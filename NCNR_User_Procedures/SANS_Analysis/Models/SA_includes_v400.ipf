@@ -1,0 +1,58 @@
+#pragma rtGlobals=1		// Use modern global access method.
+#pragma version=4.0
+#pragma IgorVersion=6.0
+
+//*************
+// the list of files to include in the SANS reduction experiment
+//  - files must be located somewhere in the User Procedures folder
+// or sub-folders
+//
+
+//always include the picker
+#include "SANSModelPicker_v40"			version>=4.00
+//utility procedures
+#include "GaussUtils_v40"				version>=4.00
+#include "PlotUtilsMacro_v40"			version>=4.00
+#include "PlotManager_v40"				version>=4.00
+
+#include "Wrapper_v40"
+#include "PlotUtils2D_v40"
+#include "GizmoCylinder_v40"
+
+Menu "SANS Models"
+	"Fit Manager", Init_WrapperPanel()
+	"Load Model Functions",Execute/P "INSERTINCLUDE \"SANSModelPicker_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "ModelPicker_Panel()"
+	"Load and Plot Manager", Show_Plot_Manager()
+	"Freeze Model"
+	"Write Model Data"
+	"-"
+	Submenu "Packages"
+		"Sum Two Models",Execute/P "INSERTINCLUDE \"SumSANSModels_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SumModelPanel()"
+		"Global Fitting",Execute/P "INSERTINCLUDE \"GlobalFit2_NCNR_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "WM_NewGlobalFit1#InitNewGlobalFitPanel()"
+		"Determine Invariant",Execute/P "INSERTINCLUDE \"Invariant_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Make_Invariant_Panel()"
+		"Do Linear Fits",Execute/P "INSERTINCLUDE \"LinearizedFits_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "A_OpenFitPanel()"
+	End
+	"-"
+	Submenu "2D Utilities"
+		"Generate Fake QxQy Data",FakeQxQy()
+		"Show Cylinder Orientation"
+		"Change Angle"
+	end
+	"-"
+	"Feedback or Bug Report",OpenTracTicketPage()
+	"Open Help Movie Page",OpenHelpMoviePage()
+End
+
+Function OpenTracTicketPage()
+	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
+	if(V_flag==1)
+		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
+	endif
+End
+
+Function OpenHelpMoviePage()
+	DoAlert 1,"Your web browser will open to a page where you can view help movies. OK? (You must have QuickTime installed)"
+	if(V_flag==1)
+		BrowseURL "ftp://webster.ncnr.nist.gov/pub/sans/kline/movies/"
+	endif
+End
