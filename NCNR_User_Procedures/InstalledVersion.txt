@@ -1,0 +1,9 @@
+PACKAGE_VERSION=6.00b;SANS_RED_VERSION=5.10;SANS_ANA_VERSION=4.00;USANS_RED_VERSION=2.21;
+
+Only the first line of the file is read in.
+Igor will use the NumberByKey operation to get the 
+version number from the string
+
+These are the current versions as of:
+01 AUG 2006 SRK
+
