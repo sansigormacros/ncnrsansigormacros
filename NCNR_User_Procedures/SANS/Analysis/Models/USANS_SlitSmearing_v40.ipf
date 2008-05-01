@@ -15,13 +15,15 @@
 
 //
 
+// called only by the main file loader
+//
 Function USANS_CalcWeights(basestr, dQv)
 	String basestr
 	Variable dQv
 
 	Variable/G USANS_N=numpnts($(basestr+"_q"))
 	Variable/G USANS_dQv = dQv
-	String/G root:Packages:NIST:USANS_basestr = basestr
+	String/G root:Packages:NIST:USANS_basestr = basestr		//this is the "current data" for slope and weights
 
 	Make/D/O/N=(USANS_N,USANS_N) $(basestr+"_res")
 	Make/D/O/N=(USANS_N,USANS_N) W1mat
@@ -110,6 +112,9 @@ Function USANS_RE_CalcWeights(baseStr,pt1,pt2)
 	//Variable/G USANS_m = EnterSlope(baseStr)
 	Variable/G USANS_m = -4
 	Variable/G USANS_slope_numpnts = 15
+	// must reset the global for baseStr to this set, otherwise it will look for the last set loaded
+	String/G root:Packages:NIST:USANS_basestr = basestr		//this is the "current data" for slope and weights
+
 	
 	Print "---- Calculating Weighting Matrix for USANS Data ----"
 	
