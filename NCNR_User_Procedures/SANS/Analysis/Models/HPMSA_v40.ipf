@@ -10,10 +10,10 @@ Proc PlotHayterPenfoldMSA(num,qmin,qmax)
 	Prompt qmin "Enter minimum q-value (A^-1) for model: "
 
 	//	Set up data folder for global variables
- 	if(!DataFolderExists("root:HayPenMSA"))
- 		NewDataFolder root:HayPenMSA
+ 	if(!DataFolderExists(":HayPenMSA"))
+ 		NewDataFolder :HayPenMSA
  	endif
-	Make/O/D/N=17 root:HayPenMSA:gMSAWave
+	Make/O/D/N=17 :HayPenMSA:gMSAWave
 	//
 	make/o/d/n=(num) xwave_hpmsa, ywave_hpmsa, xdiamwave_hpmsa	
 	xwave_hpmsa = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
@@ -126,7 +126,7 @@ Function fHayterPenfoldMSA(w,x) : FitFunc
 //	NVAR fval=root:HayPenMSA:fval = gMSAWave[15]
 //	NVAR evar=root:HayPenMSA:evar = gMSAWave[16]
 //use wave instead
-	WAVE gMSAWave = $"root:HayPenMSA:gMSAWave"
+	WAVE gMSAWave = $":HayPenMSA:gMSAWave"
 	
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,7 +294,7 @@ Function sqcoef(ir)
 	variable ir
 	
       variable itm=40.0, acc=5.0E-6, ix,ig,ii,del,e1,e2,f1,f2
-      WAVE gMSAWave = $"root:HayPenMSA:gMSAWave"
+      WAVE gMSAWave = $":HayPenMSA:gMSAWave"
       
 //	NVAR a=root:HayPenMSA:a
 //	NVAR b=root:HayPenMSA:b
@@ -414,7 +414,7 @@ Function sqfun(ix,ir)
       variable a1,a2,a3,b1,b2,b3,v1,v2,v3,p1,p2,p3,pp,pp1,pp2,p1p2,t1,t2,t3,um1,um2,um3,um4,um5,um6
       variable w0,w1,w2,w3,w4,w12,w13,w14,w15,w16,w24,w25,w26,w32,w34,w3425,w35,w3526,w36,w46,w56
       variable fa,fap,ca,e24g,pwk,qpw,pg,ii,del,fun,fund,g24
-      WAVE gMSAWave = $"root:HayPenMSA:gMSAWave"
+      WAVE gMSAWave = $":HayPenMSA:gMSAWave"
       
 //	NVAR a=root:HayPenMSA:a
 //	NVAR b=root:HayPenMSA:b
@@ -736,7 +736,7 @@ Function sqhcal(qq)
       	variable qq
       	
       	variable SofQ,etaz,akz,gekz,e24,x1,x2,ck,sk,ak2,qk,q2k,qk2,qk3,qqk,sink,cosk,asink,qcosk,aqk,inter  		
-	WAVE gMSAWave = $"root:HayPenMSA:gMSAWave"
+	WAVE gMSAWave = $":HayPenMSA:gMSAWave"
 	
 	
 	//NVAR a=root:HayPenMSA:a
