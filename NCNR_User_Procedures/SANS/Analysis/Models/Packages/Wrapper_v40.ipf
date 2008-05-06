@@ -342,11 +342,13 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			if(exists("Hold_"+suffix) == 0)
 				Make/O/D/N=(num) $("epsilon_"+suffix),$("Hold_"+suffix)
 				Make/O/T/N=(num) $("LoLim_"+suffix),$("HiLim_"+suffix)
+				Wave eps = $("epsilon_"+suffix)
+				Wave coef=$popStr
+				eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
 			endif
 			// default epsilon values, sometimes needed for the fit
-			Wave eps = $("epsilon_"+suffix)
-			Wave coef=$popStr
-			eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
+			
+
 			WAVE/T LoLim = $("LoLim_"+suffix)
 			WAVE/T HiLim = $("HiLim_"+suffix)
 			
@@ -905,7 +907,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	// report the results (to the panel?)
 	print "V_chisq = ",V_chisq
 	print cw
-	WAVE w_sigma
+	WAVE/Z w_sigma
 	print w_sigma
 	String resultStr=""
 		

@@ -755,15 +755,15 @@ Function Smear_Model_5(fcn,w,x,answer,resW)
 		//MatrixOP/O answer = resW x tmpMat
 		Return(0)
 	else
-		weightStr = "gauss20wt"
-		zStr = "gauss20z"
+		weightStr = "gauss5wt"
+		zStr = "gauss5z"
 	
 	//	if wt,z waves don't exist, create them (only check for weight, should really check for both)
 		if (WaveExists($weightStr) == 0) // wave reference is not valid, 
 			Make/D/N=(nord) $weightStr,$zStr
 			Wave weightW = $weightStr
 			Wave abscissW = $zStr		// wave references to pass
-			Make20GaussPoints(weightW,abscissW)	
+			Make5GaussPoints(weightW,abscissW)	
 		else
 			if(exists(weightStr) > 1) 
 				 Abort "wave name is already in use"		//executed only if name is in use elsewhere
@@ -803,15 +803,15 @@ Function Smear_Model_10(fcn,w,x,answer,resW)
 		//MatrixOP/O answer = resW x tmpMat
 		Return(0)
 	else
-		weightStr = "gauss20wt"
-		zStr = "gauss20z"
+		weightStr = "gauss10wt"
+		zStr = "gauss10z"
 	
 	//	if wt,z waves don't exist, create them (only check for weight, should really check for both)
 		if (WaveExists($weightStr) == 0) // wave reference is not valid, 
 			Make/D/N=(nord) $weightStr,$zStr
 			Wave weightW = $weightStr
 			Wave abscissW = $zStr		// wave references to pass
-			Make20GaussPoints(weightW,abscissW)	
+			Make10GaussPoints(weightW,abscissW)	
 		else
 			if(exists(weightStr) > 1) 
 				 Abort "wave name is already in use"		//executed only if name is in use elsewhere
@@ -903,15 +903,15 @@ Function Smear_Model_76(fcn,w,x,answer,resW)
 		//MatrixOP/O answer = resW x tmpMat
 		Return(0)
 	else
-		weightStr = "gauss20wt"
-		zStr = "gauss20z"
+		weightStr = "gauss76wt"
+		zStr = "gauss76z"
 	
 	//	if wt,z waves don't exist, create them (only check for weight, should really check for both)
 		if (WaveExists($weightStr) == 0) // wave reference is not valid, 
 			Make/D/N=(nord) $weightStr,$zStr
 			Wave weightW = $weightStr
 			Wave abscissW = $zStr		// wave references to pass
-			Make20GaussPoints(weightW,abscissW)	
+			Make76GaussPoints(weightW,abscissW)	
 		else
 			if(exists(weightStr) > 1) 
 				 Abort "wave name is already in use"		//executed only if name is in use elsewhere
