@@ -110,7 +110,7 @@ Function ReadHeaderAndData(fname)
 	textw[9]= ""
 
 	//total counting time in seconds
-	intw[3] = getCountTime(fname)
+	intw[2] = getCountTime(fname)
 	
 	
 	// total monitor count
@@ -135,10 +135,10 @@ Function ReadHeaderAndData(fname)
 	// 10 and 13 are the X and Y pixel dimensions, respectively (in mm!)
 	//(11,12 and 13,14 are set to values for a linear response, as from a new Ordela detector)
 	realw[10] = getDetectorPixelXSize(fname)
-	realw[11] = 1000
+	realw[11] = 10000
 	realw[12] = 0
 	realw[13] = getDetectorPixelYSize(fname)
-	realw[14] = 1000
+	realw[14] = 10000
 	realw[15] = 0
 	
 	// beam center X,Y on the detector (in units of pixel coordinates (1,N))
