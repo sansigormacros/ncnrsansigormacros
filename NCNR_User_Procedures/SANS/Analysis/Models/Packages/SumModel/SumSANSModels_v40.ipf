@@ -220,8 +220,8 @@ Proc PlotSum_Model(num,qmin,qmax)
 	if(exists("Hold_"+suffix) == 1)
 		Redimension/N=(nParam) $("epsilon_"+suffix),$("Hold_"+suffix)
 		Redimension/N=(nParam) $("LoLim_"+suffix),$("HiLim_"+suffix)
+		$("epsilon_"+suffix) = abs(coef_sum*1e-4) + 1e-10			//default eps is proportional to the coefficients
 	endif
-	$("epsilon_"+suffix) = abs(coef_sum*1e-4) + 1e-10			//default eps is proportional to the coefficients
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -305,8 +305,8 @@ Proc PlotSmeared_Sum_Model(str)
 	if(exists("Hold_"+suffix) == 1)
 		Redimension/N=(nParam) $("epsilon_"+suffix),$("Hold_"+suffix)
 		Redimension/N=(nParam) $("LoLim_"+suffix),$("HiLim_"+suffix)
+		$("epsilon_"+suffix) = abs(smear_coef_sum*1e-4) + 1e-10			//default eps is proportional to the coefficients
 	endif
-	$("epsilon_"+suffix) = abs(smear_coef_sum*1e-4) + 1e-10			//default eps is proportional to the coefficients
 	SetDataFolder root:
 End
 

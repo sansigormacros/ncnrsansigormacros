@@ -15,6 +15,8 @@
 #include "PlotUtilsMacro_v40"			version>=4.00
 #include "PlotManager_v40"				version>=4.00
 
+#include "USANS_SlitSmearing_v40"
+#include "WriteModelData_v40"
 #include "Wrapper_v40"
 #include "PlotUtils2D_v40"
 #include "GizmoCylinder_v40"
