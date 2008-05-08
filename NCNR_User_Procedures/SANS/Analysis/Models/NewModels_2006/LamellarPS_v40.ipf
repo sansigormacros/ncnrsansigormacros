@@ -53,8 +53,8 @@ Proc PlotLamellarPS(num,qmin,qmax)
 	Prompt qmax "Enter maximum q-value (^1) for model: "
 //
 	// constants
-	Variable/G root:gEuler = 0.5772156649		// Euler's constant
-	Variable/G root:gDelQ = 0.0025		//[=] 1/A, q-resolution, default value
+//	Variable/G root:gEuler = 0.5772156649		// Euler's constant
+//	Variable/G root:gDelQ = 0.0025		//[=] 1/A, q-resolution, default value
 	
 	Make/O/D/n=(num) xwave_LamellarPS, ywave_LamellarPS
 	xwave_LamellarPS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -81,43 +81,41 @@ Proc PlotLamellarPS(num,qmin,qmax)
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
-//Proc PlotSmeared_LamellarPS(str)								
-//	String str
-//	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
-//	
-//	// if any of the resolution waves are missing => abort
-//	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
-//		Abort
-//	endif
-//	
-//	SetDataFolder $("root:"+str)
-//	
-//	// constants
+Proc PlotSmearedLamellarPS(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// constants
 //	Variable/G root:gEuler = 0.5772156649		// Euler's constant
 //	Variable/G root:gDelQ = 0.0025		//[=] 1/A, q-resolution, default value
-//	// Setup parameter table for model function
-//	Make/O/D smear_coef_LamellarPS = {1,400,30,0.15,6e-6,20,0.1,0}		//CH#4
-//	make/o/t smear_parameters_LamellarPS = {"Scale","Lamellar spacing, D (A)","Bilayer Thick (delta) (A)","polydisp of Bilayer Thickness","contrast (A^-2)","# of Lamellar plates","Caille parameter","Incoherent Bgd (cm-1)"}
-//	Edit smear_parameters_LamellarPS,smear_coef_LamellarPS					//display parameters in a table
-//	
-//	// output smeared intensity wave, dimensions are identical to experimental QSIG values
-//	// make extra copy of experimental q-values for easy plotting
-//	Duplicate/O $(str+"_q") smeared_LamellarPS,smeared_qvals				//
-//	SetScale d,0,0,"1/cm",smeared_LamellarPS							//
-//					
-//	Variable/G gs_LamellarPS=0
-//	gs_LamellarPS := fLamellarPS_Smeared(smear_coef_LamellarPS,smeared_LamellarPS,smeared_qvals)	//this wrapper fills the STRUCT
-//	
-//	Display smeared_LamellarPS vs smeared_qvals									//
-//	ModifyGraph log=1,marker=29,msize=2,mode=4
-//	Label bottom "q (\\S-1\\M)"
-//	Label left "I(q) (cm\\S-1\\M)"
-//	
-//	SetDataFolder root:
-//End
-
-
-
+	// Setup parameter table for model function
+	Make/O/D smear_coef_LamellarPS = {1,400,30,0.15,1e-6,6.3e-6,20,0.1,0}		//CH#4
+	make/o/t smear_parameters_LamellarPS = {"Scale","Lamellar spacing, D (A)","Bilayer Thick (delta) (A)","polydisp of Bilayer Thickness","SLD bilayer (A^-2)","SLD solvent (A^-2)","# of Lamellar plates","Caille parameter","Incoherent Bgd (cm-1)"}
+	Edit smear_parameters_LamellarPS,smear_coef_LamellarPS					//display parameters in a table
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_LamellarPS,smeared_qvals				//
+	SetScale d,0,0,"1/cm",smeared_LamellarPS							//
+					
+	Variable/G gs_LamellarPS=0
+	gs_LamellarPS := fSmearedLamellarPS(smear_coef_LamellarPS,smeared_LamellarPS,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_LamellarPS vs smeared_qvals									//
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (\\S-1\\M)"
+	Label left "I(q) (cm\\S-1\\M)"
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedLamellarPS","smear_coef_LamellarPS","LamellarPS")
+End
 
 
 //AAO version, uses XOP if available
@@ -163,29 +161,32 @@ Function fLamellarPS(w,x) : FitFunc
 	
 //	local variables
 	Variable inten, qval,Pq,Sq,ii,alpha,temp,t1,t2,t3,dQ
+	Variable Euler = 0.5772156649
+	Variable dQDefault = 0
+	dQ = dqDefault
 	
-	NVAR Euler = root:gEuler
-	NVAR dQDefault = root:gDelQ
+//	NVAR Euler = root:gEuler
+//	NVAR dQDefault = root:gDelQ
 	//	x is the q-value for the calculation
 	qval = x
 	//get the instrument resolution
-	SVAR/Z sigQ = gSig_Q
-	SVAR/Z qStr = gQVals
-	
-	if(SVAR_Exists(sigQ) && SVAR_Exists(qStr))
-		Wave/Z sigWave=$sigQ
-		Wave/Z sig_Qwave = $qStr
-		if(waveexists(sigWave)&&waveexists(sig_qwave))
-			dQ = interp(qval, sig_Qwave, sigWave )
-		else
-//			if(qval>0.01 && qval<0.012)
-//				print "using default resolution"
-//			endif
-			dQ = dQDefault
-		endif
-	else
-		dQ = dQDefault
-	endif
+//	SVAR/Z sigQ = gSig_Q
+//	SVAR/Z qStr = gQVals
+//	
+//	if(SVAR_Exists(sigQ) && SVAR_Exists(qStr))
+//		Wave/Z sigWave=$sigQ
+//		Wave/Z sig_Qwave = $qStr
+//		if(waveexists(sigWave)&&waveexists(sig_qwave))
+//			dQ = interp(qval, sig_Qwave, sigWave )
+//		else
+////			if(qval>0.01 && qval<0.012)
+////				print "using default resolution"
+////			endif
+//			dQ = dQDefault
+//		endif
+//	else
+//		dQ = dQDefault
+//	endif
 	
 	Pq = 2*contr^2/qval/qval*(1-cos(qval*del)*exp(-0.5*qval^2*sig^2))
 	
@@ -220,33 +221,33 @@ End
 //
 // used only for the dependency, not for fitting
 //
-//Function fLamellarPS_Smeared(coefW,yW,xW)
-//	Wave coefW,yW,xW
-//	
-//	String str = getWavesDataFolder(yW,0)
-//	String DF="root:"+str+":"
-//	
-//	WAVE resW = $(DF+str+"_res")
-//	
-//	STRUCT ResSmearAAOStruct fs
-//	WAVE fs.coefW = coefW	
-//	WAVE fs.yW = yW
-//	WAVE fs.xW = xW
-//	WAVE fs.resW = resW
-//	
-//	Variable err
-//	err = LamellarPS_Smeared(fs)
-//	
-//	return (0)
-//End
+Function fSmearedLamellarPS(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedLamellarPS(fs)
+	
+	return (0)
+End
 
 //the smeared model calculation
-//Function LamellarPS_Smeared(s) :FitFunc
-//	Struct ResSmearAAOStruct &s
-//
-////	the name of your unsmeared model (AAO) is the first argument
-//	Smear_Model_20(LamellarPS,s.coefW,s.xW,s.yW,s.resW)
-//
-//	return(0)
-//End
+Function SmearedLamellarPS(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_76(LamellarPS,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
 ////

@@ -52,7 +52,7 @@ Function DiamCyl(hcyl,rcyl)
 	a = rcyl
 	b = hcyl/2
 	t1 = a*a*2*b/2
-	t2 = 1 + (b/a)*(1+a/b)*(1+pi*a/b/2)
+	t2 = 1 + (b/a)*(1+a/b/2)*(1+pi*a/b/2)
 	ddd = 3*t1*t2
 	diam = ddd^(1/3)
 	
