@@ -420,6 +420,7 @@ Function Rescale_Data()
 		Display /W=(5,42,480,400)/K=1 yAxisWave vs xAxisWave
 		ModifyGraph mode=3,standoff=0,marker=8
 		ErrorBars yAxisWave Y,wave=(yErrWave,yErrWave)
+		ModifyGraph opaque(yAxisWave)=1
 		DoWindow/C FitWindow
 	else
 		//window already exists, just bring to front for update
@@ -513,6 +514,7 @@ Function DispatchModel(GoFit) : ButtonControl
 	CurveFit line yAxisWave(xcsr(A),xcsr(B)) /X=xAxisWave /W=yWtWave /D  
 	//CurveFit line yAxisWave(xcsr(A),xcsr(B)) /X=xAxisWave /W=yWtWave  /R /D  
 	ModifyGraph rgb(fit_yAxisWave)=(0,0,0)
+	ModifyGraph lsize(fit_yAxisWave)=2
 // annotate graph, filtering out special cases of Guinier fits
 // Text Boxes must be used, since ControlBars on graphs DON'T print out
 	
