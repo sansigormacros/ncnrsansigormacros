@@ -7,8 +7,7 @@
 
 //
 // package-6.001
-//
-
+// - lots more diagnostics added
 
 Function InstallNCNRMacros()
 
@@ -31,6 +30,7 @@ Function InstallNCNRMacros()
 		isMac=1
 	endif
 	
+
 	String igorPathStr,homePathStr
 	PathInfo Igor
 	igorPathStr = S_Path		//these have trailing colons
@@ -56,8 +56,8 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
-			Print "Move "+ tmpStr
 			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
 		endif
 	endfor
 	
@@ -68,8 +68,8 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
-			Print "Move "+ tmpStr
 			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
 		endif
 	endfor
 	
@@ -85,8 +85,8 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
 		if(isThere)
-			Print "Move "+ tmpStr
 			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from User Procedures: "+num2str(V_flag)
 		endif
 	endfor
 	
@@ -99,12 +99,13 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,UPFoldersWave)
 		if(isThere)
-			Print "Move "+ tmpStr
-			MoveFolder UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
+			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from User Procedures: "+num2str(V_flag)
 		endif
 	endfor
 
-// clean up the Igor help files
+// now try to move the  Igor Help files out
 	NewPath /Q/O IHPath, igorPathStr+"Igor Help Files:"
 	PathInfo IHPath
 	String IHPathStr = S_Path
@@ -116,8 +117,8 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFilesWave)
 		if(isThere)
-			Print "Move "+ tmpStr
 			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
 		endif
 	endfor	
 	
@@ -128,8 +129,8 @@ Function InstallNCNRMacros()
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFolders)
 		if(isThere)
-			Print "Move "+ tmpStr
 			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
 		endif
 	endfor
 	
@@ -138,19 +139,41 @@ Function InstallNCNRMacros()
 //(2) set up the aliases from there
 //
 // the old ones should be gone already, so just put in the new ones
+
+// they may not be possible to remove, so try to overwrite...
+
 //  and then create shortcuts for XOP and help files
-	MoveFolder homePathStr+"NCNR_Help_Files" as UPPathStr+"NCNR_Help_Files"
+//	MoveFolder/Z=1/O homePathStr+"NCNR_Help_Files" as UPPathStr+"NCNR_Help_Files"
+//	Print "Move folder NCNR_Help_Files into User Procedures, overwrite if needed: "+num2str(V_flag)
+//	if(V_Flag != 0)
+		MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as UPPathStr+"NCNR_Help_Files"
+		Print "******Move folder NCNR_Help_Files into User Procedures, NO overwite: "+num2str(V_flag)
+//	endif
 	CreateAliasShortcut/O/P=UPPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
+	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+num2str(V_flag)
 	
-	MoveFolder homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+	
+//	MoveFolder/Z=1/O homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+//	Print "Move folder NCNR_User_Procedures into User Procedures, overwrite if needed: "+num2str(V_flag)
+//	if(V_flag !=0)
+		MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+		Print "*******Move folder NCNR_User_Procedures into User Procedures, NO overwrite: "+num2str(V_flag)
+//	endif	
 	// don't need an alias for the UserProcedures - they're already here....
 
-	MoveFolder homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
+
+//	MoveFolder/Z=1/O homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
+//	Print "Move folder NCNR_Extensions into User Procedures, overwrite if needed: "+num2str(V_flag)
+//	if(V_flag !=0)
+		MoveFolder/Z=1 homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
+		Print "*******Move folder NCNR_Extensions into User Procedures, NO overwrite: "+num2str(V_flag)
+//	endif
 	if(isMac)
 		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Mac_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
 	else
 		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Win_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
 	endif
+	Print "Creating shortcut for XOP into Igor Extensions: "+num2str(V_flag)
 	
 
 // put shortcuts to the template in the "top" folder
@@ -164,6 +187,7 @@ Function InstallNCNRMacros()
 //			Print "Move "+ tmpStr
 //			MoveFolder/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
 			CreateAliasShortcut/O/P=UtilPath tmpStr as homePathStr +tmpStr
+			Print "Creating shortcut for "+tmpStr+" into top level: "+num2str(V_flag)
 //		endif
 	endfor
 	
@@ -178,7 +202,7 @@ Function InstallNCNRMacros()
 	
 
 // installation is done, quit to start fresh
-	doAlert 1, "Quit Igor to complete installation.\rQuit now? "
+	DoAlert 1, "Quit Igor to complete installation.\rQuit now? "
 	if (V_Flag==1)
 		execute "Quit /Y"
 	endif
@@ -196,7 +220,7 @@ Function CheckForMatch(str,tw)
 	Variable num=numpnts(tw),ii=0
 	
 	do
-		if(cmpstr(str,tw[ii])==0 || cmpstr(str+".lnk",tw[ii])==0)
+		if(cmpstr(str,tw[ii])==0 || cmpstr(str,tw[ii]+".lnk")==0)
 			return (1)
 		endif
 		ii+=1
@@ -371,5 +395,56 @@ Function InstallDiagnostics()
 	Notebook $nb selection={startOfFile, startOfFile}	
 	Notebook $nb text=""
 	
+	return(0)
+End
+
+Function AskUserToKillHelp()
+
+	//// clean up the Igor help files
+// first, kill any open help files
+// there are 5 of them
+	Variable numHelpFilesOpen=0
+//	do
+		numHelpFilesOpen = 0
+		// V_flag is set to zero if it's found, non-zero (unspecified value?) if it's not found
+		DisplayHelpTopic/Z "Beta SANS Tools"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif
+		
+		DisplayHelpTopic/Z "SANS Data Analysis Documentation"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif
+				
+		DisplayHelpTopic/Z "SANS Model Function Documentation"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif
+				
+		DisplayHelpTopic/Z "SANS Data Reduction Tutorial"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif
+				
+		DisplayHelpTopic/Z "USANS Data Reduction"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif
+			
+//		PauseForUser		// can't use this, it keeps you from interacting with anything....
+//	while(NumHelpFilesOpen != 0)
+	DoWindow HelpNotebook
+	if(V_flag)
+		DoWindow/K HelpNotebook
+	endif
+	
+	String helpStr = "Please kill the open Help Files by option-clicking (Macintosh) or alt-clicking (Windows) on the close box of each window. Once you have finished, please close this window and install the SANS Macros."
+	if(NumHelpFilesOpen != 0)
+		NewNotebook/F=1/K=1/N=HelpNotebook /W=(5,44,547,181) as "Please close the open help files"
+		Notebook HelpNotebook,fsize=12,fstyle=1,showRuler=0,text=helpStr
+		return(0)
+	endif
+
 	return(0)
 End
