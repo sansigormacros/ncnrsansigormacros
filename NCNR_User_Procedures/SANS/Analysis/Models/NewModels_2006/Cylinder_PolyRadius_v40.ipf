@@ -279,26 +279,6 @@ Function SmearedCyl_PolyRadius(s) :FitFunc
 	return(0)
 End
 
-
-
-//// experimental threaded version...
-// don't try to thread the smeared calculation, it's good enough
-// to thread the unsmeared version
-
-//threaded version of the function
-ThreadSafe Function Cyl_PolyRadius_T(cw,yw,xw,p1,p2)
-	WAVE cw,yw,xw
-	Variable p1,p2
-	
-#if exists("Cyl_PolyRadiusX")			//this check is done in the calling function, simply hide from compiler
-	yw[p1,p2] = Cyl_PolyRadiusX(cw,xw)
-//#else
-//	yw[p1,p2] = fCyl_PolyRadius(cw,xw)
-#endif
-
-	return 0
-End
-
 //
 //  Fit function that is actually a wrapper to dispatch the calculation to N threads
 //
@@ -335,4 +315,22 @@ Function Cyl_PolyRadius(cw,yw,xw) : FitFunc
 		yw = fCyl_PolyRadius(cw,xw)		//the Igor, non-XOP, non-threaded calculation
 #endif
 	return(0)
+End
+
+//// experimental threaded version...
+// don't try to thread the smeared calculation, it's good enough
+// to thread the unsmeared version
+
+//threaded version of the function
+ThreadSafe Function Cyl_PolyRadius_T(cw,yw,xw,p1,p2)
+	WAVE cw,yw,xw
+	Variable p1,p2
+	
+#if exists("Cyl_PolyRadiusX")			//this check is done in the calling function, simply hide from compiler
+	yw[p1,p2] = Cyl_PolyRadiusX(cw,xw)
+#else
+	yw[p1,p2] = fCyl_PolyRadius(cw,xw)
+#endif
+
+	return 0
 End

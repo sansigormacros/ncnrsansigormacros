@@ -443,8 +443,9 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			// multiplicative correction for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
 			// correction inserted 11/2007 SRK
 			// large angle detector efficiency correction is >= 1 and will "bump up" the highest angles
+			// so divide here to get the correct answer (5/22/08 SRK)
 			if(doEfficiency)
-				data[ii][jj] *= DetEffCorr(lambda,dtdist,xd,yd)
+				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
 	//			solidAngle[ii][jj] = DetEffCorr(lambda,dtdist,xd,yd)		//testing only
 			endif
 			
