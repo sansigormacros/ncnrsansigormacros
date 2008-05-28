@@ -2006,7 +2006,7 @@ Function AskForAbsoluteParams_Quest()
 		//note that reading the detector pixel size from the header ASSUMES SQUARE PIXELS! - Jan2008
 		pixel = rw[10]/10			// header value (X) is in mm, want cm here
 	
-		countTime = iw[1]
+		countTime = iw[2]
 		//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
 		monCnt = rw[0]
 		sdd = rw[18]
@@ -2022,7 +2022,9 @@ Function AskForAbsoluteParams_Quest()
 		//get the XY box, if needed
 		Variable x1,x2,y1,y2
 		String filename=tw[0],tempStr
-		err = GetXYBoxFromFile(filename,x1,x2,y1,y2)		//xy's are passed/returned by reference
+		PathInfo/S catPathName
+		String tempName = S_Path + FindValidFilename(filename)
+		err = GetXYBoxFromFile(tempName,x1,x2,y1,y2)		//xy's are passed/returned by reference
 		Print x1,x2,y1,y2
 
 		if( ((x1-x2)==0) || ((y1-y2)==0) )	//need to re-select the box
@@ -2031,8 +2033,6 @@ Function AskForAbsoluteParams_Quest()
 				Abort "Box not selected properly - Please re-set the ABS parameters"
 			Endif
 			//box is OK, write box values to file
-			PathInfo/S catPathName
-			String tempName = S_Path + FindValidFilename(filename)
 			WriteXYBoxToHeader(tempName,x1,x2,y1,y2)
 		else
 			//give option to override

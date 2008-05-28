@@ -1579,14 +1579,16 @@ End
 
 /////   TRANSMISSION RELATED FUNCTIONS    ////////
 //box coordinate are returned by reference
+// filename is the full path:name 
 Function getXYBoxFromFile(filename,x1,x2,y1,y2)
 	String filename
 	Variable &x1,&x2,&y1,&y2
 	
 	Variable refnum
-	String tmpFile = FindValidFilename(filename)
+//	String tmpFile = FindValidFilename(filename)
 		
-	Open/R/P=catPathName refnum as tmpFile
+//	Open/R/P=catPathName refnum as tmpFile
+	Open/R refnum as filename
 	FSetPos refnum,478
 	FBinRead/F=3/B=3 refnum, x1
 	FBinRead/F=3/B=3 refnum, x2

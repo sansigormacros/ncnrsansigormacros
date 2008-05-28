@@ -28,7 +28,7 @@ Function InitFacilityGlobals()
 	
 	Variable/G root:myGlobals:DeadtimeDefault = 0.9e-6		//deadtime in seconds
 	
-	Variable/G root:myGlobals:BeamstopYTol = 150	
+	Variable/G root:myGlobals:BeamstopYTol = 100	
 
 	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position
 
@@ -366,7 +366,7 @@ Function isTransFile(fName)
 	
 //	print ypos
 
-//print ytol
+//  print ytol
 	
 	if(abs(ypos)>=ytol)
 //		//yes, its a transmisison file
@@ -830,12 +830,15 @@ Function AttenuationFactor(fileStr,lam,attenNo)
 	Variable lam,attenNo
 	
 	Variable attenFactor
+	make/O/N=3 Attenuators_ILL={147,902,2874}
 	
-	attenFactor = 1
+	attenFactor = Attenuators_ILL[attenNo-1]
+	
+//	print attenfactor
 	
 	// your code here
 
-	return(attenFactor)
+	return(1/attenFactor)
 End
 
 //function called by the popups to get a file list of data that can be sorted

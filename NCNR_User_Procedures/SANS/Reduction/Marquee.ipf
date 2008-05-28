@@ -74,8 +74,8 @@ Function SetXYBoxCoords() :  GraphMarquee
 		Abort "There is no Marquee"
 	Endif
 	SVAR dispType=root:myGlobals:gDataDisplayType
-	if(cmpstr(dispType,"RealTime")==0)
-		Print "Can't SetXYBox for a RealTime file"
+	if(cmpstr(dispType,"SAM")!=0)
+		DoAlert 0, "You can only use SetXYBox on SAM data files"
 		return(1)
 	endif
 	//printf "marquee left in bottom axis terms: %g\r",round(V_left)
