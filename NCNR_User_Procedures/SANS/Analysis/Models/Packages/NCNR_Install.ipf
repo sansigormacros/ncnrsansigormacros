@@ -454,9 +454,10 @@ Function AskUserToKillHelp()
 		DoWindow/K HelpNotebook
 	endif
 	
-	String helpStr = "Please kill the open Help Files by option-clicking (Macintosh) or alt-clicking (Windows) on the close box of each window. Once you have finished, please close this window and install the SANS Macros."
+	String helpStr = "Please kill the open Help Files by holding down the OPTION key (Macintosh) or ALT key (Windows) and then CLICKING on the close box of each help window."
+	helpStr += " Once you have finished, please close this window and install the SANS Macros."
 	if(NumHelpFilesOpen != 0)
-		NewNotebook/F=1/K=1/N=HelpNotebook /W=(5,44,547,200) as "Please close the open help files"
+		NewNotebook/F=1/K=1/N=HelpNotebook /W=(5,44,547,380) as "Please close the open help files"
 		Notebook HelpNotebook,fsize=18,fstyle=1,showRuler=0,text=helpStr
 		return(0)
 	endif
