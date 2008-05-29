@@ -830,9 +830,9 @@ Function AttenuationFactor(fileStr,lam,attenNo)
 	Variable lam,attenNo
 	
 	Variable attenFactor
-	make/O/N=3 Attenuators_ILL={147,902,2874}
+	make/O/N=4 Attenuators_ILL={1,147,902,2874}
 	
-	attenFactor = Attenuators_ILL[attenNo-1]
+	attenFactor = Attenuators_ILL[attenNo]
 	
 //	print attenfactor
 	

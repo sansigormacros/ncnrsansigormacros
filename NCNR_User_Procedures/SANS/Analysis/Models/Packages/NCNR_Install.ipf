@@ -389,8 +389,23 @@ Function InstallDiagnostics()
 	strFileList = IndexedDir(IgorProcPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
+//
+//
+	// then get a listing of the "home" directory. If files were not moved properly, they will still be here
+	Notebook $nb text="\r\r**Home (files)**\r"
+//	NewPath /Q/O IgorProcPath, igorPathStr+"Igor Procedures:"
 
+	//files
+	strFileList = IndexedFile(home, -1, "????" )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr
 
+	//folders
+	Notebook $nb text="\r**Home (folders)**\r"
+	strFileList = IndexedDir(home, -1, 0 )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr+"\r"
+	
 	//move to the beginning of the notebook
 	Notebook $nb selection={startOfFile, startOfFile}	
 	Notebook $nb text=""
@@ -441,8 +456,8 @@ Function AskUserToKillHelp()
 	
 	String helpStr = "Please kill the open Help Files by option-clicking (Macintosh) or alt-clicking (Windows) on the close box of each window. Once you have finished, please close this window and install the SANS Macros."
 	if(NumHelpFilesOpen != 0)
-		NewNotebook/F=1/K=1/N=HelpNotebook /W=(5,44,547,181) as "Please close the open help files"
-		Notebook HelpNotebook,fsize=12,fstyle=1,showRuler=0,text=helpStr
+		NewNotebook/F=1/K=1/N=HelpNotebook /W=(5,44,547,200) as "Please close the open help files"
+		Notebook HelpNotebook,fsize=18,fstyle=1,showRuler=0,text=helpStr
 		return(0)
 	endif
 
