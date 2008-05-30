@@ -850,7 +850,9 @@ Function WriteTransmissionToHeader(fname,trans)
 	
 	// your writer here
 	
-	WriteReal(fname,trans,5589)     //I will define at position 10 lines   by myself
+	WriteReal(fname,trans,5589)     //I will define at position 10 lines position 1  by myself
+	
+	// 16 bites between numbers and 81 per line
 	
 	return(0)
 End
@@ -862,7 +864,7 @@ Function WriteWholeTransToHeader(fname,trans)
 	Variable trans
 	
 	// do nothing for now
-	WriteReal(fname,trans,6885)
+	WriteReal(fname,trans,6885)   /// //I will define at position last  lines  position 1  by myself
 	
 	return(0)
 End
@@ -877,6 +879,9 @@ Function WriteBoxCountsToHeader(fname,counts)
 	
 	WriteReal(fname,counts,6868)
 	
+	////I will define at position 2   lines before the end and  last position   by myself
+	
+	
 	return(0)
 End
 
@@ -888,7 +893,8 @@ Function WriteBSXPosToHeader(fname,xpos)
 	
 	// do nothing if not using NCNR Transmission module
 	
-	WriteReal(fname,xpos,5120)    ////should do it for ypos for ILL ....NEED TO REMEMBER HERE
+	WriteReal(fname,xpos,5119)    ////should do it for ypos for ILL ....NEED TO REMEMBER HERE
+	/// line 4 column 2    
 	
 	return(0)
 End
@@ -900,7 +906,7 @@ Function WriteThicknessToHeader(fname,num)
 	
 	// your code here
 	
-	WriteReal(fname,num,5508)  //define at 9 lines  just above transmission
+	WriteReal(fname,num,5508)  //define at 9 lines  column 1 just above transmission by myself
 	
 	return(0)
 End
@@ -915,6 +921,8 @@ Function WriteBeamCenterXToHeader(fname,num)
 	// pos (1) on line 71 => 70 lines x 81 char
 	WriteReal(fname,num,5670) 
 	
+	///   line 11 column 1
+	
 	return(0)
 End
 
@@ -926,6 +934,8 @@ Function WriteBeamCenterYToHeader(fname,num)
 	// your code here
 	
 	WriteReal(fname,num,5686)
+	
+	///   line 11 column 2
 	
 	return(0)
 End
@@ -939,7 +949,9 @@ Function WriteAttenNumberToHeader(fname,num)
 	Variable num
 	
 	// your code here, default of 1
-	WriteReal(fname,num,5801)
+	WriteReal(fname,num,5799)
+	
+	///   line 12 column 4
 	
 	return(0)
 End
@@ -951,7 +963,9 @@ Function WriteMonitorCountToHeader(fname,num)
 	
 	// your code here
 	
-	WriteReal(fname,num,4926)
+	WriteReal(fname,num,4924)
+	
+	///   line 1 column 5
 	
 	return(0)
 End
@@ -963,7 +977,9 @@ Function WriteDetectorCountToHeader(fname,num)
 	
 	// your code here
 	
-	WriteReal(fname,num,4910)
+	WriteReal(fname,num,4908)
+	
+	///   line 1 column 4
 	
 	return(0)
 End
@@ -985,7 +1001,9 @@ Function WriteWavelengthToHeader(fname,num)
 	Variable num
 	
 	// your code here
-	WriteReal(fname,num,5702)
+	WriteReal(fname,num,5703)
+	
+	//   line 11 column 3
 	
 	return(0)
 End
@@ -997,7 +1015,9 @@ Function WriteWavelengthDistrToHeader(fname,num)
 	
 	// your code here
 	
-	WriteReal(fname,num,5718)
+	WriteReal(fname,num,5719)
+	
+	//   line 11 column 4
 	
 	return(0)
 End
@@ -1009,7 +1029,9 @@ Function WriteTemperatureToHeader(fname,num)
 	
 	//  your code here
 	
-	WriteReal(fname,num,5348)
+	WriteReal(fname,num,5347)
+	
+	//   line 7 column 1
 	
 	return(0)
 End
@@ -1031,6 +1053,9 @@ Function WriteSourceApDiamToHeader(fname,num)
 	
 	// your code here
 //	WriteReal(fname,num,5348)
+      WriteReal(fname,num,6027)    ///4*81 = 324
+      
+      // line 15 colum 3
 	
 	return(0)
 End
@@ -1041,7 +1066,9 @@ Function WriteSampleApDiamToHeader(fname,num)
 	Variable num
 	
 	//your code here
-	WriteReal(fname,num,6028)
+	WriteReal(fname,num,6043)
+	
+	    // line 15 colum 4
 	
 	return(0)
 End
@@ -1052,7 +1079,8 @@ Function WriteSrcToSamDistToHeader(fname,num)
 	Variable num
 	
 	//	your code here
-	WriteReal(fname,num,5785)
+	WriteReal(fname,num,5784)  //it is collimation at ILL
+	
 	
 	return(0)
 End
@@ -1064,7 +1092,11 @@ Function WriteDetectorOffsetToHeader(fname,num)
 	
 	//your code here
 	
-	WriteReal(fname,num,5850)
+	WriteReal(fname,num,5849)
+	
+	
+	
+	// line 13 column 2
 	
 	return(0)
 End
@@ -1075,7 +1107,9 @@ Function WriteBeamStopDiamToHeader(fname,num)
 	Variable num
 	
 	// your code here
-	WriteReal(fname,num,6060)
+	WriteReal(fname,num,6059)
+	
+	//line 15 column 5
 	
 	return(0)
 End
@@ -1086,7 +1120,9 @@ Function WriteSDDToHeader(fname,num)
 	Variable num
 	
 	//your code here
-	WriteReal(fname,num,5153)
+	WriteReal(fname,num,5152)
+	
+	// line 4 column 4
 	
 	return(0)
 End
@@ -1097,7 +1133,9 @@ Function WriteDetPixelXToHeader(fname,num)
 	Variable num
 	
 	//your code here
-	WriteReal(fname,num,5736)
+	WriteReal(fname,num,5735)
+	
+	//  line 11 column 5   
 	
 	return(0)
 end
@@ -1108,7 +1146,7 @@ Function WriteDetPixelYToHeader(fname,num)
 	Variable num
 	
 	//your code here
-	WriteReal(fname,num,5753)
+	WriteReal(fname,num,5752)
 	
 	return(0)
 end
@@ -1118,7 +1156,8 @@ Function WriteSamLabelToHeader(fname,str)
 	String fname,str
 	
 	// your code here
-	WriteText(fname,str,2025)
+	WriteText(fname,"                              ",2075)
+	WriteText(fname,str,2075)   //// need to change that in order to erase the title and write a new one
 
 	return(0)
 End
@@ -1130,7 +1169,7 @@ Function WriteCountTimeToHeader(fname,num)
 	
 	// your code here
 //	WriteReal(fname,num,4894)
-	WriteReal(fname,num,4892)
+	WriteReal(fname,10*num,4892)
 	
 	
 	
@@ -1450,6 +1489,8 @@ Function getSourceApertureDiam(fname)
 	
 	// your code returning value
 	
+	value  = 52
+	
 	return(value)
 end
 
@@ -1463,7 +1504,7 @@ Function getSampleApertureDiam(fname)
 //	value = getRealValueFromHeader_2(fname,60,28,5,15,3) 
 	value = getRealValueFromHeader(fname,72)
 	
-	value = 5
+	value = 10
 	
 	return(value)
 end
@@ -1636,7 +1677,9 @@ Function WriteXYBoxToHeader(filename,x1,x2,y1,y2)
 	WriteReal(filename,y1,6836)
 	WriteReal(filename,y2,6852)
 	
-	print "in write",x1,x2,y1,y2
+	// use the last full line and the 4 first numbers
+	
+//	print "in write",x1,x2,y1,y2
 	
 	//  should start at 120  for read and  line 25
 	

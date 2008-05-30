@@ -244,8 +244,28 @@ Function/S FindFileFromRunNumber(num)
 	String fullName="",partialName="",item=""
 	String numStr=""
 	
-	
 	numStr = num2str(num)
+	// pad to 6 characters
+	switch(strlen(numstr))	// numeric switch
+		case 6:		// execute if case matches expression
+			break						// exit from switch
+		case 5:
+			numStr = "0"+numStr
+			break
+		case 4:
+			numStr = "00"+numStr
+			break
+		case 3:
+			numStr = "000"+numStr
+			break
+		case 2:
+			numStr = "0000"+numStr
+			break
+		case 1:
+			numStr = "00000"+numStr
+			break												
+		default:							// optional default expression executed
+	endswitch
 	
 //	Print "numstr = ",numstr
 	
@@ -274,7 +294,8 @@ Function/S FindFileFromRunNumber(num)
 		if(strlen(item) != 0)
 			//find the run number, if it exists as a three character string
 			testStr = GetRunNumStrFromFile(item)
-			
+			runFound = cmpstr(numStr,testStr)
+			if(runFound == 0)
 				partialName = FindValidFileName(item)
 				if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
 					fullName = path + partialName
@@ -282,12 +303,11 @@ Function/S FindFileFromRunNumber(num)
 					isRAW = CheckIfRawData(fullName)
 					if(isRaw)
 						//stop here
-						
-						print fullname
+						//print fullname
 						return(fullname)
 					Endif
 				Endif
-			
+			Endif
 		Endif
 		ii+=1
 	while(ii<numItems)		//process all items in list
