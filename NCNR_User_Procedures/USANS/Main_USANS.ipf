@@ -28,6 +28,7 @@ Menu "USANS"
 	"Convert to 6 Columns",Convert3ColTo6Col()
 	"-"
 	"Feedback or Bug Report",U_OpenTracTicketPage("")
+	"Check for Updates",CheckForLatestVersion()
 End
 
 // Bring the USANS_Panel to the front

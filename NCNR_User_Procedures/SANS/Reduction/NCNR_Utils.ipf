@@ -438,6 +438,10 @@ Function CheckIfRawData(fname)
 	FStatus refNum
 	totalBytes = V_logEOF
 	//Print totalBytes
+	if(totalBytes < 100)
+		Close refNum
+		return(0)		//not a raw file
+	endif
 	FSetPos refNum,75
 	FReadLine/N=3 refNum,testStr
 	Close refNum

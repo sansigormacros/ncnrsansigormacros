@@ -49,6 +49,7 @@
 
 // new in Jan 2008
 #include "SASCALC"
+#include "CheckVersionFTP"				//added June 2008
 
 // to include the analysis packages, uncomment the following
 // include statement and click "compile" at the bottom of this window.

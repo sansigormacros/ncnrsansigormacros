@@ -46,6 +46,8 @@ Menu "SANS"
 		"Tile Raw 2D files",Show_Tile_2D_Panel()
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
 	End
+	"-"
+	"Check for Updates",CheckForLatestVersion()
 //	Submenu "Utility Routines"
 //		"Clear Work Folders"
 //		"Clear Root Folder"

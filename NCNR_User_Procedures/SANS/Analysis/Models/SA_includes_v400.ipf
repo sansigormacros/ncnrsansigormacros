@@ -21,6 +21,9 @@
 #include "PlotUtils2D_v40"
 #include "GizmoCylinder_v40"
 
+#include "CheckVersionFTP"				//added June 2008
+
+
 Menu "SANS Models"
 	"Fit Manager", Init_WrapperPanel()
 	"Load Model Functions",Execute/P "INSERTINCLUDE \"SANSModelPicker_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "ModelPicker_Panel()"
@@ -43,6 +46,7 @@ Menu "SANS Models"
 	"-"
 	"Feedback or Bug Report",OpenTracTicketPage()
 	"Open Help Movie Page",OpenHelpMoviePage()
+	"Check for Updates",CheckForLatestVersion()
 End
 
 Function OpenTracTicketPage()
