@@ -358,7 +358,7 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			RenameWindow #,T0
 			// get them onto the table
 			// how do I get the parameter name?
-			String param = WaveList("*param*_"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
+			String param = WaveList("*parameters_"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
 			AppendtoTable/W=wrapperPanel#T0 $param,$(popStr)
 			AppendToTable/W=wrapperPanel#T0 $("Hold_"+suffix),$("LoLim_"+suffix),$("HiLim_"+suffix),$("epsilon_"+suffix)
 			ModifyTable width(Point)=0
