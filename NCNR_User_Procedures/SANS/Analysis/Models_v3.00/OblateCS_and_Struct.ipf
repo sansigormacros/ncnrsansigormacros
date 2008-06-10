@@ -13,8 +13,8 @@
 Proc PlotOblate_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_OEF_HS,ywave_OEF_HS
 	xwave_OEF_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -24,7 +24,7 @@ Proc PlotOblate_HS(num,qmin,qmax)
 	ywave_OEF_HS := Oblate_HS(coef_OEF_HS,xwave_OEF_HS)
 	Display ywave_OEF_HS vs xwave_OEF_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -52,7 +52,7 @@ Proc PlotSmearedOblate_HS()
 	smeared_OEF_HS := SmearedOblate_HS(smear_coef_OEF_HS,$gQvals)		
 	Display smeared_OEF_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -97,8 +97,8 @@ End
 Proc PlotOblate_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_OEF_SW,ywave_OEF_SW
 	xwave_OEF_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -108,7 +108,7 @@ Proc PlotOblate_SW(num,qmin,qmax)
 	ywave_OEF_SW := Oblate_SW(coef_OEF_SW,xwave_OEF_SW)
 	Display ywave_OEF_SW vs xwave_OEF_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -136,7 +136,7 @@ Proc PlotSmearedOblate_SW()
 	smeared_OEF_SW := SmearedOblate_SW(smear_coef_OEF_SW,$gQvals)		
 	Display smeared_OEF_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -183,8 +183,8 @@ End
 Proc PlotOblate_SC(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -201,7 +201,7 @@ Proc PlotOblate_SC(num,qmin,qmax)
 	ywave_OEF_SC := Oblate_SC(coef_OEF_SC,xwave_OEF_SC)
 	Display ywave_OEF_SC vs xwave_OEF_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -236,7 +236,7 @@ Proc PlotSmearedOblate_SC()
 	smeared_OEF_SC := SmearedOblate_SC(smear_coef_OEF_SC,$gQvals)		
 	Display smeared_OEF_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -286,8 +286,8 @@ End
 Proc PlotOblate_SHS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_OEF_SHS,ywave_OEF_SHS
 	xwave_OEF_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -297,7 +297,7 @@ Proc PlotOblate_SHS(num,qmin,qmax)
 	ywave_OEF_SHS := Oblate_SHS(coef_OEF_SHS,xwave_OEF_SHS)
 	Display ywave_OEF_SHS vs xwave_OEF_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -325,7 +325,7 @@ Proc PlotSmearedOblate_SHS()
 	smeared_OEF_SHS := SmearedOblate_SHS(smear_coef_OEF_SHS,$gQvals)		
 	Display smeared_OEF_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

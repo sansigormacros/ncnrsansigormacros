@@ -12,8 +12,8 @@
 Proc PlotPolyRectSphere_HS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_RECT_HS,ywave_RECT_HS
 	xwave_RECT_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -23,7 +23,7 @@ Proc PlotPolyRectSphere_HS(num,qmin,qmax)
 	ywave_RECT_HS := PolyRectSphere_HS(coef_RECT_HS,xwave_RECT_HS)
 	Display/K=1 ywave_RECT_HS vs xwave_RECT_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -51,7 +51,7 @@ Proc PlotSmearedPolyRectSphere_HS()
 	smeared_RECT_HS := SmearedPolyRectSphere_HS(smear_coef_RECT_HS,$gQvals)		
 	Display smeared_RECT_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -101,8 +101,8 @@ End
 Proc PlotPolyRectSphere_SW(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_RECT_SW,ywave_RECT_SW
 	xwave_RECT_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -112,7 +112,7 @@ Proc PlotPolyRectSphere_SW(num,qmin,qmax)
 	ywave_RECT_SW := PolyRectSphere_SW(coef_RECT_SW,xwave_RECT_SW)
 	Display/K=1 ywave_RECT_SW vs xwave_RECT_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -140,7 +140,7 @@ Proc PlotSmearedPolyRectSphere_SW()
 	smeared_RECT_SW := SmearedPolyRectSphere_SW(smear_coef_RECT_SW,$gQvals)		
 	Display smeared_RECT_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -193,8 +193,8 @@ End
 Proc PlotPolyRectSphere_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -211,7 +211,7 @@ Proc PlotPolyRectSphere_SC(num,qmin,qmax)
 	ywave_RECT_SC := PolyRectSphere_SC(coef_RECT_SC,xwave_RECT_SC)
 	Display/K=1 ywave_RECT_SC vs xwave_RECT_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -246,7 +246,7 @@ Proc PlotSmearedPolyRectSphere_SC()
 	smeared_RECT_SC := SmearedPolyRectSphere_SC(smear_coef_RECT_SC,$gQvals)		
 	Display smeared_RECT_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -300,8 +300,8 @@ End
 Proc PlotPolyRectSphere_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_RECT_SHS,ywave_RECT_SHS
 	xwave_RECT_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -311,7 +311,7 @@ Proc PlotPolyRectSphere_SHS(num,qmin,qmax)
 	ywave_RECT_SHS := PolyRectSphere_SHS(coef_RECT_SHS,xwave_RECT_SHS)
 	Display/K=1 ywave_RECT_SHS vs xwave_RECT_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -339,7 +339,7 @@ Proc PlotSmearedPolyRectSphere_SHS()
 	smeared_RECT_SHS := SmearedPolyRectSphere_SHS(smear_coef_RECT_SHS,$gQvals)		
 	Display smeared_RECT_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

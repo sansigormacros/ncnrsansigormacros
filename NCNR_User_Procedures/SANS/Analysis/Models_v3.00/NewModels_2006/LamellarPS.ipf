@@ -48,8 +48,8 @@
 Proc Plot_LamellarPS(num,qmin,qmax)
 	Variable num=128, qmin=.001, qmax=.5
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	Prompt qmax "Enter maximum q-value (A^1) for model: "
 //
 	// constants
 	Variable/G root:gEuler = 0.5772156649		// Euler's constant
@@ -65,7 +65,7 @@ Proc Plot_LamellarPS(num,qmin,qmax)
 	Display ywave_LamellarPS vs xwave_LamellarPS
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "I(q) (cm\\S-1\\M)"
 	//
 	// make epsilon wave appropriate for integer number of lamellar repeats
@@ -106,7 +106,7 @@ End
 //	smeared_LamellarPS := LamellarPS_Smeared(smear_coef_LamellarPS,$gQvals)		// SMEARED function name
 //	Display smeared_LamellarPS vs $gQvals									//
 //	ModifyGraph log=1,marker=29,msize=2,mode=4
-//	Label bottom "q (Å\\S-1\\M)"
+//	Label bottom "q (A\\S-1\\M)"
 //	Label left "I(q) (cm\\S-1\\M)"
 //
 //End     // end macro 

@@ -13,8 +13,8 @@
 Proc PlotMultiShellSphere(num,qmin,qmax)
 	Variable num=100,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/O/D/N=(num) xwave_mss,ywave_mss
 	xwave_mss =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -26,7 +26,7 @@ Proc PlotMultiShellSphere(num,qmin,qmax)
 	g_mss := MultiShellSphere(coef_mss,ywave_mss,xwave_mss)
 	Display/K=1 ywave_mss vs xwave_mss
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -60,7 +60,7 @@ Proc PlotSmearedMultiShellSphere(str)
 	
 	Display/K=1 smeared_mss vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -91,10 +91,10 @@ Function fMultiShellSphere(w,x) :FitFunc
 	
 	// variables are:
 	//[0] scale factor
-	//[1] radius of core [Å]
-	//[2] thickness of the shell	[Å]
+	//[1] radius of core [A]
+	//[2] thickness of the shell	[A]
 	//[3] thickness of the water layer
-	//[4] SLD of the core = sld of the solvent[Å-2]
+	//[4] SLD of the core = sld of the solvent[A-2]
 	//[5] SLD of the shell
 	//[6] number of pairs (tw+tsh)
 	//[7] background	[cm-1]

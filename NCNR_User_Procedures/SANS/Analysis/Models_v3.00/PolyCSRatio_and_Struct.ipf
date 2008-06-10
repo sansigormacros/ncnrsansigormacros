@@ -12,8 +12,8 @@
 Proc PlotPolyCSRatio_HS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCR_HS,ywave_PCR_HS
 	xwave_PCR_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -23,7 +23,7 @@ Proc PlotPolyCSRatio_HS(num,qmin,qmax)
 	ywave_PCR_HS := PolyCSRatio_HS(coef_PCR_HS,xwave_PCR_HS)
 	Display/K=1 ywave_PCR_HS vs xwave_PCR_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -51,7 +51,7 @@ Proc PlotSmearedPolyCSRatio_HS()
 	smeared_PCR_HS := SmearedPolyCSRatio_HS(smear_coef_PCR_HS,$gQvals)		
 	Display smeared_PCR_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -105,8 +105,8 @@ End
 Proc PlotPolyCSRatio_SW(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCR_SW,ywave_PCR_SW
 	xwave_PCR_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -116,7 +116,7 @@ Proc PlotPolyCSRatio_SW(num,qmin,qmax)
 	ywave_PCR_SW := PolyCSRatio_SW(coef_PCR_SW,xwave_PCR_SW)
 	Display/K=1 ywave_PCR_SW vs xwave_PCR_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -144,7 +144,7 @@ Proc PlotSmearedPolyCSRatio_SW()
 	smeared_PCR_SW := SmearedPolyCSRatio_SW(smear_coef_PCR_SW,$gQvals)		
 	Display smeared_PCR_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -201,8 +201,8 @@ End
 Proc PlotPolyCSRatio_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -219,7 +219,7 @@ Proc PlotPolyCSRatio_SC(num,qmin,qmax)
 	ywave_PCR_SC := PolyCSRatio_SC(coef_PCR_SC,xwave_PCR_SC)
 	Display/K=1 ywave_PCR_SC vs xwave_PCR_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -254,7 +254,7 @@ Proc PlotSmearedPolyCSRatio_SC()
 	smeared_PCR_SC := SmearedPolyCSRatio_SC(smear_coef_PCR_SC,$gQvals)		
 	Display smeared_PCR_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -312,8 +312,8 @@ End
 Proc PlotPolyCSRatio_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCR_SHS,ywave_PCR_SHS
 	xwave_PCR_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -323,7 +323,7 @@ Proc PlotPolyCSRatio_SHS(num,qmin,qmax)
 	ywave_PCR_SHS := PolyCSRatio_SHS(coef_PCR_SHS,xwave_PCR_SHS)
 	Display/K=1 ywave_PCR_SHS vs xwave_PCR_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -351,7 +351,7 @@ Proc PlotSmearedPolyCSRatio_SHS()
 	smeared_PCR_SHS := SmearedPolyCSRatio_SHS(smear_coef_PCR_SHS,$gQvals)		
 	Display smeared_PCR_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

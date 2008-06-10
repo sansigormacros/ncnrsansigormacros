@@ -19,8 +19,8 @@
 Proc PlotVesicle_HS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	//make the normal model waves
 	Make/O/D/n=(num) xwave_ves_HS,ywave_ves_HS					
@@ -33,7 +33,7 @@ Proc PlotVesicle_HS(num,qmin,qmax)
 	g_ves_HS := Vesicle_HS(coef_ves_HS,ywave_ves_HS,xwave_ves_HS)			
 	Display/K=1 ywave_ves_HS vs xwave_ves_HS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -68,7 +68,7 @@ Proc PlotSmearedVesicle_HS(str)
 	
 	Display smeared_ves_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -124,8 +124,8 @@ End
 Proc PlotVesicle_SW(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_ves_SW
@@ -141,7 +141,7 @@ Proc PlotVesicle_SW(num,qmin,qmax)
 	g_ves_SW := Vesicle_SW(coef_ves_SW,ywave_ves_SW,xwave_ves_SW)			
 	Display/K=1 ywave_ves_SW vs xwave_ves_SW							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -175,7 +175,7 @@ Proc PlotSmearedVesicle_SW(str)
 	
 	Display smeared_ves_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -234,8 +234,8 @@ End
 Proc PlotVesicle_SC(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -253,7 +253,7 @@ Proc PlotVesicle_SC(num,qmin,qmax)
 	g_ves_SC := Vesicle_SC(coef_ves_SC,ywave_ves_SC,xwave_ves_SC)			
 	Display/K=1 ywave_ves_SC vs xwave_ves_SC							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -292,7 +292,7 @@ Proc PlotSmearedVesicle_SC(str)
 	
 	Display smeared_ves_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -353,8 +353,8 @@ End
 Proc PlotVesicle_SHS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_ves_SHS
@@ -370,7 +370,7 @@ Proc PlotVesicle_SHS(num,qmin,qmax)
 	g_ves_SHS := Vesicle_SHS(coef_ves_SHS,ywave_ves_SHS,xwave_ves_SHS)			
 	Display/K=1 ywave_ves_SHS vs xwave_ves_SHS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -404,7 +404,7 @@ Proc PlotSmearedVesicle_SHS(str)
 	
 	Display smeared_ves_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

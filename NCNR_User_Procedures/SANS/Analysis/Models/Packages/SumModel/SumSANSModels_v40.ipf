@@ -159,8 +159,8 @@ End
 Proc PlotSum_Model(num,qmin,qmax)						
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_sum,ywave_sum					
 	xwave_sum = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -206,7 +206,7 @@ Proc PlotSum_Model(num,qmin,qmax)
 	g_sum := Sum_Model(coef_sum,ywave_sum,xwave_sum)			
 	Display ywave_sum vs xwave_sum							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	Legend					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -290,7 +290,7 @@ Proc PlotSmeared_Sum_Model(str)
 	
 	Display smeared_sum vs $(str+"_q")									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	Legend
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

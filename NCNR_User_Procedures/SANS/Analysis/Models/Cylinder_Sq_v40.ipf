@@ -13,8 +13,8 @@
 Proc PlotCylinder_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CYL_HS,ywave_CYL_HS
 	xwave_CYL_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -26,7 +26,7 @@ Proc PlotCylinder_HS(num,qmin,qmax)
 	g_CYL_HS := Cylinder_HS(coef_CYL_HS,ywave_CYL_HS,xwave_CYL_HS)
 	Display ywave_CYL_HS vs xwave_CYL_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -61,7 +61,7 @@ Proc PlotSmearedCylinder_HS(str)
 	
 	Display smeared_CYL_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -109,8 +109,8 @@ End
 Proc PlotCylinder_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CYL_SW,ywave_CYL_SW
 	xwave_CYL_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -122,7 +122,7 @@ Proc PlotCylinder_SW(num,qmin,qmax)
 	g_CYL_SW := Cylinder_SW(coef_CYL_SW,ywave_CYL_SW,xwave_CYL_SW)
 	Display ywave_CYL_SW vs xwave_CYL_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -157,7 +157,7 @@ Proc PlotSmearedCylinder_SW(str)
 	
 	Display smeared_CYL_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -207,8 +207,8 @@ End
 Proc PlotCylinder_SC(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -225,7 +225,7 @@ Proc PlotCylinder_SC(num,qmin,qmax)
 	g_CYL_SC := Cylinder_SC(coef_CYL_SC,ywave_CYL_SC,xwave_CYL_SC)
 	Display ywave_CYL_SC vs xwave_CYL_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -265,7 +265,7 @@ Proc PlotSmearedCylinder_SC(str)
 	
 	Display smeared_CYL_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -318,8 +318,8 @@ End
 Proc PlotCylinder_SHS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CYL_SHS,ywave_CYL_SHS
 	xwave_CYL_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -331,7 +331,7 @@ Proc PlotCylinder_SHS(num,qmin,qmax)
 	g_CYL_SHS := Cylinder_SHS(coef_CYL_SHS,ywave_CYL_SHS,xwave_CYL_SHS)
 	Display ywave_CYL_SHS vs xwave_CYL_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -366,7 +366,7 @@ Proc PlotSmearedCylinder_SHS(str)
 	
 	Display smeared_CYL_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

@@ -29,13 +29,13 @@
 Proc PlotParallelepiped(num,qmin,qmax)
 	Variable num=100, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	Prompt qmax "Enter maximum q-value (A^1) for model: "
 	//
 	Make/O/D/n=(num) xwave_Parallelepiped, ywave_Parallelepiped
 	xwave_Parallelepiped =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_Parallelepiped = {1,35,75,400,1e-6,6.3e-6,0}			//CH#2
-	make/o/t parameters_Parallelepiped = {"Scale Factor","Shortest Edge A (Å)","B (Å)","Longest Edge C (Å)","SLD particle (Å^-2)","SLD solvent (A^-2)","Incoherent Bgd (cm-1)"}	//CH#3
+	make/o/t parameters_Parallelepiped = {"Scale Factor","Shortest Edge A (A)","B (A)","Longest Edge C (A)","SLD particle (A^-2)","SLD solvent (A^-2)","Incoherent Bgd (cm-1)"}	//CH#3
 	Edit parameters_Parallelepiped, coef_Parallelepiped
 	
 	Variable/G root:g_Parallelepiped
@@ -43,7 +43,7 @@ Proc PlotParallelepiped(num,qmin,qmax)
 	Display ywave_Parallelepiped vs xwave_Parallelepiped
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -65,7 +65,7 @@ Proc PlotSmearedParallelepiped(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_Parallelepiped = {1,35,75,400,1e-6,6.3e-6,0}		//CH#4
-	make/o/t smear_parameters_Parallelepiped = {"Scale Factor","Shortest Edge A (Å)","B (Å)","Longest Edge C (Å)","SLD particle (Å^-2)","SLD solvent (A^-2)","Incoherent Bgd (cm-1)"}
+	make/o/t smear_parameters_Parallelepiped = {"Scale Factor","Shortest Edge A (A)","B (A)","Longest Edge C (A)","SLD particle (A^-2)","SLD solvent (A^-2)","Incoherent Bgd (cm-1)"}
 	Edit smear_parameters_Parallelepiped,smear_coef_Parallelepiped					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -78,7 +78,7 @@ Proc PlotSmearedParallelepiped(str)
 	
 	Display smeared_Parallelepiped vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

@@ -18,8 +18,8 @@
 Proc PlotCyl_PolyLength(num,qmin,qmax)
 	Variable num=100,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_cypl,ywave_cypl
 	xwave_cypl = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -29,7 +29,7 @@ Proc PlotCyl_PolyLength(num,qmin,qmax)
 	ywave_cypl := Cyl_PolyLength(coef_cypl,xwave_cypl)
 	Display ywave_cypl vs xwave_cypl
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -57,7 +57,7 @@ Proc PlotSmearedCyl_PolyLength()
 	smeared_cypl := SmearedCyl_PolyLength(smear_coef_cypl,$gQvals)
 	Display smeared_cypl vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

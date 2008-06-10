@@ -12,13 +12,13 @@
 Proc PlotDAB_Model(num,qmin,qmax)
 	Variable num=512, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	 Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	 Prompt qmax "Enter maximum q-value (A^1) for model: "
 //
 	Make/O/D/n=(num) xwave_DAB, ywave_DAB
 	xwave_DAB =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_DAB = {10.0, 40, 1.0}
-	make/o/t parameters_DAB = {"Scale Factor, A ", "Correlation Length (Å)", "Incoherent Bgd (cm-1)"}
+	make/o/t parameters_DAB = {"Scale Factor, A ", "Correlation Length (A)", "Incoherent Bgd (cm-1)"}
 	Edit parameters_DAB, coef_DAB
 	Variable/G root:g_DAB
 	g_DAB  := DAB_Model(coef_DAB, ywave_DAB, xwave_DAB)
@@ -26,7 +26,7 @@ Proc PlotDAB_Model(num,qmin,qmax)
 	Display ywave_DAB vs xwave_DAB
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log(left)=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "Debye-Anderson-Brumberger Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -48,7 +48,7 @@ Proc PlotSmearedDAB_Model(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_DAB = {10.0, 40, 1.0}					//model  coef values to match unsmeared model above
-	make/o/t smear_parameters_DAB = {"Scale Factor, A ", "Correlation Length (Å)", "Incoherent Bgd (cm-1)"}// parameter names
+	make/o/t smear_parameters_DAB = {"Scale Factor, A ", "Correlation Length (A)", "Incoherent Bgd (cm-1)"}// parameter names
 	Edit smear_parameters_DAB,smear_coef_DAB					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -61,7 +61,7 @@ Proc PlotSmearedDAB_Model(str)
 	
 	Display smeared_DAB vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Debye-Anderson-Brumberger Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

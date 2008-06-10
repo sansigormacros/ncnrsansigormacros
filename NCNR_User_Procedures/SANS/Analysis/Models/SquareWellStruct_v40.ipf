@@ -14,8 +14,8 @@
 Proc PlotSquareWellStruct(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.3
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_sws,ywave_sws
 	xwave_sws = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
@@ -27,7 +27,7 @@ Proc PlotSquareWellStruct(num,qmin,qmax)
 //	ywave_sws := SquareWellStruct(coef_sws,xwave_sws)
 	Display ywave_sws vs xwave_sws
 	ModifyGraph marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Structure Factor"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

@@ -378,7 +378,7 @@ Function A_Rescale_Data()
 		// make the new yaxis wave
 		Duplicate/o xw xAxisWave
 		If (cmpstr("q",S_Value) == 0)	
-			SetScale d 0,0,"Å^-1",xAxisWave
+			SetScale d 0,0,"A^-1",xAxisWave
 			xAxisWave = xw
 			xlabel = "q"
 			xlow = low
@@ -386,7 +386,7 @@ Function A_Rescale_Data()
 			break	
 		endif
 		If (cmpstr("q^2",S_Value) == 0)	
-			SetScale d 0,0,"Å^-2",xAxisWave
+			SetScale d 0,0,"A^-2",xAxisWave
 			xAxisWave = xw*xw
 			xlabel = "q^2"
 			xlow = low^2
@@ -557,7 +557,7 @@ Function A_DispatchModel(GoFit) : ButtonControl
 			if(cmpstr("q^2",xstr) == 0)	//then a Guinier plot for a sphere (3-d)
 				rg = sqrt(-3*W_coef[1])
 				rgerr = 3*W_sigma[1]/(2*rg)
-				textstr_3 += "\rRg (Å) = " + num2str(rg) + " ± " + num2str(rgerr)
+				textstr_3 += "\rRg (A) = " + num2str(rg) + " ± " + num2str(rgerr)
 				textstr_3 += "\r" + num2str(rg*minfit) + " < Rg*q < " + num2str(rg*maxfit)
 				break
 			endif
@@ -595,7 +595,7 @@ Function A_DispatchModel(GoFit) : ButtonControl
 				// rg now is NOT the radius of gyration, but the x-sect DIAMETER
 				rg = 4*sqrt(-W_coef[1])
 				rgerr = 8*W_sigma[1]/rg
-				textstr_3 = "Rod diameter (Å) = " + num2str(rg) + " ± " + num2str(rgerr)
+				textstr_3 = "Rod diameter (A) = " + num2str(rg) + " ± " + num2str(rgerr)
 				textstr_3 += "\r" + num2str(rg*minfit) + " < Rg*q < " + num2str(rg*maxfit)
 				break
 			endif
@@ -607,7 +607,7 @@ Function A_DispatchModel(GoFit) : ButtonControl
 				// rg now is NOT the radius of gyration, but the thickness
 				rg = sqrt(-12*W_coef[1])
 				rgerr = 6*W_sigma[1]/(2*rg)
-				textstr_3 = "Platelet thickness (Å) = " + num2str(rg) + " ± " + num2str(rgerr)
+				textstr_3 = "Platelet thickness (A) = " + num2str(rg) + " ± " + num2str(rgerr)
 				textstr_3 += "\r" + num2str(rg*minfit) + " < Rg*q < " + num2str(rg*maxfit)
 				break
 			endif

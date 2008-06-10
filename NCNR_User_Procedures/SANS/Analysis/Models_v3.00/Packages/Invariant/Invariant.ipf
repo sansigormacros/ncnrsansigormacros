@@ -48,7 +48,7 @@ Macro PrintModelInvariant(delta_rho,phi)
 	Variable inv
 	inv = 2*pi*pi*delta_rho*delta_rho*phi*(1-phi)*1e8
 	
-	Printf "The model invariant is %g Å^-3 cm^-1\r\r",inv
+	Printf "The model invariant is %g A^-3 cm^-1\r\r",inv
 End
 
 
@@ -64,7 +64,7 @@ Function Invariant(qw,iw)
 	num = numpnts(qw)
 	invar = areaXY(qw,integrand,qw[0],qw[num-1])
 	
-	return(invar)		//units of Å^-3 cm^-1
+	return(invar)		//units of A^-3 cm^-1
 End
 
 //integrates only over the given q-range, does no interpolation
@@ -84,7 +84,7 @@ Function Invariant_SlitSmeared(qw,iw)
 	
 	invar *= dQv		//correct for the effects of slit-smearing
 		
-	return(invar)		//units of Å^-3 cm^-1
+	return(invar)		//units of A^-3 cm^-1
 End
 
 Function Guinier_Fit(w,x) : FitFunc
@@ -139,7 +139,7 @@ Function DoExtrapolate(qw,iw,sw,nbeg,nend)
 	extr_lqi= Guinier_Fit(G_coef,extr_lqq)
 	
 	Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
-	Printf "Rg = %g (Å)\r",sqrt(-3*G_coef[1])
+	Printf "Rg = %g (A)\r",sqrt(-3*G_coef[1])
 	
 	Make/O/D P_coef={0,1,-4}			//input
 	//(set background to zero and hold fixed)
@@ -190,7 +190,7 @@ Function Plot_Inv_Data(ctrlName) : ButtonControl
 	ModifyGraph mirror=2
 	ModifyGraph standoff=0
 	Label left "Intensity (1/cm)"
-	Label bottom "q (1/Å)"
+	Label bottom "q (1/A)"
 	ModifyGraph rgb($NameofWave(iw))=(0,0,0)
 	ModifyGraph opaque($NameofWave(iw))=1
 	ErrorBars $NameofWave(iw) Y,wave=(sw,sw)
@@ -250,7 +250,7 @@ Proc Invariant_Panel()
 	DrawText 158,195,"Power-Law"
 	DrawText 158,211,"Extrapolation"
 	SetDrawEnv fstyle= 1
-	DrawText 58,349,"Units are [Å^-3 cm^-1]"
+	DrawText 58,349,"Units are [A^-3 cm^-1]"
 	SetDrawEnv fstyle= 1
 	DrawText 61,16,"Calculate the Invariant"
 	DrawLine 16,135,264,135
@@ -337,7 +337,7 @@ Function InvMeasQ(ctrlName) : ButtonControl
 	endif
 	
 	num=numpnts(qw)
-	Printf "The invariant over the measured q-range %g to %g is %g Å^-3 cm^-1\r\r",qw[0],qw[(num-1)],inv
+	Printf "The invariant over the measured q-range %g to %g is %g A^-3 cm^-1\r\r",qw[0],qw[(num-1)],inv
 	
 	// update the global display on the panel (there is a dependency for the total)
 	NVAR val = root:invariant:gInvMeas
@@ -383,7 +383,7 @@ Function InvLowQ(ctrlName) : ButtonControl
 		extr_lqi= Guinier_Fit(G_coef,extr_lqq)
 		
 		Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
-		Printf "Rg = %g (Å)\r",sqrt(-3*G_coef[1])
+		Printf "Rg = %g (A)\r",sqrt(-3*G_coef[1])
 	else
 		//do a power-law fit instead
 		Make/O/D P_coef={0,1,-1}			//input
@@ -405,7 +405,7 @@ Function InvLowQ(ctrlName) : ButtonControl
 	endif
 	
 	nume=numpnts(extr_lqq)
-	Printf "The invariant over the q-range %g to %g is %g Å^-3 cm^-1\r\r",extr_lqq[0],extr_lqq[(nume-1)],inv
+	Printf "The invariant over the q-range %g to %g is %g A^-3 cm^-1\r\r",extr_lqq[0],extr_lqq[(nume-1)],inv
 	
 	// update the global display on the panel (there is a dependency for the total)
 	NVAR val = root:invariant:gInvLowQ
@@ -455,7 +455,7 @@ Function InvHighQ(ctrlName) : ButtonControl
 	endif
 
 	nume=numpnts(extr_hqq)
-	Printf "The invariant over the q-range %g to %g is %g Å^-3 cm^-1\r\r",extr_hqq[0],extr_hqq[(nume-1)],inv
+	Printf "The invariant over the q-range %g to %g is %g A^-3 cm^-1\r\r",extr_hqq[0],extr_hqq[(nume-1)],inv
 	
 	// update the global display on the panel (there is a dependency for the total)
 	NVAR val = root:invariant:gInvHighQ

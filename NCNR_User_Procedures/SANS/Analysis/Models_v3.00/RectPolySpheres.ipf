@@ -14,8 +14,8 @@
 Proc PlotPolyRectSpheres(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_rect,ywave_rect
 	xwave_rect =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -25,7 +25,7 @@ Proc PlotPolyRectSpheres(num,qmin,qmax)
 	ywave_rect := PolyRectSpheres(coef_rect,xwave_rect)
 	Display ywave_rect vs xwave_rect
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 //	DoAlert 0,"The form facor is not properly normalized with the polydisperse volume"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -56,7 +56,7 @@ Proc PlotSmearedPolyRectSpheres()
 	smeared_rect := SmearedPolyRectSpheres(smear_coef_rect,$gQvals)
 	Display smeared_rect vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

@@ -17,8 +17,8 @@
 Proc PlotPolyCoreForm(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_pcf,ywave_pcf
 	//xwave_pcf = qmin + x*((qmax-qmin)/num)
@@ -31,7 +31,7 @@ Proc PlotPolyCoreForm(num,qmin,qmax)
 //	ywave_pcf := PolyCoreForm(coef_pcf,xwave_pcf)
 	Display ywave_pcf vs xwave_pcf
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -66,7 +66,7 @@ Proc PlotSmearedPolyCoreForm(str)
 
 	Display smeared_pcf vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
@@ -102,10 +102,10 @@ Function fPolyCoreForm(w,h) : FitFunc
 
 // input parameters are
 	//[0] scale
-	//[1] average core radius	[Å]
+	//[1] average core radius	[A]
 	//[2] polydispersity of core (0<sig<1)
-	//[3] shell thickness	[Å]
-	//[4] SLD core		[Å-2]
+	//[3] shell thickness	[A]
+	//[4] SLD core		[A-2]
 	//[5] SLD shell
 	//[6] SLD solvent
 	//[7] background [cm-1]

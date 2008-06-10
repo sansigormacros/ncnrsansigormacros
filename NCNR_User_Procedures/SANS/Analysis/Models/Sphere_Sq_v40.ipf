@@ -13,8 +13,8 @@
 Proc PlotSphere_HS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	//make the normal model waves
 	Make/O/D/n=(num) xwave_S_HS,ywave_S_HS					
@@ -27,7 +27,7 @@ Proc PlotSphere_HS(num,qmin,qmax)
 //	ywave_S_HS := Sphere_HS(coef_S_HS,xwave_S_HS)			
 	Display/K=1 ywave_S_HS vs xwave_S_HS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -62,7 +62,7 @@ Proc PlotSmearedSphere_HS(str)
 	
 	Display smeared_S_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -107,8 +107,8 @@ End
 Proc PlotSphere_SW(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_S_SW
@@ -124,7 +124,7 @@ Proc PlotSphere_SW(num,qmin,qmax)
 //	ywave_S_SW := Sphere_SW(coef_S_SW,xwave_S_SW)			
 	Display/K=1 ywave_S_SW vs xwave_S_SW							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -158,7 +158,7 @@ Proc PlotSmearedSphere_SW(str)
 	
 	Display smeared_S_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -205,8 +205,8 @@ End
 Proc PlotSphere_SC(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -224,7 +224,7 @@ Proc PlotSphere_SC(num,qmin,qmax)
 //	ywave_S_SC := Sphere_SC(coef_S_SC,xwave_S_SC)			
 	Display/K=1 ywave_S_SC vs xwave_S_SC							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -264,7 +264,7 @@ Proc PlotSmearedSphere_SC(str)
 	
 	Display smeared_S_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -312,8 +312,8 @@ End
 Proc PlotSphere_SHS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_S_SHS
@@ -329,7 +329,7 @@ Proc PlotSphere_SHS(num,qmin,qmax)
 //	ywave_S_SHS := Sphere_SHS(coef_S_SHS,xwave_S_SHS)			
 	Display/K=1 ywave_S_SHS vs xwave_S_SHS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -364,7 +364,7 @@ Proc PlotSmearedSphere_SHS(str)
 	
 	Display smeared_S_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

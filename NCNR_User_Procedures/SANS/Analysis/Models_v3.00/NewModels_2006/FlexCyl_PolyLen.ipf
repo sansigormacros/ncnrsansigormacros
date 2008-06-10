@@ -9,8 +9,8 @@
 Proc PlotFlexCyl_PolyLength(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	// Setup parameter table for model function
 	Make/O/D/n=(num) xwave_flepl,ywave_flepl
@@ -21,7 +21,7 @@ Proc PlotFlexCyl_PolyLength(num,qmin,qmax)
 	ywave_flepl := FlexCyl_PolyLen(coef_flepl,xwave_flepl)
 	Display ywave_flepl vs xwave_flepl
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -46,7 +46,7 @@ Proc PlotSmeared_FlexCyl_PolyLen()								//MyModel
 	smeared_flepl := SmearedFlexCyl_PolyLen(smear_coef_flepl,$gQvals)		// SMEARED function name
 	Display smeared_flepl vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End     // end macro 

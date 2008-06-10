@@ -14,18 +14,18 @@
 Proc PlotBE_Polyelectrolyte(num,qmin,qmax)
 	Variable num=512,qmin=0.001,qmax=0.2
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (^-1) for model: "
-	Prompt qmax "Enter maximum q-value (^-1) for model: "	
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "	
 
 	make/o/n=(num) xwave_BE,ywave_BE
 	xwave_BE =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))	
 	make/o coef_BE = {10,7.1,12,10,0.00,0.05,0.7,0.001}
-	make/o/t parameters_BE = {"K (barns)","Lb ()","h (-3)","b ()","Cs (mol/L)","alpha","C (mol/L)","Background"}	
+	make/o/t parameters_BE = {"K (barns)","Lb (A)","h (A-3)","b (A)","Cs (mol/L)","alpha","C (mol/L)","Background"}	
 	Edit parameters_BE,coef_BE
 	ywave_BE := BEPolyelectrolyte(coef_BE,xwave_BE)
 	Display ywave_BE vs xwave_BE
 	ModifyGraph log=0,marker=29,msize=2,mode=4			//**** log=0 if linear scale desired
-	Label bottom "q (\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "S(q) BE , cm\\S-1\\M"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -42,7 +42,7 @@ Proc PlotSmearedBE_Polyelectrolyte()								//**** name of your function
 	
 	// Setup parameter table for model function
 	make/o smear_coef_BE = {10,7.1,12,10,0.00,0.05,0.7,0.001}					//**** mod, coef values to match unsmeared model above
-	make/o/t smear_parameters_BE= {"K (barns)","Lb ()","h (-3)","b ()","Cs (mol/L)","alpha","C (mol/L)","Background"}	
+	make/o/t smear_parameters_BE= {"K (barns)","Lb (A)","h (A-3)","b (A)","Cs (mol/L)","alpha","C (mol/L)","Background"}	
 	Edit smear_parameters_BE,smear_coef_BE					//**** mod
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -53,7 +53,7 @@ Proc PlotSmearedBE_Polyelectrolyte()								//**** name of your function
 	smeared_BE := SmearedBEPolyelec(smear_coef_BE,$gQvals)		//**** mod, your SMEARED function name
 	Display smeared_BE vs smeared_qvals									//**** mod
 	ModifyGraph log=0,marker=29,msize=2,mode=4
-	Label bottom "q (\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I  sBE (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -69,10 +69,10 @@ Function BEPolyelectrolyte(w,q) : FitFunc
 	Wave w
 	Variable q
 // Input (fitting) variables are:
-	//[0] K  = contrast factor  (barns = 10-24 cm^2=10-4 ^2)
-	//[1] Lb = Bjerrum length ; this parameter needs to be kept constant for a given solvent and temperature!  ()
-	//[2]  h = virial parameter (3)
-	//[3]  b = monomer length  ()
+	//[0] K  = contrast factor  (barns = 10-24 cm^2=10-4 A^2)
+	//[1] Lb = Bjerrum length ; this parameter needs to be kept constant for a given solvent and temperature!  (A)
+	//[2]  h = virial parameter (A3)
+	//[3]  b = monomer length  (A)
 	//[4]  Cs = concentration of monovalent salt (mol/L)
 	//[5]  alpha = ionization degree : ratio of charged monomers  to total number of monomers
 	//[6]  C  = polymer molar concentration (mol/L)
@@ -103,7 +103,7 @@ Function BEPolyelectrolyte(w,q) : FitFunc
 //   K = a^2  with:  a = (bp - vp/vsolvent * bsolvent)
 // where : b = Sum(batom) ; batom = scattering length in cm-12 
 //		vp = partial molar volume of the polymer ; vsolvent= partial molar volume of the solvent
-// NB :K in  Barns = 10^-24 cm2 ; the rest of the expression is in -3 = 10^24 cm3
+// NB :K in  Barns = 10^-24 cm2 ; the rest of the expression is in A-3 = 10^24 cm3
 //  -> there is no multiplication factor to get the result in cm-1 . 
 // Returns S(q) in cm-1
 

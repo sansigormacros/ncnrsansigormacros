@@ -14,8 +14,8 @@
 Proc PlotSphereForm(num,qmin,qmax)						
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_sf,ywave_sf					
 	xwave_sf = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
@@ -27,7 +27,7 @@ Proc PlotSphereForm(num,qmin,qmax)
 //	ywave_sf := SphereForm(coef_sf,xwave_sf)		//point calculation
 	Display ywave_sf vs xwave_sf							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -59,7 +59,7 @@ Proc PlotSmearedSphereForm(str)
 	Display smeared_sf vs smeared_qvals								
 	
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -91,8 +91,8 @@ Function fSphereForm(w,x)
 	
 	// variables are:							
 	//[0] scale
-	//[1] radius (Å)
-	//[2] sld sphere (Å-2)
+	//[1] radius (A)
+	//[2] sld sphere (A-2)
 	//[3] sld solv
 	//[4] background (cm-1)
 	
@@ -117,7 +117,7 @@ Function fSphereForm(w,x)
 	
 	bes = 3*(sin(x*radius)-x*radius*cos(x*radius))/x^3/radius^3
 	vol = 4*pi/3*radius^3
-	f = vol*bes*delrho		// [=] Å
+	f = vol*bes*delrho		// [=] A
 	// normalize to single particle volume, convert to 1/cm
 	f2 = f * f / vol * 1.0e8		// [=] 1/cm
 	
@@ -173,56 +173,3 @@ Function SmearedSphereForm(s) : FitFunc
 	return(0)
 End
  
-
-// wrapper to do the desired fit
-// 
-// str is the data folder for the desired data set
-//
-// -- this looks like something that can be made rather generic rather easily
-//
-//Function SphereFitWrapper(str)
-//	String str
-//		
-//	SetDataFolder root:
-//	String DF="root:"+str+":"
-//	
-//	Struct ResSmearAAOStruct fs
-//	WAVE resW = $(DF+str+"_res")		
-//	WAVE fs.resW =  resW
-//	
-//	WAVE cw=$(DF+"smear_coef_sf")
-//	WAVE yw=$(DF+str+"_i")
-//	WAVE xw=$(DF+str+"_q")
-//	WAVE sw=$(DF+str+"_s")
-//	
-//	Duplicate/O yw $(DF+"FitYw")
-//	
-//	//can't use execute if /STRC is needed since structure instance is not a global!
-//	//don't use the auto-destination with no flag, it doesn't appear to work correctly
-//	//force it to use a wave of identical length, at least - no guarantee that the q-values 
-//	// will be the same? be sure that the smearing iterpolates
-//	//
-//	// ?? how can I get the hold string in correctly?? - from a global? - no, as string function
-//	//
-//	FuncFit/H=getHoldStr() /NTHR=0 SmearedSphereForm, cw, yw /X=xw /W=sw /I=1 /STRC=fs
-////	FuncFit/H=getHoldStr() /NTHR=0 SphereForm cw, yw /X=xw /W=sw /I=1 /D=$(DF+"FitYw")
-//
-////	FuncFit/H="0010"/NTHR=0 SmearedSphereForm cw, yw /X=xw /W=sw /I=1 /D=$(DF+"FitYw") /STRC=fs
-//	Wave fityw =  $(DF+"FitYw")
-//	fs.yW = fityw
-//	SmearedSphereForm(fs)
-//	AppendToGraph fityw vs xw 
-//	
-//	print "V_chisq = ",V_chisq
-//	print cw
-//	WAVE w_sigma
-//	print w_sigma
-//	
-//	return(0)
-//End
-//
-//Function/S getHoldStr()
-//
-//	String str="0010"
-//	return str
-//End

@@ -20,8 +20,8 @@
 Proc PlotStackedDiscs(num,qmin,qmax)
 	Variable num=500,qmin=0.001,qmax=1.0
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/D/n=(num) xwave_scyl,ywave_scyl
 	xwave_scyl =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -34,7 +34,7 @@ Proc PlotStackedDiscs(num,qmin,qmax)
 //	ywave_scyl := StackedDiscs(coef_scyl,xwave_scyl)
 	Display ywave_scyl vs xwave_scyl
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -70,7 +70,7 @@ Proc PlotSmearedStackedDiscs(str)
 	
 	Display smeared_scyl vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

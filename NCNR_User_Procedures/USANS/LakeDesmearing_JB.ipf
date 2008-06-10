@@ -661,7 +661,7 @@ Function ExtendToSmooth(qw,iw,sw,nbeg,nend,num_extr)
 //	lqi= DSM_Guinier_Fit(G_coef,lqq)
 	
 //	Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
-//	Printf "Rg = %g (Å)\r",sqrt(-3*G_coef[1])
+//	Printf "Rg = %g (A)\r",sqrt(-3*G_coef[1])
 		
 	Make/O/D P_coef={0,1,-4}			//input  --- (set background to zero and hold fixed)
 	CurveFit/Q/N/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D=dummy 

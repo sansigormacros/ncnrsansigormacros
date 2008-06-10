@@ -12,8 +12,8 @@
 Proc PlotFractal(num,qmin,qmax)						
 	Variable num=128,qmin=0.001,qmax=0.5
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_fra,ywave_fra					
 	xwave_fra = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
@@ -25,7 +25,7 @@ Proc PlotFractal(num,qmin,qmax)
 	g_fra := Fractal(coef_fra,ywave_fra,xwave_fra)			
 	Display ywave_fra vs xwave_fra							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -59,7 +59,7 @@ Proc PlotSmearedFractal(str)
 	
 	Display smeared_fra vs smeared_qvals		
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

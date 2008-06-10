@@ -15,8 +15,8 @@
 Proc PlotPolyCoreShellRatio(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_pcr,ywave_pcr
 	xwave_pcr = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))	
@@ -26,7 +26,7 @@ Proc PlotPolyCoreShellRatio(num,qmin,qmax)
 	ywave_pcr := PolyCoreShellRatio(coef_pcr,xwave_pcr)
 	Display ywave_pcr vs xwave_pcr
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -55,7 +55,7 @@ Proc PlotSmearedPolyCoreShellRatio()
 	smeared_pcr := SmearedPolyCoreShellRatio(smear_coef_pcr,$gQvals)
 	Display smeared_pcr vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 
@@ -84,12 +84,12 @@ Function PolyCoreShellRatio(w,x) : FitFunc
 
 	//assign nice names to the input wave
 	//w[0] = scale
-	//w[1] = core radius [Å]
-	//w[2] = shell thickness [Å]
+	//w[1] = core radius [A]
+	//w[2] = shell thickness [A]
 	//w[3] = polydispersity index (0<p<1)
-	//w[4] = SLD core [Å^-2]
-	//w[5] = SLD shell  [Å^-2]
-	//w[6] = SLD solvent [Å^-2]
+	//w[4] = SLD core [A^-2]
+	//w[5] = SLD shell  [A^-2]
+	//w[6] = SLD solvent [A^-2]
 	//w[7] = bkg [cm-1]
 	Variable scale,corrad,thick,shlrad,pp,drho1,drho2,sig,zz,bkg
 	Variable sld1,sld2,sld3,zp1,zp2,zp3,vpoly

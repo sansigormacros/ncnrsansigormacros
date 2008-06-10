@@ -15,8 +15,8 @@
 Proc PlotEllipCylinderForm(num,qmin,qmax)
 	Variable num=50,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 //	//constants needed for the integration if qtrap is used (in a separate procedure file!)
 //	Variable/G root:gNumPoints=200
@@ -26,12 +26,12 @@ Proc PlotEllipCylinderForm(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_ecf,ywave_ecf
 	xwave_ecf =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_ecf = {1.,20.,1.5,400,3.0e-6,0.0}
-	make/o/t parameters_ecf = {"scale","minor radius (A)","nu = major/minor (-)","length (Å)","SLD diff (A^-2)","incoh. bkg (cm^-1)"}
+	make/o/t parameters_ecf = {"scale","minor radius (A)","nu = major/minor (-)","length (A)","SLD diff (A^-2)","incoh. bkg (cm^-1)"}
 	Edit parameters_ecf,coef_ecf
 	ywave_ecf := EllipCylForm(coef_ecf,xwave_ecf)
 	Display ywave_ecf vs xwave_ecf
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -48,7 +48,7 @@ Proc PlotSmearedEllipCylForm()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_ecf =  {1.,20.,1.5,400,3.0e-6,0.0}
-	make/o/t smear_parameters_ecf = {"scale","minor radius (A)","nu = major/minor (-)","length (Å)","SLD diff (A^-2)","incoh. bkg (cm^-1)"}
+	make/o/t smear_parameters_ecf = {"scale","minor radius (A)","nu = major/minor (-)","length (A)","SLD diff (A^-2)","incoh. bkg (cm^-1)"}
 	Edit smear_parameters_ecf,smear_coef_ecf
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -59,7 +59,7 @@ Proc PlotSmearedEllipCylForm()
 	smeared_ecf := SmearedEllipCylForm(smear_coef_ecf,$gQvals)
 	Display smeared_ecf vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

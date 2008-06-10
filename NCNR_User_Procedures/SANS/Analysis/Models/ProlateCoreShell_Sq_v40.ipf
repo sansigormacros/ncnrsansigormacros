@@ -13,8 +13,8 @@
 Proc PlotProlate_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PEF_HS,ywave_PEF_HS
 	xwave_PEF_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -26,7 +26,7 @@ Proc PlotProlate_HS(num,qmin,qmax)
 	g_PEF_HS := Prolate_HS(coef_PEF_HS,ywave_PEF_HS,xwave_PEF_HS)
 	Display ywave_PEF_HS vs xwave_PEF_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -61,7 +61,7 @@ Proc PlotSmearedProlate_HS(str)
 	
 	Display smeared_PEF_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -112,8 +112,8 @@ End
 Proc PlotProlate_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PEF_SW,ywave_PEF_SW
 	xwave_PEF_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -125,7 +125,7 @@ Proc PlotProlate_SW(num,qmin,qmax)
 	g_PEF_SW := Prolate_SW(coef_PEF_SW,ywave_PEF_SW,xwave_PEF_SW)
 	Display ywave_PEF_SW vs xwave_PEF_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -160,7 +160,7 @@ Proc PlotSmearedProlate_SW(str)
 	
 	Display smeared_PEF_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -213,8 +213,8 @@ End
 Proc PlotProlate_SC(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -231,7 +231,7 @@ Proc PlotProlate_SC(num,qmin,qmax)
 	g_PEF_SC := Prolate_SC(coef_PEF_SC,ywave_PEF_SC,xwave_PEF_SC)
 	Display ywave_PEF_SC vs xwave_PEF_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -271,7 +271,7 @@ Proc PlotSmearedProlate_SC(str)
 	
 	Display smeared_PEF_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -327,8 +327,8 @@ End
 Proc PlotProlate_SHS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PEF_SHS,ywave_PEF_SHS
 	xwave_PEF_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -340,7 +340,7 @@ Proc PlotProlate_SHS(num,qmin,qmax)
 	g_PEF_SHS := Prolate_SHS(coef_PEF_SHS,ywave_PEF_SHS,xwave_PEF_SHS)
 	Display ywave_PEF_SHS vs xwave_PEF_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -375,7 +375,7 @@ Proc PlotSmearedProlate_SHS(str)
 	
 	Display smeared_PEF_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

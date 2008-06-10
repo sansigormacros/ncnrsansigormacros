@@ -14,8 +14,8 @@
 Proc PlotOblateForm(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_oef,ywave_oef
 	xwave_oef =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -27,7 +27,7 @@ Proc PlotOblateForm(num,qmin,qmax)
 //	ywave_oef := OblateForm(coef_oef,xwave_oef)
 	Display ywave_oef vs xwave_oef
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -62,7 +62,7 @@ Proc PlotSmearedOblateForm(str)
 	
 	Display smeared_oef vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -92,11 +92,11 @@ Function fOblateForm(w,x) : FitFunc
 
 //The input variables are (and output)
 	//[0] scale
-	//[1] crmaj, major radius of core	[Å]
+	//[1] crmaj, major radius of core	[A]
 	//[2] crmin, minor radius of core
 	//[3] trmaj, overall major radius
 	//[4] trmin, overall minor radius
-	//[5] sldc, core [Å-2]
+	//[5] sldc, core [A-2]
 	//[6] slds, shell
 	//[7] sld (solvent)
 	//[8] bkg, [cm-1]
@@ -189,7 +189,7 @@ Function fOblateForm(w,x) : FitFunc
       oblatevol = 4*Pi/3*trmaj*trmaj*trmin
       answer /= oblatevol
       
-      //convert answer [Å-1] to [cm-1]
+      //convert answer [A-1] to [cm-1]
       answer *= 1.0e8  
       //scale
       answer *= scale

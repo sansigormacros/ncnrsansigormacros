@@ -27,7 +27,7 @@ Proc PlotHayterPenfoldMSA(num,qmin,qmax)
 	//Display ywave_hpmsa vs xdiamwave_hpmsa	
 	Display ywave_hpmsa vs xwave_hpmsa	
 	ModifyGraph log=0,marker=29,msize=2,mode=4,grid=1			//**** log=0 if linear scale desired
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Structure Factor"	
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -58,10 +58,10 @@ Function HayterPenfoldMSA(w,x) : FitFunc
 	variable VolFrac, SIdiam, diam, Kappa, cs, IonSt
 	variable dialec, Perm, Beta, Temp, zz, charge, ierr
 
-	diam=w[0]		//in Å  (not SI .. should force people to think in nm!!!)
+	diam=w[0]		//in A  (not SI .. should force people to think in nm!!!)
 	zz = w[1]		//# of charges
 	VolFrac=w[2]	
-	QQ=x			//in Å^-1 (not SI .. should force people to think in nm^-1!!!)
+	QQ=x			//in A^-1 (not SI .. should force people to think in nm^-1!!!)
 	Temp=w[3]		//in degrees Kelvin
 	csalt=w[4]		//in molarity
 	dialec=w[5]		// unitless

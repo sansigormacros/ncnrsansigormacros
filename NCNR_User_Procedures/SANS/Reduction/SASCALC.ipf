@@ -1214,7 +1214,7 @@ Function S_Debye(scale,rg,bkg,x)
 	
 	// variables are:
 	//[0] scale factor
-	//[1] radius of gyration [Å]
+	//[1] radius of gyration [A]
 	//[2] background	[cm-1]
 	
 	// calculates (scale*debye)+bkg
@@ -1236,8 +1236,8 @@ Function S_SphereForm(scale,radius,delrho,bkg,x)
 	
 	// variables are:							
 	//[0] scale
-	//[1] radius (Å)
-	//[2] delrho (Å-2)
+	//[1] radius (A)
+	//[2] delrho (A-2)
 	//[3] background (cm-1)
 	
 //	Variable scale,radius,delrho,bkg				
@@ -1260,7 +1260,7 @@ Function S_SphereForm(scale,radius,delrho,bkg,x)
 	
 	bes = 3*(sin(x*radius)-x*radius*cos(x*radius))/x^3/radius^3
 	vol = 4*pi/3*radius^3
-	f = vol*bes*delrho		// [=] Å
+	f = vol*bes*delrho		// [=] A
 	// normalize to single particle volume, convert to 1/cm
 	f2 = f * f / vol * 1.0e8		// [=] 1/cm
 	

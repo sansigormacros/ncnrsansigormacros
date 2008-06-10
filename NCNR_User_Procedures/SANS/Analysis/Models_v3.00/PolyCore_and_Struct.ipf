@@ -12,8 +12,8 @@
 Proc PlotPolyCore_HS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCF_HS,ywave_PCF_HS
 	xwave_PCF_HS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -23,7 +23,7 @@ Proc PlotPolyCore_HS(num,qmin,qmax)
 	ywave_PCF_HS := PolyCore_HS(coef_PCF_HS,xwave_PCF_HS)
 	Display/K=1 ywave_PCF_HS vs xwave_PCF_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -51,7 +51,7 @@ Proc PlotSmearedPolyCore_HS()
 	smeared_PCF_HS := SmearedPolyCore_HS(smear_coef_PCF_HS,$gQvals)		
 	Display smeared_PCF_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -106,8 +106,8 @@ End
 Proc PlotPolyCore_SW(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCF_SW,ywave_PCF_SW
 	xwave_PCF_SW = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -117,7 +117,7 @@ Proc PlotPolyCore_SW(num,qmin,qmax)
 	ywave_PCF_SW := PolyCore_SW(coef_PCF_SW,xwave_PCF_SW)
 	Display/K=1 ywave_PCF_SW vs xwave_PCF_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -145,7 +145,7 @@ Proc PlotSmearedPolyCore_SW()
 	smeared_PCF_SW := SmearedPolyCore_SW(smear_coef_PCF_SW,$gQvals)		
 	Display smeared_PCF_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -202,8 +202,8 @@ End
 Proc PlotPolyCore_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -220,7 +220,7 @@ Proc PlotPolyCore_SC(num,qmin,qmax)
 	ywave_PCF_SC := PolyCore_SC(coef_PCF_SC,xwave_PCF_SC)
 	Display/K=1 ywave_PCF_SC vs xwave_PCF_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -255,7 +255,7 @@ Proc PlotSmearedPolyCore_SC()
 	smeared_PCF_SC := SmearedPolyCore_SC(smear_coef_PCF_SC,$gQvals)		
 	Display smeared_PCF_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -313,8 +313,8 @@ End
 Proc PlotPolyCore_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_PCF_SHS,ywave_PCF_SHS
 	xwave_PCF_SHS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -324,7 +324,7 @@ Proc PlotPolyCore_SHS(num,qmin,qmax)
 	ywave_PCF_SHS := PolyCore_SHS(coef_PCF_SHS,xwave_PCF_SHS)
 	Display/K=1 ywave_PCF_SHS vs xwave_PCF_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -352,7 +352,7 @@ Proc PlotSmearedPolyCore_SHS()
 	smeared_PCF_SHS := SmearedPolyCore_SHS(smear_coef_PCF_SHS,$gQvals)		
 	Display smeared_PCF_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

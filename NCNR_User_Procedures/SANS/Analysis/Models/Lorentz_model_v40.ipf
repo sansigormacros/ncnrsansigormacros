@@ -7,13 +7,13 @@
 Proc PlotLorentz_Model(num,qmin,qmax)
 	Variable num=512, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	 Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	 Prompt qmax "Enter maximum q-value (A^1) for model: "
 //
 	Make/O/D/n=(num) xwave_Lorentz, ywave_Lorentz
 	xwave_Lorentz =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_Lorentz = {100.0, 50.0, 1.0}
-	make/o/t parameters_Lorentz = {"Scale Factor, I0 ", "Screening Length (Å)","Incoherent Bgd (cm-1)"}
+	make/o/t parameters_Lorentz = {"Scale Factor, I0 ", "Screening Length (A)","Incoherent Bgd (cm-1)"}
 	Edit parameters_Lorentz, coef_Lorentz
 	Variable/G root:g_Lorentz
 	g_Lorentz  := Lorentz_Model(coef_Lorentz,ywave_Lorentz, xwave_Lorentz)
@@ -21,7 +21,7 @@ Proc PlotLorentz_Model(num,qmin,qmax)
 	Display ywave_Lorentz vs xwave_Lorentz
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log(left)=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "Lorentzian (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -43,7 +43,7 @@ Proc PlotSmearedLorentz_Model(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_Lorentz = {100.0, 50.0, 1.0}
-	make/o/t smear_parameters_Lorentz = {"Scale Factor, I0 ", "Screening Length (Å)","Incoherent Bgd (cm-1)"}
+	make/o/t smear_parameters_Lorentz = {"Scale Factor, I0 ", "Screening Length (A)","Incoherent Bgd (cm-1)"}
 	Edit smear_parameters_Lorentz,smear_coef_Lorentz					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -56,7 +56,7 @@ Proc PlotSmearedLorentz_Model(str)
 	
 	Display smeared_Lorentz vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Lorentz Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 		

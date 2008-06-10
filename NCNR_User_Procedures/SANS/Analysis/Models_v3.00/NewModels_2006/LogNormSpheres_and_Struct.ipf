@@ -12,8 +12,8 @@
 Proc PlotLogNormalSphere_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_lns_HS,ywave_lns_HS
 	xwave_lns_HS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -23,7 +23,7 @@ Proc PlotLogNormalSphere_HS(num,qmin,qmax)
 	ywave_lns_HS := LogNormalSphere_HS(coef_lns_HS,xwave_lns_HS)
 	Display ywave_lns_HS vs xwave_lns_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -50,7 +50,7 @@ Proc PlotSmearedLogNormalSphere_HS()
 	smeared_lns_HS := SmearedLogNormalSphere_HS(smear_coef_lns_HS,$gQvals)		
 	Display smeared_lns_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -100,8 +100,8 @@ End
 Proc PlotLogNormalSphere_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_lns_SW,ywave_lns_SW
 	xwave_lns_SW = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -111,7 +111,7 @@ Proc PlotLogNormalSphere_SW(num,qmin,qmax)
 	ywave_lns_SW := LogNormalSphere_SW(coef_lns_SW,xwave_lns_SW)
 	Display ywave_lns_SW vs xwave_lns_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -138,7 +138,7 @@ Proc PlotSmearedLogNormalSphere_SW()
 	smeared_lns_SW := SmearedLogNormalSphere_SW(smear_coef_lns_SW,$gQvals)		
 	Display smeared_lns_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -190,8 +190,8 @@ End
 Proc PlotLogNormalSphere_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -208,7 +208,7 @@ Proc PlotLogNormalSphere_SC(num,qmin,qmax)
 	ywave_lns_SC := LogNormalSphere_SC(coef_lns_SC,xwave_lns_SC)
 	Display ywave_lns_SC vs xwave_lns_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -242,7 +242,7 @@ Proc PlotSmearedLogNormalSphere_SC()
 	smeared_lns_SC := SmearedLogNormalSphere_SC(smear_coef_lns_SC,$gQvals)		
 	Display smeared_lns_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -295,8 +295,8 @@ End
 Proc PlotLogNormalSphere_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_lns_SHS,ywave_lns_SHS
 	xwave_lns_SHS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -306,7 +306,7 @@ Proc PlotLogNormalSphere_SHS(num,qmin,qmax)
 	ywave_lns_SHS := LogNormalSphere_SHS(coef_lns_SHS,xwave_lns_SHS)
 	Display ywave_lns_SHS vs xwave_lns_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -333,7 +333,7 @@ Proc PlotSmearedLogNormalSphere_SHS()
 	smeared_lns_SHS := SmearedLogNormalSphere_SHS(smear_coef_lns_SHS,$gQvals)		
 	Display smeared_lns_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

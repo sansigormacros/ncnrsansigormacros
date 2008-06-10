@@ -63,7 +63,7 @@ Proc PlotSmearedPolyCoShCylinder()
 	smeared_CSCpr := SmearedPolyCoShCylinder(smear_coef_CSCpr,$gQvals)		
 	Display smeared_CSCpr vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

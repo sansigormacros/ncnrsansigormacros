@@ -13,8 +13,8 @@
 Proc PlotEllipsoid_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_EOR_HS,ywave_EOR_HS
 	xwave_EOR_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -24,7 +24,7 @@ Proc PlotEllipsoid_HS(num,qmin,qmax)
 	ywave_EOR_HS := Ellipsoid_HS(coef_EOR_HS,xwave_EOR_HS)
 	Display ywave_EOR_HS vs xwave_EOR_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -51,7 +51,7 @@ Proc PlotSmearedEllipsoid_HS()
 	smeared_EOR_HS := SmearedEllipsoid_HS(smear_coef_EOR_HS,$gQvals)		
 	Display smeared_EOR_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -93,8 +93,8 @@ End
 Proc PlotEllipsoid_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_EOR_SW,ywave_EOR_SW
 	xwave_EOR_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -104,7 +104,7 @@ Proc PlotEllipsoid_SW(num,qmin,qmax)
 	ywave_EOR_SW := Ellipsoid_SW(coef_EOR_SW,xwave_EOR_SW)
 	Display ywave_EOR_SW vs xwave_EOR_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -132,7 +132,7 @@ Proc PlotSmearedEllipsoid_SW()
 	smeared_EOR_SW := SmearedEllipsoid_SW(smear_coef_EOR_SW,$gQvals)		
 	Display smeared_EOR_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -176,8 +176,8 @@ End
 Proc PlotEllipsoid_SC(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -194,7 +194,7 @@ Proc PlotEllipsoid_SC(num,qmin,qmax)
 	ywave_EOR_SC := Ellipsoid_SC(coef_EOR_SC,xwave_EOR_SC)
 	Display ywave_EOR_SC vs xwave_EOR_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -229,7 +229,7 @@ Proc PlotSmearedEllipsoid_SC()
 	smeared_EOR_SC := SmearedEllipsoid_SC(smear_coef_EOR_SC,$gQvals)		
 	Display smeared_EOR_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -276,8 +276,8 @@ End
 Proc PlotEllipsoid_SHS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_EOR_SHS,ywave_EOR_SHS
 	xwave_EOR_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -287,7 +287,7 @@ Proc PlotEllipsoid_SHS(num,qmin,qmax)
 	ywave_EOR_SHS := Ellipsoid_SHS(coef_EOR_SHS,xwave_EOR_SHS)
 	Display ywave_EOR_SHS vs xwave_EOR_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -315,7 +315,7 @@ Proc PlotSmearedEllipsoid_SHS()
 	smeared_EOR_SHS := SmearedEllipsoid_SHS(smear_coef_EOR_SHS,$gQvals)		
 	Display smeared_EOR_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

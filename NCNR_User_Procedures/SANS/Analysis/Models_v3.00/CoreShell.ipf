@@ -13,8 +13,8 @@
 Proc PlotCoreShellSphere(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_css,ywave_css
 	xwave_css =alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -24,7 +24,7 @@ Proc PlotCoreShellSphere(num,qmin,qmax)
 	ywave_css := CoreShellForm(coef_css,xwave_css)
 	Display ywave_css vs xwave_css
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -54,7 +54,7 @@ Proc PlotSmearedCoreShellSphere()								//**** name of your function
 	smeared_css := SmearedCoreShellForm(smear_coef_css,$gQvals)									
 	Display smeared_css vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -68,9 +68,9 @@ Function CoreShellForm(w,x) : FitFunc
 	
 	// variables are:
 	//[0] scale factor
-	//[1] radius of core [Å]
-	//[2] thickness of the shell	[Å]
-	//[3] SLD of the core	[Å-2]
+	//[1] radius of core [A]
+	//[2] thickness of the shell	[A]
+	//[3] SLD of the core	[A-2]
 	//[4] SLD of the shell
 	//[5] SLD of the solvent
 	//[6] background	[cm-1]
@@ -104,7 +104,7 @@ Function CoreShellForm(w,x) : FitFunc
 	vol = 4*pi/3*(rcore+thick)^3
 	f += vol*bes*contr
 	
-	// normalize to particle volume and rescale from [Å-1] to [cm-1]
+	// normalize to particle volume and rescale from [A-1] to [cm-1]
 	f2 = f*f/vol*1.0e8
 	
 	//scale if desired

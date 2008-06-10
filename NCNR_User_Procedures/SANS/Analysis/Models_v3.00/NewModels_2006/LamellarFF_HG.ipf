@@ -24,8 +24,8 @@
 Proc Plot_LamellarFF_HG(num,qmin,qmax)
 	Variable num=128, qmin=.001, qmax=.5
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	Prompt qmax "Enter maximum q-value (A^1) for model: "
 //
 	Make/O/D/n=(num) xwave_LamellarFF_HG, ywave_LamellarFF_HG
 	xwave_LamellarFF_HG =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -37,7 +37,7 @@ Proc Plot_LamellarFF_HG(num,qmin,qmax)
 	Display ywave_LamellarFF_HG vs xwave_LamellarFF_HG
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 //
@@ -70,7 +70,7 @@ Proc PlotSmeared_LamellarFF_HG()								//Lamellar
 	smeared_LamellarFF_HG := LamellarFF_HG_Smeared(smear_coef_LamellarFF_HG,$gQvals)		// SMEARED function name
 	Display smeared_LamellarFF_HG vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End     // end macro 

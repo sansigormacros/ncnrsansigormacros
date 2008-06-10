@@ -24,19 +24,19 @@
 Proc Plot_TriaxialEllipsoid(num,qmin,qmax)
 	Variable num=100, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	Prompt qmax "Enter maximum q-value (A^1) for model: "
 	//
 	Make/O/D/n=(num) xwave_triax, ywave_triax
 	xwave_triax =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_triax = {1,35,100,400,6e-6,0}			//CH#2
-	make/o/t parameters_triax = {"Scale Factor","Semi-axis A [smallest](Å)","Semi-axis B (Å)","Semi-axis C [largest](Å)","Contrast (Å^-2)","Incoherent Bgd (cm-1)"}	//CH#3
+	make/o/t parameters_triax = {"Scale Factor","Semi-axis A [smallest](A)","Semi-axis B (A)","Semi-axis C [largest](A)","Contrast (A^-2)","Incoherent Bgd (cm-1)"}	//CH#3
 	Edit parameters_triax, coef_triax
 	ywave_triax  := TriaxialEllipsoid(coef_triax, xwave_triax)
 	Display ywave_triax vs xwave_triax
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 //
@@ -57,7 +57,7 @@ Proc PlotSmeared_TriAxEllipsoid()								//triax
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_triax = {1,35,100,400,6e-6,0}		//CH#4
-	make/o/t smear_parameters_triax = {"Scale Factor","A (Å)","B (Å)","C (Å)","Contrast (Å^-2)","Incoherent Bgd (cm-1)"}
+	make/o/t smear_parameters_triax = {"Scale Factor","A (A)","B (A)","C (A)","Contrast (A^-2)","Incoherent Bgd (cm-1)"}
 	Edit smear_parameters_triax,smear_coef_triax					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -68,7 +68,7 @@ Proc PlotSmeared_TriAxEllipsoid()								//triax
 	smeared_triax := Triax_Smeared(smear_coef_triax,$gQvals)		// SMEARED function name
 	Display smeared_triax vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End     // end macro 

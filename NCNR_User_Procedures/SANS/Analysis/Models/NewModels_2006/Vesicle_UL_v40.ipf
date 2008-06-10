@@ -23,8 +23,8 @@
 Proc PlotVesicleForm(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_vesicle,ywave_vesicle
 	xwave_vesicle =alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -36,7 +36,7 @@ Proc PlotVesicleForm(num,qmin,qmax)
 	g_vesicle := VesicleForm(coef_vesicle,ywave_vesicle,xwave_vesicle)
 	Display ywave_vesicle vs xwave_vesicle
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -73,7 +73,7 @@ Proc PlotSmearedVesicleForm(str)
 	
 	Display smeared_vesicle vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -105,9 +105,9 @@ Function fVesicleForm(w,x) : FitFunc
 	
 	// variables are:
 	//[0] scale factor
-	//[1] radius of core [Å]
-	//[2] thickness of the shell	[Å]
-	//[3] SLD of the core and solvent[Å-2]
+	//[1] radius of core [A]
+	//[2] thickness of the shell	[A]
+	//[3] SLD of the core and solvent[A-2]
 	//[4] SLD of the shell
 	//[5] background	[cm-1]
 	
@@ -140,7 +140,7 @@ Function fVesicleForm(w,x) : FitFunc
 	vol = 4*pi/3*(rcore+thick)^3
 	f += vol*bes*contr
 	
-	// normalize to the particle volume and rescale from [Å-1] to [cm-1]
+	// normalize to the particle volume and rescale from [A-1] to [cm-1]
 	//note that for the vesicle model, the volume is ONLY the shell volume
 	vol = 4*pi/3*((rcore+thick)^3-rcore^3)
 	f2 = f*f/vol*1.0e8

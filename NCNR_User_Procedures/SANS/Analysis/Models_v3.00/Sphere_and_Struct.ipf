@@ -12,19 +12,19 @@
 Proc PlotSphere_HS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	//make the normal model waves
 	Make/O/D/n=(num) xwave_S_HS,ywave_S_HS					
 	xwave_S_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
 	Make/O/D coef_S_HS = {0.1,60,1e-6,0.01}						
-	make/o/t parameters_S_HS = {"volume fraction","Radius (A)","contrast (Å-2)","bkgd (cm-1)"}		
+	make/o/t parameters_S_HS = {"volume fraction","Radius (A)","contrast (A-2)","bkgd (cm-1)"}		
 	Edit/K=1 parameters_S_HS,coef_S_HS								
 	ywave_S_HS := Sphere_HS(coef_S_HS,xwave_S_HS)			
 	Display/K=1 ywave_S_HS vs xwave_S_HS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -41,7 +41,7 @@ Proc PlotSmearedSphere_HS()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_S_HS = {0.1,60,1e-6,0.01}						
-	make/o/t smear_parameters_S_HS = {"volume fraction","Radius (A)","contrast (Å-2)","bkgd (cm-1)"}		
+	make/o/t smear_parameters_S_HS = {"volume fraction","Radius (A)","contrast (A-2)","bkgd (cm-1)"}		
 	Edit smear_parameters_S_HS,smear_coef_S_HS					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -52,7 +52,7 @@ Proc PlotSmearedSphere_HS()
 	smeared_S_HS := SmearedSphere_HS(smear_coef_S_HS,$gQvals)		
 	Display smeared_S_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -92,8 +92,8 @@ End
 Proc PlotSphere_SW(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_S_SW
@@ -102,12 +102,12 @@ Proc PlotSphere_SW(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_S_SW,ywave_S_SW					
 	xwave_S_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
 	Make/O/D coef_S_SW = {0.1,60,1e-6,1.0,1.2,0.01}						
-	make/o/t parameters_S_SW = {"volume fraction","Radius (A)","contrast (Å-2)","well depth (kT)","well width (diam.)","bkgd (cm-1)"}		
+	make/o/t parameters_S_SW = {"volume fraction","Radius (A)","contrast (A-2)","well depth (kT)","well width (diam.)","bkgd (cm-1)"}		
 	Edit/K=1 parameters_S_SW,coef_S_SW								
 	ywave_S_SW := Sphere_SW(coef_S_SW,xwave_S_SW)			
 	Display/K=1 ywave_S_SW vs xwave_S_SW							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -124,7 +124,7 @@ Proc PlotSmearedSphere_SW()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_S_SW = {0.1,60,1e-6,1.0,1.2,0.01}						
-	make/o/t smear_parameters_S_SW = {"volume fraction","Radius (A)","contrast (Å-2)","well depth (kT)","well width (diam.)","bkgd (cm-1)"}		
+	make/o/t smear_parameters_S_SW = {"volume fraction","Radius (A)","contrast (A-2)","well depth (kT)","well width (diam.)","bkgd (cm-1)"}		
 	Edit smear_parameters_S_SW,smear_coef_S_SW					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -135,7 +135,7 @@ Proc PlotSmearedSphere_SW()
 	smeared_S_SW := SmearedSphere_SW(smear_coef_S_SW,$gQvals)		
 	Display smeared_S_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -177,8 +177,8 @@ End
 Proc PlotSphere_SC(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -191,12 +191,12 @@ Proc PlotSphere_SC(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_S_SC,ywave_S_SC					
 	xwave_S_SC =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))				
 	Make/O/D coef_S_SC = {0.2,50,3e-6,20,0,298,78,0.0001}						
-	make/o/t parameters_S_SC = {"volume fraction","Radius (A)","contrast (Å-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkgd (cm-1)"}		
+	make/o/t parameters_S_SC = {"volume fraction","Radius (A)","contrast (A-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkgd (cm-1)"}		
 	Edit/K=1 parameters_S_SC,coef_S_SC								
 	ywave_S_SC := Sphere_SC(coef_S_SC,xwave_S_SC)			
 	Display/K=1 ywave_S_SC vs xwave_S_SC							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -220,7 +220,7 @@ Proc PlotSmearedSphere_SC()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_S_SC = {0.2,50,3e-6,20,0,298,78,0.0001}						
-	make/o/t smear_parameters_S_SC = {"volume fraction","Radius (A)","contrast (Å-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkgd (cm-1)"}		
+	make/o/t smear_parameters_S_SC = {"volume fraction","Radius (A)","contrast (A-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkgd (cm-1)"}		
 	Edit smear_parameters_S_SC,smear_coef_S_SC					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -231,7 +231,7 @@ Proc PlotSmearedSphere_SC()
 	smeared_S_SC := SmearedSphere_SC(smear_coef_S_SC,$gQvals)		
 	Display smeared_S_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -276,8 +276,8 @@ End
 Proc PlotSphere_SHS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	///
 	Make/O/D/N=4 form_S_SHS
@@ -286,12 +286,12 @@ Proc PlotSphere_SHS(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_S_SHS,ywave_S_SHS					
 	xwave_S_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
 	Make/O/D coef_S_SHS = {0.1,60,1e-6,0.05,0.2,0.01}						
-	make/o/t parameters_S_SHS = {"volume fraction","Radius (A)","contrast (Å-2)","perturbation parameter (0.1)","stickiness, tau","bkgd (cm-1)"}		
+	make/o/t parameters_S_SHS = {"volume fraction","Radius (A)","contrast (A-2)","perturbation parameter (0.1)","stickiness, tau","bkgd (cm-1)"}		
 	Edit/K=1 parameters_S_SHS,coef_S_SHS								
 	ywave_S_SHS := Sphere_SHS(coef_S_SHS,xwave_S_SHS)			
 	Display/K=1 ywave_S_SHS vs xwave_S_SHS							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -308,7 +308,7 @@ Proc PlotSmearedSphere_SHS()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_S_SHS = {0.1,60,1e-6,0.05,0.2,0.01}						
-	make/o/t smear_parameters_S_SHS = {"volume fraction","Radius (A)","contrast (Å-2)","perturbation parameter (0.1)","stickiness, tau","bkgd (cm-1)"}		
+	make/o/t smear_parameters_S_SHS = {"volume fraction","Radius (A)","contrast (A-2)","perturbation parameter (0.1)","stickiness, tau","bkgd (cm-1)"}		
 	Edit smear_parameters_S_SHS,smear_coef_S_SHS					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -319,7 +319,7 @@ Proc PlotSmearedSphere_SHS()
 	smeared_S_SHS := SmearedSphere_SHS(smear_coef_S_SHS,$gQvals)		
 	Display smeared_S_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)

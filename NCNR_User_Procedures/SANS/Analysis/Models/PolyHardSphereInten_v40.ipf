@@ -15,8 +15,8 @@
 Proc PlotPolyHardSpheres(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_phs,ywave_phs
 	xwave_phs =alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -28,7 +28,7 @@ Proc PlotPolyHardSpheres(num,qmin,qmax)
 //	ywave_phs := PolyHardSpheres(coef_phs,xwave_phs)
 	Display ywave_phs vs xwave_phs
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -63,7 +63,7 @@ Proc PlotSmearedPolyHardSpheres(str)
 
 	Display smeared_phs vs smeared_qvals
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	

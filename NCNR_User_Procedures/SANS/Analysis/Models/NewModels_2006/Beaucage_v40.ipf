@@ -16,8 +16,8 @@
 Proc PlotOnelevel(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_b1,ywave_b1
 	xwave_b1 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -29,7 +29,7 @@ Proc PlotOnelevel(num,qmin,qmax)
 	g_b1 := OneLevel(coef_b1,ywave_b1,xwave_b1)
 	Display ywave_b1 vs xwave_b1
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -39,8 +39,8 @@ End
 Proc PlotTwoLevel(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_b2,ywave_b2
 	xwave_b2 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -52,7 +52,7 @@ Proc PlotTwoLevel(num,qmin,qmax)
 	g_b2 := TwoLevel(coef_b2,ywave_b2,xwave_b2)
 	Display ywave_b2 vs xwave_b2
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -62,8 +62,8 @@ End
 Proc PlotThreeLevel(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_b3,ywave_b3
 	xwave_b3 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -75,7 +75,7 @@ Proc PlotThreeLevel(num,qmin,qmax)
 	g_b3 := ThreeLevel(coef_b3,ywave_b3,xwave_b3)	
 	Display ywave_b3 vs xwave_b3
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -85,8 +85,8 @@ End
 Proc PlotFourLevel(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	make/o/d/n=(num) xwave_b4,ywave_b4
 	xwave_b4 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -98,7 +98,7 @@ Proc PlotFourLevel(num,qmin,qmax)
 	g_b4 := FourLevel(coef_b4,ywave_b4,xwave_b4)	
 	Display ywave_b4 vs xwave_b4
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -134,7 +134,7 @@ Proc PlotSmearedOneLevel(str)
 	
 	Display smeared_b1 vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -169,7 +169,7 @@ Proc PlotSmearedTwoLevel(str)
 	
 	Display smeared_b2 vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -204,7 +204,7 @@ Proc PlotSmearedThreeLevel(str)
 	
 	Display smeared_b3 vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -239,7 +239,7 @@ Proc PlotSmearedFourLevel(str)
 	
 	Display smeared_b4 vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

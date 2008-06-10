@@ -14,8 +14,8 @@
 Proc PlotGaussPolySphere_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_pgs_HS,ywave_pgs_HS
 	xwave_pgs_HS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -27,7 +27,7 @@ Proc PlotGaussPolySphere_HS(num,qmin,qmax)
 	g_pgs_HS := GaussPolySphere_HS(coef_pgs_HS,ywave_pgs_HS,xwave_pgs_HS)
 	Display ywave_pgs_HS vs xwave_pgs_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -61,7 +61,7 @@ Proc PlotSmearedGaussPolySphere_HS(str)
 	
 	Display smeared_pgs_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -117,8 +117,8 @@ End
 Proc PlotGaussPolySphere_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_pgs_SW,ywave_pgs_SW
 	xwave_pgs_SW = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -130,7 +130,7 @@ Proc PlotGaussPolySphere_SW(num,qmin,qmax)
 	g_pgs_SW := GaussPolySphere_SW(coef_pgs_SW,ywave_pgs_SW,xwave_pgs_SW)
 	Display ywave_pgs_SW vs xwave_pgs_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -164,7 +164,7 @@ Proc PlotSmearedGaussPolySphere_SW(str)
 	
 	Display smeared_pgs_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -221,8 +221,8 @@ End
 Proc PlotGaussPolySphere_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -239,7 +239,7 @@ Proc PlotGaussPolySphere_SC(num,qmin,qmax)
 	g_pgs_SC := GaussPolySphere_SC(coef_pgs_SC,ywave_pgs_SC,xwave_pgs_SC)
 	Display ywave_pgs_SC vs xwave_pgs_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -278,7 +278,7 @@ Proc PlotSmearedGaussPolySphere_SC(str)
 	
 	Display smeared_pgs_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -336,8 +336,8 @@ End
 Proc PlotGaussPolySphere_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_pgs_SHS,ywave_pgs_SHS
 	xwave_pgs_SHS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -349,7 +349,7 @@ Proc PlotGaussPolySphere_SHS(num,qmin,qmax)
 	g_pgs_SHS := GaussPolySphere_SHS(coef_pgs_SHS,ywave_pgs_SHS,xwave_pgs_SHS)
 	Display ywave_pgs_SHS vs xwave_pgs_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -383,7 +383,7 @@ Proc PlotSmearedGaussPolySphere_SHS(str)
 	
 	Display smeared_pgs_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

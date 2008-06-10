@@ -7,13 +7,13 @@
 Proc PlotPeak_Gauss_Model(num,qmin,qmax)
 	Variable num=512, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
-	 Prompt qmax "Enter maximum q-value (Å^1) for model: "
+	Prompt qmin "Enter minimum q-value (A^1) for model: " 
+	 Prompt qmax "Enter maximum q-value (A^1) for model: "
 //
 	Make/O/D/n=(num) xwave_Peak_Gauss, ywave_Peak_Gauss
 	xwave_Peak_Gauss =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_Peak_Gauss = {100.0, 0.05,0.005, 1.0}
-	make/o/t parameters_Peak_Gauss = {"Scale Factor, I0 ", "Peak position (Å^-1)", "Std Dev (Å^-1)","Incoherent Bgd (cm-1)"}
+	make/o/t parameters_Peak_Gauss = {"Scale Factor, I0 ", "Peak position (A^-1)", "Std Dev (A^-1)","Incoherent Bgd (cm-1)"}
 	Edit parameters_Peak_Gauss, coef_Peak_Gauss
 	Variable/G root:g_Peak_Gauss
 	g_Peak_Gauss  := Peak_Gauss_Model(coef_Peak_Gauss, ywave_Peak_Gauss, xwave_Peak_Gauss)
@@ -21,7 +21,7 @@ Proc PlotPeak_Gauss_Model(num,qmin,qmax)
 	Display ywave_Peak_Gauss vs xwave_Peak_Gauss
 	ModifyGraph marker=29, msize=2, mode=4
 	ModifyGraph log(left)=1
-	Label bottom "q (Å\\S-1\\M) "
+	Label bottom "q (A\\S-1\\M) "
 	Label left "Peak - Gauss (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -44,7 +44,7 @@ Proc PlotSmearedPeak_Gauss_Model(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_Peak_Gauss = {100.0, 0.05,0.005, 1.0}
-	make/o/t smear_parameters_Peak_Gauss = {"Scale Factor, I0 ", "Peak position (Å^-1)", "Std Dev (Å^-1)","Incoherent Bgd (cm-1)"}
+	make/o/t smear_parameters_Peak_Gauss = {"Scale Factor, I0 ", "Peak position (A^-1)", "Std Dev (A^-1)","Incoherent Bgd (cm-1)"}
 	Edit smear_parameters_Peak_Gauss,smear_coef_Peak_Gauss					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -57,7 +57,7 @@ Proc PlotSmearedPeak_Gauss_Model(str)
 	
 	Display smeared_Peak_Gauss vs smeared_qvals									//
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Peak_Gauss Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

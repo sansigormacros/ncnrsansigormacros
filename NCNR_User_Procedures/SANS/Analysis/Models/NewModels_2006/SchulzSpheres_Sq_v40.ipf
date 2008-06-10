@@ -14,8 +14,8 @@
 Proc PlotSchulzSpheres_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_sch_HS,ywave_sch_HS
 	xwave_sch_HS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -27,7 +27,7 @@ Proc PlotSchulzSpheres_HS(num,qmin,qmax)
 	g_sch_HS := SchulzSpheres_HS(coef_sch_HS,ywave_sch_HS,xwave_sch_HS)
 	Display ywave_sch_HS vs xwave_sch_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -61,7 +61,7 @@ Proc PlotSmearedSchulzSpheres_HS(str)
 	
 	Display smeared_sch_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -118,8 +118,8 @@ End
 Proc PlotSchulzSpheres_SW(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_sch_SW,ywave_sch_SW
 	xwave_sch_SW = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -131,7 +131,7 @@ Proc PlotSchulzSpheres_SW(num,qmin,qmax)
 	g_sch_SW := SchulzSpheres_SW(coef_sch_SW,ywave_sch_SW,xwave_sch_SW)
 	Display ywave_sch_SW vs xwave_sch_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -165,7 +165,7 @@ Proc PlotSmearedSchulzSpheres_SW(str)
 	
 	Display smeared_sch_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -224,8 +224,8 @@ End
 Proc PlotSchulzSpheres_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if(!DataFolderExists(":HayPenMSA"))
 		NewDataFolder :HayPenMSA
@@ -242,7 +242,7 @@ Proc PlotSchulzSpheres_SC(num,qmin,qmax)
 	g_sch_SC := SchulzSpheres_SC(coef_sch_SC,ywave_sch_SC,xwave_sch_SC)
 	Display ywave_sch_SC vs xwave_sch_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -281,7 +281,7 @@ Proc PlotSmearedSchulzSpheres_SC(str)
 	
 	Display smeared_sch_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -340,8 +340,8 @@ End
 Proc PlotSchulzSpheres_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/N=(num) xwave_sch_SHS,ywave_sch_SHS
 	xwave_sch_SHS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
@@ -353,7 +353,7 @@ Proc PlotSchulzSpheres_SHS(num,qmin,qmax)
 	g_sch_SHS := SchulzSpheres_SHS(coef_sch_SHS,ywave_sch_SHS,xwave_sch_SHS)
 	Display ywave_sch_SHS vs xwave_sch_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -387,7 +387,7 @@ Proc PlotSmearedSchulzSpheres_SHS(str)
 	
 	Display smeared_sch_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	

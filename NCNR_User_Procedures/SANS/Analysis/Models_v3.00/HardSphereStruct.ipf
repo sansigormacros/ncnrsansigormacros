@@ -12,8 +12,8 @@
 Proc PlotHardSphereStruct(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.3
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_hss,ywave_hss
 	//xwave_hss = (x+1)*((qmax-qmin)/num)
@@ -24,7 +24,7 @@ Proc PlotHardSphereStruct(num,qmin,qmax)
 	ywave_hss := HardSphereStruct(coef_hss,xwave_hss)
 	Display ywave_hss vs xwave_hss
 	ModifyGraph marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Structure Factor"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End

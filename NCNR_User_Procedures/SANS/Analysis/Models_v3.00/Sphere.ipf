@@ -12,18 +12,18 @@
 Proc PlotSphereForm(num,qmin,qmax)						
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_sf,ywave_sf					
 	xwave_sf = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
 	Make/O/D coef_sf = {1.,60,1e-6,0.01}						
-	make/o/t parameters_sf = {"scale","Radius (A)","contrast (Å-2)","bkgd (cm-1)"}		
+	make/o/t parameters_sf = {"scale","Radius (A)","contrast (A-2)","bkgd (cm-1)"}		
 	Edit parameters_sf,coef_sf								
 	ywave_sf := SphereForm(coef_sf,xwave_sf)			
 	Display ywave_sf vs xwave_sf							
 	ModifyGraph log=1,marker=29,msize=2,mode=4			
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -41,7 +41,7 @@ Proc PlotSmearedSphereForm()
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_sf = {1.,60,1e-6,0.0}					
-	make/o/t smear_parameters_sf = {"scale","Radius (A)","contrast (Å-2)","bkgd (cm-1)"}		
+	make/o/t smear_parameters_sf = {"scale","Radius (A)","contrast (A-2)","bkgd (cm-1)"}		
 	Edit smear_parameters_sf,smear_coef_sf					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -52,7 +52,7 @@ Proc PlotSmearedSphereForm()
 	smeared_sf := SmearedSphereForm(smear_coef_sf,$gQvals)		
 	Display smeared_sf vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 End
@@ -66,8 +66,8 @@ Function SphereForm(w,x)	: FitFunc
 	
 	// variables are:							
 	//[0] scale
-	//[1] radius (Å)
-	//[2] delrho (Å-2)
+	//[1] radius (A)
+	//[2] delrho (A-2)
 	//[3] background (cm-1)
 	
 	Variable scale,radius,delrho,bkg				
@@ -90,7 +90,7 @@ Function SphereForm(w,x)	: FitFunc
 	
 	bes = 3*(sin(x*radius)-x*radius*cos(x*radius))/x^3/radius^3
 	vol = 4*pi/3*radius^3
-	f = vol*bes*delrho		// [=] Å
+	f = vol*bes*delrho		// [=] A
 	// normalize to single particle volume, convert to 1/cm
 	f2 = f * f / vol * 1.0e8		// [=] 1/cm
 	

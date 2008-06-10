@@ -11,8 +11,8 @@
 Proc PlotCoreShell_HS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CSS_HS,ywave_CSS_HS
 	xwave_CSS_HS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -22,7 +22,7 @@ Proc PlotCoreShell_HS(num,qmin,qmax)
 	ywave_CSS_HS := CoreShell_HS(coef_CSS_HS,xwave_CSS_HS)
 	Display/K=1 ywave_CSS_HS vs xwave_CSS_HS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -50,7 +50,7 @@ Proc PlotSmearedCoreShell_HS()
 	smeared_CSS_HS := SmearedCoreShell_HS(smear_coef_CSS_HS,$gQvals)		
 	Display smeared_CSS_HS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -93,8 +93,8 @@ End
 Proc PlotCoreShell_SW(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CSS_SW,ywave_CSS_SW
 	xwave_CSS_SW =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -104,7 +104,7 @@ Proc PlotCoreShell_SW(num,qmin,qmax)
 	ywave_CSS_SW := CoreShell_SW(coef_CSS_SW,xwave_CSS_SW)
 	Display/K=1 ywave_CSS_SW vs xwave_CSS_SW
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -132,7 +132,7 @@ Proc PlotSmearedCoreShell_SW()
 	smeared_CSS_SW := SmearedCoreShell_SW(smear_coef_CSS_SW,$gQvals)		
 	Display smeared_CSS_SW vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -178,8 +178,8 @@ End
 Proc PlotCoreShell_SC(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	if (DataFolderExists("root:HayPenMSA"))
  		Make/O/D/N=17 root:HayPenMSA:gMSAWave
@@ -196,7 +196,7 @@ Proc PlotCoreShell_SC(num,qmin,qmax)
 	ywave_CSS_SC := CoreShell_SC(coef_CSS_SC,xwave_CSS_SC)
 	Display/K=1 ywave_CSS_SC vs xwave_CSS_SC
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -231,7 +231,7 @@ Proc PlotSmearedCoreShell_SC()
 	smeared_CSS_SC := SmearedCoreShell_SC(smear_coef_CSS_SC,$gQvals)		
 	Display smeared_CSS_SC vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -278,8 +278,8 @@ End
 Proc PlotCoreShell_SHS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
-	Prompt qmin "Enter minimum q-value (Å^-1) for model: "
-	Prompt qmax "Enter maximum q-value (Å^-1) for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
 	Make/O/D/n=(num) xwave_CSS_SHS,ywave_CSS_SHS
 	xwave_CSS_SHS =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
@@ -289,7 +289,7 @@ Proc PlotCoreShell_SHS(num,qmin,qmax)
 	ywave_CSS_SHS := CoreShell_SHS(coef_CSS_SHS,xwave_CSS_SHS)
 	Display/K=1 ywave_CSS_SHS vs xwave_CSS_SHS
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
@@ -317,7 +317,7 @@ Proc PlotSmearedCoreShell_SHS()
 	smeared_CSS_SHS := SmearedCoreShell_SHS(smear_coef_CSS_SHS,$gQvals)		
 	Display smeared_CSS_SHS vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
-	Label bottom "q (Å\\S-1\\M)"
+	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
