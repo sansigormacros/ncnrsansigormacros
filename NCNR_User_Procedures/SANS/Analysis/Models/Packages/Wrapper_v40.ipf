@@ -132,7 +132,11 @@ Function W_LoadDataButtonProc(ba) : ButtonControl
 			break
 	endswitch
 
-	ControlUpdate/W=WrapperPanel popup_0
+//	ControlUpdate/W=WrapperPanel popup_0
+	//instead of a simple controlUpdate, better to pop the menu to make sure that the other menus follow
+	// but not sure how to get the most recently loaded file as the selected item - bring the 
+	// wrapper panel back to the top - then pop - 
+
 	return 0
 End
 

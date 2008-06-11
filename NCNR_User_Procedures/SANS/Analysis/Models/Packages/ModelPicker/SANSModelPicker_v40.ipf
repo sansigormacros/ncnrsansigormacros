@@ -770,16 +770,46 @@ end
 // in Igor 5, you can restrict the WaveList to be just the top graph...
 // SRK  09 JUN 2006
 //
-Proc FreezeModel(xWave,yWave,newNameStr)
-	String xWave,yWave,newNameStr
-	Prompt xwave,"X data",popup,WaveList("*",";","")
-	Prompt ywave,"y data",popup,WaveList("*",";","")
-	Prompt newNameStr,"new name for the waves, _q and _i will be appended"
+// made data folder-aware in a somewhat messy way, but wavelist works only on the
+// current data folder, and WaveSelectorWidget is waaaaaay too complex
+//
+Function FreezeModel()
+	String modelType
+	Prompt modelType,"What type of model to freeze? (smeared models use the current data set)",popup,"Unsmeared Model;Smeared Model;"
+	DoPrompt "Type of Data",modelType
 	
+	if(V_Flag==1)		//user canceled
+		return(1)
+	endif
+	
+	String xWave,yWave,newNameStr
+
+	SetDataFolder root:
+	if(cmpstr(modelType,"Smeared Model")==0)
+		ControlInfo/W=WrapperPanel popup_0
+		String folderStr=S_Value
+		SetDataFolder $("root:"+folderStr)
+	
+		Prompt xwave,"X data",popup,WaveList("s*",";","")
+		Prompt ywave,"Y data",popup,WaveList("s*",";","")
+		Prompt newNameStr,"new name for the waves, _q and _i will be appended"
+	else
+		Prompt xwave,"X data",popup,WaveList("x*",";","")
+		Prompt ywave,"Y data",popup,WaveList("y*",";","")
+		Prompt newNameStr,"new name for the waves, _q and _i will be appended"
+	endif
+
+	DoPrompt "Select the Waves to Freeze",xwave,ywave,newNameStr
+	if(V_Flag==1)		//user canceled
+		SetDataFolder root:
+		return(1)
+	endif
+
 	Duplicate/O $xwave,$(newNameStr+"_q")
 	Duplicate/O $ywave,$(newNameStr+"_i")
 	SetFormula $(newNameStr+"_i"), ""
 	
 	AppendToGraph $(newNameStr+"_i") vs $(newNameStr+"_q") 
 	
-End
+	SetDataFolder root:
+end

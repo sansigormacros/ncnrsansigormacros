@@ -22,6 +22,12 @@
 //
 Proc ShowSchematic()
 
+	Dowindow/F Schematic_Layout
+	if(V_flag==1)
+		Abort "Please close the existing schematic before creating a new one. Print it out if you want to save it."
+		//DoWindow/K Schematic_Layout
+	endif
+	
 	Variable oldScaling=root:myGlobals:gLogScalingAsDefault
 
 	Variable num=getNewScaling()
@@ -465,6 +471,7 @@ Proc DrawWinSchematic()
 	//draw the textboxes
 	PauseUpdate; Silent 1           // building window...
   	Layout/C=1/W=(5,42,360,460) as "Data Reduction Schematic"
+  	DoWindow/C Schematic_Layout
   	Textbox/N=text0/F=0/A=LB/X=9.65/Y=98.03 "SAM"
   	Textbox/N=text1/F=0/A=LB/X=26.69/Y=98.03 "EMP"
  	Textbox/N=text2/F=0/A=LB/X=57.40/Y=93.62 text2
