@@ -117,7 +117,8 @@ Function FeedbackButtonProc(ba) : ButtonControl
 End
 
 
-//obvious use
+//obvious use, now finds the most recent data loaded, finds the folder, and pops the menu with that selection...
+//
 Function W_LoadDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -129,13 +130,40 @@ Function W_LoadDataButtonProc(ba) : ButtonControl
 				DoWindow/F $topGraph			//so that the panel is not on top
 			endif
 			Execute "A_LoadOneDData()"
+			
+			ControlUpdate/W=WrapperPanel popup_0
+			//instead of a simple controlUpdate, better to pop the menu to make sure that the other menus follow
+			// convoluted method to find the right item and pop the menu.
+
+			// data is plotted, so get the "new" top graph
+			topGraph= WinName(0,1)	//this is the topmost graph, and should exist, but...
+			if(cmpstr(topGraph,"")==0)
+				return(0)
+			endif
+			String list,folderStr
+			Variable num
+			list = TraceNameList(topGraph,";",1)		//want the last item in the list
+			num= ItemsInList(list)
+			FolderStr = StringFromList(num-1,list,";")
+			folderStr = folderStr[0,strlen(folderStr)-3]		//remove the "_i" that the loader enforced
+			list = W_DataSetPopupList()
+			num=WhichListItem(folderStr,list,";",0,0)
+			if(num != -1)
+				PopupMenu popup_0,mode=num+1,win=WrapperPanel
+				ControlUpdate/W=WrapperPanel popup_0
+				
+				// fake mouse up
+				Struct WMPopupAction ps
+				ps.eventCode = 2		//fake mouse up
+	//			ps.popStr = str
+				DataSet_PopMenuProc(ps)
+				
+				// new data set has been selected, always uncheck the "use cursors", other checkboxes are benign.
+				CheckBox check_0,win=WrapperPanel,value=0
+			endif
 			break
 	endswitch
 
-//	ControlUpdate/W=WrapperPanel popup_0
-	//instead of a simple controlUpdate, better to pop the menu to make sure that the other menus follow
-	// but not sure how to get the most recently loaded file as the selected item - bring the 
-	// wrapper panel back to the top - then pop - 
 
 	return 0
 End
@@ -397,7 +425,7 @@ Function Function_PopMenuProc(pa) : PopupMenuControl
 			String str=StringFromList(num, listStr  ,";")
 //			print "str = ",str
 			//set the item in the coef popup, and pop it
-			PopupMenu popup_2 mode=(num+1)
+			PopupMenu popup_2 win=WrapperPanel,mode=(num+1)
 			
 			Struct WMPopupAction ps
 			ps.eventCode = 2		//fake mouse up
@@ -1154,7 +1182,12 @@ End
 Function UseCursorsWrapperProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
-	String topGraph= WinName(0,1)	//this is the topmost graph	
+	String topGraph= WinName(0,1)	//this is the topmost graph
+	if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
+		CheckBox check_0,value=0
+		return(0)
+	endif
+		
 	String ciStr = CsrInfo(A , topGraph)
 	
 	ControlInfo/W=wrapperpanel popup_0

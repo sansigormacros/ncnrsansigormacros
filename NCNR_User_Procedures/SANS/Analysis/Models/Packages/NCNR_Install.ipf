@@ -24,6 +24,32 @@ Function InstallNCNRMacros()
 		Abort "You've already run the installer. If you want to re-install, you'll need a fresh copy from the NCNR website."
 	endif
 	
+	// check for install problems
+	// locked folders, OS errors _err will be non-zero if there is an error
+	Variable UP_err,IH_err,IE_err
+	UP_err = FolderPermissionCheck("User Procedures:")
+	IH_err = FolderPermissionCheck("Igor Help Files:")
+	IE_err = FolderPermissionCheck("Igor Extensions:")	
+//	Print UP_err,IH_err,IE_err
+
+	String alertStr=""
+	if(UP_err != 0)
+		alertStr += "User Procedures has no write permission.\r"
+	endif
+	if(IH_err != 0)
+		alertStr += "Igor Help Files has no write permission.\r"
+	endif
+	if(IE_err != 0)
+		alertStr += "Igor Extensions has no write permission.\r"
+	endif
+	
+	if(UP_err != 0 || IH_err != 0 || IE_err != 0)
+		alertStr += "You will need to install manually."
+		DoAlert 0,alertStr
+		return(0)
+	endif
+	
+	
 	// check the platform
 	Variable isMac=0
 	if(cmpstr("Macintosh",IgorInfo(2))==0)
@@ -318,6 +344,39 @@ Function InstallDiagnostics()
 		textStr = installedStr
 	endif
 	
+	// check for permissions
+	Variable UP_err,IH_err,IE_err
+	UP_err = FolderPermissionCheck("User Procedures:")
+	IH_err = FolderPermissionCheck("Igor Help Files:")
+	IE_err = FolderPermissionCheck("Igor Extensions:")
+	
+	Print UP_err,IH_err,IE_err
+	
+	String alertStr=""
+	if(UP_err != 0)
+		alertStr += "User Procedures has no write permission. Error = "+num2Str(UP_err)+"\r"
+	else
+		alertStr += "User Procedures permission is OK.\r"
+	endif
+	if(IH_err != 0)
+		alertStr += "Igor Help Files has no write permission. Error = "+num2Str(IH_err)+"\r"
+	else
+		alertStr += "Igor Help Files permission is OK.\r"
+	endif
+	if(IE_err != 0)
+		alertStr += "Igor Extensions has no write permission. Error = "+num2Str(IE_err)+"\r"
+	else
+		alertStr += "Igor Extensions permission is OK.\r"
+	endif
+	
+	if(UP_err != 0 || IH_err != 0 || IE_err != 0)
+		alertStr += "You will need to install manually."
+	endif
+	
+	Notebook $nb text="\r\r**Folder Permissions**\r"
+	Notebook $nb text=AlertStr +"\r"
+	
+	
 	Notebook $nb text="\r\r**InstalledVersion.txt**\r"
 	Notebook $nb text=textStr +"\r"
 
@@ -464,3 +523,32 @@ Function AskUserToKillHelp()
 
 	return(0)
 End
+
+//check each of the three folders
+// folder string MUST have the trailing colon
+Function FolderPermissionCheck(folderStr)
+	String folderStr
+	Variable refnum
+	String str="delete me"
+	
+	String igorPathStr,resultStr=""
+	PathInfo Igor
+	igorPathStr = S_Path
+	
+	NewPath /Q/O tmpPath, igorPathStr+folderStr
+
+	
+	Open/Z/P=tmpPath refnum as "test.txt"
+	if(V_flag != 0)
+		return(V_flag)
+	else
+		FBinWrite refnum,str
+		Close refnum
+		
+//		Print "folder OK"
+		DeleteFile/Z/P=tmpPath  "test.txt"
+	endif
+	
+	
+	return(V_flag)
+end
