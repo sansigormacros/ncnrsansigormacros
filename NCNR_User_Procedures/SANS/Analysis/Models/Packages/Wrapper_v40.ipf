@@ -1182,21 +1182,24 @@ End
 Function UseCursorsWrapperProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
-	String topGraph= WinName(0,1)	//this is the topmost graph
-	if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
-		CheckBox check_0,value=0
-		return(0)
-	endif
-		
-	String ciStr = CsrInfo(A , topGraph)
-	
-	ControlInfo/W=wrapperpanel popup_0
-	String folderStr=S_Value
-	String traceList = TraceNameList(topGraph, ";", 1 )
-	
+
 	switch( cba.eventCode )
 		case 2: // mouse up
+			// check to make sure there really is a "topmost" graph		
+			String topGraph= WinName(0,1)	//this is the topmost graph
+			if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
+				CheckBox check_0,value=0
+				return(0)
+			endif
+				
+			String ciStr = CsrInfo(A , topGraph)
+			
+			ControlInfo/W=wrapperpanel popup_0
+			String folderStr=S_Value
+			String traceList = TraceNameList(topGraph, ";", 1 )		
+		
 			Variable checked = cba.checked
+			
 			if(checked)
 				//print "add the cursors to the topmost graph, if the data set is there, or move them"
 				if(strlen(ciStr)==0 && strsearch(traceList, folderStr, 0) != -1 )		//no cursors && data is there

@@ -140,9 +140,9 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 				if(V_flag==2)	//user selected No, don't load the data
 					SetDataFolder root:
 					KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
-					//if(DataFolderExists("root:Packages:NIST"))
-					//	String/G root:Packages:NIST:gLastFileName = filename
-					//endif		//set the last file loaded to the one NOT loaded
+					if(DataFolderExists("root:Packages:NIST"))
+						String/G root:Packages:NIST:gLastFileName = filename
+					endif		//set the last file loaded to the one NOT loaded
 					return		//quits the macro
 				endif
 				SetDataFolder $("root:"+baseStr)
