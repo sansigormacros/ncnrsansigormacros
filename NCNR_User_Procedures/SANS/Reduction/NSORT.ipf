@@ -1858,10 +1858,7 @@ Function SendSelectionToTable()
 	if(V_flag==1)
 		return(1)		//user cancel, get out before anything is set
 	endif
-	saveName[num] = saveStr
-	
-	
-	
+
 
 	if( !(num==2 || num==3) )
 		Abort "invalid table selection - must select either 2 or 3 files to combine"
@@ -1889,7 +1886,7 @@ Function SendSelectionToTable()
 	medium[num] = tmpRun[1]
 	high[num] = tmpRun[0]
 	prefix[num] = GetPrefixStrFromFile(filenames[ii])
-	
+	saveName[num] = saveStr	
 
 	return(0)
 end

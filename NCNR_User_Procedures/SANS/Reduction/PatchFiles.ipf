@@ -770,3 +770,94 @@ Function SetLabelVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String/G root:myGlobals:Patch:gPS1 = varStr
 
 End
+
+
+// testing, very dangerous batch changing of the file header labels
+//
+// testStr is the string at the front of a label, that will be moved to the "back"
+// if doIt is 1, it will write to the headers, any other value will only print to history
+Function MPatchLabel(testStr,doIt)
+	String testStr
+	Variable doIt
+
+//	SVAR list = root:myGlobals:Patch:gPatchList
+	String list = GetValidPatchPopupList()
+
+	Variable numitems,ii
+	numitems = ItemsInList(list,";")
+	
+	if(numitems == 0)
+		Abort "no items in list for multiple patch"
+	Endif
+	
+	String partialName="", tempName = ""
+	Variable ok,nvars = 20
+	
+	//loop through all of the files in the list, applying changes as dictated by w and wt waves
+	string str1,str2,str3
+	Variable match,loc,len,spc,jj,len1
+	len=strlen(testStr)
+	ii=0
+	do
+		//get current item in the list
+		partialName = StringFromList(ii, list, ";")
+		   
+		//get a valid file based on this partialName and catPathName
+		tempName = FindValidFilename(partialName)
+	
+		//prepend path to tempName for read routine 
+		PathInfo catPathName
+		tempName = S_path + tempName
+	
+		//make sure the file is really a RAW data file
+		ok = CheckIfRawData(tempName)
+		if (!ok)
+		   Print "this file is not recognized as a RAW SANS data file = ",tempName
+		else
+		   //go write the changes to the file
+		   str1 = getSampleLabel(tempName)
+			match = strsearch(str1, testStr, 0)
+			if(match != -1)
+				str2 = ReplaceString(testStr, str1, "", 0, 1)
+				
+				jj=strlen(str2)
+				do
+					jj -= 1
+					spc = cmpstr(str2[jj], " ", 0)
+					if (spc != 0)
+						break		//no more spaces found, get out
+					endif
+				While(1)	// jj is the location of the last non-space
+				
+				str2[jj+2,jj+1+len] = testStr
+			
+			// may need to remove leading spaces???
+				str2 = PadString(str2, 60, 0x20 )
+				
+				if(doIt == 1)
+					WriteSamLabelToHeader(tempName,str2)
+					print str2," ** Written to file **"
+				else
+					//print str2,strlen(str2)
+					print str2," ** Testing, not written to file **"
+				endif
+			else
+				
+				jj=strlen(str1)
+				do
+					jj -= 1
+					spc = cmpstr(str1[jj], " ", 0)
+					if (spc != 0)
+						break		//no more spaces found, get out
+					endif
+				While(1)
+	
+				//print str1, jj, str1[jj]	
+			endif
+		Endif
+		
+		ii+=1
+	while(ii<numitems)
+
+
+end

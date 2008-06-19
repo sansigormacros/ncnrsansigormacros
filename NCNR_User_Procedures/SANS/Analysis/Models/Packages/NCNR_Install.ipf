@@ -9,7 +9,8 @@
 // package-6.001
 // - lots more diagnostics added
 
-Function InstallNCNRMacros()
+Function InstallNCNRMacros(forceInstall)
+	Variable forceInstall		// if == 1, install whatever possible, even if R/W errors from the OS
 
 	//first step, check for Igor 6!!!
 	if(NumberByKey("IGORVERS", IgorInfo(0)) < 6)
@@ -43,10 +44,12 @@ Function InstallNCNRMacros()
 		alertStr += "Igor Extensions has no write permission.\r"
 	endif
 	
-	if(UP_err != 0 || IH_err != 0 || IE_err != 0)
-		alertStr += "You will need to install manually."
-		DoAlert 0,alertStr
-		return(0)
+	if(forceInstall == 0)
+		if(UP_err != 0 || IH_err != 0 || IE_err != 0)
+			alertStr += "You will need to install manually."
+			DoAlert 0,alertStr
+			return(0)
+		endif
 	endif
 	
 	
@@ -262,7 +265,7 @@ Function InstallButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			InstallNCNRMacros()
+			InstallNCNRMacros(0)
 			break
 	endswitch
 
@@ -551,4 +554,10 @@ Function FolderPermissionCheck(folderStr)
 	
 	
 	return(V_flag)
+end
+
+// this will "force" an install, even if there are R/W errors
+Macro ForceInstall()
+
+	Execute "InstallNCNRMacros(1)"
 end
