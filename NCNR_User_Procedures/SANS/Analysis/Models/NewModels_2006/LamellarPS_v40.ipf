@@ -73,7 +73,7 @@ Proc PlotLamellarPS(num,qmin,qmax)
 	//
 	// make epsilon wave appropriate for integer number of lamellar repeats
 	Duplicate/O coef_LamellarPS epsilon_LamellarPS
-	epsilon_LamellarPS = 1e-4
+	epsilon_LamellarPS = 1e-4*coef_LamellarPS
 	epsilon_LamellarPS[6] = 1		//to make the derivative useful 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -112,6 +112,11 @@ Proc PlotSmearedLamellarPS(str)
 	ModifyGraph log=1,marker=29,msize=2,mode=4
 	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
+	
+	// make epsilon wave appropriate for integer number of lamellar repeats
+	Duplicate/O smear_coef_LamellarPS epsilon_LamellarPS
+	epsilon_LamellarPS = 1e-4*smear_coef_LamellarPS
+	epsilon_LamellarPS[6] = 1		//to make the derivative useful 
 	
 	SetDataFolder root:
 	AddModelToStrings("SmearedLamellarPS","smear_coef_LamellarPS","LamellarPS")

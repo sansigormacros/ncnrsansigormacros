@@ -73,7 +73,7 @@ Proc PlotLamellarPS_HG(num,qmin,qmax)
 	//
 	// make epsilon wave appropriate for integer number of lamellar repeats
 	Duplicate/O coef_LamellarPS_HG epsilon_LamellarPS_HG
-	epsilon_LamellarPS_HG = 1e-4
+	epsilon_LamellarPS_HG = 1e-4*coef_LamellarPS_HG
 	epsilon_LamellarPS_HG[7] = 1		//to make the derivative useful 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
@@ -112,6 +112,11 @@ Proc PlotSmearedLamellarPS_HG(str)
 	ModifyGraph log=1,marker=29,msize=2,mode=4
 	Label bottom "q (A\\S-1\\M)"
 	Label left "I(q) (cm\\S-1\\M)"
+	
+	// make epsilon wave appropriate for integer number of lamellar repeats
+	Duplicate/O smear_coef_LamellarPS_HG epsilon_LamellarPS_HG
+	epsilon_LamellarPS_HG = 1e-4*smear_coef_LamellarPS_HG
+	epsilon_LamellarPS_HG[7] = 1		//to make the derivative useful 
 	
 	SetDataFolder root:
 	AddModelToStrings("SmearedLamellarPS_HG","smear_coef_LamellarPS_HG","LamellarPS_HG")

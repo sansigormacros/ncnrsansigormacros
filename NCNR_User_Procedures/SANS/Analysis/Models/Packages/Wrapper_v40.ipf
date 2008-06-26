@@ -376,7 +376,9 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 				Make/O/T/N=(num) $("LoLim_"+suffix),$("HiLim_"+suffix)
 				Wave eps = $("epsilon_"+suffix)
 				Wave coef=$popStr
-				eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
+				if(eps[0] == 0)		//if eps already if filled, don't change it
+					eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
+				endif
 			endif
 			// default epsilon values, sometimes needed for the fit
 			
@@ -450,22 +452,21 @@ Function DataSet_PopMenuProc(pa) : PopupMenuControl
 
 	switch( pa.eventCode )
 		case 2: // mouse up
-//			Variable popNum = pa.popNum
-//			String funcStr = pa.popStr
-//			String coefStr = W_CoefPopupList()
+		// make sure that the cursors are on/off appropriately
+		// check to make sure there really is a "topmost" graph		
+//			String topGraph= WinName(0,1)	//this is the topmost graph
+//			if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
+//				CheckBox check_0,value=0
+//			else
+//				String ciStr = CsrInfo(A , topGraph)
+//				
+//				ControlInfo/W=wrapperpanel popup_0
+//				String folderStr=S_Value
+//				String traceList = TraceNameList(topGraph, ";", 1 )		
 //			
-////			Print "coefStr = ",coefStr
-//			
-//			ControlInfo/W=WrapperPanel popup_0
-//			String folderStr=S_Value
-//			
-//			String listStr = W_CoefPopupList()
-//			Variable num=WhichListItem(coefStr, listStr, ";")
-//			String str=StringFromList(num, listStr  ,";")
-////			print "str = ",str
-//			//set the item in the coef popup, and pop it
-//			PopupMenu popup_2 mode=(num+1)
-			
+//			endif
+						
+			// then cascade the function/coefficient popups
 			Struct WMPopupAction ps
 			ps.eventCode = 2		//fake mouse up
 			Function_PopMenuProc(ps)
@@ -778,6 +779,10 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		endfor
 	endif
 
+	// 20JUN if useCursors is true, and there are no cursors on the specified data set, uncheck and set to false
+	if(useCursors)
+		useCursors = AreCursorsCorrect(folderStr)
+	endif
 	//if useCursors, and the data is USANS, need to recalculate the matrix if the range is new
 	Variable pt1,pt2,newN,mPt1,mPt2
 	String noteStr
@@ -1229,4 +1234,28 @@ Function UseCursorsWrapperProc(cba) : CheckBoxControl
 	endswitch
 
 	return 0
+End
+
+// returns 1 if the specified data is on the top graph && has cursors on it
+// returns 0 and unchecks the box if anything is wrong
+//
+// only call this function if the cursor box is checked, to uncheck it as needed
+// if the box is unchecked, leave it be.
+//
+Function AreCursorsCorrect(folderStr)
+	String folderStr
+	
+	String topGraph= WinName(0,1)	//this is the topmost graph
+	if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
+		CheckBox check_0,win=wrapperpanel,value=0
+		return(0)
+	endif
+		
+	String traceAisOn = CsrWave(A , "", 0)
+	if(	strsearch(traceAisOn, folderStr, 0) == -1)		//data and cursors don't match
+		CheckBox check_0,win=wrapperpanel,value=0
+		return(0)
+	endif
+	
+	return(1)
 End
