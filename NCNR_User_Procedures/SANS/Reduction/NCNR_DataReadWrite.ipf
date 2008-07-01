@@ -1434,10 +1434,13 @@ Function getTemperature(fname)
 end
 
 //field strength is at byte 190
+// 190 is not the right location, 348 looks to be correct for the electromagnets, 450 for the 
+// superconducting magnet. Although each place is only the voltage, it is correct
 Function getFieldStrength(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,190))
+//	return(getRealValueFromHeader(fname,190))
+	return(getRealValueFromHeader(fname,348))
 end
 
 //beam xPos is at byte 252

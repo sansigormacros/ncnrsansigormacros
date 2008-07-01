@@ -12,8 +12,18 @@ Proc U_LoadOneDData()
 	//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 	LoadWave/G/D/A
 	String filename = S_fileName
+	Variable numCols = V_flag
 	
-	if(V_flag==3)
+	//changes JIL
+	if(numCols==2)		//no errors	
+		n1 = StringFromList(1, S_waveNames ,";" )		
+		Duplicate/O $("root:"+n1), errorTmp
+		 errorTmp = 0.01*(errorTmp)+ 0.03*sqrt(errorTmp)
+		S_waveNames+="errorTmp;"
+		numCols=3
+	endif
+	
+	if(numCols==3)
 		String w0,w1,w2,n0,n1,n2,wt
 		Variable rr,gg,bb
 		
@@ -99,7 +109,7 @@ Proc U_LoadOneDData()
 	    DoWindow/F Plot_Manager
 	endif
 	
-	if(V_flag == 6)
+	if(numCols == 6)
 		String w0,w1,w2,n0,n1,n2,wt
 		String w3,w4,w5,n3,n4,n5			//3 extra waves to load
 		Variable rr,gg,bb
@@ -201,7 +211,7 @@ Proc U_LoadOneDData()
 	    DoWindow/F Plot_Manager
 	endif
 
-	if(V_flag==5)
+	if(numCols==5)
 		String w0,w1,w2,n0,n1,n2,w3,n3,w4,n4
 		Variable rr,gg,bb
 		
@@ -282,8 +292,18 @@ Proc U_LoadOneDDataWithName(fileStr)
 	//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 	LoadWave/G/D/A/Q fileStr
 	String fileName = S_fileName
+	Variable numCols = V_flag
 	
-	if(V_flag==3)
+	//changes JIL
+	if(numCols==2)		//no errors	
+		n1 = StringFromList(1, S_waveNames ,";" )		
+		Duplicate/O $("root:"+n1), errorTmp
+		 errorTmp = 0.01*(errorTmp)+ 0.03*sqrt(errorTmp)
+		S_waveNames+="errorTmp;"
+		numCols=3
+	endif
+	
+	if(numCols==3)
 		String w0,w1,w2,n0,n1,n2,wt
 		
 		// put the names of the three loaded waves into local names
@@ -326,7 +346,7 @@ Proc U_LoadOneDDataWithName(fileStr)
 		
 	endif
 	
-	if(V_flag == 6)
+	if(numCols == 6)
 		String w0,w1,w2,n0,n1,n2,wt
 		String w3,w4,w5,n3,n4,n5			//3 extra waves to load
 		
@@ -384,7 +404,7 @@ Proc U_LoadOneDDataWithName(fileStr)
 
 	endif
 
-	if(V_flag==5)
+	if(numCols==5)
 		String w0,w1,w2,n0,n1,n2,w3,n3,w4,n4
 		Variable rr,gg,bb
 		

@@ -387,6 +387,7 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			WAVE/T HiLim = $("HiLim_"+suffix)
 			
 			// clear the table (a subwindow)
+			DoWindow/F WrapperPanel				// ?? had to add this in during all of the cursor meddling...
 			KillWindow wrapperPanel#T0
 			Edit/W=(20,174,634,435)/HOST=#
 			RenameWindow #,T0
