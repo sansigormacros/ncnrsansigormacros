@@ -525,7 +525,8 @@ Function SaveResult(ctrlName) : ButtonControl
 		return(1)
 	endif
 	
-	fileName = DoSaveFileDialog("Save Data as")
+	SVAR loadedFile=root:myGlobals:Subtract1D:gName1
+	fileName = DoSaveFileDialog("Save Data as",fname=loadedFile,suffix="b")
 	if(cmpstr(fileName,"")==0)
 		return(1)
 	endif

@@ -1068,10 +1068,10 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	
 	// insert graphs
 	if(WaveExists(dataXw))
-		Notebook $nb picture={$topGraph(0, 0, 400, 300), 0, 1}, text="\r"
+		Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
 	//
 	else		//must be 2D Gizmo
-		Execute "ExportGizmo Clip"
+		Execute "ExportGizmo Clip"			//this ALWAYS is a PICT or BMP. Gizmo windows are different...
 		LoadPict/Q/O "Clipboard",tmp_Gizmo
 		Notebook $nb picture={tmp_Gizmo(0, 0, 400, 300), 0, 1}, text="\r"
 	endif

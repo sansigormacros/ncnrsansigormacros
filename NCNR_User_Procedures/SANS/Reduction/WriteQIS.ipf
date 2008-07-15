@@ -810,13 +810,25 @@ Function/S DoOpenFileDialog(msg)
 End
 
 // returns the path to the file, or null if the user cancelled
-Function/S DoSaveFileDialog(msg)
-	String msg
+// fancy use of optional parameters
+Function/S DoSaveFileDialog(msg,[fname,suffix])
+	String msg,fname,suffix
 	Variable refNum
 //	String message = "Save the file as"
-	String outputPath
+
+	if(ParamIsDefault(fname))
+//		Print "fname not supplied"
+		fname = ""
+	endif
+	if(ParamIsDefault(suffix))
+//		Print "suffix not supplied"
+		suffix = ""
+	endif
 	
-	Open/D/M=msg/T="????" refNum
+	String outputPath,tmpName
+	tmpName = fname + suffix
+	
+	Open/D/M=msg/T="????" refNum as tmpName
 	outputPath = S_fileName
 	
 	return outputPath
