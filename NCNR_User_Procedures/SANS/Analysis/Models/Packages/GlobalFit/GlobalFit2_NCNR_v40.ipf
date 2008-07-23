@@ -3399,6 +3399,10 @@ DoUpdate
 	ControlInfo/W=NewGlobalFitPanel#NewGF_GlobalControlArea NewGF_MaskingCheckBox
 	if (V_value)
 		GFUI_AddMaskWavesToDataSets(DataSets)  //SRK - if masking, recalculate the matrix for the USANS data if necessary
+	else
+		// if masking is not selected, be sure to reset the USANS matrices (if any) to their original, full dimensions
+		// new function
+		GFUI_ResetUSANSMatrices(DataSets)  //SRK - if NOT masking, reset any USANS matrices
 	endif
 	
 
@@ -4075,9 +4079,78 @@ static Function GFUI_AddMaskWavesToDataSets(DataSets)
 //			DoAlert 0,"The mask wave \""+MaskingListWave[i][1]+"\" for Y wave \""+(DataSets[i][0])+"\" does not exist."
 //			return -1
 
+		// this will signal the AAOFitFunction to use the full matrix without recalculation
+
 			DataSets[i][startingNCols] = "No Mask"
 			//eSRK
 		endif
+	endfor
+	
+	return 0
+end
+
+// if masking is not checked at all, make sure that the full matrix is used for the USANS data sets
+// force a recalculate
+// set all of the data sets to "no mask", even the SANS data
+// SRK July 2008
+static Function GFUI_ResetUSANSMatrices(DataSets)
+	Wave/T DataSets
+	
+	Wave/T/Z MaskingListWave=root:Packages:NewGlobalFit:MaskingListWave
+	
+	Variable startingNCols = DimSize(DataSets, 1)
+	Redimension/N=(-1, startingNCols+1) DataSets
+	SetDimLabel 1, startingNCols, Masks, DataSets
+	
+	Variable numSets = DimSize(DataSets, 0)
+	Variable i
+	Variable pt1,pt2,mPt1,mPt2
+	String str,noteStr,DF
+	
+	for (i = 0; i < NumSets; i += 1)
+
+		str=DataSets[i][0]		//this seems to work
+		DF=ParseFilePath(1, str, ":", 1, 0)
+//
+		str=str[0,strlen(str)-3]		//remove the "_i" = DataFolder:name
+		WAVE resW = $(str+"_res")
+		if((dimsize(resW,1) > 4))	//USANS, NxN
+			// always force a recalculation, even though the weights_saved exists
+			// seems easier than shuffling.
+			Wave data = $(str+"_i")
+			Variable len=numpnts(data)
+			USANS_RE_CalcWeights(ParseFilePath(0, str, ":", 1, 0),0,len-1)
+			
+//			noteStr = note(resW)		
+//			mPt1 = NumberByKey("P1",noteStr,"=",";")
+//			mPt2 = NumberByKey("P2",noteStr,"=",";")
+//			Wave/Z mw = $(DataSets[i][startingNCols])
+//	
+//			//find the first 1,  then find the zero
+//			pt1 = 0
+//			do
+//				if(mw[pt1]==1)
+//					break
+//				endif
+//				pt1+=1
+//			while(pt1<numpnts(mw))
+//			
+//			pt2 = pt1
+//			do
+//				if(mw[pt2]==0)
+//					break
+//				endif
+//				pt2+=1
+//			while(pt2<numpnts(mw))
+//			pt2 -= 1
+//			if((mPt1 != pt1) || (mPt2 != pt2) )
+//				// need to recalculate
+//				USANS_RE_CalcWeights(ParseFilePath(0, str, ":", 1, 0),pt1,pt2)
+//			endif
+		endif
+	
+		DataSets[i][startingNCols] = "No Mask"		//no mask for any data set
+
 	endfor
 	
 	return 0

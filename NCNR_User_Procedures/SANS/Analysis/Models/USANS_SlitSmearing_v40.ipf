@@ -13,7 +13,30 @@
 //     - pass dQv to functions to  avoid globals
 //     - pass N to CalcR to avoid globals
 
+//////////////
 //
+//// July 2008 SRK
+//
+// For fitting withe cursors, the matrix must be recalculated for the exact range of the data
+// - but the inital dependency of the model (any number of them) was (were) set up to use the full matrix
+// -- so:
+//	$_res is the resolution for the dependencies. It is always the full size of the data set. If cursors are used,
+// 			it is padded with zeroes at the edges to fill.
+//
+// weights_save: is a pristine copy of the resolution matrix for the full data set, as when loaded
+// $_qt, $_qi, $_qs, $_rest: are "trimmed" sets that use the range specified by the cursors. They are created
+//			at load time and are initially the full data range.
+//
+// there is a wave note attached to $_res that has the current point range for the matrix. This is what the 
+// 		$_rest matrix is expected to be too, so keep these two matrices in sync.
+//
+//	during fitting, $_rest is used in the structure if cursors are used, since the matrix must be the same dimension (N)
+//			as the (trimmed) data range. It may be the full data range if the cursors are at the ends of the data set.
+//			If no cursors are used, then the $_res wave is used in the structure
+//////////
+
+
+
 
 // called only by the main file loader
 //
@@ -68,6 +91,14 @@ Function USANS_CalcWeights(basestr, dQv)
 	sprintf nStr,"P1=%d;P2=%d;",0,USANS_N-1
 	Note weights ,nStr
 	
+	// make a set of "trimmed" data that is currently the full data set
+	// but will be trimmed as needed for use with cursors
+	// this is necessary to handle the base case of cursors that use the full range of the data!
+	Duplicate/O $(baseStr+"_q") $(baseStr+"_qt")
+	Duplicate/O $(baseStr+"_i") $(baseStr+"_it")
+	Duplicate/O $(baseStr+"_s") $(baseStr+"_st")
+	Duplicate/O weights, $(basestr+"_res"+"t")
+
 	// save a copy of the untainted matrix to return to...
 	Duplicate/O weights, weights_save
 	

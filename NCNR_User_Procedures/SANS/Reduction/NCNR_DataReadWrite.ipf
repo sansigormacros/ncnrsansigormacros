@@ -1534,6 +1534,14 @@ Function getDetectorPixelYSize(fname)
 	return(getRealValueFromHeader(fname,232))
 end
 
+// stub for ILL - power is written to their header, not ours
+Function getReactorPower(fname)
+	String fname
+
+	return 0
+
+end
+
 //////  integer values
 
 Function getIntegerFromHeader(fname,start)

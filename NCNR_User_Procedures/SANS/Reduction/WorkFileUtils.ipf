@@ -451,6 +451,18 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			
 			// large angle transmission correction is <= 1 and will "bump up" the highest angles
 			if(doTrans)
+			
+				if(trans<0.1 && ii==0 && jj==0)
+					Print "***transmission is less than 0.1*** and is a significant correction"
+				endif
+				
+				if(trans==0)
+					if(ii==0 && jj==0)
+						Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
+					endif
+					trans = 1
+				endif
+					
 				data[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//moved from 1D avg SRK 11/2007
 				solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
 			endif
@@ -534,13 +546,13 @@ Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd)
 	Variable uval,arg,cos_th,correction,theta
 	
 	////this section is the trans_correct() VAX routine
-	if(trans<0.1)
-		Print "***transmission is less than 0.1*** and is a significant correction"
-	endif
-	if(trans==0)
-		Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
-		trans = 1
-	endif
+//	if(trans<0.1)
+//		Print "***transmission is less than 0.1*** and is a significant correction"
+//	endif
+//	if(trans==0)
+//		Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
+//		trans = 1
+//	endif
 	
 	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )		//theta at the input pixel
 	

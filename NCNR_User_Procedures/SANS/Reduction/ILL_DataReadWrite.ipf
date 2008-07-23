@@ -168,7 +168,7 @@ Function ReadHeaderAndData(fname)
 	realw[18] = getSDD(fname)
 
 	// detector physical width (right now assumes square...) (in cm)
-	realw[20] = 65
+	realw[20] = 102
 	
 	// beam stop diameter (assumes circular) (in mm)
 	realw[21] = getBSDiameter(fname)
@@ -187,6 +187,8 @@ Function ReadHeaderAndData(fname)
 	
 	// wavelength spread (FWHM)
 	realw[27] = getWavelengthSpread(fname)
+	
+	realw[52] = getreactorpower(fname)
 	
 	// beam stop X-position (motor reading, approximate cm from zero position)
 	// currently NCNR-specific use to identify transmission measurements
@@ -919,7 +921,7 @@ Function WriteBeamCenterXToHeader(fname,num)
 	// your code here
 	
 	// pos (1) on line 71 => 70 lines x 81 char
-	WriteReal(fname,num,5670) 
+	WriteReal(fname,num*10,5670) 
 	
 	///   line 11 column 1
 	
@@ -933,7 +935,7 @@ Function WriteBeamCenterYToHeader(fname,num)
 	
 	// your code here
 	
-	WriteReal(fname,num,5686)
+	WriteReal(fname,num*10,5686)
 	
 	///   line 11 column 2
 	
@@ -955,6 +957,26 @@ Function WriteAttenNumberToHeader(fname,num)
 	
 	return(0)
 End
+
+
+Function WritereactorpowerToHeader(fname,num)
+	String fname
+	Variable num
+	
+	// your code here, default of 1
+	WriteReal(fname,num,6204)
+	
+	///   line 12 column 4
+	
+	return(0)
+End
+
+
+
+
+
+
+
 
 // total monitor count during data collection
 Function WriteMonitorCountToHeader(fname,num)
@@ -1092,7 +1114,7 @@ Function WriteDetectorOffsetToHeader(fname,num)
 	
 	//your code here
 	
-	WriteReal(fname,num,5849)
+	WriteReal(fname,10*num,5849)
 	
 	
 	
@@ -1156,7 +1178,17 @@ Function WriteSamLabelToHeader(fname,str)
 	String fname,str
 	
 	// your code here
-	WriteText(fname,"                              ",2075)
+//           	WriteText(fname,"                              ",2075)  // need to write in 30 bites no more....
+
+	Variable numChars=30
+	String blankStr=""
+	blankStr = PadString(blankStr, numChars, 0x20)
+	WriteText(fname,blankStr,2075)
+	
+	if(strlen(str)>numChars)
+		str = str[0,numchars-1]
+	endif
+	
 	WriteText(fname,str,2075)   //// need to change that in order to erase the title and write a new one
 
 	return(0)
@@ -1212,7 +1244,12 @@ End
 Function/S getSuffix(fname)
 	String fname
 	
-	return("")
+	String suffix = getStringFromHeader(fname,9341,6)
+	
+	// replace the leading space w/ "0"
+	suffix = ReplaceString(" ",suffix,"0")
+	
+	return(suffix)   //// file suffix (6 characters @ byte 9341)
 End
 
 // associated file suffix (for transmission)
@@ -1221,7 +1258,15 @@ End
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	return("")
+	string str
+	
+	str= getStringFromHeader(fname,9350,6)
+	
+	// replace leading space(s) w/zero
+	str = ReplaceString(" ", str, "0" )
+//	print  str
+	
+	return(str)  //  6 characters @ byte 9350
 End
 
 // sample label
@@ -1262,6 +1307,25 @@ Function/S getFileInstrument(fname)
 	
 	return(str)
 End
+
+
+//reactor power
+Function getReactorpower(fname)
+	String fname
+	
+	Variable value
+	
+	// your code returning value
+	
+//	value = getRealValueFromHeader_2(fname,60,28,5,1,5)  //
+	
+	value = getRealValueFromHeader(fname,83)
+	
+//	print value
+	
+	return(value)
+end
+
 
 
 
@@ -1423,7 +1487,7 @@ Function getBeamXPos(fname)
 	
 	// your code returning value	
 //	value = getRealValueFromHeader(fname,14)		//Lionel
-	value = getRealValueFromHeader(fname,50)		//SRK
+	value = getRealValueFromHeader(fname,50)/10		//SRK
 	
 	return(value)
 end
@@ -1436,7 +1500,7 @@ Function getBeamYPos(fname)
 	
 	// your code returning value
 //	value = getRealValueFromHeader(fname,15)		//Lionel
-	value = getRealValueFromHeader(fname,51)		//SRK
+	value = getRealValueFromHeader(fname,51)/10		//SRK
 	
 	return(value)
 end
@@ -1464,7 +1528,7 @@ Function getDetectorOffset(fname)
 //	value = getRealValueFromHeader_2(fname,60,28,5,13,2)
 	value = getRealValueFromHeader(fname,61) 
 	
-	return(value)
+	return(value/10)  // need in cm ILL write in mm
 end
 
 //Beamstop diameter (millimeters)
@@ -1695,7 +1759,13 @@ End
 Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
 		
-	// your code to write bounding box to the header, or nothing
+	// replace leading space(s) w/zero
+	suffix = ReplaceString(" ", suffix, "0" )
+		
+	suffix = suffix[0,5]		//limit to 6 characters
+	
+	WriteText(fname,suffix,9350)
+	
 	
 	return(0)
 end
@@ -2025,17 +2095,17 @@ End
 
 /// !!!! Make sure the text string is the correct LENGTH before sending it here!!!
 // SRK - May 2008
-Function WriteText(path,value,start)
-	string path,value
+Function WriteText(path,str,start)
+	string path,str
 	variable start
 	
 	variable refnum
 	
-	Open/A/T= "????" refnum as path
+	Open/A/T= "????TEXT" refnum as path
 	
 	FStatus refnum
 	FSetPos refnum, start
-	FBinWrite refNum,value
+	FBinWrite/F=0 refnum, str      //native object format (character)
 	FSetPos refnum,V_logEOF
 	
 	Close refnum

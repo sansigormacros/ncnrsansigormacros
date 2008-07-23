@@ -152,40 +152,22 @@ Function W_LoadDataButtonProc(ba) : ButtonControl
 				PopupMenu popup_0,mode=num+1,win=WrapperPanel
 				ControlUpdate/W=WrapperPanel popup_0
 				
-				// fake mouse up
+				// fake mouse up to pop the menu
 				Struct WMPopupAction ps
 				ps.eventCode = 2		//fake mouse up
-	//			ps.popStr = str
 				DataSet_PopMenuProc(ps)
-				
-				// new data set has been selected, always uncheck the "use cursors", other checkboxes are benign.
-				CheckBox check_0,win=WrapperPanel,value=0
 			endif
 			break
 	endswitch
-
-
+	
 	return 0
 End
 
 
-// is there a simpler way to do this?
+// is there a simpler way to do this? I don't think so.
 Function/S W_DataSetPopupList()
 
-	String str=GetAList(4),tmp="",onTargetStr=""
-	Variable ii
-//	ControlInfo/W=WrapperPanel check_3
-//	if(V_Value==1)		//if "from target" checked
-//		//ther must be a better way to do this
-//		onTargetStr = TraceNameList("",";",1)
-//		onTargetStr = ReplaceString("_i",onTargetStr,"")		//get rid of the "_i"
-//		for(ii=0;ii<ItemsInList(onTargetStr);ii+=1)
-//			if(WhichListItem(StringFromList(ii,onTargetStr,";"), str  , ";") != -1)
-//				tmp = Addlistitem(StringFromList(ii,onTargetStr,";"),tmp)		//only keep the matches w/data folder listing
-//			endif
-//		endfor
-//		return(tmp)
-//	endif
+	String str=GetAList(4)
 
 	if(strlen(str)==0)
 		str = "No data loaded"
@@ -382,7 +364,6 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			endif
 			// default epsilon values, sometimes needed for the fit
 			
-
 			WAVE/T LoLim = $("LoLim_"+suffix)
 			WAVE/T HiLim = $("HiLim_"+suffix)
 			
@@ -450,23 +431,17 @@ End
 //
 Function DataSet_PopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
-
+	
 	switch( pa.eventCode )
 		case 2: // mouse up
-		// make sure that the cursors are on/off appropriately
-		// check to make sure there really is a "topmost" graph		
-//			String topGraph= WinName(0,1)	//this is the topmost graph
-//			if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
-//				CheckBox check_0,value=0
-//			else
-//				String ciStr = CsrInfo(A , topGraph)
-//				
-//				ControlInfo/W=wrapperpanel popup_0
-//				String folderStr=S_Value
-//				String traceList = TraceNameList(topGraph, ";", 1 )		
-//			
-//			endif
-						
+			// make sure that the cursors are on/off appropriately
+			// let the cursors checkbox decide what to do, sending the current state
+			ControlInfo/W=WrapperPanel check_0
+			STRUCT WMCheckboxAction cba
+			cba.eventCode = 2
+			cba.checked = V_Value
+			UseCursorsWrapperProc(cba)
+					
 			// then cascade the function/coefficient popups
 			Struct WMPopupAction ps
 			ps.eventCode = 2		//fake mouse up
@@ -781,6 +756,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	endif
 
 	// 20JUN if useCursors is true, and there are no cursors on the specified data set, uncheck and set to false
+	// this is a last line of defense, and should never actually do anything...
 	if(useCursors)
 		useCursors = AreCursorsCorrect(folderStr)
 	endif
@@ -803,27 +779,14 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		if((mPt1 != pt1) || (mPt2 != pt2) )
 			// need to recalculate
 			USANS_RE_CalcWeights(folderStr,pt1,pt2)
+			Print "Done recalculating the matrix"
 		endif
+		
 		Wave trimResW=$(DF+folderStr+"_res"+"t")	//put the trimmed resW in the struct for the fit!
 		Wave fs.resW=trimResW
+
+	endif
 		
-		Print "Done recalculating the matrix"
-//////WRONG WAY
-//		Make/O/D/N=(newN,newN) $(DF+"crsrResW")
-//		WAVE crsrResW = $(DF+"crsrResW")
-//		crsrResW = resW[p+pt1][q+pt1]
-//		//assign to the struct
-//		WAVE fs.resW =  crsrResW		
-/////////////
-	endif
-	
-	if(!useCursors && (dimsize(resW,1) > 4) )
-		// avoid an odd sequence of y/n cursors that can lead to a truncated res matrix, but useCursors is not selected
-		if(waveExists($("root:"+folderStr+":weights_save")))
-			Duplicate/O $("root:"+folderStr+":weights_save"), $("root:"+folderStr+":"+folderStr+"_res")
-		endif
-	endif
-	
 // create these variables so that FuncFit will set them on exit
 	Variable/G V_FitError=0				//0=no err, 1=error,(2^1+2^0)=3=singular matrix
 	Variable/G V_FitQuitReason=0		//0=ok,1=maxiter,2=user stop,3=no chisq decrease
@@ -1191,6 +1154,7 @@ Function UseCursorsWrapperProc(cba) : CheckBoxControl
 
 	switch( cba.eventCode )
 		case 2: // mouse up
+		
 			// check to make sure there really is a "topmost" graph		
 			String topGraph= WinName(0,1)	//this is the topmost graph
 			if(cmpstr(topGraph,"")==0) 	//no graphs, uncheck and exit
@@ -1214,19 +1178,21 @@ Function UseCursorsWrapperProc(cba) : CheckBoxControl
 					Cursor/P/W=$topGraph A, $(folderStr+"_i"),0
 					Cursor/P/W=$topGraph/A=0 B, $(folderStr+"_i"),numpnts(yw)-1			//deactivate the one at the high Q end
 					DoUpdate
-//				else		//if (strlen(ciStr)!=0 && strsearch(traceList, folderStr, 0) != -1 ) //cursors present, but on wrong data
-//					Wave yw=$("root:"+folderStr+":"+folderStr+"_i")
-//					Cursor/P/W=$topGraph A, $(folderStr+"_i"),0								//move the cursors
-//					Cursor/P/W=$topGraph/A=0 B, $(folderStr+"_i"),numpnts(yw)-1
-//					DoUpdate
+				elseif (strlen(ciStr)!=0 && strsearch(traceList, folderStr, 0) != -1 ) //cursors present, but on wrong data
+					Wave yw=$("root:"+folderStr+":"+folderStr+"_i")
+					Cursor/P/W=$topGraph A, $(folderStr+"_i"),0								//move the cursors
+					Cursor/P/W=$topGraph/A=0 B, $(folderStr+"_i"),numpnts(yw)-1
+					DoUpdate
 				endif
-			
+				
+				AreCursorsCorrect(folderStr)
 			else
 				//print "unchecked, remove the cursors"
 				// go back to the full matrix for the resolution calculation (not if SANS data...)
 				if(waveExists($("root:"+folderStr+":weights_save")))
-					Duplicate/O $("root:"+folderStr+":weights_save"), $("root:"+folderStr+":"+folderStr+"_res")
+					Duplicate/O $("root:"+folderStr+":weights_save"), $("root:"+folderStr+":"+folderStr+"_res"),$("root:"+folderStr+":"+folderStr+"_rest")
 				endif
+
 				HideInfo
 				Cursor/K A
 				Cursor/K B
@@ -1255,6 +1221,9 @@ Function AreCursorsCorrect(folderStr)
 	String traceAisOn = CsrWave(A , "", 0)
 	if(	strsearch(traceAisOn, folderStr, 0) == -1)		//data and cursors don't match
 		CheckBox check_0,win=wrapperpanel,value=0
+		HideInfo
+		Cursor/K A
+		Cursor/K B
 		return(0)
 	endif
 	

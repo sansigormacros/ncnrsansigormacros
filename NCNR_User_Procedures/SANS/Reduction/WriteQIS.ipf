@@ -516,35 +516,43 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	Variable numTextLines=17
 	Make/O/T/N=(numTextLines) labelWave
 	
-	sprintf tmpStr," '%s'   '%s'   '%s'",textw[0],textw[1],textw[2]
+//	sprintf tmpStr," '%s'   '%s'   '%s'",textw[0],textw[1],textw[2]
+	sprintf tmpStr," '%s'        '%s'        '%s'     'SAn''ABC''A123'",GetFileNameFromPathNoSemi(fullPath),textw[1],textw[2]
 	labelWave[0] = tmpStr
-	labelWave[1] = textw[6]		//label
+	labelWave[1] = " "+textw[6]		//label
 	
-	sprintf tmpStr," %d  %g  %g  %g",intw[2],rw[0],rw[39],rw[2]
+//	sprintf tmpStr," %d  %g  %g  %g",intw[2],rw[0],rw[39],rw[2]
+	sprintf tmpStr," %6d        %13.5E     %13.5E     %13.5E",intw[2],rw[0],rw[39],rw[2]
 	labelWave[2] = tmpStr
 	labelWave[3] = " Cnt.Time(sec.)    Mon. Cnt.      Trans. Det. Cnt.  Tot. Det. Cnt."
 	
-	sprintf tmpStr," %g  %g  %g '%s' %g '%s' %d  %d  %g",rw[4],rw[5],rw[8],textw[7],rw[9],textw[8],intw[4],intw[5],rw[6]
+//	sprintf tmpStr," %g  %g  %g '%s' %g '%s' %d  %d  %g",rw[4],rw[5],rw[8],textw[7],rw[9],textw[8],intw[4],intw[5],rw[6]
+	sprintf tmpStr,"%10.3g   %9.2g%8.2f '%6s'%8.2f '%6s'%7d%7d%7.2f",rw[4],rw[5],rw[8],textw[7],rw[9],textw[8],intw[4],intw[5],rw[6]
 	labelWave[4] = tmpStr
 	labelWave[5] = " Trans.      Thckns       Temp.           H Field         Table  Holder  Pos"
 	
-	sprintf tmpStr," %g  %g  %d  '%s'  %g",rw[26],rw[27],intw[9],textw[9],rw[7]
+//	sprintf tmpStr," %g  %g  %d  '%s'  %g",rw[26],rw[27],intw[9],textw[9],rw[7]
+	sprintf tmpStr," %8.2f        %5.2f          %2d   '%6s'          %6.2f",rw[26],rw[27],intw[9],textw[9],rw[7]
 	labelWave[6] = tmpStr
 	labelWave[7] = " Wavelength &  Spread(FWHM)    Det.#  Type      Sample Rotation Angle"
 	
-	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[18],rw[19],rw[16],rw[17],rw[21],rw[3]
+//	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[18],rw[19],rw[16],rw[17],rw[21],rw[3]
+	sprintf tmpStr," %12.2f%12.2f          %6.2f  %6.2f  %10.2f        %4.1f",rw[18],rw[19],rw[16],rw[17],rw[21],rw[3]
 	labelWave[8] = tmpStr
 	labelWave[9] = " Sam-Det Dis.(m)   Det.Ang.(cm.)   Beam Center(x,y)  Beam Stop(mm)  Atten.No."
 	
-	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[10],rw[11],rw[12],rw[13],rw[14],rw[15]
+//	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[10],rw[11],rw[12],rw[13],rw[14],rw[15]
+	sprintf tmpStr," %8.3f      %10.4E  %10.4E%8.3f      %10.4E  %10.4E",rw[10],rw[11],rw[12],rw[13],rw[14],rw[15]
 	labelWave[10] = tmpStr
 	labelWave[11] = "        Det. Calib Consts. (x)           Det. Calib Consts. (y)"
 	
-	sprintf tmpStr," %g  %g  %g  '%s'  %g  %g",rw[23],rw[24],rw[25],"    F",rw[45],rw[46]
+//	sprintf tmpStr," %g  %g  %g  '%s'  %g  %g",rw[23],rw[24],rw[25],"    F",rw[45],rw[46]
+	sprintf tmpStr,"%12.2f%12.2f%12.2f      '%s'%8.2f    %8.2f",rw[23],rw[24],rw[25],"     F",rw[45],rw[46]
 	labelWave[12] = tmpStr
 	labelWave[13] = " Aperture (A1,A2) Sizes(mm)    Sep.(m)    Flip ON   Horiz. and Vert. Cur.(amps)"
 	
-	sprintf tmpStr," %d  %d  %d  %d  %g  %g  %g",intw[19],intw[20],intw[21],intw[22],rw[47],rw[48],rw[49]
+//	sprintf tmpStr," %d  %d  %d  %d  %g  %g  %g",intw[19],intw[20],intw[21],intw[22],rw[47],rw[48],rw[49]
+	sprintf tmpStr,"%6d%6d%6d%6d%10.3f%10.6f%10.6f",intw[19],intw[20],intw[21],intw[22],rw[47],rw[48],rw[49]
 	labelWave[14] = tmpStr
 	labelWave[15] = "      Rows        Cols       Factor   Qmin      Qmax"
 	
