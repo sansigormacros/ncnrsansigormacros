@@ -35,6 +35,9 @@ Proc Init_Invariant()
 	String/G gDataPopList = "none"
 	Variable/G gIsSlitSmeared=0
 	Variable/G gDqv = 0.117		//default value for USANS slit height (re-read from file)
+	
+	// new July 2008
+	Variable/G gSlopeVal = -4
 		
 	SetDataFolder root:
 End
@@ -257,7 +260,7 @@ End
 Proc Invariant_Panel()
 	SetDataFolder root:		//use absolute paths?
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(510,44,796,529)	/K=2
+	NewPanel /W=(510,44,796,529) /K=2
 	DoWindow/C Invariant_Panel
 	ModifyPanel cbRGB=(65535,43690,0)
 	SetDrawLayer UserBack
@@ -270,30 +273,25 @@ Proc Invariant_Panel()
 	DrawText 61,16,"Calculate the Invariant"
 	DrawLine 16,135,264,135
 	DrawLine 16,19,264,19
-	
-	PopupMenu ywave,pos={10,60},size={154,19},title="Data File"
+	PopupMenu ywave,pos={10,60},size={231,20},proc=Inv_FilePopMenuProc,title="Data File"
 	PopupMenu ywave,help={"Select the experimental intensity values"}
-	PopupMenu ywave,mode=1,value=root:Packages:NIST:invariant:gDataPopList,proc=Inv_FilePopMenuProc
-	
+	PopupMenu ywave,mode=1,popvalue="DDAB_EMATF_1p_25C.absb",value= #"root:Packages:NIST:invariant:gDataPopList"
 	Button loadButton,pos={10,90},size={130,20},proc=Inv_Load_Proc,title="Load and Plot File"
 	Button loadButton,help={"After choosing a file, load it into memory and plot it with this button."}
-	
 	Button Inv_PathButton,pos={10,29},size={80,20},proc=Inv_PickPathButtonProc,title="Pick Path"
 	Button DoneButton,pos={215,453},size={50,20},proc=InvDoneButton,title="Done"
 	Button DoneButton,help={"This button will close the panel and the associated graph"}
-
-	SetVariable setvar_0,pos={27,249},size={80,15},title="# points"
+	SetVariable setvar_0,pos={27,255},size={80,15},title="# points"
 	SetVariable setvar_0,limits={5,50,0},value= root:Packages:NIST:invariant:gNumLow
-	SetVariable setvar_1,pos={166,249},size={80,15},title="# points"
+	SetVariable setvar_1,pos={164,255},size={80,15},title="# points"
 	SetVariable setvar_1,limits={5,200,0},value= root:Packages:NIST:invariant:gNumHigh
-	CheckBox check_0,pos={23,202},size={50,14},proc=LowCheckProc,title="Guinier"
+	CheckBox check_0,pos={23,202},size={48,14},proc=LowCheckProc,title="Guinier"
 	CheckBox check_0,value= 1
-	CheckBox check_1,pos={23,223},size={68,14},proc=LowCheckProc,title="Power Law"
+	CheckBox check_1,pos={23,223},size={65,14},proc=LowCheckProc,title="Power Law"
 	CheckBox check_1,value= 0
-	Button button_0,pos={29,275},size={90,20},proc=InvLowQ,title="Calc Low Q"
+	Button button_0,pos={29,279},size={90,20},proc=InvLowQ,title="Calc Low Q"
 	Button button_1,pos={56,141},size={170,20},proc=InvMeasQ,title="Calculate Measured Q"
-	Button button_2,pos={168,275},size={90,20},proc=InvHighQ,title="Calc High Q"
-//	Button button_3,pos={13,98},size={50,20},proc=Plot_Inv_Data,title="Plot"
+	Button button_2,pos={159,279},size={90,20},proc=InvHighQ,title="Calc High Q"
 	Button button_4,pos={230,29},size={25,20},proc=Inv_HelpButtonProc,title="?"
 	GroupBox group0,pos={14,165},size={123,144},title="Low Q"
 	GroupBox group0_1,pos={147,165},size={123,144},title="High Q"
@@ -310,11 +308,14 @@ Proc Invariant_Panel()
 	ValDisplay valdisp0_3,pos={51,411},size={180,14},title="TOTAL "
 	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000}
 	ValDisplay valdisp0_3,value= #"root:Packages:NIST:invariant:gInvTotal"
-	
-	CheckBox check0,pos={10,116},size={101,14},proc=SlitSmearedCheckProc,title="Slit-Smeared Data"
-	CheckBox check0,value= root:Packages:NIST:invariant:gIsSlitSmeared
+	CheckBox check0,pos={10,116},size={97,14},proc=SlitSmearedCheckProc,title="Slit-Smeared Data"
+	CheckBox check0,value= 0
 	SetVariable setvar0,pos={136,116},size={130,15},title="Slit Height (1/A)"
 	SetVariable setvar0,limits={-inf,inf,0},value= root:Packages:NIST:invariant:gDqv
+	CheckBox check2,pos={168,217},size={73,14},title="Fixed Slope?",value= 1
+	SetVariable setvar2,pos={164,235},size={80,15},title="Slope"
+	SetVariable setvar2,limits={-100,0,0},value= root:Packages:NIST:invariant:gSlopeVal
+	
 	
 	//set up a dependency to calculate the total invariant
 	root:Packages:NIST:invariant:gInvTotal := root:Packages:NIST:invariant:gInvLowQ + root:Packages:NIST:invariant:gInvMeas + root:Packages:NIST:invariant:gInvHighQ
@@ -446,10 +447,24 @@ Function InvHighQ(ctrlName) : ButtonControl
 	Variable/G V_FitMaxIters=300
 	Variable num=numpnts(iw),nume,inv
 	NVAR nend=root:Packages:NIST:invariant:gNumHigh		//number of points for the fit
+	NVAR fixedSlope = root:Packages:NIST:invariant:gSlopeVal		//fixed slope value at high q
+
+	if(fixedSlope == 0)
+		fixedSlope = -4
+	endif
 
 	Make/O/D P_coef={0,1,-4}			//input
-	//(set background to zero and hold fixed)
-	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+	P_coef[2] = fixedSlope
+	
+	ControlInfo/W=Invariant_Panel check2
+	if(V_Value == 1)
+		//hold the slope fixed, and the background
+		CurveFit/H="101" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+	else
+		//(set background to zero and hold fixed)
+		CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+	endif
+	
 	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
 	
 	Printf "Pre-exponential = %g\r",P_coef[1]
