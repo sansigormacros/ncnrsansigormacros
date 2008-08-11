@@ -76,15 +76,6 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	String fileName = S_fileName
 	Variable numCols = V_flag
 	
-	//changes JIL
-	if(numCols==2)		//no errors	
-		n1 = StringFromList(1, S_waveNames ,";" )		
-		Duplicate/O $("root:"+n1), errorTmp
-		 errorTmp = 0.01*(errorTmp)+ 0.03*sqrt(errorTmp)
-		S_waveNames+="errorTmp;"
-		numCols=3
-	endif
-	
 	if(numCols==3)		//simple 3-column data with no resolution information
 		
 		// put the names of the three loaded waves into local names
@@ -199,6 +190,79 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 		SetScale d,0,0,"1/cm",$w1
 	
 	endif	//6-col data
+
+	// Load ORNL data from Heller program
+	if(numCols == 4)		//4-column SANS or USANS data that has resolution information
+		
+		// put the names of the (default named) loaded waves into local names
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
+		n3 = StringFromList(3, S_waveNames ,";" )
+		
+		//remove the semicolon AND period from files from the VAX
+		w0 = CleanupName((S_fileName + "_q"),0)
+		w1 = CleanupName((S_fileName + "_i"),0)
+		w2 = CleanupName((S_fileName + "_s"),0)
+		w3 = CleanupName((S_fileName + "sq"),0)
+		w4 = CleanupName((S_fileName + "qb"),0)
+		w5 = CleanupName((S_fileName + "fs"),0)
+
+		
+		String baseStr=w1[0,strlen(w1)-3]
+		if(DataFolderExists("root:"+baseStr))
+				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+				if(V_flag==2)	//user selected No, don't load the data
+					SetDataFolder root:
+					KillWaves $n0,$n1,$n2,$n3		// kill the default waveX that were loaded
+					if(DataFolderExists("root:Packages:NIST"))
+						String/G root:Packages:NIST:gLastFileName = filename
+					endif		//set the last file loaded to the one NOT loaded
+					return		//quits the macro
+				endif
+				SetDataFolder $("root:"+baseStr)
+		else
+			NewDataFolder/S $("root:"+baseStr)
+		endif
+
+////overwrite the existing data, if it exists
+		Duplicate/O $("root:"+n0), $w0
+		Duplicate/O $("root:"+n1), $w1
+		Duplicate/O $("root:"+n2), $w2
+		Duplicate/O $("root:"+n3), $w3
+		Duplicate/O $("root:"+n0), $w4 // Set qb wave to nominal measured Q values
+		Duplicate/O $("root:"+n0), $w5 // Make wave of appropriate length
+		$w5 = 1						  //  Set all shadowfactor to 1
+
+		// need to switch based on SANS/USANS
+		if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
+			// make a resolution matrix for SANS data
+			Variable np=numpnts($w0)
+			Make/D/O/N=(np,4) $(baseStr+"_res")
+			
+			$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+			$(baseStr+"_res")[][1] = $w4[p]		//qBar
+			$(baseStr+"_res")[][2] = $w5[p]		//fShad
+			$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+		else
+			//the data is USANS data
+			// marix calculation here, but for now, just copy the waves
+			//$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+			//$(baseStr+"_res")[][1] = $w4[p]		//qBar
+			//$(baseStr+"_res")[][2] = $w5[p]		//fShad
+			//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+			dQv = -$w3[0]
+			
+			USANS_CalcWeights(baseStr,dQv)
+			
+		endif
+		Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
+
+		SetScale d,0,0,"1/A",$w0
+		SetScale d,0,0,"1/cm",$w1
+	
+	endif	//4-col data
+
 
 	if(numCols==5)		//this is the "old-style" VAX desmeared data format
 		
