@@ -370,14 +370,14 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			// clear the table (a subwindow)
 			DoWindow/F WrapperPanel				// ?? had to add this in during all of the cursor meddling...
 			KillWindow wrapperPanel#T0
-			Edit/W=(20,174,634,435)/HOST=#
+			Edit/W=(20,174,634,435)/HOST=wrapperPanel
 			RenameWindow #,T0
 			// get them onto the table
 			// how do I get the parameter name?
 			String param = WaveList("*parameters_"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
 			AppendtoTable/W=wrapperPanel#T0 $param,$(popStr)
 			AppendToTable/W=wrapperPanel#T0 $("Hold_"+suffix),$("LoLim_"+suffix),$("HiLim_"+suffix),$("epsilon_"+suffix)
-			ModifyTable width(Point)=0
+			ModifyTable/W=wrapperPanel#T0 width(Point)=0
 			
 			SetDataFolder root:
 			break
