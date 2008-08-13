@@ -823,7 +823,7 @@ Function MPatchLabel(testStr,doIt)
 				jj=strlen(str2)
 				do
 					jj -= 1
-					spc = cmpstr(str2[jj], " ", 0)
+					spc = cmpstr(str2[jj], " ")		//can add the optional flag ,0), but I don't care about case, and Igor 6.02 is necessary...
 					if (spc != 0)
 						break		//no more spaces found, get out
 					endif
@@ -846,7 +846,7 @@ Function MPatchLabel(testStr,doIt)
 				jj=strlen(str1)
 				do
 					jj -= 1
-					spc = cmpstr(str1[jj], " ", 0)
+					spc = cmpstr(str1[jj], " ")
 					if (spc != 0)
 						break		//no more spaces found, get out
 					endif
