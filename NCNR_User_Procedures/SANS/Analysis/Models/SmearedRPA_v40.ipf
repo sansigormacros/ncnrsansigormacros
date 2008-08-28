@@ -148,6 +148,9 @@ End
 //AAO version, uses XOP if available
 // simply calls the original single point calculation with
 // a wave assignment (this will behave nicely if given point ranges)
+//
+// there is no RPAFormX due to the extra inputValues wave of information...
+//
 Function RPAForm(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
@@ -164,8 +167,10 @@ Function fRPAForm(w,x) : FitFunc
 	Wave w
 	Variable x
 	
-	Wave var=$"inputvalues"
-	Nvar lCASE=gCASE
+//	print (GetWavesDataFolder(w,1)+"inputvalues")
+
+	Wave var=$(GetWavesDataFolder(w,1)+"inputvalues")
+	Nvar lCASE=$(GetWavesDataFolder(w,1)+"gCASE")
 //	print lCASE
 //	Variable lCASE
 //	RANDOM PHASE APPROXIMATION FOR A FOUR-BLOCK COPOLYMER A-B-C-D
