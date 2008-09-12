@@ -64,271 +64,292 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	String fileStr
 	Variable doPlot
 	
-	Variable rr,gg,bb
+	Variable rr,gg,bb,refnum
 	String w0,w1,w2,n0,n1,n2
 	String w3,w4,w5,n3,n4,n5			//3 extra waves to load
 	SetDataFolder root:		//build sub-folders for each data set under root
 	Variable dQv = root:Packages:NIST:USANS_dQv
-	
-	//Load the waves, using default waveX names
-	//if no path or file is specified for LoadWave, the default Mac open dialog will appear
-	LoadWave/G/D/A/Q fileStr
-	String fileName = S_fileName
-	Variable numCols = V_flag
-	
-	if(numCols==3)		//simple 3-column data with no resolution information
 		
-		// put the names of the three loaded waves into local names
-		n0 = StringFromList(0, S_waveNames ,";" )
-		n1 = StringFromList(1, S_waveNames ,";" )
-		n2 = StringFromList(2, S_waveNames ,";" )
-		
-		//remove the semicolon AND period from files from the VAX
-		w0 = CleanupName((S_fileName + "_q"),0)
-		w1 = CleanupName((S_fileName + "_i"),0)
-		w2 = CleanupName((S_fileName + "_s"),0)
-		
-		String baseStr=w1[0,strlen(w1)-3]
-		if(DataFolderExists("root:"+baseStr))
-				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-				if(V_flag==2)	//user selected No, don't load the data
-					SetDataFolder root:
-					KillWaves $n0,$n1,$n2		// kill the default waveX that were loaded
-					//if(DataFolderExists("root:Packages:NIST"))
-					//	String/G root:Packages:NIST:gLastFileName = filename
-					//endif
-					return		//quits the macro
-				endif
-				SetDataFolder $("root:"+baseStr)
+	if (cmpStr(fileStr,"") == 0)
+		//No filename given, open dialog
+		Open/D/R  refnum
+		if (cmpstr(S_filename,"") == 0)
+			return
 		else
-			NewDataFolder/S $("root:"+baseStr)
+			fileStr = S_filename
 		endif
-		
-		////overwrite the existing data, if it exists
-		Duplicate/O $("root:"+n0), $w0
-		Duplicate/O $("root:"+n1), $w1
-		Duplicate/O $("root:"+n2), $w2
-
-		// no resolution matrix to make
-
-		SetScale d,0,0,"1/A",$w0
-		SetScale d,0,0,"1/cm",$w1
-		
-	endif		//3-col data
-	
-	if(numCols == 6)		//6-column SANS or USANS data that has resolution information
-		
-		// put the names of the (default named) loaded waves into local names
-		n0 = StringFromList(0, S_waveNames ,";" )
-		n1 = StringFromList(1, S_waveNames ,";" )
-		n2 = StringFromList(2, S_waveNames ,";" )
-		n3 = StringFromList(3, S_waveNames ,";" )
-		n4 = StringFromList(4, S_waveNames ,";" )
-		n5 = StringFromList(5, S_waveNames ,";" )
-		
-		//remove the semicolon AND period from files from the VAX
-		w0 = CleanupName((S_fileName + "_q"),0)
-		w1 = CleanupName((S_fileName + "_i"),0)
-		w2 = CleanupName((S_fileName + "_s"),0)
-		w3 = CleanupName((S_fileName + "sq"),0)
-		w4 = CleanupName((S_fileName + "qb"),0)
-		w5 = CleanupName((S_fileName + "fs"),0)
-		
-		String baseStr=w1[0,strlen(w1)-3]
-		if(DataFolderExists("root:"+baseStr))
-				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-				if(V_flag==2)	//user selected No, don't load the data
-					SetDataFolder root:
-					KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
-					if(DataFolderExists("root:Packages:NIST"))
-						String/G root:Packages:NIST:gLastFileName = filename
-					endif		//set the last file loaded to the one NOT loaded
-					return		//quits the macro
-				endif
-				SetDataFolder $("root:"+baseStr)
-				Print "Old Data Folder"
-				Print GetDataFolder(1)
-		else
-			NewDataFolder/S $("root:"+baseStr)
-			Print "New Data Folder"
-			Print GetDataFolder(1)
-		endif
-
-////overwrite the existing data, if it exists
-		Duplicate/O $("root:"+n0), $w0
-		Duplicate/O $("root:"+n1), $w1
-		Duplicate/O $("root:"+n2), $w2
-		Duplicate/O $("root:"+n3), $w3
-		Duplicate/O $("root:"+n4), $w4
-		Duplicate/O $("root:"+n5), $w5
-
-		// need to switch based on SANS/USANS
-		if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
-			// make a resolution matrix for SANS data
-			Variable np=numpnts($w0)
-			Make/D/O/N=(np,4) $(baseStr+"_res")
-			
-			$(baseStr+"_res")[][0] = $w3[p]		//sigQ
-			$(baseStr+"_res")[][1] = $w4[p]		//qBar
-			$(baseStr+"_res")[][2] = $w5[p]		//fShad
-			$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
-		else
-			//the data is USANS data
-			// marix calculation here, but for now, just copy the waves
-			//$(baseStr+"_res")[][0] = $w3[p]		//sigQ
-			//$(baseStr+"_res")[][1] = $w4[p]		//qBar
-			//$(baseStr+"_res")[][2] = $w5[p]		//fShad
-			//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
-			dQv = -$w3[0]
-			
-			USANS_CalcWeights(baseStr,dQv)
-			
-		endif
-		Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
-
-		SetScale d,0,0,"1/A",$w0
-		SetScale d,0,0,"1/cm",$w1
-	
-	endif	//6-col data
-
-	// Load ORNL data from Heller program
-	if(numCols == 4)		//4-column SANS or USANS data that has resolution information
-		
-		// put the names of the (default named) loaded waves into local names
-		n0 = StringFromList(0, S_waveNames ,";" )
-		n1 = StringFromList(1, S_waveNames ,";" )
-		n2 = StringFromList(2, S_waveNames ,";" )
-		n3 = StringFromList(3, S_waveNames ,";" )
-		
-		//remove the semicolon AND period from files from the VAX
-		w0 = CleanupName((S_fileName + "_q"),0)
-		w1 = CleanupName((S_fileName + "_i"),0)
-		w2 = CleanupName((S_fileName + "_s"),0)
-		w3 = CleanupName((S_fileName + "sq"),0)
-		w4 = CleanupName((S_fileName + "qb"),0)
-		w5 = CleanupName((S_fileName + "fs"),0)
-
-		
-		String baseStr=w1[0,strlen(w1)-3]
-		if(DataFolderExists("root:"+baseStr))
-				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-				if(V_flag==2)	//user selected No, don't load the data
-					SetDataFolder root:
-					KillWaves $n0,$n1,$n2,$n3		// kill the default waveX that were loaded
-					if(DataFolderExists("root:Packages:NIST"))
-						String/G root:Packages:NIST:gLastFileName = filename
-					endif		//set the last file loaded to the one NOT loaded
-					return		//quits the macro
-				endif
-				SetDataFolder $("root:"+baseStr)
-		else
-			NewDataFolder/S $("root:"+baseStr)
-		endif
-
-////overwrite the existing data, if it exists
-		Duplicate/O $("root:"+n0), $w0
-		Duplicate/O $("root:"+n1), $w1
-		Duplicate/O $("root:"+n2), $w2
-		Duplicate/O $("root:"+n3), $w3
-		Duplicate/O $("root:"+n0), $w4 // Set qb wave to nominal measured Q values
-		Duplicate/O $("root:"+n0), $w5 // Make wave of appropriate length
-		$w5 = 1						  //  Set all shadowfactor to 1
-
-		// need to switch based on SANS/USANS
-		if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
-			// make a resolution matrix for SANS data
-			Variable np=numpnts($w0)
-			Make/D/O/N=(np,4) $(baseStr+"_res")
-			
-			$(baseStr+"_res")[][0] = $w3[p]		//sigQ
-			$(baseStr+"_res")[][1] = $w4[p]		//qBar
-			$(baseStr+"_res")[][2] = $w5[p]		//fShad
-			$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
-		else
-			//the data is USANS data
-			// marix calculation here, but for now, just copy the waves
-			//$(baseStr+"_res")[][0] = $w3[p]		//sigQ
-			//$(baseStr+"_res")[][1] = $w4[p]		//qBar
-			//$(baseStr+"_res")[][2] = $w5[p]		//fShad
-			//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
-			dQv = -$w3[0]
-			
-			USANS_CalcWeights(baseStr,dQv)
-			
-		endif
-		Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
-
-		SetScale d,0,0,"1/A",$w0
-		SetScale d,0,0,"1/cm",$w1
-	
-	endif	//4-col data
-
-
-	if(numCols==5)		//this is the "old-style" VAX desmeared data format
-		
-		// put the names of the three loaded waves into local names
-		n0 = StringFromList(0, S_waveNames ,";" )
-		n1 = StringFromList(1, S_waveNames ,";" )
-		n2 = StringFromList(2, S_waveNames ,";" )
-		n3 = StringFromList(3, S_waveNames ,";" )
-		n4 = StringFromList(4, S_waveNames ,";" )
-		
-		
-		//remove the semicolon AND period from files from the VAX
-		w0 = CleanupName((S_fileName+"_q"),0)
-		w1 = CleanupName((S_fileName+"_i"),0)
-		w2 = CleanupName((S_fileName+"_s"),0)
-		w3 = CleanupName((S_fileName+"_ism"),0)
-		w4 = CleanupName((S_fileName+"_fit_ism"),0)
-		
-		String baseStr=w1[0,strlen(w1)-3]
-		if(DataFolderExists("root:"+baseStr))
-				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-				if(V_flag==2)	//user selected No, don't load the data
-					KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
-					//if(DataFolderExists("root:Packages:NIST"))
-					//	String/G root:Packages:NIST:gLastFileName = filename
-					//endif		//set the last file loaded to the one NOT loaded
-					return		//quits the macro
-				endif
-				SetDataFolder $("root:"+baseStr)
-		else
-			NewDataFolder/S $("root:"+baseStr)
-		endif
-		
-		////overwrite the existing data, if it exists	
-		Duplicate/O $("root:"+n0), $w0
-		Duplicate/O $("root:"+n1), $w1
-		Duplicate/O $("root:"+n2), $w2
-		Duplicate/O $("root:"+n3), $w3
-		Duplicate/O $("root:"+n4), $w4
-		
-		// no resolution matrix
-	endif		//5-col data
-	
-	//////
-	if(DataFolderExists("root:Packages:NIST"))
-		String/G root:Packages:NIST:gLastFileName = filename
 	endif
-	
-	//plot if desired
-	if(doPlot)
-		// assign colors randomly
-		rr = abs(trunc(enoise(65535)))
-		gg = abs(trunc(enoise(65535)))
-		bb = abs(trunc(enoise(65535)))
+
+	if (isXML(fileStr) == 1)
+		LoadNISTXMLData(fileStr,doPlot)
+	else		
+		//Load the waves, using default waveX names
+		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
+		LoadWave/G/D/A/Q fileStr
+		//String fileName = S_fileName
+		String basestr = ParseFilePath(3,ParseFilePath(5,S_Path,":",0,0),":",0,0)
+		String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
+		Variable numCols = V_flag
 		
-		// if target window is a graph, and user wants to append, do so
-	   DoWindow/B Plot_Manager
-		if(WinType("") == 1)
-			DoAlert 1,"Do you want to append this data to the current graph?"
-			if(V_Flag == 1)
-				AppendToGraph $w1 vs $w0
-				ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
-				ErrorBars $w1 Y,wave=($w2,$w2)
-				ModifyGraph tickUnit(left)=1
+		if(numCols==3)		//simple 3-column data with no resolution information
+			
+			// put the names of the three loaded waves into local names
+			n0 = StringFromList(0, S_waveNames ,";" )
+			n1 = StringFromList(1, S_waveNames ,";" )
+			n2 = StringFromList(2, S_waveNames ,";" )
+			
+			//remove the semicolon AND period from files from the VAX
+			w0 = CleanupName((basestr + "_q"),0)
+			w1 = CleanupName((basestr + "_i"),0)
+			w2 = CleanupName((basestr + "_s"),0)
+			
+			//String baseStr=w1[0,strlen(w1)-3]
+			if(DataFolderExists("root:"+baseStr))
+					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+					if(V_flag==2)	//user selected No, don't load the data
+						SetDataFolder root:
+						KillWaves $n0,$n1,$n2		// kill the default waveX that were loaded
+						//if(DataFolderExists("root:Packages:NIST"))
+						//	String/G root:Packages:NIST:gLastFileName = filename
+						//endif
+						return	//quits the macro
+					endif
+					SetDataFolder $("root:"+baseStr)
 			else
-			//new graph
+				NewDataFolder/S $("root:"+baseStr)
+			endif
+			
+			////overwrite the existing data, if it exists
+			Duplicate/O $("root:"+n0), $w0
+			Duplicate/O $("root:"+n1), $w1
+			Duplicate/O $("root:"+n2), $w2
+	
+			// no resolution matrix to make
+	
+			SetScale d,0,0,"1/A",$w0
+			SetScale d,0,0,"1/cm",$w1
+			
+		endif		//3-col data
+		
+		if(numCols == 6)		//6-column SANS or USANS data that has resolution information
+			
+			// put the names of the (default named) loaded waves into local names
+			n0 = StringFromList(0, S_waveNames ,";" )
+			n1 = StringFromList(1, S_waveNames ,";" )
+			n2 = StringFromList(2, S_waveNames ,";" )
+			n3 = StringFromList(3, S_waveNames ,";" )
+			n4 = StringFromList(4, S_waveNames ,";" )
+			n5 = StringFromList(5, S_waveNames ,";" )
+			
+			//remove the semicolon AND period from files from the VAX
+			w0 = CleanupName((basestr + "_q"),0)
+			w1 = CleanupName((basestr + "_i"),0)
+			w2 = CleanupName((basestr + "_s"),0)
+			w3 = CleanupName((basestr + "sq"),0)
+			w4 = CleanupName((basestr + "qb"),0)
+			w5 = CleanupName((basestr + "fs"),0)
+			
+			//String baseStr=w1[0,strlen(w1)-3]
+			if(DataFolderExists("root:"+baseStr))
+					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+					if(V_flag==2)	//user selected No, don't load the data
+						SetDataFolder root:
+						KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
+						if(DataFolderExists("root:Packages:NIST"))
+							String/G root:Packages:NIST:gLastFileName = filename
+						endif		//set the last file loaded to the one NOT loaded
+						return		//quits the macro
+					endif
+					SetDataFolder $("root:"+baseStr)
+			else
+				NewDataFolder/S $("root:"+baseStr)
+			endif
+	
+	////overwrite the existing data, if it exists
+			Duplicate/O $("root:"+n0), $w0
+			Duplicate/O $("root:"+n1), $w1
+			Duplicate/O $("root:"+n2), $w2
+			Duplicate/O $("root:"+n3), $w3
+			Duplicate/O $("root:"+n4), $w4
+			Duplicate/O $("root:"+n5), $w5
+	
+			// need to switch based on SANS/USANS
+			if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
+				// make a resolution matrix for SANS data
+				Variable np=numpnts($w0)
+				Make/D/O/N=(np,4) $(baseStr+"_res")
+				
+				$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+				$(baseStr+"_res")[][1] = $w4[p]		//qBar
+				$(baseStr+"_res")[][2] = $w5[p]		//fShad
+				$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+			else
+				//the data is USANS data
+				// marix calculation here, but for now, just copy the waves
+				//$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+				//$(baseStr+"_res")[][1] = $w4[p]		//qBar
+				//$(baseStr+"_res")[][2] = $w5[p]		//fShad
+				//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+				dQv = -$w3[0]
+				
+				USANS_CalcWeights(baseStr,dQv)
+				
+			endif
+			Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
+	
+			SetScale d,0,0,"1/A",$w0
+			SetScale d,0,0,"1/cm",$w1
+		
+		endif	//6-col data
+	
+		// Load ORNL data from Heller program
+		if(numCols == 4)		//4-column SANS or USANS data that has resolution information
+			
+			// put the names of the (default named) loaded waves into local names
+			n0 = StringFromList(0, S_waveNames ,";" )
+			n1 = StringFromList(1, S_waveNames ,";" )
+			n2 = StringFromList(2, S_waveNames ,";" )
+			n3 = StringFromList(3, S_waveNames ,";" )
+			
+			//remove the semicolon AND period from files from the VAX
+			w0 = CleanupName((basestr + "_q"),0)
+			w1 = CleanupName((basestr + "_i"),0)
+			w2 = CleanupName((basestr + "_s"),0)
+			w3 = CleanupName((basestr + "sq"),0)
+			w4 = CleanupName((basestr + "qb"),0)
+			w5 = CleanupName((basestr + "fs"),0)
+	
+			
+			//String baseStr=w1[0,strlen(w1)-3]
+			if(DataFolderExists("root:"+baseStr))
+					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+					if(V_flag==2)	//user selected No, don't load the data
+						SetDataFolder root:
+						KillWaves $n0,$n1,$n2,$n3		// kill the default waveX that were loaded
+						if(DataFolderExists("root:Packages:NIST"))
+							String/G root:Packages:NIST:gLastFileName = filename
+						endif		//set the last file loaded to the one NOT loaded
+						return		//quits the macro
+					endif
+					SetDataFolder $("root:"+baseStr)
+			else
+				NewDataFolder/S $("root:"+baseStr)
+			endif
+	
+	////overwrite the existing data, if it exists
+			Duplicate/O $("root:"+n0), $w0
+			Duplicate/O $("root:"+n1), $w1
+			Duplicate/O $("root:"+n2), $w2
+			Duplicate/O $("root:"+n3), $w3
+			Duplicate/O $("root:"+n0), $w4 // Set qb wave to nominal measured Q values
+			Duplicate/O $("root:"+n0), $w5 // Make wave of appropriate length
+			$w5 = 1						  //  Set all shadowfactor to 1
+	
+			// need to switch based on SANS/USANS
+			if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
+				// make a resolution matrix for SANS data
+				Variable np=numpnts($w0)
+				Make/D/O/N=(np,4) $(baseStr+"_res")
+				
+				$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+				$(baseStr+"_res")[][1] = $w4[p]		//qBar
+				$(baseStr+"_res")[][2] = $w5[p]		//fShad
+				$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+			else
+				//the data is USANS data
+				// marix calculation here, but for now, just copy the waves
+				//$(baseStr+"_res")[][0] = $w3[p]		//sigQ
+				//$(baseStr+"_res")[][1] = $w4[p]		//qBar
+				//$(baseStr+"_res")[][2] = $w5[p]		//fShad
+				//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
+				dQv = -$w3[0]
+				
+				USANS_CalcWeights(baseStr,dQv)
+				
+			endif
+			Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
+	
+			SetScale d,0,0,"1/A",$w0
+			SetScale d,0,0,"1/cm",$w1
+		
+		endif	//4-col data
+	
+	
+		if(numCols==5)		//this is the "old-style" VAX desmeared data format
+			
+			// put the names of the three loaded waves into local names
+			n0 = StringFromList(0, S_waveNames ,";" )
+			n1 = StringFromList(1, S_waveNames ,";" )
+			n2 = StringFromList(2, S_waveNames ,";" )
+			n3 = StringFromList(3, S_waveNames ,";" )
+			n4 = StringFromList(4, S_waveNames ,";" )
+			
+			
+			//remove the semicolon AND period from files from the VAX
+			w0 = CleanupName((basestr+"_q"),0)
+			w1 = CleanupName((basestr+"_i"),0)
+			w2 = CleanupName((basestr+"_s"),0)
+			w3 = CleanupName((basestr+"_ism"),0)
+			w4 = CleanupName((basestr+"_fit_ism"),0)
+			
+			//String baseStr=w1[0,strlen(w1)-3]
+			if(DataFolderExists("root:"+baseStr))
+					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+					if(V_flag==2)	//user selected No, don't load the data
+						KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
+						//if(DataFolderExists("root:Packages:NIST"))
+						//	String/G root:Packages:NIST:gLastFileName = filename
+						//endif		//set the last file loaded to the one NOT loaded
+						return		//quits the macro
+					endif
+					SetDataFolder $("root:"+baseStr)
+			else
+				NewDataFolder/S $("root:"+baseStr)
+			endif
+			
+			////overwrite the existing data, if it exists	
+			Duplicate/O $("root:"+n0), $w0
+			Duplicate/O $("root:"+n1), $w1
+			Duplicate/O $("root:"+n2), $w2
+			Duplicate/O $("root:"+n3), $w3
+			Duplicate/O $("root:"+n4), $w4
+			
+			// no resolution matrix
+		endif		//5-col data
+
+		//////
+		if(DataFolderExists("root:Packages:NIST"))
+			String/G root:Packages:NIST:gLastFileName = filename
+		endif
+	
+		
+		//plot if desired
+		if(doPlot)
+			// assign colors randomly
+			rr = abs(trunc(enoise(65535)))
+			gg = abs(trunc(enoise(65535)))
+			bb = abs(trunc(enoise(65535)))
+			
+			// if target window is a graph, and user wants to append, do so
+		   DoWindow/B Plot_Manager
+			if(WinType("") == 1)
+				DoAlert 1,"Do you want to append this data to the current graph?"
+				if(V_Flag == 1)
+					AppendToGraph $w1 vs $w0
+					ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
+					ErrorBars $w1 Y,wave=($w2,$w2)
+					ModifyGraph tickUnit(left)=1
+				else
+				//new graph
+					Display $w1 vs $w0
+					ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
+					ModifyGraph grid=1,mirror=2,standoff=0
+					ErrorBars $w1 Y,wave=($w2,$w2)
+					ModifyGraph tickUnit(left)=1
+					Legend
+				endif
+			else
+			// graph window was not target, make new one
 				Display $w1 vs $w0
 				ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 				ModifyGraph grid=1,mirror=2,standoff=0
@@ -336,20 +357,13 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 				ModifyGraph tickUnit(left)=1
 				Legend
 			endif
-		else
-		// graph window was not target, make new one
-			Display $w1 vs $w0
-			ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
-			ModifyGraph grid=1,mirror=2,standoff=0
-			ErrorBars $w1 Y,wave=($w2,$w2)
-			ModifyGraph tickUnit(left)=1
-			Legend
 		endif
-	endif
+			
+		//go back to the root folder and clean up before leaving
+		SetDataFolder root:
+		KillWaves/Z $n0,$n1,$n2,$n3,$n4,$n5
 		
-	//go back to the root folder and clean up before leaving
-	SetDataFolder root:
-	KillWaves/Z $n0,$n1,$n2,$n3,$n4,$n5
+	endif
 End
 
 

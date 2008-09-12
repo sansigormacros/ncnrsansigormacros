@@ -12,6 +12,7 @@
 #include "SANSModelPicker_v40"			version>=4.00
 //utility procedures
 #include "GaussUtils_v40"				version>=4.00
+#include "NIST_XML_V40"					//added September 2008
 #include "PlotUtilsMacro_v40"			version>=4.00
 #include "PlotManager_v40"				version>=4.00
 
@@ -22,6 +23,7 @@
 #include "GizmoCylinder_v40"
 
 #include "CheckVersionFTP"				//added June 2008
+
 
 
 Menu "SANS Models"
