@@ -22,6 +22,8 @@
 // "Clr" buttons on the USANS_Panel will clear the graph..
 //
 Function DoCORGraph()
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	DoWindow/F COR_Graph
 	if(V_flag==0)
@@ -31,19 +33,19 @@ Function DoCORGraph()
 		ControlBar 100
 		SetVariable gTransWide,pos={210,12},size={135,15},title="Trans - Wide",format="%5.4f"
 		SetVariable gTransWide,help={"Average counts on transmssion detector at wide angles"}
-		SetVariable gTransWide,limits={0,1,0.001},value= root:Globals:MainPanel:gTransWide
+		SetVariable gTransWide,limits={0,1,0.001},value= $(USANSFolder+":Globals:MainPanel:gTransWide")
 		SetVariable gTransRock,pos={210,27},size={135,15},title="Trans - Rock",format="%5.4f"
 		SetVariable gTransRock,help={"Transmission counts at the zero-angle peak"}
-		SetVariable gTransRock,limits={0,1,0.001},value= root:Globals:MainPanel:gTransRock
+		SetVariable gTransRock,limits={0,1,0.001},value= $(USANSFolder+":Globals:MainPanel:gTransRock")
 		SetVariable gEmpCts,pos={210,42},size={135,15},title="EMP Level",format="%7.4f"
-		SetVariable gEmpCts,limits={-Inf,Inf,0.1},value= root:Globals:MainPanel:gEmpCts
+		SetVariable gEmpCts,limits={-Inf,Inf,0.1},value= $(USANSFolder+":Globals:MainPanel:gEmpCts")
 		SetVariable gEmpCts,help={"High q limit of empty cell scattering normalized to 1.0e6 monitor counts"}
 		SetVariable gBkgCts,pos={210,57},size={135,15},title="BKG Level",format="%7.4f"
-		SetVariable gBkgCts,limits={-Inf,Inf,0.1},value= root:Globals:MainPanel:gBkgCts
+		SetVariable gBkgCts,limits={-Inf,Inf,0.1},value= $(USANSFolder+":Globals:MainPanel:gBkgCts")
 		SetVariable gBkgCts,help={"Background scattering level normalized to 1.0e6 monitor counts"}
 		SetVariable gThick,pos={210,72},size={135,15},title="SAM Thick(cm)",format="%5.4f"
 		SetVariable gThick,help={"Thickness of the sample in centimeters"}
-		SetVariable gThick,limits={0,5,0.01},value= root:Globals:MainPanel:gThick
+		SetVariable gThick,limits={0,5,0.01},value= $(USANSFolder+":Globals:MainPanel:gThick")
 		Button UpdateButton,pos={115,19},size={88,20},proc=UpdateButtonProc,title="Update Trans"
 		Button UpdateButton,help={"Updates both the wide and rocking transmission values based on the raw data files"}
 		Button CorrectButton,pos={115,53},size={88,20},proc=CorrectButtonProc,title="Correct Data"
@@ -93,74 +95,87 @@ End
 // add SAM data to the graph if it exists and is not already on the graph
 //
 Function GraphSAM()
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//is it already on the graph?
-	SetDataFolder root:Graph
+	SetDataFolder $(USANSFolder+":Graph")
 	String list=""
 	list = Wavelist("DetCts_SAM*",";","WIN:COR_Graph")
-	SetDataFolder root:
 	if(strlen(list)!=0)
 		//Print "SAM already on graph"
 		return(0)
 	Endif
 	//append the data if it exists
-	If(waveExists($"root:Graph:DetCts_SAM")==1)
+	If(waveExists($"DetCts_SAM")==1)
 		DoWindow/F COR_Graph
-		AppendToGraph :Graph:DetCts_SAM vs :Graph:Qvals_SAM
+		AppendToGraph DetCts_SAM vs Qvals_SAM
 		ModifyGraph rgb(DetCts_SAM)=(1,12815,52428)
 		ModifyGraph mode(DetCts_SAM)=3,marker(DetCts_SAM)=19,msize(DetCts_SAM)=2
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_SAM Y,wave=(:Graph:ErrDetCts_SAM,:Graph:ErrDetCts_SAM)
+		ErrorBars DetCts_SAM Y,wave=(ErrDetCts_SAM,ErrDetCts_SAM)
 	endif
+	SetDataFolder root:
 End
 
 // add EMP data to the graph if it exists and is not already on the graph
 //
 Function GraphEMP()
-	SetDataFolder root:Graph
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	SetDataFolder $(USANSFolder+":Graph")
 	String list=""
 	list = Wavelist("DetCts_EMP*",";","WIN:COR_Graph")
-	SetDataFolder root:
 	if(strlen(list)!=0)
 	//	Print "EMP already on graph"
 		return(0)
 	Endif
 	//append the data if it exists
-	If(waveExists($"root:Graph:DetCts_EMP")==1)
+	If(waveExists($"DetCts_EMP")==1)
 		DoWindow/F COR_Graph
-		AppendToGraph :Graph:DetCts_EMP vs :Graph:Qvals_EMP
+		AppendToGraph DetCts_EMP vs Qvals_EMP
 		ModifyGraph msize(DetCts_EMP)=2,rgb(DetCts_EMP)=(1,39321,19939)
 		ModifyGraph mode(DetCts_EMP)=3,marker(DetCts_EMP)=19
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_EMP Y,wave=(:Graph:ErrDetCts_EMP,:Graph:ErrDetCts_EMP)
+		ErrorBars DetCts_EMP Y,wave=(ErrDetCts_EMP,ErrDetCts_EMP)
 	endif
+	SetDataFolder root:
 	return(0)
 End
 
 // add COR data to the graph if it exists and is not already on the graph
 //
 Function GraphCOR()
-	SetDataFolder root:Graph
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	SetDataFolder $(USANSFolder+":Graph")
+	
 	String list=""
 	list = Wavelist("DetCts_COR*",";","WIN:COR_Graph")
-	SetDataFolder root:
 	if(strlen(list)!=0)
 	//	Print "COR already on graph"
 		return(0)
 	Endif
 	//append the data if it exists
-	If(waveExists($"root:Graph:DetCts_COR")==1)
+	If(waveExists($"DetCts_COR")==1)
 		DoWindow/F COR_Graph
-		AppendToGraph :Graph:DetCts_COR vs :Graph:Qvals_COR
+		AppendToGraph DetCts_COR vs Qvals_COR
 		ModifyGraph msize(DetCts_COR)=2,rgb(DetCts_COR)=(52428,34958,1)
 		ModifyGraph mode(DetCts_COR)=3,marker(DetCts_COR)=19
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_COR Y,wave=(:Graph:ErrDetCts_COR,:Graph:ErrDetCts_COR)
+		ErrorBars DetCts_COR Y,wave=(ErrDetCts_COR,ErrDetCts_COR)
 	endif
+
+	SetDataFolder root:
 	return(0)
 End
 
 // add horizoontal lines for the background and empty cell levels
 Function GraphEMPBKGLevels()
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//if the data is on the graph, remove them and replot, to properly reset the scale
 	DoUpdate
 	String list = TraceNameList("COR_Graph",";",1)
@@ -171,12 +186,12 @@ Function GraphEMPBKGLevels()
 		RemoveFromGraph empLevel,bkgLevel
 	Endif
 	DoUpdate
-	AppendToGraph :EMP:EMPLevel,:BKG:BKGLevel
+	AppendToGraph $(USANSFolder+":EMP:EMPLevel"),$(USANSFolder+":BKG:BKGLevel")
 	ModifyGraph rgb(empLevel)=(0,0,0),lsize(bkgLevel)=2,rgb(bkgLevel)=(52428,1,1)
 	ModifyGraph lsize(empLevel)=2,offset={0,0}
 	ModifyGraph tickUnit=1
 	GetAxis/W=COR_Graph/Q bottom
-	SetScale/I x V_min,V_max,"",:EMP:EMPLevel,:BKG:BKGLevel
+	SetScale/I x V_min,V_max,"",$(USANSFolder+":EMP:EMPLevel"),$(USANSFolder+":BKG:BKGLevel")
 	return(0)
 End
 
@@ -187,6 +202,8 @@ End
 //
 Function SaveButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	PathInfo/S savePathName
 	if(V_Flag==0)
@@ -198,7 +215,7 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 	Variable useCrsrs=0,ptA=0,ptB=0
 	
 	//check for data save type (controlled by radio buttons)
-	NVAR gRadioVal=root:Globals:MainPanel:gTypeCheck		//1=COR,2=SAM,3=EMP
+	NVAR gRadioVal=$(USANSFolder+":Globals:MainPanel:gTypeCheck")		//1=COR,2=SAM,3=EMP
 	switch(gRadioVal)
 		case 1:	//COR
 			type="COR"
@@ -219,7 +236,7 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 	useCrsrs = V_Value 		//1 if checked
 	//if so, read off the point range (cursors should be on the same wave as the save type)
 	if(useCrsrs)
-		Wave xwave=$("root:Graph:Qvals_"+type)
+		Wave xwave=$(USANSFolder+":Graph:Qvals_"+type)
 		ptA=x2pnt(xwave,xcsr(A))
 		ptB=x2pnt(xwave,xcsr(B))
 		if(ptA>ptB)
@@ -243,7 +260,9 @@ Function UseCrsrCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gRadioVal=root:Globals:MainPanel:gTypeCheck		//1=COR,2=SAM,3=EMP
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	
+	NVAR gRadioVal=$(USANSFolder+":Globals:MainPanel:gTypeCheck")		//1=COR,2=SAM,3=EMP
 	String type=""
 	switch(gRadioVal)
 		case 1:	//COR
@@ -266,7 +285,7 @@ Function UseCrsrCheckProc(ctrlName,checked) : CheckBoxControl
 		yname="DetCts_"+type
 		Variable ok=WhichListItem(yname, str,";",0)
 		if(ok != -1)
-			Wave ywave=$("root:Graph:DetCts_"+type)
+			Wave ywave=$(USANSFolder+":Graph:DetCts_"+type)
 			Showinfo/W=COR_Graph
 			Cursor/A=1/P/S=1 A,$yname,0
 			Cursor/A=0/P/S=1 B,$yname,numpnts(ywave)-1
@@ -292,8 +311,10 @@ End
 Function TypeToggleCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	
-	NVAR gRadioVal=root:Globals:MainPanel:gTypeCheck
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	NVAR gRadioVal=$(USANSFolder+":Globals:MainPanel:gTypeCheck")
 	
 	strswitch(ctrlName)
 		case "CORCheck":
@@ -322,12 +343,14 @@ End
 //
 Function UpdateButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Wave samCts=$"root:SAM:DetCts"
-	Wave empCts=$"root:EMP:DetCts"
+	Wave samCts=$(USANSFolder+":SAM:DetCts")
+	Wave empCts=$(USANSFolder+":EMP:DetCts")
 	if((WaveExists(samCts)==0) || (WaveExists(empCts)==0))
-		Variable/G root:Globals:MainPanel:gTransWide=NaN		//error
-		Variable/G root:Globals:MainPanel:gTransRock=NaN
+		Variable/G $(USANSFolder+":Globals:MainPanel:gTransWide")=NaN		//error
+		Variable/G $(USANSFolder+":Globals:MainPanel:gTransRock")=NaN
 		return(1)
 	Endif
 	//get the wave notes, and the transCt values
@@ -337,8 +360,8 @@ Function UpdateButtonProc(ctrlName) : ButtonControl
 	empWide = NumberByKey("TWIDE",empNote,":",";")
 	samRock = NumberByKey("PEAKVAL",samNote,":",";")
 	empRock = NumberByKey("PEAKVAL",empNote,":",";")
-	Variable/G root:Globals:MainPanel:gTransWide=samWide/empWide
-	Variable/G root:Globals:MainPanel:gTransRock=samRock/empRock
+	Variable/G $(USANSFolder+":Globals:MainPanel:gTransWide")=samWide/empWide
+	Variable/G $(USANSFolder+":Globals:MainPanel:gTransRock")=samRock/empRock
 	
 	return(0)
 End
@@ -384,8 +407,10 @@ End
 //displayed on the COR_Graph
 Function QpkFromNote(type)
 	String type
-	
-	Wave/Z detCts=$("root:Graph:DetCts_"+type)
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+		
+	Wave/Z detCts=$(USANSFolder+":Graph:DetCts_"+type)
 	if(!WaveExists(detCts))
 		return(NaN)
 	Endif
@@ -405,6 +430,8 @@ End
 Function RePlotWithUserAngle(type,zeroAngle)
 	String type
 	Variable zeroAngle
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	//SETS the wave note with the PEAKANG value
 	
@@ -417,7 +444,7 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	//get selected files from listbox (everything)
 	//use the listBox wave directly
 	
-	Wave/T listW=$("root:Globals:MainPanel:"+type+"Wave")
+	Wave/T listW=$(USANSFolder+":Globals:MainPanel:"+type+"Wave")
 	Variable ii,num=numpnts(listW)
 	String fname="",fpath=""
 	PathInfo bt5PathName
@@ -446,8 +473,8 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	//Endif
 	
 	//find the peak value at the supplied angle, rather than automatic...
-	Wave tmpangle = $("root:"+type+":Angle")
-	Wave tmpdetCts = $("root:"+type+":DetCts")
+	Wave tmpangle = $(USANSFolder+":"+type+":Angle")
+	Wave tmpdetCts = $(USANSFolder+":"+type+":DetCts")
 	Variable pkHt=0
 	pkHt = interp(zeroAngle,tmpangle,tmpdetcts)
 	String str=""
@@ -462,12 +489,12 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	FindTWideCts(type)
 	//
 	//copy the data to plot to the root:Graph directory, and give clear names
-	if(WaveExists($("root:"+type+":Qvals")))
-		Duplicate/O $("root:"+type+":Qvals"),$("root:Graph:Qvals_"+type)
+	if(WaveExists($(USANSFolder+":"+type+":Qvals")))
+		Duplicate/O $(USANSFolder+":"+type+":Qvals"),$(USANSFolder+":Graph:Qvals_"+type)
 	Endif
-	Duplicate/O $("root:"+type+":Angle"),$("root:Graph:Angle_"+type)
-	Duplicate/O $("root:"+type+":DetCts"),$("root:Graph:DetCts_"+type)
-	Duplicate/O $("root:"+type+":ErrDetCts"),$("root:Graph:ErrDetCts_"+type)
+	Duplicate/O $(USANSFolder+":"+type+":Angle"),$(USANSFolder+":Graph:Angle_"+type)
+	Duplicate/O $(USANSFolder+":"+type+":DetCts"),$(USANSFolder+":Graph:DetCts_"+type)
+	Duplicate/O $(USANSFolder+":"+type+":ErrDetCts"),$(USANSFolder+":Graph:ErrDetCts_"+type)
 	
 	//now plot the data (or just bring the graph to the front)
 	DoCORGraph()

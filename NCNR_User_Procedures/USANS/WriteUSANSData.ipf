@@ -17,9 +17,12 @@ Function WriteUSANSWaves(type,fullpath,lo,hi,dialog)
 	String type,fullpath
 	Variable lo,hi,dialog		//=1 will present dialog for name
 	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	
 	String termStr="\r\n"		//VAX uses only <CR> as terminator, but only CRLF seems to FTP correctly to VAX
 	String destStr="",formatStr = "%15.6g %15.6g %15.6g %15.6g %15.6g %15.6g"+termStr
-	destStr = "root:"+type
+	destStr = USANSFolder+":"+type
 	
 	Variable refNum,integer,realval
 	
@@ -44,7 +47,7 @@ Function WriteUSANSWaves(type,fullpath,lo,hi,dialog)
 	// and make the value negative as a flag for the analysis software
 	//
 	Duplicate/O qvals,dumWave
-	NVAR DQv=root:Globals:MainPanel:gDQv
+	NVAR DQv=$(USANSFolder+":Globals:MainPanel:gDQv")
 	dumWave = - DQv
 	///
 	
@@ -71,14 +74,14 @@ Function WriteUSANSWaves(type,fullpath,lo,hi,dialog)
 	endif
 	
 	//tailor the output given the type of data written out...
-	WAVE inten_EMP=$("root:EMP:DetCts")
+	WAVE inten_EMP=$(USANSFolder+":EMP:DetCts")
 	String samStr="",empStr="",dateStr="",samLabelStr="",paramStr="",empLevStr="",bkgLevStr=""
 	String pkStr=""
-	NVAR TransWide = root:Globals:MainPanel:gTransWide
-	NVAR TransRock = root:Globals:MainPanel:gTransRock
-	NVAR empCts = root:Globals:MainPanel:gEmpCts
-	NVAR bkgCts = root:Globals:MainPanel:gBkgCts
-	NVAR thick = root:Globals:MainPanel:gThick
+	NVAR TransWide = $(USANSFolder+":Globals:MainPanel:gTransWide")
+	NVAR TransRock = $(USANSFolder+":Globals:MainPanel:gTransRock")
+	NVAR empCts = $(USANSFolder+":Globals:MainPanel:gEmpCts")
+	NVAR bkgCts = $(USANSFolder+":Globals:MainPanel:gBkgCts")
+	NVAR thick = $(USANSFolder+":Globals:MainPanel:gThick")
 	
 	strswitch(type)
 		case "SAM":		

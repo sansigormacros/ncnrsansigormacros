@@ -27,18 +27,20 @@
 //"blank" note entries are set up here as well, so later they can be polled/updated
 Function LoadBT5File(fname,type)
 	String fname,type
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	Variable num=200,err=0,refnum
-	Make/O/D/N=(num) $("root:"+type+":Angle")
-	Make/O/D/N=(num) $("root:"+type+":DetCts")
-	Make/O/D/N=(num) $("root:"+type+":ErrDetCts")
-	Make/O/D/N=(num) $("root:"+type+":MonCts")
-	Make/O/D/N=(num) $("root:"+type+":TransCts")
-	Wave Angle = $("root:"+type+":Angle")
-	Wave DetCts = $("root:"+type+":DetCts")
-	Wave ErrDetCts = $("root:"+type+":ErrDetCts")
-	Wave MonCts = $("root:"+type+":MonCts")
-	Wave TransCts = $("root:"+type+":TransCts")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":Angle")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":DetCts")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":ErrDetCts")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":MonCts")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":TransCts")
+	Wave Angle = $(USANSFolder+":"+type+":Angle")
+	Wave DetCts = $(USANSFolder+":"+type+":DetCts")
+	Wave ErrDetCts = $(USANSFolder+":"+type+":ErrDetCts")
+	Wave MonCts = $(USANSFolder+":"+type+":MonCts")
+	Wave TransCts = $(USANSFolder+":"+type+":TransCts")
 	
 	Open/R refNum as fname		//if fname is "", a dialog will be presented
 	if(refnum==0)
@@ -127,9 +129,12 @@ End
 Function FindZeroAngle(type)
 	String type
 	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	
 	Variable pkNotFound,pkPt,pkAngle,pkVal,temp
-	Wave angle = $("root:"+type+":Angle")
-	Wave detCts = $("root:"+type+":DetCts")
+	Wave angle = $(USANSFolder+":"+type+":Angle")
+	Wave detCts = $(USANSFolder+":"+type+":DetCts")
+
 
 	WaveStats/Q detcts
 	temp=V_Maxloc		//in points
@@ -164,13 +169,15 @@ End
 Function ConvertAngle2Qvals(type,pkAngle)
 	String type
 	Variable pkAngle
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Wave angle = $("root:"+type+":Angle")
+	Wave angle = $(USANSFolder+":"+type+":Angle")
 	Variable num=numpnts(angle)
 	Variable deg2QConv=5.55e-5		//JGB -- 2/24/01
 	
-	Make/O/N=(num) $("root:"+type+":Qvals")
-	Wave qvals = $("root:"+type+":Qvals")	
+	Make/O/N=(num) $(USANSFolder+":"+type+":Qvals")
+	Wave qvals = $(USANSFolder+":"+type+":Qvals")	
 	Qvals = deg2QConv*(angle[p] - pkAngle)
 	
 	return(0)	//no error
@@ -186,10 +193,12 @@ End
 Function FindTWideCts(type)
 	String type
 	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	
 	Variable levNotFound,levPt,Cts,num,ii
-	Wave angle = $("root:"+type+":Angle")
-	Wave detCts = $("root:"+type+":DetCts")
-	Wave TransCts = $("root:"+type+":TransCts")
+	Wave angle = $(USANSFolder+":"+type+":Angle")
+	Wave detCts = $(USANSFolder+":"+type+":DetCts")
+	Wave TransCts = $(USANSFolder+":"+type+":TransCts")
 	FindLevel/Q/P angle,2		//use angles greater than 2 deg
 	levNotFound=V_Flag		//V_Flag==1 if no pk found
 	if(levNotFound)
@@ -206,7 +215,7 @@ Function FindTWideCts(type)
 	Cts /= (num-levPt-1)
 	
 	//update the note
-	Wave DetCts = $("root:"+type+":DetCts")
+	Wave DetCts = $(USANSFolder+":"+type+":DetCts")
 	String str,strVal
 	str=note(DetCts)
 	str = ReplaceNumberByKey("TWIDE",str,Cts,":",";")

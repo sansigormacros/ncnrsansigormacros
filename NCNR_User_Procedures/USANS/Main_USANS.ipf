@@ -24,7 +24,7 @@ Menu "USANS"
 	"Build USANS Notebook"
 	"Desmear USANS Data",Desmear()
 	"-"
-	"Load USANS Data",U_LoadOneDData()
+	"Load USANS Data",A_LoadOneDData()
 	"Convert to 6 Columns",Convert3ColTo6Col()
 	"-"
 	"Feedback or Bug Report",U_OpenTracTicketPage("")
@@ -52,8 +52,15 @@ End
 // instrumental constants are set here as well
 //
 Proc Init_MainUSANS()
-	NewDataFolder/O root:Globals
-	NewDataFolder/O/S root:Globals:MainPanel
+	NewDataFolder/O root:Packages
+	NewDataFolder/O root:Packages:NIST
+	NewDataFolder/O root:Packages:NIST:USANS
+	NewDataFolder/O root:Packages:NIST:USANS:Globals
+	NewDataFolder/O/S root:Packages:NIST:USANS:Globals:MainPanel
+	
+	String/G root:Packages:NIST:USANS:Globals:gUSANSFolder  = "root:Packages:NIST:USANS"
+	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	//NB This is also hardcoded a bit further down - search for "WHY WHY WHY" AJJ Sept 08
 	
 	Make/O/T/N=1 fileWave,samWave,empWave,curWave //Added curWave Sept 06 A. Jackson
 	fileWave=""
@@ -80,28 +87,31 @@ Proc Init_MainUSANS()
 	
 	SetDataFolder root:
 	
-	NewDataFolder/O root:RAW
-	NewDataFolder/O root:SAM
-	NewDataFolder/O root:COR
-	NewDataFolder/O root:EMP
-	NewDataFolder/O root:BKG
-	NewDataFolder/O root:SWAP
-	NewDataFolder/O root:Graph
+	NewDataFolder/O $(USANSFolder+":RAW")
+	NewDataFolder/O $(USANSFolder+":SAM")
+	NewDataFolder/O $(USANSFolder+":COR")
+	NewDataFolder/O $(USANSFolder+":EMP")
+	NewDataFolder/O $(USANSFolder+":BKG")
+	NewDataFolder/O $(USANSFolder+":SWAP")
+	NewDataFolder/O $(USANSFolder+":Graph")
 	
 	//dummy waves for bkg and emp levels
-	Make/O root:EMP:empLevel,root:BKG:bkgLevel
-	root:EMP:empLevel := root:Globals:MainPanel:gEmpCts		//dependency to connect to SetVariable in panel
-	root:BKG:bkgLevel := root:Globals:MainPanel:gBkgCts
+	Make/O $(USANSFolder+":EMP:empLevel"),$(USANSFolder+":BKG:bkgLevel")
+	//WHY WHY WHY?????
+	//Explicit dependency
+	root:Packages:NIST:USANS:EMP:empLevel := root:Packages:NIST:USANS:Globals:MainPanel:gEmpCts //dependency to connect to SetVariable in panel
+	root:Packages:NIST:USANS:BKG:bkgLevel := root:Packages:NIST:USANS:Globals:MainPanel:gBkgCts
+
 	
 	//INSTRUMENTAL CONSTANTS 
-	Variable/G  root:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
-	Variable/G  root:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
 	//Variable/G  root:Globals:MainPanel:gDomega = 2.7e-7		//Solid angle of detector (pre- NOV 2004)
-	Variable/G  root:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
-	Variable/G  root:Globals:MainPanel:gDefaultMCR = 1e6		//factor for normalization
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDefaultMCR= 1e6		//factor for normalization
 	
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
-	Variable/G  root:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
 
 	
 
@@ -127,9 +137,9 @@ Window USANS_Panel() : Panel
 	SetDrawEnv fstyle= 1
 	DrawText 293,55,"Current Data"
 	ListBox fileLB,pos={5,55},size={110,230},proc=FileListBoxProc
-	ListBox fileLB,listWave=root:Globals:MainPanel:fileWave
-	ListBox fileLB,selWave=root:Globals:MainPanel:selFileW,mode= 4
-	ListBox samLB,pos={149,55},size={110,90},listWave=root:Globals:MainPanel:samWave
+	ListBox fileLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:fileWave
+	ListBox fileLB,selWave=root:Packages:NIST:USANS:Globals:MainPanel:selFileW,mode= 4
+	ListBox samLB,pos={149,55},size={110,90},listWave=root:Packages:NIST:USANS:Globals:MainPanel:samWave
 	ListBox samLB,mode= 1,selRow= -1
 	Button ClearSamButton,pos={224,148},size={35,21},proc=ClearButtonProc,title="Clr"
 	Button ClearSamButton,help={"Clears the list of sample scans"}
@@ -142,13 +152,13 @@ Window USANS_Panel() : Panel
 	Button DelEmpButton,pos={190,286},size={35,20},proc=DelEmpButtonProc,title="Del"
 	Button DelEmpButton,help={"Deletes the selected file(s) from the list of empty scans"}
 	ListBox empLB,pos={151,194},size={110,90}
-	ListBox empLB,listWave=root:Globals:MainPanel:empWave,mode= 1,selRow= 0
+	ListBox empLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:empWave,mode= 1,selRow= 0
 	Button toSamList,pos={118,55},size={25,90},proc=toSamListButtonProc,title="S->"
 	Button toSamList,help={"Adds the selected file(s) to the list of sample scans"}
 	Button toEmpList,pos={120,195},size={25,90},proc=toEmptyListButtonProc,title="E->"
 	Button toEmpList,help={"Adds the selected file(s) to the list of empty (cell) scans"}
 	ListBox StatusLB,pos={11,358},size={386,77}
-	ListBox StatusLB,listWave=root:Globals:MainPanel:statusWave
+	ListBox StatusLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:statusWave
 	Button pickPathButton,pos={6,8},size={80,20},proc=PickBT5PathButton,title="DataPath..."
 	Button pickPathButton,help={"Select the data folder where the raw ICP data files are located"}
 	Button PlotSelectedSAMButton,pos={148,148},size={35,20},proc=PlotSelectedSAMButtonProc,title="Plot"
@@ -166,9 +176,9 @@ Window USANS_Panel() : Panel
 	Button AddCurToEMP,pos={265,194},size={25,90},proc=CurtoEmptyListButtonProc,title="<-E",disable=2
 	Button AddCurToEMP,help={"Adds the current data file to the list of empty scans"}
 	ListBox CurFileBox,pos={295,55},size={100,230},proc=FileListBoxProc,disable=1
-	ListBox CurFileBox,listWave=root:Globals:MainPanel:curWave,mode=1
+	ListBox CurFileBox,listWave=root:Packages:NIST:USANS:Globals:MainPanel:curWave,mode=1
 	SetVariable FilterSetVar,pos={8,289},size={106,18},title="Filter",fSize=12
-	SetVariable FilterSetVar,value= root:Globals:MainPanel:FilterStr
+	SetVariable FilterSetVar,value= root:Packages:NIST:USANS:Globals:MainPanel:FilterStr
 	CheckBox UseCurrentData,pos={298,290},size={10,10},proc=UseCurrentDataProc,title="Enable Current Data"
 	CheckBox UseCurrentData,value=0
 	Button USANSFeedback,pos={220,6},size={100,20},proc=U_OpenTracTicketPage,title="Feedback"
@@ -183,7 +193,8 @@ EndMacro
 Proc GraphRawData()
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav= GetDataFolder(1)
-	SetDataFolder root:RAW:
+	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	SetDataFolder $(USANSFolder+":RAW:")
 	//String textStr = StringForRawGraph()
 	//textStr=StringByKey("FILE",textStr,":",";")+" MONRATE:"+num2str(mean(MonCts)/NumberByKey("TIMEPT",textStr,":",";"))
 	Display /W=(600,525,1015,850)/L=left1/B=bottom1 /K=1 DetCts vs Angle as "Raw Data"
@@ -231,11 +242,13 @@ End
 Function PlotSelectedEMPButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//get selected files from listbox (everything)
 	//use the listBox wave directly
-	Wave/T listW=$"root:Globals:MainPanel:empWave"
+	Wave/T listW=$(USANSFolder+":Globals:MainPanel:empWave")
 	//Wave for indication of current data set AJJ Sept 2006
-	Wave isCurrent = $"root:Globals:MainPanel:EMPisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:EMPisCurrent")
 	Variable ii,num=numpnts(listW)
 	String fname="",fpath="",curPathStr=""
 	PathInfo bt5PathName
@@ -282,12 +295,12 @@ Function PlotSelectedEMPButtonProc(ctrlName) : ButtonControl
 	FindTWideCts("EMP")
 	
 	//copy the data to plot to the root:Graph directory, and give clear names
-	if(WaveExists($("root:EMP:Qvals")))
-		Duplicate/O $("root:EMP:Qvals"),$("root:Graph:Qvals_EMP")
+	if(WaveExists($(USANSFolder+":EMP:Qvals")))
+		Duplicate/O $(USANSFolder+":EMP:Qvals"),$(USANSFolder+":Graph:Qvals_EMP")
 	Endif
-	Duplicate/O $("root:EMP:Angle"),$("root:Graph:Angle_EMP")
-	Duplicate/O $("root:EMP:DetCts"),$("root:Graph:DetCts_EMP")
-	Duplicate/O $("root:EMP:ErrDetCts"),$("root:Graph:ErrDetCts_EMP")
+	Duplicate/O $(USANSFolder+":EMP:Angle"),$(USANSFolder+":Graph:Angle_EMP")
+	Duplicate/O $(USANSFolder+":EMP:DetCts"),$(USANSFolder+":Graph:DetCts_EMP")
+	Duplicate/O $(USANSFolder+":EMP:ErrDetCts"),$(USANSFolder+":Graph:ErrDetCts_EMP")
 	
 	//now plot the data (or just bring the graph to the front)
 	DoCORGraph()
@@ -306,17 +319,21 @@ End
 Function PlotSelectedSAMButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//get selected files from listbox (everything)
 	//use the listBox wave directly
-	Wave/T listW=$"root:Globals:MainPanel:samWave"
+	Wave/T listW=$(USANSFolder+":Globals:MainPanel:samWave")
 	//Wave for indication of current data set AJJ Sept 2006
-	Wave isCurrent = $"root:Globals:MainPanel:SAMisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:SAMisCurrent")
 	Variable ii,num=numpnts(listW)
 	String fname="",fpath="",curPathStr=""
 	PathInfo bt5PathName
 	fpath = S_Path
 	PathInfo bt5CurPathName
 	curPathStr = S_Path
+	
+	print fpath
 	
 	if(cmpstr("",listW[0])==0)
 		return(0)		//null item in 1st position, exit
@@ -356,12 +373,12 @@ Function PlotSelectedSAMButtonProc(ctrlName) : ButtonControl
 	FindTWideCts("SAM")
 	//
 	//copy the data to plot to the root:Graph directory, and give clear names
-	if(WaveExists($("root:SAM:Qvals")))
-		Duplicate/O $("root:SAM:Qvals"),$("root:Graph:Qvals_SAM")
+	if(WaveExists($(USANSFolder+":SAM:Qvals")))
+		Duplicate/O $(USANSFolder+":SAM:Qvals"),$(USANSFolder+":Graph:Qvals_SAM")
 	Endif
-	Duplicate/O $("root:SAM:Angle"),$("root:Graph:Angle_SAM")
-	Duplicate/O $("root:SAM:DetCts"),$("root:Graph:DetCts_SAM")
-	Duplicate/O $("root:SAM:ErrDetCts"),$("root:Graph:ErrDetCts_SAM")
+	Duplicate/O $(USANSFolder+":SAM:Angle"),$(USANSFolder+":Graph:Angle_SAM")
+	Duplicate/O $(USANSFolder+":SAM:DetCts"),$(USANSFolder+":Graph:DetCts_SAM")
+	Duplicate/O $(USANSFolder+":SAM:ErrDetCts"),$(USANSFolder+":Graph:ErrDetCts_SAM")
 	
 	//now plot the data (or just bring the graph to the front)
 	DoCORGraph()
@@ -373,11 +390,13 @@ End
 Function DoAngleSort(type)
 	String type
 	
-	Wave angle = $("root:"+Type+":Angle")
-	Wave detCts = $("root:"+Type+":DetCts")
-	Wave ErrdetCts = $("root:"+Type+":ErrDetCts")
-	Wave MonCts = $("root:"+Type+":MonCts")
-	Wave TransCts = $("root:"+Type+":TransCts")
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	
+	Wave angle = $(USANSFolder+":"+Type+":Angle")
+	Wave detCts = $(USANSFolder+":"+Type+":DetCts")
+	Wave ErrdetCts = $(USANSFolder+":"+Type+":ErrDetCts")
+	Wave MonCts = $(USANSFolder+":"+Type+":MonCts")
+	Wave TransCts = $(USANSFolder+":"+Type+":TransCts")
 	
 	Sort Angle DetCts,ErrDetCts,MonCts,TransCts,Angle
 	return(0)
@@ -394,14 +413,17 @@ End
 Function Convert2Countrate(type)
 	String type
 	
-	String noteStr = note($("root:"+Type+":DetCts"))
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	
+	String noteStr = note($(USANSFolder+":"+Type+":DetCts"))
 	Variable ctTime
 	ctTime = NumberByKey("TIMEPT",noteStr,":",";")
+	print ctTime
 	//normalize by counting time
-	Wave detCts = $("root:"+Type+":DetCts")
-	Wave ErrdetCts = $("root:"+Type+":ErrDetCts")
-	Wave MonCts = $("root:"+Type+":MonCts")
-	Wave TransCts = $("root:"+Type+":TransCts")
+	Wave detCts = $(USANSFolder+":"+Type+":DetCts")
+	Wave ErrdetCts = $(USANSFolder+":"+Type+":ErrDetCts")
+	Wave MonCts = $(USANSFolder+":"+Type+":MonCts")
+	Wave TransCts = $(USANSFolder+":"+Type+":TransCts")
 	
 	detCts /= ctTime
 	ErrDetCts /= ctTime
@@ -410,7 +432,7 @@ Function Convert2Countrate(type)
 	
 	//normalize to monitor countrate [=] counts/monitor
 	//trans countrate does not need to be normalized
-	NVAR defaultMCR=root:Globals:MainPanel:gDefaultMCR 
+	NVAR defaultMCR=$(USANSFolder+":Globals:MainPanel:gDefaultMCR") 
 	DetCts /= monCts/defaultMCR
 	ErrDetCts /= MonCts/defaultMCR
 	
@@ -431,15 +453,17 @@ End
 Function NewDataWaves(fromType,toType)
 	String fromType,toType
 	
-	Duplicate/O $("root:"+fromType+":Angle"),$("root:"+toType+":Angle")
-	Duplicate/O $("root:"+fromType+":DetCts"),$("root:"+toType+":DetCts")
-	Duplicate/O $("root:"+fromType+":ErrDetCts"),$("root:"+toType+":ErrDetCts")
-	Duplicate/O $("root:"+fromType+":MonCts"),$("root:"+toType+":MonCts")
-	Duplicate/O $("root:"+fromType+":TransCts"),$("root:"+toType+":TransCts")
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	Duplicate/O $(USANSFolder+":"+fromType+":Angle"),$(USANSFolder+":"+toType+":Angle")
+	Duplicate/O $(USANSFolder+":"+fromType+":DetCts"),$(USANSFolder+":"+toType+":DetCts")
+	Duplicate/O $(USANSFolder+":"+fromType+":ErrDetCts"),$(USANSFolder+":"+toType+":ErrDetCts")
+	Duplicate/O $(USANSFolder+":"+fromType+":MonCts"),$(USANSFolder+":"+toType+":MonCts")
+	Duplicate/O $(USANSFolder+":"+fromType+":TransCts"),$(USANSFolder+":"+toType+":TransCts")
 	
 	//check for qvals wave, move if it's there
-	if(WaveExists($("root:"+fromType+":Qvals")))
-		Duplicate/O $("root:"+fromType+":Qvals"),$("root:"+toType+":Qvals")
+	if(WaveExists($(USANSFolder+":"+fromType+":Qvals")))
+		Duplicate/O $(USANSFolder+":"+fromType+":Qvals"),$(USANSFolder+":"+toType+":Qvals")
 	Endif
 	
 End
@@ -449,25 +473,28 @@ End
 //
 Function AppendDataWaves(fromType,toType)
 	String fromType,toType
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	String fromNote="",toNote="",newNote="",fromfile="",toFile=""
 	
-	ConcatenateData( ("root:"+toType+":Angle"),("root:"+fromType+":Angle") ) //appends "from" at the end of "to"
-	ConcatenateData( ("root:"+toType+":DetCts"),("root:"+fromType+":DetCts") )
-	ConcatenateData( ("root:"+toType+":ErrDetCts"),("root:"+fromType+":ErrDetCts") )
-	ConcatenateData( ("root:"+toType+":MonCts"),("root:"+fromType+":MonCts") )
-	ConcatenateData( ("root:"+toType+":TransCts"),("root:"+fromType+":TransCts") )
+	
+	ConcatenateData( (USANSFolder+":"+toType+":Angle"),(USANSFolder+":"+fromType+":Angle") ) //appends "from" at the end of "to"
+	ConcatenateData( (USANSFolder+":"+toType+":DetCts"),(USANSFolder+":"+fromType+":DetCts") )
+	ConcatenateData( (USANSFolder+":"+toType+":ErrDetCts"),(USANSFolder+":"+fromType+":ErrDetCts") )
+	ConcatenateData( (USANSFolder+":"+toType+":MonCts"),(USANSFolder+":"+fromType+":MonCts") )
+	ConcatenateData( (USANSFolder+":"+toType+":TransCts"),(USANSFolder+":"+fromType+":TransCts") )
 	
 
 	//adjust the wavenote, to account for the new dataset
-	fromNote = note($("root:"+fromType+":DetCts"))
+	fromNote = note($(USANSFolder+":"+fromType+":DetCts"))
 	fromFile = StringByKey("FILE",fromNote,":",";")
-	toNote = note($("root:"+toType+":DetCts"))
+	toNote = note($(USANSFolder+":"+toType+":DetCts"))
 	toFile = StringByKey("FILE",toNote,":",";")
 	toFile += "," + fromfile
 	toNote = ReplaceStringByKey("FILE",toNote,toFile,":",";")
-	Note/K $("root:"+toType+":DetCts")
-	Note $("root:"+toType+":DetCts"),toNote
+	Note/K $(USANSFolder+":"+toType+":DetCts")
+	Note $(USANSFolder+":"+toType+":DetCts"),toNote
 	
 	Return(0)
 End
@@ -539,14 +566,16 @@ End
 Function PlotRawButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	String fname=""
 	
 	if (cmpstr(ctrlName,"FileLB") == 0)
 		//Print "PlotRaw Button"
 		//take the selection, and simply plot the counts vs. angle - don't save the data anyplace special
 		//get the selected wave
-		Wave/T fileWave=$"root:Globals:MainPanel:fileWave"
-		Wave sel=$"root:Globals:MainPanel:selFileW"
+		Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:fileWave")
+		Wave sel=$(USANSFolder+":Globals:MainPanel:selFileW")
 		Variable ii=0,num=numpnts(sel),err
 
 		
@@ -560,7 +589,7 @@ Function PlotRawButtonProc(ctrlName) : ButtonControl
 			ii+=1
 		while(ii<num)
 	elseif (cmpstr(ctrlName,"CurFileBox" )== 0)
-		Wave/T fileWave=$"root:Globals:MainPanel:curWave"
+		Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:curWave")
 		PathInfo bt5CurPathName
 		fname = S_Path
 		fname+=filewave[0]
@@ -621,13 +650,17 @@ End
 //
 Function StatusButtonProc(ctrlName) 
 	String ctrlName
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	String fname=""
+
 
 	if(cmpstr(ctrlName,"fileLB")==0)
 		//Print "Status Button"	
 		//display the (first) selected wave
-		Wave/T fileWave=$"root:Globals:MainPanel:fileWave"
-		Wave sel=$"root:Globals:MainPanel:selFileW"
+		Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:fileWave")
+		Wave sel=$(USANSFolder+":Globals:MainPanel:selFileW")
 		Variable ii=0,num=numpnts(sel)
 		
 		PathInfo bt5PathName
@@ -640,7 +673,7 @@ Function StatusButtonProc(ctrlName)
 			ii+=1
 		while(ii<num)
 	elseif(cmpstr(ctrlName,"CurFileBox")==0)
-		Wave/T fileWave=$"root:Globals:MainPanel:curWave"
+		Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:curWave")
 		PathInfo bt5CurPathName
 		fname = S_Path
 		fname+=filewave[0]
@@ -656,12 +689,14 @@ End
 Function toSamListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//Print "toSamList button"
-	Wave/T fileWave=$"root:Globals:MainPanel:fileWave"
-	Wave/T samWave=$"root:Globals:MainPanel:samWave"
-	Wave sel=$"root:Globals:MainPanel:selFileW"
+	Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:fileWave")
+	Wave/T samWave=$(USANSFolder+":Globals:MainPanel:samWave")
+	Wave sel=$(USANSFolder+":Globals:MainPanel:selFileW")
 	//Wave to indicate Current status
-	Wave isCurrent = $"root:Globals:MainPanel:SAMisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:SAMisCurrent")
 
 	
 	Variable num=numpnts(sel),ii=0
@@ -697,12 +732,14 @@ End
 Function toEmptyListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	//Print "toEmptyList button"
-	Wave/T fileWave=$"root:Globals:MainPanel:fileWave"
-	Wave/T empWave=$"root:Globals:MainPanel:empWave"
-	Wave sel=$"root:Globals:MainPanel:selFileW"
+	Wave/T fileWave=$(USANSFolder+":Globals:MainPanel:fileWave")
+	Wave/T empWave=$(USANSFolder+":Globals:MainPanel:empWave")
+	Wave sel=$(USANSFolder+":Globals:MainPanel:selFileW")
 	//Wave to indicate Current status
-	Wave isCurrent = $"root:Globals:MainPanel:EMPisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:EMPisCurrent")
 
 
 	
@@ -738,13 +775,15 @@ End
 //
 Function DelSamButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	ControlInfo SamLB
 	Variable selRow=V_Value
 	Wave lw=$(S_DataFolder + S_Value)
 	DeletePoints selRow,1,lw	
 	//Clear out current flag AJJ Sept O6
-	Wave isCurrent = $"root:Globals:MainPanel:SAMisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:SAMisCurrent")
 	DeletePoints selRow, 1, isCurrent	
 End
 
@@ -754,13 +793,15 @@ End
 //
 Function DelEmpButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
 	ControlInfo EmpLB
 	Variable selRow=V_Value
 	Wave lw=$(S_DataFolder + S_Value)
 	DeletePoints selRow,1,lw
 	//Clear out current flag AJJ Sept O6
-	Wave isCurrent = $"root:Globals:MainPanel:EMPisCurrent"
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:EMPisCurrent")
 	DeletePoints selRow, 1, isCurrent	
 End
 
@@ -775,7 +816,10 @@ End
 Function RefreshListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	SVAR FilterStr = root:Globals:MainPanel:FilterStr
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	SVAR FilterStr = $(USANSFolder+":Globals:MainPanel:FilterStr")
+	print FilterStr
 	String filter
 	
 	//check for path and force user to pick a path
@@ -808,8 +852,8 @@ Function RefreshListButtonProc(ctrlName) : ButtonControl
 	endfor
 	newList = SortList(newList,";",0)	//get them in order
 	num=ItemsInList(newlist,";")
-	Wave/T fileWave = $" root:Globals:MainPanel:fileWave"
-	Wave selFileW = $"root:Globals:MainPanel:selFileW"
+	Wave/T fileWave = $(USANSFolder+":Globals:MainPanel:fileWave")
+	Wave selFileW = $(USANSFolder+":Globals:MainPanel:selFileW")
 	Redimension/N=(num) fileWave
 	Redimension/N=(num) selFileW
 	fileWave=""
@@ -826,8 +870,10 @@ End
 //
 Function ClearButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
-	SetDataFolder root:Globals:MainPanel
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+		
+	SetDataFolder $(USANSFolder+":Globals:MainPanel")
 	strswitch(ctrlName)
 		case "ClearSamButton":
 			Make/O/T/N=1 samWave
@@ -869,8 +915,10 @@ End
 Function ReadBT5Header(fname)
 	String fname
 	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	
 	Variable err=0,refNum
-	Wave/T statusWave=$"root:Globals:MainPanel:statusWave"
+	Wave/T statusWave=$(USANSFolder+":Globals:MainPanel:statusWave")
 	
 	Open/R refNum as fname		//READ-ONLY.......if fname is "", a dialog will be presented
 	if(refnum==0)
@@ -917,8 +965,10 @@ End
 //
 Function TitleForRawGraph()
 
-	WAVE detCts=$"root:RAW:detCts"
-	WAVE monCts = $"root:RAW:monCts"
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	WAVE detCts=$(USANSFolder+":RAW:detCts")
+	WAVE monCts = $(USANSFolder+":RAW:monCts")
 	String str=note(detCts)
 	
 	String retStr="\\JC"
@@ -956,32 +1006,35 @@ End
 //takes the given inputs, subtracts EMP and BKG from the SAM data
 //the user must supply the correct sample thickness, BKGLevel, and EMPLevel for extrapolation
 Function DoCorrectData()
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	//constants
 //	NVAR  thetaH = root:Globals:MainPanel:gTheta_H			//Darwin FWHM
 //	NVAR  thetaV = root:Globals:MainPanel:gTheta_V			//Vertical divergence
-	NVAR dOmega =  root:Globals:MainPanel:gDomega 			//Solid angle of detector
-	NVAR defaultMCR = root:Globals:MainPanel:gDefaultMCR 
+	NVAR dOmega =  $(USANSFolder+":Globals:MainPanel:gDomega")			//Solid angle of detector
+	NVAR defaultMCR = $(USANSFolder+":Globals:MainPanel:gDefaultMCR")
+		
 	//waves
-	Wave iqSAM = $"root:SAM:DetCts"
-	Wave errSAM = $"root:SAM:ErrDetCts"
-	Wave qvalSAM = $"root:SAM:Qvals"
-	Wave iqEMP = $"root:EMP:DetCts"
-	Wave errEMP = $"root:EMP:ErrDetCts"
-	Wave qvalEMP = $"root:EMP:Qvals"
+	Wave iqSAM = $(USANSFolder+":SAM:DetCts")
+	Wave errSAM = $(USANSFolder+":SAM:ErrDetCts")
+	Wave qvalSAM = $(USANSFolder+":SAM:Qvals")
+	Wave iqEMP = $(USANSFolder+":EMP:DetCts")
+	Wave errEMP = $(USANSFolder+":EMP:ErrDetCts")
+	Wave qvalEMP = $(USANSFolder+":EMP:Qvals")
 	//BKG,EMP levels,trans,thick
-	NVAR bkgLevel = root:Globals:MainPanel:gBkgCts
-	NVAR empLevel = root:Globals:MainPanel:gEmpCts
-	NVAR Trock = root:Globals:MainPanel:gTransRock
-	NVAR Twide = root:Globals:MainPanel:gTransWide
-	NVAR thick = root:Globals:MainPanel:gThick
+	NVAR bkgLevel = $(USANSFolder+":Globals:MainPanel:gBkgCts")
+	NVAR empLevel =  $(USANSFolder+":Globals:MainPanel:gEmpCts")
+	NVAR Trock =  $(USANSFolder+":Globals:MainPanel:gTransRock")
+	NVAR Twide =  $(USANSFolder+":Globals:MainPanel:gTransWide")
+	NVAR thick =  $(USANSFolder+":Globals:MainPanel:gThick")
 	//New waves in COR folder, same length as SAM data
-	Duplicate/O iqSAM,$"root:COR:DetCts"
-	Duplicate/O errSAM,$"root:COR:ErrDetCts"
-	Duplicate/O qvalSAM,$"root:COR:Qvals"
-	Wave iqCOR = $"root:COR:DetCts"
-	Wave qvalCOR = $"root:COR:Qvals"
-	Wave errCOR = $"root:COR:ErrDetCts"
+	Duplicate/O iqSAM,$(USANSFolder+":COR:DetCts")
+	Duplicate/O errSAM,$(USANSFolder+":COR:ErrDetCts")
+	Duplicate/O qvalSAM,$(USANSFolder+":COR:Qvals")
+	Wave iqCOR = $(USANSFolder+":COR:DetCts")
+	Wave qvalCOR = $(USANSFolder+":COR:Qvals")
+	Wave errCOR = $(USANSFolder+":COR:ErrDetCts")
 	
 	//correction done here
 	//q-values of EMP must be interpolated to match SAM data
@@ -1011,9 +1064,9 @@ Function DoCorrectData()
 	errCOR *= scale
 	
 	//copy to Graph directory to plot
-	Duplicate/O $("root:COR:Qvals"),$("root:Graph:Qvals_COR")
-	Duplicate/O $("root:COR:DetCts"),$("root:Graph:DetCts_COR")
-	Duplicate/O $("root:COR:ErrDetCts"),$("root:Graph:ErrDetCts_COR")
+	Duplicate/O $(USANSFolder+":COR:Qvals"),$(USANSFolder+":Graph:Qvals_COR")
+	Duplicate/O $(USANSFolder+":COR:DetCts"),$(USANSFolder+":Graph:DetCts_COR")
+	Duplicate/O $(USANSFolder+":COR:ErrDetCts"),$(USANSFolder+":Graph:ErrDetCts_COR")
 	
 	//now plot the data (or just bring the graph to the front)
 	DoCORGraph()
@@ -1026,11 +1079,13 @@ End
 //
 Function CleanOutFolder(type)
 	String type
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
 	
-	SetDataFolder $("root:"+type)
+	SetDataFolder $(USANSFolder+":"+type)
 	Killwaves/Z DetCts,Qvals,ErrDetCts,Angle,MonCts,TransCts
 	
-	SetDataFolder root:Graph
+	SetDataFolder $(USANSFolder+":Graph")
 	KillWaves/Z $("DetCts_"+type),$("ErrDetCts_"+type),$("Qvals_"+type)
 	
 	SetDataFolder root:
@@ -1052,6 +1107,8 @@ End
 
 Function RefreshCurrentButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
 	
 	//Prod the web update page
 	//This is a horrible kludge that doesn't really work as the 
@@ -1091,7 +1148,7 @@ Function RefreshCurrentButtonProc(ctrlName) : ButtonControl
 	endfor
 	newList = SortList(newList,";",0)	//get them in order
 	num=ItemsInList(newlist,";")
-	Wave/T curWave = $" root:Globals:MainPanel:curWave"
+	Wave/T curWave = $(USANSFolder+" :Globals:MainPanel:curWave")
 	Redimension/N=(num) curWave
 	curWave=""
 	curWave = StringFromList(p,newlist,";")	//  ! quick and easy assignment of the list
@@ -1103,9 +1160,11 @@ End
 Function CurtoSamListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Wave/T curWave=$"root:Globals:MainPanel:curWave"
-	Wave/T samWave=$"root:Globals:MainPanel:samWave"
-	Wave isCurrent = $"root:Globals:MainPanel:SAMisCurrent"
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	Wave/T curWave=$(USANSFolder+":Globals:MainPanel:curWave")
+	Wave/T samWave=$(USANSFolder+":Globals:MainPanel:samWave")
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:SAMisCurrent")
 	
 	Variable num, ii = 0
 	variable lastPt=numpnts(samWave)
@@ -1132,9 +1191,11 @@ End
 Function CurtoEmptyListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Wave/T curWave=$"root:Globals:MainPanel:curWave"
-	Wave/T empWave=$"root:Globals:MainPanel:empWave"
-	Wave isCurrent = $"root:Globals:MainPanel:EMPisCurrent"
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+
+	Wave/T curWave=$(USANSFolder+":Globals:MainPanel:curWave")
+	Wave/T empWave=$(USANSFolder+":Globals:MainPanel:empWave")
+	Wave isCurrent = $(USANSFolder+":Globals:MainPanel:EMPisCurrent")
 		
 	Variable num, ii=0
 	variable lastPt=numpnts(empWave)
@@ -1162,8 +1223,10 @@ End
 Function UseCurrentDataProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
+
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	NVAR isChecked = root:Globals:MainPanel:gUseCurrentData
+	NVAR isChecked = $(USANSFolder+":Globals:MainPanel:gUseCurrentData")
 	
 	if (checked == 1)
 		DoAlert 1, "Enabling Current Data requires access to the NCNR Network.\rDo you wish to continue?" 
