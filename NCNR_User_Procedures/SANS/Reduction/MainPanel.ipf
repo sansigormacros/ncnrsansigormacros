@@ -194,6 +194,12 @@ Proc WorkMath_MainButtonProc(ctrlName) : ButtonControl
 	Show_WorkMath_Panel()
 End
 
+Proc TISANE_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Show_TISANE_Panel()
+End
+
 Proc Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -302,6 +308,8 @@ Window Main_Panel()
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
 	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
+	Button MainButton_3g,pos={150,180},size={100,20},title="TISANE",proc=TISANE_MainButtonProc
+	Button MainButton_3g,help={"Manipulate TISANE Timeslice data"}
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
@@ -309,6 +317,7 @@ Window Main_Panel()
 	Button MainButton_3d,disable=1
 	Button MainButton_3e,disable=1
 	Button MainButton_3f,disable=1
+	Button MainButton_3g,disable=1
 
 //on tab(4) - Miscellaneous operations
 	Button MainButton_4a,pos={15,90},size={80,20},proc=Draw3D_MainButtonProc,title="3D Display"
