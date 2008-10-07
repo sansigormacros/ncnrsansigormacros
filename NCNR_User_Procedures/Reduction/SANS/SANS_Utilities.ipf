@@ -420,15 +420,15 @@ End
 Proc ClearWorkFolders()
 
 	//not foolproof - will generage an error if any wavs, etc.. are in use.
-	KillDataFolder root:RAW
-	KillDataFolder root:SAM
-	KillDataFolder root:EMP
-	KillDataFolder root:BGD
-	KillDataFolder root:COR
-	KillDataFolder root:DIV
-	KillDataFolder root:MSK
-	KillDataFolder root:ABS
-	KillDataFolder root:CAL
+	KillDataFolder root:Packages:NIST:RAW
+	KillDataFolder root:Packages:NIST:SAM
+	KillDataFolder root:Packages:NIST:EMP
+	KillDataFolder root:Packages:NIST:BGD
+	KillDataFolder root:Packages:NIST:COR
+	KillDataFolder root:Packages:NIST:DIV
+	KillDataFolder root:Packages:NIST:MSK
+	KillDataFolder root:Packages:NIST:ABS
+	KillDataFolder root:Packages:NIST:CAL
 	SetDataFolder root:
 	
 End
@@ -439,7 +439,7 @@ End
 Function ClearWorkFolder(type)
 	String type
 	
-	SetDataFolder $("root:"+type)
+	SetDataFolder $("root:Packages:NIST:"+type)
 	KillWaves/A/Z
 	KillStrings/A/Z
 	KillVariables/A/Z

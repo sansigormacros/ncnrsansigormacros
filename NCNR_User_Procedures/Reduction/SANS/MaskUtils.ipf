@@ -20,20 +20,20 @@
 
 //reads the data (1=mask, 0 = no mask)
 //and plots a quickie image to make sure it's ok
-//data is always read into root:MSK folder
+//data is always read into root:Packages:NIST:MSK folder
 //
 Proc ReadMASK()
 	
-	//SetDataFolder root:MSK
+	//SetDataFolder root:Packages:NIST:MSK
 	String fname = PromptForPath("Select Mask file")
 	if(strlen(fname)==0)
 		return
 	endif
 	ReadMCID_MASK(fname)
 	
-	//SetDataFolder root:MSK
+	//SetDataFolder root:Packages:NIST:MSK
 //// 	SRK SEP06 disable plot of mask data, just show the overlay
-////	String waveStr = "root:MSK:data"
+////	String waveStr = "root:Packages:NIST:MSK:data"
 ////	NewImage/F/S=2/K=1 $waveStr
 ////	ModifyImage '' ctab= {*,*,YellowHot,0}
 	maskButtonProc("maskButton")
@@ -44,7 +44,7 @@ Proc ReadMASK()
 End
 
 
-//reads the mask data into the root:MSK folder
+//reads the mask data into the root:Packages:NIST:MSK folder
 //setDataFolder is required here
 //y-values must be flipped to get proper array assignment of the mask
 //
@@ -55,20 +55,20 @@ Function ReadMCID_MASK(fname)
 	// flip the y-values to correspond to the work file
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
-	SetDataFolder root:MSK
+	SetDataFolder root:Packages:NIST:MSK
 	Killwaves/Z data,data0		//kill the old data, if it exists
 	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
 	Execute cmd 
-	SetDataFolder root:MSK						//make sure correct data folder is set
-	WAVE data0 = $"root:MSK:data0"
+	SetDataFolder root:Packages:NIST:MSK						//make sure correct data folder is set
+	WAVE data0 = $"root:Packages:NIST:MSK:data0"
 	Redimension/N=(pixelsX,pixelsY) data0
 	Flip_Y(data0)
 	
-	SetDataFolder root:MSK
+	SetDataFolder root:Packages:NIST:MSK
 	Rename data0,data
 	
-	Variable/G root:MSK:gIsLogScale = 0
-	String/G root:MSK:fileList = GetFileNameFromPathNoSemi(fname)
+	Variable/G root:Packages:NIST:MSK:gIsLogScale = 0
+	String/G root:Packages:NIST:MSK:fileList = GetFileNameFromPathNoSemi(fname)
 	//back to root folder
 	SetDataFolder root:
 	return(0)
@@ -152,13 +152,13 @@ End
 Function OverlayMask(state)
 	Variable state
 	
-	String maskPath = "root:MSK:data"
+	String maskPath = "root:Packages:NIST:MSK:data"
 	if(WaveExists($maskPath) == 1)
 		//duplicate the mask, which is named "data"
 		Duplicate/O root:MSK:data root:MSK:overlay
 		Redimension/D root:MSK:overlay
 	
-		String tempStr = "root:MSK:overlay"
+		String tempStr = "root:Packages:NIST:MSK:overlay"
 		ResetLoop(tempStr)		//keeps 1's and sets 0's to NaN
 	
 		//check to see if mask overlay is currently displayed
@@ -167,7 +167,7 @@ Function OverlayMask(state)
 			return(0)
 		endif
 		
-		CheckDisplayed/W=SANS_Data root:MSK:overlay
+		CheckDisplayed/W=SANS_Data root:Packages:NIST:MSK:overlay
 		//Print "V_flag = ",V_flag
 	
 		If(V_Flag == 1)		//overlay is present
@@ -177,7 +177,7 @@ Function OverlayMask(state)
 		Else		//overlay is not present
 			if(state==1)
 				//append the new overlay
-				AppendImage/L=left/B=bottom root:MSK:overlay
+				AppendImage/L=left/B=bottom root:Packages:NIST:MSK:overlay
 				//set the color table to vary from 0 to * (=max data = 1), with blue maximum
 				//Nan's will appear transparent (just a general feature of images)
 				ModifyImage/W=SANS_Data overlay ctab={0,*,BlueRedGreen,0}
@@ -295,7 +295,7 @@ End
 Function DrawMask()		//main entry procedure
 	//there must be data in root:curDispType:data FIRST
 	SVAR curType=root:myGlobals:gDataDisplayType
-	if(WaveExists($("root:"+curType+":data") ))
+	if(WaveExists($("root:Packages:NIST:"+curType+":data") ))
 		DoWindow/F drawMaskWin
 		If(V_flag == 0)
 			InitializeDrawMask(curType)
@@ -318,7 +318,7 @@ Function InitializeDrawMask(type)
 	If( ! (DataFolderExists("root:myGlobals:drawMask"))  )
 		//create the data folder and the globals
 				NewDataFolder/O root:myGlobals:drawMask
-				Duplicate/O $("root:"+type+":data") root:myGlobals:drawMask:data		//copy of the data
+				Duplicate/O $("root:Packages:NIST:"+type+":data") root:myGlobals:drawMask:data		//copy of the data
 		Endif
 		//if the data folder's there , then the globals must also be there so don't do anything
 End

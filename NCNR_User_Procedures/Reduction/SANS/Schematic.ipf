@@ -106,7 +106,7 @@ Proc DrawMacSchematic()
 	String text2,text3,text5,text7,text22,text21,text11,text20,text23
 	
 	text2 = "Using Protocol: "+protocolName
-	text3 = "Sample file: "+ root:SAM:fileList
+	text3 = "Sample file: "+ root:Packages:NIST:SAM:fileList
 	text5 = "T\\BSAM\\M = " + getTransStrFromReals("SAM")	//trans and thickness of the sample
 	text5 += "   d\\BSAM\\M = " + getThickStrFromReals("SAM") + " cm"
 	text7 = "T\\BEMP\\M = " + getTransStrFromReals("EMP")	//transmission of the empty cell
@@ -318,7 +318,7 @@ Function SetGraphic(type,choice)
 	else
 		NVAR doLogScaling = root:myGlobals:gLogScalingAsDefault
 		
-		wave data = $("root:"+type+":data")
+		wave data = $("root:Packages:NIST:"+type+":data")
 		if(waveExists(data))
 			PauseUpdate; Silent 1		// building window...
 			Display /W=(40,40,196,196)
@@ -345,11 +345,11 @@ Function SetGraphic(type,choice)
 	       	//a mask on it do this
 	      		if(cmpstr(choice,"MSK overlay")==0)
 	        		nameStr = type+"MSK_PNG"
-	        		Duplicate/O root:MSK:data root:MSK:overlay
-	         		Redimension/D root:MSK:overlay
-	         		String tempStr = "root:MSK:overlay"
+	        		Duplicate/O root:Packages:NIST:MSK:data root:MSK:overlay
+	         		Redimension/D root:Packages:NIST:MSK:overlay
+	         		String tempStr = "root:Packages:NIST:MSK:overlay"
 	    	       	ResetLoop(tempStr)
-	       	   	AppendImage root:MSK:overlay
+	       	   	AppendImage root:Packages:NIST:MSK:overlay
 	         		ModifyImage overlay ctab={0,1,BlueRedGreen,0}
 	       	endif
 	     		//end of overlay
@@ -362,7 +362,7 @@ Function SetGraphic(type,choice)
 			ModifyGraph tkLblRot(left)=90
 			ModifyGraph btLen=3
 			ModifyGraph tlOffset=-2
-			SVAR fileStr = $("root:"+type+":fileList")
+			SVAR fileStr = $("root:Packages:NIST:"+type+":fileList")
 			Textbox/N=text0/F=0/A=MT/X=0.00/Y=0.00/E fileStr
 			
 // comment out line below for DEMO_MODIFIED version
@@ -437,7 +437,7 @@ Proc DrawWinSchematic()
 	String text2,text3,text5,text7,text22,text21,text11,text20,text23
 	
 	text2 = "Using Protocol: "+protocolName
-	text3 = "Sample file: "+ root:SAM:fileList
+	text3 = "Sample file: "+ root:Packages:NIST:SAM:fileList
 	text5 = "T\\BSAM\\M = " + getTransStrFromReals("SAM")	//trans and thickness of the sample
 	text5 += "   d\\BSAM\\M = " + getThickStrFromReals("SAM") + " cm"
 	text7 = "T\\BEMP\\M = " + getTransStrFromReals("EMP")	//transmission of the empty cell
@@ -632,7 +632,7 @@ End
 Function/S getTransStrFromReals(type)
 	String type
 	
-	String name="root:"+type+":realsread"
+	String name="root:Packages:NIST:"+type+":realsread"
 	WAVE reals = $name
 	if(waveExists(reals))
 		return(num2str(reals[4]))
@@ -648,7 +648,7 @@ End
 Function/S getThickStrFromReals(type)
 	String type
 	
-	String name="root:"+type+":realsread"
+	String name="root:Packages:NIST:"+type+":realsread"
 	WAVE reals = $name
 	if(waveExists(reals))
 		return(num2str(reals[5]))
@@ -664,7 +664,7 @@ End
 Function/S GetAttenNumStrFromReals(type)
 	String type
 	
-	String name="root:"+type+":realsread"
+	String name="root:Packages:NIST:"+type+":realsread"
 	WAVE reals = $name
 	if(waveExists(reals))
 		return(num2str(reals[3]))

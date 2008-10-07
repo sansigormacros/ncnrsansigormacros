@@ -51,20 +51,25 @@ End
 //it leaves data in them untouched
 Function InitFolders()
 	
+	NewDataFolder/O root:Packages
+	NewDataFolder/O root:Packages:NIST
+	
 	NewDataFolder/O root:myGlobals
 	NewDataFolder/O root:myGlobals:CatVSHeaderInfo
-	NewDataFolder/O root:RAW
-	NewDataFolder/O root:SAM
-	NewDataFolder/O root:EMP
-	NewDataFolder/O root:BGD
-	NewDataFolder/O root:COR
-	NewDataFolder/O root:DIV
-	NewDataFolder/O root:MSK
-	NewDataFolder/O root:ABS
-	NewDataFolder/O root:CAL
-	NewDataFolder/O root:STO
-	NewDataFolder/O root:SUB
-	NewDataFolder/O root:DRK
+	NewDataFolder/O root:Packages:NIST:RAW
+	NewDataFolder/O root:Packages:NIST:SAM
+	NewDataFolder/O root:Packages:NIST:EMP
+	NewDataFolder/O root:Packages:NIST:BGD
+	NewDataFolder/O root:Packages:NIST:COR
+	NewDataFolder/O root:Packages:NIST:DIV
+	NewDataFolder/O root:Packages:NIST:MSK
+	NewDataFolder/O root:Packages:NIST:ABS
+	NewDataFolder/O root:Packages:NIST:CAL
+	NewDataFolder/O root:Packages:NIST:STO
+	NewDataFolder/O root:Packages:NIST:SUB
+	NewDataFolder/O root:Packages:NIST:DRK
+	
+
 	
 	Return(0)
 End

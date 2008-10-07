@@ -70,7 +70,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	SVAR type=root:myGlobals:gDataDisplayType
 	
 	//Check for logscale data in "type" folder
-	String dest = "root:"+type
+	String dest = "root:Packages:NIST:"+type
 	
 	NVAR isLogScale = $(dest + ":gIsLogScale")
 	if(isLogScale)
@@ -360,7 +360,7 @@ Function MasterAngleDraw()
 	
 	//get the beam center from the currently displayed data type
 	SVAR type = root:myGlobals:gDataDisplayType
-	Wave reals = $("root:"+type+":RealsRead")
+	Wave reals = $("root:Packages:NIST:"+type+":RealsRead")
 	Variable x0,y0,x1,y1
 	x0 = reals[16] - 1		//convert to [0,127] from (1,128) detector
 	y0 = reals[17] - 1
@@ -1058,16 +1058,16 @@ Function Rescale_Plot_1D_ButtonProc(ctrlName) : ButtonControl
 	
 //	SetDataFolder curPath
 	//get the untarnished data, so we can rescale it freshly here
-	Wave yw = $("root:"+curFolder+":aveint")
-	Wave ew = $("root:"+curFolder+":sigave")
+	Wave yw = $("root:Packages:NIST:"+curFolder+":aveint")
+	Wave ew = $("root:Packages:NIST:"+curFolder+":sigave")
 	//get the correct x values
 	NVAR isPhiAve= root:myGlobals:Plot_1d:isPhiAve 	//0 signifies (normal) x=qvals
 	if(isPhiAve)
 		//x is angle
-		Wave xw=$("root:"+curFolder+":phival")
+		Wave xw=$("root:Packages:NIST:"+curFolder+":phival")
 	else
 		//x is q-values
-		Wave xw=$("root:"+curFolder+":qval")
+		Wave xw=$("root:Packages:NIST:"+curFolder+":qval")
 	endif
 	Wave yAxisWave=root:myGlobals:Plot_1d:yAxisWave		//refs to waves to be modified, hard-wired positions
 	Wave xAxisWave=root:myGlobals:Plot_1d:xAxisWave

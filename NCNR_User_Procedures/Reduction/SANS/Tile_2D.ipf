@@ -397,7 +397,7 @@ Function MakePNGforLayout(minScale,maxScale,type,ii)
 	Endif
 	
 	WAVE NIHColors = $"root:myGlobals:NIHColors"
-	WAVE data = $("root:"+type+":data")
+	WAVE data = $("root:Packages:NIST:"+type+":data")
 	String nameStr = type +num2str(ii)+ "L_PNG"
 
 	PauseUpdate; Silent 1		// building window...
@@ -420,7 +420,7 @@ Function MakePNGforLayout(minScale,maxScale,type,ii)
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
-	SVAR fileStr = $("root:"+type+":fileList")
+	SVAR fileStr = $("root:Packages:NIST:"+type+":fileList")
 	Textbox/N=text0/F=0/A=MT/X=0.00/Y=0.00/E fileStr
 	
 // comment out the line below for DEMO_MODIFIED version
@@ -577,7 +577,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 			ReadHeaderAndData(fname)		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
-			WAVE/T/Z tw = $"root:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
+			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
 			newFileName= GetNameFromHeader(tw[0])
 			
 			if(qxqy)

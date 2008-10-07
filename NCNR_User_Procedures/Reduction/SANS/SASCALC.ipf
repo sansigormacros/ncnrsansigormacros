@@ -765,7 +765,7 @@ Function S_CircularAverageTo1D(type)
 	
 	//type is the data type to do the averaging on, and will be set as the current folder
 	//get the current displayed data (so the correct folder is used)
-	String destPath = "root:"+type
+	String destPath = "root:Packages:NIST:"+type
 	
 	//
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist,dr,ddr

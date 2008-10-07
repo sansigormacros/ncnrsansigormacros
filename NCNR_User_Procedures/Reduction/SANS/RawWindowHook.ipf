@@ -41,7 +41,7 @@ Function fRawWindowHook()
 	//get the current displayed data (so the correct folder is used)
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
 	SVAR cur_title = root:myGlobals:gCurTitle
-	String curPath = "root:"+cur_folder
+	String curPath = "root:Packages:NIST:"+cur_folder
 	Wave/T tw=$(curPath+":TextRead")
 	cur_title = tw[6]			//always update the title string
 	
@@ -207,8 +207,8 @@ Function RawWindowHook(s)
 	
 	//get the current displayed data (so the correct folder is used)
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	SetDataFolder "root:"+cur_folder		//use the full path, so it will always work
-	String curPath = "root:" + cur_folder
+	SetDataFolder "root:Packages:NIST:"+cur_folder		//use the full path, so it will always work
+	String curPath = "root:Packages:NIST:" + cur_folder
 	NVAR dataIsLog=$(curPath + ":gIsLogScale")		//now a global variable in the current folder, not the globals folder
 	if (dataIsLog) 
 		wave w=$(curPath + ":linear_data")
@@ -276,7 +276,7 @@ Function CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	
 	Variable dx,dy,thetax,thetay,qval,qx,qy
 	
-//	Wave realW=$"root:raw:realsRead"
+//	Wave realW=$"root:Packages:NIST:raw:realsRead"
 //	Variable pixSizeX = realW[10]/10		//header is in mm, want cm
 //	Variable pixSizeY = realW[13]/10		//header is in mm, want cm
 	Variable pixSizeX=pixSize
@@ -306,7 +306,7 @@ Function CalcQX(xaxval,xctr,sdd,lam,pixSize)
 	//sdd is in meters
 	//wavelength is in Angstroms
 	
-//	Wave realW=$"root:raw:realsRead"
+//	Wave realW=$"root:Packages:NIST:raw:realsRead"
 //	Variable pixSize = realW[10]/10		//header is in mm, want cm
 	
 	Variable dx,thetax,qx
@@ -331,7 +331,7 @@ Function CalcQY(yaxval,yctr,sdd,lam,pixSize)
 	//sdd is in meters
 	//wavelength is in Angstroms
 	
-//	Wave realW=$"root:raw:realsRead"
+//	Wave realW=$"root:Packages:NIST:raw:realsRead"
 //	Variable pixSize = realW[13]/10		//header is in mm, want cm
 		
 	Variable dy,thetay,qy

@@ -62,7 +62,7 @@ Function Add_raw_to_work(newType)
 	String destPath=""
 	
 	// if the desired workfile doesn't exist, let the user know, and just make a new one
-	destPath = "root:"+newType + ":data"
+	destPath = "root:Packages:NIST:"+newType + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no old work file to add to - a new one will be created"
 		//call Raw_to_work(), then return from this function
@@ -71,7 +71,7 @@ Function Add_raw_to_work(newType)
 	Endif
 	
 	//now make references to data in newType folder
-	DestPath="root:"+newType	
+	DestPath="root:Packages:NIST:"+newType	
 	WAVE data=$(destPath +":data")			// these wave references point to the EXISTING work data
 	WAVE/T textread=$(destPath + ":textread")
 	WAVE integersread=$(destPath + ":integersread")
@@ -108,10 +108,10 @@ Function Add_raw_to_work(newType)
 	data *= uscale
 	
 	//DetCorr() has not been applied to the data in RAW , do it now in a local reference to the raw data
-	WAVE raw_data = $"root:RAW:data"
-	WAVE raw_reals =  $"root:RAW:realsread"
-	WAVE/T raw_text = $"root:RAW:textread"
-	WAVE raw_ints = $"root:RAW:integersread"
+	WAVE raw_data = $"root:Packages:NIST:RAW:data"
+	WAVE raw_reals =  $"root:Packages:NIST:RAW:realsread"
+	WAVE/T raw_text = $"root:Packages:NIST:RAW:textread"
+	WAVE raw_ints = $"root:Packages:NIST:RAW:integersread"
 	
 	//check for log-scaling of the raw data - make sure it's linear
 	ConvertFolderToLinearScale("RAW")
@@ -242,19 +242,19 @@ Function Raw_to_work(newType)
 	//Not adding multiple runs, so wipe out the old contents of the work folder and 
 	// replace with the contents of raw
 
-	destPath = "root:" + newType
+	destPath = "root:Packages:NIST:" + newType
 	
 	//check for log-scaling of the RAW data and adjust if necessary
 	ConvertFolderToLinearScale("RAW")
 	//then continue
 
 	//copy from current dir (RAW) to work, defined by destpath
-	DestPath = "root:"+newType
-	Duplicate/O $"root:RAW:data",$(destPath + ":data")
-//	Duplicate/O $"root:RAW:vlegend",$(destPath + ":vlegend")
-	Duplicate/O $"root:RAW:textread",$(destPath + ":textread")
-	Duplicate/O $"root:RAW:integersread",$(destPath + ":integersread")
-	Duplicate/O $"root:RAW:realsread",$(destPath + ":realsread")
+	DestPath = "root:Packages:NIST:"+newType
+	Duplicate/O $"root:Packages:NIST:RAW:data",$(destPath + ":data")
+//	Duplicate/O $"root:Packages:NIST:RAW:vlegend",$(destPath + ":vlegend")
+	Duplicate/O $"root:Packages:NIST:RAW:textread",$(destPath + ":textread")
+	Duplicate/O $"root:Packages:NIST:RAW:integersread",$(destPath + ":integersread")
+	Duplicate/O $"root:Packages:NIST:RAW:realsread",$(destPath + ":realsread")
 	Variable/G $(destPath + ":gIsLogscale")=0			//overwite flag in newType folder, data converted (above) to linear scale
 	
 	WAVE data=$(destPath + ":data")				// these wave references point to the data in work
@@ -328,12 +328,12 @@ End
 Function Raw_to_Work_NoNorm(type)
 	String type
 	
-	WAVE reals=$("root:RAW:realsread")
+	WAVE reals=$("root:Packages:NIST:RAW:realsread")
 	reals[1]=1		//true monitor counts, still in raw
 	Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:"+type+":data")
-	WAVE new_reals=$("root:"+type+":realsread")
+	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
 	
 	Variable norm_mon,tot_mon,scale
 	
@@ -354,12 +354,12 @@ End
 Function Add_Raw_to_Work_NoNorm(type)
 	String type
 	
-	WAVE reals=$("root:RAW:realsread")
+	WAVE reals=$("root:Packages:NIST:RAW:realsread")
 	reals[1]=1		//true monitor counts, still in raw
 	Add_Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:"+type+":data")
-	WAVE new_reals=$("root:"+type+":realsread")
+	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
 	
 	Variable norm_mon,tot_mon,scale
 	
@@ -746,14 +746,14 @@ Function Divide_work(type)
 	//check for existence of data in type and DIV
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
-	destPath = "root:"+Type + ":data"
+	destPath = "root:Packages:NIST:"+Type + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
-	destPath = "root:DIV:data"
+	destPath = "root:Packages:NIST:DIV:data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in DIV --Aborting"
 		Return(1)		//error condition
@@ -765,7 +765,7 @@ Function Divide_work(type)
 	
 	//copy type information to CAL, wiping out the old contents of the CAL folder first
 	
-	//destPath = "root:CAL"
+	//destPath = "root:Packages:NIST:CAL"
 	//SetDataFolder destPath
 	//KillWaves/A/Z			//get rid of the old data in CAL folder
 
@@ -774,17 +774,17 @@ Function Divide_work(type)
 	//then continue
 
 	//copy from current dir (type)=destPath to CAL, overwriting CAL contents
-	destPath = "root:" + type
-	Duplicate/O $(destPath + ":data"),$"root:CAL:data"
-//	Duplicate/O $(destPath + ":vlegend"),$"root:CAL:vlegend"
-	Duplicate/O $(destPath + ":textread"),$"root:CAL:textread"
-	Duplicate/O $(destPath + ":integersread"),$"root:CAL:integersread"
-	Duplicate/O $(destPath + ":realsread"),$"root:CAL:realsread"
+	destPath = "root:Packages:NIST:" + type
+	Duplicate/O $(destPath + ":data"),$"root:Packages:NIST:CAL:data"
+//	Duplicate/O $(destPath + ":vlegend"),$"root:Packages:NIST:CAL:vlegend"
+	Duplicate/O $(destPath + ":textread"),$"root:Packages:NIST:CAL:textread"
+	Duplicate/O $(destPath + ":integersread"),$"root:Packages:NIST:CAL:integersread"
+	Duplicate/O $(destPath + ":realsread"),$"root:Packages:NIST:CAL:realsread"
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 
 	//now switch to reference waves in CAL folder
-	destPath = "root:CAL"
+	destPath = "root:Packages:NIST:CAL"
 	//make appropriate wave references
 	Wave data=$(destPath + ":data")					// these wave references point to the data in CAL
 	Wave/t textread=$(destPath + ":textread")			//that are to be directly operated on
@@ -794,7 +794,7 @@ Function Divide_work(type)
 	//need to copy filelist string too
 	String/G $(destPath + ":fileList") = oldFileList
 
-	Wave div_data = $"root:DIV:data"		//hard-wired in....
+	Wave div_data = $"root:Packages:NIST:DIV:data"		//hard-wired in....
 	//do the division, changing data in CAL
 	data /= div_data
 	
@@ -854,13 +854,13 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	//check for existence of data, rescale to linear if needed
 	String destPath
 	//check for "type"
-	destPath = "root:"+Type + ":data"
+	destPath = "root:Packages:NIST:"+Type + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
 	//check for log-scaling of the "type" data and adjust if necessary
-	destPath = "root:"+Type
+	destPath = "root:Packages:NIST:"+Type
 	NVAR gIsLogScale = $(destPath + ":gIsLogScale")
 	if(gIsLogScale)
 		Duplicate/O $(destPath + ":linear_data") $(destPath + ":data")//back to linear scale
@@ -871,25 +871,25 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	//overwriting out the old contents of the ABS folder (/O option in Duplicate)
 	//copy over the waves data,vlegend,text,integers,reals(read)
 
-	String oldType= "root:"+type  		//this is where the data to be absoluted is 
+	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is 
 	//copy from current dir (type) to ABS, defined by destPath
-	Duplicate/O $(oldType + ":data"),$"root:ABS:data"
-//	Duplicate/O $(oldType + ":vlegend"),$"root:ABS:vlegend"
-	Duplicate/O $(oldType + ":textread"),$"root:ABS:textread"
-	Duplicate/O $(oldType + ":integersread"),$"root:ABS:integersread"
-	Duplicate/O $(oldType + ":realsread"),$"root:ABS:realsread"
+	Duplicate/O $(oldType + ":data"),$"root:Packages:NIST:ABS:data"
+//	Duplicate/O $(oldType + ":vlegend"),$"root:Packages:NIST:ABS:vlegend"
+	Duplicate/O $(oldType + ":textread"),$"root:Packages:NIST:ABS:textread"
+	Duplicate/O $(oldType + ":integersread"),$"root:Packages:NIST:ABS:integersread"
+	Duplicate/O $(oldType + ":realsread"),$"root:Packages:NIST:ABS:realsread"
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(oldType + ":fileList")
 	//need to copy filelist string too
-	String/G $"root:ABS:fileList" = oldFileList
+	String/G $"root:Packages:NIST:ABS:fileList" = oldFileList
 	
 	//now switch to ABS folder
 	//make appropriate wave references
-	WAVE data=$"root:ABS:data"					// these wave references point to the "type" data in ABS
-	WAVE/T textread=$"root:ABS:textread"			//that are to be directly operated on
-	WAVE integersread=$"root:ABS:integersread"
-	WAVE realsread=$"root:ABS:realsread"
-	Variable/G $"root:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
+	WAVE data=$"root:Packages:NIST:ABS:data"					// these wave references point to the "type" data in ABS
+	WAVE/T textread=$"root:Packages:NIST:ABS:textread"			//that are to be directly operated on
+	WAVE integersread=$"root:Packages:NIST:ABS:integersread"
+	WAVE realsread=$"root:Packages:NIST:ABS:realsread"
+	Variable/G $"root:Packages:NIST:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
 	
 	//do the actual absolute scaling here, modifying the data in ABS
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
@@ -936,7 +936,7 @@ Function CopyWorkContents(oldtype,newtype)
 	//check for existence of data in oldtype
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
-	destPath = "root:"+oldType + ":data"
+	destPath = "root:Packages:NIST:"+oldType + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in "+oldtype+"--Aborting"
 		Return(1) 		//error condition
@@ -948,16 +948,16 @@ Function CopyWorkContents(oldtype,newtype)
 	//then continue
 
 	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
-	destPath = "root:" + oldtype
-	Duplicate/O $(destPath + ":data"),$("root:"+newtype+":data")
-	Duplicate/O $(destPath + ":textread"),$("root:"+newtype+":textread")
-	Duplicate/O $(destPath + ":integersread"),$("root:"+newtype+":integersread")
-	Duplicate/O $(destPath + ":realsread"),$("root:"+newtype+":realsread")
+	destPath = "root:Packages:NIST:" + oldtype
+	Duplicate/O $(destPath + ":data"),$("root:Packages:NIST:"+newtype+":data")
+	Duplicate/O $(destPath + ":textread"),$("root:Packages:NIST:"+newtype+":textread")
+	Duplicate/O $(destPath + ":integersread"),$("root:Packages:NIST:"+newtype+":integersread")
+	Duplicate/O $(destPath + ":realsread"),$("root:Packages:NIST:"+newtype+":realsread")
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 
 	//now switch to reference waves in newtype folder
-	destPath = "root:"+newtype
+	destPath = "root:Packages:NIST:"+newtype
 	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in newtype folder, data is linear scale
 	//need to copy filelist string too
 	String/G $(destPath + ":fileList") = oldFileList
@@ -1044,7 +1044,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
-	WAVE/Z data1=$("root:"+workMathStr+"File_1:data")
+	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:data")
 	If(cmpstr(str2,"UNIT MATRIX")==0)
 		Make/O/N=(pixelsX,pixelsY) root:myGlobals:WorkMath:data		//don't put in File_2 folder
 		Wave/Z data2 =  root:myGlobals:WorkMath:data			//it's not real data!
@@ -1052,7 +1052,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	else
 		//Load set #2
 		Load_NamedASC_File(pathStr+str2,workMathStr+"File_2")
-		WAVE/Z data2=$("root:"+workMathStr+"File_2:data")
+		WAVE/Z data2=$("root:Packages:NIST:"+workMathStr+"File_2:data")
 	Endif
 
 	///////
@@ -1064,7 +1064,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	endif
 	//copy contents of str1 folder to dest and create the wave ref (it will exist)
 	CopyWorkContents(workMathStr+"File_1",workMathStr+dest)
-	WAVE/Z destData=$("root:"+workMathStr+dest+":data")
+	WAVE/Z destData=$("root:Packages:NIST:"+workMathStr+dest+":data")
 	
 	//dispatch
 	strswitch(oper)	
@@ -1228,7 +1228,7 @@ End
 Function ClearDataFolder(type)
 	String type
 	
-	SetDataFolder $("root:"+type)
+	SetDataFolder $("root:Packages:NIST:"+type)
 	KillWaves/a/z
 	KillStrings/a/z
 	KillVariables/a/z

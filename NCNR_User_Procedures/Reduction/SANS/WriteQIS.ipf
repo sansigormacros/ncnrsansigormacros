@@ -19,7 +19,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	Variable dialog		//=1 will present dialog for name
 	
 	String destStr=""
-	destStr = "root:"+type
+	destStr = "root:Packages:NIST:"+type
 	
 	Variable refNum
 	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
@@ -98,7 +98,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
 	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+textW[9] + "\r\n"
 	
-	SVAR samFiles = $("root:"+type+":fileList")
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
 	Open refNum as fullpath
 	
@@ -154,7 +154,7 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	Variable dialog		//=1 will present dialog for name
 	
 	String destStr
-	destStr = "root:"+type
+	destStr = "root:Packages:NIST:"+type
 	
 	Variable refNum
 	String formatStr = "%15.4g %15.4g %15.4g\r\n"
@@ -217,7 +217,7 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
 	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+textW[9] + "\r\n"
 	
-	SVAR samFiles = $("root:"+type+":fileList")
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
 	Open refNum as fullpath
 	
@@ -289,7 +289,7 @@ Function SaveAsPNG(type,fullPath,dialog)
 	
 	print "type=",type
 	//graph the current data and save a little graph
-	Wave data =  $("root:"+type+":data")
+	Wave data =  $("root:Packages:NIST:"+type+":data")
 	Wave q_x_axis = $"root:myGlobals:q_x_axis"
 	Wave q_y_axis = $"root:myGlobals:q_y_axis"
 	Wave NIHColors = $"root:myGlobals:NIHColors"
@@ -336,7 +336,7 @@ Function Fast2dExport(type,fullpath,dialog)
 		
 	String destStr="",ave="C",typeStr=""
 	Variable step=1,refnum
-	destStr = "root:"+type
+	destStr = "root:Packages:NIST:"+type
 	
 	//must select the linear_data to export
 	// can't export log data if there are -ve intensities from a subtraction
@@ -363,7 +363,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	else
 		Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
 	endif
-	SVAR samFiles = $("root:"+type+":fileList")
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//check each wave - MUST exist, or will cause a crash
 	If(!(WaveExists(data)))
 		Abort "data DNExist AsciiExport()"
@@ -467,7 +467,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	String typeStr=""
 	Variable refnum
 	
-	destStr = "root:"+type
+	destStr = "root:Packages:NIST:"+type
 	
 	//must select the linear_data to export
 	// can't export log data if there are -ve intensities from a subtraction
@@ -642,7 +642,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	
 	String destStr="",typeStr=""
 	Variable step=1,refnum
-	destStr = "root:"+type
+	destStr = "root:Packages:NIST:"+type
 	
 	//must select the linear_data to export
 	NVAR isLog = $(destStr+":gIsLogScale")
@@ -668,7 +668,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	else
 		Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
 	endif
-	SVAR samFiles = $("root:"+type+":fileList")
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//check each wave - MUST exist, or will cause a crash
 	If(!(WaveExists(data)))
 		Abort "data DNExist QxQy_Export()"

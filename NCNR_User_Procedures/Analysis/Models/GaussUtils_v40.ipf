@@ -60,38 +60,7 @@ Structure ResSmearAAOStruct
 	String info
 EndStructure
 
-// utility used in the "PlotSmeared...() macros to get a list of data folders
-//
-//1:	Waves.
-//2:	Numeric variables.
-//3:	String variables.
-//4:	Data folders.
-Function/S GetAList(type)
-	Variable type
-	
-	SetDataFolder root:
-	
-	String objName,str=""
-	Variable index = 0
-	do
-		objName = GetIndexedObjName(":", type, index)
-		if (strlen(objName) == 0)
-			break
-		endif
-		//Print objName
-		str += objName + ";"
-		index += 1
-	while(1)
-	
-	// remove myGlobals, Packages from the folder list
-	if(type==4)
-		str = RemoveFromList("myGlobals", str , ";" )
-		str = RemoveFromList("Packages", str, ";")
-		str = RemoveFromList("AutoFit", str, ";")
-	endif
-	
-	return(str)
-End
+
 
 
 Function Make5GaussPoints(w5,z5)

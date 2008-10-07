@@ -35,7 +35,7 @@
 Function WriteVAXWorkFile(type)
 	String type
 	
-	Wave data=$("root:"+type+":data")
+	Wave data=$("root:Packages:NIST:"+type+":data")
 	
 	Variable refnum,ii=0,hdrBytes=516,a,b,offset
 	String fullpath=""
@@ -191,7 +191,7 @@ End
 Function NormalizeDIV(type)
 	String type
 	
-	WAVE data=$("root:"+type+":data")
+	WAVE data=$("root:Packages:NIST:"+type+":data")
 	Variable totCts=sum(data,Inf,-Inf)		//sum all of the data
 	
 	data /= totCts
@@ -271,8 +271,8 @@ Function ReplaceDataBlock(ctrType,offType,x1,x2,y1,y2)
 	Variable x1,x2,y1,y2
 	
 	//do it crudely, with nested for loops
-	WAVE ctrData=$("root:"+ctrtype+":data")
-	WAVE offData=$("root:"+offtype+":data")
+	WAVE ctrData=$("root:Packages:NIST:"+ctrtype+":data")
+	WAVE offData=$("root:Packages:NIST:"+offtype+":data")
 	Variable ii,jj
 	
 	for(ii=x1;ii<=x2;ii+=1)

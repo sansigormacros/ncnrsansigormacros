@@ -58,7 +58,7 @@ End
 //fname is the full path:name;vers required to open the file
 //VAX record markers are skipped as needed
 //VAX data as read in is in compressed I*2 format, and is decompressed
-//immediately after being read in. The final root:RAW:data wave is the real
+//immediately after being read in. The final root:Packages:NIST:RAW:data wave is the real
 //neutron counts and can be directly operated on
 //
 // header information is put into three waves: integersRead, realsRead, and textRead
@@ -77,20 +77,20 @@ End
 Function ReadHeaderAndData(fname)
 	String fname
 	//this function is for reading in RAW data only, so it will always put data in RAW folder
-	String curPath = "root:RAW"
+	String curPath = "root:Packages:NIST:RAW"
 	SetDataFolder curPath		//use the full path, so it will always work
 	Variable/G root:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
 	
 	Variable refNum,integer,realval
 	String sansfname,textstr
 	
-	Make/O/N=23 $"root:RAW:IntegersRead"
-	Make/O/N=52 $"root:RAW:RealsRead"
-	Make/O/T/N=11 $"root:RAW:TextRead"
+	Make/O/N=23 $"root:Packages:NIST:RAW:IntegersRead"
+	Make/O/N=52 $"root:Packages:NIST:RAW:RealsRead"
+	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
 	
-	Wave intw=$"root:RAW:IntegersRead"
-	Wave realw=$"root:RAW:RealsRead"
-	Wave/T textw=$"root:RAW:TextRead"
+	Wave intw=$"root:Packages:NIST:RAW:IntegersRead"
+	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
+	Wave/T textw=$"root:Packages:NIST:RAW:TextRead"
 	
 	//***NOTE ****
 	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
@@ -227,7 +227,7 @@ Function ReadHeaderAndData(fname)
 	// 4 R*4 values
 	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
 	Execute strToExecute
-	Wave w=$"root:RAW:tempGBWave0"
+	Wave w=$"root:Packages:NIST:RAW:tempGBWave0"
 	b=4	//num of reals read
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -333,13 +333,13 @@ Function ReadHeaderAndData(fname)
 
 	SetDataFolder curPath		//use the full path, so it will always work
 	
-	Make/O/N=16384 $"root:RAW:data"
-	WAVE data=$"root:RAW:data"
+	Make/O/N=16384 $"root:Packages:NIST:RAW:data"
+	WAVE data=$"root:Packages:NIST:RAW:data"
 	SkipAndDecompressVAX(w,data)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
 	
 	//keep a string with the filename in the RAW folder
-	String/G root:RAW:fileList = textw[0]
+	String/G root:Packages:NIST:RAW:fileList = textw[0]
 	
 	//set the globals to the detector dimensions (pixels)
 	Variable/G root:myGlobals:gNPixelsX=128		//default for Ordela data (also set in Initialize/NCNR_Utils.ipf)
@@ -349,7 +349,7 @@ Function ReadHeaderAndData(fname)
 //		Variable/G root:myGlobals:gNPixelsY=64
 //	endif
 	
-	//clean up - get rid of w = $"root:RAW:tempGBWave0"
+	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
 	KillWaves/Z w
 	
 	//return the data folder to root
@@ -427,7 +427,7 @@ End
 //****************
 //main entry procedure for reading a "WORK.DIV" file
 //displays a quick image of the  file, to check that it's correct
-//data is deposited in root:DIV data folder
+//data is deposited in root:Packages:NIST:DIV data folder
 //
 // local, currently unused
 //
@@ -438,13 +438,13 @@ Proc ReadWork_DIV()
 	String fname = PromptForPath("Select detector sensitivity file")
 	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
 	
-	String waveStr = "root:DIV:data"
+	String waveStr = "root:Packages:NIST:DIV:data"
 	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
 	ModifyImage '' ctab= {*,*,YellowHot,0}
 	//Display;AppendImage $waveStr
 	
 	//change the title string to WORK.DIV, rather than PLEXnnn_TST_asdfa garbage
-	String/G root:DIV:fileList = "WORK.DIV"
+	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
 	
 	SetDataFolder root:		//(redundant)
 //	Silent 0
@@ -473,7 +473,7 @@ Function ReadHeaderAndWork(type,fname)
 
 //	SVAR cur_folder=root:myGlobals:gDataDisplayType
 	String cur_folder = type
-	String curPath = "root:"+cur_folder
+	String curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
 	Variable refNum,integer,realval
@@ -727,7 +727,7 @@ Function ReadHeaderAndWork(type,fname)
 	//read in the data
 	 GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 
-	curPath = "root:"+cur_folder
+	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
 	Make/O/N=16384 $(curPath + ":data")
@@ -827,7 +827,7 @@ End
 Function ReadASCData(fname,destPath)
 	String fname, destPath
 	//this function is for reading in ASCII data so put data in user-specified folder
-	SetDataFolder "root:"+destPath
+	SetDataFolder "root:Packages:NIST:"+destPath
 
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -889,17 +889,17 @@ End
 //
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
-	Make/O/N=23 $("root:"+destFolder+":IntegersRead")
-	Make/O/N=52 $("root:"+destFolder+":RealsRead")
-	Make/O/T/N=11 $("root:"+destFolder+":TextRead")
+	Make/O/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
+	Make/O/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
+	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
 	
-	Wave intw=$("root:"+destFolder+":IntegersRead")
-	Wave realw=$("root:"+destFolder+":RealsRead")
-	Wave/T textw=$("root:"+destFolder+":TextRead")
+	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")
+	Wave realw=$("root:Packages:NIST:"+destFolder+":RealsRead")
+	Wave/T textw=$("root:Packages:NIST:"+destFolder+":TextRead")
 	
 	//Put in appropriate "fake" values
 	//parse values as needed from headerLines
-	Wave/T hdr=$("root:"+destFolder+":hdrLines")
+	Wave/T hdr=$("root:Packages:NIST:"+destFolder+":hdrLines")
 	Variable monCt,lam,offset,sdd,trans,thick
 	Variable xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam
 	String detTyp=""
@@ -950,7 +950,7 @@ Function FillFakeHeader_ASC(destFolder)
 	sscanf hdr[0],formatStr,tempStr,junkStr
 //	Print tempStr
 //	Print junkStr
-	String/G $("root:"+destFolder+":fileList") = tempStr
+	String/G $("root:Packages:NIST:"+destFolder+":fileList") = tempStr
 	textw[0] = tempStr		//filename
 	textw[1] = junkStr		//run date-time
 	

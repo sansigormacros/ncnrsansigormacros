@@ -26,7 +26,11 @@
 #include "NSORT"					version>=5.0
 #include "PatchFiles"			version>=5.0
 //#include "PlotUtils"			version>=5.0
-#include "PlotUtilsMacro_v40"		version>=4.0
+//AJJ October 2008 - switch to shared file loader
+#include "PlotUtilsMacro_v40"
+#include "NIST_XML_v40"
+#include "USANS_SlitSmearing_v40"
+//
 #include "ProDiv"				version>=5.0
 #include "ProtocolAsPanel"		version>=5.0
 //#include "RawDataReader"		version>=5.0 			//branched 29MAR07
@@ -53,6 +57,10 @@
 #include "CheckVersionFTP"				//added June 2008
 
 #include "TISANE"
+
+
+//AJJ Oct 2008
+#include "PlotManager_v40"
 
 // to include the analysis packages, uncomment the following
 // include statement and click "compile" at the bottom of this window.

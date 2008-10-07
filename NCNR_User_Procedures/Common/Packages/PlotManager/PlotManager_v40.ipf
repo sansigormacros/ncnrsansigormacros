@@ -69,7 +69,17 @@ End
 //uses the same data folder listing as the wrapper
 // if it's right there, it's right here
 Function/S A_OneDDataInMemory()
-	String list = W_DataSetPopupList()
+	//AJJ Oct 2008
+	//To make this general for both analysis and reduction this code must be a duplicate 
+	//W_DataPopupList rather than a call to it as IGOR doesn't like assignment to function 
+	//that doesn't exists even if you've done a if(exists... to check first.
+	//Grrr
+	String list = GetAList(4)
+	if (strlen(list) == 0)
+		list = "No data loaded"
+	endif
+	list = SortList(list)
+	
 	return(list)
 end
 

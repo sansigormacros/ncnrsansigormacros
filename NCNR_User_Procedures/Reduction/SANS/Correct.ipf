@@ -87,8 +87,8 @@ Function Correct(mode)
 	
 	//check for trans==1
 	NVAR doCheck=root:myGlobals:gDoTransCheck
-	Wave/Z samR=root:SAM:RealsRead
-	Wave/Z empR=root:EMP:RealsRead
+	Wave/Z samR=root:Packages:NIST:SAM:RealsRead
+	Wave/Z empR=root:Packages:NIST:EMP:RealsRead
 	if(doCheck)
 		trans = samR[4]
 		newTrans=GetNewTrans(trans,"SAM")		//will change value if necessary
@@ -236,20 +236,20 @@ End
 Function CorrectMode_1()
 	
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE bgd_data=$"root:BGD:data"
-	WAVE bgd_reals=$"root:BGD:realsread"
-	WAVE bgd_ints=$"root:BGD:integersread"
-	WAVE/T bgd_text=$"root:BGD:textread"
-	WAVE emp_data=$"root:EMP:data"
-	WAVE emp_reals=$"root:EMP:realsread"
-	WAVE emp_ints=$"root:EMP:integersread"
-	WAVE/T emp_text=$"root:EMP:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"rootPackages:NIST::SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
+	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
+	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
+	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
+	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
+	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -337,16 +337,16 @@ End
 Function CorrectMode_2()
 
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE bgd_data=$"root:BGD:data"
-	WAVE bgd_reals=$"root:BGD:realsread"
-	WAVE bgd_ints=$"root:BGD:integersread"
-	WAVE/T bgd_text=$"root:BGD:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
+	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
+	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -413,16 +413,16 @@ End
 //
 Function CorrectMode_3()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE emp_data=$"root:EMP:data"
-	WAVE emp_reals=$"root:EMP:realsread"
-	WAVE emp_ints=$"root:EMP:integersread"
-	WAVE/T emp_text=$"root:EMP:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
+	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
+	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -495,13 +495,13 @@ End
 //
 Function CorrectMode_4()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
 
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -530,24 +530,24 @@ End
 
 Function CorrectMode_11()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE bgd_data=$"root:BGD:data"
-	WAVE bgd_reals=$"root:BGD:realsread"
-	WAVE bgd_ints=$"root:BGD:integersread"
-	WAVE/T bgd_text=$"root:BGD:textread"
-	WAVE emp_data=$"root:EMP:data"
-	WAVE emp_reals=$"root:EMP:realsread"
-	WAVE emp_ints=$"root:EMP:integersread"
-	WAVE/T emp_text=$"root:EMP:textread"
-	WAVE drk_data=$"root:DRK:data"
-	WAVE drk_reals=$"root:DRK:realsread"
-	WAVE drk_ints=$"root:DRK:integersread"
-	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
+	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
+	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
+	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
+	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
+	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
+	WAVE drk_data=$"root:Packages:NIST:DRK:data"
+	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
+	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
+	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -642,20 +642,20 @@ End
 //
 Function CorrectMode_12()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE bgd_data=$"root:BGD:data"
-	WAVE bgd_reals=$"root:BGD:realsread"
-	WAVE bgd_ints=$"root:BGD:integersread"
-	WAVE/T bgd_text=$"root:BGD:textread"
-	WAVE drk_data=$"root:DRK:data"
-	WAVE drk_reals=$"root:DRK:realsread"
-	WAVE drk_ints=$"root:DRK:integersread"
-	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
+	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
+	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
+	WAVE drk_data=$"root:Packages:NIST:DRK:data"
+	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
+	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
+	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -728,20 +728,20 @@ End
 //to place the DRK file on equal footing
 Function CorrectMode_13()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
-	WAVE emp_data=$"root:EMP:data"
-	WAVE emp_reals=$"root:EMP:realsread"
-	WAVE emp_ints=$"root:EMP:integersread"
-	WAVE/T emp_text=$"root:EMP:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
+	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
+	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
+	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
 	WAVE drk_data=$"root:DRK:data"
 	WAVE drk_reals=$"root:DRK:realsread"
 	WAVE drk_ints=$"root:DRK:integersread"
 	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors (DRK irrelevant)
 	String fileStr=""
@@ -819,17 +819,17 @@ End
 //
 Function CorrectMode_14()
 	//create the necessary wave references
-	WAVE sam_data=$"root:SAM:data"
-	WAVE sam_reals=$"root:SAM:realsread"
-	WAVE sam_ints=$"root:SAM:integersread"
-	WAVE/T sam_text=$"root:SAM:textread"
+	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
 
 	WAVE drk_data=$"root:DRK:data"
 	WAVE drk_reals=$"root:DRK:realsread"
 	WAVE drk_ints=$"root:DRK:integersread"
 	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:COR:data"
-	WAVE/T cor_text=$"root:COR:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -932,7 +932,7 @@ Function WorkDataExists(type)
 	String type
 	
 	String destPath=""
-	destPath =  "root:"+Type + ":data"
+	destPath =  "root:Packages:NIST:"+Type + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in "+type
 		Return(1)		//error condition
@@ -1063,48 +1063,48 @@ Function OLD_Correct(mode)
 	String destPath
 	String type = "SAM"
 	//check for SAM
-	destPath = "root:"+Type + ":data"
+	destPath = "root:Packages:NIST:"+Type + ":data"
 	if(WaveExists($destpath) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	else
 		//check for log-scaling of the "SAM" data and adjust if necessary
 		ConvertFolderToLinearScale(type)
-		Wave sam_data = $"root:SAM:data"
+		Wave sam_data = $"root:Packages:NIST:SAM:data"
 	Endif
 	
 	//check for BGD if mode = 1 or 2 or 11 or 12
 	if( (mode ==1) || (mode==2) || (mode==11) || (mode==12) )
 		type = "BGD"
-		destPath =  "root:"+Type + ":data"
+		destPath =  "root:Packages:NIST:"+Type + ":data"
 		if(WaveExists($destpath) == 0)
 			Print "There is no work file in "+type+"--Aborting"
 			Return(1)		//error condition
 		else
 			//check for log-scaling of the "BGD" data and adjust if necessary
 			ConvertFolderToLinearScale(type)
-			Wave bgd_data = $"root:BGD:data"
+			Wave bgd_data = $"root:Packages:NIST:BGD:data"
 		Endif
 	Endif
 	
 	// check for EMP data if type 3 or 1 or 13 or 11
 	if( (mode==1) || (mode==3) || (mode==11) || (mode==13) )
 		type = "EMP"
-		destPath =  "root:"+Type + ":data"
+		destPath =  "root:Packages:NIST:"+Type + ":data"
 		if(WaveExists($destpath) == 0)
 			Print "There is no work file in "+type+"--Aborting"
 			Return(1)		//error condition
 		else
 			//check for log-scaling of the "EMP" data and adjust if necessary
 			ConvertFolderToLinearScale(type)
-			Wave emp_data = $"root:EMP:data"
+			Wave emp_data = $"root:Packages:NIST:EMP:data"
 		Endif
 	Endif
 	
 	// check for DRK data if type 11,12,13, or 14
 	if( (mode==11) || (mode==12) || (mode==13) || (mode==14) )
 		type = "DRK"
-		destPath =  "root:"+Type + ":data"
+		destPath =  "root:Packages:NIST:"+Type + ":data"
 		if(WaveExists($destpath) == 0)
 			Print "There is no work file in "+type+"--Aborting"
 			Return(1)		//error condition
@@ -1119,15 +1119,15 @@ Function OLD_Correct(mode)
 
 	//make needed wave references to other folders
 	//NOTE that these references MAY NOT EXIST, depending on the mode
-	WAVE sam_reals = $"root:SAM:realsread"
-	WAVE sam_ints = $"root:SAM:integersread"
-	WAVE/T sam_text = $"root:SAM:textread"
-	WAVE/Z emp_reals = $"root:EMP:realsread"
-	WAVE/Z emp_ints = $"root:EMP:integersread"
-	WAVE/T/Z emp_text = $"root:EMP:textread"
-	WAVE/Z bgd_reals = $"root:BGD:realsread"
-	WAVE/Z bgd_ints = $"root:BGD:integersread"
-	WAVE/T/Z bgd_text = $"root:BGD:textread"
+	WAVE sam_reals = $"root:Packages:NIST:SAM:realsread"
+	WAVE sam_ints = $"root:Packages:NIST:SAM:integersread"
+	WAVE/T sam_text = $"root:Packages:NIST:SAM:textread"
+	WAVE/Z emp_reals = $"root:Packages:NIST:EMP:realsread"
+	WAVE/Z emp_ints = $"root:Packages:NIST:EMP:integersread"
+	WAVE/T/Z emp_text = $"root:Packages:NIST:EMP:textread"
+	WAVE/Z bgd_reals = $"root:Packages:NIST:BGD:realsread"
+	WAVE/Z bgd_ints = $"root:Packages:NIST:BGD:integersread"
+	WAVE/T/Z bgd_text = $"root:Packages:NIST:BGD:textread"
 	
 	//find the attenuation of the sample (if any)
 	Variable SamAttenFactor,lambda,attenNo,err=0
@@ -1146,7 +1146,7 @@ Function OLD_Correct(mode)
 	endif
 	
 	//now switch to COR folder
-	DestPath="root:COR"
+	DestPath="root:Packages:NIST:COR"
 	//make appropriate wave references
 	WAVE data=$(destPath + ":data")					// these wave references point to the SAM data in COR
 	WAVE/T textread=$(destPath + ":textread")			//that are to be directly operated on
@@ -1168,9 +1168,9 @@ Function OLD_Correct(mode)
 	cor2 = 0
 	
 	//make needed wave references to other folders
-	Wave sam_reals = $"root:SAM:realsread"
-	Wave bgd_reals = $"root:BGD:realsread"
-	Wave emp_reals = $"root:EMP:realsread"
+	Wave sam_reals = $"root:Packages:NIST:SAM:realsread"
+	Wave bgd_reals = $"root:Packages:NIST:BGD:realsread"
+	Wave emp_reals = $"root:Packages:NIST:EMP:realsread"
 	
 	//get counts, trans, etc. from file headers
 	numsam = sam_ints[3]		//number of runs in SAM file
@@ -1378,7 +1378,7 @@ Function OLD_Correct(mode)
 	textread[1] = date() + " " + time()		//date + time stamp
 	
 	//clean up
-	SetDataFolder root:COR
+	SetDataFolder root:Packages:NIST:COR
 	SetDataFolder root:
 	KillWaves/Z cor1,cor2,noadd
 

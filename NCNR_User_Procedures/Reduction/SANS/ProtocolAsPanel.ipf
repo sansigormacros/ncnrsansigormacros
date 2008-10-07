@@ -1374,7 +1374,7 @@ Function AreFilesThere(type,reqFiles)
 	//get the name of the file currently in BGD - in the global fileList
 	//fileList has NAMES ONLY - since it was derived from the file header
 	String testStr
-	testStr = "root:"+type+":fileList"
+	testStr = "root:Packages:NIST:"+type+":fileList"
 	if(Exists(testStr) == 2)		//2 if string variable exists
 		SVAR curFiles = $testStr
 	else
@@ -1615,8 +1615,8 @@ Function ExecuteProtocol(protStr,samStr)
 		Endif
 		If(cmpstr(prot[1],"none") == 0)
 			//clean out the EMP folder?
-			//KillDataFolder root:EMP
-			//NewDataFolder/O root:EMP
+			//KillDataFolder root:Packages:NIST:EMP
+			//NewDataFolder/O root:Packages:NIST:EMP
 			break
 		Endif
 		//if not "ask" AND not "none" then try to parse the filenames
@@ -1749,7 +1749,7 @@ Function ExecuteProtocol(protStr,samStr)
 			c5 = NumberByKey("XSECT", prot[4], "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
-		String destStr = "root:"+activeType+":realsread"
+		String destStr = "root:Packages:NIST:"+activeType+":realsread"
 		Wave dest = $destStr
 		Variable c0 = dest[4]		//sample transmission
 		Variable c1 = dest[5]		//sample thickness
@@ -1776,8 +1776,8 @@ Function ExecuteProtocol(protStr,samStr)
 				//make a "null" mask 
 				//if none desired, make sure that the old mask is deleted
 				//junkStr = GetDataFolder(1)
-				//SetDataFolder root:MSK
-				KillWaves/Z root:MSK:data
+				//SetDataFolder root:Packages:NIST:MSK
+				KillWaves/Z root:Packages:NIST:MSK:data
 				//SetDataFolder junkStr
 				DoAlert 0,"No Mask file selected, data not masked"
 			else
@@ -1793,8 +1793,8 @@ Function ExecuteProtocol(protStr,samStr)
 	else
 		//if none desired, make sure that the old mask is deleted
 		//junkStr = GetDataFolder(1)
-		//SetDataFolder root:MSK
-		KillWaves/Z root:MSK:data
+		//SetDataFolder root:Packages:NIST:MSK
+		KillWaves/Z root:Packages:NIST:MSK:data
 		//SetDataFolder junkStr
 	Endif
 	
@@ -1862,7 +1862,7 @@ Function ExecuteProtocol(protStr,samStr)
 	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
 		//get name from textwave of the activeType dataset
-		String textStr = "root:"+activeType+":textread"
+		String textStr = "root:Packages:NIST:"+activeType+":textread"
 		Wave/T textPath = $textStr
 		If(WaveExists(textPath) == 1)
 			newFileName = UpperStr(GetNameFromHeader(textPath[0]))
@@ -1993,9 +1993,9 @@ Function AskForAbsoluteParams_Quest()
 			Abort "reduction sequence aborted"
 		endif
 			
-		Wave/T tw=$"root:RAW:TextRead"
-		Wave rw=$"root:RAW:RealsRead"
-		Wave iw=$"root:RAW:IntegersRead"
+		Wave/T tw=$"root:Packages:NIST:RAW:TextRead"
+		Wave rw=$"root:Packages:NIST:RAW:RealsRead"
+		Wave iw=$"root:Packages:NIST:RAW:IntegersRead"
 		String acctStr = tw[3]
 		//NG5 attenuator transmission is assumed to be the same as the table for NG7
 			
@@ -2050,7 +2050,7 @@ Function AskForAbsoluteParams_Quest()
 		
 		//need the detector sensitivity file - make a guess, allow to override
 		String junkStr=""
-		if(! waveexists($"root:DIV:data"))
+		if(! waveexists($"root:Packages:NIST:DIV:data"))
 			 junkStr = PromptForPath("Select the detector sensitivity file")
 			If(strlen(junkStr)==0 || CheckIfRawData(junkStr))		//raw check==1 if RAW, DIV is not
 				SetDataFolder root:
@@ -2063,13 +2063,13 @@ Function AskForAbsoluteParams_Quest()
 		if(V_Flag==1)
 			Log_Lin("bisLog")	
 		endif	
-		Wave divData = $"root:div:Data"
-		Wave data = $"root:raw:data"		//this will be the linear data
+		Wave divData = $"root:Packages:NIST:div:Data"
+		Wave data = $"root:Packages:NIST:raw:data"		//this will be the linear data
 		// correct by detector sensitivity
 		data /= divData
 		
 		// now do the sum, only in the box	
-//		detCnt = sum($"root:raw:data", -inf, inf )
+//		detCnt = sum($"root:Packages:NIST:raw:data", -inf, inf )
 //		Print "box is now ",x1,x2,y1,y2
 		detCnt = SumCountsInBox(x1,x2,y1,y2,"RAW")
 		//		

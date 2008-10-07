@@ -45,7 +45,7 @@ Function StatusButton(ctrlName) : ButtonControl
 	
 	//get the current displayed data (so the correct folder is used)
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	String cur = "root:"+cur_folder
+	String cur = "root:Packages:NIST:"+cur_folder
 	
 	WAVE reals=$(cur + ":realsread")
 	WAVE ints = $(cur + ":integersRead")
@@ -92,7 +92,7 @@ Function FakeUpdate()
 
 	//get the current displayed data (so the correct folder is used)
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	SetDataFolder "root:"+cur_folder		//use the full path, so it will always work
+	SetDataFolder "root:Packages:NIST:"+cur_folder		//use the full path, so it will always work
 	WAVE data = $"data"
 //	WAVE vlegend = $"vlegend"
 	
@@ -209,7 +209,7 @@ Function LoadPlotAndDisplayRAW(increment)
 	Variable increment
 
 	//take the currently displayed RAW file (there is only one name in fileList)
-	SVAR oldName = root:RAW:fileList
+	SVAR oldName = root:Packages:NIST:RAW:fileList
 	
 	//get the run number
 	Variable num = GetRunNumFromFile(oldName)
@@ -250,7 +250,7 @@ Proc maskButtonProc(ctrlName) : ButtonControl
 		return
 	endif
 	
-	CheckDisplayed/W=SANS_Data root:MSK:overlay
+	CheckDisplayed/W=SANS_Data root:Packages:NIST:MSK:overlay
 	if(V_flag==1)		//the overlay is present
 		Button $ctrlName,title="Show Mask",win=SANS_Data
 		OverlayMask(0)		//hide the mask

@@ -736,8 +736,8 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:SAM:textRead"
-						WAVE samReals = $"root:SAM:realsRead"
+						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
+						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]
@@ -845,8 +845,8 @@ Function CalcTotalTrans(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:SAM:textRead"
-						WAVE samReals = $"root:SAM:realsRead"
+						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
+						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]
@@ -959,8 +959,8 @@ Function CalcWholeTrans(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:SAM:textRead"
-						WAVE samReals = $"root:SAM:realsRead"
+						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
+						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]

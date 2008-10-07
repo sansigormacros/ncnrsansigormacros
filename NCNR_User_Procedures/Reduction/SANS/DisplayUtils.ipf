@@ -22,7 +22,7 @@ Proc Plot3DSurface(type)
 	
 	//macro will take whatever is in "type" folder
 	//check the contents of "type" to make sure that data exists
-	String wavePath = "root:"+type+":data"
+	String wavePath = "root:Packages:NIST:"+type+":data"
 	if(WaveExists($wavePath) == 0)
 		String errString="There is no data in "+type
 		Abort errString
@@ -173,7 +173,7 @@ Proc QuickViewFile(type)
 		Print "file option currently not operational"
 	else
 		//check the contents of "type" to make sure that data exists
-		String wavePath = "root:"+type+":data"
+		String wavePath = "root:Packages:NIST:"+type+":data"
 		if(WaveExists($wavePath) == 0)
 			String errString="There is no data in "+type
 			Abort errString
@@ -202,7 +202,7 @@ Proc ChangeDisplay(type)
 	//and set it to the current display
 	
 	//check the contents of "type" to make sure that data exists
-	String wavePath = "root:"+type+":data"
+	String wavePath = "root:Packages:NIST:"+type+":data"
 	if(WaveExists($wavePath) == 0)
 		Abort "There is no data in "+type
 	Endif
@@ -223,7 +223,7 @@ End
 Function ConvertFolderToLinearScale(folder)
 	String folder	
 	
-	String dest = "root:"+folder
+	String dest = "root:Packages:NIST:"+folder
 	NVAR isLogscale = $(dest + ":gIsLogScale")
 	If(!isLogScale)
 		Return(0)
@@ -261,7 +261,7 @@ End
 Function ConvertFolderToLogScale(folder)
 	String folder	
 	
-	String dest = "root:"+folder
+	String dest = "root:Packages:NIST:"+folder
 	NVAR isLogscale = $(dest + ":gIsLogScale")
 //	Print "ConvertFolderToLogScale() -- ",dest," has gIsLogscale = ",isLogScale
 	If(isLogScale)

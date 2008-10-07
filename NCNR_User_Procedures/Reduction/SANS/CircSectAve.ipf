@@ -39,7 +39,7 @@ Function CircularAverageTo1D(type)
 	
 	//type is the data type to do the averaging on, and will be set as the current folder
 	//get the current displayed data (so the correct folder is used)
-	String destPath = "root:"+type
+	String destPath = "root:Packages:NIST:"+type
 	
 	//
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist,dr,ddr
@@ -92,13 +92,13 @@ Function CircularAverageTo1D(type)
 	WAVE data=$(destPath + ":data")
 	//Check for the existence of the mask, if not, make one (local to this folder) that is null
 	
-	if(WaveExists($"root:MSK:data") == 0)
+	if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
 		Print "There is no mask file loaded (WaveExists)- the data is not masked"
 		Make/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
 		Wave mask = $(destPath + ":mask")
 		mask = 0
 	else
-		Wave mask=$"root:MSK:data"
+		Wave mask=$"root:Packages:NIST:MSK:data"
 	Endif
 	
 	//
@@ -451,8 +451,8 @@ Function Ave_button(button0) : ButtonControl
 	SVAR type=root:myGlobals:gDataDisplayType
 	
 	//Check for logscale data in "type" folder
-	SetDataFolder "root:"+type		//use the full path, so it will always work
-	String dest = "root:" + type
+	SetDataFolder "root:Packages:NIST:"+type		//use the full path, so it will always work
+	String dest = "root:Packages:NIST:" + type
 	
 	NVAR isLogScale = $(dest + ":gIsLogScale")
 	if(isLogScale == 1)

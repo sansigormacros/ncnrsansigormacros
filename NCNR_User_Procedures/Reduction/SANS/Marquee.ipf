@@ -31,7 +31,7 @@ Function SumCountsInBox(x1,x2,y1,y2,type)
 	
 	Variable counts = 0,ii,jj
 	
-	String dest =  "root:"+type
+	String dest =  "root:Packages:NIST:"+type
 	
 	//check for logscale data, but don't change the data
 	NVAR gIsLogScale = $(dest + ":gIsLogScale")
@@ -120,7 +120,7 @@ Function SetXYBoxCoords() :  GraphMarquee
 	
 	//now change the extra variables in the empty beam file
 	//get the filename from the SAM folder (there will only be one file)
-	SVAR partialName = root:SAM:FileList
+	SVAR partialName = root:Packages:NIST:SAM:FileList
 	//construct valid filename, then prepend path
 	String tempName = FindValidFilename(partialName)
 	Print "in marquee",partialName
@@ -157,7 +157,7 @@ Function FindBeamCenter() :  GraphMarquee
 
 	//get the current displayed data (so the correct folder is used)
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	String dest = "root:" + cur_folder
+	String dest = "root:Packages:NIST:" + cur_folder
 	
 	Variable xzsum,yzsum,zsum,xctr,yctr
 	Variable left,right,bottom,top,ii,jj,counts
@@ -454,7 +454,7 @@ Function SANS_Histogram() :  GraphMarquee
 		vsX=0		//sum and graph vs Y
 	endif
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	WAVE data=$("root:"+cur_folder+":data")		//don't care if it's log or linear scale
+	WAVE data=$("root:Packages:NIST:"+cur_folder+":data")		//don't care if it's log or linear scale
 	Make/O/N=(max(xwidth,ywidth)+1) Position,AvgCounts
 	AvgCounts=0
 	//set position wave 

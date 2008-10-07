@@ -49,7 +49,7 @@ Function RectangularAverageTo1D(type)
 	
 	//type is the data type to do the averaging on, and will be set as the current folder
 	//get the current displayed data (so the correct folder is used)
-	String destPath = "root:"+type
+	String destPath = "root:Packages:NIST:"+type
 	//
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist,dr,ddr
 	Variable lambda,trans
@@ -105,13 +105,13 @@ Function RectangularAverageTo1D(type)
 	Wave data=$(destPath + ":data")
 	//Check for the existence of the mask, if not, make one (local to this folder) that is null
 	
-	if(WaveExists($"root:MSK:data") == 0)
+	if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
 		Print "There is no mask file loaded (WaveExists)- the data is not masked"
 		Make/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
 		WAVE mask = $(destPath + ":mask")
 		mask = 0
 	else
-		Wave mask=$"root:MSK:data"
+		Wave mask=$"root:Packages:NIST:MSK:data"
 	Endif
 	
 	rcentr = 100		//pixels within rcentr of beam center are broken into 9 parts
@@ -458,7 +458,7 @@ Function AnnularAverageTo1D(type)
 	
 	//type is the data type to do the averaging on, and will be set as the current folder
 	//get the current displayed data (so the correct folder is used)
-	String destPath = "root:"+type
+	String destPath = "root:Packages:NIST:"+type
 	
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist
 	Variable rcentr,large_num,small_num,dtdis2,nq,xoffst,xbm,ybm,ii
@@ -503,13 +503,13 @@ Function AnnularAverageTo1D(type)
 	Wave data=$(destPath + ":data")
 	//Check for the existence of the mask, if not, make one (local to this folder) that is null
 	
-	if(WaveExists($"root:MSK:data") == 0)
+	if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
 		Print "There is no mask file loaded (WaveExists)- the data is not masked"
 		Make/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
 		WAVE mask = $(destPath + ":mask")
 		mask = 0
 	else
-		Wave mask=$"root:MSK:data"
+		Wave mask=$"root:Packages:NIST:MSK:data"
 	Endif
 	
 	rcentr = 150		//pixels within rcentr of beam center are broken into 9 parts
