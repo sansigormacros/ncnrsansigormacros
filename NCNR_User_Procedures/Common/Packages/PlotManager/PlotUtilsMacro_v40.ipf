@@ -94,9 +94,11 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 		//Load the waves, using default waveX names
 		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 		LoadWave/G/D/A/Q fileStr
-		//String fileName = S_fileName
-		String basestr = ParseFilePath(3,ParseFilePath(5,S_Path,":",0,0),":",0,0)
+		String fileNamePath = S_Path+S_fileName
+		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
+		print "basestr :"+basestr
 		String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
+		print "filename :"+filename
 		Variable numCols = V_flag
 		
 		if(numCols==3)		//simple 3-column data with no resolution information

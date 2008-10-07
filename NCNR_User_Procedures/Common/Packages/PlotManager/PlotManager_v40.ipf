@@ -192,7 +192,7 @@ Proc A_PlotManager_Kill(ctrlName) : ButtonControl
 	SetDataFolder DF
 	KillVariables/A			//removes the dependent variables
 	SetDataFolder savDF
-	
+		
 	//now kill the data folder
 	KillDataFolder/Z $DF
 	ControlUpdate popup0		//refresh the popup, very important if last item removed
@@ -292,6 +292,8 @@ Function A_OneDLoader_LoadButton(ctrlName) : ButtonControl
 		endif
 		ii+=1
 	while(ii<num)
+
+	ControlUpdate/W=Plot_Manager popup0
 
 	return(0)
 End

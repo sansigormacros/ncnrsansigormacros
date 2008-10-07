@@ -159,7 +159,7 @@ function/S getXMLDataSetTitle(xmlDF)
 	print mdstring
 
 	Wave/T meta = $mdstring
-	FindValue/TEXT="Title"/TXOP=4/Z meta
+	FindValue/TEXT="Run"/TXOP=4/Z meta
 
 	String title = meta[V_Value][1]
 	

@@ -30,6 +30,7 @@
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
 #include "USANS_SlitSmearing_v40"
+#include "GaussUtils_v40" // for isSANSResolution - could put this function elsewhere
 //
 #include "ProDiv"				version>=5.0
 #include "ProtocolAsPanel"		version>=5.0
