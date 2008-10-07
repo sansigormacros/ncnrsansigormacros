@@ -77,9 +77,9 @@ End
 Function ReadHeaderAndData(fname)
 	String fname
 	//this function is for reading in RAW data only, so it will always put data in RAW folder
-	String curPath = "root:Packages:NIST:RAW"
+	String curPath = "root:Packages:NIST:RAW:"
 	SetDataFolder curPath		//use the full path, so it will always work
-	Variable/G root:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
+	Variable/G root:Packages:NIST:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
 	
 	Variable refNum,integer,realval
 	String sansfname,textstr
