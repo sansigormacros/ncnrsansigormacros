@@ -69,13 +69,13 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	String w3,w4,w5,n3,n4,n5			//3 extra waves to load
 	SetDataFolder root:		//build sub-folders for each data set under root
 	
-	if (exists("root:Packages:NIST:USANS:Globals:MainPanel:gDQv"))
+	if (exists("root:Packages:NIST:USANS:Globals:MainPanel:dQv"))
 		//Running from USANS reduction
-		Variable dQv = root:Packages:NIST:USANS:Globals:MainPanel:gDQv
+		Variable dQv = root:Packages:NIST:USANS:Globals:MainPanel:dQv
 	endif
-	if(exists("root:Packages:NIST:USANS_gDQv"))
+	if(exists("root:Packages:NIST:USANS_dQv"))
 		//Running from SANS Analysis
-		Variable dQv = root:Packages:NIST:USANS_gDQv
+		Variable dQv = root:Packages:NIST:USANS_dQv
 	endif
 		
 	if (cmpStr(fileStr,"") == 0)
@@ -95,10 +95,11 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 		LoadWave/G/D/A/Q fileStr
 		String fileNamePath = S_Path+S_fileName
-		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
-		print "basestr :"+basestr
+//		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
+		String baseStr = CleanupName(S_fileName,0)
+//		print "basestr :"+basestr
 		String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
-		print "filename :"+filename
+//		print "filename :"+filename
 		Variable numCols = V_flag
 		
 		if(numCols==3)		//simple 3-column data with no resolution information

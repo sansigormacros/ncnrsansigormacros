@@ -676,6 +676,9 @@ Function CheckFunctionAndCoef(funcStr,coefStr)
 	
 	SVAR listStr=root:Packages:NIST:coefKWStr
 	String properCoefStr = StringByKey(funcStr, listStr  ,"=",";",0)
+	if(cmpstr("",properCoefStr)==0)
+		return(0)		//false, no match found, so properCoefStr is returned null
+	endif
 	if(cmpstr(coefStr,properCoefStr)==0)
 		return(1)		//true, the coef is the correct match
 	endif
@@ -794,6 +797,8 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 // don't use the auto-destination with no flag, it doesn't appear to work correctly
 // dispatch the fit
 	do
+//		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
+		
 		if(useRes && useEps && useCursors && useConstr)		//do it all
 			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs
 			break
@@ -890,6 +895,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /D=fitYw
 	
 	while(0)
+	
+//	t0 = (stopMSTimer(-2) - t0)*1e-6
+//	Printf  "fit time = %g seconds\r\r",t0
 	
 	// append the fit
 	// need to manage duplicate copies
