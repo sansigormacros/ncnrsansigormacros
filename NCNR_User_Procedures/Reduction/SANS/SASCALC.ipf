@@ -310,7 +310,7 @@ Window SASCALC_Panel()
 	Button FreezeButton title="Freeze",size={60,20},pos={307,166}
 	Button FreezeButton proc=FreezeButtonProc
 	Button ClearButton title="Clear",size={60,20},pos={377,166}
-	Button ClearButton proc=ClearButtonProc
+	Button ClearButton proc=S_ClearButtonProc
 	GroupBox group0,pos={6,1},size={108,36},title="Instrument"
 	SetDataFolder fldrSav0
 	
@@ -603,7 +603,7 @@ Proc DoTest(nCts)
 	
 	root:Packages:NIST:SAS:linear_data = root:sim_lin
 	
-	S_CircularAverageTo1D("Packages:NIST:SAS")
+	S_CircularAverageTo1D("SAS")
 	
 	//multiply by sphere FF (S_SphereForm(scale,radius,delrho,bkg,x))
 	// or Debye Function S_Debye(scale,rg,bkg,x)
@@ -632,7 +632,7 @@ Function ReCalculateInten(doIt)
 	// recalculated, or the text displayed, the right BS must be present
 	beamstopDiam()
 	
-	S_CircularAverageTo1D("Packages:NIST:SAS")
+	S_CircularAverageTo1D("SAS")
 	WAVE aveint=root:Packages:NIST:SAS:aveint
 	WAVE qval=root:Packages:NIST:SAS:qval
 	WAVE fSubS=root:Packages:NIST:SAS:fSubS
@@ -727,7 +727,7 @@ End
 
 //clears the frozen traces on the graph, asks if you want to clear the saved text
 //
-Function ClearButtonProc(ctrlName) : ButtonControl
+Function S_ClearButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	NVAR ct=root:Packages:NIST:SAS:gFreezeCount
