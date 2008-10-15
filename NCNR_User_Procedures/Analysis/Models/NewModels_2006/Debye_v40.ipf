@@ -96,6 +96,10 @@ Function fDebye(w,x) : FitFunc
 	// calculates (scale*debye)+bkg
 	Variable Pq,qr2
 	
+	if(x*Rg < 1e-3)		//added Oct 2008 to avoid numerical errors at low arg values
+		return(scale+bkg)
+	endif
+	
 	qr2=(x*rg)^2
 	Pq = 2*(exp(-(qr2))-1+qr2)/qr2^2
 	

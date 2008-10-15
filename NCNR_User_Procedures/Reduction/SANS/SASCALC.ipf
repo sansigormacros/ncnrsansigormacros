@@ -72,7 +72,7 @@ Proc S_initialize_space()
 	Make/O/T/N=11 root:Packages:NIST:SAS:textRead
 	// data
 	Make/O/D/N=(128,128) root:Packages:NIST:SAS:data,root:Packages:NIST:SAS:linear_data
-	Make/O/D/N=2 root:Packages:NIST:SAS:aveint,root:Packages:NIST:SAS:qval
+	Make/O/D/N=2 root:Packages:NIST:SAS:aveint,root:Packages:NIST:SAS:qval,root:Packages:NIST:SAS:sigave
 	root:Packages:NIST:SAS:data = 1
 	root:Packages:NIST:SAS:linear_data = 1
 	// fill w/default values
@@ -81,6 +81,8 @@ Proc S_initialize_space()
 	// other variables
 	// -(hard coded right now - look for NVAR declarations)
 	Variable/G root:Packages:NIST:SAS:gBinWidth=1
+	Variable/G root:Packages:NIST:SAS:gisLogScale=0
+	String/G root:Packages:NIST:SAS:FileList = "SASCALC"
 	
 	// for the panel
 	Variable/G root:Packages:NIST:SAS:gInst=3		//or 7 for NG7
@@ -98,6 +100,16 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gSamApOther = 10		//non-standard aperture diameter, in mm
 	Variable/G root:Packages:NIST:SAS:gUsingLenses = 0		//0=no lenses, 1=lenses(or prisms)
 	Variable/G root:Packages:NIST:SAS:gModelOffsetFactor = 1
+	
+	// for the MC simulation
+	Variable/G root:Packages:NIST:SAS:gImon = 10000
+	Variable/G root:Packages:NIST:SAS:gThick = 0.1
+	Variable/G root:Packages:NIST:SAS:gSig_incoh = 0.1
+	String/G root:Packages:NIST:SAS:gFuncStr = "SphereForm"
+	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
+	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0	
+	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
+	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","# reaching detector","fraction reaching detector","# that interact","fraction singly scattered","fraction transmitted","","",""}
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -238,10 +250,12 @@ Function S_fillDefaultHeader(iW,rW,tW)
 	rw[16] = 64		// beamcenter X (pixels)
 	rw[17] = 64		// beamcenter Y
 	
-	rw[10]	= 5			//detector resolution (5mm) and calibration constants (linearity)
+	rw[10]	= 5.08			//detector resolution (5mm) and calibration constants (linearity)
 	rw[11] = 10000
-	rw[13] = 5
+	rw[12] = 0
+	rw[13] = 5.08
 	rw[14] = 10000
+	rw[15] = 0
 	
 	rw[20] = 65		// det size in cm
 	rw[18] = 6		// SDD in meters (=L2)
@@ -266,7 +280,6 @@ Window SASCALC_Panel()
 	SetDataFolder root:Packages:NIST:SAS:
 	Display /W=(5,44,463,570)/K=1 aveint vs qval as "SASCALC"
 	DoWindow/C SASCALC
-	SetDataFolder fldrSav0
 	ModifyGraph cbRGB=(49151,53155,65535)
 	ModifyGraph mode=3
 	ModifyGraph marker=19
@@ -274,10 +287,14 @@ Window SASCALC_Panel()
 	Modifygraph log=1
 	Modifygraph grid=1
 	Modifygraph mirror=2
+	ModifyGraph msize(aveint)=2
+	ErrorBars/T=0 aveint Y,wave=(sigave,sigave)
 	Label bottom, "Q (1/A)"
 	Label left, "Relative Intensity"
 	legend
-	
+	SetDataFolder fldrSav0
+
+
 	ControlBar 200
 	
 	Slider SC_Slider,pos={11,46},size={150,45},proc=GuideSliderProc,live=0
@@ -315,7 +332,7 @@ Window SASCALC_Panel()
 	SetDataFolder fldrSav0
 	
 	SetVariable setvar0_3,pos={140,94},size={110,15},title="Diam (mm)",disable=1
-	SetVariable setvar0_3,limits={0,100,0.1},value= root:Packages:NIST:SAS:gSamApOther,proc=SourceApOtherSetVarProc
+	SetVariable setvar0_3,limits={0,100,0.1},value= root:Packages:NIST:SAS:gSamApOther,proc=SampleApOtherSetVarProc
 	
 	CheckBox checkLens,pos={6,155},size={44,14},proc=LensCheckProc,title="Lenses?"
 	CheckBox checkLens,value=root:Packages:NIST:SAS:gUsingLenses
@@ -627,6 +644,60 @@ Function ReCalculateInten(doIt)
 		return(0)
 	endif
 	
+	// do the simulation here
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	String coefStr
+	
+//	Variable imon,thick,r2,sig_incoh
+//	String funcStr
+//	imon = 10000
+//	thick = 0.1
+//	sig_incoh = 0.1
+//	funcStr = "SphereForm"
+//	r2 = 2.54/2			//typical 1" diameter sample, convert to radius in cm
+
+	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if MC, 0 if other
+	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr
+
+	if(doMonteCarlo == 1)
+		WAVE rw=root:Packages:NIST:SAS:realsRead
+		
+		NVAR imon = root:Packages:NIST:SAS:gImon
+		NVAR thick = root:Packages:NIST:SAS:gThick
+		NVAR sig_incoh = root:Packages:NIST:SAS:gSig_incoh
+		NVAR r2 = root:Packages:NIST:SAS:gR2
+	
+		r1 = rw[24]/2/10		// sample diameter convert diam in [mm] to radius in cm
+		xCtr = rw[16]
+		yCtr = rw[17]
+		sdd = rw[18]*100		//conver header of [m] to [cm]
+		pixSize = rw[10]/10		// convert pix size in mm to cm
+		wavelength = rw[26]
+		coefStr = MC_getFunctionCoef(funcStr)
+		
+		if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+			Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+		endif
+		
+		FUNCREF SANSModelAAO_MCproto func=$funcStr
+		WAVE results = root:Packages:NIST:SAS:results
+		results = 0
+		
+		Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,func,$coefStr,results)
+		
+		// convert to absolute scale
+		Variable kappa,beaminten = beamIntensity()
+		// results[6] is the fraction transmitted
+//		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*results[6]*(iMon/beaminten)
+		kappa = thick*(pixSize/sdd)^2*results[6]*iMon *2	//why the factor of 2?
+		
+		WAVE linear_data = root:Packages:NIST:SAS:linear_data
+		WAVE data = root:Packages:NIST:SAS:data
+		linear_data = linear_data / kappa
+		data = linear_data
+	
+	endif
+	
 	// update the wave with the beamstop diameter here, since I don't know what
 	// combinations of parameters will change the BS - but anytime the curve is 
 	// recalculated, or the text displayed, the right BS must be present
@@ -641,9 +712,21 @@ Function ReCalculateInten(doIt)
 	// or Debye Function S_Debye(scale,rg,bkg,x)
 	
 	//aveint = S_SphereForm(1,80,1e-6,0,qval)
-	aveint = S_Debye(1000,100,0.0,qval)
-
-	// multiply by beamstop shadowing
+	if(doMonteCarlo != 1)
+		if(exists(funcStr) != 0)
+			FUNCREF SANSModelAAO_MCproto func=$funcStr
+			coefStr = MC_getFunctionCoef(funcStr)
+			
+			if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+				Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+			endif
+			func($coefStr,aveint,qval)
+		else
+			aveint = S_Debye(1000,100,0.0,qval)
+		endif
+	endif
+	
+	// multiply either estimate by beamstop shadowing
 	aveint *= fSubS
 	
 	//display the configuration text in a separate notebook
@@ -1366,7 +1449,7 @@ Function sourceApertureDiam()
 end
 
 // change the sample aperture to a non-standard value
-Function SourceApOtherSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function SampleApOtherSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr

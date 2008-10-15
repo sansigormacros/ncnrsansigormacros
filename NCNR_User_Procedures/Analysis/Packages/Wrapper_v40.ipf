@@ -190,7 +190,7 @@ Function/S W_FunctionPopupList()
 	list = FunctionList("*",";","KIND:10")		//get every user defined curve fit function
 
 	//now start to remove everything the user doesn't need to see...
-		
+
 	tmp = FunctionList("*_proto",";","KIND:10")		//prototypes
 	list = RemoveFromList(tmp, list  ,";")
 	//prototypes that show up if GF is loaded
@@ -211,7 +211,14 @@ Function/S W_FunctionPopupList()
 	list = RemoveFromList("UpdateQxQy2Mat", list)
 	list = RemoveFromList("MakeBSMask", list)
 	
+	// MOTOFIT/GenFit bits
+	tmp = "GEN_allatoncefitfunc;GEN_fitfunc;GetCheckBoxesState;MOTO_GFFitAllAtOnceTemplate;MOTO_GFFitFuncTemplate;MOTO_NewGF_SetXWaveInList;MOTO_NewGlblFitFunc;MOTO_NewGlblFitFuncAllAtOnce;"
+	list = RemoveFromList(tmp, list  ,";")
 
+	// SANS Reduction bits
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;"
+	list = RemoveFromList(tmp, list  ,";")
+	
 	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
 	list = RemoveFromList(tmp, list  ,";")
 	

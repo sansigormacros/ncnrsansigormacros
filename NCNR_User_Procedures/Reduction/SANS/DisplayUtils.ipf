@@ -195,7 +195,7 @@ End
 //
 Proc ChangeDisplay(type)
 	String type
-	Prompt type,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
+	Prompt type,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
 	
 	//macro will take whatever is in "type" folder
 	//check for data existence
