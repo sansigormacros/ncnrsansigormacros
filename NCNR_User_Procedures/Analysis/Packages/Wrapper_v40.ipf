@@ -218,7 +218,13 @@ Function/S W_FunctionPopupList()
 	// SANS Reduction bits
 	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;"
 	list = RemoveFromList(tmp, list  ,";")
-	
+	list = RemoveFromList("Monte_SANS", list)
+
+	// USANS Reduction bits
+	tmp = "DSM_Guinier_Fit;RemoveMaskedPoints;"
+	list = RemoveFromList(tmp, list  ,";")
+
+
 	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
 	list = RemoveFromList(tmp, list  ,";")
 	

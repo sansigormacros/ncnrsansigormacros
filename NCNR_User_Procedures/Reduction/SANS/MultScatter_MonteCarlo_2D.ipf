@@ -6,58 +6,50 @@
 //
 // This code simulates the scattering for a selected model based on the instrument configuration
 // This code is based directly on John Barker's code, which includes multiple scattering effects.
+// A lot of the setup, wave creation, and post-calculations are done in SASCALC->ReCalculateInten()
 //
 //
 // - Most importantly, this needs to be checked for correctness of the MC simulation
-// - how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
+// X how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
 // - why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
 // - get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
 // - what is magical about Qu? Is this an assumpution?
-// - why am I off a magical factor of 2 in my calculation of kappa to get to absolute scale (in ReCalculateInten())
 
 // - at the larger angles, is the "flat" detector being properly accounted for - in terms of
 //   the solid angle and how many counts fall in that pixel. Am I implicitly defining a spherical detector
 //   so that what I see is already "corrected"?
-// - the MC will, of course benefit greatly from being XOPized. Maybe think about parallel implementation
-//   by allowing the data arrays to accumulate.
+// X the MC will, of course benefit greatly from being XOPized. Maybe think about parallel implementation
+//   by allowing the data arrays to accumulate. First pass at the XOP is done. Not pretty, not the speediest (5.8x)
+//   but it is functional. Add spinCursor() for long calculations. See WaveAccess XOP example.
 // - the background parameter for the model MUST be zero, or the integration for scattering
 //    power will be incorrect.
 // - fully use the SASCALC input, most importantly, flux on sample.
-// - if no MC desired, still use the selected model
-// - better display of MC results on panel
+// X if no MC desired, still use the selected model
+// X better display of MC results on panel
 // - settings for "count for X seconds" or "how long to 1E6 cts on detector" (run short sim, then multiply)
 // - add quartz window scattering to the simulation somehow
 // - do smeared models make any sense??
+// - make sure that the ratio of scattering coherent/incoherent is properly adjusted for the sample composition
+//   or the volume fraction of solvent.
+//
+// - add to the results the fraction of coherently scattered neutrons that are singly scattered, different than
+//   the overall fraction of singly scattered, and maybe more important to know.
+//
+// - change the fraction reaching the detector to exclude those that don't interact. These transmitted neutrons
+//   aren't counted. Is the # that interact a better number?
+//
+// - do we want to NOT offset the data by a multiplicative factor as it is "frozen" , so that the 
+//   effects on the absolute scale can be seen?
+//
+// - why is "pure" incoherent scattering giving me a q^-1 slope, even with the detector all the way back?
+// - can I speed up by assuming everything interacts? This would compromise the ability to calculate multiple scattering
+// - ask John how to verify what is going on
+// - a number of models are now found to be ill-behaved when q=1e-10. Then the random deviate calculation blows up.
+//   a warning has been added - but the models are better fixed with the limiting value.
+//
 //
 
-Macro Simulate2D_MonteCarlo(imon,r1,r2,xCtr,yCtr,sdd,thick,wavelength,sig_incoh,funcStr)
-	Variable imon=100000,r1=0.6,r2=0.8,xCtr=100,yCtr=64,sdd=400,thick=0.1,wavelength=6,sig_incoh=0.1
-	String funcStr
-	Prompt funcStr, "Pick the model function", popup,	MC_FunctionPopupList()
-	
-	String coefStr = MC_getFunctionCoef(funcStr)
-	Variable pixSize = 0.5		// can't have 11 parameters in macro!
-	
-	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
-		Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
-	endif
-	
-	Make/O/D/N=10 root:Packages:NIST:SAS:results
-	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc
-	
-	RunMonte(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,funcStr,coefStr,results)
-	
-End
 
-Function RunMonte(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,funcStr,coefStr)
-	Variable imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh
-	String funcStr,coefStr
-	WAVE results
-	
-	FUNCREF SANSModelAAO_MCproto func=$funcStr
-	
-	Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,func,$coefStr,results)
-End
 
 //////////
 //    PROGRAM Monte_SANS
@@ -79,11 +71,10 @@ End
 //        R0 = 'Enter sphere radius. (A)'
 //
 
-Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,func,coef,results)
-	Variable imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh
-	FUNCREF SANSModelAAO_MCproto func
-	WAVE coef,results
+Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results
 
+	Variable imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,sig_sas
 	Variable NUM_BINS,N_INDEX
 	Variable RHO,SIGSAS,SIGABS_0
 	Variable ii,jj,IND,idum,INDEX,IR,NQ
@@ -93,33 +84,32 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 	//in John's implementation, he dimensioned the indices of the arrays to begin
 	// at 0, making things much easier for me...
 	//DIMENSION  NT(0:5000),J1(0:5000),J2(0:5000),NN(0:100)
-	Make/O/N=5000 root:Packages:NIST:SAS:nt,root:Packages:NIST:SAS:j1,root:Packages:NIST:SAS:j2
-	Make/O/N=100 root:Packages:NIST:SAS:nn
-	WAVE nt = root:Packages:NIST:SAS:nt
-	WAVE j1 = root:Packages:NIST:SAS:j1
-	WAVE j2 = root:Packages:NIST:SAS:j2
-	WAVE nn = root:Packages:NIST:SAS:nn
-	
+
 	Variable G0,E_NT,E_NN,TRANS_th,Trans_exp,rat
 	Variable GG,GG_ED,dS_dW,ds_dw_double,ds_dw_single
 	Variable DONE,FIND_THETA,err		//used as logicals
 
-	Variable Vx,Vy,Vz,Theta_z,qq,SIG_SAS
+	Variable Vx,Vy,Vz,Theta_z,qq
 	Variable Sig_scat,Sig_abs,Ratio,Sig_total
 	Variable isOn=0,testQ,testPhi,xPixel,yPixel
 	
-	// detector information
-//	Variable pixSize,sdd,xCtr,yCtr
-//	pixSize = 0.5		//cm
-//	sdd = 400			//cm
-//	xCtr = 100			//pixels
-//	yCtr = 64
-
+	imon = inputWave[0]
+	r1 = inputWave[1]
+	r2 = inputWave[2]
+	xCtr = inputWave[3]
+	yCtr = inputWave[4]
+	sdd = inputWave[5]
+	pixSize = inputWave[6]
+	thick = inputWave[7]
+	wavelength = inputWave[8]
+	sig_incoh = inputWave[9]
+	sig_sas = inputWave[10]
+	
 //	SetRandomSeed 0.1		//to get a reproduceable sequence
 
 //scattering power and maximum qvalue to bin
 //	zpow = .1		//scattering power, calculated below
-	qmax = 0.1	//maximum Q to bin 1D data. (A-1) (not really used)
+	qmax = 4*pi/wavelength		//maximum Q to bin 1D data. (A-1) (not really used, so set to a big value)
 	sigabs_0 = 0.0		// ignore absorption cross section/wavelength [1/(cm A)]
 	N_INDEX = 50		// maximum number of scattering events per neutron
 	num_bins = 200		//number of 1-D bins (not really used)
@@ -127,17 +117,8 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 // my additions - calculate the randome deviate function as needed
 // and calculate the scattering power from the model function
 //
-	CalculateRandomDeviate(func,coef,wavelength,"root:Packages:NIST:SAS:ran_dev",SIG_SAS)
-	WAVE ran_dev=$"root:Packages:NIST:SAS:ran_dev"
 	Variable left = leftx(ran_dev)
 	Variable delta = deltax(ran_dev)
-	
-	// arrays for the data - these should already be there, created by SASCALC initializing the space
-	Make/O/D/N=(128,128) root:Packages:NIST:SAS:data,root:Packages:NIST:SAS:linear_data
-	WAVE MC_data =  root:Packages:NIST:SAS:data
-	WAVE MC_linear_data =  root:Packages:NIST:SAS:linear_data
-	MC_data = 0		//initialize
-	MC_linear_data = 0
 	
 //c       total SAS cross-section
 //
@@ -155,7 +136,7 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 	results[1] = sig_sas
 //	RATIO = SIG_ABS / SIG_TOTAL
 	RATIO = sig_incoh / SIG_TOTAL
-//!!!! the ratio is not yer porperly weighted for the volume fractions of each component!!!
+//!!!! the ratio is not yet properly weighted for the volume fractions of each component!!!
 	
 //c       assuming theta = sin(theta)...OK
 	theta_max = wavelength*qmax/(2*pi)
@@ -173,10 +154,6 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 	j2 = 0
 	nt = 0
 	nn=0
-
-	//vector to carry direction information
-	Make/O/N=3 root:Packages:NIST:SAS:d_vector
-	WAVE d_vector = root:Packages:NIST:SAS:d_vector
 	
 //C     MONITOR LOOP - looping over the number of incedent neutrons
 //note that zz, is the z-position in the sample - NOT the scattering power
@@ -186,9 +163,6 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 		Vx = 0.0			// Initialize direction vector.
 		Vy = 0.0
 		Vz = 1.0
-		d_vector[0] = 0
-		d_vector[1] = 0
-		d_vector[2] = 1
 		
 		Theta = 0.0		//	Initialize scattering angle.
 		Phi = 0.0			//	Intialize azimuthal angle.
@@ -196,7 +170,6 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 		DONE = 0			//	True when neutron is absorbed or when  scattered out of the sample.
 		INDEX = 0			//	Set counter for number of scattering events.
 		zz = 0.0			//	Set entering dimension of sample.
-		//RR = 2.0*R1		//	Make sure next loop runs at least once.
 		
 		do					//	Makes sure position is within circle.
 			ran = abs(enoise(1))		//[0,1]
@@ -211,10 +184,8 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 			ran = abs(enoise(1))		//[0,1]  RANDOM NUMBER FOR DETERMINING PATH LENGTH
 			ll = PATH_len(ran,Sig_total)
 			//Determine new scattering direction vector.
-			err = NewDirection(d_vector,Theta,Phi)		//d_vector is updated, theta, phi unchanged by function
-			vx = d_vector[0]		//reassign to local variables
-			vy = d_vector[1]
-			vz = d_vector[2]
+			err = NewDirection(vx,vy,vz,Theta,Phi)		//vx,vy,vz is updated, theta, phi unchanged by function
+
 			//X,Y,Z-POSITION OF SCATTERING EVENT.
 			xx += ll*vx
 			yy += ll*vy
@@ -222,7 +193,7 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 			RR = sqrt(xx*xx+yy*yy)		//radial position of scattering event.
 
 			//Check whether interaction occurred within sample volume.
-			IF (((zz > 0.0) %& (zz < THICK)) %& (rr < r2))
+			IF (((zz > 0.0) && (zz < THICK)) && (rr < r2))
 				//NEUTRON INTERACTED.
 				INDEX += 1			//Increment counter of scattering events.
 				IF(INDEX == 1)
@@ -233,30 +204,20 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 				IF(ran > ratio )		//C             NEUTRON SCATTERED coherently
 					FIND_THETA = 0			//false
 					DO
-						ran = abs(enoise(1))		//[0,1]
-						
+						//ran = abs(enoise(1))		//[0,1]
 						//theta = Scat_angle(Ran,R_DAB,wavelength)	// CHOOSE DAB ANGLE -- this is 2Theta
-						//theta = Scat_angle(Ran,100,wavelength)	// CHOOSE DAB ANGLE -- this is 2Theta
 						//Q0 = 2*PI*THETA/WAVElength					// John chose theta, calculated Q
 
 						// pick a q-value from the deviate function
 						// pnt2x truncates the point to an integer before returning the x
-						//Q0 = pnt2x(ran_dev,binarysearchinterp(ran_dev,abs(enoise(1))))
 						// so get it from the wave scaling instead
 						Q0 =left + binarysearchinterp(ran_dev,abs(enoise(1)))*delta
 						theta = Q0/2/Pi*wavelength		//SAS approximation
 						
-						// always accept
-						FIND_THETA = 1
-//						ran = abs(enoise(1))		//[0,1]
-//						BOUND = inten_sphere(Q0,R0) / inten_dab(Q0,R_DAB)
-//						IF(BOUND > 1.0)
-//							Print "****BOUND ERROR.."
-//						ENDIF
-//						IF(Ran <= BOUND)
-//							FIND_THETA = 1		//accept attempt
-//						ENDIF
-//						
+						//Print "q0, theta = ",q0,theta
+						
+						FIND_THETA = 1		//always accept
+
 					while(!find_theta)
 					ran = abs(enoise(1))		//[0,1]
 					PHI = 2.0*PI*Ran			//Chooses azimuthal scattering angle.
@@ -288,9 +249,14 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 				// pick a random phi angle, and see if it lands on the detector
 				// since the scattering is isotropic, I can safely pick a new, random value
 				// this would not be true if simulating anisotropic scattering.
-				testPhi = abs(enoise(1,2))*2*Pi
+				testPhi = abs(enoise(1))*2*Pi
 				// is it on the detector?	
 				FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+				
+//				if(xPixel != xCtr && yPixel != yCtr)
+//					Print "testQ,testPhi,xPixel,yPixel",testQ,testPhi,xPixel,yPixel
+//				endif
+				
 				if(xPixel != -1 && yPixel != -1)
 					isOn += 1
 					//if(index==1)  // only the single scattering events
@@ -327,13 +293,6 @@ Function Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,
 	results[2] = isOn
 	results[3] = isOn/iMon
 	
-	MC_data = MC_linear_data
-//	MC_data = log(MC_data)
-	// for display ONLY, since most of the neutrons just pass through with theta=0
-	
-	MC_linear_data[xCtr][yCtr]=0
-	MC_data[xCtr][yCtr]=0
-				
 				
 // OUTPUT of the 1D data, not necessary now since I want the 2D
 //	Make/O/N=(num_bins) qvals,int_ms,sig_ms,int_sing,int_doub
@@ -412,8 +371,7 @@ Function 	CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	Make/O/N=(nPts_ran)/D root:Packages:NIST:SAS:Gq,root:Packages:NIST:SAS:xw		// if these waves are 1000 pts, the results are "pixelated"
 	WAVE Gq = root:Packages:NIST:SAS:gQ
 	WAVE xw = root:Packages:NIST:SAS:xw
-//	Make/O/N=(nPts_ran)/D iWave1,iWave2
-	SetScale/I x (0+1e-10),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
+	SetScale/I x (0+1e-6),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
 	xw=x												//for the AAO
 	func(coef,Gq,xw)									//call as AAO
 
@@ -427,18 +385,6 @@ Function 	CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	Gq_INT /= Gq_INT[nPts_ran-1]
 	
 	Duplicate/O Gq_INT $outWave
-	
-	//Display Gq_INT
-//	SetScale/I x 0,qu*(1-1e-10),"", iWave2			//qu = 4Pi/lam  (4Pi/6 = 2.09) 
-////	iWave2 = DAB_modelX(coef_dab,x)
-//	iWave2 = Peak_Gauss_modelX(coef_peak_gauss,x)
-//	duplicate/O iWave2 Gqu
-////	Gqu = x*Gqu
-//	Gqu = Gqu*sin(2*asin(x/qu))/sqrt(1-(x/qu))
-//	Integrate/METH=1 Gqu/D=Gqu_INT
-//	//Appendtograph Gqu_INT
-//	//ModifyGraph lsize(Gq_INT)=3
-//	Gq_INT /= gqu_int[nPts_ran-2]
 
 	return(0)
 End
@@ -538,6 +484,7 @@ Function/S MC_FunctionPopupList()
 	// SANS Reduction bits
 	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;"
 	list = RemoveFromList(tmp, list  ,";")
+	list = RemoveFromList("Monte_SANS", list)
 
 	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
 	list = RemoveFromList(tmp, list  ,";")
@@ -559,33 +506,7 @@ Function/S MC_FunctionPopupList()
 	
 	list = SortList(list)
 	return(list)
-End
-
-
-// CALCULATES SCATTERING FOR SPHERES, WITH I(0) = 1.0
-//Function inten_sphere(qq,R0)
-//	Variable qq,r0
-//	
-//	Variable xx,i_sphere
-//        xx = qq*R0
-//	IF (xx < 1.0e-6)
-//		I_SPHERE = 1.0
-//	ELSE
-//		I_SPHERE = 9.0*( (SIN(xx)-xx*COS(xx)) / xx^3 )^2
-//	ENDIF
-//	RETURN (i_sphere)
-//END
-
-
-//CALCULATES SCATTERING FOR DAB MODEL, WITH I(0) = 1.0
-//FUNCTION inten_dab(qq,R_DAB)
-//	Variable qq,r_dab
-//	
-//	Variable i_dab
-//	
-//	I_DAB = 1.0 / (1.0+(qq*R_DAB)^2)^2
-//	RETURN (i_dab)
-//END                    
+End              
 
 
 //Function Scat_Angle(Ran,R_DAB,wavelength)
@@ -604,15 +525,12 @@ End
 
 //calculates new direction (xyz) from an old direction
 //theta and phi don't change
-Function NewDirection(d_vector,theta,phi)
-	Wave d_vector
+Function NewDirection(vx,vy,vz,theta,phi)
+	Variable &vx,&vy,&vz
 	Variable theta,phi
 	
 	Variable err=0,vx0,vy0,vz0
-	Variable Vx,Vy,Vz,nx,ny,mag_xy,tx,ty,tz
-	Vx = d_vector[0]
-	Vy = d_vector[1]
-	Vz = d_vector[2]
+	Variable nx,ny,mag_xy,tx,ty,tz
 	
 	//store old direction vector
 	vx0 = vx
@@ -640,11 +558,6 @@ Function NewDirection(d_vector,theta,phi)
 	Vy = cos(phi)*sin(theta)*Ty + sin(phi)*sin(theta)*Ny + cos(theta)*Vy0
 	Vz = cos(phi)*sin(theta)*Tz + cos(theta)*Vz0
 	
-	//reassign d_vector before exiting
-	d_vector[0] = vx
-	d_vector[1] = vy
-	d_vector[2] = vz
-	
 	Return(err)
 End
 
@@ -653,14 +566,14 @@ Function path_len(aval,sig_tot)
 	
 	Variable retval
 	
-	retval = -1*log(1-aval)/sig_tot
+	retval = -1*ln(1-aval)/sig_tot
 	
 	return(retval)
 End
 
 Window MC_SASCALC() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(787,44,1088,563) /K=1  /N=MC_SASCALC as "SANS Simulator"
+	NewPanel /W=(787,44,1088,563)  /N=MC_SASCALC as "SANS Simulator"
 	CheckBox MC_check0,pos={11,11},size={98,14},title="Use MC Simulation"
 	CheckBox MC_check0,variable= root:Packages:NIST:SAS:gDoMonteCarlo
 	SetVariable MC_setvar0,pos={11,38},size={144,15},bodyWidth=80,title="# of neutrons"
@@ -673,6 +586,8 @@ Window MC_SASCALC() : Panel
 	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
 	PopupMenu MC_popup0,pos={11,63},size={162,20},proc=MC_ModelPopMenuProc,title="Model Function"
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
+	Button MC_button0,pos={17,455},size={50,20},proc=MC_DoItButtonProc,title="Do It"
+	Button MC_button1,pos={15,484},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
 	
 	SetDataFolder root:Packages:NIST:SAS:
 	Edit/W=(13,174,284,435)/HOST=# results_desc,results
@@ -697,3 +612,63 @@ Function MC_ModelPopMenuProc(pa) : PopupMenuControl
 
 	return 0
 End
+
+Function MC_DoItButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			ReCalculateInten(1)
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function MC_Display2DButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "ChangeDisplay(\"SAS\")"
+			break
+	endswitch
+
+	return 0
+End
+
+/////UNUSED, testing routines that have note been updated to work with SASCALC
+//
+//Macro Simulate2D_MonteCarlo(imon,r1,r2,xCtr,yCtr,sdd,thick,wavelength,sig_incoh,funcStr)
+//	Variable imon=100000,r1=0.6,r2=0.8,xCtr=100,yCtr=64,sdd=400,thick=0.1,wavelength=6,sig_incoh=0.1
+//	String funcStr
+//	Prompt funcStr, "Pick the model function", popup,	MC_FunctionPopupList()
+//	
+//	String coefStr = MC_getFunctionCoef(funcStr)
+//	Variable pixSize = 0.5		// can't have 11 parameters in macro!
+//	
+//	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+//		Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+//	endif
+//	
+//	Make/O/D/N=10 root:Packages:NIST:SAS:results
+//	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc
+//	
+//	RunMonte(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,funcStr,coefStr,results)
+//	
+//End
+//
+//Function RunMonte(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,funcStr,coefStr)
+//	Variable imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh
+//	String funcStr,coefStr
+//	WAVE results
+//	
+//	FUNCREF SANSModelAAO_MCproto func=$funcStr
+//	
+//	Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,sig_sas,ran_dev,linear_data,results)
+//End
+//
+////// END UNUSED BLOCK

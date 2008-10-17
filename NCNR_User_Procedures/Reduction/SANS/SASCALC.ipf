@@ -646,15 +646,7 @@ Function ReCalculateInten(doIt)
 	
 	// do the simulation here
 	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
-	String coefStr
-	
-//	Variable imon,thick,r2,sig_incoh
-//	String funcStr
-//	imon = 10000
-//	thick = 0.1
-//	sig_incoh = 0.1
-//	funcStr = "SphereForm"
-//	r2 = 2.54/2			//typical 1" diameter sample, convert to radius in cm
+	String coefStr,abortStr
 
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if MC, 0 if other
 	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr
@@ -679,21 +671,67 @@ Function ReCalculateInten(doIt)
 			Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 		endif
 		
+		Variable sig_sas
 		FUNCREF SANSModelAAO_MCproto func=$funcStr
 		WAVE results = root:Packages:NIST:SAS:results
+		WAVE linear_data = root:Packages:NIST:SAS:linear_data
+		WAVE data = root:Packages:NIST:SAS:data
+
 		results = 0
+		linear_data = 0
 		
-		Monte_SANS(imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,func,$coefStr,results)
+		CalculateRandomDeviate(func,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",SIG_SAS)
+		if(sig_sas > 100)
+			sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
+			Abort abortStr
+		endif
+		
+		WAVE ran_dev=$"root:Packages:NIST:SAS:ran_dev"
+		
+		Make/O/D/N=5000 root:Packages:NIST:SAS:nt=0,root:Packages:NIST:SAS:j1=0,root:Packages:NIST:SAS:j2=0
+		Make/O/D/N=100 root:Packages:NIST:SAS:nn=0
+		Make/O/D/N=11 root:Packages:NIST:SAS:inputWave=0
+		
+		WAVE nt = root:Packages:NIST:SAS:nt
+		WAVE j1 = root:Packages:NIST:SAS:j1
+		WAVE j2 = root:Packages:NIST:SAS:j2
+		WAVE nn = root:Packages:NIST:SAS:nn
+		WAVE inputWave = root:Packages:NIST:SAS:inputWave
+
+		inputWave[0] = imon
+		inputWave[1] = r1
+		inputWave[2] = r2
+		inputWave[3] = xCtr
+		inputWave[4] = yCtr
+		inputWave[5] = sdd
+		inputWave[6] = pixSize
+		inputWave[7] = thick
+		inputWave[8] = wavelength
+		inputWave[9] = sig_incoh
+		inputWave[10] = sig_sas
+
+		//initialize ran1 in the XOP by passing a negative integer
+		// does nothing in the Igor code
+		results[0] = -1*trunc(datetime)/10
+
+//		Variable t0 = stopMStimer(-2)
+	
+#if exists("Monte_SANSX")
+	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#else
+	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#endif
+//		t0 = (stopMSTimer(-2) - t0)*1e-6
+//		Printf  "Mc sim time = %g seconds\r\r",t0	
 		
 		// convert to absolute scale
 		Variable kappa,beaminten = beamIntensity()
 		// results[6] is the fraction transmitted
 //		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*results[6]*(iMon/beaminten)
-		kappa = thick*(pixSize/sdd)^2*results[6]*iMon *2	//why the factor of 2?
-		
-		WAVE linear_data = root:Packages:NIST:SAS:linear_data
-		WAVE data = root:Packages:NIST:SAS:data
+		kappa = thick*(pixSize/sdd)^2*results[6]*iMon
+
 		linear_data = linear_data / kappa
+		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
 		data = linear_data
 	
 	endif
@@ -724,6 +762,8 @@ Function ReCalculateInten(doIt)
 		else
 			aveint = S_Debye(1000,100,0.0,qval)
 		endif
+		WAVE sigave=root:Packages:NIST:SAS:sigave
+		sigave = 0		//reset for model calculation
 	endif
 	
 	// multiply either estimate by beamstop shadowing
@@ -893,7 +933,7 @@ Function S_CircularAverageTo1D(type)
 	WAVE data=$(destPath + ":data")
 
 // fake mask that uses all of the detector
-	Make/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
+	Make/D/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
 	Wave mask = $(destPath + ":mask")
 	mask = 0
 	//two pixels all around
@@ -913,9 +953,9 @@ Function S_CircularAverageTo1D(type)
 	// output wave are expected to exist (?) initialized to zero, what length?
 	// 200 points on VAX --- use 300 here, or more if SAXS data is used with 1024x1024 detector (1000 pts seems good)
 	Variable defWavePts=500
-	Make/O/N=(defWavePts) $(destPath + ":qval"),$(destPath + ":aveint")
-	Make/O/N=(defWavePts) $(destPath + ":ncells"),$(destPath + ":dsq"),$(destPath + ":sigave")
-	Make/O/N=(defWavePts) $(destPath + ":SigmaQ"),$(destPath + ":fSubS"),$(destPath + ":QBar")
+	Make/O/D/N=(defWavePts) $(destPath + ":qval"),$(destPath + ":aveint")
+	Make/O/D/N=(defWavePts) $(destPath + ":ncells"),$(destPath + ":dsq"),$(destPath + ":sigave")
+	Make/O/D/N=(defWavePts) $(destPath + ":SigmaQ"),$(destPath + ":fSubS"),$(destPath + ":QBar")
 
 	WAVE qval = $(destPath + ":qval")
 	WAVE aveint = $(destPath + ":aveint")
