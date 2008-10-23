@@ -984,7 +984,7 @@ Proc Init_WorkMath()
 	//create the data folder
 	//String str = "AAA;BBB;CCC;DDD;EEE;FFF;GGG;"
 	String str = "File_1;File_2;Result;"
-	NewDataFolder/O/S root:myGlobals:WorkMath
+	NewDataFolder/O/S root:Packages:NIST:WorkMath
 	String/G gFolderList=str
 	Variable ii=0,num=itemsinlist(str)
 	do
@@ -1014,7 +1014,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	String str1,str2,oper,dest = "Result"
-	String pathStr,workMathStr="myGlobals:WorkMath:"
+	String pathStr,workMathStr="WorkMath:"
 	
 	//get the panel selections (these are the names of the files on disk)
 	PathInfo catPathName
@@ -1032,8 +1032,8 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	Endif
 
 	//constants from globals
-	NVAR const1=root:myGlobals:WorkMath:const1
-	NVAR const2=root:myGlobals:WorkMath:const2
+	NVAR const1=root:Packages:NIST:WorkMath:const1
+	NVAR const2=root:Packages:NIST:WorkMath:const2
 	Printf "(%g)%s %s (%g)%s = %s\r", const1,str1,oper,const2,str2,dest
 	//check for proper folders (all 3 must be different)
 	
@@ -1041,13 +1041,13 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	//set #1
 	Load_NamedASC_File(pathStr+str1,workMathStr+"File_1")
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsX = root:myGlobals:gNPixelsX		//OK, location is correct
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
 	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:data")
 	If(cmpstr(str2,"UNIT MATRIX")==0)
-		Make/O/N=(pixelsX,pixelsY) root:myGlobals:WorkMath:data		//don't put in File_2 folder
-		Wave/Z data2 =  root:myGlobals:WorkMath:data			//it's not real data!
+		Make/O/N=(pixelsX,pixelsY) root:Packages:NIST:WorkMath:data		//don't put in File_2 folder
+		Wave/Z data2 =  root:Packages:NIST:WorkMath:data			//it's not real data!
 		data2=1
 	else
 		//Load set #2
@@ -1099,10 +1099,10 @@ Function WorkMath_Done_ButtonProc(ctrlName) : ButtonControl
 	DoWindow/K WorkFileMath
 	//wipe out the data folder of globals
 	SVAR dataType=root:myGlobals:gDataDisplayType
-	if(strsearch(dataType, "myGlobals", 0 ) != -1)		//kill the SANS_Data graph if needed
+	if(strsearch(dataType, "WorkMath", 0 ) != -1)		//kill the SANS_Data graph if needed
 		DoWindow/K SANS_Data
 	Endif
-	KillDataFolder root:myGlobals:WorkMath
+	KillDataFolder root:Packages:NIST:WorkMath
 End
 
 // loads data into the specified folder
@@ -1113,7 +1113,7 @@ Function WorkMath_Load_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	String destStr=""
-	SVAR folderList=root:myGlobals:WorkMath:gFolderList
+	SVAR folderList=root:Packages:NIST:WorkMath:gFolderList
 	Prompt destStr,"Select the destination folder",popup,folderList
 	DoPrompt "Folder for ASC Load",destStr
 	
@@ -1121,7 +1121,7 @@ Function WorkMath_Load_ButtonProc(ctrlName) : ButtonControl
 		return(1)		//user abort, do nothing
 	Endif
 	
-	String destFolder = "myGlobals:WorkMath:"+destStr
+	String destFolder = "WorkMath:"+destStr
 	
 	Load_ASC_File("Pick the ASC file",destFolder)
 End
@@ -1138,7 +1138,7 @@ Function WorkMath_Display_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 	
-	String folder="myGlobals:WorkMath:",pathStr,str1
+	String folder="WorkMath:",pathStr,str1
 
 	PathInfo catPathName
 	pathStr=S_Path
@@ -1191,7 +1191,7 @@ Proc WorkFileMath()
 	Button button3,pos={205,8},size={25,20},proc=ShowWorkMathHelp,title="?"
 	Button button3,help={"Show help file for math operations on 2-D data sets"}
 	SetVariable setvar0,pos={9,46},size={70,15},title=" "
-	SetVariable setvar0,limits={-Inf,Inf,0},value= root:myGlobals:WorkMath:const1
+	SetVariable setvar0,limits={-Inf,Inf,0},value= root:Packages:NIST:WorkMath:const1
 	SetVariable setvar0,help={"Multiplicative constant for the first dataset"}
 	PopupMenu popup0,pos={89,44},size={84,20},title="X  "
 	PopupMenu popup0,mode=1,popvalue="1st Set",value= ASC_FileList()
@@ -1203,10 +1203,10 @@ Proc WorkFileMath()
 	PopupMenu popup2,mode=3,popvalue="Operation",value= #"\"+;_;*;/;\""
 	PopupMenu popup2,help={"Selects the mathematical operator"}
 	SetVariable setvar1,pos={13,139},size={70,15},title=" "
-	SetVariable setvar1,limits={-Inf,Inf,0},value= root:myGlobals:WorkMath:const2
+	SetVariable setvar1,limits={-Inf,Inf,0},value= root:Packages:NIST:WorkMath:const2
 	SetVariable setvar1,help={"Multiplicative constant for the second dataset"}
 //	PopupMenu popup3,pos={27,167},size={124,20},title=" = Destination"
-//	PopupMenu popup3,mode=1,popvalue="Destination",value= root:myGlobals:WorkMath:gFolderList
+//	PopupMenu popup3,mode=1,popvalue="Destination",value= root:Packages:NIST:WorkMath:gFolderList
 //	PopupMenu popup3,help={"Selects the destination folder"}
 	PopupMenu popup4,pos={55,204},size={103,20},proc=WorkMath_Display_PopMenuProc,title="Display"
 	PopupMenu popup4,mode=3,value= "File_1;File_2;Result;"
@@ -1239,7 +1239,7 @@ End
 
 //fileStr must be the FULL path and filename on disk
 //destFolder is the path to the Igor folder where the data is to be deposited
-// - "myGlobals:WorkMath:File_1" for example, compatible with SANS_Data display type
+// - "Packages:NIST:WorkMath:File_1" for example, compatible with SANS_Data display type
 //
 Function Load_NamedASC_File(fileStr,destFolder)
 	String fileStr,destFolder

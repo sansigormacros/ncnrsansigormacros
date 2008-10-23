@@ -226,9 +226,10 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
           	   // N3 += 1
            	  // DONE = 1
            	  // phi and theta are random over the entire sphere of scattering
+           	  // !can't just choose random theta and phi, won't be random over sphere solid angle
            	  	
            	  	ran = abs(enoise(1))		//[0,1]
-					theta = pi*ran
+					theta = acos(2*ran-1)		
            	  	
            	  	ran = abs(enoise(1))		//[0,1]
 					PHI = 2.0*PI*Ran			//Chooses azimuthal scattering angle.

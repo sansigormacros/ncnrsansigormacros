@@ -76,6 +76,9 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	if(exists("root:Packages:NIST:USANS_dQv"))
 		//Running from SANS Analysis
 		Variable dQv = root:Packages:NIST:USANS_dQv
+	else
+		//running from somewhere else, probably SANS Reduction, which uses common loaders
+		Variable/G root:Packages:NIST:USANS_dQv = 0.117
 	endif
 		
 	if (cmpStr(fileStr,"") == 0)

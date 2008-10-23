@@ -155,8 +155,8 @@ Function OverlayMask(state)
 	String maskPath = "root:Packages:NIST:MSK:data"
 	if(WaveExists($maskPath) == 1)
 		//duplicate the mask, which is named "data"
-		Duplicate/O root:MSK:data root:MSK:overlay
-		Redimension/D root:MSK:overlay
+		Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:overlay
+		Redimension/D root:Packages:NIST:MSK:overlay
 	
 		String tempStr = "root:Packages:NIST:MSK:overlay"
 		ResetLoop(tempStr)		//keeps 1's and sets 0's to NaN

@@ -789,9 +789,13 @@ Function FreezeButtonProc(ctrlName) : ButtonControl
 	
 	Duplicate/O aveint,$("aveint_"+num2str(ct))
 	Duplicate/O qval,$("qval_"+num2str(ct))
+	Duplicate/O sigave,$("sigave_"+num2str(ct))
 	Appendtograph $("aveint_"+num2str(ct)) vs $("qval_"+num2str(ct))
 	ModifyGraph mode=3
 	ModifyGraph marker=19
+	ModifyGraph msize($("aveint_"+num2str(ct)))=2
+	ErrorBars/T=0 $("aveint_"+num2str(ct)) Y,wave=($("sigave_"+num2str(ct)),$("sigave_"+num2str(ct)))
+	
 	switch(mod(ct,10))	// 10 different colors - black is the unfrozen color
 		case 0:
 			ModifyGraph rgb($("aveint_"+num2str(ct)))=(65535,16385,16385)

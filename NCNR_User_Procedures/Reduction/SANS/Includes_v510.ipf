@@ -55,6 +55,12 @@
 #include "TISANE"
 #include "MultScatter_MonteCarlo_2D"			//Oct 2008 SRK for SASCALC simulation
 
+#include "PlotManager_v40"						//Oct 2008 as part of unifying the loading routines
+#include "NIST_XML_v40"							// - creates a cascade of dependencies to load files
+#include "cansasXML_v11"
+#include "GaussUtils_v40"
+#include "USANS_SlitSmearing_v40"
+
 // to include the analysis packages, uncomment the following
 // include statement and click "compile" at the bottom of this window.
 // ** the SANSModels menu will appear, and the packages will be 

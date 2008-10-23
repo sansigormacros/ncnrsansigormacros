@@ -146,19 +146,19 @@ Proc FIT_Load_Proc(ctrlName): ButtonControl
 	
 	tempName = S_path + tempName
 	
-	//load in the data (into the root directory)
-	LoadOneDDataWithName(tempName)
+	//load in the data (into the its own folder)
+	A_LoadOneDDataWithName(tempName,0)
 	//Print S_fileName
 	//Print tempName
 	
-	String cleanLastFileName = "root:"+CleanupName(root:myGlobals:gLastFileName,0)
+	String cleanLastFileName = CleanupName(root:Packages:NIST:gLastFileName,0)
 
-	tempName=cleanLastFileName+"_q"
-	Duplicate/O $tempName xAxisWave
-	tempName=cleanLastFileName+"_i"
-	Duplicate/O $tempName yAxisWave
-	tempName=cleanLastFileName+"_s"
-	Duplicate/O $tempName yErrWave
+	tempName="root:"+cleanLastFileName+":"+cleanLastFileName
+	Duplicate/O $(tempName+"_q") xAxisWave
+	//tempName=cleanLastFileName+"_i"
+	Duplicate/O $(tempName+"_i") yAxisWave
+	//tempName=cleanLastFileName+"_s"
+	Duplicate/O $(tempName+"_s") yErrWave
 
 	//Plot, and adjust the scaling to match the axis scaling set by the popups
 	Rescale_Data()
@@ -247,11 +247,13 @@ Function Rescale_Data()
 	//ControlInfo/W=FitPanel ywave
 	//get the filename from the global as it's loaded, rather from the popup - as version numbers
 	// do cause problems here. This global is also used later in this function
-	SVAR gLastFileName = root:myGlobals:gLastFileName
+	SVAR gLastFileName = root:Packages:NIST:gLastFileName
+	String tempStr = CleanupName(gLastFileName,0)
+	String tempName = "root:"+tempStr+":"+tempStr
 	
-	Wave xw = $( CleanupName((gLastFileName + "_q"),0) )
-	Wave yw = $( CleanupName((gLastFileName + "_i"),0) )
-	Wave ew = $( CleanupName((gLastFileName + "_s"),0) )
+	Wave xw = $(tempName+"_q")
+	Wave yw = $(tempName+"_i")
+	Wave ew = $(tempName+"_s")
 	
 	//variables set for each model to control look of graph
 	Variable xlow,xhigh,ylow,yhigh,yes_cursors
@@ -521,11 +523,11 @@ Function DispatchModel(GoFit) : ButtonControl
 	// need access to Global wave, result of fit
 	//ystr and xstr are the axis strings - filter with a do-loop
 	String ystr="",xstr=""
-	SVAR gLastFileName = root:myGlobals:gLastFileName
+	SVAR gLastFileName = root:Packages:NIST:gLastFileName
 	SVAR aStr = root:myGlobals:gAngstStr
-	
+	String tmpStr = CleanupName(gLastFileName,0)
 	//ControlInfo/W=FitPanel ywave
-	Wave xw = $( CleanupName((gLastFileName + "_q"),0) )
+	Wave xw = $("root:"+tmpStr+":"+tmpStr+"_q")
 	ControlInfo/W=FitPanel yModel
 	ystr = S_Value
 	ControlInfo/W=FitPanel xModel
@@ -840,17 +842,13 @@ end
 Proc DoFITRPA(ctrlName) : ButtonControl
 	String ctrlName
 	//
-	String cleanLastFileName = "root:"+CleanupName(root:myGlobals:gLastFileName,0)
-	String tempName
+	String cleanLastFileName = CleanupName(root:Packages:NIST:gLastFileName,0)
+	String tmpStr = "root:"+cleanLastFileName+":"+cleanLastFileName
 
-	tempName=cleanLastFileName+"_q"
-	Duplicate/O $tempName xAxisWave
-	tempName=cleanLastFileName+"_i"
-	Duplicate/O $tempName yAxisWave
-	tempName=cleanLastFileName+"_s"
-	Duplicate/O $tempName yErrWave
-	Duplicate/O $tempName yWtWave
-	Duplicate/O $tempName residWave
+	Duplicate/O $(tmpStr+"_q") xAxisWave
+	Duplicate/O $(tmpStr+"_i") yAxisWave
+	Duplicate/O $(tmpStr+"_s") yErrWave,yWtWave,residWave
+
 	yWtWave = 1/yErrWave
 	
 	String xlabel = "q (A^-1)"
@@ -1027,18 +1025,17 @@ Proc FITRPA_Load_Proc(ctrlName): ButtonControl
 	tempName = S_path + tempName
 	
 	//load in the data (into the root directory)
-	LoadOneDDataWithName(tempName)
+	A_LoadOneDDataWithName(tempName,0)
 	//Print S_fileName
 	//Print tempName
 	
-	String cleanLastFileName = "root:"+CleanupName(root:myGlobals:gLastFileName,0)
+	String cleanLastFileName = CleanupName(root:Packages:NIST:gLastFileName,0)
+	String tmpStr = "root:"+cleanLastFileName+":"+cleanLastFileName
 
-	tempName=cleanLastFileName+"_q"
-	Duplicate/o $tempName xAxisWave
-	tempName=cleanLastFileName+"_i"
-	Duplicate/o $tempName yAxisWave
-	tempName=cleanLastFileName+"_s"
-	Duplicate/o $tempName yErrWave
+	Duplicate/o $(tmpStr+"_q") xAxisWave
+	Duplicate/o $(tmpStr+"_i") yAxisWave
+	Duplicate/o $(tmpStr+"_s") yErrWave
+	
 	Variable xmin, xmax
 	WaveStats/Q xAxisWave
 	root:myGlobals:FITRPA:gLolim=V_min
