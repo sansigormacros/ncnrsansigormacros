@@ -18,3 +18,4 @@
 #include "LakeDesmearing_JB",version >= 2.20	
 #include "USANSCatNotebook",version >= 2.20	
 #include "CheckVersionFTP"				//added June 2008
+#include "GaussUtils_v40"				//added Oct 2008 for unified file loading

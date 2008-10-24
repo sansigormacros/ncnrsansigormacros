@@ -541,7 +541,7 @@ End
 //returns 1 if no path selected as error condition
 Function PickBT5Path()
 	
-	NVAR isChecked = root:Globals:MainPanel:gUseCurrentData
+	NVAR isChecked = root:Packages:NIST:USANS:Globals:MainPanel:gUseCurrentData
 	
 	//set the global string to the selected pathname
 	NewPath/O/M="pick the BT5 data folder" bt5PathName
@@ -1148,7 +1148,7 @@ Function RefreshCurrentButtonProc(ctrlName) : ButtonControl
 	endfor
 	newList = SortList(newList,";",0)	//get them in order
 	num=ItemsInList(newlist,";")
-	Wave/T curWave = $(USANSFolder+" :Globals:MainPanel:curWave")
+	Wave/T curWave = $(USANSFolder+":Globals:MainPanel:curWave")
 	Redimension/N=(num) curWave
 	curWave=""
 	curWave = StringFromList(p,newlist,";")	//  ! quick and easy assignment of the list

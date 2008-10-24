@@ -64,22 +64,23 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	String fileStr
 	Variable doPlot
 	
-	Variable rr,gg,bb,refnum
+	Variable rr,gg,bb,refnum,dQv
 	String w0,w1,w2,n0,n1,n2
 	String w3,w4,w5,n3,n4,n5			//3 extra waves to load
 	SetDataFolder root:		//build sub-folders for each data set under root
-	
-	if (exists("root:Packages:NIST:USANS:Globals:MainPanel:dQv"))
-		//Running from USANS reduction
-		Variable dQv = root:Packages:NIST:USANS:Globals:MainPanel:dQv
-	endif
-	if(exists("root:Packages:NIST:USANS_dQv"))
-		//Running from SANS Analysis
-		Variable dQv = root:Packages:NIST:USANS_dQv
-	else
-		//running from somewhere else, probably SANS Reduction, which uses common loaders
-		Variable/G root:Packages:NIST:USANS_dQv = 0.117
-	endif
+
+// I can't see that we need to find dQv here.	
+//	if (exists("root:Packages:NIST:USANS:Globals:MainPanel:gDQv"))
+//		//Running from USANS reduction
+//		Variable dQv = root:Packages:NIST:USANS:Globals:MainPanel:gDQv
+//	endif
+//	if(exists("root:Packages:NIST:USANS_dQv"))
+//		//Running from SANS Analysis
+//		Variable dQv = root:Packages:NIST:USANS_dQv
+//	else
+//		//running from somewhere else, probably SANS Reduction, which uses common loaders
+//		Variable/G root:Packages:NIST:USANS_dQv = 0.117
+//	endif
 		
 	if (cmpStr(fileStr,"") == 0)
 		//No filename given, open dialog
