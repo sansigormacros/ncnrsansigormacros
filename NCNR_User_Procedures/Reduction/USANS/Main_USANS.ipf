@@ -81,6 +81,7 @@ Proc Init_MainUSANS()
 	Variable/G gBkgCts = 0.62			//default values as of 15 DEC 05 J. Barker
 	Variable/G gThick = 0.1
 	Variable/G gTypeCheck=1
+	Variable/G gTransRatio=1
 	//Text filter for data files AJJ Sept 06
 	String/G FilterStr
 	Variable/G gUseCurrentData = 0

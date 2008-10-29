@@ -28,9 +28,9 @@ Function DoCORGraph()
 	DoWindow/F COR_Graph
 	if(V_flag==0)
 		//draw the blank window and the control bar
-		Display /W=(5,42,450,500) /K=1
+		Display /W=(5,42,450,550) /K=1
 		DoWindow/C COR_Graph
-		ControlBar 100
+		ControlBar 150
 		SetVariable gTransWide,pos={210,12},size={135,15},title="Trans - Wide",format="%5.4f"
 		SetVariable gTransWide,help={"Average counts on transmssion detector at wide angles"}
 		SetVariable gTransWide,limits={0,1,0.001},value= $(USANSFolder+":Globals:MainPanel:gTransWide")
@@ -70,6 +70,12 @@ Function DoCORGraph()
 		ValDisplay valdispEMP,limits={0,0,0},barmisc={0,1000},value=QpkFromNote("EMP")
 		ValDisplay valdispEMP,help={"Displays the peak angle the raw EMP data, determined automatically"}
 	
+		CheckBox check0 title="Log X-axis",proc=LogLinToggleCheckProc
+		CheckBox check0 pos={12,100},value=0,mode=0
+		SetVariable setvar0,pos={210,100},size={120,20},title="Trock/Twide",format="%5.4f"
+		SetVariable setVar0,help={"fraction of unscattered neutrons"}
+		SetVariable setVar0,limits={0,2,0},value= $(USANSFolder+":Globals:MainPanel:gTransRatio")
+		
 		Legend
 	Endif
 	// add each data type to the graph, if possible (each checks on its own)
@@ -363,6 +369,8 @@ Function UpdateButtonProc(ctrlName) : ButtonControl
 	Variable/G $(USANSFolder+":Globals:MainPanel:gTransWide")=samWide/empWide
 	Variable/G $(USANSFolder+":Globals:MainPanel:gTransRock")=samRock/empRock
 	
+	TransRatio()		//calculate the ratio and update
+	
 	return(0)
 End
 
@@ -402,6 +410,38 @@ Function QpkButtonProc(ctrlName) : ButtonControl
 	
 	RePlotWithUserAngle(type,newPkAngle)
 End
+
+Function TransRatio()
+	NVAR tr = root:Packages:NIST:USANS:Globals:MainPanel:gTransRock
+	NVAR tw = root:Packages:NIST:USANS:Globals:MainPanel:gTransWide
+	NVAR rat = root:Packages:NIST:USANS:Globals:MainPanel:gTransRatio
+	
+	rat = tr/tw
+	if(rat < 0.9)
+		SetVariable setVar0 labelBack=(65535,32768,32768)
+	else
+		SetVariable setVar0 labelBack=0
+	endif
+	return(0)
+End
+
+Function LogLinToggleCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked			
+			if(checked)
+				ModifyGraph log(bottom)=1
+			else
+				ModifyGraph log(bottom)=0
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
 
 //returns the peak location found (and used) for zero angle
 //displayed on the COR_Graph

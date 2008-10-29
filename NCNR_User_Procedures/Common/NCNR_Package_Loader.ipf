@@ -38,6 +38,7 @@ Function NCNR_AnalysisLoader(itemStr)
 	SVAR gMenuStr1a = root:Packages:NCNRItemStr1a
 	SVAR gMenuStr1b = root:Packages:NCNRItemStr1b
 	
+	String SANSAna_WinList = "wrapperPanel;Procedure_List;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR Analysis Macros":	
 			Execute/P "INSERTINCLUDE \"SA_Includes_v400\""
@@ -81,14 +82,7 @@ Function NCNR_AnalysisLoader(itemStr)
 			
 			break
 		case "Hide NCNR Analysis Macros":	
-			DoWindow wrapperPanel
-			if(V_Flag)
-				DoWindow/HIDE=1 wrapperPanel
-			endif
-			DoWindow Procedure_List
-			If(V_Flag)
-				DoWindow/HIDE=1 Procedure_List
-			endif
+			HideShowWindowsInList(SANSAna_WinList,1)	
 		
 			gMenuStr1a = "Show NCNR Analysis Macros"
 //			gMenuStr1b = "Unload NCNR Analysis Macros"
@@ -96,15 +90,8 @@ Function NCNR_AnalysisLoader(itemStr)
 			BuildMenu "Macros"
 			
 			break
-		case "Show NCNR Analysis Macros":	
-			DoWindow wrapperPanel
-			if(V_Flag)
-				DoWindow/HIDE=0 wrapperPanel
-			endif
-			DoWindow Procedure_List
-			If(V_Flag)
-				DoWindow/HIDE=0 Procedure_List
-			endif
+		case "Show NCNR Analysis Macros":
+			HideShowWindowsInList(SANSAna_WinList,0)	
 		
 			gMenuStr1a = "Hide NCNR Analysis Macros"
 //			gMenuStr1b = "Unload NCNR Analysis Macros"
@@ -133,6 +120,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SVAR gMenuStr2a = root:Packages:NCNRItemStr2a
 	SVAR gMenuStr2b = root:Packages:NCNRItemStr2b
 	
+	String SANSRed_WinList = "Main_Panel;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR SANS Reduction Macros":	
 			Execute/P "INSERTINCLUDE \"Includes_v510\""
@@ -160,11 +148,8 @@ Function NCNR_SANSReductionLoader(itemStr)
 			BuildMenu "Macros"
 			
 			break
-		case "Hide NCNR SANS Reduction Macros":	
-			DoWindow Main_Panel
-			if(V_Flag)
-				DoWindow/HIDE=1 Main_Panel
-			endif
+		case "Hide NCNR SANS Reduction Macros":
+			HideShowWindowsInList(SANSRed_WinList,1)
 		
 			gMenuStr2a = "Show NCNR SANS Reduction Macros"
 //			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
@@ -173,10 +158,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			
 			break
 		case "Show NCNR SANS Reduction Macros":	
-			DoWindow Main_Panel
-			if(V_Flag)
-				DoWindow/HIDE=0 Main_Panel
-			endif
+			HideShowWindowsInList(SANSRed_WinList,0)
 		
 			gMenuStr2a = "Hide NCNR SANS Reduction Macros"
 //			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
@@ -203,6 +185,8 @@ Function NCNR_USANSReductionLoader(itemStr)
 	String/G root:Packages:NCNRItemStr3b = itemStr
 	SVAR gMenuStr3a = root:Packages:NCNRItemStr3a
 	SVAR gMenuStr3b = root:Packages:NCNRItemStr3b
+	
+	String USANS_WinList = "USANS_Panel;COR_Graph;RawDataWin;Desmear_Graph;"
 	
 	strswitch(itemStr)	// string switch
 		case "Load NCNR USANS Reduction Macros":	
@@ -232,10 +216,7 @@ Function NCNR_USANSReductionLoader(itemStr)
 			
 			break
 		case "Hide NCNR USANS Reduction Macros":	
-			DoWindow USANS_Panel
-			if(V_Flag)
-				DoWindow/HIDE=1 USANS_Panel
-			endif
+			HideShowWindowsInList(USANS_WinList,1)	
 		
 			gMenuStr3a = "Show NCNR USANS Reduction Macros"
 //			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
@@ -243,12 +224,9 @@ Function NCNR_USANSReductionLoader(itemStr)
 			BuildMenu "Macros"
 			
 			break
-		case "Show NCNR USANS Reduction Macros":	
-			DoWindow USANS_Panel
-			if(V_Flag)
-				DoWindow/HIDE=0 USANS_Panel
-			endif
-		
+		case "Show NCNR USANS Reduction Macros":
+			HideShowWindowsInList(USANS_WinList,0)	
+			
 			gMenuStr3a = "Hide NCNR USANS Reduction Macros"
 //			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
 			gMenuStr3b = "-"
@@ -261,3 +239,19 @@ Function NCNR_USANSReductionLoader(itemStr)
 	
 end
 
+// 1 = hide, 0 = show
+Function HideShowWindowsInList(list,hide)
+	String list
+	Variable hide
+	
+	String item
+	Variable ii,num=ItemsinList(list)
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list , ";")
+		DoWindow $item
+		if(V_Flag)
+			DoWindow/HIDE=(hide) $item
+		endif
+	endfor
+	return(0)
+End
