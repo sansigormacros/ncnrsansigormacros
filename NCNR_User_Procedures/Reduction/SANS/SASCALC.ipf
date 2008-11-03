@@ -105,11 +105,11 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gImon = 10000
 	Variable/G root:Packages:NIST:SAS:gThick = 0.1
 	Variable/G root:Packages:NIST:SAS:gSig_incoh = 0.1
-	String/G root:Packages:NIST:SAS:gFuncStr = "SphereForm"
+	String/G root:Packages:NIST:SAS:gFuncStr = ""
 	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
 	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0	
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
-	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","# reaching detector","fraction reaching detector","# that interact","fraction singly scattered","fraction transmitted","","",""}
+	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","-"}
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -710,30 +710,29 @@ Function ReCalculateInten(doIt)
 		inputWave[9] = sig_incoh
 		inputWave[10] = sig_sas
 
-		//initialize ran1 in the XOP by passing a negative integer
-		// does nothing in the Igor code
-		results[0] = -1*trunc(datetime)/10
-
-//		Variable t0 = stopMStimer(-2)
+		Variable t0 = stopMStimer(-2)
 	
-#if exists("Monte_SANSX")
-	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-#else
-	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-#endif
-//		t0 = (stopMSTimer(-2) - t0)*1e-6
-//		Printf  "Mc sim time = %g seconds\r\r",t0	
+// threading crashes - there must be some operation in the XOP that is not threadSafe. What, I don't know...
+//		xMonte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+
+		t0 = (stopMSTimer(-2) - t0)*1e-6
+		Printf  "MC sim time = %g seconds\r\r",t0
 		
+		Variable trans
+		trans = results[8]			//(n1-n2)/n1
+
 		// convert to absolute scale
 		Variable kappa,beaminten = beamIntensity()
-		// results[6] is the fraction transmitted
-//		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*results[6]*(iMon/beaminten)
-		kappa = thick*(pixSize/sdd)^2*results[6]*iMon
+//		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*trans*(iMon/beaminten)
+		kappa = thick*(pixSize/sdd)^2*trans*iMon
 
 		linear_data = linear_data / kappa
 		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
 		data = linear_data
-	
+		
+//		print sum(linear_data), kappa
+
 	endif
 	
 	// update the wave with the beamstop diameter here, since I don't know what
@@ -1566,8 +1565,8 @@ Function detectorOffset()
 	WAVE rw=root:Packages:NIST:SAS:RealsRead
 	NVAR val = root:Packages:NIST:SAS:gOffset
 	rw[19] = val		// already in cm
-	//move the beamcenter
-	rw[16] = 64 + 2*rw[19]		//approximate beam X is 64 w/no offset, 114 w/25 cm offset
+	//move the beamcenter, make it an integer value for the MC simulation
+	rw[16] = 64 + round(2*rw[19])		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
 	rw[17] = 64		//typical value
 	
 	return(val)

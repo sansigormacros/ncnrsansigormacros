@@ -216,7 +216,7 @@ Function/S W_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;"
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;"
 	list = RemoveFromList(tmp, list  ,";")
 	list = RemoveFromList("Monte_SANS", list)
 

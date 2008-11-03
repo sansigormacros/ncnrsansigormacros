@@ -28,7 +28,7 @@
 // X better display of MC results on panel
 // - settings for "count for X seconds" or "how long to 1E6 cts on detector" (run short sim, then multiply)
 // - add quartz window scattering to the simulation somehow
-// - do smeared models make any sense??
+// - do smeared models make any sense?? Yes, John agrees that they do, and may be used in a more realistic simulation
 // - make sure that the ratio of scattering coherent/incoherent is properly adjusted for the sample composition
 //   or the volume fraction of solvent.
 //
@@ -41,13 +41,187 @@
 // - do we want to NOT offset the data by a multiplicative factor as it is "frozen" , so that the 
 //   effects on the absolute scale can be seen?
 //
-// - why is "pure" incoherent scattering giving me a q^-1 slope, even with the detector all the way back?
+// X why is "pure" incoherent scattering giving me a q^-1 slope, even with the detector all the way back?
 // - can I speed up by assuming everything interacts? This would compromise the ability to calculate multiple scattering
-// - ask John how to verify what is going on
+// X ask John how to verify what is going on
 // - a number of models are now found to be ill-behaved when q=1e-10. Then the random deviate calculation blows up.
 //   a warning has been added - but the models are better fixed with the limiting value.
 //
 //
+
+// threaded call to the main function, adds up the individual runs, and returns what is to be displayed
+// results is calculated and sent back for display
+Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+
+	//initialize ran1 in the XOP by passing a negative integer
+	// does nothing in the Igor code
+	Duplicate/O results retWave
+	//results[0] = -1*(datetime)
+
+	Variable NNeutron=inputWave[0]
+	Variable i,nthreads= ThreadProcessorCount
+	if(nthreads>2)		//only support 2 processors until I can figure out how to properly thread the XOP and to loop it
+		nthreads=2
+	endif
+	
+//	nthreads = 1
+	
+	variable mt= ThreadGroupCreate(nthreads)
+	
+	inputWave[0] = NNeutron/nthreads		//split up the number of neutrons
+	
+	for(i=0;i<nthreads;i+=1)
+		Duplicate/O nt $("nt"+num2istr(i))		//new instance for each thread
+		Duplicate/O j1 $("j1"+num2istr(i))
+		Duplicate/O j2 $("j2"+num2istr(i))
+		Duplicate/O nn $("nn"+num2istr(i))
+		Duplicate/O linear_data $("linear_data"+num2istr(i))
+		Duplicate/O retWave $("retWave"+num2istr(i))
+		Duplicate/O inputWave $("inputWave"+num2istr(i))
+		Duplicate/O ran_dev $("ran_dev"+num2istr(i))
+		
+		// ?? I need explicit wave references?
+		if(i==0)
+			WAVE inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0
+			retWave0[0] = -1*datetime		//to initialize ran3
+			ThreadStart mt,i,Monte_SANS_W1(inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0)
+			Print "started thread 0"
+		endif
+		if(i==1)
+			WAVE inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1
+			//retWave1[0] = -1*datetime		//to initialize ran3
+			ThreadStart mt,i,Monte_SANS_W1(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
+			Print "started thread 1"
+		endif
+//		if(i==2)
+//			WAVE inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2
+//			retWave2[0] = -1*datetime		//to initialize ran3
+//			ThreadStart mt,i,Monte_SANS_W(inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2)
+//		endif
+//		if(i==3)
+//			WAVE inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3
+//			retWave3[0] = -1*datetime		//to initialize ran3
+//			ThreadStart mt,i,Monte_SANS_W(inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3)
+//		endif
+	endfor
+
+// wait until done
+	do
+		variable tgs= ThreadGroupWait(mt,100)
+	while( tgs != 0 )
+	variable dummy= ThreadGroupRelease(mt)
+	Print "done with all threads"
+
+	// calculate all of the bits for the results
+	if(nthreads == 1)
+		nt = nt0		// add up each instance
+		j1 = j10
+		j2 = j20
+		nn = nn0
+		linear_data = linear_data0
+		retWave = retWave0
+	endif
+	if(nthreads == 2)
+		nt = nt0+nt1		// add up each instance
+		j1 = j10+j11
+		j2 = j20+j21
+		nn = nn0+nn1
+		linear_data = linear_data0+linear_data1
+		retWave = retWave0+retWave1
+	endif
+//	if(nthreads == 3)
+//		nt = nt0+nt1+nt2		// add up each instance
+//		j1 = j10+j11+j12
+//		j2 = j20+j21+j22
+//		nn = nn0+nn1+nn2
+//		linear_data = linear_data0+linear_data1+linear_data2
+//		retWave = retWave0+retWave1+retWave2
+//	endif
+//	if(nthreads == 4)
+//		nt = nt0+nt1+nt2+nt3		// add up each instance
+//		j1 = j10+j11+j12+j13
+//		j2 = j20+j21+j22+j23
+//		nn = nn0+nn1+nn2+nn3
+//		linear_data = linear_data0+linear_data1+linear_data2+linear_data3
+//		retWave = retWave0+retWave1+retWave2+retWave3
+//	endif
+	
+	// fill up the results wave
+	Variable xc,yc
+	xc=inputWave[3]
+	yc=inputWave[4]
+	results[0] = inputWave[9]+inputWave[10]		//total XS
+	results[1] = inputWave[10]						//SAS XS
+	results[2] = retWave[1]							//number that interact n2
+	results[3] = retWave[2]	- linear_data[xc][yc]				//# reaching detector minus Q(0)
+	results[4] = retWave[3]/retWave[1]				//avg# times scattered
+	results[5] = retWave[4]/retWave[1]						//single coherent fraction
+	results[6] = retWave[5]/retWave[1]				//double coherent fraction
+	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
+	results[8] = (retWave[0]-retWave[1])/retWave[0]			//trasnmitted fraction
+	
+	return(0)
+End
+
+// worker function for threads, does nothing except switch between XOP and Igor versions
+ThreadSafe Function Monte_SANS_W1(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+	
+#if exists("Monte_SANSX")
+	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#else
+	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#endif
+
+	return (0)
+End
+// worker function for threads, does nothing except switch between XOP and Igor versions
+ThreadSafe Function Monte_SANS_W2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+	
+#if exists("xxxxMonte_SANSX")
+	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#else
+	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#endif
+
+	return (0)
+End
+
+// NON-threaded call to the main function returns what is to be displayed
+// results is calculated and sent back for display
+Function Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+
+	//initialize ran1 in the XOP by passing a negative integer
+	// does nothing in the Igor code, enoise is already initialized
+	Duplicate/O results retWave
+	WAVE retWave
+	retWave[0] = -1*abs(trunc(100000*enoise(1)))
+	
+#if exists("Monte_SANSX")
+	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,retWave)
+#else
+	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,retWave)
+#endif
+
+	// fill up the results wave
+	Variable xc,yc
+	xc=inputWave[3]
+	yc=inputWave[4]
+	results[0] = inputWave[9]+inputWave[10]		//total XS
+	results[1] = inputWave[10]						//SAS XS
+	results[2] = retWave[1]							//number that interact n2
+	results[3] = retWave[2]	- linear_data[xc][yc]				//# reaching detector minus Q(0)
+	results[4] = retWave[3]/retWave[1]				//avg# times scattered
+	results[5] = retWave[4]/retWave[1]						//single coherent fraction
+	results[6] = retWave[5]/retWave[1]				//double coherent fraction
+	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
+	results[8] = (retWave[0]-retWave[1])/retWave[0]			//trasnmitted fraction
+	
+	return(0)
+End
 
 
 
@@ -71,7 +245,7 @@
 //        R0 = 'Enter sphere radius. (A)'
 //
 
-Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
+ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 	WAVE inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results
 
 	Variable imon,r1,r2,xCtr,yCtr,sdd,pixSize,thick,wavelength,sig_incoh,sig_sas
@@ -81,10 +255,6 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 	Variable qmax,theta_max,R_DAB,R0,BOUND,I0,q0,zpow
 	Variable N1,N2,N3,DTH,zz,tt,SIG_SINGLE,xx,yy,PHI,UU,SIG
 	Variable THETA,Ran,ll,D_OMEGA,RR,Tabs,Ttot,I1_sumI
-	//in John's implementation, he dimensioned the indices of the arrays to begin
-	// at 0, making things much easier for me...
-	//DIMENSION  NT(0:5000),J1(0:5000),J2(0:5000),NN(0:100)
-
 	Variable G0,E_NT,E_NN,TRANS_th,Trans_exp,rat
 	Variable GG,GG_ED,dS_dW,ds_dw_double,ds_dw_single
 	Variable DONE,FIND_THETA,err		//used as logicals
@@ -92,6 +262,8 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 	Variable Vx,Vy,Vz,Theta_z,qq
 	Variable Sig_scat,Sig_abs,Ratio,Sig_total
 	Variable isOn=0,testQ,testPhi,xPixel,yPixel
+	Variable NSingleIncoherent,NSingleCoherent,NScatterEvents,incoherentEvent,coherentEvent
+	Variable NDoubleCoherent,NMultipleScatter
 	
 	imon = inputWave[0]
 	r1 = inputWave[1]
@@ -121,22 +293,16 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 	Variable delta = deltax(ran_dev)
 	
 //c       total SAS cross-section
-//
-// input a test value for the incoherent scattering from water
-//
-//	sig_incoh = 5.6			//[1/cm] as calculated for H2O, now a parameter
-//
 //	SIG_SAS = zpow/thick
 	zpow = sig_sas*thick			//since I now calculate the sig_sas from the model
 	SIG_ABS = SIGABS_0 * WAVElength
 	SIG_TOTAL =SIG_ABS + SIG_SAS + sig_incoh
 //	Print "The TOTAL XSECTION. (CM-1) is ",sig_total
 //	Print "The TOTAL SAS XSECTION. (CM-1) is ",sig_sas
-	results[0] = sig_total
-	results[1] = sig_sas
+//	results[0] = sig_total		//assign these after everything's done
+//	results[1] = sig_sas
 //	RATIO = SIG_ABS / SIG_TOTAL
 	RATIO = sig_incoh / SIG_TOTAL
-//!!!! the ratio is not yet properly weighted for the volume fractions of each component!!!
 	
 //c       assuming theta = sin(theta)...OK
 	theta_max = wavelength*qmax/(2*pi)
@@ -148,6 +314,11 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 	N1 = 0
 	N2 = 0
 	N3 = 0
+	NSingleIncoherent = 0
+	NSingleCoherent = 0
+	NDoubleCoherent = 0
+	NMultipleScatter = 0
+	NScatterEvents = 0
 
 //C     INITIALIZE ARRAYS.
 	j1 = 0
@@ -170,6 +341,8 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 		DONE = 0			//	True when neutron is absorbed or when  scattered out of the sample.
 		INDEX = 0			//	Set counter for number of scattering events.
 		zz = 0.0			//	Set entering dimension of sample.
+		incoherentEvent = 0
+		coherentEvent = 0
 		
 		do					//	Makes sure position is within circle.
 			ran = abs(enoise(1))		//[0,1]
@@ -202,6 +375,7 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 				ran = abs(enoise(1))		//[0,1]
 				//Split neutron interactions into scattering and absorption events
 				IF(ran > ratio )		//C             NEUTRON SCATTERED coherently
+					coherentEvent = 1
 					FIND_THETA = 0			//false
 					DO
 						//ran = abs(enoise(1))		//[0,1]
@@ -227,6 +401,7 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
            	  // DONE = 1
            	  // phi and theta are random over the entire sphere of scattering
            	  // !can't just choose random theta and phi, won't be random over sphere solid angle
+           	  	incoherentEvent = 1
            	  	
            	  	ran = abs(enoise(1))		//[0,1]
 					theta = acos(2*ran-1)		
@@ -254,15 +429,11 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 				// is it on the detector?	
 				FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 				
-//				if(xPixel != xCtr && yPixel != yCtr)
-//					Print "testQ,testPhi,xPixel,yPixel",testQ,testPhi,xPixel,yPixel
-//				endif
-				
 				if(xPixel != -1 && yPixel != -1)
-					isOn += 1
 					//if(index==1)  // only the single scattering events
 						MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
 					//endif
+						isOn += 1		// scattered neutron that lands on detector
 				endif
 
 				If(theta_z < theta_max)
@@ -280,78 +451,55 @@ Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,results)
 					Endif
 				EndIf
 				
+				// increment all of the counters now since done==1 here and I'm sure to exit and get another neutron
+				NScatterEvents += index		//total number of scattering events
+				if(index == 1 && incoherentEvent == 1)
+					NSingleIncoherent += 1
+				endif
+				if(index == 1 && coherentEvent == 1)
+					NSingleCoherent += 1
+				endif
+				if(index == 2 && coherentEvent == 1 && incoherentEvent == 0)
+					NDoubleCoherent += 1
+				endif
+				if(index > 1)
+					NMultipleScatter += 1
+				endif
 			ENDIF
 		while (!done)
 	while(n1 < imon)
 
 //	Print "Monte Carlo Done"
-	trans_th = exp(-sig_total*thick)
+	results[0] = n1
+	results[1] = n2
+	results[2] = isOn
+	results[3] = NScatterEvents		//sum of # of times that neutrons scattered
+	results[4] = NSingleCoherent		//# of events that are single, coherent
+	results[5] = NDoubleCoherent
+	results[6] = NMultipleScatter		//# of multiple scattering events
+	
+	
+//	trans_th = exp(-sig_total*thick)
 //	TRANS_exp = (N1-N2) / N1 			// Transmission
 	// dsigma/domega assuming isotropic scattering, with no absorption.
 //	Print "trans_exp = ",trans_exp
 //	Print "total # of neutrons reaching 2D detector",isOn
 //	Print "fraction of incident neutrons reaching detector ",isOn/iMon
-	results[2] = isOn
-	results[3] = isOn/iMon
 	
-				
-// OUTPUT of the 1D data, not necessary now since I want the 2D
-//	Make/O/N=(num_bins) qvals,int_ms,sig_ms,int_sing,int_doub
-//	ii=1
-//	Print "binning"
-//	do
-//		//CALCULATE MEAN THETA IN BIN.
-//		THETA_z = (ii-0.5)*DTH			// Mean scattering angle of bin.
-//		//Solid angle of Ith bin.
-//		D_OMEGA = 2*PI*ABS( COS(ii*DTH) - COS((ii-1)*DTH) )
-//		//SOLID ANGLE CORRECTION: YIELDING CROSS-SECTION.
-//		dS_dW = NT[ii]/(N1*THICK*Trans_th*D_OMEGA)
-//		SIG = NT[ii]^0.5/(N1*THICK*Trans_th*D_OMEGA)
-//		ds_dw_single = J1[ii]/(N1*THICK*Trans_th*D_OMEGA)
-//		ds_dw_double = J2[ii]/(N1*THICK*Trans_th*D_OMEGA)
-//		//Deviation from isotropic model.
-//		qq = 4*pi*sin(0.5*theta_z)/wavelength
-//		qvals[ii-1] = qq
-//		int_ms[ii-1] = dS_dW
-//		sig_ms[ii-1] = sig
-//		int_sing[ii-1] = ds_dw_single
-//		int_doub[ii-1] = ds_dw_double
-//		//140     WRITE (7,145) qq,dS_dW,SIG,ds_dw_single,ds_dw_double
-//		ii+=1
-//	while(ii<=num_bins)
-//	Print "done binning"
-
-
-//        Write(7,*)
-//        Write(7,*) '#Times Sc.   #Events    '
-//      DO 150 I = 1,N_INDEX
-//150    WRITE (7,146) I,NN(I)
-//146   Format (I5,T10,F8.0)
-
-///       Write(7,171) N1
-//        Write(7,172) N2
-//        Write(7,173) N3
-//        Write(7,174) N2-N3
-
-//171     Format('Total number of neutrons:         N1= ',E10.5)
-///172     Format('Number of neutrons that interact: N2= ',E10.5)
-//173     Format('Number of absorption events:      N3= ',E10.5)
-//174     Format('# of neutrons that scatter out:(N2-N3)= ',E10.5)
-
 //	Print "Total number of neutrons = ",N1
 //	Print "Total number of neutrons that interact = ",N2
 //	Print "Fraction of singly scattered neutrons = ",sum(j1,-inf,inf)/N2
-	results[4] = N2
-	results[5] = sum(j1,-inf,inf)/N2
+//	results[2] = N2						//number that scatter
+//	results[3] = isOn - MC_linear_data[xCtr][yCtr]			//# scattered reaching detector minus zero angle
+
 	
-	Tabs = (N1-N3)/N1
-	Ttot = (N1-N2)/N1
-	I1_sumI = NN[0]/(N2-N3)
+//	Tabs = (N1-N3)/N1
+//	Ttot = (N1-N2)/N1
+//	I1_sumI = NN[0]/(N2-N3)
 //	Print "Tabs = ",Tabs
 //	Print "Transmitted neutrons = ",Ttot
-	results[6] = Ttot
+//	results[8] = Ttot
 //	Print "I1 / all I1 = ", I1_sumI
-//	Print "DONE!"
 
 End
 ////////	end of main function for calculating multiple scattering
@@ -390,7 +538,7 @@ Function 	CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	return(0)
 End
 
-Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 	Variable testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
 
 	Variable theta,dy,dx,qx,qy
@@ -483,7 +631,7 @@ Function/S MC_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;"
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;"
 	list = RemoveFromList(tmp, list  ,";")
 	list = RemoveFromList("Monte_SANS", list)
 
@@ -506,6 +654,8 @@ Function/S MC_FunctionPopupList()
 	endif
 	
 	list = SortList(list)
+	
+	list = "default;"+list
 	return(list)
 End              
 
@@ -526,7 +676,7 @@ End
 
 //calculates new direction (xyz) from an old direction
 //theta and phi don't change
-Function NewDirection(vx,vy,vz,theta,phi)
+ThreadSafe Function NewDirection(vx,vy,vz,theta,phi)
 	Variable &vx,&vy,&vz
 	Variable theta,phi
 	
@@ -562,7 +712,7 @@ Function NewDirection(vx,vy,vz,theta,phi)
 	Return(err)
 End
 
-Function path_len(aval,sig_tot)
+ThreadSafe Function path_len(aval,sig_tot)
 	Variable aval,sig_tot
 	
 	Variable retval
@@ -641,7 +791,7 @@ Function MC_Display2DButtonProc(ba) : ButtonControl
 	return 0
 End
 
-/////UNUSED, testing routines that have note been updated to work with SASCALC
+/////UNUSED, testing routines that have not been updated to work with SASCALC
 //
 //Macro Simulate2D_MonteCarlo(imon,r1,r2,xCtr,yCtr,sdd,thick,wavelength,sig_incoh,funcStr)
 //	Variable imon=100000,r1=0.6,r2=0.8,xCtr=100,yCtr=64,sdd=400,thick=0.1,wavelength=6,sig_incoh=0.1
