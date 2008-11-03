@@ -11,11 +11,10 @@
 //
 // - Most importantly, this needs to be checked for correctness of the MC simulation
 // X how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
-// - why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
+// X why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
 // - get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
-// - what is magical about Qu? Is this an assumpution?
 
-// - at the larger angles, is the "flat" detector being properly accounted for - in terms of
+// X at the larger angles, is the "flat" detector being properly accounted for - in terms of
 //   the solid angle and how many counts fall in that pixel. Am I implicitly defining a spherical detector
 //   so that what I see is already "corrected"?
 // X the MC will, of course benefit greatly from being XOPized. Maybe think about parallel implementation
@@ -26,16 +25,16 @@
 // - fully use the SASCALC input, most importantly, flux on sample.
 // X if no MC desired, still use the selected model
 // X better display of MC results on panel
-// - settings for "count for X seconds" or "how long to 1E6 cts on detector" (run short sim, then multiply)
+// - settings for "count for X seconds" or "how long to 1E6 cts on detector" (but 1E6 is typically too many counts...)
 // - add quartz window scattering to the simulation somehow
 // - do smeared models make any sense?? Yes, John agrees that they do, and may be used in a more realistic simulation
 // - make sure that the ratio of scattering coherent/incoherent is properly adjusted for the sample composition
 //   or the volume fraction of solvent.
 //
-// - add to the results the fraction of coherently scattered neutrons that are singly scattered, different than
+// X add to the results the fraction of coherently scattered neutrons that are singly scattered, different than
 //   the overall fraction of singly scattered, and maybe more important to know.
 //
-// - change the fraction reaching the detector to exclude those that don't interact. These transmitted neutrons
+// X change the fraction reaching the detector to exclude those that don't interact. These transmitted neutrons
 //   aren't counted. Is the # that interact a better number?
 //
 // - do we want to NOT offset the data by a multiplicative factor as it is "frozen" , so that the 
@@ -159,7 +158,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	results[5] = retWave[4]/retWave[1]						//single coherent fraction
 	results[6] = retWave[5]/retWave[1]				//double coherent fraction
 	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
-	results[8] = (retWave[0]-retWave[1])/retWave[0]			//trasnmitted fraction
+	results[8] = (retWave[0]-retWave[1])/retWave[0]			//transmitted fraction
 	
 	return(0)
 End
@@ -218,7 +217,7 @@ Function Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,result
 	results[5] = retWave[4]/retWave[1]						//single coherent fraction
 	results[6] = retWave[5]/retWave[1]				//double coherent fraction
 	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
-	results[8] = (retWave[0]-retWave[1])/retWave[0]			//trasnmitted fraction
+	results[8] = (retWave[0]-retWave[1])/retWave[0]			//transmitted fraction
 	
 	return(0)
 End
@@ -338,7 +337,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 		Theta = 0.0		//	Initialize scattering angle.
 		Phi = 0.0			//	Intialize azimuthal angle.
 		N1 += 1			//	Increment total number neutrons counter.
-		DONE = 0			//	True when neutron is absorbed or when  scattered out of the sample.
+		DONE = 0			//	True when neutron is scattered out of the sample.
 		INDEX = 0			//	Set counter for number of scattering events.
 		zz = 0.0			//	Set entering dimension of sample.
 		incoherentEvent = 0
@@ -416,55 +415,79 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 				If (index <= N_Index)
 					NN[INDEX] += 1
 				Endif
-				//IF (VZ > 1.0) 	// FIX INVALID ARGUMENT
-					//VZ = 1.0 - 1.2e-7
-				//ENDIF
-				Theta_z = acos(Vz)		// Angle WITH respect to z axis.
-				testQ = 2*pi*sin(theta_z)/wavelength
 				
-				// pick a random phi angle, and see if it lands on the detector
-				// since the scattering is isotropic, I can safely pick a new, random value
-				// this would not be true if simulating anisotropic scattering.
-				testPhi = abs(enoise(1))*2*Pi
-				// is it on the detector?	
-				FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
-				
-				if(xPixel != -1 && yPixel != -1)
-					//if(index==1)  // only the single scattering events
-						MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
-					//endif
-						isOn += 1		// scattered neutron that lands on detector
-				endif
+				if(index != 0)		//the neutron interacted at least once, figure out where it ends up
 
-				If(theta_z < theta_max)
-					//Choose index for scattering angle array.
-					//IND = NINT(THETA_z/DTH + 0.4999999)
-					ind = round(THETA_z/DTH + 0.4999999)		//round is eqivalent to nint()
-					NT[ind] += 1 			//Increment bin for angle.
-					//Increment angle array for single scattering events.
-					IF(INDEX == 1)
-						j1[ind] += 1
-					Endif
-					//Increment angle array for double scattering events.
-					IF (INDEX == 2)
-						j2[ind] += 1
-					Endif
-				EndIf
+					Theta_z = acos(Vz)		// Angle WITH respect to z axis.
+					testQ = 2*pi*sin(theta_z)/wavelength
+					
+					// pick a random phi angle, and see if it lands on the detector
+					// since the scattering is isotropic, I can safely pick a new, random value
+					// this would not be true if simulating anisotropic scattering.
+					testPhi = abs(enoise(1))*2*Pi
+					// is it on the detector?	
+					FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+					
+					if(xPixel != -1 && yPixel != -1)
+						//if(index==1)  // only the single scattering events
+							MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
+						//endif
+							isOn += 1		// neutron that lands on detector
+					endif
+	
+					If(theta_z < theta_max)
+						//Choose index for scattering angle array.
+						//IND = NINT(THETA_z/DTH + 0.4999999)
+						ind = round(THETA_z/DTH + 0.4999999)		//round is eqivalent to nint()
+						NT[ind] += 1 			//Increment bin for angle.
+						//Increment angle array for single scattering events.
+						IF(INDEX == 1)
+							j1[ind] += 1
+						Endif
+						//Increment angle array for double scattering events.
+						IF (INDEX == 2)
+							j2[ind] += 1
+						Endif
+					EndIf
+					
+					// increment all of the counters now since done==1 here and I'm sure to exit and get another neutron
+					NScatterEvents += index		//total number of scattering events
+					if(index == 1 && incoherentEvent == 1)
+						NSingleIncoherent += 1
+					endif
+					if(index == 1 && coherentEvent == 1)
+						NSingleCoherent += 1
+					endif
+					if(index == 2 && coherentEvent == 1 && incoherentEvent == 0)
+						NDoubleCoherent += 1
+					endif
+					if(index > 1)
+						NMultipleScatter += 1
+					endif
+					//Print "n1,index (x,y) = ",n1,index, xpixel,ypixel
+				else	// if neutron escaped without interacting
+					// then it must be a transmitted neutron
+					// don't need to calculate, just increment the proper counters
+					MC_linear_data[xCtr][yCtr] += 1
+					isOn += 1
+					nt[0] += 1
+					
+					// (Don't do this - it's a waste of time) 
+					// re-initialize and go back and count this neutron again
+					// go back to xy position
+//					xx -= ll*vx
+//					yy -= ll*vy
+//					zz -= ll*vz
+//					RR = sqrt(xx*xx+yy*yy)		//radial position of scattering event.
+//			
+//					Vx = 0.0			// Initialize incident direction vector.
+//					Vy = 0.0
+//					Vz = 1.0
+//					zz = 0
+//					theta = 0
+//					phi = 0
+				endif
 				
-				// increment all of the counters now since done==1 here and I'm sure to exit and get another neutron
-				NScatterEvents += index		//total number of scattering events
-				if(index == 1 && incoherentEvent == 1)
-					NSingleIncoherent += 1
-				endif
-				if(index == 1 && coherentEvent == 1)
-					NSingleCoherent += 1
-				endif
-				if(index == 2 && coherentEvent == 1 && incoherentEvent == 0)
-					NDoubleCoherent += 1
-				endif
-				if(index > 1)
-					NMultipleScatter += 1
-				endif
 			ENDIF
 		while (!done)
 	while(n1 < imon)

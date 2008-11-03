@@ -710,6 +710,8 @@ Function ReCalculateInten(doIt)
 		inputWave[9] = sig_incoh
 		inputWave[10] = sig_sas
 
+		linear_data = 0		//initialize
+		
 		Variable t0 = stopMStimer(-2)
 	
 // threading crashes - there must be some operation in the XOP that is not threadSafe. What, I don't know...
@@ -721,6 +723,9 @@ Function ReCalculateInten(doIt)
 		
 		Variable trans
 		trans = results[8]			//(n1-n2)/n1
+		if(trans == 0)
+			trans = 1
+		endif
 
 		// convert to absolute scale
 		Variable kappa,beaminten = beamIntensity()
