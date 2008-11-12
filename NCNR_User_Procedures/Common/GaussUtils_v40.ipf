@@ -322,6 +322,120 @@ Function Make76GaussPoints(w76,z76)
 
 End		//Make76GaussPoints()
 
+// !!!!! reduces the length of qt and zi by one !!!!!
+//
+Function Make_N_GaussPoints(wt,zi)
+	Wave wt,zi
+	
+	Variable num
+	num = numpnts(wt) - 1
+	
+	gauleg(-1,1,zi,wt,num)
+	
+	DeletePoints 0,1,wt,zi
+	
+	return(0)
+End
+
+/// gauleg subroutine from NR to calculate weights and abscissae for 
+// Gauss-Legendre quadrature
+//
+//
+// arrays are indexed from 1
+//
+Function gauleg( x1, x2, x, w, n)
+	Variable x1, x2
+	Wave x, w
+	Variable n
+	
+	variable m,j,i
+	variable z1,z,xm,xl,pp,p3,p2,p1
+	Variable eps = 3e-11
+
+	m=(n+1)/2
+	xm=0.5*(x2+x1)
+	xl=0.5*(x2-x1)
+	for (i=1;i<=m;i+=1) 
+		z=cos(pi*(i-0.25)/(n+0.5))
+		do 
+			p1=1.0
+			p2=0.0
+			for (j=1;j<=n;j+=1) 
+				p3=p2
+				p2=p1
+				p1=((2.0*j-1.0)*z*p2-(j-1.0)*p3)/j
+			endfor
+			pp=n*(z*p1-p2)/(z*z-1.0)
+			z1=z
+			z=z1-p1/pp
+		while (abs(z-z1) > EPS)
+		x[i]=xm-xl*z
+		x[n+1-i]=xm+xl*z
+		w[i]=2.0*xl/((1.0-z*z)*pp*pp)
+		w[n+1-i]=w[i]
+	Endfor
+End
+
+
+/// uses a user-supplied number of Gauss points, and generates them on-the-fly as needed
+// using a Numerical Recipes routine
+//
+// - note that this has an extra input parameter, nord
+//
+////////////
+Function IntegrateFn_N(fcn,loLim,upLim,w,x,nord)				
+	FUNCREF GenericQuadrature_proto fcn
+	Variable loLim,upLim	//limits of integration
+	Wave w			//coefficients of function fcn(w,x)
+	Variable x	//x-value (q) for the calculation
+	Variable nord			//number of quadrature points to used
+
+// local variables
+	Variable ii,va,vb,summ,yyy,zi
+	Variable answer,dum
+	String weightStr,zStr
+	
+	weightStr = "gauss"+num2iStr(nord)+"wt"
+	zStr = "gauss"+num2istr(nord)+"z"
+		
+	if (WaveExists($weightStr) == 0) // wave reference is not valid, 
+		Make/D/N=(nord+1) $weightStr,$zStr
+		Wave wt = $weightStr
+		Wave xx = $zStr		// wave references to pass
+		Make_N_GaussPoints(wt,xx)				//generates the gauss points and removes the extra point
+	else
+		if(exists(weightStr) > 1) 
+			 Abort "wave name is already in use"		//executed only if name is in use elsewhere
+		endif
+		Wave wt = $weightStr
+		Wave xx = $zStr		// create the wave references
+	endif
+
+	//limits of integration are input to function
+	va = loLim
+	vb = upLim
+	// Using 5 Gauss points		    
+	// remember to index from 0,size-1
+
+	summ = 0.0		// initialize integral
+	ii=0			// loop counter
+	do
+		// calculate Gauss points on integration interval (q-value for evaluation)
+		zi = ( xx[ii]*(vb-va) + vb + va )/2.0
+		//calculate partial sum for the passed-in model function	
+		yyy = wt[ii] *  fcn(w,x,zi)						
+		summ += yyy		//add to the running total of the quadrature
+       ii+=1     	
+	while (ii<nord)				// end of loop over quadrature points
+   
+	// calculate value of integral to return
+	answer = (vb-va)/2.0*summ
+
+	Return (answer)
+End
+
+
+
 ////////////
 Function IntegrateFn5(fcn,loLim,upLim,w,x)				
 	FUNCREF GenericQuadrature_proto fcn
@@ -1200,3 +1314,4 @@ Function fResetSmearedModels(matchStr,qStr)
 	endfor
 	return(0)
 end
+

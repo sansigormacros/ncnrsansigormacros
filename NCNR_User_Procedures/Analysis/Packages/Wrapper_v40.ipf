@@ -806,9 +806,18 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 // create these variables so that FuncFit will set them on exit
 	Variable/G V_FitError=0				//0=no err, 1=error,(2^1+2^0)=3=singular matrix
 	Variable/G V_FitQuitReason=0		//0=ok,1=maxiter,2=user stop,3=no chisq decrease
+
 	
 // don't use the auto-destination with no flag, it doesn't appear to work correctly
 // dispatch the fit
+
+// currently, none of the fit functions are defined as threadsafe, so I don't think that the /NTHR flag really
+// does anything. The functions themselves can be threaded since they are AAO, and that is probably enough,
+// since it doesn't make much sense to thread threads. In addition, there is a little-publicized warning
+// in the WM help file that /C=texWave cannot be used to specify constraints for threadsafe functions!
+// The textwave would have to be parsed into a constraint matrix first, then passed as /C={cMat,cVec}.
+// -- just something to watch out for.
+
 	do
 //		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
 		

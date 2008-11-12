@@ -126,7 +126,7 @@ Proc FileList_BuiltInList()
 
 ////paste here... after deleting the old make statement and list
 	
-  Make/O/T/N=69  SANS_Model_List
+  Make/O/T/N=80  SANS_Model_List
 
   SANS_Model_List[0] = "BE_Polyelectrolyte.ipf"
   SANS_Model_List[1] = "CoreShellCylinder.ipf"
@@ -194,10 +194,21 @@ Proc FileList_BuiltInList()
   SANS_Model_List[63] = "TriaxialEllipsoid.ipf"
   SANS_Model_List[64] = "Vesicle_UL_and_Struct.ipf"
   SANS_Model_List[65] = "Vesicle_UL.ipf"
-  //Beta Models
+  //2008 Models
   SANS_Model_List[66] = "Core_and_NShells.ipf"
   SANS_Model_List[67] = "PolyCore_and_NShells.ipf"
   SANS_Model_List[68] = "Fractal_Polysphere.ipf"
+  SANS_Model_List[69] = "GaussLorentzGel.ipf"
+  SANS_Model_List[70] = "PolyGaussCoil.ipf"
+  SANS_Model_List[71] = "Two_Power_Law.ipf"
+  SANS_Model_List[72] = "BroadPeak.ipf"
+  SANS_Model_List[73] = "CorrelationLengthModel.ipf"
+  SANS_Model_List[74] = "TwoLorentzian.ipf"
+  SANS_Model_List[75] = "PolyGaussShell.ipf"
+  SANS_Model_List[76] = "LamellarParacrystal.ipf"
+  SANS_Model_List[77] = "SC_ParaCrystal.ipf"
+  SANS_Model_List[78] = "BCC_ParaCrystal.ipf"
+  SANS_Model_List[79] = "FCC_ParaCrystal.ipf"
 
 
   ///end paste here

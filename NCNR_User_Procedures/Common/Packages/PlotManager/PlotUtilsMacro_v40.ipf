@@ -106,6 +106,15 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 //		print "filename :"+filename
 		Variable numCols = V_flag
 		
+		//changes JIL to allow 2-column data to be read in, "faking" a 3rd column of errors
+		if(numCols==2) //no errors
+			n1 = StringFromList(1, S_waveNames ,";" )
+			Duplicate/O $("root:"+n1), errorTmp
+			errorTmp = 0.01*(errorTmp)+ 0.03*sqrt(errorTmp)
+			S_waveNames+="errorTmp;"
+			numCols=3
+		endif
+		
 		if(numCols==3)		//simple 3-column data with no resolution information
 			
 			// put the names of the three loaded waves into local names
