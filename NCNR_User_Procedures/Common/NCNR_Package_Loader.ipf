@@ -123,7 +123,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 	String SANSRed_WinList = "Main_Panel;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR SANS Reduction Macros":	
-			Execute/P "INSERTINCLUDE \"Includes_v510\""
+			Execute/P "INSERTINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
 		
@@ -135,7 +135,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			break						
 		case "Unload NCNR SANS Reduction Macros":	
 		// very dangerous - don't really want to implement this because it will surely crash
-			Execute/P "DELETEINCLUDE \"Includes_v510\""
+			Execute/P "DELETEINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			DoWindow Main_Panel
 			if(V_Flag)

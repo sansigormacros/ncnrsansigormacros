@@ -792,15 +792,15 @@ Function FillFakeHeader_ASC(destFolder)
 	realw[26]=lam		//wavelength (A)
 	//
 	// necessary values
-	realw[10]=5			//detector calibration constants, needed for averaging
+	realw[10]=8			//detector calibration constants, needed for averaging
 	realw[11]=10000
 	realw[12]=0
-	realw[13]=5
+	realw[13]=8
 	realw[14]=10000
 	realw[15]=0
 	//
 	// used in the resolution calculation, ONLY here to keep the routine from crashing
-	realw[20]=65		//det size
+	realw[20]=102		//det size
 	realw[27]=dlam	//delta lambda
 	realw[21]=bsDiam	//BS size
 	realw[23]=a1		//A1
@@ -1142,9 +1142,14 @@ Function WriteSDDToHeader(fname,num)
 	Variable num
 	
 	//your code here
-	WriteReal(fname,num,5152)
+	//WriteReal(fname,num,5152)
+	
+	
+	WriteReal(fname,num,5265)
 	
 	// line 4 column 4
+	
+	// real calculated distance line 6 colunm1
 	
 	return(0)
 End
@@ -1513,7 +1518,10 @@ Function getSDD(fname)
 	
 	// your code returning value
 //	value = getRealValueFromHeader_2(fname,60,28,5,4,4) 
-	value = getRealValueFromHeader(fname,18)
+//	value = getRealValueFromHeader(fname,18)  detector distance but need to add the offset due to the table
+	
+	value = getRealValueFromHeader(fname,25)
+	
 	
 	return(value)
 end

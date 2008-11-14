@@ -26,7 +26,7 @@ Function InitFacilityGlobals()
 	// pixel dimensions are now read directly from the file header.
 //	Variable/G root:myGlobals:PixelResDefault = 0.5			//pixel resolution in cm
 	
-	Variable/G root:myGlobals:DeadtimeDefault = 0.9e-6		//deadtime in seconds
+	Variable/G root:myGlobals:DeadtimeDefault =  (0.9e-6 )/128		//deadtime in seconds
 	
 	Variable/G root:myGlobals:BeamstopYTol = 100	
 
@@ -172,7 +172,7 @@ Function DetectorDeadtime(fileStr,detStr)
 	Variable deadtime
 	
 // your code here
-deadtime = 0.9e-6
+deadtime = (2e-6)
 
 	return(deadtime)
 End

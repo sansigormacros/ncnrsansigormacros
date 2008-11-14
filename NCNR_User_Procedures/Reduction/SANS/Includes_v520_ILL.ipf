@@ -17,7 +17,7 @@
 #include "Correct"				version>=5.0
 #include "DisplayUtils"			version>=5.0
 #include "FIT_Ops"				version>=5.0
-#include "Initialize"			version>=5.0
+#include "InitializeILL"			version>=5.0
 #include "MainPanel"			version>=5.0
 #include "Marquee"				version>=5.0
 #include "MaskUtils"			version>=5.0
@@ -42,7 +42,7 @@
 #include "Tile_2D"				version>=5.0
 #include "Transmission"			version>=5.0
 //#include "VAXFileUtils"			version>=5.0		//branched 29MAR07
-#include "WorkFileUtils"		version>=5.0
+#include "WorkFileUtilsLP"		version>=5.0
 #include "WriteQIS"				version>=5.0 
 // removed RT button from main panel AUG2006
 // removed RT ipf file in 29MAR07 branch (do not delete, but do not include or maintain)
@@ -50,17 +50,14 @@
 #include "SANSPreferences"				version>=5.0 		//NEW 05MAY03
 #include "Subtract_1D"				version>=5.0 			//NEW 14MAY03
 
-#include "NCNR_Utils"									//new in the 29MAR07 branch
-#include "NCNR_DataReadWrite"							//new in the 29MAR07 branch
+#include "ILL_Utils"									//new in the 29MAR07 branch
+#include "ILL_DataReadWrite"							//new in the 29MAR07 branch
 #include "SANS_Utilities"								//new in the 29MAR07 branch
 
 // new in Jan 2008
 #include "SASCALC"
 #include "CheckVersionFTP"				//added June 2008
 #include "MultScatter_MonteCarlo_2D"			//Oct 2008 SRK for SASCALC simulation
-
-
-#include "TISANE"
 
 
 //AJJ Oct 2008
