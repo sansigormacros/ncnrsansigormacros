@@ -193,6 +193,7 @@ Function/S W_FunctionPopupList()
 
 	tmp = FunctionList("*_proto",";","KIND:10")		//prototypes
 	list = RemoveFromList(tmp, list  ,";")
+	
 	//prototypes that show up if GF is loaded
 	list = RemoveFromList("GFFitFuncTemplate", list)
 	list = RemoveFromList("GFFitAllAtOnceTemplate", list)
@@ -216,12 +217,21 @@ Function/S W_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;"
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;Monte_SANS;"
 	list = RemoveFromList(tmp, list  ,";")
-	list = RemoveFromList("Monte_SANS", list)
 
 	// USANS Reduction bits
 	tmp = "DSM_Guinier_Fit;RemoveMaskedPoints;"
+	list = RemoveFromList(tmp, list  ,";")
+
+	//more functions from analysis models (2008)
+	tmp = "Barbell_Inner;Barbell_Outer;Barbell_integrand;BCC_Integrand;Integrand_BCC_Inner;Integrand_BCC_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "CapCyl;CapCyl_Inner;CapCyl_Outer;ConvLens;ConvLens_Inner;ConvLens_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "Dumb;Dumb_Inner;Dumb_Outer;FCC_Integrand;Integrand_FCC_Inner;Integrand_FCC_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "Integrand_SC_Inner;Integrand_SC_Outer;SC_Integrand;SphCyl;SphCyl_Inner;SphCyl_Outer;"
 	list = RemoveFromList(tmp, list  ,";")
 
 
