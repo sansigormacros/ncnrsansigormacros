@@ -120,7 +120,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SVAR gMenuStr2a = root:Packages:NCNRItemStr2a
 	SVAR gMenuStr2b = root:Packages:NCNRItemStr2b
 	
-	String SANSRed_WinList = "Main_Panel;"
+	String SANSRed_WinList = "Main_Panel;CatVSTable;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR SANS Reduction Macros":	
 			Execute/P "INSERTINCLUDE \"Includes_v520\""

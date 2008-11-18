@@ -238,7 +238,7 @@ Function CorrectMode_1()
 	//create the necessary wave references
 	WAVE sam_data=$"root:Packages:NIST:SAM:data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"rootPackages:NIST::SAM:integersread"
+	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
 	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
 	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"

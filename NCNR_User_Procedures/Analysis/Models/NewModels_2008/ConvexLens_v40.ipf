@@ -117,10 +117,10 @@ Function fConvexLens(w,x) : FitFunc
 	scale = w[0]
 	rad = w[1]
 //	len = w[2]
-	endRad = w[3]
-	sldc = w[4]
-	slds = w[5]
-	bkg = w[6]
+	endRad = w[2]
+	sldc = w[3]
+	slds = w[4]
+	bkg = w[5]
 
 	hDist = -1*sqrt(abs(endRad^2-rad^2))
 

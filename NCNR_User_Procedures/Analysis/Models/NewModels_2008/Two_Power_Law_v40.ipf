@@ -10,7 +10,7 @@
 
 //////////////////////////////////
 Proc PlotTwoPowerLaw(num,qmin,qmax)
-	Variable num=512, qmin=.001, qmax=.2
+	Variable num=512, qmin=.001, qmax=.7
 	Prompt num "Enter number of data points for model: "
 	Prompt qmin "Enter minimum q-value (Å^1) for model: " 
 	 Prompt qmax "Enter maximum q-value (Å^1) for model: "
