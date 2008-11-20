@@ -58,8 +58,13 @@ Proc SASCALC()
 		S_initialize_space()
 		initNG3()		//start life as NG3
 		Sascalc_Panel()
-		ReCalculateInten(1)
+		ReCalculateInten(1)		//will use defaults
 	Endif
+	
+	DoWindow/F MC_SASCALC
+	if(V_flag==0)
+		MC_SASCALC()
+	endif
 End
 
 Proc S_initialize_space()
@@ -107,7 +112,8 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gSig_incoh = 0.1
 	String/G root:Packages:NIST:SAS:gFuncStr = ""
 	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
-	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0	
+	Variable/G root:Packages:NIST:SAS:gCntTime = 1
+	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
 	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","-"}
 	
@@ -337,6 +343,9 @@ Window SASCALC_Panel()
 	CheckBox checkLens,pos={6,155},size={44,14},proc=LensCheckProc,title="Lenses?"
 	CheckBox checkLens,value=root:Packages:NIST:SAS:gUsingLenses
 	
+//	CheckBox checkSim,pos={20,165},size={44,14},proc=SimCheckProc,title="Simulation?"
+//	CheckBox checkSim,value=0
+	
 	// set up a fake dependency to trigger recalculation
 	//root:Packages:NIST:SAS:gCalculate := ReCalculateInten(root:Packages:NIST:SAS:gTouched)
 EndMacro
@@ -532,6 +541,19 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	ReCalculateInten(1)
 End
 
+////simulation control panel
+//Function SimCheckProc(ctrlName,checked) : CheckBoxControl
+//	String ctrlName
+//	Variable checked
+//
+//	if(checked)
+//		DoWindow/F MC_SASCALC
+//		if(V_flag==0)
+//			Execute "MC_SASCALC()"
+//		endif
+//	endif
+//	return(0)
+//End
 
 // change the source aperture
 // 
@@ -613,30 +635,27 @@ Function DeltaLambdaPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 End
 
 
-Proc DoTest(nCts)
-	variable nCts = 1e6
-	
-	test2DSphere(nCts)
-	
-	root:Packages:NIST:SAS:linear_data = root:sim_lin
-	
-	S_CircularAverageTo1D("SAS")
-	
-	//multiply by sphere FF (S_SphereForm(scale,radius,delrho,bkg,x))
-	// or Debye Function S_Debye(scale,rg,bkg,x)
-	
-	//root:Packages:NIST:SAS:aveint = S_SphereForm(1,80,1e-6,0,root:Packages:NIST:SAS:qval)
-	//root:Packages:NIST:SAS:aveint = S_Debye(1000,100,0,qval)
-	
-	// multiply by beamstop shadowing
-	//root:Packages:NIST:SAS:aveint *= root:Packages:NIST:SAS:fSubS
-	
-	//multiply by current offset (>=1)
-	//root:Packages:NIST:SAS:aveint *= root:Packages:NIST:SAS:gModelOffsetFactor
-	
-End
-
+// calculate the intensity
+// - either do MC or the straight calculation.
+//
+// *****currently the smeared calculation is turned off, by not prepending "fSmeared" to the FUNCREFs)
+// --- the random deviate can't be calculated for the smeared model since I don't know the resolution
+// function over an infinite q-range, just the detector. Maybe the interpolation is OK, but I
+// don't really have a good way of testing this. Also, the resolution calculation explicitly multiplies
+// by fShad, and this wrecks the random deviate calculation. The 2D looks great, but the probabilities
+// are all wrong. fShad is only appropriate post-simulation.
+//
+//
+// (--NO--) ALWAYS DOES THE RESOLUTION SMEARED CALCULATION
+//  even though the unsmeared model is plotted. this is more realistic to 
+//  present to users that are planning base on what they will see in an experiment.
+//
+// some bits of the calculation are in a root:Simulation folder that are needed for the resolution smeared calculation
+// all other bits (as possible) are in the SAS folder (a 2D work folder)
+//
+// passing in one does the calculation, "normal" or MC, depending on the global. Normal calculation is the default
 // passing in zero from a control skips the calculation
+//
 Function ReCalculateInten(doIt)
 	Variable doIt
 	
@@ -644,12 +663,31 @@ Function ReCalculateInten(doIt)
 		return(0)
 	endif
 	
-	// do the simulation here
+	// update the wave with the beamstop diameter here, since I don't know what
+	// combinations of parameters will change the BS - but anytime the curve is 
+	// recalculated, or the text displayed, the right BS must be present
+	beamstopDiam()
+	
+	
+	// generate the resolution waves first, so they are present for a smearing calculation
+	// average the "fake" 2d data now to generate the smearing information
+	S_CircularAverageTo1D("SAS")
+	WAVE aveint=root:Packages:NIST:SAS:aveint
+	WAVE qval=root:Packages:NIST:SAS:qval
+	WAVE sigave=root:Packages:NIST:SAS:sigave
+	WAVE SigmaQ=root:Packages:NIST:SAS:sigmaQ
+	WAVE qbar=root:Packages:NIST:SAS:qbar
+	WAVE fSubS=root:Packages:NIST:SAS:fSubS
+	
+	//generate a "fake" 1d data folder/set named "Simulation"
+	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")
+	
+	// do the simulation here, or not
 	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
-	String coefStr,abortStr
+	String coefStr,abortStr,str
 
-	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if MC, 0 if other
-	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr
+	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if MC, 0 if other from the checkbox
+	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr		//set by the popup
 
 	if(doMonteCarlo == 1)
 		WAVE rw=root:Packages:NIST:SAS:realsRead
@@ -668,11 +706,13 @@ Function ReCalculateInten(doIt)
 		coefStr = MC_getFunctionCoef(funcStr)
 		
 		if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+			doMonteCarlo = 0		//we're getting out now, reset the flag so we don't continually end up here
 			Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 		endif
 		
 		Variable sig_sas
-		FUNCREF SANSModelAAO_MCproto func=$funcStr
+//		FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)		//a wrapper for the structure version
+		FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
 		WAVE results = root:Packages:NIST:SAS:results
 		WAVE linear_data = root:Packages:NIST:SAS:linear_data
 		WAVE data = root:Packages:NIST:SAS:data
@@ -711,17 +751,36 @@ Function ReCalculateInten(doIt)
 		inputWave[10] = sig_sas
 
 		linear_data = 0		//initialize
+
+		Variable t0,trans
 		
-		Variable t0 = stopMStimer(-2)
-	
-// threading crashes - there must be some operation in the XOP that is not threadSafe. What, I don't know...
+		// get a time estimate, and give the user a chance to exit if they're unsure.
+		t0 = stopMStimer(-2)
+		inputWave[0] = 1000
+		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		t0 = (stopMSTimer(-2) - t0)*1e-6
+		t0 *= imon/1000		//projected time, in seconds
+		inputWave[0] = imon		//reset
+		
+		if(t0>10)
+			sprintf str,"The simulation will take approximately %d seconds.\r- Proceed?",t0
+			DoAlert 1,str
+			if(V_flag == 2)
+				doMonteCarlo = 0
+				reCalculateInten(1)		//come back in and do the smeared calculation
+				return(0)
+			endif
+		endif
+		
+// threading crashes!! - there must be some operation in the XOP that is not threadSafe. What, I don't know...		
+		t0 = stopMStimer(-2)
+
 //		xMonte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 
 		t0 = (stopMSTimer(-2) - t0)*1e-6
 		Printf  "MC sim time = %g seconds\r\r",t0
 		
-		Variable trans
 		trans = results[8]			//(n1-n2)/n1
 		if(trans == 0)
 			trans = 1
@@ -736,42 +795,37 @@ Function ReCalculateInten(doIt)
 		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
 		data = linear_data
 		
-//		print sum(linear_data), kappa
-
+		// re-average the 2D data
+		S_CircularAverageTo1D("SAS")
+		// multiply either estimate by beamstop shadowing
+		aveint *= fSubS
+		// put the new result into the simulation folder
+		Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 	endif
 	
-	// update the wave with the beamstop diameter here, since I don't know what
-	// combinations of parameters will change the BS - but anytime the curve is 
-	// recalculated, or the text displayed, the right BS must be present
-	beamstopDiam()
-	
-	S_CircularAverageTo1D("SAS")
-	WAVE aveint=root:Packages:NIST:SAS:aveint
-	WAVE qval=root:Packages:NIST:SAS:qval
-	WAVE fSubS=root:Packages:NIST:SAS:fSubS
-	
-	//multiply by sphere FF (S_SphereForm(scale,radius,delrho,bkg,x))
-	// or Debye Function S_Debye(scale,rg,bkg,x)
-	
-	//aveint = S_SphereForm(1,80,1e-6,0,qval)
+
 	if(doMonteCarlo != 1)
 		if(exists(funcStr) != 0)
-			FUNCREF SANSModelAAO_MCproto func=$funcStr
+			FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
+//			FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
 			coefStr = MC_getFunctionCoef(funcStr)
 			
 			if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
 				Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 			endif
-			func($coefStr,aveint,qval)
+			Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+			func($coefStr,inten,qval)
+			inten *= fSubS
+			aveint = inten		//but aveint is displayed
 		else
 			aveint = S_Debye(1000,100,0.0,qval)
+			aveint *= fSubS		// multiply either estimate by beamstop shadowing
 		endif
+		
+		
 		WAVE sigave=root:Packages:NIST:SAS:sigave
 		sigave = 0		//reset for model calculation
 	endif
-	
-	// multiply either estimate by beamstop shadowing
-	aveint *= fSubS
 	
 	//display the configuration text in a separate notebook
 	DisplayConfigurationText()

@@ -20,14 +20,16 @@
 // X the MC will, of course benefit greatly from being XOPized. Maybe think about parallel implementation
 //   by allowing the data arrays to accumulate. First pass at the XOP is done. Not pretty, not the speediest (5.8x)
 //   but it is functional. Add spinCursor() for long calculations. See WaveAccess XOP example.
-// - the background parameter for the model MUST be zero, or the integration for scattering
-//    power will be incorrect.
-// - fully use the SASCALC input, most importantly, flux on sample.
+// X the background parameter for the model MUST be zero, or the integration for scattering
+//    power will be incorrect. (now the LAST point in a copy of the coef wave is set to zero, only for the rad_dev calculation
+// X fully use the SASCALC input, most importantly, flux on sample.
 // X if no MC desired, still use the selected model
 // X better display of MC results on panel
-// - settings for "count for X seconds" or "how long to 1E6 cts on detector" (but 1E6 is typically too many counts...)
+// X settings for "count for X seconds" or "how long to 1E6 cts on detector" (but 1E6 is typically too many counts...)
+// X warn of projected simulation time
 // - add quartz window scattering to the simulation somehow
-// - do smeared models make any sense?? Yes, John agrees that they do, and may be used in a more realistic simulation
+// -?- do smeared models make any sense?? Yes, John agrees that they do, and may be used in a more realistic simulation
+//   -?- but the random deviate can't be properly calculated...
 // - make sure that the ratio of scattering coherent/incoherent is properly adjusted for the sample composition
 //   or the volume fraction of solvent.
 //
@@ -44,7 +46,8 @@
 // - can I speed up by assuming everything interacts? This would compromise the ability to calculate multiple scattering
 // X ask John how to verify what is going on
 // - a number of models are now found to be ill-behaved when q=1e-10. Then the random deviate calculation blows up.
-//   a warning has been added - but the models are better fixed with the limiting value.
+//   a warning has been added - but some models need a proper limiting value, and some (power-law) are simply unuseable
+//   unless something else can be done.
 //
 //
 
@@ -81,6 +84,8 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		Duplicate/O ran_dev $("ran_dev"+num2istr(i))
 		
 		// ?? I need explicit wave references?
+		// maybe I need to have everything in separate data folders - bu tI haven't tried that. seems like a reach.
+		// more likely there is something bad going on in the XOP code.
 		if(i==0)
 			WAVE inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0
 			retWave0[0] = -1*datetime		//to initialize ran3
@@ -530,7 +535,7 @@ End
 
 // returns the random deviate as a wave
 // and the total SAS cross-section [1/cm] sig_sas
-Function 	CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
+Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	FUNCREF SANSModelAAO_MCproto func
 	WAVE coef
 	Variable lam
@@ -540,12 +545,26 @@ Function 	CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	Variable nPts_ran=10000,qu
 	qu = 4*pi/lam		
 	
-	Make/O/N=(nPts_ran)/D root:Packages:NIST:SAS:Gq,root:Packages:NIST:SAS:xw		// if these waves are 1000 pts, the results are "pixelated"
-	WAVE Gq = root:Packages:NIST:SAS:gQ
-	WAVE xw = root:Packages:NIST:SAS:xw
+//	Make/O/N=(nPts_ran)/D root:Packages:NIST:SAS:Gq,root:Packages:NIST:SAS:xw		// if these waves are 1000 pts, the results are "pixelated"
+//	WAVE Gq = root:Packages:NIST:SAS:gQ
+//	WAVE xw = root:Packages:NIST:SAS:xw
+
+// hard-wired into the Simulation directory rather than the SAS folder.
+// plotting resolution-smeared models won't work any other way
+	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
+	WAVE Gq = root:Simulation:gQ
+	WAVE xw = root:Simulation:xw
 	SetScale/I x (0+1e-6),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
+
+///
+/// if all of the coefficients are well-behaved, then the last point is the background
+// and I can set it to zero here (only for the calculation)
+	Duplicate/O coef,tmp_coef
+	Variable num=numpnts(coef)
+	tmp_coef[num-1] = 0
+	
 	xw=x												//for the AAO
-	func(coef,Gq,xw)									//call as AAO
+	func(tmp_coef,Gq,xw)									//call as AAO
 
 //	Gq = x*Gq													// SAS approximation
 	Gq = Gq*sin(2*asin(x/qu))/sqrt(1-(x/qu))			// exact
@@ -664,13 +683,13 @@ Function/S MC_FunctionPopupList()
 	tmp = FunctionList("fSmear*",";","NPARAMS:3")		//smeared dependency calculations
 	list = RemoveFromList(tmp, list  ,";")
 	
-//	tmp = FunctionList("*X",";","KIND:4")		//XOPs, but these shouldn't show up if KIND:10 is used initially
-//	Print "X* = ",tmp
-//	print " "
-//	list = RemoveFromList(tmp, list  ,";")
-	
 	//non-fit functions that I can't seem to filter out
 	list = RemoveFromList("BinaryHS_PSF11;BinaryHS_PSF12;BinaryHS_PSF22;EllipCyl_Integrand;PP_Inner;PP_Outer;Phi_EC;TaE_Inner;TaE_Outer;",list,";")
+////////////////
+
+	//simplify the display, forcing smeared calculations behind the scenes
+	tmp = FunctionList("Smear*",";","NPARAMS:1")		//smeared dependency calculations
+	list = RemoveFromList(tmp, list  ,";")
 
 	if(strlen(list)==0)
 		list = "No functions plotted"
@@ -745,31 +764,58 @@ ThreadSafe Function path_len(aval,sig_tot)
 	return(retval)
 End
 
+// globals are initialized in SASCALC.ipf
 Window MC_SASCALC() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(787,44,1088,563)  /N=MC_SASCALC as "SANS Simulator"
-	CheckBox MC_check0,pos={11,11},size={98,14},title="Use MC Simulation"
-	CheckBox MC_check0,variable= root:Packages:NIST:SAS:gDoMonteCarlo
-	SetVariable MC_setvar0,pos={11,38},size={144,15},bodyWidth=80,title="# of neutrons"
+	NewPanel /W=(92,556,390,1028)/K=1 as "SANS Simulator"
+	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
+	SetVariable MC_setvar0,format="%5.4g"
 	SetVariable MC_setvar0,limits={-inf,inf,100},value= root:Packages:NIST:SAS:gImon
-	SetVariable MC_setvar0_1,pos={11,121},size={131,15},bodyWidth=60,title="Thickness (cm)"
+	SetVariable MC_setvar0_1,pos={28,119},size={131,15},bodyWidth=60,title="Thickness (cm)"
 	SetVariable MC_setvar0_1,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gThick
-	SetVariable MC_setvar0_2,pos={11,93},size={149,15},bodyWidth=60,title="Incoherent XS (cm)"
+	SetVariable MC_setvar0_2,pos={28,96},size={149,15},bodyWidth=60,title="Incoherent XS (cm)"
 	SetVariable MC_setvar0_2,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gSig_incoh
-	SetVariable MC_setvar0_3,pos={11,149},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
+	SetVariable MC_setvar0_3,pos={28,142},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
 	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
-	PopupMenu MC_popup0,pos={11,63},size={162,20},proc=MC_ModelPopMenuProc,title="Model Function"
+	PopupMenu MC_popup0,pos={13,13},size={165,20},proc=MC_ModelPopMenuProc,title="Model Function"
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
-	Button MC_button0,pos={17,455},size={50,20},proc=MC_DoItButtonProc,title="Do It"
-	Button MC_button1,pos={15,484},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
+	Button MC_button0,pos={17,181},size={130,20},proc=MC_DoItButtonProc,title="Do MC Simulation"
+	Button MC_button1,pos={181,181},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
+	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
+	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
+	SetVariable cntVar,pos={190,73},size={80,15},proc=CountTimeSetVarProc,title="time(s)"
+	SetVariable cntVar,format="%d"
+	SetVariable cntVar,limits={1,10,1},value= root:Packages:NIST:SAS:gCntTime
 	
+	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
-	Edit/W=(13,174,284,435)/HOST=# results_desc,results
-	ModifyTable width(Point)=0,width(results_desc)=150
-	SetDataFolder root:
+	Edit/W=(13,217,283,450)/HOST=#  results_desc,results
+	ModifyTable format(Point)=1,width(Point)=0,width(results_desc)=150
+	SetDataFolder fldrSav0
 	RenameWindow #,T_results
 	SetActiveSubwindow ##
 EndMacro
+
+
+Function CountTimeSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+
+			// get the neutron flux, multiply, and reset the global for # neutrons
+			NVAR imon=root:Packages:NIST:SAS:gImon
+			imon = dval*beamIntensity()
+			
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function MC_ModelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -793,7 +839,10 @@ Function MC_DoItButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			NVAR doMC = root:Packages:NIST:SAS:gDoMonteCarlo
+			doMC = 1
 			ReCalculateInten(1)
+			doMC = 0		//so the next time won't be MC
 			break
 	endswitch
 
@@ -813,6 +862,64 @@ Function MC_Display2DButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+// after a 2d data image is averaged in the usual way, take the waves and generate a "fake" folder of the 1d
+// data, to appear as if it was loaded from a real data file.
+//
+// currently only works with SANS data, but can later be expanded to generate fake USANS data sets
+//
+Function	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,dataFolder)
+	WAVE qval,aveint,sigave,sigmaQ,qbar,fSubs
+	String dataFolder
+
+	String baseStr=dataFolder
+	if(DataFolderExists("root:"+baseStr))
+		SetDataFolder $("root:"+baseStr)
+	else
+		NewDataFolder/S $("root:"+baseStr)
+	endif
+
+	////overwrite the existing data, if it exists
+	Duplicate/O qval, $(baseStr+"_q")
+	Duplicate/O aveint, $(baseStr+"_i")
+	Duplicate/O sigave, $(baseStr+"_s")
+//	Duplicate/O sigmaQ, $(baseStr+"sq")
+//	Duplicate/O qbar, $(baseStr+"qb")
+//	Duplicate/O fSubS, $(baseStr+"fs")
+
+	// need to switch based on SANS/USANS
+	if (isSANSResolution(sigave[0]))		//checks to see if the first point of the wave is <0]
+		// make a resolution matrix for SANS data
+		Variable np=numpnts(qval)
+		Make/D/O/N=(np,4) $(baseStr+"_res")
+		Wave res=$(baseStr+"_res")
+		
+		res[][0] = sigmaQ[p]		//sigQ
+		res[][1] = qBar[p]		//qBar
+		res[][2] = fSubS[p]		//fShad
+		res[][3] = qval[p]		//Qvalues
+		
+		// keep a copy of everything in SAS too... the smearing wrapper function looks for 
+		// data in folders based on waves it is passed - an I lose control of that
+		Duplicate/O res, $("root:Packages:NIST:SAS:"+baseStr+"_res")
+		Duplicate/O qval,  $("root:Packages:NIST:SAS:"+baseStr+"_q")
+		Duplicate/O aveint,  $("root:Packages:NIST:SAS:"+baseStr+"_i")
+		Duplicate/O sigave,  $("root:Packages:NIST:SAS:"+baseStr+"_s")
+	else
+		//the data is USANS data
+		// nothing done here yet
+//		dQv = -$w3[0]
+		
+//		USANS_CalcWeights(baseStr,dQv)
+		
+	endif
+
+	//clean up		
+	SetDataFolder root:
+	
+End
+
+
 
 /////UNUSED, testing routines that have not been updated to work with SASCALC
 //

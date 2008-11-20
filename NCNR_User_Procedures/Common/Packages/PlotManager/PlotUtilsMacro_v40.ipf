@@ -349,6 +349,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 		
 		//plot if desired
 		if(doPlot)
+			Print GetDataFolder(1)
+			
 			// assign colors randomly
 			rr = abs(trunc(enoise(65535)))
 			gg = abs(trunc(enoise(65535)))
@@ -358,6 +360,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 		   DoWindow/B Plot_Manager
 			if(WinType("") == 1)
 				DoAlert 1,"Do you want to append this data to the current graph?"
+				
+				
 				if(V_Flag == 1)
 					AppendToGraph $w1 vs $w0
 					ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
@@ -365,6 +369,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 					ModifyGraph tickUnit(left)=1
 				else
 				//new graph
+					SetDataFolder $("root:"+baseStr)		//sometimes I end up back in root: here, and I can't figure out why!
 					Display $w1 vs $w0
 					ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 					ModifyGraph grid=1,mirror=2,standoff=0
