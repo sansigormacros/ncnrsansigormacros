@@ -562,7 +562,7 @@ Function FileList_RemoveButtonProc(ctrlName) : ButtonControl
 	SVAR fileVerExt=root:Packages:NIST:SANS_ANA_EXTENSION
 	
 	Variable num=numpnts(selToDel),ii
-	String fname=""
+	String fname="",funcToDelStr=""
 	
 	ii=num-1		//work backwards
 	do
@@ -574,10 +574,15 @@ Function FileList_RemoveButtonProc(ctrlName) : ButtonControl
 			fileWave[numpnts(fileWave)-1]=includedFileWave[ii]
 			//delete the point 
 			DeletePoints ii, 1, includedFileWave,selToDel
+			//
+			// be sure to kill the dependencies, otherwise some nasty crashes can result
+			// (a bug in the WM's threading???
+			funcToDelStr = FunctionList("*",";","WIN:"+fname+fileVerExt+".ipf")
+			KillAllDependentObjects("root:",funcToDelStr, 1, 1, 0)
+			 
 		endif
 		ii-=1
 	while(ii>=0)
-//	Execute/P "COMPILEPROCEDURES ";Execute/P/Q/Z "RefreshMenu()"
 	Execute/P "COMPILEPROCEDURES "
 	
 	sel=0
@@ -585,6 +590,95 @@ Function FileList_RemoveButtonProc(ctrlName) : ButtonControl
 	
 	Sort filewave,filewave
 	return(0)
+End
+
+Function KillDependentVariables(folderStr,funcToDelStr)
+	String folderStr,funcToDelStr
+	
+	String objName,formStr,funcStr,matchStr
+	Variable index = 0,loc
+	
+	do
+		objName = GetIndexedObjName(folderStr, 2, index)
+		if (strlen(objName) == 0)
+			break
+		endif
+		formStr = GetFormula($(folderStr+objName))
+		if(strlen(formStr) != 0)
+			loc = strsearch(formStr,"(",0)
+			funcStr = formStr[0,loc-1]
+//			Print objName,funcStr
+			matchStr = ListMatch(funcToDelStr, funcStr ,";")
+			if(strlen(matchStr) != 0)
+				SetFormula $(folderStr+objName),""		//kill the dependency
+				Printf "killed the dependency of %s on the function %s\r",folderStr+objName,matchStr
+			endif
+				
+		endif
+				
+		index += 1
+	while(1)
+End
+
+
+
+// doesn't really kill all objects...
+// kills the dependency formula for any variable that has a formula that contains a function name
+// that matches anything in the funcToDelStr, which are functions that are about to be removed
+// from the experiment by DELETEINCLUDE
+//
+// recursively looks through all data folders
+//
+// on the first call:
+// pass "root:" as the pathName
+// full = 1
+// recurse = 1
+// level = 0
+//
+Function KillAllDependentObjects(pathName,funcToDelStr, full, recurse, level)
+	String pathName		// Name of symbolic path in which to look for folders.
+	String funcToDelStr		//list of functions to look for
+	Variable full			// True to print full paths instead of just folder name.
+	Variable recurse		// True to recurse (do it for subfolders too).
+	Variable level		// Recursion level. Pass 0 for the top level.
+	
+	Variable ii
+	String prefix
+	
+//	SVAR allFiles=root:Packages:NIST:FileList:allFiles
+	// Build a prefix (a number of tabs to indicate the folder level by indentation)
+	prefix = ""
+	ii = 0
+	do
+		if (ii >= level)
+			break
+		endif
+		prefix += "\t"					// Indent one more tab
+		ii += 1
+	while(1)
+	
+//	Printf "%s%s\r", prefix, pathName
+//	Print IndexedFile($pathName,-1,"????")
+	//allFiles += IndexedFile($pathName,-1,"????")
+	
+	KillDependentVariables(pathName,funcToDelStr)
+	
+	String path
+	ii = 0
+	do
+		path = GetIndexedObjName(pathName, 4, ii)
+		if (strlen(path) == 0)
+			break							// No more folders
+		endif
+		path = pathName+path+":"			//the full path
+//		Print "ii, path = ",ii,path
+
+		if (recurse)						// Do we want to go into subfolder?
+			KillAllDependentObjects(path, funcToDelStr, full, recurse, level+1)
+		endif
+		
+		ii += 1
+	while(1)
 End
 
 

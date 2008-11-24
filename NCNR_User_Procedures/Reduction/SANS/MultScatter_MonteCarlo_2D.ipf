@@ -571,7 +571,8 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	//
 	Integrate/METH=1 Gq/D=Gq_INT
 	
-	SASxs = lam*lam/2/pi*Gq_INT[nPts_ran-1]
+//	SASxs = lam*lam/2/pi*Gq_INT[nPts_ran-1]			//if the approximation is used
+	SASxs = lam*Gq_INT[nPts_ran-1]
 	
 	Gq_INT /= Gq_INT[nPts_ran-1]
 	
@@ -686,6 +687,16 @@ Function/S MC_FunctionPopupList()
 	//non-fit functions that I can't seem to filter out
 	list = RemoveFromList("BinaryHS_PSF11;BinaryHS_PSF12;BinaryHS_PSF22;EllipCyl_Integrand;PP_Inner;PP_Outer;Phi_EC;TaE_Inner;TaE_Outer;",list,";")
 ////////////////
+
+	//more functions from analysis models (2008)
+	tmp = "Barbell_Inner;Barbell_Outer;Barbell_integrand;BCC_Integrand;Integrand_BCC_Inner;Integrand_BCC_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "CapCyl;CapCyl_Inner;CapCyl_Outer;ConvLens;ConvLens_Inner;ConvLens_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "Dumb;Dumb_Inner;Dumb_Outer;FCC_Integrand;Integrand_FCC_Inner;Integrand_FCC_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = "Integrand_SC_Inner;Integrand_SC_Outer;SC_Integrand;SphCyl;SphCyl_Inner;SphCyl_Outer;"
+	list = RemoveFromList(tmp, list  ,";")
 
 	//simplify the display, forcing smeared calculations behind the scenes
 	tmp = FunctionList("Smear*",";","NPARAMS:1")		//smeared dependency calculations

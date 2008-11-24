@@ -289,31 +289,40 @@ End
 //
 Function Cyl_PolyRadius(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
-	
-#if exists("Cyl_PolyRadiusX")
-
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
 
 //	Variable t1=StopMSTimer(-2)
-	
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Cyl_PolyRadius_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
 
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
-	
-//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
-	
+///////NON-THREADED VERSION ///////
+#if exists("Cyl_PolyRadiusX")	
+	yw = Cyl_PolyRadiusX(cw,xw)
 #else
-		yw = fCyl_PolyRadius(cw,xw)		//the Igor, non-XOP, non-threaded calculation
+	yw = fCyl_PolyRadius(cw,xw)
 #endif
+
+/// THREADED VERSION HAS BEEN REMOVED DUE TO CRASHES //////	
+//#if exists("Cyl_PolyRadiusX")
+//
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,Cyl_PolyRadius_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+//#else
+//		yw = fCyl_PolyRadius(cw,xw)		//the Igor, non-XOP, non-threaded calculation, messy to make ThreadSafe
+//#endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

@@ -38,7 +38,7 @@ Function NCNR_AnalysisLoader(itemStr)
 	SVAR gMenuStr1a = root:Packages:NCNRItemStr1a
 	SVAR gMenuStr1b = root:Packages:NCNRItemStr1b
 	
-	String SANSAna_WinList = "wrapperPanel;Procedure_List;"
+	String SANSAna_WinList = "wrapperPanel;Procedure_List;Report;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR Analysis Macros":	
 			Execute/P "INSERTINCLUDE \"SA_Includes_v400\""
@@ -120,7 +120,10 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SVAR gMenuStr2a = root:Packages:NCNRItemStr2a
 	SVAR gMenuStr2b = root:Packages:NCNRItemStr2b
 	
-	String SANSRed_WinList = "Main_Panel;CatVSTable;"
+	String SANSRed_WinList = "Main_Panel;CatVSTable;SANS_Data;Plot_Manager;Average_Panel;Plot_1d;CatWin;Surface_3D;FitPanel;FitWindow;"
+	SANSRed_WinList += "FitRPAPanel;SANS_Histo;drawMaskWin;Multiple_Reduce_Panel;NSORT_Panel;NSORT_Graph;CombineTable;ToCombine;Patch_Panel;"
+	SANSRed_WinList += "ProtocolPanel;Schematic_Layout;Tile_2D;RAW_to_ASCII;Trans_Panel;TransFileTable;ScatterFileTable;Convert_to_Trans;"
+	SANSRed_WinList += "WorkFileMath;Pref_Panel;Subtract_1D_Panel;Plot_Sub1D;SASCALC;MC_SASCALC;Saved_Configurations;TISANE;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR SANS Reduction Macros":	
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
@@ -186,7 +189,7 @@ Function NCNR_USANSReductionLoader(itemStr)
 	SVAR gMenuStr3a = root:Packages:NCNRItemStr3a
 	SVAR gMenuStr3b = root:Packages:NCNRItemStr3b
 	
-	String USANS_WinList = "USANS_Panel;COR_Graph;RawDataWin;Desmear_Graph;"
+	String USANS_WinList = "USANS_Panel;COR_Graph;RawDataWin;Desmear_Graph;USANS_Slope;"
 	
 	strswitch(itemStr)	// string switch
 		case "Load NCNR USANS Reduction Macros":	
