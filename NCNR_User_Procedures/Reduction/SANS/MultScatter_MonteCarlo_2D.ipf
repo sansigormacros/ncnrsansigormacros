@@ -9,11 +9,17 @@
 // A lot of the setup, wave creation, and post-calculations are done in SASCALC->ReCalculateInten()
 //
 //
+// - Why am I off by a factor of 2.7 - 3.7 (MC too high) relative to real data?
+//   I need to include efficiency (70%?) - do I knock these off be fore the simulation or do I 
+//    really simulate that some fraction of neutrons on the detector don't actually get counted?
+//   Is the flux estimate up-to-date?
 // - Most importantly, this needs to be checked for correctness of the MC simulation
 // X how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
 // X why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
 // - get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
-
+// - my simulated transmission is larger than what is measured, even after correcting for the quartz cell.
+//   Why? Do I need to include absorption? Just inherent problems with incoherent cross sections?
+//
 // X at the larger angles, is the "flat" detector being properly accounted for - in terms of
 //   the solid angle and how many counts fall in that pixel. Am I implicitly defining a spherical detector
 //   so that what I see is already "corrected"?
@@ -267,7 +273,9 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	Variable Sig_scat,Sig_abs,Ratio,Sig_total
 	Variable isOn=0,testQ,testPhi,xPixel,yPixel
 	Variable NSingleIncoherent,NSingleCoherent,NScatterEvents,incoherentEvent,coherentEvent
-	Variable NDoubleCoherent,NMultipleScatter
+	Variable NDoubleCoherent,NMultipleScatter,countIt,detEfficiency
+	
+	detEfficiency = 1.0		//70% counting efficiency = 0.7
 	
 	imon = inputWave[0]
 	r1 = inputWave[1]
@@ -290,8 +298,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	N_INDEX = 50		// maximum number of scattering events per neutron
 	num_bins = 200		//number of 1-D bins (not really used)
 	
-// my additions - calculate the randome deviate function as needed
-// and calculate the scattering power from the model function
+// my additions - calculate the random deviate function as needed
+// and calculate the scattering power from the model function (passed in as a wave)
 //
 	Variable left = leftx(ran_dev)
 	Variable delta = deltax(ran_dev)
@@ -300,12 +308,18 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 //	SIG_SAS = zpow/thick
 	zpow = sig_sas*thick			//since I now calculate the sig_sas from the model
 	SIG_ABS = SIGABS_0 * WAVElength
+	sig_abs = 0.0		//cm-1
 	SIG_TOTAL =SIG_ABS + SIG_SAS + sig_incoh
 //	Print "The TOTAL XSECTION. (CM-1) is ",sig_total
 //	Print "The TOTAL SAS XSECTION. (CM-1) is ",sig_sas
 //	results[0] = sig_total		//assign these after everything's done
 //	results[1] = sig_sas
-//	RATIO = SIG_ABS / SIG_TOTAL
+//	variable ratio1,ratio2
+//	ratio1 = sig_abs/sig_total
+//	ratio2 = sig_incoh/sig_total
+//	// 0->ratio1 = abs
+//	// ratio1 -> ratio2 = incoh
+//	// > ratio2 = coherent
 	RATIO = sig_incoh / SIG_TOTAL
 	
 //c       assuming theta = sin(theta)...OK
@@ -372,13 +386,21 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 			//Check whether interaction occurred within sample volume.
 			IF (((zz > 0.0) && (zz < THICK)) && (rr < r2))
 				//NEUTRON INTERACTED.
+				ran = abs(enoise(1))		//[0,1]
+				
+//				if(ran<ratio1)
+//					//absorption event
+//					n3 +=1
+//					done=1
+//				else
+
 				INDEX += 1			//Increment counter of scattering events.
 				IF(INDEX == 1)
 					N2 += 1 		//Increment # of scat. neutrons
 				Endif
-				ran = abs(enoise(1))		//[0,1]
 				//Split neutron interactions into scattering and absorption events
-				IF(ran > ratio )		//C             NEUTRON SCATTERED coherently
+//				IF(ran > (ratio1+ratio2) )		//C             NEUTRON SCATTERED coherently
+				IF(ran > ratio)		//C             NEUTRON SCATTERED coherently
 					coherentEvent = 1
 					FIND_THETA = 0			//false
 					DO
@@ -413,9 +435,16 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
            	  	ran = abs(enoise(1))		//[0,1]
 					PHI = 2.0*PI*Ran			//Chooses azimuthal scattering angle.
 				ENDIF		//(ran > ratio)
+//				endif		// event was absorption
 			ELSE
 				//NEUTRON ESCAPES FROM SAMPLE -- bin it somewhere
 				DONE = 1		//done = true, will exit from loop
+				
+//				countIt = 1
+//				if(abs(enoise(1)) > detEfficiency)		//efficiency of 70% wired @top
+//					countIt = 0					//detector does not register
+//				endif
+				
 				//Increment #scattering events array
 				If (index <= N_Index)
 					NN[INDEX] += 1
@@ -429,7 +458,9 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					// pick a random phi angle, and see if it lands on the detector
 					// since the scattering is isotropic, I can safely pick a new, random value
 					// this would not be true if simulating anisotropic scattering.
-					testPhi = abs(enoise(1))*2*Pi
+					//testPhi = abs(enoise(1))*2*Pi
+					testPhi = FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
+					
 					// is it on the detector?	
 					FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 					
@@ -470,29 +501,16 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 						NMultipleScatter += 1
 					endif
 					//Print "n1,index (x,y) = ",n1,index, xpixel,ypixel
+					
 				else	// if neutron escaped without interacting
+				
 					// then it must be a transmitted neutron
 					// don't need to calculate, just increment the proper counters
 					MC_linear_data[xCtr][yCtr] += 1
 					isOn += 1
 					nt[0] += 1
 					
-					// (Don't do this - it's a waste of time) 
-					// re-initialize and go back and count this neutron again
-					// go back to xy position
-//					xx -= ll*vx
-//					yy -= ll*vy
-//					zz -= ll*vz
-//					RR = sqrt(xx*xx+yy*yy)		//radial position of scattering event.
-//			
-//					Vx = 0.0			// Initialize incident direction vector.
-//					Vy = 0.0
-//					Vz = 1.0
-//					zz = 0
-//					theta = 0
-//					phi = 0
-				endif
-				
+				endif		//if interacted
 			ENDIF
 		while (!done)
 	while(n1 < imon)
@@ -506,7 +524,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	results[5] = NDoubleCoherent
 	results[6] = NMultipleScatter		//# of multiple scattering events
 	
-	
+//	Print "# absorbed = ",n3
+
 //	trans_th = exp(-sig_total*thick)
 //	TRANS_exp = (N1-N2) / N1 			// Transmission
 	// dsigma/domega assuming isotropic scattering, with no absorption.
@@ -580,6 +599,47 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 
 	return(0)
 End
+
+//phi is defined from +x axis, proceeding CCW around [0,2Pi]
+Threadsafe Function FindPhi(vx,vy)
+	variable vx,vy
+	
+	variable phi
+	
+	phi = atan(vy/vx)		//returns a value from -pi/2 to pi/2
+	
+	// special cases
+	if(vx==0 && vy > 0)
+		return(pi/2)
+	endif
+	if(vx==0 && vy < 0)
+		return(3*pi/2)
+	endif
+	if(vx >= 0 && vy == 0)
+		return(0)
+	endif
+	if(vx < 0 && vy == 0)
+		return(pi)
+	endif
+	
+	
+	
+	if(vx > 0 && vy > 0)
+		return(phi)
+	endif
+	if(vx < 0 && vy > 0)
+		return(abs(phi) + pi/2)
+	endif
+	if(vx < 0 && vy < 0)
+		return(phi + pi)
+	endif
+	if( vx > 0 && vy < 0)
+		return(abs(phi) + 3*pi/2)
+	endif
+	
+	return(phi)
+end
+
 
 ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 	Variable testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel

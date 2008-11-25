@@ -115,7 +115,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gCntTime = 1
 	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
-	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","-"}
+	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/beamstop"}
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -772,6 +772,7 @@ Function ReCalculateInten(doIt)
 			endif
 		endif
 		
+		linear_data = 0		//initialize
 // threading crashes!! - there must be some operation in the XOP that is not threadSafe. What, I don't know...		
 		t0 = stopMStimer(-2)
 
@@ -786,19 +787,38 @@ Function ReCalculateInten(doIt)
 			trans = 1
 		endif
 
+		Print "counts on detector = ",sum(linear_data,-inf,inf)
+		
+		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
+		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
+
+		// or simulate a beamstop
+		Variable rad=beamstopDiam()/2		//beamstop radius in cm
+		rad /= 0.5				//convert cm to pixels
+		rad += 1					// add an extra pixel to each side to account for edge
+		Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask
+		WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
+		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
+		
+		linear_data *= tmp_mask
+		Print "counts on detector not behind beamstop = ",sum(linear_data,-inf,inf)
+		results[9] = sum(linear_data,-inf,inf)
+		
 		// convert to absolute scale
-		Variable kappa,beaminten = beamIntensity()
+		Variable kappa		//,beaminten = beamIntensity()
 //		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*trans*(iMon/beaminten)
 		kappa = thick*(pixSize/sdd)^2*trans*iMon
 
 		linear_data = linear_data / kappa
-		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
+		
 		data = linear_data
 		
 		// re-average the 2D data
 		S_CircularAverageTo1D("SAS")
 		// multiply either estimate by beamstop shadowing
-		aveint *= fSubS
+		
+//		aveint *= fSubS
+
 		// put the new result into the simulation folder
 		Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 	endif
