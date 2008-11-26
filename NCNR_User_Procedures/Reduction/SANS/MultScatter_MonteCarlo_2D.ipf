@@ -101,7 +101,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		if(i==1)
 			WAVE inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1
 			//retWave1[0] = -1*datetime		//to initialize ran3
-			ThreadStart mt,i,Monte_SANS_W1(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
+			ThreadStart mt,i,Monte_SANS_W2(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
 			Print "started thread 1"
 		endif
 //		if(i==2)
@@ -190,8 +190,8 @@ End
 ThreadSafe Function Monte_SANS_W2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
 	
-#if exists("xxxxMonte_SANSX")
-	Monte_SANSX(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#if exists("Monte_SANSX2")
+	Monte_SANSX2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #else
 	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #endif

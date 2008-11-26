@@ -757,9 +757,10 @@ Function ReCalculateInten(doIt)
 		// get a time estimate, and give the user a chance to exit if they're unsure.
 		t0 = stopMStimer(-2)
 		inputWave[0] = 1000
+//		Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		t0 = (stopMSTimer(-2) - t0)*1e-6
-		t0 *= imon/1000		//projected time, in seconds
+		t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
 		inputWave[0] = imon		//reset
 		
 		if(t0>10)
@@ -773,11 +774,13 @@ Function ReCalculateInten(doIt)
 		endif
 		
 		linear_data = 0		//initialize
-// threading crashes!! - there must be some operation in the XOP that is not threadSafe. What, I don't know...		
+// threading crashes!! - there must be some operation in the XOP that is not threadSafe. What, I don't know...
+// I think it's the ran() calls, being "non-reentrant". So the XOP now defines two separate functions, that each
+// use a different rng. This works. 1.75x speedup.	
 		t0 = stopMStimer(-2)
 
-//		xMonte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+//		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 
 		t0 = (stopMSTimer(-2) - t0)*1e-6
 		Printf  "MC sim time = %g seconds\r\r",t0

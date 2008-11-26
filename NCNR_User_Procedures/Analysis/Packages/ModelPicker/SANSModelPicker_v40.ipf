@@ -575,10 +575,9 @@ Function FileList_RemoveButtonProc(ctrlName) : ButtonControl
 			//delete the point 
 			DeletePoints ii, 1, includedFileWave,selToDel
 			//
-			// be sure to kill the dependencies, otherwise some nasty crashes can result
-			// (a bug in the WM's threading???
-			funcToDelStr = FunctionList("*",";","WIN:"+fname+fileVerExt+".ipf")
-			KillAllDependentObjects("root:",funcToDelStr, 1, 1, 0)
+			// could kill dependencies connected to the procedure file, but really not necessary
+			//funcToDelStr = FunctionList("*",";","WIN:"+fname+fileVerExt+".ipf")
+			//KillAllDependentObjects("root:",funcToDelStr, 1, 1, 0)
 			 
 		endif
 		ii-=1
