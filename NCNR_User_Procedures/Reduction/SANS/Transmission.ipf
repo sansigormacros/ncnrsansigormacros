@@ -977,7 +977,7 @@ Function CalcWholeTrans(startRow,endRow)
 							//Printf "%s\t\tTrans Counts = %g\tTrans = %g\tAttenuatorRatio = %g, Tbox/Twhole = %g\r",T_GFilenames[ii], transCts,trans,attenRatio, T_GTransmission[ii]/trans
 							Printf "%s\t\tTotal Counts = %g\t Trans using whole detector = %g\t AttenuatorRatio = %g",T_GFilenames[ii], transCts,trans,attenRatio
 						endif
-						If(T_GTransmission[ii]/trans > 0.97)
+						If(T_GTransmission[ii]/trans > 0.95)		//95%, from conversation w/Lionel
 							printf " Tbox/Twhole = %g\r",T_GTransmission[ii]/trans
 						else
 							printf " !!! Tbox/Twhole is low !!! = %g\r",T_GTransmission[ii]/trans
