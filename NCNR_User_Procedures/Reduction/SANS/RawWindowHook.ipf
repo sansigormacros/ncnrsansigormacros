@@ -241,8 +241,8 @@ Function RawWindowHook(s)
 			if(cmpstr(cur_folder,"MSK")!=0)
 				Variable xctr=reals[16],yctr=reals[17],sdd=reals[18],lam=reals[26],pixSize=reals[13]/10
 				Variable/G root:myGlobals:gQQ = CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
-				Variable/G root:myGlobals:gQX = CalcQX(xaxval+1,xctr,sdd,lam,pixSize)
-				Variable/G root:myGlobals:gQY = CalcQY(yaxval+1,yctr,sdd,lam,pixSize)
+				Variable/G root:myGlobals:gQX = CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
+				Variable/G root:myGlobals:gQY = CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
 			else
 				Variable/G root:myGlobals:gQQ = 0
 				Variable/G root:myGlobals:gQX = 0
@@ -267,29 +267,27 @@ end
 //the pixel locations need not be integers, reals are ok inputs
 //sdd is in meters
 //wavelength is in Angstroms
-//returned q-value is in 1/Angstroms
 //
-// generalized to read the detector pixel dimension from the file header...
+//returned magnitude of Q is in 1/Angstroms
+//
+// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
 //
 Function CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
 	
-	Variable dx,dy,thetax,thetay,qval,qx,qy
+	Variable dx,dy,qval,theta,dist
 	
-//	Wave realW=$"root:Packages:NIST:raw:realsRead"
-//	Variable pixSizeX = realW[10]/10		//header is in mm, want cm
-//	Variable pixSizeY = realW[13]/10		//header is in mm, want cm
 	Variable pixSizeX=pixSize
 	Variable pixSizeY=pixSize
 	
 	sdd *=100		//convert to cm
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
 	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
-	thetax = atan(dx/sdd)
-	thetay = atan(dy/sdd)
-	qx = 4*Pi/lam*sin(thetax/2)
-	qy = 4*Pi/lam*sin(thetay/2)
-	qval = sqrt(qx^2 + qy^2)
+	dist = sqrt(dx^2 + dy^2)
+	
+	theta = atan(dist/sdd)
+
+	qval = 4*Pi/lam*sin(theta/2)
 	
 	return qval
 End
@@ -298,23 +296,25 @@ End
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
 //
-// generalized to read the detector pixel dimension from the file header...
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
 //
-Function CalcQX(xaxval,xctr,sdd,lam,pixSize)
-	Variable xaxval,xctr,sdd,lam,pixSize
-	//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
-	//sdd is in meters
-	//wavelength is in Angstroms
+// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
+//
+Function CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+
+	Variable qx,qval,phi,dx,dy
 	
-//	Wave realW=$"root:Packages:NIST:raw:realsRead"
-//	Variable pixSize = realW[10]/10		//header is in mm, want cm
-	
-	Variable dx,thetax,qx
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	
 	sdd *=100		//convert to cm
-	dx = (xaxval - xctr)*pixSize	//delta x in cm
-	thetax = atan(dx/sdd)
-	qx = 4*Pi/lam*sin(thetax/2)
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
+	dy = (yaxval - yctr)*pixSize		//delta y in cm
+	phi = FindPhi(dx,dy)
+	
+	qx = qval*cos(phi)
 	
 	return qx
 End
@@ -322,27 +322,69 @@ End
 //calculates just the q-value in the y-direction on the detector
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
 //
-// generalized to read the detector pixel dimension from the file header...
+// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
 //
-Function CalcQY(yaxval,yctr,sdd,lam,pixSize)
-	Variable yaxval,yctr,sdd,lam,pixSize
-	//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
-	//sdd is in meters
-	//wavelength is in Angstroms
+Function CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
 	
-//	Wave realW=$"root:Packages:NIST:raw:realsRead"
-//	Variable pixSize = realW[13]/10		//header is in mm, want cm
-		
-	Variable dy,thetay,qy
+	Variable dy,qval,dx,phi,qy
+	
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	
 	sdd *=100		//convert to cm
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
 	dy = (yaxval - yctr)*pixSize		//delta y in cm
-	thetay = atan(dy/sdd)
-	qy = 4*Pi/lam*sin(thetay/2)
+	phi = FindPhi(dx,dy)
+	
+	qy = qval*sin(phi)
 	
 	return qy
 End
+
+
+//phi is defined from +x axis, proceeding CCW around [0,2Pi]
+Threadsafe Function FindPhi(vx,vy)
+	variable vx,vy
+	
+	variable phi
+	
+	phi = atan(vy/vx)		//returns a value from -pi/2 to pi/2
+	
+	// special cases
+	if(vx==0 && vy > 0)
+		return(pi/2)
+	endif
+	if(vx==0 && vy < 0)
+		return(3*pi/2)
+	endif
+	if(vx >= 0 && vy == 0)
+		return(0)
+	endif
+	if(vx < 0 && vy == 0)
+		return(pi)
+	endif
+	
+	
+	if(vx > 0 && vy > 0)
+		return(phi)
+	endif
+	if(vx < 0 && vy > 0)
+		return(phi + pi)
+	endif
+	if(vx < 0 && vy < 0)
+		return(phi + pi)
+	endif
+	if( vx > 0 && vy < 0)
+		return(phi + 2*pi)
+	endif
+	
+	return(phi)
+end
+
 
 //function to set the q-axis scaling after the data has been read in
 // - needs the location of the currently displayed data to get the header information
@@ -366,12 +408,12 @@ Function Set_Q_Axes(qx,qy,curPath)
 	Variable pixSize=reals[13]/10		//pixel size in cm to pass
 	Variable maxX,minX,maxY,minY
 	
-	minX = CalcQX(1,xctr,sdd,lam,pixSize)
-	maxX = CalcQX(pixelsX,xctr,sdd,lam,pixSize)
+	minX = CalcQX(1,yctr,xctr,yctr,sdd,lam,pixSize)
+	maxX = CalcQX(pixelsX,yctr,xctr,yctr,sdd,lam,pixSize)
 	SetScale/I x minX,maxX,"",qx
 	
-	minY = CalcQY(1,yctr,sdd,lam,pixSize)
-	maxY = CalcQY(pixelsY,yctr,sdd,lam,pixSize)
+	minY = CalcQY(xctr,1,xctr,yctr,sdd,lam,pixSize)
+	maxY = CalcQY(xctr,pixelsY,xctr,yctr,sdd,lam,pixSize)
 	qy[0] = minY
 	qy[1] = maxY
 	
@@ -382,4 +424,3 @@ Function ToggleDefaultMapping()
 	NVAR value = root:myGlobals:gLogScalingAsDefault
 	value = !(value)
 End
-

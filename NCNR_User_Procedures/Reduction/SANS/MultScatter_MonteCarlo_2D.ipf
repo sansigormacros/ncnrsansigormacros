@@ -600,45 +600,6 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	return(0)
 End
 
-//phi is defined from +x axis, proceeding CCW around [0,2Pi]
-Threadsafe Function FindPhi(vx,vy)
-	variable vx,vy
-	
-	variable phi
-	
-	phi = atan(vy/vx)		//returns a value from -pi/2 to pi/2
-	
-	// special cases
-	if(vx==0 && vy > 0)
-		return(pi/2)
-	endif
-	if(vx==0 && vy < 0)
-		return(3*pi/2)
-	endif
-	if(vx >= 0 && vy == 0)
-		return(0)
-	endif
-	if(vx < 0 && vy == 0)
-		return(pi)
-	endif
-	
-	
-	
-	if(vx > 0 && vy > 0)
-		return(phi)
-	endif
-	if(vx < 0 && vy > 0)
-		return(abs(phi) + pi/2)
-	endif
-	if(vx < 0 && vy < 0)
-		return(phi + pi)
-	endif
-	if( vx > 0 && vy < 0)
-		return(abs(phi) + 3*pi/2)
-	endif
-	
-	return(phi)
-end
 
 
 ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)

@@ -736,11 +736,14 @@ Function QxQy_Export(type,fullpath,dialog)
 //	Endif
 	
 	Duplicate/O data,qx_val,qy_val,z_val
-	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
-	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
 	
-	qx_val = CalcQx(qx_val+1,rw[16],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-	qy_val = CalcQy(qy_val+1,rw[17],rw[18],rw[26],rw[13]/10)
+//	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
+//	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
+	
+	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
+	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+
+	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
 	//not demo-compatible, but approx 8x faster!!	
 #if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)	
@@ -761,17 +764,17 @@ Function QxQy_Export(type,fullpath,dialog)
 End
 
 
-Function MyMat2XYZ(mat,xw,yw,zw)
-	WAVE mat,xw,yw,zw
-
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
-	xw= mod(p,pixelsX)		// X varies quickly
-	yw= floor(p/pixelsY)	// Y varies slowly
-	zw= mat(xw[p])(yw[p])
-
-End
+//Function MyMat2XYZ(mat,xw,yw,zw)
+//	WAVE mat,xw,yw,zw
+//
+//	NVAR pixelsX = root:myGlobals:gNPixelsX
+//	NVAR pixelsY = root:myGlobals:gNPixelsY
+//	
+//	xw= mod(p,pixelsX)		// X varies quickly
+//	yw= floor(p/pixelsY)	// Y varies slowly
+//	zw= mat(xw[p])(yw[p])
+//
+//End
 
 //converts xyz triple to a matrix
 //MAJOR assumption is that the x and y-spacings are LINEAR
@@ -842,4 +845,3 @@ Function/S DoSaveFileDialog(msg,[fname,suffix])
 	
 	return outputPath
 End
-
