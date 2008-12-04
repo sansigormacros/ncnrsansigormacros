@@ -114,6 +114,10 @@ Function InitGlobals()
 	//set flag if Demo Version is detected
 	Variable/G root:myGlobals:isDemoVersion = isDemo()
 	
+	//set XML globals
+	String/G root:myGlobals:gXMLLoader_Title = ""
+
+	
 	Return(0)
 End
 
