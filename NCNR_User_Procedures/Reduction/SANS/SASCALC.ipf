@@ -798,7 +798,7 @@ Function ReCalculateInten(doIt)
 		// or simulate a beamstop
 		Variable rad=beamstopDiam()/2		//beamstop radius in cm
 		rad /= 0.5				//convert cm to pixels
-		rad += 1					// add an extra pixel to each side to account for edge
+		rad += 0.					// (no - it cuts off the low Q artificially) add an extra pixel to each side to account for edge
 		Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask
 		WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
 		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
@@ -1638,6 +1638,22 @@ Function sourceToSampleDist()
 	rw[25] = SSD/100		// in meters
 	return(SSD)
 End
+
+
+// not part of SASCALC, but can be used to convert the SSD to number of guides
+//
+// SSD in meters
+Function numGuides(SSD)
+	variable SSD
+	
+	Variable Ng
+	Ng = SSD*100 + 5 - 1632
+	Ng /= -155
+	
+	Ng = round(Ng)
+	return(Ng)
+End
+
 
 //returns the offset value
 // slider and setVar are linked to the same global

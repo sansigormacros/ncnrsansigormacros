@@ -10,15 +10,17 @@
 //
 //
 // - Why am I off by a factor of 2.7 - 3.7 (MC too high) relative to real data?
-//   I need to include efficiency (70%?) - do I knock these off be fore the simulation or do I 
+//   I need to include efficiency (70%?) - do I knock these off before the simulation or do I 
 //    really simulate that some fraction of neutrons on the detector don't actually get counted?
-//   Is the flux estimate up-to-date?
+//   Is the flux estimate up-to-date? !! Flux estimates at NG3 are out-of-date....
+// - my simulated transmission is larger than what is measured, even after correcting for the quartz cell.
+//   Why? Do I need to include absorption? Just inherent problems with incoherent cross sections?
+
 // - Most importantly, this needs to be checked for correctness of the MC simulation
 // X how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
 // X why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
 // - get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
-// - my simulated transmission is larger than what is measured, even after correcting for the quartz cell.
-//   Why? Do I need to include absorption? Just inherent problems with incoherent cross sections?
+
 //
 // X at the larger angles, is the "flat" detector being properly accounted for - in terms of
 //   the solid angle and how many counts fall in that pixel. Am I implicitly defining a spherical detector
@@ -49,11 +51,13 @@
 //   effects on the absolute scale can be seen?
 //
 // X why is "pure" incoherent scattering giving me a q^-1 slope, even with the detector all the way back?
-// - can I speed up by assuming everything interacts? This would compromise the ability to calculate multiple scattering
+// -NO- can I speed up by assuming everything interacts? This would compromise the ability to calculate multiple scattering
 // X ask John how to verify what is going on
 // - a number of models are now found to be ill-behaved when q=1e-10. Then the random deviate calculation blows up.
 //   a warning has been added - but some models need a proper limiting value, and some (power-law) are simply unuseable
 //   unless something else can be done.
+// - if the MC gags on a simulation, it often gets "stuck" and can't do the normal calculation from the model, which it
+//   should always default to...
 //
 //
 

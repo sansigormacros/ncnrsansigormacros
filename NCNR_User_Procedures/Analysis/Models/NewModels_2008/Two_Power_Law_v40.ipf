@@ -17,7 +17,7 @@ Proc PlotTwoPowerLaw(num,qmin,qmax)
 //
 	Make/O/D/n=(num) xwave_TwoPowerLaw, ywave_TwoPowerLaw
 	xwave_TwoPowerLaw =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
-	Make/O/D coef_TwoPowerLaw = {1e-6, 4, 1, 0.01, 0}
+	Make/O/D coef_TwoPowerLaw = {1, 1, 4, 0.04, 0}
 	make/o/t parameters_TwoPowerLaw = {"Coefficient, A ", "(-)Low Q Power","(-) high Q Power","Crossover Qc (A-1)","Incoherent Bgd (cm-1)"}
 	Edit parameters_TwoPowerLaw, coef_TwoPowerLaw
 	Variable/G root:g_TwoPowerLaw
@@ -49,7 +49,7 @@ Proc PlotSmearedTwoPowerLaw(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_TwoPowerLaw = {1e-6, 4, 1, 0.01, 0}
+	Make/O/D smear_coef_TwoPowerLaw = {1, 1, 4, 0.04, 0}
 	make/o/t smear_parameters_TwoPowerLaw = {"Coefficient, A ", "(-)Low Q Power","(-) high Q Power","Crossover Qc (A-1)","Incoherent Bgd (cm-1)"}
 	Edit smear_parameters_TwoPowerLaw,smear_coef_TwoPowerLaw					//display parameters in a table
 	
