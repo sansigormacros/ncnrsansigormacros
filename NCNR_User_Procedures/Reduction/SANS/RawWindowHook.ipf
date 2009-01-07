@@ -270,12 +270,10 @@ end
 //
 //returned magnitude of Q is in 1/Angstroms
 //
-// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
-//
 Function CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
 	
-	Variable dx,dy,qval,theta,dist
+	Variable dx,dy,qval,two_theta,dist
 	
 	Variable pixSizeX=pixSize
 	Variable pixSizeY=pixSize
@@ -285,9 +283,9 @@ Function CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
 	dist = sqrt(dx^2 + dy^2)
 	
-	theta = atan(dist/sdd)
+	two_theta = atan(dist/sdd)
 
-	qval = 4*Pi/lam*sin(theta/2)
+	qval = 4*Pi/lam*sin(two_theta/2)
 	
 	return qval
 End
@@ -300,12 +298,13 @@ End
 //sdd is in meters
 //wavelength is in Angstroms
 //
-// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
+// repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
+// now properly accounts for qz
 //
 Function CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
 
-	Variable qx,qval,phi,dx,dy
+	Variable qx,qval,phi,dx,dy,dist,two_theta
 	
 	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	
@@ -314,7 +313,11 @@ Function CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	dy = (yaxval - yctr)*pixSize		//delta y in cm
 	phi = FindPhi(dx,dy)
 	
-	qx = qval*cos(phi)
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+
+	qx = qval*cos(two_theta/2)*cos(phi)
 	
 	return qx
 End
@@ -326,12 +329,13 @@ End
 //sdd is in meters
 //wavelength is in Angstroms
 //
-// repaired the dumb error of incorrect qx and qy calculation 3 dec 08 SRK (Lionel...)
+// repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
+// now properly accounts for qz
 //
 Function CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
 	
-	Variable dy,qval,dx,phi,qy
+	Variable dy,qval,dx,phi,qy,dist,two_theta
 	
 	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	
@@ -340,11 +344,43 @@ Function CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
 	dy = (yaxval - yctr)*pixSize		//delta y in cm
 	phi = FindPhi(dx,dy)
 	
-	qy = qval*sin(phi)
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+	
+	qy = qval*cos(two_theta/2)*sin(phi)
 	
 	return qy
 End
 
+//calculates just the z-component of the q-vector, not measured on the detector
+//input/output is the same as CalcQval()
+//ALL inputs are in detector coordinates
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
+//
+// not actually used, but here for completeness if anyone asks
+//
+Function CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+	
+	Variable dy,qval,dx,phi,qz,dist,two_theta
+	
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	
+	sdd *=100		//convert to cm
+	
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
+	dy = (yaxval - yctr)*pixSize		//delta y in cm
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+	
+	qz = qval*sin(two_theta/2)
+	
+	return qz
+End
 
 //phi is defined from +x axis, proceeding CCW around [0,2Pi]
 Threadsafe Function FindPhi(vx,vy)

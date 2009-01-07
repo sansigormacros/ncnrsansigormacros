@@ -735,19 +735,25 @@ Function QxQy_Export(type,fullpath,dialog)
 //		termStr = "\r\n"
 //	Endif
 	
-	Duplicate/O data,qx_val,qy_val,z_val
+	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val
 	
 //	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 //	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
 	
 	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
 	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-
+	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
+	
+	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
+//	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+//	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+//	Redimension/N=(pixelsX*pixelsY) qz_val,qval
 
 	//not demo-compatible, but approx 8x faster!!	
 #if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)	
-	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// /M=termStr specifies terminator
+	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// /M=termStr specifies terminator	
+//	Save/G/M="\r\n" labelWave,qx_val,qy_val,qz_val,qval,z_val as fullpath	// for debugging, write out everything
 #else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave
@@ -756,7 +762,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	Close refNum
 #endif
 	
-	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val
+	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val
 	
 	Print "QxQy_Export File written: ", GetFileNameFromPathNoSemi(fullPath)
 	return(0)
