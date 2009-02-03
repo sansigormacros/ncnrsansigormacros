@@ -903,6 +903,9 @@ Function ClearButtonProc(ctrlName) : ButtonControl
 			CleanOutFolder("COR")
 			break
 	endswitch
+	// uncheck the cursors
+	UseCrsrCheckProc("",0)
+	
 	DoWindow/F USANS_Panel		//focus back to MainPanel
 	SetDataFolder root:
 End
@@ -1288,5 +1291,4 @@ Function U_OpenTracTicketPage(ctrlName)
 		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
 	endif
 End
-
 

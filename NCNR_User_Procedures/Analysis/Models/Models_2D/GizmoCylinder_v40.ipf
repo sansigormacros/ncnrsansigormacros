@@ -14,7 +14,7 @@ Window Gizmo1() : GizmoPlot
 		return
 	endif
 
-	NewGizmo/N=ObjOrient/T="Object Orientation" /K=1 /W=(953,158,1318,524)
+	NewGizmo/N=ObjOrient/T="Object Orientation" /K=1 /W=(653,158,1018,524)
 	ModifyGizmo startRecMacro
 	AppendToGizmo Axes=CustomAxis,name=axes0
 	ModifyGizmo ModifyObject=axes0,property={0,axisRange,0,0,-1,0,0,1}

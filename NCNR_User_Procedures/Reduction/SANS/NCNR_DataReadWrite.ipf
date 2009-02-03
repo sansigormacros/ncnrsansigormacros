@@ -350,7 +350,7 @@ Function ReadHeaderAndData(fname)
 //	endif
 	
 	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
-	KillWaves/Z w
+//	KillWaves/Z w
 	
 	//return the data folder to root
 	SetDataFolder root:
@@ -1286,7 +1286,7 @@ Function RewriteIntegerToHeader(fname,val,start)
 	
 	Variable refnum
 	Open/A/T="????TEXT" refnum as fname      //Open for writing! Move to EOF before closing!
-	FSetPos refnum,31
+	FSetPos refnum,start
 	FBinWrite/B=3/F=3 refnum, val      //write a 4-byte integer
 	//move to the end of the file before closing
 	FStatus refnum
@@ -1769,5 +1769,557 @@ Function HeaderToLensResolution(num)
 		//Print "Unconvert",fullname
 		WriteVAXReal(fullname,1,300)
 	Endif
+	return(0)
+End
+
+
+// given a data folder, write out the corresponding VAX binary data file.
+//
+// I don't think that I can generate a STRUCT and then lay that down - since the
+// VAX FP format has to be duplicated with a write/read/flip/re-write dance...
+//
+// seems to work correctly byte for byte
+// compression has bee implmented also, for complete replication of the format (n>32767 in a cell)
+//
+// SRK 29JAN09
+//
+// other functions needed:
+//
+//
+// one to generate a fake data file name, and put the matching name in the data header
+// !! must fake the Annn suffix too! this is used...
+// use a prefix, keep a run number, initials SIM, and alpha as before (start randomly, don't bother changing?)
+//
+// for right now, keep a run number, and generate
+// PREFIXnnn.SA2_SIM_Annn
+// also, start the index @ 100 to avoid leading zeros (although I have the functions available)
+
+// one to generate the date/time string in VAX format, right # characters// Print Secs2Time(DateTime,3)				// Prints 13:07:29
+// Print Secs2Time(DateTime,3)				// Prints 13:07:29
+//	Print Secs2Date(DateTime,-2)		// 1993-03-14			//this call is independent of System date/time!//
+//
+// for now, 20 characters 01-JAN-2009 12:12:12
+//
+
+// simulation should call as ("SAS","",0) to bypass the dialog, and to fill the header
+// this could be modified in the future to be more generic
+//
+///
+Function WriteVAXData(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
+	
+	String destStr=""
+	Variable refNum,ii,val,err
+	
+	
+	destStr = "root:Packages:NIST:"+type
+	
+	SetDataFolder $destStr
+	WAVE intw=integersRead
+	WAVE rw=realsRead
+	WAVE/T textw=textRead
+	WAVE data=linear_data
+	
+	//check each wave
+	If(!(WaveExists(intw)))
+		Abort "intw DNExist WriteVAXData()"
+	Endif
+	If(!(WaveExists(rw)))
+		Abort "rw DNExist WriteVAXData()"
+	Endif
+	If(!(WaveExists(textw)))
+		Abort "textw DNExist WriteVAXData()"
+	Endif
+	If(!(WaveExists(data)))
+		Abort "linear_data DNExist WriteVAXData()"
+	Endif
+	
+	
+//	if(dialog)
+//		PathInfo/S catPathName
+//		fullPath = DoSaveFileDialog("Save data as")
+//		If(cmpstr(fullPath,"")==0)
+//			//user cancel, don't write out a file
+//			Close/A
+//			Abort "no data file was written"
+//		Endif
+//		//Print "dialog fullpath = ",fullpath
+//	Endif
+	
+	// save to home, or get out
+	//
+	PathInfo home
+	if(V_flag	== 0)
+		Abort "no save path defined. Save the experiment to generate a home path"
+	endif
+	
+	fullPath = S_path		//not the full path yet, still need the name, after the header is filled
+	
+	
+	Make/O/B/U/N=33316 tmpFile		//unsigned integers for a blank data file
+	tmpFile=0
+	
+	Make/O/W/N=16401 dataWRecMarkers
+	AddRecordMarkers(data,dataWRecMarkers)
+	
+	// need to re-compress?? maybe never a problem, but should be done for the odd case
+	dataWRecMarkers = CompressI4toI2(dataWRecMarkers)		//unless a pixel value is > 32767, the same values are returned
+	
+	// fill the last bits of the header information
+	err = SimulationVAXHeader(type)
+	if (err == -1)
+		Abort "no sample label entered - no file written"			// User did not fill in header correctly/completely
+	endif
+	fullPath = fullPath + textW[0]
+	
+	// lay down a blank file
+	Open refNum as fullpath
+		FBinWrite refNum,tmpFile			//file is the right size, but all zeroes
+	Close refNum
+	
+	// fill up the header
+	// text values
+	// elements of textW are already the correct length set by the read, but just make sure
+	String str
+	
+	if(strlen(textw[0])>21)
+		textw[0] = (textw[0])[0,20]
+	endif
+	if(strlen(textw[1])>20)
+		textw[1] = (textw[1])[0,19]
+	endif
+	if(strlen(textw[2])>3)
+		textw[2] = (textw[2])[0,2]
+	endif
+	if(strlen(textw[3])>11)
+		textw[3] = (textw[3])[0,10]
+	endif
+	if(strlen(textw[4])>1)
+		textw[4] = (textw[4])[0]
+	endif
+	if(strlen(textw[5])>8)
+		textw[5] = (textw[5])[0,7]
+	endif
+	if(strlen(textw[6])>60)
+		textw[6] = (textw[6])[0,59]
+	endif
+	if(strlen(textw[7])>6)
+		textw[7] = (textw[7])[0,5]
+	endif
+	if(strlen(textw[8])>6)
+		textw[8] = (textw[8])[0,5]
+	endif
+	if(strlen(textw[9])>6)
+		textw[9] = (textw[9])[0,5]
+	endif
+	if(strlen(textw[10])>42)
+		textw[10] = (textw[10])[0,41]
+	endif	
+	
+	ii=0
+	Open/A/T="????TEXT" refnum as fullpath      //Open for writing! Move to EOF before closing!
+		str = textW[ii]
+		FSetPos refnum,2							////file name
+		FBinWrite/F=0 refnum, str      //native object format (character)
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,55							////date/time
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,75							////type
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,78						////def dir
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,89						////mode
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,90						////reserve
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,98						////@98, sample label
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,202						//// T units
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,208						//// F units
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,214						////det type
+		FBinWrite/F=0 refnum, str
+		ii+=1
+		str = textW[ii]
+		FSetPos refnum,404						////reserve
+		FBinWrite/F=0 refnum, str
+	
+		//move to the end of the file before closing
+		FStatus refnum
+		FSetPos refnum,V_logEOF
+	Close refnum
+	
+	
+	// integer values (4 bytes)
+	ii=0
+	Open/A/T="????TEXT" refnum as fullpath      //Open for writing! Move to EOF before closing!
+		val = intw[ii]
+		FSetPos refnum,23							//nprefactors
+		FBinWrite/B=3/F=3 refnum, val      //write a 4-byte integer
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,27							//ctime
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,31							//rtime
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,35							//numruns
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,174							//table
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,178							//holder
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,182							//blank
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,194							//tctrlr
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,198							//magnet
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,244							//det num
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,248							//det spacer
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,308							//tslice mult
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,312							//tsclice ltslice
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,332							//extra
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,336							//reserve
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,376							//blank1
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,380							//blank2
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,384							//blank3
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,458							//spacer
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,478							//box x1
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,482							//box x2
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,486							//box y1
+		FBinWrite/B=3/F=3 refnum, val
+		ii+=1
+		val=intw[ii]
+		FSetPos refnum,490							//box y2
+		FBinWrite/B=3/F=3 refnum, val
+		
+		//move to the end of the file before closing
+		FStatus refnum
+		FSetPos refnum,V_logEOF
+	Close refnum
+	
+		
+	//VAX 4-byte FP values. No choice here but to write/read/re-write to get 
+	// the proper format. there are 52! values to write
+	//WriteVAXReal(fullpath,rw[n],start)
+	// [0]
+	WriteVAXReal(fullpath,rw[0],39)
+	WriteVAXReal(fullpath,rw[1],43)
+	WriteVAXReal(fullpath,rw[2],47)
+	WriteVAXReal(fullpath,rw[3],51)
+	WriteVAXReal(fullpath,rw[4],158)
+	WriteVAXReal(fullpath,rw[5],162)
+	WriteVAXReal(fullpath,rw[6],166)
+	WriteVAXReal(fullpath,rw[7],170)
+	WriteVAXReal(fullpath,rw[8],186)
+	WriteVAXReal(fullpath,rw[9],190)
+	// [10]
+	WriteVAXReal(fullpath,rw[10],220)
+	WriteVAXReal(fullpath,rw[11],224)
+	WriteVAXReal(fullpath,rw[12],228)
+	WriteVAXReal(fullpath,rw[13],232)
+	WriteVAXReal(fullpath,rw[14],236)
+	WriteVAXReal(fullpath,rw[15],240)
+	WriteVAXReal(fullpath,rw[16],252)
+	WriteVAXReal(fullpath,rw[17],256)
+	WriteVAXReal(fullpath,rw[18],260)
+	WriteVAXReal(fullpath,rw[19],264)
+	// [20]
+	WriteVAXReal(fullpath,rw[20],268)
+	WriteVAXReal(fullpath,rw[21],272)
+	WriteVAXReal(fullpath,rw[22],276)
+	WriteVAXReal(fullpath,rw[23],280)
+	WriteVAXReal(fullpath,rw[24],284)
+	WriteVAXReal(fullpath,rw[25],288)
+	WriteVAXReal(fullpath,rw[26],292)
+	WriteVAXReal(fullpath,rw[27],296)
+	WriteVAXReal(fullpath,rw[28],300)
+	WriteVAXReal(fullpath,rw[29],320)
+	// [30]
+	WriteVAXReal(fullpath,rw[30],324)
+	WriteVAXReal(fullpath,rw[31],328)
+	WriteVAXReal(fullpath,rw[32],348)
+	WriteVAXReal(fullpath,rw[33],352)
+	WriteVAXReal(fullpath,rw[34],356)
+	WriteVAXReal(fullpath,rw[35],360)
+	WriteVAXReal(fullpath,rw[36],364)
+	WriteVAXReal(fullpath,rw[37],368)
+	WriteVAXReal(fullpath,rw[38],372)
+	WriteVAXReal(fullpath,rw[39],388)
+	// [40]
+	WriteVAXReal(fullpath,rw[40],392)
+	WriteVAXReal(fullpath,rw[41],396)
+	WriteVAXReal(fullpath,rw[42],400)
+	WriteVAXReal(fullpath,rw[43],450)
+	WriteVAXReal(fullpath,rw[44],454)
+	WriteVAXReal(fullpath,rw[45],470)
+	WriteVAXReal(fullpath,rw[46],474)
+	WriteVAXReal(fullpath,rw[47],494)
+	WriteVAXReal(fullpath,rw[48],498)
+	WriteVAXReal(fullpath,rw[49],502)
+	// [50]
+	WriteVAXReal(fullpath,rw[50],506)
+	WriteVAXReal(fullpath,rw[51],510)
+	
+	
+	// write out the data
+	Open refNum as fullpath
+		FSetPos refnum,514					//  OK
+		FBinWrite/F=2/B=3 refNum,dataWRecMarkers		//don't trust the native format
+		FStatus refNum
+		FSetPos refNum,V_logEOF
+	Close refNum
+	
+	// all done
+	Killwaves/Z tmpFile,dataWRecMarkers
+	
+	Print "Saved VAX binary data as:  ",textW[0]
+	SetDatafolder root:
+	return(0)
+End
+
+
+Function AddRecordMarkers(in,out)
+	Wave in,out
+	
+	Variable skip,ii
+
+//	Duplicate/O in,out
+//	Redimension/N=16401 out
+
+	out=0
+	
+	ii=0
+	skip=0
+	out[ii] = 1
+	ii+=1
+	do
+		if(mod(ii+skip,1022)==0)
+			out[ii+skip] = 0		//999999
+			skip+=1			//increment AFTER filling the current marker
+		endif
+		out[ii+skip] = in[ii-1]
+		ii+=1
+	while(ii<=16384)
+	
+	
+	return(0)
+End
+
+
+
+
+//        INTEGER*2 FUNCTION I4ToI2(I4)
+//C
+//C       Original author : Jim Rhyne
+//C       Modified by     : Frank Chen 09/26/90
+//C
+//C       I4ToI2 = I4,                            I4 in [0,32767]
+//C       I4ToI2 = -777,                          I4 in (2767000,...)
+//C       I4ToI2 mapped to -13277 to -32768,      otherwise
+//C
+//C       the mapped values [-776,-1] and [-13276,-778] are not used
+//C
+//C       I4max should be 2768499, this value will maps to -32768
+//C       and mantissa should be compared  using 
+//C               IF (R4 .GE. IPW)
+//C       instead of
+//C               IF (R4 .GT. (IPW - 1.0))
+//C
+//
+//
+//C       I4      :       input I*4
+//C       R4      :       temperory real number storage
+//C       IPW     :       IPW = IB ** ND
+//C       NPW     :       number of power
+//C       IB      :       Base value
+//C       ND      :       Number of precision digits
+//C       I4max   :       max data value w/ some error
+//C       I2max   :       max data value w/o error
+//C       Error   :       when data value > I4max
+//C
+//        INTEGER*4       I4
+//        INTEGER*4       NPW
+//        REAL*4          R4
+//        INTEGER*4       IPW
+//        INTEGER*4       IB      /10/
+//        INTEGER*4       ND      /4/
+//        INTEGER*4       I4max   /2767000/
+//        INTEGER*4       I2max   /32767/
+//        INTEGER*4       Error   /-777/
+//
+Function CompressI4toI2(i4)
+	Variable i4
+
+	Variable npw,ipw,ib,nd,i4max,i2max,error,i4toi2
+	Variable r4
+	
+	ib=10
+	nd=4
+	i4max=2767000
+	i2max=32767
+	error=-777
+	
+	if(i4 <= i4max)
+		r4=i4
+		if(r4 > i2max)
+			ipw = ib^nd
+			npw=0
+			do
+				if( !(r4 > (ipw-1)) )		//to simulate a do-while loop evaluating at top
+					break
+				endif
+				npw=npw+1
+				r4=r4/ib		
+			while (1)
+			i4toi2 = -1*trunc(r4+ipw*npw)
+		else
+			i4toi2 = trunc(r4)		//shouldn't I just return i4 (as a 2 byte value?)
+		endif
+	else
+		i4toi2=error
+	endif
+	return(i4toi2)
+End
+
+
+// function to fill the extra bits of header information to make a "complete"
+// simulated VAX data file.
+//
+//
+Function SimulationVAXHeader(folder)
+	String folder
+
+	Wave rw=root:Packages:NIST:SAS:realsRead
+	Wave iw=root:Packages:NIST:SAS:integersRead
+	Wave/T tw=root:Packages:NIST:SAS:textRead
+	Wave res=root:Packages:NIST:SAS:results
+	
+// integers needed:
+	//[2] count time
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+	iw[2] = ctTime
+	
+//reals are partially set in SASCALC initializtion
+	//remaining values are updated automatically as SASCALC is modified
+	// -- but still need:
+	//	[0] monitor count
+	//	[2] detector count (w/o beamstop)
+	//	[4] transmission
+	//	[5] thickness (in cm)
+	NVAR imon = root:Packages:NIST:SAS:gImon
+	rw[0] = imon
+	rw[2] = res[9]
+	rw[4] = res[8]
+	NVAR thick = root:Packages:NIST:SAS:gThick
+	rw[5] = thick
+	
+// text values needed:
+// be sure they are padded to the correct length
+	// [0] filename (do I fake a VAX name? probably yes...)
+	// [1] date/time in VAX format
+	// [2] type (use SIM)
+	// [3] def dir (use [NG7SANS99])
+	// [4] mode? C
+	// [5] reserve (another date), prob not needed
+	// [6] sample label
+	// [9] det type "ORNL  " (6 chars)
+	
+	tw[1] = "01-JAN-2009 12:12:12"
+	tw[2] = "SIM"
+	tw[3] = "[NG7SANS99]"
+	tw[4] = "C"
+	tw[5] = "01JAN09 "
+	tw[9] = "ORNL  "
+	
+	NVAR index = root:Packages:NIST:SAS:gSaveIndex
+	SVAR prefix = root:Packages:NIST:SAS:gSavePrefix
+
+	tw[0] = prefix+num2str(index)+".SA2_SIM_A"+num2str(index)
+	index += 1
+	
+	String labelStr=" "	
+	Prompt labelStr, "Enter sample label "		// Set prompt for x param
+	DoPrompt "Enter sample label", labelStr
+	if (V_Flag)
+		//Print "no sample label entered - no file written"
+		index -=1
+		return -1								// User canceled
+	endif
+	
+	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
+	tw[6] = labelStr[0,59]
+	
 	return(0)
 End

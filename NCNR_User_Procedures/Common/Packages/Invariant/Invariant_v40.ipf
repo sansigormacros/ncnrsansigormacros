@@ -132,7 +132,7 @@ Function SetExtrWaves(w)
 	//set the q-range
 	Variable qmax,qmin,num
 	qmax=10
-	qmin=0
+	qmin=1e-5
 	num=numpnts(w)
 	
 	extr_hqq = w[num-1] + x * (qmax-w[num-1])/num_extr
@@ -207,6 +207,7 @@ Function Plot_Inv_Data(ctrlName) : ButtonControl
 	ModifyGraph log=1
 	ModifyGraph mirror=2
 	ModifyGraph standoff=0
+	ModifyGraph tickUnit=1
 	Label left "Intensity (1/cm)"
 	Label bottom "q (1/A)"
 	ModifyGraph rgb($NameofWave(iw))=(0,0,0)

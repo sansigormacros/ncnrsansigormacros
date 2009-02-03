@@ -829,6 +829,8 @@ End
 
 // returns the path to the file, or null if the user cancelled
 // fancy use of optional parameters
+// 
+// enforce short file names (26 characters)
 Function/S DoSaveFileDialog(msg,[fname,suffix])
 	String msg,fname,suffix
 	Variable refNum
@@ -843,11 +845,41 @@ Function/S DoSaveFileDialog(msg,[fname,suffix])
 		suffix = ""
 	endif
 	
-	String outputPath,tmpName
+	String outputPath,tmpName,testStr
+	Variable badLength=0,maxLength=26,l1,l2
+	
+	
 	tmpName = fname + suffix
 	
-	Open/D/M=msg/T="????" refNum as tmpName
-	outputPath = S_fileName
+	do
+		badLength=0
+		Open/D/M=msg/T="????" refNum as tmpName
+		outputPath = S_fileName
+		
+		testStr = ParseFilePath(0, outputPath, ":", 1, 0)		//just the filename
+		if(strlen(testStr)==0)
+			break		//cancel, allow exit
+		endif
+		if(strlen(testStr) > maxLength)
+			badlength = 1
+			DoAlert 2,"File name is too long. Is\r"+testStr[0,25]+"\rOK?"
+			if(V_flag==3)
+				outputPath = ""
+				break
+			endif
+			if(V_flag==1)			//my suggested name is OK, so trim the output
+				badlength=0
+				l1 = strlen(testStr)		//too long length
+				l1 = l1-maxLength		//number to trim
+				//Print outputPath
+				l2=strlen(outputPath)
+				outputPath = outputPath[0,l2-1-l1]
+				//Print "modified  ",outputPath
+			endif
+			//if(V_flag==2)  do nothing, let it go around again
+		endif
+		
+	while(badLength)
 	
 	return outputPath
 End

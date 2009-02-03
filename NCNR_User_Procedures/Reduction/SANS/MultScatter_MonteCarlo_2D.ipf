@@ -55,7 +55,8 @@
 // X ask John how to verify what is going on
 // - a number of models are now found to be ill-behaved when q=1e-10. Then the random deviate calculation blows up.
 //   a warning has been added - but some models need a proper limiting value, and some (power-law) are simply unuseable
-//   unless something else can be done.
+//   unless something else can be done. Using a log-spacing of points doesn't seem to help, and it introduces a lot of
+//   other problems. Not the way to go.
 // - if the MC gags on a simulation, it often gets "stuck" and can't do the normal calculation from the model, which it
 //   should always default to...
 //
@@ -69,7 +70,6 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	//initialize ran1 in the XOP by passing a negative integer
 	// does nothing in the Igor code
 	Duplicate/O results retWave
-	//results[0] = -1*(datetime)
 
 	Variable NNeutron=inputWave[0]
 	Variable i,nthreads= ThreadProcessorCount
@@ -80,6 +80,8 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 //	nthreads = 1
 	
 	variable mt= ThreadGroupCreate(nthreads)
+	NVAR gInitTime = root:Packages:NIST:SAS:gRanDateTime		//time that SASCALC was started
+
 	
 	inputWave[0] = NNeutron/nthreads		//split up the number of neutrons
 	
@@ -92,19 +94,21 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		Duplicate/O retWave $("retWave"+num2istr(i))
 		Duplicate/O inputWave $("inputWave"+num2istr(i))
 		Duplicate/O ran_dev $("ran_dev"+num2istr(i))
-		
+				
 		// ?? I need explicit wave references?
 		// maybe I need to have everything in separate data folders - bu tI haven't tried that. seems like a reach.
 		// more likely there is something bad going on in the XOP code.
 		if(i==0)
 			WAVE inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0
-			retWave0[0] = -1*datetime		//to initialize ran3
+			retWave0 = 0		//clear the return wave
+			retWave0[0] = -1*(datetime-gInitTime)		//to initialize ran3
 			ThreadStart mt,i,Monte_SANS_W1(inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0)
 			Print "started thread 0"
 		endif
 		if(i==1)
 			WAVE inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1
-			//retWave1[0] = -1*datetime		//to initialize ran3
+			retWave1 = 0			//clear the return wave
+			retWave1[0] = -1*(datetime-gInitTime)		//to initialize ran1
 			ThreadStart mt,i,Monte_SANS_W2(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
 			Print "started thread 1"
 		endif
@@ -179,6 +183,8 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 End
 
 // worker function for threads, does nothing except switch between XOP and Igor versions
+//
+// uses ran3
 ThreadSafe Function Monte_SANS_W1(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
 	
@@ -190,7 +196,10 @@ ThreadSafe Function Monte_SANS_W1(inputWave,ran_dev,nt,j1,j2,nn,linear_data,resu
 
 	return (0)
 End
+
 // worker function for threads, does nothing except switch between XOP and Igor versions
+//
+// uses ran1
 ThreadSafe Function Monte_SANS_W2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
 	
@@ -568,18 +577,13 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	Variable nPts_ran=10000,qu
 	qu = 4*pi/lam		
 	
-//	Make/O/N=(nPts_ran)/D root:Packages:NIST:SAS:Gq,root:Packages:NIST:SAS:xw		// if these waves are 1000 pts, the results are "pixelated"
-//	WAVE Gq = root:Packages:NIST:SAS:gQ
-//	WAVE xw = root:Packages:NIST:SAS:xw
-
 // hard-wired into the Simulation directory rather than the SAS folder.
 // plotting resolution-smeared models won't work any other way
 	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
 	WAVE Gq = root:Simulation:gQ
 	WAVE xw = root:Simulation:xw
-	SetScale/I x (0+1e-6),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
+	SetScale/I x (0+1e-4),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
 
-///
 /// if all of the coefficients are well-behaved, then the last point is the background
 // and I can set it to zero here (only for the calculation)
 	Duplicate/O coef,tmp_coef
@@ -591,6 +595,7 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 
 //	Gq = x*Gq													// SAS approximation
 	Gq = Gq*sin(2*asin(x/qu))/sqrt(1-(x/qu))			// exact
+	//
 	//
 	Integrate/METH=1 Gq/D=Gq_INT
 	
@@ -604,7 +609,61 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	return(0)
 End
 
+// returns the random deviate as a wave
+// and the total SAS cross-section [1/cm] sig_sas
+//
+// uses a log spacing of x for better coverage
+// downside is that it doesn't use built-in integrate, which is automatically cumulative
+//
+// --- Currently does not work - since the usage of the random deviate in the MC routine is based on the 
+// wave properties of ran_dev, that is it must have the proper scaling and be equally spaced.
+//
+// -- not really sure that this will solve any of the problems with some functions (notably those with power-laws)
+// giving unreasonably large SAS cross sections. (>>10)
+//
+Function CalculateRandomDeviate_log(func,coef,lam,outWave,SASxs)
+	FUNCREF SANSModelAAO_MCproto func
+	WAVE coef
+	Variable lam
+	String outWave
+	Variable &SASxs
 
+	Variable nPts_ran=1000,qu,qmin,ii
+	qmin=1e-5
+	qu = 4*pi/lam		
+
+// hard-wired into the Simulation directory rather than the SAS folder.
+// plotting resolution-smeared models won't work any other way
+	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
+	WAVE Gq = root:Simulation:gQ
+	WAVE xw = root:Simulation:xw
+//	SetScale/I x (0+1e-4),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
+	xw =  alog(log(qmin) + x*((log(qu)-log(qmin))/nPts_ran))
+
+/// if all of the coefficients are well-behaved, then the last point is the background
+// and I can set it to zero here (only for the calculation)
+	Duplicate/O coef,tmp_coef
+	Variable num=numpnts(coef)
+	tmp_coef[num-1] = 0
+	
+	func(tmp_coef,Gq,xw)									//call as AAO
+	Gq = Gq*sin(2*asin(xw/qu))/sqrt(1-(xw/qu))			// exact
+
+	
+	Duplicate/O Gq Gq_INT
+	Gq_INT = 0
+	for(ii=0;ii<nPts_ran;ii+=1)
+		Gq_INT[ii] = AreaXY(xw,Gq,qmin,xw[ii])
+	endfor
+	
+	SASxs = lam*Gq_INT[nPts_ran-1]
+	
+	Gq_INT /= Gq_INT[nPts_ran-1]
+	
+	Duplicate/O Gq_INT $outWave
+
+	return(0)
+End
 
 ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 	Variable testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
@@ -801,9 +860,45 @@ ThreadSafe Function path_len(aval,sig_tot)
 End
 
 // globals are initialized in SASCALC.ipf
+// coordinates if I make this part of the panel - but this breaks other things...
+//
+//Proc MC_SASCALC()
+////	PauseUpdate; Silent 1		// building window...
+//
+////	NewPanel /W=(92,556,390,1028)/K=1 as "SANS Simulator"
+//	SetVariable MC_setvar0,pos={491,73},size={144,15},bodyWidth=80,title="# of neutrons"
+//	SetVariable MC_setvar0,format="%5.4g"
+//	SetVariable MC_setvar0,limits={-inf,inf,100},value= root:Packages:NIST:SAS:gImon
+//	SetVariable MC_setvar0_1,pos={491,119},size={131,15},bodyWidth=60,title="Thickness (cm)"
+//	SetVariable MC_setvar0_1,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gThick
+//	SetVariable MC_setvar0_2,pos={491,96},size={149,15},bodyWidth=60,title="Incoherent XS (cm)"
+//	SetVariable MC_setvar0_2,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gSig_incoh
+//	SetVariable MC_setvar0_3,pos={491,142},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
+//	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
+//	PopupMenu MC_popup0,pos={476,13},size={165,20},proc=MC_ModelPopMenuProc,title="Model Function"
+//	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
+//	Button MC_button0,pos={480,181},size={130,20},proc=MC_DoItButtonProc,title="Do MC Simulation"
+//	Button MC_button1,pos={644,181},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
+//	SetVariable setvar0_3,pos={568,484},size={50,20},disable=1
+//	GroupBox group0,pos={478,42},size={267,130},title="Monte Carlo"
+//	SetVariable cntVar,pos={653,73},size={80,15},proc=CountTimeSetVarProc,title="time(s)"
+//	SetVariable cntVar,format="%d"
+//	SetVariable cntVar,limits={1,10,1},value= root:Packages:NIST:SAS:gCntTime
+//	
+//	String fldrSav0= GetDataFolder(1)
+//	SetDataFolder root:Packages:NIST:SAS:
+//	Edit/W=(476,217,746,450)/HOST=#  results_desc,results
+//	ModifyTable format(Point)=1,width(Point)=0,width(results_desc)=150
+//	SetDataFolder fldrSav0
+//	RenameWindow #,T_results
+//	SetActiveSubwindow ##
+EndMacro
+
+// as a stand-alone panel, extra control bar  (right) and subwindow implementations don't work right 
+// for various reasons...
 Window MC_SASCALC() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(92,556,390,1028)/K=1 as "SANS Simulator"
+	NewPanel /W=(92,556,713,818)/K=1 as "SANS Simulator"
 	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
 	SetVariable MC_setvar0,format="%5.4g"
 	SetVariable MC_setvar0,limits={-inf,inf,100},value= root:Packages:NIST:SAS:gImon
@@ -816,22 +911,25 @@ Window MC_SASCALC() : Panel
 	PopupMenu MC_popup0,pos={13,13},size={165,20},proc=MC_ModelPopMenuProc,title="Model Function"
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
 	Button MC_button0,pos={17,181},size={130,20},proc=MC_DoItButtonProc,title="Do MC Simulation"
-	Button MC_button1,pos={181,181},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
+	Button MC_button0,fColor=(3,52428,1)
+	Button MC_button1,pos={17,208},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
 	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
 	SetVariable cntVar,pos={190,73},size={80,15},proc=CountTimeSetVarProc,title="time(s)"
 	SetVariable cntVar,format="%d"
-	SetVariable cntVar,limits={1,10,1},value= root:Packages:NIST:SAS:gCntTime
+	SetVariable cntVar,limits={1,60,1},value= root:Packages:NIST:SAS:gCntTime
+	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
+	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
+	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
 	
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
-	Edit/W=(13,217,283,450)/HOST=#  results_desc,results
+	Edit/W=(344,23,606,248)/HOST=#  results_desc,results
 	ModifyTable format(Point)=1,width(Point)=0,width(results_desc)=150
 	SetDataFolder fldrSav0
 	RenameWindow #,T_results
 	SetActiveSubwindow ##
 EndMacro
-
 
 Function CountTimeSetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
@@ -954,6 +1052,17 @@ Function	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,dataFolder)
 	SetDataFolder root:
 	
 End
+
+// writes out a VAX binary data file
+// automatically generates a name
+// will prompt for the sample label
+//
+Function SaveAsVAXButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	WriteVAXData("SAS","",0)
+End
+
 
 
 

@@ -55,12 +55,14 @@ Function/S PossibleModelWaves(filterStr)
 	return(list)
 end
 
+// always asks for a file name
 Function fWriteModelData(xwave,ywave,delim,term)
 	Wave xwave,ywave
 	String delim,term
 	
 	String formatStr="",fullpath=""
-	Variable refnum
+	Variable refnum,dialog=1
+	
 	//setup delimeter and terminator choices
 	If(cmpstr(delim,"tab")==0)
 		//tab-delimeted
@@ -79,13 +81,17 @@ Function fWriteModelData(xwave,ywave,delim,term)
 		formatStr += "\r\n"
 	Endif
 	
-	Open/D/T="????" refnum as NameofWave(ywave)+".txt"	//doesn't open file
-	If(cmpstr(S_filename,"")==0)
-		//user cancel, don't write out a file
-		Close/A
-		Abort "no data file was written"
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as",fname=NameofWave(ywave)+".txt")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
 	Endif
-	fullpath=S_filename
+	
 	Open refnum as fullpath
 	
 	fprintf refnum,"Model data created %s\r\n",(date()+" "+time())

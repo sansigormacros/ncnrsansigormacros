@@ -308,6 +308,7 @@ Function UseCrsrCheckProc(ctrlName,checked) : CheckBoxControl
 		HideInfo/W=COR_Graph
 		Cursor/K A
 		Cursor/K B
+		CheckBox useCrsrCheck,value= 0
 	endif
 	DoUpdate
 End

@@ -16,6 +16,9 @@
 // 						 added option of lenses, approximated beamDiam=sourceDiam, BSdiam=1"
 //						 Lens flux, trans is not corrected for lens/prism transmission
 //						 Lenses can still be inserted in incorrect cases, and are not automatically taken out
+// 27 JAN 2009 SRK - Changed behavior of Lens checkbox. Now, it SETS parameters as needed for proper
+//						 configuration. 17.2 can be typed in for lens/prism on NG3. Invalid conditions
+//						 will automatically uncheck the box
 //
 // calculate what q-values you get based on the instruments settings
 // that you would typically input to SASCALC
@@ -24,9 +27,6 @@
 // - NOT true intensity, not counts, just a display
 //
 // To Do:
-// - add in instrument conditions for lens/(lens+prism) configurations
-// - proper resolution calculation for lens/prism
-//
 //
 // Optional:
 // - freeze configurations with a user defined tag
@@ -60,11 +60,12 @@ Proc SASCALC()
 		Sascalc_Panel()
 		ReCalculateInten(1)		//will use defaults
 	Endif
-	
-	DoWindow/F MC_SASCALC
-	if(V_flag==0)
-		MC_SASCALC()
-	endif
+
+// now a checkbox as needed
+//	DoWindow/F MC_SASCALC
+//	if(V_flag==0)
+//		MC_SASCALC()
+//	endif
 End
 
 Proc S_initialize_space()
@@ -107,6 +108,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gModelOffsetFactor = 1
 	
 	// for the MC simulation
+	Variable/G root:Packages:NIST:SAS:gRanDateTime=datetime
 	Variable/G root:Packages:NIST:SAS:gImon = 10000
 	Variable/G root:Packages:NIST:SAS:gThick = 0.1
 	Variable/G root:Packages:NIST:SAS:gSig_incoh = 0.1
@@ -114,8 +116,11 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
 	Variable/G root:Packages:NIST:SAS:gCntTime = 1
 	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0
+	Variable/G root:Packages:NIST:SAS:gRawCounts = 0
+	Variable/G root:Packages:NIST:SAS:gSaveIndex = 100
+	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
-	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/beamstop"}
+	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/o beamstop"}
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -131,6 +136,8 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gCalculate=0
 	//for plotting
 	Variable/G root:Packages:NIST:SAS:gFreezeCount=1		//start the count at 1 to keep Jeff happy
+	Variable/G root:Packages:NIST:SAS:gDoTraceOffset=1		// (1==Yes, offset 2^n), 0==turn off the offset
+	
 End
 
 Function initNG3()
@@ -282,9 +289,39 @@ End
 Window SASCALC_Panel()
 
 	PauseUpdate; Silent 1		// building window...
+
+// if I make the graph a subwindow in a panel, it breaks the "append 1d" from the wrapper	
+//	NewPanel/W=(5,44,463,570)/K=1 as "SASCALC"
+//	DoWindow/C SASCALC
+//	ModifyPanel cbRGB=(49151,53155,65535)
+//
+//	
+//	String fldrSav0= GetDataFolder(1)
+//	SetDataFolder root:Packages:NIST:SAS:
+//	
+//	Display/HOST=#/W=(5,200,463,570) aveint vs qval
+//	ModifyGraph mode=3
+//	ModifyGraph marker=19
+//	ModifyGraph rgb=(0,0,0)
+//	Modifygraph log=1
+//	Modifygraph grid=1
+//	Modifygraph mirror=2
+//	ModifyGraph msize(aveint)=2
+//	ErrorBars/T=0 aveint Y,wave=(sigave,sigave)
+//	Label bottom, "Q (1/A)"
+//	Label left, "Relative Intensity"
+//	legend
+//	
+//	RenameWindow #,G_aveint
+//	SetActiveSubwindow ##
+
+//// end panel commands
+
+/// draw as a graph
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
-	Display /W=(5,44,463,570)/K=1 aveint vs qval as "SASCALC"
+	
+	Display/W=(5,44,463,570)/K=1  aveint vs qval as "SASCALC"
 	DoWindow/C SASCALC
 	ModifyGraph cbRGB=(49151,53155,65535)
 	ModifyGraph mode=3
@@ -298,10 +335,10 @@ Window SASCALC_Panel()
 	Label bottom, "Q (1/A)"
 	Label left, "Relative Intensity"
 	legend
+	
+	ControlBar/T 200
+
 	SetDataFolder fldrSav0
-
-
-	ControlBar 200
 	
 	Slider SC_Slider,pos={11,46},size={150,45},proc=GuideSliderProc,live=0
 	Slider SC_Slider,limits={0,8,1},variable= root:Packages:NIST:SAS:gNg,vert= 0//,thumbColor= (1,16019,65535)
@@ -343,8 +380,8 @@ Window SASCALC_Panel()
 	CheckBox checkLens,pos={6,155},size={44,14},proc=LensCheckProc,title="Lenses?"
 	CheckBox checkLens,value=root:Packages:NIST:SAS:gUsingLenses
 	
-//	CheckBox checkSim,pos={20,165},size={44,14},proc=SimCheckProc,title="Simulation?"
-//	CheckBox checkSim,value=0
+	CheckBox checkSim,pos={6,175},size={44,14},proc=SimCheckProc,title="MC Simulation?"
+	CheckBox checkSim,value=0
 	
 	// set up a fake dependency to trigger recalculation
 	//root:Packages:NIST:SAS:gCalculate := ReCalculateInten(root:Packages:NIST:SAS:gTouched)
@@ -430,14 +467,17 @@ Function GuideSliderProc(ctrlName,sliderValue,event)
 	Variable sliderValue
 	Variable event	// bit field: bit 0: value set, 1: mouse down, 2: mouse up, 3: mouse moved
 	
+	Variable recalc=0
+	
 	if(event %& 0x1)	// bit 0, value set
-		if(sliderValue != 0)
-			LensCheckProc("",0)		//make sure lenses are deselected
+		if(cmpstr(ctrlName,"") != 0)		//here by direct action, so do LensCheck and recalculate
+			recalc=1
+			LensCheckProc("",2)		//make sure lenses are deselected
 		endif
 		sourceToSampleDist()		//updates the SSD global and wave
 		//change the sourceAp popup, SDD range, etc
 		UpdateControls()
-		ReCalculateInten(1)
+		ReCalculateInten(recalc)
 	endif
 	return 0
 End
@@ -449,12 +489,14 @@ Function DetDistSliderProc(ctrlName,sliderValue,event)
 	Variable sliderValue
 	Variable event	// bit field: bit 0: value set, 1: mouse down, 2: mouse up, 3: mouse moved
 
+	Variable recalc=0
 	if(event %& 0x1)	// bit 0, value set
-		if(sliderValue < 1300)
-			LensCheckProc("",0)		//make sure lenses are deselected
+		if(cmpstr(ctrlName,"") != 0)
+			recalc=1
+			LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
 		endif
 		sampleToDetectorDist()		//changes the SDD and wave (DetDist is the global)
-		ReCalculateInten(1)
+		ReCalculateInten(recalc)
 	endif
 
 	return 0
@@ -492,6 +534,7 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 		checkBox checkNG7, value=1 
 		initNG7()
 	endif
+	LensCheckProc("",2)		//check if lenses are still valid (they won't be)
 	UpdateControls()
 	ReCalculateInten(1)
 End
@@ -519,6 +562,18 @@ End
 
 
 //lenses (or prisms) in/out changes resolution
+//
+// passing in a checked == 2 will do a check of the configuration without
+// affecting the box state
+//
+// if an invalid configuration is detected, the box is unchecked
+// and the lens flag is set to zero (=out).
+//
+// When necessary controls are "popped", a ctrlName="" is passed to signal the control
+// to NOT recalculate the intensity, and to NOT (recursively) call LensCheckProc again
+//
+// currently, the 17.2 A for lens/prism @ ng3 must be typed in
+//
 Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
@@ -530,30 +585,129 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	NVAR ng = root:Packages:NIST:SAS:gNg
 	NVAR lam = root:Packages:NIST:SAS:gLambda
 	NVAR dist = root:Packages:NIST:SAS:gDetDist
+	NVAR instrument = root:Packages:NIST:SAS:instrument
+	Wave rw=root:Packages:NIST:SAS:realsRead
 	
-	if( (Ng != 0) || (lam < 8) || (dist < 1300) )
+	// directly uncheck the box, just set the flag and get out
+	if(checked == 0)
 		lens = 0
 		CheckBox checkLens,value=0
+		rw[28]=0		//flag for lenses out
+		ReCalculateInten(1)
 		return(0)
 	endif
-	lens = checked
 	
-	ReCalculateInten(1)
+	// check the box, enforce the proper conditions
+	if(checked == 1)
+		lens = checked
+		if(instrument == 3)
+			dist = 1317
+			DetDistSliderProc("",1317,1)
+			
+			lam = 8.4
+			LambdaSetVarProc("",8.4,"8.4","") 
+
+			ng=0
+			GuideSliderProc("",0,1)		//this updates the controls to the new # of guides
+			
+			PopupMenu popup0,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
+			
+			PopupMenu popup0_2,mode=2		//deltaLambda
+			ControlInfo popup0_2
+			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
+		else
+			dist = 1531
+			DetDistSliderProc("",1531,1)
+			
+			lam = 8.09
+			LambdaSetVarProc("",8.09,"8.09","") 
+			
+			ng=0
+			GuideSliderProc("",0,1)
+			PopupMenu popup0,mode=1,popvalue="1.43 cm"		//first item
+			
+			PopupMenu popup0_2,mode=2		//deltaLambda
+			ControlInfo popup0_2
+			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
+		endif
+		rw[28]=1		//flag for lenses in (not the true number, but OK)
+		ReCalculateInten(1)
+	endif
+	
+	// this is my internal check to see if conditions are still valid
+	// I'll uncheck as needed
+	if(checked == 2)
+
+		// source aperture must be 1.43 cm diameter
+		// number of guides must be zero
+		Variable a1 = sourceApertureDiam()
+		if(a1 != 1.43  || Ng !=0)
+			lens = 0
+			CheckBox checkLens,value=0
+			rw[28]=0		//flag for lenses out
+			return(0)
+		endif
+	
+		// instrument specific distance requirements
+		if(instrument == 3 && dist != 1317)
+			lens = 0
+			CheckBox checkLens,value=0
+			rw[28]=0		//flag for lenses out
+			return(0)
+		endif
+	
+		if(instrument == 7 && dist != 1531)
+			lens = 0
+			CheckBox checkLens,value=0
+			rw[28]=0		//flag for lenses out
+			return(0)
+		endif
+		
+		// instrument specific wavelength requirements
+		if(instrument == 3 && !(lam == 8.4 || lam == 17.2) )
+			lens = 0
+			CheckBox checkLens,value=0
+			rw[28]=0		//flag for lenses out
+			return(0)
+		endif
+		
+		if(instrument == 7 && lam != 8.09 )
+			lens = 0
+			CheckBox checkLens,value=0
+			rw[28]=0		//flag for lenses out
+			return(0)
+		endif
+		
+	endif
+
+	return(1)		//return value not used
 End
 
-////simulation control panel
-//Function SimCheckProc(ctrlName,checked) : CheckBoxControl
-//	String ctrlName
-//	Variable checked
-//
-//	if(checked)
-//		DoWindow/F MC_SASCALC
-//		if(V_flag==0)
-//			Execute "MC_SASCALC()"
-//		endif
-//	endif
-//	return(0)
-//End
+//simulation ccontrols as a control bar that toggles on/off to the right
+Function SimCheckProc(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	if(checked)
+		//MoveWindow/W=SASCALC 5,44,763,570		//to resize
+		// draw the controls
+		DoWindow/F MC_SASCALC
+		if(V_flag==0)
+			Execute "MC_SASCALC()"
+			AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
+		endif
+	else
+		//get rid of the controls
+		DoWindow MC_SASCALC
+		if(V_flag!=0)
+			KillWindow MC_SASCALC
+		endif
+		//MoveWindow/W=SASCALC 5,44,463,570		//to resize
+		//KillWindow SASCALC#T_results
+	endif
+
+	return(0)
+End
 
 // change the source aperture
 // 
@@ -563,6 +717,12 @@ Function SourceAperturePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr
 
 	Variable a1 = sourceApertureDiam()		//sets the new value in the wave
+	
+	// if LensCheckProc is calling this, don't call it again.
+	// if this is called by a direct pop, then check
+	if(cmpstr(ctrlName,"") != 0)
+		LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
+	endif
 	
 	ReCalculateInten(popnum)		//skip the recalculation if I pass in a zero
 End
@@ -587,7 +747,9 @@ Function SDDSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String varName
 	
 	sampleToDetectorDist()
-	
+	if(cmpstr(ctrlName,"") != 0)
+		LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
+	endif
 	ReCalculateInten(1)
 End
 
@@ -614,8 +776,14 @@ Function LambdaSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String varName
 
 	WAVE rw=root:Packages:NIST:SAS:realsRead
+	Variable recalc=0
+	
 	rw[26] = str2num(varStr)
-	ReCalculateInten(1)
+	if(cmpstr(ctrlName,"") != 0)
+		recalc=1
+		LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
+	endif
+	ReCalculateInten(recalc)
 	return(0)
 End
 
@@ -662,6 +830,7 @@ Function ReCalculateInten(doIt)
 	if(doIt==0)			
 		return(0)
 	endif
+//	Print "recalculate"
 	
 	// update the wave with the beamstop diameter here, since I don't know what
 	// combinations of parameters will change the BS - but anytime the curve is 
@@ -783,7 +952,7 @@ Function ReCalculateInten(doIt)
 //		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 
 		t0 = (stopMSTimer(-2) - t0)*1e-6
-		Printf  "MC sim time = %g seconds\r\r",t0
+		Printf  "MC sim time = %g seconds\r",t0
 		
 		trans = results[8]			//(n1-n2)/n1
 		if(trans == 0)
@@ -793,7 +962,7 @@ Function ReCalculateInten(doIt)
 		Print "counts on detector = ",sum(linear_data,-inf,inf)
 		
 		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
-		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
+//		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
 
 		// or simulate a beamstop
 		Variable rad=beamstopDiam()/2		//beamstop radius in cm
@@ -804,24 +973,26 @@ Function ReCalculateInten(doIt)
 		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
 		
 		linear_data *= tmp_mask
-		Print "counts on detector not behind beamstop = ",sum(linear_data,-inf,inf)
 		results[9] = sum(linear_data,-inf,inf)
+		//		Print "counts on detector not behind beamstop = ",results[9]
 		
 		// convert to absolute scale
 		Variable kappa		//,beaminten = beamIntensity()
 //		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*trans*(iMon/beaminten)
 		kappa = thick*(pixSize/sdd)^2*trans*iMon
-
-		linear_data = linear_data / kappa
 		
+		//use kappa to get back to counts => linear_data = round(linear_data*kappa)
+		Note/K linear_data ,"KAPPA="+num2str(kappa)+";"
+		
+		NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
+		if(!rawCts)			//go ahead and do the linear scaling
+			linear_data = linear_data / kappa
+		endif		
 		data = linear_data
 		
 		// re-average the 2D data
 		S_CircularAverageTo1D("SAS")
-		// multiply either estimate by beamstop shadowing
 		
-//		aveint *= fSubS
-
 		// put the new result into the simulation folder
 		Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 	endif
@@ -872,8 +1043,8 @@ Function FreezeButtonProc(ctrlName) : ButtonControl
 	Duplicate/O qval,$("qval_"+num2str(ct))
 	Duplicate/O sigave,$("sigave_"+num2str(ct))
 	Appendtograph $("aveint_"+num2str(ct)) vs $("qval_"+num2str(ct))
-	ModifyGraph mode=3
-	ModifyGraph marker=19
+	ModifyGraph mode($("aveint_"+num2str(ct)))=3
+	ModifyGraph marker($("aveint_"+num2str(ct)))=19
 	ModifyGraph msize($("aveint_"+num2str(ct)))=2
 	ErrorBars/T=0 $("aveint_"+num2str(ct)) Y,wave=($("sigave_"+num2str(ct)),$("sigave_"+num2str(ct)))
 	
@@ -910,12 +1081,15 @@ Function FreezeButtonProc(ctrlName) : ButtonControl
 			break
 	endswitch
 	
+	NVAR doTraceOffset = root:Packages:NIST:SAS:gDoTraceOffset
 	NVAR offset = root:Packages:NIST:SAS:gModelOffsetFactor
-	offset = 2^ct
-	//multiply by current offset (>=1)
-	Wave inten = $("aveint_"+num2str(ct))
-	inten *= offset
-//	Print "new offset = ",offset
+	if(doTraceOffset)
+		offset = 2^ct
+		//multiply by current offset (>=1)
+		Wave inten = $("aveint_"+num2str(ct))
+		inten *= offset
+		//	Print "new offset = ",offset
+	endif
 	
 	ct +=1
 	SetDataFolder root:

@@ -43,6 +43,7 @@ Proc ModelPicker_Panel()
 	if(V_Flag==0)
 		Init_FileList()
 		Procedure_List()
+		AutoPositionWindow/M=1/R=WrapperPanel Procedure_List		//keep it on-screen
 	endif
 End
 

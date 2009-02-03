@@ -50,16 +50,15 @@ Function WriteUSANSWaves(type,fullpath,lo,hi,dialog)
 	NVAR DQv=$(USANSFolder+":Globals:MainPanel:gDQv")
 	dumWave = - DQv
 	///
-	
 	if(dialog)
-		PathInfo/S savePathName
-		Open/D/T="????" refnum as fullpath		//won't actually open the file
-		If(cmpstr(S_filename,"")==0)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as")
+		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
 			Abort "no data file was written"
 		Endif
-		fullpath = S_filename
+		//Print "dialog fullpath = ",fullpath
 	Endif
 	
 	//write out partial set?
