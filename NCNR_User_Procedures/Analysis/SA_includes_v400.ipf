@@ -23,7 +23,6 @@
 #include "GizmoCylinder_v40"
 
 #include "CheckVersionFTP"				//added June 2008
-#include "WriteQIS"				//added Jan 2009 for fileSaveDialog
 
 
 Menu "SANS Models"
