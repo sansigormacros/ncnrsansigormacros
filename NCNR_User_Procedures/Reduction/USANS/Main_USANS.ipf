@@ -945,9 +945,9 @@ Function ReadBT5Header(fname)
 	
 	//skip the next line
 	FReadLine refnum,buffer
-	//the next line is the title, use it all
+	//the next line is the title, use it all except the last character - causes formatting oddities in listBox
 	FReadLine refnum,buffer
-	statusWave[3] = "TITLE: "+ buffer
+	statusWave[3] = "TITLE: "+ buffer[0,strlen(buffer)-2]
 	
 	//skip the next 3 lines
 	For(ii=0;ii<3;ii+=1)
@@ -1291,4 +1291,3 @@ Function U_OpenTracTicketPage(ctrlName)
 		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
 	endif
 End
-

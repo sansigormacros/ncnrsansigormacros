@@ -35,6 +35,7 @@ Menu "SANS Models"
 	Submenu "Packages"
 		"Sum Two Models",Execute/P "INSERTINCLUDE \"SumSANSModels_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SumModelPanel()"
 		"Global Fitting",Execute/P "INSERTINCLUDE \"GlobalFit2_NCNR_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "WM_NewGlobalFit1#InitNewGlobalFitPanel()"
+		"Simple Global Fitting",Execute/P "INSERTINCLUDE \"GlobalFit2_NCNR_v40\"";Execute/P "INSERTINCLUDE \"SimpleGlobalFit_NCNR_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SimpleGlobalFit()"
 		"Determine Invariant",Execute/P "INSERTINCLUDE \"Invariant_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Make_Invariant_Panel()"
 		"Do Linear Fits",Execute/P "INSERTINCLUDE \"LinearizedFits_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "A_OpenFitPanel()"
 	End

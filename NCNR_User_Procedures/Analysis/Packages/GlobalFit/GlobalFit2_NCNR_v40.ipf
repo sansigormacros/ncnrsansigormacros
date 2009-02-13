@@ -4879,6 +4879,8 @@ end
 Function Generate_GF_Report(topGraph,GF_resultStr)
 	String topGraph,GF_resultStr
 	
+//	String/G root:inputStr=GF_resultStr
+
 	String nb = "GF_Report"
 	String str=""
 	
@@ -4891,9 +4893,9 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	Notebook $nb selection={startOfFile, endOfFile}, text="\r", selection={startOfFile, startOfFile}
 	
 	//setup
-	Notebook $nb defaultTab=36, statusWidth=252, pageMargins={44,44,44,44}		//44 points = 0.6" margin all around
-	Notebook $nb showRuler=1, rulerUnits=1, updating={1, 60}
-	Notebook $nb newRuler=Normal, justification=0, margins={0,0,524}, spacing={0,0,0}, tabs={}, rulerDefaults={"Geneva",10,0,(0,0,0)}
+	Notebook $nb defaultTab=18, statusWidth=252, pageMargins={44,44,44,44}		//44 points = 0.6" margin all around
+	Notebook $nb showRuler=1, rulerUnits=1
+	Notebook $nb newRuler=Normal, justification=0, margins={0,0,524}, spacing={0,0,0}, rulerDefaults={"Geneva",10,0,(0,0,0)}
 //	
 	// insert title
 	Notebook $nb newRuler=Title, justification=1, rulerDefaults={"Times", 16, 1, (0, 0, 0)}
@@ -4910,16 +4912,29 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	suffix = getModelSuffix(getFunctionCoef(funcStr))
 	SetDataFolder $("root:"+dataFileStr+":")
 	paramStr = WaveList("*param*_"+suffix, "", "TEXT:1," )
-	Wave/T pw = $paramStr
+	Wave/T/Z pw = $paramStr
 	num=numpnts(pw)
+	
+//	String/G root:beforeStr=GF_resultStr
+	//SRK clean up text a bit
+	GF_resultStr = ReplaceString("data set ",GF_resultStr, "", 1)		//case-sensitive
+	
+	for(ii=0;ii<num;ii+=1)
+		GF_resultStr = ReplaceString("; Coef_"+num2str(ii), GF_resultStr,"")
+	endfor
+	//eSRK
 	for(ii=0;ii<num;ii+=1)
 		GF_resultStr = ReplaceString("Coef_"+num2str(ii), GF_resultStr, pw[ii])
 	endfor
+	
+//	String/G root:afterStr=GF_resultStr
+	
 	SetDataFolder $savDF
 	
 	Notebook $nb ruler=Normal
-	Notebook $nb  margins={0,0,524}, tabs={63 + 3*8192}
+	Notebook $nb margins={0,0,524}
 	Notebook $nb text=GF_resultStr
+	Notebook $nb text="\r"
 	
 	//the graph
 	Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
@@ -4948,5 +4963,3 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	
 	return(0)
 end
-
-
