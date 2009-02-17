@@ -470,8 +470,9 @@ Function UpdateSGFCoefs(CoefWave)
 	return(0)
 End
 
-static Function UnloadSimpleGlobalFit()
-	if (WinType("NewGlobalFitPanel") == 7)
+// clean up after itself, don't kill any data folder
+Function UnloadSimpleGlobalFit()
+	if (WinType("SimpGFPanel") == 7)
 		DoWindow/K SimpGFPanel
 	endif
 	if (WinType("GlobalFitGraph") != 0)
@@ -482,5 +483,11 @@ static Function UnloadSimpleGlobalFit()
 	String fname="SimpleGlobalFit_NCNR"
 	Execute/P "DELETEINCLUDE \""+fname+fileVerExt+"\""
 	Execute/P "COMPILEPROCEDURES "
-	KillDataFolder/Z root:Packages:NewGlobalFit
+	KillWaves/Z root:Packages:NewGlobalFit:listW
+	KillWaves/Z root:Packages:NewGlobalFit:selW
+	KillWaves/Z root:Packages:NewGlobalFit:titles
+	
+//	KillDataFolder/Z root:Packages:NewGlobalFit
+	
+	
 end

@@ -1,4 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.0
+//#pragma IndependentModule=NCNRLoader		//can't seem to get this to work properly...
 
 // load/unload courtesy of Jan Ilavsky
 // June 2008
@@ -38,7 +40,8 @@ Function NCNR_AnalysisLoader(itemStr)
 	SVAR gMenuStr1a = root:Packages:NCNRItemStr1a
 	SVAR gMenuStr1b = root:Packages:NCNRItemStr1b
 	
-	String SANSAna_WinList = "wrapperPanel;Procedure_List;Report;"
+	String SANSAna_WinList = "wrapperPanel;Procedure_List;Report;Plot_Manager;A_FitPanel;A_FitWindow;Sum_Model_Panel;"
+	SANSAna_WinList += "NewGlobalFitPanel;SimpGFPanel;Invariant_Panel;invariant_graph;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR Analysis Macros":	
 			Execute/P "INSERTINCLUDE \"SA_Includes_v400\""

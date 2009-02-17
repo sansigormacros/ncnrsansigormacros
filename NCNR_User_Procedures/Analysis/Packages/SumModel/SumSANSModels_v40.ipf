@@ -68,9 +68,9 @@ Window Sum_Model_Panel() : Panel
 	PopupMenu popup2_0,pos={15,190},size={131,20},title="Model"
 	PopupMenu popup2_0,mode=1,popvalue="Pick model 2",value= #"SumModelPopupList()"
 	PopupMenu popup1_1,pos={15,98},size={173,20},title="Coef"
-	PopupMenu popup1_1,mode=1,popvalue="Pick coef for model 1",value= #"CoefPopupList()"
+	PopupMenu popup1_1,mode=1,popvalue="Pick coef for model 1",value= #"CoefPopupList()",proc=Func_1_2PopMenuProc
 	PopupMenu popup2_1,pos={15,221},size={173,20},title="Coef"
-	PopupMenu popup2_1,mode=1,popvalue="Pick coef for model 2",value= #"CoefPopupList()"
+	PopupMenu popup2_1,mode=1,popvalue="Pick coef for model 2",value= #"CoefPopupList()",proc=Func_1_2PopMenuProc
 	GroupBox group1,pos={5,50},size={216,107},title="Function # 1"
 	SetVariable setvar1,pos={14,128},size={140,15},title="# of Parameters"
 	SetVariable setvar1,limits={0,20,1},value= root:Packages:NIST:SumModel:gNParMod1
@@ -81,6 +81,36 @@ Window Sum_Model_Panel() : Panel
 	Button button1,pos={15,330},size={190,20},proc=PlotSmearedSumButtonProc,title="Plot Smeared Summed Model"
 	Button button2,pos={190,23},size={25,20},proc=Sum_HelpButtonProc,title="?"
 EndMacro
+
+Function Func_1_2PopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			String name=pa.ctrlName
+			Variable num=0
+			
+			Wave/Z coef=$("root:"+popStr)
+			if(WaveExists(coef))
+				num=numpnts(coef)
+			endif
+			
+			
+			if(cmpstr(name,"popup1_1")==0)		//function #1
+				NVAR pts1 = root:Packages:NIST:SumModel:gNParMod1
+				pts1 = num
+			else
+				NVAR pts2 = root:Packages:NIST:SumModel:gNParMod2
+				pts2 = num
+			endif
+			
+			break
+	endswitch
+
+	return 0
+End
 
 // show the available models
 // but not the smeared versions

@@ -1488,12 +1488,19 @@ static Function UnloadNewGlobalFit()
 	if (WinType("NewGF_GlobalFitMaskingPanel"))
 		DoWindow/K NewGF_GlobalFitMaskingPanel
 	endif
-//	Execute/P "DELETEINCLUDE  <Global Fit 2>"
-	SVAR fileVerExt=root:Packages:NIST:SANS_ANA_EXTENSION
-	String fname="GlobalFit2_NCNR"
-	Execute/P "DELETEINCLUDE \""+fname+fileVerExt+"\""
-	Execute/P "COMPILEPROCEDURES "
-	KillDataFolder/Z root:Packages:NewGlobalFit
+	
+	//SRK - if SimpleGlobalFit is open, go ahead and kill the windows, just
+	// don't un-include the procedure files !
+	if(Exists("root:Packages:NewGlobalFit:listW") == 0)		//simple fit waves don't exist
+	
+	//	Execute/P "DELETEINCLUDE  <Global Fit 2>"
+		SVAR fileVerExt=root:Packages:NIST:SANS_ANA_EXTENSION
+		String fname="GlobalFit2_NCNR"
+		Execute/P "DELETEINCLUDE \""+fname+fileVerExt+"\""
+		Execute/P "COMPILEPROCEDURES "
+		KillDataFolder/Z root:Packages:NewGlobalFit
+	
+	endif
 end
 
 static constant NewGF_DSList_YWaveCol = 0
