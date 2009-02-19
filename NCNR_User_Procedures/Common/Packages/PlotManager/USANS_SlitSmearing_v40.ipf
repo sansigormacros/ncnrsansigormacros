@@ -224,7 +224,7 @@ Function EnterSlope(baseStr)
 	
 	Display/W=(9,6,402,305)/HOST=USANS_Slope $(basestr+"_i"+trimStr) vs $(basestr+"_q"+trimStr)
 	RenameWindow #,SlopePlot
-	ErrorBars/W=USANS_Slope#SlopePlot $(basestr+"_i"+trimStr), Y wave=($(basestr+"_s"+trimStr),$(basestr+"_s"+trimStr))
+	ErrorBars/T=0/W=USANS_Slope#SlopePlot $(basestr+"_i"+trimStr), Y wave=($(basestr+"_s"+trimStr),$(basestr+"_s"+trimStr))
 	ModifyGraph log=1
 	ModifyGraph mode=3,msize=3,marker=1,rgb=(0,0,0)
 //	legend

@@ -421,7 +421,7 @@ Function Rescale_Data()
 	If(WinType("FitWindow") == 0)
 		Display /W=(5,42,480,400)/K=1 yAxisWave vs xAxisWave
 		ModifyGraph mode=3,standoff=0,marker=8
-		ErrorBars yAxisWave Y,wave=(yErrWave,yErrWave)
+		ErrorBars/T=0 yAxisWave Y,wave=(yErrWave,yErrWave)
 		ModifyGraph opaque(yAxisWave)=1
 		DoWindow/C FitWindow
 	else
@@ -858,7 +858,7 @@ Proc DoFITRPA(ctrlName) : ButtonControl
 	If(WinType("FitWindow") == 0)
 		Display /W=(5,42,480,400)/K=1  yAxisWave vs xAxisWave
 		ModifyGraph mode=3,standoff=0,marker=8
-		ErrorBars yAxisWave Y,wave=(yErrWave,yErrWave)
+		ErrorBars/T=0 yAxisWave Y,wave=(yErrWave,yErrWave)
 		DoWindow/C FitWindow
 		ShowInfo
 	else
@@ -1047,7 +1047,7 @@ Proc FITRPA_Load_Proc(ctrlName): ButtonControl
 	If(WinType("FitWindow") == 0)
 		Display /W=(5,42,480,400)/K=1  yAxisWave vs xAxisWave
 		ModifyGraph mode=3,standoff=0,marker=8
-		ErrorBars yAxisWave Y,wave=(yErrWave,yErrWave)
+		ErrorBars/T=0 yAxisWave Y,wave=(yErrWave,yErrWave)
 		TextBox/C/N=textLabel/A=RB "File = "+cleanLastFileName
 		DoWindow/C FitWindow
 		ShowInfo
@@ -1160,4 +1160,3 @@ Function FIT_dbf(rgq)
 		return 2*(exp(-x) + x - 1)/x^2
 	endif
 End
-

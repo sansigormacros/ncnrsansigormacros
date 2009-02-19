@@ -365,7 +365,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 				if(V_Flag == 1)
 					AppendToGraph $w1 vs $w0
 					ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
-					ErrorBars $w1 Y,wave=($w2,$w2)
+					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 					ModifyGraph tickUnit(left)=1
 				else
 				//new graph
@@ -373,7 +373,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 					Display $w1 vs $w0
 					ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 					ModifyGraph grid=1,mirror=2,standoff=0
-					ErrorBars $w1 Y,wave=($w2,$w2)
+					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 					ModifyGraph tickUnit(left)=1
 					Legend
 				endif
@@ -382,7 +382,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 				Display $w1 vs $w0
 				ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 				ModifyGraph grid=1,mirror=2,standoff=0
-				ErrorBars $w1 Y,wave=($w2,$w2)
+				ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 				ModifyGraph tickUnit(left)=1
 				Legend
 			endif
@@ -453,19 +453,19 @@ Proc A_LoadNSEDataWithName(fileStr,doPlot)
 			if(V_Flag == 1)
 				AppendToGraph $w2 vs $w1
 				ModifyGraph mode($w2)=3,marker($w2)=29,msize($w2)=2,rgb($w2) =(rr,gg,bb),grid=1,mirror=2,tickUnit=1
-				ErrorBars $w2 Y,wave=($w3,$w3)
+				ErrorBars/T=0 $w2 Y,wave=($w3,$w3)
 			else
 			//new graph
 				Display $w2 vs $w1
 				ModifyGraph standoff=0,mode($w2)=3,marker($w2)=29,msize($w2)=2,rgb($w2)=(rr,gg,bb),grid=1,mirror=2,tickUnit=1
-				ErrorBars $w2 Y,wave=($w3,$w3)
+				ErrorBars/T=0 $w2 Y,wave=($w3,$w3)
 				Legend
 			endif
 		else
 		// graph window was not target, make new one
 			Display $w2 vs $w1
 			ModifyGraph standoff=0,mode($w2)=3,marker($w2)=29,msize($w2)=2,rgb($w2)=(rr,gg,bb),grid=1,mirror=2,tickUnit=1
-			ErrorBars $w2 Y,wave=($w3,$w3)
+			ErrorBars/T=0 $w2 Y,wave=($w3,$w3)
 			Legend
 		endif
 	endif //doPlot		
@@ -537,19 +537,19 @@ Proc A_LoadUSANSData()
 		if(V_Flag == 1)
 			AppendToGraph $w1 vs $w0
 			ModifyGraph mode=3,marker=29,msize=2,rgb ($w1) =(rr,gg,bb),tickUnit=1,grid=1,mirror=2
-			ErrorBars $w1 Y,wave=($w2,$w2)
+			ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 		else
 		//new graph
 			Display $w1 vs $w0
 			ModifyGraph log=1,mode=3,marker=29,msize=2,rgb=(rr,gg,bb),tickUnit=1,grid=1,mirror=2
-			ErrorBars $w1 Y,wave=($w2,$w2)
+			ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 			Legend
 		endif
 	else
 	// graph window was not target, make new one
 		Display $w1 vs $w0
 		ModifyGraph log=1,mode=3,marker=29,msize=2,rgb=(rr,gg,bb),tickUnit=1,grid=1,mirror=2
-		ErrorBars $w1 Y,wave=($w2,$w2)
+		ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 		Legend
 	endif
 		

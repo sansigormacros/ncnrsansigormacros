@@ -218,7 +218,7 @@ Proc GraphRawData()
 	ModifyGraph axisEnab(left2)={0.57,0.77},gridEnab(left2)={0.1,1}
 	ModifyGraph axisEnab(left3)={0.8,1},gridEnab={0.1,1}
 	ModifyGraph axisEnab(bottom1)={0.1,1},gridEnab(bottom1)={0.1,1}
-	ErrorBars DetCts Y,wave=(ErrDetCts,ErrDetCts)
+	ErrorBars/T=0 DetCts Y,wave=(ErrDetCts,ErrDetCts)
 	TextBox/F=0/E=2/A=MB/Y=2/N=text1 "Angle"
 	TextBox/F=0/O=90/E=2/A=LC/X=2/N=text2 "Counts"
 	//TextBox/N=text1/A=RC/X=0.50/Y=-2 textStr

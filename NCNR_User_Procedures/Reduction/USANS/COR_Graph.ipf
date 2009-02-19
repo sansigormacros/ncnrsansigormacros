@@ -119,7 +119,7 @@ Function GraphSAM()
 		ModifyGraph rgb(DetCts_SAM)=(1,12815,52428)
 		ModifyGraph mode(DetCts_SAM)=3,marker(DetCts_SAM)=19,msize(DetCts_SAM)=2
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_SAM Y,wave=(ErrDetCts_SAM,ErrDetCts_SAM)
+		ErrorBars/T=0 DetCts_SAM Y,wave=(ErrDetCts_SAM,ErrDetCts_SAM)
 	endif
 	SetDataFolder root:
 End
@@ -144,7 +144,7 @@ Function GraphEMP()
 		ModifyGraph msize(DetCts_EMP)=2,rgb(DetCts_EMP)=(1,39321,19939)
 		ModifyGraph mode(DetCts_EMP)=3,marker(DetCts_EMP)=19
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_EMP Y,wave=(ErrDetCts_EMP,ErrDetCts_EMP)
+		ErrorBars/T=0 DetCts_EMP Y,wave=(ErrDetCts_EMP,ErrDetCts_EMP)
 	endif
 	SetDataFolder root:
 	return(0)

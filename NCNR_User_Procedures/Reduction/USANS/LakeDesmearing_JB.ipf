@@ -960,7 +960,7 @@ Proc AppendSmeared()
 		ModifyGraph mode=4,marker=19		//3 is markers, 4 is markers and lines
 		ModifyGraph rgb(I_exp_orig)=(0,0,0)
 		ModifyGraph msize=2,grid=1,log=1,mirror=2,standoff=0,tickunit=1
-		ErrorBars I_exp_orig Y,wave=(S_exp_orig,S_exp_orig)
+		ErrorBars/T=0 I_exp_orig Y,wave=(S_exp_orig,S_exp_orig)
 		Legend/N=text0/J "\\F'Courier'\\s(I_exp_orig) I_exp_orig"
 		Label left "Intensity"
 		Label bottom "Q (1/A)"
@@ -1021,7 +1021,7 @@ Proc AppendDesmeared()
 		AppendToGraph/W=Desmear_Graph I_dsm vs Q_dsm
 		ModifyGraph mode(I_dsm)=3,marker(I_dsm)=19
 		ModifyGraph rgb(I_dsm)=(1,16019,65535),msize(I_dsm)=2
-		ErrorBars I_dsm Y,wave=(S_dsm,S_dsm)
+		ErrorBars/T=0 I_dsm Y,wave=(S_dsm,S_dsm)
 		setdatafolder root: 
 	endif
 end

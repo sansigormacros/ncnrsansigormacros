@@ -4911,7 +4911,7 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	
 	//the text
 	// -- modify to put in the coefficient labels...
-	String dataFileStr,funcStr,nameStr,paramStr,suffix,savDF
+	String dataFileStr,funcStr,nameStr,paramStr,suffix,savDF,tmpindex
 	Variable num,ii
 	savDF = GetDataFolder(1)
 	sscanf StringFromList(4,GF_ResultStr,"\r"),"Data Set:%s ; Function: %s",dataFileStr,funcStr
@@ -4922,15 +4922,18 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	Wave/T/Z pw = $paramStr
 	num=numpnts(pw)
 	
-//	String/G root:beforeStr=GF_resultStr
+	String/G root:beforeStr=GF_resultStr
 	//SRK clean up text a bit
 	GF_resultStr = ReplaceString("data set ",GF_resultStr, "", 1)		//case-sensitive
 	
-	for(ii=0;ii<num;ii+=1)
+	// loop through backwards so that coef_1 does not replace part of coef_10, coef_11, etc.
+	for(ii=num-1;ii>=0;ii-=1)
+//		tmpIndex=num2str(ii)
+//		print "Coef_"+tmpindex
 		GF_resultStr = ReplaceString("; Coef_"+num2str(ii), GF_resultStr,"")
 	endfor
 	//eSRK
-	for(ii=0;ii<num;ii+=1)
+	for(ii=num-1;ii>=0;ii-=1)
 		GF_resultStr = ReplaceString("Coef_"+num2str(ii), GF_resultStr, pw[ii])
 	endfor
 	

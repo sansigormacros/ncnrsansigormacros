@@ -938,7 +938,7 @@ Function Draw_Plot1D(xw,yw,ew)
 	//	
 		String list=TraceNameList("",";", 1)
 		String yname=StringFromList(0, list,";")
-		ErrorBars $yname Y,wave=(ew,ew)
+		ErrorBars/T=0 $yname Y,wave=(ew,ew)
 		ModifyGraph grid=1
 		ModifyGraph log=0
 		ModifyGraph mirror=2
@@ -1227,4 +1227,3 @@ Function Rescale_Plot_1D_ButtonProc(ctrlName) : ButtonControl
 	ModifyGraph log(bottom)=(logBottom)
 	
 End
-

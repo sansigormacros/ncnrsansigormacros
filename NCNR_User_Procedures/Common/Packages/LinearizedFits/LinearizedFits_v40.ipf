@@ -423,8 +423,8 @@ Function A_Rescale_Data(dataStr)
 //	String cleanLastFileName = "root:"+CleanupName(gLastFileName,0)
 	If(WinType("A_FitWindow") == 0)
 		Display /W=(5,42,480,400)/K=1 yAxisWave vs xAxisWave
-		ModifyGraph mode=3,standoff=0,marker=8
-		ErrorBars yAxisWave Y,wave=(yErrWave,yErrWave)
+		ModifyGraph mode=3,standoff=0,marker=8,opaque=1
+		ErrorBars/T=0 yAxisWave Y,wave=(yErrWave,yErrWave)
 		DoWindow/C A_FitWindow
 	else
 		//window already exists, just bring to front for update

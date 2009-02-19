@@ -308,14 +308,14 @@ Proc Plot_Sub1D()
 	endif
 	DoWindow/C Plot_Sub1D
 	ModifyGraph rgb(ysample)=(65535,0,0)
-	ErrorBars ysample Y,wave=(ssample,ssample)
+	ErrorBars/T=0 ysample Y,wave=(ssample,ssample)
 	AppendToGraph/L ysolvent vs xsolvent
 	ModifyGraph rgb(ysolvent)=(0,0,65535)
-	ErrorBars ysolvent Y,wave=(ssolvent,ssolvent)
+	ErrorBars/T=0 ysolvent Y,wave=(ssolvent,ssolvent)
 	//AppendToGraph/R yresult vs xresult
 	AppendToGraph/L yresult vs xresult
 	ModifyGraph rgb(yresult)=(0,65535,0)
-	ErrorBars yresult Y,wave=(sresult,sresult)
+	ErrorBars/T=0 yresult Y,wave=(sresult,sresult)
 	ModifyGraph mode=3, msize=2, marker=19, mirror=1, tick=2, log(bottom)=1
 	Legend/C/N=text0/J/A=LT/X=2/Y=2 "\\s(ysample) Sample\r\\s(ysolvent) Solvent\r\\s(yresult) Result"
 	ShowInfo
@@ -567,4 +567,3 @@ Proc WriteExpression(choice)
 		DrawText 100,168,"           -"
 	endif
 End
-

@@ -134,14 +134,14 @@ function LoadNISTXMLData(filestr,doPlot)
 								if(V_Flag == 1)
 									AppendToGraph $w1 vs $w0
 									ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
-									ErrorBars $w1 Y,wave=($w2,$w2)
+									ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 									ModifyGraph tickUnit(left)=1
 								else
 								//new graph
 									Display $w1 vs $w0
 									ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 									ModifyGraph grid=1,mirror=2,standoff=0
-									ErrorBars $w1 Y,wave=($w2,$w2)
+									ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 									ModifyGraph tickUnit(left)=1
 									Legend
 								endif
@@ -150,7 +150,7 @@ function LoadNISTXMLData(filestr,doPlot)
 								Display $w1 vs $w0
 								ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 								ModifyGraph grid=1,mirror=2,standoff=0
-								ErrorBars $w1 Y,wave=($w2,$w2)
+								ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 								ModifyGraph tickUnit(left)=1
 								Legend
 							endif
@@ -250,14 +250,14 @@ function LoadNISTXMLData(filestr,doPlot)
 							if(V_Flag == 1)
 								AppendToGraph $w1 vs $w0
 								ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1) =(rr,gg,bb),tickUnit=1
-								ErrorBars $w1 Y,wave=($w2,$w2)
+								ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 								ModifyGraph tickUnit(left)=1
 							else
 							//new graph
 								Display $w1 vs $w0
 								ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 								ModifyGraph grid=1,mirror=2,standoff=0
-								ErrorBars $w1 Y,wave=($w2,$w2)
+								ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 								ModifyGraph tickUnit(left)=1
 								Legend
 							endif
@@ -266,7 +266,7 @@ function LoadNISTXMLData(filestr,doPlot)
 							Display $w1 vs $w0
 							ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 							ModifyGraph grid=1,mirror=2,standoff=0
-							ErrorBars $w1 Y,wave=($w2,$w2)
+							ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 							ModifyGraph tickUnit(left)=1
 							Legend
 						endif

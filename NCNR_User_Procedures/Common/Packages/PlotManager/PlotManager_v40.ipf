@@ -23,7 +23,7 @@ Proc Show_Plot_Manager()
 	A_OneDLoader_GetListButton("")
 End
 
-Window A_Plot_Manager() : Panel
+Window A_Plot_Manager()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(658,347,1018,737)/N=Plot_Manager/K=1 as "Plot Manager"
 	ModifyPanel cbRGB=(37265,65535,32896)
@@ -130,7 +130,7 @@ Function A_PM_doAppend(DF)
 	// append to whatever is top-most graph
 	AppendToGraph $iStr vs $qStr
 	ModifyGraph log=1,mode($istr)=3,marker($iStr)=19,msize($iStr)=2,rgb($iStr)=(rr,gg,bb)
-	ErrorBars $iStr Y,wave=($eStr,$eStr)
+	ErrorBars/T=0 $iStr Y,wave=($eStr,$eStr)
 
 	SetDataFolder root:
 End
@@ -168,7 +168,7 @@ Function A_PM_doNewGraph(DF)
 	Display $iStr vs $qStr
 	ModifyGraph log=1,mode($istr)=3,marker($iStr)=19,msize($iStr)=2,rgb=(rr,gg,bb)
 	ModifyGraph grid=1,mirror=2,standoff=0
-	ErrorBars $iStr Y,wave=($eStr,$eStr)
+	ErrorBars/T=0 $iStr Y,wave=($eStr,$eStr)
 	ModifyGraph tickUnit=1
 				
 	Label left "I(q)"

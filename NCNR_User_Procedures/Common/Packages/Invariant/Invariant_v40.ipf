@@ -212,7 +212,7 @@ Function Plot_Inv_Data(ctrlName) : ButtonControl
 	Label bottom "q (1/A)"
 	ModifyGraph rgb($NameofWave(iw))=(0,0,0)
 	ModifyGraph opaque($NameofWave(iw))=1
-	ErrorBars $NameofWave(iw) Y,wave=(sw,sw)
+	ErrorBars/T=0 $NameofWave(iw) Y,wave=(sw,sw)
 	Legend
 	
 //	Print TraceNameList("",";",1)

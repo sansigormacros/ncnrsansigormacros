@@ -596,7 +596,7 @@ Function DisplayHighSet()
 	DoWindow/F NSORT_Graph
 	AppendToGraph $"HighQSet_i" vs $"HighQSet_q"
 	ModifyGraph log=1,mode=3,marker($"HighQSet_i")=8,msize=2,rgb($"HighQSet_i")=(0,0,65535),opaque($"HighQSet_i")=1
-	ErrorBars $"HighQSet_i" Y,wave=($"HighQSet_s",$"HighQSet_s")
+	ErrorBars/T=0 $"HighQSet_i" Y,wave=($"HighQSet_s",$"HighQSet_s")
 	AppendToGraph $"TrimHighQSet_i" vs $"TrimHighQSet_q"
 	ModifyGraph mode($"TrimHighQSet_i")=3,marker($"TrimHighQSet_i")=19,msize=2,rgb($"TrimHighQSet_i")=(0,0,65535)
 End
@@ -609,7 +609,7 @@ Function DisplayMedSet()
 	DoWindow/F NSORT_Graph
 	AppendToGraph $"MedQSet_i" vs $"MedQSet_q"
 	ModifyGraph log=1,mode=3,marker($"MedQSet_i")=8,msize=2,rgb($"MedQSet_i")=(65535,0,0),opaque($"MedQSet_i")=1
-	ErrorBars $"MedQSet_i" Y,wave=($"MedQSet_s",$"MedQSet_s")
+	ErrorBars/T=0 $"MedQSet_i" Y,wave=($"MedQSet_s",$"MedQSet_s")
 	AppendToGraph $"TrimMedQSet_i" vs $"TrimMedQSet_q"
 	ModifyGraph mode($"TrimMedQSet_i")=3,marker($"TrimMedQSet_i")=19,msize=2,rgb($"TrimMedQSet_i")=(65535,0,0)
 End
@@ -622,7 +622,7 @@ Function DisplayLowSet()
 	DoWindow/F NSORT_Graph
 	AppendToGraph $"LowQSet_i" vs $"LowQSet_q"
 	ModifyGraph log=1,mode=3,marker($"LowQSet_i")=8,msize=2,rgb($"LowQSet_i")=(2,39321,1),opaque($"LowQSet_i")=1
-	ErrorBars $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
+	ErrorBars/T=0 $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
 	AppendToGraph $"TrimLowQSet_i" vs $"TrimLowQSet_q"
 	ModifyGraph mode($"TrimLowQSet_i")=3,marker($"TrimLowQSet_i")=19,msize=2,rgb($"TrimLowQSet_i")=(2,39321,1)
 End

@@ -1,16 +1,30 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
-// Uses a lot of the functionality from the Wrapper Panel - so be careful
-// if the behavior of that panel changes - especially the popup menus
-//
-//
+
 // panel meant to make it easier to fit two data sets with a single model
 // typically (but not necessarily) U+S, resolution smeared
+//
+// Uses a lot of the functionality from the Wrapper Panel - so be careful
+// if the behavior of that panel changes - especially the popup menus
 //
 // currently unsupported:
 // mask
 // constraints
-// epsilon (used? but not user-settable?)
+// epsilon (used, set behind the scenes but is not user-settable)
+//
+// ** some of the other assumptions/behaviors are:
+// - if a global variable is held by one set, it is (must be) held for the other set
+//   even though I don't automatically check the other box
+// - global parameter values are set from SET A. values in set B are overwritten during
+//   the fit
+// - upon initialization of the coefficients, coef_A and coef_B are set to those from the 
+//   first data set (A). So the appropriate model must be plotted for set A. It does not
+//   need to be plotted for set B, although if you fit the sets separately, each fit can 
+//   be used as a good first guess for the global fitting by cut/pase into the table.
+// - reports are always generated and automatically saved. Beware overwriting.
+// - weighting waves are automatically selected, as usual, since I know the data sets
+// - both data sets should be on the top graph. The fit, when finished, will try to append
+//   the results of the fit on the top graph.
 //
 // SRK FEB 2009 
 
@@ -100,6 +114,8 @@ Window SimpGFPanel() : Panel
 	
 	Button button_0,pos={344,13},size={100,20},title="Do Fit"
 	Button button_0 proc=SGF_DoFitButtonProc
+	Button button_1,pos={369,173},size={50,20},proc=SaveCheckStateButtonProc,title="Save"
+	Button button_2,pos={429,173},size={70,20},proc=RestoreCheckStateButtonProc,title="Restore"
 	
 	Edit/W=(14,174,348,495)/HOST=# 
 	ModifyTable format(Point)=1,width(Point)=34
@@ -107,6 +123,47 @@ Window SimpGFPanel() : Panel
 	SetActiveSubwindow ##
 	
 EndMacro
+
+// save the state of the checkboxes
+Function SaveCheckStateButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Duplicate/O root:Packages:NewGlobalFit:selW, root:Packages:NewGlobalFit:selW_saved
+			break
+	endswitch
+
+	return 0
+End
+
+//restore the state of the checkboxes if the number of rows is correct
+Function RestoreCheckStateButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Wave sw_cur = root:Packages:NewGlobalFit:selW
+			Wave sw_sav = root:Packages:NewGlobalFit:selW_saved
+
+			Variable num_cur,num_sav
+			num_cur = DimSize(sw_cur,0)
+			num_sav = DimSize(sw_sav,0)
+
+			if(num_cur == num_sav)
+				sw_cur = sw_sav
+			endif
+			
+			break
+	endswitch
+
+	return 0
+End
+
+
+
 
 // show the appropriate coefficient waves
 // 
