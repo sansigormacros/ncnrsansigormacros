@@ -322,7 +322,7 @@ Function Make76GaussPoints(w76,z76)
 
 End		//Make76GaussPoints()
 
-// !!!!! reduces the length of qt and zi by one !!!!!
+// !!!!! reduces the length of wt and zi by one !!!!!
 //
 Function Make_N_GaussPoints(wt,zi)
 	Wave wt,zi
@@ -1314,4 +1314,3 @@ Function fResetSmearedModels(matchStr,qStr)
 	endfor
 	return(0)
 end
-

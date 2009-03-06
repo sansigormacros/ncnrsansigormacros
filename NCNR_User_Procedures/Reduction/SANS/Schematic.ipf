@@ -345,7 +345,7 @@ Function SetGraphic(type,choice)
 	       	//a mask on it do this
 	      		if(cmpstr(choice,"MSK overlay")==0)
 	        		nameStr = type+"MSK_PNG"
-	        		Duplicate/O root:Packages:NIST:MSK:data root:MSK:overlay
+	        		Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:overlay
 	         		Redimension/D root:Packages:NIST:MSK:overlay
 	         		String tempStr = "root:Packages:NIST:MSK:overlay"
 	    	       	ResetLoop(tempStr)

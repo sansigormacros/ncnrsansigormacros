@@ -815,11 +815,12 @@ Function/S GetAList(type)
 		index += 1
 	while(1)
 	
-	// remove myGlobals, Packages from the folder list
+	// remove myGlobals, Packages, etc. from the folder list
 	if(type==4)
 		str = RemoveFromList("myGlobals", str , ";" )
 		str = RemoveFromList("Packages", str, ";")
 		str = RemoveFromList("AutoFit", str, ";")
+		str = RemoveFromList("TISANE", str, ";")
 	endif
 	
 	return(str)

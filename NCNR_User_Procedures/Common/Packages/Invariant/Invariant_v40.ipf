@@ -276,7 +276,7 @@ Proc Invariant_Panel()
 	DrawLine 16,19,264,19
 	PopupMenu ywave,pos={10,60},size={231,20},proc=Inv_FilePopMenuProc,title="Data File"
 	PopupMenu ywave,help={"Select the experimental intensity values"}
-	PopupMenu ywave,mode=1,popvalue="DDAB_EMATF_1p_25C.absb",value= #"root:Packages:NIST:invariant:gDataPopList"
+	PopupMenu ywave,mode=1,value= #"root:Packages:NIST:invariant:gDataPopList"
 	Button loadButton,pos={10,90},size={130,20},proc=Inv_Load_Proc,title="Load and Plot File"
 	Button loadButton,help={"After choosing a file, load it into memory and plot it with this button."}
 	Button Inv_PathButton,pos={10,29},size={80,20},proc=Inv_PickPathButtonProc,title="Pick Path"
@@ -652,19 +652,19 @@ Function SlitSmearedCheckProc(ctrlName,checked) : CheckBoxControl
 	Variable checked
 
 	NVAR isSlitSmeared=root:Packages:NIST:invariant:gIsSlitSmeared
-	SVAR fileStr=root:Packages:NIST:gLastFileName
+//	SVAR fileStr=root:Packages:NIST:gLastFileName
 	
 	//reset the global to the checkbox state
 	isSlitSmeared = checked		//==0 if the data is not slit smeared
 	
 	if(checked)		//get the smearing info
-		String cleanLastFileName = "root:"+CleanupName(fileStr,0)
+		ControlInfo/W=Invariant_Panel ywave
+		String folderStr=CleanupName(S_value,0)
 		NVAR dQv=root:Packages:NIST:invariant:gDqv
-		String tempName = cleanLastFileName+"sq"
-		Wave/Z w=$tempName
-		if(WaveExists(w) && w[0] < 0)
-			dQv = - w[0]
-			Print "Data is slit-smeared, dqv = ",w[0]
+		NVAR/Z loaded_dQv = $("root:"+folderStr+":USANS_dQv")
+		if(NVAR_Exists(loaded_dQv))
+			dQv = loaded_dQv
+			Print "Data is slit-smeared, dqv = ",dQv
 		else
 			DoAlert 0,"Can't find the slit height from the data. Enter the value manually if the data is truly slit-smeared, or uncheck the box."
 		endif
