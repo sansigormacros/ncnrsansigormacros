@@ -52,7 +52,7 @@ End
 //
 Function Init_RT()
 	//create folders
-	NewDataFolder/O root:RealTime
+	NewDataFolder/O root:Packages:NIST:RealTime
 	NewDataFolder/O/S root:myGlobals:RT
 	//create default globals only if they don't already exist, so you don't overwrite user-entered values.
 	NVAR xCtr=xCtr
@@ -115,7 +115,7 @@ End
 //
 Proc RT_Panel() 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(500,350,802,531) /K=2
+	NewPanel /W=(500,350,802,480) /K=2
 	DoWindow/C RT_Panel
 	DoWindow/T RT_Panel,"Real Time Display Controls"
 	ModifyPanel cbRGB=(65535,52428,6168)
@@ -124,31 +124,31 @@ Proc RT_Panel()
 	DrawText 26,21,"Enter values for real-time display"
 	Button bkgStart,pos={171,54},size={120,20},proc=UpdateHSTButton,title="Start Updating"
 	Button bkgStart,help={"Starts or stops the updating of the real-time SANS image"}
-	SetVariable setvar_0,pos={15,29},size={100,15},proc=RT_Param_SetVarProc,title="X Center"
-	SetVariable setvar_0,help={"Set this to the current beamcenter x-coordinate (in pixels)"}
-	SetVariable setvar_0,limits={0,128,0},value= root:myGlobals:RT:xCtr
-	SetVariable setvar_1,pos={14,46},size={100,15},proc=RT_Param_SetVarProc,title="Y Center"
-	SetVariable setvar_1,help={"Set this to the current beamcenter y-coordinate (in pixels)"}
-	SetVariable setvar_1,limits={0,128,0},value= root:myGlobals:RT:yCtr
-	SetVariable setvar_2,pos={14,64},size={100,15},proc=RT_Param_SetVarProc,title="SDD (m)"
-	SetVariable setvar_2,help={"Set this to the sample-to-detector distance of the current instrument configuration"}
-	SetVariable setvar_2,limits={0,1600,0},value= root:myGlobals:RT:SDD
-	SetVariable setvar_3,pos={15,82},size={100,15},proc=RT_Param_SetVarProc,title="Lambda (A)"
-	SetVariable setvar_3,help={"Set this to the wavelength of the current instrument configuration"}
-	SetVariable setvar_3,limits={0,30,0},value= root:myGlobals:RT:lambda
-	SetVariable setvar_4,pos={11,116},size={150,15},proc=UpdateInt_SetVarProc,title="Update Interval (s)"
+//	SetVariable setvar_0,pos={15,29},size={100,15},proc=RT_Param_SetVarProc,title="X Center"
+//	SetVariable setvar_0,help={"Set this to the current beamcenter x-coordinate (in pixels)"}
+//	SetVariable setvar_0,limits={0,128,0},value= root:myGlobals:RT:xCtr
+//	SetVariable setvar_1,pos={14,46},size={100,15},proc=RT_Param_SetVarProc,title="Y Center"
+//	SetVariable setvar_1,help={"Set this to the current beamcenter y-coordinate (in pixels)"}
+//	SetVariable setvar_1,limits={0,128,0},value= root:myGlobals:RT:yCtr
+//	SetVariable setvar_2,pos={14,64},size={100,15},proc=RT_Param_SetVarProc,title="SDD (m)"
+//	SetVariable setvar_2,help={"Set this to the sample-to-detector distance of the current instrument configuration"}
+//	SetVariable setvar_2,limits={0,1600,0},value= root:myGlobals:RT:SDD
+//	SetVariable setvar_3,pos={15,82},size={100,15},proc=RT_Param_SetVarProc,title="Lambda (A)"
+//	SetVariable setvar_3,help={"Set this to the wavelength of the current instrument configuration"}
+//	SetVariable setvar_3,limits={0,30,0},value= root:myGlobals:RT:lambda
+	SetVariable setvar_4,pos={11,31},size={150,20},proc=UpdateInt_SetVarProc,title="Update Interval (s)"
 	SetVariable setvar_4,help={"This is the period of the update"}
 	SetVariable setvar_4,limits={1,3600,0},value= root:myGlobals:RT:updateInt
-	SetVariable setvar_5,pos={11,135},size={150,15},title="Timeout Interval (s)"
+	SetVariable setvar_5,pos={11,56},size={150,20},title="Timeout Interval (s)"
 	SetVariable setvar_5,help={"After the timeout interval has expired, the update process will automatically stop"}
 	SetVariable setvar_5,limits={1,3600,0},value= root:myGlobals:RT:timeout
 	Button button_1,pos={170,29},size={120,20},proc=LoadRTButtonProc,title="Load Live Data"
 	Button button_1,help={"Load the data file for real-time display"}
-	Button button_2,pos={229,80},size={60,20},proc=RT_HelpButtonProc,title="Help"
+	Button button_2,pos={250,2},size={30,20},proc=RT_HelpButtonProc,title="?"
 	Button button_2,help={"Display the help file for real-time controls"}
-	Button button_3,pos={230,105},size={60,20},proc=RT_DoneButtonProc,title="Done"
+	Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
 	Button button_3,help={"Closes the panel and stops the updating process"}
-	SetVariable setvar_6,pos={11,153},size={200,15},title="Total Detector Counts"
+	SetVariable setvar_6,pos={11,82},size={200,20},title="Total Detector Counts"
 	SetVariable setvar_6,help={"Total counts on the detector, as displayed"}
 	SetVariable setvar_6,limits={0,Inf,0},value= root:myGlobals:RT:totalCounts
 EndMacro
@@ -177,8 +177,8 @@ End
 Function LoadRTButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DoAlert 0,"The RealTime detector image is located on Bach/tmp/Run.hst"
-	Read_RT_File("Select the Run.hst file")
+	DoAlert 0,"The RealTime detector image is located somewhere"
+	Read_RT_File("Select the Live Data file")
 	return(0)
 End
 
@@ -199,7 +199,7 @@ Function RT_Param_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContro
 	String varStr
 	String varName
 
-	Wave rw=$"root:RealTime:RealsRead"
+	Wave rw=$"root:Packages:NIST:RealTime:RealsRead"
 	if(WaveExists(rw)==0)
 		return(1)
 	Endif
@@ -291,15 +291,18 @@ Function Read_RT_File(msgStr)
 	//set the globals and reset the RT_Path value
 	pathStr = GetPathStrFromfullName(filename)
 	NewPath/O RT_Path,pathStr
-	Variable/G root:RealTime:gIsLogScale = 0		//force data to linear scale (1st read)
+	Variable/G root:Packages:NIST:RealTime:gIsLogScale = 0		//force data to linear scale (1st read)
 	String/G root:myGlobals:RT:RT_fileStr=filename	//full path:file of the Run.hst file to re-read
 	//read in the data
-	ReadOrdelaHST(filename)
+	//ReadOrdelaHST(filename)
+	
+	ReadHeaderAndData(filename)
+	Raw_to_Work("RealTime")
 
 	//the calling macro must change the display type
 	String/G root:myGlobals:gDataDisplayType="RealTime"		//displayed data type is RealTime
 	
-	FillFakeHeader() 		//uses info on the panel, if available
+	//FillFakeHeader() 		//uses info on the panel, if available
 
 	//data is displayed here, and needs header info
 	
@@ -314,7 +317,7 @@ End
 
 //function that does the guts of reading the binary data file
 //fname is the full path:name;vers required to open the file
-//The final root:RealTime:data wave is the real
+//The final root:Packages:NIST:RealTime:data wave is the real
 //neutron counts and can be directly used
 //
 //returns 0 if read was ok
@@ -322,12 +325,12 @@ End
 Function ReadOrdelaHST(fname)
 	String fname
 	//this function is for reading in RealTime data only, so it will always put data in RealTime folder
-	SetDataFolder "root:RealTime"	
+	SetDataFolder "root:Packages:NIST:RealTime"	
 	//keep a string with the filename in the RealTime folder
-	String/G root:RealTime:fileList = "Real-Time Data Display"
+	String/G root:Packages:NIST:RealTime:fileList = "Real-Time Data Display"
 	//get log/linear state based on SANS_Data window
-	Variable isLogScale=NumVarOrDefault("root:RealTime:gIsLogScale", 0)
-	Variable/G root:RealTime:gIsLogScale = isLogScale		//creates if needed, "sets" to cur val if already exists
+	Variable isLogScale=NumVarOrDefault("root:Packages:NIST:RealTime:gIsLogScale", 0)
+	Variable/G root:Packages:NIST:RealTime:gIsLogScale = isLogScale		//creates if needed, "sets" to cur val if already exists
 	
 	Variable refNum=0,ii,p1,p2,tot,num=128
 	String str=""
@@ -364,12 +367,12 @@ Function ReadOrdelaHST(fname)
 	//Redimension/N=(256,256) a1
 	Redimension/N=(128,128) a1
 
-	if(exists("root:RealTime:data")!=1)		//wave DN exist
-		Make/O/N=(128,128) $"root:RealTime:data"
+	if(exists("root:Packages:NIST:RealTime:data")!=1)		//wave DN exist
+		Make/O/N=(128,128) $"root:Packages:NIST:RealTime:data"
 	endif
-	WAVE data=$"root:RealTime:data"
-	Duplicate/O data,$"root:RealTime:linear_data"
-	WAVE lin_data=$"root:RealTime:linear_data"
+	WAVE data=$"root:Packages:NIST:RealTime:data"
+	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
+	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
 	lin_data=a1
 	if(isLogScale)
 		data=log(a1)
@@ -390,13 +393,13 @@ End
 //
 Function FillFakeHeader()
 
-	Make/O/N=23 $"root:RealTime:IntegersRead"
-	Make/O/N=52 $"root:RealTime:RealsRead"
-	Make/O/T/N=11 $"root:RealTime:TextRead"
+	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
+	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
+	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
 	
-	Wave intw=$"root:RealTime:IntegersRead"
-	Wave realw=$"root:RealTime:RealsRead"
-	Wave/T textw=$"root:RealTime:TextRead"
+	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
+	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
+	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
 	
 	//Put in appropriate "fake" values
 	// first 4 are user-defined on the Real Time control panel, so user has the opportunity to change these values.
@@ -481,7 +484,7 @@ End
 //
 Function BkgUpdateHST()
 
-	WAVE data = $"root:RealTime:data"
+	WAVE data = $"root:Packages:NIST:RealTime:data"
 	NVAR elapsed=root:myGlobals:RT:elapsed
 	NVAR timeout=root:myGlobals:RT:timeout
 	NVAR updateInt=root:myGlobals:RT:updateInt
@@ -508,11 +511,13 @@ Function BkgUpdateHST()
 		title="Reading new data..."
 		ControlUpdate/W=SANS_Data/A
 		
-		err = ReadOrdelaHST(RT_fileStr)
+		//err = ReadOrdelaHST(RT_fileStr)
+		err = ReadHeaderAndData(RT_fileStr)
 		if(err==1)
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
 			return(err)	//file not found
 		Endif
+		Raw_to_work("RealTime")
 		// for testing only...
 //		data += abs(enoise(data))
 		//
@@ -520,11 +525,11 @@ Function BkgUpdateHST()
 		
 		title="Real-Time Data Display"
 		//sum the total counts, global variable will automatically update
-		WAVE/Z linear_data = $"root:RealTime:linear_data"
+		WAVE/Z linear_data = $"root:Packages:NIST:RealTime:linear_data"
 		if(WaveExists(linear_data))
 			totCounts = sum(linear_data, -Inf, Inf )
 		else
-			WAVE/Z data = $"root:RealTime:data"
+			WAVE/Z data = $"root:Packages:NIST:RealTime:data"
 			totCounts = sum(data, -Inf, Inf )
 		endif
 		
@@ -538,4 +543,3 @@ Function BkgUpdateHST()
 	endif
 	
 End
-

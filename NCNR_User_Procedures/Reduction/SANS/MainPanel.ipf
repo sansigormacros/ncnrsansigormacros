@@ -261,8 +261,8 @@ Window Main_Panel()
 	Button MainButton_0b,help={"Patch will update incorrect information in raw data headers"}
 	Button MainButton_0c,pos={15,150},size={110,20},proc=TransMainButtonProc,title="Transmission"
 	Button MainButton_0c,help={"Shows the \"Patch\" panel which allows calculation of sample transmissions and entering these values into raw data headers"}
-//	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
-//	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
+	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
+	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"

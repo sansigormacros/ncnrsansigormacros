@@ -500,7 +500,7 @@ Function Draw_Histo()
 	Display /W=(197,329,567,461)/K=1 AvgCounts vs Position
 	DoWindow/C SANS_Histo
 	DoWindow/T SANS_Histo,"Histogram"
-	ModifyGraph mode=5,grid=1,mirror=2
+	ModifyGraph mode=0,grid=1,mirror=2
 	ModifyGraph rgb=(21845,21845,21845)
 	ModifyGraph standoff=0
 	ModifyGraph hbFill=2
