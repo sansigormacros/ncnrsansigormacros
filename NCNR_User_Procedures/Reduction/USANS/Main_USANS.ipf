@@ -62,6 +62,9 @@ Proc Init_MainUSANS()
 	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	//NB This is also hardcoded a bit further down - search for "WHY WHY WHY" AJJ Sept 08
 	
+	//Preference value to determine if we are outputting XML
+	Variable/G root:Packages:NIST:USANS:Globals:gUseXMLOutput = 0
+	
 	Make/O/T/N=1 fileWave,samWave,empWave,curWave //Added curWave Sept 06 A. Jackson
 	fileWave=""
 	samWave=""

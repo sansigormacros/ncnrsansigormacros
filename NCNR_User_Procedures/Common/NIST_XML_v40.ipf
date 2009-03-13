@@ -288,7 +288,7 @@ function/S getXMLDataSetTitle(xmlDF,dsNum)
 	String xmlDF
 	Variable dsNum
 
-	SVAR title = root:myGlobals:gXMLLoader_Title
+	SVAR title = root:Packages:NIST:gXMLLoader_Title
 
 
 	String mdstring = xmlDF+"metadata"
@@ -296,15 +296,18 @@ function/S getXMLDataSetTitle(xmlDF,dsNum)
 	Wave/T meta = $mdstring
 	//Check for value when there are multiple datasets
 	FindValue/TEXT="Title"/TXOP=4/Z meta
-	title = meta[V_Value][1]
-
+	title = TrimWS(meta[V_Value][1])
+	print meta[V_Value][1]
+	print title
 	 //Check for Run value
 	 FindValue/TEXT="Run_"+num2str(dsNum)/TXOP=4/Z meta
 	if (V_Value >= 0)
-		title = title+" "+meta[V_Value][1]
+		title = title+" "+TrimWS(meta[V_Value][1])
+		print title
 	else
 		FindValue/TEXT="Run"/TXOP=4/Z meta
-		title = title+" "+meta[V_Value][1]	
+		title = title+" "+TrimWS(meta[V_Value][1])	
+		print title
 	endif
 
 	if (strlen(title) > 28)
@@ -353,9 +356,9 @@ Window getNewTitle()
 	DrawText 11,42,"Please enter a new one with a maximum length 28 characters"
 	DrawText 11,72,"Current Sample Title:"
 	GroupBox group0 pos={8,55},size={484,50}
-	TitleBox tb_CurrentTitle,pos={150,57}, variable=:myGlobals:gXMLLoader_Title,fSize=12,frame=0	
+	TitleBox tb_CurrentTitle,pos={150,57}, variable=root:Packages:NIST:gXMLLoader_Title,fSize=12,frame=0	
 	SetVariable sv_NewTitle,pos={11,77},size={476,18},title="New Sample Title"
-	SetVariable sv_NewTitle,fSize=12,value=root:myGlobals:gXMLLoader_Title
+	SetVariable sv_NewTitle,fSize=12,value=root:Packages:NIST:gXMLLoader_Title
 	Button btn_SetNewTitle title="Set New Title",pos={150,110},size={200,20}
 	Button btn_SetNewTitle proc=SetNewTitleButtonProc
 

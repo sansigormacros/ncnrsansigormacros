@@ -520,6 +520,7 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	Variable lo,hi,dialog		//=1 will present dialog for name
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	NVAR XMLO = $(USANSFolder+"gUseXMLOutput")
 	
 	String termStr="\r\n"
 	String destStr = USANSFolder+":DSM:"
@@ -589,6 +590,13 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	dateStr="CREATED: "+date()+" at  "+time()
 	sprintf str1,"Chi^2 = %g   PowerLaw m = %4.2f   Iterations = %d",chiFinal,m,iter
 	sprintf str2,"%d box smooth passes and %d smoothing spline passes",boxPass,splinePass
+	
+	if (xmlo == 1)
+	
+		
+	
+	endif
+	
 	
 	//actually open the file
 	Open refNum as fullpath

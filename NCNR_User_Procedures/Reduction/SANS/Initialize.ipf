@@ -115,7 +115,7 @@ Function InitGlobals()
 	Variable/G root:myGlobals:isDemoVersion = isDemo()
 	
 	//set XML globals
-	String/G root:myGlobals:gXMLLoader_Title = ""
+	String/G root:Packages:NIST:gXMLLoader_Title = ""
 
 	
 	Return(0)

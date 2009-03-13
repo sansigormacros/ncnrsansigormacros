@@ -199,6 +199,7 @@ FUNCTION CS_1i_parseXml(fileID)
 		
 		title =  CS_1i_locateTitle(fileID, SASentryPath)
 		Title_folder = CS_cleanFolderName(Title)
+		print Title_folder
 		NewDataFolder/O/S  $Title_folder
 
 		XmlListXpath(fileID, SASentryPath + "//cs:SASdata", nsStr)
@@ -228,9 +229,9 @@ END
 FUNCTION/S CS_cleanFolderName(proposal)
 	STRING proposal
 	STRING result
-	result = CleanupName(proposal, 0)
+	result = TrimWS(CleanupName(proposal, 0))
 	IF ( CheckName(result, 11) != 0 )
-		result = UniqueName(result, 11, 0)
+		result = TrimWS(UniqueName(result, 11, 0))
 	ENDIF
 	RETURN result
 END
@@ -573,19 +574,19 @@ FUNCTION/S CS_1i_locateTitle(fileID, SASentryPath)
 
 	// /cs:SASroot/cs:SASentry/cs:Title is the expected location, but it could be empty
 	TitlePath = SASentryPath + "/cs:Title"
-	Title = XMLstrFmXpath(fileID,  TitlePath, nsStr, "")
+	Title = TrimWS(XMLstrFmXpath(fileID,  TitlePath, nsStr, ""))
 	// search harder for a title
 	IF (strlen(Title) == 0)
 		TitlePath = SASentryPath + "/@name"
-		Title = XMLstrFmXpath(fileID,  TitlePath, nsStr, "")
+		Title = TrimWS(XMLstrFmXpath(fileID,  TitlePath, nsStr, ""))
 	ENDIF
 	IF (strlen(Title) == 0)
 		TitlePath = SASentryPath + "/cs:SASsample/cs:ID"
-		Title = XMLstrFmXpath(fileID,  TitlePath, nsStr, "")
+		Title = TrimWS(XMLstrFmXpath(fileID,  TitlePath, nsStr, ""))
 	ENDIF
 	IF (strlen(Title) == 0)
 		TitlePath = SASentryPath + "/cs:SASsample/@name"
-		Title = XMLstrFmXpath(fileID,  TitlePath, nsStr, "")
+		Title = TrimWS(XMLstrFmXpath(fileID,  TitlePath, nsStr, ""))
 	ENDIF
 	IF (strlen(Title) == 0)
 		// last resort: make up a title

@@ -24,6 +24,9 @@ Function Init_WrapperPanel()
 	Variable/G root:Packages:NIST:USANSUseTrap = 0
 	Variable/G root:Packages:NIST:USANS_dQv = 0.117
 	
+	//Ugly. Put this here to make sure things don't break
+	String/G root:Packages:NIST:gXMLLoader_Title
+	
 	DoWindow/F WrapperPanel
 	if(V_flag==0)
 		if(exists("root:Packages:NIST:coefKWStr")==0)
