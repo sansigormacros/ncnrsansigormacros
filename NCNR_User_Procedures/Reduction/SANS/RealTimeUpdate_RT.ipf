@@ -296,8 +296,9 @@ Function Read_RT_File(msgStr)
 	//read in the data
 	//ReadOrdelaHST(filename)
 	
-	ReadHeaderAndData(filename)
-	Raw_to_Work("RealTime")
+	//ReadHeaderAndData(filename)
+	//Raw_to_Work("RealTime")
+	ReadRTAndData(filename)
 
 	//the calling macro must change the display type
 	String/G root:myGlobals:gDataDisplayType="RealTime"		//displayed data type is RealTime
@@ -511,13 +512,17 @@ Function BkgUpdateHST()
 		title="Reading new data..."
 		ControlUpdate/W=SANS_Data/A
 		
+		//Copy file from ICE server
+		ExecuteScriptText/B "\"C:\\Documents and Settings\\user\\Desktop\\ICE Test\\getdata.bat\""
+		
 		//err = ReadOrdelaHST(RT_fileStr)
-		err = ReadHeaderAndData(RT_fileStr)
+		//err = ReadHeaderAndData(RT_fileStr)
+		err = ReadRTAndData(RT_fileStr)
 		if(err==1)
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
 			return(err)	//file not found
 		Endif
-		Raw_to_work("RealTime")
+		//Raw_to_work("RealTime")
 		// for testing only...
 //		data += abs(enoise(data))
 		//
@@ -542,4 +547,299 @@ Function BkgUpdateHST()
 		return(1)
 	endif
 	
+End
+
+Function ReadRTAndData(fname)
+	String fname
+	//this function is for reading in RAW data only, so it will always put data in RAW folder
+	String curPath = "root:Packages:NIST:RealTime:"
+	SetDataFolder curPath		//use the full path, so it will always work
+	//Variable/G root:Packages:NIST:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
+	Variable isLogScale=NumVarOrDefault("root:Packages:NIST:RealTime:gIsLogScale", 0)
+	Variable/G root:Packages:NIST:RealTime:gIsLogScale = isLogScale	
+	
+	Variable refNum,integer,realval
+	String sansfname,textstr
+	
+	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
+	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
+	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
+	
+	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
+	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
+	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
+	
+	//***NOTE ****
+	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
+	// this read routine, after the open dialog is presented
+	// the "--read" waves end up in the correct folder, but the data does not! Why?
+	//must re-set data folder before writing data array (done below)
+	
+	//full filename and path is now passed in...
+	//actually open the file
+	Open/R refNum as fname
+	//skip first two bytes (VAX record length markers, not needed here)
+	FSetPos refNum, 2
+	//read the next 21 bytes as characters (fname)
+	FReadLine/N=21 refNum,textstr
+	textw[0]= textstr
+	//read four i*4 values	/F=3 flag, B=3 flag
+	FBinRead/F=3/B=3 refNum, integer
+	intw[0] = integer
+	//
+	FBinRead/F=3/B=3 refNum, integer
+	intw[1] = integer
+	//
+	FBinRead/F=3/B=3 refNum, integer
+	intw[2] = integer
+	//
+	FBinRead/F=3/B=3 refNum, integer
+	intw[3] = integer
+	// 6 text fields
+	FSetPos refNum,55		//will start reading at byte 56
+	FReadLine/N=20 refNum,textstr
+	textw[1]= textstr
+	FReadLine/N=3 refNum,textstr
+	textw[2]= textstr
+	FReadLine/N=11 refNum,textstr
+	textw[3]= textstr
+	FReadLine/N=1 refNum,textstr
+	textw[4]= textstr
+	FReadLine/N=8 refNum,textstr
+	textw[5]= textstr
+	FReadLine/N=60 refNum,textstr
+	textw[6]= textstr
+	
+	//3 integers
+	FSetPos refNum,174
+	FBinRead/F=3/B=3 refNum, integer
+	intw[4] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[5] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[6] = integer
+	
+	//2 integers, 3 text fields
+	FSetPos refNum,194
+	FBinRead/F=3/B=3 refNum, integer
+	intw[7] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[8] = integer
+	FReadLine/N=6 refNum,textstr
+	textw[7]= textstr
+	FReadLine/N=6 refNum,textstr
+	textw[8]= textstr
+	FReadLine/N=6 refNum,textstr
+	textw[9]= textstr
+	
+	//2 integers
+	FSetPos refNum,244
+	FBinRead/F=3/B=3 refNum, integer
+	intw[9] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[10] = integer
+	
+	//2 integers
+	FSetPos refNum,308
+	FBinRead/F=3/B=3 refNum, integer
+	intw[11] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[12] = integer
+	
+	//2 integers
+	FSetPos refNum,332
+	FBinRead/F=3/B=3 refNum, integer
+	intw[13] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[14] = integer
+	
+	//3 integers
+	FSetPos refNum,376
+	FBinRead/F=3/B=3 refNum, integer
+	intw[15] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[16] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[17] = integer
+	
+	//1 text field - the file association for transmission are the first 4 bytes
+	FSetPos refNum,404
+	FReadLine/N=42 refNum,textstr
+	textw[10]= textstr
+	
+	//1 integer
+	FSetPos refNum,458
+	FBinRead/F=3/B=3 refNum, integer
+	intw[18] = integer
+	
+	//4 integers
+	FSetPos refNum,478
+	FBinRead/F=3/B=3 refNum, integer
+	intw[19] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[20] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[21] = integer
+	FBinRead/F=3/B=3 refNum, integer
+	intw[22] = integer
+	
+	Close refNum
+	
+	//now get all of the reals
+	//
+	//Do all the GBLoadWaves at the end
+	//
+	//FBinRead Cannot handle 32 bit VAX floating point
+	//GBLoadWave, however, can properly read it
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	String strToExecute
+	//append "/S=offset/U=numofreals" to control the read
+	// then append fname to give the full file path
+	// then execute
+	
+	Variable a=0,b=0
+	
+	SetDataFolder curPath
+	
+	// 4 R*4 values
+	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
+	Execute strToExecute
+	Wave w=$"root:Packages:NIST:RealTime:tempGBWave0"
+	b=4	//num of reals read
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 4 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + fname + "\""
+	Execute strToExecute
+	b=4	
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+
+///////////
+	// 2 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + fname + "\""
+	Execute strToExecute
+	b=2	
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+
+	// 6 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + fname + "\""
+	Execute strToExecute
+	b=6	
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 13 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + fname + "\""
+	Execute strToExecute
+	b=13
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 3 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + fname + "\""
+	Execute strToExecute
+	b=3	
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 7 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + fname + "\""
+	Execute strToExecute
+	b=7
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 4 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + fname + "\""
+	Execute strToExecute
+	b=4	
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 2 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + fname + "\""
+	Execute strToExecute
+	b=2
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 2 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + fname + "\""
+	Execute strToExecute
+	b=2
+	realw[a,a+b-1] = w[p-a]
+	a+=b
+	
+	// 5 R*4 values
+	SetDataFolder curPath
+	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + fname + "\""
+	Execute strToExecute
+	b=5	
+	realw[a,a+b-1] = w[p-a]
+	
+	//if the binary VAX data ws transferred to a MAC, all is OK
+	//if the data was trasnferred to an Intel machine (IBM), all the real values must be
+	//divided by 4 to get the correct floating point values
+	// I can't find any combination of settings in GBLoadWave or FBinRead to read data in correctly
+	// on an Intel machine.
+	//With the corrected version of GBLoadWave XOP (v. 1.43 or higher) Mac and PC both read
+	//VAX reals correctly, and no checking is necessary 12 APR 99
+	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
+		//do nothing
+	//else
+		//either Windows or Windows NT
+		//realw /= 4
+	//endif
+	
+	SetDataFolder curPath
+	//read in the data
+	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q" + "\"" + fname + "\""
+	Execute strToExecute
+
+	SetDataFolder curPath		//use the full path, so it will always work
+	
+	Make/O/N=16384 $"root:Packages:NIST:RealTime:data"
+	WAVE data=$"root:Packages:NIST:RealTime:data"
+	SkipAndDecompressVAX(w,data)
+	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
+	
+	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
+	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
+	if(isLogScale)
+		data=log(lin_data)
+	else
+		data=lin_data
+	Endif
+	
+	//keep a string with the filename in the RAW folder
+	String/G root:Packages:NIST:RealTime:fileList = textw[0]
+	
+	//set the globals to the detector dimensions (pixels)
+	Variable/G root:myGlobals:gNPixelsX=128		//default for Ordela data (also set in Initialize/NCNR_Utils.ipf)
+	Variable/G root:myGlobals:gNPixelsY=128
+//	if(cmpstr(textW[9],"ILL   ")==0)		//override if OLD Cerca data
+//		Variable/G root:myGlobals:gNPixelsX=64
+//		Variable/G root:myGlobals:gNPixelsY=64
+//	endif
+	
+	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
+//	KillWaves/Z w
+	
+	//return the data folder to root
+	SetDataFolder root:
+	
+	Return 0
+
 End
