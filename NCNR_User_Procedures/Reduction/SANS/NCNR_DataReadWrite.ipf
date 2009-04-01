@@ -87,10 +87,12 @@ Function ReadHeaderAndData(fname)
 	Make/O/N=23 $"root:Packages:NIST:RAW:IntegersRead"
 	Make/O/N=52 $"root:Packages:NIST:RAW:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
+	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
 	
 	Wave intw=$"root:Packages:NIST:RAW:IntegersRead"
 	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
 	Wave/T textw=$"root:Packages:NIST:RAW:TextRead"
+	Wave logw=$"root:Packages:NIST:RAW:LogicalsRead"
 	
 	//***NOTE ****
 	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
@@ -162,6 +164,7 @@ Function ReadHeaderAndData(fname)
 	FBinRead/F=3/B=3 refNum, integer
 	intw[10] = integer
 	
+	
 	//2 integers
 	FSetPos refNum,308
 	FBinRead/F=3/B=3 refNum, integer
@@ -205,7 +208,31 @@ Function ReadHeaderAndData(fname)
 	intw[21] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[22] = integer
-	
+
+	//Get Logicals	
+	//Read logicals as int - ICE is writing integers here
+	FSetPos refNum,304
+	FBinRead/F=3/B=3 refNum, integer
+	logw[0] = integer
+	FSetPos refNum,316
+	FBinRead/F=3/B=3 refNum, integer
+	logw[1] = integer	
+	FSetPos refNum,340
+	FBinRead/F=3/B=3 refNum, integer
+	logw[2] = integer
+	FSetPos refNum,344
+	FBinRead/F=3/B=3 refNum, integer
+	logw[3] = integer		
+	FSetPos refNum,446
+	FBinRead/F=3/B=3 refNum, integer
+	logw[4] = integer
+	FSetPos refNum,462
+	FBinRead/F=3/B=3 refNum, integer
+	logw[5] = integer
+	FSetPos refNum,466
+	FBinRead/F=3/B=3 refNum, integer
+	logw[6] = integer		
+
 	Close refNum
 	
 	//now get all of the reals
@@ -2322,4 +2349,147 @@ Function SimulationVAXHeader(folder)
 	tw[6] = labelStr[0,59]
 	
 	return(0)
+End
+
+Function ExamineHeader(type)
+	String type
+
+	String data_folder = type
+	String dataPath = "root:Packages:NIST:"+data_folder
+	String cur_folder = "ExamineHeader"
+	String curPath = "root:Packages:NIST:"+cur_folder
+	
+	//SetDataFolder curPath
+
+	Wave intw=$(dataPath+":IntegersRead")
+	Wave realw=$(dataPath+":RealsRead")
+	Wave/T textw=$(dataPath+":TextRead")
+	Wave logw=$(dataPath+":LogicalsRead")
+
+
+	print "----------------------------------"
+	print "Header Details"
+	print "----------------------------------"
+	print "fname :\t\t"+textw[0]
+	//
+	print "run.npre :\t\t"+num2str(intw[0])
+	print "run.ctime :\t\t"+num2str(intw[1])
+	print "run.rtime :\t\t"+num2str(intw[2])
+	print "run.numruns :\t\t"+num2str(intw[3])
+	//
+	print "run.moncnt :\t\t"+num2str(realw[0])
+	print "run.savmon :\t\t"+num2str(realw[1])
+	print "run.detcnt :\t\t"+num2str(realw[2])
+	print "run.atten :\t\t"+num2str(realw[3])	
+	//
+	print "run.timdat:\t\t"+textw[1]
+	print "run.type:\t\t"+textw[2]
+	print "run.defdir:\t\t"+textw[3]
+	print "run.mode:\t\t"+textw[4]
+	print "run.reserve:\t\t"+textw[5]
+	print "sample.labl:\t\t"+textw[6]
+	//
+	print "sample.trns:\t\t"+num2str(realw[4])
+	print "sample.thk:\t\t"+num2str(realw[5])
+	print "sample.position:\t\t"+num2str(realw[6])
+	print "sample.rotang:\t\t"+num2str(realw[7])
+	//
+	print "sample.table:\t\t"+num2str(intw[4])
+	print "sample.holder:\t\t"+num2str(intw[5])
+	print "sample.blank:\t\t"+num2str(intw[6])
+	//
+	print "sample.temp:\t\t"+num2str(realw[8])
+	print "sample.field:\t\t"+num2str(realw[9])	
+	//
+	print "sample.tctrlr:\t\t"+num2str(intw[7])
+	print "sample.magnet:\t\t"+num2str(intw[8])
+	//
+	print "sample.tunits:\t\t"+textw[7]
+	print "sample.funits:\t\t"+textw[8]
+	print "det.typ:\t\t"+textw[9]
+	//
+	print "det.calx(1):\t\t"+num2str(realw[10])
+	print "det.calx(2):\t\t"+num2str(realw[11])
+	print "det.calx(3):\t\t"+num2str(realw[12])
+	print "det.caly(1):\t\t"+num2str(realw[13])
+	print "det.caly(2):\t\t"+num2str(realw[14])
+	print "det.caly(3):\t\t"+num2str(realw[15])
+	//
+	print "det.num:\t\t"+num2str(intw[9])
+	print "det.spacer:\t\t"+num2str(intw[10])
+	//
+	print "det.beamx:\t\t"+num2str(realw[16])
+	print "det.beamy:\t\t"+num2str(realw[17])
+	print "det.dis:\t\t"+num2str(realw[18])
+	print "det.offset:\t\t"+num2str(realw[19])
+	print "det.siz:\t\t"+num2str(realw[20])
+	print "det.bstop:\t\t"+num2str(realw[21])
+	print "det.blank:\t\t"+num2str(realw[22])
+	print "resolution.ap1:\t\t"+num2str(realw[23])
+	print "resolution.ap2:\t\t"+num2str(realw[24])
+	print "resolution.ap12dis:\t\t"+num2str(realw[25])
+	print "resolution.lmda:\t\t"+num2str(realw[26])
+	print "resolution.dlmda:\t\t"+num2str(realw[27])
+	print "resolution.nlenses:\t\t"+num2str(realw[28])	
+	//
+	print "tslice.slicing:\t\t"+num2str(logw[0])
+	//
+	print "tslice.multfact:\t\t"+num2str(intw[11])
+	print "tslice.ltslice:\t\t"+num2str(intw[12])
+	//
+	print "temp.printemp:\t\t"+num2str(logw[1])
+	//
+	print "temp.hold:\t\t"+num2str(realw[29])
+	print "temp.err:\t\t"+num2str(realw[30])
+	print "temp.blank:\t\t"+num2str(realw[31])
+	//
+	print "temp.extra:\t\t"+num2str(intw[13])
+	print "temp.err:\t\t"+num2str(intw[14])
+	//
+	print "magnet.printmag:\t\t"+num2str(logw[2])
+	print "magnet.sensor:\t\t"+num2str(logw[3])
+	//
+	print "magnet.current:\t\t"+num2str(realw[32])
+	print "magnet.conv:\t\t"+num2str(realw[33])
+	print "magnet.fieldlast:\t\t"+num2str(realw[34])
+	print "magnet.blank:\t\t"+num2str(realw[35])
+	print "magnet.spacer:\t\t"+num2str(realw[36])
+	print "bmstp.xpos:\t\t"+num2str(realw[37])
+	print "bmstop.ypos:\t\t"+num2str(realw[38])
+	//	
+	print "params.blank1:\t\t"+num2str(intw[15])
+	print "params.blank2:\t\t"+num2str(intw[16])
+	print "params.blank3:\t\t"+num2str(intw[17])
+	//
+	print "params.trnscnt:\t\t"+num2str(realw[39])
+	print "params.extra1:\t\t"+num2str(realw[40])
+	print "params.extra2:\t\t"+num2str(realw[41])
+	print "params.extra3:\t\t"+num2str(realw[42])
+	//	
+	print "params.reserve:\t\t"+textw[10]
+	//
+	print "voltage.printemp:\t\t"+num2str(logw[4])
+	//
+	print "voltage.volts:\t\t"+num2str(realw[43])
+	print "voltage.blank:\t\t"+num2str(realw[44])
+	//	
+	print "voltage.spacer:\t\t"+num2str(intw[18])
+	//
+	print "polarization.printpol:\t\t"+num2str(logw[5])
+	print "polarization.flipper:\t\t"+num2str(logw[6])
+	//	
+	print "polarization.horiz:\t\t"+num2str(realw[45])
+	print "polarization.vert:\t\t"+num2str(realw[46])
+	//
+	print "analysis.rows(1):\t\t"+num2str(intw[19])
+	print "analysis.rows(2):\t\t"+num2str(intw[20])
+	print "analysis.cols(1):\t\t"+num2str(intw[21])
+	print "analysis.cols(2):\t\t"+num2str(intw[22])
+	//
+	print "analysis.factor:\t\t"+num2str(realw[47])
+	print "analysis.qmin:\t\t"+num2str(realw[48])
+	print "analysis.qmax:\t\t"+num2str(realw[49])
+	print "analysis.imin:\t\t"+num2str(realw[50])
+	print "analysis.imax:\t\t"+num2str(realw[51])
+
 End
