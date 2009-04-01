@@ -2,8 +2,10 @@
 #pragma version=1.00
 #pragma IgorVersion=6.0
 
-#include "cansasXML_v11", version >= 1.10
 
+#if( Exists("XmlOpenFile") )
+
+#include "cansasXML_v11", version >= 1.10
 
 // The function is called "LoadNISTXMLData" but is actually more generic
 // and will load any canSAS XML v1 dataset
@@ -371,3 +373,12 @@ Proc SetNewTitleButtonProc(ctrlName) : ButtonControl
 	DoWindow/K getNewTitle
 
 End
+
+#else	// if( Exists("XmlOpenFile") )
+	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
+	FUNCTION LoadNISTXMLData(fileName)
+	    String fileName
+	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+	    RETURN(-6)
+	END
+#endif	// if( Exists("XmlOpenFile") )
