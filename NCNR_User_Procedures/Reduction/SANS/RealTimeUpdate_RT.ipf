@@ -29,7 +29,8 @@ Proc Init_for_RealTime()
 	InitFolders()
 	InitFakeProtocols()
 	InitGlobals()
-	
+	InitFacilityGlobals()
+
 	// specific for RealTime display
 	//set the current display type to RealTime
 	String/G root:myGlobals:gDataDisplayType = "RealTime"
@@ -115,7 +116,7 @@ End
 //
 Proc RT_Panel() 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(500,350,802,480) /K=2
+	NewPanel /W=(300,350,602,480) /K=2
 	DoWindow/C RT_Panel
 	DoWindow/T RT_Panel,"Real Time Display Controls"
 	ModifyPanel cbRGB=(65535,52428,6168)
@@ -146,8 +147,8 @@ Proc RT_Panel()
 	Button button_1,help={"Load the data file for real-time display"}
 	Button button_2,pos={250,2},size={30,20},proc=RT_HelpButtonProc,title="?"
 	Button button_2,help={"Display the help file for real-time controls"}
-	Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
-	Button button_3,help={"Closes the panel and stops the updating process"}
+	//Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
+	//Button button_3,help={"Closes the panel and stops the updating process"}
 	SetVariable setvar_6,pos={11,82},size={200,20},title="Total Detector Counts"
 	SetVariable setvar_6,help={"Total counts on the detector, as displayed"}
 	SetVariable setvar_6,limits={0,Inf,0},value= root:myGlobals:RT:totalCounts
@@ -177,7 +178,7 @@ End
 Function LoadRTButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DoAlert 0,"The RealTime detector image is located somewhere"
+	DoAlert 0,"The RealTime detector image is located on charlotte"
 	Read_RT_File("Select the Live Data file")
 	return(0)
 End
@@ -513,7 +514,7 @@ Function BkgUpdateHST()
 		ControlUpdate/W=SANS_Data/A
 		
 		//Copy file from ICE server
-		ExecuteScriptText/B "\"C:\\Documents and Settings\\user\\Desktop\\ICE Test\\getdata.bat\""
+		//ExecuteScriptText/B "\"C:\\Documents and Settings\\user\\Desktop\\ICE Test\\getdata.bat\""
 		
 		//err = ReadOrdelaHST(RT_fileStr)
 		//err = ReadHeaderAndData(RT_fileStr)
