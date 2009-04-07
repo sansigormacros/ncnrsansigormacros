@@ -25,6 +25,9 @@ Menu "Macros"
 
 	StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"))
 	StrVarOrDefault("root:Packages:NCNRItemStr3b","-"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3b","-"))
+	
+	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
+	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
 end
 
 Function NCNR_AnalysisLoader(itemStr)
@@ -261,3 +264,72 @@ Function HideShowWindowsInList(list,hide)
 	endfor
 	return(0)
 End
+
+// now add for the SANS Live
+Function NCNR_SANSLiveLoader(itemStr)
+	String itemStr
+	
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.02)
+		Abort "Your version of Igor is lower than 6.02, these macros need version 6.02 or higher.... "
+	endif
+	
+	NewDataFolder/O root:Packages 		//create the folder for string variable
+	String/G root:Packages:NCNRItemSt4a = itemStr
+	String/G root:Packages:NCNRItemStr4b = itemStr
+	SVAR gMenuStr4a = root:Packages:NCNRItemStr4a
+	SVAR gMenuStr4b = root:Packages:NCNRItemStr4b
+	
+	String SANSLive_WinList = "RT_Panel;SANS_Data;"
+	//SANSLive_WinList += "FitRPAPanel;SANS_Histo;drawMaskWin;Multiple_Reduce_Panel;NSORT_Panel;NSORT_Graph;CombineTable;ToCombine;Patch_Panel;"
+	//SANSLive_WinList += "ProtocolPanel;Schematic_Layout;Tile_2D;RAW_to_ASCII;Trans_Panel;TransFileTable;ScatterFileTable;Convert_to_Trans;"
+	//SANSLive_WinList += "WorkFileMath;Pref_Panel;Subtract_1D_Panel;Plot_Sub1D;SASCALC;MC_SASCALC;Saved_Configurations;TISANE;"
+	strswitch(itemStr)	// string switch
+		case "Load NCNR SANS Live Data":	
+			Execute/P "INSERTINCLUDE \"Includes_v520\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P ("Init_for_RealTime()")
+		
+			gMenuStr4a = "Hide NCNR SANS Live Data"
+//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
+			gMenuStr4b = "-"
+			BuildMenu "Macros"
+			
+			break						
+		case "Unload NCNR SANS Live Data":	
+		// very dangerous - don't really want to implement this because it will surely crash
+			Execute/P "DELETEINCLUDE \"Includes_v520\""
+			Execute/P "COMPILEPROCEDURES "
+			DoWindow Main_Panel
+			if(V_Flag)
+				DoWindow/K Main_Panel
+			endif
+
+			gMenuStr4a = "Load NCNR SANS Live Data"
+			gMenuStr4b = "-"
+			
+			BuildMenu "Macros"
+			
+			break
+		case "Hide NCNR SANS Live Data":
+			HideShowWindowsInList(SANSLive_WinList,1)
+		
+			gMenuStr4a = "Show NCNR SANS Reduction Macros"
+//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
+			gMenuStr4b = "-"
+			BuildMenu "Macros"
+			
+			break
+		case "Show NCNR SANS Reduction Macros":	
+			HideShowWindowsInList(SANSLive_WinList,0)
+		
+			gMenuStr4a = "Hide NCNR SANS Reduction Macros"
+//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
+			gMenuStr4b = "-"
+			BuildMenu "Macros"
+			
+			break
+		default:
+			Abort "Invalid Menu Selection"
+	endswitch
+
+end
