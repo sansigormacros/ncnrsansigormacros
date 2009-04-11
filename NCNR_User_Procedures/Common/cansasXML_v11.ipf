@@ -629,7 +629,7 @@ END
 
 // ==================================================================
 
-Function/T   TrimWS(str)
+Function/S   TrimWS(str)
     // TrimWhiteSpace (code from Jon Tischler)
     String str
     return TrimWSL(TrimWSR(str))
@@ -637,7 +637,7 @@ End
 
 // ==================================================================
 
-Function/T   TrimWSL(str)
+Function/S   TrimWSL(str)
     // TrimWhiteSpaceLeft (code from Jon Tischler)
     String str
     Variable i, N=strlen(str)
@@ -648,7 +648,7 @@ End
 
 // ==================================================================
 
-Function/T   TrimWSR(str)
+Function/S   TrimWSR(str)
     // TrimWhiteSpaceRight (code from Jon Tischler)
     String str
     Variable i
