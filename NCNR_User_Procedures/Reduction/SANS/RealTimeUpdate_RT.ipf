@@ -26,6 +26,7 @@
 //
 Proc Init_for_RealTime()
 	// initialize the reduction folders as for normal SANS Reduction, but don't draw the main Reduction control panel
+	DoWindow/K RT_Panel
 	InitFolders()
 	InitFakeProtocols()
 	InitGlobals()
@@ -88,6 +89,22 @@ Function Init_RT()
 	if(NVAR_Exists(totalCounts)==0)
 		Variable/G totalCounts=0
 	endif
+	NVAR countTime = root:myGlobals:RT:countTime
+	if(NVAR_Exists(countTime)==0)
+		Variable/G countTime = 0
+	endif
+	NVAR countRate = root:myGlobals:RT:countRate
+	if(NVAR_Exists(countRate)==0)
+		Variable/G countRate = 0
+	endif
+	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
+	if(NVAR_Exists(monitorCountRate)==0)
+		Variable/G monitorCountRate = 0
+	endif
+	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
+	if(NVAR_Exists(monitorCounts)==0)
+		Variable/G monitorCounts = 0
+	endif
 	
 	// set the explicit path to the data file on "relay" computer (the user will be propmted for this)
 	SVAR RT_fileStr=RT_fileStr
@@ -108,7 +125,7 @@ Function AssignBackgroundTask()
 	Variable updateInt=NumVarOrDefault("root:myGlobals:RT:updateInt",5)
 	// set the background task
 	SetBackground BkgUpdateHST()
-	CtrlBackground period=(updateInt*60),noBurst=1		//noBurst prevents rapid "catch-up calls
+	CtrlBackground period=(updateInt*60),noBurst=0		//noBurst prevents rapid "catch-up calls
 	return(0)
 End
 
@@ -116,7 +133,7 @@ End
 //
 Proc RT_Panel() 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(300,350,602,480) /K=2
+	NewPanel /W=(300,350,602,580) /K=2
 	DoWindow/C RT_Panel
 	DoWindow/T RT_Panel,"Real Time Display Controls"
 	ModifyPanel cbRGB=(65535,52428,6168)
@@ -140,18 +157,30 @@ Proc RT_Panel()
 	SetVariable setvar_4,pos={11,31},size={150,20},proc=UpdateInt_SetVarProc,title="Update Interval (s)"
 	SetVariable setvar_4,help={"This is the period of the update"}
 	SetVariable setvar_4,limits={1,3600,0},value= root:myGlobals:RT:updateInt
-	SetVariable setvar_5,pos={11,56},size={150,20},title="Timeout Interval (s)"
-	SetVariable setvar_5,help={"After the timeout interval has expired, the update process will automatically stop"}
-	SetVariable setvar_5,limits={1,3600,0},value= root:myGlobals:RT:timeout
+//	SetVariable setvar_5,pos={11,56},size={150,20},title="Timeout Interval (s)"
+//	SetVariable setvar_5,help={"After the timeout interval has expired, the update process will automatically stop"}
+//	SetVariable setvar_5,limits={1,3600,0},value= root:myGlobals:RT:timeout
 	Button button_1,pos={170,29},size={120,20},proc=LoadRTButtonProc,title="Load Live Data"
 	Button button_1,help={"Load the data file for real-time display"}
 	Button button_2,pos={250,2},size={30,20},proc=RT_HelpButtonProc,title="?"
 	Button button_2,help={"Display the help file for real-time controls"}
 	//Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
 	//Button button_3,help={"Closes the panel and stops the updating process"}
-	SetVariable setvar_6,pos={11,82},size={200,20},title="Total Detector Counts"
-	SetVariable setvar_6,help={"Total counts on the detector, as displayed"}
+	SetVariable setvar_6,pos={11,105},size={250,20},title="Total Detector Counts"
+	SetVariable setvar_6,help={"Total counts on the detector, as displayed"},disable=2
 	SetVariable setvar_6,limits={0,Inf,0},value= root:myGlobals:RT:totalCounts
+	SetVariable setvar_7,pos={11,82},size={250,20},title="                  Count Time"
+	SetVariable setvar_7,help={"Count time, as displayed"},disable=2
+	SetVariable setvar_7,limits={0,Inf,0},value= root:myGlobals:RT:countTime
+	SetVariable setvar_8,pos={11,127},size={250,20},title="  Detector Count Rate"
+	SetVariable setvar_8,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_8,limits={0,Inf,0},value= root:myGlobals:RT:countRate
+	SetVariable setvar_9,pos={11,149},size={250,20},title="           Monitor Counts"
+	SetVariable setvar_9,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_9,limits={0,Inf,0},value= root:myGlobals:RT:monitorCounts
+	SetVariable setvar_10,pos={11,171},size={250,20},title="    Monitor Count Rate"
+	SetVariable setvar_10,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_10,limits={0,Inf,0},value= root:myGlobals:RT:monitorCountRate
 EndMacro
 
 //
@@ -307,7 +336,31 @@ Function Read_RT_File(msgStr)
 	//FillFakeHeader() 		//uses info on the panel, if available
 
 	//data is displayed here, and needs header info
+	WAVE data = $"root:Packages:NIST:RealTime:data"
+	NVAR totCounts = root:myGlobals:RT:totalCounts
+	NVAR countTime = root:myGlobals:RT:countTime
+	NVAR countRate = root:myGlobals:RT:countRate
+	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
+	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
+	SVAR title = root:myGlobals:gCurDispFile
 	
+	title="Real-Time : "+filename
+	//sum the total counts, global variable will automatically update
+	WAVE/Z linear_data = $"root:Packages:NIST:RealTime:linear_data"
+	if(WaveExists(linear_data))
+		totCounts = sum(linear_data, -Inf, Inf )
+	else
+		WAVE/Z data = $"root:Packages:NIST:RealTime:data"
+		totCounts = sum(data, -Inf, Inf )
+	endif
+	//Update other live values
+	Wave intw = root:Packages:NIST:RealTime:IntegersRead
+	Wave realw = root:Packages:NIST:RealTime:RealsRead
+	countTime = intw[2]
+	countRate = totCounts/countTime
+	monitorCounts = realw[0]
+	monitorCountRate = monitorCounts/countTime
+
 	fRawWindowHook()
 	
 	// set the SANS_Data graph to "live" mode to allow fast updating
@@ -487,18 +540,28 @@ End
 Function BkgUpdateHST()
 
 	WAVE data = $"root:Packages:NIST:RealTime:data"
+	Wave intw = root:Packages:NIST:RealTime:IntegersRead
+	Wave realw = root:Packages:NIST:RealTime:RealsRead
+	Wave/T textw = root:Packages:NIST:RealTime:TextRead
+
 	NVAR elapsed=root:myGlobals:RT:elapsed
 	NVAR timeout=root:myGlobals:RT:timeout
 	NVAR updateInt=root:myGlobals:RT:updateInt
-	NVAR totCounts=root:myGlobals:RT:totalCounts
-	
+	NVAR totCounts = root:myGlobals:RT:totalCounts
+	NVAR countTime = root:myGlobals:RT:countTime
+	NVAR countRate = root:myGlobals:RT:countRate
+	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
+	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
+	SVAR title=root:myGlobals:gCurDispFile
+	SVAR sampledesc=root:myGlobals:gCurTitle
+			
 	Variable err=0
 //	Variable t1=ticks
 	SVAR RT_fileStr=root:myGlobals:RT:RT_fileStr
 	
 	elapsed += updateInt
 //	get the new data by re-reading the datafile from the relay computer
-	if(elapsed<timeout)
+//	if(elapsed<timeout)
 	
 		if(WinType("SANS_Data")==0)
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
@@ -509,7 +572,6 @@ Function BkgUpdateHST()
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
 			return(1)		//display not RealTime
 		Endif
-		SVAR title=root:myGlobals:gCurDispFile
 		title="Reading new data..."
 		ControlUpdate/W=SANS_Data/A
 		
@@ -529,7 +591,8 @@ Function BkgUpdateHST()
 		//
 		MapSliderProc("reset", 0, 1)
 		
-		title="Real-Time Data Display"
+		title=textw[0]
+		sampledesc=textw[6]
 		//sum the total counts, global variable will automatically update
 		WAVE/Z linear_data = $"root:Packages:NIST:RealTime:linear_data"
 		if(WaveExists(linear_data))
@@ -538,15 +601,21 @@ Function BkgUpdateHST()
 			WAVE/Z data = $"root:Packages:NIST:RealTime:data"
 			totCounts = sum(data, -Inf, Inf )
 		endif
+		//Update other live values
+		countTime = intw[2]
+		countRate = totCounts/countTime
+		monitorCounts = realw[0]
+		monitorCountRate = monitorCounts/countTime
+			
 		
 //		print "Bkg task time (s) =",(ticks-t1)/60.15
 		return 0		//keep the process going
-	else
-		//timeout, stop the process, reset the button label
-		elapsed=0
-		Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
-		return(1)
-	endif
+//	else
+//		//timeout, stop the process, reset the button label
+//		elapsed=0
+//		Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
+//		return(1)
+//	endif
 	
 End
 
@@ -565,10 +634,13 @@ Function ReadRTAndData(fname)
 	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
 	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
+	Make/O/N=7 $"root:Packages:NIST:RealTime:LogicalsRead"
+
 	
 	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
 	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
 	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
+	Wave logw=$"root:Packages:NIST:RealTime:LogicalsRead"
 	
 	//***NOTE ****
 	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
@@ -683,6 +755,31 @@ Function ReadRTAndData(fname)
 	intw[21] = integer
 	FBinRead/F=3/B=3 refNum, integer
 	intw[22] = integer
+	
+	//Get Logicals	
+	//Read logicals as int - ICE is writing integers here
+	FSetPos refNum,304
+	FBinRead/F=3/B=3 refNum, integer
+	logw[0] = integer
+	FSetPos refNum,316
+	FBinRead/F=3/B=3 refNum, integer
+	logw[1] = integer	
+	FSetPos refNum,340
+	FBinRead/F=3/B=3 refNum, integer
+	logw[2] = integer
+	FSetPos refNum,344
+	FBinRead/F=3/B=3 refNum, integer
+	logw[3] = integer		
+	FSetPos refNum,446
+	FBinRead/F=3/B=3 refNum, integer
+	logw[4] = integer
+	FSetPos refNum,462
+	FBinRead/F=3/B=3 refNum, integer
+	logw[5] = integer
+	FSetPos refNum,466
+	FBinRead/F=3/B=3 refNum, integer
+	logw[6] = integer		
+
 	
 	Close refNum
 	
@@ -836,7 +933,7 @@ Function ReadRTAndData(fname)
 //	endif
 	
 	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
-//	KillWaves/Z w
+	KillWaves/Z w
 	
 	//return the data folder to root
 	SetDataFolder root:
