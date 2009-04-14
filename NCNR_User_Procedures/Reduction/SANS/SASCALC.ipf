@@ -116,6 +116,8 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
 	Variable/G root:Packages:NIST:SAS:gCntTime = 1
 	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0
+	Variable/G root:Packages:NIST:SAS:gUse_MC_XOP = 1				//set to zero to use Igor code
+	Variable/G root:Packages:NIST:SAS:gBeamStopIn = 1			//set to zero for beamstop out (transmission)
 	Variable/G root:Packages:NIST:SAS:gRawCounts = 0
 	Variable/G root:Packages:NIST:SAS:gSaveIndex = 100
 	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
@@ -926,8 +928,15 @@ Function ReCalculateInten(doIt)
 		// get a time estimate, and give the user a chance to exit if they're unsure.
 		t0 = stopMStimer(-2)
 		inputWave[0] = 1000
-//		Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		NVAR useXOP = root:Packages:NIST:SAS:gUse_MC_XOP		//if zero, will use non-threaded Igor code
+		
+		if(useXOP)
+			//use a single thread, otherwise time is dominated by overhead
+			Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		else
+			Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		endif
+		
 		t0 = (stopMSTimer(-2) - t0)*1e-6
 		t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
 		inputWave[0] = imon		//reset
@@ -948,9 +957,12 @@ Function ReCalculateInten(doIt)
 // use a different rng. This works. 1.75x speedup.	
 		t0 = stopMStimer(-2)
 
-		Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-//		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-
+		if(useXOP)
+			Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		else
+			Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		endif
+		
 		t0 = (stopMSTimer(-2) - t0)*1e-6
 		Printf  "MC sim time = %g seconds\r",t0
 		
@@ -959,20 +971,25 @@ Function ReCalculateInten(doIt)
 			trans = 1
 		endif
 
-		Print "counts on detector = ",sum(linear_data,-inf,inf)
+		Print "counts on detector, including transmitted = ",sum(linear_data,-inf,inf)
 		
-		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
+//		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
 //		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
 
 		// or simulate a beamstop
-		Variable rad=beamstopDiam()/2		//beamstop radius in cm
-		rad /= 0.5				//convert cm to pixels
-		rad += 0.					// (no - it cuts off the low Q artificially) add an extra pixel to each side to account for edge
-		Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask
-		WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
-		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
+		NVAR MC_BS_in = root:Packages:NIST:SAS:gBeamStopIn		//if zero, beam stop is "out", as in a transmission measurement
 		
-		linear_data *= tmp_mask
+		Variable rad=beamstopDiam()/2		//beamstop radius in cm
+		if(MC_BS_in)
+			rad /= 0.5				//convert cm to pixels
+			rad += 0.					// (no - it cuts off the low Q artificially) add an extra pixel to each side to account for edge
+			Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask//,root:Packages:NIST:SAS:MC_linear_data
+			WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
+			tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
+			
+			linear_data *= tmp_mask
+		endif
+		
 		results[9] = sum(linear_data,-inf,inf)
 		//		Print "counts on detector not behind beamstop = ",results[9]
 		

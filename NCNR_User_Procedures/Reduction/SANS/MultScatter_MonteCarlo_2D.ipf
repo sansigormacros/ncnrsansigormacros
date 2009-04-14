@@ -425,7 +425,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 						// pnt2x truncates the point to an integer before returning the x
 						// so get it from the wave scaling instead
 						Q0 =left + binarysearchinterp(ran_dev,abs(enoise(1)))*delta
-						theta = Q0/2/Pi*wavelength		//SAS approximation
+						theta = Q0/2/Pi*wavelength		//SAS approximation. 1% error at theta=30 deg (theta/2=15deg)
 						
 						//Print "q0, theta = ",q0,theta
 						
@@ -519,7 +519,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 				
 					// then it must be a transmitted neutron
 					// don't need to calculate, just increment the proper counters
-					MC_linear_data[xCtr][yCtr] += 1
+					
+					MC_linear_data[xCtr+xx/pixsize][yCtr+yy/pixsize] += 1
 					isOn += 1
 					nt[0] += 1
 					
@@ -921,6 +922,8 @@ Window MC_SASCALC() : Panel
 	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
 	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
 	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
+	CheckBox check0_2,pos={216,199+19},size={60,14},title="Beam Stop in",variable= root:Packages:NIST:SAS:gBeamStopIn
+	CheckBox check0_3,pos={216,199+2*19},size={60,14},title="use XOP",variable= root:Packages:NIST:SAS:gUse_MC_XOP
 	
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
@@ -1063,7 +1066,24 @@ Function SaveAsVAXButtonProc(ctrlName) : ButtonControl
 	WriteVAXData("SAS","",0)
 End
 
-
+// calculates the fraction of the scattering that reaches the detector, given the random deviate function
+// and qmin and qmax
+//
+//
+// still some question of the corners and number of pixels per q-bin
+Function FractionReachingDetector(ran_dev,Qmin,Qmax)
+	wave ran_dev
+	Variable Qmin,Qmax
+	
+	Variable r1,r2,frac
+	r1=x2pnt(ran_dev,Qmin)
+	r2=x2pnt(ran_dev,Qmax)
+	
+	// no normalization needed - the full q-range is defined as [0,1]
+	frac = ran_dev[r2] - ran_dev[r1]
+	
+	return frac
+End
 
 
 /////UNUSED, testing routines that have not been updated to work with SASCALC

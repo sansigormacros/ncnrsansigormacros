@@ -1,5 +1,17 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+
+
+///
+// ***********
+// it may be prefereable to COPY the files to the UP folder, so that the installer doesn't "eat" itself 
+// and require users to re-download if they do something wrong. the difficulty with CopyFolder is that
+// on Windows it does a "mix-in" copy, rather than a delete/overwrite all. So it may be better to just leave
+// the installer as is, requiring a fresh copy each time. SRK 10MAR09
+//
+//
+///
+
 // Install the NCNR Macros
 
 //InstallNCNRMacros() // run this function when experiment is loaded

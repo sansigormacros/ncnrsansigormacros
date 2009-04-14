@@ -19,6 +19,7 @@ Proc LoadQxQy()
 
 	LoadWave/G/D/W/A
 	String fileName = S_fileName
+	String path = S_Path
 	Variable numCols = V_flag
 
 	String w0,w1,w2,n0,n1,n2
@@ -45,6 +46,23 @@ Proc LoadQxQy()
 	else
 		NewDataFolder/S $("root:"+baseStr)
 	endif
+	
+	//read in the 18 lines of header (18th line starts w/ ASCII... 19th line is blank)
+	Make/O/T/N=18 header
+	Variable refnum,ii
+	string tmpStr=""
+	Open/R refNum  as (path+filename)
+	ii=0
+	do
+		tmpStr = ""
+		FReadLine refNum, tmpStr
+		header[ii] = tmpStr
+		ii+=1
+	while(ii < 18)		
+	Close refnum
+	
+	// ? parse to get nice variable names? put these in a structure just for fun?
+	
 	
 	////overwrite the existing data, if it exists
 	Duplicate/O $("root:"+n0), $w0
