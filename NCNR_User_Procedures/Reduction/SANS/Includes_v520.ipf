@@ -104,6 +104,8 @@ Menu "SANSBeta"
 	"Convert To Pinhole"
 	"Patch Detector Pixel Size"
 	"Read Detector Pixel Size"
+	"Patch User Account Name"
+	"Read User Account Name"
 	"-"
 	"AddALLToLayout"
 	

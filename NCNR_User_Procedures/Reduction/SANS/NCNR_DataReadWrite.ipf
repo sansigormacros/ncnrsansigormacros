@@ -1303,6 +1303,19 @@ Function WriteSamLabelToHeader(fname,str)
 	return(0)
 End
 
+//user account name, starts at byte 78
+// limit to 11 characters
+Function WriteAcctNameToHeader(fname,str)
+	String fname,str
+	
+	if(strlen(str) > 9)
+		str = str[0,8]
+	endif
+	str = "["+str+"]"
+	WriteTextToHeader(fname,str,78)
+	return(0)
+End
+
 //rewrite an integer field back to the header
 // fname is the full path:name
 // val is the integer value
@@ -1375,6 +1388,14 @@ Function/S getFileCreationDate(fname)
 	
 	return(getStringFromHeader(fname,55,20))
 End
+
+// user account (11 characters @ byte 78)
+Function/S getAcctName(fname)
+	String fname
+	
+	return(getStringFromHeader(fname,78,11))
+End
+
 
 // read a single real value with GBLoadWave
 Function getRealValueFromHeader(fname,start)
@@ -2492,4 +2513,67 @@ Function ExamineHeader(type)
 	print "analysis.imin:\t\t"+num2str(realw[50])
 	print "analysis.imax:\t\t"+num2str(realw[51])
 
+End
+
+// April 2009 - AJJ
+// The new ICE instrument control software was not correctly writing the run.defdir field
+// The format of that field should be [NGxSANSn] where x is 3 or 7 and nn is 0 through 50
+
+Proc PatchUserAccountName(firstFile,lastFile,acctName)
+	Variable firstFile=1,lastFile=100
+	String acctName = "NG3SANS0"
+
+	fPatchUserAccountName(firstFile,lastFile,acctName)
+
+End
+
+Proc ReadUserAccountName(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadUserAccountName(firstFile,lastFile)
+End
+
+// simple utility to patch the user account name in the file headers
+// pass in the account name as a string
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchUserAccountName(lo,hi,acctName)
+	Variable lo,hi
+	String acctName
+	
+	Variable ii
+	String file
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			WriteAcctNameToHeader(file,acctName)
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the user account name stored in the file header
+Function fReadUserAccountName(lo,hi)
+	Variable lo,hi
+	
+	String file,acctName
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			acctName = getAcctName(file)
+			printf "File %d:  Account name = %s\r",ii,acctName
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
 End
