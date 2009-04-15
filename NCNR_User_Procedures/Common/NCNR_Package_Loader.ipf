@@ -274,7 +274,7 @@ Function NCNR_SANSLiveLoader(itemStr)
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
-	String/G root:Packages:NCNRItemSt4a = itemStr
+	String/G root:Packages:NCNRItemStr4a = itemStr
 	String/G root:Packages:NCNRItemStr4b = itemStr
 	SVAR gMenuStr4a = root:Packages:NCNRItemStr4a
 	SVAR gMenuStr4b = root:Packages:NCNRItemStr4b

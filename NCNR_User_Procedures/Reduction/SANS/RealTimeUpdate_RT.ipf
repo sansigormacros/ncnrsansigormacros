@@ -57,57 +57,57 @@ Function Init_RT()
 	NewDataFolder/O root:Packages:NIST:RealTime
 	NewDataFolder/O/S root:myGlobals:RT
 	//create default globals only if they don't already exist, so you don't overwrite user-entered values.
-	NVAR xCtr=xCtr
+	NVAR/Z xCtr=xCtr
 	if(NVAR_Exists(xctr)==0)
 		Variable/G xCtr=110			//pixels
 	endif
-	NVAR yCtr=yCtr
+	NVAR/Z yCtr=yCtr
 	if(NVAR_Exists(yCtr)==0)
 		Variable/G yCtr=64
 	endif
-	NVAR SDD=SDD
+	NVAR/Z SDD=SDD
 	if(NVAR_Exists(SDD)==0)
 		Variable/G SDD=3.84					//in meters
 	endif
-	NVAR lambda=lambda
+	NVAR/Z lambda=lambda
 	if(NVAR_Exists(lambda)==0)
 		Variable/G lambda=6				//angstroms
 	endif
-	NVAR updateInt=updateInt
+	NVAR/Z updateInt=updateInt
 	if(NVAR_Exists(updateInt)==0)
 		Variable/G updateInt=5			//seconds
 	endif
-	NVAR timeout=timeout
+	NVAR/Z timeout=timeout
 	if(NVAR_Exists(timeout)==0)
 		Variable/G timeout=300		//seconds
 	endif
-	NVAR elapsed=elapsed
+	NVAR/Z elapsed=elapsed
 	if(NVAR_Exists(elapsed)==0)
 		Variable/G elapsed=0
 	endif
-	NVAR totalCounts=totalCounts		//total detector counts
+	NVAR/Z totalCounts=totalCounts		//total detector counts
 	if(NVAR_Exists(totalCounts)==0)
 		Variable/G totalCounts=0
 	endif
-	NVAR countTime = root:myGlobals:RT:countTime
+	NVAR/Z countTime = root:myGlobals:RT:countTime
 	if(NVAR_Exists(countTime)==0)
 		Variable/G countTime = 0
 	endif
-	NVAR countRate = root:myGlobals:RT:countRate
+	NVAR/Z countRate = root:myGlobals:RT:countRate
 	if(NVAR_Exists(countRate)==0)
 		Variable/G countRate = 0
 	endif
-	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
+	NVAR/Z monitorCountRate = root:myGlobals:RT:monitorCountRate
 	if(NVAR_Exists(monitorCountRate)==0)
 		Variable/G monitorCountRate = 0
 	endif
-	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
+	NVAR/Z monitorCounts = root:myGlobals:RT:monitorCounts
 	if(NVAR_Exists(monitorCounts)==0)
 		Variable/G monitorCounts = 0
 	endif
 	
 	// set the explicit path to the data file on "relay" computer (the user will be propmted for this)
-	SVAR RT_fileStr=RT_fileStr
+	SVAR/Z RT_fileStr=RT_fileStr
 	if(SVAR_Exists(RT_fileStr)==0)
 		String/G RT_fileStr=""
 	endif

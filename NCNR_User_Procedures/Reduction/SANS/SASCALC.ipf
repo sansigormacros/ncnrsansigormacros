@@ -99,9 +99,9 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gOffset=0
 	Variable/G root:Packages:NIST:SAS:gSamAp=1.27		//samAp diameter in cm
 	Variable/G root:Packages:NIST:SAS:gLambda=6
-	Variable/G root:Packages:NIST:SAS:gDeltaLambda=0.15
+	Variable/G root:Packages:NIST:SAS:gDeltaLambda=0.125		//default value
 	String/G root:Packages:NIST:SAS:gSourceApString = "1.43 cm;2.54 cm;3.81 cm;"
-	String/G root:Packages:NIST:SAS:gDeltaLambdaStr = "0.11;0.15;0.34;"
+	String/G root:Packages:NIST:SAS:gDeltaLambdaStr = "0.109;0.125;0.236;"		//ng3 defaults
 	String/G root:Packages:NIST:SAS:gApPopStr = "1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";other;"
 	Variable/G root:Packages:NIST:SAS:gSamApOther = 10		//non-standard aperture diameter, in mm
 	Variable/G root:Packages:NIST:SAS:gUsingLenses = 0		//0=no lenses, 1=lenses(or prisms)
@@ -169,16 +169,16 @@ Function initNG3()
 	Variable/G b = 0.023
 	Variable/G c = 0.023
 	
-	//fwhm values (new variables)
-	Variable/G fwhm_narrow = 0.11
-	Variable/G fwhm_mid = 0.15
-	Variable/G fwhm_wide = 0.34
+	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
+	Variable/G fwhm_narrow = 0.109
+	Variable/G fwhm_mid = 0.125
+	Variable/G fwhm_wide = 0.236
 	
 	//source apertures (cm)
 	Variable/G a1_0_0 = 1.43
 	Variable/G a1_0_1 = 2.54
 	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 2.5	// after the polarizer
+	Variable/G a1_7_0 = 2.5	// after the polarizer		//removed as an option in 2009
 	Variable/G a1_7_1 = 5.0
 	Variable/G a1_def = 5.00
 	
@@ -368,7 +368,7 @@ Window SASCALC_Panel()
 	SetVariable setvar0_2,pos={6,130},size={90,15},title="Lambda",proc=LambdaSetVarProc
 	SetVariable setvar0_2,limits={4,20,0.1},value= root:Packages:NIST:SAS:gLambda
 	PopupMenu popup0_2,pos={108,127},size={55,20},proc=DeltaLambdaPopMenuProc
-	PopupMenu popup0_2,mode=1,popvalue="0.15",value= root:Packages:NIST:SAS:gDeltaLambdaStr
+	PopupMenu popup0_2,mode=2,value= root:Packages:NIST:SAS:gDeltaLambdaStr
 	Button FreezeButton title="Freeze",size={60,20},pos={307,166}
 	Button FreezeButton proc=FreezeButtonProc
 	Button ClearButton title="Clear",size={60,20},pos={377,166}
@@ -414,16 +414,16 @@ Function UpdateControls()
 				A1str = "! 6 Guides invalid;"
 				mode=1
 				break
-			case 7:
-				A1Str = "2.50 cm;5.00 cm;"
-				mode = 1
-				break
+//			case 7:							// removed as option in 2009
+//				A1Str = "2.50 cm;5.00 cm;"
+//				mode = 1
+//				break
 			default:
 				A1str = "5 cm;"
 				mode=1
 		endswitch
 		//wavelength spread
-		dlStr = "0.11;0.15;0.34;"
+		dlStr = "0.109;0.125;0.236;"		//updated calibration 2009
 		//detector limits
 		SetVariable setvar0,limits={133,1317,1}
 		NVAR detDist=root:Packages:NIST:SAS:gDetDist
