@@ -759,7 +759,7 @@ Function/S MC_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;"
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;FractionReachingDetector;"
 	list = RemoveFromList(tmp, list  ,";")
 	list = RemoveFromList("Monte_SANS", list)
 
@@ -918,7 +918,7 @@ Window MC_SASCALC() : Panel
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
 	SetVariable cntVar,pos={190,73},size={80,15},proc=CountTimeSetVarProc,title="time(s)"
 	SetVariable cntVar,format="%d"
-	SetVariable cntVar,limits={1,60,1},value= root:Packages:NIST:SAS:gCntTime
+	SetVariable cntVar,limits={1,600,1},value= root:Packages:NIST:SAS:gCntTime
 	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
 	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
 	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset

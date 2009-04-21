@@ -80,6 +80,7 @@ Proc CreatePatchGlobals()
 	Variable/G root:myGlobals:Patch:gPV18 = 0
 	Variable/G root:myGlobals:Patch:gPV19 = 0
 	Variable/G root:myGlobals:Patch:gTransCts = 0
+	Variable/G root:myGlobals:Patch:gRadioVal = 0
 End
 
 //button action procedure to select the local path to the folder that
@@ -112,6 +113,49 @@ End
 //returns a list of valid files (raw data, no version numbers, no averaged files)
 //that is semicolon delimited, and is suitable for display in a popup menu
 //
+Function/S xGetValidPatchPopupList()
+
+	//make sure that path exists
+	PathInfo catPathName
+	String path = S_path
+	if (V_flag == 0)
+		Abort "folder path does not exist - use Pick Path button"
+	Endif
+	
+	String newList = ""
+
+	newList = GetRawDataFileList()
+
+	//trim list to include only selected files
+	SVAR match = root:myGlobals:Patch:gPatchMatchStr
+	if(strlen(match) == 0)		//if nothing is entered for a match string, return everything, rather than nothing
+		match = "*"
+	endif
+	
+	newlist = MyMatchList(match,newlist,";")
+	
+	newList = SortList(newList,";",0)
+	Return(newList)
+End
+
+//returns a list of valid files (raw data, no version numbers, no averaged files)
+//that is semicolon delimited, and is suitable for display in a popup menu
+//
+// Uses Grep to look through the any text in the file, which includes the sample label
+// can be very slow across the network, as it re-pops the menu on a selection (since some folks don't hit
+// enter when inputing a filter string)
+//
+// - or -
+// a list or range of run numbers
+// - or - 
+// a SDD (to within 0.001m)
+// - or -
+// * to get everything
+//
+// 	NVAR gRadioVal= root:myGlobals:Patch:gRadioVal
+ // 1== Run # (comma range OK)
+ // 2== Grep the text (SLOW)
+ // 3== filter by SDD (within 0.001 m)
 Function/S GetValidPatchPopupList()
 
 	//make sure that path exists
@@ -127,13 +171,92 @@ Function/S GetValidPatchPopupList()
 
 	//trim list to include only selected files
 	SVAR match = root:myGlobals:Patch:gPatchMatchStr
-	newlist = MyMatchList(match,newlist,";")
+	if(strlen(match) == 0 || cmpstr(match,"*")==0)		//if nothing or "*" entered for a match string, return everything, rather than nothing
+		match = "*"
+	// old way, with simply a wildcard
+		newlist = MyMatchList(match,newlist,";")
+		newList = SortList(newList,";",0)
+		return(newList)
+	endif
 	
+	//loop through all of the files as needed
+	// Grep Note: the \\b sequences limit matches to a word boundary before and after
+	// "boondoggle", so "boondoggles" and "aboondoggle" won't match.
+	
+	String list="",item="",fname,runList="",numStr=""
+	Variable ii,num=ItemsInList(newList),val,sdd
+	NVAR gRadioVal= root:myGlobals:Patch:gRadioVal
+	
+
+
+	// run number list
+	if(gRadioVal == 1)
+//		list = ParseRunNumberList(match)		//slow, file access every time
+//		list = ReplaceString(",", list, ";")
+//		newList = list
+		
+		list = ExpandNumRanges(match)		//now simply comma delimited
+		num=ItemsInList(list,",")
+		for(ii=0;ii<num;ii+=1)
+			item = StringFromList(ii,list,",")
+			val=str2num(item)
+			//make a three character string of the run number
+			if(val<10)
+				numStr = "00"+num2str(val)
+			else
+				if(val<100)
+					numStr = "0"+num2str(val)
+				else
+					numStr = num2str(val)
+				Endif
+			Endif
+			runList += ListMatch(newList,"*"+numStr+"*",";")
+			
+		endfor
+		newlist = runList
+		
+	endif
+	
+	//grep through what text I can find in the VAX binary
+	if(gRadioVal == 2)
+		for(ii=0;ii<num;ii+=1)
+			item=StringFromList(ii, newList , ";")
+//			Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
+			Grep/P=catPathName/Q/E=("(?i)"+match) item
+			if( V_value )	// at least one instance was found
+//				Print "found ", item,ii
+				list += item + ";"
+			endif
+		endfor
+
+		newList = list
+	endif
+	
+	// SDD
+	if(gRadioVal == 3)
+		val = str2num(match)
+//		print val
+		for(ii=0;ii<num;ii+=1)
+			item=StringFromList(ii, newList , ";")
+			fname = path + item
+			sdd = getSDD(fname)
+			if(abs(val - sdd) < 0.001	)		//if numerically within 0.001 meter, they're the same
+				list += item + ";"
+			endif
+		endfor
+		
+		newList = list
+	endif
+
 	newList = SortList(newList,";",0)
 	Return(newList)
 End
 
 
+
+
+// -- no longer refreshes the list - this seems redundant, and can be slow if grepping
+//
 //updates the popup list when the menu is "popped" so the list is 
 //always fresh, then automatically displays the header of the popped file
 //value of match string is used in the creation of the list - use * to get
@@ -149,10 +272,10 @@ Function PatchPopMenuProc(PatchPopup,popNum,popStr) : PopupMenuControl
 	//further trim list to include only RAW SANS files
 	//this will exclude version numbers, .AVE, .ABS files, etc. from the popup (which can't be patched)
 
-	String list = GetValidPatchPopupList()
+//	String list = GetValidPatchPopupList()
 	
-	String/G root:myGlobals:Patch:gPatchList = list
-	ControlUpdate PatchPopup
+//	String/G root:myGlobals:Patch:gPatchList = list
+//	ControlUpdate PatchPopup
 	ShowHeaderButtonProc("SHButton")
 End
 
@@ -176,7 +299,7 @@ Function SetMatchStrProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	
 	String/G root:myGlobals:Patch:gPatchList = list
 	ControlUpdate PatchPopup
-	
+	PopupMenu PatchPopup,mode=1
 End
 
 
@@ -478,7 +601,8 @@ End
 //
 Proc Patch_Panel()
 	PauseUpdate; Silent 1	   // building window...
-	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw SANS Data Files"
+//	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw SANS Data Files"
+	NewPanel /W=(519,85,950,608) as "Patch Raw SANS Data Files"
 	DoWindow/C Patch_Panel
 	ModifyPanel cbRGB=(1,39321,19939)
 	ModifyPanel fixedSize=1
@@ -498,18 +622,18 @@ Proc Patch_Panel()
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
 	Button helpButton,pos={400,3},size={25,20},proc=ShowPatchHelp,title="?"
 	Button helpButton,help={"Show the help file for patching raw data headers"}
-	PopupMenu PatchPopup,pos={4,40},size={156,19},proc=PatchPopMenuProc,title="File(s) to Patch"
+	PopupMenu PatchPopup,pos={4,37},size={156,19},proc=PatchPopMenuProc,title="File(s) to Patch"
 	PopupMenu PatchPopup,help={"The displayed file is the one that will be edited. The entire list will be edited if \"Change All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh. \r List items are selected from the file based on MatchString"}
 	PopupMenu PatchPopup,mode=1,popvalue="none",value= #"root:myGlobals:Patch:gPatchList"
-	Button SHButton,pos={324,37},size={100,20},proc=ShowHeaderButtonProc,title="Show Header"
-	Button SHButton,help={"This will display the header of the file indicated in the popup menu."}
-	Button CHButton,pos={314,60},size={110,20},proc=ChangeHeaderButtonProc,title="Change Header"
+//	Button SHButton,pos={324,37},size={100,20},proc=ShowHeaderButtonProc,title="Show Header"
+//	Button SHButton,help={"This will display the header of the file indicated in the popup menu."}
+	Button CHButton,pos={314,37},size={110,20},proc=ChangeHeaderButtonProc,title="Change Header"
 	Button CHButton,help={"This will change the checked values (ONLY) in the single file selected in the popup."}
-	SetVariable PMStr,pos={6,65},size={174,13},proc=SetMatchStrProc,title="Match String"
+	SetVariable PMStr,pos={6,63},size={174,13},proc=SetMatchStrProc,title="Match String"
 	SetVariable PMStr,help={"Enter the search string to narrow the list of files. \"*\" is the wildcard character. After entering, \"pop\" the menu to refresh the file list."}
 	SetVariable PMStr,font="Courier",fSize=10
 	SetVariable PMStr,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPatchMatchStr
-	Button ChAllButton,pos={245,84},size={180,20},proc=ChAllHeadersButtonProc,title="Change All Headers in List"
+	Button ChAllButton,pos={245,60},size={180,20},proc=ChAllHeadersButtonProc,title="Change All Headers in List"
 	Button ChAllButton,help={"This will change the checked values (ONLY) in ALL of the files in the popup list, not just the top file. If the \"change\" checkbox for the item is not checked, nothing will be changed for that item."}
 	Button DoneButton,pos={310,489},size={110,20},proc=DoneButtonProc,title="Done Patching"
 	Button DoneButton,help={"When done Patching files, this will close this control panel."}
@@ -620,6 +744,34 @@ Proc Patch_Panel()
 	CheckBox checkPV18,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
 	CheckBox checkPV19,pos={18,450},size={20,20},title="",value=0
 	CheckBox checkPV19,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox check0,pos={18,80},size={40,15},title="Run #",value= 1,mode=1,proc=MatchCheckProc
+	CheckBox check1,pos={78,80},size={40,15},title="Text",value= 0,mode=1,proc=MatchCheckProc
+	CheckBox check2,pos={138,80},size={40,15},title="SDD",value= 0,mode=1,proc=MatchCheckProc
+
+End
+
+
+Function MatchCheckProc(name,value)
+	String name
+	Variable value
+	
+	NVAR gRadioVal= root:myGlobals:Patch:gRadioVal
+	
+	strswitch (name)
+		case "check0":
+			gRadioVal= 1
+			break
+		case "check1":
+			gRadioVal= 2
+			break
+		case "check2":
+			gRadioVal= 3
+			break
+	endswitch
+	CheckBox check0,value= gRadioVal==1
+	CheckBox check1,value= gRadioVal==2
+	CheckBox check2,value= gRadioVal==3
 End
 
 //This function will read only the selected values editable in the patch panel
