@@ -80,7 +80,7 @@ Proc CreatePatchGlobals()
 	Variable/G root:myGlobals:Patch:gPV18 = 0
 	Variable/G root:myGlobals:Patch:gPV19 = 0
 	Variable/G root:myGlobals:Patch:gTransCts = 0
-	Variable/G root:myGlobals:Patch:gRadioVal = 0
+	Variable/G root:myGlobals:Patch:gRadioVal = 1
 End
 
 //button action procedure to select the local path to the folder that
@@ -300,6 +300,7 @@ Function SetMatchStrProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String/G root:myGlobals:Patch:gPatchList = list
 	ControlUpdate PatchPopup
 	PopupMenu PatchPopup,mode=1
+	ShowHeaderButtonProc("SHButton")
 End
 
 

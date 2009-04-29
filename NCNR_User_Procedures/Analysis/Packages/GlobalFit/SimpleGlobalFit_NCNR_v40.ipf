@@ -112,10 +112,11 @@ Window SimpGFPanel() : Panel
 	ListBox list0 titleWave=root:Packages:NewGlobalFit:titles//,userColumnResize=1
 	ListBox list0 widths={30,50,80,80}
 	
-	Button button_0,pos={344,13},size={100,20},title="Do Fit"
+	Button button_0,pos={344,13},size={100,20},title="Do The Fit"
 	Button button_0 proc=SGF_DoFitButtonProc
 	Button button_1,pos={369,173},size={50,20},proc=SaveCheckStateButtonProc,title="Save"
 	Button button_2,pos={429,173},size={70,20},proc=RestoreCheckStateButtonProc,title="Restore"
+	Button button_3,pos={500,13},size={100,20},proc=SGFitHelpButtonProc,title="Help"
 	
 	Edit/W=(14,174,348,495)/HOST=# 
 	ModifyTable format(Point)=1,width(Point)=34
@@ -123,6 +124,24 @@ Window SimpGFPanel() : Panel
 	SetActiveSubwindow ##
 	
 EndMacro
+
+//open the Help file for the Simple Global Fit
+Function SGFitHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Simple Global Fit"
+			if(V_flag !=0)
+				DoAlert 0,"The Simple Global Fit Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
 
 // save the state of the checkboxes
 Function SaveCheckStateButtonProc(ba) : ButtonControl

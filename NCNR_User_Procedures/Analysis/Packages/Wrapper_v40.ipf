@@ -23,7 +23,8 @@ Function Init_WrapperPanel()
 	//Set this variable to 1 to force use of trapezoidal integration routine for USANS smearing
 	Variable/G root:Packages:NIST:USANSUseTrap = 0
 	Variable/G root:Packages:NIST:USANS_dQv = 0.117
-	
+	Variable/G root:Packages:NIST:gUseGenCurveFit = 0			//set to 1 to use genetic optimization
+			
 	//Ugly. Put this here to make sure things don't break
 	String/G root:Packages:NIST:gXMLLoader_Title
 	
@@ -216,7 +217,7 @@ Function/S W_FunctionPopupList()
 	list = RemoveFromList("MakeBSMask", list)
 	
 	// MOTOFIT/GenFit bits
-	tmp = "GEN_allatoncefitfunc;GEN_fitfunc;GetCheckBoxesState;MOTO_GFFitAllAtOnceTemplate;MOTO_GFFitFuncTemplate;MOTO_NewGF_SetXWaveInList;MOTO_NewGlblFitFunc;MOTO_NewGlblFitFuncAllAtOnce;"
+	tmp = "GEN_allatoncefitfunc;GEN_fitfunc;GetCheckBoxesState;MOTO_GFFitAllAtOnceTemplate;MOTO_GFFitFuncTemplate;MOTO_NewGF_SetXWaveInList;MOTO_NewGlblFitFunc;MOTO_NewGlblFitFuncAllAtOnce;GeneticFit_UnSmearedModel;GeneticFit_SmearedModel;"
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
@@ -757,11 +758,13 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	WAVE fitYw = $(DF+"FitYw")
 	fitYw = NaN
 	
-	Variable useRes=0
+	Variable useRes=0,isUSANS=0,val
 	if(stringmatch(funcStr, "Smear*"))		// if it's a smeared function, need a struct
 		useRes=1
 	endif
-	
+	if(dimsize(resW,1) > 4)
+		isUSANS=1
+	endif
 	// do not construct constraints for any of the coefficients that are being held
 	// -- this will generate an "unknown error" from the curve fitting
 	Make/O/T/N=0 constr
@@ -792,7 +795,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	//if useCursors, and the data is USANS, need to recalculate the matrix if the range is new
 	Variable pt1,pt2,newN,mPt1,mPt2
 	String noteStr
-	if(useCursors && (dimsize(resW,1) > 4) )
+	if(useCursors && isUSANS )
 		//where are the cursors, and what is the status of the current matrix?
 		if(pcsr(A) > pcsr(B))
 			pt1 = pcsr(B)
@@ -813,14 +816,23 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		
 		Wave trimResW=$(DF+folderStr+"_res"+"t")	//put the trimmed resW in the struct for the fit!
 		Wave fs.resW=trimResW
-
+	endif
+	if(useCursors)
+		//find the points so that genetic optimization can use them
+		if(pcsr(A) > pcsr(B))
+			pt1 = pcsr(B)
+			pt2 = pcsr(A)
+		else
+			pt1 = pcsr(A)
+			pt2 = pcsr(B)
+		endif
 	endif
 		
 // create these variables so that FuncFit will set them on exit
 	Variable/G V_FitError=0				//0=no err, 1=error,(2^1+2^0)=3=singular matrix
 	Variable/G V_FitQuitReason=0		//0=ok,1=maxiter,2=user stop,3=no chisq decrease
 
-	
+	NVAR useGenCurveFit = root:Packages:NIST:gUseGenCurveFit
 // don't use the auto-destination with no flag, it doesn't appear to work correctly
 // dispatch the fit
 
@@ -833,6 +845,27 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 
 	do
 //		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
+
+
+		if(useGenCurveFit)
+		
+#if !(exists("GenCurveFit"))
+			// XOP not available
+			useGenCurveFit = 0
+			Abort "Genetic Optimiztion XOP not available. Reverting to normal optimization."	
+#endif
+			//send everything to a function, to reduce the clutter
+			// useEps and useConstr are not needed
+			// pass the structure to get the current waves, including the trimmed USANS matrix
+			Variable chi,pt
+
+			chi = DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,getHStr(hold),val,lolim,hilim,pt1,pt2)
+			pt = val
+
+			break
+			
+		endif
+		
 		
 		if(useRes && useEps && useCursors && useConstr)		//do it all
 			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs
@@ -939,16 +972,30 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	// Don't plot the full curve if cursors were used (set fitYw to NaN on entry...)
 	String traces=TraceNameList("", ";", 1 )		//"" as first parameter == look on the target graph
 	if(strsearch(traces,"FitYw",0) == -1)
-		AppendToGraph FitYw vs xw
+		if(useGenCurveFit && useCursors)
+			WAVE trimX = trimX
+			AppendtoGraph fitYw vs trimX
+		else
+			AppendToGraph FitYw vs xw
+		endif
 	else
 		RemoveFromGraph FitYw
-		AppendToGraph FitYw vs xw
+		if(useGenCurveFit && useCursors)
+			WAVE trimX = trimX
+			AppendtoGraph fitYw vs trimX
+		else
+			AppendToGraph FitYw vs xw
+		endif
 	endif
 	ModifyGraph lsize(FitYw)=2,rgb(FitYw)=(0,0,0)
 	
 	DoUpdate		//force update of table and graph with fitted values (why doesn't this work? - the table still does not update)
 	
 	// report the results (to the panel?)
+	if(useGenCurveFit)
+		V_chisq = chi
+		V_npnts = pt
+	endif
 	print "V_chisq = ",V_chisq
 	print cw
 	WAVE/Z w_sigma

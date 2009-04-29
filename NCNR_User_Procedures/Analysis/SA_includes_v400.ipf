@@ -15,6 +15,7 @@
 #include "NIST_XML_V40"					//added September 2008
 #include "PlotUtilsMacro_v40"			version>=4.00
 #include "PlotManager_v40"				version>=4.00
+#include "NCNR_GenFitUtils"			// April 2009, compiles OK if XOP not present
 
 #include "USANS_SlitSmearing_v40"
 #include "WriteModelData_v40"
@@ -38,6 +39,8 @@ Menu "SANS Models"
 		"Simple Global Fitting",Execute/P "INSERTINCLUDE \"GlobalFit2_NCNR_v40\"";Execute/P "INSERTINCLUDE \"SimpleGlobalFit_NCNR_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SimpleGlobalFit()"
 		"Determine Invariant",Execute/P "INSERTINCLUDE \"Invariant_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Make_Invariant_Panel()"
 		"Do Linear Fits",Execute/P "INSERTINCLUDE \"LinearizedFits_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "A_OpenFitPanel()"
+		GenOpFlagEnable()+"Genetic Optimization Enabled", Init_GenOp()
+		GenOpFlagDisable()+"Genetic Optimization Disabled", UnSet_GenOp()
 	End
 	"-"
 	Submenu "2D Utilities"
