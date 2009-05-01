@@ -114,7 +114,7 @@ End
 
 
 // always asks for a file name
-// - and right now, always expect 6-column data!
+// - and right now, always expect 6-column data, either SANS or USANS (re-writes -dQv)
 Function fReWrite1DData(folderStr,delim,term)
 	String folderStr,delim,term
 	
@@ -124,10 +124,10 @@ Function fReWrite1DData(folderStr,delim,term)
 	//setup delimeter and terminator choices
 	If(cmpstr(delim,"tab")==0)
 		//tab-delimeted
-		formatStr="%15.4g\t%15.4g\t%15.4g\t%15.4g\t%15.4g\t%15.4g"
+		formatStr="%15.8g\t%15.8g\t%15.8g\t%15.8g\t%15.8g\t%15.8g"
 	else
 		//use 3 spaces
-		formatStr="%15.4g   %15.4g   %15.4g   %15.4g   %15.4g   %15.4g"
+		formatStr="%15.8g   %15.8g   %15.8g   %15.8g   %15.8g   %15.8g"
 	Endif
 	If(cmpstr(term,"CR")==0)
 		formatStr += "\r"
@@ -160,9 +160,21 @@ Function fReWrite1DData(folderStr,delim,term)
 	endif
 	
 	Duplicate/O qw qbar,sigQ,fs
-	sigQ = resw[p][0]
-	qbar = resw[p][1]
-	fs = resw[p][2]
+	if(dimsize(resW,1) > 4)
+		//it's USANS put -dQv back in the last 3 columns
+		NVAR/Z dQv = USANS_dQv
+		if(NVAR_Exists(dQv) == 0)
+			Abort "It's USANS data, and I don't know what the slit height is."
+		endif
+		sigQ = -dQv
+		qbar = -dQv
+		fs = -dQv
+	else
+		//it's SANS
+		sigQ = resw[p][0]
+		qbar = resw[p][1]
+		fs = resw[p][2]
+	endif
 	
 	if(dialog)
 		PathInfo/S catPathName
