@@ -312,3 +312,272 @@ Function GetXYRange(x1,x2,y1,y2)
 //	Print x1,x2,y1,y2
 	Return(0)
 End
+
+
+/////////////////////
+//
+// for the DIV "protocol" panel, I probably need to have parts of the protocol panel initialized...
+// folders are generated at the startup initialization, before protocol panel
+//
+Proc BuildDIVPanel()
+	DoWindow/F DIV_Panel
+	if(V_flag==0)
+		InitDIVPanel()
+		DIV_Panel()
+	Endif
+End
+
+//initialization procedure for the protocol panel
+//note that :gAbsStr is also shared (common global) to that used in 
+//the questionnare form of the protcol (see protocol.ipf)
+//
+//0901, uses 8 points in protocol wave
+Proc InitDIVPanel()
+
+	//set up the global variables needed for the protocol panel
+	//global strings to put in a temporary protocol textwave
+	Variable ii=0,nsteps=8
+	String waveStr="DIV_Protocol"
+	SetDataFolder root:myGlobals:Protocols
+	Make/O/T/N=(nsteps) $"root:myGlobals:Protocols:DIV_Protocol" = ""
+	
+	DIV_protocol[2] = "none"
+	DIV_protocol[3] = "none"
+	DIV_protocol[4] = "none"
+	DIV_protocol[5] = "AVTYPE=none;"
+	DIV_protocol[6] = "DRK=none,DRKMODE=0,"
+	
+
+	String/G root:myGlobals:Protocols:gPlex="Plex"
+	String/G root:myGlobals:Protocols:gPlexBgd="Bgd"
+	String/G root:myGlobals:Protocols:gPlexEmp="Emp"
+	String/G root:myGlobals:Protocols:gPlex_off="Plex offset"
+	String/G root:myGlobals:Protocols:gPlexBgd_off="Bgd offset"
+	String/G root:myGlobals:Protocols:gPlexEmp_off="Emp offset"
+	String/G root:myGlobals:Protocols:gPlexName="Plex_date.div"
+	
+	Variable/G root:myGlobals:Protocols:gPlexX1=45
+	Variable/G root:myGlobals:Protocols:gPlexX2=87
+	Variable/G root:myGlobals:Protocols:gPlexY1=43
+	Variable/G root:myGlobals:Protocols:gPlexY2=85
+	Variable/G root:myGlobals:Protocols:gPlexTrans=0.48
+	
+	SetDataFolder root:
+	
+End
+
+// load in one on-center file and show the box
+//
+Function ShowBoxButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			//parse for the first run number
+			SVAR gPlex = root:myGlobals:Protocols:gPlex
+			String item,fname
+			
+			item = StringFromList(0, gPlex ,",")
+			fname = FindFileFromRunNumber(str2num(item))
+			if(strlen(fname) == 0)
+				Abort "Bad file number in Plex field"
+			endif
+			// load the file
+			ReadHeaderAndData(fname)	//this is the full Path+file
+			UpdateDisplayInformation("RAW")
+			//draw a box of the specified size. This is persistent on the display as you scroll to the offset data
+			NVAR x1 = root:myGlobals:Protocols:gPlexX1
+			NVAR x2 = root:myGlobals:Protocols:gPlexX2
+			NVAR y1 = root:myGlobals:Protocols:gPlexY1
+			NVAR y2 = root:myGlobals:Protocols:gPlexY2
+			
+			SetDrawLayer/W=SANS_Data/K UserFront			//set the layer, and clear it
+			SetDrawEnv/W=SANS_Data xcoord=bottom,ycoord=left,fillpat=0,linethick=3,linefgc=(65535, 65535, 65535)
+			DrawRect/W=SANS_Data x1, y2, x2, y1
+						
+			break
+	endswitch
+
+	return 0
+End
+
+// do everything...
+//
+Function GenerateDIVButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SVAR gPlex = root:myGlobals:Protocols:gPlex
+			SVAR gPlexBgd = root:myGlobals:Protocols:gPlexBgd
+			SVAR gPlexEmp = root:myGlobals:Protocols:gPlexEmp
+			SVAR gPlex_off = root:myGlobals:Protocols:gPlex_off
+			SVAR gPlexBgd_off = root:myGlobals:Protocols:gPlexBgd_off
+			SVAR gPlexEmp_off = root:myGlobals:Protocols:gPlexEmp_off
+			SVAR gPlexName = root:myGlobals:Protocols:gPlexName
+			
+			NVAR X1 = root:myGlobals:Protocols:gPlexX1
+			NVAR X2 = root:myGlobals:Protocols:gPlexX2
+			NVAR Y1 = root:myGlobals:Protocols:gPlexY1
+			NVAR Y2 = root:myGlobals:Protocols:gPlexY2
+			NVAR gPlexTrans = root:myGlobals:Protocols:gPlexTrans
+			
+			WAVE/T proto = $"root:myGlobals:Protocols:DIV_Protocol"
+			
+			String item,fname,str
+			Variable ii,num
+		// reduce the on-center
+			//patch trans
+			num = ItemsInList(gPlex, ",")
+			for(ii=0;ii<num;ii+=1)
+				item = StringFromList(ii, gPlex ,",")
+				fname = FindFileFromRunNumber(str2num(item))
+				if(strlen(fname) == 0)
+					Abort "Bad file number in no offset Plex field"
+				endif
+				WriteTransmissionToHeader(fname,gPlexTrans)
+			endfor
+			
+			//go through the protocol
+			str = ParseRunNumberList(gPlexBgd)
+			if(strlen(str) > 0)
+				proto[0] = str
+			else
+				Abort "Bad file number in no offset Bgd"
+			endif
+			str = ParseRunNumberList(gPlexEmp)
+			if(strlen(str) > 0)
+				proto[1] = str
+			else
+				Abort "Bad file number in no offset Emp"
+			endif
+			str = ParseRunNumberList(gPlex)
+			if(strlen(str) > 0)
+				ExecuteProtocol("root:myGlobals:Protocols:DIV_Protocol",str)
+			else
+				Abort "Bad file number in no offset Plex"
+			endif
+			// move it into STO
+			Execute "CopyWorkFolder(\"COR\",\"STO\")"
+			
+			
+			
+		// reduce the off-center, keep in STO
+			//patch trans
+			num = ItemsInList(gPlex_off, ",")
+			for(ii=0;ii<num;ii+=1)
+				item = StringFromList(ii, gPlex_off ,",")
+				fname = FindFileFromRunNumber(str2num(item))
+				if(strlen(fname) == 0)
+					Abort "Bad file number in Plex field"
+				endif
+				WriteTransmissionToHeader(fname,gPlexTrans)
+			endfor
+			
+			//go through the protocol
+			str = ParseRunNumberList(gPlexBgd_off)
+			if(strlen(str) > 0)
+				proto[0] = str
+			else
+				Abort "Bad file number in offset Bgd"
+			endif
+			str = ParseRunNumberList(gPlexEmp_off)
+			if(strlen(str) > 0)
+				proto[1] = str
+			else
+				Abort "Bad file number in offset Emp"
+			endif
+			str = ParseRunNumberList(gPlex_off)
+			if(strlen(str) > 0)
+				ExecuteProtocol("root:myGlobals:Protocols:DIV_Protocol",str)
+			else
+				Abort "Bad file number in offset Emp"
+			endif
+			
+			
+			
+		// replace the patch
+		// on-center data is changed (STO)
+			ReplaceDataBlock("STO","COR",x1,x2,y1,y2)
+		// normalize
+			NormalizeDiv("STO")
+			UpdateDisplayInformation("STO")
+		//write out the new data file
+			WriteVAXWorkFile("STO")
+					
+			break
+	endswitch
+
+	return 0
+End
+
+// if a dark color is used, then
+//¥SetVariable setvar0 labelBack=(65535,65535,65535)
+// for each variable will give a white background to the label text
+Window DIV_Panel() : Panel
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(594,44,932,570)/K=1 as "DIV_Panel"
+//	ModifyPanel cbRGB=(35867,28177,65535)		//purple
+//	ModifyPanel cbRGB=(1,16019,65535)				//electric blue
+	ModifyPanel cbRGB=(36631,59604,33902)		//spring green
+	SetDrawLayer UserBack
+	DrawRect 71,324,145,391
+	TitleBox title0,pos={14,16},size={50,20},title="No Offset"
+	TitleBox title0_1,pos={17,125},size={35,20},title="Offset"
+	SetVariable setvar0,pos={15,46},size={250,15},title="PLEX",value= root:myGlobals:Protocols:gPlex
+	SetVariable setvar0_1,pos={16,69},size={250,15},title="EMP",value= root:myGlobals:Protocols:gPlexEmp
+	SetVariable setvar0_2,pos={14,92},size={250,15},title="BGD",value= root:myGlobals:Protocols:gPlexBgd
+	SetVariable setvar1,pos={17,158},size={250,15},title="PLEX",value= root:myGlobals:Protocols:gPlex_off
+	SetVariable setvar001,pos={18,181},size={250,15},title="EMP",value= root:myGlobals:Protocols:gPlexEmp_off
+	SetVariable setvar002,pos={16,204},size={250,15},title="BGD",value= root:myGlobals:Protocols:gPlexBgd_off
+	SetVariable setvar002_1,pos={14,251},size={150,15},title="Transmission"
+	SetVariable setvar002_1,limits={0,1,0.01},value= root:myGlobals:Protocols:gPlexTrans
+//	SetVariable setvar003,pos={16,441},size={250,15},title="DIV FILE NAME"
+//	SetVariable setvar003,value= root:myGlobals:Protocols:gPlexName
+	Button button0,pos={226,325},size={90,20},proc=ShowBoxButtonProc,title="Show Box"
+	Button button1,pos={25,441},size={150,20},proc=GenerateDIVButtonProc,title="Generate DIV File"
+	Button button2,pos={25,481},size={150,20},proc=ReloadDIVButtonProc,title="Load DIV File"
+	Button button3,pos={240,10},size={50,20},proc=DIVHelpButtonProc,title="Help"
+	SetVariable setvar00201,pos={84,297},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexY2
+	SetVariable setvar00202,pos={15,350},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexX1
+	SetVariable setvar00203,pos={85,399},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexY1
+	SetVariable setvar00204,pos={156,348},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexX2
+EndMacro
+
+
+// load in a DIV file, print out the stats, display in SANS_Data
+//
+Function ReloadDIVButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "ReadWork_DIV()"
+			WaveStats root:Packages:NIST:DIV:data
+			Print "*"			
+//			Execute "ChangeDisplay(\"DIV\")"	
+			break
+	endswitch
+
+	return 0
+End
+
+//
+Function DIVHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial[Detector Sensitivity File]"
+			if(V_flag !=0)
+				DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End

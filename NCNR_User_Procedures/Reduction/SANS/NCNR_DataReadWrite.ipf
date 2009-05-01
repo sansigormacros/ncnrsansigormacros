@@ -466,12 +466,13 @@ Proc ReadWork_DIV()
 	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
 	
 	String waveStr = "root:Packages:NIST:DIV:data"
-	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
-	ModifyImage '' ctab= {*,*,YellowHot,0}
+//	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
+//	ModifyImage '' ctab= {*,*,YellowHot,0}
 	//Display;AppendImage $waveStr
 	
 	//change the title string to WORK.DIV, rather than PLEXnnn_TST_asdfa garbage
-	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
+//	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
+	ChangeDisplay("DIV")
 	
 	SetDataFolder root:		//(redundant)
 //	Silent 0

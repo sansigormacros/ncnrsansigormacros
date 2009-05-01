@@ -184,7 +184,9 @@ End
 Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	MakeDIVFile("","")			
+	//new, May 2009. show a full panel for input
+	BuildDIVPanel()
+//	MakeDIVFile("","")			
 End
 
 

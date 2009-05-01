@@ -72,6 +72,18 @@ Proc BuildUSANSNotebook(matchStr)
 	list = RemoveFromList(tmp, list  ,";")
 	print tmp
 	
+	// remove the ".DS_Store"
+	list = RemoveFromList(".DS_Store",list,";")
+	
+	// remove .cor, .dsm reduced data files
+	tmp = ListMatch(list,"*.cor",";")		
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = ListMatch(list,"*.dsm",";")		
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = ListMatch(list,"*.pxp",";")		
+	list = RemoveFromList(tmp, list  ,";")
+	
+	
 	//loop through all of the files in the list, reading header information 
 	String str,fullName
 	numitems = ItemsInList(list,";")
@@ -160,4 +172,3 @@ Function WriteUCatToNotebook(fname,sname)
 //	Notebook CatWin,textRGB=(50000,0,0),fStyle = 1,text=temp
 
 End
-

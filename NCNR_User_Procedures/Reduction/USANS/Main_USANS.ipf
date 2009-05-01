@@ -101,7 +101,8 @@ Proc Init_MainUSANS()
 	
 	//dummy waves for bkg and emp levels
 	Make/O $(USANSFolder+":EMP:empLevel"),$(USANSFolder+":BKG:bkgLevel")
-	//WHY WHY WHY?????
+	//WHY WHY WHY????? - because dependencies can only involve globals. No locals allowed, since the dependency
+	// must remain in existence after the function is finished
 	//Explicit dependency
 	root:Packages:NIST:USANS:EMP:empLevel := root:Packages:NIST:USANS:Globals:MainPanel:gEmpCts //dependency to connect to SetVariable in panel
 	root:Packages:NIST:USANS:BKG:bkgLevel := root:Packages:NIST:USANS:Globals:MainPanel:gBkgCts

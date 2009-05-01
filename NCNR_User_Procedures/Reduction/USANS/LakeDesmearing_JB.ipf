@@ -520,7 +520,7 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	Variable lo,hi,dialog		//=1 will present dialog for name
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	NVAR XMLO = $(USANSFolder+"gUseXMLOutput")
+	NVAR XMLO = $(USANSFolder+":Globals:gUseXMLOutput")
 	
 	String termStr="\r\n"
 	String destStr = USANSFolder+":DSM:"
