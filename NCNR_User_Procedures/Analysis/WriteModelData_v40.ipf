@@ -100,3 +100,89 @@ Function fWriteModelData(xwave,ywave,delim,term)
 	return(0)
 End
 
+
+/////////////
+Proc ReWrite1DData(folderStr,delim,term)
+	String folderStr,delim,term
+	Prompt folderStr,"Data Set",popup,W_DataSetPopupList()
+	Prompt delim,"delimeter",popup,"tab;space;"
+	Prompt term,"line termination",popup,"CR;LF;CRLF;"
+		
+	fReWrite1DData(folderStr,delim,term)
+	
+End
+
+
+// always asks for a file name
+// - and right now, always expect 6-column data!
+Function fReWrite1DData(folderStr,delim,term)
+	String folderStr,delim,term
+	
+	String formatStr="",fullpath=""
+	Variable refnum,dialog=1
+	
+	//setup delimeter and terminator choices
+	If(cmpstr(delim,"tab")==0)
+		//tab-delimeted
+		formatStr="%15.4g\t%15.4g\t%15.4g\t%15.4g\t%15.4g\t%15.4g"
+	else
+		//use 3 spaces
+		formatStr="%15.4g   %15.4g   %15.4g   %15.4g   %15.4g   %15.4g"
+	Endif
+	If(cmpstr(term,"CR")==0)
+		formatStr += "\r"
+	Endif
+	If(cmpstr(term,"LF")==0)
+		formatStr += "\n"
+	Endif
+	If(cmpstr(term,"CRLF")==0)
+		formatStr += "\r\n"
+	Endif
+	
+	//make sure the waves exist
+	SetDataFolder $("root:"+folderStr)
+	WAVE/Z qw = $(folderStr+"_q")
+	WAVE/Z iw = $(folderStr+"_i")
+	WAVE/Z sw = $(folderStr+"_s")
+	WAVE/Z resw = $(folderStr+"_res")
+	
+	if(WaveExists(qw) == 0)
+		Abort "q is missing"
+	endif
+	if(WaveExists(iw) == 0)
+		Abort "i is missing"
+	endif
+	if(WaveExists(sw) == 0)
+		Abort "s is missing"
+	endif
+	if(WaveExists(resw) == 0)
+		Abort "Resolution information is missing."
+	endif
+	
+	Duplicate/O qw qbar,sigQ,fs
+	sigQ = resw[p][0]
+	qbar = resw[p][1]
+	fs = resw[p][2]
+	
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as",fname=folderStr+".txt")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	
+	Open refnum as fullpath
+	
+	fprintf refnum,"Modified data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
+	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
+	Close refnum
+	
+	KillWaves/Z sigQ,qbar,fs
+	
+	SetDataFolder root:
+	return(0)
+End

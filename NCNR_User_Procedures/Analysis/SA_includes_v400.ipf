@@ -32,6 +32,7 @@ Menu "SANS Models"
 	"Load and Plot Manager", Show_Plot_Manager()
 	"Freeze Model"
 	"Write Model Data"
+	"ReWrite Experimental Data",ReWrite1DData()
 	"-"
 	Submenu "Packages"
 		"Sum Two Models",Execute/P "INSERTINCLUDE \"SumSANSModels_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SumModelPanel()"
