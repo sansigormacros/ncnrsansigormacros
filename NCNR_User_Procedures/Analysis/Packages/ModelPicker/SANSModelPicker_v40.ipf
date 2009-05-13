@@ -83,7 +83,7 @@ Proc Init_FileList()
 		//
 		// first time, create wave from built-in list
 		FileList_BuiltInList()		//makes sure that the wave exists
-		FileList_GetListButtonProc()	//converts it into a list for the panel
+		FileList_GetListButtonProc("")	//converts it into a list for the panel
 		
 		// "include" nothing to force a load of the utility procedures
 		FileList_InsertButtonProc("") 
@@ -127,7 +127,7 @@ Proc FileList_BuiltInList()
 
 ////paste here... after deleting the old make statement and list
 	
-  Make/O/T/N=85  SANS_Model_List
+  Make/O/T/N=86  SANS_Model_List
 
   SANS_Model_List[0] = "BE_Polyelectrolyte.ipf"
   SANS_Model_List[1] = "CoreShellCylinder.ipf"
@@ -215,6 +215,8 @@ Proc FileList_BuiltInList()
   SANS_Model_List[82] = "ConvexLens.ipf"
   SANS_Model_List[83] = "CappedCylinder.ipf"
   SANS_Model_List[84] = "Barbell.ipf"
+  //2009 Models
+  SANS_Model_List[85] = "PolyCoreBicelle.ipf"
 
 
   ///end paste here
