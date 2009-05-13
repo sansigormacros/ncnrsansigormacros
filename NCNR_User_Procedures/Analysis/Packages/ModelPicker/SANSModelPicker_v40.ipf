@@ -83,7 +83,7 @@ Proc Init_FileList()
 		//
 		// first time, create wave from built-in list
 		FileList_BuiltInList()		//makes sure that the wave exists
-		FileList_GetListButtonProc("")	//converts it into a list for the panel
+		FileList_GetListButtonProc()	//converts it into a list for the panel
 		
 		// "include" nothing to force a load of the utility procedures
 		FileList_InsertButtonProc("") 

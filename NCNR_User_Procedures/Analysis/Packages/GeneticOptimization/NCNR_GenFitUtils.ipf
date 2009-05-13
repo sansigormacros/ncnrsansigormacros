@@ -282,14 +282,11 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	while(0)	
 #endif
 	
-	chi = V_chisq
-	pt = V_npnts
-	val = pt
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	Printf  "fit time = %g seconds\r\r",t0
 			
 	Print "number of function evaluations = ",num
 
-	return(V_chisq)
+	return(chi)
 end
