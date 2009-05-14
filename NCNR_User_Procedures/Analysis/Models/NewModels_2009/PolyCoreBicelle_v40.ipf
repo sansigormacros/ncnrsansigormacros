@@ -33,7 +33,7 @@ Proc PlotPolyCoreBicelle(num,qmin,qmax)
 	Edit/W=(410,44,757,306)  parameters_PCBicelle,coef_PCBicelle
 	ModifyTable width(parameters_PCBicelle)=162
 	
-	Variable/G root:g_PCBicellee
+	Variable/G root:g_PCBicelle
 	g_PCBicelle := PolyCoreBicelle(coef_PCBicelle,ywave_PCBicelle,xwave_PCBicelle)
 	Display ywave_PCBicelle vs xwave_PCBicelle
 	ModifyGraph log=1, marker=29,msize=2,mode=4
@@ -41,7 +41,7 @@ Proc PlotPolyCoreBicelle(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCoreBicelle","coef_PCBicelle","Bicelle")
+	AddModelToStrings("PolyCoreBicelle","coef_PCBicelle","PCBicelle")
 End
 
 
@@ -79,7 +79,7 @@ Proc PlotSmearedPolyCoreBicelle(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCoreBicelle","smear_coef_PCBicelle","Bicelle")
+	AddModelToStrings("SmearedPolyCoreBicelle","smear_coef_PCBicelle","PCBicelle")
 End
 ///////////////////////////////////////////////////////////////////////////////
 // unsmeared model calculation: function integrates for a polydisperse radius.
