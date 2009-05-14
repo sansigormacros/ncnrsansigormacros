@@ -1770,6 +1770,7 @@ Function GuessFromTableHook(infoStr)
 //	Print "EVENT= ",event
 
 	String menuStr=""
+	menuStr += "Guess using N characters;"
 	menuStr += "Guess using 3 characters;"
 	menuStr += "Guess using 6 characters;"
 	menuStr += "Guess using 9 characters;"
@@ -1811,6 +1812,15 @@ Function GuessFromTableHook(infoStr)
 						break
 					case "Guess using 24 characters":
 						fGuessTransToScattFiles(24)
+						break
+					case "Guess using N characters":
+						Variable num=10
+						Prompt num, "Number of characters"
+						DoPrompt "Enter the number of characters to match", num
+						if (V_Flag)
+							break	//user cancel, do nothing
+						endif
+						fGuessTransToScattFiles(num)
 						break
 				endswitch		//on selection
 			endif

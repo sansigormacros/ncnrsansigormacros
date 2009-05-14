@@ -2578,3 +2578,64 @@ Function fReadUserAccountName(lo,hi)
 	
 	return(0)
 End
+
+// May 2009 - SRK
+// Monitor count not written correctly to file from ICE
+
+Proc PatchMonitorCount(firstFile,lastFile,monCtRate)
+	Variable firstFile=1,lastFile=100,monCtRate
+
+	fPatchMonitorCount(firstFile,lastFile,monCtRate)
+
+End
+
+Proc ReadMonitorCount(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadMonitorCount(firstFile,lastFile)
+End
+
+// simple utility to patch the user account name in the file headers
+// pass in the account name as a string
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchMonitorCount(lo,hi,monCtRate)
+	Variable lo,hi,monCtRate
+	
+	Variable ii,ctTime
+	String file
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			ctTime = getCountTime(file)
+			WriteMonitorCountToHeader(file,ctTime*monCtRate)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the user account name stored in the file header
+Function fReadMonitorCount(lo,hi)
+	Variable lo,hi
+	
+	String file
+	Variable ii,monitorCount
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			monitorCount = getMonitorCount(file)
+			printf "File %d:  Monitor Count = %g\r",ii,monitorCount
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End

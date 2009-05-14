@@ -894,7 +894,8 @@ Function GetShiftedArray(data_in,data_out,noadd_mat,xshift,yshift)
 	Variable ii=0,jj=0
 	noadd_mat = 1		//initialize to 1
 	
-	If((abs(xshift) >= 0.01) || (abs(yshift) >= 0.01))			//APR09 - change tolerance to handle ICE "precision"
+	If((xshift != 0) || (yshift != 0))
+//	If((abs(xshift) >= 0.01) || (abs(yshift) >= 0.01))			//APR09 - loosen tolerance to handle ICE "precision"
 		DoAlert 1,"Do you want to ignore the beam center mismatch?"
 		if(V_flag==1)		//yes -> just go on
 			xshift=0

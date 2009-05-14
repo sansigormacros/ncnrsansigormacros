@@ -29,8 +29,10 @@ End
 Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	LoadRawSANSData("Select a Raw SANS data file")
-	UpdateDisplayInformation("RAW")
+	Variable err=	LoadRawSANSData("Select a Raw SANS data file")
+	if(!err)
+		UpdateDisplayInformation("RAW")
+	endif
 End
 
 Proc PatchMainButtonProc(ctrlName) : ButtonControl

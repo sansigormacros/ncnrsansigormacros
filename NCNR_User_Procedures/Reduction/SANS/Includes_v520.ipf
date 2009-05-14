@@ -106,6 +106,8 @@ Menu "SANSBeta"
 	"Read Detector Pixel Size"
 	"Patch User Account Name"
 	"Read User Account Name"
+	"Patch Monitor Count"
+	"Read Monitor Count"
 	"-"
 	"AddALLToLayout"
 	

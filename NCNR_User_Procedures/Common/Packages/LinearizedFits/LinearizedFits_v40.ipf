@@ -537,7 +537,7 @@ Function A_DispatchModel(GoFit) : ButtonControl
 	WAVE W_coef=W_coef
 	WAVE W_sigma=W_sigma
 	String textstr_1,textstr_2,textstr_3 = ""
-	Variable rg,rgerr,minfit,maxfit
+	Variable rg,rgerr,minfit,maxfit,izerr
 	
 	textstr_1 = "Slope = " + num2str(W_coef[1]) + " ± " + num2str(W_sigma[1])
 	textstr_1 += "\rIntercept = " + num2str(W_coef[0]) + " ± " + num2str(W_sigma[0])
@@ -573,7 +573,8 @@ Function A_DispatchModel(GoFit) : ButtonControl
 			break	
 		endif
 		If (cmpstr("1/I",ystr) == 0)
-			textstr_3 = "I(q=0) =  "  + num2str(1/W_coef[0])
+			izerr = abs(1/W_coef[0] - 1/(W_coef[0]+W_sigma[0]))
+			textstr_3 = "I(q=0) =  "  + num2str(1/W_coef[0])+" ± " + num2str(izerr)
 			break
 		endif
 		If (cmpstr("I^a",ystr) == 0)
