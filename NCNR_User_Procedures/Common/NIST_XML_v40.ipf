@@ -323,20 +323,6 @@ function/S getXMLDataSetTitle(xmlDF,dsNum)
 	return title
 end
 
-function isXML(filestr)
-	String filestr
-	
-	String line
-	Variable fileref
-	
-	Open/R fileref as filestr
-	FReadLine fileref,  line
-	Close fileref
-	
-	//Hopefully this will distinguish between other formats and the XML
-	return stringmatch(line, "*xml*")	
-
-end
 
 
 Proc getXMLShorterTitle()
@@ -381,4 +367,22 @@ End
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 	    RETURN(-6)
 	END
-#endif	// if( Exists("XmlOpenFile") )
+	
+
+	
+#endif	// if( Exists("XmlOpenFile") 
+//Needed to test whether file is XML. The load routine will then either give an error if XMLutils is not present or load the file if it is.
+function isXML(filestr)
+	String filestr
+	
+	String line
+	Variable fileref
+	
+	Open/R fileref as filestr
+	FReadLine fileref,  line
+	Close fileref
+	
+	//Hopefully this will distinguish between other formats and the XML
+	return stringmatch(line, "*xml*")	
+
+end
