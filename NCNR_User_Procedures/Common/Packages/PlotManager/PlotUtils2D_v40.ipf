@@ -14,6 +14,8 @@
 
 
 //
+// changed May 2009 to read in the resolution information (now 7 columns)
+// -- subject to change --
 //
 Proc LoadQxQy()
 
@@ -23,23 +25,32 @@ Proc LoadQxQy()
 	Variable numCols = V_flag
 
 	String w0,w1,w2,n0,n1,n2
+	String w3,w4,w5,w6,n3,n4,n5,n6
 		
 	// put the names of the three loaded waves into local names
 	n0 = StringFromList(0, S_waveNames ,";" )
 	n1 = StringFromList(1, S_waveNames ,";" )
 	n2 = StringFromList(2, S_waveNames ,";" )
+	n3 = StringFromList(3, S_waveNames ,";" )
+	n4 = StringFromList(4, S_waveNames ,";" )
+	n5 = StringFromList(5, S_waveNames ,";" )
+	n6 = StringFromList(6, S_waveNames ,";" )
 	
 	//remove the semicolon AND period from files from the VAX
 	w0 = CleanupName((S_fileName + "_qx"),0)
 	w1 = CleanupName((S_fileName + "_qy"),0)
 	w2 = CleanupName((S_fileName + "_i"),0)
-	
+	w3 = CleanupName((S_fileName + "_qz"),0)
+	w4 = CleanupName((S_fileName + "_sigQx"),0)
+	w5 = CleanupName((S_fileName + "_sigQy"),0)
+	w6 = CleanupName((S_fileName + "_fs"),0)
+
 	String baseStr=w1[0,strlen(w1)-4]
 	if(DataFolderExists("root:"+baseStr))
 			DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 			if(V_flag==2)	//user selected No, don't load the data
 				SetDataFolder root:
-				KillWaves $n0,$n1,$n2		// kill the default waveX that were loaded
+				KillWaves $n0,$n1,$n2,$n3,$n4,$n5,$n6		// kill the default waveX that were loaded
 				return		//quits the macro
 			endif
 			SetDataFolder $("root:"+baseStr)
@@ -68,6 +79,10 @@ Proc LoadQxQy()
 	Duplicate/O $("root:"+n0), $w0
 	Duplicate/O $("root:"+n1), $w1
 	Duplicate/O $("root:"+n2), $w2
+	Duplicate/O $("root:"+n3), $w3
+	Duplicate/O $("root:"+n4), $w4
+	Duplicate/O $("root:"+n5), $w5
+	Duplicate/O $("root:"+n6), $w6
 	
 	Variable/G gIsLogScale = 0
 	
@@ -87,7 +102,7 @@ Proc LoadQxQy()
 
 	//clean up		
 	SetDataFolder root:
-	KillWaves/Z $n0,$n1,$n2
+	KillWaves/Z $n0,$n1,$n2,$n3,$n4,$n5,$n6
 EndMacro
 
 //does not seem to need to be flipped at all from the standard QxQy output
@@ -412,6 +427,7 @@ Function ToggleFolderScaling(DF)
 			else	
 				//make log scale
 				w=log(linW)
+				w = w[p][q] == -inf ? NaN : w[p][q]		//remove the -inf for display
 			endif
 	endfor	
 	

@@ -61,6 +61,20 @@ Structure ResSmearAAOStruct
 EndStructure
 
 
+// tentative pass at 2D resolution smearing
+//
+Structure ResSmear_2D_AAOStruct
+	Wave coefW
+	Wave zw			//answer
+	Wave qy			// q-value
+	Wave qx
+	Wave qz
+	Wave sigQx		//resolution
+	Wave sigQy
+	Wave fs
+	String info
+EndStructure
+
 
 
 Function Make5GaussPoints(w5,z5)
@@ -1056,6 +1070,23 @@ end
 // it intentionally does nothing
 Function SANSModelSTRUCT_proto(s)
 	Struct ResSmearAAOStruct &s	
+
+	Print "in SANSModelSTRUCT_proto function"
+	return(1)
+end
+
+// prototype function for 2D smearing routine
+Function SANS_2D_ModelAAO_proto(w,zw,xw,yw)
+	Wave w,zw,xw,yw
+	
+	Print "in SANSModelAAO_proto function"
+	return(1)
+end
+
+// prototype function for fit wrapper using 2D smearing
+// not used (yet)
+Function SANS_2D_ModelSTRUCT_proto(s)
+	Struct ResSmear_2D_AAOStruct &s	
 
 	Print "in SANSModelSTRUCT_proto function"
 	return(1)

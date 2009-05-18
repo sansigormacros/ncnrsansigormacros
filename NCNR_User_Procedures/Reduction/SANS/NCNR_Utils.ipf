@@ -152,6 +152,122 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	Return results
 End
 
+//
+//
+//	this should end up in NCNR_Utils once it's fully functional
+//
+// lots of unnecessary junk...
+//
+//**********************
+// 2D resolution function calculation - in terms of X and Y
+//
+// based on notes from David Mildner, 2008
+//
+// - 21 MAR 07 uses projected BS diameter on the detector
+// - APR 07 still need to add resolution with lenses. currently there is no flag in the 
+//          raw data header to indicate the presence of lenses.
+//
+// - Aug 07 - added input to switch calculation based on lenses (==1 if in)
+//
+// passed values are read from RealsRead
+// except DDet and apOff, which are set from globals before passing
+//
+// phi is the azimuthal angle, CCW from +x axis
+// r_dist is the real-space distance from ctr of detector to QxQy pixel location
+//
+Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
+	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
+	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
+	
+	//lots of calculation variables
+	Variable a2, lp, v_lambda, v_b, v_d, vz, yg, v_g
+	Variable r0, delta, inc_gamma, fr, fv, rmd, v_r1, rm, v_r
+
+	//Constants
+	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
+	Variable g = 981.0				//gravity acceleration [cm/s^2]
+	Variable h_m = 3995				// h/m [=] A*m/s
+
+	String results
+	results ="Failure"
+
+	S1 *= 0.5*0.1			//convert to radius and [cm]
+	S2 *= 0.5*0.1
+
+	L1 *= 100.0			// [cm]
+	L1 -= apOff				//correct the distance
+
+	L2 *= 100.0
+	L2 += apOff
+	del_r *= 0.1				//width of annulus, convert mm to [cm]
+	
+	BS *= 0.5*0.1			//nominal BS diameter passed in, convert to radius and [cm]
+	// 21 MAR 07 SRK - use the projected BS diameter, based on a point sample aperture
+	Variable LB
+	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
+	BS = bs + bs*lb/(l2-lb)		//adjusted diameter of shadow from parallax
+	
+	//Start resolution calculation
+	a2 = S1*L2/L1 + S2*(L1+L2)/L1
+	lp = 1.0/( 1.0/L1 + 1.0/L2)
+
+	v_lambda = lambdaWidth^2/6.0
+	
+//	if(usingLenses==1)			//SRK 2007
+	if(usingLenses != 0)			//SRK 2008 allows for the possibility of different numbers of lenses in header
+		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth/lambda)^2*(S2*L2/lp)^2		//correction to 2nd term
+	else
+		v_b = 0.25*(S1*L2/L1)^2 +0.25*(S2*L2/lp)^2		//original form
+	endif
+	
+	v_d = (DDet/2.3548)^2 + del_r^2/12.0
+	vz = vz_1 / lambda
+	yg = 0.5*g*L2*(L1+L2)/vz^2
+	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+
+	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
+	delta = 0.5*(BS - r0)^2/v_d
+
+	if (r0 < BS) 
+		inc_gamma=exp(gammln(1.5))*(1-gammp(1.5,delta))
+	else
+		inc_gamma=exp(gammln(1.5))*(1+gammp(1.5,delta))
+	endif
+
+	fSubS = 0.5*(1.0+erf( (r0-BS)/sqrt(2.0*v_d) ) )
+	if (fSubS <= 0.0) 
+		fSubS = 1.e-10
+	endif
+//	fr = 1.0 + sqrt(v_d)*exp(-1.0*delta) /(r0*fSubS*sqrt(2.0*Pi))
+//	fv = inc_gamma/(fSubS*sqrt(Pi)) - r0^2*(fr-1.0)^2/v_d
+//
+//	rmd = fr*r0
+//	v_r1 = v_b + fv*v_d +v_g
+//
+//	rm = rmd + 0.5*v_r1/rmd
+//	v_r = v_r1 - 0.5*(v_r1/rmd)^2
+//	if (v_r < 0.0) 
+//		v_r = 0.0
+//	endif
+
+	Variable kap,a_val
+	
+	kap = 2*pi/lambda
+	a_val = (L1+L2)*g/2/(h_m)^2
+	
+	SigmaQX = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(cos(phi))^2
+
+	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(sin(phi))^2 + 8*(a_val/L2)^2*lambda^4*lambdaWidth^2
+
+	SigmaQX = sqrt(kap*kap/12*SigmaQX)
+	SigmaQy = sqrt(kap*kap/12*SigmaQY)
+
+	results = "success"
+	Return results
+End
+
+
+
 
 //Utility function that returns the detector resolution (in cm)
 //Global values are set in the Initialize procedure

@@ -31,8 +31,8 @@ Proc PlotSphere2D(str)
 	Duplicate/O $(str+"_qx") xwave_sf2D
 	Duplicate/O $(str+"_qy") ywave_sf2D,zwave_sf2D			
 		
-	Variable/G gs_sf2D=0
-	gs_sf2D := Sphere2D(coef_sf2D,zwave_sf2D,xwave_sf2D,ywave_sf2D)	//AAO 2D calculation
+	Variable/G g_sf2D=0
+	g_sf2D := Sphere2D(coef_sf2D,zwave_sf2D,xwave_sf2D,ywave_sf2D)	//AAO 2D calculation
 	
 	Display ywave_sf2D vs xwave_sf2D
 	modifygraph log=0
@@ -50,12 +50,49 @@ Proc PlotSphere2D(str)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_sf2Dmat=0
-	gs_sf2Dmat := UpdateQxQy2Mat(xwave_sf2D,ywave_sf2D,zwave_sf2D,sf2D_lin,sf2D_mat)
+	Variable/G g_sf2Dmat=0
+	g_sf2Dmat := UpdateQxQy2Mat(xwave_sf2D,ywave_sf2D,zwave_sf2D,sf2D_lin,sf2D_mat)
 	
 	
 	SetDataFolder root:
 	AddModelToStrings("Sphere2D","coef_sf2D","sf2D")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedSphere2D(str)								
+	String str
+	Prompt str,"Pick the data folder containing the 2D data",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+//	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+//		Abort
+//	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_sf2D = {1.,60,1e-6,6.3e-6,0.01}					
+	make/o/t smear_parameters_sf2D = {"scale","Radius (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkgd (cm-1)"}
+	Edit smear_parameters_sf2D,smear_coef_sf2D					
+	
+	Duplicate/O $(str+"_qx") smeared_sf2D	//1d place for the smeared model
+	SetScale d,0,0,"1/cm",smeared_sf2D					
+		
+	Variable/G gs_sf2D=0
+	gs_sf2D := fSmearedSphere2D(smear_coef_sf2D,smeared_sf2D)	//this wrapper fills the STRUCT
+
+	Display $(str+"_qy") vs $(str+"_qx")
+	modifygraph log=0
+	ModifyGraph mode=3,marker=16,zColor($(str+"_qy"))={smeared_sf2D,*,*,YellowHot,0}
+	ModifyGraph standoff=0
+	ModifyGraph width={Aspect,1}
+	ModifyGraph lowTrip=0.001
+	Label bottom "qx (A\\S-1\\M)"
+	Label left "qy (A\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedSphere2D","smear_coef_sf2D","sf2D")
 End
 
 
@@ -104,4 +141,56 @@ Function Sphere2D(cw,zw,xw,yw) : FitFunc
 //	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
 	
 	return(0)
+End
+
+
+//threaded version of the function
+Function Sphere2D_noThread(cw,zw,xw,yw)
+	WAVE cw,zw, xw,yw
+	
+#if exists("Sphere_2DX")			//to hide the function if XOP not installed
+	
+	zw= Sphere_2DX(cw,xw,yw)
+
+#endif
+
+	return 0
+End
+
+
+Function SmearedSphere2D(s)
+	Struct ResSmear_2D_AAOStruct &s
+	
+	Smear_2DModel_5(Sphere2D_noThread,s)
+	return(0)
+end
+
+
+Function fSmearedSphere2D(coefW,resultW)
+	Wave coefW,resultW
+	
+	String str = getWavesDataFolder(resultW,0)
+	String DF="root:"+str+":"
+	
+	WAVE qx = $(DF+str+"_qx")
+	WAVE qy = $(DF+str+"_qy")
+	WAVE qz = $(DF+str+"_qz")
+	WAVE sigQx = $(DF+str+"_sigQx")
+	WAVE sigQy = $(DF+str+"_sigQy")
+	WAVE shad = $(DF+str+"_fs")
+	
+	STRUCT ResSmear_2D_AAOStruct s
+	WAVE s.coefW = coefW	
+	WAVE s.zw = resultW	
+	WAVE s.qx = qx
+	WAVE s.qy = qy
+	WAVE s.qz = qz
+	WAVE s.sigQx = sigQx
+	WAVE s.sigQy = sigQy
+	WAVE s.fs = shad
+	
+	Variable err
+	err = SmearedSphere2D(s)
+	
+	return (0)
 End

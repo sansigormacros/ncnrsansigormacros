@@ -2072,6 +2072,10 @@ Function AskForAbsoluteParams_Quest()
 //		detCnt = sum($"root:Packages:NIST:raw:data", -inf, inf )
 //		Print "box is now ",x1,x2,y1,y2
 		detCnt = SumCountsInBox(x1,x2,y1,y2,"RAW")
+		if(cmpstr(tw[9],"ILL   ")==0)
+			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large
+								// this is usually corrected in the Add step
+		endif
 		//		
 		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
 		junkStr = num2str(kappa)

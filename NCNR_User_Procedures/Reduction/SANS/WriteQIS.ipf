@@ -629,7 +629,8 @@ End
 //// end ASCII - old style export procedures
 
 
-//ASCII export of data as 3-columns qx-qy-Intensity
+// NEW additions - May 2009
+//ASCII export of data as 7-columns qx-qy-Intensity-qz-sigmaQx-sigmaQy-fShad
 //limited header information?
 //
 // - creates the qx and qy data here, based on the data and header information
@@ -717,7 +718,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[12] = "Average Choices: "+proto[5]
 	labelWave[13] = ""
 	labelWave[14] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy)"
+	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQx - SigmaQy - fSubS(beam stop shadow)"
 	labelWave[16] = ""
 	labelWave[17] = "ASCII data created " +date()+" "+time()
 	//strings can be too long to print-- must trim to 255 chars
@@ -735,25 +736,67 @@ Function QxQy_Export(type,fullpath,dialog)
 //		termStr = "\r\n"
 //	Endif
 	
-	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val
+	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
 	
 //	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 //	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
+	
+	Variable xctr,yctr,sdd,lambda,pixSize
+	xctr = rw[16]
+	yctr = rw[17]
+	sdd = rw[18]
+	lambda = rw[26]
+	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
 	
 	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
 	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
-	
+
+///************
+// do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-//	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	Redimension/N=(pixelsX*pixelsY) qz_val,qval
+	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
+	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt
+	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
+	//everything in 1D now
+	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+
+	Variable L2 = rw[18]
+	Variable BS = rw[21]
+	Variable S1 = rw[23]
+	Variable S2 = rw[24]
+	Variable L1 = rw[25]
+	Variable lambdaWidth = rw[27]	
+	Variable usingLenses = rw[28]		//new 2007
+
+	//Two parameters DDET and APOFF are instrument dependent.  Determine
+	//these from the instrument name in the header.
+	//From conversation with JB on 01.06.99 these are the current good values
+	Variable DDet
+	NVAR apOff = root:myGlobals:apOff		//in cm
+	DDet = rw[10]/10			// header value (X) is in mm, want cm here
+
+	Variable ret1,ret2,ret3,nq
+	nq = pixelsX*pixelsY
+	ii=0
+	
+	do
+		get2DResolution(qval[ii],phi[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[ii],ret1,ret2,ret3)
+		SigmaQX[ii] = ret1	
+		SigmaQY[ii] = ret2	
+		fsubs[ii] = ret3	
+		ii+=1
+	while(ii<nq)	
+
+//*********************
 
 	//not demo-compatible, but approx 8x faster!!	
 #if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)	
-	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// /M=termStr specifies terminator	
-//	Save/G/M="\r\n" labelWave,qx_val,qy_val,qz_val,qval,z_val as fullpath	// for debugging, write out everything
+//	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// /M=termStr specifies terminator	
+	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val,qz_val,SigmaQx,SigmaQy,fSubS as fullpath	// for debugging, write out everything
 #else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave
@@ -762,7 +805,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	Close refNum
 #endif
 	
-	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val
+	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS,phi,r_dist
 	
 	Print "QxQy_Export File written: ", GetFileNameFromPathNoSemi(fullPath)
 	return(0)
@@ -811,4 +854,3 @@ Function LinXYZToMatrix(xw,yw,zw,matStr)
 	
 	return(0)
 End
-
