@@ -23,7 +23,7 @@ Proc PlotDebye(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Debye","coef_deb","deb")
+	AddModelToStrings("Debye","coef_deb","parameters_deb","deb")
 End
 
 ///////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ Proc PlotSmearedDebye(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedDebye","smear_coef_deb","deb")
+	AddModelToStrings("SmearedDebye","smear_coef_deb","smear_parameters_deb","deb")
 End
 	
 

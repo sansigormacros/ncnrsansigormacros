@@ -31,7 +31,7 @@ Proc PlotLogNormalSphere_HS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LogNormalSphere_HS","coef_lns_HS","lns_HS")
+	AddModelToStrings("LogNormalSphere_HS","coef_lns_HS","parameters_lns_HS","lns_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -66,7 +66,7 @@ Proc PlotSmearedLogNormalSphere_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLogNormalSphere_HS","smear_coef_lns_HS","lns_HS")
+	AddModelToStrings("SmearedLogNormalSphere_HS","smear_coef_lns_HS","smear_parameters_lns_HS","lns_HS")
 End
 	
 
@@ -133,7 +133,7 @@ Proc PlotLogNormalSphere_SW(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LogNormalSphere_SW","coef_lns_SW","lns_SW")
+	AddModelToStrings("LogNormalSphere_SW","coef_lns_SW","parameters_lns_SW","lns_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -168,7 +168,7 @@ Proc PlotSmearedLogNormalSphere_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLogNormalSphere_SW","smear_coef_lns_SW","lns_SW")
+	AddModelToStrings("SmearedLogNormalSphere_SW","smear_coef_lns_SW","smear_parameters_lns_SW","lns_SW")
 End
 	
 
@@ -242,7 +242,7 @@ Proc PlotLogNormalSphere_SC(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LogNormalSphere_SC","coef_lns_SC","lns_SC")
+	AddModelToStrings("LogNormalSphere_SC","coef_lns_SC","parameters_lns_SC","lns_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -282,7 +282,7 @@ Proc PlotSmearedLogNormalSphere_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLogNormalSphere_SC","smear_coef_lns_SC","lns_SC")
+	AddModelToStrings("SmearedLogNormalSphere_SC","smear_coef_lns_SC","smear_parameters_lns_SC","lns_SC")
 End
 
 
@@ -353,7 +353,7 @@ Proc PlotLogNormalSphere_SHS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LogNormalSphere_SHS","coef_lns_SHS","lns_SHS")
+	AddModelToStrings("LogNormalSphere_SHS","coef_lns_SHS","parameters_lns_SHS","lns_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -388,7 +388,7 @@ Proc PlotSmearedLogNormalSphere_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLogNormalSphere_SHS","smear_coef_lns_SHS","lns_SHS")
+	AddModelToStrings("SmearedLogNormalSphere_SHS","smear_coef_lns_SHS","smear_parameters_lns_SHS","lns_SHS")
 End
 	
 
@@ -575,4 +575,3 @@ Function fSmearedLogNormalSphere_SHS(coefW,yW,xW)
 	
 	return (0)
 End
-

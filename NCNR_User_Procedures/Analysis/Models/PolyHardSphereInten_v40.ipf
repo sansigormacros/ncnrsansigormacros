@@ -32,7 +32,7 @@ Proc PlotPolyHardSpheres(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyHardSpheres","coef_phs","phs")
+	AddModelToStrings("PolyHardSpheres","coef_phs","parameters_phs","phs")
 End
 
 ///////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ Proc PlotSmearedPolyHardSpheres(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyHardSpheres","smear_coef_phs","phs")
+	AddModelToStrings("SmearedPolyHardSpheres","smear_coef_phs","smear_parameters_phs","phs")
 End
 
 //AAO version

@@ -42,7 +42,7 @@ Proc PlotSpherocylinder(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Spherocylinder","coef_SphCyl","SphCyl")
+	AddModelToStrings("Spherocylinder","coef_SphCyl","parameters_SphCyl","SphCyl")
 //
 End
 
@@ -79,7 +79,7 @@ Proc PlotSmearedSpherocylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSpherocylinder","smear_coef_SphCyl","SphCyl")
+	AddModelToStrings("SmearedSpherocylinder","smear_coef_SphCyl","smear_parameters_SphCyl","SphCyl")
 End
 
 	

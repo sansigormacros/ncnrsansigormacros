@@ -31,7 +31,7 @@ Proc PlotHayterPenfoldMSA(num,qmin,qmax)
 	Label left "Structure Factor"	
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("HayterPenfoldMSA","coef_hpmsa","hpmsa")
+	AddModelToStrings("HayterPenfoldMSA","coef_hpmsa","parameters_hpmsa","hpmsa")
 End
 
 //AAO version

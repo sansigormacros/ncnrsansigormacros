@@ -27,7 +27,7 @@ Proc PlotLogNormalSphere(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LogNormalSphere","coef_lns","lns")
+	AddModelToStrings("LogNormalSphere","coef_lns","parameters_lns","lns")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -62,7 +62,7 @@ Proc PlotSmearedLogNormalSphere(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLogNormalSphere","smear_coef_lns","lns")
+	AddModelToStrings("SmearedLogNormalSphere","smear_coef_lns","smear_parameters_lns","lns")
 End
 
 

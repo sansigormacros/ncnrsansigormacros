@@ -32,7 +32,7 @@ Proc PlotOblate_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Oblate_HS","coef_OEF_HS","OEF_HS")
+	AddModelToStrings("Oblate_HS","coef_OEF_HS","parameters_OEF_HS","OEF_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -68,7 +68,7 @@ Proc PlotSmearedOblate_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOblate_HS","smear_coef_OEF_HS","OEF_HS")
+	AddModelToStrings("SmearedOblate_HS","smear_coef_OEF_HS","smear_parameters_OEF_HS","OEF_HS")
 End
 	
 
@@ -131,7 +131,7 @@ Proc PlotOblate_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Oblate_SW","coef_OEF_SW","OEF_SW")
+	AddModelToStrings("Oblate_SW","coef_OEF_SW","parameters_OEF_SW","OEF_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -167,7 +167,7 @@ Proc PlotSmearedOblate_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOblate_SW","smear_coef_OEF_SW","OEF_SW")
+	AddModelToStrings("SmearedOblate_SW","smear_coef_OEF_SW","smear_parameters_OEF_SW","OEF_SW")
 End
 
 
@@ -237,7 +237,7 @@ Proc PlotOblate_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Oblate_SC","coef_OEF_SC","OEF_SC")
+	AddModelToStrings("Oblate_SC","coef_OEF_SC","parameters_OEF_SC","OEF_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -278,7 +278,7 @@ Proc PlotSmearedOblate_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOblate_SC","smear_coef_OEF_SC","OEF_SC")
+	AddModelToStrings("SmearedOblate_SC","smear_coef_OEF_SC","smear_parameters_OEF_SC","OEF_SC")
 End
 
 
@@ -346,7 +346,7 @@ Proc PlotOblate_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Oblate_SHS","coef_OEF_SHS","OEF_SHS")
+	AddModelToStrings("Oblate_SHS","coef_OEF_SHS","parameters_OEF_SHS","OEF_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -382,7 +382,7 @@ Proc PlotSmearedOblate_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOblate_SHS","smear_coef_OEF_SHS","OEF_SHS")
+	AddModelToStrings("SmearedOblate_SHS","smear_coef_OEF_SHS","smear_parameters_OEF_SHS","OEF_SHS")
 End
 	
 

@@ -44,7 +44,7 @@ Proc PlotLamellarFF_HG(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LamellarFF_HG","coef_LamellarFF_HG","LamellarFF_HG")
+	AddModelToStrings("LamellarFF_HG","coef_LamellarFF_HG","parameters_LamellarFF_HG","LamellarFF_HG")
 //
 End
 
@@ -80,7 +80,7 @@ Proc PlotSmearedLamellarFF_HG(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLamellarFF_HG","smear_coef_LamellarFF_HG","LamellarFF_HG")
+	AddModelToStrings("SmearedLamellarFF_HG","smear_coef_LamellarFF_HG","smear_parameters_LamellarFF_HG","LamellarFF_HG")
 End
 
 

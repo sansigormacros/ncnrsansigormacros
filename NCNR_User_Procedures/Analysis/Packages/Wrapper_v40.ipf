@@ -347,7 +347,9 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 		case 2: // mouse up
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
-			String suffix = getModelSuffix(popStr)
+			ControlInfo/W=WrapperPanel popup_1
+			String funcStr=S_Value
+			String suffix = getModelSuffix(funcStr)
 			ControlInfo/W=WrapperPanel popup_0
 			String folderStr=S_Value
 			
@@ -401,7 +403,7 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			RenameWindow #,T0
 			// get them onto the table
 			// how do I get the parameter name?
-			String param = WaveList("*parameters_"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
+			String param = getFunctionParams(funcStr)
 			AppendtoTable/W=wrapperPanel#T0 $param,$(popStr)
 			AppendToTable/W=wrapperPanel#T0 $("Hold_"+suffix),$("LoLim_"+suffix),$("HiLim_"+suffix),$("epsilon_"+suffix)
 			ModifyTable/W=wrapperPanel#T0 width(Point)=0
@@ -482,11 +484,18 @@ Function DataSet_PopMenuProc(pa) : PopupMenuControl
 End
 
 
-
-// always pass this the coefficient string
+// always pass this the function string
 //
-// either "coef_"
-// or "smear_coef_"
+Function/S getFunctionParams(funcStr)
+	String funcStr
+
+	SVAR listStr=root:Packages:NIST:paramKWStr
+	String paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
+
+	return(paramStr)
+End
+
+// always pass this the function string
 //
 Function/S getFunctionCoef(funcStr)
 	String funcStr
@@ -497,27 +506,16 @@ Function/S getFunctionCoef(funcStr)
 	return(coefStr)
 End
 
-// always pass this the coefficient string
-//
-// either "coef_"
-// or "smear_coef_"
+// always pass this the Function string
 //
 // does NOT return the leading "_" as part of the suffix
-Function/S getModelSuffix(coefStr)
-	String coefStr
+Function/S getModelSuffix(funcStr)
+	String funcStr
 
 	SVAR listStr=root:Packages:NIST:suffixKWStr
-	String suffixStr = StringByKey(coefStr, listStr  ,"=",";",0)
+	String suffixStr = StringByKey(funcStr, listStr  ,"=",";",0)
 
 	return(suffixStr)
-//	Variable pos,start=0
-
-//	if(stringmatch(coefStr,"smear_*") == 1)
-//		start=7	//look forwards to find "_", skipping "smear_coe" if necessary
-//	endif
-//	pos=Strsearch(coefStr,"_",start,0)
-	//Print start, pos
-//	return(coefStr[pos,strlen(coefStr)-1])
 End
 
 
@@ -615,13 +613,16 @@ End
 Function AppendModelToTarget(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
-	String coefStr,suffix,yWStr,xWStr,folderStr
+	String coefStr,suffix,yWStr,xWStr,folderStr,funcStr
 	
 	switch( ba.eventCode )
 		case 2: // mouse up			
 			ControlInfo/W=WrapperPanel popup_2
 			coefStr=S_Value
-			suffix = getModelSuffix(coefStr)
+			
+			ControlInfo/W=WrapperPanel popup_1
+			funcStr=S_Value
+			suffix = getModelSuffix(funcStr)
 			
 			// check for smeared or smeared function
 			if(stringmatch(coefStr, "smear*" )==1)
@@ -723,7 +724,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	String folderStr,funcStr,coefStr
 	Variable useCursors,useEps,useConstr
 
-	String suffix=getModelSuffix(coefStr)
+	String suffix=getModelSuffix(funcStr)
 	
 	SetDataFolder $("root:"+folderStr)
 	if(!exists(coefStr))

@@ -38,7 +38,7 @@ Proc PlotVesicle_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Vesicle_HS","coef_ves_HS","ves_HS")
+	AddModelToStrings("Vesicle_HS","coef_ves_HS","parameters_ves_HS","ves_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -74,7 +74,7 @@ Proc PlotSmearedVesicle_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedVesicle_HS","smear_coef_ves_HS","ves_HS")
+	AddModelToStrings("SmearedVesicle_HS","smear_coef_ves_HS","smear_parameters_ves_HS","ves_HS")
 End
 
 
@@ -145,7 +145,7 @@ Proc PlotVesicle_SW(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
-	AddModelToStrings("Vesicle_SW","coef_ves_SW","ves_SW")
+	AddModelToStrings("Vesicle_SW","coef_ves_SW","parameters_ves_SW","ves_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -181,7 +181,7 @@ Proc PlotSmearedVesicle_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedVesicle_SW","smear_coef_ves_SW","ves_SW")
+	AddModelToStrings("SmearedVesicle_SW","smear_coef_ves_SW","smear_parameters_ves_SW","ves_SW")
 End
 
 	
@@ -257,7 +257,7 @@ Proc PlotVesicle_SC(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
-	AddModelToStrings("Vesicle_SC","coef_ves_SC","ves_SC")
+	AddModelToStrings("Vesicle_SC","coef_ves_SC","parameters_ves_SC","ves_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -298,7 +298,7 @@ Proc PlotSmearedVesicle_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedVesicle_SC","smear_coef_ves_SC","ves_SC")
+	AddModelToStrings("SmearedVesicle_SC","smear_coef_ves_SC","smear_parameters_ves_SC","ves_SC")
 End
 	
 
@@ -374,7 +374,7 @@ Proc PlotVesicle_SHS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
-	AddModelToStrings("Vesicle_SHS","coef_ves_SHS","ves_SHS")
+	AddModelToStrings("Vesicle_SHS","coef_ves_SHS","parameters_ves_SHS","ves_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -410,7 +410,7 @@ Proc PlotSmearedVesicle_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedVesicle_SHS","smear_coef_ves_SHS","ves_SHS")
+	AddModelToStrings("SmearedVesicle_SHS","smear_coef_ves_SHS","smear_parameters_ves_SHS","ves_SHS")
 End
 
 	
@@ -601,4 +601,3 @@ Function fSmearedVesicle_SHS(coefW,yW,xW)
 	
 	return (0)
 End
-

@@ -36,7 +36,7 @@ Proc PlotCyl_PolyRadius(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cyl_PolyRadius","coef_cypr","cypr")
+	AddModelToStrings("Cyl_PolyRadius","coef_cypr","parameters_cypr","cypr")
 End
 
 ///////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ Proc PlotSmearedCyl_PolyRadius(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCyl_PolyRadius","smear_coef_cypr","cypr")
+	AddModelToStrings("SmearedCyl_PolyRadius","smear_coef_cypr","smear_parameters_cypr","cypr")
 End
 	
 

@@ -30,7 +30,7 @@ Proc PlotCylinderForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CylinderForm","coef_cyl","cyl")
+	AddModelToStrings("CylinderForm","coef_cyl","parameters_cyl","cyl")
 End
 
 ///////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ Proc PlotSmearedCylinderForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCylinderForm","smear_coef_cyl","cyl")
+	AddModelToStrings("SmearedCylinderForm","smear_coef_cyl","smear_parameters_cyl","cyl")
 End
 
 // AAO verison

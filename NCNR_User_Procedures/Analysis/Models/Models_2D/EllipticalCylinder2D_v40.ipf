@@ -73,8 +73,8 @@ Proc PlotEllipticalCylinder2D(str)
 	Duplicate/O $(str+"_qx") xwave_EllCyl2D
 	Duplicate/O $(str+"_qy") ywave_EllCyl2D,zwave_EllCyl2D			
 		
-	Variable/G gs_EllCyl2D=0
-	gs_EllCyl2D := EllipticalCylinder2D(coef_EllCyl2D,zwave_EllCyl2D,xwave_EllCyl2D,ywave_EllCyl2D)	//AAO 2D calculation
+	Variable/G g_EllCyl2D=0
+	g_EllCyl2D := EllipticalCylinder2D(coef_EllCyl2D,zwave_EllCyl2D,xwave_EllCyl2D,ywave_EllCyl2D)	//AAO 2D calculation
 	
 	Display ywave_EllCyl2D vs xwave_EllCyl2D
 	modifygraph log=0
@@ -92,12 +92,12 @@ Proc PlotEllipticalCylinder2D(str)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_EllCyl2Dmat=0
-	gs_EllCyl2Dmat := UpdateQxQy2Mat(xwave_EllCyl2D,ywave_EllCyl2D,zwave_EllCyl2D,EllCyl2D_lin,EllCyl2D_mat)
+	Variable/G g_EllCyl2Dmat=0
+	g_EllCyl2Dmat := UpdateQxQy2Mat(xwave_EllCyl2D,ywave_EllCyl2D,zwave_EllCyl2D,EllCyl2D_lin,EllCyl2D_mat)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("EllipticalCylinder2D","coef_EllCyl2D","EllCyl2D")
+	AddModelToStrings("EllipticalCylinder2D","coef_EllCyl2D","parameters_EllCyl2D","EllCyl2D")
 End
 
 //AAO version, uses XOP if available

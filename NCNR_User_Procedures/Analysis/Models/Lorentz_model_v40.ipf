@@ -25,7 +25,7 @@ Proc PlotLorentz_Model(num,qmin,qmax)
 	Label left "Lorentzian (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Lorentz_Model","coef_Lorentz","Lorentz")
+	AddModelToStrings("Lorentz_Model","coef_Lorentz","parameters_Lorentz","Lorentz")
 End
 
 ////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ Proc PlotSmearedLorentz_Model(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 		
 	SetDataFolder root:
-	AddModelToStrings("SmearedLorentz_Model","smear_coef_Lorentz","Lorentz")
+	AddModelToStrings("SmearedLorentz_Model","smear_coef_Lorentz","smear_parameters_Lorentz","Lorentz")
 End
 
 

@@ -30,7 +30,7 @@ Proc PlotGaussSpheres(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussSpheres","coef_pgs","pgs")
+	AddModelToStrings("GaussSpheres","coef_pgs","parameters_pgs","pgs")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -65,7 +65,7 @@ Proc PlotSmearedGaussSpheres(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussSpheres","smear_coef_pgs","pgs")
+	AddModelToStrings("SmearedGaussSpheres","smear_coef_pgs","smear_parameters_pgs","pgs")
 End
 	
 

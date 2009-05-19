@@ -47,7 +47,7 @@ Proc PlotParallelepiped(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Parallelepiped","coef_Parallelepiped","Parallelepiped")
+	AddModelToStrings("Parallelepiped","coef_Parallelepiped","parameters_Parallelepiped","Parallelepiped")
 //
 End
 
@@ -83,7 +83,7 @@ Proc PlotSmearedParallelepiped(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedParallelepiped","smear_coef_Parallelepiped","Parallelepiped")
+	AddModelToStrings("SmearedParallelepiped","smear_coef_Parallelepiped","smear_parameters_Parallelepiped","Parallelepiped")
 End
 
 

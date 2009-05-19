@@ -30,7 +30,7 @@ Proc PlotDAB_Model(num,qmin,qmax)
 	Label left "Debye-Anderson-Brumberger Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("DAB_Model","coef_DAB","DAB")
+	AddModelToStrings("DAB_Model","coef_DAB","parameters_DAB","DAB")
 End
 
 ////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ Proc PlotSmearedDAB_Model(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedDAB_Model","smear_coef_DAB","DAB")
+	AddModelToStrings("SmearedDAB_Model","smear_coef_DAB","smear_parameters_DAB","DAB")
 End
 
 //AAO version

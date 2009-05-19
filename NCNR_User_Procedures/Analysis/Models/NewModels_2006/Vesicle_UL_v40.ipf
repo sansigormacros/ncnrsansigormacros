@@ -40,7 +40,7 @@ Proc PlotVesicleForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("VesicleForm","coef_vesicle","vesicle")
+	AddModelToStrings("VesicleForm","coef_vesicle","parameters_vesicle","vesicle")
 End
 
 ///////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ Proc PlotSmearedVesicleForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedVesicleForm","smear_coef_vesicle","vesicle")
+	AddModelToStrings("SmearedVesicleForm","smear_coef_vesicle","smear_parameters_vesicle","vesicle")
 End
 
 

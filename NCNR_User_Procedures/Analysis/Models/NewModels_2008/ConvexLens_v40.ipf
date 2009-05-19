@@ -41,7 +41,7 @@ Proc PlotConvexLens(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("ConvexLens","coef_ConvLens","ConvLens")
+	AddModelToStrings("ConvexLens","coef_ConvLens","parameters_ConvLens","ConvLens")
 //
 End
 
@@ -78,7 +78,7 @@ Proc PlotSmearedConvexLens(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedConvexLens","smear_coef_ConvLens","ConvLens")
+	AddModelToStrings("SmearedConvexLens","smear_coef_ConvLens","smear_parameters_ConvLens","ConvLens")
 End
 
 	

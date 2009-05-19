@@ -36,7 +36,7 @@ Proc PlotCyl_PolyLength(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cyl_PolyLength","coef_cypl","cypl")
+	AddModelToStrings("Cyl_PolyLength","coef_cypl","parameters_cypl","cypl")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -71,7 +71,7 @@ Proc PlotSmearedCyl_PolyLength(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCyl_PolyLength","smear_coef_cypl","cypl")
+	AddModelToStrings("SmearedCyl_PolyLength","smear_coef_cypl","smear_parameters_cypl","cypl")
 End
 	
 

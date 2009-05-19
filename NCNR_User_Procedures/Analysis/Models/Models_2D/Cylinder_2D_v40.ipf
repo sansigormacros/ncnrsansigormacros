@@ -69,8 +69,8 @@ Proc PlotCylinder2D(str)
 	Duplicate/O $(str+"_qx") xwave_Cyl2D
 	Duplicate/O $(str+"_qy") ywave_Cyl2D,zwave_Cyl2D			
 		
-	Variable/G gs_Cyl2D=0
-	gs_Cyl2D := Cylinder2D(coef_Cyl2D,zwave_Cyl2D,xwave_Cyl2D,ywave_Cyl2D)	//AAO 2D calculation
+	Variable/G g_Cyl2D=0
+	g_Cyl2D := Cylinder2D(coef_Cyl2D,zwave_Cyl2D,xwave_Cyl2D,ywave_Cyl2D)	//AAO 2D calculation
 	
 	Display ywave_Cyl2D vs xwave_Cyl2D
 	modifygraph log=0
@@ -88,12 +88,12 @@ Proc PlotCylinder2D(str)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_Cyl2Dmat=0
-	gs_Cyl2Dmat := UpdateQxQy2Mat(xwave_Cyl2D,ywave_Cyl2D,zwave_Cyl2D,Cyl2D_lin,Cyl2D_mat)
+	Variable/G g_Cyl2Dmat=0
+	g_Cyl2Dmat := UpdateQxQy2Mat(xwave_Cyl2D,ywave_Cyl2D,zwave_Cyl2D,Cyl2D_lin,Cyl2D_mat)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("Cylinder2D","coef_Cyl2D","Cyl2D")
+	AddModelToStrings("Cylinder2D","coef_Cyl2D","parameters_Cyl2D","Cyl2D")
 End
 
 //AAO version, uses XOP if available

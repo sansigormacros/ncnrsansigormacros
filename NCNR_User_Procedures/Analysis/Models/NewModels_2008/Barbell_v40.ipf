@@ -42,7 +42,7 @@ Proc PlotBarbell(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Barbell","coef_Barbell","Barbell")
+	AddModelToStrings("Barbell","coef_Barbell","parameters_Barbell","Barbell")
 //
 End
 
@@ -79,7 +79,7 @@ Proc PlotSmearedBarbell(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedBarbell","smear_coef_Barbell","Barbell")
+	AddModelToStrings("SmearedBarbell","smear_coef_Barbell","smear_parameters_Barbell","Barbell")
 End
 
 	

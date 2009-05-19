@@ -33,7 +33,7 @@ Proc PlotCoreShellCylinder(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShellCylinder","coef_cscyl","cscyl")
+	AddModelToStrings("CoreShellCylinder","coef_cscyl","parameters_cscyl","cscyl")
 End
 
 ///////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ Proc PlotSmearedCoreShellCylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShellCylinder","smear_coef_cscyl","cscyl")
+	AddModelToStrings("SmearedCoreShellCylinder","smear_coef_cscyl","smear_parameters_cscyl","cscyl")
 End
 	
 

@@ -45,7 +45,7 @@ Proc PlotDumbbell(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Dumbbell","coef_Dumb","Dumb")
+	AddModelToStrings("Dumbbell","coef_Dumb","parameters_Dumb","Dumb")
 //
 End
 
@@ -82,7 +82,7 @@ Proc PlotSmearedDumbbell(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedDumbbell","smear_coef_Dumb","Dumb")
+	AddModelToStrings("SmearedDumbbell","smear_coef_Dumb","smear_parameters_Dumb","Dumb")
 End
 
 	

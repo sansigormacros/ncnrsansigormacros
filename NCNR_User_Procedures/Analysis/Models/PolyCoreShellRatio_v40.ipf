@@ -33,7 +33,7 @@ Proc PlotPolyCoreShellRatio(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCoreShellRatio","coef_pcr","pcr")
+	AddModelToStrings("PolyCoreShellRatio","coef_pcr","parameters_pcr","pcr")
 End
 
 ///////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ Proc PlotSmearedPolyCoreShellRatio(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCoreShellRatio","smear_coef_pcr","pcr")
+	AddModelToStrings("SmearedPolyCoreShellRatio","smear_coef_pcr","smear_parameters_pcr","pcr")
 End
 
 

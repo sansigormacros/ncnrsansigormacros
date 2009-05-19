@@ -38,7 +38,7 @@ Proc PlotStackedDiscs(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("StackedDiscs","coef_scyl","scyl")
+	AddModelToStrings("StackedDiscs","coef_scyl","parameters_scyl","scyl")
 End
 ///////////////////////////////////////////////////////////
 
@@ -75,7 +75,7 @@ Proc PlotSmearedStackedDiscs(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedStackedDiscs","smear_coef_scyl","scyl")
+	AddModelToStrings("SmearedStackedDiscs","smear_coef_scyl","smear_parameters_scyl","scyl")
 End
 
 ///////////////////////////////////////////////////////////////

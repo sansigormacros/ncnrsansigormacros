@@ -35,7 +35,7 @@ Proc PlotFlexCyl_Ellip(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FlexCyl_Ellip","coef_fleell","fleell")
+	AddModelToStrings("FlexCyl_Ellip","coef_fleell","parameters_fleell","fleell")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -70,7 +70,7 @@ Proc PlotSmearedFlexCyl_Ellip(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFlexCyl_Ellip","smear_coef_fleell","fleell")
+	AddModelToStrings("SmearedFlexCyl_Ellip","smear_coef_fleell","smear_parameters_fleell","fleell")
 End
 	
 
@@ -189,5 +189,4 @@ Function SmearedFlexCyl_Ellip(s) :FitFunc
 
 	return(0)
 End
-
 

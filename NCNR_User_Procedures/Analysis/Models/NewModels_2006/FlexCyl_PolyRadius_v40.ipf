@@ -26,7 +26,7 @@ Proc PlotFlexCyl_PolyRad(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FlexCyl_PolyRad","coef_fcpr","fcpr")
+	AddModelToStrings("FlexCyl_PolyRad","coef_fcpr","parameters_fcpr","fcpr")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -61,7 +61,7 @@ Proc PlotSmearedFlexCyl_PolyRad(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFlexCyl_PolyRad","smear_coef_fcpr","fcpr")
+	AddModelToStrings("SmearedFlexCyl_PolyRad","smear_coef_fcpr","smear_parameters_fcpr","fcpr")
 End
 
 

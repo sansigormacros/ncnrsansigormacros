@@ -31,7 +31,7 @@ Proc PlotOblateForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("OblateForm","coef_oef","oef")
+	AddModelToStrings("OblateForm","coef_oef","parameters_oef","oef")
 End
 
 ///////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ Proc PlotSmearedOblateForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOblateForm","smear_coef_oef","oef")
+	AddModelToStrings("SmearedOblateForm","smear_coef_oef","smear_parameters_oef","oef")
 End
 
 

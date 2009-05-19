@@ -72,8 +72,8 @@ Proc PlotEllipsoid2D(str)
 	Duplicate/O $(str+"_qx") xwave_Ellip2D
 	Duplicate/O $(str+"_qy") ywave_Ellip2D,zwave_Ellip2D			
 		
-	Variable/G gs_Ellip2D=0
-	gs_Ellip2D := Ellipsoid2D(coef_Ellip2D,zwave_Ellip2D,xwave_Ellip2D,ywave_Ellip2D)	//AAO 2D calculation
+	Variable/G g_Ellip2D=0
+	g_Ellip2D := Ellipsoid2D(coef_Ellip2D,zwave_Ellip2D,xwave_Ellip2D,ywave_Ellip2D)	//AAO 2D calculation
 	
 	Display ywave_Ellip2D vs xwave_Ellip2D
 	modifygraph log=0
@@ -91,12 +91,12 @@ Proc PlotEllipsoid2D(str)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_Ellip2Dmat=0
-	gs_Ellip2Dmat := UpdateQxQy2Mat(xwave_Ellip2D,ywave_Ellip2D,zwave_Ellip2D,Ellip2D_lin,Ellip2D_mat)
+	Variable/G g_Ellip2Dmat=0
+	g_Ellip2Dmat := UpdateQxQy2Mat(xwave_Ellip2D,ywave_Ellip2D,zwave_Ellip2D,Ellip2D_lin,Ellip2D_mat)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("Ellipsoid2D","coef_Ellip2D","Ellip2D")
+	AddModelToStrings("Ellipsoid2D","coef_Ellip2D","parameters_Ellip2D","Ellip2D")
 End
 
 //AAO version, uses XOP if available

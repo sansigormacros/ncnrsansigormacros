@@ -31,7 +31,7 @@ Proc PlotProlate_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Prolate_HS","coef_PEF_HS","PEF_HS")
+	AddModelToStrings("Prolate_HS","coef_PEF_HS","parameters_PEF_HS","PEF_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -67,7 +67,7 @@ Proc PlotSmearedProlate_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedProlate_HS","smear_coef_PEF_HS","PEF_HS")
+	AddModelToStrings("SmearedProlate_HS","smear_coef_PEF_HS","smear_parameters_PEF_HS","PEF_HS")
 End
 	
 
@@ -130,7 +130,7 @@ Proc PlotProlate_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Prolate_SW","coef_PEF_SW","PEF_SW")
+	AddModelToStrings("Prolate_SW","coef_PEF_SW","parameters_PEF_SW","PEF_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -166,7 +166,7 @@ Proc PlotSmearedProlate_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedProlate_SW","smear_coef_PEF_SW","PEF_SW")
+	AddModelToStrings("SmearedProlate_SW","smear_coef_PEF_SW","smear_parameters_PEF_SW","PEF_SW")
 End
 	
 
@@ -236,7 +236,7 @@ Proc PlotProlate_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Prolate_SC","coef_PEF_SC","PEF_SC")
+	AddModelToStrings("Prolate_SC","coef_PEF_SC","parameters_PEF_SC","PEF_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -277,7 +277,7 @@ Proc PlotSmearedProlate_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedProlate_SC","smear_coef_PEF_SC","PEF_SC")
+	AddModelToStrings("SmearedProlate_SC","smear_coef_PEF_SC","smear_parameters_PEF_SC","PEF_SC")
 End
 
 
@@ -345,7 +345,7 @@ Proc PlotProlate_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Prolate_SHS","coef_PEF_SHS","PEF_SHS")
+	AddModelToStrings("Prolate_SHS","coef_PEF_SHS","parameters_PEF_SHS","PEF_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -381,7 +381,7 @@ Proc PlotSmearedProlate_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedProlate_SHS","smear_coef_PEF_SHS","PEF_SHS")
+	AddModelToStrings("SmearedProlate_SHS","smear_coef_PEF_SHS","smear_parameters_PEF_SHS","PEF_SHS")
 End
 	
 

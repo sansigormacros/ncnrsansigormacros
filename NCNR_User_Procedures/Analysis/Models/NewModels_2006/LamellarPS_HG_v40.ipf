@@ -77,7 +77,7 @@ Proc PlotLamellarPS_HG(num,qmin,qmax)
 	epsilon_LamellarPS_HG[7] = 1		//to make the derivative useful 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LamellarPS_HG","coef_LamellarPS_HG","LamellarPS_HG")
+	AddModelToStrings("LamellarPS_HG","coef_LamellarPS_HG","parameters_LamellarPS_HG","LamellarPS_HG")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -119,7 +119,7 @@ Proc PlotSmearedLamellarPS_HG(str)
 	epsilon_LamellarPS_HG[7] = 1		//to make the derivative useful 
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedLamellarPS_HG","smear_coef_LamellarPS_HG","LamellarPS_HG")
+	AddModelToStrings("SmearedLamellarPS_HG","smear_coef_LamellarPS_HG","smear_parameters_LamellarPS_HG","LamellarPS_HG")
 End
 	
 

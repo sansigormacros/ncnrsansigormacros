@@ -31,7 +31,7 @@ Proc PlotEllipsoid_HS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Ellipsoid_HS","coef_EOR_HS","EOR_HS")
+	AddModelToStrings("Ellipsoid_HS","coef_EOR_HS","parameters_EOR_HS","EOR_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -67,7 +67,7 @@ Proc PlotSmearedEllipsoid_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipsoid_HS","smear_coef_EOR_HS","EOR_HS")
+	AddModelToStrings("SmearedEllipsoid_HS","smear_coef_EOR_HS","smear_parameters_EOR_HS","EOR_HS")
 End
 	
 
@@ -128,7 +128,7 @@ Proc PlotEllipsoid_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Ellipsoid_SW","coef_EOR_SW","EOR_SW")
+	AddModelToStrings("Ellipsoid_SW","coef_EOR_SW","parameters_EOR_SW","EOR_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -164,7 +164,7 @@ Proc PlotSmearedEllipsoid_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipsoid_SW","smear_coef_EOR_SW","EOR_SW")
+	AddModelToStrings("SmearedEllipsoid_SW","smear_coef_EOR_SW","smear_parameters_EOR_SW","EOR_SW")
 End
 	
 
@@ -231,7 +231,7 @@ Proc PlotEllipsoid_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Ellipsoid_SC","coef_EOR_SC","EOR_SC")
+	AddModelToStrings("Ellipsoid_SC","coef_EOR_SC","parameters_EOR_SC","EOR_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -272,7 +272,7 @@ Proc PlotSmearedEllipsoid_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipsoid_SC","smear_coef_EOR_SC","EOR_SC")
+	AddModelToStrings("SmearedEllipsoid_SC","smear_coef_EOR_SC","smear_parameters_EOR_SC","EOR_SC")
 End
 
 
@@ -336,7 +336,7 @@ Proc PlotEllipsoid_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Ellipsoid_SHS","coef_EOR_SHS","EOR_SHS")
+	AddModelToStrings("Ellipsoid_SHS","coef_EOR_SHS","parameters_EOR_SHS","EOR_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -372,7 +372,7 @@ Proc PlotSmearedEllipsoid_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipsoid_SHS","smear_coef_EOR_SHS","EOR_SHS")
+	AddModelToStrings("SmearedEllipsoid_SHS","smear_coef_EOR_SHS","smear_parameters_EOR_SHS","EOR_SHS")
 End
 	
 

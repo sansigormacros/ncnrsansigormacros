@@ -31,7 +31,7 @@ Proc PlotSquareWellStruct(num,qmin,qmax)
 	Label left "Structure Factor"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SquareWellStruct","coef_sws","sws")
+	AddModelToStrings("SquareWellStruct","coef_sws","parameters_sws","sws")
 End
 
 //AAO version
@@ -114,4 +114,3 @@ Function fSquareWellStruct(w,x) : FitFunc
 //   20 CONTINUE
       Return struc
 End
-

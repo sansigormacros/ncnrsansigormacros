@@ -28,7 +28,7 @@ Proc PlotFlexCyl_PolyLen(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FlexCyl_PolyLen","coef_flepl","flepl")
+	AddModelToStrings("FlexCyl_PolyLen","coef_flepl","parameters_flepl","flepl")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -63,7 +63,7 @@ Proc PlotSmearedFlexCyl_PolyLen(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFlexCyl_PolyLen","smear_coef_flepl","flepl")
+	AddModelToStrings("SmearedFlexCyl_PolyLen","smear_coef_flepl","smear_parameters_flepl","flepl")
 End
 	
 

@@ -42,7 +42,7 @@ Proc PlotLamellarFF(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("LamellarFF","coef_LamellarFF","LamellarFF")
+	AddModelToStrings("LamellarFF","coef_LamellarFF","parameters_LamellarFF","LamellarFF")
 //
 End
 
@@ -79,7 +79,7 @@ Proc PlotSmearedLamellarFF(str)
 	
 	SetDataFolder root:
 	
-	AddModelToStrings("SmearedLamellarFF","smear_coef_LamellarFF","LamellarFF")
+	AddModelToStrings("SmearedLamellarFF","smear_coef_LamellarFF","smear_parameters_LamellarFF","LamellarFF")
 End
 ////////////////////////////////////////////////////
 	

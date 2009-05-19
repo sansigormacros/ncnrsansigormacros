@@ -43,7 +43,7 @@ Proc PlotTriaxialEllipsoid(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("TriaxialEllipsoid","coef_triax","triax")
+	AddModelToStrings("TriaxialEllipsoid","coef_triax","parameters_triax","triax")
 //
 End
 
@@ -80,7 +80,7 @@ Proc PlotSmearedTriaxialEllipsoid(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedTriaxialEllipsoid","smear_coef_triax","triax")
+	AddModelToStrings("SmearedTriaxialEllipsoid","smear_coef_triax","smear_parameters_triax","triax")
 End
 
 	

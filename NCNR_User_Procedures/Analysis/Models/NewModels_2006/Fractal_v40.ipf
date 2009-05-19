@@ -29,7 +29,7 @@ Proc PlotFractal(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Fractal","coef_fra","fra")
+	AddModelToStrings("Fractal","coef_fra","parameters_fra","fra")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -64,7 +64,7 @@ Proc PlotSmearedFractal(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFractal","smear_coef_fra","fra")
+	AddModelToStrings("SmearedFractal","smear_coef_fra","smear_parameters_fra","fra")
 End
 
 

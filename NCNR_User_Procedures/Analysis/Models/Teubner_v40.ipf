@@ -28,7 +28,7 @@ Proc PlotTeubnerStreyModel(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 
-	AddModelToStrings("TeubnerStreyModel","coef_ts","ts")
+	AddModelToStrings("TeubnerStreyModel","coef_ts","parameters_ts","ts")
 End
 
 ///////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ Proc PlotSmearedTeubnerStreyModel(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedTeubnerStreyModel","smear_coef_ts","ts")
+	AddModelToStrings("SmearedTeubnerStreyModel","smear_coef_ts","smear_parameters_ts","ts")
 End
 
 //AAO version

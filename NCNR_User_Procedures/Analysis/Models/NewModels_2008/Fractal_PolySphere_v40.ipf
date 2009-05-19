@@ -31,7 +31,7 @@ Proc PlotFractalPolySphere(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FractalPolySphere","coef_fraPolySph","fraPolySph")
+	AddModelToStrings("FractalPolySphere","coef_fraPolySph","parameters_fraPolySph","fraPolySph")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -66,7 +66,7 @@ Proc PlotSmearedFractalPolySphere(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFractalPolySphere","smear_coef_fraPolySph","fraPolySph")
+	AddModelToStrings("SmearedFractalPolySphere","smear_coef_fraPolySph","smear_parameters_fraPolySph","fraPolySph")
 End
 
 

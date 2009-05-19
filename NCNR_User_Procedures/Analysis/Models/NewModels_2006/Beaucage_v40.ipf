@@ -33,7 +33,7 @@ Proc PlotOnelevel(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("OneLevel","coef_b1","b1")
+	AddModelToStrings("OneLevel","coef_b1","parameters_b1","b1")
 End
 
 Proc PlotTwoLevel(num,qmin,qmax)
@@ -56,7 +56,7 @@ Proc PlotTwoLevel(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("TwoLevel","coef_b2","b2")
+	AddModelToStrings("TwoLevel","coef_b2","parameters_b2","b2")
 End
 
 Proc PlotThreeLevel(num,qmin,qmax)
@@ -79,7 +79,7 @@ Proc PlotThreeLevel(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("ThreeLevel","coef_b3","b3")
+	AddModelToStrings("ThreeLevel","coef_b3","parameters_b3","b3")
 End
 
 Proc PlotFourLevel(num,qmin,qmax)
@@ -102,7 +102,7 @@ Proc PlotFourLevel(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FourLevel","coef_b4","b4")
+	AddModelToStrings("FourLevel","coef_b4","parameters_b4","b4")
 End
 
 /////////// macros for smeared model calculations
@@ -139,7 +139,7 @@ Proc PlotSmearedOneLevel(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedOneLevel","smear_coef_b1","b1")
+	AddModelToStrings("SmearedOneLevel","smear_coef_b1","smear_parameters_b1","b1")
 End
 	
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -174,7 +174,7 @@ Proc PlotSmearedTwoLevel(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedTwoLevel","smear_coef_b2","b2")
+	AddModelToStrings("SmearedTwoLevel","smear_coef_b2","smear_parameters_b2","b2")
 End
 	
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -209,7 +209,7 @@ Proc PlotSmearedThreeLevel(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedThreeLevel","smear_coef_b3","b3")
+	AddModelToStrings("SmearedThreeLevel","smear_coef_b3","smear_parameters_b3","b3")
 End
 	
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -244,7 +244,7 @@ Proc PlotSmearedFourLevel(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFourLevel","smear_coef_b4","b4")
+	AddModelToStrings("SmearedFourLevel","smear_coef_b4","smear_parameters_b4","b4")
 End
 	
 

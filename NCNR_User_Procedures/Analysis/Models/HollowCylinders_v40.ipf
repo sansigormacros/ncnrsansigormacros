@@ -30,7 +30,7 @@ Proc PlotHollowCylinder(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("HollowCylinder","coef_Hcyl","Hcyl")
+	AddModelToStrings("HollowCylinder","coef_Hcyl","parameters_Hcyl","Hcyl")
 End
 
 ///////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ Proc PlotSmearedHollowCylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedHollowCylinder","smear_coef_Hcyl","Hcyl")
+	AddModelToStrings("SmearedHollowCylinder","smear_coef_Hcyl","smear_parameters_Hcyl","Hcyl")
 End
 
 

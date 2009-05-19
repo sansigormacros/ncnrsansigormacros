@@ -42,7 +42,7 @@ Proc PlotStickyHS_Struct(num,qmin,qmax)
 	Label left "S(q)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("StickyHS_Struct","coef_shsSQ","shsSQ")
+	AddModelToStrings("StickyHS_Struct","coef_shsSQ","parameters_shsSQ","shsSQ")
 //
 End
 
@@ -134,4 +134,3 @@ Function fStickyHS_Struct(w,x) : FitFunc
 
 	Return (sq)
 End
-

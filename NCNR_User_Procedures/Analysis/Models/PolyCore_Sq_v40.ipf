@@ -32,7 +32,7 @@ Proc PlotPolyCore_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCore_HS","coef_PCF_HS","PCF_HS")
+	AddModelToStrings("PolyCore_HS","coef_PCF_HS","parameters_PCF_HS","PCF_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -68,7 +68,7 @@ Proc PlotSmearedPolyCore_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCore_HS","smear_coef_PCF_HS","PCF_HS")
+	AddModelToStrings("SmearedPolyCore_HS","smear_coef_PCF_HS","smear_parameters_PCF_HS","PCF_HS")
 End
 	
 
@@ -139,7 +139,7 @@ Proc PlotPolyCore_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCore_SW","coef_PCF_SW","PCF_SW")
+	AddModelToStrings("PolyCore_SW","coef_PCF_SW","parameters_PCF_SW","PCF_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -175,7 +175,7 @@ Proc PlotSmearedPolyCore_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCore_SW","smear_coef_PCF_SW","PCF_SW")
+	AddModelToStrings("SmearedPolyCore_SW","smear_coef_PCF_SW","smear_parameters_PCF_SW","PCF_SW")
 End
 	
 
@@ -254,7 +254,7 @@ Proc PlotPolyCore_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCore_SC","coef_PCF_SC","PCF_SC")
+	AddModelToStrings("PolyCore_SC","coef_PCF_SC","parameters_PCF_SC","PCF_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -295,7 +295,7 @@ Proc PlotSmearedPolyCore_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCore_SC","smear_coef_PCF_SC","PCF_SC")
+	AddModelToStrings("SmearedPolyCore_SC","smear_coef_PCF_SC","smear_parameters_PCF_SC","PCF_SC")
 End
 
 
@@ -370,7 +370,7 @@ Proc PlotPolyCore_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCore_SHS","coef_PCF_SHS","PCF_SHS")
+	AddModelToStrings("PolyCore_SHS","coef_PCF_SHS","parameters_PCF_SHS","PCF_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -406,7 +406,7 @@ Proc PlotSmearedPolyCore_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCore_SHS","smear_coef_PCF_SHS","PCF_SHS")
+	AddModelToStrings("SmearedPolyCore_SHS","smear_coef_PCF_SHS","smear_parameters_PCF_SHS","PCF_SHS")
 End
 	
 

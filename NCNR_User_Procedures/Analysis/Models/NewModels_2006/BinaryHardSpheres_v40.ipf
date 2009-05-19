@@ -66,7 +66,7 @@ Proc PlotBinaryHS(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("BinaryHS","coef_BinaryHS","BinaryHS")
+	AddModelToStrings("BinaryHS","coef_BinaryHS","parameters_BinaryHS","BinaryHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -102,7 +102,7 @@ Proc PlotSmearedBinaryHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedBinaryHS","smear_coef_BinaryHS","BinaryHS")
+	AddModelToStrings("SmearedBinaryHS","smear_coef_BinaryHS","smear_parameters_BinaryHS","BinaryHS")
 End
 
 

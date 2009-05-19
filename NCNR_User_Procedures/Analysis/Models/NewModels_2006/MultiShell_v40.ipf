@@ -30,7 +30,7 @@ Proc PlotMultiShellSphere(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("MultiShellSphere","coef_mss","mss")
+	AddModelToStrings("MultiShellSphere","coef_mss","parameters_mss","mss")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -65,7 +65,7 @@ Proc PlotSmearedMultiShellSphere(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedMultiShellSphere","smear_coef_mss","mss")
+	AddModelToStrings("SmearedMultiShellSphere","smear_coef_mss","smear_parameters_mss","mss")
 End
 
 

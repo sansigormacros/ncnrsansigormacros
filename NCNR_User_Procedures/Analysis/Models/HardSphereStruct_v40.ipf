@@ -31,7 +31,7 @@ Proc PlotHardSphereStruct(num,qmin,qmax)
 	Label left "Structure Factor"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("HardSphereStruct","coef_hss","hss")
+	AddModelToStrings("HardSphereStruct","coef_hss","parameters_hss","hss")
 End
 
 //AAO version
@@ -109,4 +109,3 @@ Function fHardSphereStruct(w,x) : FitFunc
       RETURN Struc
 End
 // End of HardSphereStruct
-

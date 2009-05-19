@@ -31,7 +31,7 @@ Proc PlotSchulzSpheres_HS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SchulzSpheres_HS","coef_sch_HS","sch_HS")
+	AddModelToStrings("SchulzSpheres_HS","coef_sch_HS","parameters_sch_HS","sch_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -66,7 +66,7 @@ Proc PlotSmearedSchulzSpheres_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSchulzSpheres_HS","smear_coef_sch_HS","sch_HS")
+	AddModelToStrings("SmearedSchulzSpheres_HS","smear_coef_sch_HS","smear_parameters_sch_HS","sch_HS")
 End
 	
 
@@ -135,7 +135,7 @@ Proc PlotSchulzSpheres_SW(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SchulzSpheres_SW","coef_sch_SW","sch_SW")
+	AddModelToStrings("SchulzSpheres_SW","coef_sch_SW","parameters_sch_SW","sch_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -170,7 +170,7 @@ Proc PlotSmearedSchulzSpheres_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSchulzSpheres_SW","smear_coef_sch_SW","sch_SW")
+	AddModelToStrings("SmearedSchulzSpheres_SW","smear_coef_sch_SW","smear_parameters_sch_SW","sch_SW")
 End
 
 	
@@ -246,7 +246,7 @@ Proc PlotSchulzSpheres_SC(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SchulzSpheres_SC","coef_sch_SC","sch_SC")
+	AddModelToStrings("SchulzSpheres_SC","coef_sch_SC","parameters_sch_SC","sch_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -286,7 +286,7 @@ Proc PlotSmearedSchulzSpheres_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSchulzSpheres_SC","smear_coef_sch_SC","sch_SC")
+	AddModelToStrings("SmearedSchulzSpheres_SC","smear_coef_sch_SC","smear_parameters_sch_SC","sch_SC")
 End
 
 
@@ -357,7 +357,7 @@ Proc PlotSchulzSpheres_SHS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SchulzSpheres_SHS","coef_sch_SHS","sch_SHS")
+	AddModelToStrings("SchulzSpheres_SHS","coef_sch_SHS","parameters_sch_SHS","sch_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -392,7 +392,7 @@ Proc PlotSmearedSchulzSpheres_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSchulzSpheres_SHS","smear_coef_sch_SHS","sch_SHS")
+	AddModelToStrings("SmearedSchulzSpheres_SHS","smear_coef_sch_SHS","smear_parameters_sch_SHS","sch_SHS")
 End
 
 
@@ -581,4 +581,3 @@ Function fSmearedSchulzSpheres_SHS(coefW,yW,xW)
 	
 	return (0)
 End
-

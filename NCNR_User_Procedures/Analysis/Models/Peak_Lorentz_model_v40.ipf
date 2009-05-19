@@ -25,7 +25,7 @@ Proc PlotPeak_Lorentz_Model(num,qmin,qmax)
 	Label left "Peak - Lorentzian (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Peak_Lorentz_Model","coef_Peak_Lorentz","Peak_Lorentz")
+	AddModelToStrings("Peak_Lorentz_Model","coef_Peak_Lorentz","parameters_Peak_Lorentz","Peak_Lorentz")
 //
 End
 
@@ -61,7 +61,7 @@ Proc PlotSmearedPeak_Lorentz_Model(str)
 	Label left "Peak_Lorentz Model (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
-	AddModelToStrings("SmearedPeak_Lorentz_Model","smear_coef_Peak_Lorentz","Peak_Lorentz")
+	AddModelToStrings("SmearedPeak_Lorentz_Model","smear_coef_Peak_Lorentz","smear_parameters_Peak_Lorentz","Peak_Lorentz")
 End
 
 

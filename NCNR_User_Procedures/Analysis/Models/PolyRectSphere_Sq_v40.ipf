@@ -31,7 +31,7 @@ Proc PlotPolyRectSphere_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyRectSphere_HS","coef_RECT_HS","RECT_HS")
+	AddModelToStrings("PolyRectSphere_HS","coef_RECT_HS","parameters_RECT_HS","RECT_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -67,7 +67,7 @@ Proc PlotSmearedPolyRectSphere_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyRectSphere_HS","smear_coef_RECT_HS","RECT_HS")
+	AddModelToStrings("SmearedPolyRectSphere_HS","smear_coef_RECT_HS","smear_parameters_RECT_HS","RECT_HS")
 End
 	
 
@@ -135,7 +135,7 @@ Proc PlotPolyRectSphere_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyRectSphere_SW","coef_RECT_SW","RECT_SW")
+	AddModelToStrings("PolyRectSphere_SW","coef_RECT_SW","parameters_RECT_SW","RECT_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -171,7 +171,7 @@ Proc PlotSmearedPolyRectSphere_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyRectSphere_SW","smear_coef_RECT_SW","RECT_SW")
+	AddModelToStrings("SmearedPolyRectSphere_SW","smear_coef_RECT_SW","smear_parameters_RECT_SW","RECT_SW")
 End
 	
 
@@ -247,7 +247,7 @@ Proc PlotPolyRectSphere_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyRectSphere_SC","coef_RECT_SC","RECT_SC")
+	AddModelToStrings("PolyRectSphere_SC","coef_RECT_SC","parameters_RECT_SC","RECT_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -288,7 +288,7 @@ Proc PlotSmearedPolyRectSphere_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyRectSphere_SC","smear_coef_RECT_SC","RECT_SC")
+	AddModelToStrings("SmearedPolyRectSphere_SC","smear_coef_RECT_SC","smear_parameters_RECT_SC","RECT_SC")
 End
 
 
@@ -360,7 +360,7 @@ Proc PlotPolyRectSphere_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyRectSphere_SHS","coef_RECT_SHS","RECT_SHS")
+	AddModelToStrings("PolyRectSphere_SHS","coef_RECT_SHS","parameters_RECT_SHS","RECT_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -396,7 +396,7 @@ Proc PlotSmearedPolyRectSphere_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyRectSphere_SHS","smear_coef_RECT_SHS","RECT_SHS")
+	AddModelToStrings("SmearedPolyRectSphere_SHS","smear_coef_RECT_SHS","smear_parameters_RECT_SHS","RECT_SHS")
 End
 	
 

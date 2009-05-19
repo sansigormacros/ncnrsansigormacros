@@ -31,7 +31,7 @@ Proc PlotCoreShellSphere(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShellSphere","coef_css","css")
+	AddModelToStrings("CoreShellSphere","coef_css","parameters_css","css")
 End
 
 ///////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ Proc PlotSmearedCoreShellSphere(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShellSphere","smear_coef_css","css")
+	AddModelToStrings("SmearedCoreShellSphere","smear_coef_css","smear_parameters_css","css")
 End
 
 

@@ -35,7 +35,7 @@ Proc PlotPolyCoreForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCoreForm","coef_pcf","pcf")
+	AddModelToStrings("PolyCoreForm","coef_pcf","parameters_pcf","pcf")
 End
 
 ///////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ Proc PlotSmearedPolyCoreForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCoreForm","smear_coef_pcf","pcf")
+	AddModelToStrings("SmearedPolyCoreForm","smear_coef_pcf","smear_parameters_pcf","pcf")
 End
 
 

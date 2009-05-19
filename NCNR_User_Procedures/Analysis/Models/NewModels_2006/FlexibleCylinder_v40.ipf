@@ -38,7 +38,7 @@ Proc PlotFlexExclVolCyl(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("FlexExclVolCyl","coef_fle","fle")
+	AddModelToStrings("FlexExclVolCyl","coef_fle","parameters_fle","fle")
 End
 ///////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ Proc PlotSmearedFlexExclVolCyl(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedFlexExclVolCyl","smear_coef_fle","fle")
+	AddModelToStrings("SmearedFlexExclVolCyl","smear_coef_fle","smear_parameters_fle","fle")
 End
 	
 

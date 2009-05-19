@@ -25,7 +25,7 @@ Proc PlotPeak_Gauss_Model(num,qmin,qmax)
 	Label left "Peak - Gauss (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Peak_Gauss_Model","coef_Peak_Gauss","Peak_Gauss")
+	AddModelToStrings("Peak_Gauss_Model","coef_Peak_Gauss","parameters_Peak_Gauss","Peak_Gauss")
 //
 End
 
@@ -62,7 +62,7 @@ Proc PlotSmearedPeak_Gauss_Model(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPeak_Gauss_Model","smear_coef_Peak_Gauss","Peak_Gauss")
+	AddModelToStrings("SmearedPeak_Gauss_Model","smear_coef_Peak_Gauss","smear_parameters_Peak_Gauss","Peak_Gauss")
 End
 
 

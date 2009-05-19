@@ -30,7 +30,7 @@ Proc PlotEllipsoidForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("EllipsoidForm","coef_eor","eor")
+	AddModelToStrings("EllipsoidForm","coef_eor","parameters_eor","eor")
 End
 ///////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ Proc PlotSmearedEllipsoidForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipsoidForm","smear_coef_eor","eor")
+	AddModelToStrings("SmearedEllipsoidForm","smear_coef_eor","smear_parameters_eor","eor")
 End
 
 //AAO version

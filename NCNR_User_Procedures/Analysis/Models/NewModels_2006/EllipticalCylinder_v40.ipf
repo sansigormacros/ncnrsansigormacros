@@ -38,7 +38,7 @@ Proc PlotEllipticalCylinder(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("EllipticalCylinder","coef_ecf","ecf")
+	AddModelToStrings("EllipticalCylinder","coef_ecf","parameters_ecf","ecf")
 End
 ///////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ Proc PlotSmearedEllipticalCylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedEllipticalCylinder","smear_coef_ecf","ecf")
+	AddModelToStrings("SmearedEllipticalCylinder","smear_coef_ecf","smear_parameters_ecf","ecf")
 End
 
 

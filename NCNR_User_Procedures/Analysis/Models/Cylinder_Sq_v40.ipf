@@ -31,7 +31,7 @@ Proc PlotCylinder_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cylinder_HS","coef_CYL_HS","CYL_HS")
+	AddModelToStrings("Cylinder_HS","coef_CYL_HS","parameters_CYL_HS","CYL_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -67,7 +67,7 @@ Proc PlotSmearedCylinder_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCylinder_HS","smear_coef_CYL_HS","CYL_HS")
+	AddModelToStrings("SmearedCylinder_HS","smear_coef_CYL_HS","smear_parameters_CYL_HS","CYL_HS")
 End
 		
 
@@ -127,7 +127,7 @@ Proc PlotCylinder_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cylinder_SW","coef_CYL_SW","CYL_SW")
+	AddModelToStrings("Cylinder_SW","coef_CYL_SW","parameters_CYL_SW","CYL_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -163,7 +163,7 @@ Proc PlotSmearedCylinder_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCylinder_SW","smear_coef_CYL_SW","CYL_SW")
+	AddModelToStrings("SmearedCylinder_SW","smear_coef_CYL_SW","smear_parameters_CYL_SW","CYL_SW")
 End
 	
 
@@ -230,7 +230,7 @@ Proc PlotCylinder_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cylinder_SC","coef_CYL_SC","CYL_SC")
+	AddModelToStrings("Cylinder_SC","coef_CYL_SC","parameters_CYL_SC","CYL_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -271,7 +271,7 @@ Proc PlotSmearedCylinder_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCylinder_SC","smear_coef_CYL_SC","CYL_SC")
+	AddModelToStrings("SmearedCylinder_SC","smear_coef_CYL_SC","smear_parameters_CYL_SC","CYL_SC")
 End
 
 
@@ -336,7 +336,7 @@ Proc PlotCylinder_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Cylinder_SHS","coef_CYL_SHS","CYL_SHS")
+	AddModelToStrings("Cylinder_SHS","coef_CYL_SHS","parameters_CYL_SHS","CYL_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -372,7 +372,7 @@ Proc PlotSmearedCylinder_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCylinder_SHS","smear_coef_CYL_SHS","CYL_SHS")
+	AddModelToStrings("SmearedCylinder_SHS","smear_coef_CYL_SHS","smear_parameters_CYL_SHS","CYL_SHS")
 End
 	
 

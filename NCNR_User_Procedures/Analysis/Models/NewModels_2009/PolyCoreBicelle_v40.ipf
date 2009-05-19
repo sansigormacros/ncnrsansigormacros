@@ -41,7 +41,7 @@ Proc PlotPolyCoreBicelle(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCoreBicelle","coef_PCBicelle","PCBicelle")
+	AddModelToStrings("PolyCoreBicelle","coef_PCBicelle","parameters_PCBicelle","PCBicelle")
 End
 
 
@@ -79,7 +79,7 @@ Proc PlotSmearedPolyCoreBicelle(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCoreBicelle","smear_coef_PCBicelle","PCBicelle")
+	AddModelToStrings("SmearedPolyCoreBicelle","smear_coef_PCBicelle","smear_parameters_PCBicelle","PCBicelle")
 End
 ///////////////////////////////////////////////////////////////////////////////
 // unsmeared model calculation: function integrates for a polydisperse radius.

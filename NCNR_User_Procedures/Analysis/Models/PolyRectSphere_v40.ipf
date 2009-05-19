@@ -33,7 +33,7 @@ Proc PlotPolyRectSpheres(num,qmin,qmax)
 //	DoAlert 0,"The form facor is not properly normalized with the polydisperse volume"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyRectSpheres","coef_rect","rect")
+	AddModelToStrings("PolyRectSpheres","coef_rect","parameters_rect","rect")
 End
 
 
@@ -70,7 +70,7 @@ Proc PlotSmearedPolyRectSpheres(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyRectSpheres","smear_coef_rect","rect")
+	AddModelToStrings("SmearedPolyRectSpheres","smear_coef_rect","smear_parameters_rect","rect")
 End
 
 

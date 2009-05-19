@@ -31,7 +31,7 @@ Proc PlotGaussPolySphere_HS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussPolySphere_HS","coef_pgs_HS","pgs_HS")
+	AddModelToStrings("GaussPolySphere_HS","coef_pgs_HS","parameters_pgs_HS","pgs_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -66,7 +66,7 @@ Proc PlotSmearedGaussPolySphere_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussPolySphere_HS","smear_coef_pgs_HS","pgs_HS")
+	AddModelToStrings("SmearedGaussPolySphere_HS","smear_coef_pgs_HS","smear_parameters_pgs_HS","pgs_HS")
 End
 
 
@@ -134,7 +134,7 @@ Proc PlotGaussPolySphere_SW(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussPolySphere_SW","coef_pgs_SW","pgs_SW")
+	AddModelToStrings("GaussPolySphere_SW","coef_pgs_SW","parameters_pgs_SW","pgs_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -169,7 +169,7 @@ Proc PlotSmearedGaussPolySphere_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussPolySphere_SW","smear_coef_pgs_SW","pgs_SW")
+	AddModelToStrings("SmearedGaussPolySphere_SW","smear_coef_pgs_SW","smear_parameters_pgs_SW","pgs_SW")
 End
 	
 
@@ -243,7 +243,7 @@ Proc PlotGaussPolySphere_SC(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussPolySphere_SC","coef_pgs_SC","pgs_SC")
+	AddModelToStrings("GaussPolySphere_SC","coef_pgs_SC","parameters_pgs_SC","pgs_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -283,7 +283,7 @@ Proc PlotSmearedGaussPolySphere_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussPolySphere_SC","smear_coef_pgs_SC","pgs_SC")
+	AddModelToStrings("SmearedGaussPolySphere_SC","smear_coef_pgs_SC","smear_parameters_pgs_SC","pgs_SC")
 End
 
 
@@ -353,7 +353,7 @@ Proc PlotGaussPolySphere_SHS(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussPolySphere_SHS","coef_pgs_SHS","pgs_SHS")
+	AddModelToStrings("GaussPolySphere_SHS","coef_pgs_SHS","parameters_pgs_SHS","pgs_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -388,7 +388,7 @@ Proc PlotSmearedGaussPolySphere_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussPolySphere_SHS","smear_coef_pgs_SHS","pgs_SHS")
+	AddModelToStrings("SmearedGaussPolySphere_SHS","smear_coef_pgs_SHS","smear_parameters_pgs_SHS","pgs_SHS")
 End
 	
 
@@ -576,4 +576,3 @@ Function fSmearedGaussPolySphere_SHS(coefW,yW,xW)
 	
 	return (0)
 End
-

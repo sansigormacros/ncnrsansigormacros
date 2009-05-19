@@ -55,7 +55,7 @@ Proc PlotSphere2D(str)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("Sphere2D","coef_sf2D","sf2D")
+	AddModelToStrings("Sphere2D","coef_sf2D","parameters_sf2D","sf2D")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -91,8 +91,20 @@ Proc PlotSmearedSphere2D(str)
 	Label left "qy (A\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
+	// generate the matrix representation
+	Duplicate/O $(str+"_qx"), sm_qx
+	Duplicate/O $(str+"_qy"), sm_qy		// I can't use local variables in dependencies, so I need the name (that I can't get)
+	
+	ConvertQxQy2Mat(sm_qx,sm_qy,smeared_sf2D,"sm_sf2D_mat")
+	Duplicate/O $"sm_sf2D_mat",$"sm_sf2D_lin" 		//keep a linear-scaled version of the data
+	// _mat is for display, _lin is the real calculation
+
+	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
+	Variable/G gs_sf2Dmat=0
+	gs_sf2Dmat := UpdateQxQy2Mat(sm_qx,sm_qy,smeared_sf2D,sm_sf2D_lin,sm_sf2D_mat)
+	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere2D","smear_coef_sf2D","sf2D")
+	AddModelToStrings("SmearedSphere2D","smear_coef_sf2D","smear_parameters_sf2D","sf2D")
 End
 
 

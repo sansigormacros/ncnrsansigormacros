@@ -72,8 +72,8 @@ Proc PlotCoreShellCylinder2D(str)
 	Duplicate/O $(str+"_qx") xwave_CSCyl2D
 	Duplicate/O $(str+"_qy") ywave_CSCyl2D,zwave_CSCyl2D			
 		
-	Variable/G gs_CSCyl2D=0
-	gs_CSCyl2D := CoreShellCylinder2D(coef_CSCyl2D,zwave_CSCyl2D,xwave_CSCyl2D,ywave_CSCyl2D)	//AAO 2D calculation
+	Variable/G g_CSCyl2D=0
+	g_CSCyl2D := CoreShellCylinder2D(coef_CSCyl2D,zwave_CSCyl2D,xwave_CSCyl2D,ywave_CSCyl2D)	//AAO 2D calculation
 	
 	Display ywave_CSCyl2D vs xwave_CSCyl2D
 	modifygraph log=0
@@ -91,12 +91,12 @@ Proc PlotCoreShellCylinder2D(str)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_CSCyl2Dmat=0
-	gs_CSCyl2Dmat := UpdateQxQy2Mat(xwave_CSCyl2D,ywave_CSCyl2D,zwave_CSCyl2D,CSCyl2D_lin,CSCyl2D_mat)
+	Variable/G g_CSCyl2Dmat=0
+	g_CSCyl2Dmat := UpdateQxQy2Mat(xwave_CSCyl2D,ywave_CSCyl2D,zwave_CSCyl2D,CSCyl2D_lin,CSCyl2D_mat)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("CoreShellCylinder2D","coef_CSCyl2D","CSCyl2D")
+	AddModelToStrings("CoreShellCylinder2D","coef_CSCyl2D","parameters_CSCyl2D","CSCyl2D")
 End
 
 //AAO version, uses XOP if available

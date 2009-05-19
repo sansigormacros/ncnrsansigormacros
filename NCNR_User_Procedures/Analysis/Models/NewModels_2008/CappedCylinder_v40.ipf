@@ -43,7 +43,7 @@ Proc PlotCappedCylinder(num,qmin,qmax)
 	Label left "I(q) (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CappedCylinder","coef_CapCyl","CapCyl")
+	AddModelToStrings("CappedCylinder","coef_CapCyl","parameters_CapCyl","CapCyl")
 //
 End
 
@@ -80,7 +80,7 @@ Proc PlotSmearedCappedCylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCappedCylinder","smear_coef_CapCyl","CapCyl")
+	AddModelToStrings("SmearedCappedCylinder","smear_coef_CapCyl","smear_parameters_CapCyl","CapCyl")
 End
 
 	

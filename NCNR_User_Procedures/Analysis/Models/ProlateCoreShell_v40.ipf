@@ -30,7 +30,7 @@ Proc PlotProlateForm(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("ProlateForm","coef_pef","pef")
+	AddModelToStrings("ProlateForm","coef_pef","parameters_pef","pef")
 End
 
 ///////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ Proc PlotSmearedProlateForm(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)	
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedProlateForm","smear_coef_pef","pef")
+	AddModelToStrings("SmearedProlateForm","smear_coef_pef","smear_parameters_pef","pef")
 End
 
 //AAO version

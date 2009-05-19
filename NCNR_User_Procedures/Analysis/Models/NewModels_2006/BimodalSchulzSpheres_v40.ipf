@@ -34,7 +34,7 @@ Proc PlotBimodalSchulzSpheres(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("BimodalSchulzSpheres","coef_bss","bss")
+	AddModelToStrings("BimodalSchulzSpheres","coef_bss","parameters_bss","bss")
 End
 
 
@@ -73,7 +73,7 @@ Proc PlotSmearedBimodalSchulzSpheres(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedBimodalSchulzSpheres","smear_coef_bss","bss")
+	AddModelToStrings("SmearedBimodalSchulzSpheres","smear_coef_bss","smear_parameters_bss","bss")
 End
 	
 
@@ -257,5 +257,4 @@ Function SmearedBimodalSchulzSpheres(s) :FitFunc
 	return(0)
 End
 	
-
 

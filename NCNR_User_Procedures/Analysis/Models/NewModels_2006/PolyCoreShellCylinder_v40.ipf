@@ -40,7 +40,7 @@ Proc PlotPolyCoShCylinder(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyCoShCylinder","coef_CSCpr","CSCpr")
+	AddModelToStrings("PolyCoShCylinder","coef_CSCpr","parameters_CSCpr","CSCpr")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -76,7 +76,7 @@ Proc PlotSmearedPolyCoShCylinder(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyCoShCylinder","smear_coef_CSCpr","CSCpr")
+	AddModelToStrings("SmearedPolyCoShCylinder","smear_coef_CSCpr","smear_parameters_CSCpr","CSCpr")
 End
 	
 

@@ -67,7 +67,7 @@ Proc PlotRPAForm(num,qmin,qmax,nCASE)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("RPAForm","coef_rpa","rpa")
+	AddModelToStrings("RPAForm","coef_rpa","parameters_rpa","rpa")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -141,7 +141,7 @@ Proc PlotSmearedRPAForm(str,nCASE)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedRPAForm","smear_coef_rpa","rpa")
+	AddModelToStrings("SmearedRPAForm","smear_coef_rpa","smear_parameters_rpa","rpa")
 End
 
 ///////////////////////////////////////////////////////////////

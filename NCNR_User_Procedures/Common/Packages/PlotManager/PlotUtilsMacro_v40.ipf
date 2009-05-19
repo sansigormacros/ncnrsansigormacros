@@ -22,17 +22,20 @@
 
 // create a KW=string; of model=coef correspondence as the models are plotted, rather than
 // some other hard-wired solution
-Function AddModelToStrings(funcStr,coefStr,suffix)
-	String funcStr,coefStr,suffix
+Function AddModelToStrings(funcStr,coefStr,paramStr,suffix)
+	String funcStr,coefStr,paramStr,suffix
 	
-	if(exists("root:Packages:NIST:coefKWStr")==0)
+	if(exists("root:Packages:NIST:paramKWStr")==0)
 		String/G root:Packages:NIST:coefKWStr=""
+		String/G root:Packages:NIST:paramKWStr=""
 		String/G root:Packages:NIST:suffixKWStr=""
 	endif
 	SVAR coefKWStr = root:Packages:NIST:coefKWStr
+	SVAR paramKWStr = root:Packages:NIST:paramKWStr
 	SVAR suffixKWStr = root:Packages:NIST:suffixKWStr
 	coefKWStr += funcStr+"="+coefStr+";"
-	suffixKWStr += coefStr+"="+suffix+";"
+	paramKWStr += funcStr+"="+paramStr+";"
+	suffixKWStr += funcStr+"="+suffix+";"
 end
 
 // loads a 1-d (ascii) datafile and plots the data
@@ -821,6 +824,7 @@ Function/S GetAList(type)
 		str = RemoveFromList("Packages", str, ";")
 		str = RemoveFromList("AutoFit", str, ";")
 		str = RemoveFromList("TISANE", str, ";")
+		str = RemoveFromList("HayPenMSA", str, ";")
 	endif
 	
 	return(str)

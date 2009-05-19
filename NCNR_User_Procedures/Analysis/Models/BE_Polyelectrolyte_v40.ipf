@@ -32,7 +32,7 @@ Proc PlotBEPolyelectrolyte(num,qmin,qmax)
 	Label left "S(q) BE , cm\\S-1\\M"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("BEPolyelectrolyte","coef_BE","BE")
+	AddModelToStrings("BEPolyelectrolyte","coef_BE","parameters_BE","BE")
 End
 
 ///////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ Proc PlotSmearedBEPolyelectrolyte(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedBEPolyelectrolyte","smear_coef_BE","BE")
+	AddModelToStrings("SmearedBEPolyelectrolyte","smear_coef_BE","smear_parameters_BE","BE")
 End
 	
 
@@ -173,5 +173,4 @@ Function fSmearedBEPolyelectrolyte(coefW,yW,xW)
 	
 	return (0)
 End
-
 

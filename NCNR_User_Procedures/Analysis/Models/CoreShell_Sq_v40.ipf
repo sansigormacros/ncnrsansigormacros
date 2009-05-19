@@ -31,7 +31,7 @@ Proc PlotCoreShell_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShell_HS","coef_CSS_HS","CSS_HS")
+	AddModelToStrings("CoreShell_HS","coef_CSS_HS","parameters_CSS_HS","CSS_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -67,7 +67,7 @@ Proc PlotSmearedCoreShell_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShell_HS","smear_coef_CSS_HS","CSS_HS")
+	AddModelToStrings("SmearedCoreShell_HS","smear_coef_CSS_HS","smear_parameters_CSS_HS","CSS_HS")
 End
 	
 
@@ -127,7 +127,7 @@ Proc PlotCoreShell_SW(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShell_SW","coef_CSS_SW","CSS_SW")
+	AddModelToStrings("CoreShell_SW","coef_CSS_SW","parameters_CSS_SW","CSS_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -163,7 +163,7 @@ Proc PlotSmearedCoreShell_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShell_SW","smear_coef_CSS_SW","CSS_SW")
+	AddModelToStrings("SmearedCoreShell_SW","smear_coef_CSS_SW","smear_parameters_CSS_SW","CSS_SW")
 End
 	
 
@@ -231,7 +231,7 @@ Proc PlotCoreShell_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShell_SC","coef_CSS_SC","CSS_SC")
+	AddModelToStrings("CoreShell_SC","coef_CSS_SC","parameters_CSS_SC","CSS_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -272,7 +272,7 @@ Proc PlotSmearedCoreShell_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShell_SC","smear_coef_CSS_SC","CSS_SC")
+	AddModelToStrings("SmearedCoreShell_SC","smear_coef_CSS_SC","smear_parameters_CSS_SC","CSS_SC")
 End
 	
 
@@ -336,7 +336,7 @@ Proc PlotCoreShell_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("CoreShell_SHS","coef_CSS_SHS","CSS_SHS")
+	AddModelToStrings("CoreShell_SHS","coef_CSS_SHS","parameters_CSS_SHS","CSS_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -372,7 +372,7 @@ Proc PlotSmearedCoreShell_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedCoreShell_SHS","smear_coef_CSS_SHS","CSS_SHS")
+	AddModelToStrings("SmearedCoreShell_SHS","smear_coef_CSS_SHS","smear_parameters_CSS_SHS","CSS_SHS")
 End
 	
 

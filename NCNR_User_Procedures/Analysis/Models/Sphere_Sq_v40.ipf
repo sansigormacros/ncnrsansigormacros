@@ -32,7 +32,7 @@ Proc PlotSphere_HS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Sphere_HS","coef_S_HS","S_HS")
+	AddModelToStrings("Sphere_HS","coef_S_HS","parameters_S_HS","S_HS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -68,7 +68,7 @@ Proc PlotSmearedSphere_HS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere_HS","smear_coef_S_HS","S_HS")
+	AddModelToStrings("SmearedSphere_HS","smear_coef_S_HS","smear_parameters_S_HS","S_HS")
 End
 
 
@@ -128,7 +128,7 @@ Proc PlotSphere_SW(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"					
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
-	AddModelToStrings("Sphere_SW","coef_S_SW","S_SW")
+	AddModelToStrings("Sphere_SW","coef_S_SW","parameters_S_SW","S_SW")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -164,7 +164,7 @@ Proc PlotSmearedSphere_SW(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere_SW","smear_coef_S_SW","S_SW")
+	AddModelToStrings("SmearedSphere_SW","smear_coef_S_SW","smear_parameters_S_SW","S_SW")
 End
 	
 
@@ -229,7 +229,7 @@ Proc PlotSphere_SC(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Sphere_SC","coef_S_SC","S_SC")
+	AddModelToStrings("Sphere_SC","coef_S_SC","parameters_S_SC","S_SC")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -270,7 +270,7 @@ Proc PlotSmearedSphere_SC(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere_SC","smear_coef_S_SC","S_SC")
+	AddModelToStrings("SmearedSphere_SC","smear_coef_S_SC","smear_parameters_S_SC","S_SC")
 End
 	
 
@@ -334,7 +334,7 @@ Proc PlotSphere_SHS(num,qmin,qmax)
 
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Sphere_SHS","coef_S_SHS","S_SHS")
+	AddModelToStrings("Sphere_SHS","coef_S_SHS","parameters_S_SHS","S_SHS")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
@@ -370,7 +370,7 @@ Proc PlotSmearedSphere_SHS(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere_SHS","smear_coef_S_SHS","S_SHS")
+	AddModelToStrings("SmearedSphere_SHS","smear_coef_S_SHS","smear_parameters_S_SHS","S_SHS")
 End
 
 

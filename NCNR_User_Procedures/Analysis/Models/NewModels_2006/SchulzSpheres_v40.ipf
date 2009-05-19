@@ -28,7 +28,7 @@ Proc PlotSchulzSpheres(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SchulzSpheres","coef_sch","sch")
+	AddModelToStrings("SchulzSpheres","coef_sch","parameters_sch","sch")
 End
 
 
@@ -63,7 +63,7 @@ Proc PlotSmearedSchulzSpheres(str)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("SmearedSchulzSpheres","smear_coef_sch","sch")
+	AddModelToStrings("SmearedSchulzSpheres","smear_coef_sch","smear_parameters_sch","sch")
 End
 	
 

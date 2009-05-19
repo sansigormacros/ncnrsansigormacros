@@ -31,7 +31,7 @@ Proc PlotTwoPowerLaw(num,qmin,qmax)
 	Label left "Power-Law (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("TwoPowerLaw","coef_TwoPowerLaw","TwoPowerLaw")
+	AddModelToStrings("TwoPowerLaw","coef_TwoPowerLaw","parameters_TwoPowerLaw","TwoPowerLaw")
 //
 End
 
@@ -69,7 +69,7 @@ Proc PlotSmearedTwoPowerLaw(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedTwoPowerLaw","smear_coef_TwoPowerLaw","TwoPowerLaw")
+	AddModelToStrings("SmearedTwoPowerLaw","smear_coef_TwoPowerLaw","smear_parameters_TwoPowerLaw","TwoPowerLaw")
 //
 End     // end macro PlotSmearedTwoPowerLaw
 

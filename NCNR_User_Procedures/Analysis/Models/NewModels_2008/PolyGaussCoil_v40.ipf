@@ -31,7 +31,7 @@ Proc PlotPolyGaussCoil(num,qmin,qmax)
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("PolyGaussCoil","coef_pgc","pgc")
+	AddModelToStrings("PolyGaussCoil","coef_pgc","parameters_pgc","pgc")
 End
 
 ///////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ Proc PlotSmearedPolyGaussCoil(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedPolyGaussCoil","smear_coef_pgc","pgc")
+	AddModelToStrings("SmearedPolyGaussCoil","smear_coef_pgc","smear_parameters_pgc","pgc")
 End
 
 
