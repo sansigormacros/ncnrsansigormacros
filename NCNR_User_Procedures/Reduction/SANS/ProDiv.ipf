@@ -495,7 +495,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			else
 				Abort "Bad file number in offset Emp"
 			endif
-			
+			ConvertFolderToLinearScale("COR")
 			
 			
 		// replace the patch
