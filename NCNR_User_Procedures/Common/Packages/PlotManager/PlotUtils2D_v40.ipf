@@ -162,9 +162,11 @@ Proc PlotQxQy(str)
 	ModifyGizmo ModifyObject=axes0,property={0,fontScaleFactor,1.5}
 	ModifyGizmo ModifyObject=axes0,property={1,fontScaleFactor,1.5}
 	ModifyGizmo ModifyObject=axes0,property={2,fontScaleFactor,1.5}
+	AppendToGizmo freeAxesCue={0,0,0,1.5},name=freeAxesCue0
 	ModifyGizmo setDisplayList=0, opName=clearColor0, operation=clearColor, data={1,0.917,0.75,1}
 	ModifyGizmo setDisplayList=1, object=surface0
 	ModifyGizmo setDisplayList=2, object=axes0
+	ModifyGizmo setDisplayList=3, object=freeAxesCue0
 	ModifyGizmo SETQUATERNION={0.521287,-0.097088,-0.138769,0.836408}
 	ModifyGizmo autoscaling=1
 	ModifyGizmo currentGroupObject=""
@@ -325,7 +327,8 @@ Proc AppendSurfaceToGizmo(str)
 	
 //	ModifyGizmo setDisplayList=0, object=surface0
 //	ModifyGizmo setDisplayList=1, object=axes0
-	ModifyGizmo setDisplayList=3, object=surface1
+// object 3 is the axisCue
+	ModifyGizmo setDisplayList=4, object=surface1
 	ModifyGizmo SETQUATERNION={0.565517,-0.103105,-0.139134,0.806350}
 //	ModifyGizmo autoscaling=1
 //	ModifyGizmo currentGroupObject=""
@@ -392,7 +395,10 @@ Function Append2DModelButtonProc(ba) : ButtonControl
 			String str,funcStr,suffix
 			ControlInfo/W=WrapperPanel popup_1
 			funcStr = S_Value
-			suffix = getModelSuffix(getFunctionCoef(funcStr))
+			suffix = getModelSuffix(funcStr)
+			if(stringmatch(funcStr, "smear*") == 1)
+				suffix = "sm_"+suffix
+			endif
 			str = "root:"+DF+":"+suffix+"_mat"
 			
 			Execute "AppendSurfaceToGizmo(\""+str+"\")"
@@ -519,7 +525,7 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	String folderStr,funcStr,coefStr
 	Variable useCursors,useEps,useConstr
 
-	String suffix=getModelSuffix(coefStr)
+	String suffix=getModelSuffix(funcStr)
 	
 	SetDataFolder $("root:"+folderStr)
 	if(!exists(coefStr))

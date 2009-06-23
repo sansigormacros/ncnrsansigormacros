@@ -178,7 +178,7 @@ Function initNG3()
 	Variable/G a1_0_0 = 1.43
 	Variable/G a1_0_1 = 2.54
 	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 2.5	// after the polarizer		//removed as an option in 2009
+	Variable/G a1_7_0 = 2.5	// after the polarizer		
 	Variable/G a1_7_1 = 5.0
 	Variable/G a1_def = 5.00
 	
@@ -414,10 +414,10 @@ Function UpdateControls()
 				A1str = "! 6 Guides invalid;"
 				mode=1
 				break
-//			case 7:							// removed as option in 2009
-//				A1Str = "2.50 cm;5.00 cm;"
-//				mode = 1
-//				break
+			case 7:							// switched order in 2009 to keep 5 cm as default, 2.5 cm for polarizer
+				A1Str = "5.00 cm;2.50 cm;"
+				mode = 1
+				break
 			default:
 				A1str = "5 cm;"
 				mode=1

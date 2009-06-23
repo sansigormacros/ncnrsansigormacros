@@ -254,10 +254,12 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	
 	kap = 2*pi/lambda
 	a_val = (L1+L2)*g/2/(h_m)^2
-	
+
+//	lambdaWidth = 0.5	
 	SigmaQX = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(cos(phi))^2
 
 	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(sin(phi))^2 + 8*(a_val/L2)^2*lambda^4*lambdaWidth^2
+//	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(sin(phi))^2
 
 	SigmaQX = sqrt(kap*kap/12*SigmaQX)
 	SigmaQy = sqrt(kap*kap/12*SigmaQY)

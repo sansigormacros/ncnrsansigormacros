@@ -17,26 +17,26 @@
 // the calculation is done as for the QxQy data set:
 // three waves XYZ, then converted to a matrix
 //
-Proc PlotSphere2D(str)						
+Proc PlotPeakGauss2D(str)						
 	String str
 	Prompt str,"Pick the data folder containing the 2D data",popup,getAList(4)
 	
 	SetDataFolder $("root:"+str)
 	
-	Make/O/D coef_sf2D = {1.,60,1e-6,6.3e-6,0.01}						
-	make/o/t parameters_sf2D = {"scale","Radius (A)","SLD sphere (A-2)","SLD solvent","bkgd (cm-1)"}		
-	Edit parameters_sf2D,coef_sf2D				
+	Make/O/D coef_pkGau2D = {100.0, 0.25,0.005, 1.0}						
+	make/o/t parameters_pkGau2D = {"Scale Factor, I0 ", "Peak position (A^-1)", "Std Dev (A^-1)","Incoherent Bgd (cm-1)"}		
+	Edit parameters_pkGau2D,coef_pkGau2D				
 	
 	// generate the triplet representation
-	Duplicate/O $(str+"_qx") xwave_sf2D
-	Duplicate/O $(str+"_qy") ywave_sf2D,zwave_sf2D			
+	Duplicate/O $(str+"_qx") xwave_pkGau2D
+	Duplicate/O $(str+"_qy") ywave_pkGau2D,zwave_pkGau2D			
 		
-	Variable/G g_sf2D=0
-	g_sf2D := Sphere2D(coef_sf2D,zwave_sf2D,xwave_sf2D,ywave_sf2D)	//AAO 2D calculation
+	Variable/G g_pkGau2D=0
+	g_pkGau2D := PeakGauss2D(coef_pkGau2D,zwave_pkGau2D,xwave_pkGau2D,ywave_pkGau2D)	//AAO 2D calculation
 	
-	Display ywave_sf2D vs xwave_sf2D
+	Display ywave_pkGau2D vs xwave_pkGau2D
 	modifygraph log=0
-	ModifyGraph mode=3,marker=16,zColor(ywave_sf2D)={zwave_sf2D,*,*,YellowHot,0}
+	ModifyGraph mode=3,marker=16,zColor(ywave_pkGau2D)={zwave_pkGau2D,*,*,YellowHot,0}
 	ModifyGraph standoff=0
 	ModifyGraph width={Aspect,1}
 	ModifyGraph lowTrip=0.001
@@ -45,21 +45,21 @@ Proc PlotSphere2D(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	// generate the matrix representation
-	ConvertQxQy2Mat(xwave_sf2D,ywave_sf2D,zwave_sf2D,"sf2D_mat")
-	Duplicate/O $"sf2D_mat",$"sf2D_lin" 		//keep a linear-scaled version of the data
+	ConvertQxQy2Mat(xwave_pkGau2D,ywave_pkGau2D,zwave_pkGau2D,"pkGau2D_mat")
+	Duplicate/O $"pkGau2D_mat",$"pkGau2D_lin" 		//keep a linear-scaled version of the data
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G g_sf2Dmat=0
-	g_sf2Dmat := UpdateQxQy2Mat(xwave_sf2D,ywave_sf2D,zwave_sf2D,sf2D_lin,sf2D_mat)
+	Variable/G g_pkGau2Dmat=0
+	g_pkGau2Dmat := UpdateQxQy2Mat(xwave_pkGau2D,ywave_pkGau2D,zwave_pkGau2D,pkGau2D_lin,pkGau2D_mat)
 	
 	
 	SetDataFolder root:
-	AddModelToStrings("Sphere2D","coef_sf2D","parameters_sf2D","sf2D")
+	AddModelToStrings("PeakGauss2D","coef_pkGau2D","parameters_pkGau2D","pkGau2D")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
-Proc PlotSmearedSphere2D(str)								
+Proc PlotSmearedPeakGauss2D(str)								
 	String str
 	Prompt str,"Pick the data folder containing the 2D data",popup,getAList(4)
 	
@@ -71,19 +71,19 @@ Proc PlotSmearedSphere2D(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_sf2D = {1.,60,1e-6,6.3e-6,0.01}					
-	make/o/t smear_parameters_sf2D = {"scale","Radius (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkgd (cm-1)"}
-	Edit smear_parameters_sf2D,smear_coef_sf2D					
+	Make/O/D smear_coef_pkGau2D = {100.0, 0.25,0.005, 1.0}					
+	make/o/t smear_parameters_pkGau2D = {"Scale Factor, I0 ", "Peak position (A^-1)", "Std Dev (A^-1)","Incoherent Bgd (cm-1)"}
+	Edit smear_parameters_pkGau2D,smear_coef_pkGau2D					
 	
-	Duplicate/O $(str+"_qx") smeared_sf2D	//1d place for the smeared model
-	SetScale d,0,0,"1/cm",smeared_sf2D					
+	Duplicate/O $(str+"_qx") smeared_pkGau2D	//1d place for the smeared model
+	SetScale d,0,0,"1/cm",smeared_pkGau2D					
 		
-	Variable/G gs_sf2D=0
-	gs_sf2D := fSmearedSphere2D(smear_coef_sf2D,smeared_sf2D)	//this wrapper fills the STRUCT
+	Variable/G gs_pkGau2D=0
+	gs_pkGau2D := fSmearedPeakGauss2D(smear_coef_pkGau2D,smeared_pkGau2D)	//this wrapper fills the STRUCT
 
 	Display $(str+"_qy") vs $(str+"_qx")
 	modifygraph log=0
-	ModifyGraph mode=3,marker=16,zColor($(str+"_qy"))={smeared_sf2D,*,*,YellowHot,0}
+	ModifyGraph mode=3,marker=16,zColor($(str+"_qy"))={smeared_pkGau2D,*,*,YellowHot,0}
 	ModifyGraph standoff=0
 	ModifyGraph width={Aspect,1}
 	ModifyGraph lowTrip=0.001
@@ -95,28 +95,30 @@ Proc PlotSmearedSphere2D(str)
 	Duplicate/O $(str+"_qx"), sm_qx
 	Duplicate/O $(str+"_qy"), sm_qy		// I can't use local variables in dependencies, so I need the name (that I can't get)
 	
-	ConvertQxQy2Mat(sm_qx,sm_qy,smeared_sf2D,"sm_sf2D_mat")
-	Duplicate/O $"sm_sf2D_mat",$"sm_sf2D_lin" 		//keep a linear-scaled version of the data
+	ConvertQxQy2Mat(sm_qx,sm_qy,smeared_pkGau2D,"sm_pkGau2D_mat")
+	Duplicate/O $"sm_pkGau2D_mat",$"sm_pkGau2D_lin" 		//keep a linear-scaled version of the data
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
-	Variable/G gs_sf2Dmat=0
-	gs_sf2Dmat := UpdateQxQy2Mat(sm_qx,sm_qy,smeared_sf2D,sm_sf2D_lin,sm_sf2D_mat)
+	Variable/G gs_pkGau2Dmat=0
+	gs_pkGau2Dmat := UpdateQxQy2Mat(sm_qx,sm_qy,smeared_pkGau2D,sm_pkGau2D_lin,sm_pkGau2D_mat)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedSphere2D","smear_coef_sf2D","smear_parameters_sf2D","sf2D")
+	AddModelToStrings("SmearedPeakGauss2D","smear_coef_pkGau2D","smear_parameters_pkGau2D","pkGau2D")
 End
 
 
 //threaded version of the function
-ThreadSafe Function Sphere2D_T(cw,zw,xw,yw,p1,p2)
+ThreadSafe Function PeakGauss2D_T(cw,zw,xw,yw,p1,p2)
 	WAVE cw,zw,xw,yw
 	Variable p1,p2
 	
-#if exists("Sphere_2DX")			//to hide the function if XOP not installed
+#if exists("PeakGauss2DX")			//to hide the function if XOP not installed
 	
-	zw[p1,p2]= Sphere_2DX(cw,xw,yw)
+	zw[p1,p2]= PeakGauss2DX(cw,xw,yw)
 
+#else
+	zw[p1,p2] =  I_PeakGauss2D(cw,xw,yw)
 #endif
 
 	return 0
@@ -125,12 +127,9 @@ End
 //
 //  Fit function that is actually a wrapper to dispatch the calculation to N threads
 //
-// nthreads is 1 or an even number, typically 2
-// it doesn't matter if npt is odd. In this case, fractional point numbers are passed
-// and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
-// and the points "2.5" and "3.5" evaluate correctly as 2 and 3
+// not used
 //
-Function Sphere2D(cw,zw,xw,yw) : FitFunc
+Function PeakGauss2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
 	Variable npt=numpnts(yw)
@@ -141,7 +140,7 @@ Function Sphere2D(cw,zw,xw,yw) : FitFunc
 	
 	for(i=0;i<nthreads;i+=1)
 	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Sphere2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+		ThreadStart mt,i,PeakGauss2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
 	endfor
 
 	do
@@ -157,13 +156,14 @@ End
 
 
 //non-threaded version of the function
-Function Sphere2D_noThread(cw,zw,xw,yw)
+Function PeakGauss2D_noThread(cw,zw,xw,yw)
 	WAVE cw,zw, xw,yw
 	
-#if exists("Sphere_2DX")			//to hide the function if XOP not installed
+#if exists("PeakGauss2DX")			//to hide the function if XOP not installed
 	
-	zw= Sphere_2DX(cw,xw,yw)
-
+	zw= PeakGauss2DX(cw,xw,yw)
+#else
+	zw = I_PeakGauss2D(cw,xw,yw)
 #endif
 
 	return 0
@@ -171,15 +171,16 @@ End
 
 // I think I did this because when I do the quadrature loops I'm calling the AAO with 1-pt waves, so threading
 // would just be a slowdown
-Function SmearedSphere2D(s)
+Function SmearedPeakGauss2D(s)
 	Struct ResSmear_2D_AAOStruct &s
 	
-	Smear_2DModel_5(Sphere2D_noThread,s)
+	Smear_2DModel_20(PeakGauss2D_noThread,s)
+//	Smear_2DModel_5(PeakGauss2D_noThread,s)
 	return(0)
 end
 
 
-Function fSmearedSphere2D(coefW,resultW)
+Function fSmearedPeakGauss2D(coefW,resultW)
 	Wave coefW,resultW
 	
 	String str = getWavesDataFolder(resultW,0)
@@ -203,7 +204,20 @@ Function fSmearedSphere2D(coefW,resultW)
 	WAVE s.fs = shad
 	
 	Variable err
-	err = SmearedSphere2D(s)
+	err = SmearedPeakGauss2D(s)
 	
 	return (0)
 End
+
+ThreadSafe Function I_PeakGauss2D(w,x,y)
+	Wave w
+	Variable x,y
+	
+	Variable retVal,qval
+	qval = sqrt(x^2+y^2)
+		
+	retval = Peak_Gauss_modelX(w,qval)
+//	retval = fPeak_Gauss_model(w,qval)
+	
+	RETURN(retVal)
+END

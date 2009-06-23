@@ -486,11 +486,59 @@ End
 
 // always pass this the function string
 //
+// this is new in the 2009 release, so make sure that it generates itself as needed.
+// Two options: (1) search and construct as needed, ask for intervention if I need it.
+// (2) since I'm passed the function, try to replot it to re-run the function
+// to fill in the strings. (Being sure to save the coefficients)
+//
+// using method (1) to fill in what I need with no intervention
+//
 Function/S getFunctionParams(funcStr)
 	String funcStr
 
-	SVAR listStr=root:Packages:NIST:paramKWStr
-	String paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
+	String paramStr=""
+	SVAR/Z listStr=root:Packages:NIST:paramKWStr
+	if(SVAR_Exists(listStr))
+		paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
+		if(strlen(paramStr)!=0)			//will drop out of loop if string can't be found
+			return(paramStr)
+		endif
+	else	//global string does not exist, create it and fill it in
+		String/G root:Packages:NIST:paramKWStr=""
+		SVAR/Z listStr=root:Packages:NIST:paramKWStr
+	endif
+	// find everything
+	SVAR suffixKWStr = root:Packages:NIST:suffixKWStr
+	String coef = getFunctionCoef(funcStr)
+	String suffix = getModelSuffix(coef)		//!! normally takes funcStr
+	
+	// add to the suffix list
+	suffixKWStr += funcStr+"="+suffix+";"
+	
+	// add to the paramList
+	
+	///// NEED TO BE IN PROPER DATA FOLDER FOR SMEARED FUNCTIONS
+	// FUNCTION POP MENU WILL LOOK IN ROOT OTHERWISE
+	ControlInfo/W=WrapperPanel popup_0
+	String folderStr=S_Value
+	// this if/else/endif should not ever return an error alert	
+	// it should simply set the data folder properly	
+	if(Stringmatch(funcStr,"Smear*"))		//simple test for smeared function
+		if(DataFolderExists("root:"+folderStr))
+			SetDataFolder $("root:"+folderStr)
+		else
+			SetDataFolder root:
+		endif
+	else
+		SetDataFolder root:
+	endif
+			
+	
+	String paramWave = WaveList("*par*"+suffix,"","TEXT:1")		//should be one wave name, no trailing semicolon
+	listStr += funcStr+"="+paramWave+";"
+
+	//now look it up again
+	paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
 
 	return(paramStr)
 End
@@ -515,6 +563,11 @@ Function/S getModelSuffix(funcStr)
 	SVAR listStr=root:Packages:NIST:suffixKWStr
 	String suffixStr = StringByKey(funcStr, listStr  ,"=",";",0)
 
+	if(strlen(suffixStr)==0)
+		// run through the param function to set the strings properly
+		String str = getFunctionParams(funcStr)
+		suffixStr = getModelSuffix(funcStr)		//then call again
+	endif
 	return(suffixStr)
 End
 

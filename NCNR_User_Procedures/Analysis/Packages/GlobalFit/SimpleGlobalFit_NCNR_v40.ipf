@@ -235,6 +235,9 @@ Function SGF_CoefPopMenuProc(pa) : PopupMenuControl
 			ControlInfo/W=SimpGFPanel popup_0b
 			String folderStr_b=S_Value
 			
+			ControlInfo/W=SimpGFPanel popup_1
+			String funcStr=S_Value
+			
 			if(cmpstr(popStr,"Please plot the function")==0)
 //				Print "function not plotted"
 				return(0)
@@ -293,7 +296,7 @@ Function SGF_CoefPopMenuProc(pa) : PopupMenuControl
 			RenameWindow #,T0
 			// get them onto the table
 			// how do I get the parameter name?
-			String param = WaveList("*parameters_"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
+			String param = getFunctionParams(funcStr)		//this is *hopefully* one wave
 			AppendtoTable/W=SimpGFPanel#T0 $param
 			AppendToTable/W=SimpGFPanel#T0 coef_A,coef_B
 //			AppendToTable/W=SimpGFPanel#T0 $("Hold_"+suffix),$("LoLim_"+suffix),$("HiLim_"+suffix),$("epsilon_"+suffix)
