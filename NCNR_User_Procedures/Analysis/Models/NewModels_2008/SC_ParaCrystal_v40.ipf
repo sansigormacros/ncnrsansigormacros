@@ -125,7 +125,7 @@ Function fSC_ParaCrystal(w,x) : FitFunc
 //	you would give them nice names
 	Variable integral,loLim,upLim
 	loLim = 0
-	upLim = 2*Pi
+	upLim = Pi/2
 	
 	Variable/G root:gDumY=0		//root:gDumX=0
 	
@@ -168,7 +168,7 @@ Function Integrand_SC_Outer(w,x,dum)
 	Variable retVal,loLim,upLim
 	//
 	loLim = 0
-	upLim = Pi
+	upLim = Pi/2
 
 	NVAR/Z nord=root:gNordSC
 	if(NVAR_Exists(nord)!=1)
@@ -212,7 +212,7 @@ Function SC_Integrand(w,qq,xx,yy)
 	
 	
 	retVal = temp2*SCeval(xx,yy,temp3,temp4,temp5)
-	retVal /=4*Pi
+	retVal *= 2/pi
 	
 	return(retVal)
 end

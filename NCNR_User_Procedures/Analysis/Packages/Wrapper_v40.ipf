@@ -36,6 +36,9 @@ Function Init_WrapperPanel()
 		if(exists("root:Packages:NIST:suffixKWStr")==0)
 			String/G root:Packages:NIST:suffixKWStr=""
 		endif
+		if(exists("root:Packages:NIST:paramKWStr")==0)
+			String/G root:Packages:NIST:paramKWStr=""
+		endif
 		Execute "WrapperPanel()"
 	endif
 End
@@ -498,24 +501,24 @@ Function/S getFunctionParams(funcStr)
 
 	String paramStr=""
 	SVAR/Z listStr=root:Packages:NIST:paramKWStr
+
 	if(SVAR_Exists(listStr))
 		paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
 		if(strlen(paramStr)!=0)			//will drop out of loop if string can't be found
 			return(paramStr)
 		endif
 	else	//global string does not exist, create it and fill it in
+		Variable/G root:Pacakges:NIST:gReconstructStrings = 1			//coefficients old style and must be rebuilt too
 		String/G root:Packages:NIST:paramKWStr=""
 		SVAR/Z listStr=root:Packages:NIST:paramKWStr
-	endif
-	// find everything
-	SVAR suffixKWStr = root:Packages:NIST:suffixKWStr
+	endif	
+	
+	// find everything to rebuild only if the model has been plotted (if so, coefficients will exist)
 	String coef = getFunctionCoef(funcStr)
-	String suffix = getModelSuffix(coef)		//!! normally takes funcStr
-	
-	// add to the suffix list
-	suffixKWStr += funcStr+"="+suffix+";"
-	
-	// add to the paramList
+	if(strlen(coef)==0)
+		//model not plotted, don't reconstruct, return null string
+		return(paramStr)
+	endif
 	
 	///// NEED TO BE IN PROPER DATA FOLDER FOR SMEARED FUNCTIONS
 	// FUNCTION POP MENU WILL LOOK IN ROOT OTHERWISE
@@ -532,7 +535,10 @@ Function/S getFunctionParams(funcStr)
 	else
 		SetDataFolder root:
 	endif
-			
+	
+	// model was plotted, find the suffix to fill in the parameter wave
+	SVAR suffListStr=root:Packages:NIST:suffixKWStr
+	String suffix = StringByKey(coef, suffListStr  ,"=",";",0)
 	
 	String paramWave = WaveList("*par*"+suffix,"","TEXT:1")		//should be one wave name, no trailing semicolon
 	listStr += funcStr+"="+paramWave+";"
@@ -557,18 +563,34 @@ End
 // always pass this the Function string
 //
 // does NOT return the leading "_" as part of the suffix
+// may need to set the string correctly - so lost of messing around for back-compatibility
 Function/S getModelSuffix(funcStr)
 	String funcStr
 
 	SVAR listStr=root:Packages:NIST:suffixKWStr
 	String suffixStr = StringByKey(funcStr, listStr  ,"=",";",0)
 
-	if(strlen(suffixStr)==0)
-		// run through the param function to set the strings properly
-		String str = getFunctionParams(funcStr)
-		suffixStr = getModelSuffix(funcStr)		//then call again
+	if(strlen(suffixStr) !=0)		//found it, get out
+		return(suffixStr)
 	endif
-	return(suffixStr)
+	
+	// was the model plotted?
+	String coef = getFunctionCoef(funcStr)
+	if(strlen(coef)==0)		
+		//nothing plotted
+		return("")
+	else
+		//plotted, find the coeff
+		String suffix = StringByKey(coef, ListStr  ,"=",";",0)
+	
+		// add to the suffix list in the new style, if it was found
+		if(strlen(suffix) !=0)
+			listStr += funcStr+"="+suffix+";"
+		endif
+		return(suffix)
+	endif
+	
+	return("")
 End
 
 

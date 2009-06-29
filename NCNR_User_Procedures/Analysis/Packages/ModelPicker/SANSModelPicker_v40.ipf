@@ -198,7 +198,7 @@ Proc FileList_BuiltInList()
   //2008 Models
   SANS_Model_List[66] = "Core_and_NShells.ipf"
   SANS_Model_List[67] = "PolyCore_and_NShells.ipf"
-  SANS_Model_List[68] = "Fractal_Polysphere.ipf"
+  SANS_Model_List[68] = "Fractal_PolySphere.ipf"
   SANS_Model_List[69] = "GaussLorentzGel.ipf"
   SANS_Model_List[70] = "PolyGaussCoil.ipf"
   SANS_Model_List[71] = "Two_Power_Law.ipf"

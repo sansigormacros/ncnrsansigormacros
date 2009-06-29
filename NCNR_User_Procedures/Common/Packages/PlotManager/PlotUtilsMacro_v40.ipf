@@ -26,9 +26,9 @@ Function AddModelToStrings(funcStr,coefStr,paramStr,suffix)
 	String funcStr,coefStr,paramStr,suffix
 	
 	if(exists("root:Packages:NIST:paramKWStr")==0)
-		String/G root:Packages:NIST:coefKWStr=""
+//		String/G root:Packages:NIST:coefKWStr=""
 		String/G root:Packages:NIST:paramKWStr=""
-		String/G root:Packages:NIST:suffixKWStr=""
+//		String/G root:Packages:NIST:suffixKWStr=""
 	endif
 	SVAR coefKWStr = root:Packages:NIST:coefKWStr
 	SVAR paramKWStr = root:Packages:NIST:paramKWStr
