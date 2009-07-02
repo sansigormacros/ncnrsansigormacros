@@ -67,6 +67,9 @@
 //AJJ Oct 2008
 #include "PlotManager_v40"
 
+// SRK JUN2009
+#include "Smear_2D"		//2D resolution calculation and smearing
+
 // to include the analysis packages, uncomment the following
 // include statement and click "compile" at the bottom of this window.
 // ** the SANSModels menu will appear, and the packages will be 
