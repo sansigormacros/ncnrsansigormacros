@@ -97,21 +97,94 @@ Proc PlotSmearedSC_ParaCrystal(str)
 End
 
 
+
+// Threaded version
+// Threaded XOP = 2.46 s
+// non-threaded XOP = 4.48s (1.8x speedup)
+// non-threaded, non-XOP = 39.8 s
+//  overall = x 16 speedup !
+//
+Function SC_ParaCrystal(cw,yw,xw) : FitFunc
+	Wave cw,yw,xw
+
+//	Variable t1=StopMSTimer(-2)
+
+
+/////// NO threading /////////
+//#if exists("SC_ParaCrystalX")
+//	yw = SC_ParaCrystalX(cw,xw)
+//#else
+//	yw = fSC_ParaCrystal(cw,xw)
+//#endif
+
+
+///// THREADING ///////
+
+			
+#if exists("SC_ParaCrystalX")
+
+	Variable npt=numpnts(yw)
+	Variable i,nthreads= ThreadProcessorCount
+	variable mt= ThreadGroupCreate(nthreads)
+
+	for(i=0;i<nthreads;i+=1)
+	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+		ThreadStart mt,i,SC_ParaCrystal_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+	endfor
+
+	do
+		variable tgs= ThreadGroupWait(mt,100)
+	while( tgs != 0 )
+
+	variable dummy= ThreadGroupRelease(mt)
+
+//// to return just Z(q), undo the form factor calculation
+//	Variable latticeScale
+//	latticeScale = 4*(4/3)*pi*(cw[3]^3)/((cw[1]*(2^0.5))^3)	
+//	
+//	yw /= SphereForm_SC(cw[3],cw[4]-cw[5],xw)*latticeScale
+////	
+
+#else
+	yw = fSC_ParaCrystal(cw,xw)			// Igor code is NOT threaded, for lots of good reasons
+#endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
+	return(0)
+End
+
+
+
 // nothing to change here
 //
 //AAO version, uses XOP if available
 // simply calls the original single point calculation with
 // a wave assignment (this will behave nicely if given point ranges)
-Function SC_ParaCrystal(cw,yw,xw) : FitFunc
+//
+// Threaded Version
+ThreadSafe Function SC_ParaCrystal_T(cw,yw,xw,p1,p2) : FitFunc
 	Wave cw,yw,xw
-	
+	Variable p1,p2
+
+//	Variable t1=StopMSTimer(-2)
+
 #if exists("SC_ParaCrystalX")
-	yw = SC_ParaCrystalX(cw,xw)
+	yw[p1,p2] = SC_ParaCrystalX(cw,xw)
 #else
-	yw = fSC_ParaCrystal(cw,xw)
+	yw[p1,p2] = fSC_ParaCrystal(cw,xw)		// shouldn't ever see this...
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
+
+
+
+
+
+
 
 
 //
