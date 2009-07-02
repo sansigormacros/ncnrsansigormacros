@@ -127,7 +127,7 @@ Proc FileList_BuiltInList()
 
 ////paste here... after deleting the old make statement and list
 	
-  Make/O/T/N=88  SANS_Model_List
+  Make/O/T/N=90  SANS_Model_List
 
   SANS_Model_List[0] = "BE_Polyelectrolyte.ipf"
   SANS_Model_List[1] = "CoreShellCylinder.ipf"
@@ -219,6 +219,8 @@ Proc FileList_BuiltInList()
   SANS_Model_List[85] = "PolyCoreBicelle.ipf"
   SANS_Model_List[86] = "CSParallelepiped.ipf"
   SANS_Model_List[87] = "Fractal_PolyCore.ipf"
+  SANS_Model_List[88] = "FuzzySpheres.ipf"
+  SANS_Model_List[89] = "FuzzySpheres_Sq.ipf"
 
 
   ///end paste here
@@ -339,6 +341,7 @@ Function FileList_HelpButtonProc(ctrlName) : ButtonControl
 	if(cmpstr(fname,"")!=0)
 //		Print "show help for ",RemoveExten(fname)
 //		Print fname[strlen(fname)-11,strlen(fname)-1]
+//		Print fname
 		if(cmpstr(fname[strlen(fname)-7,strlen(fname)-1],"_Sq.ipf") ==0 )
 			DisplayHelpTopic/Z/K=1 "How Form Factors and Structure Factors are Combined"
 			if(V_flag !=0)
