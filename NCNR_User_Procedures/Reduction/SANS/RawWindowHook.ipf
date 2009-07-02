@@ -85,7 +85,7 @@ Function fRawWindowHook()
 		SetVariable CurFile,help={"Currently displayed file"},frame=0,noedit=1
 		SetVariable CurFile,limits={-Inf,Inf,0},value= root:myGlobals:gCurDispFile
 		
-		SetVariable CurTitle,pos={4,81},size={260,17},title=" "//,title="LABEL:"
+		SetVariable CurTitle,pos={4,81},size={360,17},title=" "//,title="LABEL:"
 		SetVariable CurTitle,help={"Title string for currently displayed file"},frame=0,noedit=1
 		SetVariable CurTitle,fstyle=1,limits={-Inf,Inf,0},value= root:myGlobals:gCurTitle
 		Button Print_status,pos={170,23},size={50,20},proc=StatusButton,title="Status"
