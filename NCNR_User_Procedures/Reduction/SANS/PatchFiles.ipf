@@ -677,7 +677,7 @@ Proc Patch_Panel()
 	SetVariable PV10,pos={42,291},size={340,13},title="Wavelength (A)",font="Courier",fSize=10
 	SetVariable PV10,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV10
 	SetVariable PV10,help={"neutron wavelength in angstroms"}
-	SetVariable PV11,pos={42,309},size={340,13},title="Wavelength spread",font="Courier",fSize=10
+	SetVariable PV11,pos={42,309},size={340,13},title="Wavelength spread (dL/L)",font="Courier",fSize=10
 	SetVariable PV11,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV11
 	SetVariable PV11,help={"wavelength spread (delta lambda)/lambda"}
 	SetVariable PV12,pos={42,327},size={340,13},title="Temperature (C)",font="Courier",fSize=10
@@ -686,10 +686,10 @@ Proc Patch_Panel()
 	SetVariable PV13,pos={42,345},size={340,13},title="Magnetic field (G)",font="Courier",fSize=10
 	SetVariable PV13,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV13
 	SetVariable PV13,help={"magnetic field strength units?"}
-	SetVariable PV14,pos={42,363},size={340,13},title="Source aperture (mm)",font="Courier",fSize=10
+	SetVariable PV14,pos={42,363},size={340,13},title="Source aperture diameter (mm)",font="Courier",fSize=10
 	SetVariable PV14,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV14
 	SetVariable PV14,help={"source aperture diameter, in millimeters"}
-	SetVariable PV15,pos={42,381},size={340,13},title="Sample aperture (mm)",font="Courier",fSize=10
+	SetVariable PV15,pos={42,381},size={340,13},title="Sample aperture diameter (mm)",font="Courier",fSize=10
 	SetVariable PV15,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV15
 	SetVariable PV15,help={"sample aperture diameter, in millimeters"}
 	SetVariable PV16,pos={42,399},size={340,13},title="Source to sample distance (m)",font="Courier",fSize=10
@@ -1014,4 +1014,3 @@ Function MPatchLabel(testStr,doIt)
 
 
 end
-
