@@ -5,6 +5,9 @@
 //	C. Glinka, 11-22-98
 ////////////////
 
+// SRK 6 JUL 2009 - converted the definition of the scale factor (A) to be
+// independent of the correlation length. Changed the Igor, XOP, and documentation
+
 
 								//Debye-Anderson-Brumberger
 
@@ -17,7 +20,7 @@ Proc PlotDAB_Model(num,qmin,qmax)
 //
 	Make/O/D/n=(num) xwave_DAB, ywave_DAB
 	xwave_DAB =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
-	Make/O/D coef_DAB = {10.0, 40, 1.0}
+	Make/O/D coef_DAB = {0.00015625, 40, 1.0}
 	make/o/t parameters_DAB = {"Scale Factor, A ", "Correlation Length (A)", "Incoherent Bgd (cm-1)"}
 	Edit parameters_DAB, coef_DAB
 	Variable/G root:g_DAB
@@ -47,7 +50,7 @@ Proc PlotSmearedDAB_Model(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_DAB = {10.0, 40, 1.0}					//model  coef values to match unsmeared model above
+	Make/O/D smear_coef_DAB = {0.00015625, 40, 1.0}					//model  coef values to match unsmeared model above
 	make/o/t smear_parameters_DAB = {"Scale Factor, A ", "Correlation Length (A)", "Incoherent Bgd (cm-1)"}// parameter names
 	Edit smear_parameters_DAB,smear_coef_DAB					//display parameters in a table
 	
@@ -81,6 +84,8 @@ Function DAB_model(cw,yw,xw) : FitFunc
 	return(0)
 End
 
+// Izero is really now scale*range^3
+//
 Function fDAB_model(w,x) : FitFunc
 	Wave w
 	Variable x
@@ -99,7 +104,7 @@ Function fDAB_model(w,x) : FitFunc
 	qval = x
 //	do the calculation and return the function value
 	
-	inten = Izero/(1 + (qval*range)^2)^2 + incoh
+	inten = (Izero*range^3)/(1 + (qval*range)^2)^2 + incoh
 	Return (inten)
 End
 /////////////////////////////////////////////////////////////////////////////////
