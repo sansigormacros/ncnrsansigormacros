@@ -108,6 +108,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gModelOffsetFactor = 1
 	
 	// for the MC simulation
+	Variable/G root:Packages:NIST:SAS:doSimulation	=0		// == 1 if 1D simulated data, 0 if other from the checkbox
 	Variable/G root:Packages:NIST:SAS:gRanDateTime=datetime
 	Variable/G root:Packages:NIST:SAS:gImon = 10000
 	Variable/G root:Packages:NIST:SAS:gThick = 0.1
@@ -123,6 +124,7 @@ Proc S_initialize_space()
 	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
 	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/o beamstop"}
+	
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -382,7 +384,7 @@ Window SASCALC_Panel()
 	CheckBox checkLens,pos={6,155},size={44,14},proc=LensCheckProc,title="Lenses?"
 	CheckBox checkLens,value=root:Packages:NIST:SAS:gUsingLenses
 	
-	CheckBox checkSim,pos={6,175},size={44,14},proc=SimCheckProc,title="MC Simulation?"
+	CheckBox checkSim,pos={6,175},size={44,14},proc=SimCheckProc,title="Simulation?"
 	CheckBox checkSim,value=0
 	
 	// set up a fake dependency to trigger recalculation
@@ -685,27 +687,45 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	return(1)		//return value not used
 End
 
-//simulation ccontrols as a control bar that toggles on/off to the right
+//simulation controls as a control bar that toggles on/off to the right
+//
+// depending on the state of the 2D flag, open the 1d or 2d control panel
 Function SimCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 
 	if(checked)
-		//MoveWindow/W=SASCALC 5,44,763,570		//to resize
-		// draw the controls
-		DoWindow/F MC_SASCALC
-		if(V_flag==0)
-			Execute "MC_SASCALC()"
-			AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
+		NVAR do2D = root:Packages:NIST:SAS:gDoMonteCarlo
+		
+		if(do2D)
+			DoWindow/F MC_SASCALC
+			if(V_flag==0)
+				Execute "MC_SASCALC()"		//sets the variable
+				AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
+			endif
+		else
+			//draw 1D panel
+			DoWindow/F Sim_1D_Panel
+			if(V_flag==0)
+				Execute "Sim_1D_Panel()"
+				AutoPositionWindow/M=1/R=SASCALC Sim_1D_Panel
+			endif
 		endif
 	else
-		//get rid of the controls
+		//get rid of the controls (just try both)
 		DoWindow MC_SASCALC
 		if(V_flag!=0)
+			NVAR do2D = root:Packages:NIST:SAS:gDoMonteCarlo
+			do2D = 0
 			KillWindow MC_SASCALC
 		endif
-		//MoveWindow/W=SASCALC 5,44,463,570		//to resize
-		//KillWindow SASCALC#T_results
+		DoWindow Sim_1D_Panel
+		if(V_flag!=0)
+			KillWindow Sim_1D_Panel
+		endif
+		
+		NVAR doSim = root:Packages:NIST:SAS:doSimulation
+		doSim=0
 	endif
 
 	return(0)
@@ -854,188 +874,79 @@ Function ReCalculateInten(doIt)
 	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")
 	
 	// do the simulation here, or not
-	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,trans
 	String coefStr,abortStr,str
 
-	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if MC, 0 if other from the checkbox
+	// now the cases are: simulation (0|1), 1D (default) or 2D (hidden)
+	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
+	NVAR doSimulation = root:Packages:NIST:SAS:doSimulation		// == 1 if 1D simulated data, 0 if other from the checkbox
 	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr		//set by the popup
 
-	if(doMonteCarlo == 1)
-		WAVE rw=root:Packages:NIST:SAS:realsRead
-		
-		NVAR imon = root:Packages:NIST:SAS:gImon
-		NVAR thick = root:Packages:NIST:SAS:gThick
-		NVAR sig_incoh = root:Packages:NIST:SAS:gSig_incoh
-		NVAR r2 = root:Packages:NIST:SAS:gR2
-	
-		r1 = rw[24]/2/10		// sample diameter convert diam in [mm] to radius in cm
-		xCtr = rw[16]
-		yCtr = rw[17]
-		sdd = rw[18]*100		//conver header of [m] to [cm]
-		pixSize = rw[10]/10		// convert pix size in mm to cm
-		wavelength = rw[26]
-		coefStr = MC_getFunctionCoef(funcStr)
-		
-		if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
-			doMonteCarlo = 0		//we're getting out now, reset the flag so we don't continually end up here
-			Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
-		endif
-		
-		Variable sig_sas
-//		FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)		//a wrapper for the structure version
-		FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
-		WAVE results = root:Packages:NIST:SAS:results
-		WAVE linear_data = root:Packages:NIST:SAS:linear_data
-		WAVE data = root:Packages:NIST:SAS:data
-
-		results = 0
-		linear_data = 0
-		
-		CalculateRandomDeviate(func,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",SIG_SAS)
-		if(sig_sas > 100)
-			sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
-			Abort abortStr
-		endif
-		
-		WAVE ran_dev=$"root:Packages:NIST:SAS:ran_dev"
-		
-		Make/O/D/N=5000 root:Packages:NIST:SAS:nt=0,root:Packages:NIST:SAS:j1=0,root:Packages:NIST:SAS:j2=0
-		Make/O/D/N=100 root:Packages:NIST:SAS:nn=0
-		Make/O/D/N=11 root:Packages:NIST:SAS:inputWave=0
-		
-		WAVE nt = root:Packages:NIST:SAS:nt
-		WAVE j1 = root:Packages:NIST:SAS:j1
-		WAVE j2 = root:Packages:NIST:SAS:j2
-		WAVE nn = root:Packages:NIST:SAS:nn
-		WAVE inputWave = root:Packages:NIST:SAS:inputWave
-
-		inputWave[0] = imon
-		inputWave[1] = r1
-		inputWave[2] = r2
-		inputWave[3] = xCtr
-		inputWave[4] = yCtr
-		inputWave[5] = sdd
-		inputWave[6] = pixSize
-		inputWave[7] = thick
-		inputWave[8] = wavelength
-		inputWave[9] = sig_incoh
-		inputWave[10] = sig_sas
-
-		linear_data = 0		//initialize
-
-		Variable t0,trans
-		
-		// get a time estimate, and give the user a chance to exit if they're unsure.
-		t0 = stopMStimer(-2)
-		inputWave[0] = 1000
-		NVAR useXOP = root:Packages:NIST:SAS:gUse_MC_XOP		//if zero, will use non-threaded Igor code
-		
-		if(useXOP)
-			//use a single thread, otherwise time is dominated by overhead
-			Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		else
-			Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		endif
-		
-		t0 = (stopMSTimer(-2) - t0)*1e-6
-		t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
-		inputWave[0] = imon		//reset
-		
-		if(t0>10)
-			sprintf str,"The simulation will take approximately %d seconds.\r- Proceed?",t0
-			DoAlert 1,str
-			if(V_flag == 2)
-				doMonteCarlo = 0
-				reCalculateInten(1)		//come back in and do the smeared calculation
-				return(0)
-			endif
-		endif
-		
-		linear_data = 0		//initialize
-// threading crashes!! - there must be some operation in the XOP that is not threadSafe. What, I don't know...
-// I think it's the ran() calls, being "non-reentrant". So the XOP now defines two separate functions, that each
-// use a different rng. This works. 1.75x speedup.	
-		t0 = stopMStimer(-2)
-
-		if(useXOP)
-			Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		else
-			Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
-		endif
-		
-		t0 = (stopMSTimer(-2) - t0)*1e-6
-		Printf  "MC sim time = %g seconds\r",t0
-		
-		trans = results[8]			//(n1-n2)/n1
-		if(trans == 0)
-			trans = 1
-		endif
-
-		Print "counts on detector, including transmitted = ",sum(linear_data,-inf,inf)
-		
-//		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
-//		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
-
-		// or simulate a beamstop
-		NVAR MC_BS_in = root:Packages:NIST:SAS:gBeamStopIn		//if zero, beam stop is "out", as in a transmission measurement
-		
-		Variable rad=beamstopDiam()/2		//beamstop radius in cm
-		if(MC_BS_in)
-			rad /= 0.5				//convert cm to pixels
-			rad += 0.					// (no - it cuts off the low Q artificially) add an extra pixel to each side to account for edge
-			Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask//,root:Packages:NIST:SAS:MC_linear_data
-			WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
-			tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
+	if(doSimulation == 1)
+		if(doMonteCarlo == 1)
+			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf
 			
-			linear_data *= tmp_mask
-		endif
-		
-		results[9] = sum(linear_data,-inf,inf)
-		//		Print "counts on detector not behind beamstop = ",results[9]
-		
-		// convert to absolute scale
-		Variable kappa		//,beaminten = beamIntensity()
-//		kappa = beamInten*pi*r1*r1*thick*(pixSize/sdd)^2*trans*(iMon/beaminten)
-		kappa = thick*(pixSize/sdd)^2*trans*iMon
-		
-		//use kappa to get back to counts => linear_data = round(linear_data*kappa)
-		Note/K linear_data ,"KAPPA="+num2str(kappa)+";"
-		
-		NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
-		if(!rawCts)			//go ahead and do the linear scaling
-			linear_data = linear_data / kappa
-		endif		
-		data = linear_data
-		
-		// re-average the 2D data
-		S_CircularAverageTo1D("SAS")
-		
-		// put the new result into the simulation folder
-		Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
-	endif
-	
-
-	if(doMonteCarlo != 1)
-		if(exists(funcStr) != 0)
-			FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
-//			FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
-			coefStr = MC_getFunctionCoef(funcStr)
+			Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 			
-			if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+			//end 2D simulation
+		else
+			//1D simulation
+			
+			if(exists(funcStr) != 0)
+				FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
+	//			FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
+				coefStr = MC_getFunctionCoef(funcStr)
+				
+				if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+					Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+				endif
+				Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+				func($coefStr,inten,qval)
+				
+				NVAR imon = root:Packages:NIST:SAS:gImon
+				NVAR thick = root:Packages:NIST:SAS:gThick
+				
+				WAVE rw=root:Packages:NIST:SAS:realsRead
+				WAVE nCells=root:Packages:NIST:SAS:nCells
+				
+	///////Trans is hard-wired - need to input from somewhere!!!
+				trans = 0.8
+				
+				
+				pixSize = rw[10]/10		// convert pix size in mm to cm
+				sdd = rw[18]*100		//conver header of [m] to [cm]
+				
+				duplicate/O qval prob_i
+				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in bin(i)
+				
+				Variable P_on = sum(prob_i,-inf,inf)
+				Print "P_on = ",P_on
+				
+				aveint = Imon*P_on*prob_i
+				
+				
+				
+				aveint *= fSubS
+						
+				sigave = sqrt(aveint)		//reset for model calculation
+			else
 				Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 			endif
-			Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
-			func($coefStr,inten,qval)
-			inten *= fSubS
-			aveint = inten		//but aveint is displayed
-		else
-			aveint = S_Debye(1000,100,0.0,qval)
-			aveint *= fSubS		// multiply either estimate by beamstop shadowing
+			
+			// end 1D simulation
 		endif
+	else
+		//no simulation
 		
-		
-		WAVE sigave=root:Packages:NIST:SAS:sigave
+		aveint = S_Debye(1000,100,0.0,qval)
+		aveint *= fSubS		// multiply either estimate by beamstop shadowing
 		sigave = 0		//reset for model calculation
+		
+		//end no simulation	
+	endif
+	
+	if(doMonteCarlo == 1)
+
 	endif
 	
 	//display the configuration text in a separate notebook
