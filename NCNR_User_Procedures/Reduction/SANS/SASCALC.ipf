@@ -115,7 +115,8 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gSig_incoh = 0.1
 	String/G root:Packages:NIST:SAS:gFuncStr = ""
 	Variable/G root:Packages:NIST:SAS:gR2 = 2.54/2	
-	Variable/G root:Packages:NIST:SAS:gCntTime = 1
+	Variable/G root:Packages:NIST:SAS:gSamTrans=0.8			//for 1D, default value
+	Variable/G root:Packages:NIST:SAS:gCntTime = 300
 	Variable/G root:Packages:NIST:SAS:gDoMonteCarlo = 0
 	Variable/G root:Packages:NIST:SAS:gUse_MC_XOP = 1				//set to zero to use Igor code
 	Variable/G root:Packages:NIST:SAS:gBeamStopIn = 1			//set to zero for beamstop out (transmission)
@@ -124,7 +125,13 @@ Proc S_initialize_space()
 	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
 	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/o beamstop"}
-	
+
+	Variable/G root:Packages:NIST:SAS:g_1DTotCts = 0			//summed counts (simulated)
+	Variable/G root:Packages:NIST:SAS:g_1DEstDetCR = 0		// estimated detector count rate
+	Variable/G root:Packages:NIST:SAS:g_1DFracScatt = 0		// fraction of beam captured on detector
+	Variable/G root:Packages:NIST:SAS:g_1DEstTrans = 0		// estimated transmission of sample
+	Variable/G root:Packages:NIST:SAS:g_1D_DoABS = 1
+	Variable/G root:Packages:NIST:SAS:g_1D_AddNoise = 1
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -852,13 +859,11 @@ Function ReCalculateInten(doIt)
 	if(doIt==0)			
 		return(0)
 	endif
-//	Print "recalculate"
 	
 	// update the wave with the beamstop diameter here, since I don't know what
 	// combinations of parameters will change the BS - but anytime the curve is 
 	// recalculated, or the text displayed, the right BS must be present
 	beamstopDiam()
-	
 	
 	// generate the resolution waves first, so they are present for a smearing calculation
 	// average the "fake" 2d data now to generate the smearing information
@@ -874,7 +879,7 @@ Function ReCalculateInten(doIt)
 	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")
 	
 	// do the simulation here, or not
-	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,trans
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
 	String coefStr,abortStr,str
 
 	// now the cases are: simulation (0|1), 1D (default) or 2D (hidden)
@@ -884,7 +889,7 @@ Function ReCalculateInten(doIt)
 
 	if(doSimulation == 1)
 		if(doMonteCarlo == 1)
-			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf
+			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf)
 			
 			Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 			
@@ -894,41 +899,79 @@ Function ReCalculateInten(doIt)
 			
 			if(exists(funcStr) != 0)
 				FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
-	//			FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
+				FUNCREF SANSModelAAO_MCproto funcUnsmeared=$(funcStr)		//unsmeared
 				coefStr = MC_getFunctionCoef(funcStr)
 				
 				if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
 					Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 				endif
 				Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+				
 				func($coefStr,inten,qval)
 				
 				NVAR imon = root:Packages:NIST:SAS:gImon
+				NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 				NVAR thick = root:Packages:NIST:SAS:gThick
+				NVAR trans = root:Packages:NIST:SAS:gSamTrans
+				NVAR SimDetCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
+				NVAR estDetCR = root:Packages:NIST:SAS:g_1DEstDetCR			// estimated detector count rate
+				NVAR fracScat = root:Packages:NIST:SAS:g_1DFracScatt		// fraction of beam captured on detector
+				NVAR estTrans = root:Packages:NIST:SAS:g_1DEstTrans		// estimated transmission of sample
+				NVAR SimCountTime = root:Packages:NIST:SAS:gCntTime		//counting time used for simulation
 				
 				WAVE rw=root:Packages:NIST:SAS:realsRead
-				WAVE nCells=root:Packages:NIST:SAS:nCells
-				
-	///////Trans is hard-wired - need to input from somewhere!!!
-				trans = 0.8
-				
-				
+				WAVE nCells=root:Packages:NIST:SAS:nCells				
+								
 				pixSize = rw[10]/10		// convert pix size in mm to cm
-				sdd = rw[18]*100		//conver header of [m] to [cm]
+				sdd = rw[18]*100		//convert header of [m] to [cm]
+				wavelength = rw[26]		// in 1/A
 				
-				duplicate/O qval prob_i
-				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in bin(i)
+				imon = beamIntensity()
+				
+				// calculate the scattering cross section simply to be able to estimate the transmission
+				Variable sig_sas
+				CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
+				if(sig_sas > 100)
+					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
+				endif
+				estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
+				Print "Sig_sas = ",sig_sas
+				
+				Duplicate/O qval prob_i,circle_fraction,rval,nCells_expected
+				rval = sdd*tan(2*asin(qval*wavelength/4/pi))		//radial distance in cm
+				nCells_expected = 2*pi*rval/pixSize					//does this need to be an integer?
+				circle_fraction = nCells / nCells_expected
+				
+							
+				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) that has nCells
 				
 				Variable P_on = sum(prob_i,-inf,inf)
 				Print "P_on = ",P_on
+				fracScat = P_on
 				
-				aveint = Imon*P_on*prob_i
+				aveint = (Imon*ctTime)*prob_i / circle_fraction / nCells_expected
+
+				SimDetCts = sum(aveint,-inf,inf)
+				estDetCR = SimDetCts/SimCountTime
 				
 				
+				NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
+				NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
+							
+				sigave = sqrt(aveint)		// assuming that N is large
 				
-				aveint *= fSubS
-						
-				sigave = sqrt(aveint)		//reset for model calculation
+				// add in random error in aveint based on the sigave
+				if(addNoise)
+					aveint += gnoise(sigave)
+				endif
+
+				// convert to absolute scale
+				if(doABS)
+					Variable kappa = thick*(pixSize/sdd)^2*trans*iMon*ctTime
+					aveint /= kappa
+					sigave /= kappa
+				endif
+				
 			else
 				Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
 			endif
@@ -945,10 +988,7 @@ Function ReCalculateInten(doIt)
 		//end no simulation	
 	endif
 	
-	if(doMonteCarlo == 1)
 
-	endif
-	
 	//display the configuration text in a separate notebook
 	DisplayConfigurationText()
 	

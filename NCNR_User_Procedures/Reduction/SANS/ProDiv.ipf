@@ -410,6 +410,13 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			
+			//temporarily set data display to linear
+			NVAR gLog = root:myGlobals:gLogScalingAsDefault
+			Variable oldState = gLog
+			gLog=0	//linear
+			
+			
 			SVAR gPlex = root:myGlobals:Protocols:gPlex
 			SVAR gPlexBgd = root:myGlobals:Protocols:gPlexBgd
 			SVAR gPlexEmp = root:myGlobals:Protocols:gPlexEmp
@@ -506,7 +513,8 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			UpdateDisplayInformation("STO")
 		//write out the new data file
 			WriteVAXWorkFile("STO")
-					
+				
+			gLog=oldState		//revert display preference to old state	
 			break
 	endswitch
 

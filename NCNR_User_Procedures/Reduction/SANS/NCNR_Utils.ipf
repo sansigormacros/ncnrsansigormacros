@@ -552,6 +552,10 @@ Function CheckIfRawData(fname)
 	String testStr=""
 	
 	Open/R/T="????TEXT" refNum as fname
+	if(strlen(s_filename) == 0)	//user cancel (/Z not used, so V_flag not set)
+		return(0)
+	endif
+	
 	//get the total number of bytes in the file
 	FStatus refNum
 	totalBytes = V_logEOF

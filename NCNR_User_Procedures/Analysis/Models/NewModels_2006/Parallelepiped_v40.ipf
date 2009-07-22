@@ -236,3 +236,28 @@ Function SmearedParallelepiped(s) :FitFunc
 
 	return(0)
 End
+
+
+
+////////////For testing
+
+Macro PP_Rg_and_IZero()
+
+	variable rg2,iz
+	
+	iz = coef_Parallelepiped[0]
+	iz *= coef_Parallelepiped[1]*coef_Parallelepiped[2]*coef_Parallelepiped[3]
+	iz *= (coef_Parallelepiped[4]-coef_Parallelepiped[5])^2
+	iz -= coef_Parallelepiped[6]
+	iz *= 1e8
+	
+	
+	rg2 = coef_Parallelepiped[1]^2
+	rg2 += coef_Parallelepiped[2]^2
+	rg2 += coef_Parallelepiped[3]^2
+	rg2 /= 12
+	
+	
+	Print "I(q=0) [cm^-1] = ",iz
+	Print "Rg [A] = ",sqrt(rg2)
+end

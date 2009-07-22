@@ -106,7 +106,10 @@ Function PickPathButton(PathButton) : ButtonControl
 	ControlUpdate/W=Patch_Panel $"PathDisplay"
 	
 	//then update the popup list
-	PatchPopMenuProc("PatchPopup",1,"")
+	// (don't update the list - not until someone enters a search critera) -- Jul09
+	//
+	SetMatchStrProc("",0,"*","")		//this is equivalent to finding everything, typical startup case
+
 End
 
 
@@ -300,7 +303,10 @@ Function SetMatchStrProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String/G root:myGlobals:Patch:gPatchList = list
 	ControlUpdate PatchPopup
 	PopupMenu PatchPopup,mode=1
-	ShowHeaderButtonProc("SHButton")
+	
+	if(strlen(list) > 0)
+		ShowHeaderButtonProc("SHButton")
+	endif
 End
 
 
@@ -317,8 +323,8 @@ Function ShowHeaderButtonProc(SHButton) : ButtonControl
 	//get the popup string
 	String partialName, tempName
 	Variable ok
-	ControlInfo patchPopup
-	If(cmpstr(S_value,"")==0)
+	ControlInfo/W=Patch_Panel PatchPopup
+	If(strlen(S_value)==0)
 		//null selection
 		Abort "no file selected in popup menu"
 	else
@@ -602,8 +608,8 @@ End
 //
 Proc Patch_Panel()
 	PauseUpdate; Silent 1	   // building window...
-//	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw SANS Data Files"
-	NewPanel /W=(519,85,950,608) as "Patch Raw SANS Data Files"
+	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw SANS Data Files"
+//	NewPanel /W=(519,85,950,608) as "Patch Raw SANS Data Files"
 	DoWindow/C Patch_Panel
 	ModifyPanel cbRGB=(1,39321,19939)
 	ModifyPanel fixedSize=1

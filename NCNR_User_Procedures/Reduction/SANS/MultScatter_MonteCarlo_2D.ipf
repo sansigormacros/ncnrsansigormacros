@@ -1254,44 +1254,39 @@ end
 
 
 
-// as a stand-alone panel, extra control bar  (right) and subwindow implementations don't work right 
-// for various reasons...
 Window Sim_1D_Panel() : Panel
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(92,556,713,818)/K=1 as "1D SANS Simulator"
-	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
-	SetVariable MC_setvar0,format="%5.4g"
-	SetVariable MC_setvar0,limits={0,inf,100},value= root:Packages:NIST:SAS:gImon
-	SetVariable MC_setvar0_1,pos={28,119},size={131,15},bodyWidth=60,title="Thickness (cm)"
+	SetVariable cntVar,pos={26,68},size={160,15},title="Counting time(s)",format="%d"
+	SetVariable cntVar,limits={1,36000,10},value= root:Packages:NIST:SAS:gCntTime
+	SetVariable cntVar, proc=Sim_1D_CountTimeSetVarProc
+	SetVariable MC_setvar0_1,pos={26,91},size={160,15},title="Thickness (cm)"
 	SetVariable MC_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gThick
-	SetVariable MC_setvar0_2,pos={28,96},size={149,15},bodyWidth=60,title="Incoherent XS (cm)"
-	SetVariable MC_setvar0_2,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gSig_incoh
-//	SetVariable MC_setvar0_3,pos={28,142},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
-//	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
-	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
+	SetVariable MC_setvar0_1, proc=Sim_1D_SamThickSetVarProc
+
+	SetVariable MC_setvar0_3,pos={26,114},size={160,15},title="Sample Transmission"
+	SetVariable MC_setvar0_3,limits={0,1,0.01},value= root:Packages:NIST:SAS:gSamTrans
+	SetVariable MC_setvar0_3, proc=Sim_1D_SamTransSetVarProc
+
 	PopupMenu MC_popup0,pos={13,13},size={165,20},proc=Sim_1D_ModelPopMenuProc,title="Model Function"
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
-//	Button MC_button0,pos={17,181},size={130,20},proc=Sim_1D_DoItButtonProc,title="Do 1D Simulation"
-//	Button MC_button0,fColor=(3,52428,1)
-//	Button MC_button1,pos={17,208},size={80,20},proc=Sim_1D_Display2DButtonProc,title="Show 2D"
-	GroupBox group0,pos={15,42},size={267,130},title="Sample Setup"
-	SetVariable cntVar,pos={190,73},size={80,15},proc=Sim_1D_CountTimeSetVarProc,title="time(s)"
-	SetVariable cntVar,format="%d"
-	SetVariable cntVar,limits={1,600,1},value= root:Packages:NIST:SAS:gCntTime
-//	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
-	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
-	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
-//	CheckBox check0_2,pos={216,199+19},size={60,14},title="Beam Stop in",variable= root:Packages:NIST:SAS:gBeamStopIn
-//	CheckBox check0_3,pos={216,199+2*19},size={60,14},title="use XOP",variable= root:Packages:NIST:SAS:gUse_MC_XOP
+	Button MC_button0,pos={17,181},size={130,20},proc=Sim_1D_DoItButtonProc,title="Do 1D Simulation"
+	Button MC_button0,fColor=(3,52428,1)
+	GroupBox group0,pos={15,42},size={280,130},title="Sample Setup"
+	CheckBox check0_1,pos={216,179},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
+	CheckBox check0_2,pos={216,199},size={60,14},title="Abs scale?",variable= root:Packages:NIST:SAS:g_1D_DoABS
+	CheckBox check0_3,pos={216,219},size={60,14},title="Noise?",variable= root:Packages:NIST:SAS:g_1D_AddNoise
 	
-	String fldrSav0= GetDataFolder(1)
-	SetDataFolder root:Packages:NIST:SAS:
-	Edit/W=(344,23,606,248)/HOST=#  results_desc,results
-	ModifyTable format(Point)=1,width(Point)=0,width(results_desc)=150
-	SetDataFolder fldrSav0
-	RenameWindow #,T_results
-	SetActiveSubwindow ##
-	
+// a box for the results
+	GroupBox group1,pos={314,23},size={277,163},title="Simulation Results"
+	ValDisplay valdisp0,pos={326,48},size={220,13},title="Total detector counts"
+	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:SAS:g_1DTotCts
+	ValDisplay valdisp0_1,pos={326,72},size={220,13},title="Estimated count rate (1/s)"
+	ValDisplay valdisp0_1,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:SAS:g_1DEstDetCR
+	ValDisplay valdisp0_2,pos={326,96},size={220,13},title="Fraction of beam scattered"
+	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:SAS:g_1DFracScatt
+	ValDisplay valdisp0_3,pos={326,121},size={220,13},title="Estimated transmission"
+	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:SAS:g_1DEstTrans
 	// set the flags here -- do the simulation, but not 2D
 	
 	root:Packages:NIST:SAS:doSimulation	= 1 	// == 1 if 1D simulated data, 0 if other from the checkbox
@@ -1309,9 +1304,41 @@ Function Sim_1D_CountTimeSetVarProc(sva) : SetVariableControl
 		case 3: // Live update
 			Variable dval = sva.dval
 
-			// get the neutron flux, multiply, and reset the global for # neutrons
-			NVAR imon=root:Packages:NIST:SAS:gImon
-			imon = dval*beamIntensity()
+			ReCalculateInten(1)
+			
+			break
+	endswitch
+
+	return 0
+End
+
+Function Sim_1D_SamThickSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+
+			ReCalculateInten(1)
+			
+			break
+	endswitch
+
+	return 0
+End
+
+Function Sim_1D_SamTransSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+
+			ReCalculateInten(1)
 			
 			break
 	endswitch
@@ -1337,33 +1364,16 @@ Function Sim_1D_ModelPopMenuProc(pa) : PopupMenuControl
 End
 
 
+Function Sim_1D_DoItButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
 
-//Function Sim_1D_DoItButtonProc(ba) : ButtonControl
-//	STRUCT WMButtonAction &ba
-//
-//	switch( ba.eventCode )
-//		case 2: // mouse up
-//			// click code here
-//			NVAR doMC = root:Packages:NIST:SAS:gDoMonteCarlo
-//			doMC = 1
-//			ReCalculateInten(1)
-//			doMC = 0		//so the next time won't be MC
-//			break
-//	endswitch
-//
-//	return 0
-//End
-//
-//
-//Function Sim_1D_Display2DButtonProc(ba) : ButtonControl
-//	STRUCT WMButtonAction &ba
-//
-//	switch( ba.eventCode )
-//		case 2: // mouse up
-//			// click code here
-//			Execute "ChangeDisplay(\"SAS\")"
-//			break
-//	endswitch
-//
-//	return 0
-//End
+	switch( ba.eventCode )
+		case 2: // mouse up
+		
+			ReCalculateInten(1)
+			
+			break
+	endswitch
+
+	return 0
+End
