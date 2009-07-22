@@ -9,11 +9,6 @@
 // functions are either labeled with the procedure file that calls them,
 // or noted that they are local to this file
 
-
-
-
-
-
 // initializes globals that are specific to a particular facility
 // - number of XY pixels
 // - pixexl resolution [cm]
@@ -28,11 +23,11 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:gNPixelsY=192
 	
 	// pixel dimensions are now read directly from the file header.
-	Variable/G root:myGlobals:PixelResDefault = 0.5			//pixel resolution in cm
+	Variable/G root:myGlobals:PixelResDefault = 0.51	//pixel resolution in cm
 	
-	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6		//deadtime in seconds
+	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6		//deadtime in seconds?????????????????????????????????????????????????????????????????????
 
-	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position
+	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position???????????????????????????????????????????????????
 
 End
 
@@ -166,9 +161,9 @@ Function xDetectorPixelResolution(fileStr,detStr)
 	String fileStr,detStr
 	
 	Variable DDet
-
+	NVAR PixelResDefault = root:myGlobals:PixelResDefault
 	//your code here
-	
+	DDet = PixelResDefault	//0.515 cm, typical for new ORNL detectors
 	return(DDet)
 End
 
@@ -184,9 +179,9 @@ Function DetectorDeadtime(fileStr,detStr)
 	String fileStr,detStr
 	
 	Variable deadtime
+	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
 	
-// your code here
-
+	deadtime = DeadtimeDefault	//3.4e-6 seconds, typical for new ORNL detectors //???????????????????????????
 	return(deadtime)
 End
 
@@ -202,12 +197,34 @@ End
 //
 Function GetRunNumFromFile(item)
 	String item
-
-	Variable num=-1		// an invalid return value
+	Variable invalid = -1	//negative numbers are invalid
+	Variable num=-1
 	
-	//your code here
-	
-	return (num)
+	//find the "dot"
+	String runStr=""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, get the nine characters preceeding it
+		if (pos <=8)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[pos-9,pos-5]
+			//convert to a number
+			num = str2num(runStr)
+			//if valid, return it
+			if (num == NaN)
+				//4 characters were not a number
+				return (invalid)
+			else
+				//run was OK
+				return (num)
+			Endif
+		Endif
+	Endif
 End
 
 
@@ -230,8 +247,25 @@ Function/S GetRunNumStrFromFile(item)
 	retStr=invalid
 	
 	//your code here
+	//find the "dot"
+	Variable pos = strsearch( LowerStr(item),".xml",0)
+	if(pos == -1)
+		//"dotxml" not found
+		return (retStr)
+	else
+		pos = strsearch( LowerStr(item),"_scan",0)
+		//found, get the nine characters preceeding it
+		if (pos ==-1)
+			//not a raw data file
+			return (retStr)
+		else
+			//Take the first four
+			retStr= item[pos+5,pos+8]
+			return (retStr)
+			
+		Endif
+	Endif
 	
-	return(retStr)
 End
 
 //returns a string containing the full path to the file containing the 
@@ -246,8 +280,23 @@ End
 //
 Function/S FindFileFromRunNumber(num)
 	Variable num
-	
 	String fullName="",partialName="",item=""
+	//get list of raw data files in folder that match "num" (add leading zeros)
+	if( (num>999) || (num<=0) )
+		//Print "error in  FindFileFromRunNumber(num), file number too large or too small"
+		Return ("")
+	Endif
+	//make a three character string of the run number
+	String numStr=""
+	if(num<10)
+		numStr = "00"+num2str(num)
+	else
+		if(num<100)
+			numStr = "0"+num2str(num)
+		else
+			numStr = num2str(num)
+		Endif
+	Endif
 	
 	//make sure that path exists
 	PathInfo catPathName
@@ -255,11 +304,42 @@ Function/S FindFileFromRunNumber(num)
 	if (V_flag == 0)
 		Abort "folder path does not exist - use Pick Path button"
 	Endif
-
-	//your code here	
-
-	return(fullname)
+	String list="",newList="",testStr=""
 	
+	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
+	//find (the) one with the number in the run # location in the name
+	Variable numItems,ii,runFound,isRAW
+	numItems = ItemsInList(list,";")		//get the new number of items in the list
+	ii=0
+	do
+		//parse through the list in this order:
+		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let the first ### is the run num.
+		// 2 - exclude by isRaw? (to minimize disk access)
+		item = StringFromList(ii, list  ,";" )
+		if(strlen(item) != 0)
+			//find the run number, if it exists as a three character string
+			testStr = GetRunNumStrFromFile(item)
+			runFound= cmpstr(numStr,testStr)	//compare the three character strings, 0 if equal
+			if(runFound == 0)
+				//the run Number was found
+				//build valid filename
+				partialName = FindValidFileName(item)
+
+				if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
+					fullName = path + partialName
+					//check if RAW, if so,this must be the file!
+					isRAW = CheckIfRawData(fullName)
+					if(isRaw)
+						//stop here
+						return(fullname)
+					Endif
+				Endif
+			Endif
+		Endif
+		ii+=1
+	while(ii<numItems)		//process all items in list
+	print "Please type 'scan number(s)' from your file name..."
+	Return ("")	//null return if file not found in list	
 End
 
 //function to test a binary file to see if it is a RAW binary SANS file
@@ -306,7 +386,7 @@ Function CheckIfRawData(fname)
 			for (i = 0; i < DimSize(M_listAttr,0); i+=1)			// loop over all available attributes
 				// Expect the required hfir XML header (will fail if "schemalocation" is not found)
 				if ( CmpStr(  LowerStr(M_listAttr[i][1]),  LowerStr("SPICE_version") ) == 0 )
-					thisLocation = TrimWS(M_listAttr[i][2])
+					thisLocation = HFIR_TrimWS(M_listAttr[i][2])
 					if ( StringMatch(thisLocation, nsList[item] ) )
 						ns = nsList[item]			
 					
@@ -334,16 +414,23 @@ End
 //
 // called by Transmission.ipf, CatVSTable.ipf, NSORT.ipf
 //
-Function isTransFile(fName)
+Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	String fname
 	
+	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0
 //	if(your test here)
-//		//yes, its a transmisison file
-//		Return(1)
-//	else
-//		//some other file
-//		Return(0)
-//	Endif
+	beamtrap_1y=getRealValueFromHeader(fname,"trap_y_101mm","mm")
+	beamtrap_2y=getRealValueFromHeader(fname,"trap_y_25mm","mm")
+	beamtrap_3y=getRealValueFromHeader(fname,"trap_y_50mm","mm")
+	beamtrap_4y=getRealValueFromHeader(fname,"trap_y_76mm","mm")
+
+	 if (beamtrap_1y<10 && beamtrap_2y<10 && beamtrap_3y<10 && beamtrap_4y<10)	
+	//yes, its a transmisison file
+		return (1)
+	else
+	//some other file
+		return (0)
+	endif
 End
 
 
@@ -398,10 +485,61 @@ Function/S FindValidFilename(partialName)
 	String PartialName
 	
 	String retStr=partialName
-	
+
 	//your code here
+	//try name with no changes - to allow for ABS files that have spaces in the names 12APR04
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		return(retStr)
+	endif
 	
-	return(retStr)
+	//if the partial name is derived from the file header, there can be spaces at the beginning
+	//or in the middle of the filename - depending on the prefix and initials used
+	//
+	//remove any leading spaces from the name before starting
+	partialName = RemoveAllSpaces(partialName)
+	
+	//try name with no spaces
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	endif
+	
+	//try all UPPERCASE
+	partialName = UpperStr(partialName)
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	endif
+	
+	//try all lowercase (ret null if failure)
+	partialName = LowerStr(partialName)
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	else
+		return(retStr)
+	endif
+End
+
+// Function checks for the existence of a file
+
+// *** the PATH is hard-wired to catPathName (which is assumed to exist)
+// version numers up to ;10 are tried
+// only the "name;vers" is returned if successful. The path is not prepended
+//
+// local function
+//
+Function/S ValidFileString(partialName)
+	String partialName
+
+	String tempName = "" 
+	//Variable ii,refnum
+	tempName = partialName
+	Return (tempName)
 End
 
 
@@ -506,9 +644,26 @@ End
 //
 Function/S GetNameFromHeader(fullName)
 	String fullName
-	String newName = ""
-
-	//your code here
+	String temp, newName = ""
+	Variable spc,ii=0
+	
+	//filename is 31-33 characters INSTRNAMESANS_exp##_scan####_####.xml (where # : numbers)
+	//returns a null string if no name can be found
+	Variable iimax =  strlen(fullName)
+	do
+		temp = fullname[ii,iimax-1-4]		//characters ii,all of the name
+		spc = strsearch(temp," ",0)
+		if (spc == -1)
+			break		//no more spaces found
+		endif
+		ii+=1
+	While(ii<iimax)
+	
+	If(strlen(temp) < 1)
+		newName = ""		//be sure to return a null string if problem found
+	else
+		newName = temp
+	Endif
 	
 	Return(newName)
 End
@@ -683,13 +838,14 @@ End
 //
 // called by Correct.ipf, ProtocolAsPanel.ipf, Transmission.ipf
 //
-Function AttenuationFactor(fileStr,lam,attenNo)
+Function AttenuationFactor(fileStr,lam,attenpercent)
 	String fileStr
-	Variable lam,attenNo
+	Variable lam,attenpercent
 	
 	Variable attenFactor=1
 	
 	// your code here
+	attenFactor = 1- attenpercent /100  //???Attenuate transmission
 
 	return(attenFactor)
 End
