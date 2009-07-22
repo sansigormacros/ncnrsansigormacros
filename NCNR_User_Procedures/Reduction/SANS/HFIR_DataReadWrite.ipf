@@ -8,14 +8,14 @@
 // Vers. ???? - branched from main reduction to split out facility
 //                     specific calls
 //
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//				   HFIR SANS version for SPICE raw data format:
-//     			    NIST CNR Igor Pro Data Reduction Package
-//							Coded by J H J Cho
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//					NIST CNR Igor Pro Data Reduction Package
+//				   HFIR SANS version for SPICE raw data format: 
+//
 //						University of Tennessee / NIST
 //							   DANSE/SANS
-//								Jun. 2009
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//								Jun. 2009: JHC
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // - RAW data files are read into the RAW folder - integer data from the detector
 //   is decompressed and given the proper orientation
@@ -34,7 +34,7 @@
 Function LoadRawSANSData(msgStr)
 	String msgStr
 
-	String filename=""
+	String filename = ""
 
 	//each routine is responsible for checking the current (displayed) data folder
 	//selecting it, and returning to root when done
@@ -145,6 +145,7 @@ Function ReadHeaderAndData(filename)
 	IF ( EXISTS( "M_listXPath" ) == 0 )
 		XmlCloseFile(refNum,0)
 		//errorMsg = "XMLutils needs an upgrade:  http://www.igorexchange.com/project/XMLutils"
+	
 		SetDataFolder root:
 		RETURN(-3)						// XOPutils needs an upgrade
 	ENDIF
@@ -165,7 +166,7 @@ Function ReadHeaderAndData(filename)
 		for (i = 0; i < DimSize(M_listAttr,0); i+=1)			// loop over all available attributes
 			// Expect the required hfir XML header (will fail if "schemalocation" is not found)
 			if ( CmpStr(  LowerStr(M_listAttr[i][1]),  LowerStr("SPICE_version") ) == 0 )
-				thisLocation = TrimWS(M_listAttr[i][2])
+				thisLocation = HFIR_TrimWS(M_listAttr[i][2])
 				if ( StringMatch(thisLocation, nsList[item] + "*") )
 					ns = nsList[item]			
 						
@@ -219,7 +220,18 @@ Function ReadHeaderAndData(filename)
 	String tempheadhfir
 	tempheadhfir = ""
        ReadHFIRSansRaw(refNum,curFolder,tempheadhfir) 
-
+       
+       i=0
+       do	
+       	//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+       	//This DOLOOP can be removed where the problem is solved....
+       	textw[0]=stringfromlist(i,filename,":") 
+       	if (stringmatch(textw[0],"*.xml")>0)       		
+       		break
+       	endif
+       	i +=1
+       while (1)
+       	
 	//return the data folder to root
 	SetDataFolder root:
 	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
@@ -314,7 +326,15 @@ Function ReadHeaderAndWork(type,fname)
 	String tempheadhfir
 	tempheadhfir = ""
        ReadHFIRSansRaw(refNum,cur_folder,tempheadhfir) 
-
+       Variable i=0
+       do	
+       	//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+       	textw[0]=stringfromlist(i,fname,":") 
+       	if (stringmatch(textw[0],"*.xml")>0)       		
+       		break
+       	endif
+       	i +=1
+       while (1)
 
 	//divide the FP data by 4 if read from a PC (not since GBLoadWave update)
 	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
@@ -492,7 +512,7 @@ Function/S getStringFromHeader(fname,wantedterm)
 	
 	
 	String str = ""
-	Variable refNum
+	Variable refNum,i
 	
 	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
@@ -507,7 +527,20 @@ Function/S getStringFromHeader(fname,wantedterm)
 	endif
 
 	//ORNL HFIR SANS strings meta DATA
-       str=ReadSFromHHead(refNum,wantedterm) 
+	if (stringmatch("filename",wantedterm)>0)
+      		i=0
+       	do	
+       		//Get the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+       		//This DOLOOP can be removed when the problem is solved....
+       		str=stringfromlist(i,fname,":") 
+       		if (stringmatch(str,"*.xml")>0 && stringmatch(stringfromlist(i+1,fname,":"),"")>0)       		
+       			break
+       		endif
+       		i +=1
+       	while (1)
+	else
+      		str=ReadSFromHHead(refNum,wantedterm)  //Get it from the header.
+       endif
 	
 	//return the data folder to root
 	//SetDataFolder root:
@@ -517,21 +550,20 @@ Function/S getStringFromHeader(fname,wantedterm)
 End
 
 // file suffix (NCNR data file name specific)
-// return null string
-// file suffix (4 characters @ byte 19)
+
+// file suffix (13 characters @ byte 19)
 Function/S getSuffix(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"suffix"))
+	return(getStringFromHeader(fname,"suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
 End
 
 // associated file suffix (for transmission)
-// NCNR Transmission calculation specific
-// return null string
+
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"suffix"))
+	return(getStringFromHeader(fname,"suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
 End
 
 // sample label (60 characters @ byte 98)
@@ -588,7 +620,7 @@ end
 Function getSavMon(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"monitor",""))
+	return(getRealValueFromHeader(fname,"monitor",""))  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!??
 end
 
 //detector count is at byte 47
@@ -602,27 +634,27 @@ end
 Function getAttenNumber(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"attenuator_number",""))
+	return(getRealValueFromHeader(fname,"attenuation","percent")) //in unit od percents
 end
 
 //transmission is at byte 158
 Function getSampleTrans(fname)
 	String fname
-	return(getRealValueFromHeader(fname,"Transmission_for_Scan",""))
+	return(getRealValueFromHeader(fname,"Transmission_for_Sample",""))
 end
 
 //box counts are stored at byte 494
 Function getBoxCounts(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"",""))  			//ToDo: define this...
+	return(getRealValueFromHeader(fname,"Box_Counts",""))  		
 end
 
 //whole detector trasmission is at byte 392
 Function getSampleTransWholeDetector(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"detector","")) //Need to check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Counters/detector????????????
+	return(getRealValueFromHeader(fname,"detector","")) //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end
 
 //SampleThickness is at byte 162
@@ -727,7 +759,7 @@ end
 Function getTransDetectorCounts(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"",""))  //"detector"// (Unused, return 0)
+	return(getRealValueFromHeader(fname,"",""))  // (Unused, return 0) 
 end
 
 //detector pixel X size is at byte 220
@@ -742,6 +774,18 @@ Function getDetectorPixelYSize(fname)
 	String fname
 	
 	return(getRealValueFromHeader(fname,"y_mm_per_pixel","mm"))
+end
+
+//total count time is at byte 31	
+Function getCountTime(fname)
+	String fname
+	Variable mtime
+	
+	mtime = getRealValueFromHeader(fname,"time","")
+	if (mtime == 0)
+		mtime = 1		//get rid of a singular for calculating a rate.
+	endif 
+	return(mtime)
 end
 
 //////  integer values
@@ -774,18 +818,6 @@ Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 		
 	return(0)
 End
-
-//total count time is at byte 31	
-Function getCountTime(fname)
-	String fname
-	Variable mtime
-	
-	mtime = getRealValueFromHeader(fname,"time","")
-	if (mtime == 0)
-		mtime = 1		//get rid of a singular for calculating a rate.
-	endif 
-	return(mtime)
-end
 
 
 //reads the wavelength from a reduced data file (not very reliable)
@@ -824,19 +856,26 @@ End
 //
 // if not using the NCNR Transmission module, this function default to 
 // returning 0000, and no changes needed
-Function getXYBoxFromFile(filename,x1,x2,y1,y2)
-	String filename
+Function getXYBoxFromFile(fname,x1,x2,y1,y2)
+	String fname
 	Variable &x1,&x2,&y1,&y2
 	
 	Variable refnum
-	String tmpFile = FindValidFilename(filename)
+	String tmpFile = FindValidFilename(fname)
 	// tmpFile is only a parital path
-
+	
 	// return your bounding box coordinates or default values of 0
-	x1=0
-	y1=0
-	x2=0
-	y2=0
+	x1=getRealValueFromHeader(fname,"XYBox_x1","")
+	x2=getRealValueFromHeader(fname,"XYBox_x2","")
+	y1=getRealValueFromHeader(fname,"XYBox_y1","")
+	y2=getRealValueFromHeader(fname,"XYBox_y2","")
+	
+	if (x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1)
+		x1 = 0
+		x2 = 0
+		y1 = 0
+		y2 = 0
+	endif
 	
 	return(0)
 End
@@ -846,11 +885,21 @@ End
 // box to sum over bounded (x1,y1) to (x2,y2)
 //
 // if not using the NCNR Transmission module, this function is null
-Function WriteXYBoxToHeader(filename,x1,x2,y1,y2)
-	String filename
+Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
+	String fname
 	Variable x1,x2,y1,y2
 	
 	// your code to write bounding box to the header, or nothing
+	String x1str = "", x2str = "", y1str = "", y2str = ""
+	sprintf x1str, "%d", x1
+	sprintf x2str, "%d", x2
+	sprintf y1str, "%d", y1
+	sprintf y2str, "%d", y2
+
+	WriteHFIRHead(fname,x1str,"XYBox_x1" ,"") 	
+	WriteHFIRHead(fname,x2str,"XYBox_x2" ,"") 
+	WriteHFIRHead(fname,y1str,"XYBox_y1" ,"") 
+	WriteHFIRHead(fname,y2str,"XYBox_y2" ,"") 
 	
 	return(0)
 End
@@ -858,46 +907,39 @@ End
 // for transmission calculation, writes an NCNR-specific alphanumeric identifier
 // (suffix of the data file)
 //
-// if not using the NCNR Transmission module, this function is null
 Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
 		
-	// your code to write bounding box to the header, or nothing
 	
+	WriteHFIRHead(fname,suffix,"suffix" ,"text") 
 	return(0)
 end
 
 
 //// ==================================================================
-//
-//Function/T   TrimWS(strg)
-//    // TrimWhiteSpace (code from Jon Tischler)
-//    String strg
-//    return TrimWSL(TrimWSR(strg))
-//End
-//
-//// ==================================================================
-//
-//Function/T   TrimWSL(strg)
-//    // TrimWhiteSpaceLeft (code from Jon Tischler)
-//    String strg
-//    Variable i, N=strlen(strg)
-//    for (i=0;char2num(strg[i])<=32 && i<N;i+=1)    // find first non-white space
-//    endfor
-//    return strg[i,Inf]
-//End
-//
-//// ==================================================================
-//
-//Function/T   TrimWSR(strg)
-//    // TrimWhiteSpaceRight (code from Jon Tischler)
-//    String strg
-//    Variable i
-//    for (i=strlen(strg)-1; char2num(strg[i])<=32 && i>=0; i-=1)    // find last non-white space
-//    endfor
-//    return strg[0,i]
-//End
-//
+//Keep these functions in case NIST changes: We need these...
+// TrimWhiteSpace (code from Jon Tischler)
+Function/T   HFIR_TrimWS(strg)
+   
+   String strg
+   return HFIR_TrimWSL(HFIR_TrimWSR(strg))
+End
+
+Function/T   HFIR_TrimWSL(strg)
+    String strg
+    Variable i, N=strlen(strg)
+    for (i=0;char2num(strg[i])<=32 && i<N;i+=1)    // find first non-white space
+    endfor
+    return strg[i,Inf]
+End
+
+Function/T   HFIR_TrimWSR(strg)
+    String strg
+    Variable i
+    for (i=strlen(strg)-1; char2num(strg[i])<=32 && i>=0; i-=1)    // find last non-white space
+   endfor
+    return strg[0,i]
+End
 //// ==================================================================
 
 Function ReadHFIRRaw(refNum,prtname,pname)   //NOT USED!!!!!!!!
@@ -920,7 +962,7 @@ Function ReadHFIRRaw(refNum,prtname,pname)   //NOT USED!!!!!!!!
 		for (i = 0; i < DimSize(M_listAttr,0); i+=1)			// loop over all available attributes
 			// Expect the required hfir XML header (will fail if "schemalocation" is not found)
 			if ( CmpStr(  LowerStr(M_listAttr[i][1]),  LowerStr(pname) ) == 0 )
-				thisLocation = TrimWS(M_listAttr[i][2])
+				thisLocation = HFIR_TrimWS(M_listAttr[i][2])
 				if ( StringMatch(thisLocation, nsList[item] + "*") )
 					ns = nsList[item]
 					Break
@@ -965,12 +1007,13 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	 textw=""
 	 textw[2]=curFolder
 	 textw[3]=""
-	 textw[4]="C"   ///???
+	 textw[4]="C"   			     ///???
 	 textw[7]="C"                        // temperature unit C
 	 textw[10]="xml"			//HFIR SANS RAW data file extension
+	 realw[4]  = 1				//Default for transmission for sample
 	 realw[12]=0.00                       //following 6 values are for non-linear spatial corrections to a detector (RC timing)
 	 realw[15]=0.00                        // 10 and 13 are the X and Y pixel dimensions,,(11,12 and 13,14 are set to values for a linear response, as from a new Ordela detector)
-	 realw[11]=10000.00                          //nonlinear spatial pix(x)
+	 realw[11]=10000.00                          //nonlinear spatial pix(x) //Do not change unless knowing what you are doing...
 	 realw[14]=10000.00                          //nonlinear spatial pix(y)
 	 // detector physical width (right now assumes square...) (in cm)
 	 // beam stop X-position (motor reading, approximate cm from zero position)
@@ -1055,13 +1098,13 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 					val += " " + M_xmlContent[i]
 				endfor	   	 	
 	   	 		textw[9] = val				//ToDo: Define
-	   	 	elseif  (stringmatch(tempheadhfir,"Transmission_for_Scan")>0)
+	   	 	elseif  (stringmatch(tempheadhfir,"Transmission_for_Sample")>0)
 	   	 		if (value <= 0)
 	   	 			value = 1 		//HFIR default = -1 while NIST package not working if it is <=0: Set default =1. <=NOT good!!!
 	   	 		endif
 	   	 		realw[4] = unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"attenuator_number")>0)
-	   	 		realw[3] = unit_convert(value,unitstr,"")
+	   	 	elseif  (stringmatch(tempheadhfir,"attenuation")>0)
+	   	 		realw[3] = unit_convert(value,unitstr,"percent")
 	   	 	elseif  (stringmatch(tempheadhfir,"tsample")>0) 
 	   	 		realw[8] = unit_convert(value,unitstr,"C")
 	   	 	elseif  (stringmatch(tempheadhfir,"monitor")>0)
@@ -1074,6 +1117,8 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   	 		realw[10] = unit_convert(value,unitstr,"mm")
 	   	 	elseif  (stringmatch(tempheadhfir,"y_mm_per_pixel")>0)
 	   	 		realw[13] =  unit_convert(value,unitstr,"mm")
+	   	 		Variable/G root:myGlobals:PixelResDefault = unit_convert(realw[13],"mm","cm") //back to cm unit for this default value??!!
+	   	 		SetDataFolder curPath
 	   	 	elseif  (stringmatch(tempheadhfir,"beam_center_x_pixel")>0)
 	   	 		realw[16] = unit_convert(value,unitstr,"")
 	   	 	elseif  (stringmatch(tempheadhfir,"beam_center_y_pixel")>0)
@@ -1093,7 +1138,7 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   	 	//The units of the source_distance is treated special...
 	   	 	elseif  (stringmatch(tempheadhfir,"source_distance")>0)
 	   	 		if (strlen(unitstr)==0) 
-	   	 			unitstr = "mm" //Give mm unit when no unit is provided from file. ///This needs to be corrected soon!!!!
+	   	 			unitstr = "mm" //Give mm unit since no unit is provided from the file. ///This needs to be corrected soon!!!!
 	   	 		endif
 	   	 		realw[25] =value*length_unit_convert(unitstr,"m") //Unit's Not provided from the file but it is in mm.
 	   	 		
@@ -1174,7 +1219,13 @@ Function ReadVFromHHead(refNum,wantedterm,NCunit)
       
       Variable vresult=-1  // (wantedterm=="", return -1)
 	Variable ind=0,i=0, value = 0
-
+	String  ntype = ""
+	String savedDataFolder = GetDataFolder(1)
+	//Default for transmission rate (between 0 to 1): HFIR not provide this as a Float number???? ==>make one
+	if (stringmatch(wantedterm,"Transmission_for_Sample")>0)
+		vresult=1		
+	endif
+	
 	XMLelemlist(refNum)
 	WAVE/T W_ElementList
 
@@ -1200,7 +1251,26 @@ Function ReadVFromHHead(refNum,wantedterm,NCunit)
 					break
 				endif
 			endfor
-						
+			ntype ="s"		//TEXT	
+			for (i = 0; i < DimSize( M_listAttr,0); i+=1)	
+				if (stringmatch(M_listAttr[i][1],"type")>0)
+					if   (stringmatch(M_listAttr[i][2], "INT*")>0)
+						ntype = "i"		//INT32
+						break
+					elseif (stringmatch(M_listAttr[i][2], "FLOAT*")>0)
+						ntype ="f"		//FLOAT32
+						break
+					endif	
+				endif
+			endfor	
+			if (strlen(ntype) == 0)
+				ntype = "s"			//for no "type" attr.
+			endif		
+			String ustr ="%f"				//default: float
+			if (stringmatch(ntype,"i") > 0)	//for integer	
+				ustr = "%d"
+			endif	
+					
 			//Special case starts!!! 
 			//No unit found in hfir ("mm") but needs to convert to meters.
 			//The following 3 lines should be removed once HFIR puts th units on the raw data files.
@@ -1208,12 +1278,14 @@ Function ReadVFromHHead(refNum,wantedterm,NCunit)
 				unitstr = "mm" 		
 			endif
 			//Special case ends!!!
-			sscanf val, "%f", value
-			if (stringmatch(wantedterm,"Transmission_for_Scan")>0)
-				value = 1			//HFIR default =-1 :Reset default because NIST pac never works this with <=0..!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			endif
+			sscanf val, ustr, value
 			
 	   	 	vresult = unit_convert(value,unitstr,NCunit)
+	   	 	//Set PixResDefault from y_mm_per_pixel (not x_mm_per_pixel!!!!!!!!)
+	   	 	if (stringmatch(wantedterm,"y_mm_per_pixel")>0)
+	   	 		Variable/G root:myGlobals:PixelResDefault = unit_convert(vresult,"mm","cm") //back to cm unit for this default value??!!
+	   	 		SetDataFolder savedDataFolder		//In case...
+			endif
 	   	 	break
 	   	 endif
 		
@@ -1237,24 +1309,16 @@ Function/S ReadSFromHHead(refNum,wantedterm)
       if   (stringmatch(wantedterm,"")>0) 
       		result = ""
       		return (result)
-      elseif (stringmatch(wantedterm,"suffix")>0)     //file suffix (4 characters @ byte 19)    // associated file suffix (for transmission) (4 characters @ byte 404)
-      		result=""                          // null for non NCNR files
-          	return (result) 
 	endif
 
 	XMLlistAttr(refNum,"/SPICErack","")
 	WAVE/T M_listAttr
-		
-	if (stringmatch("filename=",wantedterm)>0 ||  stringmatch("start_time",wantedterm)>0)
+	if (stringmatch("filename",wantedterm)>0 ||  stringmatch("start_time",wantedterm)>0)
 		for (i = 0; i<DimSize(M_listAttr,0);i+=1)
-	   	 	 if ( Strsearch(M_listAttr[i][1],wantedterm,0) !=-1  )   //find file name
-	   	      	 	result=M_listAttr[i][2]     //filename
+	   	 	 if ( Strsearch(M_listAttr[i][1],wantedterm,0) !=-1  )  
+	   	      	 	result=M_listAttr[i][2]    
 	   	      	 	gotterm ="y" 
 				break
-	   	  	elseif (Strsearch(M_listAttr[i][1],wantedterm,0) !=-1 ) 
-	   	       	result=M_listAttr[i][2]      		//Date and Time
-	   	       	gotterm ="y" 
-	   	      		break 
 	   	  	endif
 		endfor    
 	else
@@ -1285,9 +1349,20 @@ Function/S ReadSFromHHead(refNum,wantedterm)
 	 	endfor
 	endif
 	
-	//make sure not to have a left-over content (only for text; numbers are set to -1 later as a default if not found)
+	
 	if (stringmatch(gotterm,"n")>0 ) 
 		result = ""
+	endif
+	//HFIR header does not have "suffix" tag but one can get the info from file name before user writes the tag into the header.
+	if (stringmatch("suffix",wantedterm)>0 && stringmatch("",result)>0) 			
+		for (i = 0; i<DimSize(M_listAttr,0);i+=1)
+	   	 	 if ( Strsearch(M_listAttr[i][1],"filename",0) !=-1  )  
+	   	 	 	result=StringFromList(2,StringFromList(0,M_listAttr[i][2],"."), "_")+"_"+StringFromList(3,StringFromList(0,M_listAttr[i][2],"."), "_")
+				break
+	   	  	endif
+		endfor   
+	//make sure not to have a left-over content (only for text; numbers are set to -1 later as a default if not found)
+	 else
 	endif
 	
 	//Make sure to clean up things...
@@ -1322,22 +1397,19 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	endif
 	//actually open the file
 	refNum = XmlOpenFile(filename)	
+
 	if (refNum < 0)
-		print "\r  ==> Failed: Not a standard xml file format... Please check the file if it is properly written..."
-		return 0 				//Not a xml file. Do nothing...
-	endif
-	
-	if ( refNum < 0 )
 		switch(refNum)					
 			case -1:
-				errorMsg = filename + ":  Failed to parse xml..."
+				errorMsg =  "  ==>  Not a standard xml file format; Please check if the file is not broken..."
 			break
 			case -2:
-				errorMsg = filename + ":  Not found or cannot be opened..."
+				errorMsg = "  ==>  Please check if the file name is same as that written in the header..."
 			break
 		endswitch
 		print errorMsg
-		return(0)						// could not find file
+		XMLclosefile(refNum, 0)
+		return -1 				//Not a xml file. Do nothing...
 	endif
 	
 	XMLelemlist(refNum)
@@ -1357,7 +1429,7 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 			WAVE/T M_listAttr
 				
 			//Special case starts!!! 
-			//No unit founds in hfir ("mm") file but needs to convert to meters. Let's give it.
+			//No unit founds in hfir ("mm") file but needs to convert to meters. Let's give it one.
 			if (stringmatch(wantedterm,"source_distance")>0&& strlen(unitstr) ==0)
 				unitstr = "mm" 		
 			//Special case ends!!!
@@ -1389,9 +1461,13 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 				vresult = 1			
 				valstr =value
 			else
-				sscanf  value, "%f", vals
-	   	 		vresult = unit_convert(vals,NCunit,unitstr)	//Unit correction...(back to HFIR units)
-				sprintf valstr, "%f", vresult
+				String ustr ="%f"				//default: float
+				if (stringmatch(ntype,"i") > 0)	//for integer	
+					ustr = "%d"
+				endif			
+				sscanf  value,ustr, vals
+	   	 		vresult = unit_convert(vals,NCunit,unitstr)	//Unit correction...(back to the HFIR unit)
+				sprintf valstr,ustr, vresult
 	   	 		//valstr = vresult
 	   	 	endif
 	   	 	XMLsetNodeStr(refNum,W_ElementList[ind][0],"",valstr)	//to set
@@ -1400,7 +1476,7 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	   	 endif		
        endfor
 
-	if (strlen(nstr)>0)	 //to write a new  attribut name and value.
+	if (strlen(nstr)>0)	 			//to write a new  attribut name and value which is not found in the raw file.
 		 XMLaddNode(refNum,nstr,"",wantedterm,value,1)
 		 nstr += "/" + wantedterm
 	   	 if (stringmatch(NCunit,"text")>0)	
@@ -1408,20 +1484,20 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	   	 	vresult = 1
 	   	 else
 	   	 	XMLsetAttr(refNum,nstr,"","units",NCunit) 	//use NIST units.
-	   	 	ntype = "FLOAT32" 	//Let's set the any number as float fo now...	
+	   	 	ntype = "FLOAT32" 						//Let's set the any number as float for now...	
 	   	 	sscanf  value, "%f", vals
 	   	 	vresult = vals 		
 	   	 endif
-	   	 print "*** Important Note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
+	   	 print "*** Important note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
 	   	 XMLsetAttr(refNum,nstr,"","type",ntype)    	
 	endif
 
-	KillWaves/Z W_ElementList,M_xmlContent,M_listXPath,M_listAttr	//clean up
+	KillWaves/Z W_ElementList,M_xmlContent,M_listXPath,M_listAttr			//clean up
 	if	(strlen(wantedterm)==0 && vresult == -1)
 		XMLclosefile(refNum, 0)
 		print "Failed writing",wantedterm, "on", filename, "..."
 	else
-		XMLclosefile(refNum, 1)		//save and close the file.
+		XMLclosefile(refNum, 1)						//save and close the file.
 		print "Finished writing",wantedterm,"=",value,"[",NCunit,"]  on", filename, "..."
 	endif
       	return (vresult)
@@ -1469,7 +1545,7 @@ Function WriteTransmissionToHeader(fname,trans)
 	String transstr = ""
 	sprintf transstr, "%f", trans
 
-	 WriteHFIRHead(fname,transstr,"Transmission_for_Scan" ,"") 		
+	 WriteHFIRHead(fname,transstr,"Transmission_for_Sample" ,"") 		
 	return(0)
 End
 
@@ -1481,7 +1557,7 @@ Function WriteWholeTransToHeader(fname,trans)
 	String transstr = ""
 	sprintf transstr, "%f", trans
 
-	WriteHFIRHead(fname,transstr,"detector" ,"") 			
+	WriteHFIRHead(fname,transstr,"detector" ,"") 	//????????????????????????????????????????????????????????
 	return(0)
 End
 
@@ -1493,9 +1569,9 @@ Function WriteBoxCountsToHeader(fname,counts)
 	Variable counts
 
 	String countsstr = ""
-	sprintf countsstr, "%f", counts
+	sprintf countsstr, "%d", counts
 
-	WriteHFIRHead(fname,countsstr,"" ,"") 	
+	WriteHFIRHead(fname,countsstr,"Box_Counts" ,"") 	
 	return(0)
 End
 
@@ -1548,7 +1624,7 @@ Function WriteBeamCenterYToHeader(fname,num)
 	return(0)
 End
 
-//attenuator number (not its transmission) is at byte 51
+//Attenuation (percent) 0 for no attanuation (not its transmission) 
 Function WriteAttenNumberToHeader(fname,num)
 	String fname
 	Variable num
@@ -1556,7 +1632,7 @@ Function WriteAttenNumberToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"attenuator_number","")  	// HFIR has attenuation % instead of this. thus user has to use patch unless somebody change the format!!!!
+	WriteHFIRHead(fname,numstr,"attenuation","percent")  	// HFIR has attenuation % instead of this. thus user has to use patch unless somebody change the format!!!!
 	return(0)
 End
 
@@ -1748,7 +1824,7 @@ Function WriteSamLabelToHeader(fname,str)
 	if(strlen(str) > 60)
 		str = str[0,59]
 	endif
-	WriteHFIRHead(fname,str, "Scan_Title","text") //Users tend to put the sample descrpt here. But it could be "Sample_Name"...
+	WriteHFIRHead(fname,str, "Scan_Title","text") //Users tend to put the sample descrpt here instead of "Sample_Name"...
 	return(0)
 End
 
