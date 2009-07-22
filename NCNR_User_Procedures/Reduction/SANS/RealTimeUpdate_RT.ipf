@@ -606,7 +606,34 @@ Function BkgUpdateHST()
 		countRate = totCounts/countTime
 		monitorCounts = realw[0]
 		monitorCountRate = monitorCounts/countTime
+		
+		//if the 1D plot is open, update this too
+		// make sure folders exist first
+		if(!DataFolderExists("root:myGlobals:Drawing"))
+			Execute "InitializeAveragePanel()"
+		endif
+		
+		// check for the mask, generate one? Two pixels all around
+		if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
+			Print "There is no mask file loaded (WaveExists)- the data is not masked"
+			Make/O/N=(128,128) root:Packages:NIST:MSK:data
+			Wave mask = root:Packages:NIST:MSK:data
+			mask[0][] = 1
+			mask[1][] = 1
+			mask[126][] = 1
+			mask[127][] = 1
 			
+			mask[][0] = 1
+			mask[][1] = 1
+			mask[][126] = 1
+			mask[][127] = 1
+		endif
+		
+		// update the 1d plot
+		if(WinType("Plot_1d")==1)		//if the 1D graph exists
+			Panel_DoAverageButtonProc("")		
+		endif
+		///////
 		
 //		print "Bkg task time (s) =",(ticks-t1)/60.15
 		return 0		//keep the process going
