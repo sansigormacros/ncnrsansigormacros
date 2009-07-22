@@ -189,31 +189,55 @@ End
 //
 // error value of 1 is returned and wavenote not updated if level is not found
 // 
+// now normalizes to the monitor counts
 //
 Function FindTWideCts(type)
 	String type
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Variable levNotFound,levPt,Cts,num,ii
+	Variable levNotFound,levPt,Cts,num,ii,sumMonCts
+	
 	Wave angle = $(USANSFolder+":"+type+":Angle")
 	Wave detCts = $(USANSFolder+":"+type+":DetCts")
 	Wave TransCts = $(USANSFolder+":"+type+":TransCts")
+	Wave monCts = $(USANSFolder+":"+type+":MonCts")
+	
+	num=numpnts(TransCts)
+
+
 	FindLevel/Q/P angle,2		//use angles greater than 2 deg
 	levNotFound=V_Flag		//V_Flag==1 if no pk found
+	
 	if(levNotFound)
-		return(1)
+		//post a warning, and use just the last 4 points...
+		DoAlert 0,"You don't have "+type+" data past 2 degrees - so Twide may not be reliable"
+		levPt = num-4
+	else
+		levPt = trunc(V_LevelX)		// in points, force to integer
 	endif
-	levPt = trunc(V_LevelX)		// in points, force to integer
 	
 	//average the trans cts from levPt to the end of the dataset
-	num=numpnts(TransCts)
 	Cts=0
+	sumMonCts=0
+	
 	for(ii=levPt;ii<num;ii+=1)
 		Cts += transCts[ii]
+		sumMonCts += monCts[ii]
 	endfor
+	// get the average over that number of data points
+	sumMonCts /= (num-levPt-1)
 	Cts /= (num-levPt-1)
 	
+//	Print "cts = ",cts
+//	Print "sumMoncts = ",sumMoncts
+	
+	//normalize to the average monitor counts
+	Cts /= sumMonCts
+	
+//	Print "normalized counts = ",cts
+
+
 	//update the note
 	Wave DetCts = $(USANSFolder+":"+type+":DetCts")
 	String str,strVal
@@ -221,6 +245,6 @@ Function FindTWideCts(type)
 	str = ReplaceNumberByKey("TWIDE",str,Cts,":",";")
 	Note/K DetCts
 	Note detCts,str
-	
+
 	return(0)
 End

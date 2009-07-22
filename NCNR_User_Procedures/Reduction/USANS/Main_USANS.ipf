@@ -140,7 +140,7 @@ Window USANS_Panel() : Panel
 	SetDrawEnv fstyle= 1
 	DrawText 140,357,"Raw Data Header"
 	SetDrawEnv fstyle= 1
-	DrawText 293,55,"Current Data"
+//	DrawText 293,55,"Current Data"
 	ListBox fileLB,pos={5,55},size={110,230},proc=FileListBoxProc
 	ListBox fileLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:fileWave
 	ListBox fileLB,selWave=root:Packages:NIST:USANS:Globals:MainPanel:selFileW,mode= 4
@@ -184,8 +184,8 @@ Window USANS_Panel() : Panel
 	ListBox CurFileBox,listWave=root:Packages:NIST:USANS:Globals:MainPanel:curWave,mode=1
 	SetVariable FilterSetVar,pos={8,289},size={106,18},title="Filter",fSize=12
 	SetVariable FilterSetVar,value= root:Packages:NIST:USANS:Globals:MainPanel:FilterStr
-	CheckBox UseCurrentData,pos={298,290},size={10,10},proc=UseCurrentDataProc,title="Enable Current Data"
-	CheckBox UseCurrentData,value=0
+//	CheckBox UseCurrentData,pos={298,290},size={10,10},proc=UseCurrentDataProc,title="Enable Current Data"
+//	CheckBox UseCurrentData,value=0
 	Button USANSFeedback,pos={220,6},size={100,20},proc=U_OpenTracTicketPage,title="Feedback"
 	
 EndMacro
@@ -338,7 +338,7 @@ Function PlotSelectedSAMButtonProc(ctrlName) : ButtonControl
 	PathInfo bt5CurPathName
 	curPathStr = S_Path
 	
-	print fpath
+//	print fpath
 	
 	if(cmpstr("",listW[0])==0)
 		return(0)		//null item in 1st position, exit
@@ -423,7 +423,7 @@ Function Convert2Countrate(type)
 	String noteStr = note($(USANSFolder+":"+Type+":DetCts"))
 	Variable ctTime
 	ctTime = NumberByKey("TIMEPT",noteStr,":",";")
-	print ctTime
+//	print ctTime
 	//normalize by counting time
 	Wave detCts = $(USANSFolder+":"+Type+":DetCts")
 	Wave ErrdetCts = $(USANSFolder+":"+Type+":ErrDetCts")
