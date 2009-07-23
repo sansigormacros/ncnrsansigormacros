@@ -793,7 +793,7 @@ Function/S MC_FunctionPopupList()
 	
 	list = SortList(list)
 	
-	list = "default;"+list
+//	list = "default;"+list
 	return(list)
 End              
 

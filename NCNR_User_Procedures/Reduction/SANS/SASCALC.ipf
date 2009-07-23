@@ -903,12 +903,12 @@ Function ReCalculateInten(doIt)
 				coefStr = MC_getFunctionCoef(funcStr)
 				
 				if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
-					Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+					Abort "Function and coefficients do not match. You must plot the unsmeared function before simulation."
 				endif
+				
 				Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
-				
 				func($coefStr,inten,qval)
-				
+
 				NVAR imon = root:Packages:NIST:SAS:gImon
 				NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 				NVAR thick = root:Packages:NIST:SAS:gThick
@@ -929,11 +929,13 @@ Function ReCalculateInten(doIt)
 				imon = beamIntensity()
 				
 				// calculate the scattering cross section simply to be able to estimate the transmission
-				Variable sig_sas
+				Variable sig_sas=0
+				
 				CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
-				if(sig_sas > 100)
-					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
-				endif
+				
+//				if(sig_sas > 100)
+//					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
+//				endif
 				estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
 				Print "Sig_sas = ",sig_sas
 				
@@ -973,11 +975,15 @@ Function ReCalculateInten(doIt)
 				endif
 				
 			else
-				Abort "The coefficients and function type do not match. Please correct the selections in the popup menus."
+				//no function plotted, no simulation can be done
+				DoAlert 0,"No function is selected or plotted, so no simulation is done. The default Debye function is used."
+		
+				aveint = S_Debye(1000,100,0.0,qval)
+				aveint *= fSubS		// multiply either estimate by beamstop shadowing
+				sigave = 0		//reset for model calculation
 			endif
 			
-			// end 1D simulation
-		endif
+		endif // end 1D simulation
 	else
 		//no simulation
 		

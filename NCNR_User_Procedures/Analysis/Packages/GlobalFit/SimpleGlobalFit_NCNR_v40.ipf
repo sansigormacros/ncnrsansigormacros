@@ -132,7 +132,7 @@ Function SGFitHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z/K=1 "Simple Global Fit"
+			DisplayHelpTopic/Z/K=1 "Simple Global Fitting"
 			if(V_flag !=0)
 				DoAlert 0,"The Simple Global Fit Help file could not be found"
 			endif
