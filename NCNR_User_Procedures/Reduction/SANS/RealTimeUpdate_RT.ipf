@@ -167,19 +167,19 @@ Proc RT_Panel()
 	//Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
 	//Button button_3,help={"Closes the panel and stops the updating process"}
 	SetVariable setvar_6,pos={11,105},size={250,20},title="Total Detector Counts"
-	SetVariable setvar_6,help={"Total counts on the detector, as displayed"},disable=2
+	SetVariable setvar_6,help={"Total counts on the detector, as displayed"},noedit=1
 	SetVariable setvar_6,limits={0,Inf,0},value= root:myGlobals:RT:totalCounts
 	SetVariable setvar_7,pos={11,82},size={250,20},title="                  Count Time"
-	SetVariable setvar_7,help={"Count time, as displayed"},disable=2
+	SetVariable setvar_7,help={"Count time, as displayed"},noedit=1
 	SetVariable setvar_7,limits={0,Inf,0},value= root:myGlobals:RT:countTime
 	SetVariable setvar_8,pos={11,127},size={250,20},title="  Detector Count Rate"
-	SetVariable setvar_8,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_8,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_8,limits={0,Inf,0},value= root:myGlobals:RT:countRate
 	SetVariable setvar_9,pos={11,149},size={250,20},title="           Monitor Counts"
-	SetVariable setvar_9,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_9,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_9,limits={0,Inf,0},value= root:myGlobals:RT:monitorCounts
 	SetVariable setvar_10,pos={11,171},size={250,20},title="    Monitor Count Rate"
-	SetVariable setvar_10,help={"Count rate, as displayed"},disable=2
+	SetVariable setvar_10,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_10,limits={0,Inf,0},value= root:myGlobals:RT:monitorCountRate
 EndMacro
 
