@@ -111,6 +111,7 @@ Menu "SANSBeta"
 	"Read User Account Name"
 	"Patch Monitor Count"
 	"Read Monitor Count"
+	"Read Detector Count"
 	"-"
 	"AddALLToLayout"
 	

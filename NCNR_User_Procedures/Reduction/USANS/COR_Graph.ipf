@@ -299,16 +299,16 @@ Function UseCrsrCheckProc(ctrlName,checked) : CheckBoxControl
 			//trace is not on graph
 			CheckBox $ctrlName, value=0		//not checked
 			HideInfo/W=COR_Graph
-			Cursor/K A
-			Cursor/K B
+			Cursor/K/W=COR_Graph A
+			Cursor/K/W=COR_Graph B
 			DoAlert 0,type+" data is not on the graph"
 		endif
 	else
 		//hide info and cursors, if there are any displayed
 		HideInfo/W=COR_Graph
-		Cursor/K A
-		Cursor/K B
-		CheckBox useCrsrCheck,value= 0
+		Cursor/K/W=COR_Graph A
+		Cursor/K/W=COR_Graph B
+		CheckBox useCrsrCheck,win=COR_Graph,value= 0
 	endif
 	DoUpdate
 End
@@ -334,9 +334,9 @@ Function TypeToggleCheckProc(ctrlName,checked) : CheckBoxControl
 			gRadioVal=3
 			break
 	endswitch
-	CheckBox CORCheck,value= (gRadioVal==1)
-	CheckBox SAMCheck,value= (gRadioVal==2)
-	CheckBox EMPCheck,value= (gRadioVal==3)
+	CheckBox CORCheck,win=COR_Graph,value= (gRadioVal==1)
+	CheckBox SAMCheck,win=COR_Graph,value= (gRadioVal==2)
+	CheckBox EMPCheck,win=COR_Graph,value= (gRadioVal==3)
 	
 	//move the cursors to the correct trace on the graph
 	ControlInfo useCrsrCheck

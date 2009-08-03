@@ -435,15 +435,18 @@ Function Fast2dExport(type,fullpath,dialog)
 	
 	//not demo- compatible, but approx 100x faster!!
 	
-#if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)
-	Save/G/M="\r\n" labelWave,spWave as fullPath
-#else
+// for some reason, Igor 6.10 barfs on this and the Save operation gives an out-of-memory error!
+// so for now, go back to the old way...
+
+//#if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)
+//	Save/G/M="\r\n" labelWave,spWave as fullPath
+//#else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave
 	fprintf refnum,"\r\n"
 	wfprintf refNum,"%g\r\n",spWave
 	Close refNum
-#endif
+//#endif
 
 	Killwaves/Z spWave,labelWave		//don't delete proto!
 	

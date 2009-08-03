@@ -73,14 +73,16 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	String dest = "root:Packages:NIST:"+type
 	
 	NVAR isLogScale = $(dest + ":gIsLogScale")
+	Variable wasLogScale=isLogScale
+	
 	if(isLogScale)
 		ConvertFolderToLinearScale(type)
 		//rename the button to reflect "isLin" - the displayed name must have been isLog
-		DoWindow/F SANS_Data
-		MapSliderProc("reset", 0, 1)		//force default values for color mapping
-		Button bisLog,title="isLin",rename=bisLin
-		DoWindow/F Average_Panel
-		DoUpdate
+//		DoWindow/F SANS_Data
+//		MapSliderProc("reset", 0, 1)		//force default values for color mapping
+//		Button bisLog,title="isLin",rename=bisLin
+//		DoWindow/F Average_Panel
+//		DoUpdate
 	Endif
 
 	//set data folder back to root (redundant)
@@ -153,11 +155,19 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			Abort "no case match in average dispatch"
 	endswitch
 	
+	//convert back to log scaling if I changed it...
+	if(wasLogScale)
+		ConvertFolderToLogScale(type)
+		DoUpdate
+	endif
+	
 	//clear the stuff that was created for case of saving files
 	If(doSave)
 		Killwaves/Z root:myGlobals:Protocols:fakeProtocol
 		String/G root:myGlobals:Protocols:gProtoStr = ""
 	Endif
+	
+	
 	return(0)
 	
 End

@@ -472,7 +472,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					// since the scattering is isotropic, I can safely pick a new, random value
 					// this would not be true if simulating anisotropic scattering.
 					//testPhi = abs(enoise(1))*2*Pi
-					testPhi = FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
+					testPhi = MC_FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
 					
 					// is it on the detector?	
 					FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
@@ -730,62 +730,12 @@ end
 
 Function/S MC_FunctionPopupList()
 	String list,tmp
-	list = FunctionList("*",";","KIND:10")		//get every user defined curve fit function
-
-	//now start to remove everything the user doesn't need to see...
-		
-	tmp = FunctionList("*_proto",";","KIND:10")		//prototypes
-	list = RemoveFromList(tmp, list  ,";")
-	//prototypes that show up if GF is loaded
-	list = RemoveFromList("GFFitFuncTemplate", list)
-	list = RemoveFromList("GFFitAllAtOnceTemplate", list)
-	list = RemoveFromList("NewGlblFitFunc", list)
-	list = RemoveFromList("NewGlblFitFuncAllAtOnce", list)
-	list = RemoveFromList("GlobalFitFunc", list)
-	list = RemoveFromList("GlobalFitAllAtOnce", list)
-	list = RemoveFromList("GFFitAAOStructTemplate", list)
-	list = RemoveFromList("NewGF_SetXWaveInList", list)
-	list = RemoveFromList("NewGlblFitFuncAAOStruct", list)
+	list = User_FunctionPopupList()
 	
-	// more to remove as a result of 2D/Gizmo
-	list = RemoveFromList("A_WMRunLessThanDelta", list)
-	list = RemoveFromList("WMFindNaNValue", list)
-	list = RemoveFromList("WM_Make3DBarChartParametricWave", list)
-	list = RemoveFromList("UpdateQxQy2Mat", list)
-	list = RemoveFromList("MakeBSMask", list)
-	
-	// MOTOFIT/GenFit bits
-	tmp = "GEN_allatoncefitfunc;GEN_fitfunc;GetCheckBoxesState;MOTO_GFFitAllAtOnceTemplate;MOTO_GFFitFuncTemplate;MOTO_NewGF_SetXWaveInList;MOTO_NewGlblFitFunc;MOTO_NewGlblFitFuncAllAtOnce;GeneticFit_UnSmearedModel;GeneticFit_SmearedModel;"
-	list = RemoveFromList(tmp, list  ,";")
-
-	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;FractionReachingDetector;"
-	list = RemoveFromList(tmp, list  ,";")
-	list = RemoveFromList("Monte_SANS", list)
-
-	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
-	list = RemoveFromList(tmp, list  ,";")
-	
-	tmp = FunctionList("fSmear*",";","NPARAMS:3")		//smeared dependency calculations
-	list = RemoveFromList(tmp, list  ,";")
-	
-	//non-fit functions that I can't seem to filter out
-	list = RemoveFromList("BinaryHS_PSF11;BinaryHS_PSF12;BinaryHS_PSF22;EllipCyl_Integrand;PP_Inner;PP_Outer;Phi_EC;TaE_Inner;TaE_Outer;",list,";")
-////////////////
-
-	//more functions from analysis models (2008)
-	tmp = "Barbell_Inner;Barbell_Outer;Barbell_integrand;BCC_Integrand;Integrand_BCC_Inner;Integrand_BCC_Outer;"
-	list = RemoveFromList(tmp, list  ,";")
-	tmp = "CapCyl;CapCyl_Inner;CapCyl_Outer;ConvLens;ConvLens_Inner;ConvLens_Outer;"
-	list = RemoveFromList(tmp, list  ,";")
-	tmp = "Dumb;Dumb_Inner;Dumb_Outer;FCC_Integrand;Integrand_FCC_Inner;Integrand_FCC_Outer;"
-	list = RemoveFromList(tmp, list  ,";")
-	tmp = "Integrand_SC_Inner;Integrand_SC_Outer;SC_Integrand;SphCyl;SphCyl_Inner;SphCyl_Outer;"
-	list = RemoveFromList(tmp, list  ,";")
-
 	//simplify the display, forcing smeared calculations behind the scenes
 	tmp = FunctionList("Smear*",";","NPARAMS:1")		//smeared dependency calculations
-	list = RemoveFromList(tmp, list  ,";")
+	list = RemoveFromList(tmp, list,";")
+
 
 	if(strlen(list)==0)
 		list = "No functions plotted"
@@ -793,7 +743,6 @@ Function/S MC_FunctionPopupList()
 	
 	list = SortList(list)
 	
-//	list = "default;"+list
 	return(list)
 End              
 
@@ -1004,6 +953,7 @@ End
 // data, to appear as if it was loaded from a real data file.
 //
 // currently only works with SANS data, but can later be expanded to generate fake USANS data sets
+// ---- use FakeUSANSDataFolder() instead----
 //
 Function	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,dataFolder)
 	WAVE qval,aveint,sigave,sigmaQ,qbar,fSubs
@@ -1251,6 +1201,47 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 	return(0)
 end
+
+//phi is defined from +x axis, proceeding CCW around [0,2Pi]
+ThreadSafe Function MC_FindPhi(vx,vy)
+	variable vx,vy
+	
+	variable phi
+	
+	phi = atan(vy/vx)		//returns a value from -pi/2 to pi/2
+	
+	// special cases
+	if(vx==0 && vy > 0)
+		return(pi/2)
+	endif
+	if(vx==0 && vy < 0)
+		return(3*pi/2)
+	endif
+	if(vx >= 0 && vy == 0)
+		return(0)
+	endif
+	if(vx < 0 && vy == 0)
+		return(pi)
+	endif
+	
+	
+	if(vx > 0 && vy > 0)
+		return(phi)
+	endif
+	if(vx < 0 && vy > 0)
+		return(phi + pi)
+	endif
+	if(vx < 0 && vy < 0)
+		return(phi + pi)
+	endif
+	if( vx > 0 && vy < 0)
+		return(phi + 2*pi)
+	endif
+	
+	return(phi)
+end
+
+
 
 
 

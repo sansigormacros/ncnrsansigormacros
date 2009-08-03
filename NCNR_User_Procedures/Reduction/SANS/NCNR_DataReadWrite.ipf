@@ -2639,3 +2639,36 @@ Function fReadMonitorCount(lo,hi)
 	
 	return(0)
 End
+
+
+/////
+Proc ReadDetectorCount(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadDetectorCount(firstFile,lastFile)
+End
+
+
+// simple utility to read the detector count from the header, and the summed data value
+// and print out the values
+Function fReadDetectorCount(lo,hi)
+	Variable lo,hi
+	
+	String file
+	Variable ii,summed
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			ReadHeaderAndData(file)
+			Wave rw=root:Packages:NIST:RAW:RealsRead
+			Wave data=root:Packages:NIST:RAW:data			//data as read in is linear
+			summed = sum(data,-inf,inf)
+			printf "File %d:  DetCt Header = %g\t Detector Sum = %g\t Ratio sum/hdr = %g\r",ii,rw[2],summed,summed/rw[2]
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End

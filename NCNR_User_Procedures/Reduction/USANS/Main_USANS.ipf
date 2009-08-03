@@ -27,6 +27,8 @@ Menu "USANS"
 	"Load USANS Data",A_LoadOneDData()
 	"Convert to 6 Columns",Convert3ColTo6Col()
 	"-"
+	"USANS Simulator",Show_UCALC()
+	"-"
 	"Feedback or Bug Report",U_OpenTracTicketPage("")
 	"Check for Updates",CheckForLatestVersion()
 End

@@ -374,28 +374,41 @@ Function ShowBoxButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			//parse for the first run number
-			SVAR gPlex = root:myGlobals:Protocols:gPlex
-			String item,fname
+			if(cmpstr(ba.ctrlName, "ShowBox") == 0)
 			
-			item = StringFromList(0, gPlex ,",")
-			fname = FindFileFromRunNumber(str2num(item))
-			if(strlen(fname) == 0)
-				Abort "Bad file number in Plex field"
-			endif
-			// load the file
-			ReadHeaderAndData(fname)	//this is the full Path+file
-			UpdateDisplayInformation("RAW")
-			//draw a box of the specified size. This is persistent on the display as you scroll to the offset data
-			NVAR x1 = root:myGlobals:Protocols:gPlexX1
-			NVAR x2 = root:myGlobals:Protocols:gPlexX2
-			NVAR y1 = root:myGlobals:Protocols:gPlexY1
-			NVAR y2 = root:myGlobals:Protocols:gPlexY2
+				//parse for the first run number
+				SVAR gPlex = root:myGlobals:Protocols:gPlex
+				String item,fname
+				
+				item = StringFromList(0, gPlex ,",")
+				fname = FindFileFromRunNumber(str2num(item))
+				if(strlen(fname) == 0)
+					Abort "Bad file number in Plex field"
+				endif
+				// load the file
+				ReadHeaderAndData(fname)	//this is the full Path+file
+				UpdateDisplayInformation("RAW")
+				//draw a box of the specified size. This is persistent on the display as you scroll to the offset data
+				NVAR x1 = root:myGlobals:Protocols:gPlexX1
+				NVAR x2 = root:myGlobals:Protocols:gPlexX2
+				NVAR y1 = root:myGlobals:Protocols:gPlexY1
+				NVAR y2 = root:myGlobals:Protocols:gPlexY2
+				
+				SetDrawLayer/W=SANS_Data/K UserFront			//set the layer, and clear it
+				SetDrawEnv/W=SANS_Data xcoord=bottom,ycoord=left,fillpat=0,linethick=3,linefgc=(65535, 65535, 65535)
+				DrawRect/W=SANS_Data x1, y2, x2, y1
+				
+				Button $ba.ctrlName,title="Clear Box",rename=HideBox,win=DIV_Panel
+				
+			else
+				if(winType("SANS_Data")==1)
+					SetDrawLayer/W=SANS_Data/K UserFront			//set the layer, and clear it
+					Button $ba.ctrlName,title="Show Box",rename=ShowBox,win=DIV_Panel
+				else
+					Button $ba.ctrlName,title="Show Box",rename=ShowBox,win=DIV_Panel
+				endif
+			endif	
 			
-			SetDrawLayer/W=SANS_Data/K UserFront			//set the layer, and clear it
-			SetDrawEnv/W=SANS_Data xcoord=bottom,ycoord=left,fillpat=0,linethick=3,linefgc=(65535, 65535, 65535)
-			DrawRect/W=SANS_Data x1, y2, x2, y1
-						
 			break
 	endswitch
 
@@ -544,9 +557,10 @@ Window DIV_Panel() : Panel
 	SetVariable setvar002_1,limits={0,1,0.01},value= root:myGlobals:Protocols:gPlexTrans
 //	SetVariable setvar003,pos={16,441},size={250,15},title="DIV FILE NAME"
 //	SetVariable setvar003,value= root:myGlobals:Protocols:gPlexName
-	Button button0,pos={226,325},size={90,20},proc=ShowBoxButtonProc,title="Show Box"
+	Button ShowBox,pos={226,325},size={90,20},proc=ShowBoxButtonProc,title="Show Box"
 	Button button1,pos={25,441},size={150,20},proc=GenerateDIVButtonProc,title="Generate DIV File"
 	Button button2,pos={25,481},size={150,20},proc=ReloadDIVButtonProc,title="Load DIV File"
+	Button button4,pos={240,481},size={80,20},proc=DoneDIVButtonProc,title="Done"
 	Button button3,pos={240,10},size={50,20},proc=DIVHelpButtonProc,title="Help"
 	SetVariable setvar00201,pos={84,297},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexY2
 	SetVariable setvar00202,pos={15,350},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexX1
@@ -554,6 +568,21 @@ Window DIV_Panel() : Panel
 	SetVariable setvar00204,pos={156,348},size={50,15},limits={0,128,1},title=" ",value= root:myGlobals:Protocols:gPlexX2
 EndMacro
 
+
+// done
+//
+Function DoneDIVButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoWindow/K DIV_Panel
+			break
+	endswitch
+
+	return 0
+End
 
 // load in a DIV file, print out the stats, display in SANS_Data
 //
