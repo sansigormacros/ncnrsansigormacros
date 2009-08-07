@@ -907,6 +907,8 @@ Function ReCalculateInten(doIt)
 				endif
 				
 				Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+				
+				// the resolution-smeared intensity is calculated, including the incoherent background
 				func($coefStr,inten,qval)
 
 				NVAR imon = root:Packages:NIST:SAS:gImon
@@ -931,6 +933,8 @@ Function ReCalculateInten(doIt)
 				// calculate the scattering cross section simply to be able to estimate the transmission
 				Variable sig_sas=0
 				
+				// remember that the random deviate is the coherent portion ONLY - the incoherent background is 
+				// subtracted before the calculation.
 				CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
 				
 //				if(sig_sas > 100)
@@ -939,28 +943,36 @@ Function ReCalculateInten(doIt)
 				estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
 				Print "Sig_sas = ",sig_sas
 				
-				Duplicate/O qval prob_i,circle_fraction,rval,nCells_expected
-				rval = sdd*tan(2*asin(qval*wavelength/4/pi))		//radial distance in cm
-				nCells_expected = 2*pi*rval/pixSize					//does this need to be an integer?
-				circle_fraction = nCells / nCells_expected
+				Duplicate/O qval prob_i,countsInAnnulus
+				
+				// not needed - nCells takes care of this when the error is correctly calculated
+//				Duplicate/O qval circle_fraction,rval,nCells_expected
+//				rval = sdd*tan(2*asin(qval*wavelength/4/pi))		//radial distance in cm
+//				nCells_expected = 2*pi*rval/pixSize					//does this need to be an integer?
+//				circle_fraction = nCells / nCells_expected
 				
 							
-				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) that has nCells
+//				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) that has nCells
+				prob_i = trans*thick*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) 
 				
 				Variable P_on = sum(prob_i,-inf,inf)
 				Print "P_on = ",P_on
-				fracScat = P_on
 				
-				aveint = (Imon*ctTime)*prob_i / circle_fraction / nCells_expected
+//				fracScat = P_on
+				fracScat = 1-estTrans
+				
+//				aveint = (Imon*ctTime)*prob_i / circle_fraction / nCells_expected
+				aveint = (Imon*ctTime)*prob_i
 
-				SimDetCts = sum(aveint,-inf,inf)
+				countsInAnnulus = aveint*nCells
+				SimDetCts = sum(countsInAnnulus,-inf,inf)
 				estDetCR = SimDetCts/SimCountTime
 				
 				
 				NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
 				NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
 							
-				sigave = sqrt(aveint)		// assuming that N is large
+				sigave = sqrt(aveint/nCells)		// corrected based on John's memo, from 8/9/99
 				
 				// add in random error in aveint based on the sigave
 				if(addNoise)

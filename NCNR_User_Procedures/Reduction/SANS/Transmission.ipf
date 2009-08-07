@@ -1614,7 +1614,9 @@ End
 //
 // apply TWO criteria
 // (1) the label must match "well enough"
-// (2) the wavelength must be the same
+// (2) the wavelength must be the same "enough", given the unnecessary precision reported by ICE
+//
+// (for example, "6" can be anything from 6.0008 to 6.0020 in a recent experiment)
 //
 // passes the matching rows in the sample table back
 //
@@ -1629,7 +1631,7 @@ Function GuessTransToScattFiles(charsToUse,row,matchRows)
 	Wave sLam = root:myGlobals:TransHeaderInfo:S_Lambda		//Scattering file wavelength
 	Wave tLam = root:myGlobals:TransHeaderInfo:T_Lambda		//Transmission file wavelength
 	
-	Variable num,ii,found
+	Variable num,ii,found,tolerance=0.01		//0.01 = 1% tolerance
 	String transStr = "",testStr=""
 	
 	transStr = (tw[row])[0,charsToUse-1]		//string to try and match
@@ -1641,7 +1643,7 @@ Function GuessTransToScattFiles(charsToUse,row,matchRows)
 	do
 		testStr=sw[ii]
 		found = stringmatch(testStr, transStr )
-		if( (found == 1) && (sLam[ii] == tLam[row]) )		// both must match
+		if( (found == 1) && (abs(sLam[ii] - tLam[row]) < tolerance) )		// both must match
 			Print "Match Found at:  ",transStr,snam[ii],sw[ii]
 			InsertPoints numpnts(matchRows), 1, matchRows
 			matchRows[numpnts(matchRows)-1] = ii
