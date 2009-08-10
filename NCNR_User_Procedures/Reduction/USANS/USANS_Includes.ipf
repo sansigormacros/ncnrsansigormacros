@@ -20,5 +20,11 @@
 #include "CheckVersionFTP"				//added June 2008
 #include "GaussUtils_v40"				//added Oct 2008 for unified file loading
 
-// USANS simulation test
+// USANS simulation and required procedures
 #include "U_CALC"
+#include "MultScatter_MonteCarlo_2D"
+#include "SASCALC"
+#include "NCNR_DataReadWrite"
+#include "SANS_Utilities"
+#include "NCNR_Utils"
+#include "MultipleReduce"

@@ -17,7 +17,7 @@
 // - default model of q-4 power law or spheres
 //
 
-//
+
 // need to add in empty and background corrections to see "reduced" data
 // or at least compare to what the empty cell would give in the same count time
 //
@@ -28,7 +28,7 @@
 //
 
 
-#include "MultScatter_MonteCarlo_2D"
+//#include "MultScatter_MonteCarlo_2D"
 
 
 
@@ -98,6 +98,8 @@ Proc Init_UCALC()
 	// results, setup values
 	String/G gFuncStr=""
 	String/G gTotTimeStr=""
+	Variable/G gAnalyzerOmega = 7.1e-7		//solid angle of the analyzer, in steradians
+	Variable/G gBeamCurrent=25000		//beam current Ed*I	(n/s) for 5/8" diam = 25000 n/s
 	Variable/G gThick=0.1		//sample thickness (cm)	
 	Variable/G gSamTrans=0.8
 	Variable/G g_1D_DoABS = 0 		//=1 for abs scale, 0 for just counts
@@ -136,8 +138,9 @@ Window UCALC_Panel() : Graph
 	GroupBox group1,pos={5,165},size={240,147},title="Sample Setup"
 	GroupBox group2,pos={327,165},size={259,147},title="Results"
 	
-	PopupMenu popup0,pos={17,18},size={165,20},title="Sample Aperture Diameter"
-	PopupMenu popup0,mode=10,popvalue="5/8\"",value="1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";"
+	PopupMenu popup0,pos={17,18},size={165,20},title="Sample Aperture Diam (in)"
+	PopupMenu popup0,mode=2,popvalue="0.625",value="0.5;0.625;0.75;1.0;1.75;"
+//	PopupMenu popup0,proc=Sim_USANS_SamplAperPopMenuProc
 	PopupMenu popup2,pos={220,18},size={165,20},title="Presets"
 	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
 	PopupMenu popup2,proc=UCALC_PresetPopup
@@ -530,9 +533,13 @@ Function CalcUSANS()
 
 
 	//sort after all loaded - not by angle, but by Q
+// Get rid of the negative angles - the smearing integration does not like these!
+// (may add them back in later, but probably not)
 	UDoAngleSort("SIM")
 	
 	ConvertAngle2Qvals("SIM",0)
+	
+	
 	
 	//fill the data with something
 	WAVE qvals = root:Packages:NIST:USANS:SIM:qvals
@@ -560,12 +567,11 @@ Function CalcUSANS()
 	Wave Smeared_inten = root:Sim_USANS:Smeared_inten
 
 	String coefStr=""
-	Variable sig_sas=0,wavelength = 2.4,omega
+	Variable sig_sas=0,wavelength = 2.4
 	Variable Imon
 	
 
-	
-	omega = 7.1e-7		//solid angle of the detector
+	NVAR omega = root:Packages:NIST:USANS:Globals:U_Sim:gAnalyzerOmega
 	
 	if(exists(funcStr) != 0)
 		FUNCREF SANSModelAAO_proto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
@@ -589,7 +595,7 @@ Function CalcUSANS()
 //		NVAR SimCountTime = root:Packages:NIST:USANS:Globals:U_Sim:gCntTime		//counting time used for simulation
 		
 		Imon = GetUSANSBeamIntensity()				//based on the aperture size, select the beam intensity
-		
+		Print "imon=",imon
 		// calculate the scattering cross section simply to be able to estimate the transmission
 		
 		CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
@@ -603,7 +609,7 @@ Function CalcUSANS()
 		
 		Duplicate/O qvals prob_i
 					
-		prob_i = trans*thick*omega*Smeared_inten			//probability of a neutron in q-bin(i) that has nCells
+		prob_i = trans*thick*omega*Smeared_inten			//probability of a neutron in q-bin(i)
 		
 		Variable P_on = sum(prob_i,-inf,inf)
 		Print "P_on = ",P_on
@@ -661,6 +667,8 @@ end
 // ---a duplicate of DoAngleSort(), by modified to
 // include counting time and setNumber
 //
+// also trims the beginning of each data set so that it does not include any negative or zero angles
+//
 Function UDoAngleSort(type)
 	String type
 	
@@ -675,6 +683,31 @@ Function UDoAngleSort(type)
 	Wave SetNumber = $(USANSFolder+":"+Type+":SetNumber")
 	
 	Sort Angle DetCts,ErrDetCts,MonCts,TransCts,Angle,countingTime,SetNumber
+	
+	Variable ii,num,numBad,ang,val
+	num=numpnts(angle)
+	ii=0
+	numBad=0
+	val = 0		//cutoff value
+	do
+		ang = angle[ii]
+		if(ang <= val)
+			numBad += 1
+		else		//keep the points
+			Angle[ii-numBad] = ang
+			DetCts[ii-numBad] = DetCts[ii]
+			ErrDetCts[ii-numBad] = ErrDetCts[ii]
+			MonCts[ii-numBad] = MonCts[ii]
+			TransCts[ii-numBad] = TransCts[ii]
+			countingTime[ii-numBad] = countingTime[ii]
+			SetNumber[ii-numBad] = SetNumber[ii]
+		endif
+		ii += 1
+	while(ii<num)
+	//trim the end of the waves
+	DeletePoints num-numBad, numBad, DetCts,ErrDetCts,MonCts,TransCts,Angle,countingTime,SetNumber
+	
+	
 	return(0)
 End
 
@@ -908,6 +941,24 @@ Function Sim_USANS_ModelPopMenuProc(pa) : PopupMenuControl
 End         
 
 
+//Function Sim_USANS_SamplAperPopMenuProc(pa) : PopupMenuControl
+//	STRUCT WMPopupAction &pa
+//
+//	switch( pa.eventCode )
+//		case 2: // mouse up
+//			Variable popNum = pa.popNum
+//			String popStr = pa.popStr
+//
+//			Variable diam=str2num(popStr)
+//			
+//			
+//			break
+//	endswitch
+//
+//	return 0
+//End  
+
+
 Function UCALC_PresetPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -1091,18 +1142,32 @@ End
 
 // return the beam intensity based on the sample aperture diameter
 //
+/// based on only TWO known values at 0.625 (=25000) and 1.75 in (=57000) diam
+//
+// so this is a BAD interpolation!!!
+// get proper numbers from John
+//
 Function GetUSANSBeamIntensity()	
 
-	String popStr, list
-	Variable flux=10000
+	String popStr
+	Variable flux,diam
 	
 	ControlInfo/W=UCALC popup0
 	popStr = S_Value
+	diam=str2num(popStr)
 	
-	list = "1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";"
-
-//	 the WhichListItem or a strswitch to get the right flux value
-
+	// a switch would be easier, but cases need to be integer
+	strswitch(popStr)	// string switch
+		case "0.625":		// execute if case matches expression
+			flux=25000
+			break						// exit from switch
+		case "1.75":		// execute if case matches expression
+			flux=57000
+			break
+		default:							// optional default expression executed
+			flux=7200+28400*diam
+	endswitch
+	
 	return(flux)
 End
 
