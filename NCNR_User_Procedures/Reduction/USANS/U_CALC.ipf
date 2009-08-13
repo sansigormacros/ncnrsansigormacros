@@ -4,7 +4,10 @@
 // USANS version of SASCALC
 
 // to simulate the intensity from a USANS experiment for planning
-
+// see John's instrument paper:
+//
+// J. Appl. Cryst. (2005) 38 1004-1011.
+//
 // SRK JUL 2009
 
 
@@ -14,7 +17,10 @@
 // - fast ways to increase/decrease number of points
 // - fast ways to increase/decrease counting time
 //
-// - default model of q-4 power law or spheres
+// - plot as countrate, not absolute scale
+// - 3e-5 cutoff
+// - ? don't plot lowest angle range (but needs to be in the count time)
+// - need empty beam and empty cell count rate vs. aperture (Cd vs. Gd?)
 //
 
 
@@ -23,6 +29,8 @@
 //
 // model the direct beam?? currently the "red" region from -1 to 0.6 is almost entirely
 // the primary beam, so it's a bit artificial (qmin is really ~ 3e-5)
+//
+
 //
 // Need T_wide, T_rock, I peak for proper absolute scaling
 //
@@ -103,6 +111,7 @@ Proc Init_UCALC()
 	Variable/G gThick=0.1		//sample thickness (cm)	
 	Variable/G gSamTrans=0.8
 	Variable/G g_1D_DoABS = 0 		//=1 for abs scale, 0 for just counts
+	Variable/G g_1D_PlotCR = 1		//=1 to plot countrate
 	Variable/G g_1D_AddNoise = 1 		// add in appropriate noise to simulation
 	
 // a box for the results
@@ -124,14 +133,12 @@ End
 // make the display panel a graph with a control bar just as in SASCALC
 // so that the subwindow syntax doesn't break all of the other functionality
 //
-
 Window UCALC_Panel() : Graph
 	PauseUpdate; Silent 1		// building window...
 	Display /W=(55,44,670,850) /K=1
 	ModifyGraph cbRGB=(36929,50412,31845)
 	DoWindow/C UCALC
 	DoWindow/T UCALC,"USANS Simulation"
-//	ShowTools/A
 	ControlBar 320
 	
 	GroupBox group0,pos={5,0},size={577,159},title="Instrument Setup"
@@ -139,8 +146,7 @@ Window UCALC_Panel() : Graph
 	GroupBox group2,pos={327,165},size={259,147},title="Results"
 	
 	PopupMenu popup0,pos={17,18},size={165,20},title="Sample Aperture Diam (in)"
-	PopupMenu popup0,mode=2,popvalue="0.625",value="0.5;0.625;0.75;1.0;1.75;"
-//	PopupMenu popup0,proc=Sim_USANS_SamplAperPopMenuProc
+	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
 	PopupMenu popup2,pos={220,18},size={165,20},title="Presets"
 	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
 	PopupMenu popup2,proc=UCALC_PresetPopup
@@ -232,7 +238,7 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar5e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	SetVariable setvar6e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	
-	Button button0,pos={260,213},size={50,20},proc=U_SimPlotButtonProc,title="Plot"
+	Button button0,pos={255,180},size={60,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Plot"
 	Button button1,pos={260,286},size={50,20},proc=U_SaveButtonProc,title="Save"
 
 //checkbox for "easy" mode
@@ -251,13 +257,15 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar0_1,pos={20,284},size={120,15},title="Bkg Level"
 	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
 	
-	CheckBox check0_2,pos={253,239},size={60,14},title="Abs scale?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_DoABS
+	CheckBox check0_4 title="Show EMP?",pos={160,260},proc=ShowEMPCheckProc,value=0
+	
+	CheckBox check0_2,pos={253,239},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
 	CheckBox check0_3,pos={262,264},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
 	
 // a box for the results
 	SetVariable totalTime,pos={338,185},size={150,15},title="Count time (h:m)",value= gTotTimeStr
-	ValDisplay valdisp0,pos={338,210},size={220,13},title="Total detector counts"
-	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DTotCts
+//	ValDisplay valdisp0,pos={338,210},size={220,13},title="Total detector counts"
+//	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DTotCts
 	ValDisplay valdisp0_2,pos={338,234},size={220,13},title="Fraction of beam scattered"
 	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DFracScatt
 	ValDisplay valdisp0_3,pos={338,259},size={220,13},title="Estimated transmission"
@@ -467,6 +475,75 @@ Function EnterModeCheckProc(cba) : CheckBoxControl
 End
 
 
+Function ShowEMPCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+
+			String list,item,popStr,qval,CR
+			Variable OK=1
+
+			if(exists("root:Packages:NIST:USANS:Globals:Q_2p0")==0)			//
+				MakeUSANSEmptyWaves()
+			endif
+			
+			
+			if(checked)
+				// put it on the graph
+				SetDataFolder root:Packages:NIST:USANS:Globals
+				ControlInfo/W=UCALC popup0
+				popStr = S_Value
+				strswitch(popStr)	// string switch
+					case "0.25":		// execute if case matches expression
+						qval = "Q_0p25"
+						CR = "CR_0p25"
+						break		
+					case "0.50":	
+						qval = "Q_0p50"
+						CR = "CR_0p50"
+						break	
+					case "0.625":		
+						qval = "Q_0p625"
+						CR = "CR_0p625"
+						break	
+					case "1.75":		
+						qval = "Q_1p75"
+						CR = "CR_1p75"
+						break	
+					case "2.0":		
+						qval = "Q_2p0"
+						CR = "CR_2p0"
+						break	
+					default:							// optional default expression executed
+						OK=0
+				endswitch
+				
+				if(OK)
+					AppendToGraph/W=UCALC $CR vs $qval
+					ModifyGraph marker=19,mode($CR)=4,msize($CR)=3,rgb($CR)=(0,0,0)
+				endif
+				
+			else
+				//take it off of the graph
+				SetDataFolder root:Packages:NIST:USANS:Globals
+				list=WaveList("CR*", ";", "WIN:UCALC")
+				item=StringFromList(0, list ,";")		//should be one item
+				if(strlen(item) != 0)
+					RemoveFromGraph/W=UCALC $item
+				endif
+			endif
+			
+			break
+	endswitch
+
+	SetDataFolder root:
+	return 0
+End
+
+
+
 // based on the angle ranges above (with non-zero count times)
 // plot where the data points would be
 //
@@ -611,9 +688,9 @@ Function CalcUSANS()
 					
 		prob_i = trans*thick*omega*Smeared_inten			//probability of a neutron in q-bin(i)
 		
-		Variable P_on = sum(prob_i,-inf,inf)
-		Print "P_on = ",P_on
-		fracScat = P_on
+//		Variable P_on = sum(prob_i,-inf,inf)
+//		Print "P_on = ",P_on
+		fracScat = 1-estTrans
 		
 		inten = (Imon*countingTime)*prob_i
 		
@@ -625,6 +702,7 @@ Function CalcUSANS()
 		
 		
 		NVAR doABS = root:Packages:NIST:USANS:Globals:U_Sim:g_1D_DoABS
+		NVAR plotCR = root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
 		NVAR addNoise = root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
 					
 		sigave = sqrt(inten)		// assuming that N is large
@@ -637,21 +715,28 @@ Function CalcUSANS()
 			inten = round(inten)		
 		endif
 
-		// convert to absolute scale
+		// convert to absolute scale? Maybe not needed
 		// does nothing yet - need Ipeak, Twide
 //		if(doABS)
 //			Variable kappa = thick*omega*trans*iMon*ctTime
 //			inten /= kappa
 //			inten /= kappa
 //		endif
+
+		// plot as countrate - maybe easier to visualize, and all of the data overlaps
+		if(plotCR)
+			inten /= countingTime
+			sigave /= countingTime
+		endif
 		
 		GraphSIM()
 
 	else
 		//no function plotted, no simulation can be done
-		DoAlert 0,"No function is selected or plotted, so no simulation is done. The default Sphere function is used."
+		DoAlert 0,"No function is selected or plotted, so no simulation is done. The default power law function is used."
 
-		inten = U_SphereForm(1,9000,6e-6,0,qvals)		
+		inten = U_Power_Law_Model(1e-6,3,0,qvals)
+//		inten = U_SphereForm(1,9000,6e-6,0,qvals)		
 	
 		GraphSIM()
 
@@ -744,6 +829,25 @@ Function U_SphereForm(scale,radius,delrho,bkg,x)
 	return (scale*f2+bkg)	// Scale, then add in the background
 	
 End
+
+// better default function
+Function U_Power_Law_Model(A,m,bgd,x) : FitFunc
+	Variable A, m,bgd,x
+//	 Input (fitting) variables are:
+	//[0] Coefficient
+	//[1] (-) Power
+	//[2] incoherent background
+	
+//	local variables
+	Variable inten, qval
+//	x is the q-value for the calculation
+	qval = x
+//	do the calculation and return the function value
+	
+	inten = A*qval^-m + bgd
+	Return (inten)
+End
+
 
 // mimics LoadBT5File
 // creates two other waves to identify the set and the counting time for that set
@@ -842,14 +946,19 @@ Function GraphSIM()
 		ModifyGraph log=1
 		ModifyGraph mirror(left)=1
 		ModifyGraph grid=2
+		ModifyGraph standoff=0
 		
-		// to make sure that the scales are the same
-		SetAxis bottom 2e-06,0.003
-		SetAxis top 2e-06/5.55e-5,0.003/5.55e-5
+		// to make sure that the scales are the same (but fails on zoom)
+//		SetAxis bottom 2e-06,0.003
+//		SetAxis top 2e-06/5.55e-5,0.003/5.55e-5
 		
+		SetDrawEnv linefgc= (39321,1,1),dash= 3,linethick= 3
+		SetDrawEnv xcoord= bottom
+		DrawLine 3e-05,0.01,3e-05,0.99
+
 		Label top "Angle"
 		Label bottom "Q (1/A)"
-		Label left "Intensity (1/cm) or Counts"
+		Label left "Counts or Count Rate"
 		
 		Legend
 	endif
@@ -1142,31 +1251,19 @@ End
 
 // return the beam intensity based on the sample aperture diameter
 //
-/// based on only TWO known values at 0.625 (=25000) and 1.75 in (=57000) diam
-//
-// so this is a BAD interpolation!!!
-// get proper numbers from John
+// based on the equation in John's instrument paper
 //
 Function GetUSANSBeamIntensity()	
 
 	String popStr
-	Variable flux,diam
+	Variable flux,diam,rad
 	
 	ControlInfo/W=UCALC popup0
 	popStr = S_Value
-	diam=str2num(popStr)
+	diam=str2num(popStr)		//in inches
+	rad = diam/2*25.4			//radius in mm
 	
-	// a switch would be easier, but cases need to be integer
-	strswitch(popStr)	// string switch
-		case "0.625":		// execute if case matches expression
-			flux=25000
-			break						// exit from switch
-		case "1.75":		// execute if case matches expression
-			flux=57000
-			break
-		default:							// optional default expression executed
-			flux=7200+28400*diam
-	endswitch
+	flux = 662*rad*rad-39.9*rad*rad*rad+0.70*rad*rad*rad*rad
 	
 	return(flux)
 End

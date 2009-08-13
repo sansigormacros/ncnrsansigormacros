@@ -22,6 +22,7 @@
 
 // USANS simulation and required procedures
 #include "U_CALC"
+#include "USANS_EmptyWaves"
 #include "MultScatter_MonteCarlo_2D"
 #include "SASCALC"
 #include "NCNR_DataReadWrite"
