@@ -362,8 +362,9 @@ End
 
 #else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
-	FUNCTION LoadNISTXMLData(fileName)
+	FUNCTION LoadNISTXMLData(fileName,doPlot)
 	    String fileName
+	    Variable doPlot
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 	    RETURN(-6)
 	END
@@ -383,6 +384,7 @@ function isXML(filestr)
 	Close fileref
 	
 	//Hopefully this will distinguish between other formats and the XML
-	return stringmatch(line, "*xml*")	
+	//Previous string match would match normal files that have a .xml file as their progenitor...
+	return GrepString(line, "(?iU).*\<.*xml.*")	
 
 end
