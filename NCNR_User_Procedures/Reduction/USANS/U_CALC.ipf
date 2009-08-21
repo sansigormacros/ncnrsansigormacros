@@ -130,75 +130,230 @@ Proc Init_UCALC()
 	
 End
 
-// make the display panel a graph with a control bar just as in SASCALC
-// so that the subwindow syntax doesn't break all of the other functionality
+//// make the display panel a graph with a control bar just as in SASCALC
+//// so that the subwindow syntax doesn't break all of the other functionality
+////
+//Window UCALC_Panel() : Graph
+//	PauseUpdate; Silent 1		// building window...
+//	Display /W=(55,44,670,850) /K=1
+//	ModifyGraph cbRGB=(36929,50412,31845)
+//	DoWindow/C UCALC
+//	DoWindow/T UCALC,"USANS Simulation"
+//	ControlBar 320
+//	
+//	GroupBox group0,pos={5,0},size={577,159},title="Instrument Setup"
+//	GroupBox group1,pos={5,165},size={240,147},title="Sample Setup"
+//	GroupBox group2,pos={327,165},size={259,147},title="Results"
+//	
+//	PopupMenu popup0,pos={17,18},size={165,20},title="Sample Aperture Diam (in)"
+//	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
+//	PopupMenu popup2,pos={220,18},size={165,20},title="Presets"
+//	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
+//	PopupMenu popup2,proc=UCALC_PresetPopup
+//
+//	SetDataFolder root:Packages:NIST:USANS:Globals:U_Sim
+//	
+//	Variable top=44,pt=0,inc=18
+//	SetVariable setvar1a,pos={12,top},size={100,15},title="theta min",value= gAngLow1
+//	SetVariable setvar1b,pos={119,top},size={100,15},title="theta max",value= gAngHigh1
+//	SetVariable setvar1c,pos={227,top},size={100,15},title="increm",value= gIncr1
+//	SetVariable setvar1d,pos={335,top},size={100,15},title="# points",value= gNumPts1
+//	SetVariable setvar1e,pos={443,top},size={100,15},title="count (s)",value= gCtTime1
+//	SetVariable setvar1a,labelBack=(65535,32768,32768)
+//	
+//	pt += inc
+//	SetVariable setvar2a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow2
+//	SetVariable setvar2b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh2
+//	SetVariable setvar2c,pos={227,top+pt},size={100,15},title="increm",value= gIncr2
+//	SetVariable setvar2d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts2
+//	SetVariable setvar2e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime2
+//	SetVariable setvar2a labelBack=(65535,65533,32768)
+//	
+//	pt += inc
+//	SetVariable setvar3a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow3
+//	SetVariable setvar3b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh3
+//	SetVariable setvar3c,pos={227,top+pt},size={100,15},title="increm",value= gIncr3
+//	SetVariable setvar3d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts3
+//	SetVariable setvar3e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime3
+//	SetVariable setvar3a labelBack=(32769,65535,32768)
+//	
+//	pt += inc
+//	SetVariable setvar4a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow4
+//	SetVariable setvar4b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh4
+//	SetVariable setvar4c,pos={227,top+pt},size={100,15},title="increm",value= gIncr4
+//	SetVariable setvar4d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts4
+//	SetVariable setvar4e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime4
+//	SetVariable setvar4a labelBack=(32768,65535,65535)
+//	
+//	pt += inc
+//	SetVariable setvar5a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow5
+//	SetVariable setvar5b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh5
+//	SetVariable setvar5c,pos={227,top+pt},size={100,15},title="increm",value= gIncr5
+//	SetVariable setvar5d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts5
+//	SetVariable setvar5e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime5
+//	SetVariable setvar5a labelBack=(32768,54615,65535)
+//	
+//	pt += inc
+//	SetVariable setvar6a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow6
+//	SetVariable setvar6b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh6
+//	SetVariable setvar6c,pos={227,top+pt},size={100,15},title="increm",value= gIncr6
+//	SetVariable setvar6d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts6
+//	SetVariable setvar6e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime6
+//	SetVariable setvar6a labelBack=(44253,29492,58982)
+//
+//// the action procedures and limits/increments
+//	SetVariable setvar1a proc=ThetaMinSetVarProc		//,limits={-2,0,0.1}
+//	SetVariable setvar2a proc=ThetaMinSetVarProc
+//	SetVariable setvar3a proc=ThetaMinSetVarProc
+//	SetVariable setvar4a proc=ThetaMinSetVarProc
+//	SetVariable setvar5a proc=ThetaMinSetVarProc
+//	SetVariable setvar6a proc=ThetaMinSetVarProc
+//
+////
+//	SetVariable setvar1b proc=ThetaMaxSetVarProc		//,limits={0.4,1,0.1}
+//	SetVariable setvar2b proc=ThetaMaxSetVarProc
+//	SetVariable setvar3b proc=ThetaMaxSetVarProc
+//	SetVariable setvar4b proc=ThetaMaxSetVarProc
+//	SetVariable setvar5b proc=ThetaMaxSetVarProc
+//	SetVariable setvar6b proc=ThetaMaxSetVarProc
+////
+//	SetVariable setvar1c proc=IncrSetVarProc,limits={0.01,0.1,0.01}
+//	SetVariable setvar2c proc=IncrSetVarProc,limits={0.02,0.2,0.02}
+//	SetVariable setvar3c proc=IncrSetVarProc,limits={0.05,0.4,0.05}
+//	SetVariable setvar4c proc=IncrSetVarProc,limits={0.1,1,0.1}
+//	SetVariable setvar5c proc=IncrSetVarProc,limits={0.5,5,1}
+//	SetVariable setvar6c proc=IncrSetVarProc,limits={1,10,2}
+////
+//	SetVariable setvar1d proc=NumPtsSetVarProc,limits={2,50,1}
+//	SetVariable setvar2d proc=NumPtsSetVarProc,limits={2,50,1}
+//	SetVariable setvar3d proc=NumPtsSetVarProc,limits={2,50,1}
+//	SetVariable setvar4d proc=NumPtsSetVarProc,limits={2,50,1}
+//	SetVariable setvar5d proc=NumPtsSetVarProc,limits={2,50,1}
+//	SetVariable setvar6d proc=NumPtsSetVarProc,limits={2,50,1}
+////
+//	SetVariable setvar1e proc=CtTimeSetVarProc,limits={-1,50000,1}
+//	SetVariable setvar2e proc=CtTimeSetVarProc,limits={-1,50000,10}
+//	SetVariable setvar3e proc=CtTimeSetVarProc,limits={-1,50000,10}
+//	SetVariable setvar4e proc=CtTimeSetVarProc,limits={-1,50000,30}
+//	SetVariable setvar5e proc=CtTimeSetVarProc,limits={-1,50000,100}
+//	SetVariable setvar6e proc=CtTimeSetVarProc,limits={-1,50000,100}
+//	
+//	Button button0,pos={255,180},size={60,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Plot"
+//	Button button1,pos={260,286},size={50,20},proc=U_SaveButtonProc,title="Save"
+//
+////checkbox for "easy" mode
+//	CheckBox check0 title="Simple mode?",pos={400,19},proc=EnterModeCheckProc,value=1
+//	ThetaEditMode(2)		//checked on startup
+//	
+////	instrument setup
+//	SetVariable U_setvar0_1,pos={20,211},size={160,15},title="Thickness (cm)"
+//	SetVariable U_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:USANS:Globals:U_Sim:gThick	
+//	SetVariable U_setvar0_3,pos={20,235},size={160,15},title="Sample Transmission"
+//	SetVariable U_setvar0_3,limits={0,1,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:gSamTrans
+//	PopupMenu U_popup0,pos={20,185},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
+//	PopupMenu U_popup0,mode=1,value= #"U_FunctionPopupList()"
+//	SetVariable setvar0,pos={20,259},size={120,15},title="Empty Level"
+//	SetVariable setvar0,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_EmptyLevel
+//	SetVariable setvar0_1,pos={20,284},size={120,15},title="Bkg Level"
+//	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
+//	
+//	CheckBox check0_4 title="Show EMP?",pos={160,260},proc=ShowEMPCheckProc,value=0
+//	
+//	CheckBox check0_2,pos={253,239},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
+//	CheckBox check0_3,pos={262,264},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
+//	
+//// a box for the results
+//	SetVariable totalTime,pos={338,185},size={150,15},title="Count time (h:m)",value= gTotTimeStr
+////	ValDisplay valdisp0,pos={338,210},size={220,13},title="Total detector counts"
+////	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DTotCts
+//	ValDisplay valdisp0_2,pos={338,234},size={220,13},title="Fraction of beam scattered"
+//	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DFracScatt
+//	ValDisplay valdisp0_3,pos={338,259},size={220,13},title="Estimated transmission"
+//	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
+//
+//	
+//	SetDataFolder root:
+//
+//EndMacro
+
+// ??make the USANS simulation results into a graph and a separate panel.
+// the control bar at the top makes the whole thing too large, and control bars are limited
+// to 500 pix wide, which is really tight
+// left of 1055 is good for Mac, 955 is better for Win
 //
 Window UCALC_Panel() : Graph
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(55,44,670,850) /K=1
+	String platform=UpperStr(IgorInfo(2))
+	Variable pos=strsearch(platform,"WINDOWS",0)
+	if(pos >= 0)		//windows
+		Display /W=(55,44,955,544) /K=1
+	else		//mac
+		Display /W=(55,44,1055,544) /K=1
+	endif
+	
 	ModifyGraph cbRGB=(36929,50412,31845)
 	DoWindow/C UCALC
 	DoWindow/T UCALC,"USANS Simulation"
-	ControlBar 320
+	ControlBar/L 500
 	
-	GroupBox group0,pos={5,0},size={577,159},title="Instrument Setup"
+	GroupBox group0,pos={5,1},size={493,159},title="Instrument Setup"
 	GroupBox group1,pos={5,165},size={240,147},title="Sample Setup"
-	GroupBox group2,pos={327,165},size={259,147},title="Results"
+	GroupBox group2,pos={5,325},size={259,147},title="Results"
 	
-	PopupMenu popup0,pos={17,18},size={165,20},title="Sample Aperture Diam (in)"
+	PopupMenu popup0,pos={17,19},size={165,20},title="Sample Aperture Diam (in)"
 	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
-	PopupMenu popup2,pos={220,18},size={165,20},title="Presets"
+	PopupMenu popup2,pos={220,19},size={165,20},title="Presets"
 	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
 	PopupMenu popup2,proc=UCALC_PresetPopup
 
 	SetDataFolder root:Packages:NIST:USANS:Globals:U_Sim
 	
-	Variable top=44,pt=0,inc=18
-	SetVariable setvar1a,pos={12,top},size={100,15},title="theta min",value= gAngLow1
-	SetVariable setvar1b,pos={119,top},size={100,15},title="theta max",value= gAngHigh1
-	SetVariable setvar1c,pos={227,top},size={100,15},title="increm",value= gIncr1
-	SetVariable setvar1d,pos={335,top},size={100,15},title="# points",value= gNumPts1
-	SetVariable setvar1e,pos={443,top},size={100,15},title="count (s)",value= gCtTime1
+	Variable top=46,pt=0,inc=18,left=0//left=533
+	SetVariable setvar1a,pos={left+17,top},size={90,15},title="theta min",value= gAngLow1
+	SetVariable setvar1b,pos={left+113,top},size={89,15},title="theta max",value= gAngHigh1
+	SetVariable setvar1c,pos={left+209,top},size={89,15},title="increm",value= gIncr1
+	SetVariable setvar1d,pos={left+299,top},size={100,15},title="# points",value= gNumPts1
+	SetVariable setvar1e,pos={left+399,top},size={93,15},title="count (s)",value= gCtTime1
 	SetVariable setvar1a,labelBack=(65535,32768,32768)
 	
 	pt += inc
-	SetVariable setvar2a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow2
-	SetVariable setvar2b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh2
-	SetVariable setvar2c,pos={227,top+pt},size={100,15},title="increm",value= gIncr2
-	SetVariable setvar2d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts2
-	SetVariable setvar2e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime2
+	SetVariable setvar2a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow2
+	SetVariable setvar2b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh2
+	SetVariable setvar2c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr2
+	SetVariable setvar2d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts2
+	SetVariable setvar2e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime2
 	SetVariable setvar2a labelBack=(65535,65533,32768)
 	
 	pt += inc
-	SetVariable setvar3a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow3
-	SetVariable setvar3b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh3
-	SetVariable setvar3c,pos={227,top+pt},size={100,15},title="increm",value= gIncr3
-	SetVariable setvar3d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts3
-	SetVariable setvar3e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime3
+	SetVariable setvar3a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow3
+	SetVariable setvar3b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh3
+	SetVariable setvar3c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr3
+	SetVariable setvar3d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts3
+	SetVariable setvar3e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime3
 	SetVariable setvar3a labelBack=(32769,65535,32768)
 	
 	pt += inc
-	SetVariable setvar4a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow4
-	SetVariable setvar4b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh4
-	SetVariable setvar4c,pos={227,top+pt},size={100,15},title="increm",value= gIncr4
-	SetVariable setvar4d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts4
-	SetVariable setvar4e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime4
+	SetVariable setvar4a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow4
+	SetVariable setvar4b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh4
+	SetVariable setvar4c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr4
+	SetVariable setvar4d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts4
+	SetVariable setvar4e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime4
 	SetVariable setvar4a labelBack=(32768,65535,65535)
 	
 	pt += inc
-	SetVariable setvar5a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow5
-	SetVariable setvar5b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh5
-	SetVariable setvar5c,pos={227,top+pt},size={100,15},title="increm",value= gIncr5
-	SetVariable setvar5d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts5
-	SetVariable setvar5e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime5
+	SetVariable setvar5a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow5
+	SetVariable setvar5b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh5
+	SetVariable setvar5c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr5
+	SetVariable setvar5d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts5
+	SetVariable setvar5e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime5
 	SetVariable setvar5a labelBack=(32768,54615,65535)
 	
 	pt += inc
-	SetVariable setvar6a,pos={12,top+pt},size={100,15},title="theta min",value= gAngLow6
-	SetVariable setvar6b,pos={119,top+pt},size={100,15},title="theta max",value= gAngHigh6
-	SetVariable setvar6c,pos={227,top+pt},size={100,15},title="increm",value= gIncr6
-	SetVariable setvar6d,pos={335,top+pt},size={100,15},title="# points",value= gNumPts6
-	SetVariable setvar6e,pos={443,top+pt},size={100,15},title="count (s)",value= gCtTime6
+	SetVariable setvar6a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow6
+	SetVariable setvar6b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh6
+	SetVariable setvar6c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr6
+	SetVariable setvar6d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts6
+	SetVariable setvar6e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime6
 	SetVariable setvar6a labelBack=(44253,29492,58982)
 
 // the action procedures and limits/increments
@@ -238,43 +393,45 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar5e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	SetVariable setvar6e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	
-	Button button0,pos={255,180},size={60,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Plot"
-	Button button1,pos={260,286},size={50,20},proc=U_SaveButtonProc,title="Save"
+	Button button0,pos={left+280,180},size={60,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Plot"
+	CheckBox check0_2,pos={left+280,230},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
+	CheckBox check0_3,pos={left+280,250},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
+	CheckBox check0_4 title="Show EMP?",pos={left+280,270},proc=ShowEMPCheckProc,value=0
+
 
 //checkbox for "easy" mode
-	CheckBox check0 title="Simple mode?",pos={400,19},proc=EnterModeCheckProc,value=1
+	CheckBox check0 title="Simple mode?",pos={left+400,19},proc=EnterModeCheckProc,value=1
 	ThetaEditMode(2)		//checked on startup
 	
 //	instrument setup
-	SetVariable U_setvar0_1,pos={20,211},size={160,15},title="Thickness (cm)"
+	SetVariable U_setvar0_1,pos={left+20,211},size={160,15},title="Thickness (cm)"
 	SetVariable U_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:USANS:Globals:U_Sim:gThick	
-	SetVariable U_setvar0_3,pos={20,235},size={160,15},title="Sample Transmission"
+	SetVariable U_setvar0_3,pos={left+20,235},size={160,15},title="Sample Transmission"
 	SetVariable U_setvar0_3,limits={0,1,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:gSamTrans
-	PopupMenu U_popup0,pos={20,185},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
+	PopupMenu U_popup0,pos={left+20,185},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
 	PopupMenu U_popup0,mode=1,value= #"U_FunctionPopupList()"
-	SetVariable setvar0,pos={20,259},size={120,15},title="Empty Level"
+	SetVariable setvar0,pos={left+20,259},size={120,15},title="Empty Level",disable=2
 	SetVariable setvar0,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_EmptyLevel
-	SetVariable setvar0_1,pos={20,284},size={120,15},title="Bkg Level"
+	SetVariable setvar0_1,pos={left+20,284},size={120,15},title="Bkg Level",disable=2
 	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
 	
-	CheckBox check0_4 title="Show EMP?",pos={160,260},proc=ShowEMPCheckProc,value=0
 	
-	CheckBox check0_2,pos={253,239},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
-	CheckBox check0_3,pos={262,264},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
 	
 // a box for the results
-	SetVariable totalTime,pos={338,185},size={150,15},title="Count time (h:m)",value= gTotTimeStr
+	SetVariable totalTime,pos={left+20,350},size={150,15},title="Count time (h:m)",value= gTotTimeStr
 //	ValDisplay valdisp0,pos={338,210},size={220,13},title="Total detector counts"
 //	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DTotCts
-	ValDisplay valdisp0_2,pos={338,234},size={220,13},title="Fraction of beam scattered"
+	ValDisplay valdisp0_2,pos={left+20,380},size={220,13},title="Fraction of beam scattered"
 	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DFracScatt
-	ValDisplay valdisp0_3,pos={338,259},size={220,13},title="Estimated transmission"
+	ValDisplay valdisp0_3,pos={left+20,410},size={220,13},title="Estimated transmission"
 	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
+	Button button1,pos={left+20,440},size={50,20},proc=U_SaveButtonProc,title="Save"
 
 	
 	SetDataFolder root:
 
 EndMacro
+
 
 // changing theta min - hold incr and #, result is new theta max
 Function ThetaMinSetVarProc(sva) : SetVariableControl
