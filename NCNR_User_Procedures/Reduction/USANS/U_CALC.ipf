@@ -302,6 +302,7 @@ Window UCALC_Panel() : Graph
 	
 	PopupMenu popup0,pos={17,19},size={165,20},title="Sample Aperture Diam (in)"
 	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
+	PopupMenu popup0,proc=UCALC_SampleAperturePopup
 	PopupMenu popup2,pos={220,19},size={165,20},title="Presets"
 	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
 	PopupMenu popup2,proc=UCALC_PresetPopup
@@ -1206,23 +1207,33 @@ Function Sim_USANS_ModelPopMenuProc(pa) : PopupMenuControl
 	return 0
 End         
 
+// if the sample aperture is changed, AND the empty data is displayed, change to the proper data
+Function UCALC_SampleAperturePopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
 
-//Function Sim_USANS_SamplAperPopMenuProc(pa) : PopupMenuControl
-//	STRUCT WMPopupAction &pa
-//
-//	switch( pa.eventCode )
-//		case 2: // mouse up
-//			Variable popNum = pa.popNum
-//			String popStr = pa.popStr
-//
-//			Variable diam=str2num(popStr)
-//			
-//			
-//			break
-//	endswitch
-//
-//	return 0
-//End  
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+
+			ControlInfo/W=UCALC check0_4
+			if(V_Value==1)		//currently checked, need to update
+				
+				STRUCT WMCheckboxAction cba
+				cba.checked=0		//"un-check"
+				cba.eventCode=2
+				ShowEMPCheckProc(cba)
+				
+				cba.checked=1		//"re-check"
+				ShowEMPCheckProc(cba)
+			
+			endif
+			break
+			
+	endswitch
+	
+	return 0
+End  
 
 
 Function UCALC_PresetPopup(pa) : PopupMenuControl
