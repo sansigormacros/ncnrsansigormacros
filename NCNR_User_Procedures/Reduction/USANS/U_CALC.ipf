@@ -14,12 +14,11 @@
 // ideas:
 //
 // - more presets
-// - fast ways to increase/decrease number of points
-// - fast ways to increase/decrease counting time
+
 //
-// - plot as countrate, not absolute scale
-// - 3e-5 cutoff
-// - ? don't plot lowest angle range (but needs to be in the count time)
+// X plot as countrate, not absolute scale
+// X 3e-5 cutoff
+// X ? don't plot lowest angle range (but needs to be in the count time)
 // - need empty beam and empty cell count rate vs. aperture (Cd vs. Gd?)
 //
 
@@ -27,12 +26,13 @@
 // need to add in empty and background corrections to see "reduced" data
 // or at least compare to what the empty cell would give in the same count time
 //
-// model the direct beam?? currently the "red" region from -1 to 0.6 is almost entirely
+// -? model the direct beam?? currently the "red" region from -1 to 0.6 is almost entirely
 // the primary beam, so it's a bit artificial (qmin is really ~ 3e-5)
 //
 
 //
-// Need T_wide, T_rock, I peak for proper absolute scaling
+// Need T_wide, T_rock, I peak for proper absolute scaling, but I don't know if it's really important
+// to be able to simlulate to this extent
 //
 
 
@@ -102,6 +102,12 @@ Proc Init_UCALC()
 	Variable/G gNumPts6 = 15
 	Variable/G gCtTime6 = 2000
 	Variable/G gIncr6 = 2	
+	
+	Variable/G gAngLow7 = 50
+	Variable/G gAngHigh7 = 95
+	Variable/G gNumPts7 = 10
+	Variable/G gCtTime7 = 0
+	Variable/G gIncr7 = 5	
 	
 	// results, setup values
 	String/G gFuncStr=""
@@ -286,7 +292,7 @@ Window UCALC_Panel() : Graph
 	String platform=UpperStr(IgorInfo(2))
 	Variable pos=strsearch(platform,"WINDOWS",0)
 	if(pos >= 0)		//windows
-		Display /W=(55,44,955,544) /K=1
+		Display /W=(55,44,855,450) /K=1
 	else		//mac
 		Display /W=(55,44,1055,544) /K=1
 	endif
@@ -296,9 +302,9 @@ Window UCALC_Panel() : Graph
 	DoWindow/T UCALC,"USANS Simulation"
 	ControlBar/L 500
 	
-	GroupBox group0,pos={5,1},size={493,159},title="Instrument Setup"
-	GroupBox group1,pos={5,165},size={240,147},title="Sample Setup"
-	GroupBox group2,pos={5,325},size={259,147},title="Results"
+	GroupBox group0,pos={5,1},size={493,177},title="Instrument Setup"
+	GroupBox group1,pos={5,183},size={240,147},title="Sample Setup"
+	GroupBox group2,pos={5,343},size={259,147},title="Results"
 	
 	PopupMenu popup0,pos={17,19},size={165,20},title="Sample Aperture Diam (in)"
 	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
@@ -315,7 +321,8 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar1c,pos={left+209,top},size={89,15},title="increm",value= gIncr1
 	SetVariable setvar1d,pos={left+299,top},size={100,15},title="# points",value= gNumPts1
 	SetVariable setvar1e,pos={left+399,top},size={93,15},title="count (s)",value= gCtTime1
-	SetVariable setvar1a,labelBack=(65535,32768,32768)
+//	SetVariable setvar1a,labelBack=(65535,32768,32768)		//old rainbow
+	SetVariable setvar1a,labelBack=(49858,65535,65535)
 	
 	pt += inc
 	SetVariable setvar2a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow2
@@ -323,7 +330,8 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar2c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr2
 	SetVariable setvar2d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts2
 	SetVariable setvar2e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime2
-	SetVariable setvar2a labelBack=(65535,65533,32768)
+//	SetVariable setvar2a labelBack=(65535,65533,32768)		//old rainbow
+	SetVariable setvar2a labelBack=(21074,8995,21074)
 	
 	pt += inc
 	SetVariable setvar3a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow3
@@ -331,7 +339,8 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar3c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr3
 	SetVariable setvar3d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts3
 	SetVariable setvar3e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime3
-	SetVariable setvar3a labelBack=(32769,65535,32768)
+//	SetVariable setvar3a labelBack=(32769,65535,32768)		//old rainbow
+	SetVariable setvar3a labelBack=(0,60652,60652)
 	
 	pt += inc
 	SetVariable setvar4a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow4
@@ -339,7 +348,8 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr4
 	SetVariable setvar4d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts4
 	SetVariable setvar4e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime4
-	SetVariable setvar4a labelBack=(32768,65535,65535)
+//	SetVariable setvar4a labelBack=(32768,65535,65535)		//old rainbow
+	SetVariable setvar4a labelBack=(0,51400,0)
 	
 	pt += inc
 	SetVariable setvar5a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow5
@@ -347,7 +357,8 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar5c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr5
 	SetVariable setvar5d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts5
 	SetVariable setvar5e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime5
-	SetVariable setvar5a labelBack=(32768,54615,65535)
+//	SetVariable setvar5a labelBack=(32768,54615,65535)		//old rainbow
+	SetVariable setvar5a labelBack=(59367,49344,0)
 	
 	pt += inc
 	SetVariable setvar6a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow6
@@ -355,7 +366,17 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar6c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr6
 	SetVariable setvar6d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts6
 	SetVariable setvar6e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime6
-	SetVariable setvar6a labelBack=(44253,29492,58982)
+//	SetVariable setvar6a labelBack=(44253,29492,58982)		//old rainbow
+	SetVariable setvar6a labelBack=(54998,0,0)
+
+	pt += inc
+	SetVariable setvar7a,pos={left+17,top+pt},size={90,15},title="theta min",value= gAngLow7
+	SetVariable setvar7b,pos={left+113,top+pt},size={89,15},title="theta max",value= gAngHigh7
+	SetVariable setvar7c,pos={left+209,top+pt},size={89,15},title="increm",value= gIncr7
+	SetVariable setvar7d,pos={left+299,top+pt},size={100,15},title="# points",value= gNumPts7
+	SetVariable setvar7e,pos={left+399,top+pt},size={93,15},title="count (s)",value= gCtTime7
+//	SetVariable setvar7a labelBack=(44253,29492,58982)		//old rainbow
+	SetVariable setvar7a labelBack=(39321,21845,51657)
 
 // the action procedures and limits/increments
 	SetVariable setvar1a proc=ThetaMinSetVarProc		//,limits={-2,0,0.1}
@@ -364,6 +385,7 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4a proc=ThetaMinSetVarProc
 	SetVariable setvar5a proc=ThetaMinSetVarProc
 	SetVariable setvar6a proc=ThetaMinSetVarProc
+	SetVariable setvar7a proc=ThetaMinSetVarProc
 
 //
 	SetVariable setvar1b proc=ThetaMaxSetVarProc		//,limits={0.4,1,0.1}
@@ -372,6 +394,7 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4b proc=ThetaMaxSetVarProc
 	SetVariable setvar5b proc=ThetaMaxSetVarProc
 	SetVariable setvar6b proc=ThetaMaxSetVarProc
+	SetVariable setvar7b proc=ThetaMaxSetVarProc
 //
 	SetVariable setvar1c proc=IncrSetVarProc,limits={0.01,0.1,0.01}
 	SetVariable setvar2c proc=IncrSetVarProc,limits={0.02,0.2,0.02}
@@ -379,6 +402,7 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4c proc=IncrSetVarProc,limits={0.1,1,0.1}
 	SetVariable setvar5c proc=IncrSetVarProc,limits={0.5,5,1}
 	SetVariable setvar6c proc=IncrSetVarProc,limits={1,10,2}
+	SetVariable setvar7c proc=IncrSetVarProc,limits={1,20,2}
 //
 	SetVariable setvar1d proc=NumPtsSetVarProc,limits={2,50,1}
 	SetVariable setvar2d proc=NumPtsSetVarProc,limits={2,50,1}
@@ -386,6 +410,7 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4d proc=NumPtsSetVarProc,limits={2,50,1}
 	SetVariable setvar5d proc=NumPtsSetVarProc,limits={2,50,1}
 	SetVariable setvar6d proc=NumPtsSetVarProc,limits={2,50,1}
+	SetVariable setvar7d proc=NumPtsSetVarProc,limits={2,50,1}
 //
 	SetVariable setvar1e proc=CtTimeSetVarProc,limits={-1,50000,1}
 	SetVariable setvar2e proc=CtTimeSetVarProc,limits={-1,50000,10}
@@ -393,40 +418,41 @@ Window UCALC_Panel() : Graph
 	SetVariable setvar4e proc=CtTimeSetVarProc,limits={-1,50000,30}
 	SetVariable setvar5e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	SetVariable setvar6e proc=CtTimeSetVarProc,limits={-1,50000,100}
+	SetVariable setvar7e proc=CtTimeSetVarProc,limits={-1,50000,100}
 	
-	Button button0,pos={left+280,180},size={60,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Plot"
-	CheckBox check0_2,pos={left+280,230},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
-	CheckBox check0_3,pos={left+280,250},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
-	CheckBox check0_4 title="Show EMP?",pos={left+280,270},proc=ShowEMPCheckProc,value=0
+	Button button0,pos={left+280,200},size={130,20},fColor=(65535,65535,0),proc=U_SimPlotButtonProc,title="Simulate USANS"
+	CheckBox check0_2,pos={left+280,250},size={60,14},title="CountRate?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
+	CheckBox check0_3,pos={left+280,270},size={60,14},title="Noise?",variable= root:Packages:NIST:USANS:Globals:U_Sim:g_1D_AddNoise
+	CheckBox check0_4 title="Show EMP?",pos={left+280,290},proc=ShowEMPCheckProc,value=0
 
 
 //checkbox for "easy" mode
 	CheckBox check0 title="Simple mode?",pos={left+400,19},proc=EnterModeCheckProc,value=1
 	ThetaEditMode(2)		//checked on startup
 	
-//	instrument setup
-	SetVariable U_setvar0_1,pos={left+20,211},size={160,15},title="Thickness (cm)"
+//	sample setup
+	SetVariable U_setvar0_1,pos={left+20,231},size={160,15},title="Thickness (cm)"
 	SetVariable U_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:USANS:Globals:U_Sim:gThick	
-	SetVariable U_setvar0_3,pos={left+20,235},size={160,15},title="Sample Transmission"
+	SetVariable U_setvar0_3,pos={left+20,255},size={160,15},title="Sample Transmission"
 	SetVariable U_setvar0_3,limits={0,1,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:gSamTrans
-	PopupMenu U_popup0,pos={left+20,185},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
+	PopupMenu U_popup0,pos={left+20,205},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
 	PopupMenu U_popup0,mode=1,value= #"U_FunctionPopupList()"
-	SetVariable setvar0,pos={left+20,259},size={120,15},title="Empty Level",disable=2
+	SetVariable setvar0,pos={left+20,279},size={120,15},title="Empty Level",disable=2
 	SetVariable setvar0,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_EmptyLevel
-	SetVariable setvar0_1,pos={left+20,284},size={120,15},title="Bkg Level",disable=2
+	SetVariable setvar0_1,pos={left+20,304},size={120,15},title="Bkg Level",disable=2
 	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
 	
 	
 	
 // a box for the results
-	SetVariable totalTime,pos={left+20,350},size={150,15},title="Count time (h:m)",value= gTotTimeStr
-//	ValDisplay valdisp0,pos={338,210},size={220,13},title="Total detector counts"
-//	ValDisplay valdisp0,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DTotCts
-	ValDisplay valdisp0_2,pos={left+20,380},size={220,13},title="Fraction of beam scattered"
+	SetVariable totalTime,pos={left+20,370},size={150,15},title="Count time (h:m)",value= gTotTimeStr
+	ValDisplay valdisp0_2,pos={left+20,395},size={220,13},title="Fraction of beam scattered"
 	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DFracScatt
-	ValDisplay valdisp0_3,pos={left+20,410},size={220,13},title="Estimated transmission"
+	ValDisplay valdisp0_2,disable=1
+	ValDisplay valdisp0_3,pos={left+20,420},size={220,13},title="Estimated transmission"
 	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
-	Button button1,pos={left+20,440},size={50,20},proc=U_SaveButtonProc,title="Save"
+	ValDisplay valdisp0_3,disable=1
+	Button button1,pos={left+20,440},size={150,20},proc=U_SaveButtonProc,title="Save Simulated Data"
 
 	
 	SetDataFolder root:
@@ -549,14 +575,14 @@ Function CtTimeSetVarProc(sva) : SetVariableControl
 	return 0
 End
 
-// hard-wired for 6 controls
+// hard-wired for 7 controls
 // return value is in seconds
 // global display string is set with hrs:min
 Function CalcTotalCountTime()
 
 	Variable ii,num,totTime=0
 	String pathStr="root:Packages:NIST:USANS:Globals:U_Sim:"
-	num=6
+	num=7
 	
 	for(ii=1;ii<=num;ii+=1)
 		NVAR ctTime = $(pathStr+"gCtTime"+num2str(ii))
@@ -584,7 +610,7 @@ Function/S CtrlNumber(str)
 	return(str[6])
 End
 
-// changes edit mode of the theta min/max boxes for simplified setup
+// changes edit mode of the theta min/max boxes and increment for simplified setup
 // val = 2 = disable
 // val = 0 = edit enabled
 Function ThetaEditMode(val)
@@ -592,22 +618,31 @@ Function ThetaEditMode(val)
 	
 	SetVariable setvar1a,win=UCALC,disable=val
 	SetVariable setvar1b,win=UCALC,disable=val
+	SetVariable setvar1c,win=UCALC,disable=val
 	
 	SetVariable setvar2a,win=UCALC,disable=val
 	SetVariable setvar2b,win=UCALC,disable=val
+	SetVariable setvar2c,win=UCALC,disable=val
 	
 	SetVariable setvar3a,win=UCALC,disable=val
 	SetVariable setvar3b,win=UCALC,disable=val
+	SetVariable setvar3c,win=UCALC,disable=val
 	
 	SetVariable setvar4a,win=UCALC,disable=val
 	SetVariable setvar4b,win=UCALC,disable=val
+	SetVariable setvar4c,win=UCALC,disable=val
 	
 	SetVariable setvar5a,win=UCALC,disable=val
 	SetVariable setvar5b,win=UCALC,disable=val
+	SetVariable setvar5c,win=UCALC,disable=val
 	
 	SetVariable setvar6a,win=UCALC,disable=val
 	SetVariable setvar6b,win=UCALC,disable=val
+	SetVariable setvar6c,win=UCALC,disable=val
 	
+	SetVariable setvar7a,win=UCALC,disable=val
+	SetVariable setvar7b,win=UCALC,disable=val
+	SetVariable setvar7c,win=UCALC,disable=val
 	return(0)
 End
 
@@ -734,7 +769,7 @@ Function CalcUSANS()
 	String fromType="SWAP",toType="SIM"
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	num = 6			//# of angular ranges
+	num = 7			//# of angular ranges
 	
 	// only try to plot ranges with non-zero count times
 	firstSet=0
@@ -831,8 +866,12 @@ Function CalcUSANS()
 		
 		Imon = GetUSANSBeamIntensity()				//based on the aperture size, select the beam intensity
 		Print "imon=",imon
-		// calculate the scattering cross section simply to be able to estimate the transmission
 		
+		// calculate the scattering cross section simply to be able to estimate the transmission
+		// unfortunately, this calculation is useless in the USANS range. So although it's calculated, the
+		// results are never reported.
+		// -- the main issue is that the integration range is optimized for SANS, and is not useful for USANS
+		// -there are only a few points in the USANS range, and extending it lower caused issues before.
 		CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
 		
 //		if(sig_sas > 100)
@@ -1068,6 +1107,11 @@ End
 
 // add SIM data to the graph if it exists and is not already on the graph
 //
+//
+// ** currently, I have changed the graph to not display the angle at the top. I have not yet
+// found a way to keep the scaling of the two axes in-sync when the empty cell data is added to the
+// graph (versus Q)
+//
 Function GraphSIM()
 
 //	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
@@ -1089,7 +1133,8 @@ Function GraphSIM()
 		DoWindow/F UCALC
 
 // lines for the no-noise result vs angle
-		AppendToGraph/T Smeared_inten vs angle
+//		AppendToGraph/T Smeared_inten vs angle
+		AppendToGraph Smeared_inten vs Sim_USANS_q
 		ModifyGraph rgb(Smeared_inten)=(1,12815,52428)
 		ModifyGraph mode(Smeared_inten)=4,marker(Smeared_inten)=19,msize(Smeared_inten)=2
 		ModifyGraph tickUnit=1
@@ -1097,24 +1142,30 @@ Function GraphSIM()
 // colored points for the simulation with noise on top
 		AppendToGraph Sim_USANS_i vs Sim_USANS_q
 		ModifyGraph mode(Sim_USANS_i)=3,marker(Sim_USANS_i)=19,msize(Sim_USANS_i)=4
-		ModifyGraph zColor(Sim_USANS_i)={setNumber,1,6,Rainbow,0}			//force the colors from 1->6
+		//don't reverse the dbZ21 or the highest angle will have "invisible" light blue error bars
+		ModifyGraph zColor(Sim_USANS_i)={setNumber,1,7,dBZ21,0}				//better for 7 colors
+//		ModifyGraph zColor(Sim_USANS_i)={setNumber,1,7,Rainbow,0}			//force the colors from 1->7
 		ModifyGraph useMrkStrokeRGB(Sim_USANS_i)=1
 		ErrorBars/T=0 Sim_USANS_i Y,wave=(Sim_USANS_s,Sim_USANS_s)
 		
 		ModifyGraph log=1
 		ModifyGraph mirror(left)=1
+		// if no top axis, then
+//		ModifyGraph mirror(bottom)=1
 		ModifyGraph grid=2
 		ModifyGraph standoff=0
 		
 		// to make sure that the scales are the same (but fails on zoom)
-//		SetAxis bottom 2e-06,0.003
-//		SetAxis top 2e-06/5.55e-5,0.003/5.55e-5
+		NewFreeAxis/O/T top_angle
+		ModifyFreeAxis/Z top_angle,master= bottom,hook= TransformAngleAxisHook
+		ModifyGraph lblPos(top_angle)=50,freePos(top_angle)=0
+		ModifyGraph log(top_angle)=1
 		
 		SetDrawEnv linefgc= (39321,1,1),dash= 3,linethick= 3
 		SetDrawEnv xcoord= bottom
 		DrawLine 3e-05,0.01,3e-05,0.99
-
-		Label top "Angle"
+		
+		Label top_angle "Angle"
 		Label bottom "Q (1/A)"
 		Label left "Counts or Count Rate"
 		
@@ -1124,6 +1175,14 @@ Function GraphSIM()
 	SetDataFolder root:
 End
 
+Function TransformAngleAxisHook(s)
+	STRUCT WMAxisHookStruct &s
+
+	s.max= s.max/5.55e-5
+	s.min= s.min/5.55e-5
+	
+	return 0
+End
 
 //fakes a folder with loaded 1-d usans data, no calculation of the matrix
 Function	FakeUSANSDataFolder(qval,aveint,dqv,dataFolder)
@@ -1282,7 +1341,11 @@ Function UCALC_PresetPopup(pa) : PopupMenuControl
 			NVAR gCtTime6 = gCtTime6
 			NVAR gIncr6 = gIncr6
 			
-			
+			NVAR gAngLow7 = gAngLow7
+			NVAR gAngHigh7 = gAngHigh7
+			NVAR gNumPts7 = gNumPts7
+			NVAR gCtTime7 = gCtTime7
+			NVAR gIncr7 = gIncr7
 			
 			strswitch(popStr)	// string switch
 				case "Short Count":		// execute if case matches expression
@@ -1323,6 +1386,12 @@ Function UCALC_PresetPopup(pa) : PopupMenuControl
 					gCtTime6 = 0
 					gIncr6 = 2
 					
+					gAngLow7 = 50
+					gAngHigh7 = 95
+					gNumPts7 = 10
+					gCtTime7 = 0
+					gIncr7 = 5
+					
 					break						
 				case "Medium Count":	
 			
@@ -1361,7 +1430,13 @@ Function UCALC_PresetPopup(pa) : PopupMenuControl
 					gNumPts6 = 15
 					gCtTime6 = 1200
 					gIncr6 = 2	
-									
+					
+					gAngLow7 = 50
+					gAngHigh7 = 95
+					gNumPts7 = 10
+					gCtTime7 = 0
+					gIncr7 = 5
+								
 					break
 				case "Long Count":	
 					
@@ -1400,6 +1475,12 @@ Function UCALC_PresetPopup(pa) : PopupMenuControl
 					gNumPts6 = 15
 					gCtTime6 = 2000
 					gIncr6 = 2
+					
+					gAngLow7 = 50
+					gAngHigh7 = 95
+					gNumPts7 = 10
+					gCtTime7 = 3000
+					gIncr7 = 5
 					
 					break
 				default:			
@@ -1452,7 +1533,7 @@ Function U_SaveButtonProc(ba) : ButtonControl
 			SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 			String baseName="SIMUL"
 			
-			num = 6			//# of angular ranges
+			num = 7			//# of angular ranges
 			
 			// only try to plot ranges with non-zero count times
 			firstSet=0

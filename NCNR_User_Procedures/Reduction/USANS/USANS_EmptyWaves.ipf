@@ -8,7 +8,7 @@ Function Write2Save(w,name)
 	Variable ii,num
 	num=numpnts(w)
 	
-	printf "Make/O/N=%d  %s\r\r",num,name
+	printf "Make/O/D/N=%d  %s\r\r",num,name
 
 	for(ii=0;ii<num;ii+=1)
 		printf "%s[%d] = %g\r",name,ii,w[ii]
@@ -22,7 +22,7 @@ Function MakeUSANSEmptyWaves()
 	SetDataFolder root:Packages:NIST:USANS:Globals
 	
 //Write2Save(CR_EC_0p25Gd,"CR_0p25")
-  Make/O/N=44  CR_0p25
+  Make/O/D/N=44  CR_0p25
 
   CR_0p25[0] = 3873.7
   CR_0p25[1] = 3227.55
@@ -71,7 +71,7 @@ Function MakeUSANSEmptyWaves()
   
 //
 ///Write2Save(Q_EC_0p25Gd,"Q_0p25")
-  Make/O/N=44  Q_0p25
+  Make/O/D/N=44  Q_0p25
 
   Q_0p25[0] = 5.52469e-06
   Q_0p25[1] = 8.29969e-06
@@ -119,7 +119,7 @@ Function MakeUSANSEmptyWaves()
   Q_0p25[43] = 0.0010517
 
 //¥Write2Save(CR_EC_0p50Gd,"CR_0p50")
-  Make/O/N=38  CR_0p50
+  Make/O/D/N=38  CR_0p50
 
   CR_0p50[0] = 15828.3
   CR_0p50[1] = 14044.4
@@ -161,7 +161,7 @@ Function MakeUSANSEmptyWaves()
   CR_0p50[37] = 0.0235
   
 //¥Write2Save(Q_EC_0p50Gd,"Q_0p50")
-  Make/O/N=38  Q_0p50
+  Make/O/D/N=38  Q_0p50
 
   Q_0p50[0] = 3.68132e-06
   Q_0p50[1] = 6.45632e-06
@@ -203,7 +203,7 @@ Function MakeUSANSEmptyWaves()
   Q_0p50[37] = 0.00287026
   
 //  ¥Write2Save(CR_EC_0p625Gd,"CR_0p625")
-  Make/O/N=111  CR_0p625
+  Make/O/D/N=111  CR_0p625
 
   CR_0p625[0] = 21097
   CR_0p625[1] = 18615.3
@@ -318,7 +318,7 @@ Function MakeUSANSEmptyWaves()
   CR_0p625[110] = 0.0208333
   
 //¥Write2Save(Q_EC_0p625Gd,"Q_0p625")
-  Make/O/N=111  Q_0p625
+  Make/O/D/N=111  Q_0p625
 
   Q_0p625[0] = 4.51567e-06
   Q_0p625[1] = 7.29067e-06
@@ -434,7 +434,7 @@ Function MakeUSANSEmptyWaves()
 
 
 //¥Write2Save(CR_EB_1p75Cd,"CR_1p75")
-  Make/O/N=62  CR_1p75
+  Make/O/D/N=62  CR_1p75
 
   CR_1p75[0] = 56049.9
   CR_1p75[1] = 51240.5
@@ -500,7 +500,7 @@ Function MakeUSANSEmptyWaves()
   CR_1p75[61] = 0.0308333
   
 //¥Write2Save(Q_EB_1p75Cd,"Q_1p75")
-  Make/O/N=62  Q_1p75
+  Make/O/D/N=62  Q_1p75
 
   Q_1p75[0] = 2.39312e-06
   Q_1p75[1] = 5.16812e-06
@@ -566,7 +566,7 @@ Function MakeUSANSEmptyWaves()
   Q_1p75[61] = 0.00105967
 
 //¥Write2Save(CR_EB_2p0Cd,"CR_2p0")
-  Make/O/N=98  CR_2p0
+  Make/O/D/N=98  CR_2p0
 
   CR_2p0[0] = 56491
   CR_2p0[1] = 54551
@@ -668,7 +668,7 @@ Function MakeUSANSEmptyWaves()
   CR_2p0[97] = 0.032651
   
 //¥Write2Save(Q_EB_2p0Cd,"Q_2p0")
-  Make/O/N=98  Q_2p0
+  Make/O/D/N=98  Q_2p0
 
   Q_2p0[0] = 1.4972e-06
   Q_2p0[1] = 2.6072e-06

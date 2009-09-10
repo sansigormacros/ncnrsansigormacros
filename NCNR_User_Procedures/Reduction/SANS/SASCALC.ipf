@@ -124,7 +124,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gSaveIndex = 100
 	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
-	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction double coherent","fraction multiple scattered","fraction transmitted","detector counts w/o beamstop"}
+	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction multiple coherent","fraction multiple scattered","fraction transmitted","detector counts w/beamstop"}
 
 	Variable/G root:Packages:NIST:SAS:g_1DTotCts = 0			//summed counts (simulated)
 	Variable/G root:Packages:NIST:SAS:g_1DEstDetCR = 0		// estimated detector count rate
@@ -147,7 +147,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gCalculate=0
 	//for plotting
 	Variable/G root:Packages:NIST:SAS:gFreezeCount=1		//start the count at 1 to keep Jeff happy
-	Variable/G root:Packages:NIST:SAS:gDoTraceOffset=1		// (1==Yes, offset 2^n), 0==turn off the offset
+	Variable/G root:Packages:NIST:SAS:gDoTraceOffset=0		// (1==Yes, offset 2^n), 0==turn off the offset
 	
 End
 
@@ -718,6 +718,8 @@ Function SimCheckProc(ctrlName,checked) : CheckBoxControl
 				AutoPositionWindow/M=1/R=SASCALC Sim_1D_Panel
 			endif
 		endif
+		NVAR doSim = root:Packages:NIST:SAS:doSimulation
+		doSim=1
 	else
 		//get rid of the controls (just try both)
 		DoWindow MC_SASCALC

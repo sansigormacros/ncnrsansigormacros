@@ -62,6 +62,19 @@
 //
 //
 
+// setting the flag to 1 == 2D simulation
+// any other value for flag == 1D simulation
+//
+// must remember to close/reopen the simulation control panel to get the correct panel
+//
+Function Set_2DMonteCarlo_Flag(value)
+	Variable value
+	
+	NVAR flag=root:Packages:NIST:SAS:gDoMonteCarlo
+	flag=value
+	return(0)
+end
+
 // threaded call to the main function, adds up the individual runs, and returns what is to be displayed
 // results is calculated and sent back for display
 Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
@@ -174,8 +187,8 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	results[2] = retWave[1]							//number that interact n2
 	results[3] = retWave[2]	- linear_data[xc][yc]				//# reaching detector minus Q(0)
 	results[4] = retWave[3]/retWave[1]				//avg# times scattered
-	results[5] = retWave[4]/retWave[1]						//single coherent fraction
-	results[6] = retWave[5]/retWave[1]				//double coherent fraction
+	results[5] = retWave[4]/retWave[7]						//single coherent fraction
+	results[6] = retWave[5]/retWave[7]				//multiple coherent fraction
 	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
 	results[8] = (retWave[0]-retWave[1])/retWave[0]			//transmitted fraction
 	
@@ -238,8 +251,8 @@ Function Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,result
 	results[2] = retWave[1]							//number that interact n2
 	results[3] = retWave[2]	- linear_data[xc][yc]				//# reaching detector minus Q(0)
 	results[4] = retWave[3]/retWave[1]				//avg# times scattered
-	results[5] = retWave[4]/retWave[1]						//single coherent fraction
-	results[6] = retWave[5]/retWave[1]				//double coherent fraction
+	results[5] = retWave[4]/retWave[7]						//single coherent fraction
+	results[6] = retWave[5]/retWave[7]				//double coherent fraction
 	results[7] = retWave[6]/retWave[1]				//multiple scatter fraction
 	results[8] = (retWave[0]-retWave[1])/retWave[0]			//transmitted fraction
 	
@@ -287,6 +300,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	Variable isOn=0,testQ,testPhi,xPixel,yPixel
 	Variable NSingleIncoherent,NSingleCoherent,NScatterEvents,incoherentEvent,coherentEvent
 	Variable NDoubleCoherent,NMultipleScatter,countIt,detEfficiency
+	Variable NMultipleCoherent,NCoherentEvents
 	
 	detEfficiency = 1.0		//70% counting efficiency = 0.7
 	
@@ -350,6 +364,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	NDoubleCoherent = 0
 	NMultipleScatter = 0
 	NScatterEvents = 0
+	NMultipleCoherent = 0
+	NCoherentEvents = 0
 
 //C     INITIALIZE ARRAYS.
 	j1 = 0
@@ -414,7 +430,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 				//Split neutron interactions into scattering and absorption events
 //				IF(ran > (ratio1+ratio2) )		//C             NEUTRON SCATTERED coherently
 				IF(ran > ratio)		//C             NEUTRON SCATTERED coherently
-					coherentEvent = 1
+					coherentEvent += 1
 					FIND_THETA = 0			//false
 					DO
 						//ran = abs(enoise(1))		//[0,1]
@@ -440,7 +456,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
            	  // DONE = 1
            	  // phi and theta are random over the entire sphere of scattering
            	  // !can't just choose random theta and phi, won't be random over sphere solid angle
-           	  	incoherentEvent = 1
+           	  	incoherentEvent += 1
            	  	
            	  	ran = abs(enoise(1))		//[0,1]
 					theta = acos(2*ran-1)		
@@ -513,6 +529,14 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					if(index > 1)
 						NMultipleScatter += 1
 					endif
+					if(coherentEvent >= 1 && incoherentEvent == 0)
+						NCoherentEvents += 1
+					endif
+					if(coherentEvent > 1 && incoherentEvent == 0)
+						NMultipleCoherent += 1
+					endif
+					
+					
 					//Print "n1,index (x,y) = ",n1,index, xpixel,ypixel
 					
 				else	// if neutron escaped without interacting
@@ -533,10 +557,11 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	results[0] = n1
 	results[1] = n2
 	results[2] = isOn
-	results[3] = NScatterEvents		//sum of # of times that neutrons scattered
+	results[3] = NScatterEvents		//sum of # of times that neutrons scattered (coh+incoh)
 	results[4] = NSingleCoherent		//# of events that are single, coherent
-	results[5] = NDoubleCoherent
-	results[6] = NMultipleScatter		//# of multiple scattering events
+	results[5] = NMultipleCoherent	//# of scattered neutrons that are coherently scattered more than once
+	results[6] = NMultipleScatter		//# of scattered neutrons that are scattered more than once (coh and/or incoh)
+	results[7] = NCoherentEvents		//# of scattered neutrons that are scattered coherently one or more times
 	
 //	Print "# absorbed = ",n3
 
@@ -842,11 +867,15 @@ End
 //	SetDataFolder fldrSav0
 //	RenameWindow #,T_results
 //	SetActiveSubwindow ##
-EndMacro
+//EndMacro
 
 // as a stand-alone panel, extra control bar  (right) and subwindow implementations don't work right 
 // for various reasons...
 Window MC_SASCALC() : Panel
+
+	// when opening the panel, set the raw counts check to 1
+	root:Packages:NIST:SAS:gRawCounts = 1
+	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(92,556,713,818)/K=1 as "SANS Simulator"
 	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
@@ -865,7 +894,7 @@ Window MC_SASCALC() : Panel
 	Button MC_button1,pos={17,208},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
 	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
-	SetVariable cntVar,pos={190,73},size={80,15},proc=CountTimeSetVarProc,title="time(s)"
+	SetVariable cntVar,pos={185,73},size={90,15},proc=CountTimeSetVarProc,title="time(s)"
 	SetVariable cntVar,format="%d"
 	SetVariable cntVar,limits={1,600,1},value= root:Packages:NIST:SAS:gCntTime
 	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
@@ -1263,6 +1292,7 @@ Window Sim_1D_Panel() : Panel
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
 	Button MC_button0,pos={17,181},size={130,20},proc=Sim_1D_DoItButtonProc,title="Do 1D Simulation"
 	Button MC_button0,fColor=(3,52428,1)
+	Button MC_button1,pos={17,211},size={150,20},proc=Save_1DSimData,title="Save Simulated Data"
 	GroupBox group0,pos={15,42},size={280,130},title="Sample Setup"
 	CheckBox check0_1,pos={216,179},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
 	CheckBox check0_2,pos={216,199},size={60,14},title="Abs scale?",variable= root:Packages:NIST:SAS:g_1D_DoABS
@@ -1367,4 +1397,173 @@ Function Sim_1D_DoItButtonProc(ba) : ButtonControl
 	endswitch
 
 	return 0
+End
+
+
+//
+//
+//
+Function Save_1DSimData(ctrlName) : ButtonControl
+	String ctrlName
+
+	String type="SAS",fullpath=""
+	Variable dialog=1		//=1 will present dialog for name
+	
+	String destStr=""
+	destStr = "root:Packages:NIST:"+type
+	
+	Variable refNum
+	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
+	String fname,ave="C",hdrStr1="",hdrStr2=""
+	Variable step=1
+	
+	If(1)
+		//setup a "fake protocol" wave, sice I have no idea of the current state of the data
+		Make/O/T/N=8 root:myGlobals:Protocols:SIMProtocol
+		Wave/T SIMProtocol = $"root:myGlobals:Protocols:SIMProtocol"
+		String junk="****SIMULATED DATA****"
+		//stick in the fake protocol...
+		NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+		NVAR totalCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
+		NVAR detCR = root:Packages:NIST:SAS:g_1DEstDetCR		// estimated detector count rate
+		NVAR fractScat = root:Packages:NIST:SAS:g_1DFracScatt
+	
+		SIMProtocol[0] = junk
+		SIMProtocol[1] = "\tCounting time (s) = "+num2str(ctTime)
+		SIMProtocol[2] = "\tTotal detector counts = "+num2str(totalCts)
+		SIMProtocol[3] = "\tDetector countrate (1/s) = "+num2str(detCR)
+		SIMProtocol[4] = "\tFraction of beam scattered coherently = "+num2str(fractScat)
+		SIMProtocol[5] = junk
+		SIMProtocol[6] = ""
+		SIMProtocol[7] = ""
+		//set the global
+		String/G root:myGlobals:Protocols:gProtoStr = "SIMProtocol"
+	Endif
+	
+	
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE intw=$(destStr + ":integersRead")
+	WAVE rw=$(destStr + ":realsRead")
+	WAVE/T textw=$(destStr + ":textRead")
+	WAVE qvals =$(destStr + ":qval")
+	WAVE inten=$(destStr + ":aveint")
+	WAVE sig=$(destStr + ":sigave")
+ 	WAVE qbar = $(destStr + ":QBar")
+  	WAVE sigmaq = $(destStr + ":SigmaQ")
+ 	WAVE fsubs = $(destStr + ":fSubS")
+
+	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
+	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
+	
+	//check each wave
+	If(!(WaveExists(intw)))
+		Abort "intw DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(rw)))
+		Abort "rw DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(textw)))
+		Abort "textw DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(qvals)))
+		Abort "qvals DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(inten)))
+		Abort "inten DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(sig)))
+		Abort "sig DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(qbar)))
+		Abort "qbar DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(sigmaq)))
+		Abort "sigmaq DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(fsubs)))
+		Abort "fsubs DNExist Save_1DSimData()"
+	Endif
+	If(!(WaveExists(proto)))
+		Abort "current protocol wave DNExist Save_1DSimData()"
+	Endif
+
+	//strings can be too long to print-- must trim to 255 chars
+	Variable ii,num=8
+	Make/O/T/N=(num) tempShortProto
+	for(ii=0;ii<num;ii+=1)
+		tempShortProto[ii] = (proto[ii])[0,240]
+	endfor
+	
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	
+	NVAR monCt = root:Packages:NIST:SAS:gImon
+	NVAR thick = root:Packages:NIST:SAS:gThick
+	NVAR trans = root:Packages:NIST:SAS:gSamTrans			//for 1D, default value
+	
+
+	
+	hdrStr1 = num2str(monCt)+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
+	hdrStr1 += "     "+num2str(trans)+"     "+num2str(thick) + ave +"   "+num2str(step) + "\r\n"
+
+	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
+	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+"ORNL  " + "\r\n"
+	
+	//actually open the file here
+	Open refNum as fullpath
+	
+	//write out the standard header information
+	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n","SIMULATED DATA",(date() +"  "+ time())
+	fprintf refnum,"LABEL: %s\r\n","SIMULATED DATA"
+	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
+	fprintf refnum,hdrStr1
+	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
+	fprintf refnum,hdrStr2
+//	fprintf refnum,headerFormat,rw[0],rw[26],rw[19],rw[18],rw[4],rw[5],ave,step
+
+	//insert protocol information here
+	//-1 list of sample files
+	//0 - bkg
+	//1 - emp
+	//2 - div
+	//3 - mask
+	//4 - abs params c2-c5
+	//5 - average params
+	fprintf refnum, "SAM: %s\r\n",tempShortProto[0]
+	fprintf refnum, "BGD: %s\r\n",tempShortProto[1]
+	fprintf refnum, "EMP: %s\r\n",tempShortProto[2]
+	fprintf refnum, "DIV: %s\r\n",tempShortProto[3]
+	fprintf refnum, "MASK: %s\r\n",tempShortProto[4]
+	fprintf refnum, "ABS: %s\r\n",tempShortProto[5]
+	fprintf refnum, "Average Choices: %s\r\n",tempShortProto[6]
+	
+	//write out the data columns
+	fprintf refnum,"The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"
+	wfprintf refnum, formatStr, qvals,inten,sig,sigmaq,qbar,fsubs
+	
+	Close refnum
+	
+	SetDataFolder root:		//(redundant)
+	
+	//write confirmation of write operation to history area
+	Print "Averaged File written: ", GetFileNameFromPathNoSemi(fullPath)
+	KillWaves/Z tempShortProto
+
+	//clear the stuff that was created for case of saving files
+	If(1)
+		Killwaves/Z root:myGlobals:Protocols:SIMProtocol
+		String/G root:myGlobals:Protocols:gProtoStr = ""
+	Endif
+	
+	
+	return(0)
+	
 End
