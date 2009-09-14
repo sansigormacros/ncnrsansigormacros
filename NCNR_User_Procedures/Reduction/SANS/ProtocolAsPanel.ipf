@@ -1912,6 +1912,7 @@ Function ExecuteProtocol(protStr,samStr)
 				break
 			default:
 				WriteWaves_W_Protocol(activeType,fullpath,dialog)
+				//WriteXMLWaves_W_Protocol(activeType,fullpath,dialog)
 		endswitch
 		
 		//Print "data written to:  "+ fullpath
