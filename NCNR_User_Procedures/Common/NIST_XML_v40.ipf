@@ -688,6 +688,177 @@ function setmetadataFromASCHeader(fileStr,NISTfile)
 	
 end
 
+//for writing out data (q-i-s) from the "type" folder, and including reduction information
+//if fullpath is a complete HD path:filename, no dialog will be presented
+//if fullpath is just a filename, the save dialog will be presented
+//if dialog = 1, a dialog will always be presented
+//
+// root:myGlobals:Protocols:gProtoStr is the name of the currently active protocol
+//
+Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
+	
+	Struct NISTXMLfile nf
+	
+	String destStr=""
+	destStr = "root:Packages:NIST:"+type
+	
+	Variable refNum
+	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
+	String fname,ave="C",hdrStr1="",hdrStr2=""
+	Variable step=1
+	
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE intw=$(destStr + ":integersRead")
+	WAVE rw=$(destStr + ":realsRead")
+	WAVE/T textw=$(destStr + ":textRead")
+	WAVE qvals =$(destStr + ":qval")
+	WAVE inten=$(destStr + ":aveint")
+	WAVE sig=$(destStr + ":sigave")
+ 	WAVE qbar = $(destStr + ":QBar")
+  	WAVE sigmaq = $(destStr + ":SigmaQ")
+ 	WAVE fsubs = $(destStr + ":fSubS")
+
+
+	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
+	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
+
+	
+	//check each wave
+	If(!(WaveExists(intw)))
+		Abort "intw DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(rw)))
+		Abort "rw DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(textw)))
+		Abort "textw DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(qvals)))
+		Abort "qvals DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(inten)))
+		Abort "inten DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(sig)))
+		Abort "sig DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(qbar)))
+		Abort "qbar DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(sigmaq)))
+		Abort "sigmaq DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(fsubs)))
+		Abort "fsubs DNExist BinaryWrite_W_Protocol()"
+	Endif
+	If(!(WaveExists(proto)))
+		Abort "current protocol wave DNExist BinaryWrite_W_Protocol()"
+	Endif
+	
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
+	//actually open the file here
+	//Open refNum as fullpath
+	
+	//Data
+	Wave nf.Q = qvals
+	nf.unitsQ = "1/A"
+	Wave nf.I = inten
+	nf.unitsI = "1/cm"
+	Wave nf.Idev = sig
+	nf.unitsIdev = "1/cm"
+	Wave nf.Qdev = sigmaq
+	nf.unitsQdev = "1/A"
+	Wave nf.Qmean = qbar
+	nf.unitsQmean = "1/A"
+	Wave nf.Shadowfactor = fSubS
+	nf.unitsShadowfactor = "none"
+	
+	
+	//write out the standard header information
+	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
+	
+	//AJJ to fix with sensible values
+	nf.run = "Test"
+	String acct = textw[3]
+	nf.nameSASinstrument = acct[1,3]
+	nf.SASnote = ""
+	//
+	nf.sample_ID = textw[6]
+	nf.title = textw[6]
+	nf.radiation = "neutron"
+	nf.wavelength = rw[26]
+	nf.unitswavelength = "A"
+	nf.offset_angle = rw[19]
+	nf.unitsoffset_angle = "cm"
+	nf.SDD = rw[18]
+	nf.unitsSDD = "m"
+	nf.sample_transmission = rw[4]
+	nf.sample_thickness = rw[5]
+	nf.unitssample_thickness = "mm"
+	
+	nf.beamcenter_X = rw[16]  
+	nf.beamcenter_Y = rw[17]
+	nf.unitsbeamcenter_X = "pixels"
+	nf.unitsbeamcenter_Y = "pixels"
+	nf.source_aperture = rw[23]
+	nf.typesource_aperture = "pinhole"
+	nf.unitssource_aperture = "mm"
+	nf.sample_aperture = rw[24]
+	nf.typesample_aperture = "pinhole"
+	nf.unitssample_aperture = "mm"
+	//nf.collimation_length = total length - rw[25]
+	nf.wavelength_spread = rw[27]
+	nf.unitswavelength_spread = "percent"
+	//Do something with beamstop (rw[21])
+	nf.detector_name = textW[9]
+//	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
+//	fprintf refnum,hdrStr1
+
+//	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
+//	fprintf refnum,hdrStr2
+
+	//insert protocol information here
+	//-1 list of sample files
+	//0 - bkg
+	//1 - emp
+	//2 - div
+	//3 - mask
+	//4 - abs params c2-c5
+	//5 - average params
+	nf.SASprocessnote =  "SAM: "+samFiles+"\n"
+	nf.SASprocessnote += "BGD: "+proto[0]+"\n"
+	nf.SASprocessnote += "EMP: "+Proto[1]+"\n"
+	nf.SASprocessnote += "DIV: "+Proto[2]+"\n"
+	nf.SASprocessnote += "MASK: "+Proto[3]+"\n"
+	nf.SASprocessnote += "ABS Parameters (3-6): "+Proto[4]+"\n"
+	nf.SASprocessnote += "Average Choices: "+Proto[5]+"\n"
+	
+	nf.nameSASProcess = "NIST IGOR"
+
+	//Close refnum
+	
+	writeNISTXML(fullpath, nf)
+	
+	SetDataFolder root:		//(redundant)
+	
+	//write confirmation of write operation to history area
+	Print "Averaged XML File written: ", GetFileNameFromPathNoSemi(fullPath)
+	KillWaves/Z tempShortProto
+	Return(0)
+End
 
 #else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
@@ -699,13 +870,22 @@ end
 	END
 	
 
-	function writeNISTXML(fileName, NISTfile)
-	    String fileName, NISTfile
+	Function writeNISTXML(fileName, NISTfile)
+		String fileName, NISTfile
+		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+	 	RETURN(-6)
+	End
+	
+	Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
+		String type,fullpath
+		Variable dialog		//=1 will present dialog for name
+	
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
-	 RETURN(-6)
-	
-	
-#endif	// if( Exists("XmlOpenFile") 
+		return(-6)
+	end
+#endif
+
+	// if( Exists("XmlOpenFile") 
 //Needed to test whether file is XML. The load routine will then either give an error if XMLutils is not present or load the file if it is.
 function isXML(filestr)
 	String filestr
