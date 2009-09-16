@@ -113,6 +113,9 @@ Menu "SANSBeta"
 	"Read Monitor Count"
 	"Read Detector Count"
 	"-"
+	"PatchFileNameInHeader"
+	"ReadFileNameInHeader"
+	"-"
 	"AddALLToLayout"
 	
 End

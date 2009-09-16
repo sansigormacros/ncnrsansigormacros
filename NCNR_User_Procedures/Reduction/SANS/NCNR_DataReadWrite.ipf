@@ -1317,6 +1317,37 @@ Function WriteAcctNameToHeader(fname,str)
 	return(0)
 End
 
+// file name, starts at byte 2
+// limit to 21 characters
+//
+// be sure that any white space to pad to 21 characters is at the front of the string
+Function WriteFileNameToHeader(fname,str)
+	String fname,str
+	
+	Variable i
+	String newStr=""
+//	printf "\"%s\"\t%d\r",str,strlen(str)
+
+	//strip any white spaces from the end (from TrimWSR(str) in cansasXML.ipf)
+	for (i=strlen(str)-1; char2num(str[i])<=32 && i>=0; i-=1)    // find last non-white space
+	endfor
+	str = str[0,i]
+//	printf "\"%s\"\t%d\r",str,strlen(str)
+
+	// if the string is less than 21 characters, fix it with white space at the beginning
+	if(strlen(str) < 21)
+		newStr = PadString(newStr,21,0x20)		//pad with fortran-style spaces
+		newStr[21-strlen(str),20] = str
+	else
+		newStr = str
+	endif
+//	printf "\"%s\"\t%d\r",newstr,strlen(newstr)
+
+	WriteTextToHeader(fname,newstr,2)
+	return(0)
+End
+
+
 //rewrite an integer field back to the header
 // fname is the full path:name
 // val is the integer value
@@ -1395,6 +1426,13 @@ Function/S getAcctName(fname)
 	String fname
 	
 	return(getStringFromHeader(fname,78,11))
+End
+
+// file name (21 characters @ byte 2)
+Function/S getFileName(fname)
+	String fname
+	
+	return(getStringFromHeader(fname,2,21))
 End
 
 
@@ -2515,6 +2553,76 @@ Function ExamineHeader(type)
 	print "analysis.imax:\t\t"+num2str(realw[51])
 
 End
+
+
+// Sept 2009 -SRK
+// the ICE instrument control software is not correctly writing out the file name to the header in the specific
+// case of a file prefix less than 5 characters. ICE is quite naturally putting the blanke space(s) at the end of
+// the string. However, the VAX puts them at the beginning...
+Proc PatchFileNameInHeader(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+
+	fPatchFileName(firstFile,lastFile)
+
+End
+
+Proc ReadFileNameInHeader(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadFileName(firstFile,lastFile)
+End
+
+
+// simple utility to patch the file name in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+// will read the 21 character file name and put any spaces at the front of the string
+// like the VAX does. Should have absolutely no effect if there are spaces at the
+// beginning of the string, as the VAX does.
+Function fPatchFileName(lo,hi)
+	Variable lo,hi
+	
+	Variable ii
+	String file,fileName
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			fileName = getFileName(file)
+			WriteFileNameToHeader(file,fileName)
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the file name stored in the file header (and the suffix)
+Function fReadFileName(lo,hi)
+	Variable lo,hi
+	
+	String file,fileName,suffix
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			fileName = getFileName(file)
+			suffix = getSuffix(file)
+			printf "File %d:  File name = %s\t\tSuffix = %s\r",ii,fileName,suffix
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+
 
 // April 2009 - AJJ
 // The new ICE instrument control software was not correctly writing the run.defdir field
