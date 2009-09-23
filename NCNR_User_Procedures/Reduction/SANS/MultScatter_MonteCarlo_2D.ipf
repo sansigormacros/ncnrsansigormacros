@@ -981,8 +981,7 @@ End
 // after a 2d data image is averaged in the usual way, take the waves and generate a "fake" folder of the 1d
 // data, to appear as if it was loaded from a real data file.
 //
-// currently only works with SANS data, but can later be expanded to generate fake USANS data sets
-// ---- use FakeUSANSDataFolder() instead----
+// ---- use FakeUSANSDataFolder() if you want to fake a 1D USANS data set ----
 //
 Function	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,dataFolder)
 	WAVE qval,aveint,sigave,sigmaQ,qbar,fSubs
@@ -999,37 +998,25 @@ Function	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,dataFolder)
 	Duplicate/O qval, $(baseStr+"_q")
 	Duplicate/O aveint, $(baseStr+"_i")
 	Duplicate/O sigave, $(baseStr+"_s")
-//	Duplicate/O sigmaQ, $(baseStr+"sq")
-//	Duplicate/O qbar, $(baseStr+"qb")
-//	Duplicate/O fSubS, $(baseStr+"fs")
 
-	// need to switch based on SANS/USANS
-	if (isSANSResolution(sigave[0]))		//checks to see if the first point of the wave is <0]
-		// make a resolution matrix for SANS data
-		Variable np=numpnts(qval)
-		Make/D/O/N=(np,4) $(baseStr+"_res")
-		Wave res=$(baseStr+"_res")
-		
-		res[][0] = sigmaQ[p]		//sigQ
-		res[][1] = qBar[p]		//qBar
-		res[][2] = fSubS[p]		//fShad
-		res[][3] = qval[p]		//Qvalues
-		
-		// keep a copy of everything in SAS too... the smearing wrapper function looks for 
-		// data in folders based on waves it is passed - an I lose control of that
-		Duplicate/O res, $("root:Packages:NIST:SAS:"+baseStr+"_res")
-		Duplicate/O qval,  $("root:Packages:NIST:SAS:"+baseStr+"_q")
-		Duplicate/O aveint,  $("root:Packages:NIST:SAS:"+baseStr+"_i")
-		Duplicate/O sigave,  $("root:Packages:NIST:SAS:"+baseStr+"_s")
-	else
-		//the data is USANS data
-		// nothing done here yet
-//		dQv = -$w3[0]
-		
-//		USANS_CalcWeights(baseStr,dQv)
-		
-	endif
 
+	// make a resolution matrix for SANS data
+	Variable np=numpnts(qval)
+	Make/D/O/N=(np,4) $(baseStr+"_res")
+	Wave res=$(baseStr+"_res")
+	
+	res[][0] = sigmaQ[p]		//sigQ
+	res[][1] = qBar[p]		//qBar
+	res[][2] = fSubS[p]		//fShad
+	res[][3] = qval[p]		//Qvalues
+	
+	// keep a copy of everything in SAS too... the smearing wrapper function looks for 
+	// data in folders based on waves it is passed - an I lose control of that
+	Duplicate/O res, $("root:Packages:NIST:SAS:"+baseStr+"_res")
+	Duplicate/O qval,  $("root:Packages:NIST:SAS:"+baseStr+"_q")
+	Duplicate/O aveint,  $("root:Packages:NIST:SAS:"+baseStr+"_i")
+	Duplicate/O sigave,  $("root:Packages:NIST:SAS:"+baseStr+"_s")
+	
 	//clean up		
 	SetDataFolder root:
 	

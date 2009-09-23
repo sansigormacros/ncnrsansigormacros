@@ -1368,8 +1368,10 @@ Function S_CircularAverageTo1D(type)
 // ***************************************************************
 
 	Variable L2 = reals[18]
-//	Variable BS = reals[21]		//this the diameter is stored in mm
-	Variable BS = beamstopDiamProjection(1) * 10		//calculated projection in cm *10 = mm
+	Variable BS = reals[21]		//this the diameter is stored in mm
+//  SRK - why was I using the projected diameter of the beam stop?? I added a step at the beginning of every recalculation
+// of the intensity to get the right beamstop diameter into RealsRead...
+//	Variable BS = beamstopDiamProjection(1) * 10		//calculated projection in cm *10 = mm
 	Variable S1 = reals[23]
 	Variable S2 = reals[24]
 	Variable L1 = reals[25]
@@ -1573,7 +1575,7 @@ Function/S S_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	endif
 	QBar = (4.0*Pi/lambda)*sin(0.5*atan(rm/L2))
 	SigmaQ = QBar*sqrt(v_r/rmd^2 +v_lambda)
-
+	
 	results = "success"
 	Return results
 End

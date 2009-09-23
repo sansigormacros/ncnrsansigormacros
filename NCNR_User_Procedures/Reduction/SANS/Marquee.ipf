@@ -301,9 +301,10 @@ End
 // x,y are assumed to already be in-bounds of the data array
 // output is dumped to the command window
 //
-Function DoBoxSum(fileStr,x1,x2,y1,y2)
+Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	String fileStr
 	Variable x1,x2,y1,y2
+	String type
 	
 	//parse the list of file numbers
 	String fileList="",item="",pathStr="",fullPath=""
@@ -331,10 +332,12 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2)
 		ReadHeaderAndData(fullPath)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
-		err = Raw_to_work("SAM")
-		String/G root:myGlobals:gDataDisplayType="SAM"	
+		if(cmpstr(type,"SAM")==0)
+			err = Raw_to_work("SAM")
+		endif
+		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
-		cts=SumCountsInBox(x1,x2,y1,y2,"SAM")
+		cts=SumCountsInBox(x1,x2,y1,y2,type)
 		BoxCounts[ii]=cts
 		Print item+" counts = ",cts
 	endfor
@@ -383,12 +386,14 @@ Function BoxSum() :  GraphMarquee
 	KeepSelectionInBounds(x1,x2,y1,y2)
 	
 	String fileStr="",msgStr="Enter a comma-delimited list of run numbers, use dashes for ranges"
+	String type="RAW"
 	Prompt fileStr,msgStr
-	DoPrompt "Pick the file range",fileStr
+	Prompt type,"RAW or Normalized (SAM)",popup,"RAW;SAM;"
+	DoPrompt "Pick the file range",fileStr,type
 	Print "fileStr = ",fileStr
 	printf "(x1,x2) (y1,y2) = (%d,%d) (%d,%d)\r",x1,x2,y1,y2
 	
-	DoBoxSum(fileStr,x1,x2,y1,y2)
+	DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	
 	return(0)
 End	

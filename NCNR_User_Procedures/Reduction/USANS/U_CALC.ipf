@@ -14,6 +14,12 @@
 // ideas:
 //
 // - more presets
+//
+// - NEED - 
+// - printable output that makes sense to an instrument scientist at least
+//   for instrument setup
+//
+// - make sure that the # points <-> increment relation meshes with ICP
 
 //
 // X plot as countrate, not absolute scale
@@ -107,7 +113,7 @@ Proc Init_UCALC()
 	Variable/G gAngHigh7 = 95
 	Variable/G gNumPts7 = 10
 	Variable/G gCtTime7 = 0
-	Variable/G gIncr7 = 5	
+	Variable/G gIncr7 = 3000	
 	
 	// results, setup values
 	String/G gFuncStr=""

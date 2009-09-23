@@ -196,7 +196,7 @@ Function NCNR_USANSReductionLoader(itemStr)
 	SVAR gMenuStr3a = root:Packages:NCNRItemStr3a
 	SVAR gMenuStr3b = root:Packages:NCNRItemStr3b
 	
-	String USANS_WinList = "USANS_Panel;COR_Graph;RawDataWin;Desmear_Graph;USANS_Slope;"
+	String USANS_WinList = "USANS_Panel;COR_Graph;RawDataWin;Desmear_Graph;USANS_Slope;UCALC;"
 	
 	strswitch(itemStr)	// string switch
 		case "Load NCNR USANS Reduction Macros":	
