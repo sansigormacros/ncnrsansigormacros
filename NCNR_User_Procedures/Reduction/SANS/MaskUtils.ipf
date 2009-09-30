@@ -48,6 +48,9 @@ End
 //setDataFolder is required here
 //y-values must be flipped to get proper array assignment of the mask
 //
+// SRK -SEP09 - removed hard-wired 16384 (128x128) from GBLoadWave cmd string
+// for general XY compatibility (192x192) = 36864
+//
 Function ReadMCID_MASK(fname)
 	String fname
 	// Reads MCID-format mask files written out by SANS IMAGE
@@ -57,7 +60,11 @@ Function ReadMCID_MASK(fname)
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	SetDataFolder root:Packages:NIST:MSK
 	Killwaves/Z data,data0		//kill the old data, if it exists
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
+	
+//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
+	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
+	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+		
 	Execute cmd 
 	SetDataFolder root:Packages:NIST:MSK						//make sure correct data folder is set
 	WAVE data0 = $"root:Packages:NIST:MSK:data0"
@@ -370,6 +377,9 @@ End
 //loads a previously saved mask in the the draw layer
 // - does not affect the state of the current mask used for data reduction
 //
+// SRK -SEP09 - removed hard-wired 16384 (128x128) from GBLoadWave cmd string
+// for general XY compatibility (192x192) = 36864
+//
 Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -385,7 +395,10 @@ Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 	
 	SetDataFolder root:myGlobals:DrawMask
 	Killwaves/Z data,data0,tempMask		//kill the old data, if it exists
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
+//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
+	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
+	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+	
 	Execute cmd 
 	SetDataFolder root:myGlobals:DrawMask					//make sure correct data folder is set
 	WAVE data0 = $"root:myGlobals:DrawMask:data0"
@@ -485,6 +498,9 @@ End
 // = 16896 bytes
 // incoming data is a 2-D wave of any precision data, 0's and 1's
 //
+// tested with 192x192 data, and it works correctly (once the reader was corrected)
+// - should work with generic XY dimensions
+//
 Function WriteMask(data)
 	Wave data
 	
@@ -534,4 +550,3 @@ Function WriteMask(data)
 	ReadMCID_MASK(fullpath)
 	Killwaves/Z byteWave
 End
-
