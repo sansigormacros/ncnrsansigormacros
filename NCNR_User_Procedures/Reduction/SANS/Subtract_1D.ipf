@@ -466,10 +466,65 @@ Proc LoadFile_Sub1D(type)
 		else
 			gName2 = S_fileName
 		endif
+	
+	elseif (V_flag == 4)
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
+		n3 = StringFromList(3, S_waveNames ,";" )
+		Duplicate/O $n0, $("w0" + num2istr(type))
+		Duplicate/O $n1, $("w1" + num2istr(type))
+		Duplicate/O $n2, $("w2" + num2istr(type))
+		Duplicate/O $n3, $("w3" + num2istr(type))
+		if (type==1) 
+			gName1 = S_fileName
+			//read in the header of the sample file
+			// not yet implemented
+			numLines = CountNumLines(fileStr)
+			numData = numpnts($n0)
+			numHdr = numLines - numData
+			Make/T/O/N=(numHdr) SampleHeader
+			Open/R refNum as fileStr
+			ii=0
+			do
+				FReadLine refnum, junkStr
+				SampleHeader[ii] = junkStr
+				ii+=1
+			while(ii<numHdr)
+			Close refnum
+		else
+			gName2 = S_fileName
+		endif
 		
+	elseif (V_flag == 3)
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
+		Duplicate/O $n0, $("w0" + num2istr(type))
+		Duplicate/O $n1, $("w1" + num2istr(type))
+		Duplicate/O $n2, $("w2" + num2istr(type))
+		if (type==1) 
+			gName1 = S_fileName
+			//read in the header of the sample file
+			// not yet implemented
+			numLines = CountNumLines(fileStr)
+			numData = numpnts($n0)
+			numHdr = numLines - numData
+			Make/T/O/N=(numHdr) SampleHeader
+			Open/R refNum as fileStr
+			ii=0
+			do
+				FReadLine refnum, junkStr
+				SampleHeader[ii] = junkStr
+				ii+=1
+			while(ii<numHdr)
+			Close refnum
+		else
+			gName2 = S_fileName
+		endif
 	else
 		if (V_flag>0)
-			DoAlert 0, "This is NOT a six-column file !"
+			DoAlert 0, "This is NOT a 3-, 4- or 6-column file !"
 		endif
 	endif
 	//do some cleanup
@@ -511,17 +566,27 @@ Function SaveResult(ctrlName) : ButtonControl
 	//check each wave for existence
 	Variable err=0,refnum
 	String fileName=""
-	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
+	String formatStr = ""
+	if (WaveExists(w41) && WaveExists(w51))
+		//6-column
+		formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
+	elseif(WaveExists(w31))
+		//4-column (ILL)
+		formatStr = "%15.4g %15.4g %15.4g %15.4g\r\n"
+	else
+		//3-column
+		formatStr = "%15.4g %15.4g %15.4g\r\n"
+	endif
 	err += 1 - WaveExists(xresult)
 	err += 1 - WaveExists(yresult)
 	err += 1 - WaveExists(sresult)
-	err += 1 - WaveExists(w31)
-	err += 1 - WaveExists(w41)
-	err += 1 - WaveExists(w51)
+	//err += 1 - WaveExists(w31)
+	//err += 1 - WaveExists(w41)
+	//err += 1 - WaveExists(w51)
 	err += 1 - WaveExists(hdr)
 	
 	if(err>0)
-		DoAlert 0,"Some of the data is missing - I can't write out the file"
+		DoAlert 0,"We need at least 3 column data - I can't write out the file"
 		return(1)
 	endif
 	
@@ -532,7 +597,13 @@ Function SaveResult(ctrlName) : ButtonControl
 	endif
 	Open refNum as fileName
 	wfprintf refnum,"%s\n",hdr		//strings already have \r?
-	wfprintf refnum, formatStr, xresult,yresult,sresult,w31,w41,w51
+	if (WaveExists(w41) && WaveExists(w51))
+		wfprintf refnum, formatStr, xresult,yresult,sresult,w31,w41,w51
+	elseif (WaveExists(w31))
+		wfprintf refnum, formatStr, xresult,yresult,sresult,w31
+	else
+		wfprintf refnum,formatStr, xresult,yresult,sresult
+	endif
 	Close refnum
 	
 	return(0)
