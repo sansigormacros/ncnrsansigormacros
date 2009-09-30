@@ -31,7 +31,7 @@ function LoadNISTXMLData(filestr,doPlot)
 			Variable i,j,numDataSets
 			Variable np
 			
-			String w0,w1,w2,basestr,fileName
+			String w0,w1,w2,w3,w4,w5,basestr,fileName
 			String xmlDataFolder,xmlDataSetFolder
 			
 			
@@ -60,6 +60,9 @@ function LoadNISTXMLData(filestr,doPlot)
 						w0 = basestr + "_q"
 						w1 = basestr + "_i"
 						w2 = basestr + "_s"
+						w3 = basestr + "sq"
+						w4 = basestr + "qb"
+						w5 = basestr + "fs"
 						
 						if(DataFolderExists("root:"+baseStr))
 								DoAlert 1,"The data set " + basestr + " from file "+fileName+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
@@ -84,7 +87,8 @@ function LoadNISTXMLData(filestr,doPlot)
 						if (exists(xmlDataSetFolder+"Qdev"))
 							Wave Qsas = $(xmlDataSetFolder+"Qsas")
 							Wave Qdev = $(xmlDataSetFolder+"Qdev")
-						
+							
+							Duplicate/O Qdev, $w3
 						// make a resolution matrix for SANS data
 							 np=numpnts($w0)
 							Make/D/O/N=(np,4) $(baseStr+"_res")
@@ -94,10 +98,12 @@ function LoadNISTXMLData(filestr,doPlot)
 							reswave[][3] = Qsas[p]	//Qvalues
 							if(exists(xmlDataSetFolder+"Qmean"))
 								Wave Qmean = $(xmlDataSetFolder+"Qmean")
+								Duplicate/O Qmean,$w4
 								reswave[][1] = Qmean[p]		//qBar
 							endif
 							if(exists(xmlDataSetFolder+"Shadowfactor"))
 								Wave Shadowfactor = $(xmlDataSetFolder+"Shadowfactor")
+								Duplicate/O Shadowfactor, $w5
 								reswave[][2] = Shadowfactor[p]		//fShad
 							endif
 						elseif(exists(xmlDataSetFolder+"dQl"))
