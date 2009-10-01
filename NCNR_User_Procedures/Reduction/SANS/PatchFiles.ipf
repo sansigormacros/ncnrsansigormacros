@@ -39,9 +39,8 @@ Proc InitializePatchPanel()
 	If( ! (DataFolderExists("root:myGlobals:Patch"))  )
 		//create the data folder and the globals for BOTH the Patch and Trans panels
 		NewDataFolder/O root:myGlobals:Patch
-		CreatePatchGlobals()
 	Endif
-
+	CreatePatchGlobals()		//re-create them every time (so text and radio buttons are correct)
 End
 
 //the data folder root:myGlobals:Patch must exist
@@ -183,8 +182,7 @@ Function/S GetValidPatchPopupList()
 	endif
 	
 	//loop through all of the files as needed
-	// Grep Note: the \\b sequences limit matches to a word boundary before and after
-	// "boondoggle", so "boondoggles" and "aboondoggle" won't match.
+
 	
 	String list="",item="",fname,runList="",numStr=""
 	Variable ii,num=ItemsInList(newList),val,sdd
@@ -221,6 +219,8 @@ Function/S GetValidPatchPopupList()
 	endif
 	
 	//grep through what text I can find in the VAX binary
+	// Grep Note: the \\b sequences limit matches to a word boundary before and after
+	// "boondoggle", so "boondoggles" and "aboondoggle" won't match.
 	if(gRadioVal == 2)
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, newList , ";")
