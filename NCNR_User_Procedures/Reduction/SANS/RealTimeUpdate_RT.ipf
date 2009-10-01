@@ -187,7 +187,7 @@ EndMacro
 Proc RT_HelpButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 //	DoAlert 0,"the help file has not been written yet :-("
-	DisplayHelpTopic/K=1 "SANS Data Reduction Tutorial[Real Time Data Display]"
+	DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial[Real Time Data Display]"
 End
 
 //close the panel gracefully, and stop the background task if necessary

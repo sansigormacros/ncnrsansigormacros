@@ -241,7 +241,7 @@ Proc PlotSum_Model(num,qmin,qmax)
 	Legend					
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("Sum_Model","coef_sum","sum")
+	AddModelToStrings("Sum_Model","coef_sum","parameters_sum","sum")
 	
 	// additional step to make sure the "helper waves" are the right dimension, in case the user
 	// has changed the functions (M. Laver)
@@ -326,7 +326,7 @@ Proc PlotSmeared_Sum_Model(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("Smeared_Sum_Model","smear_coef_sum","sum")
+	AddModelToStrings("Smeared_Sum_Model","smear_coef_sum","smear_parameters_sum","sum")
 	
 	// additional step to make sure the "helper waves" are the right dimension, in case the user
 	// has changed the functions (M. Laver)

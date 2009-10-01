@@ -9,6 +9,15 @@
 // A lot of the setup, wave creation, and post-calculations are done in SASCALC->ReCalculateInten()
 //
 //
+
+
+
+// *** look into erand48() as the (pseudo) random number generator (it's a standard c-lib function, at least on unix)
+//     and is apparantly thread safe. drand48() returns values [0.0,1.0)
+//http://qnxcs.unomaha.edu/help/product/neutrino/lib_ref/e/erand48.html
+
+
+
 // - Why am I off by a factor of 2.7 - 3.7 (MC too high) relative to real data?
 //   I need to include efficiency (70%?) - do I knock these off before the simulation or do I 
 //    really simulate that some fraction of neutrons on the detector don't actually get counted?

@@ -114,7 +114,7 @@ end
 
 Proc showFITHelp(ctrlName): ButtonControl
 	String ctrlName
-	DisplayHelpTopic/K=1 "SANS Data Reduction Tutorial[Fit Lines to Your Data]"
+	DisplayHelpTopic/K=1/Z "SANS Data Reduction Tutorial[Fit Lines to Your Data]"
 	if(V_flag !=0)
 		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
 	endif

@@ -148,29 +148,29 @@ Window USANS_Panel() : Panel
 	ListBox fileLB,selWave=root:Packages:NIST:USANS:Globals:MainPanel:selFileW,mode= 4
 	ListBox samLB,pos={149,55},size={110,90},listWave=root:Packages:NIST:USANS:Globals:MainPanel:samWave
 	ListBox samLB,mode= 1,selRow= -1
-	Button ClearSamButton,pos={224,148},size={35,21},proc=ClearButtonProc,title="Clr"
+	Button ClearSamButton,pos={227,148},size={35,20},proc=ClearButtonProc,title="Clr"
 	Button ClearSamButton,help={"Clears the list of sample scans"}
 	Button ClearEmpButton,pos={227,286},size={35,20},proc=ClearButtonProc,title="Clr"
 	Button ClearEmpButton,help={"Clears the list of empty scans"}
 	Button RefreshButton,pos={9,310},size={104,20},proc=RefreshListButtonProc,title="Refresh"
 	Button RefreshButton,help={"Refreshes the list of raw ICP data files"}
-	Button DelSamButton,pos={186,148},size={35,20},proc=DelSamButtonProc,title="Del"
+	Button DelSamButton,pos={183,148},size={35,20},proc=DelSamButtonProc,title="Del"
 	Button DelSamButton,help={"Deletes the selected file(s) from the list of sample scans"}
-	Button DelEmpButton,pos={190,286},size={35,20},proc=DelEmpButtonProc,title="Del"
+	Button DelEmpButton,pos={183,286},size={35,20},proc=DelEmpButtonProc,title="Del"
 	Button DelEmpButton,help={"Deletes the selected file(s) from the list of empty scans"}
 	ListBox empLB,pos={151,194},size={110,90}
 	ListBox empLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:empWave,mode= 1,selRow= 0
-	Button toSamList,pos={118,55},size={25,90},proc=toSamListButtonProc,title="S->"
+	Button toSamList,pos={118,55},size={25,90},proc=toSamListButtonProc,title="S\r->"
 	Button toSamList,help={"Adds the selected file(s) to the list of sample scans"}
-	Button toEmpList,pos={120,195},size={25,90},proc=toEmptyListButtonProc,title="E->"
+	Button toEmpList,pos={120,195},size={25,90},proc=toEmptyListButtonProc,title="E\r->"
 	Button toEmpList,help={"Adds the selected file(s) to the list of empty (cell) scans"}
 	ListBox StatusLB,pos={11,358},size={386,77}
 	ListBox StatusLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:statusWave
 	Button pickPathButton,pos={6,8},size={80,20},proc=PickBT5PathButton,title="DataPath..."
 	Button pickPathButton,help={"Select the data folder where the raw ICP data files are located"}
-	Button PlotSelectedSAMButton,pos={148,148},size={35,20},proc=PlotSelectedSAMButtonProc,title="Plot"
+	Button PlotSelectedSAMButton,pos={140,148},size={35,20},proc=PlotSelectedSAMButtonProc,title="Plot"
 	Button PlotSelectedSAMButton,help={"Plot the selected sample scattering files in the COR_Graph"}
-	Button PlotSelectedEMPButton,pos={152,286},size={35,20},proc=PlotSelectedEMPButtonProc,title="Plot"
+	Button PlotSelectedEMPButton,pos={140,286},size={35,20},proc=PlotSelectedEMPButtonProc,title="Plot"
 	Button PlotSelectedEMPButton,help={"Plot the selected empty cell scattering files in the COR_Graph"}
 	Button pickSavePathButton,pos={97,8},size={80,20},proc=PickSaveButtonProc,title="SavePath..."
 	Button pickSavePathButton,help={"Select the data folder where data is to be saved to disk"}
@@ -178,9 +178,9 @@ Window USANS_Panel() : Panel
 	Button USANSHelpButton,help={"Show the USANS reduction help file"}
 	Button RefreshCurrent,pos={298,310},size={95,20},proc=RefreshCurrentButtonProc,title="Refresh",disable=2
 	Button RefreshCurrent,help={"Updates data files on Charlotte and gets current data file name"}
-	Button AddCurToSAM,pos={264,55},size={25,90},proc=CurtoSamListButtonProc,title="<-S",disable=2
+	Button AddCurToSAM,pos={264,55},size={25,90},proc=CurtoSamListButtonProc,title="S\r<-",disable=2
 	Button AddCurToSAM,help={"Adds the current data file to the list of sample scans"}
-	Button AddCurToEMP,pos={265,194},size={25,90},proc=CurtoEmptyListButtonProc,title="<-E",disable=2
+	Button AddCurToEMP,pos={265,194},size={25,90},proc=CurtoEmptyListButtonProc,title="E\r<-",disable=2
 	Button AddCurToEMP,help={"Adds the current data file to the list of empty scans"}
 	ListBox CurFileBox,pos={295,55},size={100,230},proc=FileListBoxProc,disable=1
 	ListBox CurFileBox,listWave=root:Packages:NIST:USANS:Globals:MainPanel:curWave,mode=1

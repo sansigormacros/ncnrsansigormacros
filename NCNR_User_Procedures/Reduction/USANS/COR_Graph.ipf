@@ -46,9 +46,9 @@ Function DoCORGraph()
 		SetVariable gThick,pos={210,72},size={135,15},title="SAM Thick(cm)",format="%5.4f"
 		SetVariable gThick,help={"Thickness of the sample in centimeters"}
 		SetVariable gThick,limits={0,5,0.01},value= $(USANSFolder+":Globals:MainPanel:gThick")
-		Button UpdateButton,pos={115,19},size={88,20},proc=UpdateButtonProc,title="Update Trans"
+		Button UpdateButton,pos={125,15},size={70,40},proc=UpdateButtonProc,title="Update\rTrans"
 		Button UpdateButton,help={"Updates both the wide and rocking transmission values based on the raw data files"}
-		Button CorrectButton,pos={115,53},size={88,20},proc=CorrectButtonProc,title="Correct Data"
+		Button CorrectButton,pos={125,60},size={70,40},proc=CorrectButtonProc,title="Correct\rData"
 		Button CorrectButton,help={"Corrects the sample data by subtracting empty cell and backgrond scattering"}
 		Button SaveDataButton,pos={355,3},size={85,20},proc=SaveButtonProc,title="Save Data..."
 		Button SaveDataButton,help={"Saves the selected data type to disk in ASCII format"}

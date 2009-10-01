@@ -1065,7 +1065,7 @@ End
 
 Proc ShowTransHelp(ctrlName) : ButtonControl
 	String ctrlName
-	DisplayHelpTopic/K=1 "SANS Data Reduction Tutorial[Calculate Transmissions]"
+	DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial[Calculate Transmissions]"
 	if(V_flag !=0)
 		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
 	endif

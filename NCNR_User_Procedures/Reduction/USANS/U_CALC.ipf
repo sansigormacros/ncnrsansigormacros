@@ -112,8 +112,8 @@ Proc Init_UCALC()
 	Variable/G gAngLow7 = 50
 	Variable/G gAngHigh7 = 95
 	Variable/G gNumPts7 = 10
-	Variable/G gCtTime7 = 0
-	Variable/G gIncr7 = 3000	
+	Variable/G gCtTime7 = 3000
+	Variable/G gIncr7 = 5	
 	
 	// results, setup values
 	String/G gFuncStr=""
@@ -458,13 +458,32 @@ Window UCALC_Panel() : Graph
 	ValDisplay valdisp0_3,pos={left+20,420},size={220,13},title="Estimated transmission"
 	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
 	ValDisplay valdisp0_3,disable=1
-	Button button1,pos={left+20,440},size={150,20},proc=U_SaveButtonProc,title="Save Simulated Data"
+	Button button1,pos={left+20,400},size={150,20},proc=U_SavePanelProc,title="Save PNG"
+	Button button2,pos={left+20,430},size={150,20},proc=U_ConfigTextProc,title="Config Text"
+	Button button3,pos={left+20,460},size={150,20},proc=U_SaveButtonProc,title="Save Simulated Data"
 
-	
+// help, done buttons
+	Button U_helpButton,pos={300,440},size={25,20},proc=showUCALCHelp,title="?"
+	Button U_helpButton,help={"Show help file for simulation of USANS Data"}
+	Button U_DoneButton,pos={350,440},size={50,20},proc=UCALCDoneButton,title="Done"
+	Button U_DoneButton,help={"This button will close the panel"}
+		
 	SetDataFolder root:
 
 EndMacro
 
+Proc UCALCDoneButton(ctrlName): ButtonControl
+	String ctrlName
+	DoWindow/K UCALC
+end
+
+Proc showUCALCHelp(ctrlName): ButtonControl
+	String ctrlName
+	DisplayHelpTopic/K=1/Z "UCALC"
+	if(V_flag !=0)
+		DoAlert 0,"The USANS Simulation Help file could not be found"
+	endif
+end
 
 // changing theta min - hold incr and #, result is new theta max
 Function ThetaMinSetVarProc(sva) : SetVariableControl
@@ -1654,3 +1673,94 @@ Function SaveFakeUSANS(nameStr,num,set)
 
 	return(0)
 end
+
+
+// print out the USANS configuration in some reasonable format
+Function/S USANSConfigurationText()
+
+	String str="",temp
+
+	SetDataFolder root:Packages:NIST:USANS:Globals:U_Sim
+	
+	// results, setup values
+	SVAR gTotTimeStr=gTotTimeStr
+	
+	Variable ii,num
+	String pathStr="root:Packages:NIST:USANS:Globals:U_Sim:"
+	num=7
+	
+	str += "USANS Instrument Configuration:\r\r"
+	str += "Theta Min  Theta Max   Increment   # Points   Count Time\r"
+	
+	
+	for(ii=1;ii<=num;ii+=1)
+		NVAR ctTime = $(pathStr+"gCtTime"+num2str(ii))
+		if(ctTime>0)
+			NVAR angLow = $(pathStr+"gAngLow"+num2str(ii))
+			NVAR angHigh = $(pathStr+"gAngHigh"+num2str(ii))
+			NVAR incr = $(pathStr+"gIncr"+num2str(ii))
+			NVAR numPts = $(pathStr+"gNumPts"+num2str(ii))
+			
+			sprintf temp,"%9.3f  %9.3f  %9.3f  %9d  %9d\r",angLow,angHigh,incr,numPts,ctTime
+			str += temp
+		endif
+	endfor
+	
+	
+	sprintf temp,"\r\rTotal Counting Time (HR:MIN) = %s\r",gTotTimeStr
+	str += temp
+
+   	
+   setDataFolder root:
+   return str			 
+End
+
+Function DisplayUCALCText()
+
+	if(WinType("USANS_Configuration")==0)
+		NewNotebook/F=0/K=1/N=USANS_Configuration /W=(480,44,880,369)
+	endif
+	//replace the text
+	Notebook USANS_Configuration selection={startOfFile, endOfFile}
+	Notebook USANS_Configuration font="Monaco",fSize=10,text=USANSConfigurationText()
+	return(0)
+end
+
+
+//
+Function U_ConfigTextProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+				DisplayUCALCText()					
+			break
+	endswitch
+
+	return 0
+End
+
+// this will save a graphic of the whole panel that then needs to be opened and printed
+// must be a PNG @ screen resolution
+//
+Function U_SavePanelProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			SavePICT/P=home/E=-5/B=72/SNAP=1	
+			
+			// can I reload and print?
+			// how will the users know where this went and what to do with it?
+			//			
+			break
+	endswitch
+
+	return 0
+End

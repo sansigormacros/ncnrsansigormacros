@@ -199,7 +199,7 @@ End
 Proc ShowMRHelp(ctrlName) : ButtonControl
 	String ctrlName
 
-	DisplayHelpTopic/K=1 "SANS Data Reduction Tutorial[Reduce Multiple Files]"
+	DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial[Reduce Multiple Files]"
 	if(V_flag !=0)
 		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
 	endif
@@ -515,4 +515,3 @@ Function/S PossiblyQuoteFileList(list, separator)
 	while(1)
 	return outputList
 End
-

@@ -378,9 +378,9 @@ Window SASCALC_Panel()
 	SetVariable setvar0_2,limits={4,20,0.1},value= root:Packages:NIST:SAS:gLambda
 	PopupMenu popup0_2,pos={108,127},size={55,20},proc=DeltaLambdaPopMenuProc
 	PopupMenu popup0_2,mode=2,value= root:Packages:NIST:SAS:gDeltaLambdaStr
-	Button FreezeButton title="Freeze",size={60,20},pos={307,166}
+	Button FreezeButton title="Freeze",size={60,20},pos={180,166}
 	Button FreezeButton proc=FreezeButtonProc
-	Button ClearButton title="Clear",size={60,20},pos={377,166}
+	Button ClearButton title="Clear",size={60,20},pos={250,166}
 	Button ClearButton proc=S_ClearButtonProc
 	GroupBox group0,pos={6,1},size={108,36},title="Instrument"
 	SetDataFolder fldrSav0
@@ -394,9 +394,34 @@ Window SASCALC_Panel()
 	CheckBox checkSim,pos={6,175},size={44,14},proc=SimCheckProc,title="Simulation?"
 	CheckBox checkSim,value=0
 	
+	// help, done buttons
+	Button SC_helpButton,pos={340,166},size={25,20},proc=showSASCALCHelp,title="?"
+	Button SC_helpButton,help={"Show help file for simulation of SANS Data"}
+	Button SC_DoneButton,pos={380,166},size={50,20},proc=SASCALCDoneButton,title="Done"
+	Button SC_DoneButton,help={"This button will close the panel"}
+
 	// set up a fake dependency to trigger recalculation
 	//root:Packages:NIST:SAS:gCalculate := ReCalculateInten(root:Packages:NIST:SAS:gTouched)
 EndMacro
+
+//clean up
+Proc SASCALCDoneButton(ctrlName): ButtonControl
+	String ctrlName
+	DoWindow/K SASCALC
+	DoWindow/K Trial_Configuration
+	DoWindow/K Saved_Configurations
+	DoWindow/K MC_SASCALC
+	DoWindow/K Sim_1D_Panel
+end
+
+//
+Proc showSASCALCHelp(ctrlName): ButtonControl
+	String ctrlName
+	DisplayHelpTopic/K=1/Z "SASCALC"
+	if(V_flag !=0)
+		DoAlert 0,"The SANS Simulation Help file could not be found"
+	endif
+end
 
 // based on the instrument selected...
 //set the SDD range
