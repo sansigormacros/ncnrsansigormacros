@@ -263,7 +263,7 @@ Function Smear_2DModel_20(fcn,s)
 		Make/D/N=(nord) $weightStr,$zStr
 		Wave wt = $weightStr
 		Wave xi = $zStr		// wave references to pass
-		Make5GaussPoints(wt,xi)	
+		Make20GaussPoints(wt,xi)	
 	else
 		if(exists(weightStr) > 1) 
 			 Abort "wave name is already in use"		//executed only if name is in use elsewhere
@@ -300,7 +300,7 @@ Function Smear_2DModel_20(fcn,s)
 		ay = -3*sqy + qy		//qy integration limits
 		by = 3*sqy + qy
 		
-		// 5-pt quadrature loops
+		// 20-pt quadrature loops
 		sumOut = 0
 		for(jj=0;jj<nord;jj+=1)		// call qy the "outer'
 			qy_pt = (xi[jj]*(by-ay)+ay+by)/2
