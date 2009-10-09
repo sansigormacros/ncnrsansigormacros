@@ -1,5 +1,9 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+// genetic optimization, uses XOP supplied by Andy Nelson, ANSTO
+// http://www.igorexchange.com/project/gencurvefit
+
+
 
 // TO USE GENETIC OPTIMIZATION
 //	Variable/G root:Packages:NIST:gUseGenCurveFit = 0			//set to 1 to use genetic optimization
@@ -13,8 +17,8 @@
 //
 // X add a check to make sure that the XOP is installed before the switch is set (force 0 if not present)
 // X add a global variable as a switch
-// - parse the limits. All must be filled in. Currently unfilled slots are val/10 < val < 10*val, bad choice
-//   if coef is zero, or too far from the true value
+// X parse the limits. All must be filled in. If not, fit aborts and asks for user input to fill them in. Limits
+//   on fixed parameters are +/- 1% of the value. Has no effect on fit (duh), but filled in for completeness.
 // X create a mask wave for use when cursors are selected. [a,b] subranges can't be used w/Andy's XOP
 // X fitYw not behaving correctly - probably need to hand-trim
 // X use the switch in the wrapper, building the structure and function call as necessary
@@ -24,6 +28,7 @@
 // X add the XOP to the distribution, or instructions (better to NOT bundle...)
 // X odd bug where first "fit" fails on AppendToGraph as GenCurveFit is started. May need to disable /D flag
 //
+// -- need to pass back the chi-squared and number of points. "V_" globals don't appear
 //
 // for the speed test. try writing my own wrapper for an unsmeared calculation, and see if it's still dog-slow.
 // --- NOPE, the wrapper is not a problem, tested this, and they seem to be both the same speed, each only about 5 seconds.
@@ -175,19 +180,29 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	
 	//need to parse limits, or make up some defaults
 	// limits is (n,2)
-	Variable nPnts = numpnts(fs.coefW),i,multip=10,isUSANS=0,tol=0.01
+	Variable nPnts = numpnts(fs.coefW),i,multip=1.01,isUSANS=0,tol=0.01
 	Make/O/D/N=(nPnts,2) limits
 	Wave limits=limits
 	for (i=0; i < nPnts; i += 1)
+	
 		if (strlen(lolim[i]) > 0)
 			limits[i][0] = str2num(lolim[i])
-		else	
-			limits[i][0] = fs.coefW[i]/multip
+		else
+			if(cmpstr(holdStr[i],"0")==0)		//no limit, not held
+				Abort "You must enter low and high coefficient limits for all free parameters"
+			else
+				limits[i][0] = fs.coefW[i]/multip		//fixed parameter, just stick something in
+			endif
 		endif
+		
 		if (strlen(hilim[i]) > 0)
 			limits[i][1] = str2num(hilim[i])
-		else	
-			limits[i][1] = fs.coefW[i] * multip
+		else
+			if(cmpstr(holdStr[i],"0")==0)		//no limit, not held
+				Abort "You must enter low and high coefficient limits for all free parameters"
+			else	
+				limits[i][1] = fs.coefW[i] * multip
+			endif
 		endif
 	endfor
 
