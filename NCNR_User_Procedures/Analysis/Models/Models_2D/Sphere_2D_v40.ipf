@@ -174,7 +174,8 @@ End
 Function SmearedSphere2D(s)
 	Struct ResSmear_2D_AAOStruct &s
 	
-	Smear_2DModel_5(Sphere2D_noThread,s)
+//	Smear_2DModel_5(Sphere2D_noThread,s)
+	Smear_2DModel_20(Sphere2D_noThread,s)
 	return(0)
 end
 

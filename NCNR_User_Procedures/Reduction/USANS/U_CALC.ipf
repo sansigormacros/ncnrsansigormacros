@@ -51,9 +51,9 @@
 // then draws the panel if necessary
 Proc Show_UCALC()
 
-	Init_UCALC()
 	DoWindow/F UCALC
 	if(V_Flag==0)
+		Init_UCALC()
 		UCALC_Panel()
 		CalcTotalCountTime()
 		ControlUpdate/W=UCALC U_popup0		//force a pop of the function list
@@ -443,10 +443,12 @@ Window UCALC_Panel() : Graph
 	SetVariable U_setvar0_3,limits={0,1,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:gSamTrans
 	PopupMenu U_popup0,pos={left+20,205},size={165,20},proc=Sim_USANS_ModelPopMenuProc,title="Model"
 	PopupMenu U_popup0,mode=1,value= #"U_FunctionPopupList()"
-	SetVariable setvar0,pos={left+20,279},size={120,15},title="Empty Level",disable=2
-	SetVariable setvar0,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_EmptyLevel
-	SetVariable setvar0_1,pos={left+20,304},size={120,15},title="Bkg Level",disable=2
-	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
+	
+	//unused as of yet, not sure I'll ever need these
+//	SetVariable setvar0,pos={left+20,279},size={120,15},title="Empty Level",disable=2
+//	SetVariable setvar0,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_EmptyLevel
+//	SetVariable setvar0_1,pos={left+20,304},size={120,15},title="Bkg Level",disable=2
+//	SetVariable setvar0_1,limits={0,10,0.01},value= root:Packages:NIST:USANS:Globals:U_Sim:g_BkgLevel
 	
 	
 	
@@ -806,7 +808,7 @@ Function CalcUSANS()
 			LoadSimulatedAngleRange(ii,"SWAP")	//overwrite what's in the SWAP folder
 			
 			// did not do this step
-			//Convert2Countrate("SWAP")
+			//Convert2Countrate("SWAP",1)
 			//
 			
 			if(firstSet==1)	//first time, overwrite

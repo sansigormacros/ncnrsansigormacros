@@ -19,6 +19,7 @@
 #include "USANSCatNotebook",version >= 2.20	
 #include "CheckVersionFTP"				//added June 2008
 #include "GaussUtils_v40"				//added Oct 2008 for unified file loading
+#include "BT5_AddFiles"					//Oct 2009 to add raw data files
 
 // USANS simulation and required procedures
 #include "U_CALC"

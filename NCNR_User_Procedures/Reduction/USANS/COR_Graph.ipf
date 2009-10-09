@@ -496,7 +496,7 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	for(ii=0;ii<num;ii+=1)
 		fname = fpath + listw[ii]
 		LoadBT5File(fname,"SWAP")	//overwrite what's in the SWAP folder
-		Convert2Countrate("SWAP")
+		Convert2Countrate("SWAP",1)
 		if(ii==0)	//first time, overwrite
 			NewDataWaves("SWAP",type)
 		else		//append to waves in TYPE folder

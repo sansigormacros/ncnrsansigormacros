@@ -82,7 +82,7 @@ Function LoadBT5File(fname,type)
 		if ( (firstChar==10) || (firstChar==13) )
 			break							// Hit blank line. End of data in the file.
 		endif
-		sscanf buffer,"%g%g%g",v1,v2,v3		//v2,v3 not used
+		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
 		angle[numlinesloaded] = v1		//[0] is the ANGLE
 		
 		FReadLine refNum,buffer	//assume a 2nd line is there, w/16 values

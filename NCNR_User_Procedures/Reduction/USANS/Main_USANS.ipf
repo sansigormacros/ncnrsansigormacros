@@ -280,7 +280,7 @@ Function PlotSelectedEMPButtonProc(ctrlName) : ButtonControl
 
 		
 		LoadBT5File(fname,"SWAP")	//overwrite what's in the SWAP folder
-		Convert2Countrate("SWAP")
+		Convert2Countrate("SWAP",1)
 		if(ii==0)	//first time, overwrite
 			NewDataWaves("SWAP","EMP")
 		else		//append to waves in "EMP"
@@ -359,7 +359,7 @@ Function PlotSelectedSAMButtonProc(ctrlName) : ButtonControl
 		endif
 				
 		LoadBT5File(fname,"SWAP")	//overwrite what's in the SWAP folder
-		Convert2Countrate("SWAP")
+		Convert2Countrate("SWAP",1)
 		if(ii==0)	//first time, overwrite
 			NewDataWaves("SWAP","SAM")
 		else		//append to waves in "SAM"
@@ -417,8 +417,9 @@ End
 //
 // note that trans detector counts are NOT normalized to 1E6 mon cts (not necessary)
 //
-Function Convert2Countrate(type)
+Function Convert2Countrate(type,doNorm)
 	String type
+	Variable doNorm
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
@@ -439,9 +440,11 @@ Function Convert2Countrate(type)
 	
 	//normalize to monitor countrate [=] counts/monitor
 	//trans countrate does not need to be normalized
-	NVAR defaultMCR=$(USANSFolder+":Globals:MainPanel:gDefaultMCR") 
-	DetCts /= monCts/defaultMCR
-	ErrDetCts /= MonCts/defaultMCR
+	if(doNorm)
+		NVAR defaultMCR=$(USANSFolder+":Globals:MainPanel:gDefaultMCR") 
+		DetCts /= monCts/defaultMCR
+		ErrDetCts /= MonCts/defaultMCR
+	endif
 	
 	//adjust the note (now on basis of 1 second)
 	ctTime = 1
@@ -820,12 +823,22 @@ End
 //
 // sorts the list to alphabetical order
 //
+// modified to use the correct folder, switching on the control name (AddPanel added)
+//
 Function RefreshListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 
-	SVAR FilterStr = $(USANSFolder+":Globals:MainPanel:FilterStr")
+	String folderStr=""
+	if(cmpstr(ctrlName,"RefreshButton")==0)
+		//from MainUSANS panel
+		folderStr = "MainPanel"
+	else
+		folderStr = "AddPanel"
+	endif
+	
+	SVAR FilterStr = $(USANSFolder+":Globals:"+folderStr+":FilterStr")
 	print FilterStr
 	String filter
 	
@@ -859,8 +872,8 @@ Function RefreshListButtonProc(ctrlName) : ButtonControl
 	endfor
 	newList = SortList(newList,";",0)	//get them in order
 	num=ItemsInList(newlist,";")
-	Wave/T fileWave = $(USANSFolder+":Globals:MainPanel:fileWave")
-	Wave selFileW = $(USANSFolder+":Globals:MainPanel:selFileW")
+	Wave/T fileWave = $(USANSFolder+":Globals:"+folderStr+":fileWave")
+	Wave selFileW = $(USANSFolder+":Globals:"+folderStr+":selFileW")
 	Redimension/N=(num) fileWave
 	Redimension/N=(num) selFileW
 	fileWave=""
