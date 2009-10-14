@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////
 // this procedure calculates the form factor of a sphere
@@ -70,14 +70,23 @@ End
 //AAO version, uses XOP if available
 // simply calls the original single point calculation with
 // a wave assignment (this will behave nicely if given point ranges)
+
+// Using MultiThread keyword:
+// 1.2x speedup for 1000 points (yawn)
+// !! 3.0x SLOWER for 100 points (ouch!)
 Function SphereForm(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
+
+//	Variable t1=StopMSTimer(-2)
 	
 #if exists("SphereFormX")
 	yw = SphereFormX(cw,xw)
 #else
 	yw = fSphereForm(cw,xw)
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

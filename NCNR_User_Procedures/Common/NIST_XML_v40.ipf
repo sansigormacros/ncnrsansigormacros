@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=1.00
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 
 #if( Exists("XmlOpenFile") )

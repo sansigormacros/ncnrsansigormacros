@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 //#include "GaussUtils"
 //#include "PlotUtils"
@@ -92,7 +92,7 @@ Function TriaxialEllipsoid(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("TriaxialEllipsoidX")
-	yw = TriaxialEllipsoidX(cw,xw)
+	MultiThread yw = TriaxialEllipsoidX(cw,xw)
 #else
 	yw = fTriaxialEllipsoid(cw,xw)
 #endif

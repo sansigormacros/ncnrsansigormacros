@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "FlexibleCylinder_v40"
 //uses the function FlexibleCylinder(.ipf) as basic function
@@ -87,7 +87,7 @@ Function FlexCyl_PolyLen(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("FlexCyl_PolyLenX")
-	yw = FlexCyl_PolyLenX(cw,xw)
+	MultiThread yw = FlexCyl_PolyLenX(cw,xw)
 #else
 	yw = fFlexCyl_PolyLen(cw,xw)
 #endif

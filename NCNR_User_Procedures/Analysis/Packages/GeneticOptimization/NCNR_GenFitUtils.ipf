@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
 
 // genetic optimization, uses XOP supplied by Andy Nelson, ANSTO
 // http://www.igorexchange.com/project/gencurvefit

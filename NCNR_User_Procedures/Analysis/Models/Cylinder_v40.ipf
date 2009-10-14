@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////
 // GaussUtils.proc and PlotUtils.proc MUST be included for the smearing calculation to compile
@@ -70,14 +70,21 @@ Proc PlotSmearedCylinderForm(str)
 End
 
 // AAO verison
+// even 100 points gets a 1.7x speedup from MultiThread
+// then the fit is 1.24x faster (1.25s vs 1.55s)
 Function CylinderForm(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 
+//	Variable t1=StopMSTimer(-2)
+
 #if exists("CylinderFormX")
-	yw = CylinderFormX(cw,xw)
+	MultiThread yw = CylinderFormX(cw,xw)
 #else
 	yw = fCylinderForm(cw,xw)
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

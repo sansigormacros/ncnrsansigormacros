@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 // calculates the scattering from a spherical particle made up of a core (aqueous) surrounded
 // by N spherical layers, each of which is a PAIR of shells, solvent + surfactant since there
@@ -78,7 +78,7 @@ Function MultiShellSphere(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("MultiShellSphereX")
-	yw = MultiShellSphereX(cw,xw)
+	MultiThread yw = MultiShellSphereX(cw,xw)
 #else
 	yw = fMultiShellSphere(cw,xw)
 #endif

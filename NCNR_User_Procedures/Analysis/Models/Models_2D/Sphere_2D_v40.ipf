@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //
 // The plotting macro sets up TWO dependencies
@@ -132,26 +132,33 @@ End
 //
 Function Sphere2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
-	
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
 
-//	Variable t1=StopMSTimer(-2)
-	
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Sphere2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
 
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
+#if exists("Sphere_2DX")			//to hide the function if XOP not installed
+	
+	MultiThread 	zw= Sphere_2DX(cw,xw,yw)
 
-	variable dummy= ThreadGroupRelease(mt)
-	
-//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
-	
+#endif
+
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+////	Variable t1=StopMSTimer(-2)
+//	
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,Sphere2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+////	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+//	
 	return(0)
 End
 
@@ -174,8 +181,8 @@ End
 Function SmearedSphere2D(s)
 	Struct ResSmear_2D_AAOStruct &s
 	
-//	Smear_2DModel_5(Sphere2D_noThread,s)
-	Smear_2DModel_20(Sphere2D_noThread,s)
+	Smear_2DModel_5(Sphere2D_noThread,s)
+//	Smear_2DModel_20(Sphere2D_noThread,s)
 	return(0)
 end
 

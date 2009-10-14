@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 // currently, there is NO XOP version of RPA, since there is an extra input parameter
 // wave that must be carried into the function.

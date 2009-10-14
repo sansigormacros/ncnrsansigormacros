@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma Version=2.21
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //********************
 // 101101 Vers. 1
@@ -23,6 +23,8 @@ Menu "USANS"
 	"USANS Reduction Panel",ShowUSANSPanel()
 	"Build USANS Notebook"
 	"Desmear USANS Data",Desmear()
+	"Add two raw BT5 files",SelectFilesToAdd()
+	"Add two data sets",ShowUSANSAddPanel()
 	"-"
 	"Load USANS Data",A_LoadOneDData()
 	"Convert to 6 Columns",Convert3ColTo6Col()

@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=4.00
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //
 // need a way of importing more functions into the experiment

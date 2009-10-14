@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 // these routines are used to calculate an effective spherical diameter for
 // a non-spherical object, either a cylinder or an  ellipsoid

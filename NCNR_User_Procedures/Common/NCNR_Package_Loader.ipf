@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 //#pragma IndependentModule=NCNRLoader		//can't seem to get this to work properly...
 
 // load/unload courtesy of Jan Ilavsky

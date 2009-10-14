@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////
 // GaussUtils.ipf is not necessary (no smearing calculations done) PlotUtils.ipf is recommended

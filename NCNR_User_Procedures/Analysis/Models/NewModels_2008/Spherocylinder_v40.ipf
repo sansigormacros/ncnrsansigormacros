@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////////
 //
@@ -91,7 +91,7 @@ Function Spherocylinder(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("SpherocylinderX")
-	yw = SpherocylinderX(cw,xw)
+	MultiThread yw = SpherocylinderX(cw,xw)
 #else
 	yw = fSpherocylinder(cw,xw)
 #endif

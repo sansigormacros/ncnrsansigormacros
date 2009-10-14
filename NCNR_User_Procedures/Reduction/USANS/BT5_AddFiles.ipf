@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
 
 
 // Version 1.0
@@ -14,20 +15,24 @@
 // - convert to countrate seems like a good idea, then 1+1=2 and I can propagate errors
 //  -- but how to save the data? At this point, errCR != sqrt(CR)
 //
+// - Why can't I just use the whole set of files from the main USANS panel, and add what needs
+//   to be added? Because if there is an angle shift, I have no way of knowing which files to apply
+//   the shift to...
+//
+//
+// - need a global for the tolerance (and a good reason to use that particular value)
+//
+// - do I have anything hard-wired in the code that needs to be generalized before release? 
+//
+// - add descriptions of this to the help files
+//
 
 
 // simple stuff to do:
 // - allow user to input Qpeak (maybe of no use?) If so, do it right away with a dialog
 //   if no peak was found.
-//
 
-Macro mShowUSANSAddPanel()
-ShowUSANSAddPanel()
-end
 
-Macro mSelectFilesToAdd()
-	SelectFilesToAdd()
-end
 
 Proc ShowUSANSAddPanel()
 	DoWindow/F USANS_Add_Panel
@@ -722,7 +727,7 @@ Proc SelectFilesToAdd(file1,file2)
 	Prompt file1, "First File", popup, BT5FileList("*.bt5*")
 	Prompt file2, "Second File", popup, BT5FileList("*.bt5*")
 	
-	Print file1,file2
+//	Print file1,file2
 	
 	LoadAndAddUSANS(file1,file2)
 	
@@ -760,12 +765,18 @@ Function LoadAndAddUSANS(file1,file2)
 	//load each file into a textWave
 	Make/O/T/N=200 tw1,tw2
 	
-	String fname="",fpath=""
+	String fname="",fpath="",fullPath=""
 	Variable ctTime1,ang11,ang21
 	Variable ctTime2,ang12,ang22
+	Variable dialog=1
 	
-	PathInfo bt5PathName
+	PathInfo/S savePathName
 	fpath = S_Path
+	
+	if(strlen(S_Path)==0)
+		DoAlert 0,"You must select a Save Path... from the main USANS_Panel"
+		return(0)
+	endif
 	
 	fname = fpath + file1
 	LoadBT5_toWave(fname,tw1,ctTime1,ang11,ang21)		//redimensions tw1
@@ -856,10 +867,22 @@ Function LoadAndAddUSANS(file1,file2)
 	
 	// write out the final file (=tw3)
 	filen = file1[0,strlen(file1)-5]+"_SUM.bt5"
-	Open refNum as filen
+	
+	if(dialog)
+		PathInfo/S savePathName
+		fullPath = DoSaveFileDialog("Save data as",fname=filen)
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	
+	Open refNum as fullPath
 	wfprintf refnum, "%s",tw3
 	Close refnum
-	
+		
 	//killwaves/Z tw1,tw2,tw3
 	
 	return(0)

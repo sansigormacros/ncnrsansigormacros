@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "sphere_v40"
 // plots the form factor of spherical particles with a log-normal radius distribution
@@ -73,12 +73,17 @@ End
 // a wave assignment (this will behave nicely if given point ranges)
 Function LogNormalSphere(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
-	
+
+//	Variable t1=StopMSTimer(-2)
+
 #if exists("LogNormalSphereX")
-	yw = LogNormalSphereX(cw,xw)
+	MultiThread yw = LogNormalSphereX(cw,xw)
 #else
 	yw = fLogNormalSphere(cw,xw)
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

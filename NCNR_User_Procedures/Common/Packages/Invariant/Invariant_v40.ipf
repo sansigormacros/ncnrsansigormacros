@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 // 07 JAN 05 SRK
 // updated procedures (from SS 2002) to be used as a package

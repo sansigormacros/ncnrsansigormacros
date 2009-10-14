@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=1.0
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 #pragma ModuleName=SASCALC
 
 // SASCALC.ipf

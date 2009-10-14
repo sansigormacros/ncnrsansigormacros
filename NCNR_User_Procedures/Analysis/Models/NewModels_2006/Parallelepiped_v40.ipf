@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////////
 //
@@ -95,7 +95,7 @@ Function Parallelepiped(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("ParallelepipedX")
-	yw = ParallelepipedX(cw,xw)
+	MultiThread yw = ParallelepipedX(cw,xw)
 #else
 	yw = fParallelepiped(cw,xw)
 #endif

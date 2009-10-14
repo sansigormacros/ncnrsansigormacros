@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=3.00
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //Functions for doing USANS Slit smearing by method of weight matrix
 //Routines originally from J Barker fortran code

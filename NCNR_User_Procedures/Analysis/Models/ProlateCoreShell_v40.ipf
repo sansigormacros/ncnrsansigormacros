@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////
 // GaussUtils.proc and PlotUtils.proc MUST be included for the smearing calculation to compile
@@ -74,7 +74,7 @@ Function ProlateForm(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 
 #if exists("ProlateFormX")
-	yw = ProlateFormX(cw,xw)
+	MultiThread yw = ProlateFormX(cw,xw)
 #else
 	yw = fProlateForm(cw,xw)
 #endif

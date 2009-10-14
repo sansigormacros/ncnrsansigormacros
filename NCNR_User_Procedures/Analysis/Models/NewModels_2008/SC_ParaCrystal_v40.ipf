@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //
 //
@@ -123,20 +123,24 @@ Function SC_ParaCrystal(cw,yw,xw) : FitFunc
 			
 #if exists("SC_ParaCrystalX")
 
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
-
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,SC_ParaCrystal_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
-
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
+////////
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,SC_ParaCrystal_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+/////
+	
+	MultiThread 	yw = SC_ParaCrystalX(cw,xw)
 
 //// to return just Z(q), undo the form factor calculation
 //	Variable latticeScale

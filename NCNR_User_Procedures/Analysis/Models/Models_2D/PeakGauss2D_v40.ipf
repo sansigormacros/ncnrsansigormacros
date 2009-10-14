@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //
 // The plotting macro sets up TWO dependencies
@@ -174,8 +174,8 @@ End
 Function SmearedPeakGauss2D(s)
 	Struct ResSmear_2D_AAOStruct &s
 	
-	Smear_2DModel_20(PeakGauss2D_noThread,s)
-//	Smear_2DModel_5(PeakGauss2D_noThread,s)
+//	Smear_2DModel_20(PeakGauss2D_noThread,s)
+	Smear_2DModel_5(PeakGauss2D_noThread,s)
 	return(0)
 end
 

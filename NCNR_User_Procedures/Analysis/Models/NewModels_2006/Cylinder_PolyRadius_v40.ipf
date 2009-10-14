@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "Cylinder_v40"
 
@@ -301,22 +301,25 @@ Function Cyl_PolyRadius(cw,yw,xw) : FitFunc
 
 ///// THREADED VERSION NEEDS Igor 6.10B04 or higher to avoid crashes //////	
 #if exists("Cyl_PolyRadiusX")
-
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
-
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Cyl_PolyRadius_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
-
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
+///////////////
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,Cyl_PolyRadius_T(cw,yw,xw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	/////////////
 	
+	MultiThread	yw = Cyl_PolyRadiusX(cw,xw)
+
 #else
 		yw = fCyl_PolyRadius(cw,xw)		//the Igor, non-XOP, non-threaded calculation, messy to make ThreadSafe
 #endif

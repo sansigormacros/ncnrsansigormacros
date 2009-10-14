@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.1
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //***********************
 // 091901 Vers 1.2

@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ///////////////////////////////////////////
 // this function is for the form factor of an cylinder with an ellipsoidal cross-section
@@ -82,14 +82,24 @@ End
 //AAO version, uses XOP if available
 // simply calls the original single point calculation with
 // a wave assignment (this will behave nicely if given point ranges)
+//
+// (MultiThread) yw = 0.044s (100 pts)
+// XOP alone     yw = 0.082s
+// Igor code     yw = 0.34s  (Thread = 7.4 x faster)
+//
 Function EllipticalCylinder(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
+//	Variable t1=StopMSTimer(-2)
+
 #if exists("EllipticalCylinderX")
-	yw = EllipticalCylinderX(cw,xw)
+	MultiThread yw = EllipticalCylinderX(cw,xw)
 #else
 	yw = fEllipticalCylinder(cw,xw)
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=2.20
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //*************
 // the list of files to include in the USANS reduction experiment

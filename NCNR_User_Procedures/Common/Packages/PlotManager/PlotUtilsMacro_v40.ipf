@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=4.00
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 // This is to be used with the Analysis packages ONLY
 // there are a number of utility procedures here for loading

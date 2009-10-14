@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "FlexibleCylinder_v40"
 //
@@ -73,7 +73,7 @@ Function FlexCyl_PolyRad(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("FlexCyl_PolyRadX")
-	yw = FlexCyl_PolyRadX(cw,xw)
+	MultiThread yw = FlexCyl_PolyRadX(cw,xw)
 #else
 	yw = fFlexCyl_PolyRad(cw,xw)
 #endif

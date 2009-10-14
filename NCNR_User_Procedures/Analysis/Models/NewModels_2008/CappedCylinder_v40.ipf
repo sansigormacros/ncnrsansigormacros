@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////////
 //
@@ -92,7 +92,7 @@ Function CappedCylinder(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("CappedCylinderX")
-	yw = CappedCylinderX(cw,xw)
+	MultiThread yw = CappedCylinderX(cw,xw)
 #else
 	yw = fCappedCylinder(cw,xw)
 #endif

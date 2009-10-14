@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////
 // This function is for the form factor of a right circular
@@ -88,7 +88,7 @@ Function PolyCoShCylinder(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("PolyCoShCylinderX")
-	yw = PolyCoShCylinderX(cw,xw)
+	MultiThread yw = PolyCoShCylinderX(cw,xw)
 #else
 	yw = fPolyCoShCylinder(cw,xw)
 #endif

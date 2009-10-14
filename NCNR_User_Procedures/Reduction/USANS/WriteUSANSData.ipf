@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma Version=2.20
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 //////////////
 //for writing out data (q-i-s-dum-dum-dum) from the "type" folder

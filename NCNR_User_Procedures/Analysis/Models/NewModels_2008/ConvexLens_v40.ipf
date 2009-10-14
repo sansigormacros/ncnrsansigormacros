@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 ////////////////////////////////////////////////////
 //
@@ -88,12 +88,17 @@ End
 // a wave assignment (this will behave nicely if given point ranges)
 Function ConvexLens(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
-	
+
+//	Variable t1=StopMSTimer(-2)
+
 #if exists("ConvexLensX")
-	yw = ConvexLensX(cw,xw)
+	MultiThread yw = ConvexLensX(cw,xw)
 #else
 	yw = fConvexLens(cw,xw)
 #endif
+
+//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+
 	return(0)
 End
 

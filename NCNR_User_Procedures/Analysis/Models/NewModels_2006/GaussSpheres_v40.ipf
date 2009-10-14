@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "sphere_v40"
 // plots the form factor of  spheres with a Gaussian radius distribution
@@ -78,7 +78,7 @@ Function GaussSpheres(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("GaussSpheresX")
-	yw = GaussSpheresX(cw,xw)
+	MultiThread yw = GaussSpheresX(cw,xw)
 #else
 	yw = fGaussSpheres(cw,xw)
 #endif

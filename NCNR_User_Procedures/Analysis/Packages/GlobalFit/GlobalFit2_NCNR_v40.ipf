@@ -1,6 +1,6 @@
 #pragma rtGlobals=2		// Use modern global access method.
 #pragma version = 1.11
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 #pragma ModuleName= WM_NewGlobalFit1
 
 #include <BringDestToFront>

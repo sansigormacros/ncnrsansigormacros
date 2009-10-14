@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion = 6.0
+#pragma IgorVersion=6.1
 
 #include "Cylinder_v40"
 
@@ -83,7 +83,7 @@ Function Cyl_PolyLength(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("Cyl_PolyLengthX")
-	yw = Cyl_PolyLengthX(cw,xw)
+	MultiThread yw = Cyl_PolyLengthX(cw,xw)
 #else
 	yw = fCyl_PolyLength(cw,xw)
 #endif

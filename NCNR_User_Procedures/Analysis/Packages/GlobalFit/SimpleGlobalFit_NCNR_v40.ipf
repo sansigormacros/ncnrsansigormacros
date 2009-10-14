@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
 
 
 // panel meant to make it easier to fit two data sets with a single model

@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=1.2
-#pragma IgorVersion=6.0
+#pragma IgorVersion=6.1
 
 ///////////////////////////////
 //procedures for creating and initializing the Linearized FIT panel
