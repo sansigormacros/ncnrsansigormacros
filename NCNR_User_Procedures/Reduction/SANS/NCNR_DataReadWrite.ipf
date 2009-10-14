@@ -2780,3 +2780,183 @@ Function fReadDetectorCount(lo,hi)
 	
 	return(0)
 End
+
+
+////// OCT 2009, facility specific bits from ProDiv()
+//"type" is the data folder that has the corrected, patched, and normalized DIV data array
+//
+// the header of this file is rather unimportant. Filling in a title at least would be helpful/
+//
+Function Write_DIV_File(type)
+	String type
+	
+	// Your file writing function here. Don't try to duplicate the VAX binary format...
+	WriteVAXWorkFile(type)
+	
+	return(0)
+End
+
+//writes an VAX-style WORK file, "exactly" as it would be output from the VAX
+//except for the "dummy" header and the record markers - the record marker bytes are
+// in the files - they are just written as zeros and are meaningless
+//file is:
+//	516 bytes header
+// 128x128=16384 (x4) bytes of data 
+// + 2 byte record markers interspersed just for fun
+// = 66116 bytes
+//prompts for name of the output file.
+//
+Function WriteVAXWorkFile(type)
+	String type
+	
+	Wave data=$("root:Packages:NIST:"+type+":data")
+	
+	Variable refnum,ii=0,hdrBytes=516,a,b,offset
+	String fullpath=""
+	
+	Duplicate/O data,tempData
+	Redimension/S/N=(128*128) tempData
+	tempData *= 4
+	
+	PathInfo/S catPathName
+	fullPath = DoSaveFileDialog("Save data as")	  //won't actually open the file
+	If(cmpstr(fullPath,"")==0)
+		//user cancel, don't write out a file
+	  Close/A
+	  Abort "no data file was written"
+	Endif
+	
+	Make/B/O/N=(hdrBytes) hdrWave
+	hdrWave=0
+	FakeDIVHeader(hdrWave)
+	
+	Make/Y=2/O/N=(510) bw510		//Y=2 specifies 32 bit (=4 byte) floating point
+	Make/Y=2/O/N=(511) bw511
+	Make/Y=2/O/N=(48) bw48
+
+	Make/O/B/N=2 recWave		//two bytes
+
+	//actually open the file
+	Open/C="????"/T="TEXT" refNum as fullpath
+	FSetPos refNum, 0
+	//write header bytes (to be skipped when reading the file later)
+	
+	FBinWrite /F=1 refnum,hdrWave
+	
+	ii=0
+	a=0
+	do
+		//write 511 4-byte values (little-endian order), 4* true value
+		bw511[] = tempData[p+a]
+		FBinWrite /B=3/F=4 refnum,bw511
+		a+=511
+		//write a 2-byte record marker
+		FBinWrite refnum,recWave
+		
+		//write 510 4-byte values (little-endian) 4* true value
+		bw510[] = tempData[p+a]
+		FBinWrite /B=3/F=4 refnum,bw510
+		a+=510
+		
+		//write a 2-byte record marker
+		FBinWrite refnum,recWave
+		
+		ii+=1	
+	while(ii<16)
+	//write out last 48  4-byte values (little-endian) 4* true value
+	bw48[] = tempData[p+a]
+	FBinWrite /B=3/F=4 refnum,bw48
+	//close the file
+	Close refnum
+	
+	//go back through and make it look like a VAX datafile
+	Make/W/U/O/N=(511*2) int511		// /W=16 bit signed integers /U=unsigned
+	Make/W/U/O/N=(510*2) int510
+	Make/W/U/O/N=(48*2) int48
+	
+	//skip the header for now
+	Open/A/T="????TEXT" refnum as fullPath
+	FSetPos refnum,0
+	
+	offset=hdrBytes
+	ii=0
+	do
+		//511*2 integers
+		FSetPos refnum,offset
+		FBinRead/B=2/F=2 refnum,int511
+		Swap16BWave(int511)
+		FSetPos refnum,offset
+		FBinWrite/B=2/F=2 refnum,int511
+		
+		//skip 511 4-byte FP = (511*2)*2 2byte int  + 2 bytes record marker
+		offset += 511*2*2 + 2
+		
+		//510*2 integers
+		FSetPos refnum,offset
+		FBinRead/B=2/F=2 refnum,int510
+		Swap16BWave(int510)
+		FSetPos refnum,offset
+		FBinWrite/B=2/F=2 refnum,int510
+		
+		//
+		offset += 510*2*2 + 2
+		
+		ii+=1
+	while(ii<16)
+	//48*2 integers
+	FSetPos refnum,offset
+	FBinRead/B=2/F=2 refnum,int48
+	Swap16BWave(int48)
+	FSetPos refnum,offset
+	FBinWrite/B=2/F=2 refnum,int48
+
+	//move to EOF and close
+	FStatus refnum
+	FSetPos refnum,V_logEOF
+	
+	Close refnum
+	
+	Killwaves/Z hdrWave,bw48,bw511,bw510,recWave,temp16,int511,int510,int48
+End
+
+// given a 16 bit integer wave, read in as 2-byte pairs of 32-bit FP data
+// swap the order of the 2-byte pairs
+// 
+Function Swap16BWave(w)
+	Wave w
+
+	Duplicate/O w,temp16
+	//Variable num=numpnts(w),ii=0
+
+	//elegant way to swap even/odd values, using wave assignments
+	w[0,*;2] = temp16[p+1]
+	w[1,*;2] = temp16[p-1]
+
+//crude way, using a loop	
+//	for(ii=0;ii<num;ii+=2)
+//		w[ii] = temp16[ii+1]
+//		w[ii+1] = temp16[ii]
+//	endfor
+	
+	return(0)	
+End
+
+// writes a fake label into the header of the DIV file
+//
+Function FakeDIVHeader(hdrWave)
+	WAVE hdrWave
+	
+	//put some fake text into the sample label position (60 characters=60 bytes)
+	String day=date(),tim=time(),lbl=""
+	Variable start=98,num,ii
+	
+	lbl = "Sensitivity (DIV) created "+day +" "+tim
+	num=strlen(lbl)
+	for(ii=0;ii<num;ii+=1)
+		hdrWave[start+ii] = char2num(lbl[ii])
+	endfor
+
+	return(0)
+End
+
+////////end of ProDiv() specifics

@@ -1136,3 +1136,16 @@ Function WriteAssocFileSuffixToHeader(fname,suffix)
 	return(0)
 end
 
+////// OCT 2009, facility specific bits from ProDiv()
+//"type" is the data folder that has the corrected, patched, and normalized DIV data array
+//
+// the header of this file is rather unimportant. Filling in a title at least would be helpful/
+//
+Function Write_DIV_File(type)
+	String type
+	
+	// Your file writing function here. Don't try to duplicate the VAX binary format...
+	WriteVAXWorkFile(type)
+	
+	return(0)
+End
