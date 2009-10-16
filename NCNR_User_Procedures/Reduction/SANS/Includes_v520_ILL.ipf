@@ -46,7 +46,7 @@
 #include "Tile_2D"				version>=5.0
 #include "Transmission"			version>=5.0
 //#include "VAXFileUtils"			version>=5.0		//branched 29MAR07
-#include "WorkFileUtilsLP"		version>=5.0
+#include "WorkFileUtils"		version>=5.0
 #include "WriteQIS"				version>=5.0 
 // removed RT button from main panel AUG2006
 // removed RT ipf file in 29MAR07 branch (do not delete, but do not include or maintain)

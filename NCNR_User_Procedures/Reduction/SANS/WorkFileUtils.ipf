@@ -70,6 +70,9 @@ Function Add_raw_to_work(newType)
 		Return(0)		//does not generate an error - a single file was converted to work.newtype
 	Endif
 	
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
 	//now make references to data in newType folder
 	DestPath="root:Packages:NIST:"+newType	
 	WAVE data=$(destPath +":data")			// these wave references point to the EXISTING work data
@@ -137,9 +140,31 @@ Function Add_raw_to_work(newType)
 	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
 
+#ifdef ILL_D22
+	Variable tubeSum
+	// for D22 detector might need to use cntrate/128 as it is the tube response
+	for(ii=0;ii<pixelsX;ii+=1)
+		//sum the counts in each tube
+		tubeSum = 0
+		for(jj=0;jj<pixelsY;jj+=1)
+			tubeSum += data[jj][ii]
+		endfor
+		// countrate in tube ii
+		cntrate = tubeSum/itim
+		// deadtime scaling in tube ii
+		dscale = 1/(1-deadTime*cntrate)
+		// multiply data[ii][] by the dead time
+		data[][ii] *= dscale
+	endfor
+#endif
+
 	//update totals by adding RAW values to the local ones (write to work header at end of function)
 	total_mon += raw_reals[0]
+#ifdef ILL_D22
+	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
+#else
 	total_det += dscale*raw_reals[2]
+#endif
 	total_trn += raw_reals[39]
 	total_rtime += raw_ints[2]
 	total_numruns +=1
@@ -156,9 +181,6 @@ Function Add_raw_to_work(newType)
 			yshift=0
 		endif
 	endif
-	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
 	If((xshift == 0) && (yshift == 0))		//no shift, just add them
 		data += dscale*raw_data		//do the deadtime correction on RAW here
@@ -247,7 +269,10 @@ Function Raw_to_work(newType)
 	//check for log-scaling of the RAW data and adjust if necessary
 	ConvertFolderToLinearScale("RAW")
 	//then continue
-
+	
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
 	//copy from current dir (RAW) to work, defined by destpath
 	DestPath = "root:Packages:NIST:"+newType
 	Duplicate/O $"root:Packages:NIST:RAW:data",$(destPath + ":data")
@@ -285,9 +310,32 @@ Function Raw_to_work(newType)
 	deadtime = DetectorDeadtime(textread[3],textread[9])	//pick the correct deadtime
 	dscale = 1/(1-deadTime*cntrate)
 	
+#ifdef ILL_D22
+	Variable tubeSum
+	// for D22 detector might need to use cntrate/128 as it is the tube response
+	for(ii=0;ii<pixelsX;ii+=1)
+		//sum the counts in each tube
+		tubeSum = 0
+		for(jj=0;jj<pixelsY;jj+=1)
+			tubeSum += data[jj][ii]
+		endfor
+		// countrate in tube ii
+		cntrate = tubeSum/itim
+		// deadtime scaling in tube ii
+		dscale = 1/(1-deadTime*cntrate)
+		// multiply data[ii][] by the dead time
+		data[][ii] *= dscale
+	endfor
+#endif
+	
+	
 	//update totals to put in the work header (at the end of the function)
 	total_mon += realsread[0]
+#ifdef ILL_D22	
+	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
+#else
 	total_det += dscale*realsread[2]
+#endif
 	total_trn += realsread[39]
 	total_rtime += integersread[2]
 	total_numruns +=1
@@ -296,8 +344,10 @@ Function Raw_to_work(newType)
 	
 	//only ONE data file- no addition of multiple runs in this function, so data is
 	//just simply corrected for deadtime.
+#ifndef ILL_D22		//correction done tube-by-tube above
 	data *= dscale		//deadtime correction
-	
+#endif
+
 	//scale the data to the default montor counts
 	scale = defmon/total_mon
 	data *= scale
@@ -445,8 +495,13 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			// large angle detector efficiency correction is >= 1 and will "bump up" the highest angles
 			// so divide here to get the correct answer (5/22/08 SRK)
 			if(doEfficiency)
+#ifdef ILL_D22
+				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
+	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
+#else
 				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
 	//			solidAngle[ii][jj] = DetEffCorr(lambda,dtdist,xd,yd)		//testing only
+#endif
 			endif
 			
 			// large angle transmission correction is <= 1 and will "bump up" the highest angles

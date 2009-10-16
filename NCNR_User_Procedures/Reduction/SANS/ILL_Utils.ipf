@@ -33,8 +33,7 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position
 
 	// changing behavior specific to ILL correction of data
-	Variable/G root:myGlobals:gDoDetectorEffCorr = 0				//default state is ==1
-	Variable/G root:myGlobals:gDoDetectorEffCorrILL = 1			//new global switch
+	Variable/G root:myGlobals:gDoDetectorEffCorr = 1				//default state is ==1
 
 
 End
@@ -970,4 +969,20 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
 	
 	return("Function Empty")
+End
+
+// a tube-by-tube correction that replaces our area detecor correction
+Function DetEffCorrILL(lambda,dtdist,xd)  
+	Variable lambda,dtdist,xd
+	Variable ff=1,theta
+ 
+	theta =360* atan( xd/dtdist )/(2*Pi)
+ 
+	if (lambda <=5.1 && lambda>=4.9)
+		ff= 1.000087- 7.094023e-5*abs(theta) + 8.622997e-5*abs(theta^2) + 9.262026e-6*abs(theta^3) -3.216369e-7*abs(theta^4) +2.142398e-9*abs(theta^5)
+	elseif  (lambda <=8.1 && lambda>=7.9)
+		ff= 0.9993575- 0.0002320264*abs(theta) + 9.751713e-5*abs(theta^2) + 1.018564e-5*abs(theta^3) -3.977445e-7*abs(theta^4) +2.960205e-9*abs(theta^5)
+	endif
+
+	return(ff)
 End
