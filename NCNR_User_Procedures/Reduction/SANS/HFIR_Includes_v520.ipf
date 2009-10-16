@@ -2,6 +2,10 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+#define HFIR
+
+
 //*************
 // the list of files to include in the SANS reduction experiment
 //  - files must be located somewhere in the User Procedures folder

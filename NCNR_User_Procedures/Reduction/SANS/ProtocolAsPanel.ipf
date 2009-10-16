@@ -1864,8 +1864,13 @@ Function ExecuteProtocol(protStr,samStr)
 		//get name from textwave of the activeType dataset
 		String textStr = "root:Packages:NIST:"+activeType+":textread"
 		Wave/T textPath = $textStr
+		String tempFilename = samStr
 		If(WaveExists(textPath) == 1)
+#ifdef QUOKKA
+			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
+#else
 			newFileName = UpperStr(GetNameFromHeader(textPath[0]))
+#endif
 		else
 			newFileName = ""			//if the header is missing?
 			//Print "can't read the header - newfilename is null"

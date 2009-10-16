@@ -2,6 +2,13 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+// be sure to add a definition for your facility so that
+// minor chnages to the core code can be added through compiler directives
+//#define SYMBOL
+
+
+
 //*************
 // the list of files to include in the SANS reduction experiment
 //  - files must be located somewhere in the User Procedures folder

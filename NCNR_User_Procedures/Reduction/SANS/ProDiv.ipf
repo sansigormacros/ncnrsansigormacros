@@ -74,6 +74,15 @@ Function MakeDIVFile(ctrType,offType)
 		//user cancelled
 		return(1)
 	endif
+
+#ifdef QUOKKA	
+	//corrects edge rows and columns by copy data from adjacent column
+	DoAlert 1,"Do edge correction for Quokka detector?"
+	if(V_flag==1)
+		DoEdgeCorrection(ctrType)
+		DoEdgeCorrection(offType)		
+	endif
+#endif
 	
 	//show the ctrType
 	//get the xy range to replace
@@ -366,6 +375,14 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			endif
 			ConvertFolderToLinearScale("COR")
 			
+#ifdef QUOKKA	
+			//corrects edge rows and columns by copy data from adjacent column
+			DoAlert 1,"Do edge correction for Quokka detector?"
+			if(V_flag==1)
+				DoEdgeCorrection(ctrType)
+				DoEdgeCorrection(offType)		
+			endif
+#endif
 			
 		// replace the patch
 		// on-center data is changed (STO)
@@ -467,4 +484,3 @@ Function DIVHelpButtonProc(ba) : ButtonControl
 
 	return 0
 End
-
