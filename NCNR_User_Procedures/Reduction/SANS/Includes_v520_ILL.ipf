@@ -17,7 +17,7 @@
 #include "Correct"				version>=5.0
 #include "DisplayUtils"			version>=5.0
 #include "FIT_Ops"				version>=5.0
-#include "InitializeILL"			version>=5.0
+#include "Initialize"			version>=5.0
 #include "MainPanel"			version>=5.0
 #include "Marquee"				version>=5.0
 #include "MaskUtils"			version>=5.0

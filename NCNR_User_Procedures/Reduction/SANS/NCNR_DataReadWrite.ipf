@@ -84,8 +84,8 @@ Function ReadHeaderAndData(fname)
 	Variable refNum,integer,realval
 	String sansfname,textstr
 	
-	Make/O/N=23 $"root:Packages:NIST:RAW:IntegersRead"
-	Make/O/N=52 $"root:Packages:NIST:RAW:RealsRead"
+	Make/O/D/N=23 $"root:Packages:NIST:RAW:IntegersRead"
+	Make/O/D/N=52 $"root:Packages:NIST:RAW:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
 	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
 	
@@ -360,7 +360,7 @@ Function ReadHeaderAndData(fname)
 
 	SetDataFolder curPath		//use the full path, so it will always work
 	
-	Make/O/N=16384 $"root:Packages:NIST:RAW:data"
+	Make/O/D/N=16384 $"root:Packages:NIST:RAW:data"
 	WAVE data=$"root:Packages:NIST:RAW:data"
 	SkipAndDecompressVAX(w,data)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
@@ -508,8 +508,8 @@ Function ReadHeaderAndWork(type,fname)
 	String sansfname,textstr
 	Variable/G $(curPath + ":gIsLogScale") = 0		//initial state is linear, keep this in DIV folder
 	
-	Make/O/N=23 $(curPath + ":IntegersRead")
-	Make/O/N=52 $(curPath + ":RealsRead")
+	Make/O/D/N=23 $(curPath + ":IntegersRead")
+	Make/O/D/N=52 $(curPath + ":RealsRead")
 	Make/O/T/N=11 $(curPath + ":TextRead")
 	
 	WAVE intw=$(curPath + ":IntegersRead")
@@ -758,7 +758,7 @@ Function ReadHeaderAndWork(type,fname)
 	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
-	Make/O/N=16384 $(curPath + ":data")
+	Make/O/D/N=16384 $(curPath + ":data")
 	WAVE data = $(curPath + ":data")
 	
 	Variable skip,ii,offset
@@ -917,8 +917,8 @@ End
 //
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
-	Make/O/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
-	Make/O/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
+	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
+	Make/O/D/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
 	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
 	
 	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")

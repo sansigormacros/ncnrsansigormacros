@@ -324,7 +324,7 @@ Function ShowHeaderButtonProc(SHButton) : ButtonControl
 	String partialName, tempName
 	Variable ok
 	ControlInfo/W=Patch_Panel PatchPopup
-	If(strlen(S_value)==0)
+	If(strlen(S_value)==0 || cmpstr(S_Value,"none")==0)
 		//null selection
 		Abort "no file selected in popup menu"
 	else

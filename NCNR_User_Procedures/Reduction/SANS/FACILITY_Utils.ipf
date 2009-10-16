@@ -91,7 +91,8 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 
 	v_lambda = lambdaWidth^2/6.0
 	
-	if(usingLenses==1)			//SRK 2007
+//	if(usingLenses==1)			//SRK 2007
+	if(usingLenses != 0)			//SRK 2008 allows for the possibility of different numbers of lenses in header
 		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth/lambda)^2*(S2*L2/lp)^2		//correction to 2nd term
 	else
 		v_b = 0.25*(S1*L2/L1)^2 +0.25*(S2*L2/lp)^2		//original form
@@ -137,10 +138,14 @@ End
 //Utility function that returns the detector resolution (in cm)
 //Global values are set in the Initialize procedure
 //
+//
 // - called by CircSectAvg.ipf, RectAnnulAvg.ipf, and ProtocolAsPanel.ipf
 //
-// fileStr is passed as TextRead[3] and is the filename
-// detStr is passed as TextRead[9] and is an identifier for the detector
+// fileStr is passed as TextRead[3]
+// detStr is passed as TextRead[9]
+//
+// *** as of Jan 2008, depricated. Now detector pixel sizes are read from the file header
+// rw[10] = x size (mm); rw[13] = y size (mm)
 //
 // depricated - pixel dimensions are read directly from the file header
 Function xDetectorPixelResolution(fileStr,detStr)

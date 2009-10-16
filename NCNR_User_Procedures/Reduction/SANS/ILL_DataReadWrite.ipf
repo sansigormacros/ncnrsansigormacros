@@ -72,20 +72,22 @@ End
 Function ReadHeaderAndData(fname)
 	String fname
 	//this function is for reading in RAW data only, so it will always put data in RAW folder
-	String curPath = "root:RAW"
+	String curPath = "root:Packages:NIST:RAW:"
 	SetDataFolder curPath		//use the full path, so it will always work
-	Variable/G root:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
+	Variable/G root:Packages:NIST:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
 	
 	Variable refNum,integer,realval,ii
 	String sansfname,textstr,v0
 	
-	Make/D/O/N=23 $"root:RAW:IntegersRead"
-	Make/D/O/N=52 $"root:RAW:RealsRead"
-	Make/O/T/N=11 $"root:RAW:TextRead"
+	Make/O/D/N=23 $"root:Packages:NIST:RAW:IntegersRead"
+	Make/O/D/N=52 $"root:Packages:NIST:RAW:RealsRead"
+	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
+	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
 	
-	Wave intw=$"root:RAW:IntegersRead"
-	Wave realw=$"root:RAW:RealsRead"
-	Wave/T textw=$"root:RAW:TextRead"
+	Wave intw=$"root:Packages:NIST:RAW:IntegersRead"
+	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
+	Wave/T textw=$"root:Packages:NIST:RAW:TextRead"
+	Wave logw=$"root:Packages:NIST:RAW:LogicalsRead"
 	
 	// FILL IN 3 ARRAYS WITH HEADER INFORMATION FOR LATER USE
 	// THESE ARE JUST THE MINIMALLY NECESSARY VALUES
@@ -203,8 +205,8 @@ Function ReadHeaderAndData(fname)
 	
 	SetDataFolder curPath
 	
-	Make/D/O/N=(XPix,YPix) $"root:RAW:data"
-	WAVE data=$"root:RAW:data"
+	Make/D/O/N=(XPix,YPix) $"root:Packages:NIST:RAW:data"
+	WAVE data=$"root:Packages:NIST:RAW:data"
 
 	// fill the data array with the detector values
 	getDetectorData(fname,data)
@@ -213,7 +215,7 @@ Function ReadHeaderAndData(fname)
 	
 	
 	//keep a string with the filename in the RAW folder
-	String/G root:RAW:fileList = textw[0]
+	String/G root:Packages:NIST:RAW:fileList = textw[0]
 	
 	Setdatafolder root:
 
@@ -234,11 +236,11 @@ Proc ReadWork_DIV()
 	String fname = PromptForPath("Select detector sensitivity file")
 	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
 	
-	String waveStr = "root:DIV:data"
+	String waveStr = "root:Packages:NIST:DIV:data"
 	NewImage/F/K=1/S=2 $waveStr
 	ModifyImage '' ctab= {*,*,YellowHot,0}
 	
-	String/G root:DIV:fileList = "WORK.DIV"
+	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
 	
 	SetDataFolder root:		//(redundant)
 End
@@ -266,7 +268,7 @@ Function ReadHeaderAndWork1(type,fname)
 	// gDataDisplayType is unchanged
 
 	String cur_folder = type
-	String curPath = "root:"+cur_folder
+	String curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
 	Variable refNum,integer,realval
@@ -298,9 +300,9 @@ Function ReadHeaderAndWork1(type,fname)
 		// (1)
 	// fill in your reader for the header here so that intw, realw, and textW are filled in
 	// ? possibly a duplication of the raw data reader
-	Duplicate/O $("root:raw:realsread"),$("curPath"+ ":realsread")
-	Duplicate/O $("root:raw:integersread"),$("curPath"+ ":integersread")
-	Duplicate/T $("root:raw:Textread"),$("curPath"+ ":Textread")
+	Duplicate/O $("root:Packages:NIST:raw:realsread"),$(curPath+ ":realsread")
+	Duplicate/O $("root:Packages:NIST:raw:integersread"),$(curPath+ ":integersread")
+	Duplicate/T $("root:Packages:NIST:raw:Textread"),$(curPath+ ":Textread")
 	
 
 	//(2)
@@ -308,7 +310,7 @@ Function ReadHeaderAndWork1(type,fname)
 	// to get the corrected values.
 	// fill the data array with the detector values
 
-	duplicate/O $("root:raw:data"),$("curPath"+ ":data")
+	duplicate/O $("root:Packages:NIST:raw:data"),$(curPath+ ":data")
 	
 	
 	//keep a string with the filename in the DIV folder
@@ -331,7 +333,7 @@ Function ReadHeaderAndWork(type,fname)
 
 //	SVAR cur_folder=root:myGlobals:gDataDisplayType
 	String cur_folder = type
-	String curPath = "root:"+cur_folder
+	String curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
 	Variable refNum,integer,realval
@@ -585,7 +587,7 @@ Function ReadHeaderAndWork(type,fname)
 	//read in the data
 	 GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 
-	curPath = "root:"+cur_folder
+	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
 	
 	Make/O/N=16384 $(curPath + ":data")
@@ -693,7 +695,7 @@ End
 Function ReadASCData(fname,destPath)
 	String fname, destPath
 	//this function is for reading in ASCII data so put data in user-specified folder
-	SetDataFolder "root:"+destPath
+	SetDataFolder "root:Packages:NIST:"+destPath
 
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -762,17 +764,17 @@ End
 //
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
-	Make/O/N=23 $("root:"+destFolder+":IntegersRead")
-	Make/O/N=52 $("root:"+destFolder+":RealsRead")
-	Make/O/T/N=11 $("root:"+destFolder+":TextRead")
+	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
+	Make/O/D/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
+	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
 	
-	Wave intw=$("root:"+destFolder+":IntegersRead")
-	Wave realw=$("root:"+destFolder+":RealsRead")
-	Wave/T textw=$("root:"+destFolder+":TextRead")
+	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")
+	Wave realw=$("root:Packages:NIST:"+destFolder+":RealsRead")
+	Wave/T textw=$("root:Packages:NIST:"+destFolder+":TextRead")
 	
 	//Put in appropriate "fake" values
 	//parse values as needed from headerLines
-	Wave/T hdr=$("root:"+destFolder+":hdrLines")
+	Wave/T hdr=$("root:Packages:NIST:"+destFolder+":hdrLines")
 	Variable monCt,lam,offset,sdd,trans,thick
 	Variable xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam
 	String detTyp=""
@@ -823,7 +825,7 @@ Function FillFakeHeader_ASC(destFolder)
 	sscanf hdr[0],formatStr,tempStr,junkStr
 //	Print tempStr
 //	Print junkStr
-	String/G $("root:"+destFolder+":fileList") = tempStr
+	String/G $("root:Packages:NIST:"+destFolder+":fileList") = tempStr
 	textw[0] = tempStr		//filename
 	textw[1] = junkStr		//run date-time
 	
