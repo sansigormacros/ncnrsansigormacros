@@ -70,12 +70,6 @@
 // SRK JUN2009
 #include "Smear_2D"		//2D resolution calculation and smearing
 
-// to include the analysis packages, uncomment the following
-// include statement and click "compile" at the bottom of this window.
-// ** the SANSModels menu will appear, and the packages will be 
-// available under the Macros menu as usual.
-
-//#include "Analysis_SRK"
 
 
 // a simple list of items to add to the Beta menu

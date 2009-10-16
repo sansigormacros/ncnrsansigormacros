@@ -201,7 +201,13 @@ End
 Proc TISANE_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Show_TISANE_Panel()
+	if(exists("Show_TISANE_Panel")==0)
+		// procedure file was not loaded
+		DoAlert 0,"This operation is not available in this set of macros"
+	else
+		Show_TISANE_Panel()
+	endif
+	
 End
 
 Proc Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
@@ -213,9 +219,9 @@ End
 Proc RealTime_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	if(root:myGlobals:isDemoVersion == 1)
-		//	comment out in DEMO_MODIFIED version, and show the alert
-		DoAlert 0,"This operation is not available in the Demo version of IGOR"
+	if(exists("Init_for_RealTime")==0)
+		// procedure file was not loaded
+		DoAlert 0,"This operation is not available in this set of macros"
 	else
 		Show_RealTime_Panel()
 	endif
@@ -226,6 +232,7 @@ Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
 
 	Show_Preferences_Panel()
 End
+
 ////////////////////////////////////////////////
 //************* NEW version of Main control Panel *****************
 //

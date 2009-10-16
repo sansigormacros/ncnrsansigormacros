@@ -68,11 +68,11 @@ Function LoadRawSANSData(msgStr)
 				errorMsg =  "\r\t XMLutils needs an upgrade:  http://www.igorexchange.com/project/XMLutils"
 				break
 			case -4:
-				errorMsg = filename+ ": \r\t Not supported version of xml or SPICE..."	
+				errorMsg = filename+ " ===> Not supported version of xml or SPICE..."	
 				break
 		endswitch
 		SetDataFolder root:
-		print "Failed loading", filename, "..."
+		//print "Failed loading", filename, "..."
 		DoAlert 0, errorMsg
 		//Clean up waves...
 		KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
@@ -127,15 +127,15 @@ Function ReadHeaderAndData(filename)
 	//Open/R refNum as fname
 	STRING/G errorMsg	
 	Variable refNum
-	print "Loading", filename, "..."	
+	//print "Loading", filename, "..."	
 	if (stringmatch(filename,"*.xml") <1)
-		print "\r  ==> Failed: Not a *.xml file."
+		//print "\r  ==> Failed: Not a *.xml file."
 		return (-1)				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
 	refNum = XmlOpenFile(filename)	
 	if (refNum < 0)
-		print "\r  ==> Failed: Not a standard xml file format."
+		//print "\r  ==> Failed: Not a standard xml file format."
 		return (-2) 				//Not a xml file. Do nothing...
 	endif
 	
@@ -516,13 +516,13 @@ Function/S getStringFromHeader(fname,wantedterm)
 	
 	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
-		print "Failed: Not a *.xml file."
+		//print "Failed: Not a *.xml file."
 		return (str)				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
 	refNum = XmlOpenFile(fname)	
 	if (refNum < 0)
-		print "Failed: Not a xml file."
+		//print "Failed: Not a xml file."
 		return (str) 				//Not a xml file. Do nothing...
 	endif
 
@@ -563,7 +563,7 @@ End
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
+	return(getStringFromHeader(fname,"assoc_suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
 End
 
 // sample label (60 characters @ byte 98)
@@ -580,6 +580,12 @@ Function/S getFileCreationDate(fname)
 	return(getStringFromHeader(fname,"start_time"))
 End
 
+// Check if the file is transmission file?
+Function/S getIsTrans(fname)
+	String fname
+	return(getStringFromHeader(fname,"Transmission"))
+End
+
 // read a single real value with GBLoadWave
 Function getRealValueFromHeader(fname,wantedterm,unit)
 	String fname, wantedterm,unit
@@ -589,13 +595,13 @@ Function getRealValueFromHeader(fname,wantedterm,unit)
 	
 	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
-		print "Failed: Not a *.xml file."
+		//print "Failed: Not a *.xml file."
 		return 0				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
 	refNum = XmlOpenFile(fname)	
 	if (refNum < 0)
-		print "Failed: Not a xml file."
+		//print "Failed: Not a xml file."
 		return 0 				//Not a xml file. Do nothing...
 	endif
 
@@ -789,7 +795,7 @@ Function getCountTime(fname)
 end
 
 //////  integer values
-//////Not used !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//////Not used !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 	String fname				//full path:name
 	String wanted		//starting byte
@@ -799,13 +805,13 @@ Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 	
 	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
-		print "Failed: Not a *.xml file."
+		//print "Failed: Not a *.xml file."
 		return 0				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
 	refNum = XmlOpenFile(fname)	
 	if (refNum < 0)
-		print "Failed: Not a xml file."
+		//print "Failed: Not a xml file."
 		return 0 				//Not a xml file. Do nothing...
 	endif
 
@@ -818,7 +824,7 @@ Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 		
 	return(0)
 End
-
+//////////////////////////////////////////////////////////////////////////////////
 
 //reads the wavelength from a reduced data file (not very reliable)
 // - does not work with NSORTed files
@@ -911,7 +917,7 @@ Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
 		
 	
-	WriteHFIRHead(fname,suffix,"suffix" ,"text") 
+	WriteHFIRHead(fname,suffix,"assoc_suffix" ,"text") 
 	return(0)
 end
 
@@ -1362,7 +1368,7 @@ Function/S ReadSFromHHead(refNum,wantedterm)
 	   	  	endif
 		endfor   
 	//make sure not to have a left-over content (only for text; numbers are set to -1 later as a default if not found)
-	 else
+	//else
 	endif
 	
 	//Make sure to clean up things...
@@ -1388,11 +1394,11 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	Variable typenum = 0
 	String ntype = ""	//Do not change this initial, "".
       	String nstr = "/SPICErack" 		//to add new nodes and content.
-      	String errorMsg ="Failed to parse ..."
+      	String errorMsg =""
 	
-	print "Loading", filename, "..."
+	//print "Loading", filename, "..."
 	if (stringmatch(filename,"*.xml") <1)
-		print "\r  ==>  Failed: Not a *.xml file."
+		//print "\r  ==>  Failed: Not a *.xml file."
 		return 0				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
@@ -1401,10 +1407,10 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	if (refNum < 0)
 		switch(refNum)					
 			case -1:
-				errorMsg =  "  ==>  Not a standard xml file format; Please check if the file is not broken..."
+				errorMsg = errorMsg+filename+ "  ==>  Not a standard xml file format; Please check if the file is not broken..."
 			break
 			case -2:
-				errorMsg = "  ==>  Please check if the file name is same as that written in the header..."
+				errorMsg = errorMsg+filename+"  ==>  Please check if the file name is same as that written in the header..."
 			break
 		endswitch
 		print errorMsg
@@ -1488,17 +1494,17 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	   	 	sscanf  value, "%f", vals
 	   	 	vresult = vals 		
 	   	 endif
-	   	 print "*** Important note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
+	   	 print "*** Note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
 	   	 XMLsetAttr(refNum,nstr,"","type",ntype)    	
 	endif
 
 	KillWaves/Z W_ElementList,M_xmlContent,M_listXPath,M_listAttr			//clean up
 	if	(strlen(wantedterm)==0 && vresult == -1)
 		XMLclosefile(refNum, 0)
-		print "Failed writing",wantedterm, "on", filename, "..."
+		//print "Failed writing",wantedterm, "on", filename, "..."
 	else
 		XMLclosefile(refNum, 1)						//save and close the file.
-		print "Finished writing",wantedterm,"=",value,"[",NCunit,"]  on", filename, "..."
+		//print "Finished writing",wantedterm,"=",value,"[",NCunit,"]  on", filename, "..."
 	endif
       	return (vresult)
 
@@ -1536,6 +1542,14 @@ Variable/G root:myGlobals:globDask1=checked
       endif
 
  End
+ 
+//Write whether Transmission is True or False.
+Function Write_isTransmissionToHeader(fname,str)
+	String fname,str
+
+	WriteHFIRHead(fname,str, "Transmission","text") 	
+	return(0)
+End
 
 //sample transmission is a real value at byte 158
 Function WriteTransmissionToHeader(fname,trans)
@@ -1569,7 +1583,7 @@ Function WriteBoxCountsToHeader(fname,counts)
 	Variable counts
 
 	String countsstr = ""
-	sprintf countsstr, "%d", counts
+	sprintf countsstr, "%f", counts
 
 	WriteHFIRHead(fname,countsstr,"Box_Counts" ,"") 	
 	return(0)
@@ -1996,6 +2010,22 @@ Function Write_DIV_File(type)
 	String type
 	
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
+	
+	return(0)
+End
+
+////// OCT 2009, facility specific bits from MonteCarlo functions()
+//"type" is the data folder that has the data array that is to be (re)written as a full
+// data file, as if it was a raw data file
+//
+// not really necessary
+//
+Function Write_RawData_File(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
+	
+	// Your file writing function here. Don't try to duplicate the VAX binary format...
+	Print "Write_RawData_File stub"
 	
 	return(0)
 End

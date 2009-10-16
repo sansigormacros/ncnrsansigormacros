@@ -3,8 +3,6 @@
 
 
 
-
-
 //Functions to deal with TISANE data
 
 Constant ATXY = 0

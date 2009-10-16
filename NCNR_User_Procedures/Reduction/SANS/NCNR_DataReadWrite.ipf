@@ -1860,6 +1860,19 @@ Function HeaderToLensResolution(num)
 End
 
 
+////// OCT 2009, facility specific bits from MonteCarlo functions()
+//"type" is the data folder that has the data array that is to be (re)written as a full
+// data file, as if it was a raw data file
+//
+Function Write_RawData_File(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
+	
+	Write_VAXRaw_Data(type,fullpath,dialog)
+	
+	return(0)
+End
+
 // given a data folder, write out the corresponding VAX binary data file.
 //
 // I don't think that I can generate a STRUCT and then lay that down - since the
@@ -1887,12 +1900,11 @@ End
 //
 // for now, 20 characters 01-JAN-2009 12:12:12
 //
-
 // simulation should call as ("SAS","",0) to bypass the dialog, and to fill the header
 // this could be modified in the future to be more generic
 //
 ///
-Function WriteVAXData(type,fullpath,dialog)
+Function Write_VAXRaw_Data(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name
 	

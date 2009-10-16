@@ -133,19 +133,6 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	Return results
 End
 
-//**********************
-// 2D resolution function calculation - in terms of X and Y
-//
-// see same-named function in NCNR_Utils
-//
-Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
-	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
-	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
-
-
-	String results = "success"
-	Return results
-End
 
 
 //Utility function that returns the detector resolution (in cm)
@@ -246,7 +233,6 @@ Function/S GetRunNumStrFromFile(item)
 	String retStr
 	retStr=invalid
 	
-	//your code here
 	//find the "dot"
 	Variable pos = strsearch( LowerStr(item),".xml",0)
 	if(pos == -1)
@@ -313,7 +299,7 @@ Function/S FindFileFromRunNumber(num)
 	ii=0
 	do
 		//parse through the list in this order:
-		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let the first ### is the run num.
+		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let the first #### is the run num.
 		// 2 - exclude by isRaw? (to minimize disk access)
 		item = StringFromList(ii, list  ,";" )
 		if(strlen(item) != 0)
@@ -417,20 +403,28 @@ End
 Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	String fname
 	
+	//Check by key "transsmission"
+	if (stringmatch( getIsTrans(fName),"True")>0)
+		return (1)
+	else
+		//Check from beam stop motor position
 	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0
-//	if(your test here)
+	//	if(your test here)
 	beamtrap_1y=getRealValueFromHeader(fname,"trap_y_101mm","mm")
 	beamtrap_2y=getRealValueFromHeader(fname,"trap_y_25mm","mm")
 	beamtrap_3y=getRealValueFromHeader(fname,"trap_y_50mm","mm")
 	beamtrap_4y=getRealValueFromHeader(fname,"trap_y_76mm","mm")
 
 	 if (beamtrap_1y<10 && beamtrap_2y<10 && beamtrap_3y<10 && beamtrap_4y<10)	
-	//yes, its a transmisison file
+		 	//Write the flag ON
+			Write_isTransmissionToHeader(fName,"True")
 		return (1)
 	else
 	//some other file
 		return (0)
 	endif
+	endif
+	return (0)
 End
 
 
@@ -838,14 +832,14 @@ End
 //
 // called by Correct.ipf, ProtocolAsPanel.ipf, Transmission.ipf
 //
-Function AttenuationFactor(fileStr,lam,attenpercent)
+Function AttenuationFactor(fileStr,lam,attenuation)
 	String fileStr
-	Variable lam,attenpercent
+	Variable lam,attenuation  //    0 =< attenuation <= 1 : where no attenuator stands for 0.
 	
 	Variable attenFactor=1
 	
 	// your code here
-	attenFactor = 1- attenpercent /100  //???Attenuate transmission
+	attenFactor = 1- attenuation  //???Attenuate transmission
 
 	return(attenFactor)
 End
@@ -880,7 +874,7 @@ Function/S ReducedDataFileList(ctrlName)
 	for(ii=(num-1);ii>=0;ii-=1)
 		item = StringFromList(ii, list  ,";")
 		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"*.xml") )
+		if( !stringmatch(item,"HiResSANS*.xml")  && !stringmatch(item,"BioSANS*.xml") )
 			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
 				newlist += item + ";"
 			endif
@@ -920,7 +914,26 @@ Function/S GetRawDataFileList()
 				newlist += item + ";"
 			endif
 		endif
+		if( stringmatch(item,"*.xml") )
+			if (CheckIfRawData(S_path+item) >0)
+				newlist += item + ";"
+			endif
+		endif
 	endfor
 	newList = SortList(newList,";",0)
 	return(newList)
+End
+
+//**********************
+// 2D resolution function calculation - in terms of X and Y
+//
+// based on notes from David Mildner, 2008
+//
+// the final NCNR version is located in NCNR_Utils.ipf
+//
+Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
+	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
+	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
+	
+	return("Function Empty")
 End

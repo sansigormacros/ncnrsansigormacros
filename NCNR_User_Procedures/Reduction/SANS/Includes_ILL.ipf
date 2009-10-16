@@ -47,13 +47,6 @@
 #include "ILL_DataReadWrite"							//new in the 29MAR07 branch
 #include "SANS_Utilities"								//new in the 29MAR07 branch
 
-// to include the analysis packages, uncomment the following
-// include statement and click "compile" at the bottom of this window.
-// ** the SANSModels menu will appear, and the packages will be 
-// available under the Macros menu as usual.
-
-//#include "Analysis_SRK"
-
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

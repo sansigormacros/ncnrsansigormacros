@@ -2133,3 +2133,19 @@ Function Write_DIV_File(type)
 	
 	return(0)
 End
+
+////// OCT 2009, facility specific bits from MonteCarlo functions()
+//"type" is the data folder that has the data array that is to be (re)written as a full
+// data file, as if it was a raw data file
+//
+// not really necessary
+//
+Function Write_RawData_File(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
+	
+	// Your file writing function here. Don't try to duplicate the VAX binary format...
+	Print "Write_RawData_File stub"
+	
+	return(0)
+End

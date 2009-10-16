@@ -1039,7 +1039,7 @@ End
 Function SaveAsVAXButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	WriteVAXData("SAS","",0)
+	Write_RawData_File("SAS","",0)
 End
 
 // calculates the fraction of the scattering that reaches the detector, given the random deviate function

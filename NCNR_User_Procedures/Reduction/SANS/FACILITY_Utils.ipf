@@ -683,3 +683,17 @@ Function/S GetRawDataFileList()
 	
 	return(list)
 End
+
+//**********************
+// 2D resolution function calculation - in terms of X and Y
+//
+// based on notes from David Mildner, 2008
+//
+// the final NCNR version is located in NCNR_Utils.ipf
+//
+Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
+	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
+	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
+	
+	return("Function Empty")
+End
