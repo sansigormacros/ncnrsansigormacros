@@ -607,21 +607,23 @@ Function PlotRawButtonProc(ctrlName) : ButtonControl
 		fname+=filewave[0]
 	endif
 	//Print fname
-	err = LoadBT5File(fname,"RAW")
-	if(err)
-		return(err)
+	if(strlen(fileWave[ii]) > 0)		//make sure that this is not a click in blank space
+		err = LoadBT5File(fname,"RAW")
+		if(err)
+			return(err)
+		endif
+		//if the "Raw Data" Graph exists, do nothing - else draw it
+		//DoWindow/F RawDataWin
+		if(WinType("RawDataWin")!=1)
+			Execute "GraphRawData()"
+		else
+			//just update the textbox
+			//String textStr=StringForRawGraph()
+			//TextBox/W=RawDataWin/C/N=text1/A=RC/X=0.50/Y=-2 textStr
+			//TextBox/W=RawDataWin/C/E=2/A=MT/X=0/Y=0/N=text0 textStr
+			TitleForRawGraph()
+		Endif
 	endif
-	//if the "Raw Data" Graph exists, do nothing - else draw it
-	//DoWindow/F RawDataWin
-	if(WinType("RawDataWin")!=1)
-		Execute "GraphRawData()"
-	else
-		//just update the textbox
-		//String textStr=StringForRawGraph()
-		//TextBox/W=RawDataWin/C/N=text1/A=RC/X=0.50/Y=-2 textStr
-		//TextBox/W=RawDataWin/C/E=2/A=MT/X=0/Y=0/N=text0 textStr
-		TitleForRawGraph()
-	Endif
 	//bring the panel back to the front
 	DoWindow/F USANS_Panel
 End
@@ -691,7 +693,9 @@ Function StatusButtonProc(ctrlName)
 		fname+=filewave[0]
 	endif		
 	//Print fname
-	ReadBT5Header(fname)
+	if(strlen(fileWave[ii]) > 0)		//make sure that this is not a click in blank space
+		ReadBT5Header(fname)
+	endif
 End
 
 // copies the selected files from the raw file list box to the sam file listbox

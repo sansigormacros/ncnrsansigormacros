@@ -2240,6 +2240,24 @@ Function Write_VAXRaw_Data(type,fullpath,dialog)
 		FSetPos refNum,V_logEOF
 	Close refNum
 	
+	
+	// write out the results into a text file
+	//	SetDataFolder $destStr
+	WAVE results=results
+	WAVE/T results_desc=results_desc
+	
+	//check each wave
+	If(!(WaveExists(results)))
+		Abort "results DNExist WriteVAXData()"
+	Endif
+	If(!(WaveExists(results_desc)))
+		Abort "results_desc DNExist WriteVAXData()"
+	Endif
+	
+	Save/T results_desc,results as fullpath+".itx"
+	
+	///////////////////////////////
+	
 	// all done
 	Killwaves/Z tmpFile,dataWRecMarkers
 	
@@ -2395,7 +2413,7 @@ Function SimulationVAXHeader(folder)
 	// [6] sample label
 	// [9] det type "ORNL  " (6 chars)
 	
-	tw[1] = "01-JAN-2009 12:12:12"
+	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
 	tw[2] = "SIM"
 	tw[3] = "[NG7SANS99]"
 	tw[4] = "C"
@@ -2405,17 +2423,25 @@ Function SimulationVAXHeader(folder)
 	NVAR index = root:Packages:NIST:SAS:gSaveIndex
 	SVAR prefix = root:Packages:NIST:SAS:gSavePrefix
 
-	tw[0] = prefix+num2str(index)+".SA2_SIM_A"+num2str(index)
-	index += 1
+
 	
 	String labelStr=" "	
+	Variable runNum = index
 	Prompt labelStr, "Enter sample label "		// Set prompt for x param
-	DoPrompt "Enter sample label", labelStr
+	Prompt runNum,"Run Number (automatically increments)"
+	DoPrompt "Enter sample label", labelStr,runNum
 	if (V_Flag)
 		//Print "no sample label entered - no file written"
-		index -=1
+		//index -=1
 		return -1								// User canceled
 	endif
+	
+	if(runNum != index)
+		index = runNum
+	endif
+	index += 1
+
+	tw[0] = prefix+num2str(runNum)+".SA2_SIM_A"+num2str(runNum)
 	
 	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
 	tw[6] = labelStr[0,59]
