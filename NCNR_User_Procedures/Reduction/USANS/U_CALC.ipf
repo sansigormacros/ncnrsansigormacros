@@ -1556,7 +1556,7 @@ Function U_SaveButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Variable num,ii,baseNumber=100,firstSet=0
+			Variable num,ii,baseNumber=101,firstSet=0
 			String pathStr="root:Packages:NIST:USANS:Globals:U_Sim:gCtTime"
 			SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 			String baseName="SIMUL"
@@ -1660,15 +1660,15 @@ Function SaveFakeUSANS(nameStr,num,set)
 	fprintf refnum,"%s"+termStr,"  5       0.00000    0.00000    0.00000"
 	fprintf refnum,"%s"+termStr,"  6       0.00000    0.00000    0.00000"
 	fprintf refnum,"%s"+termStr," Mot:    Start       Step      End"
-	fprintf refnum,"%s"+termStr,"     A2       MIN       COUNTS "
+	fprintf refnum,"%s"+termStr,"     A2       MIN      MONITOR      COUNTS      EXTRA  "
 
 	//loop over the waves, picking out the desired set
 	//write 2 lines each time
 	for(ii=first;ii<=last;ii+=1)
-		sprintf str,"      %6.3f    %6.2f         %d",angle[ii],ctTime/60,DetCts[ii]
+		sprintf str,"      %6.3f    %6.2f    %d     %d     %d",angle[ii],ctTime/60,MonCt,DetCts[ii]*ctTime,transDet
 		fprintf refnum,"%s"+termStr,str
 
-		sprintf str,"%d,%d,0,%d,0,0,0,0",MonCt,DetCts[ii],transDet
+		sprintf str,"%d,%d,0,%d,0,0,0,0",MonCt,DetCts[ii]*ctTime,transDet
 		fprintf refnum,"%s"+termStr,str
 	endfor
 	

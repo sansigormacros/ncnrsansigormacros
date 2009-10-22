@@ -92,7 +92,7 @@ Function DoCORGraph()
 	
 	ModifyGraph log(left)=1,mirror=2,grid=1,standoff=0
 	ModifyGraph tickUnit=1
-	Label left "(Counts/sec)/(MON*10\\S6\\M)"
+	Label left "(Counts/sec)/(MON)*10\\S6\\M"
 	Label bottom "q (A\\S-1\\M)"
 	
 	return(0)

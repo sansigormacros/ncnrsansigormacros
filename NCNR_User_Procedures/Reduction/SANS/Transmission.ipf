@@ -396,7 +396,29 @@ Function PickEMPTransButton(ctrlName) : ButtonControl
 		  	SVAR temp = root:myGlobals:TransHeaderInfo:gEMP
 			//
 			temp = temp+selectedFiles[0]		//take just the first file
+			
 			UpdateBoxCoordinates()
+			
+			//check to make sure that if the box is set, that the count value in the box is set too...
+			// if the box is set by a protocol, then the counts are not set -> and the transmission will be INF
+			String tempName = FindValidFilename(temp)
+			if(cmpstr(tempName,"")==0)
+				//file not found, get out
+				Abort "Empty beam file not found UpdateBoxCoordinates(ctrlName)"
+			Endif
+			//name is ok, prepend path to tempName for read routine 
+			PathInfo catPathName
+			String filename = S_path + tempName
+			Variable boxCounts = getBoxCounts(filename)
+			
+			variable x1,x2,y1,y2
+			getXYBoxFromFile(filename,x1,x2,y1,y2)
+			
+			if( (boxCounts == 0) && (x1!=0) && (x2!=0) && (y1!=0) && (y2!=0) )
+				DoAlert 0,"Box Counts were not recorded. Please re-select the box using SetXYBox"
+			endif
+			
+			
 		Else
 			DoWindow/F TransFileTable
    			DoAlert 0,"Invalid selection from the Transmision file table. You must select a file from the T_Filenames column"
@@ -1357,7 +1379,7 @@ Function UpdateBoxCoordinates()
 	
 	Variable refnum,x1,x2,y1,y2,err
 	GetXYBoxFromFile(filename,x1,x2,y1,y2)
-		
+	
 	//and update the global string
 	String msgStr=""
 	msgStr = "X1="+num2str(x1)+";"

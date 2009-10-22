@@ -54,7 +54,9 @@ Proc BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
-//	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //activate for ILL, June 2008
+//#ifdef ILL_D22
+//	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //activate for ILL, June 2008,
+//#endif
 
 	If(V_Flag==0)
 		BuildTableWindow()
@@ -71,8 +73,10 @@ Proc BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
+//#ifdef ILL_D22
 //		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
-		
+//#endif
+
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 	Endif
 
@@ -169,10 +173,13 @@ Function SortWaves()
 	Wave GTemp = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
+//#ifdef ILL_D22
 //	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
 //	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
-
+//#else
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+//#endif
+
 	return(0)
 End
 
@@ -197,14 +204,17 @@ Function BuildTableWindow()
 	Wave Temperature = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave Field= $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
+//#ifdef ILL_D22
+// for ILL
 //	Wave ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
-
+//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
+//#else
 // original order, magnetic at the end
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
-// for ILL
-//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
+//#endif
+
 	String name="CatVSTable"
 	DoWindow/C $name
 	return(0)
@@ -243,7 +253,9 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave GTemp = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"
+//#ifdef ILL_D22
 //	Wave GReactpow = $"root:myGlobals:CatVSHeaderInfo:reactorpower"		//activate for ILL, Jne 2008, (+ last insert @ end of function)	
+//#endif
 	lastPoint = numpnts(GLambda)
 		
 	//filename
@@ -330,11 +342,13 @@ Function GetHeaderInfoToWave(fname,sname)
 	// Monitor Count Rate
 	InsertPoints lastPoint,1,GMCR
 	GMCR[lastPoint]  = getMonitorCount(fname)/ctime		//total monitor count / total count time
-	
-	// Reactor Power (activate for ILL)
+
+//#ifdef ILL_D22	
+//	// Reactor Power (activate for ILL)
 //	InsertPoints lastPoint,1,GReactpow
 //	GReactPow[lastPoint]  = getReactorPower(fname)
-	
+//#endif	
+
 	return(0)
 End
 
@@ -662,4 +676,3 @@ Function WriteCatVSToNotebook(fname,sname)
 	//temp = num2str(numatten)+", "
 	//Notebook CatWin,text=temp
 End
-

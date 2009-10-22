@@ -16,6 +16,7 @@
 #include "PlotUtilsMacro_v40"			version>=4.00
 #include "PlotManager_v40"				version>=4.00
 #include "NCNR_GenFitUtils"			// April 2009, compiles OK if XOP not present
+#include "NCNR_Utils"
 
 #include "USANS_SlitSmearing_v40"
 #include "WriteModelData_v40"

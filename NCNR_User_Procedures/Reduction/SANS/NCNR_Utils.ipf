@@ -568,7 +568,7 @@ Function CheckIfRawData(fname)
 	FReadLine/N=3 refNum,testStr
 	Close refNum
 	
-	if(totalBytes == 33316 && cmpstr(testStr,"RAW")==0)
+	if(totalBytes == 33316 && ( cmpstr(testStr,"RAW")==0 ||  cmpstr(testStr,"SIM")==0))
 		//true, is raw data file
 		Return(1)
 	else

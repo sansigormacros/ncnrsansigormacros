@@ -493,7 +493,7 @@ Function Do_AB_Graph(type)
 	if(strlen(list)==0)
 		//drawing a new graph
 		Legend
-		Label left "(Counts/sec)/(MON*10\\S6\\M)"
+		Label left "(Counts/sec)/(MON)*10\\S6\\M"
 		Label bottom "Angle (deg)"
 	endif
 	

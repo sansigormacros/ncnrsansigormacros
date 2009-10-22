@@ -998,7 +998,11 @@ Function ReCalculateInten(doIt)
 				
 				NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
 				NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
-							
+				
+				// this is where the number of cells comes in - the calculation of the error bars
+				// sigma[i] = SUM(sigma[ij]^2) / nCells^2
+				// and since in the simulation, SUM(sigma[ij]^2) = nCells*sigma[ij]^2 = nCells*Inten
+				// then...
 				sigave = sqrt(aveint/nCells)		// corrected based on John's memo, from 8/9/99
 				
 				// add in random error in aveint based on the sigave
