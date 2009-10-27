@@ -78,6 +78,7 @@ Function CylinderForm(cw,yw,xw) : FitFunc
 //	Variable t1=StopMSTimer(-2)
 
 #if exists("CylinderFormX")
+//	yw = CylinderFormX(cw,xw)
 	MultiThread yw = CylinderFormX(cw,xw)
 #else
 	yw = fCylinderForm(cw,xw)

@@ -133,6 +133,8 @@ Proc Init_UCALC()
 	Variable/G g_1DTotCts = 0		
 	Variable/G g_1DFracScatt= 0	// ??
 	Variable/G g_1DEstTrans = 0	// ? can I calculate this?
+	Variable/G g_MultScattFraction = 0
+
 
 // not on panel yet
 	Variable/G g_Empirical_EMP = 0		// use an emperical model for empty cell subtraction
@@ -310,8 +312,8 @@ Window UCALC_Panel() : Graph
 	ControlBar/L 500
 	
 	GroupBox group0,pos={5,1},size={493,177},title="Instrument Setup"
-	GroupBox group1,pos={5,183},size={240,147},title="Sample Setup"
-	GroupBox group2,pos={5,343},size={259,147},title="Results"
+	GroupBox group1,pos={5,183},size={240,110},title="Sample Setup"
+	GroupBox group2,pos={5,310},size={240,170},title="Results"
 	
 	PopupMenu popup0,pos={17,19},size={165,20},title="Sample Aperture Diam (in)"
 	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
@@ -454,16 +456,16 @@ Window UCALC_Panel() : Graph
 	
 	
 // a box for the results
-	SetVariable totalTime,pos={left+20,370},size={150,15},title="Count time (h:m)",value= gTotTimeStr
-	ValDisplay valdisp0_2,pos={left+20,395},size={220,13},title="Fraction of beam scattered"
-	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:USANS:Globals:U_Sim:g_1DFracScatt
-	ValDisplay valdisp0_2,disable=1
-	ValDisplay valdisp0_3,pos={left+20,420},size={220,13},title="Estimated transmission"
-	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
-	ValDisplay valdisp0_3,disable=1
-	Button button1,pos={left+20,400},size={150,20},proc=U_SavePanelProc,title="Save PNG"
-	Button button2,pos={left+20,430},size={150,20},proc=U_ConfigTextProc,title="Config Text"
-	Button button3,pos={left+20,460},size={150,20},proc=U_SaveButtonProc,title="Save Simulated Data"
+	SetVariable totalTime,pos={left+20,335},size={150,15},title="Count time (h:m)",value= gTotTimeStr
+	SetVariable totalTime,limits={-inf,inf,0},noedit=1
+	SetVariable valdisp0_2,pos={left+20,365},size={190,15},title="Multiple Coherent Scattering"
+	SetVariable valdisp0_2,limits={-inf,inf,0},noedit=1,value=g_MultScattFraction
+//	ValDisplay valdisp0_3,pos={left+20,420},size={220,13},title="Estimated transmission"
+//	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
+//	ValDisplay valdisp0_3,disable=1
+	Button button1,pos={left+20,390},size={150,20},proc=U_SavePanelProc,title="Save PNG"
+	Button button2,pos={left+20,420},size={150,20},proc=U_ConfigTextProc,title="Config Text"
+	Button button3,pos={left+20,450},size={150,20},proc=U_SaveButtonProc,title="Save Simulated Data"
 
 // help, done buttons
 	Button U_helpButton,pos={300,440},size={25,20},proc=showUCALCHelp,title="?"
@@ -905,7 +907,27 @@ Function CalcUSANS()
 //		if(sig_sas > 100)
 //			sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
 //		endif
+		// calculate the multiple scattering fraction for display (10/2009)
+		NVAR mScat = root:Packages:NIST:USANS:Globals:U_Sim:g_MultScattFraction
+		Variable nMax=10,tau
+		mScat=0
+		tau = thick*sig_sas
+		// this sums the normalized scattering P', so the result is the fraction of multiply coherently scattered
+		// neutrons out of those that were scattered
+		for(ii=2;ii<nMax;ii+=1)
+			mScat += tau^(ii)/factorial(ii)
+	//		print tau^(ii)/factorial(ii)
+		endfor
 		estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
+		mscat *= (estTrans)/(1-estTrans)
+		
+		if(mScat > 0.1)
+			SetVariable valdisp0_2 win=UCALC,labelBack=(65535,32768,32768)
+		else
+			SetVariable valdisp0_2 win=UCALC,labelBack=0
+		endif
+
+
 		Print "Sig_sas = ",sig_sas
 		
 		

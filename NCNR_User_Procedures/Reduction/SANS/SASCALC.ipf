@@ -132,6 +132,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_1DEstTrans = 0		// estimated transmission of sample
 	Variable/G root:Packages:NIST:SAS:g_1D_DoABS = 1
 	Variable/G root:Packages:NIST:SAS:g_1D_AddNoise = 1
+	Variable/G root:Packages:NIST:SAS:g_MultScattFraction=0
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -925,97 +926,8 @@ Function ReCalculateInten(doIt)
 			//1D simulation
 			
 			if(exists(funcStr) != 0)
-				FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
-				FUNCREF SANSModelAAO_MCproto funcUnsmeared=$(funcStr)		//unsmeared
-				coefStr = MC_getFunctionCoef(funcStr)
 				
-				if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
-					Abort "Function and coefficients do not match. You must plot the unsmeared function before simulation."
-				endif
-				
-				Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
-				
-				// the resolution-smeared intensity is calculated, including the incoherent background
-				func($coefStr,inten,qval)
-
-				NVAR imon = root:Packages:NIST:SAS:gImon
-				NVAR ctTime = root:Packages:NIST:SAS:gCntTime
-				NVAR thick = root:Packages:NIST:SAS:gThick
-				NVAR trans = root:Packages:NIST:SAS:gSamTrans
-				NVAR SimDetCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
-				NVAR estDetCR = root:Packages:NIST:SAS:g_1DEstDetCR			// estimated detector count rate
-				NVAR fracScat = root:Packages:NIST:SAS:g_1DFracScatt		// fraction of beam captured on detector
-				NVAR estTrans = root:Packages:NIST:SAS:g_1DEstTrans		// estimated transmission of sample
-				NVAR SimCountTime = root:Packages:NIST:SAS:gCntTime		//counting time used for simulation
-				
-				WAVE rw=root:Packages:NIST:SAS:realsRead
-				WAVE nCells=root:Packages:NIST:SAS:nCells				
-								
-				pixSize = rw[10]/10		// convert pix size in mm to cm
-				sdd = rw[18]*100		//convert header of [m] to [cm]
-				wavelength = rw[26]		// in 1/A
-				
-				imon = beamIntensity()
-				
-				// calculate the scattering cross section simply to be able to estimate the transmission
-				Variable sig_sas=0
-				
-				// remember that the random deviate is the coherent portion ONLY - the incoherent background is 
-				// subtracted before the calculation.
-				CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
-				
-//				if(sig_sas > 100)
-//					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
-//				endif
-				estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
-				Print "Sig_sas = ",sig_sas
-				
-				Duplicate/O qval prob_i,countsInAnnulus
-				
-				// not needed - nCells takes care of this when the error is correctly calculated
-//				Duplicate/O qval circle_fraction,rval,nCells_expected
-//				rval = sdd*tan(2*asin(qval*wavelength/4/pi))		//radial distance in cm
-//				nCells_expected = 2*pi*rval/pixSize					//does this need to be an integer?
-//				circle_fraction = nCells / nCells_expected
-				
-							
-//				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) that has nCells
-				prob_i = trans*thick*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) 
-				
-				Variable P_on = sum(prob_i,-inf,inf)
-				Print "P_on = ",P_on
-				
-//				fracScat = P_on
-				fracScat = 1-estTrans
-				
-//				aveint = (Imon*ctTime)*prob_i / circle_fraction / nCells_expected
-				aveint = (Imon*ctTime)*prob_i
-
-				countsInAnnulus = aveint*nCells
-				SimDetCts = sum(countsInAnnulus,-inf,inf)
-				estDetCR = SimDetCts/SimCountTime
-				
-				
-				NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
-				NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
-				
-				// this is where the number of cells comes in - the calculation of the error bars
-				// sigma[i] = SUM(sigma[ij]^2) / nCells^2
-				// and since in the simulation, SUM(sigma[ij]^2) = nCells*sigma[ij]^2 = nCells*Inten
-				// then...
-				sigave = sqrt(aveint/nCells)		// corrected based on John's memo, from 8/9/99
-				
-				// add in random error in aveint based on the sigave
-				if(addNoise)
-					aveint += gnoise(sigave)
-				endif
-
-				// convert to absolute scale
-				if(doABS)
-					Variable kappa = thick*(pixSize/sdd)^2*trans*iMon*ctTime
-					aveint /= kappa
-					sigave /= kappa
-				endif
+				Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 				
 			else
 				//no function plotted, no simulation can be done

@@ -1864,13 +1864,14 @@ End
 //"type" is the data folder that has the data array that is to be (re)written as a full
 // data file, as if it was a raw data file
 //
-Function Write_RawData_File(type,fullpath,dialog)
+Function/S Write_RawData_File(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name
 	
-	Write_VAXRaw_Data(type,fullpath,dialog)
+	String filename = ""
+	filename = Write_VAXRaw_Data(type,fullpath,dialog)
 	
-	return(0)
+	return(filename)
 End
 
 // given a data folder, write out the corresponding VAX binary data file.
@@ -1898,13 +1899,13 @@ End
 // Print Secs2Time(DateTime,3)				// Prints 13:07:29
 //	Print Secs2Date(DateTime,-2)		// 1993-03-14			//this call is independent of System date/time!//
 //
-// for now, 20 characters 01-JAN-2009 12:12:12
 //
 // simulation should call as ("SAS","",0) to bypass the dialog, and to fill the header
 // this could be modified in the future to be more generic
 //
 ///
-Function Write_VAXRaw_Data(type,fullpath,dialog)
+// changed to return the string w/ the filename as written for later use
+Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name
 	
@@ -2240,30 +2241,12 @@ Function Write_VAXRaw_Data(type,fullpath,dialog)
 		FSetPos refNum,V_logEOF
 	Close refNum
 	
-	
-	// write out the results into a text file
-	//	SetDataFolder $destStr
-	WAVE results=results
-	WAVE/T results_desc=results_desc
-	
-	//check each wave
-	If(!(WaveExists(results)))
-		Abort "results DNExist WriteVAXData()"
-	Endif
-	If(!(WaveExists(results_desc)))
-		Abort "results_desc DNExist WriteVAXData()"
-	Endif
-	
-	Save/T results_desc,results as fullpath+".itx"
-	
-	///////////////////////////////
-	
 	// all done
 	Killwaves/Z tmpFile,dataWRecMarkers
 	
 	Print "Saved VAX binary data as:  ",textW[0]
 	SetDatafolder root:
-	return(0)
+	return(fullpath)
 End
 
 
@@ -2441,7 +2424,26 @@ Function SimulationVAXHeader(folder)
 	endif
 	index += 1
 
-	tw[0] = prefix+num2str(runNum)+".SA2_SIM_A"+num2str(runNum)
+	//make a three character string of the run number
+	String numStr=""
+	if(runNum<10)
+		numStr = "00"+num2str(runNum)
+	else
+		if(runNum<100)
+			numStr = "0"+num2str(runNum)
+		else
+			numStr = num2str(runNum)
+		Endif
+	Endif
+	//date()[0] is the first letter of the day of the week
+	// OK for most cases, except for an overnight simulation! then the suffix won't sort right...
+//	tw[0] = prefix+numstr+".SA2_SIM_"+(date()[0])+numStr
+
+//fancier, JAN=A, FEB=B, etc...
+	String timeStr= secs2date(datetime,-1)
+	String monthStr=StringFromList(1, timeStr  ,"/")
+
+	tw[0] = prefix+numstr+".SA2_SIM_"+(num2char(str2num(monthStr)+64))+numStr
 	
 	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
 	tw[6] = labelStr[0,59]

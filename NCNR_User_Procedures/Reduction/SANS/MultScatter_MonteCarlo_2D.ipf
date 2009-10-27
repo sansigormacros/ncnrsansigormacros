@@ -906,7 +906,7 @@ Window MC_SASCALC() : Panel
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
 	SetVariable cntVar,pos={185,73},size={90,15},proc=CountTimeSetVarProc,title="time(s)"
 	SetVariable cntVar,format="%d"
-	SetVariable cntVar,limits={1,600,1},value= root:Packages:NIST:SAS:gCntTime
+	SetVariable cntVar,limits={1,3600,1},value= root:Packages:NIST:SAS:gCntTime
 	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
 	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
 	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
@@ -1036,10 +1036,44 @@ End
 // automatically generates a name
 // will prompt for the sample label
 //
+// currently hard-wired for SAS data folder
+//
 Function SaveAsVAXButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Write_RawData_File("SAS","",0)
+	String fullpath="",destStr=""
+	Variable refnum
+	
+	fullpath = Write_RawData_File("SAS","",0)
+	
+	// write out the results into a text file
+	destStr = "root:Packages:NIST:SAS:"
+	SetDataFolder $destStr
+
+	WAVE results=results
+	WAVE/T results_desc=results_desc
+	
+	//check each wave
+	If(!(WaveExists(results)))
+		Abort "results DNExist WriteVAXData()"
+	Endif
+	If(!(WaveExists(results_desc)))
+		Abort "results_desc DNExist WriteVAXData()"
+	Endif
+	
+	Open refNum as fullpath+".txt"
+		wfprintf refNum, "%30s\t\t%g\r",results_desc,results
+		FStatus refNum
+		FSetPos refNum,V_logEOF
+	Close refNum
+	
+	///////////////////////////////
+	
+	// could also automatically do the average here, but probably not worth the the effort...
+	
+	SetDataFolder root:
+	
+	return(0)
 End
 
 // calculates the fraction of the scattering that reaches the detector, given the random deviate function
@@ -1305,6 +1339,8 @@ Window Sim_1D_Panel() : Panel
 	ValDisplay valdisp0_2,limits={0,0,0},barmisc={0,1000},value= root:Packages:NIST:SAS:g_1DFracScatt
 	ValDisplay valdisp0_3,pos={326,121},size={220,13},title="Estimated transmission"
 	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:SAS:g_1DEstTrans
+	ValDisplay valdisp0_4,pos={326,145},size={220,13},title="Multiple Coherent Scattering"
+	ValDisplay valdisp0_4,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:SAS:g_MultScattFraction
 	// set the flags here -- do the simulation, but not 2D
 	
 	root:Packages:NIST:SAS:doSimulation	= 1 	// == 1 if 1D simulated data, 0 if other from the checkbox
@@ -1424,13 +1460,14 @@ Function Save_1DSimData(ctrlName) : ButtonControl
 		NVAR totalCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
 		NVAR detCR = root:Packages:NIST:SAS:g_1DEstDetCR		// estimated detector count rate
 		NVAR fractScat = root:Packages:NIST:SAS:g_1DFracScatt
+		NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
 	
 		SIMProtocol[0] = junk
 		SIMProtocol[1] = "\tCounting time (s) = "+num2str(ctTime)
 		SIMProtocol[2] = "\tTotal detector counts = "+num2str(totalCts)
 		SIMProtocol[3] = "\tDetector countrate (1/s) = "+num2str(detCR)
 		SIMProtocol[4] = "\tFraction of beam scattered coherently = "+num2str(fractScat)
-		SIMProtocol[5] = junk
+		SIMProtocol[5] = "\tFraction of multiple coherent scattering = "+num2str(mScat)
 		SIMProtocol[6] = ""
 		SIMProtocol[7] = ""
 		//set the global
@@ -1563,4 +1600,166 @@ Function Save_1DSimData(ctrlName) : ButtonControl
 	
 	return(0)
 	
+End
+
+
+/// called in SASCALC:ReCalculateInten()
+Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
+	String funcStr
+	WAVE aveint,qval,sigave,sigmaq,qbar,fsubs
+
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	String coefStr,abortStr,str	
+
+	FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
+	FUNCREF SANSModelAAO_MCproto funcUnsmeared=$(funcStr)		//unsmeared
+	coefStr = MC_getFunctionCoef(funcStr)
+	
+	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
+		Abort "Function and coefficients do not match. You must plot the unsmeared function before simulation."
+	endif
+	
+	Wave inten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+	
+	// the resolution-smeared intensity is calculated, including the incoherent background
+	func($coefStr,inten,qval)
+
+	NVAR imon = root:Packages:NIST:SAS:gImon
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+	NVAR thick = root:Packages:NIST:SAS:gThick
+	NVAR trans = root:Packages:NIST:SAS:gSamTrans
+	NVAR SimDetCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
+	NVAR estDetCR = root:Packages:NIST:SAS:g_1DEstDetCR			// estimated detector count rate
+	NVAR fracScat = root:Packages:NIST:SAS:g_1DFracScatt		// fraction of beam captured on detector
+	NVAR estTrans = root:Packages:NIST:SAS:g_1DEstTrans		// estimated transmission of sample
+	NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
+	
+	WAVE rw=root:Packages:NIST:SAS:realsRead
+	WAVE nCells=root:Packages:NIST:SAS:nCells				
+					
+	pixSize = rw[10]/10		// convert pix size in mm to cm
+	sdd = rw[18]*100		//convert header of [m] to [cm]
+	wavelength = rw[26]		// in 1/A
+	
+	imon = beamIntensity()*ctTime
+	
+	// calculate the scattering cross section simply to be able to estimate the transmission
+	Variable sig_sas=0
+	
+	// remember that the random deviate is the coherent portion ONLY - the incoherent background is 
+	// subtracted before the calculation.
+	CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
+	
+//				if(sig_sas > 100)
+//					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
+//				endif
+
+	// calculate the multiple scattering fraction for display (10/2009)
+	Variable ii,nMax=10,tau
+	mScat=0
+	tau = thick*sig_sas
+	// this sums the normalized scattering P', so the result is the fraction of multiply coherently scattered
+	// neutrons out of those that were scattered
+	for(ii=2;ii<nMax;ii+=1)
+		mScat += tau^(ii)/factorial(ii)
+//		print tau^(ii)/factorial(ii)
+	endfor
+	estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
+	mscat *= (estTrans)/(1-estTrans)
+
+	if(mScat > 0.1)		//  /Z to supress error if this was a 1D calc with the 2D panel open
+		ValDisplay/Z valdisp0_4 win=Sim_1D_Panel,labelBack=(65535,32768,32768)
+	else
+		ValDisplay/Z valdisp0_4 win=Sim_1D_Panel,labelBack=0
+	endif
+
+
+	Print "Sig_sas = ",sig_sas
+	
+	Duplicate/O qval prob_i,countsInAnnulus
+	
+	// not needed - nCells takes care of this when the error is correctly calculated
+//				Duplicate/O qval circle_fraction,rval,nCells_expected
+//				rval = sdd*tan(2*asin(qval*wavelength/4/pi))		//radial distance in cm
+//				nCells_expected = 2*pi*rval/pixSize					//does this need to be an integer?
+//				circle_fraction = nCells / nCells_expected
+	
+				
+//				prob_i = trans*thick*nCells*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) that has nCells
+	prob_i = trans*thick*(pixSize/sdd)^2*inten			//probability of a neutron in q-bin(i) 
+	
+	Variable P_on = sum(prob_i,-inf,inf)
+	Print "P_on = ",P_on
+	
+//				fracScat = P_on
+	fracScat = 1-estTrans
+	
+//				aveint = (Imon)*prob_i / circle_fraction / nCells_expected
+	aveint = (Imon)*prob_i
+
+	countsInAnnulus = aveint*nCells
+	SimDetCts = sum(countsInAnnulus,-inf,inf)
+	estDetCR = SimDetCts/ctTime
+	
+	
+	NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
+	NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
+	
+	// this is where the number of cells comes in - the calculation of the error bars
+	// sigma[i] = SUM(sigma[ij]^2) / nCells^2
+	// and since in the simulation, SUM(sigma[ij]^2) = nCells*sigma[ij]^2 = nCells*Inten
+	// then...
+	sigave = sqrt(aveint/nCells)		// corrected based on John's memo, from 8/9/99
+	
+	// add in random error in aveint based on the sigave
+	if(addNoise)
+		aveint += gnoise(sigave)
+	endif
+
+	// signature in the standard deviation, do this after the noise is added
+	// start at 10 to be out of the beamstop (makes for nicer plotting)
+	// end at 50 to leave the natural statistics at the end of the set (may have a total of 80+ points if no offset)
+	sigave[10,50;10] = 10*sigave[p]
+
+	// convert to absolute scale
+	if(doABS)
+		Variable kappa = thick*(pixSize/sdd)^2*trans*iMon
+		aveint /= kappa
+		sigave /= kappa
+	endif
+				
+				
+	return(0)
+End
+
+/// for testing only
+Function testProbability(sas,thick)
+	Variable sas,thick
+	
+	Variable tau,trans,p2p,p3p,p4p
+	
+	tau = sas*thick
+	trans = exp(-tau)
+	
+	Print "tau = ",tau
+	Print "trans = ",trans
+	
+	p2p = tau^2/factorial(2)*trans/(1-trans)
+	p3p = tau^3/factorial(3)*trans/(1-trans)
+	p4p = tau^4/factorial(4)*trans/(1-trans)
+	
+	Print "double scattering = ",p2p
+	Print "triple scattering = ",p3p
+	Print "quadruple scattering = ",p4p
+	
+	Variable ii,nMax=10,mScat=0
+	for(ii=2;ii<nMax;ii+=1)
+		mScat += tau^(ii)/factorial(ii)
+//		print tau^(ii)/factorial(ii)
+	endfor
+	mscat *= (Trans)/(1-Trans)
+
+	Print "Total fraction of multiple scattering = ",mScat
+
+	return(mScat)
 End
