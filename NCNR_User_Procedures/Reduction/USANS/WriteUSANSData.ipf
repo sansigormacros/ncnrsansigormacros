@@ -51,7 +51,7 @@ Function WriteUSANSWaves(type,fullpath,lo,hi,dialog)
 	dumWave = - DQv
 	///
 	if(dialog)
-		PathInfo/S catPathName
+		PathInfo/S savePathName
 		fullPath = DoSaveFileDialog("Save data as")
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
@@ -197,4 +197,3 @@ Function Convert3ColTo6Col()
 		
 	Return(0)
 End
-
