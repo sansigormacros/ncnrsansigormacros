@@ -3,7 +3,16 @@
 #pragma IgorVersion=6.1
 
 
-#define HFIR
+
+
+// to properly set up the template for HFIR Data Reduction, the dummy
+// function HFIR() must exist here in the Includes file.
+//
+Function HFIR()
+	//does nothing but define HFIR()
+	return(0)
+End
+
 
 
 //*************

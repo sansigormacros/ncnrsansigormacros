@@ -334,3 +334,61 @@ Function NCNR_SANSLiveLoader(itemStr)
 	endswitch
 
 end
+
+Function WhatSymbolsAreDefined()
+
+#if (exists("QUOKKA")==6)
+		print "function QUOKKA defined"
+#else
+		print "function QUOKKA NOT defined"
+#endif
+	
+#if(exists("HFIR")==6)
+		print "function HFIR defined"
+#else
+		print "function HFIR NOT defined"
+#endif
+	
+#if(exists("ILL_D22")==6)
+		print "function ILL_D22 defined"
+#else
+		print "function ILL_D22 NOT defined"
+#endif
+
+
+
+// for a lot of reasons, defined symbols do not work
+// mostly, the procedures are compiled before the symbols are
+// defined (or re-defined)
+// another issues is that they are persistent, and  don't disappear
+// until Igor is quit. 
+	
+//	SetIgorOption poundDefine=QUOKKA?
+//	if(V_flag)
+//		print "QUOKKA defined"
+//	else
+//		print "QUOKKA NOT defined"
+//	endif
+//	
+//	SetIgorOption poundDefine=HFIR?
+//	if(V_flag)
+//		print "HFIR defined"
+//	else
+//		print "HFIR NOT defined"
+//	endif
+//	
+//	SetIgorOption poundDefine=ILL_D22?
+//	if(V_flag)
+//		print "ILL_D22 defined"
+//	else
+//		print "ILL_D22 NOT defined"
+//	endif
+
+	return(0)
+End
+
+Proc ClearDefinedSymbols()
+	SetIgorOption poundUnDefine=QUOKKA
+	SetIgorOption poundUnDefine=HFIR
+	SetIgorOption poundUnDefine=ILL_D22
+End

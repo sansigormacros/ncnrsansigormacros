@@ -75,7 +75,7 @@ Function MakeDIVFile(ctrType,offType)
 		return(1)
 	endif
 
-#ifdef QUOKKA	
+#if (exists("QUOKKA")==6)
 	//corrects edge rows and columns by copy data from adjacent column
 	DoAlert 1,"Do edge correction for Quokka detector?"
 	if(V_flag==1)
@@ -375,8 +375,9 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			endif
 			ConvertFolderToLinearScale("COR")
 			
-#ifdef QUOKKA	
+#if (exists("QUOKKA")==6)
 			//corrects edge rows and columns by copy data from adjacent column
+			String ctrType="STO",offType="COR"
 			DoAlert 1,"Do edge correction for Quokka detector?"
 			if(V_flag==1)
 				DoEdgeCorrection(ctrType)

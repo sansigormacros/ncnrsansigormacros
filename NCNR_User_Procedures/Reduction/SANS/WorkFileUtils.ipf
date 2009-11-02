@@ -140,7 +140,7 @@ Function Add_raw_to_work(newType)
 	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
 
-#ifdef ILL_D22
+#if (exists("ILL_D22")==6)
 	Variable tubeSum
 	// for D22 detector might need to use cntrate/128 as it is the tube response
 	for(ii=0;ii<pixelsX;ii+=1)
@@ -160,7 +160,7 @@ Function Add_raw_to_work(newType)
 
 	//update totals by adding RAW values to the local ones (write to work header at end of function)
 	total_mon += raw_reals[0]
-#ifdef ILL_D22
+#if (exists("ILL_D22")==6)
 	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
 #else
 	total_det += dscale*raw_reals[2]
@@ -310,7 +310,7 @@ Function Raw_to_work(newType)
 	deadtime = DetectorDeadtime(textread[3],textread[9])	//pick the correct deadtime
 	dscale = 1/(1-deadTime*cntrate)
 	
-#ifdef ILL_D22
+#if (exists("ILL_D22")==6)
 	Variable tubeSum
 	// for D22 detector might need to use cntrate/128 as it is the tube response
 	for(ii=0;ii<pixelsX;ii+=1)
@@ -331,7 +331,7 @@ Function Raw_to_work(newType)
 	
 	//update totals to put in the work header (at the end of the function)
 	total_mon += realsread[0]
-#ifdef ILL_D22	
+#if (exists("ILL_D22")==6)
 	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
 #else
 	total_det += dscale*realsread[2]
@@ -495,7 +495,7 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			// large angle detector efficiency correction is >= 1 and will "bump up" the highest angles
 			// so divide here to get the correct answer (5/22/08 SRK)
 			if(doEfficiency)
-#ifdef ILL_D22
+#if (exists("ILL_D22")==6)
 				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
 	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
 #else

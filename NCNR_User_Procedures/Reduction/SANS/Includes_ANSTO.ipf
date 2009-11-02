@@ -9,10 +9,16 @@
 //
 // nha. Edited for Quokka. 5/2/09
 //
-// these procedure files are those used in version 5.0 of the 
-// SANS Reduction macros, August 2006
 
-#define QUOKKA
+
+// to properly set up the template for QUOKKA Data Reduction, the dummy
+// function must exist in the Includes file.
+//
+Function QUOKKA()
+	//does nothing but declare QUOKKA
+	return(0)
+End
+
 
 
 #include "AvgGraphics"			version>=5.0

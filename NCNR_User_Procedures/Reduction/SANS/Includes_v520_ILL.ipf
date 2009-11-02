@@ -3,7 +3,15 @@
 #pragma IgorVersion=6.1
 
 
-#define ILL_D22
+
+// to properly set up the template for ILL Data Reduction, the dummy
+// function ILL_D22() must exist here in the Includes file.
+//
+Function ILL_D22()
+	//does nothing but define ILL_D22()
+	return(0)
+End
+
 
 
 //*************

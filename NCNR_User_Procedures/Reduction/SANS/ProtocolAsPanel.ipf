@@ -1866,7 +1866,7 @@ Function ExecuteProtocol(protStr,samStr)
 		Wave/T textPath = $textStr
 		String tempFilename = samStr
 		If(WaveExists(textPath) == 1)
-#ifdef QUOKKA
+#if (exists("QUOKKA")==6)
 			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
 #else
 			newFileName = UpperStr(GetNameFromHeader(textPath[0]))

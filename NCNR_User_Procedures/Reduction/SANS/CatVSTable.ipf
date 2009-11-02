@@ -20,7 +20,7 @@
 //this main procedure does all the work, obtaining the folder path, 
 //parsing the filenames in the list and (dispatching) to write out the 
 //appropriate information to the notebook window
-Proc BuildCatVeryShortTable()
+Function BuildCatVeryShortTable()
 	
 	Variable err
 	PathInfo catPathName
@@ -54,10 +54,34 @@ Proc BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
-//#ifdef ILL_D22
-//	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //activate for ILL, June 2008,
-//#endif
+#if (exists("ILL_D22")==6)
+	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //activate for ILL, June 2008,
+	WAVE ReactorPower = $"root:myGlobals:CatVSHeaderInfo:Reactorpower"
+#endif
 
+	WAVE/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
+	WAVE/T Suffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
+	WAVE/T Labels = $"root:myGlobals:CatVSHeaderInfo:Labels"
+	WAVE/T DateAndTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	WAVE SDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
+	WAVE Lambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
+	WAVE CntTime = $"root:myGlobals:CatVSHeaderInfo:CntTime"
+	WAVE TotCnts = $"root:myGlobals:CatVSHeaderInfo:TotCnts"
+	WAVE CntRate = $"root:myGlobals:CatVSHeaderInfo:CntRate"
+	WAVE Transmission = $"root:myGlobals:CatVSHeaderInfo:Transmission"
+	WAVE Thickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
+	WAVE XCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
+	WAVE YCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
+	//WAVE/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	WAVE/B NumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
+	WAVE RunNumber = $"root:myGlobals:CatVSHeaderInfo:RunNumber"
+	WAVE IsTrans = $"root:myGlobals:CatVSHeaderInfo:IsTrans"
+	WAVE RotAngle = $"root:myGlobals:CatVSHeaderInfo:RotAngle"
+	WAVE Temperature = $"root:myGlobals:CatVSHeaderInfo:Temperature"
+	WAVE Field = $"root:myGlobals:CatVSHeaderInfo:Field"
+	WAVE MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
+	
+	
 	If(V_Flag==0)
 		BuildTableWindow()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:SDD)=40
@@ -73,9 +97,9 @@ Proc BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
-//#ifdef ILL_D22
-//		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
-//#endif
+#if (exists("ILL_D22")==6)
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
+#endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 	Endif
@@ -173,12 +197,12 @@ Function SortWaves()
 	Wave GTemp = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
-//#ifdef ILL_D22
-//	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
-//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
-//#else
+#if (exists("ILL_D22")==6)
+	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
+#else
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-//#endif
+#endif
 
 	return(0)
 End
@@ -204,16 +228,16 @@ Function BuildTableWindow()
 	Wave Temperature = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave Field= $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
-//#ifdef ILL_D22
+#if (exists("ILL_D22")==6)
 // for ILL
-//	Wave ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
-//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
-//#else
+	Wave ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
+	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
+#else
 // original order, magnetic at the end
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
-//#endif
+#endif
 
 	String name="CatVSTable"
 	DoWindow/C $name
@@ -253,9 +277,9 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave GTemp = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"
-//#ifdef ILL_D22
-//	Wave GReactpow = $"root:myGlobals:CatVSHeaderInfo:reactorpower"		//activate for ILL, Jne 2008, (+ last insert @ end of function)	
-//#endif
+#if (exists("ILL_D22")==6)
+	Wave GReactpow = $"root:myGlobals:CatVSHeaderInfo:reactorpower"		//activate for ILL, Jne 2008, (+ last insert @ end of function)	
+#endif
 	lastPoint = numpnts(GLambda)
 		
 	//filename
@@ -343,11 +367,11 @@ Function GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GMCR
 	GMCR[lastPoint]  = getMonitorCount(fname)/ctime		//total monitor count / total count time
 
-//#ifdef ILL_D22	
-//	// Reactor Power (activate for ILL)
-//	InsertPoints lastPoint,1,GReactpow
-//	GReactPow[lastPoint]  = getReactorPower(fname)
-//#endif	
+#if (exists("ILL_D22")==6)
+	// Reactor Power (activate for ILL)
+	InsertPoints lastPoint,1,GReactpow
+	GReactPow[lastPoint]  = getReactorPower(fname)
+#endif	
 
 	return(0)
 End

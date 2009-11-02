@@ -101,10 +101,10 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	endif
 	
 //	nthreads = 1
-	
-	variable mt= ThreadGroupCreate(nthreads)
+	NVAR mt=root:myGlobals:gThreadGroupID
+	mt = ThreadGroupCreate(nthreads)
 	NVAR gInitTime = root:Packages:NIST:SAS:gRanDateTime		//time that SASCALC was started
-
+	Print "thread group ID = ",mt
 	
 	inputWave[0] = NNeutron/nthreads		//split up the number of neutrons
 	
@@ -152,6 +152,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		variable tgs= ThreadGroupWait(mt,100)
 	while( tgs != 0 )
 	variable dummy= ThreadGroupRelease(mt)
+	mt=0
 	Print "done with all threads"
 
 	// calculate all of the bits for the results
@@ -1103,6 +1104,23 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
 	WAVE rw=root:Packages:NIST:SAS:realsRead
+	
+// Try to nicely exit from a threading error, if possible
+	Variable err=0
+	if(!exists("root:myGlobals:gThreadGroupID"))
+		Variable/G root:myGlobals:gThreadGroupID=0
+	endif
+	NVAR mt=root:myGlobals:gThreadGroupID
+
+	if(mt!=0)	//there was an error with the stopping of the threads, possibly user abort
+		err = ThreadGroupRelease(mt)
+		Print "threading err = ",err
+		if(err == 0)
+			// all *should* be OK
+		else
+			return(0)
+		endif
+	endif
 
 	NVAR imon = root:Packages:NIST:SAS:gImon
 	NVAR thick = root:Packages:NIST:SAS:gThick
