@@ -719,11 +719,14 @@ ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPi
 	dx = sdd*tan(theta)
 	xPixel = round(xCtr + dx/pixSize)
 
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
 	//if on detector, return xPix and yPix values, otherwise -1
-	if(yPixel > 127 || yPixel < 0)
+	if(yPixel > pixelsY || yPixel < 0)
 		yPixel = -1
 	endif
-	if(xPixel > 127 || xPixel < 0)
+	if(xPixel > pixelsX || xPixel < 0)
 		xPixel = -1
 	endif
 	

@@ -7,3 +7,7 @@ This is a template for writing your own fitting function in Igor. Very little pr
 Updated to use the new structure function format
 
 01 OCT 2007 SRK
+
+Updated to latest release
+
+03 NOV 2009 SRK
