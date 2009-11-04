@@ -960,7 +960,8 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 	tmp = "Integrand_SC_Inner;Integrand_SC_Outer;SC_Integrand;SphCyl;SphCyl_Inner;SphCyl_Outer;"
 	list = RemoveFromList(tmp, list  ,";")
-
+	tmp = "CSPP_Outer;CSPP_Inner;PP_Outer;PP_Inner;"
+	list = RemoveFromList(tmp, list  ,";")
 
 	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
 	list = RemoveFromList(tmp, list  ,";")

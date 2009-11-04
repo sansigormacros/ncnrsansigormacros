@@ -241,7 +241,7 @@ End
 
 ////////////For testing
 
-Macro PP_Rg_and_IZero()
+Proc PP_Rg_and_IZero()
 
 	variable rg2,iz
 	

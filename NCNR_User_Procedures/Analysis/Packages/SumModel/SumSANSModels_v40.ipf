@@ -122,29 +122,23 @@ End
 // - not other user-defined functions
 Function/S SumModelPopupList()
 	String list,tmp
-	list = FunctionList("!Smear*",";","KIND:10")		//don't show smeared models
 	
+	//get every user defined curve fit function, remove everything the user doesn't need to see...
+	list = User_FunctionPopupList()	
+	
+	// must remove Sum_Model
 	list = RemoveFromList("Sum_Model", list  ,";")
-	
-	tmp = FunctionList("*_proto",";","KIND:10")		//prototypes
-	list = RemoveFromList(tmp, list  ,";")
 
-//	Print list
-	tmp = GrepList(FunctionList("f*",";","KIND:10"),"^f")	
-//	tmp = FunctionList("f*",";","KIND:10")		//point calculations
-	
-//	Print tmp
-	
+//	can remove the smeared models either this way, or using GrepList as below
+//	tmp = FunctionList("Smear*",";","KIND:10")		//don't show smeared models
+//	list = RemoveFromList(tmp, list  ,";")
+
+//
+////	Print list
+	tmp = GrepList(list,"^Smear")			//don't show the Smeared... models in the popup	
+	Print tmp	
 	list = RemoveFromList(tmp, list  ,";")
-	
-	// this should be a null string with KIND:10
-	tmp = FunctionList("*X",";","KIND:10")		//XOPs, also point calculations
-	list = RemoveFromList(tmp, list  ,";")
-	
-	// remove some odds and ends...
-	tmp = "UpdateQxQy2Mat;"
-	tmp += "MakeBSMask;"
-	list = RemoveFromList(tmp, list  ,";")
+//	
 	
 	return(list)
 End

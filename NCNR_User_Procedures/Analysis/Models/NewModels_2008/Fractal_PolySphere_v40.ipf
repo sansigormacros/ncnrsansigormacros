@@ -9,6 +9,8 @@
 //
 // - basic subunit is a polydisperse (Schulz) sphere - SRK July 2008
 //
+// no XOP was written for this - it is not necessary
+//
 // Macro for fractal parameters added JGB 2004
 
 Proc PlotFractalPolySphere(num,qmin,qmax)						
