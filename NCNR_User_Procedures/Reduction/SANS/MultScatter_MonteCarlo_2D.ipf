@@ -10,13 +10,18 @@
 // A lot of the setup, wave creation, and post-calculations are done in SASCALC->ReCalculateInten()
 //
 //
+// at the end of the procedure fils is a *very* simple example of scripting for unattended simulations
+// - not for the casual user at all.
 
 
 
+// the RNG issue is really not worth the effort. multiple copies with different RNG is as good as I need. Plus,
+// whatever XOP crashing was happining during threading is really unlikely to be from the RNG
+//
 // *** look into erand48() as the (pseudo) random number generator (it's a standard c-lib function, at least on unix)
 //     and is apparantly thread safe. drand48() returns values [0.0,1.0)
 //http://qnxcs.unomaha.edu/help/product/neutrino/lib_ref/e/erand48.html
-
+//
 
 
 // - Why am I off by a factor of 2.7 - 3.7 (MC too high) relative to real data?
@@ -29,7 +34,7 @@
 // - Most importantly, this needs to be checked for correctness of the MC simulation
 // X how can I get the "data" on absolute scale? This would be a great comparison vs. the ideal model calculation
 // X why does my integrated tau not match up with John's analytical calculations? where are the assumptions?
-// - get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
+// X get rid of all small angle assumptions - to make sure that the calculation is correct at all angles
 
 //
 // X at the larger angles, is the "flat" detector being properly accounted for - in terms of
@@ -71,6 +76,10 @@
 //   should always default to...
 //
 //
+
+
+
+
 
 // setting the flag to 1 == 2D simulation
 // any other value for flag == 1D simulation
@@ -1042,9 +1051,32 @@ End
 //
 // currently hard-wired for SAS data folder
 //
-Function SaveAsVAXButtonProc(ctrlName) : ButtonControl
+Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 	String ctrlName
+	Variable runIndex
+	String simLabel
 
+	
+	// if default parameters were passed in, use them
+	// if not, set them to "bad" values so that the user will be prompted later	
+	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
+	SVAR autoSaveLabel = root:Packages:NIST:SAS:gAutoSaveLabel
+	
+	// Determine if the optional parameters were supplied
+	if( ParamIsDefault(runIndex))		//==1 if parameter was NOT specified
+		print "runIndex not specified"
+		autoSaveIndex=0					// 0 == bad value, test for this later
+	else
+		autoSaveIndex=runIndex
+	endif
+	
+	if( ParamIsDefault(simLabel))		//==1 if parameter was NOT specified
+		print "simLabel not specified"
+		autoSaveLabel=""					// "" == bad value, test for this later
+	else
+		autoSaveLabel=simLabel
+	endif
+	
 	String fullpath="",destStr=""
 	Variable refnum
 	
@@ -1784,3 +1816,36 @@ Function testProbability(sas,thick)
 
 	return(mScat)
 End
+
+
+//// this is a very simple example of how to script the MC simulation to run unattended
+//
+//  you need to supply for each "run": 	the run index (you increment manually)
+//												the sample label (as a string)
+//
+// changing the various configuration paramters will have to be done on a case-by-case basis
+// looking into SASCALC to see what is really changed,
+// or the configuration parameters of the MC_SASCALC panel 
+//
+//
+//Function Script_2DMC()
+//
+//	STRUCT WMButtonAction ba
+//	ba.eventCode = 2			//fake mouse click on button
+//	
+//	NVAR detDist = root:Packages:NIST:SAS:gDetDist
+//	
+//	detDist = 200		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
+//	
+//	detDist = 300		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=106,simLabel="this is run 106, SDD = 300")
+//
+//	detDist = 400		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
+//	
+//	return(0)
+//end

@@ -1867,7 +1867,7 @@ End
 Function/S Write_RawData_File(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name
-	
+
 	String filename = ""
 	filename = Write_VAXRaw_Data(type,fullpath,dialog)
 	
@@ -2357,6 +2357,7 @@ End
 // function to fill the extra bits of header information to make a "complete"
 // simulated VAX data file.
 //
+// NCNR-Specific
 //
 Function SimulationVAXHeader(folder)
 	String folder
@@ -2403,26 +2404,38 @@ Function SimulationVAXHeader(folder)
 	tw[5] = "01JAN09 "
 	tw[9] = "ORNL  "
 	
+	
+	//get the run index and the sample label from the optional parameters, or from a dialog
 	NVAR index = root:Packages:NIST:SAS:gSaveIndex
 	SVAR prefix = root:Packages:NIST:SAS:gSavePrefix
-
-
+// did the user pass in values?
+	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
+	SVAR autoSaveLabel = root:Packages:NIST:SAS:gAutoSaveLabel
 	
-	String labelStr=" "	
-	Variable runNum = index
-	Prompt labelStr, "Enter sample label "		// Set prompt for x param
-	Prompt runNum,"Run Number (automatically increments)"
-	DoPrompt "Enter sample label", labelStr,runNum
-	if (V_Flag)
-		//Print "no sample label entered - no file written"
-		//index -=1
-		return -1								// User canceled
+	String labelStr=""	
+	Variable runNum
+	if( (autoSaveIndex != 0) && (strlen(autoSaveLabel) > 0) )
+		// all is OK, proceed with the save
+		labelStr = autoSaveLabel
+		runNum = autoSaveIndex		//user must take care of incrementing this!
+	else
+		//one or the other, or both are missing, so ask
+		runNum = index
+		Prompt labelStr, "Enter sample label "		// Set prompt for x param
+		Prompt runNum,"Run Number (automatically increments)"
+		DoPrompt "Enter sample label", labelStr,runNum
+		if (V_Flag)
+			//Print "no sample label entered - no file written"
+			//index -=1
+			return -1								// User canceled
+		endif
+		if(runNum != index)
+			index = runNum
+		endif
+		index += 1
 	endif
 	
-	if(runNum != index)
-		index = runNum
-	endif
-	index += 1
+
 
 	//make a three character string of the run number
 	String numStr=""

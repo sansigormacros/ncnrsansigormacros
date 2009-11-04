@@ -123,6 +123,8 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gRawCounts = 0
 	Variable/G root:Packages:NIST:SAS:gSaveIndex = 100
 	String/G root:Packages:NIST:SAS:gSavePrefix = "SIMUL"
+	Variable/G root:Packages:NIST:SAS:gAutoSaveIndex = 100			//a way to set the index for automated saves
+	String/G root:Packages:NIST:SAS:gAutoSaveLabel = ""				//a way to set the "sample" label for automated saves
 	Make/O/D/N=10 root:Packages:NIST:SAS:results = 0
 	Make/O/T/N=10 root:Packages:NIST:SAS:results_desc = {"total X-section (1/cm)","SAS X-section (1/cm)","number that scatter","number that reach detector","avg # times scattered","fraction single coherent","fraction multiple coherent","fraction multiple scattered","fraction transmitted","detector counts w/beamstop"}
 
