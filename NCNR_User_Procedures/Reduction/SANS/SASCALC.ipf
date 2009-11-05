@@ -135,6 +135,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_1D_DoABS = 1
 	Variable/G root:Packages:NIST:SAS:g_1D_AddNoise = 1
 	Variable/G root:Packages:NIST:SAS:g_MultScattFraction=0
+	Variable/G root:Packages:NIST:SAS:g_detectorEff=0.75			//averag value for most wavelengths
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -164,7 +165,6 @@ Function initNG3()
 	Variable/G a_pixel = 0.5
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
-	Variable/G phi_0 = 2.95e13
 	Variable/G lambda_t = 5.50
 	Variable/G l2r_lower = 132.3
 	Variable/G l2r_upper =  1317
@@ -178,8 +178,15 @@ Function initNG3()
 	Variable/G l_gap = 100.0
 	Variable/G guide_width = 6.0
 	Variable/G idmax = 100.0
-	Variable/G b = 0.023
-	Variable/G c = 0.023
+//	//old values, from 3/2002
+//	Variable/G phi_0 = 2.95e13
+//	Variable/G b = 0.023
+//	Variable/G c = 0.023
+
+	//new values, from 2/2009
+	Variable/G phi_0 = 3.4e13
+	Variable/G b = 0.0185
+	Variable/G c = 0.0135
 	
 	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
 	Variable/G fwhm_narrow = 0.109
@@ -218,7 +225,6 @@ Function initNG7()
 	Variable/G a_pixel = 0.5
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
-	Variable/G phi_0 = 2.3e13
 	Variable/G lambda_t = 5.50
 	Variable/G l2r_lower = 100
 	Variable/G l2r_upper =  1531
@@ -232,12 +238,20 @@ Function initNG7()
 	Variable/G l_gap = 188.0
 	Variable/G guide_width = 5.0
 	Variable/G idmax = 100.0
-	Variable/G b = 0.028
-	Variable/G c = 0.028
+	
+//	//old values, from 3/2002
+//	Variable/G phi_0 = 2.3e13
+//	Variable/G b = 0.028
+//	Variable/G c = 0.028
+
+	//new values, from 6/2009	
+	Variable/G phi_0 = 3.2e13
+	Variable/G b = 0.0448
+	Variable/G c = 0.0463
 	
 	//fwhm values (new variables)
 	Variable/G fwhm_narrow = 0.09
-	Variable/G fwhm_mid = 0.11
+	Variable/G fwhm_mid = 0.115		//2009
 	Variable/G fwhm_wide = 0.22
 	
 	//source apertures (cm)
@@ -483,7 +497,7 @@ Function UpdateControls()
 				mode=1
 		endswitch
 		
-		dlStr = "0.09;0.11;0.22;"
+		dlStr = "0.09;0.115;0.22;"
 		Slider SC_Slider_1,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
 		SetVariable setvar0,limits={100,1531,1}
 		Slider SC_Slider_1,variable=root:Packages:NIST:SAS:gDetDist		//forces update
@@ -1981,11 +1995,18 @@ Function deltaQ(atQ)
     return(100*sqrt(sigQ2)/atQ)
 End
 
-
+// updated with new flux numbers from John Barker
+// NG3 - Feb 2009
+// NG7 - July 2009
+//
+// guide loss has been changed to 0.95 rather than the old value of 0.95
+//
+// other values are changed in the initialization routines
+//
 Function beamIntensity()
 
     Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
-    Variable a1,a2,retVal
+    Variable a1,a2,retVal,guide_loss=0.95
     SetDataFolder root:Packages:NIST:SAS
     NVAR l_gap=l_gap,guide_width =guide_width,ng = gNg
     NVAR lambda_t=lambda_t,b=b,c=c
@@ -2000,7 +2021,7 @@ Function beamIntensity()
     alpha = (a1+a2)/(2*l1)	//angular divergence of beam
     f = l_gap*alpha/(2*guide_width)
     t4 = (1-f)*(1-f)
-    t5 = exp(ng*ln(0.96))	// trans losses of guides in pre-sample flight
+    t5 = exp(ng*ln(guide_loss))	// trans losses of guides in pre-sample flight
     t6 = 1 - lambda*(b-(ng/8)*(b-c))		//experimental correction factor
     t = t1*t2*t3*t4*t5*t6
     

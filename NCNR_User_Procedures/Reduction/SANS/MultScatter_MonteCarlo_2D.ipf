@@ -1237,7 +1237,11 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
-	inputWave[0] = imon		//reset
+
+// to correct for detector efficiency, send only the fraction of neutrons that are actually counted	
+	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
+
+	inputWave[0] = imon	* detectorEff			//reset number of input neutrons before full simulation
 	
 	if(t0>10)
 		sprintf str,"The simulation will take approximately %d seconds.\r- Proceed?",t0
@@ -1686,6 +1690,7 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR fracScat = root:Packages:NIST:SAS:g_1DFracScatt		// fraction of beam captured on detector
 	NVAR estTrans = root:Packages:NIST:SAS:g_1DEstTrans		// estimated transmission of sample
 	NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
+	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
 	
 	WAVE rw=root:Packages:NIST:SAS:realsRead
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
@@ -1748,7 +1753,8 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	fracScat = 1-estTrans
 	
 //				aveint = (Imon)*prob_i / circle_fraction / nCells_expected
-	aveint = (Imon)*prob_i
+// added correction for detector efficiency, since SASCALC is flux on sample
+	aveint = (Imon)*prob_i*detectorEff
 
 	countsInAnnulus = aveint*nCells
 	SimDetCts = sum(countsInAnnulus,-inf,inf)
