@@ -135,7 +135,10 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_1D_DoABS = 1
 	Variable/G root:Packages:NIST:SAS:g_1D_AddNoise = 1
 	Variable/G root:Packages:NIST:SAS:g_MultScattFraction=0
-	Variable/G root:Packages:NIST:SAS:g_detectorEff=0.75			//averag value for most wavelengths
+	Variable/G root:Packages:NIST:SAS:g_detectorEff=0.75			//average value for most wavelengths
+	Variable/G root:Packages:NIST:SAS:g_actSimTime = 0				//for the save
+	Variable/G root:Packages:NIST:SAS:g_SimTimeWarn = 10			//manually set to a very large value for scripted operation
+	
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }

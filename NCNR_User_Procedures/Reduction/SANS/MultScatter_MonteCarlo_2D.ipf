@@ -1097,8 +1097,13 @@ Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 		Abort "results_desc DNExist WriteVAXData()"
 	Endif
 	
+	NVAR actSimTime = root:Packages:NIST:SAS:g_actSimTime
+	String str = ""
+	sprintf str,"%30s\t\t%g seconds\r","MonteCarlo Simulation time = ",actSimTime
+		
 	Open refNum as fullpath+".txt"
 		wfprintf refNum, "%30s\t\t%g\r",results_desc,results
+		FBinWrite refNum,str
 		FStatus refNum
 		FSetPos refNum,V_logEOF
 	Close refNum
@@ -1238,12 +1243,16 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
 
+	Print "Estimated Simulation time (s) = ",t0
+	
 // to correct for detector efficiency, send only the fraction of neutrons that are actually counted	
 	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
+	NVAR actSimTime = root:Packages:NIST:SAS:g_actSimTime
+	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
 
 	inputWave[0] = imon	* detectorEff			//reset number of input neutrons before full simulation
 	
-	if(t0>10)
+	if(t0>SimTimeWarn)
 		sprintf str,"The simulation will take approximately %d seconds.\r- Proceed?",t0
 		DoAlert 1,str
 		if(V_flag == 2)
@@ -1267,6 +1276,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	Printf  "MC sim time = %g seconds\r",t0
+	actSimTime = t0
 	
 	trans = results[8]			//(n1-n2)/n1
 	if(trans == 0)
@@ -1306,6 +1316,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
 	if(!rawCts)			//go ahead and do the linear scaling
 		linear_data = linear_data / kappa
+		linear_data /= detectorEff
 	endif		
 	data = linear_data
 	
@@ -1780,11 +1791,13 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	// end at 50 to leave the natural statistics at the end of the set (may have a total of 80+ points if no offset)
 	sigave[10,50;10] = 10*sigave[p]
 
-	// convert to absolute scale
+	// convert to absolute scale, remembering to un-correct for the detector efficiency
 	if(doABS)
 		Variable kappa = thick*(pixSize/sdd)^2*trans*iMon
 		aveint /= kappa
 		sigave /= kappa
+		aveint /= detectorEff
+		sigave /= detectorEff
 	endif
 				
 				
@@ -1836,11 +1849,14 @@ End
 //
 //Function Script_2DMC()
 //
+//
+//	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
+//	SimTimeWarn = 36000			//sets the threshold for the warning dialog to 10 hours
 //	STRUCT WMButtonAction ba
 //	ba.eventCode = 2			//fake mouse click on button
 //	
 //	NVAR detDist = root:Packages:NIST:SAS:gDetDist
-//	
+//
 //	detDist = 200		//set directly in cm
 //	MC_DoItButtonProc(ba)
 //	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
@@ -1853,5 +1869,7 @@ End
 //	MC_DoItButtonProc(ba)
 //	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
 //	
+//
+// SimTimeWarn = 10		//back to 10 seconds for manual operation
 //	return(0)
 //end
