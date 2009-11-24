@@ -70,6 +70,8 @@
 // SRK JUN2009
 #include "Smear_2D"		//2D resolution calculation and smearing
 
+//AJJ Nov 2009
+#include "DataSetHandling"
 
 
 // a simple list of items to add to the Beta menu

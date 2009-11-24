@@ -26,6 +26,7 @@
 
 #include "CheckVersionFTP"				//added June 2008
 
+#include "DataSetHandling"					//added Nov 2009 AJJ
 
 Menu "SANS Models"
 	"Fit Manager", Init_WrapperPanel()
