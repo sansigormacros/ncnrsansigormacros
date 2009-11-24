@@ -1466,6 +1466,7 @@ Function ExecuteProtocol(protStr,samStr)
 	PathInfo catPathName			//this is where the files are
 	pathStr=S_path
 	
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 	
 	//Parse the instructions in the prot wave
 	//0 - bkg
@@ -1916,8 +1917,11 @@ Function ExecuteProtocol(protStr,samStr)
 				SaveAsPNG(activeType,fullpath,dialog)
 				break
 			default:
-				WriteWaves_W_Protocol(activeType,fullpath,dialog)
-				//WriteXMLWaves_W_Protocol(activeType,fullpath,dialog)
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
+				else
+					WriteWaves_W_Protocol(activeType,fullpath,dialog)
+				endif
 		endswitch
 		
 		//Print "data written to:  "+ fullpath

@@ -53,6 +53,14 @@ Function UnityTransPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function XMLWritePref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gXML_Write
+	gVal = checked
+End
+
 Function PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -80,6 +88,9 @@ Proc Pref_Panel()
 	SetVariable setvar0,limits={1,100,1},value= root:myGlobals:gBinWidth
 	SetVariable setvar1,pos={10,105},size={200,15},title="# Phi Steps (annular avg)"
 	SetVariable setvar1,limits={1,360,1},value= root:myGlobals:gNPhiSteps
+	CheckBox check3,pos={10,130},size={184,14},proc=XMLWritePref,title="Use canSAS XML Output"
+	CheckBox check3,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
+	CheckBox check3,value=root:Packages:NIST:gXML_Write
 	//keep these hidden for now so that nobody can accidentally change them from
 	//the default values set in Initialize.ipf (128x128)
 //	SetVariable setvar2,pos={10,125},size={200,15},title="Detector Pixels (X)"
@@ -88,4 +99,3 @@ Proc Pref_Panel()
 //	SetVariable setvar3,limits={1,2000,1},value= root:myGlobals:gNPixelsY
 
 End
-

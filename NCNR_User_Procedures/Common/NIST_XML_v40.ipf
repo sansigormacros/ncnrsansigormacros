@@ -701,6 +701,9 @@ end
 //
 // root:myGlobals:Protocols:gProtoStr is the name of the currently active protocol
 //
+//AJJ Nov 2009 : This version of the function currently only works for Circular, Sector and Rectangular averages
+//i.e. anything that produces I vs Q. Need to add ability to handle Annular (I vs theta) but that requires namespace addition to XML format
+//and handling on load.
 Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	String type,fullpath
 	Variable dialog		//=1 will present dialog for name

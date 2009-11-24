@@ -116,6 +116,7 @@ Function InitGlobals()
 	
 	//set XML globals
 	String/G root:Packages:NIST:gXMLLoader_Title = ""
+	Variable/G root:Packages:NIST:gXML_Write = 0
 
 	
 	Return(0)
