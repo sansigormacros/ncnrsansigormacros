@@ -136,15 +136,16 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 					if(V_flag==2)	//user selected No, don't load the data
 						SetDataFolder root:
 						KillWaves $n0,$n1,$n2		// kill the default waveX that were loaded
-						//if(DataFolderExists("root:Packages:NIST"))
-						//	String/G root:Packages:NIST:gLastFileName = filename
-						//endif
+						if(DataFolderExists("root:Packages:NIST"))
+							String/G root:Packages:NIST:gLastFileName = filename
+						endif
 						return	//quits the macro
 					endif
 					SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
+
 			
 			////overwrite the existing data, if it exists
 			Duplicate/O $("root:"+n0), $w0
@@ -184,13 +185,16 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
 						if(DataFolderExists("root:Packages:NIST"))
 							String/G root:Packages:NIST:gLastFileName = filename
-						endif		//set the last file loaded to the one NOT loaded
+						endif
 						return		//quits the macro
 					endif
 					SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
+
+
+
 	
 	////overwrite the existing data, if it exists
 			Duplicate/O $("root:"+n0), $w0
@@ -255,13 +259,16 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						KillWaves $n0,$n1,$n2,$n3		// kill the default waveX that were loaded
 						if(DataFolderExists("root:Packages:NIST"))
 							String/G root:Packages:NIST:gLastFileName = filename
-						endif		//set the last file loaded to the one NOT loaded
+						endif
 						return		//quits the macro
 					endif
 					SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
+	
+
+
 	
 	////overwrite the existing data, if it exists
 			Duplicate/O $("root:"+n0), $w0
@@ -324,9 +331,9 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 					if(V_flag==2)	//user selected No, don't load the data
 						KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
-						//if(DataFolderExists("root:Packages:NIST"))
-						//	String/G root:Packages:NIST:gLastFileName = filename
-						//endif		//set the last file loaded to the one NOT loaded
+						if(DataFolderExists("root:Packages:NIST"))
+							String/G root:Packages:NIST:gLastFileName = filename
+						endif		//set the last file loaded to the one NOT loaded
 						return		//quits the macro
 					endif
 					SetDataFolder $("root:"+baseStr)
