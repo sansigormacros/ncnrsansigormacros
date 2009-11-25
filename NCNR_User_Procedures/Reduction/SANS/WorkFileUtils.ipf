@@ -483,16 +483,19 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			yd = fyy[jj]-yy0
 			//rad is the distance of pixel ij from the sample
 			//domega is the ratio of the solid angle of pixel ij versus center pixel
+			// product xy = 1 for a detector with a linear spatial response (modern Ordela)
+			// solid angle calculated, dW^3 >=1, so multiply data to raise measured values to correct values.
 			rad = sqrt(dtdis2 + xd^2 + yd^2)
 			domega = rad/dtdist
 			ratio = domega^3
-//			solidAngle[ii][jj] = ratio		//testing only	
 			xy = xx[ii]*yy[jj]
 			data[ii][jj] *= xy*ratio
+//			solidAngle[ii][jj] = xy*ratio		//testing only	
+
 			
-			// multiplicative correction for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
+			// correction factor for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
 			// correction inserted 11/2007 SRK
-			// large angle detector efficiency correction is >= 1 and will "bump up" the highest angles
+			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
 			// so divide here to get the correct answer (5/22/08 SRK)
 			if(doEfficiency)
 #if (exists("ILL_D22")==6)
@@ -500,11 +503,12 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
 #else
 				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-	//			solidAngle[ii][jj] = DetEffCorr(lambda,dtdist,xd,yd)		//testing only
+//				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
 #endif
 			endif
 			
-			// large angle transmission correction is <= 1 and will "bump up" the highest angles
+			// large angle transmission calculation is <= 1 and will "bump down" the measured value at the highest angles
+			// so divide here to get the correct answer
 			if(doTrans)
 			
 				if(trans<0.1 && ii==0 && jj==0)
@@ -519,7 +523,7 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 				endif
 					
 				data[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//moved from 1D avg SRK 11/2007
-				solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
+//				solidAngle[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
 			endif
 			
 			jj+=1

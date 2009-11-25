@@ -186,10 +186,11 @@ Function initNG3()
 //	Variable/G b = 0.023
 //	Variable/G c = 0.023
 
-	//new values, from 2/2009
-	Variable/G phi_0 = 3.4e13
-	Variable/G b = 0.0185
-	Variable/G c = 0.0135
+	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
+	Variable/G phi_0 = 2.42e13
+	Variable/G b = 0.0
+	Variable/G c = -0.0243
+	Variable/G gGuide_loss = 0.924
 	
 	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
 	Variable/G fwhm_narrow = 0.109
@@ -247,10 +248,11 @@ Function initNG7()
 //	Variable/G b = 0.028
 //	Variable/G c = 0.028
 
-	//new values, from 6/2009	
-	Variable/G phi_0 = 3.2e13
-	Variable/G b = 0.0448
-	Variable/G c = 0.0463
+	//new values, from 11/2009	
+	Variable/G phi_0 = 2.55e13
+	Variable/G b = 0.0395
+	Variable/G c = 0.0442
+	Variable/G gGuide_loss = 0.974
 	
 	//fwhm values (new variables)
 	Variable/G fwhm_narrow = 0.09
@@ -2009,12 +2011,13 @@ End
 Function beamIntensity()
 
     Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
-    Variable a1,a2,retVal,guide_loss=0.95
+    Variable a1,a2,retVal
     SetDataFolder root:Packages:NIST:SAS
     NVAR l_gap=l_gap,guide_width =guide_width,ng = gNg
     NVAR lambda_t=lambda_t,b=b,c=c
     NVAR lambda=gLambda,t1=t1,t2=t2,t3=t3,phi_0=phi_0
     NVAR lambda_width=gDeltaLambda
+    NVAR guide_loss=gGuide_loss
     
     l1 = sourceToSampleDist()
     a1 = sourceApertureDiam()

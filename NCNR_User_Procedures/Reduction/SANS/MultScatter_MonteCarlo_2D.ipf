@@ -113,7 +113,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	NVAR mt=root:myGlobals:gThreadGroupID
 	mt = ThreadGroupCreate(nthreads)
 	NVAR gInitTime = root:Packages:NIST:SAS:gRanDateTime		//time that SASCALC was started
-	Print "thread group ID = ",mt
+//	Print "thread group ID = ",mt
 	
 	inputWave[0] = NNeutron/nthreads		//split up the number of neutrons
 	

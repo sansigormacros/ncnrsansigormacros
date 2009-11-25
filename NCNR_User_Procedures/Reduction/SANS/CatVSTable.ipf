@@ -46,7 +46,7 @@ Function BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	//Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:RunNumber"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:IsTrans"
@@ -72,7 +72,7 @@ Function BuildCatVeryShortTable()
 	WAVE Thickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	WAVE XCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	WAVE YCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	//WAVE/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	WAVE/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	WAVE/B NumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	WAVE RunNumber = $"root:myGlobals:CatVSHeaderInfo:RunNumber"
 	WAVE IsTrans = $"root:myGlobals:CatVSHeaderInfo:IsTrans"
@@ -100,6 +100,8 @@ Function BuildCatVeryShortTable()
 #if (exists("ILL_D22")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
 #endif
+
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 	Endif
@@ -189,7 +191,7 @@ Function SortWaves()
 	Wave GThickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	Wave GXCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	Wave GYCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	//Wave/B GNumGuides = $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	Wave/B GNumGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	Wave/B GNumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	Wave GRunNumber = $"root:myGlobals:CatVSHeaderInfo:RunNumber"
 	Wave GIsTrans = $"root:myGlobals:CatVSHeaderInfo:IsTrans"
@@ -201,7 +203,8 @@ Function SortWaves()
 	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
 #else
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,gNumGuides
 #endif
 
 	return(0)
@@ -222,7 +225,7 @@ Function BuildTableWindow()
 	Wave Thickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	Wave XCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	Wave YCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	//Wave/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	Wave/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	Wave/B NumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	Wave RotAngle =  $"root:myGlobals:CatVSHeaderInfo:RotAngle"
 	Wave Temperature = $"root:myGlobals:CatVSHeaderInfo:Temperature"
@@ -234,7 +237,9 @@ Function BuildTableWindow()
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
 #else
 // original order, magnetic at the end
-	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
+//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
+// with numGuides
+	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
 #endif
@@ -269,7 +274,7 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave GThickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	Wave GXCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	Wave GYCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	//Wave/B GNumGuides = $"root:myGlobals:CatVSHeaderInfo:NumGuides"
+	Wave/B GNumGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	Wave/B GNumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	Wave GRunNumber = $"root:myGlobals:CatVSHeaderInfo:RunNumber"
 	Wave GIsTrans = $"root:myGlobals:CatVSHeaderInfo:IsTrans"
@@ -372,6 +377,10 @@ Function GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GReactpow
 	GReactPow[lastPoint]  = getReactorPower(fname)
 #endif	
+
+// number of guides
+	InsertPoints lastPoint,1,GNumGuides
+	GNumGuides[lastPoint]  = numGuides(getSourceToSampleDist(fname))
 
 	return(0)
 End

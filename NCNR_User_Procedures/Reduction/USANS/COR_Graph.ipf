@@ -487,7 +487,7 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	
 	Wave/T listW=$(USANSFolder+":Globals:MainPanel:"+type+"Wave")
 	Variable ii,num=numpnts(listW)
-	String fname="",fpath=""
+	String fname="",fpath="",str=""
 	PathInfo bt5PathName
 	fpath = S_Path
 	
@@ -518,7 +518,12 @@ Function RePlotWithUserAngle(type,zeroAngle)
 	Wave tmpdetCts = $(USANSFolder+":"+type+":DetCts")
 	Variable pkHt=0
 	pkHt = interp(zeroAngle,tmpangle,tmpdetcts)
-	String str=""
+	
+	if(numtype(pkHt) != 0)		// bad but it warns, useful if only positive angles are available, use the smallest
+		str = "Can't find peak at angle = "+num2str(zeroAngle)+" Using the value at angle = "+num2str(tmpAngle[0])
+		pkHt = tmpDetCts[0]
+	endif
+
 	str=note(tmpDetCts)
 	str = ReplaceNumberByKey("PEAKANG",str,zeroAngle,":",";")
 	str = ReplaceNumberByKey("PEAKVAL",str,pkHt,":",";")

@@ -120,7 +120,7 @@ Proc Init_UCALC()
 	String/G gFuncStr=""
 	String/G gTotTimeStr=""
 	Variable/G gAnalyzerOmega = 7.1e-7		//solid angle of the analyzer, in steradians
-	Variable/G gBeamCurrent=25000		//beam current Ed*I	(n/s) for 5/8" diam = 25000 n/s
+//	Variable/G gBeamCurrent=25000		// (?? not used) beam current Ed*I	(n/s) for 5/8" diam = 25000 n/s
 	Variable/G gThick=0.1		//sample thickness (cm)	
 	Variable/G gSamTrans=0.8
 	Variable/G g_1D_DoABS = 0 		//=1 for abs scale, 0 for just counts
@@ -458,8 +458,8 @@ Window UCALC_Panel() : Graph
 // a box for the results
 	SetVariable totalTime,pos={left+20,335},size={150,15},title="Count time (h:m)",value= gTotTimeStr
 	SetVariable totalTime,limits={-inf,inf,0},noedit=1
-	SetVariable valdisp0_2,pos={left+20,365},size={190,15},title="Multiple Coherent Scattering"
-	SetVariable valdisp0_2,limits={-inf,inf,0},noedit=1,value=g_MultScattFraction
+	SetVariable valdisp0_2,pos={left+20,365},size={200,15},title="Multiple Coherent Scattering"
+	SetVariable valdisp0_2,limits={-inf,inf,0},format="%8f",noedit=1,value=g_MultScattFraction
 //	ValDisplay valdisp0_3,pos={left+20,420},size={220,13},title="Estimated transmission"
 //	ValDisplay valdisp0_3,limits={0,0,0},barmisc={0,1000},value=root:Packages:NIST:USANS:Globals:U_Sim:g_1DEstTrans
 //	ValDisplay valdisp0_3,disable=1
@@ -1605,11 +1605,118 @@ Function U_SaveButtonProc(ba) : ButtonControl
 					
 				endif
 			endfor
-									
+			
+			// no save the fake "COR" file that is the combination and rescaling of the data sets
+			// - the combination is in root:Sim_USANS:
+			NVAR g_1D_PlotCR = root:Packages:NIST:USANS:Globals:U_Sim:g_1D_PlotCR
+
+			if(g_1D_PlotCR) // right now, save COR only if the CR is plotted
+				SaveFakeCOR(baseName)			
+			endif
+			
 			break
 	endswitch
 
 	return 0
+End
+
+
+Function SaveFakeCOR(nameStr)
+	String nameStr
+	
+	NVAR gThick = root:Packages:NIST:USANS:Globals:U_Sim:gThick
+	NVAR gSamTrans = root:Packages:NIST:USANS:Globals:U_Sim:gSamTrans
+	NVAR gAnalyzerOmega = root:Packages:NIST:USANS:Globals:U_Sim:gAnalyzerOmega
+	NVAR g_MultScattFraction = root:Packages:NIST:USANS:Globals:U_Sim:g_MultScattFraction
+	SVAR funcStr = root:Packages:NIST:USANS:Globals:U_Sim:gFuncStr 
+	
+	String folder = "root:Sim_USANS:",fileStr=""
+	String termStr="\r\n"		//VAX uses only <CR> as terminator, but only CRLF seems to FTP correctly to VAX
+	String destStr="",formatStr = "%15.6g %15.6g %15.6g %15.6g %15.6g %15.6g"+termStr
+
+	Variable refNum,integer,realval
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE qvals =$(folder + "Sim_USANS_q")
+	WAVE inten=$(folder + "Sim_USANS_i")
+	WAVE sig=$(folder + "Sim_USANS_s")
+	
+	//check each wave
+	If(!(WaveExists(qvals)))
+		Abort "qvals DNExist in SaveFakeCOR()"
+	Endif
+	If(!(WaveExists(inten)))
+		Abort "inten DNExist in SaveFakeCOR()"
+	Endif
+	If(!(WaveExists(sig)))
+		Abort "sig DNExist in SaveFakeCOR()"
+	Endif
+	
+	//dummy wave for the resolution
+	Duplicate/O qvals,dumWave
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	NVAR DQv=$(USANSFolder+":Globals:MainPanel:gDQv")
+	dumWave = - DQv
+	
+	//temp waves for the rescaling
+	Duplicate/O qvals,tq,ti,te
+	ti=inten
+	te=sig
+	tq=qvals
+
+	//rescale
+	ti *= 1.0e6 / GetUSANSBeamIntensity()		//converts to "SAM" scaled data
+	ti *= 1/(gSamTrans*gThick*gAnalyzerOmega*1.0e6)		//converts to "COR" scaling (approx, since I don't know Twide)
+	//rescale error appropriately too
+	te *= 1.0e6 / GetUSANSBeamIntensity()		//converts to "SAM" scaled data
+	te *= 1/(gSamTrans*gThick*gAnalyzerOmega*1.0e6)		//converts to "COR" scaling (approx, since I don't know Twide)
+
+	// add fake error to every few data points to mark it as simulated data
+	te[2,numpnts(te)-1;7] *= 10
+	
+	// now trim off the q-values less than 3e-5
+	if(tq[0] < 3e-5)
+		do
+			DeletePoints 0, 1, ti,tq,te,dumWave
+		while(tq[0] < 3e-5)
+	endif
+	
+	String samStr="",empStr="",dateStr="",samLabelStr="",paramStr="",empLevStr="",bkgLevStr="",pkStr=""
+	samStr = "SIM FILES: "+StringByKey("FILE",note(inten),":",";")
+	empStr = "EMP FILES: "+"none"
+	empLevStr = "EMP LEVEL: " + "none"
+	bkgLevStr = "BKG LEVEL: " + "not used"
+	paramStr = "Ds = "+num2str(gthick)+" cm ; "
+	paramStr += "Twide = "+"unknown"+" ; "
+	paramStr += "Trock = "+num2str(gSamTrans)	
+	pkStr += "Multiple coherent scattering fraction: "+num2str(g_MultScattFraction)
+	
+	//these strings are always the same
+	samLabelStr ="LABEL: "+"Simulated USANS Data from: "+funcStr
+	dateStr = date()+" at  "+time()// + " "+Secs2Time(DateTime,2)
+	
+	
+	fileStr=nameStr+".cor"
+	//actually open the file
+	Open refNum as fileStr
+	
+	fprintf refnum,"%s"+termStr,samStr
+	fprintf refnum,"%s"+termStr,dateStr
+	fprintf refnum,"%s"+termStr,samLabelStr
+	fprintf refnum,"%s"+termStr,empStr
+	fprintf refnum,"%s"+termStr,paramStr
+	fprintf refnum,"%s"+termStr,pkStr
+	fprintf refnum,"%s"+termStr,empLevStr + " ; "+bkglevStr
+	
+	//
+	wfprintf refnum, formatStr, tq,ti,te,dumWave,dumWave,dumWave
+	
+	Close refnum
+	
+	Killwaves/Z dumWave,ti,te,tq
+	
+	
+	
+	return(0)
 End
 
 
@@ -1656,7 +1763,7 @@ Function SaveFakeUSANS(nameStr,num,set)
 	
 	// set up some of the strings needed
 	fileStr=nameStr+num2str(num+set)+".bt5"
-	dateStr = date()// + " "+Secs2Time(DateTime,2)
+	dateStr = date()
 	ctTime = countingTime[first]
 	numPts = last-first+1
 	
