@@ -29,7 +29,7 @@
 //AJJ October 2008 - switch to shared file loader
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
-#include "cansasXML_v11"
+//#include "cansasXML_v11"
 #include "USANS_SlitSmearing_v40"
 #include "GaussUtils_v40" // for isSANSResolution - could put this function elsewhere
 //
@@ -72,6 +72,7 @@
 
 //AJJ Nov 2009
 #include "DataSetHandling"
+#include "WriteModelData_v40"
 
 
 // a simple list of items to add to the Beta menu

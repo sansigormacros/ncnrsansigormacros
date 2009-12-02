@@ -96,6 +96,12 @@ Proc Subtract1D_MainButtonProc(ctrlName) : ButtonControl
 	OpenSubtract1DPanel()
 End
 
+Proc Arithmetic1D_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	MakeDAPanel()
+End
+
 Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -298,8 +304,10 @@ Window Main_Panel()
 	Button MainButton_2c,help={"Shows panel for performing a variety of linearized fits to 1-D data files. Use \"Plot\" button to import 1-D data files"}
 	Button MainButton_2d,pos={15,180},size={60,20},proc=FITRPA_MainButtonProc,title="FIT/RPA"
 	Button MainButton_2d,help={"Shows panel for performing a fit to a polymer standard."}
-	Button MainButton_2e,pos={120,90},size={90,20},proc=Subtract1D_MainButtonProc,title="Subtract 1D"
-	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
+//	Button MainButton_2e,pos={120,90},size={90,20},proc=Subtract1D_MainButtonProc,title="Subtract 1D"
+//	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
+	Button MainButton_2e,pos={120,90},size={90,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
+	Button MainButton_2e,help={"Shows panel for doing arithmetic on 1D data sets"}
 	Button MainButton_2a,disable=1
 	Button MainButton_2b,disable=1
 	Button MainButton_2c,disable=1

@@ -27,6 +27,7 @@ Function Init_WrapperPanel()
 			
 	//Ugly. Put this here to make sure things don't break
 	String/G root:Packages:NIST:gXMLLoader_Title
+	Variable/G root:Packages:NIST:gXML_Write = 0
 	
 	DoWindow/F WrapperPanel
 	if(V_flag==0)

@@ -34,8 +34,6 @@ function LoadNISTXMLData(filestr,doPlot)
 			String w0,w1,w2,w3,w4,w5,basestr,fileName
 			String xmlDataFolder,xmlDataSetFolder
 			
-			
-			
 			for (i = 0; i < CountObjects(xmlReaderFolder,4); i+=1)
 								
 				xmlDataFolder = xmlReaderFolder+GetIndexedObjName(xmlReaderFolder,4,i)+":"
@@ -45,12 +43,13 @@ function LoadNISTXMLData(filestr,doPlot)
 					for (j = 0; j < numDataSets; j+=1)
 						
 						xmlDataSetFolder = xmlDataFolder+GetIndexedObjName(xmlDataFolder,4,j)+":"
-						
-						SetDataFolder xmlDataSetFolder
+					
+						SetDataFolder xmlDataSetFolder	
 					
 						basestr = CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j),0)
 						//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
 						fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
+							
 							
 						//print "In NIST XML Loader"
 						//print "fileStr: ",fileStr
@@ -169,12 +168,14 @@ function LoadNISTXMLData(filestr,doPlot)
 					
 				else
 					//No multiple SASData sets for this SASEntry
-					SetDataFolder xmlDataFolder
+					SetDataFolder xmlDataFolder					
+					
+					print xmlDataFolder
 					
 					basestr = CleanupName(getXMLDataSetTitle(xmlDataFolder,0),0)
 					//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
 					fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
-						
+																
 					//print "In NIST XML Loader"
 					//print "fileStr: ",fileStr
 					//print "basestr: ",basestr
@@ -298,7 +299,6 @@ function/S getXMLDataSetTitle(xmlDF,dsNum)
 
 	SVAR title = root:Packages:NIST:gXMLLoader_Title
 
-
 	String mdstring = xmlDF+"metadata"
 
 	Wave/T meta = $mdstring
@@ -314,8 +314,10 @@ function/S getXMLDataSetTitle(xmlDF,dsNum)
 		print title
 	else
 		FindValue/TEXT="Run"/TXOP=4/Z meta
-		title = title+" "+TrimWS(meta[V_Value][1])	
-		print title
+		if (V_Value >= 0)
+			title = title+" "+TrimWS(meta[V_Value][1])	
+			print title
+		endif
 	endif
 
 	if (strlen(title) > 28)
@@ -714,9 +716,8 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	destStr = "root:Packages:NIST:"+type
 	
 	Variable refNum
-	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
-	String fname,ave="C",hdrStr1="",hdrStr2=""
-	Variable step=1
+//	String fname,ave="C",hdrStr1="",hdrStr2=""
+//	Variable step=1
 	
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 	WAVE intw=$(destStr + ":integersRead")
@@ -869,6 +870,98 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	Return(0)
 End
 
+/// See WriteModelData_v40.ipf for 6 column equivalent
+Function ReWrite1DXMLData(folderStr)
+	String folderStr
+
+	String fullpath=""
+	Variable dialog=1
+	String dataSetFolderParent,basestr,fullBase
+	
+	Struct NISTXMLfile nf
+
+	//Abuse ParseFilePath to get path without folder name
+	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
+	//Abuse ParseFilePath to get basestr
+	basestr = ParseFilePath(0,folderStr,":",1,0)
+
+	SetDataFolder $(dataSetFolderParent+basestr)
+	WAVE/Z qw = $(baseStr+"_q")
+	WAVE/Z iw = $(baseStr+"_i")
+	WAVE/Z sw = $(baseStr+"_s")
+	WAVE/Z resw = $(baseStr+"_res")
+	
+	if(WaveExists(qw) == 0)
+		Abort "q is missing"
+	endif
+	if(WaveExists(iw) == 0)
+		Abort "i is missing"
+	endif
+	if(WaveExists(sw) == 0)
+		Abort "s is missing"
+	endif
+	if(WaveExists(resw) == 0)
+		Abort "Resolution information is missing."
+	endif
+	
+	Duplicate/O qw qbar,sigQ,fs
+		
+
+		
+	//Data
+	Wave nf.Q = qw
+	nf.unitsQ = "1/A"
+	Wave nf.I = iw
+	nf.unitsI = "1/cm"
+	Wave nf.Idev = sw
+	nf.unitsIdev = "1/cm"
+	Wave nf.Qdev = sigQ
+	nf.unitsQdev = "1/A"
+	Wave nf.Qmean = qbar
+	nf.unitsQmean = "1/A"
+	Wave nf.Shadowfactor = fs
+	nf.unitsShadowfactor = "none"
+	
+	
+	//write out the standard header information
+	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
+	
+	//AJJ to fix with sensible values
+	nf.run = ""
+	nf.nameSASinstrument = "NIST IGOR Procedures"
+	nf.SASnote = ""
+	//
+	nf.sample_ID = baseStr
+	nf.title = baseStr
+	nf.radiation = "neutron"
+	//Do something with beamstop (rw[21])
+	nf.detector_name = "Re-written data"
+
+	nf.SASprocessnote =  "Modified data written from folder "+baseStr+" on "+(date()+" "+time())
+	
+	nf.nameSASProcess = "NIST IGOR"
+
+	//Close refnum
+	
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as",fname=baseStr+".xml")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	
+	
+	writeNISTXML(fullpath,nf)
+	//write confirmation of write operation to history area
+	Print "XML File written: ", GetFileNameFromPathNoSemi(fullPath)
+	KillWaves/Z tempShortProto
+	Return(0)
+End
+
 #else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
 	FUNCTION LoadNISTXMLData(fileName,doPlot)
@@ -888,6 +981,13 @@ End
 	Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 		String type,fullpath
 		Variable dialog		//=1 will present dialog for name
+	
+	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return(-6)
+	end
+	
+	Function ReWrite1DXMLData(folderStr)
+		String folderStr
 	
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)

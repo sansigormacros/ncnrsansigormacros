@@ -107,19 +107,27 @@ Proc ReWrite1DData(folderStr,delim,term)
 	Prompt folderStr,"Data Set",popup,W_DataSetPopupList()
 	Prompt delim,"delimeter",popup,"tab;space;"
 	Prompt term,"line termination",popup,"CR;LF;CRLF;"
-		
-	fReWrite1DData(folderStr,delim,term)
 	
+	if (root:Packages:NIST:gXML_Write == 1)
+		SetDataFolder root:
+		ReWrite1DXMLData(folderStr)
+	else
+		SetDataFolder root:
+		fReWrite1DData(folderStr,delim,term)
+	endif	
 End
 
 
 // always asks for a file name
 // - and right now, always expect 6-column data, either SANS or USANS (re-writes -dQv)
+// - AJJ Nov 2009 : better make sure we always fake 6 columns on reading then....
 Function fReWrite1DData(folderStr,delim,term)
 	String folderStr,delim,term
 	
 	String formatStr="",fullpath=""
 	Variable refnum,dialog=1
+	
+	String dataSetFolderParent,basestr
 	
 	//setup delimeter and terminator choices
 	If(cmpstr(delim,"tab")==0)
@@ -139,12 +147,17 @@ Function fReWrite1DData(folderStr,delim,term)
 		formatStr += "\r\n"
 	Endif
 	
+	//Abuse ParseFilePath to get path without folder name
+	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
+	//Abuse ParseFilePath to get basestr
+	basestr = ParseFilePath(0,folderStr,":",1,0)
+	
 	//make sure the waves exist
-	SetDataFolder $("root:"+folderStr)
-	WAVE/Z qw = $(folderStr+"_q")
-	WAVE/Z iw = $(folderStr+"_i")
-	WAVE/Z sw = $(folderStr+"_s")
-	WAVE/Z resw = $(folderStr+"_res")
+	SetDataFolder $(dataSetFolderParent+basestr)
+	WAVE/Z qw = $(baseStr+"_q")
+	WAVE/Z iw = $(baseStr+"_i")
+	WAVE/Z sw = $(baseStr+"_s")
+	WAVE/Z resw = $(baseStr+"_res")
 	
 	if(WaveExists(qw) == 0)
 		Abort "q is missing"
@@ -178,7 +191,7 @@ Function fReWrite1DData(folderStr,delim,term)
 	
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as",fname=folderStr+".txt")
+		fullPath = DoSaveFileDialog("Save data as",fname=baseStr+".txt")
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -189,7 +202,7 @@ Function fReWrite1DData(folderStr,delim,term)
 	
 	Open refnum as fullpath
 	
-	fprintf refnum,"Modified data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
+	fprintf refnum,"Modified data written from folder %s on %s\r\n",baseStr,(date()+" "+time())
 	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
 	Close refnum
 	

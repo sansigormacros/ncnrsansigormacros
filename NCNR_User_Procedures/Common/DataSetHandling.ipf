@@ -12,7 +12,9 @@
 // - Multiply data sets
 // - Save a data folder to file
 
-Function DataManagementPanel()
+/////////////////// Data Management Panel ///////////////////////////////////////////////////////
+
+Function MakeDMPanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(459,44,959,364)/N=DataManagementPanel/K=1 as "Data Set Management"
 	ModifyPanel fixedSize=1
@@ -24,19 +26,6 @@ Function DataManagementPanel()
 	Button DS1_button,pos={300,20},size={150,20},proc=DM_LoadDataSetProc,title="Load 1D Data Set 1"
 	PopupMenu DS1_popup,pos={30,21},size={318,20},title="Data Set 1",proc=DMDS_PopMenuProc
 	PopupMenu DS1_popup,mode=1,value= #"DM_DataSetPopupList()"
-
-	//Button DS2_button,pos={300,50},size={150,20},proc=DM_LoadDataSetProc,title="Load 1D Data Set 2"
-	//PopupMenu DS2_popup,pos={30,51},size={318,20},title="Data Set 2",proc=DMDS_PopMenuProc
-	//PopupMenu DS2_popup,mode=1,value= #"DM_DataSetPopupList()"
-
-	//Default to disabled for second data set - only needed for arithmetic
-	//Button DS2_button,disable=2
-	//PopupMenu DS2_popup,disable=2
-
-	//Tabs
-	//TabControl DSTabs,pos={20,90},size={460,200},tabLabel(0)="Management", proc=DSTabsProc
-	//TabControl DSTabs,tablabel(1)="Arithmetic"
-	//TabControl DSTabs,value=0
 
 	//Management Tab
 	Button Rename_button,title="Rename",pos={75,200},size={150,20}
@@ -50,18 +39,93 @@ Function DataManagementPanel()
 
 End
 
-Function MakeDAPanel()
+//Must follow naming scheme to match buttons to popups
+//"Name_button" goes with "Name_popup"
+Function DM_LoadDataSetProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
 
-//	//Set up globals
-//	String/G root:Packages:NIST:gDA_DS1Name
-//	String/G root:Packages:NIST:gDA_DS2Name
-//	String/G root:Packages:NIST:gDA_ResultName	
-//
-//	String/G root:Packages:NIST:gDA_DS1Trace
-//	String/G root:Packages:NIST:gDA_DS2Trace
-//	String/G root:Packages:NIST:gDA_ResultTrace	
 
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			String cmd = "A_LoadOneDDataWithName(\"\","+num2str(0)+")"
+			Execute cmd
+		
+			SVAR gLastFileName = root:packages:NIST:gLastFileName
+
+			String windowName = ba.win
+			String popupName = StringFromList(0,ba.ctrlName,"_")+"_popup"
+			
+			ControlUpdate/W=$(windowName) $(popupName)
+			//instead of a simple controlUpdate, better to pop the menu to make sure that the other menus follow
+			// convoluted method to find the right item and pop the menu.
+
+			String list,folderStr
+			Variable num
+			folderStr = CleanupName(gLastFileName,0)
+			list = DM_DataSetPopupList()
+			num=WhichListItem(folderStr,list,";",0,0)
+			if(num != -1)
+				PopupMenu $(popupName),mode=num+1,win=$(windowName)
+				ControlUpdate/W=$(windowName) $(popupName)
+				
+				if (cmpstr(popupName,"DS1_popup") ==  0)
+					//send fake mouse action to popup to update old name if 
+					Struct WMPopupAction pa
+					pa.eventCode = 2		//fake mouse up
+					pa.win = windowName
+					pa.ctrlName = "DS1_popup"
+					DMDS_PopMenuProc(pa)
+				endif			
+			endif
+			break
+	endswitch
 	
+	return 0
+End
+
+
+Function DMDS_PopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+	
+	switch( pa.eventCode )
+		case 2: // mouse up
+			ControlInfo/W=$(pa.win) $(pa.ctrlName)
+			SetVariable OldName_setvar,win=$(pa.win),value=_STR:S_Value
+//			ControlInfo/W=$(pa.win) DSTabItem_0e
+//			SVAR val = S_Value
+//			 
+//			ControlInfo/W=$(pa.win) $(pa.ctrlName)
+//			val = S_Value
+
+			SetDataFolder root:			
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function/S DMGetDSName(dsNum)
+	Variable dsNum
+	
+	String ctrlName
+	if (dsNum == 1)
+		ctrlName = "DS1_popup"
+	elseif (dsNum == 2)
+		ctrlName = "DS2_popup"
+	endif
+	
+	ControlInfo/W=DataManagementPanel $(ctrlName)
+
+	Return S_Value
+
+End
+
+
+/////////////////////// Data Arithmetic Panel /////////////////////////////////////////
+
+Function MakeDAPanel()
 	PauseUpdate; Silent 1		// building window...
 	DoWindow/K DataArithmeticPanel
 	NewPanel /W=(459,44,959,404)/N=DataArithmeticPanel/K=1 as "Data Set Arithmetic"
@@ -70,20 +134,20 @@ Function MakeDAPanel()
 	//Main bit of panel
 	GroupBox grpBox_0,pos={20,10},size={460,105}
 
-	Button DS1_button,pos={300,20},size={150,20},proc=DMDA_LoadDataSetProc,title="Load 1D Data Set 1"
+	Button DS1_button,pos={300,20},size={150,20},proc=DA_LoadDataSetProc,title="Load 1D Data Set 1"
 	Button DS1_button,valueColor=(65535,0,0),userdata="DS1"
 	PopupMenu DS1_popup,pos={30,21},size={318,20},title="Data Set 1"
 	PopupMenu DS1_popup,mode=1,value= #"DM_DataSetPopupList()"
 	PopupMenu DS1_popup,fsize=12,fcolor=(65535,0,0),valueColor=(65535,0,0)
 
-	Button DS2_button,pos={300,50},size={150,20},proc=DMDA_LoadDataSetProc,title="Load 1D Data Set 2"
+	Button DS2_button,pos={300,50},size={150,20},proc=DA_LoadDataSetProc,title="Load 1D Data Set 2"
 	Button DS2_button,valueColor=(0,0,65535),userdata="DS2"
 	PopupMenu DS2_popup,pos={30,51},size={318,20},title="Data Set 2"
 	PopupMenu DS2_popup,mode=1,value= #"DM_DataSetPopupList()"
 	PopupMenu DS2_popup,fsize=12,fcolor=(0,0,65535),valueColor=(0,0,65535)
 
-	Button DSPlot_button,title="Plot",pos={175,85},size={150,20}
-	Button DSPlot_button,proc=DSPlotButtonProc
+	Button DAPlot_button,title="Plot",pos={175,85},size={150,20}
+	Button DAPlot_button,proc=DAPlotButtonProc
 
 
 	//Tabs
@@ -94,13 +158,16 @@ Function MakeDAPanel()
 	Button DACalculate_button,title="Calculate",pos={50,310},size={150,20}
 	Button DACalculate_button,proc=DACalculateProc
 	Button DASave_button,title="Save Result",pos={300,310},size={150,20}
-	Button DACursors_button,title="Get Cursors",pos={175,250},size={150,20}
+	Button DASave_button,proc=DASaveProc
+	Button DACursors_button,title="Get Matching Range",pos={175,250},size={150,20}
+	Button DACursors_button,proc=DACursorButtonProc
 	SetVariable DAResultName_sv,title="Result Name (max 25 characters)",pos={50,280},size={400,20}
 	SetVariable DAResultName_Sv,fsize=12,value=_STR:"SubtractionResult",proc=setvarproc,live=1
 	CheckBox DANoDS2_cb,title="Data Set 2 = 1?",pos={300,180}
+	CheckBox DANoDS2_cb,proc=DANoDS2Proc
 	
-	ValDisplay DARangeStar_vd,title="Start",pos={40,220},size={100,20},fsize=12
-	ValDisplay DARangeEnd_vd,title="End  ",pos={160,220},size={100,20},fsize=12
+	ValDisplay DARangeStar_vd,title="Start",pos={40,220},size={100,20},fsize=12,value=_NUM:0
+	ValDisplay DARangeEnd_vd,title="End  ",pos={160,220},size={100,20},fsize=12,value=_NUM:0
 	
 	SetVariable DAScale_sv,title="Scale Factor (f)",pos={280,220},size={180,20},fsize=12,value=_NUM:1
 
@@ -111,6 +178,7 @@ Function MakeDAPanel()
 	
 End
 
+
 Function MakeDAPlotPanel()
 	PauseUpdate; Silent 1		// building window...
 	DoWindow/K DAPlotPanel
@@ -118,86 +186,82 @@ Function MakeDAPlotPanel()
 	ModifyPanel fixedSize=1
 
 	Display/HOST=DAPlotPanel/N=DAPlot/W=(0,0,440,400)
+	ShowInfo
 	SetActiveSubWindow DAPlotPanel
-	Checkbox DAPlot_log_cb, title="Log I(q)", pos={20,410}
-End
-
-
-Function DSPlotButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
+	Checkbox DAPlot_log_cb, title="Log I(q)", pos={20,410},value=0
+	Checkbox DAPlot_log_cb, proc=DALogLinIProc
 	
-	String win = ba.win
-	SVAR DS1name = root:Packages:NIST:gDA_DS1Name
-	SVAR DS2name = root:Packages:NIST:gDA_DS2Name
-	SVAR Resultname = root:Packages:NIST:gDA_ResultName	
 	
-	switch (ba.eventCode)
-		case 2:
-			//mouse up
-			//Get folder for DS1
-			DoWindow DAPlotPanel
-			if (V_Flag == 0)
-				MakeDAPlotPanel()
-			else 
-				DoWindow/HIDE=0/F DAPlotPanel
-				do 
-					String tracename = StringFromList(0,TraceNameList("DAPlotPanel#DAPlot",";",1),";")
-					if (cmpstr(tracename,"")==0)
-						break
-					else
-						RemoveFromGraph/W=DAPlotPanel#DAPlot $tracename
-					endif			
-				while(1)				
-			endif
-			
-			ControlInfo/W=$(win) DS1_popup
-			String DS1 = S_Value
-			if (cmpstr(DS1,"") != 0 )
-				AddDAPlot(1)
-			endif
-			//Get folder for DS2
-			ControlInfo/W=$(win) DS2_popup
-			String DS2 = S_Value
-			if (cmpstr(DS2,"") != 0)
-				AddDAPlot(2)
-			endif
-			break
-	endswitch
-
-	return 0
 End
 
 Function AddDAPlot(dataset)
 	Variable dataset
 	
 	String win = "DataArithmeticPanel"
+	String DS1name,DS2name,ResultName
 
 	switch(dataset)
 		case 1:
 			ControlInfo/W=$(win) DS1_popup
-			String DS1name = S_Value
+			DS1name = S_Value
 			Wave qWave = $("root:"+DS1name+":"+DS1name+"_q")
 			Wave iWave = $("root:"+DS1name+":"+DS1name+"_i")
 			Wave errWave = $("root:"+DS1name+":"+DS1name+"_s")
 			AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
+			ErrorBars/W=DAPlotPanel#DAPlot /T=0 $(DS1name+"_i"), Y wave=(errWave,errWave)
+			ModifyGraph/W=DAPlotPanel#DAPlot rgb($(DS1name+"_i"))=(65535,0,0)
+			ControlInfo/W=$(win) DANoDS2_cb
+//			if (V_Value == 1)
+//					Cursor/W=DAPlotPanel#DAPlot A, $(DS1name+"_i"), leftx(iWave)
+//					Cursor/W=DAPlotPanel#DAPlot/A=0 B, $(DS1name+"_i"),  rightx(iWave)
+//			endif
 			break
 		case 2:
-			ControlInfo/W=$(win) DS2_popup
-			String DS2name = S_Value
-			Wave qWave = $("root:"+DS2name+":"+DS2name+"_q")
-			Wave iWave = $("root:"+DS2name+":"+DS2name+"_i")
-			Wave errWave = $("root:"+DS2name+":"+DS2name+"_s")
-			AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
+			ControlInfo/W=$(win) DANoDS2_cb
+			if (V_Value == 0)
+				ControlInfo/W=$(win) DS2_popup
+				DS2name = S_Value
+				Wave qWave = $("root:"+DS2name+":"+DS2name+"_q")
+				Wave iWave = $("root:"+DS2name+":"+DS2name+"_i")
+				Wave errWave = $("root:"+DS2name+":"+DS2name+"_s")
+				AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
+				ErrorBars/W=DAPlotPanel#DAPlot /T=0 $(DS2name+"_i"), Y wave=(errWave,errWave)			
+				ModifyGraph/W=DAPlotPanel#DAPlot rgb($(DS2name+"_i"))=(0,0,65535)
+				Cursor/W=DAPlotPanel#DAPlot A, $(DS2name+"_i"), leftx(iWave)
+				Cursor/W=DAPlotPanel#DAPlot/A=0 B, $(DS2name+"_i"),  rightx(iWave)
+			else
+				ControlInfo/W=$(win) DS1_popup
+				DS1name = S_Value
+				if (!DataFolderExists("root:NullSolvent"))
+					DuplicateDataSet("root:"+DS1name,"NullSolvent")
+				endif
+				Wave qWave =root:NullSolvent:NullSolvent_q
+				Wave iWave = root:NullSolvent:NullSolvent_i
+				Wave errWave = root:NullSolvent:NullSolvent_s
+				iWave = 1
+				errWave = 0.1
+				AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
+				ErrorBars/W=DAPlotPanel#DAPlot /T=0 NullSolvent_i, Y wave=(errWave,errWave)			
+				ModifyGraph/W=DAPlotPanel#DAPlot rgb(NullSolvent_i)=(0,0,65535)
+				Cursor/W=DAPlotPanel#DAPlot A, NullSolvent_i, leftx(iWave)
+				Cursor/W=DAPlotPanel#DAPlot/A=0 B, NullSolvent_i,  rightx(iWave)			
+			endif
 			break
 		case 3:
 			ControlInfo/W=$(win) DAResultName_sv
-			String ResultName = S_Value
+			ResultName = S_Value
 			Wave qWave = $("root:"+ResultName+":"+ResultName+"_q")
 			Wave iWave = $("root:"+ResultName+":"+ResultName+"_i")
 			Wave errWave = $("root:"+ResultName+":"+ResultName+"_s")
 			AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
+			ErrorBars/W=DAPlotPanel#DAPlot /T=0 $(ResultName+"_i"), Y wave=(errWave,errWave)
+			ModifyGraph/W=DAPlotPanel#DAPlot rgb($(ResultName+"_i"))=(0,65535,0)
 			break
 	endswitch
+
+	ControlInfo/W=DAPlotPanel DAPlot_log_cb
+	ModifyGraph/W=DAPlotPanel#DAPlot mode=3, msize=2, marker=19, mirror=1, tick=2, log(bottom)=1,log(left)=V_Value
+
 End
 
 Function arithDisplayProc(s)
@@ -297,58 +361,11 @@ Function arithDisplayProc(s)
 	return 0
 End
 
-
 //Must follow naming scheme to match buttons to popups
 //"Name_button" goes with "Name_popup"
-Function DM_LoadDataSetProc(ba) : ButtonControl
+Function DA_LoadDataSetProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
-
-
-	switch( ba.eventCode )
-		case 2: // mouse up
-			// click code here
-			String cmd = "A_LoadOneDDataWithName(\"\","+num2str(0)+")"
-			Execute cmd
-		
-			SVAR gLastFileName = root:packages:NIST:gLastFileName
-
-			String windowName = ba.win
-			String popupName = StringFromList(0,ba.ctrlName,"_")+"_popup"
-			
-			ControlUpdate/W=$(windowName) $(popupName)
-			//instead of a simple controlUpdate, better to pop the menu to make sure that the other menus follow
-			// convoluted method to find the right item and pop the menu.
-
-			String list,folderStr
-			Variable num
-			folderStr = CleanupName(gLastFileName,0)
-			list = DM_DataSetPopupList()
-			num=WhichListItem(folderStr,list,";",0,0)
-			if(num != -1)
-				PopupMenu $(popupName),mode=num+1,win=$(windowName)
-				ControlUpdate/W=$(windowName) $(popupName)
-				
-				if (cmpstr(popupName,"DS1_popup") ==  0)
-					//send fake mouse action to popup to update old name if 
-					Struct WMPopupAction pa
-					pa.eventCode = 2		//fake mouse up
-					pa.win = windowName
-					pa.ctrlName = "DS1_popup"
-					DMDS_PopMenuProc(pa)
-				endif			
-			endif
-			break
-	endswitch
 	
-	return 0
-End
-
-//Must follow naming scheme to match buttons to popups
-//"Name_button" goes with "Name_popup"
-Function DMDA_LoadDataSetProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
-
-
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
@@ -378,74 +395,6 @@ Function DMDA_LoadDataSetProc(ba) : ButtonControl
 	endswitch
 	
 	return 0
-End
-
-
-Function DMDS_PopMenuProc(pa) : PopupMenuControl
-	STRUCT WMPopupAction &pa
-	
-	switch( pa.eventCode )
-		case 2: // mouse up
-			ControlInfo/W=$(pa.win) $(pa.ctrlName)
-			SetVariable OldName_setvar,win=$(pa.win),value=_STR:S_Value
-//			ControlInfo/W=$(pa.win) DSTabItem_0e
-//			SVAR val = S_Value
-//			 
-//			ControlInfo/W=$(pa.win) $(pa.ctrlName)
-//			val = S_Value
-
-			SetDataFolder root:			
-			break
-	endswitch
-
-	return 0
-End
-
-Function SetVarProc(sva) : SetVariableControl
-	STRUCT WMSetVariableAction &sva
-		
-	switch( sva.eventCode )
-		case 1: // mouse up
-		case 2: // Enter key
-		case 3: // Live update
-				String sv = sva.sval
-				if( strlen(sv) > 25 )
-					sv= sv[0,24]
-					SetVariable  $(sva.ctrlName),win=$(sva.win),value=_STR:sv
-					Beep
-				endif
-				break
-		endswitch
-	return 0
-End
-
-// is there a simpler way to do this? I don't think so.
-Function/S DM_DataSetPopupList()
-
-	String str=GetAList(4)
-
-	if(strlen(str)==0)
-		str = "No data loaded"
-	endif
-	str = SortList(str)
-	
-	return(str)
-End
-
-Function/S DMGetDSName(dsNum)
-	Variable dsNum
-	
-	String ctrlName
-	if (dsNum == 1)
-		ctrlName = "DS1_popup"
-	elseif (dsNum == 2)
-		ctrlName = "DS2_popup"
-	endif
-	
-	ControlInfo/W=DataManagementPanel $(ctrlName)
-
-	Return S_Value
-
 End
 
 // function to control the drawing of buttons in the TabControl on the main panel
@@ -492,39 +441,264 @@ End
 
 Function DACalculateProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
-		
-	//Which tab?
-	ControlInfo/W=$(ba.win) DATabs
-	print V_value
-	switch(V_Value)
-		case 0:
-			print "Doing subtraction"
-			//do subtraction
-			ControlInfo/W=$(ba.win) DS1_popup
-			String DS1 = S_Value
+	
+	String DS1,DS2,Resultname
+	
+	switch(ba.eventCode)
+	case 2:	
+		//Which tab?
+		ControlInfo/W=$(ba.win) DATabs
+		Variable tabNum = V_value
+		Print "Tab number "+num2str(tabNum)
+
+		ControlInfo/W=$(ba.win) DS1_popup
+		DS1 = S_Value
+		ControlInfo/W=$(ba.win) DANoDS2_cb
+		if (V_Value == 0)
 			ControlInfo/W=$(ba.win) DS2_popup
-			String DS2 = S_Value
-			ControlInfo/W=$(ba.win) DAResultName_sv
-			String Resultname = S_Value
-			ControlInfo/W=$(ba.win) DAScalefactor_sv
-			Variable Scalefactor = V_Value
-			SubtractDataSets(DS1,DS2,Scalefactor,Resultname)
-		case 1:
-			//do addition
-		case 2:
-			//do multiplication
-		case 3:
-			//do division
+			DS2 = S_Value
+		else
+			DS2 = "NullSolvent"
+		endif
+		ControlInfo/W=$(ba.win) DAResultName_sv
+		Resultname = S_Value
+		ControlInfo/W=$(ba.win) DAScale_sv
+		Variable Scalefactor = V_Value
+
+		switch(tabNum)
+			case 0:
+				//do subtraction
+				//print "Subtraction of "+DS2+" from "+DS1+" with sf "+num2str(scalefactor)+ " into "+Resultname
+				SubtractDataSets(DS1,DS2,Scalefactor,Resultname)
+				break
+			case 1:
+				//do addition
+				AddDataSets(DS1,DS2,Scalefactor,Resultname)
+				break
+			case 2:
+				//do multiplication
+				MultiplyDataSets(DS1,DS2,Scalefactor,Resultname)
+				break
+			case 3:
+				//do division
+				DivideDataSets(DS1,DS2,Scalefactor,Resultname)
+				break
+		endswitch
+		
+		//Sort out plot
+		//Fake button press to DAPlotButtonProc
+		STRUCT WMButtonAction ba2
+		ba2.win = ba.win
+		ba2.ctrlName = "DAPlot_button"
+		ba2.eventCode = 2
+		DAPlotButtonProc(ba2)
+		AddDAPlot(3)
+		SetActiveSubWindow DAPlotPanel
+		DoWindow/F DataArithmeticPanel
 	endswitch
-	//Do calculation
 	
-	
-	//Sort out plot
-	AddDAPlot(3)
+
 
 End
 
-/////// Functions to do manipulations /////////
+Function DAPlotButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			//mouse up
+			//Get folder for DS1
+			DoWindow DAPlotPanel
+			if (V_Flag == 0)
+				MakeDAPlotPanel()
+			else 
+				DoWindow/HIDE=0/F DAPlotPanel
+				do 
+					String tracename = StringFromList(0,TraceNameList("DAPlotPanel#DAPlot",";",1),";")
+					if (cmpstr(tracename,"")==0)
+						break
+					else
+						RemoveFromGraph/W=DAPlotPanel#DAPlot $tracename
+					endif			
+				while(1)				
+			endif
+			
+			ControlInfo/W=$(win) DS1_popup
+			String DS1 = S_Value
+			if (cmpstr(DS1,"") != 0 )
+				AddDAPlot(1)
+			endif
+			//Get folder for DS2
+			ControlInfo/W=$(win) DS2_popup
+			String DS2 = S_Value
+			if (cmpstr(DS2,"") != 0)
+				AddDAPlot(2)
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+Function DALogLinIProc(cba) : CheckBoxControl
+	STRUCT WMCheckBoxAction &cba
+
+	switch(cba.eventcode)
+		case 2:
+			
+			ModifyGraph/W=DAPlotPanel#DAPlot log(left)=cba.checked
+		
+	endswitch
+
+
+End
+
+Function DACursorButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	String DS1,DS2
+	
+	switch(ba.eventCode)
+		case 2:
+		
+			ControlInfo/W=$(ba.win) DS1_popup
+			DS1 = S_Value
+			ControlInfo/W=$(ba.win) DANoDS2_cb
+			Variable NoDS2 = V_Value
+			if (NoDS2 == 0)
+				ControlInfo/W=$(ba.win) DS2_popup
+				DS2 = S_Value
+			else
+				DS2 = "NullSolvent"
+			endif
+		
+			//AJJ Nov 2009 - UGLY - Will have to revisit this when we deal with hierarchical folders
+			Wave set1_i = $("root:"+DS1+":"+DS1+"_i")
+			Wave set1_q = $("root:"+DS1+":"+DS1+"_q")
+			Wave set2_i = $("root:"+DS2+":"+DS2+"_i")
+			Wave set2_q = $("root:"+DS2+":"+DS2+"_q")
+			Duplicate/O set1_i tmp_i
+			Duplicate/O set1_q tmp_q
+			tmp_i = set1_i / interp(set1_q[p],set2_q,set2_i)	
+			
+			//Get cursors
+			Variable q1,q2
+			
+			DoWindow/F DAPlotPanel
+			SetActiveSubWindow DAPlotPanel#DAPlot
+			
+			q1 = CsrXWaveRef(A)[pcsr(A)]
+			q2 = CsrXWaveRef(B)[pcsr(B)]
+
+			//Update value display
+			ValDisplay DARangeStar_vd,value=_NUM:q1, win=$(ba.win)
+			ValDisplay DARangeEnd_vd,value=_NUM:q2, win=$(ba.win)
+			
+			//Calculate scalefactor
+			
+			if (NoDS2 == 1)
+				Wave avgWave = set1_i
+			else
+				Wave avgWave = tmp_i
+			endif
+
+			Variable p1 = BinarySearch(tmp_q,q1)			
+			Variable p2 = BinarySearch(tmp_q,q2)			
+
+			//print avgWave
+
+			WaveStats/Q/R=[p1,p2] avgWave
+			//print V_avg
+			//Update sv control
+			SetVariable DAScale_sv, value=_NUM:V_avg, win=$(ba.win)
+			
+			KillWaves/Z tmp_i,tmp_q
+			DoWindow/F DataArithmeticPanel
+	endswitch
+
+End
+
+
+Function DANoDS2Proc(cba) : CheckBoxControl
+	STRUCT WMCheckBoxAction &cba
+	
+	
+	switch(cba.eventCode)
+		case 2:
+			if (cba.checked == 1)
+				//Disable DS2 popup etc
+				PopupMenu DS2_popup win=$(cba.win), disable=2
+				Button DS2_button win=$(cba.win), disable=2
+			else
+				//Enable DS2 popup etc
+				PopupMenu DS2_popup win=$(cba.win), disable=0
+				Button DS2_button win=$(cba.win), disable=0
+			endif
+			//Sort out plot
+			//Fake button press to DAPlotButtonProc
+			STRUCT WMButtonAction ba2
+			ba2.win = cba.win
+			ba2.ctrlName = "DAPlot_button"
+			ba2.eventCode = 2
+			DAPlotButtonProc(ba2)
+			SetActiveSubWindow DAPlotPanel
+			DoWindow/F DataArithmeticPanel
+	endswitch
+
+End
+
+Function DASaveProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch(ba.eventCode)
+		case 2:
+			ControlInfo/W=$(ba.win) DAResultName_sv
+			SaveDataSetToFile(S_Value)
+			break
+	endswitch
+
+
+End
+
+/////////////////////// Common Panel Functions ///////////////////////////////////////
+
+
+// is there a simpler way to do this? I don't think so.
+Function/S DM_DataSetPopupList()
+
+	String str=GetAList(4)
+
+	if(strlen(str)==0)
+		str = "No data loaded"
+	endif
+	str = SortList(str)
+	
+	return(str)
+End
+
+
+Function SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+		
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+				String sv = sva.sval
+				if( strlen(sv) > 25 )
+					sv= sv[0,24]
+					SetVariable  $(sva.ctrlName),win=$(sva.win),value=_STR:sv
+					Beep
+				endif
+				break
+		endswitch
+	return 0
+End
+
+
+////////////////////// Functions to do manipulations ///////////////////////////////////
 
 Function RenameDataSet(dataSetFolder, newName)
 	String dataSetFolder
@@ -538,11 +712,11 @@ Function RenameDataSet(dataSetFolder, newName)
 	//Abuse ParseFilePath to get basestr
 	basestr = ParseFilePath(0,dataSetFolder,":",1,0)
 
-	try
-		RenameDataFolder $(dataSetFolder) $(newName); AbortOnRTE
+//	try
+		RenameDataFolder $(dataSetFolder) $(newName)//; AbortOnRTE
 	
 
-		SetDataFolder $(dataSetFolderParent+newName); AbortOnRTE
+		SetDataFolder $(dataSetFolderParent+newName)//; AbortOnRTE
 		do
 			objName = GetIndexedObjName("",1,index)
 			if (strlen(objName) == 0)
@@ -552,10 +726,10 @@ Function RenameDataSet(dataSetFolder, newName)
 			index+=1
 		while(1)
 		SetDataFolder root:
-	catch
-		Print "Aborted: " + num2str(V_AbortCode)
-		SetDataFolder root:
-	endtry
+//	catch
+//		Print "Aborted: " + num2str(V_AbortCode)
+//		SetDataFolder root:
+//	endtry
 End
 
 
@@ -571,10 +745,11 @@ Function DuplicateDataSet(dataSetFolder, newName)
 	//Abuse ParseFilePath to get basestr
 	basestr = ParseFilePath(0,dataSetFolder,":",1,0)
 	
-	try
-		DuplicateDataFolder $(dataSetFolder) $(dataSetFolderParent+newName); AbortOnRTE
+	SetDataFolder $(dataSetFolderParent)
+//	try
+		DuplicateDataFolder $(dataSetFolder) $(dataSetFolderParent+newName)//; AbortOnRTE
 
-		SetDataFolder $(dataSetFolderParent+newName); AbortOnRTE
+		SetDataFolder $(dataSetFolderParent+newName)//; AbortOnRTE
 		do
 			objName = GetIndexedObjName("",1,index)
 			if (strlen(objName) == 0)
@@ -584,10 +759,11 @@ Function DuplicateDataSet(dataSetFolder, newName)
 			index+=1
 		while(1)
 		SetDataFolder root:
-	catch
-		Print "Aborted: " + num2str(V_AbortCode)
-		SetDataFolder root:
-	endtry
+//	catch
+//			Print "Aborted: " + num2str(V_AbortCode)
+//			SetDataFolder root:
+//		
+//	endtry
 End
 
 
@@ -606,18 +782,20 @@ Function SubtractDataSets(set1Name,set2Name,set2Scale,resultName)
 	SetDataFolder root:
 	//Create folder for result
 	//UnloadDataSet(resultName)
-
+	if (!DataFolderExists(resultPath))
+		//Make the folder
+		DuplicateDataSet(set1Path,resultName)
+	endif
 
 	//Do subtraction of I waves - including interpolation if necessary. 
-	//Can we flag when interpolation was necessary?
-	//AJJ Nov 2009 - assuming no interpolation user beware!
 	Wave result_i = $(resultPath+resultName+"_i")
 	Wave set1_i = $(set1Path+set1Name+"_i")
+	Wave set1_q = $(set1Path+set1Name+"_q")
 	Wave set2_i = $(set2Path+set2Name+"_i")
-	result_i =  set1_i - (set2Scale*set2_i)
-	
-	//Generate correct result Q wave - including interpolation if necessary
-	
+	Wave set2_q = $(set2Path+set2Name+"_q")
+	result_i = set1_i - (set2Scale*interp(set1_q[p],set2_q,set2_i))
+
+
 	//Calculate result error wave - can we produce corrected Q error? 
 	
 	//Generate history string to record what was done?
@@ -626,20 +804,31 @@ End
 
 // Add Set2 to Set1
 // Use Result_I = Set1_I + f*Set2_I
-Function AddDataSets(set1Folder,set2Folder,set2Scale,resultName)
-	String set1Folder
-	String set2Folder
+Function AddDataSets(set1Name,set2Name,set2Scale,resultName)
+	String set1Name
+	String set2Name
 	Variable set2Scale
 	String resultName
 
-	//Create folder for result
+	String set1Path = "root:"+set1Name+":"
+	String set2Path = "root:"+set2Name+":"
+	String resultPath = "root:"+resultName+":"
 	
-	//Create result waves
+	SetDataFolder root:
+	//Create folder for result
+	//UnloadDataSet(resultName)
+	if (DataFolderExists(resultPath) != 1)
+		//Make the folder
+		DuplicateDataSet(set1Path,resultName)
+	endif
 
 	//Do addition of I waves - including interpolation if necessary. 
-	//Can we flag when interpolation was necessary?
-	
-	//Generate correct result Q wave - including interpolation if necessary
+	Wave result_i = $(resultPath+resultName+"_i")
+	Wave set1_i = $(set1Path+set1Name+"_i")
+	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set2_i = $(set2Path+set2Name+"_i")
+	Wave set2_q = $(set2Path+set2Name+"_q")
+	result_i =  set1_i + set2Scale*interp(set1_q[p],set2_q,set2_i)	
 	
 	//Calculate result error wave - can we produce corrected Q error? 
 
@@ -649,20 +838,32 @@ End
 
 // Multiply Set1 by Set2
 // Use Result_I  = Set1_I * (f*Set2_I)
-Function MultiplyDataSets(set1Folder, set2Folder, set2Scale, resultName)
-	String set1Folder
-	String set2Folder
+Function MultiplyDataSets(set1Name, set2Name, set2Scale, resultName)
+	String set1Name
+	String set2Name
 	Variable set2Scale
 	String resultName
 
-	//Create folder for result
+	String set1Path = "root:"+set1Name+":"
+	String set2Path = "root:"+set2Name+":"
+	String resultPath = "root:"+resultName+":"
 	
-	//Create result waves
+	SetDataFolder root:
+	//Create folder for result
+	//UnloadDataSet(resultName)
+	if (DataFolderExists(resultPath) != 1)
+		//Make the folder
+		DuplicateDataSet(set1Path,resultName)
+	endif
 
 	//Do multiplcation of I waves - including interpolation if necessary. 
-	//Can we flag when interpolation was necessary?
-	
-	//Generate correct result Q wave - including interpolation if necessary
+	Wave result_i = $(resultPath+resultName+"_i")
+	Wave set1_i = $(set1Path+set1Name+"_i")
+	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set2_i = $(set2Path+set2Name+"_i")
+	Wave set2_q = $(set2Path+set2Name+"_q")
+	result_i =  set1_i*set2Scale*interp(set1_q[p],set2_q,set2_i)
+		
 	
 	//Calculate result error wave - can we produce corrected Q error? 
 
@@ -672,20 +873,31 @@ End
 
 // Divide Set1 by Set2
 // Use Result_I  = Set1_I / (f*Set2_I)
-Function DivideDataSets(set1Folder, set2Folder, set2Scale, resultName)
-	String set1Folder
-	String set2Folder
+Function DivideDataSets(set1Name, set2Name, set2Scale, resultName)
+	String set1Name
+	String set2Name
 	Variable set2Scale
 	String resultName
 
-	//Create folder for result
+	String set1Path = "root:"+set1Name+":"
+	String set2Path = "root:"+set2Name+":"
+	String resultPath = "root:"+resultName+":"
 	
-	//Create result waves
+	SetDataFolder root:
+	//Create folder for result
+	//UnloadDataSet(resultName)
+	if (DataFolderExists(resultPath) != 1)
+		//Make the folder
+		DuplicateDataSet(set1Path,resultName)
+	endif
 
 	//Do division of I waves - including interpolation if necessary. 
-	//Can we flag when interpolation was necessary?
-	
-	//Generate correct result Q wave - including interpolation if necessary
+	Wave result_i = $(resultPath+resultName+"_i")
+	Wave set1_i = $(set1Path+set1Name+"_i")
+	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set2_i = $(set2Path+set2Name+"_i")
+	Wave set2_q = $(set2Path+set2Name+"_q")
+	result_i =  set1_i/(set2Scale*interp(set1_q[p],set2_q,set2_i)	)
 	
 	//Calculate result error wave - can we produce corrected Q error? 
 	
@@ -693,10 +905,27 @@ Function DivideDataSets(set1Folder, set2Folder, set2Scale, resultName)
 
 End
 
+
+///////////////////////////Other Utility functions ////////////////////////////
+
 Function SaveDataSetToFile(folderName)
 	String folderName
 
+	String protoStr = ""
+	//Check for history string in folder
+	//If it doesn't exist then 
+
 	//Do saving of data file.
+	
+	NVAR gXML_Write = root:Packages:NIST:gXML_Write 
+
+	if (gXML_Write == 1)
+		ReWrite1DXMLData(folderName)
+	else
+		fReWrite1DData(folderName,"tab","CRLF")
+	endif
+
+//	NISTSave1DData(folderName,protoStr)
 
 	//Include history string to record what was done?
 
@@ -709,3 +938,17 @@ Function UnloadDataSet(folderName)
 
 	
 End
+
+
+//////////////////// Write data functions ////////////////////////////////////
+// AJJ Nov 2009 - should move towards unified writer
+//
+//////////////////////////////////////////////////////////////////////////
+
+//Function NISTSave1DData(folderPath,protoStr)
+//	String folderPath, protoStr
+//	
+//	//protoStr is string that will be written to either 
+//	
+//
+//End
