@@ -138,12 +138,14 @@ Function MakeDAPanel()
 	Button DS1_button,valueColor=(65535,0,0),userdata="DS1"
 	PopupMenu DS1_popup,pos={30,21},size={318,20},title="Data Set 1"
 	PopupMenu DS1_popup,mode=1,value= #"DM_DataSetPopupList()"
+	PopupMenu DS1_popup,proc=DA_PopupProc
 	PopupMenu DS1_popup,fsize=12,fcolor=(65535,0,0),valueColor=(65535,0,0)
 
 	Button DS2_button,pos={300,50},size={150,20},proc=DA_LoadDataSetProc,title="Load 1D Data Set 2"
 	Button DS2_button,valueColor=(0,0,65535),userdata="DS2"
 	PopupMenu DS2_popup,pos={30,51},size={318,20},title="Data Set 2"
 	PopupMenu DS2_popup,mode=1,value= #"DM_DataSetPopupList()"
+	PopupMenu DS2_popup,proc=DA_PopupProc
 	PopupMenu DS2_popup,fsize=12,fcolor=(0,0,65535),valueColor=(0,0,65535)
 
 	Button DAPlot_button,title="Plot",pos={175,85},size={150,20}
@@ -161,8 +163,22 @@ Function MakeDAPanel()
 	Button DASave_button,proc=DASaveProc
 	Button DACursors_button,title="Get Matching Range",pos={175,250},size={150,20}
 	Button DACursors_button,proc=DACursorButtonProc
+	
 	SetVariable DAResultName_sv,title="Result Name (max 25 characters)",pos={50,280},size={400,20}
-	SetVariable DAResultName_Sv,fsize=12,value=_STR:"SubtractionResult",proc=setvarproc,live=1
+	SetVariable DAResultName_Sv,fsize=12,proc=setvarproc,live=1
+	//Update the result name
+	ControlInfo/W=DataArithmeticPanel DS1_popup
+	if (cmpstr(S_Value,"No data loaded") == 0)
+		SetVariable DAResultName_sv,value=_STR:"SubtractionResult"
+	else
+		//fake call to popup
+		STRUCT WMPopupAction pa
+		pa.win = "DataArithmeticPanel"
+		pa.ctrlName = "DS1_popup"
+		pa.eventCode = 2
+		DA_PopupProc(pa)
+	endif
+	
 	CheckBox DANoDS2_cb,title="Data Set 2 = 1?",pos={300,180}
 	CheckBox DANoDS2_cb,proc=DANoDS2Proc
 	
@@ -174,6 +190,12 @@ Function MakeDAPanel()
 	GroupBox grpBox_1,pos={30,210},size={440,70}
 	
 	NewPanel/HOST=DataArithmeticPanel/N=arithDisplay/W=(50,150,170,190)
+	
+	//Update the result name
+	ControlInfo/W=DataArithmeticPanel DS1_popup
+
+	
+	
 	arithDisplayProc(0)
 	
 End
@@ -232,14 +254,12 @@ Function AddDAPlot(dataset)
 			else
 				ControlInfo/W=$(win) DS1_popup
 				DS1name = S_Value
-				if (!DataFolderExists("root:NullSolvent"))
-					DuplicateDataSet("root:"+DS1name,"NullSolvent")
-				endif
+				DuplicateDataSet("root:"+DS1name,"NullSolvent",1)
 				Wave qWave =root:NullSolvent:NullSolvent_q
 				Wave iWave = root:NullSolvent:NullSolvent_i
 				Wave errWave = root:NullSolvent:NullSolvent_s
 				iWave = 1
-				errWave = 0.1
+				errWave = 0
 				AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
 				ErrorBars/W=DAPlotPanel#DAPlot /T=0 NullSolvent_i, Y wave=(errWave,errWave)			
 				ModifyGraph/W=DAPlotPanel#DAPlot rgb(NullSolvent_i)=(0,0,65535)
@@ -391,10 +411,37 @@ Function DA_LoadDataSetProc(ba) : ButtonControl
 				ControlUpdate/W=$(windowName) $(popupName)
 		
 			endif
+			//fake call to popup
+			STRUCT WMPopupAction pa
+			pa.win = ba.win
+			pa.ctrlName = "DS1_popup"
+			pa.eventCode = 2
+			DA_PopupProc(pa)
 			break
 	endswitch
 	
 	return 0
+End
+
+Function DA_PopupProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+	
+	String resultName
+	
+	switch( pa.eventCode)
+		case 2:
+			//print "Called by "+pa.ctrlname+" with value "+pa.popStr
+			ControlInfo/W=$(pa.win) $(pa.ctrlName)
+			String popStr = S_Value
+			if (stringmatch(pa.ctrlname,"*DS1*") == 1)
+				resultName = stringfromlist(0,popStr,"_")+"_mod"
+				
+				SetVariable DAResultName_sv win=$(pa.win), value=_STR:resultName
+			endif
+		break
+	endswitch
+	
+
 End
 
 // function to control the drawing of buttons in the TabControl on the main panel
@@ -404,38 +451,41 @@ End
 // the button's position on that particular tab.
 // in this way, buttons will always be drawn correctly..
 //
-Function DATabsProc(name,tab)
-	String name
-	Variable tab
-	
-//	Print "name,number",name,tab
-	String ctrlList = ControlNameList("",";"),item="",nameStr=""
-	Variable num = ItemsinList(ctrlList,";"),ii,onTab
-	for(ii=0;ii<num;ii+=1)
-		//items all start w/"DSTabItem_"
-		item=StringFromList(ii, ctrlList ,";")
-		nameStr=item[0,9]
-		if(cmpstr(nameStr,"DATabItem_")==0)
-			onTab = str2num(item[10])
-			ControlInfo $item
-			switch (V_flag)
-				case 1:
-					Button $item,disable=(tab!=onTab)
-					break
-				case 2:
-					CheckBox $item,disable=(tab!=onTab)
-					break
-				case 3:
-					PopUpMenu	$item,disable=(tab!=onTab)
-					break
-				case 5:
-					SetVariable	$item,disable=(tab!=onTab)
-					break
-			endswitch
-		endif
-	endfor 
-	
-	arithDisplayProc(tab)
+Function DATabsProc(tca) : TabControl
+	STRUCT WMTabControlAction &tca
+		
+	switch (tca.eventCode)
+		case 2:
+		//	Print "name,number",name,tab
+			String ctrlList = ControlNameList("",";"),item="",nameStr=""
+			Variable num = ItemsinList(ctrlList,";"),ii,onTab
+			for(ii=0;ii<num;ii+=1)
+				//items all start w/"DSTabItem_"
+				item=StringFromList(ii, ctrlList ,";")
+				nameStr=item[0,9]
+				if(cmpstr(nameStr,"DATabItem_")==0)
+					onTab = str2num(item[10])
+					ControlInfo $item
+					switch (V_flag)
+						case 1:
+							Button $item,disable=(tca.tab!=onTab)
+							break
+						case 2:
+							CheckBox $item,disable=(tca.tab!=onTab)
+							break
+						case 3:
+							PopUpMenu	$item,disable=(tca.tab!=onTab)
+							break
+						case 5:
+							SetVariable	$item,disable=(tca.tab!=onTab)
+							break
+					endswitch
+				endif
+			endfor
+			
+			arithDisplayProc(tca.tab)
+			break
+	endswitch	
 End
 
 
@@ -449,7 +499,7 @@ Function DACalculateProc(ba) : ButtonControl
 		//Which tab?
 		ControlInfo/W=$(ba.win) DATabs
 		Variable tabNum = V_value
-		Print "Tab number "+num2str(tabNum)
+		//Print "Tab number "+num2str(tabNum)
 
 		ControlInfo/W=$(ba.win) DS1_popup
 		DS1 = S_Value
@@ -733,9 +783,10 @@ Function RenameDataSet(dataSetFolder, newName)
 End
 
 
-Function DuplicateDataSet(dataSetFolder, newName)
+Function DuplicateDataSet(dataSetFolder, newName, forceoverwrite)
 	String dataSetFolder
 	String newName
+	Variable forceoverwrite
 
 	String dataSetFolderParent,basestr,objName
 	Variable index = 0
@@ -745,25 +796,35 @@ Function DuplicateDataSet(dataSetFolder, newName)
 	//Abuse ParseFilePath to get basestr
 	basestr = ParseFilePath(0,dataSetFolder,":",1,0)
 	
+	print "Duplicating "+dataSetFolder+" as "+newName
+	
 	SetDataFolder $(dataSetFolderParent)
-//	try
-		DuplicateDataFolder $(dataSetFolder) $(dataSetFolderParent+newName)//; AbortOnRTE
-
-		SetDataFolder $(dataSetFolderParent+newName)//; AbortOnRTE
-		do
-			objName = GetIndexedObjName("",1,index)
-			if (strlen(objName) == 0)
-				break
+	
+	if (!DataFolderExists(newName))
+		NewDataFolder $(newName)
+	else
+		if (!forceoverwrite)
+			DoAlert 1, "A dataset with the name "+newName+" already exists. Overwrite?"
+			if (V_flag == 2)
+				return 1
 			endif
-			Rename $(objName) $(ReplaceString(basestr,objName,newName))
-			index+=1
-		while(1)
-		SetDataFolder root:
-//	catch
-//			Print "Aborted: " + num2str(V_AbortCode)
-//			SetDataFolder root:
-//		
-//	endtry
+		endif
+	endif	
+
+	//If we are here, the folder (now) exists and the user has agreed to overwrite
+	//either in the function call or from the alert.
+	do
+		objName = GetIndexedObjName(basestr,1,index)
+		if (strlen(objName) == 0)
+			break
+		endif
+		objname = ":"+basestr+":"+objname
+			Duplicate/O $(objName) $(ReplaceString(basestr,objName,newName))
+		index+=1
+	while(1)
+
+	SetDataFolder root:
+	return 0
 End
 
 
@@ -782,24 +843,27 @@ Function SubtractDataSets(set1Name,set2Name,set2Scale,resultName)
 	SetDataFolder root:
 	//Create folder for result
 	//UnloadDataSet(resultName)
-	if (!DataFolderExists(resultPath))
-		//Make the folder
-		DuplicateDataSet(set1Path,resultName)
-	endif
-
+	//Make the folder
+	if (DuplicateDataSet(set1Path,resultName,0)) 
+		return 1
+	else
 	//Do subtraction of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
+	Wave result_s = $(resultPath+resultName+"_s")
 	Wave set1_i = $(set1Path+set1Name+"_i")
 	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set1_s = $(set1Path+set1Name+"_s")
 	Wave set2_i = $(set2Path+set2Name+"_i")
 	Wave set2_q = $(set2Path+set2Name+"_q")
+	Wave set2_s = $(set2Path+set2Name+"_s")
+	
 	result_i = set1_i - (set2Scale*interp(set1_q[p],set2_q,set2_i))
-
-
+	result_s = sqrt(set1_s^2 + set2Scale^2*interp(set1_q[p],set2_q,set2_s))
 	//Calculate result error wave - can we produce corrected Q error? 
 	
 	//Generate history string to record what was done?
-
+	return 0
+	endif
 End
 
 // Add Set2 to Set1
@@ -816,12 +880,10 @@ Function AddDataSets(set1Name,set2Name,set2Scale,resultName)
 	
 	SetDataFolder root:
 	//Create folder for result
-	//UnloadDataSet(resultName)
-	if (DataFolderExists(resultPath) != 1)
-		//Make the folder
-		DuplicateDataSet(set1Path,resultName)
-	endif
-
+	if(DuplicateDataSet(set1Path,resultName,0))
+		//User said no overwrite
+		return 1
+	else
 	//Do addition of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
 	Wave set1_i = $(set1Path+set1Name+"_i")
@@ -833,7 +895,8 @@ Function AddDataSets(set1Name,set2Name,set2Scale,resultName)
 	//Calculate result error wave - can we produce corrected Q error? 
 
 	//Generate history string to record what was done?
-
+	return 0
+	endif
 End
 
 // Multiply Set1 by Set2
@@ -850,12 +913,11 @@ Function MultiplyDataSets(set1Name, set2Name, set2Scale, resultName)
 	
 	SetDataFolder root:
 	//Create folder for result
-	//UnloadDataSet(resultName)
-	if (DataFolderExists(resultPath) != 1)
-		//Make the folder
-		DuplicateDataSet(set1Path,resultName)
-	endif
-
+	//Make the folder
+	if(DuplicateDataSet(set1Path,resultName,0))
+		//User said no overwrite
+		return 1
+	else
 	//Do multiplcation of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
 	Wave set1_i = $(set1Path+set1Name+"_i")
@@ -868,7 +930,8 @@ Function MultiplyDataSets(set1Name, set2Name, set2Scale, resultName)
 	//Calculate result error wave - can we produce corrected Q error? 
 
 	//Generate history string to record what was done?
-
+	return 0
+	endif
 End
 
 // Divide Set1 by Set2
@@ -885,12 +948,11 @@ Function DivideDataSets(set1Name, set2Name, set2Scale, resultName)
 	
 	SetDataFolder root:
 	//Create folder for result
-	//UnloadDataSet(resultName)
-	if (DataFolderExists(resultPath) != 1)
-		//Make the folder
-		DuplicateDataSet(set1Path,resultName)
-	endif
-
+	//Make the folder
+	if(DuplicateDataSet(set1Path,resultName,0))
+		//User said no overwrite
+		return 1
+	else
 	//Do division of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
 	Wave set1_i = $(set1Path+set1Name+"_i")
@@ -902,7 +964,8 @@ Function DivideDataSets(set1Name, set2Name, set2Scale, resultName)
 	//Calculate result error wave - can we produce corrected Q error? 
 	
 	//Generate history string to record what was done?
-
+	return 0
+	endif
 End
 
 
