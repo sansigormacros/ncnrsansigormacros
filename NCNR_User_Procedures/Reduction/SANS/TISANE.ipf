@@ -48,9 +48,10 @@ Function Init_TISANE()
 	SetDataFolder root:
 End
 
-Window TISANE() : Panel
+Proc TISANE()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel/K=1 /W=(100,50,600,680)/N=TISANE
+	DoWindow/C TISANE
 	ModifyPanel fixedSize=1,noEdit =1
 	//ShowTools/A
 	SetDrawLayer UserBack

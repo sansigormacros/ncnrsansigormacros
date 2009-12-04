@@ -490,7 +490,7 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			ratio = domega^3
 			xy = xx[ii]*yy[jj]
 			data[ii][jj] *= xy*ratio
-//			solidAngle[ii][jj] = xy*ratio		//testing only	
+			solidAngle[ii][jj] = xy*ratio		//testing only	
 
 			
 			// correction factor for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
@@ -523,7 +523,7 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 				endif
 					
 				data[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//moved from 1D avg SRK 11/2007
-//				solidAngle[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
+				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
 			endif
 			
 			jj+=1
@@ -1012,6 +1012,9 @@ Function CopyWorkContents(oldtype,newtype)
 	Duplicate/O $(destPath + ":textread"),$("root:Packages:NIST:"+newtype+":textread")
 	Duplicate/O $(destPath + ":integersread"),$("root:Packages:NIST:"+newtype+":integersread")
 	Duplicate/O $(destPath + ":realsread"),$("root:Packages:NIST:"+newtype+":realsread")
+	//
+	// be sure to get rid of the linear_data if it exists in the destination folder
+	KillWaves/Z $("root:Packages:NIST:"+newtype+":linear_data")
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 

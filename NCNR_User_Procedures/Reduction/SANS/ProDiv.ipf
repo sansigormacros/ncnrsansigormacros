@@ -404,9 +404,10 @@ End
 // if a dark color is used, then
 //¥SetVariable setvar0 labelBack=(65535,65535,65535)
 // for each variable will give a white background to the label text
-Window DIV_Panel() : Panel
+Proc DIV_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(594,44,932,570)/K=1 as "DIV_Panel"
+	DoWindow/C DIV_Panel
 //	ModifyPanel cbRGB=(35867,28177,65535)		//purple
 //	ModifyPanel cbRGB=(1,16019,65535)				//electric blue
 	ModifyPanel cbRGB=(36631,59604,33902)		//spring green
@@ -425,10 +426,11 @@ Window DIV_Panel() : Panel
 //	SetVariable setvar003,pos={16,441},size={250,15},title="DIV FILE NAME"
 //	SetVariable setvar003,value= root:myGlobals:Protocols:gPlexName
 	Button ShowBox,pos={226,325},size={90,20},proc=ShowBoxButtonProc,title="Show Box"
-	Button button1,pos={25,441},size={150,20},proc=GenerateDIVButtonProc,title="Generate DIV File"
-	Button button2,pos={25,481},size={150,20},proc=ReloadDIVButtonProc,title="Load DIV File"
+	Button button1,pos={25,430},size={150,20},proc=GenerateDIVButtonProc,title="Generate DIV File"
+	Button button2,pos={25,460},size={150,20},proc=ReloadDIVButtonProc,title="Load DIV File"
 	Button button4,pos={240,481},size={80,20},proc=DoneDIVButtonProc,title="Done"
 	Button button3,pos={240,10},size={50,20},proc=DIVHelpButtonProc,title="Help"
+	Button button5,pos={25,490},size={150,20},proc=CompareDIVButtonProc,title="Compare DIV Files"
 	SetVariable setvar00201,pos={84,297},size={50,15},limits={0,root:myGlobals:gNPixelsY-1,1},title=" ",value= root:myGlobals:Protocols:gPlexY2
 	SetVariable setvar00202,pos={15,350},size={50,15},limits={0,root:myGlobals:gNPixelsX-1,1},title=" ",value= root:myGlobals:Protocols:gPlexX1
 	SetVariable setvar00203,pos={85,399},size={50,15},limits={0,root:myGlobals:gNPixelsY-1,1},title=" ",value= root:myGlobals:Protocols:gPlexY1
@@ -484,4 +486,45 @@ Function DIVHelpButtonProc(ba) : ButtonControl
 	endswitch
 
 	return 0
+End
+
+// load in two DIV files, divide them, and display the results
+// first is divided by the second, results are in SUB
+//
+Function CompareDIVButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoAlert 0,"First DIV / Second DIV = Result in SUB folder"
+			
+			Execute "ReadWork_DIV()"
+			Execute "CopyWorkContents(\"DIV\",\"STO\")"		// converts linear, copies data, kills linear_data
+			Execute "CopyWorkContents(\"DIV\",\"SUB\")"		///just to have waves for later
+
+			Execute "ReadWork_DIV()"
+			Execute "CopyWorkContents(\"DIV\",\"DRK\")"		//then data in DRK is guaranteed linear
+
+			WAVE sub_d = root:Packages:NIST:SUB:data
+			WAVE sto_d = root:Packages:NIST:STO:data
+			WAVE drk_d = root:Packages:NIST:DRK:data
+			
+			sub_d = sto_d/drk_d
+
+//			WaveStats root:Packages:NIST:DIV:data
+//			Print "*"			
+			Execute "ChangeDisplay(\"SUB\")"	
+			break
+	endswitch
+
+	return 0
+End
+Function CompareDIV()
+
+	STRUCT WMButtonAction ba
+
+	ba.eventCode=2
+	CompareDIVButtonProc(ba) 
+	return(0)
 End

@@ -894,13 +894,15 @@ End
 
 // as a stand-alone panel, extra control bar  (right) and subwindow implementations don't work right 
 // for various reasons...
-Window MC_SASCALC() : Panel
+Proc MC_SASCALC()
 
 	// when opening the panel, set the raw counts check to 1
 	root:Packages:NIST:SAS:gRawCounts = 1
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(92,556,713,818)/K=1 as "SANS Simulator"
+	DoWindow/C MC_SASCALC
+	
 	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
 	SetVariable MC_setvar0,format="%5.4g"
 	SetVariable MC_setvar0,limits={0,inf,100},value= root:Packages:NIST:SAS:gImon
@@ -1373,9 +1375,11 @@ end
 
 
 
-Window Sim_1D_Panel() : Panel
+Proc Sim_1D_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(92,556,713,818)/K=1 as "1D SANS Simulator"
+	DoWindow/C Sim_1D_Panel
+	
 	SetVariable cntVar,pos={26,68},size={160,15},title="Counting time(s)",format="%d"
 	SetVariable cntVar,limits={1,36000,10},value= root:Packages:NIST:SAS:gCntTime
 	SetVariable cntVar, proc=Sim_1D_CountTimeSetVarProc

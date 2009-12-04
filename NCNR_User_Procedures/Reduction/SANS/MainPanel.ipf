@@ -306,7 +306,7 @@ Window Main_Panel()
 	Button MainButton_2d,help={"Shows panel for performing a fit to a polymer standard."}
 //	Button MainButton_2e,pos={120,90},size={90,20},proc=Subtract1D_MainButtonProc,title="Subtract 1D"
 //	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
-	Button MainButton_2e,pos={120,90},size={90,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
+	Button MainButton_2e,pos={120,90},size={110,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
 	Button MainButton_2e,help={"Shows panel for doing arithmetic on 1D data sets"}
 	Button MainButton_2a,disable=1
 	Button MainButton_2b,disable=1

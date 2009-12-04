@@ -293,7 +293,13 @@ Function SaveSANSGraphic() : GraphMarquee
 		//	comment out in DEMO_MODIFIED version, and show the alert
 		DoAlert 0,"This operation is not available in the Demo version of IGOR"
 	else
-		DoIGORMenu "File","Save Graphics"
+		DoAlert 1,"Do you want the controls too?"
+		if(V_flag==1)
+			GetMarquee/K/Z
+			SavePICT /E=-5/SNAP=1
+		else
+			DoIGORMenu "File","Save Graphics"
+		endif
 	endif
 End
 

@@ -243,6 +243,9 @@ Function AddDAPlot(dataset)
 			if (V_Value == 0)
 				ControlInfo/W=$(win) DS2_popup
 				DS2name = S_Value
+				if(cmpstr(DS2name,"No data loaded")==0)
+					break			//in case someone loads set 1, but not set two, then plots
+				endif
 				Wave qWave = $("root:"+DS2name+":"+DS2name+"_q")
 				Wave iWave = $("root:"+DS2name+":"+DS2name+"_i")
 				Wave errWave = $("root:"+DS2name+":"+DS2name+"_s")
@@ -258,13 +261,16 @@ Function AddDAPlot(dataset)
 				Wave qWave =root:NullSolvent:NullSolvent_q
 				Wave iWave = root:NullSolvent:NullSolvent_i
 				Wave errWave = root:NullSolvent:NullSolvent_s
+				Wave iWaveDS1 = $("root:"+DS1name+":"+DS1name+"_i")
 				iWave = 1
 				errWave = 0
 				AppendToGraph/W=DAPlotPanel#DAPlot iWave vs Qwave
 				ErrorBars/W=DAPlotPanel#DAPlot /T=0 NullSolvent_i, Y wave=(errWave,errWave)			
 				ModifyGraph/W=DAPlotPanel#DAPlot rgb(NullSolvent_i)=(0,0,65535)
-				Cursor/W=DAPlotPanel#DAPlot A, NullSolvent_i, leftx(iWave)
-				Cursor/W=DAPlotPanel#DAPlot/A=0 B, NullSolvent_i,  rightx(iWave)			
+				//Cursor/W=DAPlotPanel#DAPlot A, NullSolvent_i, leftx(iWave)
+				//Cursor/W=DAPlotPanel#DAPlot/A=0 B, NullSolvent_i,  rightx(iWave)			
+				Cursor/W=DAPlotPanel#DAPlot A, $(DS1Name+"_i"), leftx(iWaveDS1)
+				Cursor/W=DAPlotPanel#DAPlot/A=0 B, $(DS1Name+"_i"),  rightx(iWaveDS1)			
 			endif
 			break
 		case 3:
@@ -280,8 +286,7 @@ Function AddDAPlot(dataset)
 	endswitch
 
 	ControlInfo/W=DAPlotPanel DAPlot_log_cb
-	ModifyGraph/W=DAPlotPanel#DAPlot mode=3, msize=2, marker=19, mirror=1, tick=2, log(bottom)=1,log(left)=V_Value
-
+	ModifyGraph/W=DAPlotPanel#DAPlot mode=3, msize=2, marker=19, mirror=1, tick=2, log(bottom)=1,log(left)=V_Value,tickUnit=1
 End
 
 Function arithDisplayProc(s)
@@ -543,12 +548,10 @@ Function DACalculateProc(ba) : ButtonControl
 		ba2.eventCode = 2
 		DAPlotButtonProc(ba2)
 		AddDAPlot(3)
-		SetActiveSubWindow DAPlotPanel
 		DoWindow/F DataArithmeticPanel
+//		SetActiveSubWindow DAPlotPanel
 	endswitch
 	
-
-
 End
 
 Function DAPlotButtonProc(ba) : ButtonControl
