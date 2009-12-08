@@ -6,6 +6,23 @@
 // SRK 7 OCT 2009
 //
 
+// Adding two raw .bt5 files:
+//	- only files with the same angle range and the same number of points can be added.
+//	- NO shifting is done - these are raw data files, and the angular shift is not known
+//	- it can be repeated multiple times to add more than two files together
+//	- the two added files are listed in the title of the summed file.
+
+// Adding two data sets:
+//	- here, two entire data sets (inlcluding the main beam) are added together after
+//	   loading and normalizing and coverting to Q. The data file is NOT saved out, because
+//		it is not a format that can be re-read in for reduction.
+//	- to use the summed data set, it is first summed in a separate panel, and then transferred
+//		to either the active "SAM" or "EMP" data
+//	- since the zero offset can make the point values not exactly the same, only those within a 
+//		certain tolerance are actually added. Points that cannot be added are still kept in the final
+//		data set.
+//
+
 // issues
 // - are the errors calculated correctly? I think so...
 // - if there is a direct 1:1 correspondence of the data points, saving is easy
@@ -14,17 +31,13 @@
 //
 // - convert to countrate seems like a good idea, then 1+1=2 and I can propagate errors
 //  -- but how to save the data? At this point, errCR != sqrt(CR)
+// -> answer is -- don't save the full data sets that have been summed...
 //
 // - Why can't I just use the whole set of files from the main USANS panel, and add what needs
 //   to be added? Because if there is an angle shift, I have no way of knowing which files to apply
 //   the shift to...
 //
-//
-// - need a global for the tolerance (and a good reason to use that particular value)
-//
 // - do I have anything hard-wired in the code that needs to be generalized before release? 
-//
-// - add descriptions of this to the help files
 //
 
 
@@ -61,6 +74,7 @@ Proc Init_AddUSANS()
 	//Preference value to determine if we are outputting XML
 //	Variable/G root:Packages:NIST:USANS:Globals:gUseXMLOutput = 0
 	String/G FilterStr
+	Variable/G gAddUSANSTolerance = 0.01		// add points if x is within 1% (an arbitrary choice!)
 
 	Make/O/T/N=1 fileWave,AWave,BWave 
 	fileWave=""
@@ -140,7 +154,7 @@ Proc USANS_Add_Panel()
 	Button PlotSelected_B_Button,help={"Plot the selected empty cell scattering files in the COR_Graph"}
 	Button pickSavePathButton,pos={97,8},size={80,20},proc=PickSaveButtonProc,title="SavePath..."
 	Button pickSavePathButton,help={"Select the data folder where data is to be saved to disk"}
-	Button USANSHelpButton,pos={220,6},size={50,20},proc=USANSHelpButtonProc,title="Help"
+	Button USANSHelpButton,pos={220,6},size={50,20},proc=USANSAddFilesHelpButton,title="Help"
 	Button USANSHelpButton,help={"Show the USANS reduction help file"}
 
 	SetVariable FilterSetVar,pos={8,289},size={106,18},title="Filter",fSize=12
@@ -158,6 +172,17 @@ Proc USANS_Add_Panel()
 	Button SaveSumButton,fColor=(16385,28398,65535)
 	
 EndMacro
+
+// Show the help file, don't necessarily keep it with the experiment (/K=1)
+Function USANSAddFilesHelpButton(ctrlName) : ButtonControl
+	String ctrlName
+	
+	DisplayHelpTopic/Z/K=1 "Adding Two Data Sets"
+	if(V_flag !=0)
+		DoAlert 0,"The USANS Data Reduction Help file could not be found"
+	endif
+	return(0)
+End
 
 Function AddUSANSDone(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -265,13 +290,14 @@ Function Add_AB(ctrlName) : ButtonControl
 //	String/G note_B = note(DetCts_B)
 	
 	
-	Variable minPt,minDelta,tol
+	Variable minPt,minDelta
 	Variable ii,jj,nA,nB,sumPt=0
 	nA = numpnts(Angle_A)
 	nB = numpnts(Angle_B)
 	Make/O/D/N=(nB) tmp_delta
 	
-	tol = 0.01		//1% error allowed	
+	NVAR tol = root:Packages:NIST:USANS:Globals:AddPanel:gAddUSANSTolerance	//1% error allowed as default
+		
 	for(ii=0;ii<nA;ii+=1)
 		Redimension/N=(nB) tmp_delta
 		tmp_delta = NaN		//initialize every pass

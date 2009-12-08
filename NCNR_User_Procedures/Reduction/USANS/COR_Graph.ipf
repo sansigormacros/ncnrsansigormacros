@@ -170,7 +170,7 @@ Function GraphCOR()
 		ModifyGraph msize(DetCts_COR)=2,rgb(DetCts_COR)=(52428,34958,1)
 		ModifyGraph mode(DetCts_COR)=3,marker(DetCts_COR)=19
 		ModifyGraph tickUnit=1
-		ErrorBars DetCts_COR Y,wave=(ErrDetCts_COR,ErrDetCts_COR)
+		ErrorBars/T=0 DetCts_COR Y,wave=(ErrDetCts_COR,ErrDetCts_COR)
 	endif
 
 	SetDataFolder root:
