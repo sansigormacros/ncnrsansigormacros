@@ -130,7 +130,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SANSRed_WinList += "FitRPAPanel;SANS_Histo;drawMaskWin;Multiple_Reduce_Panel;NSORT_Panel;NSORT_Graph;CombineTable;ToCombine;Patch_Panel;"
 	SANSRed_WinList += "ProtocolPanel;Schematic_Layout;Tile_2D;RAW_to_ASCII;Trans_Panel;TransFileTable;ScatterFileTable;Convert_to_Trans;"
 	SANSRed_WinList += "WorkFileMath;Pref_Panel;Subtract_1D_Panel;Plot_Sub1D;SASCALC;MC_SASCALC;Saved_Configurations;TISANE;Sim_1D_Panel;"
-	SANSRed_WinList += "Trial_Configuration;Saved_Configurations;"
+	SANSRed_WinList += "Trial_Configuration;Saved_Configurations;DataArithmeticPanel;DAPlotPanel;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR SANS Reduction Macros":	
 			Execute/P "INSERTINCLUDE \"Includes_v520\""

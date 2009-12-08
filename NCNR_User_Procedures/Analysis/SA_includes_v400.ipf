@@ -35,6 +35,7 @@ Menu "SANS Models"
 	"Freeze Model"
 	"Write Model Data"
 	"ReWrite Experimental Data",ReWrite1DData()
+	"1D Arithmetic Panel",MakeDAPanel()
 	"-"
 	Submenu "Packages"
 		"Sum Two Models",Execute/P "INSERTINCLUDE \"SumSANSModels_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SumModelPanel()"

@@ -35,7 +35,7 @@ Function MakeDMPanel()
 	SetVariable OldName_setvar,title="Old Name",pos={50,100},size={400,20}
 	SetVariable OldName_setvar,fsize=12,value=_STR:"",noedit=2
 	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,140},size={400,20}
-	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=setvarproc,live=1
+	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=DANameSetvarproc,live=1
 
 End
 
@@ -125,10 +125,22 @@ End
 
 /////////////////////// Data Arithmetic Panel /////////////////////////////////////////
 
+// 
 Function MakeDAPanel()
+	DoWindow/F DataArithmeticPanel
+	if(V_flag==0)
+		fMakeDAPanel()
+	else
+		DoWindow/F DAPlotPanel
+	endif
+	
+	return(0)
+End
+
+Function fMakeDAPanel()
 	PauseUpdate; Silent 1		// building window...
 	DoWindow/K DataArithmeticPanel
-	NewPanel /W=(459,44,959,404)/N=DataArithmeticPanel/K=1 as "Data Set Arithmetic"
+	NewPanel /W=(459,44,959,404)/N=DataArithmeticPanel/K=2 as "Data Set Arithmetic"
 	ModifyPanel fixedSize=1
 
 	//Main bit of panel
@@ -148,8 +160,12 @@ Function MakeDAPanel()
 	PopupMenu DS2_popup,proc=DA_PopupProc
 	PopupMenu DS2_popup,fsize=12,fcolor=(0,0,65535),valueColor=(0,0,65535)
 
-	Button DAPlot_button,title="Plot",pos={175,85},size={150,20}
+	Button DAPlot_button,title="Plot",pos={100,85},size={150,20}
 	Button DAPlot_button,proc=DAPlotButtonProc
+	Button DADone_button,title="Done",pos={360,85},size={60,20}
+	Button DADone_button,proc=DADoneButtonProc
+	Button DAHelp_button,title="?",pos={440,85},size={30,20}
+	Button DAHelp_button,proc=DAHelpButtonProc
 
 
 	//Tabs
@@ -165,7 +181,7 @@ Function MakeDAPanel()
 	Button DACursors_button,proc=DACursorButtonProc
 	
 	SetVariable DAResultName_sv,title="Result Name (max 25 characters)",pos={50,280},size={400,20}
-	SetVariable DAResultName_Sv,fsize=12,proc=setvarproc,live=1
+	SetVariable DAResultName_Sv,fsize=12,proc=DANameSetvarproc,live=1
 	//Update the result name
 	ControlInfo/W=DataArithmeticPanel DS1_popup
 	if (cmpstr(S_Value,"No data loaded") == 0)
@@ -208,11 +224,11 @@ Function MakeDAPlotPanel()
 	ModifyPanel fixedSize=1
 
 	Display/HOST=DAPlotPanel/N=DAPlot/W=(0,0,440,400)
+	Legend
 	ShowInfo
 	SetActiveSubWindow DAPlotPanel
 	Checkbox DAPlot_log_cb, title="Log I(q)", pos={20,410},value=0
 	Checkbox DAPlot_log_cb, proc=DALogLinIProc
-	
 	
 End
 
@@ -268,9 +284,11 @@ Function AddDAPlot(dataset)
 				ErrorBars/W=DAPlotPanel#DAPlot /T=0 NullSolvent_i, Y wave=(errWave,errWave)			
 				ModifyGraph/W=DAPlotPanel#DAPlot rgb(NullSolvent_i)=(0,0,65535)
 				//Cursor/W=DAPlotPanel#DAPlot A, NullSolvent_i, leftx(iWave)
-				//Cursor/W=DAPlotPanel#DAPlot/A=0 B, NullSolvent_i,  rightx(iWave)			
-				Cursor/W=DAPlotPanel#DAPlot A, $(DS1Name+"_i"), leftx(iWaveDS1)
-				Cursor/W=DAPlotPanel#DAPlot/A=0 B, $(DS1Name+"_i"),  rightx(iWaveDS1)			
+				//Cursor/W=DAPlotPanel#DAPlot/A=0 B, NullSolvent_i,  rightx(iWave)
+				if(strlen(CsrInfo(A,"DAPlotPanel#DAPlot")) == 0)		//cursors not already on the graph		
+					Cursor/W=DAPlotPanel#DAPlot A, $(DS1Name+"_i"), leftx(iWaveDS1)
+					Cursor/W=DAPlotPanel#DAPlot/A=0 B, $(DS1Name+"_i"),  rightx(iWaveDS1)			
+				endif
 			endif
 			break
 		case 3:
@@ -516,7 +534,9 @@ Function DACalculateProc(ba) : ButtonControl
 			DS2 = "NullSolvent"
 		endif
 		ControlInfo/W=$(ba.win) DAResultName_sv
-		Resultname = S_Value
+		Resultname = CleanupName(S_Value, 0 )		//clean up any bad characters, and put the cleaned string back
+		SetVariable DAResultName_sv,value=_STR:ResultName
+		
 		ControlInfo/W=$(ba.win) DAScale_sv
 		Variable Scalefactor = V_Value
 
@@ -546,13 +566,74 @@ Function DACalculateProc(ba) : ButtonControl
 		ba2.win = ba.win
 		ba2.ctrlName = "DAPlot_button"
 		ba2.eventCode = 2
-		DAPlotButtonProc(ba2)
+		
+		// I've commented this out - the cursors get reset to the ends since this removes all sets from the graph, and
+		// then replots them. What is the real purpose of this call? To clear the old result off before adding the 
+		// new one? 
+//		DAPlotButtonProc(ba2)
+		ba2.userData = ResultName
+		DAPlotRemoveResult(ba2)
+		
+		
 		AddDAPlot(3)
 		DoWindow/F DataArithmeticPanel
 //		SetActiveSubWindow DAPlotPanel
 	endswitch
 	
 End
+
+// remove what is not the 
+//
+Function DAPlotRemoveResult(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+	String ResultName = ba.userData
+	String item="",traceList=""
+	Variable ii=0,num
+
+	switch (ba.eventCode)
+		case 2:		//mouse up
+			//data set 1
+			ControlInfo/W=$(win) DS1_popup
+			String DS1 = S_Value
+			
+			//Get folder for DS2
+			ControlInfo/W=$(win) DS2_popup
+			String DS2 = S_Value
+			
+			// state of the checkbox
+			ControlInfo/W=$(win) DANoDS2_cb
+			if(V_flag)
+				DS2 = "NullSolvent"
+			endif
+			
+			DoWindow DAPlotPanel
+			if (V_Flag == 0)
+				MakeDAPlotPanel()
+			else 
+				DoWindow/HIDE=0/F DAPlotPanel
+				traceList = TraceNameList("DAPlotPanel#DAPlot",";",1)
+				num=ItemsInList(traceList)
+				ii=0
+				do 
+					item = StringFromList(ii,traceList,";")
+					if (stringmatch(item,ResultName+"*")==1)		//it it's the specific trace I've asked to remove
+						RemoveFromGraph/W=DAPlotPanel#DAPlot $item
+					elseif (stringmatch(item,DS1+"*")==0 && stringmatch(item,DS2+"*")==0)		//if it's not set1 & not set2
+						RemoveFromGraph/W=DAPlotPanel#DAPlot $item
+					endif
+					
+					ii+=1
+				while(ii<num)				
+			endif
+			
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function DAPlotButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -588,6 +669,39 @@ Function DAPlotButtonProc(ba) : ButtonControl
 			String DS2 = S_Value
 			if (cmpstr(DS2,"") != 0)
 				AddDAPlot(2)
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+Function DADoneButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			DoWindow/K DAPlotPanel
+			DoWindow/K DataArithmeticPanel
+			break
+	endswitch
+
+	return 0
+End
+
+Function DAHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			DisplayHelpTopic/Z/K=1 "1D Arithmetic"
+			if(V_flag !=0)
+				DoAlert 0,"The 1D Arithmetic Help file could not be found"
 			endif
 			break
 	endswitch
@@ -732,7 +846,7 @@ Function/S DM_DataSetPopupList()
 End
 
 
-Function SetVarProc(sva) : SetVariableControl
+Function DANameSetvarproc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 		
 	switch( sva.eventCode )
