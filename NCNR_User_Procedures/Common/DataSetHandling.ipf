@@ -699,9 +699,9 @@ Function DAHelpButtonProc(ba) : ButtonControl
 	switch (ba.eventCode)
 		case 2:
 			// click code here
-			DisplayHelpTopic/Z/K=1 "1D Arithmetic"
+			DisplayHelpTopic/Z/K=1 "Data Set Arithmetic"
 			if(V_flag !=0)
-				DoAlert 0,"The 1D Arithmetic Help file could not be found"
+				DoAlert 0,"The Data Set Arithmetic Help file could not be found"
 			endif
 			break
 	endswitch

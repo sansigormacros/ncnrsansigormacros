@@ -6,16 +6,9 @@
 //**************************
 // Vers 1.2 091901
 //
-// an essentially useless routine, but could be dressed up considerably
-// especially with more HELP for the user
-//
-// adds a "SANS" menu, with only 2 items
-//
 //****************************
 //
 
-// only 2 items - almost all of the other items are woefully obsolete
-// and would generate errors if compiled
 //
 Menu "SANS"
 	"Initialize"
@@ -39,7 +32,8 @@ Menu "SANS"
 		"Load and Plot 1D Data",Show_Plot_Manager()
 		"Open FIT Panel",OpenFITPanel()
 		"Sort and Combine data",ShowNSORTPanel()
-		"Subtract 1D Data Sets",OpenSubtract1DPanel()
+//		"Subtract 1D Data Sets",OpenSubtract1DPanel()
+		"Subtract 1D Data Sets",MakeDAPanel()		//new version
 	End
 		Submenu "2-D Processing"
 		"2D Work file Math",Show_WorkMath_Panel()
@@ -60,4 +54,3 @@ Function SANSHelp()
 		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
 	endif
 End
-
