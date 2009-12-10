@@ -917,6 +917,7 @@ Proc MC_SASCALC()
 	Button MC_button0,pos={17,181},size={130,20},proc=MC_DoItButtonProc,title="Do MC Simulation"
 	Button MC_button0,fColor=(3,52428,1)
 	Button MC_button1,pos={17,208},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
+	Button MC_button3,pos={182,94},size={25,20},proc=showIncohXSHelp,title="?"
 	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
 	SetVariable cntVar,pos={185,73},size={90,15},proc=CountTimeSetVarProc,title="time(s)"
@@ -936,6 +937,17 @@ Proc MC_SASCALC()
 	RenameWindow #,T_results
 	SetActiveSubwindow ##
 EndMacro
+
+
+//
+Proc showIncohXSHelp(ctrlName): ButtonControl
+	String ctrlName
+	DisplayHelpTopic/K=1/Z "Approximate Incoherent Cross Section"
+	if(V_flag !=0)
+		DoAlert 0,"The SANS Simulation Help file could not be found"
+	endif
+end
+
 
 Function CountTimeSetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
