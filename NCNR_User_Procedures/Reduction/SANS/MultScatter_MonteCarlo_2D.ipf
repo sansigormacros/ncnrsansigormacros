@@ -908,7 +908,7 @@ Proc MC_SASCALC()
 	SetVariable MC_setvar0,limits={0,inf,100},value= root:Packages:NIST:SAS:gImon
 	SetVariable MC_setvar0_1,pos={28,119},size={131,15},bodyWidth=60,title="Thickness (cm)"
 	SetVariable MC_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gThick
-	SetVariable MC_setvar0_2,pos={28,96},size={149,15},bodyWidth=60,title="Incoherent XS (cm)"
+	SetVariable MC_setvar0_2,pos={28,96},size={149,15},bodyWidth=60,title="Incoherent XS (1/cm)"
 	SetVariable MC_setvar0_2,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gSig_incoh
 	SetVariable MC_setvar0_3,pos={28,142},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
 	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
