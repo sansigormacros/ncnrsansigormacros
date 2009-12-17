@@ -278,6 +278,8 @@ End
 Function GenerateDIVButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
+	Variable err=0
+	
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
@@ -328,11 +330,19 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			str = ParseRunNumberList(gPlexEmp)
 			if(strlen(str) > 0)
 				proto[1] = str
+				err = CheckDIVBeamCenter(str,65,65)
+				if(err)
+					Abort "On-center EMP files do not have correct beam center"
+				endif
 			else
 				Abort "Bad file number in no offset Emp"
 			endif
 			str = ParseRunNumberList(gPlex)
 			if(strlen(str) > 0)
+				err = CheckDIVBeamCenter(str,65,65)
+				if(err)
+					Abort "On-center PLEX files do not have correct beam center"
+				endif
 				ExecuteProtocol("root:myGlobals:Protocols:DIV_Protocol",str)
 			else
 				Abort "Bad file number in no offset Plex"
@@ -364,11 +374,19 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			str = ParseRunNumberList(gPlexEmp_off)
 			if(strlen(str) > 0)
 				proto[1] = str
+				err = CheckDIVBeamCenter(str,105,65)
+				if(err)
+					Abort "Off-center EMP files do not have correct beam center"
+				endif
 			else
 				Abort "Bad file number in offset Emp"
 			endif
 			str = ParseRunNumberList(gPlex_off)
 			if(strlen(str) > 0)
+				err = CheckDIVBeamCenter(str,105,65)
+				if(err)
+					Abort "On-center EMP files do not have correct beam center"
+				endif
 				ExecuteProtocol("root:myGlobals:Protocols:DIV_Protocol",str)
 			else
 				Abort "Bad file number in offset Emp"
@@ -528,3 +546,34 @@ Function CompareDIV()
 	CompareDIVButtonProc(ba) 
 	return(0)
 End
+
+//loop through each file and check the x and y center
+// within some tolerance (5 pixels) should be fine
+Function CheckDIVBeamCenter(str,xc,yc)
+	String str
+	Variable xc,yc
+	
+	Variable err,ii,num,tmpX,tmpY,badCtr,tol=5
+	String fileStr,pathStr
+	
+	PathInfo catPathName
+	pathStr=S_path
+	
+	num = ItemsInList(str,",")
+	ii=0
+	badCtr = 0
+	do
+		fileStr = pathStr + StringFromList(ii, str,",")
+		tmpX = GetBeamXPos(fileStr)
+		tmpY = GetBeamYPos(fileStr)
+		if(abs(tmpX - xc) > tol)
+			badCtr = 1
+		endif
+		if(abs(tmpY - yc) > tol)
+			badCtr = 1
+		endif		
+		ii+=1
+	while(ii<num && !badCtr)
+	
+	return(badCtr)
+end

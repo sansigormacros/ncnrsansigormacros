@@ -153,7 +153,7 @@ Function DoExtrapolate(qw,iw,sw,nbeg,nend)
 	Variable num=numpnts(iw)
 	
 	Make/O/D G_coef={100,-100}		//input
-	FuncFit Guinier_Fit G_coef iw[0,(nbeg-1)] /X=qw /W=sw /D 
+	FuncFit Guinier_Fit G_coef iw[0,(nbeg-1)] /I=1 /X=qw /W=sw /D 
 	extr_lqi= Guinier_Fit(G_coef,extr_lqq)
 	
 	Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
@@ -161,7 +161,7 @@ Function DoExtrapolate(qw,iw,sw,nbeg,nend)
 	
 	Make/O/D P_coef={0,1,-4}			//input
 	//(set background to zero and hold fixed)
-	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /I=1 /X=qw /W=sw /D 
 	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
 	
 	Printf "Power law exponent = %g\r",P_coef[2]
@@ -390,7 +390,7 @@ Function InvLowQ(ctrlName) : ButtonControl
 	
 	if(yesGuinier)
 		Make/O/D G_coef={1000,-1000}		//input
-		FuncFit Guinier_Fit G_coef iw[0,(nbeg-1)] /X=qw /W=sw /D 
+		FuncFit Guinier_Fit G_coef iw[0,(nbeg-1)] /I=1 /X=qw /W=sw /D 
 		extr_lqi= Guinier_Fit(G_coef,extr_lqq)
 		
 		Printf "I(q=0) = %g (1/cm)\r",G_coef[0]
@@ -399,7 +399,7 @@ Function InvLowQ(ctrlName) : ButtonControl
 		//do a power-law fit instead
 		Make/O/D P_coef={0,1,-1}			//input
 		//(set background to zero and hold fixed)
-		CurveFit/H="100" Power kwCWave=P_coef  iw[0,(nbeg-1)] /X=qw /W=sw /D 
+		CurveFit/H="100" Power kwCWave=P_coef  iw[0,(nbeg-1)] /I=1 /X=qw /W=sw /D 
 		extr_lqi=P_coef[0]+P_coef[1]*extr_lqq^P_coef[2]
 		//	
 		Printf "Pre-exponential = %g\r",P_coef[1]
@@ -460,10 +460,10 @@ Function InvHighQ(ctrlName) : ButtonControl
 	ControlInfo/W=Invariant_Panel check2
 	if(V_Value == 1)
 		//hold the slope fixed, and the background
-		CurveFit/H="101" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+		CurveFit/H="101" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /I=1 /X=qw /W=sw /D 
 	else
 		//(set background to zero and hold fixed)
-		CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+		CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /I=1 /X=qw /W=sw /D 
 	endif
 	
 	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]

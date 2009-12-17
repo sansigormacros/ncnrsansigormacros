@@ -636,6 +636,11 @@ End
 //ASCII export of data as 7-columns qx-qy-Intensity-qz-sigmaQx-sigmaQy-fShad
 //limited header information?
 //
+// *** DEC 2009 ***
+// Removed the SAVE of the 2D resolution waves - I'm not sure they are correct. Can't verify the 
+// smearing of the 2D data yet. For a future minor release...
+//
+//
 // - creates the qx and qy data here, based on the data and header information
 //
 // Need to ensure that the data being exported is the linear copy of the dataset - check the global
@@ -798,8 +803,8 @@ Function QxQy_Export(type,fullpath,dialog)
 
 	//not demo-compatible, but approx 8x faster!!	
 #if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)	
-//	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// /M=termStr specifies terminator	
-	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val,qz_val,SigmaQx,SigmaQy,fSubS as fullpath	// for debugging, write out everything
+	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// without resolution
+//	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val,qz_val,SigmaQx,SigmaQy,fSubS as fullpath	// write out the resolution information
 #else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave
@@ -857,5 +862,4 @@ Function LinXYZToMatrix(xw,yw,zw,matStr)
 	
 	return(0)
 End
-
 

@@ -289,7 +289,7 @@ Function USANS_CalculateSlope(basestr, nend)
 		// initial guess 
 		P_coef[1] = iw[num-1]/qw[num-1]^P_coef[2]
 		
-		CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /C=constr
+		CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /I=1 /W=sw /C=constr
 		extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
 	
 		AppendToGraph/W=USANS_Slope#SlopePlot extr_hqi vs extr_hqq
