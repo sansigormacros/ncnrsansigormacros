@@ -576,4 +576,5 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	while(ii<num && !badCtr)
 	
 	return(badCtr)
+//	return(0)
 end

@@ -23,7 +23,7 @@
 
 // main entry procedure for subtraction panel
 // re-initializes necessary folders and waves
-Proc OpenSubtract1DPanel()()
+Proc OpenSubtract1DPanel()
 	DoWindow/F Subtract_1D_Panel
 	if(V_Flag==0)
 		Init_Subtract1D()
