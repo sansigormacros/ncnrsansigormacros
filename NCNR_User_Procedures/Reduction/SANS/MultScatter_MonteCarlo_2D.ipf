@@ -105,9 +105,16 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 
 	Variable NNeutron=inputWave[0]
 	Variable i,nthreads= ThreadProcessorCount
-	if(nthreads>2)		//only support 2 processors until I can figure out how to properly thread the XOP and to loop it
-		nthreads=2
+
+// make sure that the XOP exists if we are going to thread	
+#if exists("Monte_SANSX4")
+	//OK
+	if(nthreads>4)		//only support 4 processors until I can figure out how to properly thread the XOP and to loop it
+		nthreads=4
 	endif
+#else
+	nthreads = 1
+#endif
 	
 //	nthreads = 1
 	NVAR mt=root:myGlobals:gThreadGroupID
@@ -133,27 +140,27 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		if(i==0)
 			WAVE inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0
 			retWave0 = 0		//clear the return wave
-			retWave0[0] = -1*(datetime-gInitTime)		//to initialize ran3
+			retWave0[0] = -1*trunc(datetime-gInitTime)		//to initialize ran3
 			ThreadStart mt,i,Monte_SANS_W1(inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0)
 			Print "started thread 0"
 		endif
 		if(i==1)
 			WAVE inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1
 			retWave1 = 0			//clear the return wave
-			retWave1[0] = -1*(datetime-gInitTime)		//to initialize ran1
+			retWave1[0] = -1*trunc(datetime-gInitTime-2)		//to initialize ran1
 			ThreadStart mt,i,Monte_SANS_W2(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
 			Print "started thread 1"
 		endif
-//		if(i==2)
-//			WAVE inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2
-//			retWave2[0] = -1*datetime		//to initialize ran3
-//			ThreadStart mt,i,Monte_SANS_W(inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2)
-//		endif
-//		if(i==3)
-//			WAVE inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3
-//			retWave3[0] = -1*datetime		//to initialize ran3
-//			ThreadStart mt,i,Monte_SANS_W(inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3)
-//		endif
+		if(i==2)
+			WAVE inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2
+			retWave2[0] = -1*trunc(datetime-gInitTime-3)		//to initialize ran3a
+			ThreadStart mt,i,Monte_SANS_W3(inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2)
+		endif
+		if(i==3)
+			WAVE inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3
+			retWave3[0] = -1*trunc(datetime-gInitTime-4)		//to initialize ran1a
+			ThreadStart mt,i,Monte_SANS_W4(inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3)
+		endif
 	endfor
 
 // wait until done
@@ -181,22 +188,22 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 		linear_data = linear_data0+linear_data1
 		retWave = retWave0+retWave1
 	endif
-//	if(nthreads == 3)
-//		nt = nt0+nt1+nt2		// add up each instance
-//		j1 = j10+j11+j12
-//		j2 = j20+j21+j22
-//		nn = nn0+nn1+nn2
-//		linear_data = linear_data0+linear_data1+linear_data2
-//		retWave = retWave0+retWave1+retWave2
-//	endif
-//	if(nthreads == 4)
-//		nt = nt0+nt1+nt2+nt3		// add up each instance
-//		j1 = j10+j11+j12+j13
-//		j2 = j20+j21+j22+j23
-//		nn = nn0+nn1+nn2+nn3
-//		linear_data = linear_data0+linear_data1+linear_data2+linear_data3
-//		retWave = retWave0+retWave1+retWave2+retWave3
-//	endif
+	if(nthreads == 3)
+		nt = nt0+nt1+nt2		// add up each instance
+		j1 = j10+j11+j12
+		j2 = j20+j21+j22
+		nn = nn0+nn1+nn2
+		linear_data = linear_data0+linear_data1+linear_data2
+		retWave = retWave0+retWave1+retWave2
+	endif
+	if(nthreads == 4)
+		nt = nt0+nt1+nt2+nt3		// add up each instance
+		j1 = j10+j11+j12+j13
+		j2 = j20+j21+j22+j23
+		nn = nn0+nn1+nn2+nn3
+		linear_data = linear_data0+linear_data1+linear_data2+linear_data3
+		retWave = retWave0+retWave1+retWave2+retWave3
+	endif
 	
 	// fill up the results wave
 	Variable xc,yc
@@ -239,11 +246,39 @@ ThreadSafe Function Monte_SANS_W2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,resu
 #if exists("Monte_SANSX2")
 	Monte_SANSX2(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #else
-	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+//	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #endif
 
 	return (0)
 End
+
+// uses ran3a
+ThreadSafe Function Monte_SANS_W3(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+	
+#if exists("Monte_SANSX3")
+	Monte_SANSX3(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#else
+//	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#endif
+
+	return (0)
+End
+
+// uses ran1a
+ThreadSafe Function Monte_SANS_W4(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+	WAVE inputWave,ran_dev,nt,j1,j2,nn,linear_data,results
+	
+#if exists("Monte_SANSX4")
+	Monte_SANSX4(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#else
+//	Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+#endif
+
+	return (0)
+End
+
+
 
 // NON-threaded call to the main function returns what is to be displayed
 // results is calculated and sent back for display
