@@ -85,13 +85,11 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 //		Variable/G root:Packages:NIST:USANS_dQv = 0.117
 //	endif
 		
+	// if no fileStr passed in, display dialog now
 	if (cmpStr(fileStr,"") == 0)
-		//No filename given, open dialog
-		Open/D/R  refnum
-		if (cmpstr(S_filename,"") == 0)
-			return
-		else
-			fileStr = S_filename
+		fileStr = DoOpenFileDialog("Select a data file to load")
+		if (cmpstr(fileStr,"") == 0)
+			return		//get out if no file selected
 		endif
 	endif
 
