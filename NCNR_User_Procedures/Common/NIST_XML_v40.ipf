@@ -899,6 +899,103 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	Return(0)
 End
 
+Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+	Wave qw,iw,sw,res
+	String firstFileName,secondFileName,thirdFileName,normTo
+	Variable norm12,norm23
+
+	Variable err=0,refNum,numCols
+	String fullPath="",formatStr=""
+	//check each wave - else REALLY FATAL error when writing file
+	If(!(WaveExists(qw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(iw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(sw)))
+		err = 1
+		return err
+	Endif
+	
+	if(WaveExists(res))
+		numCols = 6
+	else
+		numCols = 3
+	endif
+	
+	Variable dialog = 1
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+
+	Struct NISTxmlfile nf
+	
+	//Data
+	Wave nf.Q = qw
+	nf.unitsQ = "1/A"
+	Wave nf.I = iw
+	nf.unitsI = "1/cm"
+	Wave nf.Idev = sw
+	nf.unitsIdev = "1/cm"
+
+	//write out the standard header information
+	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
+	
+	//AJJ to fix with sensible values
+	nf.run = ""
+	nf.nameSASinstrument = "NIST IGOR"
+	nf.SASnote = ""
+	//
+	nf.sample_ID = ParseFilePath(3, fullPath, ":", 0, 0)
+	nf.title = ParseFilePath(3, fullPath, ":", 0, 0)
+	nf.radiation = "neutron"
+	//Do something with beamstop (rw[21])
+	nf.detector_name = "NSORTed Data"	
+	nf.nameSASProcess = "NIST IGOR"
+	
+	nf.sasProcessNote = "COMBINED FILE CREATED: "+date()+"\n"
+	nf.sasProcessNote += "NSORT-ed : " +firstFileName+";"+secondFileName+";"+thirdFileName+"\n"
+	nf.sasProcessNote += "normalized to  "+normTo+"\n"
+	fprintf refNum, "multiplicative factor 1-2 = "+num2str(norm12)+" multiplicative factor 2-3 = "+num2str(norm23)+"\n"
+
+	if (numCols == 3)
+		writeNISTXML(fullpath,nf)
+	elseif (numCols == 6)
+		Make/O/N=(dimsize(res,0)) sigq = res[p][0]
+		Make/O/N=(dimsize(res,0)) qbar = res[p][1]
+		Make/O/N=(dimsize(res,0)) fs = res[p][2]
+	
+		Wave nf.Qdev = sigQ
+		nf.unitsQdev = "1/A"
+		Wave nf.Qmean = qbar
+		nf.unitsQmean = "1/A"
+		Wave nf.Shadowfactor = fs
+		nf.unitsShadowfactor = "none"
+	
+		writeNISTXML(fullpath,nf)
+	
+		Killwaves/Z sigq,qbar,fs
+	endif
+
+	Return err
+End
+
+
+
+
+
+End
+
 /// See WriteModelData_v40.ipf for 6 column equivalent
 Function ReWrite1DXMLData(folderStr)
 	String folderStr
@@ -1017,11 +1114,20 @@ End
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)
 	end
+	
+	Function WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+		Wave q3,i3,sig3,res
+		String firstFileName,secondFileName,thirdFileName,normTo
+		Variable norm12,norm23
+
+		 Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return(-6)
+	End
 
 	Function ReWrite1DXMLData(folderStr)
 		String folderStr
 	
-	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		 Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)
 	end
 #endif
