@@ -210,6 +210,8 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+
 	
 	PathInfo/S savePathName
 	if(V_Flag==0)
@@ -255,7 +257,11 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 	endif
 	
 	//fill in the blanks and dispatch to save routine
-	WriteUSANSWaves(type,"",ptA,ptB,1)
+	if (useXMLOutput == 1)
+		WriteXMLUSANSWaves(type,"",ptA,ptB,1)
+	else
+		WriteUSANSWaves(type,"",ptA,ptB,1)
+	endif
 	
 	return(0)
 End

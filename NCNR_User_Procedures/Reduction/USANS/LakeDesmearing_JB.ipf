@@ -520,7 +520,6 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	Variable lo,hi,dialog		//=1 will present dialog for name
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	NVAR XMLO = $(USANSFolder+":Globals:gUseXMLOutput")
 	
 	String termStr="\r\n"
 	String destStr = USANSFolder+":DSM:"
@@ -566,7 +565,7 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	ti=I_dsm
 	te=S_dsm
 	if( (lo!=hi) && (lo<hi))
-		redimension/N=(hi-lo+1) tq,ti,te,dumWave		//lo to hi, inclusive
+		redimension/N=(hi-lo+1) tq,ti,te,res1,res2,res3		//lo to hi, inclusive
 		tq=Q_dsm[p+lo]
 		ti=I_dsm[p+lo]
 		te=S_dsm[p+lo]
@@ -590,13 +589,7 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	dateStr="CREATED: "+date()+" at  "+time()
 	sprintf str1,"Chi^2 = %g   PowerLaw m = %4.2f   Iterations = %d",chiFinal,m,iter
 	sprintf str2,"%d box smooth passes and %d smoothing spline passes",boxPass,splinePass
-	
-	if (xmlo == 1)
-	
-		
-	
-	endif
-	
+
 	
 	//actually open the file
 	Open refNum as fullpath
@@ -1632,12 +1625,18 @@ Function DSM_SaveButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 
 	String saveStr
 	SVAR curFile = $(USANSFolder+":DSM:gCurFile")
 	saveStr = CleanupName((curFile),0)		//the output filename
 	//
-	WriteUSANSDesmeared(saveStr,0,0,1)			//use the full set (lo=hi=0) and present a dialog
+
+	if (useXMLOutput == 1)	
+		WriteXMLUSANSDesmeared(saveStr,0,0,1)
+	else
+		WriteUSANSDesmeared(saveStr,0,0,1)			//use the full set (lo=hi=0) and present a dialog
+	endif
 	
 	SetDataFolder root:
 	return(0)
