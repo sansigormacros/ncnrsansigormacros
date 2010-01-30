@@ -234,31 +234,31 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	// read in the header information from each of the combined files and put this information in the file header
-	String dum,hdr1="none\r\n",hdr2="none\r\n",hdr3="none\r\n"
-	PathInfo catPathName
-	
-	// the first file exists, check anyways
-	if(cmpstr(firstFileName,"none") !=0)
-		Open/R refNum as S_Path+firstFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr1 			//just grab the second line
-		Close refNum
-	endif
-	//second file
-	if(cmpstr(secondFileName,"none") !=0)
-		Open/R refNum as S_Path+secondFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr2 			//just grab the second line
-		Close refNum
-	endif
-	// third file
-	if(cmpstr(thirdFileName,"none") !=0)
-		Open/R refNum as S_Path+thirdFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr3 			//just grab the second line
-		Close refNum
-	endif
+//	// read in the header information from each of the combined files and put this information in the file header
+//	String dum,hdr1="none\r\n",hdr2="none\r\n",hdr3="none\r\n"
+//	PathInfo catPathName
+//	
+//	// the first file exists, check anyways
+//	if(cmpstr(firstFileName,"none") !=0)
+//		Open/R refNum as S_Path+firstFileName
+//		FReadLine refNum, dum
+//		FReadLine refNum, hdr1 			//just grab the second line
+//		Close refNum
+//	endif
+//	//second file
+//	if(cmpstr(secondFileName,"none") !=0)
+//		Open/R refNum as S_Path+secondFileName
+//		FReadLine refNum, dum
+//		FReadLine refNum, hdr2 			//just grab the second line
+//		Close refNum
+//	endif
+//	// third file
+//	if(cmpstr(thirdFileName,"none") !=0)
+//		Open/R refNum as S_Path+thirdFileName
+//		FReadLine refNum, dum
+//		FReadLine refNum, hdr3 			//just grab the second line
+//		Close refNum
+//	endif
 
 	
 	//actually open the file
@@ -266,9 +266,9 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 	
 	fprintf refnum, "COMBINED FILE CREATED: %s \r\n",date()
 	
-	fprintf refnum, "FIRST File %s",hdr1		//new, Mar 2008
-	fprintf refnum, "SECOND File %s",hdr2		//new, Mar 2008
-	fprintf refnum, "THIRD File %s",hdr3		//new, Mar 2008
+//	fprintf refnum, "FIRST File %s",hdr1		//new, Mar 2008
+//	fprintf refnum, "SECOND File %s",hdr2		//new, Mar 2008
+//	fprintf refnum, "THIRD File %s",hdr3		//new, Mar 2008
 	
 	fprintf refNum, "NSORT-ed   %s \t  +  %s\t  + %s\r\n",firstFileName, secondFileName,thirdFileName
 	fprintf refNum, "normalized to   %s\r\n",normTo
