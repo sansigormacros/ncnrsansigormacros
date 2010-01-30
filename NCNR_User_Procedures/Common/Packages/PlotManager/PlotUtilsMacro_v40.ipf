@@ -63,9 +63,20 @@ End
 //new version, 19JUN07 that loads each data set into a separate data folder
 // the data folder is given the "base name" of the data file as it's loaded
 //
+
 Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	String fileStr
 	Variable doPlot
+	
+	A_LoadOneDDataToName(fileStr,"",doPlot,0)
+
+End
+
+
+///Function that takes output name as well as input
+Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
+	String fileStr, outstr
+	Variable doPlot,forceOverwrite
 	
 	Variable rr,gg,bb,refnum,dQv
 	String w0,w1,w2,n0,n1,n2
@@ -94,14 +105,22 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 	endif
 
 	if (isXML(fileStr) == 1)
-		LoadNISTXMLData(fileStr,doPlot)
+		LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
 	else		
 		//Load the waves, using default waveX names
 		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 		LoadWave/G/D/A/Q fileStr
 		String fileNamePath = S_Path+S_fileName
 //		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
-		String baseStr = CleanupName(S_fileName,0)
+
+		String basestr
+		if (!cmpstr(outstr, ""))
+			//Outstr = "", cmpstr returns 0
+			baseStr = CleanupName(S_fileName,0)
+		else
+			baseStr = outstr
+		endif
+	
 //		print "basestr :"+basestr
 		String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
 //		print "filename :"+filename
@@ -130,6 +149,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 			
 			//String baseStr=w1[0,strlen(w1)-3]
 			if(DataFolderExists("root:"+baseStr))
+				if (!forceOverwrite)
 					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 					if(V_flag==2)	//user selected No, don't load the data
 						SetDataFolder root:
@@ -139,7 +159,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						endif
 						return	//quits the macro
 					endif
-					SetDataFolder $("root:"+baseStr)
+				endif
+				SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
@@ -177,6 +198,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 			
 			//String baseStr=w1[0,strlen(w1)-3]
 			if(DataFolderExists("root:"+baseStr))
+				if(!forceOverwrite)
 					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 					if(V_flag==2)	//user selected No, don't load the data
 						SetDataFolder root:
@@ -186,7 +208,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						endif
 						return		//quits the macro
 					endif
-					SetDataFolder $("root:"+baseStr)
+				endif
+				SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
@@ -251,6 +274,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 			
 			//String baseStr=w1[0,strlen(w1)-3]
 			if(DataFolderExists("root:"+baseStr))
+				if(!forceOverwrite)
 					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 					if(V_flag==2)	//user selected No, don't load the data
 						SetDataFolder root:
@@ -260,7 +284,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						endif
 						return		//quits the macro
 					endif
-					SetDataFolder $("root:"+baseStr)
+				endif
+				SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif
@@ -326,6 +351,7 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 			
 			//String baseStr=w1[0,strlen(w1)-3]
 			if(DataFolderExists("root:"+baseStr))
+				if(!forceOverwrite)
 					DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 					if(V_flag==2)	//user selected No, don't load the data
 						KillWaves $n0,$n1,$n2,$n3,$n4,$n5		// kill the default waveX that were loaded
@@ -334,7 +360,8 @@ Proc A_LoadOneDDataWithName(fileStr,doPlot)
 						endif		//set the last file loaded to the one NOT loaded
 						return		//quits the macro
 					endif
-					SetDataFolder $("root:"+baseStr)
+				endif
+				SetDataFolder $("root:"+baseStr)
 			else
 				NewDataFolder/S $("root:"+baseStr)
 			endif

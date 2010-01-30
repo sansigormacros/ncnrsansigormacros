@@ -11,9 +11,13 @@
 // and will load any canSAS XML v1 dataset
 // Dec 2008 : 
 //			 Caveats - Assumes Q in /A and I in /cm
-function LoadNISTXMLData(filestr,doPlot)
-	String filestr
-	Variable doPlot
+// Takes outStr as output name. If outStr is specified then we must load only the first SASData in the firstSASEntry, 
+// since anything else doesn't make sense. This is a bit of a hack to support NSORT.
+
+
+function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
+	String filestr,outStr
+	Variable doPlot,forceOverwrite
 	
 	
 	Variable rr,gg,bb
@@ -34,10 +38,24 @@ function LoadNISTXMLData(filestr,doPlot)
 			String w0,w1,w2,w3,w4,w5,basestr,fileName
 			String xmlDataFolder,xmlDataSetFolder
 			
-			for (i = 0; i < CountObjects(xmlReaderFolder,4); i+=1)
+			Variable numSASEntries
+			
+			if(!cmpStr(outStr,""))
+				//no outStr defined
+				numSASEntries = CountObjects(xmlReaderFolder,4)
+			else
+				numSASEntries = 1
+			endif
+			
+			for (i = 0; i < numSASEntries; i+=1)
 								
 				xmlDataFolder = xmlReaderFolder+GetIndexedObjName(xmlReaderFolder,4,i)+":"
-				numDataSets = CountObjects(xmlDataFolder,4)
+				if (!cmpstr(outstr,""))
+					numDataSets = CountObjects(xmlDataFolder,4)
+				else
+					numDataSets = 0
+				endif
+				
 				if (numDataSets > 0)
 					//Multiple SASData sets in this SASEntry
 					for (j = 0; j < numDataSets; j+=1)
@@ -47,6 +65,7 @@ function LoadNISTXMLData(filestr,doPlot)
 						SetDataFolder xmlDataSetFolder	
 					
 						basestr = CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j),0)
+						
 						//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
 						fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
 							
@@ -56,6 +75,7 @@ function LoadNISTXMLData(filestr,doPlot)
 						//print "basestr: ",basestr
 						//print "fileName: ",fileName
 						//remove the semicolon AND period from files from the VAX
+						print basestr
 						w0 = basestr + "_q"
 						w1 = basestr + "_i"
 						w2 = basestr + "_s"
@@ -64,6 +84,7 @@ function LoadNISTXMLData(filestr,doPlot)
 						w5 = basestr + "fs"
 						
 						if(DataFolderExists("root:"+baseStr))
+							if(!forceOverwrite)
 								DoAlert 1,"The data set " + basestr + " from file "+fileName+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 								if(V_flag==2)	//user selected No, don't load the data
 									SetDataFolder root:
@@ -72,7 +93,8 @@ function LoadNISTXMLData(filestr,doPlot)
 									endif		//set the last file loaded to the one NOT loaded
 									return	0	//quits the macro
 								endif
-								SetDataFolder $("root:"+baseStr)
+							endif
+							SetDataFolder $("root:"+baseStr)
 						else
 							NewDataFolder/S $("root:"+baseStr)
 						endif
@@ -80,9 +102,8 @@ function LoadNISTXMLData(filestr,doPlot)
 						Duplicate/O $(xmlDataSetFolder+"Qsas") $w0
 						Duplicate/O $(xmlDataSetFolder+"Isas") $w1
 						Duplicate/O $(xmlDataSetFolder+"Idev") $w2
-		
-		
-							
+
+						
 						if (exists(xmlDataSetFolder+"Qdev"))
 							Wave Qsas = $(xmlDataSetFolder+"Qsas")
 							Wave Qdev = $(xmlDataSetFolder+"Qdev")
@@ -172,7 +193,13 @@ function LoadNISTXMLData(filestr,doPlot)
 					
 					print xmlDataFolder
 					
-					basestr = CleanupName(getXMLDataSetTitle(xmlDataFolder,0),0)
+					//if outstr has been specified, we'll find ourselves here....
+					if (!cmpstr(outstr,""))
+						basestr = CleanupName(getXMLDataSetTitle(xmlDataFolder,0),0)
+					else
+						basestr = CleanupName(outstr,0)
+					endif
+					
 					//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
 					fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
 																
@@ -185,6 +212,7 @@ function LoadNISTXMLData(filestr,doPlot)
 					w2 = basestr + "_s"
 					
 					if(DataFolderExists("root:"+baseStr))
+						if(!forceOverwrite)
 							DoAlert 1,"The data set " + basestr + " from file "+fileName+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
 							if(V_flag==2)	//user selected No, don't load the data
 								SetDataFolder root:
@@ -193,7 +221,8 @@ function LoadNISTXMLData(filestr,doPlot)
 								endif		//set the last file loaded to the one NOT loaded
 								return	0	//quits the macro
 							endif
-							SetDataFolder $("root:"+baseStr)
+						endif
+						SetDataFolder $("root:"+baseStr)
 					else
 						NewDataFolder/S $("root:"+baseStr)
 					endif
@@ -962,6 +991,9 @@ Function ReWrite1DXMLData(folderStr)
 	Return(0)
 End
 
+
+
+
 #else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
 	FUNCTION LoadNISTXMLData(fileName,doPlot)
@@ -985,7 +1017,7 @@ End
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)
 	end
-	
+
 	Function ReWrite1DXMLData(folderStr)
 		String folderStr
 	

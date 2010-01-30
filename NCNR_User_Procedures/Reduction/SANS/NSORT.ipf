@@ -68,23 +68,18 @@ Proc InitNSORTPanel()
 	SetDataFolder root:		//(redundant)
 End
 
-
-//loads datasets (3-column or 6-column) for use in NSORTing
-//identical in function to normal file loading routine LoadQISData()
-//except that this routine builds custom names to keep track of
-//high-med-low q datasets (as defined by setNum input)
-//
+//New loader that uses data folders etc...
+//AJJ Jan 2010
 Function LoadDataForNSORT(fileStr,setNum)
 	String fileStr		//full path:name to a valid file
 	Variable setNum	//number of set (used for naming) = 0, 1, or 2 (ONLY)
 	
 	Variable err=0
-	
-	LoadWave/G/D/A/Q fileStr 		// (/Q) option suppresses printing to history
-	String nm0,nm1,nm2
-	String firstFileName = S_fileName
-	Variable pt=0,begPts,endPts
 
+	String nm0,nm1,nm2
+	//String firstFileName = S_fileName
+	Variable pt=0,begPts,endPts,numCols
+	
 	NVAR gColumns1 = root:myGlobals:NSORT:gColumns1
 	NVAR gColumns2 = root:myGlobals:NSORT:gColumns2
 	NVAR gColumns3 = root:myGlobals:NSORT:gColumns3
@@ -94,130 +89,96 @@ Function LoadDataForNSORT(fileStr,setNum)
 	NVAR endPts2 = root:myGlobals:NSORT:gPtsEnd2
 	NVAR begPts3 = root:myGlobals:NSORT:gPtsBeg3
 	NVAR endPts3 = root:myGlobals:NSORT:gPtsEnd3
+
+	String cmd
+	String typStr= "", trimStr=""
 	
-	String typStr="",trimStr=""
-	
-	do
-		if(V_flag == 3)  //Three waves loaded	
-			// put the names of the three loaded waves into local names
-			nm0 = StringFromList(0, S_waveNames ,";" )
-			nm1 = StringFromList(1, S_waveNames ,";" )
-			nm2 = StringFromList(2, S_waveNames ,";" )
-	
-			//rename to give desired names - can't use rename if waves exist - it will generate an error
-			if(setNum == 1)
-				gColumns1 = 3
-				typStr = "LowQSet"
-				trimStr = "TrimLowQSet"
-				begPts = begPts1
-				endPts = endPts1
-			else
-				if(setNum == 2)
-					gColumns2 = 3
-					typStr = "MedQSet"
-					trimStr = "TrimMedQSet"
-					begPts = begPts2
-					endPts = endPts2
-				else
-					gColumns3 = 3
-					typStr="HighQSet"
-					trimStr = "TrimHighQSet"
-					begPts = begPts3
-					endPts = endPts3
-				Endif
-			Endif
-			Duplicate/O $nm0, $(typStr+"_q")
-			Duplicate/O $nm1, $(typStr+"_i")
-			Duplicate/O $nm2, $(typStr+"_s")
-			KillWaves/Z $nm0,$nm1,$nm2
-			//create the "trimmed" dataset too, start by duplicating the original sets
-			Duplicate/O $(typStr+"_q"),$(trimStr+"_q")
-			Duplicate/O $(typStr+"_i"),$(trimStr+"_i")
-			Duplicate/O $(typStr+"_s"),$(trimStr+"_s")
-			WaveStats/Q $(typStr+"_q")			//get info about the original q-values read in
-			pt = V_npnts-endPts
-			DeletePoints pt,endPts,$(trimStr+"_q"),$(trimStr+"_i"),$(trimStr+"_s")	//delete end points first
-			DeletePoints 0,begPts,$(trimStr+"_q"),$(trimStr+"_i"),$(trimStr+"_s")	//then delete points from beginning
-		
-			Return err
+	switch (setNum)
+		case 1:
+			sprintf cmd , "A_LoadOneDDataToName(\"%s\",\"%s\",%d,%d)",fileStr,"LowQSet",0,1
+			Execute cmd
+			typStr = "LowQSet"
+			trimStr = "TrimLowQSet"
+			begPts = begPts1
+			endPts = endPts1
 			break
-		endif //End of what happens if 3 columns are loaded
-	
-		if(V_flag == 6)  //Six waves loaded
-			String nm3,nm4,nm5
-			// put the names of the three loaded waves into local names
-			nm0 = StringFromList(0, S_waveNames ,";" )
-			nm1 = StringFromList(1, S_waveNames ,";" )
-			nm2 = StringFromList(2, S_waveNames ,";" )
-			nm3 = StringFromList(3, S_waveNames ,";" )
-			nm4 = StringFromList(4, S_waveNames ,";" )
-			nm5 = StringFromList(5, S_waveNames ,";" )
-		
-			if(setNum == 1)
-				gColumns1 = 6
-				typStr = "LowQSet"
-				trimStr = "TrimLowQSet"
-				begPts = begPts1
-				endPts = endPts1
-			else
-				if(setNum == 2)
-					gColumns2 = 6
-					typStr = "MedQSet"
-					trimStr = "TrimMedQSet"
-					begPts = begPts2
-					endPts = endPts2
-				else
-					gColumns3 = 6
-					typStr="HighQSet"
-					trimStr = "TrimHighQSet"
-					begPts = begPts3
-					endPts = endPts3
-				Endif
-			Endif
-			Duplicate/O $nm0, $(typStr+"_q")
-			Duplicate/O $nm1, $(typStr+"_i")
-			Duplicate/O $nm2, $(typStr+"_s")
-			Duplicate/O $nm3, $(typStr+"_sq")
-			Duplicate/O $nm4, $(typStr+"_qb")
-			Duplicate/O $nm5, $(typStr+"_fs")
-			KillWaves/Z $nm0,$nm1,$nm2,$nm3,$nm4,$nm5
-			//create the "trimmed" dataset too
-			Duplicate/O $(typStr+"_q"),$(trimStr+"_q")
-			Duplicate/O $(typStr+"_i"),$(trimStr+"_i")
-			Duplicate/O $(typStr+"_s"),$(trimStr+"_s")
-			Duplicate/O $(typStr+"_sq"),$(trimStr+"_sq")
-			Duplicate/O $(typStr+"_qb"),$(trimStr+"_qb")
-			Duplicate/O $(typStr+"_fs"),$(trimStr+"_fs")
-			WaveStats/Q $(typStr+"_q")			//get info about the original q-values read in
-			pt = V_npnts-endPts
-			DeletePoints pt,endPts,$(trimStr+"_q"),$(trimStr+"_i"),$(trimStr+"_s"),$(trimStr+"_sq"),$(trimStr+"_qb"),$(trimStr+"_fs")	//delete end points first
-			DeletePoints 0,begPts,$(trimStr+"_q"),$(trimStr+"_i"),$(trimStr+"_s"),$(trimStr+"_sq"),$(trimStr+"_qb"),$(trimStr+"_fs")	//then delete points from beginning
-				
-			Return err
+		case 2:
+			sprintf cmd , "A_LoadOneDDataToName(\"%s\",\"%s\",%d,%d)",fileStr,"MedQSet",0,1
+			Execute cmd		
+			typStr = "MedQSet"
+			trimStr = "TrimMedQSet"
+			begPts = begPts2
+			endPts = endPts2
 			break
-		endif //End of Six waves loaded
+		case 3:
+			sprintf cmd , "A_LoadOneDDataToName(\"%s\",\"%s\",%d,%d)",fileStr,"HighQSet",0,1
+			Execute cmd
+			typStr = "HighQSet"
+			trimStr = "TrimHighQSet"
+			begPts = begPts3
+			endPts = endPts3
+			break
+	endswitch
+		
+	String typPrefix = "root:"+typStr+":"+typStr
+	String trimPrefix = "root:"+typStr+":"+trimStr
 	
-		//Next stuff gets executed if not 3 or 6 (example, if 0 )
-		err=1
-		return err
-	while(0)
+	if (WaveExists($(typPrefix+"_res")))
+		//6 col data loaded
+		print "6 col data loaded"
+		numCols = 6
+		Duplicate/O $(typPrefix+"_q") $(trimPrefix+"_q")
+		Duplicate/O $(typPrefix+"_i") $(trimPrefix+"_i")
+		Duplicate/O $(typPrefix+"_s") $(trimPrefix+"_s")
+		Duplicate/O $(typPrefix+"_res") $(trimPrefix+"_res")
+		//Trimmed data set
+		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
+		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
+		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
+		WaveStats/Q $(typPrefix+"_q")			//get info about the original q-values read in
+		pt = V_npnts-endPts
+		DeletePoints pt,endPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//delete end points first
+		DeletePoints 0,begPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//then delete points from beginning			
+	else
+		//Assume
+		//3 col data loaded
+		print "Assuming 3 col data loaded"
+		numcols = 3
+		Duplicate/O $(typPrefix+"_q") $(trimPrefix+"_q")
+		Duplicate/O $(typPrefix+"_i") $(trimPrefix+"_i")
+		Duplicate/O $(typPrefix+"_s") $(trimPrefix+"_s")		
+		//Trimmed data set
+		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
+		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
+		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
+		WaveStats/Q $(typPrefix+"_q")			//get info about the original q-values read in
+		pt = V_npnts-endPts
+		DeletePoints pt,endPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//delete end points first
+		DeletePoints 0,begPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//then delete points from beginning							
+	endif
+
+	switch (setNum)
+		case 1:
+			gColumns1 = numCols
+			break
+		case 2:
+			gColumns2 = numCols
+			break
+		case 3:
+			gColumns3 = numCols
+			break
+	endswitch
+	
 End
 
-//writes out the NSORTed file, includeing header information about how the file
-//was genereated - from which files, and how it was normalized
-//protocol info makes no sense here - go back to the original, separate files
-//if you want to know that information
-//
-// this is the 3-column version  - there's a separate function for 6-column data
-//will ALWAYS prompt for a filename
-//
-Function Write3ColNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23)
-	Wave q3,i3,sig3
+
+Function WriteNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+	Wave q3,i3,sig3,res
 	String firstFileName,secondFileName,thirdFileName,normTo
 	Variable norm12,norm23
 
-	Variable err=0,refNum
-	String fullPath=""
+	Variable err=0,refNum,numCols
+	String fullPath="",formatStr=""
 	//check each wave - else REALLY FATAL error when writing file
 	If(!(WaveExists(q3)))
 		err = 1
@@ -232,6 +193,12 @@ Function Write3ColNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileN
 		return err
 	Endif
 	
+	if(WaveExists(res))
+		numCols = 6
+	else
+		numCols = 3
+	endif
+	
 	Variable dialog = 1
 	if(dialog)
 		PathInfo/S catPathName
@@ -269,8 +236,8 @@ Function Write3ColNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileN
 		FReadLine refNum, hdr3 			//just grab the second line
 		Close refNum
 	endif
+
 	
-	String formatStr = "%15.4g %15.4g %15.4g\r\n"
 	//actually open the file
 	Open refNum as fullpath
 	
@@ -283,129 +250,29 @@ Function Write3ColNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileN
 	fprintf refNum, "NSORT-ed   %s \t  +  %s\t  + %s\r\n",firstFileName, secondFileName,thirdFileName
 	fprintf refNum, "normalized to   %s\r\n",normTo
 	fprintf refNum, "multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\r\n",norm12,norm23
-	fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) |\r\n"
-	wfprintf refnum, formatStr, q3,i3,sig3
+
+	if (numCols == 3)
+		formatStr = "%15.4g %15.4g %15.4g\r\n"
+		fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) |\r\n"
+		wfprintf refnum, formatStr, q3,i3,sig3
+	elseif (numCols == 6)
+		Make/O/N=(dimsize(res,0)) sigq3 = res[p][0]
+		Make/O/N=(dimsize(res,0)) qbar3 = res[p][1]
+		Make/O/N=(dimsize(res,0)) fs3 = res[p][2]
+	
+		formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
+		fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"
+		wfprintf refnum, formatStr, q3,i3,sig3,sigq3,qbar3,fs3
+	endif
 	
 	Close refnum
 	
 	Return err
 End
 
-//writes out the NSORTed file, includeing header information about how the file
-//was generated - from which files, and how it was normalized
-//protocol info makes no sense here - go back to the original, separate files
-//if you want to know that information
-//
-// this is the 6-column version  - there's a separate function for 3-column data
-//will ALWAYS prompt for a filename
-//
-Function Write6ColNSORTedFile(q3,i3,sig3,sq3,qb3,fs3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23)
-	Wave q3,i3,sig3,sq3,qb3,fs3
-	String firstFileName,secondFileName,thirdFileName,normTo
-	Variable norm12,norm23
 
-	Variable err=0,refNum
-	String fullPath=""
-	//check each wave - else REALLY FATAL error when writing file	
-	If(!(WaveExists(q3)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(i3)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(sig3)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(sq3)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(qb3)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(fs3)))
-		err = 1
-		return err
-	Endif
-	
-	Variable dialog = 1
-	// 05SEP05 SRK -- added to automatically combine files from a table - see the end of NSORT.ipf for details
-	// - use the flag set in DoCombineFiles() to decide if the table entries should be used
-	//   root:myGlobals:CombineTable:useTable= (1) (0)
-	//if(exists("root:myGlobals:CombineTable:SaveName"))
-	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
-	if(NVAR_Exists(useTable) && useTable==1)
-		SVAR str=$"root:myGlobals:CombineTable:SaveNameStr"		//messy, but pass in as a global
-		fullPath = str
-//		String str2 = "Is the file name "+str+" correct?"
-//		DoAlert 1,str2
-//		if(V_flag==1)
-			dialog=0	//bypass the dialog if the name is good
-//		endif
-	endif
-	
-	if(dialog)
-		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
-		If(cmpstr(fullPath,"")==0)
-			//user cancel, don't write out a file
-			Close/A
-			Abort "no data file was written"
-		Endif
-		//Print "dialog fullpath = ",fullpath
-	Endif
-	
-	// read in the header information from each of the combined files and put this information in the file header
-	String dum,hdr1="none\r\n",hdr2="none\r\n",hdr3="none\r\n"
-	PathInfo catPathName
-	
-	// the first file exists, check anyways
-	if(cmpstr(firstFileName,"none") !=0)
-		Open/R refNum as S_Path+firstFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr1 			//just grab the second line
-		Close refNum
-	endif
-	//second file
-	if(cmpstr(secondFileName,"none") !=0)
-		Open/R refNum as S_Path+secondFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr2 			//just grab the second line
-		Close refNum
-	endif
-	// third file
-	if(cmpstr(thirdFileName,"none") !=0)
-		Open/R refNum as S_Path+thirdFileName
-		FReadLine refNum, dum
-		FReadLine refNum, hdr3 			//just grab the second line
-		Close refNum
-	endif
-	
-	
-	String formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"
-	//actually open the file
-	Open refNum as fullpath
-	
-	fprintf refnum, "COMBINED FILE CREATED: %s \r\n",date()
-	
-	fprintf refnum, "FIRST File %s",hdr1		//new, Mar 2008
-	fprintf refnum, "SECOND File %s",hdr2		//new, Mar 2008
-	fprintf refnum, "THIRD File %s",hdr3		//new, Mar 2008
-	
-	fprintf refNum, "NSORT-ed   %s \t  +  %s\t  + %s\r\n",firstFileName, secondFileName,thirdFileName
-	fprintf refNum, "normalized to   %s\r\n",normTo
-	fprintf refNum, "multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\r\n",norm12,norm23
-	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"
-	wfprintf refnum, formatStr, q3,i3,sig3,sq3,qb3,fs3
-	
-	Close refnum
-	
-	Return err
-End
+
+
 
 //gets the scaling constant to make (best) overlap of the specified datasets
 //the scaling value is an average value of the individual scaling values for 
@@ -468,13 +335,10 @@ Function NSORT_DoneButton(ctrlName) : ButtonControl
 	
 	//clean up the temporary waves in the root: folder
 	SetDataFolder root:
-	
-	KillWaves/Z LowQSet_q,LowQSet_i,LowQSet_s,LowQSet_sq,LowQSet_qb,LowQSet_fs
-	KillWaves/Z TrimLowQSet_q,TrimLowQSet_i,TrimLowQSet_s,TrimLowQSet_sq,TrimLowQSet_qb,TrimLowQSet_fs
-	KillWaves/Z MedQSet_q,MedQSet_i,MedQSet_s,MedQSet_sq,MedQSet_qb,MedQSet_fs
-	KillWaves/Z TrimMedQSet_q,TrimMedQSet_i,TrimMedQSet_s,TrimMedQSet_sq,TrimMedQSet_qb,TrimMedQSet_fs
-	KillWaves/Z HighQSet_q,HighQSet_i,HighQSet_s,HighQSet_sq,HighQSet_qb,HighQSet_fs
-	KillWaves/Z TrimHighQSet_q,TrimHighQSet_i,TrimHighQSet_s,TrimHighQSet_sq,TrimHighQSet_qb,TrimHighQSet_fs
+
+	KillDataFolder/Z LowQSet
+	KillDataFolder/Z MedQSet
+	KillDataFolder/Z HighQSet
 
 End
 
@@ -594,11 +458,13 @@ End
 Function DisplayHighSet()
 	//function assumes that the window "NSORT_Graph" already exists
 	DoWindow/F NSORT_Graph
+	SetDataFolder root:HighQSet:
 	AppendToGraph $"HighQSet_i" vs $"HighQSet_q"
 	ModifyGraph log=1,mode=3,marker($"HighQSet_i")=8,msize=2,rgb($"HighQSet_i")=(0,0,65535),opaque($"HighQSet_i")=1
 	ErrorBars/T=0 $"HighQSet_i" Y,wave=($"HighQSet_s",$"HighQSet_s")
 	AppendToGraph $"TrimHighQSet_i" vs $"TrimHighQSet_q"
 	ModifyGraph mode($"TrimHighQSet_i")=3,marker($"TrimHighQSet_i")=19,msize=2,rgb($"TrimHighQSet_i")=(0,0,65535)
+	SetDataFolder root:
 End
 
 //adds both med-q sets (full and trimmed) to the graph, which is 
@@ -607,11 +473,13 @@ End
 Function DisplayMedSet()
 	//function assumes that the window "NSORT_Graph" already exists
 	DoWindow/F NSORT_Graph
+	SetDataFolder root:MedQSet:
 	AppendToGraph $"MedQSet_i" vs $"MedQSet_q"
 	ModifyGraph log=1,mode=3,marker($"MedQSet_i")=8,msize=2,rgb($"MedQSet_i")=(65535,0,0),opaque($"MedQSet_i")=1
 	ErrorBars/T=0 $"MedQSet_i" Y,wave=($"MedQSet_s",$"MedQSet_s")
 	AppendToGraph $"TrimMedQSet_i" vs $"TrimMedQSet_q"
 	ModifyGraph mode($"TrimMedQSet_i")=3,marker($"TrimMedQSet_i")=19,msize=2,rgb($"TrimMedQSet_i")=(65535,0,0)
+	SetDataFolder root:
 End
 
 //adds both low-q sets (full and trimmed) to the graph, which is 
@@ -620,11 +488,13 @@ End
 Function DisplayLowSet()
 	//function assumes that the window "NSORT_Graph" already exists
 	DoWindow/F NSORT_Graph
+	SetDataFolder root:LowQSet:
 	AppendToGraph $"LowQSet_i" vs $"LowQSet_q"
 	ModifyGraph log=1,mode=3,marker($"LowQSet_i")=8,msize=2,rgb($"LowQSet_i")=(2,39321,1),opaque($"LowQSet_i")=1
 	ErrorBars/T=0 $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
 	AppendToGraph $"TrimLowQSet_i" vs $"TrimLowQSet_q"
 	ModifyGraph mode($"TrimLowQSet_i")=3,marker($"TrimLowQSet_i")=19,msize=2,rgb($"TrimLowQSet_i")=(2,39321,1)
+	SetDataFolder root:
 End
 
 //button action procedure to set both the main global of the catPath string
@@ -727,12 +597,13 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 		//////end load file1
 	
 		//send just the trimmed (LowQ) set to be written out
-		WAVE lowq = $"TrimLowQSet_q"
-		WAVE lowi = $"TrimLowQSet_i"
-		WAVE lows = $"TrimLowQSet_s"
-		WAVE/Z lowsq = $"TrimLowQSet_sq"		//these may not exist
-		WAVE/Z lowqb = $"TrimLowQSet_qb"
-		WAVE/Z lowfs = $"TrimLowQSet_fs"
+		WAVE lowq = $"root:LowQSet:TrimLowQSet_q"
+		WAVE lowi = $"root:LowQSet:TrimLowQSet_i"
+		WAVE lows = $"root:LowQSet:TrimLowQSet_s"
+//		WAVE/Z lowsq = $"root:LowQSet:TrimLowQSet_sq"		//these may not exist
+//		WAVE/Z lowqb = $"root:LowQSet:TrimLowQSet_qb"
+//		WAVE/Z lowfs = $"root:LowQSet:TrimLowQSet_fs"
+		WAVE/Z lowres = $"root:LowQSet:TrimLowQSet_res"
 		NVAR scaleFactor= root:myGlobals:NSORT:gScale1_2
 		
 		//
@@ -746,9 +617,9 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 			
 		ControlInfo/W=NSORT_Panel popup_1
 		if(isAThree)
-			Write3ColNSORTedFile(lowq,lowi,lows,S_Value,"none","none",S_Value,scaleFactor,1)
+			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none",S_Value,scaleFactor,1)
 		else
-			Write6ColNSORTedFile(lowq,lowi,lows,lowsq,lowqb,lowfs,S_Value,"none","none",S_Value,scaleFactor,1)
+			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none",S_Value,scaleFactor,1,res=lowres)
 		endif
 		//  just get the new list and return - don't actually "pop" the menu, or the selected item will change
 		SVAR popList = root:myGlobals:NSORT:gDataPopList
@@ -1076,19 +947,19 @@ Function DoAutoScaleFromPanel(auto)
    if(numOutputColumns == 3) //Start the 3-column specific stuff here.
 		//order points in sets 1-2, indexing overlap region
 		//put result in temporary waves
-		WaveStats/Q $"TrimLowQSet_q"
+		WaveStats/Q $"root:LowQSet:TrimLowQSet_q"
 		n1 = V_npnts
-		WaveStats/Q $"TrimMedQSet_q"
+		WaveStats/Q $"root:LowQSet:TrimMedQSet_q"
 		n2 = V_npnts
 		n12 = n1+ n2
 		
 		Make/O/N=(n12) q12,i12,sig12
-		WAVE lowq = $"TrimLowQSet_q"
-		WAVE medq = $"TrimMedQSet_q"
-		WAVE lowi = $"TrimLowQSet_i"
-		WAVE medi =  $"TrimMedQSet_i"
-		WAVE lows = $"TrimLowQSet_s"
-		WAVE meds = $"TrimMedQSet_s"
+		WAVE lowq = $"root:LowQSet:TrimLowQSet_q"
+		WAVE medq = $"root:MedQSet:TrimMedQSet_q"
+		WAVE lowi = $"root:LowQSet:TrimLowQSet_i"
+		WAVE medi =  $"root:MedQSet:TrimMedQSet_i"
+		WAVE lows = $"root:LowQSet:TrimLowQSet_s"
+		WAVE meds = $"root:MedQSet:TrimMedQSet_s"
 		q12[0,n1-1] = lowq[p]
 		q12[n1,n1+n2-1]= medq[p-n1]
 		i12[0,n1-1] = lowi[p]
@@ -1159,7 +1030,7 @@ Function DoAutoScaleFromPanel(auto)
 			
 			ControlInfo/W=NSORT_Panel PreviewCheck
 			if( V_Value==0 )		//if zero skip the preview and write out the file
-				err=Write3ColNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23)
+				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23)
 			endif
 			//cleanup waves before exiting
 			KillWaves/Z q12,i12,sig12
@@ -1172,14 +1043,14 @@ Function DoAutoScaleFromPanel(auto)
 		//put result in temporary waves
 		WaveStats/Q q12
 		n12 = V_npnts
-		WaveStats/Q $"TrimHighQSet_q"
+		WaveStats/Q $"root:HighQSet:TrimHighQSet_q"
 		n3 = V_npnts
 		n123 = n12+ n3
 		
 		Make/O/N=(n123) q123,i123,sig123
-		WAVE highq = $"TrimHighQSet_q"
-		WAVE highi = $"TrimHighQSet_i"
-		WAVE highs = $"TrimHighQSet_s"
+		WAVE highq = $"root:HighQSet:TrimHighQSet_q"
+		WAVE highi = $"root:HighQSet:TrimHighQSet_i"
+		WAVE highs = $"root:HighQSet:TrimHighQSet_s"
 	
 		q123[0,n12-1] = q12[p]
 		q123[n1,n12+n3-1]= highq[p-n12]
@@ -1244,7 +1115,7 @@ Function DoAutoScaleFromPanel(auto)
 	
 		ControlInfo/W=NSORT_Panel PreviewCheck
 		if( V_Value==0 )		//if zero skip the preview and write out the file
-			err=Write3ColNSORTedFile(q123,i123,sig123,name1,name2,name3,normToStr,norm12,norm23)
+			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,normToStr,norm12,norm23)
 		endif
 		//cleanup waves before exiting
 		KillWaves/Z q12,i12,sig12,q123,i123,sig123
@@ -1257,38 +1128,48 @@ Function DoAutoScaleFromPanel(auto)
    if(numOutputColumns == 6) // Start the 6-column specific stuff here
 		//order points in sets 1-2, indexing overlap region
 		//put result in temporary waves
-		WaveStats/Q $"TrimLowQSet_q"
+		WaveStats/Q $"root:LowQSet:TrimLowQSet_q"
 		n1 = V_npnts
-		WaveStats/Q $"TrimMedQSet_q"
+		WaveStats/Q $"root:MedQSet:TrimMedQSet_q"
 		n2 = V_npnts
 		n12 = n1+ n2
 		
 		Make/O/N=(n12) q12,i12,sig12,sq12,qb12,fs12
-		WAVE lowq = $"TrimLowQSet_q"
-		WAVE medq = $"TrimMedQSet_q"
-		WAVE lowi = $"TrimLowQSet_i"
-		WAVE medi =  $"TrimMedQSet_i"
-		WAVE lows = $"TrimLowQSet_s"
-		WAVE meds = $"TrimMedQSet_s"
-		WAVE lowsq = $"TrimLowQSet_sq"
-		WAVE medsq = $"TrimMedQSet_sq"
-		WAVE lowqb = $"TrimLowQSet_qb"
-		WAVE medqb =  $"TrimMedQSet_qb"
-		WAVE lowfs = $"TrimLowQSet_fs"
-		WAVE medfs = $"TrimMedQSet_fs"
-	
+		Make/O/N=(n12,3) res12
+		WAVE lowq = $"root:LowQSet:TrimLowQSet_q"
+		WAVE medq = $"root:MedQSet:TrimMedQSet_q"
+		WAVE lowi = $"root:LowQSet:TrimLowQSet_i"
+		WAVE medi =  $"root:MedQSet:TrimMedQSet_i"
+		WAVE lows = $"root:LowQSet:TrimLowQSet_s"
+		WAVE meds = $"root:MedQSet:TrimMedQSet_s"
+//		WAVE lowsq = $"root:LowQSet:TrimLowQSet_sq"
+//		WAVE medsq = $"root:MedQSet:TrimMedQSet_sq"
+//		WAVE lowqb = $"root:LowQSet:TrimLowQSet_qb"
+//		WAVE medqb =  $"root:MedQSet:TrimMedQSet_qb"
+//		WAVE lowfs = $"root:LowQSet:TrimLowQSet_fs"
+//		WAVE medfs = $"root:MedQSet:TrimMedQSet_fs"
+		WAVE lowres = $"root:LowQSet:TrimLowQSet_res"
+		WAVE medres = $"root:MedQSet:TrimMedQSet_res"
+		
 		q12[0,n1-1] = lowq[p]
 		q12[n1,n1+n2-1]= medq[p-n1]
 		i12[0,n1-1] = lowi[p]
 		i12[n1,n1+n2-1]= medi[p-n1]
 		sig12[0,n1-1] = lows[p]
 		sig12[n1,n1+n2-1]= meds[p-n1]
-		sq12[0,n1-1] = lowsq[p]
-		sq12[n1,n1+n2-1]= medsq[p-n1]
-		qb12[0,n1-1] = lowqb[p]
-		qb12[n1,n1+n2-1]= medqb[p-n1]
-		fs12[0,n1-1] = lowfs[p]
-		fs12[n1,n1+n2-1]= medfs[p-n1]
+		sq12[0,n1-1] = lowres[p][0]
+		sq12[n1,n1+n2-1]= medres[p-n1][0]
+		qb12[0,n1-1] = lowres[p][1]
+		qb12[n1,n1+n2-1]= medres[p-n1][1]
+		fs12[0,n1-1] = lowres[p][2]
+		fs12[n1,n1+n2-1]= medres[p-n1][2]
+//		res12[0,n1-1][0]=lowres[p][0]
+//		res12[n1,n1+n2-1][0]=medres[p-n1][0]
+//		res12[0,n1-1][1]=lowres[p][1]
+//		res12[n1,n1+n2-1][1]=medres[p-n1][1]
+//		res12[0,n1-1][2]=lowres[p][2]
+//		res12[n1,n1+n2-1][2]=medres[p-n1][2]
+
 		
 		Sort q12, q12,i12,sig12,sq12,qb12,fs12
 		/////////////////
@@ -1333,18 +1214,26 @@ Function DoAutoScaleFromPanel(auto)
 		
 		//Make the combined, scaled dataset by overwriting the old sets
 		Make/O/N=(n12) q12,i12,sig12,sq12,qb12,fs12
+		Make/O/N=(n12,3) res12
 		q12[0,n1-1] = lowq[p]
 		q12[n1,n1+n2-1]= medq[p-n1]
 		i12[0,n1-1] = lowi[p]
 		i12[n1,n1+n2-1]= medi[p-n1]
 		sig12[0,n1-1] = lows[p]
 		sig12[n1,n1+n2-1]= meds[p-n1]
-		sq12[0,n1-1] = lowsq[p]
-		sq12[n1,n1+n2-1]= medsq[p-n1]
-		qb12[0,n1-1] = lowqb[p]
-		qb12[n1,n1+n2-1]= medqb[p-n1]
-		fs12[0,n1-1] = lowfs[p]
-		fs12[n1,n1+n2-1]= medfs[p-n1]
+		sq12[0,n1-1] = lowres[p][0]
+		sq12[n1,n1+n2-1]= medres[p-n1][0]
+		qb12[0,n1-1] = lowres[p][1]
+		qb12[n1,n1+n2-1]= medres[p-n1][1]
+		fs12[0,n1-1] = lowres[p][2]
+		fs12[n1,n1+n2-1]= medres[p-n1][2]
+//		res12[0,n1-1][0]=lowres[p][0]
+//		res12[n1,n1+n2-1][0]=medres[p-n1][0]
+//		res12[0,n1-1][1]=lowres[p][1]
+//		res12[n1,n1+n2-1][1]=medres[p-n1][1]
+//		res12[0,n1-1][2]=lowres[p][2]
+//		res12[n1,n1+n2-1][2]=medres[p-n1][2]
+
 		
 		Sort q12, q12,i12,sig12,sq12,qb12,fs12
 		//at this point 1-2 are combined
@@ -1357,7 +1246,7 @@ Function DoAutoScaleFromPanel(auto)
 			ControlInfo/W=NSORT_Panel PreviewCheck
 			if( V_Value==0 )		//if zero skip the preview and write out the file
 				//If any of them have three columns write three column data
-				err=Write6ColNSORTedFile(q12,i12,sig12,sq12,qb12,fs12,name1,name2,name3,normToStr,norm12,norm23)
+				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23)
 			endif
 			// always clean up waves before exiting
 			KillWaves/Z q12,i12,sig12,sq12,qb12,fs12
@@ -1370,17 +1259,20 @@ Function DoAutoScaleFromPanel(auto)
 		//put result in temporary waves
 		WaveStats/Q q12
 		n12 = V_npnts
-		WaveStats/Q $"TrimHighQSet_q"
+		WaveStats/Q $"root:HighQSet:TrimHighQSet_q"
 		n3 = V_npnts
 		n123 = n12+ n3
 		
 		Make/O/N=(n123) q123,i123,sig123,sq123,qb123,fs123
-		WAVE highq = $"TrimHighQSet_q"
-		WAVE highi = $"TrimHighQSet_i"
-		WAVE highs = $"TrimHighQSet_s"
-		WAVE highsq = $"TrimHighQSet_sq"
-		WAVE highqb = $"TrimHighQSet_qb"
-		WAVE highfs = $"TrimHighQSet_fs"
+		Make/O/N=(n123,3) res123
+		WAVE highq = $"root:HighQSet:TrimHighQSet_q"
+		WAVE highi = $"root:HighQSet:TrimHighQSet_i"
+		WAVE highs = $"root:HighQSet:TrimHighQSet_s"
+//		WAVE highsq = $"root:HighQSet:TrimHighQSet_sq"
+//		WAVE highqb = $"root:HighQSet:TrimHighQSet_qb"
+//		WAVE highfs = $"root:HighQSet:TrimHighQSet_fs"
+		WAVE highres = $"root:HighQSet:TrimHighQSet_res"
+	
 	
 		q123[0,n12-1] = q12[p]
 		q123[n1,n12+n3-1]= highq[p-n12]
@@ -1389,11 +1281,18 @@ Function DoAutoScaleFromPanel(auto)
 		sig123[0,n12-1] = sig12[p]
 		sig123[n1,n12+n3-1]= highs[p-n12]
 		sq123[0,n12-1] = sq12[p]
-		sq123[n1,n12+n3-1]= highsq[p-n12]
+		sq123[n1,n12+n3-1]= highres[p-n12][0]
 		qb123[0,n12-1] = qb12[p]
-		qb123[n1,n12+n3-1]= highqb[p-n12]
+		qb123[n1,n12+n3-1]= highres[p-n12][1]
 		fs123[0,n12-1] = fs12[p]
-		fs123[n1,n12+n3-1]= highfs[p-n12]
+		fs123[n1,n12+n3-1]= highres[p-n12][2]
+//		res123[0,n12-1][0] = highres[p][0]
+//		res123[n1,n12+n3-1][0] = highres[p-n12][0]
+//		res123[0,n12-1][1] = highres[p][1]
+//		res123[n1,n12+n3-1][1] = highres[p-n12][1]
+//		res123[0,n12-1][2] = highres[p][2]
+//		res123[n1,n12+n3-1][2] = highres[p-n12][2]
+
 		
 		Sort q123, q123,i123,sig123,sq123,qb123,fs123
 		/////////////////
@@ -1435,7 +1334,8 @@ Function DoAutoScaleFromPanel(auto)
 		ControlUpdate/A/W=NSORT_Panel
 		DoUpdate
 		
-		Make/O/N=(n123) q123,i123,sig123,sq123,qb123,fs123
+		Make/O/N=(n123) q123,i123,sig123
+		Make/O/N=(n123,3) res123
 		q123[0,n12-1] = q12[p]
 		q123[n12,n12+n3-1]= highq[p-n12]
 		i123[0,n12-1] = i12[p]
@@ -1443,11 +1343,17 @@ Function DoAutoScaleFromPanel(auto)
 		sig123[0,n12-1] = sig12[p]
 		sig123[n12,n12+n3-1]= highs[p-n12]
 		sq123[0,n12-1] = sq12[p]
-		sq123[n12,n12+n3-1]= highsq[p-n12]
+		sq123[n12,n12+n3-1]= highres[p-n12][0]
 		qb123[0,n12-1] = qb12[p]
-		qb123[n12,n12+n3-1]= highqb[p-n12]
+		qb123[n12,n12+n3-1]= highres[p-n12][1]
 		fs123[0,n12-1] = fs12[p]
-		fs123[n12,n12+n3-1]= highfs[p-n12]
+		fs123[n12,n12+n3-1]= highres[p-n12][2]
+//		res123[0,n12-1][0] = highres[p][0]
+//		res123[n1,n12+n3-1][0] = highres[p-n12][0]
+//		res123[0,n12-1][1] = highres[p][1]
+//		res123[n1,n12+n3-1][1] = highres[p-n12][1]
+//		res123[0,n12-1][2] = highres[p][2]
+//		res123[n1,n12+n3-1][2] = highres[p-n12][2]
 		
 		Sort q123, q123,i123,sig123,sq123,qb123,fs123
 		//at this point 12 - 3 are combined
@@ -1455,10 +1361,13 @@ Function DoAutoScaleFromPanel(auto)
 	
 		ControlInfo/W=NSORT_Panel PreviewCheck
 		if( V_Value==0 )		//if zero skip the preview and write out the file
-			err=Write6ColNSORTedFile(q123,i123,sig123,sq123,qb123,fs123,name1,name2,name3,normToStr,norm12,norm23)
+			res123[][0] = sq123[p]
+			res123[][1] = qb123[p]
+			res123[][2] = fs123[p]
+			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,normToStr,norm12,norm23,res=res123)
 		endif
 		//cleanup waves before exiting
-		KillWaves/Z q12,i12,sig12,sq12,qb12,fs12,q123,i123,sig123,sq123,qb123,fs123
+		KillWaves/Z q12,i12,sig12,q123,i123,sig123,sq123,qb123,fs123 //,res123
 		//combined dataset will already be displayed if the NSORT_Graph is open
 	
 		////////////////
