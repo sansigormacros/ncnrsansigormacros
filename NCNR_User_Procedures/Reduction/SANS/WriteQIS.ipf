@@ -403,18 +403,20 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"  "+num2str(rw[24])+"  "
 	labelWave[5] += num2str(rw[25])+"  "+num2str(rw[27])+"  "+num2str(rw[21])+"  "+textW[9]
-	labelWave[6] =  "SAM: "+rawTag+samFiles
-	labelWave[7] =  "BGD: "+proto[0]
-	labelWave[8] =  "EMP: "+proto[1]
-	labelWave[9] =  "DIV: "+proto[2]
-	labelWave[10] =  "MASK: "+proto[3]
-	labelWave[11] =  "ABS Parameters (3-6): "+proto[4]
-	labelWave[12] = "Average Choices: "+proto[5]
-	labelWave[13] = ""
-	labelWave[14] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-	labelWave[15] = "The detector image is a standard X-Y coordinate system"
-	labelWave[16] = "Data is written by row, starting with Y=1 and X=(1->128)"
-	labelWave[17] = "ASCII data created " +date()+" "+time()
+	labelWave[6] = "PIXELS(X)    PIXELS(Y)   PIXELSIZE X (mm)  PIXELSIZE Y (mm)"
+	labelWave[7] += num2str(pixelsX)+"    "+num2str(pixelsY)+"    "+num2str(rw[10])+"    "+num2str(rw[13])
+	labelWave[8] =  "SAM: "+rawTag+samFiles
+	labelWave[9] =  "BGD: "+proto[0]
+	labelWave[10] =  "EMP: "+proto[1]
+	labelWave[11] =  "DIV: "+proto[2]
+	labelWave[12] =  "MASK: "+proto[3]
+	labelWave[13] =  "ABS Parameters (3-6): "+proto[4]
+	labelWave[14] = "Average Choices: "+proto[5]
+	labelWave[15] = ""
+	labelWave[16] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
+	labelWave[17] = "The detector image is a standard X-Y coordinate system"
+	labelWave[18] = "Data is written by row, starting with Y=1 and X=(1->128)"
+	labelWave[19] = "ASCII data created " +date()+" "+time()
 	//strings can be too long to print-- must trim to 255 chars
 	Variable ii
 	for(ii=0;ii<numTextLines;ii+=1)
@@ -862,4 +864,3 @@ Function LinXYZToMatrix(xw,yw,zw,matStr)
 	
 	return(0)
 End
-

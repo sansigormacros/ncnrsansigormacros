@@ -294,9 +294,6 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 End
 
 
-
-
-
 //gets the scaling constant to make (best) overlap of the specified datasets
 //the scaling value is an average value of the individual scaling values for 
 //every data point (at the low q end) of set 2 that overlaps with set 1
