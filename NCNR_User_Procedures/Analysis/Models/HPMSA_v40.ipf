@@ -792,4 +792,62 @@ Function sqhcal(qq)
       endif
       return SofQ
 end
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// calculate U(r) given the HPMSA parameters
+//
+// pass in the x wave as scaled r/diam values
+//
+Function fHPMSA_Ur(w,x)
+	wave w
+	variable x
       
+//      variable timer=StartMSTimer
+      
+	variable Elcharge=1.602189e-19		// electron charge in Coulombs (C)
+	variable kB=1.380662e-23				// Boltzman constant in J/K
+	variable FrSpPerm=8.85418782E-12	//Permittivity of free space in C^2/(N m^2)
+
+	variable SofQ, QQ, Qdiam, gammaek, Vp, csalt, ss
+	variable VolFrac, SIdiam, diam, Kappa, cs, IonSt
+	variable dialec, Perm, beta1, Temp, zz, charge, ierr
+	Variable ur,gam,kapSig
+
+	diam=w[0]		//in A  (not SI .. should force people to think in nm!!!)
+	zz = w[1]		//# of charges
+	VolFrac=w[2]	
+	QQ=x			//in A^-1 (not SI .. should force people to think in nm^-1!!!)
+	Temp=w[3]		//in degrees Kelvin
+	csalt=w[4]		//in molarity
+	dialec=w[5]		// unitless
+	
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// convert to USEFUL inputs in SI units                                                //
+////////////////////////////    NOTE: easiest to do EVERYTHING in SI units                               //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	beta1=1/(kB*Temp)		// in Joules^-1
+	Perm=dialec*FrSpPerm	//in C^2/(N  m^2)
+	charge=zz*Elcharge		//in Coulomb (C)
+	SIdiam = diam*1E-10		//in m
+	Vp=4*pi/3*(SIdiam/2)^3	//in m^3
+	cs=csalt*6.022E23*1E3	//# salt molecules/m^3
+
+//         Compute the derived values of :
+//			 Ionic strength IonSt (in C^2/m^3)  
+// 			Kappa (Debye-Huckel screening length in m)
+//	and		gamma Exp(-k)
+	IonSt=0.5 * Elcharge^2*(zz*VolFrac/Vp+2*cs)
+	Kappa=sqrt(2*beta1*IonSt/Perm)     //Kappa calc from Ionic strength
+//	Kappa=2/SIdiam					// Use to compare with HP paper
+
+	kapSig = kappa*SIDiam
+	
+	gam=beta1*charge^2/(pi*Perm*SIdiam*(2+Kappa*SIdiam)^2)*exp(kapSig)
+	ur = gam*exp(-kapSig*x)/x
+
+
+	Return(ur)
+End

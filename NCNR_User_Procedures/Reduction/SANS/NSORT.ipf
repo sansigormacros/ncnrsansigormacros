@@ -132,13 +132,13 @@ Function LoadDataForNSORT(fileStr,setNum)
 		Duplicate/O $(typPrefix+"_s") $(trimPrefix+"_s")
 		Duplicate/O $(typPrefix+"_res") $(trimPrefix+"_res")
 		//Trimmed data set
-		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
-		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
-		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
+//		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
+//		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
+//		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
 		WaveStats/Q $(typPrefix+"_q")			//get info about the original q-values read in
 		pt = V_npnts-endPts
-		DeletePoints pt,endPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//delete end points first
-		DeletePoints 0,begPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//then delete points from beginning			
+		DeletePoints pt,endPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s"),$(trimPrefix+"_res")	//delete end points first
+		DeletePoints 0,begPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s"),$(trimPrefix+"_res")	//then delete points from beginning			
 	else
 		//Assume
 		//3 col data loaded
@@ -148,9 +148,9 @@ Function LoadDataForNSORT(fileStr,setNum)
 		Duplicate/O $(typPrefix+"_i") $(trimPrefix+"_i")
 		Duplicate/O $(typPrefix+"_s") $(trimPrefix+"_s")		
 		//Trimmed data set
-		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
-		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
-		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
+//		Duplicate/O $(typPrefix+"_q"),$(trimPrefix+"_q")
+//		Duplicate/O $(typPrefix+"_i"),$(trimPrefix+"_i")
+//		Duplicate/O $(typPrefix+"_s"),$(trimPrefix+"_s")
 		WaveStats/Q $(typPrefix+"_q")			//get info about the original q-values read in
 		pt = V_npnts-endPts
 		DeletePoints pt,endPts,$(trimPrefix+"_q"),$(trimPrefix+"_i"),$(trimPrefix+"_s")	//delete end points first
@@ -1265,8 +1265,10 @@ Function DoAutoScaleFromPanel(auto)
 			
 			ControlInfo/W=NSORT_Panel PreviewCheck
 			if( V_Value==0 )		//if zero skip the preview and write out the file
-				//If any of them have three columns write three column data
-				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23)
+				res12[][0] = sq12[p]
+				res12[][1] = qb12[p]
+				res12[][2] = fs12[p]
+				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23,res=res12)
 			endif
 			// always clean up waves before exiting
 			KillWaves/Z q12,i12,sig12,sq12,qb12,fs12
