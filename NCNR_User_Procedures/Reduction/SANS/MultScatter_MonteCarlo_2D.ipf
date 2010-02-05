@@ -1363,12 +1363,23 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	Note/K linear_data ,"KAPPA="+num2str(kappa)+";"
 	
 	NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
-	if(!rawCts)			//go ahead and do the linear scaling
+	if(!rawCts)			//go ahead and do the abs scaling to the linear_data
 		linear_data = linear_data / kappa
 		linear_data /= detectorEff
-	endif		
-	data = linear_data
+	endif
 	
+	// add a signature to the data file to tag as a simulation
+	linear_data[0][0] = 1
+	linear_data[2][0] = 1
+	linear_data[0][2] = 1
+	linear_data[1][1] = 1
+//	linear_data[2][2] = 1
+	linear_data[1][0] = 0
+//	linear_data[2][1] = 0
+	linear_data[0][1] = 0
+//	linear_data[1][2] = 0
+			
+	data = linear_data
 	// re-average the 2D data
 	S_CircularAverageTo1D("SAS")
 	

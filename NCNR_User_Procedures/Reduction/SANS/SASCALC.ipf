@@ -1145,11 +1145,11 @@ Function S_CircularAverageTo1D(type)
 	Make/D/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
 	Wave mask = $(destPath + ":mask")
 	mask = 0
-	//two pixels all around
-	mask[0,1][] = 1
-	mask[126,127][] = 1
-	mask[][0,1] = 1
-	mask[][126,127] = 1
+	//three pixels all around
+	mask[0,2][] = 1
+	mask[125,127][] = 1
+	mask[][0,2] = 1
+	mask[][125,127] = 1
 	//
 	//pixels within rcentr of beam center are broken into 9 parts (units of mm)
 	rcentr = 100		//original
