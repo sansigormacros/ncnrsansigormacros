@@ -604,7 +604,7 @@ Function DAPlotRemoveResult(ba) : ButtonControl
 			
 			// state of the checkbox
 			ControlInfo/W=$(win) DANoDS2_cb
-			if(V_flag)
+			if(V_Value)
 				DS2 = "NullSolvent"
 			endif
 			
@@ -975,7 +975,7 @@ Function SubtractDataSets(set1Name,set2Name,set2Scale,resultName)
 	Wave set2_s = $(set2Path+set2Name+"_s")
 	
 	result_i = set1_i - (set2Scale*interp(set1_q[p],set2_q,set2_i))
-	result_s = sqrt(set1_s^2 + set2Scale^2*interp(set1_q[p],set2_q,set2_s))
+	result_s = sqrt(set1_s^2 + (set2Scale*interp(set1_q[p],set2_q,set2_s))^2 )
 	//Calculate result error wave - can we produce corrected Q error? 
 	
 	//Generate history string to record what was done?
@@ -1003,14 +1003,19 @@ Function AddDataSets(set1Name,set2Name,set2Scale,resultName)
 	else
 	//Do addition of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
+	Wave result_s = $(resultPath+resultName+"_s")
 	Wave set1_i = $(set1Path+set1Name+"_i")
 	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set1_s = $(set1Path+set1Name+"_s")
 	Wave set2_i = $(set2Path+set2Name+"_i")
 	Wave set2_q = $(set2Path+set2Name+"_q")
-	result_i =  set1_i + set2Scale*interp(set1_q[p],set2_q,set2_i)	
+	Wave set2_s = $(set2Path+set2Name+"_s")
 	
-	//Calculate result error wave - can we produce corrected Q error? 
+	result_i =  set1_i + set2Scale*interp(set1_q[p],set2_q,set2_i)	
+	//Calculate result error wave (note that this is identical to subtraction)
+	result_s = sqrt(set1_s^2 + (set2Scale*interp(set1_q[p],set2_q,set2_s))^2 )
 
+	//  - can we produce corrected Q error? 
 	//Generate history string to record what was done?
 	return 0
 	endif
@@ -1037,14 +1042,23 @@ Function MultiplyDataSets(set1Name, set2Name, set2Scale, resultName)
 	else
 	//Do multiplcation of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
+	Wave result_s = $(resultPath+resultName+"_s")
 	Wave set1_i = $(set1Path+set1Name+"_i")
 	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set1_s = $(set1Path+set1Name+"_s")
 	Wave set2_i = $(set2Path+set2Name+"_i")
 	Wave set2_q = $(set2Path+set2Name+"_q")
-	result_i =  set1_i*set2Scale*interp(set1_q[p],set2_q,set2_i)
-		
+	Wave set2_s = $(set2Path+set2Name+"_s")
 	
-	//Calculate result error wave - can we produce corrected Q error? 
+	result_i =  set1_i*set2Scale*interp(set1_q[p],set2_q,set2_i)
+	//Calculate result error wave
+	// sum each of the relative errors, interpolating set 2 intensity and error as needed
+	// then sqrt
+	result_s = (set2Scale*interp(set1_q[p],set2_q,set2_i)*set1_s)^2
+	result_s += (set2Scale*set1_i*interp(set1_q[p],set2_q,set2_s))^2
+	result_s = sqrt(result_s)
+
+	// - can we produce corrected Q error? 
 
 	//Generate history string to record what was done?
 	return 0
@@ -1072,13 +1086,23 @@ Function DivideDataSets(set1Name, set2Name, set2Scale, resultName)
 	else
 	//Do division of I waves - including interpolation if necessary. 
 	Wave result_i = $(resultPath+resultName+"_i")
+	Wave result_s = $(resultPath+resultName+"_s")
 	Wave set1_i = $(set1Path+set1Name+"_i")
 	Wave set1_q = $(set1Path+set1Name+"_q")
+	Wave set1_s = $(set1Path+set1Name+"_s")
 	Wave set2_i = $(set2Path+set2Name+"_i")
 	Wave set2_q = $(set2Path+set2Name+"_q")
-	result_i =  set1_i/(set2Scale*interp(set1_q[p],set2_q,set2_i)	)
+	Wave set2_s = $(set2Path+set2Name+"_s")
 	
-	//Calculate result error wave - can we produce corrected Q error? 
+	result_i =  set1_i/(set2Scale*interp(set1_q[p],set2_q,set2_i)	)
+	//Calculate result error wave
+	// sum each of the relative errors, interpolating set 2 intensity and error as needed
+	// then sqrt
+	result_s = (set1_s/set2Scale/interp(set1_q[p],set2_q,set2_i))^2
+	result_s += (interp(set1_q[p],set2_q,set2_s)*set1_i/set2Scale/interp(set1_q[p],set2_q,set2_i)^2)^2
+	result_s = sqrt(result_s)
+
+	// - can we produce corrected Q error? 
 	
 	//Generate history string to record what was done?
 	return 0

@@ -22,6 +22,11 @@
 // package-6.001
 // - lots more diagnostics added
 
+// FEB 2010 - now make use of the user-specific procedure path. It's always writeable, and not in the application folder
+// -- now I need to search both locations to move old stuff out
+// -- then install clean into the new user path (userPathStr)
+//
+
 Function InstallNCNRMacros(forceInstall)
 	Variable forceInstall		// if == 1, install whatever possible, even if R/W errors from the OS
 
@@ -73,11 +78,13 @@ Function InstallNCNRMacros(forceInstall)
 	endif
 	
 
-	String igorPathStr,homePathStr
+	String igorPathStr,homePathStr,userPathStr
 	PathInfo Igor
 	igorPathStr = S_Path		//these have trailing colons
 	PathInfo home					//the location where this was run from...
 	homePathStr = S_Path
+	// the Igor 6.1 User Procedure Path, same sub-folders as in Igor App Folder
+	userPathStr=RemoveEnding(SpecialDirPath("Igor Pro User Files",0,0,0),":")+":"
 	
 	// clean up old stuff, moving to home:old_moved_files
 	// extensions - these show up as files, even the aliases
@@ -85,15 +92,18 @@ Function InstallNCNRMacros(forceInstall)
 	// user procedures - these can be in folders or as files
 	variable i=0, AliasSet=0, isThere = 0
 	String tmpStr
+
+
+//////////////////////////////////////////////////////////////////////
 	
-// clean up the Igor Extensions
+////// clean up the Igor Extensions (first the old path -- in the App folder)
 	NewPath /Q/O ExPath, igorPathStr+"Igor Extensions:"
 	PathInfo ExPath
 	String extPathStr = S_Path 
 	string strFileList = IndexedFile(ExPath, -1, "????" )
 	
+	//files first
 	Wave/T extFiles=root:IExtFiles
-	
 	for (i=0; i<itemsInList(strFileList); i+=1)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFiles)
@@ -106,6 +116,7 @@ Function InstallNCNRMacros(forceInstall)
 	//then anything that shows up as a folder
 	Wave/T extFolders=root:IExtFolders
 	strFileList = IndexedDir(ExPath, -1, 0 )
+	
 	for (i=0; i<itemsInList(strFileList); i+=1)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFolders)
@@ -114,15 +125,43 @@ Function InstallNCNRMacros(forceInstall)
 			Print "Move folder "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
 		endif
 	endfor
+
+////// then clean up the Igor Extensions (now look in the User Path, by changing the definition of ExPath)
+	NewPath /Q/O ExPath, userPathStr+"Igor Extensions:"
+	PathInfo ExPath
+	extPathStr = S_Path 
+	strFileList = IndexedFile(ExPath, -1, "????" )
+		
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,extFiles)
+		if(isThere)
+			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+		endif
+	endfor
 	
-// clean up the user procedures (files first)
+	//then anything that shows up as a folder
+	strFileList = IndexedDir(ExPath, -1, 0 )
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,extFolders)
+		if(isThere)
+			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+		endif
+	endfor
+
+//////////////////////////////////////////////////////////////////////
+	
+/////// clean up the User Procedures -- in the APP folder
 	NewPath /Q/O UPPath, igorPathStr+"User Procedures:"
 	PathInfo UPPath
 	String UPPathStr = S_Path
 	strFileList = IndexedFile(UPPath, -1, "????" )			//for files
 	
+	// (files first)
 	Wave/T UPFilesWave=root:UPFiles
-	
 	for (i=0; i<itemsInList(strFileList); i+=1)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
@@ -132,9 +171,8 @@ Function InstallNCNRMacros(forceInstall)
 		endif
 	endfor
 	
-// clean up the user procedures (folders second)
+	//(folders second)
 	strFileList = IndexedDir(UPPath, -1, 0)			//for folders, just the names, not full paths
-	
 	Wave/T UPFoldersWave=root:UPFolders
 	
 	for (i=0; i<itemsInList(strFileList); i+=1)
@@ -147,12 +185,47 @@ Function InstallNCNRMacros(forceInstall)
 		endif
 	endfor
 
-// now try to move the  Igor Help files out
+/////// now clean up the User Procedures -- in the User Folder
+	NewPath /Q/O UPPath, userPathStr+"User Procedures:"
+	PathInfo UPPath
+	UPPathStr = S_Path
+	strFileList = IndexedFile(UPPath, -1, "????" )			//for files
+	
+	// (files first)
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,UPFilesWave)
+		if(isThere)
+			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+		endif
+	endfor
+	
+	//(folders second)
+	strFileList = IndexedDir(UPPath, -1, 0)			//for folders, just the names, not full paths
+		
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,UPFoldersWave)
+		if(isThere)
+		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
+			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+		endif
+	endfor
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+/////// now try to clean up the Igor Help Files (in the APP folder)
 	NewPath /Q/O IHPath, igorPathStr+"Igor Help Files:"
 	PathInfo IHPath
 	String IHPathStr = S_Path
 	strFileList = IndexedFile(IHPath, -1, "????" )			//for files
 	
+	// files first
 	Wave/T IHFilesWave=root:IHFiles
 	
 	for (i=0; i<itemsInList(strFileList); i+=1)
@@ -167,6 +240,7 @@ Function InstallNCNRMacros(forceInstall)
 	// then anything that shows up as a folder
 	Wave/T IHFilesWave=root:IHFolders
 	strFileList = IndexedDir(IHPath, -1, 0)	
+	
 	for (i=0; i<itemsInList(strFileList); i+=1)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFolders)
@@ -176,50 +250,85 @@ Function InstallNCNRMacros(forceInstall)
 		endif
 	endfor
 	
-// INSTALL the new stuff
-//(1) copy the items to install to the User Procedures folder
-//(2) set up the aliases from there
+	/////// now try the Igor Help Files (in the USER folder)
+	NewPath /Q/O IHPath, userPathStr+"Igor Help Files:"
+	PathInfo IHPath
+	IHPathStr = S_Path
+	strFileList = IndexedFile(IHPath, -1, "????" )			//for files
+	
+	// files first	
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IHFilesWave)
+		if(isThere)
+			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+		endif
+	endfor	
+	
+	// then anything that shows up as a folder
+	strFileList = IndexedDir(IHPath, -1, 0)	
+	
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IHFolders)
+		if(isThere)
+			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+		endif
+	endfor
+
+
+
+// at this point all of the old stuff is cleaned up as best as I can
+//
+// at this point the paths point to the User Folder, not in the App folder	
+	
+	
+	
+	
+//////////// INSTALL the new stuff
+//
+//(1) copy the items to install to the User Special Folder
+//(2) --- now I don't need to set up aliases! they are just there
 //
 // the old ones should be gone already, so just put in the new ones
 
 // they may not be possible to remove, so try to overwrite...
 
-//  and then create shortcuts for XOP and help files
-//	MoveFolder/Z=1/O homePathStr+"NCNR_Help_Files" as UPPathStr+"NCNR_Help_Files"
-//	Print "Move folder NCNR_Help_Files into User Procedures, overwrite if needed: "+num2str(V_flag)
-//	if(V_Flag != 0)
-		MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as UPPathStr+"NCNR_Help_Files"
-		Print "******Move folder NCNR_Help_Files into User Procedures, NO overwite: "+num2str(V_flag)
-//	endif
-	CreateAliasShortcut/O/P=UPPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
-	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+num2str(V_flag)
+	NewPath /Q/O SpecialPath, userPathStr
+
+// the help files
+	MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
+	Print "******Move folder NCNR_Help_Files into User Special Folder, NO overwite: "+num2str(V_flag)
+
+// not needed now
+//	CreateAliasShortcut/O/P=SpecialPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
+//	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+num2str(V_flag)
 	
+
+// the User Procedures	
+	MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+	Print "*******Move folder NCNR_User_Procedures into User Procedures, NO overwrite: "+num2str(V_flag)
 	
-//	MoveFolder/Z=1/O homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
-//	Print "Move folder NCNR_User_Procedures into User Procedures, overwrite if needed: "+num2str(V_flag)
-//	if(V_flag !=0)
-		MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
-		Print "*******Move folder NCNR_User_Procedures into User Procedures, NO overwrite: "+num2str(V_flag)
-//	endif	
-	// don't need an alias for the UserProcedures - they're already here....
+// don't need an alias for the UserProcedures - they're already here....
 
 
-//	MoveFolder/Z=1/O homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
-//	Print "Move folder NCNR_Extensions into User Procedures, overwrite if needed: "+num2str(V_flag)
-//	if(V_flag !=0)
-		MoveFolder/Z=1 homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
-		Print "*******Move folder NCNR_Extensions into User Procedures, NO overwrite: "+num2str(V_flag)
+// Igor Extensions
+	MoveFolder/Z=1 homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
+	Print "*******Move folder NCNR_Extensions into User Procedures, NO overwrite: "+num2str(V_flag)
+//	
+// not needed now
+//	if(isMac)
+//		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Mac_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
+//	else
+//		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Win_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
 //	endif
-	if(isMac)
-		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Mac_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
-	else
-		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Win_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
-	endif
-	Print "Creating shortcut for XOP into Igor Extensions: "+num2str(V_flag)
+//	Print "Creating shortcut for XOP into Igor Extensions: "+num2str(V_flag)
 	
 
 // put shortcuts to the template in the "top" folder
-//??
+//
 	NewPath/O/Q UtilPath, homePathStr+"NCNR_SANS_Utilities:"
 	strFileList = IndexedFile(UtilPath,-1,".pxt")	
 	for (i=0; i<itemsInList(strFileList); i+=1)
@@ -232,16 +341,7 @@ Function InstallNCNRMacros(forceInstall)
 			Print "Creating shortcut for "+tmpStr+" into top level: "+num2str(V_flag)
 //		endif
 	endfor
-	
-// old method, used shortcuts from main package (risky if user deletes them)
-//	CreateAliasShortcut/O/P=home "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
-//	CreateAliasShortcut/O/P=home "NCNR_User_Procedures" as igorPathStr+"User Procedures:NCNR_User_Procedures"
-//	if(isMac)
-//		CreateAliasShortcut/O/P=home "NCNR_Extensions:Mac XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
-//	else
-//		CreateAliasShortcut/O/P=home "NCNR_Extensions:Win XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
-//	endif
-	
+
 
 // installation is done, quit to start fresh
 	DoAlert 1, "Quit Igor to complete installation.\rQuit now? "
