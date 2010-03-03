@@ -120,7 +120,7 @@ Function fFractal(w,x) :FitFunc
 	wave w
 	variable x
 	
-	variable r0,Df,corr,phi,sldp,sldm,bkg
+	variable r0,Df,corr,phi,sldp,sldm,bkg,bes
 	variable pq,sq,ans
 	phi=w[0]   // volume fraction of building block spheres...
 	r0=w[1]    //  radius of building block
@@ -131,12 +131,19 @@ Function fFractal(w,x) :FitFunc
 	bkg=w[6]  //  flat background
 	
 	//calculate P(q) for the spherical subunits, units cm-1 sr-1
-	pq = 1.0e8*phi*4/3*pi*r0^3*(sldp-sldm)^2*(3*(sin(x*r0) - x*r0*cos(x*r0))/(x*r0)^3)^2
+	if(x*r0 == 0)
+		bes = 1
+	else
+		bes = (3*(sin(x*r0) - x*r0*cos(x*r0))/(x*r0)^3)^2
+	endif
+	
+	pq = 1.0e8*phi*4/3*pi*r0^3*(sldp-sldm)^2*bes
 
 	//calculate S(q)
 	sq = Df*exp(gammln(Df-1))*sin((Df-1)*atan(x*corr))
 	sq /= (x*r0)^Df * (1 + 1/(x*corr)^2)^((Df-1)/2)
 	sq += 1
+
 	//combine and return
 	ans = pq*sq + bkg
 

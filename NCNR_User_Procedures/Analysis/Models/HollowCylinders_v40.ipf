@@ -192,18 +192,32 @@ Function Hollowcyl(qq,r2,r1,h,theta)
 // theta is the dummy variable for the integration (x in Feigin's notation)
 
    //Local variables 
-	Variable gamma,besarg1,besarg2,lam1,lam2,t2,retval,psi,sinarg
+	Variable gamm,besarg1,besarg2,lam1,lam2,t2,retval,psi,sinarg
 	
-	gamma = r2/r1
+	gamm = r2/r1
 	besarg1 = qq*r1*sqrt(1-theta^2)
 	besarg2 = qq*r2*sqrt(1-theta^2)
-	lam1 = 2*bessJ(1,besarg1)/besarg1
-	lam2 = 2*bessJ(1,besarg2)/besarg2
-	psi = 1/(1-gamma^2)*(lam1 -  gamma^2*lam2)		//SRK 10/19/00
+	
+	if(besarg1 == 0)
+		lam1 = 1
+	else
+		lam1 = 2*bessJ(1,besarg1)/besarg1
+	endif
+	if(besarg2 == 0)
+		lam2 = 1
+	else
+		lam2 = 2*bessJ(1,besarg2)/besarg2
+	endif
+	
+	psi = 1/(1-gamm^2)*(lam1 -  gamm^2*lam2)		//SRK 10/19/00
 	
 	sinarg = qq*h*theta/2
-	t2 = sin(sinarg)/sinarg
-	
+	if(sinarg == 0)
+		t2 = 1
+	else
+		t2 = sin(sinarg)/sinarg
+	endif
+		
 	retval = psi*psi*t2*t2
 	
     return retval

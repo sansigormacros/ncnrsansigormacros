@@ -119,13 +119,21 @@ Function fCoreShellSphere(w,x) : FitFunc
 	// core first, then add in shell
 	qr=x*rcore
 	contr = rhocore-rhoshel
-	bes = 3*(sin(qr)-qr*cos(qr))/qr^3
+	if(qr==0)
+		bes = 1
+	else
+		bes = 3*(sin(qr)-qr*cos(qr))/qr^3
+	endif
 	vol = 4*pi/3*rcore^3
 	f = vol*bes*contr
 	//now the shell
 	qr=x*(rcore+thick)
+	if(qr==0)
+		bes = 1
+	else
+		bes = 3*(sin(qr)-qr*cos(qr))/qr^3
+	endif
 	contr = rhoshel-rhosolv
-	bes = 3*(sin(qr)-qr*cos(qr))/qr^3
 	vol = 4*pi/3*(rcore+thick)^3
 	f += vol*bes*contr
 	

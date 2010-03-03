@@ -284,10 +284,15 @@ Function fOneLevel(w,x) :FitFunc
 	
 	ans = G1*exp(-x*x*Rg1*Rg1/3)
 	ans += B1*(erf1^3/x)^Pow1
+	
+	if(x == 0)
+		ans = G1
+	endif
+	
 	ans *= scale
 	ans += bkg
 	
-	Return (ans)
+	return(ans)
 End
 
 //AAO version, uses XOP if available
@@ -331,6 +336,11 @@ Function fTwoLevel(w,x) :FitFunc
 	ans += B1*exp(-x*x*Rg2*Rg2/3)*(erf1^3/x)^Pow1
 	ans += G2*exp(-x*x*Rg2*Rg2/3)
 	ans += B2*(erf2^3/x)^Pow2
+	
+	if(x == 0)
+		ans = G1 + G2
+	endif
+	
 	ans *= scale
 	ans += bkg
 	
@@ -383,6 +393,11 @@ Function fThreeLevel(w,x) :FitFunc
 	ans = G1*exp(-x*x*Rg1*Rg1/3) + B1*exp(-x*x*Rg2*Rg2/3)*(erf1^3/x)^Pow1
 	ans += G2*exp(-x*x*Rg2*Rg2/3) + B2*exp(-x*x*Rg3*Rg3/3)*(erf2^3/x)^Pow2
 	ans += G3*exp(-x*x*Rg3*Rg3/3) + B3*(erf3^3/x)^Pow3
+	
+	if(x == 0)
+		ans = G1 + G2 + G3
+	endif
+	
 	ans *= scale
 	ans += bkg
 	
@@ -441,6 +456,11 @@ Function fFourLevel(w,x) :FitFunc
 	ans += G2*exp(-x*x*Rg2*Rg2/3) + B2*exp(-x*x*Rg3*Rg3/3)*(erf2^3/x)^Pow2
 	ans += G3*exp(-x*x*Rg3*Rg3/3) + B3*exp(-x*x*Rg4*Rg4/3)*(erf3^3/x)^Pow3
 	ans += G4*exp(-x*x*Rg4*Rg4/3) + B4*(erf4^3/x)^Pow4
+	
+	if(x == 0)
+		ans = G1 + G2 + G3 + G4
+	endif
+	
 	ans *= scale
 	ans += bkg
 	

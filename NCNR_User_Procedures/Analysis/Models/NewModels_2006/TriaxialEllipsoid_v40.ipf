@@ -185,8 +185,12 @@ Function TaE(qq,aa,bb,cc,dx,dy)
 	arg += cc*cc*dy*dy
 	arg = qq*sqrt(arg)
 	
-	val = 9*((sin(arg) - arg*cos(arg))/arg^3 )^2
-	
+	if(arg == 0)
+		val = 1
+	else
+		val = 9*((sin(arg) - arg*cos(arg))/arg^3 )^2
+	endif
+
 	return(val)
 end
 

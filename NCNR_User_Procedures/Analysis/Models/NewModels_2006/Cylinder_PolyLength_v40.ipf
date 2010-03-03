@@ -202,7 +202,7 @@ Function len_kernel(qw,rad,len_avg,zz,sldc,slds,len)
 	
 	//calculate the orientationally averaged P(q) for the input rad
 	//this is correct - see K&C (1983) or Lin &Tsao JACryst (1996)29 170.
-	Make/O/n=6 kernpar
+	Make/O/D/n=6 kernpar
 	Wave kp = kernpar
 	kp[0] = 1		//scale fixed at 1
 	kp[1] = rad

@@ -204,6 +204,7 @@ Function CoreShellcyl(qq, rcore, thick, rhoc,rhos,rhosolv, length, dum)
 
    //Local variables 
 	Variable dr1,dr2,besarg1,besarg2,vol1,vol2,sinarg1,sinarg2,t1,t2,retval
+	Variable si1,si2,be1,be2
 	
 	dr1 = rhoc-rhos
 	dr2 = rhos-rhosolv
@@ -215,8 +216,32 @@ Function CoreShellcyl(qq, rcore, thick, rhoc,rhos,rhosolv, length, dum)
 	sinarg1 = qq*length*cos(dum)
 	sinarg2 = qq*(length+thick)*cos(dum)
 	
-	t1 = 2*vol1*dr1*sin(sinarg1)/sinarg1*bessJ(1,besarg1)/besarg1
-	t2 = 2*vol2*dr2*sin(sinarg2)/sinarg2*bessJ(1,besarg2)/besarg2
+	if(besarg1 == 0.0)
+		be1 = 0.5
+	else
+		be1 = bessJ(1,besarg1)/besarg1
+	endif
+	
+	if(besarg2 == 0.0)
+		be2 = 0.5
+	else
+		be2 = bessJ(1,besarg2)/besarg2
+	endif
+	
+	if(sinarg1 == 0.0)
+		si1 = 1.0
+	else
+		si1 = sin(sinarg1)/sinarg1
+	endif
+	
+	if(sinarg2 == 0.0)
+		si2 = 1.0
+	else
+		si2 = sin(sinarg2)/sinarg2
+	endif
+
+	t1 = 2.0*vol1*dr1*si1*be1
+	t2 = 2.0*vol2*dr2*si2*be2
 	
 	retval = ((t1+t2)^2)*sin(dum)
 	

@@ -196,7 +196,7 @@ Function fle_kernel(qw,rad,len_avg,lb,zz,sldc,slds,len_i)
 	//ww[5] = sld solv
 	//ww[6] = bkg [cm-1]
 	Variable Pq,vcyl,dl
-	Make/O/n=7 fle_ker
+	Make/O/D/n=7 fle_ker
 	Wave kp = fle_ker
 	kp[0] = 1		//scale fixed at 1
 	kp[1] = len_i

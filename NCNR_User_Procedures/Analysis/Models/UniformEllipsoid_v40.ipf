@@ -196,8 +196,14 @@ Function eor(qq,ra,vra,theta)
 	nu = vra/ra
 	arg = qq*ra*sqrt(1+theta^2*(nu^2-1))
 	
-	retval = 9*((sin(arg)-arg*cos(arg))/arg^3)^2
-	
+	if(arg == 0.0)
+    	retval =1.0/3.0
+    else
+    	retval = (sin(arg)-arg*cos(arg))/(arg*arg*arg)
+    endif
+    retval *= retval
+    retval *= 9.0
+    	
     return retval
     
 End 	//Function eor()

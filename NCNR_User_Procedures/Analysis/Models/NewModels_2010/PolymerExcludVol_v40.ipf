@@ -120,6 +120,11 @@ Function fPolymerExclVol(w,x)
 	o2nu=1.0/(2*nu)
 	Ps=(1/(nu*Xx^o2nu))*(gammaInc(o2nu,Xx,0)-(1/Xx^o2nu)*gammaInc(onu,Xx,0))
 	Debye=(2/Xx^2)*(exp(-Xx)-1+Xx)
+	
+	if(qval == 0)
+		Ps = 1
+	endif
+	
 	inten = I0*Ps + bgd 
 	
 //	inten = I0*Debye/(1+Vv*Debye) + bgd + Aa/qval^mm

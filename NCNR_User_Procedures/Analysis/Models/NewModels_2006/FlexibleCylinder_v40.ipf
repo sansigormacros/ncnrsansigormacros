@@ -120,8 +120,12 @@ Function fFlexExclVolCyl(ww,x)
 	
 	Variable flex,crossSect
 	flex = Sk_WR(x,L,B)
-     
-	crossSect = (2*bessJ(1,qr)/qr)^2
+    
+    if(qr == 0)
+	    crossSect = 1
+    else
+    	crossSect = (2*bessJ(1,qr)/qr)^2
+    endif
         
 	//normalize form factor by multiplying by cylinder volume * cont^2
    // then convert to cm-1 by multiplying by 10^8

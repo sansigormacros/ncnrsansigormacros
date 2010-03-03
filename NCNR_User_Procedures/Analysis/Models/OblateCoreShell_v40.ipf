@@ -209,6 +209,7 @@ Function gfn4(xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq)
 	Variable xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq
 	// local variables
 	Variable aa,bb,u2,ut2,uq,ut,vc,vt,gfnc,gfnt,tgfn,gfn4,pi43
+	Variable siq,sit
 	
 	PI43=4.0/3.0*PI
   	aa = crmaj
@@ -219,8 +220,19 @@ Function gfn4(xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq)
  	ut= sqrt(ut2)*qq
 	vc = PI43*aa*aa*bb
    	vt = PI43*trmaj*trmaj*trmin
-   	gfnc = 3.0*(sin(uq)/uq/uq - cos(uq)/uq)/uq*vc*delpc
-  	gfnt = 3.0*(sin(ut)/ut/ut - cos(ut)/ut)/ut*vt*delps
+   	if(uq == 0)
+   		siq = 1/3
+   	else
+   		siq = (sin(uq)/uq/uq - cos(uq)/uq)/uq
+   	endif
+   	if(ut == 0)
+   		sit = 1/3
+   	else
+   		sit = (sin(ut)/ut/ut - cos(ut)/ut)/ut
+   	endif
+   	
+   	gfnc = 3.0*siq*vc*delpc
+  	gfnt = 3.0*sit*vt*delps
   	tgfn = gfnc+gfnt
   	gfn4 = tgfn*tgfn
   	

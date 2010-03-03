@@ -140,9 +140,12 @@ Function F_func(qr)
 	Variable qr
 	
 	Variable val=0
-	
-	val = 3*(sin(qr) - qr*cos(qr))/qr^3
-	
+	if(qr == 0)
+		val = 1
+	else	
+		val = 3*(sin(qr) - qr*cos(qr))/qr^3
+	endif
+		
 	return(val)
 End
 

@@ -166,11 +166,16 @@ Function CapCyl_Outer(w,x,dum)
 	dTheta = dum
 	retval = IntegrateFn76(CapCyl_Inner,-hDist/endRad,1,w,x)
 	
-	Variable arg1,arg2
+	Variable arg1,arg2,be
 	arg1 = x*len/2*cos(dum)
 	arg2 = x*rad*sin(dum)
 	
-	retVal += pi*rad*rad*len*sinc(arg1)*2*Besselj(1, arg2)/arg2
+	if(arg2 == 0)
+		be = 0.5
+	else
+		be = Besselj(1, arg2)/arg2
+	endif
+	retVal += pi*rad*rad*len*sinc(arg1)*2*be
 	
 	retVal *= retval*sin(dum)		// = |A(q)|^2*sin(theta)
 	
@@ -210,7 +215,7 @@ Function CapCyl(w,x,tt,Theta)
 	
 	Variable val,arg1,arg2
 	Variable scale,contr,bkg,inten,sldc,slds
-	Variable len,rad,hDist,endRad
+	Variable len,rad,hDist,endRad,be
 	scale = w[0]
 	rad = w[1]
 	len = w[2]
@@ -224,7 +229,13 @@ Function CapCyl(w,x,tt,Theta)
 	arg1 = x*cos(theta)*(endRad*tt+hDist+len/2)
 	arg2 = x*endRad*sin(theta)*sqrt(1-tt*tt)
 	
-	val = cos(arg1)*(1-tt*tt)*Besselj(1,arg2)/arg2
+	if(arg2 == 0)
+		be = 0.5
+	else
+		be = Besselj(1, arg2)/arg2
+	endif
+	
+	val = cos(arg1)*(1-tt*tt)*be
 	
 	return(val)
 end

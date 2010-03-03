@@ -213,6 +213,7 @@ Function gfn2(xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq)
 	Variable xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq
 	// local variables
 	Variable aa,bb,u2,ut2,uq,ut,vc,vt,gfnc,gfnt,tgfn,gfn2,pi43,gfn
+	Variable siq,sit
 
 	PI43=4.0/3.0*PI
 	aa = crmaj
@@ -223,8 +224,20 @@ Function gfn2(xx,crmaj,crmin,trmaj,trmin,delpc,delps,qq)
 	ut= sqrt(ut2)*qq
 	vc = PI43*aa*bb*bb
 	vt = PI43*trmaj*trmin*trmin
-	gfnc = 3.0*(sin(uq)/uq/uq - cos(uq)/uq)/uq*vc*delpc
-	gfnt = 3.0*(sin(ut)/ut/ut - cos(ut)/ut)/ut*vt*delps
+	
+	if(uq == 0.0)
+   		siq = 1.0/3.0
+   else
+   		siq = (sin(uq)/uq/uq - cos(uq)/uq)/uq
+   	endif
+   	if(ut == 0.0)
+   		sit = 1.0/3.0
+   	else
+   		sit = (sin(ut)/ut/ut - cos(ut)/ut)/ut
+   	endif
+   	
+	gfnc = 3.0*siq*vc*delpc
+	gfnt = 3.0*sit*vt*delps
 	gfn = gfnc+gfnt
 	gfn2 = gfn*gfn
 	

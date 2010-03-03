@@ -196,24 +196,38 @@ Function cyl(qq,rr,h,theta)
 // h is the HALF-LENGTH of the cylinder = L/2 (A)
 
    //Local variables 
-	Variable besarg,bj,retval,d1,t1,b1,t2,b2
+	Variable besarg,bj,retval,d1,t1,b1,t2,b2,be,si,siarg
     besarg = qq*rr*sin(theta)
-
+	siarg = qq * h * cos(theta)
+	
     bj =bessJ(1,besarg)
 
 //* Computing 2nd power */
-    d1 = sin(qq * h * cos(theta))
+    d1 = sin(siarg)
     t1 = d1 * d1
 //* Computing 2nd power */
     d1 = bj
     t2 = d1 * d1 * 4.0 * sin(theta)
 //* Computing 2nd power */
-    d1 = qq * h * cos(theta)
+    d1 = siarg
     b1 = d1 * d1
 //* Computing 2nd power */
     d1 = qq * rr * sin(theta)
     b2 = d1 * d1
-    retval = t1 * t2 / b1 / b2
+    
+    if(besarg == 0)
+    	be = sin(theta)
+    else
+    	be = t2/b2
+    endif
+    
+    if(siarg == 0)
+    	si = 1
+    else
+    	si = t1/b1
+    endif
+    
+    retval = be*si
 
     return retval
     

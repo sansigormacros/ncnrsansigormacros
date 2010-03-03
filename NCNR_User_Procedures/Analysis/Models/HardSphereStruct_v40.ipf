@@ -67,7 +67,6 @@ Function fHardSphereStruct(w,x) : FitFunc
 // Input variables are:
 	//[0] radius
 	//[1] volume fraction
-	//Variable timer=StartMSTimer
 	
 	Variable r,phi,struc
 	r = w[0]
@@ -104,8 +103,7 @@ Function fHardSphereStruct(w,x) : FitFunc
         VSTRUC = 1.0/(1.0-C)
         STRUC = VSTRUC
 //   10 CONTINUE
-	//Variable elapse=StopMSTimer(timer)
-      //Print "HS struct eval time (s) = ",elapse
+
       RETURN Struc
 End
 // End of HardSphereStruct
