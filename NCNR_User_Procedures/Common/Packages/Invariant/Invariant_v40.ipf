@@ -47,8 +47,12 @@ End
 // - the extrapolated/integrated value should match this...
 Macro PrintModelInvariant(delta_rho,phi)
 	Variable delta_rho=3e-6,phi=0.1
+	Prompt delta_rho,"Contrast (1/A^2)"
+	Prompt phi,"Volume fraction"
+	
 	// delta_rho [=] 1/A^2
 	Variable inv
+
 	inv = 2*pi*pi*delta_rho*delta_rho*phi*(1-phi)*1e8
 	
 	Printf "The model invariant is %g A^-3 cm^-1\r\r",inv
@@ -59,14 +63,17 @@ End
 // - the extrapolated/integrated value should match this...
 Macro SolveForVolumeFraction(invariant,delta_rho)
 	Variable invariant,delta_rho=6e-6
+	Prompt invariant,"Invariant [=] cm^-1 A^-3"
+	Prompt delta_rho,"Contrast (1/A^2)"
+	
 	// delta_rho [=] 1/A^2
 	Variable phi1,phi2,arg
-	
 	arg = 1 - 4*invariant*(1e-8)/2/pi/pi/delta_rho/delta_rho
 	phi1 = (1 - sqrt(arg))/2
 	phi2 = (1 + sqrt(arg))/2
-	
 	Printf "The two solutions for phi are: %8.6f\t and %8.6f\r\r",phi1,phi2
+
+	
 End
 
 
