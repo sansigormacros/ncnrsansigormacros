@@ -2061,12 +2061,22 @@ Function AskForAbsoluteParams_Quest()
 		//need the detector sensitivity file - make a guess, allow to override
 		String junkStr=""
 		if(! waveexists($"root:Packages:NIST:DIV:data"))
-			 junkStr = PromptForPath("Select the detector sensitivity file")
-			If(strlen(junkStr)==0 || CheckIfRawData(junkStr))		//raw check==1 if RAW, DIV is not
+			junkStr = PromptForPath("Select the detector sensitivity file")
+			Print junkStr
+#if(exists("HFIR")==6)
+			if(strlen(junkStr)==0 || !CheckIfDIVData(junkStr))		//if either is false, exit
+				//Print strlen(junkStr)
+				//Print CheckIfDIVData(junkStr)
 				SetDataFolder root:
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
-			Endif
-			 ReadHeaderAndWork("DIV", junkStr)
+			endif
+#else
+			if(strlen(junkStr)==0 || CheckIfRawData(junkStr))		//for NCNR, not raw is sufficient, but better in the future to confirm it is DIV if either is false, exit
+				SetDataFolder root:
+				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
+			endif
+#endif
+			ReadHeaderAndWork("DIV", junkStr)
 		endif
 		//toggle SANS_Data to linear display if needed, so that we're working with linear scaled data
 		ControlInfo/W=SANS_Data bisLog

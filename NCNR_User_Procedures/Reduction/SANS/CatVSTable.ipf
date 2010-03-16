@@ -23,6 +23,8 @@
 Function BuildCatVeryShortTable()
 	
 	Variable err
+	Variable t1 = ticks
+	
 	PathInfo catPathName
 	if(v_flag==0)
 		err = PickPath()		//sets the local path to the data (catPathName)
@@ -101,7 +103,9 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
 #endif
 
+#if (exists("NCNR")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
+#endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 	Endif
@@ -123,10 +127,12 @@ Function BuildCatVeryShortTable()
 	
 	Make/T/O/N=0 notRAWlist
 	do
+	
 		//get current item in the list
 		partialName = StringFromList(ii, list, ";")
 		//get a valid file based on this partialName and catPathName
 		tempName = FindValidFilename(partialName)
+		
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
@@ -140,6 +146,7 @@ Function BuildCatVeryShortTable()
 			FullName = S_path + tempName
 			//make sure the file is really a RAW data file
 			ok = CheckIfRawData(fullName)
+		
 			if (!ok)
 				//write to notebook that file was not a RAW SANS file
 				lastPoint = numpnts(notRAWlist)
@@ -158,7 +165,9 @@ Function BuildCatVeryShortTable()
 	AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
 //
-
+	Print "Total time (s) = ",(ticks - t1)/60.15
+	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
+	return(0)
 End
 
 //appends the list of files that are not RAW SANS data to the filename wave (1st column)
@@ -199,13 +208,20 @@ Function SortWaves()
 	Wave GTemp = $"root:myGlobals:CatVSHeaderInfo:Temperature"
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
+	
 #if (exists("ILL_D22")==6)
 	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
-#else
-//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,gNumGuides
 #endif
+
+#if (exists("NCNR")==6)
+	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,gNumGuides
+#else
+	//must be HFIR or ANSTO
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+#endif
+
 
 	return(0)
 End
@@ -235,13 +251,18 @@ Function BuildTableWindow()
 // for ILL
 	Wave ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
-#else
+#endif
+
+#if (exists("NCNR")==6)
 // original order, magnetic at the end
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // with numGuides
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
+#else
+	// either HFIR or ANSTO
+	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 #endif
 
 	String name="CatVSTable"
@@ -378,9 +399,11 @@ Function GetHeaderInfoToWave(fname,sname)
 	GReactPow[lastPoint]  = getReactorPower(fname)
 #endif	
 
-// number of guides
+// number of guides, only for NCNR
+#if (exists("NCNR")==6)
 	InsertPoints lastPoint,1,GNumGuides
 	GNumGuides[lastPoint]  = numGuides(getSourceToSampleDist(fname))
+#endif
 
 	return(0)
 End

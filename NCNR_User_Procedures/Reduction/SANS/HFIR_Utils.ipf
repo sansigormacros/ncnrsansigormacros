@@ -268,21 +268,24 @@ Function/S FindFileFromRunNumber(num)
 	Variable num
 	String fullName="",partialName="",item=""
 	//get list of raw data files in folder that match "num" (add leading zeros)
-	if( (num>999) || (num<=0) )
+	if( (num>9999) || (num<=0) )
 		//Print "error in  FindFileFromRunNumber(num), file number too large or too small"
 		Return ("")
 	Endif
-	//make a three character string of the run number
+	//make a four character string of the run number
 	String numStr=""
-	if(num<10)
+	
+	if(num > 999)
+		numStr = num2str(num)
+	endif
+	if(num > 99)
+		numStr = "0"+num2str(num)
+	endif
+	if(num > 9)
 		numStr = "00"+num2str(num)
 	else
-		if(num<100)
-			numStr = "0"+num2str(num)
-		else
-			numStr = num2str(num)
-		Endif
-	Endif
+		numStr = "000"+num2Str(num)
+	endif
 	
 	//make sure that path exists
 	PathInfo catPathName
@@ -396,9 +399,22 @@ Function CheckIfRawData(fname)
 	return str2num(ns)
 End
 
+// for HFIR data, both DIV and RAW are determined by looking for "*.xml"
+Function CheckIfDIVData(fname)
+	String fname
+	return(CheckIfRawData(fname))
+End
+
 // function returns 1 if file is a transmission file, 0 if not
 //
 // called by Transmission.ipf, CatVSTable.ipf, NSORT.ipf
+//
+// SRK MAR 2010 - apparently from what I can see in the files, the beam stop "out"
+// position is 25 mm for all four beam stop Y POSITIONS
+// - if one is larger, (in the hundreds of mm) then it's in, and the run is not a transmission
+// - so if all four y positions are less than (tol) 30 mm, call it a trans file
+//
+// there is a field for this in the header, write "True", so I don't need to guess again.
 //
 Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	String fname
@@ -408,14 +424,15 @@ Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		return (1)
 	else
 		//Check from beam stop motor position
-	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0
+	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=30
 	//	if(your test here)
 	beamtrap_1y=getRealValueFromHeader(fname,"trap_y_101mm","mm")
 	beamtrap_2y=getRealValueFromHeader(fname,"trap_y_25mm","mm")
 	beamtrap_3y=getRealValueFromHeader(fname,"trap_y_50mm","mm")
 	beamtrap_4y=getRealValueFromHeader(fname,"trap_y_76mm","mm")
 
-	 if (beamtrap_1y<10 && beamtrap_2y<10 && beamtrap_3y<10 && beamtrap_4y<10)	
+//	 if (beamtrap_1y<10 && beamtrap_2y<10 && beamtrap_3y<10 && beamtrap_4y<10)	
+	 if (beamtrap_1y < tol && beamtrap_2y < tol && beamtrap_3y < tol && beamtrap_4y < tol)	
 		 	//Write the flag ON
 			Write_isTransmissionToHeader(fName,"True")
 		return (1)
@@ -529,10 +546,42 @@ End
 //
 Function/S ValidFileString(partialName)
 	String partialName
+	
+	String tempName = "",msg=""
+	Variable ii,refnum
 
-	String tempName = "" 
-	//Variable ii,refnum
+	ii=0
+	do
+		if(ii==0)
+			//first pass, try the partialName
 	tempName = partialName
+			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName	//Does open file (/Z flag)
+			if(V_flag == 0)
+				//file exists
+				Close refnum		//YES needed, 
+				break
+			endif
+		else
+			tempName = partialName + ";" + num2str(ii)
+			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName
+			if(V_flag == 0)
+				//file exists
+				Close refnum
+				break
+			endif
+		Endif
+		ii+=1
+		//print "ii=",ii
+	while(ii<11)
+	//go get the selected bits of information, using tempName, which exists
+	if(ii>=11)
+		//msg = partialName + " not found. is version number > 11?"
+		//DoAlert 0, msg
+		//PathInfo catPathName
+		//Print S_Path
+		Return ("")		//use null string as error condition
+	Endif
+		
 	Return (tempName)
 End
 
@@ -834,12 +883,12 @@ End
 //
 Function AttenuationFactor(fileStr,lam,attenuation)
 	String fileStr
-	Variable lam,attenuation  //    0 =< attenuation <= 1 : where no attenuator stands for 0.
+	Variable lam,attenuation  //    0 =< attenuation <= 100 (%) : where no attenuator stands for 0.
 	
 	Variable attenFactor=1
 	
 	// your code here
-	attenFactor = 1- attenuation  //???Attenuate transmission
+	attenFactor = 1- attenuation*0.01  //???Attenuate transmission
 
 	return(attenFactor)
 End
@@ -914,11 +963,12 @@ Function/S GetRawDataFileList()
 				newlist += item + ";"
 			endif
 		endif
-		if( stringmatch(item,"*.xml") )
-			if (CheckIfRawData(S_path+item) >0)
-				newlist += item + ";"
-			endif
-		endif
+		// if condition is in here twice, not sure why since they are both "*.xml"
+//		if( stringmatch(item,"*.xml") )
+//			if (CheckIfRawData(S_path+item) >0)
+//				newlist += item + ";"
+//			endif
+//		endif
 	endfor
 	newList = SortList(newList,";",0)
 	return(newList)

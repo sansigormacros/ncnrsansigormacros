@@ -40,6 +40,7 @@ Function LoadRawSANSData(msgStr)
 		DoAlert 0, "No file selected, action aborted"
 		return(1)
 	Endif
+//	Variable t1=ticks
 	//Print  "GetFileNameFromPath(filename) = " +  GetFileNameFromPathNoSemi(filename)
 	ReadHeaderAndData(filename)	//this is the full Path+file
 
@@ -49,7 +50,8 @@ Function LoadRawSANSData(msgStr)
 //	
 //	//data is displayed here
 //	fRawWindowHook()
-	
+
+//	Print "time to load and display (s) = ",(ticks-t1)/60.15
 	Return(0)
 End
 

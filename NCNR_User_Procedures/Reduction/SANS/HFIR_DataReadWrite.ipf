@@ -49,6 +49,7 @@ Function LoadRawSANSData(msgStr)
 		return(1)
 	Endif
 	
+	Variable t1=ticks
 	
 	variable error
 	String errorMsg
@@ -88,6 +89,7 @@ Function LoadRawSANSData(msgStr)
 	//Clean up waves...
 	KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
 	
+	Print "Time to load and display (s) = ",(ticks-t1)/60.15
 	Return(0)		//Do not change.
 End
 
@@ -126,7 +128,7 @@ Function ReadHeaderAndData(filename)
 	//actually open the file
 	//Open/R refNum as fname
 	STRING/G errorMsg	
-	Variable refNum
+	Variable refNum,t1=ticks
 	//print "Loading", filename, "..."	
 	if (stringmatch(filename,"*.xml") <1)
 		//print "\r  ==> Failed: Not a *.xml file."
@@ -215,22 +217,24 @@ Function ReadHeaderAndData(filename)
 	//Redimension/N=(192,192) data			//NIST raw data is 128x128 - do not generalize
 	//data =0
 	
+//	Print "Time to open (s) = ",(ticks-t1)/60.15
 
 	//ORNL HFIR SANS DATA
 	String tempheadhfir
 	tempheadhfir = ""
-       ReadHFIRSansRaw(refNum,curFolder,tempheadhfir) 
+	
+	ReadHFIRSansRaw(refNum,curFolder,tempheadhfir) 
        
-       i=0
-       do	
-       	//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
-       	//This DOLOOP can be removed where the problem is solved....
-       	textw[0]=stringfromlist(i,filename,":") 
-       	if (stringmatch(textw[0],"*.xml")>0)       		
-       		break
-       	endif
-       	i +=1
-       while (1)
+	i=0
+	do	
+		//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+		//This DOLOOP can be removed where the problem is solved....
+		textw[0]=stringfromlist(i,filename,":") 
+		if (stringmatch(textw[0],"*.xml")>0)       		
+			break
+		endif
+		i +=1
+	while (1)
        	
 	//return the data folder to root
 	SetDataFolder root:
@@ -604,10 +608,10 @@ Function getRealValueFromHeader(fname,wantedterm,unit)
 		//print "Failed: Not a xml file."
 		return 0 				//Not a xml file. Do nothing...
 	endif
-
+	
 	//ORNL HFIR SANS strings meta DATA
        vresult=ReadVFromHHead(refNum,wantedterm,unit) 
-	
+       
 	//return the data folder to root
 	//SetDataFolder root:
 	XMLclosefile(refNum, 0)
@@ -640,7 +644,7 @@ end
 Function getAttenNumber(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"attenuation","percent")) //in unit od percents
+	return(getRealValueFromHeader(fname,"attenuation","percent")) //in unit of percents
 end
 
 //transmission is at byte 158
@@ -988,11 +992,11 @@ END
 //       Read ORNL HFIR SANS data ( xml format) file:general loading from display raw data
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
-      Variable refNum
-      String curFolder,tempheadhfir
+	Variable refNum
+	String curFolder,tempheadhfir
       
-      String curPath="root:Packages:NIST:"+curFolder
-      SetDataFolder curPath
+	String curPath="root:Packages:NIST:"+curFolder
+  	SetDataFolder curPath
 	Make/O/N=23 $(curPath+":IntegersRead")
 	Make/O/N=52 $(curPath+":RealsRead")
 	Make/O/T/N=11 $(curPath+":TextRead")
@@ -1004,7 +1008,7 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	Variable ind,i,j,centerdata=1
 	Variable pixnumx=0,pixnumy=0
 	String val = ""// numerical and text values
-	Variable value
+	Variable value,t1=ticks
 
 	//Initialize wave values	 
 	//   data=1
@@ -1042,10 +1046,11 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   		endif
 		endfor    
   	//endif
-  	
+//	Print "Time to list attributes (s) = ",(ticks-t1)/60.15
   	
 	XMLelemlist(refNum)
 	WAVE/T W_ElementList
+//	Print "Time to list elements (s) = ",(ticks-t1)/60.15
 
 	for (ind = 0; ind<DimSize(W_ElementList,0); ind +=1)
 			String unitstr =""								//unit string
@@ -1178,7 +1183,15 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   	 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
        endfor
+       
+//	Print "Time to loop over elements (s) = ",(ticks-t1)/60.15
 
+       //If the data is a sensitivity scan, normalize so that the average =1.
+       print curFolder
+	if (stringmatch(curFolder,"DIV") >0)
+		WaveStats/Z/Q data
+		data /= V_avg
+	endif
 	//keep a string with the filename in the RAW folder
 	
 	Variable strpos
@@ -1212,7 +1225,12 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	SetDataFolder curPath
-	Killwaves/Z nsList,M_listAttr,M_xmlContent,W_ElementList,M_listXPath,W_xmlcontentnodes
+	
+//	Print "Time to exit reader (s) = ",(ticks-t1)/60.15
+		
+//	Killwaves/Z nsList,M_listAttr,M_xmlContent,W_ElementList,M_listXPath,W_xmlcontentnodes
+	return(0)
+	
 End
 
 
