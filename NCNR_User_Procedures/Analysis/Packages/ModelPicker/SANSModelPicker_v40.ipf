@@ -478,6 +478,9 @@ End
 // returns 1 if the file exists, 0 if the file is not there
 // fails miserably if there are aliases in the UP folder, although
 // the #include doesn't mind
+//
+// SRK -2010- I need to look in the special directory too (look there first)
+//
 Function CheckFileInUPFolder(fileStr)
 	String fileStr
 
@@ -489,11 +492,25 @@ Function CheckFileInUPFolder(fileStr)
 
 	fileStr = RemoveExten(fileStr)+fileVerExt
 	
-	PathInfo Igor
-	String UPStr=S_path+"User Procedures:"
+	// the Igor 6.1 User Procedure Path, same sub-folders as in Igor App Folder
+	// the installer MOVES items here, so no troubles with aliases
+	String userPathStr=RemoveEnding(SpecialDirPath("Igor Pro User Files",0,0,0),":")+":"
+	String UPStr=userPathStr+"User Procedures:"
 	NewPath /O/Q/Z UPPath ,UPStr
-	ListAllFilesAndFolders("UPPath",1,1,0)	//this sets allFiles
+	ListAllFilesAndFolders("UPPath",1,1,0)	//this sets the global string allFiles
 	String list = allFiles
+	err = strsearch(list, fileStr, 0,2)		//this is not case-sensitive, but Igor 5!
+	if(err != -1)
+		return(1)		//name was found somewhere
+	endif
+	
+	// name not found, try looking in the Igor Pro/ folder
+	// this will still fail if aliases are present here
+	PathInfo Igor
+	UPStr=S_path+"User Procedures:"
+	NewPath /O/Q/Z UPPath ,UPStr
+	ListAllFilesAndFolders("UPPath",1,1,0)	//this sets the global string allFiles
+	list = allFiles
 //	err = FindListItem(fileStr, list ,";" ,0)
 	err = strsearch(list, fileStr, 0,2)		//this is not case-sensitive, but Igor 5!
 //	err = strsearch(list, fileStr, 0)		//this is Igor 4+ compatible

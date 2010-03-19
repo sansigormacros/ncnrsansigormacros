@@ -1143,12 +1143,12 @@ End
 //the wavelength may be any value between 4 and 20 (A), and is interpolated
 //between calibrated wavelengths for a given attenuator
 //
-//
+// Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
 Function LookupAttenNG3(lambda,attenNo)
 	Variable lambda, attenNo
 	
 	Variable trans
-	String attStr="root:myGlobals:Attenuators:ng3att"+num2str(trunc(attenNo))
+	String attStr="root:myGlobals:Attenuators:ng3att"+num2str(trunc(abs(attenNo)))
 	String lamStr = "root:myGlobals:Attenuators:ng3lambda"
 	
 	if(attenNo == 0)
@@ -1187,11 +1187,12 @@ End
 //
 // local function
 //
+// Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
 Function LookupAttenNG7(lambda,attenNo)
 	Variable lambda, attenNo
 	
 	Variable trans
-	String attStr="root:myGlobals:Attenuators:ng7att"+num2str(trunc(attenNo))
+	String attStr="root:myGlobals:Attenuators:ng7att"+num2str(trunc(abs(attenNo)))
 	String lamStr = "root:myGlobals:Attenuators:ng7lambda"
 	
 	if(attenNo == 0)

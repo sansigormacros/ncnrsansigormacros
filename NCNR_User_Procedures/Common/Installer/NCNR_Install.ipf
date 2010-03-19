@@ -23,6 +23,13 @@
 // - lots more diagnostics added
 
 // FEB 2010 - now make use of the user-specific procedure path. It's always writeable, and not in the application folder
+//
+// since old material may be installed, and permission may be gone:
+// - check for permission
+// - check for old material installed in Igor Pro/
+// -- if nothing installed in Igor Pro/, then permissions are not a problem
+// -- install in the new uer-specific path as intended
+//
 // -- now I need to search both locations to move old stuff out
 // -- then install clean into the new user path (userPathStr)
 //
@@ -61,14 +68,17 @@ Function InstallNCNRMacros(forceInstall)
 	if(IE_err != 0)
 		alertStr += "Igor Extensions has no write permission.\r"
 	endif
+
+/// SRK - 2010 - errors are not used here. instead, errors are caught if a file or folder move fails. If there
+// is nothing to move out, or it moves out OK, then permissions don't matter.
 	
-	if(forceInstall == 0)
-		if(UP_err != 0 || IH_err != 0 || IE_err != 0)
-			alertStr += "You will need to install manually."
-			DoAlert 0,alertStr
-			return(0)
-		endif
-	endif
+//	if(forceInstall == 0)
+//		if(UP_err != 0 || IH_err != 0 || IE_err != 0)
+//			alertStr += "You will need to install manually."
+//			DoAlert 0,alertStr
+//			return(0)
+//		endif
+//	endif
 	
 	
 	// check the platform
@@ -109,7 +119,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
 			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -122,7 +132,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
 			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -137,7 +147,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
 			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -148,7 +158,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
 			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from Igor Extensions: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -167,7 +177,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
 		if(isThere)
 			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -181,7 +191,7 @@ Function InstallNCNRMacros(forceInstall)
 		if(isThere)
 		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
 			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -197,7 +207,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
 		if(isThere)
 			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -210,7 +220,7 @@ Function InstallNCNRMacros(forceInstall)
 		if(isThere)
 		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
 			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from User Procedures: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -233,7 +243,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,IHFilesWave)
 		if(isThere)
 			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor	
 	
@@ -246,7 +256,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,IHFolders)
 		if(isThere)
 			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -262,7 +272,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,IHFilesWave)
 		if(isThere)
 			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			Print "Move file "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+			Print "Move file "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor	
 	
@@ -274,7 +284,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,IHFolders)
 		if(isThere)
 			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
-			Print "Move folder "+ tmpStr + " from Igor Help Files: "+num2str(V_flag)
+			Print "Move folder "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -300,23 +310,27 @@ Function InstallNCNRMacros(forceInstall)
 
 // the help files
 	MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
-	Print "******Move folder NCNR_Help_Files into User Special Folder, NO overwite: "+num2str(V_flag)
+	Print "******Move folder NCNR_Help_Files into User Special Folder, NO overwite: "+IsMoveOK(V_flag)
 
 // not needed now
 //	CreateAliasShortcut/O/P=SpecialPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
-//	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+num2str(V_flag)
+//	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+IsMoveOK(V_flag)
 	
 
 // the User Procedures	
 	MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
-	Print "*******Move folder NCNR_User_Procedures into User Procedures, NO overwrite: "+num2str(V_flag)
+	Print "*******Move folder NCNR_User_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 	
 // don't need an alias for the UserProcedures - they're already here....
 
 
-// Igor Extensions
-	MoveFolder/Z=1 homePathStr+"NCNR_Extensions" as UPPathStr+"NCNR_Extensions"
-	Print "*******Move folder NCNR_Extensions into User Procedures, NO overwrite: "+num2str(V_flag)
+// Igor Extensions, platform-specific
+	if(isMac)
+		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Mac_XOP" as extPathStr+"NCNR_Extensions"
+	else
+		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Win_XOP" as extPathStr+"NCNR_Extensions"
+	endif
+	Print "*******Move folder NCNR_Extensions:xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 //	
 // not needed now
 //	if(isMac)
@@ -324,7 +338,7 @@ Function InstallNCNRMacros(forceInstall)
 //	else
 //		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Win_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
 //	endif
-//	Print "Creating shortcut for XOP into Igor Extensions: "+num2str(V_flag)
+//	Print "Creating shortcut for XOP into Igor Extensions: "+IsMoveOK(V_flag)
 	
 
 // put shortcuts to the template in the "top" folder
@@ -338,7 +352,7 @@ Function InstallNCNRMacros(forceInstall)
 //			Print "Move "+ tmpStr
 //			MoveFolder/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
 			CreateAliasShortcut/O/P=UtilPath tmpStr as homePathStr +tmpStr
-			Print "Creating shortcut for "+tmpStr+" into top level: "+num2str(V_flag)
+			Print "Creating shortcut for "+tmpStr+" into top level: "+IsMoveOK(V_flag)
 //		endif
 	endfor
 
@@ -667,6 +681,18 @@ Function FolderPermissionCheck(folderStr)
 	
 	
 	return(V_flag)
+end
+
+Function/S IsMoveOK(flag)
+	Variable flag
+	
+	String alertStr="There are old NCNR procedures and files present. You will need admin privileges to manually remove them before you can continue"
+	if(flag == 0)
+		return(" OK")
+	else
+		DoAlert 0,alertStr
+		return(" ERROR")
+	endif
 end
 
 // this will "force" an install, even if there are R/W errors
