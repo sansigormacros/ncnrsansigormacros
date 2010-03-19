@@ -994,6 +994,8 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 	tmp = "CSPP_Outer;CSPP_Inner;PP_Outer;PP_Inner;"
 	list = RemoveFromList(tmp, list  ,";")
+	tmp = "Guinier_Fit;"
+	list = RemoveFromList(tmp, list  ,";")
 
 	tmp = FunctionList("f*",";","NPARAMS:2")		//point calculations
 	list = RemoveFromList(tmp, list  ,";")
