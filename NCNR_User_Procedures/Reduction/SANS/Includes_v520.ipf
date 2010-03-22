@@ -102,9 +102,9 @@ Menu "SANSBeta"
 	"-"
 ////	"CreateRunNumList"
 ////	"TransList"
-	"ScatteringAtSDDList"
+//	"ScatteringAtSDDList"			// MRED utilities have been added directly to the panel
 ////	"RemoveRunFromList"
-	"FillMREDList"
+//	"FillMREDList"
 	"-"
 ////	"Set3NSORTFiles"
 	"CreateTableToCombine"
@@ -122,7 +122,7 @@ Menu "SANSBeta"
 	"-"
 	"PatchFileNameInHeader"
 	"ReadFileNameInHeader"
-	"-"
-	"AddALLToLayout"
+//	"-"
+//	"AddALLToLayout"			//added to tile raw 2d panel
 	
 End

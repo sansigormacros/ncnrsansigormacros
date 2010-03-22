@@ -82,12 +82,16 @@ Window Multiple_Reduce_Panel()
 	SetVariable MRList,limits={-Inf,Inf,1},value= root:myGlobals:MRED:gFileNumList
 	Button ReduceAllButton,pos={3,128},size={180,20},proc=ReduceAllPopupFiles,title="Reduce All Files in Popup"
 	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
-	Button DoneButton,pos={292,128},size={110,20},proc=MRDoneButtonProc,title="Done Reducing"
+	Button DoneButton,pos={280,128},size={110,20},proc=MRDoneButtonProc,title="Done Reducing"
 	Button DoneButton,help={"When done reducing files, this will close this control panel."}
-	Button cat_short,pos={310,72},size={90,20},proc=DoCatShort,title="File Catalog"
-	Button cat_short,help={"Use this button to generate a table with file header information. Very useful for identifying files."}
-	Button show_cat_short,pos={280,98},size={120,20},proc=ShowCatShort_MRED,title="Show File Catalog"
-	Button show_cat_short,help={"Use this button to bring the File Catalog window to the front."}
+//	Button cat_short,pos={310,72},size={90,20},proc=DoCatShort,title="File Catalog"
+//	Button cat_short,help={"Use this button to generate a table with file header information. Very useful for identifying files."}
+//	Button show_cat_short,pos={280,98},size={120,20},proc=ShowCatShort_MRED,title="Show File Catalog"
+//	Button show_cat_short,help={"Use this button to bring the File Catalog window to the front."}
+	Button sddList,pos={280,72},size={120,20},proc=ScatteringAtSDDTableButton,title="Files at SDD List"
+	Button sddList,help={"Use this button to generate a table of scattering files at a given ample to detector distance."}
+	Button acceptList,pos={280,98},size={120,20},proc=AcceptMREDList,title="Accept List"
+	Button acceptList,help={"Accept the list of files to reduce."}
 	PopupMenu MRProto_pop,pos={3,98},size={119,19},proc=MRProtoPopMenuProc,title="Protocol "
 	PopupMenu MRProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
 	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:myGlobals:MRED:gMRProtoList"
@@ -304,7 +308,7 @@ Function MRProtoPopMenuProc(MRProto_pop,popNum,popStr) : PopupMenuControl
 
 End
 
-//button procedure to close the panel
+//button procedure to close the panel, and the SDD table if if was generated
 //
 Function MRDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -314,6 +318,8 @@ Function MRDoneButtonProc(ctrlName) : ButtonControl
 
 	Close/A
 	DoWindow/K Multiple_Reduce_Panel
+	
+	DoWindow/K SDDTable	
 	KillDataFolder root:myGlobals:MRED
 End
 
@@ -514,4 +520,245 @@ Function/S PossiblyQuoteFileList(list, separator)
 		ii += 1
 	while(1)
 	return outputList
+End
+
+Function ScatteringAtSDDTableButton(ctrlName)
+	String ctrlName
+	
+	Execute "CreateScatteringAtSDDTable()"
+	return(0)
+End
+
+Function AcceptMREDList(ctrlName)
+	String ctrlName
+	
+	SVAR/Z list = root:myGlobals:MRED:gFileNumList
+	if(SVAR_Exists(list)==0)		//check for myself
+		DoAlert 0,"The Multiple Reduce Panel must be open for you to use this function"
+		Return(1)
+	endif
+	
+	// convert the wave to a comma-delimited List
+	wave/Z numW = $"root:myGlobals:MRED:RunNumber"
+	if(waveExists(numW)==0 || numpnts(numW)==0)
+		DoAlert 0, "Generate a list of files at a specific detector distance using the Files at SDD List button"
+		return(0)
+	Endif
+	
+	list = NumWave2CommaList(numW)
+	
+	//force an update If the SVAR exists, then the panel does too - MRED cleans up after itself when done
+	DoWindow/F Multiple_Reduce_Panel			//bring to front
+	MRedPopMenuProc("MRFilesPopup",0,"")		//parse the list, pop the menu
+	
+	
+	return(0)
+End
+
+// - to create a table of scattering runs at an input SDD
+Proc CreateScatteringAtSDDTable(SDD_to_Filter)
+	Variable SDD_to_Filter
+	
+	NewDataFolder/O root:myGlobals:MRED
+	DoWindow/F SDDTable
+	
+	Make/O/T/N=0 $"root:myGlobals:MRED:Filenames"
+	Make/O/T/N=0 $"root:myGlobals:MRED:Suffix"
+	Make/O/T/N=0 $"root:myGlobals:MRED:Labels"
+	Make/O/D/N=0 $"root:myGlobals:MRED:SDD"
+	Make/O/D/N=0 $"root:myGlobals:MRED:RunNumber"
+	Make/O/D/N=0 $"root:myGlobals:MRED:IsTrans"
+
+	If(V_Flag==0)
+		SetDataFolder root:myGlobals:MRED
+		Edit Labels, SDD, runNumber as "Scattering at SDD"
+		DoWindow/C $"SDDTable"
+		
+		ModifyTable width(SDD)=40
+		ModifyTable width(Labels)=180
+		
+		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+		SetDataFolder root:
+	Endif
+
+	//get a list of all files in the folder, some will be junk version numbers that don't exist	
+	String list,partialName,tempName,temp=""
+	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
+	Variable numitems,ii,ok
+	
+	//remove version numbers from semicolon-delimited list
+	list =  RemoveVersNumsFromList(list)
+	numitems = ItemsInList(list,";")
+	
+	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS
+	//***version numbers have been removed***
+	String str,fullName
+	Variable lastPoint
+	ii=0
+	
+	Make/T/O/N=0 notRAWlist
+	do
+		//get current item in the list
+		partialName = StringFromList(ii, list, ";")
+		//get a valid file based on this partialName and catPathName
+		tempName = FindValidFilename(partialName)
+		If(cmpstr(tempName,"")==0) 		//a null string was returned
+			//write to notebook that file was not found
+			//if string is not a number, report the error
+			if(str2num(partialName) == NaN)
+				str = "this file was not found: "+partialName+"\r\r"
+				//Notebook CatWin,font="Times",fsize=12,text=str
+			Endif
+		else
+			//prepend path to tempName for read routine 
+			PathInfo catPathName
+			FullName = S_path + tempName
+			//make sure the file is really a RAW data file
+			ok = CheckIfRawData(fullName)
+			if (!ok)
+				//write to notebook that file was not a RAW SANS file
+				lastPoint = numpnts(notRAWlist)
+				InsertPoints lastPoint,1,notRAWlist
+				notRAWlist[lastPoint]=tempname
+			else
+				//go write the header information to the Notebook
+				GetHeaderInfoToSDDWave(fullName,tempName)
+			Endif
+		Endif
+		ii+=1
+	while(ii<numitems)
+//Now sort them all based on the suffix data (orders them as collected)
+//	SortCombineWaves()
+// sort by label
+//	SortCombineByLabel()
+// remove the transmission waves
+//
+	RemoveTransFilesFromSDDList()
+
+// Remove anything not at the desired SDD, then sort by run number
+	RemoveWrongSDDFromSDDList(SDD_to_Filter)
+	
+// remove anything named blocked, empty cell, etc.
+	RemoveLabeledFromSDDList("EMPTY")		//not case-sensitive
+	RemoveLabeledFromSDDList("MT CELL")		//not case-sensitive
+	RemoveLabeledFromSDDList("BLOCKED BEAM")		//not case-sensitive
+	RemoveLabeledFromSDDList("BEAM BLOCKED")		//not case-sensitive
+
+End
+
+// need fuzzy comparison, since SDD = 1.33 may actually be represented in FP as 1.33000004	!!!
+//
+Function RemoveLabeledFromSDDList(findThisStr)
+	String findThisStr
+	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
+	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
+	Wave/T labels = $"root:myGlobals:MRED:Labels"
+	Wave sdd = $"root:myGlobals:MRED:SDD"
+	Wave runnum = $"root:myGlobals:MRED:RunNumber"
+	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	
+	Variable num=numpnts(Labels),ii,loc
+	ii=num-1
+	do
+		loc = strsearch(labels[ii], findThisStr, 0 ,2)		//2==case insensitive, but Igor 5 specific
+		if(loc != -1)
+			Print "Remove w[ii] = ",num,"  ",labels[ii]
+			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+		endif
+		ii-=1
+	while(ii>=0)
+	return(0)
+End		
+
+// need fuzzy comparison, since SDD = 1.33 may actually be represented in FP as 1.33000004	!!!
+//
+Function RemoveWrongSDDFromSDDList(tSDD)
+	Variable tSDD
+	
+	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
+	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
+	Wave/T labels = $"root:myGlobals:MRED:Labels"
+	Wave sdd = $"root:myGlobals:MRED:SDD"
+	Wave runnum = $"root:myGlobals:MRED:RunNumber"
+	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	
+	Variable num=numpnts(sdd),ii,tol = 0.001
+	ii=num-1
+	do
+		if(abs(sdd[ii] - tSDD) > tol)		//if numerically more than 0.001 m different, they're not the same
+			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+		endif
+		ii-=1
+	while(ii>=0)
+	
+	// now sort
+	Sort RunNum, 	filenames,suffix,labels,sdd,runnum,isTrans
+	return(0)
+End
+
+
+Function RemoveTransFilesFromSDDList()
+	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
+	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
+	Wave/T labels = $"root:myGlobals:MRED:Labels"
+	Wave sdd = $"root:myGlobals:MRED:SDD"
+	Wave runnum = $"root:myGlobals:MRED:RunNumber"
+	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	
+	Variable num=numpnts(isTrans),ii
+	ii=num-1
+	do
+		if(isTrans[ii] != 0)
+			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+		endif
+		ii-=1
+	while(ii>=0)
+	return(0)
+End
+
+//reads header information and puts it in the appropriate waves for display in the table.
+//fname is the full path for opening (and reading) information from the file
+//which alreay was found to exist. sname is the file;vers to be written out,
+//avoiding the need to re-extract it from fname.
+Function GetHeaderInfoToSDDWave(fname,sname)
+	String fname,sname
+	
+	String textstr,temp,lbl,date_time,suffix
+	Variable ctime,lambda,sdd,detcnt,cntrate,refNum,trans,thick,xcenter,ycenter,numatten
+	Variable lastPoint, beamstop
+
+	Wave/T GFilenames = $"root:myGlobals:MRED:Filenames"
+	Wave/T GSuffix = $"root:myGlobals:MRED:Suffix"
+	Wave/T GLabels = $"root:myGlobals:MRED:Labels"
+	Wave GSDD = $"root:myGlobals:MRED:SDD"
+	Wave GRunNumber = $"root:myGlobals:MRED:RunNumber"
+	Wave GIsTrans = $"root:myGlobals:MRED:IsTrans"
+	
+	lastPoint = numpnts(GLambda)
+		
+	InsertPoints lastPoint,1,GFilenames
+	GFilenames[lastPoint]=sname
+	
+	//read the file suffix
+	InsertPoints lastPoint,1,GSuffix
+	GSuffix[lastPoint]=getSuffix(fname)
+
+	// read the sample.label text field
+	InsertPoints lastPoint,1,GLabels
+	GLabels[lastPoint]=getSampleLabel(fname)
+	
+	//read in the SDD
+	InsertPoints lastPoint,1,GSDD
+	GSDD[lastPoint]= getSDD(fname)
+
+	//the run number (not displayed in the table, but carried along)
+	InsertPoints lastPoint,1,GRunNumber
+	GRunNumber[lastPoint] = GetRunNumFromFile(sname)
+
+	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
+	InsertPoints lastPoint,1,GIsTrans
+	GIsTrans[lastPoint]  = isTransFile(fname)		//returns one if beamstop is "out"
+	
+	KillWaves/Z w
+	return(0)
 End

@@ -290,6 +290,7 @@ Proc FillMREDList()
 	DoUpdate
 End
 
+
 //num passed in is the run number, as in the list
 // ii is the index of all of the files from the catalog
 //return will be -1 if string not found, >=0 if found
