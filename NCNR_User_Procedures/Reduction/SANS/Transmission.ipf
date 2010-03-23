@@ -1034,28 +1034,26 @@ End
 //
 Proc Trans_Panel() 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(173,197,540,424)/K=1 as "Calculate Transmissions"
+	NewPanel /W=(173,197,548,444) /K=1 as "Calculate Transmissions"
 	DoWindow/C Trans_Panel
 	ModifyPanel cbRGB=(49807,47186,38011)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
 	DrawLine 0,56,368,56
-	DrawLine 0,125,368,125
-	Button pick_emp,pos={4,65},size={105,20},proc=PickEMPTransButton,title="set BCENT file"
+	DrawLine 0,142,368,142
+	Button pick_emp,pos={4,65},size={105,20},proc=PickEMPTransButton,title="set EMPTY file"
 	Button pick_emp,help={"This button will set the file selected in the Transmission file table to be the empty beam file."}
 	SetVariable empStr,pos={114,67},size={250,17},title="file:"
 	SetVariable empStr,help={"Filename of the empty beam file(s) to be used in the transmission calculation"}
 	SetVariable empStr,fSize=10
 	SetVariable empStr,limits={-Inf,Inf,0},value= root:myGlobals:TransHeaderInfo:gEMP
-	Button Trn_button_1,pos={5,101},size={90,20},proc=Trn_SetXYBoxButton,title="Set XY Box"
+	Button Trn_button_1,pos={5,91},size={90,20},proc=Trn_SetXYBoxButton,title="Set XY Box"
 	Button Trn_button_1,help={"Sets the XY box to sum over"}
-	Button Trn_button_2,pos={174,139},size={110,20},proc=Trn_SortFilesByDate,title="Sort by Date"
+	Button Trn_button_2,pos={174,156},size={110,20},proc=Trn_SortFilesByDate,title="Sort by Date"
 	Button Trn_button_2,help={"Sort the scattering and transmission files by creation date."}
-	Button Trn_button_3,pos={174,169},size={110,20},proc=Trn_SortFilesByLabel,title="Sort by Label"
+	Button Trn_button_3,pos={174,186},size={110,20},proc=Trn_SortFilesByLabel,title="Sort by Label"
 	Button Trn_button_3,help={"Sort the scattering and transmission files by label."}
-	Button Trn_button_4,pos={295,139},size={67,20},proc=Trn_ShowHelpProc,title="Help"
-	Button Trn_button_4,help={"Show a help notebook for calculating transmissions."}
-	SetVariable Trn_setvar_1,pos={135,100},size={227,17},title="Box is "
+	SetVariable Trn_setvar_1,pos={135,90},size={227,17},title="Box is "
 	SetVariable Trn_setvar_1,help={"Box coordinates to sum over"},fSize=10
 	SetVariable Trn_setvar_1,limits={-Inf,Inf,0},value= root:myGlobals:TransHeaderInfo:gBox
 	Button Trn_button_0,pos={1,1},size={70,20},proc=Trn_PickPathButton,title="Pick Path"
@@ -1065,17 +1063,21 @@ Proc Trans_Panel()
 	SetVariable Trn_setvar_0,pos={80,4},size={250,17},title="Path"
 	SetVariable Trn_setvar_0,help={"Currently selected data path"},fSize=10
 	SetVariable Trn_setvar_0,limits={-Inf,Inf,0},value= root:myGlobals:TransHeaderInfo:gCatPathStr
-	Button Trn_button_5,pos={5,169},size={161,20},proc=Trn_CalcAllFilesButton,title="Calculate All Files"
+	Button Trn_button_5,pos={5,186},size={161,20},proc=Trn_CalcAllFilesButton,title="Calculate All Files"
 	Button Trn_button_5,help={"Calculate transmission and patch headers of ALL files in the Scattering File Table."}
-	Button Trn_button_6,pos={295,198},size={67,20},proc=Trn_PanelDoneButtonProc,title="Done"
+	Button Trn_button_6,pos={295,215},size={67,20},proc=Trn_PanelDoneButtonProc,title="Done"
 	Button Trn_button_6,help={"Close the panel when done calculating transmissions"}
 	Button Trn_button_7,pos={67,32},size={214,20},proc=Trn_RefreshProc,title="List Files"
 	Button Trn_button_7,help={"Generate or refresh the tables of files."}
-	Button Trn_button_8,pos={5,139},size={161,20},proc=Trn_CalcSelectedFilesButton,title="Calculate Selected Files"
+	Button Trn_button_8,pos={5,156},size={161,20},proc=Trn_CalcSelectedFilesButton,title="Calculate Selected Files"
 	Button Trn_button_8,help={"Calculate transmission and patch headers of selected files in the Scattering File Table."}
-	Button Trn_button_10,pos={5,198}, size={161,20},proc=TotalTransButtonProc
+	Button Trn_button_10,pos={5,215}, size={161,20},proc=TotalTransButtonProc
 	Button Trn_button_10 title="Calculate Total Trans"
 	Button Trn_button_10 help={"Calculate transmission over the whole detector and patch headers of ALL files in the data folder."}
+	Button setEmpForAll,pos={4,117},size={120,20},proc=FillEMPFilenameWSelection,title="Use EMP for ALL"
+	Button setEmpForAll,help={"This button will set the file selected in the Transmission file table to be the empty beam file."}
+	Button ClearTrans,pos={175,215},size={110,20},proc=ClearSelectedAssignments,title="Clear Selection"
+	Button ClearTrans,help={"This button will set the file selected in the Transmission file table to be the empty beam file."}
 EndMacro
 
 
@@ -1569,14 +1571,25 @@ EndMacro
 // if you  are using only one wavelength)
 //
 /////
-Function FillEMPFilenameWSelection()
+// March 2010:
+// changed from the previous beta menu operation, now uses the text from the file name box
+// rather than requiring a selection on the table (since you just set the box...)
+//
+Function FillEMPFilenameWSelection(ctrlName)
+	String ctrlName
+	
+//	GetSelection table,TransFileTable,3
+//	Variable row=V_startRow			//ony need the selected row, we know the column names and location
 
-	GetSelection table,TransFileTable,3
-	Variable row=V_startRow			//ony need the selected row, we know the column names and location
+	SVAR empName = root:myGlobals:TransHeaderInfo:gEMP
+	if(strlen(empName)==0 || cmpstr(empName,"no path selected")==0)
+		DoAlert 0,"Please select and set an empty beam file"
+		return(0)
+	endif
 	Wave/T fw = root:myGlobals:TransHeaderInfo:T_FileNames		//trans files
 	Wave/T ew = root:myGlobals:TransHeaderInfo:T_EMP_FileNames		//empty beam reference files
 	
-	ew[] = fw[row]
+	ew[] = empName
 	
 	return(0)
 End
@@ -1938,22 +1951,42 @@ Function fGuessSelectedTransFiles(numChars)
 	return(0)
 End
 
-Function ClearSelectedAssignments()
-	
-	String winStr = WinList("*", ";", "WIN:" )		//returns the target window
+// now a button on the Transmission Panel
+Function ClearSelectedAssignments(ctrlName)
+	String ctrlName
+
+	/// old way, from the menu - takes the selection from the top window, have it now return the top table.
+//	String winStr = WinList("*", ";", "WIN:" )		//returns the top window (with a trailing semicolon!)
+	String winStr = WinName(0,2,1)			//returns the top visible table
 	Variable scatterTableExists, transTableExists
-	Print winStr
-   	scatterTableExists = cmpstr(winStr,"ScatterFileTable;")
+//	Print winStr
+   	scatterTableExists = cmpstr(winStr,"ScatterFileTable")
    	if (scatterTableExists == 0)
 		GetSelection table,ScatterFileTable,1	
 		fClearSelectedAssignments(V_startRow,V_endRow,1)
 	endif
 	
-	transTableExists = cmpstr(winStr,"TransFileTable;")
+	transTableExists = cmpstr(winStr,"TransFileTable")
    	if (transTableExists == 0)
 		GetSelection table,TransFileTable,1	
 		fClearSelectedAssignments(V_startRow,V_endRow,2)
 	endif
 	
+///////// new method, presents a clunky dialog - don't use this way unless I absolutely need to
+//	Variable whichTable=1
+//	Prompt whichTable,"Which Table?",popup,"Transmission Files;Scattering Files;"
+//	DoPrompt "Which Selection to Clear",whichTable
+//	if (V_Flag)
+//		return 0									// user canceled
+//	endif
+//
+//	if (whichTable == 1)		//the Transmission Table
+//		GetSelection table,TransFileTable,1	
+//		fClearSelectedAssignments(V_startRow,V_endRow,2)
+//	else
+//		//the Scattering Files table
+//		GetSelection table,ScatterFileTable,1	
+//		fClearSelectedAssignments(V_startRow,V_endRow,1)
+//	endif
 	return(0)
 End

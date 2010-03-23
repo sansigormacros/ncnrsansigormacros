@@ -165,8 +165,8 @@ Function BuildCatVeryShortTable()
 	AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
 //
-	Print "Total time (s) = ",(ticks - t1)/60.15
-	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
+//	Print "Total time (s) = ",(ticks - t1)/60.15
+//	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
 	return(0)
 End
 

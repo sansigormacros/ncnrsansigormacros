@@ -231,7 +231,7 @@ Function setMREDFileList(str)
 End
 
 Proc FillEMPUsingSelection()
-	FillEMPFilenameWSelection()
+	FillEMPFilenameWSelection("")
 End
 
 Proc GuessEveryTransFile(num)
@@ -245,7 +245,7 @@ Proc GuessSelectedTransFiles(num)
 End
 
 Proc ClearSelectedTransAssignments()
-	ClearSelectedAssignments()
+	ClearSelectedAssignments("")
 End
 
 Proc CreateRunNumList()

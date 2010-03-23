@@ -269,7 +269,7 @@ Function/S FindFileFromRunNumber(num)
 	Variable num
 	String fullName="",partialName="",item=""
 	//get list of raw data files in folder that match "num" (add leading zeros)
-	if( (num>9999) || (num<=0) )
+	if( (num>9999) || (num<0) )
 		//Print "error in  FindFileFromRunNumber(num), file number too large or too small"
 		Return ("")
 	Endif
@@ -279,15 +279,19 @@ Function/S FindFileFromRunNumber(num)
 	if(num > 999)
 		numStr = num2str(num)
 	endif
-	if(num > 99)
+	if(num > 99 && num < 1000)
 		numStr = "0"+num2str(num)
 	endif
-	if(num > 9)
+	if(num > 9 && num < 100)
 		numStr = "00"+num2str(num)
-	else
+	endif
+	if(num < 10)
 		numStr = "000"+num2Str(num)
 	endif
-	
+	if(num == 0)
+		numStr = "0000"
+	endif
+		
 	//make sure that path exists
 	PathInfo catPathName
 	String path = S_path
