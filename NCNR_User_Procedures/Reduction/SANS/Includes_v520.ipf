@@ -93,8 +93,8 @@ End
 // menu will appear in the menubar.
 //
 xMenu "SANSBeta"
-	"Help for Beta Operations",DisplayHelpTopic/Z/K=1 "Beta SANS Tools"
-	"-"
+//	"Help for Beta Operations",DisplayHelpTopic/Z/K=1 "Beta SANS Tools"
+//	"-"
 //	"FillEMPUsingSelection"		// Transmission utilities have been added directly to the panel
 //	"GuessEveryTransFile"
 //	"GuessSelectedTransFiles"
@@ -109,7 +109,7 @@ xMenu "SANSBeta"
 ////	"Set3NSORTFiles"
 //	"CreateTableToCombine"			//moved to a separate panel available from the 1D Ops tab
 //	"DoCombineFiles"
-	"-"
+//	"-"
 	"Convert To Lens"
 	"Convert To Pinhole"
 	"Patch Detector Pixel Size"
