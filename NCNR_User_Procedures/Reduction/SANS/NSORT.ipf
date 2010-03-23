@@ -125,7 +125,7 @@ Function LoadDataForNSORT(fileStr,setNum)
 	
 	if (WaveExists($(typPrefix+"_res")))
 		//6 col data loaded
-		print "6 col data loaded"
+//		print "6 col data loaded"
 		numCols = 6
 		Duplicate/O $(typPrefix+"_q") $(trimPrefix+"_q")
 		Duplicate/O $(typPrefix+"_i") $(trimPrefix+"_i")
@@ -142,7 +142,7 @@ Function LoadDataForNSORT(fileStr,setNum)
 	else
 		//Assume
 		//3 col data loaded
-		print "Assuming 3 col data loaded"
+//		print "Assuming 3 col data loaded"
 		numcols = 3
 		Duplicate/O $(typPrefix+"_q") $(trimPrefix+"_q")
 		Duplicate/O $(typPrefix+"_i") $(trimPrefix+"_i")
@@ -168,6 +168,8 @@ Function LoadDataForNSORT(fileStr,setNum)
 			gColumns3 = numCols
 			break
 	endswitch
+	
+	return(0)
 	
 End
 
@@ -200,8 +202,8 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 	String firstFileName,secondFileName,thirdFileName,normTo
 	Variable norm12,norm23
 
-	Variable err=0,refNum,numCols
-	String fullPath="",formatStr=""
+	Variable err=0,refNum,numCols,dialog=1
+	String fullPath="",formatStr="",str2
 	//check each wave - else REALLY FATAL error when writing file
 	If(!(WaveExists(q3)))
 		err = 1
@@ -222,7 +224,21 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 		numCols = 3
 	endif
 	
-	Variable dialog = 1
+// 05SEP05 SRK -- added to automatically combine files from a table - see the end of NSORT.ipf for details
+// - use the flag set in DoCombineFiles() to decide if the table entries should be used
+//Ê Êroot:myGlobals:CombineTable:useTable= (1) (0)
+//if(exists("root:myGlobals:CombineTable:SaveName"))
+	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
+	if(NVAR_Exists(useTable) && useTable==1)
+		SVAR str=root:myGlobals:CombineTable:SaveNameStr	//messy, but pass in as a global
+		fullPath = str
+//		str2 = "Is the file name "+str+" correct?"
+//		DoAlert 1,str2
+//		if(V_flag==1)
+			dialog=0		//bypass the dialog if the name is good (assumed, since DoAlert is bypassed)
+//		endif
+	endif
+	
 	if(dialog)
 		PathInfo/S catPathName
 		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
@@ -1403,27 +1419,34 @@ End
 /////////////////////////////////////////////////////////////
 // testing, may speed up NSORT, NCNR-specific naming scheme of 
 // run numbers and a run prefix
-Proc Set3NSORTFiles(low,med,hi,pref)
-	Variable low=1,med=2,hi=3
-	String pref="LIPID"
+//
+//
+Function Set3NSORTFiles(low,med,hi,pref)
+	Variable low,med,hi
+	String pref
 	
 	//make strings from the numbers
 	String absStr=""
 	Variable popNum
 	DoWindow/F NSORT_Panel
 	
+	SVAR lowQPopStr = root:myGlobals:NSORT:gDataPopList
+	SVAR medHiQPopStr = root:myGlobals:NSORT:gDataPopList_3
+	
+	String ext = ".ABS"
+	
 	//lowQ menu
-	absStr = pref+ThreeDigitString(low)+".ABS"
-	popNum = 1+WhichListItem(absStr,root:myGlobals:NSORT:gDataPopList,";",0)
+	absStr = pref+ThreeDigitString(low)+ext
+	popNum = 1+WhichListItem(absStr,lowQPopStr,";",0)
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
 	//medQ (a different list for the popup)
-	absStr = pref+ThreeDigitString(med)+".ABS"
-	popNum = 1+WhichListItem(absStr,root:myGlobals:NSORT:gDataPopList_3,";",0)
+	absStr = pref+ThreeDigitString(med)+ext
+	popNum = 1+WhichListItem(absStr,medHiQPopStr,";",0)
 	PopupMenu popup_2,win=NSORT_Panel,mode=(popNum)
 	//highQ (same pop list as medQ)
 	if(hi != 0)
-		absStr = pref+ThreeDigitString(hi)+".ABS"
-		popNum = 1+WhichListItem(absStr,root:myGlobals:NSORT:gDataPopList_3,";",0)
+		absStr = pref+ThreeDigitString(hi)+ext
+		popNum = 1+WhichListItem(absStr,medHiQPopStr,";",0)
 		PopupMenu popup_3,win=NSORT_Panel,mode=(popNum)
 	else
 		PopupMenu popup_3,win=NSORT_Panel,mode=(1)
@@ -1449,10 +1472,11 @@ Function/S ThreeDigitString(num)
 End
 
 //more beta procedures - to create a table of scattering runs to combine with NSORT
-Proc CreateTableToCombine()
+Proc CreateTableToCombine(ctrlName)
+	String ctrlName
 	
 	NewDataFolder/O root:myGlobals:CombineTable
-	DoWindow/F CombineTable
+//	DoWindow/F CombineTable
 	
 	Make/O/T/N=0 $"root:myGlobals:CombineTable:Filenames"
 	Make/O/T/N=0 $"root:myGlobals:CombineTable:Suffix"
@@ -1461,13 +1485,13 @@ Proc CreateTableToCombine()
 	Make/O/D/N=0 $"root:myGlobals:CombineTable:RunNumber"
 	Make/O/D/N=0 $"root:myGlobals:CombineTable:IsTrans"
 
-	If(V_Flag==0)
+//	If(V_Flag==0)
 		BuildCombineTableWindow()
-		ModifyTable width(:myGlobals:CombineTable:SDD)=40
-		ModifyTable width(:myGlobals:CombineTable:Labels)=180
+		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:SDD)=40
+		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:Labels)=180
 		
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
-	Endif
+//	Endif
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
 	String list,partialName,tempName,temp=""
@@ -1561,13 +1585,13 @@ Function MakeTabletoCombine()
 	Wave/T prefix = $"root:myGlobals:CombineTable:Prefix"
 	Wave/T saveName = $"root:myGlobals:CombineTable:SaveName"
 
-	DoWindow/F ToCombine
-	if(V_flag==0)
-		edit Low,Medium,High,Prefix,SaveName as "Run Numbers to Combine"
-		DoWindow/C ToCombine
-	endif
-	AutoPositionWindow/M=1/R=CombineTable toCombine
-	
+//	DoWindow/F ToCombine
+//	if(V_flag==0)
+//		edit Low,Medium,High,Prefix,SaveName as "Run Numbers to Combine"
+//		DoWindow/C ToCombine
+//	endif
+//	AutoPositionWindow/M=1/R=CombineTable toCombine
+	AppendToTable/W=CombinePanel#RunNumbersToCombine Low,Medium,High,Prefix,SaveName
 	
 	/////
 //	SetWindow kwTopWin hook=CombineTableHook, hookevents=1	// mouse down events
@@ -1583,11 +1607,13 @@ Function BuildCombineTableWindow()
 	Wave isTrans = $"root:myGlobals:CombineTable:IsTrans"
 	
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Files to Combine"
-	Edit Labels, SDD, runNum as "Files to Combine"
+//	Edit Labels, SDD, runNum as "Files to Combine"
+	AppendToTable/W=CombinePanel#FilesToCombine Labels, SDD, runNum
+	
 	SetWindow kwTopWin hook=CombineTableHook, hookevents=1	// mouse down events
 
-	String name="CombineTable"
-	DoWindow/C $name
+//	String name="CombineTable"
+//	DoWindow/C $name
 	return(0)
 End
 
@@ -1675,15 +1701,20 @@ End
 // during the procedure that writes the data files.
 //
 //
-Proc  DoCombineFiles()
+Function DoCombineFiles(ctrlName)
+	String ctrlName
 	
 	// pop all of the menus to make sure that they are properly populated
 	LowQPopMenuProc("",1,"")
 	MedQPopMenuProc("",1,"")
 	HighQPopMenuProc("",1,"")
 	
-	String savedDataFolder = GetDataFolder(1)		// save
-	SetDataFolder root:myGlobals:CombineTable:
+//	String savedDataFolder = GetDataFolder(1)		// save
+	Wave LowRun = root:myGlobals:CombineTable:LowRun
+	Wave MediumRun = root:myGlobals:CombineTable:MediumRun
+	Wave HighRun = root:myGlobals:CombineTable:HighRun
+	Wave/T prefix = root:myGlobals:CombineTable:Prefix
+	Wave/T saveName = root:myGlobals:CombineTable:saveName
 
 	Variable/G useTable=1
 	
@@ -1711,8 +1742,7 @@ Proc  DoCombineFiles()
 
 	Variable/G useTable=0
 	
-	SetDataFolder savedDataFolder
-
+	return(0)
 End
 
 
@@ -1752,7 +1782,7 @@ End
 //ASSUMES 3 FILES!!!!
 Function SendSelectionToTable()
 
-	DoWindow/F CombineTable
+	DoWindow/F CombinePanel
 	if(V_flag==0)
 //		Make/O/N=0 $"root:myGlobals:CombineTable:Low"
 //		Make/O/N=0 $"root:myGlobals:CombineTable:Medium"
@@ -1777,8 +1807,8 @@ Function SendSelectionToTable()
 		Wave/T filenames = $"root:myGlobals:CombineTable:FileNames"
 	endif
 	
-	GetSelection table,CombineTable,3
-//	Print V_startRow, V_endRow
+	GetSelection table,CombinePanel#FilesToCombine,3
+	Print V_startRow, V_endRow
 	
 	//prompt for combined name, give the user a chance to cancel
 	Variable num=V_endRow-V_startRow+1
@@ -1851,3 +1881,48 @@ Function/S GetPrefixStrFromFile(item)
 		Endif
 	Endif
 End
+
+////////////////////////
+// replaces the beta menu items
+//
+
+Proc ShowCombinePanel()
+	DoWindow/F CombinePanel
+	if(V_flag==0)
+		CombinePanel()
+	endif
+end
+
+Proc CombinePanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(546,442,1197,915) /K=1 as "Sort and Combine Data Files"
+	ModifyPanel cbRGB=(49151,53155,65535)
+	DoWindow/C CombinePanel
+	Button button0_0,pos={20,20},size={160,20},proc=CreateTableToCombine,title="List Files to Combine"
+	Button button0_1,pos={206,20},size={140,20},proc=DoCombineFiles,title="Combine Files"
+	Button button0_2,pos={509,40},size={60,20},proc=CombinePanelDone,title="Done"
+	Button button0_3,pos={522,14},size={30,20},proc=ShowCombineHelp,title="?"
+	Edit/W=(20,54,368,249)/HOST=# 
+	ModifyTable format=1,width=0
+	RenameWindow #,FilesToCombine
+	SetActiveSubwindow ##
+	Edit/W=(20,263,634,455)/HOST=# 
+	ModifyTable format=1
+	RenameWindow #,RunNumbersToCombine
+	SetActiveSubwindow ##
+EndMacro
+
+Proc ShowCombineHelp(ctrlName): ButtonControl
+	String ctrlName
+	DisplayHelpTopic/K=1/Z "SANS Data Reduction Tutorial[Batch Combine Data Files]"
+	if(V_flag !=0)
+		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
+	endif
+end
+
+Function CombinePanelDone(ctrlName)
+	String ctrlName
+	
+	DoWindow/K CombinePanel
+	return(0)
+end

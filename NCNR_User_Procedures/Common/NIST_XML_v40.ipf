@@ -21,7 +21,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 	
 	
 	Variable rr,gg,bb
-	NVAR dQv = root:Packages:NIST:USANS_dQv
+	NVAR/Z dQv = root:Packages:NIST:USANS_dQv
 
 		
 	Print "Trying to load canSAS XML format data" 
@@ -904,8 +904,8 @@ Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName
 	String firstFileName,secondFileName,thirdFileName,normTo
 	Variable norm12,norm23
 
-	Variable err=0,refNum,numCols
-	String fullPath="",formatStr=""
+	Variable err=0,refNum,numCols,dialog=1
+	String fullPath="",formatStr="",str2
 	//check each wave - else REALLY FATAL error when writing file
 	If(!(WaveExists(qw)))
 		err = 1
@@ -926,7 +926,21 @@ Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName
 		numCols = 3
 	endif
 	
-	Variable dialog = 1
+// 05SEP05 SRK -- added to automatically combine files from a table - see the end of NSORT.ipf for details
+// - use the flag set in DoCombineFiles() to decide if the table entries should be used
+//Ê Êroot:myGlobals:CombineTable:useTable= (1) (0)
+//if(exists("root:myGlobals:CombineTable:SaveName"))
+	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
+	if(NVAR_Exists(useTable) && useTable==1)
+		SVAR str=root:myGlobals:CombineTable:SaveNameStr	//messy, but pass in as a global
+		fullPath = str
+//		str2 = "Is the file name "+str+" correct?"
+//		DoAlert 1,str2
+//		if(V_flag==1)
+			dialog=0		//bypass the dialog if the name is good (assumed, since DoAlert is bypassed)
+//		endif
+	endif
+
 	if(dialog)
 		PathInfo/S catPathName
 		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file

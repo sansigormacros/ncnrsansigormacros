@@ -92,7 +92,7 @@ End
 // and click "compile" at the bottom of this window. The SANSBeta
 // menu will appear in the menubar.
 //
-Menu "SANSBeta"
+xMenu "SANSBeta"
 	"Help for Beta Operations",DisplayHelpTopic/Z/K=1 "Beta SANS Tools"
 	"-"
 //	"FillEMPUsingSelection"		// Transmission utilities have been added directly to the panel
@@ -107,8 +107,8 @@ Menu "SANSBeta"
 //	"FillMREDList"
 //	"-"
 ////	"Set3NSORTFiles"
-	"CreateTableToCombine"
-	"DoCombineFiles"
+//	"CreateTableToCombine"			//moved to a separate panel available from the 1D Ops tab
+//	"DoCombineFiles"
 	"-"
 	"Convert To Lens"
 	"Convert To Pinhole"

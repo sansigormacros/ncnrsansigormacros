@@ -78,6 +78,13 @@ Proc Sort1D_MainButtonProc(ctrlName) : ButtonControl
 	ShowNSORTPanel()
 End
 
+Proc Combine1D_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	ShowCombinePanel()
+End
+
+
 Proc Fit1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -308,11 +315,16 @@ Window Main_Panel()
 //	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
 	Button MainButton_2e,pos={120,90},size={110,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
 	Button MainButton_2e,help={"Shows panel for doing arithmetic on 1D data sets"}
+	Button MainButton_2f,pos={120,120},size={130,20},proc=Combine1D_MainButtonProc,title="Combine 1D Files"
+	Button MainButton_2f,help={"Shows panel for batch combination of 1D data files. Use after you're comfortable with NSORT"}
 	Button MainButton_2a,disable=1
 	Button MainButton_2b,disable=1
 	Button MainButton_2c,disable=1
 	Button MainButton_2d,disable=1
 	Button MainButton_2e,disable=1
+	Button MainButton_2f,disable=1
+
+
 
 //on tab(3) - 2-D Operations
 	Button MainButton_3a,pos={15,90},size={90,20},proc=DisplayInterm_MainButtonProc,title="Display 2D"
