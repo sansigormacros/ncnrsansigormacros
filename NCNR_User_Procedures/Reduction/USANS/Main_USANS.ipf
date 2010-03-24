@@ -162,7 +162,7 @@ Window USANS_Panel() : Panel
 	Button DelEmpButton,help={"Deletes the selected file(s) from the list of empty scans"}
 	ListBox empLB,pos={151,194},size={110,90}
 	ListBox empLB,listWave=root:Packages:NIST:USANS:Globals:MainPanel:empWave,mode= 1,selRow= 0
-	Button toSamList,pos={118,55},size={25,90},proc=toSamListButtonProc,title="S\r->"
+	Button toSamList,pos={120,55},size={25,90},proc=toSamListButtonProc,title="S\r->"
 	Button toSamList,help={"Adds the selected file(s) to the list of sample scans"}
 	Button toEmpList,pos={120,195},size={25,90},proc=toEmptyListButtonProc,title="E\r->"
 	Button toEmpList,help={"Adds the selected file(s) to the list of empty (cell) scans"}
