@@ -46,21 +46,21 @@ End
 //procedure to draw the "tile" panel
 Proc Tile_2D()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(849,337,1242,526) /K=2
+	NewPanel /W=(849,337,1248,553) /K=2
 	DoWindow/C Tile_2D
 	
-	ListBox fileList,pos={4,3},size={206,179}
+	ListBox fileList,pos={5,4},size={206,206}
 	ListBox fileList,listWave=root:myGlobals:Tile_2D:fileWave
 	ListBox fileList,selWave=root:myGlobals:Tile_2D:selWave,mode= 4
-	Button button0,pos={217,109},size={170,20},proc=AddToLayoutButtonProc,title="Add Selected To Layout"
+	Button button0,pos={217,131},size={170,20},proc=AddToLayoutButtonProc,title="Add Selected To Layout"
 	Button button0,help={"Adds images of the selected files to the layout selected in the popup menu"}
-	Button button1,pos={316,160},size={50,20},proc=TileDoneButtonProc,title="Done"
+	Button button1,pos={316,182},size={50,20},proc=TileDoneButtonProc,title="Done"
 	Button button1,help={"Closes the panel, kills the layouts, and kills images from your memory"}
 	Button button3,pos={227,6},size={60,20},proc=GetListButtonProc,title="Get List"
 	Button button3,help={"Refreshes the list of data files"}
 	Button button4,pos={340,6},size={25,20},proc=ShowTileHelp,title="?"
 	Button button4,help={"Show help file for tiling raw data files in a layout"}
-	Button button5,pos={217,133},size={170,20},proc=AddAllToLayout,title="Add All To Layout"
+	Button button5,pos={217,155},size={170,20},proc=AddAllToLayout,title="Add All To Layout"
 	Button button5,help={"Adds images of all raw files, 40 per layout"}
 	CheckBox check0,pos={216,64},size={71,14},title="Log scaling"
 	CheckBox check0,help={"If checked, the image color will be log scale"},value= 1
