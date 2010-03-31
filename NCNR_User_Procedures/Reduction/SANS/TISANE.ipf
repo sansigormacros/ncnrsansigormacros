@@ -25,32 +25,38 @@ End
 
 
 Function Init_TISANE()
-	String/G root:MyGlobals:gTISANE_logfile
-	Variable/G 	root:MyGlobals:AIMTYPE_XY=0 // XY Event
-	Variable/G 	root:MyGlobals:AIMTYPE_XYM=2 // XY Minor event
-	Variable/G 	root:MyGlobals:AIMTYPE_MIR=1 // Minor rollover event
-	Variable/G 	root:MyGlobals:AIMTYPE_MAR=3 // Major rollover event
+	String/G root:Packages:NIST:gTISANE_logfile
+	Variable/G 	root:Packages:NIST:AIMTYPE_XY=0 // XY Event
+	Variable/G 	root:Packages:NIST:AIMTYPE_XYM=2 // XY Minor event
+	Variable/G 	root:Packages:NIST:AIMTYPE_MIR=1 // Minor rollover event
+	Variable/G 	root:Packages:NIST:AIMTYPE_MAR=3 // Major rollover event
 
-	Variable/G root:MyGlobals:gTISANE_time_msw = 0
-	Variable/G root:MyGlobals:gTISANE_time_lsw = 0
-	Variable/G root:MyGlobals:gTISANE_t_longest = 0
+	Variable/G root:Packages:NIST:gTISANE_time_msw = 0
+	Variable/G root:Packages:NIST:gTISANE_time_lsw = 0
+	Variable/G root:Packages:NIST:gTISANE_t_longest = 0
 
-	Variable/G root:MyGlobals:gTISANE_tsdisp //Displayed slice
-	Variable/G root:MyGlobals:gTISANE_nslices = 10  //Number of time slices
-	Variable/G root:MyGlobals:gTISANE_slicewidth  = 1000 //Slicewidth in us 
+	Variable/G root:Packages:NIST:gTISANE_tsdisp //Displayed slice
+	Variable/G root:Packages:NIST:gTISANE_nslices = 10  //Number of time slices
+	Variable/G root:Packages:NIST:gTISANE_slicewidth  = 1000 //Slicewidth in us 
 	
-	Variable/G root:MyGlobals:gTISANE_prescan // Do we prescan the file?
-	Variable/G root:MyGlobals:gTISANE_logint = 1
+	Variable/G root:Packages:NIST:gTISANE_prescan // Do we prescan the file?
+	Variable/G root:Packages:NIST:gTISANE_logint = 1
 
+	NVAR nslices = root:Packages:NIST:gTISANE_nslices
+	
 	SetDataFolder root:
-	NewDataFolder/O/S root:TISANE
+	NewDataFolder/O/S root:Packages:NIST:TISANE
+	
+	Make/O/N=(XBINS,YBINS,nslices) slicedData
+	Duplicate/O slicedData logslicedData
+	Duplicate/O slicedData dispsliceData
 	
 	SetDataFolder root:
 End
 
 Proc TISANE()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel/K=1 /W=(100,50,600,680)/N=TISANE
+	NewPanel/K=2 /W=(100,50,600,680)/N=TISANE
 	DoWindow/C TISANE
 	ModifyPanel fixedSize=1,noEdit =1
 	//ShowTools/A
@@ -58,26 +64,28 @@ Proc TISANE()
 	Button button0,pos = {10,10}, size={150,20},title="Load TISANE Log File",fSize=12
 	Button button0,proc=LoadTISANELog_Proc
 	SetVariable setvar3,pos= {20,590},size={460,20},title=" ",fSize=12
-	SetVariable setvar3,disable=2,variable=root:myGlobals:gTISANE_logfile
+	SetVariable setvar3,disable=2,variable=root:Packages:NIST:gTISANE_logfile
 	CheckBox chkbox1,pos={170,15},title="Prescan file? (increases load time)"
-	CheckBox chkbox1,variable = root:myGlobals:gTISANE_prescan
+	CheckBox chkbox1,variable = root:Packages:NIST:gTISANE_prescan
+	Button doneButton,pos={400,10}, size={50,20},title="Done",fSize=12
+	Button doneButton,proc=TISANEDone_Proc
 	
 	//DrawLine 10,35,490,35
 	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
 	Button button1,proc=ProcessLog_Proc
 	SetVariable setvar1,pos={170,50},size={160,20},title="Number of slices",fSize=12
-	SetVariable setvar1,value=root:myGlobals:gTISANE_nslices
+	SetVariable setvar1,value=root:Packages:NIST:gTISANE_nslices
 	SetVariable setvar2,pos={330,50},size={160,20},title="Slice Width (us)",fSize=12
-	SetVariable setvar2,value=root:myGlobals:gTISANE_slicewidth
+	SetVariable setvar2,value=root:Packages:NIST:gTISANE_slicewidth
 	//DrawLine 10,65,490,65
 	
 	CheckBox chkbox2,pos={20,95},title="Log Intensity",value=1
-	CheckBox chkbox2,variable=root:myGlobals:gTISANE_logint,proc=LogInt_Proc
+	CheckBox chkbox2,variable=root:Packages:NIST:gTISANE_logint,proc=LogInt_Proc
 	SetVariable setvar0,pos={320,90},size={160,20},title="Display Time Slice",fSize=12
-	SetVariable setvar0,value= root:myGlobals:gTISANE_tsdisp
+	SetVariable setvar0,value= root:Packages:NIST:gTISANE_tsdisp
 	SetVariable setvar0,proc=sliceSelect_Proc
 	Display/W=(20,120,480,580)/HOST=TISANE/N=TISANE_slicegraph
-	AppendImage/W=TISANE#TISANE_slicegraph/T :TISANE:dispsliceData
+	AppendImage/W=TISANE#TISANE_slicegraph/T root:Packages:NIST:TISANE:dispsliceData
 	ModifyImage/W=TISANE#TISANE_slicegraph  ''#0 ctab= {*,*,Rainbow,0}
 	ModifyImage/W=TISANE#TISANE_slicegraph ''#0 ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
@@ -97,11 +105,11 @@ Function LoadTISANELog_Proc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	Variable fileref
-	SVAR filename = root:MyGlobals:gTISANE_logfile
-	NVAR prescan = root:MyGlobals:gTISANE_prescan
-	NVAR slicewidth = root:MyGlobals:gTISANE_slicewidth
-	NVAR nslices = root:MyGlobals:gTISANE_nslices
-	NVAR t_longest = root:MyGlobals:gTISANE_t_longest
+	SVAR filename = root:Packages:NIST:gTISANE_logfile
+	NVAR prescan = root:Packages:NIST:gTISANE_prescan
+	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
+	NVAR nslices = root:Packages:NIST:gTISANE_nslices
+	NVAR t_longest = root:Packages:NIST:gTISANE_t_longest
 	
 	Open/R/D fileref
 	filename = S_filename
@@ -114,11 +122,23 @@ Function LoadTISANELog_Proc(ctrlName) : ButtonControl
 
 End
 
+Function TISANEDone_Proc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+	switch (ba.eventCode)
+		case 2:
+			DoWindow/K TISANE
+			break
+	endswitch
+
+End
+
 Function ProcessLog_Proc(ctrlName) : ButtonControl
 	String ctrlName
 
-	NVAR slicewidth = root:MyGlobals:gTISANE_slicewidth
-	NVAR nslices = root:MyGlobals:gTISANE_nslices
+	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
+	NVAR nslices = root:Packages:NIST:gTISANE_nslices
 	
 	ProcessLog(nslices,slicewidth)
 	
@@ -128,7 +148,7 @@ Function LogInt_Proc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 		
-	SetDataFolder root:TISANE
+	SetDataFolder root:Packages:NIST:TISANE
 	if(checked)
 		Duplicate/O logslicedData dispsliceData
 	else
@@ -144,8 +164,8 @@ Function sliceSelect_Proc(ctrlName, varNum, varStr, varName) : SetVariableContro
 	String varStr
 	String varName
 	
-	NVAR nslices = root:MyGlobals:gTISANE_nslices
-	NVAR selectedslice = root:MyGlobals:gTISANE_tsdisp
+	NVAR nslices = root:Packages:NIST:gTISANE_nslices
+	NVAR selectedslice = root:Packages:NIST:gTISANE_tsdisp
 	
 	if(varNum < 0)
 		selectedslice = 0
@@ -162,14 +182,14 @@ End
 Function ProcessLog(nslices,slicewidth)
 	Variable nslices,slicewidth
 	
-	NVAR time_msw = root:MyGlobals:gTISANE_time_msw
-	NVAR time_lsw = root:MyGlobals:gTISANE_time_lsw
-	NVAR t_longest = root:MyGlobals:gTISANE_t_longest
+	NVAR time_msw = root:Packages:NIST:gTISANE_time_msw
+	NVAR time_lsw = root:Packages:NIST:gTISANE_time_lsw
+	NVAR t_longest = root:Packages:NIST:gTISANE_t_longest
 	
-	NVAR logint = root:MyGlobals:gTISANE_logint
+	NVAR logint = root:Packages:NIST:gTISANE_logint
 	
-	SVAR filepathstr = root:MyGlobals:gTISANE_logfile
-	SetDataFolder root:TISANE
+	SVAR filepathstr = root:Packages:NIST:gTISANE_logfile
+	SetDataFolder root:Packages:NIST:TISANE
 
 	//Create bin lookup
 	Variable tickwidth, i ,boundary
@@ -257,7 +277,7 @@ End
 Function FindBin(nticks,nslices)
 	Variable nticks,nslices
 	
-	WAVE t_lookup = root:TISANE:t_lookup
+	WAVE t_lookup = root:Packages:NIST:TISANE:t_lookup
 	
 	Variable i
 	Variable whichbin = nslices -1
@@ -274,12 +294,12 @@ End
 
 Function PreProcessLog()
 	
-	NVAR time_msw = root:MyGlobals:gTISANE_time_msw
-	NVAR time_lsw = root:MyGlobals:gTISANE_time_lsw
-	NVAR t_longest = root:MyGlobals:gTISANE_t_longest
+	NVAR time_msw = root:Packages:NIST:gTISANE_time_msw
+	NVAR time_lsw = root:Packages:NIST:gTISANE_time_lsw
+	NVAR t_longest = root:Packages:NIST:gTISANE_t_longest
 	
-	SVAR filepathstr = root:MyGlobals:gTISANE_logfile
-	SetDataFolder root:TISANE
+	SVAR filepathstr = root:Packages:NIST:gTISANE_logfile
+	SetDataFolder root:Packages:NIST:TISANE
 
 	Variable fileref
 	

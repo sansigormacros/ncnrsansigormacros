@@ -10,6 +10,12 @@
 // potentially a lorentzian could be added to the low Q, if absolutely necessary
 //
 // SRK JUL 2009
+//
+// Use different volume fraction and radius for hard sphere interaction as Stieger et al.
+//
+//
+// AJJ Feb 2010
+
 
 //
 // be sure to include all of the necessary files

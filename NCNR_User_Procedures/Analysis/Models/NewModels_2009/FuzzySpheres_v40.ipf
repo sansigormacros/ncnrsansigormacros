@@ -11,6 +11,12 @@
 // potentially a lorentzian could be added to the low Q, if absolutely necessary
 //
 // SRK JUL 2009
+//
+// Include lorentzian term for *high* Q component of the scattering.
+//
+// AJJ Feb 2010
+
+#include "Lorentz_model_v40"
 
 Proc PlotFuzzySpheres(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
@@ -20,8 +26,8 @@ Proc PlotFuzzySpheres(num,qmin,qmax)
 	
 	Make/O/D/N=(num) xwave_fuzz,ywave_fuzz
 	xwave_fuzz = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,0.001}
-	make/O/T parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}
+	Make/O/D coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}
+	make/O/T parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz,coef_fuzz
 	
 	Variable/G root:g_fuzz
@@ -48,8 +54,8 @@ Proc PlotSmearedFuzzySpheres(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,0.001}					
-	make/o/t smear_parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}	
+	Make/O/D smear_coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}					
+	make/o/t smear_parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz,smear_coef_fuzz					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -91,7 +97,7 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	wave w
 	variable xx
 	
-	Variable scale,rad,pd,sig,rho,rhos,bkg,delrho,sig_surf
+	Variable scale,rad,pd,sig,rho,rhos,bkg,delrho,sig_surf,lor_sf,lor_len
 	
 	//set up the coefficient values
 	scale=w[0]
@@ -102,7 +108,7 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	rho=w[4]
 	rhos=w[5]
 	delrho=rho-rhos
-	bkg=w[6]
+	bkg=w[8]
 
 	
 	//could use 5 pt quadrature to integrate over the size distribution, since it's a gaussian
@@ -179,6 +185,15 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	inten /= (4*pi/3*rad^3)*(1+3*pd^2)
 	
 	inten *= scale
+	
+	//Lorentzian term
+	Make/O/N=3 tmp_lor
+	tmp_lor[0] = w[6]
+	tmp_lor[1] = w[7]
+	tmp_lor[2] = 0
+	
+	inten+=fLorentz_model(tmp_lor,xx)
+	
 	inten+=bkg
 	
 	Return(inten)

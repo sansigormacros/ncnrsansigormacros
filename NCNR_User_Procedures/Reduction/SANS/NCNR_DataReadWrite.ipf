@@ -1515,6 +1515,13 @@ Function getSampleRotationAngle(fname)
 	return(getRealValueFromHeader(fname,170))
 end
 
+//Sample position in changer
+Function getSamplePosition(fname)
+	String fname
+	
+	return(getRealValueFromHeader(fname,166))
+end
+
 //temperature is at byte 186
 Function getTemperature(fname)
 	String fname
