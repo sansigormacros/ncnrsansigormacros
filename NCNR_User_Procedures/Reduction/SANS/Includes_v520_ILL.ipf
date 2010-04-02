@@ -41,7 +41,7 @@ End
 //AJJ October 2008 - switch to shared file loader
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
-#include "cansasXML_v11"
+#include "cansasXML"
 #include "USANS_SlitSmearing_v40"
 #include "GaussUtils_v40" // for isSANSResolution - could put this function elsewhere
 //

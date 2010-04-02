@@ -5,7 +5,7 @@
 
 #if( Exists("XmlOpenFile") )
 
-#include "cansasXML_v11", version >= 1.10
+#include "cansasXML", version >= 1.10
 
 // The function is called "LoadNISTXMLData" but is actually more generic
 // and will load any canSAS XML v1 dataset
