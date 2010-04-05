@@ -114,11 +114,13 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 //		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
 
 		String basestr
-		if (!cmpstr(outstr, ""))
-			//Outstr = "", cmpstr returns 0
-			baseStr = CleanupName(S_fileName,0)
+		if (!cmpstr(outstr, ""))		//Outstr = "", cmpstr returns 0
+//			enforce a short enough name here to keep Igor objects < 31 chars
+			baseStr = ShortFileNameString(CleanupName(S_fileName,0))
+			baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
+			//baseStr = CleanupName(S_fileName,0)
 		else
-			baseStr = outstr
+			baseStr = outstr			//for output, hopefully correct length as passed in
 		endif
 	
 //		print "basestr :"+basestr
@@ -884,7 +886,7 @@ End
 // returns the path to the file, or null if the user cancelled
 // fancy use of optional parameters
 // 
-// enforce short file names (26 characters)
+// enforce short file names (25 characters)
 Function/S DoSaveFileDialog(msg,[fname,suffix])
 	String msg,fname,suffix
 	Variable refNum
@@ -900,14 +902,14 @@ Function/S DoSaveFileDialog(msg,[fname,suffix])
 	endif
 	
 	String outputPath,tmpName,testStr
-	Variable badLength=0,maxLength=26,l1,l2
+	Variable badLength=0,maxLength=25,l1,l2
 	
 	
 	tmpName = fname + suffix
 	
 	do
 		badLength=0
-		Open/D/M=msg/T="????" refNum as tmpName
+		Open/D/M=msg/T="????" refNum as tmpName		//OS will allow 255 characters, but then I can't read it back in!
 		outputPath = S_fileName
 		
 		testStr = ParseFilePath(0, outputPath, ":", 1, 0)		//just the filename
@@ -916,7 +918,7 @@ Function/S DoSaveFileDialog(msg,[fname,suffix])
 		endif
 		if(strlen(testStr) > maxLength)
 			badlength = 1
-			DoAlert 2,"File name is too long. Is\r"+testStr[0,25]+"\rOK?"
+			DoAlert 2,"File name is too long. Is\r"+testStr[0,maxLength-1]+"\rOK?"
 			if(V_flag==3)
 				outputPath = ""
 				break
@@ -937,6 +939,106 @@ Function/S DoSaveFileDialog(msg,[fname,suffix])
 	
 	return outputPath
 End
+
+// returns a shortened file name (26 characters max) so that the loader
+// won't try to create Igor objects that have names that are longer than 31
+// 
+Function/S ShortFileNameString(inStr)
+	String inStr
+
+	String outStr=""
+	Variable maxLength=25
+	Variable nameTooLong=0
+	
+	if(strlen(inStr) <= maxLength)
+		return (inStr)		//length OK
+	else
+		do
+			nameTooLong = 0
+			
+			DoAlert 1,"File name is too long. Is\r"+inStr[0,maxLength-1]+"\rOK?"
+			if(V_flag==1)			//my suggested name is OK, so trim the output
+				outStr = inStr[0,maxLength-1]
+				//Print "modified  ",outStr
+				return(outStr)
+			endif
+	
+	
+			if(V_flag == 2)		//not OK, do something about it
+				String/G root:myGlobals:gShortNameStr = inStr[0,maxLength-1]
+				SVAR newStr = root:myGlobals:gShortNameStr
+				
+				DoWindow/F ShorterNameInput		//it really shouldn't exist...
+				if(V_flag==0)
+					NewPanel /W=(570,152,915,280) as "Enter a Shorter Name"
+					DoWindow/C ShorterNameInput
+					SetDrawLayer UserBack
+					TitleBox title0,pos={35,8},size={261,20},title=" Enter a shorter file name. It must be 25 characters or less "
+					TitleBox title0,fStyle=1
+					SetVariable setvar0,pos={21,52},size={300,15},title="New name",value= _STR:newStr
+					SetVariable setvar0,proc=ShorterNameSetVarProc
+					SetVariable setvar0 valueBackColor=(65535,49151,49151)
+					Button button0,pos={259,87},size={60,20},title="Done"
+					Button button0,proc=ShorterNameDoneButtonProc
+				endif
+				
+				PauseForUser ShorterNameInput
+				
+				// this really should force a good name, but there could be errors that I'm not catching
+				Print newStr, strlen(newStr)
+				nameTooLong = 0
+			endif
+		
+		while (nameTooLong)
+		
+		return(newStr)
+		
+	endif
+		
+End
+
+
+// for the ShortFileNameString() - PauseForUser to get a shorter file name
+Function ShorterNameSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+		
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+				String sv = sva.sval
+				if( strlen(sv) > 25 )
+					sv= sv[0,24]
+					SetVariable  $(sva.ctrlName),win=$(sva.win),value=_STR:sv
+					SetVariable setvar0 valueBackColor=(65535,49151,49151)
+					Beep
+				else
+					SetVariable setvar0 valueBackColor=(65535,65535,65535)
+				endif
+				break
+		endswitch
+	return 0
+End
+
+// for the ShortFileNameString() - PauseForUser to get a shorter file name
+Function ShorterNameDoneButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			SVAR newStr = root:myGlobals:gShortNameStr
+			ControlInfo setvar0
+			newStr = S_value
+			DoWindow/K ShorterNameInput
+			
+			break
+	endswitch
+
+	return 0
+End
+
 
 // a function common to many panels, so put the basic version here that simply
 // returns null string if no functions are present. Calling procedures can 
@@ -1040,6 +1142,22 @@ Function/S User_FunctionPopupList()
 	tmp = FunctionList("IR2_*",";","KIND:10")
 	list = RemoveFromList(tmp, list  ,";")
 	tmp = FunctionList("*LogLog",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	
+	//functions included in Nika
+	tmp = FunctionList("NI1*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("TransAx_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("TransformAxis*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("erfForNormal*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+
+	// functions in Indra (USAXS)
+	tmp = FunctionList("IN2Q_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IN3_*",";","KIND:10")
 	list = RemoveFromList(tmp, list  ,";")
 	
 //	tmp = FunctionList("*X",";","KIND:4")		//XOPs, but these shouldn't show up if KIND:10 is used initially

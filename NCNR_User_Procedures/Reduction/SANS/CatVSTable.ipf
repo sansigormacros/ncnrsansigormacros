@@ -101,13 +101,13 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
-		ModifyTable width(:myGlobals:CatVSHedaerInfo:Pos)=30
 #if (exists("ILL_D22")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
 #endif
 
 #if (exists("NCNR")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
+		ModifyTable width(:myGlobals:CatVSHedaerInfo:Pos)=30
 #endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
@@ -214,12 +214,12 @@ Function SortWaves()
 	Wave GPos = $"root:myGlobals:CatVSHeaderInfo:Pos"
 #if (exists("ILL_D22")==6)
 	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,GReactPow
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
 #endif
 
 #if (exists("NCNR")==6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,gNumGuides
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #else
 //	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
@@ -398,9 +398,7 @@ Function GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GMCR
 	GMCR[lastPoint]  = getMonitorCount(fname)/ctime		//total monitor count / total count time
 
-	//Sample Position
-	InsertPoints lastPoint,1,GPos
-	GPos[lastPoint] = getSamplePosition(fname)
+
 
 #if (exists("ILL_D22")==6)
 	// Reactor Power (activate for ILL)
@@ -412,6 +410,10 @@ Function GetHeaderInfoToWave(fname,sname)
 #if (exists("NCNR")==6)
 	InsertPoints lastPoint,1,GNumGuides
 	GNumGuides[lastPoint]  = numGuides(getSourceToSampleDist(fname))
+	
+	//Sample Position
+	InsertPoints lastPoint,1,GPos
+	GPos[lastPoint] = getSamplePosition(fname)
 #endif
 
 	return(0)

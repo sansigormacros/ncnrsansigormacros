@@ -58,18 +58,3 @@ Menu "SANS Models"
 	"Check for Updates",CheckForLatestVersion()
 End
 
-Function OpenTracTicketPage()
-	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
-	if(V_flag==1)
-		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
-	endif
-End
-
-Function OpenHelpMoviePage()
-	DoAlert 1,"Your web browser will open to a page where you can view help movies. OK? (You must have QuickTime installed)"
-	if(V_flag==1)
-		BrowseURL "ftp://webster.ncnr.nist.gov/pub/sans/kline/movies/"
-		// Andrew has set up a http page too. Try to use this in the future
-		//BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/movies/reduction_analysis_movies.html"
-	endif
-End

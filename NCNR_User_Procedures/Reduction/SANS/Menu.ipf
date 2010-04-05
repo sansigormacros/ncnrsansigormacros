@@ -41,6 +41,8 @@ Menu "SANS"
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
 	End
 	"-"
+	"Feedback or Bug Report",OpenTracTicketPage()
+	"Open Help Movie Page",OpenHelpMoviePage()
 	"Check for Updates",CheckForLatestVersion()
 //	Submenu "Utility Routines"
 //		"Clear Work Folders"

@@ -31,7 +31,8 @@ Menu "USANS"
 	"-"
 	"USANS Simulator",Show_UCALC()
 	"-"
-	"Feedback or Bug Report",U_OpenTracTicketPage("")
+	"Feedback or Bug Report",OpenTracTicketPage()
+	"Open Help Movie Page",OpenHelpMoviePage()
 	"Check for Updates",CheckForLatestVersion()
 End
 
@@ -1306,13 +1307,4 @@ Function/S getCurrentPath(inPath)
 
 	return inPath
 	
-End
-
-//
-Function U_OpenTracTicketPage(ctrlName)
-	String ctrlName
-	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
-	if(V_flag==1)
-		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
-	endif
 End

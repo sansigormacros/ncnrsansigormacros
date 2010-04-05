@@ -1869,8 +1869,13 @@ Function ExecuteProtocol(protStr,samStr)
 		If(WaveExists(textPath) == 1)
 #if (exists("QUOKKA")==6)
 			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
+#elif (exists("HFIR")==6)
+			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
+			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
+			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
+			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
 #else
-			newFileName = UpperStr(GetNameFromHeader(textPath[0]))
+			newFileName = UpperStr(GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
 #endif
 		else
 			newFileName = ""			//if the header is missing?
@@ -1889,6 +1894,14 @@ Function ExecuteProtocol(protStr,samStr)
 			exten = "DAT"
 		endif
 		
+		// add an "x" to the file extension if the output is XML
+		// currently (2010), only for ABS and AVE (1D) output
+		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
+			if(useXMLOutput == 1)
+				exten += "x"
+			endif
+		endif
+				
 		//Path is catPathName, symbolic path
 		//if this doesn't exist, a dialog will be presented by setting dialog = 1
 		Variable dialog = 0

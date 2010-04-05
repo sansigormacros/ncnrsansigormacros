@@ -63,8 +63,9 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 						xmlDataSetFolder = xmlDataFolder+GetIndexedObjName(xmlDataFolder,4,j)+":"
 					
 						SetDataFolder xmlDataSetFolder	
-					
-						basestr = CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j),0)
+						//			enforce a short enough name here to keep Igor objects < 31 chars
+						basestr = ShortFileNameString(CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j),0))
+						baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
 						
 						//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
 						fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
