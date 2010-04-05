@@ -410,6 +410,8 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 					ModifyGraph grid=1,mirror=2,standoff=0
 					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 					ModifyGraph tickUnit(left)=1
+					Label left "I(q)"
+					Label bottom "q (A\\S-1\\M)"
 					Legend
 				endif
 			else
@@ -419,6 +421,8 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 				ModifyGraph grid=1,mirror=2,standoff=0
 				ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 				ModifyGraph tickUnit(left)=1
+				Label left "I(q)"
+				Label bottom "q (A\\S-1\\M)"
 				Legend
 			endif
 		endif
@@ -1001,6 +1005,41 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 	
 	tmp = FunctionList("fSmear*",";","NPARAMS:3")		//smeared dependency calculations
+	list = RemoveFromList(tmp, list  ,";")
+	
+	// anything that might be included in Irena
+	tmp = FunctionList("GEN_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IN2G_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR1A_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR1B_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR1U_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR1V_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR1_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2D_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+
+	tmp = FunctionList("IR2D_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2H_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")	
+	tmp = FunctionList("IR2L_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2Pr_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2R_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2S_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("IR2_*",";","KIND:10")
+	list = RemoveFromList(tmp, list  ,";")
+	tmp = FunctionList("*LogLog",";","KIND:10")
 	list = RemoveFromList(tmp, list  ,";")
 	
 //	tmp = FunctionList("*X",";","KIND:4")		//XOPs, but these shouldn't show up if KIND:10 is used initially

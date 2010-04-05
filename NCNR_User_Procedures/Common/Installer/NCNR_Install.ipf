@@ -405,24 +405,26 @@ Function InstallNCNRMacros(forceInstall)
 //	Print "Creating shortcut for XOP into Igor Extensions: "+IsMoveOK(V_flag)
 	
 
-// put shortcuts to the template in the "top" folder
-//
-	NewPath/O/Q UtilPath, homePathStr+"NCNR_SANS_Utilities:"
-	strFileList = IndexedFile(UtilPath,-1,".pxt")	
-	for (i=0; i<itemsInList(strFileList); i+=1)
-		tmpStr = StringFromList(i,strFileList)
-//		isThere = CheckForMatch(tmpStr,IHFolders)
-//		if(isThere)
-//			Print "Move "+ tmpStr
-//			MoveFolder/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
-			CreateAliasShortcut/O/P=UtilPath tmpStr as homePathStr +tmpStr
-			Print "Creating shortcut for "+tmpStr+" into top level: "+IsMoveOK(V_flag)
-//		endif
-	endfor
+
+// now with the NCNR_Package_Loader in the Igor Procedures, the templates are obsolete
+//// put shortcuts to the template in the "top" folder
+////
+//	NewPath/O/Q UtilPath, homePathStr+"NCNR_SANS_Utilities:"
+//	strFileList = IndexedFile(UtilPath,-1,".pxt")	
+//	for (i=0; i<itemsInList(strFileList); i+=1)
+//		tmpStr = StringFromList(i,strFileList)
+////		isThere = CheckForMatch(tmpStr,IHFolders)
+////		if(isThere)
+////			Print "Move "+ tmpStr
+////			MoveFolder/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+//			CreateAliasShortcut/O/P=UtilPath tmpStr as homePathStr +tmpStr
+//			Print "Creating shortcut for "+tmpStr+" into top level: "+IsMoveOK(V_flag)
+////		endif
+//	endfor
 
 
 // installation is done, quit to start fresh
-	DoAlert 1, "Quit Igor to complete installation.\rQuit now? "
+	DoAlert 1, "Quit and restart Igor to complete installation.\rQuit now? "
 	if (V_Flag==1)
 		execute "Quit /Y"
 	endif
