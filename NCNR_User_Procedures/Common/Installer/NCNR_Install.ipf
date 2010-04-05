@@ -33,6 +33,9 @@
 // -- now I need to search both locations to move old stuff out
 // -- then install clean into the new user path (userPathStr)
 //
+// ** The NCNR_Package_Loader is now installed in the Igor Procedures folder so that the package can be loaded at any time
+//    improving compatibility with Jan Ilavsky's package
+//
 
 Function InstallNCNRMacros(forceInstall)
 	Variable forceInstall		// if == 1, install whatever possible, even if R/W errors from the OS
@@ -288,7 +291,65 @@ Function InstallNCNRMacros(forceInstall)
 		endif
 	endfor
 
+///////////////////
+////// clean up the Igor Procedures (first the old path -- in the App folder, likely empty)
+	NewPath /Q/O IgProcPath, igorPathStr+"Igor Procedures:"
+	PathInfo IgProcPath
+	String IgProcPathStr = S_Path 
+	strFileList = IndexedFile(IgProcPath, -1, "????" )
+	
+	//files first
+	Wave/T IgProcFiles=root:IgProcFiles
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IgProcFiles)
+		if(isThere)
+			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Procedures: "+IsMoveOK(V_flag)
+		endif
+	endfor
+	
+	//then anything that shows up as a folder (don't bother with this)
+	Wave/T IgProcFolders=root:IgProcFolders
+	
+	strFileList = IndexedDir(IgProcPath, -1, 0 )
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IgProcFolders)
+		if(isThere)
+			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+		endif
+	endfor
 
+////// then clean up the Igor Procedures (now look in the User Path, by changing the definition of IgProcPath)
+	NewPath /Q/O IgProcPath, userPathStr+"Igor Procedures:"
+	PathInfo IgProcPath
+	IgProcPathStr = S_Path 
+	strFileList = IndexedFile(IgProcPath, -1, "????" )
+		
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IgProcFiles)
+		if(isThere)
+			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			Print "Move file "+ tmpStr + " from Igor Procedures: "+IsMoveOK(V_flag)
+		endif
+	endfor
+
+	//then anything that shows up as a folder
+	strFileList = IndexedDir(IgProcPath, -1, 0 )
+	for (i=0; i<itemsInList(strFileList); i+=1)
+		tmpStr = StringFromList(i,strFileList)
+		isThere = CheckForMatch(tmpStr,IgProcFolders)
+		if(isThere)
+			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+		endif
+	endfor
+
+//////////////////////////////////////////////////////////////////////
+	
 
 // at this point all of the old stuff is cleaned up as best as I can
 //
@@ -315,7 +376,10 @@ Function InstallNCNRMacros(forceInstall)
 // not needed now
 //	CreateAliasShortcut/O/P=SpecialPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
 //	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+IsMoveOK(V_flag)
-	
+
+// the Igor Procedures
+	MoveFolder/Z=1 homePathStr+"NCNR_Igor_Procedures" as IgProcPathStr+"NCNR_Igor_Procedures"
+	Print "*******Move folder NCNR_Igor_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 
 // the User Procedures	
 	MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
@@ -695,8 +759,8 @@ Function/S IsMoveOK(flag)
 	endif
 end
 
-// this will "force" an install, even if there are R/W errors
-Macro ForceInstall()
-
-	Execute "InstallNCNRMacros(1)"
-end
+//// this will "force" an install, even if there are R/W errors
+//Macro ForceInstall()
+//
+//	Execute "InstallNCNRMacros(1)"
+//end
