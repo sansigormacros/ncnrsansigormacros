@@ -105,7 +105,7 @@ Function InstallNCNRMacros(forceInstall)
 	// user procedures - these can be in folders or as files
 	variable i=0, AliasSet=0, isThere = 0
 	String tmpStr
-
+	String timeStamp = "_"+num2istr(datetime)
 
 //////////////////////////////////////////////////////////////////////
 	
@@ -121,7 +121,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
-			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -134,7 +134,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
-			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -149,7 +149,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
-			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -160,7 +160,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
-			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -179,7 +179,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
 		if(isThere)
-			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -193,7 +193,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,UPFoldersWave)
 		if(isThere)
 		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
-			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -209,7 +209,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,UPFilesWave)
 		if(isThere)
-			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=UPPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -222,7 +222,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,UPFoldersWave)
 		if(isThere)
 		// THIS is the problem, when NCNR_Help_Files is moved - it is in use
-			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder/Z UPPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from User Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -245,7 +245,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFilesWave)
 		if(isThere)
-			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor	
@@ -258,7 +258,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFolders)
 		if(isThere)
-			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -274,7 +274,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFilesWave)
 		if(isThere)
-			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=IHPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor	
@@ -286,7 +286,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IHFolders)
 		if(isThere)
-			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder IHPathStr + tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Help Files: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -304,7 +304,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IgProcFiles)
 		if(isThere)
-			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -317,7 +317,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IgProcFolders)
 		if(isThere)
-			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -332,7 +332,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IgProcFiles)
 		if(isThere)
-			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr
+			MoveFile/O/P=IgProcPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
 			Print "Move file "+ tmpStr + " from Igor Procedures: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -343,7 +343,7 @@ Function InstallNCNRMacros(forceInstall)
 		tmpStr = StringFromList(i,strFileList)
 		isThere = CheckForMatch(tmpStr,IgProcFolders)
 		if(isThere)
-			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr
+			MoveFolder IgProcPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
 			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
 		endif
 	endfor
@@ -432,7 +432,7 @@ Function InstallNCNRMacros(forceInstall)
 // installation is done, quit to start fresh
 	DoAlert 1, "Quit and restart Igor to complete installation.\rQuit now? "
 	if (V_Flag==1)
-		execute "Quit /Y"
+		execute "Quit/Y "
 	endif
 	
 	return 1
@@ -674,8 +674,15 @@ Function InstallDiagnostics()
 	return(0)
 End
 
+// first, close the NCNR_Package_Loader.ipf to break the link (if it's there)
+// otherwise, if the installer is run a second time, it won't compile - the current and the old (moved)
+// instance will both open up.
 Function AskUserToKillHelp()
 
+	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";","WIN:128")))
+		Execute/P "CloseProc /NAME=\"NCNR_Package_Loader.ipf\""
+	endif
+	
 	//// clean up the Igor help files
 // first, kill any open help files
 // there are 5 of them

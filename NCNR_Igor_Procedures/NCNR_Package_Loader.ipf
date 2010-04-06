@@ -56,6 +56,7 @@ Function NCNR_AnalysisLoader(itemStr)
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Init_WrapperPanel()")
 			Execute/P ("ModelPicker_Panel()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 		
 			gMenuStr1a = "Hide NCNR Analysis Macros"
 //			gMenuStr1b = "Unload NCNR Analysis Macros"
@@ -136,7 +137,8 @@ Function NCNR_SANSReductionLoader(itemStr)
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
-		
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
 			gMenuStr2a = "Hide NCNR SANS Reduction Macros"
 //			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
 			gMenuStr2b = "-"
@@ -203,7 +205,8 @@ Function NCNR_USANSReductionLoader(itemStr)
 			Execute/P "INSERTINCLUDE \"USANS_Includes\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("ShowUSANSPanel()")
-		
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
 			gMenuStr3a = "Hide NCNR USANS Reduction Macros"
 //			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
 			gMenuStr3b = "-"
