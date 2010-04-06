@@ -86,7 +86,7 @@ Function Correct(mode)
 	
 	
 	//check for trans==1
-	NVAR doCheck=root:myGlobals:gDoTransCheck
+	NVAR doCheck=root:Packages:NIST:gDoTransCheck
 	Wave/Z samR=root:Packages:NIST:SAM:RealsRead
 	Wave/Z empR=root:Packages:NIST:EMP:RealsRead
 	if(doCheck)
@@ -977,7 +977,7 @@ Function GetNewTrans(oldTrans,type)
 //	KillDataFolder root:tmp_trans
 	
 	if(newCode==1)
-		Variable/G root:myGlobals:gDoTransCheck=0	//turn off checking
+		Variable/G root:Packages:NIST:gDoTransCheck=0	//turn off checking
 	endif
 	
 	if(newcode==2)		//user changed trans value

@@ -66,7 +66,7 @@ Function MakeDIVFile(ctrType,offType)
 	//"COR" data in both places - reduction must be done ahead of time
 	
 	//temporarily set data display to linear
-	NVAR gLog = root:myGlobals:gLogScalingAsDefault
+	NVAR gLog = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = gLog
 	gLog=0	//linear
 	
@@ -285,7 +285,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			// click code here
 			
 			//temporarily set data display to linear
-			NVAR gLog = root:myGlobals:gLogScalingAsDefault
+			NVAR gLog = root:Packages:NIST:gLogScalingAsDefault
 			Variable oldState = gLog
 			gLog=0	//linear
 			

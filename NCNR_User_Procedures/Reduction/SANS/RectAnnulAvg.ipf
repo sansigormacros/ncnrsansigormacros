@@ -80,7 +80,7 @@ Function RectangularAverageTo1D(type)
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
-	NVAR binWidth=root:myGlobals:gBinWidth
+	NVAR binWidth=root:Packages:NIST:gBinWidth
 	dr = binWidth		// annulus width set by user, default is one
 	ddr = dr*sx		//step size, in mm (this is the value to pass to the resolution calculation, not dr 18NOV03)
 		
@@ -490,7 +490,7 @@ Function AnnularAverageTo1D(type)
 	Variable nw = NumberByKey("QDELTA",keyListStr,"=",";")
 	
 	dr = 1 			//minimum annulus width, keep this fixed at one
-	NVAR numPhiSteps = root:myGlobals:gNPhiSteps
+	NVAR numPhiSteps = root:Packages:NIST:gNPhiSteps
 	nphi = numPhiSteps		//number of anular sectors is set by users
 	
 	rc = 2*dtdist*asin(qc*lambda/4/Pi)		//in mm

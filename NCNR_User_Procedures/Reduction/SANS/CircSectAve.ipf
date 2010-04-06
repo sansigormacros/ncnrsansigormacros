@@ -67,7 +67,7 @@ Function CircularAverageTo1D(type)
 	dtsize = 10*reals[20]		//det size in mm
 	dtdist = 1000*reals[18]		// det distance in mm
 	
-	NVAR binWidth=root:myGlobals:gBinWidth
+	NVAR binWidth=root:Packages:NIST:gBinWidth
 	
 	dr = binWidth		// ***********annulus width set by user, default is one***********
 	ddr = dr*sx		//step size, in mm (this value should be passed to the resolution calculation, not dr 18NOV03)

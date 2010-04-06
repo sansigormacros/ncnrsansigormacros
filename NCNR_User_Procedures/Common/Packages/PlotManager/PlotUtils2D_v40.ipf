@@ -817,7 +817,7 @@ Function Plot2DFunctionButtonProc(ba) : ButtonControl
 End
 
 // unused - all of this functionality has been added to the Wrapper Panel
-Window Plot_2D_Controls() : Panel
+Window Plot_2D_Controls()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(950,44,1250,244)
 	Button button0,pos={172,37},size={70,20},proc=LogToggle2DButtonProc,title="Log/Lin"

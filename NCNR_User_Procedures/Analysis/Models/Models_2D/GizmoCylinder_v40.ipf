@@ -5,7 +5,7 @@ Proc ShowCylinderOrientation()
 	Gizmo1()
 end
 
-Window Gizmo1() : GizmoPlot
+Window Gizmo1()
 	PauseUpdate; Silent 1	// Building Gizmo 6 window...
 
 	// Do nothing if the Gizmo XOP is not available.

@@ -86,7 +86,7 @@ Proc S_initialize_space()
 	
 	// other variables
 	// -(hard coded right now - look for NVAR declarations)
-	Variable/G root:Packages:NIST:SAS:gBinWidth=1
+	Variable/G root:Packages:NIST:gBinWidth=1		//uses global preference
 	Variable/G root:Packages:NIST:SAS:gisLogScale=0
 	String/G root:Packages:NIST:SAS:FileList = "SASCALC"
 	
@@ -1124,7 +1124,7 @@ Function S_CircularAverageTo1D(type)
 	dtsize = 10*reals[20]		//det size in mm
 	dtdist = 1000*reals[18]		// det distance in mm
 	
-	NVAR binWidth=root:Packages:NIST:SAS:gBinWidth
+	NVAR binWidth=root:Packages:NIST:gBinWidth
 //	Variable binWidth = 1
 	
 	dr = binWidth		// ***********annulus width set by user, default is one***********

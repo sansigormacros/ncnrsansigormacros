@@ -41,6 +41,7 @@ Menu "SANS"
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
 	End
 	"-"
+	"NCNR Preferences",Show_Preferences_Panel()
 	"Feedback or Bug Report",OpenTracTicketPage()
 	"Open Help Movie Page",OpenHelpMoviePage()
 	"Check for Updates",CheckForLatestVersion()

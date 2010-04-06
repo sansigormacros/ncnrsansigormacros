@@ -1075,6 +1075,10 @@ Function DSM_LoadButtonProc(ctrlName) : ButtonControl
 	
 	SetDataFolder root:
 	Execute "A_LoadOneDDataWithName(\"\",0)"
+	SVAR fileStr = root:Packages:NIST:gLastFileName
+	if (cmpstr(fileStr,"") == 0)
+		return(0)		//get out if no file selected
+	endif
 	//define the waves that the smoothing will be looking for...
 	SVAR fname = $("root:Packages:NIST:gLastFileName")		//this changes as any data is loaded
 	SVAR curFile = $(USANSFolder+":DSM:gCurFile")					//keep this for title, save

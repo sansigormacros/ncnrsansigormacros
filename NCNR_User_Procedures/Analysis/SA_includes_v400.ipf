@@ -53,6 +53,7 @@ Menu "SANS Models"
 		"Change Angle"
 	end
 	"-"
+	"NCNR Preferences",Show_Preferences_Panel()
 	"Feedback or Bug Report",OpenTracTicketPage()
 	"Open Help Movie Page",OpenHelpMoviePage()
 	"Check for Updates",CheckForLatestVersion()

@@ -28,13 +28,13 @@ Proc ShowSchematic()
 		//DoWindow/K Schematic_Layout
 	endif
 	
-	Variable oldScaling=root:myGlobals:gLogScalingAsDefault
+	Variable oldScaling=root:Packages:NIST:gLogScalingAsDefault
 
 	Variable num=getNewScaling()
 	if(num==-99)		//use cancel
 		Abort
 	else
-		root:myGlobals:gLogScalingAsDefault=num
+		root:Packages:NIST:gLogScalingAsDefault=num
 	endif
 	
 	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
@@ -43,7 +43,7 @@ Proc ShowSchematic()
 		DrawWinSchematic()
 	Endif
 	//reset scaling back to old value
-	root:myGlobals:gLogScalingAsDefault=oldScaling
+	root:Packages:NIST:gLogScalingAsDefault=oldScaling
 End
 
 //returns the new color mapping
@@ -316,7 +316,7 @@ Function SetGraphic(type,choice)
 		//none used, protocol did not need data from this folder
 		return (1)
 	else
-		NVAR doLogScaling = root:myGlobals:gLogScalingAsDefault
+		NVAR doLogScaling = root:Packages:NIST:gLogScalingAsDefault
 		
 		wave data = $("root:Packages:NIST:"+type+":data")
 		if(waveExists(data))

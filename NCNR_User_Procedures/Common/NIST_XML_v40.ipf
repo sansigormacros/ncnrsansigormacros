@@ -921,7 +921,7 @@ Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName
 
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
+		fullPath = DoSaveFileDialog("Save XML data as",fname="",suffix=".ABSx")		//won't actually open the file
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A

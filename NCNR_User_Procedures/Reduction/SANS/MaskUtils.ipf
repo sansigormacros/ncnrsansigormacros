@@ -511,7 +511,7 @@ Function WriteMask(data)
 	String fullpath=""
 	
 	PathInfo/S catPathName
-	fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
+	fullPath = DoSaveFileDialog("Save Mask file as",fname="",suffix=".MASK")		//won't actually open the file
 	If(cmpstr(fullPath,"")==0)
 		//user cancel, don't write out a file
 		Close/A

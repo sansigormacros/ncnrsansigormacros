@@ -296,7 +296,7 @@ End
 // to 500 pix wide, which is really tight
 // left of 1055 is good for Mac, 955 is better for Win
 //
-Window UCALC_Panel() : Graph
+Window UCALC_Panel()
 	PauseUpdate; Silent 1		// building window...
 	String platform=UpperStr(IgorInfo(2))
 	Variable pos=strsearch(platform,"WINDOWS",0)

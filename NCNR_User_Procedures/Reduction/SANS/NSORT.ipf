@@ -241,7 +241,7 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 	
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")		//won't actually open the file
+		fullPath = DoSaveFileDialog("Save data as",fname="",suffix=".ABS")		//won't actually open the file
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -1490,7 +1490,7 @@ Proc CreateTableToCombine(ctrlName)
 		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:SDD)=40
 		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:Labels)=180
 		
-		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+		ModifyTable/W=CombinePanel#FilesToCombine width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 //	Endif
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
@@ -1716,7 +1716,7 @@ Function DoCombineFiles(ctrlName)
 	Wave/T prefix = root:myGlobals:CombineTable:Prefix
 	Wave/T saveName = root:myGlobals:CombineTable:saveName
 
-	Variable/G useTable=1
+	Variable/G root:myGlobals:CombineTable:useTable=1
 	
 	Variable num=numpnts(lowRun),ii,lowFile,medFile,hiFile
 	String prefixStr = ""
@@ -1740,7 +1740,7 @@ Function DoCombineFiles(ctrlName)
 		ii+=1
 	while(ii<num)
 
-	Variable/G useTable=0
+	Variable/G root:myGlobals:CombineTable:useTable=0		//turn this off immediately
 	
 	return(0)
 End

@@ -27,7 +27,11 @@ Function Init_WrapperPanel()
 			
 	//Ugly. Put this here to make sure things don't break
 	String/G root:Packages:NIST:gXMLLoader_Title
-	Variable/G root:Packages:NIST:gXML_Write = 1
+	
+	
+	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
+	// if they already exist, they won't be overwritten
+	Execute "init_pref()"		
 	
 	DoWindow/F WrapperPanel
 	if(V_flag==0)

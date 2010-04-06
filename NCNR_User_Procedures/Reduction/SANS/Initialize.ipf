@@ -101,11 +101,10 @@ Function InitGlobals()
 	
 	//global to set log scale as the default for display of RAW data
 	//these can be set using the Misc->Preferences panel
-	Variable/G root:myGlobals:gLogScalingAsDefault=1
-	Variable/G root:myGlobals:gAllowDRK=0			//don't show DRK as default
-	Variable/G root:myGlobals:gDoTransCheck=1
-	Variable/G root:myGlobals:gBinWidth=1
-	Variable/G root:myGlobals:gNPhiSteps=72
+	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
+	// if they already exist, they won't be overwritten
+	Execute "init_pref()"	
+
 	
 	// flags to turn detector corrections on/off for testing (you should leave these ON)
 	Variable/G root:myGlobals:gDoDetectorEffCorr = 1
@@ -116,8 +115,6 @@ Function InitGlobals()
 	
 	//set XML globals
 	String/G root:Packages:NIST:gXMLLoader_Title = ""
-	Variable/G root:Packages:NIST:gXML_Write = 1
-
 	
 	Return(0)
 End

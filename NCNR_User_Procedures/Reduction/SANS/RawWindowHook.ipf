@@ -181,7 +181,7 @@ Function fRawWindowHook()
 	endif
 	//now that button state and data are sure to match (both are linear)
 	// set the display to log scale, if the global has been set
-	NVAR gLogScalingAsDefault=root:myGlobals:gLogScalingAsDefault
+	NVAR gLogScalingAsDefault=root:Packages:NIST:gLogScalingAsDefault
 	if(gLogScalingAsDefault)
 		Log_lin("bisLin")
 	endif
@@ -457,6 +457,6 @@ Function Set_Q_Axes(qx,qy,curPath)
 End
 
 Function ToggleDefaultMapping()
-	NVAR value = root:myGlobals:gLogScalingAsDefault
+	NVAR value = root:Packages:NIST:gLogScalingAsDefault
 	value = !(value)
 End

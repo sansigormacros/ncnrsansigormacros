@@ -886,9 +886,9 @@ Window ProtocolPanel()
 	//if global = 1,then show => set disable = 0
 	CheckBox prot_check_6,pos={6,363},size={113,14},proc=DrkCheckProc,title="Use DRK correction"
 	CheckBox prot_check_6,help={"If checked, the selected file will be used for DRK correction. Typically this is NOT checked"}
-	CheckBox prot_check_6,value= 0,disable = (!root:myGlobals:gAllowDRK)
+	CheckBox prot_check_6,value= 0,disable = (!root:Packages:NIST:gAllowDRK)
 	SetVariable drkStr,pos={120,363},size={150,15},title="."
-	SetVariable drkStr,help={"DRK detector count file"},disable = (!root:myGlobals:gAllowDRK)
+	SetVariable drkStr,help={"DRK detector count file"},disable = (!root:Packages:NIST:gAllowDRK)
 	SetVariable drkStr,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gDRK
 	Button export_button, size={60,20},pos={125,384},title="Export",proc=ExportProtocol
 	Button export_button, help={"Exports the protocol to disk for Importing into another experiment"}

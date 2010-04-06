@@ -31,6 +31,7 @@ Menu "USANS"
 	"-"
 	"USANS Simulator",Show_UCALC()
 	"-"
+	"NCNR Preferences",Show_Preferences_Panel()
 	"Feedback or Bug Report",OpenTracTicketPage()
 	"Open Help Movie Page",OpenHelpMoviePage()
 	"Check for Updates",CheckForLatestVersion()
@@ -67,9 +68,7 @@ Proc Init_MainUSANS()
 	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	//NB This is also hardcoded a bit further down - search for "WHY WHY WHY" AJJ Sept 08
 	
-	//Preference value to determine if we are outputting XML
-	Variable/G root:Packages:NIST:gXML_Write = 1
-	
+
 	Make/O/T/N=1 fileWave,samWave,empWave,curWave //Added curWave Sept 06 A. Jackson
 	fileWave=""
 	samWave=""
@@ -123,6 +122,9 @@ Proc Init_MainUSANS()
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
 
+	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
+	// if they already exist, they won't be overwritten
+	Execute "init_pref()"	
 	
 
 End
@@ -130,7 +132,7 @@ End
 //draws the USANS_Panel, the main control panel for the macros
 //
 
-Window USANS_Panel() : Panel
+Window USANS_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(600,44,1015,493)/K=1 as "USANS_Panel"
 	SetDrawLayer UserBack

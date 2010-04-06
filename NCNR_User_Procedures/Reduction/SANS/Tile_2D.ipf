@@ -144,7 +144,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	pathStr=S_path
 	
 	// get the current state
-	NVAR defaultScaling = root:myGlobals:gLogScalingAsDefault
+	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
 	defaultScaling = 0		//set the scaling to linear
 	
@@ -263,7 +263,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 	pathStr=S_path
 	
 	// get the current state
-	NVAR defaultScaling = root:myGlobals:gLogScalingAsDefault
+	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
 	defaultScaling = 0		//set the scaling to linear
 	
@@ -568,7 +568,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 	GraspASCII=V_Value		//==1 if GraspASCII desired
 	
 	// get the current state
-	NVAR defaultScaling = root:myGlobals:gLogScalingAsDefault
+	NVAR defaultScaling = root:Packages:NIST:gLogScalingAsDefault
 	Variable oldState = defaultScaling
 	defaultScaling = 0		//set the scaling to linear
 	do
