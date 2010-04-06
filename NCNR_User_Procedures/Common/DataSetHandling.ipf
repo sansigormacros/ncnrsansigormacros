@@ -14,30 +14,202 @@
 
 /////////////////// Data Management Panel ///////////////////////////////////////////////////////
 
+// 
 Function MakeDMPanel()
+	DoWindow/F DataManagementPanel
+	if(V_flag==0)
+		fMakeDMPanel()
+	endif
+	
+	return(0)
+End
+
+Function fMakeDMPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(459,44,959,364)/N=DataManagementPanel/K=1 as "Data Set Management"
-	ModifyPanel fixedSize=1
+	NewPanel /W=(459,44,959,300)/N=DataManagementPanel/K=2 as "Data Set Management"
+	ModifyPanel fixedSize=1,cbRGB=(30000,60000,60000)
 
 	//Main bit of panel
-	GroupBox grpBox_0,pos={20,10},size={460,50}
-	GroupBox grpBox_1,pos={20,80},size={460,200}
+	GroupBox grpBox_0,pos={20,10},size={460,100}
+	GroupBox grpBox_1,pos={20,130},size={460,70}
 
-	Button DS1_button,pos={300,20},size={150,20},proc=DM_LoadDataSetProc,title="Load 1D Data Set 1"
-	PopupMenu DS1_popup,pos={30,21},size={318,20},title="Data Set 1",proc=DMDS_PopMenuProc
-	PopupMenu DS1_popup,mode=1,value= #"DM_DataSetPopupList()"
+	Button DS_button,pos={300,20},size={150,20},proc=DM_LoadDataSetProc,title="Load 1D Data Set"
+	Button Save_button,title="Save 1D Data Set",pos={300,50},size={150,20}
+	Button Save_button,proc=DM_SaveProc
+	Button Unload_button,title="Unload 1D Data Set",pos={300,80},size={150,20}
+	Button Unload_button,proc=DM_UnloadProc	
+	PopupMenu DS_popup,pos={30,52},size={318,20},title="Data Set ",proc=DM_PopupProc
+	PopupMenu DS_popup,mode=1,value= #"DM_DataSetPopupList()"
 
-	//Management Tab
-	Button Rename_button,title="Rename",pos={75,200},size={150,20}
-	Button  Duplicate_button,title="Duplicate",pos={275,200},size={150,20}
-	Button Save_button,title="Save",pos={75,240},size={150,20}
-	Button Unload_button,title="Unload",pos={275,240},size={150,20}
-	SetVariable OldName_setvar,title="Old Name",pos={50,100},size={400,20}
-	SetVariable OldName_setvar,fsize=12,value=_STR:"",noedit=2
+	Button Rename_button,title="Rename",pos={75,170},size={150,20}
+	Button Rename_button,proc=DM_RenameProc
+	Button  Duplicate_button,title="Duplicate",pos={275,170},size={150,20}
+	Button Duplicate_button,proc=DM_DuplicateProc
+
 	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,140},size={400,20}
-	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=DANameSetvarproc,live=1
+	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=DMNameSetvarproc,live=1
+	
+	Button DMDone_button,title="Done",pos={360,210},size={60,20}
+	Button DMDone_button,proc=DMDoneButtonProc
+	Button DMHelp_button,title="?",pos={440,210},size={30,20}
+	Button DMHelp_button,proc=DMHelpButtonProc
+	
+	
+	ControlInfo/W=DataManagementPanel DS_popup
+	if (cmpstr(S_Value,"No data loaded") == 0)
+		SetVariable NewName_setvar,value=_STR:"dataset_copy"
+	else
+		//fake call to popup
+		STRUCT WMPopupAction pa
+		pa.win = "DataManagementPanel"
+		pa.ctrlName = "DS_popup"
+		pa.eventCode = 2
+		DM_PopupProc(pa)
+	endif
 
 End
+
+
+Function DMNameSetvarproc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+		
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+				String sv = sva.sval
+				if( strlen(sv) > 25 )
+					sv= sv[0,24]
+					SetVariable  $(sva.ctrlName),win=$(sva.win),value=_STR:sv
+					ControlUpdate /W=$(sva.win) $(sva.ctrlName)
+					Beep
+				endif
+				break
+		endswitch
+	return 0
+End
+
+Function DM_RenameProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String DS,NewName
+	
+	ControlInfo/W=$(ba.win) DS_popup
+	DS = S_Value
+	
+	ControlInfo/W=$(ba.win) NewName_setvar
+	NewName = CleanupName(S_Value, 0 )		//clean up any bad characters, and put the cleaned string back
+	SetVariable NewName_setvar,value=_STR:NewName
+	
+	switch (ba.eventcode)
+		case 2: // mouse up
+			RenameDataSet(DS,NewName)
+			ControlUpdate /W=$(ba.win) DS_Popup
+			break
+	endswitch
+
+
+	
+	return 0
+end
+		
+Function DM_DuplicateProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String DS,NewName
+	
+	ControlInfo/W=$(ba.win) DS_popup
+	DS = S_Value
+	
+	ControlInfo/W=$(ba.win) NewName_setvar
+	NewName = CleanupName(S_Value, 0 )		//clean up any bad characters, and put the cleaned string back
+	SetVariable NewName_setvar,value=_STR:NewName
+	
+	switch (ba.eventcode)
+		case 2: // mouse up
+			DuplicateDataSet(DS,NewName,0)
+			ControlUpdate /W=$(ba.win) DS_Popup
+			break
+	endswitch
+	
+	return 0
+end
+
+Function DM_SaveProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch(ba.eventCode)
+		case 2:
+			ControlInfo/W=$(ba.win) DS_popup
+			SaveDataSetToFile(S_Value)
+			break
+	endswitch
+	
+	return 0
+end
+
+Function DM_UnloadProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch (ba.eventcode)
+		case 2: // mouse up
+			
+			String savDF=GetDataFolder(1)
+			String DF
+			ControlInfo /W=$(ba.win) DS_Popup
+			DF = S_Value
+			
+			print DF
+			//check for horrific null output from control
+			if (cmpstr(DF,"") != 0)
+			
+				SetDataFolder DF
+				KillVariables/A
+				SetDataFolder savDF
+			
+				KillDataFolder/Z $DF
+				ControlUpdate /W=$(ba.win) DS_Popup
+			
+				ControlInfo/W=DataManagementPanel DS_popup
+				if (cmpstr(S_Value,"No data loaded") == 0)
+					SetVariable NewName_setvar,value=_STR:"dataset_copy"
+				else
+					//fake call to popup
+					STRUCT WMPopupAction pa
+					pa.win = "DataManagementPanel"
+					pa.ctrlName = "DS_popup"
+					pa.eventCode = 2
+					DM_PopupProc(pa)
+				endif
+			endif
+			break
+	endswitch
+	
+	return 0
+end
+		
+
+Function DM_PopupProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+	
+	String resultName
+	
+	switch( pa.eventCode)
+		case 2:
+			//print "Called by "+pa.ctrlname+" with value "+pa.popStr
+			ControlInfo/W=$(pa.win) $(pa.ctrlName)
+			String popStr = S_Value
+			if (stringmatch(pa.ctrlname,"*DS*") == 1)
+				resultName = stringfromlist(0,popStr,"_")+"_copy"
+				
+				SetVariable NewName_setvar win=$(pa.win), value=_STR:resultName
+			endif
+		break
+	endswitch
+	
+
+End
+
 
 //Must follow naming scheme to match buttons to popups
 //"Name_button" goes with "Name_popup"
@@ -69,39 +241,18 @@ Function DM_LoadDataSetProc(ba) : ButtonControl
 				PopupMenu $(popupName),mode=num+1,win=$(windowName)
 				ControlUpdate/W=$(windowName) $(popupName)
 				
-				if (cmpstr(popupName,"DS1_popup") ==  0)
+				if (cmpstr(popupName,"DS_popup") ==  0)
 					//send fake mouse action to popup to update old name if 
 					Struct WMPopupAction pa
 					pa.eventCode = 2		//fake mouse up
 					pa.win = windowName
-					pa.ctrlName = "DS1_popup"
-					DMDS_PopMenuProc(pa)
+					pa.ctrlName = "DS_popup"
+					DM_PopupProc(pa)
 				endif			
 			endif
 			break
 	endswitch
 	
-	return 0
-End
-
-
-Function DMDS_PopMenuProc(pa) : PopupMenuControl
-	STRUCT WMPopupAction &pa
-	
-	switch( pa.eventCode )
-		case 2: // mouse up
-			ControlInfo/W=$(pa.win) $(pa.ctrlName)
-			SetVariable OldName_setvar,win=$(pa.win),value=_STR:S_Value
-//			ControlInfo/W=$(pa.win) DSTabItem_0e
-//			SVAR val = S_Value
-//			 
-//			ControlInfo/W=$(pa.win) $(pa.ctrlName)
-//			val = S_Value
-
-			SetDataFolder root:			
-			break
-	endswitch
-
 	return 0
 End
 
@@ -122,6 +273,38 @@ Function/S DMGetDSName(dsNum)
 
 End
 
+
+Function DMDoneButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			DoWindow/K DataManagementPanel
+			break
+	endswitch
+
+	return 0
+End
+
+Function DMHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Data Set Management"
+			if(V_flag !=0)
+				DoAlert 0,"The Data Set Management Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
 
 /////////////////////// Data Arithmetic Panel /////////////////////////////////////////
 
@@ -176,7 +359,7 @@ Function fMakeDAPanel()
 	Button DACalculate_button,title="Calculate",pos={50,310},size={150,20}
 	Button DACalculate_button,proc=DACalculateProc
 	Button DASave_button,title="Save Result",pos={300,310},size={150,20}
-	Button DASave_button,proc=DASaveProc
+	Button DASave_button,proc=DASaveProc,disable=2
 	Button DACursors_button,title="Get Matching Range",pos={175,250},size={150,20}
 	Button DACursors_button,proc=DACursorButtonProc
 	
@@ -577,6 +760,10 @@ Function DACalculateProc(ba) : ButtonControl
 		
 		AddDAPlot(3)
 		DoWindow/F DataArithmeticPanel
+		
+		//Enable save button now that we have a result to save
+		Button DASave_Button win=$(ba.win),disable=0
+		
 //		SetActiveSubWindow DAPlotPanel
 	endswitch
 	
@@ -857,8 +1044,10 @@ Function DANameSetvarproc(sva) : SetVariableControl
 				if( strlen(sv) > 25 )
 					sv= sv[0,24]
 					SetVariable  $(sva.ctrlName),win=$(sva.win),value=_STR:sv
+					ControlUpdate /W=$(sva.win) $(sva.ctrlName)
 					Beep
 				endif
+				Button DASave_Button win=$(sva.win), disable=2
 				break
 		endswitch
 	return 0
@@ -1135,13 +1324,6 @@ Function SaveDataSetToFile(folderName)
 
 End
 
-
-//This will be hideous
-Function UnloadDataSet(folderName)
-	String folderName
-
-	
-End
 
 
 //////////////////// Write data functions ////////////////////////////////////
