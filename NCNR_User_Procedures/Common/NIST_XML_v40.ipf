@@ -64,7 +64,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 					
 						SetDataFolder xmlDataSetFolder	
 						//			enforce a short enough name here to keep Igor objects < 31 chars
-						basestr = ShortFileNameString(CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j),0))
+						// Multiple data sets so we need to use titles and run numbers for naming
+						basestr = ShortFileNameString(CleanupName(getXMLDataSetTitle(xmlDataSetFolder,j,useFilename=0),0))
 						baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
 						
 						//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
@@ -195,10 +196,11 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 					print xmlDataFolder
 					
 					//if outstr has been specified, we'll find ourselves here....
+					//We should default to using the filename here to make life easier on people who have used the NIST reduction...
 					if (!cmpstr(outstr,""))
-						basestr = CleanupName(getXMLDataSetTitle(xmlDataFolder,0),0)
+						basestr = ShortFileNameString(CleanupName(getXMLDataSetTitle(xmlDataFolder,0,useFilename=1),0))
 					else
-						basestr = CleanupName(outstr,0)
+						basestr = ShortFileNameString(CleanupName(outstr,0))
 					endif
 					
 					//String basestr = ParseFilePath(3, ParseFilePath(5,filestr,":",0,0),":",0,0)				
@@ -323,80 +325,55 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 end
 
 
-function/S getXMLDataSetTitle(xmlDF,dsNum)
+function/S getXMLDataSetTitle(xmlDF,dsNum,[useFilename])
 	String xmlDF
 	Variable dsNum
+	Variable useFilename
 
 	SVAR title = root:Packages:NIST:gXMLLoader_Title
 
 	String mdstring = xmlDF+"metadata"
+	String filename
 
 	Wave/T meta = $mdstring
+
+	//Get filename to use if useFilename is specified or as a fall back if title is missing.
+	FindValue/TEXT="xmlFile"/TXOP=4/Z meta
+	filename = ParseFilePath(0,TrimWS(meta[V_Value][1]),":",1,0)
+	
+	if (useFilename)
+		return filename
+	endif
+	
 	//Check for value when there are multiple datasets
+	//Note that the use of FindValue here assumes that the tag is in column 0 so that V_Value 
+	//represents the row number
+	//This will almost certainly break if your title was "Title" or "Run"
 	FindValue/TEXT="Title"/TXOP=4/Z meta
-	title = TrimWS(meta[V_Value][1])
-	print meta[V_Value][1]
-	print title
+	if (V_Value >= 0)
+	//This should always be true as title is required in canSAS XML format
+		title = TrimWS(meta[V_Value][1])
+	else
+		title = filename
+	endif	
 	 //Check for Run value
+	 //If you get a run value, put it at the start of the string so it isn't lost if there is truncation
+	 //One hopes that the run number will be unique...
 	 FindValue/TEXT="Run_"+num2str(dsNum)/TXOP=4/Z meta
 	if (V_Value >= 0)
-		title = title+" "+TrimWS(meta[V_Value][1])
-		print title
+		title = TrimWS(meta[V_Value][1])+" "+title
+		//print title
 	else
 		FindValue/TEXT="Run"/TXOP=4/Z meta
 		if (V_Value >= 0)
-			title = title+" "+TrimWS(meta[V_Value][1])	
-			print title
+			title = TrimWS(meta[V_Value][1])+" "+title
+			//print title
 		endif
-	endif
-
-	if (strlen(title) > 28)
-		//Prompt title, "Set New Sample Name"
-		//DoPrompt "Sample Name Is Too Long", title
-		do
-			Execute "getXMLShorterTitle()"
-		while (strlen(title) > 28)			
 	endif
 	
 	return title
 end
 
-
-
-Proc getXMLShorterTitle()
-	
-	 //NVAR title = root:myGlobals:gXMLLoader_Title
-	
-	DoWindow/K getNewTitle
-	getNewTitle()
-
-	PauseforUser getNewTitle 
-end
-
-Window getNewTitle()
-
-	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(166,90,666,230) as "Sample Title Too Long!"
-	SetDrawLayer UserBack
-	DrawText 11,22,"The sample title is too long."
-	DrawText 11,42,"Please enter a new one with a maximum length 28 characters"
-	DrawText 11,72,"Current Sample Title:"
-	GroupBox group0 pos={8,55},size={484,50}
-	TitleBox tb_CurrentTitle,pos={150,57}, variable=root:Packages:NIST:gXMLLoader_Title,fSize=12,frame=0	
-	SetVariable sv_NewTitle,pos={11,77},size={476,18},title="New Sample Title"
-	SetVariable sv_NewTitle,fSize=12,value=root:Packages:NIST:gXMLLoader_Title
-	Button btn_SetNewTitle title="Set New Title",pos={150,110},size={200,20}
-	Button btn_SetNewTitle proc=SetNewTitleButtonProc
-
-EndMacro
-
-
-Proc SetNewTitleButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-
-	DoWindow/K getNewTitle
-
-End
 
 //AJJ 12/5/08
 
