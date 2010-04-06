@@ -353,57 +353,63 @@ Function InstallNCNRMacros(forceInstall)
 
 // at this point all of the old stuff is cleaned up as best as I can
 //
-// at this point the paths point to the User Folder, not in the App folder	
+// at this point the paths point to the User Folder, not the App folder	
 	
 	
 	
 	
 //////////// INSTALL the new stuff
 //
-//(1) copy the items to install to the User Special Folder
-//(2) --- now I don't need to set up aliases! they are just there
+//(1) COPY the items to install to the User Special Folder
+//(2) --- now I don't need to set up aliases! Load everything from the Macros menu
 //
 // the old ones should be gone already, so just put in the new ones
-
 // they may not be possible to remove, so try to overwrite...
 
-	NewPath /Q/O SpecialPath, userPathStr
 
+///// now COPY the Folders to the special path
 // the help files
-	MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
-	Print "******Move folder NCNR_Help_Files into User Special Folder, NO overwite: "+IsMoveOK(V_flag)
-
-// not needed now
-//	CreateAliasShortcut/O/P=SpecialPath "NCNR_Help_Files" as igorPathStr+"Igor Help Files:NCNR_Help_Files"
-//	Print "Creating shortcut from NCNR_Help_Files into Igor Help Files: "+IsMoveOK(V_flag)
+	CopyFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
+	Print "******Copy folder NCNR_Help_Files into User Special Folder, NO overwite: "+IsMoveOK(V_flag)
 
 // the Igor Procedures
-	MoveFolder/Z=1 homePathStr+"NCNR_Igor_Procedures" as IgProcPathStr+"NCNR_Igor_Procedures"
-	Print "*******Move folder NCNR_Igor_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+	CopyFolder/Z=1 homePathStr+"NCNR_Igor_Procedures" as IgProcPathStr+"NCNR_Igor_Procedures"
+	Print "*******Copy folder NCNR_Igor_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 
 // the User Procedures	
-	MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
-	Print "*******Move folder NCNR_User_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
-	
-// don't need an alias for the UserProcedures - they're already here....
-
+	CopyFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+	Print "*******Copy folder NCNR_User_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 
 // Igor Extensions, platform-specific
 	if(isMac)
-		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Mac_XOP" as extPathStr+"NCNR_Extensions"
+		CopyFolder/Z=1 homePathStr+"NCNR_Extensions:Mac_XOP" as extPathStr+"NCNR_Extensions"
 	else
-		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Win_XOP" as extPathStr+"NCNR_Extensions"
+		CopyFolder/Z=1 homePathStr+"NCNR_Extensions:Win_XOP" as extPathStr+"NCNR_Extensions"
 	endif
-	Print "*******Move folder NCNR_Extensions:xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+	Print "*******Copy folder NCNR_Extensions:xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 //	
-// not needed now
+
+////////////////OLD way, moved the Folders//////////
+//// the help files
+//	MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
+//	Print "******Move folder NCNR_Help_Files into User Special Folder, NO overwite: "+IsMoveOK(V_flag)
+//
+//// the Igor Procedures
+//	MoveFolder/Z=1 homePathStr+"NCNR_Igor_Procedures" as IgProcPathStr+"NCNR_Igor_Procedures"
+//	Print "*******Move folder NCNR_Igor_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+//
+//// the User Procedures	
+//	MoveFolder/Z=1 homePathStr+"NCNR_User_Procedures" as UPPathStr+"NCNR_User_Procedures"
+//	Print "*******Move folder NCNR_User_Procedures into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+//
+//// Igor Extensions, platform-specific
 //	if(isMac)
-//		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Mac_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
+//		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Mac_XOP" as extPathStr+"NCNR_Extensions"
 //	else
-//		CreateAliasShortcut/O/P=UPPath "NCNR_Extensions:Win_XOP" as igorPathStr+"Igor Extensions:NCNR_Extensions"
+//		MoveFolder/Z=1 homePathStr+"NCNR_Extensions:Win_XOP" as extPathStr+"NCNR_Extensions"
 //	endif
-//	Print "Creating shortcut for XOP into Igor Extensions: "+IsMoveOK(V_flag)
-	
+//	Print "*******Move folder NCNR_Extensions:xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+////	
 
 
 // now with the NCNR_Package_Loader in the Igor Procedures, the templates are obsolete
@@ -754,7 +760,7 @@ Function/S IsMoveOK(flag)
 	
 	String alertStr="There are old NCNR procedures and files present. You will need admin privileges to manually remove them before you can continue"
 	if(flag == 0)
-		return(" OK")
+		return("  Copied OK")
 	else
 		DoAlert 0,alertStr
 		return(" ERROR")

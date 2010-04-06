@@ -39,14 +39,15 @@ Window A_Plot_Manager()
 	ListBox fileList,pos={13,11},size={206,179}
 	ListBox fileList,listWave=root:Packages:NIST:OneDLoader:fileWave
 	ListBox fileList,selWave=root:Packages:NIST:OneDLoader:selWave,mode= 4
-	Button button6,pos={238,153},size={100,20},proc=A_OneDLoader_LoadButton,title="Load File(s)"
+	Button button6,pos={238,165},size={100,20},proc=A_OneDLoader_LoadButton,title="Load File(s)"
 	Button button6,help={"Loads the selected files into memory and will graph them if that option is checked"}
 	Button button7,pos={238,20},size={100,20},proc=A_OneDLoader_NewFolderButton,title="New Folder"
 	Button button7,help={"Select a new data folder"}
-	GroupBox group0,pos={222,108},size={50,4},title="Shift-click to load"
-	GroupBox group0_1,pos={222,123},size={50,4},title="multiple files"
+	GroupBox group0,pos={222,127},size={50,4},title="Shift-click to load"
+	GroupBox group0_1,pos={222,143},size={50,4},title="multiple files"
 	GroupBox group1,pos={7,207},size={350,4}
-	Button button8,pos={238,50},size={100,20},proc=A_OneDLoader_HelpButton,title="Help"
+	Button button8,pos={238,76},size={100,20},proc=A_OneDLoader_HelpButton,title="Help"
+	Button button9,pos={238,48},size={100,20},proc=A_PlotManager_Refresh,title="Refresh List"
 EndMacro
 
 //open the Help file for the Fit Manager
@@ -243,6 +244,14 @@ Function A_OneDLoader_NewFolderButton(ctrlName) : ButtonControl
 	return(0)
 End
 
+//refresh the listing
+Function A_PlotManager_Refresh(ctrlName) : ButtonControl
+	String ctrlName
+
+	A_OneDLoader_GetListButton("")
+	return(0)
+End
+
 //filters to remove only the files that are named like a raw data file, i.e. "*.SAn"
 //does not check to see if they really are RAW files though...(too tedious)
 Function A_OneDLoader_GetListButton(ctrlName) : ButtonControl
@@ -322,19 +331,18 @@ Function/S A_ReducedDataFileList(ctrlName)
 	Endif
 	
 	list = IndexedFile(catpathName,-1,"????")
-	num=ItemsInList(list,";")
-	//print "num = ",num
-	for(ii=(num-1);ii>=0;ii-=1)
-		item = StringFromList(ii, list  ,";")
-		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
-			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				newlist += item + ";"
-			endif
-		endif
-	endfor
+	
+	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
+
 	//sort
-	newList = SortList(newList,";",0)
+	newList = SortList(List,";",0)
 
 	return newlist
 End

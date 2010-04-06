@@ -75,7 +75,7 @@ Function BuildCatVeryShortTable()
 	WAVE Thickness = $"root:myGlobals:CatVSHeaderInfo:Thickness"
 	WAVE XCenter = $"root:myGlobals:CatVSHeaderInfo:XCenter"
 	WAVE YCenter = $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	WAVE/B NumGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
+	WAVE/B nGuides = $"root:myGlobals:CatVSHeaderInfo:nGuides"
 	WAVE/B NumAttens = $"root:myGlobals:CatVSHeaderInfo:NumAttens"
 	WAVE RunNumber = $"root:myGlobals:CatVSHeaderInfo:RunNumber"
 	WAVE IsTrans = $"root:myGlobals:CatVSHeaderInfo:IsTrans"
@@ -107,7 +107,7 @@ Function BuildCatVeryShortTable()
 
 #if (exists("NCNR")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
-		ModifyTable width(:myGlobals:CatVSHedaerInfo:Pos)=30
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:Pos)=30
 #endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run

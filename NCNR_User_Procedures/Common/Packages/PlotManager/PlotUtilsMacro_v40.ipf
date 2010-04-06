@@ -863,6 +863,8 @@ Function/S GetAList(type)
 		str = RemoveFromList("AutoFit", str, ";")
 		str = RemoveFromList("TISANE", str, ";")
 		str = RemoveFromList("HayPenMSA", str, ";")
+		str = RemoveFromList("SAS", str, ";")			//from Irena
+		str = RemoveFromList("USAXS", str, ";")
 	endif
 	
 	return(str)
