@@ -244,7 +244,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")
+		fullPath = DoSaveFileDialog("Save data as",fname="",suffix="."+type+"x")
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -253,7 +253,6 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
 	//Open refNum as fullpath
 	
@@ -387,7 +386,7 @@ Function WriteXMLUSANSDesmeared(fullpath,lo,hi,dialog)
 	res1 /= 100		//make the sigmaQ so small that there is no smearing
 	
 	if(dialog)
-		Open/D refnum as fullpath+".dsm"		//won't actually open the file
+		Open/D refnum as fullpath+".dsmx"		//won't actually open the file
 		If(cmpstr(S_filename,"")==0)
 			//user cancel, don't write out a file
 			Close/A

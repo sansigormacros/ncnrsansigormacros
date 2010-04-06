@@ -76,9 +76,10 @@ Proc BuildUSANSNotebook(matchStr)
 	list = RemoveFromList(".DS_Store",list,";")
 	
 	// remove .cor, .dsm reduced data files
-	tmp = ListMatch(list,"*.cor",";")		
+	// should also catch .corx, .dsmx if they are generated
+	tmp = ListMatch(list,"*.cor*",";")		
 	list = RemoveFromList(tmp, list  ,";")
-	tmp = ListMatch(list,"*.dsm",";")		
+	tmp = ListMatch(list,"*.dsm*",";")		
 	list = RemoveFromList(tmp, list  ,";")
 	tmp = ListMatch(list,"*.pxp",";")		
 	list = RemoveFromList(tmp, list  ,";")

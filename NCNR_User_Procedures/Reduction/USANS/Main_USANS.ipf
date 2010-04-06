@@ -122,8 +122,11 @@ Proc Init_MainUSANS()
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
 
+	String/G root:Packages:NIST:gXMLLoader_Title
+
 	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
 	// if they already exist, they won't be overwritten
+	
 	Execute "init_pref()"	
 	
 
