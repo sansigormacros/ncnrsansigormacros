@@ -3,9 +3,14 @@
 #pragma IgorVersion=6.1
 
 
+
+// SRK 7 APR 2012
+// as of version 5.1, this is now a pointer to the current version of the includes
+#include "Includes_v520"
+
 // SRK 12 FEB 08
 // as of version 5.1, this is now a pointer to the current version of the includes
-#include "Includes_v510"
+//#include "Includes_v510"
 
 // as of version 5, this is now a pointer to the current version of the includes
 // -- need for back-compatibility so that anyone opening an old template (v4.2 or earlier)

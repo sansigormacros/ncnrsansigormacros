@@ -103,12 +103,10 @@ Function InitGlobals()
 	//these can be set using the Misc->Preferences panel
 	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
 	// if they already exist, they won't be overwritten
-	Execute "init_pref()"	
+	Execute "Initialize_Preferences()"	
 
 	
-	// flags to turn detector corrections on/off for testing (you should leave these ON)
-	Variable/G root:myGlobals:gDoDetectorEffCorr = 1
-	Variable/G root:myGlobals:gDoTransmissionCorr = 1
+
 
 	//set flag if Demo Version is detected
 	Variable/G root:myGlobals:isDemoVersion = isDemo()

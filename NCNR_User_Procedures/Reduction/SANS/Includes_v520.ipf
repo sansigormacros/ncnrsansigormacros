@@ -58,7 +58,6 @@ End
 // removed RT ipf file in 29MAR07 branch (do not delete, but do not include or maintain)
 //Add back Real Time for ICE
 #include "RealTimeUpdate_RT"		version>=5.0		
-#include "SANSPreferences"				version>=5.0 		//NEW 05MAY03
 #include "Subtract_1D"				version>=5.0 			//NEW 14MAY03
 
 #include "NCNR_Utils"									//new in the 29MAR07 branch

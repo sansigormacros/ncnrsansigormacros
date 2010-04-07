@@ -1201,13 +1201,13 @@ Proc Show_Preferences_Panel()
 
 	DoWindow/F Pref_Panel
 	if(V_flag==0)
-		Init_Pref()
+		Initialize_Preferences()
 		Pref_Panel()
 	Endif
 //	Print "Preferences Panel stub"
 End
 
-Proc init_pref()
+Proc Initialize_Preferences()
 	// create the globals here if they are not already present
 	
 	// each package initialization should call this to repeat the initialization
@@ -1230,6 +1230,14 @@ Proc init_pref()
 	
 	val = NumVarOrDefault("root:Packages:NIST:gNPhiSteps", 72 )
 	Variable/G root:Packages:NIST:gNPhiSteps=val
+	
+	// flags to turn detector corrections on/off for testing (you should leave these ON)
+	val = NumVarOrDefault("root:Packages:NIST:gDoDetectorEffCorr", 1 )
+	Variable/G root:Packages:NIST:gDoDetectorEffCorr = 1
+	
+	val = NumVarOrDefault("root:Packages:NIST:gDoTransmissionCorr", 1 )
+	Variable/G root:Packages:NIST:gDoTransmissionCorr = 1
+	
 	
 	/// items for SANS Analysis
 	
@@ -1284,43 +1292,103 @@ Function PrefDoneButtonProc(ctrlName) : ButtonControl
 	DoWindow/K pref_panel
 End
 
-// draws the panel
-// each checkbox should actively change a global value
 Proc Pref_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(607,158,958,580)/K=2 as "SANS Preference Panel"
+	NewPanel /W=(646,208,1070,468)/K=2 as "NCNR Preference Panel"
 	DoWindow/C pref_panel
 	ModifyPanel cbRGB=(49694,61514,27679)
 	SetDrawLayer UserBack
-	DrawText 34,288,"nothing to set"
-	DrawText 34,370,"nothing to set"
-	CheckBox check0,pos={21,99},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"
-	CheckBox check0,help={"Checking this will display 2D SANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
-	CheckBox check0,value= root:Packages:NIST:gLogScalingAsDefault
-	CheckBox check1,pos={21,119},size={163,14},proc=DRKProtocolPref,title="Allow DRK correction in protocols"
-	CheckBox check1,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
-	CheckBox check1,value= root:Packages:NIST:gAllowDRK
-	CheckBox check2,pos={21,139},size={137,14},proc=UnityTransPref,title="Check for Transmission = 1"
-	CheckBox check2,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
-	CheckBox check2,value= root:Packages:NIST:gDoTransCheck
-	Button button0,pos={282,379},size={50,20},proc=PrefDoneButtonProc,title="Done"
-	SetVariable setvar0,pos={21,169},size={200,15},title="Averaging Bin Width (pixels)"
-	SetVariable setvar0,limits={1,100,1},value= root:Packages:NIST:gBinWidth
-	SetVariable setvar1,pos={21,194},size={200,15},title="# Phi Steps (annular avg)"
-	SetVariable setvar1,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
-	CheckBox check3,pos={21,34},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
-	CheckBox check3,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
-	CheckBox check3,value= root:Packages:NIST:gXML_Write
-	GroupBox group0,pos={9,6},size={230,54},title="Global Preferences",fSize=12
-	GroupBox group0_1,pos={9,74},size={230,149},title="SANS Reduction",fSize=12
-	GroupBox group0_2,pos={9,238},size={230,68},title="USANS Reduction",fSize=12
-	GroupBox group0_3,pos={9,319},size={230,68},title="Analysis",fSize=12
-	
-	//keep these hidden for now so that nobody can accidentally change them from
-	//the default values set in Initialize.ipf (128x128)
-//	SetVariable setvar2,pos={10,125},size={200,15},title="Detector Pixels (X)"
-//	SetVariable setvar2,limits={1,2000,1},value= root:Packages:NIST:gNPixelsX
-//	SetVariable setvar3,pos={10,145},size={200,15},title="Detector Pixels (Y)"
-//	SetVariable setvar3,limits={1,2000,1},value= root:Packages:NIST:gNPixelsY
+	ModifyPanel fixedSize=1
+//////
+//on main portion of panel, always visible
+	Button PrefPanelButtA,pos={354,12},size={50,20},proc=PrefDoneButtonProc,title="Done"
 
+	TabControl PrefTab,pos={7,49},size={410,202},tabLabel(0)="General",proc=PrefTabProc
+	TabControl PrefTab,tabLabel(1)="SANS",tabLabel(2)="USANS",tabLabel(3)="Analysis"
+	TabControl PrefTab,value=0
+	TabControl PrefTab labelBack=(49694,61514,27679)
+	
+//on tab(0) - General - initially visible
+	CheckBox PrefChec_0a,pos={21,96},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
+	CheckBox PrefChec_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
+	CheckBox PrefChec_0a,value= root:Packages:NIST:gXML_Write
+
+//on tab(1) - SANS
+	CheckBox PrefChec_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"
+	CheckBox PrefChec_1a,help={"Checking this will display 2D SANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
+	CheckBox PrefChec_1a,value= root:Packages:NIST:gLogScalingAsDefault
+	CheckBox PrefChec_1b,pos={21,120},size={163,14},proc=DRKProtocolPref,title="Allow DRK correction in protocols"
+	CheckBox PrefChec_1b,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
+	CheckBox PrefChec_1b,value= root:Packages:NIST:gAllowDRK
+	CheckBox PrefChec_1c,pos={21,140},size={137,14},proc=UnityTransPref,title="Check for Transmission = 1"
+	CheckBox PrefChec_1c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
+	CheckBox PrefChec_1c,value= root:Packages:NIST:gDoTransCheck
+	SetVariable PrefSetV_1d,pos={21,170},size={200,15},title="Averaging Bin Width (pixels)"
+	SetVariable PrefSetV_1d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
+	SetVariable PrefSetV_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
+	SetVariable PrefSetV_1e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
+	CheckBox PrefChec_1f title="Do Transmssion Correction?",size={140,14},value=1
+	CheckBox PrefChec_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
+	CheckBox PrefChec_1g title="Do Efficiency Correction?",size={140,14}
+	CheckBox PrefChec_1g value=1,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+
+
+	CheckBox PrefChec_1a,disable=1
+	CheckBox PrefChec_1b,disable=1
+	CheckBox PrefChec_1c,disable=1
+	SetVariable PrefSetV_1d,disable=1
+	SetVariable PrefSetV_1e,disable=1
+	CheckBox PrefChec_1f,disable=1
+	CheckBox PrefChec_1g,disable=1
+
+//on tab(2) - USANS
+	GroupBox PrefGrou_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
+
+	GroupBox PrefGrou_2a,disable=1
+
+
+//on tab(3) - Analysis
+	GroupBox PrefGrou_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
+	
+	GroupBox PrefGrou_3a,disable=1
+
+EndMacro
+
+// function to control the drawing of controls in the TabControl on the main panel
+// Naming scheme for the controls MUST be strictly adhered to... else controls will 
+// appear in odd places...
+// all controls are named PrefCtrl_NA where N is the tab number and A is the letter denoting
+// the controls position on that particular tab.
+// in this way, they will always be drawn correctly..
+//
+Function PrefTabProc(name,tab)
+	String name
+	Variable tab
+	
+//	Print "name,number",name,tab
+	String ctrlList = ControlNameList("",";"),item="",nameStr=""
+	Variable num = ItemsinList(ctrlList,";"),ii,onTab
+	for(ii=0;ii<num;ii+=1)
+		//items all start w/"PrefCtrl_"
+		item=StringFromList(ii, ctrlList ,";")
+		nameStr=item[0,10]
+		strswitch(item[0,7])	
+			case "PrefChec":		
+				onTab = str2num(item[9])
+				CheckBox $item,disable=(tab!=onTab)
+				break						// exit from switch
+			case "PrefSetV":		
+				onTab = str2num(item[9])
+				SetVariable $item,disable=(tab!=onTab)
+				break
+			case "PrefGrou":		
+				onTab = str2num(item[9])
+				GroupBox $item,disable=(tab!=onTab)
+				break
+			default:
+					//do nothing for no match
+		endswitch
+	
+	endfor 
 End
+

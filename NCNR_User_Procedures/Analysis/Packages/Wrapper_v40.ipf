@@ -2,11 +2,6 @@
 #pragma version=4.00
 #pragma IgorVersion=6.1
 
-//
-// need a way of importing more functions into the experiment
-// ? call the picker panel from the panel?
-//
-//
 
 //Macro OpenWrapperPanel()
 //	Init_WrapperPanel()
@@ -31,7 +26,7 @@ Function Init_WrapperPanel()
 	
 	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
 	// if they already exist, they won't be overwritten
-	Execute "init_pref()"		
+	Execute "Initialize_Preferences()"		
 	
 	DoWindow/F WrapperPanel
 	if(V_flag==0)
