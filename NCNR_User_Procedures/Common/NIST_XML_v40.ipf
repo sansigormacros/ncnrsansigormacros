@@ -21,7 +21,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 	
 	
 	Variable rr,gg,bb
-	NVAR/Z dQv = root:Packages:NIST:USANS_dQv
+	Variable dQv
+//	NVAR/Z dQv = root:Packages:NIST:USANS_dQv		//let USANS_CalcWeights set the dQv value
 
 		
 	Print "Trying to load canSAS XML format data" 
@@ -258,7 +259,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 					elseif(exists(xmlDataFolder+"dQl"))
 						//USAS Data
 						Wave dQl = $(xmlDataFolder+"dQl")
-						dQv = dQl[0]
+						dQv = - dQl[0]		//make it positive again
 					
 						USANS_CalcWeights(baseStr,dQv)
 					else
@@ -497,8 +498,8 @@ function writeNISTXML(fileName, NISTfile)
 			xmladdnode(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]","","Idev",num2str(NISTfile.Idev[ii]),1)
 			xmlsetAttr(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]/Idev","","unit",NISTfile.unitsIdev)	
 	
-			xmladdnode(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]","","Idev",num2str(NISTfile.dQl[ii]),1)
-			xmlsetAttr(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]/Idev","","unit",NISTfile.unitsdQl)		
+			xmladdnode(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]","","dQl",num2str(NISTfile.dQl[ii]),1)
+			xmlsetAttr(fileID,"/SASroot/SASentry/SASdata/Idata["+num2istr(ii+1)+"]/dQl","","unit",NISTfile.unitsdQl)		
 		endfor
 	else
 		for(ii=0 ; ii<numpnts(NISTfile.Q) ; ii+=1)
@@ -633,7 +634,7 @@ Function convertNISTtoNISTXML(fileStr)
 		//Tidy up
 		Variable i = 0
 		do
-			WAVE wv= $(StringFromList(i,S_waveNames,";"))
+			WAVE/Z wv= $(StringFromList(i,S_waveNames,";"))
 			if( WaveExists(wv) == 0 )
 				break
 			endif

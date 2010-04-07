@@ -210,6 +210,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	Variable lo,hi,dialog		//=1 will present dialog for name
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	NVAR dQv = root:Packages:NIST:USANS:Globals:MainPanel:gDQv
 	
 	Struct NISTXMLfile nf
 	
@@ -236,10 +237,9 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 		Abort "sig DNExist in WriteUSANSWaves()"
 	Endif
 	
-	//Use the evil extra column. Should probably switch to using slit_length in collimation.
+	//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
 	Duplicate/O qvals,dumWave
-	NVAR DQv=$(USANSFolder+":Globals:MainPanel:gDQv")
-	dumWave = - DQv
+	dumWave = - dQv
 	///
 	
 	if(dialog)
@@ -253,9 +253,6 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	//actually open the file here
-	//Open refNum as fullpath
-	
 	//Data
 	Wave nf.Q = qvals
 	nf.unitsQ = "1/A"
@@ -263,10 +260,10 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	nf.unitsI = "1/cm"
 	Wave nf.Idev = sig
 	nf.unitsIdev = "1/cm"
-	Wave nf.dQl = sigmaq
+	// for slit-smeared USANS, set only a 4th column to  -dQv
+	Wave nf.dQl = dumWave
 	nf.unitsdQl= "1/A"
-	
-	
+
 	//write out the standard header information
 	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
 	
@@ -344,7 +341,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	
 	//write confirmation of write operation to history area
 	Print "Averaged XML File written: ", GetFileNameFromPathNoSemi(fullPath)
-	KillWaves/Z tempShortProto
+	KillWaves/Z dumWave
 	Return(0)
 End
 
@@ -466,6 +463,8 @@ Function WriteXMLUSANSDesmeared(fullpath,lo,hi,dialog)
 	writeNISTXML(fullpath, nf)
 	
 	SetDataFolder root:		//(redundant)
+	
+	KillWaves/Z res1,res2,res2,ti,te,tq
 	
 	Return(0)
 End
