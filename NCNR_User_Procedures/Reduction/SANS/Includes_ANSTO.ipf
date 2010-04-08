@@ -57,7 +57,6 @@ End
 // removed RT button from main panel AUG2006
 // removed RT ipf file in 29MAR07 branch (do not delete, but do not include or maintain)
 //#include "RealTimeUpdate_RT"		version>=5.0		
-#include "SANSPreferences"				version>=5.0 		//NEW 05MAY03
 #include "Subtract_1D"				version>=5.0 			//NEW 14MAY03
 
 #include "SANS_Utilities"								//new in the 29MAR07 branch
@@ -87,30 +86,30 @@ End
 // To activate the SANSBeta menu, change "xMenu" to "Menu"
 // and click "compile" at the bottom of this window. The SANSBeta
 // menu will appear in the menubar.
-//
-Menu "SANSBeta"
-	"Help for Beta Operations",DisplayHelpTopic/Z/K=1 "Beta SANS Tools"
-	"-"
-	"FillEMPUsingSelection"
-//	"GuessEveryTransFile"
-//	"GuessSelectedTransFiles"
-	"ClearSelectedTransAssignments"
-	"-"
-////	"CreateRunNumList"
-////	"TransList"
-	"ScatteringAtSDDList"
-////	"RemoveRunFromList"
-	"FillMREDList"
-	"-"
-////	"Set3NSORTFiles"
-	"CreateTableToCombine"
-	"DoCombineFiles"
-	"-"
-	"Convert To Lens"
-	"Convert To Pinhole"
-	"Patch Detector Pixel Size"
-	"Read Detector Pixel Size"
-	"-"
-	"AddALLToLayout"
-	
-End
+////
+//Menu "SANSBeta"
+//	"Help for Beta Operations",DisplayHelpTopic/Z/K=1 "Beta SANS Tools"
+//	"-"
+//	"FillEMPUsingSelection"
+////	"GuessEveryTransFile"
+////	"GuessSelectedTransFiles"
+//	"ClearSelectedTransAssignments"
+//	"-"
+//////	"CreateRunNumList"
+//////	"TransList"
+//	"ScatteringAtSDDList"
+//////	"RemoveRunFromList"
+//	"FillMREDList"
+//	"-"
+//////	"Set3NSORTFiles"
+//	"CreateTableToCombine"
+//	"DoCombineFiles"
+//	"-"
+//	"Convert To Lens"
+//	"Convert To Pinhole"
+//	"Patch Detector Pixel Size"
+//	"Read Detector Pixel Size"
+//	"-"
+//	"AddALLToLayout"
+//	
+//End
