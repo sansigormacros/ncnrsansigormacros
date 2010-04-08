@@ -1387,23 +1387,20 @@ Function/S ASC_FileList()
 	Endif
 	
 	list = IndexedFile(catpathName,-1,"????")
-	num=ItemsInList(list,";")
-	//print "num = ",num
-	for(ii=(num-1);ii>=0;ii-=1)
-		item = StringFromList(ii, list  ,";")
-		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
-			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				if(!stringmatch(item,"*.AVE") && !stringmatch(item,"*.ABS"))
-					newlist += item + ";"
-				endif
-			endif
-		endif
-	endfor
+	
+	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
+
 	//remove VAX version numbers
-	newList = RemoveVersNumsFromList(newList)
+	list = RemoveVersNumsFromList(List)
 	//sort
-	newList = SortList(newList,";",0)
+	newList = SortList(List,";",0)
 
 	return newlist
 End

@@ -25,7 +25,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 //	NVAR/Z dQv = root:Packages:NIST:USANS_dQv		//let USANS_CalcWeights set the dQv value
 
 		
-	Print "Trying to load canSAS XML format data" 
+//	Print "Trying to load canSAS XML format data" 
 	Variable result = CS_XMLReader(filestr)
 	
 	String xmlReaderFolder = "root:Packages:CS_XMLreader:"
@@ -78,7 +78,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 						//print "basestr: ",basestr
 						//print "fileName: ",fileName
 						//remove the semicolon AND period from files from the VAX
-						print basestr
+//						print basestr
 						w0 = basestr + "_q"
 						w1 = basestr + "_i"
 						w2 = basestr + "_s"
@@ -194,7 +194,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 					//No multiple SASData sets for this SASEntry
 					SetDataFolder xmlDataFolder					
 					
-					print xmlDataFolder
+//					print xmlDataFolder
 					
 					//if outstr has been specified, we'll find ourselves here....
 					//We should default to using the filename here to make life easier on people who have used the NIST reduction...
@@ -675,7 +675,7 @@ function setmetadataFromASCHeader(fileStr,NISTfile)
 			break
 		endif
 		buffer = RemoveEnding(buffer)
-		print buffer
+//		print buffer
 		//Get run value
 		if (stringmatch(buffer,"*file:*") == 1)
 			NISTfile.run = TrimWS(StringFromList(0,StringFromList(1, buffer, ":"),"C"))

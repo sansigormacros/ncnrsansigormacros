@@ -1420,33 +1420,55 @@ End
 // testing, may speed up NSORT, NCNR-specific naming scheme of 
 // run numbers and a run prefix
 //
+// it is assumed that you are combining data from the current reduction session,
+// so that the XML y/n hasn't changed.
 //
 Function Set3NSORTFiles(low,med,hi,pref)
 	Variable low,med,hi
 	String pref
 	
 	//make strings from the numbers
-	String absStr=""
+	String absStr="",ext
 	Variable popNum
 	DoWindow/F NSORT_Panel
 	
 	SVAR lowQPopStr = root:myGlobals:NSORT:gDataPopList
 	SVAR medHiQPopStr = root:myGlobals:NSORT:gDataPopList_3
 	
-	String ext = ".ABS"
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	if(useXMLOutput)
+		ext = ".ABSx"
+	else
+		ext = ".ABS"
+	endif
 	
 	//lowQ menu
 	absStr = pref+ThreeDigitString(low)+ext
-	popNum = 1+WhichListItem(absStr,lowQPopStr,";",0)
+	popNum = WhichListItem(absStr,lowQPopStr,";",0)
+	if(popNum == -1)
+		Abort "Could not find file: " + absStr +" aborting..."
+	endif
+	popNum += 1		// add 1 to get the item number
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
+	
 	//medQ (a different list for the popup)
 	absStr = pref+ThreeDigitString(med)+ext
-	popNum = 1+WhichListItem(absStr,medHiQPopStr,";",0)
+	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
+	if(popNum == -1)
+		Abort "Could not find file: "+absStr+" aborting..."
+	endif
+	popNum += 1		// add 1 to get the item number
 	PopupMenu popup_2,win=NSORT_Panel,mode=(popNum)
+	
+	
 	//highQ (same pop list as medQ)
 	if(hi != 0)
 		absStr = pref+ThreeDigitString(hi)+ext
-		popNum = 1+WhichListItem(absStr,medHiQPopStr,";",0)
+		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
+		if(popNum == -1)
+			Abort "Could not find file: "+absStr+" aborting..."
+		endif
+		popNum += 1		// add 1 to get the item number
 		PopupMenu popup_3,win=NSORT_Panel,mode=(popNum)
 	else
 		PopupMenu popup_3,win=NSORT_Panel,mode=(1)
@@ -1485,13 +1507,13 @@ Proc CreateTableToCombine(ctrlName)
 	Make/O/D/N=0 $"root:myGlobals:CombineTable:RunNumber"
 	Make/O/D/N=0 $"root:myGlobals:CombineTable:IsTrans"
 
-//	If(V_Flag==0)
-		BuildCombineTableWindow()
-		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:SDD)=40
-		ModifyTable/W=CombinePanel#FilesToCombine width(:myGlobals:CombineTable:Labels)=180
-		
-		ModifyTable/W=CombinePanel#FilesToCombine width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
-//	Endif
+
+	AppendToTable/W=CombinePanel#GroupedFiles root:myGlobals:CombineTable:Labels, root:myGlobals:CombineTable:SDD, root:myGlobals:CombineTable:RunNumber
+
+	ModifyTable/W=CombinePanel#GroupedFiles width(:myGlobals:CombineTable:SDD)=40
+	ModifyTable/W=CombinePanel#GroupedFiles width(:myGlobals:CombineTable:Labels)=180
+	ModifyTable/W=CombinePanel#GroupedFiles width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
 	String list,partialName,tempName,temp=""
@@ -1553,8 +1575,13 @@ Proc CreateTableToCombine(ctrlName)
 	Make/O/N=0 $"root:myGlobals:CombineTable:HighRun"
 	Make/O/T/N=0 $"root:myGlobals:CombineTable:Prefix"
 	Make/O/T/N=0 $"root:myGlobals:CombineTable:SaveName"
-	MakeTableToCombine()
+	
+	SetDataFolder root:myGlobals:CombineTable
+	
+	// make the second table
+	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,Prefix,SaveName
 
+	SetDataFolder root:
 End
 
 
@@ -1574,46 +1601,6 @@ Function RemoveTransFilesFromCombine()
 		endif
 		ii-=1
 	while(ii>=0)
-	return(0)
-End
-
-Function MakeTabletoCombine()
-
-	Wave low = $"root:myGlobals:CombineTable:LowRun"
-	Wave medium = $"root:myGlobals:CombineTable:MediumRun"
-	Wave high = $"root:myGlobals:CombineTable:HighRun"
-	Wave/T prefix = $"root:myGlobals:CombineTable:Prefix"
-	Wave/T saveName = $"root:myGlobals:CombineTable:SaveName"
-
-//	DoWindow/F ToCombine
-//	if(V_flag==0)
-//		edit Low,Medium,High,Prefix,SaveName as "Run Numbers to Combine"
-//		DoWindow/C ToCombine
-//	endif
-//	AutoPositionWindow/M=1/R=CombineTable toCombine
-	AppendToTable/W=CombinePanel#RunNumbersToCombine Low,Medium,High,Prefix,SaveName
-	
-	/////
-//	SetWindow kwTopWin hook=CombineTableHook, hookevents=1	// mouse down events
-	
-end
-
-Function BuildCombineTableWindow()
-	Wave/T Filenames = $"root:myGlobals:CombineTable:Filenames"
-	Wave/T Labels = $"root:myGlobals:CombineTable:Labels"
-	Wave SDD = $"root:myGlobals:CombineTable:SDD"
-	Wave/T suffix = $"root:myGlobals:CombineTable:Suffix"
-	Wave runnum = $"root:myGlobals:CombineTable:RunNumber"
-	Wave isTrans = $"root:myGlobals:CombineTable:IsTrans"
-	
-//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Files to Combine"
-//	Edit Labels, SDD, runNum as "Files to Combine"
-	AppendToTable/W=CombinePanel#FilesToCombine Labels, SDD, runNum
-	
-	SetWindow kwTopWin hook=CombineTableHook, hookevents=1	// mouse down events
-
-//	String name="CombineTable"
-//	DoWindow/C $name
 	return(0)
 End
 
@@ -1737,6 +1724,7 @@ Function DoCombineFiles(ctrlName)
 		//combine the files and write the data
 		WriteNSORTFileButton("")
 		
+		Print "wrote file : ",path+saveName[ii]
 		ii+=1
 	while(ii<num)
 
@@ -1746,36 +1734,36 @@ Function DoCombineFiles(ctrlName)
 End
 
 
-// Commentized lines here are incomplete - and NON-FUNCTIONING
+// only respond to clicks in the subwindow (table) rather than everywhere. Hooks can't be set for subwindows
 //
 //// Window hook example:
+//  WINDOW:CombinePanel;HCSPEC:CombinePanel#GroupedFiles;EVENT:mouseup;MOUSEX:152;MOUSEY:143;TICKS:7722029;MODIFIERS:0;
 //
 Function CombineTableHook(infoStr)
 	String infoStr
 	String event= StringByKey("EVENT",infoStr)
+	String subwin = StringByKey("HCSPEC",infoStr)
+//	Print subwin
+//	Print infoStr
 //	Print "EVENT= ",event
-	strswitch(event)
-		case "mousedown":
-			Variable xpix= NumberByKey("MOUSEX",infoStr)
-			Variable ypix= NumberByKey("MOUSEY",infoStr)
-			Variable modif= NumberByKey("MODIFIERS",infoStr)
-			//print modif
-			if(modif & 2^1)		//bit 1 set, shift key is down
-				PopupContextualMenu/C=(xpix, ypix) "combine;"
-				strswitch(S_selection)
-					case "combine":
-						//Print "combine the files"
-						SendSelectionToTable()
-						break
-	//				case "no":
-	//					break
-	//				case "maybe":
-	//					// do something because "maybe" was chosen
-	//					break
-				endswitch		//on selection
-			endif
-	endswitch	// on event
-	
+	if(cmpstr(subwin,"CombinePanel#GroupedFiles")==0)
+		strswitch(event)
+			case "mousedown":
+				Variable xpix= NumberByKey("MOUSEX",infoStr)
+				Variable ypix= NumberByKey("MOUSEY",infoStr)
+				Variable modif= NumberByKey("MODIFIERS",infoStr)
+				//print modif
+				if(modif & 2^1)		//bit 1 set, shift key is down
+					PopupContextualMenu/C=(xpix, ypix) "combine;"
+					strswitch(S_selection)
+						case "combine":
+							//Print "combine the files"
+							SendSelectionToTable()
+							break
+					endswitch		//on selection
+				endif
+		endswitch	// on event
+	endif
 	return 0
 End
 
@@ -1807,8 +1795,8 @@ Function SendSelectionToTable()
 		Wave/T filenames = $"root:myGlobals:CombineTable:FileNames"
 	endif
 	
-	GetSelection table,CombinePanel#FilesToCombine,3
-	Print V_startRow, V_endRow
+	GetSelection table,CombinePanel#GroupedFiles,3
+//	Print V_startRow, V_endRow
 	
 	//prompt for combined name, give the user a chance to cancel
 	Variable num=V_endRow-V_startRow+1
@@ -1904,12 +1892,13 @@ Proc CombinePanel()
 	Button button0_3,pos={522,14},size={30,20},proc=ShowCombineHelp,title="?"
 	Edit/W=(20,54,368,249)/HOST=# 
 	ModifyTable format=1,width=0
-	RenameWindow #,FilesToCombine
+	RenameWindow #,GroupedFiles
 	SetActiveSubwindow ##
 	Edit/W=(20,263,634,455)/HOST=# 
 	ModifyTable format=1
 	RenameWindow #,RunNumbersToCombine
 	SetActiveSubwindow ##
+	SetWindow kwTopWin hook=CombineTableHook, hookevents=1	// mouse down events
 EndMacro
 
 Proc ShowCombineHelp(ctrlName): ButtonControl

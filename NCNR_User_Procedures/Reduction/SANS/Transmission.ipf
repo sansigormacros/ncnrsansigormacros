@@ -1758,12 +1758,12 @@ Function fGuessTransToScattFiles(numChars)
 	if(V_flag==1)
 		TitleBox title0,pos={9,5},variable=root:myGlobals:TransHeaderInfo:gResultStr
 	else
-		NewPanel /W=(578,44,1263,214) as "Confirm Guess"
+		NewPanel /W=(600,44,1150,225) as "Confirm Guess"
 		DoWindow/C ConfirmGuess
-		TitleBox title0,pos={9,5},size={501,32}
+		TitleBox title0,pos={15,8},size={560,32}
 		TitleBox title0,variable= root:myGlobals:TransHeaderInfo:gResultStr
-		Button button0,pos={9,107},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
-		Button button2,pos={341,108},size={90,20},proc=DoTryAgainButtonProc,title="Try Again"
+		Button button0,pos={9,150},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
+		Button button2,pos={341,150},size={90,20},proc=DoTryAgainButtonProc,title="Try Again"
 		ToolsGrid snap=1,visible=1
 	endif
 	

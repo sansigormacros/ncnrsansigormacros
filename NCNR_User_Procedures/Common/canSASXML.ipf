@@ -114,7 +114,7 @@ FUNCTION CS_XmlReader(fileName)
 	
 	STRSWITCH(ns)	
 	CASE "cansas1d/1.0":							// version 1.0 of the canSAS 1-D reduced SAS data standard
-		PRINT fileName, "\t\t identified as: cansas1d/1.0 XML file"
+//		PRINT fileName, "\t\t identified as: cansas1d/1.0 XML file"
 		returnCode = CS_1i_parseXml(fileID)			//  This is where the action happens!
 		IF (returnCode != 0)
 			IF (strlen(errorMsg) == 0)
@@ -612,7 +612,7 @@ FUNCTION/S CS_1i_locateTitle(fileID, SASentryPath)
 		Title = "SASentry"
 		TitlePath = ""
 	ENDIF
-	PRINT "\t Title:", Title
+//	PRINT "\t Title:", Title
 	RETURN(Title)
 END
 

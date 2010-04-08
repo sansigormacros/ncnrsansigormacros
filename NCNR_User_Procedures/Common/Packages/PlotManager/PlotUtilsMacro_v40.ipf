@@ -1301,7 +1301,7 @@ Proc Pref_Panel()
 	ModifyPanel fixedSize=1
 //////
 //on main portion of panel, always visible
-	Button PrefPanelButtA,pos={354,12},size={50,20},proc=PrefDoneButtonProc,title="Done"
+	Button PrefPanelButtonA,pos={354,12},size={50,20},proc=PrefDoneButtonProc,title="Done"
 
 	TabControl PrefTab,pos={7,49},size={410,202},tabLabel(0)="General",proc=PrefTabProc
 	TabControl PrefTab,tabLabel(1)="SANS",tabLabel(2)="USANS",tabLabel(3)="Analysis"
@@ -1309,48 +1309,48 @@ Proc Pref_Panel()
 	TabControl PrefTab labelBack=(49694,61514,27679)
 	
 //on tab(0) - General - initially visible
-	CheckBox PrefChec_0a,pos={21,96},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
-	CheckBox PrefChec_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
-	CheckBox PrefChec_0a,value= root:Packages:NIST:gXML_Write
+	CheckBox PrefCtrl_0a,pos={21,96},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
+	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
+	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gXML_Write
 
 //on tab(1) - SANS
-	CheckBox PrefChec_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"
-	CheckBox PrefChec_1a,help={"Checking this will display 2D SANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
-	CheckBox PrefChec_1a,value= root:Packages:NIST:gLogScalingAsDefault
-	CheckBox PrefChec_1b,pos={21,120},size={163,14},proc=DRKProtocolPref,title="Allow DRK correction in protocols"
-	CheckBox PrefChec_1b,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
-	CheckBox PrefChec_1b,value= root:Packages:NIST:gAllowDRK
-	CheckBox PrefChec_1c,pos={21,140},size={137,14},proc=UnityTransPref,title="Check for Transmission = 1"
-	CheckBox PrefChec_1c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
-	CheckBox PrefChec_1c,value= root:Packages:NIST:gDoTransCheck
-	SetVariable PrefSetV_1d,pos={21,170},size={200,15},title="Averaging Bin Width (pixels)"
-	SetVariable PrefSetV_1d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
-	SetVariable PrefSetV_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
-	SetVariable PrefSetV_1e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
-	CheckBox PrefChec_1f title="Do Transmssion Correction?",size={140,14},value=1
-	CheckBox PrefChec_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
-	CheckBox PrefChec_1g title="Do Efficiency Correction?",size={140,14}
-	CheckBox PrefChec_1g value=1,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"
+	CheckBox PrefCtrl_1a,help={"Checking this will display 2D SANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
+	CheckBox PrefCtrl_1a,value= root:Packages:NIST:gLogScalingAsDefault
+	CheckBox PrefCtrl_1b,pos={21,120},size={163,14},proc=DRKProtocolPref,title="Allow DRK correction in protocols"
+	CheckBox PrefCtrl_1b,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
+	CheckBox PrefCtrl_1b,value= root:Packages:NIST:gAllowDRK
+	CheckBox PrefCtrl_1c,pos={21,140},size={137,14},proc=UnityTransPref,title="Check for Transmission = 1"
+	CheckBox PrefCtrl_1c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
+	CheckBox PrefCtrl_1c,value= root:Packages:NIST:gDoTransCheck
+	SetVariable PrefCtrl_1d,pos={21,170},size={200,15},title="Averaging Bin Width (pixels)"
+	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
+	SetVariable PrefCtrl_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
+	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
+	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=1
+	CheckBox PrefCtrl_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
+	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14}
+	CheckBox PrefCtrl_1g value=1,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
 
 
-	CheckBox PrefChec_1a,disable=1
-	CheckBox PrefChec_1b,disable=1
-	CheckBox PrefChec_1c,disable=1
-	SetVariable PrefSetV_1d,disable=1
-	SetVariable PrefSetV_1e,disable=1
-	CheckBox PrefChec_1f,disable=1
-	CheckBox PrefChec_1g,disable=1
+	CheckBox PrefCtrl_1a,disable=1
+	CheckBox PrefCtrl_1b,disable=1
+	CheckBox PrefCtrl_1c,disable=1
+	SetVariable PrefCtrl_1d,disable=1
+	SetVariable PrefCtrl_1e,disable=1
+	CheckBox PrefCtrl_1f,disable=1
+	CheckBox PrefCtrl_1g,disable=1
 
 //on tab(2) - USANS
-	GroupBox PrefGrou_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
+	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
 
-	GroupBox PrefGrou_2a,disable=1
+	GroupBox PrefCtrl_2a,disable=1
 
 
 //on tab(3) - Analysis
-	GroupBox PrefGrou_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
+	GroupBox PrefCtrl_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
 	
-	GroupBox PrefGrou_3a,disable=1
+	GroupBox PrefCtrl_3a,disable=1
 
 EndMacro
 
@@ -1369,26 +1369,35 @@ Function PrefTabProc(name,tab)
 	String ctrlList = ControlNameList("",";"),item="",nameStr=""
 	Variable num = ItemsinList(ctrlList,";"),ii,onTab
 	for(ii=0;ii<num;ii+=1)
-		//items all start w/"PrefCtrl_"
+		//items all start w/"PrefCtrl_", 9 characters
 		item=StringFromList(ii, ctrlList ,";")
-		nameStr=item[0,10]
-		strswitch(item[0,7])	
-			case "PrefChec":		
-				onTab = str2num(item[9])
-				CheckBox $item,disable=(tab!=onTab)
-				break						// exit from switch
-			case "PrefSetV":		
-				onTab = str2num(item[9])
-				SetVariable $item,disable=(tab!=onTab)
-				break
-			case "PrefGrou":		
-				onTab = str2num(item[9])
-				GroupBox $item,disable=(tab!=onTab)
-				break
-			default:
-					//do nothing for no match
-		endswitch
-	
+		nameStr=item[0,8]
+		if(cmpstr(nameStr,"PrefCtrl_")==0)
+			onTab = str2num(item[9])			//[9] is a number
+			ControlInfo $item
+			switch(abs(V_flag))	
+				case 1:
+					Button $item,disable=(tab!=onTab)
+					break
+				case 2:	
+					CheckBox $item,disable=(tab!=onTab)
+					break
+				case 5:	
+					SetVariable $item,disable=(tab!=onTab)
+					break
+				case 10:	
+					TitleBox $item,disable=(tab!=onTab)
+					break
+				case 4:
+					ValDisplay $item,disable=(tab!=onTab)
+					break
+				case 9:
+					GroupBox $item,disable=(tab!=onTab)
+					break
+				// add more items to the switch if different control types are used
+			endswitch
+		endif
 	endfor 
+	return(0)
 End
 
