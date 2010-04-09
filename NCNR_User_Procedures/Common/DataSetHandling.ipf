@@ -15,31 +15,37 @@
 /////////////////// Data Management Panel ///////////////////////////////////////////////////////
 
 // 
-Function MakeDMPanel()
+Proc MakeDMPanel()
 	DoWindow/F DataManagementPanel
 	if(V_flag==0)
 		fMakeDMPanel()
 	endif
-	
-	return(0)
 End
 
-Function fMakeDMPanel()
+Proc fMakeDMPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(459,44,959,300)/N=DataManagementPanel/K=2 as "Data Set Management"
+	NewPanel /W=(459,44,959,410)/N=DataManagementPanel/K=2 as "Data Set Management"
 	ModifyPanel fixedSize=1,cbRGB=(30000,60000,60000)
 
 	//Main bit of panel
 	GroupBox grpBox_0,pos={20,10},size={460,100}
 	GroupBox grpBox_1,pos={20,130},size={460,70}
+	GroupBox grpBox_2,pos={20,220},size={460,40}
 
-	Button DS_button,pos={300,20},size={150,20},proc=DM_LoadDataSetProc,title="Load 1D Data Set"
-	Button Save_button,title="Save 1D Data Set",pos={300,50},size={150,20}
-	Button Save_button,proc=DM_SaveProc
-	Button Unload_button,title="Unload 1D Data Set",pos={300,80},size={150,20}
+	GroupBox grpBox_3,pos={20,280},size={460,40}
+
+	Button DS_button,title="Load 1D Data Set",pos={300,20},size={150,20}
+	Button DS_button,proc=DM_LoadDataSetProc
+	Button Unload_button,title="Unload 1D Data Set",pos={300,50},size={150,20}
 	Button Unload_button,proc=DM_UnloadProc	
-	PopupMenu DS_popup,pos={30,52},size={318,20},title="Data Set ",proc=DM_PopupProc
+	Button Save_button,title="Save 1D Data Set",pos={300,80},size={150,20}
+	Button Save_button,proc=DM_SaveProc
+	PopupMenu DS_popup,pos={30,40},size={318,20},title="Data Set ",proc=DM_PopupProc
 	PopupMenu DS_popup,mode=1,value= #"DM_DataSetPopupList()"
+
+	CheckBox XMLStateCtrl,pos={30,82},size={124,14},title="XML Output Enabled (change in Preferences)"
+	CheckBox XMLStateCtrl,help={"Default output format is canSAS XML rather than NIST 6 column"}
+	CheckBox XMLStateCtrl,value= root:Packages:NIST:gXML_Write,disable=2
 
 	Button Rename_button,title="Rename",pos={75,170},size={150,20}
 	Button Rename_button,proc=DM_RenameProc
@@ -48,10 +54,19 @@ Function fMakeDMPanel()
 
 	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,140},size={400,20}
 	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=DMNameSetvarproc,live=1
+		
+	Button SaveAsXML_button,title="Save as canSAS XML",pos={75,230},size={150,20}
+	Button SaveAsXML_button,proc=DMSaveAsXMLproc	
+
+	Button SaveAs6col_button,title="Save as NIST 6 column",pos={275,230},size={150,20}
+	Button SaveAs6col_button,proc=DMSaveAs6colproc	
 	
-	Button DMDone_button,title="Done",pos={360,210},size={60,20}
+	Button BatchConvertData_button,title="Convert Format of 1D Data Files",pos={75,290},size={350,20}
+	Button BatchConvertData_button,proc=DMBatchConvertProc
+			
+	Button DMDone_button,title="Done",pos={360,330},size={60,20}
 	Button DMDone_button,proc=DMDoneButtonProc
-	Button DMHelp_button,title="?",pos={440,210},size={30,20}
+	Button DMHelp_button,title="?",pos={440,330},size={30,20}
 	Button DMHelp_button,proc=DMHelpButtonProc
 	
 	
@@ -67,6 +82,18 @@ Function fMakeDMPanel()
 		DM_PopupProc(pa)
 	endif
 
+End
+
+Function DMBatchConvertProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch( ba.eventCode)
+		case 2:
+			Execute	"MakeBatchConvertPanel()"
+			break
+	endswitch
+	
+	return 0
 End
 
 
@@ -299,6 +326,149 @@ Function DMHelpButtonProc(ba) : ButtonControl
 			DisplayHelpTopic/Z/K=1 "Data Set Management"
 			if(V_flag !=0)
 				DoAlert 0,"The Data Set Management Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+/////////////////////// Batch Data Conversion Panel ////////////////////////////////////
+//
+//
+
+Proc MakeNCNRBatchConvertPanel()
+	NCNRInitBatchConvert()
+	DoWindow/F NCNRBatchConvertPanel
+	if(V_flag==0)
+		fMakeNCNRBatchConvertPanel()
+	endif
+End
+
+
+Function NCNRInitBatchConvert()
+	NewDataFolder/O/S root:Packages:NIST:BatchConvert
+	Make/O/T/N=1 filewave=""
+	Make/O/N=1 selWave=0
+	Variable/G ind=0
+	SetDataFolder root:
+End
+
+Proc fMakeNCNRBatchConvertPanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(658,347,1018,737)/N=NCNRBatchConvertPanel/K=2 as "Batch Convert 1D Data"
+	ModifyPanel cbRGB=(40000,50000,32896)
+	ModifyPanel fixedSize=1
+	
+	ListBox fileList,pos={13,11},size={206,179}
+	ListBox fileList,listWave=root:Packages:NIST:BatchConvert:fileWave
+	ListBox fileList,selWave=root:Packages:NIST:BatchConvert:selWave,mode= 4
+
+	Button button7,pos={238,20},size={100,20},proc=NCNRBatchConvertNewFolder,title="New Folder"
+	Button button7,help={"Select a new data folder"}
+	TitleBox msg0,pos={238,140},size={100,30},title="\JCShift-click to\rselect multiple files"
+	TitleBox msg0,frame=0,fixedSize=1
+	
+	GroupBox filterGroup,pos={13,200},size={206,60},title="Filter list by input file type"
+	
+	Button button8,pos={238,76},size={100,20},proc=NCNRBatchConvertHelpProc,title="Help"
+	Button button9,pos={238,48},size={100,20},proc=NCNRBatchConvertRefresh,title="Refresh List"
+	Button button0,pos={238,106},size={100,20},proc=NCNRBatchConvertDone,title="Done"
+
+	GroupBox outputGroup,pos={13,270},size={206,60},title="Output File Type"
+
+	
+	Button button6,pos={13,350},size={206,20},proc=NCNRBatchConvertFiles,title="Convert File(s)"
+	Button button6,help={"Converts the files to the format selected"}
+	
+
+	
+End
+
+
+Function NCNRBatchConvertFiles(ba) : ButtonControl
+		STRUCT WMButtonAction &ba
+		
+		switch (ba.eventCode)
+			case 2:
+				Wave/T fileWave=$"root:Packages:NIST:BatchConvert:fileWave"
+				Wave sel=$"root:BatchConvert:NIST:BatchConvert:selWave"
+				
+				break
+		endswitch
+
+	return 0
+End
+
+
+Function NCNRBatchConvertNewFolder(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch (ba.eventcode)
+		case 2:
+			A_PickPath()
+			NCNRBatchConvertGetList()
+			break
+	endswitch
+
+End
+
+Function NCNRBatchConvertGetList()
+
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use \"New Folder\" button"
+	Endif
+	
+	String newList = A_ReducedDataFileList("")
+	Variable num
+	
+	num=ItemsInList(newlist,";")
+	WAVE/T fileWave=$"root:Packages:NIST:BatchConvert:fileWave"
+	WAVE selWave=$"root:Packages:NIST:BatchConvert:selWave"
+	Redimension/N=(num) fileWave
+	Redimension/N=(num) selWave
+	fileWave = StringFromList(p,newlist,";")
+	Sort filewave,filewave
+End
+
+Function NCNRBatchConvertRefresh(ba) : ButtonControl
+		STRUCT WMButtonAction &ba
+		
+		switch (ba.eventCode)
+			case 2:
+				NCNRBatchConvertGetList()
+				break
+		endswitch
+		
+		return 0
+End
+	
+
+Function NCNRBatchConvertDone(ba) : ButtonControl
+		STRUCT WMButtonAction &ba
+
+		switch (ba.eventCode)
+			case 2:
+				DoWindow/K NCNRBatchConvertPanel
+				break
+		endswitch
+		
+		return 0
+End
+
+Function NCNRBatchConvertHelpProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Batch Data Conversion"
+			if(V_flag !=0)
+				DoAlert 0,"The Batch Data Conversion Help file could not be found"
 			endif
 			break
 	endswitch

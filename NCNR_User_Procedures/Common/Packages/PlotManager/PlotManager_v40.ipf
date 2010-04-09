@@ -25,7 +25,7 @@ End
 
 Window A_Plot_Manager()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(658,347,1018,737)/N=Plot_Manager/K=1 as "Plot Manager"
+	NewPanel /W=(658,347,1018,737)/N=Plot_Manager/K=2 as "Plot Manager"
 	ModifyPanel cbRGB=(37265,65535,32896)
 	ModifyPanel fixedSize=1
 	
