@@ -714,6 +714,11 @@ Function AskUserToKillHelp()
 		if(V_flag==0)
 			numHelpFilesOpen += 1
 		endif
+		
+		DisplayHelpTopic/Z "SANS and USANS Simulation"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif	
 			
 //		PauseForUser		// can't use this, it keeps you from interacting with anything....
 //	while(NumHelpFilesOpen != 0)

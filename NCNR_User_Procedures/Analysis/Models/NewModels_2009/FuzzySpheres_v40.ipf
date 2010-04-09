@@ -8,7 +8,7 @@
 // M. Stieger, J. S. Pedersen, P. Lindner, W. Richtering, Langmuir 20 (2004) 7283-7292.
 // M. Stieger, W. Richtering, J. S. Pedersen, P. Lindner, Journal of Chemical Physics 120(13) (2004) 6197-6206.
 //
-// potentially a lorentzian could be added to the low Q, if absolutely necessary
+// potentially a lorentzian could be added to the high Q, if absolutely necessary
 //
 // SRK JUL 2009
 //
