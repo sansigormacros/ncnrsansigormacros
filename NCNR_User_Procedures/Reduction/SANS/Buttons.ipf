@@ -208,21 +208,19 @@ End
 Function LoadPlotAndDisplayRAW(increment)
 	Variable increment
 
+	Variable i
+	String filename
 	//take the currently displayed RAW file (there is only one name in fileList)
 	SVAR oldName = root:Packages:NIST:RAW:fileList
 	
-	//get the run number
-	Variable num = GetRunNumFromFile(oldName)
+	print oldName
 	
-	//increment
-	num += increment
+	filename = oldname
+	for (i = 0; i < abs(increment); i += 1)
+		filename = GetPrevNextRawFile(filename,increment/abs(increment))
+	endfor	
 	
-	//find the next specified file by number
-	String fileName = FindFileFromRunNumber(num)
-	if(cmpstr(fileName,"")==0)
-		//null return, do nothing
-		Return(1)
-	Endif
+	print filename
 	
 	// display the specified RAW data file
 	String/G root:myGlobals:gDataDisplayType="RAW"
