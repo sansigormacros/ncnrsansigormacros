@@ -1691,6 +1691,16 @@ End
 Function DoCombineFiles(ctrlName)
 	String ctrlName
 	
+	
+	if(WinType("NSORT_Panel") == 0)
+		DoAlert 0, "The NSORT Panel must bo open to combine the files"
+		return(0)
+	endif
+	
+	DoAlert 1,"Do you have all the assignments set in the bottom table? If not, <no> will exit."
+	if(V_flag == 2)
+		return(0)		//no, get out
+	endif
 	// pop all of the menus to make sure that they are properly populated
 	LowQPopMenuProc("",1,"")
 	MedQPopMenuProc("",1,"")
