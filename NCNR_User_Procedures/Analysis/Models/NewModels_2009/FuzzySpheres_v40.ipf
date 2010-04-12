@@ -12,11 +12,11 @@
 //
 // SRK JUL 2009
 //
-// Include lorentzian term for *high* Q component of the scattering.
+// Include lorentzian term for *high* Q component of the scattering, calculate here, removing the #include
 //
 // AJJ Feb 2010
 
-#include "Lorentz_model_v40"
+//#include "Lorentz_model_v40"
 
 Proc PlotFuzzySpheres(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
@@ -98,7 +98,10 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	variable xx
 	
 	Variable scale,rad,pd,sig,rho,rhos,bkg,delrho,sig_surf,lor_sf,lor_len
-	
+	Variable I0, L
+	I0 = w[0]
+	L = w[1]
+
 	//set up the coefficient values
 	scale=w[0]
 	rad=w[1]
@@ -108,6 +111,8 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	rho=w[4]
 	rhos=w[5]
 	delrho=rho-rhos
+	I0 = w[6]		//for the Lorentzian
+	L = w[7]
 	bkg=w[8]
 
 	
@@ -186,13 +191,9 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	
 	inten *= scale
 	
-	//Lorentzian term
-	Make/O/N=3 tmp_lor
-	tmp_lor[0] = w[6]
-	tmp_lor[1] = w[7]
-	tmp_lor[2] = 0
+	//Lorentzian term	
+	inten += I0/(1 + (xx*L)^2)
 	
-	inten+=fLorentz_model(tmp_lor,xx)
 	
 	inten+=bkg
 	

@@ -15,6 +15,9 @@
 //
 //
 // AJJ Feb 2010
+// added the lorentzian SRK APR 2010. this is a little different than other P*S, since the 
+// Lorentzian is not scaled by phi, but rather is added on to the high q independently.
+// -- so it must be tacked on at the end, just like the form factor
 
 
 //
@@ -35,8 +38,8 @@ Proc PlotFuzzySphere_HS(num,qmin,qmax)
 	
 	Make/O/D/N=(num) xwave_fuzz_HS,ywave_fuzz_HS
 	xwave_fuzz_HS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_fuzz_HS = {0.01,60,0.2,10,1e-6,3e-6,0.001}
-	make/O/T parameters_fuzz_HS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}
+	Make/O/D coef_fuzz_HS = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}
+	make/O/T parameters_fuzz_HS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz_HS,coef_fuzz_HS
 	
 	Variable/G root:g_fuzz_HS
@@ -63,8 +66,8 @@ Proc PlotSmearedFuzzySphere_HS(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_fuzz_HS = {0.01,60,0.2,10,1e-6,3e-6,0.001}					
-	make/o/t smear_parameters_fuzz_HS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}	
+	Make/O/D smear_coef_fuzz_HS = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}					
+	make/o/t smear_parameters_fuzz_HS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz_HS,smear_coef_fuzz_HS					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -93,14 +96,16 @@ Function FuzzySphere_HS(w,yw,xw) : FitFunc
 	Variable inten
 	
 	//setup form factor coefficient wave
-	Make/O/D/N=7 form_fuzz_HS
-	form_fuzz_HS[0] = 1
+	Make/O/D/N=9 form_fuzz_HS
+	form_fuzz_HS[0] = w[0]		// send the real volume fraction in here, so the scaling is done correctly
 	form_fuzz_HS[1] = w[1]
 	form_fuzz_HS[2] = w[2]
 	form_fuzz_HS[3] = w[3]
 	form_fuzz_HS[4] = w[4]
 	form_fuzz_HS[5] = w[5]
-	form_fuzz_HS[6] = 0
+	form_fuzz_HS[6] = w[6]			// w[6] is  the Lorentzian scale
+	form_fuzz_HS[7] = w[7]
+	form_fuzz_HS[8] = 0
 	
 	//calculate the diameter of the effective one-component sphere
 	Variable pd,diam,Vpoly,Ravg
@@ -119,10 +124,12 @@ Function FuzzySphere_HS(w,yw,xw) : FitFunc
 	//calculate each and combine
 	Duplicate/O xw tmp_fuzz_HS_PQ,tmp_fuzz_HS_SQ
 	FuzzySpheres(form_fuzz_HS,tmp_fuzz_HS_PQ,xw)
+
 	HardSphereStruct(struct_fuzz_HS,tmp_fuzz_HS_SQ,xw)
 	yw = tmp_fuzz_HS_PQ * tmp_fuzz_HS_SQ
-	yw *= w[0]
-	yw += w[6]
+	
+//	yw *= w[0]		// scaling is done in FuzzySpheres
+	yw += w[8]
 	
 	//cleanup waves
 //	Killwaves/Z form_fuzz_HS,struct_fuzz_HS
@@ -139,8 +146,8 @@ Proc PlotFuzzySphere_SW(num,qmin,qmax)
 	
 	Make/O/D/N=(num) xwave_fuzz_SW,ywave_fuzz_SW
 	xwave_fuzz_SW = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_fuzz_SW = {0.01,60,0.2,10,1e-6,3e-6,1.0,1.2,0.001}
-	make/O/T parameters_fuzz_SW = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","well depth (kT)","well width (diam.)","bkg (cm-1 sr-1)"}
+	Make/O/D coef_fuzz_SW = {0.01,60,0.2,10,1e-6,3e-6,1,50,1.0,1.2,0.001}
+	make/O/T parameters_fuzz_SW = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","well depth (kT)","well width (diam.)","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz_SW,coef_fuzz_SW
 	
 	Variable/G root:g_fuzz_SW
@@ -167,8 +174,8 @@ Proc PlotSmearedFuzzySphere_SW(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_fuzz_SW = {0.01,60,0.2,10,1e-6,3e-6,1.0,1.2,0.001}					
-	make/o/t smear_parameters_fuzz_SW = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","well depth (kT)","well width (diam.)","bkg (cm-1 sr-1)"}	
+	Make/O/D smear_coef_fuzz_SW = {0.01,60,0.2,10,1e-6,3e-6,1,50,1.0,1.2,0.001}					
+	make/o/t smear_parameters_fuzz_SW = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","well depth (kT)","well width (diam.)","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz_SW,smear_coef_fuzz_SW					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -196,14 +203,16 @@ Function FuzzySphere_SW(w,yw,xw) : FitFunc
 	Variable inten
 	
 	//setup form factor coefficient wave
-	Make/O/D/N=7 form_fuzz_SW
-	form_fuzz_SW[0] = 1
+	Make/O/D/N=9 form_fuzz_SW
+	form_fuzz_SW[0] = w[0]
 	form_fuzz_SW[1] = w[1]
 	form_fuzz_SW[2] = w[2]
 	form_fuzz_SW[3] = w[3]
 	form_fuzz_SW[4] = w[4]
 	form_fuzz_SW[5] = w[5]
-	form_fuzz_SW[6] = 0
+	form_fuzz_SW[6] = w[6]
+	form_fuzz_SW[7] = w[7]
+	form_fuzz_SW[8] = 0
 	
 	//calculate the diameter of the effective one-component sphere
 	Variable pd,diam,Vpoly,Ravg
@@ -217,16 +226,17 @@ Function FuzzySphere_SW(w,yw,xw) : FitFunc
 	Make/O/D/N=4 struct_fuzz_SW
 	struct_fuzz_SW[0] = diam/2
 	struct_fuzz_SW[1] = w[0]
-	struct_fuzz_SW[2] = w[6]
-	struct_fuzz_SW[3] = w[7]
+	struct_fuzz_SW[2] = w[8]
+	struct_fuzz_SW[3] = w[9]
 	
 	//calculate each and combine
 	Duplicate/O xw tmp_fuzz_SW_PQ,tmp_fuzz_SW_SQ
 	FuzzySpheres(form_fuzz_SW,tmp_fuzz_SW_PQ,xw)
 	SquareWellStruct(struct_fuzz_SW,tmp_fuzz_SW_SQ,xw)
 	yw = tmp_fuzz_SW_PQ * tmp_fuzz_SW_SQ
-	yw *= w[0]
-	yw += w[8]
+	
+//	yw *= w[0]		// scaling is done in FuzzySpheres
+	yw += w[10]
 	
 	//cleanup waves
 //	Killwaves/Z form_fuzz_SW,struct_fuzz_SW
@@ -249,8 +259,8 @@ Proc PlotFuzzySphere_SC(num,qmin,qmax)
 
 	Make/O/D/N=(num) xwave_fuzz_SC,ywave_fuzz_SC
 	xwave_fuzz_SC = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_fuzz_SC = {0.01,60,0.2,10,1e-6,3e-6,20,0,298,78,0.001}
-	make/O/T parameters_fuzz_SC = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkg (cm-1 sr-1)"}
+	Make/O/D coef_fuzz_SC = {0.01,60,0.2,10,1e-6,3e-6,1,50,20,0,298,78,0.001}
+	make/O/T parameters_fuzz_SC = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","charge","movalent salt(M)","Temperature (K)","dielectric const","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz_SC,coef_fuzz_SC
 	
 	Variable/G root:g_fuzz_SC
@@ -282,8 +292,8 @@ Proc PlotSmearedFuzzySphere_SC(str)
  	Make/O/D/N=17 :HayPenMSA:gMSAWave
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_fuzz_SC = {0.01,60,0.2,10,1e-6,3e-6,20,0,298,78,0.001}					
-	make/o/t smear_parameters_fuzz_SC = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","charge","movalent salt(M)","Temperature (K)","dielectric const","bkg (cm-1 sr-1)"}	
+	Make/O/D smear_coef_fuzz_SC = {0.01,60,0.2,10,1e-6,3e-6,1,50,20,0,298,78,0.001}					
+	make/o/t smear_parameters_fuzz_SC = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","charge","movalent salt(M)","Temperature (K)","dielectric const","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz_SC,smear_coef_fuzz_SC					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -311,14 +321,16 @@ Function FuzzySphere_SC(w,yw,xw) : FitFunc
 	Variable inten
 	
 	//setup form factor coefficient wave
-	Make/O/D/N=7 form_fuzz_SC
-	form_fuzz_SC[0] = 1
+	Make/O/D/N=9 form_fuzz_SC
+	form_fuzz_SC[0] = w[0]
 	form_fuzz_SC[1] = w[1]
 	form_fuzz_SC[2] = w[2]
 	form_fuzz_SC[3] = w[3]
 	form_fuzz_SC[4] = w[4]
 	form_fuzz_SC[5] = w[5]
-	form_fuzz_SC[6] = 0
+	form_fuzz_SC[6] = w[6]
+	form_fuzz_SC[7] = w[7]
+	form_fuzz_SC[8] = 0
 	
 	//calculate the diameter of the effective one-component sphere
 	Variable pd,diam,Vpoly,Ravg
@@ -331,19 +343,20 @@ Function FuzzySphere_SC(w,yw,xw) : FitFunc
 	//setup structure factor coefficient wave
 	Make/O/D/N=6 struct_fuzz_SC
 	struct_fuzz_SC[0] = diam
-	struct_fuzz_SC[1] = w[6]
+	struct_fuzz_SC[1] = w[8]
 	struct_fuzz_SC[2] = w[0]
-	struct_fuzz_SC[3] = w[8]
-	struct_fuzz_SC[4] = w[7]
-	struct_fuzz_SC[5] = w[9]
+	struct_fuzz_SC[3] = w[10]
+	struct_fuzz_SC[4] = w[9]
+	struct_fuzz_SC[5] = w[11]
 	
 	//calculate each and combine
 	Duplicate/O xw tmp_fuzz_SC_PQ,tmp_fuzz_SC_SQ
 	FuzzySpheres(form_fuzz_SC,tmp_fuzz_SC_PQ,xw)
 	HayterPenfoldMSA(struct_fuzz_SC,tmp_fuzz_SC_SQ,xw)
 	yw = tmp_fuzz_SC_PQ * tmp_fuzz_SC_SQ
-	yw *= w[0]
-	yw += w[10]
+	
+//	yw *= w[0]		// scaling is done in FuzzySpheres
+	yw += w[12]
 	
 	//cleanup waves
 //	Killwaves/Z form_fuzz_SC,struct_fuzz_SC
@@ -360,8 +373,8 @@ Proc PlotFuzzySphere_SHS(num,qmin,qmax)
 	
 	Make/O/D/N=(num) xwave_fuzz_SHS,ywave_fuzz_SHS
 	xwave_fuzz_SHS = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_fuzz_SHS = {0.01,60,0.2,10,1e-6,3e-6,0.05,0.2,0.001}
-	make/O/T parameters_fuzz_SHS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","perturbation parameter (0.1)","stickiness, tau","bkg (cm-1 sr-1)"}
+	Make/O/D coef_fuzz_SHS = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.05,0.2,0.001}
+	make/O/T parameters_fuzz_SHS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","perturbation parameter (0.1)","stickiness, tau","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz_SHS,coef_fuzz_SHS
 	
 	Variable/G root:g_fuzz_SHS
@@ -388,8 +401,8 @@ Proc PlotSmearedFuzzySphere_SHS(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_fuzz_SHS = {0.01,60,0.2,10,1e-6,3e-6,0.05,0.2,0.001}					
-	make/o/t smear_parameters_fuzz_SHS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","perturbation parameter (0.1)","stickiness, tau","bkg (cm-1 sr-1)"}	
+	Make/O/D smear_coef_fuzz_SHS = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.05,0.2,0.001}					
+	make/o/t smear_parameters_fuzz_SHS = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","perturbation parameter (0.1)","stickiness, tau","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz_SHS,smear_coef_fuzz_SHS					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -417,14 +430,16 @@ Function FuzzySphere_SHS(w,yw,xw) : FitFunc
 	Variable inten
 	
 	//setup form factor coefficient wave
-	Make/O/D/N=7 form_fuzz_SHS
-	form_fuzz_SHS[0] = 1
+	Make/O/D/N=9 form_fuzz_SHS
+	form_fuzz_SHS[0] = w[0]
 	form_fuzz_SHS[1] = w[1]
 	form_fuzz_SHS[2] = w[2]
 	form_fuzz_SHS[3] = w[3]
 	form_fuzz_SHS[4] = w[4]
 	form_fuzz_SHS[5] = w[5]
-	form_fuzz_SHS[6] = 0
+	form_fuzz_SHS[6] = w[6]
+	form_fuzz_SHS[7] = w[7]
+	form_fuzz_SHS[8] = 0
 	
 	//calculate the diameter of the effective one-component sphere
 	Variable pd,diam,Vpoly,Ravg
@@ -438,16 +453,17 @@ Function FuzzySphere_SHS(w,yw,xw) : FitFunc
 	Make/O/D/N=4 struct_fuzz_SHS
 	struct_fuzz_SHS[0] = diam/2
 	struct_fuzz_SHS[1] = w[0]
-	struct_fuzz_SHS[2] = w[6]
-	struct_fuzz_SHS[3] = w[7]
+	struct_fuzz_SHS[2] = w[8]
+	struct_fuzz_SHS[3] = w[9]
 	
 	//calculate each and combine
 	Duplicate/O xw tmp_fuzz_SHS_PQ,tmp_fuzz_SHS_SQ
 	FuzzySpheres(form_fuzz_SHS,tmp_fuzz_SHS_PQ,xw)
 	StickyHS_Struct(struct_fuzz_SHS,tmp_fuzz_SHS_SQ,xw)
 	yw = tmp_fuzz_SHS_PQ * tmp_fuzz_SHS_SQ
-	yw *= w[0]
-	yw += w[8]
+	
+//	yw *= w[0]		// scaling is done in FuzzySpheres
+	yw += w[10]
 	
 	//cleanup waves
 //	Killwaves/Z form_fuzz_SHS,struct_fuzz_SHS
