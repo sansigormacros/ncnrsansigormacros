@@ -938,21 +938,21 @@ Proc MC_SASCALC()
 	NewPanel /W=(92,556,713,818)/K=1 as "SANS Simulator"
 	DoWindow/C MC_SASCALC
 	
-	SetVariable MC_setvar0,pos={28,73},size={144,15},bodyWidth=80,title="# of neutrons"
+	SetVariable MC_setvar0,pos={26,73},size={144,15},title="# of neutrons"
 	SetVariable MC_setvar0,format="%5.4g"
 	SetVariable MC_setvar0,limits={0,inf,100},value= root:Packages:NIST:SAS:gImon
-	SetVariable MC_setvar0_1,pos={28,119},size={131,15},bodyWidth=60,title="Thickness (cm)"
+	SetVariable MC_setvar0_1,pos={26,119},size={140,15},title="Thickness (cm)"
 	SetVariable MC_setvar0_1,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gThick
-	SetVariable MC_setvar0_2,pos={28,96},size={149,15},bodyWidth=60,title="Incoherent XS (1/cm)"
+	SetVariable MC_setvar0_2,pos={26,96},size={165,15},title="Incoherent XS (1/cm)"
 	SetVariable MC_setvar0_2,limits={0,inf,0.1},value= root:Packages:NIST:SAS:gSig_incoh
-	SetVariable MC_setvar0_3,pos={28,142},size={150,15},bodyWidth=60,title="Sample Radius (cm)"
+	SetVariable MC_setvar0_3,pos={26,142},size={155,15},title="Sample Radius (cm)"
 	SetVariable MC_setvar0_3,limits={-inf,inf,0.1},value= root:Packages:NIST:SAS:gR2
 	PopupMenu MC_popup0,pos={13,13},size={165,20},proc=MC_ModelPopMenuProc,title="Model Function"
 	PopupMenu MC_popup0,mode=1,value= #"MC_FunctionPopupList()"
 	Button MC_button0,pos={17,181},size={130,20},proc=MC_DoItButtonProc,title="Do MC Simulation"
 	Button MC_button0,fColor=(3,52428,1)
 	Button MC_button1,pos={17,208},size={80,20},proc=MC_Display2DButtonProc,title="Show 2D"
-	Button MC_button3,pos={182,94},size={25,20},proc=showIncohXSHelp,title="?"
+	Button MC_button3,pos={210,94},size={25,20},proc=showIncohXSHelp,title="?"
 	SetVariable setvar0_3,pos={105,484},size={50,20},disable=1
 	GroupBox group0,pos={15,42},size={267,130},title="Monte Carlo"
 	SetVariable cntVar,pos={185,73},size={90,15},proc=CountTimeSetVarProc,title="time(s)"

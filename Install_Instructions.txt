@@ -1,141 +1,154 @@
-To install the NCNR Reduction and Analysis Package:
+To install the NCNR Reduction and Analysis Package:
+
+(1) - Unzip the downloaded package. Be sure to extract all
+(2) - Double click on the NCNR_Install_or_Update.pxp experiment
+(3) - If there are any help files open, you will be asked to close them. NOTE: be sure to hold down the option (or alt) key when closing them to kill them, not just hide them.
+(4) - Click on "Install SANS Macros"
+(5) - When the installer is finished, and you will see four lines of "copy...: OK" in the command window at the bottom of the screen, indicating a successful install. You will be asked to Quit Igor (yes, do it, and save changes to the experiment.)
 
-(1) - Unzip the downloaded package
-(2) - Double click on the NCNR_Install_or_Update.pxp experiment
-(3) - If there are any help files open, you will be asked to close them. NOTE: be sure to hold down the option (or alt) key when closing them to kill them, not just hide them.
-(4) - Click on "Install SANS Macros"
-(5) - When the installer is finished, you will be asked to Quit Igor (yes, do it, and save changes to the experiment.)
-(6) - If you were informed that some folders did not have proper permissions, skip down to the section for "Manual Install"
-
-- SANS_Reduction, USANS_Reduction, and Analysis templates are located in the same folder as the installer (these are the starting points)
-- Example data for reduction and analysis are in NCNR_SANS_Utilities
-- A folder with instructions and a template for writing your own analysis function is included (Single_Model_Template)
-- Help files are integral to each template. Open any of the templates and click on "Help" or "?" from any of the panels to view the help files.
-- Any previous installations, including any files you may have modified are moved to the NCNR_Moved_Files folder. Look in here for anything that you may want to save. 
+--- If you were informed that some folders did not have proper permissions, (you'll see "ERROR" rather then OK, and some alerts about procedures that could not be removed) -- then skip down to the section for "Manual Install"
 
 
-To Update the Package:
+After a successful install:
+
+- When you restart Igor, there will be 4 "Load..." macros in the Macros menu for you to load the SANS or USANS Reduction packages, or the Analysis package. This is the starting point. There are no longer any "template" experiments necessary. Any or all of the packages can now be loaded into the same experiment.
+- Example data for reduction and analysis are in NCNR_SANS_Utilities
+- A folder with instructions and a template for writing your own analysis function is included (Single_Model_Template)
+- Help files are integral to each package. Click on "Help" or "?" from any of the panels to view the help files.
+- Any previous installations, including any files you may have modified are moved to the NCNR_Moved_Files folder. Look in here for anything that you may want to save. 
+
+
+To Update the Package:
+
+(1) - double click on the NCNR_Install_or_Update.pxp experiment
+(2) - Click on "Check for Updates"
+(3) - The updater will check the version installed versus the version available on the NCNR website. If your version is out-of-date, you will be sent to the NCNR website.
+(4) If you need to update, download the current version (.zip), and run the installer as in the first step.
+
+
+Troubleshooting:
+
+(1) - double click on the NCNR_Install_or_Update.pxp experiment
+(2) - Click on "Print Diagnostics"
+(3) - Select and copy the entire contents of the notebook of diagnostics, and paste it into an e-mail.
+
+
+
+-------------------------------------------------------------------
+*** Manual Install of the NCNR SANS/USANS Procedures ***
+-------------------------------------------------------------------
+
+If you were directed by the installer that there were old NCNR procedures present that need to be removes, it is most likely because you do not have the proper permissions to move the files from the necessary subfolders of the Igor Pro application folder.
+
+-------------------
+First, if possible, contact your system administrator. See if it is possible to grant you full read/write access to these three folders:
+
+(on Windows)
+/Program Files/WaveMetrics/Igor Pro/Igor Help Files
+/Program Files/WaveMetrics/Igor Pro/Igor Extensions
+/Program Files/WaveMetrics/Igor Pro/User Procedures
+
+(on Mac OSX)
+/Applications/Igor Pro/Igor Help Files
+/Applications/Igor Pro/Igor Extensions
+/Applications/Igor Pro/User Procedures
+
+If you or someone can reset the permissions on these folders so you can read and write, then re-run the installer, and it should work correctly without errors.
+
+
+If you can't get full permissions, you may still be able to use the macros. You may need to remove some of the old NCNR procedures by hand, granting permission for each move.
 
-(1) - double click on the NCNR_Install_or_Update.pxp experiment
-(2) - Click on "Check for Updates"
-(3) - The updater will check the version installed versus the version available on the NCNR website. If your version is out-of-date, you will be sent to the NCNR website.
-(4) If you need to update, download the current version (.zip), and run the installer as in the first step.
+To do this, follow these steps, skipping those operations that you do not have permission to do:
+
+(0) Quit Igor, if it is open.
+
+(1) Clean out ALL of the older versions of the NCNR macros from the User Procedures folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. The files to remove will have a variety of names. See the listing at the bottom of this file.
+
+(2) Clean out all of the older versions of the NCNR Help Files from the Igor Help Files folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. Again, see the listing of possible names at the bottom of this file.
+
+(3) Clean out all of the older versions of the NCNR Extensions from the Igor Extensions folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. Again, see the listing of possible names at the bottom of this file.
 
+-- now with all of the old material removed, re-run the installer. All should be OK now. If, for some bizarre reason it is not, continue by moving procedures in manually. These locations are not in the application folder, so you will have write permission.
 
-Troubleshooting:
+
+(4) From the downloaded package, move the entire folder NCNR_User_Procedures to:
+<user>:Documents:WaveMetrics:Igor Pro 6 User Files:User Procedures
+or on Windows:
+MyDocuments\WaveMetrics\Igor Pro 6 User Files\User Procedures
+(5) Move the entire folder NCNR_Help_Files to:
+<user>:Documents:WaveMetrics:Igor Pro 6 User Files:Igor Help Files
+or on Windows:
+MyDocuments\WaveMetrics\Igor Pro 6 User Files\Igor Help Files
+
+(6) In the NCNR_Extensions folder, move EITHER the Mac_XOP folder or the Win_XOP folder to:
+<user>:Documents:WaveMetrics:Igor Pro 6 User Files:Igor Extensions
+or on Windows:
+MyDocuments\WaveMetrics\Igor Pro 6 User Files\Igor Extensions
 
-(1) - double click on the NCNR_Install_or_Update.pxp experiment
-(2) - Click on "Print Diagnostics"
-(3) - Select and copy the entire contents of the notebook of diagnostics, and paste it into an e-mail.
+(7) Move the entire folder NCNR_Igor_Procedures to:
+<user>:Documents:WaveMetrics:Igor Pro 6 User Files:Igor Procedures
+or on Windows:
+MyDocuments\WaveMetrics\Igor Pro 6 User Files\Igor Procedures
 
-
-
--------------------------------------------------------------------
-*** Manual Install of the NCNR SANS/USANS Procedures ***
--------------------------------------------------------------------
-
-If you were directed by the installer to perform a manual install, it is most likely because you do not have the proper permissions to copy the files into the necessary subfolders of the Igor Pro application folder.
-
--------------------
-First, if possible, contact your system administrator. See if it is possible to grant you full read/write access to these three folders:
-
-(on Windows)
-/Program Files/WaveMetrics/Igor Pro/Igor Help Files
-/Program Files/WaveMetrics/Igor Pro/Igor Extensions
-/Program Files/WaveMetrics/Igor Pro/User Procedures
-
-(on Mac OSX)
-/Applications/Igor Pro/Igor Help Files
-/Applications/Igor Pro/Igor Extensions
-/Applications/Igor Pro/User Procedures
-
-If you or someone can reset the permissions on these folders so you can read and write, then re-run the installer, and it should work correctly without errors.
-
-
-If you can't get full permissions, you may still be able to use the macros. 
-
-Choose from the Menu Macros->Force Install.
-
-The installer will do as good as it can to install the macros. You must have at a minimum, permission to install in /User Procedures. If you can't get permission to install into /Igor Help Files, you can still open the help files manually as needed. If you can't get permission to install into /Igor Extensions, your calculations will be much slower, and you will not have access to any of the 2D analysis functions. The most common problem is faulty permissions on /Igor Help Files, which is not fatal, just inconvenient.
-
-------------------
-
-If you want to move the files and folders by hand, follow these steps, skipping those operations that you do not have permission to do:
-
-(0) Quit Igor, if it is open.
-
-(1) Clean out ALL of the older versions of the NCNR macros from the User Procedures folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. The files to remove will have a variety of names. See the listing at the bottom of this file.
-
-(2) Clean out all of the older versions of the NCNR Help Files from the Igor Help Files folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. Again, see the listing of possible names at the bottom of this file.
-
-(3) Clean out all of the older versions of the NCNR Extensions from the Igor Extensions folder. Move them to the trash/recycle, and be sure to EMPTY the trash/recycle. Again, see the listing of possible names at the bottom of this file.
-
-(4) From the downloaded package, move the entire folder NCNR_User_Procedures to the Igor Pro/User Procedures folder.
-
-(5) Move the entire folder NCNR_Help_Files to the Igor Pro/Igor Help Files folder.
-
-(6) In the NCNR_Extensions folder, move EITHER the Mac_XOP folder or the Win_XOP folder to Igor Pro/Igor Extensions, depending on your operating system. Delete the XOP for the platform that you are not using.
-
-(7) The NCNR_SANS_Utilities folder has the three templates for starting SANS or USANS Reduction experiment, and for an analysis experiment. If the templates open up correctly, you're likely OK. In this folder, there are also example data sets and a template for writing your own analysis model.
-
-
-
--------------------
-"OLD" User Procedures could be any of the following:
-
-SANS_Reduction_v5.00
-SANS_Reduction_v5.0
-SANS Redn 28OCT03
-SANS Redn 18JUN04
-SANS Redn 23JAN04
-SANS Redn Beta
-SANS_Models_B 09MAY03
-SANS_Models (B)
-SANS_Models Beta
-SANS_Models Beta2
-SANS_Models_v3.00
-SANS_Models_v3.01
-USANS Procedures 13AUG02
-USANS_Procedures_14DEC04
-USANS_Procedures_15DEC05
-USANS Beta Procedures
-USANS Procedures v2.00
-USANS Procedures v2.20
-Put in User Procedures
-NCNR_User_Procedures
-NCNR_Extensions
-NCNR_Help_Files
-
-
--------------------
-"OLD" Igor Help files could be any of the following:
-
-SANS_Reduction_Help_v5.ihf
-SANSReductionHelp_4p2.ihf
-SANS_Analysis_Docs_v3.00.ihf
-SANSAnalysisHelp(B).ihf
-SANS_Model_Docs_v3.00.ihf
-SANS_Model_Docs_v3.01.ihf
-USANSReductionHelp_v2.20.ihf
-USANSReductionHelp_v2.00.ihf
-USANSReductionHelp_v1.ihf
-SANS_Analysis_Docs_09JUN06.ihf
-SANS_Model_Docs_09JUN06.ihf
-Put in Igor Help Files
-NCNR_Help_Files
-
-
--------------------
-"OLD" Igor Extensions could be any of the following:
-
-SANS_Analysis.xop
-NCNR_Extensions
-
-Mac_XOP
-Win_XOP
--------------------
-
-
-
-
-June 2008 SRK
+(8) Launch Igor. The "Load..." macros should appear under the Macros menu.
+
+
+
+-------------------
+"OLD" User Procedures could be any of the following:
+
+SANS_Reduction_v5.00
+SANS_Reduction_v5.0
+SANS Redn 28OCT03
+SANS Redn 18JUN04
+SANS Redn 23JAN04
+SANS Redn Beta
+SANS_Models_B 09MAY03
+SANS_Models (B)
+SANS_Models Beta
+SANS_Models Beta2
+SANS_Models_v3.00
+SANS_Models_v3.01
+USANS Procedures 13AUG02
+USANS_Procedures_14DEC04
+USANS_Procedures_15DEC05
+USANS Beta Procedures
+USANS Procedures v2.00
+USANS Procedures v2.20
+Put in User Procedures
+NCNR_User_Procedures
+NCNR_Extensions
+NCNR_Help_Files
+
+
+-------------------
+"OLD" Igor Help files could be any of the following:
+
+SANS_Reduction_Help_v5.ihf
+SANSReductionHelp_4p2.ihf
+SANS_Analysis_Docs_v3.00.ihf
+SANSAnalysisHelp(B).ihf
+SANS_Model_Docs_v3.00.ihf
+SANS_Model_Docs_v3.01.ihf
+USANSReductionHelp_v2.20.ihf
+USANSReductionHelp_v2.00.ihf
+USANSReductionHelp_v1.ihf
+SANS_Analysis_Docs_09JUN06.ihf
+SANS_Model_Docs_09JUN06.ihf
+Put in Igor Help Files
+NCNR_Help_Files
+
+
+-------------------
+"OLD" Igor Extensions could be any of the following:
+
+SANS_Analysis.xop
+NCNR_Extensions
+
+Mac_XOP
+Win_XOP
+-------------------
+
+
+
+APR 2010 SRK
