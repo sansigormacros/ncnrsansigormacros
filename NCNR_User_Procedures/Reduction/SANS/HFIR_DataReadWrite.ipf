@@ -40,7 +40,8 @@ Function LoadRawSANSData(msgStr)
 	//selecting it, and returning to root when done
 	PathInfo/S catPathName		//should set the next dialog to the proper path...
 	//get the filename, then read it in
-	filename = PromptForPath(msgStr)		//in SANS_Utils.ipf
+	filename = PromptForPath(msgStr)//in SANS_Utils.ipf
+	
 	//check for cancel from dialog
 	if(strlen(filename)==0)
 		//user cancelled, abort
@@ -76,7 +77,7 @@ Function LoadRawSANSData(msgStr)
 		//print "Failed loading", filename, "..."
 		DoAlert 0, errorMsg
 		//Clean up waves...
-		KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
+		//KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
 		return(1)		//Do not change.
 	endif
 ///***** done by a call to UpdateDisplayInformation()
@@ -86,8 +87,6 @@ Function LoadRawSANSData(msgStr)
 //	//data is displayed here
 //	fRawWindowHook()
 	SetDataFolder root:
-	//Clean up waves...
-	KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
 	
 	Print "Time to load and display (s) = ",(ticks-t1)/60.15
 	Return(0)		//Do not change.
@@ -137,6 +136,7 @@ Function ReadHeaderAndData(filename)
 	//actually open the file
 	refNum = XmlOpenFile(filename)	
 	if (refNum < 0)
+		XmlCloseFile(refNum,0)
 		//print "\r  ==> Failed: Not a standard xml file format."
 		return (-2) 				//Not a xml file. Do nothing...
 	endif
@@ -153,42 +153,18 @@ Function ReadHeaderAndData(filename)
 	ENDIF
 	///////////////////////////////////////////////////////////////////////////////////////////////\/\/\/\ from P. R. Jemian
 	
-	//temp list of ns
-	Make/T/N=(1)/O nsList
-	nsList[0] = "1.1" 
-	
 	// Check if  it is the SPICE version = 1.1
-	Variable  item,i
-	String thislocation,ns = ""
-
-	for (item = 0; item < DimSize(nsList, 0); item += 1)		// loop over all possible namespaces
-		XMLlistAttr(refNum, "/SPICErack", nsList[item])
-		wave/T M_listAttr
+	String ns_ver = "1.1"
+	Variable ns = 0
+	ns = str2num(XMLstrFmXpath(refNum, "//SPICErack/@SPICE_version","",""))
 	
-		for (i = 0; i < DimSize(M_listAttr,0); i+=1)			// loop over all available attributes
-			// Expect the required hfir XML header (will fail if "schemalocation" is not found)
-			if ( CmpStr(  LowerStr(M_listAttr[i][1]),  LowerStr("SPICE_version") ) == 0 )
-				thisLocation = HFIR_TrimWS(M_listAttr[i][2])
-				if ( StringMatch(thisLocation, nsList[item] + "*") )
-					ns = nsList[item]			
-						
-					Break	// found it!
-				endif
-			endif
-		endfor
-		if (strlen(ns))
-			Break		
-		endif
-	endfor
-
-	if (StringMatch(ns,"1.1") <1)
+	// older version	
+	if (ns <1.1)
 		//errorMsg = filename + ": This SPICE version is not supported"
 		XmlCloseFile(refNum,0)
-		KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
 		SetDataFolder root:
 		return (-4)
 	endif
-	
 	
 	//this function is for reading in RAW data only, so it will always put data in RAW folder
 	
@@ -217,31 +193,19 @@ Function ReadHeaderAndData(filename)
 	//Redimension/N=(192,192) data			//NIST raw data is 128x128 - do not generalize
 	//data =0
 	
-//	Print "Time to open (s) = ",(ticks-t1)/60.15
-
 	//ORNL HFIR SANS DATA
-	String tempheadhfir
-	tempheadhfir = ""
-	
-	ReadHFIRSansRaw(refNum,curFolder,tempheadhfir) 
-       
-	i=0
-	do	
-		//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
-		//This DOLOOP can be removed where the problem is solved....
-		textw[0]=stringfromlist(i,filename,":") 
-		if (stringmatch(textw[0],"*.xml")>0)       		
-			break
-		endif
-		i +=1
-	while (1)
-       	
+	String tempheadhfir =""
+       ReadHFIRSansRaw(refNum,curFolder,tempheadhfir) 
+
+       //Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+       //This  can be removed where the problem is solved....
+       textw[0]=GetFName(filename,  1)
+
+	SetDataFolder curPath
+	String/G fileList = textw[0]
 	//return the data folder to root
 	SetDataFolder root:
-	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
-	KillWaves/Z M_listAttr, nsList,W_xmlcontentnodes
-	
-	XMLclosefile(refNum, 0)
+
 	Return 0
 
 End
@@ -255,8 +219,8 @@ End
 // local, currently unused
 //
 //
+
 Proc ReadWork_DIV()
-//	Silent 1
 	
 	String fname = PromptForPath("Select detector sensitivity file")
 	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
@@ -264,13 +228,10 @@ Proc ReadWork_DIV()
 	String waveStr = "root:Packages:NIST:DIV:data"
 	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
 	ModifyImage '' ctab= {*,*,YellowHot,0}
-	//Display;AppendImage $waveStr
-	
-	//change the title string to WORK.DIV, rather than PLEXnnn_TST_asdfa garbage
+
 	String/G root:Packages:NIST:DIV:fileList = "WORK.DIV"
 	
 	SetDataFolder root:		//(redundant)
-//	Silent 0
 End
 
 
@@ -324,34 +285,21 @@ Function ReadHeaderAndWork(type,fname)
 	//actually open the file
 	refNum = XmlOpenFile(fname)	
 	if (refNum < 0)
+		XMLclosefile(refNum, 0)
 		return 0 				//Not a xml file. Do nothing...
 	endif
+	
 	//ORNL HFIR SANS DATA
-	String tempheadhfir
-	tempheadhfir = ""
+	String tempheadhfir =""
        ReadHFIRSansRaw(refNum,cur_folder,tempheadhfir) 
-       Variable i=0
-       do	
-       	//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
-       	textw[0]=stringfromlist(i,fname,":") 
-       	if (stringmatch(textw[0],"*.xml")>0)       		
-       		break
-       	endif
-       	i +=1
-       while (1)
 
-	//divide the FP data by 4 if read from a PC (not since GBLoadWave update)
-	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		//do nothing
-	//else
-		//either Windows or Windows NT
-		//data /= 4
-	//endif
+	//Take the file name from "actual file name", not from the header: (JC found some cases that those are different.)
+       //This  can be removed where the problem is solved....
+       textw[0]=GetFName(fname,  1)
 	
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
 
-	XMLclosefile(refNum, 0)
 	//return the data folder to root
 	SetDataFolder root:
 	Return(0)
@@ -416,7 +364,7 @@ Function ReadASCData(fname,destPath)
 	//linear_data = data
 	
 	KillWaves/Z temp0 
-	
+	Close/A
 	//return the data folder to root
 	SetDataFolder root:
 	
@@ -493,16 +441,14 @@ Function FillFakeHeader_ASC(destFolder)
 	//set the string values
 	formatStr="FILE: %s CREATED: %s"
 	sscanf hdr[0],formatStr,tempStr,junkStr
-//	Print tempStr
-//	Print junkStr
+
 	String/G $("root:"+destFolder+":fileList") = tempStr
 	textw[0] = tempStr		//filename
 	textw[1] = junkStr		//run date-time
 	
-	//file label = hdr[1]
 	tempStr = hdr[1]
 	tempStr = tempStr[0,strlen(tempStr)-2]		//clean off the last LF
-//	Print tempStr
+
 	textW[6] = tempStr	//sample label
 	
 	return(0)
@@ -514,11 +460,10 @@ End
 Function/S getStringFromHeader(fname,wantedterm)
 	String fname, wantedterm				//full path:name, term name
 	
-	
 	String str = ""
 	Variable refNum,i
 	
-	//actually open the file
+	//check the ext.
 	if (stringmatch(fname,"*.xml") <1)
 		//print "Failed: Not a *.xml file."
 		return (str)				//Not *.xml. Do nothing...
@@ -527,28 +472,19 @@ Function/S getStringFromHeader(fname,wantedterm)
 	refNum = XmlOpenFile(fname)	
 	if (refNum < 0)
 		//print "Failed: Not a xml file."
+		XmlCloseFile(refNum,0)
 		return (str) 				//Not a xml file. Do nothing...
 	endif
 
 	//ORNL HFIR SANS strings meta DATA
-	if (stringmatch("filename",wantedterm)>0)
-      		i=0
-       	do	
-       		//Get the file name from "actual file name", not from the header: (JC found some cases that those are different.)
-       		//This DOLOOP can be removed when the problem is solved....
-       		str=stringfromlist(i,fname,":") 
-       		if (stringmatch(str,"*.xml")>0 && stringmatch(stringfromlist(i+1,fname,":"),"")>0)       		
-       			break
-       		endif
-       		i +=1
-       	while (1)
+	if (stringmatch("*filename",wantedterm)>0)
+		str =GetFName(fname,  1)
 	else
       		str=ReadSFromHHead(refNum,wantedterm)  //Get it from the header.
        endif
 	
 	//return the data folder to root
 	//SetDataFolder root:
-	XMLclosefile(refNum, 0)
 		
 	return(str)
 End
@@ -559,7 +495,7 @@ End
 Function/S getSuffix(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
+	return(getStringFromHeader(fname,"//suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
 End
 
 // associated file suffix (for transmission)
@@ -567,27 +503,27 @@ End
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"assoc_suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
+	return(getStringFromHeader(fname,"//assoc_suffix"))		//!!!!!!!!!!!!!!!!!!!!!!!!!
 End
 
 // sample label (60 characters @ byte 98)
 Function/S getSampleLabel(fname)
 	String fname
 	
-	return(getStringFromHeader(fname,"Scan_Title"))
+	return(getStringFromHeader(fname,"//Header/Scan_Title"))
 End
 
 // file creation date (20 characters @ byte 55)
 Function/S getFileCreationDate(fname)
 	String fname
  
-	return(getStringFromHeader(fname,"start_time"))
+	return(getStringFromHeader(fname,"//SPICErack/@start_time"))
 End
 
 // Check if the file is transmission file?
 Function/S getIsTrans(fname)
 	String fname
-	return(getStringFromHeader(fname,"Transmission"))
+	return(getStringFromHeader(fname,"//Header/Transmission"))
 End
 
 // read a single real value with GBLoadWave
@@ -597,7 +533,6 @@ Function getRealValueFromHeader(fname,wantedterm,unit)
 	Variable vresult
 	Variable refNum
 	
-	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
 		//print "Failed: Not a *.xml file."
 		return 0				//Not *.xml. Do nothing...
@@ -608,13 +543,9 @@ Function getRealValueFromHeader(fname,wantedterm,unit)
 		//print "Failed: Not a xml file."
 		return 0 				//Not a xml file. Do nothing...
 	endif
-	
+
 	//ORNL HFIR SANS strings meta DATA
        vresult=ReadVFromHHead(refNum,wantedterm,unit) 
-       
-	//return the data folder to root
-	//SetDataFolder root:
-	XMLclosefile(refNum, 0)
 	
 	return(vresult)
 End
@@ -623,55 +554,55 @@ End
 Function getMonitorCount(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"monitor",""))
+	return(getRealValueFromHeader(fname,"//Counters/monitor",""))
 end
 
 //saved monitor count is at byte 43
 Function getSavMon(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"monitor",""))  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!??
+	return(getRealValueFromHeader(fname,"//Counters/monitor",""))  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!??
 end
 
 //detector count is at byte 47
 Function getDetCount(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"psd",""))   //Need to check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	return(getRealValueFromHeader(fname,"//Counters/psd",""))   //Need to check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end
 
 //Attenuator number is at byte 51
 Function getAttenNumber(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"attenuation","percent")) //in unit of percents
+	return(getRealValueFromHeader(fname,"//Motor_Positions/attenuation","percent")) //in unit of percents
 end
 
 //transmission is at byte 158
 Function getSampleTrans(fname)
 	String fname
-	return(getRealValueFromHeader(fname,"Transmission_for_Sample",""))
+	return(getRealValueFromHeader(fname,"//Transmission_for_Sample",""))
 end
 
 //box counts are stored at byte 494
 Function getBoxCounts(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"Box_Counts",""))  		
+	return(getRealValueFromHeader(fname,"//Box_Counts",""))  		
 end
 
 //whole detector trasmission is at byte 392
 Function getSampleTransWholeDetector(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"detector","")) //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	return(getRealValueFromHeader(fname,"//Counters/detector","")) //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 end
 
 //SampleThickness is at byte 162
 Function getSampleThickness(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"Sample_Thickness","cm"))
+	return(getRealValueFromHeader(fname,"//Header/Sample_Thickness","cm"))
 end
 
 //Sample Rotation Angle is at byte 170
@@ -685,84 +616,84 @@ end
 Function getTemperature(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"temp","C")) 
+	return(getRealValueFromHeader(fname,"//Parameter_Positions/tsample","C"))   
 end
 
 //field strength is at byte 190
 Function getFieldStrength(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"magnetic_field","G"))
+	return(getRealValueFromHeader(fname,"//magnetic_field","G"))
 end
 
 //beam xPos is at byte 252
 Function getBeamXPos(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"beam_center_x_pixel",""))
+	return(getRealValueFromHeader(fname,"//Header/beam_center_x_pixel",""))
 end
 
 //beam Y pos is at byte 256
 Function getBeamYPos(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"beam_center_y_pixel",""))
+	return(getRealValueFromHeader(fname,"//Header/beam_center_y_pixel",""))
 end
 
 //sample to detector distance is at byte 260
 Function getSDD(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"sample_det_dist","m"))
+	return(getRealValueFromHeader(fname,"//Motor_Positions/sample_det_dist","m"))
 end
 
 //detector offset is at byte 264
 Function getDetectorOffset(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"detector_trans","cm"))  //cm:  HFIR mm
+	return(getRealValueFromHeader(fname,"//Motor_Positions/detector_trans","cm"))  //cm:  HFIR mm
 end
 
 //Beamstop diameter is at byte 272
 Function getBSDiameter(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"beam_trap_size","mm"))  //check if this beamstop diameter?
+	return(getRealValueFromHeader(fname,"//Motor_Positions/beam_trap_size","mm"))  //check if this beamstop diameter?
 end
 
 //source aperture diameter is at byte 280
 Function getSourceApertureDiam(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"source_aperture_size","mm"))
+	return(getRealValueFromHeader(fname,"//Header/source_aperture_size","mm"))
 end
 
 //sample aperture diameter is at byte 284
 Function getSampleApertureDiam(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"sample_aperture_size","mm"))
+	return(getRealValueFromHeader(fname,"//Header/sample_aperture_size","mm"))
 end
 
 //source AP to Sample AP distance is at byte 288
 Function getSourceToSampleDist(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"source_distance","m")) //unit=m   :hfir = mm
+	return(getRealValueFromHeader(fname,"//Header/source_distance","m")) //unit=m   :hfir = mm
 end
 
 //wavelength is at byte 292
 Function getWavelength(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"wavelength", "A"))
+	return(getRealValueFromHeader(fname,"//Header/wavelength", "A"))
 end
 
 //wavelength spread is at byte 296
 Function getWavelengthSpread(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"wavelength_spread",""))
+	return(getRealValueFromHeader(fname,"//Header/wavelength_spread",""))
 end
 
 //transmission detector count is at byte 388
@@ -776,14 +707,14 @@ end
 Function getDetectorPixelXSize(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"x_mm_per_pixel","mm"))
+	return(getRealValueFromHeader(fname,"//Header/x_mm_per_pixel","mm"))
 end
 
 //detector pixel Y size is at byte 232
 Function getDetectorPixelYSize(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"y_mm_per_pixel","mm"))
+	return(getRealValueFromHeader(fname,"//Header/y_mm_per_pixel","mm"))
 end
 
 //total count time is at byte 31	
@@ -791,9 +722,9 @@ Function getCountTime(fname)
 	String fname
 	Variable mtime
 	
-	mtime = getRealValueFromHeader(fname,"time","")
+	mtime = getRealValueFromHeader(fname,"//Counters/time","")
 	if (mtime == 0)
-		mtime = 1		//get rid of a singular for calculating a rate.
+		mtime = 1		//get rid of a singular for calculating a rate in case.
 	endif 
 	return(mtime)
 end
@@ -807,13 +738,13 @@ Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 	Variable refNum	                                                               
 	Variable vresult
 	
-	//actually open the file
 	if (stringmatch(fname,"*.xml") <1)
 		//print "Failed: Not a *.xml file."
 		return 0				//Not *.xml. Do nothing...
 	endif
 	//actually open the file
-	refNum = XmlOpenFile(fname)	
+	refNum = XmlOpenFile(fname)
+	XMLclosefile(refNum, 0)
 	if (refNum < 0)
 		//print "Failed: Not a xml file."
 		return 0 				//Not a xml file. Do nothing...
@@ -821,10 +752,6 @@ Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
 
 	//ORNL HFIR SANS strings meta DATA
        vresult=ReadVFromHHead(refNum,wanted, "") 
-	
-	//return the data folder to root
-	//SetDataFolder root:
-	XMLclosefile(refNum, 0)
 		
 	return(0)
 End
@@ -840,6 +767,7 @@ Function GetLambdaFromReducedData(tempName)
 	String junkString
 	Variable lambdaFromFile, fileVar, junkVal
 	lambdaFromFile = 6.0
+
 	Open/R/P=catPathName fileVar as tempName
 	FReadLine fileVar, junkString
 	FReadLine fileVar, junkString
@@ -875,10 +803,10 @@ Function getXYBoxFromFile(fname,x1,x2,y1,y2)
 	// tmpFile is only a parital path
 	
 	// return your bounding box coordinates or default values of 0
-	x1=getRealValueFromHeader(fname,"XYBox_x1","")
-	x2=getRealValueFromHeader(fname,"XYBox_x2","")
-	y1=getRealValueFromHeader(fname,"XYBox_y1","")
-	y2=getRealValueFromHeader(fname,"XYBox_y2","")
+	x1=getRealValueFromHeader(fname,"//XYBox_x1","")
+	x2=getRealValueFromHeader(fname,"//XYBox_x2","")
+	y1=getRealValueFromHeader(fname,"//XYBox_y1","")
+	y2=getRealValueFromHeader(fname,"//XYBox_y2","")
 	
 	if (x1 == -1 || x2 == -1 || y1 == -1 || y2 == -1)
 		x1 = 0
@@ -906,10 +834,10 @@ Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
 	sprintf y1str, "%d", y1
 	sprintf y2str, "%d", y2
 
-	WriteHFIRHead(fname,x1str,"XYBox_x1" ,"") 	
-	WriteHFIRHead(fname,x2str,"XYBox_x2" ,"") 
-	WriteHFIRHead(fname,y1str,"XYBox_y1" ,"") 
-	WriteHFIRHead(fname,y2str,"XYBox_y2" ,"") 
+	WriteHFIRHead(fname,x1str,"/SPICErack/XYBox_x1" ,"") 	
+	WriteHFIRHead(fname,x2str,"/SPICErack/XYBox_x2" ,"") 
+	WriteHFIRHead(fname,y1str,"/SPICErack/XYBox_y1" ,"") 
+	WriteHFIRHead(fname,y2str,"/SPICErack/XYBox_y2" ,"") 
 	
 	return(0)
 End
@@ -921,7 +849,7 @@ Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
 		
 	
-	WriteHFIRHead(fname,suffix,"assoc_suffix" ,"text") 
+	WriteHFIRHead(fname,suffix,"/SPICErack/assoc_suffix" ,"text") 
 	return(0)
 end
 
@@ -992,8 +920,8 @@ END
 //       Read ORNL HFIR SANS data ( xml format) file:general loading from display raw data
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
-	Variable refNum
-	String curFolder,tempheadhfir
+    Variable refNum
+    String curFolder,tempheadhfir
       
 	String curPath="root:Packages:NIST:"+curFolder
   	SetDataFolder curPath
@@ -1007,11 +935,11 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	
 	Variable ind,i,j,centerdata=1
 	Variable pixnumx=0,pixnumy=0
-	String val = ""// numerical and text values
-	Variable value,t1=ticks
+	String val = "", pix_num = ""// numerical and text values
+	Variable value = 0.0,t1=ticks
+	String unitstr =""	//unit string
 
 	//Initialize wave values	 
-	//   data=1
 	 realw=0
 	 intw=0
 	 textw=""
@@ -1032,53 +960,17 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	 realw[37] = 0
  	 //textw[2]="RAW"      //????
   
-  	//if (stringmatch(tempheadhfir,"Number_of_X_Pixels")>0 || stringmatch(tempheadhfir,"Number_of_Y_Pixels")>0)
-  		XMLlistAttr(refNum,"/SPICErack/Data/Detector","")
-  		WAVE/T M_listAttr
-		for (i = 0; i<DimSize(M_listAttr,0);i+=1)
-	   		if ( Strsearch(M_listAttr[i][1],"type",0) !=-1)   //find INT32[xxx,xxx]
-	   	      		pixnumy=Str2num(StringFromList(0,StringFromList(1,M_listAttr[i][2] ,","),"]"))   
-	   	      		pixnumx=Str2num(StringFromList(1,StringFromList(0,M_listAttr[i][2] ,","),"["))
-	   	 		Variable/G root:myGlobals:gNPixelsX=pixnumx
-	   	 		Variable/G root:myGlobals:gNPixelsY=pixnumy	
-	   	 		SetDataFolder curPath
-                          break
-	   		endif
-		endfor    
-  	//endif
 //	Print "Time to list attributes (s) = ",(ticks-t1)/60.15
-  	
-	XMLelemlist(refNum)
-	WAVE/T W_ElementList
 //	Print "Time to list elements (s) = ",(ticks-t1)/60.15
 
-	for (ind = 0; ind<DimSize(W_ElementList,0); ind +=1)
-			String unitstr =""								//unit string
-			tempheadhfir = W_ElementList[ind][3]
-			
-			//Find unit if exists. If no unit is found, unit convertor will do nothing.
-			XMLlistAttr(refNum,W_ElementList[ind][0],"")
-			WAVE/T M_listAttr
-			for (i = 0; i < DimSize( M_listAttr,0); i+=1)
-				if (stringmatch(M_listAttr[i][1],"units") >0)
-					unitstr = M_listAttr[i][2]
-					break
-				endif
-			endfor
-			
-			//Find string or values.
-			XMLwaveFmXpath(refNum,W_ElementList[ind][0],""," \t\n\r")
-			WAVE/T M_xmlContent
-			
-			if (DimSize(M_xmlContent, 0)==0)		//For NULL content
-				Make/O/T /N=1 M_xmlContent			
-				M_xmlContent = ""
-			endif	
-			
-			val =  M_xmlContent[0]
-			
-			sscanf val, "%f", value
-			
+	// Get and set the number of pixels from the line just above data.
+ 	pix_num = XMLstrFmXpath(refNum,"//Data/Detector/@type","","")
+	pixnumx=Str2num(StringFromList(0,StringFromList(1,pix_num ,","),"]"))   
+	pixnumy=Str2num(StringFromList(1,StringFromList(0,pix_num ,","),"["))
+	Variable/G root:myGlobals:gNPixelsX=pixnumx
+	Variable/G root:myGlobals:gNPixelsY=pixnumy	
+	SetDataFolder curPath
+
 			//******Below deleted since HFIR prefers to use <Data type="INT32[xxx,xxx]" for pixnumbers
 			//********Leave the following lines in case they change the policy.
 			//if (stringmatch(tempheadhfir,"Number_of_X_Pixels")>0)			
@@ -1090,91 +982,65 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   	 	//	Variable/G root:myGlobals:gNPixelsY=pixnumy
 	   	 	//	 SetDataFolder curPath
 	   	 	// Note for units: If in-unit is null, out will be unity.
-	   	 	if  (stringmatch(tempheadhfir,"Scan_Title")>0)
-				for (i = 1; i < DimSize(M_xmlContent,0);i +=1)
-					val += " " + M_xmlContent[i]
-				endfor	   	 	
-	   	 		textw[6] = val
-	   	 	// fake values to get valid deadtime and detector constants
-			//
-			//textw[9]=detTyp+"  "		//6 characters 4+2 spaces
-			//textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
-	   	 	elseif  (stringmatch(tempheadhfir,"Users")>0)
-				for (i = 1; i < DimSize(M_xmlContent,0);i +=1)
-					val += " " + M_xmlContent[i]
-				endfor	   	 	
-	   	 		textw[3] = val				//ToDo: Define
-	   	 	elseif  (stringmatch(tempheadhfir,"Instrument")>0)
-				for (i = 1; i < DimSize(M_xmlContent,0);i +=1)
-					val += " " + M_xmlContent[i]
-				endfor	   	 	
-	   	 		textw[9] = val				//ToDo: Define
-	   	 	elseif  (stringmatch(tempheadhfir,"Transmission_for_Sample")>0)
-	   	 		if (value <= 0)
-	   	 			value = 1 		//HFIR default = -1 while NIST package not working if it is <=0: Set default =1. <=NOT good!!!
-	   	 		endif
-	   	 		realw[4] = unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"attenuation")>0)
-	   	 		realw[3] = unit_convert(value,unitstr,"percent")
-	   	 	elseif  (stringmatch(tempheadhfir,"tsample")>0) 
-	   	 		realw[8] = unit_convert(value,unitstr,"C")
-	   	 	elseif  (stringmatch(tempheadhfir,"monitor")>0)
-	   	 		realw[0] =unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"Sample_Thickness")>0)
-	   	 		realw[5]  =unit_convert(value,unitstr,"cm")
-	   	 	elseif  (stringmatch(tempheadhfir,"psd")>0)
-	   	 		realw[2] = unit_convert(value,unitstr,"")    ////Need to check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	   	 	elseif  (stringmatch(tempheadhfir,"x_mm_per_pixel")>0)
-	   	 		realw[10] = unit_convert(value,unitstr,"mm")
-	   	 	elseif  (stringmatch(tempheadhfir,"y_mm_per_pixel")>0)
-	   	 		realw[13] =  unit_convert(value,unitstr,"mm")
-	   	 		Variable/G root:myGlobals:PixelResDefault = unit_convert(realw[13],"mm","cm") //back to cm unit for this default value??!!
-	   	 		SetDataFolder curPath
-	   	 	elseif  (stringmatch(tempheadhfir,"beam_center_x_pixel")>0)
-	   	 		realw[16] = unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"beam_center_y_pixel")>0)
-	   	 		realw[17] =unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"beam_trap_size")>0) //what is the beam trap diameter???
-	   	 		realw[21] = unit_convert(value,unitstr,"mm")
-	   	 	elseif  (stringmatch(tempheadhfir,"sample_det_dist")>0)
-	   	 		realw[18] = unit_convert(value,unitstr,"m")
-	   	 	elseif  (stringmatch(tempheadhfir,"time")>0)
-	   	 		intw[1] =unit_convert(value,unitstr,"sec") //Not supported. Assumed in "sec"
-	   	 		intw[2] = intw[1] //???
-	   	 	elseif  (stringmatch(tempheadhfir,"source_aperture_size")>0) //diameter???
-	   	 		realw[23]  = unit_convert(value,unitstr,"mm")
-	   	 	elseif  (stringmatch(tempheadhfir,"sample_aperture_size")>0) //diameter???
-	   	 		realw[24]= unit_convert(value,unitstr,"mm")
+	   	 	textw[6] = XMLstrFmXpath(refNum,"//Header/Scan_Title","","")
+   	 	
+	   	 	textw[3] = XMLstrFmXpath(refNum,"//Header/Users","","")		//ToDo: Define	 
 	   	 		
-	   	 	//The units of the source_distance is treated special...
-	   	 	elseif  (stringmatch(tempheadhfir,"source_distance")>0)
-	   	 		if (strlen(unitstr)==0) 
-	   	 			unitstr = "mm" //Give mm unit since no unit is provided from the file. ///This needs to be corrected soon!!!!
-	   	 		endif
-	   	 		realw[25] =value*length_unit_convert(unitstr,"m") //Unit's Not provided from the file but it is in mm.
-	   	 		
-	   	 	elseif  (stringmatch(tempheadhfir,"wavelength")>0)
-	   	 		realw[26] =unit_convert(value,unitstr,"a")
-	   	 	elseif  (stringmatch(tempheadhfir,"wavelength_spread")>0)
-	   	 		realw[27] =unit_convert(value,unitstr,"")
-	   	 	elseif  (stringmatch(tempheadhfir,"Detector")>0)
-	   	 	      SetDataFolder curPath
-	   	 	      NVAR pixnumx1= root:myGlobals:gNPixelsX	   	 	     
-	   	 	      NVAR pixnumy1= root:myGlobals:gNPixelsY
-	   	 	      Variable pixnx = pixnumx1, pixny = pixnumy1
-	   	 	      realw[20] = realw[10]*pixnx/10 			// physical detector width  in cm  // ToDo: Need to check for ypix size???
-      				Make/O/N=(pixnumx1*pixnumy1) $(curPath+":data")
-				WAVE  data=$(curPath+":data")
-				//set the globals to the detector dimensions (pixels)
-				Redimension/N=(pixnx,pixny) data			//ORNL pixnums are given from the data file
-				Variable intens = 0
-	   	 		for (i=0;i<pixnx;i+=1)
-	   	 			for  (j=0;j<pixny;j+=1)
-	   	 				sscanf M_xmlContent[j+i*pixny],"%i", intens
-	   	 				data[i][j]=intens
-	   	 			endfor
-	   	 		endfor
+	   	 	textw[9] = XMLstrFmXpath(refNum,"//Header/Instrument","","")				//ToDo: Define
+	   	 	
+	   	 	value = ValfromUnit(refNum,"//Transmission_for_Sample","")
+	   	 	if (value <= 0)
+	   	 		value = 1 		//HFIR default = -1 while NIST package not working if it is <=0: Set default =1. <=NOT good!!!
 	   	 	endif
+	   	 	realw[4] = value
+	   	 	
+	   	 	realw[3] = ValfromUnit(refNum,"//Motor_Positions/attenuation","percent") 
+	   	 	realw[8] = ValfromUnit(refNum,"//Parameter_Positions/tsample","C") 
+	   	 	realw[0] = ValfromUnit(refNum,"//Counters/monitor","") 
+	   	 	realw[5] = ValfromUnit(refNum,"//Header/Sample_Thickness","cm") 
+	   	 	realw[2] = ValfromUnit(refNum,"//Counters/psd","")       ////Need to check!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			realw[10] = ValfromUnit(refNum,"//Header/x_mm_per_pixel","mm")  
+			realw[13] = ValfromUnit(refNum,"//Header/y_mm_per_pixel","mm")  
+			Variable/G root:myGlobals:PixelResDefault = unit_convert(realw[13],"mm","cm") //back to cm unit for this default value??!!
+	   	 	SetDataFolder curPath
+	   	 	
+	   	 	realw[16] = ValfromUnit(refNum,"//Header/beam_center_x_pixel","")  
+	   	 	realw[17] = ValfromUnit(refNum,"//Header/beam_center_y_pixel","")  
+	   	 	realw[21] = ValfromUnit(refNum,"//Motor_Positions/beam_trap_size","mm")    //what is different from the beam trap diameter in the file???
+	   	 	realw[18] = ValfromUnit(refNum,"//Motor_Positions/sample_det_dist","m") 
+			intw[1]  = ValfromUnit(refNum,"//Counters/time","sec")     //Not supported. Assumed in "sec"
+			intw[2] = intw[1] //???
+			realw[23]  = ValfromUnit(refNum,"//Header/source_aperture_size","mm")      //diameter???
+			realw[24]  = ValfromUnit(refNum,"//Header/sample_aperture_size","mm")      //diameter???
+	   	 	realw[25]  = ValfromUnit(refNum,"//Header/source_distance","m") 	
+	   	 	realw[26]  = ValfromUnit(refNum,"//Header/wavelength","a") 	
+	   	 	realw[27]  = ValfromUnit(refNum,"//Header/wavelength_spread","") 	
+			
+			//Set pixel numbers 
+	   	 	//SetDataFolder curPath
+	   	 	NVAR pixnumx1= root:myGlobals:gNPixelsX	   	 	     
+	   	 	NVAR pixnumy1= root:myGlobals:gNPixelsY
+	   	 	Variable pixnx = pixnumx1, pixny = pixnumy1
+	   	 	realw[20] = realw[10]*pixnx/10.0 			// physical detector width  in cm  // ToDo: Need to check for ypix size???
+	   	 	
+	   	 	//prepare to get data
+      			Make/O/N=(pixnumx1*pixnumy1) $(curPath+":data")
+			WAVE  data=$(curPath+":data")
+			//set the globals to the detector dimensions (pixels)
+			Redimension/N=(pixnx,pixny) data			//ORNL pixnums are given from the data file
+			Variable intens = 0
+	
+			// Read 2d data
+			XMLwaveFmXpath(refNum,"/SPICErack/Data/Detector",""," \t\n\r")
+			WAVE/T M_xmlContent
+	   	 	for (i=0;i<pixnx;i+=1)
+	   	 		for  (j=0;j<pixny;j+=1)
+	   	 			sscanf M_xmlContent[j+i*pixny],"%i", intens
+	   	 			data[i][j]=intens
+	   	 		endfor
+	   	 	endfor
+	   	 	
+
 	   	 	
 	   	 	///////unit test 1/2//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	   	 	//if  (stringmatch(tempheadhfir,"Detector")<1 ||stringmatch(tempheadhfir,"data"))
@@ -1182,33 +1048,25 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	   	 	//endif
 	   	 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		
-       endfor
-       
-//	Print "Time to loop over elements (s) = ",(ticks-t1)/60.15
 
-       //If the data is a sensitivity scan, normalize so that the average =1.
-       print curFolder
-	if (stringmatch(curFolder,"DIV") >0)
-		WaveStats/Z/Q data
-		data /= V_avg
-	endif
-	//keep a string with the filename in the RAW folder
+
+	  //If the data is a sensitivity data, need to be narmalize so that the average over the detector should be 1.
+	 If (stringmatch(curFolder, "DIV") >0)
+	 	//Variable V_avg
+	 	 WaveStats/Z/Q data
+	  	data /= V_avg
+	  endif
+	   	 	
+
+	//keep a string of the filename in the RAW folder
 	
 	Variable strpos
-	WAVE/T M_listAttr
-	XMLlistAttr(refNum,"/SPICErack","")
-
-	for (i = 0; i<DimSize(M_listAttr,0);i+=1)
-	   	  if ( Strsearch(M_listAttr[i][1],"filename",0) !=-1)   //find file name
-	   	       textw[0]=M_listAttr[i][2]     //filename
-
-	   	  elseif (Strsearch(M_listAttr[i][1],"start_time",0) !=-1) 
-	   	       textw[1]=M_listAttr[i][2]      		//Date and Time
-							
-	   	       textw[5]=StringFromList(0,textw[1]," ")                                                //Date
-	   	  endif
-	endfor    
-	String/G $(curPath+":FileList") = textw[0]
+		
+	textw[0] = RemoveAllSpaces(XMLstrFmXpath(refNum,"//SPICErack/@filename","","") )    //////ShortFileName(RemoveAllSpaces(XMLstrFmXpath(refNum,"//SPICErack/@filename","","") )  )         // file name
+	textw[1] =   XMLstrFmXpath(refNum,"//SPICErack/@start_time","","")		//Date and Time
+	textw[5]=StringFromList(0,textw[1]," ")  									//Date
+	
+	//String/G $(curPath+":FileList") = textw[0]
 	
 	///////unit test 2/2//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//SetDataFolder curPath
@@ -1223,14 +1081,36 @@ Function ReadHFIRSansRaw(refNum,curFolder,tempheadhfir)
 	//	print "intw["+num2str(i)+"] ="+num2str(intw[i])
 	//endfor
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+	// We have everything from file: Need to close the file soon as possible
+	XMLclosefile(refNum, 0)	
 	SetDataFolder curPath
+	Killwaves/Z M_listXPath
+End
+
+/// Get real value in NIST unit ///////////////////////////////////////////////////////////////////////////////////////////////////
+Function ValfromUnit(refNum,wantedterm,NISTunit)
+	Variable refNum    //FileID
+	String wantedterm,NISTunit  //Xpath, value in string, unit from HFIR, unit from NIST
 	
-//	Print "Time to exit reader (s) = ",(ticks-t1)/60.15
-		
-//	Killwaves/Z nsList,M_listAttr,M_xmlContent,W_ElementList,M_listXPath,W_xmlcontentnodes
-	return(0)
+	String val="", unitstr=""
+	Variable value = 0.0 
+	//SetDataFolder curPath ////????????/
 	
+	val =   XMLstrFmXpath(refNum,wantedterm,"","")
+	unitstr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@units","",""))
+	
+	//The units of the source_distance is treated special...
+	if (stringmatch(wantedterm,"*source_distance")>0 )
+		if  (strlen(unitstr)==0)
+	   	 	unitstr = "mm" 		//Give mm unit since no unit is provided from the file. ///This needs to be corrected soon!!!!
+	   	 endif
+	endif
+	//String to double
+	sscanf val, "%f", value
+	Variable data
+	data = unit_convert(value,unitstr,NISTunit)
+
+	return data
 End
 
 
@@ -1245,76 +1125,63 @@ Function ReadVFromHHead(refNum,wantedterm,NCunit)
 	Variable ind=0,i=0, value = 0
 	String  ntype = ""
 	String savedDataFolder = GetDataFolder(1)
-	//Default for transmission rate (between 0 to 1): HFIR not provide this as a Float number???? ==>make one
-	if (stringmatch(wantedterm,"Transmission_for_Sample")>0)
+	//Default for transmission rate (between 0 to 1): HFIR not provide this as a Float number???? ==>make one: if exist, read it below.
+	if (stringmatch(wantedterm,"//Transmission_for_Sample")>0)
 		vresult=1		
 	endif
 	
-	XMLelemlist(refNum)
-	WAVE/T W_ElementList
+	String unitstr = "", typestr="",tempheadhfir="", val=""
 
-	for (ind = 0; ind<DimSize(W_ElementList,0); ind +=1)
-		String unitstr = "",tempheadhfir="", val=""
-		tempheadhfir=W_ElementList[ind][3]
-			
-		//Find the value
-		XMLwaveFmXpath(refNum,W_ElementList[ind][0],""," \t\n\r")
-		WAVE/T M_xmlContent
-		val =  M_xmlContent[0]
-
-		if  (stringmatch("",wantedterm)>0)	
-			vresult =0
-			break
-		elseif (stringmatch(tempheadhfir,wantedterm)>0)	
-			//Find unit if exists.
-			XMLlistAttr(refNum,W_ElementList[ind][0],"")
-			WAVE/T M_listAttr
-			for (i = 0; i < DimSize( M_listAttr,0); i+=1)
-				if (stringmatch(M_listAttr[i][1],"units") >0)
-					unitstr = M_listAttr[i][2]
-					break
-				endif
-			endfor
-			ntype ="s"		//TEXT	
-			for (i = 0; i < DimSize( M_listAttr,0); i+=1)	
-				if (stringmatch(M_listAttr[i][1],"type")>0)
-					if   (stringmatch(M_listAttr[i][2], "INT*")>0)
-						ntype = "i"		//INT32
-						break
-					elseif (stringmatch(M_listAttr[i][2], "FLOAT*")>0)
-						ntype ="f"		//FLOAT32
-						break
-					endif	
-				endif
-			endfor	
-			if (strlen(ntype) == 0)
-				ntype = "s"			//for no "type" attr.
-			endif		
-			String ustr ="%f"				//default: float
-			if (stringmatch(ntype,"i") > 0)	//for integer	
-				ustr = "%d"
-			endif	
+	if (stringmatch(wantedterm,"") >0 ) // set zero if wnatedterm is "" ,not defined(eg., rotation angle).
+		vresult =0
+		//close here
+		XMLclosefile(refNum, 0)
+		return vresult
+	else
+		//Find the value,unit, and type of the value: a little ugly but faster...
+		val =   XMLstrFmXpath(refNum,wantedterm,"","")
+		unitstr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@units","",""))
+		typestr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@type","",""))
+		//close here
+		XMLclosefile(refNum, 0)
+	endif
+	
+	if   (stringmatch(typestr , "INT*")>0)
+		ntype = "i"		//INT32
+	elseif (stringmatch(typestr , "FLOAT*")>0)
+		ntype ="f"		//FLOAT32
+	else
+		ntype ="s"		//TEXT
+	endif	
+	
+	String ustr ="%f"				//default: float
+	if (stringmatch(ntype,"i") > 0)	//for integer	
+		ustr = "%d"
+	endif	
 					
-			//Special case starts!!! 
-			//No unit found in hfir ("mm") but needs to convert to meters.
-			//The following 3 lines should be removed once HFIR puts th units on the raw data files.
-			if (stringmatch(wantedterm,"source_distance")>0&& strlen(unitstr) ==0)
-				unitstr = "mm" 		
-			endif
-			//Special case ends!!!
-			sscanf val, ustr, value
-			
-	   	 	vresult = unit_convert(value,unitstr,NCunit)
-	   	 	//Set PixResDefault from y_mm_per_pixel (not x_mm_per_pixel!!!!!!!!)
-	   	 	if (stringmatch(wantedterm,"y_mm_per_pixel")>0)
-	   	 		Variable/G root:myGlobals:PixelResDefault = unit_convert(vresult,"mm","cm") //back to cm unit for this default value??!!
-	   	 		SetDataFolder savedDataFolder		//In case...
-			endif
-	   	 	break
-	   	 endif
+	//Special case starts!!! 
+	//No unit found in hfir ("mm") but needs to convert to meters.
+	//The following 3 lines should be removed once HFIR puts th units on the raw data files.
+	if (stringmatch(wantedterm,"*source_distance")>0&& strlen(unitstr) ==0)
+		unitstr = "mm" 		
+	endif
+	//Special case ends!!!
+	
+	//Do NOT use str2num(): will loose many decimal digits.
+	sscanf val, ustr, value	
+	vresult = unit_convert(value,unitstr,NCunit)
+	if (stringmatch(wantedterm,"*Transmission_for_Sample")>0 && vresult == 0)
+	   	 //Transmission default value if it was set to 0.
+	   	 vresult = 1
+	endif
+	   	 	
+	//Set PixResDefault from y_mm_per_pixel (not x_mm_per_pixel!!!!!!!!)
+	if (stringmatch(wantedterm,"*y_mm_per_pixel")>0)
+	   	 Variable/G root:myGlobals:PixelResDefault = unit_convert(vresult,"mm","cm") //back to cm unit for this default value??!!
+	   	 SetDataFolder savedDataFolder		//In case...
+	endif
+
 		
-      endfor
-	KillWaves/Z W_ElementList,M_xmlContent
       	return (vresult)
 
 End
@@ -1327,71 +1194,33 @@ Function/S ReadSFromHHead(refNum,wantedterm)
       String wantedterm
       
       String tempheadhfir = ""
-      String result = "",gotterm ="n" 
+      String result = "",gotterm ="n" ,name
 	Variable ind,i
 
       if   (stringmatch(wantedterm,"")>0) 
       		result = ""
+      		XMLclosefile(refNum, 0)
       		return (result)
 	endif
-
-	XMLlistAttr(refNum,"/SPICErack","")
-	WAVE/T M_listAttr
-	if (stringmatch("filename",wantedterm)>0 ||  stringmatch("start_time",wantedterm)>0)
-		for (i = 0; i<DimSize(M_listAttr,0);i+=1)
-	   	 	 if ( Strsearch(M_listAttr[i][1],wantedterm,0) !=-1  )  
-	   	      	 	result=M_listAttr[i][2]    
-	   	      	 	gotterm ="y" 
-				break
-	   	  	endif
-		endfor    
-	else
-		XMLelemlist(refNum)
-		WAVE/T W_ElementList
-
-		for (ind = 0; ind<DimSize(W_ElementList,0); ind +=1)
-		
-			tempheadhfir=W_ElementList[ind][3]
-			
-			XMLwaveFmXpath(refNum,W_ElementList[ind][0],""," \t\n\r")
-			WAVE/T M_xmlContent
-			
-			if (DimSize(M_xmlContent, 0)==0)		//For NULL content
-				Make/O/T /N=1 M_xmlContent			
-				M_xmlContent = ""
-			endif	
-
-			result =  M_xmlContent[0]
-			
-			if (stringmatch(tempheadhfir,wantedterm)>0)		
-				for (i = 1; i < DimSize(M_xmlContent,0);i +=1)
-					result += " " + M_xmlContent[i]
-				endfor	   	
-				gotterm ="y" 	
-	   	 		break
-	   	 	endif
-	 	endfor
-	endif
 	
+	result =  XMLstrFmXpath(refNum,wantedterm,"","")
+	if (stringmatch(result, "") != -1 )	
+		gotterm ="y" 	
+	endif
+
+	//HFIR header does not have "suffix" tag but one can get the info from file name before user writes the tag into the header.
+	if (stringmatch("",result)>0	 && stringmatch("//suffix",wantedterm)>0 )
+		name = RemoveAllSpaces(XMLstrFmXpath(refNum,"//SPICErack/@filename","",""))
+	   	result=StringFromList(2,StringFromList(0, name,"."), "_")+"_"+StringFromList(3,StringFromList(0,name,"."), "_")
+	endif
+
+	//Close file here.
+	XMLclosefile(refNum, 0)
 	
 	if (stringmatch(gotterm,"n")>0 ) 
 		result = ""
-	endif
-	//HFIR header does not have "suffix" tag but one can get the info from file name before user writes the tag into the header.
-	if (stringmatch("suffix",wantedterm)>0 && stringmatch("",result)>0) 			
-		for (i = 0; i<DimSize(M_listAttr,0);i+=1)
-	   	 	 if ( Strsearch(M_listAttr[i][1],"filename",0) !=-1  )  
-	   	 	 	result=StringFromList(2,StringFromList(0,M_listAttr[i][2],"."), "_")+"_"+StringFromList(3,StringFromList(0,M_listAttr[i][2],"."), "_")
-				break
-	   	  	endif
-		endfor   
-	//make sure not to have a left-over content (only for text; numbers are set to -1 later as a default if not found)
-	//else
-	endif
-	
-	//Make sure to clean up things...
-	KillWaves/Z M_listAttr,W_ElementList,M_xmlContent,,W_xmlcontentnodes
-	
+	endif	
+
       return (result)
 End
 
@@ -1411,7 +1240,7 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	
 	Variable typenum = 0
 	String ntype = ""	//Do not change this initial, "".
-      	String nstr = "/SPICErack" 		//to add new nodes and content.
+      	String nstr = "/SPICErack" 		//to add new nodes and content: NEVER CAHNGE this string
       	String errorMsg =""
 	
 	//print "Loading", filename, "..."
@@ -1435,52 +1264,37 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 		XMLclosefile(refNum, 0)
 		return -1 				//Not a xml file. Do nothing...
 	endif
-	
-	XMLelemlist(refNum)
-	WAVE/T W_ElementList
 
-	for (ind = 0; ind<DimSize(W_ElementList,0); ind +=1)
-		String unitstr = "",tempheadhfir="", val=""
-		tempheadhfir=W_ElementList[ind][3]
+		String unitstr = "",typestr="", val=""
 
 		if  (strlen(wantedterm)==0)	
 			vresult =0				//If input is NULL, do nothing...
 			nstr = ""					//reset as No new node
-			break
-		elseif (stringmatch(tempheadhfir,wantedterm)>0)	
 
-			XMLlistAttr(refNum,W_ElementList[ind][0],"")
-			WAVE/T M_listAttr
-				
+		else   //(stringmatch(tempheadhfir,wantedterm)>0)	
+			val =   XMLstrFmXpath(refNum,wantedterm,"","")
+		
 			//Special case starts!!! 
 			//No unit founds in hfir ("mm") file but needs to convert to meters. Let's give it one.
-			if (stringmatch(wantedterm,"source_distance")>0&& strlen(unitstr) ==0)
-				unitstr = "mm" 		
+			if (stringmatch(wantedterm,"*source_distance")>0&& strlen(unitstr) ==0)
+				unitstr = "mm" 	
+				ntype ="f"	
 			//Special case ends!!!
 			else
-				//Check the unit
-				for (i = 0; i < DimSize( M_listAttr,0); i+=1)	
-					if (stringmatch(M_listAttr[i][1],"units") >0)
-						unitstr = M_listAttr[i][2]
-						break
-					endif
-				endfor		
+				unitstr =  XMLstrFmXpath(refNum,wantedterm+"/@units","","")
+				typestr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@type","",""))
+	
 				ntype ="s"		//TEXT	
-				for (i = 0; i < DimSize( M_listAttr,0); i+=1)	
-					if (stringmatch(M_listAttr[i][1],"type")>0)
-						if   (stringmatch(M_listAttr[i][2], "INT*")>0)
-							ntype = "i"		//INT32
-							break
-						elseif (stringmatch(M_listAttr[i][2], "FLOAT*")>0)
-							ntype ="f"		//FLOAT32
-							break
-						endif	
-					endif
-				endfor	
-				if (strlen(ntype) == 0)
-					ntype = "s"			//for no "type" attr.
-				endif		
+				
+					if  (strlen(typestr)==0)
+						ntype = "s"
+					elseif   (stringmatch(typestr, "INT*")>0)
+						ntype = "i"		//INT32
+					elseif (stringmatch(typestr, "FLOAT*")>0)
+						ntype ="f"		//FLOAT32
+					endif	
 			endif
+			
 			if (stringmatch(ntype,"s") > 0)	//for strings		
 				vresult = 1			
 				valstr =value
@@ -1491,18 +1305,26 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 				endif			
 				sscanf  value,ustr, vals
 	   	 		vresult = unit_convert(vals,NCunit,unitstr)	//Unit correction...(back to the HFIR unit)
+	   	 		
 				sprintf valstr,ustr, vresult
-	   	 		//valstr = vresult
 	   	 	endif
-	   	 	XMLsetNodeStr(refNum,W_ElementList[ind][0],"",valstr)	//to set
-	   	 	nstr = ""				//reset as No new node
-	   	 	break
+	   	 	
+	   	 	if (stringmatch(wantedterm,"/SPICErack/*")>0&& strlen(val) ==0)
+	   	 		nstr = "/SPICErack"
+	   	 		// remove "/SPICErack/" from wantedterm 
+	   	 		wantedterm = StringFromList(2, wantedterm,"/SPICErack/")
+	   	 	else
+	   	 		XMLsetNodeStr(refNum,wantedterm,"",valstr)	//to set
+	   	 		nstr = ""				//reset as No new node
+	   	 	endif
+	   	 	//break
 	   	 endif		
-       endfor
-
-	if (strlen(nstr)>0)	 			//to write a new  attribut name and value which is not found in the raw file.
+	//to write new  attr name and value which are not found in the raw file.
+	if (strlen(nstr)>2)	 			
 		 XMLaddNode(refNum,nstr,"",wantedterm,value,1)
-		 nstr += "/" + wantedterm
+		 // nstr to add new node
+		 nstr = "//"+wantedterm
+		 // get unit
 	   	 if (stringmatch(NCunit,"text")>0)	
 	   	 	ntype = "text"
 	   	 	vresult = 1
@@ -1512,11 +1334,11 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	   	 	sscanf  value, "%f", vals
 	   	 	vresult = vals 		
 	   	 endif
-	   	 print "*** Note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
+	   	 //print "*** Note:*** \r     *** No parameter named",wantedterm, "was found, so it was added to the end of your data file."
 	   	 XMLsetAttr(refNum,nstr,"","type",ntype)    	
 	endif
 
-	KillWaves/Z W_ElementList,M_xmlContent,M_listXPath,M_listAttr			//clean up
+	//KillWaves/Z W_ElementList,M_xmlContent,M_listXPath,M_listAttr			//clean up
 	if	(strlen(wantedterm)==0 && vresult == -1)
 		XMLclosefile(refNum, 0)
 		//print "Failed writing",wantedterm, "on", filename, "..."
@@ -1565,7 +1387,7 @@ Variable/G root:myGlobals:globDask1=checked
 Function Write_isTransmissionToHeader(fname,str)
 	String fname,str
 
-	WriteHFIRHead(fname,str, "Transmission","text") 	
+	WriteHFIRHead(fname,str, "//Header/Transmission","text") 	
 	return(0)
 End
 
@@ -1577,7 +1399,7 @@ Function WriteTransmissionToHeader(fname,trans)
 	String transstr = ""
 	sprintf transstr, "%f", trans
 
-	 WriteHFIRHead(fname,transstr,"Transmission_for_Sample" ,"") 		
+	 WriteHFIRHead(fname,transstr,"/SPICErack/Transmission_for_Sample" ,"") 		
 	return(0)
 End
 
@@ -1589,7 +1411,7 @@ Function WriteWholeTransToHeader(fname,trans)
 	String transstr = ""
 	sprintf transstr, "%f", trans
 
-	WriteHFIRHead(fname,transstr,"detector" ,"") 	//????????????????????????????????????????????????????????
+	WriteHFIRHead(fname,transstr,"//Counters/detector" ,"") 	//????????????????????????????????????????????????????????
 	return(0)
 End
 
@@ -1603,7 +1425,7 @@ Function WriteBoxCountsToHeader(fname,counts)
 	String countsstr = ""
 	sprintf countsstr, "%f", counts
 
-	WriteHFIRHead(fname,countsstr,"Box_Counts" ,"") 	
+	WriteHFIRHead(fname,countsstr,"/SPICErack/Box_Counts" ,"") 	
 	return(0)
 End
 
@@ -1616,7 +1438,7 @@ Function WriteBSXPosToHeader(fname,xpos)
 	String xposstr = ""
 	sprintf xposstr, "%f", xpos
 
-	WriteHFIRHead(fname,xposstr,"beam_trap_x","mm") 	///Is this diameter???!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	WriteHFIRHead(fname,xposstr,"//Motor_Positions/beam_trap_x","mm") 	///Is this diameter?
 	return(0)
 End
 
@@ -1628,7 +1450,7 @@ Function WriteThicknessToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"Sample_Thickness","cm") 
+	WriteHFIRHead(fname,numstr,"//Header/Sample_Thickness","cm") 
 	return(0)
 End
 
@@ -1640,7 +1462,7 @@ Function WriteBeamCenterXToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"beam_center_x_pixel" ,"") 
+	WriteHFIRHead(fname,numstr,"//Header/beam_center_x_pixel" ,"") 
 	return(0)
 End
 
@@ -1652,7 +1474,7 @@ Function WriteBeamCenterYToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"beam_center_y_pixel","") 
+	WriteHFIRHead(fname,numstr,"//Header/beam_center_y_pixel","") 
 	return(0)
 End
 
@@ -1664,7 +1486,7 @@ Function WriteAttenNumberToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"attenuation","percent")  	// HFIR has attenuation % instead of this. thus user has to use patch unless somebody change the format!!!!
+	WriteHFIRHead(fname,numstr,"//Motor_Positions/attenuation","percent")  	// HFIR has attenuation % instead of this. thus user has to use patch unless somebody change the format!!!!
 	return(0)
 End
 
@@ -1676,7 +1498,7 @@ Function WriteMonitorCountToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"monitor","") 
+	WriteHFIRHead(fname,numstr,"//Counters/monitor","") 
 	return(0)
 End
 
@@ -1688,7 +1510,7 @@ Function WriteDetectorCountToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"psd","") 
+	WriteHFIRHead(fname,numstr,"//Counters/psd","") 
 	return(0)
 End
 
@@ -1700,7 +1522,7 @@ Function WriteTransDetCountToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"detector","")   ///Check with Steve & Ken!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+	WriteHFIRHead(fname,numstr,"//Counters/detector","")   ///Check with Steve & Ken!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
 	return(0)
 End
 
@@ -1712,7 +1534,7 @@ Function WriteWavelengthToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"wavelength" ,"angstroms") 
+	WriteHFIRHead(fname,numstr,"//Header/wavelength" ,"angstroms") 
 	return(0)
 End
 
@@ -1724,7 +1546,7 @@ Function WriteWavelengthDistrToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"wavelength_spread","") 
+	WriteHFIRHead(fname,numstr,"//Header/wavelength_spread","") 
 	return(0)
 End
 
@@ -1736,7 +1558,7 @@ Function WriteTemperatureToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"temp" ,"C") 
+	WriteHFIRHead(fname,numstr,"//Parameter_Positions/tsample" ,"C") 
 	return(0)
 End
 
@@ -1748,7 +1570,7 @@ Function WriteMagnFieldToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"magnetic_field","G")  //Not defined on HFIR file...  Should be changed the name when decided...
+	WriteHFIRHead(fname,numstr,"/SPICErack/magnetic_field","G")  //Not defined on HFIR file...  Should be changed the name when decided...
 	return(0)
 End
 
@@ -1760,7 +1582,7 @@ Function WriteSourceApDiamToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"source_aperture_size","mm") 
+	WriteHFIRHead(fname,numstr,"//Header/source_aperture_size","mm") 
 	return(0)
 End
 
@@ -1784,7 +1606,7 @@ Function WriteSrcToSamDistToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"source_distance","m")     //unit=m   :hfir = mm ???????????????
+	WriteHFIRHead(fname,numstr,"//Header/source_distance","m")     //unit=m   :hfir = mm ???????????????
 	return(0)
 End
 
@@ -1796,7 +1618,7 @@ Function WriteDetectorOffsetToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"detector_trans","cm")  //cm:  HFIR = mm !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	WriteHFIRHead(fname,numstr,"//Header/detector_trans","cm")  //cm:  HFIR = mm !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	return(0)
 End
 
@@ -1808,7 +1630,7 @@ Function WriteBeamStopDiamToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 	
-	WriteHFIRHead(fname,numstr,"beam_trap_size","mm")  //check !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	WriteHFIRHead(fname,numstr,"//Motor_Positions/beam_trap_size","mm")  //check !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	return(0)
 End
 
@@ -1820,7 +1642,7 @@ Function WriteSDDToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 	
-	WriteHFIRHead(fname,numstr,"sample_det_dist","m")
+	WriteHFIRHead(fname,numstr,"//Motor_Positions/sample_det_dist","m")
 	return(0)
 End
 
@@ -1832,7 +1654,7 @@ Function WriteDetPixelXToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 	
-	WriteHFIRHead(fname,numstr, "x_mm_per_pixel","mm")
+	WriteHFIRHead(fname,numstr, "//Header/x_mm_per_pixel","mm")
 	return(0)
 End
 
@@ -1844,7 +1666,7 @@ Function WriteDetPixelYToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 	
-	WriteHFIRHead(fname,numstr, "y_mm_per_pixel","mm")
+	WriteHFIRHead(fname,numstr, "//Header/y_mm_per_pixel","mm")
 	return(0)
 End
 
@@ -1856,7 +1678,7 @@ Function WriteSamLabelToHeader(fname,str)
 	if(strlen(str) > 60)
 		str = str[0,59]
 	endif
-	WriteHFIRHead(fname,str, "Scan_Title","text") //Users tend to put the sample descrpt here instead of "Sample_Name"...
+	WriteHFIRHead(fname,str, "//Header/Scan_Title","text") //Users tend to put the sample descrpt here instead of "Sample_Name"...
 	return(0)
 End
 
@@ -1868,7 +1690,7 @@ Function WriteCountTimeToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 	
-	WriteHFIRHead(fname,numstr,"time","sec") 
+	WriteHFIRHead(fname,numstr,"//Counters/time","sec") 
 	return(0)
 End
 
@@ -1880,8 +1702,9 @@ Function length_unit_convert(from,to)  // input: ("m", cm")==> output=10,....;  
 	Variable i, out
 	
 	Make/O/T/N=(18,2) munit
-		
-	//length units
+	
+	//ToDo: to combine the same units	
+	//length units 
 	munit[0][0]="m"   //popular units first...
 	munit[0][1]= "1"
 	munit[1][0]="cm" 
@@ -1956,9 +1779,12 @@ End
 Function unit_convert(val, from,to)  // input: ("m", cm")==> output=10,....;   input: ("", "") ==> out = 1
 	Variable val
 	String from, to
-	
+
+	from = RemoveAllSpaces(from)
+	to = RemoveAllSpaces(to)
+			
 	Variable i, out = val
-	
+
 	//Search for two same strings, or one with none.
 	if (stringmatch(from,to)>0 ||strlen(from) == 0||strlen(to)==0) 
 		out = val
@@ -1980,7 +1806,7 @@ Function temp_unit_convert(val, from,to)
 	Variable val
 	String from, to
 	
-	Variable i, out = val
+	Variable i, j, out = val
 
 	Make/O/T/N=(2,2) tunit
 	
@@ -1988,24 +1814,23 @@ Function temp_unit_convert(val, from,to)
 	tunit[0][1]= "-273.15"
 	tunit[1][0]="K" 
 	tunit[1][1]= "0"	
-	
+
 	String  v_from="", v_to=""
-	
+
 	for (i = 0; i<DimSize(tunit,0); i+=1)
-		if (stringmatch(tunit[i][0],from)>0)  // IgorPro "stringmatch()" function handles both lower & upper cases.
+		if (stringmatch(tunit[i][0],from)==1)  // IgorPro "stringmatch()" function handles both lower & upper cases.
 			v_from = tunit[i][1]
 			break
 		endif
 	endfor
-	
-	for (i = 0; i<DimSize(tunit,0); i+=1)
-		if (stringmatch(tunit[i][0],to)>0)
-			v_to = tunit[i][1]
+
+	for (j = 0; j<DimSize(tunit,0); j+=1)
+		if (stringmatch(tunit[j][0],to)==1)
+			v_to = tunit[j][1]
 			break
 		endif	
 	endfor	
 	KillWaves/Z tunit
-		
 	if (strlen(v_from)==0 || strlen(v_to) ==0)
 		out = 1    		//Do nothing...
 	else
@@ -2014,8 +1839,102 @@ Function temp_unit_convert(val, from,to)
 		sscanf  v_from, "%f", vf
 		out = val + (vt - vf)
 	endif
-	
 	return out
+End
+
+
+///This function make HFIR SANS data file shorter which is more than 30 characters causing problem taking other names after the file name.
+//Will remove instrumental name.
+Function/S ShortFileName(fileName)
+	String fileName
+	//Default: just passing
+	String fname = fileName
+
+	//Check whether it is from HiResSANS or BioSANS and remove the head
+	if (stringmatch(fileName,"HiResSANS_*.*")>0 )
+		fname = ReplaceString("HiResSANS_",fname,"HS_",0,1)    
+	elseif (stringmatch(filename,"BioSANS_*.*")>0)
+		fname = ReplaceString("BioSANS_",fname,"BS_",0,1)     
+	endif
+	return fname
+END
+
+//Not used
+///This function return the original HFIR SANS data file name that was shorten before.
+//Put them back to HiResSANS*** or BioSANS***.
+Function/S FullFileName(fname)
+	String fname
+	//Default: just passing
+	String fileName = fname
+	
+	//Check whether it is from HiResSANS or BioSANS
+	if (stringmatch(fname,"*HS_*.*")>0 )
+		fileName = ReplaceString("HS_",fname,"HiResSANS_",0,1)  
+	elseif (stringmatch(fname,"*BS_*.*")>0)
+		fileName = ReplaceString("BS_",fname,"BioSANS_",0,1)   
+	endif
+
+	return fileName
+END
+
+
+///Find file name from full Path+file 
+Function/S GetFName(path,  length)
+	String path
+	Variable length // 1 for full name, 0 for shorten name, others pass the name
+	
+	Variable index 
+	String ofname, mfname
+	
+	// get index of the file name
+	index = ItemsInList(path,":") - 1
+	// get file name
+	ofname = StringFromList(index,path,":")
+	//modify the name if need otherwise return w/o change
+	if (length == 0)
+		mfname = ShortFileName(ofname)
+	elseif (length == 1)
+		mfname = FullFileName(ofname)
+	else
+		mfname = ofname
+	endif
+	// return the path+modified file name
+	return mfname
+End
+
+
+///Find file name from full Path+file and replace file name to a shorter or full name in path+file.
+Function/S ReplaceFName(path,  length)
+	String path
+	Variable length // 1 for full name, 0 for shorten name
+	
+	Variable index 
+	String ofname,mfname
+	
+	// get index of the file name
+	index = ItemsInList(path,":") - 1
+	// get file name
+	ofname = StringFromList(index,path,":")
+	//modify the name if need otherwise return w/o change
+	if (length == 0)
+		mfname = ShortFileName(ofname)
+	else
+		mfname = FullFileName(ofname)
+	endif
+	// return the path+modified file name
+	return ReplaceString(ofname,path,mfname,0,1)
+End
+
+////Unused ///Not working well
+// Change file name before and after Xml open
+Function/S XmlFileOpen(fname)
+	String fname
+	
+	// fname = path + full file name
+	fname = ReplaceFName(fname,  1)
+	XmlOpenFile(fname)
+	// path + short file name
+	return ReplaceFName(fname,  0)
 End
 
 

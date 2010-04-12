@@ -986,3 +986,31 @@ Function DetEffCorrILL(lambda,dtdist,xd)
 
 	return(ff)
 End
+
+
+// Return the filename that represents the previous or next file.
+// Input is current filename and increment. 
+// Increment should be -1 or 1
+// -1 => previous file
+// 1 => next file
+Function/S GetPrevNextRawFile(curfilename, prevnext)
+	String curfilename
+	Variable prevnext
+
+	String filename
+	
+	//get the run number
+	Variable num = GetRunNumFromFile(curfilename)
+		
+	//find the next specified file by number
+	fileName = FindFileFromRunNumber(num+prevnext)
+
+	if(cmpstr(fileName,"")==0)
+		//null return, do nothing
+		fileName = FindFileFromRunNumber(num)
+	Endif
+
+//	print "in FU "+filename
+
+	Return filename
+End

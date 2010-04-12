@@ -44,6 +44,10 @@ Proc Initialize()
 		Main_Panel()
 	Endif
 	ResizeCmdWindow()
+	
+	//unload the NCNR_Package_Loader, if NCNR not defined
+	UnloadNCNR_Igor_Procedures()
+
 End
 
 //creates all the necessary data folders in the root folder
@@ -158,6 +162,21 @@ Function ResizeCmdWindow()
 	MoveWindow/C  (left+3)*factor,(bottom-150)*factor,(right-50)*factor,(bottom-10)*factor
 End
 
+// since the NCNR procedures can't be loaded concurrently with the other facility functions,
+// unload this procedure file, and add this to the functions that run at initialization of the 
+// experiment
+Function UnloadNCNR_Igor_Procedures()
+
+#if (exists("NCNR")==6)			//defined in the main #includes file.
+	//do nothing if an NCNR reduction experiment
+#else
+	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";","WIN:128")))
+		Execute/P "CloseProc /NAME=\"NCNR_Package_Loader.ipf\""
+		Execute/P "COMPILEPROCEDURES "
+	endif
+#endif
+
+End
 
 //returns 1 if demo version, 0 if full version
 Function IsDemo()

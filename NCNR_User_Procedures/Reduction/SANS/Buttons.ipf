@@ -213,14 +213,14 @@ Function LoadPlotAndDisplayRAW(increment)
 	//take the currently displayed RAW file (there is only one name in fileList)
 	SVAR oldName = root:Packages:NIST:RAW:fileList
 	
-	print oldName
+//	print oldName
 	
 	filename = oldname
 	for (i = 0; i < abs(increment); i += 1)
 		filename = GetPrevNextRawFile(filename,increment/abs(increment))
 	endfor	
 	
-	print filename
+//	print filename
 	
 	// display the specified RAW data file
 	String/G root:myGlobals:gDataDisplayType="RAW"

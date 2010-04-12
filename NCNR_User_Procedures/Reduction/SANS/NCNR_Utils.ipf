@@ -1365,7 +1365,7 @@ Function/S GetPrevNextRawFile(curfilename, prevnext)
 		fileName = FindFileFromRunNumber(num)
 	Endif
 
-	print "in FU "+filename
+//	print "in FU "+filename
 
 	Return filename
 End
