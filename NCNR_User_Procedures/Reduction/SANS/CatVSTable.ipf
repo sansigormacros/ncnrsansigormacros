@@ -222,7 +222,7 @@ Function SortWaves()
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #else
 //	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 #endif
 
 
@@ -406,7 +406,7 @@ Function GetHeaderInfoToWave(fname,sname)
 	GReactPow[lastPoint]  = getReactorPower(fname)
 #endif	
 
-// number of guides, only for NCNR
+// number of guides and sample position, only for NCNR
 #if (exists("NCNR")==6)
 	InsertPoints lastPoint,1,GNumGuides
 	GNumGuides[lastPoint]  = numGuides(getSourceToSampleDist(fname))

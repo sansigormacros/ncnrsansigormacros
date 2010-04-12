@@ -41,7 +41,7 @@ End
 //AJJ October 2008 - switch to shared file loader
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
-#include "cansasXML"
+//#include "cansasXML"
 #include "USANS_SlitSmearing_v40"
 #include "GaussUtils_v40" // for isSANSResolution - could put this function elsewhere
 //
@@ -66,13 +66,20 @@ End
 #include "SANS_Utilities"								//new in the 29MAR07 branch
 
 // new in Jan 2008
-#include "SASCALC"
+//#include "SASCALC"
 #include "CheckVersionFTP"				//added June 2008
-#include "MultScatter_MonteCarlo_2D"			//Oct 2008 SRK for SASCALC simulation
+//#include "MultScatter_MonteCarlo_2D"			//Oct 2008 SRK for SASCALC simulation
 
 
 //AJJ Oct 2008
 #include "PlotManager_v40"
+
+// SRK JUN2009
+#include "Smear_2D"		//2D resolution calculation and smearing
+
+//AJJ Nov 2009
+#include "DataSetHandling"
+#include "WriteModelData_v40"
 
 
 // a simple list of items to add to the Beta menu
