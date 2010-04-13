@@ -1697,7 +1697,12 @@ Function SaveFakeCOR(nameStr)
 	
 	fileStr=nameStr+".cor"
 	//actually open the file
-	Open refNum as fileStr
+	PathInfo savePathName
+	if(V_flag==1)
+		Open/P=savePathName refNum as fileStr
+	else
+		Open refNum as fileStr
+	endif
 	
 	fprintf refnum,"%s"+termStr,samStr
 	fprintf refnum,"%s"+termStr,dateStr
@@ -1772,7 +1777,12 @@ Function SaveFakeUSANS(nameStr,num,set)
 	transDet = 999		//bogus and constant value
 		
 	//actually open the file
-	Open refNum as fileStr
+	PathInfo savePathName
+	if(V_flag==1)
+		Open/P=savePathName refNum as fileStr
+	else
+		Open refNum as fileStr
+	endif
 	
 	sprintf str,"'%s' '%s' 'I'        %d    1  'TIME'   %d  'RAW'",fileStr,dateStr,ctTime,numpts
 	fprintf refnum,"%s"+termStr,str

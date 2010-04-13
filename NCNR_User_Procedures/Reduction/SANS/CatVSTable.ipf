@@ -57,10 +57,9 @@ Function BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Pos"		//added Mar 2010
-#if (exists("ILL_D22")==6)
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //activate for ILL, June 2008,
+	
+	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //only used for for ILL, June 2008,
 	WAVE ReactorPower = $"root:myGlobals:CatVSHeaderInfo:Reactorpower"
-#endif
 
 	WAVE/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
 	WAVE/T Suffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
@@ -212,12 +211,11 @@ Function SortWaves()
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave GPos = $"root:myGlobals:CatVSHeaderInfo:Pos"
-#if (exists("ILL_D22")==6)
-	Wave GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
-#endif
+	Wave/Z GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
 
-#if (exists("NCNR")==6)
+#if (exists("ILL_D22")==6)
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
+#elif (exists("NCNR")==6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #else
@@ -251,13 +249,10 @@ Function BuildTableWindow()
 	Wave Field= $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave Pos = $"root:myGlobals:CatVSHeaderInfo:Pos"
+	Wave/Z ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
 #if (exists("ILL_D22")==6)
-// for ILL
-	Wave ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
-	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos, ReactorPower as "Data File Catalog"
-#endif
-
-#if (exists("NCNR")==6)
+	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
+#elif (exists("NCNR")==6)
 // original order, magnetic at the end
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // with numGuides
@@ -308,9 +303,8 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave GField = $"root:myGlobals:CatVSHeaderInfo:Field"
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"
 	Wave GPos = $"root:myGlobals:CatVSHeaderInfo:Pos"
-#if (exists("ILL_D22")==6)
 	Wave GReactpow = $"root:myGlobals:CatVSHeaderInfo:reactorpower"		//activate for ILL, Jne 2008, (+ last insert @ end of function)	
-#endif
+
 	lastPoint = numpnts(GLambda)
 		
 	//filename
