@@ -174,6 +174,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 									ModifyGraph grid=1,mirror=2,standoff=0
 									ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 									ModifyGraph tickUnit(left)=1
+									Label left "I(q)"
+									Label bottom "q (A\\S-1\\M)"
 									Legend
 								endif
 							else
@@ -183,6 +185,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 								ModifyGraph grid=1,mirror=2,standoff=0
 								ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 								ModifyGraph tickUnit(left)=1
+								Label left "I(q)"
+								Label bottom "q (A\\S-1\\M)"
 								Legend
 							endif
 						endif
@@ -301,6 +305,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 								ModifyGraph grid=1,mirror=2,standoff=0
 								ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 								ModifyGraph tickUnit(left)=1
+								Label left "I(q)"
+								Label bottom "q (A\\S-1\\M)"
 								Legend
 							endif
 						else
@@ -310,6 +316,8 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 							ModifyGraph grid=1,mirror=2,standoff=0
 							ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 							ModifyGraph tickUnit(left)=1
+							Label left "I(q)"
+							Label bottom "q (A\\S-1\\M)"
 							Legend
 						endif
 					endif

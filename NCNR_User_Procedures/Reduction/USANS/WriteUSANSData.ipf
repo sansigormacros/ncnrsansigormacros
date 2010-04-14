@@ -253,12 +253,24 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
+	//write out partial set?
+	// duplicate the original data, all 3 waves
+	Duplicate/O qvals,tq,ti,te
+	ti=inten
+	te=sig
+	if( (lo!=hi) && (lo<hi))
+		redimension/N=(hi-lo+1) tq,ti,te,dumWave		//lo to hi, inclusive
+		tq=qvals[p+lo]
+		ti=inten[p+lo]
+		te=sig[p+lo]
+	endif
+	
 	//Data
-	Wave nf.Q = qvals
+	Wave nf.Q = tq
 	nf.unitsQ = "1/A"
-	Wave nf.I = inten
+	Wave nf.I = ti
 	nf.unitsI = "1/cm"
-	Wave nf.Idev = sig
+	Wave nf.Idev = te
 	nf.unitsIdev = "1/cm"
 	// for slit-smeared USANS, set only a 4th column to  -dQv
 	Wave nf.dQl = dumWave
@@ -267,7 +279,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	//write out the standard header information
 	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
 	
-		//tailor the output given the type of data written out...
+	//tailor the output given the type of data written out...
 	WAVE inten_EMP=$(USANSFolder+":EMP:DetCts")
 	String samStr="",empStr="",dateStr="",samLabelStr="",paramStr="",empLevStr="",bkgLevStr=""
 	String pkStr=""
@@ -308,7 +320,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	
 	
 	//AJJ to fix with sensible values
-	nf.run = "Test"
+	nf.run = ""
 	nf.nameSASinstrument = "BT5 USANS"
 	nf.SASnote = ""
 	//

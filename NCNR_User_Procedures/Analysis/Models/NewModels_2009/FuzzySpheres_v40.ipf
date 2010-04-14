@@ -27,7 +27,7 @@ Proc PlotFuzzySpheres(num,qmin,qmax)
 	Make/O/D/N=(num) xwave_fuzz,ywave_fuzz
 	xwave_fuzz = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
 	Make/O/D coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}
-	make/O/T parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}
+	make/O/T parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length (A)","bkg (cm-1 sr-1)"}
 	Edit parameters_fuzz,coef_fuzz
 	
 	Variable/G root:g_fuzz
@@ -55,7 +55,7 @@ Proc PlotSmearedFuzzySpheres(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_fuzz = {0.01,60,0.2,10,1e-6,3e-6,1,50,0.001}					
-	make/o/t smear_parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","bkg (cm-1 sr-1)"}	
+	make/o/t smear_parameters_fuzz = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length (A)","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_fuzz,smear_coef_fuzz					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
