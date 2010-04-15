@@ -43,8 +43,7 @@ Proc Initialize()
 		oldVersion = 5.00
 	endif
 	
-	if(itemsinlist(WinList("Includes_v520.ipf", ";","INCLUDE:6"),";") != 0)
-		oldVersion = 5.20
+	if(oldVersion == curVersion)
 		//must just be a new startup with the current version
 		Variable/G root:SANS_RED_VERSION=5.20
 	endif
