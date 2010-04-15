@@ -182,7 +182,7 @@ End
 // acquisition system
 //
 // this run number should be a unique identifier for the file
-//
+//Because HFIR data format is w/ 2X 4digit number. We add them to get a unique number => This will cause the arrow button not working.
 Function GetRunNumFromFile(item)
 	String item
 	Variable invalid = -1	//negative numbers are invalid
@@ -200,12 +200,18 @@ Function GetRunNumFromFile(item)
 			//not enough characters
 			return (invalid)
 		else
-			runStr = item[pos-9,pos-5]
+			Variable pos_bio = strsearch( LowerStr(item),"biosans",0)
+			//if  (pos_bio== -1)
+				runStr  = item[pos-9,pos-6]  	//first 4 numbers
+			//else
+				runStr  += item[pos-4,pos-1]	//add last 4 numbers
+			//endif
 			//convert to a number
 			num = str2num(runStr)
+			
 			//if valid, return it
 			if (num == NaN)
-				//4 characters were not a number
+				//8 characters were not a number
 				return (invalid)
 			else
 				//run was OK
@@ -213,6 +219,7 @@ Function GetRunNumFromFile(item)
 			Endif
 		Endif
 	Endif
+	
 End
 
 
@@ -227,13 +234,15 @@ End
 // same as GetRunNumFromFile(0), just with a string return
 //
 // "ABC" returned as an invalid result
-Function/S GetRunNumStrFromFile(item)
+// XXXXSANS_expXX._scan1234_5678.xmp ==> "12345678"
+Function/S GetRunNumStrFromFile(item)	//,numposition)
 	String item
+	Variable numposition
 	
 	String invalid = "ABC"	//"ABC" is not a valid run number, since it's text
 	String retStr
 	retStr=invalid
-	
+
 	//find the "dot"
 	Variable pos = strsearch( LowerStr(item),".xml",0)
 	if(pos == -1)
@@ -241,15 +250,20 @@ Function/S GetRunNumStrFromFile(item)
 		return (retStr)
 	else
 		pos = strsearch( LowerStr(item),"_scan",0)
-		//found, get the nine characters preceeding it
-		if (pos ==-1)
+		
+		if  (pos == -1)
 			//not a raw data file
 			return (retStr)
 		else
-			//Take the first four
-			retStr= item[pos+5,pos+8]
+			//Variable pos_bio = strsearch( LowerStr(item),"biosans_",0)  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//if  (numposition == 0)
+				//Take the first four: //HiResSANS
+				retStr = item[pos+5,pos+8]
+			//else	
+				//add the last four: //BioSANS
+				retStr += item[pos+10,pos+13]
+			//Endif
 			return (retStr)
-			
 		Endif
 	Endif
 	
@@ -267,31 +281,44 @@ End
 //
 Function/S FindFileFromRunNumber(num)
 	Variable num
+
 	String fullName="",partialName="",item=""
 	//get list of raw data files in folder that match "num" (add leading zeros)
-	if( (num>9999) || (num<0) )
+	if( (num>99999999) || (num<0) )
 		//Print "error in  FindFileFromRunNumber(num), file number too large or too small"
 		Return ("")
 	Endif
 	//make a four character string of the run number
 	String numStr=""
 	
-	if(num > 999)
-		numStr = num2str(num)
+	if(num > 9999999 && num < 100000000)
+		numStr = num2istr(num)
+	endif
+	if(num > 999999 && num < 10000000)
+		numStr = "0"+num2istr(num)
+	endif	
+	if(num > 99999 && num < 1000000)
+		numStr = "00"+num2istr(num)
+	endif	
+	if(num > 9999 && num < 100000)
+		numStr = "000"+num2istr(num)
+	endif
+	if(num > 999 && num < 10000)
+		numStr =  "0000"+num2istr(num)
 	endif
 	if(num > 99 && num < 1000)
-		numStr = "0"+num2str(num)
-	endif
+		numStr = "00000"+num2istr(num)
+	endif	
 	if(num > 9 && num < 100)
-		numStr = "00"+num2str(num)
-	endif
-	if(num < 10)
-		numStr = "000"+num2Str(num)
+		numStr = "000000"+num2istr(num)
+	endif	
+	if(num < 10 && num >0)
+		numStr = "0000000"+num2iStr(num)
 	endif
 	if(num == 0)
-		numStr = "0000"
+		numStr = "00000000"
 	endif
-		
+
 	//make sure that path exists
 	PathInfo catPathName
 	String path = S_path
@@ -304,21 +331,24 @@ Function/S FindFileFromRunNumber(num)
 	//find (the) one with the number in the run # location in the name
 	Variable numItems,ii,runFound,isRAW
 	numItems = ItemsInList(list,";")		//get the new number of items in the list
-	ii=0
+
+	ii=3
 	do
 		//parse through the list in this order:
-		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let the first #### is the run num.
+		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let's check the 8  nums.
 		// 2 - exclude by isRaw? (to minimize disk access)
 		item = StringFromList(ii, list  ,";" )
+		
 		if(strlen(item) != 0)
-			//find the run number, if it exists as a three character string
-			testStr = GetRunNumStrFromFile(item)
+			//find the run number, if it exists as a 8 character string
+			testStr = GetRunNumStrFromFile(item)	//0)
 			runFound= cmpstr(numStr,testStr)	//compare the three character strings, 0 if equal
+			
 			if(runFound == 0)
 				//the run Number was found
 				//build valid filename
 				partialName = FindValidFileName(item)
-
+				
 				if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
 					fullName = path + partialName
 					//check if RAW, if so,this must be the file!
@@ -329,10 +359,11 @@ Function/S FindFileFromRunNumber(num)
 					Endif
 				Endif
 			Endif
+			
 		Endif
 		ii+=1
 	while(ii<numItems)		//process all items in list
-	print "Please type 'scan number(s)' from your file name..."
+	print "The run number (", numStr, " +- 1 ) does not exist... (Note: The run number is defined as 12345678 if the file name is NameSANS_exp##_scan1234_5678.xml)"
 	Return ("")	//null return if file not found in list	
 End
 
@@ -364,44 +395,21 @@ Function CheckIfRawData(fname)
 		print "==> "+ fname+ "\r  ==> Failed to load: Not a standard xml file format or broken.. Please check the file if properly written..."
 		return 0 				//Not a xml file. Do nothing...
 	endif
-
-	//temp list of ns
-	MAKE/T/N=(1)/O nsList
-	nsList[0] = "1.1" 
 	
 	// Check if  it is the SPICE version = 1.1
-	Variable  item,i
-	String thislocation,ns = ""
+	Variable  item,i,ns = 0
+	String thislocation
 	if (refNum >0)
-		for (item = 0; item < DimSize(nsList, 0); item += 1)		// loop over all possible namespaces
-			XMLlistAttr(refNum, "/SPICErack", nsList[item])
-			wave/T M_listAttr
-	
-			for (i = 0; i < DimSize(M_listAttr,0); i+=1)			// loop over all available attributes
-				// Expect the required hfir XML header (will fail if "schemalocation" is not found)
-				if ( CmpStr(  LowerStr(M_listAttr[i][1]),  LowerStr("SPICE_version") ) == 0 )
-					thisLocation = HFIR_TrimWS(M_listAttr[i][2])
-					if ( StringMatch(thisLocation, nsList[item] ) )
-						ns = nsList[item]			
-					
-						Break	// found it!
-					endif
-				endif
-			endfor
-			if (strlen(ns))			
-				Break		
-			endif
-		endfor
+		ns = str2num(XMLstrFmXpath(refNum, "//SPICErack/@SPICE_version","",""))
 	endif
 	XmlCloseFile(refNum,0)
-	KillWaves/Z M_listAttr, nsList
-	if (StringMatch(ns,"1.1") <1)
-		ns = "0"
+	if (ns <1.1)
+		ns =0
 	else
-		ns = "1"
+		ns =1
 	endif
 	
-	return str2num(ns)
+	return ns
 End
 
 // for HFIR data, both DIV and RAW are determined by looking for "*.xml"
@@ -429,22 +437,21 @@ Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		return (1)
 	else
 		//Check from beam stop motor position
-	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=30
+	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=451
 	//	if(your test here)
-	beamtrap_1y=getRealValueFromHeader(fname,"trap_y_101mm","mm")
-	beamtrap_2y=getRealValueFromHeader(fname,"trap_y_25mm","mm")
-	beamtrap_3y=getRealValueFromHeader(fname,"trap_y_50mm","mm")
-	beamtrap_4y=getRealValueFromHeader(fname,"trap_y_76mm","mm")
+		beamtrap_1y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_101mm","mm")
+		beamtrap_2y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_25mm","mm")
+		beamtrap_3y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_50mm","mm")
+		beamtrap_4y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_76mm","mm")
 
-//	 if (beamtrap_1y<10 && beamtrap_2y<10 && beamtrap_3y<10 && beamtrap_4y<10)	
-	 if (beamtrap_1y < tol && beamtrap_2y < tol && beamtrap_3y < tol && beamtrap_4y < tol)	
-		 	//Write the flag ON
+	 	if (beamtrap_1y < tol && beamtrap_2y < tol && beamtrap_3y < tol && beamtrap_4y < tol)	
+			//Write the flag ON
 			Write_isTransmissionToHeader(fName,"True")
-		return (1)
-	else
-	//some other file
-		return (0)
-	endif
+			return (1)
+		else
+			//some other file
+			return (0)
+		endif
 	endif
 	return (0)
 End
@@ -559,7 +566,7 @@ Function/S ValidFileString(partialName)
 	do
 		if(ii==0)
 			//first pass, try the partialName
-	tempName = partialName
+			tempName = partialName
 			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName	//Does open file (/Z flag)
 			if(V_flag == 0)
 				//file exists
@@ -576,7 +583,7 @@ Function/S ValidFileString(partialName)
 			endif
 		Endif
 		ii+=1
-		//print "ii=",ii
+
 	while(ii<11)
 	//go get the selected bits of information, using tempName, which exists
 	if(ii>=11)
@@ -690,16 +697,16 @@ End
 //
 // called by ProtocolAsPanel.ipf and Tile_2D.ipf
 //
-Function/S GetNameFromHeader(fullName)
-	String fullName
+Function/S GetNameFromHeader(fName)
+	String fName
 	String temp, newName = ""
 	Variable spc,ii=0
 	
 	//filename is 31-33 characters INSTRNAMESANS_exp##_scan####_####.xml (where # : numbers)
 	//returns a null string if no name can be found
-	Variable iimax =  strlen(fullName)
+	Variable iimax =  strlen(fName)
 	do
-		temp = fullname[ii,iimax-1-4]		//characters ii,all of the name
+		temp = fname[ii,iimax-1-4]		//characters ii,all of the name
 		spc = strsearch(temp," ",0)
 		if (spc == -1)
 			break		//no more spaces found
@@ -780,6 +787,7 @@ Function/S ParseRunNumberList(list)
 		//get the item
 		item = StringFromList(ii,list,",")
 		//is it already a valid filename?
+		
 		tempStr=FindValidFilename(item) //returns filename if good, null if error
 		if(strlen(tempstr)!=0)
 			//valid name, add to list
@@ -789,7 +797,7 @@ Function/S ParseRunNumberList(list)
 			//not a valid name
 			//is it a number?
 			runNum=str2num(item)
-			//print runnum
+
 			if(numtype(runNum) != 0)
 				//not a number -  maybe an error			
 				DoAlert 0,"List item "+item+" is not a valid run number or filename. Please enter a valid number or filename."
@@ -807,7 +815,7 @@ Function/S ParseRunNumberList(list)
 			endif
 		endif
 	endfor		//loop over all items in list
-	
+
 	return(newList)
 End
 
@@ -827,7 +835,7 @@ Function/S ExpandNumRanges(list)
 	Variable num,ii,hasDash
 	
 	num=itemsinlist(list,",")
-//	print num
+
 	for(ii=0;ii<num;ii+=1)
 		//get the item
 		item = StringFromList(ii,list,",")
@@ -924,15 +932,15 @@ Function/S ReducedDataFileList(ctrlName)
 	
 	list = IndexedFile(catpathName,-1,"????")
 	num=ItemsInList(list,";")
-	//print "num = ",num
+
 	for(ii=(num-1);ii>=0;ii-=1)
 		item = StringFromList(ii, list  ,";")
 		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"HiResSANS*.xml")  && !stringmatch(item,"BioSANS*.xml") )
+		//if( !stringmatch(item,"*HiResSANS*.xml") && !stringmatch(item,"*BioSANS*.xml"))
 			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				newlist += item + ";"
+				newlist += (item) + ";"    
 			endif
-		endif
+		//endif
 	endfor
 	//remove VAX version numbers
 	newList = RemoveVersNumsFromList(newList)
@@ -993,6 +1001,9 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	return("Function Empty")
 End
 
+
+
+
 // Return the filename that represents the previous or next file.
 // Input is current filename and increment. 
 // Increment should be -1 or 1
@@ -1008,14 +1019,58 @@ Function/S GetPrevNextRawFile(curfilename, prevnext)
 	Variable num = GetRunNumFromFile(curfilename)
 		
 	//find the next specified file by number
-	fileName = FindFileFromRunNumber(num+prevnext)
+	fileName = FindPrevNextRawFile(curfilename, prevnext)
 
 	if(cmpstr(fileName,"")==0)
 		//null return, do nothing
 		fileName = FindFileFromRunNumber(num)
 	Endif
 
-//	print "in FU "+filename
+	//print "in FU "+filename
 
 	Return filename
 End
+
+// Find next or previous file name w/ current file name given.
+// Sort the list of files and get the next/previous file name.
+Function/S FindPrevNextRawFile(curfilename, prevnext)
+	String curfilename
+	Variable prevnext
+	
+	String fullName="",partialName="",item="", list=""
+	Variable numItems,isRAW
+			
+	//make sure that path exists
+	PathInfo catPathName
+	String path = S_path
+	
+	if (V_flag == 0)
+		Abort "folder path does not exist - use Pick Path button"
+	Endif
+
+	
+	list = SortList(IndexedFile(catPathName,-1,"????"),";")	//get all files in folder and make sure it is sorted.
+	
+	//find (the) one with the number in the run # location in the name
+
+	numItems = ItemsInList(list,";")		//get the new number of items in the list
+	//index of curfilename
+	Variable index = WhichListItem(curfilename,list,";",0,0)
+	//get the prenextitem in the list
+	item = StringFromList(index+prevnext, list  ,";")
+	partialName = FindValidFileName(item)
+	
+	if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
+		fullName = path + partialName
+		//check if RAW, if so,this must be the file!
+		isRAW = CheckIfRawData(fullName)
+		if(isRaw)
+			//stop here
+			return(fullname)
+		Endif
+	Endif
+
+	print "Please type 'scan number(s)' from your file name..."
+	Return ("")	//null return if file not found in list	
+End
+
