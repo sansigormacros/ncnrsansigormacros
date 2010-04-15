@@ -40,6 +40,18 @@ Function/S TextWave2SemiList(textW)
 	return(list)
 End
 
+Function/S NumWave2IntegerCommaList(numW)
+	Wave numW
+	
+	String list=""
+	Variable num=numpnts(numW),ii=0
+	do
+		list += num2iStr(numW[ii]) + ","
+		ii+=1
+	while(ii<num)
+	return(list)
+End
+
 Function/S NumWave2CommaList(numW)
 	Wave numW
 	
@@ -90,7 +102,7 @@ Function/S RunNumberList()
 	if(WaveExists(w) == 0)
 		list = ""
 	else
-		list=NumWave2CommaList(w)
+		list=NumWave2IntegerCommaList(w)
 	endif
 	return(list)
 End

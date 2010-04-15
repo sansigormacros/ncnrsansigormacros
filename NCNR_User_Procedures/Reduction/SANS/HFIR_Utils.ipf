@@ -428,16 +428,18 @@ End
 // - so if all four y positions are less than (tol) 30 mm, call it a trans file
 //
 // there is a field for this in the header, write "True", so I don't need to guess again.
+// -- but this field is often incorrect - for some sample data ALL FILES were "True"
+// -- better to check the physical location every time
 //
 Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	String fname
 	
-	//Check by key "transsmission"
-	if (stringmatch( getIsTrans(fName),"True")>0)
-		return (1)
-	else
-		//Check from beam stop motor position
 	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=451
+	//Check by key "transsmission"
+//	if (stringmatch( getIsTrans(fName),"True")>0)
+//		return (1)
+//	else
+		//Check from beam stop motor position
 	//	if(your test here)
 		beamtrap_1y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_101mm","mm")
 		beamtrap_2y=getRealValueFromHeader(fname,"//Motor_Positions/trap_y_25mm","mm")
@@ -450,9 +452,12 @@ Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			return (1)
 		else
 			//some other file
+			Write_isTransmissionToHeader(fName,"False")
 			return (0)
 		endif
-	endif
+		
+//	endif
+
 	return (0)
 End
 

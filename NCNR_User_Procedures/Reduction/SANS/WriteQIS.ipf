@@ -641,6 +641,8 @@ End
 // *** DEC 2009 ***
 // Removed the SAVE of the 2D resolution waves - I'm not sure they are correct. Can't verify the 
 // smearing of the 2D data yet. For a future minor release...
+// -- when the Qz and resolution are written, be sure to change the tw[15] in the header back to the 
+// 		proper labels
 //
 //
 // - creates the qx and qy data here, based on the data and header information
@@ -728,7 +730,8 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[12] = "Average Choices: "+proto[5]
 	labelWave[13] = ""
 	labelWave[14] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQx - SigmaQy - fSubS(beam stop shadow)"
+	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy)"
+//	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQx - SigmaQy - fSubS(beam stop shadow)"
 	labelWave[16] = ""
 	labelWave[17] = "ASCII data created " +date()+" "+time()
 	//strings can be too long to print-- must trim to 255 chars

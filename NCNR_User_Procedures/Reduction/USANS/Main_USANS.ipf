@@ -42,8 +42,14 @@ End
 // then draws the panel if necessary
 //
 Proc ShowUSANSPanel()
+
+	if(itemsinlist(WinList("USANS_Includes.ipf", ";","INCLUDE:6"),";") != 0)
+		//must be opening a v2.2 or earlier template
+		DoAlert 0,"This experiment was created with an old version (v2.2 or earlier) of the macros. I'll try to make this work, but please start new work with a current template"
+	endif
+	
 	//version number
-	Variable/G root:USANS_RED_VERSION=2.21			//distribution as of Jan 2007
+	Variable/G root:USANS_RED_VERSION=2.3			//distribution as of Jan 2007
 	
 	Init_MainUSANS()
 	DoWindow/F USANS_Panel

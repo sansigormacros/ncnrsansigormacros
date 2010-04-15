@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma version=4.00
+#pragma version=4.10
 #pragma IgorVersion=6.1
 
 
@@ -8,12 +8,18 @@
 //End
 
 Function Init_WrapperPanel()
+
+	if(itemsinlist(WinList("SA_includes_v400.ipf", ";","INCLUDE:6"),";") != 0)
+		//must be opening a v4.00 or earlier template
+		DoAlert 0,"This experiment was created with an old version (v4.0) of the macros. I'll try to make this work, but please start new work with a current version"
+	endif
+	
 	//make sure that folders exist - this is the first initialization to be called
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
 
 	//Create useful globals
-	Variable/G root:Packages:NIST:SANS_ANA_VERSION=4.00
+	Variable/G root:Packages:NIST:SANS_ANA_VERSION=4.10
 	String/G root:Packages:NIST:SANS_ANA_EXTENSION="_v40"
 	//Set this variable to 1 to force use of trapezoidal integration routine for USANS smearing
 	Variable/G root:Packages:NIST:USANSUseTrap = 0

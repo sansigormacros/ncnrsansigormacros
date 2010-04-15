@@ -33,8 +33,8 @@ end
 Function NCNR_AnalysisLoader(itemStr)
 	String itemStr
 		
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.02)
-		Abort "Your version of Igor is lower than 6.02, these macros need version 6.02 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
+		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -47,7 +47,7 @@ Function NCNR_AnalysisLoader(itemStr)
 	SANSAna_WinList += "NewGlobalFitPanel;SimpGFPanel;Invariant_Panel;invariant_graph;"
 	strswitch(itemStr)	// string switch
 		case "Load NCNR Analysis Macros":	
-			Execute/P "INSERTINCLUDE \"SA_Includes_v400\""
+			Execute/P "INSERTINCLUDE \"SA_Includes_v410\""
 			Execute/P "INSERTINCLUDE \"PlotUtilsMacro_v40\""
 			Execute/P "INSERTINCLUDE \"GaussUtils_v40\""
 			Execute/P "INSERTINCLUDE \"WriteModelData_v40\""
@@ -66,7 +66,7 @@ Function NCNR_AnalysisLoader(itemStr)
 			break						
 		case "Unload NCNR Analysis Macros":	
 		// very dangerous - don't really want to implement this because it will surely crash
-			Execute/P "DELETEINCLUDE \"SA_Includes_v400\""
+			Execute/P "DELETEINCLUDE \"SA_Includes_v410\""
 			Execute/P "DELETEINCLUDE \"PlotUtilsMacro_v40\""
 			Execute/P "DELETEINCLUDE \"GaussUtils_v40\""
 			Execute/P "DELETEINCLUDE \"WriteModelData_v40\""
@@ -117,8 +117,8 @@ end
 Function NCNR_SANSReductionLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.02)
-		Abort "Your version of Igor is lower than 6.02, these macros need version 6.02 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
+		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -188,8 +188,8 @@ end
 Function NCNR_USANSReductionLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.02)
-		Abort "Your version of Igor is lower than 6.02, these macros need version 6.02 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
+		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -202,7 +202,7 @@ Function NCNR_USANSReductionLoader(itemStr)
 	
 	strswitch(itemStr)	// string switch
 		case "Load NCNR USANS Reduction Macros":	
-			Execute/P "INSERTINCLUDE \"USANS_Includes\""
+			Execute/P "INSERTINCLUDE \"USANS_Includes_v230\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("ShowUSANSPanel()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
@@ -215,7 +215,7 @@ Function NCNR_USANSReductionLoader(itemStr)
 			break						
 		case "Unload NCNR USANS Reduction Macros":	
 		// very dangerous - don't really want to implement this because it will surely crash
-			Execute/P "DELETEINCLUDE \"USANS_Includes\""
+			Execute/P "DELETEINCLUDE \"USANS_Includes_v230\""
 			Execute/P "COMPILEPROCEDURES "
 			DoWindow USANS_Panel
 			if(V_Flag)
@@ -273,8 +273,8 @@ End
 Function NCNR_SANSLiveLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.02)
-		Abort "Your version of Igor is lower than 6.02, these macros need version 6.02 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
+		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable

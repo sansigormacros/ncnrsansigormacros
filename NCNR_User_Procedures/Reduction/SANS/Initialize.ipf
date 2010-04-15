@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma version=5.1
+#pragma version=5.2
 #pragma IgorVersion=6.1
 
 //***********************
@@ -27,11 +27,31 @@
 //sets up data folders, globals, protocols, and draws the main panel
 Proc Initialize()
 
-	Variable/G root:SANS_RED_VERSION=5.10
+	Variable curVersion = 5.2
+	Variable oldVersion = NumVarOrDefault("root:SANS_RED_VERSION",curVersion)
 	
+	//check for really old versions
 	if(itemsinlist(WinList("Includes.ipf", ";","INCLUDE:6"),";") != 0)
 		//must be opening a v4.2 or earlier template
-		DoAlert 0,"This experiment was created with an old version of the macros. I'll try to make this work, but please start new work with a current template"
+		oldVersion = 4.2
+	endif
+	
+	if(itemsinlist(WinList("Includes_v510.ipf", ";","INCLUDE:6"),";") != 0)
+		oldVersion = 5.10
+	endif
+	if(itemsinlist(WinList("Includes_v500.ipf", ";","INCLUDE:6"),";") != 0)
+		oldVersion = 5.00
+	endif
+	
+	if(itemsinlist(WinList("Includes_v520.ipf", ";","INCLUDE:6"),";") != 0)
+		oldVersion = 5.20
+		//must just be a new startup with the current version
+		Variable/G root:SANS_RED_VERSION=5.20
+	endif
+	
+	if(oldVersion < curVersion)
+		String str = 	"This experiment was created with version "+num2str(oldVersion)+" of the macros. I'll try to make this work, but please start new work with a current template"
+		DoAlert 0,str
 	endif
 	
 	InitFolders()

@@ -545,7 +545,7 @@ Function AcceptMREDList(ctrlName)
 		return(0)
 	Endif
 	
-	list = NumWave2CommaList(numW)
+	list = NumWave2IntegerCommaList(numW)
 	
 	//force an update If the SVAR exists, then the panel does too - MRED cleans up after itself when done
 	DoWindow/F Multiple_Reduce_Panel			//bring to front
