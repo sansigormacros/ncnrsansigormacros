@@ -68,7 +68,8 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 
 	// average the currently displayed data
 	SVAR type=root:myGlobals:gDataDisplayType
-	
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+
 	//Check for logscale data in "type" folder
 	String dest = "root:Packages:NIST:"+type
 	
@@ -124,14 +125,17 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	strswitch(choice)
 		case "Rectangular":		
 			RectangularAverageTo1D(type)
-			If(doSave)
-				//save the file, acting on the currently displayed file
-				WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+			If(doSave)					//save the file, acting on the currently displayed file
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(type,"",1)
+				else
+					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				endif
 			Endif
 			break					
 		case "Annular":		
 			AnnularAverageTo1D(type)
-			If(doSave)
+			If(doSave)		// XML here yet
 				//save the file, acting on the currently displayed file
 				WritePhiave_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
 			Endif
@@ -141,8 +145,11 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
 			If(doSave)
-				//save the file, acting on the currently displayed file
-				WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(type,"",1)
+				else
+					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				endif
 			Endif
 			break
 		case "2D ASCII":
