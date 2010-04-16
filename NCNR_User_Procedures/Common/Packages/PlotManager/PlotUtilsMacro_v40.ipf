@@ -866,7 +866,7 @@ Function/S GetAList(type)
 		str = RemoveFromList("HayPenMSA", str, ";")
 		str = RemoveFromList("SAS", str, ";")			//from Irena
 		str = RemoveFromList("USAXS", str, ";")
-		str = RemoveFromList("RAW;SAM;EMP;BGD;DIV;MSK;ABS;CAL;STO;SUB;DRK;SAS;", str  ,";")			//root level folders present in old reduction experiments
+		str = RemoveFromList("RAW;SAM;EMP;BGD;DIV;MSK;ABS;CAL;COR;STO;SUB;DRK;SAS;", str  ,";")			//root level folders present in old reduction experiments
 	endif
 	
 	return(str)
