@@ -332,7 +332,7 @@ Function/S FindFileFromRunNumber(num)
 	Variable numItems,ii,runFound,isRAW
 	numItems = ItemsInList(list,";")		//get the new number of items in the list
 
-	ii=3
+	ii=0
 	do
 		//parse through the list in this order:
 		// 1 - does item contain run number (as a string) "NAMESANS_expNN_scan####_####.xml" : Let's check the 8  nums.

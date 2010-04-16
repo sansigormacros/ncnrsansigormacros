@@ -576,6 +576,7 @@ Proc CreateScatteringAtSDDTable(SDD_to_Filter)
 		
 		ModifyTable width(SDD)=40
 		ModifyTable width(Labels)=180
+		ModifyTable format(RunNumber)=1		//so that HFIR 8-digit numbers are interpreted correctly as integers
 		
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 		SetDataFolder root:
