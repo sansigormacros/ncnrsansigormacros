@@ -365,12 +365,12 @@ Function MasterAngleDraw()
 	//takes the global gDrawInfoStr and Parses it to determine what to redraw on the graph
 	
 	//first clear the old draw Layer
-	DoWindow/F SANS_Data
-	if(V_flag ==0)
+//	DoWindow/F SANS_Data
+	if(WinType("SANS_Data") == 0)
 		Abort "No SANS data. Use'Display Raw Data' to display a 2D data file"
 	Endif
-	SetDrawLayer/K UserFront
-	SetDrawLayer UserFront
+	SetDrawLayer/W=SANS_Data/K UserFront
+	SetDrawLayer/W=SANS_Data UserFront
 	
 	//what average type are we drawing for?
 	SVAR drawStr = root:myGlobals:Drawing:gDrawInfoStr
@@ -399,10 +399,9 @@ Function MasterAngleDraw()
 	//if circular average, just get out
 	if(cmpstr(av_type,"Circular")==0)
 		//clear the drawing
-	//	DoWindow/F SANS_Data
-	//	SetDrawLayer/K UserFront	
+
 		//go back to the average panel
-		DoWindow/F Average_Panel
+//		DoWindow/F Average_Panel
 	
 		Return 0		//exit the Draw routine
 	Endif
@@ -439,7 +438,7 @@ Function MasterAngleDraw()
 		DrawACircle(x0,y0,dy-(QDelta/2),rr,gg,bb,thick)
 
 		//go back to the average panel
-		DoWindow/F Average_Panel
+//		DoWindow/F Average_Panel
 	 
 		Return 0		//exit the Draw routine
 	Endif
@@ -543,7 +542,7 @@ Function MasterAngleDraw()
 	Endif
 	
 	//go back to the average panel
-	DoWindow/F Average_Panel
+//	DoWindow/F Average_Panel
 	
 	Return 0
 End
@@ -702,10 +701,10 @@ End
 Function DrawACircle(x0,y0,rad,rr,gg,bb,thick)
 	Variable x0,y0,rad,rr,gg,bb,thick
 	
-	DoWindow/F SANS_Data
-	SetDrawLayer UserFront
-	SetDrawEnv xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick),fillpat=0
-	DrawOval x0-rad,y0+rad,x0+rad,y0-rad			//left,top,right,bottom
+//	DoWindow/F SANS_Data
+	SetDrawLayer/W=SANS_Data UserFront
+	SetDrawEnv/W=SANS_Data xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick),fillpat=0
+	DrawOval/W=SANS_Data x0-rad,y0+rad,x0+rad,y0-rad			//left,top,right,bottom
 End
 
 //draws a line to the left of the beamcenter (x0,y0)
@@ -729,10 +728,10 @@ Function DrawALineLeft(x0,y0,phi,rr,gg,bb,thick)
 	x1 = FindXLeft(x0,y0,slope,intcp)
 	y1 = FindYLeft(x0,y0,slope,intcp)
 	
-	DoWindow/F SANS_Data
-	SetDrawLayer UserFront
-	SetDrawEnv xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick)
-	DrawLine x0,y0, x1,y1
+//	DoWindow/F SANS_Data
+	SetDrawLayer/W=SANS_Data UserFront
+	SetDrawEnv/W=SANS_Data xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick)
+	DrawLine/W=SANS_Data x0,y0, x1,y1
 End
 
 //draws a line to the right of the beamcenter (x0,y0)
@@ -756,10 +755,10 @@ Function DrawALineRight(x0,y0,phi,rr,gg,bb,thick)
 	x1 = FindXRight(x0,y0,slope,intcp)
 	y1 = FindYRight(x0,y0,slope,intcp)
 	
-	DoWindow/F SANS_Data
-	SetDrawLayer UserFront
-	SetDrawEnv xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick)
-	DrawLine x0,y0, x1,y1
+//	DoWindow/F SANS_Data
+	SetDrawLayer/W=SANS_Data UserFront
+	SetDrawEnv/W=SANS_Data xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick)
+	DrawLine/W=SANS_Data x0,y0, x1,y1
 End
 
 //reads the value from the panel and updates the global string

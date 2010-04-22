@@ -435,8 +435,8 @@ Function Plot_0_Button(ctrlName) : ButtonControl
 	String list="",searchStr=""
 	Variable isOnPlot=0
 	
-	DoWindow/F NSORT_Graph
-	if(V_flag == 0)
+//	DoWindow/F NSORT_Graph
+	if(WinType("NSORT_Graph")==0)
 		//no window, create one
 		if(cmpstr(ctrlName,"Plot_1")==0)
 			//low-q
@@ -493,13 +493,14 @@ End
 //
 Function DisplayHighSet()
 	//function assumes that the window "NSORT_Graph" already exists
-	DoWindow/F NSORT_Graph
+//	DoWindow/F NSORT_Graph
+
 	SetDataFolder root:HighQSet:
-	AppendToGraph $"HighQSet_i" vs $"HighQSet_q"
-	ModifyGraph log=1,mode=3,marker($"HighQSet_i")=8,msize=2,rgb($"HighQSet_i")=(0,0,65535),opaque($"HighQSet_i")=1
-	ErrorBars/T=0 $"HighQSet_i" Y,wave=($"HighQSet_s",$"HighQSet_s")
-	AppendToGraph $"TrimHighQSet_i" vs $"TrimHighQSet_q"
-	ModifyGraph mode($"TrimHighQSet_i")=3,marker($"TrimHighQSet_i")=19,msize=2,rgb($"TrimHighQSet_i")=(0,0,65535)
+	AppendToGraph/W=NSORT_Graph $"HighQSet_i" vs $"HighQSet_q"
+	ModifyGraph/W=NSORT_Graph log=1,mode=3,marker($"HighQSet_i")=8,msize=2,rgb($"HighQSet_i")=(0,0,65535),opaque($"HighQSet_i")=1
+	ErrorBars/W=NSORT_Graph/T=0 $"HighQSet_i" Y,wave=($"HighQSet_s",$"HighQSet_s")
+	AppendToGraph/W=NSORT_Graph $"TrimHighQSet_i" vs $"TrimHighQSet_q"
+	ModifyGraph/W=NSORT_Graph mode($"TrimHighQSet_i")=3,marker($"TrimHighQSet_i")=19,msize=2,rgb($"TrimHighQSet_i")=(0,0,65535)
 	SetDataFolder root:
 End
 
@@ -508,13 +509,14 @@ End
 //
 Function DisplayMedSet()
 	//function assumes that the window "NSORT_Graph" already exists
-	DoWindow/F NSORT_Graph
+//	DoWindow/F NSORT_Graph
+	
 	SetDataFolder root:MedQSet:
-	AppendToGraph $"MedQSet_i" vs $"MedQSet_q"
-	ModifyGraph log=1,mode=3,marker($"MedQSet_i")=8,msize=2,rgb($"MedQSet_i")=(65535,0,0),opaque($"MedQSet_i")=1
-	ErrorBars/T=0 $"MedQSet_i" Y,wave=($"MedQSet_s",$"MedQSet_s")
-	AppendToGraph $"TrimMedQSet_i" vs $"TrimMedQSet_q"
-	ModifyGraph mode($"TrimMedQSet_i")=3,marker($"TrimMedQSet_i")=19,msize=2,rgb($"TrimMedQSet_i")=(65535,0,0)
+	AppendToGraph/W=NSORT_Graph $"MedQSet_i" vs $"MedQSet_q"
+	ModifyGraph/W=NSORT_Graph log=1,mode=3,marker($"MedQSet_i")=8,msize=2,rgb($"MedQSet_i")=(65535,0,0),opaque($"MedQSet_i")=1
+	ErrorBars/W=NSORT_Graph/T=0 $"MedQSet_i" Y,wave=($"MedQSet_s",$"MedQSet_s")
+	AppendToGraph/W=NSORT_Graph $"TrimMedQSet_i" vs $"TrimMedQSet_q"
+	ModifyGraph/W=NSORT_Graph mode($"TrimMedQSet_i")=3,marker($"TrimMedQSet_i")=19,msize=2,rgb($"TrimMedQSet_i")=(65535,0,0)
 	SetDataFolder root:
 End
 
@@ -523,13 +525,14 @@ End
 //
 Function DisplayLowSet()
 	//function assumes that the window "NSORT_Graph" already exists
-	DoWindow/F NSORT_Graph
+//	DoWindow/F NSORT_Graph
+
 	SetDataFolder root:LowQSet:
-	AppendToGraph $"LowQSet_i" vs $"LowQSet_q"
-	ModifyGraph log=1,mode=3,marker($"LowQSet_i")=8,msize=2,rgb($"LowQSet_i")=(2,39321,1),opaque($"LowQSet_i")=1
-	ErrorBars/T=0 $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
-	AppendToGraph $"TrimLowQSet_i" vs $"TrimLowQSet_q"
-	ModifyGraph mode($"TrimLowQSet_i")=3,marker($"TrimLowQSet_i")=19,msize=2,rgb($"TrimLowQSet_i")=(2,39321,1)
+	AppendToGraph/W=NSORT_Graph $"LowQSet_i" vs $"LowQSet_q"
+	ModifyGraph/W=NSORT_Graph log=1,mode=3,marker($"LowQSet_i")=8,msize=2,rgb($"LowQSet_i")=(2,39321,1),opaque($"LowQSet_i")=1
+	ErrorBars/W=NSORT_Graph/T=0 $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
+	AppendToGraph/W=NSORT_Graph $"TrimLowQSet_i" vs $"TrimLowQSet_q"
+	ModifyGraph/W=NSORT_Graph mode($"TrimLowQSet_i")=3,marker($"TrimLowQSet_i")=19,msize=2,rgb($"TrimLowQSet_i")=(2,39321,1)
 	SetDataFolder root:
 End
 
@@ -1127,6 +1130,11 @@ Function DoAutoScaleFromPanel(auto)
 			norm23 = 1/norm23
 			i12 *= norm23
 			sig12 *= norm23
+			// for the display, scale the trimmed sets 1 and 2
+			lowi *= norm23
+			lows *= norm23
+			medi *= norm23
+			meds *= norm23
 		Endif
 		
 		ControlUpdate/A/W=NSORT_Panel
@@ -1364,6 +1372,11 @@ Function DoAutoScaleFromPanel(auto)
 			norm23 = 1/norm23
 			i12 *= norm23
 			sig12 *= norm23
+			// for the display, scale the trimmed sets 1 and 2
+			lowi *= norm23
+			lows *= norm23
+			medi *= norm23
+			meds *= norm23
 		Endif
 		
 		//Print "NSORT-ed ",name1," + ", name2, " + ", name3
