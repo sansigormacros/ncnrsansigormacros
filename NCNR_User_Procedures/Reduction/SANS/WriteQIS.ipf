@@ -416,7 +416,12 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[16] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
 	labelWave[17] = "The detector image is a standard X-Y coordinate system"
 	labelWave[18] = "Data is written by row, starting with Y=1 and X=(1->128)"
-	labelWave[19] = "ASCII data created " +date()+" "+time()
+	//labelWave[19] = "ASCII data created " +date()+" "+time()
+	PathInfo catPathName
+	String sfPath = S_Path+StringFromList(0,samfiles,";")
+	print sfPath
+	labelWave[19] = "RAW SAM FILE "+StringFromList(0, samfiles  , ";")+ " TIMESTAMP: "+getFileCreationDate(sfPath)
+	
 	//strings can be too long to print-- must trim to 255 chars
 	Variable ii
 	for(ii=0;ii<numTextLines;ii+=1)
