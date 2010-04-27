@@ -397,9 +397,9 @@ Function Fast2dExport(type,fullpath,dialog)
 	Make/O/T/N=(numTextLines) labelWave
 	labelWave[0] = "FILE: "+textw[0]+"   CREATED: "+textw[1]
 	labelWave[1] = "LABEL: "+textw[6]
-	labelWave[2] = "MON CNT   LAMBDA(A)   DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)"
+	labelWave[2] = "MON CNT   LAMBDA(A)   DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)    COUNT TIME"
 	labelWave[3] = num2str(rw[0])+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	labelWave[3] += "     "+num2str(rw[4])+"     "+num2str(rw[5])
+	labelWave[3] += "     "+num2str(rw[4])+"     "+num2str(rw[5])+"     "+num2str(intw[2])
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"  "+num2str(rw[24])+"  "
 	labelWave[5] += num2str(rw[25])+"  "+num2str(rw[27])+"  "+num2str(rw[21])+"  "+textW[9]
