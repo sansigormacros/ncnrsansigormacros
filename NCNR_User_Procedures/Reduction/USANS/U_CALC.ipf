@@ -528,7 +528,7 @@ Function ThetaMaxSetVarProc(sva) : SetVariableControl
 			NVAR NumPts = $("root:Packages:NIST:USANS:Globals:U_Sim:"+"gNumPts"+ns)
 			NVAR Incr = $("root:Packages:NIST:USANS:Globals:U_Sim:"+"gIncr"+ns)
 			
-			NumPts = trunc( (thetaMax - ThetaMin) / incr )
+			NumPts = trunc( (thetaMax - ThetaMin) / incr ) + 1			//+1 to count both ends of the interval
 		
 			CalcTotalCountTime()
 			
@@ -579,7 +579,7 @@ Function NumPtsSetVarProc(sva) : SetVariableControl
 //			thetaMax = ThetaMin + incr*NumPts
 
 // new way - to spread the points out over the specified angle range
-			incr = (thetaMax - thetaMin) / numpts
+			incr = (thetaMax - thetaMin) /( numpts -1 )			//-1 since end points are both counted
 			
 			CalcTotalCountTime()
 			

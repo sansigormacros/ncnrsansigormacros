@@ -867,7 +867,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 // -- just something to watch out for.
 
 	do
-//		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
+		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
 
 
 		if(useGenCurveFit)
@@ -987,8 +987,8 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	
 	while(0)
 	
-//	t0 = (stopMSTimer(-2) - t0)*1e-6
-//	Printf  "fit time = %g seconds\r\r",t0
+	t0 = (stopMSTimer(-2) - t0)*1e-6
+	Printf  "fit time = %g seconds\r\r",t0
 	
 	// append the fit
 	// need to manage duplicate copies
@@ -1048,6 +1048,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	
 		DoUpdate		//force an update of the graph before making a copy of it for the report
 
+		//if GenCurveFit used, V_startRow and V_endRow may not exist - so read the cursors? but the cursors may not be used, so 
+		// there won't be anything on the graph...
+		//
 		W_GenerateReport(funcStr,folderStr,$parStr,cw,yesSave,V_chisq,W_sigma,V_npnts,V_FitError,V_FitQuitReason,V_startRow,V_endRow,topGraph)
 	endif
 	

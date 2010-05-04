@@ -179,6 +179,7 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	WAVE bar.x[0] = fs.xW
 	WAVE/Z bar.ffsWaves[0] = fs.resW		//will not exist for 3-column data sets
 	
+
 	//need to parse limits, or make up some defaults
 	// limits is (n,2)
 	Variable nPnts = numpnts(fs.coefW),i,multip=1.01,isUSANS=0,tol=0.01
@@ -242,12 +243,11 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	endif	
 
 	Variable t0 = stopMStimer(-2)
-	Variable/G root:num_evals=0
-	Variable/G root:V_chisq,root:V_npnts
-	NVAR chi = root:V_chisq
-	NVAR pt = root:V_npnts
-	NVAR num=root:num_evals
+
+
 	
+	Variable/G root:num_evals		//for my own tracking
+	NVAR num = root:num_evals
 	num=0
 
 	
@@ -277,32 +277,40 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	do
 			
 		if(useRes && useCursors)
-			GenCurveFit /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=trimS /D=fitYw GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
+			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=trimS /D=fitYw GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
 			break
 		endif
 		if(useRes)
-			GenCurveFit /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
+			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
 			break
 		endif
 		
 		//no resolution
 		if(!useRes && useCursors)
-			GenCurveFit /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=trimS /D=fitYw GeneticFit_UnSmearedModel,bar.y,bar.w,holdStr,limits
+			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=trimS /D=fitYw GeneticFit_UnSmearedModel,bar.y,bar.w,holdStr,limits
 			break
 		endif
 		if(!useRes)
-			GenCurveFit /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw GeneticFit_UnSmearedModel,bar.y,bar.w,holdStr,limits
+			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw GeneticFit_UnSmearedModel,bar.y,bar.w,holdStr,limits
 			break
 		endif
 		
 	while(0)	
 #endif
 	
+//	NVAR V_chisq = V_chisq
+//	NVAR V_npnts = V_npnts
+//	NVAR V_fitIters = V_fitIters
+	WAVE/Z W_sigma = W_sigma
+	
+	val = V_npnts		//return this as a parameter
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	Printf  "fit time = %g seconds\r\r",t0
-			
+	Print W_sigma	
+	Print "number of iterations = ",V_fitIters
 	Print "number of function evaluations = ",num
-
-	return(chi)
+	Print "Chi-squared = ",V_chisq
+	
+	return(V_chisq)
 end
