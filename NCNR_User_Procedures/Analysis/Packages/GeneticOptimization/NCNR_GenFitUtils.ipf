@@ -153,6 +153,8 @@ End
 
 // need to pass back the chi-squared and number of points. "V_" globals don't appear
 //
+// function will only compile if the GenCurveFit XOP is installed - else it will return zero
+//
 Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,hilim,pt1,pt2)
 	Variable useRes,useCursors
 	WAVE sw,fitYw
@@ -161,6 +163,8 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	Variable &val
 	WAVE/T lolim,hilim
 	Variable pt1,pt2		//already sorted if cursors are needed
+
+#if exists("GenCurveFit")
 
 	// initialise the structure you will use
 	struct fitFuncStruct bar
@@ -254,7 +258,6 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	// other useful flags:  /N /DUMP /TOL /D=fitYw
 	//  /OPT=1 seems to make no difference whether it's used or not
 	
-#if exists("GenCurveFit")
 	// append the fit
 	//do this only because GenCurveFit tries to append too quickly?
 	String traces=TraceNameList("", ";", 1 )		//"" as first parameter == look on the target graph
@@ -296,7 +299,6 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 		endif
 		
 	while(0)	
-#endif
 	
 //	NVAR V_chisq = V_chisq
 //	NVAR V_npnts = V_npnts
@@ -313,4 +315,7 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	Print "Chi-squared = ",V_chisq
 	
 	return(V_chisq)
+#else
+	return(0)
+#endif	
 end
