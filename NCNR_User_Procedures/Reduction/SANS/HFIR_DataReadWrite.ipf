@@ -1594,7 +1594,7 @@ Function WriteSampleApDiamToHeader(fname,num)
 	String numstr = ""
 	sprintf numstr, "%f", num
 
-	WriteHFIRHead(fname,numstr,"sample_aperture_size","mm") 
+	WriteHFIRHead(fname,numstr,"//Header/sample_aperture_size","mm") 
 	return(0)
 End
 
