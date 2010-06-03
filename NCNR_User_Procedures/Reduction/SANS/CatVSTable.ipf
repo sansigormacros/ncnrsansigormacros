@@ -57,6 +57,9 @@ Function BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Pos"		//added Mar 2010
+	//For ANSTO
+	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:SICS"	
+	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:HDF"
 	
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //only used for for ILL, June 2008,
 	WAVE ReactorPower = $"root:myGlobals:CatVSHeaderInfo:Reactorpower"
@@ -83,7 +86,9 @@ Function BuildCatVeryShortTable()
 	WAVE Field = $"root:myGlobals:CatVSHeaderInfo:Field"
 	WAVE MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	WAVE Pos = $"root:myGlobals:CatVSHeaderInfo:Pos"
-	
+	//For ANSTO
+	WAVE SICS = $"root:myGlobals:CatVSHeaderInfo:SICS"	
+	WAVE HDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
 	
 	If(V_Flag==0)
 		BuildTableWindow()
@@ -100,6 +105,12 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
+#if (exists("QUOKKA")==6)
+		//ANSTO
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:SICS)=80
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:HDF)=40
+#endif		
+		
 #if (exists("ILL_D22")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
 #endif
@@ -135,6 +146,7 @@ Function BuildCatVeryShortTable()
 		//get a valid file based on this partialName and catPathName
 		tempName = FindValidFilename(partialName)
 		
+		
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
@@ -161,7 +173,7 @@ Function BuildCatVeryShortTable()
 		Endif
 		ii+=1
 	while(ii<numitems)
-//Now sort them all based on the suffix data (orders them as collected)
+//Now sort them all based on some criterion that may be facility dependent (aim is to order them as collected)
 	SortWaves()
 //Append the files that are not raw files to the list
 	AppendNotRAWFiles(notRAWlist)	
@@ -212,12 +224,18 @@ Function SortWaves()
 	Wave GMCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave GPos = $"root:myGlobals:CatVSHeaderInfo:Pos"
 	Wave/Z GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
+	//For ANSTO
+	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
+	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
 
 #if (exists("ILL_D22")==6)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
 #elif (exists("NCNR")==6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
+#elif (exists("QUOKKA")==6)
+    //ANSTO
+	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR, GSICS, GHDF
 #else
 //	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
@@ -250,6 +268,9 @@ Function BuildTableWindow()
 	Wave MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave Pos = $"root:myGlobals:CatVSHeaderInfo:Pos"
 	Wave/Z ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
+	Wave/Z SICS = $"root:myGlobals:CatVSHeaderInfo:SICS" // For ANSTO June 2010
+	Wave/Z HDF = $"root:myGlobals:CatVSHeaderInfo:HDF" // For ANSTO June 2010
+	
 #if (exists("ILL_D22")==6)
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
 #elif (exists("NCNR")==6)
@@ -259,8 +280,11 @@ Function BuildTableWindow()
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
+#elif (exists("QUOKKA")==6)
+	//ANSTO
+	Edit Filenames, Labels, DateAndTime,  SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR,SICS, HDF as "Data File Catalog"
 #else
-	// either HFIR or ANSTO
+	// HFIR or anything else
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 #endif
 
@@ -285,6 +309,10 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave/T GSuffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
 	Wave/T GLabels = $"root:myGlobals:CatVSHeaderInfo:Labels"
 	Wave/T GDateTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	//ANSTO
+	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
+	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
+	//END ANSTO
 	Wave GSDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Wave GLambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
 	Wave GCntTime = $"root:myGlobals:CatVSHeaderInfo:CntTime"
@@ -327,6 +355,15 @@ Function GetHeaderInfoToWave(fname,sname)
 	// read the sample.label text field
 	InsertPoints lastPoint,1,GLabels
 	GLabels[lastPoint]=getSampleLabel(fname)
+	
+	#if (exists("QUOKKA")==6)
+		InsertPoints lastPoint,1,GSICS
+		GSICS[lastPoint]=getSICSVersion(fname)
+			
+		//read the HDF version
+		InsertPoints lastPoint,1,GHDF
+		GHDF[lastPoint]=getHDFVersion(fname)
+	#endif
 		
 	//read the reals
 	//detector count and (derived) count rate

@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion = 6.1
+#pragma IgorVersion = 6.1 //required to read and write files created with HDF 1.8 library
 
 //**************************
 //
@@ -93,7 +93,7 @@ Function ReadHeaderAndData(fname)
 	// THESE ARE JUST THE MINIMALLY NECESSARY VALUES
 	
 	// filename as stored in the file header
-	textw[0]= fname	
+	textw[0]= ParseFilePath(0, fname, ":", 1, 0)	
 	
 	// date and time of collection
 	textw[1]= getFileCreationDate(fname)
@@ -124,9 +124,7 @@ Function ReadHeaderAndData(fname)
 
 	// total monitor count
 	realw[0] = getMonitorCount(fname)
-	
-	// total detector count
-	realw[2] = getDetCount(fname)
+
 	
 	// attenuator number (NCNR-specific, your stub returns 0)
 	// may also be used to hold attenuator transmission (< 1)
@@ -194,6 +192,11 @@ Function ReadHeaderAndData(fname)
 
 	// fill the data array with the detector values
 	getDetectorData(fname,data)
+	
+	// total detector count
+	//nha 21/5/10 moved here because it requires the detector data to already be written
+	//Result of issue with 0 counts being written for a while in metadata.
+	realw[2] = getDetCount(fname)
 	
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
@@ -281,7 +284,16 @@ Function ReadHeaderAndWork(type,fname)
 	err = hdfRead(fname, dfName)
 	Wave tempData = $dfName+":data:div"
 	data = tempData
-
+	
+	//funky edge correction bodgy ???
+	//copy second column to first column
+	data[][0] = data[p][1]
+	//copy second last column to last column
+	data[][191] = data[p][190]
+	//copy second row to first row
+	data[0][] = data[1][q]
+	//copy second last row to last row
+	data[191][] = data[190][q]
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
 	
@@ -321,7 +333,7 @@ Function WriteHeaderAndWork(type)
 	
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	//Make /N=(1,1) wTransmission
-	String groupName = "/data"
+	String groupName = "/reduce"
 	String varName = "div"
 	// your code returning value
 	variable err
@@ -508,7 +520,7 @@ Function WriteWholeTransToHeader(fname,wholeTrans)
 	String fname
 	Variable wholeTrans
 	
-	String groupName = "/entry1/reduce"
+	String groupName = "/reduce"
 	variable err
 	
 	Wave wCounts
@@ -533,7 +545,7 @@ Function WriteBoxCountsToHeader(fname,counts)
 	
 	// do nothing if not using NCNR Transmission module
 	
-	String groupName = "/entry1/reduce"
+	String groupName = "/reduce"
 	variable err
 	
 	Wave wCounts
@@ -569,14 +581,29 @@ End
 // if your beam attenuation is indexed in some way, use that number here
 // if not, write a 1 to the file here as a default
 //
-Function WriteAttenNumberToHeader(fname,num)
+Function WriteAttenNumberToHeader(fname,attenNumber)
 	String fname
-	Variable num
+	Variable attenNumber
 	
-	// your code here, default of 1
-	
+	// your writer here
+	Wave wAttenNumber
+	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
+	Make /N=(1,1) wAttenNumber
+	String groupName = "/instrument/collimator"
+	String varName = "att"
+	//convert number to a rotation angle
+	attenNumber = attenNumber * 30
+	wAttenNumber[0] = attenNumber //
+	// your code returning value
+	variable err
+	err = hdfWrite(fname, groupName, varName, wAttenNumber)
+	KillWaves wAttenNumber
+	//err not handled here
+		
 	return(0)
+
 End
+
 
 // total monitor count during data collection
 Function WriteMonitorCountToHeader(fname,num)
@@ -632,11 +659,24 @@ Function WriteMagnFieldToHeader(fname,num)
 End
 
 //lateral detector offset (centimeters)
-Function WriteDetectorOffsetToHeader(fname,num)
+Function WriteDetectorOffsetToHeader(fname,DetectorOffset)
 	String fname
-	Variable num
+	Variable DetectorOffset
 	
-	//your code here
+	// your writer here
+	Wave wDetectorOffset
+	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
+	Make /N=(1,1) wDetectorOffset
+	String groupName = "/instrument/detector"
+	String varName = "detector_x"
+	//convert from cm (NIST standard) to mm (NeXus standard)
+	DetectorOffset = DetectorOffset * 10
+	wDetectorOffset[0] = DetectorOffset //
+	// your code returning value
+	variable err
+	err = hdfWrite(fname, groupName, varName, wDetectorOffset)
+	KillWaves wDetectorOffset
+	//err not handled here
 	
 	return(0)
 End
@@ -714,7 +754,7 @@ Function getDetectorData(fname,data)
 		return 0
 	endif
 
-	Wave hmm_xy = $(dfName+":entry1:data:hmm_xy")
+	Wave hmm_xy = $(dfName+":data:hmm_xy")
 	
 	//redimension /I /N = (dimsize(hmm_xy, 2), dimsize(hmm_xy, 1)), data
 	//nha. Count arrays need to be floating point, since the data will be divided, normalised etc. 
@@ -730,7 +770,17 @@ Function getDetectorData(fname,data)
 		data[191][] = data[190][q]
 	endif	
 	// end workaround
-		
+	
+	//funky edge correction bodgy ???
+	//copy second column to first column
+	data[][0] = data[p][1]
+	//copy second last column to last column
+	data[][191] = data[p][190]
+	//copy second row to first row
+	data[0][] = data[1][q]
+	//copy second last row to last row
+	data[191][] = data[190][q]
+			
 	KillWaves hmm_xy
 	
 	
@@ -738,11 +788,11 @@ Function getDetectorData(fname,data)
 End
 
 // file suffix (NCNR data file name specific)
-// return null string
+// return filename as suffix
 Function/S getSuffix(fname)
 	String fname
 	
-	return("")
+	return(ParseFilePath(0, fname, ":", 1, 0))
 End
 
 // associated file suffix (for transmission)
@@ -751,7 +801,7 @@ End
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	return("")
+	return(getFileAssoc(fname))
 End
 
 // sample label
@@ -765,7 +815,7 @@ Function/S getSampleLabel(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 	
-	Wave/T wSampleName = $dfname+":entry1:sample:name"
+	Wave/T wSampleName = $dfname+":sample:name"
 	str = wSampleName[0]
 	KillWaves wSampleName
 	
@@ -783,7 +833,7 @@ Function/S getFileCreationDate(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 	
-	Wave/T wStartTime = $dfName+":entry1:start_time"
+	Wave/T wStartTime = $dfName+":start_time"
 	str = wStartTime[0]
 	KillWaves wStartTime
 	
@@ -793,6 +843,7 @@ End
 
 //monitor count
 Function getMonitorCount(fname)
+//not patched
 	String fname
 	Variable value
 	
@@ -802,7 +853,7 @@ Function getMonitorCount(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 	
-	Wave wCounts = $dfName+":entry1:monitor:bm1_counts"
+	Wave wCounts = $dfName+":monitor:bm1_counts"
 	value = wCounts[0]
 	KillWaves wCounts
 	
@@ -825,6 +876,7 @@ end
 
 //total detector count
 Function getDetCount(fname)
+//not patched, but could be
 	String fname
 	Variable value
 	
@@ -834,8 +886,28 @@ Function getDetCount(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wCounts = $(dfName+":entry1:data:total_counts")
+	//	Wave wCounts = $(dfName+":data:total_counts")
+	// changed 22/12/09 nha
+		if(WaveExists($(dfName+":data:total_counts")))
+			Wave wCounts = $(dfName+":data:total_counts")
+		elseif(WaveExists($(dfName+":instrument:detector:total_counts")))
+	       	Wave wCounts = $(dfName+":instrument:detector:total_counts")
+	       else
+	       	print "Can't find detector total_counts in " + fname
+	       endif
+	
 	value = wCounts[0]
+	
+	//nha 21/5/10 temporary glitch wrote detector count to file as 0	
+		if (value<1)
+			NVAR XPix = root:myGlobals:gNPixelsX
+			NVAR YPix = root:myGlobals:gNPixelsX
+			Make/D/O/N=(XPix,YPix) $"root:RAW:data"
+			WAVE data=$"root:RAW:data"
+			getDetectorData(fname,data)
+			value = sum(data)
+		endif
+	
 	KillWaves wCounts
 	
 	return(value)
@@ -852,12 +924,20 @@ Function getAttenNumber(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wAttrotdeg = $(dfName+":entry1:instrument:parameters:derived_parameters:AttRotDeg")
+	if(WaveExists($(dfName+":instrument:collimator:att")))
+			Wave wAttrotdeg = $(dfName+":instrument:collimator:att")
+	elseif(WaveExists($(dfName+":instrument:parameters:derived_parameters:AttRotDeg")))
+			Wave wAttrotdeg = $(dfName+":instrument:parameters:derived_parameters:AttRotDeg")
+	else
+			print "Can't find attenuator in " + fname
+	endif	
+	
 	value = wAttrotdeg[0]
 	att = round(value)/30
 	KillWaves wAttrotdeg
 	return(att)
 end
+
 
 //transmission
 Function getSampleTrans(fname)
@@ -871,7 +951,13 @@ Function getSampleTrans(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wTransmission = $(dfName+":entry1:data:Transmission")
+	if(WaveExists($(dfName+":reduce:Transmission"))) //canonical location
+			Wave wTransmission = $(dfName+":reduce:Transmission")
+	elseif(WaveExists($(dfName+":instrument:parameters:Transmission"))) 
+			Wave wTransmission = $(dfName+":instrument:parameters:Transmission")
+	else 
+			print "Can't find Transmission in " + fname
+	endif
 	value = wTransmission[0]
 	KillWaves wTransmission
 		
@@ -887,7 +973,7 @@ Function WriteTransmissionToHeader(fname,trans)
 	Wave wTransmission
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wTransmission
-	String groupName = "/entry1/data"
+	String groupName = "/reduce"
 	String varName = "Transmission"
 	wTransmission[0] = trans //
 	// your code returning value
@@ -911,9 +997,16 @@ Function getBoxCounts(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wBoxCounts = $(dfName+":entry1:reduce:boxCounts") 
-	value = wBoxCounts[0]
-	KillWaves wBoxCounts
+	Wave wBoxCounts = $(dfName+":reduce:boxCounts") 
+	if (waveexists(wBoxCounts) == 0)
+		//boxcounts not yet set in  reduce group
+		//return 0
+		value = 0
+	else
+		value = wBoxCounts[0]
+	endif
+
+	KillWaves/Z wBoxCounts
 	
 	return(value)
 end
@@ -942,8 +1035,15 @@ Function getSampleThickness(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wThickness = $(dfName+":entry1:sample:thickness") //does not exist ???
-	value = wThickness[0]
+	if(WaveExists($(dfName+":sample:SampleThickness"))) //canonical location - a bit ugly and verbose, but that's just my opinion
+		Wave wThickness = $(dfName+":sample:SampleThickness")
+	elseif(WaveExists($(dfName+":sample:thickness")))
+		Wave wThickness = $(dfName+":sample:thickness")
+	else
+		print "Can't find Sample Thickness in " + fname
+	endif
+			
+	value = wThickness[0]/10
 	//value = 1 //??? temporary fix. nha
 	KillWaves wThickness
 	
@@ -959,9 +1059,9 @@ Function WriteThicknessToHeader(fname,thickness)
 	Wave wThickness
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wThickness
-	String groupName = "/entry1/sample"
-	String varName = "thickness"
-	wThickness[0] = thickness //
+	String groupName = "/sample"
+	String varName = "SampleThickness"
+	wThickness[0] = thickness*10 //
 	// your code returning value
 	variable err
 	err = hdfWrite(fname, groupName, varName, wThickness) //does not exist ???
@@ -982,7 +1082,7 @@ Function getSampleRotationAngle(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wSample_rotation_angle = $(dfName+":entry1:sample:sample_theta") //is this correct
+	Wave wSample_rotation_angle = $(dfName+":sample:sample_theta") //is this correct
 	value = wSample_rotation_angle[0]
 	KillWaves wSample_rotation_angle
 		
@@ -1021,7 +1121,13 @@ Function getBeamXPos(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wBeamXPos = $(dfName+":entry1:instrument:parameters:BeamCenterX") //is this correct
+	if(WaveExists($(dfName+":instrument:reduce:BeamCenterX"))) //canonical location
+			Wave wBeamXPos = $(dfName+":instrument:reduce:BeamCenterX")
+	elseif(WaveExists($(dfName+":instrument:parameters:BeamCenterX")))
+			Wave wBeamXPos = $(dfName+":instrument:parameters:BeamCenterX") 
+	else
+			print "Can't find BeamCenterX in" $fname
+	endif
 	value = wBeamXPos[0]	
 	KillWaves wBeamXPos
 	
@@ -1038,7 +1144,7 @@ Function WriteBeamCenterXToHeader(fname,beamCenterX)
 	Wave wBeamCenterX
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wBeamCenterX
-	String groupName = "/entry1/instrument/parameters"
+	String groupName = "/instrument/reduce"
 	String varName = "BeamCenterX"
 	wBeamCenterX[0] = beamCenterX //
 	// your code returning value
@@ -1060,7 +1166,13 @@ Function getBeamYPos(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wBeamYPos = $(dfName+":entry1:instrument:parameters:BeamCenterZ") //is this correct
+	if(WaveExists($(dfName+":instrument:reduce:BeamCenterZ"))) //canonical location
+			Wave wBeamYPos = $(dfName+":instrument:reduce:BeamCenterZ")
+	elseif(WaveExists($(dfName+":instrument:parameters:BeamCenterZ")))
+			Wave wBeamYPos = $(dfName+":instrument:parameters:BeamCenterZ") 
+	else
+			print "Can't find BeamCenterZ in" $fname
+	endif
 	value = wBeamYPos[0]	
 	KillWaves wBeamYPos
 		
@@ -1076,7 +1188,7 @@ Function WriteBeamCenterYToHeader(fname,beamCenterY)
 	Wave wBeamCenterY
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wBeamCenterY
-	String groupName = "/entry1/instrument/parameters"
+	String groupName = "/instrument/reduce"
 	String varName = "BeamCenterZ"
 	wBeamCenterY[0] = beamCenterY //
 	// your code returning value
@@ -1100,11 +1212,14 @@ Function getSDD(fname)
 	//err not handled here
 
 	//workaround for bad HDF5 dataset
-	String tempDF = dfName+":entry1:instrument:parameters:L2mm"
-	if(Exists(tempDF))
-		Wave wSourceToDetectorDist = $(dfName+":entry1:instrument:parameters:L2mm") //is this correct
+	if(WaveExists($(dfName+":instrument:parameters:L2"))) //canonical location
+		Wave wSourceToDetectorDist = $(dfName+":instrument:parameters:L2")
+	elseif(WaveExists($(dfName+":instrument:parameters:L2mm")))
+		Wave wSourceToDetectorDist = $(dfName+":instrument:parameters:L2mm")
+	elseif(WaveExists($(dfName+":instrument:parameters:derived_parameters:L2mm")))	
+		Wave wSourceToDetectorDist = $(dfName+":instrument:parameters:derived_parameters:L2mm")
 	else
-		Wave wSourceToDetectorDist = $(dfName+":entry1:instrument:parameters:derived_parameters:L2mm") //is this correct
+		print "Can't find L2 in " + fname
 	endif
 	
 	value = wSourceToDetectorDist[0]/1000	
@@ -1122,9 +1237,8 @@ Function WriteSDDToHeader(fname,sdd)
 	Wave wSDD
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wSDD
-//	String groupName = "/entry1/instrument/parameters/derived_parameters"
-	String groupName = "/entry1/instrument/parameters"
-	String varName = "L2mm"
+	String groupName = "/instrument/parameters"
+	String varName = "L2"
 	wSDD[0] = sdd * 1000 //
 	// your code returning value
 	variable err
@@ -1145,7 +1259,7 @@ Function getDetectorOffset(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wDetectorOffset = $(dfName+":entry1:instrument:detector:detector_x") //is this correct
+	Wave wDetectorOffset = $(dfName+":instrument:detector:detector_x") //is this correct
 	value = wDetectorOffset[0]/10
 	KillWaves wDetectorOffset
 	
@@ -1162,7 +1276,13 @@ Function getBSDiameter(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wBSdiameter = $(dfName+":entry1:instrument:parameters:BSXmm") //is this correct
+	if(WaveExists($(dfName+":instrument:parameters:BSdiam"))) //canonical location
+		Wave wBSdiameter = $(dfName+":instrument:parameters:BSdiam")
+	elseif(WaveExists($(dfName+":instrument:parameters:BSXmm")))
+		Wave wBSdiameter = $(dfName+":instrument:parameters:BSXmm") 
+	else
+		print "Can't find Beamstop Diameter in " + fname
+	endif
 	value = wBSdiameter[0]
 	KillWaves wBSdiameter
 	
@@ -1178,8 +1298,8 @@ Function WriteBeamStopDiamToHeader(fname,bs)
 	Wave wBS
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wBS
-	String groupName = "/entry1/instrument/parameters"
-	String varName = "BSXmm"
+	String groupName = "/instrument/parameters"
+	String varName = "BSdiam"
 	wBS[0] = bs //
 	// your code returning value
 	variable err
@@ -1199,7 +1319,13 @@ Function getSourceApertureDiam(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wSourceApertureDiam = $(dfName+":entry1:instrument:parameters:derived_parameters:EApXmm") //is this correct
+	if(WaveExists($(dfName+":instrument:parameters:EApX")))
+		Wave wSourceApertureDiam = $(dfName+":instrument:parameters:EApX") // canonical location
+	elseif(WaveExists($(dfName+":instrument:parameters:derived_parameters:EApXmm")))
+		Wave wSourceApertureDiam = $(dfName+":instrument:parameters:derived_parameters:EApXmm") 
+	else
+		print "Can't find Source Aperture Diameter in " + fname
+	endif	
 	value = wSourceApertureDiam[0]
 	KillWaves wSourceApertureDiam
 	
@@ -1215,8 +1341,8 @@ Function WriteSourceApDiamToHeader(fname,source)
 	Wave wsource
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wsource
-	String groupName = "/entry1/instrument/parameters/derived_parameters"
-	String varName = "EApXmm"
+	String groupName = "/instrument/parameters"
+	String varName = "EApX"
 	wsource[0] = source //
 	// your code returning value
 	variable err
@@ -1236,7 +1362,15 @@ Function getSampleApertureDiam(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wSampleApertureDiam = $(dfName+":entry1:instrument:sample_aperture:geometry:shape:SApXmm") //is this correct
+	if(WaveExists($(dfName+":sample:diameter"))) //canonical location
+		Wave wSampleApertureDiam = $(dfName+":sample:diameter")
+	elseif(WaveExists($(dfName+":instrument:parameters:autoSampleAp:diameter"))) //canonical location
+		Wave wSampleApertureDiam = $(dfName+":instrument:parameters:autoSampleAp:diameter")
+	elseif (WaveExists($(dfName+":instrument:sample_aperture:geometry:shape:SApXmm")))
+		Wave wSampleApertureDiam = $(dfName+":instrument:sample_aperture:geometry:shape:SApXmm") 
+	else
+		print "Can't find Sample Aperture Diameter in " + fname
+	endif	
 	value = wSampleApertureDiam[0]
 	KillWaves wSampleApertureDiam
 
@@ -1252,8 +1386,8 @@ Function WriteSampleApDiamToHeader(fname,source)
 	Wave wsource
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wsource
-	String groupName = "/entry1/instrument/sample_aperture/geometry/shape"
-	String varName = "SApXmm"
+	String groupName = "/sample"
+	String varName = "diameter"
 	wsource[0] = source //
 	// your code returning value
 	variable err
@@ -1276,12 +1410,14 @@ Function getSourceToSampleDist(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 	
-	//workaround for bad HDF5 dataset
-	String tempDF = dfName+":entry1:instrument:parameters:L1mm"
-	if(Exists(tempDF))
-		Wave wSourceToSampleDist = $(dfName+":entry1:instrument:parameters:L1mm") //is this correct
+	if(WaveExists($(dfName+":instrument:parameters:L1"))) //canonical location
+		Wave wSourceToSampleDist = $(dfName+":instrument:parameters:L1") 	
+	elseif(WaveExists($(dfName+":instrument:parameters:L1mm")))
+		Wave wSourceToSampleDist = $(dfName+":instrument:parameters:L1mm") 
+	elseif(WaveExists($(dfName+":instrument:parameters:derived_parameters:L1mm")))
+		Wave wSourceToSampleDist = $(dfName+":instrument:parameters:derived_parameters:L1mm")
 	else
-		Wave wSourceToSampleDist = $(dfName+":entry1:instrument:parameters:derived_parameters:L1mm") //is this correct
+		print "Can't find L1 in " + fname
 	endif
 	
 	value = wSourceToSampleDist[0]/1000
@@ -1299,9 +1435,8 @@ Function WriteSrcToSamDistToHeader(fname,SSD)
 	Wave wSSD
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wSSD
-//	String groupName = "/entry1/instrument/parameters/derived_parameters"
-	String groupName = "/entry1/instrument/parameters"
-	String varName = "L1mm"
+	String groupName = "/instrument/parameters"
+	String varName = "L1"
 	wSSD[0] = SSD * 1000 //input in metres, converted to mm for saving to file.
 	// your code returning value
 	variable err
@@ -1322,7 +1457,20 @@ Function getWavelength(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wWavelength = $(dfName+":entry1:data:LambdaA") //is this correct
+	//	Wave wWavelength = $(dfName+":data:LambdaA") 
+	//change 22/12/09 nha
+	// all these locations to be deprecated 
+	if(WaveExists($(dfName+":instrument:velocity_selector:Lambda")))  // canonical location
+		Wave wWavelength = $(dfName+":instrument:velocity_selector:Lambda") 
+	elseif(WaveExists($(dfName+":data:Lambda")))
+		Wave wWavelength = $(dfName+":data:Lambda") 
+	elseif(WaveExists($(dfName+":data:LambdaA")))
+		Wave wWavelength = $(dfName+":data:LambdaA") 
+	elseif(WaveExists($(dfName+":instrument:velocity_selector:LambdaA")))
+		Wave wWavelength = $(dfName+":instrument:velocity_selector:LambdaA") 
+	else
+		print "Can't find Lambda in " + fname
+	endif 
 	value = wWavelength[0]	
 	KillWaves wWavelength
 	
@@ -1338,18 +1486,22 @@ Function WriteWavelengthToHeader(fname,wavelength)
 	Wave wWavelength
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wWavelength
-	String groupName = "/entry1/data"
-	String varName = "LambdaA"
+	String groupName = "/instrument/velocity_selector"
+	String varName = "Lambda"
 	wWavelength[0] = wavelength //
 	// your code returning value
 	variable err
 	err = hdfWrite(fname, groupName, varName, wWavelength)
 	
-	//and because Bill Hamilton is not happy with the NeXus naming, we write it to 2 other places
-	groupName = "/entry1/instrument/parameters"
-	err = hdfWrite(fname, groupName, varName, wWavelength)
-	//velocity_selector group causes Igor crash
-	//groupName = "/entry1/instrument/velocity_selector"
+	//and because Bill Hamilton is not happy with the NeXus naming, we write it to 3 other places
+	//groupName = "/instrument/parameters"
+	//err = hdfWrite(fname, groupName, varName, wWavelength)
+	//velocity_selector group causes Igor crash in some cases
+	//groupName = "/instrument/velocity_selector"
+	//err = hdfWrite(fname, groupName, varName, wWavelength)
+	//
+	//groupName = "/data"
+	//varName = "lambda"
 	//err = hdfWrite(fname, groupName, varName, wWavelength)
 	
 	KillWaves wWavelength
@@ -1373,9 +1525,13 @@ Function getWavelengthSpread(fname)
 	//err not handled here
 	
 	//velocity_selector group causes Igor crash
-	//Wave wWavelengthSpread = $(dfName+":entry1:instrument:velocity_selector:LambdaResFWHM_percent") //is this correct
-	Wave wWavelengthSpread = $(dfName+":entry1:instrument:parameters:LambdaResFWHM_percent") //is this correct
-
+	if(WaveExists($(dfName+":instrument:velocity_selector:LambdaResFWHM_percent")))  //canonical location
+		Wave wWavelengthSpread = $(dfName+":instrument:velocity_selector:LambdaResFWHM_percent")
+	elseif(WaveExists($(dfName+":instrument:parameters:LambdaResFWHM_percent"))) 
+		Wave wWavelengthSpread = $(dfName+":instrument:parameters:LambdaResFWHM_percent")
+	else
+		print "Can't find Wavelength Spread in " + fname
+	endif
 	value = wWavelengthSpread[0]	
 	KillWaves wWavelengthSpread
 	
@@ -1392,8 +1548,7 @@ Function WriteWavelengthDistrToHeader(fname,wavelengthSpread)
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
 	Make /N=(1,1) wWavelengthSpread
 	//velocity_selector group causes Igor crash
-	//String groupName = "/entry1/instrument/velocity_selector"
-	String groupName = "/entry1/instrument/parameters"
+	String groupName = "/instrument/velocity_selector"
 	String varName = "LambdaResFWHM_percent"
 
 	wWavelengthSpread[0] = wavelengthSpread 
@@ -1417,8 +1572,8 @@ Function getDetectorPixelXSize(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wActiveArea = $(dfName+":entry1:instrument:detector:active_height") 
-	Wave w_x_bin = $(dfName+":entry1:instrument:detector:x_bin")
+	Wave wActiveArea = $(dfName+":instrument:detector:active_height") 
+	Wave w_x_bin = $(dfName+":instrument:detector:x_bin")
 	Variable numPixels = dimsize(w_x_bin, 0)
 	value = wActiveArea[0]/numPixels
 	KillWaves wActiveArea
@@ -1438,8 +1593,8 @@ Function getDetectorPixelYSize(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wActiveArea = $(dfName+":entry1:instrument:detector:active_width") 
-	Wave w_y_bin = $(dfName+":entry1:instrument:detector:y_bin")
+	Wave wActiveArea = $(dfName+":instrument:detector:active_width") 
+	Wave w_y_bin = $(dfName+":instrument:detector:y_bin")
 	Variable numPixels = dimsize(w_y_bin, 0)
 	value = wActiveArea[0]/numPixels
 	KillWaves wActiveArea
@@ -1471,7 +1626,7 @@ Function getCountTime(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here 
 
-	Wave wTime1 = $(dfName+":entry1:monitor:bm1_time") 
+	Wave wTime1 = $(dfName+":monitor:bm1_time") 
 	value = wTime1[0]	
 	KillWaves wTime1
 	
@@ -1488,10 +1643,45 @@ Function getPhysicalWidth(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here 
 
-	Wave wPhysicalWidth = $(dfName+":entry1:instrument:detector:active_width") 
+	Wave wPhysicalWidth = $(dfName+":instrument:detector:active_width") 
 	value = wPhysicalWidth[0]/10
 	KillWaves wPhysicalWidth
 		
+	return(value)
+end
+
+Function/S getSICSVersion(fname)
+	String fname
+	String value
+	// your code returning value
+	variable err
+	string dfName = ""
+	err = hdfRead(fname, dfName)
+	//err not handled here 
+
+	Wave/T wSICSVersion = $(dfName+":sics_release") 
+	value = wSICSVersion[0]	
+	KillWaves wSICSVersion
+	
+	return(value)
+end
+
+Function/S getHDFversion(fname)
+	String fname
+	String value
+	// your code returning value
+	variable err
+	string dfName = ""
+	string attribute = "HDF5_Version"
+	err = hdfReadAttribute(fname, dfName, "/", 1, attribute)
+//	string attribute ="signal"
+//	err = hdfReadAttribute(fname, dfName, "/entry/data/hmm_xy", 2, attribute)
+	//err not handled here 
+
+	Wave/T wHDF5_Version = $(dfName+":"+attribute) 
+	value = wHDF5_Version[0]	
+//	KillWaves wHDF5_Version
+
 	return(value)
 end
 
@@ -1547,16 +1737,22 @@ Function getXYBoxFromFile(fname,x1,x2,y1,y2)
 	err = hdfRead(fname, dfName)
 	//err not handled here 
 
-	Wave wX1 = $(dfName+":entry1:reduce:x1") 
-	x1 = wX1[0]
-	Wave wX2 = $(dfName+":entry1:reduce:x2") 
-	x2 = wX2[0]
-	Wave wY1 = $(dfName+":entry1:reduce:y1") 
-	y1 = wY1[0]
-	Wave wY2 = $(dfName+":entry1:reduce:y2") 
-	y2 = wY2[0]
 	
-	KillWaves wX1, wX2, wY1, wY2
+	Wave wX1 = $(dfName+":reduce:x1") 
+	if (waveexists(wX1) == 0)
+		//Waves don't exists which means an XY box has not been set for this file.
+		//Hence return 0 bounding boxes (default)
+	else
+		x1 = wX1[0]
+		Wave wX2 = $(dfName+":reduce:x2") 
+		x2 = wX2[0]
+		Wave wY1 = $(dfName+":reduce:y1") 
+		y1 = wY1[0]
+		Wave wY2 = $(dfName+":reduce:y2") 
+		y2 = wY2[0]
+	endif
+	
+	KillWaves/Z wX1, wX2, wY1, wY2
 	return(0)
 
 End
@@ -1570,17 +1766,17 @@ Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
 	String fname
 	Variable x1,x2,y1,y2
 
-	String groupName = "/entry1/reduce"
+	String groupName = "/reduce"
 	variable err
-	
+		
 	Wave wX1
-	Make /N=(1,1) wX1
+	Make/O/N=(1,1) wX1
 	Wave wX2
-	Make /N=(1,1) wX2
+	Make/O/N=(1,1) wX2
 	Wave wY1
-	Make /N=(1,1) wY1
+	Make/O/N=(1,1) wY1
 	Wave wY2
-	Make /N=(1,1) wY2
+	Make/O/N=(1,1) wY2
 		
 	wX1[0] = x1
 	wX2[0] = x2
@@ -1606,27 +1802,8 @@ End
 // for transmission calculation, writes an NCNR-specific alphanumeric identifier
 // (suffix of the data file)
 //
-// if not using the NCNR Transmission module, this function is null
-Function WriteAssocFileSuffixToHeader(trans_fname,empty_fname)
-	String trans_fname, empty_fname
-		
-// your writer here
-	Wave/T wEmpty_fname
-	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
-	Make/T /N=(1,1) wEmpty_fname
-	String groupName = "/entry1/reduce"
-	String varName = "empty_beam_file_name"
-
-	wEmpty_fname[0] = empty_fname 
-	// your code returning value
-	variable err
-	err = hdfWrite(trans_fname, groupName, varName, wEmpty_fname)
-	KillWaves wEmpty_fname
-	//err not handled here
-	return(0)
-end
-
-Function WriteFileAssoc(fname,assoc_fname)
+//AJJ June 3 2010 - Note!! For ANSTO data the "suffix" is just the filename.
+Function WriteAssocFileSuffixToHeader(fname,assoc_fname)
 	String fname,assoc_fname
 		
 // your writer here
@@ -1635,7 +1812,7 @@ Function WriteFileAssoc(fname,assoc_fname)
 	Make/T /N=(1,1) wAssoc_fname
 	
 	String varName =""
-	String groupName = "/entry1/reduce"
+	String groupName = "/reduce"
 	if(isTransFile(fname))
 		varName = "empty_beam_file_name"
 	elseif(isScatFile(fname))
@@ -1655,7 +1832,7 @@ Function/S GetFileAssoc(fname)
 	String fname
 	
 	String assoc_fname
-	String groupName = ":entry1:reduce:"
+	String groupName = ":reduce:"
 	
 	String varName = ""
 	if(isTransFile(fname))
@@ -1670,10 +1847,104 @@ Function/S GetFileAssoc(fname)
 	//err not handled here 
 
 	Wave/T wAssoc_fname = $(dfName+groupName+varName) 
-	assoc_fname =wAssoc_fname[0]	
-	KillWaves wAssoc_fname
+	if (waveexists(wAssoc_fname) == 1)
+		assoc_fname =wAssoc_fname[0]	
+	else
+		assoc_fname = ""
+	endif
+	KillWaves/Z wAssoc_fname
 	
 	return(assoc_fname)
+end
+
+Function hdfReadAttribute(fname, dfName, nodeName, nodeType, attributeStr)
+// this is a copy of hdfRead, and could be incorporated back into hdfRead.
+	
+	String fname, &dfName, nodeName, attributeStr
+	variable nodeType
+	String nxentryName
+	variable err=0,fileID	
+	String cDF = getDataFolder(1), temp
+	String fname_temp = ParseFilePath(0, fname, ":", 1, 0)
+
+	
+	String fileSuffix
+	
+	if(strsearch(fname_temp,".nx.hdf",0,2)>=0)
+		fileSuffix=".nx.hdf"
+	else
+		err = 1
+		abort "unrecognised file suffix. Not .nx.hdf"
+	endif
+	
+	dfName = "root:packages:quokka:"+removeending(fname_temp,fileSuffix)
+	
+	//folder must already exist i.e. hdfRead must have already been called
+	if(!DataFolderExists(dfName)) 
+		// possibly call an hdfRead from here
+		return err
+	endif
+	
+	//test for the name of nxentry
+	if(DataFolderExists(dfName+":"+removeending(fname_temp,fileSuffix)))
+		nxentryName = removeending(fname_temp,fileSuffix)
+	elseif(DataFolderExists(dfName+":"+"entry1"))
+		nxentryName = "entry1"
+	else
+		print "NXentry not found"
+		return err
+	endif
+	
+	//this is the stupid bit.
+	// If you're looking for attributes of the root node, then nodename = "/"
+	// If you're looking for attributes 	of the nxentry node, then e.g. nodename ="/entry/instrument"
+	// /entry is replaced with nxentryName
+	nodeName = ReplaceString("entry", nodeName, nxentryName)	
+	
+	//convert nodeName to data folder string
+	String dfNodeName = nodeName
+	dfNodeName = ReplaceString( "/", nodeName, ":")
+	dfName = dfName + dfNodeName
+	if(nodeType == 2) //data item (dataset)
+		//remove the end of dfName so that it points to a folder and not a dataset
+		variable length = strlen(dfName) 
+		variable position = strsearch(dfName, ":", length, 1) // search backwards to find last :
+		// to do - truncate string to remove dataset
+		string truncate = "\"%0." + num2str(position) + "s\""
+		sprintf dfName, truncate, dfName
+	endif
+	
+	setDataFolder dfName
+	
+	try	
+		HDF5OpenFile /R /Z fileID  as fname
+		if(!fileID)
+			err = 1
+			abort "couldn't load HDF5 file"
+		endif
+
+		HDF5LoadData /O /Q /Z /TYPE=(nodeType) /A=attributeStr, fileID, nodeName
+
+		if (V_flag!=0)
+			print "couldn't load attribute " + attributeStr
+		endif
+	catch
+
+	endtry
+	if(fileID)
+		HDF5CloseFile /Z fileID 
+	endif
+
+// add the name of the root node to dfName 
+// in the case of sensitivity files aka DIV files, don't append a root node to dfName
+	if(DataFolderExists(dfName+":"+removeending(fname_temp,fileSuffix)))
+		dfName = dfName+":"+removeending(fname_temp,fileSuffix)  //for files written Dec 2009 and after
+	elseif(DataFolderExists(dfName+":"+"entry1"))
+		dfName = dfName+":entry1" //for files written before Dec 2009
+	endif
+
+	setDataFolder $cDF
+	return err
 end
 
 Function hdfRead(fname, dfName)
@@ -1685,7 +1956,7 @@ Function hdfRead(fname, dfName)
 	variable err=0,fileID
 	String cDF = getDataFolder(1), temp
 	String fname_temp = ParseFilePath(0, fname, ":", 1, 0)
-	
+		
 	String fileSuffix
 	if(strsearch(fname_temp,".nx.hdf",0,2)>=0)
 		fileSuffix=".nx.hdf"
@@ -1720,6 +1991,14 @@ Function hdfRead(fname, dfName)
 		HDF5CloseFile /Z fileID 
 	endif
 
+	// add the name of the root node to dfName 
+	// in the case of sensitivity files aka DIV files, don't append a root node to dfName
+	if(DataFolderExists(dfName+":"+removeending(fname_temp,fileSuffix)))
+		dfName = dfName+":"+removeending(fname_temp,fileSuffix)  //for files written Dec 2009 and after
+	elseif(DataFolderExists(dfName+":"+"entry1"))
+		dfName = dfName+":entry1" //for files written before Dec 2009
+	endif
+
 	setDataFolder $cDF
 	return err
 end
@@ -1734,13 +2013,26 @@ Function hdfWrite(fname, groupName, varName, wav)
 	variable err=0, fileID,groupID
 	String cDF = getDataFolder(1), temp
 	String fname_temp = ParseFilePath(0, fname, ":", 1, 0)
-	
+	String NXentry_name
+			
 	try	
-		HDF5OpenFile /Z fileID  as fname  //open file read-write
+		HDF5OpenFile/Z fileID  as fname  //open file read-write
 		if(!fileID)
 			err = 1
 			abort "HDF5 file does not exist"
 		endif
+		
+		//get the NXentry node name
+		HDF5ListGroup /TYPE=1 fileID, "/"
+		//remove trailing ; from S_HDF5ListGroup
+		NXentry_name = S_HDF5ListGroup
+		NXentry_name = ReplaceString(";",NXentry_name,"")
+		if(strsearch(NXentry_name,":",0)!=-1) //more than one entry under the root node
+			err = 1
+			abort "More than one entry under the root node. Ambiguous"
+		endif 
+		//concatenate NXentry node name and groupName	
+		groupName = "/" + NXentry_name + groupName
 		HDF5OpenGroup /Z fileID , groupName, groupID
 
 	//	!! At the moment, there is no entry for sample thickness in our data file
@@ -1751,12 +2043,23 @@ Function hdfWrite(fname, groupName, varName, wav)
 			HDF5CreateGroup /Z fileID, groupName, groupID
 			//err = 1
 			//abort "HDF5 group does not exist"
-		endif		
-		HDF5SaveData /O /Z  wav, groupID, varName
+		else
+			// get attributes and save them
+			//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes 
+			//Wave attributes = S_HDF5ListAttributes
+		endif
+	
+		HDF5SaveData /O /Z /IGOR=0  wav, groupID, varName
 		if (V_flag != 0)
 			err = 1
-			abort "Cannot save wave to HDF5 group"
+			abort "Cannot save wave to HDF5 dataset" + varName
 		endif	
+		
+		//HDF5SaveData /O /Z /IGOR=0 /A=attributes groupID, varName
+		//if (V_flag != 0)
+		////	err = 1
+		//	abort "Cannot save attributes to HDF5 dataset"
+		//endif	
 	catch
 
 	endtry

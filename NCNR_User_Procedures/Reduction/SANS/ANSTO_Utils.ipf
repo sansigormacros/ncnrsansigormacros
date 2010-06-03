@@ -30,10 +30,6 @@ Function InitFacilityGlobals()
 
 	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position
 
-	// flags to turn detector corrections on/off for testing (nha. this overrides the default, turning these corrections OFF)
-	Variable/G root:myGlobals:gDoDetectorEffCorr = 0
-	Variable/G root:myGlobals:gDoTransmissionCorr = 0
-
 End
 
 
@@ -191,10 +187,33 @@ End
 Function GetRunNumFromFile(item)
 	String item
 
+	Variable invalid = -1
 	Variable num=-1		// an invalid return value
 	
-	//your code here
-	
+	String runStr=""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, get the three characters preceeding it
+		if (pos <=6)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[pos-7,pos-1]
+			//convert to a number
+			num = str2num(runStr)
+			//if valid, return it
+			if (num == NaN)
+				//3 characters were not a number
+				return (invalid)
+			else
+				//run was OK
+				return (num)
+			Endif
+		Endif
+	Endif	
 	return (num)
 End
 
@@ -216,9 +235,21 @@ Function/S GetRunNumStrFromFile(item)
 	String retStr
 	retStr=invalid
 	
-	//your code here
-	
-	return(retStr)
+	String runStr = ""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, get the three characters preceeding it
+		if (pos <=6)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[pos-7,pos-1]
+			return (runStr)
+		Endif
+	Endif
 End
 
 //returns a string containing the full path to the file containing the 
@@ -234,7 +265,7 @@ End
 Function/S FindFileFromRunNumber(num)
 	Variable num
 	
-	String fullName="",partialName="",item=""
+	String fullName="",partialName="",item="",numStr=""
 	
 	//make sure that path exists
 	PathInfo catPathName
@@ -243,10 +274,45 @@ Function/S FindFileFromRunNumber(num)
 		Abort "folder path does not exist - use Pick Path button"
 	Endif
 
-	//your code here	
+	//make 7 digit string from run number
+	sprintf numStr,"%07u",num
 
-	return(fullname)
-	
+	//partialname = "QKK"+tmp_num+".nx.hdf"
+
+	String list="",newList="",testStr=""
+
+	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
+	//find (the) one with the number in the run # location in the name
+	Variable numItems,ii,runFound,isRAW
+	numItems = ItemsInList(list,";")		//get the new number of items in the list
+	ii=0
+	do
+		//parse through the list in this order:
+		// 1 - does item contain run number (as a string) "QKKXXXXXXX.nx.hdf"
+		// 2 - exclude by isRaw? (to minimize disk access)
+		item = StringFromList(ii, list  ,";" )
+		if(strlen(item) != 0)
+			//find the run number, if it exists as a three character string
+			testStr = GetRunNumStrFromFile(item)
+			runFound= cmpstr(numStr,testStr)	//compare the three character strings, 0 if equal
+			if(runFound == 0)
+				//the run Number was found
+				//build valid filename
+				partialName = FindValidFileName(item)
+				if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
+					fullName = path + partialName
+					//check if RAW, if so,this must be the file!
+					isRAW = CheckIfRawData(fullName)
+					if(isRaw)
+						//stop here
+						return(fullname)
+					Endif
+				Endif
+			Endif
+		Endif
+		ii+=1
+	while(ii<numItems)		//process all items in list
+	Return ("")	//null return if file not found in list
 End
 
 //function to test a file to see if it is a RAW SANS file
@@ -259,9 +325,31 @@ Function CheckIfRawData(fname)
 	String fname
 	Variable value = 0
 	
-	if(cmpStr(FindValidFilename(fname),fname)==0)
-		value = 1
+	Variable hdfID,hdfgID
+	Variable isNXHDF = 0
+	
+	//nha. look for non-NeXus files 
+	if (strsearch(fname, "nx.hdf", 0) >= 0)
+		isNXHDF = 1
 	endif
+
+	if(isNXHDF == 1)
+		//Need to actually determine if file is RAW data.
+		HDF5OpenFile/Z hdfID as fname
+		HDF5OpenGroup/Z hdfID, "/data", hdfgID
+		if (V_Flag == 0)
+			//DIV file (with nx.hdf suffix)
+			value = 0
+		else
+			//Some other nx.hdf file
+			value = 1
+		endif
+		HDF5CloseGroup/Z hdfgID
+		HDF5CloseFile/Z hdfID
+	else
+		value = 0
+	endif
+	
 	return(value)
 End
 
@@ -292,7 +380,7 @@ Function isEmpFile(fName)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave/T wSampleName = $(dfName+":entry1:sample:name") 
+	Wave/T wSampleName = $(dfName+":sample:name") 
 	String sampleName = wSampleName[0]
 	
 	if (cmpstr(sampleName,"MT beam")==0)
@@ -319,16 +407,19 @@ Function isTransFile(fName)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	Wave wTransmission_Flag = $(dfName+":entry1:sample:transmission_flag") //is only being set after 27/5/2009. ???
+	Wave wTransmission_Flag = $(dfName+":sample:TransmissionFlag") //is only being set after 27/5/2009. ???
 	value = wTransmission_Flag[0]
-	
-	//workaround - determine by bsx position
-	Wave wBSX = $(dfName+":entry1:instrument:beam_stop:geometry:position:BSPosXmm")
-	variable bsx = wBSX[0]
-	
-	if (bsx >= -10 )
-		value = 1
-	endif
+//	
+//   AJJ June 2nd 2010 - Unclear that this check is correct. Certainly BSPosXmm is not correct parameter in current data format...
+//	if (value == 0)
+//	//workaround - determine by bsx position
+//	Wave wBSX = $(dfName+":instrument:beam_stop:geometry:position:BSPosXmm")
+//	variable bsx = wBSX[0]
+//		
+//		if (bsx >= -10 )
+//			value = 1
+//		endif
+//	endif
 
 	return(value)
 End
@@ -383,11 +474,8 @@ Function/S FindValidFilename(partialName)
 	String retStr=""
 	
 	//your code here
-	//nha. look for non-NeXus files 
-	if (strsearch(partialName, "nx.hdf", 0) == -1)
-		return(retStr)
-	endif
-	
+	//Assuming no issues with partialNames....
+		
 	return(partialName)
 
 End
@@ -490,11 +578,13 @@ End
 // called by ProtocolAsPanel.ipf and Tile_2D.ipf
 //
 Function/S GetNameFromHeader(fullName)
+// given the fully qualified path and filename ie. fullName, return just the filename
 	String fullName
 	String newName = ""
 
 	//your code here
-	
+	newName = ParseFilePath(0, fullName, ":", 1, 0)
+
 	Return(newName)
 End
 
@@ -561,23 +651,17 @@ Function/S ParseRunNumberList(list)
 		//get the item
 		item = StringFromList(ii,list,",")
 
-		//hardcode the mask filename - ??? bad 
-		if(strlen(item)==4)
-			item = "QKK000"+item+".nx.hdf"
-		endif
-		//is it already a valid filename?
-
-		//hardcode the mask filename - ??? bad 
-		if(cmpstr(item,"mask.bin")==0)
-			tempStr = item
-		else
 		tempStr=FindValidFilename(item) //returns filename if good, null if error
-		endif
+		
 		if(strlen(tempstr)!=0)
 			//valid name, add to list
 			//Print "it's a file"
-			newList += tempStr + ","
-		else
+				if(strlen(newList)==0)
+					newList = tempStr
+				else
+					newList += "," + tempStr
+				endif		
+			else
 			//not a valid name
 			//is it a number?
 			runNum=str2num(item)
@@ -702,9 +786,9 @@ Function LookupAtten(lambda,attenNo)
 		return (1)		//no attenuation, return trans == 1
 	endif
 	
-	if( (lambda < 5) || (lambda > 5 ) )
-		Abort "Wavelength out of calibration range (5A). You must manually enter the absolute parameters"
-	Endif
+//	if( (lambda < 5) || (lambda > 5 ) )
+//		Abort "Wavelength out of calibration range (5A). You must manually enter the absolute parameters"
+//	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
 		Execute "MakeAttenTable()"
@@ -754,24 +838,26 @@ Proc MakeAttenTable()
 	// epg
 	// note 5A only at this stage but other wavelengths as measured
 	// these values have to be re-determined as were measured on time and not monitor counts
-	Make/O/N=(num) root:myGlobals:Attenuators:lambda={5}
+	//Make/O/N=(num) root:myGlobals:Attenuators:lambda={5}
+	Make/O/N=(num) root:myGlobals:Attenuators:lambda={4.94}	
 
 	//Quokka attenuator factors. 19/1/09 nha
 	//20/3/09 nha updated to 
 	//file://fianna/Sections/Bragg/Data_Analysis_Team/Project/P025 Quokka Commissioning DRV/3_Development/ATTest-timeseries.pdf 
+	//updated by epg 13-02-2010 to reflect kwo measurements at g7
 	
-	root:myGlobals:Attenuators:att0 = {1}
-	root:myGlobals:Attenuators:att1 = {0.499}
-	root:myGlobals:Attenuators:att2 = {0.175}
-	root:myGlobals:Attenuators:att3 = {0.0727}
-	root:myGlobals:Attenuators:att4 = {0.0326}
-	root:myGlobals:Attenuators:att5 = {0.0124}
-	root:myGlobals:Attenuators:att6 = {0.00573}
-	root:myGlobals:Attenuators:att7 = {0.00257}
-	root:myGlobals:Attenuators:att8 = {0.000929}
-	root:myGlobals:Attenuators:att9 = {6.93e-5}
-	root:myGlobals:Attenuators:att10 = {5.46e-6}
-	root:myGlobals:Attenuators:att11 = {1.55e-6}
+ 	root:myGlobals:Attenuators:att0 = {1}
+	root:myGlobals:Attenuators:att1 = {0.498782}
+	root:myGlobals:Attenuators:att2 = {0.176433}
+	root:myGlobals:Attenuators:att3 = {0.0761367}
+	root:myGlobals:Attenuators:att4 = {0.0353985}
+	root:myGlobals:Attenuators:att5 = {0.0137137}
+	root:myGlobals:Attenuators:att6 = {0.00614167}
+	root:myGlobals:Attenuators:att7 = {0.00264554}
+	root:myGlobals:Attenuators:att8 = {0.000994504}
+	root:myGlobals:Attenuators:att9 = {0.000358897}
+	root:myGlobals:Attenuators:att10 = {7.2845e-05}
+	root:myGlobals:Attenuators:att11 = {1.67827e-06}
 
 End
 

@@ -51,7 +51,7 @@ End
 #include "RectAnnulAvg"			version>=5.0
 #include "Schematic"				version>=5.0
 #include "Tile_2D"				version>=5.0
-#include "ANSTO_Transmission"	version>=5.0
+#include "Transmission"	version>=5.0
 #include "WorkFileUtils"	version>=5.0
 #include "WriteQIS"				version>=5.0 
 // removed RT button from main panel AUG2006
