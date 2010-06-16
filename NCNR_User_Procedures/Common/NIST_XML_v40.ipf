@@ -993,11 +993,10 @@ End
 
 
 
-
-
-End
-
 /// See WriteModelData_v40.ipf for 6 column equivalent
+//
+// this only handles 6-column data, will abort if resolution wave is missing
+//
 Function ReWrite1DXMLData(folderStr)
 	String folderStr
 
@@ -1032,7 +1031,9 @@ Function ReWrite1DXMLData(folderStr)
 	endif
 	
 	Duplicate/O qw qbar,sigQ,fs
-		
+	sigq = resw[p][0]
+	qbar = resw[p][1]
+	fs = resw[p][2]
 
 		
 	//Data
