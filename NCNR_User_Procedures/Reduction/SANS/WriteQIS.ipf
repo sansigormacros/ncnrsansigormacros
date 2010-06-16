@@ -640,7 +640,7 @@ End
 
 
 // NEW additions - May 2009
-//ASCII export of data as 7-columns qx-qy-Intensity-qz-sigmaQx-sigmaQy-fShad
+//ASCII export of data as 7-columns qx-qy-Intensity-qz-sigmaQ_parall-sigmaQ_perp-fShad
 //limited header information?
 //
 // *** DEC 2009 ***
@@ -648,7 +648,12 @@ End
 // smearing of the 2D data yet. For a future minor release...
 // -- when the Qz and resolution are written, be sure to change the tw[15] in the header back to the 
 // 		proper labels
+// - May 2010:
+// now the smearing is correct, and is now defined in terms of Q_parallel and Q_perpendicular
 //
+// - June 2010:
+// TEMPORARY - I've added "fake" error that is sqrt(value). It really needs to be propogated
+//  in a more correct way, but this is at least a placeholder for the error column
 //
 // - creates the qx and qy data here, based on the data and header information
 //
@@ -735,9 +740,10 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[12] = "Average Choices: "+proto[5]
 	labelWave[13] = ""
 	labelWave[14] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy)"
-//	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQx - SigmaQy - fSubS(beam stop shadow)"
-	labelWave[16] = ""
+//	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy)"
+//	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+	labelWave[16] = "ERROR WAVE IS ONLY AN ESTIMATE  - 6/2010"
 	labelWave[17] = "ASCII data created " +date()+" "+time()
 	//strings can be too long to print-- must trim to 255 chars
 	Variable ii,jj
@@ -811,17 +817,45 @@ Function QxQy_Export(type,fullpath,dialog)
 
 //*********************
 
+	// generate my own error wave for I(qx,qy)
+	Duplicate/O z_val sw
+	sw = sqrt(z_val)		//assumes Poisson statistics for each cell (counter)
+	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
+	// get rid of the "bad" errorsby replacing the NaN, Inf, and zero with V_avg
+	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
+	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
+	// It appears to have no effect on the unsmeared model.
+	WaveStats/Q sw
+	sw = numtype(sw[p]) == 0 ? sw[p] : V_avg
+	sw = sw[p] != 0 ? sw[p] : V_avg
+	
+
 	//not demo-compatible, but approx 8x faster!!	
-#if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)	
-	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// without resolution
-//	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val,qz_val,SigmaQx,SigmaQy,fSubS as fullpath	// write out the resolution information
+#if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)
+	Duplicate/O qx_val,qx_val_s
+	Duplicate/O qy_val,qy_val_s
+	Duplicate/O qz_val,qz_val_s
+	Duplicate/O z_val,z_val_s
+	Duplicate/O SigmaQx,sigmaQx_s
+	Duplicate/O SigmaQy,sigmaQy_s
+	Duplicate/O fSubS,fSubS_s
+	Duplicate/O sw,sw_s
+	
+	//so that double precision is not written ou
+	Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sigmaQx_s,sigmaQy_s,fSubS_s,sw_s
+	
+//	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// without resolution
+	Save/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s as fullpath	// write out the resolution information
 #else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave
 	fprintf refnum,"\r\n"
-	wfprintf refNum,"%8g\t%8g\t%8g\r\n",qx_val,qy_val,z_val
+//	wfprintf refNum,"%8g\t%8g\t%8g\r\n",qx_val,qy_val,z_val
+	wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val,qy_val,z_val,sw,qz_val,SigmaQx,SigmaQy,fSubS
 	Close refNum
 #endif
+	
+	KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s
 	
 	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS,phi,r_dist
 	

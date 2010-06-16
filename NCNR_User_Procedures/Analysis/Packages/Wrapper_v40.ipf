@@ -1043,7 +1043,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	
 	
 	if(yesReport)
-		String parStr=GetWavesDataFolder(cw,1)+ WaveList("*param*"+suffix, "", "TEXT:1," )		//this is *hopefully* one wave
+		String parStr=GetWavesDataFolder(cw,1)+ WaveList("*param*"+suffix, "", "TEXT:1," )		// this is *hopefully* one wave
 		String topGraph= WinName(0,1)	//this is the topmost graph
 	
 		DoUpdate		//force an update of the graph before making a copy of it for the report

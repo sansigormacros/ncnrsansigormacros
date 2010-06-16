@@ -192,6 +192,7 @@ Function fReWrite1DData(folderStr,delim,term)
 	if(dialog)
 		PathInfo/S catPathName
 		fullPath = DoSaveFileDialog("Save data as",fname=baseStr+".txt")
+		Print fullPath
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -199,7 +200,7 @@ Function fReWrite1DData(folderStr,delim,term)
 		Endif
 		//Print "dialog fullpath = ",fullpath
 	Endif
-	
+
 	Open refnum as fullpath
 	
 	fprintf refnum,"Modified data written from folder %s on %s\r\n",baseStr,(date()+" "+time())

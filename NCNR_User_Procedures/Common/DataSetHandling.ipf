@@ -1,5 +1,13 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+
+///////// SRK - VERY SIMPLE batch converter has been added: see
+//
+//	Function batchXML26ColConvert()
+//
+
+
+
 // Functions and interfaces to manage datasets now that they are in data folders
 // Planned interface
 // - Panel to select/load data and then select operation
@@ -1508,3 +1516,146 @@ End
 //	
 //
 //End
+
+
+
+///////// SRK - VERY SIMPLE batch converter
+// no header information is preserved
+// file names are partially preserved
+//
+
+/// to use this:
+// -open the Plot Manager and set the path
+// -run this function
+//
+// it doesn't matter if the XML ouput flag is set - this overrides.
+Function batchXML26ColConvert()
+
+	String list, item,path,fname
+	Variable num,ii
+	
+	PathInfo CatPathName
+	path = S_Path
+
+	list = A_ReducedDataFileList("")
+	num = itemsInList(list)
+	Print num
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list ,";")
+		fname=path + item
+		Execute "A_LoadOneDDataWithName(\""+fname+"\",0)"		//won't plot
+//		easier to load all, then write out, since the name will be changed
+	endfor
+	
+	
+	list = DM_DataSetPopupList()
+
+	num = itemsInList(list)
+	Print num
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list ,";")
+		fReWrite1DData_noPrompt(item,"tab","CR")
+	endfor
+	
+End
+
+// quick version (copied from fReWrite1DData() that NEVER asks for a new fileName
+// - and right now, always expect 6-column data, either SANS or USANS (re-writes -dQv)
+// - AJJ Nov 2009 : better make sure we always fake 6 columns on reading then....
+Function fReWrite1DData_noPrompt(folderStr,delim,term)
+	String folderStr,delim,term
+	
+	String formatStr="",fullpath=""
+	Variable refnum,dialog=1
+	
+	String dataSetFolderParent,basestr
+	
+	//setup delimeter and terminator choices
+	If(cmpstr(delim,"tab")==0)
+		//tab-delimeted
+		formatStr="%15.8g\t%15.8g\t%15.8g\t%15.8g\t%15.8g\t%15.8g"
+	else
+		//use 3 spaces
+		formatStr="%15.8g   %15.8g   %15.8g   %15.8g   %15.8g   %15.8g"
+	Endif
+	If(cmpstr(term,"CR")==0)
+		formatStr += "\r"
+	Endif
+	If(cmpstr(term,"LF")==0)
+		formatStr += "\n"
+	Endif
+	If(cmpstr(term,"CRLF")==0)
+		formatStr += "\r\n"
+	Endif
+	
+	//Abuse ParseFilePath to get path without folder name
+	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
+	//Abuse ParseFilePath to get basestr
+	basestr = ParseFilePath(0,folderStr,":",1,0)
+	
+	//make sure the waves exist
+	SetDataFolder $(dataSetFolderParent+basestr)
+	WAVE/Z qw = $(baseStr+"_q")
+	WAVE/Z iw = $(baseStr+"_i")
+	WAVE/Z sw = $(baseStr+"_s")
+	WAVE/Z resw = $(baseStr+"_res")
+	
+	if(WaveExists(qw) == 0)
+		Abort "q is missing"
+	endif
+	if(WaveExists(iw) == 0)
+		Abort "i is missing"
+	endif
+	if(WaveExists(sw) == 0)
+		Abort "s is missing"
+	endif
+	if(WaveExists(resw) == 0)
+		Abort "Resolution information is missing."
+	endif
+	
+	Duplicate/O qw qbar,sigQ,fs
+	if(dimsize(resW,1) > 4)
+		//it's USANS put -dQv back in the last 3 columns
+		NVAR/Z dQv = USANS_dQv
+		if(NVAR_Exists(dQv) == 0)
+			Abort "It's USANS data, and I don't know what the slit height is."
+		endif
+		sigQ = -dQv
+		qbar = -dQv
+		fs = -dQv
+	else
+		//it's SANS
+		sigQ = resw[p][0]
+		qbar = resw[p][1]
+		fs = resw[p][2]
+	endif
+	
+	dialog=0
+	if(dialog)
+		PathInfo/S catPathName
+//		fullPath = DoSaveFileDialog("Save data as",fname=baseStr+".txt")
+		fullPath = DoSaveFileDialog("Save data as",fname=baseStr[0,strlen(BaseStr)-2])
+		Print fullPath
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+	PathInfo catPathName
+	fullPath = S_Path + baseStr[0,strlen(BaseStr)-2]
+
+	Open refnum as fullpath
+	
+	fprintf refnum,"Modified data written from folder %s on %s\r\n",baseStr,(date()+" "+time())
+	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
+	Close refnum
+	
+	KillWaves/Z sigQ,qbar,fs
+	
+	SetDataFolder root:
+	return(0)
+End
+
+///////////end SRK

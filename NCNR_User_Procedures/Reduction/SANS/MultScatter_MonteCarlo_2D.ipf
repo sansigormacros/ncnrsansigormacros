@@ -75,6 +75,11 @@
 // - if the MC gags on a simulation, it often gets "stuck" and can't do the normal calculation from the model, which it
 //   should always default to...
 //
+
+// - to add ---
+// -- wavelength distribution = another RNG to select the wavelength
+// -- quartz windows (an empirical model?? or measure some real data - power Law + background)
+// -- blocked beam (measure this too, and have some empirical model for this too - Broad Peak)
 //
 
 
@@ -142,24 +147,26 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 			retWave0 = 0		//clear the return wave
 			retWave0[0] = -1*trunc(datetime-gInitTime)		//to initialize ran3
 			ThreadStart mt,i,Monte_SANS_W1(inputWave0,ran_dev0,nt0,j10,j20,nn0,linear_data0,retWave0)
-			Print "started thread 0"
+			Print "started thread 1"
 		endif
 		if(i==1)
 			WAVE inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1
 			retWave1 = 0			//clear the return wave
 			retWave1[0] = -1*trunc(datetime-gInitTime-2)		//to initialize ran1
 			ThreadStart mt,i,Monte_SANS_W2(inputWave1,ran_dev1,nt1,j11,j21,nn1,linear_data1,retWave1)
-			Print "started thread 1"
+			Print "started thread 2"
 		endif
 		if(i==2)
 			WAVE inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2
 			retWave2[0] = -1*trunc(datetime-gInitTime-3)		//to initialize ran3a
 			ThreadStart mt,i,Monte_SANS_W3(inputWave2,ran_dev2,nt2,j12,j22,nn2,linear_data2,retWave2)
+			Print "started thread 3"
 		endif
 		if(i==3)
 			WAVE inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3
 			retWave3[0] = -1*trunc(datetime-gInitTime-4)		//to initialize ran1a
 			ThreadStart mt,i,Monte_SANS_W4(inputWave3,ran_dev3,nt3,j13,j23,nn3,linear_data3,retWave3)
+			Print "started thread 4"
 		endif
 	endfor
 
@@ -1291,7 +1298,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
-
+	t0 *= 2		//empirical correction
 	Print "Estimated Simulation time (s) = ",t0
 	
 // to correct for detector efficiency, send only the fraction of neutrons that are actually counted	

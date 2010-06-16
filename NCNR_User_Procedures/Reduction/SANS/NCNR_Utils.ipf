@@ -152,16 +152,18 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	Return results
 End
 
-//
-//
-//	this should end up in FACILITY_Utils once it's fully functional
-//
-// lots of unnecessary junk...
+
 //
 //**********************
-// 2D resolution function calculation - in terms of X and Y
+// 2D resolution function calculation - ***NOT*** in terms of X and Y
+// but written in terms of Parallel and perpendicular to the Q vector at each point
+//
+// -- it must be written this way since the 2D function is an ellipse with its major
+// axis pointing in the direction of Q_parallel. Hence there is no way to properly define the 
+// elliptical gaussian in terms of sigmaX and sigmaY
 //
 // based on notes from David Mildner, 2008
+//
 //
 // - 21 MAR 07 uses projected BS diameter on the detector
 // - APR 07 still need to add resolution with lenses. currently there is no flag in the 
@@ -186,7 +188,7 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	//Constants
 	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
 	Variable g = 981.0				//gravity acceleration [cm/s^2]
-	Variable h_m = 3995				// h/m [=] A*m/s
+	Variable m_h	= 252.8			// m/h [=] s/cm^2
 
 	String results
 	results ="Failure"
@@ -250,20 +252,37 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 //		v_r = 0.0
 //	endif
 
-	Variable kap,a_val
+	Variable kap,a_val,a_val_L2
 	
 	kap = 2*pi/lambda
-	a_val = (L1+L2)*g/2/(h_m)^2
+	a_val = L2*(L1+L2)*g/2*(m_h)^2
+	a_val_L2 = a_val/L2*1e-16		//convert 1/cm^2 to 1/A^2
 
-//	lambdaWidth = 0.5	
-	SigmaQX = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(cos(phi))^2
 
-	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(sin(phi))^2 + 8*(a_val/L2)^2*lambda^4*lambdaWidth^2
-//	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + 2*(DDet/L2)^2 + 2*(r_dist/L2)^2*(lambdaWidth)^2*(sin(phi))^2
+///////// in terms of Q_parallel ("x") and Q_perp ("y") - this works, since parallel is in the direction of Q and I
+// can calculate that from the QxQy (I just need the projection)
 
-	SigmaQX = sqrt(kap*kap/12*SigmaQX)
-	SigmaQy = sqrt(kap*kap/12*SigmaQY)
 
+// for test case with no gravity, set a_val = 0
+// note that gravity has no wavelength dependence. the lambda^4 cancels out.
+//
+//	a_val = 0
+
+	// the detector pixel is square, so correct for phi
+	DDet = DDet*cos(phi) + DDet*sin(phi)
+	
+	// this is really sigma_Q_parallel
+	SigmaQX = kap*kap/12* (3*(S1/L1)^2 + 3*(S2/LP)^2 + (DDet/L2)^2 + (del_r/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
+	SigmaQX += inQ*inQ*v_lambda
+
+	//this is really sigma_Q_perpendicular
+	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + (DDet/L2)^2 + (del_r/L2)^2 + (cos(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2
+	SigmaQY *= kap*kap/12
+	
+	SigmaQX = sqrt(SigmaQX)
+	SigmaQy = sqrt(SigmaQY)
+	
+	
 	results = "success"
 	Return results
 End
@@ -1369,3 +1388,5 @@ Function/S GetPrevNextRawFile(curfilename, prevnext)
 
 	Return filename
 End
+
+

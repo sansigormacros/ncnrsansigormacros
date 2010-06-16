@@ -61,16 +61,30 @@ Structure ResSmearAAOStruct
 EndStructure
 
 
-// tentative pass at 2D resolution smearing
+//// tentative pass at 2D resolution smearing
+////
+//Structure ResSmear_2D_AAOStruct
+//	Wave coefW
+//	Wave zw			//answer
+//	Wave qy			// q-value
+//	Wave qx
+//	Wave qz
+//	Wave sQpl		//resolution parallel to Q
+//	Wave sQpp		//resolution perpendicular to Q
+//	Wave fs
+//	String info
+//EndStructure
+
+// reformat the structure ?? WM Fit compatible
+// -- 2D resolution smearing
 //
 Structure ResSmear_2D_AAOStruct
 	Wave coefW
 	Wave zw			//answer
-	Wave qy			// q-value
-	Wave qx
+	Wave xw[2]		// qx-value is [0], qy is xw[1]
 	Wave qz
-	Wave sigQx		//resolution
-	Wave sigQy
+	Wave sQpl		//resolution parallel to Q
+	Wave sQpp		//resolution perpendicular to Q
 	Wave fs
 	String info
 EndStructure
@@ -1076,7 +1090,7 @@ Function SANSModelSTRUCT_proto(s)
 end
 
 // prototype function for 2D smearing routine
-Function SANS_2D_ModelAAO_proto(w,zw,xw,yw)
+ThreadSafe Function SANS_2D_ModelAAO_proto(w,zw,xw,yw)
 	Wave w,zw,xw,yw
 	
 	Print "in SANSModelAAO_proto function"
@@ -1345,3 +1359,209 @@ Function fResetSmearedModels(matchStr,qStr)
 	endfor
 	return(0)
 end
+
+
+////
+//// moved from RawWindowHook to here - where the Q calculations are available to
+//   reduction and analysis
+//
+
+//phi is defined from +x axis, proceeding CCW around [0,2Pi]
+Threadsafe Function FindPhi(vx,vy)
+	variable vx,vy
+	
+	variable phi
+	
+	phi = atan(vy/vx)		//returns a value from -pi/2 to pi/2
+	
+	// special cases
+	if(vx==0 && vy > 0)
+		return(pi/2)
+	endif
+	if(vx==0 && vy < 0)
+		return(3*pi/2)
+	endif
+	if(vx >= 0 && vy == 0)
+		return(0)
+	endif
+	if(vx < 0 && vy == 0)
+		return(pi)
+	endif
+	
+	
+	if(vx > 0 && vy > 0)
+		return(phi)
+	endif
+	if(vx < 0 && vy > 0)
+		return(phi + pi)
+	endif
+	if(vx < 0 && vy < 0)
+		return(phi + pi)
+	endif
+	if( vx > 0 && vy < 0)
+		return(phi + 2*pi)
+	endif
+	
+	return(phi)
+end
+
+	
+//function to calculate the overall q-value, given all of the necesary trig inputs
+//NOTE: detector locations passed in are pixels = 0.5cm real space on the detector
+//and are in detector coordinates (1,128) rather than axis values
+//the pixel locations need not be integers, reals are ok inputs
+//sdd is in meters
+//wavelength is in Angstroms
+//
+//returned magnitude of Q is in 1/Angstroms
+//
+Function CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+	
+	Variable dx,dy,qval,two_theta,dist
+	
+	Variable pixSizeX=pixSize
+	Variable pixSizeY=pixSize
+	
+	sdd *=100		//convert to cm
+	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
+	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
+	dist = sqrt(dx^2 + dy^2)
+	
+	two_theta = atan(dist/sdd)
+
+	qval = 4*Pi/lam*sin(two_theta/2)
+	
+	return qval
+End
+
+//calculates just the q-value in the x-direction on the detector
+//input/output is the same as CalcQval()
+//ALL inputs are in detector coordinates
+//
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
+//
+// repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
+// now properly accounts for qz
+//
+Function CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+
+	Variable qx,qval,phi,dx,dy,dist,two_theta
+	
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	
+	sdd *=100		//convert to cm
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
+	dy = (yaxval - yctr)*pixSize		//delta y in cm
+	phi = FindPhi(dx,dy)
+	
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+
+	qx = qval*cos(two_theta/2)*cos(phi)
+	
+	return qx
+End
+
+//calculates just the q-value in the y-direction on the detector
+//input/output is the same as CalcQval()
+//ALL inputs are in detector coordinates
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
+//
+// repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
+// now properly accounts for qz
+//
+Function CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+	
+	Variable dy,qval,dx,phi,qy,dist,two_theta
+	
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	
+	sdd *=100		//convert to cm
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
+	dy = (yaxval - yctr)*pixSize		//delta y in cm
+	phi = FindPhi(dx,dy)
+	
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+	
+	qy = qval*cos(two_theta/2)*sin(phi)
+	
+	return qy
+End
+
+//calculates just the z-component of the q-vector, not measured on the detector
+//input/output is the same as CalcQval()
+//ALL inputs are in detector coordinates
+//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
+//sdd is in meters
+//wavelength is in Angstroms
+//
+// not actually used, but here for completeness if anyone asks
+//
+Function CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSize
+	
+	Variable dy,qval,dx,phi,qz,dist,two_theta
+	
+	qval = CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSize)
+	
+	sdd *=100		//convert to cm
+	
+	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
+	dx = (xaxval - xctr)*pixSize		//delta x in cm
+	dy = (yaxval - yctr)*pixSize		//delta y in cm
+	dist = sqrt(dx^2 + dy^2)
+	two_theta = atan(dist/sdd)
+	
+	qz = qval*sin(two_theta/2)
+	
+	return qz
+End
+
+//for command-line testing, replace the function declaration
+//Function FindQxQy(qq,phi)
+//	Variable qq,phi
+//	Variable qx,qy
+//
+//
+ThreadSafe Function FindQxQy(qq,phi,qx,qy)
+	Variable qq,phi,&qx,&qy
+
+	qx = sqrt(qq^2/(1+tan(phi)*tan(phi)))
+	qy = qx*tan(phi)
+	
+	if(phi >= 0 && phi <= pi/2)
+		qx = abs(qx)
+		qy = abs(qy)
+	endif
+	
+	if(phi > pi/2 && phi <= pi)
+		qx = -abs(qx)
+		qy = abs(qy)
+	endif
+	
+	if(phi > pi && phi <= pi*3/2)
+		qx = -abs(qx)
+		qy = -abs(qy)
+	endif
+	
+	if(phi > pi*3/2 && phi < 2*pi)
+		qx = abs(qx)
+		qy = -abs(qy)
+	endif	
+	
+	
+//	Print "recalculated qx,qy,q = ",qx,qy,sqrt(qx*qx+qy*qy)
+	
+	return(0)
+end
+	

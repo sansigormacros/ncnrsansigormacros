@@ -27,6 +27,7 @@
 #include "CheckVersionFTP"				//added June 2008
 
 #include "DataSetHandling"					//added Nov 2009 AJJ
+#include "Smear_2D"						//for 2D resolution smearing, May 2010
 
 Menu "SANS Models"
 	"Fit Manager", Init_WrapperPanel()
