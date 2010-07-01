@@ -431,10 +431,12 @@ End
 // -- but this field is often incorrect - for some sample data ALL FILES were "True"
 // -- better to check the physical location every time
 //
+// tol changed to 401 per Gernot's experience 6/24/10
+//
 Function isTransFile(fName)   ///  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	String fname
 	
-	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=451
+	Variable beamtrap_1y=0,beamtrap_2y=0,beamtrap_3y=0,beamtrap_4y=0,tol=401
 	//Check by key "transsmission"
 //	if (stringmatch( getIsTrans(fName),"True")>0)
 //		return (1)

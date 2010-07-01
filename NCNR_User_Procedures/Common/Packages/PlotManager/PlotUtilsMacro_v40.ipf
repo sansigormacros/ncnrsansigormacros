@@ -1094,8 +1094,11 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList(tmp, list  ,";")
 
 	// SANS Reduction bits
-	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;Monte_SANS_W3;Monte_SANS_W4;Monte_SANS;FractionReachingDetector;"
+	tmp = "ASStandardFunction;Ann_1D_Graph;Avg_1D_Graph;BStandardFunction;CStandardFunction;Draw_Plot1D;MyMat2XYZ;"
 	list = RemoveFromList(tmp, list  ,";")
+	tmp = "NewDirection;SANSModelAAO_MCproto;Monte_SANS_Threaded;Monte_SANS_NotThreaded;Monte_SANS_W1;Monte_SANS_W2;Monte_SANS_W3;Monte_SANS_W4;Monte_SANS;FractionReachingDetector;TwoLevel_EC;SmearedTwoLevel_EC;"
+	list = RemoveFromList(tmp, list  ,";")
+
 
 	// USANS Reduction bits
 	tmp = "DSM_Guinier_Fit;RemoveMaskedPoints;"

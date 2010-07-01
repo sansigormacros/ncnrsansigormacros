@@ -744,12 +744,16 @@ End
 //simulation controls as a control bar that toggles on/off to the right
 //
 // depending on the state of the 2D flag, open the 1d or 2d control panel
-Function SimCheckProc(ctrlName,checked) : CheckBoxControl
-	String ctrlName
-	Variable checked
+Function SimCheckProc(CB_Struct) : CheckBoxControl
+	STRUCT WMCheckboxAction &CB_Struct
 
-	if(checked)
+
+	if(CB_Struct.checked)
 		NVAR do2D = root:Packages:NIST:SAS:gDoMonteCarlo
+		
+		if(CB_Struct.eventMod == 2)		//if the shift key is down - go to 2D mode
+			do2D = 1
+		endif
 		
 		if(do2D)
 			DoWindow/F MC_SASCALC

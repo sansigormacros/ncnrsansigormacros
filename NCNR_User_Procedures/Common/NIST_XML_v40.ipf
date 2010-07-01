@@ -1142,7 +1142,7 @@ function isXML(filestr)
 	String line
 	Variable fileref
 	
-	Open/R fileref as filestr
+	Open/R/Z fileref as filestr
 	FReadLine fileref,  line
 	Close fileref
 	

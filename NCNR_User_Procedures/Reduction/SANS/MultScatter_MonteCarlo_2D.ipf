@@ -1,6 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.1
 
+
 //
 // Monte Carlo simulator for SASCALC
 // October 2008 SRK
@@ -17,6 +18,11 @@
 
 // the RNG issue is really not worth the effort. multiple copies with different RNG is as good as I need. Plus,
 // whatever XOP crashing was happining during threading is really unlikely to be from the RNG
+//
+// -- June 2010 - calls from different threads to the same RNG really seems to cause a crash. Probably as soon
+//				as the different threads try to call at the same time. Found this out by accident doing the 
+//				wavelength spread. Each thread called ran3 at that point, and the crash came quickly. Went
+//				away immediately when I kept the ran calls consistent and isolated within threads.
 //
 // *** look into erand48() as the (pseudo) random number generator (it's a standard c-lib function, at least on unix)
 //     and is apparantly thread safe. drand48() returns values [0.0,1.0)
@@ -76,11 +82,21 @@
 //   should always default to...
 //
 
-// - to add ---
-// -- wavelength distribution = another RNG to select the wavelength
-// -- quartz windows (an empirical model?? or measure some real data - power Law + background)
-// -- blocked beam (measure this too, and have some empirical model for this too - Broad Peak)
+// --- TO ADD ---
+// X- wavelength distribution = another RNG to select the wavelength
+// ---- done Jun 2010, approximating the wavelength distribution as a Gaussian, based on the triangular
+//			FWHM. Wavelength distribution added to XOP too, and now very accurately matches the shape of the 1D
+//			simulation.
 //
+//
+// X- quartz windows (an empirical model?? or measure some real data - power Law + background)
+// X- blocked beam (measure this too, and have some empirical model for this too - Broad Peak)
+// --- Done (mostly). quartz cell and blocked beam have been added empirically, giving the count rate and predicted 
+//     scattering. Count time for the simulated scattering is the same as the sample. The simulated EC
+//		 data can be plotted, but only by hand right now. EC and blocked beam are combined.
+//
+// -- divergence / size of the incoming beam. Currently everything is parallel, and anything that is transmitted
+//		simply ends up in (xCtr,yCtr), and the "real" profile of the beam is not captured.
 
 
 
@@ -115,6 +131,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #if exists("Monte_SANSX4")
 	//OK
 	if(nthreads>4)		//only support 4 processors until I can figure out how to properly thread the XOP and to loop it
+							//AND - just use 4 threads rather than the 8 (4 + 4 hyperthread?) my quad-core reports.
 		nthreads=4
 	endif
 #else
@@ -363,7 +380,10 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	Variable NSingleIncoherent,NSingleCoherent,NScatterEvents,incoherentEvent,coherentEvent
 	Variable NDoubleCoherent,NMultipleScatter,countIt,detEfficiency
 	Variable NMultipleCoherent,NCoherentEvents
+	Variable deltaLam,v1,v2,currWavelength,rsq,fac		//for simulating wavelength distribution
 	
+	// don't set to other than one here. Detector efficiency is handled outside, only passing the number of 
+	// countable neutrons to any of the simulation functions (n=imon*eff)
 	detEfficiency = 1.0		//70% counting efficiency = 0.7
 	
 	imon = inputWave[0]
@@ -377,6 +397,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	wavelength = inputWave[8]
 	sig_incoh = inputWave[9]
 	sig_sas = inputWave[10]
+	deltaLam = inputWave[11]
 	
 //	SetRandomSeed 0.1		//to get a reproduceable sequence
 
@@ -461,6 +482,21 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 			RR = SQRT(xx*xx+yy*yy)		//Radial position of neutron in incident beam.
 		while(rr>r1)
 
+		//pick the wavelength out of the wavelength spread, approximate as a gaussian
+		// from NR - pg 288. Needs random # from [0,1]. del is deltaLam/lam (as FWHM) and the
+		// 2.35 converts to a gaussian std dev.
+		do 
+			v1=2.0*abs(enoise(1))-1.0
+			v2=2.0*abs(enoise(1))-1.0
+			rsq=v1*v1+v2*v2
+		while (rsq >= 1.0 || rsq == 0.0)
+		fac=sqrt(-2.0*log(rsq)/rsq)
+		
+//		gset=v1*fac		//technically, I'm throwing away one of the two values
+		
+		currWavelength = (v2*fac)*deltaLam*wavelength/2.35 + wavelength
+		
+		
 		do    //Scattering Loop, will exit when "done" == 1
 				// keep scattering multiple times until the neutron exits the sample
 			ran = abs(enoise(1))		//[0,1]  RANDOM NUMBER FOR DETERMINING PATH LENGTH
@@ -503,7 +539,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 						// pnt2x truncates the point to an integer before returning the x
 						// so get it from the wave scaling instead
 						Q0 =left + binarysearchinterp(ran_dev,abs(enoise(1)))*delta
-						theta = Q0/2/Pi*wavelength		//SAS approximation. 1% error at theta=30 deg (theta/2=15deg)
+						theta = Q0/2/Pi*currWavelength		//SAS approximation. 1% error at theta=30 deg (theta/2=15deg)
 						
 						//Print "q0, theta = ",q0,theta
 						
@@ -544,7 +580,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 				if(index != 0)		//the neutron interacted at least once, figure out where it ends up
 
 					Theta_z = acos(Vz)		// Angle WITH respect to z axis.
-					testQ = 2*pi*sin(theta_z)/wavelength
+					testQ = 2*pi*sin(theta_z)/currWavelength
 					
 					// pick a random phi angle, and see if it lands on the detector
 					// since the scattering is isotropic, I can safely pick a new, random value
@@ -553,7 +589,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					testPhi = MC_FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
 					
 					// is it on the detector?	
-					FindPixel(testQ,testPhi,wavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+					FindPixel(testQ,testPhi,currWavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 					
 					if(xPixel != -1 && yPixel != -1)
 						//if(index==1)  // only the single scattering events
@@ -1194,7 +1230,7 @@ End
 
 
 /// called in SASCALC:ReCalculateInten()
-Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
+Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	String funcStr
 	WAVE aveint,qval,sigave,sigmaq,qbar,fsubs
 
@@ -1224,7 +1260,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR r2 = root:Packages:NIST:SAS:gR2
 
 	// do the simulation here, or not
-	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,deltaLam
 	String coefStr,abortStr,str
 
 	r1 = rw[24]/2/10		// sample diameter convert diam in [mm] to radius in cm
@@ -1233,6 +1269,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	sdd = rw[18]*100		//conver header of [m] to [cm]
 	pixSize = rw[10]/10		// convert pix size in mm to cm
 	wavelength = rw[26]
+	deltaLam = rw[27]
 	coefStr = MC_getFunctionCoef(funcStr)
 	
 	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
@@ -1260,7 +1297,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	Make/O/D/N=5000 root:Packages:NIST:SAS:nt=0,root:Packages:NIST:SAS:j1=0,root:Packages:NIST:SAS:j2=0
 	Make/O/D/N=100 root:Packages:NIST:SAS:nn=0
-	Make/O/D/N=11 root:Packages:NIST:SAS:inputWave=0
+	Make/O/D/N=15 root:Packages:NIST:SAS:inputWave=0
 	
 	WAVE nt = root:Packages:NIST:SAS:nt
 	WAVE j1 = root:Packages:NIST:SAS:j1
@@ -1279,6 +1316,8 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	inputWave[8] = wavelength
 	inputWave[9] = sig_incoh
 	inputWave[10] = sig_sas
+	inputWave[11] = deltaLam
+//	inputWave[] 12-14 are currently unused
 
 	linear_data = 0		//initialize
 
@@ -1327,7 +1366,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	if(useXOP)
 		Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	else
-		Monte_SANS_NotThreaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
+		Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	endif
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
@@ -1339,7 +1378,7 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 		trans = 1
 	endif
 
-	Print "counts on detector, including transmitted = ",sum(linear_data,-inf,inf)
+//	Print "counts on detector, including transmitted = ",sum(linear_data,-inf,inf)
 	
 //		linear_data[xCtr][yCtr] = 0			//snip out the transmitted spike
 //		Print "counts on detector not transmitted = ",sum(linear_data,-inf,inf)
@@ -1380,11 +1419,20 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	linear_data[2][0] = 1
 	linear_data[0][2] = 1
 	linear_data[1][1] = 1
-//	linear_data[2][2] = 1
+	linear_data[2][2] = 1
 	linear_data[1][0] = 0
-//	linear_data[2][1] = 0
+	linear_data[2][1] = 0
 	linear_data[0][1] = 0
-//	linear_data[1][2] = 0
+	linear_data[1][2] = 0
+
+	linear_data[0][3] = 0
+	linear_data[1][3] = 0
+	linear_data[2][3] = 0
+	linear_data[3][3] = 0
+	linear_data[3][2] = 0
+	linear_data[3][1] = 0
+	linear_data[3][0] = 0
+
 			
 	data = linear_data
 	// re-average the 2D data
@@ -1393,6 +1441,13 @@ Function 	Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	// put the new result into the simulation folder
 	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 				
+	// simulate the empty cell scattering, only in 1D
+	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+	Print "Sample Simulation (2D) CR = ",results[9]/ctTime
+	if(WinType("SANS_Data") ==1)
+		Execute "ChangeDisplay(\"SAS\")"		//equivalent to pressing "Show 2D"
+	endif
 
 	return(0)
 end
@@ -1869,7 +1924,10 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 		sigave /= detectorEff
 	endif
 				
-				
+	
+	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	Print "Sample Simulation (1D) CR = ",estDetCR
+	
 	return(0)
 End
 
@@ -1904,6 +1962,228 @@ Function testProbability(sas,thick)
 
 	return(mScat)
 End
+
+
+
+//
+// -- empirical simulation of the scattering from an empty quartz cell + background (combined)
+// - there is little difference vs. the empty cell alone.
+//
+// - data was fit to the TwoLevel model, which fits rather nicely
+//
+Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
+	String funcStr
+	WAVE aveint,qval,sigave,sigmaq,qbar,fsubs
+
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	String coefStr,abortStr,str	
+
+	FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
+	FUNCREF SANSModelAAO_MCproto funcUnsmeared=$(funcStr)		//unsmeared
+	
+	Make/O/D root:Packages:NIST:SAS:coef_Empty = {1,1.84594,714.625,5e-08,2.63775,0.0223493,3.94009,0.0153754,1.72127,0}
+	WAVE coefW = root:Packages:NIST:SAS:coef_Empty
+	
+	Wave samInten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
+	Duplicate samInten, root:Simulation:Simulation_EC_i
+	Wave inten_EC=$"root:Simulation:Simulation_EC_i"
+
+	// the resolution-smeared intensity of the empty cell
+	func(coefW,inten_EC,qval)
+
+	NVAR imon = root:Packages:NIST:SAS:gImon
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+//	NVAR thick = root:Packages:NIST:SAS:gThick
+	NVAR trans = root:Packages:NIST:SAS:gSamTrans
+//	NVAR SimDetCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
+//	NVAR estDetCR = root:Packages:NIST:SAS:g_1DEstDetCR			// estimated detector count rate
+//	NVAR fracScat = root:Packages:NIST:SAS:g_1DFracScatt		// fraction of beam captured on detector
+//	NVAR estTrans = root:Packages:NIST:SAS:g_1DEstTrans		// estimated transmission of sample
+//	NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
+	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
+
+//	use local variables here for the Empty cell - maybe use globals later, if I really want to save them
+// - here, just print them out for now
+	Variable SimDetCts,estDetCR,fracScat,estTrans,mScat,thick
+	
+// for two 1/16" quartz windows, thick = 0.32 cm
+	thick = 0.32
+	
+	WAVE rw=root:Packages:NIST:SAS:realsRead
+	WAVE nCells=root:Packages:NIST:SAS:nCells				
+					
+	pixSize = rw[10]/10		// convert pix size in mm to cm
+	sdd = rw[18]*100		//convert header of [m] to [cm]
+	wavelength = rw[26]		// in 1/A
+	
+	imon = beamIntensity()*ctTime
+	
+	// calculate the scattering cross section simply to be able to estimate the transmission
+	Variable sig_sas=0
+	
+	// remember that the random deviate is the coherent portion ONLY - the incoherent background is 
+	// subtracted before the calculation.
+	CalculateRandomDeviate(funcUnsmeared,coefW,wavelength,"root:Packages:NIST:SAS:ran_dev_EC",sig_sas)
+
+	// calculate the multiple scattering fraction for display (10/2009)
+	Variable ii,nMax=10,tau
+	mScat=0
+	tau = thick*sig_sas
+	// this sums the normalized scattering P', so the result is the fraction of multiply coherently scattered
+	// neutrons out of those that were scattered
+	for(ii=2;ii<nMax;ii+=1)
+		mScat += tau^(ii)/factorial(ii)
+//		print tau^(ii)/factorial(ii)
+	endfor
+	estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
+	mscat *= (estTrans)/(1-estTrans)
+
+	
+	Duplicate/O qval prob_i_EC,countsInAnnulus_EC
+	
+	prob_i_EC = trans*thick*(pixSize/sdd)^2*inten_EC			//probability of a neutron in q-bin(i) 
+	
+	Variable P_on = sum(prob_i_EC,-inf,inf)
+//	Print "P_on = ",P_on
+	
+	fracScat = 1-estTrans
+	
+// added correction for detector efficiency, since SASCALC is flux on sample
+	Duplicate/O aveint root:Packages:NIST:SAS:aveint_EC,root:Packages:NIST:SAS:sigave_EC
+	WAVE aveint_EC = root:Packages:NIST:SAS:aveint_EC
+	WAVE sigave_EC = root:Packages:NIST:SAS:sigave_EC
+	aveint_EC = (Imon)*prob_i_EC*detectorEff
+
+	countsInAnnulus_EC = aveint_EC*nCells
+	SimDetCts = sum(countsInAnnulus_EC,-inf,inf)
+	estDetCR = SimDetCts/ctTime
+	
+//	Print "Empty Cell Sig_sas = ",sig_sas
+	Print "Empty Cell Count Rate : ",estDetCR
+	
+	NVAR doABS = root:Packages:NIST:SAS:g_1D_DoABS
+	NVAR addNoise = root:Packages:NIST:SAS:g_1D_AddNoise
+	
+	// this is where the number of cells comes in - the calculation of the error bars
+	// sigma[i] = SUM(sigma[ij]^2) / nCells^2
+	// and since in the simulation, SUM(sigma[ij]^2) = nCells*sigma[ij]^2 = nCells*Inten
+	// then...
+	sigave_EC = sqrt(aveint_EC/nCells)		// corrected based on John's memo, from 8/9/99
+	
+	// add in random error in aveint based on the sigave
+	if(addNoise)
+		aveint_EC += gnoise(sigave_EC)
+	endif
+
+	// signature in the standard deviation, do this after the noise is added
+	// start at 10 to be out of the beamstop (makes for nicer plotting)
+	// end at 50 to leave the natural statistics at the end of the set (may have a total of 80+ points if no offset)
+	sigave_EC[10,50;10] = 10*sigave_EC[p]
+
+	// convert to absolute scale, remembering to un-correct for the detector efficiency
+	if(doABS)
+		Variable kappa = thick*(pixSize/sdd)^2*trans*iMon
+		aveint_EC /= kappa
+		sigave_EC /= kappa
+		aveint_EC /= detectorEff
+		sigave_EC /= detectorEff
+	endif
+				
+				
+	return(0)
+End
+
+
+// instead of including the Beaucage model in everything, keep a local copy here
+
+//AAO version, uses XOP if available
+// simply calls the original single point calculation with
+// a wave assignment (this will behave nicely if given point ranges)
+Function TwoLevel_EC(cw,yw,xw)
+	Wave cw,yw,xw
+	
+#if exists("TwoLevelX")
+	yw = TwoLevelX(cw,xw)
+#else
+	yw = fTwoLevel_EC(cw,xw)
+#endif
+	return(0)
+End
+
+Function fTwoLevel_EC(w,x) 
+	Wave w
+	Variable x
+	
+	Variable ans,G1,Rg1,B1,G2,Rg2,B2,Pow1,Pow2,bkg
+	Variable erf1,erf2,prec=1e-15,scale
+	
+	//Rsub = Rs
+	scale = w[0]
+	G1 = w[1]	//equivalent to I(0)
+	Rg1 = w[2]
+	B1 = w[3]
+	Pow1 = w[4]
+	G2 = w[5]
+	Rg2 = w[6]
+	B2 = w[7]
+	Pow2 = w[8]
+	bkg = w[9]
+	
+	erf1 = erf( (x*Rg1/sqrt(6)) ,prec)
+	erf2 = erf( (x*Rg2/sqrt(6)) ,prec)
+	//Print erf1
+	
+	ans = G1*exp(-x*x*Rg1*Rg1/3)
+	ans += B1*exp(-x*x*Rg2*Rg2/3)*(erf1^3/x)^Pow1
+	ans += G2*exp(-x*x*Rg2*Rg2/3)
+	ans += B2*(erf2^3/x)^Pow2
+	
+	if(x == 0)
+		ans = G1 + G2
+	endif
+	
+	ans *= scale
+	ans += bkg
+	
+	Return(ans)
+End
+
+
+Function SmearedTwoLevel_EC(s)
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_20(TwoLevel_EC,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedTwoLevel_EC(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedTwoLevel_EC(fs)
+	
+	return (0)
+End
+
+
 
 
 //// this is a very simple example of how to script the MC simulation to run unattended

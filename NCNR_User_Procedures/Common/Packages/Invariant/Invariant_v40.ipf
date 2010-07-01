@@ -373,7 +373,7 @@ Function InvLowQ(ctrlName) : ButtonControl
 		return(0)
 	endif
 	
-	Variable yesGuinier=0,nume,inv
+	Variable yesGuinier=0,nume,inv,scale
 	// do the extrapolation of the correct type
 	ControlInfo/W=Invariant_Panel check_0		//the Guinier box
 	yesGuinier = V_Value
@@ -396,7 +396,10 @@ Function InvLowQ(ctrlName) : ButtonControl
 //	Variable numi=numpnts(iw)
 	
 	if(yesGuinier)
-		Make/O/D G_coef={1000,-1000}		//input
+//		Make/O/D G_coef={1000,-1000}		//input
+		WaveStats/M=1/Q/R=[0,(nbeg-1)] iw
+		scale = V_avg
+		Make/O/D G_coef={(scale),-1000}		//input -- with a better guess for the overall scale factor, 
 		FuncFit Guinier_Fit G_coef iw[0,(nbeg-1)] /I=1 /X=qw /W=sw /D 
 		extr_lqi= Guinier_Fit(G_coef,extr_lqq)
 		
