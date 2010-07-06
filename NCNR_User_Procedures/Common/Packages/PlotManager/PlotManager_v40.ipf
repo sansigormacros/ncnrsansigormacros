@@ -340,6 +340,11 @@ Function/S A_ReducedDataFileList(ctrlName)
 	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
+	#if(exists("QUOKKA") == 6)
+	list = RemoveFromList(ListMatch(list,"*.nx.hdf",";"), list, ";", 0)	
+	list = RemoveFromList(ListMatch(list,"*.bin",";"), list, ";", 0)	
+	#endif
+	
 
 	//sort
 	newList = SortList(List,";",0)

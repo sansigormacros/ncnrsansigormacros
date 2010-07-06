@@ -398,6 +398,57 @@ Function DetectorDeadtime(fileStr,detStr)
 	return(deadtime)
 End
 
+//make a three character string of the run number
+//Moved to facility utils
+Function/S RunDigitString(num)
+	Variable num
+	
+	String numStr=""
+	if(num<10)
+		numStr = "00"+num2str(num)
+	else
+		if(num<100)
+			numStr = "0"+num2str(num)
+		else
+			numStr = num2str(num)
+		Endif
+	Endif
+	//Print "numstr = ",numstr
+	return(numstr)
+End
+
+//given a filename of a SANS data filename of the form
+//TTTTTnnn.SAn_TTT_Txxx
+//returns the prefix "TTTTT" as some number of characters
+//returns "" as an invalid file prefix
+//
+// NCNR-specifc, does not really belong here - but it's a beta procedure anyhow...
+//
+Function/S GetPrefixStrFromFile(item)
+	String item
+	String invalid = ""	//"" is not a valid run prefix, since it's text
+	Variable num=-1
+	
+	//find the "dot"
+	String runStr=""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, skip the three characters preceeding it
+		if (pos <=3)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[0,pos-4]
+			return (runStr)
+		Endif
+	Endif
+End
+
+
+
 
 /////VAX filename/Run number parsing utilities
 //

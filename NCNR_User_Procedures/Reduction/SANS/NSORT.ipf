@@ -1456,7 +1456,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	endif
 	
 	//lowQ menu
-	absStr = pref+ThreeDigitString(low)+ext
+	absStr = pref+RunDigitString(low)+ext
 	popNum = WhichListItem(absStr,lowQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: " + absStr +" aborting..."
@@ -1465,7 +1465,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
 	
 	//medQ (a different list for the popup)
-	absStr = pref+ThreeDigitString(med)+ext
+	absStr = pref+RunDigitString(med)+ext
 	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: "+absStr+" aborting..."
@@ -1476,7 +1476,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	
 	//highQ (same pop list as medQ)
 	if(hi != 0)
-		absStr = pref+ThreeDigitString(hi)+ext
+		absStr = pref+RunDigitString(hi)+ext
 		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 		if(popNum == -1)
 			Abort "Could not find file: "+absStr+" aborting..."
@@ -1486,24 +1486,6 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	else
 		PopupMenu popup_3,win=NSORT_Panel,mode=(1)
 	endif
-End
-
-//make a three character string of the run number
-Function/S ThreeDigitString(num)
-	Variable num
-	
-	String numStr=""
-	if(num<10)
-		numStr = "00"+num2str(num)
-	else
-		if(num<100)
-			numStr = "0"+num2str(num)
-		else
-			numStr = num2str(num)
-		Endif
-	Endif
-	//Print "numstr = ",numstr
-	return(numstr)
 End
 
 //more beta procedures - to create a table of scattering runs to combine with NSORT
@@ -1863,35 +1845,6 @@ Function SendSelectionToTable()
 	return(0)
 end
 
-//given a filename of a SANS data filename of the form
-//TTTTTnnn.SAn_TTT_Txxx
-//returns the prefix "TTTTT" as some number of characters
-//returns "" as an invalid file prefix
-//
-// NCNR-specifc, does not really belong here - but it's a beta procedure anyhow...
-//
-Function/S GetPrefixStrFromFile(item)
-	String item
-	String invalid = ""	//"" is not a valid run prefix, since it's text
-	Variable num=-1
-	
-	//find the "dot"
-	String runStr=""
-	Variable pos = strsearch(item,".",0)
-	if(pos == -1)
-		//"dot" not found
-		return (invalid)
-	else
-		//found, skip the three characters preceeding it
-		if (pos <=3)
-			//not enough characters
-			return (invalid)
-		else
-			runStr = item[0,pos-4]
-			return (runStr)
-		Endif
-	Endif
-End
 
 ////////////////////////
 // replaces the beta menu items

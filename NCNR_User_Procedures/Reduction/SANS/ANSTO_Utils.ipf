@@ -176,6 +176,46 @@ Function DetectorDeadtime(fileStr,detStr)
 End
 
 
+//given a filename of a SANS data filename of the form
+//QKKNNNNNNN.nx.hdf
+//returns the prefix 
+Function/S GetPrefixStrFromFile(item)
+	String item
+	String invalid = ""	//"" is not a valid run prefix, since it's text
+	Variable num=-1
+	
+	//find the "dot"
+	String runStr=""
+	
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, skip the three characters preceeding it
+		if (pos <=7)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[0,pos-8]
+			return (runStr)
+		Endif
+	Endif
+End
+
+Function/S RunDigitString(num)
+	Variable num
+	
+	String numStr=""
+
+	//make 7 digit string from run number
+	sprintf numStr,"%07u",num
+	
+	//Print "numstr = ",numstr
+	return(numstr)
+End
+
+
 // item is a filename
 //
 // this function extracts some sort of number from the file
@@ -206,7 +246,7 @@ Function GetRunNumFromFile(item)
 			num = str2num(runStr)
 			//if valid, return it
 			if (num == NaN)
-				//3 characters were not a number
+				//7 characters were not a number
 				return (invalid)
 			else
 				//run was OK
@@ -473,11 +513,95 @@ Function/S FindValidFilename(partialName)
 	
 	String retStr=""
 	
-	//your code here
-	//Assuming no issues with partialNames....
-		
-	return(partialName)
+	//try name with no changes - to allow for ABS files that have spaces in the names 12APR04
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	Endif
+	
+	//if the partial name is derived from the file header, there can be spaces at the beginning
+	//or in the middle of the filename - depending on the prefix and initials used
+	//
+	//remove any leading spaces from the name before starting
+	partialName = RemoveAllSpaces(partialName)
+	
+	//try name with no spaces
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	Endif
+	
+	//try all UPPERCASE
+	partialName = UpperStr(partialName)
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	Endif
+	
+	//try all lowercase (ret null if failure)
+	partialName = LowerStr(partialName)
+	retStr = ValidFileString(partialName)
+	if(cmpstr(retStr,"") !=0)
+		//non-null return
+		return(retStr)
+	else
+		return(retStr)
+	Endif
 
+End
+
+// Function checks for the existence of a file
+// partialName;vers (to account for VAX filenaming conventions)
+// The partial name is tried first with no version number
+//
+// *** the PATH is hard-wired to catPathName (which is assumed to exist)
+// version numers up to ;10 are tried
+// only the "name;vers" is returned if successful. The path is not prepended
+//
+// local function
+//
+Function/S ValidFileString(partialName)
+	String partialName
+	
+	String tempName = "",msg=""
+	Variable ii,refnum
+	
+	ii=0
+	do
+		if(ii==0)
+			//first pass, try the partialName
+			tempName = partialName
+			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName	//Does open file (/Z flag)
+			if(V_flag == 0)
+				//file exists
+				Close refnum		//YES needed, 
+				break
+			endif
+		else
+			tempName = partialName + ";" + num2str(ii)
+			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName
+			if(V_flag == 0)
+				//file exists
+				Close refnum
+				break
+			endif
+		Endif
+		ii+=1
+		//print "ii=",ii
+	while(ii<11)
+	//go get the selected bits of information, using tempName, which exists
+	if(ii>=11)
+		//msg = partialName + " not found. is version number > 11?"
+		//DoAlert 0, msg
+		//PathInfo catPathName
+		//Print S_Path
+		Return ("")		//use null string as error condition
+	Endif
+	
+	Return (tempName)
 End
 
 
@@ -896,7 +1020,9 @@ Function/S ReducedDataFileList(ctrlName)
 		//simply remove all that are not raw data files (SA1 SA2 SA3)
 		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
 			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				newlist += item + ";"
+				if (!stringmatch(item,"*.nx.hdf") && !stringmatch(item,"*.bin") && !stringmatch(item,"*.mask"))
+					newlist += item + ";"
+				endif
 			endif
 		endif
 	endfor
