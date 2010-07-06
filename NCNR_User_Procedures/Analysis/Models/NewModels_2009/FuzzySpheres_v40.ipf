@@ -99,8 +99,8 @@ Function fFuzzySpheres(w,xx) : FitFunc
 	
 	Variable scale,rad,pd,sig,rho,rhos,bkg,delrho,sig_surf,lor_sf,lor_len
 	Variable I0, L
-	I0 = w[0]
-	L = w[1]
+	//I0 = w[0]
+	//L = w[1]
 
 	//set up the coefficient values
 	scale=w[0]
@@ -244,4 +244,32 @@ Function Gauss_f_distr(sig,avg,pt)
 	
 	retval = (1/ ( sig*sqrt(2*Pi)) )*exp(-(avg-pt)^2/sig^2/2)
 	return(retval)
+End
+
+Proc PlotFuzzySphereSLD()
+
+	Variable scale,rad,pd,sig,rho,rhos,bkg,delrho,sig_surf,lor_sf,lor_len
+	Variable I0, L
+	scale=coef_fuzz[0]
+	rad=coef_fuzz[1]
+	pd=coef_fuzz[2]
+	sig=pd*rad
+	sig_surf = coef_fuzz[3]
+	rho=coef_fuzz[4]
+	rhos=coef_fuzz[5]
+	delrho=rho-rhos
+	I0 = coef_fuzz[6]		//for the Lorentzian
+	L = coef_fuzz[7]
+	bkg=coef_fuzz[8]
+
+	Make/O/N=1000 fuzzy_rwave
+	Make/O/N=1000 fuzzy_sldwave
+	
+	fuzzy_rwave = p*(rad+4*sig_surf)/numpnts(fuzzy_rwave)
+	
+	
+	fuzzy_sldwave = erf(fuzzy_rwave)
+	
+	Display fuzzy_sldwave vs fuzzy_rwave
+
 End
