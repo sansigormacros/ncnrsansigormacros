@@ -159,11 +159,12 @@ Function fFractalPolyCore(w,x) :FitFunc
 
 	//calculate S(q)
 	sq = Df*exp(gammln(Df-1))*sin((Df-1)*atan(x*corr))
-	sq /= (x*r0)^Df * (1 + 1/(x*corr)^2)^((Df-1)/2)
+	sq /= (x*(r0+thick))^Df * (1 + 1/(x*corr)^2)^((Df-1)/2)
 	sq += 1
 	//combine and return
-	ans = pq*sq + bkg
-
+	//ans = pq*sq + bkg
+	ans = pq +bkg
+	
 	return (ans)
 End
 
