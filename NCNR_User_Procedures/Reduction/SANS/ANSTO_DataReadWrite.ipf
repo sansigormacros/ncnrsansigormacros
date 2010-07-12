@@ -902,8 +902,8 @@ Function getDetCount(fname)
 		if (value<1)
 			NVAR XPix = root:myGlobals:gNPixelsX
 			NVAR YPix = root:myGlobals:gNPixelsX
-			Make/D/O/N=(XPix,YPix) $"root:RAW:data"
-			WAVE data=$"root:RAW:data"
+			Make/D/O/N=(XPix,YPix) $"root:Packages:NIST:RAW:data"
+			WAVE data=$"root:Packages:NIST:RAW:data"
 			getDetectorData(fname,data)
 			value = sum(data)
 		endif
