@@ -11,3 +11,7 @@ Updated to use the new structure function format
 Updated to latest release
 
 03 NOV 2009 SRK
+
+Updated to remove old instructions
+
+13 JULY 2010 ARK
