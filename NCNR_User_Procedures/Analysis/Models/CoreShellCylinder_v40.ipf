@@ -51,7 +51,7 @@ Proc PlotSmearedCoreShellCylinder(str)
 	
 	// Setup parameter table for model function
 	make/o/d smear_coef_cscyl =  {1.,20.,10.,400,1.0e-6,4.0e-6,1.0e-6,0.01}
-	make/o/t smear_parameters_cscyl = {"scale","core radius (A)","shell radius (A)","length (A)","SLD core (A^-2)","SLD shell (A^-2)","SLD solvent (A^-2)","incoh. bkg (cm^-1)"}
+	make/o/t smear_parameters_cscyl = {"scale","core radius (A)","shell THICKNESS (A)","CORE length (A)","SLD core (A^-2)","SLD shell (A^-2)","SLD solvent (A^-2)","incoh. bkg (cm^-1)"}
 	Edit smear_parameters_cscyl,smear_coef_cscyl
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values

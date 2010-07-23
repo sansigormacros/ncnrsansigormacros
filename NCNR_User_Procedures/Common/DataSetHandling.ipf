@@ -5,7 +5,11 @@
 //
 //	Function batchXML26ColConvert()
 //
-
+// Function batchGrasp26ColConvert()
+//
+// these both need a real interface, and a way to better define the name of the
+// converted output file. And some retention of the header would be nice too...
+//
 
 
 // Functions and interfaces to manage datasets now that they are in data folders
@@ -590,6 +594,8 @@ Function MakeDAPlotPanel()
 	SetActiveSubWindow DAPlotPanel
 	Checkbox DAPlot_log_cb, title="Log I(q)", pos={20,410},value=0
 	Checkbox DAPlot_log_cb, proc=DALogLinIProc
+	Checkbox DAPlot_lin_cb, title="High Q Linear", pos={100,410},value=0
+	Checkbox DAPlot_lin_cb, proc=DAHighQLinProc
 	
 End
 
@@ -1081,11 +1087,36 @@ Function DALogLinIProc(cba) : CheckBoxControl
 		case 2:
 			
 			ModifyGraph/W=DAPlotPanel#DAPlot log(left)=cba.checked
-		
+			ModifyGraph/W=DAPlotPanel#DAPlot log(bottom)=cba.checked
+			ModifyGraph/W=DAPlotPanel#DAPlot zero(left)=0
+			SetAxis/A/W=DAPlotPanel#DAPlot
+			
+			if(cba.checked)
+				Checkbox DAPlot_lin_cb,value=0		//uncheck lin
+			endif
 	endswitch
 
 
 End
+
+Function DAHighQLinProc(cba) : CheckBoxControl
+	STRUCT WMCheckBoxAction &cba
+
+	switch(cba.eventcode)
+		case 2:
+			if(cba.checked)
+				ModifyGraph/W=DAPlotPanel#DAPlot log=0,zero(left)=1
+				SetAxis/W=DAPlotPanel#DAPlot left -0.1,0.1
+				SetAxis/W=DAPlotPanel#DAPlot bottom 0.1,*
+				SetAxis/W=DAPlotPanel#DAPlot left -0.02,0.02
+				
+				Checkbox DAPlot_log_cb,value=0		//uncheck the log
+			endif
+	endswitch
+
+
+End
+
 
 Function DACursorButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -1559,6 +1590,65 @@ Function batchXML26ColConvert()
 	
 End
 
+///////// SRK - VERY SIMPLE batch converter
+// NO header information is preserved
+// file names are partially preserved
+//
+
+/// to use this:
+// -open the Plot Manager and set the path
+// -run this function
+//
+// it doesn't matter if the XML ouput flag is set - this overrides.
+//
+// The GRASP output data is 5-column Q-I-errI-sigQ-nCells
+// which gets read in as q-i-s-ism-fit_ism (as if it was some wierd USANS data format)
+// -- so fake the output...
+//
+Function batchGrasp26ColConvert()
+
+	String list, item,path,fname
+	Variable num,ii,npt
+	
+	PathInfo CatPathName
+	path = S_Path
+
+	list = A_ReducedDataFileList("")
+	num = itemsInList(list)
+	Print num
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list ,";")
+		fname=path + item
+		Execute "A_LoadOneDDataWithName(\""+fname+"\",0)"		//won't plot
+//		easier to load all, then write out, since the name will be changed
+	endfor
+	
+	
+	list = DM_DataSetPopupList()
+
+	num = itemsInList(list)
+	
+	Print num
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list ,";")
+		
+		// fake the 6-column NIST data structure
+		WAVE qw = $("root:"+item+":"+item+"_q")
+		npt = numpnts(qw)
+		Make/O/D/N=(npt,4) $("root:"+item+":"+item+"_res")
+		WAVE res = $("root:"+item+":"+item+"_res")
+		WAVE sigQ = $("root:"+item+":"+item+"_ism")
+		res[][0] = sigQ[p]	// sigQ
+		res[][1] = qw[p]		// qBar ~ q
+		res[][2] = 1		//shadow
+		res[][3] = qw[p]		// q
+		
+		
+		fReWrite1DData_noPrompt(item,"tab","CR")
+	endfor
+	
+End
+
 // quick version (copied from fReWrite1DData() that NEVER asks for a new fileName
 // - and right now, always expect 6-column data, either SANS or USANS (re-writes -dQv)
 // - AJJ Nov 2009 : better make sure we always fake 6 columns on reading then....
@@ -1634,7 +1724,7 @@ Function fReWrite1DData_noPrompt(folderStr,delim,term)
 	if(dialog)
 		PathInfo/S catPathName
 //		fullPath = DoSaveFileDialog("Save data as",fname=baseStr+".txt")
-		fullPath = DoSaveFileDialog("Save data as",fname=baseStr[0,strlen(BaseStr)-2])
+		fullPath = DoSaveFileDialog("Save data as",fname=baseStr[0,strlen(BaseStr)-1])
 		Print fullPath
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
@@ -1644,7 +1734,7 @@ Function fReWrite1DData_noPrompt(folderStr,delim,term)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	PathInfo catPathName
-	fullPath = S_Path + baseStr[0,strlen(BaseStr)-2]
+	fullPath = S_Path + baseStr[0,strlen(BaseStr)-1]
 
 	Open refnum as fullpath
 	

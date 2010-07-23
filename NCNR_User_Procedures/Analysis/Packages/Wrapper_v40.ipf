@@ -1024,7 +1024,19 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	WAVE/Z w_sigma
 	print w_sigma
 	String resultStr=""
-		
+	
+	if(waveexists(W_sigma))
+		//append it to the table, if it's not already there
+		CheckDisplayed/W=WrapperPanel#T0 W_sigma
+		if(V_flag==0)
+			//not there, append it
+			AppendtoTable/W=wrapperPanel#T0 W_sigma
+		else
+			//remove it, and put it back on to make sure it's the right one (do I need to do this?)
+			// -- not really, since any switch of the function menu takes W_Sigma off
+		endif
+	endif
+	
 	//now re-write the results
 	sprintf resultStr,"Chi^2 = %g  Sqrt(X^2/N) = %g",V_chisq,sqrt(V_chisq/V_Npnts)
 	resultStr = PadString(resultStr,63,0x20)
@@ -1162,8 +1174,8 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	//save the notebook and the graphic file
 	if(yesSave)
 		String nameStr=CleanupName(func,0)
-		nameStr = nameStr[0,8]	//shorten the name
 		nameStr += "_"+dataname
+		nameStr = ReplaceString("Smeared",nameStr,"Sm_")		//if Smeared function, shorten the name
 		//make sure the name is no more than 31 characters
 		namestr = namestr[0,30]		//if shorter than 31, this will NOT pad to 31 characters
 		Print "file saved as ",nameStr
