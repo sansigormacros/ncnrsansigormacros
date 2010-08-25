@@ -319,7 +319,7 @@ End
 //wave2 must be multiplied by norm to rescale to wave1
 //the scale factor is the return value
 //
-Function GetScalingInOverlap(num2,wave1q,wave1i,wave2q,wave2i)
+Function NCNR_GetScalingInOverlap(num2,wave1q,wave1i,wave2q,wave2i)
 	Variable num2		//largest point number of wave2 in overlap region
 	Wave wave1q,wave1i,wave2q,wave2i		//1 = first dataset, 2= second dataset
 
@@ -1020,7 +1020,7 @@ Function DoAutoScaleFromPanel(auto)
 				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
 			endif
 			//do auto-scaling of data
-			norm12 = GetScalingInOverlap(num2,lowq,lowi,medq,medi)
+			norm12 = NCNR_GetScalingInOverlap(num2,lowq,lowi,medq,medi)
 			//Set the global variable for the 1-2 scale factor
 			Variable/G root:myGlobals:NSORT:gScale1_2 = norm12
 		else
@@ -1112,7 +1112,7 @@ Function DoAutoScaleFromPanel(auto)
 				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
 			endif
 			//do auto-scaling of data
-			norm23 = GetScalingInOverlap(num2,q12,i12,highq,highi)
+			norm23 = NCNR_GetScalingInOverlap(num2,q12,i12,highq,highi)
 			//Set the global variable for the 12 - 3 scale factor
 			Variable/G root:myGlobals:NSORT:gScale2_3 = norm23
 		else
@@ -1229,7 +1229,7 @@ Function DoAutoScaleFromPanel(auto)
 				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
 			endif
 			//do auto-scaling of data
-			norm12 = GetScalingInOverlap(num2,lowq,lowi,medq,medi)
+			norm12 = NCNR_GetScalingInOverlap(num2,lowq,lowi,medq,medi)
 			//Set the global variable for the 1-2 scale factor
 			Variable/G root:myGlobals:NSORT:gScale1_2 = norm12
 		else
@@ -1354,7 +1354,7 @@ Function DoAutoScaleFromPanel(auto)
 				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
 			endif
 			//do auto-scaling of data
-			norm23 = GetScalingInOverlap(num2,q12,i12,highq,highi)
+			norm23 = NCNR_GetScalingInOverlap(num2,q12,i12,highq,highi)
 			//Set the global variable for the 12 - 3 scale factor
 			Variable/G root:myGlobals:NSORT:gScale2_3 = norm23
 		else
