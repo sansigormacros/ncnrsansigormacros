@@ -1250,7 +1250,7 @@ Proc Initialize_Preferences()
 	
 	
 	/// items for everyone
-	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 1 )
+	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
 	Variable/G root:Packages:NIST:gXML_Write = val
 	
 	
