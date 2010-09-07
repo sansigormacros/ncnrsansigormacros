@@ -301,8 +301,9 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 			Duplicate/O $("root:"+n1), $w1
 			Duplicate/O $("root:"+n2), $w2
 			Duplicate/O $("root:"+n3), $w3
-			Duplicate/O $("root:"+n0), $w0 // Set qb wave to nominal measured Q values
+			Duplicate/O $("root:"+n0), $w4 // Set qb wave to nominal measured Q values
 			Duplicate/O $("root:"+n0), $w5 // Make wave of appropriate length
+			$w4 = $w0
 			$w5 = 1						  //  Set all shadowfactor to 1
 	
 			// need to switch based on SANS/USANS
