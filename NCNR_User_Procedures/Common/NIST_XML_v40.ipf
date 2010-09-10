@@ -564,6 +564,10 @@ function writeNISTXML(fileName, NISTfile)
 	
 end
 
+//
+// !!! nf.Sample_ID is not set correctly here, since it's not read in from the NIST 6-col data file
+// and SASprocessnote does not get set either!
+//
 Function convertNISTtoNISTXML(fileStr)
 	String fileStr
 	
@@ -638,18 +642,6 @@ Function convertNISTtoNISTXML(fileStr)
 			nf.unitsdQl = "1/A"
 			
 		endif
-		
-		//Tidy up
-		Variable i = 0
-		do
-			WAVE/Z wv= $(StringFromList(i,S_waveNames,";"))
-			if( WaveExists(wv) == 0 )
-				break
-			endif
-			KillWaves wv
-			i += 1
-		while (1)	// exit is via break statement
-
 	
 	endif	//6-col data
 
@@ -665,6 +657,17 @@ Function convertNISTtoNISTXML(fileStr)
 	nf.sasnote = "Data converted from previous NIST format. SASProcessnote contains header from original text file."
 
 	writeNISTXML(outfileName, nf)
+
+	//Tidy up AFTER we're all done, since STRUCT points to wave0,wave1, etc.
+	Variable i = 0
+	do
+		WAVE/Z wv= $(StringFromList(i,S_waveNames,";"))
+		if( WaveExists(wv) == 0 )
+			break
+		endif
+		KillWaves wv
+		i += 1
+	while (1)	// exit is via break statement
 
 end
 
@@ -694,8 +697,12 @@ function setmetadataFromASCHeader(fileStr,NISTfile)
 		//Get title value
 		if (stringmatch(buffer,"*FIRST File LABEL:*") == 1)
 			NISTfile.title = TrimWS(StringFromList(1,buffer, ":"))
-		elseif(stringmatch(buffer,"*LABEL:*") == 1)
+		endif
+		if(stringmatch(buffer,"*LABEL:*") == 1)
 			NISTfile.title = TrimWS(StringFromList(1,buffer, ":"))
+		endif
+		if(stringmatch(buffer,"NSORT*") == 1)
+			NISTfile.title = buffer
 		endif
 		
 		hdr += buffer+"\n"

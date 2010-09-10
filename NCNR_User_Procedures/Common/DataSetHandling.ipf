@@ -362,13 +362,14 @@ Function NCNRInitBatchConvert()
 	NewDataFolder/O/S root:Packages:NIST:BatchConvert
 	Make/O/T/N=1 filewave=""
 	Make/O/N=1 selWave=0
-	Variable/G ind=0
+	Variable/G ind=0,gRadioVal=1
 	SetDataFolder root:
 End
 
 Proc fMakeNCNRBatchConvertPanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(658,347,1018,737)/N=NCNRBatchConvertPanel/K=2 as "Batch Convert 1D Data"
+//	NewPanel /W=(658,347,1018,737)/N=NCNRBatchConvertPanel as "Batch Convert 1D Data"
 	ModifyPanel cbRGB=(40000,50000,32896)
 	ModifyPanel fixedSize=1
 	
@@ -382,13 +383,17 @@ Proc fMakeNCNRBatchConvertPanel()
 	TitleBox msg0,frame=0,fixedSize=1
 	
 	GroupBox filterGroup,pos={13,200},size={206,60},title="Filter list by input file type"
+	CheckBox filterCheck_1,pos={24,220},size={36,14},title="XML",value= 1,mode=1, proc=BC_filterCheckProc
+	CheckBox filterCheck_2,pos={24,239},size={69,14},title="ABS or AVE",value= 0,mode=1, proc=BC_filterCheckProc
+	CheckBox filterCheck_3,pos={100,220},size={69,14},title="none",value= 0,mode=1, proc=BC_filterCheckProc
 	
 	Button button8,pos={238,76},size={100,20},proc=NCNRBatchConvertHelpProc,title="Help"
 	Button button9,pos={238,48},size={100,20},proc=NCNRBatchConvertRefresh,title="Refresh List"
 	Button button0,pos={238,106},size={100,20},proc=NCNRBatchConvertDone,title="Done"
 
 	GroupBox outputGroup,pos={13,270},size={206,60},title="Output File Type"
-
+	CheckBox outputCheck_1,pos={24,289},size={36,14},title="XML",value= 0,mode=1, proc=BC_outputCheckProc
+	CheckBox outputCheck_2,pos={24,309},size={69,14},title="ABS or AVE",value= 1,mode=1, proc=BC_outputCheckProc
 	
 	Button button6,pos={13,350},size={206,20},proc=NCNRBatchConvertFiles,title="Convert File(s)"
 	Button button6,help={"Converts the files to the format selected"}
@@ -397,14 +402,98 @@ Proc fMakeNCNRBatchConvertPanel()
 	
 End
 
+Function BC_filterCheckProc(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	NVAR gRadioVal= root:Packages:NIST:BatchConvert:gRadioVal
+	
+	strswitch (ctrlName)
+		case "filterCheck_1":
+			gRadioVal= 1
+			break
+		case "filterCheck_2":
+			gRadioVal= 2
+			break
+		case "filterCheck_3":
+			gRadioVal= 3
+			break
+	endswitch
+	CheckBox filterCheck_1,value= gRadioVal==1
+	CheckBox filterCheck_2,value= gRadioVal==2
+	CheckBox filterCheck_3,value= gRadioVal==3
+	
+	NCNRBatchConvertGetList()
+	 
+	return(0)
+End
+
+Function BC_outputCheckProc(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	if(cmpstr("outputCheck_1",ctrlName)==0)
+		CheckBox outputCheck_1,value=checked
+		CheckBox outputCheck_2,value=!checked
+	else
+		CheckBox outputCheck_1,value=!checked
+		CheckBox outputCheck_2,value=checked
+	endif
+	
+	return(0)
+End
 
 Function NCNRBatchConvertFiles(ba) : ButtonControl
 		STRUCT WMButtonAction &ba
 		
+		
 		switch (ba.eventCode)
 			case 2:
+			
+				//check the input/output as best I can (none may be the input filter)
+				Variable inputType,outputType=1
+				NVAR gRadioVal= root:Packages:NIST:BatchConvert:gRadioVal
+				inputType = gRadioVal
+				ControlInfo outputCheck_1
+				if(V_value==1)
+					outputType = 1		//xml
+				else
+					outputType = 2		//6-col
+				endif
+				
+				if(inputType==outputType)
+					DoAlert 0,"Input and output types are the same. Nothing will be converted"
+					return(0)
+				endif
+			
+			
+					// input and output are different, proceed
+
 				Wave/T fileWave=$"root:Packages:NIST:BatchConvert:fileWave"
-				Wave sel=$"root:BatchConvert:NIST:BatchConvert:selWave"
+				Wave sel=$"root:Packages:NIST:BatchConvert:selWave"
+				
+				String fname="",pathStr="",newFileName=""
+				Variable ii,num
+				PathInfo catPathName			//this is where the files are
+				pathStr=S_path
+							
+				// process the selected items
+				num=numpnts(sel)
+				ii=0
+				do
+					if(sel[ii] == 1)
+						fname=pathStr + fileWave[ii]
+						
+						if(outputType == 1)
+							convertNISTtoNISTXML(fname)
+						endif
+						
+						if(outputType == 2)
+							convertNISTXMLtoNIST6Col(fname)
+						endif
+					endif
+					ii+=1
+				while(ii<num)
 				
 				break
 		endswitch
@@ -425,6 +514,9 @@ Function NCNRBatchConvertNewFolder(ba) : ButtonControl
 
 End
 
+
+// filter is a bit harsh - will need to soften this by presenting an option to enter the suffix
+//
 Function NCNRBatchConvertGetList()
 
 	//make sure that path exists
@@ -433,8 +525,27 @@ Function NCNRBatchConvertGetList()
 		Abort "Folder path does not exist - use \"New Folder\" button"
 	Endif
 	
-	String newList = A_ReducedDataFileList("")
+	String newList = A_ReducedDataFileList(""),tmpList=""
 	Variable num
+	
+	NVAR gRadioVal= root:Packages:NIST:BatchConvert:gRadioVal
+	ControlInfo filterCheck_1
+	if(gRadioVal == 1)
+		//keep XML data
+		tmpList = ListMatch(newList, "*.ABSx" ,";")
+		tmpList += ListMatch(newList, "*.AVEx" ,";")
+		tmpList += ListMatch(newList, "*.xml" ,";")
+	else
+		if(gRadioVal ==2)
+			//keep ave, abs data
+			tmpList = ListMatch(newList, "*.ABS" ,";")
+			tmpList += ListMatch(newList, "*.AVE" ,";")
+		else
+			//return everything
+			tmpList = newList
+		endif
+	endif
+	newList = tmpList
 	
 	num=ItemsInList(newlist,";")
 	WAVE/T fileWave=$"root:Packages:NIST:BatchConvert:fileWave"
@@ -443,6 +554,8 @@ Function NCNRBatchConvertGetList()
 	Redimension/N=(num) selWave
 	fileWave = StringFromList(p,newlist,";")
 	Sort filewave,filewave
+	
+	return 0
 End
 
 Function NCNRBatchConvertRefresh(ba) : ButtonControl
@@ -1548,6 +1661,37 @@ End
 //
 //End
 
+
+
+
+// still need to get the header information, and possibly the SASprocessnote from the XML load into the 6-column header
+//
+// start by looking in: 
+//	String xmlReaderFolder = "root:Packages:CS_XMLreader:"
+// for Title and Title_folder strings -> then the metadata (but the processnote is still not there
+//
+// may need to get it directly using the filename
+Function  convertNISTXMLtoNIST6Col(fname)
+	String fname
+
+	String list, item,path
+	Variable num,ii
+	
+	//load the XML
+	
+	LoadNISTXMLData(fname,"",0,0)		//no plot, no force overwrite
+//	Execute "A_LoadOneDDataWithName(\""+fname+"\",0)"		//won't plot
+
+	// then rewrite what is in the data folder that was just loaded
+	String basestr = ParseFilePath(0, fname, ":", 1, 0)
+	baseStr = CleanupName(baseStr,0)
+	print fname
+	print basestr
+
+	fReWrite1DData_noPrompt(baseStr,"tab","CR")
+
+	return(0)
+End
 
 
 ///////// SRK - VERY SIMPLE batch converter
