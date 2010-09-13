@@ -516,7 +516,10 @@ Function PickSAMButton(ctrlName) : ButtonControl
 	//global string is either null or contains filename(s) on entry
 	
 	//ask to reset the list?
-	DoAlert 1,"Reset the list of sample files?"
+	DoAlert 2,"Reset the list of sample files?"
+	if(V_flag == 3)
+		return(0)		//cancel, get out
+	endif
 	if(V_flag == 1)
 		String/G root:myGlobals:Protocols:gSAM = ""
 	Endif
@@ -564,7 +567,10 @@ Function PickBGDButton(ctrlName) : ButtonControl
 	//global string is either null or contains filename(s) on entry
 	
 	//ask to reset the list?
-	DoAlert 1,"Reset the list of background files?"
+	DoAlert 2,"Reset the list of background files?"
+	if(V_flag == 3)
+		return(0)		//cancel, get out
+	endif
 	if(V_flag == 1)
 		String/G root:myGlobals:Protocols:gBGD = ""
 	Endif
@@ -607,7 +613,10 @@ Function PickEMPButton(ctrlName) : ButtonControl
 	String ctrlName
 
 	//ask to reset the list?
-	DoAlert 1,"Reset the list of empty cell files?"
+	DoAlert 2,"Reset the list of empty cell files?"
+	if(V_flag == 3)
+		return(0)		//cancel, get out
+	endif
 	if(V_flag == 1)
 		String/G root:myGlobals:Protocols:gEMP = ""
 	Endif
