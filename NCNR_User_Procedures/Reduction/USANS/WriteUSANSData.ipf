@@ -239,7 +239,7 @@ Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	
 	//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
 	Duplicate/O qvals,dumWave
-	dumWave = - dQv
+	dumWave = dQv			//written out as a positive value, since the column is identified by its label, dQl
 	///
 	
 	if(dialog)

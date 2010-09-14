@@ -130,9 +130,9 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 								reswave[][2] = Shadowfactor[p]		//fShad
 							endif
 						elseif(exists(xmlDataSetFolder+"dQl"))
-							//USAS Data
+							//USANS Data
 							Wave dQl = $(xmlDataSetFolder+"dQl")
-							dQv = dQl[0]
+							dQv = abs(dQl[0])
 						
 							USANS_CalcWeights(baseStr,dQv)
 						else
@@ -261,9 +261,9 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 							reswave[][2] = Shadowfactor[p]		//fShad
 						endif
 					elseif(exists(xmlDataFolder+"dQl"))
-						//USAS Data
+						//USANS Data
 						Wave dQl = $(xmlDataFolder+"dQl")
-						dQv = - dQl[0]		//make it positive again
+						dQv = abs(dQl[0])		//make it positive again
 					
 						USANS_CalcWeights(baseStr,dQv)
 					else
@@ -1047,7 +1047,7 @@ Function ReWrite1DXMLData(folderStr)
 		//USANS data, proceed
 		//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
 		Duplicate/O qw,dumWave
-		dumWave = - dQv
+		dumWave = dQv			//written out as a positive value, since the column is identified by its label, dQl
 		
 		//Data
 		Wave nf.Q = qw

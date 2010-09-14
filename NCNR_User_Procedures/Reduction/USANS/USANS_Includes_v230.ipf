@@ -30,6 +30,7 @@
 #include "SANS_Utilities"
 #include "NCNR_Utils"
 #include "MultipleReduce"
+#include "WriteQIS"
 
 //AJJ for data set output?
 //#include "DataSetHandling"
