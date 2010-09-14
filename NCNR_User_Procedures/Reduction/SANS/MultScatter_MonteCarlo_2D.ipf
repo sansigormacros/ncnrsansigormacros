@@ -1646,7 +1646,9 @@ Function Save_1DSimData(ctrlName) : ButtonControl
 		//setup a "fake protocol" wave, sice I have no idea of the current state of the data
 		Make/O/T/N=8 root:myGlobals:Protocols:SIMProtocol
 		Wave/T SIMProtocol = $"root:myGlobals:Protocols:SIMProtocol"
+		SVAR funcStr = root:Packages:NIST:SAS:gFuncStr
 		String junk="****SIMULATED DATA****"
+
 		//stick in the fake protocol...
 		NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 		NVAR totalCts = root:Packages:NIST:SAS:g_1DTotCts			//summed counts (simulated)
@@ -1654,141 +1656,150 @@ Function Save_1DSimData(ctrlName) : ButtonControl
 		NVAR fractScat = root:Packages:NIST:SAS:g_1DFracScatt
 		NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
 	
-		SIMProtocol[0] = junk
+		SIMProtocol[0] = "*** SIMULATED DATA from "+funcStr+" ***"
 		SIMProtocol[1] = "\tCounting time (s) = "+num2str(ctTime)
 		SIMProtocol[2] = "\tTotal detector counts = "+num2str(totalCts)
 		SIMProtocol[3] = "\tDetector countrate (1/s) = "+num2str(detCR)
 		SIMProtocol[4] = "\tFraction of beam scattered coherently = "+num2str(fractScat)
 		SIMProtocol[5] = "\tFraction of multiple coherent scattering = "+num2str(mScat)
 		SIMProtocol[6] = ""
-		SIMProtocol[7] = ""
+		SIMProtocol[7] = "*** SIMULATED DATA ***"
 		//set the global
 		String/G root:myGlobals:Protocols:gProtoStr = "SIMProtocol"
 	Endif
 	
 	
-	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
-	WAVE qvals =$(destStr + ":qval")
-	WAVE inten=$(destStr + ":aveint")
-	WAVE sig=$(destStr + ":sigave")
- 	WAVE qbar = $(destStr + ":QBar")
-  	WAVE sigmaq = $(destStr + ":SigmaQ")
- 	WAVE fsubs = $(destStr + ":fSubS")
-
-	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
-	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 	
-	//check each wave
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(qvals)))
-		Abort "qvals DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(inten)))
-		Abort "inten DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(sig)))
-		Abort "sig DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(qbar)))
-		Abort "qbar DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(sigmaq)))
-		Abort "sigmaq DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(fsubs)))
-		Abort "fsubs DNExist Save_1DSimData()"
-	Endif
-	If(!(WaveExists(proto)))
-		Abort "current protocol wave DNExist Save_1DSimData()"
-	Endif
-
-	//strings can be too long to print-- must trim to 255 chars
-	Variable ii,num=8
-	Make/O/T/N=(num) tempShortProto
-	for(ii=0;ii<num;ii+=1)
-		tempShortProto[ii] = (proto[ii])[0,240]
-	endfor
+	if (useXMLOutput == 1)
+		WriteXMLWaves_W_Protocol(type,"",1)
+	else
+		WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+	endif
 	
-	if(dialog)
-		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")
-		If(cmpstr(fullPath,"")==0)
-			//user cancel, don't write out a file
-			Close/A
-			Abort "no data file was written"
-		Endif
-		//Print "dialog fullpath = ",fullpath
-	Endif
-	
-	NVAR monCt = root:Packages:NIST:SAS:gImon
-	NVAR thick = root:Packages:NIST:SAS:gThick
-	NVAR trans = root:Packages:NIST:SAS:gSamTrans			//for 1D, default value
-	
-
-	
-	hdrStr1 = num2str(monCt)+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	hdrStr1 += "     "+num2str(trans)+"     "+num2str(thick) + ave +"   "+num2str(step) + "\r\n"
-
-	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
-	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+"ORNL  " + "\r\n"
-	
-	//actually open the file here
-	Open refNum as fullpath
-	
-	//write out the standard header information
-	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n","SIMULATED DATA",(date() +"  "+ time())
-	fprintf refnum,"LABEL: %s\r\n","SIMULATED DATA"
-	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
-	fprintf refnum,hdrStr1
-	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
-	fprintf refnum,hdrStr2
-//	fprintf refnum,headerFormat,rw[0],rw[26],rw[19],rw[18],rw[4],rw[5],ave,step
-
-	//insert protocol information here
-	//-1 list of sample files
-	//0 - bkg
-	//1 - emp
-	//2 - div
-	//3 - mask
-	//4 - abs params c2-c5
-	//5 - average params
-	fprintf refnum, "SAM: %s\r\n",tempShortProto[0]
-	fprintf refnum, "BGD: %s\r\n",tempShortProto[1]
-	fprintf refnum, "EMP: %s\r\n",tempShortProto[2]
-	fprintf refnum, "DIV: %s\r\n",tempShortProto[3]
-	fprintf refnum, "MASK: %s\r\n",tempShortProto[4]
-	fprintf refnum, "ABS: %s\r\n",tempShortProto[5]
-	fprintf refnum, "Average Choices: %s\r\n",tempShortProto[6]
-	
-	//write out the data columns
-	fprintf refnum,"The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"
-	wfprintf refnum, formatStr, qvals,inten,sig,sigmaq,qbar,fsubs
-	
-	Close refnum
-	
-	SetDataFolder root:		//(redundant)
-	
-	//write confirmation of write operation to history area
-	Print "Averaged File written: ", GetFileNameFromPathNoSemi(fullPath)
-	KillWaves/Z tempShortProto
-
-	//clear the stuff that was created for case of saving files
-	If(1)
-		Killwaves/Z root:myGlobals:Protocols:SIMProtocol
-		String/G root:myGlobals:Protocols:gProtoStr = ""
-	Endif
-	
+//	
+//	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+//	WAVE intw=$(destStr + ":integersRead")
+//	WAVE rw=$(destStr + ":realsRead")
+//	WAVE/T textw=$(destStr + ":textRead")
+//	WAVE qvals =$(destStr + ":qval")
+//	WAVE inten=$(destStr + ":aveint")
+//	WAVE sig=$(destStr + ":sigave")
+// 	WAVE qbar = $(destStr + ":QBar")
+//  	WAVE sigmaq = $(destStr + ":SigmaQ")
+// 	WAVE fsubs = $(destStr + ":fSubS")
+//
+//	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
+//	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
+//	
+//	//check each wave
+//	If(!(WaveExists(intw)))
+//		Abort "intw DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(rw)))
+//		Abort "rw DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(textw)))
+//		Abort "textw DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(qvals)))
+//		Abort "qvals DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(inten)))
+//		Abort "inten DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(sig)))
+//		Abort "sig DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(qbar)))
+//		Abort "qbar DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(sigmaq)))
+//		Abort "sigmaq DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(fsubs)))
+//		Abort "fsubs DNExist Save_1DSimData()"
+//	Endif
+//	If(!(WaveExists(proto)))
+//		Abort "current protocol wave DNExist Save_1DSimData()"
+//	Endif
+//
+//	//strings can be too long to print-- must trim to 255 chars
+//	Variable ii,num=8
+//	Make/O/T/N=(num) tempShortProto
+//	for(ii=0;ii<num;ii+=1)
+//		tempShortProto[ii] = (proto[ii])[0,240]
+//	endfor
+//	
+//	if(dialog)
+//		PathInfo/S catPathName
+//		fullPath = DoSaveFileDialog("Save data as")
+//		If(cmpstr(fullPath,"")==0)
+//			//user cancel, don't write out a file
+//			Close/A
+//			Abort "no data file was written"
+//		Endif
+//		//Print "dialog fullpath = ",fullpath
+//	Endif
+//	
+//	NVAR monCt = root:Packages:NIST:SAS:gImon
+//	NVAR thick = root:Packages:NIST:SAS:gThick
+//	NVAR trans = root:Packages:NIST:SAS:gSamTrans			//for 1D, default value
+//	
+//
+//	
+//	hdrStr1 = num2str(monCt)+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
+//	hdrStr1 += "     "+num2str(trans)+"     "+num2str(thick) + ave +"   "+num2str(step) + "\r\n"
+//
+//	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
+//	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+"ORNL  " + "\r\n"
+//	
+//	//actually open the file here
+//	Open refNum as fullpath
+//	
+//	//write out the standard header information
+//	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n","SIMULATED DATA",(date() +"  "+ time())
+//	fprintf refnum,"LABEL: %s\r\n","SIMULATED DATA"
+//	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
+//	fprintf refnum,hdrStr1
+//	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
+//	fprintf refnum,hdrStr2
+////	fprintf refnum,headerFormat,rw[0],rw[26],rw[19],rw[18],rw[4],rw[5],ave,step
+//
+//	//insert protocol information here
+//	//-1 list of sample files
+//	//0 - bkg
+//	//1 - emp
+//	//2 - div
+//	//3 - mask
+//	//4 - abs params c2-c5
+//	//5 - average params
+//	fprintf refnum, "SAM: %s\r\n",tempShortProto[0]
+//	fprintf refnum, "BGD: %s\r\n",tempShortProto[1]
+//	fprintf refnum, "EMP: %s\r\n",tempShortProto[2]
+//	fprintf refnum, "DIV: %s\r\n",tempShortProto[3]
+//	fprintf refnum, "MASK: %s\r\n",tempShortProto[4]
+//	fprintf refnum, "ABS: %s\r\n",tempShortProto[5]
+//	fprintf refnum, "Average Choices: %s\r\n",tempShortProto[6]
+//	
+//	//write out the data columns
+//	fprintf refnum,"The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"
+//	wfprintf refnum, formatStr, qvals,inten,sig,sigmaq,qbar,fsubs
+//	
+//	Close refnum
+//	
+//	SetDataFolder root:		//(redundant)
+//	
+//	//write confirmation of write operation to history area
+//	Print "Averaged File written: ", GetFileNameFromPathNoSemi(fullPath)
+//	KillWaves/Z tempShortProto
+//
+//	//clear the stuff that was created for case of saving files
+//	If(1)
+//		Killwaves/Z root:myGlobals:Protocols:SIMProtocol
+//		String/G root:myGlobals:Protocols:gProtoStr = ""
+//	Endif
+//	
 	
 	return(0)
 	
