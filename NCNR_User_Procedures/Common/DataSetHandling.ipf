@@ -1441,6 +1441,9 @@ Function DuplicateDataSet(dataSetFolder, newName, forceoverwrite)
 
 	//If we are here, the folder (now) exists and the user has agreed to overwrite
 	//either in the function call or from the alert.
+	
+	// here, GetIndexedObjectName copies all of the waves
+	index = 0
 	do
 		objName = GetIndexedObjName(basestr,1,index)
 		if (strlen(objName) == 0)
@@ -1450,6 +1453,23 @@ Function DuplicateDataSet(dataSetFolder, newName, forceoverwrite)
 			Duplicate/O $(objName) $(ReplaceString(basestr,objName,newName))
 		index+=1
 	while(1)
+
+// -- for USANS data, we need the slit height. copy all of the "USANS_*" variables
+// may need to augment this for other situations
+	index = 0
+	do
+		objName = GetIndexedObjName(basestr,2,index)
+		if (strlen(objName) == 0)
+			break
+		endif
+		if(stringmatch(objName,"USANS*") == 1)
+			objname = ":"+basestr+":"+objname
+			NVAR tmp = $objName
+			Variable/G $(ReplaceString(basestr,objName,newName))= tmp
+		endif
+		index+=1
+	while(1)
+	
 
 	SetDataFolder root:
 	return 0

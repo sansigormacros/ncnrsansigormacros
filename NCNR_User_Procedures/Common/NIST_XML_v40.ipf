@@ -1002,7 +1002,8 @@ End
 
 /// See WriteModelData_v40.ipf for 6 column equivalent
 //
-// this only handles 6-column data, will abort if resolution wave is missing
+// will abort if resolution wave is missing
+// switches for USANS data if the proper global is found, otheriwse treats as SANS data
 //
 Function ReWrite1DXMLData(folderStr)
 	String folderStr
@@ -1037,46 +1038,86 @@ Function ReWrite1DXMLData(folderStr)
 		Abort "Resolution information is missing."
 	endif
 	
-	Duplicate/O qw qbar,sigQ,fs
-	sigq = resw[p][0]
-	qbar = resw[p][1]
-	fs = resw[p][2]
-
+	
+	// if (USANS)
+	// else (SANS is assumed)
+	// endif
+	NVAR/Z dQv = USANS_dQv		// in current DF
+	if (NVAR_Exists(dQv))
+		//USANS data, proceed
+		//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
+		Duplicate/O qw,dumWave
+		dumWave = - dQv
 		
-	//Data
-	Wave nf.Q = qw
-	nf.unitsQ = "1/A"
-	Wave nf.I = iw
-	nf.unitsI = "1/cm"
-	Wave nf.Idev = sw
-	nf.unitsIdev = "1/cm"
-	Wave nf.Qdev = sigQ
-	nf.unitsQdev = "1/A"
-	Wave nf.Qmean = qbar
-	nf.unitsQmean = "1/A"
-	Wave nf.Shadowfactor = fs
-	nf.unitsShadowfactor = "none"
+		//Data
+		Wave nf.Q = qw
+		nf.unitsQ = "1/A"
+		Wave nf.I = iw
+		nf.unitsI = "1/cm"
+		Wave nf.Idev = sw
+		nf.unitsIdev = "1/cm"
+		// for slit-smeared USANS, set only a 4th column to  -dQv
+		Wave nf.dQl = dumWave
+		nf.unitsdQl= "1/A"
 	
+		//AJJ to fix with sensible values
+		nf.run = ""
+		nf.nameSASinstrument = "NIST IGOR Procedures"
+		nf.SASnote = ""
+		//
+		nf.sample_ID = baseStr
+		nf.title = baseStr
+		nf.radiation = "neutron"
+		//Do something with beamstop (rw[21])
+		nf.detector_name = "Re-written USANS data"
 	
-	//write out the standard header information
-	//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
+		nf.SASprocessnote =  "Modified data written from folder "+baseStr+" on "+(date()+" "+time())
+		
+		nf.nameSASProcess = "NIST IGOR"
+		
+	else
+		//assume SANS data
+		Duplicate/O qw qbar,sigQ,fs
+		sigq = resw[p][0]
+		qbar = resw[p][1]
+		fs = resw[p][2]
 	
-	//AJJ to fix with sensible values
-	nf.run = ""
-	nf.nameSASinstrument = "NIST IGOR Procedures"
-	nf.SASnote = ""
-	//
-	nf.sample_ID = baseStr
-	nf.title = baseStr
-	nf.radiation = "neutron"
-	//Do something with beamstop (rw[21])
-	nf.detector_name = "Re-written data"
+			
+		//Data
+		Wave nf.Q = qw
+		nf.unitsQ = "1/A"
+		Wave nf.I = iw
+		nf.unitsI = "1/cm"
+		Wave nf.Idev = sw
+		nf.unitsIdev = "1/cm"
+		Wave nf.Qdev = sigQ
+		nf.unitsQdev = "1/A"
+		Wave nf.Qmean = qbar
+		nf.unitsQmean = "1/A"
+		Wave nf.Shadowfactor = fs
+		nf.unitsShadowfactor = "none"
+		
+		
+		//write out the standard header information
+		//fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
+		
+		//AJJ to fix with sensible values
+		nf.run = ""
+		nf.nameSASinstrument = "NIST IGOR Procedures"
+		nf.SASnote = ""
+		//
+		nf.sample_ID = baseStr
+		nf.title = baseStr
+		nf.radiation = "neutron"
+		//Do something with beamstop (rw[21])
+		nf.detector_name = "Re-written data"
+	
+		nf.SASprocessnote =  "Modified data written from folder "+baseStr+" on "+(date()+" "+time())
+		
+		nf.nameSASProcess = "NIST IGOR"
 
-	nf.SASprocessnote =  "Modified data written from folder "+baseStr+" on "+(date()+" "+time())
-	
-	nf.nameSASProcess = "NIST IGOR"
+	endif
 
-	//Close refnum
 	
 	if(dialog)
 		PathInfo/S catPathName
@@ -1094,6 +1135,9 @@ Function ReWrite1DXMLData(folderStr)
 	//write confirmation of write operation to history area
 	Print "XML File written: ", GetFileNameFromPathNoSemi(fullPath)
 	KillWaves/Z tempShortProto
+	
+	SetDataFolder root:
+
 	Return(0)
 End
 

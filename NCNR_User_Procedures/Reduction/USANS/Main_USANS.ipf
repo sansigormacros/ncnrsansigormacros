@@ -619,7 +619,7 @@ Function PlotRawButtonProc(ctrlName) : ButtonControl
 		fname+=filewave[0]
 	endif
 	//Print fname
-	if(strlen(fileWave[ii]) > 0)		//make sure that this is not a click in blank space
+	if(strlen(fileWave[ii]) > 0 && ii < numpnts(fileWave))		//make sure that this is not a click in blank space
 		err = LoadBT5File(fname,"RAW")
 		if(err)
 			return(err)
@@ -705,7 +705,7 @@ Function StatusButtonProc(ctrlName)
 		fname+=filewave[0]
 	endif		
 	//Print fname
-	if(strlen(fileWave[ii]) > 0)		//make sure that this is not a click in blank space
+	if(strlen(fileWave[ii]) > 0 && ii < numpnts(fileWave))		//make sure that this is not a click in blank space
 		ReadBT5Header(fname)
 	endif
 End

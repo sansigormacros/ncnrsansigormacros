@@ -177,6 +177,7 @@ Function fReWrite1DData(folderStr,delim,term)
 		//it's USANS put -dQv back in the last 3 columns
 		NVAR/Z dQv = USANS_dQv
 		if(NVAR_Exists(dQv) == 0)
+			SetDataFolder root:
 			Abort "It's USANS data, and I don't know what the slit height is."
 		endif
 		sigQ = -dQv
