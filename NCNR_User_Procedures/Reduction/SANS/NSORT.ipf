@@ -1459,7 +1459,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	absStr = pref+RunDigitString(low)+ext
 	popNum = WhichListItem(absStr,lowQPopStr,";",0)
 	if(popNum == -1)
-		Abort "Could not find file: " + absStr +" aborting..."
+		Abort "Could not find file: " + absStr +" aborting...  Be sure that your output format is the same as the input"
 	endif
 	popNum += 1		// add 1 to get the item number
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
@@ -1468,7 +1468,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	absStr = pref+RunDigitString(med)+ext
 	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 	if(popNum == -1)
-		Abort "Could not find file: "+absStr+" aborting..."
+		Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
 	endif
 	popNum += 1		// add 1 to get the item number
 	PopupMenu popup_2,win=NSORT_Panel,mode=(popNum)
@@ -1479,7 +1479,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 		absStr = pref+RunDigitString(hi)+ext
 		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 		if(popNum == -1)
-			Abort "Could not find file: "+absStr+" aborting..."
+			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
 		endif
 		popNum += 1		// add 1 to get the item number
 		PopupMenu popup_3,win=NSORT_Panel,mode=(popNum)
@@ -1564,19 +1564,9 @@ Proc CreateTableToCombine(ctrlName)
 //
 	RemoveTransFilesFromCombine()
 //
-// make the waves and table for the sets to combine
-	Make/O/N=0 $"root:myGlobals:CombineTable:LowRun"
-	Make/O/N=0 $"root:myGlobals:CombineTable:MediumRun"
-	Make/O/N=0 $"root:myGlobals:CombineTable:HighRun"
-	Make/O/T/N=0 $"root:myGlobals:CombineTable:Prefix"
-	Make/O/T/N=0 $"root:myGlobals:CombineTable:SaveName"
-	
-	SetDataFolder root:myGlobals:CombineTable
-	
-	// make the second table
-	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,Prefix,SaveName
-
 	SetDataFolder root:
+	
+	Killwaves/Z notRAWlist
 End
 
 
@@ -1842,6 +1832,7 @@ Function SendSelectionToTable()
 	prefix[num] = GetPrefixStrFromFile(filenames[ii])
 	saveName[num] = saveStr	
 
+	KillWaves/Z tmpLbl,tmpRun,tmpSDD
 	return(0)
 end
 
@@ -1854,6 +1845,9 @@ Proc ShowCombinePanel()
 	DoWindow/F CombinePanel
 	if(V_flag==0)
 		CombinePanel()
+		CreateTableToCombine("")
+		DoAlert 1,"Do you want to clear the list of runs and file names to combine?"
+		TableToCombineAndSave(V_flag==1)		// clear and initialize, if desired
 	endif
 end
 
@@ -1866,6 +1860,7 @@ Proc CombinePanel()
 	Button button0_1,pos={206,20},size={140,20},proc=DoCombineFiles,title="Combine Files"
 	Button button0_2,pos={509,40},size={60,20},proc=CombinePanelDone,title="Done"
 	Button button0_3,pos={522,14},size={30,20},proc=ShowCombineHelp,title="?"
+	Button button0_4,pos={500,220},size={120,20},proc=ClearCombineTable,title="Clear Table?"
 	Edit/W=(20,54,368,249)/HOST=# 
 	ModifyTable format=1,width=0
 	RenameWindow #,GroupedFiles
@@ -1891,3 +1886,30 @@ Function CombinePanelDone(ctrlName)
 	DoWindow/K CombinePanel
 	return(0)
 end
+
+Function ClearCombineTable(ctrlName)
+	String ctrlName
+	
+	DoAlert 1,"Do you want to clear the list of runs and file names to combine?"
+	TableToCombineAndSave(V_flag==1)		// clear and initialize, if desired
+	return(0)
+end
+
+Function TableToCombineAndSave(clear)
+	Variable clear
+	
+	if(clear)
+		// make the waves and table for the sets to combine
+		Make/O/N=0 $"root:myGlobals:CombineTable:LowRun"
+		Make/O/N=0 $"root:myGlobals:CombineTable:MediumRun"
+		Make/O/N=0 $"root:myGlobals:CombineTable:HighRun"
+		Make/O/T/N=0 $"root:myGlobals:CombineTable:Prefix"
+		Make/O/T/N=0 $"root:myGlobals:CombineTable:SaveName"
+	endif
+	SetDataFolder root:myGlobals:CombineTable
+	
+	// make the second table
+	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,Prefix,SaveName
+	
+	SetDataFolder root:
+End
