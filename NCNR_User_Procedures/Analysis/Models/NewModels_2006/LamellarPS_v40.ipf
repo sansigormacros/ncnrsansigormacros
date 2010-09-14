@@ -197,7 +197,7 @@ Function fLamellarPS(w,x) : FitFunc
 	
 	ii=0
 	Sq = 0
-	for(ii=1;ii<(NN-1);ii+=1)
+	for(ii=1;ii<=(NN-1);ii+=1)
 		temp = 0
 		alpha = Cp/4/pi/pi*(ln(pi*ii) + Euler)
 		t1 = 2*dQ*dQ*dd*dd*alpha
