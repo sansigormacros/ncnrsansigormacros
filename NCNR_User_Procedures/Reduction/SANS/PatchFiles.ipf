@@ -236,15 +236,40 @@ Function/S GetValidPatchPopupList()
 	endif
 	
 	// SDD
+	Variable pos
+	String SDDStr=""
 	if(gRadioVal == 3)
-		val = str2num(match)
+		pos = strsearch(match, "*", 0)
+		if(pos == -1)		//no wildcard
+			val = str2num(match)
+		else
+			val = str2num(match[0,pos-1])
+		endif
+		
 //		print val
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, newList , ";")
 			fname = path + item
 			sdd = getSDD(fname)
-			if(abs(val - sdd) < 0.001	)		//if numerically within 0.001 meter, they're the same
-				list += item + ";"
+			if(pos == -1)
+				//no wildcard
+				if(abs(val - sdd) < 0.01	)		//if numerically within 0.01 meter, they're the same
+					list += item + ";"
+				endif
+			else
+				//yes, wildcard, try a string match?
+				// string match doesn't work -- 1* returns 1m and 13m data
+				// round the value (or truncate?)
+				
+				//SDDStr = num2str(sdd)
+				//if(strsearch(SDDStr,match[0,pos-1],0) != -1)
+				//	list += item + ";"
+				//endif
+				
+				if(abs(val - round(sdd)) < 0.01	)		//if numerically within 0.01 meter, they're the same
+					list += item + ";"
+				endif
+	
 			endif
 		endfor
 		

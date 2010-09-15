@@ -1678,7 +1678,7 @@ Function DoCombineFiles(ctrlName)
 	
 	
 	if(WinType("NSORT_Panel") == 0)
-		DoAlert 0, "The NSORT Panel must be open to combine the files"
+		DoAlert 0, "The SORT Panel must be open to combine the files"
 		return(0)
 	endif
 	
