@@ -32,6 +32,7 @@
 #include "MultipleReduce"
 #include "WriteQIS"
 
-//AJJ for data set output?
-//#include "DataSetHandling"
-//#Include "WriteModelData_v40"
+//AJJ for data set output
+#include "DataSetHandling"
+#Include "WriteModelData_v40"
+#include "PlotManager_v40"

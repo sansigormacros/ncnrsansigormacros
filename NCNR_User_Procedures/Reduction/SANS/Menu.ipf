@@ -33,7 +33,9 @@ Menu "SANS"
 		"Open FIT Panel",OpenFITPanel()
 		"Sort and Combine data",ShowNSORTPanel()
 //		"Subtract 1D Data Sets",OpenSubtract1DPanel()
-		"Subtract 1D Data Sets",MakeDAPanel()		//new version
+		"ReWrite Experimental Data",MakeDMPanel()		//,ReWrite1DData()	// SRK SEP10
+		"1D Arithmetic Panel",MakeDAPanel()
+		"ReBin 1D Data",OpenRebin()
 	End
 		Submenu "2-D Processing"
 		"2D Work file Math",Show_WorkMath_Panel()

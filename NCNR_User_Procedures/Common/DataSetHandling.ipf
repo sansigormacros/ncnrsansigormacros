@@ -61,7 +61,7 @@ Proc fMakeDMPanel()
 
 	Button Rename_button,title="Rename",pos={75,170},size={150,20}
 	Button Rename_button,proc=DM_RenameProc
-	Button  Duplicate_button,title="Duplicate",pos={275,170},size={150,20}
+	Button Duplicate_button,title="Duplicate",pos={275,170},size={150,20}
 	Button Duplicate_button,proc=DM_DuplicateProc
 
 	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,140},size={400,20}
@@ -70,10 +70,10 @@ Proc fMakeDMPanel()
 	Button SaveAsXML_button,title="Save as canSAS XML",pos={75,230},size={150,20}
 	Button SaveAsXML_button,proc=DMSaveAsXMLproc	
 
-	Button SaveAs6col_button,title="Save as NIST 6 column",pos={275,230},size={150,20}
+	Button SaveAs6col_button,title="Save as NIST 6 column",pos={275,230},size={160,20}
 	Button SaveAs6col_button,proc=DMSaveAs6colproc	
 	
-	Button BatchConvertData_button,title="Convert Format of 1D Data Files",pos={75,290},size={350,20}
+	Button BatchConvertData_button,title="Batch Convert Format of 1D Data Files",pos={75,290},size={350,20}
 	Button BatchConvertData_button,proc=DMBatchConvertProc
 			
 	Button DMDone_button,title="Done",pos={360,330},size={60,20}
@@ -87,21 +87,77 @@ Proc fMakeDMPanel()
 		SetVariable NewName_setvar,value=_STR:"dataset_copy"
 	else
 		//fake call to popup
-		STRUCT WMPopupAction pa
-		pa.win = "DataManagementPanel"
-		pa.ctrlName = "DS_popup"
-		pa.eventCode = 2
-		DM_PopupProc(pa)
+		//// -- can't use STRUCT in a Proc, only a function
+//		STRUCT WMPopupAction pa
+//		pa.win = "DataManagementPanel"
+//		pa.ctrlName = "DS_popup"
+//		pa.eventCode = 2
+//		DM_PopupProc(pa)
 	endif
 
 End
+
+Function DMSaveAs6colproc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch( ba.eventCode)
+		case 2:
+			ControlInfo/W=DataManagementPanel DS_popup
+			String folderName = S_Value
+			fReWrite1DData(folderName,"tab","CRLF")
+			break
+	endswitch
+	
+	return 0
+End
+
+Function DMSaveAsXMLproc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch( ba.eventCode)
+		case 2:
+			ControlInfo/W=DataManagementPanel DS_popup
+			String folderName = S_Value
+			ReWrite1DXMLData(folderName)
+			break
+	endswitch
+	
+	return 0
+End
+
+
+//Function SaveDataSetToFile(folderName)
+//	String folderName
+//
+//	String protoStr = ""
+//	//Check for history string in folder
+//	//If it doesn't exist then 
+//
+//	//Do saving of data file.
+//	
+//	NVAR gXML_Write = root:Packages:NIST:gXML_Write 
+//
+//	if (gXML_Write == 1)
+//		ReWrite1DXMLData(folderName)
+//	else
+//		fReWrite1DData(folderName,"tab","CRLF")
+//	endif
+//
+//	//Include history string to record what was done?
+//
+//End
+
+
+
+
+
 
 Function DMBatchConvertProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 	
 	switch( ba.eventCode)
 		case 2:
-			Execute	"MakeBatchConvertPanel()"
+			Execute	"MakeNCNRBatchConvertPanel()"
 			break
 	endswitch
 	
@@ -379,7 +435,7 @@ Proc fMakeNCNRBatchConvertPanel()
 
 	Button button7,pos={238,20},size={100,20},proc=NCNRBatchConvertNewFolder,title="New Folder"
 	Button button7,help={"Select a new data folder"}
-	TitleBox msg0,pos={238,140},size={100,30},title="\JCShift-click to\rselect multiple files"
+	TitleBox msg0,pos={238,160},size={100,30},title="\JCShift-click to\rselect multiple files"
 	TitleBox msg0,frame=0,fixedSize=1
 	
 	GroupBox filterGroup,pos={13,200},size={206,60},title="Filter list by input file type"
@@ -387,9 +443,10 @@ Proc fMakeNCNRBatchConvertPanel()
 	CheckBox filterCheck_2,pos={24,239},size={69,14},title="ABS or AVE",value= 0,mode=1, proc=BC_filterCheckProc
 	CheckBox filterCheck_3,pos={100,220},size={69,14},title="none",value= 0,mode=1, proc=BC_filterCheckProc
 	
-	Button button8,pos={238,76},size={100,20},proc=NCNRBatchConvertHelpProc,title="Help"
-	Button button9,pos={238,48},size={100,20},proc=NCNRBatchConvertRefresh,title="Refresh List"
-	Button button0,pos={238,106},size={100,20},proc=NCNRBatchConvertDone,title="Done"
+	Button button8,pos={238,75},size={100,20},proc=NCNRBatchConvertHelpProc,title="Help"
+	Button button9,pos={238,47},size={100,20},proc=NCNRBatchConvertRefresh,title="Refresh List"
+	Button button10,pos={238,102},size={100,20},proc=NCNRBatchConvertSelectAll,title="Select All"
+	Button button0,pos={238,130},size={100,20},proc=NCNRBatchConvertDone,title="Done"
 
 	GroupBox outputGroup,pos={13,270},size={206,60},title="Output File Type"
 	CheckBox outputCheck_1,pos={24,289},size={36,14},title="XML",value= 0,mode=1, proc=BC_outputCheckProc
@@ -501,6 +558,17 @@ Function NCNRBatchConvertFiles(ba) : ButtonControl
 	return 0
 End
 
+Function NCNRBatchConvertSelectAll(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch (ba.eventcode)
+		case 2:
+			Wave sel=$"root:Packages:NIST:BatchConvert:selWave"
+			sel = 1
+			break
+	endswitch
+
+End
 
 Function NCNRBatchConvertNewFolder(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -532,8 +600,9 @@ Function NCNRBatchConvertGetList()
 	ControlInfo filterCheck_1
 	if(gRadioVal == 1)
 		//keep XML data
-		tmpList = ListMatch(newList, "*.ABSx" ,";")
+		tmpList = ListMatch(newList, "*.ABSx" ,";")		//note that ListMatch is not case-sensitive
 		tmpList += ListMatch(newList, "*.AVEx" ,";")
+		tmpList += ListMatch(newList, "*.CORx" ,";")
 		tmpList += ListMatch(newList, "*.xml" ,";")
 	else
 		if(gRadioVal ==2)
@@ -876,7 +945,7 @@ Function arithDisplayProc(s)
 			DrawText 85,32,"*"
 			SetDrawEnv fname="Times", fsize=22, fstyle= 2,textrgb= (0,0,0)					
 			DrawText 105,30,")"
-			break		
+			break	
 	endswitch
 
 	SetActiveSubWindow DataArithmeticPanel
@@ -1660,27 +1729,9 @@ Function SaveDataSetToFile(folderName)
 		fReWrite1DData(folderName,"tab","CRLF")
 	endif
 
-//	NISTSave1DData(folderName,protoStr)
-
 	//Include history string to record what was done?
 
 End
-
-
-
-//////////////////// Write data functions ////////////////////////////////////
-// AJJ Nov 2009 - should move towards unified writer
-//
-//////////////////////////////////////////////////////////////////////////
-
-//Function NISTSave1DData(folderPath,protoStr)
-//	String folderPath, protoStr
-//	
-//	//protoStr is string that will be written to either 
-//	
-//
-//End
-
 
 
 
@@ -1913,3 +1964,244 @@ Function fReWrite1DData_noPrompt(folderStr,delim,term)
 End
 
 ///////////end SRK
+
+
+
+///// SRK 
+///// Rebinning
+
+
+// main entry procedure for subtraction panel
+// re-initializes necessary folders and waves
+Proc OpenRebin()
+	DoWindow/F Rebin_Panel
+	if(V_Flag==0)
+		InitRebin()
+		Rebin()		//the panel
+//		Plot_Sub1D()		//the graph
+	endif
+	
+End
+
+Function InitRebin()
+
+	NewDataFolder/O/S root:Packages:NIST:Rebin
+//	Variable/G gPtsBeg1=0
+//	Variable/G gPtsEnd1=0
+	Variable/G binning=2
+
+	SetDataFolder root:
+End
+
+Proc Rebin() 
+
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(658,347,920,562)/K=1
+	DoWindow/C Rebin_Panel
+	ModifyPanel cbRGB=(65535,48662,45086),fixedSize=1
+	Button button0,pos={161,178},size={50,20},proc=Rebin_Done,title="Done"
+	PopupMenu popup0,pos={11,50},size={211,20},title="Data in Memory"
+	PopupMenu popup0,mode=1,value= #"A_OneDDataInMemory()"
+	Button button1,pos={60,14},size={150,20},proc=Rebin_Load,title="Load Data From File"
+	Button button2,pos={118,84},size={100,20},proc=Rebin_Append,title="Append Data"
+	Button button3,pos={11,84},size={80,20},proc=Rebin_newGraph,title="New Graph"
+	Button button6,pos={11,138},size={70,20},proc=Rebin_by,title="Rebin by"
+	Button button_8,pos={160,138},size={90,20},proc=SaveResultBin,title="Save Result"
+	
+	SetVariable end_3,pos={97,140},size={40,14},title=" ",Font="Arial",fsize=10
+	SetVariable end_3,limits={1,10,1},value= root:Packages:NIST:Rebin:binning
+
+EndMacro
+
+
+Function Rebin_Done(ctrlName) : ButtonControl
+	String ctrlName
+	DoWindow/K Rebin_Panel
+End
+
+Proc Rebin_Load(ctrlName) : ButtonControl
+	String ctrlName
+	
+	A_LoadOneDData()
+	ControlUpdate/W=Rebin_Panel popup0
+End
+
+Function Rebin_Append(ctrlName) : ButtonControl
+	String ctrlName
+	//appends data set from memory   /// joindre
+	String iStr,qStr,eStr
+	Variable rr,gg,bb
+	
+	//get the current selection
+	ControlInfo popup0
+	if(strlen(S_Value)==0)
+		Abort "You must load data from a file into memory before appending the data"
+	Endif
+	
+	A_PM_doAppend(S_Value)
+	
+	DoWindow/F Rebin_Panel
+End
+
+
+Function Rebin_newGraph(ctrlName) : ButtonControl
+	String ctrlName
+
+	//get the current selection
+	ControlInfo popup0
+	if(strlen(S_Value)==0 || cmpstr(S_Value,"No data loaded")==0)
+		Abort "You must load data from a file into memory before plotting the data"
+	Endif
+	
+	A_PM_doNewGraph(S_Value)
+	
+	DoWindow/F Rebin_Panel
+End
+
+
+
+Function Rebin_by (ctrlName) : ButtonControl
+	String ctrlName
+	
+	
+	Variable len
+	Variable ii,jj, helplp,kk
+	String iStr,qStr,eStr,sqStr,qbStr,fsStr,wtStr,folderStr
+	Variable rr,gg,bb
+	NVAR binpts = root:Packages:NIST:Rebin:binning
+	
+	
+	
+	ControlInfo popup0
+	if(strlen(S_Value)==0)
+		Abort "You must load data from a file into memory before plotting the data"
+	Endif
+	folderStr = S_Value	
+	
+	SetDataFolder $("root:"+folderStr)
+	
+	Wave w0 = $(folderStr+"_q")
+	Wave w1 = $(folderStr+"_i")
+	Wave w2 = $(folderStr+"_s")
+	Wave resW = $(folderStr+"_res")
+	
+	len = numpnts(w0)
+	Make/O/D/N=(len) w3,w4,w5 
+	w3 = resW[p][0]		//std dev of resolution fn
+	w4 = resW[p][1]		//mean q-value
+	w5 = resW[p][2]		//beamstop shadow factor
+	
+	Make/O/D/N=(round((len-1)/binpts)) qbin,Ibin,sigbin,sqbin,qbbin,fsbin,helpTemp
+
+	qbin = 0
+	Ibin = 0
+	sigbin = 0
+	sqbin = 0
+	qbbin = 0
+	fsbin = 0
+	helptemp = 0
+	
+	ii=0
+	do
+		qBin = qBin + w0[binpts*p+ii]/binpts
+		iBin = iBin + w1[binpts*p+ii]/binpts
+		helptemp = helptemp + w2[binpts*p+ii]^2
+		sqBin = sqBin + w3[binpts*p+ii]/binpts
+		qbBin = qbBin + w4[binpts*p+ii]/binpts
+		fsBin = fsBin + w5[binpts*p+ii]/binpts
+		
+
+      ii+=1
+	while (ii<binpts)
+      
+	sigBin  = sqrt(helptemp)/binpts
+
+	CheckDisplayed Ibin		//check top graph only
+	if(V_flag==0)
+		AppendToGraph Ibin vs qbin
+		ModifyGraph log=1,mode(Ibin)=4,marker(Ibin)=29,msize(Ibin)=3,rgb(Ibin)=(65535,0,0)
+		ErrorBars/T=0 ibin Y,wave=(sigbin,sigbin)
+	endif
+
+	KillWaves/Z helpTemp,w3,w4,w5
+	
+	SetDataFolder root:
+End
+
+
+// duplicates the binned data to its own data folder, fixing up the names
+// as needed, then write out the file from the folder using the standard procedures
+// then kill the data folder to clean up.
+Function SaveResultBin(ctrlName) : ButtonControl
+	String ctrlName
+	
+	String finalname,folderStr
+	
+	ControlInfo popup0
+	folderStr=S_Value	
+	
+	SetDataFolder $("root:"+folderStr)
+	WAVE qbin = qBin
+	WAVE Ibin = iBin
+	WAVE sigbin = sigBin
+	WAVE sqbin = sqBin
+	WAVE qbbin = qbBin
+	WAVE fsbin = fsBin
+	
+	NVAR/Z dQv = USANS_dQv
+	Variable isSANS = (NVAR_Exists(dQv) == 0)
+//	Print "isSANS = ",isSANS
+	if(isSANS)
+		// SANS data - make a smaller resWave
+		Variable np=numpnts(qBin)
+		Make/D/O/N=(np,4) $(folderStr+"_resBin")
+		Wave res = $(folderStr+"_resBin")
+		
+		res[][0] = sqBin[p]		//sigQ
+		res[][1] = qbBin[p]		//qBar
+		res[][2] = fsBin[p]		//fShad
+		res[][3] = qBin[p]		//Qvalues
+	
+	endif
+	finalname = folderStr+"bin"
+	
+	SetDataFolder root:
+	DuplicateDataSet(folderStr,finalname,1)
+	
+	// rename the waves so that the correct ones are written out
+	SetDataFolder $("root:"+finalname)
+	Killwaves/Z $(finalname+"_q")
+	Killwaves/Z $(finalname+"_i")
+	Killwaves/Z $(finalname+"_s")
+	if(isSANS)		//if USANS, keep the resolution waves, so that the writer will recognize the set as USANS
+		Killwaves/Z $(finalname+"_res")
+	endif
+		
+	WAVE qbin = qBin		//reset the wave references to the new folder (bin)
+	WAVE Ibin = iBin
+	WAVE sigbin = sigBin
+	if(isSANS)
+		Wave res = $(finalName+"_resBin")
+	endif
+	
+	Rename qbin $(finalname+"_q")
+	Rename ibin $(finalname+"_i")
+	Rename sigbin $(finalname+"_s")
+	if(isSANS)
+		Rename res $(finalname+"_res")
+	endif
+	SetDataFolder root:
+	
+	// save out the data in the folder
+	SaveDataSetToFile(finalName)
+
+	KillDataFolder/Z $("root:"+finalname)
+
+	SetDataFolder root:
+	return(0)
+End
+
+
+
+
+/// end rebinning procedures

@@ -32,11 +32,15 @@
 Menu "SANS Models"
 	"Fit Manager", Init_WrapperPanel()
 	"Load Model Functions",Execute/P "INSERTINCLUDE \"SANSModelPicker_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "ModelPicker_Panel()"
-	"Load and Plot Manager", Show_Plot_Manager()
-	"Freeze Model"
-	"Write Model Data"
-	"ReWrite Experimental Data",ReWrite1DData()
-	"1D Arithmetic Panel",MakeDAPanel()
+	"-"
+	Submenu "1D Utilities"
+		"Load and Plot Manager", Show_Plot_Manager()
+		"Freeze Model"
+		"Write Model Data"
+		"ReWrite Experimental Data",MakeDMPanel()		//,ReWrite1DData()	// SRK SEP10
+		"1D Arithmetic Panel",MakeDAPanel()
+		"ReBin 1D Data",OpenRebin()
+	end
 	"-"
 	Submenu "Packages"
 		"Sum Two Models",Execute/P "INSERTINCLUDE \"SumSANSModels_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_SumModelPanel()"

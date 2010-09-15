@@ -26,9 +26,16 @@ Menu "USANS"
 	"Add two raw BT5 files",SelectFilesToAdd()
 	"Add two data sets",ShowUSANSAddPanel()
 	"-"
-	"Load USANS Data",A_LoadOneDData()
-	"Convert to 6 Columns",Convert3ColTo6Col()
+	Submenu "1D Utilities"
+		"Load and Plot Manager", Show_Plot_Manager()
+		"Convert to 6 Columns",Convert3ColTo6Col()
+		"ReWrite Experimental Data",MakeDMPanel()		//,ReWrite1DData()	// SRK SEP10
+		"1D Arithmetic Panel",MakeDAPanel()
+		"ReBin 1D Data",OpenRebin()
+	end
 	"-"
+//	"Load USANS Data",A_LoadOneDData()
+//	"-"
 	"USANS Simulator",Show_UCALC()
 	"-"
 	"NCNR Preferences",Show_Preferences_Panel()
