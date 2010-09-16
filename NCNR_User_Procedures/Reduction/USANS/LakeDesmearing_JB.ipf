@@ -89,7 +89,7 @@ Proc Init_Desmearing()
 	Variable/G gMaxFastIter = 100			//max number of iter in Fast convergence
 	Variable/G gMaxSlowIter = 10000
 	
-	Variable/G gNptsExtrap = 10		//points for high q extrapolation
+	Variable/G gNptsExtrap = 15		//points for high q extrapolation
 	Variable/G gChi2Target = 1		//chi^2 target
 	Variable/G gPowerM = -4
 	Variable/G gDqv = 0.117			//2005 measured slit height - see John
@@ -743,10 +743,16 @@ Function DSM_DoExtrapolate(qw,iw,sw,nend)
 	Variable/G V_fitOptions=4		//suppress the iteration window
 	Variable num=numpnts(iw),retVal
 	
+	
+	/////////for the fit
 	Make/O/D P_coef={0,1,-4}			//input
-//	Make/O/T Constr={"K2<0","K2 > -20"}
+	Make/O/T Constr={"K2<0","K2 > -8"}
 	//(set background to zero and hold fixed)
-	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
+	
+	// initial guess 
+	P_coef[1] = iw[num-1]/qw[num-1]^P_coef[2]
+		
+	CurveFit/H="100" Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /I=1 /C=constr
 	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
 	
 	// for the case of data with a background
@@ -755,6 +761,11 @@ Function DSM_DoExtrapolate(qw,iw,sw,nend)
 //	P_coef[0] = iw[num-1]
 //	CurveFit Power kwCWave=P_coef  iw[(num-1-nend),(num-1)] /X=qw /W=sw /D 
 //	extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
+	
+//	if(checked && if(not already displayed))
+//		AppendToGraph extr_hqi vs extr_hqq
+//		ModifyGraph lsize(extr_hqi)=2
+//	endif
 	
 	
 	Printf "Smeared Power law exponent = %g\r",P_coef[2]
@@ -948,6 +959,25 @@ Function DSM_TabProc(ctrlName,tab) //: TabControl
 		DSM_MaskDoneButton("")		//masking is done if you click off the tab
 	endif
 	
+	if(tab == 2)
+		//calculate the extrapolation when the tab is selected - this re-fits the data, what we want to avoid
+//		DSM_ExtrapolateButtonProc("")
+		
+		// OR
+		// use the coefficients from when it was loaded
+		SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+		WAVE P_coef = $(USANSFolder+":DSM:P_coef")
+		wave Qw = $(USANSFolder+":DSM:Q_exp")
+		
+		DSM_SetExtrWaves(Qw)
+		Wave extr_hqi=$(USANSFolder+":DSM:extr_hqi")
+		Wave extr_hqq=$(USANSFolder+":DSM:extr_hqq")
+		extr_hqi=P_coef[0]+P_coef[1]*extr_hqq^P_coef[2]
+
+		AppendExtrapolation()
+		
+	endif
+	
 	return 0
 End
 
@@ -1091,12 +1121,18 @@ Function DSM_LoadButtonProc(ctrlName) : ButtonControl
 
 	String DFStr= CleanupName(fname,0)
 	
-	Duplicate/O $("root:"+DFStr+":"+qStr) $(USANSFolder+":DSM:Q_exp	")		
+	Duplicate/O $("root:"+DFStr+":"+qStr) $(USANSFolder+":DSM:Q_exp")		
 	Duplicate/O $("root:"+DFStr+":"+iStr) $(USANSFolder+":DSM:I_exp")		
-	Duplicate/O $("root:"+DFStr+":"+sStr) $(USANSFolder+":DSM:S_exp	")	
+	Duplicate/O $("root:"+DFStr+":"+sStr) $(USANSFolder+":DSM:S_exp")	
 	wave Q_exp = $(USANSFolder+":DSM:Q_exp")
 	Wave I_exp = $(USANSFolder+":DSM:I_exp")
 	Wave S_exp = $(USANSFolder+":DSM:S_exp")
+	
+	// copy over the high q extrapolation information
+	Duplicate/O $("root:"+DFStr+":P_coef") $(USANSFolder+":DSM:P_coef")	
+	NVAR slope = $("root:"+DFStr+":USANS_m")
+	NVAR powerM = $(USANSFolder+":DSM:gPowerM")
+	powerM = slope
 	
 	// remove any negative q-values (and q=0 values!)(and report this)
 	// ? and trim the low q to be >= 3.0e-5 (1/A), below this USANS is not reliable.
