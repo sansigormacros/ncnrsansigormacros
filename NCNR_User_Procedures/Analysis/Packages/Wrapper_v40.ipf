@@ -78,14 +78,18 @@ Window WrapperPanel()
 	PopupMenu popup_1,mode=1,value= #"W_FunctionPopupList()",proc=Function_PopMenuProc
 	PopupMenu popup_2,pos={30,93},size={123,20},title="Coefficients"
 	PopupMenu popup_2,mode=1,value= #"W_CoefPopupList()",proc=Coef_PopMenuProc
-	CheckBox check_0,pos={440,19},size={79,14},title="Use Cursors?",value= 0
+	CheckBox check_0,pos={430,19},size={79,14},title="Use Cursors?",value= 0
 	CheckBox check_0,proc=UseCursorsWrapperProc
-	CheckBox check_1,pos={440,42},size={74,14},title="Use Epsilon?",value= 0
-	CheckBox check_2,pos={440,65},size={95,14},title="Use Constraints?",value= 0
+	CheckBox check_1,pos={430,42},size={74,14},title="Use Epsilon?",value= 0
+	CheckBox check_2,pos={430,65},size={95,14},title="Use Constraints?",value= 0
 	CheckBox check_3,pos={530,18},size={72,14},title="2D Functions?",value= 0
 	CheckBox check_3 proc=Toggle2DControlsCheckProc
-	CheckBox check_4,pos={440,85},size={72,14},title="Report?",value= 0
-	CheckBox check_5,pos={454,103},size={72,14},title="Save it?",value= 0
+	CheckBox check_4,pos={430,85},size={72,14},title="Report?",value= 0
+	CheckBox check_5,pos={444,103},size={72,14},title="Save it?",value= 0
+	CheckBox check_6,pos={530,42},size={72,14},title="Use Residuals?",value= 0
+	CheckBox check_6,proc=UseResidualsCheckProc
+	CheckBox check_7,pos={530,65},size={72,14},title="Info Box?",value= 0
+	CheckBox check_7,proc=UseInfoTextBoxCheckProc
 	//change draw order to put button over text of checkbox
 	Button button_0,pos={520,93},size={100,20},proc=DoTheFitButton,title="Do 1D Fit"
 	Button button_4,pos={520,126},size={100,20},proc=FeedbackButtonProc,title="Feedback"
@@ -678,7 +682,7 @@ Function DoTheFitButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	String folderStr,funcStr,coefStr
-	Variable useCursors,useEps,useConstr
+	Variable useCursors,useEps,useConstr,useResiduals,useTextBox
 	
 	switch( ba.eventCode )
 		case 2: // mouse up
@@ -698,12 +702,18 @@ Function DoTheFitButton(ba) : ButtonControl
 			ControlInfo/W=WrapperPanel check_2
 			useConstr=V_Value
 			
+			ControlInfo/W=WrapperPanel check_6
+			useResiduals=V_Value
+			
+			ControlInfo/W=WrapperPanel check_7
+			useTextBox = V_Value
+			
 			if(!CheckFunctionAndCoef(funcStr,coefStr))
 				DoAlert 0,"The coefficients and function type do not match. Please correct the selections in the popup menus."
 				break
 			endif
 			
-			FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
+			FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useResiduals,useTextBox)
 			
 			//	DoUpdate (does not work!)
 			//?? why do I need to force an update ??
@@ -742,9 +752,9 @@ End
 // folderStr is the data folder for the desired data set
 //
 //
-Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
+Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useResiduals,useTextBox)
 	String folderStr,funcStr,coefStr
-	Variable useCursors,useEps,useConstr
+	Variable useCursors,useEps,useConstr,useResiduals,useTextBox
 
 	String suffix=getModelSuffix(funcStr)
 	
@@ -762,8 +772,10 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	Wave hold=$("Hold_"+suffix)
 	Wave/T lolim=$("LoLim_"+suffix)
 	Wave/T hilim=$("HiLim_"+suffix)
-	Wave eps=$("epsilon_"+suffix)
 	
+	if(useEps)
+		Wave eps=$("epsilon_"+suffix)
+	endif
 // fill a struct instance whether I need one or not
 	String DF="root:"+folderStr+":"	
 	
@@ -788,10 +800,12 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	if(dimsize(resW,1) > 4)
 		isUSANS=1
 	endif
+	
 	// do not construct constraints for any of the coefficients that are being held
 	// -- this will generate an "unknown error" from the curve fitting
-	Make/O/T/N=0 constr
+	// -- if constraints are not used, the constr wave is killed (null), but that's OK
 	if(useConstr)
+		Make/O/T/N=0 constr
 		String constraintExpression
 		Variable i, nPnts=DimSize(lolim, 0),nextRow=0
 		for (i=0; i < nPnts; i += 1)
@@ -808,6 +822,8 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 				nextRow += 1
 			endif
 		endfor
+	else
+		KillWaves/Z constr
 	endif
 
 	// 20JUN if useCursors is true, and there are no cursors on the specified data set, uncheck and set to false
@@ -849,6 +865,10 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 			pt1 = pcsr(A)
 			pt2 = pcsr(B)
 		endif
+	else
+		//if cursors are not being used, find the first and last points of the data set, and pass them
+		pt1 = 0
+		pt2 = numpnts(yw)
 	endif
 		
 // create these variables so that FuncFit will set them on exit
@@ -866,6 +886,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 // The textwave would have to be parsed into a constraint matrix first, then passed as /C={cMat,cVec}.
 // -- just something to watch out for.
 
+// now two more flags... ,useResiduals,useTextBox
+	Variable tb = 1+2+4+8+16+256+512		//See CurveFit docs for bit settings for /TBOX flag
+
 	do
 		Variable t0 = stopMStimer(-2)		// corresponding print is at the end of the do-while loop (outside)
 
@@ -880,6 +903,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 			//send everything to a function, to reduce the clutter
 			// useEps and useConstr are not needed
 			// pass the structure to get the current waves, including the trimmed USANS matrix
+			//
+			// I don't know that GetCurveFit can do residuals, so I'm not passing that flag, or the text box flag
+			//
 			Variable chi,pt
 
 			chi = DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,getHStr(hold),val,lolim,hilim,pt1,pt2)
@@ -889,39 +915,33 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 			
 		endif
 		
+		// now useCursors, useEps, and useConstr are all handled w/ /NWOK
+		// so there are only three conditions to test == 1 + 3 + 3 + 1 = 8 conditions
 		
-		if(useRes && useEps && useCursors && useConstr)		//do it all
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs
+		if(useRes && useResiduals && useTextBox)		//do it all
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
 			break
 		endif
 		
-		if(useRes && useEps && useCursors)		//no constr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw /STRC=fs
+		if(useRes && useResiduals)		//res + resid
+			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
+			break
+		endif
+
+		
+		if(useRes && useTextBox)		//res + text
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 			break
 		endif
 		
-		if(useRes && useEps && useConstr)		//no crsr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs
-			break
-		endif
-		
-		if(useRes && useCursors && useConstr)		//no eps
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /D=fitYw /C=constr /STRC=fs
-			break
-		endif
-		
-		if(useRes && useCursors)		//no eps, no constr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /D=fitYw /STRC=fs
-			break
-		endif
-		
-		if(useRes && useEps)		//no crsr, no constr
-//			Print "timing test for Cylinder_PolyRadius --- the supposedly threaded version ---"
+		if(useRes)		//res only
+//			Print "timing test for Cylinder_PolyRadius---"
 //			Variable t0 = stopMStimer(-2)
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /E=eps /D=fitYw /STRC=fs
+
+			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
+			
 //			t0 = (stopMSTimer(-2) - t0)*1e-6
 //			Printf  "CylPolyRad fit time using res and eps and /NTHR=0 time = %g seconds\r\r",t0
-			
 //			cw[0] = .01
 //			cw[1] = 20
 //			cw[2] = 400
@@ -930,65 +950,40 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 //			cw[5] = 0.0
 //			
 //			t0 = stopMSTimer(-2)
-//			FuncFit/H=getHStr(hold) $funcStr cw, yw /X=xw /W=sw /I=1 /E=eps /D=fitYw /STRC=fs
+//			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 //			t0 = (stopMSTimer(-2) - t0)*1e-6
 //			Printf  "CylPolyRad fit time using res and eps and NO THREADING time = %g seconds\r\r",t0
 			break
 		endif
-	
-		if(useRes && useConstr)		//no crsr, no eps
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /D=fitYw /C=constr /STRC=fs
-			break
-		endif
+			
 		
-		if(useRes)		//just res
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /D=fitYw /STRC=fs
-			break
-		endif
 		
 /////	same as above, but all without useRes (no /STRC flag)
-		if(useEps && useCursors && useConstr)		//do it all
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr
+		if(useResiduals && useTextBox)		//resid+ text
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
 			break
 		endif
 		
-		if(useEps && useCursors)		//no constr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /E=eps /D=fitYw
+		if(useResiduals)		//resid
+			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
 			break
 		endif
+
 		
-		if(useEps && useConstr)		//no crsr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr
-			break
-		endif
-		
-		if(useCursors && useConstr)		//no eps
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /D=fitYw /C=constr
-			break
-		endif
-		
-		if(useCursors)		//no eps, no constr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pcsr(A),pcsr(B)] /X=xw /W=sw /I=1 /D=fitYw
-			break
-		endif
-		
-		if(useEps)		//no crsr, no constr
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /E=eps /D=fitYw
-			break
-		endif
-	
-		if(useConstr)		//no crsr, no eps
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /D=fitYw /C=constr
+		if(useTextBox)		//text
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
 			break
 		endif
 		
 		//just a plain vanilla fit
-		FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw /X=xw /W=sw /I=1 /D=fitYw
-	
+
+		FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
+		
 	while(0)
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	Printf  "fit time = %g seconds\r\r",t0
+	
 	
 	// append the fit
 	// need to manage duplicate copies
@@ -1239,6 +1234,91 @@ Function/S W_QuitMessage(code)
 			return "Unknown Quit code "+num2str(code)
 	endswitch
 end
+
+Function UseInfoTextBoxCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			if(checked)
+				//print "checked, use textBox in the next fit"
+			else
+				//print "unchecked, ask to remove TextBox from the graph"
+				ControlInfo/W=WrapperPanel popup_0
+				RemoveTextBox(S_value)
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+//does not report an error if the text box is not there
+// -- so I'll just be lazy and not check to see if it's there
+//
+Function RemoveTextBox(folderStr)
+	String folderStr
+	
+	DoAlert 1,"Remove the TextBox from the graph?"
+	if(V_flag == 1)
+		String str = "CF_"+folderStr+"_i"
+		TextBox/K/N=$str
+	endif
+	return(0)
+End
+
+Function UseResidualsCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			if(checked)
+				//print "checked, use them in the next fit"
+			else
+				//print "unchecked, ask to remove residuals from the graph"
+				ControlInfo/W=WrapperPanel popup_0
+				RemoveResiduals(S_value)
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+// the default name from the /R flag is "Res_" + yWaveName
+//
+// better to find the wave that starts with "Res_" and remove that one in case the
+// wave names get too long
+//
+// the difficulty now is that the residual wave ends up in root: and not with the data....
+// -- not really a problem, but adds to clutter
+Function RemoveResiduals(folderStr)
+	String folderStr
+	
+	String list="",topWin=""
+	Variable num,ii
+	String str
+
+	DoAlert 1,"Remove the residuals from the graph?"
+	if(V_flag == 1)
+//		String topGraph= WinName(0,1)	//this is the topmost graph
+		list=TraceNameList("", ";", 1 )		//"" as first parameter == look on the target graph
+		num=ItemsInList(list)
+		
+		for(ii=0;ii<num;ii+=1)
+			str = StringFromList(ii, list ,";")
+			if(strsearch(str, "Res_", 0) != -1)
+				RemoveFromGraph $str
+			endif
+		endfor
+	
+		SetDataFolder root:
+	endif
+	
+	return(0)
+End
 
 Function Toggle2DControlsCheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba

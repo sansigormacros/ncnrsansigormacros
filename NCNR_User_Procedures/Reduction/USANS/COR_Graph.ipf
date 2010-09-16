@@ -359,9 +359,10 @@ Function UpdateButtonProc(ctrlName) : ButtonControl
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Wave samCts=$(USANSFolder+":SAM:DetCts")
-	Wave empCts=$(USANSFolder+":EMP:DetCts")
+	Wave/Z samCts=$(USANSFolder+":SAM:DetCts")
+	Wave/Z empCts=$(USANSFolder+":EMP:DetCts")
 	if((WaveExists(samCts)==0) || (WaveExists(empCts)==0))
+		DoAlert 0,"Sample and Empty data must both be plotted before you can calculate the transmission"
 		Variable/G $(USANSFolder+":Globals:MainPanel:gTransWide")=NaN		//error
 		Variable/G $(USANSFolder+":Globals:MainPanel:gTransRock")=NaN
 		return(1)
