@@ -1916,13 +1916,19 @@ Function ExecuteProtocol(protStr,samStr)
 		Variable dialog = 0
 		PathInfo/S catPathName
 		item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
+		String autoname = StringByKey("AUTONAME",prot[5],"=",";")		//autoname -  will get empty string if not present
 		If((cmpstr(item,"Manual")==0) || (cmpstr(newFileName,"") == 0))
 			//manual name if requested or if no name can be derived from header
 			fullPath = newfileName + "."+ exten //puts possible new name or null string in dialog
 			dialog = 1		//force dialog for user to enter name
 		else
 			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
-			fullPath = S_Path + newFileName+ "." + exten	
+			//use autoname if present
+			if (cmpstr(autoname,"") != 0)
+				fullPath = S_Path + autoname + "." +exten
+			else
+				fullPath = S_Path + newFileName+"." + exten
+			endif	
 		Endif
 		//
 		strswitch(av_type)	
