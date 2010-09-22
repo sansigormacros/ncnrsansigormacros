@@ -43,6 +43,7 @@ Window A_Plot_Manager()
 	Button button6,help={"Loads the selected files into memory and will graph them if that option is checked"}
 	Button button7,pos={238,20},size={100,20},proc=A_OneDLoader_NewFolderButton,title="New Folder"
 	Button button7,help={"Select a new data folder"}
+	Checkbox check0,pos={240,190},title="Plot data on loading?",noproc,value=1
 	GroupBox group0,pos={222,127},size={50,4},title="Shift-click to load"
 	GroupBox group0_1,pos={222,143},size={50,4},title="multiple files"
 	GroupBox group1,pos={7,207},size={350,4}
@@ -296,7 +297,7 @@ Function A_OneDLoader_LoadButton(ctrlName) : ButtonControl
 	do
 		if(sel[ii] == 1)
 			fname=pathStr + fileWave[ii]
-			Execute "A_LoadOneDDataWithName(\""+fname+"\",1)"
+			Execute "A_LoadOneDDataWithName(\""+fname+"\","+num2str(doGraph)+")"
 			cnt += 1 	//a file was loaded
 		endif
 		ii+=1
