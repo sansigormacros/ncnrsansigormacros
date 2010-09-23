@@ -517,8 +517,10 @@ Function A_DispatchModel(GoFit) : ButtonControl
 
 	//try including residuals on the graph /R=residWave, explicitly place on new axis
 	//if only /R used, residuals are automatically placed on graph
+	// -- NOTE that A_Rescale_Data() calculates the weighting wave as 1/err (like the old days) so the flag is correctly
+	// /I=0, not /I=1
 	
-	CurveFit line yAxisWave(xcsr(A),xcsr(B)) /I=1 /X=xAxisWave /W=yWtWave /D  
+	CurveFit line yAxisWave(xcsr(A),xcsr(B)) /I=0 /X=xAxisWave /W=yWtWave /D  
 	//CurveFit line yAxisWave(xcsr(A),xcsr(B)) /X=xAxisWave /W=yWtWave  /R /D  
 	ModifyGraph rgb(fit_yAxisWave)=(0,0,0)
 // annotate graph, filtering out special cases of Guinier fits

@@ -1996,7 +1996,7 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	WAVE coefW = root:Packages:NIST:SAS:coef_Empty
 	
 	Wave samInten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
-	Duplicate samInten, root:Simulation:Simulation_EC_i
+	Duplicate/O samInten, root:Simulation:Simulation_EC_i
 	Wave inten_EC=$"root:Simulation:Simulation_EC_i"
 
 	// the resolution-smeared intensity of the empty cell
