@@ -640,14 +640,9 @@ End
 
 
 // NEW additions - May 2009
-//ASCII export of data as 7-columns qx-qy-Intensity-qz-sigmaQ_parall-sigmaQ_perp-fShad
-//limited header information?
+//ASCII export of data as 8-columns qx-qy-Intensity-err-qz-sigmaQ_parall-sigmaQ_perp-fShad
+// + limited header information
 //
-// *** DEC 2009 ***
-// Removed the SAVE of the 2D resolution waves - I'm not sure they are correct. Can't verify the 
-// smearing of the 2D data yet. For a future minor release...
-// -- when the Qz and resolution are written, be sure to change the tw[15] in the header back to the 
-// 		proper labels
 // - May 2010:
 // now the smearing is correct, and is now defined in terms of Q_parallel and Q_perpendicular
 //
@@ -855,7 +850,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	Close refNum
 #endif
 	
-	KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s
+	KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s,proto
 	
 	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS,phi,r_dist
 	

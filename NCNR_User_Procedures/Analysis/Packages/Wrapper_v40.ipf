@@ -1369,6 +1369,12 @@ Function UseCursorsWrapperProc(cba) : CheckBoxControl
 				CheckBox check_0,value=0
 				return(0)
 			endif
+			
+			//if in 2D mode, just exit
+			ControlInfo/W=WrapperPanel check_3
+			if(V_Value == 1)
+				return (0)
+			endif
 				
 			String ciStr = CsrInfo(A , topGraph)
 			
@@ -1401,7 +1407,7 @@ Function UseCursorsWrapperProc(cba) : CheckBoxControl
 					Duplicate/O $("root:"+folderStr+":weights_save"), $("root:"+folderStr+":"+folderStr+"_res"),$("root:"+folderStr+":"+folderStr+"_rest")
 				endif
 
-				HideInfo
+				HideInfo/W=$topGraph
 				Cursor/K A
 				Cursor/K B
 			endif

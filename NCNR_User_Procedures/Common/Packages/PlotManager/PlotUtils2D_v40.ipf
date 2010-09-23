@@ -17,6 +17,7 @@
 // changed June 2010 to read in the resolution information (now 8! columns)
 // -- subject to change --
 //
+// look for either the old-style 3-column (no resolution information) or the newer 8-column format
 Proc LoadQxQy()
 
 	LoadWave/G/D/W/A
@@ -27,65 +28,113 @@ Proc LoadQxQy()
 	String w0,w1,w2,w3,w4,w5,w6,w7
 	String n0,n1,n2,n3,n4,n5,n6,n7
 		
-	// put the names of the three loaded waves into local names
-	n0 = StringFromList(0, S_waveNames ,";" )
-	n1 = StringFromList(1, S_waveNames ,";" )
-	n2 = StringFromList(2, S_waveNames ,";" )
-	n3 = StringFromList(3, S_waveNames ,";" )
-	n4 = StringFromList(4, S_waveNames ,";" )
-	n5 = StringFromList(5, S_waveNames ,";" )
-	n6 = StringFromList(6, S_waveNames ,";" )
-	n7 = StringFromList(7, S_waveNames ,";" )
+	if(numCols == 8)
+		// put the names of the 8 loaded waves into local names
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
+		n3 = StringFromList(3, S_waveNames ,";" )
+		n4 = StringFromList(4, S_waveNames ,";" )
+		n5 = StringFromList(5, S_waveNames ,";" )
+		n6 = StringFromList(6, S_waveNames ,";" )
+		n7 = StringFromList(7, S_waveNames ,";" )
+		
+		//remove the semicolon AND period from file names
+		w0 = CleanupName((S_fileName + "_qx"),0)
+		w1 = CleanupName((S_fileName + "_qy"),0)
+		w2 = CleanupName((S_fileName + "_i"),0)
+		w3 = CleanupName((S_fileName + "_iErr"),0)
+		w4 = CleanupName((S_fileName + "_qz"),0)
+		w5 = CleanupName((S_fileName + "_sQpl"),0)
+		w6 = CleanupName((S_fileName + "_sQpp"),0)
+		w7 = CleanupName((S_fileName + "_fs"),0)
 	
-	//remove the semicolon AND period from files from the VAX
-	w0 = CleanupName((S_fileName + "_qx"),0)
-	w1 = CleanupName((S_fileName + "_qy"),0)
-	w2 = CleanupName((S_fileName + "_i"),0)
-	w3 = CleanupName((S_fileName + "_iErr"),0)
-	w4 = CleanupName((S_fileName + "_qz"),0)
-	w5 = CleanupName((S_fileName + "_sQpl"),0)
-	w6 = CleanupName((S_fileName + "_sQpp"),0)
-	w7 = CleanupName((S_fileName + "_fs"),0)
+		String baseStr=w1[0,strlen(w1)-4]
+		if(DataFolderExists("root:"+baseStr))
+				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+				if(V_flag==2)	//user selected No, don't load the data
+					SetDataFolder root:
+					KillWaves/Z $n0,$n1,$n2,$n3,$n4,$n5,$n6,$n7		// kill the default waveX that were loaded
+					return		//quits the macro
+				endif
+				SetDataFolder $("root:"+baseStr)
+		else
+			NewDataFolder/S $("root:"+baseStr)
+		endif
+		
+		//read in the 18 lines of header (18th line starts w/ ASCII... 19th line is blank)
+		Make/O/T/N=18 header
+		Variable refnum,ii
+		string tmpStr=""
+		Open/R refNum  as (path+filename)
+		ii=0
+		do
+			tmpStr = ""
+			FReadLine refNum, tmpStr
+			header[ii] = tmpStr
+			ii+=1
+		while(ii < 18)		
+		Close refnum		
+		
+		////overwrite the existing data, if it exists
+		Duplicate/O $("root:"+n0), $w0
+		Duplicate/O $("root:"+n1), $w1
+		Duplicate/O $("root:"+n2), $w2
+		Duplicate/O $("root:"+n3), $w3
+		Duplicate/O $("root:"+n4), $w4
+		Duplicate/O $("root:"+n5), $w5
+		Duplicate/O $("root:"+n6), $w6
+		Duplicate/O $("root:"+n7), $w7
+	
+	endif		//8-columns
+	
+	if(numCols == 3)
+		// put the names of the 3 loaded waves into local names
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
 
-	String baseStr=w1[0,strlen(w1)-4]
-	if(DataFolderExists("root:"+baseStr))
-			DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
-			if(V_flag==2)	//user selected No, don't load the data
-				SetDataFolder root:
-				KillWaves $n0,$n1,$n2,$n3,$n4,$n5,$n6,$n7		// kill the default waveX that were loaded
-				return		//quits the macro
-			endif
-			SetDataFolder $("root:"+baseStr)
-	else
-		NewDataFolder/S $("root:"+baseStr)
-	endif
+		//remove the semicolon AND period from file names
+		w0 = CleanupName((S_fileName + "_qx"),0)
+		w1 = CleanupName((S_fileName + "_qy"),0)
+		w2 = CleanupName((S_fileName + "_i"),0)
 	
-	//read in the 18 lines of header (18th line starts w/ ASCII... 19th line is blank)
-	Make/O/T/N=18 header
-	Variable refnum,ii
-	string tmpStr=""
-	Open/R refNum  as (path+filename)
-	ii=0
-	do
-		tmpStr = ""
-		FReadLine refNum, tmpStr
-		header[ii] = tmpStr
-		ii+=1
-	while(ii < 18)		
-	Close refnum
+		String baseStr=w1[0,strlen(w1)-4]
+		if(DataFolderExists("root:"+baseStr))
+				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+				if(V_flag==2)	//user selected No, don't load the data
+					SetDataFolder root:
+					KillWaves/Z $n0,$n1,$n2		// kill the default waveX that were loaded
+					return		//quits the macro
+				endif
+				SetDataFolder $("root:"+baseStr)
+		else
+			NewDataFolder/S $("root:"+baseStr)
+		endif
+		
+		//read in the 18 lines of header (18th line starts w/ ASCII... 19th line is blank)
+		Make/O/T/N=18 header
+		Variable refnum,ii
+		string tmpStr=""
+		Open/R refNum  as (path+filename)
+		ii=0
+		do
+			tmpStr = ""
+			FReadLine refNum, tmpStr
+			header[ii] = tmpStr
+			ii+=1
+		while(ii < 18)		
+		Close refnum		
+		
+		////overwrite the existing data, if it exists
+		Duplicate/O $("root:"+n0), $w0
+		Duplicate/O $("root:"+n1), $w1
+		Duplicate/O $("root:"+n2), $w2
 	
-	// ? parse to get nice variable names? put these in a structure just for fun?
+	endif		//3-columns
 	
 	
-	////overwrite the existing data, if it exists
-	Duplicate/O $("root:"+n0), $w0
-	Duplicate/O $("root:"+n1), $w1
-	Duplicate/O $("root:"+n2), $w2
-	Duplicate/O $("root:"+n3), $w3
-	Duplicate/O $("root:"+n4), $w4
-	Duplicate/O $("root:"+n5), $w5
-	Duplicate/O $("root:"+n6), $w6
-	Duplicate/O $("root:"+n7), $w7
+	/// do this for all 2D data, whether or not resolution information was read in
 	
 	Variable/G gIsLogScale = 0
 	
@@ -100,6 +149,7 @@ Proc LoadQxQy()
 	//clean up		
 	SetDataFolder root:
 	KillWaves/Z $n0,$n1,$n2,$n3,$n4,$n5,$n6,$n7
+	
 EndMacro
 
 //does not seem to need to be flipped at all from the standard QxQy output
