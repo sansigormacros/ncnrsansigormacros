@@ -803,7 +803,8 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	
 	// do not construct constraints for any of the coefficients that are being held
 	// -- this will generate an "unknown error" from the curve fitting
-	// -- if constraints are not used, the constr wave is killed (null), but that's OK
+	// -- if constraints are not used, the constr wave is killed. This apparently
+	// confuses the /NWOK flag, since there is not even a null reference present. So generate one.
 	if(useConstr)
 		Make/O/T/N=0 constr
 		String constraintExpression
@@ -824,6 +825,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 		endfor
 	else
 		KillWaves/Z constr
+		Wave/T/Z constr = constr		//this is intentionally a null reference
 	endif
 
 	// 20JUN if useCursors is true, and there are no cursors on the specified data set, uncheck and set to false
