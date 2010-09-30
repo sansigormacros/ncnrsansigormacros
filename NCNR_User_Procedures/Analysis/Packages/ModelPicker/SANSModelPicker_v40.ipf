@@ -54,6 +54,17 @@ Proc Init_FileList()
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
 	
+	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
+		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+//		Variable/G root:myGlobals:gIsMac = 1
+	else
+		//either Windows or Windows NT
+		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+//		Variable/G root:myGlobals:gIsMac = 0
+		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
+		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+	endif
+	
 	if(!DataFolderExists("root:Packages:NIST:FileList"))
 		NewDataFolder/O/S root:Packages:NIST:FileList
 		//create the waves

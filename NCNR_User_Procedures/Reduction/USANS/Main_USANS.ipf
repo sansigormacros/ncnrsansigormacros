@@ -77,6 +77,18 @@ Proc Init_MainUSANS()
 	NewDataFolder/O root:Packages:NIST:USANS:Globals
 	NewDataFolder/O/S root:Packages:NIST:USANS:Globals:MainPanel
 	
+	
+	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
+		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+//		Variable/G root:myGlobals:gIsMac = 1
+	else
+		//either Windows or Windows NT
+		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+//		Variable/G root:myGlobals:gIsMac = 0
+		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
+		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+	endif
+	
 	String/G root:Packages:NIST:USANS:Globals:gUSANSFolder  = "root:Packages:NIST:USANS"
 	String USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	//NB This is also hardcoded a bit further down - search for "WHY WHY WHY" AJJ Sept 08

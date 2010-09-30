@@ -95,7 +95,8 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 //		//running from somewhere else, probably SANS Reduction, which uses common loaders
 //		Variable/G root:Packages:NIST:USANS_dQv = 0.117
 //	endif
-		
+	string angst = root:Packages:NIST:gAngstStr
+
 	// if no fileStr passed in, display dialog now
 	if (cmpStr(fileStr,"") == 0)
 		fileStr = DoOpenFileDialog("Select a data file to load")
@@ -415,7 +416,7 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 					ModifyGraph tickUnit(left)=1
 					Label left "I(q)"
-					Label bottom "q (A\\S-1\\M)"
+					Label bottom "q ("+angst+"\\S-1\\M)"
 					Legend
 				endif
 			else
@@ -426,7 +427,7 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 				ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
 				ModifyGraph tickUnit(left)=1
 				Label left "I(q)"
-				Label bottom "q (A\\S-1\\M)"
+				Label bottom "q ("+angst+"\\S-1\\M)"
 				Legend
 			endif
 		endif

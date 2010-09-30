@@ -263,7 +263,7 @@ Function Do_2D_Gaussian_Fit() :  GraphMarquee
 		ModifyGraph mirror=2
 		ModifyGraph lowTrip=1e-04
 		ModifyImage data cindex=$"root:myGlobals:NIHColors"
-		SVAR angst = root:myGlobals:gAngstStr
+		SVAR angst = root:Packages:NIST:gAngstStr
 		Label bottom "Qx ("+angst+"\\S-1\\M)"
 		Label left "Qy ("+angst+"\\S-1\\M)"
 
