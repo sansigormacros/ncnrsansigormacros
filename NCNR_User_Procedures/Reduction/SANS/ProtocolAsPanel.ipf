@@ -1879,10 +1879,11 @@ Function ExecuteProtocol(protStr,samStr)
 #if (exists("QUOKKA")==6)
 			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
 #elif (exists("HFIR")==6)
-			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
-			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
-			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
-			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
+//			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
+//			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
+//			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
+//			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
+			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
 #else
 			newFileName = UpperStr(GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
 #endif

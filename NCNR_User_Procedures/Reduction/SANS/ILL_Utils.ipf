@@ -326,6 +326,71 @@ Function/S FindFileFromRunNumber(num)
 End
 	
 	
+//make an (N) character string of the run number
+//Moved to facility utils
+//
+// same scheme to get 6-character string as in GetRunNumStrFromFile(item)
+//
+Function/S RunDigitString(num)
+	Variable num
+	
+//	String fullName="",partialName="",item=""
+//	String numStr=""
+//	
+//	numStr = num2istr(num)
+//	// pad to 6 characters
+//	switch(strlen(numstr))	// numeric switch
+//		case 6:		// execute if case matches expression
+//			break						// exit from switch
+//		case 5:
+//			numStr = "0"+numStr
+//			break
+//		case 4:
+//			numStr = "00"+numStr
+//			break
+//		case 3:
+//			numStr = "000"+numStr
+//			break
+//		case 2:
+//			numStr = "0000"+numStr
+//			break
+//		case 1:
+//			numStr = "00000"+numStr
+//			break												
+//		default:							// optional default expression executed
+//	endswitch
+//	
+	
+	String numStr=""
+
+	//make 6 digit string from run number
+	sprintf numStr,"%06u",num
+	
+	//Print "numstr = ",numstr
+	if(strlen(numstr) > 6)
+		return("")
+	else
+		return(numstr)
+	endif
+	
+End
+	
+	return(numstr)
+End
+
+// there is no prefix on D22 data files - they're just a run number
+//
+// so return null
+//
+// NCNR-specifc, does not really belong here - it's a beta procedure used for the
+// Combine Files Panel, and I'm not sure of how I'm really going to get this to work properly
+// since the .ABS file written is not of the form that NSORT->Set3NSORTFiles(low,med,hi,pref)
+// is trying to construct
+//
+Function/S GetPrefixStrFromFile(item)
+	String item
+	return("")
+End
 
 
 

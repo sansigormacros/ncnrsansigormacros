@@ -422,7 +422,8 @@ End
 //returns the prefix "TTTTT" as some number of characters
 //returns "" as an invalid file prefix
 //
-// NCNR-specifc, does not really belong here - but it's a beta procedure anyhow...
+// NCNR-specifc, does not really belong here - but it's a beta procedure used for the
+// Combine Files Panel
 //
 Function/S GetPrefixStrFromFile(item)
 	String item

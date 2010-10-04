@@ -235,6 +235,8 @@ End
 //
 // "ABC" returned as an invalid result
 // XXXXSANS_expXX._scan1234_5678.xmp ==> "12345678"
+// -- result is an 8-character string
+//
 Function/S GetRunNumStrFromFile(item)	//,numposition)
 	String item
 	Variable numposition
@@ -366,6 +368,79 @@ Function/S FindFileFromRunNumber(num)
 	print "The run number (", numStr, " +- 1 ) does not exist... (Note: The run number is defined as 12345678 if the file name is NameSANS_exp##_scan1234_5678.xml)"
 	Return ("")	//null return if file not found in list	
 End
+
+
+//make an (N) character string of the run number
+//Moved to facility utils
+//
+// same scheme to get 8-character string as in GetRunNumStrFromFile(item)
+//
+Function/S RunDigitString(num)
+	Variable num
+
+	String numStr=""
+
+	//make 8 digit string from run number
+	sprintf numStr,"%08u",num
+	
+	if(strlen(numStr) > 8)
+		return("")
+	else
+		return(numstr)
+	endif
+	
+End
+
+//given a filename of a SANS data filename of the form
+//TTTTTnnn.SAn_TTT_Txxx
+//returns the prefix "TTTTT" as some number of characters
+//returns "" as an invalid file prefix
+//
+// HFIR writes out files with a "prefix" of the following -- since there is really no "prefix" 
+// like in the VAX scheme:
+//			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
+//			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
+//			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
+//			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
+//
+//
+// -- so the raw data:		BioSANS_exp9_scan1828_0001.xml
+// -- translates to: 		Bio_9_1828_0001.AVE	
+//
+//
+// NCNR-specifc, does not really belong here - it's a beta procedure used for the
+// Combine Files Panel, and I'm not sure of how I'm really going to get this to work properly
+// since the .ABS file written is not of the form that NSORT->Set3NSORTFiles(low,med,hi,pref)
+// is trying to construct
+//
+// changed (Oct 2010) the naming for HFIR from ExecuteProtocol to:
+//			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
+// -- translates to: 		BioSANS18280001.AVE
+//
+Function/S GetPrefixStrFromFile(item)
+	String item
+	String invalid = ""	//"" is not a valid run prefix, since it's text
+	Variable num=-1
+	
+	//find the "dash"
+	String runStr=""
+	Variable pos = strsearch(item,"_",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found
+		if (pos <=3)
+			//not enough characters
+			return (invalid)
+		else
+			runStr = item[0,pos-1]
+			return (runStr)
+		Endif
+	Endif
+End
+
+
 
 //function to test a binary file to see if it is a RAW binary SANS file
 //first checks the total bytes in the file (which for raw data is 33316 bytes)
