@@ -481,15 +481,15 @@ Function UpdateControls()
 		//wavelength spread
 		dlStr = "0.109;0.125;0.236;"		//updated calibration 2009
 		//detector limits
-		SetVariable setvar0,limits={133,1317,1}
+		SetVariable setvar0,win=SASCALC,limits={133,1317,1}
 		NVAR detDist=root:Packages:NIST:SAS:gDetDist
 		if(detDist < 133 )
 			detDist = 133
 		elseif (detDist > 1317 )
 			detDist = 1317
 		endif
-		Slider SC_Slider_1,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
-		Slider SC_Slider_1,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+		Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
+		Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
 	else			//ng7
 		switch(ng)	
 			case 0:
@@ -503,12 +503,12 @@ Function UpdateControls()
 		endswitch
 		
 		dlStr = "0.09;0.115;0.22;"
-		Slider SC_Slider_1,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
-		SetVariable setvar0,limits={100,1531,1}
-		Slider SC_Slider_1,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+		Slider SC_Slider_1,win=SASCALC,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
+		SetVariable setvar0,win=SASCALC,limits={100,1531,1}
+		Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
 	endif
 	ControlUpdate popup0
-	PopupMenu popup0,mode=mode		//source Ap
+	PopupMenu popup0,win=SASCALC,mode=mode		//source Ap
 	ControlInfo/W=SASCALC popup0
 	SourceAperturePopMenuProc("",0,S_Value)			//send popNum==0 so recalculation won't be done
 	
@@ -584,12 +584,12 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 	Variable checked
 
 	if(cmpstr(ctrlName,"checkNG3")==0)
-		checkBox checkNG3, value=1
-		checkBox checkNG7, value=0
+		checkBox checkNG3,win=SASCALC, value=1
+		checkBox checkNG7,win=SASCALC, value=0
 		initNG3()
 	else
-		checkBox checkNG3, value=0
-		checkBox checkNG7, value=1 
+		checkBox checkNG3,win=SASCALC, value=0
+		checkBox checkNG7,win=SASCALC, value=1 
 		initNG7()
 	endif
 	LensCheckProc("",2)		//check if lenses are still valid (they won't be)
@@ -605,12 +605,12 @@ Function TableCheckProc(ctrlName,checked) : CheckBoxControl
 
 	NVAR table=root:Packages:NIST:SAS:gTable
 	if(cmpstr(ctrlName,"checkHuber")==0)
-		checkBox checkHuber, value=1
-		checkBox checkChamber, value=0
+		checkBox checkHuber,win=SASCALC, value=1
+		checkBox checkChamber,win=SASCALC, value=0
 		table=1		//in Huber position
 	else
-		checkBox checkHuber, value=0
-		checkBox checkChamber, value=1 
+		checkBox checkHuber,win=SASCALC, value=0
+		checkBox checkChamber,win=SASCALC, value=1 
 		table = 2 		//in Sample chamber
 	endif
 	sampleToDetectorDist()
@@ -649,7 +649,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	// directly uncheck the box, just set the flag and get out
 	if(checked == 0)
 		lens = 0
-		CheckBox checkLens,value=0
+		CheckBox checkLens,win=SASCALC,value=0
 		rw[28]=0		//flag for lenses out
 		ReCalculateInten(1)
 		return(0)
@@ -668,10 +668,10 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 			ng=0
 			GuideSliderProc("",0,1)		//this updates the controls to the new # of guides
 			
-			PopupMenu popup0,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
+			PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
 			
-			PopupMenu popup0_2,mode=2		//deltaLambda
-			ControlInfo popup0_2
+			PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
+			ControlInfo/W=SASCALC popup0_2
 			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
 		else
 			dist = 1531
@@ -682,10 +682,10 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 			
 			ng=0
 			GuideSliderProc("",0,1)
-			PopupMenu popup0,mode=1,popvalue="1.43 cm"		//first item
+			PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item
 			
-			PopupMenu popup0_2,mode=2		//deltaLambda
-			ControlInfo popup0_2
+			PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
+			ControlInfo/W=SASCALC popup0_2
 			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
 		endif
 		rw[28]=1		//flag for lenses in (not the true number, but OK)
@@ -701,7 +701,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		Variable a1 = sourceApertureDiam()
 		if(a1 != 1.43  || Ng !=0)
 			lens = 0
-			CheckBox checkLens,value=0
+			CheckBox checkLens,win=SASCALC,value=0
 			rw[28]=0		//flag for lenses out
 			return(0)
 		endif
@@ -709,14 +709,14 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		// instrument specific distance requirements
 		if(instrument == 3 && dist != 1317)
 			lens = 0
-			CheckBox checkLens,value=0
+			CheckBox checkLens,win=SASCALC,value=0
 			rw[28]=0		//flag for lenses out
 			return(0)
 		endif
 	
 		if(instrument == 7 && dist != 1531)
 			lens = 0
-			CheckBox checkLens,value=0
+			CheckBox checkLens,win=SASCALC,value=0
 			rw[28]=0		//flag for lenses out
 			return(0)
 		endif
@@ -724,14 +724,14 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		// instrument specific wavelength requirements
 		if(instrument == 3 && !(lam == 8.4 || lam == 17.2) )
 			lens = 0
-			CheckBox checkLens,value=0
+			CheckBox checkLens,win=SASCALC,value=0
 			rw[28]=0		//flag for lenses out
 			return(0)
 		endif
 		
 		if(instrument == 7 && lam != 8.09 )
 			lens = 0
-			CheckBox checkLens,value=0
+			CheckBox checkLens,win=SASCALC,value=0
 			rw[28]=0		//flag for lenses out
 			return(0)
 		endif
@@ -1728,12 +1728,12 @@ Function sampleApertureDiam()
 	
 	if(cmpstr(S_Value,"other") == 0)		// "other" selected
 		//enable the setvar, diameter in mm!
-		SetVariable setvar0_3 disable=0
+		SetVariable setvar0_3,win=SASCALC, disable=0
 		// read its value (a global)
 		NVAR a2other = root:Packages:NIST:SAS:gSamApOther
 		a2=a2other/10				//a2 in cm
 	else
-		SetVariable setvar0_3 disable=1
+		SetVariable setvar0_3,win=SASCALC, disable=1
 		//1st item is 1/16", popup steps by 1/16"
 		a2 = 2.54/16.0 * (V_Value)			//convert to cm		
 	endif
