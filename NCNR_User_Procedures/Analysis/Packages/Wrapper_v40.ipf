@@ -824,6 +824,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 			endif
 		endfor
 	else
+		Wave/T/Z constr = constr
 		KillWaves/Z constr
 		Wave/T/Z constr = constr		//this is intentionally a null reference
 	endif
@@ -870,7 +871,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	else
 		//if cursors are not being used, find the first and last points of the data set, and pass them
 		pt1 = 0
-		pt2 = numpnts(yw)
+		pt2 = numpnts(yw)-1
 	endif
 		
 // create these variables so that FuncFit will set them on exit
@@ -1156,12 +1157,13 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	
 	// insert graphs
 	if(WaveExists(dataXw))
-		Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
+//		Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
+		Notebook $nb scaling={50, 50}, picture={$topGraph(0, 0, 800, 600), -5, 1}, text="\r"
 	//
 	else		//must be 2D Gizmo
 		Execute "ExportGizmo Clip"			//this ALWAYS is a PICT or BMP. Gizmo windows are different...
 		LoadPict/Q/O "Clipboard",tmp_Gizmo
-		Notebook $nb picture={tmp_Gizmo(0, 0, 400, 300), 0, 1}, text="\r"
+		Notebook $nb scaling={50, 50}, picture={tmp_Gizmo(0, 0, 800, 600), 0, 1}, text="\r"
 	endif
 	//Notebook Report picture={Table1, 0, 0}, text="\r"
 	
@@ -1177,7 +1179,7 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 		namestr = namestr[0,30]		//if shorter than 31, this will NOT pad to 31 characters
 		Print "file saved as ",nameStr
 		SaveNotebook /O/P=home/S=2 $nb as nameStr
-		//save the graph separately as a PICT file, 2x screen
+		//save the graph separately as a PNG file, 2x screen
 		pictStr += nameStr
 		pictStr = pictStr[0,28]		//need a shorter name - why?
 //		DoWindow/F $topGraph
@@ -1185,9 +1187,9 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 		// E=2 is PICT @2x screen resolution
 ///		SavePICT /E=-5/O/P=home /I/W=(0,0,3,3) as pictStr
 		if(WaveExists(dataXw))
-			SavePICT /E=-5/O/P=home/WIN=$topGraph /W=(0,0,400,300) as pictStr
+			SavePICT /E=-5/O/P=home/WIN=$topGraph /W=(0,0,800,600) as pictStr
 		else
-			Execute "ExportGizmo /P=home as \""+pictStr+"\""
+			Execute "ExportGizmo /P=home as \""+pictStr+"\""		//this won't be of very high quality
 			//SavePICT /E=-5/O/P=home/WIN=$topGraph /W=(0,0,400,300) as pictStr
 		endif
 	Endif
