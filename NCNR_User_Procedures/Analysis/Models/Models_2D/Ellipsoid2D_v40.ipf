@@ -122,26 +122,55 @@ End
 //#endif
 //	return(0)
 //End
+////
 //
-
-//threaded version of the function
-ThreadSafe Function Ellipsoid2D_T(cw,zw,xw,yw,p1,p2)
-	WAVE cw,zw,xw,yw
-	Variable p1,p2
-	
-#if exists("Ellipsoid_2DX")			//to hide the function if XOP not installed
-
-	Make/O/D/N=13 Ellip2D_tmp
-	Ellip2D_tmp = cw
-	Ellip2D_tmp[12] = 25
-	Ellip2D_tmp[5] = 0		//pass in a zero background and add it in later
-	
-	zw[p1,p2]= Ellipsoid_2DX(Ellip2D_tmp,xw,yw) + cw[5]
-	
-#endif
-
-	return 0
-End
+////threaded version of the function
+//ThreadSafe Function Ellipsoid2D_T(cw,zw,xw,yw,p1,p2)
+//	WAVE cw,zw,xw,yw
+//	Variable p1,p2
+//	
+//#if exists("Ellipsoid_2DX")			//to hide the function if XOP not installed
+//
+//	Make/O/D/N=13 Ellip2D_tmp
+//	Ellip2D_tmp = cw
+//	Ellip2D_tmp[12] = 25
+//	Ellip2D_tmp[5] = 0		//pass in a zero background and add it in later
+//	
+//	zw[p1,p2]= Ellipsoid_2DX(Ellip2D_tmp,xw,yw) + cw[5]
+//	
+//#endif
+//
+//	return 0
+//End
+//
+////
+////  Fit function that is actually a wrapper to dispatch the calculation to N threads
+////
+//// nthreads is 1 or an even number, typically 2
+//// it doesn't matter if npt is odd. In this case, fractional point numbers are passed
+//// and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
+//// and the points "2.5" and "3.5" evaluate correctly as 2 and 3
+////
+//Function Ellipsoid2D(cw,zw,xw,yw) : FitFunc
+//	Wave cw,zw,xw,yw
+//	
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,Ellipsoid2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+//	return(0)
+//End
 
 //
 //  Fit function that is actually a wrapper to dispatch the calculation to N threads
@@ -154,20 +183,16 @@ End
 Function Ellipsoid2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
+#if exists("Ellipsoid_2DX")			//to hide the function if XOP not installed
 
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Ellipsoid2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
-
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
+	Make/O/D/N=13 Ellip2D_tmp
+	Ellip2D_tmp = cw
+	Ellip2D_tmp[12] = 25
+	Ellip2D_tmp[5] = 0		//pass in a zero background and add it in later
+	
+	MultiThread zw= Ellipsoid_2DX(Ellip2D_tmp,xw,yw) + cw[5]
+	
+#endif
 	
 	return(0)
 End

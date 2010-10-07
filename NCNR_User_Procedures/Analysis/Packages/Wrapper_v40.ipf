@@ -1342,6 +1342,9 @@ Function Toggle2DControlsCheckProc(cba) : CheckBoxControl
 				
 				Button button_2D_0,disable=0		//visible again, and enabled
 				Button button_2D_1,disable=0
+				
+				CheckBox check_6,disable=1			//info box and residual check, remove these from view
+				CheckBox check_7,disable=1
 			else
 				//print "unchecked, change them back to 1D"
 				Button button_0,pos={520,93},size={100,20},proc=DoTheFitButton,title="Do 1D Fit"
@@ -1351,6 +1354,9 @@ Function Toggle2DControlsCheckProc(cba) : CheckBoxControl
 				
 				Button button_2D_0,disable=3	//hide the extra 2D buttons, and disable
 				Button button_2D_1,disable=3
+				
+				CheckBox check_6,disable=0			//info box and residual check, bring them back
+				CheckBox check_7,disable=0
 			endif
 			break
 	endswitch

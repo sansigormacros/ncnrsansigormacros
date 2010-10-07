@@ -123,24 +123,53 @@ End
 //End
 //
 
-//threaded version of the function
-ThreadSafe Function CoreShellCylinder2D_T(cw,zw,xw,yw,p1,p2)
-	WAVE cw,zw,xw,yw
-	Variable p1,p2
-	
-#if exists("CoreShellCylinder_2DX")			//to hide the function if XOP not installed
-
-	Make/O/D/N=15 CSCyl2D_tmp
-	CSCyl2D_tmp = cw
-	CSCyl2D_tmp[14] = 25
-	CSCyl2D_tmp[7] = 0		//send a zero background to the calculation, add it in later
-
-	zw[p1,p2]= CoreShellCylinder_2DX(CSCyl2D_tmp,xw,yw) + cw[7]
-	
-#endif
-
-	return 0
-End
+////threaded version of the function
+//ThreadSafe Function CoreShellCylinder2D_T(cw,zw,xw,yw,p1,p2)
+//	WAVE cw,zw,xw,yw
+//	Variable p1,p2
+//	
+//#if exists("CoreShellCylinder_2DX")			//to hide the function if XOP not installed
+//
+//	Make/O/D/N=15 CSCyl2D_tmp
+//	CSCyl2D_tmp = cw
+//	CSCyl2D_tmp[14] = 25
+//	CSCyl2D_tmp[7] = 0		//send a zero background to the calculation, add it in later
+//
+//	zw[p1,p2]= CoreShellCylinder_2DX(CSCyl2D_tmp,xw,yw) + cw[7]
+//	
+//#endif
+//
+//	return 0
+//End
+//
+////
+////  Fit function that is actually a wrapper to dispatch the calculation to N threads
+////
+//// nthreads is 1 or an even number, typically 2
+//// it doesn't matter if npt is odd. In this case, fractional point numbers are passed
+//// and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
+//// and the points "2.5" and "3.5" evaluate correctly as 2 and 3
+////
+//Function CoreShellCylinder2D(cw,zw,xw,yw) : FitFunc
+//	Wave cw,zw,xw,yw
+//	
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,CoreShellCylinder2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+//	return(0)
+//End
 
 //
 //  Fit function that is actually a wrapper to dispatch the calculation to N threads
@@ -153,20 +182,16 @@ End
 Function CoreShellCylinder2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
+#if exists("CoreShellCylinder_2DX")			//to hide the function if XOP not installed
 
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,CoreShellCylinder2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
+	Make/O/D/N=15 CSCyl2D_tmp
+	CSCyl2D_tmp = cw
+	CSCyl2D_tmp[14] = 25
+	CSCyl2D_tmp[7] = 0		//send a zero background to the calculation, add it in later
 
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
+	MultiThread zw= CoreShellCylinder_2DX(CSCyl2D_tmp,xw,yw) + cw[7]
 	
+#endif
+
 	return(0)
 End

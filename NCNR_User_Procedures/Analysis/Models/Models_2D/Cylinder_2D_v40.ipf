@@ -121,11 +121,66 @@ End
 //End
 //
 
-//threaded version of the function
-ThreadSafe Function Cylinder2D_T(cw,zw,xw,yw,p1,p2)
-	WAVE cw,zw,xw,yw
-	Variable p1,p2
+////threaded version of the function
+//ThreadSafe Function Cylinder2D_T(cw,zw,xw,yw,p1,p2)
+//	WAVE cw,zw,xw,yw
+//	Variable p1,p2
+//	
+//#if exists("Cylinder_2DX")			//to hide the function if XOP not installed
+//
+//	Make/O/D/N=12 Cyl2D_tmp				// there seems to be no speed penalty for doing this...
+//	Cyl2D_tmp = cw
+//	Cyl2D_tmp[11] = 25					// hard-wire the number of integration points
+//	Cyl2D_tmp[5] = 0						// send a background of zero
+//	
+//	zw[p1,p2]= Cylinder_2DX(Cyl2D_tmp,xw,yw) + cw[5]		//add in the proper background here
+//
+//#endif
+//
+//	return 0
+//End
+//
+////
+////  Fit function that is actually a wrapper to dispatch the calculation to N threads
+////
+//// nthreads is 1 or an even number, typically 2
+//// it doesn't matter if npt is odd. In this case, fractional point numbers are passed
+//// and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
+//// and the points "2.5" and "3.5" evaluate correctly as 2 and 3
+////
+//Function Cylinder2D(cw,zw,xw,yw) : FitFunc
+//	Wave cw,zw,xw,yw
+//	
+//	Variable npt=numpnts(yw)
+//	Variable ii,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+////	Variable t1=StopMSTimer(-2)
+//	
+//	for(ii=0;ii<nthreads;ii+=1)
+//	//	Print (ii*npt/nthreads),((ii+1)*npt/nthreads-1)
+//		ThreadStart mt,ii,Cylinder2D_T(cw,zw,xw,yw,(ii*npt/nthreads),((ii+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+////	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+//	
+//	return(0)
+//End
+
+
+/// now using the MultiThread keyword. as of Igor 6.20, the manual threading
+// as above gives a wave read error (index out of range). Same code works fine in Igor 6.12
+Function Cylinder2D(cw,zw,xw,yw) : FitFunc
+	Wave cw,zw,xw,yw
 	
+	//	Variable t1=StopMSTimer(-2)
+
 #if exists("Cylinder_2DX")			//to hide the function if XOP not installed
 
 	Make/O/D/N=12 Cyl2D_tmp				// there seems to be no speed penalty for doing this...
@@ -133,41 +188,10 @@ ThreadSafe Function Cylinder2D_T(cw,zw,xw,yw,p1,p2)
 	Cyl2D_tmp[11] = 25					// hard-wire the number of integration points
 	Cyl2D_tmp[5] = 0						// send a background of zero
 	
-	zw[p1,p2]= Cylinder_2DX(Cyl2D_tmp,xw,yw) + cw[5]		//add in the proper background here
+	MultiThread zw = Cylinder_2DX(Cyl2D_tmp,xw,yw) + cw[5]		//add in the proper background here
 
 #endif
 
-	return 0
-End
-
-//
-//  Fit function that is actually a wrapper to dispatch the calculation to N threads
-//
-// nthreads is 1 or an even number, typically 2
-// it doesn't matter if npt is odd. In this case, fractional point numbers are passed
-// and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
-// and the points "2.5" and "3.5" evaluate correctly as 2 and 3
-//
-Function Cylinder2D(cw,zw,xw,yw) : FitFunc
-	Wave cw,zw,xw,yw
-	
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
-
-//	Variable t1=StopMSTimer(-2)
-	
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,Cylinder2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
-
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
-	
 //	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
 	
 	return(0)
