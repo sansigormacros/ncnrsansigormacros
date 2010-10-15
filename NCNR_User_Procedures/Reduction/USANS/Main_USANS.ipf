@@ -221,7 +221,7 @@ Window USANS_Panel()
 	SetVariable FilterSetVar,value= root:Packages:NIST:USANS:Globals:MainPanel:FilterStr
 //	CheckBox UseCurrentData,pos={298,290},size={10,10},proc=UseCurrentDataProc,title="Enable Current Data"
 //	CheckBox UseCurrentData,value=0
-	Button USANSFeedback,pos={220,6},size={100,20},proc=U_OpenTracTicketPage,title="Feedback"
+	Button USANSFeedback,pos={220,6},size={100,20},proc=OpenTracTicketPage,title="Feedback"
 	
 EndMacro
 

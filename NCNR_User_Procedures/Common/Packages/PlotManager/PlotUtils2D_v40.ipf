@@ -10,7 +10,11 @@
 // - interactive masking
 //
 //
-//
+// - OCT 2010 	- added fDoBinning_QxQy2D(folderStr) that takes the QxQyQz data and bins it to I(Q)
+//   					1D result must still be plotted manually, can be automated later.
+//					- for Scaled Image data (QxQy), the function fDoBinning_Scaled2D (in FFT_Cubes) could be
+//						modified and added to this file. It was meant for an FFT slice, but applies to 
+//						2D model calculations (model_lin) 2D data files as well.
 
 
 //
@@ -988,4 +992,100 @@ Function MakeBSMask(mask,rad)
 	Redimension/N=(xDim*yDim) mask		//now 1D
 	
 	
+End
+
+// This routine assumes that the 2D data was loaded with the NCNR loader, so that the
+// data is in a data folder, and the extensions are known. A more generic form could 
+// be made too, if needed.
+//
+// X- need error on I(q)
+// -- need to set "proper" number of data points (delta and qMax?)
+// X- need to remove points at high Q end
+//
+// -- like the routines in CircSectAve, start with 500 points, and trim after binning is done.
+// 	you'l end up with < 200 points.
+//
+// the results are in iBin_qxqy, qBin_qxqy, and eBin_qxqy, in the folder passed
+// 
+//Function fDoBinning_QxQy2D(inten,qx,qy,qz)
+Function fDoBinning_QxQy2D(folderStr)
+	String folderStr
+
+//	Wave inten,qx,qy,qz
+
+	SetDataFolder $("root:"+folderStr)
+	
+	WAVE inten = $(folderStr + "_i")
+	WAVE qx = $(folderStr + "_qx")
+	WAVE qy = $(folderStr + "_qy")
+	WAVE qz = $(folderStr + "_qz")
+	
+	Variable xDim=numpnts(qx),yDim
+	Variable ii,jj,delQ
+	Variable qTot,nq,var,avesq,aveisq
+	Variable binIndex,val
+	
+	nq = 500
+	
+	yDim = XDim
+	Make/O/D/N=(nq) iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy
+	delQ = abs(sqrt(qx[2]^2+qy[2]^2+qz[2]^2) - sqrt(qx[1]^2+qy[1]^2+qz[1]^2))		//use bins of 1 pixel width 
+	qBin_qxqy[] =  p*	delQ	
+	SetScale/P x,0,delQ,"",qBin_qxqy		//allows easy binning
+
+	iBin_qxqy = 0
+	iBin2_qxqy = 0
+	eBin_qxqy = 0
+	nBin_qxqy = 0	//number of intensities added to each bin
+	
+	for(ii=0;ii<xDim;ii+=1)
+		qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+		binIndex = trunc(x2pnt(qBin_qxqy, qTot))
+		val = inten[ii]
+		if (numType(val)==0)		//count only the good points, ignore Nan or Inf
+			iBin_qxqy[binIndex] += val
+			iBin2_qxqy[binIndex] += val*val
+			nBin_qxqy[binIndex] += 1
+		endif
+	endfor
+
+//calculate errors, just like in CircSectAve.ipf
+	for(ii=0;ii<nq;ii+=1)
+		if(nBin_qxqy[ii] == 0)
+			//no pixels in annuli, data unknown
+			iBin_qxqy[ii] = 0
+			eBin_qxqy[ii] = 1
+		else
+			if(nBin_qxqy[ii] <= 1)
+				//need more than one pixel to determine error
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				eBin_qxqy[ii] = 1
+			else
+				//assume that the intensity in each pixel in annuli is normally
+				// distributed about mean...
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				avesq = iBin_qxqy[ii]^2
+				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
+				var = aveisq-avesq
+				if(var<=0)
+					eBin_qxqy[ii] = 1e-6
+				else
+					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
+				endif
+			endif
+		endif
+	endfor
+	
+	// find the last non-zero point, working backwards
+	val=nq
+	do
+		val -= 1
+	while(nBin_qxqy[val] == 0)
+	
+//	print val, nBin_qxqy[val]
+	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy
+	
+	SetDataFolder root:
+	
+	return(0)
 End

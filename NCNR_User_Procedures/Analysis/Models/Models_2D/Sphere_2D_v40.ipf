@@ -186,10 +186,24 @@ ThreadSafe Function Sphere2D_noThread(cw,zw,xw,yw)
 End
 
 
-//  when I do the quadrature loops I'm calling the AAO with 1-pt waves, so threading
-// is just a slowdown (by more than a factor of 2 !!)
+
+//// the threaded version must be specifically written, since
+//// FUNCREF can't be passed into  a threaded calc (structures can't be passed either)
+// so in this implementation, the smearing is dispatched as threads to a function that
+// can calculate the function for a range of points in the input qxqyqz. It is important
+// that the worker calls the un-threaded model function (so write one) and that in the (nord x nord)
+// loop, vectors of length (nord) are calculated rather than pointwise, since the model
+// function is AAO.
+// -- makes things rather messy to code individual functions, but I really see no other way
+// given the restrictions of what can be passed to threaded functions.
+//
+//
+// The smearing is handled this way since 1D smearing is 20 x 200 pts = 4000 evaluations
+// and the 2D is (10 x 10) x 16000 pts = 1,600,000 evaluations (if it's done like the 1D, it's 4000x slower)
+//
 //
 // - the threading gives a clean speedup of 2 for N=2, even for this simple calculation
+//  -- 4.8X speedup for N=8 (4 real cores + 4 virtual cores)
 //
 // nord = 5,10,20 allowed
 //
@@ -200,8 +214,7 @@ Function SmearedSphere2D(s)
 //// the last param is nord	
 //	Smear_2DModel_PP(Sphere2D_noThread,s,10)
 
-//// the threaded version must be specifically written, since
-//// FUNCREF can't be passed into  a threaded calc (or structures)
+
 //// the last param is nord
 	SmearSphere2D_THR(s,10)		
 
