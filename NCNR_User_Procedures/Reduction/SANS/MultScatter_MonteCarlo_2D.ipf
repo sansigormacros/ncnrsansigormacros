@@ -1149,6 +1149,14 @@ Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 	String simLabel
 
 	
+	//first, check to be sure that the data is RAW counts before trying to save the VAX format
+	// the easy answer is to abort, but I possibly could unscale the data and get back to integer
+	// counts.
+	NVAR isRAW = root:Packages:NIST:SAS:gRawCounts
+	if(! isRAW)
+		Abort "The simulation must be in RAW counts for it to be saved as RAW VAX format"
+	endif
+	
 	// if default parameters were passed in, use them
 	// if not, set them to "bad" values so that the user will be prompted later	
 	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex

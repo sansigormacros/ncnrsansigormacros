@@ -162,8 +162,8 @@ Function fFractalPolyCore(w,x) :FitFunc
 	sq /= (x*(r0+thick))^Df * (1 + 1/(x*corr)^2)^((Df-1)/2)
 	sq += 1
 	//combine and return
-	//ans = pq*sq + bkg
-	ans = pq +bkg
+	ans = pq*sq + bkg
+	//ans = pq +bkg
 	
 	return (ans)
 End
