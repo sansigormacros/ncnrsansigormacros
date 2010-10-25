@@ -320,7 +320,9 @@ Proc Plot_Sub1D()
 	Legend/C/N=text0/J/A=LT/X=2/Y=2 "\\s(ysample) Sample\r\\s(ysolvent) Solvent\r\\s(yresult) Result"
 	ShowInfo
 	Label left "Sample, Solvent I (cm\\S-1\M)"
-	Label bottom "q ("+root:Packages:NIST:gAngstStr+"\\S-1\M)"
+	
+	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A" )
+	Label bottom "q ("+angst+"\\S-1\M)"
 //	Label right "Result I/cm\\S-1"
 	ControlBar 40
 	Button button_7,pos={10,10},size={125,20},proc=MatchingRange,title="Matching Range"

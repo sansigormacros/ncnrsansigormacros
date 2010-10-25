@@ -1618,8 +1618,8 @@ Function/S SetConfigurationText()
 	NVAR lambdaWidth=gDeltaLambda
 	NVAR instrument = instrument
 	NVAR L2diff = L2diff
-   	NVAR lens = root:Packages:NIST:SAS:gUsingLenses
-	SVAR aStr = root:Packages:NIST:gAngstStr
+   NVAR lens = root:Packages:NIST:SAS:gUsingLenses
+	SVAR/Z aStr = root:Packages:NIST:gAngstStr
 	
 	sprintf temp,"Source Aperture Diameter =\t\t%6.2f cm\r",sourceApertureDiam()
 	str += temp

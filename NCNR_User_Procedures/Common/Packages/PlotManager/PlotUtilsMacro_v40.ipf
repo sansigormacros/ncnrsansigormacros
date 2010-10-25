@@ -95,7 +95,7 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 //		//running from somewhere else, probably SANS Reduction, which uses common loaders
 //		Variable/G root:Packages:NIST:USANS_dQv = 0.117
 //	endif
-	string angst = root:Packages:NIST:gAngstStr
+	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A" )
 
 	// if no fileStr passed in, display dialog now
 	if (cmpStr(fileStr,"") == 0)

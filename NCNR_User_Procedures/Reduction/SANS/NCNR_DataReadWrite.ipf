@@ -1928,7 +1928,26 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	WAVE intw=integersRead
 	WAVE rw=realsRead
 	WAVE/T textw=textRead
-	WAVE data=linear_data
+	
+	WAVE linear_data = linear_data
+	Duplicate/O linear_data tmp_data
+		
+	NVAR/Z rawCts = root:Packages:NIST:SAS:gRawCounts
+	if(cmpstr("SAS",type)==0 && !rawCts)		//simulation data, and is not RAW counts, so scale it back
+
+		//use kappa to get back to counts => linear_data = round(linear_data*kappa)
+		String strNote = note(linear_data) 
+		Variable kappa = NumberByKey("KAPPA", strNote , "=", ";")
+		NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
+
+		tmp_data *= kappa
+		tmp_data *= detectorEff
+//		Print kappa, detectorEff
+		Redimension/I tmp_data
+	endif
+	
+	WAVE w=tmp_data
+
 	
 	//check each wave
 	If(!(WaveExists(intw)))
@@ -1940,7 +1959,7 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	If(!(WaveExists(textw)))
 		Abort "textw DNExist WriteVAXData()"
 	Endif
-	If(!(WaveExists(data)))
+	If(!(WaveExists(w)))
 		Abort "linear_data DNExist WriteVAXData()"
 	Endif
 	
@@ -1970,7 +1989,7 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	tmpFile=0
 	
 	Make/O/W/N=16401 dataWRecMarkers
-	AddRecordMarkers(data,dataWRecMarkers)
+	AddRecordMarkers(w,dataWRecMarkers)
 	
 	// need to re-compress?? maybe never a problem, but should be done for the odd case
 	dataWRecMarkers = CompressI4toI2(dataWRecMarkers)		//unless a pixel value is > 32767, the same values are returned
@@ -2251,7 +2270,7 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	Close refNum
 	
 	// all done
-	Killwaves/Z tmpFile,dataWRecMarkers
+	Killwaves/Z tmpFile,dataWRecMarkers,tmp_data
 	
 	Print "Saved VAX binary data as:  ",textW[0]
 	SetDatafolder root:

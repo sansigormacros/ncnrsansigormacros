@@ -989,7 +989,7 @@ Function Draw_Plot1D(xw,yw,ew)
 	if(isPhiAve)
 		Label bottom "Angle (deg)"
 	else
-		SVAR angst = root:Packages:NIST:gAngstStr
+		SVAR/Z angst = root:Packages:NIST:gAngstStr
 		Label bottom "q ("+angst+"\\S-1\\M)"
 	Endif
 	//force a rescale to get something other than I vs. q
@@ -1178,7 +1178,7 @@ Function Rescale_Plot_1D_ButtonProc(ctrlName) : ButtonControl
 	while(0)	//end of "case" statement for y-axis scaling
 	
 	//check for proper x-scaling selection
-	SVAR angst = root:Packages:NIST:gAngstStr 
+	SVAR/Z angst = root:Packages:NIST:gAngstStr 
 	String dum
 	
 	ControlInfo xModel

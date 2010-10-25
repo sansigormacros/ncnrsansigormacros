@@ -67,7 +67,7 @@ End
 //the actual window recreation macro to draw the fit panel. Globals and data folder must 
 // already be initialized
 Window FitPanel()
-	String angst = root:Packages:NIST:gAngstStr
+	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A" )
 //	String angst = "A"
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(461,46,735,455)/K=1
