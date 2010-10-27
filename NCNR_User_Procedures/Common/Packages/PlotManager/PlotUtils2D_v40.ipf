@@ -102,7 +102,8 @@ Proc LoadQxQy()
 		w0 = CleanupName((S_fileName + "_qx"),0)
 		w1 = CleanupName((S_fileName + "_qy"),0)
 		w2 = CleanupName((S_fileName + "_i"),0)
-	
+		w3 = CleanupName((S_fileName + "_iErr"),0)		//make a name for the error wave, to be generated here
+
 		String baseStr=w1[0,strlen(w1)-4]
 		if(DataFolderExists("root:"+baseStr))
 				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
@@ -134,6 +135,20 @@ Proc LoadQxQy()
 		Duplicate/O $("root:"+n0), $w0
 		Duplicate/O $("root:"+n1), $w1
 		Duplicate/O $("root:"+n2), $w2
+	
+
+
+		// generate my own error wave for I(qx,qy). This is exactly the same procedure that is used in the QxQy_Export function
+		Duplicate/O $("root:"+n0), $w3
+		$w3 = sqrt($w2)		//assumes Poisson statistics for each cell (counter)
+		//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
+		// get rid of the "bad" errorsby replacing the NaN, Inf, and zero with V_avg
+		// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
+		// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
+		// It appears to have no effect on the unsmeared model.
+		WaveStats/Q $w3
+		$w3 = numtype($w3[p]) == 0 ? $w3[p] : V_avg
+		$w3 = $w3[p] != 0 ? $w3[p] : V_avg
 	
 	endif		//3-columns
 	
@@ -568,14 +583,21 @@ End
 // folderStr is the data folder for the desired data set
 //
 // Currently the limitations are:
-// - I have no error waves for the intensity
-// - There is no smeared model
+// - I have no error waves for the intensity (fixed 10/2010)
+// - There is no smeared model (coming soon after 10/2010)
 // - Cursors can't be used
-// - the report *probably* won't work
+// - the report works OK, but I have little control over the graphics
+// - the mask is generated here with a default radius of 8 pixels around the beam center
+//
 Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	String folderStr,funcStr,coefStr
 	Variable useCursors,useEps,useConstr
 
+	//These only make sense for the 1D fits, but put them here so keep the look of the dispatching the same
+	Variable useResiduals, useTextBox
+	useResiduals = 0
+	useTextBox = 0
+	
 	String suffix=getModelSuffix(funcStr)
 	
 	SetDataFolder $("root:"+folderStr)
@@ -595,16 +617,17 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	Wave eps=$("epsilon_"+suffix)
 	
 // fill a struct instance whether I need one or not
+// note that the resolution waves may or may not exist, and may or may not be used in the fitting
 	String DF="root:"+folderStr+":"	
 	
 	WAVE inten=$(DF+folderStr+"_i")
 	WAVE sw=$(DF+folderStr+"_iErr")
 	WAVE qx=$(DF+folderStr+"_qx")
 	WAVE qy=$(DF+folderStr+"_qy")
-	WAVE qz=$(DF+folderStr+"_qz")
-	WAVE sQpl=$(DF+folderStr+"_sQpl")
-	WAVE sQpp=$(DF+folderStr+"_sQpp")
-	WAVE shad=$(DF+folderStr+"_fs")
+	WAVE/Z qz=$(DF+folderStr+"_qz")
+	WAVE/Z sQpl=$(DF+folderStr+"_sQpl")
+	WAVE/Z sQpp=$(DF+folderStr+"_sQpp")
+	WAVE/Z shad=$(DF+folderStr+"_fs")
 
 //just a dummy - I shouldn't need this
 	Duplicate/O qx resultW
@@ -615,10 +638,10 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	WAVE s.zw = resultW	
 	WAVE s.xw[0] = qx
 	WAVE s.xw[1] = qy
-	WAVE s.qz = qz
-	WAVE s.sQpl = sQpl
-	WAVE s.sQpp = sQpp
-	WAVE s.fs = shad
+	WAVE/Z s.qz = qz
+	WAVE/Z s.sQpl = sQpl
+	WAVE/Z s.sQpp = sQpp
+	WAVE/Z s.fs = shad
 	
 
 	// generate my own mask wave - as a matrix first, then redimension to N*N vector
@@ -636,9 +659,9 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	
 
 	//for now, use res will always be 0 for 2D functions	
-	Variable useRes=0
+	Variable useResol=0
 	if(stringmatch(funcStr, "Smear*"))		// if it's a smeared function, need a struct
-		useRes=1
+		useResol=1
 	endif
 
 	// can't use constraints in this way for multivariate fits. See the curve fitting help file
@@ -647,6 +670,7 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		Print "Constraints not yet implemented"
 		useConstr = 0
 	endif	
+	WAVE/Z constr=constr		//will be a null reference
 	
 //	// do not construct constraints for any of the coefficients that are being held
 //	// -- this will generate an "unknown error" from the curve fitting
@@ -670,9 +694,15 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 //		endfor
 //	endif
 
+	if(useCursors)
+		Print "Cursors not yet implemented"
+		useCursors = 0
+	endif	
 ///// NO CURSORS for 2D waves
 	//if useCursors, and the data is USANS, need to feed a (reassigned) trimmed matrix to the fit
-//	Variable pt1,pt2,newN
+	Variable pt1,pt2,newN
+	pt1 = 0
+	pt2 = numpnts(inten)-1
 //	if(useCursors && (dimsize(resW,1) > 4) )
 //		if(pcsr(A) > pcsr(B))
 //			pt1 = pcsr(B)
@@ -697,98 +727,60 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 // dispatch the fit
 	//	FuncFit/H="11110111111"/NTHR=0 Cylinder2D_D :cyl2d_c_txt:coef_Cyl2D_D  :cyl2d_c_txt:cyl2d_c_txt_i /X={:cyl2d_c_txt:cyl2d_c_txt_qy,:cyl2d_c_txt:cyl2d_c_txt_qx} /W=:cyl2d_c_txt:sw /I=1 /M=:cyl2d_c_txt:mask /D 
 	Variable t1=StopMSTimer(-2)
-
+	Variable tb = 0		//no textbox
 
 // /NTHR=1 means just one thread for the fit (since the function itself is threaded)
+// NTHR = 0 == "Auto" mode, using as many processors as are available (not appropriate here since the function itself is threaded?)
 
 	do
-		if(useRes && useEps && useCursors && useConstr)		//do it all
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s
-			break
-		endif
-		
-		if(useRes && useEps && useCursors)		//no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /STRC=s
-			break
-		endif
-		
-		if(useRes && useEps && useConstr)		//no crsr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s
-			break
-		endif
-		
-		if(useRes && useCursors && useConstr)		//no eps
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /C=constr /STRC=s
-			break
-		endif
-		
-		if(useRes && useCursors)		//no eps, no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /STRC=s
-			break
-		endif
-		
-		if(useRes && useEps)		//no crsr, no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /STRC=s
-			break
-		endif
 	
-		if(useRes && useConstr)		//no crsr, no eps
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /C=constr /STRC=s
-			break
-		endif
+			// now useCursors, useEps, and useConstr are all handled w/ /NWOK, just like FitWrapper
+
+
+//		if(useResol && useResiduals && useTextBox)		//do it all
+//			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /R /NWOK
+//			break
+//		endif
+//		
+//		if(useResol && useResiduals)		//res + resid
+//			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /R /NWOK
+//			break
+//		endif
+//
+//		
+//		if(useResol && useTextBox)		//res + text
+//			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /NWOK
+//			break
+//		endif
 		
-		if(useRes)		//just res
+		if(useResol)		//res only
 			Print "useRes only"
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /STRC=s
-//			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /W=sw /I=1 /STRC=s
-//			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1
-//			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten_masked /X={Qx,Qy} /W=sw /I=1 /STRC=s
+			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /NWOK
+			break
+		endif
+			
+				
+/////	same as above, but all without useResol (no /STRC flag)
+		if(useResiduals && useTextBox)		//resid+ text
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
 			break
 		endif
 		
-/////	same as above, but all without useRes (no /STRC flag)
-		if(useEps && useCursors && useConstr)		//do it all
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr
+		if(useResiduals)		//resid
+			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
 			break
 		endif
+
 		
-		if(useEps && useCursors)		//no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps
-			break
-		endif
-		
-		
-		if(useEps && useConstr)		//no crsr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr
-			break
-		endif
-		
-		if(useCursors && useConstr)		//no eps
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1 /C=constr
-			break
-		endif
-		
-		if(useCursors)		//no eps, no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten[pcsr(A),pcsr(B)] /X={Qx,Qy} /M=mask /W=sw /I=1
-			break
-		endif
-		
-		if(useEps)		//no crsr, no constr
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps
-			break
-		endif
-	
-		if(useConstr)		//no crsr, no eps
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1 /C=constr
+		if(useTextBox)		//text
+			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /NWOK
 			break
 		endif
 		
 		//just a plain vanilla fit
-		print "unsmeared vanilla"
-			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /M=mask /W=sw /I=1
-//			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten /X={Qx,Qy} /W=sw /I=1
-//			FuncFit/H=getHStr(hold) /NTHR=1 $funcStr cw, inten_masked /X={Qx,Qy} /W=sw /I=1
-	
+
+		FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /NWOK
+		
 	while(0)
 	
 	Print "elapsed 2D fit time  = ",(StopMSTimer(-2) - t1)/1e6," s = ",(StopMSTimer(-2) - t1)/1e6/60," min"
@@ -813,6 +805,18 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 	WAVE w_sigma
 	print w_sigma
 	String resultStr=""
+	
+	if(waveexists(W_sigma))
+		//append it to the table, if it's not already there
+		CheckDisplayed/W=WrapperPanel#T0 W_sigma
+		if(V_flag==0)
+			//not there, append it
+			AppendtoTable/W=wrapperPanel#T0 W_sigma
+		else
+			//remove it, and put it back on to make sure it's the right one (do I need to do this?)
+			// -- not really, since any switch of the function menu takes W_Sigma off
+		endif
+	endif
 		
 	//now re-write the results
 	sprintf resultStr,"Chi^2 = %g  Sqrt(X^2/N) = %g",V_chisq,sqrt(V_chisq/V_Npnts)

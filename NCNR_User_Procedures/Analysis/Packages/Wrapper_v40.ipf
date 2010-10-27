@@ -793,9 +793,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	WAVE fitYw = $(DF+"FitYw")
 	fitYw = NaN
 	
-	Variable useRes=0,isUSANS=0,val
+	Variable useResol=0,isUSANS=0,val
 	if(stringmatch(funcStr, "Smear*"))		// if it's a smeared function, need a struct
-		useRes=1
+		useResol=1
 	endif
 	if(dimsize(resW,1) > 4)
 		isUSANS=1
@@ -911,7 +911,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 			//
 			Variable chi,pt
 
-			chi = DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,getHStr(hold),val,lolim,hilim,pt1,pt2)
+			chi = DoGenCurveFit(useResol,useCursors,sw,fitYw,fs,funcStr,getHStr(hold),val,lolim,hilim,pt1,pt2)
 			pt = val
 
 			break
@@ -921,23 +921,23 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 		// now useCursors, useEps, and useConstr are all handled w/ /NWOK
 		// so there are only three conditions to test == 1 + 3 + 3 + 1 = 8 conditions
 		
-		if(useRes && useResiduals && useTextBox)		//do it all
+		if(useResol && useResiduals && useTextBox)		//do it all
 			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
 			break
 		endif
 		
-		if(useRes && useResiduals)		//res + resid
+		if(useResol && useResiduals)		//res + resid
 			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
 			break
 		endif
 
 		
-		if(useRes && useTextBox)		//res + text
+		if(useResol && useTextBox)		//res + text
 			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 			break
 		endif
 		
-		if(useRes)		//res only
+		if(useResol)		//res only
 //			Print "timing test for Cylinder_PolyRadius---"
 //			Variable t0 = stopMStimer(-2)
 
@@ -961,7 +961,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 			
 		
 		
-/////	same as above, but all without useRes (no /STRC flag)
+/////	same as above, but all without useResol (no /STRC flag)
 		if(useResiduals && useTextBox)		//resid+ text
 			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
 			break
@@ -1163,9 +1163,8 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	else		//must be 2D Gizmo
 		Execute "ExportGizmo Clip"			//this ALWAYS is a PICT or BMP. Gizmo windows are different...
 		LoadPict/Q/O "Clipboard",tmp_Gizmo
-		Notebook $nb scaling={50, 50}, picture={tmp_Gizmo(0, 0, 800, 600), 0, 1}, text="\r"
+		Notebook $nb picture={tmp_Gizmo(0, 0, 800, 600), 0, 1}, text="\r"
 	endif
-	//Notebook Report picture={Table1, 0, 0}, text="\r"
 	
 	// show the top of the report
 	Notebook $nb  selection= {startOfFile, startOfFile},  findText={"", 1}
