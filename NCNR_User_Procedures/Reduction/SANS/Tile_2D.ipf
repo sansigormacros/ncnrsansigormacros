@@ -174,26 +174,39 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	endif
 	for(ii=startInd;ii<ind;ii+=1)
 		AppendLayoutObject/F=1/R=(72,40,144,112) picture $("RAW"+num2str(ii)+"L_PNG")
-		ModifyLayout top($("RAW"+num2str(ii)+"L_PNG"))=(40+mod(30*ii,560))	//separate the graphics (in points)
-		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
+//		ModifyLayout top($("RAW"+num2str(ii)+"L_PNG"))=(40+mod(30*ii,560))	//separate the graphics (in points)
+//		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
-	//maybe don't tile or stack the objects in the layout - it alters the aspect ratio 
+	//careful tiling the objects in the layout - it alters the aspect ratio 
 	Variable totalNumPNGs = itemsinlist(PICTList("*L_PNG", ";", "WIN:"))
 	String rcStr="/A=(4,3)"
+	wd = 2.5
 //	Print totalNumPNGs
 	if(totalNumPNGs>12)
 		rcStr="/A=(5,4)"
+		wd = 1.9
 	endif
 	if(totalNumPNGs>20)
 		rcStr="/A=(7,5)"
+		wd = 1.4
 	endif
 	if(totalNumPNGs>35)
 		rcStr="/A=(8,5)"
+		wd = 1.2
 	endif
 	if(totalNumPNGs>40)
 		rcStr=""
+		wd = 1
 	endif
 	Execute "Tile"+rcStr+"/O=8"
+	
+	// pick an appropriate width and height (the same) for the permutations of rows and columns to get the
+	// largest possible images
+	// -- then propogate this change to the Add All to Layout function
+	//
+	for(ii=startInd;ii<ind;ii+=1)
+		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
+	endfor
 	
 	defaultScaling = oldState		//set the scaling back to the previous state
 	return(0)
@@ -292,7 +305,31 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 //	else	
 //		DoWindow/F $layoutStr
 //	endif
-	Variable jj
+	Variable jj,kk
+	String rcStr=""
+	
+	// determine the appropriate scaling for the number of files.
+	// if < 40 files, pick the scaling. if > 40, use wd =1, and the last
+	// layout may be sparse, but will be scaled like the others.
+
+	if(num>12)
+		rcStr="/A=(5,4)"
+		wd = 1.9
+	endif
+	if(num>20)
+		rcStr="/A=(7,5)"
+		wd = 1.4
+	endif
+	if(num>35)
+		rcStr="/A=(8,5)"
+		wd = 1.2
+	endif
+	if(num>40)
+		rcStr=""
+		wd = 1
+	endif
+
+
 	
 	NewLayout
 	DoWindow/C $("PNGLayout"+num2str(startInd))
@@ -303,14 +340,18 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 			ModifyLayout/I width($("RAW"+num2str(jj)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 			jj+=1
 		while( (jj<ii+numPerLayout) && (jj<ind) )	//index in batch, keep from running over total number of PNGs
-		Execute "Tile/O=8"		//done with this layout
+		Execute "Tile"+rcStr+"/O=8"
+		//now make them square
+		for(kk=ii;kk<jj;kk+=1)
+			ModifyLayout/I width($("RAW"+num2str(kk)+"L_PNG"))=(wd),height($("RAW"+num2str(kk)+"L_PNG"))=(wd) //(in inches)
+		endfor
+		
 		if(jj<ind)		//need another layout
 			NewLayout
 			DoWindow/C $("PNGLayout"+num2str(jj))
 		endif
 	endfor
-	Execute "Tile/O=8"		//tile the last layout
-	
+
 	defaultScaling = oldState		//set the scaling back to the previous state
 	return(0)
 End
@@ -459,7 +500,7 @@ Proc Export_RAW_Ascii_Panel()
 End
 
 //procedure for drawing the simple panel to export raw->ascii
-//
+//root:myGlobals:RAW2ASCII:selWave = 1
 Proc RAW_to_ASCII()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(501,97,885,282) /K=2
@@ -467,7 +508,7 @@ Proc RAW_to_ASCII()
 	ListBox fileList,pos={4,3},size={206,179}
 	ListBox fileList,listWave=root:myGlobals:RAW2ASCII:fileWave
 	ListBox fileList,selWave=root:myGlobals:RAW2ASCII:selWave,mode= 4
-	Button button0,pos={239,112},size={110,20},proc=RA_ExportButtonProc,title="Export File(s)"
+	Button button0,pos={239,132},size={110,20},proc=RA_ExportButtonProc,title="Export File(s)"
 	Button button0,help={"Exports (saves to disk) the selected files as ASCII format"}
 	Button button1,pos={270,156},size={50,20},proc=RawExportDoneButtonProc,title="Done"
 	Button button1,help={"Closes the panel"}
@@ -481,7 +522,26 @@ Proc RAW_to_ASCII()
 	CheckBox check1,proc=RA_ExportCheckProc
 	CheckBox check2,pos={220,82},size={104,14},title="Det. Coord, Grasp compatible",value= 0,mode=1
 	CheckBox check2,proc=RA_ExportCheckProc
+	CheckBox check3,pos={220,110},size={104,14},title="Select All Files",value= 0
+	CheckBox check3,proc=RA_SelectAllCheckProc
 EndMacro
+
+Function RA_SelectAllCheckProc(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	WAVE w = root:myGlobals:RAW2ASCII:selWave
+	if(checked)
+		w = 1		// select everything
+		CheckBox check3,value=1
+	else
+		w = 0		// deselect all
+		CheckBox check3,value=0
+	endif
+	
+
+	return(0)
+End
 
 Function RA_ExportCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
