@@ -1059,9 +1059,14 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 		DoUpdate		//force an update of the graph before making a copy of it for the report
 
 		//if GenCurveFit used, V_startRow and V_endRow may not exist - so read the cursors? but the cursors may not be used, so 
-		// there won't be anything on the graph...
+		// there won't be anything on the graph... but pt1 and pt2 are set and passed!. The V_ variables are more foolproof
+		// so keep these for the "normal" report
 		//
-		W_GenerateReport(funcStr,folderStr,$parStr,cw,yesSave,V_chisq,W_sigma,V_npnts,V_FitError,V_FitQuitReason,V_startRow,V_endRow,topGraph)
+		if(useGenCurveFit)	
+			W_GenerateReport(funcStr,folderStr,$parStr,cw,yesSave,V_chisq,W_sigma,V_npnts,V_FitError,V_FitQuitReason,pt1,pt2,topGraph)
+		else
+			W_GenerateReport(funcStr,folderStr,$parStr,cw,yesSave,V_chisq,W_sigma,V_npnts,V_FitError,V_FitQuitReason,V_startRow,V_endRow,topGraph)
+		endif
 	endif
 	
 	SetDataFolder root:

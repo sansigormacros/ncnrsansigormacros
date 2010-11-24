@@ -493,3 +493,110 @@ Function Ave_button(button0) : ButtonControl
 	
 	Return 0
 End
+
+
+
+#pragma rtGlobals=1		// Use modern global access method.
+
+
+// -- seems to work, now I need to give it a name, add it to the list, and 
+// make sure I've thought of all of the cases - then the average can be passed as case "Sector_PlusMinus"
+// and run through the normal average and writing routines.
+//
+//
+// -- depending on what value PHI has - it's [-90,90] "left" and "right" may not be what
+// you expect. so sorting the concatenated values may be necessary (always)
+//
+// -- need documentation of the definition of PHI, left, and right so that it can make better sense
+//		which quadrants of the detector become "negative" depending on the choice of phi. may need a 
+//		switch after a little thinking.
+//
+// may want a variation of this where both sides are done, in separate files. but I think that's already
+// called a "sector" average. save them. load them. plot them.
+//
+//
+Function Sector_PlusMinus1D(type)
+	String type
+
+//	do the left side (-)
+// then hold that data in tmp_ waves
+// then do the right (+)
+// then concatenate the data
+
+// the button on the pink panel copies the two strings so they're the same
+	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr		//this is the list that has it all
+
+	String oldStr = ""
+	String	CurPath="root:myGlobals:Plot_1D:"
+	String destPath = "root:Packages:NIST:"+type+":"
+
+	oldStr = StringByKey("SIDE",keyListStr,"=",";")
+
+// do the left first, and call it negative
+	keyListStr = ReplaceStringByKey("SIDE",keyListStr,"left","=",";")
+
+	CircularAverageTo1D(type)
+	
+	WAVE qval = $(destPath + "qval")
+	WAVE aveint = $(destPath + "aveint")
+	WAVE sigave = $(destPath + "sigave")
+	WAVE qbar = $(destPath + "QBar")
+	WAVE sigmaq = $(destPath + "SigmaQ")
+	WAVE fsubs = $(destPath + "fSubS")
+
+	// copy the average, set the q's negative
+	qval *= -1
+	Duplicate/O qval $(destPath+"tmp_q")
+	Duplicate/O aveint $(destPath+"tmp_i")
+	Duplicate/O sigave $(destPath+"tmp_s")
+	Duplicate/O qbar $(destPath+"tmp_qb")
+	Duplicate/O sigmaq $(destPath+"tmp_sq")
+	Duplicate/O fsubs $(destPath+"tmp_fs")
+	
+	
+// do the right side
+	keyListStr = ReplaceStringByKey("SIDE",keyListStr,"right","=",";")
+
+	CircularAverageTo1D(type)
+	
+	// concatenate
+	WAVE tmp_q = $(destPath + "tmp_q")
+	WAVE tmp_i = $(destPath + "tmp_i")
+	WAVE tmp_s = $(destPath + "tmp_s")
+	WAVE tmp_qb = $(destPath + "tmp_qb")
+	WAVE tmp_sq = $(destPath + "tmp_sq")
+	WAVE tmp_fs = $(destPath + "tmp_fs")
+
+	SetDataFolder destPath		//to get the concatenation in the right folder
+	Concatenate/NP/O {tmp_q,qval},tmp_cat
+	Duplicate/O tmp_cat qval
+	Concatenate/NP/O {tmp_i,aveint},tmp_cat
+	Duplicate/O tmp_cat aveint
+	Concatenate/NP/O {tmp_s,sigave},tmp_cat
+	Duplicate/O tmp_cat sigave
+	Concatenate/NP/O {tmp_qb,qbar},tmp_cat
+	Duplicate/O tmp_cat qbar
+	Concatenate/NP/O {tmp_sq,sigmaq},tmp_cat
+	Duplicate/O tmp_cat sigmaq
+	Concatenate/NP/O {tmp_fs,fsubs},tmp_cat
+	Duplicate/O tmp_cat fsubs
+
+// then sort
+	Sort qval, qval,aveint,sigave,qbar,sigmaq,fsubs
+
+// move these to the Plot_1D folder for plotting
+	Duplicate/O qval $(curPath+"xAxisWave")
+	Duplicate/O aveint $(curPath+"yAxisWave")
+	Duplicate/O sigave $(curPath+"yErrWave")
+	
+	keyListStr = ReplaceStringByKey("SIDE",keyListStr,oldStr,"=",";")
+
+	DoUpdate/W=Plot_1d
+	
+	// clean up
+	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_qb,tmp_sq,tmp_fs,tmp_cat
+	
+	SetDataFolder root:
+	
+	return(0)
+End

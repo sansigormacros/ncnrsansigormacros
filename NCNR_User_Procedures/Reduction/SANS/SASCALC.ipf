@@ -416,6 +416,8 @@ Window SASCALC_Panel()
 	CheckBox checkSim,pos={6,175},size={44,14},proc=SimCheckProc,title="Simulation?"
 	CheckBox checkSim,value=0
 	
+	CheckBox check0_1,pos={80,155},size={90,14},title="Offset Traces?",variable= root:Packages:NIST:SAS:gDoTraceOffset
+
 	// help, done buttons
 	Button SC_helpButton,pos={340,166},size={25,20},proc=showSASCALCHelp,title="?"
 	Button SC_helpButton,help={"Show help file for simulation of SANS Data"}

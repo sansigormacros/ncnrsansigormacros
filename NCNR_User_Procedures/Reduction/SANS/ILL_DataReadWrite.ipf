@@ -295,7 +295,16 @@ Function ReadHeaderAndWork1(type,fname)
 	
 	
 //	print "function used"
+
+
 	
+	
+	
+	//loadwave /H "fname"
+	
+	//Duplicate/O $"fname", datates
+	
+
 
 		// (1)
 	// fill in your reader for the header here so that intw, realw, and textW are filled in
@@ -325,13 +334,28 @@ End
 
 /////////DIV file created with NIST reduction so has the VAX format.... painful
 
+
+	
+// Detector sensitivity files have the same header structure as RAW SANS data
+// as NCNR, just with a different data array (real, rather than integer data)
+//
+// So for your facility, make this reader specific to the format of whatever
+// file you use for a pixel-by-pixel division of the raw detector data
+// to correct for non-uniform sensitivities of the detector. This is typically a
+// measurement of water, plexiglas, or another uniform scattering sample.
+//
+// The data must be normalized to a mean value of 1
+//
+// called from ProtocolAsPanel.ipf
+//
+// type is "DIV" on input
 Function ReadHeaderAndWork(type,fname)
 	String type,fname
 	
 	//type is the desired folder to read the workfile to
-	//this data will NOT be automatically displayed gDataDisplayType is unchanged
+	//this data will NOT be automatically displayed
+	// gDataDisplayType is unchanged
 
-//	SVAR cur_folder=root:myGlobals:gDataDisplayType
 	String cur_folder = type
 	String curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
@@ -340,328 +364,55 @@ Function ReadHeaderAndWork(type,fname)
 	String sansfname,textstr
 	Variable/G $(curPath + ":gIsLogScale") = 0		//initial state is linear, keep this in DIV folder
 	
-	Make/O/N=23 $(curPath + ":IntegersRead")
-	Make/O/N=52 $(curPath + ":RealsRead")
+	Make/O/D/N=23 $(curPath + ":IntegersRead")
+	Make/O/D/N=52 $(curPath + ":RealsRead")
 	Make/O/T/N=11 $(curPath + ":TextRead")
 	
 	WAVE intw=$(curPath + ":IntegersRead")
 	WAVE realw=$(curPath + ":RealsRead")
 	WAVE/T textw=$(curPath + ":TextRead")
 	
-	//***NOTE ****
-	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
-	// this read routine, after the open dialog is presented
-	// the "--read" waves end up in the correct folder, but the data does not! Why?
-	//must re-set data folder before writing data array (done below)
+	// the actual data array, dimensions are set as globals in 
+	// InitFacilityGlobals()
+	NVAR XPix = root:myGlobals:gNPixelsX
+	NVAR YPix = root:myGlobals:gNPixelsX
 	
-	SetDataFolder curPath
-	
-	//actually open the file
-	Open/R refNum as fname
-	//skip first two bytes
-	FSetPos refNum, 2
-	//read the next 21 bytes as characters (fname)
-	FReadLine/N=21 refNum,textstr
-	textw[0]= textstr
-	//read four i*4 values	/F=3 flag, B=3 flag
-	FBinRead/F=3/B=3 refNum, integer
-	intw[0] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[1] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[2] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[3] = integer
-	// 6 text fields
-	FSetPos refNum,55		//will start reading at byte 56
-	FReadLine/N=20 refNum,textstr
-	textw[1]= textstr
-	FReadLine/N=3 refNum,textstr
-	textw[2]= textstr
-	FReadLine/N=11 refNum,textstr
-	textw[3]= textstr
-	FReadLine/N=1 refNum,textstr
-	textw[4]= textstr
-	FReadLine/N=8 refNum,textstr
-	textw[5]= textstr
-	FReadLine/N=60 refNum,textstr
-	textw[6]= textstr
-	
-	//3 integers
-	FSetPos refNum,174
-	FBinRead/F=3/B=3 refNum, integer
-	intw[4] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[5] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[6] = integer
-	
-	//2 integers, 3 text fields
-	FSetPos refNum,194
-	FBinRead/F=3/B=3 refNum, integer
-	intw[7] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[8] = integer
-	FReadLine/N=6 refNum,textstr
-	textw[7]= textstr
-	FReadLine/N=6 refNum,textstr
-	textw[8]= textstr
-	FReadLine/N=6 refNum,textstr
-	textw[9]= textstr
-	
-	//2 integers
-	FSetPos refNum,244
-	FBinRead/F=3/B=3 refNum, integer
-	intw[9] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[10] = integer
-	
-	//2 integers
-	FSetPos refNum,308
-	FBinRead/F=3/B=3 refNum, integer
-	intw[11] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[12] = integer
-	
-	//2 integers
-	FSetPos refNum,332
-	FBinRead/F=3/B=3 refNum, integer
-	intw[13] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[14] = integer
-	
-	//3 integers
-	FSetPos refNum,376
-	FBinRead/F=3/B=3 refNum, integer
-	intw[15] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[16] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[17] = integer
-	
-	//1 text field - the file association for transmission are the first 4 bytes
-	FSetPos refNum,404
-	FReadLine/N=42 refNum,textstr
-	textw[10]= textstr
-	
-	//1 integer
-	FSetPos refNum,458
-	FBinRead/F=3/B=3 refNum, integer
-	intw[18] = integer
-	
-	//4 integers
-	FSetPos refNum,478
-	FBinRead/F=3/B=3 refNum, integer
-	intw[19] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[20] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[21] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[22] = integer
-	
-	Close refNum
-	
-	//now get all of the reals
-	//
-	//Do all the GBLoadWaves at the end
-	//
-	//FBinRead Cannot handle 32 bit VAX floating point
-	//GBLoadWave, however, can properly read it
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String strToExecute
-	//append "/S=offset/U=numofreals" to control the read
-	// then append fname to give the full file path
-	// then execute
-	
-	Variable a=0,b=0
-	
-	SetDataFolder curPath
-	// 4 R*4 values
-	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
-	Execute strToExecute
-	
-	SetDataFolder curPath
-	Wave w=$(curPath + ":tempGBWave0")
-	b=4	//num of reals read
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 4 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + fname + "\""
-	Execute strToExecute
-	b=4	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
 
-///////////
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + fname + "\""
-	Execute strToExecute
-	b=2	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-
-	// 6 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + fname + "\""
-	Execute strToExecute
-	b=6	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 13 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + fname + "\""
-	Execute strToExecute
-	b=13
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 3 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + fname + "\""
-	Execute strToExecute
-	b=3	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 7 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + fname + "\""
-	Execute strToExecute
-	b=7
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 4 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + fname + "\""
-	Execute strToExecute
-	b=4	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + fname + "\""
-	Execute strToExecute
-	b=2
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + fname + "\""
-	Execute strToExecute
-	b=2
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 5 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + fname + "\""
-	Execute strToExecute
-	b=5	
-	realw[a,a+b-1] = w[p-a]
-	
-	//if the binary VAX data ws transferred to a MAC, all is OK
-	//if the data was trasnferred to an Intel machine (IBM), all the real values must be
-	//divided by 4 to get the correct floating point values
-	// I can't find any combination of settings in GBLoadWave or FBinRead to read data in correctly
-	// on an Intel machine.
-	//With the corrected version of GBLoadWave XOP (v. 1.43 or higher) Mac and PC both read
-	//VAX reals correctly, and no checking is necessary 12 APR 99
-	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		//do nothing
-	//else
-		//either Windows or Windows NT
-		//realw /= 4
-	//endif
-	
-	//read in the data
-	 GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-
-	curPath = "root:Packages:NIST:"+cur_folder
-	SetDataFolder curPath		//use the full path, so it will always work
-	
-	Make/O/N=16384 $(curPath + ":data")
+	Make/O/D/N=(XPix,YPix) $(curPath + ":data")
 	WAVE data = $(curPath + ":data")
 	
-	Variable skip,ii,offset
+	Make/O/D/N=(XPix,YPix) $(curPath + ":linear_data")
+	WAVE linear_data = $(curPath + ":linear_data")
 	
-	//read in a total of 16384 values (ii) 
-	//as follows :
-	// skip first 2 bytes
-	// skip 512 byte header
-	// skip first 2 bytes of data
-	//(read 511 reals, skip 2b, 510 reals, skip 2b) -16 times = 16336 values
-	// read the final 48 values in seperately to avoid EOF error
 	
-	/////////////
-	SetDataFolder curPath
-	skip = 0
-	ii=0
-	offset = 514 +2
-	a=0
-	do
-		SetDataFolder curPath
-		
-		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=511" + "\"" + fname + "\""
-		Execute strToExecute
-		//Print strToExecute
-		b=511
-		data[a,a+b-1] = w[p-a]
-		a+=b
-		
-		offset += 511*4 +2
-		
-		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=510" + "\"" + fname + "\""
-		SetDataFolder curPath
-		Execute strToExecute
-		//Print strToExecute
-		b=510
-		data[a,a+b-1] = w[p-a]
-		a+=b
-		
-		offset += 510*4 +2
-		
-		ii+=1
-		//Print "inside do, data[2] =",data[2]
-		//Print "inside do, tempGBwave0[0] = ",w[0]
-	while(ii<16)
+//	print "function used"
 	
-	// 16336 values have been read in --
-	//read in last 64 values
-	strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=48" + "\"" + fname + "\""
-	
-	SetDataFolder curPath
-	Execute strToExecute
-	b=48
-	data[a,a+b-1] = w[p-a]
-	a+=b
-//
-/// done reading in raw data
-//
-	//Print "in workdatareader , data = ", data[1][1]
 
-	Redimension/n=(128,128) data
+		// (1)
+	// fill in your reader for the header here so that intw, realw, and textW are filled in
+	// ? possibly a duplication of the raw data reader
+	Duplicate/O $("root:Packages:NIST:raw:realsread"),$(curPath+ ":realsread")
+	Duplicate/O $("root:Packages:NIST:raw:integersread"),$(curPath+ ":integersread")
+	Duplicate/T $("root:Packages:NIST:raw:Textread"),$(curPath+ ":Textread")
 	
-	//clean up - get rid of w = $"tempGBWave0"
-	KillWaves w
+
+	//(2)
+	// then fill in a reader for the data array that will DIVIDE your data
+	// to get the corrected values.
+	// fill the data array with the detector values
+
+	//here you load in your file, you're already in the DIV folder
+//	LoadWave/H/O "Macintosh HD:Users:srkline:Desktop:linear_data.ibw"
+	LoadWave/H/O fname		//since fname is the full path
 	
-	//divide the FP data by 4 if read from a PC (not since GBLoadWave update)
-	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		//do nothing
-	//else
-		//either Windows or Windows NT
-		//data /= 4
-	//endif
+	ConvertFolderToLogScale(type)
+	
+	String loadedStr = StringFromList(0,S_waveNames,";")		//then name of the wave loaded
+
+	//then copy the loaded wave to data and to linear data, in the DIV folder
+	duplicate/O $("loadedStr"),$(curPath+ ":data")
+	duplicate/O $("loadedStr"),$(curPath+ ":linear_data")
+	
 	
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
@@ -2130,6 +1881,11 @@ end
 //
 Function Write_DIV_File(type)
 	String type
+	
+	// should have the linear display.....
+ConvertFolderToLogScale(type)
+	
+	Save/C root:packages:nist:STO:linear_data as "plex.DIV"
 	
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
 	

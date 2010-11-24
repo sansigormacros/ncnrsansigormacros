@@ -35,7 +35,7 @@
 //		For AVERAGE and for DRAWING
 //			DRAWING routines only use a subset of the total list, since saving, naming, etc. don't apply
 //		(10) possible keywords, some numerical, some string values
-//		AVTYPE=string		string from set {Circular,Annular,Rectangular,Sector,2D_ASCII,QxQy_ASCII,PNG_Graphic}
+//		AVTYPE=string		string from set {Circular,Annular,Rectangular,Sector,2D_ASCII,QxQy_ASCII,PNG_Graphic;Sector_PlusMinus;}
 //		PHI=value			azimuthal angle (-90,90)
 //		DPHI=value			+/- angular range around phi for average
 //		WIDTH=value		total width of rectangular section, in pixels
@@ -968,7 +968,7 @@ End
 Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic"
+	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
@@ -991,7 +991,7 @@ Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelt
 	root:myGlobals:Protocols:gAvgInfoStr += "NAME=" + autoName + ";"
 	root:myGlobals:Protocols:gAvgInfoStr += "PLOT=" + autoPlot + ";"
 	
-	if(cmpstr(av_typ,"Sector")==0)
+	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
 		root:myGlobals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
 		root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
 		root:myGlobals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
@@ -1859,6 +1859,9 @@ Function ExecuteProtocol(protStr,samStr)
 		case "Sector":
 			CircularAverageTo1D(activeType)
 			break
+		case "Sector_PlusMinus":
+			Sector_PlusMinus1D(activeType)
+			break
 		default:	
 			//do nothing
 	endswitch
@@ -2253,7 +2256,7 @@ Function ExportProtocol(ctrlName) : ButtonControl
 	String fullPath
 	
 	PathInfo/S catPathName
-	fullPath = DoSaveFileDialog("Export Protocol as")
+	fullPath = DoSaveFileDialog("Export Protocol as",fname=Protocol,suffix="")
 	If(cmpstr(fullPath,"")==0)
 		//user cancel, don't write out a file
 		Close/A

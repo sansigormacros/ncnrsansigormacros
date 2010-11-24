@@ -28,8 +28,9 @@
 // X decide which options to add (/N /DUMP /TOL, robust fitting, etc - see Andy's list
 // X add the XOP to the distribution, or instructions (better to NOT bundle...)
 // X odd bug where first "fit" fails on AppendToGraph as GenCurveFit is started. May need to disable /D flag
+// X- need to pass back the chi-squared and number of points. "V_" globals don't appear
+// -- add the flags to calculate the residuals (/R), and then manually append the residual wave to the graph.
 //
-// -- need to pass back the chi-squared and number of points. "V_" globals don't appear
 //
 // for the speed test. try writing my own wrapper for an unsmeared calculation, and see if it's still dog-slow.
 // --- NOPE, the wrapper is not a problem, tested this, and they seem to be both the same speed, each only about 5 seconds.
@@ -257,6 +258,8 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	
 	// other useful flags:  /N /DUMP /TOL /D=fitYw
 	//  /OPT=1 seems to make no difference whether it's used or not
+	// /N does not speed anything up at all, and you get no feedback
+	// /R does work, generating "res_" wave, but the append must be "manual"
 	
 	// append the fit
 	//do this only because GenCurveFit tries to append too quickly?
@@ -284,7 +287,7 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 			break
 		endif
 		if(useRes)
-			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
+			GenCurveFit/MAT /STRC=bar /X=bar.x[0] /I=1 /TOL=(kGenOp_tol) /W=sw /D=fitYw /R GeneticFit_SmearedModel,bar.y,bar.w,holdStr,limits
 			break
 		endif
 		

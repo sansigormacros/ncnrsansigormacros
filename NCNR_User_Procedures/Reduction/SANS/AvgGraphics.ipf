@@ -158,6 +158,16 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 		case "QxQy ASCII":
 			QxQy_Export(type,"",1)
 			break
+		case "Sector_PlusMinus":
+			Sector_PlusMinus1D(type)
+			If(doSave)
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(type,"",1)
+				else
+					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				endif
+			Endif
+			break
 		default:						
 			Abort "no case match in average dispatch"
 	endswitch
@@ -173,7 +183,6 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 		Killwaves/Z root:myGlobals:Protocols:fakeProtocol
 		String/G root:myGlobals:Protocols:gProtoStr = ""
 	Endif
-	
 	
 	return(0)
 	
@@ -225,6 +234,7 @@ Function AvTypePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 			break					
 		case "Circular":
 		case "Sector":
+		case "Sector_PlusMinus":
 		case "Rectangular":
 		case "Annular":
 			String/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
@@ -257,6 +267,7 @@ Function DisableUnusedParameters(choice)
 			popupmenu sides,disable=yes
 			break
 		case "Sector":
+		case "Sector_PlusMinus":
 			SetVariable Phi_p,disable=no
 			SetVariable Qctr_p,disable=yes
 			SetVariable Qdelta_p,disable=yes
@@ -300,7 +311,7 @@ Window Average_Panel()
 	GroupBox sect_rect,pos={7,44},size={134,84},title="Sector/Rectangular"
 	PopupMenu av_choice,pos={61,7},size={144,20},proc=AvTypePopMenuProc,title="AverageType"
 	PopupMenu av_choice,help={"Select the type of average to perform, then make the required selections below and click \"DoAverage\" to plot the results"}
-	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D ASCII;QxQy ASCII\""
+	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
 	Button ave_help,pos={260,7},size={25,20},proc=ShowAvePanelHelp,title="?"
 	Button ave_help,help={"Show the help file for averaging options"}
 	Button ave_done,pos={199,245},size={50,20},proc=AveDoneButtonProc,title="Done"
@@ -445,8 +456,8 @@ Function MasterAngleDraw()
 	
 	//else sector or rectangular - draw the lines
 	
-	//if sector or rectangular, draw the phi line (on the desired side)
-	if( (cmpstr(av_type,"Sector")==0) || (cmpstr(av_type,"Rectangular")==0))
+	//if sector, sector_plusminus, or rectangular, draw the phi line (on the desired side)
+	if( (cmpstr(av_type,"Sector")==0) || (cmpstr(av_type,"Rectangular")==0) || (cmpstr(av_type,"Sector_PlusMinus")==0))
 		if( (cmpstr(side,"left")==0) || (cmpstr(side,"both")==0) )
 			//draw the phi line on the left side
 			//make sure x1,y1 is on the edge of the graph
@@ -466,7 +477,7 @@ Function MasterAngleDraw()
 	Endif
 	
 	//if Sector, draw the +/- dphi lines
-	if (cmpstr(av_type,"Sector")==0)
+	if (cmpstr(av_type,"Sector")==0  || cmpstr(av_type,"Sector_PlusMinus")==0)
 		if( (cmpstr(side,"left")==0) || (cmpstr(side,"both")==0) )
 			//draw the deltaPhi lines +/- lines
 			if (dphi != 0)

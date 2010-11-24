@@ -450,6 +450,13 @@ Function SANS_Histogram() :  GraphMarquee
 	if(V_flag == 0)
 		Abort "There is no Marquee"
 	endif
+	// if cursor A on graph
+	// Do histogram pair
+	Variable aExists= strlen(CsrInfo(A)) > 0	// A is a name, not a string
+	if(aExists)
+		DoHistogramPair(hcsr(A),vcsr(A))
+		return(0)
+	endif
 	//
 	Variable count,x1,x2,y1,y2,xwidth,ywidth,vsX=1,xx,yy
 	x1 = V_left
@@ -548,4 +555,114 @@ Function PrintMarqueeCoords() :  GraphMarquee
 		count = SumCountsInBox(x1,x2,y1,y2,cur_folder)
 		Print "counts = "+ num2str(count)
 	endif
+End
+
+// if the "A" cursor is on the graph, do +-5 pixels in each direction
+// otherwise, you won't get here
+Function DoHistogramPair(xin,yin)
+	Variable xin,yin
+	
+	Variable count,x1,x2,y1,y2,xwidth,ywidth,pt1,pt2,xx,yy
+	SVAR cur_folder=root:myGlobals:gDataDisplayType
+	WAVE data=$("root:Packages:NIST:"+cur_folder+":data")		//don't care if it's log or linear scale
+	
+
+	pt1 = 1		// extent along the "long" direction of the swath
+	pt2 = 128
+		
+	Make/O/D/N=(pt2-pt1) PositionX,AvgCountsX
+	Make/O/D/N=(pt2-pt1) PositionY,AvgCountsY
+	AvgCountsX=0
+	AvgCountsY=0
+	
+	//set position wave
+	positionX=p+pt1
+	positionY=p+pt1
+	//convert the position to Detector coordinates
+	positionX += 1
+	positionY += 1
+	
+	//do the vertical, then the horizontal
+	xwidth = 5		//+ -
+	ywidth = 5
+	x1 = xin - xwidth
+	x2 = xin + xwidth
+	y1 = pt1
+	y2 = pt2
+	
+	KeepSelectionInBounds(x1,x2,y1,y2)
+	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y1+1,y2+1
+	
+	//Compute the histogram (manually)
+	for(yy=y1;yy<=y2;yy+=1)
+		for(xx=x1;xx<=x2;xx+=1)
+			AvgCountsY[yy-y1] += data[xx][yy]
+		endfor
+	endfor
+	AvgCountsY /= (xwidth+1)
+
+	// now do the Y
+	y1 = yin - ywidth
+	y2 = yin + ywidth
+	x1 = pt1
+	x2 = pt2
+		
+	KeepSelectionInBounds(x1,x2,y1,y2)
+	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y2+1,y2+1	
+	for(xx=x1;xx<=x2;xx+=1)		//outer loop is the "x-axis"
+		for(yy=y1;yy<=y2;yy+=1)
+			AvgCountsX[xx-x1] += data[xx][yy]
+		endfor
+	endfor
+	AvgCountsX /= (ywidth+1)
+	
+	GetMarquee/K		//to keep from drawing the marquee on the new histo graph
+	//draw the graph, or just bring to the front with the new data
+	DoWindow/F HistoPair
+	if(V_Flag != 1)
+		Draw_HistoPair()
+	endif
+	
+	return(0)
+end
+
+
+Function Draw_HistoPair()
+	PauseUpdate; Silent 1		// building window...
+	Display /W=(253,683,723,950)/K=1 AvgCountsX vs PositionX as "Histogram Pair"
+	AppendToGraph/L=leftY/B=bottomY AvgCountsY vs PositionY
+	DoWindow/C HistoPair
+	ModifyGraph rgb(AvgCountsX)=(21845,21845,21845)
+	ModifyGraph hbFill(AvgCountsX)=2
+	ModifyGraph useNegPat(AvgCountsX)=1
+	ModifyGraph usePlusRGB(AvgCountsX)=1
+	ModifyGraph useNegRGB(AvgCountsX)=1
+	ModifyGraph hBarNegFill(AvgCountsX)=2
+	ModifyGraph negRGB(AvgCountsX)=(0,0,65535)
+	ModifyGraph grid(left)=1,grid(bottom)=1,grid(leftY)=1
+	ModifyGraph mirror(left)=2,mirror(bottom)=2,mirror(leftY)=2
+	ModifyGraph standoff(left)=0,standoff(bottom)=0,standoff(leftY)=0
+	ModifyGraph lblPos(left)=62,lblPos(bottom)=39
+	ModifyGraph freePos(leftY)=0
+	ModifyGraph freePos(bottomY)={0,leftY}
+	ModifyGraph axisEnab(left)={0,0.4}
+	ModifyGraph axisEnab(leftY)={0.6,1}
+	Label left "Counts"
+	Label bottom "Pixel (detector coordinates)"
+	SetAxis/A/N=2 left
+	TextBox/C/N=text0/X=5.0/Y=5.0 "TOP"
+	TextBox/C/N=text0_1/X=5.0/Y=67.0 "RIGHT"
+	TextBox/C/N=text0_2/X=84.0/Y=67.0 "LEFT"
+	TextBox/C/N=text0_3/X=84.0/Y=5.0 "BOTTOM"
+EndMacro
+
+
+// not used, just for testing
+Function CursorForHistogram()
+
+	Wave w=root:Packages:NIST:RAW:RealsRead
+	
+	Cursor/W=SANS_Data/F/I A data w[16],w[17]
+	Cursor/M/S=2/H=1/L=0/C=(3,52428,1) A
+	
 End

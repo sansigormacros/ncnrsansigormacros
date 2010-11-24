@@ -188,6 +188,8 @@ Function BackOneFileButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	LoadPlotAndDisplayRAW(-1)
+	// re-draw the sectors or annulus if this was a step to prev/next raw file
+	MasterAngleDraw()
 	
 	return(0)
 End
@@ -198,6 +200,8 @@ Function ForwardOneFileButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	LoadPlotAndDisplayRAW(1)
+	// re-draw the sectors or annulus if this was a step to prev/next raw file
+	MasterAngleDraw()
 	
 	return (0)
 End
@@ -205,21 +209,45 @@ End
 //displays next (or previous) file in series of run numbers
 //file is read from disk, if path is set and the file number is present
 //increment +1, adds 1 to run number, -1 subtracts one
+//
+// will automatically step a gap of 10 run numbers, but nothing larger. Don't want to loop too long
+// trying to find a file (frustrating), don't want to look past the end of the run numbers (waste)
+// -- may find a more elegant solution later.
+//
 Function LoadPlotAndDisplayRAW(increment)
 	Variable increment
 
-	Variable i
-	String filename
+	Variable i,val
+	String filename,tmp
 	//take the currently displayed RAW file (there is only one name in fileList)
 	SVAR oldName = root:Packages:NIST:RAW:fileList
+	oldname = RemoveAllSpaces(oldname)		// the name in the file list will have 21 chars, thus leading spaces if prefix < 5 chars
 	
 //	print oldName
 	
 	filename = oldname
-	for (i = 0; i < abs(increment); i += 1)
-		filename = GetPrevNextRawFile(filename,increment/abs(increment))
-	endfor	
-	
+//	for (i = 0; i < abs(increment); i += 1)
+//		filename = GetPrevNextRawFile(filename,increment/abs(increment))
+//	endfor	
+	i = 1
+	val = increment
+	do
+//		print filename,val
+		filename = GetPrevNextRawFile(filename,val)
+//		print "new= ",filename
+		
+		val = i*increment
+		i+=1
+		tmp = ParseFilePath(0, filename, ":", 1, 0)
+
+//		print val,strlen(tmp),strlen(oldname)
+//		print cmpstr(tmp,oldname)
+
+		if(strlen(tmp) == 0)		//in some cases, a null string can be returned - handle gracefully
+			return(0)
+		endif
+		
+	while( (cmpstr(tmp,oldname) == 0) && i < 11)
 //	print filename
 	
 	// display the specified RAW data file

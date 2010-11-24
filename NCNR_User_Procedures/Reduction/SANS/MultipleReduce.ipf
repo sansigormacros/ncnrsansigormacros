@@ -683,10 +683,13 @@ Function RemoveWrongSDDFromSDDList(tSDD)
 	Wave runnum = $"root:myGlobals:MRED:RunNumber"
 	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
 	
-	Variable num=numpnts(sdd),ii,tol = 0.001
+	Variable num=numpnts(sdd),ii,tol = 0.1
 	ii=num-1
 	do
-		if(abs(sdd[ii] - tSDD) > tol)		//if numerically more than 0.001 m different, they're not the same
+//		if(abs(sdd[ii] - tSDD) > tol)		//if numerically more than 0.001 m different, they're not the same
+//			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+//		endif
+		if(trunc(abs(sdd[ii] - tSDD)) > tol)		//just get the integer portion of the difference - very coarse comparison
 			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
 		endif
 		ii-=1

@@ -194,6 +194,8 @@ End
 //
 // this run number should be a unique identifier for the file
 //
+
+//
 Function GetRunNumFromFile(item)
 	String item
 
@@ -201,7 +203,8 @@ Function GetRunNumFromFile(item)
 	
 	String runStr=""
 	
-	runstr = item
+	runStr = ParseFilePath(0, item, ":", 1, 0)
+//	runstr = item
 	num = str2num(runstr)
 	
 	
@@ -228,7 +231,7 @@ Function/S GetRunNumStrFromFile(item)
 	String retStr
 	retStr=invalid
 	
-	retstr = item
+	retstr = ParseFilePath(0, item, ":", 1, 0)
 	//your code here
 	
 
@@ -333,7 +336,7 @@ End
 //
 Function/S RunDigitString(num)
 	Variable num
-	
+
 //	String fullName="",partialName="",item=""
 //	String numStr=""
 //	
@@ -360,7 +363,7 @@ Function/S RunDigitString(num)
 //		default:							// optional default expression executed
 //	endswitch
 //	
-	
+
 	String numStr=""
 
 	//make 6 digit string from run number
@@ -1048,6 +1051,7 @@ Function DetEffCorrILL(lambda,dtdist,xd)
 	elseif  (lambda <=8.1 && lambda>=7.9)
 		ff= 0.9993575- 0.0002320264*abs(theta) + 9.751713e-5*abs(theta^2) + 1.018564e-5*abs(theta^3) -3.977445e-7*abs(theta^4) +2.960205e-9*abs(theta^5)
 	endif
+	ff= 0.9992674-0.0001808763*abs(theta) +8.134414e-05*abs(theta^2) +1.151734e-05*abs(theta^3) - 4.401022e-07*abs(theta^4)+3.71246e-09*abs(theta^5)
 
 	return(ff)
 End
