@@ -50,7 +50,9 @@ Function LoadBT5File(fname,type)
 	Variable numLinesLoaded = 0,firstchar,countTime
 	Variable v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,ii,valuesRead
 	String buffer ="",s1,s2,s3,s4,s5,s6,s7,s8,s9,s10
-	String filen="",fileLabel=""
+	String filen="",fileLabel="",filedt=""
+	
+	Variable MainDeadTime,TransDeadTime
 	
 	//parse the first line
 	FReadLine refnum,buffer
@@ -61,6 +63,30 @@ Function LoadBT5File(fname,type)
 	//v2 is the monitor prefactor. multiply monitor time by prefactor. AJJ 5 March 07
 	countTime=v1*v2
 	//Print "time (sec) = ",countTime
+	
+	//Deadtime correction
+	//Discovered significant deadtime on detectors in Oct 2010
+	//JGB and AJJ changed pre-amps during shutdown Oct 27 - Nov 7 2010
+	//Need different deadtime before and after 8th November 2010
+	filedt = s2+" "+s3+" "+s4+" "+s5
+	ii=strlen(filedt)
+	filedt = filedt[1,(ii-2)]
+		
+	print filedt
+	print BT5Date2Secs(filedt)
+	print date2secs(2010,11,7)
+	
+	if (BT5Date2Secs(filedt) < date2secs(2010,11,7))
+			MainDeadTime = 4e-5
+			TransDeadTime = 1.26e-5
+			//print "Old Dead Times"
+			//MainDeadTime = 0
+			//TransDeadTime = 0
+	else
+			MainDeadTime = 7e-6
+			TransDeadTime = 1.26e-5
+			//print "New Dead Times"
+	endif
 	
 	//skip line 2
 	FReadLine refnum,buffer
@@ -90,8 +116,13 @@ Function LoadBT5File(fname,type)
 		//valuesRead = V_flag
 		//print valuesRead
 		MonCts[numlinesloaded] = v1		//monitor
+		v2 = v2/(1.0-V2*MainDeadTime/countTime)   // Deadtime correction
+		v3 = v3/(1.0-V3*MainDeadTime/countTime)   // Deadtime correction
+		v5 = v5/(1.0-V5*MainDeadTime/countTime)   // Deadtime correction
+		v6 = v6/(1.0-V6*MainDeadTime/countTime)   // Deadtime correction
+		v7 = v7/(1.0-V7*MainDeadTime/countTime)   // Deadtime correction
 		DetCts[numlinesloaded] = v2 + v3 + v5 + v6 + v7		//5 detectors
-		TransCts[numlinesloaded] = v4		//trans detector
+		TransCts[numlinesloaded] = v4/(1.0-V4*TransDeadTime/countTime)		//trans detector+deadtime correction
 		ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
 		//values 8-16 are always zero
 		numlinesloaded += 1		//2 lines in file read, one "real" line of data
@@ -247,4 +278,39 @@ Function FindTWideCts(type)
 	Note detCts,str
 
 	return(0)
+End
+
+
+Function BT5DateTime2Secs(datestring)
+	String datestring
+	
+	Variable bt5secs
+	
+	String monthnums = "Jan:1;Feb:2;Mar:3;Apr:4;May:5;Jun:6;Jul:7;Aug:8;Sep:9;Oct:10;Nov:11;Dec:12"
+		
+	Variable bt5month = str2num(StringByKey(stringfromlist(0,datestring, " "),monthnums))
+	Variable bt5day = str2num(stringfromlist(1,datestring," "))
+	Variable bt5year = str2num(stringfromlist(2,datestring," "))
+	Variable bt5hours = str2num(stringfromlist(0,stringfromlist(3,datestring," "),":"))
+	Variable bt5mins = str2num(stringfromlist(1,stringfromlist(3,datestring," "),":"))
+	
+	bt5secs = date2secs(bt5year,bt5month,bt5day) + 3600*bt5hours + 60*bt5mins
+
+	return bt5secs
+End
+
+Function BT5Date2Secs(datestring)
+	String datestring
+	
+	Variable bt5secs
+	
+	String monthnums = "Jan:1;Feb:2;Mar:3;Apr:4;May:5;Jun:6;Jul:7;Aug:8;Sep:9;Oct:10;Nov:11;Dec:12"
+		
+	Variable bt5month = str2num(StringByKey(stringfromlist(0,datestring, " "),monthnums))
+	Variable bt5day = str2num(stringfromlist(1,datestring," "))
+	Variable bt5year = str2num(stringfromlist(2,datestring," "))
+	
+	bt5secs = date2secs(bt5year,bt5month,bt5day)
+
+	return bt5secs
 End

@@ -146,6 +146,8 @@ Proc Init_MainUSANS()
 	
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
+	//November 2010 - deadtime corrections
+	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
 
 	String/G root:Packages:NIST:gXMLLoader_Title=""
 
