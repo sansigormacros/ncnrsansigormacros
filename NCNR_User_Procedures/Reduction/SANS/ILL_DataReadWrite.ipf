@@ -247,95 +247,9 @@ End
 
 
 
-// Detector sensitivity files have the same header structure as RAW SANS data
-// as NCNR, just with a different data array (real, rather than integer data)
-//
-// So for your facility, make this reader specific to the format of whatever
-// file you use for a pixel-by-pixel division of the raw detector data
-// to correct for non-uniform sensitivities of the detector. This is typically a
-// measurement of water, plexiglas, or another uniform scattering sample.
-//
-// The data must be normalized to a mean value of 1
-//
-// called from ProtocolAsPanel.ipf
-//
-// type is "DIV" on input
-Function ReadHeaderAndWork1(type,fname)
-	String type,fname
-	
-	//type is the desired folder to read the workfile to
-	//this data will NOT be automatically displayed
-	// gDataDisplayType is unchanged
-
-	String cur_folder = type
-	String curPath = "root:Packages:NIST:"+cur_folder
-	SetDataFolder curPath		//use the full path, so it will always work
-	
-	Variable refNum,integer,realval
-	String sansfname,textstr
-	Variable/G $(curPath + ":gIsLogScale") = 0		//initial state is linear, keep this in DIV folder
-	
-	Make/O/D/N=23 $(curPath + ":IntegersRead")
-	Make/O/D/N=52 $(curPath + ":RealsRead")
-	Make/O/T/N=11 $(curPath + ":TextRead")
-	
-	WAVE intw=$(curPath + ":IntegersRead")
-	WAVE realw=$(curPath + ":RealsRead")
-	WAVE/T textw=$(curPath + ":TextRead")
-	
-	// the actual data array, dimensions are set as globals in 
-	// InitFacilityGlobals()
-	NVAR XPix = root:myGlobals:gNPixelsX
-	NVAR YPix = root:myGlobals:gNPixelsX
-	
-
-	
-	Make/O/D/N=(XPix,YPix) $(curPath + ":data")
-	WAVE data = $(curPath + ":data")
-	
-	
-//	print "function used"
-
-
-	
-	
-	
-	//loadwave /H "fname"
-	
-	//Duplicate/O $"fname", datates
-	
-
-
-		// (1)
-	// fill in your reader for the header here so that intw, realw, and textW are filled in
-	// ? possibly a duplication of the raw data reader
-	Duplicate/O $("root:Packages:NIST:raw:realsread"),$(curPath+ ":realsread")
-	Duplicate/O $("root:Packages:NIST:raw:integersread"),$(curPath+ ":integersread")
-	Duplicate/T $("root:Packages:NIST:raw:Textread"),$(curPath+ ":Textread")
-	
-
-	//(2)
-	// then fill in a reader for the data array that will DIVIDE your data
-	// to get the corrected values.
-	// fill the data array with the detector values
-
-	duplicate/O $("root:Packages:NIST:raw:data"),$(curPath+ ":data")
-	
-	
-	//keep a string with the filename in the DIV folder
-	String/G $(curPath + ":fileList") = textw[0]
-	
-	//return the data folder to root
-	SetDataFolder root:
-	
-	Return(0)
-End
-
 
 /////////DIV file created with NIST reduction so has the VAX format.... painful
-
-
-	
+//	
 // Detector sensitivity files have the same header structure as RAW SANS data
 // as NCNR, just with a different data array (real, rather than integer data)
 //
@@ -377,42 +291,39 @@ Function ReadHeaderAndWork(type,fname)
 	NVAR XPix = root:myGlobals:gNPixelsX
 	NVAR YPix = root:myGlobals:gNPixelsX
 	
-
 	Make/O/D/N=(XPix,YPix) $(curPath + ":data")
 	WAVE data = $(curPath + ":data")
 	
 	Make/O/D/N=(XPix,YPix) $(curPath + ":linear_data")
 	WAVE linear_data = $(curPath + ":linear_data")
 	
-	
-//	print "function used"
-	
-
-		// (1)
+	// (1)
 	// fill in your reader for the header here so that intw, realw, and textW are filled in
-	// ? possibly a duplication of the raw data reader
-	Duplicate/O $("root:Packages:NIST:raw:realsread"),$(curPath+ ":realsread")
-	Duplicate/O $("root:Packages:NIST:raw:integersread"),$(curPath+ ":integersread")
-	Duplicate/T $("root:Packages:NIST:raw:Textread"),$(curPath+ ":Textread")
-	
+	// -- these are not really needed at all, so skip them for now
+	// a simple duplication of some other data may be sufficient
+	if(exists("root:Packages:NIST:raw:realsread") == 1)
+		Duplicate/O $("root:Packages:NIST:raw:realsread"),$(curPath+ ":realsread")
+		Duplicate/O $("root:Packages:NIST:raw:integersread"),$(curPath+ ":integersread")
+		Duplicate/O/T $("root:Packages:NIST:raw:Textread"),$(curPath+ ":Textread")
+	endif
 
 	//(2)
 	// then fill in a reader for the data array that will DIVIDE your data
 	// to get the corrected values.
-	// fill the data array with the detector values
 
 	//here you load in your file, you're already in the DIV folder
-//	LoadWave/H/O "Macintosh HD:Users:srkline:Desktop:linear_data.ibw"
-	LoadWave/H/O fname		//since fname is the full path
-	
-	ConvertFolderToLogScale(type)
-	
+	LoadWave/O fname		//since fname is the full path
+		
 	String loadedStr = StringFromList(0,S_waveNames,";")		//then name of the wave loaded
 
-	//then copy the loaded wave to data and to linear data, in the DIV folder
-	duplicate/O $("loadedStr"),$(curPath+ ":data")
-	duplicate/O $("loadedStr"),$(curPath+ ":linear_data")
-	
+	// if data loaded in is already named "data", don't bother with this step
+	if(exists("data") == 0)
+		duplicate/O $loadedStr,$(curPath+ ":data")
+	endif
+	// if data loaded in is already named "linear_data", don't bother with this step
+	if(exists("linear_data") == 0)
+		duplicate/O $loadedStr,$(curPath+ ":linear_data")
+	endif
 	
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
@@ -422,9 +333,6 @@ Function ReadHeaderAndWork(type,fname)
 	
 	Return(0)
 End
-
-
-
 
 
 /////   ASC FORMAT READER  //////

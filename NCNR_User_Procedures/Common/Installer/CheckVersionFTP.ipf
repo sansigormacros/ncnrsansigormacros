@@ -17,7 +17,7 @@ Proc CheckForLatestVersion()
 	fileNameStr = SpecialDirPath("Packages", 0, 0, 0)
 	fileNameStr += "CurrentVersion.txt"
 
-	FTPDownload/O/Z url, fileNameStr
+	FTPDownload/O/Z/V=7/T=1 url, fileNameStr
 
 	Open/R refNum as fileNameStr
 	FReadLine refNum, currentStr

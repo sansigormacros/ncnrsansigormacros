@@ -184,7 +184,15 @@ Function DoGenCurveFit(useRes,useCursors,sw,fitYw,fs,funcStr,holdStr,val,lolim,h
 	WAVE bar.x[0] = fs.xW
 	WAVE/Z bar.ffsWaves[0] = fs.resW		//will not exist for 3-column data sets
 	
-
+	// FuncFit can accept a null HoldStr, this cannot. 
+	if(strlen(holdStr)==0)
+		Variable nc=numpnts(bar.w),ii
+		for(ii=0;ii<nc;ii+=1)
+			holdStr += "0"
+		endfor
+		print holdStr
+	endif
+	
 	//need to parse limits, or make up some defaults
 	// limits is (n,2)
 	Variable nPnts = numpnts(fs.coefW),i,multip=1.01,isUSANS=0,tol=0.01
