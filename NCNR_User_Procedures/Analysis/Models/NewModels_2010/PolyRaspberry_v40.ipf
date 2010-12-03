@@ -2,9 +2,9 @@
 
 
 // Raspberry particles with polydisperse large sphere
-#include "Raspberry"
+#include "Raspberry_v40"
 
-Macro PlotPolyRaspberry(num,qmin,qmax)
+Proc PlotPolyRaspberry(num,qmin,qmax)
 	Variable num=500, qmin=1e-5, qmax=0.7
 	Prompt num "Enter number of data points for model: "
 	Prompt qmin "Enter minimum q-value (Å^-1) for model: " 
@@ -30,7 +30,7 @@ Macro PlotPolyRaspberry(num,qmin,qmax)
 End
 
 
-Macro PlotSmearedPolyRaspberry(str)								
+Proc PlotSmearedPolyRaspberry(str)								
 	String str
 	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
 	

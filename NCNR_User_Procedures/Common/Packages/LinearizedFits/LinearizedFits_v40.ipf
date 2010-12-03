@@ -838,7 +838,7 @@ End
 //
 Window FitRPAPanel() 
 
-	String angst = root:myGlobals:gAngstStr
+	String angst = root:Packages:NIST:gAngstStr
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(250,266,591,579)/K=1
 	ModifyPanel cbRGB=(32768,54528,65280)

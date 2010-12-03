@@ -13,7 +13,7 @@
 // -- There are many external calls and allocation/deallocation of memory, so the XOP is NOT THREADED
 // -- The function calculation is inherently AAO, so this XOP definition is DIFFERENT than
 //		all of the standard fitting functions.
-//
+// -- so be sure that the P*S implementations are not threaded - although P(q) can be threaded
 //
 // *** passing in Z values of zero can cause the XOP to crash. test for them here and send good values.
 // -- the XOP will be modified to handle this and noted here when it is done. 0.001 seems to be OK

@@ -2007,12 +2007,30 @@ Proc Rebin()
 	Button button3,pos={11,84},size={80,20},proc=Rebin_newGraph,title="New Graph"
 	Button button6,pos={11,138},size={70,20},proc=Rebin_by,title="Rebin by"
 	Button button_8,pos={160,138},size={90,20},proc=SaveResultBin,title="Save Result"
-	
+	Button button_9,pos={20,178},size={30,20},proc=Rebin_Help,title="?"
+
 	SetVariable end_3,pos={97,140},size={40,14},title=" ",Font="Arial",fsize=10
 	SetVariable end_3,limits={1,10,1},value= root:Packages:NIST:Rebin:binning
 
 EndMacro
 
+Function Rebin_Help(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Re-Bin Data"
+			if(V_flag !=0)
+				DoAlert 0,"The ReBin Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
 
 Function Rebin_Done(ctrlName) : ButtonControl
 	String ctrlName
