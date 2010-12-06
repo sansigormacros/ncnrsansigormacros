@@ -1,6 +1,14 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
+////////////////////////////////////////////////////
+// Raspberry model
+//
+// Larson-Smith et al. Small angle scattering model for Pickering emulsions and raspberry particles.
+//   Journal of colloid and interface science (2010) vol. 343 (1) pp. 36-41
+//
+////////////////////////////////////////////////////
+
 // Raspberry particles with polydisperse large sphere
 #include "Raspberry_v40"
 

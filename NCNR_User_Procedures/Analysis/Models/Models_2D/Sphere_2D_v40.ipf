@@ -118,11 +118,8 @@ End
 Function Sphere2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 
-
 #if exists("Sphere_2DX")			//to hide the function if XOP not installed
-	
 	MultiThread 	zw= Sphere_2DX(cw,xw,yw)
-
 #endif
 
 	return(0)
@@ -216,7 +213,7 @@ Function SmearedSphere2D(s)
 
 
 //// the last param is nord
-	SmearSphere2D_THR(s,10)		
+	SmearedSphere2D_THR(s,10)		
 
 	return(0)
 end
@@ -259,7 +256,7 @@ End
 //
 // must be written specific to each 2D function
 // 
-Function SmearSphere2D_THR(s,nord)
+Function SmearedSphere2D_THR(s,nord)
 	Struct ResSmear_2D_AAOStruct &s
 	Variable nord
 	
@@ -306,7 +303,7 @@ Function SmearSphere2D_THR(s,nord)
 	
 	for(i=0;i<nthreads;i+=1)
 //		Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,SmearSphere2D_T(s.coefW,s.xw[0],s.xw[1],s.qz,s.sQpl,s.sQpp,s.fs,s.zw,wt,xi,(i*npt/nthreads),((i+1)*npt/nthreads-1),nord)
+		ThreadStart mt,i,SmearedSphere2D_T(s.coefW,s.xw[0],s.xw[1],s.qz,s.sQpl,s.sQpp,s.fs,s.zw,wt,xi,(i*npt/nthreads),((i+1)*npt/nthreads-1),nord)
 	endfor
 
 	do
@@ -327,7 +324,7 @@ end
 //
 // - worker function for threads of Sphere2D
 //
-ThreadSafe Function SmearSphere2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt1,pt2,nord)
+ThreadSafe Function SmearedSphere2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt1,pt2,nord)
 	WAVE coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi
 	Variable pt1,pt2,nord
 	

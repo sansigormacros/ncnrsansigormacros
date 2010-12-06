@@ -138,7 +138,7 @@ Proc FileList_BuiltInList()
 
 ////paste here... after deleting the old make statement and list
 	
-  Make/O/T/N=92  SANS_Model_List
+  Make/O/T/N=95  SANS_Model_List
 
   SANS_Model_List[0] = "BE_Polyelectrolyte.ipf"
   SANS_Model_List[1] = "CoreShellCylinder.ipf"
@@ -235,6 +235,9 @@ Proc FileList_BuiltInList()
 	//2010 models
   SANS_Model_List[90] = "Guinier_Porod.ipf"
   SANS_Model_List[91] = "PolymerExcludVol.ipf"
+  SANS_Model_List[92] = "Raspberry.ipf"
+  SANS_Model_List[93] = "PolyRaspberry.ipf"
+  SANS_Model_List[94] = "Yukawa_SQ.ipf"
 
   ///end paste here
 End

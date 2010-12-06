@@ -664,35 +664,40 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		useResol=1
 	endif
 
-	// can't use constraints in this way for multivariate fits. See the curve fitting help file
+	// can't use constraints defined as a single text wave for multivariate fits. See the curve fitting help file
 	// and "Contraint Matrix and Vector"
-	if(useConstr)
-		Print "Constraints not yet implemented"
-		useConstr = 0
-	endif	
-	WAVE/Z constr=constr		//will be a null reference
+	//
+	// -- generate a constraint text wave, then the /C flag automatically generates a constraint matrix and vector
+	// -- then use the proper logic to dispatch (can't use /NWOK anymore)
 	
-//	// do not construct constraints for any of the coefficients that are being held
-//	// -- this will generate an "unknown error" from the curve fitting
-//	Make/O/T/N=0 constr
 //	if(useConstr)
-//		String constraintExpression
-//		Variable i, nPnts=DimSize(lolim, 0),nextRow=0
-//		for (i=0; i < nPnts; i += 1)
-//			if (strlen(lolim[i]) > 0 && hold[i] == 0)
-//				InsertPoints nextRow, 1, constr
-//				sprintf constraintExpression, "K%d > %s", i, lolim[i]
-//				constr[nextRow] = constraintExpression
-//				nextRow += 1
-//			endif
-//			if (strlen(hilim[i]) > 0 && hold[i] == 0)
-//				InsertPoints nextRow, 1, constr
-//				sprintf constraintExpression, "K%d < %s", i, hilim[i]
-//				constr[nextRow] = constraintExpression
-//				nextRow += 1
-//			endif
-//		endfor
-//	endif
+//		Print "Constraints not yet implemented"
+//		useConstr = 0
+//	endif	
+//	WAVE/Z constr=constr		//will be a null reference
+	
+	// do not construct constraints for any of the coefficients that are being held
+	// -- this will generate an "unknown error" from the curve fitting
+	Make/O/T/N=0 constr
+	if(useConstr)
+		String constraintExpression
+		Variable i, nPnts=DimSize(lolim, 0),nextRow=0
+		for (i=0; i < nPnts; i += 1)
+			if (strlen(lolim[i]) > 0 && hold[i] == 0)
+				InsertPoints nextRow, 1, constr
+				sprintf constraintExpression, "K%d > %s", i, lolim[i]
+				constr[nextRow] = constraintExpression
+				nextRow += 1
+			endif
+			if (strlen(hilim[i]) > 0 && hold[i] == 0)
+				InsertPoints nextRow, 1, constr
+				sprintf constraintExpression, "K%d < %s", i, hilim[i]
+				constr[nextRow] = constraintExpression
+				nextRow += 1
+			endif
+		endfor
+
+	endif
 
 	if(useCursors)
 		Print "Cursors not yet implemented"
@@ -734,8 +739,8 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 
 	do
 	
-			// now useCursors, useEps, and useConstr are all handled w/ /NWOK, just like FitWrapper
-
+			// now useEps, and useConstr are all handled w/ /NWOK, just like FitWrapper
+			// useCursors needs to have the /C flag in the command for the constraint matrix and vector to be auto-generated
 
 //		if(useResol && useResiduals && useTextBox)		//do it all
 //			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /R /NWOK
@@ -753,29 +758,39 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 //			break
 //		endif
 		
+		if(useResol && useConstr)		//res  and constraints
+			Print "useRes only"
+			FuncFit/C/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /NWOK
+			break
+		endif
+		
 		if(useResol)		//res only
 			Print "useRes only"
 			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /STRC=s /NWOK
 			break
 		endif
-			
 				
 /////	same as above, but all without useResol (no /STRC flag)
-		if(useResiduals && useTextBox)		//resid+ text
-			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
-			break
-		endif
+//		if(useResiduals && useTextBox)		//resid+ text
+//			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
+//			break
+//		endif
+//		
+//		if(useResiduals)		//resid
+//			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
+//			break
+//		endif
+//
+//		
+//		if(useTextBox)		//text
+//			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /NWOK
+//			break
+//		endif
 		
-		if(useResiduals)		//resid
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /R /NWOK
+		if(useConstr)
+			FuncFit/C/H=getHStr(hold) /NTHR=0 $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /NWOK
 			break
-		endif
-
-		
-		if(useTextBox)		//text
-			FuncFit/H=getHStr(hold) /NTHR=0 /TBOX=(tb) $funcStr cw, inten[pt1,pt2] /X={Qx,Qy} /M=mask /W=sw /I=1 /E=eps /C=constr /NWOK
-			break
-		endif
+		Endif
 		
 		//just a plain vanilla fit
 
@@ -783,7 +798,7 @@ Function FitWrapper2D(folderStr,funcStr,coefStr,useCursors,useEps,useConstr)
 		
 	while(0)
 	
-	Print "elapsed 2D fit time  = ",(StopMSTimer(-2) - t1)/1e6," s = ",(StopMSTimer(-2) - t1)/1e6/60," min"
+	Print "elapsed 2D fit time  = ",(StopMSTimer(-2) - t1)/1e6," seconds = ",(StopMSTimer(-2) - t1)/1e6/60," minutes"
 
 	// append the fit
 	// need to manage duplicate copies

@@ -1185,6 +1185,10 @@ Function/S User_FunctionPopupList()
 	//non-fit functions that I can't seem to filter out
 	list = RemoveFromList("BinaryHS_PSF11;BinaryHS_PSF12;BinaryHS_PSF22;EllipCyl_Integrand;PP_Inner;PP_Outer;Phi_EC;TaE_Inner;TaE_Outer;",list,";")
 
+	// from 2010 model functions
+	list = RemoveFromList("fTwoYukawa;",list,";")
+	
+	
 	list = SortList(list)
 	return(list)
 End
