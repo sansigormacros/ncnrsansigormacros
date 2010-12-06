@@ -21,7 +21,7 @@ Proc PlotPolyRaspberry(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_PolyRaspberry, ywave_PolyRaspberry
 	xwave_PolyRaspberry =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	Make/O/D coef_PolyRaspberry = {0.05,5000,0.1,-4e-7,0.005,100,0.4,3.5e-6,0,6.3e-6,0.0}			
-	make/o/t parameters_PolyRaspberry =  {"vf Large","Radius Large (A)","pd Large Sphere","SLD Large sphere (A-2)","vf Small", "Radius Small (A)","surface coverage","SLD Small sphere (A-2)","delta","SLD solvent (A-2)","bkgd (cm-1)"}
+	make/o/t parameters_PolyRaspberry =  {"vol fract Large","Radius Large (A)","pd of radius Large Sphere (0,1)","SLD Large sphere (A-2)","vol fract Small", "Radius Small (A)","surface coverage","SLD Small sphere (A-2)","delta","SLD solvent (A-2)","bkgd (cm-1)"}
 	Edit parameters_PolyRaspberry, coef_PolyRaspberry
 	
 	Variable/G root:g_PolyRaspberry
@@ -51,7 +51,7 @@ Proc PlotSmearedPolyRaspberry(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_PolyRaspberry = {0.05,5000,0.1,-4e-7,0.005,100,0.4,3.5e-6,0,6.3e-6,0.0}
-	make/o/t smear_parameters_PolyRaspberry = {"vf Large","Radius Large (A)","pd Large Sphere","SLD Large sphere (A-2)","vf Small", "Radius Small (A)","surface coverage","SLD Small sphere (A-2)","delta","SLD solvent (A-2)","bkgd (cm-1)"}
+	make/o/t smear_parameters_PolyRaspberry = {"vol fract Large","Radius Large (A)","pd of radius Large Sphere (0,1)","SLD Large sphere (A-2)","vol fract Small", "Radius Small (A)","surface coverage","SLD Small sphere (A-2)","delta","SLD solvent (A-2)","bkgd (cm-1)"}
 	Edit smear_parameters_PolyRaspberry,smear_coef_PolyRaspberry					//display parameters in a table
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values

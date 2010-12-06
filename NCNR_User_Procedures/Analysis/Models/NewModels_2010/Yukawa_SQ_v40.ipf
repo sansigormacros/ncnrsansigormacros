@@ -200,6 +200,56 @@ Function fTwoYukawa(cw,xw,yw) : FitFunc
 End
 
 
+Macro Plot_2YukawaPotential()
+	fPlot_2YukawaPotential()
+End
+
+Function fPlot_2YukawaPotential()
+
+	Variable k1,z1,k2,z2,radius
+	Variable ii=0,num=500,rmax=10,rval
+	
+	if(exists("root:coef_2yuk") == 0)
+		Abort "You must plot the 2-Yukawa model before plotting the potential"
+	else
+		WAVE coef_2yuk = root:coef_2yuk
+	endif
+	
+	radius = coef_2yuk[1]
+	K1 = coef_2yuk[2]
+	Z1 = coef_2yuk[3]
+	K2 = coef_2yuk[4]
+	Z2 = coef_2yuk[5]
+
+	Make/O/D/N=(num) TwoYukawa_Potential,TwoYukawa_Potential_r
+	TwoYukawa_Potential_r = x/num*rmax
+	
+	do
+		rval = TwoYukawa_Potential_r[ii]
+		if(rval <= 1)
+			TwoYukawa_Potential[ii] = inf
+		else
+			TwoYukawa_Potential[ii] = -1*K1*(exp(-1*Z1*(rval-1))/rval) - K2*exp(-1*Z2*(rval-1))/rval
+		endif
+	
+		ii+=1
+	while(ii<num)
+	
+	
+//	if graph is not open, draw a graph
+	DoWindow YukawaPotential
+	if(V_flag == 0)
+		Display/N=YukawaPotential TwoYukawa_Potential vs TwoYukawa_Potential_r
+		ModifyGraph marker=29,msize=2,mode=4,grid=1,mirror=2
+		Label bottom "r/Diameter"
+		Label left "V(r)/kT"
+	endif
+	
+	return(0)
+End
+
+
+
 ///////////////////// converted procedures from c-code ////////////////////////////
 
 /// there were two functions defined as TY_q: one as TY_Q and one as TY_q. I renamed the TY_Q function as TY_capQ, and left TY_q unchanged
