@@ -43,11 +43,7 @@
 //
 // 		TO ADD:
 //
-// - a mechanism for plotting the potential, so that users have a good handle on what the parameters actually mean.
-// - as with plotting the potential, transform the K and Z into some energy scale if possible for interpretation.
-//
-//
-//
+// x- a mechanism for plotting the potential, so that users have a good handle on what the parameters actually mean.
 //
 //
 /////////////////////////////////////////////

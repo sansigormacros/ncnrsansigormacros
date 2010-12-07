@@ -237,7 +237,7 @@ Proc FileList_BuiltInList()
   SANS_Model_List[91] = "PolymerExcludVol.ipf"
   SANS_Model_List[92] = "Raspberry.ipf"
   SANS_Model_List[93] = "PolyRaspberry.ipf"
-  SANS_Model_List[94] = "Yukawa_SQ.ipf"
+  SANS_Model_List[94] = "Two_Yukawa.ipf"
 
   ///end paste here
 End
