@@ -15,6 +15,8 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
+
 
 Proc PlotVesicle_HS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
@@ -460,6 +462,118 @@ Function Vesicle_SHS(w,yw,xw) : FitFunc
 End
 
 
+// two yukawa
+Proc PlotVesicle_2Y(num,qmin,qmax)						
+	Variable num=256,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	//make the normal model waves
+	Make/O/D/n=(num) xwave_ves_2Y,ywave_ves_2Y					
+	xwave_ves_2Y =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
+	Make/O/D coef_ves_2Y = {0.1,100,30,6.36e-6,0.5e-6,6,10,-1,2,0}						
+	make/o/t parameters_ves_2Y = {"Volume fraction","core radius (A)","shell thickness (A)","Core and Solvent SLD (A-2)","Shell SLD (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}		
+	Edit/K=1 parameters_ves_2Y,coef_ves_2Y
+	
+	Variable/G root:g_ves_2Y
+	g_ves_2Y := Vesicle_2Y(coef_ves_2Y,ywave_ves_2Y,xwave_ves_2Y)			
+	Display/K=1 ywave_ves_2Y vs xwave_ves_2Y							
+	ModifyGraph log=1,marker=29,msize=2,mode=4			
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"					
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("Vesicle_2Y","coef_ves_2Y","parameters_ves_2Y","ves_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedVesicle_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_ves_2Y = {0.1,100,30,6.36e-6,0.5e-6,6,10,-1,2,0}					
+	make/o/t smear_parameters_ves_2Y = {"Volume fraction","core radius (A)","shell thickness (A)","Core and Solvent SLD (A-2)","Shell SLD (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}		
+	Edit smear_parameters_ves_2Y,smear_coef_ves_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_ves_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_ves_2Y							
+					
+	Variable/G gs_ves_2Y=0
+	gs_ves_2Y := fSmearedVesicle_2Y(smear_coef_ves_2Y,smeared_ves_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_ves_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedVesicle_2Y","smear_coef_ves_2Y","smear_parameters_ves_2Y","ves_2Y")
+End
+
+
+Function Vesicle_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+	
+	Variable inten
+	
+	//setup form factor coefficient wave
+	Make/O/D/N=6 form_ves_2Y
+	form_ves_2Y[0] = 1
+	form_ves_2Y[1] = w[1]
+	form_ves_2Y[2] = w[2]
+	form_ves_2Y[3] = w[3]
+	form_ves_2Y[4] = w[4]
+	form_ves_2Y[5] = 0
+	
+	// calculate the excluded volume of the vesicles
+	Variable totvol,core,shell,exclVol,nden
+	totvol=4*pi/3*(w[1]+w[2])^3
+	core=4*pi/3*(w[1])^3
+	shell = totVol-core
+	//	nden = phi/(shell volume) or phi/Vtotal
+	nden = w[0]/shell
+	exclVol = nden*totvol
+
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_ves_2Y
+	struct_ves_2Y[0] = exclVol
+	struct_ves_2Y[1] = w[1] + w[2]
+	struct_ves_2Y[2] = w[5]
+	struct_ves_2Y[3] = w[6]
+	struct_ves_2Y[4] = w[7]
+	struct_ves_2Y[5] = w[8]
+	
+	//calculate each and combine
+	Duplicate/O xw tmp_ves_2Y_PQ,tmp_ves_2Y_SQ
+	VesicleForm(form_ves_2Y,tmp_ves_2Y_PQ,xw)
+	TwoYukawa(struct_ves_2Y,tmp_ves_2Y_SQ,xw)
+	yw = tmp_ves_2Y_PQ * tmp_ves_2Y_SQ
+	yw *= w[0]
+	yw += w[9]
+	
+	//cleanup waves
+	//Killwaves/Z form_ves_2Y,struct_ves_2Y
+	
+	return (0)
+End
+
+
+
+
 
 // this is all there is to the smeared calculation!
 Function SmearedVesicle_HS(s) :FitFunc
@@ -500,6 +614,17 @@ Function SmearedVesicle_SHS(s) :FitFunc
 
 	return(0)
 End
+
+// this is all there is to the smeared calculation!
+Function SmearedVesicle_2Y(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_20(Vesicle_2Y,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
 
 //wrapper to calculate the smeared model as an AAO-Struct
 // fills the struct and calls the ususal function with the STRUCT parameter
@@ -598,6 +723,31 @@ Function fSmearedVesicle_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedVesicle_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedVesicle_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedVesicle_2Y(fs)
 	
 	return (0)
 End

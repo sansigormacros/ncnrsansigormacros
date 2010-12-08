@@ -29,6 +29,7 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
 
 Proc PlotFuzzySphere_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
@@ -471,6 +472,117 @@ Function FuzzySphere_SHS(w,yw,xw) : FitFunc
 	return (0)
 End
 
+//two yukawa
+Proc PlotFuzzySphere_2Y(num,qmin,qmax)
+	Variable num=128,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	Make/O/D/N=(num) xwave_fuzz_2Y,ywave_fuzz_2Y
+	xwave_fuzz_2Y = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
+	Make/O/D coef_fuzz_2Y = {0.01,60,0.2,10,1e-6,3e-6,1,50,6,10,-1,2,0.001}
+	make/O/T parameters_fuzz_2Y = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1 sr-1)"}
+	Edit parameters_fuzz_2Y,coef_fuzz_2Y
+	
+	Variable/G root:g_fuzz_2Y
+	g_fuzz_2Y := FuzzySphere_2Y(coef_fuzz_2Y,ywave_fuzz_2Y,xwave_fuzz_2Y)
+	Display ywave_fuzz_2Y vs xwave_fuzz_2Y
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("FuzzySphere_2Y","coef_fuzz_2Y","parameters_fuzz_2Y","fuzz_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedFuzzySphere_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_fuzz_2Y = {0.01,60,0.2,10,1e-6,3e-6,1,50,6,10,-1,2,0.001}					
+	make/o/t smear_parameters_fuzz_2Y = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","interface thickness (A)","SLD sphere (A-2)","SLD solvent (A-2)","Lorentz Scale","Lorentz length","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1 sr-1)"}	
+	Edit smear_parameters_fuzz_2Y,smear_coef_fuzz_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_fuzz_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_fuzz_2Y							
+					
+	Variable/G gs_fuzz_2Y=0
+	gs_fuzz_2Y := fSmearedFuzzySphere_2Y(smear_coef_fuzz_2Y,smeared_fuzz_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_fuzz_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedFuzzySphere_2Y","smear_coef_fuzz_2Y","smear_parameters_fuzz_2Y","fuzz_2Y")
+End
+
+
+
+Function FuzzySphere_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+	
+	Variable inten
+	
+	//setup form factor coefficient wave
+	Make/O/D/N=9 form_fuzz_2Y
+	form_fuzz_2Y[0] = w[0]		// send the real volume fraction in here, so the scaling is done correctly
+	form_fuzz_2Y[1] = w[1]
+	form_fuzz_2Y[2] = w[2]
+	form_fuzz_2Y[3] = w[3]
+	form_fuzz_2Y[4] = w[4]
+	form_fuzz_2Y[5] = w[5]
+	form_fuzz_2Y[6] = w[6]			// w[6] is  the Lorentzian scale
+	form_fuzz_2Y[7] = w[7]
+	form_fuzz_2Y[8] = 0
+	
+	//calculate the diameter of the effective one-component sphere
+	Variable pd,diam,Vpoly,Ravg
+	pd = w[2]
+	Ravg = w[1]
+	
+	Vpoly = (4*pi/3*Ravg^3)*(1+3*pd^2)
+	diam = (6*Vpoly/pi)^(1/3)
+	
+	
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_fuzz_2Y
+	struct_fuzz_2Y[0] = w[0]
+	struct_fuzz_2Y[1] = diam/2
+	struct_fuzz_2Y[2] = w[8]
+	struct_fuzz_2Y[3] = w[9]
+	struct_fuzz_2Y[4] = w[10]
+	struct_fuzz_2Y[5] = w[11]
+	
+	//calculate each and combine
+	Duplicate/O xw tmp_fuzz_2Y_PQ,tmp_fuzz_2Y_SQ
+	FuzzySpheres(form_fuzz_2Y,tmp_fuzz_2Y_PQ,xw)
+
+	TwoYukawa(struct_fuzz_2Y,tmp_fuzz_2Y_SQ,xw)
+	yw = tmp_fuzz_2Y_PQ * tmp_fuzz_2Y_SQ
+	
+//	yw *= w[0]		// scaling is done in FuzzySpheres
+	yw += w[12]
+	
+	//cleanup waves
+//	Killwaves/Z form_fuzz_2Y,struct_fuzz_2Y
+	
+	return (0)
+End
 
 
 // this is all there is to the smeared calculation!
@@ -509,6 +621,16 @@ Function SmearedFuzzySphere_SHS(s) : FitFunc
 
 //	the name of your unsmeared model (AAO) is the first argument
 	Smear_Model_20(FuzzySphere_SHS,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
+// this is all there is to the smeared calculation!
+Function SmearedFuzzySphere_2Y(s) : FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_20(FuzzySphere_2Y,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End
@@ -609,6 +731,31 @@ Function fSmearedFuzzySphere_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedFuzzySphere_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedFuzzySphere_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedFuzzySphere_2Y(fs)
 	
 	return (0)
 End

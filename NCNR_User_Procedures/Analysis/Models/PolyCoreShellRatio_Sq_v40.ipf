@@ -9,6 +9,7 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
 
 Proc PlotPolyCSRatio_HS(num,qmin,qmax)
 	Variable num=256,qmin=0.001,qmax=0.7
@@ -456,6 +457,116 @@ Function PolyCSRatio_SHS(w,yw,xw) : FitFunc
 	return (0)
 End
 
+// two yukawa
+Proc PlotPolyCSRatio_2Y(num,qmin,qmax)
+	Variable num=256,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	Make/O/D/n=(num) xwave_PCR_2Y,ywave_PCR_2Y
+	xwave_PCR_2Y =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
+	Make/O/D coef_PCR_2Y = {0.1,60,10,0.1,1e-6,2e-6,6e-6,6,10,-1,2,0.0001}
+	make/o/t parameters_PCR_2Y = {"volume fraction","avg radius (A)","avg shell thickness (A)","overall polydispersity","SLD core (A-2)","SLD shell (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}
+	Edit/K=1 parameters_PCR_2Y,coef_PCR_2Y
+	
+	Variable/G root:g_PCR_2Y
+	g_PCR_2Y := PolyCSRatio_2Y(coef_PCR_2Y,ywave_PCR_2Y,xwave_PCR_2Y)
+	Display/K=1 ywave_PCR_2Y vs xwave_PCR_2Y
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("PolyCSRatio_2Y","coef_PCR_2Y","parameters_PCR_2Y","PCR_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedPolyCSRatio_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_PCR_2Y = {0.1,60,10,0.1,1e-6,2e-6,6e-6,6,10,-1,2,0.0001}
+	make/o/t smear_parameters_PCR_2Y = {"volume fraction","avg radius (A)","avg shell thickness (A)","overall polydispersity","SLD core (A-2)","SLD shell (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}
+	Edit smear_parameters_PCR_2Y,smear_coef_PCR_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_PCR_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_PCR_2Y							
+					
+	Variable/G gs_PCR_2Y=0
+	gs_PCR_2Y := fSmearedPolyCSRatio_2Y(smear_coef_PCR_2Y,smeared_PCR_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_PCR_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedPolyCSRatio_2Y","smear_coef_PCR_2Y","smear_parameters_PCR_2Y","PCR_2Y")
+End
+	
+
+Function PolyCSRatio_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+	
+	Variable inten
+	
+	//setup form factor coefficient wave
+	Make/O/D/N=8 form_PCR_2Y
+	form_PCR_2Y[0] = 1
+	form_PCR_2Y[1] = w[1]
+	form_PCR_2Y[2] = w[2]
+	form_PCR_2Y[3] = w[3]
+	form_PCR_2Y[4] = w[4]
+	form_PCR_2Y[5] = w[5]
+	form_PCR_2Y[6] = w[6]
+	form_PCR_2Y[7] = 0
+	
+	//calculate the diameter of the effective one-component sphere
+	Variable pd,diam,zz,Vpoly,Ravg,thick
+	pd = w[3]
+	zz = (1/pd)^2 - 1
+	Ravg = w[1]
+	thick = w[2]
+	
+	Vpoly = 4*pi/3*(Ravg+thick)^3*(zz+3)*(zz+2)/(zz+1)^2
+	diam = (6*Vpoly/pi)^(1/3)
+	
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_PCR_2Y
+	struct_PCR_2Y[0] = w[0]
+	struct_PCR_2Y[1] = diam/2
+	struct_PCR_2Y[2] = w[7]
+	struct_PCR_2Y[3] = w[8]
+	struct_PCR_2Y[4] = w[9]
+	struct_PCR_2Y[5] = w[10]
+	
+	//calculate each and combine
+	Duplicate/O xw temp_PCR_2Y_PQ,temp_PCR_2Y_SQ		//make waves for the AAO
+	PolyCoreShellRatio(form_PCR_2Y,temp_PCR_2Y_PQ,xw)
+	TwoYukawa(struct_PCR_2Y,temp_PCR_2Y_SQ,xw)
+	yw = temp_PCR_2Y_PQ * temp_PCR_2Y_SQ
+	yw *= w[0]
+	yw += w[11]
+	
+	//cleanup waves
+//	Killwaves/Z form_PCR_2Y,struct_PCR_2Y
+	
+	return (0)
+End
 
 
 // this is all there is to the smeared calculation!
@@ -494,6 +605,16 @@ Function SmearedPolyCSRatio_SHS(s) :FitFunc
 
 //	the name of your unsmeared model is the first argument
 	Smear_Model_20(PolyCSRatio_SHS,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
+// this is all there is to the smeared calculation!
+Function SmearedPolyCSRatio_2Y(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model is the first argument
+	Smear_Model_20(PolyCSRatio_2Y,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End
@@ -594,6 +715,31 @@ Function fSmearedPolyCSRatio_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedPolyCSRatio_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedPolyCSRatio_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedPolyCSRatio_2Y(fs)
 	
 	return (0)
 End

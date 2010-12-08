@@ -9,6 +9,7 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
 
 Proc PlotSphere_HS(num,qmin,qmax)						
 	Variable num=256,qmin=0.001,qmax=0.7
@@ -407,6 +408,105 @@ Function Sphere_SHS(w,yw,xw) : FitFunc
 	return (0)
 End
 
+// two yukawa
+Proc PlotSphere_2Y(num,qmin,qmax)						
+	Variable num=256,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	//make the normal model waves
+	Make/O/D/n=(num) xwave_S_2Y,ywave_S_2Y					
+	xwave_S_2Y =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))					
+	Make/O/D coef_S_2Y = {0.1,60,1e-6,6.3e-6,6,10,-1,2,0.01}						
+	make/o/t parameters_S_2Y = {"volume fraction","Radius (A)","SLD sphere (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkgd (cm-1)"}		
+	Edit/K=1 parameters_S_2Y,coef_S_2Y
+	Variable/G root:g_S_2Y						
+	g_S_2Y := Sphere_2Y(coef_S_2Y,ywave_S_2Y,xwave_S_2Y)			
+//	ywave_S_2Y := Sphere_2Y(coef_S_2Y,xwave_S_2Y)			
+	Display/K=1 ywave_S_2Y vs xwave_S_2Y							
+	ModifyGraph log=1,marker=29,msize=2,mode=4			
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"					
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("Sphere_2Y","coef_S_2Y","parameters_S_2Y","S_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedSphere_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_S_2Y = {0.1,60,1e-6,6.3e-6,6,10,-1,2,0.01}						
+	make/o/t smear_parameters_S_2Y = {"volume fraction","Radius (A)","SLD sphere (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkgd (cm-1)"}		
+	Edit smear_parameters_S_2Y,smear_coef_S_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_S_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_S_2Y							
+					
+	Variable/G gs_S_2Y=0
+	gs_S_2Y := fSmearedSphere_2Y(smear_coef_S_2Y,smeared_S_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_S_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedSphere_2Y","smear_coef_S_2Y","smear_parameters_S_2Y","S_2Y")
+End
+
+
+//AAO function
+Function Sphere_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+		
+	//setup form factor coefficient wave
+	Make/O/D/N=5 form_S_2Y
+	form_S_2Y[0] = 1
+	form_S_2Y[1] = w[1]
+	form_S_2Y[2] = w[2]
+	form_S_2Y[3] = w[3]
+	form_S_2Y[4] = 0
+	
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_S_2Y
+	struct_S_2Y[0] = w[0]	//phi
+	struct_S_2Y[1] = w[1]	//rad
+	struct_S_2Y[2] = w[4]	//K1
+	struct_S_2Y[3] = w[5]	//Z1
+	struct_S_2Y[4] = w[6]	//K2
+	struct_S_2Y[5] = w[7]	//Z2
+	
+	//calculate each and combine
+	Duplicate/O xw temp_S_2Y_PQ,temp_S_2Y_SQ		//make waves for the AAO
+	SphereForm(form_S_2Y,temp_S_2Y_PQ,xw)
+	TwoYukawa(struct_S_2Y,temp_S_2Y_SQ,xw)
+	yw = temp_S_2Y_PQ * temp_S_2Y_SQ
+	yw *= w[0]
+	yw += w[8]
+	
+	//cleanup waves
+	//Killwaves/Z form_S_2Y,struct_S_2Y
+	
+	return (0)
+End
+
+
 
 
 // this is all there is to the smeared calculation!
@@ -448,6 +548,17 @@ Function SmearedSphere_SHS(s) :FitFunc
 
 	return(0)
 End
+
+// this is all there is to the smeared calculation!
+Function SmearedSphere_2Y(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model is the first argument
+	Smear_Model_20(Sphere_2Y,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
 
 //wrapper to calculate the smeared model as an AAO-Struct
 // fills the struct and calls the ususal function with the STRUCT parameter
@@ -545,6 +656,31 @@ Function fSmearedSphere_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedSphere_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedSphere_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedSphere_2Y(fs)
 	
 	return (0)
 End

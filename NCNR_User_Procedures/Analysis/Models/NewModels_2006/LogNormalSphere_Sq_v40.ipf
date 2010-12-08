@@ -10,6 +10,8 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
+
 
 Proc PlotLogNormalSphere_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
@@ -435,6 +437,112 @@ Function LogNormalSphere_SHS(w,yw,xw) : FitFunc
 	return (0)
 End
 
+// two yukawa
+Proc PlotLogNormalSphere_2Y(num,qmin,qmax)
+	Variable num=128,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	Make/O/D/N=(num) xwave_lns_2Y,ywave_lns_2Y
+	xwave_lns_2Y = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
+	Make/O/D coef_lns_2Y = {0.1,60,0.2,1e-6,3e-6,6,10,-1,2,0.001}
+	make/O/T parameters_lns_2Y = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1 sr-1)"}
+	Edit parameters_lns_2Y,coef_lns_2Y
+	
+	Variable/G root:g_lns_2Y
+	g_lns_2Y := LogNormalSphere_2Y(coef_lns_2Y,ywave_lns_2Y,xwave_lns_2Y)
+	Display ywave_lns_2Y vs xwave_lns_2Y
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("LogNormalSphere_2Y","coef_lns_2Y","parameters_lns_2Y","lns_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedLogNormalSphere_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_lns_2Y = {0.1,60,0.2,1e-6,3e-6,6,10,-1,2,0.001}					
+	make/o/t smear_parameters_lns_2Y = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1 sr-1)"}	
+	Edit smear_parameters_lns_2Y,smear_coef_lns_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_lns_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_lns_2Y							
+					
+	Variable/G gs_lns_2Y=0
+	gs_lns_2Y := fSmearedLogNormalSphere_2Y(smear_coef_lns_2Y,smeared_lns_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_lns_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedLogNormalSphere_2Y","smear_coef_lns_2Y","smear_parameters_lns_2Y","lns_2Y")
+End
+	
+
+Function LogNormalSphere_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+	
+	Variable inten
+	
+	//setup form factor coefficient wave
+	Make/O/D/N=6 form_lns_2Y
+	form_lns_2Y[0] = 1
+	form_lns_2Y[1] = w[1]
+	form_lns_2Y[2] = w[2]
+	form_lns_2Y[3] = w[3]
+	form_lns_2Y[4] = w[4]
+	form_lns_2Y[5] = 0
+	
+	//calculate the diameter of the effective one-component sphere
+	Variable r3,mu,sig,diam
+	sig = w[2]		 		//polydispersity
+	mu = ln(w[1])			//ln of mean radius
+	r3 = exp(3*mu + 9/2*sig^2)		// <R^3> calculated directly for log-normal distr.
+	
+	diam = 2*(r3)^(1/3)
+	
+	
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_lns_2Y
+	struct_lns_2Y[0] = w[0]
+	struct_lns_2Y[1] = diam/2
+	struct_lns_2Y[2] = w[5]
+	struct_lns_2Y[3] = w[6]
+	struct_lns_2Y[4] = w[7]
+	struct_lns_2Y[5] = w[8]
+	
+	//calculate each and combine
+	Duplicate/O xw tmp_lns_2Y_PQ,tmp_lns_2Y_SQ
+	LogNormalSphere(form_lns_2Y,tmp_lns_2Y_PQ,xw)
+	TwoYukawa(struct_lns_2Y,tmp_lns_2Y_SQ,xw)
+	yw = tmp_lns_2Y_PQ *tmp_lns_2Y_SQ
+	yw *= w[0]
+	yw += w[9]
+	
+	//cleanup waves
+//	Killwaves/Z form_lns_2Y,struct_lns_2Y
+	
+	return (0)
+End
+
 
 // this is all there is to the smeared calculation!
 Function SmearedLogNormalSphere_HS(s) : FitFunc
@@ -472,6 +580,16 @@ Function SmearedLogNormalSphere_SHS(s) : FitFunc
 
 //	the name of your unsmeared model (AAO) is the first argument
 	Smear_Model_20(LogNormalSphere_SHS,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
+// this is all there is to the smeared calculation!
+Function SmearedLogNormalSphere_2Y(s) : FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_20(LogNormalSphere_2Y,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End
@@ -572,6 +690,31 @@ Function fSmearedLogNormalSphere_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedLogNormalSphere_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedLogNormalSphere_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedLogNormalSphere_2Y(fs)
 	
 	return (0)
 End

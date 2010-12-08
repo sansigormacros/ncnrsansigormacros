@@ -204,7 +204,7 @@ Proc FileList_BuiltInList()
   SANS_Model_List[61] = "SchulzSpheres.ipf"
   SANS_Model_List[62] = "StickyHardSphereStruct.ipf"
   SANS_Model_List[63] = "TriaxialEllipsoid.ipf"
-  SANS_Model_List[64] = "Vesicle_UL_and_Struct.ipf"
+  SANS_Model_List[64] = "Vesicle_UL_Sq.ipf"
   SANS_Model_List[65] = "Vesicle_UL.ipf"
   //2008 Models
   SANS_Model_List[66] = "Core_and_NShells.ipf"

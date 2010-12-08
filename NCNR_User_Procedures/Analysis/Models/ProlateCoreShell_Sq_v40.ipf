@@ -9,6 +9,7 @@
 #include "HPMSA_v40"
 #include "SquareWellStruct_v40"
 #include "StickyHardSphereStruct_v40"
+#include "Two_Yukawa_v40"
 
 Proc PlotProlate_HS(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
@@ -425,6 +426,109 @@ Function Prolate_SHS(w,yw,xw) : FitFunc
 	return (0)
 End
 
+// two yukawa
+Proc PlotProlate_2Y(num,qmin,qmax)
+	Variable num=128,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	Make/O/D/n=(num) xwave_PEF_2Y,ywave_PEF_2Y
+	xwave_PEF_2Y =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
+	Make/O/D coef_PEF_2Y = {0.01,100,50,110,60,1e-6,2e-6,6.3e-6,6,10,-1,2,0.0001}
+	make/o/t parameters_PEF_2Y = {"volume fraction","major core radius (A)","minor core radius (A)","major shell radius (A)","minor shell radius (A)","SLD core (A-2)","SLD shell (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}
+	Edit parameters_PEF_2Y,coef_PEF_2Y
+	
+	Variable/G root:g_PEF_2Y
+	g_PEF_2Y := Prolate_2Y(coef_PEF_2Y,ywave_PEF_2Y,xwave_PEF_2Y)
+	Display ywave_PEF_2Y vs xwave_PEF_2Y
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("Prolate_2Y","coef_PEF_2Y","parameters_PEF_2Y","PEF_2Y")
+End
+
+// - sets up a dependency to a wrapper, not the actual SmearedModelFunction
+Proc PlotSmearedProlate_2Y(str)								
+	String str
+	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
+	
+	// if any of the resolution waves are missing => abort
+	if(ResolutionWavesMissingDF(str))		//updated to NOT use global strings (in GaussUtils)
+		Abort
+	endif
+	
+	SetDataFolder $("root:"+str)
+	
+	// Setup parameter table for model function
+	Make/O/D smear_coef_PEF_2Y = {0.01,100,50,110,60,1e-6,2e-6,6.3e-6,6,10,-1,2,0.0001}
+	make/o/t smear_parameters_PEF_2Y = {"volume fraction","major core radius (A)","minor core radius (A)","major shell radius (A)","minor shell radius (A)","SLD core (A-2)","SLD shell (A-2)","SLD solvent (A-2)","scale, K1","charge, Z1","scale, K2","charge, Z2","bkg (cm-1)"}
+	Edit smear_parameters_PEF_2Y,smear_coef_PEF_2Y					
+	
+	// output smeared intensity wave, dimensions are identical to experimental QSIG values
+	// make extra copy of experimental q-values for easy plotting
+	Duplicate/O $(str+"_q") smeared_PEF_2Y,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_PEF_2Y							
+					
+	Variable/G gs_PEF_2Y=0
+	gs_PEF_2Y := fSmearedProlate_2Y(smear_coef_PEF_2Y,smeared_PEF_2Y,smeared_qvals)	//this wrapper fills the STRUCT
+	
+	Display smeared_PEF_2Y vs smeared_qvals									
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	SetDataFolder root:
+	AddModelToStrings("SmearedProlate_2Y","smear_coef_PEF_2Y","smear_parameters_PEF_2Y","PEF_2Y")
+End
+	
+
+Function Prolate_2Y(w,yw,xw) : FitFunc
+	Wave w,yw,xw
+	
+	Variable inten,Ras,Rbs
+	Ras = w[3]	//Ras is the rotation axis
+	Rbs = w[4]
+	
+	//setup form factor coefficient wave
+	Make/O/D/N=9 form_PEF_2Y
+	form_PEF_2Y[0] = 1
+	form_PEF_2Y[1] = w[1]
+	form_PEF_2Y[2] = w[2]
+	form_PEF_2Y[3] = w[3]
+	form_PEF_2Y[4] = w[4]
+	form_PEF_2Y[5] = w[5]
+	form_PEF_2Y[6] = w[6]
+	form_PEF_2Y[7] = w[7]
+	form_PEF_2Y[8] = 0
+	
+	//setup structure factor coefficient wave
+	Make/O/D/N=6 struct_PEF_2Y
+	struct_PEF_2Y[0] = w[0]
+	struct_PEF_2Y[1] = 0.5*DiamEllip(Ras,Rbs)
+	struct_PEF_2Y[2] = w[8]
+	struct_PEF_2Y[3] = w[9]
+	struct_PEF_2Y[4] = w[10]
+	struct_PEF_2Y[5] = w[11]
+	
+	//calculate each and combine
+	Duplicate/O xw temp_PEF_2Y_PQ,temp_PEF_2Y_SQ		//make waves for the AAO
+	ProlateForm(form_PEF_2Y,temp_PEF_2Y_PQ,xw)
+	TwoYukawa(struct_PEF_2Y,temp_PEF_2Y_SQ,xw)
+	yw = temp_PEF_2Y_PQ *temp_PEF_2Y_SQ
+	yw *= w[0]
+	yw += w[12]
+	
+	//cleanup waves
+//	Killwaves/Z form_PEF_2Y,struct_PEF_2Y
+	
+	return (yw)
+End
 
 // this is all there is to the smeared calculation!
 Function SmearedProlate_HS(s) :FitFunc
@@ -462,6 +566,16 @@ Function SmearedProlate_SHS(s) :FitFunc
 
 //	the name of your unsmeared model is the first argument
 	Smear_Model_20(Prolate_SHS,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+
+// this is all there is to the smeared calculation!
+Function SmearedProlate_2Y(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model is the first argument
+	Smear_Model_20(Prolate_2Y,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End
@@ -562,6 +676,31 @@ Function fSmearedProlate_SHS(coefW,yW,xW)
 	
 	Variable err
 	err = SmearedProlate_SHS(fs)
+	
+	return (0)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedProlate_2Y(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedProlate_2Y(fs)
 	
 	return (0)
 End
