@@ -132,24 +132,30 @@ End
 Function PeakGauss2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
-	Variable npt=numpnts(yw)
-	Variable i,nthreads= ThreadProcessorCount
-	variable mt= ThreadGroupCreate(nthreads)
-
-//	Variable t1=StopMSTimer(-2)
+#if exists("PeakGauss2DX")			//to hide the function if XOP not installed
+	MultiThread zw= PeakGauss2DX(cw,xw,yw)
+#else
+	MultiThread zw = I_PeakGauss2D(cw,xw,yw)
+#endif	
 	
-	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,PeakGauss2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
-	endfor
-
-	do
-		variable tgs= ThreadGroupWait(mt,100)
-	while( tgs != 0 )
-
-	variable dummy= ThreadGroupRelease(mt)
-	
-//	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
+//	Variable npt=numpnts(yw)
+//	Variable i,nthreads= ThreadProcessorCount
+//	variable mt= ThreadGroupCreate(nthreads)
+//
+////	Variable t1=StopMSTimer(-2)
+//	
+//	for(i=0;i<nthreads;i+=1)
+//	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
+//		ThreadStart mt,i,PeakGauss2D_T(cw,zw,xw,yw,(i*npt/nthreads),((i+1)*npt/nthreads-1))
+//	endfor
+//
+//	do
+//		variable tgs= ThreadGroupWait(mt,100)
+//	while( tgs != 0 )
+//
+//	variable dummy= ThreadGroupRelease(mt)
+//	
+////	Print "elapsed time = ",(StopMSTimer(-2) - t1)/1e6
 	
 	return(0)
 End
