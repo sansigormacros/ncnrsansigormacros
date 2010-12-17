@@ -201,6 +201,8 @@ Function ReadHeaderAndData(fname)
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
 	
+	Duplicate/O data $"root:Packages:NIST:RAW:linear_data"			//data read in is on linear scale, copy it now
+
 	Return 0
 
 End
@@ -297,6 +299,8 @@ Function ReadHeaderAndWork(type,fname)
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
 	
+	Duplicate/O data linear_data			//data read in is on linear scale, copy it now
+
 	//return the data folder to root
 	SetDataFolder root:
 	

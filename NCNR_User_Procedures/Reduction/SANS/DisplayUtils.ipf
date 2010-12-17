@@ -270,18 +270,18 @@ Function ConvertFolderToLogScale(folder)
 	//....the data is linear, convert it
 	//check the waves for existence before operating on them
 	String msg = ""
-	If(WaveExists($dest+":data") == 0)
-		msg = "data not found in "+folder+" folder. Action aborted."
+	If(WaveExists($dest+":linear_data") == 0)
+		msg = "linear_data not found in "+folder+" folder. Action aborted."
 		DoAlert 0, msg
 		Return (1)	//error
 	Endif
 
 	WAVE data=$(dest + ":data")
-	
+	WAVE linear_data=$(dest + ":linear_data")
 	// works on a copy of the linear_data, so that the original data is always preserved
 	
-	Duplicate/O $(dest + ":data") $(dest + ":linear_data")
-	data = log(data)
+//	Duplicate/O $(dest + ":data") $(dest + ":linear_data")
+	data = log(linear_data)
 	
 	//Call the procedure that would normally be called if the threshold functions were activated
 //	DoWindow/F SANS_Data

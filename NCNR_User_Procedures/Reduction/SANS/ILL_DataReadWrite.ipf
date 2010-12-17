@@ -213,6 +213,7 @@ Function ReadHeaderAndData(fname)
 	
 	Setdatafolder curpath
 	
+	Duplicate/O data $"root:Packages:NIST:RAW:linear_data"			// data is "fresh" and linear scale, so copy it now
 	
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
@@ -315,16 +316,14 @@ Function ReadHeaderAndWork(type,fname)
 	LoadWave/O fname		//since fname is the full path
 		
 	String loadedStr = StringFromList(0,S_waveNames,";")		//then name of the wave loaded
-
-	// if data loaded in is already named "data", don't bother with this step
-	if(exists("data") == 0)
-		duplicate/O $loadedStr,$(curPath+ ":data")
-	endif
-	// if data loaded in is already named "linear_data", don't bother with this step
-	if(exists("linear_data") == 0)
-		duplicate/O $loadedStr,$(curPath+ ":linear_data")
-	endif
 	
+//	data loaded should be named "linear_data" (this is set in the DIV writer)
+
+// so this will generate the log-scaled data wave	
+//	ConvertFolderToLogScale("DIV")
+	Duplicate/O linear_data,data
+	data = log(linear_data)
+
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
 	
@@ -1791,12 +1790,14 @@ Function Write_DIV_File(type)
 	String type
 	
 	// should have the linear display.....
-ConvertFolderToLogScale(type)
-	
-	Save/C root:packages:nist:STO:linear_data as "plex.DIV"
-	
+	ConvertFolderToLogScale(type)
+
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
 	
+	SetDataFolder $("root:Packages:NIST:"+type)
+	Save/C linear_data as "plex.DIV"
+	
+	SetDataFolder root:
 	return(0)
 End
 

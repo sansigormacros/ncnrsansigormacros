@@ -204,6 +204,11 @@ Function ReadHeaderAndData(filename)
 	SetDataFolder curPath
 	String/G fileList = textw[0]
 	//return the data folder to root
+	
+	WAVE data=$"root:Packages:NIST:RAW:data"
+	Duplicate/O data $"root:Packages:NIST:RAW:linear_data"			// data is "fresh" and linear scale, so copy it now
+	
+	
 	SetDataFolder root:
 
 	Return 0
@@ -300,6 +305,9 @@ Function ReadHeaderAndWork(type,fname)
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
 
+	WAVE data=$"root:Packages:NIST:RAW:data"
+	Duplicate/O data $"root:Packages:NIST:RAW:linear_data"			// data is "fresh" and linear scale, so copy it now
+	
 	//return the data folder to root
 	SetDataFolder root:
 	Return(0)

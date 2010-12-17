@@ -437,6 +437,27 @@ Function testKeepInBounds(x1,x2,y1,y2)
 	return(0)
 End
 
+Function SANS_Histogram_Pair() :  GraphMarquee
+	GetMarquee left,bottom
+	if(V_flag == 0)
+		Abort "There is no Marquee"
+	endif
+	
+	Cursor/W=SANS_Data/F/I A data 64,64
+	Cursor/M/S=2/H=1/L=0/C=(3,52428,1) A
+				
+	// if cursor A on graph
+	// Do histogram pair
+	Variable aExists= strlen(CsrInfo(A)) > 0	// A is a name, not a string
+	if(aExists)
+		DoHistogramPair(hcsr(A),vcsr(A))
+	else
+		DoHistogramPair(64,64)
+	endif
+	return(0)
+	
+	//
+End
 // generates a histogram of the data as defined by the marquee. The longer dimension of the marquee
 // becomes the x-axis of the histogram (this may need to be changed for some odd case). Pixel range specified
 // by the marquee is inclusive, and is automatically kept in-bounds
@@ -450,13 +471,13 @@ Function SANS_Histogram() :  GraphMarquee
 	if(V_flag == 0)
 		Abort "There is no Marquee"
 	endif
-	// if cursor A on graph
-	// Do histogram pair
-	Variable aExists= strlen(CsrInfo(A)) > 0	// A is a name, not a string
-	if(aExists)
-		DoHistogramPair(hcsr(A),vcsr(A))
-		return(0)
-	endif
+//	// if cursor A on graph
+//	// Do histogram pair
+//	Variable aExists= strlen(CsrInfo(A)) > 0	// A is a name, not a string
+//	if(aExists)
+//		DoHistogramPair(hcsr(A),vcsr(A))
+//		return(0)
+//	endif
 	//
 	Variable count,x1,x2,y1,y2,xwidth,ywidth,vsX=1,xx,yy
 	x1 = V_left
@@ -557,8 +578,8 @@ Function PrintMarqueeCoords() :  GraphMarquee
 	endif
 End
 
-// if the "A" cursor is on the graph, do +-5 pixels in each direction
-// otherwise, you won't get here
+//
+//
 Function DoHistogramPair(xin,yin)
 	Variable xin,yin
 	
@@ -570,8 +591,8 @@ Function DoHistogramPair(xin,yin)
 	pt1 = 1		// extent along the "long" direction of the swath
 	pt2 = 128
 		
-	Make/O/D/N=(pt2-pt1) PositionX,AvgCountsX
-	Make/O/D/N=(pt2-pt1) PositionY,AvgCountsY
+	Make/O/D/N=(pt2-pt1+1) PositionX,AvgCountsX
+	Make/O/D/N=(pt2-pt1+1) PositionY,AvgCountsY
 	AvgCountsX=0
 	AvgCountsY=0
 	
@@ -583,15 +604,17 @@ Function DoHistogramPair(xin,yin)
 	positionY += 1
 	
 	//do the vertical, then the horizontal
-	xwidth = 5		//+ -
-	ywidth = 5
+	ControlInfo/W=HistoPair setvar0
+//	Print "width = ",V_Value
+	xwidth = V_Value		//+ -
+	ywidth = V_Value
 	x1 = xin - xwidth
 	x2 = xin + xwidth
 	y1 = pt1
 	y2 = pt2
 	
 	KeepSelectionInBounds(x1,x2,y1,y2)
-	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y1+1,y2+1
+//	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y1+1,y2+1
 	
 	//Compute the histogram (manually)
 	for(yy=y1;yy<=y2;yy+=1)
@@ -608,7 +631,7 @@ Function DoHistogramPair(xin,yin)
 	x2 = pt2
 		
 	KeepSelectionInBounds(x1,x2,y1,y2)
-	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y2+1,y2+1	
+//	Print "x1,x2,y1,y2 (det) =",x1+1,x2+1,y2+1,y2+1	
 	for(xx=x1;xx<=x2;xx+=1)		//outer loop is the "x-axis"
 		for(yy=y1;yy<=y2;yy+=1)
 			AvgCountsX[xx-x1] += data[xx][yy]
@@ -629,9 +652,10 @@ end
 
 Function Draw_HistoPair()
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(253,683,723,950)/K=1 AvgCountsX vs PositionX as "Histogram Pair"
+	Display /W=(432.75,431.75,903,698.75)/K=1 AvgCountsX vs PositionX as "Histogram Pair"
 	AppendToGraph/L=leftY/B=bottomY AvgCountsY vs PositionY
 	DoWindow/C HistoPair
+	
 	ModifyGraph rgb(AvgCountsX)=(21845,21845,21845)
 	ModifyGraph hbFill(AvgCountsX)=2
 	ModifyGraph useNegPat(AvgCountsX)=1
@@ -654,6 +678,14 @@ Function Draw_HistoPair()
 	TextBox/C/N=text0_1/X=5.0/Y=67.0 "RIGHT"
 	TextBox/C/N=text0_2/X=84.0/Y=67.0 "LEFT"
 	TextBox/C/N=text0_3/X=84.0/Y=5.0 "BOTTOM"
+	
+	ControlBar 40
+//	CheckBox check0,pos={300,11},size={72,14},proc=SH_FreeCursorCheck,title="Free Cursor"
+//	CheckBox check0,value= 0
+	Button button0 title="Update",size={70,20},pos={200,9},proc=SH_RecalcButton
+	SetVariable setvar0,pos={20,11},size={120,16},title="Width (pixels)"
+	SetVariable setvar0,limits={0,64,1},value= _NUM:5
+	
 EndMacro
 
 
@@ -665,4 +697,38 @@ Function CursorForHistogram()
 	Cursor/W=SANS_Data/F/I A data w[16],w[17]
 	Cursor/M/S=2/H=1/L=0/C=(3,52428,1) A
 	
+End
+
+
+Function SH_FreeCursorCheck(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			
+				//don't move the cursor
+				//Cursor/W=SANS_Data/F/M/S=2/H=1/L=0/C=(3,52428,1) A data
+			
+				Cursor/W=SANS_Data/F/I A data 64,64
+				Cursor/M/S=2/H=1/L=0/C=(3,52428,1) A
+				
+			break
+	endswitch
+
+	return 0
+End
+
+Function SH_RecalcButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+//			Print "at = ",hcsr(A,"SANS_Data"),vcsr(A,"SANS_Data")
+			DoHistogramPair(hcsr(A,"SANS_Data"),vcsr(A,"SANS_Data"))
+			break
+	endswitch
+
+	return 0
 End

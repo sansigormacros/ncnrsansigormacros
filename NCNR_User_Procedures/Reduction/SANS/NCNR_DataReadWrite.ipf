@@ -367,6 +367,9 @@ Function ReadHeaderAndData(fname)
 	SkipAndDecompressVAX(w,data)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
 	
+	Duplicate/O data linear_data			// at this point, the data is still the raw data, and is linear_data
+	//
+	
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
 	
@@ -821,6 +824,8 @@ Function ReadHeaderAndWork(type,fname)
 	//Print "in workdatareader , data = ", data[1][1]
 
 	Redimension/n=(128,128) data
+	
+	Duplicate/O data linear_data			//data read in is on linear scale, copy it now
 	
 	//clean up - get rid of w = $"tempGBWave0"
 	KillWaves w
