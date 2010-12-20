@@ -318,11 +318,7 @@ Function ReadHeaderAndWork(type,fname)
 	String loadedStr = StringFromList(0,S_waveNames,";")		//then name of the wave loaded
 	
 //	data loaded should be named "linear_data" (this is set in the DIV writer)
-
-// so this will generate the log-scaled data wave	
-//	ConvertFolderToLogScale("DIV")
-	Duplicate/O linear_data,data
-	data = log(linear_data)
+	Duplicate/O linear_data,data			// folder is in linear scale in its as-loaded state, so both are linear
 
 	//keep a string with the filename in the DIV folder
 	String/G $(curPath + ":fileList") = textw[0]
