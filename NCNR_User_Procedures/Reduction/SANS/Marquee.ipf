@@ -646,13 +646,37 @@ Function DoHistogramPair(xin,yin)
 		Draw_HistoPair()
 	endif
 	
+	
+	//could draw the width lines on the graph using the normal drawing routines
+	// -- but can't draw horizontal and vertical on at the same time. MasterAngleDraw clears
+	// between drawing. Also, the lines are drawn though the beam center of the data file as
+	// loaded. Not good for beamstop alignment, since the beam center may not have been measured yet
+//	SVAR tempStr = root:myGlobals:Drawing:gDrawInfoStr
+//	String newStr = ReplaceNumberByKey("WIDTH", tempStr, xWidth, "=", ";")
+//	newStr = ReplaceNumberByKey("PHI", newStr, 0, "=", ";")
+//	String/G root:myGlobals:Drawing:gDrawInfoStr = newStr
+//	//redraw the angles
+//	MasterAngleDraw()
+		
+	// so use a pair of cursors instead (how do I easily get rid of them?) - a "done" button
+	Cursor/W=SANS_Data/K B
+	Cursor/W=SANS_Data/K C
+	
+	Cursor/W=SANS_Data/F/I B data (xin-xwidth), (yin-yWidth)
+	Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) B
+//	Cursor/W=SANS_Data/M/A=0 B
+	
+	Cursor/W=SANS_Data/F/I C data (xin+xwidth), (yin+yWidth)
+	Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) C
+//	Cursor/W=SANS_Data/M/A=0 C
+			
 	return(0)
 end
 
 
 Function Draw_HistoPair()
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(432.75,431.75,903,698.75)/K=1 AvgCountsX vs PositionX as "Histogram Pair"
+	Display /W=(432.75,431.75,903,698.75)/K=2 AvgCountsX vs PositionX as "Histogram Pair"
 	AppendToGraph/L=leftY/B=bottomY AvgCountsY vs PositionY
 	DoWindow/C HistoPair
 	
@@ -684,8 +708,10 @@ Function Draw_HistoPair()
 //	CheckBox check0,value= 0
 	Button button0 title="Update",size={70,20},pos={200,9},proc=SH_RecalcButton
 	SetVariable setvar0,pos={20,11},size={120,16},title="Width (pixels)"
-	SetVariable setvar0,limits={0,64,1},value= _NUM:5
+	SetVariable setvar0,limits={0,64,1},value= _NUM:5,proc=SH_WidthSetVarProc
 	
+	Button button1 title="Done",size={70,20},pos={300,9},proc=SH_DoneButton
+
 EndMacro
 
 
@@ -727,6 +753,39 @@ Function SH_RecalcButton(ba) : ButtonControl
 			// click code here
 //			Print "at = ",hcsr(A,"SANS_Data"),vcsr(A,"SANS_Data")
 			DoHistogramPair(hcsr(A,"SANS_Data"),vcsr(A,"SANS_Data"))
+			break
+	endswitch
+
+	return 0
+End
+
+Function SH_DoneButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoWindow/K HistoPair
+			Cursor/W=SANS_Data/K A
+			Cursor/W=SANS_Data/K B
+			Cursor/W=SANS_Data/K C
+			break
+	endswitch
+
+	return 0
+End
+Function SH_WidthSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+			DoHistogramPair(hcsr(A,"SANS_Data"),vcsr(A,"SANS_Data"))
+			
 			break
 	endswitch
 
