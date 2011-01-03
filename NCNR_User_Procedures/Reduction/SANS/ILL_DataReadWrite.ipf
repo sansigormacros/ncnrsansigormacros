@@ -1230,9 +1230,11 @@ Function getSampleApertureDiam(fname)
 	
 	// your code returning value
 //	value = getRealValueFromHeader_2(fname,60,28,5,15,3) 
-	value = getRealValueFromHeader(fname,72)
+	value = getRealValueFromHeader(fname,73)
 	
-	value = 10
+	if(value == 0)		//in case no aperture size was written to raw data file
+		value = 10
+	endif
 	
 	return(value)
 end

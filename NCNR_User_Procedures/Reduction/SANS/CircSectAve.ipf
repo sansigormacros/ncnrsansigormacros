@@ -19,11 +19,11 @@
 //***********************************************
 
 
-// this fuction also does sector averaging 
+// this function also does sector averaging 
 //the parameters in the global keyword-string must have already been set somewhere
 //either directly, from the protocol, or from the Average_Panel
 //** the keyword-list has already been "pre-parsed" to send only Circular or Sector
-//averages to this routine. Rectangualr or annular averages get done elsewhere
+//averages to this routine. Rectangular or annular averages get done elsewhere
 // TYPE parameter determines which data folder to work from
 //
 //annnulus (step) size is currently fixed at 1 (variable dr, below)
@@ -494,9 +494,6 @@ Function Ave_button(button0) : ButtonControl
 	Return 0
 End
 
-
-
-#pragma rtGlobals=1		// Use modern global access method.
 
 
 // -- seems to work, now I need to give it a name, add it to the list, and 

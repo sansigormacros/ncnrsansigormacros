@@ -659,17 +659,19 @@ Function DoHistogramPair(xin,yin)
 //	MasterAngleDraw()
 		
 	// so use a pair of cursors instead (how do I easily get rid of them?) - a "done" button
-	Cursor/W=SANS_Data/K B
-	Cursor/W=SANS_Data/K C
+	DoWindow SANS_Data
+	if(V_flag)
+		Cursor/W=SANS_Data/K B
+		Cursor/W=SANS_Data/K C
 	
-	Cursor/W=SANS_Data/F/I B data (xin-xwidth), (yin-yWidth)
-	Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) B
-//	Cursor/W=SANS_Data/M/A=0 B
-	
-	Cursor/W=SANS_Data/F/I C data (xin+xwidth), (yin+yWidth)
-	Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) C
-//	Cursor/W=SANS_Data/M/A=0 C
-			
+		Cursor/W=SANS_Data/F/I B data (xin-xwidth), (yin-yWidth)
+		Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) B
+	//	Cursor/W=SANS_Data/M/A=0 B
+		
+		Cursor/W=SANS_Data/F/I C data (xin+xwidth), (yin+yWidth)
+		Cursor/W=SANS_Data/M/S=2/H=1/L=1/C=(3,52428,1) C
+	//	Cursor/W=SANS_Data/M/A=0 C
+	endif	
 	return(0)
 end
 
@@ -697,7 +699,7 @@ Function Draw_HistoPair()
 	ModifyGraph axisEnab(leftY)={0.6,1}
 	Label left "Counts"
 	Label bottom "Pixel (detector coordinates)"
-	SetAxis/A/N=2 left
+	SetAxis/A/N=0 left
 	TextBox/C/N=text0/X=5.0/Y=5.0 "TOP"
 	TextBox/C/N=text0_1/X=5.0/Y=67.0 "RIGHT"
 	TextBox/C/N=text0_2/X=84.0/Y=67.0 "LEFT"
@@ -766,9 +768,13 @@ Function SH_DoneButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			DoWindow/K HistoPair
-			Cursor/W=SANS_Data/K A
-			Cursor/W=SANS_Data/K B
-			Cursor/W=SANS_Data/K C
+			
+			DoWindow SANS_Data
+			if(V_flag)
+				Cursor/W=SANS_Data/K A
+				Cursor/W=SANS_Data/K B
+				Cursor/W=SANS_Data/K C
+			endif
 			break
 	endswitch
 
