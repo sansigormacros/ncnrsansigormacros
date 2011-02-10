@@ -301,7 +301,7 @@ ThreadSafe Function Cylinder2D_noThread(cw,zw,xw,yw)
 
 	Make/O/D/N=12 Cyl2D_tmp				// there seems to be no speed penalty for doing this...
 	Cyl2D_tmp[0,10] = cw
-	Cyl2D_tmp[11] = 25					// hard-wire the number of integration points
+	Cyl2D_tmp[11] = 5					// hard-wire the number of integration points
 	Cyl2D_tmp[5] = 0						// send a background of zero
 	
 	zw = Cylinder_2DX(Cyl2D_tmp,xw,yw) + cw[5]		//add in the proper background here

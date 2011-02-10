@@ -36,9 +36,11 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
 	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
 	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
-	Variable/G root:myGlobals:DeadtimeNG3_ORNL = 3.4e-6
-	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6		//as of 9 MAY 2002
-	Variable/G root:myGlobals:DeadtimeNG7_ORNL = 3.4e-6
+	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
+	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
+	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
+	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
+	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
 	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
 	
 	//new 11APR07
@@ -353,9 +355,25 @@ End
 //
 // fileStr is passed as TextRead[3]
 // detStr is passed as TextRead[9]
+// dateAndTimeStr is passed as TextRead[1]
+//	--- if no date/time string is passed, ICE values are the default
 //
-Function DetectorDeadtime(fileStr,detStr)
-	String fileStr,detStr
+// Due to the switch from VAX -> ICE, there were some hardware changes that led to
+// a change in the effective detector dead time. The dead time was re-measured by J. Barker
+// as follows:
+//	Instrument				Date measured				deadtime constant
+//	NG3							DECEMBER 2009				1.5 microseconds
+//	NG7							APRIL2010					2.3 microseconds
+//
+// The day of the switch to ICE on NG7 was 25-FEB-2010 (per J. Krzywon) 
+// The day of the switch to ICE on NG3 was 23-JUL-2009 (per C. Gagnon)
+//
+// so any data after these dates is to use the new dead time constant. The switch is made on the
+// data collection date.
+//
+//
+Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
+	String fileStr,detStr,dateAndTimeStr
 	
 	Variable deadtime
 	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)
@@ -363,17 +381,34 @@ Function DetectorDeadtime(fileStr,detStr)
 	NVAR DeadtimeNG3_ILL = root:myGlobals:DeadtimeNG3_ILL		//pixel resolution in cm
 	NVAR DeadtimeNG5_ILL = root:myGlobals:DeadtimeNG5_ILL
 	NVAR DeadtimeNG7_ILL = root:myGlobals:DeadtimeNG7_ILL
-	NVAR DeadtimeNG3_ORNL = root:myGlobals:DeadtimeNG3_ORNL
+	NVAR DeadtimeNG3_ORNL_VAX = root:myGlobals:DeadtimeNG3_ORNL_VAX
+	NVAR DeadtimeNG3_ORNL_ICE = root:myGlobals:DeadtimeNG3_ORNL_ICE
 	NVAR DeadtimeNG5_ORNL = root:myGlobals:DeadtimeNG5_ORNL
-	NVAR DeadtimeNG7_ORNL = root:myGlobals:DeadtimeNG7_ORNL
+	NVAR DeadtimeNG7_ORNL_VAX = root:myGlobals:DeadtimeNG7_ORNL_VAX
+	NVAR DeadtimeNG7_ORNL_ICE = root:myGlobals:DeadtimeNG7_ORNL_ICE
 	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
+	
+	// if no date string is passed, default to the ICE values
+	if(strlen(dateAndTimeStr)==0)
+		dateAndTimeStr = "01-JAN-2011"		//dummy date to force to ICE values
+	endif
+	
+	
+	Variable NG3_to_ICE = ConvertVAXDay2secs("23-JUL-2009")
+	Variable NG7_to_ICE = ConvertVAXDay2secs("25-FEB-2010")
+	Variable fileTime = ConvertVAXDay2secs(dateAndTimeStr)
+
 	
 	strswitch(instr)
 		case "NG3":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG3_ILL
 			else
-				deadtime = DeadtimeNG3_ORNL	//detector is ordella-type
+				if(fileTime > NG3_to_ICE)
+					deadtime = DeadtimeNG3_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				else
+					deadtime = DeadtimeNG3_ORNL_VAX	//detector is ordella-type
+				endif
 			endif
 			break
 		case "NG5":
@@ -387,7 +422,11 @@ Function DetectorDeadtime(fileStr,detStr)
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG7_ILL
 			else
-				deadtime = DeadtimeNG7_ORNL	//detector is ordella-type
+				if(fileTime > NG7_to_ICE)
+					deadtime = DeadtimeNG7_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				else
+					deadtime = DeadtimeNG7_ORNL_VAX	//detector is ordella-type
+				endif
 			endif
 			break
 		default:							
@@ -397,6 +436,36 @@ Function DetectorDeadtime(fileStr,detStr)
 	
 	return(deadtime)
 End
+
+// converts ONLY DD-MON-YYYY portion of the data collection time
+// to a number of seconds from midnight on 1/1/1904, as Igor likes to do
+//
+// dateAndTime is the full string of "dd-mon-yyyy hh:mm:ss" as returned by the function
+// getFileCreationDate(file)
+//
+Function ConvertVAXDay2secs(dateAndTime)
+	string dateAndTime
+	
+	Variable day,yr,mon,time_secs
+	string monStr
+
+	sscanf dateandtime,"%d-%3s-%4d",day,monStr,yr
+	mon = monStr2num(monStr)
+//	print yr,mon,day
+	time_secs = date2secs(yr,mon,day)
+
+	return(time_secs)
+end
+
+// takes a month string and returns the corresponding number
+//
+Function monStr2num(monStr)
+	String monStr
+	
+	String list=";JAN;FEB;MAR;APR;MAY;JUN;JUL;AUG;SEP;OCT;NOV;DEC;"
+	return(WhichListItem(monStr, list ,";"))
+end
+
 
 //make a three character string of the run number
 //Moved to facility utils

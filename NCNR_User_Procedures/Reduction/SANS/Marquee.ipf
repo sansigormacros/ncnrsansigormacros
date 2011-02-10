@@ -580,6 +580,9 @@ End
 
 //
 //
+// The histogram could potentially be done with the Igor ImageLineProfile operation
+// but this seems to be just as efficient to do.
+//
 Function DoHistogramPair(xin,yin)
 	Variable xin,yin
 	
@@ -596,12 +599,9 @@ Function DoHistogramPair(xin,yin)
 	AvgCountsX=0
 	AvgCountsY=0
 	
-	//set position wave
+	//set position wave, in detector coordinates
 	positionX=p+pt1
 	positionY=p+pt1
-	//convert the position to Detector coordinates
-	positionX += 1
-	positionY += 1
 	
 	//do the vertical, then the horizontal
 	ControlInfo/W=HistoPair setvar0
@@ -641,22 +641,14 @@ Function DoHistogramPair(xin,yin)
 	
 	GetMarquee/K		//to keep from drawing the marquee on the new histo graph
 	//draw the graph, or just bring to the front with the new data
+	Variable step = 30
 	DoWindow/F HistoPair
 	if(V_Flag != 1)
 		Draw_HistoPair()
+	else
+		SetAxis bottom (xin-step),(xin+step)
+		SetAxis bottomY (yin-step),(yin+step)
 	endif
-	
-	
-	//could draw the width lines on the graph using the normal drawing routines
-	// -- but can't draw horizontal and vertical on at the same time. MasterAngleDraw clears
-	// between drawing. Also, the lines are drawn though the beam center of the data file as
-	// loaded. Not good for beamstop alignment, since the beam center may not have been measured yet
-//	SVAR tempStr = root:myGlobals:Drawing:gDrawInfoStr
-//	String newStr = ReplaceNumberByKey("WIDTH", tempStr, xWidth, "=", ";")
-//	newStr = ReplaceNumberByKey("PHI", newStr, 0, "=", ";")
-//	String/G root:myGlobals:Drawing:gDrawInfoStr = newStr
-//	//redraw the angles
-//	MasterAngleDraw()
 		
 	// so use a pair of cursors instead (how do I easily get rid of them?) - a "done" button
 	DoWindow SANS_Data

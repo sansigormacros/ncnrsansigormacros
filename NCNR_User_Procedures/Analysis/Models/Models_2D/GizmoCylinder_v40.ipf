@@ -2,7 +2,9 @@
 #pragma IgorVersion=6.1
 
 Proc ShowCylinderOrientation()
-	Gizmo1()
+	if(WinType("ObjOrient") == 0)
+		Gizmo1()
+	endif
 end
 
 Window Gizmo1()
@@ -57,7 +59,7 @@ Proc ChangeAngle(theta,phi)
 	theta = theta/360*2*pi
 	phi = phi/360*2*pi
 	
-	Print "theta, phi in radians = ",theta,phi
+	Print "Use theta, phi in radians = ",theta,phi
 	
 	dx = sin(theta)*cos(phi)
 	dy = sin(theta)*sin(phi)
