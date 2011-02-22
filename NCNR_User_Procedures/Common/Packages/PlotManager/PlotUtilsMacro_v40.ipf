@@ -1188,6 +1188,10 @@ Function/S User_FunctionPopupList()
 	// from 2010 model functions
 	list = RemoveFromList("fTwoYukawa;",list,";")
 	
+	// from Debye Sphere method
+	list = RemoveFromList("CalcIQRfromMat;ConnectPoints2D;ConnectPoints3D;ConnectPoints3D_old;ConnectedRodFill;ConvertXYZto3N;CylindersAtPoints;",list,";")
+	list = RemoveFromList("FillSphere;FillSphere3;FillSphereRadius;FillSphereRadiusNoOverlap;FillXCylinder;FillXYCircle;FillXZCircle;FillYCylinder;",list,";")
+	list = RemoveFromList("FillYZCircle;FillZCylinder;PadMatrix;RandomFill3DMat;RandomPoints2D;SobolFill3DMat;SphereAtEachPoint;UnConnectedRodFill;XYZV_toByteVoxels;",list,";")
 	
 	list = SortList(list)
 	return(list)
