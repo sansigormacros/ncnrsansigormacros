@@ -368,6 +368,13 @@ Function ReadHeaderAndData(fname)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
 	
 	Duplicate/O data linear_data			// at this point, the data is still the raw data, and is linear_data
+	
+	// proper error for counting statistics, good for low count values too
+	// rather than just sqrt(n)
+	// see N. Gehrels, Astrophys. J., 303 (1986) 336-346, equation (7)
+	// for S = 1 in eq (7), this corresponds to one sigma error bars
+	Duplicate/O linear_data linear_data_error
+	linear_data_error = 1 + sqrt(linear_data + 0.75)				
 	//
 	
 	//keep a string with the filename in the RAW folder
@@ -758,7 +765,7 @@ Function ReadHeaderAndWork(type,fname)
 	//endif
 	
 	//read in the data
-	 GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 
 	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
@@ -902,6 +909,14 @@ Function ReadASCData(fname,destPath)
 	Wave/Z temp0=temp0
 	data=temp0
 	Redimension/N=(pixelsX,pixelsY) data		//,linear_data
+	
+	Duplicate/O data linear_data_error
+	linear_data_error = 1 + sqrt(data + 0.75)
+	
+	//just in case there are odd inputs to this, like negative intensities
+	WaveStats/Q linear_data_error
+	linear_data_error = numtype(linear_data_error[p]) == 0 ? linear_data_error[p] : V_avg
+	linear_data_error = linear_data_error[p] != 0 ? linear_data_error[p] : V_avg
 	
 	//linear_data = data
 	
@@ -1081,6 +1096,16 @@ Function WriteTransmissionToHeader(fname,trans)
 	return(0)
 End
 
+//sample transmission error (one sigma) is a real value at byte 396
+Function WriteTransmissionErrorToHeader(fname,transErr)
+	String fname
+	Variable transErr
+	
+	WriteVAXReal(fname,transErr,396)		//transmission start byte is 396
+	return(0)
+End
+
+
 //whole transmission is a real value at byte 392
 Function WriteWholeTransToHeader(fname,trans)
 	String fname
@@ -1096,6 +1121,15 @@ Function WriteBoxCountsToHeader(fname,counts)
 	Variable counts
 	
 	WriteVAXReal(fname,counts,494)		// start byte is 494
+	return(0)
+End
+
+//box sum counts error is is a real value at byte 400
+Function WriteBoxCountsErrorToHeader(fname,rel_err)
+	String fname
+	Variable rel_err
+	
+	WriteVAXReal(fname,rel_err,400)		// start byte is 400
 	return(0)
 End
 
@@ -1492,12 +1526,27 @@ Function getSampleTrans(fname)
 	return(getRealValueFromHeader(fname,158))
 end
 
+//transmission error (one sigma) is at byte 396
+Function getSampleTransError(fname)
+	String fname
+	
+	return(getRealValueFromHeader(fname,396))
+end
+
 //box counts are stored at byte 494
 Function getBoxCounts(fname)
 	String fname
 	
 	return(getRealValueFromHeader(fname,494))
 end
+
+//box counts error are stored at byte 400
+Function getBoxCountsError(fname)
+	String fname
+	
+	return(getRealValueFromHeader(fname,400))
+end
+
 
 //whole detector trasmission is at byte 392
 Function getSampleTransWholeDetector(fname)

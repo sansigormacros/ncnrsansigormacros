@@ -16,6 +16,10 @@
 //						modified and added to this file. It was meant for an FFT slice, but applies to 
 //						2D model calculations (model_lin) 2D data files as well.
 
+// Call the procedure BinQxQy_to_1D() to re-bin the QxQy data into I(q). good for testing to check the 2D error propagation
+//
+//
+
 
 //
 // changed June 2010 to read in the resolution information (now 8! columns)
@@ -24,6 +28,8 @@
 // look for either the old-style 3-column (no resolution information) or the newer 8-column format
 Proc LoadQxQy()
 
+	SetDataFolder root:
+	
 	LoadWave/G/D/W/A
 	String fileName = S_fileName
 	String path = S_Path
@@ -1017,8 +1023,8 @@ End
 // data is in a data folder, and the extensions are known. A more generic form could 
 // be made too, if needed.
 //
-// X- need error on I(q)
-// -- need to set "proper" number of data points (delta and qMax?)
+// X- need error on I(q) - now calculated both ways, from 2D error propagation, and from deviation from the mean
+// X- need to set "proper" number of data points (delta and qMax?)
 // X- need to remove points at high Q end
 //
 // -- like the routines in CircSectAve, start with 500 points, and trim after binning is done.
@@ -1026,15 +1032,29 @@ End
 //
 // the results are in iBin_qxqy, qBin_qxqy, and eBin_qxqy, in the folder passed
 // 
+
+Proc BinQxQy_to_1D(folderStr)
+	String folderStr
+	Prompt folderStr,"Pick the data folder containing 2D data",popup,getAList(4)
+
+	fDoBinning_QxQy2D(folderStr)
+End
+
+
+
 //Function fDoBinning_QxQy2D(inten,qx,qy,qz)
+//	Wave inten,qx,qy,qz
+
 Function fDoBinning_QxQy2D(folderStr)
 	String folderStr
 
-//	Wave inten,qx,qy,qz
 
 	SetDataFolder $("root:"+folderStr)
 	
-	WAVE inten = $(folderStr + "_i")
+	WAVE inten = $("smeared_sf2D")
+
+//	WAVE inten = $(folderStr + "_i")
+	WAVE iErr = $(folderStr + "_iErr")
 	WAVE qx = $(folderStr + "_qx")
 	WAVE qy = $(folderStr + "_qy")
 	WAVE qz = $(folderStr + "_qz")
@@ -1047,7 +1067,7 @@ Function fDoBinning_QxQy2D(folderStr)
 	nq = 500
 	
 	yDim = XDim
-	Make/O/D/N=(nq) iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy
+	Make/O/D/N=(nq) iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
 	delQ = abs(sqrt(qx[2]^2+qy[2]^2+qz[2]^2) - sqrt(qx[1]^2+qy[1]^2+qz[1]^2))		//use bins of 1 pixel width 
 	qBin_qxqy[] =  p*	delQ	
 	SetScale/P x,0,delQ,"",qBin_qxqy		//allows easy binning
@@ -1055,6 +1075,7 @@ Function fDoBinning_QxQy2D(folderStr)
 	iBin_qxqy = 0
 	iBin2_qxqy = 0
 	eBin_qxqy = 0
+	eBin2D_qxqy = 0
 	nBin_qxqy = 0	//number of intensities added to each bin
 	
 	for(ii=0;ii<xDim;ii+=1)
@@ -1064,6 +1085,7 @@ Function fDoBinning_QxQy2D(folderStr)
 		if (numType(val)==0)		//count only the good points, ignore Nan or Inf
 			iBin_qxqy[binIndex] += val
 			iBin2_qxqy[binIndex] += val*val
+			eBin2D_qxqy[binIndex] += iErr[ii]*iErr[ii]
 			nBin_qxqy[binIndex] += 1
 		endif
 	endfor
@@ -1074,11 +1096,13 @@ Function fDoBinning_QxQy2D(folderStr)
 			//no pixels in annuli, data unknown
 			iBin_qxqy[ii] = 0
 			eBin_qxqy[ii] = 1
+			eBin2D_qxqy[ii] = NaN
 		else
 			if(nBin_qxqy[ii] <= 1)
 				//need more than one pixel to determine error
 				iBin_qxqy[ii] /= nBin_qxqy[ii]
 				eBin_qxqy[ii] = 1
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
 			else
 				//assume that the intensity in each pixel in annuli is normally
 				// distributed about mean...
@@ -1091,9 +1115,13 @@ Function fDoBinning_QxQy2D(folderStr)
 				else
 					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
 				endif
+				// and calculate as it is propagated pixel-by-pixel
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
 			endif
 		endif
 	endfor
+	
+	eBin2D_qxqy = sqrt(eBin2D_qxqy)		// as equation (3) of John's memo
 	
 	// find the last non-zero point, working backwards
 	val=nq
@@ -1102,7 +1130,7 @@ Function fDoBinning_QxQy2D(folderStr)
 	while(nBin_qxqy[val] == 0)
 	
 //	print val, nBin_qxqy[val]
-	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy
+	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
 	
 	SetDataFolder root:
 	

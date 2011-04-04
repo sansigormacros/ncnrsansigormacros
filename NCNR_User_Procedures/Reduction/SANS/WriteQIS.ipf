@@ -418,7 +418,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[18] = "Data is written by row, starting with Y=1 and X=(1->128)"
 	//labelWave[19] = "ASCII data created " +date()+" "+time()
 	PathInfo catPathName
-	String sfPath = S_Path+StringFromList(0,samfiles,";")
+	String sfPath = S_Path+RemoveAllSpaces(StringFromList(0,samfiles,";"))		//make sure there are no leading spaces in the file name
 	print sfPath
 	labelWave[19] = "RAW SAM FILE "+StringFromList(0, samfiles  , ";")+ " TIMESTAMP: "+getFileCreationDate(sfPath)
 	
@@ -674,6 +674,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
 	Wave data=$(destStr+typeStr)
+	Wave data_err=$(destStr+":linear_data_error")
 	WAVE intw=$(destStr + ":integersRead")
 	WAVE rw=$(destStr + ":realsRead")
 	WAVE/T textw=$(destStr + ":textRead")
@@ -690,6 +691,9 @@ Function QxQy_Export(type,fullpath,dialog)
 	//check each wave - MUST exist, or will cause a crash
 	If(!(WaveExists(data)))
 		Abort "data DNExist QxQy_Export()"
+	Endif
+	If(!(WaveExists(data_err)))
+		Abort "linear data error DNExist QxQy_Export()"
 	Endif
 	If(!(WaveExists(intw)))
 		Abort "intw DNExist QxQy_Export()"
@@ -812,18 +816,23 @@ Function QxQy_Export(type,fullpath,dialog)
 
 //*********************
 
-	// generate my own error wave for I(qx,qy)
-	Duplicate/O z_val sw
-	sw = sqrt(z_val)		//assumes Poisson statistics for each cell (counter)
-	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
-	// get rid of the "bad" errorsby replacing the NaN, Inf, and zero with V_avg
-	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
-	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
-	// It appears to have no effect on the unsmeared model.
-	WaveStats/Q sw
-	sw = numtype(sw[p]) == 0 ? sw[p] : V_avg
-	sw = sw[p] != 0 ? sw[p] : V_avg
+//	// generate my own error wave for I(qx,qy)
+//	Duplicate/O z_val sw
+//	sw = sqrt(z_val)		//assumes Poisson statistics for each cell (counter)
+//	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
+//	// get rid of the "bad" errorsby replacing the NaN, Inf, and zero with V_avg
+//	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
+//	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
+//	// It appears to have no effect on the unsmeared model.
+//	WaveStats/Q sw
+//	sw = numtype(sw[p]) == 0 ? sw[p] : V_avg
+//	sw = sw[p] != 0 ? sw[p] : V_avg
 	
+	// now use the properly propagated 2D error
+	Duplicate/O data_err sw
+	Redimension/N=(pixelsX*pixelsY) sw
+
+
 
 	//not demo-compatible, but approx 8x faster!!	
 #if(cmpstr(stringbykey("IGORKIND",IgorInfo(0),":",";"),"pro") == 0)

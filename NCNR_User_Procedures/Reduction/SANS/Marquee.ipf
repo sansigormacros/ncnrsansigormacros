@@ -25,11 +25,11 @@
 //
 // accepts arbitrary detector coordinates. calling function is responsible for 
 // keeping selection in bounds
-Function SumCountsInBox(x1,x2,y1,y2,type)
-	Variable x1,x2,y1,y2
+Function SumCountsInBox(x1,x2,y1,y2,ct_err,type)
+	Variable x1,x2,y1,y2,&ct_err
 	String type
 	
-	Variable counts = 0,ii,jj
+	Variable counts = 0,ii,jj,err2_sum
 	
 	String dest =  "root:Packages:NIST:"+type
 	
@@ -40,17 +40,27 @@ Function SumCountsInBox(x1,x2,y1,y2,type)
 	else
 		wave w=$(dest + ":data")
 	endif
+	wave data_err = $(dest + ":linear_data_error")
 	
+	err2_sum = 0		// running total of the squared error
 	ii=x1
 	jj=y1
 	do
 		do
 			counts += w[ii][jj]
+			err2_sum += data_err[ii][jj]*data_err[ii][jj]
 			jj+=1
 		while(jj<=y2)
 		jj=y1
 		ii+=1
 	while(ii<=x2)
+	
+	err2_sum = sqrt(err2_sum)
+	ct_err = err2_sum
+	
+//	Print "error = ",err2_sum
+//	Print "error/counts = ",err2_sum/counts
+	
 	
 	Return (counts)
 End
@@ -112,9 +122,11 @@ Function SetXYBoxCoords() :  GraphMarquee
 	//sum the counts in the patch - working on the SAM data, to be sure that it's normalized
 	//to the same monitor counts and corrected for detector deadtime
 	String type = "SAM"
-	Variable counts
-	counts = SumCountsInBox(x1,x2,y1,y2,type)
-	Print " marquee counts =",counts
+	Variable counts,ct_err
+	counts = SumCountsInBox(x1,x2,y1,y2,ct_err,type)
+//	Print "marquee counts =",counts
+//	Print "relative error = ",ct_err/counts
+	
 	//Set the global gTransCts
 	Variable/G root:myGlobals:Patch:gTransCts = counts
 	
@@ -147,6 +159,9 @@ Function SetXYBoxCoords() :  GraphMarquee
 	Print counts, " counts in XY box"
 	WriteBoxCountsToHeader(filename,counts)
 	
+	WriteBoxCountsErrorToHeader(filename,ct_err)
+	
+	return(0)
 End
 
 //finds the beam center (the centroid) of the selected region
@@ -314,7 +329,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	
 	//parse the list of file numbers
 	String fileList="",item="",pathStr="",fullPath=""
-	Variable ii,num,err,cts
+	Variable ii,num,err,cts,ct_err
 	
 	PathInfo catPathName
 	If(V_Flag==0)
@@ -329,7 +344,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	//add each file to SAM (to normalize to monitor counts)
 	//sum over the box
 	//print the results
-	Make/O/N=(num) FileID,BoxCounts
+	Make/O/N=(num) FileID,BoxCounts,BoxCount_err
 	Print "Results are stored in root:FileID and root:BoxCounts waves"
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,fileList,",")
@@ -343,18 +358,19 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
-		cts=SumCountsInBox(x1,x2,y1,y2,type)
+		cts=SumCountsInBox(x1,x2,y1,y2,ct_err,type)
 		BoxCounts[ii]=cts
+		BoxCount_err[ii]=ct_err
 		Print item+" counts = ",cts
 	endfor
 	
-	DoBoxGraph(FileID,BoxCounts)
+	DoBoxGraph(FileID,BoxCounts,BoxCount_err)
 	
 	return(0)
 End
 
-Function DoBoxGraph(FileID,BoxCounts)
-	Wave FileID,BoxCounts
+Function DoBoxGraph(FileID,BoxCounts,BoxCount_err)
+	Wave FileID,BoxCounts,BoxCount_err
 	
 	Sort FileID BoxCounts,FileID		//sort the waves, in case the run numbers were entered out of numerical order
 	
@@ -363,6 +379,7 @@ Function DoBoxGraph(FileID,BoxCounts)
 	ModifyGraph marker=8
 	ModifyGraph grid=2
 	ModifyGraph mirror=2
+	ErrorBars/T=0 BoxCounts Y,wave=(BoxCount_err,BoxCount_err)
 	Label left "Counts (per 10^8 monitor counts)"
 	Label bottom "Run Number"
 	
@@ -560,7 +577,7 @@ Function PrintMarqueeCoords() :  GraphMarquee
 	if(V_flag == 0)
 		Print "There is no Marquee"
 	else
-		Variable count,x1,x2,y1,y2
+		Variable count,x1,x2,y1,y2,ct_err
 		x1 = V_left
 		x2 = V_right
 		y1 = V_bottom
@@ -573,8 +590,9 @@ Function PrintMarqueeCoords() :  GraphMarquee
 		
 		KeepSelectionInBounds(x1,x2,y1,y2)
 		SVAR cur_folder=root:myGlobals:gDataDisplayType
-		count = SumCountsInBox(x1,x2,y1,y2,cur_folder)
-		Print "counts = "+ num2str(count)
+		count = SumCountsInBox(x1,x2,y1,y2,ct_err,cur_folder)
+		Print "counts = ",count
+		Print "err/counts = ",ct_err/count
 	endif
 End
 

@@ -102,6 +102,7 @@ Function Correct(mode)
 	
 	//copy SAM information to COR, wiping out the old contents of the COR folder first
 	//do this even if no correction is dispatched (if incorrect mode)
+	// the Copy converts "SAM" to linear scale, so "COR" is then linear too
 	err = CopyWorkContents("SAM","COR")	
 	if(err==1)
 		Abort "No data in SAM, abort from Correct()"
@@ -233,41 +234,59 @@ End
 // subtraction of bot EMP and BGD from SAM
 // data exists, checked by dispatch routine
 //
+// this is the most common use
+// March 2011 added error propagation
+//					added explicit reference to use linear_data, instead of trusting that data
+//					was freshly loaded. added final copy of cor result to cor:data and cor:linear_data
+//
 Function CorrectMode_1()
 	
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
 	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
 	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
 	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
 	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
 	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
+	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err,emp_trans_err
+	sam_trans_err = sam_reals[41]
+	emp_trans_err = emp_reals[41]
+	
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor,emp_AttenFactor
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
+	Variable sam_atten_err,emp_atten_err,bgd_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = bgd_text[3]
 	lambda = bgd_reals[26]
 	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
 	fileStr = emp_text[3]
 	lambda = emp_reals[26]
 	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -319,14 +338,30 @@ Function CorrectMode_1()
 	cor1 = fsam*sam_data/sam_attenFactor - fbgd*bgd_temp/bgd_attenFactor
 	cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
 	cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
+
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
+
+	tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+	tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+	
+	tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+
+	cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d)
 	
 	//we're done, get out w/no error
-	//set the COR data to the result
+	//set the COR data and linear_data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+	
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
+	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val
 	SetDataFolder root:
 	Return(0)
 End
@@ -337,30 +372,41 @@ End
 Function CorrectMode_2()
 
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
 	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
 	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
 	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err
+	sam_trans_err = sam_reals[41]
+
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001
+	Variable sam_atten_err,bgd_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = bgd_text[3]
 	lambda = bgd_reals[26]
 	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
 	
 	//Print "atten = ",sam_attenFactor,bgd_attenFactor
 	
@@ -397,13 +443,26 @@ Function CorrectMode_2()
 	cor1 = fsam*sam_data/sam_AttenFactor - fbgd*bgd_temp/bgd_AttenFactor
 	cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_b
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+
+	cor_err = sqrt(tmp_a + tmp_b)
+
+
 	//we're done, get out w/no error
 	//set the COR_data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd
+	Killwaves/Z tmp_a,tmp_b
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -413,30 +472,41 @@ End
 //
 Function CorrectMode_3()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
 	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
 	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err,emp_trans_err
+	sam_trans_err = sam_reals[41]
+	emp_trans_err = emp_reals[41]	
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,emp_attenFactor
 	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
 	Variable wcen=0.001,tsam,temp
+	Variable sam_atten_err,emp_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = emp_text[3]
 	lambda = emp_reals[26]
 	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -477,13 +547,26 @@ Function CorrectMode_3()
 	cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
 	cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_c ,c_val
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
+	tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+
+	cor_err = sqrt(tmp_a + tmp_c)
+	
 	//we're done, get out w/no error
 	//set the COR data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp
+	Killwaves/Z tmp_a,tmp_c,c_val
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -495,21 +578,26 @@ End
 //
 Function CorrectMode_4()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
 
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
-	
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+		
 	//get sam and bgd attenuation factors
 	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor
+	Variable lambda,attenNo,sam_AttenFactor,sam_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -517,55 +605,79 @@ Function CorrectMode_4()
 	
 	cor1 = sam_data/sam_AttenFactor		//simply rescale the data
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+
+	cor_err = sqrt(tmp_a)
+	
+
 	//we're done, get out w/no error
 	//set the COR data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1
+	Killwaves/Z tmp_a
+
 	SetDataFolder root:
 	Return(0)
 End
 
 Function CorrectMode_11()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
 	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
 	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
 	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
 	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
 	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:data"
+	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
 	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
 	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
 	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
+	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
+	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err,emp_trans_err
+	sam_trans_err = sam_reals[41]
+	emp_trans_err = emp_reals[41]
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor,emp_AttenFactor
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp,time_sam,time_drk,savmon_sam
+	Variable sam_atten_err,bgd_atten_err,emp_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = bgd_text[3]
 	lambda = bgd_reals[26]
 	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
 	fileStr = emp_text[3]
 	lambda = emp_reals[26]
 	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -586,8 +698,9 @@ Function CorrectMode_11()
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp
+	Make/D/O/N=(pixelsX,pixelsY) drk_temp, drk_tmp_err
 	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
 	
 	if(temp==0)
 		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
@@ -627,13 +740,30 @@ Function CorrectMode_11()
 	cor1 -= drk_temp/sam_attenFactor
 	cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
 	
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
+
+	tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+	tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+	
+	tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+
+	cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d + drk_tmp_err^2)
+	
 	//we're done, get out w/no error
 	//set the COR data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp,drk_temp
+	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val,drk_tmp_err
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -642,34 +772,46 @@ End
 //
 Function CorrectMode_12()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:data"
+	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
 	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
 	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
 	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:data"
+	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
 	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
 	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
 	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
+	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err
+	sam_trans_err = sam_reals[41]
+	
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
+	Variable sam_atten_err,bgd_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = bgd_text[3]
 	lambda = bgd_reals[26]
 	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -686,9 +828,10 @@ Function CorrectMode_12()
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp
+	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
 	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	
+	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
+
 	// set up beamcenter shift, relative to SAM
 	xshift = cbgd-csam
 	yshift = rbgd-rsam
@@ -711,13 +854,25 @@ Function CorrectMode_12()
 	cor1 += -1*(fbgd*bgd_temp/bgd_attenFactor - drk_temp) - drk_temp/sam_attenFactor
 	cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_b
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+
+	cor_err = sqrt(tmp_a + tmp_b + drk_tmp_err^2)
+
 	//we're done, get out w/no error
 	//set the COR_data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
-//	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
+	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
+	Killwaves/Z tmp_a,tmp_b,drk_tmp_err
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -728,34 +883,46 @@ End
 //to place the DRK file on equal footing
 Function CorrectMode_13()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:data"
+	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
 	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
 	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE drk_data=$"root:DRK:data"
-	WAVE drk_reals=$"root:DRK:realsread"
-	WAVE drk_ints=$"root:DRK:integersread"
-	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
+	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
+	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
+	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
+	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err,emp_trans_err
+	sam_trans_err = sam_reals[41]
+	emp_trans_err = emp_reals[41]
 	
 	//get sam and bgd attenuation factors (DRK irrelevant)
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,emp_attenFactor
 	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
 	Variable wcen=0.001,tsam,temp,savmon_sam,time_sam,time_drk
+	Variable sam_atten_err,emp_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	fileStr = emp_text[3]
 	lambda = emp_reals[26]
 	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -773,8 +940,10 @@ Function CorrectMode_13()
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp
+	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
 	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
+
 	
 	if(temp==0)
 		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
@@ -804,13 +973,26 @@ Function CorrectMode_13()
 	cor1 += drk_temp - drk_temp/sam_attenFactor
 	cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a, tmp_c, c_val
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+	tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
+	tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+	
+	cor_err = sqrt(tmp_a + tmp_c + drk_tmp_err^2)
+	
 	//we're done, get out w/no error
 	//set the COR data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp,drk_temp
+	Killwaves/Z tmp_a,tmp_c,c_val,drk_tmp_err
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -819,27 +1001,37 @@ End
 //
 Function CorrectMode_14()
 	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:data"
+	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
 	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
 	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
 	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-
-	WAVE drk_data=$"root:DRK:data"
-	WAVE drk_reals=$"root:DRK:realsread"
-	WAVE drk_ints=$"root:DRK:integersread"
-	WAVE/T drk_text=$"root:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:data"
+	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
+	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
+	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
+	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
+	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+
+	// needed to propagate error
+	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
+	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
+	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
+	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	
+	Variable sam_trans_err
+	sam_trans_err = sam_reals[41]
+	
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
+	Variable sam_atten_err
 	fileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo)
+	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = sam_reals[0]		//monitor count in SAM
@@ -854,9 +1046,10 @@ Function CorrectMode_14()
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp
+	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
 	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	
+	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
+
 	Make/D/O/N=(pixelsX,pixelsY) cor1	//temp arrays
 	//always ignore the DRK center shift
 	
@@ -867,13 +1060,23 @@ Function CorrectMode_14()
 	//correct sam for attenuators, and do the same to drk, since it was scaled to sam count time
 	cor1 = fsam*sam_data/sam_AttenFactor  - drk_temp/sam_attenFactor
 
+// do the error propagation piecewise	
+	Duplicate/O sam_err, tmp_a
+	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+
+	cor_err = sqrt(tmp_a + drk_tmp_err^2)
+	
 	//we're done, get out w/no error
 	//set the COR_data to the result
 	cor_data = cor1
+	cor_data_display = cor1
+
 	//update COR header
 	cor_text[1] = date() + " " + time()		//date + time stamp
 
-//	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
+	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
+	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val,drk_tmp_err
+
 	SetDataFolder root:
 	Return(0)
 End
@@ -1137,10 +1340,11 @@ Function OLD_Correct(mode)
 	//find the attenuation of the sample (if any)
 	Variable SamAttenFactor,lambda,attenNo,err=0
 	String samfileStr=""
+	Variable sam_atten_err
 	samfileStr = sam_text[3]
 	lambda = sam_reals[26]
 	attenNo = sam_reals[3]
-	SamAttenFactor = AttenuationFactor(samFileStr,lambda,AttenNo)
+	SamAttenFactor = AttenuationFactor(samFileStr,lambda,AttenNo,sam_atten_err)
 	//if sample trans is zero, do only SAM-BGD subtraction (notify the user)
 	Variable sam_trans = sam_reals[4]
 	

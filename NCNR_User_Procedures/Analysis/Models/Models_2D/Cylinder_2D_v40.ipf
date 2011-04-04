@@ -220,6 +220,7 @@ End
 
 /// now using the MultiThread keyword. as of Igor 6.20, the manual threading
 // as above gives a wave read error (index out of range). Same code works fine in Igor 6.12
+//ThreadSafe Function Cylinder2D(cw,zw,xw,yw) : FitFunc
 Function Cylinder2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
@@ -251,6 +252,14 @@ Function SmearedCylinder2D(s)
 //// the last param is nord	
 //	Smear_2DModel_PP(Cylinder2D_noThread,s,10)
 
+// this is generic, but I need to declare the Cylinder2D threadsafe
+// and this calculation is significantly slower than the manually threaded calculation
+// if the function is fast to calculate. Once the function has polydispersity on 2 or more parameters
+// then this AAO calculation and the manual threading are both painfully slow, and more similar in execution time
+//
+// see the function for timing details
+//
+//	Smear_2DModel_PP_AAO(Cylinder2D,s,10)
 
 //// the last param is nord
 	SmearedCylinder2D_THR(s,10)		
@@ -384,7 +393,7 @@ Function SmearedCylinder2D_THR(s,nord)
 end
 
 //
-// - worker function for threads of Sphere2D
+// - worker function for threads of Cylinder2D
 //
 ThreadSafe Function SmearedCylinder2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt1,pt2,nord)
 	WAVE coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi
@@ -408,6 +417,7 @@ ThreadSafe Function SmearedCylinder2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt
 	answer=0
 	
 	Variable spl,spp,apl,app,bpl,bpp,phi_pt,qpl_pt
+	Variable qperp_pt,phi_prime,q_prime
 
 	//loop over q-values
 	for(ii=pt1;ii<(pt2+1);ii+=1)
@@ -426,8 +436,8 @@ ThreadSafe Function SmearedCylinder2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt
 		
 		apl = -numStdDev*spl + qval		//parallel = q integration limits
 		bpl = numStdDev*spl + qval
-		app = -numStdDev*spp + phi		//perpendicular = phi integration limits
-		bpp = numStdDev*spp + phi
+		app = -numStdDev*spp + 0		//q_perp = 0
+		bpp = numStdDev*spp + 0
 		
 		//make sure the limits are reasonable.
 		if(apl < 0)
@@ -438,18 +448,23 @@ ThreadSafe Function SmearedCylinder2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,pt
 		
 		sumOut = 0
 		for(jj=0;jj<nord;jj+=1)		// call phi the "outer'
-			phi_pt = (xi[jj]*(bpp-app)+app+bpp)/2
+			qperp_pt = (xi[jj]*(bpp-app)+app+bpp)/2		//this is now q_perp
 
 			sumIn=0
 			for(kk=0;kk<nord;kk+=1)		//at phi, integrate over Qpl
 
 				qpl_pt = (xi[kk]*(bpl-apl)+apl+bpl)/2
 				
-				FindQxQy(qpl_pt,phi_pt,qx_pt,qy_pt)		//find the corresponding QxQy to the Q,phi
+				// find QxQy given Qpl and Qperp on the grid
+				//
+				q_prime = sqrt(qpl_pt^2+qperp_pt^2)
+				phi_prime = phi + qperp_pt/qpl_pt
+				FindQxQy(q_prime,phi_prime,qx_pt,qy_pt)
+				
 				yPtw[kk] = qy_pt					//phi is the same in this loop, but qy is not
 				xPtW[kk] = qx_pt					//qx is different here too, as we're varying Qpl
 				
-				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (phi_pt-phi)^2/spp/spp ) )
+				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (qperp_pt)^2/spp/spp ) )
 				res_tot[kk] /= normFactor
 //				res_tot[kk] *= fs
 

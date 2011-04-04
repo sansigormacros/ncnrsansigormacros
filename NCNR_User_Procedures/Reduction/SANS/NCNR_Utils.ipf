@@ -150,6 +150,35 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	QBar = (4.0*Pi/lambda)*sin(0.5*atan(rm/L2))
 	SigmaQ = QBar*sqrt(v_r/rmd^2 +v_lambda)
 
+
+// more readable method for calculating the variance in Q
+// EXCEPT - this is calculated for Qo, NOT qBar
+// (otherwise, they are nearly equivalent, except for close to the beam stop)
+//	Variable kap,a_val,a_val_l2,m_h
+//	g = 981.0				//gravity acceleration [cm/s^2]
+//	m_h	= 252.8			// m/h [=] s/cm^2
+//	
+//	kap = 2*pi/lambda
+//	a_val = L2*(L1+L2)*g/2*(m_h)^2
+//	a_val_L2 = a_val/L2*1e-16		//convert 1/cm^2 to 1/A^2
+//
+//	sigmaQ = 0
+//	sigmaQ = 3*(S1/L1)^2
+//	
+//	if(usingLenses != 0)
+//		sigmaQ += 2*(S2/lp)^2*(lambdaWidth)^2	//2nd term w/ lenses
+//	else	
+//		sigmaQ += 2*(S2/lp)^2						//2nd term w/ no lenses
+//	endif
+//	
+//	sigmaQ += (del_r/L2)^2
+//	sigmaQ += 2*(r0/L2)^2*(lambdaWidth)^2
+//	sigmaQ += 4*(a_val_l2)^2*lambda^4*(lambdaWidth)^2
+//	
+//	sigmaQ *= kap^2/12
+//	sigmaQ = sqrt(sigmaQ)
+
+
 	results = "success"
 	Return results
 End
@@ -178,6 +207,8 @@ End
 //
 // phi is the azimuthal angle, CCW from +x axis
 // r_dist is the real-space distance from ctr of detector to QxQy pixel location
+//
+// MAR 2011 - removed the del_r terms, they don't apply since no bining is done to the 2D data
 //
 Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
 	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
@@ -254,7 +285,7 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 //		v_r = 0.0
 //	endif
 
-	Variable kap,a_val,a_val_L2
+	Variable kap,a_val,a_val_L2,proj_DDet
 	
 	kap = 2*pi/lambda
 	a_val = L2*(L1+L2)*g/2*(m_h)^2
@@ -269,16 +300,19 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 // note that gravity has no wavelength dependence. the lambda^4 cancels out.
 //
 //	a_val = 0
+//	a_val_l2 = 0
 
 	// the detector pixel is square, so correct for phi
-	DDet = DDet*cos(phi) + DDet*sin(phi)
+	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
 	
 	// this is really sigma_Q_parallel
-	SigmaQX = kap*kap/12* (3*(S1/L1)^2 + 3*(S2/LP)^2 + (DDet/L2)^2 + (del_r/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
+	SigmaQX = kap*kap/12* (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
 	SigmaQX += inQ*inQ*v_lambda
 
 	//this is really sigma_Q_perpendicular
-	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + (DDet/L2)^2 + (del_r/L2)^2 + (cos(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2
+	proj_DDet = DDet*sin(phi) + DDet*cos(phi)		//not necessary, since DDet is the same in both X and Y directions
+
+	SigmaQY = 3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (cos(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2
 	SigmaQY *= kap*kap/12
 	
 	SigmaQX = sqrt(SigmaQX)
@@ -1193,6 +1227,20 @@ Proc MakeNG3AttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3att9
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3att10
 	
+	// and a wave for the errors at each attenuation factor
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att0_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att1_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att2_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att3_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att4_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att5_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att6_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att7_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att8_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att9_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3att10_err
+	
+	
 	//each wave has 10 elements, the transmission of att# at the wavelengths 
 	//lambda = 4,5,6,7,8,10,12,14,17,20 (4 A and 20 A are extrapolated values)
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3lambda={4,5,6,7,8,10,12,14,17,20}
@@ -1209,6 +1257,21 @@ Proc MakeNG3AttenTable()
 	root:myGlobals:Attenuators:ng3att8 = {0.000320057,0.0001918,0.0001025,6.085e-05,3.681e-05,1.835e-05,6.74002e-06,3.25288e-06,1.15321e-06,3.98173e-07}
 	root:myGlobals:Attenuators:ng3att9 = {6.27682e-05,3.69e-05,1.908e-05,1.196e-05,8.738e-06,6.996e-06,6.2901e-07,2.60221e-07,7.49748e-08,2.08029e-08}
 	root:myGlobals:Attenuators:ng3att10 = {1.40323e-05,8.51e-06,5.161e-06,4.4e-06,4.273e-06,1.88799e-07,5.87021e-08,2.08169e-08,4.8744e-09,1.08687e-09}
+  
+  // percent errors as measured, May 2007 values
+  // zero error for zero attenuators, appropriate average values put in for unknown values
+	root:myGlobals:Attenuators:ng3att0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:ng3att1_err = {0.15,0.142,0.154,0.183,0.221,0.328,0.136,0.13,0.163,0.15}
+	root:myGlobals:Attenuators:ng3att2_err = {0.25,0.257,0.285,0.223,0.271,0.405,0.212,0.223,0.227,0.25}
+	root:myGlobals:Attenuators:ng3att3_err = {0.3,0.295,0.329,0.263,0.323,0.495,0.307,0.28,0.277,0.3}
+	root:myGlobals:Attenuators:ng3att4_err = {0.35,0.331,0.374,0.303,0.379,0.598,0.367,0.322,0.33,0.35}
+	root:myGlobals:Attenuators:ng3att5_err = {0.4,0.365,0.418,0.355,0.454,0.745,0.411,0.367,0.485,0.4}
+	root:myGlobals:Attenuators:ng3att6_err = {0.45,0.406,0.473,0.385,0.498,0.838,0.454,0.49,0.5,0.5}
+	root:myGlobals:Attenuators:ng3att7_err = {0.6,0.554,0.692,0.425,0.562,0.991,0.715,0.8,0.8,0.8}
+	root:myGlobals:Attenuators:ng3att8_err = {0.7,0.705,0.927,0.503,0.691,1.27,1,1,1,1}
+	root:myGlobals:Attenuators:ng3att9_err = {1,0.862,1.172,0.799,1.104,1.891,1.5,1.5,1.5,1.5}
+	root:myGlobals:Attenuators:ng3att10_err = {1.5,1.054,1.435,1.354,1.742,2,2,2,2,2}
+  
   
   //old tables, pre-June 2007
 //  	Make/O/N=9 root:myGlobals:Attenuators:ng3lambda={5,6,7,8,10,12,14,17,20}
@@ -1245,6 +1308,19 @@ Proc MakeNG7AttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:ng7att9
 	Make/O/N=(num) root:myGlobals:Attenuators:ng7att10
 	
+	// and a wave for the errors at each attenuation factor
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att0_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att1_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att2_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att3_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att4_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att5_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att6_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att7_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att8_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att9_err
+	Make/O/N=(num) root:myGlobals:Attenuators:ng7att10_err	
+	
 	//NG7 wave has 10 elements, the transmission of att# at the wavelengths 
 	//lambda =4, 5,6,7,8,10,12,14,17,20
 	// note that some of the higher attenuations and ALL of the 4 A and 20A data is interpolated
@@ -1263,6 +1339,21 @@ Proc MakeNG7AttenTable()
   	root:myGlobals:Attenuators:ng7att8 = {0.000397173,0.0001911,0.0001044,5.844e-05,3.236e-05,1.471e-05,6.88523e-06,4.06541e-06,3.27333e-06,2.81838e-06}
   	root:myGlobals:Attenuators:ng7att9 = {9.43625e-05,3.557e-05,1.833e-05,1.014e-05,6.153e-06,1.64816e-06,6.42353e-07,3.42132e-07,2.68269e-07,2.2182e-07}
   	root:myGlobals:Attenuators:ng7att10 = {2.1607e-05,7.521e-06,2.91221e-06,1.45252e-06,7.93451e-07,1.92309e-07,5.99279e-08,2.87928e-08,2.19862e-08,1.7559e-08}
+
+  // percent errors as measured, May 2007 values
+  // zero error for zero attenuators, appropriate average values put in for unknown values
+	root:myGlobals:Attenuators:ng7att0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:ng7att1_err = {0.2,0.169,0.1932,0.253,0.298,0.4871,0.238,0.245,0.332,0.3}
+	root:myGlobals:Attenuators:ng7att2_err = {0.3,0.305,0.3551,0.306,0.37,0.6113,0.368,0.413,0.45,0.4}
+	root:myGlobals:Attenuators:ng7att3_err = {0.4,0.355,0.4158,0.36,0.4461,0.7643,0.532,0.514,0.535,0.5}
+	root:myGlobals:Attenuators:ng7att4_err = {0.45,0.402,0.4767,0.415,0.5292,0.9304,0.635,0.588,0.623,0.6}
+	root:myGlobals:Attenuators:ng7att5_err = {0.5,0.447,0.5376,0.487,0.6391,1.169,0.708,0.665,0.851,0.8}
+	root:myGlobals:Attenuators:ng7att6_err = {0.6,0.501,0.6136,0.528,0.8796,1.708,0.782,0.874,1,1}
+	root:myGlobals:Attenuators:ng7att7_err = {0.8,0.697,0.9149,0.583,1.173,2.427,1.242,2,2,2}
+	root:myGlobals:Attenuators:ng7att8_err = {1,0.898,1.24,0.696,1.577,3.412,3,3,3,3}
+	root:myGlobals:Attenuators:ng7att9_err = {1.5,1.113,1.599,1.154,2.324,4.721,5,5,5,5}
+	root:myGlobals:Attenuators:ng7att10_err = {1.5,1.493,5,5,5,5,5,5,5,5}  
+  
 
 // Pre-June 2007 calibration values - do not use these anymore	
 ////	root:myGlobals:Attenuators:ng7att0 = {1, 1, 1, 1, 1, 1, 1, 1 ,1}
@@ -1284,11 +1375,12 @@ End
 //between calibrated wavelengths for a given attenuator
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function LookupAttenNG3(lambda,attenNo)
-	Variable lambda, attenNo
+Function LookupAttenNG3(lambda,attenNo,atten_err)
+	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
 	String attStr="root:myGlobals:Attenuators:ng3att"+num2str(trunc(abs(attenNo)))
+	String attErrWStr="root:myGlobals:Attenuators:ng3att"+num2str(trunc(abs(attenNo)))+"_err"
 	String lamStr = "root:myGlobals:Attenuators:ng3lambda"
 	
 	if(attenNo == 0)
@@ -1299,7 +1391,7 @@ Function LookupAttenNG3(lambda,attenNo)
 		Abort "Wavelength out of calibration range (4,20). You must manually enter the absolute parameters"
 	Endif
 	
-	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
+	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
 		Execute "MakeNG3AttenTable()"
 	Endif
 	//just in case creating the tables fails....
@@ -1310,10 +1402,16 @@ Function LookupAttenNG3(lambda,attenNo)
 	//lookup the value by interpolating the wavelength
 	//the attenuator must always be an integer
 	Wave att = $attStr
+	Wave attErrW = $attErrWStr
 	Wave lam = $lamstr
 	trans = interp(lambda,lam,att)
-	
+	atten_err = interp(lambda,lam,attErrW)
+
+// the error in the tables is % error. return the standard deviation instead
+	atten_err = trans*atten_err/100
+		
 //	Print "trans = ",trans
+//	Print "trans err = ",atten_err
 	
 	return trans
 End
@@ -1328,11 +1426,12 @@ End
 // local function
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function LookupAttenNG7(lambda,attenNo)
-	Variable lambda, attenNo
+Function LookupAttenNG7(lambda,attenNo,atten_err)
+	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
 	String attStr="root:myGlobals:Attenuators:ng7att"+num2str(trunc(abs(attenNo)))
+	String attErrWStr="root:myGlobals:Attenuators:ng7att"+num2str(trunc(abs(attenNo)))+"_err"
 	String lamStr = "root:myGlobals:Attenuators:ng7lambda"
 	
 	if(attenNo == 0)
@@ -1343,7 +1442,7 @@ Function LookupAttenNG7(lambda,attenNo)
 		Abort "Wavelength out of calibration range (4,20). You must manually enter the absolute parameters"
 	Endif
 	
-	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
+	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
 		Execute "MakeNG7AttenTable()"
 	Endif
 	//just in case creating the tables fails....
@@ -1354,10 +1453,16 @@ Function LookupAttenNG7(lambda,attenNo)
 	//lookup the value by interpolating the wavelength
 	//the attenuator must always be an integer
 	Wave att = $attStr
+	Wave attErrW = $attErrWStr
 	Wave lam = $lamstr
 	trans = interp(lambda,lam,att)
+	atten_err = interp(lambda,lam,attErrW)
+
+// the error in the tables is % error. return the standard deviation instead
+	atten_err = trans*atten_err/100
 	
-	//Print "trans = ",trans
+//	Print "trans = ",trans
+//	Print "trans err = ",atten_err
 	
 	return trans
 
@@ -1378,23 +1483,25 @@ End
 //
 // called by Correct.ipf, ProtocolAsPanel.ipf, Transmission.ipf
 //
-Function AttenuationFactor(fileStr,lam,attenNo)
+//
+// as of March 2011, returns the error (one standard deviation) in the attenuation factor as the last parameter, by reference
+Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
-	Variable lam,attenNo
+	Variable lam,attenNo, &atten_err
 	
 	Variable attenFactor=1,loc
 	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)
 	
 	strswitch(instr)
 		case "NG3":
-			attenFactor = LookupAttenNG3(lam,attenNo)
+			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
 			break
 		case "NG5":
 			//using NG7 lookup Table
-			attenFactor = LookupAttenNG7(lam,attenNo)
+			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NG7":
-			attenFactor = LookupAttenNG7(lam,attenNo)
+			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?

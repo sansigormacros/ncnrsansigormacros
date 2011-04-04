@@ -241,7 +241,7 @@ Function ResetToSavedProtocol(nameStr)
 	list = w[4]
 	numItems = ItemsInList(list,";")
 	checked = 1
-	if(numitems == 4)
+	if(numitems == 4 || numitems == 5)		//allow for protocols with no SDEV list item
 		//correct number of parameters, assume ok
 		String/G root:myGlobals:Protocols:gAbsStr = list
 		CheckBox prot_check_9 win=ProtocolPanel,value=checked
@@ -1739,7 +1739,7 @@ Function ExecuteProtocol(protStr,samStr)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	Endif
 	
-	Variable c2,c3,c4,c5
+	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired
 	if(cmpstr("none",prot[4])!=0)
 		if(cmpstr("ask",prot[4])==0)
@@ -1751,12 +1751,14 @@ Function ExecuteProtocol(protStr,samStr)
 			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
 			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
 			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
+			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
 		else
 			//get the parames from the list
 			c2 = NumberByKey("TSTAND", prot[4], "=", ";")	//parse the list of values
 			c3 = NumberByKey("DSTAND", prot[4], "=", ";")
 			c4 = NumberByKey("IZERO", prot[4], "=", ";")
 			c5 = NumberByKey("XSECT", prot[4], "=", ";")
+			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
 		String destStr = "root:Packages:NIST:"+activeType+":realsread"
@@ -1764,7 +1766,7 @@ Function ExecuteProtocol(protStr,samStr)
 		Variable c0 = dest[4]		//sample transmission
 		Variable c1 = dest[5]		//sample thickness
 		
-		err = Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5)
+		err = Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
 		if(err)
 			SetDataFolder root:
 			Abort "Error in Absolute_Scale(), called from executeProtocol"
@@ -1989,12 +1991,13 @@ End
 //from the user
 //values are passed back as a global string variable (keyword=value)
 //
-Proc AskForAbsoluteParams(c2,c3,c4,c5)
-	Variable c2=0.95,c3=0.1,c4=1,c5=32.0
+Proc AskForAbsoluteParams(c2,c3,c4,c5,err)
+	Variable c2=0.95,c3=0.1,c4=1,c5=32.0,err=0
 	Prompt c2, "Standard Transmission"
 	Prompt c3, "Standard Thickness (cm)"
 	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"
 	Prompt c5, "Standard Cross-Section (cm-1)"
+	Prompt err, "error in I(q=0) (one std dev)"
 	
 	String/G root:myGlobals:Protocols:gAbsStr=""
 	
@@ -2002,6 +2005,7 @@ Proc AskForAbsoluteParams(c2,c3,c4,c5)
 	root:myGlobals:Protocols:gAbsStr +=  ";" + "DSTAND="+num2str(c3)
 	root:myGlobals:Protocols:gAbsStr +=  ";" + "IZERO="+num2str(c4)
 	root:myGlobals:Protocols:gAbsStr +=  ";" + "XSECT="+num2str(c5)
+	root:myGlobals:Protocols:gAbsStr +=  ";" + "SDEV="+num2str(err)
 	
 End
 
@@ -2058,11 +2062,12 @@ Function AskForAbsoluteParams_Quest()
 		//determine which instrument the measurement was done on from acctStr
 		Variable lambda = rw[26]
 		Variable attenNo = rw[3]
-		attenTrans = AttenuationFactor(acctStr,lambda,attenNo)
+		Variable atten_err
+		attenTrans = AttenuationFactor(acctStr,lambda,attenNo,atten_err)
 		//Print "attenTrans = ",attenTrans
 		
 		//get the XY box, if needed
-		Variable x1,x2,y1,y2
+		Variable x1,x2,y1,y2,ct_err
 		String filename=tw[0],tempStr
 		PathInfo/S catPathName
 		String tempName = S_Path + FindValidFilename(filename)
@@ -2091,7 +2096,7 @@ Function AskForAbsoluteParams_Quest()
 		Printf "Using Box X(%d,%d),Y(%d,%d)\r",x1,x2,y1,y2
 		
 		//need the detector sensitivity file - make a guess, allow to override
-		String junkStr=""
+		String junkStr="",errStr=""
 		if(! waveexists($"root:Packages:NIST:DIV:data"))
 			junkStr = PromptForPath("Select the detector sensitivity file")
 			Print junkStr
@@ -2123,23 +2128,30 @@ Function AskForAbsoluteParams_Quest()
 		// now do the sum, only in the box	
 //		detCnt = sum($"root:Packages:NIST:raw:data", -inf, inf )
 //		Print "box is now ",x1,x2,y1,y2
-		detCnt = SumCountsInBox(x1,x2,y1,y2,"RAW")
+		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
 		if(cmpstr(tw[9],"ILL   ")==0)
 			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large this is usually corrected in the Add step
 			pixel *= 1.04			// correction for true pixel size of the Cerca
 		endif
 		//		
 		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+		
+		Variable kappa_err
+		kappa_err = (ct_err/detCnt)^2 + (atten_err/attenTrans)^2
+		kappa_err = sqrt(kappa_err) * kappa
+		
 		junkStr = num2str(kappa)
+		errStr = num2Str(kappa_err)
 		// set the parameters in the global string
-		Execute "AskForAbsoluteParams(1,1,"+junkStr+",1)"		//no missing parameters, no dialog
+//		Print "AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"	
+		Execute "AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"		//no missing parameters, no dialog
 		
 		//should wipe out the data in the RAW folder, since it's not really RAW now
 		DoWindow/K SANS_Data
 		// SRK JUL 2006 don't clear the contents - just kill the window to force new data to be loaded
 		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from RAW:RealsRead
 		//ClearDataFolder("RAW")
-		Print "Kappa was successfully calculated as = ",kappa	
+		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	Endif
 	
 End

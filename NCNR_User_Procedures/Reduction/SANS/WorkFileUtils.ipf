@@ -19,6 +19,12 @@
 // - adding work.drk data without normalizing to monitor counts
 //***************************
 
+//
+//
+// MARCH 2011 - changed the references that manipulate the data to explcitly work on the linear_data wave
+//					at the end of routines that maniplulate linear_data, it is copied back to "data" which is displayed
+//
+//
 
 //testing procedure, not called anymore
 Proc Add_to_Workfile(type, add)
@@ -62,8 +68,7 @@ Function Add_raw_to_work(newType)
 	String destPath=""
 	
 	// if the desired workfile doesn't exist, let the user know, and just make a new one
-	destPath = "root:Packages:NIST:"+newType + ":data"
-	if(WaveExists($destpath) == 0)
+	if(WaveExists($("root:Packages:NIST:"+newType + ":data")) == 0)
 		Print "There is no old work file to add to - a new one will be created"
 		//call Raw_to_work(), then return from this function
 		Raw_to_Work(newType)
@@ -75,7 +80,9 @@ Function Add_raw_to_work(newType)
 	
 	//now make references to data in newType folder
 	DestPath="root:Packages:NIST:"+newType	
-	WAVE data=$(destPath +":data")			// these wave references point to the EXISTING work data
+	WAVE data=$(destPath +":linear_data")			// these wave references point to the EXISTING work data
+	WAVE data_copy=$(destPath +":data")			// these wave references point to the EXISTING work data
+	WAVE dest_data_err=$(destPath +":linear_data_error")			// these wave references point to the EXISTING work data
 	WAVE/T textread=$(destPath + ":textread")
 	WAVE integersread=$(destPath + ":integersread")
 	WAVE realsread=$(destPath + ":realsread")
@@ -109,9 +116,11 @@ Function Add_raw_to_work(newType)
 	//
 	//then unscale the data array
 	data *= uscale
+	dest_data_err *= uscale
 	
 	//DetCorr() has not been applied to the data in RAW , do it now in a local reference to the raw data
-	WAVE raw_data = $"root:Packages:NIST:RAW:data"
+	WAVE raw_data = $"root:Packages:NIST:RAW:linear_data"
+	WAVE raw_data_err = $"root:Packages:NIST:RAW:linear_data_error"
 	WAVE raw_reals =  $"root:Packages:NIST:RAW:realsread"
 	WAVE/T raw_text = $"root:Packages:NIST:RAW:textread"
 	WAVE raw_ints = $"root:Packages:NIST:RAW:integersread"
@@ -127,11 +136,12 @@ Function Add_raw_to_work(newType)
 		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
 	endif	
 	
-	DetCorr(raw_data,raw_reals,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
+	DetCorr(raw_data,raw_data_err,raw_reals,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
 	
 	//if RAW data is ILL type detector, correct raw_data for same counts being written to 4 pixels
 	if(cmpstr(raw_text[9], "ILL   ") == 0 )		//text field in header is 6 characters "ILL---"
 		raw_data /= 4
+		raw_data_err /= 4
 	endif
 	
 	//deadtime corrections to raw data
@@ -154,14 +164,19 @@ Function Add_raw_to_work(newType)
 		// deadtime scaling in tube ii
 		dscale = 1/(1-deadTime*cntrate)
 		// multiply data[ii][] by the dead time
-		data[][ii] *= dscale
+		raw_data[][ii] *= dscale
+		raw_data_err[][ii] *= dscale
 	endfor
+#else
+	// dead time correction on all other RAW data, including NCNR
+	raw_data *= dscale
+	raw_data_err *= dscale
 #endif
 
 	//update totals by adding RAW values to the local ones (write to work header at end of function)
 	total_mon += raw_reals[0]
 #if (exists("ILL_D22")==6)
-	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
+	total_det += sum(raw_data,-inf,inf)			//add the newly scaled detector array
 #else
 	total_det += dscale*raw_reals[2]
 #endif
@@ -183,7 +198,8 @@ Function Add_raw_to_work(newType)
 	endif
 	
 	If((xshift == 0) && (yshift == 0))		//no shift, just add them
-		data += dscale*raw_data		//do the deadtime correction on RAW here
+		data += raw_data		//deadtime correction has already been done to the raw data
+		dest_data_err = sqrt(dest_data_err^2 + raw_data_err^2)			// error of the sum
 	else
 		//shift the beamcenter, then add
 		Make/O/N=1 $(destPath + ":noadd")		//needed to get noadd condition back from ShiftSum()
@@ -201,7 +217,8 @@ Function Add_raw_to_work(newType)
 					//don't do anything to data[][]
 				else
 					//add the raw_data + shifted sum (and do the deadtime correction on both)
-					data[ii][jj] += dscale*(raw_data[ii][jj]+sh_sum)		//do the deadtime correction on RAW here
+					data[ii][jj] += (raw_data[ii][jj]+sh_sum)		//do the deadtime correction on RAW here
+					dest_data_err[ii][jj] = sqrt(dest_data_err[ii][jj]^2 + raw_data_err[ii][jj]^2)			// error of the sum
 				Endif
 				jj+=1
 			while(jj<pixelsY)
@@ -212,6 +229,10 @@ Function Add_raw_to_work(newType)
 	//scale the data to the default montor counts
 	scale = defmon/total_mon
 	data *= scale
+	dest_data_err *= scale
+	
+	// keep "data" and linear_data in sync in the destination folder
+	data_copy = data
 	
 	//all is done, except for the bookkeeping of updating the header info in the work folder
 	textread[1] = date() + " " + time()		//date + time stamp
@@ -276,14 +297,18 @@ Function Raw_to_work(newType)
 	//copy from current dir (RAW) to work, defined by destpath
 	DestPath = "root:Packages:NIST:"+newType
 	Duplicate/O $"root:Packages:NIST:RAW:data",$(destPath + ":data")
+	Duplicate/O $"root:Packages:NIST:RAW:linear_data_error",$(destPath + ":linear_data_error")
+	Duplicate/O $"root:Packages:NIST:RAW:linear_data",$(destPath + ":linear_data")
 //	Duplicate/O $"root:Packages:NIST:RAW:vlegend",$(destPath + ":vlegend")
 	Duplicate/O $"root:Packages:NIST:RAW:textread",$(destPath + ":textread")
 	Duplicate/O $"root:Packages:NIST:RAW:integersread",$(destPath + ":integersread")
 	Duplicate/O $"root:Packages:NIST:RAW:realsread",$(destPath + ":realsread")
 	Variable/G $(destPath + ":gIsLogscale")=0			//overwite flag in newType folder, data converted (above) to linear scale
-	
-	WAVE data=$(destPath + ":data")				// these wave references point to the data in work
-	WAVE/T textread=$(destPath + ":textread")			//that are to be directly operated on
+
+	WAVE data=$(destPath + ":linear_data")							// these wave references point to the data in work
+	WAVE data_copy=$(destPath + ":data")							// these wave references point to the data in work
+	WAVE data_err=$(destPath + ":linear_data_error")
+	WAVE/T textread=$(destPath + ":textread")				//that are to be directly operated on
 	WAVE integersread=$(destPath + ":integersread")
 	WAVE realsread=$(destPath + ":realsread")
 	String/G $(destPath + ":fileList") = textread[0]			//a list of names of the files in the work file (1)
@@ -297,11 +322,12 @@ Function Raw_to_work(newType)
 		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
 	endif
 	
-	DetCorr(data,realsread,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
-	
+	DetCorr(data,data_err,realsread,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
+
 	//if ILL type detector, correct for same counts being written to 4 pixels
 	if(cmpstr(textread[9], "ILL   ") == 0 )		//text field in header is 6 characters "ILL---"
 		data /= 4
+		data_err /= 4		//rescale error
 	endif
 	
 	//deadtime corrections
@@ -325,9 +351,18 @@ Function Raw_to_work(newType)
 		dscale = 1/(1-deadTime*cntrate)
 		// multiply data[ii][] by the dead time
 		data[][ii] *= dscale
+		data_err[][ii] *= dscale
 	endfor
 #endif
+
+	// NO xcenter,ycenter shifting is done - this is the first (and only) file in the work folder
 	
+	//only ONE data file- no addition of multiple runs in this function, so data is
+	//just simply corrected for deadtime.
+#if (exists("ILL_D22")==0)		//ILL correction done tube-by-tube above
+	data *= dscale		//deadtime correction for everyone else, including NCNR
+	data_err *= dscale
+#endif
 	
 	//update totals to put in the work header (at the end of the function)
 	total_mon += realsread[0]
@@ -340,17 +375,14 @@ Function Raw_to_work(newType)
 	total_rtime += integersread[2]
 	total_numruns +=1
 	
-	// NO xcenter,ycenter shifting is done - this is the first (and only) file in the work folder
 	
-	//only ONE data file- no addition of multiple runs in this function, so data is
-	//just simply corrected for deadtime.
-#ifndef ILL_D22		//correction done tube-by-tube above
-	data *= dscale		//deadtime correction
-#endif
-
 	//scale the data to the default montor counts
 	scale = defmon/total_mon
 	data *= scale
+	data_err *= scale		//assumes total monitor count is so large there is essentially no error
+	
+	// to keep "data" and linear_data in sync
+	data_copy = data
 	
 	//all is done, except for the bookkeeping, updating the header information in the work folder
 	textread[1] = date() + " " + time()		//date + time stamp
@@ -382,7 +414,9 @@ Function Raw_to_Work_NoNorm(type)
 	reals[1]=1		//true monitor counts, still in raw
 	Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
 	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
 	
 	Variable norm_mon,tot_mon,scale
@@ -392,6 +426,10 @@ Function Raw_to_Work_NoNorm(type)
 	scale= norm_mon/tot_mon
 	
 	data /= scale		//unscale the data
+	data_err /= scale
+	
+	// to keep "data" and linear_data in sync
+	data_copy = data
 	
 	return(0)
 End
@@ -408,7 +446,9 @@ Function Add_Raw_to_Work_NoNorm(type)
 	reals[1]=1		//true monitor counts, still in raw
 	Add_Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
 	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
 	
 	Variable norm_mon,tot_mon,scale
@@ -418,6 +458,10 @@ Function Add_Raw_to_Work_NoNorm(type)
 	scale= norm_mon/tot_mon
 	
 	data /= scale		//unscale the data
+	data_err /= scale
+	
+	// to keep "data" and linear_data in sync
+	data_copy = data
 	
 	return(0)
 End
@@ -426,14 +470,14 @@ End
 //function is called by Raw_to_work() and Add_raw_to_work() functions
 //works on the actual data array, assumes that is is already on LINEAR scale
 //
-Function DetCorr(data,realsread,doEfficiency,doTrans)
-	Wave data,realsread
+Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
+	Wave data,data_err,realsread
 	Variable doEfficiency,doTrans
 	
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,xx0,yy0
 	Variable ii,jj,dtdist,dtdis2
 	Variable xi,xd,yd,rad,ratio,domega,xy
-	Variable lambda,trans
+	Variable lambda,trans,trans_err,lat_err,tmp_err,lat_corr
 	
 //	Print "...doing jacobian and non-linear corrections"
 
@@ -456,6 +500,7 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 	
 	lambda = realsRead[26]
 	trans = RealsRead[4]
+	trans_err = RealsRead[41]		//new, March 2011
 	
 	xx0 = dc_fx(x0,sx,sx3,xcenter)
 	yy0 = dc_fy(y0,sy,sy3,ycenter)
@@ -491,7 +536,8 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			xy = xx[ii]*yy[jj]
 			data[ii][jj] *= xy*ratio
 			solidAngle[ii][jj] = xy*ratio		//testing only	
-
+			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
+			
 			
 			// correction factor for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
 			// correction inserted 11/2007 SRK
@@ -500,9 +546,11 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 			if(doEfficiency)
 #if (exists("ILL_D22")==6)
 				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
-	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
+				data_err[ii][jj] /= DetEffCorrILL(lambda,dtdist,xd) 			//assumes correction is exact
+//	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
 #else
 				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
+				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
 //				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
 #endif
 			endif
@@ -521,8 +569,22 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 					endif
 					trans = 1
 				endif
-					
-				data[ii][jj] /= LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//moved from 1D avg SRK 11/2007
+				
+				// pass in the transmission error, and the error in the correction is returned as the last parameter
+				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+				data[ii][jj] /= lat_corr			//divide by the correction factor
+				//
+				//
+				//
+				// relative errors add in quadrature
+				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
+				tmp_err = sqrt(tmp_err)
+				
+				data_err[ii][jj] = tmp_err
+				
+				solidAngle[ii][jj] = lat_err
+
+				
 				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
 			endif
 			
@@ -598,8 +660,8 @@ Function DetEffCorr(lambda,dtdist,xd,yd)
 End
 
 // DIVIDE the intensity by this correction to get the right answer
-Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd)
-	Variable trans,dtdist,xd,yd
+Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,err)
+	Variable trans,dtdist,xd,yd,trans_err,&err
 
 	//angle dependent transmission correction 
 	Variable uval,arg,cos_th,correction,theta
@@ -617,12 +679,13 @@ Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd)
 	
 	//optical thickness
 	uval = -ln(trans)		//use natural logarithm
-
-//	theta = 2*asin(lambda*qval/(4*pi))
-
 	cos_th = cos(theta)
 	arg = (1-cos_th)/cos_th
-	if((uval<0.01) || (cos_th>0.99))		//OR
+	
+	// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
+	// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
+	// OR
+	if((uval<0.01) || (cos_th>0.99))	
 		//small arg, approx correction
 		correction= 1-0.5*uval*arg
 	else
@@ -630,6 +693,23 @@ Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd)
 		correction = (1-exp(-uval*arg))/(uval*arg)
 	endif
 
+	Variable tmp
+	
+	if(trans == 1)
+		err = 0		//no correction, no error
+	else
+		//sigT, calculated from the Taylor expansion
+		tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
+		tmp *= tmp
+		tmp *= trans_err^2
+		tmp = sqrt(tmp)		//sigT
+		
+		err = tmp
+	endif
+	
+//	Printf "trans error = %g\r",trans_err
+//	Printf "correction = %g +/- %g\r", correction, err
+	
 	//end of transmission/pathlength correction
 
 	return(correction)
@@ -805,15 +885,15 @@ Function Divide_work(type)
 	//check for existence of data in type and DIV
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
-	destPath = "root:Packages:NIST:"+Type + ":data"
-	if(WaveExists($destpath) == 0)
+
+	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
-	destPath = "root:Packages:NIST:DIV:data"
-	if(WaveExists($destpath) == 0)
+
+	if(WaveExists($"root:Packages:NIST:DIV:data") == 0)
 		Print "There is no work file in DIV --Aborting"
 		Return(1)		//error condition
 	Endif
@@ -835,6 +915,8 @@ Function Divide_work(type)
 	//copy from current dir (type)=destPath to CAL, overwriting CAL contents
 	destPath = "root:Packages:NIST:" + type
 	Duplicate/O $(destPath + ":data"),$"root:Packages:NIST:CAL:data"
+	Duplicate/O $(destPath + ":linear_data"),$"root:Packages:NIST:CAL:linear_data"
+	Duplicate/O $(destPath + ":linear_data_error"),$"root:Packages:NIST:CAL:linear_data_error"
 //	Duplicate/O $(destPath + ":vlegend"),$"root:Packages:NIST:CAL:vlegend"
 	Duplicate/O $(destPath + ":textread"),$"root:Packages:NIST:CAL:textread"
 	Duplicate/O $(destPath + ":integersread"),$"root:Packages:NIST:CAL:integersread"
@@ -845,7 +927,9 @@ Function Divide_work(type)
 	//now switch to reference waves in CAL folder
 	destPath = "root:Packages:NIST:CAL"
 	//make appropriate wave references
-	Wave data=$(destPath + ":data")					// these wave references point to the data in CAL
+	Wave data=$(destPath + ":linear_data")					// these wave references point to the data in CAL
+//	Wave data_err=$(destPath + ":linear_data_err")					// these wave references point to the data in CAL
+	Wave data_copy=$(destPath + ":data")					// these wave references point to the data in CAL
 	Wave/t textread=$(destPath + ":textread")			//that are to be directly operated on
 	Wave integersread=$(destPath + ":integersread")
 	Wave realsread=$(destPath + ":realsread")
@@ -856,6 +940,11 @@ Function Divide_work(type)
 	Wave div_data = $"root:Packages:NIST:DIV:data"		//hard-wired in....
 	//do the division, changing data in CAL
 	data /= div_data
+	
+//	data_err /= div_data
+	
+	// keep "data" in sync with linear_data
+	data_copy = data
 	
 	//update CAL header
 	textread[1] = date() + " " + time()		//date + time stamp
@@ -903,9 +992,9 @@ End
 //s_ is the standard
 //w_ is the "work" file
 //both are work files and should already be normalized to 10^8 monitor counts
-Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
+Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err)
 	String type
-	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross
+	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err
 	
 	//convert the "type" data to absolute scale using the given standard information
 	//copying the "type" waves to ABS
@@ -913,8 +1002,7 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	//check for existence of data, rescale to linear if needed
 	String destPath
 	//check for "type"
-	destPath = "root:Packages:NIST:"+Type + ":data"
-	if(WaveExists($destpath) == 0)
+	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
@@ -933,6 +1021,8 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is 
 	//copy from current dir (type) to ABS, defined by destPath
 	Duplicate/O $(oldType + ":data"),$"root:Packages:NIST:ABS:data"
+	Duplicate/O $(oldType + ":linear_data"),$"root:Packages:NIST:ABS:linear_data"
+	Duplicate/O $(oldType + ":linear_data_error"),$"root:Packages:NIST:ABS:linear_data_error"
 //	Duplicate/O $(oldType + ":vlegend"),$"root:Packages:NIST:ABS:vlegend"
 	Duplicate/O $(oldType + ":textread"),$"root:Packages:NIST:ABS:textread"
 	Duplicate/O $(oldType + ":integersread"),$"root:Packages:NIST:ABS:integersread"
@@ -944,7 +1034,9 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	
 	//now switch to ABS folder
 	//make appropriate wave references
-	WAVE data=$"root:Packages:NIST:ABS:data"					// these wave references point to the "type" data in ABS
+	WAVE data=$"root:Packages:NIST:ABS:linear_data"					// these wave references point to the "type" data in ABS
+	WAVE data_err=$"root:Packages:NIST:ABS:linear_data_error"					// these wave references point to the "type" data in ABS
+	WAVE data_copy=$"root:Packages:NIST:ABS:data"					// just for display
 	WAVE/T textread=$"root:Packages:NIST:ABS:textread"			//that are to be directly operated on
 	WAVE integersread=$"root:Packages:NIST:ABS:integersread"
 	WAVE realsread=$"root:Packages:NIST:ABS:realsread"
@@ -961,12 +1053,28 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross)
 	Endif
 	
 	//calculate scale factor
+	Variable scale,trans_err
 	s1 = defmon/realsread[0]		//[0] is monitor count (s1 should be 1)
 	s2 = s_thick/w_thick
 	s3 = s_trans/w_trans
 	s4 = s_cross/s_izero
 	
+	// kappa comes in as s_izero, so be sure to use 1/kappa_err
+	
 	data *= s1*s2*s3*s4
+	
+	scale = s1*s2*s3*s4
+	trans_err = realsRead[41]
+	
+//	print scale
+//	print data[0][0]
+	
+	data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
+
+//	print data_err[0][0]
+	
+// keep "data" in sync with linear_data	
+	data_copy = data
 	
 	//********* 15APR02
 	// DO NOt correct for atenuators here - the COR step already does this, putting all of the data one equal
@@ -995,8 +1103,7 @@ Function CopyWorkContents(oldtype,newtype)
 	//check for existence of data in oldtype
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
-	destPath = "root:Packages:NIST:"+oldType + ":data"
-	if(WaveExists($destpath) == 0)
+	if(WaveExists($("root:Packages:NIST:"+oldType + ":data")) == 0)
 		Print "There is no work file in "+oldtype+"--Aborting"
 		Return(1) 		//error condition
 	Endif
@@ -1009,12 +1116,15 @@ Function CopyWorkContents(oldtype,newtype)
 	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
 	destPath = "root:Packages:NIST:" + oldtype
 	Duplicate/O $(destPath + ":data"),$("root:Packages:NIST:"+newtype+":data")
+	Duplicate/O $(destPath + ":linear_data"),$("root:Packages:NIST:"+newtype+":linear_data")
+	Duplicate/O $(destPath + ":linear_data_error"),$("root:Packages:NIST:"+newtype+":linear_data_error")
 	Duplicate/O $(destPath + ":textread"),$("root:Packages:NIST:"+newtype+":textread")
 	Duplicate/O $(destPath + ":integersread"),$("root:Packages:NIST:"+newtype+":integersread")
 	Duplicate/O $(destPath + ":realsread"),$("root:Packages:NIST:"+newtype+":realsread")
 	//
 	// be sure to get rid of the linear_data if it exists in the destination folder
-	KillWaves/Z $("root:Packages:NIST:"+newtype+":linear_data")
+//	KillWaves/Z $("root:Packages:NIST:"+newtype+":linear_data")
+
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 
@@ -1107,14 +1217,20 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
 	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:data")
+	WAVE/Z err1=$("root:Packages:NIST:"+workMathStr+"File_1:linear_data_error")
+	
+	// set # 2
 	If(cmpstr(str2,"UNIT MATRIX")==0)
 		Make/O/N=(pixelsX,pixelsY) root:Packages:NIST:WorkMath:data		//don't put in File_2 folder
 		Wave/Z data2 =  root:Packages:NIST:WorkMath:data			//it's not real data!
 		data2=1
+		Duplicate/O data2 err2
+		err2 = 0
 	else
 		//Load set #2
 		Load_NamedASC_File(pathStr+str2,workMathStr+"File_2")
 		WAVE/Z data2=$("root:Packages:NIST:"+workMathStr+"File_2:data")
+		WAVE/Z err2=$("root:Packages:NIST:"+workMathStr+"File_2:linear_data_error")
 	Endif
 
 	///////
@@ -1127,20 +1243,29 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	//copy contents of str1 folder to dest and create the wave ref (it will exist)
 	CopyWorkContents(workMathStr+"File_1",workMathStr+dest)
 	WAVE/Z destData=$("root:Packages:NIST:"+workMathStr+dest+":data")
+	WAVE/Z destErr=$("root:Packages:NIST:"+workMathStr+dest+":linear_data_error")
 	
 	//dispatch
 	strswitch(oper)	
 		case "*":		//multiplication
 			destData = const1*data1 * const2*data2
+			destErr = const1^2*const2^2*(err1^2*data2^2 + err2^2*data1^2)
+			destErr = sqrt(destErr)
 			break	
 		case "_":		//subtraction
 			destData = const1*data1 - const2*data2
+			destErr = const1^2*err1^2 + const2^2*err2^2
+			destErr = sqrt(destErr)
 			break
 		case "/":		//division
 			destData = (const1*data1) / (const2*data2)
+			destErr = const1^2/const2^2*(err1^2/data2^2 + err2^2*data1^2/data2^4)
+			destErr = sqrt(destErr)
 			break
 		case "+":		//addition
 			destData = const1*data1 + const2*data2
+			destErr = const1^2*err1^2 + const2^2*err2^2
+			destErr = sqrt(destErr)
 			break			
 	endswitch
 	

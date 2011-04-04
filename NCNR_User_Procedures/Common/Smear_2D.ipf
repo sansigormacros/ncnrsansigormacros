@@ -94,6 +94,8 @@ Function Smear_2DModel_PP(fcn,s,nord)
 	answer=0
 	
 	Variable spl,spp,apl,app,bpl,bpp,phi_pt,qpl_pt
+	Variable qperp_pt,phi_prime,q_prime
+
 	Variable t1=StopMSTimer(-2)
 
 	//loop over q-values
@@ -117,8 +119,10 @@ Function Smear_2DModel_PP(fcn,s,nord)
 		
 		apl = -numStdDev*spl + qval		//parallel = q integration limits
 		bpl = numStdDev*spl + qval
-		app = -numStdDev*spp + phi		//perpendicular = phi integration limits
-		bpp = numStdDev*spp + phi
+///		app = -numStdDev*spp + phi		//perpendicular = phi integration limits (WRONG)
+///		bpp = numStdDev*spp + phi
+		app = -numStdDev*spp + 0		//q_perp = 0
+		bpp = numStdDev*spp + 0
 		
 		//make sure the limits are reasonable.
 		if(apl < 0)
@@ -129,18 +133,27 @@ Function Smear_2DModel_PP(fcn,s,nord)
 		
 		sumOut = 0
 		for(jj=0;jj<nord;jj+=1)		// call phi the "outer'
-			phi_pt = (xi[jj]*(bpp-app)+app+bpp)/2
+///			phi_pt = (xi[jj]*(bpp-app)+app+bpp)/2
+			qperp_pt = (xi[jj]*(bpp-app)+app+bpp)/2		//this is now q_perp
 
 			sumIn=0
 			for(kk=0;kk<nord;kk+=1)		//at phi, integrate over Qpl
 
 				qpl_pt = (xi[kk]*(bpl-apl)+apl+bpl)/2
 				
-				FindQxQy(qpl_pt,phi_pt,qx_pt,qy_pt)		//find the corresponding QxQy to the Q,phi
+///				FindQxQy(qpl_pt,phi_pt,qx_pt,qy_pt)		//find the corresponding QxQy to the Q,phi
+
+				// find QxQy given Qpl and Qperp on the grid
+				//
+				q_prime = sqrt(qpl_pt^2+qperp_pt^2)
+				phi_prime = phi + qperp_pt/qpl_pt
+				FindQxQy(q_prime,phi_prime,qx_pt,qy_pt)
+				
 				yPtw[kk] = qy_pt					//phi is the same in this loop, but qy is not
 				xPtW[kk] = qx_pt					//qx is different here too, as we're varying Qpl
-				
-				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (phi_pt-phi)^2/spp/spp ) )
+
+				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (qperp_pt)^2/spp/spp ) )
+///				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (phi_pt-phi)^2/spp/spp ) )
 				res_tot[kk] /= normFactor
 //				res_tot[kk] *= fs
 
@@ -163,6 +176,167 @@ Function Smear_2DModel_PP(fcn,s,nord)
 	
 	return(0)
 end
+
+
+// this is generic, but I need to declare the Cylinder2D function threadsafe
+// and this calculation is significantly slower than the manually threaded calculation
+// if the function is fast to calculate. Once the function has polydispersity on 2 or more parameters
+// then this AAO calculation and the manual threading are both painfully slow, and more similar in execution time
+//
+// For 128x128 data, and 10x10 smearing, using 25 points for each polydispersity (using DANSE code)
+//	Successively making more things polydisperse gives the following timing (in seconds):
+//
+// 				monodisp		sigR		sigTheta		sigPhi
+// manual THR		1.1		3.9			74			1844
+//	this AAO			8.6		11.4			104		1930
+//
+// and using 5 points for each polydispersity: (I see no visual difference)
+// manual THR		1.1		1.6			3.9		16.1
+//
+// so clearly -- use 5 points for the polydispersities, unless there's a good reason not to - and 
+// certainly for a survey, it's the way to go.
+//
+Function Smear_2DModel_PP_AAO(fcn,s,nord)
+	FUNCREF SANS_2D_ModelAAO_proto fcn
+	Struct ResSmear_2D_AAOStruct &s
+	Variable nord
+	
+	String weightStr,zStr
+
+	Variable ii,jj,kk,num
+	Variable qx,qy,qz,qval,fs
+	Variable qy_pt,qx_pt,res_x,res_y,answer,sumIn,sumOut
+	
+	Variable a,b,c,normFactor,phi,theta,maxSig,numStdDev=3
+	
+	switch(nord)	
+		case 5:		
+			weightStr="gauss5wt"
+			zStr="gauss5z"
+			if (WaveExists($weightStr) == 0)
+				Make/O/D/N=(nord) $weightStr,$zStr
+				Make5GaussPoints($weightStr,$zStr)	
+			endif
+			break				
+		case 10:		
+			weightStr="gauss10wt"
+			zStr="gauss10z"
+			if (WaveExists($weightStr) == 0)
+				Make/O/D/N=(nord) $weightStr,$zStr
+				Make10GaussPoints($weightStr,$zStr)	
+			endif
+			break				
+		case 20:		
+			weightStr="gauss20wt"
+			zStr="gauss20z"
+			if (WaveExists($weightStr) == 0)
+				Make/O/D/N=(nord) $weightStr,$zStr
+				Make20GaussPoints($weightStr,$zStr)	
+			endif
+			break
+		default:							
+			Abort "Smear_2DModel_PP called with invalid nord value"					
+	endswitch
+	
+	Wave/Z wt = $weightStr
+	Wave/Z xi = $zStr
+	
+/// keep these waves local
+//	Make/O/D/N=1 yPtW
+	Make/O/D/N=(nord*nord) fcnRet,xptW,res_tot,yptW,wts
+	Make/O/D/N=(nord) phi_pt,qpl_pt,qperp_pt
+		
+	// now just loop over the points as specified
+	num=numpnts(s.xw[0])
+	
+	answer=0
+	
+	Variable spl,spp,apl,app,bpl,bpp
+	Variable phi_prime,q_prime
+
+	Variable t1=StopMSTimer(-2)
+
+	//loop over q-values
+	for(ii=0;ii<num;ii+=1)
+	
+//		if(mod(ii, 1000 ) == 0)
+//			Print "ii= ",ii
+//		endif
+		
+		qx = s.xw[0][ii]
+		qy = s.xw[1][ii]
+		qz = s.qz[ii]
+		qval = sqrt(qx^2+qy^2+qz^2)
+		spl = s.sQpl[ii]
+		spp = s.sQpp[ii]
+		fs = s.fs[ii]
+		
+		normFactor = 2*pi*spl*spp
+		
+		phi = -1*FindTheta(qx,qy) 		//Findtheta is an exact duplicate of FindPhi() * -1
+		
+		apl = -numStdDev*spl + qval		//parallel = q integration limits
+		bpl = numStdDev*spl + qval
+///		app = -numStdDev*spp + phi		//perpendicular = phi integration limits (WRONG)
+///		bpp = numStdDev*spp + phi
+		app = -numStdDev*spp + 0		//q_perp = 0
+		bpp = numStdDev*spp + 0
+		
+		//make sure the limits are reasonable.
+		if(apl < 0)
+			apl = 0
+		endif
+		// do I need to specially handle limits when phi ~ 0?
+	
+		
+//		sumOut = 0
+		for(jj=0;jj<nord;jj+=1)		// call phi the "outer'
+//			phi_pt[jj] = (xi[jj]*(bpp-app)+app+bpp)/2
+			qperp_pt[jj] = (xi[jj]*(bpp-app)+app+bpp)/2		//this is now q_perp
+			
+//			sumIn=0
+			for(kk=0;kk<nord;kk+=1)		//at phi, integrate over Qpl
+
+				qpl_pt[kk] = (xi[kk]*(bpl-apl)+apl+bpl)/2
+				
+///				FindQxQy(qpl_pt[kk],phi_pt[jj],qx_pt,qy_pt)		//find the corresponding QxQy to the Q,phi
+				
+				// find QxQy given Qpl and Qperp on the grid
+				//
+				q_prime = sqrt(qpl_pt[kk]^2+qperp_pt[jj]^2)
+				phi_prime = phi + qperp_pt[jj]/qpl_pt[kk]
+				FindQxQy(q_prime,phi_prime,qx_pt,qy_pt)
+								
+				yPtw[nord*jj+kk] = qy_pt					//phi is the same in this loop, but qy is not
+				xPtW[nord*jj+kk] = qx_pt					//qx is different here too, as we're varying Qpl
+				
+				res_tot[nord*jj+kk] = exp(-0.5*( (qpl_pt[kk]-qval)^2/spl/spl + (qperp_pt[jj])^2/spp/spp ) )
+//				res_tot[nord*jj+kk] = exp(-0.5*( (qpl_pt[kk]-qval)^2/spl/spl + (phi_pt[jj]-phi)^2/spp/spp ) )
+				res_tot[nord*jj+kk] /= normFactor
+//				res_tot[kk] *= fs
+
+				//weighting
+				wts[nord*jj+kk] = wt[jj]*wt[kk]
+			endfor
+			
+		endfor
+		
+		fcn(s.coefW,fcnRet,xptw,yptw)			//calculate nord*nord pts at a time
+		
+		fcnRet *= wts*res_tot
+		//
+		answer = (bpl-apl)/2.0*sum(fcnRet)		// get the sum, normalize to parallel direction
+		answer *= (bpp-app)/2.0						// and normalize to perpendicular direction
+		
+		s.zw[ii] = answer
+	endfor
+	
+	Variable elap = (StopMSTimer(-2) - t1)/1e6
+	Print "elapsed time = ",elap
+	
+	return(0)
+end
+
 
 
 

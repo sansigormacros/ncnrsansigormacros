@@ -37,6 +37,9 @@ Function NormalizeDIV(type)
 	String type
 	
 	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
+	
 	Variable totCts=sum(data,Inf,-Inf)		//sum all of the data
 	NVAR pixelX = root:myGlobals:gNPixelsX
 	NVAR pixelY = root:myGlobals:gNPixelsY
@@ -45,6 +48,12 @@ Function NormalizeDIV(type)
 	data /= totCts
 	data *= pixelX*pixelY
 	
+	data_lin /= totCts
+	data_lin *= pixelX*pixelY
+	
+	data_err /= totCts
+	data_err *= pixelX*pixelY
+		
 	return(0)
 End
 
@@ -131,11 +140,20 @@ Function ReplaceDataBlock(ctrType,offType,x1,x2,y1,y2)
 	//do it crudely, with nested for loops
 	WAVE ctrData=$("root:Packages:NIST:"+ctrtype+":data")
 	WAVE offData=$("root:Packages:NIST:"+offtype+":data")
+	
+	WAVE ctrData_lin=$("root:Packages:NIST:"+ctrtype+":linear_data")
+	WAVE offData_lin=$("root:Packages:NIST:"+offtype+":linear_data")
+	
+	WAVE ctrData_err=$("root:Packages:NIST:"+ctrtype+":linear_data_error")
+	WAVE offData_err=$("root:Packages:NIST:"+offtype+":linear_data_error")
+	
 	Variable ii,jj
 	
 	for(ii=x1;ii<=x2;ii+=1)
 		for(jj=y1;jj<=y2;jj+=1)
 			ctrData[ii][jj] = offData[ii][jj]
+			ctrData_lin[ii][jj] = offData_lin[ii][jj]
+			ctrData_err[ii][jj] = offData_err[ii][jj]
 		endfor
 	endfor
 	

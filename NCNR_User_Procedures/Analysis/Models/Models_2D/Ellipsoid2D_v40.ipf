@@ -269,7 +269,7 @@ ThreadSafe Function Ellipsoid2D_noThread(cw,zw,xw,yw)
 
 	Make/O/D/N=13 Ellip2D_tmp
 	Ellip2D_tmp[0,11] = cw
-	Ellip2D_tmp[12] = 25
+	Ellip2D_tmp[12] = 5			//use a small number of integration points since smearing is used
 	Ellip2D_tmp[5] = 0		//pass in a zero background and add it in later
 	
 	zw= Ellipsoid_2DX(Ellip2D_tmp,xw,yw) + cw[5]
@@ -376,6 +376,7 @@ ThreadSafe Function SmearedEllipsoid2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,p
 	answer=0
 	
 	Variable spl,spp,apl,app,bpl,bpp,phi_pt,qpl_pt
+	Variable qperp_pt,phi_prime,q_prime
 
 	//loop over q-values
 	for(ii=pt1;ii<(pt2+1);ii+=1)
@@ -394,8 +395,8 @@ ThreadSafe Function SmearedEllipsoid2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,p
 		
 		apl = -numStdDev*spl + qval		//parallel = q integration limits
 		bpl = numStdDev*spl + qval
-		app = -numStdDev*spp + phi		//perpendicular = phi integration limits
-		bpp = numStdDev*spp + phi
+		app = -numStdDev*spp + 0		//q_perp = 0
+		bpp = numStdDev*spp + 0
 		
 		//make sure the limits are reasonable.
 		if(apl < 0)
@@ -406,18 +407,23 @@ ThreadSafe Function SmearedEllipsoid2D_T(coef,qxw,qyw,qzw,sxw,syw,fsw,zw,wt,xi,p
 		
 		sumOut = 0
 		for(jj=0;jj<nord;jj+=1)		// call phi the "outer'
-			phi_pt = (xi[jj]*(bpp-app)+app+bpp)/2
+			qperp_pt = (xi[jj]*(bpp-app)+app+bpp)/2		//this is now q_perp
 
 			sumIn=0
 			for(kk=0;kk<nord;kk+=1)		//at phi, integrate over Qpl
 
 				qpl_pt = (xi[kk]*(bpl-apl)+apl+bpl)/2
 				
-				FindQxQy(qpl_pt,phi_pt,qx_pt,qy_pt)		//find the corresponding QxQy to the Q,phi
+				// find QxQy given Qpl and Qperp on the grid
+				//
+				q_prime = sqrt(qpl_pt^2+qperp_pt^2)
+				phi_prime = phi + qperp_pt/qpl_pt
+				FindQxQy(q_prime,phi_prime,qx_pt,qy_pt)
+				
 				yPtw[kk] = qy_pt					//phi is the same in this loop, but qy is not
 				xPtW[kk] = qx_pt					//qx is different here too, as we're varying Qpl
 				
-				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (phi_pt-phi)^2/spp/spp ) )
+				res_tot[kk] = exp(-0.5*( (qpl_pt-qval)^2/spl/spl + (qperp_pt)^2/spp/spp ) )
 				res_tot[kk] /= normFactor
 //				res_tot[kk] *= fs
 

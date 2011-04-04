@@ -79,6 +79,8 @@ Proc BuildFileTables()
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_SDD"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Lambda"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
+
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Whole"
 	If(V_Flag==0)
 		BuildScatTableWindow()
@@ -176,8 +178,10 @@ Function BuildScatTableWindow()
 	Wave   S_SDD = $"root:myGlobals:TransHeaderInfo:S_SDD"
 	Wave   S_Lambda = $"root:myGlobals:TransHeaderInfo:S_Lambda"
 	Wave   S_Transmission = $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Wave   S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
+
 	
-	Edit/K=1/W=(50,50,520,270) S_TRANS_Filenames, S_Filenames, S_Labels, S_SDD, S_Lambda, S_Transmission as "ScatteringFiles"
+	Edit/K=1/W=(50,50,520,270) S_TRANS_Filenames, S_Filenames, S_Labels, S_SDD, S_Lambda, S_Transmission, S_GTrans_err as "ScatteringFiles"
 	String name="ScatterFileTable"
 	DoWindow/C $name
 
@@ -206,10 +210,11 @@ Function SortTransByDate()
 	Wave   S_GSDD = $"root:myGlobals:TransHeaderInfo:S_SDD"
 	Wave   S_GLambda = $"root:myGlobals:TransHeaderInfo:S_Lambda"
 	Wave   S_GTransmission = $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Wave 	 S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 	Wave   S_Whole= $"root:myGlobals:TransHeaderInfo:S_Whole"
 	
 	Sort T_GSuffix, T_GEMP_Filenames, T_GSuffix, T_GSuffices, T_GFilenames, T_GLabels, T_GSDD, T_GLambda, T_GTransmission, T_Whole
-	Sort S_GSuffix, S_GTRANS_Filenames, S_GSuffix, S_GSuffices, S_GFilenames, S_GLabels, S_GSDD, S_GLambda, S_GTransmission, S_Whole
+	Sort S_GSuffix, S_GTRANS_Filenames, S_GSuffix, S_GSuffices, S_GFilenames, S_GLabels, S_GSDD, S_GLambda, S_GTransmission, S_Whole, S_GTrans_err
 	
 End
 
@@ -235,10 +240,11 @@ Function SortTransByLabel()
 	Wave   S_GSDD = $"root:myGlobals:TransHeaderInfo:S_SDD"
 	Wave   S_GLambda = $"root:myGlobals:TransHeaderInfo:S_Lambda"
 	Wave   S_GTransmission = $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Wave   S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 	Wave   S_Whole= $"root:myGlobals:TransHeaderInfo:S_Whole"
 	
 	Sort T_GLabels, T_GEMP_Filenames, T_GSuffix, T_GSuffices, T_GFilenames, T_GLabels, T_GSDD, T_GLambda, T_GTransmission, T_Whole
-	Sort S_GLabels, S_GTRANS_Filenames, S_GSuffix, S_GSuffices, S_GFilenames, S_GLabels, S_GSDD, S_GLambda, S_GTransmission, S_Whole
+	Sort S_GLabels, S_GTRANS_Filenames, S_GSuffix, S_GSuffices, S_GFilenames, S_GLabels, S_GSDD, S_GLambda, S_GTransmission, S_Whole, S_GTrans_err
 	
 End
 
@@ -278,7 +284,13 @@ Function GetTransHeaderInfoToWave(fname,sname)
 		Wave GSDD = $"root:myGlobals:TransHeaderInfo:S_SDD"
 		Wave GLambda = $"root:myGlobals:TransHeaderInfo:S_Lambda"
 		Wave GTransmission = $"root:myGlobals:TransHeaderInfo:S_Transmission"
+		Wave S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 		Wave GWhole = $"root:myGlobals:TransHeaderInfo:S_Whole"
+		
+			//Transmission error
+			InsertPoints lastPoint,1,S_GTrans_err
+			S_GTrans_err[lastPoint] = getSampleTransError(fname)
+			
 	Endif
 
 	lastPoint = numpnts(GLambda)
@@ -305,6 +317,8 @@ Function GetTransHeaderInfoToWave(fname,sname)
 	//Transmission
 	InsertPoints lastPoint,1,GTransmission
 	GTransmission[lastPoint]=getSampleTrans(fname)
+	
+
 	
 	//Whole detector Transmission
 	InsertPoints lastPoint,1,GWhole
@@ -476,6 +490,7 @@ Proc CreateTransGlobals()
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_SDD"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Lambda"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Whole"
 End
 
@@ -604,6 +619,7 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 	Wave/T S_GFilenames = $"root:myGlobals:TransHeaderInfo:S_Filenames"
 	Wave/T S_GSuffix = $"root:myGlobals:TransHeaderInfo:S_Suffix"
 	Wave S_GTransmission =  $"root:myGlobals:TransHeaderInfo:S_Transmission"
+	Wave S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 	Wave/T T_EMP_Filenames = $"root:myGlobals:TransHeaderInfo:T_EMP_Filenames"
 	Wave/T T_GFilenames = $"root:myGlobals:TransHeaderInfo:T_Filenames"
 	Wave/T T_GSuffix = $"root:myGlobals:TransHeaderInfo:T_Suffix"
@@ -642,6 +658,9 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 			
 			WriteWholeTransToHeader(filename,1)		//WholeTrans start byte is 392
 			
+			WriteTransmissionErrorToHeader(filename,0)			//reset transmission error to zero
+			WriteBoxCountsErrorToHeader(filename,0)
+			
 			//then update the table that is displayed
 			T_EMP_Filenames[ii] = ""
 			T_GTransmission[ii] = 1
@@ -662,10 +681,13 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 			
 			//write a trans==1 to the file header of the raw data (open/close done in function)
 			WriteTransmissionToHeader(filename,1)		//sample trans
+			WriteTransmissionErrorToHeader(filename,0)			//reset transmission error to zero
+			WriteBoxCountsErrorToHeader(filename,0)
 			
 			//then update the table that is displayed
 			S_TRANS_Filenames[ii] = ""
 			S_GTransmission[ii] = 1
+			S_GTrans_err[ii] = 0
 			
 			ii+=1
 		while(ii<=endRow)
@@ -709,10 +731,11 @@ Function CalcSelTransFromHeader(startRow,endRow)
 	Wave/T S_TRANS_Filenames = $"root:myGlobals:TransHeaderInfo:S_TRANS_Filenames"
 	Wave/T S_GFilenames = $"root:myGlobals:TransHeaderInfo:S_Filenames"
 	Wave S_GTransmission =  $"root:myGlobals:TransHeaderInfo:S_Transmission"
-	
+	Wave S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
+
 	Variable num_s_files, num_t_files, ii, jj
-	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans
-	Variable x1,x2,y1,y2,err,attenEmp,attenSam
+	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,sam_atten_err,emp_atten_err
+	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,samAttenFactor,empAttenFactor,trans_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
 	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 	String strToExecute
@@ -741,6 +764,9 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						
 						//read the real count value
 						emptyCts = getBoxCounts(emptyFile)
+						// get the error in count value
+						empty_ct_err = getBoxCountsError(emptyFile)
+						
 						// read the attenuator number of the empty beam file
 						attenEmp = getAttenNumber(emptyFile)
 						//
@@ -756,29 +782,45 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//adds to SAM
 						err = Raw_to_work("SAM")
 						//sum region in SAM
-						transCts =  SumCountsInBox(x1,x2,y1,y2,"SAM")	
+						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
 						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]
+						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						AttenRatio = AttenuationFactor(samFileStr,lambda,attenEmp)/AttenuationFactor(samFileStr,lambda,attenSam)
+						samAttenFactor = AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						empAttenFactor = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
 						
+						// squared, relative error
+						if(AttenRatio == 1)
+							trans_err = (sam_ct_err/transCts)^2 + (empty_ct_err/emptyCts)^2		//same atten, att_err drops out
+						else
+							trans_err = (sam_ct_err/transCts)^2 + (empty_ct_err/emptyCts)^2 + (sam_atten_err/samAttenFactor)^2 + (emp_atten_err/empAttenFactor)^2
+						endif
+						trans_err = sqrt(trans_err)
+						trans_err *= trans		// now, one std deviation
+						
 						//write out counts and transmission to history window, showing the attenuator ratio, if it is not unity
 						If(attenRatio==1)
-							Printf "%s\t\tTrans Counts = %g\tTrans = %g\r",S_GFilenames[ii], transCts,trans
+							Printf "%s\t\tTrans Counts = %g\tTrans = %g +/- %g\r",S_GFilenames[ii], transCts,trans,trans_err
 						else
-							Printf "%s\t\tTrans Counts = %g\tTrans = %g\tAttenuatorRatio = %g\r",S_GFilenames[ii], transCts,trans,attenRatio
+							Printf "%s\t\tTrans Counts = %g\tTrans = %g +/- %g\tAttenuatorRatio = %g\r",S_GFilenames[ii], transCts,trans,trans_err,attenRatio
 						endif
 						//write the trans to the file header of the raw data (open/close done in function)
 						WriteTransmissionToHeader(filename,trans)
 						
+						WriteTransmissionErrorToHeader(filename,trans_err)
+/////						
 						//then update the global that is displayed
 						S_GTransmission[ii] = trans
+						S_GTrans_err[ii] = trans_err
+
 						
 					else  // There is no empty assigned
 						abortStr = "Empty beam file not assigned properly for " + T_GFilenames[jj]
@@ -820,8 +862,8 @@ Function CalcTotalTrans(startRow,endRow)
 	Wave GWhole= $"root:myGlobals:TransHeaderInfo:T_Whole"
 	
 	Variable num_t_files, ii, jj
-	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans
-	Variable x1,x2,y1,y2,err,attenEmp,attenSam
+	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,samAttenFactor,empAttenFactor,trans_err
+	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
 	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 	String strToExecute
@@ -850,8 +892,12 @@ Function CalcTotalTrans(startRow,endRow)
 						
 						//read the real count value
 						emptyCts = getBoxCounts(emptyFile)
+						// get the count error
+						empty_ct_err = getBoxCountsError(emptyFile)
+						
 						// read the attenuator number of the empty beam file
 						attenEmp = getAttenNumber(emptyFile)
+						
 						//
 						if( ((x1-x2)==0) || ((y1-y2)==0) )		//zero width marquee in either direction
 							//no region selected	-- prompt user to select box w/marquee
@@ -865,29 +911,43 @@ Function CalcTotalTrans(startRow,endRow)
 						//adds to SAM
 						err = Raw_to_work("SAM")
 						//sum region in SAM
-						transCts =  SumCountsInBox(x1,x2,y1,y2,"SAM")	
+						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
 						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]
+						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						AttenRatio = AttenuationFactor(samFileStr,lambda,attenEmp)/AttenuationFactor(samFileStr,lambda,attenSam)
+						samAttenFactor = AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						empAttenFactor = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
+						
+						// squared, relative error
+						if(AttenRatio == 1)
+							trans_err = (sam_ct_err/transCts)^2 + (empty_ct_err/emptyCts)^2		//same atten, att_err drops out
+						else
+							trans_err = (sam_ct_err/transCts)^2 + (empty_ct_err/emptyCts)^2 + (sam_atten_err/samAttenFactor)^2 + (emp_atten_err/empAttenFactor)^2
+						endif
+						trans_err = sqrt(trans_err)
+						trans_err *= trans		// now, one std deviation						
 						
 						//write out counts and transmission to history window, showing the attenuator ratio, if it is not unity
 						If(attenRatio==1)
 							//Printf "%s\t\tTrans Counts = %g\t Actual Trans = %g\r",T_GFilenames[ii], transCts,trans
-							Printf "%s\t\tBox Counts = %g\t Trans = %g\r",T_GFilenames[ii], transCts,trans
+							Printf "%s\t\tBox Counts = %g\t Trans = %g +/- %g\r",T_GFilenames[ii], transCts,trans,trans_err
 						else
 							//Printf "%s\t\tTrans Counts = %g\t Trans = %g\tAttenuatorRatio = %g\r",T_GFilenames[ii], transCts,trans,attenRatio
-							Printf "%s\t\tBox Counts = %g\t Trans = %g\t AttenuatorRatio = %g\r",T_GFilenames[ii], transCts,trans,attenRatio
+							Printf "%s\t\tBox Counts = %g\t Trans = %g +/- %g\t AttenuatorRatio = %g\r",T_GFilenames[ii], transCts,trans,trans_err,attenRatio
 						endif
 						//write the trans to the file header of the raw data (open/close done in function)
 						WriteTransmissionToHeader(filename,trans)		//transmission start byte is 158
 						
+						WriteTransmissionErrorToHeader(filename,trans_err)
+												
 						//then update the global that is displayed
 						T_GTransmission[ii] = trans
 						
@@ -935,7 +995,7 @@ Function CalcWholeTrans(startRow,endRow)
 	
 	Variable num_t_files, ii, jj
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans
-	Variable x1,x2,y1,y2,err,attenEmp,attenSam
+	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
 	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
 	String strToExecute
@@ -964,8 +1024,12 @@ Function CalcWholeTrans(startRow,endRow)
 						getXYBoxFromFile(emptyFile,x1,x2,y1,y2)
 						//read the real count value
 						emptyCts = getBoxCounts(emptyFile)
+						// get the box count error
+						empty_ct_err = getBoxCountsError(emptyFile)
+						
 						// read the attenuator number of the empty beam file
 						attenEmp = getAttenNumber(emptyFile)
+						
 						//
 						if( ((x1-x2)==0) || ((y1-y2)==0) )		//zero width marquee in either direction
 							//no region selected	-- prompt user to select box w/marquee
@@ -979,15 +1043,16 @@ Function CalcWholeTrans(startRow,endRow)
 						//adds to SAM
 						err = Raw_to_work("SAM")
 						//sum region in SAM
-						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,"SAM")	
+						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
 						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
 						samfileStr = samText[3]
 						lambda = samReals[26]
 						attenSam = samReals[3]
+						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						AttenRatio = AttenuationFactor(samFileStr,lambda,attenEmp)/AttenuationFactor(samFileStr,lambda,attenSam)
+						AttenRatio = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)/AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
 						

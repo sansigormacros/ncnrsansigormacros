@@ -741,6 +741,18 @@ end
 
 // "backwards" wrapped to reduce redundant code
 // there are only 4 choices of N (5,10,20,76) for smearing
+//
+//
+// 4 MAR 2011
+// Note: In John's paper, he integrated the Gaussian to +/- 3 sigma and then renormalized
+//       to an integral of 1. This "truncated" gaussian was a somewhat better approximation
+//       to the triangular resolution function. Here, I integrate to +/- 3 sigma and
+//       do not renormalize the integral to 1. Hence the smeared calculation is 0.27% low.
+//       This is easily seen by smearing a constant value.
+//
+// Using 5 quadrature points is not recommended, as it doesn't normalize properly using .9973
+//  -- instead, it normalizes to 1.0084, 
+//
 Function Smear_Model_N(fcn,w,x,resW,wi,zi,nord)
 	FUNCREF SANSModelAAO_proto fcn
 	Wave w			//coefficients of function fcn(w,x)
@@ -754,7 +766,7 @@ Function Smear_Model_N(fcn,w,x,resW,wi,zi,nord)
 
 // local variables
 	Variable ii,va,vb
-	Variable answer,i_shad,i_qbar,i_sigq
+	Variable answer,i_shad,i_qbar,i_sigq,normalize=1
 
 	// current x point is the q-value for evaluation
 	//
@@ -787,12 +799,20 @@ Function Smear_Model_N(fcn,w,x,resW,wi,zi,nord)
 		// change limits (and spacing of zi) at each evaluation based on R()
 		//integration from va to vb
 	
+		// for +/- 3 sigma ONLY
+		if(nord == 5)
+			normalize = 1.0057		//empirical correction, N=5 shouldn't be any different
+		else
+			normalize = 0.9973
+		endif
+		
 		va = -3*i_sigq + i_qbar
 		if (va<0)
 			va=0		//to avoid numerical error when  va<0 (-ve q-value)
-//			Print "truncated Gaussian at nominal q = ",x
+			Print "truncated Gaussian at nominal q = ",x
 		endif
 		vb = 3*i_sigq + i_qbar
+		
 		
 		// Using 20 Gauss points		    
 		ii=0			// loop counter
@@ -814,6 +834,8 @@ Function Smear_Model_N(fcn,w,x,resW,wi,zi,nord)
    		answer = (vb-va)/2.0*sum(yyy)
    		// all scaling, background addition... etc. is done in the model calculation
 	
+			// renormalize to 1
+			answer /= normalize
 	else
 		//smear with the USANS routine
 		// Make global string and local variables
@@ -883,7 +905,9 @@ Function Smear_Model_5(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+		
 		Return (0)
 	endif
 	
@@ -931,7 +955,9 @@ Function Smear_Model_10(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+
 		Return (0)
 	endif
 	
@@ -985,7 +1011,9 @@ Function Smear_Model_20(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+
 		Return (0)
 	endif
 	
@@ -1031,7 +1059,9 @@ Function Smear_Model_76(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+
 		Return (0)
 	endif
 	
@@ -1564,4 +1594,170 @@ ThreadSafe Function FindQxQy(qq,phi,qx,qy)
 	
 	return(0)
 end
+
+
+// 7 MAR 2011 SRK
+//
+// calculate the resolution smearing AAO
+//
+// - many of the form factor calculations are threaded, so they benefit
+// from being passed large numbers of q-values at once, rather than suffering the 
+// overhead penalty of setting up threads.
+//
+// In general, single integral functions benefit from this, multiple integrals not so much.
+// As an example, a fit using SmearedCylinderForm took 4.3s passing nord (=20) q-values
+// at a time, but only 1.1s by passing all (Nq*nord) q-values at once. For Cyl_polyRad,
+// the difference was not so large, 16.2s vs. 11.9s. This is due to CylPolyRad being a 
+// double integral and slow enough of a calculation that passing even 20 points at once
+// provides some speedup.
+//
+//
+//
+// "backwards" wrapped to reduce redundant code
+// there are only 4 choices of N (5,10,20,76) for smearing
+//
+//
+// 4 MAR 2011 SRK
+// Note: In John's paper, he integrated the Gaussian to +/- 3 sigma and then renormalized
+//       to an integral of 1. This "truncated" gaussian was a somewhat better approximation
+//       to the triangular resolution function. Here, I integrate to +/- 3 sigma and
+//       do not renormalize the integral to 1. Hence the smeared calculation is 0.27% low.
+//       This is easily seen by smearing a constant value.
+//
+// Using 5 quadrature points is not recommended, as it doesn't normalize properly using .9973
+//  -- instead, it normalizes to 1.0084.
+//
+Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
+	FUNCREF SANSModelAAO_proto fcn
+	Wave w			//coefficients of function fcn(w,x)
+	WAVE x			//x-value (q) for the calculation THIS IS PASSED IN AS A WAVE
+	Wave resW		// Nx4 or NxN matrix of resolution
+	Wave wi		//weight wave
+	Wave zi		//abscissa wave
+	Variable nord		//order of integration
+	Wave sm_ans		// wave returned with the smeared model
+
+	NVAR dQv = root:Packages:NIST:USANS_dQv
+
+// local variables
+	Variable ii,jj
+	Variable normalize=1
+	Variable nTot,num,block_sum
+
+
+	// current x point is the q-value for evaluation
+	//
+	// * for the input x, the resolution function waves are interpolated to get the correct values for
+	//  sigq, qbar and shad - since the model x-spacing may not be the same as
+	// the experimental QSIG data. This is always the case when curve fitting, since fit_wave is 
+	// Igor-defined as 200 points and has its own (linear) q-(x)-scaling which will be quite different
+	// from experimental data.
+	// **note** if the (x) passed in is the experimental q-values, these values are
+	// returned from the interpolation (as expected)
+
+	Make/O/D/N=(DimSize(resW, 0)) sigQ,qbar,shad,qvals,va,vb
+	sigq = resW[p][0]		//std dev of resolution fn
+	qbar = resW[p][1]		//mean q-value
+	shad = resW[p][2]		//beamstop shadow factor
+	qvals = resW[p][3]	//q-values where R(q) is known
+
+	//SKIP the interpolation, points passed in ARE (MUST) be the experimental q-values
 	
+	
+	// if USANS data, handle separately
+	// -- but this would only ever be used if the calculation was forced to use trapezoid integration
+	if ( ! isSANSResolution(sigq[0]) )
+			//smear with the USANS routine
+		// Make global string and local variables
+		// now data folder aware, necessary for GlobalFit = FULL path to wave	
+		String/G gTrap_coefStr = GetWavesDataFolder(w, 2 )	
+		Variable maxiter=20, tol=1e-4,uva,uvb
+		
+		num=numpnts(x)
+		// set up limits for the integration
+		uva=0
+		uvb=abs(dQv)
+		
+		//loop over the q-values
+		for(jj=0;jj<num;jj+=1)
+			Variable/G gEvalQval = x[jj]
+
+			// call qtrap to do actual work
+			sm_ans[jj] = qtrap_USANS(fcn,uva,uvb,tol,maxiter)
+			sm_ans[jj] /= (uvb - uva)
+		endfor
+		
+		return(0)	
+	endif
+
+
+// now the idea is to calculate a long vector of all of the zi's (Nq * nord)
+// and pass these AAO to the AAO function, to make the most use of the threading
+// passing repeated short lengths of q to the function can actually be slower
+// due to the overhead.
+	
+	num = numpnts(x)
+	nTot = nord*num
+	
+	Make/O/D/N=(nTot) Resoln,yyy,xGauss,wts
+
+	//loop over q
+	for(jj=0;jj<num;jj+=1)
+	
+		//for each q, set up the integration range
+		// end points of integration limits are technically 0-inf, but wisely choose interesting region of q where R() is nonzero
+		// +/- 3 sigq catches 99.73% of distrubution
+		// change limits (and spacing of zi) at each evaluation based on R()
+		//integration from va to vb
+
+		va[jj] = -3*sigq[jj] + qbar[jj]
+		if (va[jj]<0)
+			va[jj]=0		//to avoid numerical error when  va<0 (-ve q-value)
+//			Print "truncated Gaussian at nominal q = ",x
+		endif
+		vb[jj] = 3*sigq[jj] + qbar[jj]
+	
+		// loop over the Gauss points
+		for(ii=0;ii<nord;ii+=1)
+			// calculate Gauss points on integration interval (q-value for evaluation)
+			xGauss[nord*jj+ii] = ( zi[ii]*(vb[jj]-va[jj]) + vb[jj] + va[jj] )/2.0
+			// calculate resolution function at input q-value (use the interpolated values and zi)
+			Resoln[nord*jj+ii] = shad[jj]/sqrt(2*pi*sigq[jj]*sigq[jj])
+			Resoln[nord*jj+ii] *= exp((-1*(xGauss[nord*jj+ii] - qbar[jj])^2)/(2*sigq[jj]*sigq[jj]))
+//			Resoln[nord*jj+ii] *= exp((-1*(xGauss[nord*jj+ii] - qvals[jj])^2)/(2*sigq[jj]*sigq[jj]))		//WRONG, but just for testing
+			// carry a copy of the weights
+			wts[nord*jj+ii] = wi[ii]
+		endfor 		// end of loop over quadrature points
+	
+	endfor		//loop over q
+	
+	//calculate AAO
+	yyy = 0
+	fcn(w,yyy,xGauss)		//yyy is the return value as a wave
+
+	//multiply by weights
+	yyy *= wts*Resoln		//multiply function by resolution and weights
+	
+	//sum up blockwise to get the final answer
+	for(jj=0;jj<num;jj+=1)
+		block_sum = 0
+		for(ii=0;ii<nord;ii+=1)
+			block_sum += yyy[nord*jj+ii]
+		endfor
+		sm_ans[jj] = (vb[jj]-va[jj])/2.0*block_sum
+	endfor
+	
+	
+	// then normalize for +/- 3 sigma ONLY
+	if(nord == 5)
+		normalize = 1.0057		//empirical correction, N=5 shouldn't be any different
+	else
+		normalize = 0.9973
+	endif
+	
+	sm_ans /= normalize
+	
+	return(0)
+	
+End
+
