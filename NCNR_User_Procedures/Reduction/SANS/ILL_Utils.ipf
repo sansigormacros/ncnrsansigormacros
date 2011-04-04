@@ -174,13 +174,15 @@ End
 // fileStr is passed as TextRead[3] and is the filename
 // detStr is passed as TextRead[9] and is an identifier for the detector
 //
-Function DetectorDeadtime(fileStr,detStr)
-	String fileStr,detStr
+// [dateAndTimeStr] is optional, and could be used as a switch for 
+// different historical detector configurations
+Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
+	String fileStr,detStr,dateAndTimeStr
 	
 	Variable deadtime
 	
-// your code here
-deadtime = (2e-6)
+	// your code here
+	deadtime = (2e-6)
 
 	return(deadtime)
 End
@@ -921,15 +923,19 @@ End
 //
 // called by Correct.ipf, ProtocolAsPanel.ipf, Transmission.ipf
 //
-Function AttenuationFactor(fileStr,lam,attenNo)
+// atten_err is one std. deviation, passed back by reference
+Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
-	Variable lam,attenNo
+	Variable lam,attenNo,&atten_err
 	
 	Variable attenFactor
 	make/O/N=4 Attenuators_ILL={1,147,902,2874}
 	
 	attenFactor = Attenuators_ILL[attenNo]
-	
+
+	// Change April 2011 - now returns error in atten trans
+	atten_err = 0
+		
 //	print attenfactor
 	
 	// your code here

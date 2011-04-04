@@ -187,6 +187,16 @@ Function ReadHeaderAndData(fname)
 	// fill the data array with the detector values
 	getDetectorData(fname,data)
 	
+	Duplicate/O data linear_data			// at this point, the data is still the raw data, and is linear_data
+	
+	// proper error for counting statistics, good for low count values too
+	// rather than just sqrt(n)
+	// see N. Gehrels, Astrophys. J., 303 (1986) 336-346, equation (7)
+	// for S = 1 in eq (7), this corresponds to one sigma error bars
+	Duplicate/O linear_data linear_data_error
+	linear_data_error = 1 + sqrt(linear_data + 0.75)				
+	//
+	
 	//keep a string with the filename in the RAW folder
 	String/G root:RAW:fileList = textw[0]
 	
@@ -349,6 +359,14 @@ Function ReadASCData(fname,destPath)
 	Wave/Z temp0=temp0
 	data=temp0
 	Redimension/N=(pixelsX,pixelsY) data		//,linear_data
+
+	Duplicate/O data linear_data_error
+	linear_data_error = 1 + sqrt(data + 0.75)
+	
+	//just in case there are odd inputs to this, like negative intensities
+	WaveStats/Q linear_data_error
+	linear_data_error = numtype(linear_data_error[p]) == 0 ? linear_data_error[p] : V_avg
+	linear_data_error = linear_data_error[p] != 0 ? linear_data_error[p] : V_avg
 	
 	//linear_data = data
 	
@@ -456,6 +474,38 @@ End
 // (1) open file "fname". fname is a full file path and name to the file on disk
 // (2) write the specified value to the header at the correct location in the file
 // (3) close the file
+
+// new, April 2011 for error propagation. fill these in with the facility-
+// specific versions, if desired.
+Function WriteTransmissionErrorToHeader(fname,transErr)
+	String fname
+	Variable transErr
+	
+
+	return(0)
+End
+
+Function WriteBoxCountsErrorToHeader(fname,rel_err)
+	String fname
+	Variable rel_err
+	
+	return(0)
+End
+
+Function getSampleTransError(fname)
+	String fname
+	
+	return(0)
+end
+
+Function getBoxCountsError(fname)
+	String fname
+	
+	return(0)
+end
+
+
+// end April 2011 additions
 
 //sample transmission (0<T<=1)
 Function WriteTransmissionToHeader(fname,trans)

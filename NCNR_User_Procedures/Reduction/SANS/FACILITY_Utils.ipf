@@ -610,10 +610,10 @@ End
 // spit back the attenuationFactor (that was read into rw[3])
 //
 // called by Correct.ipf, ProtocolAsPanel.ipf, Transmission.ipf
-//
-Function AttenuationFactor(fileStr,lam,attenNo)
+// atten_err is one std. deviation, passed back by reference
+Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
-	Variable lam,attenNo
+	Variable lam,attenNo, &atten_err
 	
 	Variable attenFactor=1
 	

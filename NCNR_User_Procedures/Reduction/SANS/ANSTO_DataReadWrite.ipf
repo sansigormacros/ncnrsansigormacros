@@ -201,8 +201,16 @@ Function ReadHeaderAndData(fname)
 	//keep a string with the filename in the RAW folder
 	String/G root:Packages:NIST:RAW:fileList = textw[0]
 	
-	Duplicate/O data $"root:Packages:NIST:RAW:linear_data"			//data read in is on linear scale, copy it now
+	Duplicate/O data linear_data			//data read in is on linear scale, copy it now
 
+	// proper error for counting statistics, good for low count values too
+	// rather than just sqrt(n)
+	// see N. Gehrels, Astrophys. J., 303 (1986) 336-346, equation (7)
+	// for S = 1 in eq (7), this corresponds to one sigma error bars
+	Duplicate/O linear_data linear_data_error
+	linear_data_error = 1 + sqrt(linear_data + 0.75)				
+	//
+	
 	Return 0
 
 End
@@ -408,6 +416,14 @@ Function ReadASCData(fname,destPath)
 	Wave/Z temp0=temp0
 	data=temp0
 	Redimension/N=(pixelsX,pixelsY) data		//,linear_data
+
+	Duplicate/O data linear_data_error
+	linear_data_error = 1 + sqrt(data + 0.75)
+	
+	//just in case there are odd inputs to this, like negative intensities
+	WaveStats/Q linear_data_error
+	linear_data_error = numtype(linear_data_error[p]) == 0 ? linear_data_error[p] : V_avg
+	linear_data_error = linear_data_error[p] != 0 ? linear_data_error[p] : V_avg
 	
 	//linear_data = data
 	
@@ -516,7 +532,37 @@ End
 // (2) write the specified value to the header at the correct location in the file
 // (3) close the file
 
+// new, April 2011 for error propagation. fill these in with the facility-
+// specific versions, if desired.
+Function WriteTransmissionErrorToHeader(fname,transErr)
+	String fname
+	Variable transErr
+	
 
+	return(0)
+End
+
+Function WriteBoxCountsErrorToHeader(fname,rel_err)
+	String fname
+	Variable rel_err
+	
+	return(0)
+End
+
+Function getSampleTransError(fname)
+	String fname
+	
+	return(0)
+end
+
+Function getBoxCountsError(fname)
+	String fname
+	
+	return(0)
+end
+
+
+// end April 2011 additions
 
 //whole transmission is NCNR-specific right now
 // leave this stub empty
