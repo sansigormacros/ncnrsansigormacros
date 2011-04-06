@@ -1192,6 +1192,8 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList("CalcIQRfromMat;ConnectPoints2D;ConnectPoints3D;ConnectPoints3D_old;ConnectedRodFill;ConvertXYZto3N;CylindersAtPoints;",list,";")
 	list = RemoveFromList("FillSphere;FillSphere3;FillSphereRadius;FillSphereRadiusNoOverlap;FillXCylinder;FillXYCircle;FillXZCircle;FillYCylinder;",list,";")
 	list = RemoveFromList("FillYZCircle;FillZCylinder;PadMatrix;RandomFill3DMat;RandomPoints2D;SobolFill3DMat;SphereAtEachPoint;UnConnectedRodFill;XYZV_toByteVoxels;",list,";")
+	list = RemoveFromList("MakeTriplet;SobolPoints2D;X_CylindersAtPoints;X_CylindersHexagonalGrid;X_CylindersSquareGrid;maxDistance_Threaded;KR_MultiCylinder;",list,";")
+	
 	
 	list = SortList(list)
 	return(list)
