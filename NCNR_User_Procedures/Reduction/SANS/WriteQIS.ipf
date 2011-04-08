@@ -816,19 +816,21 @@ Function QxQy_Export(type,fullpath,dialog)
 
 //*********************
 
-//	// generate my own error wave for I(qx,qy)
+	// generate my own error wave for I(qx,qy)
+	//	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
+	// after teh SQRT(),  get rid of the "bad" errors by replacing the NaN, Inf, and zero with V_avg
+	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
+	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
+	// It appears to have no effect on fitting with the unsmeared model.
 //	Duplicate/O z_val sw
-//	sw = sqrt(z_val)		//assumes Poisson statistics for each cell (counter)
-//	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
-//	// get rid of the "bad" errorsby replacing the NaN, Inf, and zero with V_avg
-//	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
-//	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
-//	// It appears to have no effect on the unsmeared model.
+//	sw = sqrt(z_val)		//assumes Poisson statistics for each cell (counter) - which is wrong, since this is corrected data
+//
 //	WaveStats/Q sw
 //	sw = numtype(sw[p]) == 0 ? sw[p] : V_avg
 //	sw = sw[p] != 0 ? sw[p] : V_avg
-	
-	// now use the properly propagated 2D error
+
+
+//	// April 2011 -- now use the properly propagated 2D error
 	Duplicate/O data_err sw
 	Redimension/N=(pixelsX*pixelsY) sw
 

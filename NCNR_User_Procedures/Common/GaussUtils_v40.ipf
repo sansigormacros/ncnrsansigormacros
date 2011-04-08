@@ -809,7 +809,7 @@ Function Smear_Model_N(fcn,w,x,resW,wi,zi,nord)
 		va = -3*i_sigq + i_qbar
 		if (va<0)
 			va=0		//to avoid numerical error when  va<0 (-ve q-value)
-			Print "truncated Gaussian at nominal q = ",x
+//			Print "truncated Gaussian at nominal q = ",x
 		endif
 		vb = 3*i_sigq + i_qbar
 		
@@ -905,8 +905,8 @@ Function Smear_Model_5(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 		
 		Return (0)
 	endif
@@ -955,8 +955,8 @@ Function Smear_Model_10(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -1011,8 +1011,8 @@ Function Smear_Model_20(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -1059,8 +1059,8 @@ Function Smear_Model_76(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -1611,10 +1611,7 @@ end
 // double integral and slow enough of a calculation that passing even 20 points at once
 // provides some speedup.
 //
-//
-//
-// "backwards" wrapped to reduce redundant code
-// there are only 4 choices of N (5,10,20,76) for smearing
+//// APRIL 2011 *** this function is NOT YET CURSOR-AWARE. This needs to be addressed before it can be used
 //
 //
 // 4 MAR 2011 SRK
