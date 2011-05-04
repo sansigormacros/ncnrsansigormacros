@@ -1020,9 +1020,10 @@ Function WriteTransmissionToHeader(fname,trans)
 	Variable trans
 	
 	// your writer here
-	Wave wTransmission
+//	Wave wTransmission
 	//nha ??? Should make this wave in our own DataFolder to avoid clashing names. 
-	Make /N=(1,1) wTransmission
+//	Make /N=(1,1) wTransmission
+	Make/O/D/N=1 wTransmission
 	String groupName = "/reduce"
 	String varName = "Transmission"
 	wTransmission[0] = trans //

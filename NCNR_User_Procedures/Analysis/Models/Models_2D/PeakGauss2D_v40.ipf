@@ -181,6 +181,7 @@ Function SmearedPeakGauss2D(s)
 	
 	//no threads
 //	Smear_2DModel_PP(PeakGauss2D_noThread,s,10)
+//	Smear_2DModel_PPG(PeakGauss2D_noThread,s,10)
 
 	//or threaded...
 	SmearPeakGauss2D_THR(s,10)

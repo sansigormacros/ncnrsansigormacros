@@ -16,6 +16,34 @@
 //
 // as of 110101, the help file has not been written
 //
+//
+//
+// for Summer School 2011 --- a fake update
+// 1) set the flag
+// Variable/G root:myGlobals:gFakeUpdate=1
+// 2) load any data file as the RT data
+// 3) get SASCALC set up to the correct configuration
+// 4) run ClearRTFolder() to empty out the SAS folder, and update the display
+// 5) start the updating
+//
+// -- generate a script that will (from scratch) open everything needed, open/hide windows
+// as needed, and be sure that all of the files, varaibles, etc. that are needed are actually there.
+//
+// --needs SASCALC + an analysis model for it to work, and still some details to work out for 
+// smooth initialization of the process, but it should work.
+//
+//
+//
+Proc Init_FakeRT()
+	pInit_FakeRT()
+End
+
+Proc Clear_RT_Folder()
+	ClearRTFolder()
+End
+
+//
+//
 //*****************************
 
 // takes care of all of the necessary initialization for the RT control process
@@ -342,7 +370,7 @@ Function Read_RT_File(msgStr)
 	NVAR countRate = root:myGlobals:RT:countRate
 	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
 	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
-	SVAR title = root:myGlobals:gCurDispFile
+	SVAR/Z title = root:myGlobals:gCurDispFile
 	
 	title="Real-Time : "+filename
 	//sum the total counts, global variable will automatically update
@@ -552,7 +580,7 @@ Function BkgUpdateHST()
 	NVAR countRate = root:myGlobals:RT:countRate
 	NVAR monitorCounts = root:myGlobals:RT:monitorCounts
 	NVAR monitorCountRate = root:myGlobals:RT:monitorCountRate
-	SVAR title=root:myGlobals:gCurDispFile
+	SVAR/Z title=root:myGlobals:gCurDispFile
 	SVAR sampledesc=root:myGlobals:gCurTitle
 			
 	Variable err=0
@@ -580,7 +608,13 @@ Function BkgUpdateHST()
 		
 		//err = ReadOrdelaHST(RT_fileStr)
 		//err = ReadHeaderAndData(RT_fileStr)
-		err = ReadRTAndData(RT_fileStr)
+		NVAR/Z gFakeUpdate = root:myGlobals:gFakeUpdate
+		if(NVAR_Exists(gFakeUpdate) && gFakeUpdate == 1)
+			err = FakeUpdate()
+		else
+			err = ReadRTAndData(RT_fileStr)
+		endif
+		
 		if(err==1)
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
 			return(err)	//file not found
@@ -631,7 +665,8 @@ Function BkgUpdateHST()
 		
 		// update the 1d plot
 		if(WinType("Plot_1d")==1)		//if the 1D graph exists
-			Panel_DoAverageButtonProc("")		
+			Panel_DoAverageButtonProc("")	
+			DoWindow/F SANS_Data	
 		endif
 		///////
 		
@@ -966,5 +1001,219 @@ Function ReadRTAndData(fname)
 	SetDataFolder root:
 	
 	Return 0
+
+End
+
+/////not used////
+// function control a background task of "live" image updating
+//
+Function UpdateImage(ctrlName) : ButtonControl
+	String ctrlName
+	
+	if (cmpstr(ctrlName,"bStart") == 0)
+		Button $ctrlName,title="Stop",rename=bStop
+	//	Start the updating - FakeUpdate() has been designated as the background task
+		CtrlBackground period=60,start
+	else
+		Button $ctrlName,title="Start",rename=bStart
+	//	Stop the updating 
+		CtrlBackground stop
+	endif
+End
+
+
+// puts a "clean" instance of SAS into RealTime
+Function ClearRTFolder()
+
+	String 	RTPath = "root:Packages:NIST:RealTime"
+	String 	SimPath = "root:Packages:NIST:SAS"
+	
+
+	Duplicate/O $(SimPath + ":data"),$(RTPath+":data")
+	Duplicate/O $(SimPath + ":linear_data"),$(RTPath+":linear_data")
+	Duplicate/O $(SimPath + ":textread"),$(RTPath+":textread")
+	Duplicate/O $(SimPath + ":integersread"),$(RTPath+":integersread")
+	Duplicate/O $(SimPath + ":realsread"),$(RTPath+":realsread")
+	
+	WAVE RT_rw = $(RTPath+":RealsRead")
+	WAVE RT_iw = $(RTPath+":IntegersRead")
+	
+	RT_iw[2] = 0
+	RT_rw[0] = 0 
+
+	Wave RTData = $(RTPath+":data")
+	Wave RTLinData = $(RTPath+":linear_data")
+	RTLinData = 0
+	RTData = 0
+
+	// get the right Q axes on the display
+	//add the qx and qy axes
+	Wave q_x_axis=$"root:myGlobals:q_x_axis"
+	Wave q_y_axis=$"root:myGlobals:q_y_axis"
+	Set_Q_Axes(q_x_axis,q_y_axis,RTPath)
+
+	return(0)
+End
+
+//not used, but useful for real-time display of the detector
+//old, and likely not up-to-date with the present data folder structure
+Function FakeUpdate()
+
+	//get the current displayed data (so the correct folder is used)
+	SVAR cur_folder=root:myGlobals:gDataDisplayType
+
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2			//fake mouse click on button
+	MC_DoItButtonProc(ba)
+
+// would copy the work contents, but I want to add the MC results + times, etc.
+//	Execute	"CopyWorkFolder(\"Simulation\",\"RealTime\")"
+	
+	//check for existence of data in oldtype
+	// if the desired workfile doesn't exist, let the user know, and abort
+	String RTPath,SimPath
+	if(WaveExists($("root:Packages:NIST:RealTime:data")) == 0)
+		ClearRTFolder()
+//		Print "There is no work file in "+"SAS"+"--Aborting"
+//		Return(1) 		//error condition
+	Endif
+	
+	//check for log-scaling of the "type" data and adjust if necessary
+//	ConvertFolderToLinearScale("SAS")
+//	ConvertFolderToLinearScale("RealTime")
+//	Fix_LogLinButtonState(0)		//make sure the button reflects the new linear scaling
+	//then continue
+
+	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
+	SimPath = "root:Packages:NIST:SAS"
+	RTPath = "root:Packages:NIST:RealTime"
+//	Duplicate/O $(SimPath + ":textread"),$(RTPath+":textread")
+//	Duplicate/O $(SimPath + ":integersread"),$(RTPath+":integersread")
+//	Duplicate/O $(SimPath + ":realsread"),$(RTPath+":realsread")
+//	Duplicate/O $(SimPath + ":linear_data_error"),$(RTPath+":linear_data_error")
+
+	WAVE RT_rw = $(RTPath+":RealsRead")
+	WAVE Sim_rw = $(SimPath+":RealsRead")
+	WAVE RT_iw = $(RTPath+":IntegersRead")
+	WAVE Sim_iw = $(SimPath+":IntegersRead")
+	
+	// accumulate the count time and monitor counts
+	RT_iw[2] += Sim_iw[2]
+	RT_rw[0] += Sim_rw[0]
+
+// accumulate the data
+	Wave RTData = $(RTPath+":data")
+	Wave RTLinData = $(RTPath+":linear_data")	
+	Wave SimLinData = $(SimPath+":linear_data")	
+	RTLinData += SimLinData
+
+	NVAR gIsLogScale = $(RTPath + ":gIsLogScale")
+	if(gIsLogScale)
+		RTData = log(RTLinData)
+	else
+		RTData = RTLinData
+	endif
+	
+//	Execute  "ChangeDisplay(\"RealTime\")"
+	//just need to update the color bar
+//	MapSliderProc("both",0,0)
+
+	//alter the raw data
+//	linear_data += abs(enoise(1)) + abs(cos(p*q))
+//	data = linear_data
+	
+
+	//back to root folder
+	SetDataFolder root:
+	
+	return 0
+End
+
+//
+//
+//
+// to use, first load in the analysis and reduction packages
+// -- then, load in the sphere model
+//
+// load sphere model
+//	Execute/P "INSERTINCLUDE \"Sphere_v40\""
+//	Execute/P "COMPILEPROCEDURES "
+//	
+//
+Function pInit_FakeRT()
+
+
+
+// plot sphere model
+	String cmdStr,funcStr
+	funcStr = "SphereForm"
+	sprintf cmdStr, "Plot%s()",funcStr
+	Execute cmdStr
+	
+// close graph (top) and table
+	String topGraph= WinName(0,1)	//this is the topmost graph	
+	String topTable= WinName(0,2)	//this is the topmost table
+	KillWindow $topGraph
+	KillWindow $topTable
+		
+// change coef_sf[0] = 0.01
+	Wave coef_sf = root:coef_sf
+	coef_sf[0] = 0.01
+	
+	
+
+// open SASCALC
+	Execute "SASCALC()"
+	
+// open MC simulation window
+	DoWindow/F MC_SASCALC
+	if(V_flag==0)
+		Execute "MC_SASCALC()"		//sets the variable
+		AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
+	endif
+	NVAR doSim = root:Packages:NIST:SAS:doSimulation
+	doSim=1
+	
+// set model
+	SVAR gStr = root:Packages:NIST:SAS:gFuncStr 
+	gStr = "SphereForm"
+	String listStr = MC_FunctionPopupList()
+	Variable item = WhichListItem("SphereForm", listStr )
+	PopupMenu MC_popup0,win=MC_SASCALC,mode=(item+1)
+	
+// set ct time to 5 s
+	STRUCT WMSetVariableAction sva
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+	ctTime = 5
+	sva.eventCode = 3		//update
+	sva.dval = ctTime		//5 seconds
+	CountTimeSetVarProc(sva)
+	
+// be sure check boxes are raw_cts / BS in / XOP
+	NVAR cts = root:Packages:NIST:SAS:gRawCounts
+	NVAR BSin = root:Packages:NIST:SAS:gBeamStopIn
+	NVAR xop = root:Packages:NIST:SAS:gUse_MC_XOP
+	cts = 1
+	BSin = 1
+	xop = 1
+	
+// run 1 simulation to "set" things
+	DoWindow/F MC_SASCALC
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2			//fake mouse click on button
+	MC_DoItButtonProc(ba)
+
+
+// set RT fake flag
+	Variable/G root:myGlobals:gFakeUpdate=1
+
+// open RT window
+
+// load (any) data file
+
+// ClearFolder
+
+
+
 
 End

@@ -382,12 +382,15 @@ Macro Setup_KR_MultiCylinder()
 	Variable/G root:KR_Qmax = 0.4
 	Variable/G root:KR_Npt = 100
 
+	FFT_MakeMatrixButtonProc("")
+
 	NewPanel /W=(241,44,1169,458)/N=MultiCyl/K=1 as "Multi-Cylinder"
 	ModifyPanel cbRGB=(49825,57306,65535)
 
-	Button button_0,pos={45,79},size={100,20},proc=KR_Show3DButtonProc,title="Show 3D"
+	Button button_0,pos={45,80},size={100,20},proc=KR_Show3DButtonProc,title="Show 3D"
 	Button button_1,pos={46,51},size={100,20},proc=KR_Plot1DButtonProc,title="Plot 1D"
 	Button button_2,pos={178,80},size={120,20},proc=KR_DoCalcButtonProc,title="Do Calculation"
+	Button button_3,pos={600,50},size={120,20},proc=KR_DeleteRow,title="Delete Row(s)"
 	ValDisplay valdisp_0,pos={339,16},size={80,13},title="FFT_T"
 	ValDisplay valdisp_0,limits={0,0,0},barmisc={0,1000},value= #"root:FFT_T"
 	SetVariable setvar_0,pos={339,40},size={140,15},title="Q min (A)"
@@ -432,6 +435,25 @@ Function KR_Show3DButtonProc(ba) : ButtonControl
 				Execute "Gizmo_VoxelMat()"
 			endif
 	
+			break
+	endswitch
+
+	return 0
+End
+
+Function KR_DeleteRow(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			
+			GetSelection table, MultiCyl#T0,3
+//			Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+			DoAlert 1, "Do want to delete rows "+num2Str(V_StartRow)+" through "+num2str(V_endRow)+" ?"
+			if(V_flag==1)			
+				DeletePoints V_StartRow,(V_endRow-V_StartRow+1),xx,yy,zz,rri,hti,sbp,rotx,roty,sld
+			endif
+			
 			break
 	endswitch
 

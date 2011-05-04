@@ -851,7 +851,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sigmaQx_s,sigmaQy_s,fSubS_s,sw_s
 	
 //	Save/G/M="\r\n" labelWave,qx_val,qy_val,z_val as fullpath	// without resolution
-	Save/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s as fullpath	// write out the resolution information
+	Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s as fullpath	// write out the resolution information
 #else
 	Open refNum as fullpath
 	wfprintf refNum,"%s\r\n",labelWave

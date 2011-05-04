@@ -1249,6 +1249,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
 	WAVE rw=root:Packages:NIST:SAS:realsRead
+	WAVE iw=root:Packages:NIST:SAS:integersRead
 	
 // Try to nicely exit from a threading error, if possible
 	Variable err=0
@@ -1422,6 +1423,8 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	Note/K linear_data ,"KAPPA="+num2str(kappa)+";"
 	
 	NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+
 	if(!rawCts)			//go ahead and do the abs scaling to the linear_data
 		linear_data = linear_data / kappa
 		linear_data /= detectorEff
@@ -1448,6 +1451,10 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 			
 	data = linear_data
+	
+	// fill in bits of the header
+	rw[0] = imon		//the simulated monitor counts
+	iw[2] = ctTime		//simulated counting time in seconds
 	// re-average the 2D data
 	S_CircularAverageTo1D("SAS")
 	
@@ -1456,11 +1463,17 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 				
 	// simulate the empty cell scattering, only in 1D
 	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
-	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 	Print "Sample Simulation (2D) CR = ",results[9]/ctTime
-	if(WinType("SANS_Data") ==1)
-		Execute "ChangeDisplay(\"SAS\")"		//equivalent to pressing "Show 2D"
+	// check, so that RT simulation won't display SAS data type
+	NVAR/Z gFakeUpdate = root:myGlobals:gFakeUpdate
+	if(NVAR_Exists(gFakeUpdate) && gFakeUpdate == 1)
+		// do nothing
+	else
+		if(WinType("SANS_Data") ==1)
+			Execute "ChangeDisplay(\"SAS\")"		//equivalent to pressing "Show 2D"
+		endif
 	endif
+
 
 	return(0)
 end
@@ -2220,29 +2233,29 @@ End
 // or the configuration parameters of the MC_SASCALC panel 
 //
 //
-//Function Script_2DMC()
-//
-//
-//	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
-//	SimTimeWarn = 36000			//sets the threshold for the warning dialog to 10 hours
-//	STRUCT WMButtonAction ba
-//	ba.eventCode = 2			//fake mouse click on button
-//	
-//	NVAR detDist = root:Packages:NIST:SAS:gDetDist
-//
-//	detDist = 200		//set directly in cm
-//	MC_DoItButtonProc(ba)
-//	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
-//	
-//	detDist = 300		//set directly in cm
-//	MC_DoItButtonProc(ba)
-//	SaveAsVAXButtonProc("",runIndex=106,simLabel="this is run 106, SDD = 300")
-//
-//	detDist = 400		//set directly in cm
-//	MC_DoItButtonProc(ba)
-//	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
-//	
-//
-// SimTimeWarn = 10		//back to 10 seconds for manual operation
-//	return(0)
-//end
+Function Script_2DMC()
+
+
+	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
+	SimTimeWarn = 36000			//sets the threshold for the warning dialog to 10 hours
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2			//fake mouse click on button
+	
+	NVAR detDist = root:Packages:NIST:SAS:gDetDist
+
+	detDist = 200		//set directly in cm
+	MC_DoItButtonProc(ba)
+	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
+	
+	detDist = 300		//set directly in cm
+	MC_DoItButtonProc(ba)
+	SaveAsVAXButtonProc("",runIndex=106,simLabel="this is run 106, SDD = 300")
+
+	detDist = 400		//set directly in cm
+	MC_DoItButtonProc(ba)
+	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
+	
+
+ SimTimeWarn = 10		//back to 10 seconds for manual operation
+	return(0)
+end

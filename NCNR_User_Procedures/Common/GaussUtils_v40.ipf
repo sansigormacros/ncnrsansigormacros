@@ -418,6 +418,12 @@ Function IntegrateFn_N(fcn,loLim,upLim,w,x,nord)
 	Variable x	//x-value (q) for the calculation
 	Variable nord			//number of quadrature points to used
 
+
+// special case of integral limits that are identical
+	if(upLim == loLim)
+		return( fcn(w,x, loLim))
+	endif
+	
 // local variables
 	Variable ii,va,vb,summ,yyy,zi
 	Variable answer,dum
@@ -444,7 +450,7 @@ Function IntegrateFn_N(fcn,loLim,upLim,w,x,nord)
 	vb = upLim
 	// Using 5 Gauss points		    
 	// remember to index from 0,size-1
-
+	
 	summ = 0.0		// initialize integral
 	ii=0			// loop counter
 	do
@@ -471,6 +477,12 @@ Function IntegrateFn5(fcn,loLim,upLim,w,x)
 	Wave w			//coefficients of function fcn(w,x)
 	Variable x	//x-value (q) for the calculation
 
+
+// special case of integral limits that are identical
+	if(upLim == loLim)
+		return( fcn(w,x, loLim))
+	endif
+	
 // local variables
 	Variable nord,ii,va,vb,summ,yyy,zi
 	Variable answer,dum
@@ -524,6 +536,11 @@ Function IntegrateFn10(fcn,loLim,upLim,w,x)
 	Wave w			//coefficients of function fcn(w,x)
 	Variable x	//x-value (q) for the calculation
 
+// special case of integral limits that are identical
+	if(upLim == loLim)
+		return( fcn(w,x, loLim))
+	endif
+	
 // local variables
 	Variable nord,ii,va,vb,summ,yyy,zi
 	Variable answer,dum
@@ -577,6 +594,11 @@ Function IntegrateFn20(fcn,loLim,upLim,w,x)
 	Wave w			//coefficients of function fcn(w,x)
 	Variable x	//x-value (q) for the calculation
 
+// special case of integral limits that are identical
+	if(upLim == loLim)
+		return( fcn(w,x, loLim))
+	endif
+	
 // local variables
 	Variable nord,ii,va,vb,summ,yyy,zi
 	Variable answer,dum
@@ -630,7 +652,11 @@ Function IntegrateFn76(fcn,loLim,upLim,w,x)
 	Variable x	//x-value (q) for the calculation
 
 //**** The coefficient wave is passed into this function and straight through to the unsmeared model function
-
+// special case of integral limits that are identical
+	if(upLim == loLim)
+		return( fcn(w,x, loLim))
+	endif
+	
 // local variables
 	Variable nord,ii,va,vb,summ,yyy,zi
 	Variable answer,dum
@@ -905,8 +931,8 @@ Function Smear_Model_5(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 		
 		Return (0)
 	endif
@@ -955,8 +981,8 @@ Function Smear_Model_10(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -981,6 +1007,7 @@ Function Smear_Model_20(fcn,w,x,answer,resW)
 
 	String weightStr,zStr
 	Variable nord=20
+
 	
 	if (dimsize(resW,1) > 4 && useTrap != 1)
 		if(dimsize(resW,1) != dimsize(answer,0) )
@@ -1011,8 +1038,8 @@ Function Smear_Model_20(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -1059,8 +1086,8 @@ Function Smear_Model_76(fcn,w,x,answer,resW)
 			Wave abscissW = $zStr		// create the wave references
 		endif
 	
-		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
-//		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
+//		answer = Smear_Model_N(fcn,w,x,resW,weightW,abscissW,nord)
+		Smear_Model_N_AAO(fcn,w,x,resW,weightW,abscissW,nord,answer)
 
 		Return (0)
 	endif
@@ -1611,7 +1638,7 @@ end
 // double integral and slow enough of a calculation that passing even 20 points at once
 // provides some speedup.
 //
-//// APRIL 2011 *** this function is NOT YET CURSOR-AWARE. This needs to be addressed before it can be used
+//// APRIL 2011 *** this function is now cursor aware. The whole input x-wave is interpolated
 //
 //
 // 4 MAR 2011 SRK
@@ -1652,14 +1679,17 @@ Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
 	// **note** if the (x) passed in is the experimental q-values, these values are
 	// returned from the interpolation (as expected)
 
-	Make/O/D/N=(DimSize(resW, 0)) sigQ,qbar,shad,qvals,va,vb
-	sigq = resW[p][0]		//std dev of resolution fn
-	qbar = resW[p][1]		//mean q-value
-	shad = resW[p][2]		//beamstop shadow factor
-	qvals = resW[p][3]	//q-values where R(q) is known
+	Make/O/D/N=(numpnts(x)) sigQ,qbar,shad,qvals,va,vb
+	Make/O/D/N=(DimSize(resW, 0)) tmpsigQ,tmpqbar,tmpshad,tmpqvals
+	tmpsigq = resW[p][0]		//std dev of resolution fn
+	tmpqbar = resW[p][1]		//mean q-value
+	tmpshad = resW[p][2]		//beamstop shadow factor
+	tmpqvals = resW[p][3]	//q-values where R(q) is known
 
-	//SKIP the interpolation, points passed in ARE (MUST) be the experimental q-values
-	
+	//interpolate the whole input x-wave to make sure that the resolution and input x are in sync if cursors are used
+	shad = interp(x,tmpqvals,tmpshad)
+	qbar = interp(x,tmpqvals,tmpqbar)
+	sigq = interp(x,tmpqvals,tmpsigq)
 	
 	// if USANS data, handle separately
 	// -- but this would only ever be used if the calculation was forced to use trapezoid integration
@@ -1753,6 +1783,8 @@ Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
 	endif
 	
 	sm_ans /= normalize
+	
+	KillWaves/Z tmpsigQ,tmpqbar,tmpshad,tmpqvals
 	
 	return(0)
 	

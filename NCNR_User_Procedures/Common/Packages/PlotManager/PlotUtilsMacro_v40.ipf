@@ -1186,7 +1186,7 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList("BinaryHS_PSF11;BinaryHS_PSF12;BinaryHS_PSF22;EllipCyl_Integrand;PP_Inner;PP_Outer;Phi_EC;TaE_Inner;TaE_Outer;",list,";")
 
 	// from 2010 model functions
-	list = RemoveFromList("fTwoYukawa;",list,";")
+	list = RemoveFromList("fTwoYukawa;DoBoxGraph;",list,";")
 	
 	// from Debye Sphere method
 	list = RemoveFromList("CalcIQRfromMat;ConnectPoints2D;ConnectPoints3D;ConnectPoints3D_old;ConnectedRodFill;ConvertXYZto3N;CylindersAtPoints;",list,";")

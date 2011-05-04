@@ -69,49 +69,6 @@ Function StatusButton(ctrlName) : ButtonControl
 	SetDataFolder root:
 End
 
-/////not used////
-// function control a background task of "live" image updating
-//
-Function UpdateImage(ctrlName) : ButtonControl
-	String ctrlName
-	
-	if (cmpstr(ctrlName,"bStart") == 0)
-		Button $ctrlName,title="Stop",rename=bStop
-	//	Start the updating - FakeUpdate() has been designated as the background task
-		CtrlBackground period=60,start
-	else
-		Button $ctrlName,title="Start",rename=bStart
-	//	Stop the updating 
-		CtrlBackground stop
-	endif
-End
-
-//not used, but useful for real-time display of the detector
-//old, and likely not up-to-date with the present data folder structure
-Function FakeUpdate()
-
-	//get the current displayed data (so the correct folder is used)
-	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	SetDataFolder "root:Packages:NIST:"+cur_folder		//use the full path, so it will always work
-	WAVE data = $"data"
-//	WAVE vlegend = $"vlegend"
-	
-	//alter the raw data
-	data = abs(enoise(10))
-	
-	// adjust the color bar
-	WaveStats/Q data
-//	SetScale/I y,V_min,V_max,"" vlegend
-//	vlegend=y
-		
-	// assume all is OK, return 0
-	// button1 controls the start/stop of the background task
-	
-	//back to root folder
-	SetDataFolder root:
-	
-	return 0
-End
 
 //Updates the color map used for the SANS data based on the values of the slider bars
 // checks to see which (name) slider was moved and its value. event is ignored
