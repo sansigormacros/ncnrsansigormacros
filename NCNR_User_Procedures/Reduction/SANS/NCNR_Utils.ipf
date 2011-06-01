@@ -523,6 +523,26 @@ Function ConvertVAXDay2secs(dateAndTime)
 	return(time_secs)
 end
 
+// dd-mon-yyyy hh:mm:ss -> seconds
+// the VAX uses 24 hr time for hh
+//
+Function ConvertVAXDateTime2secs(dateAndTime)
+	string dateAndTime
+	
+	Variable day,yr,mon,hh,mm,ss,time_secs
+	string str,monStr
+	
+	str=dateandtime
+	sscanf str,"%d-%3s-%4d %d:%d:%d",day,monStr,yr,hh,mm,ss
+	mon = monStr2num(monStr)
+//	print yr,mon,day,hh,mm,ss
+	time_secs = date2secs(yr,mon,day)
+	time_secs += hh*3600 + mm*60 + ss
+
+
+	return(time_secs)
+end
+
 // takes a month string and returns the corresponding number
 //
 Function monStr2num(monStr)
@@ -1499,6 +1519,38 @@ Function LookupAttenNG7(lambda,attenNo,atten_err)
 	return trans
 
 End
+
+// a utility function so that I can get the values from the command line
+// since the atten_err is PBR
+//
+Function PrintAttenuation(instr,lam,attenNo)
+	String instr
+	Variable lam,attenNo
+	
+	Variable atten_err, attenFactor
+	
+	strswitch(instr)
+		case "NG3":
+			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
+			break
+		case "NG5":
+			//using NG7 lookup Table
+			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			break
+		case "NG7":
+			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			break
+		default:							
+			//return error?
+			attenFactor=1
+	endswitch
+
+	Print "atten, err = ", attenFactor, atten_err
+	
+	return(0)
+End
+
+
 
 //returns the proper attenuation factor based on the instrument (NG3, NG5, or NG7)
 //NG5 values are taken from the NG7 tables (there is very little difference in the

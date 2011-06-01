@@ -376,215 +376,215 @@ end
 // Display;AppendImage res;AppendMatrixContour res;ModifyContour res labels=0,autoLevels={*,*,3}
 // 
 
-//Function PlotResolution_atPixel(type,xx,yy)
-//	String type
-//	Variable xx,yy
-//	
-/////from QxQyExport
-//	String destStr="",typeStr=""
-//	Variable step=1,refnum
-//	destStr = "root:Packages:NIST:"+type
-//	
-//	//must select the linear_data to export
-//	NVAR isLog = $(destStr+":gIsLogScale")
-//	if(isLog==1)
-//		typeStr = ":linear_data"
-//	else
-//		typeStr = ":data"
-//	endif
-//	
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-//	
-//	Wave data=$(destStr+typeStr)
-//	WAVE intw=$(destStr + ":integersRead")
-//	WAVE rw=$(destStr + ":realsRead")
-//	WAVE/T textw=$(destStr + ":textRead")
-//	
-////	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
-//	Variable qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
+Function PlotResolution_atPixel(type,xx,yy)
+	String type
+	Variable xx,yy
+	
+///from QxQyExport
+	String destStr="",typeStr=""
+	Variable step=1,refnum
+	destStr = "root:Packages:NIST:"+type
+	
+	//must select the linear_data to export
+	NVAR isLog = $(destStr+":gIsLogScale")
+	if(isLog==1)
+		typeStr = ":linear_data"
+	else
+		typeStr = ":data"
+	endif
+	
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
+	Wave data=$(destStr+typeStr)
+	WAVE intw=$(destStr + ":integersRead")
+	WAVE rw=$(destStr + ":realsRead")
+	WAVE/T textw=$(destStr + ":textRead")
+	
+//	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
+	Variable qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
+
+	Variable xctr,yctr,sdd,lambda,pixSize
+	xctr = rw[16]
+	yctr = rw[17]
+	sdd = rw[18]
+	lambda = rw[26]
+	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
+	
+//	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
+//	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	
+	qx_val = CalcQx(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
+	qy_val = CalcQy(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	
+//	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
+
+///************
+// do everything to write out the resolution too
+	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
+	qval = CalcQval(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qz_val = CalcQz(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	phi = FindPhi( pixSize*((xx+1)-xctr) , pixSize*((yy+1)-yctr))		//(dx,dy)
+	r_dist = sqrt(  (pixSize*((xx+1)-xctr))^2 +  (pixSize*((yy+1)-yctr))^2 )		//radial distance from ctr to pt
+//	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
+	//everything in 1D now
+//	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+	Variable SigmaQX,SigmaQY,fsubS
+
+	Variable L2 = rw[18]
+	Variable BS = rw[21]
+	Variable S1 = rw[23]
+	Variable S2 = rw[24]
+	Variable L1 = rw[25]
+	Variable lambdaWidth = rw[27]	
+	Variable usingLenses = rw[28]		//new 2007
+
+	//Two parameters DDET and APOFF are instrument dependent.  Determine
+	//these from the instrument name in the header.
+	//From conversation with JB on 01.06.99 these are the current good values
+	Variable DDet
+	NVAR apOff = root:myGlobals:apOff		//in cm
+	DDet = rw[10]/10			// header value (X) is in mm, want cm here
+
+	Variable ret1,ret2,ret3,del_r
+	del_r = rw[10]
+	
+	get2DResolution(qval,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,ret1,ret2,ret3)
+	SigmaQX = ret1	
+	SigmaQY = ret2	
+	fsubs = ret3	
+/////
+
+//	Variable theta,phi,qx,qy,sx,sy,a,b,c,val,ii,jj,num=15,x0,y0
+	Variable theta,qx,qy,sx,sy,a,b,c,val,ii,jj,num=15,x0,y0,maxSig,nStdDev=3,normFactor
+	Variable qx_ret,qy_ret
+	
+//	theta = FindPhi(qx_val,qy_val)
+// need to rotate properly - theta is defined a starting from +y axis, moving CW
+// we define phi starting from +x and moving CCW
+	theta = -phi			//seems to give the right behavior...
+	
+	
+	Print qx_val,qy_val,qval
+	Print "phi, theta",phi,theta
+	
+	FindQxQy(qval,phi,qx_ret,qy_ret)
+	
+	sx = SigmaQx
+	sy = sigmaQy
+	x0 = qx_val
+	y0 = qy_val
+	
+	a = cos(theta)^2/(2*sx*sx) + sin(theta)^2/(2*sy*sy)
+	b = -1*sin(2*theta)/(4*sx*sx) + sin(2*theta)/(4*sy*sy)
+	c = sin(theta)^2/(2*sx*sx) + cos(theta)^2/(2*sy*sy)
+	
+	normFactor = pi/sqrt(a*c-b*b)
+
+	Make/O/D/N=(num,num) res
+	// so the resolution function 'looks right' on a 2D plot - otherwise it always looks like a circle
+	maxSig = max(sx,sy)
+	Setscale/I x -nStdDev*maxSig+x0,nStdDev*maxSig+x0,res
+	Setscale/I y -nStdDev*maxSig+y0,nStdDev*maxSig+y0,res
+//	Setscale/I x -nStdDev*sx+x0,nStdDev*sx+x0,res
+//	Setscale/I y -nStdDev*sy+y0,nStdDev*sy+y0,res
+	
+	Variable xPt,yPt,delx,dely,offx,offy
+	delx = DimDelta(res,0)
+	dely = DimDelta(res,1)
+	offx = DimOffset(res,0)
+	offy = DimOffset(res,1)
+
+	Print "sx,sy = ",sx,sy
+	for(ii=0;ii<num;ii+=1)
+		xPt = offx + ii*delx
+		for(jj=0;jj<num;jj+=1)
+			yPt = offy + jj*dely
+			res[ii][jj] = exp(-1*(a*(xPt-x0)^2 + 2*b*(xPt-x0)*(yPt-y0) + c*(yPt-y0)^2))
+		endfor
+	endfor	
+	res /= normFactor
+	
+	//Print sum(res,-inf,inf)*delx*dely
+	if(WaveExists($"coef")==0)
+		Make/O/D/N=6 coef
+	endif
+	Wave coef=coef
+	coef[0] = 1
+	coef[1] = qx_val
+	coef[2] = qy_val
+	coef[3] = sx
+	coef[4] = sy
+	coef[5] = theta
+
+//	Variable t1=StopMSTimer(-2)
+
 //
-//	Variable xctr,yctr,sdd,lambda,pixSize
-//	xctr = rw[16]
-//	yctr = rw[17]
-//	sdd = rw[18]
-//	lambda = rw[26]
-//	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
-//	
-////	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-////	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	
-//	qx_val = CalcQx(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-//	qy_val = CalcQy(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	
-////	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
+	do2dIntegrationGauss(-nStdDev*maxSig+x0,nStdDev*maxSig+x0,-nStdDev*maxSig+y0,nStdDev*maxSig+y0)
 //
-/////************
-//// do everything to write out the resolution too
-//	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-//	qval = CalcQval(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	qz_val = CalcQz(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-//	phi = FindPhi( pixSize*((xx+1)-xctr) , pixSize*((yy+1)-yctr))		//(dx,dy)
-//	r_dist = sqrt(  (pixSize*((xx+1)-xctr))^2 +  (pixSize*((yy+1)-yctr))^2 )		//radial distance from ctr to pt
-////	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
-//	//everything in 1D now
-////	Duplicate/O qval SigmaQX,SigmaQY,fsubS
-//	Variable SigmaQX,SigmaQY,fsubS
-//
-//	Variable L2 = rw[18]
-//	Variable BS = rw[21]
-//	Variable S1 = rw[23]
-//	Variable S2 = rw[24]
-//	Variable L1 = rw[25]
-//	Variable lambdaWidth = rw[27]	
-//	Variable usingLenses = rw[28]		//new 2007
-//
-//	//Two parameters DDET and APOFF are instrument dependent.  Determine
-//	//these from the instrument name in the header.
-//	//From conversation with JB on 01.06.99 these are the current good values
-//	Variable DDet
-//	NVAR apOff = root:myGlobals:apOff		//in cm
-//	DDet = rw[10]/10			// header value (X) is in mm, want cm here
-//
-//	Variable ret1,ret2,ret3,del_r
-//	del_r = rw[10]
-//	
-//	get2DResolution(qval,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,ret1,ret2,ret3)
-//	SigmaQX = ret1	
-//	SigmaQY = ret2	
-//	fsubs = ret3	
-///////
-//
-////	Variable theta,phi,qx,qy,sx,sy,a,b,c,val,ii,jj,num=15,x0,y0
-//	Variable theta,qx,qy,sx,sy,a,b,c,val,ii,jj,num=15,x0,y0,maxSig,nStdDev=3,normFactor
-//	Variable qx_ret,qy_ret
-//	
-////	theta = FindPhi(qx_val,qy_val)
-//// need to rotate properly - theta is defined a starting from +y axis, moving CW
-//// we define phi starting from +x and moving CCW
-//	theta = -phi			//seems to give the right behavior...
-//	
-//	
-//	Print qx_val,qy_val,qval
-//	Print "phi, theta",phi,theta
-//	
-//	FindQxQy(qval,phi,qx_ret,qy_ret)
-//	
-//	sx = SigmaQx
-//	sy = sigmaQy
-//	x0 = qx_val
-//	y0 = qy_val
-//	
-//	a = cos(theta)^2/(2*sx*sx) + sin(theta)^2/(2*sy*sy)
-//	b = -1*sin(2*theta)/(4*sx*sx) + sin(2*theta)/(4*sy*sy)
-//	c = sin(theta)^2/(2*sx*sx) + cos(theta)^2/(2*sy*sy)
-//	
-//	normFactor = pi/sqrt(a*c-b*b)
-//
-//	Make/O/D/N=(num,num) res
-//	// so the resolution function 'looks right' on a 2D plot - otherwise it always looks like a circle
-//	maxSig = max(sx,sy)
-//	Setscale/I x -nStdDev*maxSig+x0,nStdDev*maxSig+x0,res
-//	Setscale/I y -nStdDev*maxSig+y0,nStdDev*maxSig+y0,res
-////	Setscale/I x -nStdDev*sx+x0,nStdDev*sx+x0,res
-////	Setscale/I y -nStdDev*sy+y0,nStdDev*sy+y0,res
-//	
-//	Variable xPt,yPt,delx,dely,offx,offy
-//	delx = DimDelta(res,0)
-//	dely = DimDelta(res,1)
-//	offx = DimOffset(res,0)
-//	offy = DimOffset(res,1)
-//
-//	Print "sx,sy = ",sx,sy
-//	for(ii=0;ii<num;ii+=1)
-//		xPt = offx + ii*delx
-//		for(jj=0;jj<num;jj+=1)
-//			yPt = offy + jj*dely
-//			res[ii][jj] = exp(-1*(a*(xPt-x0)^2 + 2*b*(xPt-x0)*(yPt-y0) + c*(yPt-y0)^2))
-//		endfor
-//	endfor	
-//	res /= normFactor
-//	
-//	//Print sum(res,-inf,inf)*delx*dely
-//	if(WaveExists($"coef")==0)
-//		Make/O/D/N=6 coef
-//	endif
-//	Wave coef=coef
-//	coef[0] = 1
-//	coef[1] = qx_val
-//	coef[2] = qy_val
-//	coef[3] = sx
-//	coef[4] = sy
-//	coef[5] = theta
-//
-////	Variable t1=StopMSTimer(-2)
-//
-////
-////	do2dIntegrationGauss(-nStdDev*maxSig+x0,nStdDev*maxSig+x0,-nStdDev*maxSig+y0,nStdDev*maxSig+y0)
-////
-//
-////	Variable elap = (StopMSTimer(-2) - t1)/1e6
-////	Print "elapsed time = ",elap
-////	Print "time for 16384 = (minutes)",16384*elap/60
-//	return(0)
-//End
+
+//	Variable elap = (StopMSTimer(-2) - t1)/1e6
+//	Print "elapsed time = ",elap
+//	Print "time for 16384 = (minutes)",16384*elap/60
+	return(0)
+End
 
 
-//// this is called each time to integrate the gaussian
-//Function do2dIntegrationGauss(xMin,xMax,yMin,yMax)
-//	Variable xMin,xMax,yMin,yMax
-//	
-//	Variable/G globalXmin=xMin
-//	Variable/G globalXmax=xMax
-//	Variable/G globalY
-//			
-//	Variable result=Integrate1d(Gauss2DFuncOuter,yMin,yMax,2,5)	   
-//	KillVariables/z globalXmax,globalXmin,globalY
-//	print "integration of 2D = ",result
-//End
-//
-//Function Gauss2DFuncOuter(inY)
-//	Variable inY
-//	
-//	NVAR globalXmin,globalXmax,globalY
-//	globalY=inY
-//	
-//	return integrate1D(Gauss2DFuncInner,globalXmin,globalXmax,2,5)		
-//End
-//
-//Function Gauss2DFuncInner(inX)
-//	Variable inX
-//	
-//	NVAR globalY
-//	Wave coef=coef
-//	
-//	return Gauss2D_theta(coef,inX,GlobalY)
-//End
-//
-//Function Gauss2D_theta(w,x,y)
-//	Wave w
-//	Variable x,y
-//	
-//	Variable val,a,b,c
-//	Variable scale,x0,y0,sx,sy,theta,normFactor
-//	
-//	scale = w[0]
-//	x0 = w[1]
-//	y0 = w[2]
-//	sx = w[3]
-//	sy = w[4]
-//	theta = w[5]
-//	
-//	a = cos(theta)^2/(2*sx*sx) + sin(theta)^2/(2*sy*sy)
-//	b = -1*sin(2*theta)/(4*sx*sx) + sin(2*theta)/(4*sy*sy)
-//	c = sin(theta)^2/(2*sx*sx) + cos(theta)^2/(2*sy*sy)
-//	
-//	val = exp(-1*(a*(x-x0)^2 + 2*b*(x-x0)*(y-y0) + c*(y-y0)^2))
-//	
-//	normFactor = pi/sqrt(a*c-b*b)
-//	
-//	return(scale*val/normFactor)
-//end
-//
+// this is called each time to integrate the gaussian
+Function do2dIntegrationGauss(xMin,xMax,yMin,yMax)
+	Variable xMin,xMax,yMin,yMax
+	
+	Variable/G globalXmin=xMin
+	Variable/G globalXmax=xMax
+	Variable/G globalY
+			
+	Variable result=Integrate1d(Gauss2DFuncOuter,yMin,yMax,2,5)	   
+	KillVariables/z globalXmax,globalXmin,globalY
+	print "integration of 2D = ",result
+End
+
+Function Gauss2DFuncOuter(inY)
+	Variable inY
+	
+	NVAR globalXmin,globalXmax,globalY
+	globalY=inY
+	
+	return integrate1D(Gauss2DFuncInner,globalXmin,globalXmax,2,5)		
+End
+
+Function Gauss2DFuncInner(inX)
+	Variable inX
+	
+	NVAR globalY
+	Wave coef=coef
+	
+	return Gauss2D_theta(coef,inX,GlobalY)
+End
+
+Function Gauss2D_theta(w,x,y)
+	Wave w
+	Variable x,y
+	
+	Variable val,a,b,c
+	Variable scale,x0,y0,sx,sy,theta,normFactor
+	
+	scale = w[0]
+	x0 = w[1]
+	y0 = w[2]
+	sx = w[3]
+	sy = w[4]
+	theta = w[5]
+	
+	a = cos(theta)^2/(2*sx*sx) + sin(theta)^2/(2*sy*sy)
+	b = -1*sin(2*theta)/(4*sx*sx) + sin(2*theta)/(4*sy*sy)
+	c = sin(theta)^2/(2*sx*sx) + cos(theta)^2/(2*sy*sy)
+	
+	val = exp(-1*(a*(x-x0)^2 + 2*b*(x-x0)*(y-y0) + c*(y-y0)^2))
+	
+	normFactor = pi/sqrt(a*c-b*b)
+	
+	return(scale*val/normFactor)
+end
+
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////

@@ -941,7 +941,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 //			Print "timing test for Cylinder_PolyRadius---"
 //			Variable t0 = stopMStimer(-2)
 
-			FuncFit/H=getHStr(hold) /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
+			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 			
 //			t0 = (stopMSTimer(-2) - t0)*1e-6
 //			Printf  "CylPolyRad fit time using res and eps and /NTHR=0 time = %g seconds\r\r",t0
@@ -1053,7 +1053,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	
 	
 	if(yesReport)
-		String parStr=GetWavesDataFolder(cw,1)+ WaveList("*param*"+suffix, "", "TEXT:1," )		// this is *hopefully* one wave
+		String parStr=GetWavesDataFolder(cw,1)+ WaveList("*param*"+"_"+suffix, "", "TEXT:1," )		// this is *hopefully* one wave
 		String topGraph= WinName(0,1)	//this is the topmost graph
 	
 		DoUpdate		//force an update of the graph before making a copy of it for the report

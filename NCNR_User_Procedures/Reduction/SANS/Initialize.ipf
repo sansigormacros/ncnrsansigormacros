@@ -62,7 +62,7 @@ Proc Initialize()
 		//draw panel
 		Main_Panel()
 	Endif
-	ResizeCmdWindow()
+//	ResizeCmdWindow()
 	
 	//unload the NCNR_Package_Loader, if NCNR not defined
 	UnloadNCNR_Igor_Procedures()
