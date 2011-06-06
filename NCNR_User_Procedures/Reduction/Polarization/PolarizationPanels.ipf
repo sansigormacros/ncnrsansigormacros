@@ -14,12 +14,12 @@
 //
 // TODO:
 // Need a way to output the results - like in a report format
-// cell
+// cell (panel 1)
 // static params
 // fit gamma params
 // graph
 //
-// and also a separate report
+// and also a separate report (panel 2)
 // flipper/sm @ conditions
 // --- the report could be as simple as a screen snapshot of the panel?
 
@@ -281,7 +281,7 @@ End
 //
 // TODO: 
 //			- parsing routines
-//			- write the restlts to a waveNote
+//			- write the results to a waveNote
 //			--- where to store the intermediate results of trans values?
 //				make a wave behind the scenes to
 //
@@ -340,8 +340,8 @@ Function DecayParamPanel()
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(759,44,1572,713)/N=DecayPanel/K=1 as "Cell Decay Parameters"
-	ModifyPanel cbRGB=(51152,65535,60441)
-	Button button_3,pos={505,16},size={35,20},proc=DecayHelpParButtonProc,title="?"
+	ModifyPanel cbRGB=(32768,54615,65535)
+//	Button button_3,pos={505,16},size={35,20},proc=DecayHelpParButtonProc,title="?"
 	PopupMenu popup_0,pos={32,18},size={49,20},title="Cell",proc=DecayPanelPopMenuProc
 	PopupMenu popup_0,mode=1,value= #"D_CellNameList()"
 	
@@ -349,17 +349,17 @@ Function DecayParamPanel()
 	
 	GroupBox group_0,pos={550,399},size={230,149},title="FIT RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
-	SetVariable valdisp_3,pos={560,428},size={200,13},title="muPo of 3He"
-	SetVariable valdisp_3,fStyle=1,limits={0,0,0},barmisc={0,1000}
-	SetVariable valdisp_3,value= root:Packages:NIST:Polarization:Cells:gMuPo
-	SetVariable valdisp_1,pos={560,460},size={200,13},title="Po of 3He"
-	SetVariable valdisp_1,fStyle=1,limits={0,0,0},barmisc={0,1000}
-	SetVariable valdisp_1,value= root:Packages:NIST:Polarization:Cells:gPo
-	SetVariable valdisp_2,pos={560,518},size={200,13},title="Gamma (h)",fStyle=1
-	SetVariable valdisp_2,limits={0,0,0},barmisc={0,1000}
-	SetVariable valdisp_2,value= root:Packages:NIST:Polarization:Cells:gGamma
-	SetVariable setvar_0,pos={560,488},size={200,15},title="T0",fStyle=1
-	SetVariable setvar_0,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
+	SetVariable setvar_0,pos={560,428},size={200,13},title="muPo of 3He"
+	SetVariable setvar_0,fStyle=1,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_0,value= root:Packages:NIST:Polarization:Cells:gMuPo
+	SetVariable setvar_1,pos={560,460},size={200,13},title="Po of 3He"
+	SetVariable setvar_1,fStyle=1,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_1,value= root:Packages:NIST:Polarization:Cells:gPo
+	SetVariable setvar_2,pos={560,518},size={200,13},title="Gamma (h)",fStyle=1
+	SetVariable setvar_2,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_2,value= root:Packages:NIST:Polarization:Cells:gGamma
+	SetVariable setvar_3,pos={560,488},size={200,15},title="T0",fStyle=1
+	SetVariable setvar_3,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
 	
 
 	Button button_1,pos={579,294},size={120,20},proc=CalcRowParamButton,title="Calc Sel Row"
@@ -414,7 +414,7 @@ Function DecayPanelPopMenuProc(pa) : PopupMenuControl
 			else
 				// if not, make it, and the space for the results of the calculation
 				MakeDecayResultWaves(popStr)
-				WAVE decay = $("Decay_"+popStr)
+				WAVE decay = $("root:Packages:NIST:Polarization:Cells:Decay_"+popStr)
 			endif			
 			// append matrix, clearing the old one first
 			SetDataFolder root:Packages:NIST:Polarization:Cells
@@ -681,7 +681,7 @@ End
 
 // calculate PCell and its error
 //
-// error calculation is not done yet, returns zero
+// 
 Function Calc_PCell(muPo,err_muPo,err_PCell)
 	Variable muPo,err_muPo,&err_PCell
 	
@@ -745,19 +745,17 @@ Function Calc_muPo(calc,cellStr,selRow,err_muPo)
 	Variable arg_err, tmp1, tmp2
 	// the error is a big mess to calculate, since it's messy argument inside acosh
 	arg = (cr1 - cr3)/(cr2 - cr3) * (1/(Te*exp(-mu)))
+	tmp2 =  (1/sqrt(arg+1)/sqrt(arg-1))^2					// derivative of acosh(arg) (squared)
+	
 	// calculate the error of the argument first, then the error of acosh(arg)
 	// there are 5 partial derivatives
-	arg_err = ( arg/(cr1 - cr3) * err_cr1 )^2		//CR in
-	arg_err += ( arg/(cr2 - cr3) * err_cr2 )^2	//CR out
-	arg_err += ((-arg/(cr1 - cr3) +  arg/(cr2 - cr3) )* err_cr3 )^2//CR bkg 
-	arg_err += ( -arg/Te * err_Te )^2					//Te
-	arg_err += ( arg * err_mu )^2						//mu  (probably the dominant relative error)
+	arg_err = tmp2 * ( arg/(cr1 - cr3) * err_cr1 )^2		//CR in
+	arg_err += tmp2 * ( arg/(cr2 - cr3) * err_cr2 )^2	//CR out
+	arg_err += tmp2 * ((-arg/(cr1 - cr3) +  arg/(cr2 - cr3) )* err_cr3 )^2//CR bkg 
+	arg_err += tmp2 * ( -arg/Te * err_Te )^2					//Te
+	arg_err += tmp2 * ( arg * err_mu )^2						//mu  (probably the dominant relative error)
 	
-	arg_err = sqrt(arg_err)
-	
-	// then the acosh term
-	err_muPo = ( 1/sqrt(arg+1)/sqrt(arg-1) * arg_err )^2
-	err_muPo = sqrt(err_muPo)
+	err_muPo = sqrt(arg_err)
 	
 	
 	return(muPo)
@@ -1192,12 +1190,12 @@ Function ParseDecayRow(w,selRow)
 	endif
 	
 	if( (sdd1 != sdd2) || (sdd2 != sdd3) || (sdd1 != sdd3) )
-		DoAlert 0,"Files are not all at the same detector distance"
+		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
 		err = 1
 	endif
 	
 	if( (atten1 != atten2) || (atten2 != atten3) || (atten1 != atten3) )
-		DoAlert 0,"Files are not all collected with the same attenuation. Just so you know."
+		DoAlert 0,"Files in row "+num2str(selRow)+" are not all collected with the same attenuation. Just so you know."
 		err = 0
 	endif
 	

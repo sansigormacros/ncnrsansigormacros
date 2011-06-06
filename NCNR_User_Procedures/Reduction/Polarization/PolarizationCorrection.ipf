@@ -60,7 +60,7 @@ End
 
 
 
-Macro calc_muP(mu, runT_he, runT_out, runT_bk)
+Proc calc_muP(mu, runT_he, runT_out, runT_bk)
 	Variable mu=3.108, runT_he, runT_out, runT_bk
 
 	Variable muP,T_he, T_out, T_bk
