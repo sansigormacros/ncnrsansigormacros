@@ -756,7 +756,7 @@ end
 Function getTransDetectorCounts(fname)
 	String fname
 	
-	return(getRealValueFromHeader(fname,"",""))  // (Unused, return 0) 
+	return(getRealValueFromHeader(fname,"//Counters/detector",""))   
 end
 
 //detector pixel X size is at byte 220
@@ -1153,6 +1153,15 @@ Function ValfromUnit(refNum,wantedterm,NISTunit)
 	//SetDataFolder curPath ////????????/
 	
 	val =   XMLstrFmXpath(refNum,wantedterm,"","")
+
+	// Case of no value or zero value, check if written by HFIR Patch
+	if (stringmatch(wantedterm,"//*")>0&& strlen(val) ==0)
+	   	 wantedterm = "//" +  StringFromList(3, wantedterm,"//")
+	   	 // if valid wnatedterm
+	   	 if (strlen(wantedterm) >1)
+	   	 	val =   XMLstrFmXpath(refNum,wantedterm,"","")
+	   	 endif
+	endif	
 	unitstr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@units","",""))
 	
 	//The units of the source_distance is treated special...
@@ -1196,6 +1205,14 @@ Function ReadVFromHHead(refNum,wantedterm,NCunit)
 	else
 		//Find the value,unit, and type of the value: a little ugly but faster...
 		val =   XMLstrFmXpath(refNum,wantedterm,"","")
+		// Case of no value or zero value, check if it written by HFIR Patch
+		if (stringmatch(wantedterm,"//*")>0&& strlen(val) ==0)
+	   	 	wantedterm = "//" +  StringFromList(3, wantedterm,"//")
+	   	 	// if valid wnatedterm
+	   	 	if (strlen(wantedterm) >1)
+	   	 		val =   XMLstrFmXpath(refNum,wantedterm,"","")
+	   	 	endif
+	   	endif
 		unitstr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@units","",""))
 		typestr =  RemoveAllSpaces(XMLstrFmXpath(refNum,wantedterm+"/@type","",""))
 		//close here
@@ -1329,7 +1346,14 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 
 		else   //(stringmatch(tempheadhfir,wantedterm)>0)	
 			val =   XMLstrFmXpath(refNum,wantedterm,"","")
-		
+			// if no regular entry is found, check patch entry.
+			if (stringmatch(wantedterm,"//*")>0&& strlen(val) ==0)
+	   	 		wantedterm = "//" +  StringFromList(3, wantedterm,"//")
+	   	 		// if valid wnatedterm
+	   	 		if (strlen(wantedterm) >1)
+	   	 			val =   XMLstrFmXpath(refNum,wantedterm,"","")
+	   	 		endif
+	   		endif
 			//Special case starts!!! 
 			//No unit founds in hfir ("mm") file but needs to convert to meters. Let's give it one.
 			if (stringmatch(wantedterm,"*source_distance")>0&& strlen(unitstr) ==0)
@@ -1369,6 +1393,10 @@ Function WriteHFIRHead(filename,value,wantedterm,NCunit)
 	   	 		nstr = "/SPICErack"
 	   	 		// remove "/SPICErack/" from wantedterm 
 	   	 		wantedterm = StringFromList(2, wantedterm,"/SPICErack/")
+	   	 	elseif (stringmatch(wantedterm,"//*")>0&& strlen(val) ==0)
+	   	 		nstr = "/SPICErack"
+	   	 		//remove'//' to wantedterm 
+	   	 		wantedterm = StringFromList(2, wantedterm,"//")
 	   	 	else
 	   	 		XMLsetNodeStr(refNum,wantedterm,"",valstr)	//to set
 	   	 		nstr = ""				//reset as No new node
