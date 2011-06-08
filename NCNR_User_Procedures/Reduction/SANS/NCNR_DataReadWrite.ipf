@@ -910,6 +910,7 @@ Function ReadASCData(fname,destPath)
 	data=temp0
 	Redimension/N=(pixelsX,pixelsY) data		//,linear_data
 	
+	Duplicate/O data linear_data
 	Duplicate/O data linear_data_error
 	linear_data_error = 1 + sqrt(data + 0.75)
 	
