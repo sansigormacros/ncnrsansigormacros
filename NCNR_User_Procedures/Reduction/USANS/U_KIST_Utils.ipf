@@ -2,40 +2,70 @@
 #pragma version=2.20
 #pragma IgorVersion=6.1
 
+// utilities and constants that are specific to the KIST USANS
 
-///point to the current version, so I can recognize old experiments
-#include "USANS_Includes_v230"
+//facility-specific constants
+Function Init_USANS_Facility()
+
+	//INSTRUMENTAL CONSTANTS 
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
+	//Variable/G  root:Globals:MainPanel:gDomega = 2.7e-7		//Solid angle of detector (pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDefaultMCR= 1e6		//factor for normalization
+	
+	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
+
+	String/G root:Packages:NIST:gXMLLoader_Title=""
+	
+	//November 2010 - deadtime corrections -- see USANS_DetectorDeadtime() below
+	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
+	
+	
+	// to convert from angle (in degrees) to Q (in 1/Angstrom)
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+	
+	// extension string for the raw data files
+	// -- not that the extension as specified here starts with "."
+	String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
+	
+	
+	
+	return(0)
+end
 
 
-////*************
-//// the list of files to include in the USANS reduction experiment
-////  - files must be located somewhere in the User Procedures folder
-//// or sub-folders
-////
+// returns the detector dead time for the main detectors, and the transmission detector
 //
-//#include "BT5_Loader",version >= 2.20	
-//#include "COR_Graph",version >= 2.20			
-//#include "Main_USANS",version >= 2.20	
-//#include "PlotUtilsMacro_v40",version >= 2.20
-//#include "NIST_XML_v40"
-//#include "USANS_SlitSmearing_v40"	
-//#include "WriteUSANSData",version >= 2.20	
-//#include "LakeDesmearing_JB",version >= 2.20	
-//#include "USANSCatNotebook",version >= 2.20	
-//#include "CheckVersionFTP"				//added June 2008
-//#include "GaussUtils_v40"				//added Oct 2008 for unified file loading
-//#include "BT5_AddFiles"					//Oct 2009 to add raw data files
+// NCNR values switch based on a date when hardware was swapped out. other facilities can ignore the date
 //
-//// USANS simulation and required procedures
-//#include "U_CALC"
-//#include "USANS_EmptyWaves"
-//#include "MultScatter_MonteCarlo_2D"
-//#include "SASCALC"
-//#include "NCNR_DataReadWrite"
-//#include "SANS_Utilities"
-//#include "NCNR_Utils"
-//#include "MultipleReduce"
+// also, if dead time is not known, zero can be returned to inactivate the dead time correction
 //
-////AJJ for data set output?
-////#include "DataSetHandling"
-////#Include "WriteModelData_v40"
+//
+//Discovered significant deadtime on detectors in Oct 2010
+//JGB and AJJ changed pre-amps during shutdown Oct 27 - Nov 7 2010
+//Need different deadtime before and after 8th November 2010
+//
+Function USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
+	String filedt
+	Variable &MainDeadTime,&TransDeadTime
+	
+//	if (BT5Date2Secs(filedt) < date2secs(2010,11,7))
+//			MainDeadTime = 4e-5
+//			TransDeadTime = 1.26e-5
+//			//print "Old Dead Times"
+//			//MainDeadTime = 0
+//			//TransDeadTime = 0
+//	else
+//			MainDeadTime = 7e-6
+//			TransDeadTime = 1.26e-5
+//			//print "New Dead Times"
+//	endif
+	
+	MainDeadTime = 0
+	TransDeadTime = 0
+
+
+	return(0)
+end
