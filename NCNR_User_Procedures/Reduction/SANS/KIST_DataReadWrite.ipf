@@ -1212,11 +1212,12 @@ End
 //
 // not really necessary
 //
-Function Write_RawData_File(type,fullpath,dialog)
-	String type
+Function/S Write_RawData_File(type,fullpath,dialog)
+	String type,fullpath
+	Variable dialog		//=1 will present dialog for name
 	
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
 	Print "Write_RawData_File stub"
 	
-	return(0)
+	return("")
 End
