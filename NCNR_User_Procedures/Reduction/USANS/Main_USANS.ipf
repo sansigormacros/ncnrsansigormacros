@@ -63,6 +63,9 @@ Proc ShowUSANSPanel()
 	if(V_Flag==0)
 		USANS_Panel()
 	Endif
+	
+	DoIgorMenu "Control" "Retrieve All Windows"
+
 End
 
 // initializes the folders and globals for use with the USANS_Panel
@@ -136,20 +139,8 @@ Proc Init_MainUSANS()
 	root:Packages:NIST:USANS:EMP:empLevel := root:Packages:NIST:USANS:Globals:MainPanel:gEmpCts //dependency to connect to SetVariable in panel
 	root:Packages:NIST:USANS:BKG:bkgLevel := root:Packages:NIST:USANS:Globals:MainPanel:gBkgCts
 
-	
-	//INSTRUMENTAL CONSTANTS 
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
-	//Variable/G  root:Globals:MainPanel:gDomega = 2.7e-7		//Solid angle of detector (pre- NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDefaultMCR= 1e6		//factor for normalization
-	
-	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
-	//November 2010 - deadtime corrections
-	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
-
-	String/G root:Packages:NIST:gXMLLoader_Title=""
+// initializes facility specific constants to define the instrument	
+	Init_USANS_Facility()	
 
 	//initializes preferences. this includes XML y/n, and SANS Reduction items. 
 	// if they already exist, they won't be overwritten
@@ -858,7 +849,7 @@ End
 //bt5PathName is hard-wired in, will prompt if none exists
 // reads directly from disk
 //
-// EXCLUDES all files that do not match "*.bt5*" (not case sensitive)
+// EXCLUDES all files that do not match "*.bt5*" (not case sensitive) (*.ext*)
 //
 // sorts the list to alphabetical order
 //
@@ -868,6 +859,7 @@ Function RefreshListButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	SVAR ext = root:Packages:NIST:USANS:Globals:MainPanel:gUExt
 
 	String folderStr=""
 	if(cmpstr(ctrlName,"RefreshButton")==0)
@@ -892,9 +884,9 @@ Function RefreshListButtonProc(ctrlName) : ButtonControl
 	
 	//Get the filter and determine the match string required AJJ Sept06
 	if (stringmatch(FilterStr,"!"))
-		filter = FilterStr+"*.bt5*"
+		filter = FilterStr+"*"+ext+"*"
 	else
-		filter = "*.bt5*"
+		filter = "*"+ext+"*"
 	endif
 	
 	//get all the files, then trim the list
@@ -1171,7 +1163,8 @@ Function RefreshCurrentButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
-	
+	SVAR ext = root:Packages:NIST:USANS:Globals:MainPanel:gUExt
+
 	//Prod the web update page
 	//This is a horrible kludge that doesn't really work as the 
 	//webscript does not update the current run as of Sept 26 2006
@@ -1203,7 +1196,7 @@ Function RefreshCurrentButtonProc(ctrlName) : ButtonControl
 	Variable num=ItemsInList(list,";"),ii
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list  ,";")
-		if( stringmatch(item,"*.bt5*") )		//ONLY keep files with ".bt5" in the name (NOT case-sensitive) 
+		if( stringmatch(item,"*"+ext+"*") )		//ONLY keep files with ".bt5" in the name (NOT case-sensitive) 
 			newlist += item + ";"
 		endif
 		//print "ii=",ii

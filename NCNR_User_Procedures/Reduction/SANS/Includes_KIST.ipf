@@ -7,6 +7,8 @@
 // minor changes to the core code can be added through compiler directives
 //
 
+// define this in the USANS files, not here in SANS...
+
 //Function FACILITY()
 //	//does nothing but define FACILITY()
 //	return(0)
@@ -60,8 +62,8 @@
 //#include "RealTimeUpdate_RT"		version>=5.0		
 #include "Subtract_1D"				version>=5.0 			//NEW 14MAY03
 
-#include "FACILITY_Utils"									//new in the 29MAR07 branch
-#include "FACILITY_DataReadWrite"							//new in the 29MAR07 branch
+#include "KIST_Utils"									//new in the 29MAR07 branch
+#include "KIST_DataReadWrite"							//new in the 29MAR07 branch
 #include "SANS_Utilities"								//new in the 29MAR07 branch
 
 // new in Jan 2008

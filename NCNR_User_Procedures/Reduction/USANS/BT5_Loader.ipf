@@ -30,7 +30,7 @@ Function LoadBT5File(fname,type)
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Variable num=200,err=0,refnum
+	Variable num=500,err=0,refnum
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":Angle")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":DetCts")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":ErrDetCts")
@@ -72,21 +72,11 @@ Function LoadBT5File(fname,type)
 	ii=strlen(filedt)
 	filedt = filedt[1,(ii-2)]
 		
-	print filedt
-	print BT5Date2Secs(filedt)
-	print date2secs(2010,11,7)
+//	print filedt
+//	print BT5Date2Secs(filedt)
+//	print date2secs(2010,11,7)
 	
-	if (BT5Date2Secs(filedt) < date2secs(2010,11,7))
-			MainDeadTime = 4e-5
-			TransDeadTime = 1.26e-5
-			//print "Old Dead Times"
-			//MainDeadTime = 0
-			//TransDeadTime = 0
-	else
-			MainDeadTime = 7e-6
-			TransDeadTime = 1.26e-5
-			//print "New Dead Times"
-	endif
+	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	
 	//skip line 2
 	FReadLine refnum,buffer
@@ -205,7 +195,9 @@ Function ConvertAngle2Qvals(type,pkAngle)
 	
 	Wave angle = $(USANSFolder+":"+type+":Angle")
 	Variable num=numpnts(angle)
-	Variable deg2QConv=5.55e-5		//JGB -- 2/24/01
+//	Variable deg2QConv=5.55e-5		//JGB -- 2/24/01
+	NVAR deg2QConv=root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv
+
 	
 	Make/O/N=(num) $(USANSFolder+":"+type+":Qvals")
 	Wave qvals = $(USANSFolder+":"+type+":Qvals")	

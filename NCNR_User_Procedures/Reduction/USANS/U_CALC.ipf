@@ -1745,6 +1745,8 @@ Function SaveFakeUSANS(nameStr,num,set)
 	NVAR ang1 = $(pathStr+"gAngLow"+num2str(set))
 	NVAR ang2 = $(pathStr+"gAngHigh"+num2str(set))
 	NVAR incr = $(pathStr+"gIncr"+num2str(set))
+	SVAR ext = root:Packages:NIST:USANS:Globals:MainPanel:gUExt
+
 	
 	Variable refNum,ii,wavePts,numPts,first,last,ctTime,monCt,transDet
 	String str,fileStr,dateStr
@@ -1767,7 +1769,7 @@ Function SaveFakeUSANS(nameStr,num,set)
 //	Print "First, last = ",first,last
 	
 	// set up some of the strings needed
-	fileStr=nameStr+num2str(num+set)+".bt5"
+	fileStr=nameStr+num2str(num+set)+ext
 	dateStr = date()
 	ctTime = countingTime[first]
 	numPts = last-first+1

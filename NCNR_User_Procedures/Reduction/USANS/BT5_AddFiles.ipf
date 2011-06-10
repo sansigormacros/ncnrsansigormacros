@@ -750,8 +750,8 @@ End
 
 Proc SelectFilesToAdd(file1,file2)
 	String file1,file2
-	Prompt file1, "First File", popup, BT5FileList("*.bt5*")
-	Prompt file2, "Second File", popup, BT5FileList("*.bt5*")
+	Prompt file1, "First File", popup, BT5FileList("")
+	Prompt file2, "Second File", popup, BT5FileList("")
 	
 //	Print file1,file2
 	
@@ -762,6 +762,8 @@ End
 Function/S BT5FileList(filter)
 	String filter
 	
+	SVAR ext = root:Packages:NIST:USANS:Globals:MainPanel:gUExt
+	filter = "*"+ext+"*"
 	
 	//get all the files, then trim the list
 	String list=IndexedFile(bt5PathName,-1,"????")
@@ -788,6 +790,8 @@ End
 Function LoadAndAddUSANS(file1,file2)
 	String file1,file2
 	
+	SVAR ext = root:Packages:NIST:USANS:Globals:MainPanel:gUExt
+
 	//load each file into a textWave
 	Make/O/T/N=200 tw1,tw2
 	
@@ -892,7 +896,7 @@ Function LoadAndAddUSANS(file1,file2)
 	endfor
 	
 	// write out the final file (=tw3)
-	filen = file1[0,strlen(file1)-5]+"_SUM.bt5"
+	filen = file1[0,strlen(file1)-5]+"_SUM"+ext
 	
 	if(dialog)
 		PathInfo/S savePathName
