@@ -2003,6 +2003,12 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	
 	WAVE w=tmp_data
 
+	// check for data values that are too large. the maximum VAX compressed data value is 2767000
+	//
+	WaveStats/Q w
+	if(V_max > 2767000)
+		Abort "Some individual pixel values are > 2767000 and the data can't be saved in VAX format"
+	Endif
 	
 	//check each wave
 	If(!(WaveExists(intw)))
@@ -2043,9 +2049,10 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	Make/O/B/U/N=33316 tmpFile		//unsigned integers for a blank data file
 	tmpFile=0
 	
-	Make/O/W/N=16401 dataWRecMarkers
+//	Make/O/W/N=16401 dataWRecMarkers			// don't convert to 16 bit here, rather write to file as 16 bit later
+	Make/O/I/N=16401 dataWRecMarkers
 	AddRecordMarkers(w,dataWRecMarkers)
-	
+		
 	// need to re-compress?? maybe never a problem, but should be done for the odd case
 	dataWRecMarkers = CompressI4toI2(dataWRecMarkers)		//unless a pixel value is > 32767, the same values are returned
 	

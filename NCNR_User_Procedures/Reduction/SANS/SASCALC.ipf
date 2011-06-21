@@ -293,7 +293,7 @@ Function S_fillDefaultHeader(iW,rW,tW)
 	
 	// real wave
 	rw = 0
-	rw[16] = 64		// beamcenter X (pixels)
+	rw[16] = 65		// beamcenter X (pixels)
 	rw[17] = 64		// beamcenter Y
 	
 	rw[10]	= 5.08			//detector resolution (5mm) and calibration constants (linearity)
@@ -753,7 +753,7 @@ Function SimCheckProc(CB_Struct) : CheckBoxControl
 	if(CB_Struct.checked)
 		NVAR do2D = root:Packages:NIST:SAS:gDoMonteCarlo
 		
-		if(CB_Struct.eventMod == 2)		//if the shift key is down - go to 2D mode
+		if((CB_Struct.eventMod & 2^1) != 0 )		//if the shift key is down (bit 1)- go to 2D mode
 			do2D = 1
 		endif
 		
@@ -945,6 +945,13 @@ Function ReCalculateInten(doIt)
 	if(doSimulation == 1)
 		if(doMonteCarlo == 1)
 			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf)
+			
+			// may want to take this back out--- 20 JUN 2011 SRK
+			// this call to detectorOffset() sets the (xCtr,yCtr) in RealsRead to default values of (64.5,64.5)
+			// -- if user changes the values in RealsRead to be able to do a proper average, the next sim starts wtih the
+			// wrong values...
+			
+			detectorOffset()
 			
 			Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 			
@@ -1798,7 +1805,7 @@ Function detectorOffset()
 	//move the beamcenter, make it an integer value for the MC simulation
 	rw[16] = 64  + round(2*rw[19]) + 0.5		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
 	rw[17] = 64 	+ 0.5 //typical value
-	
+
 	return(val)
 end
 

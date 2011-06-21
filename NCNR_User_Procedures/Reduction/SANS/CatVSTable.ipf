@@ -150,7 +150,7 @@ Function BuildCatVeryShortTable()
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
-			if(str2num(partialName) == NaN)
+			if(numtype(str2num(partialName)) == 2)
 				str = "this file was not found: "+partialName+"\r\r"
 				//Notebook CatWin,font="Times",fsize=12,text=str
 			Endif
@@ -507,7 +507,7 @@ Proc BuildCatShortNotebook()
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
-			if(str2num(partialName) == NaN)
+			if(numtype(str2num(partialName)) == 2)
 				str = "this file was not found: "+partialName+"\r\r"
 				Notebook CatWin,font="Times",fsize=12,text=str
 			Endif
@@ -676,7 +676,7 @@ Proc BuildCatVeryShortNotebook()
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
-			if(str2num(partialName) == NaN)
+			if(numtype(str2num(partialName)) == 2)
 				str = "this file was not found: "+partialName+"\r\r"
 				Notebook CatWin,font="Times",fsize=12,text=str
 			Endif

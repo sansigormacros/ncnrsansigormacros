@@ -19,7 +19,7 @@
 // the RNG issue is really not worth the effort. multiple copies with different RNG is as good as I need. Plus,
 // whatever XOP crashing was happining during threading is really unlikely to be from the RNG
 //
-// -- June 2010 - calls from different threads to the same RNG really seems to cause a crash. Probably as soon
+// -- June 2010 - calls from different threads to the same RNG will absolutely cause a crash. Probably as soon
 //				as the different threads try to call at the same time. Found this out by accident doing the 
 //				wavelength spread. Each thread called ran3 at that point, and the crash came quickly. Went
 //				away immediately when I kept the ran calls consistent and isolated within threads.
@@ -84,7 +84,7 @@
 
 // --- TO ADD ---
 // X- wavelength distribution = another RNG to select the wavelength
-// ---- done Jun 2010, approximating the wavelength distribution as a Gaussian, based on the triangular
+// DONE Jun 2010, approximating the wavelength distribution as a Gaussian, based on the triangular
 //			FWHM. Wavelength distribution added to XOP too, and now very accurately matches the shape of the 1D
 //			simulation.
 //
@@ -95,9 +95,14 @@
 //     scattering. Count time for the simulated scattering is the same as the sample. The simulated EC
 //		 data can be plotted, but only by hand right now. EC and blocked beam are combined.
 //
-// -- divergence / size of the incoming beam. Currently everything is parallel, and anything that is transmitted
-//		simply ends up in (xCtr,yCtr), and the "real" profile of the beam is not captured.
 
+// X- divergence / size of the incoming beam. Currently everything is parallel, and anything that is transmitted
+//		simply ends up in (xCtr,yCtr), and the "real" profile of the beam is not captured.
+// DONE, 21 JUN 11 SRK
+// point is picked in source aperture, then sample aperture. This sets the initial direction of the neutron.
+// Gravity is included, lowering every neutron by yg_d. This affects qy only.Simulated beam center makes sense
+// now both in size and xy positon. Gravity effects can be seen in the beam spot itself (fall + spread) and in the scattering
+// pattern at extreme cases (sharp peaks, wide spread, long SDD, long wavelength, small source aperture)
 
 
 
@@ -137,8 +142,11 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 #else
 	nthreads = 1
 #endif
+
 	
-//	nthreads = 1
+//	nthreads = 2
+
+
 	NVAR mt=root:myGlobals:gThreadGroupID
 	mt = ThreadGroupCreate(nthreads)
 	NVAR gInitTime = root:Packages:NIST:SAS:gRanDateTime		//time that SASCALC was started
@@ -381,6 +389,12 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	Variable NDoubleCoherent,NMultipleScatter,countIt,detEfficiency
 	Variable NMultipleCoherent,NCoherentEvents
 	Variable deltaLam,v1,v2,currWavelength,rsq,fac		//for simulating wavelength distribution
+	Variable SSD, sourAp, souXX, souYY, magn		//source-to-sample, and source Ap radius for initlal trajectory
+
+	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
+	Variable g = 981.0				//gravity acceleration [cm/s^2]
+	Variable yg_d		//fall due to gravity
+	
 	
 	// don't set to other than one here. Detector efficiency is handled outside, only passing the number of 
 	// countable neutrons to any of the simulation functions (n=imon*eff)
@@ -398,6 +412,10 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	sig_incoh = inputWave[9]
 	sig_sas = inputWave[10]
 	deltaLam = inputWave[11]
+	SSD = inputWave[12]			// in cm, like SDD
+	sourAp = inputWave[13]		// radius, in cm, like r1 and r2
+	
+//	print SSD, sourAp
 	
 //	SetRandomSeed 0.1		//to get a reproduceable sequence
 
@@ -461,9 +479,9 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 
 // NOW, start the loop, throwing neutrons at the sample.
 	do
-		Vx = 0.0			// Initialize direction vector.
-		Vy = 0.0
-		Vz = 1.0
+//		Vx = 0.0			// Initialize direction vector.
+//		Vy = 0.0
+//		Vz = 1.0
 		
 		Theta = 0.0		//	Initialize scattering angle.
 		Phi = 0.0			//	Intialize azimuthal angle.
@@ -473,7 +491,17 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 		zz = 0.0			//	Set entering dimension of sample.
 		incoherentEvent = 0
 		coherentEvent = 0
-		
+	
+		// pick point in source aperture area
+		do					//	Makes sure position is within circle.
+			ran = abs(enoise(1))		//[0,1]
+			souxx = 2.0*sourAp*(Ran-0.5)		//X beam position of neutron entering sample.
+			ran = abs(enoise(1))		//[0,1]
+			souyy = 2.0*sourAp*(Ran-0.5)		//Y beam position ...
+			RR = SQRT(souxx*souxx+souyy*souyy)		//Radial position of neutron in incident beam.
+		while(rr>sourAp)
+						
+		// pick point in sample aperture
 		do					//	Makes sure position is within circle.
 			ran = abs(enoise(1))		//[0,1]
 			xx = 2.0*R1*(Ran-0.5)		//X beam position of neutron entering sample.
@@ -496,6 +524,25 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 		
 		currWavelength = (v2*fac)*deltaLam*wavelength/2.35 + wavelength
 		
+//		if(n1 == 1)
+//			Print "lambda ", currWavelength
+//		endif	
+//		
+		magn = sqrt((souXX - xx)^2 + (souYY - yy)^2 + ssd^2)
+		Vx = (souXX - xx)/magn		// Initialize direction vector.
+		Vy = (souYY - yy)/magn
+		Vz = (ssd - 0)/magn
+		
+//		Vx = 0.0			// Initialize direction vector.
+//		Vy = 0.0
+//		Vz = 1.0
+		
+		
+//
+//		if(n1 == 1)
+//			Print "vx, vy, vz, mag",vx,vy,vz,sqrt(vx^2+vy^2+vz^2)
+//		endif		
+		
 		
 		do    //Scattering Loop, will exit when "done" == 1
 				// keep scattering multiple times until the neutron exits the sample
@@ -504,6 +551,11 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 			//Determine new scattering direction vector.
 			err = NewDirection(vx,vy,vz,Theta,Phi)		//vx,vy,vz is updated, theta, phi unchanged by function
 
+//			if(vx != 0)
+//				Print "vx, vy, vz, mag" = vx,vy,vz,sqrt(vx^2+vy^2+vz^2)
+//			endif	
+			
+			
 			//X,Y,Z-POSITION OF SCATTERING EVENT.
 			xx += ll*vx
 			yy += ll*vy
@@ -577,6 +629,16 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					NN[INDEX] += 1
 				Endif
 				
+				// calculate fall due to gravity (in cm) (note that it is negative)
+				YG_d = -0.5*g*SDD*(SSD+SDD)*(currWavelength/vz_1)^2
+				
+//				yg_d=0
+				
+				if(n1 == 1)
+//					Print "gravity fall (cm) = ",Yg_d
+					Print "gravity fall at mean lam (cm) = ",-0.5*g*SDD*(SSD+SDD)*(wavelength/vz_1)^2
+				endif	
+		
 				if(index != 0)		//the neutron interacted at least once, figure out where it ends up
 
 					Theta_z = acos(Vz)		// Angle WITH respect to z axis.
@@ -589,10 +651,13 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					testPhi = MC_FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
 					
 					// is it on the detector?	
-					FindPixel(testQ,testPhi,currWavelength,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+					FindPixel(testQ,testPhi,currWavelength,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 					
 					if(xPixel != -1 && yPixel != -1)
 						//if(index==1)  // only the single scattering events
+							if( xPixel > 127 || yPixel > 127)
+								print "error XY=",xPixel,yPixel
+							endif
 							MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
 						//endif
 							isOn += 1		// neutron that lands on detector
@@ -640,27 +705,66 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 				else	// if neutron escaped without interacting
 				
 					// then it must be a transmitted neutron
-					// don't need to calculate, just increment the proper counters
+					// Now, calculate where it lands
 					
-					MC_linear_data[xCtr+xx/pixsize][yCtr+yy/pixsize] += 1
-					isOn += 1
-					nt[0] += 1
+					Theta_z = acos(Vz)		// Angle WITH respect to z axis.
+					testQ = 2*pi*sin(theta_z)/currWavelength
+					
+					testPhi = MC_FindPhi(Vx,Vy)		//use the exiting phi value as defined by Vx and Vy
+					
+					// is it on the detector?	
+					FindPixel(testQ,testPhi,currWavelength,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+					
+					if(xPixel != -1 && yPixel != -1)
+						//if(index==1)  // only the single scattering events
+							if( xPixel > 127 || yPixel > 127)
+								print "error XY=",xPixel,yPixel
+							endif
+							MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
+						//endif
+							isOn += 1		// neutron that lands on detector
+					endif
+					
+//					MC_linear_data[xCtr+xx/pixsize][yCtr+yy/pixsize] += 1
+//					isOn += 1
+					If(theta_z < theta_max)
+						//Choose index for scattering angle array.
+						//IND = NINT(THETA_z/DTH + 0.4999999)
+						ind = round(THETA_z/DTH + 0.4999999)		//round is eqivalent to nint()
+						NT[ind] += 1 			//Increment bin for angle.
+					endif
+					//nt[0] += 1		// may not be at zero angle anmore
 					
 				endif		//if interacted
 			ENDIF
 		while (!done)
 	while(n1 < imon)
 
-//	Print "Monte Carlo Done"
-	results[0] = n1
-	results[1] = n2
-	results[2] = isOn
-	results[3] = NScatterEvents		//sum of # of times that neutrons scattered (coh+incoh)
-	results[4] = NSingleCoherent		//# of events that are single, coherent
-	results[5] = NMultipleCoherent	//# of scattered neutrons that are coherently scattered more than once
-	results[6] = NMultipleScatter		//# of scattered neutrons that are scattered more than once (coh and/or incoh)
-	results[7] = NCoherentEvents		//# of scattered neutrons that are scattered coherently one or more times
+	Print "Non-XOP Monte Carlo Done"
+//	results[0] = n1
+//	results[1] = n2
+//	results[2] = isOn
+//	results[3] = NScatterEvents		//sum of # of times that neutrons scattered (coh+incoh)
+//	results[4] = NSingleCoherent		//# of events that are single, coherent
+//	results[5] = NMultipleCoherent	//# of scattered neutrons that are coherently scattered more than once
+//	results[6] = NMultipleScatter		//# of scattered neutrons that are scattered more than once (coh and/or incoh)
+//	results[7] = NCoherentEvents		//# of scattered neutrons that are scattered coherently one or more times
+
+
+	Variable xc,yc
+	xc=inputWave[3]
+	yc=inputWave[4]
+	results[0] = inputWave[9]+inputWave[10]		//total XS
+	results[1] = inputWave[10]						//SAS XS
+	results[2] = n2						//number that interact n2
+	results[3] = isOn	- MC_linear_data[xc][yc]				//# reaching detector minus Q(0)
+	results[4] = NScatterEvents/n2				//avg# times scattered
+	results[5] = NSingleCoherent/NCoherentEvents						//single coherent fraction
+	results[6] = NMultipleCoherent/NCoherentEvents				//multiple coherent fraction
+	results[7] = NMultipleScatter/n2				//multiple scatter fraction
+	results[8] = (n1-n2)/n1			//transmitted fraction
 	
+		
 //	Print "# absorbed = ",n3
 
 //	trans_th = exp(-sig_total*thick)
@@ -789,14 +893,24 @@ Function CalculateRandomDeviate_log(func,coef,lam,outWave,SASxs)
 	return(0)
 End
 
-ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
-	Variable testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
+
+
+// xCtr and yCtr here are the "optical" center of the detector ~(65,65) and the full fall due to 
+// gravity is calculated from this horizontal axis
+//
+ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+	Variable testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
 
 	Variable theta,dy,dx,qx,qy
 	//decompose to qx,qy
 	qx = testQ*cos(testPhi)
 	qy = testQ*sin(testPhi)
 
+// correct qy for gravity
+// qy = 4*pi/lam * (theta/2)
+	qy += 4*pi/lam*(yg_d/sdd/2)
+	
+	
 	//convert qx,qy to pixel locations relative to # of pixels x, y from center
 	theta = 2*asin(qy*lam/4/pi)
 	dy = sdd*tan(theta)
@@ -810,10 +924,10 @@ ThreadSafe Function FindPixel(testQ,testPhi,lam,sdd,pixSize,xCtr,yCtr,xPixel,yPi
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
 	//if on detector, return xPix and yPix values, otherwise -1
-	if(yPixel > pixelsY || yPixel < 0)
+	if(yPixel >= pixelsY || yPixel < 0)
 		yPixel = -1
 	endif
-	if(xPixel > pixelsX || xPixel < 0)
+	if(xPixel >= pixelsX || xPixel < 0)
 		xPixel = -1
 	endif
 	
@@ -1331,7 +1445,10 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	inputWave[9] = sig_incoh
 	inputWave[10] = sig_sas
 	inputWave[11] = deltaLam
-//	inputWave[] 12-14 are currently unused
+	
+	inputWave[12] = sourceToSampleDist()		// function returns dist in cm
+	inputWave[13] = sourceApertureDiam()/2		//	function returns diam in cm, this is radius
+//	inputWave[] 14 are currently unused
 
 	linear_data = 0		//initialize
 
@@ -1401,11 +1518,32 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR MC_BS_in = root:Packages:NIST:SAS:gBeamStopIn		//if zero, beam stop is "out", as in a transmission measurement
 	
 	Variable rad=beamstopDiam()/2		//beamstop radius in cm
+	// the function detectorOffset() does not take gravity into account, and resets the beam center to (64.5,64.5)
+	// after the MC simulation is done (displayConfigurationText is always called)
+//
+// so this (locally) changes the beam center, just for the correct placement of the beam stop
+// the data files will have the wrong
+	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
+	Variable g = 981.0				//gravity acceleration [cm/s^2]
+	Variable yg_d,ssd		//fall due to gravity
+
+	ssd = sourceToSampleDist()
+	YG_d = -0.5*g*SDD*(SSD+SDD)*(wavelength/vz_1)^2		// fall in cm (negative value)
+	
+	xCtr = 64.5	 + round(2*rw[19])		// I'm always off by one for some reason, so start at 65.5?
+	yCtr = 65 + yg_d/0.5					// this will lower the beam center
+//	rw[16] = xCtr
+//	rw[17] = yCtr
+	
+	Print "Gravity q* = ",-2*pi/wavelength*2*yg_d/sdd
+
+		
 	if(MC_BS_in)
 		rad /= 0.5				//convert cm to pixels
 		rad += 0.					// (no - it cuts off the low Q artificially) add an extra pixel to each side to account for edge
 		Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask//,root:Packages:NIST:SAS:MC_linear_data
 		WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
+		
 		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
 		
 		linear_data *= tmp_mask
@@ -1457,7 +1595,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	iw[2] = ctTime		//simulated counting time in seconds
 	// re-average the 2D data
 	S_CircularAverageTo1D("SAS")
-	
+		
 	// put the new result into the simulation folder
 	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 				
@@ -1473,7 +1611,6 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 			Execute "ChangeDisplay(\"SAS\")"		//equivalent to pressing "Show 2D"
 		endif
 	endif
-
 
 	return(0)
 end

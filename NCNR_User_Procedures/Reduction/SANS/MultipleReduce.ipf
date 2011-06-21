@@ -606,7 +606,7 @@ Proc CreateScatteringAtSDDTable(SDD_to_Filter)
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
-			if(str2num(partialName) == NaN)
+			if(numtype(str2num(partialName)) == 2)
 				str = "this file was not found: "+partialName+"\r\r"
 				//Notebook CatWin,font="Times",fsize=12,text=str
 			Endif
@@ -663,7 +663,7 @@ Function RemoveLabeledFromSDDList(findThisStr)
 	do
 		loc = strsearch(labels[ii], findThisStr, 0 ,2)		//2==case insensitive, but Igor 5 specific
 		if(loc != -1)
-			Print "Remove w[ii] = ",num,"  ",labels[ii]
+			Print "Remove w[ii] = ",runnum[ii],"  ",labels[ii]
 			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
 		endif
 		ii-=1
