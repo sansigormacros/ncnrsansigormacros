@@ -533,11 +533,6 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 		Vy = (souYY - yy)/magn
 		Vz = (ssd - 0)/magn
 		
-//		Vx = 0.0			// Initialize direction vector.
-//		Vy = 0.0
-//		Vz = 1.0
-		
-		
 //
 //		if(n1 == 1)
 //			Print "vx, vy, vz, mag",vx,vy,vz,sqrt(vx^2+vy^2+vz^2)
@@ -599,7 +594,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 
 					while(!find_theta)
 					ran = abs(enoise(1))		//[0,1]
-					PHI = 2.0*PI*Ran			//Chooses azimuthal scattering angle.
+					PHI = 2.0*PI*Ran			//Chooses azimuthal scattering angle. Currently this is random
 				ELSE
 					//NEUTRON scattered incoherently
           	   // N3 += 1

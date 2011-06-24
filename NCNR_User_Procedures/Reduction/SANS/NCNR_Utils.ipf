@@ -296,60 +296,60 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 // can calculate that from the QxQy (I just need the projection)
 
 
-// for test case with no gravity, set a_val = 0
-// note that gravity has no wavelength dependence. the lambda^4 cancels out.
+//// for test case with no gravity, set a_val = 0
+//// note that gravity has no wavelength dependence. the lambda^4 cancels out.
+////
+////	a_val = 0
+////	a_val_l2 = 0
 //
-//	a_val = 0
-//	a_val_l2 = 0
-
-	// the detector pixel is square, so correct for phi
-	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
-	
-	// this is really sigma_Q_parallel
-	SigmaQX = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
-	SigmaQX += inQ*inQ*v_lambda
-
-	//this is really sigma_Q_perpendicular
-	proj_DDet = DDet*sin(phi) + DDet*cos(phi)		//not necessary, since DDet is the same in both X and Y directions
-
-	SigmaQY = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (cos(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
-	
-	SigmaQX = sqrt(SigmaQX)
-	SigmaQy = sqrt(SigmaQY)
-	
+//	// the detector pixel is square, so correct for phi
+//	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
+//	
+//	// this is really sigma_Q_parallel
+//	SigmaQX = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
+//	SigmaQX += inQ*inQ*v_lambda
+//
+//	//this is really sigma_Q_perpendicular
+//	proj_DDet = DDet*sin(phi) + DDet*cos(phi)		//not necessary, since DDet is the same in both X and Y directions
+//
+//	SigmaQY = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (cos(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
+//	
+//	SigmaQX = sqrt(SigmaQX)
+//	SigmaQy = sqrt(SigmaQY)
+//	
 
 /////////////////////////////////////////////////
 /////	
 //	////// this is all experimental, inclusion of gravity effect into the parallel component
 ////	//
-//	Variable yg_d,acc,sdd,ssd,lambda0,DL_L,sig_l
-//	Variable var_qlx,var_qly,var_ql,qx,qy,sig_perp,sig_para
-//	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
-//	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
-//	SDD = L2		//1317
-//	SSD = L1		//1627 		//cm
-//	lambda0 = lambda		//		15
-//	DL_L = lambdaWidth		//0.236
-//	SIG_L = DL_L/sqrt(6)
-//	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
-///////	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG
-//	
-//	sig_perp = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2)
-//	sig_perp = sqrt(sig_perp)
-//	
-//	
-//	FindQxQy(inQ,phi,qx,qy)
-//	
-//	VAR_QLY = SIG_L^2 * (QY+4*PI*YG_d/(SDD*LAMBDA0))^2
-//	VAR_QLX = (SIG_L*QX)^2
-//	VAR_QL = VAR_QLY + VAR_QLX  //! WAVELENGTH CONTRIBUTION TO VARIANCE
-//	sig_para = (sig_perp^2 + VAR_QL)^0.5
-//	
-/////// return values PBR	
-//	SigmaQX = sig_para
-//	SigmaQy = sig_perp
-//	
-//////	
+	Variable yg_d,acc,sdd,ssd,lambda0,DL_L,sig_l
+	Variable var_qlx,var_qly,var_ql,qx,qy,sig_perp,sig_para
+	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
+	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
+	SDD = L2		//1317
+	SSD = L1		//1627 		//cm
+	lambda0 = lambda		//		15
+	DL_L = lambdaWidth		//0.236
+	SIG_L = DL_L/sqrt(6)
+	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
+/////	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG
+	
+	sig_perp = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2)
+	sig_perp = sqrt(sig_perp)
+	
+	
+	FindQxQy(inQ,phi,qx,qy)
+	
+	VAR_QLY = SIG_L^2 * (QY+4*PI*YG_d/(2*SDD*LAMBDA0))^2
+	VAR_QLX = (SIG_L*QX)^2
+	VAR_QL = VAR_QLY + VAR_QLX  //! WAVELENGTH CONTRIBUTION TO VARIANCE
+	sig_para = (sig_perp^2 + VAR_QL)^0.5
+	
+///// return values PBR	
+	SigmaQX = sig_para
+	SigmaQy = sig_perp
+	
+////	
 	
 	results = "success"
 	Return results
