@@ -1217,7 +1217,10 @@ Proc Show_Preferences_Panel()
 
 	DoWindow/F Pref_Panel
 	if(V_flag==0)
-		Initialize_Preferences()
+		// only re-initialize if the variables don't exist, so you don't overwrite what users have changed
+		if( exists("root:Packages:NIST:gXML_Write") != 2 )		//if the global variable does not exist, initialize
+			Initialize_Preferences()
+		endif
 		Pref_Panel()
 	Endif
 //	Print "Preferences Panel stub"
@@ -1302,6 +1305,22 @@ Function XMLWritePref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function DoTransCorrPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoTransmissionCorr
+	gVal = checked
+End
+
+Function DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoDetectorEffCorr
+	gVal = checked
+End
+
 Function PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -1343,10 +1362,10 @@ Proc Pref_Panel()
 	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
 	SetVariable PrefCtrl_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
-	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=1
+	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:gDoTransmissionCorr,proc=DoTransCorrPref
 	CheckBox PrefCtrl_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
-	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14}
-	CheckBox PrefCtrl_1g value=1,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14},proc=DoEfficiencyCorrPref
+	CheckBox PrefCtrl_1g value=root:Packages:NIST:gDoDetectorEffCorr,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
 
 
 	CheckBox PrefCtrl_1a,disable=1
