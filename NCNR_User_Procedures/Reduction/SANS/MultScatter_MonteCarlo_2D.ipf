@@ -1558,9 +1558,15 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR rawCts = root:Packages:NIST:SAS:gRawCounts
 	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
 
+	// make the error wave, if data is exported as qxqy
+	Duplicate/O linear_data root:Packages:NIST:SAS:linear_data_error
+	WAVE linear_data_error = root:Packages:NIST:SAS:linear_data_error
+	linear_data_error = 1 + sqrt(linear_data + 0.75)		
+	
 	if(!rawCts)			//go ahead and do the abs scaling to the linear_data
 		linear_data = linear_data / kappa
 		linear_data /= detectorEff
+		linear_data_error /= kappa
 	endif
 	
 	// add a signature to the data file to tag as a simulation

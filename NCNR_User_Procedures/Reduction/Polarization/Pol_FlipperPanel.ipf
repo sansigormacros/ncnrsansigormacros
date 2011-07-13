@@ -9,12 +9,9 @@
 
 //
 // TODO: 
-//		- add a button to "add" a new named condition (and be sure that the name is short enough)
-//		- 			
-//			- parsing routines
-//			- write the results to a waveNote
-//			--- where to store the intermediate results of trans values?
-//				make a wave behind the scenes to
+// -- add a way to manually enter the P values into a "blank" condition, in case that the users
+// calculate the values in a different way. This should be as simple as a dialog to enter values and 
+// change the wave note (and displayed strings).
 //
 //
 // Polarization parameters for each condition. Results are stored in a wave note for each condition
@@ -85,6 +82,7 @@ Function DrawFlipperPanel()
 	Button button_4,pos={540,295},size={110,20},proc=ClearFlipperRowButton,title="Clear Row"
 	Button button_5,pos={620,18},size={30,20},proc=FlipperHelpParButtonProc,title="?"
 	Button button_6,pos={488,418},size={100,20},proc=WindowSnapshotButton,title="Snapshot"
+	Button button_7,pos={488,380},size={130,20},proc=ManualEnterPfPsmButton,title="Manual Entry"
 
 	// table
 	Edit/W=(14,55,794,275)/HOST=# 
@@ -215,16 +213,16 @@ Function MakeFlipperResultWaves(popStr)
 	// to hold the results of the calculation
 	Make/O/D/N=(1,14) $("CondCalc_"+popStr)
 	WAVE CondCalc = $("CondCalc_"+popStr)
-	SetDimLabel 1,0,CR1,CondCalc
-	SetDimLabel 1,1,err_CR1,CondCalc
-	SetDimLabel 1,2,CR2,CondCalc
-	SetDimLabel 1,3,err_CR2,CondCalc
-	SetDimLabel 1,4,CR3,CondCalc
-	SetDimLabel 1,5,err_CR3,CondCalc
-	SetDimLabel 1,6,CR4,CondCalc
-	SetDimLabel 1,7,err_CR4,CondCalc
-	SetDimLabel 1,8,CR5,CondCalc
-	SetDimLabel 1,9,err_CR5,CondCalc
+	SetDimLabel 1,0,CR_UU,CondCalc
+	SetDimLabel 1,1,err_CR_UU,CondCalc
+	SetDimLabel 1,2,CR_DU,CondCalc
+	SetDimLabel 1,3,err_CR_DU,CondCalc
+	SetDimLabel 1,4,CR_DD,CondCalc
+	SetDimLabel 1,5,err_CR_DD,CondCalc
+	SetDimLabel 1,6,CR_UD,CondCalc
+	SetDimLabel 1,7,err_CR_UD,CondCalc
+	SetDimLabel 1,8,CR_Blocked,CondCalc
+	SetDimLabel 1,9,err_CR_Blocked,CondCalc
 	SetDimLabel 1,10,P_sm_f,CondCalc
 	SetDimLabel 1,11,err_P_sm_f,CondCalc
 	SetDimLabel 1,12,P_sm,CondCalc
@@ -234,6 +232,68 @@ Function MakeFlipperResultWaves(popStr)
 
 	return(0)
 End
+
+
+// allows manual entry of Psm and Pf values
+//
+Function ManualEnterPfPsmButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable selRow,err=0
+	String fname, t0str, condStr,noteStr,t1Str,cellStr
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Variable cr1,cr2,cr3,cr4,cr5,err_cr1,err_cr2,err_cr3,err_cr4,err_cr5
+			Variable PsmPf, err_PsmPf, Psm, err_Psm
+				
+			ControlInfo/W=FlipperPanel popup_0
+			condStr = S_Value
+			WAVE w=$("root:Packages:NIST:Polarization:Cells:"+condStr)		//the one that is displayed
+			WAVE calc=$("root:Packages:NIST:Polarization:Cells:CondCalc_"+condStr[5,strlen(condStr)-1])		//the one that holds results
+			
+
+			Prompt PsmPf, "Enter PsmPf: "		
+			Prompt err_PsmPf, "Enter err_PsmPf: "		
+			Prompt Psm, "Enter Psm: "		
+			Prompt err_Psm, "Enter err_Psm: "		
+			DoPrompt "Enter Supermirror and Flipper Parameters", PsmPf, err_PsmPf, Psm, err_Psm
+			if (V_Flag)
+				return -1								// User canceled
+			endif
+			
+//	this is the format of the note that is attached to the "Cond_" wave		
+//	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,Cell=asdf,"
+// the "Cell" value was filled in when the Condition was created
+	
+	
+// Put the average values into the wave note and display on the panel
+			noteStr = note(w)
+			noteStr = ReplaceNumberByKey("P_sm_f", noteStr, PsmPf ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("P_sm", noteStr, Psm ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("err_P_sm_f", noteStr, err_PsmPf ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("err_P_sm", noteStr, err_Psm ,"=", ",", 0)
+			
+			// replace the string
+			Note/K w
+			Note w, noteStr
+					
+			//update the global values for display	
+			SVAR gPsmPf = root:Packages:NIST:Polarization:Cells:gPsmPf
+			SVAR gPsm = root:Packages:NIST:Polarization:Cells:gPsm
+			sprintf gPsmPf, "%g +/- %g",PsmPf,err_PsmPf
+			sprintf gPsm, "%g +/- %g",Psm,err_Psm
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 
 
 // just recalculate everything, every time
@@ -302,16 +362,16 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 				cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
 				cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
 
-				calc[selRow][%cr1] = cr1
-				calc[selRow][%cr2] = cr2
-				calc[selRow][%cr3] = cr3
-				calc[selRow][%cr4] = cr4
-				calc[selRow][%cr5] = cr5
-				calc[selRow][%err_cr1] = err_cr1
-				calc[selRow][%err_cr2] = err_cr2
-				calc[selRow][%err_cr3] = err_cr3
-				calc[selRow][%err_cr4] = err_cr4
-				calc[selRow][%err_cr5] = err_cr5
+				calc[selRow][%cr_UU] = cr1
+				calc[selRow][%cr_DU] = cr2
+				calc[selRow][%cr_DD] = cr3
+				calc[selRow][%cr_UD] = cr4
+				calc[selRow][%cr_Blocked] = cr5
+				calc[selRow][%err_cr_UU] = err_cr1
+				calc[selRow][%err_cr_DU] = err_cr2
+				calc[selRow][%err_cr_DD] = err_cr3
+				calc[selRow][%err_cr_UD] = err_cr4
+				calc[selRow][%err_cr_Blocked] = err_cr5
 	
 				// Calc PsmPf, and assign the values
 				PsmPf = Calc_PsmPf(w,calc,noteStr,selRow,err_PsmPf)
@@ -408,12 +468,12 @@ Function Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	PCell_t2 = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell_t2)
 	
 	// DD is cr3, DU is cr2, Blocked is cr5
-	crDD = calc[selRow][%cr3]
-	crDU = calc[selRow][%cr2]
-	crBB = calc[selRow][%cr5]
-	err_crDD = calc[selRow][%err_cr3]
-	err_crDU = calc[selRow][%err_cr2]
-	err_crBB = calc[selRow][%err_cr5]
+	crDD = calc[selRow][%cr_DD]
+	crDU = calc[selRow][%cr_DU]
+	crBB = calc[selRow][%cr_Blocked]
+	err_crDD = calc[selRow][%err_cr_DD]
+	err_crDU = calc[selRow][%err_cr_DU]
+	err_crBB = calc[selRow][%err_cr_Blocked]
 	
 	// this really needs transmissions
 //	PsmPf = (crDD - crDU)/(PCell_t1 + PCell_t2)
@@ -478,12 +538,12 @@ Function Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	PCell_t2 = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell_t2)
 	
 	// UU is cr1, UD is cr4, Blocked is cr5
-	crUU = calc[selRow][%cr1]
-	crUD = calc[selRow][%cr4]
-	crBB = calc[selRow][%cr5]
-	err_crUU = calc[selRow][%err_cr1]
-	err_crUD = calc[selRow][%err_cr4]
-	err_crBB = calc[selRow][%err_cr5]
+	crUU = calc[selRow][%cr_UU]
+	crUD = calc[selRow][%cr_UD]
+	crBB = calc[selRow][%cr_Blocked]
+	err_crUU = calc[selRow][%err_cr_UU]
+	err_crUD = calc[selRow][%err_cr_UD]
+	err_crBB = calc[selRow][%err_cr_Blocked]
 	
 	// this really needs transmissions
 	
@@ -693,7 +753,7 @@ Function/S D_ConditionNameList()
 
 	// get a list of the Condition waves
 	listStr=WaveList("Cond_*",";","")
-	print listStr
+//	print listStr
 	
 	if(strlen(listStr) == 0)
 		listStr = "no conditions defined;"

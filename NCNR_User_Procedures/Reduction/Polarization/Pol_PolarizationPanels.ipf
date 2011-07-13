@@ -368,6 +368,7 @@ Function DecayParamPanel()
 	Button button_4,pos={440,18},size={110,20},proc=ClearDecayWavesRowButton,title="Clear Row"
 	Button button_5,pos={620,18},size={40,20},proc=DecayHelpParButtonProc,title="?"
 	Button button_6,pos={620,620},size={100,20},proc=WindowSnapshotButton,title="Snapshot"
+	Button button_7,pos={620,580},size={130,20},proc=ManualEnterDecayButton,title="Manual Entry"
 
 
 
@@ -384,6 +385,7 @@ Function DecayParamPanel()
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph msize=2
+
 	Legend
 //	ModifyGraph log(left)=1
 //	ErrorBars yy OFF 
@@ -392,6 +394,71 @@ Function DecayParamPanel()
 
 	SetDataFolder root:
 	return(0)
+End
+
+// allows manual entry of Decay values
+//
+// see DecayFitButtonProc
+//
+Function ManualEnterDecayButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable selRow,err=0
+	String fname, t0str, condStr,noteStr,t1Str,cellStr
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Variable gamma_val,err_gamma,muPo, err_muPo, Po, err_Po
+
+			ControlInfo/W=DecayPanel popup_0
+			cellStr = S_Value
+				
+//			SetDataFolder root:Packages:NIST:Polarization:Cells:
+			
+			WAVE decay=$("root:Packages:NIST:Polarization:Cells:Decay_"+cellStr)		//the one that is displayed
+//			WAVE calc=$("root:Packages:NIST:Polarization:Cells:DecayCalc_"+cellStr)		//with the results
+
+
+			Prompt Po, "Enter Po: "		
+			Prompt err_Po, "Enter err_Po: "		
+			Prompt muPo, "Enter muPo: "		
+			Prompt err_muPo, "Enter err_muPo: "		
+			Prompt gamma_val, "Enter gamma: "		
+			Prompt err_gamma, "Enter err_gamma: "		
+			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma
+			if (V_Flag)
+				return -1								// User canceled
+			endif
+			
+//		for the wave note
+			noteStr = note(decay)
+			noteStr = ReplaceNumberByKey("muP", noteStr, MuPo ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("P0", noteStr, Po ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("err_muP", noteStr, err_muPo ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("err_P0", noteStr, err_Po ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("gamma", noteStr, gamma_val ,"=", ",", 0)
+			noteStr = ReplaceNumberByKey("err_gamma", noteStr, err_gamma ,"=", ",", 0)
+
+			// replace the string
+			Note/K decay
+			Note decay, noteStr
+
+			// for the panel display
+			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
+			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
+			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo			
+			sprintf gMuPo, "%g +/- %g",muPo, err_muPo
+			sprintf gPo, "%g +/- %g",Po,err_Po
+			sprintf gGamma, "%g +/- %g",gamma_val,err_gamma
+
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
 End
 
 
@@ -462,12 +529,12 @@ Function MakeDecayResultWaves(popStr)
 	// to hold the results of the calculation
 	Make/O/D/N=(1,14) $("DecayCalc_"+popStr)
 	WAVE decayCalc = $("DecayCalc_"+popStr)
-	SetDimLabel 1,0,CR1,decayCalc
-	SetDimLabel 1,1,err_CR1,decayCalc
-	SetDimLabel 1,2,CR2,decayCalc
-	SetDimLabel 1,3,err_CR2,decayCalc
-	SetDimLabel 1,4,CR3,decayCalc
-	SetDimLabel 1,5,err_CR3,decayCalc
+	SetDimLabel 1,0,CR_Trans_He_In,decayCalc
+	SetDimLabel 1,1,err_CR_Trans_He_In,decayCalc
+	SetDimLabel 1,2,CR_Trans_He_Out,decayCalc
+	SetDimLabel 1,3,err_CR_Trans_He_Out,decayCalc
+	SetDimLabel 1,4,CR_Blocked,decayCalc
+	SetDimLabel 1,5,err_CR_Blocked,decayCalc
 	SetDimLabel 1,6,muPo,decayCalc
 	SetDimLabel 1,7,err_muPo,decayCalc
 	SetDimLabel 1,8,Po,decayCalc
@@ -504,7 +571,7 @@ Function CalcRowParamButton(ba) : ButtonControl
 			ControlInfo/W=DecayPanel popup_0
 			cellStr = S_Value
 			WAVE w=$("root:Packages:NIST:Polarization:Cells:Decay_"+cellStr)		//the one that is displayed
-			WAVE calc=$("root:Packages:NIST:Polarization:Cells:DecayCalc_"+cellStr)		//the one that is displayed
+			WAVE calc=$("root:Packages:NIST:Polarization:Cells:DecayCalc_"+cellStr)		// behind the scenes
 			
 			Variable numRows,ncalc,diff
 			numRows = DimSize(w,0)		//rows in the displayed table
@@ -563,12 +630,12 @@ Function CalcRowParamButton(ba) : ButtonControl
 				cr2 = TotalCR_FromRun(w[selRow][%Trans_He_Out],err_cr2,0)
 				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
 				
-				calc[selRow][%cr1] = cr1
-				calc[selRow][%cr2] = cr2
-				calc[selRow][%cr3] = cr3
-				calc[selRow][%err_cr1] = err_cr1
-				calc[selRow][%err_cr2] = err_cr2
-				calc[selRow][%err_cr3] = err_cr3
+				calc[selRow][%CR_Trans_He_In] = cr1
+				calc[selRow][%CR_Trans_He_Out] = cr2
+				calc[selRow][%CR_Blocked] = cr3
+				calc[selRow][%err_cr_Trans_He_In] = err_cr1
+				calc[selRow][%err_cr_Trans_He_Out] = err_cr2
+				calc[selRow][%err_cr_Blocked] = err_cr3
 	
 	
 				// 2 find the mu and Te values for cellStr
@@ -733,12 +800,12 @@ Function Calc_muPo(calc,cellStr,selRow,err_muPo)
 	
 	Variable cr1,cr2,cr3,err_cr1,err_cr2,err_cr3
 	// cr1 is He in, 2 is He out, 3 is blocked
-	cr1	 =	calc[selRow][%cr1]
-	cr2 =	calc[selRow][%cr2]
-	cr3 =	calc[selRow][%cr3]
-	err_cr1 =	calc[selRow][%err_cr1]
-	err_cr2 =	calc[selRow][%err_cr2]
-	err_cr3 =	calc[selRow][%err_cr3]
+	cr1	 =	calc[selRow][%CR_Trans_He_In]
+	cr2 =	calc[selRow][%CR_Trans_He_Out]
+	cr3 =	calc[selRow][%CR_Blocked]
+	err_cr1 =	calc[selRow][%err_cr_Trans_He_In]
+	err_cr2 =	calc[selRow][%err_cr_Trans_He_Out]
+	err_cr3 =	calc[selRow][%err_cr_Blocked]
 	
 	muPo = acosh( (cr1 - cr3)/(cr2 - cr3) * (1/(Te*exp(-mu))) )
 	
@@ -892,6 +959,7 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			
 			AppendToGraph/W=DecayPanel#G0 tmp_muP vs tmp_hr
 			AppendToGraph/W=DecayPanel#G0 tmp_muP2 vs tmp_hr
+
 			ModifyGraph/W=DecayPanel#G0 log(left)=1
 			ModifyGraph/W=DecayPanel#G0 frameStyle=2
 			ModifyGraph/W=DecayPanel#G0 mode=3
@@ -900,6 +968,8 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			ModifyGraph/W=DecayPanel#G0 msize=3
 			ErrorBars/W=DecayPanel#G0 tmp_muP,Y wave=(tmp_err_muP,tmp_err_muP)
 			
+			Label/W=DecayPanel#G0 left "mu*P"
+			Label/W=DecayPanel#G0 bottom "time (h)"
 			
 // do the fit
 //	 as long as the constant X0 doesn't stray from zero, exp_XOffset is OK, otherwise I'll need to switch to the exp function

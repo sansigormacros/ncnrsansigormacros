@@ -283,9 +283,10 @@ Function SmearPeakGauss2D_THR(s,nord)
 
 	Variable t1=StopMSTimer(-2)
 	
+//	print "npt = ",npt
 	for(i=0;i<nthreads;i+=1)
-	//	Print (i*npt/nthreads),((i+1)*npt/nthreads-1)
-		ThreadStart mt,i,SmearPeakGauss2D_T(s.coefW,s.xw[0],s.xw[1],s.qz,s.sQpl,s.sQpp,s.fs,s.zw,wt,xi,(i*npt/nthreads),((i+1)*npt/nthreads-1),nord)
+//		Print trunc(i*npt/nthreads),trunc((i+1)*npt/nthreads-1)
+		ThreadStart mt,i,SmearPeakGauss2D_T(s.coefW,s.xw[0],s.xw[1],s.qz,s.sQpl,s.sQpp,s.fs,s.zw,wt,xi,trunc(i*npt/nthreads),trunc((i+1)*npt/nthreads-1),nord)
 	endfor
 
 	do
