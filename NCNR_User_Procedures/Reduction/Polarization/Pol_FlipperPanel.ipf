@@ -9,7 +9,7 @@
 
 //
 // TODO: 
-// -- add a way to manually enter the P values into a "blank" condition, in case that the users
+// X- add a way to manually enter the P values into a "blank" condition, in case that the users
 // calculate the values in a different way. This should be as simple as a dialog to enter values and 
 // change the wave note (and displayed strings).
 //

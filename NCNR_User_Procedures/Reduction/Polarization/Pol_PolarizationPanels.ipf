@@ -278,14 +278,7 @@ End
 
 
 
-//
-// TODO: 
-//			- parsing routines
-//			- write the results to a waveNote
-//			--- where to store the intermediate results of trans values?
-//				make a wave behind the scenes to
-//
-//
+
 // Decay parameters for each cell. Results are stored in a wave note for each cell
 //
 //	muP=
@@ -409,7 +402,7 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Variable gamma_val,err_gamma,muPo, err_muPo, Po, err_Po
+			Variable gamma_val,err_gamma,muPo, err_muPo, Po, err_Po, runNum
 
 			ControlInfo/W=DecayPanel popup_0
 			cellStr = S_Value
@@ -425,12 +418,16 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 			Prompt muPo, "Enter muPo: "		
 			Prompt err_muPo, "Enter err_muPo: "		
 			Prompt gamma_val, "Enter gamma: "		
-			Prompt err_gamma, "Enter err_gamma: "		
-			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma
+			Prompt err_gamma, "Enter err_gamma: "
+			Prompt runNum,"Run number for time=0 of decay"	
+			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma, runNum
 			if (V_Flag)
 				return -1								// User canceled
 			endif
 			
+			fname = FindFileFromRunNumber(runNum)
+			t0str = getFileCreationDate(fname)
+					
 //		for the wave note
 			noteStr = note(decay)
 			noteStr = ReplaceNumberByKey("muP", noteStr, MuPo ,"=", ",", 0)
@@ -439,7 +436,7 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 			noteStr = ReplaceNumberByKey("err_P0", noteStr, err_Po ,"=", ",", 0)
 			noteStr = ReplaceNumberByKey("gamma", noteStr, gamma_val ,"=", ",", 0)
 			noteStr = ReplaceNumberByKey("err_gamma", noteStr, err_gamma ,"=", ",", 0)
-
+			noteStr = ReplaceStringByKey("T0", noteStr, t0Str  ,"=", ",", 0)
 			// replace the string
 			Note/K decay
 			Note decay, noteStr
@@ -447,7 +444,10 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 			// for the panel display
 			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
 			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
-			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo			
+			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo		
+			SVAR gT0 = root:Packages:NIST:Polarization:Cells:gT0
+			
+			gT0 = t0Str		//for display
 			sprintf gMuPo, "%g +/- %g",muPo, err_muPo
 			sprintf gPo, "%g +/- %g",Po,err_Po
 			sprintf gGamma, "%g +/- %g",gamma_val,err_gamma
