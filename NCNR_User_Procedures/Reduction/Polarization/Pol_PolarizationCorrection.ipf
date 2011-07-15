@@ -1271,16 +1271,23 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
 	Execute str
 	
-// don't load the EMP data, just re-tag it	
-	dataType="EMP"
-	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-	Execute str
+
 
 // don't load the BGD data, just re-tag it	
-	dataType="BGD"
-	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-	Execute str
-	
+	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
+		dataType="BGD"
+		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+		Execute str
+	endif
+
+// don't load the EMP data, just re-tag it
+//
+	if(cmpstr(prot[1],"none") != 0)		//if EMP is used, protStr[1] = ""
+		dataType="EMP"
+		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+		Execute str
+	endif
+		
 //
 // from here down, the steps are identical
 //
