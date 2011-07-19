@@ -36,15 +36,15 @@ End
 
 Proc fMakeDMPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(459,44,959,410)/N=DataManagementPanel/K=2 as "Data Set Management"
+	NewPanel /W=(459,44,959,460)/N=DataManagementPanel/K=2 as "Data Set Management"
 	ModifyPanel fixedSize=1,cbRGB=(30000,60000,60000)
 
 	//Main bit of panel
-	GroupBox grpBox_0,pos={20,10},size={460,100}
-	GroupBox grpBox_1,pos={20,130},size={460,70}
-	GroupBox grpBox_2,pos={20,220},size={460,40}
+	GroupBox grpBox_0,pos={20,10},size={460,150}
+	GroupBox grpBox_1,pos={20,180},size={460,70}
+	GroupBox grpBox_2,pos={20,270},size={460,40}
 
-	GroupBox grpBox_3,pos={20,280},size={460,40}
+	GroupBox grpBox_3,pos={20,330},size={460,40}
 
 	Button DS_button,title="Load 1D Data Set",pos={300,20},size={150,20}
 	Button DS_button,proc=DM_LoadDataSetProc
@@ -52,6 +52,8 @@ Proc fMakeDMPanel()
 	Button Unload_button,proc=DM_UnloadProc	
 	Button Save_button,title="Save 1D Data Set",pos={300,80},size={150,20}
 	Button Save_button,proc=DM_SaveProc
+	Button ReSort_button,title="Re-Sort 1D Data Set",pos={300,130},size={150,20}
+	Button ReSort_button,proc=DM_ReSortProc
 	PopupMenu DS_popup,pos={30,40},size={318,20},title="Data Set ",proc=DM_PopupProc
 	PopupMenu DS_popup,mode=1,value= #"DM_DataSetPopupList()"
 
@@ -59,26 +61,26 @@ Proc fMakeDMPanel()
 	CheckBox XMLStateCtrl,help={"Default output format is canSAS XML rather than NIST 6 column"}
 	CheckBox XMLStateCtrl,value= root:Packages:NIST:gXML_Write,disable=2
 
-	Button Rename_button,title="Rename",pos={75,170},size={150,20}
+	Button Rename_button,title="Rename",pos={75,220},size={150,20}
 	Button Rename_button,proc=DM_RenameProc
-	Button Duplicate_button,title="Duplicate",pos={275,170},size={150,20}
+	Button Duplicate_button,title="Duplicate",pos={275,220},size={150,20}
 	Button Duplicate_button,proc=DM_DuplicateProc
 
-	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,140},size={400,20}
+	SetVariable NewName_setvar,title="New Name (max 25 characters)",pos={50,190},size={400,20}
 	SetVariable NewName_setvar,fsize=12,value=_STR:"",proc=DMNameSetvarproc,live=1
 		
-	Button SaveAsXML_button,title="Save as canSAS XML",pos={75,230},size={150,20}
+	Button SaveAsXML_button,title="Save as canSAS XML",pos={75,280},size={150,20}
 	Button SaveAsXML_button,proc=DMSaveAsXMLproc	
 
-	Button SaveAs6col_button,title="Save as NIST 6 column",pos={275,230},size={160,20}
+	Button SaveAs6col_button,title="Save as NIST 6 column",pos={275,280},size={160,20}
 	Button SaveAs6col_button,proc=DMSaveAs6colproc	
 	
-	Button BatchConvertData_button,title="Batch Convert Format of 1D Data Files",pos={75,290},size={350,20}
+	Button BatchConvertData_button,title="Batch Convert Format of 1D Data Files",pos={75,340},size={350,20}
 	Button BatchConvertData_button,proc=DMBatchConvertProc
 			
-	Button DMDone_button,title="Done",pos={360,330},size={60,20}
+	Button DMDone_button,title="Done",pos={360,370},size={60,20}
 	Button DMDone_button,proc=DMDoneButtonProc
-	Button DMHelp_button,title="?",pos={440,330},size={30,20}
+	Button DMHelp_button,title="?",pos={440,370},size={30,20}
 	Button DMHelp_button,proc=DMHelpButtonProc
 	
 	
@@ -400,6 +402,19 @@ Function DMHelpButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+Function DM_ReSortProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	switch(ba.eventCode)
+		case 2:
+			ControlInfo/W=$(ba.win) DS_popup
+			ReSortDataSet(S_Value)
+			break
+	endswitch
+	
+	return 0
+end
 
 /////////////////////// Batch Data Conversion Panel ////////////////////////////////////
 //
@@ -1717,8 +1732,43 @@ Function ReSortDataSet(set1name)
 
 	SetDataFolder set1Path
 	
-	sort $(set1name+"_q"),$(set1name+"_q"),$(set1name+"_i"),$(set1name+"_s")
 	
+	//Check for resolution wave
+	if (exists(set1name+"_res"))
+		Wave reswave = $(set1name+"_res")
+		
+		//Check for USANS data - we won't resort these for the moment
+		if (dimsize(reswave, 1) > 4 )
+			//USANS data, bail out
+			print "Can't re-sort USANS data yet!"
+			return 1
+		endif
+		
+		//Break out resolution wave into separate waves
+		Make/O/N=(numpnts($(set1name+"_q"))) res0 = reswave[p][0]
+		Make/O/N=(numpnts($(set1name+"_q"))) res1 = reswave[p][1]
+		Make/O/N=(numpnts($(set1name+"_q"))) res2 = reswave[p][2]
+		Make/O/N=(numpnts($(set1name+"_q"))) res3 = reswave[p][3]
+
+		//sort 
+		print "Re-Sorting 4 or 6 Column Data Set with resolution information: "+set1Name
+		sort $(set1name+"_q"),$(set1name+"_q"),$(set1name+"_i"),$(set1name+"_s"), res0, res1, res2, res3
+	
+		//Put resolution contents back
+		reswave[][0] = res0[p]
+		reswave[][1]= res1[p]
+		reswave[][2] = res2[p]
+		reswave[][3] = res3[p]
+
+		//cleanup
+		Killwaves/Z res0, res1, res2, res3
+	else
+		//3 Column only
+		//sort 
+		print "Re-Sorting 3 Column Data Set: "+set1Name
+		sort $(set1name+"_q"),$(set1name+"_q"),$(set1name+"_i"),$(set1name+"_s")
+	endif
+
 	SetDataFolder curPath
 
 	return 0
