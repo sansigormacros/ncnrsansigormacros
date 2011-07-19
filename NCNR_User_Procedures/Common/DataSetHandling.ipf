@@ -1709,6 +1709,21 @@ Function DivideDataSets(set1Name, set2Name, set2Scale, resultName)
 	endif
 End
 
+Function ReSortDataSet(set1name)
+	String set1name
+	
+	String set1Path = "root:"+set1Name+":"
+	String curPath = GetDataFolder(1)
+
+	SetDataFolder set1Path
+	
+	sort $(set1name+"_q"),$(set1name+"_q"),$(set1name+"_i"),$(set1name+"_s")
+	
+	SetDataFolder curPath
+
+	return 0
+End
+
 
 ///////////////////////////Other Utility functions ////////////////////////////
 
