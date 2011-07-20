@@ -1,30 +1,84 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+
+// Polarized Beam Reduction Procedures
+//
+//
 // input panels to set and calculate polarization parameters necessary for the 
 // matrix corrections to the cross sections
 //
-// -1- Fundamental Cell Parameters -- these are constants, generally not editable.
-// -2- Decay Parameters -- these are fitted values based on transmission mearurements
-// -3-
+// -1- Fundamental Cell Parameters -- these are constants, generally not editable. (this file)
+// -2- Decay Parameters -- these are fitted values based on transmission mearurements (this file)
+// -3- Flipper Panel is in its own procedure (FlipperPanel.ipf)
+// -4- PolCor_Panel is in PolarizationCorrection.ipf
+
+//
+// Driven by 4 panels to get the necessary information from the users
+// -1- Fundamental cell parameters: root:Packages:NIST:Polarization:Cells
+//		- default cell parameters are loaded. More cell definitions can be added as more cells are used
+//		- changes are saved per experiment
+//		- important parameters are held in global key=value strings gCell_<name> 
+//		- cell names and parameters are used by the 2nd panel for calculation of the Decay constant
+//
+// -2- Decay Constant Panel
+//		- decay constant determined for each cell.
+//		- popping the cell name makes 2 waves, Decay_<cellname> and DecayCalc_<cellname>
+//		- Decay_ is the wave presented in the table. Specified transmission run numbers are entered
+//			and "Calc Sel Row" does the calculation of mu and Pcell (for all rows, actually)
+//		- DimLabels are used for the arrays to make the column identity more readable than simply an index
+//		- time=0 is taken from the first file
+//		- Calculations are based on the count rate of the file, corrected for monitor and attenuation
+//		- alerts are posted for files in any row that are not at the same attenuation or SDD
+//		- if "include" column is == 1, that row will be included in the fit of the decay data
+//		- excluded points are plotted in red
+//		- results of the fit are printed on the panel, and written to the wave note of the Decay_ wave 
+//			(not DecayCalc_) for use in the next panel
+//		- manual entry of all of the parameters in the wave note is allowed.
+//
+//
+// -3- Flipper Panel (not in this procedure - in Pol_FlipperPanel.ipf)
+//		- calculates the flipper and supermirror efficiencies for a given cell AND "condition"
+//		- start by entering a condition name and choosing a cell
+//		- Waves Cond_<condition>_<cell> and CondCalc_<condition>_<cell> are created
+//		- DimLabels are used for the arrays to make the column identity more readable than simply an index
+// 		- enter transmission run numbers as specified in the table
+//		- Do Average will calculate the Psm and PsmPfl values (and errors) and average if more than
+//			one row of data is present (and included)
+//		- results are printed on the panel, and written to the wave note of Cond_<condition>_<cell>
+//		- results are used in the calculation of the polarization matrix
+//
+//
+// -4- PolCor_Panel (not in this procedure - in Pol_PolarizationCorrection.ipf)
+//		- gets all of the parameters from the user to do the polariztion correction, then the "normal" SANS reduction
+//		- 5 files can be added together for each of the different spin states (more than this??)
+// 		- global strings in root:Packages:NIST:Polarization:gStr_PolCor_<tab>_<flip>_<position> hold the run number
+//		- polarization condition is set with the popup
+//		- the same fields/pops are duplicated (hidden) for the SAM/EMP/BGD tabs as needed
+//		- on loading of the data, the 2-letter spin state is tagged onto the loaded waves (all of them)
+//		- displayed data is simply re-pointed to the desired data
+//		- on loading, the raw files are added together as ususal, normalized to monitor counts. Then each contribution 
+//			of the file to the polarization matrix is added (scaling each by mon/1e8)
+//		- loaded data and PolMatrix are stored in the ususal SAM, EMP, BGD folders.
+//		- Polarization correction is done with one click (one per tab). "_pc" tags are added to the resulting names,
+//			and copies of all of the associated waves are again copied (wasteful), but makes switching display very easy
+//		- Once all of the polariztion correction is done, then the UU_pc (etc.) data can be reduced as usual (4 passes)
+//		- protocol is built as ususal, from this panel only (since the SAM, EMP, and BGD need to be switched, rather than loaded
+//		- protocols can be saved/recalled.
+//		- reduction will always ask for a protocol rather than using what's on the panel.
+//		- closing the panel will save the state (except the protocol). NOT initializing when re-opening will restore the 
+//			state of the entered runs and the popups of conditions.
+//
+//
+//
+//
+
+
 
 
 //
-// -- need a general way to be sure to NOT re-initialize the values if the panel is closed/reopened
+// Panel -1-
 //
-//
-// TODO:
-// Need a way to output the results - like in a report format
-// cell (panel 1)
-// static params
-// fit gamma params
-// graph
-//
-// and also a separate report (panel 2)
-// flipper/sm @ conditions
-// --- the report could be as simple as a screen snapshot of the panel?
-
-
-// He cell parameters. Most of these are pre-defined, so that they are supplied as a 
+// Fundamental He cell parameters. Most of these are pre-defined, so that they are supplied as a 
 // static table, only edited as parameters are refined.
 //
 // work with this as kwString
@@ -88,7 +142,7 @@ End
 
 
 // parse strings to fill in waves
-
+//
 //
 Function Make_HeCell_ParamWaves()
 

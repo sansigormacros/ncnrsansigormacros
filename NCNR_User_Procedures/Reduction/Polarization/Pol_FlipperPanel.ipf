@@ -104,7 +104,7 @@ Function AddFlipperConditionButton(ba) : ButtonControl
 			// get the new name for the condition and the name of the cell used
 			// the cell must already be defined
 			String condStr, cellStr
-			Prompt condStr,"Condition, <12 characters"
+			Prompt condStr,"Condition, <12 characters, NO UNDERSCORES"
 			Prompt cellStr,"Cell",popup,D_CellNameList()
 			DoPrompt "Add new condition",condStr, cellStr
 			if(V_Flag==1)
@@ -115,6 +115,8 @@ Function AddFlipperConditionButton(ba) : ButtonControl
 				condStr = condStr[0,11]
 				Print "Condition String trimmed to ",condStr
 			endif
+			
+			condStr = ReplaceString("_", condStr, "", 0, inf)
 			
 			String popStr
 			popStr = condStr+"_"+cellStr

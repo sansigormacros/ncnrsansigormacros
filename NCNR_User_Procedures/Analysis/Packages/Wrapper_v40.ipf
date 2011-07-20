@@ -1457,3 +1457,23 @@ Function AreCursorsCorrect(folderStr)
 	
 	return(1)
 End
+
+// displays the covariance matrix for the current data set in the popup
+// AND whatever was the last fit for that data set. it may not necessarily
+// be the displayed function...
+Function DisplayCovarianceMatrix()
+
+	ControlInfo/W=wrapperpanel popup_0
+	String folderStr=S_Value
+	
+	SetDataFolder $("root:"+folderStr)
+	
+	Wave M_Covar=M_Covar
+	Duplicate/O M_Covar, CorMat	 // You can use any name instead of CorMat
+	CorMat = M_Covar[p][q]/sqrt(M_Covar[p][p]*M_Covar[q][q])
+	Edit CorMat
+	
+	SetDataFolder root:
+	
+	return(0)
+End

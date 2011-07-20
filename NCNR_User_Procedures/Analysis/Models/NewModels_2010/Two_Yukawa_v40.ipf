@@ -60,7 +60,7 @@ Proc PlotOneYukawa(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_1yuk,ywave_1yuk
 	xwave_1yuk = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))	
 	Make/O/D coef_1yuk = {0.1,50,-1,10}
-	make/o/t parameters_1yuk = {"volume fraction","Radius (A)","scale, K","charge, Z"}
+	make/o/t parameters_1yuk = {"volume fraction","Radius (A)","scale, K","Decay constant, Z"}
 	Edit parameters_1yuk,coef_1yuk
 	Variable/G root:g_1yuk
 	g_1yuk := OneYukawa(coef_1yuk,ywave_1yuk,xwave_1yuk)
@@ -112,7 +112,7 @@ Proc PlotTwoYukawa(num,qmin,qmax)
 	Make/O/D/n=(num) xwave_2yuk,ywave_2yuk
 	xwave_2yuk = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))	
 	Make/O/D coef_2yuk = {0.2,50,6,10,-1,2}
-	make/o/t parameters_2yuk = {"volume fraction","Radius (A)","scale, K1","charge, Z1","scale, K2","charge, Z2"}
+	make/o/t parameters_2yuk = {"volume fraction","Radius (A)","scale, K1","Decay constant, Z1","scale, K2","Decay constant, Z2"}
 	Edit parameters_2yuk,coef_2yuk
 	Variable/G root:g_2yuk
 	g_2yuk := TwoYukawa(coef_2yuk,ywave_2yuk,xwave_2yuk)
@@ -161,6 +161,38 @@ Proc TestTheIgor2YUK()
 	g_2yuk_Igor := fTwoYukawa(coef_2yuk,xwave_2yuk,ywave_2yuk_Igor)
 End
 
+// with the regular 2-yukawa plotted, this uses the coefficients to plot g(r)
+//
+// - no dependency is created, it would just slow things down. So you'll
+// need to re-run this every time.
+//
+//		gr is scaled to dimensionless distance, r/diameter
+//
+Macro Plot_2Yukawa_Gr()
+	//if the regular 2-yukawa procedure is already plotted
+	// -- then append it to thte graph yourself
+	Duplicate/O ywave_2yuk ywave_2yuk_Igor
+
+	fTwoYukawa(coef_2yuk,xwave_2yuk,ywave_2yuk_Igor)
+	
+	DoWindow/F Gr_plot
+	if(V_flag==0)
+		Display gr
+		DoWindow/C Gr_plot
+		Modifygraph log=0
+		SetAxis bottom 0,10
+		Modifygraph lsize=2
+		Label left "g(r)";DelayUpdate
+		Label bottom "dimensionless distance (r/diameter)"
+		legend
+	endif
+	
+	
+	
+End
+
+
+
 //
 Function fTwoYukawa(cw,xw,yw) : FitFunc
 	Wave cw,xw,yw
@@ -189,6 +221,8 @@ Function fTwoYukawa(cw,xw,yw) : FitFunc
 		if(ok)				//if(ok) simply takes the best solution, not necessarily one that passes TY_CheckSolution
 			yw = SqTwoYukawa(xw*radius*2, Z1, Z2, K1, K2, phi, a, b, c1, c2, d1, d2)
 //			printf("%g	%g\n",q,sq)
+		else
+			yw = 1000		//return a really bogus answer, as Yun suggests
 		endif
 	endif
       
@@ -1600,6 +1634,8 @@ Function Yuk_SqToGr_FFT( phi, dq, sq, dr, gr, n )
 	gr = 1 + alpha/p*imag(W_FFT)
 	
 	gr[0] = 0
+	
+	SetScale/P x,0,dr, gr
 	
 //	Killwaves/Z temp
 

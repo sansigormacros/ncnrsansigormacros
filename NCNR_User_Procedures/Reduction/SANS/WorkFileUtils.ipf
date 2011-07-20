@@ -1499,6 +1499,9 @@ End
 // this procedure simply removes the raw data files from the string - there
 //can be lots of other junk present, but this is very fast...
 //
+// -- simplified to do in a single call -- extension must be .ASC
+// - so far, only used in WorkFileMath popups, which require .ASC
+//
 Function/S ASC_FileList()
 
 	String list="",newList="",item=""
@@ -1510,20 +1513,23 @@ Function/S ASC_FileList()
 		DoAlert 0, "Data path does not exist - pick the data path from the button on the main panel"
 		Return("")
 	Endif
-	
-	list = IndexedFile(catpathName,-1,"????")
-	
-	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
-	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
 
-	//remove VAX version numbers
-	list = RemoveVersNumsFromList(List)
+	list = IndexedFile(catpathName,-1,".ASC")
+
+
+//	list = IndexedFile(catpathName,-1,"????")
+//	
+//	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
+//	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
+//
+//	//remove VAX version numbers
+//	list = RemoveVersNumsFromList(List)
 	//sort
 	newList = SortList(List,";",0)
 
