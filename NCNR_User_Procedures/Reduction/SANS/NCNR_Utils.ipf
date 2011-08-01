@@ -292,18 +292,19 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	a_val_L2 = a_val/L2*1e-16		//convert 1/cm^2 to 1/A^2
 
 
-///////// in terms of Q_parallel ("x") and Q_perp ("y") - this works, since parallel is in the direction of Q and I
+	// the detector pixel is square, so correct for phi
+	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
+
+
+///////// OLD - don't use ---
+//in terms of Q_parallel ("x") and Q_perp ("y") - this works, since parallel is in the direction of Q and I
 // can calculate that from the QxQy (I just need the projection)
-
-
 //// for test case with no gravity, set a_val = 0
 //// note that gravity has no wavelength dependence. the lambda^4 cancels out.
 ////
 ////	a_val = 0
 ////	a_val_l2 = 0
 //
-//	// the detector pixel is square, so correct for phi
-//	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
 //	
 //	// this is really sigma_Q_parallel
 //	SigmaQX = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2 + (sin(phi))^2*8*(a_val_L2)^2*lambda^4*lambdaWidth^2)
@@ -320,10 +321,11 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 
 /////////////////////////////////////////////////
 /////	
-//	////// this is all experimental, inclusion of gravity effect into the parallel component
+//	////// this is all new, inclusion of gravity effect into the parallel component
+//       perpendicular component is purely geometric, no gravity component
 ////	//
 	Variable yg_d,acc,sdd,ssd,lambda0,DL_L,sig_l
-	Variable var_qlx,var_qly,var_ql,qx,qy,sig_perp,sig_para
+	Variable var_qlx,var_qly,var_ql,qx,qy,sig_perp,sig_para, sig_para_new
 	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
 	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
 	SDD = L2		//1317
@@ -339,14 +341,23 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	
 	
 	FindQxQy(inQ,phi,qx,qy)
+
+// missing a factor of 2 here, and the form is different than the paper, so re-write	
+//	VAR_QLY = SIG_L^2 * (QY+4*PI*YG_d/(2*SDD*LAMBDA0))^2
+//	VAR_QLX = (SIG_L*QX)^2
+//	VAR_QL = VAR_QLY + VAR_QLX  //! WAVELENGTH CONTRIBUTION TO VARIANCE
+//	sig_para = (sig_perp^2 + VAR_QL)^0.5
 	
-	VAR_QLY = SIG_L^2 * (QY+4*PI*YG_d/(2*SDD*LAMBDA0))^2
-	VAR_QLX = (SIG_L*QX)^2
-	VAR_QL = VAR_QLY + VAR_QLX  //! WAVELENGTH CONTRIBUTION TO VARIANCE
-	sig_para = (sig_perp^2 + VAR_QL)^0.5
+	// r_dist is passed in, [=]cm
+	// from the paper
+	a_val = 0.5*G*SDD*(SSD+SDD)*m_h^2 * 1e-16		//units now are cm /(A^2)
+	
+	var_QL = 1/6*(kap/SDD)^2*(DL_L)^2*(r_dist^2 - 4*r_dist*a_val*lambda0^2*sin(phi) + 4*a_val^2*lambda0^4)
+	sig_para_new = (sig_perp^2 + VAR_QL)^0.5
+	
 	
 ///// return values PBR	
-	SigmaQX = sig_para
+	SigmaQX = sig_para_new
 	SigmaQy = sig_perp
 	
 ////	
