@@ -773,8 +773,8 @@ end
 // Note: In John's paper, he integrated the Gaussian to +/- 3 sigma and then renormalized
 //       to an integral of 1. This "truncated" gaussian was a somewhat better approximation
 //       to the triangular resolution function. Here, I integrate to +/- 3 sigma and
-//       do not renormalize the integral to 1. Hence the smeared calculation is 0.27% low.
-//       This is easily seen by smearing a constant value.
+//       now correctly renormalize the integral to 1. Hence the smeared calculation in the past was 0.27% low.
+//       Confimation of the integral is easily seen by smearing a constant value.
 //
 // Using 5 quadrature points is not recommended, as it doesn't normalize properly using .9973
 //  -- instead, it normalizes to 1.0084, 

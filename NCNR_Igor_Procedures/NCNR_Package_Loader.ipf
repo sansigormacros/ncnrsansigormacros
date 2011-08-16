@@ -1,6 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.1
-//#pragma IndependentModule=NCNRLoader		//can't seem to get this to work properly...
 
 // load/unload courtesy of Jan Ilavsky
 // June 2008
@@ -28,6 +27,16 @@ Menu "Macros"
 	
 	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
 	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
+
+	// for testing ONLY
+	"-"
+	"Load Polarization Reduction",Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+
+	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
+
+	"Load Real Space Modeling",Execute/P "INSERTINCLUDE \"FFT_Cubes_Includes\"";Execute/P "INSERTINCLUDE \"FFT_Fit_Includes\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_FFT()"
+	"-"
+
 end
 
 Function NCNR_AnalysisLoader(itemStr)

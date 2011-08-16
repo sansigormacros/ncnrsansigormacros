@@ -1396,7 +1396,12 @@ End
 //*********************
 // List utilities
 //*********************
-Function List2TextWave(list,sep,waveStr)
+//
+// List2TextWave is also in SANS_Utilities.ipf, but to keep from having big lists of dependencies,
+// have definitions here that are local and Static
+
+//
+Static Function List2TextWave(list,sep,waveStr)
 	String list,sep,waveStr
 	
 	Variable n= ItemsInList(list,sep)
