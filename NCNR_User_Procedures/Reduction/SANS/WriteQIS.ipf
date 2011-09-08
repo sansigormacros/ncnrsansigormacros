@@ -742,7 +742,7 @@ Function QxQy_Export(type,fullpath,dialog)
 //	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy)"
 //	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
 	labelWave[15] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-	labelWave[16] = "ERROR WAVE IS ONLY AN ESTIMATE  - 6/2010"
+	labelWave[16] = "Error wave is properly propagated through all reduction steps 8/2011"
 	labelWave[17] = "ASCII data created " +date()+" "+time()
 	//strings can be too long to print-- must trim to 255 chars
 	Variable ii,jj

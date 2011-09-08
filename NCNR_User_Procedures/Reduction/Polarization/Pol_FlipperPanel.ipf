@@ -94,6 +94,7 @@ Function DrawFlipperPanel()
 	return(0)
 End
 
+// now, this does not depend on the cell, just the condition
 Function AddFlipperConditionButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -101,12 +102,11 @@ Function AddFlipperConditionButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			// get the new name for the condition and the name of the cell used
-			// the cell must already be defined
-			String condStr, cellStr
+
+			String condStr//, cellStr
 			Prompt condStr,"Condition, <12 characters, NO UNDERSCORES"
-			Prompt cellStr,"Cell",popup,D_CellNameList()
-			DoPrompt "Add new condition",condStr, cellStr
+//			Prompt cellStr,"Cell",popup,D_CellNameList()
+			DoPrompt "Add new condition",condStr//, cellStr
 			if(V_Flag==1)
 				return 0									// user canceled
 			endif
@@ -119,7 +119,8 @@ Function AddFlipperConditionButton(ba) : ButtonControl
 			condStr = ReplaceString("_", condStr, "", 0, inf)
 			
 			String popStr
-			popStr = condStr+"_"+cellStr
+//			popStr = condStr+"_"+cellStr
+			popStr = condStr
 			
 			MakeFlipperResultWaves(popStr)
 			
@@ -153,6 +154,7 @@ Function FlipperPanelPopMenuProc(pa) : PopupMenuControl
 			// for the given cell name, if the wave(s) exist, declare them
 			if(exists(popStr) == 1)
 				WAVE cond = $(popStr)
+				WAVE/T cellW = $("CondCell_"+popStr[5,strlen(popStr)-1])
 			else
 				// if not, report an error				
 				DoAlert 0,"The Cond_ waves should exist, this is an error"
@@ -168,6 +170,7 @@ Function FlipperPanelPopMenuProc(pa) : PopupMenuControl
 			KillWindow FlipperPanel#T0
 			Edit/W=(14,55,794,275)/HOST=FlipperPanel
 			RenameWindow #,T0
+			AppendtoTable/W=FlipperPanel#T0 cellW			//
 			AppendtoTable/W=FlipperPanel#T0 cond.ld			//show the labels
 			ModifyTable width(Point)=0
 			ModifyTable width(cond.l)=20
@@ -187,11 +190,14 @@ End
 // waves are:
 // "Cond_"+popStr
 // and "CondCalc_"+popStr
+// ... and now "CondCell"+popStr
 
 Function MakeFlipperResultWaves(popStr)
 	String popStr
 
 	SetDataFolder root:Packages:NIST:Polarization:Cells
+
+	Make/O/T/N=1  $("CondCell_"+popStr)
 
 	Make/O/D/N=(1,8) $("Cond_"+popStr)
 	WAVE cond = $("Cond_"+popStr)
@@ -208,8 +214,8 @@ Function MakeFlipperResultWaves(popStr)
 	
 	// generate the dummy wave note now, change as needed
 	String cellStr = StringFromList(1, popStr,"_")
-	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,Cell=asdf,"
-	testStr = ReplaceStringByKey("Cell", testStr, cellStr ,"=", ",", 0)
+	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,"
+//	testStr = ReplaceStringByKey("Cell", testStr, cellStr ,"=", ",", 0)
 	Note cond, testStr
 
 	// to hold the results of the calculation
@@ -296,9 +302,12 @@ Function ManualEnterPfPsmButton(ba) : ButtonControl
 End
 
 
-
-
+//
 // just recalculate everything, every time
+//
+// -- now that the cell name is entered, I need to try to catch errors where the cell decay parameters are not
+// properly calculated -- right now, invalid cell names are caught, but valid cell names with no decay data
+// behind them just calculate Inf for the polarization values. This is hopefull enough to catch someone's attention...
 //
 Function FlipperAverageButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -316,6 +325,7 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 			condStr = S_Value
 			WAVE w=$("root:Packages:NIST:Polarization:Cells:"+condStr)		//the one that is displayed
 			WAVE calc=$("root:Packages:NIST:Polarization:Cells:CondCalc_"+condStr[5,strlen(condStr)-1])		//the one that holds results
+			WAVE/T CellW=$("root:Packages:NIST:Polarization:Cells:CondCell_"+condStr[5,strlen(condStr)-1])		//the textW with cell name
 			
 			Variable numRows,ncalc,diff
 			numRows = DimSize(w,0)		//rows in the displayed table
@@ -324,7 +334,7 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 			// add rows to the ConcCalc_ matrix as needed
 			if(numRows != ncalc)
 				if(ncalc > numRows)
-					DoAlert 0,"The DecayCalc_ is larger than displayed. Seek help."
+					DoAlert 0,"The CondCalc_ is larger than displayed. Seek help."
 					err = 1
 					return(err)
 				else
@@ -333,14 +343,14 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 				endif
 			endif
 			
-			noteStr=note(w)
-			cellStr = StringByKey("Cell", noteStr, "=", ",", 0)
-			Wave decay = $("root:Packages:NIST:Polarization:Cells:Decay_"+cellStr)	
-			noteStr=note(decay)
-			t0Str = StringByKey("T0", noteStr, "=", ",", 0)
+//			noteStr=note(w)
+//			cellStr = StringByKey("Cell", noteStr, "=", ",", 0)
+//			Wave decay = $("root:Packages:NIST:Polarization:Cells:Decay_"+cellStr)	
+//			noteStr=note(decay)
+//			t0Str = StringByKey("T0", noteStr, "=", ",", 0)
 //			Print "CellStr, T0 = ",cellStr, t0Str
 
-			Variable sum_PsmPf, err_sum_PsmPf, sum_Psm, err_sum_Psm
+			Variable sum_PsmPf, err_sum_PsmPf, sum_Psm, err_sum_Psm,nRowsIncluded=0
 			sum_PsmPf = 0
 			err_sum_PsmPf = 0
 			sum_Psm = 0
@@ -349,61 +359,77 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 			for(selRow=0;selRow<numRows;selRow+=1)
 				Print "calculate the row ",selRow
 
-				// parse the rows, report errors (there, not here), exit if any found
-				err = ParseFlipperRow(w,selRow)
-				if(err)
-					return 0
+				//include this row of data?
+				if(w[selRow][%Include] == 1)
+					nRowsIncluded += 1
+					
+					// now the cell depends on the row
+					cellStr = CellW[selRow]
+					Wave/Z decay = $("root:Packages:NIST:Polarization:Cells:Decay_"+cellStr)
+					if(WaveExists(decay) == 0)		// catch gross errors
+						Abort "The cell "+cellStr+" in row "+num2str(selRow)+" does not exist"
+					endif
+					noteStr=note(decay)
+					t0Str = StringByKey("T0", noteStr, "=", ",", 0)
+	
+					// parse the rows, report errors (there, not here), exit if any found
+					err = ParseFlipperRow(w,selRow)
+					if(err)
+						return 0
+					endif
+					
+					// do the calculations:
+		
+					Print "The Blocked CR is not rescaled to zero attenuators"
+					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,0)
+					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
+					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
+					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
+					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
+	
+					calc[selRow][%cr_UU] = cr1
+					calc[selRow][%cr_DU] = cr2
+					calc[selRow][%cr_DD] = cr3
+					calc[selRow][%cr_UD] = cr4
+					calc[selRow][%cr_Blocked] = cr5
+					calc[selRow][%err_cr_UU] = err_cr1
+					calc[selRow][%err_cr_DU] = err_cr2
+					calc[selRow][%err_cr_DD] = err_cr3
+					calc[selRow][%err_cr_UD] = err_cr4
+					calc[selRow][%err_cr_Blocked] = err_cr5
+		
+					// Calc PsmPf, and assign the values
+					PsmPf = Calc_PsmPf(w,calc,noteStr,selRow,err_PsmPf)
+					calc[selRow][%P_sm_f] = PsmPf
+					calc[selRow][%err_P_sm_f] = err_PsmPf
+					w[selRow][%Pol_SM_FL] = PsmPf
+					
+					// Calc Psm, and assign the values
+					Psm = Calc_Psm(w,calc,noteStr,selRow,err_Psm)
+					calc[selRow][%P_sm] = Psm
+					calc[selRow][%err_P_sm] = err_Psm
+					w[selRow][%Pol_SM] = Psm
+	
+					// running average of PsmPf and Psm
+					sum_PsmPf += PsmPf
+					err_sum_PsmPf += err_PsmPf^2 
+					sum_Psm += Psm
+					err_sum_Psm += err_Psm^2
+					
 				endif
-				
-				// do the calculations:
-	
-				Print "The Blocked CR is not rescaled to zero attenuators"
-				cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,0)
-				cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
-				cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
-				cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
-				cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
-
-				calc[selRow][%cr_UU] = cr1
-				calc[selRow][%cr_DU] = cr2
-				calc[selRow][%cr_DD] = cr3
-				calc[selRow][%cr_UD] = cr4
-				calc[selRow][%cr_Blocked] = cr5
-				calc[selRow][%err_cr_UU] = err_cr1
-				calc[selRow][%err_cr_DU] = err_cr2
-				calc[selRow][%err_cr_DD] = err_cr3
-				calc[selRow][%err_cr_UD] = err_cr4
-				calc[selRow][%err_cr_Blocked] = err_cr5
-	
-				// Calc PsmPf, and assign the values
-				PsmPf = Calc_PsmPf(w,calc,noteStr,selRow,err_PsmPf)
-				calc[selRow][%P_sm_f] = PsmPf
-				calc[selRow][%err_P_sm_f] = err_PsmPf
-				w[selRow][%Pol_SM_FL] = PsmPf
-				
-				// Calc Psm, and assign the values
-				Psm = Calc_Psm(w,calc,noteStr,selRow,err_Psm)
-				calc[selRow][%P_sm] = Psm
-				calc[selRow][%err_P_sm] = err_Psm
-				w[selRow][%Pol_SM] = Psm
-
-				// running average of PsmPf and Psm
-				sum_PsmPf += PsmPf
-				err_sum_PsmPf += err_PsmPf^2 
-				sum_Psm += Psm
-				err_sum_Psm += err_Psm^2
 				
 			endfor		//loop over rows
 			
 			// now get a running average of muP, Po, and the errors
-			PsmPf = sum_PsmPf/numRows
-			Psm = sum_Psm/numRows
-			err_PsmPf = sqrt(err_sum_PsmPf) / numRows
-			err_Psm = sqrt(err_sum_Psm) / numRows
+			// use the actual number of rows included
+			PsmPf = sum_PsmPf/nRowsIncluded
+			Psm = sum_Psm/nRowsIncluded
+			err_PsmPf = sqrt(err_sum_PsmPf) / nRowsIncluded
+			err_Psm = sqrt(err_sum_Psm) / nRowsIncluded
 			
 //	this is the format of the note that is attached to the "Cond_" wave		
-//	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,Cell=asdf,"
-// the "Cell" value was filled in when the Condition was created
+//	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,"
+// the "Cell" value is not longer used
 	
 	
 // Put the average values into the wave note and display on the panel
@@ -640,26 +666,23 @@ Function ClearFlipperRowButton(ba) : ButtonControl
 
 			ControlInfo/W=FlipperPanel popup_0
 			popStr = S_Value
+			popStr = StringFromList(1,S_Value,"_")			//pop is "Cond_<condition>", so get list item 1
 			
-			Wave decay = $("Decay_"+popStr)
-			Wave calc = $("DecayCalc_"+popStr)
-
+			Wave cond = $("Cond_"+popStr)
+			Wave calc = $("CondCalc_"+popStr)
+			Wave/T cellW = $("CondCell_"+popStr)
+			
 			// Delete just those points
 						
 			GetSelection table, FlipperPanel#T0, 1
 			selRow = V_startRow
-			DeletePoints selRow,1,decay,calc			
+			DeletePoints selRow,1,cond,calc,cellW			
 			
 			// clear the graph and the results			
-			NVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
-			NVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
-			NVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
-			SVAR gT0  = root:Packages:NIST:Polarization:Cells:gT0
-			gMuPo = 0
-			gPo = 0
-			gGamma = 0
-			gT0 = "recalculate"
-			
+			SVAR gPsm = root:Packages:NIST:Polarization:Cells:gPsm
+			SVAR gPsmPf  = root:Packages:NIST:Polarization:Cells:gPsmPf
+			gPsm = "0"
+			gPsmPf = "0"
 			
 			SetDataFolder root:
 			break
@@ -683,7 +706,7 @@ Function ClearAllFlipperWavesButton(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 1,"Clear all of the decay waves for the selected cell?"
+			DoAlert 1,"Clear all of the flipper waves for the selected cell?"
 			if(V_flag !=1)
 				return(0)
 			endif
@@ -691,30 +714,27 @@ Function ClearAllFlipperWavesButton(ba) : ButtonControl
 			SetDataFolder root:Packages:NIST:Polarization:Cells
 
 			ControlInfo/W=FlipperPanel popup_0
-			popStr = S_Value
+			popStr = StringFromList(1,S_Value,"_")			//pop is "Cond_<condition>", so get list item 1
 			
-			Wave decay = $("Decay_"+popStr)
-			Wave calc = $("DecayCalc_"+popStr)
+			Wave cond = $("Cond_"+popStr)
+			Wave calc = $("CondCalc_"+popStr)
+			Wave/T cellW = $("CondCell_"+popStr)
 			
-//			re-initialize the decay waves, so it appears as a blank, initialized table
+//			re-initialize the flipper waves, so it appears as a blank, initialized table
 
 			MakeFlipperResultWaves(popStr)
-			decay = 0
+			cond = 0
 			calc = 0
-	
+			cellW = ""
+			cond[0][7] = 1			//default to include the point
+
 			// clear the graph and the results?	
 			
 			
-					
-			NVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
-			NVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
-			NVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
-			SVAR gT0  = root:Packages:NIST:Polarization:Cells:gT0
-			gMuPo = 0
-			gPo = 0
-			gGamma = 0
-			gT0 = "recalculate"
-			
+			SVAR gPsm = root:Packages:NIST:Polarization:Cells:gPsm
+			SVAR gPsmPf  = root:Packages:NIST:Polarization:Cells:gPsmPf
+			gPsm = "0"
+			gPsmPf = "0"
 			
 			SetDataFolder root:
 			break

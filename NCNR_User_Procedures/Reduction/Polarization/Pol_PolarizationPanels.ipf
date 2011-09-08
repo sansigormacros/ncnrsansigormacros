@@ -37,23 +37,26 @@
 //
 //
 // -3- Flipper Panel (not in this procedure - in Pol_FlipperPanel.ipf)
-//		- calculates the flipper and supermirror efficiencies for a given cell AND "condition"
-//		- start by entering a condition name and choosing a cell
-//		- Waves Cond_<condition>_<cell> and CondCalc_<condition>_<cell> are created
+//		- calculates the flipper and supermirror efficiencies for a given "condition"
+//		- this "condition" may have contributions from multiple cells
+//		- start by entering a condition name
+//		- Waves Cond_<condition> and CondCalc_<condition>, and CondCell are created
 //		- DimLabels are used for the arrays to make the column identity more readable than simply an index
+//		- Enter the name of the cell in the first column (the cell must be defined and decay calculated)
 // 		- enter transmission run numbers as specified in the table
 //		- Do Average will calculate the Psm and PsmPfl values (and errors) and average if more than
 //			one row of data is present (and included)
-//		- results are printed on the panel, and written to the wave note of Cond_<condition>_<cell>
+//		- results are printed on the panel, and written to the wave note of Cond_<condition>
 //		- results are used in the calculation of the polarization matrix
-//
+//		- (the cell name is not entered using a contextual menu, since this is difficult for a subwindow)
+//		- (the wave note no longer needs the cell name)
 //
 // -4- PolCor_Panel (not in this procedure - in Pol_PolarizationCorrection.ipf)
 //		- gets all of the parameters from the user to do the polariztion correction, then the "normal" SANS reduction
-//		- 5 files can be added together for each of the different spin states (more than this??)
-// 		- global strings in root:Packages:NIST:Polarization:gStr_PolCor_<tab>_<flip>_<position> hold the run number
-//		- polarization condition is set with the popup
-//		- the same fields/pops are duplicated (hidden) for the SAM/EMP/BGD tabs as needed
+//		- up to 10 files can be added together for each of the different spin states (more than this??)
+//		- one polarization condition is set for everything with the popup @ the top
+//		- two-column list boxes for each state hold the run number and the cell name
+//		- the same list boxes are duplicated (hidden) for the SAM/EMP/BGD tabs as needed
 //		- on loading of the data, the 2-letter spin state is tagged onto the loaded waves (all of them)
 //		- displayed data is simply re-pointed to the desired data
 //		- on loading, the raw files are added together as ususal, normalized to monitor counts. Then each contribution 
@@ -61,7 +64,7 @@
 //		- loaded data and PolMatrix are stored in the ususal SAM, EMP, BGD folders.
 //		- Polarization correction is done with one click (one per tab). "_pc" tags are added to the resulting names,
 //			and copies of all of the associated waves are again copied (wasteful), but makes switching display very easy
-//		- Once all of the polariztion correction is done, then the UU_pc (etc.) data can be reduced as usual (4 passes)
+//		- Once all of the polariztion correction is done, then the UU_pc (etc.) data can be reduced as usual (xx_pc = 4 passes)
 //		- protocol is built as ususal, from this panel only (since the SAM, EMP, and BGD need to be switched, rather than loaded
 //		- protocols can be saved/recalled.
 //		- reduction will always ask for a protocol rather than using what's on the panel.
@@ -106,7 +109,7 @@ Macro ShowCellParamPanel()
 			InitPolarizationGlobals()
 		endif
 		Make_HeCell_ParamWaves()
-		CellParamPanel()
+		DrawCellParamPanel()
 	endif
 
 end
@@ -225,12 +228,12 @@ End
 // add a button to "revert" (with warning)
 // add a button to add new cells (insert a new row in the table, then update)
 //
-Function CellParamPanel()
+Function DrawCellParamPanel()
 
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(775,44,1375,377) /N=CellParamPanel/K=1 as "Fundamental Cell Parameters"
+	NewPanel /W=(775,44,1375,377)/N=CellParamPanel/K=1 as "Fundamental Cell Parameters"
 	ModifyPanel cbRGB=(65535,49151,55704)
 	ModifyPanel fixedSize=1
 
@@ -1133,15 +1136,14 @@ Function ClearDecayWavesRowButton(ba) : ButtonControl
 			DeletePoints selRow,1,decay,calc			
 			
 			// clear the graph and the results			
-			NVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
-			NVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
-			NVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
+			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
+			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
+			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
 			SVAR gT0  = root:Packages:NIST:Polarization:Cells:gT0
-			gMuPo = 0
-			gPo = 0
-			gGamma = 0
+			gMuPo = "0"
+			gPo = "0"
+			gGamma = "0"
 			gT0 = "recalculate"
-			
 			
 			SetDataFolder root:
 			break
@@ -1188,13 +1190,13 @@ Function ClearDecayWavesButton(ba) : ButtonControl
 			
 			
 					
-			NVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
-			NVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
-			NVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
+			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
+			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
+			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
 			SVAR gT0  = root:Packages:NIST:Polarization:Cells:gT0
-			gMuPo = 0
-			gPo = 0
-			gGamma = 0
+			gMuPo = "0"
+			gPo = "0"
+			gGamma = "0"
 			gT0 = "recalculate"
 			
 			

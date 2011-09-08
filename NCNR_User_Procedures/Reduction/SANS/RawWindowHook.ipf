@@ -132,13 +132,13 @@ Function fRawWindowHook()
 	WAVE data = $(curPath + ":data")
 	WAVE NIHColors = $"root:myGlobals:NIHColors"
 	AppendImage data
-   	WaveStats/Q $(curPath + ":data")
-   	if(cmpstr(cur_folder,"MSK")==0)
+   WaveStats/Q $(curPath + ":data")
+   if(cmpstr(cur_folder,"MSK")==0)
 		ModifyImage data ctab={0,1,BlueRedGreen,0}
    else
-   		//Call the procedure that would normally be called if the sliders were moved
-//   		MapSliderProc("both", 0, 1)
-   		MapSliderProc("reset", 0, 1)
+   	//Call the procedure that would normally be called if the sliders were moved
+//   	MapSliderProc("both", 0, 1)
+   	MapSliderProc("reset", 0, 1)
     //  ScaleColorsToData(V_min, V_max, NIHColors)
 	 //  ModifyImage data cindex=NIHColors
   	endif

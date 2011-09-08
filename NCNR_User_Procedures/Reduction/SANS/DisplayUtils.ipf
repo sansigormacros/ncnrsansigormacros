@@ -280,10 +280,10 @@ Function ConvertFolderToLogScale(folder)
 	
 	// works on a copy of the linear_data, so that the original data is always preserved
 	
-	Duplicate/O $(dest + ":data") $(dest + ":linear_data") 		//wrong way, linear_data not protected
+//	Duplicate/O $(dest + ":data") $(dest + ":linear_data") 		//wrong way, linear_data not protected
 // 		but if the folder is being coverted to log, then "data" is linear
 
-//	Duplicate/O $(dest + ":linear_data") $(dest + ":data")		// right way, but linear_data not always copied to the next step
+	Duplicate/O $(dest + ":linear_data") $(dest + ":data")		// right way, but linear_data not always copied to the next step
 
 // if the folder is being coverted to log, then "data" is linear
 	data = log(data)
