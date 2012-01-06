@@ -4947,7 +4947,7 @@ Function Generate_GF_Report(topGraph,GF_resultStr)
 	Notebook $nb text="\r"
 	
 	//the graph
-	Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
+	Notebook $nb scaling={50,50},picture={$topGraph(0, 0, 800, 600), -5, 1}, text="\r"
 	
 	// show the top of the report
 	Notebook $nb  selection= {startOfFile, startOfFile},  findText={"", 1}

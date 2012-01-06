@@ -1,6 +1,12 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
+// TODO:
+// - on the decay panel. need to be able to manually enter a date that is to or an offset
+// 		number of hours. currently it takes the first file as t=0, which is often not correct
+//
+
+
 // Polarized Beam Reduction Procedures
 //
 //
@@ -682,10 +688,11 @@ Function CalcRowParamButton(ba) : ButtonControl
 				// do the calculations:
 				// 1 for each file, return the count rate and err_CR (normalize to atten or not)
 	
-				Print "The Blocked CR is not rescaled to zero attenuators"
+				Print "************The Blocked CR *is* rescaled to zero attenuators -- "
 				cr1 = TotalCR_FromRun(w[selRow][%Trans_He_In],err_cr1,0)
 				cr2 = TotalCR_FromRun(w[selRow][%Trans_He_Out],err_cr2,0)
-				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
+//				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
+				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,0)			//blocked beam is NOT normalized to zero attenuators
 				
 				calc[selRow][%CR_Trans_He_In] = cr1
 				calc[selRow][%CR_Trans_He_Out] = cr2
@@ -1280,13 +1287,17 @@ End
 // - files are valid numbers
 // - files are all at same SDD
 // - files are all with same attenuation (just print a warning to cmd)
+// - due to ICE FP values, I need to do a fuzzy comparison
+//
 //
 Function ParseDecayRow(w,selRow)
 	Wave w
 	Variable selRow
 	
-	Variable err=0, atten1,atten2,atten3,sdd1,sdd2,sdd3
+	Variable err=0, atten1,atten2,atten3,sdd1,sdd2,sdd3,tol
 	String fname=""
+	tol = 0.01		//SDDs within 1%
+	
 	// are all file numbers valid?
 	fname = FindFileFromRunNumber(w[selRow][%Trans_He_In])
 	if(cmpstr(fname,"")==0)
@@ -1315,7 +1326,8 @@ Function ParseDecayRow(w,selRow)
 		sdd3 = getSDD(fname)
 	endif
 	
-	if( (sdd1 != sdd2) || (sdd2 != sdd3) || (sdd1 != sdd3) )
+	
+	if( (abs(sdd1 - sdd2) > tol) || (abs(sdd2 - sdd3) > tol) || (abs(sdd1 - sdd3) > tol) )
 		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
 		err = 1
 	endif

@@ -385,7 +385,8 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
 					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
 					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
-					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
+//					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
+					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,0)		//blocked beam is NOT normalized to zero attenuators
 	
 					calc[selRow][%cr_UU] = cr1
 					calc[selRow][%cr_DU] = cr2

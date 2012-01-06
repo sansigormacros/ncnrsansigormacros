@@ -393,7 +393,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	Endif
 	
 /////////
-	Variable numTextLines=18
+	Variable numTextLines=20
 	Make/O/T/N=(numTextLines) labelWave
 	labelWave[0] = "FILE: "+textw[0]+"   CREATED: "+textw[1]
 	labelWave[1] = "LABEL: "+textw[6]
