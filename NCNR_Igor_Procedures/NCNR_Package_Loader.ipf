@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.1
+#pragma IgorVersion=6.2
 
 // load/unload courtesy of Jan Ilavsky
 // June 2008
@@ -30,11 +30,11 @@ Menu "Macros"
 
 	// for testing ONLY
 	"-"
-	"Load Polarization Reduction",Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	"Load Polarization Reduction - Beta",PolarizationLoader()
 
-	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
+//	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
 
-	"Load Real Space Modeling",Execute/P "INSERTINCLUDE \"FFT_Cubes_Includes\"";Execute/P "INSERTINCLUDE \"FFT_Fit_Includes\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_FFT()"
+	"Load Real Space Modeling - Beta",Execute/P "INSERTINCLUDE \"FFT_Cubes_Includes\"";Execute/P "INSERTINCLUDE \"FFT_Fit_Includes\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_FFT()"
 	"-"
 
 end
@@ -42,8 +42,8 @@ end
 Function NCNR_AnalysisLoader(itemStr)
 	String itemStr
 		
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
-		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
+		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -126,8 +126,8 @@ end
 Function NCNR_SANSReductionLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
-		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
+		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -197,8 +197,8 @@ end
 Function NCNR_USANSReductionLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
-		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
+		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -282,8 +282,8 @@ End
 Function NCNR_SANSLiveLoader(itemStr)
 	String itemStr
 	
-	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.1)
-		Abort "Your version of Igor is lower than 6.1, these macros need version 6.1 or higher.... "
+	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
+		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
@@ -403,4 +403,16 @@ Proc ClearDefinedSymbols()
 	SetIgorOption poundUnDefine=QUOKKA
 	SetIgorOption poundUnDefine=HFIR
 	SetIgorOption poundUnDefine=ILL_D22
+End
+
+Function PolarizationLoader()
+
+	// be sure that the SANS reduction is loaded and compiles
+	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	
+	// then the polarization
+	Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	BuildMenu "Macros"
+
+	return(0)
 End

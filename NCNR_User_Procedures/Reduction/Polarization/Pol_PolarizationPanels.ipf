@@ -2,7 +2,7 @@
 
 
 // TODO:
-// - on the decay panel. need to be able to manually enter a date that is to or an offset
+// x- on the decay panel. need to be able to manually enter a date that is to or an offset
 // 		number of hours. currently it takes the first file as t=0, which is often not correct
 //
 
@@ -15,9 +15,9 @@
 //
 // -1- Fundamental Cell Parameters -- these are constants, generally not editable. (this file)
 // -2- Decay Parameters -- these are fitted values based on transmission mearurements (this file)
-// -3- Flipper Panel is in its own procedure (FlipperPanel.ipf)
-// -4- PolCor_Panel is in PolarizationCorrection.ipf
-
+// -3- Flipper Panel is in its own procedure (Pol_FlipperPanel.ipf)
+// -4- PolCor_Panel is in Pol_PolarizationCorrection.ipf
+//
 //
 // Driven by 4 panels to get the necessary information from the users
 // -1- Fundamental cell parameters: root:Packages:NIST:Polarization:Cells
@@ -70,7 +70,7 @@
 //		- loaded data and PolMatrix are stored in the ususal SAM, EMP, BGD folders.
 //		- Polarization correction is done with one click (one per tab). "_pc" tags are added to the resulting names,
 //			and copies of all of the associated waves are again copied (wasteful), but makes switching display very easy
-//		- Once all of the polariztion correction is done, then the UU_pc (etc.) data can be reduced as usual (xx_pc = 4 passes)
+//		- Once all of the polarization correction is done, then the UU_pc (etc.) data can be reduced as usual (xx_pc = 4 passes)
 //		- protocol is built as ususal, from this panel only (since the SAM, EMP, and BGD need to be switched, rather than loaded
 //		- protocols can be saved/recalled.
 //		- reduction will always ask for a protocol rather than using what's on the panel.
@@ -82,6 +82,14 @@
 //
 
 
+
+// for the menu
+Menu "Macros"
+	"1 Fundamental Cell Parameters",ShowCellParamPanel()
+	"2 Cell Decay",ShowCellDecayPanel()
+	"3 Flipper States",ShowFlipperPanel()
+	"4 Polarization Correction",ShowPolCorSetup()
+End
 
 
 //
@@ -95,14 +103,14 @@
 // lambda=num
 // Te=num
 // err_Te=num
-// mu=nnum
+// mu=num
 // err_mu=num
 //
 //
 // for this panel, the cell parameters are stored as kw strings
 // all of the strings start w/ "gCell_"
 //
-Macro ShowCellParamPanel()
+Proc ShowCellParamPanel()
 	
 	// init folders
 	// ASK before initializing cell constants
@@ -358,7 +366,7 @@ End
 // for this panel, the cell parameters are stored as kw strings
 // all of the strings start w/ "gDecay_"
 //
-Macro ShowCellDecayPanel()
+Proc ShowCellDecayPanel()
 	
 	// init folders
 	// ASK before initializing cell constants
@@ -425,7 +433,7 @@ Function DecayParamPanel()
 	Button button_5,pos={620,18},size={40,20},proc=DecayHelpParButtonProc,title="?"
 	Button button_6,pos={620,620},size={100,20},proc=WindowSnapshotButton,title="Snapshot"
 	Button button_7,pos={620,580},size={130,20},proc=ManualEnterDecayButton,title="Manual Entry"
-
+	CheckBox check0,mode=0,pos={600,550},title="Overrride T0?",value=0
 
 
 	// table
@@ -560,6 +568,45 @@ Function DecayPanelPopMenuProc(pa) : PopupMenuControl
 	
 			SetDataFolder root:
 			
+			//
+			// now show the fit results, if any, from the wave note
+			//
+			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
+			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
+			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
+			SVAR gT0  = root:Packages:NIST:Polarization:Cells:gT0
+			String nStr=note(decay)
+			
+
+			// for the panel display
+			sprintf gMuPo, "%g +/- %g",NumberByKey("muP", nStr, "=",","),NumberByKey("err_muP", nStr, "=",",")
+			sprintf gPo, "%g +/- %g",NumberByKey("P0", nStr, "=",","),NumberByKey("err_P0", nStr, "=",",")
+			sprintf gGamma, "%g +/- %g",NumberByKey("gamma", nStr, "=",","),NumberByKey("err_gamma", nStr, "=",",")
+			gT0 = StringByKey("T0", nStr, "=",",")
+		
+			
+			// clear the graph - force the user to update it manually
+			// clear old data, and plot the new
+			//
+			SetDataFolder root:Packages:NIST:Polarization:Cells:
+
+			CheckDisplayed/W=DecayPanel#G0 tmp_muP,tmp_muP2,fit_tmp_muP
+			// if both present, bit 0 + bit 1 = 3
+			if(V_flag & 2^0)			//check bit 0
+				RemoveFromGraph/W=DecayPanel#G0 tmp_muP
+			endif
+			if(V_flag & 2^1)
+				RemoveFromGraph/W=DecayPanel#G0 tmp_muP2
+			endif
+			if(V_flag & 2^2)
+				RemoveFromGraph/W=DecayPanel#G0 fit_tmp_muP
+			endif
+			
+			// kill the text box (name is hard-wired)
+			TextBox/W=DecayPanel#G0/K/N=CF_tmp_muP
+			
+			setDataFolder root:
+			
 			break
 		case -1: // control being killed
 			break
@@ -587,7 +634,7 @@ Function MakeDecayResultWaves(popStr)
 	decay[0][6] = 1			//default to include the point
 	
 	// generate the dummy wave note now, change as needed
-	Note decay, "muP=2,err_muP=0,P0=0.6,err_P0=0,T0=asdf,gamma=200,err_gamma=0,"
+	Note decay, "muP=0,err_muP=0,P0=0,err_P0=0,T0=undefined,gamma=0,err_gamma=0,"
 	
 	// to hold the results of the calculation
 	Make/O/D/N=(1,14) $("DecayCalc_"+popStr)
@@ -656,16 +703,19 @@ Function CalcRowParamButton(ba) : ButtonControl
 //			GetSelection table, DecayPanel#T0, 1
 //			selRow = V_startRow
 
-			Variable sum_muP, err_avg_muP, sum_Po, err_avg_Po, avg_muP, avg_Po
+			Variable sum_muP, err_avg_muP, sum_Po, err_avg_Po, avg_muP, avg_Po, overrideT0
 			sum_muP = 0
 			sum_Po = 0
 			err_avg_muP = 0
 			err_avg_Po = 0
 			
+			ControlInfo/W=DecayPanel check0
+			overrideT0 = V_Value
+			
 			for(selRow=0;selRow<numRows;selRow+=1)
 				Print "calculate the row ",selRow
 
-				if(selRow == 0)
+				if(selRow == 0 && !overrideT0)
 					//find T0
 					fname = FindFileFromRunNumber(w[0][%Trans_He_In])
 					t0str = getFileCreationDate(fname)
@@ -676,7 +726,15 @@ Function CalcRowParamButton(ba) : ButtonControl
 					Note/K w
 					Note w, noteStr
 					Print t0str
-					w[selRow][%elapsed_hr] = 0			//by definition
+				else
+					// manually entered on the panel to override the 
+					SVAR gT0 = root:Packages:NIST:Polarization:Cells:gT0
+					t0Str = gT0
+					noteStr = note(w)
+					noteStr = ReplaceStringByKey("T0", noteStr, gT0  ,"=", ",", 0)
+					Note/K w
+					Note w, noteStr
+					Print t0str
 				endif
 				
 				// parse the rows, report errors (there, not here), exit if any found

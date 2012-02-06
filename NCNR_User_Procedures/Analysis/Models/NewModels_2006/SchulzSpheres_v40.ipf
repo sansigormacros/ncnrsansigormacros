@@ -6,6 +6,11 @@
 // at low polydispersity (< 0.2), it is very similar to the Gaussian distribution
 // at larger polydispersities, it is more skewed and similar to log-normal
 //
+//
+// JAN 2012 
+//-- added the functions to calculate the Beta factor for the decoupling approximation to
+// modify the S(q) calculation. A separate Sq_Beta.ipf file was created to hold all of the new P*S' combinations
+//
 
 //
 Proc PlotSchulzSpheres(num,qmin,qmax)
@@ -383,3 +388,114 @@ End
 //	Return (answer)
 //End
 //
+
+//AAO version, uses XOP if available
+// simply calls the original single point calculation with
+// a wave assignment (this will behave nicely if given point ranges)
+Function SchulzSpheresBeta(cw,yw,xw) : FitFunc
+	Wave cw,yw,xw
+	
+#if exists("SchulzSpheresBetaX")
+	yw = SchulzSpheresBetaX(cw,xw)
+#else
+	yw = fSchulzSpheresBeta(cw,xw)
+#endif
+	return(0)
+End
+
+//use the analytic formula from Kotlarchyk & Chen, JCP 79 (1983) 2461
+//equations 26 + 23-30
+//
+// need to calculate in terms of logarithms to avoid numerical errors
+// this returns the Beta factor
+//
+Function fSchulzSpheresBeta(w,x) : FitFunc
+	Wave w
+	Variable x
+
+	Variable scale,ravg,pd,delrho,bkg,zz,rho,rhos,vpoly
+	scale = w[0]
+	ravg = w[1]
+	pd = w[2]
+	rho = w[3]
+	rhos = w[4]
+	bkg = w[5]
+	
+	delrho=rho-rhos
+	zz = (1/pd)^2-1
+
+	Variable zp1,zp2,zp3,zp4,zp5,zp6,zp7
+	Variable aa,b1,b2,b3,at1,at2,rt1,rt2,rt3,t1,t2,t3
+	Variable v1,v2,v3,g1,g11,gd,pq,g2,g22,fBETA
+	
+	ZP1 = zz + 1
+	ZP2 = zz + 2
+	ZP3 = zz + 3
+	ZP4 = zz + 4
+	ZP5 = zz + 5
+	ZP6 = zz + 6
+	ZP7 = zz + 7
+	
+//	//small QR limit - use Guinier approx
+//	Variable i_zero,Rg2,zp8
+//	zp8 = zz+8
+//	if(x*ravg < 0.1)
+//		i_zero = scale*delrho*delrho*1e8*4*Pi/3*ravg^3
+//		i_zero *= zp6*zp5*zp4/zp1/zp1/zp1		//6th moment / 3rd moment
+//		Rg2 = 3*zp8*zp7/5/(zp1^2)*ravg*ravg
+//		pq = i_zero*exp(-x*x*Rg2/3)
+//		pq += bkg
+//		return(pq)
+//	endif
+//
+	aa = (zz+1)/x/Ravg
+
+	AT1 = atan(1/aa)
+	AT2 = atan(2/aa)
+//
+//  CALCULATIONS ARE PERFORMED TO AVOID  LARGE # ERRORS
+// - trick is to propogate the a^(z+7) term through the G1
+// 
+	T1 = ZP7*log(aa) - zp1/2*log(aa*aa+4)
+	T2 = ZP7*log(aa) - zp3/2*log(aa*aa+4)
+	T3 = ZP7*log(aa) - zp2/2*log(aa*aa+4)
+//	Print T1,T2,T3
+	RT1 = alog(T1)
+	RT2 = alog(T2)
+	RT3 = alog(T3)
+	V1 = aa^6 - RT1*cos(zp1*at2)
+	V2 = ZP1*ZP2*( aa^4 + RT2*cos(zp3*at2) )
+	V3 = -2*ZP1*RT3*SIN(zp2*at2)
+	G1 = (V1+V2+V3)
+	
+	Pq = log(G1) - 6*log(ZP1) + 6*log(Ravg)
+	Pq = alog(Pq)*8*PI*PI*delrho*delrho
+	
+//
+// beta factor is not used here, but could be for the 
+// decoupling approximation
+// 
+	G11 = G1
+	GD = -ZP7*log(aa)
+	G1 = log(G11) + GD
+                       
+	T1 = ZP1*at1
+	T2 = ZP2*at1
+	G2 = SIN( T1 ) - ZP1/SQRT(aa*aa+1)*COS( T2 )
+	G22 = G2*G2
+	fBETA = ZP1*log(aa) - ZP1*log(aa*aa+1) - G1 + log(G22) 
+	fBETA = 2*alog(fBETA)
+	
+	return(fBETA)
+	
+//re-normalize by the average volume
+//	vpoly = 4*Pi/3*zp3*zp2/zp1/zp1*(ravg)^3
+//	Pq /= vpoly
+//scale, convert to cm^-1
+//	Pq *= scale * 1e8
+// add in the background
+//	Pq += bkg
+	
+	//return (g1)
+//	Return (Pq)
+End

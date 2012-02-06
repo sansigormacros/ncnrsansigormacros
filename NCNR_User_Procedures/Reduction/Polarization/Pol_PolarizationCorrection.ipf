@@ -74,7 +74,7 @@
 
 
 // main entry to the PolCor Panel
-Macro ShowPolCorSetup()
+Proc ShowPolCorSetup()
 
 	Variable restore=0
 	DoWindow/F PolCor_Panel
@@ -268,6 +268,7 @@ Window PolCor_Panel()
 	Button button3,pos={222,473},size={160,20},proc=ChangeDisplayedPolData,title="Change Displayed Data"
 	Button button4,pos={620,18},size={30,20},proc=PolCorHelpParButtonProc,title="?"
 	Button button12,pos={440,473},size={120,20},proc=Display4XSButton,title="Display 4 XS"
+	Button button13,pos={440,446},size={120,20},proc=ClearPolCorEntries,title="Clear Entries"
 
 	PopupMenu popup1,pos={210,24},size={102,20},title="Condition"
 	PopupMenu popup1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
@@ -1014,7 +1015,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	Variable tMid
 	
 	Variable row,Psm, PsmPf, PCell,err_Psm, err_PsmPf, err_PCell
-	Variable ii,jj,muPo,err_muPo,gam,err_gam,monCts,t1,num
+	Variable ii,jj,muPo,err_muPo,gam,err_gam,monCts,t1,num,fileCount
 
 	Variable ea_uu, ea_ud, ea_dd, ea_du
 	Variable ec_uu, ec_ud, ec_dd, ec_du
@@ -1056,10 +1057,12 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 
 
 	// loop over the (10) rows in the listWave
+	fileCount=0
 	for(ii=0;ii<num;ii+=1)
 		runStr = 	lb[ii][0]		//the run number
 		if(cmpstr(runStr, "" ) != 0)
-			
+		
+			fileCount += 1		//one more file is added
 			// get run number (str)
 			// get file name
 			fname = FindFileFromRunNumber(str2num(runStr))
@@ -1084,7 +1087,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 			
 			// get file info (monitor counts)
 			monCts = getMonitorCount(fname)
-			monCts /= 1e8		//just to get reasonable values
+			monCts /= 1e8		//to get a normalized value to add proportionally
 			
 			Variable err_monCts
 			err_monCts = sqrt(monCts)
@@ -1208,7 +1211,20 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
 	
+// but now need to re-normalize the row based on the number of files that were added
+// pType has only one value as passed in, so the row has already been set. It would be more correct
+// to switch based on pType...
 	
+	matA[row][0] /= fileCount
+	matA[row][1] /= fileCount
+	matA[row][2] /= fileCount
+	matA[row][3] /= fileCount	
+	
+	matA_err[row][0] /= fileCount
+	matA_err[row][1] /= fileCount
+	matA_err[row][2] /= fileCount
+	matA_err[row][3] /= fileCount	
+				
 	SetDataFolder root:
 	return(0)
 End
@@ -2448,6 +2464,40 @@ Function Change4xsButtonProc(ba) : ButtonControl
 	return 0
 End
 
+// clear the entries for all 4 XS for the currently selected Tab only
+// clears both the run numbers and the cell assignments
+//
+Function ClearPolCorEntries(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			//
+//			String type
+			Variable tabNum
+			ControlInfo/W=PolCor_Panel PolCorTab
+//			type = S_value
+//			Print "selected data type = ",type,V_Value
+			tabNum = V_Value
+			
+			WAVE/T twDD = $("root:Packages:NIST:Polarization:ListWave_"+num2str(tabNum)+"_DD")
+			WAVE/T twUU = $("root:Packages:NIST:Polarization:ListWave_"+num2str(tabNum)+"_UU")
+			WAVE/T twUD = $("root:Packages:NIST:Polarization:ListWave_"+num2str(tabNum)+"_UD")
+			WAVE/T twDU = $("root:Packages:NIST:Polarization:ListWave_"+num2str(tabNum)+"_DU")
+			
+			twDD = ""
+			twUU = ""
+			twUD = ""
+			twDU = ""
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 

@@ -21,7 +21,7 @@
 //
 // two waves per condition "Cond_Name_Cell" and "CondCalc_Name_Cell"
 //
-Macro ShowFlipperPanel()
+Proc ShowFlipperPanel()
 	
 	// init folders
 	// ASK before initializing cell constants
@@ -179,6 +179,14 @@ Function FlipperPanelPopMenuProc(pa) : PopupMenuControl
 	
 			SetDataFolder root:
 			
+			// update the globals that are displayed from the wave note
+			String nStr=Note(cond)
+			SVAR gPsmPf = root:Packages:NIST:Polarization:Cells:gPsmPf
+			SVAR gPsm = root:Packages:NIST:Polarization:Cells:gPsm
+			sprintf gPsmPf, "%g +/- %g",NumberByKey("P_sm_f", nStr, "=",","),NumberByKey("err_P_sm_f", nStr, "=",",")
+			sprintf gPsm, "%g +/- %g",NumberByKey("P_sm", nStr, "=",","),NumberByKey("err_P_sm", nStr, "=",",")
+			
+			
 			break
 		case -1: // control being killed
 			break
@@ -214,7 +222,7 @@ Function MakeFlipperResultWaves(popStr)
 	
 	// generate the dummy wave note now, change as needed
 	String cellStr = StringFromList(1, popStr,"_")
-	String testStr = "P_sm_f=2,err_P_sm_f=0,P_sm=0.6,err_P_sm=0,T0=asdf,"
+	String testStr = "P_sm_f=0,err_P_sm_f=0,P_sm=0,err_P_sm=0,T0=undefined,"
 //	testStr = ReplaceStringByKey("Cell", testStr, cellStr ,"=", ",", 0)
 	Note cond, testStr
 
