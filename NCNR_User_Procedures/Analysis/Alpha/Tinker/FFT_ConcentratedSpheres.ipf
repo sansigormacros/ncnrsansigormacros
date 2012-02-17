@@ -1,7 +1,14 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
-
+// in this procedure file there are a few testing proceudres that are good 
+// examples of how to script the calcualtions to automatically fill, calculate
+// and rename output for later inspection. Very useful to survey a series of 
+// conditions or for very lengthy calculations
+//
+// there is also a loop to run through all of the calculation methods to 
+// get relatice timing information.
+//
 
 Proc concSphereLoop()
 
@@ -126,6 +133,12 @@ end
 // with the double do loop modification, now there is the possibility that it
 // will try forever to fill a sphere, but there was always that possibility before.
 //
+//
+// nSph = number of LARGE spheres to add (not the voxel size)
+// rad = mean radius of these large spheres
+// pd = polydispersity (0,1)
+// nPass = number of repeat averaging passes
+// tagStr = extension string for the output name = "iBin"+tagStr
 //
 Function TestConcSpheres(nSph,rad,pd,nPass,tagStr)
 	Variable nSph,rad,pd,nPass
@@ -274,7 +287,9 @@ End
 
 // for testing of the timing
 // type is 0 | 2 | 3
-//
+// 0 = FFT
+// 2 = binned, single SLD
+// 3 = Binned, multiple SLD (3 in this example)
 Proc Timing_Method(type)
 	Variable type		// type of calculation, not used right now
 

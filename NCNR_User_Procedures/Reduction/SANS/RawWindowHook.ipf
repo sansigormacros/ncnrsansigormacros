@@ -111,30 +111,30 @@ Function fRawWindowHook()
 	if(cmpstr(cur_folder,"RAW")==0)
 		//show the "next" buttons
 		//these buttons should only be available in RAW data type
-		Button backOne size={20,20},pos={350,23},proc=BackOneFileButtonProc,title="<"
+		Button backOne win=SANS_Data,size={20,20},pos={350,23},proc=BackOneFileButtonProc,title="<"
 		Button backOne help={"Display the previous RAW data file run number"}
-		Button forwardOne size={20,20},pos={375,23},proc=ForwardOneFileButtonProc,title=">"
+		Button forwardOne win=SANS_Data,size={20,20},pos={375,23},proc=ForwardOneFileButtonProc,title=">"
 		Button forwardOne help={"Display the next RAW data file run number"}
 		//
 	else
 		//kill them
-		KillControl backOne
-		KillControl forwardOne
+		KillControl/W=SANS_Data backOne
+		KillControl/W=SANS_Data forwardOne
 	Endif
 	
 	//reset the slider values to 0,1
-	Slider loSlide,value=0
-	Slider hiSlide,value=1
+	Slider loSlide win=SANS_Data,value=0
+	Slider hiSlide win=SANS_Data,value=1
 	
 	//remove old data and add new data to it
 	//data display/modification stuff
 	RemoveImage/Z data
 	WAVE data = $(curPath + ":data")
 	WAVE NIHColors = $"root:myGlobals:NIHColors"
-	AppendImage data
+	AppendImage/W=SANS_Data data
    WaveStats/Q $(curPath + ":data")
    if(cmpstr(cur_folder,"MSK")==0)
-		ModifyImage data ctab={0,1,BlueRedGreen,0}
+		ModifyImage/W=SANS_Data data ctab={0,1,BlueRedGreen,0}
    else
    	//Call the procedure that would normally be called if the sliders were moved
 //   	MapSliderProc("both", 0, 1)
@@ -143,27 +143,27 @@ Function fRawWindowHook()
 	 //  ModifyImage data cindex=NIHColors
   	endif
 	//make the pixels square, color the backgrounds
-	ModifyGraph width={plan,1,bottom,left},mirror=0
-	ModifyGraph axisenab(bottom)={0,0.7}
-	ModifyGraph axOffset(left)=-3
-	ModifyGraph standoff=0
-	ModifyGraph wbRGB=(65535,54611,49151),gbRGB=(65535,54611,49151),cbRGB=(1,52428,52428)
+	ModifyGraph/W=SANS_Data width={plan,1,bottom,left},mirror=0
+	ModifyGraph/W=SANS_Data axisenab(bottom)={0,0.7}
+	ModifyGraph/W=SANS_Data axOffset(left)=-3
+	ModifyGraph/W=SANS_Data standoff=0
+	ModifyGraph/W=SANS_Data wbRGB=(65535,54611,49151),gbRGB=(65535,54611,49151),cbRGB=(1,52428,52428)
 	
 	//add the qx and qy axes
 	Wave q_x_axis=$"root:myGlobals:q_x_axis"
 	Wave q_y_axis=$"root:myGlobals:q_y_axis"
 	Set_Q_Axes(q_x_axis,q_y_axis,curPath)
 	RemoveFromGraph/Z q_x_axis,q_y_axis
-	AppendToGraph/T q_x_axis
-	AppendToGraph/R=Right_Q q_y_axis				//plot on a free axis, crossing at x=127 (pixelsX)
-	ModifyGraph freePos(Right_q)={pixelsX-1,bottom}
-	ModifyGraph minor(top)=1,minor(Right_Q)=1,lowTrip(top)=1e-05,lowTrip(Right_Q)=1e-05
-	ModifyGraph mode(q_x_axis)=2,mode(q_y_axis)=2		//dots
-	ModifyGraph axisEnab(top)={0,0.7}
+	AppendToGraph/W=SANS_Data/T q_x_axis
+	AppendToGraph/W=SANS_Data/R=Right_Q q_y_axis				//plot on a free axis, crossing at x=127 (pixelsX)
+	ModifyGraph/W=SANS_Data freePos(Right_q)={pixelsX-1,bottom}
+	ModifyGraph/W=SANS_Data minor(top)=1,minor(Right_Q)=1,lowTrip(top)=1e-05,lowTrip(Right_Q)=1e-05
+	ModifyGraph/W=SANS_Data mode(q_x_axis)=2,mode(q_y_axis)=2		//dots
+	ModifyGraph/W=SANS_Data axisEnab(top)={0,0.7}
 
 	//add the color bar
-	ColorScale/N=colBar/A=RT/X=-3/Y=-1.5/Z=1 image=data, heightPct=100, widthPct=4,notation=1
-	ColorScale/C/N=colBar/B=(65535,60076,49151)
+	ColorScale/W=SANS_Data/N=colBar/A=RT/X=-3/Y=-1.5/Z=1 image=data, heightPct=100, widthPct=4,notation=1
+	ColorScale/W=SANS_Data/C/N=colBar/B=(65535,60076,49151)
 	
 	//update the displayed filename, using FileList in the current data folder
 	SVAR FileList = $(curPath + ":FileList")
@@ -175,9 +175,9 @@ Function fRawWindowHook()
 	// reset the initial state of the "isLin" button if it is reading "isLog", since the initial data state is
 	//always set to linear
 	//re-draw the data on the graph to make sure "data" from the current folder is being used
-	ControlInfo bisLog
+	ControlInfo/W=SANS_Data bisLog
 	if(V_flag ==1)	//if bisLog exists, this will return true
-		Button bisLog,title="isLin",rename=bisLin
+		Button bisLog,win=SANS_Data,title="isLin",rename=bisLin
 	endif
 	//now that button state and data are sure to match (both are linear)
 	// set the display to log scale, if the global has been set

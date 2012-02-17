@@ -1216,7 +1216,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	NVAR pixelsX = root:myGlobals:gNPixelsX		//OK, location is correct
 	NVAR pixelsY = root:myGlobals:gNPixelsY
 	
-	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:data")
+	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:linear_data")
 	WAVE/Z err1=$("root:Packages:NIST:"+workMathStr+"File_1:linear_data_error")
 	
 	// set # 2
@@ -1229,20 +1229,22 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	else
 		//Load set #2
 		Load_NamedASC_File(pathStr+str2,workMathStr+"File_2")
-		WAVE/Z data2=$("root:Packages:NIST:"+workMathStr+"File_2:data")
+		WAVE/Z data2=$("root:Packages:NIST:"+workMathStr+"File_2:linear_data")
 		WAVE/Z err2=$("root:Packages:NIST:"+workMathStr+"File_2:linear_data_error")
 	Endif
 
 	///////
 	
 	//now that we know that data exists, convert each of the operands to linear scale
-	ConvertFolderToLinearScale(workMathStr+"File_1")
-	If(cmpstr(str2,"UNIT MATRIX")!=0)
-		ConvertFolderToLinearScale(workMathStr+"File_2")		//don't need to convert unit matrix to linear
-	endif
+//	ConvertFolderToLinearScale(workMathStr+"File_1")
+//	If(cmpstr(str2,"UNIT MATRIX")!=0)
+//		ConvertFolderToLinearScale(workMathStr+"File_2")		//don't need to convert unit matrix to linear
+//	endif
+
 	//copy contents of str1 folder to dest and create the wave ref (it will exist)
 	CopyWorkContents(workMathStr+"File_1",workMathStr+dest)
-	WAVE/Z destData=$("root:Packages:NIST:"+workMathStr+dest+":data")
+	WAVE/Z destData=$("root:Packages:NIST:"+workMathStr+dest+":linear_data")
+	WAVE/Z destData_log=$("root:Packages:NIST:"+workMathStr+dest+":data")
 	WAVE/Z destErr=$("root:Packages:NIST:"+workMathStr+dest+":linear_data_error")
 	
 	//dispatch
@@ -1269,8 +1271,11 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 			break			
 	endswitch
 	
+	destData_log = log(destData)		//for display
 	//show the result
 	WorkMath_Display_PopMenuProc("",0,"Result")
+	
+	PopupMenu popup4 win=WorkFileMath,mode=3		//3rd item selected == Result
 End
 
 // closes the panel and kills the data folder when done
@@ -1337,11 +1342,11 @@ Function WorkMath_Display_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	endif
 	// if file1 or file2, load in the data and display
 	if(cmpstr(popStr,"File_1")==0)
-		ControlInfo popup0
+		ControlInfo/W=WorkFileMath popup0
 		str1 = S_Value
 	Endif
 	if(cmpstr(popStr,"File_2")==0)
-		ControlInfo popup1
+		ControlInfo/W=WorkFileMath popup1
 		str1 = S_Value
 	Endif
 	//don't load or display the unit matrix

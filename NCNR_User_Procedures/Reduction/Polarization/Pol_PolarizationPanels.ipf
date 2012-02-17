@@ -278,7 +278,10 @@ Function CellHelpParButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"Help for Cell Param Panel not written yet"
+			DisplayHelpTopic/Z/K=1 "Fundamental Cell Parameters"
+			if(V_flag !=0)
+				DoAlert 0,"The Cell Parameter Help file could not be found"
+			endif
 			break
 		case -1: // control being killed
 			break
@@ -470,6 +473,7 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 	Variable selRow,err=0
 	String fname, t0str, condStr,noteStr,t1Str,cellStr
 
+	t0Str = "31-OCT-2012 19:30:00"
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
@@ -490,14 +494,16 @@ Function ManualEnterDecayButton(ba) : ButtonControl
 			Prompt err_muPo, "Enter err_muPo: "		
 			Prompt gamma_val, "Enter gamma: "		
 			Prompt err_gamma, "Enter err_gamma: "
-			Prompt runNum,"Run number for time=0 of decay"	
-			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma, runNum
+			Prompt t0Str,"Enter the t=0 time DD-MMM-YYYY HH:MM:SS"
+//			Prompt runNum,"Run number for time=0 of decay"	
+			DoPrompt "Enter Cell Decay Parameters", Po, err_Po, muPo, err_muPo, gamma_val, err_gamma, t0Str
 			if (V_Flag)
 				return -1								// User canceled
 			endif
-			
-			fname = FindFileFromRunNumber(runNum)
-			t0str = getFileCreationDate(fname)
+	
+	// enter the time as a string now, rather than from a run number		
+//			fname = FindFileFromRunNumber(runNum)
+//			t0str = getFileCreationDate(fname)
 					
 //		for the wave note
 			noteStr = note(decay)
@@ -866,6 +872,33 @@ Function Calc_Tmaj(cellStr,Po,err_Po,err_Tmaj)
 	
 	return(Tmaj)
 End
+
+
+// calculate Tmin and its error
+Function Calc_Tmin(cellStr,Po,err_Po,err_Tmin)
+	String cellStr
+	Variable Po,err_Po,&err_Tmin
+	
+	Variable Tmin,arg
+	Variable Te,err_Te,mu,err_mu
+// cell constants	
+	Te = NumberByKey("Te", cellStr, "=", ",", 0)
+	err_Te = NumberByKey("err_Te", cellStr, "=", ",", 0)
+	mu = NumberByKey("mu", cellStr, "=", ",", 0)
+	err_mu = NumberByKey("err_mu", cellStr, "=", ",", 0)
+	
+	Tmin = Te*exp(-mu*(1+Po))
+	
+	//the error
+	err_Tmin = (Tmin/Te)^2*err_Te^2 + (Tmin*(1+Po))^2*err_mu^2 + (Tmin*mu)^2*err_Po^2
+	err_Tmin = sqrt(err_Tmin)
+	
+	Printf "Tmin = %g +/- %g (%g%)\r",Tmin,err_Tmin,err_Tmin/Tmin*100
+
+	
+	return(Tmin)
+End
+
 
 
 // calculate PCell and its error
@@ -1281,7 +1314,10 @@ Function DecayHelpParButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"Help for Cell Decay Panel not written yet"
+			DisplayHelpTopic/Z/K=1 "Cell Decay Constant Panel"
+			if(V_flag !=0)
+				DoAlert 0,"The Cell Decay Help file could not be found"
+			endif
 			break
 		case -1: // control being killed
 			break

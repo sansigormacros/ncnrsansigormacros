@@ -774,7 +774,10 @@ Function PolCorHelpParButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"Help for PolCor Panel not written yet"
+			DisplayHelpTopic/Z/K=1 "Polarization Correction Panel"
+			if(V_flag !=0)
+				DoAlert 0,"The Polarization Correction Panel Help file could not be found"
+			endif
 			break
 		case -1: // control being killed
 			break
@@ -1016,6 +1019,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	
 	Variable row,Psm, PsmPf, PCell,err_Psm, err_PsmPf, err_PCell
 	Variable ii,jj,muPo,err_muPo,gam,err_gam,monCts,t1,num,fileCount
+	Variable Po,err_Po,Pt,err_Pt,Tmaj,Tmin,err_Tmaj,err_Tmin,Te,err_Te,mu,err_mu,summedMonCts
 
 	Variable ea_uu, ea_ud, ea_dd, ea_du
 	Variable ec_uu, ec_ud, ec_dd, ec_du
@@ -1055,6 +1059,24 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	err_Psm = NumberByKey("err_P_sm", condNote, "=", ",", 0)
 	err_PsmPf = NumberByKey("err_P_sm_f", condNote, "=", ",", 0)
 
+//
+//
+//		find the proper propotions to add the matrix contributions
+//		if only one file, this = 1, otherwise it should sum to one
+//
+	Make/O/D/N=10 proportion
+	proportion = 0
+	summedMonCts = 0
+	// loop over the (10) rows in the listWave
+	for(ii=0;ii<num;ii+=1)
+		runStr = 	lb[ii][0]		//the run number
+		if(cmpstr(runStr, "" ) != 0)
+			fname = FindFileFromRunNumber(str2num(runStr))
+			proportion[ii] = getMonitorCount(fname)
+			summedMonCts += proportion[ii]
+		endif
+	endfor
+	proportion /= summedMonCts
 
 	// loop over the (10) rows in the listWave
 	fileCount=0
@@ -1079,15 +1101,34 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 			err_muPo = NumberByKey("err_muP", decayNote, "=", ",", 0)
 			gam = NumberByKey("gamma", decayNote, "=", ",", 0)
 			err_gam = NumberByKey("err_gamma", decayNote, "=", ",", 0)
+			Po = NumberByKey("P0", decayNote, "=", ",", 0)
+			err_Po = NumberByKey("err_P0", decayNote, "=", ",", 0)
 			// get the elapsed time to calculate PCell at the current file time
 			t1str = getFileCreationDate(fname)
 			t1 = ElapsedHours(t0Str,t1Str)
 			
 			PCell = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell)
 			
+
+			
+			SVAR cellParamStr = $("root:Packages:NIST:Polarization:Cells:gCell_"+cellStr)
+			
+			Pt = Calc_PHe_atT(Po,err_Po,gam,err_gam,t1,err_Pt)
+			
+			Tmaj = Calc_Tmaj(cellParamStr,Pt,err_Pt,err_Tmaj)
+			Tmin = Calc_Tmin(cellParamStr,Pt,err_Pt,err_Tmin)
+
+//			printf "File: %s\r",fname
+//			printf "Elapsed time = %g hours\r",t1
+//			printf "Pcell = %g\tTMaj = %g\tTmin = %g\r",PCell,(1+PCell)/2,(1-Pcell)/2
+//			printf "\t\tRecalculated TMaj = %g\tTmin = %g\r",Tmaj,Tmin
+						
 			// get file info (monitor counts)
-			monCts = getMonitorCount(fname)
-			monCts /= 1e8		//to get a normalized value to add proportionally
+//			monCts = getMonitorCount(fname)
+//			monCts /= 1e8		//to get a normalized value to add proportionally
+			
+			// use the proper proportion of each file to add to each row
+//			monCts = proportion[ii]
 			
 			Variable err_monCts
 			err_monCts = sqrt(monCts)
@@ -1100,27 +1141,35 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 						matA[row][] = 0
 						matA_err[row][] = 0
 					endif
-					ea_uu = (1+Psm)/2
-					ea_du = (1-Psm)/2
-					ec_uu = (1+Pcell)/2
-					ec_du = (1-Pcell)/2
-					
-					matA[row][0] += ea_uu*ec_uu*monCts
-					matA[row][1] += ea_du*ec_uu*monCts
-					matA[row][2] += ea_du*ec_du*monCts
-					matA[row][3] += ea_uu*ec_du*monCts
+// original version
+//					ea_uu = (1+Psm)/2
+//					ea_du = (1-Psm)/2
+//					ec_uu = (1+Pcell)/2
+//					ec_du = (1-Pcell)/2
+//					
+//					matA[row][0] += ea_uu*ec_uu*monCts
+//					matA[row][1] += ea_du*ec_uu*monCts
+//					matA[row][2] += ea_du*ec_du*monCts
+//					matA[row][3] += ea_uu*ec_du*monCts
+//
+//					matA_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+// end original version
+
+// using Tmaj, Tmin calc from Po, not Pcell					
+					matA[row][0] += (1+Psm)*Tmaj*proportion[ii]
+					matA[row][1] += (1-Psm)*Tmaj*proportion[ii]
+					matA[row][2] += (1-Psm)*Tmin*proportion[ii]
+					matA[row][3] += (1+Psm)*Tmin*proportion[ii]
 
 // this seems to be too large...
-//					matA_err[row][0] += (1/2*ec_uu*monCts)^2*err_Psm^2 + (1/2*ea_uu*monCts)^2*err_Pcell^2
-//					matA_err[row][1] += (1/2*ec_uu*monCts)^2*err_Psm^2 + (1/2*ea_du*monCts)^2*err_Pcell^2
-//					matA_err[row][2] += (1/2*ec_du*monCts)^2*err_Psm^2 + (1/2*ea_du*monCts)^2*err_Pcell^2
-//					matA_err[row][3] += (1/2*ec_du*monCts)^2*err_Psm^2 + (1/2*ea_uu*monCts)^2*err_Pcell^2
-
-					matA_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-										
+					matA_err[row][0] += (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2
+					matA_err[row][1] += (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2
+					matA_err[row][2] += (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2
+					matA_err[row][3] += (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2
+						
 					break
 				case "DU":		
 					row = 1
@@ -1128,26 +1177,36 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 						matA[row][] = 0
 						matA_err[row][] = 0
 					endif
-					ea_ud = (1-PsmPf)/2
-					ea_dd = (1+PsmPf)/2
-					ec_uu = (1+Pcell)/2
-					ec_du = (1-Pcell)/2
-					
-					matA[row][0] += ea_ud*ec_uu*monCts
-					matA[row][1] += ea_dd*ec_uu*monCts
-					matA[row][2] += ea_dd*ec_du*monCts
-					matA[row][3] += ea_ud*ec_du*monCts
-					
-//					matA_err[row][0] += (1/2*(1+Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1-PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][1] += (1/2*(1+Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1+PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][2] += (1/2*(1-Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1+PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][3] += (1/2*(1-Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1-PsmPf)/2*monCts)^2*err_Pcell^2					
+// original version
+//					ea_ud = (1-PsmPf)/2
+//					ea_dd = (1+PsmPf)/2
+//					ec_uu = (1+Pcell)/2
+//					ec_du = (1-Pcell)/2
+//					
+//					matA[row][0] += ea_ud*ec_uu*monCts
+//					matA[row][1] += ea_dd*ec_uu*monCts
+//					matA[row][2] += ea_dd*ec_du*monCts
+//					matA[row][3] += ea_ud*ec_du*monCts
+//					
+//					matA_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// original version
 
-					matA_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-							
+// using Tmaj, Tmin calc from Po, not Pcell					
+					matA[row][0] += (1-PsmPf)*Tmaj*proportion[ii]
+					matA[row][1] += (1+PsmPf)*Tmaj*proportion[ii]
+					matA[row][2] += (1+PsmPf)*Tmin*proportion[ii]
+					matA[row][3] += (1-PsmPf)*Tmin*proportion[ii]
+
+// this seems to be too large...
+					matA_err[row][0] += (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2
+					matA_err[row][1] += (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2
+					matA_err[row][2] += (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2
+					matA_err[row][3] += (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2
+
+
 					break	
 				case "DD":		
 					row = 2
@@ -1155,25 +1214,34 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 						matA[row][] = 0
 						matA_err[row][] = 0
 					endif
-					ea_ud = (1-PsmPf)/2
-					ea_dd = (1+PsmPf)/2
-					ec_ud = (1-Pcell)/2
-					ec_dd = (1+Pcell)/2
-					
-					matA[row][0] += ea_ud*ec_ud*monCts
-					matA[row][1] += ea_dd*ec_ud*monCts
-					matA[row][2] += ea_dd*ec_dd*monCts
-					matA[row][3] += ea_ud*ec_dd*monCts					
-					
-//					matA_err[row][0] += (1/2*(1-Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1-PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][1] += (1/2*(1-Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1+PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][2] += (1/2*(1+Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1+PsmPf)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][3] += (1/2*(1+Pcell)/2*monCts)^2*err_PsmPf^2 + (1/2*(1-PsmPf)/2*monCts)^2*err_Pcell^2	
+// original version
+//					ea_ud = (1-PsmPf)/2
+//					ea_dd = (1+PsmPf)/2
+//					ec_ud = (1-Pcell)/2
+//					ec_dd = (1+Pcell)/2
+//					
+//					matA[row][0] += ea_ud*ec_ud*monCts
+//					matA[row][1] += ea_dd*ec_ud*monCts
+//					matA[row][2] += ea_dd*ec_dd*monCts
+//					matA[row][3] += ea_ud*ec_dd*monCts					
+//
+//					matA_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// original version
 
-					matA_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// using Tmaj, Tmin calc from Po, not Pcell					
+					matA[row][0] += (1-PsmPf)*Tmin*proportion[ii]
+					matA[row][1] += (1+PsmPf)*Tmin*proportion[ii]
+					matA[row][2] += (1+PsmPf)*Tmaj*proportion[ii]
+					matA[row][3] += (1-PsmPf)*Tmaj*proportion[ii]
+
+// this seems to be too large...
+					matA_err[row][0] += (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2
+					matA_err[row][1] += (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2
+					matA_err[row][2] += (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2
+					matA_err[row][3] += (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2
 										
 					break						
 				case "UD":		
@@ -1182,26 +1250,36 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 						matA[row][] = 0
 						matA_err[row][] = 0
 					endif
-					ea_uu = (1+Psm)/2
-					ea_du = (1-Psm)/2
-					ec_ud = (1-Pcell)/2
-					ec_dd = (1+Pcell)/2
-					
-					matA[row][0] += ea_uu*ec_ud*monCts
-					matA[row][1] += ea_du*ec_ud*monCts
-					matA[row][2] += ea_du*ec_dd*monCts
-					matA[row][3] += ea_uu*ec_dd*monCts					
-										
-//					matA_err[row][0] += (1/2*(1-Pcell)/2*monCts)^2*err_Psm^2 + (1/2*(1+Psm)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][1] += (1/2*(1-Pcell)/2*monCts)^2*err_Psm^2 + (1/2*(1-Psm)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][2] += (1/2*(1+Pcell)/2*monCts)^2*err_Psm^2 + (1/2*(1-Psm)/2*monCts)^2*err_Pcell^2
-//					matA_err[row][3] += (1/2*(1+Pcell)/2*monCts)^2*err_Psm^2 + (1/2*(1+Psm)/2*monCts)^2*err_Pcell^2					
+// original version
+//					ea_uu = (1+Psm)/2
+//					ea_du = (1-Psm)/2
+//					ec_ud = (1-Pcell)/2
+//					ec_dd = (1+Pcell)/2
+//					
+//					matA[row][0] += ea_uu*ec_ud*monCts
+//					matA[row][1] += ea_du*ec_ud*monCts
+//					matA[row][2] += ea_du*ec_dd*monCts
+//					matA[row][3] += ea_uu*ec_dd*monCts					
+//										
+//					matA_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+//					matA_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+// original version
+	
+// using Tmaj, Tmin calc from Po, not Pcell					
+					matA[row][0] += (1+Psm)*Tmin*proportion[ii]
+					matA[row][1] += (1-Psm)*Tmin*proportion[ii]
+					matA[row][2] += (1-Psm)*Tmaj*proportion[ii]
+					matA[row][3] += (1+Psm)*Tmaj*proportion[ii]
 
-					matA_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-					matA_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-										
+// this seems to be too large...
+					matA_err[row][0] += (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2
+					matA_err[row][1] += (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2
+					matA_err[row][2] += (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2
+					matA_err[row][3] += (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2
+					
+														
 					break
 			endswitch
 
@@ -1215,15 +1293,15 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 // pType has only one value as passed in, so the row has already been set. It would be more correct
 // to switch based on pType...
 	
-	matA[row][0] /= fileCount
-	matA[row][1] /= fileCount
-	matA[row][2] /= fileCount
-	matA[row][3] /= fileCount	
-	
-	matA_err[row][0] /= fileCount
-	matA_err[row][1] /= fileCount
-	matA_err[row][2] /= fileCount
-	matA_err[row][3] /= fileCount	
+//	matA[row][0] /= fileCount
+//	matA[row][1] /= fileCount
+//	matA[row][2] /= fileCount
+//	matA[row][3] /= fileCount	
+//	
+//	matA_err[row][0] /= fileCount
+//	matA_err[row][1] /= fileCount
+//	matA_err[row][2] /= fileCount
+//	matA_err[row][3] /= fileCount	
 				
 	SetDataFolder root:
 	return(0)
@@ -1459,8 +1537,9 @@ Function Display4XSButton(ba) : ButtonControl
 			Prompt scaling,"scaling",popup,"log;linear;"
 			DoPrompt "Change Display",dataType,scaling
 			
-			Display_4(dataType,scaling)
-			
+			if(V_flag==0)		//continue
+				Display_4(dataType,scaling)
+			endif			
 			break
 		case -1: // control being killed
 			break
@@ -1485,9 +1564,10 @@ Function ChangeDisplayedPolData(ba) : ButtonControl
 			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;UU_pc;DU_pc;DD_pc;UD_pc;"
 			DoPrompt "Change Display",dataType,pType
 			
-			sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
-			Execute str
-			
+			if(V_flag==0)		//continue
+				sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
+				Execute str
+			endif
 			break
 		case -1: // control being killed
 			break

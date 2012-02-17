@@ -34,7 +34,7 @@ Menu "Macros"
 
 //	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
 
-	"Load Real Space Modeling - Beta",Execute/P "INSERTINCLUDE \"FFT_Cubes_Includes\"";Execute/P "INSERTINCLUDE \"FFT_Fit_Includes\"";Execute/P "COMPILEPROCEDURES ";Execute/P "Init_FFT()"
+	"Load Real Space Modeling - Beta",RealSpaceLoader()
 	"-"
 
 end
@@ -412,6 +412,23 @@ Function PolarizationLoader()
 	
 	// then the polarization
 	Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	BuildMenu "Macros"
+
+	return(0)
+End
+
+// loads all of the FFT procedures and the fit functions too
+Function RealSpaceLoader()
+
+	// be sure that the SANS Analysis is loaded and compiles
+	NCNR_AnalysisLoader("Load NCNR Analysis Macros")
+	
+	// then the FFT files
+	Execute/P "INSERTINCLUDE \"FFT_Cubes_Includes\""
+	Execute/P "INSERTINCLUDE \"FFT_Fit_Includes\""
+	Execute/P "COMPILEPROCEDURES "
+	Execute/P "Init_FFT()"
+	
 	BuildMenu "Macros"
 
 	return(0)

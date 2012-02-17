@@ -604,8 +604,33 @@ Function Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	return(Psm)
 end
 
+//
+// calculate the (atomic) He polarization at some delta time
+//
+// t2 is in hours, gamma in hours
+//
+Function Calc_PHe_atT(Po,err_Po,gam,err_gam,t2,err_Pt)
+	Variable Po,err_Po,gam,err_gam,t2,&err_Pt
 
 
+	Variable Pt	
+
+	Pt = Po*exp(-t2/gam)
+	
+	Variable arg,tmp2
+	// 2 terms, no error in t2
+	err_Pt = Pt^2/Po^2*err_Po^2 + t2^2/gam^4*Pt^2*err_gam^2
+	
+	err_Pt = sqrt(err_Pt)
+	
+	Printf "At (delta)t=%g  P_He(t) = %g +/- %g (%g%)\r",t2,Pt,err_Pt,err_Pt/Pt*100
+
+	return(Pt)
+End
+
+
+
+//
 // t2 is in hours, muP0 is at t0
 //
 Function Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell)
@@ -614,8 +639,8 @@ Function Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell)
 
 	Variable Pcell
 
-
 	PCell = tanh(muPo * exp(-t2/gam))
+//	PCell = (muPo * exp(-t2/gam))
 	
 	Variable arg,tmp2
 	arg = PCell
@@ -626,8 +651,6 @@ Function Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell)
 	err_PCell = sqrt(err_Pcell)
 	
 	Printf "At t=%g  Pcell = %g +/- %g (%g%)\r",t2,Pcell,err_Pcell,err_Pcell/PCell*100
-
-
 
 	return(PCell)
 End
@@ -761,7 +784,10 @@ Function FlipperHelpParButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"Help for Flipper Panel not written yet"
+			DisplayHelpTopic/Z/K=1 "Flipper States Panel"
+			if(V_flag !=0)
+				DoAlert 0,"The Flipper States Panel Help file could not be found"
+			endif
 			break
 		case -1: // control being killed
 			break
