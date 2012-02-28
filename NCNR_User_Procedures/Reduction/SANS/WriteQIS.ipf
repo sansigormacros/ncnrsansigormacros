@@ -776,16 +776,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
-///************
-// do everything to write out the resolution too
-	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
-	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt
-	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
-	//everything in 1D now
-	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+
 
 	Variable L2 = rw[18]
 	Variable BS = rw[21]
@@ -794,6 +785,41 @@ Function QxQy_Export(type,fullpath,dialog)
 	Variable L1 = rw[25]
 	Variable lambdaWidth = rw[27]	
 	Variable usingLenses = rw[28]		//new 2007
+
+	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
+	Variable g = 981.0				//gravity acceleration [cm/s^2]
+	Variable m_h	= 252.8			// m/h [=] s/cm^2
+
+	Variable acc,ssd,lambda0,yg_d,qstar
+		
+	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
+	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
+	SDD = L2	*100	//1317
+	SSD = L1	*100	//1627 		//cm
+	lambda0 = lambda		//		15
+	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
+	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
+//		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
+	qstar = -2*pi/lambda0*2*yg_d/sdd
+	
+
+// the gravity center is not the resolution center
+// gravity center = beam center
+// resolution center = offset y = dy + (2)*yg_d
+///************
+// do everything to write out the resolution too
+	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
+	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+//	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
+//	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt
+	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
+	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
+	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
+	//everything in 1D now
+	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+	
+
 
 	//Two parameters DDET and APOFF are instrument dependent.  Determine
 	//these from the instrument name in the header.
@@ -818,7 +844,7 @@ Function QxQy_Export(type,fullpath,dialog)
 
 	// generate my own error wave for I(qx,qy)
 	//	//	sw = 0.05*sw		// uniform 5% error? tends to favor the low intensity too strongly
-	// after teh SQRT(),  get rid of the "bad" errors by replacing the NaN, Inf, and zero with V_avg
+	// after the SQRT(),  get rid of the "bad" errors by replacing the NaN, Inf, and zero with V_avg
 	// THIS IS EXTREMEMLY IMPORTANT - if this is not done, there are some "bad" values in the 
 	// error wave (things that are not numbers) - and this wrecks the smeared model fitting.
 	// It appears to have no effect on fitting with the unsmeared model.

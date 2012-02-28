@@ -1038,6 +1038,15 @@ Proc BinQxQy_to_1D(folderStr)
 	Prompt folderStr,"Pick the data folder containing 2D data",popup,getAList(4)
 
 	fDoBinning_QxQy2D(folderStr)
+	
+	SetDataFolder $("root:"+folderStr)
+	Display iBin_qxqy vs qBin_qxqy
+	ModifyGraph mirror=2,grid=1,log=1
+	ModifyGraph mode=4,marker=19,msize=2
+	ErrorBars/T=0 iBin_qxqy Y,wave=(eBin2D_qxqy,eBin2D_qxqy)
+	legend
+	
+	SetDataFolder root:
 End
 
 
@@ -1051,9 +1060,9 @@ Function fDoBinning_QxQy2D(folderStr)
 
 	SetDataFolder $("root:"+folderStr)
 	
-	WAVE inten = $("smeared_sf2D")
+//	WAVE inten = $("smeared_sf2D")
 
-//	WAVE inten = $(folderStr + "_i")
+	WAVE inten = $(folderStr + "_i")
 	WAVE iErr = $(folderStr + "_iErr")
 	WAVE qx = $(folderStr + "_qx")
 	WAVE qy = $(folderStr + "_qy")

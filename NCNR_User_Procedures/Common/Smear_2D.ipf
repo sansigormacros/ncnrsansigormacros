@@ -411,26 +411,9 @@ Function PlotResolution_atPixel(type,xx,yy)
 	lambda = rw[26]
 	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
 	
-//	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-//	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	
 	qx_val = CalcQx(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
 	qy_val = CalcQy(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
 	
-//	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
-
-///************
-// do everything to write out the resolution too
-	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	qval = CalcQval(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	qz_val = CalcQz(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	phi = FindPhi( pixSize*((xx+1)-xctr) , pixSize*((yy+1)-yctr))		//(dx,dy)
-	r_dist = sqrt(  (pixSize*((xx+1)-xctr))^2 +  (pixSize*((yy+1)-yctr))^2 )		//radial distance from ctr to pt
-//	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
-	//everything in 1D now
-//	Duplicate/O qval SigmaQX,SigmaQY,fsubS
-	Variable SigmaQX,SigmaQY,fsubS
-
 	Variable L2 = rw[18]
 	Variable BS = rw[21]
 	Variable S1 = rw[23]
@@ -438,6 +421,40 @@ Function PlotResolution_atPixel(type,xx,yy)
 	Variable L1 = rw[25]
 	Variable lambdaWidth = rw[27]	
 	Variable usingLenses = rw[28]		//new 2007
+	
+	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
+	Variable g = 981.0				//gravity acceleration [cm/s^2]
+	Variable m_h	= 252.8			// m/h [=] s/cm^2
+
+	Variable acc,ssd,lambda0,yg_d,qstar
+		
+	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
+	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
+	SDD = L2	*100	//1317
+	SSD = L1	*100	//1627 		//cm
+	lambda0 = lambda		//		15
+	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
+	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
+		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
+	qstar = -2*pi/lambda0*2*yg_d/sdd
+	
+
+// the gravity center is not the resolution center
+// gravity center = beam center
+// resolution center = offset y = dy + (2)*yg_d
+
+
+	qval = CalcQval(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qz_val = CalcQz(xx+1,yy+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	phi = FindPhi( pixSize*((xx+1)-xctr) , pixSize*((yy+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
+	r_dist = sqrt(  (pixSize*((xx+1)-xctr))^2 +  (pixSize*((yy+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
+	
+	Print pixSize*((yy+1)-yctr),pixSize*((yy+1)-yctr)+(2)*yg_d
+	
+//	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
+	//everything in 1D now
+//	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+	Variable SigmaQX,SigmaQY,fsubS
 
 	//Two parameters DDET and APOFF are instrument dependent.  Determine
 	//these from the instrument name in the header.
@@ -468,7 +485,7 @@ Function PlotResolution_atPixel(type,xx,yy)
 	Print qx_val,qy_val,qval
 	Print "phi, theta",phi,theta
 	
-	FindQxQy(qval,phi,qx_ret,qy_ret)
+//	FindQxQy(qval,phi,qx_ret,qy_ret)
 	
 	sx = SigmaQx
 	sy = sigmaQy
@@ -486,8 +503,8 @@ Function PlotResolution_atPixel(type,xx,yy)
 	maxSig = max(sx,sy)
 	Setscale/I x -nStdDev*maxSig+x0,nStdDev*maxSig+x0,res
 	Setscale/I y -nStdDev*maxSig+y0,nStdDev*maxSig+y0,res
-//	Setscale/I x -nStdDev*sx+x0,nStdDev*sx+x0,res
-//	Setscale/I y -nStdDev*sy+y0,nStdDev*sy+y0,res
+/////	Setscale/I x -nStdDev*sx+x0,nStdDev*sx+x0,res
+/////	Setscale/I y -nStdDev*sy+y0,nStdDev*sy+y0,res
 	
 	Variable xPt,yPt,delx,dely,offx,offy
 	delx = DimDelta(res,0)

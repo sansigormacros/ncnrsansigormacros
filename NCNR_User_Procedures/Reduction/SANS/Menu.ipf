@@ -37,10 +37,11 @@ Menu "SANS"
 		"1D Arithmetic Panel",MakeDAPanel()
 		"ReBin 1D Data",OpenRebin()
 	End
-		Submenu "2-D Processing"
+	Submenu "2-D Processing"
 		"2D Work file Math",Show_WorkMath_Panel()
 		"Tile Raw 2D files",Show_Tile_2D_Panel()
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
+		"Bin QxQy Data to 1D",BinQxQy_to_1D()
 	End
 	"-"
 	"NCNR Preferences",Show_Preferences_Panel()

@@ -189,11 +189,22 @@ End
 // 2D resolution function calculation - ***NOT*** in terms of X and Y
 // but written in terms of Parallel and perpendicular to the Q vector at each point
 //
-// -- it must be written this way since the 2D function is an ellipse with its major
+// -- it is more naturally written this way since the 2D function is an ellipse with its major
 // axis pointing in the direction of Q_parallel. Hence there is no way to properly define the 
 // elliptical gaussian in terms of sigmaX and sigmaY
 //
-// based on notes from David Mildner, 2008
+// For a full description of the gravity effect on the resolution, see:
+//
+//	"The effect of gravity on the resolution of small-angle neutron diffraction peaks"
+//	D.F.R Mildner, J.G. Barker & S.R. Kline J. Appl. Cryst. (2011). 44, 1127-1129.
+//	[ doi:10.1107/S0021889811033322 ]
+//
+//		2/17/12 SRK
+// 		NOTE: the first 2/3 of this code is the 1D code, copied here just to have the beam stop
+// 				calculation here, if I decide to implement it. The real calculation is all at the 
+//				bottom and is quite compact
+//
+//
 //
 //
 // - 21 MAR 07 uses projected BS diameter on the detector
@@ -323,9 +334,15 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 /////	
 //	////// this is all new, inclusion of gravity effect into the parallel component
 //       perpendicular component is purely geometric, no gravity component
+//
+// the shadow factor is calculated as above -so keep the above calculations, even though
+// most of them are redundant.
+//
+	
 ////	//
 	Variable yg_d,acc,sdd,ssd,lambda0,DL_L,sig_l
 	Variable var_qlx,var_qly,var_ql,qx,qy,sig_perp,sig_para, sig_para_new
+	
 	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
 	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
 	SDD = L2		//1317
@@ -335,6 +352,7 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	SIG_L = DL_L/sqrt(6)
 	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
 /////	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG
+//		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
 	
 	sig_perp = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2)
 	sig_perp = sqrt(sig_perp)
