@@ -728,7 +728,13 @@ Function AskUserToKillHelp()
 		DisplayHelpTopic/Z "Resolution Function in 2D"
 		if(V_flag==0)
 			numHelpFilesOpen += 1
-		endif	
+		endif
+
+		DisplayHelpTopic/Z "Polarized Beam Reduction Procedures"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif		
+		
 			
 //		PauseForUser		// can't use this, it keeps you from interacting with anything....
 //	while(NumHelpFilesOpen != 0)
