@@ -719,6 +719,16 @@ Function AskUserToKillHelp()
 		if(V_flag==0)
 			numHelpFilesOpen += 1
 		endif	
+		
+		DisplayHelpTopic/Z "Real-Space Modeling of SANS Data"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif	
+		
+		DisplayHelpTopic/Z "Resolution Function in 2D"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif	
 			
 //		PauseForUser		// can't use this, it keeps you from interacting with anything....
 //	while(NumHelpFilesOpen != 0)
