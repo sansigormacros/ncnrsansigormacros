@@ -191,7 +191,7 @@ Function TestConcSpheres(nSph,rad,pd,nPass,tagStr)
 				while(m[xt][yt][zt] == 1)
 			
 				//try to put the sphere there, and keep trying forever
-				err = FillSphereRadiusNoOverlap(m,grid,tmprad,xt,yt,zt,1)
+				err = FillSphereRadiusNoOverlap(m,grid,tmprad,xt,yt,zt,10)
 				
 //				if(fails == 10)
 //					Print "failed 10x on tmprad = ",tmprad
@@ -311,7 +311,7 @@ Proc Timing_Method(type)
 	FFTEraseMatrixButtonProc("")
 	
 //// type 0
-	fill = 1
+	fill = 10
 	rad = 100
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
@@ -339,7 +339,7 @@ Proc Timing_Method(type)
 
 	
 //	type 2
-	fill = 1
+	fill = 10
 	rad = 150
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
@@ -367,61 +367,61 @@ Proc Timing_Method(type)
 	
 
 // type 3
-	fill = 3
+	fill = 30
 	rad = 150
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 2
+	fill = 20
 	rad = 100
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 1
+	fill = 10
 	rad = 50
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
-	fill = 3
+	fill = 30
 	rad = 120
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 2
+	fill = 20
 	rad = 100
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 1
+	fill = 10
 	rad = 50
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 	
-	fill = 3
+	fill = 30
 	rad = 100
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 2
+	fill = 20
 	rad = 70
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 1
+	fill = 10
 	rad = 50
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
-	fill = 3
+	fill = 30
 	rad = 80
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 2
+	fill = 20
 	rad = 70
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 1
+	fill = 10
 	rad = 50
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
-	fill = 3
+	fill = 30
 	rad = 50
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 2
+	fill = 20
 	rad = 40
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
-	fill = 1
+	fill = 10
 	rad = 30
 	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)

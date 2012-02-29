@@ -112,6 +112,9 @@ Function FindNearestNeighbor2D(xw,yw,startPt,maxConn,nnX,nnY,nnInd,nnDist)
 End
 
 Proc Test2D()
+
+	Variable fill = 10
+	
 	Make/O/N=(100,100) plane
 	DoWindow/F Plane_View
 	if(V_flag==0)
@@ -121,7 +124,7 @@ Proc Test2D()
 		ModifyGraph width={Plan,1,bottom,left},height={Plan,1,left,bottom}
 	endif
 	plane=0
-	RandomPoints2D(plane,10)
+	RandomPoints2D(plane,10,fill)
 End
 
 Proc Erase2D()
@@ -131,9 +134,10 @@ End
 
 //for the 3D equivalent, see RandomFill3DMat(mat,num)
 //
-Function RandomPoints2D(w,num)
+Function RandomPoints2D(w,num,fill)
 	Wave w
 	variable num		//number of spheres to add
+	Variable fill
 	
 	Variable row,col,ii,xt,yt,zt,fail=0
 	
@@ -145,7 +149,7 @@ Function RandomPoints2D(w,num)
 		xt=trunc(abs(enoise(row)))		//distr betw (0,npt)
 		yt=trunc(abs(enoise(col)))
 		if( w[xt][yt] == 0 )
-			w[xt][yt] = 1
+			w[xt][yt] = fill
 			ii+=1		//increment number of spheres actually added
 			//Print "point ",ii
 		else
@@ -160,9 +164,10 @@ Function RandomPoints2D(w,num)
 End
 
 // the Sobol sequence MUST be initlalized before passing to thie routine
-Function SobolPoints2D(w,num)
+Function SobolPoints2D(w,num,fill)
 	Wave w
 	variable num		//number of spheres to add
+	Variable fill
 	
 	Variable row,col,ii,xt,yt,zt,fail=0
 	
@@ -177,7 +182,7 @@ Function SobolPoints2D(w,num)
 		SobolX(2,Sobol2D)
 		xt = Sobol2D[0] *row
 		yt = Sobol2D[1] *col
-		w[xt][yt] = 1
+		w[xt][yt] = fill
 	endfor
 	
 	ParseMatrix2D(w)		//convert to XY pairs

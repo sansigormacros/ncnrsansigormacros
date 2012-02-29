@@ -389,7 +389,8 @@ Macro Setup_KR_MultiCylinder()
 
 	Button button_0,pos={45,80},size={100,20},proc=KR_Show3DButtonProc,title="Show 3D"
 	Button button_1,pos={46,51},size={100,20},proc=KR_Plot1DButtonProc,title="Plot 1D"
-	Button button_2,pos={178,80},size={120,20},proc=KR_DoCalcButtonProc,title="Do Calculation"
+	Button button_2,pos={178,50},size={150,20},proc=KR_GenerateButtonProc,title="Generate Structure"
+	Button button_4,pos={178,80},size={120,20},proc=KR_DoCalcButtonProc,title="Do Calculation"
 	Button button_3,pos={600,50},size={120,20},proc=KR_DeleteRow,title="Delete Row(s)"
 	ValDisplay valdisp_0,pos={339,16},size={80,13},title="FFT_T"
 	ValDisplay valdisp_0,limits={0,0,0},barmisc={0,1000},value= #"root:FFT_T"
@@ -459,6 +460,58 @@ Function KR_DeleteRow(ba) : ButtonControl
 
 	return 0
 End
+
+
+//just generates the structure, no calculation
+Function KR_GenerateButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			Wave xx=root:xx
+			if(numpnts(xx)==0)
+				return(0)
+			endif
+			wave yy=yy
+			wave zz=zz
+			wave rri=rri
+			wave hti=hti
+//			wave sbp=sbp
+			wave rotx=rotx
+			wave roty=roty
+			wave sld=sld
+	
+			Duplicate/O xx, sbp
+			NVAR FFT_T=root:FFT_T
+			sbp = FFT_T
+			
+			// parse
+			KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
+
+			// these are really just for display, or if the FFT of mat is wanted later.
+			WAVE xoutW=root:xoutW
+			WAVE youtW=root:youtW
+			WAVE zoutW=root:zoutW
+			WAVE sldW=root:sldW
+	
+			XYZV_FillMat(xoutW,youtW,ZoutW,sldW,1)			//last 1 will erase the matrix
+//			MakeTriplet(xoutW,youtW,zoutW)
+//		
+//		// and the calculation. Assumes SLDs are all the same	
+//			NVAR qmin = root:KR_Qmin
+//			NVAR qmax = root:KR_Qmax
+//			NVAR npt = root:KR_Npt
+//		 
+//			fDoBinned_KR_FFTPanel(npt,qmin,qmax)
+//	
+			
+			break
+	endswitch
+
+	return 0
+End
+
+
 
 Function KR_DoCalcButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba

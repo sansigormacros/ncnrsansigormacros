@@ -216,20 +216,21 @@ Function CalculateTriangulated(nPts,diam,nPass,tagStr,ranType)
 	String tagStr
 	Variable ranType
 	
-	Variable ii,np,frac,nocc
+	Variable ii,np,frac,nocc,fill
 	Wave m=root:mat
 	NVAR grid=root:FFT_T
 	NVAR Nedge = root:FFT_N
 
 	np = 0
 	frac = 0
+	fill = 10
 	for(ii=0;ii<nPass;ii+=1)		//number of averaging passes
 		m=0
 		
 		if(ranType == 1)
-			SobolFill3DMat(m,nPts)
+			SobolFill3DMat(m,nPts,fill)
 		else
-			RandomFill3DMat(m,nPts)
+			RandomFill3DMat(m,nPts,fill)
 		endif
 		ParseMatrix3D_rho(m)				// get the triplets of points to connect
 		
