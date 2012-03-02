@@ -19,6 +19,8 @@
 // 27 JAN 2009 SRK - Changed behavior of Lens checkbox. Now, it SETS parameters as needed for proper
 //						 configuration. 17.2 can be typed in for lens/prism on NG3. Invalid conditions
 //						 will automatically uncheck the box
+// 03 MAR 2012 SRK - Added new source apertures in 6th and 7th boxes of NG3
+//
 //
 // calculate what q-values you get based on the instruments settings
 // that you would typically input to SASCALC
@@ -203,6 +205,7 @@ Function initNG3()
 	Variable/G a1_0_2 = 3.81
 	Variable/G a1_7_0 = 2.5	// after the polarizer		
 	Variable/G a1_7_1 = 5.0
+	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
 	Variable/G a1_def = 5.00
 	
 	//default configuration values
@@ -468,12 +471,12 @@ Function UpdateControls()
 				mode=V_value
 				A1str="1.43 cm;2.54 cm;3.81 cm;"
 				break
-			case 6:
-				A1str = "! 6 Guides invalid;"
-				mode=1
-				break
+//			case 6:									//Mar 2012 - 6 guides is OK now, 5 cm aperture present in 7th box
+//				A1str = "! 6 Guides invalid;"
+//				mode=1
+//				break
 			case 7:							// switched order in 2009 to keep 5 cm as default, 2.5 cm for polarizer
-				A1Str = "5.00 cm;2.50 cm;"
+				A1Str = "5.00 cm;2.50 cm;0.95 cm;"		// Mar 2012 - 3rd aperture added
 				mode = 1
 				break
 			default:
