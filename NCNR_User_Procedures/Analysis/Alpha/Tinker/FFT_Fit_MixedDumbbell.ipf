@@ -96,8 +96,10 @@ Function MixedDumbbellFFT(cw,yw,xw) : FitFunc
 	NVAR FFT_T = root:FFT_T
 	NVAR FFT_N = root:FFT_N
 	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
+
 	
-	FFT_SolventSLD = trunc(rhos*1e6)		//spits back an integer, maybe not correct
+	FFT_SolventSLD = trunc(rhos/FFT_delRho)		//spits back an integer, maybe not correct
 
 // generate the matrix and erase it
 //	FFT_MakeMatrixButtonProc("")
@@ -109,8 +111,8 @@ Function MixedDumbbellFFT(cw,yw,xw) : FitFunc
 
 // with the input parameters, build the structure
 	ctr = trunc(FFT_N/2)
-	fill1 = trunc(rho1*1e6)
-	fill2 = trunc(rho2*1e6)
+	fill1 = trunc(rho1/FFT_delRho)
+	fill2 = trunc(rho2/FFT_delRho)
 	
 	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
 	FillSphereRadius(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)

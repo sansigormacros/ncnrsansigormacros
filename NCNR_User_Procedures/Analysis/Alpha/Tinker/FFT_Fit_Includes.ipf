@@ -4,6 +4,7 @@
 // fit functions
 #include "FFT_Fit_Sphere"
 #include "FFT_Fit_Cylinder"
+#include "FFT_Fit_MixedDumbbell"
 
 //K. Rubinson
 #include "FFT_KR_Parser"

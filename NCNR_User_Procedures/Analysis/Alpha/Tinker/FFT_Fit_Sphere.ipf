@@ -95,8 +95,9 @@ Function SphereFFT(cw,yw,xw) : FitFunc
 	NVAR grid = root:FFT_T
 	NVAR FFT_N = root:FFT_N
 	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 	
-	FFT_SolventSLD = trunc(sldSolv*1e6)		//spits back an integer, maybe not correct
+	FFT_SolventSLD = trunc(sldSolv/FFT_delRho)		//spits back an integer, maybe not correct
 
 // generate the matrix and erase it
 //	FFT_MakeMatrixButtonProc("")
@@ -108,7 +109,7 @@ Function SphereFFT(cw,yw,xw) : FitFunc
 
 // with the input parameters, build the structure
 	ctr = trunc(FFT_N/2)
-	fill = trunc(sldSph*1e6)
+	fill = trunc(sldSph/FFT_delRho)
 	
 	err = FillSphereRadiusNoOverlap(m,grid,radius,ctr,ctr,ctr,fill)
 
