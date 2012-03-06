@@ -23,6 +23,13 @@ Function/S PossibleModelWaves(filterStr)
 	//waves in root
 	list = WaveList(filterStr,";","")
 	
+	// get the real-space model waves, if present
+	if(cmpstr(filterStr,"x*")==0)
+		list += WaveList("qBin*",";","")
+	else
+		list += WaveList("iBin*",";","")
+	endif
+	
 	//add possble smeared models that are housed in data folders
 	ControlInfo/W=WrapperPanel popup_0
 	if(V_flag==0 || cmpstr(S_Value,"No data loaded")==0)

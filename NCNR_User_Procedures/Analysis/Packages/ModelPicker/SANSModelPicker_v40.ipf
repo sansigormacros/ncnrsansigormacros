@@ -952,8 +952,8 @@ Function FreezeModel()
 		Prompt ywave,"Y data",popup,WaveList("s*",";","")
 		Prompt newNameStr,"new name for the waves, _q and _i will be appended"
 	else
-		Prompt xwave,"X data",popup,WaveList("x*",";","")
-		Prompt ywave,"Y data",popup,WaveList("y*",";","")
+		Prompt xwave,"X data",popup,PossibleModelWaves("x*")
+		Prompt ywave,"Y data",popup,PossibleModelWaves("y*")
 		Prompt newNameStr,"new name for the waves, _q and _i will be appended"
 	endif
 

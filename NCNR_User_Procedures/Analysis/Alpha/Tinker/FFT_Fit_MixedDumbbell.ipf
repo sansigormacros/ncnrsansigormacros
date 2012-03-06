@@ -175,12 +175,16 @@ Function fSmearedMixedDumbbellFFT(coefW,yW,xW)
 	return (0)
 End
 
+
+
+//
 //Function MixTest()
 //
 //// make sure all of the globals are set correctly
 //	NVAR FFT_T = root:FFT_T
 //	NVAR FFT_N = root:FFT_N
 //	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+//	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 //	
 //	Variable rho1,rho2,rhos,radius1,radius2,ctr,separation,fill1,fill2
 //	rho1=1e-6
@@ -192,7 +196,7 @@ End
 //	ctr=50
 //	separation = radius1 + radius2
 //	
-//	FFT_SolventSLD = trunc(rhos*1e6)		//spits back an integer, maybe not correct
+//	FFT_SolventSLD = trunc(rhos/FFT_delRho)		//spits back an integer, maybe not correct
 //
 //// generate the matrix and erase it
 ////	FFT_MakeMatrixButtonProc("")
@@ -204,13 +208,14 @@ End
 //
 //// with the input parameters, build the structure
 //	ctr = trunc(FFT_N/2)
-//	fill1 = trunc(rho1*1e6)
-//	fill2 = trunc(rho2*1e6)
+//	fill1 = trunc(rho1/FFT_delRho)
+//	fill2 = trunc(rho2/FFT_delRho)
 //	
 //	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
 //	FillSphereRadius(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)
 //	
 //End
+//
 //
 //Function CoreShellTest()
 //
@@ -218,6 +223,7 @@ End
 //	NVAR FFT_T = root:FFT_T
 //	NVAR FFT_N = root:FFT_N
 //	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+//	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 //	
 //	Variable rho1,rho2,rhos,radius1,radius2,ctr,separation,fill1,fill2
 //	rho1=1e-6
@@ -232,7 +238,7 @@ End
 //	radius2 = 40
 //	ctr=50
 //	
-//	FFT_SolventSLD = trunc(rhos*1e6)		//spits back an integer, maybe not correct
+//	FFT_SolventSLD = trunc(rhos/FFT_delRho)		//spits back an integer, maybe not correct
 //
 //// generate the matrix and erase it
 ////	FFT_MakeMatrixButtonProc("")
@@ -244,8 +250,8 @@ End
 //
 //// with the input parameters, build the structure
 //	ctr = trunc(FFT_N/2)
-//	fill1 = trunc(rho1*1e6)
-//	fill2 = trunc(rho2*1e6)
+//	fill1 = trunc(rho1/FFT_delRho)
+//	fill2 = trunc(rho2/FFT_delRho)
 //	
 //	FillSphereRadius(m,FFT_T,radius2,ctr,ctr,ctr,fill2)
 //	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
@@ -258,6 +264,7 @@ End
 //	NVAR FFT_T = root:FFT_T
 //	NVAR FFT_N = root:FFT_N
 //	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+//	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 //	
 //	Variable rcore,rhocore,thick1,rhoshel1,thick2,rhoshel2,thick3,rhoshel3,rhos,fill1,fill2,fill3,fillc,ctr
 //	WAVE w=root:coef_ThreeShell
@@ -276,7 +283,7 @@ End
 ////	rho2 += 3e-6
 ////	rhos += 3e-6
 //		
-//	FFT_SolventSLD = trunc(rhos*1e6)		//spits back an integer, maybe not correct
+//	FFT_SolventSLD = trunc(rhos/FFT_delRho)		//spits back an integer, maybe not correct
 //
 //// generate the matrix and erase it
 ////	FFT_MakeMatrixButtonProc("")
@@ -288,10 +295,10 @@ End
 //
 //// with the input parameters, build the structure
 //	ctr = trunc(FFT_N/2)
-//	fillc = trunc(rhocore*1e6)
-//	fill1 = trunc(rhoshel1*1e6)
-//	fill2 = trunc(rhoshel2*1e6)
-//	fill3 = trunc(rhoshel3*1e6)
+//	fillc = trunc(rhocore/FFT_delRho)
+//	fill1 = trunc(rhoshel1/FFT_delRho)
+//	fill2 = trunc(rhoshel2/FFT_delRho)
+//	fill3 = trunc(rhoshel3/FFT_delRho)
 //	
 //	FillSphereRadius(m,FFT_T,rcore+thick1+thick2+thick3,ctr,ctr,ctr,fill3)		//outer size (shell 3)
 //	FillSphereRadius(m,FFT_T,rcore+thick1+thick2,ctr,ctr,ctr,fill2)		//outer size (shell 2)
