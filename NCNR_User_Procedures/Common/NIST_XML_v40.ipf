@@ -123,11 +123,15 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 								Wave Qmean = $(xmlDataSetFolder+"Qmean")
 								Duplicate/O Qmean,$w4
 								reswave[][1] = Qmean[p]		//qBar
+							else
+								reswave[][1] = Qsas[p] // If there is no Qmean specified, use Q values
 							endif
 							if(exists(xmlDataSetFolder+"Shadowfactor"))
 								Wave Shadowfactor = $(xmlDataSetFolder+"Shadowfactor")
 								Duplicate/O Shadowfactor, $w5
 								reswave[][2] = Shadowfactor[p]		//fShad
+							else
+								reswave[][2] = 1 // default shadowfactor to 1 if it doesn't exist
 							endif
 						elseif(exists(xmlDataSetFolder+"dQl"))
 							//USANS Data
@@ -255,10 +259,14 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 						if(exists(xmlDataFolder+"Qmean"))
 							Wave Qmean = $(xmlDataFolder+"Qmean")
 							reswave[][1] = Qmean[p]		//qBar
+						else
+							reswave[][1] = Qsas[p] // If there is no Qmean specified, use Q values
 						endif
 						if(exists(xmlDataFolder+"Shadowfactor"))
 							Wave Shadowfactor = $(xmlDataFolder+"Shadowfactor")
 							reswave[][2] = Shadowfactor[p]		//fShad
+						else
+								reswave[][2] = 1 // default shadowfactor to 1 if it doesn't exist
 						endif
 					elseif(exists(xmlDataFolder+"dQl"))
 						//USANS Data
