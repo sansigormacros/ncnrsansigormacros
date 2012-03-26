@@ -289,7 +289,12 @@ End
 // do the FFT calcualtion + rename
 // do the Binned SLD calculation + rename
 //
-Function TestSaveLoad_Hexagonal_vs_Sep()
+//	SaveExperiment statements are done after every step to be sure that there is enough free memory
+// -- running without caused a "not enough memory" error before any of the calculations could be done
+// -- so I'm not completely sure that the Save statements will work.
+//
+//
+Function TestSaveLoad_CoreShellHexagonal()
 
 
 	Wave 	mat=mat
@@ -298,36 +303,44 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	NVAR grid=root:FFT_T
 	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 	
-	// this function takes care of everything in clearing/filling the matrix
+//	// this function takes care of everything in clearing/filling the matrix
 	FilledPores(40,25,2e-6,0e-6,400,100)
-	SaveMyMatrix("mat_R40C25_L400_S100.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S100_N512.ibw")
 	Print "Done with save 1 of 7"
-	
+	SaveExperiment
+
 	FilledPores(40,25,2e-6,0e-6,400,120)
-	SaveMyMatrix("mat_R40C25_L400_S120.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S120_N512.ibw")
 	Print "Done with save 2 of 7"
+	SaveExperiment
 	
 	FilledPores(40,25,2e-6,0e-6,400,140)
-	SaveMyMatrix("mat_R40C25_L400_S140.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S140_N512.ibw")
 	Print "Done with save 3 of 7"
+	SaveExperiment
 	
 	FilledPores(40,25,2e-6,0e-6,400,160)
-	SaveMyMatrix("mat_R40C25_L400_S160.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S160_N512.ibw")
 	Print "Done with save 4 of 7"
+	SaveExperiment
 	
 	FilledPores(40,25,2e-6,0e-6,400,180)
-	SaveMyMatrix("mat_R40C25_L400_S180.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S180_N512.ibw")
 	Print "Done with save 5 of 7"
+	SaveExperiment
 
 	FilledPores(40,25,2e-6,0e-6,400,200)
-	SaveMyMatrix("mat_R40C25_L400_S200.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S200_N512.ibw")
 	Print "Done with save 6 of 7"
+	SaveExperiment
 	
 	FilledPores(40,25,2e-6,0e-6,400,220)
-	SaveMyMatrix("mat_R40C25_L400_S220.ibw")
+	SaveMyMatrix("mat_R40C25_L400_S220_N512.ibw")
 	Print "Done with save 7 of 7"
+	SaveExperiment
 
-
+	
+	
 	//re-load the matrices
 	Variable num,qmin,qmax
 	num=1000
@@ -338,70 +351,228 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	qval_SLD = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
 	
 	
-	ReloadMatrix("mat_R40C25_L400_S100.ibw")
+	ReloadMatrix("mat_R40C25_L400_S100_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S100
-	Duplicate/O qBin qBin_R40C25_L400_S100
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S100
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S100
+	Duplicate/O iBin iBin_R40C25_L400_S100_N512
+	Duplicate/O qBin qBin_R40C25_L400_S100_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S100
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S100
 	Print "Done with calculation 1 of 7"
+	SaveExperiment
 	
-	ReloadMatrix("mat_R40C25_L400_S120.ibw")
+	ReloadMatrix("mat_R40C25_L400_S120_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S120
-	Duplicate/O qBin qBin_R40C25_L400_S120
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S120
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S120
+	Duplicate/O iBin iBin_R40C25_L400_S120_N512
+	Duplicate/O qBin qBin_R40C25_L400_S120_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S120
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S120
 	Print "Done with calculation 2 of 7"
+	SaveExperiment
 	
-	ReloadMatrix("mat_R40C25_L400_S140.ibw")
+	ReloadMatrix("mat_R40C25_L400_S140_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S140
-	Duplicate/O qBin qBin_R40C25_L400_S140
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S140
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S140
+	Duplicate/O iBin iBin_R40C25_L400_S140_N512
+	Duplicate/O qBin qBin_R40C25_L400_S140_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S140
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S140
 	Print "Done with calculation 3 of 7"
+	SaveExperiment
 	
-	ReloadMatrix("mat_R40C25_L400_S160.ibw")
+	ReloadMatrix("mat_R40C25_L400_S160_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S160
-	Duplicate/O qBin qBin_R40C25_L400_S160
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S160
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S160
+	Duplicate/O iBin iBin_R40C25_L400_S160_N512
+	Duplicate/O qBin qBin_R40C25_L400_S160_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S160
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S160
 	Print "Done with calculation 4 of 7"
+	SaveExperiment
 	
-	ReloadMatrix("mat_R40C25_L400_S180.ibw")
+	ReloadMatrix("mat_R40C25_L400_S180_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S180
-	Duplicate/O qBin qBin_R40C25_L400_S180
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S180
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S180
+	Duplicate/O iBin iBin_R40C25_L400_S180_N512
+	Duplicate/O qBin qBin_R40C25_L400_S180_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S180
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S180
 	Print "Done with calculation 5 of 7"
+	SaveExperiment
 
-	ReloadMatrix("mat_R40C25_L400_S200.ibw")
+	ReloadMatrix("mat_R40C25_L400_S200_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S200
-	Duplicate/O qBin qBin_R40C25_L400_S200
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S200
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S200
+	Duplicate/O iBin iBin_R40C25_L400_S200_N512
+	Duplicate/O qBin qBin_R40C25_L400_S200_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S200
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S200
 	Print "Done with calculation 6 of 7"
+	SaveExperiment
 	
-	ReloadMatrix("mat_R40C25_L400_S220.ibw")
+	ReloadMatrix("mat_R40C25_L400_S220_N512.ibw")
 	Execute "DoFFT()"
-	Duplicate/O iBin iBin_R40C25_L400_S220
-	Duplicate/O qBin qBin_R40C25_L400_S220
-	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
-	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S220
-	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S220
+	Duplicate/O iBin iBin_R40C25_L400_S220_N512
+	Duplicate/O qBin qBin_R40C25_L400_S220_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S220
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S220
 	Print "Done with calculation 7 of 7"
-	
+	SaveExperiment
 
+		
+	
+	Print "All calculations done"
+
+
+
+	return(0)
+End
+
+
+Function TestSaveLoad_Hexagonal_vs_Sep()
+
+
+	Wave 	mat=mat
+	NVAR 	solventSLD = root:FFT_SolventSLD
+	
+	NVAR grid=root:FFT_T
+	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
+
+
+// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,100,20)
+	SaveMyMatrix("mat_R40_L400_S100_N512.ibw")
+	Print "Done with save 1 of 7"
+	SaveExperiment
+
+// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")	
+	X_CylindersHexagonalGrid(mat,40,400,120,20)
+	SaveMyMatrix("mat_R40_L400_S120_N512.ibw")
+	Print "Done with save 2 of 7"
+	SaveExperiment
+	
+	// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,140,20)
+	SaveMyMatrix("mat_R40_L400_S140_N512.ibw")
+	Print "Done with save 3 of 7"
+	SaveExperiment
+	
+	// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,160,20)
+	SaveMyMatrix("mat_R40_L400_S160_N512.ibw")
+	Print "Done with save 4 of 7"
+	SaveExperiment
+	
+	// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,180,20)
+	SaveMyMatrix("mat_R40_L400_S180_N512.ibw")
+	Print "Done with save 5 of 7"
+	SaveExperiment
+	
+	// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,200,20)
+	SaveMyMatrix("mat_R40_L400_S200_N512.ibw")
+	Print "Done with save 6 of 7"
+	SaveExperiment
+	
+	// fill the matrix with solvent
+	FFTFillSolventMatrixProc("")
+	X_CylindersHexagonalGrid(mat,40,400,220,20)
+	SaveMyMatrix("mat_R40_L400_S220_N512.ibw")
+	Print "Done with save 7 of 7"
+	SaveExperiment
+	
+	
+	//re-load the matrices
+	Variable num,qmin,qmax
+	num=1000
+	qmin=0.01
+	qmax=0.6
+	
+	Make/O/D/N=(num) qval_SLD,ival_SLD
+	qval_SLD = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
+
+
+
+	ReloadMatrix("mat_R40_L400_S100_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S100_N512
+	Duplicate/O qBin qBin_R40_L400_S100_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S100
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S100
+	Print "Done with calculation 1 of 7"
+	SaveExperiment
+	
+	ReloadMatrix("mat_R40_L400_S120_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S120_N512
+	Duplicate/O qBin qBin_R40_L400_S120_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S120
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S120
+	Print "Done with calculation 2 of 7"
+	SaveExperiment
+	
+	ReloadMatrix("mat_R40_L400_S140_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S140_N512
+	Duplicate/O qBin qBin_R40_L400_S140_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S140
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S140
+	Print "Done with calculation 3 of 7"
+	SaveExperiment
+	
+	ReloadMatrix("mat_R40_L400_S160_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S160_N512
+	Duplicate/O qBin qBin_R40_L400_S160_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S160
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S160
+	Print "Done with calculation 4 of 7"
+	SaveExperiment
+	
+	ReloadMatrix("mat_R40_L400_S180_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S180_N512
+	Duplicate/O qBin qBin_R40_L400_S180_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S180
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S180
+	Print "Done with calculation 5 of 7"
+	SaveExperiment
+	
+	ReloadMatrix("mat_R40_L400_S200_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S200_N512
+	Duplicate/O qBin qBin_R40_L400_S200_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40C25_L400_S200
+//	Duplicate/O qval_SLD qval_SLD_R40C25_L400_S200
+	Print "Done with calculation 6 of 7"
+	SaveExperiment
+
+	ReloadMatrix("mat_R40_L400_S220_N512.ibw")
+	Execute "DoFFT()"
+	Duplicate/O iBin iBin_R40_L400_S220_N512
+	Duplicate/O qBin qBin_R40_L400_S220_N512
+//	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
+//	Duplicate/O ival_SLD ival_SLD_R40_L400_S220
+//	Duplicate/O qval_SLD qval_SLD_R40_L400_S220
+	Print "Done with calculation 7 of 7"
+	SaveExperiment
+		
+	
 	Print "All calculations done"
 
 
