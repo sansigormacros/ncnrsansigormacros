@@ -1,5 +1,9 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+
+// **** search for TODO to find items still to be fixed in other procedures  **********
+
+
 // These procedures and calculations duplicate the work of K. Krycka and WC Chen
 // in calculating the state of the He cell and subsequent correction of scattering data
 //
@@ -19,7 +23,7 @@
 // error propagation was written up elsewhere, and will be implemented as well
 // - each of the calculations based on transmissions will need to have errors
 // brought in, and carried through the calculations. Some will be simple, some
-// will probably be easiest with expansions.
+// will probably be easiest written as expansions.
 //
 
 
@@ -41,7 +45,7 @@
 // then add together the values for the coefficient matrix.
 // -- this can be tricky with rescaling for time, and adding to the proper row of the 
 // coefficient matrix. I'll need to re-read either the monitor or the time from the header
-// of each file that was added
+// of each file that was added so that the contributions are added to the matrix in correct proportion
 //
 // Then everything is set to do the inversion.
 // -- the result of the inversion is 4 corrected data sets, with no polarization effects. "_pc"
@@ -52,9 +56,12 @@
 // this whole procedure is going to be essentially a big script of existing procedures
 //
 //
+
+// **** search for TODO to find items still to be fixed in other procedures  **********
+
 //
 // TODO:
-// - need a better way of flowing through the process, to be sure that values are set
+// - Overall, I need a better way of flowing through the whole process, to be sure that values are set
 // as needed and that one step won't fail because a previous step wasn't done yet. Combining the
 // first three panels into one w/ tabs would help a lot, but that is rather complex to implement.
 // and is still not a fool-proof situation
@@ -67,7 +74,7 @@
 //
 // -- When multiple files are added together, there are changes made to the RealsRead (monCts, etc.). Are these
 //		properly made, and then properly copied to the "_UU", and then properly copied back to the untagged waves
-//		for use in the reduction?
+//		for use in the reduction? (now at this later date, I don't understand this question...)
 //
 
 
@@ -246,7 +253,7 @@ end
 // X- save the popup state
 // X- need a way of saving the "protocol" since the setup is so complex.
 // - generate a report of the setup.
-// - 4-panel display (maybe a layout with labels?) Maybe a panel with 4 subwindows. Can I use color bars in them?
+// X- 4-panel display (maybe a layout with labels?) Maybe a panel with 4 subwindows. Can I use color bars in them?
 //
 //
 Window PolCor_Panel()
@@ -789,14 +796,17 @@ End
 
 // loads the specified type of data (SAM, EMP, BGD) based on the active tab
 // loads either specified spin type or all four
-// (( now, defaults to trying to load ALL four data spin states ))
-// 		- I'll have to fix this later if only 2 of the four are needed
+//
 //  -- during loading, the proper row of the PolMatrix is filled, based on pType
 //
 // then after all data is loaded:
 // 		-the inverse Inv_PolMatrix is calculated
 //		-the error in the PolMatrix is calculated
 //		-the error in Inv_PolMatrix is calculated
+//
+// TODO:
+// (( now, defaults to trying to load ALL four data spin states ))
+// 		- I'll have to fix this later if only 2 of the four are needed
 //
 Function LoadRawPolarizedButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -870,11 +880,8 @@ Function LoadRawPolarizedButton(ba) : ButtonControl
 				endfor
 				
 				Inv_PolMatrix_err = sqrt(Inv_PolMatrix_err)
-	
 				
 			endif
-	
-	
 	
 			SetDataFolder root:
 			
@@ -1007,8 +1014,13 @@ End
 //	DD = 2
 //	UD = 3
 //
+//
+// TODO:
 // -- check all of the math
-// not yet using the midpoint time
+// -- not yet using the midpoint time, even though it is passed in (?)
+//		exactly where in the math would I use the time midpoint? The midpoint passed in is the 
+//    midpoint of all of the files in the list. Individual contributions to the matrix are here
+//    calculated at the (start) time of each file. So is a midpoint really necessary?
 //
 // -- the PolMatrix_err returned from here is the squared error!
 //
@@ -1164,11 +1176,11 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					matA[row][2] += (1-Psm)*Tmin*proportion[ii]
 					matA[row][3] += (1+Psm)*Tmin*proportion[ii]
 
-// this seems to be too large...
-					matA_err[row][0] += (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2
-					matA_err[row][1] += (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2
-					matA_err[row][2] += (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2
-					matA_err[row][3] += (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2
+// this seems to be too large... do I need to add the errors in proportion too? squared?
+					matA_err[row][0] += proportion[ii]*( (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2 )
+					matA_err[row][1] += proportion[ii]*( (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2 )
+					matA_err[row][2] += proportion[ii]*( (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2 )
+					matA_err[row][3] += proportion[ii]*( (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2 )
 						
 					break
 				case "DU":		
@@ -1200,11 +1212,11 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					matA[row][2] += (1+PsmPf)*Tmin*proportion[ii]
 					matA[row][3] += (1-PsmPf)*Tmin*proportion[ii]
 
-// this seems to be too large...
-					matA_err[row][0] += (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2
-					matA_err[row][1] += (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2
-					matA_err[row][2] += (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2
-					matA_err[row][3] += (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2
+// this seems to be too large... do I need to add the errors in proportion too? squared?
+					matA_err[row][0] += proportion[ii]*( (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2 )
+					matA_err[row][1] += proportion[ii]*( (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2 )
+					matA_err[row][2] += proportion[ii]*( (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2 ) 
+					matA_err[row][3] += proportion[ii]*( (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2 )
 
 
 					break	
@@ -1237,11 +1249,11 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					matA[row][2] += (1+PsmPf)*Tmaj*proportion[ii]
 					matA[row][3] += (1-PsmPf)*Tmaj*proportion[ii]
 
-// this seems to be too large...
-					matA_err[row][0] += (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2
-					matA_err[row][1] += (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2
-					matA_err[row][2] += (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2
-					matA_err[row][3] += (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2
+// this seems to be too large... do I need to add the errors in proportion too? squared?
+					matA_err[row][0] += proportion[ii]*( (Tmin)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmin^2 )
+					matA_err[row][1] += proportion[ii]*( (Tmin)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmin^2 )
+					matA_err[row][2] += proportion[ii]*( (Tmaj)^2*err_PsmPf^2 + (1+PsmPf)^2*err_Tmaj^2 )
+					matA_err[row][3] += proportion[ii]*( (Tmaj)^2*err_PsmPf^2 + (1-PsmPf)^2*err_Tmaj^2 )
 										
 					break						
 				case "UD":		
@@ -1273,36 +1285,20 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					matA[row][2] += (1-Psm)*Tmaj*proportion[ii]
 					matA[row][3] += (1+Psm)*Tmaj*proportion[ii]
 
-// this seems to be too large...
-					matA_err[row][0] += (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2
-					matA_err[row][1] += (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2
-					matA_err[row][2] += (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2
-					matA_err[row][3] += (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2
-					
-														
+// this seems to be too large... do I need to add the errors in proportion too? squared?
+					matA_err[row][0] += proportion[ii]*( (Tmin)^2*err_Psm^2 + (1+Psm)^2*err_Tmin^2 )
+					matA_err[row][1] += proportion[ii]*( (Tmin)^2*err_Psm^2 + (1-Psm)^2*err_Tmin^2 )
+					matA_err[row][2] += proportion[ii]*( (Tmaj)^2*err_Psm^2 + (1-Psm)^2*err_Tmaj^2 )
+					matA_err[row][3] += proportion[ii]*( (Tmaj)^2*err_Psm^2 + (1+Psm)^2*err_Tmaj^2 )
+																			
 					break
 			endswitch
 
-			
 		endif
 	endfor
 	
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
 	
-// but now need to re-normalize the row based on the number of files that were added
-// pType has only one value as passed in, so the row has already been set. It would be more correct
-// to switch based on pType...
-	
-//	matA[row][0] /= fileCount
-//	matA[row][1] /= fileCount
-//	matA[row][2] /= fileCount
-//	matA[row][3] /= fileCount	
-//	
-//	matA_err[row][0] /= fileCount
-//	matA_err[row][1] /= fileCount
-//	matA_err[row][2] /= fileCount
-//	matA_err[row][3] /= fileCount	
-				
 	SetDataFolder root:
 	return(0)
 End
@@ -2245,7 +2241,8 @@ End
 
 // at a first pass, uses the regular reduction protocol 	SaveProtocolButton(ctrlName)
 //
-// -- won't work, as it uses the MakeProtocolFromPanel function... so replace this
+// TODO
+// X- won't work, as it uses the MakeProtocolFromPanel function... so replace this
 //
 Function SavePolCorProtocolButton(ctrlName) : ButtonControl
 	String ctrlName

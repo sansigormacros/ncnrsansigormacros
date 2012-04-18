@@ -1,6 +1,9 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
+
+// **** search for TODO to find items still to be fixed in other procedures  **********
+
 // TODO:
 // x- on the decay panel. need to be able to manually enter a date that is to or an offset
 // 		number of hours. currently it takes the first file as t=0, which is often not correct
@@ -752,12 +755,14 @@ Function CalcRowParamButton(ba) : ButtonControl
 				// do the calculations:
 				// 1 for each file, return the count rate and err_CR (normalize to atten or not)
 	
-				Print "************The Blocked CR *is* rescaled to zero attenuators -- "
 				cr1 = TotalCR_FromRun(w[selRow][%Trans_He_In],err_cr1,0)
 				cr2 = TotalCR_FromRun(w[selRow][%Trans_He_Out],err_cr2,0)
 //				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
-				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,0)			//blocked beam is NOT normalized to zero attenuators
-				
+//				Print "************The Blocked CR is *NOT* rescaled to zero attenuators -- CalcRowParamButton"
+				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,0)			//blocked beam is normalized to zero attenuators
+				Print "************The Blocked CR *is* rescaled to zero attenuators -- CalcRowParamButton "
+
+
 				calc[selRow][%CR_Trans_He_In] = cr1
 				calc[selRow][%CR_Trans_He_Out] = cr2
 				calc[selRow][%CR_Blocked] = cr3
@@ -994,7 +999,7 @@ End
 //	return(0)
 //End
 
-// calculate the total detector CR ane its error.
+// calculate the total detector CR and its error.
 //
 // the result is automatically normalized to 10^8 monitor counts, and to zero attenuators
 //

@@ -7,6 +7,11 @@
 // -3-Flipper efficiency
 
 
+
+// **** search for TODO to find items still to be fixed in other procedures  **********
+
+
+
 //
 // TODO: 
 // X- add a way to manually enter the P values into a "blank" condition, in case that the users
@@ -387,14 +392,14 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 					endif
 					
 					// do the calculations:
-		
-					Print "The Blocked CR is not rescaled to zero attenuators"
 					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,0)
 					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
 					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
 					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
 //					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
-					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,0)		//blocked beam is NOT normalized to zero attenuators
+//					Print "The Blocked CR is *NOT* rescaled to zero attenuators -- FlipperAverageButtonProc"
+					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,0)		//blocked beam is normalized to zero attenuators
+					Print "The Blocked CR *IS* rescaled to zero attenuators -- FlipperAverageButtonProc"
 	
 					calc[selRow][%cr_UU] = cr1
 					calc[selRow][%cr_DU] = cr2
@@ -468,13 +473,10 @@ End
 
 // gCellKW passed in has gamma, muPo, etc. needed for PCell(t) calculation
 //
-// these are not the equations that Kaythrn gave to me, but rather
-// equations 14 and 15 from the SS handout. These replacement equations
-// are in terms of relative transmissions, so I can use count rates
-// otherwise, I don't know how to calculate a transmission -- I don't know what
-// the "empty beam" condition is...
-//
+//	TODO:
 //  this is only using the measurement at t1 for the calculation!
+// -- do I need to recalculate at the midpoint of the time interval?
+// -- then how do I define the beginning and ending time?
 //
 Function Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	WAVE w,calc
@@ -538,13 +540,11 @@ end
 
 // gCellKW passed in has gamma, muPo, etc. needed for PCell(t) calculation
 //
-// these are not the equations that Kaythrn gave to me, but rather
-// equations 14 and 15 from the SS handout. These replacement equations
-// are in terms of relative transmissions, so I can use count rates
-// otherwise, I don't know how to calculate a transmission -- I don't know what
-// the "empty beam" condition is...
-//
+//	TODO:
 //  this is only using the measurement at t1 for the calculation!
+// -- do I need to recalculate at the midpoint of the time interval?
+// -- then how do I define the beginning and ending time?
+//
 //
 Function Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	WAVE w,calc
@@ -905,18 +905,12 @@ Function ParseFlipperRow(w,selRow)
 	
 	// do a check of the elapsed time from start to finish
 	
-	
-	
-	
 	if( (sdd1 != sdd2) || (sdd2 != sdd3) || (sdd1 != sdd3) )
 		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
 		err = 1
 	endif
 	
-	
-	
-	
-	
+
 	if( (atten1 != atten2) || (atten2 != atten3) || (atten1 != atten3) )
 		DoAlert 0,"Files in row "+num2str(selRow)+" are not all collected with the same attenuation. Just so you know."
 		err = 0
