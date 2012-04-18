@@ -1,4 +1,4 @@
-PACKAGE_VERSION=7.10;SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
+PACKAGE_VERSION=7.11;SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
 
 Only the first line of the file is read in.
 Igor will use the NumberByKey operation to get the 
