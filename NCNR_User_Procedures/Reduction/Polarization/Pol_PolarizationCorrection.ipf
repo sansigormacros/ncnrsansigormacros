@@ -1,8 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
-// **** search for TODO to find items still to be fixed in other procedures  **********
-
 
 // These procedures and calculations duplicate the work of K. Krycka and WC Chen
 // in calculating the state of the He cell and subsequent correction of scattering data
@@ -25,8 +23,6 @@
 // brought in, and carried through the calculations. Some will be simple, some
 // will probably be easiest written as expansions.
 //
-
-
 
 
 
@@ -75,6 +71,13 @@
 // -- When multiple files are added together, there are changes made to the RealsRead (monCts, etc.). Are these
 //		properly made, and then properly copied to the "_UU", and then properly copied back to the untagged waves
 //		for use in the reduction? (now at this later date, I don't understand this question...)
+//
+// -- still not sure what is needed for absolute scaling
+//
+// -- what is the sample transmission, and exactly what +/- states are the proper measurements to use for thransmission?
+//
+// -- generate some sort of report of what was set up, and what was used in the calculation
+//
 //
 
 
@@ -1324,7 +1327,8 @@ Function MakePCResultWaves(type,pType)
 	return(0)
 End
 
-
+// TODO
+// -- clean up the wave note method to get the file loaded information passed around for display
 // a function to tag the data in a particular folder with the UD state
 Function TagLoadedData(type,pType)
 	String type,pType
@@ -1340,10 +1344,17 @@ Function TagLoadedData(type,pType)
 	Duplicate/O $(destPath + ":integersread"),$(destPath + ":integersread"+pType)
 	Duplicate/O $(destPath + ":realsread"),$(destPath + ":realsread"+pType)
 	
+	SVAR FileList = $(destPath + ":FileList")		//stick the list of files as a wave note. Very inelegant...
+	Note $(destPath + ":textread"+pType),FileList
+	
+	
 	return(0)
 End
 
-
+// TODO
+// -- Be sure that fRawWindowHook is picking up all of the correct information - identifying what the 
+//    displayed data set really is...
+//
 // a procedure (easier than a function) to point the current data to the tagged data
 Proc DisplayTaggedData(type,pType)
 	String type="SAM",pType="UU"
@@ -1362,11 +1373,14 @@ Proc DisplayTaggedData(type,pType)
 // make the data equal to linear data
 	$(destPath + ":data") = $(destPath + ":linear_data"+pType)
 
+
+	root:myGlobals:gDataDisplayType = type + pType
+	
 	UpdateDisplayInformation(type)
-// using fRawWindowHook() gets the log/lin correct
-//	fRawWindowHook()
 
-
+	//update the displayed filename, using FileList in the current data folder
+	String/G root:myGlobals:gCurDispFile = note($(destPath + ":textread"+pType))		//read from the wave note
+	
 End
 
 
@@ -1376,6 +1390,7 @@ End
 // exp cross sections have _UU extensions
 // polCor result has _UU_pc
 //
+// error propagation through the inversion follows the paper...
 //
 Function PolCorButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba

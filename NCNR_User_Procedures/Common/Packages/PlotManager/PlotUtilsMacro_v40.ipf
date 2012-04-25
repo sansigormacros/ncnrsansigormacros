@@ -1194,7 +1194,10 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList("FillYZCircle;FillZCylinder;PadMatrix;RandomFill3DMat;RandomPoints2D;SobolFill3DMat;SphereAtEachPoint;UnConnectedRodFill;XYZV_toByteVoxels;",list,";")
 	list = RemoveFromList("MakeTriplet;SobolPoints2D;X_CylindersAtPoints;X_CylindersHexagonalGrid;X_CylindersSquareGrid;maxDistance_Threaded;KR_MultiCylinder;",list,";")
 	list = RemoveFromList("X_CoreShellCylinderHexGrid;FillPlaneHexagonal;FillPlaneSquareGrid;",list,";")
-	
+
+// from Polarization
+	list = RemoveFromList("ParseDecayRow;ParseFlipperRow;",list,";")
+
 	
 	list = SortList(list)
 	return(list)

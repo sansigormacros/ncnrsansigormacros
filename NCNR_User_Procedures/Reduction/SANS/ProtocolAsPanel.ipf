@@ -1972,10 +1972,10 @@ End
 Function UpdateDisplayInformation(type)
 	String type
 
-	String newTitle = "WORK_"+type
-	DoWindow/F SANS_Data
-	DoWindow/T SANS_Data, newTitle
-	KillStrings/Z newTitle
+//	String newTitle = "WORK_"+type
+//	DoWindow/F SANS_Data
+//	DoWindow/T SANS_Data, newTitle
+//	KillStrings/Z newTitle
 	
 	//need to update the display with "data" from the correct dataFolder
 	//reset the current displaytype to "type"

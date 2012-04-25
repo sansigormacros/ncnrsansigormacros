@@ -290,11 +290,15 @@ Function ManualEnterPfPsmButton(ba) : ButtonControl
 	
 	
 // Put the average values into the wave note and display on the panel
+			SVAR gT0 = root:Packages:NIST:Polarization:Cells:gT0
+			
 			noteStr = note(w)
 			noteStr = ReplaceNumberByKey("P_sm_f", noteStr, PsmPf ,"=", ",", 0)
 			noteStr = ReplaceNumberByKey("P_sm", noteStr, Psm ,"=", ",", 0)
 			noteStr = ReplaceNumberByKey("err_P_sm_f", noteStr, err_PsmPf ,"=", ",", 0)
 			noteStr = ReplaceNumberByKey("err_P_sm", noteStr, err_Psm ,"=", ",", 0)
+			noteStr = ReplaceStringByKey("T0", noteStr, gT0 ,"=", ",", 0)
+			
 			
 			// replace the string
 			Note/K w
