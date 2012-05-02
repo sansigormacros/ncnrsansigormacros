@@ -1463,6 +1463,8 @@ End
 // be the displayed function...
 Function DisplayCovarianceMatrix()
 
+	
+
 	ControlInfo/W=wrapperpanel popup_0
 	String folderStr=S_Value
 
@@ -1482,9 +1484,69 @@ Function DisplayCovarianceMatrix()
 	Wave M_Covar=M_Covar
 	Duplicate/O M_Covar, CorMat	 // You can use any name instead of CorMat
 	CorMat = M_Covar[p][q]/sqrt(M_Covar[p][p]*M_Covar[q][q])
-	Edit CorMat
-	
+
+	// clear the table (a subwindow)
+	DoWindow/F CorMatPanel				// ?? had to add this in during all of the cursor meddling...
+	KillWindow CorMatPanel#T0
+	Edit/W=(20,74,634,335)/HOST=CorMatPanel
+	RenameWindow #,T0
+	// get them onto the table
+	// how do I get the parameter name?
+	String param = getFunctionParams(funcStr)
+	AppendtoTable/W=CorMatPanel#T0 $param
+	AppendToTable/W=CorMatPanel#T0 CorMat
+	ModifyTable/W=CorMatPanel#T0 width(Point)=0
+
+	GroupBox grpBox_1 title="Data set: "+folderStr
+	GroupBox grpBox_2 title="Function: "+funcStr
+
+
 	SetDataFolder root:
 	
 	return(0)
+End
+
+
+Window CorMatPanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(459,44,1113,399)/N=CorMatPanel/K=1 as "Correlation Matrix"
+	ModifyPanel fixedSize=1
+	
+	GroupBox grpBox_1 title="box 1",pos={10,20},size={0,0},frame=1,fSize=10,fstyle=1,fColor=(39321,1,1)
+	GroupBox grpBox_2 title="box 2",pos={10,40},size={0,0},frame=1,fSize=10,fstyle=1,fColor=(39321,1,1)
+
+	Button button_1,pos={520,30},size={100,20},proc=CorMatHelpButtonProc,title="Help"
+
+	Edit/W=(20,74,634,335)/HOST=#  
+	ModifyTable width(Point)=0
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+EndMacro
+
+
+Proc DisplayCovariance()
+	DoWindow/F CorMatPanel
+	if(V_Flag==0)
+		CorMatPanel()
+	endif
+	
+	DisplayCovarianceMatrix()
+
+End
+
+//open the Help file for the Fit Manager
+Function CorMatHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Covariance Matrix"
+			if(V_flag !=0)
+				DoAlert 0,"Help for the correlation matrix could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
 End

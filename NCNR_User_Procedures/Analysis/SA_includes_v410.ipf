@@ -40,6 +40,7 @@ Menu "SANS Models"
 		"ReWrite Experimental Data",MakeDMPanel()		//,ReWrite1DData()	// SRK SEP10
 		"1D Arithmetic Panel",MakeDAPanel()
 		"ReBin 1D Data",OpenRebin()
+		"Show Correlation Matrix",DisplayCovariance()
 	end
 	"-"
 	Submenu "Packages"

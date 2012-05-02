@@ -814,13 +814,22 @@ Function CalcRowParamButton(ba) : ButtonControl
 				err_avg_Po += err_Po^2
 				
 			endfor		//loop over rows
-			
-			// now get a running average of muP, Po, and the errors
-			avg_muP = sum_muP/numRows
-			avg_Po = sum_Po/numRows
-			err_avg_muP = sqrt(err_avg_muP) / numRows
-			err_avg_Po = sqrt(err_avg_Po) / numRows
-			
+
+
+////// 26 APR 12 -- why was I getting a running average of these values??		not sure, so I commented them out...
+//				they aren't returned or used anywhere...
+//			// now get a running average of muP, Po, and the errors
+//			avg_muP = sum_muP/numRows
+//			avg_Po = sum_Po/numRows
+//			err_avg_muP = sqrt(err_avg_muP) / numRows
+//			err_avg_Po = sqrt(err_avg_Po) / numRows
+//	
+//
+//			Printf "Average muP = %g +/- %g (%g%)\r",avg_muP,err_avg_muP,err_avg_muP/avg_muP*100
+//			Printf "Average Po = %g +/- %g (%g%)\r",avg_Po,err_avg_Po,err_avg_Po/avg_Po*100
+//			
+//		E  26 APR 12
+		
 //			str = "muP=2,err_muP=0,P0=0.6,err_P0=0,T0=asdf,gamma=200,err_gamma=0,"
 
 			// Don't put the average values into the wave note, but rather the results of the fit
@@ -834,8 +843,7 @@ Function CalcRowParamButton(ba) : ButtonControl
 //			Note/K w
 //			Note w, noteStr
 					
-			Printf "Average muP = %g +/- %g (%g%)\r",avg_muP,err_avg_muP,err_avg_muP/avg_muP*100
-			Printf "Average Po = %g +/- %g (%g%)\r",avg_Po,err_avg_Po,err_avg_Po/avg_Po*100
+
 			
 			//update the global values for display (not these, but after the fit)
 //			Print " -- need to add the error to the display on the panel	"
