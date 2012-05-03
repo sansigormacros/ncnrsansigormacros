@@ -41,6 +41,7 @@ Menu "SANS Models"
 		"1D Arithmetic Panel",MakeDAPanel()
 		"ReBin 1D Data",OpenRebin()
 		"Show Correlation Matrix",DisplayCovariance()
+		"Map Chi-Squared",MapChiSquared()
 	end
 	"-"
 	Submenu "Packages"

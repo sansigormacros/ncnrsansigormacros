@@ -1458,6 +1458,10 @@ Function AreCursorsCorrect(folderStr)
 	return(1)
 End
 
+
+
+//////////////////////////////
+//
 // displays the covariance matrix for the current data set in the popup
 // AND whatever was the last fit for that data set. it may not necessarily
 // be the displayed function...
@@ -1550,3 +1554,181 @@ Function CorMatHelpButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
+//////////////////////////////////
+// this is a snippet from Andy Nelson, posted at the Igor Exchange web site.
+//
+// search area appears to be a percent (so enter 10 to get +/- 10% variation in the parameter)
+//
+// TODO:
+//		x- rename the function for just me
+//		x- make the edata a mandatory parameter
+//		x- remove rhs, lhs? or keep these if cursors were used to properly trim the data set
+//		x- label the graph
+//		x- make a panel to control this - to either pick a single parameter, or show all of them
+//		x- have it re-use the same graph, not draw a (new) duplicate one
+//		x- update it to use the AAO as the input function (new func template -- see Gauss Utils)
+//		x- the wrapper must be data folder aware, and data set aware like in the Wrapper panel
+//		x- need a different wrapper for smeared and unsmeared functions
+//
+//
+
+
+
+Proc MapChiSquared(paramNum,percent)
+	Variable paramNum=0,percent=10
+	Prompt paramNum, "Enter parameter number: "
+	Prompt percent, "Enter percent variation +/- : "
+
+	fChiMap(paramNum,percent)
+End
+
+
+// this does the math for a single value of "whichParam"
+Function chi2gen(funcStr,folderStr,xw,yw,sw,cw,whichParam,searchArea,lhs,rhs,useResol)
+	String funcStr,folderStr
+	Wave xw,yw,sw,cw      //	x data, y data, error wave, and coefficient wave
+	variable whichParam, searchArea  //which of the parameters to you want to vary, how far from the original value do you want to search (%)
+	variable lhs, rhs    //specify a region of interest in the data using a left hand side and right hand side.
+ 	variable useResol		// =1 if smeared used
+ 
+	variable originalvalue = cw[whichparam]
+	variable range = originalValue * searchArea/100
+	variable ii,err
+ 
+	duplicate/o yw, :theoretical_data, :chi2_data
+	Wave theoretical_data, chi2_data
+ 
+	make/o/n=200/d chi2_map
+	setscale/I x,  originalvalue - range/2, originalvalue + range/2, chi2_map
+ 
+ 	String DF="root:"+folderStr+":"	
+	String suffix=getModelSuffix(funcStr)
+
+ 	// fill a struct instance whether it is needed or not
+	Struct ResSmearAAOStruct fs
+	WAVE/Z resW = $(DF+folderStr+"_res")			//these may not exist, if 3-column data is used	
+	WAVE/Z fs.resW =  resW
+//		WAVE yw=$(DF+folderStr+"_i")
+//		WAVE xw=$(DF+folderStr+"_q")
+//		WAVE sw=$(DF+folderStr+"_s")
+	Wave fs.coefW = cw
+	Wave fs.yW = theoretical_data
+	Wave fs.xW = xw	
+ 
+ 
+ 
+	for(ii=0 ; ii < numpnts(chi2_map) ; ii+=1)
+		cw[whichparam] = pnt2x(chi2_map, ii)
+ 
+		if(useResol)
+			FUNCREF SANSModelSTRUCT_proto func1=$funcStr
+			err = func1(fs)
+		else
+			FUNCREF SANSModelAAO_proto func2=$funcStr
+			func2(cw,theoretical_data,xw)
+		endif
+		
+		chi2_data = (yw-theoretical_data)^2
+ 
+		chi2_data /= sw^2
+
+		Wavestats/q/R=[lhs, rhs] chi2_data
+ 
+		chi2_map[ii] = V_avg * V_npnts
+	endfor
+ 
+	cw[whichparam] = originalvalue
+ 
+ 	DoWindow/F Chi2
+ 	if(V_flag==0)
+		display/K=1/N=Chi2 chi2_map
+		Label left "Chi^2"
+ 	endif
+
+	String parStr=GetWavesDataFolder(cw,1)+ WaveList("*param*"+"_"+suffix, "", "TEXT:1," )		// this is *hopefully* one wave
+	Wave/T parW = $parStr
+ 	Label bottom parW[whichParam]
+ 	
+ 	
+	killwaves/z theoretical_data, chi2_data
+End
+ 
+
+// this does the setup
+Function fChiMap(paramNum,percent)
+	Variable paramNum,percent
+
+	String folderStr,funcStr,coefStr
+	Variable useCursors,useResol=0,pt1,pt2
+	
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_1
+	funcStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_2
+	coefStr=S_Value
+	
+	ControlInfo/W=WrapperPanel check_0
+	useCursors=V_Value
+	
+	
+// first, figure out where we are...
+	String suffix=getModelSuffix(funcStr)
+	
+	SetDataFolder $("root:"+folderStr)
+	if(!exists(coefStr))
+		// must be unsmeared model, work in the root folder
+		SetDataFolder root:				
+		if(!exists(coefStr))		//this should be fine if the coef filter is working, but check anyhow
+			DoAlert 0,"the coefficient and data sets do not match"
+			return 0
+		endif
+	endif
+		
+	WAVE cw=$(coefStr)
+
+
+// test for smeared function
+	if(stringmatch(funcStr, "Smear*"))		// if it's a smeared function, need a struct
+		useResol=1
+	endif
+	
+	// fill a struct instance whether I need one or not
+	String DF="root:"+folderStr+":"	
+	
+//	Struct ResSmearAAOStruct fs
+//	WAVE/Z resW = $(DF+folderStr+"_res")			//these may not exist, if 3-column data is used	
+//	WAVE/Z fs.resW =  resW
+	WAVE yw=$(DF+folderStr+"_i")
+	WAVE xw=$(DF+folderStr+"_q")
+	WAVE sw=$(DF+folderStr+"_s")
+//	Wave fs.coefW = cw
+//	Wave fs.yW = yw
+//	Wave fs.xW = xw	
+	
+	if(useCursors)
+		if(pcsr(A) > pcsr(B))
+			pt1 = pcsr(B)
+			pt2 = pcsr(A)
+		else
+			pt1 = pcsr(A)
+			pt2 = pcsr(B)
+		endif
+	else
+		//if cursors are not being used, find the first and last points of the data set, and pass them
+		pt1 = 0
+		pt2 = numpnts(yw)-1
+	endif
+	
+		
+	
+	chi2gen(funcStr,folderStr,xw,yw,sw,cw,paramNum,percent,pt1,pt2,useResol)
+	
+
+End
+
+////////////////////////////////////
