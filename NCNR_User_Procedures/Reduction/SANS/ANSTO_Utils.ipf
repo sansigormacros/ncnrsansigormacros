@@ -395,6 +395,27 @@ Function CheckIfRawData(fname)
 	return(value)
 End
 
+
+//function to test a file to see if it is a DIV file
+//
+// returns truth 0/1
+//
+// called by many procedures (both external and local)
+//
+Function CheckIfDIVData(fname)
+	String fname
+	
+
+//	if(your test here)
+//		//true, is DIV data file
+		Return(1)
+//	else
+//		//some other file
+//		Return(0)
+//	Endif
+
+End
+
 Function isScatFile(fname)
 	String fname
 	Variable isTrans, isEmp

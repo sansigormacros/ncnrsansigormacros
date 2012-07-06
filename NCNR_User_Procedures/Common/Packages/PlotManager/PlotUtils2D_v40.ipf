@@ -97,7 +97,9 @@ Proc LoadQxQy()
 		Duplicate/O $("root:"+n7), $w7
 	
 	endif		//8-columns
-	
+
+
+// the very bad case where users don't supply the error data...
 	if(numCols == 3)
 		// put the names of the 3 loaded waves into local names
 		n0 = StringFromList(0, S_waveNames ,";" )
@@ -157,6 +159,55 @@ Proc LoadQxQy()
 		$w3 = $w3[p] != 0 ? $w3[p] : V_avg
 	
 	endif		//3-columns
+
+// with 4-columns, assume that they are qx,qy,I, err	
+	if(numCols == 4)
+		// put the names of the 3 loaded waves into local names
+		n0 = StringFromList(0, S_waveNames ,";" )
+		n1 = StringFromList(1, S_waveNames ,";" )
+		n2 = StringFromList(2, S_waveNames ,";" )
+		n3 = StringFromList(3, S_waveNames ,";" )
+
+		//remove the semicolon AND period from file names
+		w0 = CleanupName((S_fileName + "_qx"),0)
+		w1 = CleanupName((S_fileName + "_qy"),0)
+		w2 = CleanupName((S_fileName + "_i"),0)
+		w3 = CleanupName((S_fileName + "_iErr"),0)		//make a name for the error wave, to be generated here
+
+		String baseStr=w1[0,strlen(w1)-4]
+		if(DataFolderExists("root:"+baseStr))
+				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+				if(V_flag==2)	//user selected No, don't load the data
+					SetDataFolder root:
+					KillWaves/Z $n0,$n1,$n2,$n3		// kill the default waveX that were loaded
+					return		//quits the macro
+				endif
+				SetDataFolder $("root:"+baseStr)
+		else
+			NewDataFolder/S $("root:"+baseStr)
+		endif
+		
+		//read in the 18 lines of header (18th line starts w/ ASCII... 19th line is blank)
+		Make/O/T/N=18 header
+		Variable refnum,ii
+		string tmpStr=""
+		Open/R refNum  as (path+filename)
+		ii=0
+		do
+			tmpStr = ""
+			FReadLine refNum, tmpStr
+			header[ii] = tmpStr
+			ii+=1
+		while(ii < 18)		
+		Close refnum		
+		
+		////overwrite the existing data, if it exists
+		Duplicate/O $("root:"+n0), $w0
+		Duplicate/O $("root:"+n1), $w1
+		Duplicate/O $("root:"+n2), $w2
+		Duplicate/O $("root:"+n3), $w3
+	
+	endif		//4-columns	
 	
 	
 	/// do this for all 2D data, whether or not resolution information was read in

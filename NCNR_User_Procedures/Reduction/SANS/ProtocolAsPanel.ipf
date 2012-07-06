@@ -2108,7 +2108,7 @@ Function AskForAbsoluteParams_Quest()
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
 			endif
 #else
-			if(strlen(junkStr)==0 || CheckIfRawData(junkStr))		//for NCNR, not raw is sufficient, but better in the future to confirm it is DIV if either is false, exit
+			if(strlen(junkStr)==0 || !CheckIfDIVData(junkStr))		//for NCNR, and other data confirm it is DIV if either is false, exit
 				SetDataFolder root:
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
 			endif

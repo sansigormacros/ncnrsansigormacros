@@ -11,6 +11,7 @@
 //	- NO shifting is done - these are raw data files, and the angular shift is not known
 //	- it can be repeated multiple times to add more than two files together
 //	- the two added files are listed in the title of the summed file.
+// -- see AddBT5AndSave() if you want something that cen be automated to bypass the user dialogs.
 
 // Adding two data sets:
 //	- here, two entire data sets (inlcluding the main beam) are added together after
@@ -757,7 +758,38 @@ Proc SelectFilesToAdd(file1,file2)
 	
 	LoadAndAddUSANS(file1,file2)
 	
+	String filen = file1[0,strlen(file1)-5]+"_SUM"+".BT5"
+	
+	GetAddedFileName(filen)
 End
+
+Proc GetAddedFileName(newName)
+	String newName
+	Prompt newName, "Enter new FileName"
+	
+	SaveAddedBT5Files(newName,1)			// 1 asks to confirm the name w/ a dialog
+End
+
+
+// this procedure will add two and name without any dialogs. Pass it the three names
+// if the save name is null, you'll get a dialog
+Proc AddBT5AndSave(file1,file2,filen)
+	String file1,file2,filen="TMP.BT5"
+	Prompt file1, "First File", popup, BT5FileList("")
+	Prompt file2, "Second File", popup, BT5FileList("")
+	Prompt filen, "output file name"
+	
+	LoadAndAddUSANS(file1,file2)
+	
+//	String filen = file1[0,strlen(file1)-5]+"_SUM"+".BT5"
+
+	PathInfo savePathName	
+	filen = S_Path + filen 
+	SaveAddedBT5Files(filen,0)		//0==no dialog
+
+End
+
+
 
 Function/S BT5FileList(filter)
 	String filter
@@ -895,28 +927,58 @@ Function LoadAndAddUSANS(file1,file2)
 	
 	endfor
 	
-	// write out the final file (=tw3)
-	filen = file1[0,strlen(file1)-5]+"_SUM"+ext
+//	// write out the final file (=tw3)
+//	filen = file1[0,strlen(file1)-5]+"_SUM"+ext
+//	
+//	if(dialog)
+//		PathInfo/S savePathName
+//		fullPath = DoSaveFileDialog("Save data as",fname=filen)
+//		If(cmpstr(fullPath,"")==0)
+//			//user cancel, don't write out a file
+//			Close/A
+//			Abort "no data file was written"
+//		Endif
+//		//Print "dialog fullpath = ",fullpath
+//	Endif
+//	
+//	Open refNum as fullPath
+//	wfprintf refnum, "%s",tw3
+//	Close refnum
+//		
+//	//killwaves/Z tw1,tw2,tw3
+	
+	return(0)
+end
+
+// if you bypass the dialog, newname needs to be a full path
+Function SaveAddedBT5Files(newName,dialog)
+	String newName
+	Variable dialog
+	
+	Variable refnum
+	String fullPath
+	
+	WAVE/T tw3=tw3
 	
 	if(dialog)
 		PathInfo/S savePathName
-		fullPath = DoSaveFileDialog("Save data as",fname=filen)
+		fullPath = DoSaveFileDialog("Save data as",fname=newName)
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
 			Abort "no data file was written"
 		Endif
+		newName=FullPath
 		//Print "dialog fullpath = ",fullpath
 	Endif
-	
-	Open refNum as fullPath
+
+
+	Open refNum as newName
 	wfprintf refnum, "%s",tw3
 	Close refnum
-		
-	//killwaves/Z tw1,tw2,tw3
-	
+
 	return(0)
-end
+End
 
 //returns count time and start/stop angles as written in header
 // number of lines in the file is a separate check

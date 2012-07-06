@@ -832,6 +832,46 @@ Function CheckIfRawData(fname)
 	Endif
 End
 
+//function to test a file to see if it is a DIV file
+//
+// returns truth 0/1
+//
+// called by many procedures (both external and local)
+//
+Function CheckIfDIVData(fname)
+	String fname
+	
+
+	Variable refnum,totalBytes
+//	String testStr=""
+	
+	Open/R/T="????TEXT" refNum as fname
+	if(strlen(s_filename) == 0)	//user cancel (/Z not used, so V_flag not set)
+		return(0)
+	endif
+	
+	//get the total number of bytes in the file
+	FStatus refNum
+	totalBytes = V_logEOF
+	//Print totalBytes
+	if(totalBytes < 100)
+		Close refNum
+		return(0)		//not a raw file
+	endif
+//	FSetPos refNum,75
+//	FReadLine/N=3 refNum,testStr
+	Close refNum
+	
+	if(totalBytes == 66116)		// && ( cmpstr(testStr,"RAW")==0 ||  cmpstr(testStr,"SIM")==0))
+		//true, is raw data file
+		Return(1)
+	else
+		//some other file
+		Return(0)
+	Endif
+
+End
+
 //function to check the header of a raw data file (full path specified by fname)
 //checks the field of the x-position of the beamstop during data collection
 //if the x-position is more negative (farther to the left) than xTol(input)
