@@ -630,18 +630,19 @@ Function MakeDecayResultWaves(popStr)
 
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 
-	Make/O/D/N=(1,8) $("Decay_"+popStr)
+	Make/O/D/N=(1,9) $("Decay_"+popStr)
 	WAVE decay = $("Decay_"+popStr)
 	// set the column labels
 	SetDimLabel 1,0,Trans_He_In,decay
 	SetDimLabel 1,1,Trans_He_Out,decay
 	SetDimLabel 1,2,Blocked,decay
 	SetDimLabel 1,3,mu_star,decay
-	SetDimLabel 1,4,Pol_Cell,decay
-	SetDimLabel 1,5,T_Major,decay
-	SetDimLabel 1,6,Include,decay			//for a mask wave, non-zero is used in the fit
-	SetDimLabel 1,7,elapsed_hr,decay
-	decay[0][6] = 1			//default to include the point
+	SetDimLabel 1,4,Effective_Pol,decay
+	SetDimLabel 1,5,Atomic_Pol,decay
+	SetDimLabel 1,6,T_Major,decay
+	SetDimLabel 1,7,Include,decay			//for a mask wave, non-zero is used in the fit
+	SetDimLabel 1,8,elapsed_hr,decay
+	decay[0][7] = 1			//default to include the point
 	
 	// generate the dummy wave note now, change as needed
 	Note decay, "muP=0,err_muP=0,P0=0,err_P0=0,T0=undefined,gamma=0,err_gamma=0,"
@@ -774,11 +775,7 @@ Function CalcRowParamButton(ba) : ButtonControl
 	
 				// 2 find the mu and Te values for cellStr
 				SVAR gCellKW = $("root:Packages:NIST:Polarization:Cells:gCell_"+cellStr)
-				//(moved to a separate function, just pass the string)
-	//			Te = NumberByKey("Te", gCellKW, "=", ",", 0)
-	//			err_Te = NumberByKey("err_Te", gCellKW, "=", ",", 0)
-	//			mu = NumberByKey("mu", gCellKW, "=", ",", 0)
-	//			err_mu = NumberByKey("err_mu", gCellKW, "=", ",", 0)
+
 	//			
 				// 3 Calc muPo and error
 				muPo = Calc_muPo(calc,gCellKW,selRow,err_muPo)
@@ -788,14 +785,13 @@ Function CalcRowParamButton(ba) : ButtonControl
 				
 				// 3.5 calc Polarization of cell (no value or error stored in calc wave?)
 				PCell = Calc_PCell(muPo,err_muPo,err_PCell)
-	//			PCell = Calc_PCell(2,err_muPo,err_PCell)
-				w[selRow][%Pol_Cell] = PCell
+				w[selRow][%Effective_Pol] = PCell
 	
 				// 4 calc Po and error
 				Po = Calc_Po(gCellKW,muPo,err_muPo,err_Po)
-	//			Po = Calc_Po(gCellKW,2,err_muPo,err_Po)
 				calc[selRow][%Po] = Po
 				calc[selRow][%err_Po] = err_Po
+				w[selRow][%Atomic_Pol] = Po		//for display
 				
 				// 5 calc Tmaj and error
 				Tmaj = Calc_Tmaj(gCellKW,Po,err_Po,err_Tmaj)
@@ -948,6 +944,8 @@ Function Calc_Po(cellStr,muPo,err_muPo,err_Po)
 	
 	tmp = (err_muPo/muPo)^2 + (err_mu/mu)^2
 	err_Po = Po * sqrt(tmp)
+//	tmp = 1/mu^2*err_muPo^2 + muPo^2/mu^4*err_mu^2
+//	err_Po = sqrt(tmp)
 	
 	Printf "Po = %g +/- %g (%g%)\r",Po,err_Po,err_Po/Po*100
 	return(Po)
@@ -998,15 +996,15 @@ Function Calc_muPo(calc,cellStr,selRow,err_muPo)
 End
 
 
-//Function testCR(num)
-//	Variable num
-//	Variable err_cr
-//	
-//	Variable noNorm=0
-//	Variable cr = TotalCR_FromRun(num,err_cr,noNorm)
-//	printf "CR = %g +/- %g (%g%)\r",cr,err_cr,err_cr/cr*100	
-//	return(0)
-//End
+Function testCR(num)
+	Variable num
+	Variable err_cr
+	
+	Variable noNorm=0
+	Variable cr = TotalCR_FromRun(num,err_cr,noNorm)
+	printf "CR = %g +/- %g (%g%)\r",cr,err_cr,err_cr/cr*100	
+	return(0)
+End
 
 // calculate the total detector CR and its error.
 //
@@ -1086,7 +1084,9 @@ Function DecayFitButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	String cellStr=""
-	Variable num
+	Variable num,plot_P
+	
+	plot_P = 1		//plot_Pol as Y, or muP if this == 0
 
 	switch( ba.eventCode )
 		case 2: // mouse up
@@ -1102,55 +1102,72 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			
 //			make temp copies for the fit and plot, extra for mask
 			num = DimSize(calc,0)
-			Make/O/D/N=(num)		tmp_Mask,tmp_hr,tmp_muP,tmp_err_muP,tmp_muP2
+			Make/O/D/N=(num)		tmp_Mask,tmp_hr,tmp_Y,tmp_err_Y,tmp_Y2
 			
 			tmp_Mask = decay[p][%Include]
 			tmp_hr = decay[p][%elapsed_hr]
-			tmp_muP = calc[p][%muPo]
-			tmp_muP2 = tmp_muP
-			tmp_err_muP = calc[p][%err_muPo]
 			
-			tmp_muP2 = (tmp_Mask == 1) ? NaN : tmp_muP2			//only excluded points will plot
+			if(plot_P == 1)
+				tmp_Y = calc[p][%Po]
+				tmp_Y2 = tmp_Y
+				tmp_err_Y = calc[p][%err_Po]			
+			else		//plot muP as the y-axis
+				tmp_Y = calc[p][%muPo]
+				tmp_Y2 = tmp_Y
+				tmp_err_Y = calc[p][%err_muPo]
+			endif
+
+			tmp_Y2 = (tmp_Mask == 1) ? NaN : tmp_Y2			//only excluded points will plot
 			
+
+
+
 			// clear old data, and plot the new
 			//
-			CheckDisplayed/W=DecayPanel#G0 tmp_muP,tmp_muP2,fit_tmp_muP
+			CheckDisplayed/W=DecayPanel#G0 tmp_Y,tmp_Y2,fit_tmp_Y
 			// if both present, bit 0 + bit 1 = 3
 			if(V_flag & 2^0)			//check bit 0
-				RemoveFromGraph/W=DecayPanel#G0 tmp_muP
+				RemoveFromGraph/W=DecayPanel#G0 tmp_Y
 			endif
 			if(V_flag & 2^1)
-				RemoveFromGraph/W=DecayPanel#G0 tmp_muP2
+				RemoveFromGraph/W=DecayPanel#G0 tmp_Y2
 			endif
 			if(V_flag & 2^2)
-				RemoveFromGraph/W=DecayPanel#G0 fit_tmp_muP
+				RemoveFromGraph/W=DecayPanel#G0 fit_tmp_Y
 			endif
 			
-			AppendToGraph/W=DecayPanel#G0 tmp_muP vs tmp_hr
-			AppendToGraph/W=DecayPanel#G0 tmp_muP2 vs tmp_hr
+			AppendToGraph/W=DecayPanel#G0 tmp_Y vs tmp_hr
+			AppendToGraph/W=DecayPanel#G0 tmp_Y2 vs tmp_hr
 
 			ModifyGraph/W=DecayPanel#G0 log(left)=1
 			ModifyGraph/W=DecayPanel#G0 frameStyle=2
 			ModifyGraph/W=DecayPanel#G0 mode=3
 			ModifyGraph/W=DecayPanel#G0 marker=19
-			ModifyGraph/W=DecayPanel#G0 rgb(tmp_muP)=(1,16019,65535),rgb(tmp_muP2)=(65535,0,0)
+			ModifyGraph/W=DecayPanel#G0 rgb(tmp_Y)=(1,16019,65535),rgb(tmp_Y2)=(65535,0,0)
 			ModifyGraph/W=DecayPanel#G0 msize=3
-			ErrorBars/W=DecayPanel#G0 tmp_muP,Y wave=(tmp_err_muP,tmp_err_muP)
-			
-			Label/W=DecayPanel#G0 left "mu*P"
+			ErrorBars/W=DecayPanel#G0 tmp_Y,Y wave=(tmp_err_Y,tmp_err_Y)
+
+			if(plot_P == 1)
+				Label/W=DecayPanel#G0 left "Atomic Polarization, P"
+			else
+				Label/W=DecayPanel#G0 left "mu*P"
+			endif			
 			Label/W=DecayPanel#G0 bottom "time (h)"
 			
 // do the fit
 //	 as long as the constant X0 doesn't stray from zero, exp_XOffset is OK, otherwise I'll need to switch to the exp function
+// -- use the /K={0} flag to set the constant to zero
 
 			SetActiveSubwindow DecayPanel#G0			//to get the automatic fit to show up on the graph
 
-//			Make/O/D/N=3 fitCoef={0,5,0.05}
-//			CurveFit/H="100"/M=2/W=0/TBOX=(0x310) exp_XOffset, kwCWave=fitCoef, tmp_muP /X=tmp_hr /D /I=1 /W=tmp_err_muP /M=tmp_Mask
-
-
 			Make/O/D/N=3 fitCoef={0,5,0.05}
-			CurveFit/H="100"/M=2/W=0/TBOX=(0x310) exp, kwCWave=fitCoef, tmp_muP /X=tmp_hr /D /I=1 /W=tmp_err_muP /M=tmp_Mask
+			CurveFit/H="100"/M=2/W=0/TBOX=(0x310)/K={0} exp_XOffset, kwCWave=fitCoef, tmp_Y /X=tmp_hr /D /I=1 /W=tmp_err_Y /M=tmp_Mask
+// gives nice error on gamma, but it's wrong since it doesn't use the errors on muP
+//			CurveFit/H="100"/M=2/W=0/TBOX=(0x310)/K={0} exp_XOffset, kwCWave=fitCoef, tmp_Y /X=tmp_hr /D /M=tmp_Mask
+
+
+//			Make/O/D/N=3 fitCoef={0,5,0.05}
+//			CurveFit/H="100"/M=2/W=0/TBOX=(0x310) exp, kwCWave=fitCoef, tmp_Y /X=tmp_hr /D /I=1 /W=tmp_err_Y /M=tmp_Mask
 			
 
 			SetActiveSubwindow ##
@@ -1170,19 +1187,35 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			SVAR gGamma  = root:Packages:NIST:Polarization:Cells:gGamma
 			SVAR gMuPo = root:Packages:NIST:Polarization:Cells:gMuPo
 			SVAR gPo  = root:Packages:NIST:Polarization:Cells:gPo
+
+			Variable mu,err_mu
+
+			if(plot_P == 1)
+				Po = fitCoef[1]
+				err_Po = W_sigma[1]
+			// calc muPo inline here, since the Calc_muP function uses a different method
+			// cell constants	
+				mu = NumberByKey("mu", gCellKW, "=", ",", 0)
+				err_mu = NumberByKey("err_mu", gCellKW, "=", ",", 0)
+				
+				muPo = Po*mu
+				err_muPo = muPo*sqrt( (err_Po/Po)^2 + (err_mu/mu)^2 )
+			else
+				muPo = fitCoef[1]
+				err_muPo = W_sigma[1]
+				
+				Po = Calc_Po(gCellKW,muPo,err_muPo,err_Po)
+			endif
 			
-			muPo = fitCoef[1]
-			err_muPo = W_sigma[1]
-			
-			Po = Calc_Po(gCellKW,muPo,err_muPo,err_Po)
+
 
 			// if exp_XOffset used
-//			gGamma = fitCoef[2]
-//			err_Gamma = W_sigma[2]
+			gamma_val = fitCoef[2]
+			err_Gamma = W_sigma[2]
 
 			// calculating the error using exp is the inverse of coef[2]:
-			gamma_val  = 1/fitCoef[2]
-			err_gamma = W_sigma[2]/(fitCoef[2])^2
+//			gamma_val  = 1/fitCoef[2]
+//			err_gamma = W_sigma[2]/(fitCoef[2])^2
 		
 			
 //		for the wave note
@@ -1200,7 +1233,7 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			
 			
 			// for the panel display
-			sprintf gMuPo, "%g +/- %g",fitCoef[1],W_sigma[1]
+			sprintf gMuPo, "%g +/- %g",muPo,err_muPo
 			sprintf gPo, "%g +/- %g",Po,err_Po
 			sprintf gGamma, "%g +/- %g",gamma_val,err_gamma
 
