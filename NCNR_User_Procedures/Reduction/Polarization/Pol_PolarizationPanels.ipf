@@ -88,6 +88,7 @@
 
 // for the menu
 Menu "Macros"
+	"Flipping Ratio",ShowFlippingRatioPanel()
 	"1 Fundamental Cell Parameters",ShowCellParamPanel()
 	"2 Cell Decay",ShowCellDecayPanel()
 	"3 Flipper States",ShowFlipperPanel()
@@ -1449,3 +1450,89 @@ end
 
 
 ////////////////////////////////////////////
+
+
+//
+// a simple little panel to calculate the flipping ratio.
+// 3 input files, calculates the flipping ratio, then simply reports the result
+//
+
+Proc ShowFlippingRatioPanel()
+	
+	// init folders
+	// ASK before initializing cell constants
+	// open the panel
+	DoWindow/F FlipRatio
+	if(V_flag == 0)
+		FlippingRatioPanel()
+	endif
+
+end
+
+Proc FlippingRatioPanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(455,44,805,245)/N=FlipRatio/K=1 as "Flipping Ratio"
+	ModifyPanel cbRGB=(65535,49157,16385)
+//	ShowTools/A
+	SetDrawLayer UserBack
+	GroupBox group0,pos={12,9},size={307,123},title="Flipping Ratio"
+	SetVariable setvar0,pos={23,35},size={150,15},title="UU or DD File"
+	SetVariable setvar0,limits={-inf,inf,0},value= _NUM:0
+	SetVariable setvar1,pos={23,58},size={150,15},title="UD or DU File"
+	SetVariable setvar1,limits={-inf,inf,0},value= _NUM:0
+	SetVariable setvar2,pos={23,82},size={150,15},title="Blocked beam"
+	SetVariable setvar2,limits={-inf,inf,0},value= _NUM:0
+	SetVariable setvar3,pos={23,104},size={240,16},title="Flipping Ratio",fSize=12
+	SetVariable setvar3,fStyle=1,limits={-inf,inf,0},value= _STR:"enter the run numbers"
+	Button button0,pos={214,55},size={90,20},proc=CalcFlippingRatioButtonProc,title="Calculate"
+EndMacro
+
+
+
+Function CalcFlippingRatioButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+
+	Variable num0,num1,num2,cr0,cr1,cr2,err_cr0,err_cr1,err_cr2
+	Variable tmp0,tmp1,tmp2,flip,flip_err
+	String str=""
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo setvar0
+			num0 = V_Value
+			ControlInfo setvar1
+			num1 = V_Value
+			ControlInfo setvar2
+			num2 = V_Value
+			
+			cr0 = TotalCR_FromRun(num0,err_cr0,0)		//last zero means yes, normalize everything to zero atten
+			cr1 = TotalCR_FromRun(num1,err_cr1,0)
+			cr2 = TotalCR_FromRun(num2,err_cr2,0)		// this one is the blocked beam
+			
+			
+			flip = (cr0-cr2)/(cr1-cr2)
+			tmp0 = 1/(cr1-cr2)
+			tmp1 = -1*flip/(cr1-cr2)
+			tmp2 = flip/(cr1-cr2) - 1/(cr1-cr2)
+			flip_err = tmp0^2*err_cr0^2 + tmp1^2*err_cr1^2 +tmp2^2*err_cr2^2
+			flip_err = sqrt(flip_err)
+			
+			
+			
+			Printf "Flipping ratio = %g +/- %g (%g%)\r",flip,flip_err,flip_err/flip*100
+			str = num2str(flip)+" +/- "+num2str(flip_err)
+			SetVariable setvar3,value=_STR:str
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+/////////////////////////////////////

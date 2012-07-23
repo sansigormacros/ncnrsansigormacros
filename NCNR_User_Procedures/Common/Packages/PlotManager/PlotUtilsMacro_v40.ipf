@@ -1198,6 +1198,8 @@ Function/S User_FunctionPopupList()
 // from Polarization
 	list = RemoveFromList("ParseDecayRow;ParseFlipperRow;",list,";")
 
+// from 2012 models
+	list = RemoveFromList("cng_integ;",list,";")
 	
 	list = SortList(list)
 	return(list)

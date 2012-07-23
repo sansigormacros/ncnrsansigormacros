@@ -211,6 +211,8 @@ Function MakeFlipperResultWaves(popStr)
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 
 	Make/O/T/N=1  $("CondCell_"+popStr)
+	WAVE/T cell=$("CondCell_"+popStr)
+	cell[0] = "Enter cell name"
 
 	Make/O/D/N=(1,8) $("Cond_"+popStr)
 	WAVE cond = $("Cond_"+popStr)
@@ -396,12 +398,16 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 					endif
 					
 					// do the calculations:
+//					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,1)
+//					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,1)
+//					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,1)	
+//					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,1)
+//					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
+//					Print "The Blocked CR is *NOT* rescaled to zero attenuators -- FlipperAverageButtonProc"
 					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,0)
 					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
 					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
 					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
-//					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
-//					Print "The Blocked CR is *NOT* rescaled to zero attenuators -- FlipperAverageButtonProc"
 					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,0)		//blocked beam is normalized to zero attenuators
 					Print "The Blocked CR *IS* rescaled to zero attenuators -- FlipperAverageButtonProc"
 	
