@@ -974,6 +974,7 @@ Function/S ShortFileNameString(inStr)
 			if(V_flag==1)			//my suggested name is OK, so trim the output
 				outStr = inStr[0,maxLength-1]
 				//Print "modified  ",outStr
+				newStr=outStr
 				return(outStr)
 			endif
 	

@@ -118,6 +118,11 @@ Function BuildCatVeryShortTable()
 #if (exists("NCNR")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Pos)=30
+		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:Pos)=3			//to make the display look nice, given the floating point values from ICE
+		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:Lambda)=3		//may not work in all situations, but an improvement
+		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:SDD)=5
+		ModifyTable trailingZeros(:myGlobals:CatVSHeaderInfo:Temperature)=1
+		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:Temperature)=4
 #endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run

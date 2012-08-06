@@ -167,9 +167,21 @@ Proc FIT_Load_Proc(ctrlName): ButtonControl
 	A_LoadOneDDataWithName(tempName,0)		//let Rescale_Data() do the plotting
 	//Print S_fileName
 	//Print tempName
+
+
+	String cleanLastFileName = "",dataStr = ""
 	
-	String cleanLastFileName = CleanupName(partialName,0)
-	String dataStr = "root:"+cleanLastFileName+":"
+	cleanLastFileName = CleanupName(partialName,0)
+	
+	//if the file name was too long, get the updated name
+	Variable maxLength=25
+	if(strlen(cleanLastFileName) > maxLength)
+		String newStr = root:Packages:NIST:gShortNameStr		//set in ShortFileNameString()
+		cleanLastFileName = newStr
+	endif
+	
+	dataStr = "root:"+cleanLastFileName+":"
+	
 	tempName=dataStr + cleanLastFileName+"_q"
 	Duplicate/O $tempName xAxisWave
 	tempName=dataStr + cleanLastFileName+"_i"
@@ -507,6 +519,24 @@ Function DispatchModel(GoFit) : ButtonControl
 	// rescale the data, to make sure it's as selected on the panel
 	ControlInfo/W=FitPanel $"ywave"
 	String partialName = CleanupName(S_value,0)
+	
+	//if the file name was too long, get the updated name. Can't guarantee that the global string set by
+	// ShortFileNameString is the currently selected data set, so make the user find the right data set
+	//
+	Variable maxLength=25
+	if(strlen(partialName) > maxLength)
+		// get user input, from a list of all of the data folder names
+		String dfList = sortList(GetAList(4))
+		String dataFolder=""
+		Prompt dataFolder,"Data files to choose from...",popup,dfList
+
+		DoPrompt "Select data set",dataFolder
+		if(V_Flag==1)		//user canceled
+			SetDataFolder root:
+			return(1)
+		endif
+		partialName = dataFolder
+	endif
 	Rescale_Data("root:"+partialName+":")
 	
 	// now go do the fit
