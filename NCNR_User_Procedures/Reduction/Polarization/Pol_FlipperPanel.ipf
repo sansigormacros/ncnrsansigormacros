@@ -213,18 +213,19 @@ Function MakeFlipperResultWaves(popStr)
 	Make/O/T/N=1  $("CondCell_"+popStr)
 	WAVE/T cell=$("CondCell_"+popStr)
 	cell[0] = "Enter cell name"
+//	SetDimLabel 0,-1,'Cell Name?',cell
 
 	Make/O/D/N=(1,8) $("Cond_"+popStr)
 	WAVE cond = $("Cond_"+popStr)
 	// set the column labels
-	SetDimLabel 1,0,UU_Trans,cond
-	SetDimLabel 1,1,DU_Trans,cond
-	SetDimLabel 1,2,DD_Trans,cond
-	SetDimLabel 1,3,UD_Trans,cond
-	SetDimLabel 1,4,Blocked,cond
+	SetDimLabel 1,0,'UU_Trans?',cond
+	SetDimLabel 1,1,'DU_Trans?',cond
+	SetDimLabel 1,2,'DD_Trans?',cond
+	SetDimLabel 1,3,'UD_Trans?',cond
+	SetDimLabel 1,4,'Blocked?',cond
 	SetDimLabel 1,5,Pol_SM_FL,cond
 	SetDimLabel 1,6,Pol_SM,cond			//for a mask wave, non-zero is used in the fit
-	SetDimLabel 1,7,Include,cond
+	SetDimLabel 1,7,'Include?',cond
 	cond[0][7] = 1			//default to include the point
 	
 	// generate the dummy wave note now, change as needed
@@ -379,7 +380,7 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 				Print "calculate the row ",selRow
 
 				//include this row of data?
-				if(w[selRow][%Include] == 1)
+				if(w[selRow][%'Include?'] == 1)
 					nRowsIncluded += 1
 					
 					// now the cell depends on the row
@@ -398,17 +399,17 @@ Function FlipperAverageButtonProc(ba) : ButtonControl
 					endif
 					
 					// do the calculations:
-//					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,1)
-//					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,1)
-//					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,1)	
-//					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,1)
-//					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
+//					cr1 = TotalCR_FromRun(w[selRow][%'UU_Trans?'],err_cr1,1)
+//					cr2 = TotalCR_FromRun(w[selRow][%'DU_Trans?'],err_cr2,1)
+//					cr3 = TotalCR_FromRun(w[selRow][%'DD_Trans?'],err_cr3,1)	
+//					cr4 = TotalCR_FromRun(w[selRow][%'UD_Trans?'],err_cr4,1)
+//					cr5 = TotalCR_FromRun(w[selRow][%'Blocked?'],err_cr5,1)		//blocked beam is NOT normalized to zero attenuators
 //					Print "The Blocked CR is *NOT* rescaled to zero attenuators -- FlipperAverageButtonProc"
-					cr1 = TotalCR_FromRun(w[selRow][%UU_Trans],err_cr1,0)
-					cr2 = TotalCR_FromRun(w[selRow][%DU_Trans],err_cr2,0)
-					cr3 = TotalCR_FromRun(w[selRow][%DD_Trans],err_cr3,0)	
-					cr4 = TotalCR_FromRun(w[selRow][%UD_Trans],err_cr4,0)
-					cr5 = TotalCR_FromRun(w[selRow][%Blocked],err_cr5,0)		//blocked beam is normalized to zero attenuators
+					cr1 = TotalCR_FromRun(w[selRow][%'UU_Trans?'],err_cr1,0)
+					cr2 = TotalCR_FromRun(w[selRow][%'DU_Trans?'],err_cr2,0)
+					cr3 = TotalCR_FromRun(w[selRow][%'DD_Trans?'],err_cr3,0)	
+					cr4 = TotalCR_FromRun(w[selRow][%'UD_Trans?'],err_cr4,0)
+					cr5 = TotalCR_FromRun(w[selRow][%'Blocked?'],err_cr5,0)		//blocked beam is normalized to zero attenuators
 					Print "The Blocked CR *IS* rescaled to zero attenuators -- FlipperAverageButtonProc"
 	
 					calc[selRow][%cr_UU] = cr1
@@ -505,11 +506,11 @@ Function Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	gam = NumberByKey("gamma", gCellKW, "=", ",", 0)
 	err_gam = NumberByKey("err_gamma", gCellKW, "=", ",", 0)
 
-	fname = FindFileFromRunNumber(w[selRow][%UU_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
 	t1str = getFileCreationDate(fname)
 	t1 = ElapsedHours(t0Str,t1Str)
 	
-	fname = FindFileFromRunNumber(w[selRow][%DU_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
 	t2str = getFileCreationDate(fname)
 	t2 = ElapsedHours(t0Str,t2Str)
 
@@ -767,7 +768,7 @@ Function ClearAllFlipperWavesButton(ba) : ButtonControl
 			MakeFlipperResultWaves(popStr)
 			cond = 0
 			calc = 0
-			cellW = ""
+//			cellW = ""
 			cond[0][7] = 1			//default to include the point
 
 			// clear the graph and the results?	
@@ -866,45 +867,45 @@ Function ParseFlipperRow(w,selRow)
 	
 	
 	// are all file numbers valid?
-	fname = FindFileFromRunNumber(w[selRow][%UU_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"UU_Trans run "+num2str(w[selRow][%UU_Trans])+" is not a valid run number"
+		DoAlert 0,"UU_Trans run "+num2str(w[selRow][%'UU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
 		atten1 = getAttenNumber(fname)
 		sdd1 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%DU_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"DU_Trans run "+num2str(w[selRow][%DU_Trans])+" is not a valid run number"
+		DoAlert 0,"DU_Trans run "+num2str(w[selRow][%'DU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
 		atten2 = getAttenNumber(fname)
 		sdd2 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%DD_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'DD_Trans?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"DD_Trans run "+num2str(w[selRow][%DD_Trans])+" is not a valid run number"
+		DoAlert 0,"DD_Trans run "+num2str(w[selRow][%'DD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
 		atten3 = getAttenNumber(fname)
 		sdd3 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%UD_Trans])
+	fname = FindFileFromRunNumber(w[selRow][%'UD_Trans?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"UD_Trans run "+num2str(w[selRow][%UD_Trans])+" is not a valid run number"
+		DoAlert 0,"UD_Trans run "+num2str(w[selRow][%'UD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
 		atten4 = getAttenNumber(fname)
 		sdd4 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%Blocked])
+	fname = FindFileFromRunNumber(w[selRow][%'Blocked?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"Blocked run "+num2str(w[selRow][%Blocked])+" is not a valid run number"
+		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
 		atten5 = getAttenNumber(fname)

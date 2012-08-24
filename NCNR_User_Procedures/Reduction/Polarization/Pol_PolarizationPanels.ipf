@@ -633,14 +633,14 @@ Function MakeDecayResultWaves(popStr)
 	Make/O/D/N=(1,9) $("Decay_"+popStr)
 	WAVE decay = $("Decay_"+popStr)
 	// set the column labels
-	SetDimLabel 1,0,Trans_He_In,decay
-	SetDimLabel 1,1,Trans_He_Out,decay
-	SetDimLabel 1,2,Blocked,decay
+	SetDimLabel 1,0,'Trans_He_In?',decay
+	SetDimLabel 1,1,'Trans_He_Out?',decay
+	SetDimLabel 1,2,'Blocked?',decay
 	SetDimLabel 1,3,mu_star,decay
 	SetDimLabel 1,4,Effective_Pol,decay
 	SetDimLabel 1,5,Atomic_Pol,decay
 	SetDimLabel 1,6,T_Major,decay
-	SetDimLabel 1,7,Include,decay			//for a mask wave, non-zero is used in the fit
+	SetDimLabel 1,7,'Include?',decay			//for a mask wave, non-zero is used in the fit
 	SetDimLabel 1,8,elapsed_hr,decay
 	decay[0][7] = 1			//default to include the point
 	
@@ -728,7 +728,7 @@ Function CalcRowParamButton(ba) : ButtonControl
 
 				if(selRow == 0 && !overrideT0)
 					//find T0
-					fname = FindFileFromRunNumber(w[0][%Trans_He_In])
+					fname = FindFileFromRunNumber(w[0][%'Trans_He_In?'])
 					t0str = getFileCreationDate(fname)
 					SVAR gT0 = root:Packages:NIST:Polarization:Cells:gT0
 					gT0 = t0Str		//for display
@@ -757,11 +757,11 @@ Function CalcRowParamButton(ba) : ButtonControl
 				// do the calculations:
 				// 1 for each file, return the count rate and err_CR (normalize to atten or not)
 	
-				cr1 = TotalCR_FromRun(w[selRow][%Trans_He_In],err_cr1,0)
-				cr2 = TotalCR_FromRun(w[selRow][%Trans_He_Out],err_cr2,0)
-//				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
+				cr1 = TotalCR_FromRun(w[selRow][%'Trans_He_In?'],err_cr1,0)
+				cr2 = TotalCR_FromRun(w[selRow][%'Trans_He_Out?'],err_cr2,0)
+//				cr3 = TotalCR_FromRun(w[selRow][%'Blocked?'],err_cr3,1)			//blocked beam is NOT normalized to zero attenuators
 //				Print "************The Blocked CR is *NOT* rescaled to zero attenuators -- CalcRowParamButton"
-				cr3 = TotalCR_FromRun(w[selRow][%Blocked],err_cr3,0)			//blocked beam is normalized to zero attenuators
+				cr3 = TotalCR_FromRun(w[selRow][%'Blocked?'],err_cr3,0)			//blocked beam is normalized to zero attenuators
 				Print "************The Blocked CR *is* rescaled to zero attenuators -- CalcRowParamButton "
 
 
@@ -800,7 +800,7 @@ Function CalcRowParamButton(ba) : ButtonControl
 				w[selRow][%T_major] = Tmaj
 				
 				// elapsed hours
-				fname = FindFileFromRunNumber(w[selRow][%Trans_He_In])
+				fname = FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
 				t1str = getFileCreationDate(fname)
 				w[selRow][%elapsed_hr] = ElapsedHours(t0Str,t1Str)
 				
@@ -1104,7 +1104,7 @@ Function DecayFitButtonProc(ba) : ButtonControl
 			num = DimSize(calc,0)
 			Make/O/D/N=(num)		tmp_Mask,tmp_hr,tmp_Y,tmp_err_Y,tmp_Y2
 			
-			tmp_Mask = decay[p][%Include]
+			tmp_Mask = decay[p][%'Include?']
 			tmp_hr = decay[p][%elapsed_hr]
 			
 			if(plot_P == 1)
@@ -1440,27 +1440,27 @@ Function ParseDecayRow(w,selRow)
 	tol = 0.01		//SDDs within 1%
 	
 	// are all file numbers valid?
-	fname = FindFileFromRunNumber(w[selRow][%Trans_He_In])
+	fname = FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"Trans_He_In run "+num2str(w[selRow][%Trans_He_In])+" is not a valid run number"
+		DoAlert 0,"Trans_He_In run "+num2str(w[selRow][%'Trans_He_In?'])+" is not a valid run number"
 		err = 1
 	else
 		atten1 = getAttenNumber(fname)
 		sdd1 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%Trans_He_Out])
+	fname = FindFileFromRunNumber(w[selRow][%'Trans_He_Out?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"Trans_He_Out run "+num2str(w[selRow][%Trans_He_Out])+" is not a valid run number"
+		DoAlert 0,"Trans_He_Out run "+num2str(w[selRow][%'Trans_He_Out?'])+" is not a valid run number"
 		err = 1
 	else
 		atten2 = getAttenNumber(fname)
 		sdd2 = getSDD(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%Blocked])
+	fname = FindFileFromRunNumber(w[selRow][%'Blocked?'])
 	if(cmpstr(fname,"")==0)
-		DoAlert 0,"Blocked run "+num2str(w[selRow][%Blocked])+" is not a valid run number"
+		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
 		atten3 = getAttenNumber(fname)
