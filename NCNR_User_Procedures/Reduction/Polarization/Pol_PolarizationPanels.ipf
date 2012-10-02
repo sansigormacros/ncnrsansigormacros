@@ -93,6 +93,19 @@ Menu "Macros"
 	"2 Cell Decay",ShowCellDecayPanel()
 	"3 Flipper States",ShowFlipperPanel()
 	"4 Polarization Correction",ShowPolCorSetup()
+	"-"
+	Submenu "Save State of..."
+		"Fundamental Cell Parameters",SaveCellParameterTable()
+		"Cell Decay Panel",SaveCellDecayTable()
+		"Flipper Condition Panel",SaveFlipperTable()
+		"Polarization Correction Panel",SavePolCorPanelState()
+	End
+	Submenu "Restore State of..."
+		"Fundamental Cell Parameters",RestoreCellParameterTable()
+		"Cell Decay Panel",RestoreCellDecayTable()
+		"Flipper Condition Panel",RestoreFlipperTable()
+		"Polarization Correction Panel",RestorePolCorPanelState()
+	End
 End
 
 
@@ -178,8 +191,12 @@ Function Make_HeCell_ParamWaves()
 	print listStr
 	
 	Make/O/T/N=0 CellName
-	Make/O/N=0 lambda,Te,err_Te,mu,err_mu
-	
+	Make/O/D/N=0 lambda,Te,err_Te,mu,err_mu
+
+// when the values are reverted, necessary to get back to zero elements
+	Redimension/N=0 CellName
+	Redimension/N=0 lambda,Te,err_Te,mu,err_mu
+		
 	// parse the strings to fill the table
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, listStr,";")

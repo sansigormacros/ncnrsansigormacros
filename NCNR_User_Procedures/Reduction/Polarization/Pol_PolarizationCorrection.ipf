@@ -131,6 +131,81 @@ Function RestorePolCorPanel()
 End
 
 
+// saves the runs+cells for the PolCor Panel, separate from what is saved when the panel is closed
+//
+// 	fname = "CellDecayPanelSaveState.itx"
+//
+//
+Function SavePolCorPanelState()
+
+	SetDataFolder root:Packages:NIST:Polarization
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "PolCorPanelSaveState.itx"
+	
+	// get a list of the List waves
+	listStr=WaveList("ListWave_*",";","")
+	num=ItemsInList(listStr,";")
+//	print listStr
+
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	fprintf refNum,"IGOR\r"
+			
+	// Save each of the list waves, 2D text
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave/T tw = $item
+		
+		Write2DTextWaveToITX(tw,refnum)
+		
+		fprintf refNum,"\r"		//space between waves
+	endfor	
+
+	// get a list of the Selection waves
+	listStr=WaveList("lbSelWave_*",";","")
+	num=ItemsInList(listStr,";")	
+	
+	// Save each of the Selection waves, 2D numerical
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+
+		Write2DWaveToITX(w,refnum)
+
+		fprintf refNum,"\r"	
+	endfor	
+
+// save the popState wave
+	Wave/T tw=root:Packages:NIST:Polarization:PolCor_popState
+	Write2DTextWaveToITX(tw,refnum)
+	
+	Close refnum
+
+	SetDataFolder root:
+	return(0)
+End
+
+// restores the waves for the cell decay table
+//
+// 	fname = "PolCorPanelSaveState.itx"
+//
+//
+Function RestorePolCorPanelState()
+
+	SetDataFolder root:Packages:NIST:Polarization
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "PolCorPanelSaveState.itx"
+	LoadWave/O/T fname
+	
+	SetDataFolder root:
+	return(0)
+End
+
 //
 // TODO:
 // X- only re-initialize values if user wants to. maybe ask.
@@ -143,7 +218,7 @@ Function Initialize_PolCorPanel()
 		
 	DoAlert 1,"Do you want to initialize, wiping out all of your entries?"
 	if(V_flag != 1)		//1== yes initialize, so everything else, restore the entries
-		return(1)
+		return(1)			//send back 1 to say yes, restore the saved state
 	endif
 	
 	//initialize all of the strings for the input
@@ -541,8 +616,13 @@ Window PolCor_Panel()
 //	PopupMenu popup_1_UD_4,pos={476,378},size={102,20},title="Cell"
 //	PopupMenu popup_1_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
+// TODO
+// BKG Tab -- DU, DD, UD are not shown, since the background is not dependent on the flipper states, so only one background
+// file is necessary - this is "incorrectly" labeled as UU. I'll get around to changing this in the future...
+//
+	TitleBox title_2_UU,pos={350,100},size={400,48},title="\\f01BGD files are independent of polarization\rEnter all as UU",fSize=12
 
-// BKG Tab	
+
 	// UU
 	ListBox ListBox_2_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_2_UU,listWave=root:Packages:NIST:Polarization:ListWave_2_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
@@ -569,9 +649,9 @@ Window PolCor_Panel()
 //	PopupMenu popup_2_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
-	ListBox ListBox_2_DU,pos={368,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
-	ListBox ListBox_2_DU,listWave=root:Packages:NIST:Polarization:ListWave_2_DU,titleWave=root:Packages:NIST:Polarization:lbTitles
-	ListBox ListBox_2_DU,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
+////////	ListBox ListBox_2_DU,pos={368,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+////////	ListBox ListBox_2_DU,listWave=root:Packages:NIST:Polarization:ListWave_2_DU,titleWave=root:Packages:NIST:Polarization:lbTitles
+////////	ListBox ListBox_2_DU,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_2_DU_0,pos={368,102},size={70,16},title="File",fSize=10
 //	SetVariable setvar_2_DU_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_0
 //	SetVariable setvar_2_DU_1,pos={368,125},size={70,16},title="File",fSize=10
@@ -594,9 +674,9 @@ Window PolCor_Panel()
 //	PopupMenu popup_2_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
-	ListBox ListBox_2_DD,pos={33,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
-	ListBox ListBox_2_DD,listWave=root:Packages:NIST:Polarization:ListWave_2_DD,titleWave=root:Packages:NIST:Polarization:lbTitles
-	ListBox ListBox_2_DD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
+////////	ListBox ListBox_2_DD,pos={33,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+////////	ListBox ListBox_2_DD,listWave=root:Packages:NIST:Polarization:ListWave_2_DD,titleWave=root:Packages:NIST:Polarization:lbTitles
+////////	ListBox ListBox_2_DD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_2_DD_0,pos={33,286},size={70,16},title="File",fSize=10
 //	SetVariable setvar_2_DD_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_0
 //	SetVariable setvar_2_DD_1,pos={33,309},size={70,16},title="File",fSize=10
@@ -619,9 +699,9 @@ Window PolCor_Panel()
 //	PopupMenu popup_2_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // UD
-	ListBox ListBox_2_UD,pos={368,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
-	ListBox ListBox_2_UD,listWave=root:Packages:NIST:Polarization:ListWave_2_UD,titleWave=root:Packages:NIST:Polarization:lbTitles
-	ListBox ListBox_2_UD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
+////////	ListBox ListBox_2_UD,pos={368,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+////////	ListBox ListBox_2_UD,listWave=root:Packages:NIST:Polarization:ListWave_2_UD,titleWave=root:Packages:NIST:Polarization:lbTitles
+////////	ListBox ListBox_2_UD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_2_UD_0,pos={368,286},size={70,16},title="File",fSize=10
 //	SetVariable setvar_2_UD_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_0
 //	SetVariable setvar_2_UD_1,pos={368,309},size={70,16},title="File",fSize=10
@@ -776,7 +856,28 @@ Function PolCorTabProc(tca) : TabControl
 	return 0
 End
 
+// 0 = SAM, 1 = EMP, 2 = BGD
+Function ChangeDataTab(tab)
+	Variable tab
+	Variable val
+	
+	TabControl PolCorTab win=PolCor_Panel,value=tab
+	
+	// as if the tab was clicked
+	val = (tab != 0)
+//			Print "tab 0 val = ",val
+	ToggleSelControls("_0_",val)
+	
+	val = (tab != 1)
+//			Print "tab 1 val = ",val
+	ToggleSelControls("_1_",val)
+	
+	val = (tab != 2)
+//			Print "tab 2 val = ",val
+	ToggleSelControls("_2_",val)
 
+	return(0)			
+End
 
 Function PolCorHelpParButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -908,6 +1009,10 @@ End
 // -data and loaded waves are tagged with a suffix (_UU, _DU, etc.)
 // -the PolMatrix of coefficients is filled (the specified row)
 //
+// *** IF THE DATA IS BGD ***
+// take the file list from UU every time, but load and put this in all 4 XS locations
+//  *************************
+//
 // TODO:
 // X- pre-parsing is not done to check for valid file numbers. This should be done gracefully.
 // X- SAM folder is currently hard-wired
@@ -934,7 +1039,12 @@ Function LoadPolarizedData(pType)
 //			Print "Searching  "+"gStr_PolCor_"+num2str(tabNum)+"_*"+pType+"*"
 //	listStr = StringList("gStr_PolCor_"+num2str(tabNum)+"_*"+pType+"*", ";" )
 
-	Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+pType)
+////////////
+	if(tabNum == 2)		//BGD data, read from UU every time, but don't change the pType tag
+		Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+"UU")
+	else
+		Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+pType)
+	endif
 	num = DimSize(lb,0)		//should be 10, as initialized
 	
 	// if the condition (for all of the sets) is "none", get out
@@ -1052,8 +1162,12 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	SetDataFolder root:Packages:NIST:Polarization
 //	listStr = StringList("gStr_PolCor_"+num2str(tabNum)+"_*"+pType+"*", ";" )
 
-
-	Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+pType)
+////////////
+	if(tabNum == 2)		//BGD data, read from UU every time, but don't change the pType tag
+		Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+"UU")
+	else
+		Wave/T lb=$("ListWave_"+num2str(tabNum)+"_"+pType)
+	endif
 	num = DimSize(lb,0)		//should be 10, as initialized
 	
 	// if the condition (for all of the sets) is "none", get out
@@ -1679,12 +1793,13 @@ End
 //
 // largely copied from ReduceAFile()
 //
+//
+//
+//
 Function ReducePolCorDataButton(ctrlName) : ButtonControl
 	String ctrlName
 
-	// depends on which tab you're on
-	// (maybe) select UD type
-	
+
 	String pType
 //	Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;All;"
 //	DoPrompt "Type to load",pType
@@ -1737,10 +1852,13 @@ End
 
 // very similar to ExecuteProtocol
 //
-// -- SAM, EMP, and BGD do not need to be loaded
-// -- but they do need to be "moved" into the regular data positions
-//    rather then their tagged locations.
 // 
+// OCT 2012 - changed this to force a re-load of all of the data, and a re-calculation 
+//   of the Pol-corrected data, so that all of the "_pc" waves that are present are the 
+// correct, and current values. Only re-loads the data that is used for the particular protocol, 
+// just like a normal reduction. This is, somewhat redundant, since the data is re-loaded 4x, when
+// it really only needs to be re-loaded 1x, but this is only a minor speed hit.
+//
 // -- the "extensions" now all are "_UU_pc" and similar, to use the polarization corrected data and errors
 //
 Function ExecutePolarizedProtocol(protStr,pType)
@@ -1765,28 +1883,49 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	//4 - abs params c2-c5
 	//5 - average params
 	//6 = DRK file (**out of sequence)
+	
+	
+	// For each of the tabs (SAM, EMP, BGD)
+	// -- reload the data
+	// -- re-do the polarization correction
+	
+	// then, and only then, after we're sure that all of the data is correct and current, then proceed with the
+	// correction of the data with the selected protocol
+	String dataType,str
 
-// don't load the SAM data, just re-tag it	
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2		// mouse up
+	
+
+// Now ensure that the proper SAM data is loaded, then re-tag it	
 // the Polarization corrected data is UU_pc, DU_pc, etc.
 // this tags it for display, and puts it in the correctly named waves
-	String dataType,str
+	
+	ChangeDataTab(0)		//SAM
+	LoadRawPolarizedButton(ba)
+	PolCorButton(ba)
 	
 	dataType="SAM"
 	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
 	Execute str
 	
-
-
-// don't load the BGD data, just re-tag it	
+// force a re-load of BGD data, then re-tag it	
 	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
+		ChangeDataTab(2)		//BGD
+		LoadRawPolarizedButton(ba)
+		PolCorButton(ba)
+		
 		dataType="BGD"
 		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
 		Execute str
 	endif
 
-// don't load the EMP data, just re-tag it
-//
+// force a re-load the EMP data, then re-tag it
 	if(cmpstr(prot[1],"none") != 0)		//if EMP is used, protStr[1] = ""
+		ChangeDataTab(1)		//EMP
+		LoadRawPolarizedButton(ba)
+		PolCorButton(ba)
+	
 		dataType="EMP"
 		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
 		Execute str
@@ -2068,7 +2207,7 @@ Function ExecutePolarizedProtocol(protStr,pType)
 		//Path is catPathName, symbolic path
 		//if this doesn't exist, a dialog will be presented by setting dialog = 1
 		//
-		// -- add in pType tag to the name
+		// -- add in pType tag to the name for the polarization "type"
 		//
 		Variable dialog = 0
 		PathInfo/S catPathName

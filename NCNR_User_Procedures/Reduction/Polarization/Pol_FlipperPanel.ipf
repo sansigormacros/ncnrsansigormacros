@@ -932,3 +932,459 @@ end
 
 
 ////////////////////////////////////////////
+
+
+
+///////////////////////
+//
+//
+// Utilities to write out waves as Igor Text
+//
+//
+// -- TODO
+// -- add flags for SetScale, Note, DimLabels, text? (or a separate function)
+// x- add a function for 2D waves. wfprintf is not 2D aware...
+
+
+Function testWriteITX()
+
+	Variable refnum
+	String fname="a_test.itx"
+//	WAVE w=root:testMat
+//	WAVE/T w=root:testText
+	WAVE/T w=root:Packages:NIST:Polarization:ListWave_0_UU
+	
+	
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file
+	
+	fprintf refNum,"IGOR\r"
+	
+//	Write1DWaveToITX(w,refnum)
+//	Write2DWaveToITX(w,refnum)
+//	Write1DTextWaveToITX(w,refnum)
+	Write2DTextWaveToITX(w,refnum)	
+	Close refnum
+
+	return(0)
+end
+
+// writes out a 1D wave as Igor Text
+// 
+// the wave and a valid refNum to an open file are passed
+//
+// the file is NOT closed when exiting
+//
+Function Write1DWaveToITX(w,refnum)
+	Wave w
+	Variable refNum
+	
+	String tmpStr,waveStr
+	waveStr=NameOfWave(w)
+	
+	fprintf refNum,"WAVES/D\t%s\r",waveStr
+
+	fprintf refNum,"BEGIN\r"
+
+	wfprintf refnum, "\t%g\r",w
+	
+	fprintf refNum,"END\r"
+
+	fprintf refnum,"X SetScale/P x 0,1,\"\", %s; SetScale y 0,0,\"\", %s\r",waveStr,waveStr
+	
+//	X SetScale/P x 0,1,"", fyy; SetScale y 0,0,"", fyy
+	
+	
+	return(0)
+End
+
+// writes out a 1D TEXT wave as Igor Text
+// 
+// the wave and a valid refNum to an open file are passed
+//
+// the file is NOT closed when exiting
+//
+Function Write1DTextWaveToITX(w,refnum)
+	Wave/T w
+	Variable refNum
+	
+	String tmpStr,waveStr
+	waveStr=NameOfWave(w)
+	
+	fprintf refNum,"WAVES/T\t%s\r",waveStr
+
+	fprintf refNum,"BEGIN\r"
+
+	wfprintf refnum, "\t\"%s\"\r",w
+	
+	fprintf refNum,"END\r"
+
+	fprintf refnum,"X SetScale/P x 0,1,\"\", %s; SetScale y 0,0,\"\", %s\r",waveStr,waveStr	
+	
+	return(0)
+End
+
+// writes out a 2D TEXT wave as Igor Text
+// 
+// the wave and a valid refNum to an open file are passed
+//
+// the file is NOT closed when exiting
+//
+Function Write2DTextWaveToITX(w,refnum)
+	Wave/T w
+	Variable refNum
+	
+	String tmpStr,waveStr
+	Variable row,col,ii,jj,tmp
+	
+	row=DimSize(w, 0 )
+	col=DimSize(w, 1 )
+	waveStr=NameOfWave(w)
+		
+	fprintf refNum,"WAVES/T/N=(%d,%d)\t%s\r",row,col,waveStr
+	fprintf refNum,"BEGIN\r"
+
+	for(ii=0;ii<row;ii+=1)
+		for(jj=0;jj<col;jj+=1)
+			fprintf refnum, "\t\"%s\"",w[ii][jj]
+		endfor
+		fprintf refnum, "\r"
+	endfor
+	
+	
+	fprintf refNum,"END\r"
+
+	fprintf refnum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",waveStr,waveStr,waveStr
+	
+//	X SetScale/P x 0,1,"", testMat; SetScale/P y 0,1,"", testMat; SetScale d 0,0,"", testMat
+
+	
+	
+	return(0)
+End
+
+// writes out a 2D wave as Igor Text
+// 
+// the wave and a valid refNum to an open file are passed
+//
+// the file is NOT closed when exiting
+//
+Function Write2DWaveToITX(w,refnum)
+	Wave w
+	Variable refNum
+	
+	String tmpStr,waveStr
+	Variable row,col,ii,jj,tmp
+	
+	row=DimSize(w, 0 )
+	col=DimSize(w, 1 )
+	waveStr=NameOfWave(w)
+		
+	fprintf refNum,"WAVES/D/N=(%d,%d)\t%s\r",row,col,waveStr
+	fprintf refNum,"BEGIN\r"
+
+	for(ii=0;ii<row;ii+=1)
+		for(jj=0;jj<col;jj+=1)
+			fprintf refnum, "\t%g",w[ii][jj]
+		endfor
+		fprintf refnum, "\r"
+	endfor
+	
+	
+	fprintf refNum,"END\r"
+
+	fprintf refnum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",waveStr,waveStr,waveStr
+	
+//	X SetScale/P x 0,1,"", testMat; SetScale/P y 0,1,"", testMat; SetScale d 0,0,"", testMat
+
+	
+	
+	return(0)
+End
+
+// root:Packages:NIST:Polarization:Cells:
+// save the state of the pink panel, as CellParamSaveState.itx
+Function SaveCellParameterTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	
+	// the waves are:
+	// CellName (T)
+	// lambda
+	// Te, err_Te
+	// mu, err_mu
+	
+	Variable refnum
+	String fname="CellParamSaveState.itx"
+//	WAVE w=root:testMat
+	WAVE/T cellName=root:Packages:NIST:Polarization:Cells:CellName
+	WAVE lambda=root:Packages:NIST:Polarization:Cells:lambda
+	WAVE Te=root:Packages:NIST:Polarization:Cells:Te
+	WAVE err_Te=root:Packages:NIST:Polarization:Cells:err_Te
+	WAVE mu=root:Packages:NIST:Polarization:Cells:mu
+	WAVE err_mu=root:Packages:NIST:Polarization:Cells:err_mu
+	
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	fprintf refNum,"IGOR\r"
+	
+	Write1DTextWaveToITX(cellName,refnum)
+	fprintf refNum,"\r"	
+
+	Write1DWaveToITX(lambda,refnum)
+	fprintf refNum,"\r"	
+	
+	Write1DWaveToITX(Te,refnum)
+	fprintf refNum,"\r"	
+
+	Write1DWaveToITX(err_Te,refnum)
+	fprintf refNum,"\r"	
+	
+	Write1DWaveToITX(mu,refnum)
+	fprintf refNum,"\r"	
+	
+	Write1DWaveToITX(err_mu,refnum)
+			
+	Close refnum
+
+	SetDataFolder root:
+		
+	return(0)
+End
+
+//could use /P=home, but the whole point is that this is for users without Igor licenses, that can't save... so "home" won't exist...
+Function RestoreCellParameterTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	String fname="CellParamSaveState.itx"
+
+//	LoadWave/P=home/O/T fname
+	LoadWave/O/T fname
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
+// saves the parameters for the cell decay table
+//
+// 	fname = "CellDecayPanelSaveState.itx"
+//
+//
+Function SaveCellDecayTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "CellDecayPanelSaveState.itx"
+	
+	// get a list of the Decay waves
+	listStr=WaveList("Decay_*",";","")
+	num=ItemsInList(listStr,";")
+//	print listStr
+
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	fprintf refNum,"IGOR\r"
+			
+	// Save each of the decay waves, then be sure to add the DimLabels and Wave Note
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+		wStr=NameOfWave(w)
+		noteStr = note(w)
+		
+		Write2DWaveToITX(w,refnum)
+		
+//		fprintf refNum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",wStr,wStr,wStr
+		fprintf refNum,"X SetDimLabel 1, 0, 'Trans_He_In?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 1, 'Trans_He_Out?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 2, 'Blocked?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 3, mu_star, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 4, Effective_Pol, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 5, Atomic_Pol, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 6, T_Major, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 7, 'Include?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 8, elapsed_hr, %s\r",wStr		
+		fprintf refNum,"X Note %s, \"%s\"\r",wStr,noteStr
+
+		fprintf refNum,"\r"		//space between waves
+	endfor	
+
+	// get a list of the DecayCalc_ waves
+	listStr=WaveList("DecayCalc_*",";","")
+	num=ItemsInList(listStr,";")	
+	
+	// Save each of the DecayCalc waves, and add all of the proper dim labels
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+		wStr=NameOfWave(w)
+
+		Write2DWaveToITX(w,refnum)
+		
+//		fprintf refNum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",wStr,wStr,wStr
+		fprintf refNum,"X SetDimLabel 1, 0, CR_Trans_He_In, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 1, err_CR_Trans_He_In, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 2, CR_Trans_He_Out, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 3, err_CR_Trans_He_Out, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 4, CR_Blocked, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 5, err_CR_Blocked, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 6, muPo, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 7, err_muPo, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 8, Po, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 9, err_Po, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 10, Tmaj, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 11, err_Tmaj, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 12, gamm, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 13, err_gamm, %s\r",wStr
+
+		fprintf refNum,"\r"	
+	endfor	
+	
+	Close refnum
+
+	SetDataFolder root:
+	return(0)
+End
+
+// restores the waves for the cell decay table
+//
+// 	fname = "CellDecayPanelSaveState.itx"
+//
+//
+Function RestoreCellDecayTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "CellDecayPanelSaveState.itx"
+	LoadWave/O/T fname
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
+
+////////
+//
+// save the state of the Flipper panel
+//
+// 	fname = "FlipperPanelSaveState.itx"
+//
+Function SaveFlipperTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "FlipperPanelSaveState.itx"
+	
+	// get a list of the "Condition" waves
+	listStr=WaveList("Cond_*",";","")
+	num=ItemsInList(listStr,";")
+//	print listStr
+
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	fprintf refNum,"IGOR\r"
+			
+	// Save each of the cond waves, then be sure to add the DimLabels and Wave Note
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+		wStr=NameOfWave(w)
+		noteStr = note(w)
+		
+		Write2DWaveToITX(w,refnum)
+		
+//		fprintf refNum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",wStr,wStr,wStr
+		fprintf refNum,"X SetDimLabel 1, 0, 'UU_Trans?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 1, 'DU_Trans?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 2, 'DD_Trans?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 3, 'UD_Trans?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 4, 'Blocked?', %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 5, Pol_SM_FL, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 6, Pol_SM, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 7, 'Include?', %s\r",wStr
+		fprintf refNum,"X Note %s, \"%s\"\r",wStr,noteStr
+
+		fprintf refNum,"\r"		//space between waves
+	endfor	
+
+	// get a list of the CondCalc_ waves (2d, with dimlabels)
+	listStr=WaveList("CondCalc_*",";","")
+	num=ItemsInList(listStr,";")	
+	
+	// Save each of the DecayCalc waves, and add all of the proper dim labels
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+		wStr=NameOfWave(w)
+
+		Write2DWaveToITX(w,refnum)
+		
+//		fprintf refNum,"X SetScale/P x 0,1,\"\", %s; SetScale/P y 0,1,\"\", %s; SetScale d 0,0,\"\", %s\r",wStr,wStr,wStr
+		fprintf refNum,"X SetDimLabel 1, 0, CR_UU, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 1, err_CR_UU, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 2, CR_DU, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 3, err_CR_DU, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 4, CR_DD, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 5, err_CR_DD, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 6, CR_UD, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 7, err_CR_UD, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 8, CR_Blocked, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 9, err_CR_Blocked, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 10, P_sm_f, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 11, err_P_sm_f, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 12, P_sm, %s\r",wStr
+		fprintf refNum,"X SetDimLabel 1, 13, err_P_sm, %s\r",wStr
+
+		fprintf refNum,"\r"	
+	endfor	
+	
+	// get a list of the CondCell_ waves (these are text, 1d)
+	listStr=WaveList("CondCell_*",";","")
+	num=ItemsInList(listStr,";")	
+	
+	// Save each of the DecayCalc waves, and add all of the proper dim labels
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		Wave w = $item
+		wStr=NameOfWave(w)
+
+		Write1DTextWaveToITX(w,refnum)
+
+//		fprintf refnum,"X SetScale/P x 0,1,\"\", wStr; SetScale y 0,0,\"\", %s\r",wStr
+
+		fprintf refNum,"\r"	
+	endfor	
+
+	Close refnum
+
+	SetDataFolder root:
+	return(0)
+end
+
+
+
+// restores the state of the Flipper panel
+//
+// 	fname = "FlipperPanelSaveState.itx"
+//
+//
+Function RestoreFlipperTable()
+
+	SetDataFolder root:Packages:NIST:Polarization:Cells:
+	
+	String listStr,item,fname,noteStr,wStr
+	Variable num,ii,refnum
+	
+	fname = "FlipperPanelSaveState.itx"
+	LoadWave/O/T fname
+	
+	SetDataFolder root:
+	return(0)
+End
