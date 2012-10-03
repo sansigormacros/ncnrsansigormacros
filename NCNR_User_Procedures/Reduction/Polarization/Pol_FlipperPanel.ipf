@@ -1123,7 +1123,7 @@ Function SaveCellParameterTable()
 	WAVE mu=root:Packages:NIST:Polarization:Cells:mu
 	WAVE err_mu=root:Packages:NIST:Polarization:Cells:err_mu
 	
-	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum	//as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 	
 	Write1DTextWaveToITX(cellName,refnum)
@@ -1183,7 +1183,7 @@ Function SaveCellDecayTable()
 	num=ItemsInList(listStr,";")
 //	print listStr
 
-	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum	// as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the decay waves, then be sure to add the DimLabels and Wave Note
@@ -1288,7 +1288,7 @@ Function SaveFlipperTable()
 	num=ItemsInList(listStr,";")
 //	print listStr
 
-	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum	// as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the cond waves, then be sure to add the DimLabels and Wave Note

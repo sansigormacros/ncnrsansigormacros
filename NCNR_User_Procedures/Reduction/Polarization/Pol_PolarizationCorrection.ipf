@@ -150,7 +150,7 @@ Function SavePolCorPanelState()
 	num=ItemsInList(listStr,";")
 //	print listStr
 
-	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum// as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the list waves, 2D text
@@ -355,7 +355,7 @@ Window PolCor_Panel()
 	Button button12,pos={440,473},size={120,20},proc=Display4XSButton,title="Display 4 XS"
 	Button button13,pos={440,446},size={120,20},proc=ClearPolCorEntries,title="Clear Entries"
 
-	PopupMenu popup1,pos={210,24},size={102,20},title="Condition"
+	PopupMenu popup1,pos={210,20},size={102,20},title="Condition"
 	PopupMenu popup1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
 
 	TitleBox title0,pos={100,66},size={24,24},title="\\f01UU or + +",fSize=12
@@ -375,10 +375,14 @@ Window PolCor_Panel()
 	Button button9,pos={80,690},size={120,20},proc=ReducePolCorDataButton,title="Reduce Data"
 	Button button9,help={"Reduce PolCor data"}
 	Button button10,pos={226,690},size={120,20},proc=SavePolCorProtocolButton,title="Save Protocol"
-	Button button10,help={"Save the PolCor protocol"}
+	Button button10,help={"Save the PolCor protocol, within this experiment only"}
 	Button button11,pos={370,690},size={120,20},proc=RecallPolCorProtocolButton,title="Recall Protocol"
-	Button button11,help={"Recall the PolCor protocol"}		
-	
+	Button button11,help={"Recall a PolCor protocol from memory"}		
+	Button button14,pos={226,720},size={120,20},proc=ExportPolCorProtocolButton,title="Export Protocol"
+	Button button14,help={"Export the PolCor protocol, saving it on disk"}
+	Button button15,pos={370,720},size={120,20},proc=ImportPolCorProtocolButton,title="Import Protocol"
+	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
+		
 	SetVariable setvar0,pos={322,560},size={250,15},title="file:"
 	SetVariable setvar0,help={"Filename of the detector sensitivity file to be used in the data reduction"}
 	SetVariable setvar0,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gDIV
@@ -1626,6 +1630,8 @@ Function PolCorButton(ba) : ButtonControl
 			
 			//update the data as log of the linear. more correct to use the default scaling
 			// this is necessary for proper display of the data
+			SetDataFolder $("root:Packages:NIST:"+type)			// this should be redundant, but I somehow eneded up in root: here???
+
 			WAVE data_UU_pc = data_UU_pc
 			WAVE data_DU_pc = data_DU_pc
 			WAVE data_DD_pc = data_DD_pc
@@ -2393,6 +2399,22 @@ Function ResetToSavedPolProtocol(nameStr)
 	Return (0)
 End
 
+
+Function ExportPolCorProtocolButton(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ExportProtocol(ctrlName)
+	return(0)
+End
+
+
+Function ImportPolCorProtocolButton(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ImportProtocol(ctrlName)
+	return(0)
+End
+
 // at a first pass, uses the regular reduction protocol 	SaveProtocolButton(ctrlName)
 //
 // TODO
@@ -2449,6 +2471,8 @@ End
 //to create the necessary text fields for a protocol
 //Wave/T w (input) is an empty text wave of 8 elements for the protocol
 //on output, w[] is filled with the protocol strings as needed from the panel 
+//
+// -- For polarized beam protocols, don't fill in EMP or BGD, as these are handled differently, since 4 XS
 //
 Function MakePolProtocolFromPanel(w)
 	Wave/T w

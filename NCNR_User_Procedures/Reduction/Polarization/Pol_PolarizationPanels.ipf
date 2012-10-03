@@ -158,12 +158,24 @@ Function InitPolarizationFolders()
 End
 
 //
-// add more cells here as they are defined
+// add more cells here as they are defined,
+//
+// first clear out the list, then rebuild it
 //
 Function InitPolarizationGlobals()
 
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
+	String listStr=StringList("gCell_*",";"),item
+	Variable	ii,num=ItemsInList(listStr,";")
+
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, listStr,";")
+		SVAR gStr = $item
+		KillStrings/Z gStr
+	endfor
+	
+	//rebuild the list
 	// cell constants
 	String/G gCell_Maverick = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.2,"
 	String/G gCell_Burgundy = "cell=Burgundy,lambda=5.0,Te=0.86,err_Te=0.01,mu=3.138,err_mu=0.15,"
@@ -274,9 +286,9 @@ Function DrawCellParamPanel()
 
 //	ShowTools/A
 	Button button_0,pos={10,10},size={90,20},proc=AddCellButtonProc,title="Add Cell"
-	Button button_1,pos={118,10},size={130,20},proc=SaveCellParButtonProc,title="Save Parameters"
-	Button button_2,pos={265,10},size={130,20},proc=RevertCellParButtonProc,title="Revert Parameters"
-	Button button_3,pos={420,10},size={35,20},proc=CellHelpParButtonProc,title="?"
+	Button button_1,pos={118,10},size={160,20},proc=SaveCellParButtonProc,title="Update Parameters"
+	Button button_2,pos={300,10},size={130,20},proc=RevertCellParButtonProc,title="Revert Parameters"
+	Button button_3,pos={520,10},size={35,20},proc=CellHelpParButtonProc,title="?"
 
 	
 	Edit/W=(14,55,582,318)/HOST=#
@@ -450,7 +462,7 @@ Function DecayParamPanel()
 	SetVariable setvar_3,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
 	
 
-	Button button_1,pos={579,294},size={120,20},proc=CalcRowParamButton,title="Calc Sel Row"
+	Button button_1,pos={579,294},size={120,20},proc=CalcRowParamButton,title="Calculate Rows"
 	Button button_2,pos={307,18},size={110,20},proc=ClearDecayWavesButton,title="Clear Table"
 	Button button_3,pos={579,333},size={120,20},proc=ShowCalcRowButton,title="Show Calc"
 	Button button_4,pos={440,18},size={110,20},proc=ClearDecayWavesRowButton,title="Clear Row"
