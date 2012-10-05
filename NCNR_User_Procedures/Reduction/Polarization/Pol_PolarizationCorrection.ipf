@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
 
 
 
@@ -18,18 +19,8 @@
 // writeup by K. Krycka, and I'll try to follow the equations as numbered there
 // and keep the notation as close as possible.
 //
-// error propagation was written up elsewhere, and will be implemented as well
-// - each of the calculations based on transmissions will need to have errors
-// brought in, and carried through the calculations. Some will be simple, some
-// will probably be easiest written as expansions.
-//
+// error propagation is written up elsewhere
 
-
-
-// This is a first pass at the input panel (step 3)
-// to gather all of the files and conditions necessary to do the polarization correction
-//
-//
 
 // I'll need space for 4 input files in, say SAM
 // - load in all of the UU files, adding together
@@ -54,19 +45,15 @@
 //
 
 // **** search for TODO to find items still to be fixed in other procedures  **********
-
+//
 //
 // TODO:
-// - Overall, I need a better way of flowing through the whole process, to be sure that values are set
-// as needed and that one step won't fail because a previous step wasn't done yet. Combining the
-// first three panels into one w/ tabs would help a lot, but that is rather complex to implement.
-// and is still not a fool-proof situation
 //
 // X- mathod to save and restore the panel state - especially the popup selections
 //
-// -- should I force the Polarization correction to be re-done just before the protocol is
+// X- should I force the Polarization correction to be re-done just before the protocol is
 //			executed? Then I'm sure that the PC is done. Must do for each tab (only if part of the protocol)
-//			Except that the procedures work on the "active" tab...
+//			Except that the procedures work on the "active" tab... (YES, and this has been done)
 //
 // -- When multiple files are added together, there are changes made to the RealsRead (monCts, etc.). Are these
 //		properly made, and then properly copied to the "_UU", and then properly copied back to the untagged waves
@@ -74,7 +61,7 @@
 //
 // -- still not sure what is needed for absolute scaling
 //
-// -- what is the sample transmission, and exactly what +/- states are the proper measurements to use for thransmission?
+// -- what is the sample transmission, and exactly what +/- states are the proper measurements to use for transmission?
 //
 // -- generate some sort of report of what was set up, and what was used in the calculation
 //
@@ -203,6 +190,9 @@ Function RestorePolCorPanelState()
 	LoadWave/O/T fname
 	
 	SetDataFolder root:
+	
+	RestorePolCorPanel()		// put the condition popups in the proper state
+	
 	return(0)
 End
 
@@ -355,8 +345,7 @@ Window PolCor_Panel()
 	Button button12,pos={440,473},size={120,20},proc=Display4XSButton,title="Display 4 XS"
 	Button button13,pos={440,446},size={120,20},proc=ClearPolCorEntries,title="Clear Entries"
 
-	PopupMenu popup1,pos={210,20},size={102,20},title="Condition"
-	PopupMenu popup1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
+
 
 	TitleBox title0,pos={100,66},size={24,24},title="\\f01UU or + +",fSize=12
 	TitleBox title1,pos={430,66},size={24,24},title="\\f01DU or - +",fSize=12
@@ -418,6 +407,8 @@ Window PolCor_Panel()
 	
 
 // SAM Tab	
+	PopupMenu popup_0_1,pos={230,60},size={102,20},title="Condition"
+	PopupMenu popup_0_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
 	// UU
 	ListBox ListBox_0_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_UU,listWave=root:Packages:NIST:Polarization:ListWave_0_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
@@ -519,7 +510,9 @@ Window PolCor_Panel()
 //	PopupMenu popup_0_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 
-// EMP Tab	
+// EMP Tab
+	PopupMenu popup_1_1,pos={230,60},size={102,20},title="Condition"
+	PopupMenu popup_1_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"	
 	// UU
 	ListBox ListBox_1_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UU,listWave=root:Packages:NIST:Polarization:ListWave_1_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
@@ -1051,9 +1044,18 @@ Function LoadPolarizedData(pType)
 	endif
 	num = DimSize(lb,0)		//should be 10, as initialized
 	
-	// if the condition (for all of the sets) is "none", get out
-	ControlInfo/W=PolCor_Panel popup1
+	// pick the condition, based on the tabNum
+	// == 0 = sam
+	// == 1 = emp
+	// == 2 = bgd, which requires no condition, so use the emp condition...
+	//
+	if(tabNum==0 || tabNum==1)
+		ControlInfo/W=PolCor_Panel $("popup_"+num2str(tabNum)+"_1")
+	else
+		ControlInfo/W=PolCor_Panel $("popup_"+num2str(1)+"_1")		//use the condition of the empty tab
+	endif
 	condStr = S_Value
+	Print "Using condition ",condStr," for ",type
 	if(cmpstr(condStr, "none" ) == 0)
 		DoAlert 0,"Condition is not set."
 		SetDataFolder root:
@@ -1175,8 +1177,14 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	num = DimSize(lb,0)		//should be 10, as initialized
 	
 	// if the condition (for all of the sets) is "none", get out
-	ControlInfo/W=PolCor_Panel popup1
+	if(tabNum==0 || tabNum==1)
+		ControlInfo/W=PolCor_Panel $("popup_"+num2str(tabNum)+"_1")
+	else
+		ControlInfo/W=PolCor_Panel $("popup_"+num2str(1)+"_1")		//use the condition of the empty tab
+	endif
 	condStr = S_Value
+//	Print "Using condition ",condStr," for ",type
+
 	if(cmpstr(condStr, "none" ) == 0)
 		DoAlert 0,"Condition is not set."
 		SetDataFolder root:

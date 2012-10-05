@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
 
 
 
@@ -177,9 +178,9 @@ Function InitPolarizationGlobals()
 	
 	//rebuild the list
 	// cell constants
-	String/G gCell_Maverick = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.2,"
-	String/G gCell_Burgundy = "cell=Burgundy,lambda=5.0,Te=0.86,err_Te=0.01,mu=3.138,err_mu=0.15,"
-	String/G gCell_Olaf = "cell=Olaf,lambda=7.5,Te=0.86,err_Te=0.005,mu=2.97,err_mu=0.18,"
+	String/G gCell_Maverick = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.02,"
+	String/G gCell_Burgundy = "cell=Burgundy,lambda=5.0,Te=0.86,err_Te=0.01,mu=3.138,err_mu=0.015,"
+	String/G gCell_Olaf = "cell=Olaf,lambda=7.5,Te=0.86,err_Te=0.005,mu=2.97,err_mu=0.018,"
 	
 	
 	SetDataFolder root:

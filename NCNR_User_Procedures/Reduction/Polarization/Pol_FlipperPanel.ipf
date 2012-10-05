@@ -1,4 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion=6.1
+
 
 // input panels to set and calculate polarization parameters necessary for the 
 // matrix corrections to the cross sections
