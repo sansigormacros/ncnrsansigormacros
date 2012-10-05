@@ -1611,6 +1611,7 @@ Function PrintAttenuation(instr,lam,attenNo)
 			break
 		default:							
 			//return error?
+			Print "if you're using the 10m SANS, this needs to be fixed, atten = 1"
 			attenFactor=1
 	endswitch
 
@@ -1658,6 +1659,7 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?
+			Print "if you're using the 10m SANS, this needs to be fixed, atten = 1"
 			attenFactor=1
 	endswitch
 //	print "instr, lambda, attenNo,attenFactor = ",instr,lam,attenNo,attenFactor

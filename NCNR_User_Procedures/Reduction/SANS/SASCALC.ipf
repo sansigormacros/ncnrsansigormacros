@@ -21,6 +21,9 @@
 //						 will automatically uncheck the box
 // 03 MAR 2012 SRK - Added new source apertures in 6th and 7th boxes of NG3
 //
+// 05 OCT 2012 SRK - (not visible) but added the skeleton bits for the 10m SANS instrument. Don't have the
+//							details of the distances, etc, but I'll fill that in as needed
+// 						-- to "un-hide" the 10m SANS, uncomment the CheckBox control in the panel (see the constant declared below)
 //
 // calculate what q-values you get based on the instruments settings
 // that you would typically input to SASCALC
@@ -28,7 +31,17 @@
 // or a Debye function (Rg=50A) * (beam stop shadow factor) 
 // - NOT true intensity, not counts, just a display
 //
-// To Do:
+// TODO:
+//
+// -- For the 10m SANS...
+//		- how many guides are there
+//		- no lenses? focusing pinholes?
+//		- aperture sizes?
+//		- flux values
+//		- huber/sample chamber is inline, so get rid of this for 10m (gray out?)
+//		- does this hook into anywhere in the main program? Attenuators, etc.
+//			where knowledge of the 10m SANS is necessary??
+//
 //
 // Optional:
 // - freeze configurations with a user defined tag
@@ -53,6 +66,10 @@
 // - disallow 6 guides at NG3 (post a warning)
 //
 //
+
+Constant show10mSANS = 0
+
+
 
 Proc SASCALC()
 	DoWindow/F SASCALC
@@ -146,11 +163,15 @@ Proc S_initialize_space()
 	//userTicks={tvWave,tlblWave }
 	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:tickSDDNG7
 	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNG3,root:Packages:NIST:SAS:lblSDDNG7
+	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNG10
+	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNG10
 	root:Packages:NIST:SAS:tickSDDNG3 = {133,400,700,1000,1317}
 	root:Packages:NIST:SAS:lblSDDNG3 = {"133","400","700","1000","1317"}
 	root:Packages:NIST:SAS:tickSDDNG7 = {100,450,800,1150,1530}
 	root:Packages:NIST:SAS:lblSDDNG7 = {"100","450","800","1150","1530"}
-	
+	root:Packages:NIST:SAS:tickSDDNG10 = {100,200,300,400,500}
+	root:Packages:NIST:SAS:lblSDDNG10 = {"100","200","300","400","500"}
+		
 	//for the fake dependency
 	Variable/G root:Packages:NIST:SAS:gTouched=0
 	Variable/G root:Packages:NIST:SAS:gCalculate=0
@@ -164,7 +185,9 @@ Function initNG3()
 
 	SetDataFolder root:Packages:NIST:SAS
 	
+	String/G gSelectedInstrument="checkNG3"
 	Variable/G instrument = 3
+	
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.5
 	Variable/G a_pixel = 0.5
@@ -225,8 +248,10 @@ end
 Function initNG7()
 
 	SetDataFolder root:Packages:NIST:SAS
-	
+
+	String/G gSelectedInstrument="checkNG7"
 	Variable/G instrument = 7
+	
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.5
 	Variable/G a_pixel = 0.5
@@ -283,6 +308,78 @@ Function initNG7()
 //	
 	SetDataFolder root:
 end
+
+/// this is the (incomplete) definition of the 10m SANS instrument
+// on NG-B, which may be referred to as NG10 here to keep the NG(number) notation
+// which may be simpler here to keep functions from breaking...
+
+// *** check ALL of these values to make sure they are correct. They were copied from NG3 and
+// most are completey wrong for the 10m SANS
+//
+Function initNG10()
+
+	SetDataFolder root:Packages:NIST:SAS
+
+	String/G gSelectedInstrument="checkNG10"	
+	Variable/G instrument = 10
+
+	Variable/G s12 = 0			//**		no difference between sample and huber position
+	Variable/G d_det = 0.5
+	Variable/G a_pixel = 0.5
+	Variable/G del_r = 0.5
+	Variable/G det_width = 64.0
+	Variable/G lambda_t = 5.50
+	Variable/G l2r_lower = 100
+	Variable/G l2r_upper =  500
+	Variable/G lambda_lower = 2.5
+	Variable/G lambda_upper = 20.0
+	Variable/G d_upper = 25.0			//**
+	Variable/G bs_factor = 1.05		//**
+	Variable/G t1 = 0.63				//**
+	Variable/G t2 = 1.0					//**
+	Variable/G t3 = 0.75				//**
+	Variable/G l_gap = 100.0			//**
+	Variable/G guide_width = 6.0		//**
+	Variable/G idmax = 100.0			//**
+//	//old values, from 3/2002
+//	Variable/G phi_0 = 2.95e13
+//	Variable/G b = 0.023
+//	Variable/G c = 0.023
+
+	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
+	Variable/G phi_0 = 2.42e13
+	Variable/G b = 0.0
+	Variable/G c = -0.0243
+	Variable/G gGuide_loss = 0.924
+	
+	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
+	Variable/G fwhm_narrow = 0.109
+	Variable/G fwhm_mid = 0.125
+	Variable/G fwhm_wide = 0.236
+	
+	//source apertures (cm)
+	Variable/G a1_0_0 = 1.43
+	Variable/G a1_0_1 = 2.54
+	Variable/G a1_0_2 = 3.81
+	Variable/G a1_7_0 = 2.5	// after the polarizer		
+	Variable/G a1_7_1 = 5.0
+	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
+	Variable/G a1_def = 5.00
+	
+	//default configuration values
+//	ng = 0
+//	a1 = 3.81
+//	pos_table = 2
+//	l2r = 1310.0
+//	a2 = 1.27
+//	det_off = 0.0
+//	lambda = 6.0
+//	lambda_width = 0.15
+	Variable/G	l2diff = 5.0
+//	
+	SetDataFolder root:
+end
+
 
 Function S_fillDefaultHeader(iW,rW,tW)
 	Wave iW,rW
@@ -387,6 +484,12 @@ Window SASCALC_Panel()
 	CheckBox checkNG3,value=1,mode=1
 	CheckBox checkNG7,pos={66,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
 	CheckBox checkNG7,value=0,mode=1
+//	-- hide/unhide the 10m SANS
+	if(show10mSANS)
+		CheckBox checkNG10,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NG10"
+		CheckBox checkNG10,value=0,mode=1
+	endif
+//	
 	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
 	CheckBox checkChamber,value=1,mode=1
 	CheckBox checkHuber,pos={172,27},size={44,14},proc=TableCheckProc,title="Huber"
@@ -407,7 +510,8 @@ Window SASCALC_Panel()
 	Button FreezeButton proc=FreezeButtonProc
 	Button ClearButton title="Clear",size={60,20},pos={250,166}
 	Button ClearButton proc=S_ClearButtonProc
-	GroupBox group0,pos={6,1},size={108,36},title="Instrument"
+//	GroupBox group0,pos={6,1},size={108,36},title="Instrument"
+	GroupBox group0,pos={6,1},size={160,36},title="Instrument"
 	SetDataFolder fldrSav0
 	
 	SetVariable setvar0_3,pos={140,94},size={110,15},title="Diam (mm)",disable=1
@@ -451,67 +555,110 @@ Proc showSASCALCHelp(ctrlName): ButtonControl
 end
 
 // based on the instrument selected...
-//set the SDD range
+// set the SDD range
 // set the source aperture popup (based on NGx and number of guides)
 // set the wavelength spread popup
 //
 Function UpdateControls()
 	//poll the controls on the panel, and change needed values
 	Variable isNG3,Ng,mode
-	ControlInfo/W=SASCALC checkNG3
-	isNG3=V_value
+//	ControlInfo/W=SASCALC checkNG3
+//	isNG3=V_value
 	ControlInfo/W=SASCALC SC_slider
 	Ng=V_value
 	SVAR A1str= root:Packages:NIST:SAS:gSourceApString// = "1.43 cm;2.54 cm;3.81 cm;"
 	SVAR dlStr = root:Packages:NIST:SAS:gDeltaLambdaStr
-	if(isNG3)
-		switch(ng)	
-			case 0:
-				ControlInfo/W=SASCALC popup0
-				mode=V_value
-				A1str="1.43 cm;2.54 cm;3.81 cm;"
-				break
-//			case 6:									//Mar 2012 - 6 guides is OK now, 5 cm aperture present in 7th box
-//				A1str = "! 6 Guides invalid;"
-//				mode=1
-//				break
-			case 7:							// switched order in 2009 to keep 5 cm as default, 2.5 cm for polarizer
-				A1Str = "5.00 cm;2.50 cm;0.95 cm;"		// Mar 2012 - 3rd aperture added
-				mode = 1
-				break
-			default:
-				A1str = "5 cm;"
-				mode=1
-		endswitch
-		//wavelength spread
-		dlStr = "0.109;0.125;0.236;"		//updated calibration 2009
-		//detector limits
-		SetVariable setvar0,win=SASCALC,limits={133,1317,1}
-		NVAR detDist=root:Packages:NIST:SAS:gDetDist
-		if(detDist < 133 )
-			detDist = 133
-		elseif (detDist > 1317 )
-			detDist = 1317
-		endif
-		Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
-		Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
-	else			//ng7
-		switch(ng)	
-			case 0:
-				ControlInfo/W=SASCALC popup0
-				mode=V_value
-				A1str="1.43 cm;2.22 cm;3.81 cm;"
-				break
-			default:
-				A1str = "5.08 cm;"
-				mode=1
-		endswitch
-		
-		dlStr = "0.09;0.115;0.22;"
-		Slider SC_Slider_1,win=SASCALC,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
-		SetVariable setvar0,win=SASCALC,limits={100,1531,1}
-		Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
-	endif
+	SVAR selInstr = root:Packages:NIST:SAS:gSelectedInstrument
+
+	strswitch(selInstr)	// string switch
+		case "checkNG3":			// 
+			switch(ng)	
+				case 0:
+					ControlInfo/W=SASCALC popup0
+					mode=V_value
+					A1str="1.43 cm;2.54 cm;3.81 cm;"
+					break
+	//			case 6:									//Mar 2012 - 6 guides is OK now, 5 cm aperture present in 7th box
+	//				A1str = "! 6 Guides invalid;"
+	//				mode=1
+	//				break
+				case 7:							// switched order in 2009 to keep 5 cm as default, 2.5 cm for polarizer
+					A1Str = "5.00 cm;2.50 cm;0.95 cm;"		// Mar 2012 - 3rd aperture added
+					mode = 1
+					break
+				default:
+					A1str = "5 cm;"
+					mode=1
+			endswitch
+			//wavelength spread
+			dlStr = "0.109;0.125;0.236;"		//updated calibration 2009
+			Slider SC_Slider,limits={0,8,1},ticks=1
+			//detector limits
+			SetVariable setvar0,win=SASCALC,limits={133,1317,1}
+			NVAR detDist=root:Packages:NIST:SAS:gDetDist
+			if(detDist < 133 )
+				detDist = 133
+			elseif (detDist > 1317 )
+				detDist = 1317
+			endif
+			Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
+			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+			
+			break
+								
+		case "checkNG7":			// 
+			switch(ng)	
+				case 0:
+					ControlInfo/W=SASCALC popup0
+					mode=V_value
+					A1str="1.43 cm;2.22 cm;3.81 cm;"
+					break
+				default:
+					A1str = "5.08 cm;"
+					mode=1
+			endswitch
+			
+			dlStr = "0.09;0.115;0.22;"
+			Slider SC_Slider,limits={0,8,1},ticks=1
+			Slider SC_Slider_1,win=SASCALC,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
+			SetVariable setvar0,win=SASCALC,limits={100,1531,1}
+			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+			
+			break
+			
+		case "checkNG10":		// 10m SANS
+			switch(ng)	
+				case 0:
+					ControlInfo/W=SASCALC popup0
+					mode=V_value
+					A1str="1.43 cm;2.22 cm;3.81 cm;"
+					break
+				default:
+					A1str = "5.08 cm;"
+					mode=1
+			endswitch
+			
+			dlStr = "0.10;0.20;0.30;"
+			Slider SC_Slider,limits={0,2,1},ticks=2			//number of guides different on 10m SANS, 3 ticks
+			
+			Slider SC_Slider_1,win=SASCALC,limits={100,500,1},userTicks={root:Packages:NIST:SAS:tickSDDNG10,root:Packages:NIST:SAS:lblSDDNG10 }
+			
+			NVAR detDist=root:Packages:NIST:SAS:gDetDist
+			if(detDist < 100 )
+				detDist = 100
+			elseif (detDist > 500 )
+				detDist = 500
+			endif
+			SetVariable setvar0,win=SASCALC,limits={100,500,1}
+			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+
+			break
+			
+		default:							// optional default expression executed
+									// when no case matches
+	endswitch
+	
+
 	ControlUpdate popup0
 	PopupMenu popup0,win=SASCALC,mode=mode		//source Ap
 	ControlInfo/W=SASCALC popup0
@@ -584,19 +731,36 @@ End
 // re-initialize the global values
 // update the controls to appropriate limits/choices
 //
+// updated for 10m SANS
 Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 
-	if(cmpstr(ctrlName,"checkNG3")==0)
-		checkBox checkNG3,win=SASCALC, value=1
-		checkBox checkNG7,win=SASCALC, value=0
-		initNG3()
-	else
-		checkBox checkNG3,win=SASCALC, value=0
-		checkBox checkNG7,win=SASCALC, value=1 
-		initNG7()
-	endif
+
+	strswitch(ctrlName)	// string switch
+		case "checkNG3":			// 
+			checkBox checkNG3,win=SASCALC, value=1
+			checkBox checkNG7,win=SASCALC, value=0
+			checkBox checkNG10,win=SASCALC, value=0
+			initNG3()
+			break						
+		case "checkNG7":			// 
+			checkBox checkNG3,win=SASCALC, value=0
+			checkBox checkNG7,win=SASCALC, value=1
+			checkBox checkNG10,win=SASCALC, value=0 
+			initNG7()
+			break
+		case "checkNG10":		// 10m SANS
+			checkBox checkNG3,win=SASCALC, value=0
+			checkBox checkNG7,win=SASCALC, value=0 
+			checkBox checkNG10,win=SASCALC, value=1
+			initNG10()
+			break
+		default:							// optional default expression executed
+									// when no case matches
+	endswitch
+
+
 	LensCheckProc("",2)		//check if lenses are still valid (they won't be)
 	UpdateControls()
 	ReCalculateInten(1)
@@ -662,86 +826,105 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	
 	// check the box, enforce the proper conditions
 	if(checked == 1)
-		lens = checked
-		if(instrument == 3)
-			dist = 1317
-			DetDistSliderProc("",1317,1)
-			
-			lam = 8.4
-			LambdaSetVarProc("",8.4,"8.4","") 
+		lens = checked	
+		switch(instrument)	// numeric switch
+			case 3:
+				dist = 1317
+				DetDistSliderProc("",1317,1)
+				
+				lam = 8.4
+				LambdaSetVarProc("",8.4,"8.4","") 
+	
+				ng=0
+				GuideSliderProc("",0,1)		//this updates the controls to the new # of guides
+				
+				PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
+				
+				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
+				ControlInfo/W=SASCALC popup0_2
+				DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
+				rw[28]=1		//flag for lenses in (not the true number, but OK)
+		
+				break
+			case 7:
+				dist = 1531
+				DetDistSliderProc("",1531,1)
+				
+				lam = 8.09
+				LambdaSetVarProc("",8.09,"8.09","") 
+				
+				ng=0
+				GuideSliderProc("",0,1)
+				PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item
+				
+				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
+				ControlInfo/W=SASCALC popup0_2
+				DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
+				rw[28]=1		//flag for lenses in (not the true number, but OK)
+				
+				break
+			case 10:
+				// 10m SANS - force no lenses for now
+				// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
+				lens = 0		//no lenses
+				CheckBox checkLens,win=SASCALC,value=0
+				rw[28]=0		//flag for lenses out
 
-			ng=0
-			GuideSliderProc("",0,1)		//this updates the controls to the new # of guides
-			
-			PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
-			
-			PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
-			ControlInfo/W=SASCALC popup0_2
-			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
-		else
-			dist = 1531
-			DetDistSliderProc("",1531,1)
-			
-			lam = 8.09
-			LambdaSetVarProc("",8.09,"8.09","") 
-			
-			ng=0
-			GuideSliderProc("",0,1)
-			PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item
-			
-			PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
-			ControlInfo/W=SASCALC popup0_2
-			DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
-		endif
-		rw[28]=1		//flag for lenses in (not the true number, but OK)
-		ReCalculateInten(1)
+				break
+			default:
+				
+		endswitch
 	endif
 	
 	// this is my internal check to see if conditions are still valid
+	// I get to this point by calling this myself and passing the fictional value of (2) for the
+	// checkbox value...
+	//
 	// I'll uncheck as needed
+	Variable lensNotAllowed=0
 	if(checked == 2)
 
 		// source aperture must be 1.43 cm diameter
 		// number of guides must be zero
 		Variable a1 = sourceApertureDiam()
 		if(a1 != 1.43  || Ng !=0)
-			lens = 0
-			CheckBox checkLens,win=SASCALC,value=0
-			rw[28]=0		//flag for lenses out
-			return(0)
+			lensNotAllowed=1
 		endif
 	
 		// instrument specific distance requirements
 		if(instrument == 3 && dist != 1317)
-			lens = 0
-			CheckBox checkLens,win=SASCALC,value=0
-			rw[28]=0		//flag for lenses out
-			return(0)
+			lensNotAllowed=1
 		endif
 	
 		if(instrument == 7 && dist != 1531)
-			lens = 0
-			CheckBox checkLens,win=SASCALC,value=0
-			rw[28]=0		//flag for lenses out
-			return(0)
+			lensNotAllowed=1
 		endif
 		
 		// instrument specific wavelength requirements
 		if(instrument == 3 && !(lam == 8.4 || lam == 17.2) )
-			lens = 0
-			CheckBox checkLens,win=SASCALC,value=0
-			rw[28]=0		//flag for lenses out
-			return(0)
+			lensNotAllowed=1
 		endif
 		
 		if(instrument == 7 && lam != 8.09 )
-			lens = 0
-			CheckBox checkLens,win=SASCALC,value=0
-			rw[28]=0		//flag for lenses out
-			return(0)
+			lensNotAllowed=1
+		endif
+
+	// right now, if 10m instrument, no lenses allowed		
+		if(instrument == 10 )
+			lensNotAllowed=1
 		endif
 		
 	endif
+	
+	if(lensNotAllowed)
+		lens = 0
+		CheckBox checkLens,win=SASCALC,value=0
+		rw[28]=0		//flag for lenses out
+		return(0)
+	endif
+
+	ReCalculateInten(1)
+
 
 	return(1)		//return value not used
 End
@@ -1767,14 +1950,34 @@ End
 
 //compute SSD and update both the global and the wave
 //
+// for the 10m SANS, table position is inline, so S12 = 0
+//
+// TODO -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
+//
 Function sourceToSampleDist()
 
 	NVAR NG=root:Packages:NIST:SAS:gNg
 	NVAR S12 = root:Packages:NIST:SAS:S12
 	NVAR L2Diff = root:Packages:NIST:SAS:L2Diff
 	NVAR SSD = root:Packages:NIST:SAS:gSSD
+	NVAR instrument = root:Packages:NIST:SAS:instrument
 	
-	SSD = 1632 - 155*NG - s12*(2-tableposition()) - L2Diff
+	switch(instrument)	// numeric switch
+		case 3:
+		case 7:
+			// NG3 and NG7 are both the same
+			SSD = 1632 - 155*NG - s12*(2-tableposition()) - L2Diff
+			break
+		case 10:
+			// 10m SANS handled differently
+			// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
+			SSD = 500 - 155*NG - s12*(2-tableposition()) - L2Diff
+			break
+		default:
+			
+	endswitch
+	
+	
 	
 	WAVE rw=root:Packages:NIST:SAS:realsRead
 	rw[25] = SSD/100		// in meters
@@ -1785,13 +1988,36 @@ End
 // not part of SASCALC, but can be used to convert the SSD to number of guides
 //
 // SSD in meters
+//
+// TODO -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
+//
 Function numGuides(SSD)
 	variable SSD
 	
 	Variable Ng
-	Ng = SSD*100 + 5 - 1632
-	Ng /= -155
 	
+	NVAR instrument = root:Packages:NIST:SAS:instrument
+	
+	switch(instrument)	// numeric switch
+		case 3:
+		case 7:
+			// NG3 and NG7 are both the same
+			Ng = SSD*100 + 5 - 1632
+			Ng /= -155
+	
+			break
+		case 10:
+			// 10m SANS handled differently
+			// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
+			Ng = SSD*100 + 5 - 1632
+			Ng /= -155
+	
+			break
+		default:
+			
+	endswitch
+	
+
 	Ng = round(Ng)
 	return(Ng)
 End
@@ -2024,6 +2250,9 @@ End
 //
 // other values are changed in the initialization routines
 //
+//
+// TODO -- for the 10m SANS - all of the numbers need to be updated in the initialization
+//
 Function beamIntensity()
 
     Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
@@ -2055,7 +2284,7 @@ Function beamIntensity()
     solid_angle = pi/4* (a1/l1)*(a1/l1)
 
     retVal = as * d2_phi * lambda_width * solid_angle * t
-     SetDataFolder root:
+    SetDataFolder root:
     return (retVal)
 end
 
