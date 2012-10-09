@@ -3,6 +3,11 @@
 #pragma IgorVersion=6.1
 
 
+// this is the flag for the relative error = W_sigma/coef that will
+// trip the bold/red color of W_sigma in the table.
+//
+Constant kRelErrorTolerance=0.5
+
 //Macro OpenWrapperPanel()
 //	Init_WrapperPanel()
 //End
@@ -1022,6 +1027,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	WAVE/Z w_sigma
 	print w_sigma
 	String resultStr=""
+	Variable maxRelError=0
 	
 	if(waveexists(W_sigma))
 		//append it to the table, if it's not already there
@@ -1033,6 +1039,16 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 			//remove it, and put it back on to make sure it's the right one (do I need to do this?)
 			// -- not really, since any switch of the function menu takes W_Sigma off
 		endif
+		// then do I want to color it if the errors are horrible?
+		Duplicate/O cw, relError
+		relError = W_sigma/cw
+		maxRelError = WaveMax(relError)
+		if(maxRelError > kRelErrorTolerance)
+			ModifyTable/W=wrapperPanel#T0 style(W_sigma)=1,rgb(W_sigma)=(65535,0,0)
+		else
+			ModifyTable/W=wrapperPanel#T0 style=0,rgb=(0,0,0)
+		endif
+		
 	endif
 	
 	//now re-write the results
