@@ -91,7 +91,9 @@ Function InitFolders()
 	NewDataFolder/O root:Packages:NIST:STO
 	NewDataFolder/O root:Packages:NIST:SUB
 	NewDataFolder/O root:Packages:NIST:DRK
-	
+
+	NewDataFolder/O root:Packages:NIST:SAS
+
 
 	
 	Return(0)

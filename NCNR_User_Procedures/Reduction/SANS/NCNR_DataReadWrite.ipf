@@ -2447,11 +2447,16 @@ End
 // function to fill the extra bits of header information to make a "complete"
 // simulated VAX data file.
 //
-// NCNR-Specific
+// NCNR-Specific. is hard wired to the SAS folder. If saving from any other folder, set all of the header
+// information before saving, and pass a null string to this procedure to bypass it entirely
 //
 Function SimulationVAXHeader(folder)
 	String folder
 
+	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1
+		return(1)
+	endif
+	
 	Wave rw=root:Packages:NIST:SAS:realsRead
 	Wave iw=root:Packages:NIST:SAS:integersRead
 	Wave/T tw=root:Packages:NIST:SAS:textRead

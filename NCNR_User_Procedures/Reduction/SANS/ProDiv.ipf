@@ -542,14 +542,17 @@ Function CompareDIVButtonProc(ba) : ButtonControl
 			Execute "ReadWork_DIV()"
 			Execute "CopyWorkContents(\"DIV\",\"DRK\")"		//then data in DRK is guaranteed linear
 
-			WAVE sub_d = root:Packages:NIST:SUB:data
-			WAVE sto_d = root:Packages:NIST:STO:data
-			WAVE drk_d = root:Packages:NIST:DRK:data
+			WAVE sub_d = root:Packages:NIST:SUB:linear_data
+			WAVE sto_d = root:Packages:NIST:STO:linear_data
+			WAVE drk_d = root:Packages:NIST:DRK:linear_data
 			
 			sub_d = sto_d/drk_d
 
 //			WaveStats root:Packages:NIST:DIV:data
-//			Print "*"			
+//			Print "*"	
+			WAVE sub_data = root:Packages:NIST:SUB:data
+			sub_data = sub_d		//data = linear_data
+					
 			Execute "ChangeDisplay(\"SUB\")"	
 			break
 	endswitch

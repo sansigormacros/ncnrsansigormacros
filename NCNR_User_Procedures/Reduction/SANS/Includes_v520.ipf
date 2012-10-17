@@ -83,6 +83,9 @@ End
 #include "DataSetHandling"
 #include "WriteModelData_v40"
 
+// SRK OCT 2012 - processing of event mode data
+#include "EventModeProcessing"
+
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features
