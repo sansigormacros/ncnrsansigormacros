@@ -18,6 +18,36 @@
 // 29MAR07 SRK
 //
 
+/////
+// @ IgorExchange
+//TicToc
+//Posted April 16th, 2009 by bgallarda
+//	¥	in Programming 6.10.x
+	
+function tic()
+	variable/G tictoc = startMSTimer
+end
+ 
+function toc()
+	NVAR/Z tictoc
+	variable ttTime = stopMSTimer(tictoc)
+	printf "%g seconds\r", (ttTime/1e6)
+	killvariables/Z tictoc
+end
+
+
+Function testTicToc()
+ 
+	tic()
+	variable i
+	For(i=0;i<10000;i+=1)
+		make/O/N=512 temp = gnoise(2)
+		FFT temp
+	Endfor
+	killwaves/z temp
+	toc()
+End
+
 
 //////////////////////
 // "intelligent" differentiation of the data files based on information gathered while
