@@ -863,7 +863,7 @@ Function ReadRTAndData(fname)
 	
 	// 4 R*4 values
 	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	Wave w=$"root:Packages:NIST:RealTime:tempGBWave0"
 	b=4	//num of reals read
 	realw[a,a+b-1] = w[p-a]
@@ -872,7 +872,7 @@ Function ReadRTAndData(fname)
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -881,7 +881,7 @@ Function ReadRTAndData(fname)
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=2	
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -889,7 +889,7 @@ Function ReadRTAndData(fname)
 	// 6 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=6	
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -897,7 +897,7 @@ Function ReadRTAndData(fname)
 	// 13 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=13
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -905,7 +905,7 @@ Function ReadRTAndData(fname)
 	// 3 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=3	
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -913,7 +913,7 @@ Function ReadRTAndData(fname)
 	// 7 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=7
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -921,7 +921,7 @@ Function ReadRTAndData(fname)
 	// 4 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -929,7 +929,7 @@ Function ReadRTAndData(fname)
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -937,7 +937,7 @@ Function ReadRTAndData(fname)
 	// 2 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
 	a+=b
@@ -945,7 +945,7 @@ Function ReadRTAndData(fname)
 	// 5 R*4 values
 	SetDataFolder curPath
 	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 	b=5	
 	realw[a,a+b-1] = w[p-a]
 	
@@ -966,7 +966,7 @@ Function ReadRTAndData(fname)
 	SetDataFolder curPath
 	//read in the data
 	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q" + "\"" + fname + "\""
-	Execute strToExecute
+	Execute/Z strToExecute
 
 	SetDataFolder curPath		//use the full path, so it will always work
 	

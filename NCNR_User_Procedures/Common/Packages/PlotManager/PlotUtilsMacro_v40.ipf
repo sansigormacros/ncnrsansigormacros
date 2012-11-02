@@ -1201,6 +1201,9 @@ Function/S User_FunctionPopupList()
 
 // from 2012 models
 	list = RemoveFromList("cng_integ;",list,";")
+
+// from 2012 Event Mode Processing
+	list = RemoveFromList("CleanupTimes;IndexForHistogram;JointHistogram;MakeFibonacciWave;Osc_ProcessEvents;SetFibonacciBins;SetLinearBins;SetLogBins;Stream_ProcessEvents;",list,";")
 	
 	list = SortList(list)
 	return(list)
