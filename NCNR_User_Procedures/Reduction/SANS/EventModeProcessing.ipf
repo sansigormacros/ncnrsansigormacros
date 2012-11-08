@@ -7,10 +7,10 @@
 // TODO:
 //
 // -- fix the log/lin display - it's not working correctly
-// -- add controls to show the bar graph
+// X- add controls to show the bar graph
 // x- add popup for selecting the binning type
 // x- add ability to save the slices to RAW VAX files
-// -- add control to show the bin counts and bin end times
+// X- add control to show the bin counts and bin end times
 // x- ADD buttons, switches, etc for the oscillatory mode - so that this can be accessed
 //
 // x- How are the headers filled for the VAX files from Teabag???
@@ -36,7 +36,7 @@
 
 
 
-Macro Show_Event_Panel()
+Proc Show_Event_Panel()
 	DoWindow/F EventModePanel
 	if(V_flag ==0)
 		Init_Event()
@@ -47,6 +47,8 @@ End
 
 Function Init_Event()
 	String/G 	root:Packages:NIST:gEvent_logfile
+	String/G 	root:Packages:NIST:gEventDisplayString="Details of the file load"
+	
 	Variable/G 	root:Packages:NIST:AIMTYPE_XY=0 // XY Event
 	Variable/G 	root:Packages:NIST:AIMTYPE_XYM=2 // XY Minor event
 	Variable/G 	root:Packages:NIST:AIMTYPE_MIR=1 // Minor rollover event
@@ -79,19 +81,27 @@ End
 
 Proc EventModePanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel/K=2 /W=(100,50,600,680)/N=EventModePanel
+	NewPanel /W=(100,50,600,840)/N=EventModePanel/K=2
 	DoWindow/C EventModePanel
 	ModifyPanel fixedSize=1,noEdit =1
 	//ShowTools/A
 	SetDrawLayer UserBack
-	Button button0,pos = {10,10}, size={150,20},title="Load Event Log File",fSize=12
+	Button button0,pos={10,10}, size={150,20},title="Load Event Log File",fSize=12
 	Button button0,proc=LoadEventLog_Button
-	SetVariable setvar3,pos= {20,590},size={460,20},title=" ",fSize=12
-	SetVariable setvar3,disable=2,variable=root:Packages:NIST:gEvent_logfile
+	
+	TitleBox tb1,pos={20,650},size={460,80},fSize=12
+	TitleBox tb1,variable=root:Packages:NIST:gEventDisplayString
+	
 	CheckBox chkbox1,pos={170,15},title="Oscillatory Mode?"
 	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_mode
-	Button doneButton,pos={400,10}, size={50,20},title="Done",fSize=12
+	Button doneButton,pos={435,12}, size={50,20},title="Done",fSize=12
 	Button doneButton,proc=EventDone_Proc
+
+	Button button2,pos={20,122},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={20,147},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button4,pos={175,122},size={140,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button5,pos={175,147},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
+	Button button6,pos={378,13},size={40,20},proc=EventModeHelpButtonProc,title="?"
 	
 	//DrawLine 10,35,490,35
 	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
@@ -110,7 +120,7 @@ Proc EventModePanel()
 	SetVariable setvar0,pos={320,90},size={160,20},title="Display Time Slice",fSize=12
 	SetVariable setvar0,value= root:Packages:NIST:gEvent_tsdisp
 	SetVariable setvar0,proc=sliceSelectEvent_Proc
-	Display/W=(20,120,480,580)/HOST=EventModePanel/N=Event_slicegraph
+	Display/W=(20,180,480,640)/HOST=EventModePanel/N=Event_slicegraph
 	AppendImage/W=EventModePanel#Event_slicegraph/T root:Packages:NIST:Event:dispsliceData
 	ModifyImage/W=EventModePanel#Event_slicegraph  ''#0 ctab= {*,*,Grays,0}
 	ModifyImage/W=EventModePanel#Event_slicegraph ''#0 ctabAutoscale=3
@@ -126,6 +136,83 @@ Proc EventModePanel()
 	SetAxis/A left
 	SetActiveSubwindow ##
 EndMacro
+
+Function ShowEventDataButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "ShowRescaledTimeGraph()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function ShowBinDetailsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "ShowBinTable()"
+			Execute "BinEventBarGraph()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function UndoTimeSortButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "UndoTheSorting()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function ExportSlicesButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "ExportSlicesAsVAX()"		//will invoke the dialog
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EventModeHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoAlert 0,"The help file has not been written yet"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function EventDone_Proc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -221,7 +308,7 @@ Function Stream_ProcessEventLog(ctrlName)
 End
 
 
-Macro	UndoTheSorting()
+Proc	UndoTheSorting()
 	Osc_UndoSort()
 End
 
@@ -682,6 +769,9 @@ End
 
 
 //
+// for the bit shifts, see the decimal-binary conversion
+// http://www.binaryconvert.com/convert_unsigned_int.html
+//
 Function LoadEvents()
 	
 	NVAR time_msw = root:Packages:NIST:gEvent_time_msw
@@ -689,6 +779,8 @@ Function LoadEvents()
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	
 	SVAR filepathstr = root:Packages:NIST:gEvent_logfile
+	SVAR dispStr = root:Packages:NIST:gEventDisplayString
+	
 	SetDataFolder root:Packages:NIST:Event
 
 	Variable fileref
@@ -772,13 +864,26 @@ Function LoadEvents()
 	toc()
 //
 //	
-	Printf "numXYevents = %d\r",numXYevents
-	Printf "XY = num0 = %d\r",num0
-	Printf "XY time = num2 = %d\r",num2
-	Printf "time MSW = num1 = %d\r",num1
-	Printf "Rollover = num3 = %d\r",num3
+//	Printf "numXYevents = %d\r",numXYevents
+//	Printf "XY = num0 = %d\r",num0
+//	Printf "XY time = num2 = %d\r",num2
+//	Printf "time MSW = num1 = %d\r",num1
+//	Printf "Rollover = num3 = %d\r",num3
 
-	Printf "num0 + num2 = %d\r",num0+num2
+//	Printf "num0 + num2 = %d\r",num0+num2
+
+	String fileStr = ParseFilePath(0, filepathstr, ":", 1, 0),tmpStr
+	
+	sprintf tmpStr, "%s: %d total bytes",fileStr,totBytes 
+	dispStr = tmpStr
+	sPrintf tmpStr,"\rnumXYevents = %d\rXY = num0 = %d",numXYevents,num0
+	dispStr += tmpStr
+	sPrintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
+	dispStr += tmpStr
+	sPrintf tmpStr,"\rRollover = num3 = %d",num3
+	dispStr += tmpStr
+
+	
 	
 	Make/O/U/N=(numXYevents) xLoc,yLoc
 	Make/O/D/N=(numXYevents) timePt
@@ -820,6 +925,9 @@ Function LoadEvents()
 		// two most sig bits (31-30)
 		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
 		
+		if(verbose > 0)
+			verbose -= 1
+		endif
 //		
 		switch(type)
 			case ATXY:
@@ -844,7 +952,7 @@ Function LoadEvents()
 
 				if(verbose)		
 //					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
+					printf "d=%u : t=%u : msw=%u : lsw=%u : %u : %u \r",dataval,timeval,time_msw,time_lsw,xval,yval
 				endif				
 
 //				b = FindBin(timeval,nslices)
@@ -892,7 +1000,7 @@ Function LoadEvents()
 				endif
 				if(verbose)
 //					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "%u : %u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval,t_longest
+					printf "d=%u : t=%u : msw=%u : lsw=%u : tlong=%u\r",dataval,timeval,time_msw,time_lsw,t_longest
 				endif
 				
 				// the XY position was in the previous event ATXYM
@@ -907,7 +1015,8 @@ Function LoadEvents()
 				break
 			case ATMAR:
 				if(verbose3)
-//					verbose = 1
+//					verbose = 15
+					verbose = 2
 					printf "MAR : "
 				endif
 				
@@ -939,7 +1048,7 @@ End
 
 ///
 
-Macro BinEventBarGraph()
+Proc BinEventBarGraph()
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:Event:
@@ -961,7 +1070,7 @@ Macro BinEventBarGraph()
 //	SetAxis bottom 0.0001,180.84853
 End
 
-Macro ShowBinTable() : Table
+Proc ShowBinTable() : Table
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:Event:
@@ -973,7 +1082,7 @@ EndMacro
 
 // only show the first 1500 data points
 //
-Macro ShowRescaledTimeGraph() : Graph
+Proc ShowRescaledTimeGraph() : Graph
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:Event:
@@ -991,7 +1100,7 @@ EndMacro
 
 
 
-Macro ExportSlicesAsVAX(firstNum,prefix)
+Proc ExportSlicesAsVAX(firstNum,prefix)
 	Variable firstNum=1
 	String prefix="SAMPL"
 

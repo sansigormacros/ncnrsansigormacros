@@ -35,6 +35,7 @@ Menu "Macros"
 //	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
 
 	"Load Real Space Modeling - Beta",RealSpaceLoader()
+	"Event Mode Processing Panel - Beta",Show_Event_Panel()
 	"-"
 
 end

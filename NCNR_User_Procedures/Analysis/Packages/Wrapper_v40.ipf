@@ -2052,7 +2052,7 @@ Function RescalePlot (ctrlName): ButtonControl
 		endfor
 	endfor
 	
-	string oldywave
+	string oldywave, xstr, ystr
 	for (i = 0; i < ItemsInList(listWave,";"); i+=1)
 		temp = StringFromList(i,listWave,";")
 		Wave/T WaveString = $temp
@@ -2060,7 +2060,47 @@ Function RescalePlot (ctrlName): ButtonControl
 			 WaveToRescale = Wavestring[j]
 		WaveDataFolder = WaveString[0]
 		SetDataFolder $WaveDataFolder
-			if(stringmatch(WaveToRescale, "*_RA"))
+		ControlInfo/W=RescaleAxisPanel yModel
+		ystr = S_Value
+		ControlInfo/W=RescaleAxisPanel xModel
+		xstr = S_Value
+			if(cmpstr("I",ystr)==0 && cmpstr("q",xstr)==0)
+				if(stringmatch(WaveToRescale, "*_i_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					xwave = RemoveEnding(WaveToRescale, "_i_RA")+"_q"
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave
+					swave = RemoveEnding(WaveToRescale, "_i_RA")+"_s"
+					if(exists(swave)==1)
+						ErrorBars/T=0/W=$topGraph $ywave, Y wave=($swave,$swave)	
+					endif
+				elseif (stringmatch(WaveToRescale,  "smeared*"))
+					if(stringmatch(WaveToRescale,"*_RA") && stringmatch(WaveToRescale,"!*_qvals*") )
+						oldywave = WaveToRescale
+						ywave = RemoveEnding(WaveToRescale,"_RA")
+						xwave = "smeared_qvals"
+						replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+						replacewave/X/W=$topGraph trace=$ywave, $xwave
+					endif
+				elseif(stringmatch(WaveToRescale,"ywave*") && stringmatch(WaveToRescale,"*_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					xwave = ReplaceString("ywave",ywave,"xwave")
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave					
+				elseif(stringmatch(WaveToRescale, "*FitYw*") && stringmatch(WaveToRescale, "*_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					for (k=1; k < numpnts(WaveString); k+=1)
+						if (stringmatch(Wavestring[k], "*_q"))
+							xwave = Wavestring[k]
+						endif
+					endfor
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave	
+				endif			
+			elseif(stringmatch(WaveToRescale, "*_RA"))
 			elseif (stringmatch(WaveToRescale, "*_i"))
 				DoWindow/F topGraph
 				oldywave = WaveToRescale
@@ -2080,7 +2120,6 @@ Function RescalePlot (ctrlName): ButtonControl
 				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
 				xwave = "smeared_qvals_RA"
 				replacewave/X/W=$topGraph trace=$ywave, $xwave	
-				ModifyGraph log=0
 			elseif(stringmatch(WaveToRescale,"ywave*"))
 				oldywave = WaveToRescale
 				ywave = WaveToRescale + "_RA"
@@ -2097,15 +2136,14 @@ Function RescalePlot (ctrlName): ButtonControl
 				endfor
 				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
 				replacewave/X/W=$topGraph trace=$ywave, $xwave	
-				ModifyGraph log=0
 			endif
 			SetDataFolder root:Packages:NIST:RescaleAxis
+			DoUpdate
 		endfor
 	endfor
 	KillWaves/A/Z
-	modifygraph log=0
 		
-	string ylabel, xlabel, ystr, xstr
+	string ylabel, xlabel
 	ControlInfo/W=RescaleAxisPanel yModel
 	ystr = S_Value
 	ControlInfo/W=RescaleAxisPanel xModel
@@ -2113,6 +2151,8 @@ Function RescalePlot (ctrlName): ButtonControl
 	
 	if(cmpstr("I",ystr)==0 && cmpstr("q",xstr)==0)
 		modifygraph log=1
+	else
+		modifygraph log=0
 	endif
 	
 	Variable pow_a,pow_b,pow_c
