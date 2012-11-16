@@ -484,16 +484,17 @@ Window SASCALC_Panel()
 	CheckBox checkNG3,value=1,mode=1
 	CheckBox checkNG7,pos={66,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
 	CheckBox checkNG7,value=0,mode=1
+
+	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
+	CheckBox checkChamber,value=1,mode=1
+	CheckBox checkHuber,pos={172,27},size={44,14},proc=TableCheckProc,title="Huber"
+	CheckBox checkHuber,value=0,mode=1
 //	-- hide/unhide the 10m SANS
 	if(show10mSANS)
 		CheckBox checkNG10,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NG10"
 		CheckBox checkNG10,value=0,mode=1
 	endif
-//	
-	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
-	CheckBox checkChamber,value=1,mode=1
-	CheckBox checkHuber,pos={172,27},size={44,14},proc=TableCheckProc,title="Huber"
-	CheckBox checkHuber,value=0,mode=1
+//		
 	PopupMenu popup0,pos={6,94},size={76,20},proc=SourceAperturePopMenuProc
 	PopupMenu popup0,mode=1,popvalue="3.81 cm",value= root:Packages:NIST:SAS:gSourceApString
 	PopupMenu popup0_1,pos={172,72},size={49,20},proc=SampleAperturePopMenuProc
@@ -603,7 +604,11 @@ Function UpdateControls()
 			endif
 			Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
 			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
-			
+
+			// un-disable the sample table position
+			CheckBox checkChamber,win=SASCALC,disable=0
+			CheckBox checkHuber,win=SASCALC,disable=0
+						
 			break
 								
 		case "checkNG7":			// 
@@ -623,6 +628,10 @@ Function UpdateControls()
 			Slider SC_Slider_1,win=SASCALC,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
 			SetVariable setvar0,win=SASCALC,limits={100,1531,1}
 			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+			
+			// un-disable the sample table position
+			CheckBox checkChamber,win=SASCALC,disable=0
+			CheckBox checkHuber,win=SASCALC,disable=0
 			
 			break
 			
@@ -651,6 +660,10 @@ Function UpdateControls()
 			endif
 			SetVariable setvar0,win=SASCALC,limits={100,500,1}
 			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+
+			// disable the sample table position, as long as the sample positions are identical for the 10 m
+			CheckBox checkChamber,win=SASCALC,disable=2
+			CheckBox checkHuber,win=SASCALC,disable=2
 
 			break
 			
@@ -1970,8 +1983,9 @@ Function sourceToSampleDist()
 			break
 		case 10:
 			// 10m SANS handled differently
+			// s12 == 0 by definition
 			// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
-			SSD = 500 - 155*NG - s12*(2-tableposition()) - L2Diff
+			SSD = 470 - 155*NG - s12*(2-tableposition()) - L2Diff
 			break
 		default:
 			

@@ -34,8 +34,6 @@
 //
 //
 
-
-
 Proc Show_Event_Panel()
 	DoWindow/F EventModePanel
 	if(V_flag ==0)
@@ -65,7 +63,8 @@ Function Init_Event()
 	Variable/G root:Packages:NIST:gEvent_prescan // Do we prescan the file?
 	Variable/G root:Packages:NIST:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:gEvent_Mode = 1		// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:gEvent_Mode = 0		// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	
@@ -92,8 +91,11 @@ Proc EventModePanel()
 	TitleBox tb1,pos={20,650},size={460,80},fSize=12
 	TitleBox tb1,variable=root:Packages:NIST:gEventDisplayString
 	
-	CheckBox chkbox1,pos={170,15},title="Oscillatory Mode?"
+	CheckBox chkbox1,pos={170,8},title="Oscillatory Mode?"
 	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_mode
+	CheckBox chkbox3,pos={170,27},title="Remove Bad Events?"
+	CheckBox chkbox3,variable = root:Packages:NIST:gRemoveBadEvents
+	
 	Button doneButton,pos={435,12}, size={50,20},title="Done",fSize=12
 	Button doneButton,proc=EventDone_Proc
 
@@ -122,7 +124,7 @@ Proc EventModePanel()
 	SetVariable setvar0,proc=sliceSelectEvent_Proc
 	Display/W=(20,180,480,640)/HOST=EventModePanel/N=Event_slicegraph
 	AppendImage/W=EventModePanel#Event_slicegraph/T root:Packages:NIST:Event:dispsliceData
-	ModifyImage/W=EventModePanel#Event_slicegraph  ''#0 ctab= {*,*,Grays,0}
+	ModifyImage/W=EventModePanel#Event_slicegraph  ''#0 ctab= {*,*,ColdWarm,0}
 	ModifyImage/W=EventModePanel#Event_slicegraph ''#0 ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
@@ -144,6 +146,9 @@ Function ShowEventDataButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			Execute "ShowRescaledTimeGraph()"
+			//
+			DifferentiatedTime()
+			//
 			break
 		case -1: // control being killed
 			break
@@ -532,6 +537,31 @@ Function Stream_ProcessEvents(xLoc,yLoc,index)
 	return(0)
 End
 
+
+Function SortTimeData()
+
+// now before binning, sort the data
+
+	//this is slow - undoing the sorting and starting over, but if you don't,
+	// you'll never be able to undo the sort
+	//
+	SetDataFolder root:Packages:NIST:Event:
+
+	KillWaves/Z OscSortIndex
+//	Print WaveExists($"root:Packages:NIST:Event:OscSortIndex")
+	
+	if(WaveExists($"root:Packages:NIST:Event:OscSortIndex") == 0 )
+		Duplicate/O rescaledTime OscSortIndex
+		MakeIndex rescaledTime OscSortIndex
+		IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime	
+	Endif
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
+
 Function SetLinearBins(binEndTime,nslices,t_longest)
 	Wave binEndTime
 	Variable nslices,t_longest
@@ -629,6 +659,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	if(mode == 1)
 		Osc_LoadEventLog("")
 	endif
+	
+	DifferentiatedTime()
 	
 	return(0)
 End
@@ -767,10 +799,35 @@ Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableC
 
 End
 
+Function DifferentiatedTime()
+
+	Wave rescaledTime = root:Packages:NIST:Event:rescaledTime
+	
+	Differentiate rescaledTime/D=rescaledTime_DIF
+//	Display rescaledTime,rescaledTime_DIF
+	DoWindow/F Differentiated_Time
+	if(V_flag == 0)
+		Display/N=Differentiated_Time/K=1 rescaledTime_DIF
+		Legend
+		Modifygraph gaps=0
+		ModifyGraph zero(left)=1
+		Label left "\\Z14Delta (dt/event)"
+		Label bottom "\\Z14Event number"
+	endif
+	
+	return(0)
+End
+
 
 //
 // for the bit shifts, see the decimal-binary conversion
 // http://www.binaryconvert.com/convert_unsigned_int.html
+//
+//		K0 = 536870912
+// 		Print (K0 & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
+//		Print (K0 & 0x10000000)/268435456		//bit 28 only, shift by 2^28
+//		Print (K0 & 0x20000000)/536870912		//bit 29 only, shift by 2^29
+//
 //
 Function LoadEvents()
 	
@@ -785,35 +842,32 @@ Function LoadEvents()
 
 	Variable fileref
 	String buffer
+	String fileStr,tmpStr
 	Variable dataval,timeval,type,numLines,verbose,verbose3
-	Variable xval,yval,rollBit,nRoll,roll_time
+	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
+	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0
 	Variable Xmax, yMax
+	
 	xMax = 127		// number the detector from 0->127 
 	yMax = 127
 	
-	verbose3 = 1
+	verbose3 = 1			//prints out the rollover events (type==3)
 	verbose = 0
 	numLines = 0
 
-// this gets me the number of lines. not terribly useful	
-//	Open/R fileref as filepathstr
-//	do
-//		numLines += 1
-//		FReadLine fileref, buffer
-//		if (strlen(buffer) == 0)
-//			numLines -= 1			//last FReadLine wasn't really a line
-//			break
-//		endif
-//	while(1)
-//	Close fileref
 	
 	// what I really need is the number of XY events
-	Variable numXYevents,num1,num2,num3,num0,totBytes
+	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
 	numXYevents = 0
 	num0 = 0
 	num1 = 0
 	num2 = 0
 	num3 = 0
+	numPP = 0
+	numT0 = 0
+	numDL = 0
+	numFF = 0
+	numZero = 0
 
 //tic()
 	Open/R fileref as filepathstr
@@ -825,8 +879,14 @@ Function LoadEvents()
 	
 //toc()
 //
+
+
+// do a "pre-scan to get some of the counts, so that I can allocate space. This does
+// double the read time, but is still faster than adding points to waves as the file is read
+//	
+
 	tic()
-	
+
 	Open/R fileref as filepathstr
 	do
 		do
@@ -841,7 +901,7 @@ Function LoadEvents()
 		
 		// two most sig bits (31-30)
 		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
-		
+				
 		if(type == 0)
 			num0 += 1
 			numXYevents += 1
@@ -857,11 +917,26 @@ Function LoadEvents()
 			num3 += 1
 		endif	
 		
+		bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+		
+		if(type==0 || type==2)
+			numPP += round(bit29)
+		endif
+		
+		if(type==1 || type==3)
+			numT0 += round(bit29)
+		endif
+		
+		if(dataval == 0)
+			numZero += 1
+		endif
+		
 	while(1)
 	Close fileref
 //		done counting the number of XY events
-
 	toc()
+	
+	
 //
 //	
 //	Printf "numXYevents = %d\r",numXYevents
@@ -869,18 +944,28 @@ Function LoadEvents()
 //	Printf "XY time = num2 = %d\r",num2
 //	Printf "time MSW = num1 = %d\r",num1
 //	Printf "Rollover = num3 = %d\r",num3
-
 //	Printf "num0 + num2 = %d\r",num0+num2
 
-	String fileStr = ParseFilePath(0, filepathstr, ":", 1, 0),tmpStr
+// dispStr will be displayed on the panel
+	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 	
-	sprintf tmpStr, "%s: %d total bytes",fileStr,totBytes 
+	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
 	dispStr = tmpStr
-	sPrintf tmpStr,"\rnumXYevents = %d\rXY = num0 = %d",numXYevents,num0
+	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
-	sPrintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
+//	sprintf tmpStr,"XY = num0 = %d\r",num0
+//	dispStr += tmpStr
+//	sprintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
+//	dispStr += tmpStr
+//	sprintf tmpStr,"XY time = num2 = %d\r",num2
+//	dispStr += tmpStr
+//	sprintf tmpStr,"time MSW = num1 = %d\r",num1
+//	dispStr += tmpStr
+	sprintf tmpStr,"PP = %d  :  ",numPP
 	dispStr += tmpStr
-	sPrintf tmpStr,"\rRollover = num3 = %d",num3
+	sprintf tmpStr,"ZeroData = %d\r",numZero
+	dispStr += tmpStr
+	sprintf tmpStr,"Rollover = %d",num3
 	dispStr += tmpStr
 
 	
@@ -889,20 +974,73 @@ Function LoadEvents()
 	Make/O/D/N=(numXYevents) timePt
 //	Make/O/U/N=(totBytes/4) xLoc,yLoc		//too large, trim when done (bad idea)
 //	Make/O/D/N=(totBytes/4) timePt
+	Make/O/D/N=1000 badTimePt,badEventNum,PPTime,PPEventNum
+	badTimePt=0
+	badEventNum=0
+	PPTime=0
+	PPEventNum=0
 	xLoc=0
 	yLoc=0
 	timePt=0
-
 	
-	Variable ii=0
 	nRoll = 0		//number of rollover events
 	roll_time = 2^26		//units of 10-7 sec
+	
+	NVAR removeBadEvents = root:Packages:NIST:gRemoveBadEvents
 	
 	time_msw=0
 	
 	tic()
 	
+	ii = 0
+	
 	Open/R fileref as filepathstr
+	
+	// remove events at the beginning up to a type==2 so that the msw and lsw times are reset properly
+	if(RemoveBadEvents == 1)
+		do
+			do
+				FReadLine fileref, buffer			//skip the "blank" lines that have one character
+			while(strlen(buffer) == 1)		
+	
+			if (strlen(buffer) == 0)
+				break
+			endif
+			
+			sscanf buffer,"%x",dataval
+		// two most sig bits (31-30)
+			type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
+			
+			if(type == 2)
+				// this is the first event with a proper time value, so process the XY-time event as ususal
+				// and then break to drop to the main loop, where the next event == type 1
+				
+				xval = xMax - (dataval & 255)						//last 8 bits (7-0)
+				yval = (dataval & 65280)/256						//bits 15-8, right shift by 2^8
+		
+				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
+		
+				if(verbose)
+		//					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
+					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
+				endif
+				
+				// this is the first point, be sure that ii = 0
+				ii = 0
+				xLoc[ii] = xval
+				yLoc[ii] = yval
+				
+				Print "At beginning of file, numBad = ",numBad
+				break	// the next do loop processes the bulk of the file (** the next event == type 1 = MIR)
+			else
+				numBad += 1
+			endif
+			
+			//ii+=1		don't increment the counter
+		while(1)
+	endif
+	
+	// now read the main portion of the file.
 	do
 		do
 			FReadLine fileref, buffer			//skip the "blank" lines that have one character
@@ -914,26 +1052,51 @@ Function LoadEvents()
 		
 		sscanf buffer,"%x",dataval
 		
+
+//		type = (dataval & ~(2^32 - 2^30 -1))/2^30
+
+		// two most sig bits (31-30)
+		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
+		
+//		// if the first event, read the time_msw, since this is not always reset. if the first event is XYM, then it's OK,
+//		// but if the first event is XY, then the first few events will have msw=0 until an XYM forces a read of MSW in the
+//		// subsequent MIR event.
+//		// So do it now.
+//		if(ii==0 && RemoveBadEvents == 1)
+//			time_msw =  (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
+//		endif
+
 		//
 		//Constant ATXY = 0
 		//Constant ATXYM = 2
 		//Constant ATMIR = 1
 		//Constant ATMAR = 3
 		//
-//		type = (dataval & ~(2^32 - 2^30 -1))/2^30
-
-		// two most sig bits (31-30)
-		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
-		
+						
 		if(verbose > 0)
 			verbose -= 1
 		endif
 //		
 		switch(type)
-			case ATXY:
+			case ATXY:		// 0
 				if(verbose)		
 					printf "XY : "		
 				endif
+				
+				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously
+				if(dataval == 0 && RemoveBadEvents == 1)
+					break		//don't increment ii
+				endif
+				
+				// if it's a pileup event, skip it now (this can be either type 0 or 2)
+				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+				if(bit29 == 1 && RemoveBadEvents == 1)
+					PPTime[tmpPP] = timeval
+					PPEventNum[tmpPP] = ii
+					tmpPP += 1
+					break		//don't increment ii
+				endif
+				
 //				xval = ~(dataval & ~(2^32 - 2^8)) & 127
 //				yval = ((dataval & ~(2^32 - 2^16 ))/2^8) & 127
 //				time_lsw = (dataval & ~(2^32 - 2^29))/2^16
@@ -946,34 +1109,76 @@ Function LoadEvents()
 				if (timeval > t_longest) 
 					t_longest = timeval
 				endif
-				xLoc[ii] = xval
-				yLoc[ii] = yval
-				timePt[ii] = timeval
+				
+				
+				// catch the "bad" events:
+				// if an XY event follows a rollover, time_msw is 0 by definition, but does not immediately get 
+				// re-evalulated here. Throw out only the immediately following points where msw is still 8191
+				if(rolloverHappened && RemoveBadEvents == 1)
+					// maybe a bad event
+					if(time_msw == 8191)
+						badTimePt[numBad] = timeVal
+						badEventNum[numBad] = ii
+						numBad +=1
+					else
+						// time_msw has been reset, points are good now, so keep this one
+						xLoc[ii] = xval
+						yLoc[ii] = yval
+						timePt[ii] = timeval
+						
+//						if(xval == 127 && yval == 0)
+//							// check bit 29
+//							bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+//							Print "XY=127,0 : bit29 = ",bit29
+//						endif
+						
+						ii+=1
+						rolloverHappened = 0
+					endif
+				else
+					// normal processing of good point, keep it
+					xLoc[ii] = xval
+					yLoc[ii] = yval
+					timePt[ii] = timeval
+				
+//					if(xval == 127 && yval == 0)
+//						// check bit 29
+//						bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+//						Printf "XY=127,0 : bit29 = %u : d=%u\r",bit29,dataval
+//					endif
+					ii+=1
+				endif
+
 
 				if(verbose)		
 //					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
 					printf "d=%u : t=%u : msw=%u : lsw=%u : %u : %u \r",dataval,timeval,time_msw,time_lsw,xval,yval
 				endif				
-
-//				b = FindBin(timeval,nslices)
-//				slicedData[xval][yval][b] += 1
-
-				ii+=1
-				
+	
 //				verbose = 0
 				break
-			case ATXYM:
+			case ATXYM: // 2 
 				if(verbose)
 					printf "XYM : "
 				endif
+				
+				// if it's a pileup event, skip it now (this can be either type 0 or 2)
+				// - but can I do this if this is an XY-time event? This will lead to a wrong time, and a time 
+				// assigned to an XY (0,0)...
+				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+				if(bit29 == 1 && RemoveBadEvents == 1)
+					Print "*****Bit 29 (PP) event set for Type==2, but not handled, ii = ",ii
+//					break		//don't increment ii
+				endif
+				
 //				xval = ~(dataval & ~(2^32 - 2^8)) & 127
 //				yval = ((dataval & ~(2^32 - 2^16 ))/2^8) & 127
-//				time_lsw =  (dataval & ~(2^32 - 2^29 ))/2^16
+//				time_lsw =  (dataval & ~(2^32 - 2^29 ))/2^16		//this method gives a FP result!! likely since the "^" operation gives FP result...
 
 				xval = xMax - (dataval & 255)						//last 8 bits (7-0)
 				yval = (dataval & 65280)/256						//bits 15-8, right shift by 2^8
 
-				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
+				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16 (result is integer)
 
 				if(verbose)
 //					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
@@ -982,17 +1187,17 @@ Function LoadEvents()
 				
 				xLoc[ii] = xval
 				yLoc[ii] = yval
-				
+
 				// don't fill in the time yet, or increment the index ii
 				// the next event MUST be ATMIR with the MSW time bits
 				//
 //				verbose = 0
 				break
-			case ATMIR:
+			case ATMIR:  // 1
 				if(verbose)
 					printf "MIR : "
 				endif
-//				time_msw =  (dataval & ~(2^32 - 2^29 ))/2^16
+
 				time_msw =  (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
 				timeval = trunc( nRoll*roll_time + (time_msw * (8192)) + time_lsw )
 				if (timeval > t_longest) 
@@ -1005,34 +1210,44 @@ Function LoadEvents()
 				
 				// the XY position was in the previous event ATXYM
 				timePt[ii] = timeval
-				
-				ii+=1
-				
-//				b = FindBin(timeval,nslices)
-//				slicedData[xval][yval][b] += 1
 
+//				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+//				if(bit29 != 0)
+//					Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
+//				endif
+								
+				ii+=1
 //				verbose = 0
 				break
-			case ATMAR:
+			case ATMAR:  // 3
 				if(verbose3)
 //					verbose = 15
-					verbose = 2
+//					verbose = 2
 					printf "MAR : "
 				endif
 				
 				// do something with the rollover event?
 				
 				// check bit 29
-				rollBit = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
 				nRoll += 1
-				
+// not doing anything with these bits yet				
+				bit27 = (dataval & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
+				bit28 = (dataval & 0x10000000)/268435456		//bit 28 only, shift by 2^28
+
 				if(verbose3)
-					printf "%u : %u : %u \r",dataval,rollBit,nRoll
+					printf "d=%u : b29=%u : b28=%u : b27=%u : #Roll=%u \r",dataval,bit29, bit28, bit27,nRoll
 				endif
 				
+				rolloverHappened = 1
+
 				break
 		endswitch
-				
+		
+//		if(ii<18)
+//			printf "TYPE=%d : ii=%d : d=%u : t=%u : msw=%u : lsw=%u : %u : %u \r",type,ii,dataval,timeval,time_msw,time_lsw,xval,yval
+//		endif	
+			
 	while(1)
 	
 	
@@ -1040,6 +1255,9 @@ Function LoadEvents()
 	
 	toc()
 	
+	sPrintf tmpStr,"\rBad Events = numBad = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	dispStr += tmpStr
+
 	SetDataFolder root:
 	
 	return(0)
@@ -1049,53 +1267,71 @@ End
 ///
 
 Proc BinEventBarGraph()
-	PauseUpdate; Silent 1		// building window...
-	String fldrSav0= GetDataFolder(1)
-	SetDataFolder root:Packages:NIST:Event:
-	Display /W=(110,705,610,1132)/K=1 binCount vs binEndTime
-	SetDataFolder fldrSav0
-	ModifyGraph mode=5
-	ModifyGraph marker=19
-	ModifyGraph lSize=2
-	ModifyGraph rgb=(0,0,0)
-	ModifyGraph msize=2
-	ModifyGraph hbFill=2
-	ModifyGraph gaps=0
-	ModifyGraph usePlusRGB=1
-	ModifyGraph toMode=1
-	ModifyGraph useBarStrokeRGB=1
-//	ModifyGraph log=1
-	ModifyGraph standoff=0
-//	SetAxis left 0.1,4189
-//	SetAxis bottom 0.0001,180.84853
+	
+	DoWindow/F EventBarGraph
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+		String fldrSav0= GetDataFolder(1)
+		SetDataFolder root:Packages:NIST:Event:
+		Display /W=(110,705,610,1132)/N=EventBarGraph /K=1 binCount vs binEndTime
+		SetDataFolder fldrSav0
+		ModifyGraph mode=5
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=2
+		ModifyGraph hbFill=2
+		ModifyGraph gaps=0
+		ModifyGraph usePlusRGB=1
+		ModifyGraph toMode=1
+		ModifyGraph useBarStrokeRGB=1
+	//	ModifyGraph log=1
+		ModifyGraph standoff=0
+		Label bottom "\\Z14Time (seconds)"
+		Label left "\\Z14Number of Events"
+	//	SetAxis left 0.1,4189
+	//	SetAxis bottom 0.0001,180.84853
+	endif
 End
 
+
 Proc ShowBinTable() : Table
-	PauseUpdate; Silent 1		// building window...
-	String fldrSav0= GetDataFolder(1)
-	SetDataFolder root:Packages:NIST:Event:
-	Edit/W=(498,699,1003,955) /K=1 binCount,binEndTime
-	ModifyTable format(Point)=1,sigDigits(binEndTime)=16,width(binEndTime)=218
-	SetDataFolder fldrSav0
+
+	DoWindow/F BinEventTable
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+		String fldrSav0= GetDataFolder(1)
+		SetDataFolder root:Packages:NIST:Event:
+		Edit/W=(498,699,1003,955) /K=1/N=BinEventTable binCount,binEndTime
+		ModifyTable format(Point)=1,sigDigits(binEndTime)=16,width(binEndTime)=218
+		SetDataFolder fldrSav0
+	endif
 EndMacro
 
 
 // only show the first 1500 data points
 //
 Proc ShowRescaledTimeGraph() : Graph
-	PauseUpdate; Silent 1		// building window...
-	String fldrSav0= GetDataFolder(1)
-	SetDataFolder root:Packages:NIST:Event:
-	Display /W=(25,44,486,356)/K=1 rescaledTime
-	SetDataFolder fldrSav0
-	ModifyGraph mode=4
-	ModifyGraph marker=19
-	ModifyGraph rgb(rescaledTime)=(0,0,0)
-	ModifyGraph msize=2
-	SetAxis/A=2 left			//only autoscale the visible data (based on the bottom limits)
-	SetAxis bottom 0,1500
-	ErrorBars rescaledTime OFF 
-	ShowInfo
+
+	DoWindow/F RescaledTimeGraph
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+		String fldrSav0= GetDataFolder(1)
+		SetDataFolder root:Packages:NIST:Event:
+		Display /W=(25,44,486,356)/K=1/N=RescaledTimeGraph rescaledTime
+		SetDataFolder fldrSav0
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ModifyGraph rgb(rescaledTime)=(0,0,0)
+		ModifyGraph msize=2
+//		SetAxis/A=2 left			//only autoscale the visible data (based on the bottom limits)
+//		SetAxis bottom 0,1500
+		ErrorBars rescaledTime OFF 
+		Label left "\\Z14Time (seconds)"
+		Label bottom "\\Z14Event number"
+		ShowInfo
+	endif
+	
 EndMacro
 
 
