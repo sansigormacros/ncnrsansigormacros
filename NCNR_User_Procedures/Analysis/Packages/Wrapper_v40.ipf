@@ -1910,6 +1910,7 @@ Window RescaleAxisPanel()
 	SetVariable expc,pos={182,45},size={80,17},title="pow \"c\""
 	SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
 	SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:RescaleAxis:gRAExpC
+	Button RAHelp, pos={220,110}, size={20,20}, proc=RAHelpButtonProc, title="?"
 EndMacro
 
 Proc RADoneButton(ctrlName): ButtonControl
@@ -1918,6 +1919,22 @@ Proc RADoneButton(ctrlName): ButtonControl
 	DoWindow/F WrapperPanel
 	CheckBox check_8 value=0
 end
+
+Function RAHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Rescaled Axis"
+			if(V_flag !=0)
+				DoAlert 0,"The Rescaled Axis Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
 
 Proc ExportData(ctrlName): ButtonControl
 	string ctrlName	
