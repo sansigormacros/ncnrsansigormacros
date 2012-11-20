@@ -1,12 +1,33 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#pragma IgorVersion=6.1
+#pragma IgorVersion=6.22
 
-//#include "TISANE"
-
+// vers 7.13d
 
 // TODO:
 //
+// -- Need to make sure that the rescaledTime and the differentiated time graphs are
+//     being properly updated when the data is processed, modified, etc.
+//
+// -- I need better nomenclature other than "stream" for the "continuous" data set.
+//     It's all a stream, just sometimes it's not oscillatory
+//
 // -- fix the log/lin display - it's not working correctly
+// 			I could use ModifyImage and log = 0|1 keyword for the log Z display
+// 			rather than creating a duplicate wave of log(data)
+// 			-- it's in the Function sliceSelectEvent_Proc()
+//
+// -- Do something withe the PP events. Currently, nothing is done (since I still need
+//     to find out what they realy mean)
+//
+// -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
+//     points. Maybe not kosher, but would clean things up.
+//
+// -- Is there any way to improve the speed of the loader? How could an XOP be structured
+//     for maximum flexibility? Leave the post processing to Igor, but how much for the XOP
+//     to do? And can it handle such large amounts of data to pass back and forth, or
+//     does it need to be written as an operation, rather than a function??? I'd really 
+//     rather that Igor handles the memory management, not me, if I write the XOP.
+//
 // X- add controls to show the bar graph
 // x- add popup for selecting the binning type
 // x- add ability to save the slices to RAW VAX files
@@ -21,18 +42,25 @@
 //
 //
 //
-// -- for the 19 MB file - the max time is reported as 67.108s, but the max rescaled time = 61 s
-//    based on the last point... there are "spikes" in the time! -- look at the plot in the
-//    data browser... (so waveMax() gives a different answer than the end point, and BinarySearch()
-//    doesn't have a monotonic file to work with... ugh.)
+
+
 //
+// These are currently defined in the TISANE procedure file. If that file becomes depricated
+// or is not loaded in, then these lines should be activated, and those in TISANE should also
+// be re-declared as Static, so they will be local to each procedure
 //
+//Static Constant ATXY = 0
+//Static Constant ATXYM = 2
+//Static Constant ATMIR = 1
+//Static Constant ATMAR = 3
 //
-// differentiate may be useful at some point, but not sure
-//¥Differentiate rescaledTime/D=rescaledTime_DIF
-//¥Display rescaledTime,rescaledTime_DIF
+//Static Constant USECSPERTICK=0.1 // microseconds
+//Static Constant TICKSPERUSEC=10
+//Static Constant XBINS=128
+//Static Constant YBINS=128
 //
-//
+
+
 
 Proc Show_Event_Panel()
 	DoWindow/F EventModePanel
@@ -58,14 +86,13 @@ Function Init_Event()
 
 	Variable/G root:Packages:NIST:gEvent_tsdisp //Displayed slice
 	Variable/G root:Packages:NIST:gEvent_nslices = 10  //Number of time slices
-	Variable/G root:Packages:NIST:gEvent_slicewidth  = 1000 // slice width (us)
 	
-	Variable/G root:Packages:NIST:gEvent_prescan // Do we prescan the file?
 	Variable/G root:Packages:NIST:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:gEvent_Mode = 0		// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:gEvent_Mode = 0				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
-
+	Variable/G root:Packages:NIST:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
+	
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	
 	SetDataFolder root:
@@ -246,6 +273,7 @@ Function ProcessEventLog_Button(ctrlName) : ButtonControl
 		Osc_ProcessEventLog("")
 	endif
 	
+	
 	return(0)
 end
 
@@ -254,105 +282,15 @@ end
 Function Osc_ProcessEventLog(ctrlName)
 	String ctrlName
 
-
 	Make/O/D/N=(128,128) root:Packages:NIST:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:Event:binnedData
 	Wave xLoc = root:Packages:NIST:Event:xLoc
 	Wave yLoc = root:Packages:NIST:Event:yLoc
 
-	SetDataFolder root:Packages:NIST:Event
-	IndexForHistogram(xLoc,yLoc,binnedData)
-	SetDataFolder root:
-	Wave index = root:Packages:NIST:Event:SavedIndex
-	
-	JointHistogram(xLoc,yLoc,binnedData,index)		// puts everything into one array
-
-
 // now with the number of slices and max time, process the events
-	Osc_ProcessEvents(xLoc,yLoc,index)
 
 
-	SetDataFolder root:Packages:NIST:Event:
-
-	SetDataFolder root:
-
-	return(0)
-End
-
-
-Function Stream_ProcessEventLog(ctrlName)
-	String ctrlName
-
-//	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
-
-	
-	Make/O/D/N=(128,128) root:Packages:NIST:Event:binnedData
-	
-	Wave binnedData = root:Packages:NIST:Event:binnedData
-	Wave xLoc = root:Packages:NIST:Event:xLoc
-	Wave yLoc = root:Packages:NIST:Event:yLoc
-
-	SetDataFolder root:Packages:NIST:Event
-	IndexForHistogram(xLoc,yLoc,binnedData)
-	SetDataFolder root:
-	Wave index = root:Packages:NIST:Event:SavedIndex
-	
-	JointHistogram(xLoc,yLoc,binnedData,index)		// puts everything into one array
-
-
-// now with the number of slices and max time, process the events
-	Stream_ProcessEvents(xLoc,yLoc,index)
-
-
-	SetDataFolder root:Packages:NIST:Event:
-
-	SetDataFolder root:
-
-	return(0)
-End
-
-
-Proc	UndoTheSorting()
-	Osc_UndoSort()
-End
-
-// for oscillatory mode
-//
-// -- this takes the previously generated index, and un-sorts the data to restore to the
-// "as-collected" state
-//
-Function Osc_UndoSort()
-
-	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
-	Wave rescaledTime = rescaledTime
-	Wave OscSortIndex = OscSortIndex
-	Wave yLoc = yLoc
-	Wave xLoc = xLoc
-	Wave timePt = timePt
-
-	Sort OscSortIndex OscSortIndex,yLoc,xLoc,timePt,rescaledTime
-
-	KillWaves/Z OscSortIndex
-	
-	SetDataFolder root:
-	return(0)
-End
-
-// for oscillatory mode
-//
-//// use indexSort to be able to restore the original data
-//¥Duplicate rescaledTime OscSortIndex
-//¥MakeIndex rescaledTime OscSortIndex
-//¥IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime
-//¥Sort OscSortIndex OscSortIndex,yLoc,xLoc,timePt,rescaledTime
-//
-// sort the data by time, then do the binning
-// save an index to be able to "undo" the sorting
-//
-Function Osc_ProcessEvents(xLoc,yLoc,index)
-	Wave xLoc,yLoc,index
-	
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 
@@ -407,8 +345,13 @@ Function Osc_ProcessEvents(xLoc,yLoc,index)
 		Duplicate/O rescaledTime OscSortIndex
 		MakeIndex rescaledTime OscSortIndex
 		IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime	
+		//SetDataFolder root:Packages:NIST:Event
+		IndexForHistogram(xLoc,yLoc,binnedData)			// index the events AFTER sorting
+		//SetDataFolder root:
 	Endif
 	
+	Wave index = root:Packages:NIST:Event:SavedIndex		//this is the histogram index
+
 	for(ii=0;ii<nslices;ii+=1)
 		if(ii==0)
 //			t1 = ii*del
@@ -451,12 +394,28 @@ Function Osc_ProcessEvents(xLoc,yLoc,index)
 	return(0)
 End
 
-
-// for the mode of "one continuous exposure"
+// for a "continuous exposure"
 //
-Function Stream_ProcessEvents(xLoc,yLoc,index)
-	Wave xLoc,yLoc,index
+// if there is a sort of these events, I need to re-index the events for the histogram
+// - see the oscillatory mode  - and sort the events here, then immediately re-index for the histogram
+// - but with the added complication that I need to always remember to index for the histogram, every time
+// - since I don't know if I've sorted or un-sorted. Osc mode always forces a re-sort and a re-index
+//
+Function Stream_ProcessEventLog(ctrlName)
+	String ctrlName
+
+//	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
+
 	
+	Make/O/D/N=(128,128) root:Packages:NIST:Event:binnedData
+	
+	Wave binnedData = root:Packages:NIST:Event:binnedData
+	Wave xLoc = root:Packages:NIST:Event:xLoc
+	Wave yLoc = root:Packages:NIST:Event:yLoc
+
+// now with the number of slices and max time, process the events
+
+	NVAR yesSortStream = root:Packages:NIST:gSortStreamEvents		//do I sort the events?
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 
@@ -497,6 +456,17 @@ Function Stream_ProcessEvents(xLoc,yLoc,index)
 			DoAlert 0,"No match for bin type, Equal bins used"
 			SetLinearBins(binEndTime,nslices,t_longest)
 	endswitch
+
+	if(yesSortStream == 1)
+		SortTimeData()
+	endif
+// index the events before binning
+// if there is a sort of these events, I need to re-index the events for the histogram
+//	SetDataFolder root:Packages:NIST:Event
+	IndexForHistogram(xLoc,yLoc,binnedData)
+//	SetDataFolder root:
+	Wave index = root:Packages:NIST:Event:SavedIndex		//the index for the histogram
+	
 	
 	for(ii=0;ii<nslices;ii+=1)
 		if(ii==0)
@@ -536,6 +506,34 @@ Function Stream_ProcessEvents(xLoc,yLoc,index)
 	SetDataFolder root:
 	return(0)
 End
+
+
+Proc	UndoTheSorting()
+	Osc_UndoSort()
+End
+
+// for oscillatory mode
+//
+// -- this takes the previously generated index, and un-sorts the data to restore to the
+// "as-collected" state
+//
+Function Osc_UndoSort()
+
+	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
+	Wave rescaledTime = rescaledTime
+	Wave OscSortIndex = OscSortIndex
+	Wave yLoc = yLoc
+	Wave xLoc = xLoc
+	Wave timePt = timePt
+
+	Sort OscSortIndex OscSortIndex,yLoc,xLoc,timePt,rescaledTime
+
+	KillWaves/Z OscSortIndex
+	
+	SetDataFolder root:
+	return(0)
+End
+
 
 
 Function SortTimeData()
@@ -659,9 +657,11 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	if(mode == 1)
 		Osc_LoadEventLog("")
 	endif
-	
-	DifferentiatedTime()
-	
+
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	ShowEventDataButtonProc(ba)
+
 	return(0)
 End
 
@@ -673,8 +673,6 @@ Function Stream_LoadEventLog(ctrlName)
 	Variable fileref
 
 	SVAR filename = root:Packages:NIST:gEvent_logfile
-	NVAR prescan = root:Packages:NIST:gEvent_prescan
-//	NVAR slicewidth = root:Packages:NIST:gEvent_slicewidth
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	
@@ -712,8 +710,6 @@ Function Osc_LoadEventLog(ctrlName)
 	Variable fileref
 
 	SVAR filename = root:Packages:NIST:gEvent_logfile
-	NVAR prescan = root:Packages:NIST:gEvent_prescan
-//	NVAR slicewidth = root:Packages:NIST:gEvent_slicewidth
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	
@@ -733,7 +729,7 @@ Function Osc_LoadEventLog(ctrlName)
 	
 	Duplicate/O timePt rescaledTime
 	rescaledTime *= 1e-7			//convert to seconds and that's all
-	t_longest = waveMax(rescaledTime)		//won't be the last point, so get it this way
+	t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 
 	KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
 
@@ -777,7 +773,13 @@ End
 
 
 
-
+// this "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
+// interprets the data as being RGB - and so does nothing.
+// need to find a way around this
+///
+// I could modify this procedure to use the log = 0|1 keyword for the log Z display
+// rather than creating a duplicate wave of log(data)
+//
 Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
@@ -845,19 +847,20 @@ Function LoadEvents()
 	String fileStr,tmpStr
 	Variable dataval,timeval,type,numLines,verbose,verbose3
 	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
-	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0
+	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0,tmpT0=0
 	Variable Xmax, yMax
 	
 	xMax = 127		// number the detector from 0->127 
 	yMax = 127
 	
-	verbose3 = 1			//prints out the rollover events (type==3)
+	verbose3 = 0			//prints out the rollover events (type==3)
 	verbose = 0
 	numLines = 0
 
 	
 	// what I really need is the number of XY events
 	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
+	Variable numRemoved
 	numXYevents = 0
 	num0 = 0
 	num1 = 0
@@ -868,6 +871,7 @@ Function LoadEvents()
 	numDL = 0
 	numFF = 0
 	numZero = 0
+	numRemoved = 0
 
 //tic()
 	Open/R fileref as filepathstr
@@ -935,7 +939,8 @@ Function LoadEvents()
 	Close fileref
 //		done counting the number of XY events
 	toc()
-	
+
+Print "numT0 = ",numT0	
 	
 //
 //	
@@ -974,11 +979,13 @@ Function LoadEvents()
 	Make/O/D/N=(numXYevents) timePt
 //	Make/O/U/N=(totBytes/4) xLoc,yLoc		//too large, trim when done (bad idea)
 //	Make/O/D/N=(totBytes/4) timePt
-	Make/O/D/N=1000 badTimePt,badEventNum,PPTime,PPEventNum
+	Make/O/D/N=1000 badTimePt,badEventNum,PPTime,PPEventNum,T0Time,T0EventNum
 	badTimePt=0
 	badEventNum=0
 	PPTime=0
 	PPEventNum=0
+	T0Time=0
+	T0EventNum=0
 	xLoc=0
 	yLoc=0
 	timePt=0
@@ -1034,6 +1041,7 @@ Function LoadEvents()
 				break	// the next do loop processes the bulk of the file (** the next event == type 1 = MIR)
 			else
 				numBad += 1
+				numRemoved += 1
 			endif
 			
 			//ii+=1		don't increment the counter
@@ -1058,14 +1066,6 @@ Function LoadEvents()
 		// two most sig bits (31-30)
 		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
 		
-//		// if the first event, read the time_msw, since this is not always reset. if the first event is XYM, then it's OK,
-//		// but if the first event is XY, then the first few events will have msw=0 until an XYM forces a read of MSW in the
-//		// subsequent MIR event.
-//		// So do it now.
-//		if(ii==0 && RemoveBadEvents == 1)
-//			time_msw =  (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
-//		endif
-
 		//
 		//Constant ATXY = 0
 		//Constant ATXYM = 2
@@ -1083,8 +1083,9 @@ Function LoadEvents()
 					printf "XY : "		
 				endif
 				
-				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously
+				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously)
 				if(dataval == 0 && RemoveBadEvents == 1)
+					numRemoved += 1
 					break		//don't increment ii
 				endif
 				
@@ -1094,6 +1095,7 @@ Function LoadEvents()
 					PPTime[tmpPP] = timeval
 					PPEventNum[tmpPP] = ii
 					tmpPP += 1
+					numRemoved += 1
 					break		//don't increment ii
 				endif
 				
@@ -1120,6 +1122,7 @@ Function LoadEvents()
 						badTimePt[numBad] = timeVal
 						badEventNum[numBad] = ii
 						numBad +=1
+						numRemoved += 1
 					else
 						// time_msw has been reset, points are good now, so keep this one
 						xLoc[ii] = xval
@@ -1165,11 +1168,11 @@ Function LoadEvents()
 				// if it's a pileup event, skip it now (this can be either type 0 or 2)
 				// - but can I do this if this is an XY-time event? This will lead to a wrong time, and a time 
 				// assigned to an XY (0,0)...
-				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-				if(bit29 == 1 && RemoveBadEvents == 1)
-					Print "*****Bit 29 (PP) event set for Type==2, but not handled, ii = ",ii
-//					break		//don't increment ii
-				endif
+//				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+//				if(bit29 == 1 && RemoveBadEvents == 1)
+//					Print "*****Bit 29 (PP) event set for Type==2, but not handled, ii = ",ii
+////					break		//don't increment ii
+//				endif
 				
 //				xval = ~(dataval & ~(2^32 - 2^8)) & 127
 //				yval = ((dataval & ~(2^32 - 2^16 ))/2^8) & 127
@@ -1211,10 +1214,15 @@ Function LoadEvents()
 				// the XY position was in the previous event ATXYM
 				timePt[ii] = timeval
 
-//				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-//				if(bit29 != 0)
-//					Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
-//				endif
+				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+				if(bit29 != 0)		// bit 29 set is a T0 event
+					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
+					T0Time[tmpT0] = timeval
+					T0EventNum[tmpT0] = ii
+					tmpT0 += 1
+					// reset nRoll = 0 for calcluating the time
+					nRoll = 0
+				endif
 								
 				ii+=1
 //				verbose = 0
@@ -1231,12 +1239,21 @@ Function LoadEvents()
 				// check bit 29
 				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
 				nRoll += 1
-// not doing anything with these bits yet				
+// not doing anything with these bits yet	
+				bit28 = (dataval & 0x10000000)/268435456		//bit 28 only, shift by 2^28	
 				bit27 = (dataval & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
-				bit28 = (dataval & 0x10000000)/268435456		//bit 28 only, shift by 2^28
 
 				if(verbose3)
 					printf "d=%u : b29=%u : b28=%u : b27=%u : #Roll=%u \r",dataval,bit29, bit28, bit27,nRoll
+				endif
+				
+				if(bit29 != 0)		// bit 29 set is a T0 event
+					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
+					T0Time[tmpT0] = timeval
+					T0EventNum[tmpT0] = ii
+					tmpT0 += 1
+					// reset nRoll = 0 for calcluating the time
+					nRoll = 0
 				endif
 				
 				rolloverHappened = 1
@@ -1254,6 +1271,8 @@ Function LoadEvents()
 	Close fileref
 	
 	toc()
+	
+	Print "Events removed = ",numRemoved
 	
 	sPrintf tmpStr,"\rBad Events = numBad = %d (%g %% of events)",numBad,numBad/numXYevents*100
 	dispStr += tmpStr
