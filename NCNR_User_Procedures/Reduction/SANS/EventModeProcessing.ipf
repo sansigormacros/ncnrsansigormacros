@@ -11,13 +11,17 @@
 // -- I need better nomenclature other than "stream" for the "continuous" data set.
 //     It's all a stream, just sometimes it's not oscillatory
 //
-// -- fix the log/lin display - it's not working correctly
+// X- fix the log/lin display - it's not working correctly
 // 			I could use ModifyImage and log = 0|1 keyword for the log Z display
 // 			rather than creating a duplicate wave of log(data)
 // 			-- it's in the Function sliceSelectEvent_Proc()
 //
-// -- Do something withe the PP events. Currently, nothing is done (since I still need
-//     to find out what they realy mean)
+// -- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
+//     interprets the data as being RGB - and so does nothing.
+//     need to find a way around this
+//
+// -- Do something with the PP events. Currently, only the PP events that are XY (just the
+//    type 0 events (since I still need to find out what they realy mean)
 //
 // -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
 //     points. Maybe not kosher, but would clean things up.
@@ -27,6 +31,21 @@
 //     to do? And can it handle such large amounts of data to pass back and forth, or
 //     does it need to be written as an operation, rather than a function??? I'd really 
 //     rather that Igor handles the memory management, not me, if I write the XOP.
+//
+// **- as of 11/27, the OSX version of the XOP event loader is about 35x faster for the load!
+//    and is taking approx 1.8s/28MB, or about 6.5s/100MB of file. quite reasonable now, and
+//    probably a bit faster yet on the PC.
+//
+// -- memory issues:
+//		-- in LoadEvents -- should I change the MAKE to:
+//				/I/U is unsigned 32-bit integer (for the time)
+//	   			/B/U is unsigned 8-bit integer (max val=255) for the x and y values
+//			-- then how does this affect downstream processing - such as rescaledTime, differentiation, etc.
+//			x- and can I re-write the XOP to create these types of data waves, and properly fill them...
+//
+//  **- any integer waves must be translated by Igor into FP to be able to be displayed or for any
+//    type of analysis. so it's largely a waste of time to use integers. so simply force the XOP to 
+//    generate only SP waves. this will at least save some space.
 //
 // X- add controls to show the bar graph
 // x- add popup for selecting the binning type
@@ -38,7 +57,7 @@
 // -- I currently read the events 2x. Once to count the events to make the waves the proper
 //     size, then a second time to actualy process the events. Would it be faster to insert points
 //     as needed, or to estimate the size, and make it too large, then trim at the end...
-// ((( NO -- deleting the extra zeros at the end is WAY WAY slower - turns 2sec into 100 sec)))
+// ((( NO -- I have no good way of getting a proper estimate of how many XY events there are for a file))
 //
 //
 //
@@ -93,6 +112,8 @@ Function Init_Event()
 	Variable/G root:Packages:NIST:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
+	Variable/G root:Packages:NIST:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
+
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	
 	SetDataFolder root:
@@ -142,7 +163,8 @@ Proc EventModePanel()
 	//DrawLine 10,65,490,65
 	
 //	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;Log;"
-	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;"
+	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;Custom;"
+	PopupMenu popup0 proc=BinTypePopMenuProc
 	
 	CheckBox chkbox2,pos={20,95},title="Log Intensity",value=1
 	CheckBox chkbox2,variable=root:Packages:NIST:gEvent_logint,proc=LogIntEvent_Proc
@@ -176,6 +198,24 @@ Function ShowEventDataButtonProc(ba) : ButtonControl
 			//
 			DifferentiatedTime()
 			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function BinTypePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			if(cmpstr(popStr,"Custom")==0)
+				Execute "Show_CustomBinPanel()"
+			endif
 			break
 		case -1: // control being killed
 			break
@@ -273,6 +313,9 @@ Function ProcessEventLog_Button(ctrlName) : ButtonControl
 		Osc_ProcessEventLog("")
 	endif
 	
+	// toggle the checkbox for log display to force the display to be correct
+	NVAR gLog = root:Packages:NIST:gEvent_logint
+	LogIntEvent_Proc("",gLog)
 	
 	return(0)
 end
@@ -303,6 +346,8 @@ Function Osc_ProcessEventLog(ctrlName)
 	Wave timePt = timePt
 	Make/O/D/N=(128,128) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount
+	Make/O/D/N=(nslices) timeWidth
+	Wave timeWidth = timeWidth
 	Wave binEndTime = binEndTime
 	Wave binCount = binCount
 
@@ -320,17 +365,17 @@ Function Osc_ProcessEventLog(ctrlName)
 	
 	strswitch(binTypeStr)	// string switch
 		case "Equal":		// execute if case matches expression
-			SetLinearBins(binEndTime,nslices,t_longest)
+			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 			break						// exit from switch
 		case "Fibonacci":		// execute if case matches expression
-			SetFibonacciBins(binEndTime,nslices,t_longest)
+			SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Log":		// execute if case matches expression
-			SetLogBins(binEndTime,nslices,t_longest)
+			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
-			SetLinearBins(binEndTime,nslices,t_longest)
+			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
 
@@ -375,7 +420,7 @@ Function Osc_ProcessEventLog(ctrlName)
 			Printf "p2 = -2 Binary search off the end %15.10g >?? %15.10g\r", binEndTime[ii+1], rescaledTime[numpnts(rescaledTime)-1]
 			p2 = numpnts(rescaledTime)-1		//set to the last point if it's off the end
 		Endif
-		Print p1,p2
+//		Print p1,p2
 
 
 		tmpData=0
@@ -427,8 +472,9 @@ Function Stream_ProcessEventLog(ctrlName)
 	Wave rescaledTime = rescaledTime
 	Make/O/D/N=(128,128) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount//,binStartTime
+	Make/O/D/N=(nslices) timeWidth
 	Wave binEndTime = binEndTime
-//	Wave binStartTime = binStartTime
+	Wave timeWidth = timeWidth
 	Wave binCount = binCount
 
 	variable ii,del,p1,p2,t1,t2
@@ -444,17 +490,20 @@ Function Stream_ProcessEventLog(ctrlName)
 	
 	strswitch(binTypeStr)	// string switch
 		case "Equal":		// execute if case matches expression
-			SetLinearBins(binEndTime,nslices,t_longest)
+			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 			break						// exit from switch
 		case "Fibonacci":		// execute if case matches expression
-			SetFibonacciBins(binEndTime,nslices,t_longest)
+			SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Log":		// execute if case matches expression
-			SetLogBins(binEndTime,nslices,t_longest)
+			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+			break
+		case "Custom":		// execute if case matches expression
+			//SetLogBins(binEndTime,nslices,t_longest)
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
-			SetLinearBins(binEndTime,nslices,t_longest)
+			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
 	if(yesSortStream == 1)
@@ -488,7 +537,7 @@ Function Stream_ProcessEventLog(ctrlName)
 			Printf "p2 = -2 Binary search off the end %15.10g >?? %15.10g\r", binEndTime[ii+1], rescaledTime[numpnts(rescaledTime)-1]
 			p2 = numpnts(rescaledTime)-1		//set to the last point if it's off the end
 		Endif
-		Print p1,p2
+//		Print p1,p2
 
 
 		tmpData=0
@@ -560,8 +609,8 @@ End
 
 
 
-Function SetLinearBins(binEndTime,nslices,t_longest)
-	Wave binEndTime
+Function SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
 	Variable del,ii,t2
@@ -574,12 +623,14 @@ Function SetLinearBins(binEndTime,nslices,t_longest)
 	endfor
 	binEndTime[ii+1] = t_longest*(1-1e-6)		//otherwise floating point errors such that the last time point is off the end of the Binary search
 
+	timeWidth = binEndTime[p+1]-binEndTime[p]
+
 	return(0)	
 End
 
 
-Function SetLogBins(binEndTime,nslices,t_longest)
-	Wave binEndTime
+Function SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
 	Variable tMin,ii
@@ -596,6 +647,8 @@ Function SetLogBins(binEndTime,nslices,t_longest)
 	endfor
 	binEndTime[ii+1] = t_longest		//otherwise floating point errors such that the last time point is off the end of the Binary search
 	
+	timeWidth = binEndTime[p+1]-binEndTime[p]
+
 	return(0)
 End
 
@@ -618,8 +671,8 @@ Function MakeFibonacciWave(w,num)
 	return(0)
 end
 
-Function SetFibonacciBins(binEndTime,nslices,t_longest)
-	Wave binEndTime
+Function SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
+	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
 	Variable tMin,ii,total,t2,tmp
@@ -639,6 +692,8 @@ Function SetFibonacciBins(binEndTime,nslices,t_longest)
 	endfor
 	binEndTime[ii+1] = t_longest		//otherwise floating point errors such that the last time point is off the end of the Binary search
 	
+	timeWidth = binEndTime[p+1]-binEndTime[p]
+	
 	return(0)
 End
 
@@ -649,13 +704,20 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 
 	NVAR mode=root:Packages:NIST:gEvent_mode
+	Variable err=0
 	
 	if(mode == 0)
-		Stream_LoadEventLog("")
+		err = Stream_LoadEventLog("")
+		if(err == 1)
+			return(0)		// user cancelled from file load
+		endif
 	endif
 	
 	if(mode == 1)
-		Osc_LoadEventLog("")
+		err = Osc_LoadEventLog("")
+		if(err == 1)
+			return(0)		// user cancelled from file load
+		endif
 	endif
 
 	STRUCT WMButtonAction ba
@@ -680,9 +742,22 @@ Function Stream_LoadEventLog(ctrlName)
 	
 	Open/R/D/F=fileFilters fileref
 	filename = S_filename
+	if(strlen(S_filename) == 0)
+		// user cancelled
+		DoAlert 0,"No file selected, no file loaded."
+		return(1)
+	endif
+
+#if (exists("EventLoadWave")==4)
+
+	LoadEvents_XOP()
+
+#else
 	
 	LoadEvents()
-	
+
+#endif	
+
 	SetDataFolder root:Packages:NIST:Event:
 
 tic()
@@ -717,8 +792,21 @@ Function Osc_LoadEventLog(ctrlName)
 	
 	Open/R/D/F=fileFilters fileref
 	filename = S_filename
+		if(strlen(S_filename) == 0)
+		// user cancelled
+		DoAlert 0,"No file selected, no file loaded."
+		return(1)
+	endif
+	
+#if (exists("EventLoadWave")==4)
+
+	LoadEvents_XOP()
+
+#else
 	
 	LoadEvents()
+
+#endif	
 	
 	SetDataFolder root:Packages:NIST:Event:
 
@@ -739,20 +827,27 @@ Function Osc_LoadEventLog(ctrlName)
 End
 
 
-
+//
+// -- MUCH faster to count the number of lines to remove, then delete (N)
+// rather then delete them one-by-one in the do-loop
 Function CleanupTimes(xLoc,yLoc,timePt)
 	Wave xLoc,yLoc,timePt
 
 	// start at the back and remove zeros
-	Variable num=numpnts(xLoc),ii
-	
+	Variable num=numpnts(xLoc),ii,numToRemove
+
+	numToRemove = 0
 	ii=num
 	do
 		ii -= 1
 		if(timePt[ii] == 0 && xLoc[ii] == 0 && yLoc[ii] == 0)
-			DeletePoints ii, 1, xLoc,yLoc,timePt
+			numToRemove += 1
 		endif
 	while(timePt[ii-1] == 0 && xLoc[ii-1] == 0 && yLoc[ii-1] == 0)
+	
+	if(numToRemove != 0)
+		DeletePoints ii, numToRemove, xLoc,yLoc,timePt
+	endif
 	
 	return(0)
 End
@@ -768,7 +863,12 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 		Duplicate/O slicedData dispsliceData
 	endif
 
+	NVAR selectedslice = root:Packages:NIST:gEvent_tsdisp
+
+	sliceSelectEvent_Proc("", selectedslice, "", "")
+
 	SetDataFolder root:
+
 End
 
 
@@ -804,7 +904,9 @@ End
 Function DifferentiatedTime()
 
 	Wave rescaledTime = root:Packages:NIST:Event:rescaledTime
-	
+
+	SetDataFolder root:Packages:NIST:Event:
+		
 	Differentiate rescaledTime/D=rescaledTime_DIF
 //	Display rescaledTime,rescaledTime_DIF
 	DoWindow/F Differentiated_Time
@@ -816,6 +918,8 @@ Function DifferentiatedTime()
 		Label left "\\Z14Delta (dt/event)"
 		Label bottom "\\Z14Event number"
 	endif
+	
+	SetDataFolder root:
 	
 	return(0)
 End
@@ -938,9 +1042,15 @@ Function LoadEvents()
 	while(1)
 	Close fileref
 //		done counting the number of XY events
+	printf("Igor pre-scan done in  ")
 	toc()
+	
 
-Print "numT0 = ",numT0	
+Print "(Igor) numT0 = ",numT0	
+Print "num0 = ",num0	
+Print "num1 = ",num1	
+Print "num2 = ",num2	
+Print "num3 = ",num3	
 	
 //
 //	
@@ -973,7 +1083,8 @@ Print "numT0 = ",numT0
 	sprintf tmpStr,"Rollover = %d",num3
 	dispStr += tmpStr
 
-	
+	// /I/U is unsigned 32-bit integer (for the time)
+	// /B/U is unsigned 8-bit integer (max val=255) for the x and y values
 	
 	Make/O/U/N=(numXYevents) xLoc,yLoc
 	Make/O/D/N=(numXYevents) timePt
@@ -1086,6 +1197,7 @@ Print "numT0 = ",numT0
 				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously)
 				if(dataval == 0 && RemoveBadEvents == 1)
 					numRemoved += 1
+					//Print "zero at ii= ",ii
 					break		//don't increment ii
 				endif
 				
@@ -1267,14 +1379,186 @@ Print "numT0 = ",numT0
 			
 	while(1)
 	
-	
 	Close fileref
 	
+	printf("Igor full file read done in  ")	
 	toc()
 	
-	Print "Events removed = ",numRemoved
+	Print "Events removed (Igor) = ",numRemoved
 	
-	sPrintf tmpStr,"\rBad Events = numBad = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	sPrintf tmpStr,"\rBad Rollover Events = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	dispStr += tmpStr
+	sPrintf tmpStr,"\rTotal Events Removed = %d (%g %% of events)",numRemoved,numRemoved/numXYevents*100
+	dispStr += tmpStr
+	SetDataFolder root:
+	
+	return(0)
+	
+End 
+
+//////////////
+//
+// This calls the XOP, as an operation
+//
+//
+Function LoadEvents_XOP()
+	
+//	NVAR time_msw = root:Packages:NIST:gEvent_time_msw
+//	NVAR time_lsw = root:Packages:NIST:gEvent_time_lsw
+	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	
+	SVAR filepathstr = root:Packages:NIST:gEvent_logfile
+	SVAR dispStr = root:Packages:NIST:gEventDisplayString
+	
+	SetDataFolder root:Packages:NIST:Event
+
+	Variable fileref
+	String buffer
+	String fileStr,tmpStr
+	Variable dataval,timeval,type,numLines,verbose,verbose3
+	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
+	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0,tmpT0=0
+	Variable Xmax, yMax
+	
+	xMax = 127		// number the detector from 0->127 
+	yMax = 127
+	
+	numLines = 0
+
+	
+	// what I really need is the number of XY events
+	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
+	Variable numRemoved
+	numXYevents = 0
+	num0 = 0
+	num1 = 0
+	num2 = 0
+	num3 = 0
+	numPP = 0
+	numT0 = 0
+	numDL = 0
+	numFF = 0
+	numZero = 0
+	numRemoved = 0
+
+// get the total number of bytes in the file
+	Open/R fileref as filepathstr
+		FStatus fileref
+	Close fileref
+
+	totBytes = V_logEOF
+	Print "total bytes = ", totBytes
+	
+//
+
+////
+//
+//  use the XOP operation to load in the data
+// -- this does everything - the pre-scan and creating the waves
+//
+// need to zero the waves before loading, just in case
+//
+
+	NVAR removeBadEvents = root:Packages:NIST:gRemoveBadEvents
+
+tic()
+
+//	Wave/Z wave0=wave0
+//	Wave/Z wave1=wave1
+//	Wave/Z wave2=wave2
+//
+//	if(WaveExists(wave0))
+//		MultiThread wave0=0
+//	endif
+//	if(WaveExists(wave1))
+//		MultiThread wave1=0
+//	endif
+//	if(WaveExists(wave2))
+//		MultiThread wave2=0
+//	endif
+
+#if (exists("EventLoadWave")==4)
+	if(removeBadEvents)
+		EventLoadWave/R/N=EventWave filepathstr
+	else
+		EventLoadWave/N=EventWave  filepathstr
+	endif
+
+#endif
+
+	Print "XOP files loaded = ",S_waveNames
+
+////		-- copy the waves over to xLoc,yLoc,timePt
+	Wave/Z EventWave0=EventWave0
+	Wave/Z EventWave1=EventWave1
+	Wave/Z EventWave2=EventWave2
+	
+	
+	Duplicate/O EventWave0,xLoc
+	KillWaves/Z EventWave0
+
+	Duplicate/O EventWave1,yLoc
+	KillWaves/Z EventWave1
+
+	Duplicate/O EventWave2,timePt
+	KillWaves/Z EventWave2
+
+// could do this, but rescaled time will neeed to be converted to SP (or DP)
+// and Igor loader was written with Make generating SP/DP waves
+	// /I/U is unsigned 32-bit integer (for the time)
+	// /B/U is unsigned 8-bit integer (max val=255) for the x and y values
+	
+//	Redimension/B/U xLoc,yLoc
+//	Redimension/I/U timePt
+
+	// access the variables from the XOP
+	numT0 = V_numT0
+	numPP = V_numPP
+	num0 = V_num0
+	num1 = V_num1
+	num2 = V_num2
+	num3 = V_num3
+	numXYevents = V_nXYevents
+	numZero = V_numZero
+	numBad = V_numBad
+	numRemoved = V_numRemoved
+	
+	Print "(XOP) numT0 = ",numT0	
+	Print "num0 = ",num0	
+	Print "num1 = ",num1	
+	Print "num2 = ",num2	
+	Print "num3 = ",num3	
+	
+
+// dispStr will be displayed on the panel
+	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
+	
+	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+	dispStr = tmpStr
+	sprintf tmpStr,"numXYevents = %d\r",numXYevents
+	dispStr += tmpStr
+//	sprintf tmpStr,"XY = num0 = %d\r",num0
+//	dispStr += tmpStr
+//	sprintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
+//	dispStr += tmpStr
+//	sprintf tmpStr,"XY time = num2 = %d\r",num2
+//	dispStr += tmpStr
+//	sprintf tmpStr,"time MSW = num1 = %d\r",num1
+//	dispStr += tmpStr
+	sprintf tmpStr,"PP = %d  :  ",numPP
+	dispStr += tmpStr
+	sprintf tmpStr,"ZeroData = %d\r",numZero
+	dispStr += tmpStr
+	sprintf tmpStr,"Rollover = %d",num3
+	dispStr += tmpStr
+
+	toc()
+	
+	Print "Events removed (XOP) = ",numRemoved
+	
+	sPrintf tmpStr,"\rBad Rollover Events = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	dispStr += tmpStr
+	sPrintf tmpStr,"\rTotal Events Removed = %d (%g %% of events)",numRemoved,numRemoved/numXYevents*100
 	dispStr += tmpStr
 
 	SetDataFolder root:
@@ -1283,7 +1567,7 @@ Print "numT0 = ",numT0
 	
 End 
 
-///
+//////////////
 
 Proc BinEventBarGraph()
 	
@@ -1306,6 +1590,7 @@ Proc BinEventBarGraph()
 		ModifyGraph useBarStrokeRGB=1
 	//	ModifyGraph log=1
 		ModifyGraph standoff=0
+		SetAxis left 0,*
 		Label bottom "\\Z14Time (seconds)"
 		Label left "\\Z14Number of Events"
 	//	SetAxis left 0.1,4189
@@ -1321,8 +1606,8 @@ Proc ShowBinTable() : Table
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:Event:
-		Edit/W=(498,699,1003,955) /K=1/N=BinEventTable binCount,binEndTime
-		ModifyTable format(Point)=1,sigDigits(binEndTime)=16,width(binEndTime)=218
+		Edit/W=(498,699,1003,955) /K=1/N=BinEventTable binCount,binEndTime,timeWidth
+		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100
 		SetDataFolder fldrSav0
 	endif
 EndMacro
@@ -1342,7 +1627,7 @@ Proc ShowRescaledTimeGraph() : Graph
 		ModifyGraph mode=4
 		ModifyGraph marker=19
 		ModifyGraph rgb(rescaledTime)=(0,0,0)
-		ModifyGraph msize=2
+		ModifyGraph msize=1
 //		SetAxis/A=2 left			//only autoscale the visible data (based on the bottom limits)
 //		SetAxis bottom 0,1500
 		ErrorBars rescaledTime OFF 
@@ -1612,3 +1897,560 @@ End
 //End
 //
 ////////////////
+
+
+////////////// Post-processing of the event mode data
+
+Macro EventCorrectionPanel()
+
+	PauseUpdate; Silent 1		// building window...
+	SetDataFolder root:Packages:NIST:Event:
+	
+	Display /W=(35,44,761,533)/K=2 rescaledTime
+	DoWindow/C EventCorrectionPanel
+	ModifyGraph mode=4
+	ModifyGraph marker=19
+	ModifyGraph rgb=(0,0,0)
+	ModifyGraph msize=1
+	ErrorBars rescaledTime OFF 
+	Label left "\\Z14Time (seconds)"
+	Label bottom "\\Z14Event number"	
+	SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
+	
+	ControlBar 100
+	Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
+	Button button1,pos={153,11},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
+	Button button2,pos={153,37},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
+	Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
+	Button button4,pos={295,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
+	Button button5,pos={294,38},size={100,20},proc=EC_ImportWavesButtonProc,title="Import Waves"
+	Button button6,pos={18,39},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
+	Button button7,pos={683,9},size={30,20},proc=EC_HelpButtonProc,title="?"
+	Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
+	
+	SetDataFolder root:
+	
+EndMacro
+
+Function EC_AddCursorButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetDataFolder root:Packages:NIST:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Cursor/P A rescaledTime 0
+			Cursor/P B rescaledTime numpnts(rescaledTime)-1
+			ShowInfo
+			SetDataFolder root:
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EC_AddTimeButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetDataFolder root:Packages:NIST:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Wave timePt = timePt
+			Variable rollTime,rollTicks,ptA,ptB,lo,hi
+			
+			rollTicks = 2^26				// in ticks
+			rollTime = 2^26*1e-7		// in seconds
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+			lo=min(ptA,ptB)
+			hi=max(ptA,ptB)
+
+			MultiThread timePt[lo,hi] += rollTicks
+			MultiThread rescaledTime[lo,hi] += rollTime
+
+			
+			SetDataFolder root:
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EC_SubtractTimeButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetDataFolder root:Packages:NIST:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Wave timePt = timePt
+			Variable rollTime,rollTicks,ptA,ptB,lo,hi
+			
+			rollTicks = 2^26				// in ticks
+			rollTime = 2^26*1e-7		// in seconds
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+			lo=min(ptA,ptB)
+			hi=max(ptA,ptB)
+			
+			MultiThread timePt[lo,hi] -= rollTicks
+			MultiThread rescaledTime[lo,hi] -= rollTime
+
+			SetDataFolder root:
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// points removed are inclusive
+//
+// put both cursors on the same point to remove just that single point
+//
+Function EC_TrimPointsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetDataFolder root:Packages:NIST:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Wave timePt = timePt
+			Wave xLoc = xLoc
+			Wave yLoc = yLoc
+			Variable rollTime,ptA,ptB,numElements,lo,hi
+			
+			rollTime = 2^26*1e-7		// in seconds
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+			lo=min(ptA,ptB)
+			hi=max(ptA,ptB)			
+			numElements = abs(ptA-ptB)+1			//so points removed are inclusive
+			DeletePoints lo, numElements, rescaledTime,timePt,xLoc,yLoc
+			
+			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
+			SetDataFolder root:
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// un-sort the data first, then save it
+Function EC_SaveWavesButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			Execute "UndoTheSorting()"
+			
+			SetDataFolder root:Packages:NIST:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Wave timePt = timePt
+			Wave xLoc = xLoc
+			Wave yLoc = yLoc
+			Save/T xLoc,yLoc,timePt			//will ask for a name
+			
+			SetDataFolder root:
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// this duplicates all of the bits that would be done if the "load" button was pressed
+//
+//
+Function EC_ImportWavesButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetDataFolder root:Packages:NIST:Event:
+
+			//SVAR filename = root:Packages:NIST:gEvent_logfile
+			//NVAR nslices = root:Packages:NIST:gEvent_nslices
+			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			SVAR dispStr = root:Packages:NIST:gEventDisplayString
+			String tmpStr="",fileStr,filePathStr
+			
+			// load in the waves, saved as Igor text to preserve the data type
+			LoadWave/T/O
+			filePathStr = S_fileName
+			if(strlen(S_fileName) == 0)
+				//user cancelled
+				DoAlert 0,"No file selected, nothing done."
+				return(0)
+			endif
+			
+			
+			Wave timePt=timePt
+
+			Duplicate/O timePt rescaledTime
+			rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+			t_longest = waveMax(rescaledTime)		//should be the last point
+	
+			fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
+			sprintf tmpStr, "%s: a user-modified event file\r",fileStr 
+			dispStr = tmpStr
+	
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function EC_ShowAllButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SetAxis/A
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EC_HelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoAlert 0,"The Event Correction help file has not been written yet"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EC_DoneButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoWindow/K EventCorrectionPanel
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
+//////////////
+
+
+
+// make sure that the bins are defined and the waves exist before
+// trying to draw the panel
+//
+Macro Show_CustomBinPanel()
+	DoWindow/F CustomBinPanel
+	if(V_flag ==0)
+		Init_CustomBins()
+		CustomBinPanel()
+	EndIf
+End
+
+
+Function Init_CustomBins()
+
+	NVAR nSlice = root:Packages:NIST:gEvent_nslices
+	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+
+	Variable/G root:Packages:NIST:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
+
+	SetDataFolder root:Packages:NIST:Event:
+		
+	Make/O/D/N=(nSlice) timeWidth
+	Make/O/D/N=(nSlice+1) binEndTime,binCount
+	
+	timeWidth = t_longest/nslice
+	binEndTime = p
+	binCount = p+1	
+	
+	SetDataFolder root:
+	
+	return(0)
+End
+
+////////////////	
+//
+// Allow custom definitions of the bin widths
+//
+// Define by the number of bins, and the time width of each bin
+//
+// This shares the number of slices and the maximum time with the main panel
+//
+Proc CustomBinPanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(130,44,851,455)/K=2 /N=CustomBinPanel
+	DoWindow/C CustomBinPanel
+	ModifyPanel fixedSize=1//,noEdit =1
+	SetDrawLayer UserBack
+	
+	Button button0,pos={654,42}, size={50,20},title="Done",fSize=12
+	Button button0,proc=CB_Done_Proc
+	Button button1,pos={663,14},size={40,20},proc=CB_HelpButtonProc,title="?"
+	Button button2,pos={216,42},size={80,20},title="Update",proc=CB_UpdateWavesButton	
+	SetVariable setvar1,pos={23,13},size={160,20},title="Number of slices",fSize=12
+	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:gEvent_nslices
+	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=12
+	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest	
+
+	CheckBox chkbox1,pos={216,14},title="Enforce Max Time?"
+	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_ForceTmaxBin
+	Button button3,pos={500,14},size={90,20},proc=CB_SaveBinsButtonProc,title="Save Bins"
+	Button button4,pos={500,42},size={100,20},proc=CB_ImportBinsButtonProc,title="Import Bins"	
+	
+	
+	
+	SetDataFolder root:Packages:NIST:Event:
+
+	Display/W=(291,86,706,395)/HOST=CustomBinPanel/N=BarGraph binCount vs binEndTime
+	ModifyGraph mode=5
+	ModifyGraph marker=19
+	ModifyGraph lSize=2
+	ModifyGraph rgb=(0,0,0)
+	ModifyGraph msize=2
+	ModifyGraph hbFill=2
+	ModifyGraph gaps=0
+	ModifyGraph usePlusRGB=1
+	ModifyGraph toMode=1
+	ModifyGraph useBarStrokeRGB=1
+	ModifyGraph standoff=0
+	SetAxis left 0,*
+	Label bottom "\\Z14Time (seconds)"
+	Label left "\\Z14Number of Events"
+	SetActiveSubwindow ##
+	
+	// and the table
+	Edit/W=(13,87,280,394)/HOST=CustomBinPanel/N=T0
+	AppendToTable/W=CustomBinPanel#T0 timeWidth,binEndTime
+	ModifyTable width(Point)=40
+	SetActiveSubwindow ##
+	
+	SetDataFolder root:
+	
+EndMacro
+
+// save the bins - use Igor Text format
+Function CB_SaveBinsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			SetDataFolder root:Packages:NIST:Event:
+
+			Wave timeWidth = timeWidth
+			Wave binEndTime = binEndTime
+			
+			Save/T timeWidth,binEndTime			//will ask for a name
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	SetDataFolder root:
+	
+	return 0
+End
+
+// Import the bins - use Igor Text format
+//
+// -- be sure that the number of bins is reset
+// -?- how about the t_longest? - this should be set by the load, not here
+//
+// -- loads in timeWidth and binEndTime
+//
+Function CB_ImportBinsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			NVAR nSlice = root:Packages:NIST:gEvent_nslices
+
+			SetDataFolder root:Packages:NIST:Event:
+
+			// prompt for the load of data
+			LoadWave/T/O
+			if(strlen(S_fileName) == 0)
+				//user cancelled
+				DoAlert 0,"No file selected, nothing done."
+				return(0)
+			endif
+
+			Wave timeWidth = timeWidth
+			nSlice = numpnts(timeWidth)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	SetDataFolder root:
+	
+	return 0
+End
+
+
+
+//
+// can either use the widths as stated -- then the end time may not
+// match the actual end time of the data set
+//
+// -- or --
+//
+// enforce the end time of the data set to be the end time of the bins,
+// then the last bin width must be reset to force the constraint
+//
+//
+Function CB_UpdateWavesButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			NVAR nSlice = root:Packages:NIST:gEvent_nslices
+			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			NVAR enforceTmax = root:Packages:NIST:gEvent_ForceTmaxBin
+			
+			// update the waves, and recalculate everything for the display
+			SetDataFolder root:Packages:NIST:Event:
+
+			Wave timeWidth = timeWidth
+			Wave binEndTime = binEndTime
+			Wave binCount = binCount
+			
+			// use the widths as entered
+			binEndTime[0] = 0
+			binEndTime[1,] = binEndTime[p-1] + timeWidth[p-1]
+			
+			// enforce the longest time as the end bin time
+			// note that this changes the last time width
+			if(enforceTmax)
+				binEndTime[nSlice] = t_longest
+				timeWidth[nSlice-1] = t_longest - binEndTime[nSlice-1]
+			endif
+			
+			binCount = p+1
+			binCount[nSlice] = 0		// last point is zero, just for display
+//			binCount *= sign(timeWidth)		//to alert to negative time bins
+			
+			// make the timeWidth bold and red if the widths are negative
+			WaveStats/Q timeWidth
+			if(V_min < 0)
+				ModifyTable/W=CustomBinPanel#T0 style(timeWidth)=1,rgb(timeWidth)=(65535,0,0)			
+			else
+				ModifyTable/W=CustomBinPanel#T0 style(timeWidth)=0,rgb(timeWidth)=(0,0,0)			
+			endif
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	SetDataFolder root:
+	
+	return 0
+End
+
+Function CB_HelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoAlert 0,"The help file for the bin editor has not been written yet"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function CB_Done_Proc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+	switch (ba.eventCode)
+		case 2:
+			DoWindow/K CustomBinPanel
+			break
+	endswitch
+	return(0)
+End
+
+
+Function CB_NumSlicesSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			SetDataFolder root:Packages:NIST:Event:
+
+			Wave timeWidth = timeWidth
+			Wave binEndTime = binEndTime
+			
+			Redimension/N=(dval) timeWidth
+			Redimension/N=(dval+1) binEndTime,binCount
+			
+			SetDataFolder root:
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+///////////////////
