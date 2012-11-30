@@ -5,15 +5,15 @@
 
 //Functions to deal with TISANE data
 
-Constant ATXY = 0
-Constant ATXYM = 2
-Constant ATMIR = 1
-Constant ATMAR = 3
+Static Constant ATXY = 0
+Static Constant ATXYM = 2
+Static Constant ATMIR = 1
+Static Constant ATMAR = 3
 
-Constant USECSPERTICK=0.1 // microseconds
-Constant TICKSPERUSEC=10
-Constant XBINS=128
-Constant YBINS=128
+Static Constant USECSPERTICK=0.1 // microseconds
+Static Constant TICKSPERUSEC=10
+Static Constant XBINS=128
+Static Constant YBINS=128
 
 Proc Show_TISANE_Panel()
 	DoWindow/F TISANE

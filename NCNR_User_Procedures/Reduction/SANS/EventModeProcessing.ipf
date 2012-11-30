@@ -5,16 +5,22 @@
 
 // TODO:
 //
+// -- search for TODO for unresolved issues not on this list
+//
+// -- add comments to the code as needed
+//
+// -- write the help file, and link the help buttons to the help docs
+//
+// -- examples?
+//
+// -- add the XOP to the distribution package
+//
 // -- Need to make sure that the rescaledTime and the differentiated time graphs are
 //     being properly updated when the data is processed, modified, etc.
 //
 // -- I need better nomenclature other than "stream" for the "continuous" data set.
 //     It's all a stream, just sometimes it's not oscillatory
 //
-// X- fix the log/lin display - it's not working correctly
-// 			I could use ModifyImage and log = 0|1 keyword for the log Z display
-// 			rather than creating a duplicate wave of log(data)
-// 			-- it's in the Function sliceSelectEvent_Proc()
 //
 // -- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 //     interprets the data as being RGB - and so does nothing.
@@ -26,17 +32,10 @@
 // -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
 //     points. Maybe not kosher, but would clean things up.
 //
-// -- Is there any way to improve the speed of the loader? How could an XOP be structured
-//     for maximum flexibility? Leave the post processing to Igor, but how much for the XOP
-//     to do? And can it handle such large amounts of data to pass back and forth, or
-//     does it need to be written as an operation, rather than a function??? I'd really 
-//     rather that Igor handles the memory management, not me, if I write the XOP.
 //
-// **- as of 11/27, the OSX version of the XOP event loader is about 35x faster for the load!
-//    and is taking approx 1.8s/28MB, or about 6.5s/100MB of file. quite reasonable now, and
-//    probably a bit faster yet on the PC.
+///////// DONE //////////
 //
-// -- memory issues:
+// X- memory issues:
 //		-- in LoadEvents -- should I change the MAKE to:
 //				/I/U is unsigned 32-bit integer (for the time)
 //	   			/B/U is unsigned 8-bit integer (max val=255) for the x and y values
@@ -46,6 +45,24 @@
 //  **- any integer waves must be translated by Igor into FP to be able to be displayed or for any
 //    type of analysis. so it's largely a waste of time to use integers. so simply force the XOP to 
 //    generate only SP waves. this will at least save some space.
+//
+//
+//
+// x- Is there any way to improve the speed of the loader? How could an XOP be structured
+//     for maximum flexibility? Leave the post processing to Igor, but how much for the XOP
+//     to do? And can it handle such large amounts of data to pass back and forth, or
+//     does it need to be written as an operation, rather than a function??? I'd really 
+//     rather that Igor handles the memory management, not me, if I write the XOP.
+//
+// **- as of 11/27, the OSX version of the XOP event loader is about 35x faster for the load!
+//    and is taking approx 1.8s/28MB, or about 6.5s/100MB of file. quite reasonable now, and
+//    probably a bit faster yet on the PC.
+//
+//
+// X- fix the log/lin display - it's not working correctly
+// 			I could use ModifyImage and log = 0|1 keyword for the log Z display
+// 			rather than creating a duplicate wave of log(data)
+// 			-- it's in the Function sliceSelectEvent_Proc()
 //
 // X- add controls to show the bar graph
 // x- add popup for selecting the binning type
@@ -64,19 +81,18 @@
 
 
 //
-// These are currently defined in the TISANE procedure file. If that file becomes depricated
-// or is not loaded in, then these lines should be activated, and those in TISANE should also
-// be re-declared as Static, so they will be local to each procedure
+// These are also defined in the TISANE procedure file. In both files they are declared
+// as Static, so they are local to each procedure
 //
-//Static Constant ATXY = 0
-//Static Constant ATXYM = 2
-//Static Constant ATMIR = 1
-//Static Constant ATMAR = 3
-//
-//Static Constant USECSPERTICK=0.1 // microseconds
-//Static Constant TICKSPERUSEC=10
-//Static Constant XBINS=128
-//Static Constant YBINS=128
+Static Constant ATXY = 0
+Static Constant ATXYM = 2
+Static Constant ATMIR = 1
+Static Constant ATMAR = 3
+
+Static Constant USECSPERTICK=0.1 // microseconds
+Static Constant TICKSPERUSEC=10
+Static Constant XBINS=128
+Static Constant YBINS=128
 //
 
 
@@ -153,16 +169,13 @@ Proc EventModePanel()
 	Button button5,pos={175,147},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
 	Button button6,pos={378,13},size={40,20},proc=EventModeHelpButtonProc,title="?"
 	
-	//DrawLine 10,35,490,35
 	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
 	Button button1,proc=ProcessEventLog_Button
 	SetVariable setvar1,pos={170,50},size={160,20},title="Number of slices",fSize=12
 	SetVariable setvar1,value=root:Packages:NIST:gEvent_nslices
 	SetVariable setvar2,pos={330,50},size={160,20},title="Max Time (s)",fSize=12
 	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest
-	//DrawLine 10,65,490,65
 	
-//	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;Log;"
 	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;Custom;"
 	PopupMenu popup0 proc=BinTypePopMenuProc
 	
@@ -333,7 +346,6 @@ Function Osc_ProcessEventLog(ctrlName)
 
 // now with the number of slices and max time, process the events
 
-
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 
@@ -372,6 +384,9 @@ Function Osc_ProcessEventLog(ctrlName)
 			break
 		case "Log":		// execute if case matches expression
 			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+			break
+		case "Custom":		// execute if case matches expression
+			//bins are set by the user on the panel - assume it's good to go
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
@@ -499,16 +514,21 @@ Function Stream_ProcessEventLog(ctrlName)
 			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Custom":		// execute if case matches expression
-			//SetLogBins(binEndTime,nslices,t_longest)
+			//bins are set by the user on the panel - assume it's good to go
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
 			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
+// TODO
+// the global exists for this switch, but it is not implemented - not sure whether
+// it's correct to implement this at all --
+//
 	if(yesSortStream == 1)
 		SortTimeData()
 	endif
+	
 // index the events before binning
 // if there is a sort of these events, I need to re-index the events for the histogram
 //	SetDataFolder root:Packages:NIST:Event
@@ -584,18 +604,17 @@ Function Osc_UndoSort()
 End
 
 
-
+// now before binning, sort the data
+//
+//this is slow - undoing the sorting and starting over, but if you don't,
+// you'll never be able to undo the sort
+//
 Function SortTimeData()
 
-// now before binning, sort the data
 
-	//this is slow - undoing the sorting and starting over, but if you don't,
-	// you'll never be able to undo the sort
-	//
 	SetDataFolder root:Packages:NIST:Event:
 
 	KillWaves/Z OscSortIndex
-//	Print WaveExists($"root:Packages:NIST:Event:OscSortIndex")
 	
 	if(WaveExists($"root:Packages:NIST:Event:OscSortIndex") == 0 )
 		Duplicate/O rescaledTime OscSortIndex
@@ -628,7 +647,9 @@ Function SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	return(0)	
 End
 
-
+// TODO
+// either get this to work, or scrap it entirely. it currently isn't on the popup
+// so it can't be accessed
 Function SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
@@ -699,7 +720,14 @@ End
 
 
 
-
+// TODO:
+//
+// What, if anything is different about the OSC or STREAM load?
+// I think that only the processing is different. so this could be
+// consolidated into a single loader.
+//
+// Would TISANE or TOF need a different loader?
+//
 Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -749,13 +777,9 @@ Function Stream_LoadEventLog(ctrlName)
 	endif
 
 #if (exists("EventLoadWave")==4)
-
 	LoadEvents_XOP()
-
 #else
-	
 	LoadEvents()
-
 #endif	
 
 	SetDataFolder root:Packages:NIST:Event:
@@ -799,13 +823,9 @@ Function Osc_LoadEventLog(ctrlName)
 	endif
 	
 #if (exists("EventLoadWave")==4)
-
 	LoadEvents_XOP()
-
 #else
-	
 	LoadEvents()
-
 #endif	
 	
 	SetDataFolder root:Packages:NIST:Event:
@@ -872,7 +892,7 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 End
 
 
-
+// TODO
 // this "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 // interprets the data as being RGB - and so does nothing.
 // need to find a way around this
@@ -934,6 +954,9 @@ End
 //		Print (K0 & 0x10000000)/268435456		//bit 28 only, shift by 2^28
 //		Print (K0 & 0x20000000)/536870912		//bit 29 only, shift by 2^29
 //
+// This is duplicated by the XOP, but the Igor code allows quick access to print out
+// all of the gorey details of the events and every little bit of them. the print
+// statements and flags are kept for this reason, so the code is a bit messy.
 //
 Function LoadEvents()
 	
@@ -1046,11 +1069,11 @@ Function LoadEvents()
 	toc()
 	
 
-Print "(Igor) numT0 = ",numT0	
-Print "num0 = ",num0	
-Print "num1 = ",num1	
-Print "num2 = ",num2	
-Print "num3 = ",num3	
+	Print "(Igor) numT0 = ",numT0	
+	Print "num0 = ",num0	
+	Print "num1 = ",num1	
+	Print "num2 = ",num2	
+	Print "num3 = ",num3	
 	
 //
 //	
@@ -1068,14 +1091,6 @@ Print "num3 = ",num3
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
-//	sprintf tmpStr,"XY = num0 = %d\r",num0
-//	dispStr += tmpStr
-//	sprintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
-//	dispStr += tmpStr
-//	sprintf tmpStr,"XY time = num2 = %d\r",num2
-//	dispStr += tmpStr
-//	sprintf tmpStr,"time MSW = num1 = %d\r",num1
-//	dispStr += tmpStr
 	sprintf tmpStr,"PP = %d  :  ",numPP
 	dispStr += tmpStr
 	sprintf tmpStr,"ZeroData = %d\r",numZero
@@ -1177,6 +1192,8 @@ Print "num3 = ",num3
 		// two most sig bits (31-30)
 		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
 		
+		//
+		// The defintions of the event types
 		//
 		//Constant ATXY = 0
 		//Constant ATXYM = 2
@@ -1398,7 +1415,9 @@ End
 
 //////////////
 //
-// This calls the XOP, as an operation
+// This calls the XOP, as an operation to load the events
+//
+// -- it's about 35x faster than the Igor code, so I guess that's OK.
 //
 //
 Function LoadEvents_XOP()
@@ -1483,7 +1502,6 @@ tic()
 	else
 		EventLoadWave/N=EventWave  filepathstr
 	endif
-
 #endif
 
 	Print "XOP files loaded = ",S_waveNames
@@ -1537,14 +1555,6 @@ tic()
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
-//	sprintf tmpStr,"XY = num0 = %d\r",num0
-//	dispStr += tmpStr
-//	sprintf tmpStr,"\rXY time = num2 = %d\rtime MSW = num1 = %d",num2,num1
-//	dispStr += tmpStr
-//	sprintf tmpStr,"XY time = num2 = %d\r",num2
-//	dispStr += tmpStr
-//	sprintf tmpStr,"time MSW = num1 = %d\r",num1
-//	dispStr += tmpStr
 	sprintf tmpStr,"PP = %d  :  ",numPP
 	dispStr += tmpStr
 	sprintf tmpStr,"ZeroData = %d\r",numZero
@@ -1588,13 +1598,10 @@ Proc BinEventBarGraph()
 		ModifyGraph usePlusRGB=1
 		ModifyGraph toMode=1
 		ModifyGraph useBarStrokeRGB=1
-	//	ModifyGraph log=1
 		ModifyGraph standoff=0
 		SetAxis left 0,*
 		Label bottom "\\Z14Time (seconds)"
 		Label left "\\Z14Number of Events"
-	//	SetAxis left 0.1,4189
-	//	SetAxis bottom 0.0001,180.84853
 	endif
 End
 
@@ -1648,7 +1655,7 @@ Proc ExportSlicesAsVAX(firstNum,prefix)
 End
 
 //////// procedures to be able to export the slices as RAW VAX files.
-
+//
 // 1- load the raw data file to use the header (it must already be in RAW)
 // 1.5- copy the raw data to the temp folder (STO)
 // 1.7- ask for the prefix and starting run number (these are passed in)
@@ -1754,29 +1761,22 @@ End
 //  http://www.igorexchange.com/node/1373
 // -- see the related thread on the mailing list
 //
-
+//Function Setup_JointHistogram()
 //
-// Now see if this can be succesfully applied to the timeslicing data sets
-// -- talk to Jeff about what he's gotten implemented, and what's still missing
-// - both in timeslicing, and in TISANE
-// - un-scale the wave? or make it work as 128x128
-
-Function Setup_JointHistogram()
-
-//	tic()
-
-	make/D /o/n=1000000 data1=gnoise(1), data2=gnoise(1)
-	make/D /o/n=(25,25) myHist
-	setscale x,-3,3,myHist
-	setscale y,-3,3,myHist
-	IndexForHistogram(data1,data2,myhist)
-	Wave index=SavedIndex
-	JointHistogram(data1,data2,myHist,index)
-	NewImage myHist
-	
-//	toc()
-	
-End
+////	tic()
+//
+//	make/D /o/n=1000000 data1=gnoise(1), data2=gnoise(1)
+//	make/D /o/n=(25,25) myHist
+//	setscale x,-3,3,myHist
+//	setscale y,-3,3,myHist
+//	IndexForHistogram(data1,data2,myhist)
+//	Wave index=SavedIndex
+//	JointHistogram(data1,data2,myHist,index)
+//	NewImage myHist
+//	
+////	toc()
+//	
+//End
 
 
 Function JointHistogram(w0,w1,hist,index)
@@ -1798,17 +1798,12 @@ Function JointHistogram(w0,w1,hist,index)
 End
 
 
-// need a way of visualizing the bin spacing / number of bins vs the full time of the data collection
-// then set the range of the source to send to the joint histogram operation
-// to assign to arrays (or a 3D wave)
+// histogram with a point range
 //
-// -- see my model with the "layered" form factor - or whatever I called it. That shows different
-// binning and visualizing as bar graphs.
-//
-// -- just need to send x2pnt or findLevel, or something similar to define the POINT
+// x- just need to send x2pnt or findLevel, or something similar to define the POINT
 // values
 //
-// can also speed this up since the index only needs to be done once, so the
+// x- can also speed this up since the index only needs to be done once, so the
 // histogram operation can be done separately, as the bins require
 //
 //
@@ -1865,38 +1860,6 @@ End
 
 
 
-
-///////
-//// @ IgorExchange
-////TicToc
-////Posted April 16th, 2009 by bgallarda
-////	¥	in Programming 6.10.x
-//	
-//function tic()
-//	variable/G tictoc = startMSTimer
-//end
-// 
-//function toc()
-//	NVAR/Z tictoc
-//	variable ttTime = stopMSTimer(tictoc)
-//	printf "%g seconds\r", (ttTime/1e6)
-//	killvariables/Z tictoc
-//end
-//
-//
-//Function testTicToc()
-// 
-//	tic()
-//	variable i
-//	For(i=0;i<10000;i+=1)
-//		make/O/N=512 temp = gnoise(2)
-//		FFT temp
-//	Endfor
-//	killwaves/z temp
-//	toc()
-//End
-//
-////////////////
 
 
 ////////////// Post-processing of the event mode data
@@ -2092,8 +2055,6 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			// click code here
 			SetDataFolder root:Packages:NIST:Event:
 
-			//SVAR filename = root:Packages:NIST:gEvent_logfile
-			//NVAR nslices = root:Packages:NIST:gEvent_nslices
 			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 			SVAR dispStr = root:Packages:NIST:gEventDisplayString
 			String tmpStr="",fileStr,filePathStr
@@ -2106,7 +2067,6 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 				DoAlert 0,"No file selected, nothing done."
 				return(0)
 			endif
-			
 			
 			Wave timePt=timePt
 
@@ -2175,10 +2135,10 @@ End
 
 
 
-//////////////
-
-
-
+//////////////   Custom Bins  /////////////////////
+//
+//
+//
 // make sure that the bins are defined and the waves exist before
 // trying to draw the panel
 //
@@ -2240,9 +2200,7 @@ Proc CustomBinPanel()
 	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_ForceTmaxBin
 	Button button3,pos={500,14},size={90,20},proc=CB_SaveBinsButtonProc,title="Save Bins"
 	Button button4,pos={500,42},size={100,20},proc=CB_ImportBinsButtonProc,title="Import Bins"	
-	
-	
-	
+		
 	SetDataFolder root:Packages:NIST:Event:
 
 	Display/W=(291,86,706,395)/HOST=CustomBinPanel/N=BarGraph binCount vs binEndTime
@@ -2273,6 +2231,7 @@ Proc CustomBinPanel()
 EndMacro
 
 // save the bins - use Igor Text format
+//
 Function CB_SaveBinsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
