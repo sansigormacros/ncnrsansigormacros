@@ -168,6 +168,9 @@ Proc EventModePanel()
 	Button button4,pos={175,122},size={140,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
 	Button button5,pos={175,147},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
 	Button button6,pos={378,13},size={40,20},proc=EventModeHelpButtonProc,title="?"
+
+	Button button7,pos={175+155,122},size={140,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
+	Button button8,pos={175+155,147},size={140,20},proc=CustomBinButtonProc,title="Custom Bins"
 	
 	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
 	Button button1,proc=ProcessEventLog_Button
@@ -200,6 +203,41 @@ Proc EventModePanel()
 	SetAxis/A left
 	SetActiveSubwindow ##
 EndMacro
+
+
+Function AdjustEventDataButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "EventCorrectionPanel()"
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function CustomBinButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "Show_CustomBinPanel()"
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+Show_CustomBinPanel()
+
 
 Function ShowEventDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -1636,7 +1674,7 @@ Proc ShowRescaledTimeGraph() : Graph
 		ModifyGraph rgb(rescaledTime)=(0,0,0)
 		ModifyGraph msize=1
 //		SetAxis/A=2 left			//only autoscale the visible data (based on the bottom limits)
-//		SetAxis bottom 0,1500
+		SetAxis bottom 0,1500
 		ErrorBars rescaledTime OFF 
 		Label left "\\Z14Time (seconds)"
 		Label bottom "\\Z14Event number"
@@ -1864,7 +1902,7 @@ End
 
 ////////////// Post-processing of the event mode data
 
-Macro EventCorrectionPanel()
+Proc EventCorrectionPanel()
 
 	PauseUpdate; Silent 1		// building window...
 	SetDataFolder root:Packages:NIST:Event:
@@ -2142,7 +2180,7 @@ End
 // make sure that the bins are defined and the waves exist before
 // trying to draw the panel
 //
-Macro Show_CustomBinPanel()
+Proc Show_CustomBinPanel()
 	DoWindow/F CustomBinPanel
 	if(V_flag ==0)
 		Init_CustomBins()
