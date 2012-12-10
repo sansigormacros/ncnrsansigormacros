@@ -35,7 +35,7 @@ Menu "Macros"
 //	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
 
 	"Load Real Space Modeling - Beta",RealSpaceLoader()
-	"Event Mode Processing Panel - Beta",Show_Event_Panel()
+	"Event Mode Processing - Beta",EventModeLoader()
 	"-"
 
 end
@@ -431,6 +431,18 @@ Function RealSpaceLoader()
 	Execute/P "Init_FFT()"
 	
 	BuildMenu "Macros"
+
+	return(0)
+End
+
+Function EventModeLoader()
+
+	// be sure that the SANS reduction is loaded and compiles
+	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	
+	// then bring up the Event Mode panel
+	Execute/P "Show_Event_Panel()"
+//	BuildMenu "Macros"
 
 	return(0)
 End

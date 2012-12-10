@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.22
 
-// vers 7.13d
+// vers 7.13e
 
 // TODO:
 //
@@ -13,7 +13,7 @@
 //
 // -- examples?
 //
-// -- add the XOP to the distribution package
+// x- add the XOP to the distribution package
 //
 // -- Need to make sure that the rescaledTime and the differentiated time graphs are
 //     being properly updated when the data is processed, modified, etc.
@@ -95,6 +95,13 @@ Static Constant XBINS=128
 Static Constant YBINS=128
 //
 
+Menu "Macros"
+	"Split Large File",SplitBigFile()
+	"Accumulate First Slice",AccumulateSlices(0)
+	"Add Current Slice",AccumulateSlices(1)
+	"Display Accumulated Slices",AccumulateSlices(2)	
+End
+
 
 
 Proc Show_Event_Panel()
@@ -174,7 +181,7 @@ Proc EventModePanel()
 	
 	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
 	Button button1,proc=ProcessEventLog_Button
-	SetVariable setvar1,pos={170,50},size={160,20},title="Number of slices",fSize=12
+	SetVariable setvar1,pos={170,50},size={160,20},title="Number of slices",fSize=12,limits={1,1000,1}
 	SetVariable setvar1,value=root:Packages:NIST:gEvent_nslices
 	SetVariable setvar2,pos={330,50},size={160,20},title="Max Time (s)",fSize=12
 	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest
@@ -185,7 +192,7 @@ Proc EventModePanel()
 	CheckBox chkbox2,pos={20,95},title="Log Intensity",value=1
 	CheckBox chkbox2,variable=root:Packages:NIST:gEvent_logint,proc=LogIntEvent_Proc
 	SetVariable setvar0,pos={320,90},size={160,20},title="Display Time Slice",fSize=12
-	SetVariable setvar0,value= root:Packages:NIST:gEvent_tsdisp
+	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:gEvent_tsdisp
 	SetVariable setvar0,proc=sliceSelectEvent_Proc
 	Display/W=(20,180,480,640)/HOST=EventModePanel/N=Event_slicegraph
 	AppendImage/W=EventModePanel#Event_slicegraph/T root:Packages:NIST:Event:dispsliceData
@@ -211,7 +218,7 @@ Function AdjustEventDataButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "EventCorrectionPanel()"
+			Execute "ShowEventCorrectionPanel()"
 			//
 			break
 		case -1: // control being killed
@@ -236,7 +243,6 @@ Function CustomBinButtonProc(ba) : ButtonControl
 
 	return 0
 End
-Show_CustomBinPanel()
 
 
 Function ShowEventDataButtonProc(ba) : ButtonControl
@@ -1901,6 +1907,12 @@ End
 
 
 ////////////// Post-processing of the event mode data
+Proc ShowEventCorrectionPanel()
+	DoWindow/F EventCorrectionPanel
+	if(V_flag ==0)
+		EventCorrectionPanel()
+	EndIf
+End
 
 Proc EventCorrectionPanel()
 
@@ -2106,6 +2118,8 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 				return(0)
 			endif
 			
+			// clear out the old sort index, if present, since new data is being loaded
+			KillWaves/Z OscSortIndex
 			Wave timePt=timePt
 
 			Duplicate/O timePt rescaledTime
@@ -2451,3 +2465,151 @@ End
 
 
 ///////////////////
+//
+// utility to split a large file
+// 100 MB is the recommended size
+// events can be clipped here, so be sure to trim the ends of the 
+// resulting files as needed.
+//
+// - works like the unix 'split' command
+//
+//
+
+Macro SplitBigFile(splitSize, baseStr)
+	Variable splitSize = 100
+	String baseStr="split"
+	Prompt splitSize,"Target file size, in MB"
+	Prompt baseStr,"File prefix, number will be appended"
+	
+	fSplitBigFile(splitSize, baseStr)
+End
+
+Function fSplitBigFile(splitSize, baseStr)
+	Variable splitSize
+	String baseStr		
+
+
+	String fileName=""		// File name, partial path, full path or "" for dialog.
+	String pathName=""
+	Variable refNum
+	String str
+
+	Variable readSize=1e6		//1 MB
+	Make/O/B/U/N=(readSize) aBlob			//1MB worth
+	Variable numSplit
+	Variable num,ii,jj,outRef,frac
+	String thePath
+	
+	Printf "SplitSize = %u MB\r",splitSize
+	splitSize = trunc(splitSize) * 1e6		// now in bytes
+	
+	
+	// Open file for read.
+	Open/R/Z=2/F="????"/P=$pathName refNum as fileName
+	thePath = ParseFilePath(1, fileName, ":", 1, 0)
+	
+	// Store results from Open in a safe place.
+	Variable err = V_flag
+	String fullPath = S_fileName
+
+	if (err == -1)
+		Print "cancelled by user."
+		return -1
+	endif
+
+	FStatus refNum
+	
+	Printf "total # bytes = %u\r",V_logEOF
+
+	numSplit=0
+	if(V_logEOF > splitSize)
+		numSplit = trunc(V_logEOF/splitSize)
+	endif
+
+	frac = V_logEOF - numSplit*splitSize
+	Print "numSplit = ",numSplit
+	Printf "frac = %u\r",frac
+	
+	num=0
+	if(frac > readSize)
+		num = trunc(frac/readSize)
+	endif
+
+	
+	frac = frac - num*readSize
+
+	Print "num = ",num
+	Printf "frac = %u\r",frac
+	
+	baseStr = "split"
+	
+	for(ii=0;ii<numSplit;ii+=1)
+		Open outRef as (thePath+baseStr+num2str(ii))
+
+		for(jj=0;jj<(splitSize/readSize);jj+=1)
+			FBinRead refNum,aBlob
+			FBinWrite outRef,aBlob
+		endfor
+
+		Close outRef
+	endfor
+
+	Make/O/B/U/N=(frac) leftover
+	// ii was already incremented past the loop
+	Open outRef as (thePath+baseStr+num2str(ii))
+	for(jj=0;jj<num;jj+=1)
+		FBinRead refNum,aBlob
+		FBinWrite outRef,aBlob
+	endfor
+	FBinRead refNum,leftover
+	FBinWrite outRef,leftover
+
+	Close outRef
+
+
+	FSetPos refNum,V_logEOF
+	Close refNum
+	
+	
+	return 0
+End
+
+
+
+//// save the sliced data, and accumulate slices
+//
+// need some way of ensuring that the slices match up since I' blindly adding them together.
+//
+//
+// 
+//
+// mode = 0		wipe out the old accumulated, copy slicedData to accumulatedData
+// mode = 1		add current slicedData to accumulatedData
+// mode = 2		copy accumulatedData to slicedData in preparation of export or display
+// mode = 3		sing a song
+//
+Function AccumulateSlices(mode)
+	Variable mode
+	
+	SetDataFolder root:Packages:NIST:Event:
+
+	switch(mode)	
+		case 0:
+			KillWaves/Z accumulatedData
+			Duplicate/O slicedData accumulatedData		
+			break
+		case 1:
+			Wave acc=accumulatedData
+			Wave cur=slicedData
+			acc += cur
+			break
+		case 2:
+			Duplicate/O accumulatedData slicedData		
+			break
+		default:			
+				
+	endswitch
+
+	SetDataFolder root:
+	return(0)
+end

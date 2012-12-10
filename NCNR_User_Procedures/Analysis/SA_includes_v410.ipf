@@ -56,6 +56,7 @@ Menu "SANS Models"
 	"-"
 	Submenu "2D Utilities"
 		"Generate Fake QxQy Data",FakeQxQy()
+		"Bin QxQy Data to 1D",BinQxQy_to_1D()
 		"Show Cylinder Orientation"
 		"Change Angle"
 	end
