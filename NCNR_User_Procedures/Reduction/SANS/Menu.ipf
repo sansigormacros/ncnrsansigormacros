@@ -43,6 +43,16 @@ Menu "SANS"
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
 		"Bin QxQy Data to 1D",BinQxQy_to_1D()
 	End
+	Submenu "Event Processing"
+		"Event Mode Process Panel",Show_Event_Panel()
+		"Adjust Events",ShowEventCorrectionPanel()
+		"Create Custom Bins",Show_CustomBinPanel()
+		"-"
+		"Split Large File",SplitBigFile()
+		"Accumulate First Slice",AccumulateSlices(0)
+		"Add Current Slice",AccumulateSlices(1)
+		"Display Accumulated Slices",AccumulateSlices(2)	
+	End
 	"-"
 	"NCNR Preferences",Show_Preferences_Panel()
 	"Feedback or Bug Report",OpenTracTicketPage()

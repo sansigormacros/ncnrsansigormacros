@@ -226,14 +226,26 @@ Proc WorkMath_MainButtonProc(ctrlName) : ButtonControl
 	Show_WorkMath_Panel()
 End
 
-Proc TISANE_MainButtonProc(ctrlName) : ButtonControl
+//Proc TISANE_MainButtonProc(ctrlName) : ButtonControl
+//	String ctrlName
+//	
+//	if(exists("Show_TISANE_Panel")==0)
+//		// procedure file was not loaded
+//		DoAlert 0,"This operation is not available in this set of macros"
+//	else
+//		Show_TISANE_Panel()
+//	endif
+//	
+//End
+
+Proc Event_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	if(exists("Show_TISANE_Panel")==0)
+	if(exists("Show_Event_Panel")==0)
 		// procedure file was not loaded
 		DoAlert 0,"This operation is not available in this set of macros"
 	else
-		Show_TISANE_Panel()
+		Show_Event_Panel()
 	endif
 	
 End
@@ -354,7 +366,7 @@ Window Main_Panel()
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
 	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
-	Button MainButton_3g,pos={150,180},size={100,20},title="TISANE",proc=TISANE_MainButtonProc
+	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=Event_MainButtonProc
 	Button MainButton_3g,help={"Manipulate TISANE Timeslice data"}
 	
 	Button MainButton_3a,disable=1

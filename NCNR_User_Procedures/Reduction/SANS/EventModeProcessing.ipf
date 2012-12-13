@@ -95,12 +95,12 @@ Static Constant XBINS=128
 Static Constant YBINS=128
 //
 
-Menu "Macros"
-	"Split Large File",SplitBigFile()
-	"Accumulate First Slice",AccumulateSlices(0)
-	"Add Current Slice",AccumulateSlices(1)
-	"Display Accumulated Slices",AccumulateSlices(2)	
-End
+//Menu "Macros"
+//	"Split Large File",SplitBigFile()
+//	"Accumulate First Slice",AccumulateSlices(0)
+//	"Add Current Slice",AccumulateSlices(1)
+//	"Display Accumulated Slices",AccumulateSlices(2)	
+//End
 
 
 
@@ -769,6 +769,10 @@ End
 // What, if anything is different about the OSC or STREAM load?
 // I think that only the processing is different. so this could be
 // consolidated into a single loader.
+//
+// ** currently, the "stream" loader uses the first data point as time=0
+//    and rescales everything to that time. "Osc" loading uses the times "as-is"
+//    from the file, trusting the times to be correct.
 //
 // Would TISANE or TOF need a different loader?
 //
@@ -2118,13 +2122,20 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 				return(0)
 			endif
 			
+			NVAR mode = root:Packages:NIST:gEvent_Mode				// ==0 for "stream", ==1 for Oscillatory
 			// clear out the old sort index, if present, since new data is being loaded
 			KillWaves/Z OscSortIndex
 			Wave timePt=timePt
 
 			Duplicate/O timePt rescaledTime
-			rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+			if(mode==0)
+				rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+			else
+				rescaledTime = timePt*1e-7						//just take the times as-is
+			endif
+			
 			t_longest = waveMax(rescaledTime)		//should be the last point
+			
 	
 			fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 			sprintf tmpStr, "%s: a user-modified event file\r",fileStr 
@@ -2475,7 +2486,7 @@ End
 //
 //
 
-Macro SplitBigFile(splitSize, baseStr)
+Proc SplitBigFile(splitSize, baseStr)
 	Variable splitSize = 100
 	String baseStr="split"
 	Prompt splitSize,"Target file size, in MB"
@@ -2586,7 +2597,7 @@ End
 // mode = 0		wipe out the old accumulated, copy slicedData to accumulatedData
 // mode = 1		add current slicedData to accumulatedData
 // mode = 2		copy accumulatedData to slicedData in preparation of export or display
-// mode = 3		sing a song
+// mode = 3		sing a song, dance a dance
 //
 Function AccumulateSlices(mode)
 	Variable mode
@@ -2595,15 +2606,18 @@ Function AccumulateSlices(mode)
 
 	switch(mode)	
 		case 0:
+			DoAlert 0,"The current data has been copied to the accumulated set. You are now ready to add more data."
 			KillWaves/Z accumulatedData
 			Duplicate/O slicedData accumulatedData		
 			break
 		case 1:
+			DoAlert 0,"The current data has been added to the accumulated data. You can add more data."
 			Wave acc=accumulatedData
 			Wave cur=slicedData
 			acc += cur
 			break
 		case 2:
+			DoAlert 0,"The accumulated data is now the display data and is ready for display or export."
 			Duplicate/O accumulatedData slicedData		
 			break
 		default:			
