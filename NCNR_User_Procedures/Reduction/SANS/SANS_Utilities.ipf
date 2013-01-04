@@ -586,3 +586,17 @@ Function MyStrMatch(matchStr,str)
 	endif
 	return match
 End
+
+
+// converts a hexadecimal string to a decimal value
+// crude, no error checking
+//
+Function str2hex(str)
+	String str
+	
+	Variable hex
+	
+	sscanf str,"%x",hex
+	
+	return(hex)
+End

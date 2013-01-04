@@ -55,7 +55,7 @@ Function RectangularAverageTo1D(type)
 	Variable lambda,trans
 	Wave reals = $(destPath + ":RealsRead")
 	WAVE/T textread = $(destPath + ":TextRead")
-	String fileStr = textread[3]
+//	String fileStr = textread[3]
 	
 	// center of detector, for non-linear corrections
 	NVAR pixelsX = root:myGlobals:gNPixelsX

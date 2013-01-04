@@ -2491,10 +2491,12 @@ Function SimulationVAXHeader(folder)
 	// [5] reserve (another date), prob not needed
 	// [6] sample label
 	// [9] det type "ORNL  " (6 chars)
-	
+
+	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
+		
 	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
 	tw[2] = "SIM"
-	tw[3] = "[NG7SANS99]"
+	tw[3] = "["+gInstStr+"SANS99]"
 	tw[4] = "C"
 	tw[5] = "01JAN09 "
 	tw[9] = "ORNL  "

@@ -24,6 +24,10 @@
 // 05 OCT 2012 SRK - (not visible) but added the skeleton bits for the 10m SANS instrument. Don't have the
 //							details of the distances, etc, but I'll fill that in as needed
 // 						-- to "un-hide" the 10m SANS, uncomment the CheckBox control in the panel (see the constant declared below)
+// 03 JAN 2013 SRK -- settled on "A" for new 10m SANS and "B" for the NG3 when it's relocated. Both instruments share
+//							NGB, so this will have to do. files will be SA4 and SA5 respectively, if the VAX naming continues
+//
+//
 //
 // calculate what q-values you get based on the instruments settings
 // that you would typically input to SASCALC
@@ -31,9 +35,10 @@
 // or a Debye function (Rg=50A) * (beam stop shadow factor) 
 // - NOT true intensity, not counts, just a display
 //
-// TODO:
+// TODO_10m:
 //
 // -- For the 10m SANS...
+//
 //		- how many guides are there
 //		- no lenses? focusing pinholes?
 //		- aperture sizes?
@@ -41,7 +46,11 @@
 //		- huber/sample chamber is inline, so get rid of this for 10m (gray out?)
 //		- does this hook into anywhere in the main program? Attenuators, etc.
 //			where knowledge of the 10m SANS is necessary??
+//		- setting the instrument "number" is done here as "10". This will have a trickle-down effect for the places that use
+//		the global -- root:Packages:NIST:SAS:instrument (search for it everywhere...)
+// 		- repair the naming/numbering scheme to look for the string "NGx" and switch on that, not a number, which is unreliable and confusing.
 //
+// use str2hex(str) (my function) to conver "A" to 10
 //
 // Optional:
 // - freeze configurations with a user defined tag
@@ -67,7 +76,7 @@
 //
 //
 
-Constant show10mSANS = 0
+Constant show10mSANS = 1
 
 
 
@@ -80,11 +89,6 @@ Proc SASCALC()
 		ReCalculateInten(1)		//will use defaults
 	Endif
 
-// now a checkbox as needed
-//	DoWindow/F MC_SASCALC
-//	if(V_flag==0)
-//		MC_SASCALC()
-//	endif
 End
 
 Proc S_initialize_space()
@@ -110,7 +114,8 @@ Proc S_initialize_space()
 	String/G root:Packages:NIST:SAS:FileList = "SASCALC"
 	
 	// for the panel
-	Variable/G root:Packages:NIST:SAS:gInst=3		//or 7 for NG7
+//	Variable/G root:Packages:NIST:SAS:gInst=3		//or 7 for NG7
+	String/G root:Packages:NIST:SAS:gInstStr="NG3"		//or "NG7" or "NGA"=10m or "NGB"=NG3 moved
 	Variable/G root:Packages:NIST:SAS:gNg=0
 	Variable/G root:Packages:NIST:SAS:gTable=2		//2=chamber, 1=table
 	Variable/G root:Packages:NIST:SAS:gDetDist=1000		//sample chamber to detector in cm
@@ -163,14 +168,14 @@ Proc S_initialize_space()
 	//userTicks={tvWave,tlblWave }
 	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:tickSDDNG7
 	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNG3,root:Packages:NIST:SAS:lblSDDNG7
-	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNG10
-	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNG10
+	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNGA
+	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNGA
 	root:Packages:NIST:SAS:tickSDDNG3 = {133,400,700,1000,1317}
 	root:Packages:NIST:SAS:lblSDDNG3 = {"133","400","700","1000","1317"}
 	root:Packages:NIST:SAS:tickSDDNG7 = {100,450,800,1150,1530}
 	root:Packages:NIST:SAS:lblSDDNG7 = {"100","450","800","1150","1530"}
-	root:Packages:NIST:SAS:tickSDDNG10 = {100,200,300,400,500}
-	root:Packages:NIST:SAS:lblSDDNG10 = {"100","200","300","400","500"}
+	root:Packages:NIST:SAS:tickSDDNGA = {100,200,300,400,500}
+	root:Packages:NIST:SAS:lblSDDNGA = {"100","200","300","400","500"}
 		
 	//for the fake dependency
 	Variable/G root:Packages:NIST:SAS:gTouched=0
@@ -186,7 +191,7 @@ Function initNG3()
 	SetDataFolder root:Packages:NIST:SAS
 	
 	String/G gSelectedInstrument="checkNG3"
-	Variable/G instrument = 3
+	String/G gInstStr = "NG3"
 	
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.5
@@ -242,6 +247,10 @@ Function initNG3()
 //	lambda_width = 0.15
 	Variable/G	l2diff = 5.0
 //	
+
+
+	UpdateSASHeader()
+	
 	SetDataFolder root:
 end
 
@@ -250,7 +259,7 @@ Function initNG7()
 	SetDataFolder root:Packages:NIST:SAS
 
 	String/G gSelectedInstrument="checkNG7"
-	Variable/G instrument = 7
+	String/G gInstStr = "NG7"
 	
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.5
@@ -306,22 +315,25 @@ Function initNG7()
 //	lambda_width = 0.11
 	Variable/G	l2diff = 5.0
 //	
+
+	UpdateSASHeader()
 	SetDataFolder root:
 end
 
 /// this is the (incomplete) definition of the 10m SANS instrument
-// on NG-B, which may be referred to as NG10 here to keep the NG(number) notation
+// on NG-B, which will be referred to as NGA here to keep the NG(number) notation
+// reserving NGB for the moved NG3 instrument
 // which may be simpler here to keep functions from breaking...
 
 // *** check ALL of these values to make sure they are correct. They were copied from NG3 and
 // most are completey wrong for the 10m SANS
 //
-Function initNG10()
+Function initNGA()
 
 	SetDataFolder root:Packages:NIST:SAS
 
-	String/G gSelectedInstrument="checkNG10"	
-	Variable/G instrument = 10
+	String/G gSelectedInstrument="checkNGA"	
+	String/G gInstStr = "NGA"
 
 	Variable/G s12 = 0			//**		no difference between sample and huber position
 	Variable/G d_det = 0.5
@@ -353,9 +365,9 @@ Function initNG10()
 	Variable/G gGuide_loss = 0.924
 	
 	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
-	Variable/G fwhm_narrow = 0.109
-	Variable/G fwhm_mid = 0.125
-	Variable/G fwhm_wide = 0.236
+	Variable/G fwhm_narrow = 0.10
+	Variable/G fwhm_mid = 0.20
+	Variable/G fwhm_wide = 0.30
 	
 	//source apertures (cm)
 	Variable/G a1_0_0 = 1.43
@@ -377,16 +389,30 @@ Function initNG10()
 //	lambda_width = 0.15
 	Variable/G	l2diff = 5.0
 //	
+	UpdateSASHeader()
 	SetDataFolder root:
 end
 
+// as the instrument changes, fill in appropriate values into the header waves of the SAS folder
+// so that any simulation data (2D VAX) that is written out will be as correct as possible
+// -- this should be taken care of in SimulationVAXHeader(), so this is really redundant
+Function UpdateSASHeader()
+
+	Wave/T tw=root:Packages:NIST:SAS:textRead
+	// fill in the instrument
+	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
+	tw[3] = "["+gInstStr+"SANS99]"
+
+End
 
 Function S_fillDefaultHeader(iW,rW,tW)
 	Wave iW,rW
 	Wave/T tW
 
 	// text wave
-	// don't need anything
+	// fill in the instrument
+	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
+	tw[3] = "["+gInstStr+"SANS99]"
 	
 	// integer wave
 	// don't need anything
@@ -491,8 +517,8 @@ Window SASCALC_Panel()
 	CheckBox checkHuber,value=0,mode=1
 //	-- hide/unhide the 10m SANS
 	if(show10mSANS)
-		CheckBox checkNG10,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NG10"
-		CheckBox checkNG10,value=0,mode=1
+		CheckBox checkNGA,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGA"
+		CheckBox checkNGA,value=0,mode=1
 	endif
 //		
 	PopupMenu popup0,pos={6,94},size={76,20},proc=SourceAperturePopMenuProc
@@ -563,16 +589,18 @@ end
 Function UpdateControls()
 	//poll the controls on the panel, and change needed values
 	Variable isNG3,Ng,mode
-//	ControlInfo/W=SASCALC checkNG3
-//	isNG3=V_value
+
 	ControlInfo/W=SASCALC SC_slider
 	Ng=V_value
+	NVAR gNg = root:Packages:NIST:SAS:gNg
+	gNg = Ng		//update the global from the panel
+	
 	SVAR A1str= root:Packages:NIST:SAS:gSourceApString// = "1.43 cm;2.54 cm;3.81 cm;"
 	SVAR dlStr = root:Packages:NIST:SAS:gDeltaLambdaStr
-	SVAR selInstr = root:Packages:NIST:SAS:gSelectedInstrument
+	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
 
 	strswitch(selInstr)	// string switch
-		case "checkNG3":			// 
+		case "NG3":			// 
 			switch(ng)	
 				case 0:
 					ControlInfo/W=SASCALC popup0
@@ -611,7 +639,7 @@ Function UpdateControls()
 						
 			break
 								
-		case "checkNG7":			// 
+		case "NG7":			// 
 			switch(ng)	
 				case 0:
 					ControlInfo/W=SASCALC popup0
@@ -635,7 +663,11 @@ Function UpdateControls()
 			
 			break
 			
-		case "checkNG10":		// 10m SANS
+		case "NGA":		// 10m SANS
+			if(ng>2)
+				ng=2
+				gNg = Ng		//update the global
+			endif
 			switch(ng)	
 				case 0:
 					ControlInfo/W=SASCALC popup0
@@ -650,7 +682,7 @@ Function UpdateControls()
 			dlStr = "0.10;0.20;0.30;"
 			Slider SC_Slider,limits={0,2,1},ticks=2			//number of guides different on 10m SANS, 3 ticks
 			
-			Slider SC_Slider_1,win=SASCALC,limits={100,500,1},userTicks={root:Packages:NIST:SAS:tickSDDNG10,root:Packages:NIST:SAS:lblSDDNG10 }
+			Slider SC_Slider_1,win=SASCALC,limits={100,500,1},userTicks={root:Packages:NIST:SAS:tickSDDNGA,root:Packages:NIST:SAS:lblSDDNGA }
 			
 			NVAR detDist=root:Packages:NIST:SAS:gDetDist
 			if(detDist < 100 )
@@ -668,7 +700,7 @@ Function UpdateControls()
 			break
 			
 		default:							// optional default expression executed
-									// when no case matches
+				DoAlert 0,"No matching instrument!  UpdateControls"					// when no case matches
 	endswitch
 	
 
@@ -754,20 +786,20 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 		case "checkNG3":			// 
 			checkBox checkNG3,win=SASCALC, value=1
 			checkBox checkNG7,win=SASCALC, value=0
-			checkBox checkNG10,win=SASCALC, value=0
+			checkBox checkNGA,win=SASCALC, value=0
 			initNG3()
 			break						
 		case "checkNG7":			// 
 			checkBox checkNG3,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=1
-			checkBox checkNG10,win=SASCALC, value=0 
+			checkBox checkNGA,win=SASCALC, value=0 
 			initNG7()
 			break
-		case "checkNG10":		// 10m SANS
+		case "checkNGA":		// 10m SANS
 			checkBox checkNG3,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=0 
-			checkBox checkNG10,win=SASCALC, value=1
-			initNG10()
+			checkBox checkNGA,win=SASCALC, value=1
+			initNGA()
 			break
 		default:							// optional default expression executed
 									// when no case matches
@@ -825,9 +857,11 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	NVAR ng = root:Packages:NIST:SAS:gNg
 	NVAR lam = root:Packages:NIST:SAS:gLambda
 	NVAR dist = root:Packages:NIST:SAS:gDetDist
-	NVAR instrument = root:Packages:NIST:SAS:instrument
+//	NVAR instrument = root:Packages:NIST:SAS:instrument
 	Wave rw=root:Packages:NIST:SAS:realsRead
 	
+	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+		
 	// directly uncheck the box, just set the flag and get out
 	if(checked == 0)
 		lens = 0
@@ -840,8 +874,8 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	// check the box, enforce the proper conditions
 	if(checked == 1)
 		lens = checked	
-		switch(instrument)	// numeric switch
-			case 3:
+		strswitch(selInstr)	// string switch
+			case "NG3":
 				dist = 1317
 				DetDistSliderProc("",1317,1)
 				
@@ -859,7 +893,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				rw[28]=1		//flag for lenses in (not the true number, but OK)
 		
 				break
-			case 7:
+			case "NG7":
 				dist = 1531
 				DetDistSliderProc("",1531,1)
 				
@@ -876,7 +910,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				rw[28]=1		//flag for lenses in (not the true number, but OK)
 				
 				break
-			case 10:
+			case "NGA":
 				// 10m SANS - force no lenses for now
 				// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
 				lens = 0		//no lenses
@@ -885,7 +919,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 
 				break
 			default:
-				
+				DoAlert 0,"No matching instrument! LCP"
 		endswitch
 	endif
 	
@@ -893,6 +927,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	// I get to this point by calling this myself and passing the fictional value of (2) for the
 	// checkbox value...
 	//
+	
 	// I'll uncheck as needed
 	Variable lensNotAllowed=0
 	if(checked == 2)
@@ -905,25 +940,25 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		endif
 	
 		// instrument specific distance requirements
-		if(instrument == 3 && dist != 1317)
+		if(cmpstr(selInstr,"NG3") == 0 && dist != 1317)
 			lensNotAllowed=1
 		endif
 	
-		if(instrument == 7 && dist != 1531)
+		if(cmpstr(selInstr,"NG7") == 0 && dist != 1531)
 			lensNotAllowed=1
 		endif
 		
 		// instrument specific wavelength requirements
-		if(instrument == 3 && !(lam == 8.4 || lam == 17.2) )
+		if(cmpstr(selInstr,"NG3") == 0 && !(lam == 8.4 || lam == 17.2) )
 			lensNotAllowed=1
 		endif
 		
-		if(instrument == 7 && lam != 8.09 )
+		if(cmpstr(selInstr,"NG7") == 0 && lam != 8.09 )
 			lensNotAllowed=1
 		endif
 
 	// right now, if 10m instrument, no lenses allowed		
-		if(instrument == 10 )
+		if(cmpstr(selInstr,"NGA") == 0)
 			lensNotAllowed=1
 		endif
 		
@@ -1824,10 +1859,12 @@ Function/S SetConfigurationText()
 	NVAR gTable=gTable		//2=chamber, 1=table
 	NVAR wavelength=gLambda
 	NVAR lambdaWidth=gDeltaLambda
-	NVAR instrument = instrument
+//	NVAR instrument = instrument
 	NVAR L2diff = L2diff
    NVAR lens = root:Packages:NIST:SAS:gUsingLenses
 	SVAR/Z aStr = root:Packages:NIST:gAngstStr
+	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+
 	
 	sprintf temp,"Source Aperture Diameter =\t\t%6.2f cm\r",sourceApertureDiam()
 	str += temp
@@ -1856,7 +1893,7 @@ Function/S SetConfigurationText()
 //	
 //	// add text of the user-edited values
 //	//
-	sprintf temp,"***************** NG %d *****************\r",instrument
+	sprintf temp,"***************** %s *** %s *****************\r",selInstr,selInstr
 	str += temp
 	sprintf temp,"Sample Aperture Diameter =\t\t\t\t%.2f cm\r",sampleApertureDiam()
 	str += temp
@@ -1965,7 +2002,7 @@ End
 //
 // for the 10m SANS, table position is inline, so S12 = 0
 //
-// TODO -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
+// TODO_10m -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
 //
 Function sourceToSampleDist()
 
@@ -1973,24 +2010,24 @@ Function sourceToSampleDist()
 	NVAR S12 = root:Packages:NIST:SAS:S12
 	NVAR L2Diff = root:Packages:NIST:SAS:L2Diff
 	NVAR SSD = root:Packages:NIST:SAS:gSSD
-	NVAR instrument = root:Packages:NIST:SAS:instrument
-	
-	switch(instrument)	// numeric switch
-		case 3:
-		case 7:
+//	NVAR instrument = root:Packages:NIST:SAS:instrument
+	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+
+	strswitch(selInstr)	// string switch
+		case "NG3":
+		case "NG7":
 			// NG3 and NG7 are both the same
 			SSD = 1632 - 155*NG - s12*(2-tableposition()) - L2Diff
 			break
-		case 10:
+		case "NGA":
 			// 10m SANS handled differently
 			// s12 == 0 by definition
-			// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
+			// TODO_10m:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
 			SSD = 470 - 155*NG - s12*(2-tableposition()) - L2Diff
 			break
 		default:
-			
+			DoAlert 0,"No matching instrument! sourceToSampleDist"
 	endswitch
-	
 	
 	
 	WAVE rw=root:Packages:NIST:SAS:realsRead
@@ -2003,26 +2040,30 @@ End
 //
 // SSD in meters
 //
-// TODO -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
+// TODO_10m -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
+// -- need to re-write this to take a second parameter, a string with the instrument, or something
+// else needs to be changed in GetHeaderInfoToWave() which calls this function
+//
 //
 Function numGuides(SSD)
 	variable SSD
 	
 	Variable Ng
 	
-	NVAR instrument = root:Packages:NIST:SAS:instrument
-	
-	switch(instrument)	// numeric switch
-		case 3:
-		case 7:
+	//NVAR instrument = root:Packages:NIST:SAS:instrument
+	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+
+	strswitch(selInstr)	// string switch
+		case "NG3":
+		case "NG7":
 			// NG3 and NG7 are both the same
 			Ng = SSD*100 + 5 - 1632
 			Ng /= -155
 	
 			break
-		case 10:
+		case "NGA":
 			// 10m SANS handled differently
-			// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
+			// TODO_10m:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
 			Ng = SSD*100 + 5 - 1632
 			Ng /= -155
 	

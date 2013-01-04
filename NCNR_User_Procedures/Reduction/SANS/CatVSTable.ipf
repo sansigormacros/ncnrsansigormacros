@@ -308,7 +308,7 @@ Function GetHeaderInfoToWave(fname,sname)
 //	String textstr,temp,lbl,date_time,suffix
 //	Variable ,lambda,sdd,,refNum,trans,thick,xcenter,ycenter,numatten
 //	Variable lastPoint, beamstop,dum
-	Variable lastPoint,ctime,detcnt,cntrate,instrumentNum
+	Variable lastPoint,ctime,detcnt,cntrate//,instrumentNum
 
 	Wave/T GFilenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
 	Wave/T GSuffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
@@ -444,8 +444,12 @@ Function GetHeaderInfoToWave(fname,sname)
 
 // number of guides and sample position, only for NCNR
 #if (exists("NCNR")==6)
-	instrumentNum = str2num(getAcctName(fname)[3])		// "[NGxSANSxx]" -- [3] should be then instrument number
-	Variable/G root:Packages:NIST:SAS:instrument = instrumentNum		//so that Ng can be correctly calculated
+//	instrumentNum = str2num(getAcctName(fname)[3])		// "[NGxSANSxx]" -- [3] should be then instrument number
+//	Variable/G root:Packages:NIST:SAS:instrument = instrumentNum		//so that Ng can be correctly calculated
+
+	// acct name is "[NGxSANSxx]" -- [1,3] is the instrument "name" "NGx"
+	//so that Ng can be correctly calculated
+	String/G root:Packages:NIST:SAS:gInstStr = getAcctName(fname)[1,3] 
 	
 	InsertPoints lastPoint,1,GNumGuides
 	GNumGuides[lastPoint]  = numGuides(getSourceToSampleDist(fname))
