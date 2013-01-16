@@ -38,13 +38,13 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
 	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
 	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
-	Variable/G root:myGlobals:DeadtimeNGA_ILL = 3.0e-6		// fictional
+	Variable/G root:myGlobals:DeadtimeNGA_ILL = 4.0e-6		// fictional
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
 	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
-//	Variable/G root:myGlobals:DeadtimeNGA_ORNL_ICE = 1.0e-6		//not yet measured for NGA (10m)
+	Variable/G root:myGlobals:DeadtimeNGA_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-23013
 	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
 	
 	//new 11APR07
@@ -1522,6 +1522,11 @@ End
 // JAN 2013 -- a duplication of the NG7 table, needs to be updated after the attenuation factors
 // are measured
 //
+// 1) change num to be the number of discrete wavelengths
+// 2) set these in ngALambda =
+//	3) do I have (11) slots for atten 0-10?
+//	4) fill in the tables of factors and errors
+//
 // TODO_10m::::
 Proc MakeNGAAttenTable()
 
@@ -1690,7 +1695,7 @@ End
 
 //returns the transmission of the attenuator (at NGA) given the attenuator number
 //which must be an integer(to select the wave) and given the wavelength.
-//the wavelength may be any value between 4 and 20 (A), and is interpolated
+//the wavelength may be any value between 3 and 30 (A), and is interpolated
 //between calibrated wavelengths for a given attenuator
 //
 // local function
@@ -1698,10 +1703,9 @@ End
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
 //
 // JAN 2013 -- a duplication of the NG7 table, needs to be updated after the attenuation factors
-// are measured
+// are measured - Note that the wavelength range is larger here than for the 30m instruments
 //
 // TODO_10m::::
-//
 Function LookupAttenNGA(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
@@ -1714,8 +1718,8 @@ Function LookupAttenNGA(lambda,attenNo,atten_err)
 		return (1)		//no attenuation, return trans == 1
 	endif
 	
-	if( (lambda < 4) || (lambda > 20 ) )
-		Abort "Wavelength out of calibration range (4,20). You must manually enter the absolute parameters"
+	if( (lambda < 3) || (lambda > 30 ) )
+		Abort "Wavelength out of calibration range (3,30). You must manually enter the absolute parameters"
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
@@ -1766,7 +1770,7 @@ Function PrintAttenuation(instr,lam,attenNo)
 			break
 		case "NGA":
 			Print "Using the NG7 table for NGA *** this needs to be updated ***"
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?
@@ -1818,7 +1822,7 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 			break
 		case "NGA":
 			Print "Using the NG7 table for NGA *** this needs to be updated ***"
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?

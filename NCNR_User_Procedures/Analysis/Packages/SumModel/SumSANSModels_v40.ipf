@@ -256,7 +256,7 @@ End
 // and all of the newly created smeared waves and coefficients are in the 
 // selected data folder
 //
-Proc PlotSmeared_Sum_Model(str)								
+Proc PlotSmearedSum_Model(str)								
 	String str
 	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
 	
@@ -310,7 +310,7 @@ Proc PlotSmeared_Sum_Model(str)
 	SetScale d,0,0,"1/cm",smeared_sum							
 					
 	Variable/G gs_sum=0
-	gs_sum := fSmeared_Sum_Model(smear_coef_sum,smeared_sum,smeared_qvals)	//this wrapper fills the STRUCT
+	gs_sum := fSmearedSum_Model(smear_coef_sum,smeared_sum,smeared_qvals)	//this wrapper fills the STRUCT
 	
 	Display smeared_sum vs $(str+"_q")									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
@@ -320,7 +320,7 @@ Proc PlotSmeared_Sum_Model(str)
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("Smeared_Sum_Model","smear_coef_sum","smear_parameters_sum","sum")
+	AddModelToStrings("SmearedSum_Model","smear_coef_sum","smear_parameters_sum","sum")
 	
 	// additional step to make sure the "helper waves" are the right dimension, in case the user
 	// has changed the functions (M. Laver)
@@ -370,7 +370,7 @@ Function Sum_Model(w,yw,xw) : FitFunc
 end
 
 // this is all there is to the smeared calculation!
-Function Smeared_Sum_Model(s) : FitFunc
+Function SmearedSum_Model(s) : FitFunc
 	Struct ResSmearAAOStruct &s
 
 //	the name of your unsmeared model (AAO) is the first argument
@@ -384,7 +384,7 @@ End
 //
 // used only for the dependency, not for fitting
 //
-Function fSmeared_Sum_Model(coefW,yW,xW)
+Function fSmearedSum_Model(coefW,yW,xW)
 	Wave coefW,yW,xW
 	
 	String str = getWavesDataFolder(yW,0)
@@ -399,7 +399,7 @@ Function fSmeared_Sum_Model(coefW,yW,xW)
 	WAVE fs.resW = resW
 	
 	Variable err
-	err = Smeared_Sum_Model(fs)
+	err = SmearedSum_Model(fs)
 	
 	return (0)
 End

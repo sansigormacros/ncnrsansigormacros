@@ -285,12 +285,7 @@ Function GetTransHeaderInfoToWave(fname,sname)
 		Wave GLambda = $"root:myGlobals:TransHeaderInfo:S_Lambda"
 		Wave GTransmission = $"root:myGlobals:TransHeaderInfo:S_Transmission"
 		Wave S_GTrans_err =  $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
-		Wave GWhole = $"root:myGlobals:TransHeaderInfo:S_Whole"
-		
-			//Transmission error
-			InsertPoints lastPoint,1,S_GTrans_err
-			S_GTrans_err[lastPoint] = getSampleTransError(fname)
-			
+		Wave GWhole = $"root:myGlobals:TransHeaderInfo:S_Whole"		
 	Endif
 
 	lastPoint = numpnts(GLambda)
@@ -332,6 +327,12 @@ Function GetTransHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GLambda
 	GLambda[lastPoint]=getWavelength(fname)
 	
+	if(isTrans==0)	
+		//Transmission error
+		InsertPoints lastPoint,1,S_GTrans_err
+		S_GTrans_err[lastPoint] = getSampleTransError(fname)
+	Endif			
+			
 	return(0)
 End
 

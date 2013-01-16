@@ -50,7 +50,7 @@
 //		the global -- root:Packages:NIST:SAS:instrument (search for it everywhere...)
 // 		- repair the naming/numbering scheme to look for the string "NGx" and switch on that, not a number, which is unreliable and confusing.
 //
-// use str2hex(str) (my function) to conver "A" to 10
+// use str2hex(str) (my function) to convert "A" to 10
 //
 // Optional:
 // - freeze configurations with a user defined tag
@@ -104,8 +104,7 @@ Proc S_initialize_space()
 	Make/O/D/N=2 root:Packages:NIST:SAS:aveint,root:Packages:NIST:SAS:qval,root:Packages:NIST:SAS:sigave
 	root:Packages:NIST:SAS:data = 1
 	root:Packages:NIST:SAS:linear_data = 1
-	// fill w/default values
-	S_fillDefaultHeader(root:Packages:NIST:SAS:integersRead,root:Packages:NIST:SAS:realsRead,root:Packages:NIST:SAS:textRead)
+
 	
 	// other variables
 	// -(hard coded right now - look for NVAR declarations)
@@ -155,7 +154,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_1DTotCts = 0			//summed counts (simulated)
 	Variable/G root:Packages:NIST:SAS:g_1DEstDetCR = 0		// estimated detector count rate
 	Variable/G root:Packages:NIST:SAS:g_1DFracScatt = 0		// fraction of beam captured on detector
-	Variable/G root:Packages:NIST:SAS:g_1DEstTrans = 0		// estimated transmission of sample
+	Variable/G root:Packages:NIST:SAS:g_1DEstTrans = 0		// estimated transmission of sample (OUTPUT)
 	Variable/G root:Packages:NIST:SAS:g_1D_DoABS = 1
 	Variable/G root:Packages:NIST:SAS:g_1D_AddNoise = 1
 	Variable/G root:Packages:NIST:SAS:g_MultScattFraction=0
@@ -174,8 +173,8 @@ Proc S_initialize_space()
 	root:Packages:NIST:SAS:lblSDDNG3 = {"133","400","700","1000","1317"}
 	root:Packages:NIST:SAS:tickSDDNG7 = {100,450,800,1150,1530}
 	root:Packages:NIST:SAS:lblSDDNG7 = {"100","450","800","1150","1530"}
-	root:Packages:NIST:SAS:tickSDDNGA = {100,200,300,400,500}
-	root:Packages:NIST:SAS:lblSDDNGA = {"100","200","300","400","500"}
+	root:Packages:NIST:SAS:tickSDDNGA = {106,200,300,400,525}
+	root:Packages:NIST:SAS:lblSDDNGA = {"106","200","300","400","525"}
 		
 	//for the fake dependency
 	Variable/G root:Packages:NIST:SAS:gTouched=0
@@ -183,6 +182,10 @@ Proc S_initialize_space()
 	//for plotting
 	Variable/G root:Packages:NIST:SAS:gFreezeCount=1		//start the count at 1 to keep Jeff happy
 	Variable/G root:Packages:NIST:SAS:gDoTraceOffset=0		// (1==Yes, offset 2^n), 0==turn off the offset
+	
+	// fill a fake data header
+	// fill w/default values
+	S_fillDefaultHeader(root:Packages:NIST:SAS:integersRead,root:Packages:NIST:SAS:realsRead,root:Packages:NIST:SAS:textRead)
 	
 End
 
@@ -194,8 +197,8 @@ Function initNG3()
 	String/G gInstStr = "NG3"
 	
 	Variable/G s12 = 54.8
-	Variable/G d_det = 0.5
-	Variable/G a_pixel = 0.5
+	Variable/G d_det = 0.508
+	Variable/G a_pixel = 0.508
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
 	Variable/G lambda_t = 5.50
@@ -222,19 +225,19 @@ Function initNG3()
 	Variable/G c = -0.0243
 	Variable/G gGuide_loss = 0.924
 	
-	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
-	Variable/G fwhm_narrow = 0.109
-	Variable/G fwhm_mid = 0.125
-	Variable/G fwhm_wide = 0.236
-	
-	//source apertures (cm)
-	Variable/G a1_0_0 = 1.43
-	Variable/G a1_0_1 = 2.54
-	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 2.5	// after the polarizer		
-	Variable/G a1_7_1 = 5.0
-	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
-	Variable/G a1_def = 5.00
+//	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
+//	Variable/G fwhm_narrow = 0.109
+//	Variable/G fwhm_mid = 0.125
+//	Variable/G fwhm_wide = 0.236
+//	
+//	//source apertures (cm)
+//	Variable/G a1_0_0 = 1.43
+//	Variable/G a1_0_1 = 2.54
+//	Variable/G a1_0_2 = 3.81
+//	Variable/G a1_7_0 = 2.5	// after the polarizer		
+//	Variable/G a1_7_1 = 5.0
+//	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
+//	Variable/G a1_def = 5.00
 	
 	//default configuration values
 //	ng = 0
@@ -262,8 +265,8 @@ Function initNG7()
 	String/G gInstStr = "NG7"
 	
 	Variable/G s12 = 54.8
-	Variable/G d_det = 0.5
-	Variable/G a_pixel = 0.5
+	Variable/G d_det = 0.508
+	Variable/G a_pixel = 0.508
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
 	Variable/G lambda_t = 5.50
@@ -291,18 +294,18 @@ Function initNG7()
 	Variable/G c = 0.0442
 	Variable/G gGuide_loss = 0.974
 	
-	//fwhm values (new variables)
-	Variable/G fwhm_narrow = 0.09
-	Variable/G fwhm_mid = 0.115		//2009
-	Variable/G fwhm_wide = 0.22
-	
-	//source apertures (cm)
-	Variable/G a1_0_0 = 1.43
-	Variable/G a1_0_1 = 2.22
-	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 5.0		// don't apply to NG7
-	Variable/G a1_7_1 = 5.0
-	Variable/G a1_def = 5.00
+//	//fwhm values (new variables)
+//	Variable/G fwhm_narrow = 0.09
+//	Variable/G fwhm_mid = 0.115		//2009
+//	Variable/G fwhm_wide = 0.22
+//	
+//	//source apertures (cm)
+//	Variable/G a1_0_0 = 1.43
+//	Variable/G a1_0_1 = 2.22
+//	Variable/G a1_0_2 = 3.81
+//	Variable/G a1_7_0 = 5.0		// don't apply to NG7
+//	Variable/G a1_7_1 = 5.0
+//	Variable/G a1_def = 5.00
 	
 	//default configuration values
 //	ng = 0
@@ -328,6 +331,7 @@ end
 // *** check ALL of these values to make sure they are correct. They were copied from NG3 and
 // most are completey wrong for the 10m SANS
 //
+// TODO_10m:
 Function initNGA()
 
 	SetDataFolder root:Packages:NIST:SAS
@@ -336,15 +340,15 @@ Function initNGA()
 	String/G gInstStr = "NGA"
 
 	Variable/G s12 = 0			//**		no difference between sample and huber position
-	Variable/G d_det = 0.5
-	Variable/G a_pixel = 0.5
+	Variable/G d_det = 0.508
+	Variable/G a_pixel = 0.508
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
 	Variable/G lambda_t = 5.50
-	Variable/G l2r_lower = 100
-	Variable/G l2r_upper =  500
-	Variable/G lambda_lower = 2.5
-	Variable/G lambda_upper = 20.0
+	Variable/G l2r_lower = 106
+	Variable/G l2r_upper =  525
+	Variable/G lambda_lower = 3.0
+	Variable/G lambda_upper = 30.0
 	Variable/G d_upper = 25.0			//**
 	Variable/G bs_factor = 1.05		//**
 	Variable/G t1 = 0.63				//**
@@ -352,7 +356,7 @@ Function initNGA()
 	Variable/G t3 = 0.75				//**
 	Variable/G l_gap = 100.0			//**
 	Variable/G guide_width = 6.0		//**
-	Variable/G idmax = 100.0			//**
+	Variable/G idmax = 100.0			//** max count rate per pixel
 //	//old values, from 3/2002
 //	Variable/G phi_0 = 2.95e13
 //	Variable/G b = 0.023
@@ -364,20 +368,20 @@ Function initNGA()
 	Variable/G c = -0.0243
 	Variable/G gGuide_loss = 0.924
 	
-	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
-	Variable/G fwhm_narrow = 0.10
-	Variable/G fwhm_mid = 0.20
-	Variable/G fwhm_wide = 0.30
-	
-	//source apertures (cm)
-	Variable/G a1_0_0 = 1.43
-	Variable/G a1_0_1 = 2.54
-	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 2.5	// after the polarizer		
-	Variable/G a1_7_1 = 5.0
-	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
-	Variable/G a1_def = 5.00
-	
+//	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
+//	Variable/G fwhm_narrow = 0.10
+//	Variable/G fwhm_mid = 0.20
+//	Variable/G fwhm_wide = 0.30
+//	
+//	//source apertures (cm)
+//	Variable/G a1_0_0 = 1.43
+//	Variable/G a1_0_1 = 2.54
+//	Variable/G a1_0_2 = 3.81
+//	Variable/G a1_7_0 = 2.5	// after the polarizer		
+//	Variable/G a1_7_1 = 5.0
+//	Variable/G a1_7_1 = 0.95		// new Mar 2012 9.5 mm diameter source aperture
+//	Variable/G a1_def = 5.00
+//	
 	//default configuration values
 //	ng = 0
 //	a1 = 3.81
@@ -444,7 +448,7 @@ Function S_fillDefaultHeader(iW,rW,tW)
 	return(0)
 End
 
-
+// TODO_10m: verify that controls have the proper limits for 10m SANS (see UpdateControls())
 Window SASCALC_Panel()
 
 	PauseUpdate; Silent 1		// building window...
@@ -586,6 +590,7 @@ end
 // set the source aperture popup (based on NGx and number of guides)
 // set the wavelength spread popup
 //
+// TODO_10m:
 Function UpdateControls()
 	//poll the controls on the panel, and change needed values
 	Variable isNG3,Ng,mode
@@ -598,6 +603,7 @@ Function UpdateControls()
 	SVAR A1str= root:Packages:NIST:SAS:gSourceApString// = "1.43 cm;2.54 cm;3.81 cm;"
 	SVAR dlStr = root:Packages:NIST:SAS:gDeltaLambdaStr
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+	NVAR lambda = root:Packages:NIST:SAS:gLambda
 
 	strswitch(selInstr)	// string switch
 		case "NG3":			// 
@@ -621,8 +627,9 @@ Function UpdateControls()
 			endswitch
 			//wavelength spread
 			dlStr = "0.109;0.125;0.236;"		//updated calibration 2009
-			Slider SC_Slider,limits={0,8,1},ticks=1
+			Slider SC_Slider win=SASCALC,limits={0,8,1},ticks=1
 			//detector limits
+			Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
 			SetVariable setvar0,win=SASCALC,limits={133,1317,1}
 			NVAR detDist=root:Packages:NIST:SAS:gDetDist
 			if(detDist < 133 )
@@ -630,8 +637,15 @@ Function UpdateControls()
 			elseif (detDist > 1317 )
 				detDist = 1317
 			endif
-			Slider SC_Slider_1,win=SASCALC,limits={133,1317,1},userTicks={root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:lblSDDNG3 }
-			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+
+			// wavelength limits
+			SetVariable setvar0_2 win=SASCALC,limits={4,20,0.1}
+			if(lambda < 4)
+				lambda = 4
+			endif
+			if(lambda > 20)
+				lambda = 20
+			endif
 
 			// un-disable the sample table position
 			CheckBox checkChamber,win=SASCALC,disable=0
@@ -652,18 +666,31 @@ Function UpdateControls()
 			endswitch
 			
 			dlStr = "0.09;0.115;0.22;"
-			Slider SC_Slider,limits={0,8,1},ticks=1
+			Slider SC_Slider win=SASCALC,limits={0,8,1},ticks=1
 			Slider SC_Slider_1,win=SASCALC,limits={100,1531,1},userTicks={root:Packages:NIST:SAS:tickSDDNG7,root:Packages:NIST:SAS:lblSDDNG7 }
 			SetVariable setvar0,win=SASCALC,limits={100,1531,1}
-			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
 			
+			if(detDist < 100 )
+				detDist = 100
+			elseif (detDist > 1531 )
+				detDist = 1531
+			endif
+			// wavelength limits
+			SetVariable setvar0_2 win=SASCALC,limits={4,20,0.1}
+			if(lambda < 4)
+				lambda = 4
+			endif
+			if(lambda > 20)
+				lambda = 20
+			endif
+						
 			// un-disable the sample table position
 			CheckBox checkChamber,win=SASCALC,disable=0
 			CheckBox checkHuber,win=SASCALC,disable=0
 			
 			break
 			
-		case "NGA":		// 10m SANS
+		case "NGA":		// 10m SANS // TODO_10m: update values in this section
 			if(ng>2)
 				ng=2
 				gNg = Ng		//update the global
@@ -672,27 +699,34 @@ Function UpdateControls()
 				case 0:
 					ControlInfo/W=SASCALC popup0
 					mode=V_value
-					A1str="1.43 cm;2.22 cm;3.81 cm;"
+					A1str="1.3 cm;2.5 cm;3.8 cm;"
 					break
 				default:
-					A1str = "5.08 cm;"
+					A1str = "5.0 cm;"
 					mode=1
 			endswitch
 			
-			dlStr = "0.10;0.20;0.30;"
-			Slider SC_Slider,limits={0,2,1},ticks=2			//number of guides different on 10m SANS, 3 ticks
-			
-			Slider SC_Slider_1,win=SASCALC,limits={100,500,1},userTicks={root:Packages:NIST:SAS:tickSDDNGA,root:Packages:NIST:SAS:lblSDDNGA }
-			
-			NVAR detDist=root:Packages:NIST:SAS:gDetDist
-			if(detDist < 100 )
-				detDist = 100
-			elseif (detDist > 500 )
-				detDist = 500
-			endif
-			SetVariable setvar0,win=SASCALC,limits={100,500,1}
-			Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//forces update
+			dlStr = "0.10;0.132;0.154;0.25;"
+			Slider SC_Slider win=SASCALC,limits={0,2,1},ticks=2			//number of guides different on 10m SANS, 3 ticks
+			Slider SC_Slider_1,win=SASCALC,limits={106,525,1},userTicks={root:Packages:NIST:SAS:tickSDDNGA,root:Packages:NIST:SAS:lblSDDNGA }
+			SetVariable setvar0,win=SASCALC,limits={106,525,1}
 
+			NVAR detDist=root:Packages:NIST:SAS:gDetDist
+			if(detDist < 106 )
+				detDist = 106
+			elseif (detDist > 525 )
+				detDist = 525
+			endif
+			
+			// wavelength limits
+			SetVariable setvar0_2 win=SASCALC,limits={3,30,0.1}
+			if(lambda < 3)
+				lambda = 3
+			endif
+			if(lambda > 30)
+				lambda = 30
+			endif
+					
 			// disable the sample table position, as long as the sample positions are identical for the 10 m
 			CheckBox checkChamber,win=SASCALC,disable=2
 			CheckBox checkHuber,win=SASCALC,disable=2
@@ -703,6 +737,11 @@ Function UpdateControls()
 				DoAlert 0,"No matching instrument!  UpdateControls"					// when no case matches
 	endswitch
 	
+	// force update of the sliders
+	Slider SC_Slider,win=SASCALC,variable=root:Packages:NIST:SAS:gNg				//guides
+	Slider SC_Slider_1,win=SASCALC,variable=root:Packages:NIST:SAS:gDetDist		//detector distance
+	Slider SC_Slider_2,win=SASCALC,variable=root:Packages:NIST:SAS:gOffset		//detector offset
+
 
 	ControlUpdate popup0
 	PopupMenu popup0,win=SASCALC,mode=mode		//source Ap
@@ -731,7 +770,7 @@ Function GuideSliderProc(ctrlName,sliderValue,event)
 		endif
 		sourceToSampleDist()		//updates the SSD global and wave
 		//change the sourceAp popup, SDD range, etc
-		UpdateControls()
+		UpdateControls()				// the Ng global is actually set inside this function
 		ReCalculateInten(recalc)
 	endif
 	return 0
@@ -846,6 +885,7 @@ End
 //
 // currently, the 17.2 A for lens/prism @ ng3 must be typed in
 //
+// TODO_10m: verify operation, no lenses @ 10m
 Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
@@ -883,8 +923,9 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				LambdaSetVarProc("",8.4,"8.4","") 
 	
 				ng=0
-				GuideSliderProc("",0,1)		//this updates the controls to the new # of guides
-				
+				Slider SC_Slider,win=SASCALC,variable=root:Packages:NIST:SAS:gNg
+				GuideSliderProc("",0,1)
+
 				PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item in source aperture menu
 				
 				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
@@ -901,7 +942,9 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				LambdaSetVarProc("",8.09,"8.09","") 
 				
 				ng=0
+				Slider SC_Slider,win=SASCALC,variable=root:Packages:NIST:SAS:gNg
 				GuideSliderProc("",0,1)
+				
 				PopupMenu popup0,win=SASCALC,mode=1,popvalue="1.43 cm"		//first item
 				
 				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
@@ -977,6 +1020,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	return(1)		//return value not used
 End
 
+//
 //simulation controls as a control bar that toggles on/off to the right
 //
 // depending on the state of the 2D flag, open the 1d or 2d control panel
@@ -1027,6 +1071,7 @@ Function SimCheckProc(CB_Struct) : CheckBoxControl
 	return(0)
 End
 
+//
 // change the source aperture
 // 
 Function SourceAperturePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
@@ -1179,13 +1224,6 @@ Function ReCalculateInten(doIt)
 	if(doSimulation == 1)
 		if(doMonteCarlo == 1)
 			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf)
-			
-			// may want to take this back out--- 20 JUN 2011 SRK
-			// this call to detectorOffset() sets the (xCtr,yCtr) in RealsRead to default values of (64.5,64.5)
-			// -- if user changes the values in RealsRead to be able to do a proper average, the next sim starts wtih the
-			// wrong values...
-			
-			detectorOffset()
 			
 			Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 			
@@ -1701,6 +1739,7 @@ End
 // equivalent to John's routine on the VAX Q_SIGMA_AVE.FOR
 // Incorporates eqn. 3-15 from J. Appl. Cryst. (1995) v. 28 p105-114
 //
+// TODO_10m: verify, and does this match the "main" getResolution function? gravity?
 Function/S S_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r
 	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
@@ -1939,6 +1978,7 @@ end
 
 //parses the control for A1 diam
 // updates the wave
+// TODO_10m: verify that this reads correctly (after I know the values)
 Function sourceApertureDiam()
 	ControlInfo/W=SASCALC popup0
 	Variable diam
@@ -2002,7 +2042,6 @@ End
 //
 // for the 10m SANS, table position is inline, so S12 = 0
 //
-// TODO_10m -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
 //
 Function sourceToSampleDist()
 
@@ -2013,6 +2052,8 @@ Function sourceToSampleDist()
 //	NVAR instrument = root:Packages:NIST:SAS:instrument
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
 
+	Variable NGA_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGA
+	
 	strswitch(selInstr)	// string switch
 		case "NG3":
 		case "NG7":
@@ -2022,13 +2063,17 @@ Function sourceToSampleDist()
 		case "NGA":
 			// 10m SANS handled differently
 			// s12 == 0 by definition
-			// TODO_10m:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
-			SSD = 470 - 155*NG - s12*(2-tableposition()) - L2Diff
+			// TODO_10m:  -- 16JAN13 - these are now correct values
+			if(ng==0)
+				SSD = 513 - L2diff
+			else			
+				SSD = 513 - NGA_gap - 150*NG - s12*(2-tableposition()) - L2Diff
+			endif
 			break
 		default:
 			DoAlert 0,"No matching instrument! sourceToSampleDist"
 	endswitch
-	
+
 	
 	WAVE rw=root:Packages:NIST:SAS:realsRead
 	rw[25] = SSD/100		// in meters
@@ -2045,6 +2090,7 @@ End
 // else needs to be changed in GetHeaderInfoToWave() which calls this function
 //
 //
+// TODO_10m: correct values, verify
 Function numGuides(SSD)
 	variable SSD
 	
@@ -2052,6 +2098,8 @@ Function numGuides(SSD)
 	
 	//NVAR instrument = root:Packages:NIST:SAS:instrument
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+
+	Variable NGA_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGA
 
 	strswitch(selInstr)	// string switch
 		case "NG3":
@@ -2063,17 +2111,21 @@ Function numGuides(SSD)
 			break
 		case "NGA":
 			// 10m SANS handled differently
-			// TODO_10m:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
-			Ng = SSD*100 + 5 - 1632
-			Ng /= -155
+			// TODO_10m:  -- 16JAN13 - these are now correct values
+			Ng = 513 - NGA_gap - SSD*100 -5
+			Ng /= 150
 	
+			if(ng < 0)
+				ng=0
+			endif
+			
 			break
 		default:
 			
 	endswitch
-	
+	Print "Ng = ",Ng
 
-	Ng = round(Ng)
+	Ng = abs(round(Ng))
 	return(Ng)
 End
 
@@ -2104,6 +2156,7 @@ End
 //sets the SDD (slider and setVar are linked by the global and is the detector position
 //  relative to the chamber)
 // updates the wave
+// TODO_10m: verify
 Function sampleToDetectorDist()
 
 	NVAR detDist = root:Packages:NIST:SAS:gDetDist
@@ -2167,6 +2220,7 @@ End
 //will return values larger than 4.0*2.54 if a larger beam is needed
 //
 // - in an approximate way, account for lenses
+// TODO_10m: verify
 Function beamstopDiam()
 
 	NVAR yesLens = root:Packages:NIST:SAS:gUsingLenses
@@ -2306,8 +2360,7 @@ End
 // other values are changed in the initialization routines
 //
 //
-// TODO -- for the 10m SANS - all of the numbers need to be updated in the initialization
-//
+// TODO_10m -- for the 10m SANS - all of the numbers need to be updated in the initialization
 Function beamIntensity()
 
     Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
@@ -2352,6 +2405,7 @@ Function figureOfMerit()
 End
 
 //estimate the number of pixels in the beam, and enforce the maximum countrate per pixel (idmax)
+// TODO_10m: verify
 Function attenuatorTransmission()
 
     Variable num_pixels,i_pix		//i_pix = id in John's notation
@@ -2370,6 +2424,7 @@ Function attenuatorTransmission()
     return(atten)
 End
 
+// TODO_10m: is this going to be close enough? Are the steps the same?
 Function attenuatorNumber()
 
     Variable atten = attenuatorTransmission()
