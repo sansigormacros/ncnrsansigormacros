@@ -124,7 +124,7 @@ Function/S SumModelPopupList()
 	String list,tmp
 	
 	//get every user defined curve fit function, remove everything the user doesn't need to see...
-	list = User_FunctionPopupList()	
+	list = User_FunctionPopupList()	+ "EC_Empirical;"
 	
 	// must remove Sum_Model
 	list = RemoveFromList("Sum_Model", list  ,";")
@@ -136,7 +136,7 @@ Function/S SumModelPopupList()
 //
 ////	Print list
 	tmp = GrepList(list,"^Smear")			//don't show the Smeared... models in the popup	
-	Print tmp	
+//	Print tmp	
 	list = RemoveFromList(tmp, list  ,";")
 //	
 	

@@ -1204,7 +1204,10 @@ Function/S User_FunctionPopupList()
 
 // from 2012 Event Mode Processing
 	list = RemoveFromList("CleanupTimes;IndexForHistogram;JointHistogram;MakeFibonacciWave;Osc_ProcessEvents;SetFibonacciBins;SetLinearBins;SetLogBins;Stream_ProcessEvents;",list,";")
-	
+
+// from 2013 Simulation
+//	list = RemoveFromList("EC_Empirical;SmearedEC_Empirical;",list,";")
+		
 	list = SortList(list)
 	return(list)
 End

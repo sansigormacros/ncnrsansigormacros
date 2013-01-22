@@ -1628,6 +1628,46 @@ Proc Convert2Trans()
 	Button UndoButton,help={"Converts the chosen file to appear as a scattering file"}
 EndMacro
 
+//
+// The proper list of transmission files MUST be present in the Patch Popup list
+// -- using Grep for "trans" is a possible choice
+//
+// testing only TODO_10m -- a quick fix for the missing BS xpos to identify trans
+Function BatchConvert_10mTrans(xPos)
+	Variable xPos			//pass -10 to make it trans, pass 0 to make it scattering again
+	
+	//this will change (checked) values in ALL of the headers in the popup list
+	SVAR list = root:myGlobals:Patch:gPatchList
+	String partialName="", tempName = ""
+	Variable numitems,ii,ok
+	numitems = ItemsInList(list,";")
+	
+	//loop through all of the files in the list, applying changes as dictated by w and wt waves
+	ii=0
+	do
+		//get current item in the list
+		partialName = StringFromList(ii, list, ";")
+		   
+		//get a valid file based on this partialName and catPathName
+		tempName = FindValidFilename(partialName)
+	
+		//prepend path to tempName for read routine 
+		PathInfo catPathName
+		tempName = S_path + tempName
+	
+		//make sure the file is really a RAW data file
+		ok = CheckIfRawData(tempName)
+		if (!ok)
+		   Print "this file is not recognized as a RAW SANS data file = ",tempName
+		else
+		   //go write the changes to the file
+		   ChangeBSXPos(tempName,xPos)
+		Endif
+		
+		ii+=1
+	while(ii<numitems)
+	
+End
 
 /////
 //  A quick way to fill all the T_EMP_Filenames with the selected empty beam file

@@ -2123,7 +2123,7 @@ Function numGuides(SSD)
 		default:
 			
 	endswitch
-	Print "Ng = ",Ng
+//	Print "Ng = ",Ng
 
 	Ng = abs(round(Ng))
 	return(Ng)
@@ -2133,6 +2133,8 @@ End
 //returns the offset value
 // slider and setVar are linked to the same global
 // updates the wave and changes the beamcenter (x,y) in the wave
+//
+// does not account for the fall due to gravity in y-direction
 Function detectorOffset()
 	
 	WAVE rw=root:Packages:NIST:SAS:RealsRead

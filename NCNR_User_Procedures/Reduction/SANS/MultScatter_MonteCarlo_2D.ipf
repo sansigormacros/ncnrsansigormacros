@@ -965,7 +965,7 @@ end
 
 Function/S MC_FunctionPopupList()
 	String list,tmp
-	list = User_FunctionPopupList()
+	list = User_FunctionPopupList()// + "EC_Empirical;"
 	
 	//simplify the display, forcing smeared calculations behind the scenes
 	tmp = FunctionList("Smear*",";","NPARAMS:1")		//smeared dependency calculations
@@ -1466,7 +1466,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	t0 = (stopMSTimer(-2) - t0)*1e-6
 	t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
-	t0 *= 2		//empirical correction
+	t0 *= 2		//empirical correction, since processor count returns 8 for (4 real + 4 virtual)
 	Print "Estimated Simulation time (s) = ",t0
 	
 // to correct for detector efficiency, send only the fraction of neutrons that are actually counted	
@@ -2256,6 +2256,127 @@ Function fSmearedTwoLevel_EC(coefW,yW,xW)
 	
 	return (0)
 End
+
+
+////
+//// plots an empirical empty cell scattering, also have a Two Level implementation in 
+//// the main MonteCarlo procedure file. The TwoLevel version is "calibrated" to give a more realistic
+//// count rate, but neither are suitable to be incorporated into a 2D simulation
+////
+// -- 2.2e-9 was the fitted value, again, empirically using 2.2e-8 to take into account
+//   that I need "enough" empty cell scattering from a sample that is say 1mm thick
+//
+Proc PlotEC_Empirical(num,qmin,qmax)
+	Variable num=256,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	make/O/D/N=(num) xwave_ECEmp,ywave_ECEmp
+	xwave_ECEmp = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
+	make/O/D coef_ECEmp = {2.2e-8,3.346,0.0065,9.0,0.016}
+	make/O/T parameters_ECEmp = {"A","power","scale","Rg (A)","bkg (cm-1)"}
+	Edit parameters_ECEmp,coef_ECEmp
+	
+	Variable/G root:g_ECEmp
+	g_ECEmp := EC_Empirical(coef_ECEmp,ywave_ECEmp,xwave_ECEmp)
+	Display ywave_ECEmp vs xwave_ECEmp
+	ModifyGraph marker=29,msize=2,mode=4,log=1
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("EC_Empirical","coef_ECEmp","parameters_ECEmp","ECEmp")
+End
+
+
+// as AAO for smeared version which is necessary
+Function EC_Empirical(cw,yw,xw) : FitFunc
+	Wave cw,yw,xw
+	
+	yw = fEC_Empirical(cw,xw)
+
+	return(0)
+End
+// a sum of a power law and debye to approximate the scattering from a real empty cell
+//
+Function fEC_Empirical(w,x) : FitFunc
+	Wave w
+	Variable x
+	
+	// variables are:
+	//[0] = A
+	//[1] = power m
+	//[2] scale factor
+	//[3] radius of gyration [A]
+	//[4] background	[cm-1]
+	
+	Variable scale,rg,bkg,aa,mm,Iq
+	aa = w[0]
+	mm = w[1]
+	scale = w[2]
+	rg = w[3]
+	bkg = w[4]
+	
+	// calculates (scale*debye)+bkg
+	Variable Pq,qr2
+	
+//	if(x*Rg < 1e-3)		//added Oct 2008 to avoid numerical errors at low arg values
+//		return(scale+bkg)
+//	endif
+	
+	Iq = aa*x^-mm
+	
+	qr2=(x*rg)^2
+	Pq = 2*(exp(-(qr2))-1+qr2)/qr2^2
+	
+	//scale
+	Pq *= scale
+	// then add the terms up
+	return (Iq + Pq + bkg)
+End
+
+//wrapper to calculate the smeared model as an AAO-Struct
+// fills the struct and calls the ususal function with the STRUCT parameter
+//
+// used only for the dependency, not for fitting
+//
+Function fSmearedEC_Empirical(coefW,yW,xW)
+	Wave coefW,yW,xW
+	
+	String str = getWavesDataFolder(yW,0)
+	String DF="root:"+str+":"
+	
+	WAVE resW = $(DF+str+"_res")
+	
+	STRUCT ResSmearAAOStruct fs
+	WAVE fs.coefW = coefW	
+	WAVE fs.yW = yW
+	WAVE fs.xW = xW
+	WAVE fs.resW = resW
+	
+	Variable err
+	err = SmearedEC_Empirical(fs)
+	
+	return (0)
+End
+
+// this is all there is to the smeared calculation!
+Function SmearedEC_Empirical(s) :FitFunc
+	Struct ResSmearAAOStruct &s
+
+//	the name of your unsmeared model (AAO) is the first argument
+	Smear_Model_20(EC_Empirical,s.coefW,s.xW,s.yW,s.resW)
+
+	return(0)
+End
+	
+
+
+
+
+
+/////////////// end empirical EC model
 
 
 

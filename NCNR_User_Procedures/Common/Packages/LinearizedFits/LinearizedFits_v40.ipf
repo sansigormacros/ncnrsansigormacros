@@ -762,33 +762,37 @@ End
 Function/S filterButtonProc(ctrlName)
 	String ctrlName
 
-	String list="",newList="",item=""
-	Variable num,ii
-	
-	//check for the path
-	PathInfo catPathName
-	if(V_Flag==0)
-		DoAlert 0, "Data path does not exist - pick the data path from the button on the FIT panel"
-		Return("")
-	Endif
-	
-	list = IndexedFile(catpathName,-1,"????")
-	num=ItemsInList(list,";")
-	//print "num = ",num
-	for(ii=(num-1);ii>=0;ii-=1)
-		item = StringFromList(ii, list  ,";")
-		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
-			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				newlist += item + ";"
-			endif
-		endif
-	endfor
-	//remove VAX version numbers
-	newList = RemoveVersNumsFromList(newList)
-	//sort
-	newList = SortList(newList,";",0)
+	String newList=""
+//	String list="",newList="",item=""
+//	Variable num,ii
+//	
+//	//check for the path
+//	PathInfo catPathName
+//	if(V_Flag==0)
+//		DoAlert 0, "Data path does not exist - pick the data path from the button on the FIT panel"
+//		Return("")
+//	Endif
+//	
+//	list = IndexedFile(catpathName,-1,"????")
+//	num=ItemsInList(list,";")
+//	//print "num = ",num
+//	for(ii=(num-1);ii>=0;ii-=1)
+//		item = StringFromList(ii, list  ,";")
+//		//simply remove all that are not raw data files (SA1 SA2 SA3)
+//		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
+//			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
+//				newlist += item + ";"
+//			endif
+//		endif
+//	endfor
+//	//remove VAX version numbers
+//	newList = RemoveVersNumsFromList(newList)
+//	//sort
+//	newList = SortList(newList,";",0)
 
+// Jan 2013 -- replaced with a utility function that filters out raw, div, mask, etc.
+	newList = A_ReducedDataFileList("")
+	
 	return newlist
 End
 

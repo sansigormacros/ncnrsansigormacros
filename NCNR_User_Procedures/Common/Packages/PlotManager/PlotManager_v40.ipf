@@ -318,6 +318,7 @@ End
 // another possibility is to get a listing of the text files, but is unreliable on 
 // Windows, where the data file must be .txt (and possibly OSX)
 //
+// TODO: this is a duplicated procedure. See the equivalent in NCNR_Utils and which one to keep?
 Function/S A_ReducedDataFileList(ctrlName)
 	String ctrlName
 
@@ -336,15 +337,17 @@ Function/S A_ReducedDataFileList(ctrlName)
 	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA4*",";"), list, ";", 0)		// added JAN 2013 for new guide hall
+	list = RemoveFromList(ListMatch(list,"*.SA5*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
-	#if(exists("QUOKKA") == 6)
+#if(exists("QUOKKA") == 6)
 	list = RemoveFromList(ListMatch(list,"*.nx.hdf",";"), list, ";", 0)	
 	list = RemoveFromList(ListMatch(list,"*.bin",";"), list, ";", 0)	
-	#endif
+#endif
 	
 
 	//sort

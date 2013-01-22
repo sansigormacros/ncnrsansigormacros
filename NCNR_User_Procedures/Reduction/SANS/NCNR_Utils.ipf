@@ -1862,6 +1862,8 @@ Function/S ReducedDataFileList(ctrlName)
 	list = RemoveFromList(ListMatch(list,"*.SA1*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.SA2*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.SA3*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.SA4*",";"), list, ";", 0)		// added JAN 2013 for new guide hall
+	list = RemoveFromList(ListMatch(list,"*.SA5*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,".*",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.pxp",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
@@ -1904,6 +1906,12 @@ Function/S GetRawDataFileList()
 			newlist += item + ";"
 		endif
 		if( stringmatch(item,"*.sa3*") )
+			newlist += item + ";"
+		endif
+		if( stringmatch(item,"*.sa4*") )		// added JAN 2013 for new guide hall
+			newlist += item + ";"
+		endif
+		if( stringmatch(item,"*.sa5*") )
 			newlist += item + ";"
 		endif
 		//print "ii=",ii
