@@ -39,16 +39,16 @@
 //
 // -- For the 10m SANS...
 //
-//		- how many guides are there
-//		- no lenses? focusing pinholes?
-//		- aperture sizes?
+//		x- how many guides are there
+//		x- no lenses? focusing pinholes?
+//		x- aperture sizes?
 //		- flux values
-//		- huber/sample chamber is inline, so get rid of this for 10m (gray out?)
-//		- does this hook into anywhere in the main program? Attenuators, etc.
+//		x- huber/sample chamber is inline, so get rid of this for 10m (gray out?)
+//		x- does this hook into anywhere in the main program? Attenuators, etc.
 //			where knowledge of the 10m SANS is necessary??
-//		- setting the instrument "number" is done here as "10". This will have a trickle-down effect for the places that use
+//		x- setting the instrument "number" is done here as "10". This will have a trickle-down effect for the places that use
 //		the global -- root:Packages:NIST:SAS:instrument (search for it everywhere...)
-// 		- repair the naming/numbering scheme to look for the string "NGx" and switch on that, not a number, which is unreliable and confusing.
+// 		x- repair the naming/numbering scheme to look for the string "NGx" and switch on that, not a number, which is unreliable and confusing.
 //
 // use str2hex(str) (my function) to convert "A" to 10
 //
@@ -175,6 +175,8 @@ Proc S_initialize_space()
 	root:Packages:NIST:SAS:lblSDDNG7 = {"100","450","800","1150","1530"}
 	root:Packages:NIST:SAS:tickSDDNGA = {106,200,300,400,525}
 	root:Packages:NIST:SAS:lblSDDNGA = {"106","200","300","400","525"}
+//	root:Packages:NIST:SAS:tickSDDNGA = {106,200,300,400,500,525}
+//	root:Packages:NIST:SAS:lblSDDNGA = {"106","200","300","400","500","525"}
 		
 	//for the fake dependency
 	Variable/G root:Packages:NIST:SAS:gTouched=0
@@ -327,11 +329,9 @@ end
 // on NG-B, which will be referred to as NGA here to keep the NG(number) notation
 // reserving NGB for the moved NG3 instrument
 // which may be simpler here to keep functions from breaking...
-
-// *** check ALL of these values to make sure they are correct. They were copied from NG3 and
-// most are completey wrong for the 10m SANS
 //
-// TODO_10m:
+// Updated 24 JAN 2013 with current flux numbers from John
+//
 Function initNGA()
 
 	SetDataFolder root:Packages:NIST:SAS
@@ -344,29 +344,25 @@ Function initNGA()
 	Variable/G a_pixel = 0.508
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
-	Variable/G lambda_t = 5.50
+	Variable/G lambda_t = 5.50				//good, Jan 2013
 	Variable/G l2r_lower = 106
 	Variable/G l2r_upper =  525
 	Variable/G lambda_lower = 3.0
 	Variable/G lambda_upper = 30.0
-	Variable/G d_upper = 25.0			//**
-	Variable/G bs_factor = 1.05		//**
-	Variable/G t1 = 0.63				//**
-	Variable/G t2 = 1.0					//**
-	Variable/G t3 = 0.75				//**
-	Variable/G l_gap = 100.0			//**
-	Variable/G guide_width = 6.0		//**
+	Variable/G d_upper = 25.0			
+	Variable/G bs_factor = 1.05		
+	Variable/G t1 = 0.63				//**good, Jan 2013
+	Variable/G t2 = 1.0					//**good, Jan 2013
+	Variable/G t3 = 0.75				//**good, Jan 2013
+	Variable/G l_gap = 165				//**good, Jan 2013
+	Variable/G guide_width = 5.0		//**good, Jan 2013
 	Variable/G idmax = 100.0			//** max count rate per pixel
-//	//old values, from 3/2002
-//	Variable/G phi_0 = 2.95e13
-//	Variable/G b = 0.023
-//	Variable/G c = 0.023
+//	current values -- Jan 2013
+	Variable/G phi_0 = 2.5e13
+	Variable/G b = 0.03
+	Variable/G c = 0.03
 
-	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
-	Variable/G phi_0 = 2.42e13
-	Variable/G b = 0.0
-	Variable/G c = -0.0243
-	Variable/G gGuide_loss = 0.924
+	Variable/G gGuide_loss = 0.95
 	
 //	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
 //	Variable/G fwhm_narrow = 0.10
@@ -448,7 +444,7 @@ Function S_fillDefaultHeader(iW,rW,tW)
 	return(0)
 End
 
-// TODO_10m: verify that controls have the proper limits for 10m SANS (see UpdateControls())
+//
 Window SASCALC_Panel()
 
 	PauseUpdate; Silent 1		// building window...
@@ -590,7 +586,6 @@ end
 // set the source aperture popup (based on NGx and number of guides)
 // set the wavelength spread popup
 //
-// TODO_10m:
 Function UpdateControls()
 	//poll the controls on the panel, and change needed values
 	Variable isNG3,Ng,mode
@@ -690,7 +685,7 @@ Function UpdateControls()
 			
 			break
 			
-		case "NGA":		// 10m SANS // TODO_10m: update values in this section
+		case "NGA":		// 10m SANS 
 			if(ng>2)
 				ng=2
 				gNg = Ng		//update the global
@@ -885,7 +880,6 @@ End
 //
 // currently, the 17.2 A for lens/prism @ ng3 must be typed in
 //
-// TODO_10m: verify operation, no lenses @ 10m
 Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
@@ -1739,7 +1733,6 @@ End
 // equivalent to John's routine on the VAX Q_SIGMA_AVE.FOR
 // Incorporates eqn. 3-15 from J. Appl. Cryst. (1995) v. 28 p105-114
 //
-// TODO_10m: verify, and does this match the "main" getResolution function? gravity?
 Function/S S_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r
 	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
@@ -1978,7 +1971,6 @@ end
 
 //parses the control for A1 diam
 // updates the wave
-// TODO_10m: verify that this reads correctly (after I know the values)
 Function sourceApertureDiam()
 	ControlInfo/W=SASCALC popup0
 	Variable diam
@@ -2063,7 +2055,7 @@ Function sourceToSampleDist()
 		case "NGA":
 			// 10m SANS handled differently
 			// s12 == 0 by definition
-			// TODO_10m:  -- 16JAN13 - these are now correct values
+			// -- 16JAN13 - these are now correct values
 			if(ng==0)
 				SSD = 513 - L2diff
 			else			
@@ -2085,12 +2077,6 @@ End
 //
 // SSD in meters
 //
-// TODO_10m -- for the 10m SANS - all of the numbers here are hard-wired and are WRONG
-// -- need to re-write this to take a second parameter, a string with the instrument, or something
-// else needs to be changed in GetHeaderInfoToWave() which calls this function
-//
-//
-// TODO_10m: correct values, verify
 Function numGuides(SSD)
 	variable SSD
 	
@@ -2111,7 +2097,7 @@ Function numGuides(SSD)
 			break
 		case "NGA":
 			// 10m SANS handled differently
-			// TODO_10m:  -- 16JAN13 - these are now correct values
+			// -- 16JAN13 - these are now correct values
 			Ng = 513 - NGA_gap - SSD*100 -5
 			Ng /= 150
 	
@@ -2158,7 +2144,6 @@ End
 //sets the SDD (slider and setVar are linked by the global and is the detector position
 //  relative to the chamber)
 // updates the wave
-// TODO_10m: verify
 Function sampleToDetectorDist()
 
 	NVAR detDist = root:Packages:NIST:SAS:gDetDist
@@ -2222,7 +2207,6 @@ End
 //will return values larger than 4.0*2.54 if a larger beam is needed
 //
 // - in an approximate way, account for lenses
-// TODO_10m: verify
 Function beamstopDiam()
 
 	NVAR yesLens = root:Packages:NIST:SAS:gUsingLenses
@@ -2361,8 +2345,6 @@ End
 //
 // other values are changed in the initialization routines
 //
-//
-// TODO_10m -- for the 10m SANS - all of the numbers need to be updated in the initialization
 Function beamIntensity()
 
     Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
@@ -2407,7 +2389,6 @@ Function figureOfMerit()
 End
 
 //estimate the number of pixels in the beam, and enforce the maximum countrate per pixel (idmax)
-// TODO_10m: verify
 Function attenuatorTransmission()
 
     Variable num_pixels,i_pix		//i_pix = id in John's notation

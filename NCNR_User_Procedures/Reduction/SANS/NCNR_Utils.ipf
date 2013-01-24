@@ -44,7 +44,7 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
-	Variable/G root:myGlobals:DeadtimeNGA_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-23013
+	Variable/G root:myGlobals:DeadtimeNGA_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013
 	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
 	
 	//new 11APR07
@@ -473,8 +473,7 @@ End
 //	Instrument				Date measured				deadtime constant
 //	NG3							DECEMBER 2009				1.5 microseconds
 //	NG7							APRIL2010					2.3 microseconds
-// 	NGA							TBD 2013
-// TODO_10m: measure proper dead time constants
+// 	NGA							JAN 2013					4 microseconds
 //
 //
 // The day of the switch to ICE on NG7 was 25-FEB-2010 (per J. Krzywon) 
@@ -1519,20 +1518,16 @@ Proc MakeNG7AttenTable()
 End
 
 
-// JAN 2013 -- a duplication of the NG7 table, needs to be updated after the attenuation factors
-// are measured
+// JAN 2013 -- Using John's measured values from 23 JAN 2013
 //
-// 1) change num to be the number of discrete wavelengths
-// 2) set these in ngALambda =
-//	3) do I have (11) slots for atten 0-10?
-//	4) fill in the tables of factors and errors
+// there are 13 discrete wavelengths in ngALambda = 13 (only 10 used for 30m)
+// there are only 9 attenuators, not 10 as in the 30m
 //
-// TODO_10m::::
 Proc MakeNGAAttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
-	Variable num=10		//10 needed for tables after June 2007
+	Variable num=13		//13 needed for tables to cover 3A - 30A
 	
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt0
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt1
@@ -1544,7 +1539,7 @@ Proc MakeNGAAttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt7
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt8
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt9
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10
+//	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10
 	
 	// and a wave for the errors at each attenuation factor
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt0_err
@@ -1557,40 +1552,40 @@ Proc MakeNGAAttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt7_err
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt8_err
 	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt9_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10_err	
+//	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10_err	
 	
-	//NGA wave has 10 elements, the transmission of att# at the wavelengths 
-	//lambda =4, 5,6,7,8,10,12,14,17,20
-	// note that some of the higher attenuations and ALL of the 4 A and 20A data is interpolated
+	//NGA wave has 13 elements, the transmission of att# at the wavelengths 
+	//lambda = 3A to 30A
+	// note that some of the higher attenuations and ALL of the 30A data is interpolated
 	// none of these values are expected to be used in reality since the flux would be too low in practice
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAlambda={4,5,6,7,8,10,12,14,17,20}
+	Make/O/N=(num) root:myGlobals:Attenuators:ngAlambda={3,4,5,6,7,8,10,12,14,17,20,25,30}
 
-// New calibration, June 2007, John Barker
-	root:myGlobals:Attenuators:ngAatt0 = {1, 1, 1, 1, 1, 1, 1, 1 ,1,1}	
-	root:myGlobals:Attenuators:ngAatt1 = {0.448656,0.4192,0.3925,0.3661,0.3458,0.3098,0.2922,0.2738,0.2544,0.251352}
- 	root:myGlobals:Attenuators:ngAatt2 = {0.217193,0.1898,0.1682,0.148,0.1321,0.1076,0.0957,0.08485,0.07479,0.0735965}
-  	root:myGlobals:Attenuators:ngAatt3 = {0.098019,0.07877,0.06611,0.05429,0.04548,0.03318,0.02798,0.0234,0.02004,0.0202492}
-  	root:myGlobals:Attenuators:ngAatt4 = {0.0426904,0.03302,0.02617,0.02026,0.0158,0.01052,0.008327,0.006665,0.005745,0.00524807}
-  	root:myGlobals:Attenuators:ngAatt5 = {0.0194353,0.01398,0.01037,0.0075496,0.005542,0.003339,0.002505,0.001936,0.001765,0.00165959}
-  	root:myGlobals:Attenuators:ngAatt6 = {0.00971666,0.005979,0.004136,0.002848,0.001946,0.001079,0.0007717,0.000588,0.000487337,0.000447713}
-  	root:myGlobals:Attenuators:ngAatt7 = {0.00207332,0.001054,0.0006462,0.0003957,0.0002368,0.0001111,7.642e-05,4.83076e-05,3.99401e-05,3.54814e-05}
-  	root:myGlobals:Attenuators:ngAatt8 = {0.000397173,0.0001911,0.0001044,5.844e-05,3.236e-05,1.471e-05,6.88523e-06,4.06541e-06,3.27333e-06,2.81838e-06}
-  	root:myGlobals:Attenuators:ngAatt9 = {9.43625e-05,3.557e-05,1.833e-05,1.014e-05,6.153e-06,1.64816e-06,6.42353e-07,3.42132e-07,2.68269e-07,2.2182e-07}
-  	root:myGlobals:Attenuators:ngAatt10 = {2.1607e-05,7.521e-06,2.91221e-06,1.45252e-06,7.93451e-07,1.92309e-07,5.99279e-08,2.87928e-08,2.19862e-08,1.7559e-08}
+// New calibration, Jan 2013 John Barker
+	root:myGlobals:Attenuators:ngAatt0 = {1,1,1,1,1,1,1,1,1,1,1,1,1}	
+	root:myGlobals:Attenuators:ngAatt1 = {0.522,0.476,0.42007,0.39298,0.36996,0.35462,0.31637,0.29422,0.27617,0.24904,0.22263,0.18525,0.15}
+ 	root:myGlobals:Attenuators:ngAatt2 = {0.27046,0.21783,0.17405,0.15566,0.13955,0.1272,0.10114,0.087289,0.077363,0.063607,0.051098,0.0357,0.023}
+  	root:myGlobals:Attenuators:ngAatt3 = {0.12601,0.090906,0.064869,0.054644,0.046916,0.041169,0.028926,0.023074,0.019276,0.014244,0.01021,0.006029,0.0033}
+  	root:myGlobals:Attenuators:ngAatt4 = {0.057782,0.037886,0.024727,0.019499,0.015719,0.013041,0.0080739,0.0059418,0.0046688,0.0031064,0.0020001,0.0010049,0.0005}
+  	root:myGlobals:Attenuators:ngAatt5 = {0.026627,0.016169,0.0096679,0.0071309,0.0052982,0.0040951,0.0021809,0.001479,0.001096,0.00066564,0.00039384,0.0002,9e-05}
+  	root:myGlobals:Attenuators:ngAatt6 = {0.0091671,0.0053041,0.0029358,0.0019376,0.0013125,0.00096946,0.00042126,0.0002713,0.00019566,0.00011443,5e-05,3e-05,1.2e-05}
+  	root:myGlobals:Attenuators:ngAatt7 = {0.0017971,0.00089679,0.00040572,0.0002255,0.00013669,8.7739e-05,3.3373e-05,2.0759e-05,1.5624e-05,1e-05,8e-06,4e-06,2.1e-06}
+  	root:myGlobals:Attenuators:ngAatt8 = {0.00033646,0.00012902,4.6033e-05,2.414e-05,1.4461e-05,9.4644e-06,4.8121e-06,4e-06,3e-06,2e-06,1e-06,7e-07,3.3e-07}
+  	root:myGlobals:Attenuators:ngAatt9 = {7e-05,2e-05,8.2796e-06,4.5619e-06,3.1543e-06,2.6216e-06,8e-07,6e-07,4e-07,3e-07,2e-07,1e-07,5e-08}
+//  	root:myGlobals:Attenuators:ngAatt10 = {}
 
-  // percent errors as measured, May 2007 values
-  // zero error for zero attenuators, appropriate average values put in for unknown values
-	root:myGlobals:Attenuators:ngAatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-	root:myGlobals:Attenuators:ngAatt1_err = {0.2,0.169,0.1932,0.253,0.298,0.4871,0.238,0.245,0.332,0.3}
-	root:myGlobals:Attenuators:ngAatt2_err = {0.3,0.305,0.3551,0.306,0.37,0.6113,0.368,0.413,0.45,0.4}
-	root:myGlobals:Attenuators:ngAatt3_err = {0.4,0.355,0.4158,0.36,0.4461,0.7643,0.532,0.514,0.535,0.5}
-	root:myGlobals:Attenuators:ngAatt4_err = {0.45,0.402,0.4767,0.415,0.5292,0.9304,0.635,0.588,0.623,0.6}
-	root:myGlobals:Attenuators:ngAatt5_err = {0.5,0.447,0.5376,0.487,0.6391,1.169,0.708,0.665,0.851,0.8}
-	root:myGlobals:Attenuators:ngAatt6_err = {0.6,0.501,0.6136,0.528,0.8796,1.708,0.782,0.874,1,1}
-	root:myGlobals:Attenuators:ngAatt7_err = {0.8,0.697,0.9149,0.583,1.173,2.427,1.242,2,2,2}
-	root:myGlobals:Attenuators:ngAatt8_err = {1,0.898,1.24,0.696,1.577,3.412,3,3,3,3}
-	root:myGlobals:Attenuators:ngAatt9_err = {1.5,1.113,1.599,1.154,2.324,4.721,5,5,5,5}
-	root:myGlobals:Attenuators:ngAatt10_err = {1.5,1.493,5,5,5,5,5,5,5,5}  
+  // percent errors as measured, Jan 2013 values
+  // zero error for zero attenuators, large values put in for unknown values (either 2% or 5%)
+	root:myGlobals:Attenuators:ngAatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:ngAatt1_err = {0.12116,0.111059,0.150188,0.15168,0.174434,0.218745,0.0938678,0.144216,0.2145,0.141995,0.153655,0.157188,5}
+	root:myGlobals:Attenuators:ngAatt2_err = {0.183583,0.19981,0.278392,0.286518,0.336599,0.240429,0.190996,0.178529,0.266807,0.23608,0.221334,0.245336,5}
+	root:myGlobals:Attenuators:ngAatt3_err = {0.271054,0.326341,0.30164,0.31008,0.364188,0.296638,0.1914,0.22433,0.340313,0.307021,0.279339,0.319965,5}
+	root:myGlobals:Attenuators:ngAatt4_err = {0.333888,0.361023,0.356208,0.368968,0.437084,0.322955,0.248284,0.260956,0.402069,0.368168,0.337252,0.454958,5}
+	root:myGlobals:Attenuators:ngAatt5_err = {0.365745,0.433845,0.379735,0.394999,0.470603,0.357534,0.290938,0.291193,0.455465,0.426855,0.434639,2,5}
+	root:myGlobals:Attenuators:ngAatt6_err = {0.402066,0.470239,0.410136,0.432342,0.523241,0.389247,0.333352,0.325301,0.517036,0.539386,2,2,5}
+	root:myGlobals:Attenuators:ngAatt7_err = {0.542334,0.549954,0.45554,0.497426,0.624473,0.454971,0.432225,0.464043,0.752858,2,5,5,5}
+	root:myGlobals:Attenuators:ngAatt8_err = {0.704775,0.673556,0.537178,0.62027,0.814375,0.582449,0.662811,2,2,5,5,5,5}
+	root:myGlobals:Attenuators:ngAatt9_err = {2,2,0.583513,0.685477,0.901413,0.767115,2,5,5,5,5,5,5}
+//	root:myGlobals:Attenuators:ngAatt10_err = {}  
   
 End
 
@@ -1702,10 +1697,8 @@ End
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
 //
-// JAN 2013 -- a duplication of the NG7 table, needs to be updated after the attenuation factors
-// are measured - Note that the wavelength range is larger here than for the 30m instruments
+// JAN 2013 -- now correct, NGA table has been added, allowing for 3A to 30A
 //
-// TODO_10m::::
 Function LookupAttenNGA(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
@@ -1769,7 +1762,6 @@ Function PrintAttenuation(instr,lam,attenNo)
 			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
-			Print "Using the NG7 table for NGA *** this needs to be updated ***"
 			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
 			break
 		default:							
