@@ -1813,7 +1813,7 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
-			Print "Using the NG7 table for NGA *** this needs to be updated ***"
+//			Print "Using the NG7 table for NGA *** this needs to be updated ***"
 			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
 			break
 		default:							

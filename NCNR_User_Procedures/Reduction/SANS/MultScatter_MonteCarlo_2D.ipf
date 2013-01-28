@@ -1355,10 +1355,11 @@ End
 
 
 /// called in SASCALC:ReCalculateInten()
-Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
+Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnly)
 	String funcStr
 	WAVE aveint,qval,sigave,sigmaq,qbar,fsubs
-
+	Variable estimateOnly
+	
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
 	WAVE rw=root:Packages:NIST:SAS:realsRead
 	WAVE iw=root:Packages:NIST:SAS:integersRead
@@ -1468,6 +1469,12 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	t0 *= imon/1000/ThreadProcessorCount			//projected time, in seconds (using threads for the calculation)
 	t0 *= 2		//empirical correction, since processor count returns 8 for (4 real + 4 virtual)
 	Print "Estimated Simulation time (s) = ",t0
+	
+	
+	if(estimateOnly)
+		return(t0)
+	endif
+	
 	
 // to correct for detector efficiency, send only the fraction of neutrons that are actually counted	
 	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
@@ -1608,8 +1615,11 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	Fake1DDataFolder(qval,aveint,sigave,sigmaQ,qbar,fSubs,"Simulation")	
 				
 	// simulate the empty cell scattering, only in 1D
-	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+//	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	Simulate_1D_EmptyCell("EC_Empirical",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	
 	Print "Sample Simulation (2D) CR = ",results[9]/ctTime
+	
 	// check, so that RT simulation won't display SAS data type
 	NVAR/Z gFakeUpdate = root:myGlobals:gFakeUpdate
 	if(NVAR_Exists(gFakeUpdate) && gFakeUpdate == 1)
@@ -1999,7 +2009,10 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	endif
 				
 	
-	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+//	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	Simulate_1D_EmptyCell("EC_Empirical",aveint,qval,sigave,sigmaq,qbar,fsubs)
+	
+	
 	Print "Sample Simulation (1D) CR = ",estDetCR
 	
 	return(0)
@@ -2043,27 +2056,38 @@ End
 // -- empirical simulation of the scattering from an empty quartz cell + background (combined)
 // - there is little difference vs. the empty cell alone.
 //
-// - data was fit to the TwoLevel model, which fits rather nicely
+// - data was fit to the TwoLevel model, which fits rather nicely, or an empirical function EC_Empirical
 //
 Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	String funcStr
 	WAVE aveint,qval,sigave,sigmaq,qbar,fsubs
 
-	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength
+	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,thick
 	String coefStr,abortStr,str	
 
 	FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
 	FUNCREF SANSModelAAO_MCproto funcUnsmeared=$(funcStr)		//unsmeared
 	
-	Make/O/D root:Packages:NIST:SAS:coef_Empty = {1,1.84594,714.625,5e-08,2.63775,0.0223493,3.94009,0.0153754,1.72127,0}
-	WAVE coefW = root:Packages:NIST:SAS:coef_Empty
-	
+
 	Wave samInten=$"root:Simulation:Simulation_i"		// this will exist and send the smeared calculation to the corect DF
 	Duplicate/O samInten, root:Simulation:Simulation_EC_i
 	Wave inten_EC=$"root:Simulation:Simulation_EC_i"
 
+	if(cmpstr(funcStr,"EC_Empirical") == 0)
+		make/O/D root:Packages:NIST:SAS:coef_ECEmp = {2.2e-8,3.346,0.0065,9.0,0.016}
+		WAVE coefW = root:Packages:NIST:SAS:coef_ECEmp
+		thick = 0.1		//this works for the empirical model
+	else
+		//use the "TwoLevel" model
+		Make/O/D root:Packages:NIST:SAS:coef_Empty = {1,1.84594,714.625,5e-08,2.63775,0.0223493,3.94009,0.0153754,1.72127,0}
+		WAVE coefW = root:Packages:NIST:SAS:coef_Empty
+		// for two 1/16" quartz windows, thick = 0.32 cm
+		thick = 0.32
+	endif
+
 	// the resolution-smeared intensity of the empty cell
 	func(coefW,inten_EC,qval)
+
 
 	NVAR imon = root:Packages:NIST:SAS:gImon
 	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
@@ -2078,10 +2102,9 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 //	use local variables here for the Empty cell - maybe use globals later, if I really want to save them
 // - here, just print them out for now
-	Variable SimDetCts,estDetCR,fracScat,estTrans,mScat,thick
+	Variable SimDetCts,estDetCR,fracScat,estTrans,mScat
 	
-// for two 1/16" quartz windows, thick = 0.32 cm
-	thick = 0.32
+
 	
 	WAVE rw=root:Packages:NIST:SAS:realsRead
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
@@ -2112,7 +2135,6 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	estTrans = exp(-1*thick*sig_sas)		//thickness and sigma both in units of cm
 	mscat *= (estTrans)/(1-estTrans)
 
-	
 	Duplicate/O qval prob_i_EC,countsInAnnulus_EC
 	
 	prob_i_EC = trans*thick*(pixSize/sdd)^2*inten_EC			//probability of a neutron in q-bin(i) 
@@ -2381,39 +2403,39 @@ End
 
 
 
-//// this is a very simple example of how to script the MC simulation to run unattended
+////// this is a very simple example of how to script the MC simulation to run unattended
+////
+////  you need to supply for each "run": 	the run index (you increment manually)
+////												the sample label (as a string)
+////
+//// changing the various configuration paramters will have to be done on a case-by-case basis
+//// looking into SASCALC to see what is really changed,
+//// or the configuration parameters of the MC_SASCALC panel 
+////
+////
+//Function Script_2DMC()
 //
-//  you need to supply for each "run": 	the run index (you increment manually)
-//												the sample label (as a string)
 //
-// changing the various configuration paramters will have to be done on a case-by-case basis
-// looking into SASCALC to see what is really changed,
-// or the configuration parameters of the MC_SASCALC panel 
+//	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
+//	SimTimeWarn = 36000			//sets the threshold for the warning dialog to 10 hours
+//	STRUCT WMButtonAction ba
+//	ba.eventCode = 2			//fake mouse click on button
+//	
+//	NVAR detDist = root:Packages:NIST:SAS:gDetDist
 //
+//	detDist = 200		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
+//	
+//	detDist = 300		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=106,simLabel="this is run 106, SDD = 300")
 //
-Function Script_2DMC()
-
-
-	NVAR SimTimeWarn = root:Packages:NIST:SAS:g_SimTimeWarn
-	SimTimeWarn = 36000			//sets the threshold for the warning dialog to 10 hours
-	STRUCT WMButtonAction ba
-	ba.eventCode = 2			//fake mouse click on button
-	
-	NVAR detDist = root:Packages:NIST:SAS:gDetDist
-
-	detDist = 200		//set directly in cm
-	MC_DoItButtonProc(ba)
-	SaveAsVAXButtonProc("",runIndex=105,simLabel="this is run 105, SDD = 200")
-	
-	detDist = 300		//set directly in cm
-	MC_DoItButtonProc(ba)
-	SaveAsVAXButtonProc("",runIndex=106,simLabel="this is run 106, SDD = 300")
-
-	detDist = 400		//set directly in cm
-	MC_DoItButtonProc(ba)
-	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
-	
-
- SimTimeWarn = 10		//back to 10 seconds for manual operation
-	return(0)
-end
+//	detDist = 400		//set directly in cm
+//	MC_DoItButtonProc(ba)
+//	SaveAsVAXButtonProc("",runIndex=107,simLabel="this is run 107, SDD = 400")
+//	
+//
+// SimTimeWarn = 10		//back to 10 seconds for manual operation
+//	return(0)
+//end

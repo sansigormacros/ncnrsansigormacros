@@ -86,6 +86,8 @@ End
 // SRK OCT 2012 - processing of event mode data
 #include "EventModeProcessing"
 
+// SRK JAN 2013 - to make simulation easier
+#include "MC_SimulationScripting"
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

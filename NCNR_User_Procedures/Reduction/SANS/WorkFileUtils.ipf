@@ -534,7 +534,9 @@ Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 			domega = rad/dtdist
 			ratio = domega^3
 			xy = xx[ii]*yy[jj]
+			
 			data[ii][jj] *= xy*ratio
+			
 			solidAngle[ii][jj] = xy*ratio		//testing only	
 			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
 			
@@ -582,7 +584,7 @@ Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 				
 				data_err[ii][jj] = tmp_err
 				
-				solidAngle[ii][jj] = lat_err
+//				solidAngle[ii][jj] = lat_err
 
 				
 				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only

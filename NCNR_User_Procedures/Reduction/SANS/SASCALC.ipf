@@ -161,7 +161,11 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_detectorEff=0.75			//average value for most wavelengths
 	Variable/G root:Packages:NIST:SAS:g_actSimTime = 0				//for the save
 	Variable/G root:Packages:NIST:SAS:g_SimTimeWarn = 10			//manually set to a very large value for scripted operation
+	Variable/G root:Packages:NIST:SAS:g_estimateOnly = 0			// == 1 for just a time estimate, == 0 (default) to do the simulation
+	Variable/G root:Packages:NIST:SAS:g_estimatedMCTime		// estimated MC sim time
 	
+	PlotEC_Empirical(100,0.001,0.7)		// plot an empirical empty cell, only used for the simulation, not needed for SASCALC
+	KillTopGraphAndTable(1)					// then kill the graph and table that the macro generates
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -1213,13 +1217,15 @@ Function ReCalculateInten(doIt)
 	// now the cases are: simulation (0|1), 1D (default) or 2D (hidden)
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
 	NVAR doSimulation = root:Packages:NIST:SAS:doSimulation		// == 1 if 1D simulated data, 0 if other from the checkbox
+	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly		// == 1 for just a time estimate, == 0 (default) to do the simulation
+	NVAR g_estimatedMCTime = root:Packages:NIST:SAS:g_estimatedMCTime		// estimated MC sim time
 	SVAR funcStr = root:Packages:NIST:SAS:gFuncStr		//set by the popup
 
 	if(doSimulation == 1)
 		if(doMonteCarlo == 1)
 			//2D simulation (in MultiScatter_MonteCarlo_2D.ipf)
 			
-			Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
+			g_estimatedMCTime = Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,g_estimateOnly)
 			
 			//end 2D simulation
 		else

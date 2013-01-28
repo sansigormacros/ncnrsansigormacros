@@ -2072,7 +2072,7 @@ Function AskForAbsoluteParams_Quest()
 		PathInfo/S catPathName
 		String tempName = S_Path + FindValidFilename(filename)
 		err = GetXYBoxFromFile(tempName,x1,x2,y1,y2)		//xy's are passed/returned by reference
-		Print x1,x2,y1,y2
+//		Print x1,x2,y1,y2
 
 		if( ((x1-x2)==0) || ((y1-y2)==0) )	//need to re-select the box
 			err = SelectABS_XYBox(x1,x2,y1,y2)		//this will pause for user input
