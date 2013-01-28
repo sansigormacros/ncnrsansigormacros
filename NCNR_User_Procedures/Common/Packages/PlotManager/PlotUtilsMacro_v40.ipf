@@ -26,9 +26,9 @@ Function AddModelToStrings(funcStr,coefStr,paramStr,suffix)
 	String funcStr,coefStr,paramStr,suffix
 	
 	if(exists("root:Packages:NIST:paramKWStr")==0)
-//		String/G root:Packages:NIST:coefKWStr=""
+		String/G root:Packages:NIST:coefKWStr=""
 		String/G root:Packages:NIST:paramKWStr=""
-//		String/G root:Packages:NIST:suffixKWStr=""
+		String/G root:Packages:NIST:suffixKWStr=""
 	endif
 	SVAR coefKWStr = root:Packages:NIST:coefKWStr
 	SVAR paramKWStr = root:Packages:NIST:paramKWStr
@@ -37,6 +37,118 @@ Function AddModelToStrings(funcStr,coefStr,paramStr,suffix)
 	paramKWStr += funcStr+"="+paramStr+";"
 	suffixKWStr += funcStr+"="+suffix+";"
 end
+
+// always pass this the function string
+//
+// this is new in the 2009 release, so make sure that it generates itself as needed.
+// Two options: (1) search and construct as needed, ask for intervention if I need it.
+// (2) since I'm passed the function, try to replot it to re-run the function
+// to fill in the strings. (Being sure to save the coefficients)
+//
+// using method (1) to fill in what I need with no intervention
+//
+Function/S getFunctionParams(funcStr)
+	String funcStr
+
+	String paramStr=""
+	SVAR/Z listStr=root:Packages:NIST:paramKWStr
+
+	if(SVAR_Exists(listStr))
+		paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
+		if(strlen(paramStr)!=0)			//will drop out of loop if string can't be found
+			return(paramStr)
+		endif
+	else	//global string does not exist, create it and fill it in
+		Variable/G root:Pacakges:NIST:gReconstructStrings = 1			//coefficients old style and must be rebuilt too
+		String/G root:Packages:NIST:paramKWStr=""
+		SVAR/Z listStr=root:Packages:NIST:paramKWStr
+	endif	
+	
+	// find everything to rebuild only if the model has been plotted (if so, coefficients will exist)
+	String coef = getFunctionCoef(funcStr)
+	if(strlen(coef)==0)
+		//model not plotted, don't reconstruct, return null string
+		return(paramStr)
+	endif
+	
+	///// NEED TO BE IN PROPER DATA FOLDER FOR SMEARED FUNCTIONS
+	// FUNCTION POP MENU WILL LOOK IN ROOT OTHERWISE
+	ControlInfo/W=WrapperPanel popup_0
+	String folderStr=S_Value
+	// this if/else/endif should not ever return an error alert	
+	// it should simply set the data folder properly	
+	if(Stringmatch(funcStr,"Smear*"))		//simple test for smeared function
+		if(DataFolderExists("root:"+folderStr))
+			SetDataFolder $("root:"+folderStr)
+		else
+			SetDataFolder root:
+		endif
+	else
+		SetDataFolder root:
+	endif
+	
+	// model was plotted, find the suffix to fill in the parameter wave
+	SVAR suffListStr=root:Packages:NIST:suffixKWStr
+	String suffix = StringByKey(coef, suffListStr  ,"=",";",0)
+	
+	String paramWave = WaveList("*par*"+suffix,"","TEXT:1")		//should be one wave name, no trailing semicolon
+	listStr += funcStr+"="+paramWave+";"
+
+	//now look it up again
+	paramStr = StringByKey(funcStr, listStr  ,"=",";",0)
+
+	return(paramStr)
+End
+
+// always pass this the function string
+//
+Function/S getFunctionCoef(funcStr)
+	String funcStr
+
+	SVAR listStr=root:Packages:NIST:coefKWStr
+	String coefStr = StringByKey(funcStr, listStr  ,"=",";",0)
+
+	return(coefStr)
+End
+
+// always pass this the Function string
+//
+// does NOT return the leading "_" as part of the suffix
+// may need to set the string correctly - so lost of messing around for back-compatibility
+Function/S getModelSuffix(funcStr)
+	String funcStr
+
+	SVAR listStr=root:Packages:NIST:suffixKWStr
+	String suffixStr = StringByKey(funcStr, listStr  ,"=",";",0)
+
+	if(strlen(suffixStr) !=0)		//found it, get out
+		return(suffixStr)
+	endif
+	
+	// was the model plotted?
+	String coef = getFunctionCoef(funcStr)
+	if(strlen(coef)==0)		
+		//nothing plotted
+		return("")
+	else
+		//plotted, find the coeff
+		String suffix = StringByKey(coef, ListStr  ,"=",";",0)
+	
+		// add to the suffix list in the new style, if it was found
+		if(strlen(suffix) !=0)
+			listStr += funcStr+"="+suffix+";"
+		endif
+		return(suffix)
+	endif
+	
+	return("")
+End
+
+
+/////////////////////////////
+
+
+
 
 // loads a 1-d (ascii) datafile and plots the data
 // will overwrite existing data if user is OK with this

@@ -165,7 +165,12 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:g_estimatedMCTime		// estimated MC sim time
 	
 	PlotEC_Empirical(100,0.001,0.7)		// plot an empirical empty cell, only used for the simulation, not needed for SASCALC
-	KillTopGraphAndTable(1)					// then kill the graph and table that the macro generates
+//	KillTopGraphAndTable(1)					// then kill the graph and table that the macro generates (but the function is in Wrapper, which is often not loaded
+	String topGraph= WinName(0,1)	//this is the topmost graph	
+	String topTable= WinName(0,2)	//this is the topmost table
+	KillWindow $topGraph
+	KillWindow $topTable
+	
 	
 	//tick labels for SDD slider
 	//userTicks={tvWave,tlblWave }
@@ -1022,11 +1027,17 @@ End
 //simulation controls as a control bar that toggles on/off to the right
 //
 // depending on the state of the 2D flag, open the 1d or 2d control panel
+// AND - if doing simulation, check first that the Analysis package is loaded - otheriwse lots of errors
 Function SimCheckProc(CB_Struct) : CheckBoxControl
 	STRUCT WMCheckboxAction &CB_Struct
 
 
 	if(CB_Struct.checked)
+		if(exists("SANS_ANA_VERSION")!=2)		//if the analysis package is not loaded
+			// be sure that the SANS Analysis is loaded and compiles
+			NCNR_AnalysisLoader("Load NCNR Analysis Macros")
+		endif
+		
 		NVAR do2D = root:Packages:NIST:SAS:gDoMonteCarlo
 		
 		if((CB_Struct.eventMod & 2^1) != 0 )		//if the shift key is down (bit 1)- go to 2D mode
