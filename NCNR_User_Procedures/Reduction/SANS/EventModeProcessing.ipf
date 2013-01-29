@@ -333,7 +333,7 @@ Function EventModeHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"The help file has not been written yet"
+			DisplayHelpTopic/Z "Event Mode Data"
 			break
 		case -1: // control being killed
 			break
@@ -2171,7 +2171,7 @@ Function EC_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"The Event Correction help file has not been written yet"
+			DisplayHelpTopic/Z "Event Mode Data[Correcting for things that go wrong]"
 			break
 		case -1: // control being killed
 			break
@@ -2425,7 +2425,7 @@ Function CB_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0,"The help file for the bin editor has not been written yet"
+			DisplayHelpTopic/Z "Event Mode Data[Setting up Custom Bin Widths]"
 			break
 		case -1: // control being killed
 			break
