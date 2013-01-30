@@ -592,7 +592,7 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	// get the account, to identify the instrument
 	fileStr = pathStr + StringFromList(ii, str,",")
 	acct = getAcctName(fileStr)
-	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
+	String instr=acct[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
 	if(cmpstr(instr,"NGA")==0)
 		tol=20		//if the 10m SANS, give an extra-wide tolerance, and show an alert
 		DoAlert 0,"NGA SANS instrument. Be sure that the correct beam centers are entered for all of the plex files."
