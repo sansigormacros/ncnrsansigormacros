@@ -81,7 +81,7 @@ Proc Init_FileList()
 		// always turn off file checking for me
 		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"s*ine"))		//zero for me
 		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"ajj"))		//and zero for me
-
+		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"andrewjackson"))		//and zero for me
 		
 		// turn off file checking if the proper alias to the NCNR procedures is there
 		PathInfo igor

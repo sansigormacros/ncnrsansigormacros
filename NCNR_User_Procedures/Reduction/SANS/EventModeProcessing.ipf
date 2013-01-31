@@ -1479,6 +1479,8 @@ Function LoadEvents_XOP()
 	
 	SetDataFolder root:Packages:NIST:Event
 
+
+
 	Variable fileref
 	String buffer
 	String fileStr,tmpStr
@@ -1492,6 +1494,11 @@ Function LoadEvents_XOP()
 	
 	numLines = 0
 
+	//Have to declare local variables for Loadwave so that this compiles without XOP.
+	String S_waveNames
+	//  and those for the XOP
+	Variable V_nXYevents,V_num1,V_num2,V_num3,V_num0,V_totBytes,V_numPP,V_numT0,V_numDL,V_numFF,V_numZero
+	Variable V_numBad,V_numRemoved
 	
 	// what I really need is the number of XY events
 	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
