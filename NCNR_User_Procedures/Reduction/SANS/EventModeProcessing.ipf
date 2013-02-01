@@ -1661,7 +1661,7 @@ Proc BinEventBarGraph()
 End
 
 
-Proc ShowBinTable() : Table
+Proc ShowBinTable() 
 
 	DoWindow/F BinEventTable
 	if(V_flag == 0)
