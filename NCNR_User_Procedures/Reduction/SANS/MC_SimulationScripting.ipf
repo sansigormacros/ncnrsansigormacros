@@ -46,7 +46,22 @@
 //    effect (since the detector CR is fictionally high, and the detector is perfect):
 //
 //		Sim_SetDeadTimeTiny()
+//
+// When you have a lot of 1D waves to combine, and they are not numbered like in a real reduction
+// experiment, see:
+//
+//  MakeCombineTable_byName()
+//  DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName) (in NSORT.ipf)
+//
+// this works with 1, 2, or 3 data files
+//
 
+
+// In general, when setting up a simulation, it's easier to set up sample conditions for a particular
+// sample, and loop through the configurations. If you want your 2D data to "look" like a typical 
+// experiment, then you'll need to simulate each different sample at one configuration, then "move"
+// to a different configuration and loop through the samples again. Somewhat more cumbersome, all to 
+// get the file catalog to be "grouped" like a real SANS experiment.
 
 
 //
@@ -89,7 +104,20 @@
 //
 // -- scattering from an empty cell is NOT provided in 2D
 
-
+Menu "Macros"
+	Submenu "Simulation Scripting - Beta"
+		"Save Configuration",Sim_saveConfProc()
+		"Move to Configuration",Sim_moveConfProc()
+		"List Configurations",ListSASCALCConfigs()
+		"Setup Sim Example",Setup_Sim_Example()
+		"1D Count Rates",DryRunProc_1D()
+		"2D Dry Run",DryRunProc_2D()
+		"Optimal Count Times",OptimalCountProc()
+		"Make Table to Combine By Name",MakeCombineTable_byName()
+		"Combine by Name",DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName)
+		"Turn Off Dead Time Correction",Sim_SetDeadTimeTiny()
+	End
+End
 
 // run this before the examples to make sure that the proper named configurations exist.
 // this function will overwrite any same-named waves
@@ -108,7 +136,7 @@ End
 
 Function Example_1DSim()
 
-	String confList,ctTimeList,saveNameList,funcStr
+	String confList,ctTimeList,saveNameList,funcStr,titleStr
 	
 
 	Sim_SetSimulationType(0)		//kill the simulation panel
@@ -132,13 +160,14 @@ Function Example_1DSim()
 	
 //(3) set the configuration list, times, and saved names
 // -- the mumber of listed configurations must match the number of discrete count times and save names
+// titleStr is the label and is the same for each run of the same sample
 	confList = "Config_1m;Config_4m;Config_13m;"
 	ctTimeList = "100;300;900;"
 	saveNameList = "sim_1m.abs;sim_4m.abs;sim_13m.abs;"
-
+	titleStr = "MySample 1"
 
 	// then this runs the samples as listed
-	Sim_RunSample_1D(confList,ctTimeList,saveNameList)
+	Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
 
 	// no transmissions or empty beam measurements to make for 1D simulation
 
@@ -181,6 +210,7 @@ tic()
 	Sim_SetIncohXS(1.3)									// incoh XS
 	
 //(4) starting run index for the saved raw data files. this will automatically increment
+//    as the sample is "Run"
 	runIndex = 400
 	
 //(5) set the configuration list, times, a single sample label, and the starting run index
@@ -215,12 +245,15 @@ toc()
 End
 
 // pass in a semicolon delimited list of configurations + corresponding count times + saved names
-Function Sim_RunSample_1D(confList,ctTimeList,saveNameList)
-	String confList,ctTimeList,saveNameList
+Function Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
+	String confList,ctTimeList,titleStr,saveNameList
 	
-	Variable ii,num,ct
+	Variable ii,num,ct,cr,numPt
 	String twStr,fname,type
-	
+	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly		// == 1 for just count rate, == 0 (default) to do the simulation and save
+	WAVE/Z crWave = root:CR_1D
+	WAVE/Z/T fileWave = root:Files_1D
+
 	type = "SAS"		// since this is a simulation
 	num=ItemsInList(confList)
 	
@@ -232,8 +265,18 @@ Function Sim_RunSample_1D(confList,ctTimeList,saveNameList)
 		
 		Sim_MoveToConfiguration(tw)
 		Sim_SetCountTime(ct)
-		Sim_Do1DSimulation()
-		Sim_Save1D_wName(type,fname)
+		cr = Sim_Do1DSimulation()
+		
+		// either save it out, or return a table of the count rates
+		if(g_estimateOnly)
+			numPt = numpnts(crWave)
+			InsertPoints numPt, 1, crWave,fileWave
+			crWave[numPt] = cr
+			fileWave[numPt] = fname
+		else
+			Sim_Save1D_wName(type,titleStr,fname)		//this function will increment the runIndex
+		endif
+	
 	endfor
 
 	return(0)
@@ -356,8 +399,13 @@ Function Sim_Expt_Proto()
 	return(0)
 End
 
+Proc DryRunProc_2D(funcStr)
+	String funcStr
+	Sim_2DDryRun(funcStr)
+end
+
 // pass the function string, no parameters
-Function Sim_DryRun(funcStr)
+Function Sim_2DDryRun(funcStr)
 	String funcStr
 	
 	FUNCREF Sim_Expt_Proto func=$funcStr
@@ -374,6 +422,43 @@ Function Sim_DryRun(funcStr)
 	Printf "Total Estimated Time = %g s or %g h\r",totalTime,totalTime/3600
 end
 
+Proc DryRunProc_1D(funcStr)
+	String funcStr
+	Sim_1DDryRun(funcStr)
+end
+
+// pass the function string, no parameters
+// makes a (new) table of the files and CR
+Function Sim_1DDryRun(funcStr)
+	String funcStr
+	
+	FUNCREF Sim_Expt_Proto func=$funcStr
+	
+	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly
+	g_estimateOnly = 1
+	
+	Variable totalTime
+	
+	Make/O/D/N=0 root:CR_1D
+	Make/O/T/N=0 root:Files_1D
+	
+	totalTime = func()
+	g_estimateOnly = 0
+	
+	Edit Files_1D,CR_1D
+	
+//	Printf "Total Estimated Time = %g s or %g h\r",totalTime,totalTime/3600
+	return(0)
+end
+
+
+
+
+
+Proc OptimalCountProc(samCountRate,emptyCountRate)
+	Variable samCountRate,emptyCountRate
+	OptimalCount(samCountRate,emptyCountRate)
+End
 
 Function OptimalCount(samCR,empCR)
 	Variable samCR,empCR
@@ -599,7 +684,8 @@ End
 Function Sim_Do1DSimulation()
 
 	ReCalculateInten(1)
-	return(0)
+	NVAR estCR = root:Packages:NIST:SAS:g_1DEstDetCR
+	return(estCR)
 End
 
 // counting time (set this last - after all of the instrument moves are done AND the 
@@ -757,23 +843,27 @@ End
 // if home path exists, save there, otherwise present a dialog
 // (no sense to use catPathName, since this is simulation, not real data
 //
-Function Sim_Save1D_wName(type,fname)
-	String type,fname
+Function Sim_Save1D_wName(type,titleStr,fname)
+	String type,titleStr,fname
 	
 	String fullPath
-	
-	// fill a fake protocol to pass information to the data writer about the simulation	
-	FillFake_SIMProtocol(type)
-	
+	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
+
 	//now save the data	
 	PathInfo home
 	fullPath = S_path + fname
 	
-	WriteWaves_W_Protocol(type,fullPath,0)		//0 means no dialog
+	Save_1DSimData("",runIndex=autoSaveIndex,simLabel=titleStr,saveName=fullPath)
 	
+	autoSaveIndex += 1
 	return(0)
 End
 
+Proc Sim_saveConfProc(waveStr)
+	String waveStr
+	
+	Sim_SaveConfiguration(waveStr)
+End
 //
 // just make a wave and fill it
 // I'll keep track of what's in each element
@@ -859,6 +949,12 @@ Function Sim_SaveConfiguration(waveStr)
 	return(0)
 End
 
+Proc Sim_moveConfProc(waveStr)
+	String waveStr
+	Prompt waveStr,"Select Configuration",popup,ListSASCALCConfigs()
+	
+	Sim_MoveToConfiguration($("root:Packages:NIST:SAS:"+waveStr))
+End
 // restore the configuration given a wave of information
 //
 // be sure to recalculate the intensity after all is set
@@ -904,11 +1000,13 @@ end
 
 ///////////// a panel to (maybe) write to speed the setup of the runs
 //
-Proc ListSASCALCConfigs()
-	
+Function/S ListSASCALCConfigs()
+	String str
 	SetDataFolder root:Packages:NIST:SAS
-	Print WaveList("Conf*",";","")
+	str = WaveList("Conf*",";","")
 	SetDataFolder root:
+	print str
+	return(str)
 End
 
 Proc Sim_SetupRunPanel() : Panel

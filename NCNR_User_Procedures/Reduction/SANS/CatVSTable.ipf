@@ -604,6 +604,69 @@ Function WriteCatToNotebook(fname,sname)
 	Notebook CatWin,textRGB=(0,0,0),fStyle = 0,text=temp
 End
 
+//writes out the CATalog information to the notebook named CatWin (which must exist)
+//fname is the full path for opening (and reading) information from the file
+//which alreay was found to exist. sname is the file;vers to be written out,
+//avoiding the need to re-extract it from fname.
+//
+// this is just for 1D (not Raw) data files
+Function Write_ABSHeader_toNotebook(fname,sname)
+	String fname,sname
+	
+	String textstr,temp,lbl,date_time
+	Variable ctime,lambda,sdd,detcnt,cntrate,refNum,trans,thick
+	
+	//read the file creation date
+	date_time = getFileCreationDate(fname)
+
+	// read the sample.label text field
+	lbl = getSampleLabel(fname)
+	
+	//read the counting time (integer)
+	ctime = getCountTime(fname)
+		
+	//read the reals
+	
+	//detector count + countrate
+	detcnt = getDetCount(fname)
+	cntrate = detcnt/ctime
+	
+	//wavelength
+	lambda = getWavelength(fname)
+	
+	//SDD
+	sdd = getSDD(fname)
+	
+	//Transmission
+	trans = getSampleTrans(fname)
+	
+	//Thickness
+	thick = getSampleThickness(fname)
+		
+	temp = "FILE:  "
+	Notebook CatWin,textRGB=(0,0,0),text=temp
+	Notebook CatWin,fstyle=1,text=sname
+	temp = "\t\t"+date_time+"\r"
+	Notebook CatWin,fstyle=0,text=temp
+	temp = "LABEL: "+lbl+"\r"
+	Notebook CatWin,text=temp
+	temp = "COUNTING TIME: "+num2str(ctime)+" secs \t\tDETECTOR COUNT: "+num2str(detcnt)+"\r"
+	Notebook CatWin,text=temp
+	temp = "WAVELENGTH: "+num2str(lambda)+" A \tSDD: "+num2str(sdd)+" m \t"
+	temp += "DET. CNT. RATE: "+num2str(cntrate)+"  cts/sec\r"
+	Notebook CatWin,text=temp
+	temp = "TRANS: " 
+	Notebook CatWin,text=temp
+	temp =  num2str(trans)
+	Notebook CatWin,textRGB=(50000,0,0),fStyle = 1,text=temp
+	temp =  "\t\tTHICKNESS: "
+	Notebook CatWin,textRGB=(0,0,0),fStyle = 0,text=temp
+	temp =  num2str(thick)
+	Notebook CatWin,textRGB=(50000,0,0),fStyle = 1,text=temp
+	temp = " cm\r\r"
+	Notebook CatWin,textRGB=(0,0,0),fStyle = 0,text=temp
+End
+
 
 //****************
 // main procedure for CAT/VS Notebook ******

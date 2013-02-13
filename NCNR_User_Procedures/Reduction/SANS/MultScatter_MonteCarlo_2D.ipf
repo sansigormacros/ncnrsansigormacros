@@ -1812,25 +1812,178 @@ End
 // set up a fake protocol with the simulation results, then call one of the 
 // standard writing routines
 //
-Function Save_1DSimData(ctrlName) : ButtonControl
+Function Save_1DSimData(ctrlName,[runIndex,simLabel,saveName]) : ButtonControl
 	String ctrlName
-
-	String type="SAS",fullpath=""
-	Variable dialog=1		//=1 will present dialog for name
+	Variable runIndex
+	String simLabel
+	String saveName
 	
-	// fill a fake protocol to pass information to the data writer about the simulation
+	String type="SAS",fname=""
+	Variable dialog=1		//=1 will present dialog for name
+	Variable err
+	
+
+	// if default parameters were passed in, use them
+	// if not, set them to "bad" values so that the user will be prompted later	
+	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
+	SVAR autoSaveLabel = root:Packages:NIST:SAS:gAutoSaveLabel
+	
+	// Determine if the optional parameters were supplied
+	if( ParamIsDefault(runIndex))		//==1 if parameter was NOT specified
+		print "runIndex not specified"
+		autoSaveIndex=0					// 0 == bad value, test for this later
+	else
+		autoSaveIndex=runIndex
+	endif
+	
+	if( ParamIsDefault(simLabel))		//==1 if parameter was NOT specified
+		print "simLabel not specified"
+		autoSaveLabel=""					// "" == bad value, test for this later
+	else
+		autoSaveLabel=simLabel
+	endif
+
+	if( ParamIsDefault(saveName))		//==1 if parameter was NOT specified
+		print "saveName not specified"
+		fname=""					// "" == bad value, test for this later and ask for dialog
+	else
+		fname=saveName
+	endif
+	
+// fill a fake protocol to pass information to the data writer about the simulation
 	FillFake_SIMProtocol(type)
 
+
+// fill the last bits of the header, so that the writer can find them
+	err = Sim_Fill1DHeader(type)
+	
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 	
 	if (useXMLOutput == 1)
-		WriteXMLWaves_W_Protocol(type,"",1)
+		WriteXMLWaves_W_Protocol(type,fname,0)
 	else
-		WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+		WriteWaves_W_Protocol(type,fname,0)		//"" is an empty path, 1 will force a dialog
 	endif
 	
 	return(0)
 	
+End
+
+
+// fills the bits that would be part of the VAX header, these are read from during the 
+// save of the 1D data file
+Function Sim_Fill1DHeader(folder)
+	String folder
+
+	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1
+		return(1)
+	endif
+	
+	Wave rw=root:Packages:NIST:SAS:realsRead
+	Wave iw=root:Packages:NIST:SAS:integersRead
+	Wave/T tw=root:Packages:NIST:SAS:textRead
+	Wave res=root:Packages:NIST:SAS:results
+	
+// integers needed:
+	//[2] count time
+	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+	iw[2] = ctTime
+	
+//reals are partially set in SASCALC initializtion
+	//remaining values are updated automatically as SASCALC is modified
+	// -- but still need:
+	//	[0] monitor count
+	//	[2] detector count (w/o beamstop)
+	//	[4] transmission
+	//	[5] thickness (in cm)
+	NVAR imon = root:Packages:NIST:SAS:gImon
+//	NVAR trans1D = root:Packages:NIST:SAS:g_1DEstTrans		// this is the estimated trans from the simulation (don't use)
+	NVAR trans1D = root:Packages:NIST:SAS:gSamTrans			//this is the input value used
+	NVAR totCts = root:Packages:NIST:SAS:g_1DTotCts
+	NVAR thick = root:Packages:NIST:SAS:gThick
+	rw[0] = imon
+	rw[2] = totCts
+	rw[4] = trans1D
+	rw[5] = thick
+	
+// text values needed:
+// be sure they are padded to the correct length
+	// [0] filename (do I fake a VAX name? probably yes...)
+	// [1] date/time in VAX format
+	// [2] type (use SIM)
+	// [3] def dir (use [NG7SANS99])
+	// [4] mode? C
+	// [5] reserve (another date), prob not needed
+	// [6] sample label
+	// [9] det type "ORNL  " (6 chars)
+
+	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
+		
+	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
+	tw[2] = "SIM"
+	tw[3] = "["+gInstStr+"SANS99]"
+	tw[4] = "C"
+	tw[5] = "01JAN09 "
+	tw[9] = "ORNL  "
+	
+	
+	//get the run index and the sample label from the optional parameters, or from a dialog
+	NVAR index = root:Packages:NIST:SAS:gSaveIndex
+	SVAR prefix = root:Packages:NIST:SAS:gSavePrefix
+// did the user pass in values?
+	NVAR autoSaveIndex = root:Packages:NIST:SAS:gAutoSaveIndex
+	SVAR autoSaveLabel = root:Packages:NIST:SAS:gAutoSaveLabel
+	
+	String labelStr=""	
+	Variable runNum
+	if( (autoSaveIndex != 0) && (strlen(autoSaveLabel) > 0) )
+		// all is OK, proceed with the save
+		labelStr = autoSaveLabel
+		runNum = autoSaveIndex		//user must take care of incrementing this!
+	else
+		//one or the other, or both are missing, so ask
+		runNum = index
+		Prompt labelStr, "Enter sample label "		// Set prompt for x param
+		Prompt runNum,"Run Number (automatically increments)"
+		DoPrompt "Enter sample label", labelStr,runNum
+		if (V_Flag)
+			//Print "no sample label entered - no file written"
+			//index -=1
+			return -1								// User canceled
+		endif
+		if(runNum != index)
+			index = runNum
+		endif
+		index += 1
+	endif
+	
+
+
+	//make a three character string of the run number
+	String numStr=""
+	if(runNum<10)
+		numStr = "00"+num2str(runNum)
+	else
+		if(runNum<100)
+			numStr = "0"+num2str(runNum)
+		else
+			numStr = num2str(runNum)
+		Endif
+	Endif
+	//date()[0] is the first letter of the day of the week
+	// OK for most cases, except for an overnight simulation! then the suffix won't sort right...
+//	tw[0] = prefix+numstr+".SA2_SIM_"+(date()[0])+numStr
+
+//fancier, JAN=A, FEB=B, etc...
+	String timeStr= secs2date(datetime,-1)
+	String monthStr=StringFromList(1, timeStr  ,"/")
+
+	tw[0] = prefix+numstr+".SA2_SIM_"+(num2char(str2num(monthStr)+64))+numStr
+	
+	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
+	tw[6] = labelStr[0,59]
+	
+	return(0)
 End
 
 // type is the folder type

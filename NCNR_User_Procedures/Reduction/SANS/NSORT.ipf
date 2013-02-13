@@ -395,16 +395,16 @@ Function Plot_0_Button(ctrlName) : ButtonControl
 	if(cmpstr(ctrlName,"Plot_1")==0)
 		//low-q
 		setNum = 1
-		ControlInfo $"popup_1"
+		ControlInfo/W=NSORT_Panel popup_1
 	else
 		if(cmpstr(ctrlName,"Plot_2")==0)
 			//medium-q
 			setNum = 2
-			ControlInfo $"popup_2"
+			ControlInfo/W=NSORT_Panel popup_2
 		else
 			//high-q
 			setNum = 3
-			ControlInfo $"popup_3"
+			ControlInfo/W=NSORT_Panel popup_3
 		Endif
 	Endif
 	
@@ -533,6 +533,7 @@ Function DisplayLowSet()
 	ErrorBars/W=NSORT_Graph/T=0 $"LowQSet_i" Y,wave=($"LowQSet_s",$"LowQSet_s")
 	AppendToGraph/W=NSORT_Graph $"TrimLowQSet_i" vs $"TrimLowQSet_q"
 	ModifyGraph/W=NSORT_Graph mode($"TrimLowQSet_i")=3,marker($"TrimLowQSet_i")=19,msize=2,rgb($"TrimLowQSet_i")=(2,39321,1)
+	ModifyGraph tickUnit(left)=1
 	SetDataFolder root:
 End
 
@@ -671,7 +672,7 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 		
 	//two or more datasets, combine them
 	//have they been manually or auto-normalized?
-	ControlInfo AutoCheck
+	ControlInfo/W=NSORT_Panel AutoCheck
 	Variable checked = V_Value
 	
 	//do the normalization and update the global scale factors displayed in the Panel
@@ -924,7 +925,7 @@ Function DoAutoScaleFromPanel(auto)
 	//rescale 1-2
 	
 	//load file1
-	ControlInfo $"popup_1"
+	ControlInfo/W=NSORT_Panel popup_1
 	fileStr = S_Value
 	name1 = fileStr
 	setNum = 1
@@ -938,7 +939,7 @@ Function DoAutoScaleFromPanel(auto)
 	//////end load file1
 	
 	//load file2
-	ControlInfo $"popup_2"
+	ControlInfo/W=NSORT_Panel popup_2
 	fileStr = S_Value
 	name2 = fileStr
 	setNum = 2
@@ -952,7 +953,7 @@ Function DoAutoScaleFromPanel(auto)
 	//////end load file2
 	
 	//load file3 , if necessary
-	ControlInfo $"popup_3"
+	ControlInfo/W=NSORT_Panel popup_3
 	fileStr = S_Value
 	name3 = fileStr
 	setNum = 3
@@ -1912,4 +1913,91 @@ Function TableToCombineAndSave(clear)
 	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,Prefix,SaveName
 	
 	SetDataFolder root:
+End
+
+
+
+/////////////////////////////////
+
+Proc MakeCombineTable_byName()
+	NewDataFolder/O root:myGlobals:CombineTable			//in case it doesn't exist yet
+	Make/O/T/N=1 lowQfile,medQfile,hiQfile,saveName
+	Edit/W=(330,148,973,360) lowQfile,medQfile,hiQfile,saveName
+	ModifyTable format(Point)=1,width(lowQfile)=120,width(medQfile)=120,width(hiQfile)=120
+	ModifyTable width(saveName)=120	
+End
+
+// Another beta procedure, to allow files to be combined quickly
+// - make 4 waves (text) with the low, med, hi, and wave names
+// (if there is no hiQ, then pass a wave with "" for all entries)
+// - then pass the waves, and the save will work like in the DoCombineFiles
+//
+// - the named files must be there - there is no error checking
+// - the NSORT panel must be open with the proper selections of beg,end and autoscale, etc.
+//
+// - could write a little proc to generate a table to fill in and a button to call this
+// - and then think of quick ways to populate the table with file names (and minimize typos)
+//
+Function DoCombineFiles_byName(lowW,medW,hiW,saveW)
+	Wave/T lowW,medW,hiW,saveW
+		
+	if(WinType("NSORT_Panel") == 0)
+		DoAlert 0, "The SORT Panel must be open to combine the files"
+		return(0)
+	endif
+	
+	// pop all of the menus to make sure that they are properly populated
+	LowQPopMenuProc("",1,"")
+	MedQPopMenuProc("",1,"")
+	HighQPopMenuProc("",1,"")
+	
+	Variable num=numpnts(lowW),ii
+	String lowFile,medFile,hiFile
+	
+	Pathinfo catPathName
+	String path=S_Path
+	
+	
+// this variable must exist and be set to 1 to be able to automatically name files
+// and use the global saveNameStr that is passed in
+// -- turn this off when done	
+	Variable/G root:myGlobals:CombineTable:useTable=1		
+
+	ii=0
+	do
+		lowFile = lowW[ii]
+		medFile = medW[ii]
+		hiFile = hiW[ii]
+		
+		//Set3NSORTFiles(lowFile,medFile,hiFile,prefixStr)		//set the files and pop the NSORT popups
+		//lowQ menu
+		PopupMenu popup_1 win=NSORT_Panel,popmatch=lowFile
+		
+		// mediumQ menu
+		if(strlen(medFile)!=0)
+			PopupMenu popup_2 win=NSORT_Panel,popmatch=medFile
+		else
+			PopupMenu popup_2,win=NSORT_Panel,popmatch="none"	//set to "none"
+		endif
+	
+		//highQ (same pop list as medQ)
+		if(strlen(hiFile)!=0)
+			PopupMenu popup_3 win=NSORT_Panel,popmatch=hiFile
+		else
+			PopupMenu popup_3,win=NSORT_Panel,popmatch="none"	//set to "none"
+		endif
+		
+		
+		//pass the new file name in as a global (ugh!)
+		String/G root:myGlobals:CombineTable:SaveNameStr = path+saveW[ii]
+		//combine the files and write the data
+		WriteNSORTFileButton("")
+		
+		Print "wrote file : ",path+saveW[ii]
+		ii+=1
+	while(ii<num)
+
+	Variable/G root:myGlobals:CombineTable:useTable=0		//turn this off immediately
+	
+	return(0)
 End

@@ -1467,8 +1467,9 @@ End
 //
 // -- it's about 35x faster than the Igor code, so I guess that's OK.
 //
-//
+// conditional compile the whole inner workings in case XOP is not present
 Function LoadEvents_XOP()
+#if (exists("EventLoadWave")==4)
 	
 //	NVAR time_msw = root:Packages:NIST:gEvent_time_msw
 //	NVAR time_lsw = root:Packages:NIST:gEvent_time_lsw
@@ -1551,13 +1552,12 @@ tic()
 //		MultiThread wave2=0
 //	endif
 
-#if (exists("EventLoadWave")==4)
 	if(removeBadEvents)
 		EventLoadWave/R/N=EventWave filepathstr
 	else
 		EventLoadWave/N=EventWave  filepathstr
 	endif
-#endif
+
 
 	Print "XOP files loaded = ",S_waveNames
 
@@ -1627,7 +1627,8 @@ tic()
 	dispStr += tmpStr
 
 	SetDataFolder root:
-	
+
+#endif	
 	return(0)
 	
 End 
@@ -1677,7 +1678,7 @@ EndMacro
 
 // only show the first 1500 data points
 //
-Proc ShowRescaledTimeGraph() : Graph
+Proc ShowRescaledTimeGraph()
 
 	DoWindow/F RescaledTimeGraph
 	if(V_flag == 0)
