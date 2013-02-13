@@ -685,7 +685,7 @@ Function AskUserToKillHelp()
 	
 	//// clean up the Igor help files
 // first, kill any open help files
-// there are 5 of them
+// there are 9 of them
 	Variable numHelpFilesOpen=0
 //	do
 		numHelpFilesOpen = 0
@@ -735,6 +735,10 @@ Function AskUserToKillHelp()
 			numHelpFilesOpen += 1
 		endif		
 		
+		DisplayHelpTopic/Z "Event Mode Data"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
+		endif		
 			
 //		PauseForUser		// can't use this, it keeps you from interacting with anything....
 //	while(NumHelpFilesOpen != 0)
