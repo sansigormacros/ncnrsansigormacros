@@ -114,7 +114,7 @@ Proc S_initialize_space()
 	
 	// for the panel
 //	Variable/G root:Packages:NIST:SAS:gInst=3		//or 7 for NG7
-	String/G root:Packages:NIST:SAS:gInstStr="NG3"		//or "NG7" or "NGA"=10m or "NGB"=NG3 moved
+	String/G root:Packages:NIST:SAS:gInstStr="NG3"		//or "NG7" or "NGB"=10m or "CGB"=NG3 moved
 	Variable/G root:Packages:NIST:SAS:gNg=0
 	Variable/G root:Packages:NIST:SAS:gTable=2		//2=chamber, 1=table
 	Variable/G root:Packages:NIST:SAS:gDetDist=1000		//sample chamber to detector in cm
@@ -176,16 +176,16 @@ Proc S_initialize_space()
 	//userTicks={tvWave,tlblWave }
 	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNG3,root:Packages:NIST:SAS:tickSDDNG7
 	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNG3,root:Packages:NIST:SAS:lblSDDNG7
-	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNGA
-	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNGA
+	Make/O/D/N=5 root:Packages:NIST:SAS:tickSDDNGB
+	Make/O/T/N=5 root:Packages:NIST:SAS:lblSDDNGB
 	root:Packages:NIST:SAS:tickSDDNG3 = {133,400,700,1000,1317}
 	root:Packages:NIST:SAS:lblSDDNG3 = {"133","400","700","1000","1317"}
 	root:Packages:NIST:SAS:tickSDDNG7 = {100,450,800,1150,1530}
 	root:Packages:NIST:SAS:lblSDDNG7 = {"100","450","800","1150","1530"}
-	root:Packages:NIST:SAS:tickSDDNGA = {106,200,300,400,525}
-	root:Packages:NIST:SAS:lblSDDNGA = {"106","200","300","400","525"}
-//	root:Packages:NIST:SAS:tickSDDNGA = {106,200,300,400,500,525}
-//	root:Packages:NIST:SAS:lblSDDNGA = {"106","200","300","400","500","525"}
+	root:Packages:NIST:SAS:tickSDDNGB = {106,200,300,400,525}
+	root:Packages:NIST:SAS:lblSDDNGB = {"106","200","300","400","525"}
+//	root:Packages:NIST:SAS:tickSDDNGB = {106,200,300,400,500,525}
+//	root:Packages:NIST:SAS:lblSDDNGB = {"106","200","300","400","500","525"}
 		
 	//for the fake dependency
 	Variable/G root:Packages:NIST:SAS:gTouched=0
@@ -335,18 +335,18 @@ Function initNG7()
 end
 
 /// this is the (incomplete) definition of the 10m SANS instrument
-// on NG-B, which will be referred to as NGA here to keep the NG(number) notation
+// on NG-B, which will be referred to as NGB here to keep the NG(number) notation
 // reserving NGB for the moved NG3 instrument
 // which may be simpler here to keep functions from breaking...
 //
 // Updated 24 JAN 2013 with current flux numbers from John
 //
-Function initNGA()
+Function initNGB()
 
 	SetDataFolder root:Packages:NIST:SAS
 
-	String/G gSelectedInstrument="checkNGA"	
-	String/G gInstStr = "NGA"
+	String/G gSelectedInstrument="checkNGB"	
+	String/G gInstStr = "NGB"
 
 	Variable/G s12 = 0			//**		no difference between sample and huber position
 	Variable/G d_det = 0.508
@@ -526,8 +526,8 @@ Window SASCALC_Panel()
 	CheckBox checkHuber,value=0,mode=1
 //	-- hide/unhide the 10m SANS
 	if(show10mSANS)
-		CheckBox checkNGA,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGA"
-		CheckBox checkNGA,value=0,mode=1
+		CheckBox checkNGB,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGB"
+		CheckBox checkNGB,value=0,mode=1
 	endif
 //		
 	PopupMenu popup0,pos={6,94},size={76,20},proc=SourceAperturePopMenuProc
@@ -694,7 +694,7 @@ Function UpdateControls()
 			
 			break
 			
-		case "NGA":		// 10m SANS 
+		case "NGB":		// 10m SANS 
 			if(ng>2)
 				ng=2
 				gNg = Ng		//update the global
@@ -712,7 +712,7 @@ Function UpdateControls()
 			
 			dlStr = "0.10;0.132;0.154;0.25;"
 			Slider SC_Slider win=SASCALC,limits={0,2,1},ticks=2			//number of guides different on 10m SANS, 3 ticks
-			Slider SC_Slider_1,win=SASCALC,limits={106,525,1},userTicks={root:Packages:NIST:SAS:tickSDDNGA,root:Packages:NIST:SAS:lblSDDNGA }
+			Slider SC_Slider_1,win=SASCALC,limits={106,525,1},userTicks={root:Packages:NIST:SAS:tickSDDNGB,root:Packages:NIST:SAS:lblSDDNGB }
 			SetVariable setvar0,win=SASCALC,limits={106,525,1}
 
 			NVAR detDist=root:Packages:NIST:SAS:gDetDist
@@ -829,20 +829,20 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 		case "checkNG3":			// 
 			checkBox checkNG3,win=SASCALC, value=1
 			checkBox checkNG7,win=SASCALC, value=0
-			checkBox checkNGA,win=SASCALC, value=0
+			checkBox checkNGB,win=SASCALC, value=0
 			initNG3()
 			break						
 		case "checkNG7":			// 
 			checkBox checkNG3,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=1
-			checkBox checkNGA,win=SASCALC, value=0 
+			checkBox checkNGB,win=SASCALC, value=0 
 			initNG7()
 			break
-		case "checkNGA":		// 10m SANS
+		case "checkNGB":		// 10m SANS
 			checkBox checkNG3,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=0 
-			checkBox checkNGA,win=SASCALC, value=1
-			initNGA()
+			checkBox checkNGB,win=SASCALC, value=1
+			initNGB()
 			break
 		default:							// optional default expression executed
 									// when no case matches
@@ -956,7 +956,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				rw[28]=1		//flag for lenses in (not the true number, but OK)
 				
 				break
-			case "NGA":
+			case "NGB":
 				// 10m SANS - force no lenses for now
 				// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
 				lens = 0		//no lenses
@@ -1004,7 +1004,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		endif
 
 	// right now, if 10m instrument, no lenses allowed		
-		if(cmpstr(selInstr,"NGA") == 0)
+		if(cmpstr(selInstr,"NGB") == 0)
 			lensNotAllowed=1
 		endif
 		
@@ -2061,7 +2061,7 @@ Function sourceToSampleDist()
 //	NVAR instrument = root:Packages:NIST:SAS:instrument
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
 
-	Variable NGA_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGA
+	Variable NGB_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGB
 	
 	strswitch(selInstr)	// string switch
 		case "NG3":
@@ -2069,14 +2069,14 @@ Function sourceToSampleDist()
 			// NG3 and NG7 are both the same
 			SSD = 1632 - 155*NG - s12*(2-tableposition()) - L2Diff
 			break
-		case "NGA":
+		case "NGB":
 			// 10m SANS handled differently
 			// s12 == 0 by definition
 			// -- 16JAN13 - these are now correct values
 			if(ng==0)
 				SSD = 513 - L2diff
 			else			
-				SSD = 513 - NGA_gap - 150*NG - s12*(2-tableposition()) - L2Diff
+				SSD = 513 - NGB_gap - 150*NG - s12*(2-tableposition()) - L2Diff
 			endif
 			break
 		default:
@@ -2102,7 +2102,7 @@ Function numGuides(SSD)
 	//NVAR instrument = root:Packages:NIST:SAS:instrument
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
 
-	Variable NGA_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGA
+	Variable NGB_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGB
 
 	strswitch(selInstr)	// string switch
 		case "NG3":
@@ -2112,10 +2112,10 @@ Function numGuides(SSD)
 			Ng /= -155
 	
 			break
-		case "NGA":
+		case "NGB":
 			// 10m SANS handled differently
 			// -- 16JAN13 - these are now correct values
-			Ng = 513 - NGA_gap - SSD*100 -5
+			Ng = 513 - NGB_gap - SSD*100 -5
 			Ng /= 150
 	
 			if(ng < 0)

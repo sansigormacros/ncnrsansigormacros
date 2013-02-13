@@ -24,29 +24,33 @@ Function InitFacilityGlobals()
 	Variable/G root:myGlobals:gNPixelsY=128
 	
 	// as of Jan2008, detector pixel sizes are read directly from the file header, so they MUST
-	// be set correctly in instr.cfg
+	// be set correctly in instr.cfg - these values are not used, but declared to avoid errors
 	Variable/G root:myGlobals:PixelResNG3_ILL = 1.0		//pixel resolution in cm
 	Variable/G root:myGlobals:PixelResNG5_ILL = 1.0
 	Variable/G root:myGlobals:PixelResNG7_ILL = 1.0
 	Variable/G root:myGlobals:PixelResNG3_ORNL = 0.5
 	Variable/G root:myGlobals:PixelResNG5_ORNL = 0.5
 	Variable/G root:myGlobals:PixelResNG7_ORNL = 0.5
-//	Variable/G root:myGlobals:PixelResNGA_ORNL = 0.5
+	Variable/G root:myGlobals:PixelResNGB_ORNL = 0.5
+//	Variable/G root:myGlobals:PixelResCGB_ORNL = 0.5		// fiction
 
 	Variable/G root:myGlobals:PixelResDefault = 0.5
 	
 	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
 	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
 	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
-	Variable/G root:myGlobals:DeadtimeNGA_ILL = 4.0e-6		// fictional
+	Variable/G root:myGlobals:DeadtimeNGB_ILL = 4.0e-6		// fictional
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
 	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
-	Variable/G root:myGlobals:DeadtimeNGA_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013
+	Variable/G root:myGlobals:DeadtimeNGB_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013, best value we have for the oscillating data
+
+//	Variable/G root:myGlobals:DeadtimeCGB_ORNL_ICE = 1.5e-6		// fiction
+
 	Variable/G root:myGlobals:DeadtimeDefault = 3.4e-6
-	
+
 	//new 11APR07
 	Variable/G root:myGlobals:BeamstopXTol = -8			// (cm) is BS Xpos is -5 cm or less, it's a trans measurement
 	// sample aperture offset is NOT stored in the VAX header, but it should be
@@ -412,14 +416,16 @@ Function xDetectorPixelResolution(fileStr,detStr)
 	NVAR PixelResNG3_ILL = root:myGlobals:PixelResNG3_ILL		//pixel resolution in cm
 	NVAR PixelResNG5_ILL = root:myGlobals:PixelResNG5_ILL
 	NVAR PixelResNG7_ILL = root:myGlobals:PixelResNG7_ILL
-	NVAR PixelResNGA_ILL = root:myGlobals:PixelResNGA_ILL
+	NVAR PixelResNGB_ILL = root:myGlobals:PixelResNGB_ILL
 	NVAR PixelResNG3_ORNL = root:myGlobals:PixelResNG3_ORNL
 	NVAR PixelResNG5_ORNL = root:myGlobals:PixelResNG5_ORNL
 	NVAR PixelResNG7_ORNL = root:myGlobals:PixelResNG7_ORNL
-	NVAR PixelResNGA_ORNL = root:myGlobals:PixelResNGA_ORNL
+	NVAR PixelResNGB_ORNL = root:myGlobals:PixelResNGB_ORNL
+//	NVAR PixelResCGB_ORNL = root:myGlobals:PixelResCGB_ORNL
 	NVAR PixelResDefault = root:myGlobals:PixelResDefault
 	
 	strswitch(instr)
+		case "CGB":
 		case "NG3":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				DDet= PixelResNG3_ILL
@@ -442,10 +448,11 @@ Function xDetectorPixelResolution(fileStr,detStr)
 			endif
 			break
 		case "NGA":
+		case "NGB":
 			if(cmpstr(detStr, "ILL   ") == 0 )
-				DDet= PixelResNGA_ILL
+				DDet= PixelResNGB_ILL
 			else
-				DDet = PixelResNGA_ORNL	//detector is ordella-type
+				DDet = PixelResNGB_ORNL	//detector is ordella-type
 			endif
 			break
 		default:							
@@ -473,7 +480,7 @@ End
 //	Instrument				Date measured				deadtime constant
 //	NG3							DECEMBER 2009				1.5 microseconds
 //	NG7							APRIL2010					2.3 microseconds
-// 	NGA							JAN 2013					4 microseconds
+// 	NGB							JAN 2013					4 microseconds
 //
 //
 // The day of the switch to ICE on NG7 was 25-FEB-2010 (per J. Krzywon) 
@@ -492,13 +499,14 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
 	NVAR DeadtimeNG3_ILL = root:myGlobals:DeadtimeNG3_ILL		//pixel resolution in cm
 	NVAR DeadtimeNG5_ILL = root:myGlobals:DeadtimeNG5_ILL
 	NVAR DeadtimeNG7_ILL = root:myGlobals:DeadtimeNG7_ILL
-	NVAR DeadtimeNGA_ILL = root:myGlobals:DeadtimeNGA_ILL
+	NVAR DeadtimeNGB_ILL = root:myGlobals:DeadtimeNGB_ILL
 	NVAR DeadtimeNG3_ORNL_VAX = root:myGlobals:DeadtimeNG3_ORNL_VAX
 	NVAR DeadtimeNG3_ORNL_ICE = root:myGlobals:DeadtimeNG3_ORNL_ICE
+//	NVAR DeadtimeCGB_ORNL_ICE = root:myGlobals:DeadtimeCGB_ORNL_ICE
 	NVAR DeadtimeNG5_ORNL = root:myGlobals:DeadtimeNG5_ORNL
 	NVAR DeadtimeNG7_ORNL_VAX = root:myGlobals:DeadtimeNG7_ORNL_VAX
 	NVAR DeadtimeNG7_ORNL_ICE = root:myGlobals:DeadtimeNG7_ORNL_ICE
-	NVAR DeadtimeNGA_ORNL_ICE = root:myGlobals:DeadtimeNGA_ORNL_ICE
+	NVAR DeadtimeNGB_ORNL_ICE = root:myGlobals:DeadtimeNGB_ORNL_ICE
 	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
 	
 	// if no date string is passed, default to the ICE values
@@ -513,6 +521,7 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
 
 	
 	strswitch(instr)
+		case "CGB":
 		case "NG3":
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG3_ILL
@@ -543,12 +552,13 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
 			endif
 			break
 		case "NGA":
+		case "NGB":
 			if(cmpstr(detStr, "ILL   ") == 0 )
-				deadtime= DeadtimeNGA_ILL
+				deadtime= DeadtimeNGB_ILL
 			else
-				deadtime = DeadtimeNGA_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				deadtime = DeadtimeNGB_ORNL_ICE	//detector is ordella-type, using ICE hardware
 			endif
-			Print "Using fictional values for NGA dead time"
+//			Print "Using fictional values for NGB dead time"
 			break
 		default:							
 			//return error?
@@ -1520,72 +1530,72 @@ End
 
 // JAN 2013 -- Using John's measured values from 23 JAN 2013
 //
-// there are 13 discrete wavelengths in ngALambda = 13 (only 10 used for 30m)
+// there are 13 discrete wavelengths in NGBLambda = 13 (only 10 used for 30m)
 // there are only 9 attenuators, not 10 as in the 30m
 //
-Proc MakeNGAAttenTable()
+Proc MakeNGBAttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
 	Variable num=13		//13 needed for tables to cover 3A - 30A
 	
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt0
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt1
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt2
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt3
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt4
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt5
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt6
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt7
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt8
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt9
-//	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt0
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt1
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt2
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt3
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt4
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt5
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt6
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt7
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt8
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt9
+//	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt10
 	
 	// and a wave for the errors at each attenuation factor
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt0_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt1_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt2_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt3_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt4_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt5_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt6_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt7_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt8_err
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt9_err
-//	Make/O/N=(num) root:myGlobals:Attenuators:ngAatt10_err	
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt0_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt1_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt2_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt3_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt4_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt5_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt6_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt7_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt8_err
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt9_err
+//	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt10_err	
 	
-	//NGA wave has 13 elements, the transmission of att# at the wavelengths 
+	//NGB wave has 13 elements, the transmission of att# at the wavelengths 
 	//lambda = 3A to 30A
 	// note that some of the higher attenuations and ALL of the 30A data is interpolated
 	// none of these values are expected to be used in reality since the flux would be too low in practice
-	Make/O/N=(num) root:myGlobals:Attenuators:ngAlambda={3,4,5,6,7,8,10,12,14,17,20,25,30}
+	Make/O/N=(num) root:myGlobals:Attenuators:NGBlambda={3,4,5,6,7,8,10,12,14,17,20,25,30}
 
 // New calibration, Jan 2013 John Barker
-	root:myGlobals:Attenuators:ngAatt0 = {1,1,1,1,1,1,1,1,1,1,1,1,1}	
-	root:myGlobals:Attenuators:ngAatt1 = {0.522,0.476,0.42007,0.39298,0.36996,0.35462,0.31637,0.29422,0.27617,0.24904,0.22263,0.18525,0.15}
- 	root:myGlobals:Attenuators:ngAatt2 = {0.27046,0.21783,0.17405,0.15566,0.13955,0.1272,0.10114,0.087289,0.077363,0.063607,0.051098,0.0357,0.023}
-  	root:myGlobals:Attenuators:ngAatt3 = {0.12601,0.090906,0.064869,0.054644,0.046916,0.041169,0.028926,0.023074,0.019276,0.014244,0.01021,0.006029,0.0033}
-  	root:myGlobals:Attenuators:ngAatt4 = {0.057782,0.037886,0.024727,0.019499,0.015719,0.013041,0.0080739,0.0059418,0.0046688,0.0031064,0.0020001,0.0010049,0.0005}
-  	root:myGlobals:Attenuators:ngAatt5 = {0.026627,0.016169,0.0096679,0.0071309,0.0052982,0.0040951,0.0021809,0.001479,0.001096,0.00066564,0.00039384,0.0002,9e-05}
-  	root:myGlobals:Attenuators:ngAatt6 = {0.0091671,0.0053041,0.0029358,0.0019376,0.0013125,0.00096946,0.00042126,0.0002713,0.00019566,0.00011443,5e-05,3e-05,1.2e-05}
-  	root:myGlobals:Attenuators:ngAatt7 = {0.0017971,0.00089679,0.00040572,0.0002255,0.00013669,8.7739e-05,3.3373e-05,2.0759e-05,1.5624e-05,1e-05,8e-06,4e-06,2.1e-06}
-  	root:myGlobals:Attenuators:ngAatt8 = {0.00033646,0.00012902,4.6033e-05,2.414e-05,1.4461e-05,9.4644e-06,4.8121e-06,4e-06,3e-06,2e-06,1e-06,7e-07,3.3e-07}
-  	root:myGlobals:Attenuators:ngAatt9 = {7e-05,2e-05,8.2796e-06,4.5619e-06,3.1543e-06,2.6216e-06,8e-07,6e-07,4e-07,3e-07,2e-07,1e-07,5e-08}
-//  	root:myGlobals:Attenuators:ngAatt10 = {}
+	root:myGlobals:Attenuators:NGBatt0 = {1,1,1,1,1,1,1,1,1,1,1,1,1}	
+	root:myGlobals:Attenuators:NGBatt1 = {0.522,0.476,0.42007,0.39298,0.36996,0.35462,0.31637,0.29422,0.27617,0.24904,0.22263,0.18525,0.15}
+ 	root:myGlobals:Attenuators:NGBatt2 = {0.27046,0.21783,0.17405,0.15566,0.13955,0.1272,0.10114,0.087289,0.077363,0.063607,0.051098,0.0357,0.023}
+  	root:myGlobals:Attenuators:NGBatt3 = {0.12601,0.090906,0.064869,0.054644,0.046916,0.041169,0.028926,0.023074,0.019276,0.014244,0.01021,0.006029,0.0033}
+  	root:myGlobals:Attenuators:NGBatt4 = {0.057782,0.037886,0.024727,0.019499,0.015719,0.013041,0.0080739,0.0059418,0.0046688,0.0031064,0.0020001,0.0010049,0.0005}
+  	root:myGlobals:Attenuators:NGBatt5 = {0.026627,0.016169,0.0096679,0.0071309,0.0052982,0.0040951,0.0021809,0.001479,0.001096,0.00066564,0.00039384,0.0002,9e-05}
+  	root:myGlobals:Attenuators:NGBatt6 = {0.0091671,0.0053041,0.0029358,0.0019376,0.0013125,0.00096946,0.00042126,0.0002713,0.00019566,0.00011443,5e-05,3e-05,1.2e-05}
+  	root:myGlobals:Attenuators:NGBatt7 = {0.0017971,0.00089679,0.00040572,0.0002255,0.00013669,8.7739e-05,3.3373e-05,2.0759e-05,1.5624e-05,1e-05,8e-06,4e-06,2.1e-06}
+  	root:myGlobals:Attenuators:NGBatt8 = {0.00033646,0.00012902,4.6033e-05,2.414e-05,1.4461e-05,9.4644e-06,4.8121e-06,4e-06,3e-06,2e-06,1e-06,7e-07,3.3e-07}
+  	root:myGlobals:Attenuators:NGBatt9 = {7e-05,2e-05,8.2796e-06,4.5619e-06,3.1543e-06,2.6216e-06,8e-07,6e-07,4e-07,3e-07,2e-07,1e-07,5e-08}
+//  	root:myGlobals:Attenuators:NGBatt10 = {}
 
   // percent errors as measured, Jan 2013 values
   // zero error for zero attenuators, large values put in for unknown values (either 2% or 5%)
-	root:myGlobals:Attenuators:ngAatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-	root:myGlobals:Attenuators:ngAatt1_err = {0.12116,0.111059,0.150188,0.15168,0.174434,0.218745,0.0938678,0.144216,0.2145,0.141995,0.153655,0.157188,5}
-	root:myGlobals:Attenuators:ngAatt2_err = {0.183583,0.19981,0.278392,0.286518,0.336599,0.240429,0.190996,0.178529,0.266807,0.23608,0.221334,0.245336,5}
-	root:myGlobals:Attenuators:ngAatt3_err = {0.271054,0.326341,0.30164,0.31008,0.364188,0.296638,0.1914,0.22433,0.340313,0.307021,0.279339,0.319965,5}
-	root:myGlobals:Attenuators:ngAatt4_err = {0.333888,0.361023,0.356208,0.368968,0.437084,0.322955,0.248284,0.260956,0.402069,0.368168,0.337252,0.454958,5}
-	root:myGlobals:Attenuators:ngAatt5_err = {0.365745,0.433845,0.379735,0.394999,0.470603,0.357534,0.290938,0.291193,0.455465,0.426855,0.434639,2,5}
-	root:myGlobals:Attenuators:ngAatt6_err = {0.402066,0.470239,0.410136,0.432342,0.523241,0.389247,0.333352,0.325301,0.517036,0.539386,2,2,5}
-	root:myGlobals:Attenuators:ngAatt7_err = {0.542334,0.549954,0.45554,0.497426,0.624473,0.454971,0.432225,0.464043,0.752858,2,5,5,5}
-	root:myGlobals:Attenuators:ngAatt8_err = {0.704775,0.673556,0.537178,0.62027,0.814375,0.582449,0.662811,2,2,5,5,5,5}
-	root:myGlobals:Attenuators:ngAatt9_err = {2,2,0.583513,0.685477,0.901413,0.767115,2,5,5,5,5,5,5}
-//	root:myGlobals:Attenuators:ngAatt10_err = {}  
+	root:myGlobals:Attenuators:NGBatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:NGBatt1_err = {0.12116,0.111059,0.150188,0.15168,0.174434,0.218745,0.0938678,0.144216,0.2145,0.141995,0.153655,0.157188,5}
+	root:myGlobals:Attenuators:NGBatt2_err = {0.183583,0.19981,0.278392,0.286518,0.336599,0.240429,0.190996,0.178529,0.266807,0.23608,0.221334,0.245336,5}
+	root:myGlobals:Attenuators:NGBatt3_err = {0.271054,0.326341,0.30164,0.31008,0.364188,0.296638,0.1914,0.22433,0.340313,0.307021,0.279339,0.319965,5}
+	root:myGlobals:Attenuators:NGBatt4_err = {0.333888,0.361023,0.356208,0.368968,0.437084,0.322955,0.248284,0.260956,0.402069,0.368168,0.337252,0.454958,5}
+	root:myGlobals:Attenuators:NGBatt5_err = {0.365745,0.433845,0.379735,0.394999,0.470603,0.357534,0.290938,0.291193,0.455465,0.426855,0.434639,2,5}
+	root:myGlobals:Attenuators:NGBatt6_err = {0.402066,0.470239,0.410136,0.432342,0.523241,0.389247,0.333352,0.325301,0.517036,0.539386,2,2,5}
+	root:myGlobals:Attenuators:NGBatt7_err = {0.542334,0.549954,0.45554,0.497426,0.624473,0.454971,0.432225,0.464043,0.752858,2,5,5,5}
+	root:myGlobals:Attenuators:NGBatt8_err = {0.704775,0.673556,0.537178,0.62027,0.814375,0.582449,0.662811,2,2,5,5,5,5}
+	root:myGlobals:Attenuators:NGBatt9_err = {2,2,0.583513,0.685477,0.901413,0.767115,2,5,5,5,5,5,5}
+//	root:myGlobals:Attenuators:NGBatt10_err = {}  
   
 End
 
@@ -1688,7 +1698,7 @@ Function LookupAttenNG7(lambda,attenNo,atten_err)
 
 End
 
-//returns the transmission of the attenuator (at NGA) given the attenuator number
+//returns the transmission of the attenuator (at NGB) given the attenuator number
 //which must be an integer(to select the wave) and given the wavelength.
 //the wavelength may be any value between 3 and 30 (A), and is interpolated
 //between calibrated wavelengths for a given attenuator
@@ -1697,15 +1707,15 @@ End
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
 //
-// JAN 2013 -- now correct, NGA table has been added, allowing for 3A to 30A
+// JAN 2013 -- now correct, NGB table has been added, allowing for 3A to 30A
 //
-Function LookupAttenNGA(lambda,attenNo,atten_err)
+Function LookupAttenNGB(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
-	String attStr="root:myGlobals:Attenuators:ngAatt"+num2str(trunc(abs(attenNo)))
-	String attErrWStr="root:myGlobals:Attenuators:ngAatt"+num2str(trunc(abs(attenNo)))+"_err"
-	String lamStr = "root:myGlobals:Attenuators:ngAlambda"
+	String attStr="root:myGlobals:Attenuators:NGBatt"+num2str(trunc(abs(attenNo)))
+	String attErrWStr="root:myGlobals:Attenuators:NGBatt"+num2str(trunc(abs(attenNo)))+"_err"
+	String lamStr = "root:myGlobals:Attenuators:NGBlambda"
 	
 	if(attenNo == 0)
 		return (1)		//no attenuation, return trans == 1
@@ -1716,7 +1726,7 @@ Function LookupAttenNGA(lambda,attenNo,atten_err)
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
-		Execute "MakeNGAAttenTable()"
+		Execute "MakeNGBAttenTable()"
 	Endif
 	//just in case creating the tables fails....
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
@@ -1751,6 +1761,7 @@ Function PrintAttenuation(instr,lam,attenNo)
 	Variable atten_err, attenFactor
 	
 	strswitch(instr)
+		case "CGB":
 		case "NG3":
 			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
 			break
@@ -1762,7 +1773,8 @@ Function PrintAttenuation(instr,lam,attenNo)
 			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
-			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
+		case "NGB":
+			attenFactor = LookupAttenNGB(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?
@@ -1802,6 +1814,7 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)
 	
 	strswitch(instr)
+		case "CGB":
 		case "NG3":
 			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
 			break
@@ -1813,8 +1826,9 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
-//			Print "Using the NG7 table for NGA *** this needs to be updated ***"
-			attenFactor = LookupAttenNGA(lam,attenNo,atten_err)
+		case "NGB":
+//			Print "Using the NG7 table for NGB *** this needs to be updated ***"
+			attenFactor = LookupAttenNGB(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?

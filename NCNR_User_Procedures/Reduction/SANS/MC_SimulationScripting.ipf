@@ -104,7 +104,7 @@
 //
 // -- scattering from an empty cell is NOT provided in 2D
 
-Menu "Macros"
+xMenu "Macros"
 	Submenu "Simulation Scripting - Beta"
 		"Save Configuration",Sim_saveConfProc()
 		"Move to Configuration",Sim_moveConfProc()
@@ -490,18 +490,18 @@ Function Sim_SetDeadTimeTiny()
 //	NVAR DeadtimeNG3_ILL = root:myGlobals:DeadtimeNG3_ILL		//pixel resolution in cm
 //	NVAR DeadtimeNG5_ILL = root:myGlobals:DeadtimeNG5_ILL
 //	NVAR DeadtimeNG7_ILL = root:myGlobals:DeadtimeNG7_ILL
-//	NVAR DeadtimeNGA_ILL = root:myGlobals:DeadtimeNGA_ILL
+//	NVAR DeadtimeNGB_ILL = root:myGlobals:DeadtimeNGB_ILL
 	NVAR DeadtimeNG3_ORNL_VAX = root:myGlobals:DeadtimeNG3_ORNL_VAX
 //	NVAR DeadtimeNG3_ORNL_ICE = root:myGlobals:DeadtimeNG3_ORNL_ICE
 //	NVAR DeadtimeNG5_ORNL = root:myGlobals:DeadtimeNG5_ORNL
 	NVAR DeadtimeNG7_ORNL_VAX = root:myGlobals:DeadtimeNG7_ORNL_VAX
 //	NVAR DeadtimeNG7_ORNL_ICE = root:myGlobals:DeadtimeNG7_ORNL_ICE
-	NVAR DeadtimeNGA_ORNL_ICE = root:myGlobals:DeadtimeNGA_ORNL_ICE
+	NVAR DeadtimeNGB_ORNL_ICE = root:myGlobals:DeadtimeNGB_ORNL_ICE
 	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
 
 	DeadtimeNG3_ORNL_VAX = 1e-15
 	DeadtimeNG7_ORNL_VAX = 1e-15
-	DeadtimeNGA_ORNL_ICE = 1e-15
+	DeadtimeNGB_ORNL_ICE = 1e-15
 	DeadtimeDefault = 1e-15
 	
 	return(0)
@@ -554,7 +554,7 @@ Function Sim_SetLenses(state)
 	return(0)
 End
 
-// instrName = "checkNG3" or "checkNG7" or "checkNGA"
+// instrName = "checkNG3" or "checkNG7" or "checkNGB"
 // these are the only allowable choices
 Function Sim_SetInstrument(instrName)
 	String instrName

@@ -574,7 +574,7 @@ End
 // this is really just to flag the case where (0,0) is the "center" which causes all sorts
 // of solid angle problems when generating a DIV file.
 //
-// TODO_10m: extra-wide tolerance for NGA = 10m SANS. Once "normal" beam centers are settled, then the tolerance can be adjusted here
+// TODO_10m: extra-wide tolerance for NGB = 10m SANS. Once "normal" beam centers are settled, then the tolerance can be adjusted here
 Function CheckDIVBeamCenter(str,xc,yc)
 	String str
 	Variable xc,yc
@@ -593,9 +593,9 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	fileStr = pathStr + StringFromList(ii, str,",")
 	acct = getAcctName(fileStr)
 	String instr=acct[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
-	if(cmpstr(instr,"NGA")==0)
+	if(cmpstr(instr,"NGA")==0 || cmpstr(instr,"NGB")==0 )
 		tol=20		//if the 10m SANS, give an extra-wide tolerance, and show an alert
-		DoAlert 0,"NGA SANS instrument. Be sure that the correct beam centers are entered for all of the plex files."
+		DoAlert 0,"NGB SANS instrument. Be sure that the correct beam centers are entered for all of the plex files."
 	endif
 	
 	do
