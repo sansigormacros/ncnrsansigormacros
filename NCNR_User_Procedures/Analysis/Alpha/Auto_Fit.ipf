@@ -1564,6 +1564,7 @@ End
 Proc Compile_Reports(Number_of_Parameters)
 	Variable Number_of_Parameters=7
 	fCompile_Reports(Number_of_Parameters)
+	fCompile_ReportsTable(Number_of_Parameters)
 End
 
 Proc Compile_GlobalFit_Reports(WhichParameter,FileStr,ParamStr,ParamErrStr)
@@ -1631,6 +1632,81 @@ Function fCompile_Reports(nPar)
 	DoWindow/F Compilation
 	Notebook Compilation selection={startOfFile,startOfFile}
 End
+
+////
+// compiles the results into a table.
+Function fCompile_ReportsTable(nPar)
+	Variable nPar
+	
+	String list=WinList("*", ";", "WIN:16")
+	String item = "",textStr="",newStr="",str
+	Variable sstop,dum,chi
+	
+	Variable ii,numRep,jj,val1,val2,pt
+	numRep=ItemsInList(list,";")
+	
+	Make/O/T/N=(numRep) fittedFiles
+	Make/O/D/N=(numRep) chiSQ
+	Edit fittedFiles,chiSQ
+	
+	for(ii=0;ii<nPar;ii+=1)		//waves for the parameters
+		Make/O/D/N=(numRep) $("par"+num2str(ii)),$("par"+num2str(ii)+"_err")
+		AppendToTable $("par"+num2str(ii)),$("par"+num2str(ii)+"_err")
+	endfor
+	
+	for(jj=0;jj<numRep;jj+=1)
+
+		item=StringFromList(jj,list,";")
+		DoWindow/F $item
+		Notebook $item selection={(2,0), (3,0)}		//paragraph 3 (starts from 0) = filename
+		GetSelection notebook,$item,2
+		textStr=S_Selection
+		textStr=textStr[0,strlen(textStr)-2]		//remove CR
+		textStr=textStr[10,strlen(textStr)-1]		//remove "DATA FILE:
+		
+		fittedFiles[jj] = textStr
+//
+// results are written as:  "%s = \t%g\t±\t%g\r"
+//
+		for(ii=0;ii<nPar;ii+=1)		//gather the parameters
+			Notebook $item selection={(ii+4,0), (ii+5,0)}		//paragraph 5		= parameter 0
+			GetSelection notebook,$item,2
+			textStr=S_Selection
+			textStr=textStr[0,strlen(textStr)-2]
+			// find the "="
+			pt = strsearch(textStr,"=",0,0)
+			textStr = textStr[pt,strlen(textStr)-1]
+			sscanf textStr,"= \t%g\t ± \t%g\r",val1,val2
+			
+			Print textStr
+						
+			Wave w1 = $("par"+num2str(ii))
+			Wave w2 = $("par"+num2str(ii)+"_err")
+			
+			w1[jj] = val1
+			w2[jj] = val2
+			
+			//textStr = ReplaceString("=",textStr,"")
+			//textStr = ReplaceString("±\t",textStr,"")
+			//Notebook Compilation text=textStr+"\r"
+			//printf "%s\r",textStr
+			//Print strlen(textStr)
+		endfor
+		//get the chi-squared/N value
+		ii += 1 
+		Notebook $item selection={(ii+4,0), (ii+5,0)}		//
+		GetSelection notebook,$item,2
+		textStr=S_Selection
+		Print textStr
+		
+		sscanf textStr,"Npnts = %g\t\tSqrt(X^2/N) = %g\r",dum,chi
+		
+		chiSQ[jj] = chi	
+	endfor
+	
+	return(0)
+End
+
 
 ////
 Function fCompile_GlobalFit_Reports(nPar,Files,Param,Param_err)

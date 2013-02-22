@@ -1175,12 +1175,23 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	Notebook $nb  selection= {startOfFile, startOfFile},  findText={"", 1}
 	
 	//save the notebook and the graphic file
+	// saving with a unique name can be an issue if there are a lot of files with similar names
+	// and the fit function has a long name
 	if(yesSave)
-		String nameStr=CleanupName(func,0)
-		nameStr += "_"+dataname
+		String nameStr
+		// function first		
+//		nameStr=CleanupName(func,0)
+//		nameStr += "_"+dataname
+//		nameStr = ReplaceString("Smeared",nameStr,"Sm_")		//if Smeared function, shorten the name
+		// -- or
+		// data first
+		nameStr = dataname+"_"
+		nameStr += CleanupName(func,0)
 		nameStr = ReplaceString("Smeared",nameStr,"Sm_")		//if Smeared function, shorten the name
+
 		//make sure the name is no more than 31 characters
 		namestr = namestr[0,30]		//if shorter than 31, this will NOT pad to 31 characters
+		
 		Print "file saved as ",nameStr
 		SaveNotebook /O/P=home/S=2 $nb as nameStr
 		//save the graph separately as a PNG file, 2x screen

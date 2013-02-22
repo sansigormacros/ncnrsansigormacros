@@ -104,7 +104,7 @@
 //
 // -- scattering from an empty cell is NOT provided in 2D
 
-xMenu "Macros"
+Menu "Macros"
 	Submenu "Simulation Scripting - Beta"
 		"Save Configuration",Sim_saveConfProc()
 		"Move to Configuration",Sim_moveConfProc()

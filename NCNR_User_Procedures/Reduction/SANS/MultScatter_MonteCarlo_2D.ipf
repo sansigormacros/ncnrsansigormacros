@@ -405,6 +405,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 	r2 = inputWave[2]
 	xCtr = inputWave[3]
 	yCtr = inputWave[4]
+//	xCtr += 1
+//	yCtr += 1
 	sdd = inputWave[5]
 	pixSize = inputWave[6]
 	thick = inputWave[7]
@@ -586,7 +588,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 						// pnt2x truncates the point to an integer before returning the x
 						// so get it from the wave scaling instead
 						Q0 =left + binarysearchinterp(ran_dev,abs(enoise(1)))*delta
-						theta = Q0/2/Pi*currWavelength		//SAS approximation. 1% error at theta=30 deg (theta/2=15deg)
+//						theta = Q0/2/Pi*currWavelength		//SAS approximation. 1% error at theta=30 deg (theta/2=15deg)
+						theta = 2*asin(Q0*currWavelength/4/pi)		//exact
 						
 						//Print "q0, theta = ",q0,theta
 						
@@ -650,7 +653,7 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					
 					if(xPixel != -1 && yPixel != -1)
 						//if(index==1)  // only the single scattering events
-							if( xPixel > 127 || yPixel > 127)
+							if( xPixel > 127 || yPixel > 127 || xPixel < 0 || yPixel < 0)
 								print "error XY=",xPixel,yPixel
 							endif
 							MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
@@ -890,17 +893,24 @@ End
 
 
 
-// xCtr and yCtr here are the "optical" center of the detector ~(65,65) and the full fall due to 
+// xCtr and yCtr here are the "optical" center of the detector ~(64,64) and the full fall due to 
 // gravity is calculated from this horizontal axis
+//
+// -- be sure to subtract 1 from xCtr and yCtr here to convert to array (pixel) units. As 
+//    passed in, xCtr and yCtr are in detector coordinates
 //
 ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 	Variable testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
 
-	Variable theta,dy,dx,qx,qy
+	Variable theta,dy,dx,qx,qy,qz
+	
+	theta = 2*asin(testQ*lam/4/pi)
+	
 	//decompose to qx,qy
-	qx = testQ*cos(testPhi)
-	qy = testQ*sin(testPhi)
-
+	qx = testQ*cos(theta/2)*cos(testPhi)
+	qy = testQ*cos(theta/2)*sin(testPhi)
+	qz = testQ*sin(theta/2)
+	
 // correct qy for gravity
 // qy = 4*pi/lam * (theta/2)
 	qy += 4*pi/lam*(yg_d/sdd/2)
@@ -909,6 +919,7 @@ ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixe
 	//convert qx,qy to pixel locations relative to # of pixels x, y from center
 	theta = 2*asin(qy*lam/4/pi)
 	dy = sdd*tan(theta)
+//	dy += 
 	yPixel = round(yCtr + dy/pixSize)
 	
 	theta = 2*asin(qx*lam/4/pi)
@@ -917,6 +928,10 @@ ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixe
 
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
+	xPixel -= 1
+	yPixel -= 1
+	
 	
 	//if on detector, return xPix and yPix values, otherwise -1
 	if(yPixel >= pixelsY || yPixel < 0)
@@ -928,6 +943,55 @@ ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixe
 	
 	return(0)
 End
+
+//// xCtr and yCtr here are the "optical" center of the detector ~(64,64) and the full fall due to 
+//// gravity is calculated from this horizontal axis
+////
+//// -- be sure to subtract 1 from xCtr and yCtr here to convert to array (pixel) units. As 
+////    passed in, xCtr and yCtr are in detector coordinates
+////
+//ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
+//	Variable testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
+//
+//	Variable theta,dy,dx,qx,qy
+//	
+////	theta = 2*asin(testQ*lam/4/pi)
+//	
+//	//decompose to qx,qy
+//	qx = testQ*cos(testPhi)
+//	qy = testQ*sin(testPhi)
+//
+//// correct qy for gravity
+//// qy = 4*pi/lam * (theta/2)
+//	qy += 4*pi/lam*(yg_d/sdd/2)
+//	
+//	
+//	//convert qx,qy to pixel locations relative to # of pixels x, y from center
+//	theta = 2*asin(qy*lam/4/pi)
+//	dy = sdd*tan(theta)
+//	yPixel = round(yCtr + dy/pixSize)
+//	
+//	theta = 2*asin(qx*lam/4/pi)
+//	dx = sdd*tan(theta)
+//	xPixel = round(xCtr + dx/pixSize)
+//
+//	NVAR pixelsX = root:myGlobals:gNPixelsX
+//	NVAR pixelsY = root:myGlobals:gNPixelsY
+//	
+//	xPixel -= 1
+//	yPixel -= 1
+//	
+//	
+//	//if on detector, return xPix and yPix values, otherwise -1
+//	if(yPixel >= pixelsY || yPixel < 0)
+//		yPixel = -1
+//	endif
+//	if(xPixel >= pixelsX || xPixel < 0)
+//		xPixel = -1
+//	endif
+//	
+//	return(0)
+//End
 
 Function MC_CheckFunctionAndCoef(funcStr,coefStr)
 	String funcStr,coefStr

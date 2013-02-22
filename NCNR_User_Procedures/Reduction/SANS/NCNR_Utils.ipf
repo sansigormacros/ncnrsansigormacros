@@ -1760,6 +1760,12 @@ Function PrintAttenuation(instr,lam,attenNo)
 	
 	Variable atten_err, attenFactor
 	
+	// 22 FEB 2013 - not sure what changed with the writeout of ICE data files... but ....
+	// to account for ICE occasionally writing out "3" as 2.9998, make sure I can construct
+	// a single digit -> string "3" to identify the proper wave in the lookup table
+	
+	attenNo = round(attenNo)
+	
 	strswitch(instr)
 		case "CGB":
 		case "NG3":
@@ -1812,7 +1818,15 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	
 	Variable attenFactor=1,loc
 	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)
+
+
+	// 22 FEB 2013 - not sure what changed with the writeout of ICE data files... but ....
+	// to account for ICE occasionally writing out "3" as 2.9998, make sure I can construct
+	// a single digit -> string "3" to identify the proper wave in the lookup table
 	
+	attenNo = round(attenNo)
+	
+		
 	strswitch(instr)
 		case "CGB":
 		case "NG3":

@@ -2144,8 +2144,8 @@ Function detectorOffset()
 	NVAR val = root:Packages:NIST:SAS:gOffset
 	rw[19] = val		// already in cm
 	//move the beamcenter, make it an integer value for the MC simulation
-	rw[16] = 64  + round(2*rw[19]) + 0.5		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
-	rw[17] = 64 	+ 0.5 //typical value
+	rw[16] = 64  + round(2*rw[19]) //+ 0.5		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
+	rw[17] = 64 	//+ 0.5 //typical value
 
 	return(val)
 end

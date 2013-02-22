@@ -370,7 +370,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			
 			
 			
-		// reduce the off-center, keep in STO
+		// reduce the off-center, keep in COR
 			//patch trans
 			num = ItemsInList(gPlex_off, ",")
 			for(ii=0;ii<num;ii+=1)
@@ -392,7 +392,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			str = ParseRunNumberList(gPlexEmp_off)
 			if(strlen(str) > 0)
 				proto[1] = str
-				err = CheckDIVBeamCenter(str,105,65)
+				err = CheckDIVBeamCenter(str,110,65)
 				if(err)
 					Abort "Off-center EMP files do not have correct beam center"
 				endif
@@ -401,9 +401,9 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			endif
 			str = ParseRunNumberList(gPlex_off)
 			if(strlen(str) > 0)
-				err = CheckDIVBeamCenter(str,105,65)
+				err = CheckDIVBeamCenter(str,110,65)
 				if(err)
-					Abort "On-center EMP files do not have correct beam center"
+					Abort "Off-center PLEX files do not have correct beam center"
 				endif
 				ExecuteProtocol("root:myGlobals:Protocols:DIV_Protocol",str)
 			else
@@ -579,7 +579,7 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	String str
 	Variable xc,yc
 	
-	Variable err,ii,num,tmpX,tmpY,badCtr,tol=5
+	Variable err,ii,num,tmpX,tmpY,badCtr,tol=10
 	String fileStr,pathStr,acct
 	
 	PathInfo catPathName
@@ -591,12 +591,12 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	
 	// get the account, to identify the instrument
 	fileStr = pathStr + StringFromList(ii, str,",")
-	acct = getAcctName(fileStr)
-	String instr=acct[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
-	if(cmpstr(instr,"NGA")==0 || cmpstr(instr,"NGB")==0 )
-		tol=20		//if the 10m SANS, give an extra-wide tolerance, and show an alert
-		DoAlert 0,"NGB SANS instrument. Be sure that the correct beam centers are entered for all of the plex files."
-	endif
+//	acct = getAcctName(fileStr)
+//	String instr=acct[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
+//	if(cmpstr(instr,"NGA")==0 || cmpstr(instr,"NGB")==0 )
+//		tol=20		//if the 10m SANS, give an extra-wide tolerance, and show an alert
+//		DoAlert 0,"NGB SANS instrument. Be sure that the correct beam centers are entered for all of the plex files."
+//	endif
 	
 	do
 		fileStr = pathStr + StringFromList(ii, str,",")
