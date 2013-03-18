@@ -309,7 +309,7 @@ Window AutoFitPanel()
 //	CheckBox typeCheck,pos={207,31},size={32,14},title="NSE Data?",value=0
 //	SetVariable fitTol,pos={80,208},size={80,15},title="Fit Tol"
 //	SetVariable fitTol,limits={0.0001,0.1,0},value= root:AutoFit:fitTol
-//	CheckBox epsilonCheck,pos={180,208},size={32,14},value=0,title="Use Epsilon Wave?"
+	CheckBox epsilonCheck,pos={156,335},size={32,14},value=0,title="Use Epsilon Wave?"
 
 	TabControl tabC,pos={13,371},size={273,244},proc=tabProc,tabLabel(0)="Guess"
 	TabControl tabC,tabLabel(1)="Hold",tabLabel(2)="Constraint",tabLabel(3)="Range",value= 0
@@ -744,6 +744,10 @@ Function DoOneFit(funcStr,fileName,numPar,fileWave,ii,guessMatrix,holdMatrix,con
 	endif
 	//epsilon wave
 	epsilonStr = GetEpsilonWave()
+	if(strlen(epsilonStr) > 0)
+		Wave eps=$epsilonStr		//in the root folder
+		useEps = 1
+	endif
 	
 	//fit it
 	//these two global variables must be created for IGOR to set them, so that
@@ -1002,7 +1006,8 @@ Function/S GetEpsilonWave()
 	
 	testStr = "Epsilon_"+extStr
 	if(waveexists($testStr) != 0)
-		return(" /E="+testStr)
+//		return(" /E="+testStr)
+		return(testStr)
 	endif
 	return(retStr)
 End

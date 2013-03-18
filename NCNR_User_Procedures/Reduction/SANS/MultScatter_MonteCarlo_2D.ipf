@@ -14,7 +14,17 @@
 // at the end of the procedure fils is a *very* simple example of scripting for unattended simulations
 // - not for the casual user at all.
 
-
+//
+// - Mar 2013 - modified the 1D simulation to properly account for very low counts. In a real experiment, 2D data
+//    is collected, and there can be lots of zeros on the detector. Then averaging out to 1D, they remain zero. Arbitrarily
+//    they are assigned an error of 1. Previously, a (low) but non-zero, non-integer count value was assigned to the
+//    1D intensity. Then when noise was added, the resulting I(q) could be negative. Now the negative intensities are
+//    replaced with zero, with an error of 1 (1e-10 was previously used as the error, but this put a ridiculous
+//    weighting on that point during fitting, making any fit impossible) -- But is this correct?
+//
+// -- so take it back out for now --?? Search for MAR 2013 in Simulate_1D() - two places there
+//
+//
 
 // the RNG issue is really not worth the effort. multiple copies with different RNG is as good as I need. Plus,
 // whatever XOP crashing was happining during threading is really unlikely to be from the RNG
@@ -715,8 +725,8 @@ ThreadSafe Function Monte_SANS(inputWave,ran_dev,nt,j1,j2,nn,MC_linear_data,resu
 					
 					if(xPixel != -1 && yPixel != -1)
 						//if(index==1)  // only the single scattering events
-							if( xPixel > 127 || yPixel > 127)
-								print "error XY=",xPixel,yPixel
+							if( xPixel > 127 || yPixel > 127 || xPixel < 0 || yPixel < 0)
+								print "error XY loc2 =",xPixel,yPixel
 							endif
 							MC_linear_data[xPixel][yPixel] += 1		//this is the total scattering, including multiple scattering
 						//endif
@@ -899,51 +909,69 @@ End
 // -- be sure to subtract 1 from xCtr and yCtr here to convert to array (pixel) units. As 
 //    passed in, xCtr and yCtr are in detector coordinates
 //
+// everything passed in is in cm, excepty lam, in A
+//
 ThreadSafe Function FindPixel(testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,xPixel,yPixel)
 	Variable testQ,testPhi,lam,yg_d,sdd,pixSize,xCtr,yCtr,&xPixel,&yPixel
 
-	Variable theta,dy,dx,qx,qy,qz
+	Variable theta,dy,dx,qx,qy,qz,theta_qy,theta_qx,two_theta,dist
 	
-	theta = 2*asin(testQ*lam/4/pi)
+	two_theta = 2*asin(testQ*lam/4/pi)
 	
 	//decompose to qx,qy
-	qx = testQ*cos(theta/2)*cos(testPhi)
-	qy = testQ*cos(theta/2)*sin(testPhi)
-	qz = testQ*sin(theta/2)
+//	qx = testQ*cos(theta/2)*cos(testPhi)
+//	qy = testQ*cos(theta/2)*sin(testPhi)
+//	qz = testQ*sin(theta/2)
 	
 // correct qy for gravity
 // qy = 4*pi/lam * (theta/2)
-	qy += 4*pi/lam*(yg_d/sdd/2)
+//	qy += 4*pi/lam*(yg_d/sdd/2)
+
 	
+	dist = sdd*tan(two_theta)		//hypot in xy plane
+
+	dx = dist*cos(testPhi)
+	dy = dist*sin(testPhi)
 	
-	//convert qx,qy to pixel locations relative to # of pixels x, y from center
-	theta = 2*asin(qy*lam/4/pi)
-	dy = sdd*tan(theta)
-//	dy += 
-	yPixel = round(yCtr + dy/pixSize)
+	xPixel = dx/pixSize + xCtr
+	yPixel = dy/pixSize + yCtr + yg_d/pixSize		//shift down due to gravity
 	
-	theta = 2*asin(qx*lam/4/pi)
-	dx = sdd*tan(theta)
-	xPixel = round(xCtr + dx/pixSize)
+	xPixel = round(xPixel)
+	yPixel = round(yPixel)
+	
+//	//convert qx,qy to pixel locations relative to # of pixels x, y from center
+//	theta = 2*asin(qy*lam/4/pi)
+//	dy = sdd*tan(theta)
+//	yPixel = abs(round(yCtr + dy/pixSize))
+//	
+//	theta = 2*asin(qx*lam/4/pi)
+//	dx = sdd*tan(theta)
+//	xPixel = abs(round(xCtr + dx/pixSize))
 
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
+
+// convert the detector pixel coordinates to [0,127] before passing back...	
 	xPixel -= 1
 	yPixel -= 1
 	
 	
 	//if on detector, return xPix and yPix values, otherwise -1
-	if(yPixel >= pixelsY || yPixel < 0)
+	// > 127 or < 0 == off detector, no good
+	if(yPixel > pixelsY-1 || yPixel < 0)
 		yPixel = -1
 	endif
-	if(xPixel >= pixelsX || xPixel < 0)
+	if(xPixel > pixelsX-1 || xPixel < 0)
 		xPixel = -1
 	endif
 	
 	return(0)
 End
 
+
+//
+// this is the original version before I messed with it.
+//
 //// xCtr and yCtr here are the "optical" center of the detector ~(64,64) and the full fall due to 
 //// gravity is calculated from this horizontal axis
 ////
@@ -1599,8 +1627,8 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	ssd = sourceToSampleDist()
 	YG_d = -0.5*g*SDD*(SSD+SDD)*(wavelength/vz_1)^2		// fall in cm (negative value)
 	
-	xCtr = 64.5	 + round(2*rw[19])		// I'm always off by one for some reason, so start at 65.5?
-	yCtr = 65 + yg_d/0.5					// this will lower the beam center
+	xCtr = 64	 + round(2*rw[19])		// I'm always off by one for some reason, so start at 65.5?
+	yCtr = 64 + yg_d/0.5					// this will lower the beam center
 //	rw[16] = xCtr
 //	rw[17] = yCtr
 	
@@ -1613,7 +1641,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 		Duplicate/O linear_data,root:Packages:NIST:SAS:tmp_mask//,root:Packages:NIST:SAS:MC_linear_data
 		WAVE tmp_mask = root:Packages:NIST:SAS:tmp_mask
 		
-		tmp_mask = (sqrt((p-xCtr)^2+(q-yCtr)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
+		tmp_mask = (sqrt((p-xCtr+1)^2+(q-yCtr+1)^2) < rad) ? 0 : 1		//behind beamstop = 0, away = 1
 		
 		linear_data *= tmp_mask
 		
@@ -2206,9 +2234,16 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	// then...
 	sigave = sqrt(aveint/nCells)		// corrected based on John's memo, from 8/9/99
 	
+	
 	// add in random error in aveint based on the sigave
+	
+	/// ?? MAR 2013 do I replace the negative intensities with zero?
+	// if the resulting value is less than zero, replace with zero. This is what would happen if the
+	// data came from 2D. Then if any of the aveint points are zero, set the associated error to == 1. This is
+	// done after all of the other scaling...
 	if(addNoise)
 		aveint += gnoise(sigave)
+		aveint = (aveint[p] < 0) ? 0 : aveint[p]			// MAR 2013 -- is this the right thing to do
 	endif
 
 	// signature in the standard deviation, do this after the noise is added
@@ -2224,7 +2259,11 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 		aveint /= detectorEff
 		sigave /= detectorEff
 	endif
-				
+	
+/// ?? MAR 2013 do I replace the "zero" intensity error with 1?
+	if(addNoise)
+		sigave = (aveint[p] == 0) ? 1 : sigave[p]
+	endif			
 	
 //	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
 	Simulate_1D_EmptyCell("EC_Empirical",aveint,qval,sigave,sigmaq,qbar,fsubs)

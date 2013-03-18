@@ -295,6 +295,8 @@ Function Sim_RunEmptyBeamTrans_2D(confList,ctTimeList,titleStr,runIndex)
 	Sim_SetModelFunction("EC_Empirical")
 	cw = {1e-18,3.346,0,9,0}
 	Sim_SetIncohXS(0)									// incoh XS = 0 for empty beam
+	Sim_SetThickness(0.1)							// thickness (cm) to give proper level of scattering
+
 		
 	totalTime = Sim_RunTrans_2D(confList,ctTimeList,titleStr,runIndex)
 		
@@ -1009,9 +1011,9 @@ Function/S ListSASCALCConfigs()
 	return(str)
 End
 
-Proc Sim_SetupRunPanel() : Panel
-	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(399,44,764,386)
-	ModifyPanel cbRGB=(56639,28443,117)
-	ShowTools/A
-EndMacro
+//Proc Sim_SetupRunPanel() : Panel
+//	PauseUpdate; Silent 1		// building window...
+//	NewPanel /W=(399,44,764,386)
+//	ModifyPanel cbRGB=(56639,28443,117)
+//	ShowTools/A
+//EndMacro

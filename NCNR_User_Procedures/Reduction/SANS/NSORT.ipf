@@ -1957,6 +1957,9 @@ Function DoCombineFiles_byName(lowW,medW,hiW,saveW)
 	Pathinfo catPathName
 	String path=S_Path
 	
+////////	Make/O/D/N=(numpnts(lowW)) scale_4m
+	NVAR scale12 = root:myGlobals:NSORT:gScale1_2
+
 	
 // this variable must exist and be set to 1 to be able to automatically name files
 // and use the global saveNameStr that is passed in
@@ -1992,6 +1995,8 @@ Function DoCombineFiles_byName(lowW,medW,hiW,saveW)
 		String/G root:myGlobals:CombineTable:SaveNameStr = path+saveW[ii]
 		//combine the files and write the data
 		WriteNSORTFileButton("")
+		
+//////		scale_4m[ii] = scale12
 		
 		Print "wrote file : ",path+saveW[ii]
 		ii+=1

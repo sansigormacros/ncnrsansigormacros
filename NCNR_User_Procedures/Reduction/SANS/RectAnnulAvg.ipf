@@ -251,7 +251,8 @@ Function RectangularAverageTo1D(type)
 				aveisq = dsq[kk-1]/ncells[kk-1]
 				var = aveisq-avesq
 				if(var<=0)
-					sigave[kk-1] = small_num
+//					sigave[kk-1] = small_num
+					sigave[kk-1] = large_num		//if there are zero counts, make error large_num to be a warning flag
 				else
 					sigave[kk-1] = sqrt(var/(ncells[kk-1] - 1))
 				endif
