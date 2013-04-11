@@ -32,7 +32,7 @@ End
 #include "CheckVersionFTP"				//added June 2008
 #include "GaussUtils_v40"				//added Oct 2008 for unified file loading
 #include "BT5_AddFiles"					//Oct 2009 to add raw data files
-#include "U_KIST_Utils"					//USANS-specific initialization
+#include "KIST_USANS_Utils"					//USANS-specific initialization
 #include "KIST_Utils"					// from the SANS reduction, needed only for XML to compile
 
 

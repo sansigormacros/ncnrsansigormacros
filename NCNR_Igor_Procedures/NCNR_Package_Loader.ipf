@@ -3,30 +3,44 @@
 
 // load/unload courtesy of Jan Ilavsky
 // June 2008
-
+//
 // - SRK Oct 2008
 // rather than deleting the macros, it is preferable to simply hide the appropriate panels. 
 // deleting the ipf files will break dependencies, leave panels hanging open without
 // their associated procedures, etc.
-
+//
 // names of everything have been changed so I won't clash with Jan's code
+// - make this an independent module in case of bad compilation...?
 //
 //
-// - make this an independent module in case of bad compilation...
+// a "(" anywhere in the menuItemString will disable that menu item
+// <U underlines, <U bolds (?? maybe use these to show which is actually loaded)
+
+
 
 
 Menu "Macros"
+	"-"
 	StrVarOrDefault("root:Packages:NCNRItemStr1a","Load NCNR Analysis Macros"), NCNR_AnalysisLoader(StrVarOrDefault("root:Packages:NCNRItemStr1a","Load NCNR Analysis Macros"))
-	StrVarOrDefault("root:Packages:NCNRItemStr1b","-"), NCNR_AnalysisLoader(StrVarOrDefault("root:Packages:NCNRItemStr1b","-"))
+//	StrVarOrDefault("root:Packages:NCNRItemStr1b","-"), NCNR_AnalysisLoader(StrVarOrDefault("root:Packages:NCNRItemStr1b","-"))
 
-	StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
-	StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))
-
-	StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"))
-	StrVarOrDefault("root:Packages:NCNRItemStr3b","-"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3b","-"))
+	Submenu	"Load SANS Reduction Macros"
+		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
+//		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
+	End
+	
+	Submenu	"Load USANS Reduction Macros"
+		StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3a","Load NCNR USANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr3b","Load HANARO USANS Reduction Macros"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3b","Load HANARO USANS Reduction Macros"))
+//		StrVarOrDefault("root:Packages:NCNRItemStr3b","-"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3b","-"))
+	End
 	
 	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
-	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
+//	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
 
 	// for testing ONLY
 	"-"
@@ -36,7 +50,7 @@ Menu "Macros"
 
 	"Load Real Space Modeling - Beta",RealSpaceLoader()
 	"Event Mode Processing - Beta",EventModeLoader()
-	"-"
+//	"-"
 
 end
 
@@ -58,11 +72,6 @@ Function NCNR_AnalysisLoader(itemStr)
 	strswitch(itemStr)	// string switch
 		case "Load NCNR Analysis Macros":	
 			Execute/P "INSERTINCLUDE \"SA_Includes_v410\""
-			Execute/P "INSERTINCLUDE \"PlotUtilsMacro_v40\""
-			Execute/P "INSERTINCLUDE \"GaussUtils_v40\""
-			Execute/P "INSERTINCLUDE \"WriteModelData_v40\""
-			Execute/P "INSERTINCLUDE \"USANS_SlitSmearing_v40\""
-			Execute/P "INSERTINCLUDE \"SANSModelPicker_v40\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Init_WrapperPanel()")
 			Execute/P ("ModelPicker_Panel()")
@@ -77,11 +86,6 @@ Function NCNR_AnalysisLoader(itemStr)
 		case "Unload NCNR Analysis Macros":	
 		// very dangerous - don't really want to implement this because it will surely crash
 			Execute/P "DELETEINCLUDE \"SA_Includes_v410\""
-			Execute/P "DELETEINCLUDE \"PlotUtilsMacro_v40\""
-			Execute/P "DELETEINCLUDE \"GaussUtils_v40\""
-			Execute/P "DELETEINCLUDE \"WriteModelData_v40\""
-			Execute/P "DELETEINCLUDE \"USANS_SlitSmearing_v40\""
-			Execute/P "DELETEINCLUDE \"SANSModelPicker_v40\""
 			Execute/P "COMPILEPROCEDURES "
 			DoWindow wrapperPanel
 			if(V_Flag)
@@ -124,6 +128,12 @@ end
 
 
 // now add for the SANS Reduction
+// a = NCNR
+// b = QUOKKA
+// c = ILL
+// d = HFIR
+// e = HANARO
+//
 Function NCNR_SANSReductionLoader(itemStr)
 	String itemStr
 	
@@ -132,10 +142,17 @@ Function NCNR_SANSReductionLoader(itemStr)
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
-	String/G root:Packages:NCNRItemStr2a = itemStr
-	String/G root:Packages:NCNRItemStr2b = itemStr
+
+	String/G root:Packages:NCNRItemStr2a = "Load NCNR SANS Reduction Macros"
+	String/G root:Packages:NCNRItemStr2b = "Load QUOKKA SANS Reduction Macros"
+	String/G root:Packages:NCNRItemStr2c = "Load ILL SANS Reduction Macros"
+	String/G root:Packages:NCNRItemStr2d = "Load HFIR SANS Reduction Macros"
+	String/G root:Packages:NCNRItemStr2e = "Load HANARO SANS Reduction Macros"
 	SVAR gMenuStr2a = root:Packages:NCNRItemStr2a
 	SVAR gMenuStr2b = root:Packages:NCNRItemStr2b
+	SVAR gMenuStr2c = root:Packages:NCNRItemStr2c
+	SVAR gMenuStr2d = root:Packages:NCNRItemStr2d
+	SVAR gMenuStr2e = root:Packages:NCNRItemStr2e
 	
 	String SANSRed_WinList = "Main_Panel;CatVSTable;SANS_Data;Plot_Manager;Average_Panel;Plot_1d;CatWin;Surface_3D;FitPanel;FitWindow;"
 	SANSRed_WinList += "FitRPAPanel;SANS_Histo;drawMaskWin;Multiple_Reduce_Panel;NSORT_Panel;NSORT_Graph;CombineTable;ToCombine;Patch_Panel;"
@@ -143,58 +160,248 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SANSRed_WinList += "WorkFileMath;Pref_Panel;Subtract_1D_Panel;Plot_Sub1D;SASCALC;MC_SASCALC;Saved_Configurations;TISANE;Sim_1D_Panel;"
 	SANSRed_WinList += "Trial_Configuration;Saved_Configurations;DataArithmeticPanel;DAPlotPanel;"
 	strswitch(itemStr)	// string switch
+	
 		case "Load NCNR SANS Reduction Macros":	
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
+			// change the facility label, disable the others		
 			gMenuStr2a = "Hide NCNR SANS Reduction Macros"
-//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
-			gMenuStr2b = "-"
-			BuildMenu "Macros"
-			
-			break						
-		case "Unload NCNR SANS Reduction Macros":	
-		// very dangerous - don't really want to implement this because it will surely crash
-			Execute/P "DELETEINCLUDE \"Includes_v520\""
-			Execute/P "COMPILEPROCEDURES "
-			DoWindow Main_Panel
-			if(V_Flag)
-				DoWindow/K Main_Panel
-			endif
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("
 
-			gMenuStr2a = "Load NCNR SANS Reduction Macros"
-			gMenuStr2b = "-"
-			
 			BuildMenu "Macros"
+			break		
 			
+		case "Load QUOKKA SANS Reduction Macros":
+		Print "QUOKKA macros not in SVN yet - NCNR macros loaded instead"
+			Execute/P "INSERTINCLUDE \"Includes_v520\""
+//			Execute/P "INSERTINCLUDE \"QKK_Includes_ANSTO\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P ("Initialize()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b = "Hide QUOKKA SANS Reduction Macros"
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"
 			break
+			
+		case "Load ILL SANS Reduction Macros":
+			Execute/P "INSERTINCLUDE \"Includes_v520_ILL\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P ("Initialize()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c = "Hide ILL SANS Reduction Macros"
+			gMenuStr2d += "("
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"	
+			break
+			
+		case "Load HFIR SANS Reduction Macros":	
+			Execute/P "INSERTINCLUDE \"HFIR_Includes_v520\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P ("Initialize()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d = "Hide HFIR SANS Reduction Macros"
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"
+			break
+			
+		case "Load HANARO SANS Reduction Macros":	
+		Print "HANARO not loaded into SVN yet. NCNR is loaded"
+			Execute/P "INSERTINCLUDE \"Includes_v520\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P ("Initialize()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "Hide HANARO SANS Reduction Macros"
+
+			BuildMenu "Macros"
+			break
+						
+////////////
 		case "Hide NCNR SANS Reduction Macros":
 			HideShowWindowsInList(SANSRed_WinList,1)
-		
-			gMenuStr2a = "Show NCNR SANS Reduction Macros"
-//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
-			gMenuStr2b = "-"
-			BuildMenu "Macros"
+
+			// change the facility label, disable the others		
+			gMenuStr2a = "Show NCNR SANS Reduction Macros"			
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("			
 			
+			BuildMenu "Macros"
 			break
+			
+		case "Hide QUOKKA SANS Reduction Macros":
+			HideShowWindowsInList(SANSRed_WinList,1)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("			
+			gMenuStr2b = "Show QUOKKA SANS Reduction Macros"
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("			
+			
+			BuildMenu "Macros"
+			break			
+
+		case "Hide ILL SANS Reduction Macros":
+			HideShowWindowsInList(SANSRed_WinList,1)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("			
+			gMenuStr2b += "("
+			gMenuStr2c = "Show ILL SANS Reduction Macros"
+			gMenuStr2d += "("
+			gMenuStr2e += "("			
+			
+			BuildMenu "Macros"
+			break
+
+		case "Hide HFIR SANS Reduction Macros":
+			HideShowWindowsInList(SANSRed_WinList,1)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("			
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d = "Show HFIR SANS Reduction Macros"
+			gMenuStr2e += "("			
+			
+			BuildMenu "Macros"
+			break
+
+		case "Hide HANARO SANS Reduction Macros":
+			HideShowWindowsInList(SANSRed_WinList,1)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("			
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e = "Show HANARO SANS Reduction Macros"			
+			
+			BuildMenu "Macros"
+			break
+
+///////////////			
 		case "Show NCNR SANS Reduction Macros":	
 			HideShowWindowsInList(SANSRed_WinList,0)
-		
+
+			// change the facility label, disable the others		
 			gMenuStr2a = "Hide NCNR SANS Reduction Macros"
-//			gMenuStr2b = "Unload NCNR SANS Reduction Macros"
-			gMenuStr2b = "-"
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("
+
 			BuildMenu "Macros"
-			
 			break
+			
+		case "Show QUOKKA SANS Reduction Macros":	
+			HideShowWindowsInList(SANSRed_WinList,0)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b = "Hide QUOKKA SANS Reduction Macros"
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"
+			break
+			
+		case "Show ILL SANS Reduction Macros":	
+			HideShowWindowsInList(SANSRed_WinList,0)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c = "Hide ILL SANS Reduction Macros"
+			gMenuStr2d += "("
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"
+			break
+			
+		case "Show HFIR SANS Reduction Macros":	
+			HideShowWindowsInList(SANSRed_WinList,0)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d = "Hide HFIR SANS Reduction Macros"
+			gMenuStr2e += "("
+
+			BuildMenu "Macros"
+			break
+			
+		case "Show HANARO SANS Reduction Macros":	
+			HideShowWindowsInList(SANSRed_WinList,0)
+
+			// change the facility label, disable the others		
+			gMenuStr2a += "("
+			gMenuStr2b += "("
+			gMenuStr2c += "("
+			gMenuStr2d += "("
+			gMenuStr2e = "Hide HANARO SANS Reduction Macros"
+
+			BuildMenu "Macros"
+			break
+			
+			
+//		case "Unload NCNR SANS Reduction Macros":	
+//		// very dangerous - don't really want to implement this because it will surely crash
+//			Execute/P "DELETEINCLUDE \"Includes_v520\""
+//			Execute/P "COMPILEPROCEDURES "
+//			DoWindow Main_Panel
+//			if(V_Flag)
+//				DoWindow/K Main_Panel
+//			endif
+//
+//			gMenuStr2a = "Load NCNR SANS Reduction Macros"
+//			gMenuStr2b = "-"
+//			
+//			BuildMenu "Macros"
+//			
+//			break			
+			
 		default:
 			Abort "Invalid Menu Selection"
 	endswitch
 
 end
 
-// now add for the SANS Reduction
+// now add for the USANS Reduction
+// a = NCNR
+// b = HANARO
 Function NCNR_USANSReductionLoader(itemStr)
 	String itemStr
 	
@@ -203,8 +410,8 @@ Function NCNR_USANSReductionLoader(itemStr)
 	endif
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
-	String/G root:Packages:NCNRItemStr3a = itemStr
-	String/G root:Packages:NCNRItemStr3b = itemStr
+	String/G root:Packages:NCNRItemStr3a = "Load NCNR USANS Reduction Macros"
+	String/G root:Packages:NCNRItemStr3b = "Load HANARO USANS Reduction Macros"
 	SVAR gMenuStr3a = root:Packages:NCNRItemStr3a
 	SVAR gMenuStr3b = root:Packages:NCNRItemStr3b
 	
@@ -212,50 +419,90 @@ Function NCNR_USANSReductionLoader(itemStr)
 	
 	strswitch(itemStr)	// string switch
 		case "Load NCNR USANS Reduction Macros":	
-			Execute/P "INSERTINCLUDE \"USANS_Includes_v230\""
+			Execute/P "INSERTINCLUDE \"NCNR_USANS_Includes_v230\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("ShowUSANSPanel()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
+			// change the facility label, disable the others		
 			gMenuStr3a = "Hide NCNR USANS Reduction Macros"
-//			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
-			gMenuStr3b = "-"
-			BuildMenu "Macros"
+			gMenuStr3b += "("
 			
-			break						
-		case "Unload NCNR USANS Reduction Macros":	
-		// very dangerous - don't really want to implement this because it will surely crash
-			Execute/P "DELETEINCLUDE \"USANS_Includes_v230\""
+			BuildMenu "Macros"
+			break	
+			
+		case "Load HANARO USANS Reduction Macros":	
+			Execute/P "INSERTINCLUDE \"KIST_USANS_Includes_v230\""
 			Execute/P "COMPILEPROCEDURES "
-			DoWindow USANS_Panel
-			if(V_Flag)
-				DoWindow/K USANS_Panel
-			endif
+			Execute/P ("ShowUSANSPanel()")
+			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
-			gMenuStr3a = "Load NCNR USANS Reduction Macros"
-			gMenuStr3b = "-"
+			// change the facility label, disable the others
+			gMenuStr3a += "("
+			gMenuStr3b = "Hide HANARO USANS Reduction Macros"
 			
 			BuildMenu "Macros"
-			
-			break
+			break	
+							
+///////////////////
+
 		case "Hide NCNR USANS Reduction Macros":	
 			HideShowWindowsInList(USANS_WinList,1)	
-		
+
+			// change the facility label, disable the others		
 			gMenuStr3a = "Show NCNR USANS Reduction Macros"
-//			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
-			gMenuStr3b = "-"
+			gMenuStr3b += "("
+					
 			BuildMenu "Macros"
-			
 			break
+			
+		case "Hide HANARO USANS Reduction Macros":	
+			HideShowWindowsInList(USANS_WinList,1)	
+
+			// change the facility label, disable the others
+			gMenuStr3a += "("
+			gMenuStr3b = "Show HANARO USANS Reduction Macros"
+					
+			BuildMenu "Macros"
+			break
+
+///////////////////
 		case "Show NCNR USANS Reduction Macros":
 			HideShowWindowsInList(USANS_WinList,0)	
-			
+
+			// change the facility label, disable the others		
 			gMenuStr3a = "Hide NCNR USANS Reduction Macros"
-//			gMenuStr3b = "Unload NCNR USANS Reduction Macros"
-			gMenuStr3b = "-"
+			gMenuStr3b += "("
+						
 			BuildMenu "Macros"
-			
 			break
+			
+		case "Show HANARO USANS Reduction Macros":
+			HideShowWindowsInList(USANS_WinList,0)	
+
+			// change the facility label, disable the others	
+			gMenuStr3a += "("
+			gMenuStr3b = "Hide HANARO USANS Reduction Macros"
+						
+			BuildMenu "Macros"
+			break
+			
+			
+//		case "Unload NCNR USANS Reduction Macros":	
+//		// very dangerous - don't really want to implement this because it will surely crash
+//			Execute/P "DELETEINCLUDE \"USANS_Includes_v230\""
+//			Execute/P "COMPILEPROCEDURES "
+//			DoWindow USANS_Panel
+//			if(V_Flag)
+//				DoWindow/K USANS_Panel
+//			endif
+//
+//			gMenuStr3a = "Load NCNR USANS Reduction Macros"
+//			gMenuStr3b = "-"
+//			
+//			BuildMenu "Macros"
+//			
+//			break			
 		default:
 			Abort "Invalid Menu Selection"
 	endswitch

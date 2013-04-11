@@ -32,7 +32,7 @@ End
 #include "GaussUtils_v40"				//added Oct 2008 for unified file loading
 #include "BT5_AddFiles"					//Oct 2009 to add raw data files
 #include "NCNR_Utils"					//needed for NIST_XML
-#include "U_NCNR_Utils"					//USANS-specific initialization
+#include "NCNR_USANS_Utils"					//USANS-specific initialization
 
 
 // USANS simulation and required procedures

@@ -8,7 +8,8 @@
 Function Init_USANS_Facility()
 
 	//INSTRUMENTAL CONSTANTS 
-	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
+	// Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 3.9e-6		//Darwin FWHM	(pre- NOV 2004)
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_H = 7.59e-6		//Horizontal Divergence mhk -- 08/21/2012	
 	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gTheta_V = 0.014		//Vertical divergence	(pre- NOV 2004)
 	//Variable/G  root:Globals:MainPanel:gDomega = 2.7e-7		//Solid angle of detector (pre- NOV 2004)
 	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDomega = 7.1e-7		//Solid angle of detector (NOV 2004)
@@ -24,11 +25,12 @@ Function Init_USANS_Facility()
 	
 	
 	// to convert from angle (in degrees) to Q (in 1/Angstrom)
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
-	
+	 // Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+	     Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=2.741557e-2	 // *** for KIST-USANS, mhk -- 08/15/2012***	
 	// extension string for the raw data files
 	// -- not that the extension as specified here starts with "."
-	String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
+	//String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
+	   String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".kusan"    // mhk -- 08/15/212	
 	
 	
 	

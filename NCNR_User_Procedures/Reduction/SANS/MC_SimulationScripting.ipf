@@ -244,6 +244,63 @@ toc()
 	return(totalTime)
 End
 
+// this example was really used, run repeatedly with different count times to get
+// replicate data sets to test the overlap
+Function Example_Loop_1DSim()
+
+	String confList,ctTimeList,saveNameList,funcStr,titleStr
+	
+
+	Sim_SetSimulationType(0)		//kill the simulation panel
+	Sim_SetSimulationType(1)		//open the 1D simulation panel
+	
+//(1)	enter the (unsmeared) function name
+	funcStr = "DAB_model"
+	Wave cw = $("root:"+getFunctionCoef(funcStr))
+	Sim_SetModelFunction(funcStr)						// model function name
+		
+//(2) model coefficients here, if needed. Wave name is "cw"
+//   then set the sample thickness. Be sure to use an appropriate incoherent background in the model
+	Sim_Set1D_Transmission(0.8)						// For 1D, I need to supply the transmission
+	Sim_SetThickness(0.1)								// thickness
+	Sim_Set1D_ABS(1)										// absolute scaling (1== yes)
+	Sim_Set1D_Noise(1)									// noise (1== yes, add statistical noise)
+
+
+	cw = {1e-05,200,0}
+	
+	
+//(3) set the configuration list, times, and saved names
+// -- the mumber of listed configurations must match the number of discrete count times and save names
+// titleStr is the label and is the same for each run of the same sample
+	confList = "Config_4m;"
+	ctTimeList = ""		//filled in the loop
+	saveNameList = ""
+	titleStr = "DAB versus count time t = "
+
+	Make/O/D ctTime = {5,11,16,21,27,32,37,43,48,53,107,160,214,267,321,374,428,481,535,1604,5348,21390,53476}
+
+	Variable ii=0,nTrials=10,jj
+	
+	for(jj=0;jj<numpnts(ctTime);jj+=1)	
+		for(ii=0;ii<nTrials;ii+=1)
+			titleStr = "DAB versus count time t = "+num2str(ctTime[jj])
+			saveNameList = "DAB_4m_t"+num2str(ctTime[jj])+"_"+num2str(ii)+".abs;"
+			ctTimeList = num2str(ctTime[jj])+";"
+			// then this runs the samples as listed
+			Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
+		endfor
+	endfor
+
+	// no transmissions or empty beam measurements to make for 1D simulation
+
+	return(0)	
+End
+
+
+
+
+
 // pass in a semicolon delimited list of configurations + corresponding count times + saved names
 Function Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
 	String confList,ctTimeList,titleStr,saveNameList
