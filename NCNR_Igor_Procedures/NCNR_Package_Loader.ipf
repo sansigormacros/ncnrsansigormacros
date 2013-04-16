@@ -29,7 +29,7 @@ Menu "Macros"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"))
-		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
+//		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
 	End
 	
@@ -178,7 +178,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			break		
 			
 		case "Load QUOKKA SANS Reduction Macros":
-		Print "QUOKKA macros not in SVN yet - NCNR macros loaded instead"
+			DoAlert 0, "QUOKKA macros not in SVN yet - NCNR macros loaded instead"
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
 //			Execute/P "INSERTINCLUDE \"QKK_Includes_ANSTO\""
 			Execute/P "COMPILEPROCEDURES "
