@@ -196,7 +196,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			break
 			
 		case "Load ILL SANS Reduction Macros":
-			Execute/P "INSERTINCLUDE \"Includes_v520_ILL\""
+			Execute/P "INSERTINCLUDE \"ILL_Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
