@@ -214,6 +214,9 @@ End
 // 
 // now normalizes to the monitor counts
 //
+// 17 APR 2013 SRK - coverted the 2 degree "cutoff" to use q-values instead. Then the 
+//  location is generic and can be used for either NCNR or KUSANS
+//
 Function FindTWideCts(type)
 	String type
 	
@@ -225,16 +228,22 @@ Function FindTWideCts(type)
 	Wave detCts = $(USANSFolder+":"+type+":DetCts")
 	Wave TransCts = $(USANSFolder+":"+type+":TransCts")
 	Wave monCts = $(USANSFolder+":"+type+":MonCts")
+	Wave Qvals = $(USANSFolder+":"+type+":Qvals")
 	
 	num=numpnts(TransCts)
 
+//	FindLevel/Q/P angle,2		//use angles greater than 2 deg
+//	Print "Using angle, pt = ",V_levelX
+	
+	FindLevel/Q/P Qvals,1e-4		//use angles greater than 2 deg = 2*5.55e-5 = 1e-4 (1/A)
+	Print "Using Qval, pt = ",V_levelX
 
-	FindLevel/Q/P angle,2		//use angles greater than 2 deg
 	levNotFound=V_Flag		//V_Flag==1 if no pk found
 	
 	if(levNotFound)
 		//post a warning, and use just the last 4 points...
-		DoAlert 0,"You don't have "+type+" data past 2 degrees - so Twide may not be reliable"
+//		DoAlert 0,"You don't have "+type+" data past 2 degrees - so Twide may not be reliable"
+		DoAlert 0,"You don't have "+type+" data past 1e-4 A-1 (~2 degrees) - so Twide may not be reliable"
 		levPt = num-4
 	else
 		levPt = trunc(V_LevelX)		// in points, force to integer

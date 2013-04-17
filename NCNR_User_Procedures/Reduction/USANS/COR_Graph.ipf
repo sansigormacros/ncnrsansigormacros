@@ -110,6 +110,7 @@ Function GraphSAM()
 	list = Wavelist("DetCts_SAM*",";","WIN:COR_Graph")
 	if(strlen(list)!=0)
 		//Print "SAM already on graph"
+		SetDataFolder root:
 		return(0)
 	Endif
 	//append the data if it exists
@@ -135,6 +136,7 @@ Function GraphEMP()
 	list = Wavelist("DetCts_EMP*",";","WIN:COR_Graph")
 	if(strlen(list)!=0)
 	//	Print "EMP already on graph"
+		SetDataFolder root:
 		return(0)
 	Endif
 	//append the data if it exists
@@ -161,6 +163,7 @@ Function GraphCOR()
 	list = Wavelist("DetCts_COR*",";","WIN:COR_Graph")
 	if(strlen(list)!=0)
 	//	Print "COR already on graph"
+		SetDataFolder root:
 		return(0)
 	Endif
 	//append the data if it exists
