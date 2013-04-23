@@ -178,9 +178,9 @@ Function NCNR_SANSReductionLoader(itemStr)
 			break		
 			
 		case "Load QUOKKA SANS Reduction Macros":
-			DoAlert 0, "QUOKKA macros not in SVN yet - NCNR macros loaded instead"
-			Execute/P "INSERTINCLUDE \"Includes_v520\""
-//			Execute/P "INSERTINCLUDE \"QKK_Includes_ANSTO\""
+//			DoAlert 0, "QUOKKA macros not in SVN yet - NCNR macros loaded instead"
+//			Execute/P "INSERTINCLUDE \"Includes_v520\""
+			Execute/P "INSERTINCLUDE \"QKK_Includes_ANSTO\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
