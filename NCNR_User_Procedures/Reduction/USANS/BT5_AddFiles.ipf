@@ -841,11 +841,11 @@ Function LoadAndAddUSANS(file1,file2)
 	endif
 	
 	fname = fpath + file1
-	LoadBT5_toWave(fname,tw1,ctTime1,ang11,ang21)		//redimensions tw1
+	LoadBT5_toWave(file1,fpath,tw1,ctTime1,ang11,ang21)		//redimensions tw1
 	Print "File 1: time, angle1, angle2",ctTime1,ang11,ang21
 	
 	fname = fpath + file2
-	LoadBT5_toWave(fname,tw2,ctTime2,ang12,ang22)		//redimensions tw2
+	LoadBT5_toWave(file2,fpath,tw2,ctTime2,ang12,ang22)		//redimensions tw2
 	Print "File 2: time, angle1, angle2",ctTime2,ang12,ang22
 
 	// check if OK to add
@@ -855,16 +855,19 @@ Function LoadAndAddUSANS(file1,file2)
 	if(numpnts(tw1) != numpnts(tw2))
 		DoAlert 0,"Files are not the same length and can't be directly added"
 		//Killwaves/Z tw1,tw2,tw3
+		abort
 		return(0)
 	endif
 	if(ang11 != ang12)
 		DoAlert 0,"Files don't start at the same angle and can't be directly added"
 		//Killwaves/Z tw1,tw2,tw3
+		abort
 		return(0)
 	endif
 	if(ang21 != ang22)
 		DoAlert 0,"Files don't end at the same angle and can't be directly added"
 		//Killwaves/Z tw1,tw2,tw3
+		abort
 		return(0)
 	endif
 	
@@ -909,6 +912,7 @@ Function LoadAndAddUSANS(file1,file2)
 		if(a1 != v1)
 			DoAlert 0,"Angles don't match and can't be directly added"
 			//Killwaves/Z tw1,tw2,tw3
+			abort
 			return(0)
 		endif
 		
@@ -983,8 +987,8 @@ End
 //returns count time and start/stop angles as written in header
 // number of lines in the file is a separate check
 //
-Function LoadBT5_toWave(fname,tw,ctTime,a1,a2)
-	String fname
+Function LoadBT5_toWave(fname,fpath,tw,ctTime,a1,a2)
+	String fname,fpath
 	WAVE/T tw
 	Variable &ctTime,&a1,&a2
 	
@@ -993,7 +997,7 @@ Function LoadBT5_toWave(fname,tw,ctTime,a1,a2)
 	Variable v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16,ii,valuesRead
 	String s1,s2,s3,s4,s5,s6,s7,s8,s9,s10
 	
-	Open/R refNum as fname
+	Open/R/P=bt5PathName refNum as fname
 	
 	//read the data until EOF - assuming always a pair or lines
 	do
