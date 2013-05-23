@@ -903,7 +903,10 @@ Function CalcUSANS()
 		// -- the main issue is that the integration range is optimized for SANS, and is not useful for USANS
 		// -there are only a few points in the USANS range, and extending it lower caused issues before.
 		CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
-		
+
+		if(sig_sas > 100)
+			DoAlert 0,"SAS cross section > 100. Estimates of multiple scattering are unreliable. Choosing a model with a well-defined Rg may help"
+		endif			
 //		if(sig_sas > 100)
 //			sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
 //		endif
@@ -929,7 +932,7 @@ Function CalcUSANS()
 
 
 		Print "Sig_sas = ",sig_sas
-		
+		Print "Estimated Transmission = ",estTrans
 		
 		Duplicate/O qvals prob_i
 					

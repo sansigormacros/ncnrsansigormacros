@@ -803,6 +803,17 @@ End
 
 // returns the random deviate as a wave
 // and the total SAS cross-section [1/cm] sig_sas
+//
+// MAY 2013
+// -- now this calculation is done adaptively, with very little speed hit. When doing either the 
+// 1D SANS or USANS simulations, the longest time spent is for the re-calculation of a smeared model. Not this.
+// -- now I calculate USANS from 1e-7 to qu/100, (then qu ~ 0.05) and for SANS, qmin = 1e-4 (everything else is behind
+//    the beamstop) and is not really "seen"
+//
+// I key on the wavelength to determine if it's USANS data
+//
+// I can verify the calculation by calculating the exact SASxs for a sphere using SAS_XS_Sphere() below
+//
 Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	FUNCREF SANSModelAAO_MCproto func
 	WAVE coef
@@ -810,38 +821,59 @@ Function CalculateRandomDeviate(func,coef,lam,outWave,SASxs)
 	String outWave
 	Variable &SASxs
 
-	Variable nPts_ran=10000,qu
-	qu = 4*pi/lam		
+	Variable nPts_ran=5000,qu,qu_scale=1,SASxs_old,qmin=1e-4
+	qu = 4*pi/lam	
 	
-// hard-wired into the Simulation directory rather than the SAS folder.
-// plotting resolution-smeared models won't work any other way
-	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
-	WAVE Gq = root:Simulation:gQ
-	WAVE xw = root:Simulation:xw
-	SetScale/I x (0+1e-4),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
-
-/// if all of the coefficients are well-behaved, then the last point is the background
-// and I can set it to zero here (only for the calculation)
-	Duplicate/O coef,tmp_coef
-	Variable num=numpnts(coef)
-	tmp_coef[num-1] = 0
 	
-	xw=x												//for the AAO
-	func(tmp_coef,Gq,xw)									//call as AAO
-
-//	Gq = x*Gq													// SAS approximation
-	Gq = Gq*sin(2*asin(x/qu))/sqrt(1-(x/qu))			// exact
-	//
-	//
-	Integrate/METH=1 Gq/D=Gq_INT
+	SASxs = 0
+	do
+		nPts_ran *= 2			//first pass -- it starts at 2*5000= 10000
+		SASxs_old = SASxs		// "old" value is zero
 	
-//	SASxs = lam*lam/2/pi*Gq_INT[nPts_ran-1]			//if the approximation is used
-	SASxs = lam*Gq_INT[nPts_ran-1]
+		// make qu much smaller if it's a call from USANS. then the points are spaced to the lower values as is necessary
+		// - qu of 5.2 is way too high for USANS-sized objects
+		if(lam < 2.9 && nPts_ran > 100000)		// USANS lam = 2.4
+			qu_scale = 100
+			qmin = 1e-7
+		endif	
+		
+	// hard-wired into the Simulation directory rather than the SAS folder.
+	// plotting resolution-smeared models won't work any other way
+		Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
+		WAVE Gq = root:Simulation:gQ
+		WAVE xw = root:Simulation:xw
+		SetScale/I x (0+qmin),qu/qu_scale*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
 	
-	Gq_INT /= Gq_INT[nPts_ran-1]
+	/// if all of the coefficients are well-behaved, then the last point is the background
+	// and I can set it to zero here (only for the calculation)
+		Duplicate/O coef,tmp_coef
+		Variable num=numpnts(coef)
+		tmp_coef[num-1] = 0
+		
+		xw=x												//for the AAO
+		func(tmp_coef,Gq,xw)									//call as AAO
+	
+//		Gq = x*Gq													// SAS approximation
+		Gq = Gq*sin(2*asin(x/qu))/sqrt(1-(x/qu))			// exact
+		//
+		//
+		Integrate/METH=1 Gq/D=Gq_INT
+		
+	//	SASxs = lam*lam/2/pi*Gq_INT[nPts_ran-1]			//if the approximation is used
+		SASxs = lam*Gq_INT[nPts_ran-1]
+		
+		Gq_INT /= Gq_INT[nPts_ran-1]
+	
+//		Print "nPts_ran, SASxs = ",nPts_ran, SASxs
+		
+	while( abs((SASxs_old-SASxs)/SASxs) > 0.02 && nPts_ran < 1e6)		// allow 5% error in XS
 	
 	Duplicate/O Gq_INT $outWave
-
+	
+//	Variable realXS
+//	realXS = SAS_XS_Sphere(coef,.1,lam)
+//	Print "Analytical XS = ",realXS
+	
 	return(0)
 End
 
@@ -865,16 +897,16 @@ Function CalculateRandomDeviate_log(func,coef,lam,outWave,SASxs)
 	Variable &SASxs
 
 	Variable nPts_ran=1000,qu,qmin,ii
-	qmin=1e-5
+	qmin=1e-7
 	qu = 4*pi/lam		
 
 // hard-wired into the Simulation directory rather than the SAS folder.
 // plotting resolution-smeared models won't work any other way
-	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
-	WAVE Gq = root:Simulation:gQ
-	WAVE xw = root:Simulation:xw
+	Make/O/N=(nPts_ran)/D root:Simulation:Gq_log,root:Simulation:xw_log		// if these waves are 1000 pts, the results are "pixelated"
+	WAVE Gq_log = root:Simulation:gQ_log
+	WAVE xw_log = root:Simulation:xw_log
 //	SetScale/I x (0+1e-4),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
-	xw =  alog(log(qmin) + x*((log(qu)-log(qmin))/nPts_ran))
+	xw_log =  alog(log(qmin) + x*((log(qu)-log(qmin))/nPts_ran))
 
 /// if all of the coefficients are well-behaved, then the last point is the background
 // and I can set it to zero here (only for the calculation)
@@ -882,23 +914,67 @@ Function CalculateRandomDeviate_log(func,coef,lam,outWave,SASxs)
 	Variable num=numpnts(coef)
 	tmp_coef[num-1] = 0
 	
-	func(tmp_coef,Gq,xw)									//call as AAO
-	Gq = Gq*sin(2*asin(xw/qu))/sqrt(1-(xw/qu))			// exact
+	func(tmp_coef,Gq_log,xw_log)									//call as AAO
+	Gq_log = Gq_log*sin(2*asin(xw_log/qu))/sqrt(1-(xw_log/qu))			// exact
 
 	
-	Duplicate/O Gq Gq_INT
-	Gq_INT = 0
+	Duplicate/O Gq_log Gq_INT_log
+	Gq_INT_log = 0
 	for(ii=0;ii<nPts_ran;ii+=1)
-		Gq_INT[ii] = AreaXY(xw,Gq,qmin,xw[ii])
+		Gq_INT_log[ii] = AreaXY(xw_log,Gq_log,qmin,xw_log[ii])
 	endfor
 	
-	SASxs = lam*Gq_INT[nPts_ran-1]
+	SASxs = lam*Gq_INT_log[nPts_ran-1]
 	
-	Gq_INT /= Gq_INT[nPts_ran-1]
+	Gq_INT_log /= Gq_INT_log[nPts_ran-1]
+	
+	
+	// now, before copying back, interpolate to a linear spacing
+	nPts_ran=100000			//gobs of points
+	Make/O/N=(nPts_ran)/D root:Simulation:Gq,root:Simulation:xw		// if these waves are 1000 pts, the results are "pixelated"
+	WAVE Gq = root:Simulation:gQ
+	WAVE xw = root:Simulation:xw
+	SetScale/I x (qmin),qu*(1-1e-10),"", Gq,xw			//don't start at zero or run up all the way to qu to avoid numerical errors
+	Duplicate/O Gq,Gq_INT
+	WAVE Gq_INT = root:Gq_INT		//keeps the same scaling
+
+	Gq_INT = interp(x,xw_log,Gq_INT_log)
+	
+	
 	
 	Duplicate/O Gq_INT $outWave
 
 	return(0)
+End
+
+//
+// coef_sf must exist and be passed
+//
+Function SAS_XS_Sphere(cw,thick,lam)
+	Wave cw
+	Variable thick,lam
+	
+	Variable SASxs,rad,Rg,phi,sld_s,sld_solv,rg2,i0,uval,tau,trans
+	
+	phi = cw[0]
+	rad = cw[1]
+	sld_s = cw[2]
+	sld_solv = cw[3]
+	
+
+	i0 = 4/3*pi*rad^3*(sld_s-sld_solv)^2*phi
+	Rg2 = 3/5*rad^2
+	Uval = (thick*1e8)*i0*lam^2/Rg2  	// convert thick to A, and all cancels out
+
+	tau = 27/40/pi*uval
+	
+	SASxs = tau/thick		// keep thick in cm here, so that SASxs is in cm^-1
+	trans = exp(-tau)
+	
+	Print "SAS XS(cm^-1) = ",SASxs
+	Print "Est Trans = ",trans
+	
+	return(SASxs)
 End
 
 
@@ -2171,7 +2247,10 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	// remember that the random deviate is the coherent portion ONLY - the incoherent background is 
 	// subtracted before the calculation.
 	CalculateRandomDeviate(funcUnsmeared,$coefStr,wavelength,"root:Packages:NIST:SAS:ran_dev",sig_sas)
-	
+
+	if(sig_sas > 100)
+		DoAlert 0,"SAS cross section > 100. Estimates of multiple scattering are unreliable. Choosing a model with a well-defined Rg may help"
+	endif		
 //				if(sig_sas > 100)
 //					sprintf abortStr,"sig_sas = %g. Please check that the model coefficients have a zero background, or the low q is well-behaved.",sig_sas
 //				endif
@@ -2266,6 +2345,7 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	endif			
 	
 //	Simulate_1D_EmptyCell("TwoLevel_EC",aveint,qval,sigave,sigmaq,qbar,fsubs)
+
 	Simulate_1D_EmptyCell("EC_Empirical",aveint,qval,sigave,sigmaq,qbar,fsubs)
 	
 	

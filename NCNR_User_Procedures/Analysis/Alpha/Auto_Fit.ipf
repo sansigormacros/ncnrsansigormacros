@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
-// This was originally written 2001-2003 ish. This works very differently than SANSview, and I havne't
+// This was originally written 2001-2003 ish. This works very differently than SANSview, and I haven't
 // mentioned that this exists, so that their ideas will be new. Still, some of this may be 
 // serviceable for use within the Igor package, with some cleanup of the interface and functionality.
 //
@@ -10,37 +10,47 @@
 // to do - July 2010
 //
 // X- smeared models don't work at all (now they work)
-// -- the report is good, but the parsing is not great - the format
+// x- the report is good, but the parsing is not great - the format
 //    	could be more convenient to read back in to a table (text col, num cols (matrix that can be plotted?)
-//	-- Maybe the report could be compiled as waves. Then they would be numeric. Nothing to plot them against
+//	x- Maybe the report could be compiled as waves. Then they would be numeric. Nothing to plot them against
 //			other than file names, but with a table of values and names, one could manually enter a meaningful
 //			column of values to plot against.
-// -- Make_HoldConstraintEps_Waves() is  currently disabled, both on the macros menu and the checkbox on the panel
-//			Constraints and holds are part of the matrix already, soo this would only be for epsilon
-// -- Many of the items on the Macros menu are just junk.
+// x- Make_HoldConstraintEps_Waves() is  currently disabled, both on the macros menu and the checkbox on the panel
+//			Constraints and holds are part of the matrix already, so this would only be for epsilon
+// x- Many of the items on the Macros menu are just junk. Remove them.
 //
+// x- savePath is obsolete. Remove the button. Report saving is sent to the procedure defined in Wrapper.ipf, and uses the home path
+// x- add a checkbox for "all" to select all data files (function is already set -- CheckAllFiles())
+//
+// x- make it easy for the user to save the results in a whole table.
+// x- remind to rename the results (or move to a folder?) before another batch is run
+// x- what to plot against?
+//
+// x- add a little text box of explanation on each of the tabs at the bottom - to give simple
+//    instructions of what to do on each tab. This will need to change with each tab.
+//
+// x- need a help button to link to the help file
 // -- Comprehensive instructions (after features are finalized)
-//
-// -- savePath seems to be obsolete. Report saving is sent to the procedure defined in Wrapper.ipf, and uses the home path
-//
+
 
 
 Menu "Macros"
-	SubMenu "Auto-Fit"
-		"InitializeAutoFitPanel"
+	SubMenu "Auto Fit"
+		"Initialize AutoFit Panel"
 		"-"
-		"Generate_Data_Checklist"
+//		"Generate_Data_Checklist"
 //		"Make_HoldConstraintEps_Waves"		//this is currently disabled
+//		"-"
+//		"CompileAndLoadReports"
+		"Compile_Reports"
+		"Load Compiled Reports"
+//		"Compile_GlobalFit_Reports"
 		"-"
-		"CompileAndLoadReports"
-		"LoadCompiledReports"
-		"Compile_GlobalFit_Reports"
-		"-"
-		"PrintOpenNotebooks"
 		"Close Open Notebooks"
+		"Print Open Notebooks"
 		"-"
-		"Generate_PICTS_list"
-		"Layout_PICTS"
+		"Generate_PNG_list"
+		"Layout_PNGs"
 		
 	End
 End
@@ -105,6 +115,23 @@ Function FileListButtonProc(ctrlName) : ButtonControl
 	
 	return(0)
 End
+
+
+//currently set up to toggle state, based on the first row
+//
+Function CheckAllFiles(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	WAVE sel = root:AutoFit:fileSelWave
+	if( (sel[0][1] & 0x10) == 16 ) //first box is checked
+		sel[][1] = 2^5			// uncheck them all
+	else
+		sel[][1] = 2^5 + 2^4		//bit 5== checkbox, bit 4== checked
+	endif
+	return(0)
+End
+
 
 // 
 // this re-sizes AND re-initializes the guessMatrix
@@ -263,12 +290,18 @@ Function InitializeAutoFit()
 	Make/O/T/N=(1,1) guessMatrix,holdMatrix,rangeMatrix			//guesses, etc... need real values (later)
 	Make/O/T/N=(1,1) constrMatrix					//constraint matrix is text
 	Make/O/B/N=1 guessSel,holdSel,ConstrSel,rangeSel						//SelWave is byte data
-	Variable/G numPar=5,ptLow=0,ptHigh=0,fitTol=1e-3,curProgress=0,endProgress=10
+	Variable/G numPar=0,ptLow=0,ptHigh=0,fitTol=1e-3,curProgress=0,endProgress=10
 	Variable/G startTicks=0
 	
 	String/G gStatFormat="\K(65535,0,0)\f01"
 	String/G gStatus=gStatFormat+"the fit engine is currently idle"
 	string/g gExt="ABC"
+	
+	String/G guessStr = "Guess is based on\rthe unsmeared\rcoefficients on the\rCurve Fit Setup\rpanel"
+	String/G holdStr = "Enter 0 to fit\rEnter 1 to hold"
+	String/G constStr = "Enter low and\rhigh range as:\rlow;high\rfor each parameter\rLeave blank if\rno constraints"
+	String/G rangeStr = "Enter the point\rrange as:\rfirst pt in 1st row\rlast pt in 2nd row\rLeave blank to\r fit all data"
+	
 	
 	fileListWave = ""
 	
@@ -296,15 +329,17 @@ Window AutoFitPanel()
 	
 //	Button DelButton,pos={245,61},size={40,20},proc=DelButtonProc,title="Del",disable=2
 	Button PathButton,pos={6,61},size={50,20},proc=PDPButton,title="Path..."
-	Button FileListButton,pos={182,61},size={50,20},proc=FileListButtonProc,title="List"
-	ListBox guessBox,pos={24,398},size={139,208},disable=1,proc=UpdateGuessMatrixProc
+	Button FileListButton,pos={82,61},size={50,20},proc=FileListButtonProc,title="List"
+	CheckBox AllFilesCheck,pos={182,64},size={32,14},proc=CheckAllFiles,title="Select All Files"
+	CheckBox AllFilesCheck,value= 0
+	ListBox guessBox,pos={24,398},size={145,208},disable=1,proc=UpdateGuessMatrixProc
 	ListBox guessBox,frame=2,listWave=root:AutoFit:guessList
 	ListBox guessBox,selWave=root:AutoFit:guessSel,mode= 2,selRow= 0
 	Button FillAllGuessButton,pos={196,406},size={50,20},disable=1,proc=FillAllGuessButtonProc,title="Fill All"
 	Button FillAllHoldButton,pos={196,406},size={50,20},disable=1,proc=FillAllHoldButtonProc,title="Fill All"
 	Button FillAllConstrButton,pos={196,406},size={50,20},proc=FillAllConstrButtonProc,title="Fill All"
 	Button FillAllRangeB,pos={196,406},size={50,20},disable=1,proc=FillAllRangeButtonProc,title="Fill All"
-	SetVariable NumParams,pos={7,31},size={161,15},proc=SetNumParamProc,title="Number of Parameters"
+	SetVariable NumParams,pos={7,34},size={150,15},proc=SetNumParamProc,title="Number of Parameters"
 	SetVariable NumParams,limits={2,Inf,0},value= root:AutoFit:numPar
 //	CheckBox typeCheck,pos={207,31},size={32,14},title="NSE Data?",value=0
 //	SetVariable fitTol,pos={80,208},size={80,15},title="Fit Tol"
@@ -315,22 +350,23 @@ Window AutoFitPanel()
 	TabControl tabC,tabLabel(1)="Hold",tabLabel(2)="Constraint",tabLabel(3)="Range",value= 0
 //	CheckBox rangeCheck,pos={92,404},size={32,14},proc=RangeCheckProc,title="All"
 //	CheckBox rangeCheck,value= 1,disable=2
+
 	SetVariable lowPt,pos={136,404},size={60,15},title="low"
 	SetVariable lowPt,limits={0,Inf,0},value= root:AutoFit:ptLow,noedit=1,disable=1
 	SetVariable highPt,pos={201,404},size={60,15},title=" to "
 	SetVariable highPt,limits={0,Inf,0},value= root:AutoFit:ptHigh,noedit=1,disable=1
-	ListBox holdBox,pos={24,398},size={139,208},disable=1,proc=UpdateHoldMatrixProc
+	ListBox holdBox,pos={24,398},size={145,208},disable=1,proc=UpdateHoldMatrixProc
 	ListBox holdBox,frame=2,listWave=root:AutoFit:holdList
 	ListBox holdBox,selWave=root:AutoFit:holdSel,mode= 2,selRow= 2
-	ListBox ConstrBox,pos={24,398},size={170,208},proc=UpdateConstrMatrixProc
+	ListBox ConstrBox,pos={24,398},size={145,208},proc=UpdateConstrMatrixProc
 	ListBox ConstrBox,frame=2,listWave=root:AutoFit:ConstrList
 	ListBox ConstrBox,selWave=root:AutoFit:ConstrSel,mode= 2,selRow= 2
-	ListBox RangeBox,pos={24,398},size={139,208},proc=UpdateRangeMatrixProc
+	ListBox RangeBox,pos={24,398},size={145,208},proc=UpdateRangeMatrixProc
 	ListBox RangeBox,frame=2,listWave=root:AutoFit:rangeList
 	ListBox RangeBox,selWave=root:AutoFit:RangeSel,mode= 2,selRow= 2
 //	Button MatrixButton,pos={12,205},size={60,20},proc=ToMatrixButtonProc,title="Matrix",disable=2
 	Button DoItButton,pos={21,632},size={80,20},proc=DoTheFitsButtonProc,title="Do the fits"
-	Button savePathButton,pos={82,61},size={80,20},proc=SavePathButtonProc,title="Save Path..."
+//	Button savePathButton,pos={82,61},size={80,20},proc=SavePathButtonProc,title="Save Path..."
 	TitleBox tb1,pos={139,634},size={128,12},anchor=MC,variable=root:AutoFit:gStatus,frame=0
 	Button button0,pos={14,331},size={40,20},title="Plot",proc=LoadForGuessProc
 //	SetVariable extStr,pos={4,170},size={40,15},title=" ",value= root:AutoFit:gExt
@@ -339,9 +375,40 @@ Window AutoFitPanel()
 	Button GuessHoldB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseHoldAsGuess
 	Button GuessConstrB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseConstraintsAsGuess
 	
+	TitleBox infoTitleBox pos={180,470},fixedSize=1,size={96,130},variable=root:AutoFit:guessStr
+	
 	ValDisplay progressValdisp,pos={113,663},size={161,7},title="00:00"
 	ValDisplay progressValdisp,limits={0,root:AutoFit:endProgress,0},barmisc={0,0},value= root:AutoFit:curProgress
+	
+	Button AF_DoneButton,pos={174,30},size={70,20},proc=AF_DoneButtonProc,title="Done"
+	Button AF_HelpButton,pos={260,30},size={30,20},proc=AF_HelpButtonProc,title="?"
+
 EndMacro
+
+// close the panel
+// + other windows?
+//
+Proc AF_DoneButtonProc(ctrlName): ButtonControl
+	String ctrlName
+	DoWindow/K AutoFitPanel
+end
+
+//open the Help file for the AutoFit Panel
+Function AF_HelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Auto Fit"
+			if(V_flag !=0)
+				DoAlert 0,"The Auto Fit Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
 
 
 Function AF_FuncPopupProc(pa) : PopupMenuControl
@@ -394,9 +461,18 @@ Function tabProc(name,tab)
 	String name
 	Variable tab
 	
+	String infoStr="",guessStr,holdStr,constStr,rangeStr
+	SVAR str0 = root:AutoFit:guessStr
+	SVAR str1 = root:AutoFit:holdStr
+	SVAR str2 = root:AutoFit:constStr
+	SVAR str3 = root:AutoFit:rangeStr
+	
+	
+	
 	Button FillAllGuessButton disable= (tab!=0)
 	Button GuessCoefB disable=(tab!=0)
 	ListBox guessBox disable= (tab!=0)
+	
 	
 	Button FillAllHoldButton disable= (tab!=1)
 	Button GuessHoldB disable=(tab!=1)
@@ -409,6 +485,20 @@ Function tabProc(name,tab)
 	//no buttons on the range tab
 	ListBox RangeBox disable=(tab!=3)
 	Button FillAllRangeB disable= (tab!=3)
+	
+	if(tab==0)
+		TitleBox infoTitleBox variable=str0
+	endif
+	if(tab==1)
+		TitleBox infoTitleBox variable=str1
+	endif
+	if(tab==2)
+		TitleBox infoTitleBox variable=str2
+	endif
+	if(tab==3)
+		TitleBox infoTitleBox variable=str3
+	endif
+	
 	
 	return(0)
 End
@@ -1385,14 +1475,16 @@ Function GenerateReport_NSE(func,dataname,par,coef,yesSave)
 		//make sure the name is no more than 31 characters
 		namestr = namestr[0,30]		//if shorter than 31, this will NOT pad to 31 characters
 		Print "file saved as ",nameStr
-		SaveNotebook /O/P=savePath/S=2 Report as nameStr
+//		SaveNotebook /O/P=savePath/S=2 Report as nameStr
+		SaveNotebook /O/P=home/S=2 Report as nameStr
 	Endif
 
 	//save a pict file, just of the graph
-	namestr = "PICT_" + namestr
+	namestr = "PNG_" + namestr
 	namestr = namestr[0,28]		//PICT names in IGOR must be shorter, to allow auto-naming?
 	DoWindow/F AutoGraph_NSE
-	SavePICT /E=2/O/I/P=savePath /W=(0,0,3,3) as nameStr
+//	SavePICT /E=2/O/I/P=savePath /W=(0,0,3,3) as nameStr
+	SavePICT /E=2/O/I/P=home /W=(0,0,3,3) as nameStr
 End
 
 
@@ -1493,42 +1585,44 @@ Proc CloseOpenNotebooks()
 	while(ItemsInList(list, ";")>0)
 End
 
-Proc Generate_PICTS_list()
-	fGenerate_PICTS_list()
+Proc Generate_PNG_list()
+	fGenerate_PNG_list()
 End
 
-//spits up a list of PICTS
-Function fGenerate_PICTS_list()
+//spits up a list of PNGS
+Function fGenerate_PNG_list()
 
-	String List=IndexedFile(savePath, -1, "PICT")
-	List2TextWave(List,";","PICT_files")
-	WAVE/T picts=$"PICT_files"
-	Edit/K=1 picts
+//	String List=IndexedFile(savePath, -1, ".png")
+	String List=IndexedFile(home, -1, ".png")
+	List2TextWave(List,";","PNG_files")
+	WAVE/T PNGs=$"PNG_files"
+	Edit/K=1 PNGs
 End
 
-Proc Layout_PICTS(pStr)
+Proc Layout_PNGS(pStr)
 	String pStr=""
-	Prompt pStr,"wave of PICTs to use",popup,WaveList("PICT_f*", ";", "")
+	Prompt pStr,"wave of PNGs to use",popup,WaveList("PNG_f*", ";", "")
 		
 	String List=TextWave2List($pStr,";")
 	String item = ""
-	//kill old picts
+	//kill old picts from memory
 	KillPicts/A/Z
 	//make a new layout
-	Layout/C=1 as "PICT_Layout"
-	DoWindow/C PICTLayout
+	Layout/C=1 as "PNG_Layout"
+	DoWindow/C PNGLayout
 	do
 		item=StringFromList(0,List,";")
-		//load each PICT, and append it to the layout
+		//load each PNG, and append it to the layout
 		Print "load item = ",item
-		LoadPICT /O/Q/P=savePath item
-		DoWindow/F PICTLayout		//be sure layout is on top
-		AppendLayoutObject /F=1/W=PICTLayout picture  $item
+//		LoadPICT /O/Q/P=savePath item
+		LoadPICT /O/Q/P=home item
+		DoWindow/F PNGLayout		//be sure layout is on top
+		AppendLayoutObject /F=1/W=PNGLayout picture  $CleanupName(item,0)
 		//AppendToLayout $item
 		//Print item
 		List = RemoveFromList(item, List, ";")
 	while(ItemsInList(List, ";")>0)
-	//tile the PICTs in the layout
+	//tile the PNGs in the layout
 	Tile/O=8
 End
 
@@ -1555,7 +1649,8 @@ End
 //
 Proc CompileAndLoadReports()
 	Compile_Reports()
-	SaveNotebook /O/P=savePath/S=2 Compilation
+//	SaveNotebook /O/P=savePath/S=2 Compilation
+	SaveNotebook /O/P=home/S=2 Compilation
 //	Print "Saved as:  ",S_Path
 	DoWindow/K Compilation
 	LoadCompiledReports(S_Path)
@@ -1566,10 +1661,16 @@ Proc LoadCompiledReports(str)
 	LoadWave/J/D/W/E=1/K=0/V={"\t"," $",0,0} str
 End
 
-Proc Compile_Reports(Number_of_Parameters)
-	Variable Number_of_Parameters=7
+Proc Compile_Reports(Number_of_Parameters,tagStr)
+	Variable Number_of_Parameters=(root:AutoFit:numPar)
+	String tagStr="v1"
+
+	fCompile_ReportsTable(Number_of_Parameters,tagStr)
+
 	fCompile_Reports(Number_of_Parameters)
-	fCompile_ReportsTable(Number_of_Parameters)
+	
+	DoWindow/F AutoFitResults
+
 End
 
 Proc Compile_GlobalFit_Reports(WhichParameter,FileStr,ParamStr,ParamErrStr)
@@ -1623,7 +1724,8 @@ Function fCompile_Reports(nPar)
 		Notebook $item selection={(ii+4,0), (ii+5,0)}		//
 		GetSelection notebook,$item,2
 		textStr=S_Selection
-		Print textStr
+		
+//		Print textStr
 		
 		sscanf textStr,"Npnts = %g\t\tSqrt(X^2/N) = %g\r",dum,chi
 		sprintf textStr,"Sqrt(X^2/N)\t%s\t\r",num2str(chi)
@@ -1640,8 +1742,10 @@ End
 
 ////
 // compiles the results into a table.
-Function fCompile_ReportsTable(nPar)
+// add tagStr to the end to (try) to make sure that the compilations are unique
+Function fCompile_ReportsTable(nPar,tagStr)
 	Variable nPar
+	String tagStr
 	
 	String list=WinList("*", ";", "WIN:16")
 	String item = "",textStr="",newStr="",str
@@ -1650,13 +1754,15 @@ Function fCompile_ReportsTable(nPar)
 	Variable ii,numRep,jj,val1,val2,pt
 	numRep=ItemsInList(list,";")
 	
-	Make/O/T/N=(numRep) fittedFiles
-	Make/O/D/N=(numRep) chiSQ
-	Edit fittedFiles,chiSQ
+	Make/O/T/N=(numRep) $("fittedFiles"+"_"+tagStr)
+	Make/O/D/N=(numRep) $("chiSQ"+"_"+tagStr)
+	Wave/T fittedFiles = $("fittedFiles"+"_"+tagStr)
+	Wave chiSq = $("chiSQ"+"_"+tagStr)
+	Edit/N=AutoFitResults fittedFiles,chiSQ
 	
 	for(ii=0;ii<nPar;ii+=1)		//waves for the parameters
-		Make/O/D/N=(numRep) $("par"+num2str(ii)),$("par"+num2str(ii)+"_err")
-		AppendToTable $("par"+num2str(ii)),$("par"+num2str(ii)+"_err")
+		Make/O/D/N=(numRep) $("par"+num2str(ii)+"_"+tagStr),$("par"+num2str(ii)+"_err"+"_"+tagStr)
+		AppendToTable $("par"+num2str(ii)+"_"+tagStr),$("par"+num2str(ii)+"_err"+"_"+tagStr)
 	endfor
 	
 	for(jj=0;jj<numRep;jj+=1)
@@ -1683,10 +1789,10 @@ Function fCompile_ReportsTable(nPar)
 			textStr = textStr[pt,strlen(textStr)-1]
 			sscanf textStr,"= \t%g\t ± \t%g\r",val1,val2
 			
-			Print textStr
+//			Print textStr
 						
-			Wave w1 = $("par"+num2str(ii))
-			Wave w2 = $("par"+num2str(ii)+"_err")
+			Wave w1 = $("par"+num2str(ii)+"_"+tagStr)
+			Wave w2 = $("par"+num2str(ii)+"_err"+"_"+tagStr)
 			
 			w1[jj] = val1
 			w2[jj] = val2
@@ -1702,12 +1808,14 @@ Function fCompile_ReportsTable(nPar)
 		Notebook $item selection={(ii+4,0), (ii+5,0)}		//
 		GetSelection notebook,$item,2
 		textStr=S_Selection
-		Print textStr
+		
+//		Print textStr
 		
 		sscanf textStr,"Npnts = %g\t\tSqrt(X^2/N) = %g\r",dum,chi
 		
 		chiSQ[jj] = chi	
 	endfor
+	
 	
 	return(0)
 End

@@ -1196,7 +1196,7 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 		SaveNotebook /O/P=home/S=2 $nb as nameStr
 		//save the graph separately as a PNG file, 2x screen
 		pictStr += nameStr
-		pictStr = pictStr[0,28]		//need a shorter name - why?
+		pictStr = pictStr[0,24]+".png"		//need a shorter name - only 29 characters allowed - why?
 //		DoWindow/F $topGraph
 		// E=-5 is png @screen resolution
 		// E=2 is PICT @2x screen resolution
