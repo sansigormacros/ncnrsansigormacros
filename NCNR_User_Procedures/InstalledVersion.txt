@@ -1,9 +1,9 @@
-PACKAGE_VERSION=7.13;SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
+PACKAGE_VERSION=7.20;SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
 
 Only the first line of the file is read in.
 Igor will use the NumberByKey operation to get the 
 version number from the string
 
 These are the current versions as of:
-17 OCT 2012 SRK
+30 MAY 2013 SRK
 

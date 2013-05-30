@@ -44,12 +44,11 @@ Menu "Macros"
 
 	// for testing ONLY
 	"-"
-	"Load Polarization Reduction - Beta",PolarizationLoader()
+	"Load Polarization Reduction",PolarizationLoader()
+	"Load Real Space Modeling",RealSpaceLoader()
+	"Event Mode Processing",EventModeLoader()
+	"Load Batch Fitting - Beta",BatchFitLoader()
 
-//	"Load Batch Fitting",Execute/P "INSERTINCLUDE \"Auto_Fit\"";Execute/P "COMPILEPROCEDURES ";Execute/P "InitializeAutoFitPanel()"
-
-	"Load Real Space Modeling - Beta",RealSpaceLoader()
-	"Event Mode Processing - Beta",EventModeLoader()
 //	"-"
 
 end
@@ -690,6 +689,23 @@ Function EventModeLoader()
 	// then bring up the Event Mode panel
 	Execute/P "Show_Event_Panel()"
 //	BuildMenu "Macros"
+
+	return(0)
+End
+
+
+// loads the Analysis package, then the AutoFit procedure
+Function BatchFitLoader()
+
+	// be sure that the SANS Analysis is loaded and compiles
+	NCNR_AnalysisLoader("Load NCNR Analysis Macros")
+	
+	// then the AutoFit files
+	Execute/P "INSERTINCLUDE \"Auto_Fit\""
+	Execute/P "COMPILEPROCEDURES "
+	Execute/P "InitializeAutoFitPanel()"
+	
+	BuildMenu "Macros"
 
 	return(0)
 End

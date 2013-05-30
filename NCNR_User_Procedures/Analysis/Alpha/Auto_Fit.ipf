@@ -31,6 +31,8 @@
 //
 // x- need a help button to link to the help file
 // -- Comprehensive instructions (after features are finalized)
+//
+// -- add a way to save the setup and guesses. May be tough if the file list changes...
 
 
 
@@ -300,7 +302,7 @@ Function InitializeAutoFit()
 	String/G guessStr = "Guess is based on\rthe unsmeared\rcoefficients on the\rCurve Fit Setup\rpanel"
 	String/G holdStr = "Enter 0 to fit\rEnter 1 to hold"
 	String/G constStr = "Enter low and\rhigh range as:\rlow;high\rfor each parameter\rLeave blank if\rno constraints"
-	String/G rangeStr = "Enter the point\rrange as:\rfirst pt in 1st row\rlast pt in 2nd row\rLeave blank to\r fit all data"
+	String/G rangeStr = "Enter the point\rrange as:\rfirst pt in 1st row\rlast pt in 2nd row\rLeave zero to\rfit all data"
 	
 	
 	fileListWave = ""
@@ -373,7 +375,7 @@ Window AutoFitPanel()
 	
 	Button GuessCoefB,pos={198,440},size={50,20},title="Guess",proc=UseCoefAsGuess
 	Button GuessHoldB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseHoldAsGuess
-	Button GuessConstrB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseConstraintsAsGuess
+//	Button GuessConstrB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseConstraintsAsGuess
 	
 	TitleBox infoTitleBox pos={180,470},fixedSize=1,size={96,130},variable=root:AutoFit:guessStr
 	
@@ -400,7 +402,7 @@ Function AF_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z/K=1 "Auto Fit"
+			DisplayHelpTopic/Z/K=1 "Auto Fit (or Batch fitting)"
 			if(V_flag !=0)
 				DoAlert 0,"The Auto Fit Help file could not be found"
 			endif
@@ -479,7 +481,7 @@ Function tabProc(name,tab)
 	ListBox holdBox disable=(tab!=1)
 	
 	Button FillAllConstrButton disable= (tab!=2)
-	Button GuessConstrB disable=(tab!=2)
+//	Button GuessConstrB disable=(tab!=2)
 	ListBox ConstrBox disable=(tab!=2)
 	
 	//no buttons on the range tab
@@ -1601,7 +1603,7 @@ End
 
 Proc Layout_PNGS(pStr)
 	String pStr=""
-	Prompt pStr,"wave of PNGs to use",popup,WaveList("PNG_f*", ";", "")
+	Prompt pStr,"wave of PNGs to use",popup,WaveList("PNG*", ";", "")
 		
 	String List=TextWave2List($pStr,";")
 	String item = ""
@@ -2109,10 +2111,10 @@ End
 Function UseHoldAsGuess(ctrlName) : ButtonControl
 	String ctrlName
 	
-//	String wStr = "hold_"
-//	SVAR ext=root:AutoFit:gExt
-//	FillHoldGuess(wStr+ext)
-//	DisplayGuess()
+	String wStr = "hold_"
+	SVAR ext=root:AutoFit:gExt
+	FillHoldGuess(wStr+ext)
+	DisplayGuess()
 	return(0)
 End
 

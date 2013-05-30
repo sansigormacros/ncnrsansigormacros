@@ -1525,6 +1525,10 @@ Function LoadEvents_XOP()
 	Print "total bytes = ", totBytes
 	
 //
+//	Print "scan only"
+//	tic()
+//		EventLoadWave/R/N=EventWave/W filepathstr
+//	toc()
 
 ////
 //

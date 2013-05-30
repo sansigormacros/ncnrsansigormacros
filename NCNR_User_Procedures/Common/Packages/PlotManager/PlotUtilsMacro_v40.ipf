@@ -1319,6 +1319,7 @@ Function/S User_FunctionPopupList()
 
 // from 2013 Simulation
 //	list = RemoveFromList("EC_Empirical;SmearedEC_Empirical;",list,";")
+	list = RemoveFromList("SAS_XS_Sphere;",list,";")
 		
 	list = SortList(list)
 	return(list)
