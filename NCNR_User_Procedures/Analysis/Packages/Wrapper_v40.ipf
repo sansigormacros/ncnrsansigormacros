@@ -1190,7 +1190,8 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 		nameStr = ReplaceString("Smeared",nameStr,"Sm_")		//if Smeared function, shorten the name
 
 		//make sure the name is no more than 31 characters
-		namestr = namestr[0,30]		//if shorter than 31, this will NOT pad to 31 characters
+		namestr = namestr[0,26]		//if shorter than 31, this will NOT pad to 31 characters
+		nameStr += ".ifn"			//extension is needed, otherwise the files are not recognized on Windows
 		
 		Print "file saved as ",nameStr
 		SaveNotebook /O/P=home/S=2 $nb as nameStr
