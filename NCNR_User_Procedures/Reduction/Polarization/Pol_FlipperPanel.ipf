@@ -39,6 +39,8 @@ Proc ShowFlipperPanel()
 		InitFlipperGlobals()
 		DrawFlipperPanel()
 	endif
+	// be sure that the panel is onscreen
+	DoIgorMenu "Control","Retrieve Window"
 end
 
 Function InitFlipperGlobals()
@@ -61,20 +63,20 @@ Function DrawFlipperPanel()
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(1023,44,1832,526)/N=FlipperPanel/K=1 as "Flipper and Supermirror"
+	NewPanel /W=(250,44,1056,480)/N=FlipperPanel/K=1 as "Flipper and Supermirror"
 	ModifyPanel cbRGB=(1,52428,26586)
 	
-	PopupMenu popup_0,pos={32,18},size={49,20},title="Field Condition",proc=FlipperPanelPopMenuProc
+	PopupMenu popup_0,pos={13,8},size={49,20},title="Field Condition",proc=FlipperPanelPopMenuProc
 	PopupMenu popup_0,mode=1,value= #"D_ConditionNameList()"
 	
-	Button button_0,pos={42,310},size={100,20},proc=FlipperAverageButtonProc,title="Do Average"
+	Button button_0,pos={18,288},size={100,20},proc=FlipperAverageButtonProc,title="Do Average"
 	
-	GroupBox group_0,pos={39,350},size={335,103},title="AVERAGED RESULTS",fSize=10
+	GroupBox group_0,pos={18,316},size={290,102},title="AVERAGED RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
-	SetVariable setvar_0,pos={49,385},size={250,15},title="Sam_depol*Psm*Pf"
+	SetVariable setvar_0,pos={33,351},size={250,15},title="Sam_depol*Psm*Pf"
 	SetVariable setvar_0,fStyle=1
 	SetVariable setvar_0,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gPsmPf
-	SetVariable setvar_1,pos={49,417},size={250,15},title="Sam_depol*Psm",fStyle=1
+	SetVariable setvar_1,pos={33,383},size={250,15},title="Sam_depol*Psm",fStyle=1
 	SetVariable setvar_1,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gPsm
 //	SetVariable setvar_2,pos={560,518},size={200,13},title="Gamma (h)",fStyle=1
 //	SetVariable setvar_2,limits={0,0,0},barmisc={0,1000}
@@ -83,16 +85,19 @@ Function DrawFlipperPanel()
 //	SetVariable setvar_3,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
 	
 
-	Button button_1,pos={320,17},size={120,20},proc=AddFlipperConditionButton,title="Add Condition"
-	Button button_2,pos={403,295},size={110,20},proc=ClearAllFlipperWavesButton,title="Clear Table"
-	Button button_3,pos={183,310},size={120,20},proc=ShowFlipperCalcButton,title="Show Calc"
-	Button button_4,pos={540,295},size={110,20},proc=ClearFlipperRowButton,title="Clear Row"
-	Button button_5,pos={620,18},size={30,20},proc=FlipperHelpParButtonProc,title="?"
-	Button button_6,pos={488,418},size={100,20},proc=WindowSnapshotButton,title="Snapshot"
-	Button button_7,pos={488,380},size={130,20},proc=ManualEnterPfPsmButton,title="Manual Entry"
+	Button button_1,pos={322,8},size={120,20},proc=AddFlipperConditionButton,title="Add Condition"
+	Button button_2,pos={482,323},size={110,20},proc=ClearAllFlipperWavesButton,title="Clear Table"
+	Button button_3,pos={330,288},size={110,20},proc=ShowFlipperCalcButton,title="Show Calc"
+	Button button_4,pos={482,288},size={110,20},proc=ClearFlipperRowButton,title="Clear Row"
+	Button button_5,pos={759,8},size={30,20},proc=FlipperHelpParButtonProc,title="?"
+	Button button_6,pos={328,358},size={110,20},proc=WindowSnapshotButton,title="Snapshot"
+	Button button_7,pos={331,323},size={110,20},proc=ManualEnterPfPsmButton,title="Manual Entry"
 
+	Button button_8,pos={615,288},size={110,20},proc=SaveFlipperPanelButton,title="Save State"
+	Button button_9,pos={615,323},size={110,20},proc=RestoreFlipperPanelButton,title="Restore State"
+	
 	// table
-	Edit/W=(14,55,794,275)/HOST=# 
+	Edit/W=(14,40,794,275)/HOST=# 
 	ModifyTable format=1,width=0
 	RenameWindow #,T0
 	SetActiveSubwindow ##
@@ -100,6 +105,37 @@ Function DrawFlipperPanel()
 	SetDataFolder root:
 	return(0)
 End
+
+Function SaveFlipperPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SaveFlipperTable()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function RestoreFlipperPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			RestoreFlipperTable()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 // now, this does not depend on the cell, just the condition
 Function AddFlipperConditionButton(ba) : ButtonControl
@@ -1116,7 +1152,7 @@ Function SaveCellParameterTable()
 	// mu, err_mu
 	
 	Variable refnum
-	String fname="CellParamSaveState.itx"
+	String fname="CellParamSaveState"
 //	WAVE w=root:testMat
 	WAVE/T cellName=root:Packages:NIST:Polarization:Cells:CellName
 	WAVE lambda=root:Packages:NIST:Polarization:Cells:lambda
@@ -1125,7 +1161,16 @@ Function SaveCellParameterTable()
 	WAVE mu=root:Packages:NIST:Polarization:Cells:mu
 	WAVE err_mu=root:Packages:NIST:Polarization:Cells:err_mu
 	
-	Open/P=home refnum	//as fname		// creates a new file, or overwrites the existing file	
+	// get the full path to the new file name before creating it
+	fname = DoSaveFileDialog("Save the Cell Table",fname=fname,suffix=".itx")
+	If(cmpstr(fname,"")==0)
+		//user cancel, don't write out a file
+		Close/A
+		Abort "no data file was written"
+	Endif
+	
+	Open/P=home refnum	as fname		// creates a new file, or overwrites the existing file	
+	
 	fprintf refNum,"IGOR\r"
 	
 	Write1DTextWaveToITX(cellName,refnum)
@@ -1178,14 +1223,22 @@ Function SaveCellDecayTable()
 	String listStr,item,fname,noteStr,wStr
 	Variable num,ii,refnum
 	
-	fname = "CellDecayPanelSaveState.itx"
+	fname = "CellDecayPanelSaveState"
 	
 	// get a list of the Decay waves
 	listStr=WaveList("Decay_*",";","")
 	num=ItemsInList(listStr,";")
 //	print listStr
 
-	Open/P=home refnum	// as fname		// creates a new file, or overwrites the existing file	
+	// get the full path to the new file name before creating it
+	fname = DoSaveFileDialog("Save the Cell Decay Table",fname=fname,suffix=".itx")
+	If(cmpstr(fname,"")==0)
+		//user cancel, don't write out a file
+		Close/A
+		Abort "no data file was written"
+	Endif
+
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the decay waves, then be sure to add the DimLabels and Wave Note
@@ -1283,13 +1336,21 @@ Function SaveFlipperTable()
 	String listStr,item,fname,noteStr,wStr
 	Variable num,ii,refnum
 	
-	fname = "FlipperPanelSaveState.itx"
+	fname = "FlipperPanelSaveState"
 	
 	// get a list of the "Condition" waves
 	listStr=WaveList("Cond_*",";","")
 	num=ItemsInList(listStr,";")
 //	print listStr
 
+	// get the full path to the new file name before creating it
+	fname = DoSaveFileDialog("Save the Flipper State Table",fname=fname,suffix=".itx")
+	If(cmpstr(fname,"")==0)
+		//user cancel, don't write out a file
+		Close/A
+		Abort "no data file was written"
+	Endif
+	
 	Open/P=home refnum	// as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			

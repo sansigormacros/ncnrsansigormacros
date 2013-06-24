@@ -315,13 +315,13 @@ End
 
 Window AutoFitPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(685,44,1001,740) /K=1
+	NewPanel /W=(434,44,1063,422) /K=1
 	DoWindow/C AutoFitPanel
 	SetDrawLayer UserBack
-//	DrawText 11,418,"Point Range"
-//	DrawText 5,167,"Suffix"
-	DrawLine 8,362,287,362
-	PopupMenu popup0,pos={2,2},size={175,20},title="pick a function"
+///	DrawText 11,418,"Point Range"
+///	DrawText 5,167,"Suffix"
+//	DrawLine 8,362,287,362
+	PopupMenu popup0,pos={13,6},size={175,20},title="Pick a Function"
 	PopupMenu popup0,mode=1,value= #"User_FunctionPopupList()",proc=AF_FuncPopupProc
 		
 	ListBox lb pos={11,90},size={280,230},proc=FileListboxProc
@@ -329,61 +329,61 @@ Window AutoFitPanel()
 	ListBox lb editStyle=1,mode=5
 	ListBox lb userColumnResize=1,widths={200,80}
 	
-//	Button DelButton,pos={245,61},size={40,20},proc=DelButtonProc,title="Del",disable=2
-	Button PathButton,pos={6,61},size={50,20},proc=PDPButton,title="Path..."
+///	Button DelButton,pos={245,61},size={40,20},proc=DelButtonProc,title="Del",disable=2
+	Button PathButton,pos={13,61},size={50,20},proc=PDPButton,title="Path..."
 	Button FileListButton,pos={82,61},size={50,20},proc=FileListButtonProc,title="List"
-	CheckBox AllFilesCheck,pos={182,64},size={32,14},proc=CheckAllFiles,title="Select All Files"
+	CheckBox AllFilesCheck,pos={196,64},size={32,14},proc=CheckAllFiles,title="Select All Files"
 	CheckBox AllFilesCheck,value= 0
-	ListBox guessBox,pos={24,398},size={145,208},disable=1,proc=UpdateGuessMatrixProc
+	ListBox guessBox,pos={345,102},size={145,208},disable=1,proc=UpdateGuessMatrixProc
 	ListBox guessBox,frame=2,listWave=root:AutoFit:guessList
 	ListBox guessBox,selWave=root:AutoFit:guessSel,mode= 2,selRow= 0
-	Button FillAllGuessButton,pos={196,406},size={50,20},disable=1,proc=FillAllGuessButtonProc,title="Fill All"
-	Button FillAllHoldButton,pos={196,406},size={50,20},disable=1,proc=FillAllHoldButtonProc,title="Fill All"
-	Button FillAllConstrButton,pos={196,406},size={50,20},proc=FillAllConstrButtonProc,title="Fill All"
-	Button FillAllRangeB,pos={196,406},size={50,20},disable=1,proc=FillAllRangeButtonProc,title="Fill All"
-	SetVariable NumParams,pos={7,34},size={150,15},proc=SetNumParamProc,title="Number of Parameters"
+	Button FillAllGuessButton,pos={517,110},size={50,20},disable=1,proc=FillAllGuessButtonProc,title="Fill All"
+	Button FillAllHoldButton,pos={517,110},size={50,20},disable=1,proc=FillAllHoldButtonProc,title="Fill All"
+	Button FillAllConstrButton,pos={517,110},size={50,20},proc=FillAllConstrButtonProc,title="Fill All"
+	Button FillAllRangeB,pos={517,110},size={50,20},disable=1,proc=FillAllRangeButtonProc,title="Fill All"
+	SetVariable NumParams,pos={13,35},size={150,15},proc=SetNumParamProc,title="Number of Parameters"
 	SetVariable NumParams,limits={2,Inf,0},value= root:AutoFit:numPar
-//	CheckBox typeCheck,pos={207,31},size={32,14},title="NSE Data?",value=0
-//	SetVariable fitTol,pos={80,208},size={80,15},title="Fit Tol"
-//	SetVariable fitTol,limits={0.0001,0.1,0},value= root:AutoFit:fitTol
-	CheckBox epsilonCheck,pos={156,335},size={32,14},value=0,title="Use Epsilon Wave?"
+///	CheckBox typeCheck,pos={207,31},size={32,14},title="NSE Data?",value=0
+///	SetVariable fitTol,pos={80,208},size={80,15},title="Fit Tol"
+///	SetVariable fitTol,limits={0.0001,0.1,0},value= root:AutoFit:fitTol
+	CheckBox epsilonCheck,pos={156,340},size={32,14},value=0,title="Use Epsilon Wave?"
 
-	TabControl tabC,pos={13,371},size={273,244},proc=tabProc,tabLabel(0)="Guess"
+	TabControl tabC,pos={334,75},size={273,244},proc=tabProc,tabLabel(0)="Guess"
 	TabControl tabC,tabLabel(1)="Hold",tabLabel(2)="Constraint",tabLabel(3)="Range",value= 0
-//	CheckBox rangeCheck,pos={92,404},size={32,14},proc=RangeCheckProc,title="All"
-//	CheckBox rangeCheck,value= 1,disable=2
+///	CheckBox rangeCheck,pos={92,404},size={32,14},proc=RangeCheckProc,title="All"
+///	CheckBox rangeCheck,value= 1,disable=2
 
-	SetVariable lowPt,pos={136,404},size={60,15},title="low"
-	SetVariable lowPt,limits={0,Inf,0},value= root:AutoFit:ptLow,noedit=1,disable=1
-	SetVariable highPt,pos={201,404},size={60,15},title=" to "
-	SetVariable highPt,limits={0,Inf,0},value= root:AutoFit:ptHigh,noedit=1,disable=1
-	ListBox holdBox,pos={24,398},size={145,208},disable=1,proc=UpdateHoldMatrixProc
+////	SetVariable lowPt,pos={136,404},size={60,15},title="low"
+////	SetVariable lowPt,limits={0,Inf,0},value= root:AutoFit:ptLow,noedit=1,disable=1
+////	SetVariable highPt,pos={201,404},size={60,15},title=" to "
+////	SetVariable highPt,limits={0,Inf,0},value= root:AutoFit:ptHigh,noedit=1,disable=1
+	ListBox holdBox,pos={345,102},size={145,208},disable=1,proc=UpdateHoldMatrixProc
 	ListBox holdBox,frame=2,listWave=root:AutoFit:holdList
 	ListBox holdBox,selWave=root:AutoFit:holdSel,mode= 2,selRow= 2
-	ListBox ConstrBox,pos={24,398},size={145,208},proc=UpdateConstrMatrixProc
+	ListBox ConstrBox,pos={345,102},size={145,208},proc=UpdateConstrMatrixProc
 	ListBox ConstrBox,frame=2,listWave=root:AutoFit:ConstrList
 	ListBox ConstrBox,selWave=root:AutoFit:ConstrSel,mode= 2,selRow= 2
-	ListBox RangeBox,pos={24,398},size={145,208},proc=UpdateRangeMatrixProc
+	ListBox RangeBox,pos={345,102},size={145,208},proc=UpdateRangeMatrixProc
 	ListBox RangeBox,frame=2,listWave=root:AutoFit:rangeList
 	ListBox RangeBox,selWave=root:AutoFit:RangeSel,mode= 2,selRow= 2
-//	Button MatrixButton,pos={12,205},size={60,20},proc=ToMatrixButtonProc,title="Matrix",disable=2
-	Button DoItButton,pos={21,632},size={80,20},proc=DoTheFitsButtonProc,title="Do the fits"
-//	Button savePathButton,pos={82,61},size={80,20},proc=SavePathButtonProc,title="Save Path..."
-	TitleBox tb1,pos={139,634},size={128,12},anchor=MC,variable=root:AutoFit:gStatus,frame=0
-	Button button0,pos={14,331},size={40,20},title="Plot",proc=LoadForGuessProc
-//	SetVariable extStr,pos={4,170},size={40,15},title=" ",value= root:AutoFit:gExt
+///	Button MatrixButton,pos={12,205},size={60,20},proc=ToMatrixButtonProc,title="Matrix",disable=2
+	Button DoItButton,pos={339,336},size={80,20},proc=DoTheFitsButtonProc,title="Do the fits"
+///	Button savePathButton,pos={82,61},size={80,20},proc=SavePathButtonProc,title="Save Path..."
+	TitleBox tb1,pos={479,330},size={128,12},anchor=MC,variable=root:AutoFit:gStatus,frame=0
+	Button button0,pos={14,336},size={60,20},title="Plot",proc=LoadForGuessProc
+///	SetVariable extStr,pos={4,170},size={40,15},title=" ",value= root:AutoFit:gExt
 	
-	Button GuessCoefB,pos={198,440},size={50,20},title="Guess",proc=UseCoefAsGuess
-	Button GuessHoldB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseHoldAsGuess
-//	Button GuessConstrB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseConstraintsAsGuess
+	Button GuessCoefB,pos={519,144},size={50,20},title="Guess",proc=UseCoefAsGuess
+	Button GuessHoldB,pos={519,144},size={50,20},title="Guess",disable=1,proc=UseHoldAsGuess
+///	Button GuessConstrB,pos={198,440},size={50,20},title="Guess",disable=1,proc=UseConstraintsAsGuess
 	
-	TitleBox infoTitleBox pos={180,470},fixedSize=1,size={96,130},variable=root:AutoFit:guessStr
+	TitleBox infoTitleBox pos={501,174},fixedSize=1,size={96,130},variable=root:AutoFit:guessStr
 	
-	ValDisplay progressValdisp,pos={113,663},size={161,7},title="00:00"
+	ValDisplay progressValdisp,pos={446,349},size={161,7},title="00:00"
 	ValDisplay progressValdisp,limits={0,root:AutoFit:endProgress,0},barmisc={0,0},value= root:AutoFit:curProgress
 	
-	Button AF_DoneButton,pos={174,30},size={70,20},proc=AF_DoneButtonProc,title="Done"
-	Button AF_HelpButton,pos={260,30},size={30,20},proc=AF_HelpButtonProc,title="?"
+	Button AF_DoneButton,pos={541,8},size={70,20},proc=AF_DoneButtonProc,title="Done"
+	Button AF_HelpButton,pos={496,8},size={30,20},proc=AF_HelpButtonProc,title="?"
 
 EndMacro
 

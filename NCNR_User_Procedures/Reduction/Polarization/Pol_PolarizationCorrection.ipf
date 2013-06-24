@@ -81,6 +81,10 @@ Proc ShowPolCorSetup()
 		
 		restore=Initialize_PolCorPanel()
 		PolCor_Panel()
+		
+		// be sure that the panel is onscreen
+		DoIgorMenu "Control","Retrieve Window"
+	
 		SetWindow PolCor_Panel hook(kill)=PolCorPanelHook		//to save the state when panel is killed
 		//disable the controls on other tabs
 		ToggleSelControls("_1_",1)
@@ -130,13 +134,23 @@ Function SavePolCorPanelState()
 	String listStr,item,fname,noteStr,wStr
 	Variable num,ii,refnum
 	
-	fname = "PolCorPanelSaveState.itx"
+	fname = "PolCorPanelSaveState"
 	
 	// get a list of the List waves
 	listStr=WaveList("ListWave_*",";","")
 	num=ItemsInList(listStr,";")
 //	print listStr
 
+
+	// get the full path to the new file name before creating it
+	fname = DoSaveFileDialog("Save the Pol_Cor Panel State",fname=fname,suffix=".itx")
+	If(cmpstr(fname,"")==0)
+		//user cancel, don't write out a file
+		Close/A
+		Abort "no data file was written"
+	Endif
+	
+	
 	Open/P=home refnum// as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
@@ -326,91 +340,83 @@ end
 //
 Window PolCor_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(925,44,1662,800) /K=1
+	NewPanel /W=(300,44,1036,624) /K=1 as "Polarization Correction"
 	ModifyPanel cbRGB=(64349,63913,44660)
 //	ShowTools/A
 	SetDrawEnv linethick= 2.00
-	DrawLine 10,510,600,510
+	DrawLine 11,427,696,427
 
-	TabControl PolCorTab,pos={15,27},size={708,401},proc=PolCorTabProc
+	TabControl PolCorTab,pos={15,20},size={515,360},proc=PolCorTabProc
 	TabControl PolCorTab,tabLabel(0)="SAM",tabLabel(1)="EMP",tabLabel(2)="BGD"
 	TabControl PolCorTab,value= 0
 	
 	// always visible
-	Button button0,pos={26,445},size={80,20},proc=LoadRawPolarizedButton,title="Load ..."
-	Button button1,pos={26,473},size={130,20},proc=PolCorButton,title="Pol Correct Data"
-	Button button2,pos={222,445},size={130,20},proc=ShowPolMatrixButton,title="Show Coef Matrix"
-	Button button3,pos={222,473},size={160,20},proc=ChangeDisplayedPolData,title="Change Displayed Data"
-	Button button4,pos={620,18},size={30,20},proc=PolCorHelpParButtonProc,title="?"
-	Button button12,pos={440,473},size={120,20},proc=Display4XSButton,title="Display 4 XS"
-	Button button13,pos={440,446},size={120,20},proc=ClearPolCorEntries,title="Clear Entries"
+	Button button0,pos={23,396},size={80,20},proc=LoadRawPolarizedButton,title="Load ..."
+	Button button1,pos={136,397},size={130,20},proc=PolCorButton,title="Pol Correct Data"
+	Button button2,pos={546,92},size={130,20},proc=ShowPolMatrixButton,title="Show Coef Matrix"
+	Button button3,pos={546,151},size={160,20},proc=ChangeDisplayedPolData,title="Change Display Data"
+	Button button4,pos={503,9},size={30,20},proc=PolCorHelpParButtonProc,title="?"
+	Button button12,pos={546,121},size={120,20},proc=Display4XSButton,title="Display 4 XS"
+	Button button13,pos={360,9},size={110,20},proc=ClearPolCorEntries,title="Clear Entries"
 
 
-
-	TitleBox title0,pos={100,66},size={24,24},title="\\f01UU or + +",fSize=12
-	TitleBox title1,pos={430,66},size={24,24},title="\\f01DU or - +",fSize=12
-	TitleBox title2,pos={100,250},size={25,24},title="\\f01DD or - -",fSize=12
-	TitleBox title3,pos={430,250},size={24,24},title="\\f01UD or + -",fSize=12
+	TitleBox title0,pos={100,48},size={24,24},title="\\f01UU or + +",fSize=12
+	TitleBox title1,pos={380,48},size={24,24},title="\\f01DU or - +",fSize=12
+	TitleBox title2,pos={100,210},size={25,24},title="\\f01DD or - -",fSize=12
+	TitleBox title3,pos={380,210},size={24,24},title="\\f01UD or + -",fSize=12
 	
 	// bits to set up reduction protocol
-	Button button5,pos={126,560},size={100,20},proc=PickDIVButton,title="set DIV file"
+	Button button5,pos={129,458},size={100,20},proc=PickDIVButton,title="set DIV file"
 	Button button5,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button button6,pos={126,590},size={100,20},proc=PickMASKButton,title="set MASK file"
+	Button button6,pos={129,482},size={100,20},proc=PickMASKButton,title="set MASK file"
 	Button button6,help={"This button will set the file selected in the File Catalog table to be the mask file."}
-	Button button7,pos={126,620},size={110,20},proc=SetABSParamsButton,title="set ABS params"
+	Button button7,pos={129,506},size={110,20},proc=SetABSParamsButton,title="set ABS params"
 	Button button7,help={"This button will prompt the user for absolute scaling parameters"}
-	Button button8,pos={126,650},size={150,20},proc=SetAverageParamsButtonProc,title="set AVERAGE params"
+	Button button8,pos={129,530},size={150,20},proc=SetAverageParamsButtonProc,title="set AVERAGE params"
 	Button button8,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
-	Button button9,pos={80,690},size={120,20},proc=ReducePolCorDataButton,title="Reduce Data"
+	Button button9,pos={581,515},size={120,20},proc=ReducePolCorDataButton,title="Reduce Data"
 	Button button9,help={"Reduce PolCor data"}
-	Button button10,pos={226,690},size={120,20},proc=SavePolCorProtocolButton,title="Save Protocol"
+	Button button10,pos={581,460},size={120,20},proc=SavePolCorProtocolButton,title="Save Protocol"
 	Button button10,help={"Save the PolCor protocol, within this experiment only"}
-	Button button11,pos={370,690},size={120,20},proc=RecallPolCorProtocolButton,title="Recall Protocol"
-	Button button11,help={"Recall a PolCor protocol from memory"}		
-	Button button14,pos={226,720},size={120,20},proc=ExportPolCorProtocolButton,title="Export Protocol"
+	Button button11,pos={546,333},size={120,20},proc=RecallPolCorProtocolButton,title="Recall Protocol"
+	Button button11,help={"Recall a PolCor protocol from memory"}
+	Button button14,pos={546,303},size={120,20},proc=ExportPolCorProtocolButton,title="Export Protocol"
 	Button button14,help={"Export the PolCor protocol, saving it on disk"}
-	Button button15,pos={370,720},size={120,20},proc=ImportPolCorProtocolButton,title="Import Protocol"
+	Button button15,pos={546,363},size={120,20},proc=ImportPolCorProtocolButton,title="Import Protocol"
 	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
-		
-	SetVariable setvar0,pos={322,560},size={250,15},title="file:"
+	Button button16,pos={546,216},size={110,20},proc=SavePolCorPanelButton,title="Save State"
+	Button button16,help={"Save the state of the panel for later recall"}
+	Button button17,pos={546,245},size={110,20},proc=RestorePolCorPanelButton,title="Restore State"
+	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
+			
+	SetVariable setvar0,pos={303,458},size={250,15},title="file:"
 	SetVariable setvar0,help={"Filename of the detector sensitivity file to be used in the data reduction"}
-	SetVariable setvar0,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gDIV
-	SetVariable setvar1,pos={322,590},size={250,15},title="file:"
+	SetVariable setvar0,limits={-inf,inf,0},value= root:myGlobals:Protocols:gDIV
+	SetVariable setvar1,pos={303,483},size={250,15},title="file:"
 	SetVariable setvar1,help={"Filename of the mask file to be used in the data reduction"}
-	SetVariable setvar1,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gMASK
-	SetVariable setvar2,pos={322,620},size={250,15},title="parameters:"
+	SetVariable setvar1,limits={-inf,inf,0},value= root:myGlobals:Protocols:gMASK
+	SetVariable setvar2,pos={303,509},size={250,15},title="parameters:"
 	SetVariable setvar2,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
-	SetVariable setvar2,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gAbsStr	
-	SetVariable setvar3,pos={322,650},size={250,15},title="parameters:"
+	SetVariable setvar2,limits={-inf,inf,0},value= root:myGlobals:Protocols:gAbsStr
+	SetVariable setvar3,pos={303,535},size={250,15},title="parameters:"
 	SetVariable setvar3,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
-	SetVariable setvar3,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gAVE	
+	SetVariable setvar3,limits={-inf,inf,0},value= root:myGlobals:Protocols:gAVE
 	
-	CheckBox check0,pos={10,560},size={72,14},title="Sensitivity"
+	CheckBox check0,pos={13,463},size={63,14},title="Sensitivity"
 	CheckBox check0,help={"If checked, the specified detector sensitivity file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox check0,value= 1
-	CheckBox check1,pos={10,590},size={72,14},title="Mask"
-	CheckBox check1,help={""}
-	CheckBox check1,value= 1
-	CheckBox check2,pos={10,620},size={72,14},title="Absolute Scale"
-	CheckBox check2,help={""}
-	CheckBox check2,value= 1
-	CheckBox check3,pos={10,650},size={72,14},title="Average and Save"
-	CheckBox check3,help={""}
-	CheckBox check3,value= 1		
-	CheckBox check4,pos={10,530},size={72,14},title="Use EMP?"
-	CheckBox check4,help={""}
-	CheckBox check4,value= 1	
-	CheckBox check5,pos={100,530},size={72,14},title="Use BGD?"
-	CheckBox check5,help={""}
-	CheckBox check5,value= 1	
-
+	CheckBox check1,pos={13,486},size={39,14},title="Mask",value= 1
+	CheckBox check2,pos={13,509},size={82,14},title="Absolute Scale",value= 1
+	CheckBox check3,pos={13,532},size={96,14},title="Average and Save",value= 1
+	CheckBox check4,pos={13,436},size={59,14},title="Use EMP?",value= 1
+	CheckBox check5,pos={103,436},size={60,14},title="Use BGD?",value= 1
 	
 
 // SAM Tab	
-	PopupMenu popup_0_1,pos={230,60},size={102,20},title="Condition"
+	PopupMenu popup_0_1,pos={190,45},size={102,20},title="Condition"
 	PopupMenu popup_0_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
 	// UU
-	ListBox ListBox_0_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_0_UU,pos={34,80},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_UU,listWave=root:Packages:NIST:Polarization:ListWave_0_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_0_UU,selWave=root:Packages:NIST:Polarization:lbSelWave_0_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_0_UU_0,pos={34,102},size={70,16},title="File",fSize=10
@@ -435,7 +441,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_0_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
-	ListBox ListBox_0_DU,pos={368,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_0_DU,pos={310,80},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_DU,listWave=root:Packages:NIST:Polarization:ListWave_0_DU,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_0_DU,selWave=root:Packages:NIST:Polarization:lbSelWave_0_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_0_DU_0,pos={368,102},size={70,16},title="File",fSize=10
@@ -460,7 +466,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_0_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
-	ListBox ListBox_0_DD,pos={33,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_0_DD,pos={33,245},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_DD,listWave=root:Packages:NIST:Polarization:ListWave_0_DD,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_0_DD,selWave=root:Packages:NIST:Polarization:lbSelWave_0_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_0_DD_0,pos={33,286},size={70,16},title="File",fSize=10
@@ -485,7 +491,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_0_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 	
 // UD
-	ListBox ListBox_0_UD,pos={368,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_0_UD,pos={310,245},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_UD,listWave=root:Packages:NIST:Polarization:ListWave_0_UD,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_0_UD,selWave=root:Packages:NIST:Polarization:lbSelWave_0_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_0_UD_0,pos={368,286},size={70,16},title="File",fSize=10
@@ -511,10 +517,10 @@ Window PolCor_Panel()
 
 
 // EMP Tab
-	PopupMenu popup_1_1,pos={230,60},size={102,20},title="Condition"
+	PopupMenu popup_1_1,pos={190,45},size={102,20},title="Condition"
 	PopupMenu popup_1_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"	
 	// UU
-	ListBox ListBox_1_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_1_UU,pos={34,80},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UU,listWave=root:Packages:NIST:Polarization:ListWave_1_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_1_UU,selWave=root:Packages:NIST:Polarization:lbSelWave_1_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_1_UU_0,pos={34,102},size={70,16},title="File",fSize=10
@@ -539,7 +545,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_1_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
-	ListBox ListBox_1_DU,pos={368,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_1_DU,pos={310,80},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_DU,listWave=root:Packages:NIST:Polarization:ListWave_1_DU,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_1_DU,selWave=root:Packages:NIST:Polarization:lbSelWave_1_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_1_DU_0,pos={368,102},size={70,16},title="File",fSize=10
@@ -564,7 +570,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_1_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
-	ListBox ListBox_1_DD,pos={33,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_1_DD,pos={33,245},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_DD,listWave=root:Packages:NIST:Polarization:ListWave_1_DD,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_1_DD,selWave=root:Packages:NIST:Polarization:lbSelWave_1_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_1_DD_0,pos={33,286},size={70,16},title="File",fSize=10
@@ -589,7 +595,7 @@ Window PolCor_Panel()
 //	PopupMenu popup_1_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // UD
-	ListBox ListBox_1_UD,pos={368,286},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_1_UD,pos={310,245},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UD,listWave=root:Packages:NIST:Polarization:ListWave_1_UD,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_1_UD,selWave=root:Packages:NIST:Polarization:lbSelWave_1_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_1_UD_0,pos={368,286},size={70,16},title="File",fSize=10
@@ -617,11 +623,11 @@ Window PolCor_Panel()
 // BKG Tab -- DU, DD, UD are not shown, since the background is not dependent on the flipper states, so only one background
 // file is necessary - this is "incorrectly" labeled as UU. I'll get around to changing this in the future...
 //
-	TitleBox title_2_UU,pos={350,100},size={400,48},title="\\f01BGD files are independent of polarization\rEnter all as UU",fSize=12
+	TitleBox title_2_UU,pos={250,100},size={400,48},title="\\f01BGD files are independent of polarization\rEnter all as UU",fSize=12
 
 
 	// UU
-	ListBox ListBox_2_UU,pos={34,102},size={200,130},proc=PolCor_FileListBoxProc,frame=2
+	ListBox ListBox_2_UU,pos={34,80},size={200,120},proc=PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_2_UU,listWave=root:Packages:NIST:Polarization:ListWave_2_UU,titleWave=root:Packages:NIST:Polarization:lbTitles
 	ListBox ListBox_2_UU,selWave=root:Packages:NIST:Polarization:lbSelWave_2_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
 //	SetVariable setvar_2_UU_0,pos={34,102},size={70,16},title="File",fSize=10
@@ -721,6 +727,38 @@ Window PolCor_Panel()
 //	PopupMenu popup_2_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 EndMacro
+
+Function SavePolCorPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SavePolCorPanelState()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function RestorePolCorPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			RestorePolCorPanelState()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 
 // action procedure for the list box that allows the popup menu
 // -- much easier to make a contextual popup with a list box than on a table/subwindow hook

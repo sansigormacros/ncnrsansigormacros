@@ -95,6 +95,11 @@ Static Constant XBINS=128
 Static Constant YBINS=128
 //
 
+Static Constant MODE_STREAM = 0
+Static Constant MODE_OSCILL = 1
+Static Constant MODE_TISANE = 2
+Static Constant MODE_TOF = 3
+
 //Menu "Macros"
 //	"Split Large File",SplitBigFile()
 //	"Accumulate First Slice",AccumulateSlices(0)
@@ -131,7 +136,7 @@ Function Init_Event()
 	
 	Variable/G root:Packages:NIST:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:gEvent_Mode = 0				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:gEvent_Mode = MODE_OSCILL				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
@@ -145,59 +150,110 @@ Function Init_Event()
 	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
 	Duplicate/O slicedData logslicedData
 	Duplicate/O slicedData dispsliceData
+
+
+// for decimation
+	Variable/G root:Packages:NIST:Event:gDecimation = 100
+	Variable/G root:Packages:NIST:gEvent_t_longest_decimated = 0
+
+// for large file splitting
+	String/G root:Packages:NIST:Event:gSplitFileList = ""		// a list of the file names as split
 	
 	SetDataFolder root:
 End
 
+//
+// -- extra bits of buttons... not used
+//
+//	Button button9 title="Decimation",size={100,20},pos={490,400},proc=E_ShowDecimateButton
+//
+//	Button button11,pos={490,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
+//	Button button12,pos={490,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
+//	Button button13,pos={490,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
+//	
+//	GroupBox group0 title="Manual Controls",size={185,112},pos={490,220}
+//
+//	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
+//	DoWindow/C EventModePanel
+//	ModifyPanel fixedSize=1,noEdit =1
 Proc EventModePanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(100,50,600,840)/N=EventModePanel/K=2
+	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
 	DoWindow/C EventModePanel
 	ModifyPanel fixedSize=1,noEdit =1
-	//ShowTools/A
+
 	SetDrawLayer UserBack
-	Button button0,pos={10,10}, size={150,20},title="Load Event Log File",fSize=12
-	Button button0,proc=LoadEventLog_Button
-	
-	TitleBox tb1,pos={20,650},size={460,80},fSize=12
-	TitleBox tb1,variable=root:Packages:NIST:gEventDisplayString
-	
-	CheckBox chkbox1,pos={170,8},title="Oscillatory Mode?"
-	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_mode
-	CheckBox chkbox3,pos={170,27},title="Remove Bad Events?"
-	CheckBox chkbox3,variable = root:Packages:NIST:gRemoveBadEvents
-	
-	Button doneButton,pos={435,12}, size={50,20},title="Done",fSize=12
-	Button doneButton,proc=EventDone_Proc
+	DrawText 479,345,"Stream Data"
+	DrawLine 563,338,731,338
+	DrawText 479,419,"Oscillatory Data"
+	DrawLine 578,411,731,411
 
-	Button button2,pos={20,122},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={20,147},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button4,pos={175,122},size={140,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button5,pos={175,147},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
-	Button button6,pos={378,13},size={40,20},proc=EventModeHelpButtonProc,title="?"
+//	ShowTools/A
+	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
+	Button button0,fSize=12
+	TitleBox tb1,pos={475,500},size={135,24},fSize=10
+	TitleBox tb1,variable= root:Packages:NIST:gEventDisplayString
 
-	Button button7,pos={175+155,122},size={140,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
-	Button button8,pos={175+155,147},size={140,20},proc=CustomBinButtonProc,title="Custom Bins"
+	CheckBox chkbox2,pos={376,151},size={81,14},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:gEvent_logint
+	CheckBox chkbox3,pos={14,125},size={119,14},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox3,variable= root:Packages:NIST:gRemoveBadEvents
 	
-	Button button1,pos = {10,50}, size={150,20},title="Process Data",fSize=12
-	Button button1,proc=ProcessEventLog_Button
-	SetVariable setvar1,pos={170,50},size={160,20},title="Number of slices",fSize=12,limits={1,1000,1}
-	SetVariable setvar1,value=root:Packages:NIST:gEvent_nslices
-	SetVariable setvar2,pos={330,50},size={160,20},title="Max Time (s)",fSize=12
-	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest
+	Button doneButton,pos={708,36},size={50,20},proc=EventDone_Proc,title="Done"
+	Button doneButton,fSize=12
+	Button button2,pos={419,28},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={419,56},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button4,pos={487,227},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button5,pos={419,85},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
+	Button button6,pos={718,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
+	Button button7,pos={487,197},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
+	Button button8,pos={619,197},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
+	Button button1,pos={206,100},size={120,20},proc=ProcessEventLog_Button,title="Bin Event Data"
+	Button button1,fSize=12
 	
-	PopupMenu popup0 title="Bin Spacing",pos={150,90},value="Equal;Fibonacci;Custom;"
-	PopupMenu popup0 proc=BinTypePopMenuProc
+	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
+	SetVariable setvar0,fSize=10
+	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:gEvent_tsdisp	
+	SetVariable setvar1,pos={206,26},size={160,16},title="Number of slices",fSize=10
+	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:gEvent_nslices
+	SetVariable setvar2,pos={206,51},size={160,16},title="Max Time (s)",fSize=10
+	SetVariable setvar2,value= root:Packages:NIST:gEvent_t_longest
 	
-	CheckBox chkbox2,pos={20,95},title="Log Intensity",value=1
-	CheckBox chkbox2,variable=root:Packages:NIST:gEvent_logint,proc=LogIntEvent_Proc
-	SetVariable setvar0,pos={320,90},size={160,20},title="Display Time Slice",fSize=12
-	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:gEvent_tsdisp
-	SetVariable setvar0,proc=sliceSelectEvent_Proc
-	Display/W=(20,180,480,640)/HOST=EventModePanel/N=Event_slicegraph
-	AppendImage/W=EventModePanel#Event_slicegraph/T root:Packages:NIST:Event:dispsliceData
-	ModifyImage/W=EventModePanel#Event_slicegraph  ''#0 ctab= {*,*,ColdWarm,0}
-	ModifyImage/W=EventModePanel#Event_slicegraph ''#0 ctabAutoscale=3
+	PopupMenu popup0,pos={206,74},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,fSize=10
+	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
+
+	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
+	Button button14,pos={488,350},size={130,20},proc=Stream_LoadDecim,title="Load From List"
+	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
+	SetVariable setvar3,fSize=10
+	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
+
+	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
+	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
+	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
+
+
+	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
+	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
+	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
+	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
+	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
+	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
+	
+	GroupBox group0_0,pos={5,5},size={174,112},title="Mode",fSize=12,fStyle=1
+	GroupBox group0_1,pos={192,5},size={192,123},title="Binning",fSize=12,fStyle=1
+	GroupBox group0_2,pos={403,5},size={173,109},title="Viewing",fSize=12,fStyle=1
+	GroupBox group0_3,pos={476,169},size={277,92},title="Editing",fSize=12,fStyle=1
+	GroupBox group0_4,pos={474,278},size={279,200},title="Big Files",fSize=12
+	GroupBox group0_4,fStyle=1
+	
+	Display/W=(10,170,460,610)/HOST=# 
+	AppendImage/T :Packages:NIST:Event:dispsliceData
+	ModifyImage dispsliceData ctab= {*,*,ColdWarm,0}
+	ModifyImage dispsliceData ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -207,10 +263,46 @@ Proc EventModePanel()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
-	SetAxis/A left
+	RenameWindow #,Event_slicegraph
 	SetActiveSubwindow ##
 EndMacro
 
+
+
+
+// mode selector
+//Static Constant MODE_STREAM = 0
+//Static Constant MODE_OSCILL = 1
+//Static Constant MODE_TISANE = 2
+//Static Constant MODE_TOF = 3
+//
+Function EventModeRadioProc(name,value)
+	String name
+	Variable value
+	
+	NVAR gEventModeRadioVal= root:Packages:NIST:gEvent_mode
+	
+	strswitch (name)
+		case "chkbox1_0":
+			gEventModeRadioVal= MODE_OSCILL
+			break
+		case "chkbox1_1":
+			gEventModeRadioVal= MODE_STREAM
+			break
+		case "chkbox1_2":
+			gEventModeRadioVal= MODE_TISANE
+			break
+		case "chkbox1_3":
+			gEventModeRadioVal= MODE_TOF
+			break
+	endswitch
+	CheckBox chkbox1_0,value= gEventModeRadioVal==MODE_OSCILL
+	CheckBox chkbox1_1,value= gEventModeRadioVal==MODE_STREAM
+	CheckBox chkbox1_2,value= gEventModeRadioVal==MODE_TISANE
+	CheckBox chkbox1_3,value= gEventModeRadioVal==MODE_TOF
+
+	return(0)
+End
 
 Function AdjustEventDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -362,11 +454,11 @@ Function ProcessEventLog_Button(ctrlName) : ButtonControl
 	
 	NVAR mode=root:Packages:NIST:gEvent_Mode
 	
-	if(mode == 0)
+	if(mode == MODE_STREAM)
 		Stream_ProcessEventLog("")
 	endif
 	
-	if(mode == 1)
+	if(mode == MODE_OSCILL)
 		Osc_ProcessEventLog("")
 	endif
 	
@@ -775,46 +867,21 @@ End
 //    from the file, trusting the times to be correct.
 //
 // Would TISANE or TOF need a different loader?
-//
+//	
 Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 
 	NVAR mode=root:Packages:NIST:gEvent_mode
 	Variable err=0
-	
-	if(mode == 0)
-		err = Stream_LoadEventLog("")
-		if(err == 1)
-			return(0)		// user cancelled from file load
-		endif
-	endif
-	
-	if(mode == 1)
-		err = Osc_LoadEventLog("")
-		if(err == 1)
-			return(0)		// user cancelled from file load
-		endif
-	endif
-
-	STRUCT WMButtonAction ba
-	ba.eventCode = 2
-	ShowEventDataButtonProc(ba)
-
-	return(0)
-End
-
-// for the mode of "one continuous exposure"
-//
-Function Stream_LoadEventLog(ctrlName)
-	String ctrlName
-	
-	Variable fileref
+	Variable fileref,totBytes
+	Variable fileTooLarge = 150		//limit load to 150MB
 
 	SVAR filename = root:Packages:NIST:gEvent_logfile
 	NVAR nslices = root:Packages:NIST:gEvent_nslices
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
 	
 	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
+	String abortStr
 	
 	Open/R/D/F=fileFilters fileref
 	filename = S_filename
@@ -823,76 +890,153 @@ Function Stream_LoadEventLog(ctrlName)
 		DoAlert 0,"No file selected, no file loaded."
 		return(1)
 	endif
-
-#if (exists("EventLoadWave")==4)
-	LoadEvents_XOP()
-#else
-	LoadEvents()
-#endif	
-
-	SetDataFolder root:Packages:NIST:Event:
-
-tic()
-	Wave timePt=timePt
-	Wave xLoc=xLoc
-	Wave yLoc=yLoc
-	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
 	
-toc()
+/// Abort if the files are too large
+	Open/R fileref as fileName
+		FStatus fileref
+	Close fileref
 
-	Duplicate/O timePt rescaledTime
-	rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
-	t_longest = waveMax(rescaledTime)		//should be the last point
-
-	SetDataFolder root:
-
-	return(0)
-End
-
-// for the mode "oscillatory"
-//
-Function Osc_LoadEventLog(ctrlName)
-	String ctrlName
-	
-	Variable fileref
-
-	SVAR filename = root:Packages:NIST:gEvent_logfile
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-	
-	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
-	
-	Open/R/D/F=fileFilters fileref
-	filename = S_filename
-		if(strlen(S_filename) == 0)
-		// user cancelled
-		DoAlert 0,"No file selected, no file loaded."
-		return(1)
+	totBytes = V_logEOF/1e6		//in MB
+	if(totBytes > fileTooLarge)
+		sprintf abortStr,"File is %g MB, larger than the limit of %g MB. Split and Decimate.",totBytes,fileTooLarge
+		Abort abortStr
 	endif
 	
+
 #if (exists("EventLoadWave")==4)
 	LoadEvents_XOP()
 #else
 	LoadEvents()
 #endif	
-	
+
 	SetDataFolder root:Packages:NIST:Event:
 
+//tic()
 	Wave timePt=timePt
 	Wave xLoc=xLoc
 	Wave yLoc=yLoc
-	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
+	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes	
+//toc()
 	
-	Duplicate/O timePt rescaledTime
-	rescaledTime *= 1e-7			//convert to seconds and that's all
-	t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
+	
+/////
+// now do a little processing of the times based on the type of data
+//	
+	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
+		Duplicate/O timePt rescaledTime
+		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+		t_longest = waveMax(rescaledTime)		//should be the last point	
+	endif
+	
+	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
+		Duplicate/O timePt rescaledTime
+		rescaledTime *= 1e-7			//convert to seconds and that's all
+		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
+	
+		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
+	endif
 
-	KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
+
 
 	SetDataFolder root:
 
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	ShowEventDataButtonProc(ba)
+
 	return(0)
 End
+
+//// for the mode of "one continuous exposure"
+////
+//Function Stream_LoadEventLog(ctrlName)
+//	String ctrlName
+//	
+//	Variable fileref
+//
+//	SVAR filename = root:Packages:NIST:gEvent_logfile
+//	NVAR nslices = root:Packages:NIST:gEvent_nslices
+//	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+//	
+//	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
+//	
+//	Open/R/D/F=fileFilters fileref
+//	filename = S_filename
+//	if(strlen(S_filename) == 0)
+//		// user cancelled
+//		DoAlert 0,"No file selected, no file loaded."
+//		return(1)
+//	endif
+//
+//#if (exists("EventLoadWave")==4)
+//	LoadEvents_XOP()
+//#else
+//	LoadEvents()
+//#endif	
+//
+//	SetDataFolder root:Packages:NIST:Event:
+//
+////tic()
+//	Wave timePt=timePt
+//	Wave xLoc=xLoc
+//	Wave yLoc=yLoc
+//	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
+//	
+////toc()
+//
+//	Duplicate/O timePt rescaledTime
+//	rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+//	t_longest = waveMax(rescaledTime)		//should be the last point
+//
+//	SetDataFolder root:
+//
+//	return(0)
+//End
+//
+//// for the mode "oscillatory"
+////
+//Function Osc_LoadEventLog(ctrlName)
+//	String ctrlName
+//	
+//	Variable fileref
+//
+//	SVAR filename = root:Packages:NIST:gEvent_logfile
+//	NVAR nslices = root:Packages:NIST:gEvent_nslices
+//	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+//	
+//	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
+//	
+//	Open/R/D/F=fileFilters fileref
+//	filename = S_filename
+//		if(strlen(S_filename) == 0)
+//		// user cancelled
+//		DoAlert 0,"No file selected, no file loaded."
+//		return(1)
+//	endif
+//	
+//#if (exists("EventLoadWave")==4)
+//	LoadEvents_XOP()
+//#else
+//	LoadEvents()
+//#endif	
+//	
+//	SetDataFolder root:Packages:NIST:Event:
+//
+//	Wave timePt=timePt
+//	Wave xLoc=xLoc
+//	Wave yLoc=yLoc
+//	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
+//	
+//	Duplicate/O timePt rescaledTime
+//	rescaledTime *= 1e-7			//convert to seconds and that's all
+//	t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
+//
+//	KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
+//
+//	SetDataFolder root:
+//
+//	return(0)
+//End
 
 
 //
@@ -1015,6 +1159,10 @@ Function LoadEvents()
 	SVAR filepathstr = root:Packages:NIST:gEvent_logfile
 	SVAR dispStr = root:Packages:NIST:gEventDisplayString
 	
+	
+////	Variable decFac = 10			//decimation factor
+////	Variable jj,keep
+	
 	SetDataFolder root:Packages:NIST:Event
 
 	Variable fileref
@@ -1122,7 +1270,7 @@ Function LoadEvents()
 	Print "num1 = ",num1	
 	Print "num2 = ",num2	
 	Print "num3 = ",num3	
-	
+
 //
 //	
 //	Printf "numXYevents = %d\r",numXYevents
@@ -1151,6 +1299,8 @@ Function LoadEvents()
 	
 	Make/O/U/N=(numXYevents) xLoc,yLoc
 	Make/O/D/N=(numXYevents) timePt
+////	Make/O/U/N=(numXYevents/decFac) xLoc,yLoc
+////	Make/O/D/N=(numXYevents/decFac) timePt
 //	Make/O/U/N=(totBytes/4) xLoc,yLoc		//too large, trim when done (bad idea)
 //	Make/O/D/N=(totBytes/4) timePt
 	Make/O/D/N=1000 badTimePt,badEventNum,PPTime,PPEventNum,T0Time,T0EventNum
@@ -1173,7 +1323,9 @@ Function LoadEvents()
 	
 	tic()
 	
-	ii = 0
+	ii = 0		//indexes the points in xLoc,yLoc,timePt
+////	keep = decFac		//keep the first point
+	
 	
 	Open/R fileref as filepathstr
 	
@@ -1206,11 +1358,13 @@ Function LoadEvents()
 					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
 				endif
 				
-				// this is the first point, be sure that ii = 0
-				ii = 0
-				xLoc[ii] = xval
-				yLoc[ii] = yval
-				
+				// this is the first point, be sure that ii = 0, and always keep this point
+////				if(keep==decFac)
+					ii = 0
+					xLoc[ii] = xval
+					yLoc[ii] = yval
+////					keep = 0
+////				endif
 				Print "At beginning of file, numBad = ",numBad
 				break	// the next do loop processes the bulk of the file (** the next event == type 1 = MIR)
 			else
@@ -1223,12 +1377,13 @@ Function LoadEvents()
 	endif
 	
 	// now read the main portion of the file.
+////	// keep is = 0 if bad points were removed, or is decFac is I need to keep the first point
 	do
 		do
 			FReadLine fileref, buffer			//skip the "blank" lines that have one character
 		while(strlen(buffer) == 1)		
 
-		if (strlen(buffer) == 0)
+		if (strlen(buffer) == 0)				// this marks the end of the file and is our only way out
 			break
 		endif
 		
@@ -1302,31 +1457,41 @@ Function LoadEvents()
 						numRemoved += 1
 					else
 						// time_msw has been reset, points are good now, so keep this one
-						xLoc[ii] = xval
-						yLoc[ii] = yval
-						timePt[ii] = timeval
-						
-//						if(xval == 127 && yval == 0)
-//							// check bit 29
-//							bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-//							Print "XY=127,0 : bit29 = ",bit29
-//						endif
-						
-						ii+=1
-						rolloverHappened = 0
+////						if(keep==decFac)
+							xLoc[ii] = xval
+							yLoc[ii] = yval
+							timePt[ii] = timeval
+							
+	//						if(xval == 127 && yval == 0)
+	//							// check bit 29
+	//							bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+	//							Print "XY=127,0 : bit29 = ",bit29
+	//						endif
+							
+							ii+=1
+							rolloverHappened = 0
+////							keep = 0
+////						else
+////							keep += 1
+////						endif
 					endif
 				else
 					// normal processing of good point, keep it
-					xLoc[ii] = xval
-					yLoc[ii] = yval
-					timePt[ii] = timeval
-				
-//					if(xval == 127 && yval == 0)
-//						// check bit 29
-//						bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-//						Printf "XY=127,0 : bit29 = %u : d=%u\r",bit29,dataval
-//					endif
-					ii+=1
+////					if(keep==decFac)
+						xLoc[ii] = xval
+						yLoc[ii] = yval
+						timePt[ii] = timeval
+					
+	//					if(xval == 127 && yval == 0)
+	//						// check bit 29
+	//						bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+	//						Printf "XY=127,0 : bit29 = %u : d=%u\r",bit29,dataval
+	//					endif
+						ii+=1
+////						keep = 0
+////					else
+////						keep += 1
+////					endif
 				endif
 
 
@@ -1365,9 +1530,11 @@ Function LoadEvents()
 					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
 				endif
 				
-				xLoc[ii] = xval
-				yLoc[ii] = yval
-
+////				if(keep==decFac)			//don't reset keep yet, do this only when ii increments
+					xLoc[ii] = xval
+					yLoc[ii] = yval
+////				endif
+				
 				// don't fill in the time yet, or increment the index ii
 				// the next event MUST be ATMIR with the MSW time bits
 				//
@@ -1389,7 +1556,9 @@ Function LoadEvents()
 				endif
 				
 				// the XY position was in the previous event ATXYM
-				timePt[ii] = timeval
+////				if(keep == decFac)
+					timePt[ii] = timeval
+////				endif
 
 				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
 				if(bit29 != 0)		// bit 29 set is a T0 event
@@ -1400,8 +1569,11 @@ Function LoadEvents()
 					// reset nRoll = 0 for calcluating the time
 					nRoll = 0
 				endif
-								
-				ii+=1
+				
+////				if(keep == decFac)			
+					ii+=1
+////					keep = 0
+////				endif
 //				verbose = 0
 				break
 			case ATMAR:  // 3
@@ -1451,9 +1623,9 @@ Function LoadEvents()
 	
 	Print "Events removed (Igor) = ",numRemoved
 	
-	sPrintf tmpStr,"\rBad Rollover Events = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
 	dispStr += tmpStr
-	sPrintf tmpStr,"\rTotal Events Removed = %d (%g %% of events)",numRemoved,numRemoved/numXYevents*100
+	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
 	dispStr += tmpStr
 	SetDataFolder root:
 	
@@ -1625,9 +1797,9 @@ tic()
 	
 	Print "Events removed (XOP) = ",numRemoved
 	
-	sPrintf tmpStr,"\rBad Rollover Events = %d (%g %% of events)",numBad,numBad/numXYevents*100
+	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
 	dispStr += tmpStr
-	sPrintf tmpStr,"\rTotal Events Removed = %d (%g %% of events)",numRemoved,numRemoved/numXYevents*100
+	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
 	dispStr += tmpStr
 
 	SetDataFolder root:
@@ -1948,14 +2120,18 @@ Proc EventCorrectionPanel()
 	
 	ControlBar 100
 	Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
-	Button button1,pos={153,11},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
-	Button button2,pos={153,37},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
+	Button button1,pos={153,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
+	Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
 	Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
-	Button button4,pos={295,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
-	Button button5,pos={294,38},size={100,20},proc=EC_ImportWavesButtonProc,title="Import Waves"
-	Button button6,pos={18,39},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
-	Button button7,pos={683,9},size={30,20},proc=EC_HelpButtonProc,title="?"
+	Button button4,pos={295+200,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
+	Button button5,pos={295+200,38},size={100,20},proc=EC_ImportWavesButtonProc,title="Import Waves"
+	Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
+	Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
 	Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
+
+	Button button9,pos={295,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
+	Button button10,pos={295,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
+	Button button11,pos={295,64},size={110,20},proc=EC_DoDifferential,title="Differential"
 	
 	SetDataFolder root:
 	
@@ -2099,7 +2275,7 @@ Function EC_SaveWavesButtonProc(ba) : ButtonControl
 			Wave timePt = timePt
 			Wave xLoc = xLoc
 			Wave yLoc = yLoc
-			Save/T xLoc,yLoc,timePt			//will ask for a name
+			Save/T xLoc,yLoc,timePt	,rescaledTime		//will ask for a name
 			
 			SetDataFolder root:
 			break
@@ -2138,13 +2314,14 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			// clear out the old sort index, if present, since new data is being loaded
 			KillWaves/Z OscSortIndex
 			Wave timePt=timePt
+			Wave rescaledTime=rescaledTime
 
-			Duplicate/O timePt rescaledTime
-			if(mode==0)
-				rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
-			else
-				rescaledTime = timePt*1e-7						//just take the times as-is
-			endif
+//			Duplicate/O timePt rescaledTime
+//			if(mode==MODE_STREAM)
+//				rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+//			else
+//				rescaledTime = timePt*1e-7						//just take the times as-is
+//			endif
 			
 			t_longest = waveMax(rescaledTime)		//should be the last point
 			
@@ -2207,8 +2384,85 @@ Function EC_DoneButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//upDown 5 or -5 looks for spikes +5 or -5 std deviations from mean
+Function PutCursorsAtStep(upDown)
+	Variable upDown
+	
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave rescaledTime=rescaledTime
+	Wave rescaledTime_DIF=rescaledTime_DIF
+	Variable avg,pt,zoom
+	
+	zoom = 200		//points in each direction
+	
+	WaveStats/Q rescaledTime_DIF
+	avg = V_avg
+	
+	
+	FindLevel/P/Q rescaledTime_DIF avg*upDown
+	if(V_flag==0)
+		pt = V_levelX
+		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-vallues within the point range
+	else
+		Print "Level not found"
+		return(0)
+	endif
+	
+	Variable loLeft,hiLeft, loBottom,hiBottom
+	loLeft = V_min*0.98		//+/- 2%
+	hiLeft = V_max*1.02
+	
+	SetAxis left loLeft,hiLeft
+	SetAxis bottom pnt2x(rescaledTime,pt-zoom),pnt2x(rescaledTime,pt+zoom)
+	
+	Cursor/P A rescaledTime pt+2	//at the point
+	Cursor/P B rescaledTime numpnts(rescaledTime)-1		//at the end
+
+	SetDataFolder root:
+
+	return(0)
+End
 
 
+Function EC_FindStepButton_down(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Variable upDown = -5
+	PutCursorsAtStep(upDown)
+
+	return(0)
+end
+
+
+Function EC_FindStepButton_up(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Variable upDown = 5
+	PutCursorsAtStep(upDown)
+
+	return(0)
+end
+
+
+Function EC_DoDifferential(ctrlName) : ButtonControl
+	String ctrlName
+	
+	DifferentiatedTime()
+	DoWindow/F EventCorrectionPanel
+	
+	//if trace is not on graph, add it
+	SetDataFolder root:Packages:NIST:Event:
+
+	String list = WaveList("*_DIF", ";", "WIN:EventCorrectionPanel")
+	if(strlen(list) == 0)
+		AppendToGraph/R rescaledTime_DIF
+		ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
+		ReorderTraces rescaledTime,{rescaledTime_DIF}		// put the differential behind the event data
+	endif
+	SetDataFolder root:
+	return(0)
+end
 
 //////////////   Custom Bins  /////////////////////
 //
@@ -2268,7 +2522,7 @@ Proc CustomBinPanel()
 	Button button2,pos={216,42},size={80,20},title="Update",proc=CB_UpdateWavesButton	
 	SetVariable setvar1,pos={23,13},size={160,20},title="Number of slices",fSize=12
 	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:gEvent_nslices
-	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=12
+	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=10
 	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest	
 
 	CheckBox chkbox1,pos={216,14},title="Enforce Max Time?"
@@ -2504,10 +2758,12 @@ Proc SplitBigFile(splitSize, baseStr)
 	Prompt splitSize,"Target file size, in MB"
 	Prompt baseStr,"File prefix, number will be appended"
 	
+	
 	fSplitBigFile(splitSize, baseStr)
+	
 End
 
-Function fSplitBigFile(splitSize, baseStr)
+Function/S fSplitBigFile(splitSize, baseStr)
 	Variable splitSize
 	String baseStr		
 
@@ -2516,12 +2772,15 @@ Function fSplitBigFile(splitSize, baseStr)
 	String pathName=""
 	Variable refNum
 	String str
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
+	
+	listStr=""		//initialize output list
 
 	Variable readSize=1e6		//1 MB
 	Make/O/B/U/N=(readSize) aBlob			//1MB worth
 	Variable numSplit
 	Variable num,ii,jj,outRef,frac
-	String thePath
+	String thePath, outStr
 	
 	Printf "SplitSize = %u MB\r",splitSize
 	splitSize = trunc(splitSize) * 1e6		// now in bytes
@@ -2529,7 +2788,8 @@ Function fSplitBigFile(splitSize, baseStr)
 	
 	// Open file for read.
 	Open/R/Z=2/F="????"/P=$pathName refNum as fileName
-	thePath = ParseFilePath(1, fileName, ":", 1, 0)
+	thePath = ParseFilePath(1, S_fileName, ":", 1, 0)
+	Print "thePath = ",thePath
 	
 	// Store results from Open in a safe place.
 	Variable err = V_flag
@@ -2537,7 +2797,7 @@ Function fSplitBigFile(splitSize, baseStr)
 
 	if (err == -1)
 		Print "cancelled by user."
-		return -1
+		return ("")
 	endif
 
 	FStatus refNum
@@ -2564,10 +2824,12 @@ Function fSplitBigFile(splitSize, baseStr)
 	Print "num = ",num
 	Printf "frac = %u\r",frac
 	
-	baseStr = "split"
+//	baseStr = "split"
 	
 	for(ii=0;ii<numSplit;ii+=1)
-		Open outRef as (thePath+baseStr+num2str(ii))
+		outStr = (thePath+baseStr+num2str(ii))
+//		Print "outStr = ",outStr
+		Open outRef as outStr
 
 		for(jj=0;jj<(splitSize/readSize);jj+=1)
 			FBinRead refNum,aBlob
@@ -2575,11 +2837,13 @@ Function fSplitBigFile(splitSize, baseStr)
 		endfor
 
 		Close outRef
+		listStr += outStr+";"
 	endfor
 
 	Make/O/B/U/N=(frac) leftover
 	// ii was already incremented past the loop
-	Open outRef as (thePath+baseStr+num2str(ii))
+	outStr = (thePath+baseStr+num2str(ii))
+	Open outRef as outStr
 	for(jj=0;jj<num;jj+=1)
 		FBinRead refNum,aBlob
 		FBinWrite outRef,aBlob
@@ -2588,29 +2852,44 @@ Function fSplitBigFile(splitSize, baseStr)
 	FBinWrite outRef,leftover
 
 	Close outRef
+	listStr += outStr+";"
 
 
 	FSetPos refNum,V_logEOF
 	Close refNum
 	
-	
-	return 0
+	KillWaves/Z aBlob,leftover
+	return(listStr)
 End
 
 
 
 //// save the sliced data, and accumulate slices
+//  *** this works with sliced data -- that is data that has been PROCESSED
 //
-// need some way of ensuring that the slices match up since I' blindly adding them together.
-//
-//
-// 
+// need some way of ensuring that the slices match up since I'm blindly adding them together. 
 //
 // mode = 0		wipe out the old accumulated, copy slicedData to accumulatedData
 // mode = 1		add current slicedData to accumulatedData
 // mode = 2		copy accumulatedData to slicedData in preparation of export or display
-// mode = 3		sing a song, dance a dance
+// mode = 3		unused...
 //
+//	"Split Large File",SplitBigFile()
+//	"Accumulate First Slice",AccumulateSlices(0)
+//	"Add Current Slice",AccumulateSlices(1)
+//	"Display Accumulated Slices",AccumulateSlices(2)	
+//
+Function AccumulateSlicesButton(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Variable mode
+	mode = str2num(ctrlName[strlen(ctrlName)-1])
+//	Print "mode=",mode
+	AccumulateSlices(mode)
+	
+	return(0)
+End
+
 Function AccumulateSlices(mode)
 	Variable mode
 	
@@ -2639,3 +2918,299 @@ Function AccumulateSlices(mode)
 	SetDataFolder root:
 	return(0)
 end
+
+
+////////////////////////////////////////////
+//
+// Panel and procedures for decimation
+//
+////////////////////////////////////////////
+
+//Function E_ShowDecimateButton(ctrlName) : ButtonControl
+//	String ctrlName
+//
+//	DoWindow/F DecimatePanel
+//	if(V_flag ==0)
+//		Execute "DecimatePanel()"
+//	endif
+//End
+//
+//
+//Proc DecimatePanel() //: Panel
+//	
+//	PauseUpdate; Silent 1		// building window...
+//	NewPanel /W=(1602,44,1961,380)/K=1
+////	ShowTools/A
+//	Button button0,pos={29,15},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
+//	SetVariable setvar0,pos={182,55},size={150,15},title="Decimation factor",fsize=10
+//	SetVariable setvar0,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
+//	Button button1,pos={26,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
+//	Button button2,pos={25,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
+//	Button button3,pos={25,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
+//	Button button4,pos={29,52},size={130,20},proc=Stream_LoadDecim,title="Load From List"
+//	
+//	GroupBox group0 title="Manual Controls",size={185,112},pos={14,220}
+//EndMacro
+
+
+Function SplitFileButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	Execute "SplitBigFile()"
+End
+
+
+// show all of the data
+//
+Proc ShowDecimatedGraph()
+
+	DoWindow/F DecimatedGraph
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+		String fldrSav0= GetDataFolder(1)
+		SetDataFolder root:Packages:NIST:Event:
+		Display /W=(25,44,486,356)/K=1/N=DecimatedGraph rescaledTime_dec
+		SetDataFolder fldrSav0
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ModifyGraph rgb(rescaledTime_dec)=(0,0,0)
+		ModifyGraph msize=1
+		ErrorBars rescaledTime_dec OFF 
+		Label left "\\Z14Time (seconds)"
+		Label bottom "\\Z14Event number"
+		ShowInfo
+	endif
+	
+EndMacro
+
+// data has NOT been processed
+//
+// so work with x,y,t, and rescaled time
+// variables -- t_longest
+Function ConcatenateButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	DoAlert 1,"Is this the first file?"
+	Variable first = V_flag
+	
+	fConcatenateButton(first)
+	
+	return(0)
+End
+
+Function fConcatenateButton(first)
+	Variable first
+
+
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave timePt_dTmp=timePt_dTmp
+	Wave xLoc_dTmp=xLoc_dTmp
+	Wave yLoc_dTmp=yLoc_dTmp
+	Wave rescaledTime_dTmp=rescaledTime_dTmp
+	
+	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	
+	
+	if(first==1)		//1==yes, 2==no
+		//then copy the files over, adjusting the time to start from zero
+		// rescaledTime starts from zero (set by the loader)
+
+		timePt_dTmp -= timePt_dTmp[0]			//subtract the first value
+		
+		Duplicate/O timePt_dTmp timePt_dec
+		Duplicate/O xLoc_dTmp xLoc_dec
+		Duplicate/O yLoc_dTmp yLoc_dec
+		Duplicate/O rescaledTime_dTmp rescaledTime_dec
+		
+		t_longest_dec = t_longest
+	
+	else
+		// concatenate the files + adjust the time
+		Wave timePt_dec=timePt_dec
+		Wave xLoc_dec=xLoc_dec
+		Wave yLoc_dec=yLoc_dec
+		Wave rescaledTime_dec=rescaledTime_dec
+
+		// adjust the times -- assuming they add
+		// rescaledTime starts from zero (set by the loader)
+		//
+		//
+		rescaledTime_dTmp += rescaledTime_dec[numpnts(rescaledTime_dec)-1]
+		rescaledTime_dTmp += abs(rescaledTime_dec[numpnts(rescaledTime_dec)-1] - rescaledTime_dec[numpnts(rescaledTime_dec)-2])
+		
+		timePt_dTmp -= timePt_dTmp[0]			//subtract the first value	
+		
+		timePt_dTmp += timePt_dec[numpnts(timePt_dec)-1]		// offset by the last point
+		timePt_dTmp += abs(timePt_dec[numpnts(timePt_dec)-1] - timePt_dec[numpnts(timePt_dec)-2])		// plus delta so there's not a flat step
+		
+		Concatenate/NP/O {timePt_dec,timePt_dTmp}, tmp
+		Duplicate/O tmp timePt_dec
+		
+		Concatenate/NP/O {xLoc_dec,xLoc_dTmp}, tmp
+		Duplicate/O tmp xLoc_dec
+		
+		Concatenate/NP/O {yLoc_dec,yLoc_dTmp}, tmp
+		Duplicate/O tmp yLoc_dec
+		
+		Concatenate/NP/O {rescaledTime_dec,rescaledTime_dTmp}, tmp
+		Duplicate/O tmp rescaledTime_dec
+		
+
+		KillWaves tmp
+
+		t_longest_dec = rescaledTime_dec[numpnts(rescaledTime_dec)-1]
+
+	endif
+	
+	
+	SetDataFolder root:
+	
+	return(0)
+
+End
+
+Function DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	//copy the files over to the display set for processing
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave timePt_dec=timePt_dec
+	Wave xLoc_dec=xLoc_dec
+	Wave yLoc_dec=yLoc_dec
+	Wave rescaledTime_dec=rescaledTime_dec
+		
+	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	
+	Duplicate/O timePt_dec timePt
+	Duplicate/O xLoc_dec xLoc
+	Duplicate/O yLoc_dec yLoc
+	Duplicate/O rescaledTime_dec rescaledTime
+	
+	t_longest = t_longest_dec	
+	
+	SetDataFolder root:
+	
+	return(0)
+
+End
+
+
+
+
+Function LoadDecimateButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	LoadEventLog_Button("")
+	
+	// now decimate
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave timePt=timePt
+	Wave xLoc=xLoc
+	Wave yLoc=yLoc
+	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+
+	NVAR decimation = root:Packages:NIST:Event:gDecimation
+
+
+	Duplicate/O timePt, timePt_dTmp
+	Duplicate/O xLoc, xLoc_dTmp
+	Duplicate/O yLoc, yLoc_dTmp
+	Resample/DOWN=(decimation)/N=1 timePt_dTmp
+	Resample/DOWN=(decimation)/N=1 xLoc_dTmp
+	Resample/DOWN=(decimation)/N=1 yLoc_dTmp
+
+
+	Duplicate/O timePt_dTmp rescaledTime_dTmp
+	rescaledTime_dTmp = 1e-7*(timePt_dTmp - timePt_dTmp[0])		//convert to seconds and start from zero
+	t_longest_dec = waveMax(rescaledTime_dTmp)		//should be the last point
+
+	SetDataFolder root:
+
+	
+End
+
+// functions that take file names as arguments so that the loading an be done in batch mode
+// for the mode of "one continuous exposure"
+//
+Function Stream_LoadDecim(ctrlName)
+	String ctrlName
+	
+	Variable fileref
+
+	SVAR filename = root:Packages:NIST:gEvent_logfile
+	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
+
+	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+	NVAR decimation = root:Packages:NIST:Event:gDecimation
+
+
+
+	//loop through everything in the list
+	Variable num,ii
+	num = ItemsInList(listStr)
+	
+	for(ii=0;ii<num;ii+=1)
+
+// (1) load the file		
+		filename = StringFromList(ii, listStr  ,";")
+		
+
+#if (exists("EventLoadWave")==4)
+		LoadEvents_XOP()
+#else
+		LoadEvents()
+#endif	
+
+		SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root:
+
+		Wave timePt=timePt
+		Wave xLoc=xLoc
+		Wave yLoc=yLoc
+		CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
+
+		Duplicate/O timePt rescaledTime
+		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+		t_longest = waveMax(rescaledTime)		//should be the last point
+		
+// (2) do the decimation, just on timePt. Ignore rescaledTime for now	
+		
+		Duplicate/O timePt, timePt_dTmp
+		Duplicate/O xLoc, xLoc_dTmp
+		Duplicate/O yLoc, yLoc_dTmp
+		Resample/DOWN=(decimation)/N=1 timePt_dTmp
+		Resample/DOWN=(decimation)/N=1 xLoc_dTmp
+		Resample/DOWN=(decimation)/N=1 yLoc_dTmp
+	
+	
+		Duplicate/O timePt_dTmp rescaledTime_dTmp
+		rescaledTime_dTmp = 1e-7*(timePt_dTmp - timePt_dTmp[0])		//convert to seconds and start from zero
+		t_longest_dec = waveMax(rescaledTime_dTmp)		//should be the last point
+		
+
+// (3) concatenate
+		fConcatenateButton(ii+1)		//passes 1 for the first time, >1 each other time
+	
+	endfor
+
+////		Now that everything is decimated and concatenated, create the rescaled time wave
+//	SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root:
+//	Wave timePt_dec = timePt_dec
+//	Duplicate/O timePt_dec rescaledTime_dec
+//	rescaledTime_dec = 1e-7*(timePt_dec - timePt_dec[0])		//convert to seconds and start from zero
+//	t_longest_dec = waveMax(rescaledTime_dec)		//should be the last point
+	
+	DisplayConcatenatedButtonProc("")
+	
+	SetDataFolder root:
+
+	return(0)
+End
+
+/////////////////////////////////////

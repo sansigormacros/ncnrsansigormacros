@@ -143,7 +143,8 @@ Proc ShowCellParamPanel()
 		Make_HeCell_ParamWaves()
 		DrawCellParamPanel()
 	endif
-
+	// be sure that the panel is onscreen
+	DoIgorMenu "Control","Retrieve Window"
 end
 
 // setup the data folder, etc
@@ -281,18 +282,20 @@ Function DrawCellParamPanel()
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(775,44,1375,377)/N=CellParamPanel/K=1 as "Fundamental Cell Parameters"
+	NewPanel /W=(150,44,750,377)/N=CellParamPanel/K=1 as "Fundamental Cell Parameters"
 	ModifyPanel cbRGB=(65535,49151,55704)
 	ModifyPanel fixedSize=1
 
 //	ShowTools/A
 	Button button_0,pos={10,10},size={90,20},proc=AddCellButtonProc,title="Add Cell"
 	Button button_1,pos={118,10},size={160,20},proc=SaveCellParButtonProc,title="Update Parameters"
-	Button button_2,pos={300,10},size={130,20},proc=RevertCellParButtonProc,title="Revert Parameters"
+	Button button_2,pos={118,35},size={130,20},proc=RevertCellParButtonProc,title="Revert Parameters"
 	Button button_3,pos={520,10},size={35,20},proc=CellHelpParButtonProc,title="?"
 
+	Button button_4,pos={324,10},size={100,20},proc=SaveCellPanelButton,title="Save State"
+	Button button_5,pos={324,35},size={100,20},proc=RestoreCellPanelButton,title="Restore State"
 	
-	Edit/W=(14,55,582,318)/HOST=#
+	Edit/W=(14,60,582,318)/HOST=#
 	ModifyTable width(Point)=0
 	RenameWindow #,T0
 
@@ -305,6 +308,40 @@ Function DrawCellParamPanel()
 	SetDataFolder root:
 	return(0)
 End
+
+
+Function SaveCellPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SaveCellParameterTable()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function RestoreCellPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			RestoreCellParameterTable()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
 
 Function CellHelpParButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -414,6 +451,8 @@ Proc ShowCellDecayPanel()
 		InitDecayGlobals()
 		DecayParamPanel()
 	endif
+	// be sure that the panel is onscreen
+	DoIgorMenu "Control","Retrieve Window"
 end
 
 Function InitDecayGlobals()
@@ -440,47 +479,49 @@ Function DecayParamPanel()
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(759,44,1572,713)/N=DecayPanel/K=1 as "Cell Decay Parameters"
+	NewPanel /W=(200,44,1013,664)/N=DecayPanel/K=1 as "Cell Decay Parameters"
 	ModifyPanel cbRGB=(32768,54615,65535)
 //	Button button_3,pos={505,16},size={35,20},proc=DecayHelpParButtonProc,title="?"
-	PopupMenu popup_0,pos={32,18},size={49,20},title="Cell",proc=DecayPanelPopMenuProc
+	PopupMenu popup_0,pos={32,8},size={49,20},title="Cell",proc=DecayPanelPopMenuProc
 	PopupMenu popup_0,mode=1,value= #"D_CellNameList()"
 	
-	Button button_0,pos={584,365},size={70,20},proc=DecayFitButtonProc,title="Do Fit"
+	Button button_0,pos={560,294},size={70,20},proc=DecayFitButtonProc,title="Do Fit"
 	
-	GroupBox group_0,pos={550,399},size={230,149},title="FIT RESULTS",fSize=10
+	GroupBox group_0,pos={560,329},size={230,149},title="FIT RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
-	SetVariable setvar_0,pos={560,428},size={200,13},title="muPo of 3He"
+	SetVariable setvar_0,pos={570,358},size={200,13},title="muPo of 3He"
 	SetVariable setvar_0,fStyle=1,limits={0,0,0},barmisc={0,1000}
 	SetVariable setvar_0,value= root:Packages:NIST:Polarization:Cells:gMuPo
-	SetVariable setvar_1,pos={560,460},size={200,13},title="Po of 3He"
+	SetVariable setvar_1,pos={570,390},size={200,13},title="Po of 3He"
 	SetVariable setvar_1,fStyle=1,limits={0,0,0},barmisc={0,1000}
 	SetVariable setvar_1,value= root:Packages:NIST:Polarization:Cells:gPo
-	SetVariable setvar_2,pos={560,518},size={200,13},title="Gamma (h)",fStyle=1
+	SetVariable setvar_2,pos={570,448},size={200,13},title="Gamma (h)",fStyle=1
 	SetVariable setvar_2,limits={0,0,0},barmisc={0,1000}
 	SetVariable setvar_2,value= root:Packages:NIST:Polarization:Cells:gGamma
-	SetVariable setvar_3,pos={560,488},size={200,15},title="T0",fStyle=1
+	SetVariable setvar_3,pos={570,418},size={200,13},title="T0",fStyle=1
 	SetVariable setvar_3,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
 	
 
-	Button button_1,pos={579,294},size={120,20},proc=CalcRowParamButton,title="Calculate Rows"
-	Button button_2,pos={307,18},size={110,20},proc=ClearDecayWavesButton,title="Clear Table"
-	Button button_3,pos={579,333},size={120,20},proc=ShowCalcRowButton,title="Show Calc"
-	Button button_4,pos={440,18},size={110,20},proc=ClearDecayWavesRowButton,title="Clear Row"
-	Button button_5,pos={620,18},size={40,20},proc=DecayHelpParButtonProc,title="?"
-	Button button_6,pos={620,620},size={100,20},proc=WindowSnapshotButton,title="Snapshot"
-	Button button_7,pos={620,580},size={130,20},proc=ManualEnterDecayButton,title="Manual Entry"
-	CheckBox check0,mode=0,pos={600,550},title="Overrride T0?",value=0
+	Button button_1,pos={560,262},size={120,20},proc=CalcRowParamButton,title="Calculate Rows"
+	Button button_2,pos={307,8},size={110,20},proc=ClearDecayWavesButton,title="Clear Table"
+	Button button_3,pos={560,519},size={110,20},proc=ShowCalcRowButton,title="Show Calc"
+	Button button_4,pos={440,8},size={110,20},proc=ClearDecayWavesRowButton,title="Clear Row"
+	Button button_5,pos={620,8},size={40,20},proc=DecayHelpParButtonProc,title="?"
+	Button button_6,pos={560,574},size={110,20},proc=WindowSnapshotButton,title="Snapshot"
+	Button button_7,pos={560,547},size={110,20},proc=ManualEnterDecayButton,title="Manual Entry"
+	Button button_8,pos={690,547},size={110,20},proc=SaveDecayPanelButton,title="Save State"
+	Button button_9,pos={690,574},size={110,20},proc=RestoreDecayPanelButton,title="Restore State"
+	CheckBox check0,mode=0,pos={560,480},title="Overrride T0?",value=0
 
 
 	// table
-	Edit/W=(14,55,794,275)/HOST=# 
+	Edit/W=(14,35,794,240)/HOST=# 
 	ModifyTable format=1,width=0
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 	
 	// graph
-	Display/W=(15,291,540,652)/HOST=#  //root:yy vs root:xx
+	Display/W=(15,250,540,610)/HOST=#  //root:yy vs root:xx
 	ModifyGraph frameStyle=2
 	ModifyGraph mode=4
 	ModifyGraph marker=19
@@ -1413,6 +1454,36 @@ Function WindowSnapshotButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			SavePICT /E=-5/SNAP=1
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function SaveDecayPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			SaveCellDecayTable()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function RestoreDecayPanelButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			RestoreCellDecayTable()
 			break
 		case -1: // control being killed
 			break
