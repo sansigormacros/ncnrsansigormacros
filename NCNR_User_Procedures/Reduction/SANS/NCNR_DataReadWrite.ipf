@@ -1944,7 +1944,7 @@ End
 // VAX FP format has to be duplicated with a write/read/flip/re-write dance...
 //
 // seems to work correctly byte for byte
-// compression has bee implmented also, for complete replication of the format (n>32767 in a cell)
+// compression has been implmented also, for complete replication of the format (n>32767 in a cell)
 //
 // SRK 29JAN09
 //
@@ -3110,3 +3110,91 @@ Function FakeDIVHeader(hdrWave)
 End
 
 ////////end of ProDiv() specifics
+
+
+// JUL 2013
+// Yet another fix for an ICE issue. Here the issue is when the run number gets "magically"
+// reset during an experiment. Then there are duplicate run numbers. When procedures key on the run number,
+// the *first* file in the OS file listing is the one that's found. Simply renaming the file with a 
+// different number is not sufficient, as the file name embedded in the header must be used (typically from
+// marquee operations) where there is a disconnect between the file load and the function - leading to 
+// cases where the current data is "unknown", except for textRead.
+//
+// Hence more patching procedures to re-write files with new file names in the header and the OS.
+//
+Proc RenumberRunNumber(add)
+	Variable add
+
+	fRenumberRunNumber(add)
+
+End
+
+Proc CheckFileNames(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fCheckFileNames(firstFile,lastFile)
+End
+
+
+// will read the 21 character file name and put any spaces at the front of the string
+// like the VAX does. Should have absolutely no effect if there are spaces at the
+// beginning of the string, as the VAX does.
+Function fRenumberRunNumber(add)
+	Variable add
+	
+	Variable ii,numItems
+	String item,runStr,list
+	String curFile,newRunStr,newFileStr
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_path
+	
+// get a list of all of the files in the folder
+	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
+	numItems = ItemsInList(list,";")		//get the new number of items in the list
+
+// for each file
+	for(ii=0;ii<numItems;ii+=1)
+		curFile = StringFromList(ii, list  ,";" )
+		runStr = GetRunNumStrFromFile(curFile)
+		
+		if(cmpstr(runStr,"ABC") != 0)		// weed out error if run number can't be found
+			newRunStr = num2str( str2num(runStr) + add )
+			newFileStr = ReplaceString(runStr, curFile, newRunStr )
+		// change the file name on disk to have a new number (+add)
+			Printf "Old = %s\t\tNew = %s\r",curFile,newFileStr
+			
+		// copy the file, saving with the new name
+			CopyFile/I=0/O/P=catPathName curFile as newFileStr
+			
+		// change the run number in the file header to have the new number (writing just the necessary characters)
+			WriteTextToHeader(pathStr+newFileStr,newRunStr,7)		//start at byte 7
+		endif
+					
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the file name stored in the file header (and the suffix)
+Function fCheckFileNames(lo,hi)
+	Variable lo,hi
+	
+	String file,fileName,suffix,fileInHdr,fileOnDisk
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			fileOnDisk = ParseFilePath(0, file, ":", 1, 0)
+			fileInHdr = getFileName(file)
+//			suffix = getSuffix(file)
+			printf "File %d:  File on disk = %s\t\tFile in Hdr = %s\r",ii,fileOnDisk,fileInHdr
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+

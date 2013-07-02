@@ -755,7 +755,7 @@ End
 //is not a complete specification of the file
 //
 // added 11/99 - uppercase and lowercase versions of the file are tried, if necessary
-// since from marquee, the filename field (textread[0]) must be used, and can be a mix of
+// since from marquee, the filename field (textread[0]) must be used, and can be a mix of		// 02JUL13
 // upper/lowercase letters, while the filename on the server (should) be all caps
 // now makes repeated calls to ValidFileString()
 //

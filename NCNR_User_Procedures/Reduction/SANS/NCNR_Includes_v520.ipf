@@ -126,6 +126,9 @@ xMenu "SANSBeta"
 	"-"
 	"PatchFileNameInHeader"
 	"ReadFileNameInHeader"
+	"-"
+	"Renumber Run Number"
+	"Check File Names"
 //	"-"
 //	"AddALLToLayout"			//added to tile raw 2d panel
 	

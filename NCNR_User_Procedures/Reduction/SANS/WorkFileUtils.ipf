@@ -311,7 +311,7 @@ Function Raw_to_work(newType)
 	WAVE/T textread=$(destPath + ":textread")				//that are to be directly operated on
 	WAVE integersread=$(destPath + ":integersread")
 	WAVE realsread=$(destPath + ":realsread")
-	String/G $(destPath + ":fileList") = textread[0]			//a list of names of the files in the work file (1)
+	String/G $(destPath + ":fileList") = textread[0]			//a list of names of the files in the work file (1)		//02JUL13
 	
 	//apply nonlinear, Jacobian corrections ---
 	// switches to control what is done, don't do the transmission correction for the BGD measurement

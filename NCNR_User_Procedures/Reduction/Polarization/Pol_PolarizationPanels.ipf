@@ -639,7 +639,7 @@ Function DecayPanelPopMenuProc(pa) : PopupMenuControl
 			SetDataFolder root:Packages:NIST:Polarization:Cells
 
 			KillWindow DecayPanel#T0
-			Edit/W=(14,55,794,275)/HOST=DecayPanel
+			Edit/W=(14,35,794,240)/HOST=DecayPanel
 			RenameWindow #,T0
 			AppendtoTable/W=DecayPanel#T0 decay.ld			//show the labels
 			ModifyTable width(Point)=0

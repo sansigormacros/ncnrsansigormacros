@@ -2068,7 +2068,7 @@ Function AskForAbsoluteParams_Quest()
 		
 		//get the XY box, if needed
 		Variable x1,x2,y1,y2,ct_err
-		String filename=tw[0],tempStr
+		String filename=tw[0],tempStr			//02JUL13
 		PathInfo/S catPathName
 		String tempName = S_Path + FindValidFilename(filename)
 		err = GetXYBoxFromFile(tempName,x1,x2,y1,y2)		//xy's are passed/returned by reference

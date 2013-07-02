@@ -2761,6 +2761,7 @@ Proc SplitBigFile(splitSize, baseStr)
 	
 	fSplitBigFile(splitSize, baseStr)
 	
+	ShowSplitFileTable()
 End
 
 Function/S fSplitBigFile(splitSize, baseStr)
@@ -2862,6 +2863,19 @@ Function/S fSplitBigFile(splitSize, baseStr)
 	return(listStr)
 End
 
+// allows the list of loaded files to be edited
+Function ShowSplitFileTable()
+
+	SVAR str = root:Packages:NIST:Event:gSplitFileList
+	
+	Make/O/T/N=1 root:Packages:NIST:Event:SplitFileWave
+	WAVE tw = root:Packages:NIST:Event:SplitFileWave
+	
+	List2TextWave(str,tw)
+	Edit tw
+
+	return(0)
+End
 
 
 //// save the sliced data, and accumulate slices
@@ -3134,8 +3148,7 @@ Function LoadDecimateButtonProc(ctrlName) : ButtonControl
 	
 End
 
-// functions that take file names as arguments so that the loading an be done in batch mode
-// for the mode of "one continuous exposure"
+// loads a list of files, decimating each chunk as it is read in
 //
 Function Stream_LoadDecim(ctrlName)
 	String ctrlName
@@ -3151,6 +3164,20 @@ Function Stream_LoadDecim(ctrlName)
 	NVAR decimation = root:Packages:NIST:Event:gDecimation
 
 
+// if "stream" mode is not checked - abort
+	NVAR gEventModeRadioVal= root:Packages:NIST:gEvent_mode
+	if(gEventModeRadioVal != MODE_STREAM)
+		Abort "The mode must be 'Stream' to use this function"
+		return(0)
+	endif
+
+// if the list has been edited, turn it into a list
+	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	if(WaveExists(tw))
+		listStr = TextWave2SemiList(tw)
+	endif
+	
+	
 
 	//loop through everything in the list
 	Variable num,ii
@@ -3179,7 +3206,7 @@ Function Stream_LoadDecim(ctrlName)
 		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
 		t_longest = waveMax(rescaledTime)		//should be the last point
 		
-// (2) do the decimation, just on timePt. Ignore rescaledTime for now	
+// (2) do the decimation, just on timePt. create rescaledTime from the decimated timePt	
 		
 		Duplicate/O timePt, timePt_dTmp
 		Duplicate/O xLoc, xLoc_dTmp

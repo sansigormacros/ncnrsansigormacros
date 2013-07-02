@@ -638,7 +638,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
-			newFileName= GetNameFromHeader(tw[0])
+			newFileName= GetNameFromHeader(tw[0])		//02JUL13
 			
 			if(qxqy)
 				fullPath=pathStr+newFileName+".DAT"
