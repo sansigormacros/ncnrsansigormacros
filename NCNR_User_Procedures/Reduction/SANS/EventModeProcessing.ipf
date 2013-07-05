@@ -203,13 +203,15 @@ Proc EventModePanel()
 	Button doneButton,fSize=12
 	Button button2,pos={419,28},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
 	Button button3,pos={419,56},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button4,pos={487,227},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
 	Button button5,pos={419,85},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
 	Button button6,pos={718,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
+	
+	
 	Button button7,pos={487,197},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
 	Button button8,pos={619,197},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
-	Button button1,pos={206,100},size={120,20},proc=ProcessEventLog_Button,title="Bin Event Data"
-	Button button1,fSize=12
+	Button button4,pos={487,227},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button18,pos={619,227},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
+
 	
 	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
 	SetVariable setvar0,fSize=10
@@ -222,6 +224,7 @@ Proc EventModePanel()
 	PopupMenu popup0,pos={206,74},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
 	PopupMenu popup0,fSize=10
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
+	Button button1,pos={206,100},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
 
 	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
 	Button button14,pos={488,350},size={130,20},proc=Stream_LoadDecim,title="Load From List"
@@ -459,6 +462,11 @@ Function ProcessEventLog_Button(ctrlName) : ButtonControl
 	endif
 	
 	if(mode == MODE_OSCILL)
+		Osc_ProcessEventLog("")
+	endif
+	
+	// If TOF mode, process as Oscillatory -- that is, take the times as is
+	if(mode == MODE_TOF)
 		Osc_ProcessEventLog("")
 	endif
 	
@@ -858,10 +866,6 @@ End
 
 // TODO:
 //
-// What, if anything is different about the OSC or STREAM load?
-// I think that only the processing is different. so this could be
-// consolidated into a single loader.
-//
 // ** currently, the "stream" loader uses the first data point as time=0
 //    and rescales everything to that time. "Osc" loading uses the times "as-is"
 //    from the file, trusting the times to be correct.
@@ -883,7 +887,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
 	String abortStr
 	
-	Open/R/D/F=fileFilters fileref
+	Open/R/D/P=catPathName/F=fileFilters fileref
 	filename = S_filename
 	if(strlen(S_filename) == 0)
 		// user cancelled
@@ -936,7 +940,16 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
 	endif
 
+// MODE_TISANE
 
+// MODE_TOF
+	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
+		Duplicate/O timePt rescaledTime
+		rescaledTime *= 1e-7			//convert to seconds and that's all
+		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
+	
+		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
+	endif
 
 	SetDataFolder root:
 
@@ -1802,6 +1815,16 @@ tic()
 	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
 	dispStr += tmpStr
 
+
+// simply to compile a table of # XY vs # bytes
+//	Wave/Z nxy = root:numberXY
+//	Wave/Z nBytes = root:numberBytes
+//	if(WaveExists(nxy) && WaveExists(nBytes))
+//		InsertPoints 0, 1, nxy,nBytes
+//		nxy[0] = numXYevents
+//		nBytes[0] = totBytes
+//	endif
+
 	SetDataFolder root:
 
 #endif	
@@ -2107,31 +2130,37 @@ Proc EventCorrectionPanel()
 	PauseUpdate; Silent 1		// building window...
 	SetDataFolder root:Packages:NIST:Event:
 	
-	Display /W=(35,44,761,533)/K=2 rescaledTime
-	DoWindow/C EventCorrectionPanel
-	ModifyGraph mode=4
-	ModifyGraph marker=19
-	ModifyGraph rgb=(0,0,0)
-	ModifyGraph msize=1
-	ErrorBars rescaledTime OFF 
-	Label left "\\Z14Time (seconds)"
-	Label bottom "\\Z14Event number"	
-	SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
+	if(exists("rescaledTime") == 1)
+		Display /W=(35,44,761,533)/K=2 rescaledTime
+		DoWindow/C EventCorrectionPanel
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=1
+		ErrorBars rescaledTime OFF 
+		Label left "\\Z14Time (seconds)"
+		Label bottom "\\Z14Event number"	
+		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
+		
+		ControlBar 100
+		Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
+		Button button1,pos={153,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
+		Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
+		Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
+		Button button4,pos={295+150,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
+		Button button5,pos={295,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
+		Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
+		Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
+		Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
 	
-	ControlBar 100
-	Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
-	Button button1,pos={153,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
-	Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
-	Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
-	Button button4,pos={295+200,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
-	Button button5,pos={295+200,38},size={100,20},proc=EC_ImportWavesButtonProc,title="Import Waves"
-	Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
-	Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
-	Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
-
-	Button button9,pos={295,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
-	Button button10,pos={295,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
-	Button button11,pos={295,64},size={110,20},proc=EC_DoDifferential,title="Differential"
+		Button button9,pos={295,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
+		Button button10,pos={295,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
+		Button button11,pos={295+150,38},size={110,20},proc=EC_DoDifferential,title="Differential"
+		
+		
+	else
+		DoAlert 0, "Please load some event data, then you'll have something to edit."
+	endif
 	
 	SetDataFolder root:
 	
@@ -2158,6 +2187,8 @@ Function EC_AddCursorButtonProc(ba) : ButtonControl
 	return 0
 End
 
+// updates the longest time (as does every operation of adjusting the data)
+//
 Function EC_AddTimeButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -2180,6 +2211,9 @@ Function EC_AddTimeButtonProc(ba) : ButtonControl
 			MultiThread timePt[lo,hi] += rollTicks
 			MultiThread rescaledTime[lo,hi] += rollTime
 
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
 			
 			SetDataFolder root:
 			break
@@ -2212,6 +2246,10 @@ Function EC_SubtractTimeButtonProc(ba) : ButtonControl
 			MultiThread timePt[lo,hi] -= rollTicks
 			MultiThread rescaledTime[lo,hi] -= rollTime
 
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+			
 			SetDataFolder root:
 			
 			break
@@ -2249,6 +2287,11 @@ Function EC_TrimPointsButtonProc(ba) : ButtonControl
 			DeletePoints lo, numElements, rescaledTime,timePt,xLoc,yLoc
 			
 			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
+			
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+			
 			SetDataFolder root:
 			
 			break
@@ -2330,6 +2373,7 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			sprintf tmpStr, "%s: a user-modified event file\r",fileStr 
 			dispStr = tmpStr
 	
+			SetDataFolder root:
 			break
 		case -1: // control being killed
 			break
@@ -2396,7 +2440,7 @@ Function PutCursorsAtStep(upDown)
 	
 	zoom = 200		//points in each direction
 	
-	WaveStats/Q rescaledTime_DIF
+	WaveStats/M=1/Q rescaledTime_DIF
 	avg = V_avg
 	
 	
@@ -2425,6 +2469,43 @@ Function PutCursorsAtStep(upDown)
 End
 
 
+// find the max (or min) of the rescaled time set
+// and place both cursors there
+Function fFindOutlier()
+
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave rescaledTime=rescaledTime
+	Variable avg,pt,zoom,maxPt,minPt,maxVal,minVal
+	
+	zoom = 200		//points in each direction
+	
+	WaveStats/M=1/Q rescaledTime
+	maxPt = V_maxLoc
+	minPt = V_minLoc
+	avg = V_avg
+	maxVal = abs(V_max)
+	minVal = abs(V_min)
+
+	
+	pt = abs(maxVal - avg) > abs(minVal - avg) ? maxPt : minPt
+	
+//	Variable loLeft,hiLeft, loBottom,hiBottom
+//	loLeft = V_min*0.98		//+/- 2%
+//	hiLeft = V_max*1.02
+	
+//	SetAxis left loLeft,hiLeft
+//	SetAxis bottom pnt2x(rescaledTime,pt-zoom),pnt2x(rescaledTime,pt+zoom)
+	
+	Cursor/P A rescaledTime pt		//at the point
+	Cursor/P B rescaledTime pt		//at the same point
+
+	SetDataFolder root:
+
+
+	return(0)
+End
+
 Function EC_FindStepButton_down(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -2444,6 +2525,20 @@ Function EC_FindStepButton_up(ctrlName) : ButtonControl
 	return(0)
 end
 
+// if the Trim button section is uncommented, it's "Zap outlier"
+//
+Function EC_FindOutlierButton(ctrlName) : ButtonControl
+	String ctrlName
+	
+	fFindOutlier()
+//
+//	STRUCT WMButtonAction ba
+//	ba.eventCode = 2
+//
+//	EC_TrimPointsButtonProc(ba)
+
+	return(0)
+end
 
 Function EC_DoDifferential(ctrlName) : ButtonControl
 	String ctrlName
@@ -2770,7 +2865,6 @@ Function/S fSplitBigFile(splitSize, baseStr)
 
 
 	String fileName=""		// File name, partial path, full path or "" for dialog.
-	String pathName=""
 	Variable refNum
 	String str
 	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
@@ -2788,7 +2882,7 @@ Function/S fSplitBigFile(splitSize, baseStr)
 	
 	
 	// Open file for read.
-	Open/R/Z=2/F="????"/P=$pathName refNum as fileName
+	Open/R/Z=2/F="????"/P=catPathName refNum as fileName
 	thePath = ParseFilePath(1, S_fileName, ":", 1, 0)
 	Print "thePath = ",thePath
 	
@@ -2838,7 +2932,8 @@ Function/S fSplitBigFile(splitSize, baseStr)
 		endfor
 
 		Close outRef
-		listStr += outStr+";"
+//		listStr += outStr+";"
+		listStr += baseStr+num2str(ii)+";"
 	endfor
 
 	Make/O/B/U/N=(frac) leftover
@@ -2853,8 +2948,8 @@ Function/S fSplitBigFile(splitSize, baseStr)
 	FBinWrite outRef,leftover
 
 	Close outRef
-	listStr += outStr+";"
-
+//	listStr += outStr+";"
+	listStr += baseStr+num2str(ii)+";"
 
 	FSetPos refNum,V_logEOF
 	Close refNum
@@ -3114,7 +3209,7 @@ End
 
 
 
-
+// unused, old testing procedure
 Function LoadDecimateButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -3157,12 +3252,14 @@ Function Stream_LoadDecim(ctrlName)
 
 	SVAR filename = root:Packages:NIST:gEvent_logfile
 	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-	
-	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
 
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
 	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
 	NVAR decimation = root:Packages:NIST:Event:gDecimation
 
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_Path
 
 // if "stream" mode is not checked - abort
 	NVAR gEventModeRadioVal= root:Packages:NIST:gEvent_mode
@@ -3175,6 +3272,10 @@ Function Stream_LoadDecim(ctrlName)
 	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
 	if(WaveExists(tw))
 		listStr = TextWave2SemiList(tw)
+	else
+		ShowSplitFileTable()
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
 	endif
 	
 	
@@ -3185,8 +3286,8 @@ Function Stream_LoadDecim(ctrlName)
 	
 	for(ii=0;ii<num;ii+=1)
 
-// (1) load the file		
-		filename = StringFromList(ii, listStr  ,";")
+// (1) load the file, prepending the path		
+		filename = pathStr + StringFromList(ii, listStr  ,";")
 		
 
 #if (exists("EventLoadWave")==4)

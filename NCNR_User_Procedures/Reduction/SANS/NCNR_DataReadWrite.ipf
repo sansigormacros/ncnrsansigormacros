@@ -2057,7 +2057,8 @@ Function/S Write_VAXRaw_Data(type,fullpath,dialog)
 	dataWRecMarkers = CompressI4toI2(dataWRecMarkers)		//unless a pixel value is > 32767, the same values are returned
 	
 	// fill the last bits of the header information
-	err = SimulationVAXHeader(type)
+	err = SimulationVAXHeader(type)		//if the type != 'SAS', this function does nothing
+	
 	if (err == -1)
 		Abort "no sample label entered - no file written"			// User did not fill in header correctly/completely
 	endif
@@ -2453,7 +2454,7 @@ End
 Function SimulationVAXHeader(folder)
 	String folder
 
-	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1
+	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1 (-1 is the error condition)
 		return(1)
 	endif
 	

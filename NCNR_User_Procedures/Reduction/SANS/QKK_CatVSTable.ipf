@@ -144,7 +144,7 @@ Function BuildCatVeryShortTable()
 	Variable lastPoint
 	ii=0
 	
-	Execute "ProgressWindow open, text=\"Loading Table...\""
+//	Execute "ProgressWindow open, text=\"Loading Table...\""
 	
 	Make/T/O/N=0 notRAWlist
 	do
@@ -164,7 +164,7 @@ Function BuildCatVeryShortTable()
 				//Notebook CatWin,font="Times",fsize=12,text=str
 			Endif
 		else
-			Execute "ProgressWindow text=\"Loading Table...\n" + tempName + "\""
+//			Execute "ProgressWindow text=\"Loading Table...\n" + tempName + "\""
 		
 			//prepend path to tempName for read routine 
 			PathInfo catPathName
@@ -183,7 +183,7 @@ Function BuildCatVeryShortTable()
 		Endif
 		
 		ii+=1
-		Execute  "ProgressWindow percent=" + Num2Str(100*ii/numitems)
+//		Execute  "ProgressWindow percent=" + Num2Str(100*ii/numitems)
 		
 	while(ii<numitems)
 //Now sort them all based on some criterion that may be facility dependent (aim is to order them as collected)
@@ -191,7 +191,7 @@ Function BuildCatVeryShortTable()
 //Append the files that are not raw files to the list
 	AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
-	Execute "ProgressWindow close"
+//	Execute "ProgressWindow close"
 //
 //	Print "Total time (s) = ",(ticks - t1)/60.15
 //	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
