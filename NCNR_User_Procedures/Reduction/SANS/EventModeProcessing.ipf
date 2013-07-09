@@ -13,9 +13,12 @@
 //
 // -- examples?
 //
+// -- ?? need way to get correspondence between .hst files and VAX files? Names are all different. See
+//    DateAndTime2HSTName() functions and similar @ bottom of this file
+//
 // x- add the XOP to the distribution package
 //
-// -- Need to make sure that the rescaledTime and the differentiated time graphs are
+// x- Need to make sure that the rescaledTime and the differentiated time graphs are
 //     being properly updated when the data is processed, modified, etc.
 //
 // -- I need better nomenclature other than "stream" for the "continuous" data set.
@@ -31,6 +34,15 @@
 //
 // -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
 //     points. Maybe not kosher, but would clean things up.
+//
+//
+///////////////   SWITCHES     /////////////////
+//
+// for the "File Too Big" limit:
+//	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 150		// 150 MB considered too large
+//
+// for the tolerance of "step" detection
+//	Variable/G root:Packages:NIST:Event:gStepTolerance = 5		// 5 = # of standard deviations from mean. See PutCursorsAtStep()
 //
 //
 ///////// DONE //////////
@@ -119,45 +131,50 @@ End
 
 
 Function Init_Event()
-	String/G 	root:Packages:NIST:gEvent_logfile
-	String/G 	root:Packages:NIST:gEventDisplayString="Details of the file load"
-	
-	Variable/G 	root:Packages:NIST:AIMTYPE_XY=0 // XY Event
-	Variable/G 	root:Packages:NIST:AIMTYPE_XYM=2 // XY Minor event
-	Variable/G 	root:Packages:NIST:AIMTYPE_MIR=1 // Minor rollover event
-	Variable/G 	root:Packages:NIST:AIMTYPE_MAR=3 // Major rollover event
 
-	Variable/G root:Packages:NIST:gEvent_time_msw = 0
-	Variable/G root:Packages:NIST:gEvent_time_lsw = 0
-	Variable/G root:Packages:NIST:gEvent_t_longest = 0
-
-	Variable/G root:Packages:NIST:gEvent_tsdisp //Displayed slice
-	Variable/G root:Packages:NIST:gEvent_nslices = 10  //Number of time slices
-	
-	Variable/G root:Packages:NIST:gEvent_logint = 1
-
-	Variable/G root:Packages:NIST:gEvent_Mode = MODE_OSCILL				// ==0 for "stream", ==1 for Oscillatory
-	Variable/G root:Packages:NIST:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
-	Variable/G root:Packages:NIST:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
-	
-	Variable/G root:Packages:NIST:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
-
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
-	
-	SetDataFolder root:
 	NewDataFolder/O/S root:Packages:NIST:Event
+
+	String/G 	root:Packages:NIST:Event:gEvent_logfile
+	String/G 	root:Packages:NIST:Event:gEventDisplayString="Details of the file load"
 	
+	Variable/G 	root:Packages:NIST:Event:AIMTYPE_XY=0 // XY Event
+	Variable/G 	root:Packages:NIST:Event:AIMTYPE_XYM=2 // XY Minor event
+	Variable/G 	root:Packages:NIST:Event:AIMTYPE_MIR=1 // Minor rollover event
+	Variable/G 	root:Packages:NIST:Event:AIMTYPE_MAR=3 // Major rollover event
+
+	Variable/G root:Packages:NIST:Event:gEvent_time_msw = 0
+	Variable/G root:Packages:NIST:Event:gEvent_time_lsw = 0
+	Variable/G root:Packages:NIST:Event:gEvent_t_longest = 0
+
+	Variable/G root:Packages:NIST:Event:gEvent_tsdisp //Displayed slice
+	Variable/G root:Packages:NIST:Event:gEvent_nslices = 10  //Number of time slices
+	
+	Variable/G root:Packages:NIST:Event:gEvent_logint = 1
+
+	Variable/G root:Packages:NIST:Event:gEvent_Mode = MODE_OSCILL				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
+	Variable/G root:Packages:NIST:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
+	
+	Variable/G root:Packages:NIST:Event:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
+
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+	
+		
 	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
 	Duplicate/O slicedData logslicedData
 	Duplicate/O slicedData dispsliceData
 
 
 // for decimation
+	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 150		// 150 MB considered too large
 	Variable/G root:Packages:NIST:Event:gDecimation = 100
-	Variable/G root:Packages:NIST:gEvent_t_longest_decimated = 0
+	Variable/G root:Packages:NIST:Event:gEvent_t_longest_decimated = 0
 
 // for large file splitting
 	String/G root:Packages:NIST:Event:gSplitFileList = ""		// a list of the file names as split
+	
+// for editing
+	Variable/G root:Packages:NIST:Event:gStepTolerance = 5		// 5 = # of standard deviations from mean. See PutCursorsAtStep()
 	
 	SetDataFolder root:
 End
@@ -192,12 +209,12 @@ Proc EventModePanel()
 	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
 	Button button0,fSize=12
 	TitleBox tb1,pos={475,500},size={135,24},fSize=10
-	TitleBox tb1,variable= root:Packages:NIST:gEventDisplayString
+	TitleBox tb1,variable= root:Packages:NIST:Event:gEventDisplayString
 
 	CheckBox chkbox2,pos={376,151},size={81,14},proc=LogIntEvent_Proc,title="Log Intensity"
-	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:gEvent_logint
+	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:Event:gEvent_logint
 	CheckBox chkbox3,pos={14,125},size={119,14},title="Remove Bad Events?",fSize=10
-	CheckBox chkbox3,variable= root:Packages:NIST:gRemoveBadEvents
+	CheckBox chkbox3,variable= root:Packages:NIST:Event:gRemoveBadEvents
 	
 	Button doneButton,pos={708,36},size={50,20},proc=EventDone_Proc,title="Done"
 	Button doneButton,fSize=12
@@ -215,11 +232,11 @@ Proc EventModePanel()
 	
 	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
 	SetVariable setvar0,fSize=10
-	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:gEvent_tsdisp	
+	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:Event:gEvent_tsdisp	
 	SetVariable setvar1,pos={206,26},size={160,16},title="Number of slices",fSize=10
-	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:gEvent_nslices
+	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:Event:gEvent_nslices
 	SetVariable setvar2,pos={206,51},size={160,16},title="Max Time (s)",fSize=10
-	SetVariable setvar2,value= root:Packages:NIST:gEvent_t_longest
+	SetVariable setvar2,value= root:Packages:NIST:Event:gEvent_t_longest
 	
 	PopupMenu popup0,pos={206,74},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
 	PopupMenu popup0,fSize=10
@@ -227,7 +244,8 @@ Proc EventModePanel()
 	Button button1,pos={206,100},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
 
 	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
-	Button button14,pos={488,350},size={130,20},proc=Stream_LoadDecim,title="Load From List"
+	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load Split List"
+	Button button19,pos={619,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
 	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
 	SetVariable setvar3,fSize=10
 	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
@@ -283,7 +301,7 @@ Function EventModeRadioProc(name,value)
 	String name
 	Variable value
 	
-	NVAR gEventModeRadioVal= root:Packages:NIST:gEvent_mode
+	NVAR gEventModeRadioVal= root:Packages:NIST:Event:gEvent_mode
 	
 	strswitch (name)
 		case "chkbox1_0":
@@ -455,7 +473,7 @@ End
 Function ProcessEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 	
-	NVAR mode=root:Packages:NIST:gEvent_Mode
+	NVAR mode=root:Packages:NIST:Event:gEvent_Mode
 	
 	if(mode == MODE_STREAM)
 		Stream_ProcessEventLog("")
@@ -471,7 +489,7 @@ Function ProcessEventLog_Button(ctrlName) : ButtonControl
 	endif
 	
 	// toggle the checkbox for log display to force the display to be correct
-	NVAR gLog = root:Packages:NIST:gEvent_logint
+	NVAR gLog = root:Packages:NIST:Event:gEvent_logint
 	LogIntEvent_Proc("",gLog)
 	
 	return(0)
@@ -490,8 +508,8 @@ Function Osc_ProcessEventLog(ctrlName)
 
 // now with the number of slices and max time, process the events
 
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
 
 	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
 	
@@ -619,9 +637,9 @@ Function Stream_ProcessEventLog(ctrlName)
 
 // now with the number of slices and max time, process the events
 
-	NVAR yesSortStream = root:Packages:NIST:gSortStreamEvents		//do I sort the events?
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
+	NVAR yesSortStream = root:Packages:NIST:Event:gSortStreamEvents		//do I sort the events?
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
 
 	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
 	
@@ -875,17 +893,24 @@ End
 Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 
-	NVAR mode=root:Packages:NIST:gEvent_mode
+	NVAR mode=root:Packages:NIST:Event:gEvent_mode
 	Variable err=0
 	Variable fileref,totBytes
-	Variable fileTooLarge = 150		//limit load to 150MB
+	NVAR fileTooLarge = root:Packages:NIST:Event:gEventFileTooLarge		//limit load to 150MB
 
-	SVAR filename = root:Packages:NIST:gEvent_logfile
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 	
 	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
 	String abortStr
+	
+	PathInfo catPathName
+	if(V_flag==0)
+		DoAlert 0,"Please 'Pick Path' to the data from the Main (yellow) Panel."
+		return(0)
+	endif
+	
 	
 	Open/R/D/P=catPathName/F=fileFilters fileref
 	filename = S_filename
@@ -967,9 +992,9 @@ End
 //	
 //	Variable fileref
 //
-//	SVAR filename = root:Packages:NIST:gEvent_logfile
-//	NVAR nslices = root:Packages:NIST:gEvent_nslices
-//	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+//	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+//	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+//	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 //	
 //	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
 //	
@@ -1013,9 +1038,9 @@ End
 //	
 //	Variable fileref
 //
-//	SVAR filename = root:Packages:NIST:gEvent_logfile
-//	NVAR nslices = root:Packages:NIST:gEvent_nslices
-//	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+//	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+//	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+//	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 //	
 //	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
 //	
@@ -1088,7 +1113,7 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 		Duplicate/O slicedData dispsliceData
 	endif
 
-	NVAR selectedslice = root:Packages:NIST:gEvent_tsdisp
+	NVAR selectedslice = root:Packages:NIST:Event:gEvent_tsdisp
 
 	sliceSelectEvent_Proc("", selectedslice, "", "")
 
@@ -1111,8 +1136,8 @@ Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableC
 	String varStr
 	String varName
 	
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
-	NVAR selectedslice = root:Packages:NIST:gEvent_tsdisp
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+	NVAR selectedslice = root:Packages:NIST:Event:gEvent_tsdisp
 	
 	if(varNum < 0)
 		selectedslice = 0
@@ -1165,12 +1190,12 @@ End
 //
 Function LoadEvents()
 	
-	NVAR time_msw = root:Packages:NIST:gEvent_time_msw
-	NVAR time_lsw = root:Packages:NIST:gEvent_time_lsw
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	NVAR time_msw = root:Packages:NIST:Event:gEvent_time_msw
+	NVAR time_lsw = root:Packages:NIST:Event:gEvent_time_lsw
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 	
-	SVAR filepathstr = root:Packages:NIST:gEvent_logfile
-	SVAR dispStr = root:Packages:NIST:gEventDisplayString
+	SVAR filepathstr = root:Packages:NIST:Event:gEvent_logfile
+	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
 	
 	
 ////	Variable decFac = 10			//decimation factor
@@ -1330,7 +1355,7 @@ Function LoadEvents()
 	nRoll = 0		//number of rollover events
 	roll_time = 2^26		//units of 10-7 sec
 	
-	NVAR removeBadEvents = root:Packages:NIST:gRemoveBadEvents
+	NVAR removeBadEvents = root:Packages:NIST:Event:gRemoveBadEvents
 	
 	time_msw=0
 	
@@ -1656,12 +1681,12 @@ End
 Function LoadEvents_XOP()
 #if (exists("EventLoadWave")==4)
 	
-//	NVAR time_msw = root:Packages:NIST:gEvent_time_msw
-//	NVAR time_lsw = root:Packages:NIST:gEvent_time_lsw
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+//	NVAR time_msw = root:Packages:NIST:Event:gEvent_time_msw
+//	NVAR time_lsw = root:Packages:NIST:Event:gEvent_time_lsw
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 	
-	SVAR filepathstr = root:Packages:NIST:gEvent_logfile
-	SVAR dispStr = root:Packages:NIST:gEventDisplayString
+	SVAR filepathstr = root:Packages:NIST:Event:gEvent_logfile
+	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
 	
 	SetDataFolder root:Packages:NIST:Event
 
@@ -1723,7 +1748,7 @@ Function LoadEvents_XOP()
 // need to zero the waves before loading, just in case
 //
 
-	NVAR removeBadEvents = root:Packages:NIST:gRemoveBadEvents
+	NVAR removeBadEvents = root:Packages:NIST:Event:gRemoveBadEvents
 
 tic()
 
@@ -1937,7 +1962,7 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 	WAVE slicedData=root:Packages:NIST:Event:slicedData
 	Make/O/D/N=(128,128) curSlice
 	
-	NVAR nslices = root:Packages:NIST:gEvent_nslices
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
 	WAVE binEndTime = root:Packages:NIST:Event:binEndTime
 
 	Wave rw=root:Packages:NIST:STO:realsRead
@@ -2212,7 +2237,7 @@ Function EC_AddTimeButtonProc(ba) : ButtonControl
 			MultiThread rescaledTime[lo,hi] += rollTime
 
 			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 			t_longest = waveMax(rescaledTime)
 			
 			SetDataFolder root:
@@ -2247,7 +2272,7 @@ Function EC_SubtractTimeButtonProc(ba) : ButtonControl
 			MultiThread rescaledTime[lo,hi] -= rollTime
 
 			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 			t_longest = waveMax(rescaledTime)
 			
 			SetDataFolder root:
@@ -2289,7 +2314,7 @@ Function EC_TrimPointsButtonProc(ba) : ButtonControl
 			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
 			
 			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 			t_longest = waveMax(rescaledTime)
 			
 			SetDataFolder root:
@@ -2329,8 +2354,8 @@ Function EC_SaveWavesButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// this duplicates all of the bits that would be done if the "load" button was pressed
 //
+// this duplicates all of the bits that would be done if the "load" button was pressed
 //
 Function EC_ImportWavesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2340,8 +2365,8 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			// click code here
 			SetDataFolder root:Packages:NIST:Event:
 
-			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-			SVAR dispStr = root:Packages:NIST:gEventDisplayString
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+			SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
 			String tmpStr="",fileStr,filePathStr
 			
 			// load in the waves, saved as Igor text to preserve the data type
@@ -2353,18 +2378,11 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 				return(0)
 			endif
 			
-			NVAR mode = root:Packages:NIST:gEvent_Mode				// ==0 for "stream", ==1 for Oscillatory
+			NVAR mode = root:Packages:NIST:Event:gEvent_Mode				// ==0 for "stream", ==1 for Oscillatory
 			// clear out the old sort index, if present, since new data is being loaded
 			KillWaves/Z OscSortIndex
 			Wave timePt=timePt
 			Wave rescaledTime=rescaledTime
-
-//			Duplicate/O timePt rescaledTime
-//			if(mode==MODE_STREAM)
-//				rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
-//			else
-//				rescaledTime = timePt*1e-7						//just take the times as-is
-//			endif
 			
 			t_longest = waveMax(rescaledTime)		//should be the last point
 			
@@ -2442,8 +2460,7 @@ Function PutCursorsAtStep(upDown)
 	
 	WaveStats/M=1/Q rescaledTime_DIF
 	avg = V_avg
-	
-	
+		
 	FindLevel/P/Q rescaledTime_DIF avg*upDown
 	if(V_flag==0)
 		pt = V_levelX
@@ -2487,7 +2504,6 @@ Function fFindOutlier()
 	maxVal = abs(V_max)
 	minVal = abs(V_min)
 
-	
 	pt = abs(maxVal - avg) > abs(minVal - avg) ? maxPt : minPt
 	
 //	Variable loLeft,hiLeft, loBottom,hiBottom
@@ -2501,16 +2517,17 @@ Function fFindOutlier()
 	Cursor/P B rescaledTime pt		//at the same point
 
 	SetDataFolder root:
-
-
+	
 	return(0)
 End
 
 Function EC_FindStepButton_down(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Variable upDown = -5
-	PutCursorsAtStep(upDown)
+//	Variable upDown = -5
+	NVAR upDown = root:Packages:NIST:Event:gStepTolerance
+	
+	PutCursorsAtStep(-1*upDown)
 
 	return(0)
 end
@@ -2519,7 +2536,9 @@ end
 Function EC_FindStepButton_up(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Variable upDown = 5
+//	Variable upDown = 5
+	NVAR upDown = root:Packages:NIST:Event:gStepTolerance
+
 	PutCursorsAtStep(upDown)
 
 	return(0)
@@ -2577,10 +2596,10 @@ End
 
 Function Init_CustomBins()
 
-	NVAR nSlice = root:Packages:NIST:gEvent_nslices
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	NVAR nSlice = root:Packages:NIST:Event:gEvent_nslices
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 
-	Variable/G root:Packages:NIST:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
+	Variable/G root:Packages:NIST:Event:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
 
 	SetDataFolder root:Packages:NIST:Event:
 		
@@ -2616,12 +2635,12 @@ Proc CustomBinPanel()
 	Button button1,pos={663,14},size={40,20},proc=CB_HelpButtonProc,title="?"
 	Button button2,pos={216,42},size={80,20},title="Update",proc=CB_UpdateWavesButton	
 	SetVariable setvar1,pos={23,13},size={160,20},title="Number of slices",fSize=12
-	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:gEvent_nslices
+	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:Event:gEvent_nslices
 	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=10
-	SetVariable setvar2,value=root:Packages:NIST:gEvent_t_longest	
+	SetVariable setvar2,value=root:Packages:NIST:Event:gEvent_t_longest	
 
 	CheckBox chkbox1,pos={216,14},title="Enforce Max Time?"
-	CheckBox chkbox1,variable = root:Packages:NIST:gEvent_ForceTmaxBin
+	CheckBox chkbox1,variable = root:Packages:NIST:Event:gEvent_ForceTmaxBin
 	Button button3,pos={500,14},size={90,20},proc=CB_SaveBinsButtonProc,title="Save Bins"
 	Button button4,pos={500,42},size={100,20},proc=CB_ImportBinsButtonProc,title="Import Bins"	
 		
@@ -2693,7 +2712,7 @@ Function CB_ImportBinsButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			NVAR nSlice = root:Packages:NIST:gEvent_nslices
+			NVAR nSlice = root:Packages:NIST:Event:gEvent_nslices
 
 			SetDataFolder root:Packages:NIST:Event:
 
@@ -2736,9 +2755,9 @@ Function CB_UpdateWavesButton(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			NVAR nSlice = root:Packages:NIST:gEvent_nslices
-			NVAR t_longest = root:Packages:NIST:gEvent_t_longest
-			NVAR enforceTmax = root:Packages:NIST:gEvent_ForceTmaxBin
+			NVAR nSlice = root:Packages:NIST:Event:gEvent_nslices
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+			NVAR enforceTmax = root:Packages:NIST:Event:gEvent_ForceTmaxBin
 			
 			// update the waves, and recalculate everything for the display
 			SetDataFolder root:Packages:NIST:Event:
@@ -3118,8 +3137,8 @@ Function fConcatenateButton(first)
 	Wave yLoc_dTmp=yLoc_dTmp
 	Wave rescaledTime_dTmp=rescaledTime_dTmp
 	
-	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 	
 	
 	if(first==1)		//1==yes, 2==no
@@ -3191,8 +3210,8 @@ Function DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
 	Wave yLoc_dec=yLoc_dec
 	Wave rescaledTime_dec=rescaledTime_dec
 		
-	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 	
 	Duplicate/O timePt_dec timePt
 	Duplicate/O xLoc_dec xLoc
@@ -3221,7 +3240,7 @@ Function LoadDecimateButtonProc(ctrlName) : ButtonControl
 	Wave timePt=timePt
 	Wave xLoc=xLoc
 	Wave yLoc=yLoc
-	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
 
 	NVAR decimation = root:Packages:NIST:Event:gDecimation
 
@@ -3243,6 +3262,13 @@ Function LoadDecimateButtonProc(ctrlName) : ButtonControl
 	
 End
 
+
+
+
+
+
+
+//
 // loads a list of files, decimating each chunk as it is read in
 //
 Function Stream_LoadDecim(ctrlName)
@@ -3250,11 +3276,11 @@ Function Stream_LoadDecim(ctrlName)
 	
 	Variable fileref
 
-	SVAR filename = root:Packages:NIST:gEvent_logfile
-	NVAR t_longest = root:Packages:NIST:gEvent_t_longest
+	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 
 	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
-	NVAR t_longest_dec = root:Packages:NIST:gEvent_t_longest_decimated
+	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
 	NVAR decimation = root:Packages:NIST:Event:gDecimation
 
 	String pathStr
@@ -3262,7 +3288,7 @@ Function Stream_LoadDecim(ctrlName)
 	pathStr = S_Path
 
 // if "stream" mode is not checked - abort
-	NVAR gEventModeRadioVal= root:Packages:NIST:gEvent_mode
+	NVAR gEventModeRadioVal= root:Packages:NIST:Event:gEvent_mode
 	if(gEventModeRadioVal != MODE_STREAM)
 		Abort "The mode must be 'Stream' to use this function"
 		return(0)
@@ -3277,7 +3303,6 @@ Function Stream_LoadDecim(ctrlName)
 		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
 		return(0)
 	endif
-	
 	
 
 	//loop through everything in the list
@@ -3341,4 +3366,141 @@ Function Stream_LoadDecim(ctrlName)
 	return(0)
 End
 
+
+
+//
+// loads a list of files that have been adjusted and saved
+// -- does not decimate
+//
+Function Stream_LoadAdjustedList(ctrlName)
+	String ctrlName
+	
+	Variable fileref
+
+	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
+	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
+//	NVAR decimation = root:Packages:NIST:Event:gDecimation
+
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_Path
+
+// if "stream" mode is not checked - abort
+	NVAR gEventModeRadioVal= root:Packages:NIST:Event:gEvent_mode
+	if(gEventModeRadioVal != MODE_STREAM)
+		Abort "The mode must be 'Stream' to use this function"
+		return(0)
+	endif
+
+// if the list has been edited, turn it into a list
+	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	if(WaveExists(tw))
+		listStr = TextWave2SemiList(tw)
+	else
+		ShowSplitFileTable()
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
+	endif
+	
+
+	//loop through everything in the list
+	Variable num,ii
+	num = ItemsInList(listStr)
+	
+	for(ii=0;ii<num;ii+=1)
+
+// (1) load the file, prepending the path		
+		filename = pathStr + StringFromList(ii, listStr  ,";")
+		
+		SetDataFolder root:Packages:NIST:Event:
+		LoadWave/T/O fileName
+
+		SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root: ??
+
+// this is what is loaded -- _dec extension is what is concatenated, and will be copied back later
+		Wave timePt=timePt
+		Wave xLoc=xLoc
+		Wave yLoc=yLoc
+		Wave rescaledTime=rescaledTime
+
+//		CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
+
+//		Duplicate/O timePt rescaledTime
+//		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+//		t_longest = waveMax(rescaledTime)		//should be the last point
+		
+// (2) No decimation
+		
+		Duplicate/O timePt, timePt_dTmp
+		Duplicate/O xLoc, xLoc_dTmp
+		Duplicate/O yLoc, yLoc_dTmp
+		Duplicate/O rescaledTime, rescaledTime_dTmp
+
+
+// (3) concatenate
+		fConcatenateButton(ii+1)		//passes 1 for the first time, >1 each other time
+	
+	endfor
+	
+	DisplayConcatenatedButtonProc("")		// this resets the longest time, too
+		
+	SetDataFolder root:
+
+	return(0)
+End
+
 /////////////////////////////////////
+
+// dd-mon-yyyy hh:mm:ss -> Event file name
+// the VAX uses 24 hr time for hh
+//
+// scans as string elements since I'm reconstructing a string name
+Function/S DateAndTime2HSTName(dateandtime)
+	string dateAndTime
+	
+	String day,yr,hh,mm,ss,time_secs
+	Variable mon
+	string str,monStr,fileStr
+	
+	str=dateandtime
+	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
+	mon = monStr2num(monStr)
+
+	fileStr = "Event"+yr+num2str(mon)+day+hh+mm+ss+".hst"
+	Print fileStr
+
+	return(fileStr)
+end
+
+// dd-mon-yyyy hh:mm:ss -> Event file name
+// the VAX uses 24 hr time for hh
+//
+// scans as string elements since I'm reconstructing a string name
+Function DateAndTime2HSTNumber(dateandtime)
+	string dateAndTime
+	
+	String day,yr,hh,mm,ss,time_secs
+	Variable mon,num
+	string str,monStr,fileStr
+	
+	str=dateandtime
+	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
+	mon = monStr2num(monStr)
+
+	fileStr = yr+num2str(mon)+day+hh+mm+ss
+	num = str2num(fileStr)
+
+	return(num)
+end
+
+Function HSTName2Num(str)
+	String str
+	
+	Variable num
+	sscanf str,"Event%d.hst",num
+	return(num)
+end
+/////////////////////////////
