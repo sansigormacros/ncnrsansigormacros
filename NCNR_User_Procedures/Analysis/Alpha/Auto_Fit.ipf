@@ -1032,9 +1032,53 @@ Function DoOneFit(funcStr,fileName,numPar,fileWave,ii,guessMatrix,holdMatrix,con
 
 //		AutoFit_GenerateReport(funcStr,dataname,"par","myCoef",1)	
 	endif
+
+
+// if checked, also write out the fitted waves and coefficients as a text file, maybe an Igor Text format, or just plain text.
+	if(1)
+		AF_SaveFitWaves(dataName,$"myCoef",W_sigma,fitYw,xw)
+	endif
 	
 	return(0)
 End
+
+// if checked, also write out the fitted waves and coefficients as a text file, maybe an Igor Text format, or just plain text.
+//
+Function AF_SaveFitWaves(dataName,cw,cw_err,yw,xw)
+	String dataName
+	Wave cw,cw_err,yw,xw
+	
+	String saveName,formatStr
+	Variable refNum
+
+	PathInfo dataPath	
+	saveName = S_path+dataName+"_fit.txt"
+	formatStr="%15.4g\t%15.4g"
+	formatStr += "\r"
+
+//	Print saveName
+	
+	Open refNum as saveName
+	
+	fprintf refnum,"Model data created %s\r\n",(date()+" "+time())
+	wfprintf refnum,formatStr,xw,yw
+		
+	close refnum
+
+	// then the coefficients
+	saveName = S_path+dataName+"_coef.txt"
+	Open refNum as saveName
+	
+	fprintf refnum,"Model coefficients and One Std. Deviation %s\r\n",(date()+" "+time())
+	wfprintf refnum,formatStr,cw,cw_err
+		
+	close refnum
+	
+	
+	return(0)
+End
+
+
 
 //// to be able to simply fill in the pt range of the yw[lo,hi]
 //Function LowRange()
