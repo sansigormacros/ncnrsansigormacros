@@ -626,9 +626,18 @@ Proc Inv_Load_Proc(ctrlName): ButtonControl
 	A_LoadOneDDataWithName(tempName,0)
 	//Print S_fileName
 	//Print tempName
+
+// if the data loader forced a shorter name, get it now
+	String newStr = root:Packages:NIST:gShortNameStr
+	String cleanLastFileName
+	if(strlen(newStr) > 0)
+		 cleanLastFileName = CleanupName(newStr,0)
+	else
+		 cleanLastFileName = CleanupName(root:Packages:NIST:gLastFileName,0)
+	endif
 	
-	String cleanLastFileName = CleanupName(root:Packages:NIST:gLastFileName,0)
 	String dataStr = "root:"+cleanLastFileName+":"
+
 	
 	// keep global copies of the names rather than reading from the popup
 	tempName=dataStr + cleanLastFileName+"_q"

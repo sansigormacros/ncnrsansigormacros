@@ -1,10 +1,18 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+
+
+
+//************
+// un-comment the Macros menu declaration to provide easier access to the functions
+//************
+
+
+
 // this is a file with all of the functions that can be used to
 // script the MC simulation of data
-// 1D will also be supported, unless I can find a reason not to support this.
 //
-// there will be a lot of utility functions to "move" the parts of an instrument that
+// there are a lot of utility functions to "move" the parts of an instrument that
 // are "moveable" into different configurations. The aim is to have this appear as
 // much like running an experiment as possible.
 //
@@ -541,7 +549,7 @@ end
 
 
 //
-// Important - in the reduction process, set the  dead time correction to something
+// Important - in the reduction process, set the dead time correction to something
 // really small, say 10^-15 so that  it won't have any effect (since the detector CR is fictionally high)
 //
 Function Sim_SetDeadTimeTiny()
