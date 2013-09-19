@@ -1223,7 +1223,7 @@ Function SaveCellDecayTable()
 	String listStr,item,fname,noteStr,wStr
 	Variable num,ii,refnum
 	
-	fname = "CellDecayPanelSaveState"
+	fname = "CellDecaySaveState"
 	
 	// get a list of the Decay waves
 	listStr=WaveList("Decay_*",";","")
@@ -1336,7 +1336,7 @@ Function SaveFlipperTable()
 	String listStr,item,fname,noteStr,wStr
 	Variable num,ii,refnum
 	
-	fname = "FlipperPanelSaveState"
+	fname = "FlipperSaveState"
 	
 	// get a list of the "Condition" waves
 	listStr=WaveList("Cond_*",";","")
@@ -1351,7 +1351,7 @@ Function SaveFlipperTable()
 		Abort "no data file was written"
 	Endif
 	
-	Open/P=home refnum	// as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum	as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the cond waves, then be sure to add the DimLabels and Wave Note

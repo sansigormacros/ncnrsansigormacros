@@ -391,7 +391,9 @@ Macro Setup_KR_MultiCylinder()
 	Button button_1,pos={46,51},size={100,20},proc=KR_Plot1DButtonProc,title="Plot 1D"
 	Button button_2,pos={178,50},size={150,20},proc=KR_GenerateButtonProc,title="Generate Structure"
 	Button button_4,pos={178,80},size={120,20},proc=KR_DoCalcButtonProc,title="Do Calculation"
-	Button button_3,pos={600,50},size={120,20},proc=KR_DeleteRow,title="Delete Row(s)"
+	Button button_3,pos={600,60},size={120,20},proc=KR_DeleteRow,title="Delete Row(s)"
+	Button button_5,pos={600,10},size={120,20},proc=KR_SaveTable,title="Save Table"
+	Button button_6,pos={600,35},size={120,20},proc=KR_ImportTable,title="Import Table"
 	ValDisplay valdisp_0,pos={339,16},size={80,13},title="FFT_T"
 	ValDisplay valdisp_0,limits={0,0,0},barmisc={0,1000},value= #"root:FFT_T"
 	SetVariable setvar_0,pos={339,40},size={140,15},title="Q min (A)"
@@ -461,6 +463,33 @@ Function KR_DeleteRow(ba) : ButtonControl
 	return 0
 End
 
+Function KR_SaveTable(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			
+//			xx,yy,zz,rri,hti,rotx,roty,sld
+			Save/T/P=home/I xx,yy,zz,rri,hti,rotx,roty,sld as "SavedCyl.itx"
+			
+			break
+	endswitch
+
+	return 0
+End
+
+Function KR_ImportTable(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			
+			LoadWave/T/O/P=home			
+			break
+	endswitch
+
+	return 0
+End
 
 //just generates the structure, no calculation
 Function KR_GenerateButtonProc(ba) : ButtonControl
@@ -504,10 +533,15 @@ Function KR_GenerateButtonProc(ba) : ButtonControl
 //		 
 //			fDoBinned_KR_FFTPanel(npt,qmin,qmax)
 //	
+
+			//force a redraw (re-coloring) of the gizmo window
+			FFTMakeGizmoButtonProc("")
 			
 			break
 	endswitch
 
+
+	
 	return 0
 End
 

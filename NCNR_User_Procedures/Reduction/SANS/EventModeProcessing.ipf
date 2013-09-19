@@ -246,6 +246,7 @@ Proc EventModePanel()
 	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
 	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load Split List"
 	Button button19,pos={619,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
+	Button button20,pos={650,376},size={90,20},proc=ShowList_ToLoad,title="Show List"
 	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
 	SetVariable setvar3,fSize=10
 	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
@@ -1107,7 +1108,13 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 	Variable checked
 		
 	SetDataFolder root:Packages:NIST:Event
+	
+	Wave slicedData = slicedData
+	Wave logSlicedData = logSlicedData
+	Wave dispSliceData = dispSliceData
+	
 	if(checked)
+		logslicedData = log(slicedData)
 		Duplicate/O logslicedData dispsliceData
 	else
 		Duplicate/O slicedData dispsliceData
@@ -2370,7 +2377,7 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			String tmpStr="",fileStr,filePathStr
 			
 			// load in the waves, saved as Igor text to preserve the data type
-			LoadWave/T/O
+			LoadWave/T/O/P=catPathName
 			filePathStr = S_fileName
 			if(strlen(S_fileName) == 0)
 				//user cancelled
@@ -2982,9 +2989,12 @@ Function ShowSplitFileTable()
 
 	SVAR str = root:Packages:NIST:Event:gSplitFileList
 	
-	Make/O/T/N=1 root:Packages:NIST:Event:SplitFileWave
-	WAVE tw = root:Packages:NIST:Event:SplitFileWave
-	
+	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	if(waveExists(tw) != 1)	
+		Make/O/T/N=1 root:Packages:NIST:Event:SplitFileWave
+		WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	endif
+
 	List2TextWave(str,tw)
 	Edit tw
 
@@ -3037,7 +3047,10 @@ Function AccumulateSlices(mode)
 			break
 		case 2:
 			DoAlert 0,"The accumulated data is now the display data and is ready for display or export."
-			Duplicate/O accumulatedData slicedData		
+			Duplicate/O accumulatedData slicedData
+			// do something to "touch" the display to force it to update
+			NVAR gLog = root:Packages:NIST:Event:gEvent_logint
+			LogIntEvent_Proc("",gLog)
 			break
 		default:			
 				
@@ -3366,6 +3379,13 @@ Function Stream_LoadDecim(ctrlName)
 	return(0)
 End
 
+Function ShowList_ToLoad(ctrlName)
+	String ctrlName
+	
+	ShowSplitFileTable()
+	
+	return(0)
+End
 
 
 //

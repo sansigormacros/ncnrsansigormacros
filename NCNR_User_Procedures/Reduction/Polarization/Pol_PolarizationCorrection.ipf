@@ -151,7 +151,7 @@ Function SavePolCorPanelState()
 	Endif
 	
 	
-	Open/P=home refnum// as fname		// creates a new file, or overwrites the existing file	
+	Open/P=home refnum as fname		// creates a new file, or overwrites the existing file	
 	fprintf refNum,"IGOR\r"
 			
 	// Save each of the list waves, 2D text
