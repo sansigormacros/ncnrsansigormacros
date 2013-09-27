@@ -5,6 +5,15 @@
 
 //************
 // un-comment the Macros menu declaration to provide easier access to the functions
+// -- remove the "x" from "xMenu" in the section following these comments.  The macros menu
+//    will then have easier access to the scripting functions.
+//
+// **To write your own scripts, follow the examples in:
+//		Example_1DSim()
+//		Example_2DSim()
+//
+// and also the instructions below in the "basic cycle"
+//
 //************
 
 
@@ -111,24 +120,36 @@
 //
 //
 // -- scattering from an empty cell is NOT provided in 2D
+//
 
+
+
+/// un-comment this by removing the "x" from the word xMenu. Then compile.
 xMenu "Macros"
 	Submenu "Simulation Scripting - Beta"
 		"Save Configuration",Sim_saveConfProc()
 		"Move to Configuration",Sim_moveConfProc()
 		"List Configurations",ListSASCALCConfigs()
-		"Setup Sim Example",Setup_Sim_Example()
 		"1D Count Rates",DryRunProc_1D()
 		"2D Dry Run",DryRunProc_2D()
 		"Optimal Count Times",OptimalCountProc()
 		"Make Table to Combine By Name",MakeCombineTable_byName()
 		"Combine by Name",DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName)
 		"Turn Off Dead Time Correction",Sim_SetDeadTimeTiny()
+		"-"
+		"Setup Sim Example",Setup_Sim_Example()
+		"Run 1D Sim Example",Example_1DSim()
+		"Run 2D Sim Example",Example_2DSim()
 	End
 End
 
-// run this before the examples to make sure that the proper named configurations exist.
-// this function will overwrite any same-named waves
+
+////////// --- START OF EXAMPLE SCRIPTS ---  ////////////////
+
+//
+// run this before the examples to make sure that the proper named configurations and function exist.
+// this function will overwrite any same-named configurations
+//
 Function Setup_Sim_Example()
 
 	SetDataFolder root:Packages:NIST:SAS:
@@ -138,6 +159,13 @@ Function Setup_Sim_Example()
 	Config_4m = {"checkNG7","5","5.08 cm","6","0.115","checkChamber","1/2\"","0","400","0","","","","","","","","","",""}
 	Config_13m = {"checkNG7","1","5.08 cm","6","0.115","checkChamber","1/2\"","0","1300","0","","","","","","","","","",""}
   
+// include the model and plot it, so that it will exist. Post to queue so they execute in order
+	Execute/P "INSERTINCLUDE \"SchulzSpheres_Sq_v40\""
+	Execute/P "COMPILEPROCEDURES " 
+ 	Execute/P "PlotSchulzSpheres_SC(256,0.001,0.7)"
+ 	
+	Execute/P "SASCALC()"
+ 			 	
 	SetDataFolder root:
 
 End
@@ -304,6 +332,9 @@ Function Example_Loop_1DSim()
 
 	return(0)	
 End
+
+
+//////////////// ---- END OF EXAMPLE SCRIPTS --- ////////////////////
 
 
 
