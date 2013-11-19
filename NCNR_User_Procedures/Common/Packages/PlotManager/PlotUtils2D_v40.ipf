@@ -309,24 +309,33 @@ Proc PlotQxQy(str)
 
 End
 
-Proc FakeQxQy(minQx,maxQx,minQy,maxQy,numPix,dataFolder)
+// if flag set, data folder will be overwritten (only if it exists)
+// otherwise, the user will be asked what to do if there is a name conflict
+//
+Proc FakeQxQy(minQx,maxQx,minQy,maxQy,numPix,dataFolder,forceOverwrite,doPlot)
 	Variable minQx=-0.1,maxQx=0.1,minQy=-0.1,maxQy=0.1
 	Variable numPix=64
 	String dataFolder="fake2DData"
+	Variable forceOverwrite = 0
+	Variable doPlot = 1
 
 	String baseStr=dataFolder
 	
-
-	if(DataFolderExists("root:"+baseStr))
+	if(DataFolderExists("root:"+baseStr) && forceOverwrite)
+		SetDataFolder $("root:"+baseStr)
+	else
+		if(DataFolderExists("root:"+baseStr))
 			DoAlert 1,"Fake data "+baseStr+" has already been created. Do you want to overwrite this fake data set?"
 			if(V_flag==2)	//user selected No, don't load the data
 				SetDataFolder root:
 				return		//quits the macro
 			endif
 			SetDataFolder $("root:"+baseStr)
-	else
-		NewDataFolder/S $("root:"+baseStr)
+		else
+			NewDataFolder/S $("root:"+baseStr)
+		endif
 	endif
+	
 
 	Make/O/D/N=(numPix*numPix) $(baseStr+"_qx"),$(baseStr+"_qy"),$(baseStr+"_i")
 	
@@ -361,9 +370,10 @@ Proc FakeQxQy(minQx,maxQx,minQy,maxQy,numPix,dataFolder)
 	// use the 3 original waves for all of the fitting...
 	ConvertQxQy2Mat($(baseStr+"_qx"),$(baseStr+"_qy"),$(baseStr+"_i"),baseStr+"_mat")
 	Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
-	
-	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
 
+	if(doPlot)	
+		PlotQxQy(baseStr)		//this sets the data folder back to root:, but may not be executed
+	endif
 	//clean up		
 	SetDataFolder root:
 	

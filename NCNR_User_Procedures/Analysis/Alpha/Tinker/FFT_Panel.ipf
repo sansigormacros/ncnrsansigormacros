@@ -78,7 +78,7 @@ Proc FFT_Panel()
 	SetVariable FFTSetVar_0,pos={7,7},size={150,15},title="Cells per edge (N)"
 	SetVariable FFTSetVar_0,limits={50,512,2},value= FFT_N,live= 1
 	SetVariable FFTSetVar_1,pos={7,33},size={150,15},title="Length per Cell (T)"
-	SetVariable FFTSetVar_1,limits={1,500,0.2},value= FFT_T,live= 1
+	SetVariable FFTSetVar_1,limits={1,5000,0.2},value= FFT_T,live= 1
 	SetVariable FFTSetVar_2,pos={183,26},size={120,15},title="Real Qmax"
 	SetVariable FFTSetVar_2,limits={0,0,0},value= FFT_QmaxReal,noedit= 1,live= 1
 	SetVariable FFTSetVar_3,pos={183,48},size={120,15},title="delta Q (A)"
@@ -209,6 +209,7 @@ Function ReloadMatrix(fileStr)
 end
 
 // utility function that reads the wave note from a binary file
+// where did I get this from? Igor Exchange? I didn't write this myself...
 //
 Function/S LoadNoteFunc(PName,FName[,FileRef])
 	String PName, FName
@@ -292,7 +293,7 @@ Function Interp2DSliceButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			String folderStr=""
-			Prompt folderStr, "Pick a 2D data folder"		// Set prompt for x param
+			Prompt folderStr, "Pick a 2D data folder",popup,W_DataSetPopupList()		// Set prompt for x param
 			DoPrompt "Enter data folder", folderStr
 			if (V_Flag || strlen(folderStr) == 0)
 				return -1								// User canceled, null string entered
@@ -447,7 +448,7 @@ Function FFT_RotateMat(ctrlName) : ButtonControl
 	Variable degree=45,sense=1
 	Prompt degree, "Degrees of rotation around Z-axis:"
 //	Prompt sense, "Direction of rotation:",popup,"CW;CCW;"
-	DoPrompt "Enter paramters for rotation", degree
+	DoPrompt "Enter parameters for rotation", degree
 	
 	if (V_Flag)
 		return 0									// user canceled
@@ -456,6 +457,7 @@ Function FFT_RotateMat(ctrlName) : ButtonControl
 	fFFT_RotateMat(degree)
 	return(0)
 End
+
 // note that the rotation is not perfect. if the rotation produces an
 // odd number of pixels, then the object will "walk" one pixel. Also, some
 // small artifacts are introduced, simply due to the voxelization of the object
@@ -468,6 +470,8 @@ Function fFFT_RotateMat(degree)
 	Variable degree
 	
 	Variable fill=0
+	NVAR solventSLD = root:FFT_SolventSLD
+	fill = solventSLD
 	
 	WAVE mat = mat
 	Variable dx,dy,dz,nx,ny,nz
