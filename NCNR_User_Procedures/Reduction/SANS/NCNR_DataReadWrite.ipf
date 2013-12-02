@@ -1694,7 +1694,7 @@ Function getReactorPower(fname)
 end
 
 //////  integer values
-
+// reads 32 bit integer
 Function getIntegerFromHeader(fname,start)
 	String fname				//full path:name
 	Variable start		//starting byte

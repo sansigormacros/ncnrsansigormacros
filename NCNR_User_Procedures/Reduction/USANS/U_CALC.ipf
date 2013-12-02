@@ -873,7 +873,8 @@ Function CalcUSANS()
 
 	NVAR omega = root:Packages:NIST:USANS:Globals:U_Sim:gAnalyzerOmega
 	
-	if(exists(funcStr) != 0)
+//	if(exists(funcStr) != 0)
+	if(cmpstr(funcStr,"default") != 0)
 		FUNCREF SANSModelAAO_proto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
 		FUNCREF SANSModelAAO_proto funcUnsmeared=$(funcStr)		//unsmeared
 		coefStr = MC_getFunctionCoef(funcStr)
@@ -1300,6 +1301,7 @@ Function/S U_FunctionPopupList()
 	
 	list = SortList(list)
 	
+	list = "default;"+ list
 	return(list)
 End     
 

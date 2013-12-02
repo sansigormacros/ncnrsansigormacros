@@ -90,8 +90,9 @@ Proc FFT_Panel()
 	Button FFTButton_4,pos={180,264},size={130,20},proc=FFT_PlotResultsButtonProc,title="Plot FFT Results"
 	Button FFTButton_5,pos={13,218},size={120,20},proc=FFTDrawZCylinderButtonProc,title="Draw Cylinder"
 //	Button FFTButton_6,pos={134,79},size={90,20},proc=FFTEraseMatrixButtonProc,title="Erase Matrix"
-	Button FFTButton_6a,pos={160,79},size={60,20},proc=FFTSaveMatrixButtonProc,title="Save"
-	Button FFTButton_6b,pos={240,79},size={60,20},proc=FFTLoadMatrixButtonProc,title="Load"
+	Button FFTButton_6a,pos={140,79},size={50,20},proc=FFTSaveMatrixButtonProc,title="Save"
+	Button FFTButton_6b,pos={200,79},size={50,20},proc=FFTLoadMatrixButtonProc,title="Load"
+	Button FFTButton_6c,pos={260,79},size={50,20},proc=FFT_AddMatrixButtonProc,title="Add"
 	Button FFTButton_7,pos={13,329},size={130,20},proc=FFT_BinnedSpheresButtonProc,title="Do Binned Debye"
 	Button FFTButton_7a,pos={180,329},size={130,20},proc=FFT_PlotResultsButtonProc,title="Plot Binned Results"
 
@@ -146,7 +147,7 @@ Function SaveMyMatrix(fileStr)
 	String str=""
 	sprintf str,"FFT_T=%g;FFT_N=%d;FFT_SolventSLD=%d;",FFT_T,FFT_N,FFT_SolventSLD
 	Note mat,str
-	Save/C/P=home mat as fileStr	//will ask for a file name, save as Igor Binary
+	Save/C/I/P=home mat as fileStr	//will ask for a file name, save as Igor Binary
 	Note/K mat			//kill wave note on exiting since I don't properly update this anywhere else
 			
 	return(0)
@@ -172,39 +173,131 @@ Function FFTLoadMatrixButtonProc(ba) : ButtonControl
 	return 0
 End
 
-
+// /H flag on the LoadWave command severs the connection with the binary file
+// -- this seems to be important - otherwise I get odd results and the wave (on disk) can change!
+//
 Function ReloadMatrix(fileStr)
 	String fileStr
 	
-		LoadWave/M/O/W/P=home		fileStr		//will ask for a file, Igor Binary format is assumed here
-		if(V_flag == 0)
-			return(0)		//user cancel
-		endif
-		
-		String str
-		str=note(mat)
-		NVAR FFT_T = root:FFT_T
-		NVAR FFT_N = root:FFT_N
-		NVAR FFT_SolventSLD = root:FFT_SolventSLD
-		
-		FFT_T = NumberByKey("FFT_T", str, "=" ,";")
-		FFT_N = NumberByKey("FFT_N", str, "=" ,";")
-		FFT_SolventSLD = NumberByKey("FFT_SolventSLD", str, "=" ,";")
+	LoadWave/H/M/O/W/P=home		fileStr		//will ask for a file, Igor Binary format is assumed here
+	if(V_flag == 0)
+		return(0)		//user cancel
+	endif
+	
+	String str
+	str=note(mat)
+	NVAR FFT_T = root:FFT_T
+	NVAR FFT_N = root:FFT_N
+	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+	
+	FFT_T = NumberByKey("FFT_T", str, "=" ,";")
+	FFT_N = NumberByKey("FFT_N", str, "=" ,";")
+	FFT_SolventSLD = NumberByKey("FFT_SolventSLD", str, "=" ,";")
 
 // if I got bad values, put in default values			
-		if(numtype(FFT_T) != 0 )
-			FFT_T = 5
-		endif
-		if(numtype(FFT_N) != 0 )
-			FFT_N = DimSize(mat,0)
-		endif
-		if(numtype(FFT_SolventSLD) != 0 )
-			FFT_SolventSLD = 0
-		endif			
-		
-		Print "Loaded matrix parameters = ",str
-		Execute "NumberOfPoints()"
+	if(numtype(FFT_T) != 0 )
+		FFT_T = 5
+	endif
+	if(numtype(FFT_N) != 0 )
+		FFT_N = DimSize(mat,0)
+	endif
+	if(numtype(FFT_SolventSLD) != 0 )
+		FFT_SolventSLD = 0
+	endif			
+
+	ColorizeGizmo()
+	
+	Print "Loaded matrix parameters = ",str
+	Execute "NumberOfPoints()"
 			
+	return(0)
+end
+
+// load in a previously saved matrix, and reset FFT_N, FFT_T and solvent
+// from the wave note when saved
+Function FFT_AddMatrixButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			String fileStr=""
+			LoadAndAddMatrix(fileStr)
+			
+			break
+	endswitch
+
+	return 0
+End
+
+// This function will load and add the matrix to whatever is currently present
+// - it is checked that the N, T, and SolventSLD are the same
+//
+// - it currently SUMS the voxels - so if there is overlap, you get a new value
+//
+Function LoadAndAddMatrix(fileStr)
+	String fileStr
+
+	String toLoadStr=""
+
+// if the passed in file name is null, pick a file	
+	if(strlen(fileStr)==0)
+		toLoadStr = DoOpenFileDialog("Pick the binary file to load")
+		if(strlen(toLoadStr)==0)
+			return(0)
+		endif
+	endif
+	fileStr=toLoadStr
+
+	// make sure that N and T are correct, just read in the note
+	String noteStr=LoadNoteFunc("home",fileStr)
+	String abortStr
+	
+	// current values
+	NVAR FFT_T = root:FFT_T
+	NVAR FFT_N = root:FFT_N
+	NVAR FFT_SolventSLD = root:FFT_SolventSLD
+
+// possible set to load
+	Variable test_T,test_N,test_SolventSLD
+	test_T = NumberByKey("FFT_T", noteStr, "=" ,";")
+	test_N = NumberByKey("FFT_N", noteStr, "=" ,";")
+	test_SolventSLD = NumberByKey("FFT_SolventSLD", noteStr, "=" ,";")
+	
+// if I got bad values, warn and abort			
+	if(FFT_T != test_T)
+		abortStr = "Current T = "+num2str(FFT_T)+" and Selected T = "+num2str(test_T)+", aborting load"
+		Abort abortStr
+	endif
+	if(FFT_N != test_N)
+		abortStr = "Current N = "+num2str(FFT_N)+" and Selected N = "+num2str(test_N)+", aborting load"
+		Abort abortStr
+	endif
+	if(FFT_SolventSLD != test_SolventSLD)
+		abortStr = "Current SolventSLD = "+num2str(FFT_SolventSLD)+" and Selected SolventSLD = "+num2str(test_SolventSLD)+", aborting load"
+		Abort abortStr
+	endif	
+		
+	// OK, then load and add the matrix
+	// the loaded matrix is "mat" as usual, so make a copy of the current first
+	Duplicate/O mat tmpMat
+	LoadWave/H/M/O/W/P=home		fileStr		//will ask for a file, Igor Binary format is assumed here
+	if(V_flag == 0)
+		return(0)		//user cancel
+	endif
+	
+	Wave mat=root:mat
+	FastOp mat = mat + tmpMat
+	
+	KillWaves/Z tmpMat
+	
+	Print "Loaded matrix parameters = ",noteStr
+	Execute "NumberOfPoints()"
+	
+	ColorizeGizmo()
+		
 	return(0)
 end
 
@@ -445,16 +538,32 @@ End
 Function FFT_RotateMat(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Variable degree=45,sense=1
-	Prompt degree, "Degrees of rotation around Z-axis:"
-//	Prompt sense, "Direction of rotation:",popup,"CW;CCW;"
-	DoPrompt "Enter parameters for rotation", degree
+	Variable angleX=45,angleY=0,angleZ=0
+	Prompt angleX, "Degrees of rotation around X-axis:"
+	Prompt angleY, "Degrees of rotation around Y-axis:"
+	Prompt angleZ, "Degrees of rotation around Z-axis:"
+	DoPrompt "Enter angles for rotation", angleX,angleY,angleZ
 	
 	if (V_Flag)
 		return 0									// user canceled
 	endif
+
+	XYZRotate(angleX,angleY,angleZ)
+
+
+//////////// old way, only one angle
+//	Variable degree=45,sense=1
+//	Prompt degree, "Degrees of rotation around Z-axis:"
+////	Prompt sense, "Direction of rotation:",popup,"CW;CCW;"
+//	DoPrompt "Enter parameters for rotation", degree
+//	
+//	if (V_Flag)
+//		return 0									// user canceled
+//	endif
 	
-	fFFT_RotateMat(degree)
+
+	// old way using ImageRotate that interpolates, and is only around Z-axis
+//	fFFT_RotateMat(degree)
 	return(0)
 End
 
@@ -691,7 +800,7 @@ Function FFTFillSolventMatrixProc(ctrlName) : ButtonControl
 	
 	Wave mat=root:mat
 	NVAR val=root:FFT_SolventSLD
-	mat=val
+	FastOp mat=(val)
 	return(0)
 End
 
@@ -778,9 +887,6 @@ Proc Davg_to_Np(davg)
 	Print "Number of points required = ",np
 	
 End
-
-
-
 
 
 
@@ -924,4 +1030,214 @@ Function EstimatedTime(nx,nq,type)
 	return(est)
 End
 
+////////////// my functions to rotate the matrix in a XYZ coordinate system
+//
+//
+// definitely not generic, is expecting NxNxN volume
+//
+// not very friendly in that it "clips" anything that rotates out of the volume
+//
+// does translate the center of the box to 000, rotates, then translates back
+//
+// friendly in the sense that the rotated matrix is the same size as the original.
+//  --this is important for my final application (FFT)
+//
+// does no interpolation of values, so be sure to keep a copy of the original
+// -- multiple rotation steps are going to make a mess of things.
+//
+// The multi axis rotation is done as one step, and probably violates every conventional
+//  coordinate system. The rotation is applied as RxRyRz, but this could easily be changed
+//
+// I just want it to be correct, so speed was not an issue.
+// -- it's nested for loops.
+// -- it's working with the full matrix, even when 99% is empty.
+//
+// 20 NOV 2013 SRK
+//
+//
+
+//
+// mat is the input volume
+// rotVol is the output rotated volume
+Function XYZRotate(angleX,angleY,angleZ)
+	Variable angleX,angleY,angleZ
+	
+	NVAR FFT_N=root:FFT_N
+	WAVE mat=root:mat
+	Variable dist=FFT_N/2
+
+
+// convert the NxNxN into 3xN xyz locations + wave of "w" values named "values"
+	fVolumeToXYZTriplet(mat,"trip")
+	Wave trip=root:trip
+
+// translate to get the center of the xyz values to 0,0,0	
+	fTranslateCoordinate(trip,dist)		//subtracts dist
+
+// do the rotation as a matrix multiplication	
+// putting zero is no rotation around that axis
+	DoRotation(trip,angleX,angleY,angleZ)
+	Wave rotated=root:rotated
+
+// translate back to a 0->N based coordinate
+	fTranslateCoordinate(rotated,-dist)
+	Wave values=root:values
+
+// convert the triplet back to a volume
+// this CLIPS anything that has rotated out of the NxNxN volume
+	fXYZTripletToVolume(rotated,values,"rotVol",FFT_N)
+
+// clean up by killng the extra waves that were generated
+//
+	KillWaves/Z trip,rotated,values
+	
+	Wave rotVol=root:rotVol
+	mat=rotVol
+	
+	return(0)
+End
+
+
+
+Function fVolumeToXYZTriplet(matrixWave, outputName)
+	Wave matrixWave
+	String outputName	
+	
+	Variable dimx=DimSize(matrixWave,0)
+	Variable dimy=DimSize(matrixWave,1)
+	Variable dimz=DimSize(matrixWave,2)
+	Variable rows=dimx*dimy*dimz
+	Make/O/N=(3,rows) $outputName
+	Make/O/N=(rows) values
+	WAVE TripletWave= $outputName
+	Wave values=values
+	
+
+	Variable ii,jj,kk,count=0
+	Variable xVal,yVal,zval
+	for(kk=0;kk<dimz;kk+=1)			// kk is z (layer)
+		zval=kk
+		for(jj=0;jj<dimy;jj+=1)		// jj is y (column)
+			yVal=jj
+			for(ii=0;ii<dimx;ii+=1)	// ii is x (row)
+				xVal=ii
+				TripletWave[0][count]=xVal
+				TripletWave[1][count]=yVal
+				TripletWave[2][count]=zval
+				values[count]=matrixWave[ii][jj][kk] // value at [row][col][lay]
+				count+=1
+			endfor
+		endfor
+	endfor
+	
+	return(0)
+End
+
+
+Function fXYZTripletToVolume(triplet, values, outputName, outputDim)
+	Wave triplet,values
+	String outputName
+	Variable outputDim
+	
+	Variable numPt=DimSize(triplet,1)
+
+	Variable num = outputDim
+	
+	Make/O/B/N=(num,num,num) $outputName
+	WAVE newVol= $outputName
+
+	FastOp newVol = 0
+	
+	Variable ii,jj,kk,count=0
+	Variable xVal,yVal,zval
+	Variable xOK, yOK, zOK
+
+	
+	for(ii=0;ii<numPt;ii+=1)
+		xval = round(triplet[0][ii])
+		yval = round(triplet[1][ii])
+		zval = round(triplet[2][ii])
+		
+		// round and keep in bounds (returns truth)
+		xOK = inRange(xval,0,num-1)
+		yOK = inRange(yval,0,num-1)
+		zOK = inRange(zval,0,num-1)
+		
+		if(xOK && yOK && zOK)
+			newVol[xval][yval][zval] = values[ii]
+		endif
+			
+	endfor
+
+
+	return(0)
+End
+
+// if val < lo or > hi, bad val
+// fi both of these pass, pt is OK
+ThreadSafe Static Function inRange(val, lo, hi)
+	Variable val, lo, hi
+ 
+ 	if(val < lo)
+ 		return (0)
+ 	endif
+ 	if(val > hi)
+ 		return (0)
+ 	endif
+ 	
+ 	return(1)
+ 
+End
+
+// Rotation is applied in the order Rx Ry Rz
+Function DoRotation(triplet,angleX,angleY,angleZ)
+	Wave triplet
+	Variable angleX,angleY,angleZ
+	
+	Variable thetaX,thetaY,thetaZ
+	thetaX = angleX*pi/180		// convert degrees to radians
+	thetaY = angleY*pi/180		// convert degrees to radians
+	thetaZ = angleZ*pi/180		// convert degrees to radians
+	
+	Make/O/D/N=(3,3) Rx,Ry,Rz
+	Rx=0
+	Ry=0
+	Rz=0
+	
+	Rx[0][0] = 1
+	Rx[1][1] = cos(thetaX)
+	Rx[1][2] = -sin(thetaX)
+	Rx[2][1] = sin(thetaX)
+	Rx[2][2] = cos(thetaX)
+	
+	Ry[0][0] = cos(thetaY)
+	Ry[0][2] = sin(thetaY)
+	Ry[1][1] = 1
+	Ry[2][0] = -sin(thetaY)
+	Ry[2][2] = cos(thetaY)
+	
+	Rz[0][0] = cos(thetaZ)
+	Rz[0][1] = -sin(thetaZ)
+	Rz[1][0] = sin(thetaZ)
+	Rz[1][1] = cos(thetaZ)
+	Rz[2][2] = 1	
+	
+	
+	MatrixOp/O rotated = Rx x Ry x Rz x triplet
+	
+	
+	return(0)
+end
+
+
+// the rotation matrix, as I copied from wikipedia, is a rotation around (0,0,0), not
+// the center of the gizmo plot
+Function fTranslateCoordinate(trip,dist)
+	Wave trip
+	Variable dist
+	
+	MatrixOp/O trip = trip - dist
+	
+	return(0)
+End
 
