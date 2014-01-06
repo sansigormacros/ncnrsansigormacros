@@ -59,7 +59,7 @@ Function InstallNCNRMacros(forceInstall)
 	UP_err = FolderPermissionCheck("User Procedures:")
 	IH_err = FolderPermissionCheck("Igor Help Files:")
 	IE_err = FolderPermissionCheck("Igor Extensions:")	
-//	Print UP_err,IH_err,IE_err
+//	Print "In install ", UP_err,IH_err,IE_err
 
 	String alertStr=""
 	if(UP_err != 0)
@@ -532,7 +532,7 @@ Function InstallDiagnostics()
 // what is the currently installed version from the string
 	PathInfo Igor
 	String IgorPathStr = S_Path
-	String fileNameStr = IgorPathStr + "User Procedures:NCNR_User_Procedures:InstalledVersion.txt"
+	String fileNameStr = SpecialDirPath("Igor Pro User Files",0,0,0) + "User Procedures:NCNR_User_Procedures:InstalledVersion.txt"
 	String installedStr
 	Variable refnum
 	
@@ -552,30 +552,30 @@ Function InstallDiagnostics()
 	IH_err = FolderPermissionCheck("Igor Help Files:")
 	IE_err = FolderPermissionCheck("Igor Extensions:")
 	
-	Print UP_err,IH_err,IE_err
+//	Print UP_err,IH_err,IE_err
 	
 	String alertStr=""
 	if(UP_err != 0)
-		alertStr += "User Procedures has no write permission. Error = "+num2Str(UP_err)+"\r"
+		alertStr += "(Application) User Procedures has no write permission. Error = "+num2Str(UP_err)+"\r"
 	else
 		alertStr += "User Procedures permission is OK.\r"
 	endif
 	if(IH_err != 0)
-		alertStr += "Igor Help Files has no write permission. Error = "+num2Str(IH_err)+"\r"
+		alertStr += "(Application) Igor Help Files has no write permission. Error = "+num2Str(IH_err)+"\r"
 	else
 		alertStr += "Igor Help Files permission is OK.\r"
 	endif
 	if(IE_err != 0)
-		alertStr += "Igor Extensions has no write permission. Error = "+num2Str(IE_err)+"\r"
+		alertStr += "(Application) Igor Extensions has no write permission. Error = "+num2Str(IE_err)+"\r"
 	else
 		alertStr += "Igor Extensions permission is OK.\r"
 	endif
 	
 	if(UP_err != 0 || IH_err != 0 || IE_err != 0)
-		alertStr += "You will need to install manually."
+		alertStr += "You may need to un-install some items manually."
 	endif
 	
-	Notebook $nb text="\r\r**Folder Permissions**\r"
+	Notebook $nb text="\r\r** (Application) Folder Permissions**\r"
 	Notebook $nb text=AlertStr +"\r"
 	
 	
@@ -583,10 +583,14 @@ Function InstallDiagnostics()
 	Notebook $nb text=textStr +"\r"
 
 // get listings of everything in each folder
+// -- TWO passes. once for the Application folder to make sure that there is nothing left there. Then
+// the second path to look in the (local) user folder where everything should be installed.
+
 	string strfileList=""
 
+// start with the Application folder. these should be free of NCNR stuff
 // what is the listing of the Igor Extensions
-	Notebook $nb text="\r\r**Igor Extensions (files)**\r"
+	Notebook $nb text="\r\r**(Application) Igor Extensions (files)**\r"
 	NewPath /Q/O ExPath, igorPathStr+"Igor Extensions:"
 	
 	//files
@@ -595,14 +599,14 @@ Function InstallDiagnostics()
 	Notebook $nb text=textStr
 
 	//folders
-	Notebook $nb text="\r**Igor Extensions (folders)**\r"
+	Notebook $nb text="\r**(Application) Igor Extensions (folders)**\r"
 	strFileList = IndexedDir(ExPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
 
 
 // what is the listing of Igor Help files
-	Notebook $nb text="\r\r**Igor Help (files)**\r"
+	Notebook $nb text="\r\r**(Application) Igor Help (files)**\r"
 	NewPath /Q/O IHPath, igorPathStr+"Igor Help Files:"
 
 	//files
@@ -611,14 +615,14 @@ Function InstallDiagnostics()
 	Notebook $nb text=textStr
 
 	//folders
-	Notebook $nb text="\r**Igor Help (folders)**\r"
+	Notebook $nb text="\r**(Application) Igor Help (folders)**\r"
 	strFileList = IndexedDir(IHPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
 	
 	
 // what is the listing of the User Procedures
-	Notebook $nb text="\r\r**User Procedures (files)**\r"
+	Notebook $nb text="\r\r**(Application) User Procedures (files)**\r"
 	NewPath /Q/O UPPath, igorPathStr+"User Procedures:"
 	//files
 	strFileList = IndexedFile(UPPath, -1, "????" )
@@ -626,7 +630,7 @@ Function InstallDiagnostics()
 	Notebook $nb text=textStr
 
 	//folders
-	Notebook $nb text="\r**User Procedures (folders)**\r"
+	Notebook $nb text="\r**(Application) User Procedures (folders)**\r"
 	strFileList = IndexedDir(UPPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
@@ -637,7 +641,7 @@ Function InstallDiagnostics()
 // that is (apparently) because if there is anything included from the IgP folder (and there is on even the default installation)
 // - then the path is "in use" and can't be killed...
 //
-	Notebook $nb text="\r\r**Igor Procedures (files)**\r"
+	Notebook $nb text="\r\r**(Application) Igor Procedures (files)**\r"
 	NewPath /Q/O IgorProcPath, igorPathStr+"Igor Procedures:"
 
 	//files
@@ -646,26 +650,102 @@ Function InstallDiagnostics()
 	Notebook $nb text=textStr
 
 	//folders
-	Notebook $nb text="\r**Igor Procedures (folders)**\r"
+	Notebook $nb text="\r**(Application) Igor Procedures (folders)**\r"
 	strFileList = IndexedDir(IgorProcPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
-//
-//
-	// then get a listing of the "home" directory. If files were not moved properly, they will still be here
-	Notebook $nb text="\r\r**Home (files)**\r"
-//	NewPath /Q/O IgorProcPath, igorPathStr+"Igor Procedures:"
+	
+//////////////////////////	
 
+	
+// NOW - look in the local Special Path where all is installed
+// what is the listing of the Igor Extensions
+	Notebook $nb text="\r\r**(LOCAL) Igor Extensions (files)**\r"
+	NewPath /Q/O ExPath, SpecialDirPath("Igor Pro User Files",0,0,0)+"Igor Extensions:"
+	
 	//files
-	strFileList = IndexedFile(home, -1, "????" )
+	strFileList = IndexedFile(ExPath, -1, "????" )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr
 
 	//folders
-	Notebook $nb text="\r**Home (folders)**\r"
-	strFileList = IndexedDir(home, -1, 0 )
+	Notebook $nb text="\r**(LOCAL) Igor Extensions (folders)**\r"
+	strFileList = IndexedDir(ExPath, -1, 0 )
 	textStr = ReplaceString(";", strFileList, "\r")
 	Notebook $nb text=textStr+"\r"
+
+
+// what is the listing of Igor Help files
+	Notebook $nb text="\r\r**(LOCAL) Igor Help (files)**\r"
+	NewPath /Q/O IHPath, SpecialDirPath("Igor Pro User Files",0,0,0)+"Igor Help Files:"
+
+	//files
+	strFileList = IndexedFile(IHPath, -1, "????" )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr
+
+	//folders
+	Notebook $nb text="\r**(LOCAL) Igor Help (folders)**\r"
+	strFileList = IndexedDir(IHPath, -1, 0 )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr+"\r"
+	
+	
+// what is the listing of the User Procedures
+	Notebook $nb text="\r\r**(LOCAL) User Procedures (files)**\r"
+	NewPath /Q/O UPPath, SpecialDirPath("Igor Pro User Files",0,0,0)+"User Procedures:"
+	//files
+	strFileList = IndexedFile(UPPath, -1, "????" )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr
+
+	//folders
+	Notebook $nb text="\r**(LOCAL) User Procedures (folders)**\r"
+	strFileList = IndexedDir(UPPath, -1, 0 )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr+"\r"
+	
+// what is the listing of the Igor Procedures
+
+//  generating a path for this seems to be problematic - since it can't be killed , or found on another computer
+// that is (apparently) because if there is anything included from the IgP folder (and there is on even the default installation)
+// - then the path is "in use" and can't be killed...
+//
+	Notebook $nb text="\r\r**(LOCAL) Igor Procedures (files)**\r"
+	NewPath /Q/O IgorProcPath, SpecialDirPath("Igor Pro User Files",0,0,0)+"Igor Procedures:"
+
+	//files
+	strFileList = IndexedFile(IgorProcPath, -1, "????" )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr
+
+	//folders
+	Notebook $nb text="\r**(LOCAL) Igor Procedures (folders)**\r"
+	strFileList = IndexedDir(IgorProcPath, -1, 0 )
+	textStr = ReplaceString(";", strFileList, "\r")
+	Notebook $nb text=textStr+"\r"
+	
+		
+	
+//
+//
+// -- 2014 -- files are always copied from the installer to the install location, so
+// there will always be a copy remaining with the installer (so it can be re-run multiple times) without error
+//
+	// then get a listing of the "home" directory. If files were not moved properly, they will still be here
+//	Notebook $nb text="\r\r**Home (files)**\r"
+//	NewPath /Q/O IgorProcPath, igorPathStr+"Igor Procedures:"
+
+	//files
+//	strFileList = IndexedFile(home, -1, "????" )
+//	textStr = ReplaceString(";", strFileList, "\r")
+//	Notebook $nb text=textStr
+
+	//folders
+//	Notebook $nb text="\r**Home (folders)**\r"
+//	strFileList = IndexedDir(home, -1, 0 )
+//	textStr = ReplaceString(";", strFileList, "\r")
+//	Notebook $nb text=textStr+"\r"
 	
 	//move to the beginning of the notebook
 	Notebook $nb selection={startOfFile, startOfFile}	

@@ -1046,7 +1046,8 @@ EndMacro
 //	SetDataFolder fldrSav0
 //EndMacro
 
-
+// NaN or zero == value not used
+// any non-zero data == value used for fit (I use 1)
 Function MakeBSMask(mask,rad)
 	Wave mask
 	Variable rad
