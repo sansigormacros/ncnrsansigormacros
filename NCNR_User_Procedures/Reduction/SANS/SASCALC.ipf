@@ -26,7 +26,10 @@
 // 						-- to "un-hide" the 10m SANS, uncomment the CheckBox control in the panel (see the constant declared below)
 // 03 JAN 2013 SRK -- settled on "A" for new 10m SANS and "B" for the NG3 when it's relocated. Both instruments share
 //							NGB, so this will have to do. files will be SA4 and SA5 respectively, if the VAX naming continues
-//
+// 21 Jan 2014 MJW - Added creation of strings representing NICE configurations and the ability to output these strings to a text document.
+//							Configuration string variables are saved using the Freeze button (2 per configuration, one for scattering
+//							and one for transmission) and deleted using the clear button.
+//							Configurations are outputted to text using command "SaveNICEConfigs()"
 //
 //
 // calculate what q-values you get based on the instruments settings
@@ -1293,6 +1296,8 @@ Function FreezeButtonProc(ctrlName) : ButtonControl
 	ModifyGraph marker($("aveint_"+num2str(ct)))=19
 	ModifyGraph msize($("aveint_"+num2str(ct)))=2
 	ErrorBars/T=0 $("aveint_"+num2str(ct)) Y,wave=($("sigave_"+num2str(ct)),$("sigave_"+num2str(ct)))
+	NICEConfigText(ct) //create NICE configuration string variables
+	
 	
 	switch(mod(ct,10))	// 10 different colors - black is the unfrozen color
 		case 0:
@@ -1366,6 +1371,7 @@ Function S_ClearButtonProc(ctrlName) : ButtonControl
 	// kill all waves _ct
 		RemoveFromGraph $("aveint_"+num2str(ii))
 		Killwaves/Z $("aveint_"+num2str(ii)),$("qval_"+num2str(ii))
+		KillStrings/Z $("nice_config_s_"+num2str(ii)),$("nice_config_t_"+num2str(ii)) //Kill NICE configuration string variables
 	endfor
 	ct=1
 	setdatafolder root:
@@ -1975,6 +1981,115 @@ Function/S SetConfigurationText()
    setDataFolder root:
    return str			 
 End
+
+
+//Write String Variables representing NICE SANS configurations.
+Function NICEConfigText(ct)
+	variable ct
+	
+	string NICENameS = "nice_config_s_"+num2str(ct)
+	string NICENameT = "nice_config_t_"+num2str(ct)
+
+	SetDataFolder root:Packages:NIST:SAS
+
+	string temp_s, temp_t
+
+	NVAR numberOfGuides=gNg
+	NVAR wavelength=gLambda
+	NVAR lambdaWidth=gDeltaLambda
+	
+	//example from a working NICE trajectory
+	//"'{1.1m5={attenuator.key=0,wavelength.wavelength=\"5Angstrom\",wavelengthSpread.wavelengthSpread=0.132, guide.guide=0, guide.aperture=\"25.4mm\", beamStop.beamStop=\"2\", beamStopX.X=\"0.1cm\", beamStopY.softPosition=\"6.1cm\",beamStop.beamCenterX= 113.3, beamStop.beamCenterY= 62.5, geometry.sampleToDetectorDistance=\"110cm\", detectorOffset.softPosition=\"25cm\"}	
+
+	// Make two configurations, one for Scattering and one for Transmission
+	temp_s = ""
+	temp_t = ""
+	//Give random names
+	//TODO: name the configurations when they are "frozen"
+	temp_s = "config_"+num2str(ct)+"_s={"
+	temp_t = "config_"+num2str(ct)+"_t={"
+
+	temp_s += "attenuator.key="+"0"+","	
+	temp_s += "wavelength.wavelength=\\\""+num2str(wavelength)+"Angstrom\\\","
+	temp_s += "wavelengthSpread.wavelengthSpread="+num2str(lambdaWidth)+","
+	temp_s += "guide.guide="+num2str(numberOfGuides)+","
+	temp_s += "guide.aperture=\\\""+num2str(sourceApertureDiam())+"cm\\\"," 
+	temp_s += "beamStop.beamStop=\\\""+num2istr(beamstopDiam()/2.54)+"\\\","
+	temp_s += "beamStopX.X=\\\""+"0"+"cm\\\","
+	temp_s += "beamStopY.softPosition=\\\""+"0"+"cm\\\","
+	temp_s += "beamStop.beamCenterX="+num2str(64+detectorOffset()*2)+","
+	temp_s += "beamStop.beamCenterY="+"64"+","
+	temp_s += "geometry.sampleToDetectorDistance=\\\""+num2str( chamberToDetectorDist())+"cm\\\","
+	temp_s += "detectorOffset.softPosition=\\\""+num2str(detectorOffset())+"cm\\\""
+	
+	temp_t += "attenuator.key="+num2str(attenuatorNumber())+","	
+	temp_t += "wavelength.wavelength=\\\""+num2str(wavelength)+"Anstrom\\\","
+	temp_t += "wavelengthSpread.wavelengthSpread="+num2str(lambdaWidth)+","
+	temp_t += "guide.guide="+num2str(numberOfGuides)+","
+	temp_t += "guide.aperture=\\\""+num2str(sourceApertureDiam())+"cm\\\"," 
+	temp_t += "beamStop.beamStop=\\\""+num2istr(beamstopDiam()/2.54)+"\\\","
+	temp_t += "beamStopX.X=\\\""+"0"+"cm\\\","
+	temp_t += "beamStopY.softPosition=\\\""+"0"+"cm\\\","
+	temp_t += "beamStop.beamCenterX="+num2str(64+detectorOffset()*2)+","
+	temp_t += "beamStop.beamCenterY="+"64"+","
+	temp_t += "geometry.sampleToDetectorDistance=\\\""+num2str( chamberToDetectorDist())+"cm\\\","
+	temp_t += "detectorOffset.softPosition=\\\""+num2str(detectorOffset())+"cm\\\""
+	
+	temp_s += "}"
+	temp_t += "}"
+	
+	SetDataFolder root:Packages:NIST:SAS
+
+	string/g $NICENameS = temp_s
+	string/g $NICENameT = temp_t
+	
+	SetDataFolder root:Packages:NIST:SAS
+
+	return (0)
+end
+
+//Export NICE SANS configurations to a plain text file.
+Function SaveNICEConfigs()
+
+	String str=""
+	NVAR ct=root:Packages:NIST:SAS:gFreezeCount
+	
+	SetDataFolder root:Packages:NIST:SAS
+	
+	if (ct == 1)
+		DoAlert 0, "No Configurations are available"
+		return (0)
+	endif
+		
+	str = "{\r"
+	string tempNameS, tempNameT
+	
+	variable i = 1
+	do
+		tempNameS = "nice_config_s_"+num2str(i)
+		tempNameT = "nice_config_t_"+num2str(i)
+		SVAR tempS = $tempNameS
+		SVAR tempT = $tempNameT
+		if (i != 1)
+			str += ",\r"
+		endif
+		str += tempS + ",\r"
+		str += tempT
+		i +=1
+	while (i<ct)
+	
+	str += "\r"
+	str += "}"
+	
+	NewNotebook/F=1/N=NICE_Configurations /W=(480,400,880,725)
+	Notebook NICE_Configurations text=str
+	SaveNotebook/S=6/I NICE_Configurations as "NICE_Configs.txt"
+	KillWindow NICE_Configurations	
+			
+	SetDataFolder root:
+	return (0)
+
+end
 
 Function DisplayConfigurationText()
 
