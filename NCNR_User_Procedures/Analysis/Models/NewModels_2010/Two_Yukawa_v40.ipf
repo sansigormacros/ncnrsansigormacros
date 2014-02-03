@@ -26,6 +26,22 @@
 // conversion to Igor from the c-code was not terribly painful, and very useful for debugging.
 //
 //
+// JAN 2014 SRK - added code to enforce Z1 > Z2. If this condition is not met, then the calculation will
+//  return a solution, but it will be incorrect (the result will look like a valid structure factor, but be incorrect)
+//  This condition is necessary due to the asymmetric treatment of these parameters in the mathematics of the calculation
+//  by Yun Liu. A lower limit constraint has been added (automatically) so that the condition will be met while fitting
+//  - without this constraint, parameter "flips" will confound the optimization. This LoLim wave only been added to the 
+//    calculation of S(Q), not any combination PS functions.
+// --- This, unfortunately means that all of the "_Sq" macros *MAY* need to be updated to reflect this constraint
+//     so it will actually be enforced during fitting. I think I'll note this in the manual, and see if the fitting can
+//     handle this. If it can't. I'll instruct users to add a LoLim to the Z1, and this should take care of this issue
+//     Otherwise- I may just introduce more problems by programmatically enforcing "hidden" constraints, and have a lot more
+//     code to maintain if the constraints are not quite correct in all situations.
+//
+// JAN 2014 - added code to bypass the condition Z1 == Z2, which is also diallowed in Yun's code.
+// -- code to prevent K1 == 0 or K2 == 0 was previously in place.
+// These conditions are all specified in Yun's "Appendix B" for the "TYSQ21 Matlab Package"
+//
 //
 // as of September 2010:
 //
@@ -121,6 +137,16 @@ Proc PlotTwoYukawa(num,qmin,qmax)
 	Label bottom "q (A\\S-1\\M)"
 	Label left "Structure Factor"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+
+	// make a constraint wave appropriate for the Z1 > Z2 condition for fitting
+	// setting the lower bound on Z1 (> Z2) is sufficient to meet this condition
+	// and check the box on the panel so that constraints are used
+	Duplicate/O parameters_2yuk Lolim_2yuk
+	LoLim_2yuk = ""
+	LoLim_2yuk[3] = "K5"
+	
+	CheckBox check_2,win=wrapperPanel,value= 1
+
 	
 	AddModelToStrings("TwoYukawa","coef_2yuk","parameters_2yuk","2yuk")
 	
@@ -128,9 +154,12 @@ End
 
 
 //AAO version
+//
 Function TwoYukawa(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 
+// make sure that none of the values are too close to zero
+// make them very small instead
 	if(abs(cw[2]) < 0.001)
 		cw[2] = 0.001
 	endif
@@ -142,6 +171,29 @@ Function TwoYukawa(cw,yw,xw) : FitFunc
 	endif
 	if(abs(cw[5]) < 0.001)
 		cw[5] = 0.001
+	endif	
+
+	if(cw[3] == cw[5])		// Z1 == Z2 not allowed, this may not be enough of a correction
+		cw[3] *= 1.001
+	endif	
+
+// JAN 2014 -- SRK
+// if I do a swap on cw, then the values on the table "flip" and is very un-natural
+// - but it may be OK. Alternatively, I could create a tmp wave to pass through into the calculation.
+
+	
+// then make sure that Z1 > Z2 is true
+// swap 1 and 2 if needed
+	Variable tmp
+	if(cw[5] > cw[3])
+	//swap the K values
+		tmp = cw[2]
+		cw[2] = cw[4]
+		cw[4] = tmp
+	// then the Z values	
+		tmp = cw[3]
+		cw[3] = cw[5]
+		cw[5] = tmp
 	endif	
 	
 	
@@ -638,7 +690,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t4 = (6.*m44 - 2.*m44*Z2 + 3.*m14*pow(Z2,2))
 	t5 = (-8.*m32*m44*Z1 + m32*m44*(-8. + 3.*Z1)*Z2 + (3.*m32*m44 - 4.*(m14*(m32 + 3.*m41 - 2.*m42) + m44)*Z1)*pow(Z2,2) + 	m34*(Z1 + Z2)*t3 + 2.*m31*(Z1 + Z2)*t4 - 4.*m14*m32*pow(Z2,3))
 			
-	TY_qc123 = (2.*phi*pow(Z2,-2)*(9.*t1 + 4.*(-2.*m44*Z1 + m34*(Z1 + Z2))*pow(m11,2)*pow(Z2,2) - 3.*m24*t2 - 6.*m11*t5)*pow(Z1 + Z2,-1))/3.;
+	TY_qc123 = (2.*phi*pow(Z2,-2)*(9.*t1 + 4.*(-2.*m44*Z1 + m34*(Z1 + Z2))*pow(m11,2)*pow(Z2,2) - 3.*m24*t2 - 6.*m11*t5)*pow(Z1 + Z2,-1))/3.
 	
 	
 	t1 = ((m14*m42 - m44)*(2.*m31 - Z1)*Z1*(Z1 + Z2) - 2.*m34*(m42*(Z1 + Z2) - Z1*(-(Z1*Z2) + m41*(Z1 + Z2))) + 2.*m32*(m44*(Z1 + Z2) - m14*Z1*(-(Z1*Z2) + m41*(Z1 + Z2))))
@@ -646,7 +698,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t3 = (-8.*m32*m44 + m34*(m42*(8. - 3.*Z1) + 4.*m41*(-3. + Z1)) - 4.*m31*m44*(-3. + Z1) + 3.*m32*m44*Z1 - 2.*(3.*m14*m41 - 2.*m14*m42 + m44)*pow(Z1,2))
 	t4 = (4.*(3.*m31 - 2.*m32)*m44 + Z1*(-4.*m31*m44 + 3.*m32*m44 - 2.*(m14*(-6.*m31 + 4.*m32 + 3.*m41 - 2.*m42) + m44)*Z1) + m34*(m42*(8. - 3.*Z1) + 4.*m41*(-3. + Z1) + 4.*pow(Z1,2)))
 	
-	TY_qc132 = (-2.*phi*pow(Z1,-2)*(9.*t1 + 4.*(-2.*m34*Z2 + m44*(Z1 + Z2))*pow(m11,2)*pow(Z1,2) + 	3.*m24*t2 + 6.*m11*(Z1*t3 + Z2*t4))*pow(Z1 + Z2,-1))/3.;
+	TY_qc132 = (-2.*phi*pow(Z1,-2)*(9.*t1 + 4.*(-2.*m34*Z2 + m44*(Z1 + Z2))*pow(m11,2)*pow(Z1,2) + 	3.*m24*t2 + 6.*m11*(Z1*t3 + Z2*t4))*pow(Z1 + Z2,-1))/3.
 		
 		
 	if( prnt ) 
@@ -713,28 +765,28 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t1 = (Z1*(2*TY_qb12*(-1 + Z1)*(Z1 + Z2) - Z1*(2*TY_qc212*Z1 + TY_qc112*(Z1 + Z2))) + TY_qa12*(Z1 + Z2)*(-2 + pow(Z1,2)))
 	t2 = (exp(2*Z1)*t1 - TY_qc112*(Z1 + Z2)*pow(Z1,2) + 2*(Z1 + Z2)*exp(Z1)*(TY_qa12 + (TY_qa12 + TY_qb12)*Z1 + TY_qc112*pow(Z1,2)))
 		  
-	TY_A12 = 6*phi*TY_qc112*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*TY_qc212*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) + exp(Z2)*t2)*pow(Z1 + Z2,-1);
+	TY_A12 = 6*phi*TY_qc112*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*TY_qc212*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) + exp(Z2)*t2)*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (2*Z1*(TY_qb21*TY_qc112*(-1 + Z1)*(Z1 + Z2) + TY_qb12*TY_qc121*(-1 + Z1)*(Z1 + Z2) -  Z1*(TY_qc121*TY_qc212*Z1 + TY_qc112*(TY_qc121 + TY_qc221)*Z1 + TY_qc112*TY_qc121*Z2)) + TY_qa21*TY_qc112*(Z1 + Z2)*(-2 + pow(Z1,2)) + TY_qa12*TY_qc121*(Z1 + Z2)*(-2 + pow(Z1,2)))
 	t2 = (TY_qb21*TY_qc112 + TY_qc121*(TY_qa12 + TY_qb12 + 2*TY_qc112*Z1))
 	t3 = (2*(TY_qa12*TY_qc121 + TY_qa21*TY_qc112*(1 + Z1) + Z1*t2)*(Z1 + Z2)*exp(Z1) + exp(2*Z1)*t1 - 2*TY_qc112*TY_qc121*(Z1 + Z2)*pow(Z1,2))
 		  
-	TY_A21 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*(TY_qc121*TY_qc212 + TY_qc112*TY_qc221)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) +  exp(Z2)*t3)*pow(Z1 + Z2,-1);
+	TY_A21 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*(TY_qc121*TY_qc212 + TY_qc112*TY_qc221)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) +  exp(Z2)*t3)*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qb22*TY_qc112 + TY_qc122*(TY_qa12 + TY_qb12 + 2*TY_qc112*Z1))
 	t2 = (2*Z1*(TY_qb22*TY_qc112*(-1 + Z1)*(Z1 + Z2) + TY_qb12*TY_qc122*(-1 + Z1)*(Z1 + Z2) - Z1*(TY_qc122*TY_qc212*Z1 + TY_qc112*(TY_qc122 + TY_qc222)*Z1 + TY_qc112*TY_qc122*Z2)) + TY_qa22*TY_qc112*(Z1 + Z2)*(-2 + pow(Z1,2)) + TY_qa12*TY_qc122*(Z1 + Z2)*(-2 + pow(Z1,2)))
 	t3 = (12*phi*(TY_qa12*TY_qc122 + TY_qa22*TY_qc112*(1 + Z1) + Z1*t1)*(Z1 + Z2)*exp(Z1) - 2*phi*TY_qc112*TY_qc122*(Z1 + Z2)*pow(Z1,2) + exp(2*Z1)*(6*phi*t2 + TY_q22*TY_qc112*(Z1 + Z2)*pow(Z1,3)))
 		  
-	TY_A22 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(12*phi*(TY_qc122*TY_qc212 + TY_qc112*TY_qc222)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) +  exp(Z2)*t3)*pow(Z1 + Z2,-1);
+	TY_A22 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(12*phi*(TY_qc122*TY_qc212 + TY_qc112*TY_qc222)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) +  exp(Z2)*t3)*pow(Z1 + Z2,-1)
 	
 	
 	t1 = ((TY_q22*TY_qc112 + TY_qc123*(TY_qc112 + TY_qc212) + TY_qc112*TY_qc223)*Z1 + TY_qc112*TY_qc123*Z2)
 	t2 = (TY_qa12*TY_qc123 + TY_qa23*TY_qc112*(1 + Z1) + Z1*(TY_qb23*TY_qc112 + TY_qc123*(TY_qa12 + TY_qb12 + 2*TY_qc112*Z1)))
 	t3 = (2*Z1*(TY_qb23*TY_qc112*(-1 + Z1)*(Z1 + Z2) + TY_qb12*TY_qc123*(-1 + Z1)*(Z1 + Z2) - Z1*t1) + TY_qa23*TY_qc112*(Z1 + Z2)*(-2 + pow(Z1,2)) +  TY_qa12*TY_qc123*(Z1 + Z2)*(-2 + pow(Z1,2)))
 	
-	TY_A23 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*(TY_qc123*TY_qc212 + TY_qc112*TY_qc223)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) + exp(Z2)*(2*t2*(Z1 + Z2)*exp(Z1) +  exp(2*Z1)*t3 - 2*TY_qc112*TY_qc123*(Z1 + Z2)*pow(Z1,2)))*pow(Z1 + Z2,-1);
+	TY_A23 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*(TY_qc123*TY_qc212 + TY_qc112*TY_qc223)*exp(Z1)*(-Z2 + (Z1 + Z2)*exp(Z1))*pow(Z1,2) + exp(Z2)*(2*t2*(Z1 + Z2)*exp(Z1) +  exp(2*Z1)*t3 - 2*TY_qc112*TY_qc123*(Z1 + Z2)*pow(Z1,2)))*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qb32*TY_qc112 + (TY_qa23 + TY_qb23)*TY_qc121 + (TY_qa21 + TY_qb21)*TY_qc123 + (TY_qa12 + TY_qb12)*TY_qc132 + TY_q22*TY_qc112*Z1 +  2*(TY_qc121*TY_qc123 + TY_qc112*TY_qc132)*Z1 + TY_qc122*(TY_qa22 + TY_qb22 + TY_qc122*Z1))
@@ -748,7 +800,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t9 = (t7 + t8 + 2*TY_qb12*TY_qc132*pow(Z1,3) - 2*TY_qc112*TY_qc132*pow(Z1,3) - 2*TY_qc132*TY_qc212*pow(Z1,3) - 2*TY_qc123*TY_qc221*pow(Z1,3) - 2*TY_qc122*TY_qc222*pow(Z1,3) - 2*TY_qc121*TY_qc223*pow(Z1,3) - 2*TY_qc112*TY_qc232*pow(Z1,3) - pow(TY_qc122,2)*pow(Z1,3))
 	t10 = (12*phi*(TY_qa23*TY_qc121 + TY_qa22*TY_qc122 + TY_qa21*TY_qc123 + TY_qa12*TY_qc132 + TY_qa32*TY_qc112*(1 + Z1) + Z1*t1)*(Z1 + Z2)*exp(Z1 + Z2) - 12*phi*t2*Z2*exp(Z1)*pow(Z1,2) + 12*phi*t3*(Z1 + Z2)*exp(2*Z1)*pow(Z1,2) - 6*phi*(Z1 + Z2)*exp(Z2)*t4*pow(Z1,2) + exp(2*Z1 + Z2)*(TY_q22*t5 + 6*phi*t9))  
 		  
-	TY_A32 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*t10*pow(Z1 + Z2,-1);
+	TY_A32 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*t10*pow(Z1 + Z2,-1)
 	
 	
 	t1 = ((-(TY_qc132*TY_qc221) - TY_qc121*TY_qc232)*Z2 + ((TY_q22 + TY_qc132)*TY_qc221 + TY_qc121*TY_qc232)*(Z1 + Z2)*exp(Z1))
@@ -756,7 +808,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t3 = (-2*(TY_qa32*TY_qc121 + TY_qa21*(TY_q22 + TY_qc132)) - 2*(TY_qb32*TY_qc121 + TY_qb21*(TY_q22 + TY_qc132))*Z1 + (TY_q22*(TY_qa21 + 2*TY_qb21 - 2*TY_qc121) + TY_qc121*(TY_qa32 + 2*TY_qb32 - 2*TY_qc132) + (TY_qa21 + 2*TY_qb21)*TY_qc132)*pow(Z1,2))
 	t4 = (-2*(TY_qa32*TY_qc121 + TY_qa21*(TY_q22 + TY_qc132)) - 2*(TY_qb32*TY_qc121 + TY_qb21*(TY_q22 + TY_qc132))*Z1 + (TY_qa32*TY_qc121 + 2*TY_qb32*TY_qc121 + TY_qa21*TY_qc132 + 2*TY_qb21*TY_qc132 - 2*TY_qc121*TY_qc132 + TY_q22*(TY_qa21 + 2*TY_qb21 - 2*TY_qc121 - 2*TY_qc221) - 2*TY_qc132*TY_qc221 - 2*TY_qc121*TY_qc232)*pow(Z1,2))
 	
-	TY_A41 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*(2*t2*(Z1 + Z2)*exp(Z1) - 2*TY_qc121*TY_qc132*(Z1 + Z2)*pow(Z1,2) + exp(2*Z1)*(Z2*t3 + Z1*t4)))*pow(Z1 + Z2,-1);
+	TY_A41 = 6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*(2*t2*(Z1 + Z2)*exp(Z1) - 2*TY_qc121*TY_qc132*(Z1 + Z2)*pow(Z1,2) + exp(2*Z1)*(Z2*t3 + Z1*t4)))*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qb32*TY_qc122 + (TY_qa22 + TY_qb22)*TY_qc132 + TY_qc122*(TY_q22 + 2*TY_qc132)*Z1)
@@ -766,7 +818,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t5 = (6*phi*t4 + (Z1 + Z2)*pow(TY_q22,2)*pow(Z1,3) + TY_q22*(6*phi*(2*Z1*(TY_qb22*(-1 + Z1)*(Z1 + Z2) - Z1*((TY_qc122 + TY_qc222)*Z1 + TY_qc122*Z2)) + TY_qa22*(Z1 + Z2)*(-2 + pow(Z1,2))) + TY_qc132*(Z1 + Z2)*pow(Z1,3)))
 	t6 = (12*phi*(TY_qa22*TY_qc132 + TY_qa32*TY_qc122*(1 + Z1) + Z1*t1)*(Z1 + Z2)*exp(Z1 + Z2) - 12*phi*t2*Z2*exp(Z1)*pow(Z1,2) + 12*phi*t3*(Z1 + Z2)*exp(2*Z1)*pow(Z1,2) - 12*phi*TY_qc122*TY_qc132*(Z1 + Z2)*exp(Z2)*pow(Z1,2) + exp(2*Z1 + Z2)*t5)
 		
-	TY_A42 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*t6*pow(Z1 + Z2,-1);
+	TY_A42 = exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*t6*pow(Z1 + Z2,-1)
 	
 	
 	t1 = ((TY_qc132*TY_qc223 + TY_qc123*TY_qc232)*Z2 - ((TY_q22 + TY_qc132)*TY_qc223 + TY_qc123*TY_qc232)*(Z1 + Z2)*exp(Z1))
@@ -774,14 +826,14 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t3 = (2*TY_qa32*TY_qc123 + 2*TY_qa23*(TY_q22 + TY_qc132) + 2*(TY_qb32*TY_qc123 + TY_qb23*(TY_q22 + TY_qc132))*Z1 - (TY_q22*(TY_qa23 + 2*TY_qb23 - 2*TY_qc123) + TY_qc123*(TY_qa32 + 2*TY_qb32 - 2*TY_qc132) + (TY_qa23 + 2*TY_qb23)*TY_qc132)*pow(Z1,2))
 	t4 = (2*TY_qa32*TY_qc123 + 2*TY_qa23*(TY_q22 + TY_qc132) + 2*(TY_qb32*TY_qc123 + TY_qb23*(TY_q22 + TY_qc132))*Z1 + (-(TY_qa32*TY_qc123) - (TY_qa23 + 2*TY_qb23)*TY_qc132 + TY_q22*(-TY_qa23 + 2*(-TY_qb23 + TY_qc123 + TY_qc132 + TY_qc223)) + 2*(-(TY_qb32*TY_qc123) + TY_qc132*(TY_qc123 + TY_qc223) + TY_qc123*TY_qc232) + 2*pow(TY_q22,2))*pow(Z1,2))
 	
-	TY_A43 = -6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*(-2*t2*(Z1 + Z2)*exp(Z1) + 2*TY_qc123*TY_qc132*(Z1 + Z2)*pow(Z1,2) + exp(2*Z1)*(Z2*t3 + Z1*t4)))*pow(Z1 + Z2,-1);
+	TY_A43 = -6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*(-2*t2*(Z1 + Z2)*exp(Z1) + 2*TY_qc123*TY_qc132*(Z1 + Z2)*pow(Z1,2) + exp(2*Z1)*(Z2*t3 + Z1*t4)))*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qc132*Z2 - (TY_q22 + TY_qc132)*(Z1 + Z2)*exp(Z1))
 	t2 = (Z1*(-2*TY_qb32*(-1 + Z1)*(Z1 + Z2) + Z1*((TY_q22 + TY_qc132 + 2*TY_qc232)*Z1 + (TY_q22 + TY_qc132)*Z2)) -  TY_qa32*(Z1 + Z2)*(-2 + pow(Z1,2)))
 	t3 = ((TY_q22 + TY_qc132)*exp(2*Z1)*t2 + (Z1 + Z2)*pow(TY_qc132,2)*pow(Z1,2) - 2*TY_qc132*(Z1 + Z2)*exp(Z1)*(TY_qa32 + (TY_qa32 + TY_qb32)*Z1 + (TY_q22 + TY_qc132)*pow(Z1,2)))
 	
-	TY_A52 = -6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*TY_qc232*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*t3)*pow(Z1 + Z2,-1);
+	TY_A52 = -6*phi*exp(-2*Z1 - Z2)*pow(TY_q22,-2)*pow(Z1,-3)*(2*TY_qc232*exp(Z1)*t1*pow(Z1,2) + exp(Z2)*t3)*pow(Z1 + Z2,-1)
 	
 	
 	// normalize A
@@ -833,7 +885,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t3 = (TY_qb21*TY_qc212*(-1 + Z2)*(Z1 + Z2) + TY_qb12*TY_qc221*(-1 + Z2)*(Z1 + Z2) - Z2*(TY_qc212*TY_qc221*Z1 + TY_qc112*TY_qc221*Z2 + TY_qc212*(TY_qc121 + TY_qc221)*Z2))
 	t4 = (exp(Z1)*(2*Z2*t3 + TY_qa21*TY_qc212*(Z1 + Z2)*(-2 + pow(Z2,2)) + TY_qa12*TY_qc221*(Z1 + Z2)*(-2 + pow(Z2,2))) + 2*(TY_qc121*TY_qc212 + TY_qc112*TY_qc221)*(Z1 + Z2)*pow(Z2,2))
 	
-	TY_B12 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc212*TY_qc221*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*((Z1 + Z2)*t1*exp(Z1) + t2*Z1*pow(Z2,2)) + exp(2*Z2)*t4)*pow(Z1 + Z2,-1);
+	TY_B12 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc212*TY_qc221*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*((Z1 + Z2)*t1*exp(Z1) + t2*Z1*pow(Z2,2)) + exp(2*Z2)*t4)*pow(Z1 + Z2,-1)
 	
 	
 	
@@ -845,7 +897,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t5 = (-2*(TY_qb23*TY_qc212 + TY_qb12*(TY_q22 + TY_qc223)) + (TY_q22*(TY_qa12 + 2*TY_qb12 - 2*TY_qc212) + TY_qc212*(TY_qa23 + 2*TY_qb23 - 2*TY_qc223) +  (TY_qa12 + 2*TY_qb12)*TY_qc223)*Z1)
 	t6 = (TY_q22*(TY_qa12 + 2*TY_qb12 - 2*TY_qc112 - 2*TY_qc212) + TY_qc212*(TY_qa23 + 2*TY_qb23 - 2*TY_qc123 - 2*TY_qc223) + (TY_qa12 + 2*TY_qb12 - 2*TY_qc112)*TY_qc223)
 	
-	TY_B14 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc212*TY_qc223*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*t1 +  exp(2*Z2)*(2*t2*(Z1 + Z2)*pow(Z2,2) + exp(Z1)*(-2*t3*Z1 - 2*t4*Z2 + t5*pow(Z2,2) + t6*pow(Z2,3))))*pow(Z1 + Z2,-1);
+	TY_B14 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc212*TY_qc223*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*t1 +  exp(2*Z2)*(2*t2*(Z1 + Z2)*pow(Z2,2) + exp(Z1)*(-2*t3*Z1 - 2*t4*Z2 + t5*pow(Z2,2) + t6*pow(Z2,3))))*pow(Z1 + Z2,-1)
 	
 	
 	
@@ -853,7 +905,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t2 = (exp(Z1)*(Z2*(2*TY_qb21*(-1 + Z2)*(Z1 + Z2) - Z2*(2*TY_qc121*Z2 + TY_qc221*(Z1 + Z2))) + TY_qa21*(Z1 + Z2)*(-2 + pow(Z2,2))) +  2*TY_qc121*(Z1 + Z2)*pow(Z2,2))
 	t3 = (-(TY_qc121*Z1*pow(Z2,2)) + (Z1 + Z2)*exp(Z1)*(TY_qa21 + (TY_qa21 + TY_qb21)*Z2 + TY_qc221*pow(Z2,2)))
 	
-	TY_B21 = 6*phi*TY_qc221*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-t1 +  exp(2*Z2)*t2 + 2*exp(Z2)*t3)*pow(Z1 + Z2,-1);
+	TY_B21 = 6*phi*TY_qc221*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-t1 +  exp(2*Z2)*t2 + 2*exp(Z2)*t3)*pow(Z1 + Z2,-1)
 	
 	
 	
@@ -863,7 +915,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t4 = (TY_qb22*TY_qc221*(-1 + Z2)*(Z1 + Z2) + TY_qb21*TY_qc222*(-1 + Z2)*(Z1 + Z2) - Z2*(TY_qc221*TY_qc222*Z1 + TY_qc121*TY_qc222*Z2 + TY_qc221*(TY_qc122 + TY_qc222)*Z2))
 	t5 = (6*phi*(2*Z2*t4 + TY_qa22*TY_qc221*(Z1 + Z2)*(-2 + pow(Z2,2)) + TY_qa21*TY_qc222*(Z1 + Z2)*(-2 + pow(Z2,2))) + TY_q22*TY_qc221*(Z1 + Z2)*pow(Z2,3))
 	
-	TY_B22 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-12*phi*TY_qc221*TY_qc222*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 12*phi*exp(Z2)*t2 + exp(2*Z2)*(12*phi*t3*(Z1 + Z2)*pow(Z2,2) +  exp(Z1)*t5))*pow(Z1 + Z2,-1);
+	TY_B22 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-12*phi*TY_qc221*TY_qc222*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 12*phi*exp(Z2)*t2 + exp(2*Z2)*(12*phi*t3*(Z1 + Z2)*pow(Z2,2) +  exp(Z1)*t5))*pow(Z1 + Z2,-1)
 	
 	
 	
@@ -884,7 +936,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t14 = (TY_q22*t9 + t10*TY_qc222 + TY_qc221*t11 + (TY_qa21 + 2*TY_qb21 - 2*TY_qc121)*TY_qc223 + TY_qc212*t12 + (TY_qa12 + 2*TY_qb12 - 2*TY_qc112)*TY_qc232)
 	t15 = (-6*phi*(Z1 + Z2)*exp(Z1)*t1*pow(Z2,2) +  12*phi*exp(Z2)*t13 +  exp(2*Z2)*(12*phi*t4*(Z1 + Z2)*pow(Z2,2) +  exp(Z1)*(TY_q22*TY_qc222*(Z1 + Z2)*pow(Z2,3) - 6*phi*(2*t5*Z1 + 2*t6*Z2 - (-2*t7 +  t8*Z1)*pow(Z2,2) - t14*pow(Z2,3)))))
 	
-	TY_B23 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t15*pow(Z1 + Z2,-1);
+	TY_B23 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t15*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qa22*TY_qc223 + TY_qa23*TY_qc222*(1 + Z2) + Z2*(TY_qb23*TY_qc222 + (TY_qa22 + TY_qb22)*TY_qc223 + TY_qc222*(TY_q22 + 2*TY_qc223)*Z2))
@@ -894,13 +946,13 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t5 = (6*phi*t4 + (Z1 + Z2)*pow(TY_q22,2)*pow(Z2,3) + TY_q22*(6*phi*(2*Z2*(TY_qb22*(-1 + Z2)*(Z1 + Z2) - Z2*(TY_qc222*Z1 + (TY_qc122 + TY_qc222)*Z2)) + TY_qa22*(Z1 + Z2)*(-2 + pow(Z2,2))) + TY_qc223*(Z1 + Z2)*pow(Z2,3)))
 	t6 = (12*phi*(Z1 + Z2)*t1*exp(Z1 + Z2) - 12*phi*TY_qc222*TY_qc223*(Z1 + Z2)*exp(Z1)*pow(Z2,2) - 12*phi*t2*Z1*exp(Z2)*pow(Z2,2) + 12*phi*t3*(Z1 + Z2)*exp(2*Z2)*pow(Z2,2) + exp(Z1 + 2*Z2)*t5)
 		
-	TY_B24 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t6*pow(Z1 + Z2,-1);
+	TY_B24 = exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t6*pow(Z1 + Z2,-1)
 
 	
 	t1 = (exp(Z1)*(Z2*(-2*TY_qb23*(-1 + Z2)*(Z1 + Z2) + Z2*((TY_q22 + TY_qc223)*Z1 + (TY_q22 + 2*TY_qc123 + TY_qc223)*Z2)) -  TY_qa23*(Z1 + Z2)*(-2 + pow(Z2,2))) - 2*TY_qc123*(Z1 + Z2)*pow(Z2,2))
 	t2 = ((Z1 + Z2)*exp(Z1)*pow(TY_qc223,2)*pow(Z2,2) + (TY_q22 + TY_qc223)*exp(2*Z2)*t1 + 2*TY_qc223*exp(Z2)*(TY_qc123*Z1*pow(Z2,2) - (Z1 + Z2)*exp(Z1)*(TY_qa23 + (TY_qa23 + TY_qb23)*Z2 + (TY_q22 + TY_qc223)*pow(Z2,2))))
 	
-	TY_B25 = -6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t2*pow(Z1 + Z2,-1);
+	TY_B25 = -6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*t2*pow(Z1 + Z2,-1)
 	
 	
 	t1 = (TY_qa21*TY_qc232 + TY_qa32*TY_qc221*(1 + Z2) + Z2*(TY_qb32*TY_qc221 + TY_qc232*(TY_qa21 + TY_qb21 + 2*TY_qc221*Z2)))
@@ -908,7 +960,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t3 = (TY_qb32*TY_qc221*(-1 + Z2)*(Z1 + Z2) + TY_qb21*TY_qc232*(-1 + Z2)*(Z1 + Z2) - Z2*(TY_qc221*TY_qc232*Z1 + TY_qc121*TY_qc232*Z2 + TY_qc221*(TY_q22 + TY_qc132 + TY_qc232)*Z2))
 	t4 = (exp(Z1)*(2*Z2*t3 + TY_qa32*TY_qc221*(Z1 + Z2)*(-2 + pow(Z2,2)) + TY_qa21*TY_qc232*(Z1 + Z2)*(-2 + pow(Z2,2))) + 2*(TY_qc132*TY_qc221 + TY_qc121*TY_qc232)*(Z1 + Z2)*pow(Z2,2))  
 	
-	TY_B32 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc221*TY_qc232*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*((Z1 + Z2)*t1*exp(Z1) + t2*Z1*pow(Z2,2)) + exp(2*Z2)*t4)*pow(Z1 + Z2,-1);
+	TY_B32 = 6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(-2*TY_qc221*TY_qc232*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*((Z1 + Z2)*t1*exp(Z1) + t2*Z1*pow(Z2,2)) + exp(2*Z2)*t4)*pow(Z1 + Z2,-1)
 	
 
 	t1 = (-((Z1 + Z2)*(TY_qa23*TY_qc232 + TY_qa32*TY_qc223*(1 + Z2) + Z2*(TY_qb32*TY_qc223 + TY_qc232*(TY_qa23 + TY_qb23 + TY_q22*Z2 + 2*TY_qc223*Z2)))*exp(Z1)) + (TY_qc132*TY_qc223 + TY_qc123*TY_qc232)*Z1*pow(Z2,2))
@@ -918,7 +970,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	t5 = (-2*(TY_qb32*(TY_q22 + TY_qc223) + TY_qb23*TY_qc232) + ((TY_qa32 + 2*TY_qb32)*(TY_q22 + TY_qc223) + (-2*TY_q22 + TY_qa23 + 2*TY_qb23 - 2*TY_qc223)*TY_qc232)*Z1)
 	t6 = (2*t3*Z1 + 2*t4*Z2 - t5*pow(Z2,2) + ((2*TY_q22 - TY_qa32 - 2*TY_qb32 + 2*TY_qc132)*(TY_q22 + TY_qc223) + (2*TY_q22 - TY_qa23 + 2*(-TY_qb23 + TY_qc123 + TY_qc223))*TY_qc232)*pow(Z2,3))
 			  
-	TY_B34 = -6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(2*TY_qc223*TY_qc232*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*t1 + exp(2*Z2)*(-2*t2*(Z1 + Z2)*pow(Z2,2) + exp(Z1)*t6))*pow(Z1 + Z2,-1);
+	TY_B34 = -6*phi*exp(-Z1 - 2*Z2)*pow(TY_q22,-2)*pow(Z2,-3)*(2*TY_qc223*TY_qc232*(Z1 + Z2)*exp(Z1)*pow(Z2,2) + 2*exp(Z2)*t1 + exp(2*Z2)*(-2*t2*(Z1 + Z2)*pow(Z2,2) + exp(Z1)*t6))*pow(Z1 + Z2,-1)
 	
 
 //	/*double norm_B = sqrt(pow(TY_B12, 2)+pow(TY_B14, 2)+pow(TY_B21, 2)+pow(TY_B22, 2)+pow(TY_B23, 2)+pow(TY_B24, 2)+pow(TY_B25, 2)+pow(TY_B32, 2)+pow(TY_B34, 2));
@@ -1112,7 +1164,7 @@ Function TY_ReduceNonlinearSystem( Z1, Z2,  K1,  K2,  phi,  prnt )
 	TY_w[3] = 2*TY_B34*TY_G13*TY_G14 + 2*TY_B32*(TY_G14*TY_G15 + TY_G13*TY_G16) - TY_B25*TY_G14*TY_G22 - TY_B24*TY_G15*TY_G22 - TY_B23*TY_G16*TY_G22 - TY_B22*TY_G17*TY_G22 - TY_B21*TY_G18*TY_G22 - TY_B25*TY_G13*TY_G23  
 	TY_w[3] += -TY_B24*TY_G14*TY_G23 - TY_B23*TY_G15*TY_G23 - TY_B22*TY_G16*TY_G23 - TY_B21*TY_G17*TY_G23 - TY_B24*TY_G13*TY_G24 - TY_B23*TY_G14*TY_G24 - TY_B22*TY_G15*TY_G24 - TY_B21*TY_G16*TY_G24 + 2*TY_B14*TY_G23*TY_G24  
 	TY_w[3] += -TY_B23*TY_G13*TY_G25 - TY_B22*TY_G14*TY_G25 - TY_B21*TY_G15*TY_G25 + 2*TY_B14*TY_G22*TY_G25 + 2*TY_B12*TY_G24*TY_G25 - TY_B22*TY_G13*TY_G26 - TY_B21*TY_G14*TY_G26 + 2*TY_B12*TY_G23*TY_G26 - TY_B21*TY_G13*TY_G27 
-	TY_w[3] += 2*TY_B12*TY_G22*TY_G27;
+	TY_w[3] += 2*TY_B12*TY_G22*TY_G27
 	
 	TY_w[4] = -(TY_B25*TY_G15*TY_G22) - TY_B24*TY_G16*TY_G22 - TY_B23*TY_G17*TY_G22 - TY_B22*TY_G18*TY_G22 - TY_B21*TY_G19*TY_G22 - TY_B25*TY_G14*TY_G23 - TY_B24*TY_G15*TY_G23 - TY_B23*TY_G16*TY_G23 - TY_B22*TY_G17*TY_G23  
 	TY_w[4] += -TY_B21*TY_G18*TY_G23 - TY_B25*TY_G13*TY_G24 - TY_B24*TY_G14*TY_G24 - TY_B23*TY_G15*TY_G24 - TY_B22*TY_G16*TY_G24 - TY_B21*TY_G17*TY_G24 - TY_B24*TY_G13*TY_G25 - TY_B23*TY_G14*TY_G25 - TY_B22*TY_G15*TY_G25  

@@ -6,6 +6,11 @@
 // this procedure is for the Teubner-Strey Model
 //
 // 06 NOV 98 SRK
+//
+// JAN 2014 - SRK
+//
+// Changed the input parameters to be the length scales rather than a2, c1, c2
+// which have no physical meaning.
 ////////////////////////////////////////////////
 
 Proc PlotTeubnerStreyModel(num,qmin,qmax)
@@ -16,8 +21,12 @@ Proc PlotTeubnerStreyModel(num,qmin,qmax)
 	
 	Make/O/D/n=(num) xwave_ts,ywave_ts
 	xwave_ts =  alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
-	Make/O/D coef_ts = {0.1,-30,5000,0.1}
-	make/o/t parameters_ts = {"scale (a2)","c1","c2","bkg"}
+//	Make/O/D coef_ts = {0.1,-30,5000,0.1}
+//	make/o/t parameters_ts = {"scale (a2)","c1","c2","bkg"}
+
+	Make/O/D coef_ts = {0.3,6e-6,30,100,0.1}
+	make/o/t parameters_ts = {"scale","SLD difference (A^-2)","correlation length (xi) (A)","repeat distance, d, (A)","bkg (1/cm)"}
+
 	Edit parameters_ts,coef_ts
 	Variable/G root:g_ts
 	g_ts := TeubnerStreyModel(coef_ts,ywave_ts,xwave_ts)
@@ -46,8 +55,8 @@ Proc PlotSmearedTeubnerStreyModel(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_ts = {0.1,-30,5000,0.1}
-	make/o/t smear_parameters_ts = {"scale (a2)","c1","c2","bkg"}
+	Make/O/D smear_coef_ts = {0.3,6e-6,30,100,0.1}
+	make/o/t smear_parameters_ts = {"scale","SLD difference (A^-2)","correlation length (xi) (A)","repeat distance, d, (A)","bkg (1/cm)"}
 	Edit smear_parameters_ts,smear_coef_ts
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -72,10 +81,35 @@ End
 Function TeubnerStreyModel(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 
+	Variable a2, c1, c2
+	Variable d,xi,scale,delrho
+
+	scale = cw[0]
+	delrho = cw[1]
+	xi = cw[2]
+	d = cw[3]
+	
+	
+	a2 = (1 + (2*pi*xi/d)^2)^2
+	c1 = -2*xi*xi*(2*pi*xi/d)^2+2*xi*xi
+	c2 = xi^4	
+	
+	a2 /= 8*pi*xi^3*scale*delrho^2*1e8		//this makes the units work out
+	c1 /= 8*pi*xi^3*scale*delrho^2*1e8
+	c2 /= 8*pi*xi^3*scale*delrho^2*1e8
+	
+//	Print a2,c1,c2
+
+	Duplicate/O cw tmp_ts_cw
+	tmp_ts_cw[0] = a2
+	tmp_ts_cw[1] = c1
+	tmp_ts_cw[2] = c2
+	tmp_ts_cw[3] = cw[4]
+	
 #if exists("TeubnerStreyModelX")
-	yw = TeubnerStreyModelX(cw,xw)
+	yw = TeubnerStreyModelX(tmp_ts_cw,xw)
 #else
-	yw = fTeubnerStreyModel(cw,xw)
+	yw = fTeubnerStreyModel(tmp_ts_cw,xw)
 #endif
 	return(0)
 End
@@ -108,20 +142,34 @@ Macro TeubnerStreyLengths()
 		Abort "You must plot the Teubner-Strey model before calculating the lengths"
 	Endif
 	// calculate the correlation length and the repeat distance
-	Variable a2,c1,c2,xi,dd
-	a2 = coef_ts[0]
-	c1 = coef_ts[1]
-	c2 = coef_ts[2]
+//	Variable a2,c1,c2,xi,dd,fa
+//	a2 = coef_ts[0]
+//	c1 = coef_ts[1]
+//	c2 = coef_ts[2]
+//	
+//	xi = 0.5*sqrt(a2/c2) + c1/4/c2
+//	xi = 1/sqrt(xi)
+//	
+//	dd = 0.5*sqrt(a2/c2) - c1/4/c2
+//	dd = 1/sqrt(dd)
+//	dd *=2*Pi
+//		
+
+	Variable a2, c1, c2
+	Variable d,xi,scale,delrho,fa
+	xi = coef_ts[2]
+	d = coef_ts[3]
 	
-	xi = 0.5*sqrt(a2/c2) + c1/4/c2
-	xi = 1/sqrt(xi)
 	
-	dd = 0.5*sqrt(a2/c2) - c1/4/c2
-	dd = 1/sqrt(dd)
-	dd *=2*Pi
+	a2 = (1 + (2*pi*xi/d)^2)^2
+	c1 = -2*xi*xi*(2*pi*xi/d)^2+2*xi*xi
+	c2 = xi^4	
 	
+	fa = c1/(sqrt(4*a2*c2))
+		
 	Printf "The correlation length (the dispersion of d) xi = %g A\r",xi
-	Printf "The quasi-periodic repeat distance, d = %g A\r",dd
+	Printf "The quasi-periodic repeat distance, d = %g A\r",d
+	Printf "The amphiphilicity factor, fa = %g\r",fa
 	
 End
 
