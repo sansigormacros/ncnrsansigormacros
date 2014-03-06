@@ -645,6 +645,7 @@ Function convertNISTtoNISTXML(fileStr)
 			nf.unitsQmean = "1/A"
 		else
 			Wave nf.dQl = $(StringFromList(3, S_waveNames ,";" ))
+			nf.dQl = abs(nf.dQl)
 			
 			//Set units
 			nf.unitsdQl = "1/A"
