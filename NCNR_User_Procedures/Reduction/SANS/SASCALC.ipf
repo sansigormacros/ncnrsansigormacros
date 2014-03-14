@@ -2023,7 +2023,7 @@ Function NICEConfigText(ct)
 	temp_s += "detectorOffset.softPosition=\\\""+num2str(detectorOffset())+"cm\\\""
 	
 	temp_t += "attenuator.key="+num2str(attenuatorNumber())+","	
-	temp_t += "wavelength.wavelength=\\\""+num2str(wavelength)+"Anstrom\\\","
+	temp_t += "wavelength.wavelength=\\\""+num2str(wavelength)+"Angstrom\\\","
 	temp_t += "wavelengthSpread.wavelengthSpread="+num2str(lambdaWidth)+","
 	temp_t += "guide.guide="+num2str(numberOfGuides)+","
 	temp_t += "guide.aperture=\\\""+num2str(sourceApertureDiam())+"cm\\\"," 
