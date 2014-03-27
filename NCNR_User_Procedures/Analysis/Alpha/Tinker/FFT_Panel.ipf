@@ -114,6 +114,10 @@ Proc FFT_Panel()
 	SetVariable FFTSetVar_5,limits={-99,99,1},value= FFT_SolventSLD,live= 1
 	Button FFTButton_15,pos={209,430},size={90,20},proc=Interp2DSliceButton,title="Interp 2D"
 	Button FFTButton_16,pos={14,460},size={70,20},proc=FFTHelpButton,title="Help"
+	
+	Button FFTButton_17,pos={13,400},size={120,20},proc=FFT_Iso2USANS,title="Iso to USANS"
+	Button FFTButton_18,pos={13,430},size={120,20},proc=FFT_Aniso2USANS,title="Aniso to USANS"
+
 EndMacro
 
 // Save a matrix wave, plus the N, T, and solvent values in the wave note for reloading
@@ -452,7 +456,7 @@ Proc Display2DSlice()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
-	SetAxis/A/R left
+//	SetAxis/A/R left
 End
 
 Proc Display2DInterpSlice_log()
@@ -470,7 +474,7 @@ Proc Display2DInterpSlice_log()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
-	SetAxis/A/R left
+//	SetAxis/A/R left
 End
 
 Proc Display2DSlice_log()
@@ -488,7 +492,7 @@ Proc Display2DSlice_log()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
-	SetAxis/A/R left
+//	SetAxis/A/R left
 End
 Proc Slice2_1D()
 	PauseUpdate; Silent 1		// building window...
@@ -734,6 +738,9 @@ Function FFT_PlotResultsButtonProc(ctrlName) : ButtonControl
 	// FFTButton_7a = binned = _XOP
 	// FFTButton_8a = Debye = _full
 	// FFTButton_14a = SLD = _SLD
+	// 17 = iso USANS
+	// 18 = Anisotropic USANS
+	//
 	strswitch(ctrlName)	
 		case "FFTButton_4":
 			if(!isTraceOnGraph("iBin","FFT_IQ") && exists("iBin")==1)		//only append if it's not already there
@@ -759,6 +766,26 @@ Function FFT_PlotResultsButtonProc(ctrlName) : ButtonControl
 				ModifyGraph mode=4,marker=19,msize=2,rgb(ival_SLD)=(2,39321,1)
 			endif		
 			break
+		case "FFTButton_14a":
+			if(!isTraceOnGraph("ival_SLD","FFT_IQ") && exists("ival_SLD")==1)		//only append if it's not already there
+				AppendToGraph /W=FFT_IQ ival_SLD vs qval_SLD
+				ModifyGraph mode=4,marker=19,msize=2,rgb(ival_SLD)=(2,39321,1)
+			endif		
+			break
+		case "FFTButton_17":
+			if(!isTraceOnGraph("FFT_iUSANS_i","FFT_IQ") && exists("FFT_iUSANS_i")==1)		//only append if it's not already there
+				AppendToGraph /W=FFT_IQ FFT_iUSANS_i vs FFT_iUSANS_q
+				ModifyGraph mode=4,marker=19,msize=2,rgb(FFT_iUSANS_i)=(39321,1,31457)
+			endif		
+			break
+		case "FFTButton_18":
+			if(!isTraceOnGraph("FFT_aUSANS_i","FFT_IQ") && exists("FFT_aUSANS_i")==1)		//only append if it's not already there
+				AppendToGraph /W=FFT_IQ FFT_aUSANS_i vs FFT_aUSANS_q
+				ModifyGraph mode=4,marker=19,msize=2,rgb(FFT_aUSANS_i)=(52428,34958,1)
+			endif		
+			break
+			
+			
 	endswitch
 	
 	if(first)
@@ -822,6 +849,19 @@ Function FFT_BinnedSLDButtonProc(ctrlName) : ButtonControl
 	Execute "DoBinnedSLDCalcFFTPanel()"
 End
 
+Function FFT_Iso2USANS(ctrlName) : ButtonControl
+	String ctrlName
+
+	Execute "Isotropic_FFT_to_USANS()"
+	FFT_PlotResultsButtonProc(ctrlName)
+End
+
+Function FFT_Aniso2USANS(ctrlName) : ButtonControl
+	String ctrlName
+
+	Execute "Anisotropic_FFT_to_USANS()"
+	FFT_PlotResultsButtonProc(ctrlName)
+End
 
 
 
@@ -1076,16 +1116,19 @@ Function XYZRotate(angleX,angleY,angleZ)
 
 // do the rotation as a matrix multiplication	
 // putting zero is no rotation around that axis
+// the triplet wave "trip" is overwritten with the output
 	DoRotation(trip,angleX,angleY,angleZ)
-	Wave rotated=root:rotated
+//	Wave rotated=root:rotated
 
 // translate back to a 0->N based coordinate
-	fTranslateCoordinate(rotated,-dist)
+//	fTranslateCoordinate(rotated,-dist)
+	fTranslateCoordinate(trip,-dist)
 	Wave values=root:values
 
 // convert the triplet back to a volume
 // this CLIPS anything that has rotated out of the NxNxN volume
-	fXYZTripletToVolume(rotated,values,"rotVol",FFT_N)
+//	fXYZTripletToVolume(rotated,values,"rotVol",FFT_N)
+	fXYZTripletToVolume(trip,values,"rotVol",FFT_N)
 
 // clean up by killng the extra waves that were generated
 //
@@ -1223,9 +1266,10 @@ Function DoRotation(triplet,angleX,angleY,angleZ)
 	Rz[2][2] = 1	
 	
 	
-	MatrixOp/O rotated = Rx x Ry x Rz x triplet
+//	MatrixOp/O rotated = Rx x Ry x Rz x triplet
+	MatrixOp/O triplet = Rx x Ry x Rz x triplet
 	
-	
+
 	return(0)
 end
 
@@ -1236,7 +1280,8 @@ Function fTranslateCoordinate(trip,dist)
 	Wave trip
 	Variable dist
 	
-	MatrixOp/O trip = trip - dist
+//	MatrixOp/O trip = trip - dist
+	trip = trip - dist
 	
 	return(0)
 End

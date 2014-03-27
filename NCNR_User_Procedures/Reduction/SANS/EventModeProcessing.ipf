@@ -25,9 +25,10 @@
 //     It's all a stream, just sometimes it's not oscillatory
 //
 //
-// -- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
+// X- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 //     interprets the data as being RGB - and so does nothing.
-//     need to find a way around this
+//     need to find a way around this. This was fixed by displaying the data using the G=1 flag on AppendImage
+//     to prevent the "atuo-detection" of data as RGB
 //
 // -- Do something with the PP events. Currently, only the PP events that are XY (just the
 //    type 0 events (since I still need to find out what they realy mean)
@@ -273,7 +274,7 @@ Proc EventModePanel()
 	GroupBox group0_4,fStyle=1
 	
 	Display/W=(10,170,460,610)/HOST=# 
-	AppendImage/T :Packages:NIST:Event:dispsliceData
+	AppendImage/T/G=1 :Packages:NIST:Event:dispsliceData		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage dispsliceData ctab= {*,*,ColdWarm,0}
 	ModifyImage dispsliceData ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
@@ -1129,10 +1130,12 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 End
 
 
-// TODO
+// TODO (DONE)
 // this "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 // interprets the data as being RGB - and so does nothing.
 // need to find a way around this
+//
+////  When first plotted, AppendImage/G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 ///
 // I could modify this procedure to use the log = 0|1 keyword for the log Z display
 // rather than creating a duplicate wave of log(data)
