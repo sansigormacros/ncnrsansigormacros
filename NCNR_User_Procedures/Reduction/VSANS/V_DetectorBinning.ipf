@@ -1267,6 +1267,35 @@ Window Front_IQ_Graph() : Graph
 		endif	
 			
 	endif
+
+
+	if(binType==4)		//slit mode
+		ClearIQIfDisplayed("FLRTB")
+		ClearIQIfDisplayed("FLR")
+		ClearIQIfDisplayed("FTB")
+		
+		SetDataFolder root:Packages:NIST:VSANS:VCALC
+		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FL
+		
+		if(V_flag==0)
+			AppendtoGraph/W=VCALC#Panels_IQ iBin_qxqy_FL vs qBin_qxqy_FL
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_FR vs qBin_qxqy_FR
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_FT vs qBin_qxqy_FT
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_FB vs qBin_qxqy_FB
+			ModifyGraph/W=VCALC#Panels_IQ mode=4
+			ModifyGraph/W=VCALC#Panels_IQ marker=19
+			ModifyGraph/W=VCALC#Panels_IQ rgb(iBin_qxqy_FL)=(39321,26208,1),rgb(iBin_qxqy_FB)=(2,39321,1),rgb(iBin_qxqy_FR)=(39321,26208,1),rgb(iBin_qxqy_FT)=(2,39321,1)
+			ModifyGraph/W=VCALC#Panels_IQ msize=2
+			ModifyGraph/W=VCALC#Panels_IQ muloffset(iBin_qxqy_FL)={0,4},muloffset(iBin_qxqy_FB)={0,2},muloffset(iBin_qxqy_FR)={0,8}
+			ModifyGraph/W=VCALC#Panels_IQ grid=1
+			ModifyGraph/W=VCALC#Panels_IQ log=1
+			ModifyGraph/W=VCALC#Panels_IQ mirror=2
+			Label/W=VCALC#Panels_IQ left "Intensity (1/cm)"
+			Label/W=VCALC#Panels_IQ bottom "Q (1/A)"
+		endif	
+				
+	endif
+
 	
 	SetDataFolder root:
 	

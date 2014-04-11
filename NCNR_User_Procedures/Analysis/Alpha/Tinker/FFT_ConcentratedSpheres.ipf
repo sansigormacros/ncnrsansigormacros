@@ -220,8 +220,9 @@ Function TestConcSpheres(nSph,rad,pd,nPass,tagStr)
 		endfor
 		// spheres have been placed, do the calculation	
 		ParseMatrix3D_rho(m)	
-		
-		Execute "DoFFT()"
+
+		Calc_IQ_FFT()		
+//		Execute "DoFFT()"
 		sprintf printStr,"completed pass %d of %d \r",ii+1,npass
 		Print printStr
 		if(ii==0)

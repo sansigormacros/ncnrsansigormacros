@@ -50,6 +50,7 @@ Proc Init_FFT()
 		Variable/G root:FFT_Qmax = 0
 		Variable/G root:FFT_QmaxReal = 0
 		Variable/G root:FFT_DQ=0
+		Variable/G root:FFT_Qmin=0
 		Variable/G root:FFT_estTime = 0
 		
 		Variable/G root:FFT_SolventSLD = 0
@@ -58,6 +59,7 @@ Proc Init_FFT()
 		FFT_Qmax :=2*pi/FFT_T
 		FFT_QmaxReal := FFT_Qmax/2
 		FFT_DQ := pi/(FFT_N*FFT_T)
+		FFT_Qmin := 2*pi/(FFT_N*FFT_T)
 		//empirical fit (cubic) of time vs N=50 to N=256
 		FFT_estTime := 0.56 - 0.0156*FFT_N + 0.000116*FFT_N^2 + 8e-7*FFT_N^3
 //		FFT_estTime := FFT_N/128
@@ -77,12 +79,14 @@ Proc FFT_Panel()
 	DrawLine 5,250,311,250
 	SetVariable FFTSetVar_0,pos={7,7},size={150,15},title="Cells per edge (N)"
 	SetVariable FFTSetVar_0,limits={50,512,2},value= FFT_N,live= 1
-	SetVariable FFTSetVar_1,pos={7,33},size={150,15},title="Length per Cell (T)"
+	SetVariable FFTSetVar_1,pos={7,27},size={150,15},title="Length per Cell (T)"
 	SetVariable FFTSetVar_1,limits={1,5000,0.2},value= FFT_T,live= 1
-	SetVariable FFTSetVar_2,pos={183,26},size={120,15},title="Real Qmax"
+	SetVariable FFTSetVar_2,pos={183,7},size={120,15},title="Real Qmax"
 	SetVariable FFTSetVar_2,limits={0,0,0},value= FFT_QmaxReal,noedit= 1,live= 1
-	SetVariable FFTSetVar_3,pos={183,48},size={120,15},title="delta Q (A)"
+	SetVariable FFTSetVar_3,pos={183,47},size={120,15},title="delta Q (A)"
 	SetVariable FFTSetVar_3,limits={0,0,0},value= FFT_DQ,noedit= 1,live= 1
+	SetVariable FFTSetVar_6,pos={183,27},size={120,15},title="Real Qmin (A)"
+	SetVariable FFTSetVar_6,limits={0,0,0},value= FFT_Qmin,noedit= 1,live= 1
 	Button FFTButton_0,pos={15,79},size={90,20},proc=FFT_MakeMatrixButtonProc,title="Make Matrix"
 	Button FFTButton_1,pos={14,157},size={90,20},proc=FFTMakeGizmoButtonProc,title="Make Gizmo"
 	Button FFTButton_2,pos={14,187},size={100,20},proc=FFTDrawSphereButtonProc,title="Draw Sphere"
@@ -102,7 +106,7 @@ Proc FFT_Panel()
 	Button FFTButton_14,pos={13,360},size={130,20},proc=FFT_BinnedSLDButtonProc,title="Do Binned SLD"
 	Button FFTButton_14a,pos={180,360},size={130,20},proc=FFT_PlotResultsButtonProc,title="Plot SLD Results"
 
-	SetVariable FFTSetVar_4,pos={201,4},size={100,15},title="FFT time(s)"
+	SetVariable FFTSetVar_4,pos={7,47},size={100,15},title="FFT time(s)"
 	SetVariable FFTSetVar_4,limits={0,0,0},value= FFT_estTime,noedit= 1,live= 1,format="%d"
 	Button FFTButton_9,pos={200,400},size={100,20},proc=FFT_Get2DSlice,title="Get 2D Slice"
 	Button FFTButton_10,pos={169,156},size={130,20},proc=FFT_TransposeMat,title="Transpose Matrix"
@@ -151,7 +155,7 @@ Function SaveMyMatrix(fileStr)
 	String str=""
 	sprintf str,"FFT_T=%g;FFT_N=%d;FFT_SolventSLD=%d;",FFT_T,FFT_N,FFT_SolventSLD
 	Note mat,str
-	Save/C/I/P=home mat as fileStr	//will ask for a file name, save as Igor Binary
+	Save/C/P=home mat as fileStr	//will ask for a file name if fileStr="" save as Igor Binary
 	Note/K mat			//kill wave note on exiting since I don't properly update this anywhere else
 			
 	return(0)
@@ -719,7 +723,8 @@ End
 Function DoTheFFT_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 End
 
 Function FFT_PlotResultsButtonProc(ctrlName) : ButtonControl

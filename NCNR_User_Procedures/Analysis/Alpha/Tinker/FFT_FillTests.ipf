@@ -1,3 +1,6 @@
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+
+
 Function MixTest()
 
 // make sure all of the globals are set correctly
@@ -46,9 +49,9 @@ Function CoreShellTest()
 	NVAR FFT_delRho = root:FFT_delRho		//the SLD multiplier, should have been initialized to 1e-7
 	
 	Variable rho1,rho2,rhos,radius1,radius2,ctr,separation,fill1,fill2
-	rho1=1e-6
-	rho2=3e-6
-	rhos=6e-6
+	rho1=6.5e-6
+	rho2=4.7e-6
+	rhos=5e-6
 	
 //	rho1 += 3e-6
 //	rho2 += 3e-6
@@ -351,8 +354,12 @@ Function TestSaveLoad_CoreShellHexagonal()
 	qval_SLD = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
 	
 	
+	Wave/Z iBin=root:iBin
+	Wave/Z qBin=root:qBin
+	
 	ReloadMatrix("mat_R40C25_L400_S100_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S100_N512
 	Duplicate/O qBin qBin_R40C25_L400_S100_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -362,7 +369,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40C25_L400_S120_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S120_N512
 	Duplicate/O qBin qBin_R40C25_L400_S120_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -372,7 +380,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40C25_L400_S140_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S140_N512
 	Duplicate/O qBin qBin_R40C25_L400_S140_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -382,7 +391,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40C25_L400_S160_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S160_N512
 	Duplicate/O qBin qBin_R40C25_L400_S160_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -392,7 +402,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40C25_L400_S180_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S180_N512
 	Duplicate/O qBin qBin_R40C25_L400_S180_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -402,7 +413,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 
 	ReloadMatrix("mat_R40C25_L400_S200_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S200_N512
 	Duplicate/O qBin qBin_R40C25_L400_S200_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -412,7 +424,8 @@ Function TestSaveLoad_CoreShellHexagonal()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40C25_L400_S220_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40C25_L400_S220_N512
 	Duplicate/O qBin qBin_R40C25_L400_S220_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -500,10 +513,12 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	Make/O/D/N=(num) qval_SLD,ival_SLD
 	qval_SLD = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))		
 
-
+	Wave/Z iBin=root:iBin
+	Wave/Z qBin=root:qBin
 
 	ReloadMatrix("mat_R40_L400_S100_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S100_N512
 	Duplicate/O qBin qBin_R40_L400_S100_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -513,7 +528,8 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40_L400_S120_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S120_N512
 	Duplicate/O qBin qBin_R40_L400_S120_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -523,7 +539,8 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40_L400_S140_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S140_N512
 	Duplicate/O qBin qBin_R40_L400_S140_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -533,7 +550,8 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40_L400_S160_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S160_N512
 	Duplicate/O qBin qBin_R40_L400_S160_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -543,7 +561,8 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	SaveExperiment
 	
 	ReloadMatrix("mat_R40_L400_S180_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S180_N512
 	Duplicate/O qBin qBin_R40_L400_S180_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -552,8 +571,10 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	Print "Done with calculation 5 of 7"
 	SaveExperiment
 	
+
 	ReloadMatrix("mat_R40_L400_S200_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S200_N512
 	Duplicate/O qBin qBin_R40_L400_S200_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)
@@ -563,7 +584,8 @@ Function TestSaveLoad_Hexagonal_vs_Sep()
 	SaveExperiment
 
 	ReloadMatrix("mat_R40_L400_S220_N512.ibw")
-	Execute "DoFFT()"
+	Calc_IQ_FFT()
+//	Execute "DoFFT()"
 	Duplicate/O iBin iBin_R40_L400_S220_N512
 	Duplicate/O qBin qBin_R40_L400_S220_N512
 //	fDoCalc(qval_SLD,ival_SLD,grid,3,1)

@@ -46,7 +46,7 @@ Function FakeFrontMiddleSDDClick()
 	
 	STRUCT WMSetVariableAction sva
 	sva.eventCode = 3
-	sva.dval = 0.3
+//	sva.dval = 0.3
 
 	V_BDet_SDD_SetVarProc(sva)		
 	V_MDet_SDD_SetVarProc(sva)

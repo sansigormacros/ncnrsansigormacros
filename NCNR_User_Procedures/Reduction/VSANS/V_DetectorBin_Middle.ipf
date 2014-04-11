@@ -369,6 +369,30 @@ Window Middle_IQ_Graph() : Graph
 			
 	endif
 
+	if(binType==4)		// slit aperture binning - Mt, ML, MR, MB are averaged
+		ClearIQIfDisplayed("MLRTB")
+		ClearIQIfDisplayed("MLR")
+		ClearIQIfDisplayed("MTB")
+		
+		SetDataFolder root:Packages:NIST:VSANS:VCALC
+		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_ML
+		
+		if(V_flag==0)
+			AppendtoGraph/W=VCALC#Panels_IQ iBin_qxqy_ML vs qBin_qxqy_ML
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_MR vs qBin_qxqy_MR
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_MT vs qBin_qxqy_MT
+			AppendToGraph/W=VCALC#Panels_IQ iBin_qxqy_MB vs qBin_qxqy_MB
+			ModifyGraph/W=VCALC#Panels_IQ mode=4
+			ModifyGraph/W=VCALC#Panels_IQ marker=19
+			ModifyGraph/W=VCALC#Panels_IQ rgb(iBin_qxqy_ML)=(65535,0,0),rgb(iBin_qxqy_MB)=(1,16019,65535),rgb(iBin_qxqy_MR)=(65535,0,0),rgb(iBin_qxqy_MT)=(1,16019,65535)
+			ModifyGraph/W=VCALC#Panels_IQ msize=2
+			ModifyGraph/W=VCALC#Panels_IQ muloffset(iBin_qxqy_ML)={0,4},muloffset(iBin_qxqy_MB)={0,2},muloffset(iBin_qxqy_MR)={0,8}
+			ModifyGraph/W=VCALC#Panels_IQ grid=1
+			ModifyGraph/W=VCALC#Panels_IQ log=1
+			ModifyGraph/W=VCALC#Panels_IQ mirror=2
+		endif		
+			
+	endif
 	SetDataFolder root:
 EndMacro
 
@@ -542,18 +566,49 @@ Window Back_IQ_Graph() : Graph
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
-	CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_B
+	Variable binType
 	
-	if(V_flag==0)
-		AppendtoGraph/W=VCALC#Panels_IQ iBin_qxqy_B vs qBin_qxqy_B
-		ModifyGraph/W=VCALC#Panels_IQ mode=4
-		ModifyGraph/W=VCALC#Panels_IQ marker=19
-		ModifyGraph/W=VCALC#Panels_IQ rgb(iBin_qxqy_B)=(1,52428,52428)
-		ModifyGraph/W=VCALC#Panels_IQ msize=2
-		ModifyGraph/W=VCALC#Panels_IQ grid=1
-		ModifyGraph/W=VCALC#Panels_IQ log=1
-		ModifyGraph/W=VCALC#Panels_IQ mirror=2
+	ControlInfo/W=VCALC popup_b
+	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
+	
+
+	if(binType==1 || binType==2 || binType==3)
+		
+		SetDataFolder root:Packages:NIST:VSANS:VCALC
+		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_B
+		
+		if(V_flag==0)
+			AppendtoGraph/W=VCALC#Panels_IQ iBin_qxqy_B vs qBin_qxqy_B
+			ModifyGraph/W=VCALC#Panels_IQ mode=4
+			ModifyGraph/W=VCALC#Panels_IQ marker=19
+			ModifyGraph/W=VCALC#Panels_IQ rgb(iBin_qxqy_B)=(1,52428,52428)
+			ModifyGraph/W=VCALC#Panels_IQ msize=2
+			ModifyGraph/W=VCALC#Panels_IQ grid=1
+			ModifyGraph/W=VCALC#Panels_IQ log=1
+			ModifyGraph/W=VCALC#Panels_IQ mirror=2
+		endif
 	endif
+
+	//nothing different here since there is ony a single detector to display, but for the future...
+	if(binType==4)
+		
+		SetDataFolder root:Packages:NIST:VSANS:VCALC
+		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_B
+		
+		if(V_flag==0)
+			AppendtoGraph/W=VCALC#Panels_IQ iBin_qxqy_B vs qBin_qxqy_B
+			ModifyGraph/W=VCALC#Panels_IQ mode=4
+			ModifyGraph/W=VCALC#Panels_IQ marker=19
+			ModifyGraph/W=VCALC#Panels_IQ rgb(iBin_qxqy_B)=(1,52428,52428)
+			ModifyGraph/W=VCALC#Panels_IQ msize=2
+			ModifyGraph/W=VCALC#Panels_IQ grid=1
+			ModifyGraph/W=VCALC#Panels_IQ log=1
+			ModifyGraph/W=VCALC#Panels_IQ mirror=2
+		endif
+	endif
+
+	
+
 	
 	SetDataFolder root:
 EndMacro

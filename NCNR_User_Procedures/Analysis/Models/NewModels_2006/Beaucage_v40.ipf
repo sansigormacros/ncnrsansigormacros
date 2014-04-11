@@ -22,7 +22,7 @@ Proc PlotOnelevel(num,qmin,qmax)
 	make/o/d/n=(num) xwave_b1,ywave_b1
 	xwave_b1 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	make/o/d coef_b1 = {1,3,21,6e-4,2,0}
-	make/o/t parameters_b1 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","bkg (cm-1 sr-1)"}
+	make/o/t parameters_b1 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","bkg (cm-1 sr-1)"}
 	Edit parameters_b1,coef_b1
 	
 	Variable/G root:g_b1
@@ -45,7 +45,7 @@ Proc PlotTwoLevel(num,qmin,qmax)
 	make/o/d/n=(num) xwave_b2,ywave_b2
 	xwave_b2 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	make/o/d coef_b2 = {1,400,200,5e-6,4,3,21,6e-4,2,0}
-	make/o/t parameters_b2 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","bkg (cm-1 sr-1)"}
+	make/o/t parameters_b2 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","bkg (cm-1 sr-1)"}
 	Edit parameters_b2,coef_b2
 	
 	Variable/G root:g_b2
@@ -68,7 +68,7 @@ Proc PlotThreeLevel(num,qmin,qmax)
 	make/o/d/n=(num) xwave_b3,ywave_b3
 	xwave_b3 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	make/o/d coef_b3 = {1,4000,600,2e-7,4,400,200,5e-6,4,3,21,6e-4,2,0}
-	make/o/t parameters_b3 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1)","Pow3","bkg (cm-1)"}
+	make/o/t parameters_b3 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1 A^-Pow)","Pow3","bkg (cm-1)"}
 	Edit parameters_b3,coef_b3
 	
 	Variable/G root:g_b3
@@ -91,7 +91,7 @@ Proc PlotFourLevel(num,qmin,qmax)
 	make/o/d/n=(num) xwave_b4,ywave_b4
 	xwave_b4 = alog(log(qmin) + x*((log(qmax)-log(qmin))/num))
 	make/o/d coef_b4 = {1,40000,2000,1e-8,4,4000,600,2e-7,4,400,200,5e-6,4,3,21,6e-4,2,0}
-	make/o/t parameters_b4 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1)","Pow3","G4 (cm-1 sr-1)","Rg4  (A)","B4 (cm-1 sr-1)","Pow4","bkg (cm-1)"}
+	make/o/t parameters_b4 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1 A^-Pow)","Pow3","G4 (cm-1 sr-1)","Rg4  (A)","B4 (cm-1 sr-1 A^-Pow)","Pow4","bkg (cm-1)"}
 	Edit parameters_b4,coef_b4
 	
 	Variable/G root:g_b4
@@ -121,7 +121,7 @@ Proc PlotSmearedOneLevel(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_b1 ={1,3,21,6e-4,2,0}					
-	make/o/t smear_parameters_b1 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","bkg (cm-1 sr-1)"}	
+	make/o/t smear_parameters_b1 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_b1,smear_coef_b1					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -156,7 +156,7 @@ Proc PlotSmearedTwoLevel(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_b2 = {1,400,200,5e-6,4,3,21,6e-4,2,0}				
-	make/o/t smear_parameters_b2 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","bkg (cm-1 sr-1)"}	
+	make/o/t smear_parameters_b2 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","bkg (cm-1 sr-1)"}	
 	Edit smear_parameters_b2,smear_coef_b2					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -191,7 +191,7 @@ Proc PlotSmearedThreeLevel(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_b3 = {1,4000,600,2e-7,4,400,200,5e-6,4,3,21,6e-4,2,0}
-	make/o/t smear_parameters_b3 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1)","Pow3","bkg (cm-1)"}
+	make/o/t smear_parameters_b3 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1 A^-Pow)","Pow3","bkg (cm-1)"}
 	Edit smear_parameters_b3,smear_coef_b3					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
@@ -226,7 +226,7 @@ Proc PlotSmearedFourLevel(str)
 	
 	// Setup parameter table for model function
 	Make/O/D smear_coef_b4 = {1,40000,2000,1e-8,4,4000,600,2e-7,4,400,200,5e-6,4,3,21,6e-4,2,0}
-	Make/o/t smear_parameters_b4 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1)","Pow3","G4 (cm-1 sr-1)","Rg4  (A)","B4 (cm-1 sr-1)","Pow4","bkg (cm-1)"}
+	Make/o/t smear_parameters_b4 = {"scale","G1 (cm-1 sr-1)","Rg1  (A)","B1 (cm-1 sr-1 A^-Pow)","Pow1","G2 (cm-1 sr-1)","Rg2  (A)","B2 (cm-1 sr-1 A^-Pow)","Pow2","G3 (cm-1 sr-1)","Rg3  (A)","B3 (cm-1 sr-1 A^-Pow)","Pow3","G4 (cm-1 sr-1)","Rg4  (A)","B4 (cm-1 sr-1 A^-Pow)","Pow4","bkg (cm-1)"}
 	Edit smear_parameters_b4,smear_coef_b4					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values

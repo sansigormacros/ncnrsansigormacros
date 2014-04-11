@@ -1,5 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+//
+//
 // I should be able to calculate the average number of connections from a search of the 
 // connXYZ table. I might have other counting routines elsewhere for this too.
 //
@@ -8,16 +10,54 @@
 //
 //
 
-Proc Overnight()
-	mTestConnRods()
+// npts is the number of nodes
+// diam is the diameter of the rods
+// nPass is the number of averaging passes
+// tagStr is the identifying tag for the files
+// ranType selects the RNG => 1 = Sobol, other = enoise
+//
+//		Function CalculateTriangulated(nPts,fill,diam,nPass,tagStr,ranType)
+
+
+
+Proc ConnectTriangulatedRods(nPts,fill,diam,nPass,tagStr,ranType)
+	Variable nPts=10,fill=20,diam=40,nPass=10
+	String tagStr="_tri_"
+	Variable ranType=1
+	Prompt nPts,"number of nodes"
+	Prompt fill,"fill value"
+	Prompt diam,"real diameter of cylinders"
+	Prompt nPass,"number of averaging passes"
+	Prompt tagStr,"tag for I(q) and for saved matrix"
+	Prompt ranType," 1 = Sobol, other = enoise"
+
+
+
+// start fresh, slower but always correct
+	FFT_MakeMatrixButtonProc("")
+	FFTEraseMatrixButtonProc("")
+	
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+num2str(nPts),ranType)
+
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+".ibw")
+
+
 End
 
 
-Proc mTestConnRods()
+Proc ConnectedTriangulatedRodLoop()
 
-	String suffix = ""
-	Variable ranType = 1
+	String suffix = "",tagStr
+	Variable ranType
+	Variable nPts,fill,diam,nPass
 	Variable t1 = ticks
+	
+	ranType = 1		//1==Sobol
+	npts = 6
+	fill = 10
+	diam = 40
+	nPass = 5
+	tagStr = "_CR"
 	
 // constant for all steps
 	root:FFT_SolventSLD = 0
@@ -27,119 +67,81 @@ Proc mTestConnRods()
 //	root:FFT_N = 256
 //	FFT_MakeMatrixButtonProc("")
 //	FFTEraseMatrixButtonProc("")
-	
+//	
 //	DoWindow/F Gizmo_VoxelMat
-	
+//	
 //	suffix = "a"
-//	CalculateTriangulated(40,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 40
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	suffix = "b"
-//	CalculateTriangulated(100,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 100
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	suffix = "c"
-//	CalculateTriangulated(200,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 200
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	suffix = "d"
-//	CalculateTriangulated(300,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 300
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	suffix = "e"
-//	CalculateTriangulated(400,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 400
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	suffix = "f"
-//	CalculateTriangulated(500,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
+//	nPts = 500
+//	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+//	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 //	
 //	
 	
 // always start fresh when changing dimensions
-	root:FFT_T = 5
+	root:FFT_T = 10
 	root:FFT_N = 256
 	FFT_MakeMatrixButtonProc("")
 	FFTEraseMatrixButtonProc("")
 	
 	suffix = "gg"
-	CalculateTriangulated(6,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
-	
+	nPts = 40
+//	CalculateTriangulated(6,40,20,"_CR"+suffix,ranType)
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
+			
 	suffix = "hh"
-	CalculateTriangulated(7,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 7
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "ii"
-	CalculateTriangulated(9,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 9
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "jj"
-	CalculateTriangulated(10,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 10
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "kk"
-	CalculateTriangulated(20,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 20
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "ll"
-	CalculateTriangulated(30,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 30
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	
 	// then repeat everything with the random sequence
 	ranType = 0
-	
-	// always start fresh when changing dimensions
-//	root:FFT_T = 40
-//	root:FFT_N = 256
-//	FFT_MakeMatrixButtonProc("")
-//	FFTEraseMatrixButtonProc("")
-	
-//	DoWindow/F Gizmo_VoxelMat
-	
-//	suffix = "m"
-//	CalculateTriangulated(40,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-//	
-//	suffix = "n"
-//	CalculateTriangulated(100,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-//	
-//	suffix = "o"
-//	CalculateTriangulated(200,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-//	
-//	suffix = "p"
-//	CalculateTriangulated(300,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-//	
-//	suffix = "q"
-//	CalculateTriangulated(400,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-//	
-//	suffix = "r"
-//	CalculateTriangulated(500,40,20,"_CR"+suffix,ranType)
-//	DoUpdate/W=Gizmo_VoxelMat
-//	ExportGizmo wave as "p_connRod_"+suffix
-	
 	
 	
 // always start fresh when changing dimensions
@@ -149,34 +151,34 @@ Proc mTestConnRods()
 	FFTEraseMatrixButtonProc("")
 	
 	suffix = "ss"
-	CalculateTriangulated(6,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 6
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "tt"
-	CalculateTriangulated(7,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 7
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "uu"
-	CalculateTriangulated(9,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 9
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "vv"
-	CalculateTriangulated(10,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 10
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "ww"
-	CalculateTriangulated(20,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 20
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	suffix = "xx"
-	CalculateTriangulated(30,40,20,"_CR"+suffix,ranType)
-	DoUpdate/W=Gizmo_VoxelMat
-	ExportGizmo wave as "p_connRod_"+suffix
+	nPts = 30
+	CalculateTriangulated(nPts,fill,diam,nPass,tagStr+suffix,ranType)
+	SaveMyMatrix("mat_Triang_"+num2str(nPts)+tagStr+suffix+".ibw")
 	
 	
 	Print "Total elapsed time (s) = ",(ticks-t1)/60.15
@@ -186,44 +188,26 @@ Proc mTestConnRods()
 
 end
 
-Function PrintWaveNote(kwStr)
-	String kwStr
-	
-	String alph="abcdefghijklmnopqrstuvwxyz"
-	String str=""
-	Variable ii
-	
-	for(ii=1;ii<12;ii+=1)
-		Wave w = $("root:iBin_"+alph[ii]+"p")
-		str = note(w)
-		if(strlen(kwStr) > 0)
-			Print NumberByKey(kwStr, Str ,"=",";")
-		else
-			Print str
-		endif
-	endfor
-	
-	return(0)
-End
+
 
 // npts is the number of nodes
 // diam is the diameter of the rods
 // nPass is the number of averaging passes
 // tagStr is the identifying tag for the files
 // ranType selects the RNG => 1 = Sobol, other = enoise
-Function CalculateTriangulated(nPts,diam,nPass,tagStr,ranType)
-	Variable nPts,diam,nPass
+Function CalculateTriangulated(nPts,fill,diam,nPass,tagStr,ranType)
+	Variable nPts,fill,diam,nPass
 	String tagStr
 	Variable ranType
 	
-	Variable ii,np,frac,nocc,fill
+	Variable ii,np,frac,nocc
 	Wave m=root:mat
 	NVAR grid=root:FFT_T
 	NVAR Nedge = root:FFT_N
 
 	np = 0
 	frac = 0
-	fill = 10
+
 	for(ii=0;ii<nPass;ii+=1)		//number of averaging passes
 		m=0
 		
@@ -235,9 +219,10 @@ Function CalculateTriangulated(nPts,diam,nPass,tagStr,ranType)
 		ParseMatrix3D_rho(m)				// get the triplets of points to connect
 		
 		Print "connecting"
-		ConnectTriangulated(diam)
-		
-		Execute "DoFFT()"
+		ConnectTriangulated(diam,fill)
+
+		Calc_IQ_FFT()		
+//		Execute "DoFFT()"
 		Print "step ii=",ii
 		if(ii==0)
 			Duplicate/O iBin, $("iBin"+tagStr),$("qBin"+tagStr),$("i2"+tagStr),$("eBin"+tagStr)
@@ -288,10 +273,10 @@ End
 // at this point, the matrix has been filled with points
 // and parsed to 3 xyz waves with ParseMatrix3D_rho()
 //
-Function ConnectTriangulated(diam)
-	Variable diam
+Function ConnectTriangulated(diam,fill)
+	Variable diam,fill
 
-	Variable ii,num,thick,fill
+	Variable ii,num,thick
 	Variable x1,x2,y1,y2,z1,z2
 	String testStr=""
 	
@@ -314,7 +299,6 @@ Function ConnectTriangulated(diam)
 	
 
 	num = DimSize(M_TetraPath,0)
-	fill = 1
 	
 	// make the list of connected points (to save time)
 	Make/O/T/N=0 connXYZ
@@ -418,70 +402,22 @@ Function/S num_to_3char(num)
 End
 
 
-/// this does not work ---
-//
-// the fCOnnectDots3D function does not work - and I 
-// don't know what's wronk with it - so I switched to the
-// Triangulate3D operation
-// Jan 2011
-//
-//Function TestConnRods(nPts,nConn,nPass,tagStr)
-//	Variable nPts,nConn,nPass
-//	String tagStr
-//	
-//	Variable ii,np,frac,num
-//	Variable row,col,lay,xt,yt,zt,err
-//	
-//	Wave m=mat
-//	NVAR grid=root:FFT_T
-//	NVAR Nedge = root:FFT_N
-//	WAVE/Z x3d=root:x3d
-//	
-//	for(ii=0;ii<nPass;ii+=1)		//number of averaging passes
-//		//fill the spheres into the box
-//		m=0
-//		RandomFill3DMat(m,nPts)
-//		ParseMatrix3D_rho(m)				// get the triplets of points to connect
-//		
-//		num=numpnts(x3d)
-//		Make/O/N=(num) numConnection3D=0
-//		Make/O/T/N=(num) connectedTo3D=""
-//		fConnectDots3D(nConn)
-//		
-//		Execute "DoFFT()"
-//		Print "step ii=",ii
-//		if(ii==0)
-//			Duplicate/O iBin, $("iBin"+tagStr),$("qBin"+tagStr),$("i2"+tagStr),$("eBin"+tagStr)
-//			wave ib=$("iBin"+tagStr)
-//			wave qb=$("qBin"+tagStr)
-//			wave i2=$("i2"+tagStr)
-//			wave eb=$("eBin"+tagStr)
-//			Wave iBin=iBin
-//			Wave qbin=qBin
-//			qb = qBin
-//			ib = iBin
-//			i2 = iBin*iBin
-//			eb = 0
-//		else
-//			ib += iBin
-//			i2 += iBin*iBin
-//		endif
-//	endfor
-//
-//	ib /= npass
-//	i2 /= npass
-//	if(nPass > 1)
-//		eb = sqrt((i2-ib^2)/(npass-1))
-//	else
-//		eb = 1e-10
-//	endif
-//	
-//	np = NonZeroValues(m)
-//	frac = np/DimSize(m,0)^3
-//	String nStr
-//	sprintf nstr,"T=%d;N=%d;Npass=%d;NNodes=%d;NConn=%d;VolFrac=%g;",grid,Nedge,nPass,nPts,nConn,frac
-//	Note ib, nStr
-//
-//	
-//End
-
+Function PrintWaveNote(kwStr)
+	String kwStr
+	
+	String alph="abcdefghijklmnopqrstuvwxyz"
+	String str=""
+	Variable ii
+	
+	for(ii=1;ii<12;ii+=1)
+		Wave w = $("root:iBin_"+alph[ii]+"p")
+		str = note(w)
+		if(strlen(kwStr) > 0)
+			Print NumberByKey(kwStr, Str ,"=",";")
+		else
+			Print str
+		endif
+	endfor
+	
+	return(0)
+End

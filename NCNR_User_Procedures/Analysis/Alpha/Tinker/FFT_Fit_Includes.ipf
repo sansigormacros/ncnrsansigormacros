@@ -9,3 +9,6 @@
 //K. Rubinson
 #include "FFT_KR_Parser"
 #include "FFT_Fit_3Cyl_KR"
+
+// a dummy model to use with SASCALC
+#include "FFT_GenericModel"
