@@ -77,43 +77,43 @@ Proc Init_UCALC()
 	Variable/G gAngLow1 = -1
 	Variable/G gAngHigh1 = 0.6
 	Variable/G gNumPts1 = 33
-	Variable/G gCtTime1 = 25
+	Variable/G gCtTime1 = 20
 	Variable/G gIncr1 = 0.05	
 	
 	Variable/G gAngLow2 = 0.7
 	Variable/G gAngHigh2 = 1.9
 	Variable/G gNumPts2 = 13
-	Variable/G gCtTime2 = 100
+	Variable/G gCtTime2 = 50
 	Variable/G gIncr2 = 0.1	
 	
 	Variable/G gAngLow3 = 2
 	Variable/G gAngHigh3 = 4.8
 	Variable/G gNumPts3 = 15
-	Variable/G gCtTime3 = 300
+	Variable/G gCtTime3 = 100
 	Variable/G gIncr3 = 0.2	
 	
 	Variable/G gAngLow4 = 5
 	Variable/G gAngHigh4 = 9.5
 	Variable/G gNumPts4 = 10
-	Variable/G gCtTime4 = 600
+	Variable/G gCtTime4 = 200
 	Variable/G gIncr4 = 0.5	
 	
 	Variable/G gAngLow5 = 10
 	Variable/G gAngHigh5 = 19
 	Variable/G gNumPts5 = 10
-	Variable/G gCtTime5 = 1200
+	Variable/G gCtTime5 = 500
 	Variable/G gIncr5 = 1
 	
 	Variable/G gAngLow6 = 20
 	Variable/G gAngHigh6 = 48
 	Variable/G gNumPts6 = 15
-	Variable/G gCtTime6 = 2000
+	Variable/G gCtTime6 = 1000
 	Variable/G gIncr6 = 2	
 	
 	Variable/G gAngLow7 = 50
-	Variable/G gAngHigh7 = 95
+	Variable/G gAngHigh7 = 95W
 	Variable/G gNumPts7 = 10
-	Variable/G gCtTime7 = 3000
+	Variable/G gCtTime7 = 0
 	Variable/G gIncr7 = 5	
 	
 	// results, setup values
@@ -319,7 +319,7 @@ Window UCALC_Panel()
 	PopupMenu popup0,mode=3,popvalue="0.625",value="0.25;0.50;0.625;0.75;1.0;1.75;2.0;"
 	PopupMenu popup0,proc=UCALC_SampleAperturePopup
 	PopupMenu popup2,pos={220,19},size={165,20},title="Presets"
-	PopupMenu popup2,mode=3,popvalue="Long Count",value="Short Count;Medium Count;Long Count;"
+	PopupMenu popup2,mode=2,popvalue="Medium Count",value="Short Count;Medium Count;Long Count;"
 	PopupMenu popup2,proc=UCALC_PresetPopup
 
 	SetDataFolder root:Packages:NIST:USANS:Globals:U_Sim
@@ -873,8 +873,7 @@ Function CalcUSANS()
 
 	NVAR omega = root:Packages:NIST:USANS:Globals:U_Sim:gAnalyzerOmega
 	
-//	if(exists(funcStr) != 0)
-	if(cmpstr(funcStr,"default") != 0)
+	if(exists(funcStr) != 0)
 		FUNCREF SANSModelAAO_proto func=$("fSmeared"+funcStr)			//a wrapper for the structure version
 		FUNCREF SANSModelAAO_proto funcUnsmeared=$(funcStr)		//unsmeared
 		coefStr = MC_getFunctionCoef(funcStr)
@@ -1301,7 +1300,6 @@ Function/S U_FunctionPopupList()
 	
 	list = SortList(list)
 	
-	list = "default;"+ list
 	return(list)
 End     
 
@@ -1453,37 +1451,37 @@ Function UCALC_PresetPopup(pa) : PopupMenuControl
 					gAngLow1 = -1
 					gAngHigh1 = 0.6
 					gNumPts1 = 33
-					gCtTime1 = 10
+					gCtTime1 = 20
 					gIncr1 = 0.05	
 					
 					gAngLow2 = 0.7
 					gAngHigh2 = 1.9
 					gNumPts2 = 13
-					gCtTime2 = 60
+					gCtTime2 = 50
 					gIncr2 = 0.1	
 					
 					gAngLow3 = 2
 					gAngHigh3 = 4.8
 					gNumPts3 = 15
-					gCtTime3 = 120
+					gCtTime3 = 100
 					gIncr3 = 0.2	
 					
 					gAngLow4 = 5
 					gAngHigh4 = 9.5
 					gNumPts4 = 10
-					gCtTime4 = 300
+					gCtTime4 = 200
 					gIncr4 = 0.5	
 					
 					gAngLow5 = 10
 					gAngHigh5 = 19
 					gNumPts5 = 10
-					gCtTime5 = 600
+					gCtTime5 = 500
 					gIncr5 = 1
 					
 					gAngLow6 = 20
 					gAngHigh6 = 48
 					gNumPts6 = 15
-					gCtTime6 = 1200
+					gCtTime6 = 1000
 					gIncr6 = 2	
 					
 					gAngLow7 = 50
