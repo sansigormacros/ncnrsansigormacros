@@ -111,7 +111,7 @@ Proc Init_UCALC()
 	Variable/G gIncr6 = 2	
 	
 	Variable/G gAngLow7 = 50
-	Variable/G gAngHigh7 = 95W
+	Variable/G gAngHigh7 = 95
 	Variable/G gNumPts7 = 10
 	Variable/G gCtTime7 = 0
 	Variable/G gIncr7 = 5	

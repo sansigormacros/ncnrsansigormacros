@@ -162,7 +162,7 @@ End
 Function PlotSmearedSumButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Execute "PlotSmeared_Sum_Model()"
+	Execute "PlotSmearedSum_Model()"
 End
 
 Function Sum_HelpButtonProc(ctrlName) : ButtonControl
