@@ -176,8 +176,9 @@ End
 //
 // [dateAndTimeStr] is optional, and could be used as a switch for 
 // different historical detector configurations
-Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
+Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	String fileStr,detStr,dateAndTimeStr
+	Variable dtime
 	
 	Variable deadtime
 	

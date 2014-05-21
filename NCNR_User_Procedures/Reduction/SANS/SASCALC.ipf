@@ -31,6 +31,11 @@
 //							and one for transmission) and deleted using the clear button.
 //							Configurations are outputted to text using command "SaveNICEConfigs()"
 //
+//  MAY 2014 SRK -- changed nomenclature of NG3 to be CGB (shows on button as NGB30) - Nothing changes in the simulation
+//                  so this change is nothing but cosmetic. I will need to update the flux calibration, but there is no need to keep the old.
+//
+//
+//
 //
 // calculate what q-values you get based on the instruments settings
 // that you would typically input to SASCALC
@@ -52,6 +57,15 @@
 //		x- setting the instrument "number" is done here as "10". This will have a trickle-down effect for the places that use
 //		the global -- root:Packages:NIST:SAS:instrument (search for it everywhere...)
 // 		x- repair the naming/numbering scheme to look for the string "NGx" and switch on that, not a number, which is unreliable and confusing.
+//
+//
+//	TODO_CGB:
+//  For the moved NG3 instrument:
+//   -- update the flux values once some measurements have been done
+//   -- update the wavelength spread values once they have been measured
+//   -- be sure that no other dimensions have been changed after the move
+//   -- polarizer is gone now. Be sure apertures are correct in UpdateControls()
+//   -- any other changes???
 //
 // use str2hex(str) (my function) to convert "A" to 10
 //
@@ -117,7 +131,8 @@ Proc S_initialize_space()
 	
 	// for the panel
 //	Variable/G root:Packages:NIST:SAS:gInst=3		//or 7 for NG7
-	String/G root:Packages:NIST:SAS:gInstStr="NG3"		//or "NG7" or "NGB"=10m or "CGB"=NG3 moved
+//	String/G root:Packages:NIST:SAS:gInstStr="NG3"		//or "NG7" or "NGB"=10m or "CGB"=NG3 moved
+	String/G root:Packages:NIST:SAS:gInstStr="CGB"		//or "NG7" or "NGB"=10m or "CGB"=NG3 moved
 	Variable/G root:Packages:NIST:SAS:gNg=0
 	Variable/G root:Packages:NIST:SAS:gTable=2		//2=chamber, 1=table
 	Variable/G root:Packages:NIST:SAS:gDetDist=1000		//sample chamber to detector in cm
@@ -207,8 +222,10 @@ Function initNG3()
 
 	SetDataFolder root:Packages:NIST:SAS
 	
-	String/G gSelectedInstrument="checkNG3"
-	String/G gInstStr = "NG3"
+//	String/G gSelectedInstrument="checkNG3"
+//	String/G gInstStr = "NG3"
+	String/G gSelectedInstrument="checkCGB"
+	String/G gInstStr = "CGB"
 	
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.508
@@ -339,7 +356,7 @@ end
 
 /// this is the (incomplete) definition of the 10m SANS instrument
 // on NG-B, which will be referred to as NGB here to keep the NG(number) notation
-// reserving NGB for the moved NG3 instrument
+// reserving CGB for the moved NG3 instrument
 // which may be simpler here to keep functions from breaking...
 //
 // Updated 24 JAN 2013 with current flux numbers from John
@@ -518,9 +535,11 @@ Window SASCALC_Panel()
 	Slider SC_Slider_1,limits={133,1317,1},variable= root:Packages:NIST:SAS:gDetDist,vert= 0//,thumbColor= (1,16019,65535)
 	Slider SC_Slider_2,pos={394,21},size={47,65},proc=OffsetSliderProc,live=0,ticks=4
 	Slider SC_Slider_2,limits={0,25,1},variable= root:Packages:NIST:SAS:gOffset//,thumbColor= (1,16019,65535)
-	CheckBox checkNG3,pos={20,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG3"
-	CheckBox checkNG3,value=1,mode=1
-	CheckBox checkNG7,pos={66,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
+//	CheckBox checkNG3,pos={20,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG3"
+//	CheckBox checkNG3,value=1,mode=1
+	CheckBox checkCGB,pos={17,19},size={36,14},proc=SelectInstrumentCheckProc,title="NGB30"
+	CheckBox checkCGB,value=1,mode=1
+	CheckBox checkNG7,pos={70,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
 	CheckBox checkNG7,value=0,mode=1
 
 	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
@@ -529,7 +548,7 @@ Window SASCALC_Panel()
 	CheckBox checkHuber,value=0,mode=1
 //	-- hide/unhide the 10m SANS
 	if(show10mSANS)
-		CheckBox checkNGB,pos={110,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGB"
+		CheckBox checkNGB,pos={114,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGB"
 		CheckBox checkNGB,value=0,mode=1
 	endif
 //		
@@ -550,7 +569,7 @@ Window SASCALC_Panel()
 	Button ClearButton title="Clear",size={60,20},pos={250,166}
 	Button ClearButton proc=S_ClearButtonProc
 //	GroupBox group0,pos={6,1},size={108,36},title="Instrument"
-	GroupBox group0,pos={6,1},size={160,36},title="Instrument"
+	GroupBox group0,pos={6,1},size={160,39},title="Instrument"
 	SetDataFolder fldrSav0
 	
 	SetVariable setvar0_3,pos={140,94},size={110,15},title="Diam (mm)",disable=1
@@ -613,6 +632,7 @@ Function UpdateControls()
 	NVAR lambda = root:Packages:NIST:SAS:gLambda
 
 	strswitch(selInstr)	// string switch
+		case "CGB":
 		case "NG3":			// 
 			switch(ng)	
 				case 0:
@@ -829,20 +849,28 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 
 
 	strswitch(ctrlName)	// string switch
-		case "checkNG3":			// 
-			checkBox checkNG3,win=SASCALC, value=1
+		case "checkCGB":			// 
+			checkBox checkCGB,win=SASCALC, value=1
 			checkBox checkNG7,win=SASCALC, value=0
 			checkBox checkNGB,win=SASCALC, value=0
 			initNG3()
-			break						
+			break	
+//		case "checkNG3":			// 
+//			checkBox checkNG3,win=SASCALC, value=1
+//			checkBox checkNG7,win=SASCALC, value=0
+//			checkBox checkNGB,win=SASCALC, value=0
+//			initNG3()
+//			break						
 		case "checkNG7":			// 
-			checkBox checkNG3,win=SASCALC, value=0
+//			checkBox checkNG3,win=SASCALC, value=0
+			checkBox checkCGB,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=1
 			checkBox checkNGB,win=SASCALC, value=0 
 			initNG7()
 			break
 		case "checkNGB":		// 10m SANS
-			checkBox checkNG3,win=SASCALC, value=0
+//			checkBox checkNG3,win=SASCALC, value=0
+			checkBox checkCGB,win=SASCALC, value=0
 			checkBox checkNG7,win=SASCALC, value=0 
 			checkBox checkNGB,win=SASCALC, value=1
 			initNGB()
@@ -921,6 +949,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	if(checked == 1)
 		lens = checked	
 		strswitch(selInstr)	// string switch
+			case "CGB":
 			case "NG3":
 				dist = 1317
 				DetDistSliderProc("",1317,1)
@@ -989,7 +1018,8 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		endif
 	
 		// instrument specific distance requirements
-		if(cmpstr(selInstr,"NG3") == 0 && dist != 1317)
+//		if(cmpstr(selInstr,"NG3") == 0 && dist != 1317)
+		if(cmpstr(selInstr,"CGB") == 0 && dist != 1317)
 			lensNotAllowed=1
 		endif
 	
@@ -998,7 +1028,8 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 		endif
 		
 		// instrument specific wavelength requirements
-		if(cmpstr(selInstr,"NG3") == 0 && !(lam == 8.4 || lam == 17.2) )
+//		if(cmpstr(selInstr,"NG3") == 0 && !(lam == 8.4 || lam == 17.2) )
+		if(cmpstr(selInstr,"CGB") == 0 && !(lam == 8.4 || lam == 17.2) )
 			lensNotAllowed=1
 		endif
 		
@@ -2180,6 +2211,7 @@ Function sourceToSampleDist()
 	Variable NGB_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGB
 	
 	strswitch(selInstr)	// string switch
+		case "CGB":
 		case "NG3":
 		case "NG7":
 			// NG3 and NG7 are both the same
@@ -2221,6 +2253,7 @@ Function numGuides(SSD)
 	Variable NGB_gap = 61.9		// extra distance between a1 and beginning of guide 1 on NGB
 
 	strswitch(selInstr)	// string switch
+		case "CGB":
 		case "NG3":
 		case "NG7":
 			// NG3 and NG7 are both the same

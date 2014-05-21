@@ -479,7 +479,7 @@ End
 // as follows:
 //	Instrument				Date measured				deadtime constant
 //	NG3							DECEMBER 2009				1.5 microseconds
-//	NG7							APRIL2010					2.3 microseconds
+//	NG7							APRIL 2010				2.3 microseconds
 // 	NGB							JAN 2013					4 microseconds
 //
 //
@@ -489,9 +489,15 @@ End
 // so any data after these dates is to use the new dead time constant. The switch is made on the
 // data collection date.
 //
+// May 2014 SRK -- optional parameter dtime is the dead time as read in from the file
+// -- if if is non-zero, use it. If it's zero, go through tree and pick from the global constants
 //
-Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
+// MAY 2014 -- if the beam is CGB (now that the NG3 SANS has been moved to NGB), the logic
+//     drops to select the values from NG3, since nothing has changed. When it does, I'll add in specifics for CGB
+//
+Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	String fileStr,detStr,dateAndTimeStr
+	Variable dtime
 	
 	Variable deadtime
 	String instr=fileStr[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)
@@ -508,6 +514,13 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr])
 	NVAR DeadtimeNG7_ORNL_ICE = root:myGlobals:DeadtimeNG7_ORNL_ICE
 	NVAR DeadtimeNGB_ORNL_ICE = root:myGlobals:DeadtimeNGB_ORNL_ICE
 	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
+	
+	// if the deadtime passed in is good, return it and get out. MAY 2014
+	if(dtime > 0)
+		Print "Deadtime from the file = ",dtime
+		return(dtime)
+	endif
+	
 	
 	// if no date string is passed, default to the ICE values
 	if(strlen(dateAndTimeStr)==0)

@@ -145,7 +145,7 @@ Function Add_raw_to_work(newType)
 	endif
 	
 	//deadtime corrections to raw data
-	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1])		//pick the correct detector deadtime, switch on date too
+	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
 	itim = raw_ints[2]
 	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
@@ -333,7 +333,7 @@ Function Raw_to_work(newType)
 	//deadtime corrections
 	itim = integersread[2]
 	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
-	deadtime = DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1])	//pick the correct deadtime
+	deadtime = DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1],dtime=realsRead[48])	//pick the correct deadtime
 	dscale = 1/(1-deadTime*cntrate)
 	
 #if (exists("ILL_D22")==6)

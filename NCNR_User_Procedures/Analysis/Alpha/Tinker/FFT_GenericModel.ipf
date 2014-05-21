@@ -8,6 +8,10 @@
 // the "model function" is nothing but a scale and background on top of
 // whatever is calculated from the FFT
 //
+// Unlike other "FFT" fit functions, this one actually uses FFT for the calculation
+// since it's used for SASCALC and only needs to be pretty close - so an iterpolation of
+// the faster FFT calculation is most appropriate
+//
 //
 //	N=256 and T=5 are relatively good choices for simulating SANS
 // Qmin = 0.005 and Qmax = 0.62

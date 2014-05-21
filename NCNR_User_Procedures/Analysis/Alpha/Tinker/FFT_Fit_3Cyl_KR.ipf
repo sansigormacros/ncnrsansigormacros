@@ -180,6 +180,7 @@ Function ThreeCylKR(cw,yw,xw) : FitFunc
 
 // do the calculation (use the binned if only one SLD, or bin+SLD if the model requires this)
 	fDoCalc(xw,yw,FFT_T,12,0)		//the binned calculation
+//	fDoCalc(xw,yw,FFT_T,13,0)		//the binned + multiple SLD calculation
 
 // reset the volume fraction to get the proper scaling
 // the calculation is normalized to the volume fraction of spheres filling the matrix

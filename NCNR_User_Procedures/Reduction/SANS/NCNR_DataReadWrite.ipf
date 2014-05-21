@@ -1314,6 +1314,17 @@ Function WriteDetPixelYToHeader(fname,num)
 	return(0)
 End
 
+// Write the detector deadtime to the file header (in seconds) @ byte 498
+Function WriteDeadtimeToHeader(fname,num)
+	String fname
+	Variable num
+	
+	WriteVAXReal(fname,num,498)
+	return(0)
+End
+
+
+
 //rewrite a text field back to the header
 // fname is the full path:name
 // str is the CORRECT length - it will all be written - pad or trim before passing
@@ -1692,6 +1703,16 @@ Function getReactorPower(fname)
 	return 0
 
 end
+
+// read the detector deadtime (in seconds)
+Function getDetectorDeadtime(fname)
+	String fname
+	
+	return(getRealValueFromHeader(fname,498))
+end
+
+
+
 
 //////  integer values
 // reads 32 bit integer
@@ -2898,6 +2919,68 @@ Function fReadMonitorCount(lo,hi)
 	
 	return(0)
 End
+
+
+// May 2014 - SRK
+// Detector Deadtime (possibly) written to file by ICE
+
+Proc PatchDetectorDeadtime(firstFile,lastFile,deadtime)
+	Variable firstFile=1,lastFile=100,deadtime
+
+	fPatchDetectorDeadtime(firstFile,lastFile,deadtime)
+
+End
+
+Proc ReadDetectorDeadtime(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadDetectorDeadtime(firstFile,lastFile)
+End
+
+// simple utility to patch the detector deadtime in the file headers
+// pass in the account name as a string
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchDetectorDeadtime(lo,hi,deadtime)
+	Variable lo,hi,deadtime
+	
+	Variable ii
+	String file
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			WriteDeadtimeToHeader(file,deadtime)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function fReadDetectorDeadtime(lo,hi)
+	Variable lo,hi
+	
+	String file
+	Variable ii,deadtime
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		file = FindFileFromRunNumber(ii)
+		if(strlen(file) != 0)
+			deadtime = getDetectorDeadtime(file)
+			printf "File %d:  Detector Dead time (s) = %g\r",ii,deadtime
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
 
 
 /////

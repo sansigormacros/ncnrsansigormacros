@@ -763,7 +763,13 @@ Function WriteCountTimeToHeader(fname,num)
 	return(0)
 End
 
-
+// Write the detector deadtime to the file header (in seconds)
+Function WriteDeadtimeToHeader(fname,num)
+	String fname
+	Variable num
+	
+	return(0)
+End
 
 //////// ACCESSORS FOR READING DATA FROM THE HEADER  //////////////
 //
@@ -1111,6 +1117,13 @@ Function getCountTime(fname)
 	// your code returning value
 	
 	return(value)
+end
+
+// read the detector deadtime (in seconds)
+Function getDetectorDeadtime(fname)
+	String fname
+	
+	return(0)
 end
 
 

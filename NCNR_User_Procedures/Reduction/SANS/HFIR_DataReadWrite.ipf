@@ -785,6 +785,15 @@ Function getCountTime(fname)
 	return(mtime)
 end
 
+
+// read the detector deadtime (in seconds)
+Function getDetectorDeadtime(fname)
+	String fname
+	
+	return(0)
+end
+
+
 //////  integer values
 //////Not used !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 Function getIntegerFromHeader(fname,wanted)   ///Not used !!!!!!!!!
@@ -1751,6 +1760,14 @@ Function WriteDetPixelYToHeader(fname,num)
 	sprintf numstr, "%f", num
 	
 	WriteHFIRHead(fname,numstr, "//Header/y_mm_per_pixel","mm")
+	return(0)
+End
+
+// Write the detector deadtime to the file header (in seconds)
+Function WriteDeadtimeToHeader(fname,num)
+	String fname
+	Variable num
+	
 	return(0)
 End
 

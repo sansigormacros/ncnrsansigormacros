@@ -170,7 +170,8 @@ Function KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
 	
 	NVAR FFT_T = root:FFT_T
 //	FFT_T = sbp[0]
-	sbp[0] = FFT_T
+//	sbp[0] = FFT_T
+	sbp = FFT_T
 	
 	variable npts,cyl
 	npts = numpnts(xx)

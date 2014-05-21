@@ -652,7 +652,7 @@ Function Sim_SetLenses(state)
 	return(0)
 End
 
-// instrName = "checkNG3" or "checkNG7" or "checkNGB"
+// instrName = "checkCGB" or "checkNG7" or "checkNGB" (checkNG3 has been removed)
 // these are the only allowable choices
 Function Sim_SetInstrument(instrName)
 	String instrName
