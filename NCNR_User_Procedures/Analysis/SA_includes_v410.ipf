@@ -42,6 +42,7 @@ Menu "SANS Models"
 		"ReBin 1D Data",OpenRebin()
 		"Show Correlation Matrix",DisplayCovariance()
 		"Map Chi-Squared",MapChiSquared()
+		"Manually Optimize Parameters",OpenManualFitPanel()
 	end
 	"-"
 	Submenu "Packages"

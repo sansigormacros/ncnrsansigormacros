@@ -1562,3 +1562,789 @@ Function PrefTabProc(name,tab)
 	return(0)
 End
 
+
+////////////////////////////////////
+// Modification from Matt Wasbrough to allow rescaling of the 
+// axes while plotting and fitting. allows export of the rescaled
+// data and of the rescaled model
+// Nov 2012
+///
+
+Function UseRescaleAxisCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			if(checked)
+				Execute "OpenAxisPanel()"
+			else
+				if(exists("RescaleAxisPanel") !=0)
+					DoWindow/K RescaleAxisPanel
+				endif
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+Proc OpenAxisPanel()
+	If(WinType("RescaleAxisPanel") == 0)
+		//create the necessary data folder
+		NewDataFolder/O root:Packages
+		NewDataFolder/O root:Packages:NIST
+		NewDataFolder/O root:Packages:NIST:RescaleAxis
+		//initialize the values
+		Variable/G root:Packages:NIST:RescaleAxis:gRAExpA = 1
+		Variable/G root:Packages:NIST:RescaleAxis:gRAExpB = 1
+		Variable/G root:Packages:NIST:RescaleAxis:gRAExpC = 1
+		RescaleAxisPanel()
+	else
+		//window already exists, just bring to front for update
+		DoWindow/F RescaleAxisPanel
+	endif
+End
+
+Window RescaleAxisPanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(461,46,735,195)/K=1
+	ModifyPanel cbRGB=(49360,30954,64507), fixedSize=1
+	SetDrawLayer UserBack
+	PopupMenu ymodel,pos={20,10},size={76,19},title="y-axis"
+	PopupMenu ymodel,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
+	PopupMenu ymodel,mode=1,value= #"\"I;log(I);ln(I);1/I;I^a;Iq^a;I^a q^b;1/sqrt(I);ln(Iq);ln(Iq^2)\""
+	Button GoRescale,pos={50,80},size={70,20},proc=RescalePlot,title="Rescale"
+	Button GoRescale,help={"This button will rescale the axis using the selections in this panel"}
+	Button DoneButton,pos={170,80},size={70,20},proc=RADoneButton,title="Done"
+	Button DoneButton,help={"This button will close the panel"}
+	Button ExportData, pos={100,110}, size={90,20}, proc=ExportData, title="Export Data"
+	Button ExportData, help={"This button will export data from the top graph"}
+	SetVariable expa,pos={13,45},size={80,17},title="pow \"a\""
+	SetVariable expa,help={"This sets the exponent \"a\" for some y-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+	SetVariable expa,limits={-2,10,0},value= root:Packages:NIST:RescaleAxis:gRAExpA
+	SetVariable expb,pos={98,45},size={80,17},title="pow \"b\""
+	SetVariable expb,help={"This sets the exponent \"b\" for some x-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+	SetVariable expb,limits={0,10,0},value= root:Packages:NIST:RescaleAxis:gRAExpB
+	PopupMenu xmodel,pos={155,10},size={79,19},title="x-axis"
+	PopupMenu xmodel,help={"This popup selects how the x-axis will be linearized given the chosen data"}
+	PopupMenu xmodel,mode=1,value= #"\"q;log(q);q^2;q^c\""
+	SetVariable expc,pos={182,45},size={80,17},title="pow \"c\""
+	SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
+	SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:RescaleAxis:gRAExpC
+	Button RAHelp, pos={220,110}, size={20,20}, proc=RAHelpButtonProc, title="?"
+EndMacro
+
+Proc RADoneButton(ctrlName): ButtonControl
+	String ctrlName
+	DoWindow/K RescaleAxisPanel
+	DoWindow/F WrapperPanel
+	CheckBox check_8 value=0
+end
+
+Function RAHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DisplayHelpTopic/Z/K=1 "Rescaled Axis"
+			if(V_flag !=0)
+				DoAlert 0,"The Rescaled Axis Help file could not be found"
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+Proc ExportData(ctrlName): ButtonControl
+	string ctrlName	
+	WriteRescaledData()		
+End
+	
+
+Function RescalePlot (ctrlName): ButtonControl
+	String ctrlName
+	SetDataFolder root:
+	String topGraph= WinName(0,1)	//this is the topmost graph
+	if(strlen(topGraph)==0)
+		Abort "There is no graph"
+	endif
+		
+	DoWindow/F $topGraph
+	GetWindow/Z $topGraph, wavelist
+	wave/t W_Wavelist
+	SetDataFolder root:Packages:NIST:RescaleAxis
+	if (exists("W_WaveList")==1)
+		KillWaves/Z root:Packages:NIST:RescaleAxis:W_WaveList
+	endif
+	MoveWave root:W_WaveList, root:Packages:NIST:RescaleAxis:W_WaveList
+	SetDataFolder root:Packages:NIST:RescaleAxis
+	variable i,j,k
+	string DF,DF1,temp, temp2, t1
+	for (i=0; i < numpnts(W_WaveList)/3; i+=1)
+		temp = W_WaveList[i][1]
+		if (stringmatch(temp, "*_i") || stringmatch(temp, "*_i_RA"))
+			temp = W_WaveList[i][0]
+			if(stringmatch(temp, "*_i"))
+				temp = removeending(temp, "_i")
+			elseif(stringmatch(temp, "*_i_RA"))
+				temp = removeending(temp, "_i_RA")
+			endif
+			Make/T/O $temp/Wave=tempWave
+			DF = ReplaceString(W_Wavelist[i][0],W_Wavelist[i][1],"")
+			if (strlen(DF) ==0)
+				DF = ":"
+			endif
+			DF1 = "root"+DF
+			tempWave[0] = DF1
+			k = 1
+			for(j=0;j<numpnts(W_WaveList)/3; j+=1)
+				if (stringmatch(W_WaveList[j][1], "*"+temp+"*"))
+					tempWave[k] = W_WaveList[j][0]
+					k  = k+1
+				endif
+			endfor
+			redimension/N=(k) tempWave
+		elseif(stringmatch(temp, "*ywave*"))
+			temp = W_WaveList[i][0]
+			if(stringmatch(temp, "*_RA"))
+				temp = removeending(temp, "_RA")
+			endif			
+			Make/T/O $temp/Wave=tempWave
+			DF = ReplaceString(W_Wavelist[i][0],W_Wavelist[i][1],"")
+			if (strlen(DF) ==0)
+				DF = ":"
+			endif
+			DF1 = "root"+DF
+			tempWave[0] = DF1
+			temp2 = replacestring("ywave", temp, "")
+			k = 1
+			for(j=0;j<numpnts(W_WaveList)/3; j+=1)
+				t1 = W_Wavelist[j][1]
+				if (stringmatch(W_WaveList[j][1], "*wave"+temp2+"*"))
+					tempWave[k] = W_WaveList[j][1]
+					k  = k+1
+				endif
+			endfor
+			redimension/N=(k) tempWave
+		endif
+	endfor
+	KillWaves/Z W_Wavelist
+	string listWave = Wavelist("*", ";", "TEXT:1")
+	string WaveToRescale, WaveDataFolder,xwave, ywave, swave
+	
+	for (i = 0; i < ItemsInList(listWave,";"); i+=1)
+		temp = StringFromList(i,listWave,";")
+		Wave/T WaveString = $temp
+		for (j=1; j < numpnts(WaveString); j+=1)
+			 WaveToRescale = Wavestring[j]
+			 if (stringmatch(WaveToRescale, "*_RA"))
+			 	WaveToRescale = RemoveEnding(WaveToRescale, "_RA")
+			 endif
+		WaveDataFolder = WaveString[0]
+		SetDataFolder $WaveDataFolder
+		if (stringmatch(WaveToRescale, "*_q"))
+		xwave = WaveToRescale
+		XRescale(xwave)	
+		elseif (stringmatch(WaveToRescale, "*_i"))
+		ywave = WaveToRescale
+		xwave = RemoveEnding(WaveToRescale, "_i")+"_q"
+		YRescale(ywave, xwave)
+		elseif (stringmatch(WaveToRescale, "*_s"))
+		swave = WaveToRescale
+		ywave = RemoveEnding(WaveToRescale, "_s")+"_i"
+		xwave = RemoveEnding(WaveToRescale, "_s")+"_q"
+		ERescale(swave, ywave, xwave)
+		elseif (stringmatch(WaveToRescale, "xwave_*"))
+		xwave=WaveToRescale
+		XRescale(xwave)
+		elseif (stringmatch(WaveToRescale, "ywave_*"))
+		ywave = WaveToRescale
+		xwave= ReplaceString("ywave", WaveToRescale, "xwave")
+		YRescale(ywave, xwave)
+		elseif(stringmatch(WaveToRescale, "*_qvals"))
+		xwave = WaveToRescale
+		XRescale(xwave)
+		elseif(stringmatch(WaveToRescale, "smeared*") && stringmatch(WaveToRescale, "!*_qvals"))
+		ywave = WaveToRescale
+				for (k=1; k < numpnts(WaveString); k+=1)
+					if (stringmatch(Wavestring[k], "*_qvals"))
+						xwave = Wavestring[k]
+					endif
+				endfor
+		YRescale(ywave, xwave)
+		else
+		ywave = WaveToRescale
+			for (k=1; k < numpnts(WaveString); k+=1)
+				if (stringmatch(Wavestring[k], "*_q"))
+					xwave = Wavestring[k]
+				endif
+			endfor
+		YRescale(ywave,xwave)
+		string yAxis = ywave+"_RA"
+		wave yAxisWave = $yAxis
+		SetFormula yAxisWave, "YRescale(ywave,xwave)"
+		endif
+		SetDataFolder root:Packages:NIST:RescaleAxis
+		endfor
+	endfor
+	
+	string oldywave, xstr, ystr
+	for (i = 0; i < ItemsInList(listWave,";"); i+=1)
+		temp = StringFromList(i,listWave,";")
+		Wave/T WaveString = $temp
+		for (j=1; j < numpnts(WaveString); j+=1)
+			 WaveToRescale = Wavestring[j]
+		WaveDataFolder = WaveString[0]
+		SetDataFolder $WaveDataFolder
+		ControlInfo/W=RescaleAxisPanel yModel
+		ystr = S_Value
+		ControlInfo/W=RescaleAxisPanel xModel
+		xstr = S_Value
+			if(cmpstr("I",ystr)==0 && cmpstr("q",xstr)==0)
+				if(stringmatch(WaveToRescale, "*_i_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					xwave = RemoveEnding(WaveToRescale, "_i_RA")+"_q"
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave
+					swave = RemoveEnding(WaveToRescale, "_i_RA")+"_s"
+					if(exists(swave)==1)
+						ErrorBars/T=0/W=$topGraph $ywave, Y wave=($swave,$swave)	
+					endif
+				elseif (stringmatch(WaveToRescale,  "smeared*"))
+					if(stringmatch(WaveToRescale,"*_RA") && stringmatch(WaveToRescale,"!*_qvals*") )
+						oldywave = WaveToRescale
+						ywave = RemoveEnding(WaveToRescale,"_RA")
+						xwave = "smeared_qvals"
+						replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+						replacewave/X/W=$topGraph trace=$ywave, $xwave
+					endif
+				elseif(stringmatch(WaveToRescale,"ywave*") && stringmatch(WaveToRescale,"*_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					xwave = ReplaceString("ywave",ywave,"xwave")
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave					
+				elseif(stringmatch(WaveToRescale, "*FitYw*") && stringmatch(WaveToRescale, "*_RA"))
+					oldywave = WaveToRescale
+					ywave = RemoveEnding(WaveToRescale,"_RA")
+					for (k=1; k < numpnts(WaveString); k+=1)
+						if (stringmatch(Wavestring[k], "*_q"))
+							xwave = Wavestring[k]
+						endif
+					endfor
+					replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+					replacewave/X/W=$topGraph trace=$ywave, $xwave	
+				endif			
+			elseif(stringmatch(WaveToRescale, "*_RA"))
+			elseif (stringmatch(WaveToRescale, "*_i"))
+				DoWindow/F topGraph
+				oldywave = WaveToRescale
+				xwave = RemoveEnding(WaveToRescale, "_i")+"_q_RA"
+				ywave = WaveToRescale + "_RA"
+				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+				replacewave/X/W=$topGraph trace=$ywave, $xwave
+				ModifyGraph log=0
+				swave = RemoveEnding(WaveToRescale, "_i")+"_s_RA"
+				if(exists(swave)==1)
+					ErrorBars/T=0/W=$topGraph $ywave, Y wave=($swave,$swave)	
+				endif
+				DoUpdate	
+			elseif(stringmatch(WaveToRescale, "smeared*") && stringmatch(WaveToRescale, "!*_qvals"))
+				oldywave = WaveToRescale
+				ywave = WaveToRescale + "_RA"
+				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+				xwave = "smeared_qvals_RA"
+				replacewave/X/W=$topGraph trace=$ywave, $xwave	
+			elseif(stringmatch(WaveToRescale,"ywave*"))
+				oldywave = WaveToRescale
+				ywave = WaveToRescale + "_RA"
+				xwave = ReplaceString("ywave",ywave,"xwave")
+				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+				replacewave/X/W=$topGraph trace=$ywave, $xwave					
+			elseif(stringmatch(WaveToRescale, "*FitYw*"))
+				oldywave = WaveToRescale
+				ywave = WaveToRescale+"_RA"
+				for (k=1; k < numpnts(WaveString); k+=1)
+					if (stringmatch(Wavestring[k], "*_q"))
+						xwave = Wavestring[k]+"_RA"
+					endif
+				endfor
+				replacewave/Y/W=$topGraph trace=$oldywave, $ywave
+				replacewave/X/W=$topGraph trace=$ywave, $xwave	
+			endif
+			SetDataFolder root:Packages:NIST:RescaleAxis
+			DoUpdate
+		endfor
+	endfor
+	KillWaves/A/Z
+		
+	string ylabel, xlabel
+	ControlInfo/W=RescaleAxisPanel yModel
+	ystr = S_Value
+	ControlInfo/W=RescaleAxisPanel xModel
+	xstr = S_Value
+	
+	if(cmpstr("I",ystr)==0 && cmpstr("q",xstr)==0)
+		modifygraph log=1
+	else
+		modifygraph log=0
+	endif
+	
+	Variable pow_a,pow_b,pow_c
+	ControlInfo/W=RescaleAxisPanel expa
+	pow_a = V_value
+	ControlInfo/W=RescaleAxisPanel expb
+	pow_b = V_value
+	ControlInfo/W=RescaleAxisPanel expc
+	pow_c = V_value
+	
+	If (cmpstr("I",ystr) == 0)
+		ylabel = "I(q)"
+	elseif (cmpstr("ln(I)",ystr) == 0)
+		ylabel = "ln(I)"
+	elseif (cmpstr("log(I)",ystr) == 0)
+		ylabel = "log(I)"
+	elseif (cmpstr("1/I",ystr) == 0)
+		ylabel = "1/I"
+	elseif (cmpstr("I^a",ystr) == 0)
+		ylabel = "I\S"+num2str(pow_a)+"\M"
+	elseif (cmpstr("Iq^a",ystr) == 0)
+		ylabel = "Iq\S"+num2str(pow_a)+"\M"
+	elseif (cmpstr("I^a q^b",ystr) == 0)
+		ylabel = "I\S"+num2str(pow_a)+"\Mq\S"+num2str(pow_b)+"\M"
+	elseif (cmpstr("1/sqrt(I)",ystr) == 0)
+		ylabel = "1/sqrt(I)"
+	elseif (cmpstr("ln(Iq)",ystr) == 0)
+		ylabel = "ln(Iq)"
+	elseif (cmpstr("ln(Iq^2)",ystr) == 0)
+		ylabel = "ln(Iq\S2\M)"
+	endif
+
+	If (cmpstr("q",xstr) == 0)
+		xlabel = "q (A\S-1\M)"
+	elseif (cmpstr("q^2",xstr) == 0)
+		xlabel = "q\S2\M"
+	elseif (cmpstr("log(q)",xstr) == 0)
+		xlabel = "log(q)"
+	elseif (cmpstr("q^c",xstr) == 0)
+		xlabel = "q\S"+num2str(pow_c)+"\M"
+	endif
+	
+	SetAxis/A
+	Label left ylabel
+	Label bottom xlabel
+	
+	SetDataFolder root:
+End
+
+Function YRescale(ywave, xwave)	
+ 	String ywave,xwave
+  
+	Wave yw = $ywave
+	Wave xw = $xwave
+	
+	//Scaling exponents and background value
+	Variable pow_a,pow_b,pow_c
+	ControlInfo/W=RescaleAxisPanel expa
+	pow_a = V_value
+	ControlInfo/W=RescaleAxisPanel expb
+	pow_b = V_value
+	ControlInfo/W=RescaleAxisPanel expc
+	pow_c = V_value
+	
+	//check for physical limits on exponent values
+	// if bad values found, alert, and reset to good values so the rescaling can continue
+	NVAR gA = root:Packages:NIST:RescaleAxis:gRAExpA
+	NVAR gB = root:Packages:NIST:RescaleAxis:gRAExpB
+	NVAR gC = root:Packages:NIST:RescaleAxis:gRAExpC
+	if((pow_a < -2) || (pow_a > 10))
+		DoAlert 0,"Exponent a must be in the range (-2,10) - the exponent a has been reset to 1"
+		gA = 1
+	endif
+	if((pow_b < 0) || (pow_b > 10))
+		DoAlert 0,"Exponent b must be in the range (0,10) - the exponent b has been reset to 1"
+		gB = 1
+	endif
+	//if q^c is the x-scaling, c must be be within limits and also non-zero
+	ControlInfo/W=RescaleAxisPanel xModel
+	If (cmpstr("q^c",S_Value) == 0)
+		if(pow_c == 0) 
+			DoAlert 0,"Exponent c must be non-zero, c has been reset to 1"
+			gC = 1
+		endif
+		if((pow_c < -10) || (pow_c > 10))
+			DoAlert 0,"Exponent c must be in the range (-10,10), c has been reset to 1"
+			gC = 1
+		endif
+	endif
+	
+	//variables set for each model to control look of graph
+	String ystr, yAxis
+	//check for proper y-scaling selection, make the necessary waves
+//	Wave yAxisWave
+
+	ControlInfo/W=RescaleAxisPanel yModel
+	ystr = S_Value
+	
+	do
+		If (cmpstr("I",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"1/cm",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = yw
+			break	
+		endif
+		If (cmpstr("ln(I)",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = ln(yw)
+			break	
+		endif
+		If (cmpstr("log(I)",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = log(yw)
+			break	
+		endif
+		If (cmpstr("1/I",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = 1/(yw)
+			break
+		endif
+		If (cmpstr("I^a",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = yw^pow_a
+			break
+		endif
+		If (cmpstr("Iq^a",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = yw*xw^pow_a
+			break
+		endif
+		If (cmpstr("I^a q^b",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = yw^pow_a*xw^pow_b
+			break
+		endif
+		If (cmpstr("1/sqrt(I)",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = 1/sqrt(yw)
+			break
+		endif
+		If (cmpstr("ln(Iq)",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = ln(xw*yw)
+			break
+		endif
+		If (cmpstr("ln(Iq^2)",S_Value) == 0)
+			yAxis = ywave+"_RA"
+			if (exists(yAxis)== 0)
+				Duplicate yw $yAxis
+			endif
+			SetScale d 0,0,"",$yAxis
+			wave yAxisWave = $yAxis
+			yAxisWave = ln(xw*xw*yw)
+			break
+		endif
+		//more ifs for each case
+		
+		// if selection not found, abort
+		DoAlert 0,"Y-axis scaling incorrect. Aborting"
+		Abort
+	while(0)
+End
+
+Function XRescale(xwave)	
+ 	String xwave
+ 
+	Wave xw = $xwave
+		 
+	//Scaling exponents and background value
+	Variable pow_a,pow_b,pow_c
+	ControlInfo/W=RescaleAxisPanel expa
+	pow_a = V_value
+	ControlInfo/W=RescaleAxisPanel expb
+	pow_b = V_value
+	ControlInfo/W=RescaleAxisPanel expc
+	pow_c = V_value
+	
+//check for physical limits on exponent values
+// if bad values found, alert, and reset to good values so the rescaling can continue
+	NVAR gA = root:Packages:NIST:RescaleAxis:gRAExpA
+	NVAR gB = root:Packages:NIST:RescaleAxis:gRAExpB
+	NVAR gC = root:Packages:NIST:RescaleAxis:gRAExpC
+	if((pow_a < -2) || (pow_a > 10))
+		DoAlert 0,"Exponent a must be in the range (-2,10) - the exponent a has been reset to 1"
+		gA = 1
+	endif
+	if((pow_b < 0) || (pow_b > 10))
+		DoAlert 0,"Exponent b must be in the range (0,10) - the exponent b has been reset to 1"
+		gB = 1
+	endif
+	//if q^c is the x-scaling, c must be be within limits and also non-zero
+	ControlInfo/W=RescaleAxisPanel xModel
+	If (cmpstr("q^c",S_Value) == 0)
+		if(pow_c == 0) 
+			DoAlert 0,"Exponent c must be non-zero, c has been reset to 1"
+			gC = 1
+		endif
+		if((pow_c < -10) || (pow_c > 10))
+			DoAlert 0,"Exponent c must be in the range (-10,10), c has been reset to 1"
+			gC = 1
+		endif
+	endif
+	
+	//variables set for each model to control look of graph
+	String xstr, xAxis
+	//check for proper y-scaling selection, make the necessary waves
+//	Wave xAxisWave
+
+	ControlInfo/W=RescaleAxisPanel xModel
+	xstr = S_Value
+	do
+		// make the new yaxis wave
+		If (cmpstr("q",S_Value) == 0)	
+			xAxis = xwave+"_RA"
+			if (exists(xAxis)== 0)
+				Duplicate xw $xAxis
+			endif
+			SetScale d 0,0,"A^-1",$xAxis
+			wave xAxisWave = $xAxis
+			xAxisWave = xw
+			break	
+		endif
+		If (cmpstr("q^2",S_Value) == 0)	
+			xAxis = xwave+"_RA"
+			if (exists(xAxis)== 0)
+				Duplicate xw $xAxis
+			endif
+			SetScale d 0,0,"A^-2",$xAxis
+			wave xAxisWave = $xAxis
+			xAxisWave = xw*xw
+			break	
+		endif
+		If (cmpstr("log(q)",S_Value) == 0)	
+			xAxis = xwave+"_RA"
+			if (exists(xAxis)== 0)
+				Duplicate xw $xAxis
+			endif
+			SetScale d 0,0,"",$xAxis
+			wave xAxisWave = $xAxis
+			xAxisWave = log(xw)
+			break	
+		endif
+		If (cmpstr("q^c",S_Value) == 0)
+			xAxis = xwave+"_RA"
+			if (exists(xAxis)== 0)
+				Duplicate xw $xAxis
+			endif
+			SetScale d 0,0,"", $xAxis
+			wave xAxisWave = $xAxis
+			xAxisWave = xw^pow_c
+			break
+		endif
+	
+		//more ifs for each case
+		// if selection not found, abort
+		DoAlert 0,"X-axis scaling incorrect. Aborting"
+		Abort
+	while(0)	//end of "case" statement for x-axis scaling
+End
+
+Function ERescale(swave, ywave, xwave)	
+ 	String swave, ywave, xwave
+ 
+	Wave ew = $swave
+	Wave yw = $ywave
+	Wave xw = $xwave
+		 
+	//Scaling exponents and background value
+	Variable pow_a,pow_b,pow_c
+	ControlInfo/W=RescaleAxisPanel expa
+	pow_a = V_value
+	ControlInfo/W=RescaleAxisPanel expb
+	pow_b = V_value
+	ControlInfo/W=RescaleAxisPanel expc
+	pow_c = V_value
+	
+//check for physical limits on exponent values
+// if bad values found, alert, and reset to good values so the rescaling can continue
+	NVAR gA = root:Packages:NIST:RescaleAxis:gRAExpA
+	NVAR gB = root:Packages:NIST:RescaleAxis:gRAExpB
+	NVAR gC = root:Packages:NIST:RescaleAxis:gRAExpC
+	if((pow_a < -2) || (pow_a > 10))
+		DoAlert 0,"Exponent a must be in the range (-2,10) - the exponent a has been reset to 1"
+		gA = 1
+	endif
+	if((pow_b < 0) || (pow_b > 10))
+		DoAlert 0,"Exponent b must be in the range (0,10) - the exponent b has been reset to 1"
+		gB = 1
+	endif
+	//if q^c is the x-scaling, c must be be within limits and also non-zero
+	ControlInfo/W=RescaleAxisPanel xModel
+	If (cmpstr("q^c",S_Value) == 0)
+		if(pow_c == 0) 
+			DoAlert 0,"Exponent c must be non-zero, c has been reset to 1"
+			gC = 1
+		endif
+		if((pow_c < -10) || (pow_c > 10))
+			DoAlert 0,"Exponent c must be in the range (-10,10), c has been reset to 1"
+			gC = 1
+		endif
+	endif
+	
+	//variables set for each model to control look of graph
+	String ystr, eWave
+	//check for proper y-scaling selection, make the necessary waves
+//	Wave yErrWave
+
+	ControlInfo/W=RescaleAxisPanel yModel
+	ystr = S_Value
+	do
+		
+		If (cmpstr("I",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew
+			break	
+		endif
+		If (cmpstr("ln(I)",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew/yw
+			break	
+		endif
+		If (cmpstr("log(I)",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew/(2.30*yw)
+			break	
+		endif
+		If (cmpstr("1/I",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew/(yw^2)
+			break
+		endif
+		If (cmpstr("I^a",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew*abs(pow_a*(yw^(pow_a-1)))
+			break
+		endif
+		If (cmpstr("Iq^a",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew*xw^pow_a
+			break
+		endif
+		If (cmpstr("I^a q^b",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew*abs(pow_a*(yw^(pow_a-1)))*xw^pow_b
+			break
+		endif
+		If (cmpstr("1/sqrt(I)",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = 0.5*ew*yw^(-1.5)
+			break
+		endif
+		If (cmpstr("ln(Iq)",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave =ew/yw
+			break
+		endif
+		If (cmpstr("ln(Iq^2)",S_Value) == 0)
+			eWave = swave+"_RA"
+			if (exists(eWave) == 0)
+				Duplicate ew $eWave
+			endif
+			wave yErrWave = $eWave
+			yErrWave = ew/yw
+			break
+		endif
+		//more ifs for each case
+		
+		// if selection not found, abort
+		DoAlert 0,"Y-axis scaling incorrect. Aborting"
+		Abort
+	while(0)	//end of "case" statement for y-axis scaling
+
+End
+
+///////////////////////////
+

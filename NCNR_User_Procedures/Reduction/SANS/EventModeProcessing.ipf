@@ -36,6 +36,12 @@
 // -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
 //     points. Maybe not kosher, but would clean things up.
 //
+///////////////////////////////
+//
+// NOTE -- to be able to show the T0 and PP event locations/times, force the loader to use the Igor code rather than
+// the XOP. Then there will be waves generated with their locations: T0Time and T0EventNum, PPTime and PPEventNum. Edit these waves
+// and (1) delete the zero points at the end of the waves and (2) multiply the Time wave * 1e-7 to convert to seconds.
+// Then the waves can be plotted on top of the event data, so it can be seen where these events were identified.
 //
 ///////////////   SWITCHES     /////////////////
 //

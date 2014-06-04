@@ -372,8 +372,6 @@ End
 // rotx, rotx = rotation angles (in degrees, but defined as ??)
 // sld = SLD of cylinder
 //
-//
-//
 // Put this into a panel with the table and the data
 // and fields for all of the inputs
 Macro Setup_KR_MultiCylinder()
@@ -411,6 +409,8 @@ Macro Setup_KR_MultiCylinder()
 	SetActiveSubwindow ##
 
 End
+
+
 
 
 Function KR_Plot1DButtonProc(ba) : ButtonControl
@@ -612,3 +612,309 @@ Proc KR_IQ() : Graph
 EndMacro
 
 /////////////////////////////////////
+//
+//
+// for the "manual" fitting
+//
+
+Proc Vary_One_Cyl_Param(waveStr,row,percent,numStep)
+// pick the wave and row and %
+	String waveStr="xx"
+	Variable row=1
+	Variable percent = 105
+	Variable numStep = 10
+	Prompt waveStr,"wave",popup,"xx;yy;zz;rri;hti;rotx;roty;sld;"
+
+	print waveStr
+	
+// dispatch to calculation
+	MultiCyl_Loop($waveStr,row,percent,numStep)
+	
+// plot the chi2_map
+	DoWindow/F MultiCyl_ChiMap
+	if(V_flag==0)
+		MultiCyl_ChiMap()
+	endif
+
+end
+
+Function MultiCyl_Loop(w,row,percent,numStep)
+	Wave w
+	Variable row,percent,numStep
+	
+	Variable loLim,hiLim,ii,minIndex,minChiSq
+	String folderStr
+	
+	Make/O/D/N=(numStep) chi2_map,testVals
+	Wave chi2_map=chi2_map
+	Wave testVals=testVals
+	
+	loLim = w[row] - percent*w[row]/100
+	hiLim = w[row] + percent*w[row]/100
+	testVals = loLim + x*(hiLim-loLim)/numStep
+
+//		the experimental data
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	// wave references for the data (to pass)
+	String DF="root:"+folderStr+":"	
+	
+	WAVE yw=$(DF+folderStr+"_i")
+	WAVE xw=$(DF+folderStr+"_q")
+	WAVE sw=$(DF+folderStr+"_s")
+
+	duplicate/o yw, interpCalc,chi2_data
+	Wave chi2_data=chi2_data
+	Wave interpCalc=interpCalc
+		
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	
+// loop
+	for(ii=0;ii<numStep;ii+=1)
+//   	set the value
+		w[row] = testVals[ii]
+//		generate the structure
+//
+		KR_GenerateButtonProc(ba)
+
+//		do the calculation
+		KR_DoCalcButtonProc(ba)
+
+		WAVE ival_KR=ival_KR
+		WAVE qval_KR=qval_KR
+		
+		interpCalc = interp(xw, qval_KR, ival_KR )
+		
+//		calculate chi-squared
+		chi2_data = (yw-interpCalc)^2
+		chi2_data /= sw^2
+	
+
+		Wavestats/Q chi2_data
+		chi2_map[ii] = V_avg * V_npnts
+// end loop
+	endfor
+
+// find the best chi squared
+	WaveStats/Q chi2_map
+// reset the value to the best
+ 	minIndex = V_minRowLoc
+	w[row] = testVals[minIndex]
+	
+	minChiSq = chi2_map[minIndex]
+	print "Minimum chi2 = ",minChiSq
+
+
+// and then recalculate at the best solution
+	KR_GenerateButtonProc(ba)
+
+//		do the calculation
+	KR_DoCalcButtonProc(ba)
+	
+	return(0)
+End
+
+Proc MultiCyl_ChiMap()
+	PauseUpdate; Silent 1		// building window...
+	Display /W=(35,44,466,414) chi2_map vs testVals
+	DoWindow/C MultiCyl_ChiMap
+	ModifyGraph mode=4
+	ModifyGraph marker=19
+	ModifyGraph msize=2
+	Label left "chi-squared"
+	Label bottom "test values"
+end
+
+//Function testKRPar()
+//	
+//	Variable row, col
+//	String wStr
+//	
+//	getParamFromKRSetup(row,col,wStr)
+//	Print row, col, wStr
+//	
+//	wStr = StringFromList(0, wStr)		// some wave "xx.d"
+//	wStr = StringFromList(0, wStr, ".")  // removes the ".d"
+//	Wave w=$wStr
+//	print w[row]
+//	
+//	Variable numStep,loLim,hiLim,percent
+//	numStep = 25
+//	percent = 50
+//	
+//	loLim = w[row] - percent*w[row]/100
+//	hiLim = w[row] + percent*w[row]/100
+//	
+//	
+//	Make/O/D/N=(numStep) testKRVals
+//	testKRVals = loLim + x*(hiLim-loLim)/numStep	
+//
+//	print testKRvals
+//	return(0)
+//	
+//End
+//
+//Function getParamFromKRSetup(row,col,wStr)
+//	Variable &row,&col
+//	String &wStr
+//	
+//	Variable parNum
+//	
+//	GetSelection table, MultiCyl#T0, 3
+//	row = V_startRow
+//	col = V_startCol
+//	Print S_Selection
+//	wStr = S_Selection
+//	
+//	
+//	return(0)
+//End
+
+Proc Vary_Two_Cyl_Param(waveStr,row,waveStr2,row2,percent,percent2,numStep)
+// pick the wave and row and %
+	String waveStr="xx"
+	Variable row=1
+	String waveStr2="rri"
+	Variable row2=0
+	Variable percent = 105
+	Variable percent2 = 50
+	Variable numStep=5
+	Prompt waveStr,"wave",popup,"xx;yy;zz;rri;hti;rotx;roty;sld;"
+	Prompt waveStr2,"wave2",popup,"xx;yy;zz;rri;hti;rotx;roty;sld;"
+	
+// dispatch to calculation
+	MultiCyl_Loop_2D($waveStr,row,$waveStr2,row2,percent,percent2,numStep)
+	
+// plot the chi2_map
+	DoWindow/F MultiCyl_ChiMap_2D
+	if(V_flag==0)
+		MultiCyl_ChiMap_2D()
+	else
+		//V_min*1.01 = the 1% neighborhood around the solution
+		WaveStats/Q chi2_Map_2D
+		ModifyImage/W=MultiCyl_ChiMap_2D chi2_Map_2D ctab= {(V_min*1.01),*,ColdWarm,0}
+		ModifyImage/W=MultiCyl_ChiMap_2D chi2_Map_2D minRGB=(0,65535,0),maxRGB=(0,65535,0)
+	endif
+
+end
+
+
+Function MultiCyl_Loop_2D(w,row,w2,row2,percent,percent2,numStep)
+	Wave w
+	Variable row
+	Wave w2
+	Variable row2,percent,percent2,numStep
+	
+	Variable loLim,hiLim,ii,jj,minIndex,minChiSq
+	String folderStr
+	
+	Make/O/D/N=(numStep,numStep) chi2_Map_2D
+	Make/O/D/N=(numStep) testVals,testVals2
+	Wave chi2_Map_2D=chi2_Map_2D
+	Wave testVals=testVals
+	Wave testVals2=testVals2
+	
+	testVals = 0
+	testVals2 = 0
+	chi2_Map_2D = 0
+	
+	
+	loLim = w[row] - percent*w[row]/100
+	hiLim = w[row] + percent*w[row]/100
+	testVals = loLim + x*(hiLim-loLim)/(numStep-1)
+//	Print lolim,hilim
+
+	SetScale/I x LoLim,HiLim,"", chi2_Map_2D
+
+	loLim = w2[row2] - percent2*w2[row2]/100
+	hiLim = w2[row2] + percent2*w2[row2]/100
+	testVals2 = loLim + x*(hiLim-loLim)/(numStep-1)
+//	Print lolim,hilim
+
+	SetScale/I y LoLim,HiLim,"", chi2_Map_2D
+
+
+//		the experimental data
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	// wave references for the data (to pass)
+	String DF="root:"+folderStr+":"	
+	
+	WAVE yw=$(DF+folderStr+"_i")
+	WAVE xw=$(DF+folderStr+"_q")
+	WAVE sw=$(DF+folderStr+"_s")
+
+	duplicate/o yw, interpCalc,chi2_data
+	Wave chi2_data=chi2_data
+	Wave interpCalc=interpCalc
+	
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	
+// double loop
+	for(ii=0;ii<numStep;ii+=1)
+		Print "			Outer Loop Index = ",ii," out of ",numStep
+		//set the value from the outer loop
+		w[row] = testVals[ii]
+
+		for(jj=0;jj<numStep;jj+=1)
+		
+	//   	set the inner value
+			w2[row2] = testVals2[jj]
+	//		generate the structure
+	//
+			KR_GenerateButtonProc(ba)
+	
+	//		do the calculation
+			KR_DoCalcButtonProc(ba)
+	
+			WAVE ival_KR=ival_KR
+			WAVE qval_KR=qval_KR
+			
+			interpCalc = interp(xw, qval_KR, ival_KR )
+			
+	//		calculate chi-squared
+			chi2_data = (yw-interpCalc)^2
+			chi2_data /= sw^2
+		
+			Wavestats/Q chi2_data
+			chi2_Map_2D[ii][jj] = V_avg * V_npnts
+			
+		endfor
+	endfor
+
+
+// find the best chi squared
+	WaveStats/Q chi2_Map_2D
+// reset the value to the best
+	w[row] = V_MinRowLoc
+	w2[row2] = V_MinColLoc	
+	
+	minChiSq = V_Min
+	print "Minimum chi2 = ",minChiSq
+
+// and then recalculate at the best solution
+	KR_GenerateButtonProc(ba)
+
+//		do the calculation
+	KR_DoCalcButtonProc(ba)
+	
+	return(0)
+End
+
+Proc MultiCyl_ChiMap_2D()
+	PauseUpdate; Silent 1		// building window...
+	Display /W=(35,44,466,414)
+	AppendImage chi2_Map_2D
+	DoWindow/C MultiCyl_ChiMap_2D
+	ModifyImage chi2_Map_2D ctab= {*,*,ColdWarm,0}
+	
+	//V_min*1.01 = the 1% neighborhood around the solution
+	WaveStats/Q chi2_Map_2D
+	ModifyImage/W=MultiCyl_ChiMap_2D chi2_Map_2D ctab= {(V_min*1.01),*,ColdWarm,0}
+	ModifyImage/W=MultiCyl_ChiMap_2D chi2_Map_2D minRGB=(0,65535,0),maxRGB=(0,65535,0)
+	
+	Label bottom "test values"
+	Label left "test values"
+end
