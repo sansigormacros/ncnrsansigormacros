@@ -109,10 +109,12 @@ Proc FFT_Panel()
 	SetVariable FFTSetVar_4,pos={7,47},size={100,15},title="FFT time(s)"
 	SetVariable FFTSetVar_4,limits={0,0,0},value= FFT_estTime,noedit= 1,live= 1,format="%d"
 	Button FFTButton_9,pos={200,400},size={100,20},proc=FFT_Get2DSlice,title="Get 2D Slice"
-	Button FFTButton_10,pos={169,156},size={130,20},proc=FFT_TransposeMat,title="Transpose Matrix"
-	Button FFTButton_11,pos={169,189},size={130,20},proc=FFT_RotateMat,title="Rotate Matrix"
-	Button FFTButton_12,pos={168,219},size={130,20},proc=FFT_AddRotatedObject,title="Add Rotated Obj"
-	Button FFTButton_12,disable=2		// hide this button
+
+	Button FFTButton_19,pos={168,150},size={130,20},proc=FFT_ChangeMatrixValuesButton,title="Replace Voxels"
+	Button FFTButton_12,pos={168,175},size={130,20},proc=FFT_ReplaceSolventButton,title="Replace Solvent"
+	Button FFTButton_11,pos={169,200},size={130,20},proc=FFT_RotateMat,title="Rotate Matrix"
+	Button FFTButton_10,pos={169,225},size={130,20},proc=FFT_TransposeMat,title="Transpose Matrix"
+
 	Button FFTButton_13,pos={14,109},size={120,20},proc=FFTFillSolventMatrixProc,title="Solvent Matrix"
 	SetVariable FFTSetVar_5,pos={155,111},size={150,15},title="Solvent SLD (10^-7)"
 	SetVariable FFTSetVar_5,limits={-99,99,1},value= FFT_SolventSLD,live= 1
@@ -590,7 +592,7 @@ Function fFFT_RotateMat(degree)
 	NVAR solventSLD = root:FFT_SolventSLD
 	fill = solventSLD
 	
-	WAVE mat = mat
+	WAVE mat = root:mat
 	Variable dx,dy,dz,nx,ny,nz
 	dx = DimSize(mat,0)
 	dy = DimSize(mat,1)
@@ -642,6 +644,18 @@ Function FFT_AddRotatedObject(ctrlName) : ButtonControl
 	Print "Not yet implemented"
 End
 
+Function FFT_ChangeMatrixValuesButton(ctrlName)
+	String ctrlName
+	
+	Execute "ChangeMatrixValues()"
+
+end
+
+Function FFT_ReplaceSolventButton(ctrlname)
+	String ctrlName
+	
+	Execute "ReplaceSolvent()"
+end
 
 Function FFT_MakeMatrixButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -669,20 +683,24 @@ Function FFTDrawSphereButtonProc(ctrlName)  : ButtonControl
 	Execute "FFTDrawSphereProc()"
 End
 
-Proc FFTDrawSphereProc(matStr,rad,xc,yc,zc,fill) 
+Proc FFTDrawSphereProc(matStr,rad,xc,yc,zc,fill,periodic) 
 	String matStr="mat"
-	Variable rad=25,xc=50,yc=50,zc=50,fill=10
+	Variable rad=25,xc=50,yc=50,zc=50,fill=10,periodic=1
 	Prompt matStr,"the wave"		//,popup,WaveList("*",";","")
 	Prompt rad,"enter real radius (A)"
 	Prompt xc,"enter the X-center"
 	Prompt yc,"enter the Y-center"
 	Prompt zc,"enter the Z-center"
 	Prompt fill,"fill SLD value"
+	Prompt periodic,"enter 1 for periodic, 0 for non-periodic fill"
 	
 	Variable grid=root:FFT_T
 	
-	FillSphereRadius($matStr,grid,rad,xc,yc,zc,fill)
-	
+	if(periodic)
+		FillSphereRadiusPeriodic($matStr,grid,rad,xc,yc,zc,fill)
+	else
+		FillSphereRadius($matStr,grid,rad,xc,yc,zc,fill)
+	endif
 End
 
 Function FFTDrawZCylinderButtonProc(ctrlName)  : ButtonControl
@@ -879,6 +897,48 @@ Function InvertMatrixFill(mat)
 	
 	mat = (mat==1) ? 0 : 1
 End
+
+// replaces specified values
+Proc ChangeMatrixValues(old,new)
+	Variable old,new
+	
+	mat = (mat==old) ? new : mat
+	// sequence of steps to get the gizmo to update the display correctly
+	RemoveFromGizmo/N=Gizmo_VoxelMat object=Voxelgram0
+	RemoveFromGizmo/N=Gizmo_VoxelMat displayItem=axes0
+	AppendToGizmo/N=Gizmo_VoxelMat voxelgram=root:mat,name=voxelgram0
+	ModifyGizmo/N=Gizmo_VoxelMat  setDisplayList=-1, object=voxelgram0
+	ModifyGizmo/N=Gizmo_VoxelMat  setDisplayList=-1, object=axes0		//so that the axes are drawn last
+	ModifyGizmo ModifyObject=voxelgram0 property={ pointSize,3}
+
+	
+	ColorizeGizmo()
+End
+
+
+
+// replaces the solvent value and updates the global
+Proc ReplaceSolvent(newSolv)
+	Variable newSolv
+	
+	Variable solv = root:FFT_SolventSLD
+	
+	mat = (mat==solv) ? newSolv : mat
+	
+	root:FFT_SolventSLD = newSolv
+
+// sequence of steps to get the gizmo to update the display correctly
+	RemoveFromGizmo/N=Gizmo_VoxelMat object=Voxelgram0
+	RemoveFromGizmo/N=Gizmo_VoxelMat displayItem=axes0
+	AppendToGizmo/N=Gizmo_VoxelMat voxelgram=root:mat,name=voxelgram0
+	ModifyGizmo/N=Gizmo_VoxelMat  setDisplayList=-1, object=voxelgram0
+	ModifyGizmo/N=Gizmo_VoxelMat  setDisplayList=-1, object=axes0		//so that the axes are drawn last
+	ModifyGizmo ModifyObject=voxelgram0 property={ pointSize,3}
+
+
+	ColorizeGizmo()
+End
+
 
 //overwrites any existing matrix
 // matrix is byte, to save space

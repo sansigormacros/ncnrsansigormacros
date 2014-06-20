@@ -314,27 +314,27 @@ Proc Timing_Method(type)
 //// type 0
 	fill = 10
 	rad = 100
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 80
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 70
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 30
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
@@ -342,27 +342,27 @@ Proc Timing_Method(type)
 //	type 2
 	fill = 10
 	rad = 150
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 	
 	rad = 120
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 100
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 80
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSpheresCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 	
@@ -370,61 +370,61 @@ Proc Timing_Method(type)
 // type 3
 	fill = 30
 	rad = 150
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 20
 	rad = 100
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 10
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	fill = 30
 	rad = 120
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 20
 	rad = 100
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 10
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 	
 	fill = 30
 	rad = 100
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 20
 	rad = 70
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 10
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	fill = 30
 	rad = 80
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 20
 	rad = 70
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 10
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 
 	fill = 30
 	rad = 50
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 20
 	rad = 40
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	fill = 10
 	rad = 30
-	FillSphereRadius(mat,grid,rad,xc,yc,zc,fill)
+	FillSphereRadiusPeriodic(mat,grid,rad,xc,yc,zc,fill)
 	DoBinnedSLDCalcFFTPanel(num,qMin,qMax)
 	FFTEraseMatrixButtonProc("")
 

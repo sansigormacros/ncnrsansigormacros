@@ -202,58 +202,56 @@ End
 //	ModifyPanel fixedSize=1,noEdit =1
 Proc EventModePanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
+	NewPanel /W=(82,44,884,664)/N=EventModePanel/K=2
 	DoWindow/C EventModePanel
 	ModifyPanel fixedSize=1,noEdit =1
 
 	SetDrawLayer UserBack
 	DrawText 479,345,"Stream Data"
-	DrawLine 563,338,731,338
-	DrawText 479,419,"Oscillatory Data"
-	DrawLine 578,411,731,411
+	DrawLine 563,338,775,338
+	DrawText 479,419,"Oscillatory or Stream Data"
+	DrawLine 647,411,775,411
 
 //	ShowTools/A
 	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
 	Button button0,fSize=12
-	TitleBox tb1,pos={475,500},size={135,24},fSize=10
+	TitleBox tb1,pos={475,500},size={266,86},fSize=10
 	TitleBox tb1,variable= root:Packages:NIST:Event:gEventDisplayString
 
-	CheckBox chkbox2,pos={376,151},size={81,14},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,pos={376,151},size={81,15},proc=LogIntEvent_Proc,title="Log Intensity"
 	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:Event:gEvent_logint
-	CheckBox chkbox3,pos={14,125},size={119,14},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox3,pos={14,125},size={119,15},title="Remove Bad Events?",fSize=10
 	CheckBox chkbox3,variable= root:Packages:NIST:Event:gRemoveBadEvents
 	
-	Button doneButton,pos={708,36},size={50,20},proc=EventDone_Proc,title="Done"
+	Button doneButton,pos={738,36},size={50,20},proc=EventDone_Proc,title="Done"
 	Button doneButton,fSize=12
-	Button button2,pos={419,28},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={419,56},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button5,pos={419,85},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
-	Button button6,pos={718,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
-	
-	
-	Button button7,pos={487,197},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
-	Button button8,pos={619,197},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
-	Button button4,pos={487,227},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button18,pos={619,227},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
-
+	Button button2,pos={486,200},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={486,228},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button5,pos={633,228},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
+	Button button6,pos={748,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
+		
+	Button button7,pos={211,33},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
+	Button button8,pos={653,201},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
+	Button button4,pos={211,63},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button18,pos={211,90},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
 	
 	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
 	SetVariable setvar0,fSize=10
 	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:Event:gEvent_tsdisp	
-	SetVariable setvar1,pos={206,26},size={160,16},title="Number of slices",fSize=10
+	SetVariable setvar1,pos={389,29},size={160,16},title="Number of slices",fSize=10
 	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:Event:gEvent_nslices
-	SetVariable setvar2,pos={206,51},size={160,16},title="Max Time (s)",fSize=10
+	SetVariable setvar2,pos={389,54},size={160,16},title="Max Time (s)",fSize=10
 	SetVariable setvar2,value= root:Packages:NIST:Event:gEvent_t_longest
 	
-	PopupMenu popup0,pos={206,74},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,pos={389,77},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
 	PopupMenu popup0,fSize=10
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={206,100},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
+	Button button1,pos={389,103},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
 
 	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
 	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load Split List"
-	Button button19,pos={619,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
-	Button button20,pos={650,376},size={90,20},proc=ShowList_ToLoad,title="Show List"
+	Button button19,pos={649,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
+	Button button20,pos={680,376},size={90,20},proc=ShowList_ToLoad,title="Show List"
 	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
 	SetVariable setvar3,fSize=10
 	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
@@ -261,7 +259,6 @@ Proc EventModePanel()
 	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
 	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
 	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
-
 
 	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
 	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
@@ -272,11 +269,11 @@ Proc EventModePanel()
 	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
 	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
 	
-	GroupBox group0_0,pos={5,5},size={174,112},title="Mode",fSize=12,fStyle=1
-	GroupBox group0_1,pos={192,5},size={192,123},title="Binning",fSize=12,fStyle=1
-	GroupBox group0_2,pos={403,5},size={173,109},title="Viewing",fSize=12,fStyle=1
-	GroupBox group0_3,pos={476,169},size={277,92},title="Editing",fSize=12,fStyle=1
-	GroupBox group0_4,pos={474,278},size={279,200},title="Big Files",fSize=12
+	GroupBox group0_0,pos={5,5},size={174,112},title="(1) Loading Mode",fSize=12,fStyle=1
+	GroupBox group0_1,pos={372,5},size={192,127},title="(3) Bin Events",fSize=12,fStyle=1
+	GroupBox group0_2,pos={477,169},size={310,92},title="(4) View / Export",fSize=12,fStyle=1
+	GroupBox group0_3,pos={191,5},size={165,117},title="(2) Edit Events",fSize=12,fStyle=1
+	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
 	GroupBox group0_4,fStyle=1
 	
 	Display/W=(10,170,460,610)/HOST=# 

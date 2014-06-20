@@ -254,23 +254,31 @@ Function/S removeTrans(list)
 	return(list)
 End
 
-Function setMREDFileList(str)
-	String str
-	
-	SVAR/Z list = root:myGlobals:MRED:gFileNumList
-	if(SVAR_Exists(list)==0)		//check for myself
-		DoAlert 0,"The Multiple Reduce Panel must be open for you to use this function"
-		Return(1)
-	endif
-	
-	list = str
-	
-	//force an update If the SVAR exists, then the panel does too - MRED cleans up after itself when done
-	DoWindow/F Multiple_Reduce_Panel			//bring to front
-	MRedPopMenuProc("MRFilesPopup",0,"")		//parse the list, pop the menu
-	
-	return(0)
-End
+
+
+// for testing, not used anymore
+//Proc FillMREDList()
+//	setMREDFileList(rStr)
+//	DoUpdate
+//End
+
+//Function setMREDFileList(str)
+//	String str
+//	
+//	SVAR/Z list = root:myGlobals:MRED:gFileNumList
+//	if(SVAR_Exists(list)==0)		//check for myself
+//		DoAlert 0,"The Multiple Reduce Panel must be open for you to use this function"
+//		Return(1)
+//	endif
+//	
+//	list = str
+//	
+//	//force an update If the SVAR exists, then the panel does too - MRED cleans up after itself when done
+//	DoWindow/F Multiple_Reduce_Panel			//bring to front
+//	MRedPopMenuProc("MRFilesPopup",0,"")		//parse the list, pop the menu
+//	
+//	return(0)
+//End
 
 Proc FillEMPUsingSelection()
 	FillEMPFilenameWSelection("")
@@ -327,10 +335,6 @@ Proc ScatteringAtSDDList(sdd)
 	print rStr
 End
 
-Proc FillMREDList()
-	setMREDFileList(rStr)
-	DoUpdate
-End
 
 
 //num passed in is the run number, as in the list

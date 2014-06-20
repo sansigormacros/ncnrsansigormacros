@@ -11,6 +11,8 @@
 // **To write your own scripts, follow the examples in:
 //		Example_1DSim()
 //		Example_2DSim()
+//		Example_Loop_1DSim()
+//		Example_Loop_2DSim()
 //
 // and also the instructions below in the "basic cycle"
 //
@@ -125,29 +127,88 @@
 
 
 /// un-comment this by removing the "x" from the word xMenu. Then compile.
-xMenu "Macros"
-	Submenu "Simulation Scripting - Beta"
-		"Save Configuration",Sim_saveConfProc()
-		"Move to Configuration",Sim_moveConfProc()
-		"List Configurations",ListSASCALCConfigs()
-		"1D Count Rates",DryRunProc_1D()
-		"2D Dry Run",DryRunProc_2D()
-		"Optimal Count Times",OptimalCountProc()
-		"Make Table to Combine By Name",MakeCombineTable_byName()
-		"Combine by Name",DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName)
-		"Turn Off Dead Time Correction",Sim_SetDeadTimeTiny()
-		"-"
-		"Setup Sim Example",Setup_Sim_Example()
-		"Run 1D Sim Example",Example_1DSim()
-		"Run 2D Sim Example",Example_2DSim()
-	End
+Menu "Macros"
+		Submenu "Simulation Scripting - Beta"
+			ScriptItem(0),Sim_saveConfProc()
+			ScriptItem(1),Sim_moveConfProc()
+			ScriptItem(2),ListSASCALCConfigs()
+			ScriptItem(3),DryRunProc_1D()
+			ScriptItem(4),DryRunProc_2D()
+			ScriptItem(5),OptimalCountProc()
+			ScriptItem(6),MakeCombineTable_byName()
+			ScriptItem(7),DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName)
+			ScriptItem(8),Sim_SetDeadTimeTiny()
+			ScriptItem(9)
+			ScriptItem(10),Setup_Sim_Example()
+			ScriptItem(11),Example_1DSim()
+			ScriptItem(12),Example_2DSim()
+			ScriptItem(13)
+			ScriptItem(14),DisplayProcedure "Example_1DSim"
+		End	
 End
 
+Function/S ScriptItem(num)
+	Variable num
+	
+	String str=""
+	
+	if(exists("root:SANS_RED_VERSION") && exists("root:Packages:NIST:SANS_ANA_VERSION"))
+		switch(num)	
+			case 0: 
+				str = "Save Configuration"
+				break
+			case 1:
+				str = "Move to Configuration"
+				break
+			case 2:
+				str = "List Configurations"
+				break
+			case 3:
+				str = "1D Count Rates"
+				break
+			case 4:
+				str = "2D Dry Run"
+				break
+			case 5:
+				str = "Optimal Count Times"
+				break
+			case 6:
+				str = "Make Table to Combine By Name"
+				break
+			case 7:
+				str = "Combine by Name"
+				break
+			case 8:
+				str = "Turn Off Dead Time Correction"
+				break
+			case 9:
+				str = "-"
+				break
+			case 10:
+				str = "Setup Sim Example"
+				break
+			case 11:
+				str = "Run 1D Sim Example"
+				break
+			case 12:
+				str = "Run 2D Sim Example"
+				break
+			case 13:
+				str = "-"
+				break
+			case 14:
+				str = "Display Example Code"
+				break	
+		endswitch
+	endif
+	
+	return(str)
+end
 
 ////////// --- START OF EXAMPLE SCRIPTS ---  ////////////////
 
 //
-// run this before the examples to make sure that the proper named configurations and function exist.
+// run this before either the 1D or 2D example to make sure that the proper named configurations and function exist.
 // this function will overwrite any same-named configurations
 //
 Function Setup_Sim_Example()
@@ -161,8 +222,10 @@ Function Setup_Sim_Example()
   
 // include the model and plot it, so that it will exist. Post to queue so they execute in order
 	Execute/P "INSERTINCLUDE \"SchulzSpheres_Sq_v40\""
+	Execute/P "INSERTINCLUDE \"DAB_Model_v40\""
 	Execute/P "COMPILEPROCEDURES " 
  	Execute/P "PlotSchulzSpheres_SC(256,0.001,0.7)"
+ 	Execute/P "PlotDAB_Model(256,0.001,0.7)"
  	
 	Execute/P "SASCALC()"
  			 	
@@ -332,6 +395,117 @@ Function Example_Loop_1DSim()
 
 	return(0)	
 End
+
+
+//
+//
+// This example will run the same sample with three different thicknesses, at
+// 1m, 4m, 13m
+//
+// empty beam measurements at all three distances, sample transmission at 13m
+//
+// total simulation time is < 600 seconds on my old machine...
+// do a dry run first to see how long it'll take.
+//
+//
+Function Example_Loop_2DSim()
+
+	String confList,ctTimeList,titleStr,transConfList,transCtTimeList
+	Variable runIndex,val,totalTime
+	String funcStr
+
+tic()
+
+	Sim_SetSimulationType(0)		//kill the simulation panel
+	Sim_SetSimulationType(2)		//open the 2D simulation panel
+	Sim_SetSimTimeWarning(36000)			//sets the threshold for the warning dialog to 10 hours
+	totalTime = 0
+
+
+//(1)	determine the (unsmeared) function name (we'll set this right before the simulation)
+	funcStr = "DAB_model"
+	Wave cw = $("root:"+getFunctionCoef(funcStr))
+
+//(2) set the standard sample cell size (1" diam banjo cell)
+// and set the conditions for beam stop in, and raw counts
+	Sim_SetSampleRadius(1.27)							// sam radius (cm)
+	Sim_SetRawCountsCheck(1)							// raw cts? 1== yes
+	Sim_SetBeamStopInOut(1)								// BS in? 1==yes
+
+//(3) model coefficients here, if needed. Wave name is "cw"
+//   then set the sample thickness and incoherent cross section
+
+	cw = {1e-05,200,0.1}
+	
+	// as needed - look at the parameter list for the model
+
+	Sim_SetThickness(0.2)								// thickness (cm)
+	Sim_SetIncohXS(1.3)									// incoh XS
+	
+//(4) starting run index for the saved raw data files. this will automatically increment
+//    as the sample is "Run"
+	runIndex = 500
+
+
+//(5)  run the transmissions and empty beam first, before you forget them
+
+	// run the empty beam at all configurations
+	// This will automatically change the function to "EC_Empirical" and "empty beam" conditions
+	transConfList = "Config_1m;Config_4m;Config_13m;"
+	transCtTimeList = "1;1;1;"	
+	titleStr = "Empty Beam"
+	totalTime += Sim_RunEmptyBeamTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+	
+	
+//(6) set the configuration list, times, a single sample label, and the starting run index
+// -- the mumber of listed configurations must match the number of discrete count times
+	confList = ""			// these will be filled in the loop
+	ctTimeList = ""
+	transConfList = "Config_13m"		// trans only @ 13m
+	transCtTimeList = "1;"				// trans count time = 1s
+	titleStr = "MySample 1"
+
+	// runIndex is PBR and updates as the number of files are written
+
+	Variable ii,jj
+
+//	any, all, or more settings can be set up to change in the loop
+//  -- be sure these waves are the same length and the values correspond.
+	Make/O/D thick = {0.1,0.2,0.5,0.1,0.2,0.5,0.1,0.2,0.5}
+	Make/O/D ctTime = {100,100,100,300,300,300,900,900,900}
+	Make/O/D/T conf = {"Config_1m","Config_1m","Config_1m","Config_4m","Config_4m","Config_4m","Config_13m","Config_13m","Config_13m"}
+
+
+	Sim_SetModelFunction(funcStr)						// model function name
+	
+	for(ii=0;ii<numpnts(thick);ii+=1)
+		Sim_SetThickness(thick[ii])								// thickness (cm)
+
+		confList = conf[ii] +";"
+		titleStr = "DAB simulation, thick = "+num2str(thick[ii])
+		ctTimeList = num2str(ctTime[ii])+";"
+		
+		// this runs the transmissions (only at 13m)
+		if(cmpstr(conf[ii],"Config_13m")==0)
+			totalTime += Sim_RunTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+		endif
+		
+		// this runs the sample
+		totalTime += Sim_RunSample_2D(confList,ctTimeList,titleStr,runIndex)
+
+	endfor
+	
+	Print "runIndex = ",runIndex
+
+	Sim_SetSimTimeWarning(10)
+
+toc()
+	
+	return(totalTime)
+End
+
+
+
 
 
 //////////////// ---- END OF EXAMPLE SCRIPTS --- ////////////////////

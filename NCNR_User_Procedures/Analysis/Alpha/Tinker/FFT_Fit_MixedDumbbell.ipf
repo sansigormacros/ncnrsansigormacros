@@ -114,8 +114,8 @@ Function MixedDumbbellFFT(cw,yw,xw) : FitFunc
 	fill1 = trunc(rho1/FFT_delRho)
 	fill2 = trunc(rho2/FFT_delRho)
 	
-	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
-	FillSphereRadius(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)
+	FillSphereRadiusPeriodic(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
+	FillSphereRadiusPeriodic(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)
 	
 // set up for the calculation
 
@@ -211,8 +211,8 @@ End
 //	fill1 = trunc(rho1/FFT_delRho)
 //	fill2 = trunc(rho2/FFT_delRho)
 //	
-//	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
-//	FillSphereRadius(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)
+//	FillSphereRadiusPeriodic(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
+//	FillSphereRadiusPeriodic(m,FFT_T,radius2,ctr+separation/FFT_T,ctr,ctr,fill2)
 //	
 //End
 //
@@ -253,8 +253,8 @@ End
 //	fill1 = trunc(rho1/FFT_delRho)
 //	fill2 = trunc(rho2/FFT_delRho)
 //	
-//	FillSphereRadius(m,FFT_T,radius2,ctr,ctr,ctr,fill2)
-//	FillSphereRadius(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
+//	FillSphereRadiusPeriodic(m,FFT_T,radius2,ctr,ctr,ctr,fill2)
+//	FillSphereRadiusPeriodic(m,FFT_T,radius1,ctr,ctr,ctr,fill1)
 //	
 //End
 //
@@ -300,9 +300,9 @@ End
 //	fill2 = trunc(rhoshel2/FFT_delRho)
 //	fill3 = trunc(rhoshel3/FFT_delRho)
 //	
-//	FillSphereRadius(m,FFT_T,rcore+thick1+thick2+thick3,ctr,ctr,ctr,fill3)		//outer size (shell 3)
-//	FillSphereRadius(m,FFT_T,rcore+thick1+thick2,ctr,ctr,ctr,fill2)		//outer size (shell 2)
-//	FillSphereRadius(m,FFT_T,rcore+thick1,ctr,ctr,ctr,fill1)		//outer size (shell 1)
-//	FillSphereRadius(m,FFT_T,rcore,ctr,ctr,ctr,fillc)		//core
+//	FillSphereRadiusPeriodic(m,FFT_T,rcore+thick1+thick2+thick3,ctr,ctr,ctr,fill3)		//outer size (shell 3)
+//	FillSphereRadiusPeriodic(m,FFT_T,rcore+thick1+thick2,ctr,ctr,ctr,fill2)		//outer size (shell 2)
+//	FillSphereRadiusPeriodic(m,FFT_T,rcore+thick1,ctr,ctr,ctr,fill1)		//outer size (shell 1)
+//	FillSphereRadiusPeriodic(m,FFT_T,rcore,ctr,ctr,ctr,fillc)		//core
 //	
 //End
