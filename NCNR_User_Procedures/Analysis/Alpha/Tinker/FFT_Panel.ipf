@@ -88,11 +88,15 @@ Proc FFT_Panel()
 	SetVariable FFTSetVar_6,pos={183,27},size={120,15},title="Real Qmin (A)"
 	SetVariable FFTSetVar_6,limits={0,0,0},value= FFT_Qmin,noedit= 1,live= 1
 	Button FFTButton_0,pos={15,79},size={90,20},proc=FFT_MakeMatrixButtonProc,title="Make Matrix"
-	Button FFTButton_1,pos={14,157},size={90,20},proc=FFTMakeGizmoButtonProc,title="Make Gizmo"
-	Button FFTButton_2,pos={14,187},size={100,20},proc=FFTDrawSphereButtonProc,title="Draw Sphere"
+
 	Button FFTButton_3,pos={14,265},size={70,20},proc=DoTheFFT_ButtonProc,title="Do FFT"
 	Button FFTButton_4,pos={180,264},size={130,20},proc=FFT_PlotResultsButtonProc,title="Plot FFT Results"
-	Button FFTButton_5,pos={13,218},size={120,20},proc=FFTDrawZCylinderButtonProc,title="Draw Cylinder"
+	
+	Button FFTButton_1,pos={14,150},size={90,20},proc=FFTMakeGizmoButtonProc,title="Make Gizmo"
+	Button FFTButton_2,pos={14,175},size={100,20},proc=FFTDrawSphereButtonProc,title="Draw Sphere"
+	Button FFTButton_5,pos={14,200},size={130,20},proc=FFTDrawZCylinderButtonProc,title="Draw XYZ Cylinder"
+	Button FFTButton_20,pos={14,225},size={130,20},proc=FFTDrawRotCylinderButton,title="Draw Rot Cylinder"
+	
 //	Button FFTButton_6,pos={134,79},size={90,20},proc=FFTEraseMatrixButtonProc,title="Erase Matrix"
 	Button FFTButton_6a,pos={140,79},size={50,20},proc=FFTSaveMatrixButtonProc,title="Save"
 	Button FFTButton_6b,pos={200,79},size={50,20},proc=FFTLoadMatrixButtonProc,title="Load"
@@ -125,6 +129,23 @@ Proc FFT_Panel()
 	Button FFTButton_18,pos={13,430},size={120,20},proc=FFT_Aniso2USANS,title="Aniso to USANS"
 
 EndMacro
+
+// Save a matrix wave, plus the N, T, and solvent values in the wave note for reloading
+Function FFTDrawRotCylinderButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+	
+	String win = ba.win
+
+	switch (ba.eventCode)
+		case 2:
+			// click code here
+			Execute "FFTDrawRotCylinder()"
+			
+			break
+	endswitch
+
+	return 0
+End
 
 // Save a matrix wave, plus the N, T, and solvent values in the wave note for reloading
 Function FFTSaveMatrixButtonProc(ba) : ButtonControl

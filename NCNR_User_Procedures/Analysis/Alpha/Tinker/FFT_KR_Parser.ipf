@@ -1,14 +1,84 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
+Proc testAddRotCyl()
+
+	Variable ii,zval,rotx,roty,fill,rad
+	
+	FFT_T=root:FFT_T
+	
+	rotx=0
+	roty=90
+	zval = 0
+	rad=20
+	fill=20
+	
+	ii=rad/FFT_T+1
+//	print ii
+	do
+		zval=ii
+		FFTDrawRotCylinder("mat",rad,200,64,64,zval,rotx,roty,fill)
+		ii+=(2*rad)/FFT_T
+		rotx += 12
+	while(ii<(127-(rad/FFT_T)))
+	
+//	print ii
+End
 
 
+// draws a single cylinder with the specified center and rotation. does not clear the matrix
+//
+// x-rotation is done first, then the y-rotation
+//
+Proc FFTDrawRotCylinder(matStr,rad,len,xc,yc,zc,xrot,yrot,fill)
+	String matStr="mat"
+	Variable rad=25,len=300,xc=50,yc=50,zc=50,xrot=10,yrot=90,fill=10
+	Prompt matStr,"the wave"		//,popup,WaveList("*",";","")
+	Prompt rad,"enter real radius (A)"
+	Prompt len,"enter length (A)"
+	Prompt xc,"enter the X-center"
+	Prompt yc,"enter the Y-center"
+	Prompt zc,"enter the Z-center"
+	Prompt xrot,"x-rotation (degrees)"
+	Prompt yrot,"y-rotation (degrees)"
+	Prompt fill,"fill SLD value"	
+	
+	Make/O/D/N=1 xx,yy,zz,rri,hti,rotx,roty,sld
+	
+	xx[0] = xc
+	yy[0] = yc
+	zz[0] = zc
+	rri[0] = rad
+	hti[0] = len
+	rotx[0] = xrot
+	roty[0] = yrot
+	sld[0] = fill	
 
+	Duplicate/O xx, sbp
+	
+	// parse
+//	KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
+	KR_MultiCylinder_Units(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
+
+	XYZV_FillMat_Centered(xoutW,youtW,ZoutW,xc,yc,zc,rad,len,sldW,0)			//last 1 will erase the matrix, 0 retains matrix
+
+	//force a redraw (re-coloring) of the gizmo window
+	FFTMakeGizmoButtonProc("")
+	
+End
+
+
+// -- now this will put the cylinders properly at the specified centers, in the units of "mat"
+//
 /// seems to work - but what do I do about fractional positions? when converting to a matrix?
 //
+// the wave "gg" has been dropped, since it's only used as a flag in an old file loader
 //
+// NOW - SBP is FORCED to the value of FFT_T - no matter what is in the file.
+//
+Function KR_MultiCylinder_Units(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
+	Wave xx,yy,zz,rri,hti,sbp,rotx,roty,sld
 
-Function KR_Load()
 	Variable I, J, K, L, PT	//integer indices loops, num cylinders, include or exclude sphere in circle
 	Variable STH, SPH, CTH, CPH, FTR  //sine and cosines and deg-->rad conversion: x rotn theta & y rotn phi
 	Variable  XMID, YMID, ZMID, XOUT, YOUT, ZOUT  //cartesian positions used in various calculations
@@ -17,66 +87,20 @@ Function KR_Load()
 	Variable X0, Y0,Z0
 	Variable PI2
 	Variable ix,nptW
-
-
-	LoadWave /G /N  
-	Print S_filename
-	Print S_wavenames
 	
-	//Make / O /N=0 OutputPoints
-	//	wave out=OutputPoints
-	//	variable num=numpnts(out)
-	
-	KillWaves/Z xx,yy,zz,rri,hti,sbp,rotx,roty,sld,gg
-	
-	Rename wave0, xx
-	Rename wave1, yy
-	Rename wave2, zz
-	Rename wave3, RRI
-	Rename wave4, HTI
-	Rename wave5, SBP
-	Rename wave6, ROTX
-	Rename wave7, ROTY
-	Rename wave8, SLD
-	Rename wave9, GG
-	
-	//print  NUM,xx,yy,zz,rri,hti,sbp,rotx,roty,sld,gg
-
-	
-	wave gg = gg
-	variable nn =-1,npts,cyl
-	npts = numpnts(GG)
-	
-	for (i=0;i<=npts;i+=1)
-		if (gg[i]==2)
-			cyl = i+1
-			break
-			print "gg[i],i=",gg,i
-		endif
-	endfor
-	print"cyl=",cyl
-	
-
-	wave xx=xx
-	wave yy=yy
-	wave zz=zz
-	wave rri=rri
-	wave hti=hti
-	wave sbp=sbp
-	wave rotx=rotx
-	wave roty=roty
-	wave sld=sld
-	
-	// SBP = diameter of the spheres
 	NVAR FFT_T = root:FFT_T
-	FFT_T = SBP[0]
-	//
+//	FFT_T = sbp[0]
+//	sbp[0] = FFT_T
+	sbp = FFT_T
 	
+	variable npts,cyl
+	npts = numpnts(xx)
+	cyl = npts
+		
 	Make/O/D/N=0 xoutW,youtW,zoutW,sbpW,sldW
 	
 	PI2=pi*2
 	FTR=PI2/360
-	// print "ftr=", ftr
 	
 	nptW = 0
 	
@@ -98,9 +122,9 @@ Function KR_Load()
 		for(k=-HH;k<HH;k+=1)  // should have +1 for HH to complete to k=HH?????
 			for(i=-RR;i<RR;i+=1)  //should this have i<RR+1 or in above RR=RR+2????
 				for(j=-RR;j<RR;J+=1)
-					x0=sbp*i+P5
-					y0=SBP*j+P5
-					z0=SBP*k+p5
+					x0=sbp[L]*i+P5
+					y0=SBP[L]*j+P5
+					z0=SBP[L]*k+p5
 					if((((y0^2)/(RRI[L]^2))+((x0^2)/(RRI[L]^2)))<=1)
 						IX=-1
 					else
@@ -112,11 +136,11 @@ Function KR_Load()
 					// end rotation about x begin rotn about y on rotated pts
 					//
 					xout=xmid*cph-zmid*sph
-					xout=xx[L]+xout
+					xout=xx[L]+xout/SBP[L]
 					yout=ymid
-					yout=yy[L]+yout
+					yout=yy[L]+yout/SBP[L]
 					zout=xmid*sph+zmid*cph
-					zout=zz[L]+zout
+					zout=zz[L]+zout/SBP[L]
 
 					// now print to wave file the point or not depending on whether ix<0 or not
 
@@ -140,16 +164,26 @@ Function KR_Load()
 		endfor  //for k 
 	endfor // for L 
 
+
 	// rescale to the sphere size
-	xoutW /= FFT_T
-	youtW /= FFT_T
-	zoutW /= FFT_T
+//	xoutW /= FFT_T
+//	youtW /= FFT_T
+//	zoutW /= FFT_T
+
+	xoutW = trunc(xoutW)
+	youtW = trunc(youtW)
+	zoutW = trunc(zoutW)
 	
 	return(0) // end do loop cycle for cylinders
 end
 
 
 
+
+
+///
+/// -- replaced by KR_MultiCylinder_Units()
+///
 /// seems to work - but what do I do about fractional positions? when converting to a matrix?
 //
 // the wave "gg" has been dropped, since it's only used as a flag in an old file loader
@@ -252,6 +286,11 @@ Function KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
 	
 	return(0) // end do loop cycle for cylinders
 end
+
+
+
+
+
 
 // triplet to display as a scatter plot in Gizmo
 //
@@ -918,3 +957,150 @@ Proc MultiCyl_ChiMap_2D()
 	Label bottom "test values"
 	Label left "test values"
 end
+
+
+
+//
+///// seems to work - but what do I do about fractional positions? when converting to a matrix?
+////
+////
+//
+//Function KR_Load()
+//	Variable I, J, K, L, PT	//integer indices loops, num cylinders, include or exclude sphere in circle
+//	Variable STH, SPH, CTH, CPH, FTR  //sine and cosines and deg-->rad conversion: x rotn theta & y rotn phi
+//	Variable  XMID, YMID, ZMID, XOUT, YOUT, ZOUT  //cartesian positions used in various calculations
+//	Variable RR,HH  //RR is limit of loops, GG used as end of read param files--exit=2, NUM of cylinder
+//	Variable  P5  //spheres half diameter shift from grid points (avoids zeros)
+//	Variable X0, Y0,Z0
+//	Variable PI2
+//	Variable ix,nptW
+//
+//
+//	LoadWave /G /N  
+//	Print S_filename
+//	Print S_wavenames
+//	
+//	//Make / O /N=0 OutputPoints
+//	//	wave out=OutputPoints
+//	//	variable num=numpnts(out)
+//	
+//	KillWaves/Z xx,yy,zz,rri,hti,sbp,rotx,roty,sld,gg
+//	
+//	Rename wave0, xx
+//	Rename wave1, yy
+//	Rename wave2, zz
+//	Rename wave3, RRI
+//	Rename wave4, HTI
+//	Rename wave5, SBP
+//	Rename wave6, ROTX
+//	Rename wave7, ROTY
+//	Rename wave8, SLD
+//	Rename wave9, GG
+//	
+//	//print  NUM,xx,yy,zz,rri,hti,sbp,rotx,roty,sld,gg
+//
+//	
+//	wave gg = gg
+//	variable nn =-1,npts,cyl
+//	npts = numpnts(GG)
+//	
+//	for (i=0;i<=npts;i+=1)
+//		if (gg[i]==2)
+//			cyl = i+1
+//			break
+//			print "gg[i],i=",gg,i
+//		endif
+//	endfor
+//	print"cyl=",cyl
+//	
+//
+//	wave xx=xx
+//	wave yy=yy
+//	wave zz=zz
+//	wave rri=rri
+//	wave hti=hti
+//	wave sbp=sbp
+//	wave rotx=rotx
+//	wave roty=roty
+//	wave sld=sld
+//	
+//	// SBP = diameter of the spheres
+//	NVAR FFT_T = root:FFT_T
+//	FFT_T = SBP[0]
+//	//
+//	
+//	Make/O/D/N=0 xoutW,youtW,zoutW,sbpW,sldW
+//	
+//	PI2=pi*2
+//	FTR=PI2/360
+//	// print "ftr=", ftr
+//	
+//	nptW = 0
+//	
+//	for(l=0;l<(cyl);L+=1)	//only change from run4
+//	//for each cylinder of loop use index NUM
+//	//calculate x & y rotation cos and sin
+//		STH=SIN(Rotx[L]*FTR)
+//		SPH=sin(roty[L]*FTR)
+//		CTH=cos(rotx[L]*FTR)
+//		CPH=cos(roty[L]*FTR)
+//		//print "sth",sth
+//		//print"L=",L
+//		P5=SBP[L]/2  //set sphere centers' half-diameter displacement from grid (avoids glitches)
+//		// print "p5 & sbp[L]",p5,sbp[L]
+//	
+//		RR=(RRI[L]/SBP[L])//as an index, Igor truncates the number to an integer....does NOT round it
+//		RR=RR+1 //rr is the loop limit for square around final circle
+//		HH=(HTI[L]/(2*SBP[L]))	//as an index, Igor truncates the number to an integer....does NOT round it
+//		for(k=-HH;k<HH;k+=1)  // should have +1 for HH to complete to k=HH?????
+//			for(i=-RR;i<RR;i+=1)  //should this have i<RR+1 or in above RR=RR+2????
+//				for(j=-RR;j<RR;J+=1)
+//					x0=sbp*i+P5
+//					y0=SBP*j+P5
+//					z0=SBP*k+p5
+//					if((((y0^2)/(RRI[L]^2))+((x0^2)/(RRI[L]^2)))<=1)
+//						IX=-1
+//					else
+//						IX=0
+//					endif 
+//					xmid=x0
+//					ymid=y0*cth+z0*sth
+//					zmid=-y0*sth+z0*cth
+//					// end rotation about x begin rotn about y on rotated pts
+//					//
+//					xout=xmid*cph-zmid*sph
+//					xout=xx[L]+xout
+//					yout=ymid
+//					yout=yy[L]+yout
+//					zout=xmid*sph+zmid*cph
+//					zout=zz[L]+zout
+//
+//					// now print to wave file the point or not depending on whether ix<0 or not
+//
+//					if (ix<0)
+//					//write to wave file
+//						InsertPoints nptW,1,xoutW,youtW,zoutW,sbpW,sldW
+//						xoutW[nptW] = xout
+//						youtW[nptW] = yout
+//						zoutW[nptW] = zout
+//						sbpW[nptW] = sbp[L]
+//						sldW[nptW] = sld[L]
+//						
+//						nptW +=1
+//					
+//						//print  xout,yout,zout,sbp[L],sld[L]
+//					//else
+//						//continue
+//					endif  //for write or not
+//				endfor  // for j
+//			endfor	//  for i
+//		endfor  //for k 
+//	endfor // for L 
+//
+//	// rescale to the sphere size
+//	xoutW /= FFT_T
+//	youtW /= FFT_T
+//	zoutW /= FFT_T
+//	
+//	return(0) // end do loop cycle for cylinders
+//end

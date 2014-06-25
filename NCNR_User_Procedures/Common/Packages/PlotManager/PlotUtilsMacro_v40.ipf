@@ -1305,7 +1305,7 @@ Function/S User_FunctionPopupList()
 	list = RemoveFromList("CalcIQRfromMat;ConnectPoints2D;ConnectPoints3D;ConnectPoints3D_old;ConnectedRodFill;ConvertXYZto3N;CylindersAtPoints;",list,";")
 	list = RemoveFromList("FillSphere;FillSphere3;FillSphereRadius;FillSphereRadiusNoOverlap;FillXCylinder;FillXYCircle;FillXZCircle;FillYCylinder;",list,";")
 	list = RemoveFromList("FillYZCircle;FillZCylinder;PadMatrix;RandomFill3DMat;RandomPoints2D;SobolFill3DMat;SphereAtEachPoint;UnConnectedRodFill;XYZV_toByteVoxels;",list,";")
-	list = RemoveFromList("MakeTriplet;SobolPoints2D;X_CylindersAtPoints;X_CylindersHexagonalGrid;X_CylindersSquareGrid;maxDistance_Threaded;KR_MultiCylinder;",list,";")
+	list = RemoveFromList("MakeTriplet;SobolPoints2D;X_CylindersAtPoints;X_CylindersHexagonalGrid;X_CylindersSquareGrid;maxDistance_Threaded;KR_MultiCylinder;KR_MultiCylinder_Units;",list,";")
 	list = RemoveFromList("X_CoreShellCylinderHexGrid;FillPlaneHexagonal;FillPlaneSquareGrid;FillSphereRadiusPeriodic;",list,";")
 	list = RemoveFromList("Setup_Ur;M_energy;DoRotation;Copy_xyz_to_xyz3d;MultiCyl_Loop;",list,";")
 
@@ -1320,7 +1320,7 @@ Function/S User_FunctionPopupList()
 
 // from 2013 Simulation
 //	list = RemoveFromList("EC_Empirical;SmearedEC_Empirical;",list,";")
-	list = RemoveFromList("SAS_XS_Sphere;",list,";")
+	list = RemoveFromList("SAS_XS_Sphere;Generate_UofR;Setup_Ur_HS;",list,";")
 		
 	list = SortList(list)
 	return(list)
