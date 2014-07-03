@@ -1988,6 +1988,30 @@ Function/S GetRawDataFileList()
 	return(newList)
 End
 
+Function/S GetASCDataFileList()
+	
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use Pick Path button on Main Panel"
+	Endif
+	
+	String list=IndexedFile(catPathName,-1,"????")
+	String newList="",item=""
+	Variable num=ItemsInList(list,";"),ii
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+		if(stringmatch(item,"*.ASC") )
+			newlist += item + ";"
+		endif
+	endfor
+	
+	newList = SortList(newList,";",0)
+	return(newList)
+End
+		
+
+
 // Return the filename that represents the previous or next file.
 // Input is current filename and increment. 
 // Increment should be -1 or 1

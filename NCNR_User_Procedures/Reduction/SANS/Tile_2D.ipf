@@ -46,33 +46,36 @@ End
 //procedure to draw the "tile" panel
 Proc Tile_2D()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(849,337,1248,553) /K=2
+	NewPanel /W=(849,337,1248,573) /K=2
 	DoWindow/C Tile_2D
 	
-	ListBox fileList,pos={5,4},size={206,206}
+	ListBox fileList,pos={5,4},size={206,226}
 	ListBox fileList,listWave=root:myGlobals:Tile_2D:fileWave
 	ListBox fileList,selWave=root:myGlobals:Tile_2D:selWave,mode= 4
-	Button button0,pos={217,131},size={170,20},proc=AddToLayoutButtonProc,title="Add Selected To Layout"
+	Button button0,pos={217,161},size={170,20},proc=AddToLayoutButtonProc,title="Add Selected To Layout"
 	Button button0,help={"Adds images of the selected files to the layout selected in the popup menu"}
-	Button button1,pos={316,182},size={50,20},proc=TileDoneButtonProc,title="Done"
+	Button button1,pos={316,207},size={50,20},proc=TileDoneButtonProc,title="Done"
 	Button button1,help={"Closes the panel, kills the layouts, and kills images from your memory"}
 	Button button3,pos={227,6},size={60,20},proc=GetListButtonProc,title="Get List"
 	Button button3,help={"Refreshes the list of data files"}
 	Button button4,pos={340,6},size={25,20},proc=ShowTileHelp,title="?"
 	Button button4,help={"Show help file for tiling raw data files in a layout"}
-	Button button5,pos={217,155},size={170,20},proc=AddAllToLayout,title="Add All To Layout"
+	Button button5,pos={217,185},size={170,20},proc=AddAllToLayout,title="Add All To Layout"
 	Button button5,help={"Adds images of all raw files, 40 per layout"}
-	CheckBox check0,pos={216,64},size={71,14},title="Log scaling"
+	CheckBox check0,pos={216,94},size={71,14},title="Log scaling"
 	CheckBox check0,help={"If checked, the image color will be log scale"},value= 1
 	PopupMenu popup0,pos={226,38},size={141,20},title="Layout ?"
 	PopupMenu popup0,help={"Sets a new or existing layout as the destination when adding images"}
 	PopupMenu popup0,mode=1,popvalue="New Layout",value= #"\"New Layout;\"+WinList(\"*\", \";\",\"WIN:4\")"
-	CheckBox check1,pos={216,86},size={72,14},proc=FixScale_CheckProc,title="Fixed Scale"
+	PopupMenu popup1,pos={226,64},size={141,20},title="Data Type?"
+	PopupMenu popup1,help={"Choose what data type you want ot tile."}
+	PopupMenu popup1,mode=1,popvalue="RAW",value= "RAW;ASC"
+	CheckBox check1,pos={216,116},size={72,14},proc=FixScale_CheckProc,title="Fixed Scale"
 	CheckBox check1,value= 0,help={"Sets a fixed z-scale (counts) for all images in the layout. Enter the min and max values"}
-	SetVariable scale_0,pos={216,105},size={80,15},title="min"
+	SetVariable scale_0,pos={216,140},size={80,15},title="min"
 	SetVariable scale_0,limits={-Inf,Inf,0},value= root:myGlobals:Tile_2D:minScale
 	SetVariable scale_0,help={"Minimum mapped count value"},disable=1		//initially not visible
-	SetVariable scale_1,pos={300,105},size={80,15},title="max"
+	SetVariable scale_1,pos={300,140},size={80,15},title="max"
 	SetVariable scale_1,limits={-Inf,Inf,0},value=root:myGlobals:Tile_2D:maxScale
 	SetVariable scale_1,help={"Maximum mapped count value"},disable=1		//initially not visible
 EndMacro
@@ -105,6 +108,9 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 
 	ControlInfo popup0
 	String layoutStr=S_Value	//create new layout or append to old one
+	
+	ControlInfo/W=Tile_2D popup1
+	String DataStr=S_Value	//create new layout or append to old one
 	
 	ControlInfo check0
 	Variable makeLog=V_Value	//make the images logscale?
@@ -149,17 +155,30 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	defaultScaling = 0		//set the scaling to linear
 	
 	do
+		fname=pathStr + FindValidFilename(fileWave[ii])	//in case of VAX version numbers
+		
 		if(sel[ii] == 1)
-			fname=pathStr + FindValidFilename(fileWave[ii])	//in case of VAX version numbers
-			ReadHeaderAndData(fname)		//fname is the full path
-			String/G root:myGlobals:gDataDisplayType="RAW"	
-			fRawWindowHook()
-			if(makeLog)
-				err = ConvertFolderToLogScale("RAW")
+			if(stringmatch(fname, "*.ASC"))
+				NewDataFolder/O root:Packages:NIST:ASC
+				Load_NamedASC_File(fname, "ASC")
+				if(makeLog)
+					err = ConvertFolderToLogScale("ASC")
+				endif			
+				MakePNGforLayout(minScale,maxScale,"ASC",ind)
+				ind+=1			//a running count of all of the PNG's
+			else
+				ReadHeaderAndData(fname)		//fname is the full path
+				String/G root:myGlobals:gDataDisplayType="RAW"	
+				fRawWindowHook()
+				if(makeLog)
+					err = ConvertFolderToLogScale("RAW")
+				endif
+				MakePNGforLayout(minScale,maxScale,"RAW",ind)
+				ind+=1			//a running count of all of the PNG's
 			endif
-			MakePNGforLayout(minScale,maxScale,"RAW",ind)
-			ind+=1			//a running count of all of the PNG's
 		endif
+
+
 		ii+=1
 	while(ii<num)
 	//close the SANS_Data window
@@ -173,7 +192,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 		DoWindow/F $layoutStr
 	endif
 	for(ii=startInd;ii<ind;ii+=1)
-		AppendLayoutObject/F=1/R=(72,40,144,112) picture $("RAW"+num2str(ii)+"L_PNG")
+		AppendLayoutObject/F=1/R=(72,40,144,112) picture $(DataStr+num2str(ii)+"L_PNG")
 //		ModifyLayout top($("RAW"+num2str(ii)+"L_PNG"))=(40+mod(30*ii,560))	//separate the graphics (in points)
 //		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
@@ -205,7 +224,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	// -- then propogate this change to the Add All to Layout function
 	//
 	for(ii=startInd;ii<ind;ii+=1)
-		ModifyLayout/I width($("RAW"+num2str(ii)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
+		ModifyLayout/I width($(DataStr+num2str(ii)+"L_PNG"))=(wd),height($(DataStr+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 	endfor
 	
 	defaultScaling = oldState		//set the scaling back to the previous state
@@ -233,6 +252,9 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 	//tile_2d will now be the top window, but check anyways, since this is not called from a button control
 	ControlInfo/W=Tile_2D popup0
 	String layoutStr=S_Value	//create new layout or append to old one
+	
+	ControlInfo/W=Tile_2D popup1
+	String DataStr=S_Value	//create new layout or append to old one
 	
 	ControlInfo/W=Tile_2D check0
 	Variable makeLog=V_Value	//make the images logscale?
@@ -283,15 +305,41 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 	//make all of the PNG files
 	do
 		fname=pathStr + FindValidFilename(fileWave[ii])	//in case of VAX version numbers
-		ReadHeaderAndData(fname)		//fname is the full path
-		String/G root:myGlobals:gDataDisplayType="RAW"	
-		fRawWindowHook()
-		if(makeLog)
-			err = ConvertFolderToLogScale("RAW")
+		
+		
+		//Modified for summer student 2014 by mjw
+		//Original is follows
+		//
+		//ReadHeaderAndData(fname)		//fname is the full path
+		//String/G root:myGlobals:gDataDisplayType="RAW"	
+		//fRawWindowHook()
+		//if(makeLog)
+		//	err = ConvertFolderToLogScale("RAW")
+		//endif
+		//MakePNGforLayout(minScale,maxScale,"RAW",ind)
+		//ind+=1			//a running count of all of the PNG's
+		//
+		
+		if(stringmatch(fname, "*.ASC"))
+			NewDataFolder/O root:Packages:NIST:ASC
+			Load_NamedASC_File(fname, "ASC")
+			if(makeLog)
+				err = ConvertFolderToLogScale("ASC")
+			endif			
+			MakePNGforLayout(minScale,maxScale,"ASC",ind)
+			ind+=1			//a running count of all of the PNG's
+		else
+			ReadHeaderAndData(fname)		//fname is the full path
+			String/G root:myGlobals:gDataDisplayType="RAW"	
+			fRawWindowHook()
+			if(makeLog)
+				err = ConvertFolderToLogScale("RAW")
+			endif
+			MakePNGforLayout(minScale,maxScale,"RAW",ind)
+			ind+=1			//a running count of all of the PNG's
 		endif
-		MakePNGforLayout(minScale,maxScale,"RAW",ind)
-		ind+=1			//a running count of all of the PNG's
-
+		//End Modification
+		
 		ii+=1
 	while(ii<num)
 	//close the SANS_Data window
@@ -329,21 +377,19 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		wd = 1
 	endif
 
-
-	
 	NewLayout
 	DoWindow/C $("PNGLayout"+num2str(startInd))
 	for(ii=startInd;ii<ind;ii+=numPerLayout)
 		jj=ii
 		do
-			AppendLayoutObject/F=1/R=(72,40,144,112) picture $("RAW"+num2str(jj)+"L_PNG")
-			ModifyLayout/I width($("RAW"+num2str(jj)+"L_PNG"))=(wd),height($("RAW"+num2str(ii)+"L_PNG"))=(wd) //(in inches)
+			AppendLayoutObject/F=1/R=(72,40,144,112) picture $(DataStr+num2str(jj)+"L_PNG")
+			ModifyLayout/I width($(DataStr+num2str(jj)+"L_PNG"))=(wd),height($(DataStr+num2str(ii)+"L_PNG"))=(wd) //(in inches)
 			jj+=1
 		while( (jj<ii+numPerLayout) && (jj<ind) )	//index in batch, keep from running over total number of PNGs
 		Execute "Tile"+rcStr+"/O=8"
 		//now make them square
 		for(kk=ii;kk<jj;kk+=1)
-			ModifyLayout/I width($("RAW"+num2str(kk)+"L_PNG"))=(wd),height($("RAW"+num2str(kk)+"L_PNG"))=(wd) //(in inches)
+			ModifyLayout/I width($(DataStr+num2str(kk)+"L_PNG"))=(wd),height($(DataStr+num2str(kk)+"L_PNG"))=(wd) //(in inches)
 		endfor
 		
 		if(jj<ind)		//need another layout
@@ -374,7 +420,16 @@ Function GetListButtonProc(ctrlName) : ButtonControl
 	String newList=""
 	Variable num
 
-	newList = GetRawDataFileList()
+	ControlInfo/W=Tile_2D popup1
+	String DataStr=S_Value	//create new layout or append to old one
+
+	
+	if(stringmatch(DataStr,"RAW"))
+		newList = GetRawDataFileList()
+	endif
+	if(stringmatch(DataStr,"ASC"))
+		newList = GetASCDataFileList()
+	endif
 	
 	num=ItemsInList(newlist,";")
 	WAVE/T fileWave=$"root:myGlobals:Tile_2D:fileWave"
