@@ -1051,6 +1051,30 @@ Function/S GetRawDataFileList()
 	return(newlist)
 End
 
+Function/S GetASCDataFileList()
+	
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use Pick Path button on Main Panel"
+	Endif
+	
+	String list=IndexedFile(catPathName,-1,"????")
+	String newList="",item=""
+	Variable num=ItemsInList(list,";"),ii
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+		if(stringmatch(item,"*.ASC") )
+			newlist += item + ";"
+		endif
+	endfor
+	
+	newList = SortList(newList,";",0)
+	return(newList)
+End
+
+
+
 //**********************
 // 2D resolution function calculation - in terms of X and Y
 //

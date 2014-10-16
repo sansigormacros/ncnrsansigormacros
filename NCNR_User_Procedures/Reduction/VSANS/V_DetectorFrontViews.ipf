@@ -12,18 +12,18 @@ Function FrontView_1x()
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 // Dimensions of detectors
-	NVAR F_LR_w = root:Packages:NIST:VSANS:VCALC:front_LR_w
-	NVAR F_LR_h =  root:Packages:NIST:VSANS:VCALC:front_LR_h
-	NVAR F_TB_w =  root:Packages:NIST:VSANS:VCALC:front_TB_w
-	NVAR F_TB_h =  root:Packages:NIST:VSANS:VCALC:front_TB_h
+	NVAR F_LR_w = root:Packages:NIST:VSANS:VCALC:gFront_LR_w
+	NVAR F_LR_h =  root:Packages:NIST:VSANS:VCALC:gFront_LR_h
+	NVAR F_TB_w =  root:Packages:NIST:VSANS:VCALC:gFront_TB_w
+	NVAR F_TB_h =  root:Packages:NIST:VSANS:VCALC:gFront_TB_h
 	
-	NVAR M_LR_w = root:Packages:NIST:VSANS:VCALC:middle_LR_w
-	NVAR M_LR_h =  root:Packages:NIST:VSANS:VCALC:middle_LR_h
-	NVAR M_TB_w =  root:Packages:NIST:VSANS:VCALC:middle_TB_w
-	NVAR M_TB_h =  root:Packages:NIST:VSANS:VCALC:middle_TB_h
+	NVAR M_LR_w = root:Packages:NIST:VSANS:VCALC:gMiddle_LR_w
+	NVAR M_LR_h =  root:Packages:NIST:VSANS:VCALC:gMiddle_LR_h
+	NVAR M_TB_w =  root:Packages:NIST:VSANS:VCALC:gMiddle_TB_w
+	NVAR M_TB_h =  root:Packages:NIST:VSANS:VCALC:gMiddle_TB_h
 
-	NVAR B_h =  root:Packages:NIST:VSANS:VCALC:back_h
-	NVAR B_w =  root:Packages:NIST:VSANS:VCALC:back_w
+	NVAR B_h =  root:Packages:NIST:VSANS:VCALC:gBack_h
+	NVAR B_w =  root:Packages:NIST:VSANS:VCALC:gBack_w
 
 
 // get the values from the panel
@@ -34,8 +34,8 @@ Function FrontView_1x()
 	
 // these offset values are in mm !!
 //in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
-	NVAR front_SDDOffset = root:Packages:NIST:VSANS:VCALC:front_SDDOffset
-	NVAR middle_SDDOffset = root:Packages:NIST:VSANS:VCALC:middle_SDDOffset
+	NVAR front_SDDOffset = root:Packages:NIST:VSANS:VCALC:gFront_SDDOffset
+	NVAR middle_SDDOffset = root:Packages:NIST:VSANS:VCALC:gMiddle_SDDOffset
 	
 	
 	//front

@@ -177,33 +177,33 @@ Function VCALC_getPixSizeX(type)
 			
 	strswitch(type)	
 		case "FL":
-			NVAR pixSizeX = front_L_pixelX
+			NVAR pixSizeX = gFront_L_pixelX
 			break
 		case "FR":		
-			NVAR pixSizeX = front_R_pixelX
+			NVAR pixSizeX = gFront_R_pixelX
 			break
 		case "FT":
-			NVAR pixSizeX = front_T_pixelX
+			NVAR pixSizeX = gFront_T_pixelX
 			break	
 		case "FB":		
-			NVAR pixSizeX = front_B_pixelX
+			NVAR pixSizeX = gFront_B_pixelX
 			break
 			
 		case "ML":
-			NVAR pixSizeX = middle_L_pixelX
+			NVAR pixSizeX = gMiddle_L_pixelX
 			break
 		case "MR":		
-			NVAR pixSizeX = middle_R_pixelX
+			NVAR pixSizeX = gMiddle_R_pixelX
 			break
 		case "MT":
-			NVAR pixSizeX = middle_T_pixelX
+			NVAR pixSizeX = gMiddle_T_pixelX
 			break	
 		case "MB":		
-			NVAR pixSizeX = middle_B_pixelX
+			NVAR pixSizeX = gMiddle_B_pixelX
 			break
 						
 		case "B":		
-			NVAR pixSizeX = Back_pixelX
+			NVAR pixSizeX = gBack_pixelX
 			break
 			
 		default:							
@@ -224,33 +224,33 @@ Function VCALC_getPixSizeY(type)
 			
 	strswitch(type)	
 		case "FL":
-			NVAR pixSizeY = front_L_pixelY
+			NVAR pixSizeY = gFront_L_pixelY
 			break
 		case "FR":		
-			NVAR pixSizeY = front_R_pixelY
+			NVAR pixSizeY = gFront_R_pixelY
 			break
 		case "FT":
-			NVAR pixSizeY = front_T_pixelY
+			NVAR pixSizeY = gFront_T_pixelY
 			break	
 		case "FB":		
-			NVAR pixSizeY = front_B_pixelY
+			NVAR pixSizeY = gFront_B_pixelY
 			break
 			
 		case "ML":
-			NVAR pixSizeY = middle_L_pixelY
+			NVAR pixSizeY = gMiddle_L_pixelY
 			break
 		case "MR":		
-			NVAR pixSizeY = middle_R_pixelY
+			NVAR pixSizeY = gMiddle_R_pixelY
 			break
 		case "MT":
-			NVAR pixSizeY = middle_T_pixelY
+			NVAR pixSizeY = gMiddle_T_pixelY
 			break	
 		case "MB":		
-			NVAR pixSizeY = middle_B_pixelY
+			NVAR pixSizeY = gMiddle_B_pixelY
 			break
 						
 		case "B":		
-			NVAR pixSizeY = Back_pixelY
+			NVAR pixSizeY = gBack_pixelY
 			break
 			
 		default:							
@@ -278,7 +278,7 @@ Function VSANS_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 		case "FT":
 		case "FB":		
-			NVAR sdd_offset = front_SDDOffset 	//T/B are 300 mm farther back 
+			NVAR sdd_offset = gFront_SDDOffset 	//T/B are 300 mm farther back 
 			break
 			
 		case "ML":
@@ -287,7 +287,7 @@ Function VSANS_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 		case "MT":
 		case "MB":
-			NVAR sdd_offset = Middle_SDDOffset 	//T/B are 30 cm farther back
+			NVAR sdd_offset = gMiddle_SDDOffset 	//T/B are 30 cm farther back
 			break	
 						
 		case "B":

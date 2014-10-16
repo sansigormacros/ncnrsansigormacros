@@ -11,18 +11,18 @@
 
 //
 //
-Function V_fBinDetector_byRows(type)
-	String type
+Function V_fBinDetector_byRows(folderStr,type)
+	String folderStr,type
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC	
 	
 	Variable pixSizeX,pixSizeY,delQx, delQy
 
-	WAVE inten = $("det_"+type)		// 2D detector data
+	WAVE inten = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":det_"+type)		// 2D detector data
 	WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-	Wave qTotal = $("qTot_"+type)			// 2D q-values
-	Wave qx = $("qx_"+type)
-	Wave qy = $("qy_"+type)
+	Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qTot_"+type)			// 2D q-values
+	Wave qx = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qx_"+type)
+	Wave qy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qy_"+type)
 	
 	pixSizeX = VCALC_getPixSizeX(type)
 	pixSizeY = VCALC_getPixSizeY(type)

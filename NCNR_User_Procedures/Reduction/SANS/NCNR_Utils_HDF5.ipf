@@ -2,6 +2,15 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+//
+// *** modified JUNL2014 to work with HDF5 raw data files.
+//    when finally implemented, be sure to compare with NCNR_Utils.ipf
+//    to pick up any changes there, especially those related to CGB
+//
+//
+//
+//
+
 // this file contains globals and functions that are specific to a
 // particular facility or data file format
 // branched out 29MAR07 - SRK

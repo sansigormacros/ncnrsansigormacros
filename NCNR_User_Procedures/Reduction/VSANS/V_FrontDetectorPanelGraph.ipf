@@ -59,27 +59,26 @@ Function UpdateSideView()
 	Wave B_S_rayX,B_S_rayY
 
 // Dimensions of detectors
-	NVAR F_LR_w = front_LR_w
-	NVAR F_LR_h =  front_LR_h
-	NVAR F_TB_w =  front_TB_w
-	NVAR F_TB_h =  front_TB_h
+	NVAR F_LR_w = gFront_LR_w
+	NVAR F_LR_h = gFront_LR_h
+	NVAR F_TB_w = gFront_TB_w
+	NVAR F_TB_h = gFront_TB_h
 	
-	NVAR M_LR_w = middle_LR_w
-	NVAR M_LR_h =  middle_LR_h
-	NVAR M_TB_w =  middle_TB_w
-	NVAR M_TB_h =  middle_TB_h
+	NVAR M_LR_w = gMiddle_LR_w
+	NVAR M_LR_h = gMiddle_LR_h
+	NVAR M_TB_w = gMiddle_TB_w
+	NVAR M_TB_h = gMiddle_TB_h
 
-	NVAR B_h =  back_h
-	NVAR B_w =  back_w
+	NVAR B_h = gBack_h
+	NVAR B_w = gBack_w
 
 
 // get the values from the panel
-	Variable F_LR_sep,F_TB_sep, F_SDD, F_offset, TB_SDD_offset
+	Variable F_LR_sep,F_TB_sep, F_SDD, F_offset
 	Variable M_LR_sep,M_TB_sep, M_SDD, M_offset
 	Variable B_SDD, B_offset
 
-// TODO -- this needs to be a global	
-	TB_SDD_offset = 300		//in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
+	NVAR TB_SDD_offset = gFront_SDDOffset		//in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
 	TB_SDD_offset /= 1000		//convert to meters for the plot
 	
 	//front
@@ -286,18 +285,18 @@ Function UpdateTopView()
 	Wave B_T_rayX,B_T_rayY
 
 // Dimensions of detectors
-	NVAR F_LR_w = front_LR_w
-	NVAR F_LR_h =  front_LR_h
-	NVAR F_TB_w =  front_TB_w
-	NVAR F_TB_h =  front_TB_h
+	NVAR F_LR_w = gFront_LR_w
+	NVAR F_LR_h = gFront_LR_h
+	NVAR F_TB_w = gFront_TB_w
+	NVAR F_TB_h = gFront_TB_h
 	
-	NVAR M_LR_w = middle_LR_w
-	NVAR M_LR_h =  middle_LR_h
-	NVAR M_TB_w =  middle_TB_w
-	NVAR M_TB_h =  middle_TB_h
+	NVAR M_LR_w = gMiddle_LR_w
+	NVAR M_LR_h = gMiddle_LR_h
+	NVAR M_TB_w = gMiddle_TB_w
+	NVAR M_TB_h = gMiddle_TB_h
 
-	NVAR B_h =  back_h
-	NVAR B_w =  back_w
+	NVAR B_h = gBack_h
+	NVAR B_w = gBack_w
 
 
 // get the values from the panel

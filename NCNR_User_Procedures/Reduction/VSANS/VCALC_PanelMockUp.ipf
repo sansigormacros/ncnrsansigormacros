@@ -566,6 +566,9 @@ Proc V_Initialize_Space()
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:VSANS
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Front
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Middle
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Back
 	
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -580,61 +583,63 @@ Proc V_Initialize_Space()
 
 ///// FRONT DETECTOR BANKS
 // dimensions for the detector banks (then get them in the drawing functions)
-	Variable/G front_LR_w = 384		//front bank, nominal LR panel width (mm)
-	Variable/G front_LR_h = 1000
-	Variable/G front_TB_w = 500
-	Variable/G front_TB_h = 384
+	Variable/G gFront_LR_w = 384		//front bank, nominal LR panel width (mm)
+	Variable/G gFront_LR_h = 1000
+	Variable/G gFront_TB_w = 500
+	Variable/G gFront_TB_h = 384
 
 // SDD offset of T/B (decide on units??)
-	Variable/G front_SDDOffset = 300			// (mm)
+	Variable/G gFront_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G front_L_pixelX = 0.8			// (cm)		these tubes are vertical
-	Variable/G front_L_pixelY = 0.4			// (cm)
-	Variable/G front_R_pixelX = 0.8			// (cm)
-	Variable/G front_R_pixelY = 0.4			// (cm)
+	Variable/G gFront_L_pixelX = 0.8			// (cm)		these tubes are vertical
+	Variable/G gFront_L_pixelY = 0.4			// (cm)
+	Variable/G gFront_R_pixelX = 0.8			// (cm)
+	Variable/G gFront_R_pixelY = 0.4			// (cm)
 	
-	Variable/G front_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G front_T_pixelY = 0.8			// (cm)
-	Variable/G front_B_pixelX = 0.4			// (cm)
-	Variable/G front_B_pixelY = 0.8			// (cm)
+	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
+	Variable/G gFront_T_pixelY = 0.8			// (cm)
+	Variable/G gFront_B_pixelX = 0.4			// (cm)
+	Variable/G gFront_B_pixelY = 0.8			// (cm)
 	
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 // allocate the detector arrays (+2D Q)
 
 
 ///// MIDDLE DETECTOR BANKS
-	Variable/G middle_LR_w = 384		//middle bank, nominal LR panel width (mm)
-	Variable/G middle_LR_h = 1000
-	Variable/G middle_TB_w = 500
-	Variable/G middle_TB_h = 384
+	Variable/G gMiddle_LR_w = 384		//middle bank, nominal LR panel width (mm)
+	Variable/G gMiddle_LR_h = 1000
+	Variable/G gMiddle_TB_w = 500
+	Variable/G gMiddle_TB_h = 384
 // SDD offset of T/B (decide on units??)
-	Variable/G middle_SDDOffset = 300			// (mm)
+	Variable/G gMiddle_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G middle_L_pixelX = 0.8			// (cm)		these tubes are vertical
-	Variable/G middle_L_pixelY = 0.4			// (cm)
-	Variable/G middle_R_pixelX = 0.8			// (cm)
-	Variable/G middle_R_pixelY = 0.4			// (cm)
+	Variable/G gMiddle_L_pixelX = 0.8			// (cm)		these tubes are vertical
+	Variable/G gMiddle_L_pixelY = 0.4			// (cm)
+	Variable/G gMiddle_R_pixelX = 0.8			// (cm)
+	Variable/G gMiddle_R_pixelY = 0.4			// (cm)
 	
-	Variable/G middle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G middle_T_pixelY = 0.8			// (cm)
-	Variable/G middle_B_pixelX = 0.4			// (cm)
-	Variable/G middle_B_pixelY = 0.8			// (cm)
+	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
+	Variable/G gMiddle_T_pixelY = 0.8			// (cm)
+	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
+	Variable/G gMiddle_B_pixelY = 0.8			// (cm)
 
 
 
 //// BACK DETECTOR
-	Variable/G back_w = 320				//w and h for the back detector, (mm)
-	Variable/G back_h = 320
-	Variable/G back_pixelX = 0.1		// 1mm resolution (units of cm here)
-	Variable/G back_pixelY = 0.1
+	Variable/G gBack_w = 320				//w and h for the back detector, (mm)
+	Variable/G gBack_h = 320
+	Variable/G gBack_pixelX = 0.1		// 1mm resolution (units of cm here)
+	Variable/G gBack_pixelY = 0.1
 
 
 // Generate all of the waves used for the detector and the q values
 //
-// TODO: the dimensions need to be properly defined here...
+// TODO: the detector dimensions need to be properly defined here...
 // FRONT
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+
 	Make/O/D/N=(48,256) det_FL,det_FR
 	Make/O/D/N=(128,48) det_FT,det_FB
 	Duplicate/O det_FL qTot_FL,qx_FL,qy_FL,qz_FL
@@ -643,7 +648,9 @@ Proc V_Initialize_Space()
 	Duplicate/O det_FB qTot_FB,qx_FB,qy_FB,qz_FB
 
 //MIDDLE
-// TODO: the dimensions need to be properly defined here...
+// TODO: the detector dimensions need to be properly defined here...
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+
 	Make/O/D/N=(48,256) det_ML,det_MR
 	Make/O/D/N=(128,48) det_MT,det_MB
 	Duplicate/O det_ML qTot_ML,qx_ML,qy_ML,qz_ML
@@ -652,12 +659,16 @@ Proc V_Initialize_Space()
 	Duplicate/O det_MB qTot_MB,qx_MB,qy_MB,qz_MB
 
 // BACK
+// TODO: the detector dimensions need to be properly defined here...
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
+	
 	Make/O/D/N=(320,320) det_B
 	Duplicate/O det_B qTot_B,qx_B,qy_B,qz_B
 
 
 ////////////	FOR THE PANEL
 
+	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
@@ -688,11 +699,6 @@ Proc V_Initialize_Space()
 
 // limits for detector travel? or are these limits part of the panel, hard-wired there
 
-
-	
-	
-	
-	
 	
 //	
 //	
@@ -774,46 +780,46 @@ Proc V_Initialize_Space()
 //
 
 //	
-	Variable/G instrument = 6		// files (may) be tagged SA6 as the 6th SANS instrument
-	Variable/G s12 = 54.8
+	Variable/G gInstrument = 6		// files (may) be tagged SA6 as the 6th SANS instrument
+	Variable/G gS12 = 54.8
 //	Variable/G d_det = 0.5
 //	Variable/G a_pixel = 0.5
 //	Variable/G del_r = 0.5
 //	Variable/G det_width = 64.0
-	Variable/G lambda_t = 5.50
-	Variable/G l2r_lower = 132.3
-	Variable/G l2r_upper =  1317
-	Variable/G lambda_lower = 2.5
-	Variable/G lambda_upper = 20.0
-	Variable/G d_upper = 25.0
-	Variable/G bs_factor = 1.05
-	Variable/G t1 = 0.63
-	Variable/G t2 = 1.0
-	Variable/G t3 = 0.75
-	Variable/G l_gap = 100.0
-	Variable/G guide_width = 6.0
-	Variable/G idmax = 100.0
+	Variable/G gLambda_t = 5.50
+	Variable/G gL2r_lower = 132.3
+	Variable/G gL2r_upper =  1317
+	Variable/G gLambda_lower = 2.5
+	Variable/G gLambda_upper = 20.0
+	Variable/G gD_upper = 25.0
+	Variable/G gBs_factor = 1.05
+	Variable/G gT1 = 0.63
+	Variable/G gT2 = 1.0
+	Variable/G gT3 = 0.75
+	Variable/G gL_gap = 100.0
+	Variable/G gGuide_width = 6.0
+	Variable/G gIdmax = 100.0
 
 //
 //	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
-	Variable/G phi_0 = 2.42e13
-	Variable/G b = 0.0
-	Variable/G c = -0.0243
+	Variable/G gPhi_0 = 2.42e13
+	Variable/G gB = 0.0
+	Variable/G gC = -0.0243
 	Variable/G gGuide_loss = 0.924
 //	
 //	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
-	Variable/G fwhm_narrow = 0.109
-	Variable/G fwhm_mid = 0.125
-	Variable/G fwhm_wide = 0.236
+	Variable/G gFwhm_narrow = 0.109
+	Variable/G gFwhm_mid = 0.125
+	Variable/G gFwhm_wide = 0.236
 //	
 //	//source apertures (cm)
-	Variable/G a1_0_0 = 1.43
-	Variable/G a1_0_1 = 2.54
-	Variable/G a1_0_2 = 3.81
-	Variable/G a1_7_0 = 2.5			// after the polarizer		
-	Variable/G a1_7_1 = 5.0
-	Variable/G a1_7_1 = 0.95		//
-	Variable/G a1_def = 5.00
+	Variable/G gA1_0_0 = 1.43
+	Variable/G gA1_0_1 = 2.54
+	Variable/G gA1_0_2 = 3.81
+	Variable/G gA1_7_0 = 2.5			// after the polarizer		
+	Variable/G gA1_7_1 = 5.0
+	Variable/G gA1_7_1 = 0.95		//
+	Variable/G gA1_def = 5.00
 //	
 	SetDataFolder root:
 end

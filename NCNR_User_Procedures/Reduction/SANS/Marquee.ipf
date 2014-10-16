@@ -374,15 +374,18 @@ Function DoBoxGraph(FileID,BoxCounts,BoxCount_err)
 	
 	Sort FileID BoxCounts,FileID		//sort the waves, in case the run numbers were entered out of numerical order
 	
-	Display /W=(5,44,383,306) BoxCounts vs FileID
-	ModifyGraph mode=4
-	ModifyGraph marker=8
-	ModifyGraph grid=2
-	ModifyGraph mirror=2
-	ErrorBars/T=0 BoxCounts Y,wave=(BoxCount_err,BoxCount_err)
-	Label left "Counts (per 10^8 monitor counts)"
-	Label bottom "Run Number"
-	
+	DoWindow BoxCountGraph
+	if(V_flag == 0)
+		Display /W=(5,44,383,306) BoxCounts vs FileID
+		DoWindow/C BoxCountGraph
+		ModifyGraph mode=4
+		ModifyGraph marker=8
+		ModifyGraph grid=2
+		ModifyGraph mirror=2
+		ErrorBars/T=0 BoxCounts Y,wave=(BoxCount_err,BoxCount_err)
+		Label left "Counts (per 10^8 monitor counts)"
+		Label bottom "Run Number"
+	endif
 	return(0)
 End
 

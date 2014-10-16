@@ -18,7 +18,7 @@ Function fPlotMiddlePanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
 	WAVE det_ML = det_ML
 	WAVE det_MR = det_MR
@@ -40,8 +40,8 @@ Function fPlotMiddlePanels()
 	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-	V_SetShadow_TopBottom("","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
-	V_SetShadow_TopBottom("","MB")
+	V_SetShadow_TopBottom("Middle","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
+	V_SetShadow_TopBottom("Middle","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
 	Execute "BinAllMiddlePanels()"
@@ -86,7 +86,7 @@ Function V_CalculateQMiddlePanels()
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
 	M_sdd_offset = VSANS_getTopBottomSDDOffset("MT") 	//T/B are 30 cm farther back  //TODO: make all detector parameters global, not hard-wired
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 	Wave det_ML,det_MR			// these are (48,256)
 	Wave det_MT,det_MB			// these are (128,48)
 
@@ -117,7 +117,7 @@ Function V_CalculateQMiddlePanels()
 //////////////////
 
 //Middle/RIGHT
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 	WAVE qTot_MR,qx_MR,qy_MR,qz_MR
 	qTot_MR = 0
 	qx_MR = 0
@@ -138,7 +138,7 @@ Function V_CalculateQMiddlePanels()
 /////////////////
 
 //Middle/TOP
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 	WAVE qTot_MT,qx_MT,qy_MT,qz_MT
 	qTot_MT = 0
 	qx_MT = 0
@@ -160,7 +160,7 @@ Function V_CalculateQMiddlePanels()
 //////////////////
 
 //Middle/BOTTOM
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 	WAVE qTot_MB,qx_MB,qy_MB,qz_MB
 	qTot_MB = 0
 	qx_MB = 0
@@ -193,7 +193,7 @@ Window MiddlePanels_AsQ() : Graph
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
 	CheckDisplayed /W=VCALC#Panels_Q det_MB
 	if(V_flag == 0)
@@ -248,8 +248,8 @@ EndMacro
 // 
 Proc BinAllMiddlePanels()
 
-	SetDeltaQ("","ML")
-	SetDeltaQ("","MT")
+	SetDeltaQ("Middle","ML")
+	SetDeltaQ("Middle","MT")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
@@ -274,10 +274,10 @@ Proc BinAllMiddlePanels()
 	// TODO -- this is only a temporary fix for slit mode	
 	if(binType == 4)
 		/// this is for a tall, narrow slit mode	
-		V_fBinDetector_byRows("ML")
-		V_fBinDetector_byRows("MR")
-		V_fBinDetector_byRows("MT")
-		V_fBinDetector_byRows("MB")
+		V_fBinDetector_byRows("Middle","ML")
+		V_fBinDetector_byRows("Middle","MR")
+		V_fBinDetector_byRows("Middle","MT")
+		V_fBinDetector_byRows("Middle","MB")
 	endif
 End
 
@@ -414,7 +414,7 @@ Function fPlotBackPanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 
 	WAVE det_B = det_B
 	WAVE qTot_B = qTot_B
@@ -462,7 +462,7 @@ Function V_CalculateQBackPanels()
 	lam = VCALC_getWavelength()
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
-	SetDataFolder root:Packages:NIST:VSANS:VCALC	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 	Wave det_B			// this is (320,320)
 
 //Back detector
@@ -500,7 +500,7 @@ Window BackPanels_AsQ() : Graph
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 
 	CheckDisplayed /W=VCALC#Panels_Q det_B
 	if(V_flag == 0)
@@ -545,7 +545,7 @@ EndMacro
 // 
 Proc BinAllBackPanels()
 
-	SetDeltaQ("","B")
+	SetDeltaQ("Back","B")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
@@ -556,7 +556,7 @@ Proc BinAllBackPanels()
 // TODO -- this is only a temporary fix for slit mode	
 	if(binType == 4)
 		/// this is for a tall, narrow slit mode	
-		V_fBinDetector_byRows("B")
+		V_fBinDetector_byRows("Back","B")
 	endif	
 	
 End

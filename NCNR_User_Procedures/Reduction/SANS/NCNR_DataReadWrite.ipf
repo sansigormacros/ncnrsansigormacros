@@ -1366,6 +1366,11 @@ Function WriteAcctNameToHeader(fname,str)
 		str = str[0,8]
 	endif
 	str = "["+str+"]"
+	
+	if(strlen(str) < 11)		//pad to 11 characters if the account number is only one digit
+		str = PadString(str,11,0x20)
+	endif
+		
 	WriteTextToHeader(fname,str,78)
 	return(0)
 End
