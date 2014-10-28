@@ -1823,11 +1823,14 @@ Function fGuessTransToScattFiles(numChars)
 	
 	Variable ii,row
 	Variable transTableExists
+	
+	Variable/G root:myGlobals:TransHeaderInfo:gNumMatchChars = numChars
+	
 	Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
 	Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
 	
-   	transTableExists = WinType("TransFileTable")
-   	if (transTableExists != 0)
+   transTableExists = WinType("TransFileTable")
+   if (transTableExists != 0)
 		GetSelection table,transFileTable,1	
 		row = V_startRow
 		GuessTransToScattFiles(numChars,row,matchRows)
@@ -1860,7 +1863,7 @@ Function fGuessTransToScattFiles(numChars)
 	
 	String/G root:myGlobals:TransHeaderInfo:gResultStr = result
 	
-	DoWindow/F ConfirmGuess		//it really shouldn't exist...
+	DoWindow/F ConfirmGuess		//if being called recursively, the panel is already up
 	if(V_flag==1)
 		TitleBox title0,pos={9,5},variable=root:myGlobals:TransHeaderInfo:gResultStr
 	else
@@ -1868,33 +1871,39 @@ Function fGuessTransToScattFiles(numChars)
 		DoWindow/C ConfirmGuess
 		TitleBox title0,pos={15,8},size={560,32}
 		TitleBox title0,variable= root:myGlobals:TransHeaderInfo:gResultStr
-		Button button0,pos={9,150},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
-		Button button2,pos={341,150},size={90,20},proc=DoTryAgainButtonProc,title="Try Again"
-		ToolsGrid snap=1,visible=1
+		Button button0,pos={240,150},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
+		Button button1,pos={10,150},size={100,20},proc=DoTryAgainMoreButtonProc,title="Try Again (+)"
+		Button button2,pos={120,150},size={100,20},proc=DoTryAgainFewerButtonProc,title="Try Again (-)"
+		Button button3,pos={450,150},size={70,20},proc=SkipTransButtonProc,title="Skip"
 	endif
 	
 	PauseForUser ConfirmGuess
 
 // figure out from the return code what the user did...
 // 1 = OK, accept guess (assign, and calculate immediately)
-// 2 = try again
-// 0 = cancel, don't do anything (not used, simply try again)
+// 2 = try again (+) // NO - not an "exit" code
+// 3 = try again (-)	//NO - not an "exit" code
+// 0 = cancel, don't do anything, drop out of case
 	NVAR guessOK = root:myGlobals:TransHeaderInfo:GuessOK
 	
 	// switch here...
 	switch(guessOK)	// numeric switch
 		case 1:		
 			// accept guess (assign, and calculate immediately)
+			num=numpnts(matchRows)		//this may have changed
 			for(ii=0;ii<num;ii+=1)
 				snam[matchRows[ii]] = tnam[row]
 				AssignSelTransFilesToData(matchRows[ii],matchRows[ii])
 				CalcSelTransFromHeader(matchRows[ii],matchRows[ii])		//does only that sample file
 			endfor			
 			break						
-		case 2:	//try again (with more / fewer characters?)	
-			//		does nothing right now
+		case 2:	//try again (with more characters)
+			// not an exit code, does nothing
 			break
-		case 0:
+		case 3:	//try again (with fewer characters)
+			// not an exit code, can't do anything
+			break
+		case 0:	// cancel
 			// do nothing
 			break
 		default:							
@@ -1992,14 +2001,49 @@ End
 
 // files are wrong, let the user try it again
 // sets a flag, nothing else
-Function DoTryAgainButtonProc(ba) : ButtonControl
+Function DoTryAgainMoreButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
+	Variable row,ii,num
+	String tmpStr
+	
+	Wave/T sw = root:myGlobals:TransHeaderInfo:S_Labels		//Sample file labels
+	Wave/T tw = root:myGlobals:TransHeaderInfo:T_Labels		//trans file labels
+	Wave/T tnam = root:myGlobals:TransHeaderInfo:T_FileNames	//trans file names
+	Wave/T snam = root:myGlobals:TransHeaderInfo:S_TRANS_FileNames	//Scattering - trans correspondence
+	Wave/T samfile = root:myGlobals:TransHeaderInfo:S_FileNames	//Scattering file name
+	
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
 			Variable/G root:myGlobals:TransHeaderInfo:GuessOK= 2
-			DoWindow/K ConfirmGuess
+			NVAR numChars = root:myGlobals:TransHeaderInfo:gNumMatchChars
+			SVAR resultStr = root:myGlobals:TransHeaderInfo:gResultStr
+
+			numChars += 1
+
+			Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
+			Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
+	
+		   //transTableExists = WinType("TransFileTable")
+   		//if (transTableExists != 0)
+			GetSelection table,transFileTable,1	
+			row = V_startRow
+			GuessTransToScattFiles(numChars,row,matchRows)
+		
+			num=numpnts(matchRows)
+
+			resultStr = ""
+			for(ii=0;ii<num;ii+=1)
+				sprintf tmpStr,"\\f01\\K(52428,1,1)%s\\K(0,0,0)\\f00* Matches file: \\f01%s\\f00 | \\K(52428,1,1)\\f01%s\\f00\\K(0,0,0)%s\r",(tw[row])[0,numChars-1],samfile[matchRows[ii]],(sw[matchRows[ii]])[0,numchars-1],(sw[matchRows[ii]])[numchars,59]
+				resultStr += tmpStr
+			endfor
+	
+			if(cmpstr(resultStr,"")==0)
+				resultStr = "No match found for "+ (tw[row])[0,numChars-1]
+			endif		
+			
+//			DoWindow/K ConfirmGuess
 			//Print "Try Again"
 			break
 	endswitch
@@ -2007,8 +2051,61 @@ Function DoTryAgainButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// not used
-Function DoCancelGuessButtonProc(ba) : ButtonControl
+// files are wrong, let the user try it again
+// sets a flag, nothing else
+Function DoTryAgainFewerButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable row,ii,num
+	String tmpStr
+	
+	Wave/T sw = root:myGlobals:TransHeaderInfo:S_Labels		//Sample file labels
+	Wave/T tw = root:myGlobals:TransHeaderInfo:T_Labels		//trans file labels
+	Wave/T tnam = root:myGlobals:TransHeaderInfo:T_FileNames	//trans file names
+	Wave/T snam = root:myGlobals:TransHeaderInfo:S_TRANS_FileNames	//Scattering - trans correspondence
+	Wave/T samfile = root:myGlobals:TransHeaderInfo:S_FileNames	//Scattering file name
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Variable/G root:myGlobals:TransHeaderInfo:GuessOK= 3
+			
+			NVAR numChars = root:myGlobals:TransHeaderInfo:gNumMatchChars
+			SVAR resultStr = root:myGlobals:TransHeaderInfo:gResultStr
+
+			numChars -= 1
+
+			Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
+			Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
+	
+		   //transTableExists = WinType("TransFileTable")
+   		//if (transTableExists != 0)
+			GetSelection table,transFileTable,1	
+			row = V_startRow
+			GuessTransToScattFiles(numChars,row,matchRows)
+		
+			num=numpnts(matchRows)
+
+			resultStr = ""
+			for(ii=0;ii<num;ii+=1)
+				sprintf tmpStr,"\\f01\\K(52428,1,1)%s\\K(0,0,0)\\f00* Matches file: \\f01%s\\f00 | \\K(52428,1,1)\\f01%s\\f00\\K(0,0,0)%s\r",(tw[row])[0,numChars-1],samfile[matchRows[ii]],(sw[matchRows[ii]])[0,numchars-1],(sw[matchRows[ii]])[numchars,59]
+				resultStr += tmpStr
+			endfor
+	
+			if(cmpstr(resultStr,"")==0)
+				resultStr = "No match found for "+ (tw[row])[0,numChars-1]
+			endif		
+//			DoWindow/K ConfirmGuess
+			//Print "Try Again"
+			break
+	endswitch
+	
+	return 0
+End
+
+
+// cancel, skip this set of trans
+Function SkipTransButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )

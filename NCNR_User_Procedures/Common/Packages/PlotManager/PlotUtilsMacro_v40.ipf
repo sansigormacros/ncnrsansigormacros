@@ -1383,7 +1383,10 @@ Proc Initialize_Preferences()
 	
 	val = NumVarOrDefault("root:Packages:NIST:gDoTransmissionCorr", 1 )
 	Variable/G root:Packages:NIST:gDoTransmissionCorr = 1
-	
+
+// flag to allow adding raw data files with different attenuation (normally not done)	
+	val = NumVarOrDefault("root:Packages:NIST:gDoAdjustRAW_Atten",0)
+	Variable/G root:Packages:NIST:gDoAdjustRAW_Atten=val
 	
 	/// items for SANS Analysis
 	
@@ -1448,6 +1451,14 @@ Function DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoAdjustRAW_Atten
+	gVal = checked
+End
+
 Function PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -1493,7 +1504,8 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
 	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14},proc=DoEfficiencyCorrPref
 	CheckBox PrefCtrl_1g value=root:Packages:NIST:gDoDetectorEffCorr,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
-
+	CheckBox PrefCtrl_1h title="Adjust RAW attenuation?",size={140,14},proc=DoRawAttenAdjPref
+	CheckBox PrefCtrl_1h value=root:Packages:NIST:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
 
 	CheckBox PrefCtrl_1a,disable=1
 	CheckBox PrefCtrl_1b,disable=1
@@ -1502,6 +1514,7 @@ Proc Pref_Panel()
 	SetVariable PrefCtrl_1e,disable=1
 	CheckBox PrefCtrl_1f,disable=1
 	CheckBox PrefCtrl_1g,disable=1
+	CheckBox PrefCtrl_1h,disable=1
 
 //on tab(2) - USANS
 	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12

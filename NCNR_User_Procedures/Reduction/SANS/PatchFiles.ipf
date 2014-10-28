@@ -195,23 +195,38 @@ Function/S GetValidPatchPopupList()
 //		list = ParseRunNumberList(match)		//slow, file access every time
 //		list = ReplaceString(",", list, ";")
 //		newList = list
+
+// cut this 0ct 2014 -- the ListMatch at the bottom returns bad results when certain conditions are met:
+// -- for example OCT14nnn runs will return all of the OCT141nn runs if you try to match run 141
+//
+//		
+//		list = ExpandNumRanges(match)		//now simply comma delimited
+//		num=ItemsInList(list,",")
+//		for(ii=0;ii<num;ii+=1)
+//			item = StringFromList(ii,list,",")
+//			val=str2num(item)
+//			//make a three character string of the run number
+//			if(val<10)
+//				numStr = "00"+num2str(val)
+//			else
+//				if(val<100)
+//					numStr = "0"+num2str(val)
+//				else
+//					numStr = num2str(val)
+//				Endif
+//			Endif
+//			runList += ListMatch(newList,"*"+numStr+"*",";")
+//			
+//		endfor		
 		
+// oct 2014 -- try this way:	
 		list = ExpandNumRanges(match)		//now simply comma delimited
 		num=ItemsInList(list,",")
 		for(ii=0;ii<num;ii+=1)
 			item = StringFromList(ii,list,",")
 			val=str2num(item)
-			//make a three character string of the run number
-			if(val<10)
-				numStr = "00"+num2str(val)
-			else
-				if(val<100)
-					numStr = "0"+num2str(val)
-				else
-					numStr = num2str(val)
-				Endif
-			Endif
-			runList += ListMatch(newList,"*"+numStr+"*",";")
+
+			runList += GetFileNameFromPathNoSemi(FindFileFromRunNumber(val)) + ";"
 			
 		endfor
 		newlist = runList

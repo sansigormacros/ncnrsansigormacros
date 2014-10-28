@@ -64,7 +64,15 @@ End
 //the current display type is updated to newType (global)
 Function Add_raw_to_work(newType)
 	String newType
-		
+	
+	// NEW OCT 2014
+	// this corrects for adding raw data files with different attenuation	
+	// does nothing if the attenuation of RAW and destination are the same
+	NVAR doAdjustRAW_Atten = root:Packages:NIST:gDoAdjustRAW_Atten
+	if(doAdjustRAW_Atten)
+		Adjust_RAW_Attenuation(newType)
+	endif
+	
 	String destPath=""
 	
 	// if the desired workfile doesn't exist, let the user know, and just make a new one
@@ -1541,4 +1549,72 @@ Function/S ASC_FileList()
 	newList = SortList(List,";",0)
 
 	return newlist
+End
+
+//
+// tests if two values are close enough to each other
+// very useful since ICE came to be
+//
+// tol is an absolute value (since input v1 or v2 may be zero, can't reliably
+// use a percentage
+Function CloseEnough(v1,v2,tol)
+	Variable v1, v2, tol
+
+	if(abs(v1-v2) < tol)
+		return(1)
+	else
+		return(0)
+	endif
+End
+
+//
+//
+// match the attenuation of the RAW data to the "type" data
+// so that they can be properly added
+//
+// are the attenuator numbers the same? if so exit
+//
+// if not, find the attenuator number for type
+// - find both attenuation factors
+//
+// rescale the raw data to match the ratio of the two attenuation factors
+// -- adjust the detector count (rw)
+// -- the linear data
+//
+//
+Function Adjust_RAW_Attenuation(type)
+	String type
+	
+	WAVE rw=$("root:Packages:NIST:RAW:realsread")
+	WAVE linear_data=$("root:Packages:NIST:RAW:linear_data")
+	WAVE data=$("root:Packages:NIST:RAW:data")
+	WAVE data_err=$("root:Packages:NIST:RAW:linear_data_error")
+	WAVE/T tw = $("root:Packages:NIST:RAW:textRead")
+	
+	WAVE dest_reals=$("root:Packages:NIST:"+type+":realsread")
+
+	Variable dest_atten,raw_atten,tol
+	Variable lambda,raw_atten_err,raw_AttenFactor,dest_attenFactor,dest_atten_err
+	String fileStr
+
+	dest_atten = dest_reals[3]
+	raw_atten = rw[3]
+	
+	tol = 0.1		// within 0.1 atten units is OK
+	if(abs(dest_atten - raw_atten) < tol )
+		return(0)
+	endif
+
+	fileStr = tw[3]
+	lambda = rw[26]
+	raw_AttenFactor = AttenuationFactor(fileStr,lambda,raw_atten,raw_atten_err)
+	dest_AttenFactor = AttenuationFactor(fileStr,lambda,dest_atten,dest_atten_err)
+		
+	rw[2] *= dest_AttenFactor/raw_AttenFactor
+	linear_data *= dest_AttenFactor/raw_AttenFactor
+	
+	// to keep "data" and linear_data in sync
+	data = linear_data
+	
+	return(0)
 End
