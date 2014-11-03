@@ -2,6 +2,17 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+/// NOV 2014 SRK -----
+//
+//  added procedures (to the end of this file) that are extensions of the "BoxSum" functionality
+// -- instead of a rectangular box, these will sum over a series of files, using a defined region that 
+// is a q-annulus (+/-), or sectors, or arcs. This is expected to be useful for event mode data
+//
+//
+//
+//
+
+
 ////////////
 // vers 1.21 3 may 06 total transmission incorporated (BSG)
 //
@@ -810,3 +821,446 @@ Function SH_WidthSetVarProc(sva) : SetVariableControl
 
 	return 0
 End
+
+
+//////////////////
+//
+// -- Extensions of "Box Sum"
+//
+// some of these are duplicated procedures - these could be more smartly written as a single set of fucntions
+// since the annulus sum is a sepcial case of the arc sum - but I'm just trying to get this to work
+// first, then figure out if it's really worth figuring out a new way to present this to users
+// either though the average panel, or through the event mode panel
+//
+// right now, these items are presented through the (awkward) marquee menu, as the box sum was.
+// these would be much better served with a panel presentation - like the average panel where these
+// input values are already (almost) collected.
+//
+// -- some tricks:
+//   when the last file is done processing, toggle from log/lin scale. The region that was summed has been set
+// to NaN, so it will be visible after toggling the display.
+// -- if there is a binTimes wave, be sure to grab that and save it elsewhere, or it will be lost, and all you'll
+//   have is cts vs. run number.
+//
+//
+// -- what's missing?
+//  -- automatically picking up the time wave. currently only the file ID is collected, since that's
+//      the run number list. But the clock time is a function of binning, if event mode is used. this
+//      can be copied directly from the bin results (wave = BinEndTime, skipping the first 0 time point).
+//      But it's a manual step. If any run numbers are skipped, it's a mess.
+//  -- if added to the average panel, the "arc" option isn't there, and someone will surely ask for it
+//  -- a quick way of displaying what was actually used in the sum -- the NaN trick is good, but it
+//      requires recompiling. Can I set a flag somewhere?
+//
+//
+//
+// Oct 2014 SRK
+//
+
+
+//
+// promts the user for a range of file numbers to perform the sum over
+// list must be comma delimited numbers (or dashes) just as in the BuildProtocol panel
+// q-Center and delta-Q is entered by the user
+//
+Function AnnulusSum() :  GraphMarquee
+	GetMarquee left,bottom
+	if(V_flag == 0)
+		Abort "There is no Marquee"
+	Endif
+	SVAR dispType=root:myGlobals:gDataDisplayType
+	if(cmpstr(dispType,"RealTime")==0)
+		Print "Can't do an AnnulusSum for a RealTime file"
+		return(1)
+	endif
+	
+	String fileStr="",msgStr="Enter a comma-delimited list of run numbers, use dashes for ranges"
+	String type="RAW"
+	Variable qCenter,deltaQ
+	Prompt fileStr,msgStr
+	Prompt qCenter, "Enter the q-center (A)"
+	Prompt deltaQ, "Enter the delta Q +/- (A)"
+	Prompt type,"RAW or Normalized (SAM)",popup,"RAW;SAM;"
+	DoPrompt "Pick the file range",fileStr,type,qCenter,deltaQ
+	Print "fileStr = ",fileStr
+	printf "QCenter +/- deltaQ = %g +/- %g\r",qCenter,deltaQ
+	
+	DoAnnulusSum(fileStr,qCenter,deltaQ,type)
+	
+	return(0)
+End	
+				
+//does a sum over each of the files in the list over the specified range
+// x,y are assumed to already be in-bounds of the data array
+// output is to AnnulusCounts waves
+//
+Function DoAnnulusSum(fileStr,qCtr,delta,type)
+	String fileStr
+	Variable qCtr,delta
+	String type
+	
+	//parse the list of file numbers
+	String fileList="",item="",pathStr="",fullPath=""
+	Variable ii,num,err,cts,ct_err
+	
+	PathInfo catPathName
+	If(V_Flag==0)
+		Abort "no path selected"
+	Endif
+	pathStr = S_Path
+	
+	fileList=ParseRunNumberList(fileStr)
+	num=ItemsInList(fileList,",")
+	
+	//loop over the list
+	//add each file to SAM (to normalize to monitor counts)
+	//sum over the annulus
+	//print the results
+	Make/O/N=(num) FileID,AnnulusCounts,AnnulusCount_err
+	Print "Results are stored in root:FileID and root:AnnulusCounts waves"
+	for(ii=0;ii<num;ii+=1)
+		item=StringFromList(ii,fileList,",")
+		FileID[ii] = GetRunNumFromFile(item)		//do this here, since the list is now valid
+		fullPath = pathStr+item
+		ReadHeaderAndData(fullPath)
+//		String/G root:myGlobals:gDataDisplayType="RAW"
+//		fRawWindowHook()
+		if(cmpstr(type,"SAM")==0)
+			err = Raw_to_work("SAM")
+		endif
+		String/G root:myGlobals:gDataDisplayType=type
+		fRawWindowHook()
+		cts=SumCountsInAnnulus(qCtr,delta,ct_err,type)
+		AnnulusCounts[ii]=cts
+		AnnulusCount_err[ii]=ct_err
+		Print item+" counts = ",cts
+	endfor
+	
+	DoAnnulusGraph(FileID,AnnulusCounts,AnnulusCount_err)
+	
+	return(0)
+End
+
+
+//sums the data counts in the annulus specified by qCtr and delta (units of Q, not pixels)
+//
+Function SumCountsInAnnulus(qCtr,delta,ct_err,type)
+	Variable qCtr,delta,&ct_err
+	String type
+	
+	Variable counts = 0,ii,jj,err2_sum,testQ
+	
+	String dest =  "root:Packages:NIST:"+type
+	
+	//check for logscale data, but don't change the data
+	NVAR gIsLogScale = $(dest + ":gIsLogScale")
+	if (gIsLogScale)
+		wave w=$(dest + ":linear_data")
+	else
+		wave w=$(dest + ":data")
+	endif
+	wave data_err = $(dest + ":linear_data_error")
+	Wave reals = $(dest + ":realsRead")
+	Variable xctr=reals[16],yctr=reals[17],sdd=reals[18],lam=reals[26],pixSize=reals[13]/10
+
+	err2_sum = 0		// running total of the squared error
+	
+	for(ii=0;ii<128;ii+=1)
+		for(jj=0;jj<128;jj+=1)
+			//test each q-value, sum if within range of annulus
+			testQ = CalcQval(ii+1,jj+1,xctr,yctr,sdd,lam,pixSize)
+			
+			if(testQ > (qCtr - delta) && testQ < (qCtr + delta))
+				counts += w[ii][jj]
+				
+				w[ii][jj] = NaN		//for testing -- sets included pixels to NaN (in linear_data)
+				
+				err2_sum += data_err[ii][jj]*data_err[ii][jj]
+			endif
+		endfor
+	endfor
+	
+	
+	err2_sum = sqrt(err2_sum)
+	ct_err = err2_sum
+	
+//	Print "error = ",err2_sum
+//	Print "error/counts = ",err2_sum/counts
+	
+	
+	Return (counts)
+End
+
+
+
+Function DoAnnulusGraph(FileID,AnnulusCounts,AnnulusCount_err)
+	Wave FileID,AnnulusCounts,AnnulusCount_err
+	
+	Sort FileID AnnulusCounts,FileID		//sort the waves, in case the run numbers were entered out of numerical order
+	
+	DoWindow AnnulusCountsGraph
+	if(V_flag == 0)
+		Display /W=(5,44,383,306) AnnulusCounts vs FileID
+		DoWindow/C AnnulusCountsGraph
+		ModifyGraph mode=4
+		ModifyGraph marker=8
+		ModifyGraph grid=2
+		ModifyGraph mirror=2
+		ErrorBars/T=0 AnnulusCounts Y,wave=(AnnulusCount_err,AnnulusCount_err)
+		Label left "Counts (per 10^8 monitor counts)"
+		Label bottom "Run Number"
+	endif	
+	return(0)
+End
+
+
+
+/////////////////////////
+// Duplicate of the procedures - this time for arcs, which are identical to the annulus, but not full circles.
+//
+
+//////////////////
+//
+// promts the user for a range of file numbers to perform the sum over
+// list must be comma delimited numbers (or dashes) just as in the BuildProtocol panel
+// q-Center and delta-Q is entered by the user
+// phi and delta phi are entered
+// left, right, or both sides are selected too
+//
+// set deltaQ huge to get the full sector
+//
+Function ArcSum() :  GraphMarquee
+
+	SVAR dispType=root:myGlobals:gDataDisplayType
+	if(cmpstr(dispType,"RealTime")==0)
+		Print "Can't do an ArcSum for a RealTime file"
+		return(1)
+	endif
+	
+	String fileStr="",msgStr="Enter a comma-delimited list of run numbers, use dashes for ranges"
+	String type="RAW",sideStr=""
+	Variable qCenter,deltaQ,phi,deltaPhi
+	Prompt fileStr,msgStr
+	Prompt qCenter, "Enter the q-center (A)"
+	Prompt deltaQ, "Enter the delta Q +/- (A)"
+	Prompt type,"RAW or Normalized (SAM)",popup,"RAW;SAM;"
+	Prompt sideStr,"One, or both sides",popup,"both;one;"
+	Prompt phi, "Enter the angle phi (0,360)"
+	Prompt deltaPhi, "Enter the delta phi angle (degrees)"
+
+	DoPrompt "Pick the file range",fileStr,type,qCenter,deltaQ,sideStr,phi,deltaPhi
+	Print "fileStr = ",fileStr
+	printf "QCenter +/- deltaQ = %g +/- %g\r",qCenter,deltaQ
+	Print "sideStr = ",sideStr
+	printf "phi +/- deltaPhi = %g +/- %g\r",phi,deltaPhi
+		
+	DoArcSum(fileStr,qCenter,deltaQ,type,sideStr,phi,deltaPhi)
+	
+	return(0)
+End	
+				
+//does a sum over each of the files in the list over the specified range
+// x,y are assumed to already be in-bounds of the data array
+// output is to ArcCounts waves
+//
+Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
+	String fileStr
+	Variable qCtr,delta
+	String type,sideStr
+	Variable phi,deltaPhi
+	
+	//parse the list of file numbers
+	String fileList="",item="",pathStr="",fullPath=""
+	Variable ii,num,err,cts,ct_err
+	
+	PathInfo catPathName
+	If(V_Flag==0)
+		Abort "no path selected"
+	Endif
+	pathStr = S_Path
+	
+	fileList=ParseRunNumberList(fileStr)
+	num=ItemsInList(fileList,",")
+	
+	//loop over the list
+	//add each file to SAM (to normalize to monitor counts)
+	//sum over the annulus
+	//print the results
+	Make/O/N=(num) FileID,ArcCounts,ArcCount_err
+	Print "Results are stored in root:FileID and root:AnnulusCounts waves"
+	for(ii=0;ii<num;ii+=1)
+		item=StringFromList(ii,fileList,",")
+		FileID[ii] = GetRunNumFromFile(item)		//do this here, since the list is now valid
+		fullPath = pathStr+item
+		ReadHeaderAndData(fullPath)
+//		String/G root:myGlobals:gDataDisplayType="RAW"
+//		fRawWindowHook()
+		if(cmpstr(type,"SAM")==0)
+			err = Raw_to_work("SAM")
+		endif
+		String/G root:myGlobals:gDataDisplayType=type
+		fRawWindowHook()
+		cts=SumCountsInArc(qCtr,delta,ct_err,type,sideStr,phi,deltaPhi)
+		ArcCounts[ii]=cts
+		ArcCount_err[ii]=ct_err
+		Print item+" counts = ",cts
+	endfor
+	
+	DoArcGraph(FileID,ArcCounts,ArcCount_err)
+	
+	return(0)
+End
+
+
+//sums the data counts in the annulus specified by qCtr and delta (units of Q, not pixels)
+//
+Function SumCountsInArc(qCtr,delta,ct_err,type,sideStr,phi,deltaPhi)
+	Variable qCtr,delta,&ct_err
+	String type,sideStr
+	Variable phi,deltaPhi
+	
+	Variable counts = 0,ii,jj,err2_sum,testQ,testPhi
+	
+	String dest =  "root:Packages:NIST:"+type
+	
+	//check for logscale data, but don't change the data
+	NVAR gIsLogScale = $(dest + ":gIsLogScale")
+	if (gIsLogScale)
+		wave w=$(dest + ":linear_data")
+	else
+		wave w=$(dest + ":data")
+	endif
+	wave data_err = $(dest + ":linear_data_error")
+	Wave reals = $(dest + ":realsRead")
+	Variable xctr=reals[16],yctr=reals[17],sdd=reals[18],lam=reals[26],pixSize=reals[13]/10
+
+
+	err2_sum = 0		// running total of the squared error
+	
+	for(ii=0;ii<128;ii+=1)
+		for(jj=0;jj<128;jj+=1)
+			//test each q-value, sum if within range of annulus
+			testQ = CalcQval(ii+1,jj+1,xctr,yctr,sdd,lam,pixSize)			
+			if(testQ > (qCtr - delta) && testQ < (qCtr + delta))
+				//then test the arc
+				testPhi = FindPhi(ii+1-xCtr, jj+1-yctr)			//does not need to be in cm, pixels is fine
+				testPhi = testPhi*360/2/pi		//convert to degrees
+				if(phiTestArcSum(testPhi,phi,deltaPhi,sideStr))
+							
+						counts += w[ii][jj]
+						
+						w[ii][jj] = NaN		//for testing -- sets included pixels to NaN (in linear_data)
+						
+						err2_sum += data_err[ii][jj]*data_err[ii][jj]	
+				endif
+			endif
+		endfor
+	endfor
+	
+	
+	err2_sum = sqrt(err2_sum)
+	ct_err = err2_sum
+	
+//	Print "error = ",err2_sum
+//	Print "error/counts = ",err2_sum/counts
+	
+	Return (counts)
+End
+
+// since the test for arcs is more complex, send it out...
+//
+// NOTE these definitions of angles are NOT the same as the average panel
+//
+// testPhi is in the range (0,360)
+// phi is (0,360)
+// side is either one or both (mirror it 180 degrees)
+//
+Function phiTestArcSum(testPhi,phi,dPhi,side)
+	Variable testPhi,phi,dPhi
+	String side
+	
+	Variable pass = 0
+	variable low,hi, range
+	
+	if( (cmpstr(side,"one")==0) || (cmpstr(side,"both")==0) )
+		low = phi - dphi
+		hi = phi + dphi		
+		if(testPhi > low && testPhi < hi)
+			return(1)
+			
+		else
+	
+			if(low < 0)	//get the gap between low+360 and 360
+				low += 360
+				if(testPhi > low && testPhi < 360)
+					return(1)
+				endif
+			endif
+			
+			if(hi > 360)		//get the gap between 0 and (hi-360)
+				hi -= 360
+				if(testPhi > 0 && testPhi < hi)
+					return(1)
+				endif
+			endif
+			
+		endif		
+	Endif		//one side or both
+	
+	if((cmpstr(side,"both")==0) )		//now catch the 180 deg mirror
+
+		if(phi + 180 > 360)
+			phi = phi - 180
+		else
+			phi = phi + 180
+		endif
+
+		low = phi - dphi
+		hi = phi + dphi
+
+		if(testPhi > low && testPhi < hi)
+			return(1)
+		else
+			if(low < 0)	//get the gap between low+360 and 360
+				low += 360
+				if(testPhi > low && testPhi < 360)
+					return(1)
+				endif
+			endif
+			
+			if(hi > 360)		//get the gap between 0 and (hi-360)
+				hi -= 360
+				if(testPhi > 0 && testPhi < hi)
+					return(1)
+				endif
+			endif
+	
+		endif
+			
+	Endif		//both
+
+	
+	return(pass)
+end
+
+Function DoArcGraph(FileID,ArcCounts,ArcCount_err)
+	Wave FileID,ArcCounts,ArcCount_err
+	
+	Sort FileID ArcCounts,FileID		//sort the waves, in case the run numbers were entered out of numerical order
+	
+	DoWindow ArcCountsGraph
+	if(V_flag == 0)
+		Display /W=(5,44,383,306) ArcCounts vs FileID
+		DoWindow/C ArcCountsGraph
+		ModifyGraph mode=4
+		ModifyGraph marker=8
+		ModifyGraph grid=2
+		ModifyGraph mirror=2
+		ErrorBars/T=0 ArcCounts Y,wave=(ArcCount_err,ArcCount_err)
+		Label left "Counts (per 10^8 monitor counts)"
+		Label bottom "Run Number"
+	endif	
+	return(0)
+End
+
+//////////////////////////////

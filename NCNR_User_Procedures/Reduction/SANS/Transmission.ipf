@@ -493,6 +493,9 @@ Proc CreateTransGlobals()
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Transmission"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Trans_Error"
 	Make/O/D/N=0 $"root:myGlobals:TransHeaderInfo:S_Whole"
+	
+	String/G root:myGlobals:TransHeaderInfo:gMatchingSampleFiles = ""
+
 End
 
 
@@ -1825,6 +1828,7 @@ Function fGuessTransToScattFiles(numChars)
 	Variable transTableExists
 	
 	Variable/G root:myGlobals:TransHeaderInfo:gNumMatchChars = numChars
+	SVAR gMatchSamStr = root:myGlobals:TransHeaderInfo:gMatchingSampleFiles
 	
 	Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
 	Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
@@ -1890,11 +1894,13 @@ Function fGuessTransToScattFiles(numChars)
 	switch(guessOK)	// numeric switch
 		case 1:		
 			// accept guess (assign, and calculate immediately)
+			gMatchSamStr=""
 			num=numpnts(matchRows)		//this may have changed
 			for(ii=0;ii<num;ii+=1)
 				snam[matchRows[ii]] = tnam[row]
 				AssignSelTransFilesToData(matchRows[ii],matchRows[ii])
 				CalcSelTransFromHeader(matchRows[ii],matchRows[ii])		//does only that sample file
+				gMatchSamStr += samfile(matchRows[ii]) + ";"
 			endfor			
 			break						
 		case 2:	//try again (with more characters)
@@ -1904,6 +1910,7 @@ Function fGuessTransToScattFiles(numChars)
 			// not an exit code, can't do anything
 			break
 		case 0:	// cancel
+			gMatchSamStr = ""
 			// do nothing
 			break
 		default:							
