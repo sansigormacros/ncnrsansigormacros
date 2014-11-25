@@ -48,6 +48,8 @@ Menu "Macros"
 	"Load Real Space Modeling",RealSpaceLoader()
 	"Event Mode Processing",EventModeLoader()
 	"Load Batch Fitting - Beta",BatchFitLoader()
+	"Load Simulation Run Builder",SimSANSRunListLoader()
+	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 
 //	"-"
 
@@ -707,5 +709,42 @@ Function BatchFitLoader()
 	
 	BuildMenu "Macros"
 
+	return(0)
+End
+
+// loads the Reduction package, then the Auto_Reduction panel
+Function AutomateSANSLoader()
+
+	// be sure that the SANS reduction is loaded and compiles
+	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	
+	// then bring up the Auto_reduction panel
+	Execute/P "Auto_Reduce_Panel()"
+	
+	return(0)
+End
+
+
+
+// for SANS simulation scripting, need to load the reduction, analysis, 
+// then the two scripting procedures
+//
+// -- this is to avoid the entanglement betwen analysis models and SASCALC (in reduction)
+//
+Function SimSANSRunListLoader()
+
+	// be sure that the SANS reduction is loaded and compiles
+	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	
+	// be sure that the SANS Analysis is loaded and compiles
+	NCNR_AnalysisLoader("Load NCNR Analysis Macros")
+	
+	// then the Scripting files
+	Execute/P "INSERTINCLUDE \"MC_SimulationScripting\""
+	Execute/P "INSERTINCLUDE \"MC_Script_Panels\""
+	Execute/P "COMPILEPROCEDURES "
+//	Execute/P "InitializeAutoFitPanel()"
+	
+	BuildMenu "Macros"
 	return(0)
 End

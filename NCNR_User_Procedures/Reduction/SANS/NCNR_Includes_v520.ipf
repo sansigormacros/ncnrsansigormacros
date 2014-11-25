@@ -87,7 +87,15 @@ End
 #include "EventModeProcessing"
 
 // SRK JAN 2013 - to make simulation easier
-#include "MC_SimulationScripting"
+// SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
+//#include "MC_SimulationScripting"
+
+// SRK NOV 2014 -- beta of automated reduction routines
+#include "Automated_SANS_Reduction"
+
+// SRK NOV 2014 -- beta of a "run panel" for scripting of simulation
+// SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
+//#include "MC_Script_Panels"
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

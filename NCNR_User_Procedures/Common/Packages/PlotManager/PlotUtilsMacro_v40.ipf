@@ -1321,7 +1321,12 @@ Function/S User_FunctionPopupList()
 // from 2013 Simulation
 //	list = RemoveFromList("EC_Empirical;SmearedEC_Empirical;",list,";")
 	list = RemoveFromList("SAS_XS_Sphere;Generate_UofR;Setup_Ur_HS;",list,";")
-		
+
+
+// from 2014 Automation of reduction
+	list = RemoveFromList("DoAnnulusGraph;DoArcGraph;",list,";")
+	
+			
 	list = SortList(list)
 	return(list)
 End

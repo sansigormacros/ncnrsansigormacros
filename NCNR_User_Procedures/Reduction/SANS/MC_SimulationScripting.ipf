@@ -95,16 +95,16 @@
 // always using the dialog
 // x- fill in the "RunSample" functions
 //
-//  -- I need a little panel to control all of this, and get the information, just 
+//  x- I need a little panel to control all of this, and get the information, just 
 //     like setting up a real experiment. Or maybe not. Maybe better to keep some of this
 //     hidden.
 //  -- It would be nice to be able to automatically do the sum_model to add the 2D empty cell contribution
 //     For some experiments it's quite useful to see the level of this contribution, rather than
 //     the completely clean simulation.
-//  -- in this file, clearly separate the examples from the utility functions
+//  x- in this file, clearly separate the examples from the utility functions
 //  -- get a function list of everything, and document what each does (if not obvious)
 //  -- step by step comments of one of the examples (1D and 2D) are probably the most useful
-//  -- "dry run" function to estimate the total simulation time for 2D. (? set all monitor counts to 1000
+//  x- "dry run" function to estimate the total simulation time for 2D. (? set all monitor counts to 1000
 //      or whatever I use to get other estimates, and then run through everything to get estimated times)
 //
 // set the global: 
@@ -112,12 +112,12 @@
 // and then do the dry run
 //
 //
-// ----- transmission really doesn't work in the simulation...
-// -- add function to simulate transmission in 2D by saving a "Trans" configuration
+// ----- transmission really in the simulation...
+//  x- add function to simulate transmission in 2D by saving a "Trans" configuration
 //     and automatically using that. Currently the trans is already written to the file
-// x- would also need a function to simulate an empty beam measurement to rescale the 
+//  x- would also need a function to simulate an empty beam measurement to rescale the 
 //     transmissions. (use the model given, set scale (w[0] to something really small)
-//  -- or better, use the empty cell function that is guaranteed to have coefficients that are
+//  x- or better, use the empty cell function that is guaranteed to have coefficients that are
 //     well behaved - and I can set/reset them to get a proper "empty beam"
 //
 //
@@ -127,21 +127,24 @@
 
 
 /// un-comment this by removing the "x" from the word xMenu. Then compile.
+// - note that no menu items will appear unless BOTH the Reduction and Analysis are loaded
 Menu "Macros"
 		Submenu "Simulation Scripting - Beta"
-			ScriptItem(0),Sim_saveConfProc()
-			ScriptItem(1),Sim_moveConfProc()
-			ScriptItem(2),ListSASCALCConfigs()
+			ScriptItem(0),ShowRunListPanel()
+//			ScriptItem(0),Sim_StoreConfProc()
+//			ScriptItem(1),Sim_moveConfProc()
+			ScriptItem(1)
+//			ScriptItem(2),ListSASCALCConfigs()
 			ScriptItem(3),DryRunProc_1D()
-			ScriptItem(4),DryRunProc_2D()
+//			ScriptItem(4),DryRunProc_2D()
 			ScriptItem(5),OptimalCountProc()
 			ScriptItem(6),MakeCombineTable_byName()
 			ScriptItem(7),DoCombineFiles_byName(lowQfile,medQfile,hiQfile,saveName)
 			ScriptItem(8),Sim_SetDeadTimeTiny()
 			ScriptItem(9)
 			ScriptItem(10),Setup_Sim_Example()
-			ScriptItem(11),Example_1DSim()
-			ScriptItem(12),Example_2DSim()
+//			ScriptItem(11),Example_1DSim()
+//			ScriptItem(12),Example_2DSim()
 			ScriptItem(13)
 			ScriptItem(14),DisplayProcedure "Example_1DSim"
 		End	
@@ -155,10 +158,12 @@ Function/S ScriptItem(num)
 	if(exists("root:SANS_RED_VERSION") && exists("root:Packages:NIST:SANS_ANA_VERSION"))
 		switch(num)	
 			case 0: 
-				str = "Save Configuration"
+				str = "Run List Panel"
+				//str = "Save Configuration"
 				break
 			case 1:
-				str = "Move to Configuration"
+				//str = "Move to Configuration"
+				str = "-"
 				break
 			case 2:
 				str = "List Configurations"
@@ -235,7 +240,7 @@ End
 
 Function Example_1DSim()
 
-	String confList,ctTimeList,saveNameList,funcStr,titleStr
+	String confList,ctTimeList,saveNameList,funcStr,titleStrList
 	
 
 	Sim_SetSimulationType(0)		//kill the simulation panel
@@ -263,10 +268,10 @@ Function Example_1DSim()
 	confList = "Config_1m;Config_4m;Config_13m;"
 	ctTimeList = "100;300;900;"
 	saveNameList = "sim_1m.abs;sim_4m.abs;sim_13m.abs;"
-	titleStr = "MySample 1"
+	titleStrList = "MySample 1 at 1m;MySample 1 at 4m;MySample 1 at 13m;"
 
 	// then this runs the samples as listed
-	Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
+	Sim_RunSample_1D(confList,ctTimeList,titleStrList,saveNameList)
 
 	// no transmissions or empty beam measurements to make for 1D simulation
 
@@ -276,7 +281,7 @@ End
 //
 Function Example_2DSim()
 
-	String confList,ctTimeList,titleStr,transConfList,transCtTimeList
+	String confList,ctTimeList,titleStrList,transConfList,transCtTimeList
 	Variable runIndex,val,totalTime
 	String funcStr
 
@@ -318,21 +323,21 @@ tic()
 	ctTimeList = "100;300;900;"
 	transConfList = "Config_13m;"		// trans only @ 13m
 	transCtTimeList = "1;"				// trans count time = 1s
-	titleStr = "MySample 1"
+	titleStrList = "MySample 1 at 1m;MySample 1 at 4m;MySample 1 at 13m;"
 
 	// runIndex is PBR and updates as the number of files are written
 	
 	// this runs the sample
-	totalTime += Sim_RunSample_2D(confList,ctTimeList,titleStr,runIndex)
+	totalTime += Sim_RunSample_2D(confList,ctTimeList,titleStrList,runIndex)
 	// this runs the transmissions
-	totalTime += Sim_RunTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+	totalTime += Sim_RunTrans_2D(transConfList,transCtTimeList,titleStrList,runIndex)
 	
 	// run the empty beam at all configurations
 	// This will automatically change the function to "EC_Empirical" and "empty beam" conditions
 	transConfList = "Config_1m;Config_4m;Config_13m;"
 	transCtTimeList = "1;1;1;"	
-	titleStr = "Empty Beam"
-	totalTime += Sim_RunEmptyBeamTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+	titleStrList = "Empty Beam at 1m;Empty Beam at 4m;Empty Beam at 13m;"
+	totalTime += Sim_RunEmptyBeamTrans_2D(transConfList,transCtTimeList,titleStrList,runIndex)
 	
 	Print "runIndex = ",runIndex
 
@@ -347,7 +352,7 @@ End
 // replicate data sets to test the overlap
 Function Example_Loop_1DSim()
 
-	String confList,ctTimeList,saveNameList,funcStr,titleStr
+	String confList,ctTimeList,saveNameList,funcStr,titleStrList
 	
 
 	Sim_SetSimulationType(0)		//kill the simulation panel
@@ -375,7 +380,7 @@ Function Example_Loop_1DSim()
 	confList = "Config_4m;"
 	ctTimeList = ""		//filled in the loop
 	saveNameList = ""
-	titleStr = "DAB versus count time t = "
+	titleStrList = "DAB versus count time t = "		//overwritten in loop
 
 	Make/O/D ctTime = {5,11,16,21,27,32,37,43,48,53,107,160,214,267,321,374,428,481,535,1604,5348,21390,53476}
 
@@ -383,11 +388,11 @@ Function Example_Loop_1DSim()
 	
 	for(jj=0;jj<numpnts(ctTime);jj+=1)	
 		for(ii=0;ii<nTrials;ii+=1)
-			titleStr = "DAB versus count time t = "+num2str(ctTime[jj])
+			titleStrList = "DAB versus count time t = "+num2str(ctTime[jj])
 			saveNameList = "DAB_4m_t"+num2str(ctTime[jj])+"_"+num2str(ii)+".abs;"
 			ctTimeList = num2str(ctTime[jj])+";"
 			// then this runs the samples as listed
-			Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
+			Sim_RunSample_1D(confList,ctTimeList,titleStrList,saveNameList)
 		endfor
 	endfor
 
@@ -410,7 +415,7 @@ End
 //
 Function Example_Loop_2DSim()
 
-	String confList,ctTimeList,titleStr,transConfList,transCtTimeList
+	String confList,ctTimeList,titleStrList,transConfList,transCtTimeList
 	Variable runIndex,val,totalTime
 	String funcStr
 
@@ -453,8 +458,8 @@ tic()
 	// This will automatically change the function to "EC_Empirical" and "empty beam" conditions
 	transConfList = "Config_1m;Config_4m;Config_13m;"
 	transCtTimeList = "1;1;1;"	
-	titleStr = "Empty Beam"
-	totalTime += Sim_RunEmptyBeamTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+	titleStrList = "Empty Beam at 1m;Empty Beam at 4m;Empty Beam at 13m;"
+	totalTime += Sim_RunEmptyBeamTrans_2D(transConfList,transCtTimeList,titleStrList,runIndex)
 	
 	
 //(6) set the configuration list, times, a single sample label, and the starting run index
@@ -463,7 +468,7 @@ tic()
 	ctTimeList = ""
 	transConfList = "Config_13m"		// trans only @ 13m
 	transCtTimeList = "1;"				// trans count time = 1s
-	titleStr = "MySample 1"
+	titleStrList = "MySample 1"
 
 	// runIndex is PBR and updates as the number of files are written
 
@@ -482,16 +487,16 @@ tic()
 		Sim_SetThickness(thick[ii])								// thickness (cm)
 
 		confList = conf[ii] +";"
-		titleStr = "DAB simulation, thick = "+num2str(thick[ii])
+		titleStrList = "DAB simulation, thick = "+num2str(thick[ii])
 		ctTimeList = num2str(ctTime[ii])+";"
 		
 		// this runs the transmissions (only at 13m)
 		if(cmpstr(conf[ii],"Config_13m")==0)
-			totalTime += Sim_RunTrans_2D(transConfList,transCtTimeList,titleStr,runIndex)
+			totalTime += Sim_RunTrans_2D(transConfList,transCtTimeList,titleStrList,runIndex)
 		endif
 		
 		// this runs the sample
-		totalTime += Sim_RunSample_2D(confList,ctTimeList,titleStr,runIndex)
+		totalTime += Sim_RunSample_2D(confList,ctTimeList,titleStrList,runIndex)
 
 	endfor
 	
@@ -515,11 +520,11 @@ End
 
 
 // pass in a semicolon delimited list of configurations + corresponding count times + saved names
-Function Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
-	String confList,ctTimeList,titleStr,saveNameList
+Function Sim_RunSample_1D(confList,ctTimeList,titleStrList,saveNameList)
+	String confList,ctTimeList,titleStrList,saveNameList
 	
 	Variable ii,num,ct,cr,numPt
-	String twStr,fname,type
+	String twStr,fname,type,titleStr
 	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly		// == 1 for just count rate, == 0 (default) to do the simulation and save
 	WAVE/Z crWave = root:CR_1D
 	WAVE/Z/T fileWave = root:Files_1D
@@ -532,6 +537,7 @@ Function Sim_RunSample_1D(confList,ctTimeList,titleStr,saveNameList)
 		Wave/T tw=$("root:Packages:NIST:SAS:"+twStr)
 		ct = str2num(StringFromList(ii, ctTimeList,";"))
 		fname = StringFromList(ii, saveNameList,";")
+		titleStr = StringFromList(ii, titleStrList,";")
 		
 		Sim_MoveToConfiguration(tw)
 		Sim_SetCountTime(ct)
@@ -583,12 +589,12 @@ End
 // -- for an empty beam, before calling, set the incoh XS = 0 and set the scale
 // of the model to something tiny so that there is no coherent scattering
 //
-Function Sim_RunTrans_2D(confList,ctTimeList,titleStr,runIndex)
-	String confList,ctTimeList,titleStr
+Function Sim_RunTrans_2D(confList,ctTimeList,titleStrList,runIndex)
+	String confList,ctTimeList,titleStrList
 	Variable &runIndex
 	
 	Variable ii,num,ct,index,totalTime
-	String twStr,type
+	String twStr,type,titleStr
 
 	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly		// == 1 for just a time estimate, == 0 (default) to do the simulation
 	NVAR g_estimatedMCTime = root:Packages:NIST:SAS:g_estimatedMCTime		// estimated MC sim time
@@ -599,6 +605,7 @@ Function Sim_RunTrans_2D(confList,ctTimeList,titleStr,runIndex)
 	
 	for(ii=0;ii<num;ii+=1)
 		twStr = StringFromList(ii, confList,";")
+		titleStr = StringFromList(ii, titleStrList,";")
 		Wave/T tw=$("root:Packages:NIST:SAS:"+twStr)
 		ct = str2num(StringFromList(ii, ctTimeList,";"))
 		
@@ -627,12 +634,12 @@ End
 // WAVE results = root:Packages:NIST:SAS:results
 //	Print "Sample Simulation (2D) CR = ",results[9]/ctTime
 // -- for estimates, iMon is set to 1000, so time=1000/(root:Packages:NIST:SAS:gImon)
-Function Sim_RunSample_2D(confList,ctTimeList,titleStr,runIndex)
-	String confList,ctTimeList,titleStr
+Function Sim_RunSample_2D(confList,ctTimeList,titleStrList,runIndex)
+	String confList,ctTimeList,titleStrList
 	Variable &runIndex
 
 	Variable ii,num,ct,index,totalTime
-	String twStr,type
+	String twStr,type,titleStr
 
 	NVAR g_estimateOnly = root:Packages:NIST:SAS:g_estimateOnly		// == 1 for just a time estimate, == 0 (default) to do the simulation
 	NVAR g_estimatedMCTime = root:Packages:NIST:SAS:g_estimatedMCTime		// estimated MC sim time
@@ -644,6 +651,7 @@ Function Sim_RunSample_2D(confList,ctTimeList,titleStr,runIndex)
 	
 	for(ii=0;ii<num;ii+=1)
 		twStr = StringFromList(ii, confList,";")
+		titleStr = StringFromList(ii, titleStrList,";")
 		Wave/T tw=$("root:Packages:NIST:SAS:"+twStr)
 		ct = str2num(StringFromList(ii, ctTimeList,";"))
 		
@@ -1131,10 +1139,10 @@ Function Sim_Save1D_wName(type,titleStr,fname)
 	return(0)
 End
 
-Proc Sim_saveConfProc(waveStr)
+Proc Sim_StoreConfProc(waveStr)
 	String waveStr
 	
-	Sim_SaveConfiguration(waveStr)
+	Sim_StoreConfiguration(waveStr)
 End
 //
 // just make a wave and fill it
@@ -1154,15 +1162,17 @@ End
 // 8 = SDD
 // 9 = offset
 //
-Function Sim_SaveConfiguration(waveStr)
+Function Sim_StoreConfiguration(waveStr)
 	String waveStr
 	
 	String str=""
 	
 	SetDataFolder root:Packages:NIST:SAS
 	
-	Make/O/T/N=20 $("Config_"+waveStr)
-	Wave/T tw=$("Config_"+waveStr)
+	waveStr = CleanupName("Config_"+waveStr,0)
+
+	Make/O/T/N=20 $(waveStr)
+	Wave/T tw=$(waveStr)
 	tw = ""
 	
 	// 0 = instrument
@@ -1270,20 +1280,3 @@ Function Sim_MoveToConfiguration(tw)
 end
 
 
-///////////// a panel to (maybe) write to speed the setup of the runs
-//
-Function/S ListSASCALCConfigs()
-	String str
-	SetDataFolder root:Packages:NIST:SAS
-	str = WaveList("Conf*",";","")
-	SetDataFolder root:
-	print str
-	return(str)
-End
-
-//Proc Sim_SetupRunPanel() : Panel
-//	PauseUpdate; Silent 1		// building window...
-//	NewPanel /W=(399,44,764,386)
-//	ModifyPanel cbRGB=(56639,28443,117)
-//	ShowTools/A
-//EndMacro

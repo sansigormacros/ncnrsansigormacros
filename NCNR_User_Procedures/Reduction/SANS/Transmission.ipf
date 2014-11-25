@@ -1843,20 +1843,42 @@ Function fGuessTransToScattFiles(numChars)
 		return (1)
 	endif
 	
+	Variable num=numpnts(matchRows)
+	String result="",tmpStr
+	
 	Wave/T sw = root:myGlobals:TransHeaderInfo:S_Labels		//Sample file labels
 	Wave/T tw = root:myGlobals:TransHeaderInfo:T_Labels		//trans file labels
 	Wave/T tnam = root:myGlobals:TransHeaderInfo:T_FileNames	//trans file names
 	Wave/T snam = root:myGlobals:TransHeaderInfo:S_TRANS_FileNames	//Scattering - trans correspondence
 	Wave/T samfile = root:myGlobals:TransHeaderInfo:S_FileNames	//Scattering file name
-	
+
+	//// set up as a list box
+	Make/O/T/N=(num,4) root:myGlobals:TransHeaderInfo:T_ListWave=""
+	Make/O/D/N=(num,4,2) root:myGlobals:TransHeaderInfo:T_selWave
+	Make/O/T/N=4 root:myGlobals:TransHeaderInfo:T_titles					// 4 rows to match 4-column ListWave
+	Make/O/W/U/N=(2,3) root:myGlobals:TransHeaderInfo:T_Colors
+	WAVE/T ListWave = root:myGlobals:TransHeaderInfo:T_ListWave
+	WAVE selWave = root:myGlobals:TransHeaderInfo:T_selWave
+	WAVE/T titles = root:myGlobals:TransHeaderInfo:T_titles
+	WAVE colors = root:myGlobals:TransHeaderInfo:T_Colors
+
+
+	colors[][] = 0
+	colors[0][] = 65000
+	colors[1][] = 60000
+
+
 	// can do fancy formatted string with ...
 	//"asdf* matches file: \\f01filen\\f00 \\K(52428,1,1)\\f01afdsfdd\\f00\\K(0,0,0)asdfasdfs"
-	Variable num=numpnts(matchRows)
-	String result="",tmpStr
+
 	for(ii=0;ii<num;ii+=1)
 		sprintf tmpStr,"\\f01\\K(52428,1,1)%s\\K(0,0,0)\\f00* Matches file: \\f01%s\\f00 | \\K(52428,1,1)\\f01%s\\f00\\K(0,0,0)%s\r",(tw[row])[0,numChars-1],samfile[matchRows[ii]],(sw[matchRows[ii]])[0,numchars-1],(sw[matchRows[ii]])[numchars,59]
 		result += tmpStr
+		listWave[ii][1] = (tw[row])[0,numChars-1] + "*" + (tw[row])[numChars,59]
+		listWave[ii][2] = samfile[matchRows[ii]]
+		listWave[ii][3] = (sw[matchRows[ii]])[0,numchars-1] + (sw[matchRows[ii]])[numchars,59]  // ??
 	endfor
+	
 	
 	if(cmpstr(result,"")==0)
 		result = "No match found for "+ (tw[row])[0,numChars-1]
@@ -1866,19 +1888,36 @@ Function fGuessTransToScattFiles(numChars)
 	Print "*******"
 	
 	String/G root:myGlobals:TransHeaderInfo:gResultStr = result
+	selWave[][][] = 0
+	selWave[][0][] = 2^5	 + 2^4		//if 2^4 also, it's selected  --- if((val & 2^4) != 0), then the bit is set
+	
+	selWave[][][1]= round(p/2-trunc(p/2))					// change the color index values
+	SetDimLabel 2,1,backColors,selWave
+
+	titles[0] = "Keep Match?"
+	titles[1] = "Match String"
+	titles[2] = "Matching Sample File"
+	titles[3] = "Matching Sample Label"
+	
+
 	
 	DoWindow/F ConfirmGuess		//if being called recursively, the panel is already up
 	if(V_flag==1)
 		TitleBox title0,pos={9,5},variable=root:myGlobals:TransHeaderInfo:gResultStr
 	else
-		NewPanel /W=(600,44,1150,225) as "Confirm Guess"
+		NewPanel /W=(600,44,1200,270) as "Confirm Guess"
 		DoWindow/C ConfirmGuess
-		TitleBox title0,pos={15,8},size={560,32}
-		TitleBox title0,variable= root:myGlobals:TransHeaderInfo:gResultStr
-		Button button0,pos={240,150},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
-		Button button1,pos={10,150},size={100,20},proc=DoTryAgainMoreButtonProc,title="Try Again (+)"
-		Button button2,pos={120,150},size={100,20},proc=DoTryAgainFewerButtonProc,title="Try Again (-)"
-		Button button3,pos={450,150},size={70,20},proc=SkipTransButtonProc,title="Skip"
+
+		ListBox list0,pos={1,2},size={580,180},listWave=ListWave,selWave=selWave,colorWave=colors
+		ListBox list0,titleWave=titles,widths={70,180,150,180}
+			
+//		TitleBox title0,pos={15,8},size={560,32}
+//		TitleBox title0,variable= root:myGlobals:TransHeaderInfo:gResultStr
+		
+		Button button0,pos={240,190},size={190,20},proc=DoAssignTransButtonProc,title="Assign Transmission Files"
+		Button button1,pos={10,190},size={100,20},proc=DoTryAgainMoreButtonProc,title="Try Again (+)"
+		Button button2,pos={120,190},size={100,20},proc=DoTryAgainFewerButtonProc,title="Try Again (-)"
+		Button button3,pos={450,190},size={70,20},proc=SkipTransButtonProc,title="Skip"
 	endif
 	
 	PauseForUser ConfirmGuess
@@ -1897,10 +1936,12 @@ Function fGuessTransToScattFiles(numChars)
 			gMatchSamStr=""
 			num=numpnts(matchRows)		//this may have changed
 			for(ii=0;ii<num;ii+=1)
-				snam[matchRows[ii]] = tnam[row]
-				AssignSelTransFilesToData(matchRows[ii],matchRows[ii])
-				CalcSelTransFromHeader(matchRows[ii],matchRows[ii])		//does only that sample file
-				gMatchSamStr += samfile(matchRows[ii]) + ";"
+				if((selWave[ii][0] & 2^4) != 0)			//box is checked, make the assignment for this file
+					snam[matchRows[ii]] = tnam[row]
+					AssignSelTransFilesToData(matchRows[ii],matchRows[ii])
+					CalcSelTransFromHeader(matchRows[ii],matchRows[ii])		//does only that sample file
+					gMatchSamStr += samfile(matchRows[ii]) + ";"			// this is for later, when trying to guess whish sample files to combine
+				endif
 			endfor			
 			break						
 		case 2:	//try again (with more characters)
@@ -2031,7 +2072,11 @@ Function DoTryAgainMoreButtonProc(ba) : ButtonControl
 
 			Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
 			Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
-	
+
+			WAVE/T ListWave = root:myGlobals:TransHeaderInfo:T_ListWave
+			WAVE selWave = root:myGlobals:TransHeaderInfo:T_selWave
+			WAVE/T titles = root:myGlobals:TransHeaderInfo:T_titles
+		
 		   //transTableExists = WinType("TransFileTable")
    		//if (transTableExists != 0)
 			GetSelection table,transFileTable,1	
@@ -2039,11 +2084,24 @@ Function DoTryAgainMoreButtonProc(ba) : ButtonControl
 			GuessTransToScattFiles(numChars,row,matchRows)
 		
 			num=numpnts(matchRows)
+			
+			//Redimension the list box waves
+			Redimension/N=(num,4) ListWave
+			Redimension/N=(num,4,2) selWave
+			ListWave = ""
+			selWave[][][] = 0
+
+			selWave[][0][] = 2^5 + 2^4
+
+			selWave[][][1]= round(p/2-trunc(p/2))					// change the color index values
 
 			resultStr = ""
 			for(ii=0;ii<num;ii+=1)
 				sprintf tmpStr,"\\f01\\K(52428,1,1)%s\\K(0,0,0)\\f00* Matches file: \\f01%s\\f00 | \\K(52428,1,1)\\f01%s\\f00\\K(0,0,0)%s\r",(tw[row])[0,numChars-1],samfile[matchRows[ii]],(sw[matchRows[ii]])[0,numchars-1],(sw[matchRows[ii]])[numchars,59]
 				resultStr += tmpStr
+				listWave[ii][1] = (tw[row])[0,numChars-1] + "*" + (tw[row])[numChars,59]
+				listWave[ii][2] = samfile[matchRows[ii]]
+				listWave[ii][3] = (sw[matchRows[ii]])[0,numchars-1] + (sw[matchRows[ii]])[numchars,59]  // ??
 			endfor
 	
 			if(cmpstr(resultStr,"")==0)
@@ -2084,7 +2142,11 @@ Function DoTryAgainFewerButtonProc(ba) : ButtonControl
 
 			Make/O/D/N=0 root:myGlobals:TransHeaderInfo:matchRows
 			Wave matchRows=root:myGlobals:TransHeaderInfo:matchRows
-	
+
+			WAVE/T ListWave = root:myGlobals:TransHeaderInfo:T_ListWave
+			WAVE selWave = root:myGlobals:TransHeaderInfo:T_selWave
+			WAVE/T titles = root:myGlobals:TransHeaderInfo:T_titles
+		
 		   //transTableExists = WinType("TransFileTable")
    		//if (transTableExists != 0)
 			GetSelection table,transFileTable,1	
@@ -2093,10 +2155,23 @@ Function DoTryAgainFewerButtonProc(ba) : ButtonControl
 		
 			num=numpnts(matchRows)
 
+			//Redimension the list box waves
+			Redimension/N=(num,4) ListWave
+			Redimension/N=(num,4,2) selWave
+			ListWave = ""
+			selWave[][][] = 0
+
+			selWave[][0][] = 2^5 + 2^4
+
+			selWave[][][1]= round(p/2-trunc(p/2))					// change the color index values
+
 			resultStr = ""
 			for(ii=0;ii<num;ii+=1)
 				sprintf tmpStr,"\\f01\\K(52428,1,1)%s\\K(0,0,0)\\f00* Matches file: \\f01%s\\f00 | \\K(52428,1,1)\\f01%s\\f00\\K(0,0,0)%s\r",(tw[row])[0,numChars-1],samfile[matchRows[ii]],(sw[matchRows[ii]])[0,numchars-1],(sw[matchRows[ii]])[numchars,59]
 				resultStr += tmpStr
+				listWave[ii][1] = (tw[row])[0,numChars-1] + "*" + (tw[row])[numChars,59]
+				listWave[ii][2] = samfile[matchRows[ii]]
+				listWave[ii][3] = (sw[matchRows[ii]])[0,numchars-1] + (sw[matchRows[ii]])[numchars,59]  // ??
 			endfor
 	
 			if(cmpstr(resultStr,"")==0)
