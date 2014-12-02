@@ -188,7 +188,8 @@ Proc RunListPanel() : Panel
 	Button RLCtrl_2l,pos={500,170},size={120,20},proc=Sim_RestoreRunListButton,title="Restore Run List",disable=1	
 	Button RLCtrl_2m,pos={500,200},size={120,20},proc=Sim_ClearRowRunListButton,title="Clear Run",disable=1	
 	
-	
+	SetVariable RLCtrl_2n,pos={400,70},size={200,15},title="Currently Executing"
+	SetVariable RLCtrl_2n,limits={-inf,inf,0},value= _STR:"Nothing",disable=1
 EndMacro
 
 Function RL_ABSCheck(name,value)
@@ -216,9 +217,9 @@ End
 
 Proc Sim_RLHelpButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	DisplayHelpTopic/Z/K=1 "Simulation Run List Scripting"
+	DisplayHelpTopic/Z/K=1 "Simulating a Run List"
 	if(V_flag !=0)
-		DoAlert 0,"The Simulation Run List Scripting Help file could not be found"
+		DoAlert 0,"The Simulating a Run List Help file could not be found"
 	endif
 End
 
@@ -1119,6 +1120,9 @@ Function Sim_RunSelected2DList(ba)
 					
 					Print "**************** Running simulation for row = ",ii
 					
+					SetVariable RLCtrl_2n, win=RunListPanel,value= _STR:"Row "+num2str(ii)
+//					DoUpdate/W=RunListPanel
+					
 					// move to configuration
 					configStr = textW[ii][1]
 //					Sim_MoveToConfiguration($("root:Packages:NIST:SAS:"+configStr))
@@ -1182,9 +1186,13 @@ Function Sim_RunSelected2DList(ba)
 			Print "****************** Run list has been completed ***********************"
 			if(g_estimateOnly)
 				Print "Total Time (s) = ",totalTime
+				Print "Total Time (m) = ",totalTime/60
+				Print "Total Time (h) = ",totalTime/60/60
 			endif
 			
-				
+			SetVariable RLCtrl_2n, win=RunListPanel,value= _STR:"Nothing"
+//			DoUpdate/W=RunListPanel	
+			
 			break
 		case -1: // control being killed
 			break
