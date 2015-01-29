@@ -1172,7 +1172,7 @@ Function WriteTransmissionToHeader(fname,trans)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
@@ -1194,7 +1194,7 @@ Function WriteTransmissionErrorToHeader(fname,transErr)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1215,7 +1215,7 @@ Function WriteWholeTransToHeader(fname,trans)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1235,7 +1235,7 @@ Function WriteBoxCountsToHeader(fname,counts)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1255,7 +1255,7 @@ Function WriteBoxCountsErrorToHeader(fname,rel_err)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1275,7 +1275,7 @@ Function WriteBSXPosToHeader(fname,xpos)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1295,7 +1295,7 @@ Function WriteThicknessToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1315,7 +1315,7 @@ Function WriteBeamCenterXToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1335,7 +1335,7 @@ Function WriteBeamCenterYToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1355,7 +1355,7 @@ Function WriteAttenNumberToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1375,7 +1375,7 @@ Function WriteMonitorCountToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1395,7 +1395,7 @@ Function WriteDetectorCountToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1415,7 +1415,7 @@ Function WriteTransDetCountToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1435,7 +1435,7 @@ Function WriteWavelengthToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1455,7 +1455,7 @@ Function WriteWavelengthDistrToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1475,7 +1475,7 @@ Function WriteTemperatureToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1495,7 +1495,7 @@ Function WriteMagnFieldToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
@@ -1516,7 +1516,7 @@ Function WriteSourceApDiamToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1536,7 +1536,7 @@ Function WriteSampleApDiamToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1556,7 +1556,7 @@ Function WriteSrcToSamDistToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1576,7 +1576,7 @@ Function WriteDetectorOffsetToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1596,7 +1596,7 @@ Function WriteBeamStopDiamToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1616,7 +1616,7 @@ Function WriteSDDToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1640,7 +1640,7 @@ Function WriteDetPixelXToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite3)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
@@ -1665,7 +1665,7 @@ Function WriteDetPixelYToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite3)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1685,7 +1685,7 @@ Function WriteDeadtimeToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1739,7 +1739,7 @@ Function WriteSamLabelToHeader(fname,str)
 	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	
@@ -1768,7 +1768,7 @@ Function WriteAcctNameToHeader(fname,str)
 	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
@@ -1814,7 +1814,7 @@ Function WriteFileNameToHeader(fname,str)
 	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -1856,7 +1856,7 @@ Function WriteCountTimeToHeader(fname,num)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
@@ -2436,7 +2436,7 @@ Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite2)
 //	Print "HDF write err = ",err
 
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
@@ -2465,7 +2465,7 @@ Function WriteAssocFileSuffixToHeader(fname,suffix)
 	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	
@@ -2565,7 +2565,7 @@ Function WriteLensFlagToHeader(fname,flag)
 	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	Print "HDF write err = ",err
 	
-	// now be sure to kill the data foler to force a re-read of the data next time this file is read in
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
