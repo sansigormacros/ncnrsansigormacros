@@ -578,7 +578,7 @@ Proc V_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Converging Slits;Lenses;Polarizer;White Beam;TOF;"
+	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;Converging Slits;White Beam;Polarizer;"
 	String/G gBinTypeStr = "One;Two;Four;Slit Mode;"
 
 ///// FRONT DETECTOR BANKS
@@ -672,14 +672,14 @@ Proc V_Initialize_Space()
 
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
-	String/G gMonochromatorType = "Velocity Selector;Graphite;None;"
-	String/G gSourceShape = "circular;rectangular;converging slits;"
+	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;"
+	String/G gSourceShape = "circular;rectangular;converging pinholes;converging slits;"
 	String/G gSourceDiam = "1.0 cm;2.0 cm;5.0 cm;"
 	String/G gDeltaLambda = "0.10;0.20;0.30;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
-	String/G gSampleApertureShape = "circular;rectangular;converging slits;"
+	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;converging slits;"
 	String/G gSampleApertureDiam = "0.5;1.0;1.5;2.0;"
 	
 // tab 2

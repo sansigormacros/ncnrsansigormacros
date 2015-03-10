@@ -60,7 +60,7 @@ Proc FFTDrawRotCylinder(matStr,rad,len,xc,yc,zc,xrot,yrot,fill)
 //	KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
 	KR_MultiCylinder_Units(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
 
-	XYZV_FillMat_Centered(xoutW,youtW,ZoutW,xc,yc,zc,rad,len,sldW,0)			//last 1 will erase the matrix, 0 retains matrix
+	XYZV_FillMat_Centered(xoutW,youtW,ZoutW,xc,yc,zc,rad,len,fill,0)			//last 1 will erase the matrix, 0 retains matrix
 
 	//force a redraw (re-coloring) of the gizmo window
 	FFTMakeGizmoButtonProc("")
