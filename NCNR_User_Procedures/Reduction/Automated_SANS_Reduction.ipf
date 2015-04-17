@@ -1243,7 +1243,7 @@ Function Auto_Sort(folderStr)
 	
 	//Put resolution contents back
 	reswave[][0] = res0[p]
-	reswave[][1]= res1[p]
+	reswave[][1] = res1[p]
 	reswave[][2] = res2[p]
 	reswave[][3] = res3[p]
 	
@@ -1294,7 +1294,7 @@ Function Auto_TrimData(folderStr,nEnd)
 	
 ////Put resolution contents back???
 //		reswave[][0] = res0[p]
-//		reswave[][1]= res1[p]
+//		reswave[][1] = res1[p]
 //		reswave[][2] = res2[p]
 //		reswave[][3] = res3[p]
 //		

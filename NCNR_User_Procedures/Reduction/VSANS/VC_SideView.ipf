@@ -10,7 +10,8 @@
 // These are the side and top views with the "rays" traced out to show
 // where the detector views overlap
 //
-// TODO: make sure that all of the values are from global constants, not hard-wired values
+// TODO: 
+// -x  make sure that all of the values are from global constants, not hard-wired values
 //
 //
 //
@@ -42,8 +43,9 @@ Function SetupSideView()
 	return(0)
 End
 
-//TODO - still need to account for the 30cm SDD offset for the T/B detectors. These are only
-//      seen in the side view.
+// TODO: 
+// -x account for the 30cm SDD offset for the T/B detectors. These are only seen in the side view.
+//
 Function UpdateSideView()
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -79,7 +81,6 @@ Function UpdateSideView()
 	Variable B_SDD, B_offset
 
 	NVAR TB_SDD_offset = gFront_SDDOffset		//in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
-	TB_SDD_offset /= 1000		//convert to meters for the plot
 	
 	//front
 //	ControlInfo VCALCCtrl_2a
@@ -113,7 +114,7 @@ Function UpdateSideView()
 			
 
 // FRONT
-	FT_profileX = F_SDD+TB_SDD_offset		//SDD in meters, set back from L/R
+	FT_profileX = F_SDD+TB_SDD_offset/1000		//SDD in meters, set back from L/R 	---- convert to meters for the plot
 	FB_profileX = FT_profileX
 	
 	FT_profileY[0] = F_TB_sep		// separation in mm
@@ -123,8 +124,8 @@ Function UpdateSideView()
 
 	//angles (not calculating anything, just connect the dots)
 	FT_rayX[0] = 0
-	FT_rayX[1] = F_SDD+TB_SDD_offset
-	FT_rayX[2] = F_SDD+TB_SDD_offset
+	FT_rayX[1] = F_SDD+TB_SDD_offset/1000
+	FT_rayX[2] = F_SDD+TB_SDD_offset/1000
 	FT_rayX[3] = 0
 	
 	FT_rayY[0] = 0
@@ -134,8 +135,8 @@ Function UpdateSideView()
 	
 	
 	FB_rayX[0] = 0
-	FB_rayX[1] = F_SDD+TB_SDD_offset
-	FB_rayX[2] = F_SDD+TB_SDD_offset
+	FB_rayX[1] = F_SDD+TB_SDD_offset/1000
+	FB_rayX[2] = F_SDD+TB_SDD_offset/1000
 	FB_rayX[3] = 0
 	
 	FB_rayY[0] = 0
@@ -145,7 +146,7 @@ Function UpdateSideView()
 
 
 // MIDDLE	
-	MT_profileX = M_SDD+TB_SDD_offset		//SDD in meters
+	MT_profileX = M_SDD+TB_SDD_offset/1000		//SDD in meters
 	MB_profileX = MT_profileX
 	
 	MT_profileY[0] = M_TB_sep		// separation in mm
@@ -155,8 +156,8 @@ Function UpdateSideView()
 
 	//angles (not calculating anything, just connect the dots)
 	MT_rayX[0] = 0
-	MT_rayX[1] = M_SDD+TB_SDD_offset
-	MT_rayX[2] = M_SDD+TB_SDD_offset
+	MT_rayX[1] = M_SDD+TB_SDD_offset/1000
+	MT_rayX[2] = M_SDD+TB_SDD_offset/1000
 	MT_rayX[3] = 0
 	
 	MT_rayY[0] = 0
@@ -166,8 +167,8 @@ Function UpdateSideView()
 	
 	
 	MB_rayX[0] = 0
-	MB_rayX[1] = M_SDD+TB_SDD_offset
-	MB_rayX[2] = M_SDD+TB_SDD_offset
+	MB_rayX[1] = M_SDD+TB_SDD_offset/1000
+	MB_rayX[2] = M_SDD+TB_SDD_offset/1000
 	MB_rayX[3] = 0
 	
 	MB_rayY[0] = 0

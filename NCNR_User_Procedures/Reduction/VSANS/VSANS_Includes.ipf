@@ -1,9 +1,10 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-#include "V_VCALCPanel_MockUp"
-#include "V_DetectorBinning"
-#include "V_UtilityProcedures"
-#include "V_BinSlitAperture"	
-#include "V_DetectorFrontViews"
-#include "V_DetectorBin_Middle"
-#include "V_FrontDetectorPanelGraph"
+#include "VC_DetectorBinning_Q"
+#include "VC_DetectorBinning_Slit"
+#include "VC_DetectorBinning_Utils"
+#include "VC_FrontView_Deg"	
+#include "VC_HDF5_VSANS_Write"
+#include "VC_SideView"
+#include "VC_UtilityProcedures"
+#include "VC_VCALCPanel_MockUp"

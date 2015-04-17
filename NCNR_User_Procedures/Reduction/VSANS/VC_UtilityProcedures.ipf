@@ -266,7 +266,7 @@ end
 // SDD offset of the top/bottom panels
 // value returned is in mm (so beware)
 //
-Function VSANS_getTopBottomSDDOffset(type)
+Function VCALC_getTopBottomSDDOffset(type)
 	String type
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -295,8 +295,8 @@ Function VSANS_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 			
 		default:
-			Print "Error -- type not found in	 VSANS_getTopBottomSDDOffset(type)"					
-			sdd_offset = NaN		//no match for type		
+			Print "Error -- type not found in	 VCALC_getTopBottomSDDOffset(type)"					
+			sdd_offset = 0		//no match for type		
 	endswitch
 
 	SetDataFolder root:

@@ -11,7 +11,8 @@
 //
 // anticipating that at the same level as VCALC will be all of the reduction folders
 // in a similar way as for SANS reduction
-
+//
+//
 
 
 Macro VCALC_Panel()
@@ -23,10 +24,6 @@ Macro VCALC_Panel()
 		
 		//open the panel
 		DrawVCALC_Panel()
-		
-		// draw the detector panels now? (obsolete)
-//		UpdateFrontDetector(200,200)
-//		UpdateMiddleDetector(200,200)
 		
 		// two graphs with the ray-tracing side/top views
 		SetupSideView()
@@ -52,8 +49,6 @@ Function FakeFrontMiddleSDDClick()
 	V_MDet_SDD_SetVarProc(sva)
 	V_FDet_SDD_SetVarProc(sva)
 
-
-	
 	return(0)
 end
 
@@ -698,27 +693,6 @@ Proc V_Initialize_Space()
 
 
 // limits for detector travel? or are these limits part of the panel, hard-wired there
-
-	
-//	
-//	
-//	Make/O/D/N=23 integersRead
-//	Make/O/D/N=52 realsRead
-//	Make/O/T/N=11 textRead
-//	// data
-//	Make/O/D/N=(128,128) data,linear_data
-//	Make/O/D/N=2 aveint,qval,sigave
-//	data = 1
-//	linear_data = 1
-//	// fill w/default values
-//	S_fillDefaultHeader(integersRead,realsRead,textRead)
-//	
-//	// other variables
-//	// -(hard coded right now - look for NVAR declarations)
-//	Variable/G root:Packages:NIST:gBinWidth=1		//uses global preference
-//	Variable/G gisLogScale=0
-//	String/G FileList = "SASCALC"
-//	
 
 
 //	// for the panel

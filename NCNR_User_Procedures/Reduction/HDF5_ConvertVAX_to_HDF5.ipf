@@ -1,6 +1,13 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+//
+// DON'T TOSS THIS FILE-- THERE ARE USEFUL PROCEDURES HERE
+// -- some that may be in use elsewhere in reading/writing of HDF files
 
+
+
+//
+//
 // crudely converts the VAX format as read into RAW into an HDF5 file
 //
 // Not any thought was given to HDF5 structure

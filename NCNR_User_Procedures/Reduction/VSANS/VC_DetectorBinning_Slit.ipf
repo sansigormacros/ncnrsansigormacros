@@ -7,6 +7,7 @@
 // can the T/B panels really be used at all for slit mode? - since there's a big "hole" in the scattering data
 // collected -- you're not getting the full column of data covering a wide range of Qy. L/R panels should be fine.
 //
+// - best answer so far is to skip the T/B panels, and simply not use them
 //
 
 //
@@ -36,20 +37,6 @@ Function V_fBinDetector_byRows(folderStr,type)
 	nq = DimSize(inten,0)		//nq == the number of columns (x dimension)
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC	
-	
-//	Make/O/D/N=(nq)  $("iBin_slit_"+type)
-//	Make/O/D/N=(nq)  $("qBin_slit_"+type)
-//	Make/O/D/N=(nq)  $("nBin_slit_"+type)
-//	Make/O/D/N=(nq)  $("iBin2_slit_"+type)
-//	Make/O/D/N=(nq)  $("eBin_slit_"+type)
-//	Make/O/D/N=(nq)  $("eBin2D_slit_"+type)
-//	
-//	Wave iBin_qxqy = $("iBin_slit_"+type)
-//	Wave qBin_qxqy = $("qBin_slit_"+type)
-//	Wave nBin_qxqy = $("nBin_slit_"+type)
-//	Wave iBin2_qxqy = $("iBin2_slit_"+type)
-//	Wave eBin_qxqy = $("eBin_slit_"+type)
-//	Wave eBin2D_qxqy = $("eBin2D_slit_"+type)
 
 	Make/O/D/N=(nq)  $("iBin_qxqy_"+type)
 	Make/O/D/N=(nq)  $("qBin_qxqy_"+type)
@@ -66,7 +53,7 @@ Function V_fBinDetector_byRows(folderStr,type)
 	Wave eBin2D_qxqy = $("eBin2D_qxqy_"+type)
 
 // sum the rows	
-	MatrixOp/O iBin_qxqy=sumRows(inten)	//automatically generates the destination
+	MatrixOp/O iBin_qxqy = sumRows(inten)	//automatically generates the destination
 
 // if the detectors are "L", then the values are all negative...
 // if the detectors are T/B, then half is negative, and there's a very nearly zero point in the middle...	
