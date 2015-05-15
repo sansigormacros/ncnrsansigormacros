@@ -1,33 +1,44 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
-///// Procedures for:
-//	Generating the detector panels
-//	Filling the panels with Qtot, QxQyQz
-// Filling the "data" with a model function
-// Averaging the panels (independently) into I(Q)
+//////////////////
+// 
+// Procedures for:
+//
+//		Gathering information to calculate QxQyQz
+//		Filling the panels with Qtot, QxQyQz
+//		Filling the "data" with a model function
+//		Averaging the panels (independently) into I(Q)
+//		Plotting the 9 detector panels in 2D
+//		Plotting the 1D I(q) data depending on the panel combinations
 //
 //
-//There are some things in the current circular averaging that don't make any sense
-//and don't seem to really do anything at all, so trim them out.
-//1) subdividing pixels near the beam stop into 9 sub-pixels
-//2) non-linear correction (maybe keep this as a dummy). I may need to put some sort
-//of correction here for the offset, or it may already be done as I receive it.
+//  There are some things in the current circular averaging that don't make any sense
+//  and don't seem to really do anything at all, so i have decided to trim them out.
+//  1) subdividing pixels near the beam stop into 9 sub-pixels
+//  2) non-linear correction (only applies to Ordela)
+//
+//
+//  Do I separate out the circular, sector, rectangular, annular averaging into
+//   separate routines? 
 //
 //
 //
-//Do I separate out the circular, sector, rectangular, annular averaging into
-//separate routines? 
-//
-//
-//
+///////////////////
 
 
 Proc PlotFrontPanels()
 	fPlotFrontPanels()
 End
 
-// to plot I(q) for the 4 front panels
+//
+// Plot the front panels in 2D and 1D
+//		calcualate Q
+//		fill w/model data
+//		"shadow" the T/B detectors
+//		bin the data to I(q)
+//		draw I(q) graph
+//		draw 2D panel graph
 //
 // *** Call this function when front panels are adjusted, or wavelength, etc. changed
 //
@@ -55,10 +66,6 @@ Function fPlotFrontPanels()
 	FillPanel_wModelData(det_FR,qTot_FR,"FR")
 	FillPanel_wModelData(det_FT,qTot_FT,"FT")
 	FillPanel_wModelData(det_FB,qTot_FB,"FB")
-//	det_FL = V_SphereForm(1,60,1e-6,1,qTot_FL[p][q])				
-//	det_FR = V_SphereForm(1,60,1e-6,1,qTot_FR[p][q])				
-//	det_FT = V_SphereForm(1,60,1e-6,1,qTot_FT[p][q])				
-//	det_FB = V_SphereForm(1,60,1e-6,1,qTot_FB[p][q])			
 
 	SetDataFolder root:
 		
@@ -75,6 +82,8 @@ Function fPlotFrontPanels()
 	// plot the results
 	Execute "Front_IQ_Graph()"
 	Execute "FrontPanels_AsQ()"
+	
+	return(0)
 End
 
 
@@ -217,7 +226,7 @@ Function V_CalculateQFrontPanels()
 End
 
 
-// TODO" - this doesn't quite mask things out as they should be (too much is masked L/R of center)
+// TODO - this doesn't quite mask things out as they should be (too much is masked L/R of center)
 // and the outer edges of the detector are masked even if the TB panels extend past the TB of the LR panels.
 // ? skip the masking? but then I bin the detector data directly to get I(q), skipping the masked NaN values...
 //
@@ -244,7 +253,7 @@ Function V_SetShadow_TopBottom(folderStr,type)
 
 // TODO - these are to be set from globals, not hard-wired
 // pixel sizes are in cm for T/B detector
-// TODO: the "FT" check is hard wired for FRONT -- get rid of this...
+// TODO - the "FT" check is hard wired for FRONT -- get rid of this...
 
 	pixSizeX = VCALC_getPixSizeX(type)
 	pixSizeY = VCALC_getPixSizeY(type)
@@ -265,11 +274,11 @@ Function V_SetShadow_TopBottom(folderStr,type)
 end
 
 
+// After the panels have been calculated and rescaled in terms of Q, and filled with simulated data
+// they can be appended to the subwindow. If they are already there, the axes and coloring
+// are rescaled as needed
+//
 Window FrontPanels_AsQ() : Graph
-//	DoWindow/F FrontPanels_AsQ
-//	if(V_flag == 0)
-//	PauseUpdate; Silent 1		// building window...
-//	Display /W=(1477,44,1978,517)
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
@@ -302,12 +311,6 @@ Window FrontPanels_AsQ() : Graph
 
 	SetDataFolder root:
 	
-//	ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
-//	ModifyGraph grid=2
-//	ModifyGraph mirror=2
-//	SetAxis left -0.2,0.2
-//	SetAxis bottom -0.2,0.2
-//	endif
 EndMacro
 
 
@@ -418,6 +421,8 @@ Function fPlotMiddlePanels()
 	// plot the results
 	Execute "Middle_IQ_Graph()"
 	Execute "MiddlePanels_AsQ()"
+	
+	return(0)
 End
 
 // works for Left, works for Right... works for T/B too.
@@ -804,6 +809,9 @@ Function fPlotBackPanels()
 	// plot the results
 	Execute "Back_IQ_Graph()"
 	Execute "BackPanels_AsQ()"
+
+	return(0)
+
 End
 
 // works for Left, works for Right... works for T/B too.

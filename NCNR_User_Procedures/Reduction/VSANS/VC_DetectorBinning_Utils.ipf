@@ -1,5 +1,16 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+/////////////////////////
+//
+// Utility functions to:
+//		calculate Q, Qx, Qy, Qz
+//		fill the detector panels with simulated data (the model functions are here)
+//		bin the 2D detector to 1D I(Q) based on Q and deltaQ (bin width)
+//
+/////////////////////////
+
+
+
 
 // TODO: hard wired for a sphere - change this to allow minimal selections and altering of coefficients
 // TODO: add the "fake" 2D simulation to fill the panels which are then later averaged as I(Q)
@@ -30,6 +41,11 @@ Function FillPanel_wModelData(det,qTot,type)
 	
 	//?? pick the function from a popup on the panel? (bypass the analysis panel, or maybe it's better to 
 	//  keep the panel to keep people used to using it.)
+	// peak @ 0.1 ~ AgBeh
+	//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 100.0, 0.1,3,0.1}		
+	//
+	// peak @ 0.015 in middle of middle detector, maybe not "real" vycor, but that is to be resolved
+	//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 500.0, 0.015,3,0.1}		
 	String funcStr = VCALC_getModelFunctionStr()
 	strswitch(funcStr)
 		case "Big Debye":
@@ -43,6 +59,18 @@ Function FillPanel_wModelData(det,qTot,type)
 			break
 		case "Sphere":
 			tmpInten = V_SphereForm(1,60,1e-6,0.001,qTot[p][q])	
+			break
+		case "AgBeh":
+			tmpInten = V_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
+			break
+		case "Vycor":
+			tmpInten = V_BroadPeak(1e-9,3,20,500.0,0.015,3,0.1,qTot[p][q])
+			break	
+		case "Empty Cell":
+			tmpInten = V_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
+			break
+		case "Blocked Beam":
+			tmpInten = V_BlockedBeam(1,qTot[p][q])
 			break
 		default:
 			tmpInten = V_Debye(10,300,0.1,qTot[p][q])
@@ -147,7 +175,6 @@ End
 /////////////////////
 
 //function to calculate the overall q-value, given all of the necesary trig inputs
-//NOTE: detector locations passed in are pixels = 0.5cm real space on the detector
 //and are in detector coordinates (1,128) rather than axis values
 //the pixel locations need not be integers, reals are ok inputs
 //sdd is in meters
@@ -176,7 +203,6 @@ End
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
 //
-//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
 //sdd is in meters
 //wavelength is in Angstroms
 //
@@ -207,7 +233,6 @@ End
 //calculates just the q-value in the y-direction on the detector
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
-//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
 //sdd is in meters
 //wavelength is in Angstroms
 //
@@ -238,7 +263,6 @@ End
 //calculates just the z-component of the q-vector, not measured on the detector
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
-//NOTE: detector locations passed in are pixel = 0.5cm real space on the Ordela detector
 //sdd is in meters
 //wavelength is in Angstroms
 //
@@ -365,6 +389,86 @@ Function V_Debye(scale,rg,bkg,x)
 	return (Pq+bkg)
 End
 
+// a sum of a power law and debye to approximate the scattering from a real empty cell
+//
+// 	make/O/D coef_ECEmp = {2.2e-8,3.346,0.0065,9.0,0.016}
+//
+Function V_EC_Empirical(aa,mm,scale,rg,bkg,x)
+	Variable aa,mm,scale,rg,bkg
+	Variable x
+	
+	// variables are:
+	//[0] = A
+	//[1] = power m
+	//[2] scale factor
+	//[3] radius of gyration [A]
+	//[4] background	[cm-1]
+	
+	Variable Iq
+	
+	// calculates (scale*debye)+bkg
+	Variable Pq,qr2
+	
+//	if(x*Rg < 1e-3)		//added Oct 2008 to avoid numerical errors at low arg values
+//		return(scale+bkg)
+//	endif
+	
+	Iq = aa*x^-mm
+	
+	qr2=(x*rg)^2
+	Pq = 2*(exp(-(qr2))-1+qr2)/qr2^2
+	
+	//scale
+	Pq *= scale
+	// then add the terms up
+	return (Iq + Pq + bkg)
+End
+
+// blocked beam
+//
+Function V_BlockedBeam(bkg,x)
+	Variable bkg
+	Variable x
+	
+	return (bkg)
+End
+
+
+//
+// a broad peak to simulate silver behenate or vycor
+//
+// peak @ 0.1 ~ AgBeh
+//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 100.0, 0.1,3,0.1}		
+//
+//
+// peak @ 0.015 in middle of middle detector, maybe not "real" vycor, but that is to be resolved
+//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 500.0, 0.015,3,0.1}		
+//
+//
+Function V_BroadPeak(aa,nn,cc,LL,Qzero,mm,bgd,x)
+	Variable aa,nn,cc,LL,Qzero,mm,bgd
+	Variable x
+	
+	// variables are:							
+	//[0] Porod term scaling
+	//[1] Porod exponent
+	//[2] Lorentzian term scaling
+	//[3] Lorentzian screening length [A]
+	//[4] peak location [1/A]
+	//[5] Lorentzian exponent
+	//[6] background
+	
+//	local variables
+	Variable inten, qval
+//	x is the q-value for the calculation
+	qval = x
+//	do the calculation and return the function value
+	
+	inten = aa/(qval)^nn + cc/(1 + (abs(qval-Qzero)*LL)^mm) + bgd
+
+	Return (inten)
+	
+End
 
 
 
@@ -428,6 +532,15 @@ Proc V_Graph_1D_detType(folderStr,type)
 End
 
 
+
+//////////
+//
+//		Function that bins a 2D detctor panel into I(q) based on the q-value of the pixel
+//		- each pixel QxQyQz has been calculated beforehand
+//		- if multiple panels are selected to be combined, it is done here during the binning
+//		- the setting of deltaQ step is still a little suspect (TODO)
+//
+//
 // see the equivalent function in PlotUtils2D_v40.ipf
 //
 //Function fDoBinning_QxQy2D(inten,qx,qy,qz)
@@ -435,8 +548,7 @@ End
 // this has been modified to accept different detector panels and to take arrays
 // -- type = FL or FR or...other panel identifiers
 //
-// TODO "iErr" is all messed up since it doesn't really apply here for data that is not 2D simulation
-//
+// TODO "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
 //
 Function V_fDoBinning_QxQy2D(folderStr,type)
 	String folderStr,type
@@ -591,11 +703,29 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 
 
 //TODO: properly define the errors here - I'll have this if I do the simulation
-	if(WaveExists(iErr)==0)
+	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
 //		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
 		iErr = sqrt(inten+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr2)==0 && WaveExists(inten2) != 0)
+		Duplicate/O inten2,iErr2
+		Wave iErr2=iErr2
+//		iErr2 = 1+sqrt(inten2+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr2 = sqrt(inten2+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr3)==0  && WaveExists(inten3) != 0)
+		Duplicate/O inten3,iErr3
+		Wave iErr3=iErr3
+//		iErr3 = 1+sqrt(inten3+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr3 = sqrt(inten3+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr4)==0  && WaveExists(inten4) != 0)
+		Duplicate/O inten4,iErr4
+		Wave iErr4=iErr4
+//		iErr4 = 1+sqrt(inten4+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
 	endif
 
 	nq = 600
@@ -621,7 +751,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 	
 	
 //	delQ = abs(sqrt(qx[2]^2+qy[2]^2+qz[2]^2) - sqrt(qx[1]^2+qy[1]^2+qz[1]^2))		//use bins of 1 pixel width 
-// TODO: not sure if I want to so dQ in x or y direction...
+// TODO: not sure if I want to set dQ in x or y direction...
 	// the short dimension is the 8mm tubes, use this direction as dQ?
 	// but don't use the corner of the detector, since dQ will be very different on T/B or L/R due to the location of [0,0]
 	// WRT the beam center. use qx or qy directly. Still not happy with this way...
@@ -679,7 +809,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
-					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
+					eBin2D_qxqy[binIndex] += iErr2[ii][jj]*iErr2[ii][jj]
 					nBin_qxqy[binIndex] += 1
 				endif
 			endfor
@@ -701,7 +831,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
-					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
+					eBin2D_qxqy[binIndex] += iErr3[ii][jj]*iErr3[ii][jj]
 					nBin_qxqy[binIndex] += 1
 				endif
 			endfor
@@ -720,7 +850,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
-					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
+					eBin2D_qxqy[binIndex] += iErr4[ii][jj]*iErr4[ii][jj]
 					nBin_qxqy[binIndex] += 1
 				endif
 			endfor

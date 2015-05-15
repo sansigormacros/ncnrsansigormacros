@@ -2,6 +2,14 @@
 
 #include <HDF5 Browser>
 
+//
+// !!! search for "SRK" to see what I have modified to work with NCNR files
+// -- these changes may only be for testing, and may need to be removed in the final version!!!
+//
+//
+//
+
+
 // requires the Wavemetrics "HDF5.xop" to be installed for IgorPro
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -938,8 +946,8 @@ Static Function H5GW__OpenHDF5_RO(fileName)
 //	endif
 
 	Variable fileID = 0
-//	HDF5OpenFile/R/P=home/Z fileID as fileName
-	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
+	HDF5OpenFile/R/P=home/Z fileID as fileName
+//	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
 	if (V_Flag != 0)
 		return 0
 	endif

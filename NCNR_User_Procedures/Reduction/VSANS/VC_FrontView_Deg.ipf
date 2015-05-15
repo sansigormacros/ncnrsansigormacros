@@ -1,12 +1,20 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+
+/////////////////////////
 //
-// draw boxes for the detector coverage based on the geometry of the instrument setup
+// Function to draw schematic boxes for the detector coverage based on the geometry
+// of the instrument setup
 //
-// this will draw all of the panels. Zooming is then simply rescaling the axes
+// -- all of the dimensions are based on the angles and ranges in degrees
 //
-// Now it is part of the main panel and is updated when any detector settings are changed
+// -- this draws all 9 of the panels. Zooming is then simply rescaling the axes
 //
+// -- Now it is part of the main panel. This function is then called again
+//    to update the drawing when any detector settings are changed
+//
+//////////////////////////
+
 Function FrontView_1x()
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC

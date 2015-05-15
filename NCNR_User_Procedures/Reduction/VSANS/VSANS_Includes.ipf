@@ -4,7 +4,11 @@
 #include "VC_DetectorBinning_Slit"
 #include "VC_DetectorBinning_Utils"
 #include "VC_FrontView_Deg"	
-#include "VC_HDF5_VSANS_Write"
+#include "VC_HDF5_VSANS_Utils"
 #include "VC_SideView"
 #include "VC_UtilityProcedures"
 #include "VC_VCALCPanel_MockUp"
+
+#include "HDF5gateway_NCNR"
+#include "Nexus_SANS_Write"
+#include "Nexus_VSANS_Write"

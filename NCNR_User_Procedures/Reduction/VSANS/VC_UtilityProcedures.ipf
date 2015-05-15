@@ -1,14 +1,21 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-
-// a bunch of utility procedures to get information from the VCALC panel and to access
+////////////////////////
+//
+//
+// a bunch of utility procedures to access information from the VCALC panel and to access
 // constants based in which of the detectors I'm trying to work with. Saves a lot of repetitive switches
 //
 // start the function names with VCALC_ to avoid the eventual conflicts with the file loading utilities
 // for reduction of real VSANS data
+//
+//
+// -- add more of these procedures as more items are added to the panel
+//
+////////////////////////
 
 
-///  Values from the VCALC panel
+//  Values from the VCALC panel
 
 
 // returns the nominal SDD from the panel -- value is METERS
@@ -307,5 +314,5 @@ End
 
 /////////// procedure to concatenate I(q) files into a single file
 //
-// currently, no rescaling is done, just simple concatentate and sort
+// currently, no rescaling is done, just crude concatentate and sort
 //

@@ -1,6 +1,14 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+//////////////////
+//
+// Procedures to average data taken in "slit" apertuere geometry. The fake data on the detector panels
+//  is as would be collected in PINHOLE geometry - I do not currently have a simulation for slit
+//  apertures (this would need to be MonteCarlo) - the I(q) averaging here gives the I(q) that you
+//  would measure in 1D using slit geometry. It is done by simply summing the columns of data on each detector.
+//
+//////////////////
 //
 //
 // TODO - big question about averaging in this way...
@@ -9,8 +17,15 @@
 //
 // - best answer so far is to skip the T/B panels, and simply not use them
 //
+// TODO -- be sure that the absolute scaling of this is correct. I have no guarantee that 
+//			it'll be correct.
+//
+/////////////////
+
 
 //
+// seems backwards to call this "byRows", but this is the way that Igor indexes
+// LR banks are defined as (48,256) (n,m), sumRows gives sum w/ dimension (n x 1)
 //
 Function V_fBinDetector_byRows(folderStr,type)
 	String folderStr,type

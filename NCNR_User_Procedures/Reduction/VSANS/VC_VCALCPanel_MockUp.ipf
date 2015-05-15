@@ -685,7 +685,7 @@ Proc V_Initialize_Space()
 	String/G gBackDetType = "1D;2D;"
 
 // tab 5
-	String/G gModelFunctionType = "Debye;Sphere;Big Debye;Big Sphere;"
+	String/G gModelFunctionType = "Debye;Sphere;Big Debye;Big Sphere;AgBeh;Vycor;Empty Cell;Blocked Beam;"
 
 
 ////////////////////
