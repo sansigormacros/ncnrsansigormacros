@@ -12,3 +12,6 @@
 #include "HDF5gateway_NCNR"
 #include "Nexus_SANS_Write"
 #include "Nexus_VSANS_Write"
+
+// for possible peak fitting
+#include "BroadPeak_Pix_2D"

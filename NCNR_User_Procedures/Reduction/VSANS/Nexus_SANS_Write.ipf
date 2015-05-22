@@ -36,7 +36,7 @@ NewDataFolder/O/S root:SANS_file
 		Make/O/D/N=1	duration	= 300
 		Make/O/D/N=1	collection_time	= 300
 		Make/O/T/N=1	run_cycle	= "S22-23"
-		Make/O/T/N=1	intent	= "RAW"
+		Make/O/T/N=1	program_name	= "runPoint={'stuff'}"
 		Make/O/T/N=1	data_directory	= "[NG7SANS41]"
 		NewDataFolder/O/S  root:SANS_file:entry1:user		
 			Make/O/T/N=1	name	= "Dr. Pi"
@@ -56,13 +56,13 @@ NewDataFolder/O/S root:SANS_file
 			Make/O/T/N=1	type	= "monitor type"
 			Make/O/D/N=1	efficiency	= 0.01
 			Make/O/D/N=1	sampled_fraction	= 1
-			Make/O/D/N=1	nominal	= 1e8
-			Make/O/D/N=1	data	= 1
-			Make/O/D/N=1	nx_distance	= 13.1
 			Make/O/D/N=1	detector_counts	= 100111222
 			Make/O/D/N=1	detector_preset	= 1e5
-			Make/O/D/N=1	detector_mask	= 1
-		NewDataFolder/O/S  root:SANS_file:entry1:program_name		
+			Make/O/D/N=1	count_start	= 1
+			Make/O/D/N=1	count_end	= 1
+			Make/O/D/N=1	count_time	= 1
+			Make/O/D/N=1	count_time_preset	= 1
+		NewDataFolder/O/S  root:SANS_file:entry1:program_data		
 			Make/O/T/N=1	data	= "program data"
 			Make/O/T/N=1	description	= "acquisition"
 			Make/O/T/N=1	file_name	= "NICE"
@@ -323,8 +323,8 @@ SetDataFolder  root:SANS_file
 		//	collection_time		
 		Note/K collection_time, "units=s"
 		//	run_cycle		
-		//	intent		
-		//	data_directory		
+		//	data_directory
+		//	program_name	
 		SetDataFolder  root:SANS_file:entry1:user		
 			Make/O/N=0 Igor___folder_attributes	
 			Note/K Igor___folder_attributes, "NX_class=NXuser"
@@ -347,14 +347,17 @@ SetDataFolder  root:SANS_file
 			//	type		
 			//	efficiency		
 			//	sampled_fraction		
-			//	nominal		
-			//	data		
-			//	nx_distance		
-			Note/K nx_distance, "units=m"
 			//	detector_counts		
-			//	detector_preset		
-			//	detector_mask		
-		SetDataFolder  root:SANS_file:entry1:program_name		
+			//	detector_preset
+			//	count_start
+			Note/K count_start, "units=s"
+			//	count_end
+			Note/K count_end, "units=s"
+			//	count_time
+			Note/K count_time, "units=s"
+			//	count_time_preset
+			Note/K count_time_preset, "units=s"
+		SetDataFolder  root:SANS_file:entry1:program_data		
 			Make/O/N=0 Igor___folder_attributes	
 			//	data		
 			//	description		
@@ -737,7 +740,7 @@ Proc H_Fill_SANS_wSim()
 			duration	= 300
 			collection_time	= 300
 			run_cycle	= "S22-23"
-			intent	= "RAW"
+			program_name	= "runPoint={stuff}"
 			data_directory	= "[NG7SANS41]"
 		SetDataFolder  root:SANS_file:entry1:user		
 				name	= "Dr. Pi"
@@ -757,13 +760,13 @@ Proc H_Fill_SANS_wSim()
 				type	= "monitor type"
 				efficiency	= 0.01
 				sampled_fraction	= 1
-				nominal	= 1e8
-				data	= 1
-				nx_distance	= 13.1
 				detector_counts	= 100111222
 				detector_preset	= 1e5
-				detector_mask	= 1
-		SetDataFolder  root:SANS_file:entry1:program_name		
+				count_start = 1
+				count_end = 1
+				count_time = 1
+				count_time_preset = 1
+		SetDataFolder  root:SANS_file:entry1:program_data		
 				data	= "program data"
 				description	= "acquisition"
 				file_name	= "NICE"

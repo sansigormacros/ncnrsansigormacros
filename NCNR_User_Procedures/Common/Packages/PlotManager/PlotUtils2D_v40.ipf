@@ -391,7 +391,7 @@ Function UpdateQxQy2Mat(Qx,Qy,inten,linMat,mat)
 	Variable xrows=DimSize(mat, 0 )			//assumes square matrix!!
 	
 	String folderStr=GetWavesDataFolder(Qx,1)
-	NVAR gIsLogScale=$(folderStr+"gIsLogScale")
+	NVAR/Z gIsLogScale=$(folderStr+"gIsLogScale")
 	
 	linMat = inten[q*xrows+p]
 	
