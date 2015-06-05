@@ -71,7 +71,7 @@ Proc DrawVCALC_Panel()
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
 	PopupMenu popup_a,mode=1,popvalue="Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 
-	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type"
+	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type",proc=V_RebinIQ_PopProc
 	PopupMenu popup_b,mode=1,popvalue="One",value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
 	
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
@@ -195,12 +195,23 @@ Proc DrawVCALC_Panel()
 
 // tab(5) - Simulation setup
  	SetVariable VCALCCtrl_5a,pos={40,290},size={200,15},title="Neutrons on Sample (imon)"
-	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e10
+	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e10,proc=V_SimImon_SetVarProc
 	PopupMenu VCALCCtrl_5b,pos={40,260},size={180,20},title="Model Function",disable=1
-	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType
+	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=V_SimModelFunc_PopProc
 	
 End
 
+//
+// just recalculates the detector panels, doesn't adjust the views
+//
+Function Recalculate_AllDetectors()
+
+	fPlotBackPanels()
+	fPlotMiddlePanels()
+	fPlotFrontPanels()
+
+	return(0)
+End
 
 // function to control the drawing of controls in the TabControl on the main panel
 // Naming scheme for the controls MUST be strictly adhered to... else controls will 
@@ -273,6 +284,7 @@ Function Front2DQ_Log_CheckProc(cba) : CheckBoxControl
 			Execute "FrontPanels_AsQ()"
 			Execute "MiddlePanels_AsQ()"
 			Execute "BackPanels_AsQ()"
+			
 			break
 		case -1: // control being killed
 			break
@@ -281,8 +293,49 @@ Function Front2DQ_Log_CheckProc(cba) : CheckBoxControl
 	return 0
 End
 
+//
+// recalculate the detectors with a preset model function
+//
+Function V_SimModelFunc_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum	// which item is currently selected (1-based)
+	String popStr		// contents of current popup item as string
+
+	Recalculate_AllDetectors()
+	
+	return(0)	
+End
 
 
+//
+// recalculate the I(q) binning. no need to adjust model function or views
+// just rebin
+//
+Function V_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum	// which item is currently selected (1-based)
+	String popStr		// contents of current popup item as string
+
+	// do the q-binning for front panels to get I(Q)
+	Execute "BinAllFrontPanels()"
+	Execute "Front_IQ_Graph()"
+
+	// do the q-binning for middle panels to get I(Q)
+	Execute "BinAllMiddlePanels()"
+	Execute "Middle_IQ_Graph()"
+	
+	// do the q-binning for the back panel to get I(Q)
+	Execute "BinAllBackPanels()"
+	Execute "Back_IQ_Graph()"
+	
+	return(0)	
+End
+
+
+
+	
+	
+//
 // setVar for the wavelength
 //
 Function V_Lambda_SetVarProc(sva) : SetVariableControl
@@ -295,11 +348,36 @@ Function V_Lambda_SetVarProc(sva) : SetVariableControl
 			Variable dval = sva.dval
 			String sval = sva.sval
 			
-			// don't need to recalculate the views, but need to recalculate the detectors
-			fPlotBackPanels()
-			fPlotMiddlePanels()
-			fPlotFrontPanels()
-			
+//			// don't need to recalculate the views, but need to recalculate the detectors
+//			fPlotBackPanels()
+//			fPlotMiddlePanels()
+//			fPlotFrontPanels()
+
+			Recalculate_AllDetectors()		
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//
+// setVar for the simulation monitor count
+//
+Function V_SimImon_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+
+			Recalculate_AllDetectors()		
+				
 			break
 		case -1: // control being killed
 			break

@@ -32,7 +32,7 @@ Proc PlotBroadPeak_Pix2D(xDim,yDim)
 	Prompt yDim "Enter Y dimension: "
 		
 	Make/O/D coef_PeakPix2D = {10, 3, 10, 0.3, 10, 2, 0.1, 8,4, 100, 100}
-	Make/O/D tmp_Pix2D = 	{10, 3, 10, 0.3, 10, 2, 0.1}		//without the pixel ctrs					
+//	Make/O/D tmp_Pix2D = 	{10, 3, 10, 0.3, 10, 2, 0.1}		//without the pixel ctrs					
 	make/o/t parameters_PeakPix2D = {"Porod Scale", "Porod Exponent","Lorentzian Scale","Lor Screening Length","Peak position","Lorentzian Exponent","Bgd [1/cm]", "xPix size (mm)","yPix size (mm)", "xCtr (pixels)", "yCtr (pixels)"}		
 	Edit parameters_PeakPix2D,coef_PeakPix2D				
 	
@@ -225,10 +225,6 @@ ThreadSafe Function I_BroadPeak_Pix2D(w,xw,yw)
 	else
 		qval = sqrt((xw-xCtr)^2*ratio+(yw-yCtr)^2)			// use for TB panels where the y pixels are twice the size of x	
 	endif
-
-//	qval = sqrt((xw-xCtr)^2+(yw-yCtr)^2)			// use if the pixels are square
-//	qval = sqrt((xw-xCtr)^2+(yw-yCtr)^2/4)			// use for LR panels where the y pixels are half the size of x
-//	qval = sqrt((xw-xCtr)^2/4+(yw-yCtr)^2)			// use for TB panels where the y pixels are twice the size of x	
 
 	if(qval<.001)
 		return(bgd)

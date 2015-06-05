@@ -221,33 +221,33 @@ NewDataFolder/O/S root:VSANS_file
 						Make/O/D/N=1	wavelength	= 5.1
 						Make/O/D/N=1	wavelength_spread	= 0.8
 						//	description_of_distribution	
-					NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:monochromator:polarizer		
-						Make/O/T/N=1	type	= "supermirror"
-						Make/O/T/N=1	composition	= "multilayer"
-						Make/O/D/N=1	efficiency	= 0.95
-						Make/O/T/N=1	status	= "in"
-					NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:monochromator:flipper		
-						Make/O/T/N=1	status	= "on"
-						Make/O/D/N=1	driving_current	= 42
-						Make/O/T/N=1	waveform	= "sine"
-						Make/O/D/N=1	frequency	= 400
-						Make/O/D/N=1	transmitted_power	= 0.99
-					NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:monochromator:polarizer_analyzer		
-						Make/O/T/N=1	status	= "down"
-						Make/O/D/N=1	guide_field_current_1	= 33
-						Make/O/D/N=1	guide_field_current_2	= 32
-						Make/O/D/N=1	solenoid_current	= 21
-						Make/O/D/N=1	cell_index	= 1
-						Make/O/T/N=(5)	cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
-						Make/O/D/N=(5,2)	cell_parameters	= 1
-					NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:monochromator:chopper		
-						Make/O/T/N=1	type	= "single"
-						Make/O/D/N=1	rotation_speed	= 12000
-						Make/O/D/N=1	distance_from_source	= 400
-						Make/O/D/N=1	distance_from_sample	= 1500
-						Make/O/D/N=1	slits	= 2
-						Make/O/D/N=1	angular_opening	= 15
-						Make/O/D/N=1	duty_cycle	= 0.25
+				NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:chopper		
+					Make/O/T/N=1	type	= "single"
+					Make/O/D/N=1	rotation_speed	= 12000
+					Make/O/D/N=1	distance_from_source	= 400
+					Make/O/D/N=1	distance_from_sample	= 1500
+					Make/O/D/N=1	slits	= 2
+					Make/O/D/N=1	angular_opening	= 15
+					Make/O/D/N=1	duty_cycle	= 0.25
+				NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:polarizer		
+					Make/O/T/N=1	type	= "supermirror"
+					Make/O/T/N=1	composition	= "multilayer"
+					Make/O/D/N=1	efficiency	= 0.95
+					Make/O/T/N=1	status	= "in"
+				NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:flipper		
+					Make/O/T/N=1	status	= "on"
+					Make/O/D/N=1	driving_current	= 42
+					Make/O/T/N=1	waveform	= "sine"
+					Make/O/D/N=1	frequency	= 400
+					Make/O/D/N=1	transmitted_power	= 0.99
+				NewDataFolder/O/S root:VSANS_file:entry1:instrument:beam:polarizer_analyzer		
+					Make/O/T/N=1	status	= "down"
+					Make/O/D/N=1	guide_field_current_1	= 33
+					Make/O/D/N=1	guide_field_current_2	= 32
+					Make/O/D/N=1	solenoid_current	= 21
+					Make/O/D/N=1	cell_index	= 1
+					Make/O/T/N=(5)	cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
+					Make/O/D/N=(5,2)	cell_parameters	= 1
 						//	+?	
 					
 				//ADD converging pinholes, etc	
@@ -896,45 +896,46 @@ SetDataFolder  root:VSANS_file
 						//wavelength		
 						Note/K wavelength, "units=A"
 						//wavelength_spread		
-							// description_of_distribution		
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:polarizer			
-						//type		
-						//composition		
-						//efficiency		
-						//status		
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:flipper			
-						//status		
-						//driving_current		
-						Note/K driving_current, "units=A"
-						//waveform		
-						//frequency		
-						Note/K frequency, "units=Hz"
-						//transmitted_power		
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:polarizer_analyzer			
-						//status		
-						//guide_field_current_1		
-						Note/K guide_field_current_1, "units=A"
-						//guide_field_current_2		
-						Note/K guide_field_current_2, "units=A"
-						//solenoid_current		
-						Note/K solenoid_current, "units=A"
-						//cell_index		
-						//cell_names		
-						//cell_parameters		
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:chopper		
-						Make/O/N=0 Igor___folder_attributes	
-						Note/K Igor___folder_attributes, "NX_class=NXdisk_chopper"
-						//type		
-						//rotation_speed		
-						Note/K rotation_speed, "units=RPM"
-						//distance_from_source		
-						Note/K distance_from_source, "units=m"
-						//distance_from_sample		
-						Note/K distance_from_sample, "units=m"
-						//slits		
-						//angular_opening		
-						Note/K angular_opening, "units=degrees"
-						//duty_cycle		
+							// description_of_distribution	
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:chopper		
+					Make/O/N=0 Igor___folder_attributes	
+					Note/K Igor___folder_attributes, "NX_class=NXdisk_chopper"
+					//type		
+					//rotation_speed		
+					Note/K rotation_speed, "units=RPM"
+					//distance_from_source		
+					Note/K distance_from_source, "units=m"
+					//distance_from_sample		
+					Note/K distance_from_sample, "units=m"
+					//slits		
+					//angular_opening		
+					Note/K angular_opening, "units=degrees"
+					//duty_cycle			
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:polarizer			
+					//type		
+					//composition		
+					//efficiency		
+					//status		
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:flipper			
+					//status		
+					//driving_current		
+					Note/K driving_current, "units=A"
+					//waveform		
+					//frequency		
+					Note/K frequency, "units=Hz"
+					//transmitted_power		
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:polarizer_analyzer			
+					//status		
+					//guide_field_current_1		
+					Note/K guide_field_current_1, "units=A"
+					//guide_field_current_2		
+					Note/K guide_field_current_2, "units=A"
+					//solenoid_current		
+					Note/K solenoid_current, "units=A"
+					//cell_index		
+					//cell_names		
+					//cell_parameters		
+
 							// +?		
 						
 				// ADD converging pinholes, etc		
@@ -1650,34 +1651,35 @@ SetDataFolder  root:VSANS_file
 					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:white_beam		
 						wavelength	= VCALC_getWavelength()
 						wavelength_spread	= 0.8
-						//	description_of_distribution	
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:polarizer		
-						type	= "supermirror"
-						composition	= "multilayer"
-						efficiency	= 0.95
-						status	= "in"
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:flipper		
-						status	= "on"
-						driving_current	= 42
-						waveform	= "sine"
-						frequency	= 400
-						transmitted_power	= 0.99
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:polarizer_analyzer		
-						status	= "down"
-						guide_field_current_1	= 33
-						guide_field_current_2	= 32
-						solenoid_current	= 21
-						cell_index	= 1
-						cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
-						cell_parameters	= 1
-					SetDataFolder root:VSANS_file:entry1:instrument:beam:monochromator:chopper		
-						type	= "single"
-						rotation_speed	= 12000
-						distance_from_source	= 400
-						distance_from_sample	= 1500
-						slits	= 2
-						angular_opening	= 15
-						duty_cycle	= 0.25
+						//	description_of_distribution
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:chopper		
+					type	= "single"
+					rotation_speed	= 12000
+					distance_from_source	= 400
+					distance_from_sample	= 1500
+					slits	= 2
+					angular_opening	= 15
+					duty_cycle	= 0.25	
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:polarizer		
+					type	= "supermirror"
+					composition	= "multilayer"
+					efficiency	= 0.95
+					status	= "in"
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:flipper		
+					status	= "on"
+					driving_current	= 42
+					waveform	= "sine"
+					frequency	= 400
+					transmitted_power	= 0.99
+				SetDataFolder root:VSANS_file:entry1:instrument:beam:polarizer_analyzer		
+					status	= "down"
+					guide_field_current_1	= 33
+					guide_field_current_2	= 32
+					solenoid_current	= 21
+					cell_index	= 1
+					cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
+					cell_parameters	= 1
+
 		//					+?	
 					
 		//		ADD converging pinholes, etc	
@@ -2082,4 +2084,56 @@ SetDataFolder  root:VSANS_file
 End
 
 
+////////////// fake DIV file tests
 
+//
+//	Make/O/T/N=1	file_name	= "VSANS_DIV_test.h5"
+//
+// simple generation of a fake div file. for sans, nothing other than the creation date was written to the 
+// file header. nothing more is needed (possibly)
+//
+// TODO -- I want to re-visit the propagation of errors in the DIV file. No errors are ever calculated/saved 
+//   during the generation of the file, but there's no reason it couldn't. the idea is that the plex
+//   is counted so long that the errors are insignificant compared to the data errors, but that may not
+//   always be the case. A bit of math may prove this. or not. Plus, the situation for VSANS may be different.
+//
+Proc H_Setup_VSANS_DIV_Structure()
+	
+	NewDataFolder/O/S root:VSANS_DIV_file		
+
+	NewDataFolder/O/S root:VSANS_DIV_file:entry1		
+		Make/O/T/N=1	title	= "title of entry1"
+		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:instrument		
+			Make/O/T/N=1	name	= "NGB30mSANS"
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_B		
+			Make/O/I/N=(320,320)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(320,320)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MR		
+			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_ML		
+			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MT		
+			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MB		
+			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FR		
+			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FL		
+			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FT		
+			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FB		
+			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
+			
+	SetDataFolder root:
+
+End

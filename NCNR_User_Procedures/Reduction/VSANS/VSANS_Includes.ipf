@@ -15,3 +15,4 @@
 
 // for possible peak fitting
 #include "BroadPeak_Pix_2D"
+#include "VC_BeamCenter"

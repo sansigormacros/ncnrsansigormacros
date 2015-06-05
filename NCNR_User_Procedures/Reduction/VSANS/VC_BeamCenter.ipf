@@ -4,8 +4,8 @@
 // TODO
 // -- adjust the guesses to some better starting conditions
 // -- multiple fit options with different things held
-// -- when selecting the detector, set the x/y pixel sizes
-// -- figure out how to re-plot the images when swapping between LR and TB panels
+// x- when selecting the detector, set the x/y pixel sizes
+// x- figure out how to re-plot the images when swapping between LR and TB panels
 //
 
 
@@ -15,14 +15,15 @@
 //
 Window DetectorPanelFit() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(662,418,1586,1108)/N=PanelFit
-	ShowTools/A
 
 // plot the default model to be sure some data is present
 	if(exists("xwave_PeakPix2D") == 0)
 		PlotBroadPeak_Pix2D()
 	endif
-	
+
+	NewPanel /W=(662,418,1586,1108)/N=PanelFit/K=1
+//	ShowTools/A
+		
 	PopupMenu popup_0,pos={20,20},size={109,20},proc=SetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
@@ -41,7 +42,7 @@ Window DetectorPanelFit() : Panel
 	Display/W=(20,80,180,600)/HOST=# 
 	AppendImage curDispPanel
 	ModifyImage curDispPanel ctab= {*,*,ColdWarm,0}
-	ModifyGraph width={Plan,1,bottom,left}
+//	ModifyGraph width={Plan,1,bottom,left}
 	Label left "Y pixels"
 	Label bottom "X pixels"	
 	RenameWindow #,DetData
@@ -51,7 +52,7 @@ Window DetectorPanelFit() : Panel
 	Display/W=(200,80,360,600)/HOST=#
 	AppendImage PeakPix2D_mat
 	ModifyImage PeakPix2D_mat ctab= {*,*,ColdWarm,0}
-	ModifyGraph width={Plan,1,bottom,left}
+//	ModifyGraph width={Plan,1,bottom,left}
 	Label left "Y pixels"
 	Label bottom "X pixels"	
 	RenameWindow #,ModelData
@@ -103,47 +104,110 @@ Function DrawDetPanel(str)
 	// TODO - currently is hard-wired for the simulation path!
 	//     need to make it more generic, especially for RAW data
 
+	Variable xDim,yDim
 	Wave dispW=root:curDispPanel
+	Wave cw = root:coef_PeakPix2D
+
+	cw[7] = 4
+	cw[8] = 8
 	
+	Wave xwave_PeakPix2D=root:xwave_PeakPix2D
+	Wave ywave_PeakPix2D=root:ywave_PeakPix2D
+	Wave zwave_PeakPix2D=root:zwave_PeakPix2D
+
+	//plot it in the subwindow with the proper aspect and positioning	
 	strswitch(str)
 		case "FL":
+			xDim=48
+			yDim=256
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,180,600)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(200,80,360,600)			
+			cw[7] = 8
+			cw[8] = 4
 			wave newW = root:Packages:NIST:VSANS:VCALC:Front:det_FL
 			break
 		case "FR":
+			xDim=48
+			yDim=256
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,180,600)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(200,80,360,600)	
+			cw[7] = 8
+			cw[8] = 4						
 			wave newW = root:Packages:NIST:VSANS:VCALC:Front:det_FR
 			break
 		case "FT":
+			xDim=128
+			yDim=48
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,464,235)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(20,280,464,435)
+			cw[7] = 4
+			cw[8] = 8			
 			wave newW = root:Packages:NIST:VSANS:VCALC:Front:det_FT
 			break
 		case "FB":
+			xDim=128
+			yDim=48
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,464,235)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(20,280,464,435)
+			cw[7] = 4
+			cw[8] = 8			
 			wave newW = root:Packages:NIST:VSANS:VCALC:Front:det_FB
 			break
 		case "ML":
+			xDim=48
+			yDim=256
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,180,600)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(200,80,360,600)	
+			cw[7] = 8
+			cw[8] = 4						
 			wave newW = root:Packages:NIST:VSANS:VCALC:Middle:det_ML
 			break
 		case "MR":
+			xDim=48
+			yDim=256
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,180,600)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(200,80,360,600)	
+			cw[7] = 8
+			cw[8] = 4						
 			wave newW = root:Packages:NIST:VSANS:VCALC:Middle:det_MR
 			break
 		case "MT":
+			xDim=128
+			yDim=48
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,464,235)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(20,280,464,435)
+			cw[7] = 4
+			cw[8] = 8			
 			wave newW = root:Packages:NIST:VSANS:VCALC:Middle:det_MT
 			break
 		case "MB":
+			xDim=128
+			yDim=48
+			MoveSubWindow/W=PanelFit#DetData fnum=(20,80,464,235)
+			MoveSubWindow/W=PanelFit#ModelData fnum=(20,280,464,435)
+			cw[7] = 4
+			cw[8] = 8			
 			wave newW = root:Packages:NIST:VSANS:VCALC:Middle:det_MB
 			break
 		case "B":
+		
 			return(0)		//just exit
 			break						
 		default:
 			return(0)		//just exit
 	endswitch
-	
+
+// set the simulated detector data to be point-scaling for display and fitting, not q-scaling	
 	duplicate/O newW dispW
 	SetScale/P x 0,1, dispW
 	SetScale/P y 0,1, dispW	
 		
-	// then plot it in the subwindow with the proper aspect and positioning
-	
-	
+
+	// re-dimension the model calculation to be the proper dimensions	
+	Redimension/N=(xDim*yDim) xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D	
+	FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)	
+	Make/O/D/N=(xDim,yDim) PeakPix2D_mat		// use the point scaling of the matrix (=pixels)
+	Duplicate/O $"PeakPix2D_mat",$"PeakPix2D_lin" 		//keep a linear-scaled version of the data
 	
 	return(0)
 End
