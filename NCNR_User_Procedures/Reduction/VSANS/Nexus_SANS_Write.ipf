@@ -36,8 +36,8 @@ NewDataFolder/O/S root:SANS_file
 		Make/O/D/N=1	duration	= 300
 		Make/O/D/N=1	collection_time	= 300
 		Make/O/T/N=1	run_cycle	= "S22-23"
-		Make/O/T/N=1	program_name	= "runPoint={'stuff'}"
 		Make/O/T/N=1	data_directory	= "[NG7SANS41]"
+		Make/O/T/N=1	program_name	= "runPoint={stuff}"
 		NewDataFolder/O/S  root:SANS_file:entry1:user		
 			Make/O/T/N=1	name	= "Dr. Pi"
 			Make/O/T/N=1	role	= "evil scientist"
@@ -53,23 +53,24 @@ NewDataFolder/O/S root:SANS_file
 			Make/O/D/N=1	integral	= 555
 			Make/O/D/N=1	monitor_counts	= 666
 			Make/O/D/N=1	monitor_preset	= 1e8
-			Make/O/T/N=1	type	= "monitor type"
-			Make/O/D/N=1	efficiency	= 0.01
-			Make/O/D/N=1	sampled_fraction	= 1
 			Make/O/D/N=1	detector_counts	= 100111222
 			Make/O/D/N=1	detector_preset	= 1e5
+//			Make/O/T/N=1	type	= "monitor type"
+//			Make/O/D/N=1	efficiency	= 0.01
+//			Make/O/D/N=1	sampled_fraction	= 1
 			Make/O/D/N=1	count_start	= 1
 			Make/O/D/N=1	count_end	= 1
 			Make/O/D/N=1	count_time	= 1
 			Make/O/D/N=1	count_time_preset	= 1
-		NewDataFolder/O/S  root:SANS_file:entry1:program_data		
-			Make/O/T/N=1	data	= "program data"
-			Make/O/T/N=1	description	= "acquisition"
-			Make/O/T/N=1	file_name	= "NICE"
-			Make/O/T/N=1	type	= "client"
+//		NewDataFolder/O/S  root:SANS_file:entry1:program_name		
+//			Make/O/T/N=1	data	= "program data"
+//			Make/O/T/N=1	description	= "acquisition"
+//			Make/O/T/N=1	file_name	= "NICE"
+//			Make/O/T/N=1	type	= "client"
 		NewDataFolder/O/S  root:SANS_file:entry1:sample		
-			Make/O/T/N=1	name	= "My Sample"
-			Make/O/T/N=1	chemical_formula	= "C8H10N4O2"
+			Make/O/T/N=1	description	= "My Sample"
+			Make/O/D/N=1	group_id	= 12345
+//			Make/O/T/N=1	chemical_formula	= "C8H10N4O2"
 			NewDataFolder/O/S  root:SANS_file:entry1:sample:temperature_1		
 				Make/O/T/N=1	name	= "Sample temperature"
 				Make/O/T/N=1	attached_to	= "block"
@@ -118,26 +119,26 @@ NewDataFolder/O/S root:SANS_file
 					Make/O/T/N=1	start	= "2015-02-28T08:15:30-5:00"
 					Make/O/D/N=(n)	nx_time	= p
 					Make/O/D/N=(n)	value	= 10*p
-			SetDataFolder  root:SANS_file:entry1:sample
+			SetDataFolder  root:SANS_file:entry1:sample		
 			Make/O/D/N=1	changer_position	= 5
 			Make/O/T/N=1	sample_holder_description	= "10CB"
-			Make/O/D/N=1	mass	= 0.3
-			Make/O/D/N=1	density	= 1.02
-			Make/O/D/N=1	molecular_weight	= 194.19
-			Make/O/T/N=1	description	= "My Sample"
-			Make/O/T/N=1	preparation_date	= "2015-02-28T08:15:30-5:00"
-			Make/O/D/N=1	volume_fraction	= 0.2
-			Make/O/D/N=1	scattering_length_density	= 6.35e-6
+//			Make/O/D/N=1	mass	= 0.3
+//			Make/O/D/N=1	density	= 1.02
+//			Make/O/D/N=1	molecular_weight	= 194.19
+//			Make/O/T/N=1	description	= "My Sample"
+//			Make/O/T/N=1	preparation_date	= "2015-02-28T08:15:30-5:00"
+//			Make/O/D/N=1	volume_fraction	= 0.2
+//			Make/O/D/N=1	scattering_length_density	= 6.35e-6
 			Make/O/D/N=1	thickness	= 0.1
 			Make/O/D/N=1	rotation_angle	= 30
 			Make/O/D/N=1	transmission	= 0.888
 			Make/O/D/N=1	transmission_error	= 0.011
-			Make/O/D/N=1	xs_incoh	= 5.5
-			Make/O/D/N=1	xs_coh	= 22.2
-			Make/O/D/N=1	xs_absorb	= 3.1
+//			Make/O/D/N=1	xs_incoh	= 5.5
+//			Make/O/D/N=1	xs_coh	= 22.2
+//			Make/O/D/N=1	xs_absorb	= 3.1
 		NewDataFolder/O/S  root:SANS_file:entry1:instrument		
-			Make/O/T/N=1	location	= "NCNR"
-			Make/O/T/N=1	description	= "NGB30mSANS"
+//			Make/O/T/N=1	location	= "NCNR"
+			Make/O/T/N=1	name	= "NGB30mSANS"
 			Make/O/T/N=1	type	= "30 m SANS"
 			Make/O/T/N=1	local_contact	= "Steve Kline"
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:source		
@@ -151,45 +152,45 @@ NewDataFolder/O/S root:SANS_file
 				Make/O/D/N=1	efficiency	= 0.01
 				Make/O/D/N=1	nx_distance	= 16
 				Make/O/D/N=1	saved_count	= 1e8
-			NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam		
-				NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:monochromator		
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:monochromator		
+				Make/O/D/N=1	wavelength	= 6
+				Make/O/D/N=1	wavelength_spread	= 0.15
+				Make/O/T/N=1	type	= "VS"
+				NewDataFolder/O/S  root:SANS_file:entry1:instrument:monochromator:velocity_selector		
+					Make/O/D/N=1	rotation_speed	= 5100
 					Make/O/D/N=1	wavelength	= 6
 					Make/O/D/N=1	wavelength_spread	= 0.15
-					NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:monochromator:velocity_selector		
-						Make/O/T/N=1	type	= "VS"
-						Make/O/D/N=1	rotation_speed	= 5100
-						Make/O/D/N=1	wavelength	= 6
-						Make/O/D/N=1	wavelength_spread	= 0.15
-						Make/O/D/N=1	vs_tilt	= 3
-						Make/O/D/N=1	nx_distance	= 18.8
-							//table (wave)	
-				NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:polarizer		
-					Make/O/T/N=1	type	= "supermirror"
-					Make/O/T/N=1	composition	= "multilayer"
-					Make/O/D/N=1	efficiency	= 0.95
-					Make/O/T/N=1	status	= "in"
-				NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:flipper		
-					Make/O/T/N=1	status	= "on"
-					Make/O/D/N=1	driving_current	= 42
-					Make/O/T/N=1	waveform	= "sine"
-					Make/O/D/N=1	frequency	= 400
-					Make/O/D/N=1	transmitted_power	= 0.99
-				NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:polarizer_analyzer		
-					Make/O/T/N=1	status	= "down"
-					Make/O/D/N=1	guide_field_current_1	= 33
-					Make/O/D/N=1	guide_field_current_2	= 32
-					Make/O/D/N=1	solenoid_current	= 21
-					Make/O/D/N=1	cell_index	= 1
-					Make/O/T/N=(5)	cell_names	= {"Burgundy","Olaf"}
-					Make/O/D/N=(5,2)	cell_parameters	= 1
-				NewDataFolder/O/S  root:SANS_file:entry1:instrument:beam:chopper		
-					Make/O/T/N=1	type	= "single"
-					Make/O/D/N=1	rotation_speed	= 12000
-					Make/O/D/N=1	distance_from_source	= 400
-					Make/O/D/N=1	distance_from_sample	= 1500
-					Make/O/D/N=1	slits	= 2
-					Make/O/D/N=1	angular_opening	= 15
-					Make/O/D/N=1	duty_cycle	= 0.25
+					Make/O/D/N=1	vs_tilt	= 3
+					Make/O/D/N=1	nx_distance	= 18.8
+						//table	
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:polarizer		
+				Make/O/T/N=1	type	= "supermirror"
+				Make/O/T/N=1	composition	= "multilayer"
+				Make/O/D/N=1	efficiency	= 0.95
+				Make/O/T/N=1	status	= "in"
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:flipper		
+				Make/O/T/N=1	status	= "on"
+				Make/O/D/N=1	driving_current	= 42
+				Make/O/T/N=1	waveform	= "sine"
+				Make/O/D/N=1	frequency	= 400
+				Make/O/D/N=1	transmitted_power	= 0.99
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:polarizer_analyzer		
+				Make/O/T/N=1	status	= "down"
+				Make/O/D/N=1	guide_field_current_1	= 33
+				Make/O/D/N=1	guide_field_current_2	= 32
+				Make/O/D/N=1	solenoid_current	= 21
+				Make/O/D/N=1	cell_index	= 1
+				Make/O/T/N=(5)	cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
+				Make/O/D/N=(5,2)	cell_parameters	= 1
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:chopper		
+				Make/O/T/N=1	type	= "single"
+				Make/O/T/N=1	status	= "in"
+				Make/O/D/N=1	rotation_speed	= 12000
+				Make/O/D/N=1	distance_from_source	= 400
+				Make/O/D/N=1	distance_from_sample	= 1500
+				Make/O/D/N=1	slits	= 2
+				Make/O/D/N=1	angular_opening	= 15
+				Make/O/D/N=1	duty_cycle	= 0.25
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:attenuator		
 				Make/O/D/N=1	nx_distance	= 1500
 				Make/O/T/N=1	type	= "PMMA"
@@ -199,22 +200,27 @@ NewDataFolder/O/S root:SANS_file
 				Make/O/D/N=1	atten_number	= 0
 				Make/O/D/N=(10,10)	index	= 1
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:source_aperture		
-				Make/O/T/N=1	material	= "Gd"
+//				Make/O/T/N=1	material	= "Gd"
 				Make/O/T/N=1	description	= "source aperture"
 				Make/O/D/N=1	diameter	= 1.27
 				Make/O/D/N=1	nx_distance	= 13.0
 				NewDataFolder/O/S  root:SANS_file:entry1:instrument:source_aperture:shape		
 					Make/O/D/N=(1,2)	size	= 1.27
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:sample_aperture		
-				Make/O/T/N=1	material	= "Gd"
+//				Make/O/T/N=1	material	= "Gd"
 				Make/O/T/N=1	description	= "sample aperture"
 				Make/O/D/N=1	diameter	= 1.27
 				Make/O/D/N=1	nx_distance	= 10
 				NewDataFolder/O/S  root:SANS_file:entry1:instrument:sample_aperture:shape		
 					Make/O/D/N=(1,2)	size	= 1.27
-			SetDataFolder  root:SANS_file:entry1:instrument
-			Make/O/I/N=1	nx_NumGuides	= 1
+			NewDataFolder/O/S  root:SANS_file:entry1:instrument:collimator		
+				NewDataFolder/O/S root:SANS_file:entry1:instrument:collimator:geometry		
+					NewDataFolder/O/S root:SANS_file:entry1:instrument:collimator:geometry:shape		
+						Make/O/T/N=1	shape	= "box"
+						Make/O/D/N=1	size	= 11
+				Make/O/I/N=1	nx_NumGuides	= 1
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:lenses		
+				Make/O/T/N=1	status	= "in"
 				Make/O/T/N=1	lens_geometry	= "concave_lens"
 				Make/O/T/N=1	focus_type	= "point"
 				Make/O/I/N=1	number_of_lenses	= 28
@@ -238,7 +244,7 @@ NewDataFolder/O/S root:SANS_file
 				Make/O/D/N=1	y_motor_position	= 0.55
 			NewDataFolder/O/S  root:SANS_file:entry1:instrument:detector		
 				Make/O/I/N=(128,128)	data	= trunc(abs(gnoise(p+q)))
-				Make/O/D/N=(128,128)	data_error	= 0.01*abs(gnoise(p+q))
+//				Make/O/D/N=(128,128)	data_error	= 0.01*abs(gnoise(p+q))
 				Make/O/D/N=1	nx_distance	= 13.1
 				Make/O/T/N=1	description	= "Ordela 2660N"
 				Make/O/T/N=1	settings	= "just right"
@@ -248,8 +254,8 @@ NewDataFolder/O/S root:SANS_file
 				Make/O/D/N=1	beam_center_x	= 65.55
 				Make/O/D/N=1	beam_center_y	= 62.33
 				Make/O/T/N=1	type	= "Ordela"
-				Make/O/D/N=1	flatfield_applied	= 0
-				Make/O/D/N=1	countrate_correction_applied	= 0
+//				Make/O/D/N=1	flatfield_applied	= 0
+//				Make/O/D/N=1	countrate_correction_applied	= 0
 				Make/O/D/N=(128,128)	pixel_mask	= 0
 				Make/O/I/N=1	integrated_count	= 100111222
 				Make/O/D/N=1	lateral_offset	= 20
@@ -263,7 +269,7 @@ NewDataFolder/O/S root:SANS_file
 				Make/O/T/N=1	event_file_name	="something.hst"
 		NewDataFolder/O/S  root:SANS_file:entry1:data		
 			Make/O/I/N=(128,128)	data	= trunc(abs(gnoise(p+q)))
-			Make/O/D/N=(128,128)	error	= 0.01*abs(gnoise(p+q))
+//			Make/O/D/N=(128,128)	error	= 0.01*abs(gnoise(p+q))
 			Make/O/D/N=2	variables	= {128,128}
 			Make/O/I/N=(128,128)	data_image	= p
 		NewDataFolder/O/S  root:SANS_file:entry1:reduction		
@@ -280,13 +286,14 @@ NewDataFolder/O/S root:SANS_file
 			Make/O/D/N=1	box_count	= 23232
 			Make/O/D/N=1	box_count_error	= 22
 			Make/O/I/N=4	box_coordinates	= {50,80,45,75}
-			Make/O/T/N=1	comments	= "extra data notes"
+			Make/O/T/N=1	comments	= "extra data comments"
 			Make/O/D/N=4	absolute_scaling	= {1,1,1e5,1}
 			NewDataFolder/O/S  root:SANS_file:entry1:reduction:pol_sans		
 				Make/O/T/N=1	pol_sans_purpose	= "name from the list"
 				Make/O/T/N=1	cell_name	= "Burgundy"
 				Make/O/D/N=(5)	cell_parameters	= {1,2,3,4,5}
 						
+
 	NewDataFolder/O/S  root:SANS_file:DAS_Logs		
 			//...multiple entries and levels... to add	
 
@@ -299,7 +306,7 @@ End
 
 Proc H_Fill_SANS_Attributes()
 
-SetDataFolder  root:SANS_file	
+SetDataFolder  root:SANS_file		
 	Make/O/N=0 Igor___folder_attributes	
 	Note/K Igor___folder_attributes, "producer=IgorPro\rNX_class=NXroot"
 	//	file_name		
@@ -323,8 +330,8 @@ SetDataFolder  root:SANS_file
 		//	collection_time		
 		Note/K collection_time, "units=s"
 		//	run_cycle		
-		//	data_directory
-		//	program_name	
+		//	data_directory		
+		//	program_name		
 		SetDataFolder  root:SANS_file:entry1:user		
 			Make/O/N=0 Igor___folder_attributes	
 			Note/K Igor___folder_attributes, "NX_class=NXuser"
@@ -344,21 +351,21 @@ SetDataFolder  root:SANS_file
 			//	integral		
 			//	monitor_counts		
 			//	monitor_preset		
+			//	detector_counts		
+			//	detector_preset		
 			//	type		
 			//	efficiency		
 			//	sampled_fraction		
-			//	detector_counts		
-			//	detector_preset
-			//	count_start
+			//	count_start		
 			Note/K count_start, "units=s"
-			//	count_end
+			//	count_end		
 			Note/K count_end, "units=s"
-			//	count_time
+			//	count_time		
 			Note/K count_time, "units=s"
-			//	count_time_preset
+			//	count_time_preset		
 			Note/K count_time_preset, "units=s"
-		SetDataFolder  root:SANS_file:entry1:program_data		
-			Make/O/N=0 Igor___folder_attributes	
+//		SetDataFolder  root:SANS_file:entry1:program_name		
+//			Make/O/N=0 Igor___folder_attributes	
 			//	data		
 			//	description		
 			//	file_name		
@@ -366,7 +373,8 @@ SetDataFolder  root:SANS_file
 		SetDataFolder  root:SANS_file:entry1:sample		
 			Make/O/N=0 Igor___folder_attributes	
 			Note/K Igor___folder_attributes, "NX_class=NXsample"
-			//	name		
+			//	description		
+			//	group_id		
 			//	chemical_formula		
 			SetDataFolder  root:SANS_file:entry1:sample:temperature_1		
 				Make/O/N=0 Igor___folder_attributes	
@@ -452,20 +460,20 @@ SetDataFolder  root:SANS_file
 					Note/K nx_time, "units=s"
 					//	value		
 					Note/K value, "units=T"
-		SetDataFolder  root:SANS_file:entry1:sample			
+			SetDataFolder  root:SANS_file:entry1:sample			
 			//	changer_position		
 			//	sample_holder_description		
 			//	mass		
-			Note/K mass, "units=g"
+//			Note/K mass, "units=g"
 			//	density		
-			Note/K density, "units=g ml-1"
+//			Note/K density, "units=g ml-1"
 			//	molecular_weight		
-			Note/K molecular_weight, "units=g mol-1"
+//			Note/K molecular_weight, "units=g mol-1"
 			//	description		
 			//	preparation_date		
 			//	volume_fraction		
 			//	scattering_length_density		
-			Note/K scattering_length_density, "units=A-2"
+//			Note/K scattering_length_density, "units=A-2"
 			//	thickness		
 			Note/K thickness, "units=cm"
 			//	rotation_angle		
@@ -473,21 +481,21 @@ SetDataFolder  root:SANS_file
 			//	transmission		
 			//	transmission_error		
 			//	xs_incoh		
-			Note/K xs_incoh, "units=cm-1"
+//			Note/K xs_incoh, "units=cm-1"
 			//	xs_coh		
-			Note/K xs_coh, "units=cm-1"
+//			Note/K xs_coh, "units=cm-1"
 			//	xs_absorb		
-			Note/K xs_absorb, "units=cm-1"
+//			Note/K xs_absorb, "units=cm-1"
 		SetDataFolder  root:SANS_file:entry1:instrument		
 			Make/O/N=0 Igor___folder_attributes	
 			Note/K Igor___folder_attributes, "NX_class=NXinstrument"
 			//	location		
-			//	description		
+			//	name		
 			//	type		
 			//	local_contact		
 			SetDataFolder  root:SANS_file:entry1:instrument:source		
-			Make/O/N=0 Igor___folder_attributes	
-			Note/K Igor___folder_attributes, "NX_class=NXsource"
+				Make/O/N=0 Igor___folder_attributes	
+				Note/K Igor___folder_attributes, "NX_class=NXsource"
 				//	name		
 				//	type		
 				//	probe		
@@ -502,70 +510,68 @@ SetDataFolder  root:SANS_file
 				//	nx_distance		
 				Note/K nx_distance, "units=m"
 				//	saved_count		
-			SetDataFolder  root:SANS_file:entry1:instrument:beam		
+			SetDataFolder  root:SANS_file:entry1:instrument:monochromator		
 				Make/O/N=0 Igor___folder_attributes	
-				Note/K Igor___folder_attributes, "NX_class=NXbeam"
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:monochromator		
+				Note/K Igor___folder_attributes, "NX_class=NXmonochromator"
+				//	wavelength		
+				Note/K wavelength, "units=A"
+				//	wavelength_spread		
+				//	type		
+				SetDataFolder  root:SANS_file:entry1:instrument:monochromator:velocity_selector		
 					Make/O/N=0 Igor___folder_attributes	
-					Note/K Igor___folder_attributes, "NX_class=NXmonochromator"
+					Note/K Igor___folder_attributes, "NX_class=NXvelocity_selector"
+					//	rotation_speed		
+					Note/K rotation_speed, "units=RPM"
 					//	wavelength		
 					Note/K wavelength, "units=A"
 					//	wavelength_spread		
-					SetDataFolder  root:SANS_file:entry1:instrument:beam:monochromator:velocity_selector		
-						Make/O/N=0 Igor___folder_attributes	
-						Note/K Igor___folder_attributes, "NX_class=NXvelocity_selector"
-						//	type		
-						//	rotation_speed		
-						Note/K rotation_speed, "units=RPM"
-						//	wavelength		
-						Note/K wavelength, "units=A"
-						//	wavelength_spread		
-						//	vs_tilt		
-						Note/K vs_tilt, "units=degrees"
-						//	nx_distance		
-						Note/K nx_distance, "units=m"
-//							table (//)		
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:polarizer		
-					Make/O/N=0 Igor___folder_attributes	
-					//	type		
-					//	composition		
-					//	efficiency		
-					//	status		
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:flipper		
-					Make/O/N=0 Igor___folder_attributes	
-					//	status		
-					//	driving_current		
-					Note/K driving_current, "units=A"
-					//	waveform		
-					//	frequency		
-					Note/K frequency, "units=Hz"
-					//	transmitted_power		
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:polarizer_analyzer		
-					Make/O/N=0 Igor___folder_attributes	
-					//	status		
-					//	guide_field_current_1		
-					Note/K guide_field_current_1, "units=A"
-					//	guide_field_current_2		
-					Note/K guide_field_current_2, "units=A"
-					//	solenoid_current		
-					Note/K solenoid_current, "units=A"
-					//	cell_index		
-					//	cell_names		
-					//	cell_parameters		
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:chopper		
-					Make/O/N=0 Igor___folder_attributes	
-					Note/K Igor___folder_attributes, "NX_class=NXdisk_chopper"
-					//	type		
-					//	rotation_speed		
-					Note/K rotation_speed, "units=RPM"
-					//	distance_from_source		
-					Note/K distance_from_source, "units=m"
-					//	distance_from_sample		
-					Note/K distance_from_sample, "units=m"
-					//	slits		
-					//	angular_opening		
-					Note/K angular_opening, "units=degrees"
-					//	duty_cycle		
+					//	vs_tilt		
+					Note/K vs_tilt, "units=degrees"
+					//	nx_distance		
+					Note/K nx_distance, "units=m"
+						//table		
+			SetDataFolder  root:SANS_file:entry1:instrument:polarizer		
+				Make/O/N=0 Igor___folder_attributes	
+				//	type		
+				//	composition		
+				//	efficiency		
+				//	status		
+			SetDataFolder  root:SANS_file:entry1:instrument:flipper		
+				Make/O/N=0 Igor___folder_attributes	
+				//	status		
+				//	driving_current		
+				Note/K driving_current, "units=A"
+				//	waveform		
+				//	frequency		
+				Note/K frequency, "units=Hz"
+				//	transmitted_power		
+			SetDataFolder  root:SANS_file:entry1:instrument:polarizer_analyzer		
+				Make/O/N=0 Igor___folder_attributes	
+				//	status		
+				//	guide_field_current_1		
+				Note/K guide_field_current_1, "units=A"
+				//	guide_field_current_2		
+				Note/K guide_field_current_2, "units=A"
+				//	solenoid_current		
+				Note/K solenoid_current, "units=A"
+				//	cell_index		
+				//	cell_names		
+				//	cell_parameters		
+			SetDataFolder  root:SANS_file:entry1:instrument:chopper		
+				Make/O/N=0 Igor___folder_attributes	
+				Note/K Igor___folder_attributes, "NX_class=NXdisk_chopper"
+				//	type		
+				//	status		
+				//	rotation_speed		
+				Note/K rotation_speed, "units=RPM"
+				//	distance_from_source		
+				Note/K distance_from_source, "units=m"
+				//	distance_from_sample		
+				Note/K distance_from_sample, "units=m"
+				//	slits		
+				//	angular_opening		
+				Note/K angular_opening, "units=degrees"
+				//	duty_cycle		
 			SetDataFolder  root:SANS_file:entry1:instrument:attenuator		
 				Make/O/N=0 Igor___folder_attributes	
 				Note/K Igor___folder_attributes, "NX_class=NXattenuator"
@@ -606,11 +612,17 @@ SetDataFolder  root:SANS_file
 					Note/K Igor___folder_attributes, "NX_class=NXshape"
 					//	size		
 					Note/K size, "units=cm"
-		SetDataFolder  root:SANS_file:entry1:instrument
-			//	nx_NumGuides		
+			SetDataFolder root:SANS_file:entry1:instrument:collimator			
+				SetDataFolder root:SANS_file:entry1:instrument:collimator:geometry			
+					SetDataFolder root:SANS_file:entry1:instrument:collimator:geometry:shape			
+						//	shape		
+						//	size		
+						Note/K size, "units=m"
+				//	nx_NumGuides		
 			SetDataFolder  root:SANS_file:entry1:instrument:lenses		
 				Make/O/N=0 Igor___folder_attributes	
 				Note/K Igor___folder_attributes, "NX_class=NXxraylens"
+				//	status		
 				//	lens_geometry		
 				//	focus_type		
 				//	number_of_lenses		
@@ -670,7 +682,7 @@ SetDataFolder  root:SANS_file
 				//	PixelNumX		
 				//	PixelNumY		
 				//	PixelFWHM		
-//					calibration_method		
+					//calibration_method		
 				//	CALX		
 				//	CALY		
 				//	size		
@@ -710,7 +722,8 @@ SetDataFolder  root:SANS_file
 	SetDataFolder  root:SANS_file:DAS_Logs		
 		Make/O/N=0 Igor___folder_attributes	
 		Note/K Igor___folder_attributes, "NX_class=NXlog"
-//			...multiple entries and levels... to add	
+			//...multiple entries and levels... to add		
+
 
 	SetDataFolder root:	
 
@@ -722,7 +735,7 @@ End
 //
 Proc H_Fill_SANS_wSim()
 
-	SetDataFolder  root:SANS_file	
+SetDataFolder  root:SANS_file		
 		file_name	= "SANSTest.h5"
 		file_time	= "2015-02-28T08:15:30-5:00"
 		facility	= "NCNR"
@@ -740,8 +753,8 @@ Proc H_Fill_SANS_wSim()
 			duration	= 300
 			collection_time	= 300
 			run_cycle	= "S22-23"
-			program_name	= "runPoint={stuff}"
 			data_directory	= "[NG7SANS41]"
+			program_name	= "runPoint={stuff}"
 		SetDataFolder  root:SANS_file:entry1:user		
 				name	= "Dr. Pi"
 				role	= "evil scientist"
@@ -757,23 +770,24 @@ Proc H_Fill_SANS_wSim()
 				integral	= 555
 				monitor_counts	= 666
 				monitor_preset	= 1e8
-				type	= "monitor type"
-				efficiency	= 0.01
-				sampled_fraction	= 1
 				detector_counts	= 100111222
 				detector_preset	= 1e5
-				count_start = 1
-				count_end = 1
-				count_time = 1
-				count_time_preset = 1
-		SetDataFolder  root:SANS_file:entry1:program_data		
-				data	= "program data"
-				description	= "acquisition"
-				file_name	= "NICE"
-				type	= "client"
+//				type	= "monitor type"
+//				efficiency	= 0.01
+//				sampled_fraction	= 1
+				count_start	= 1
+				count_end	= 1
+				count_time	= 1
+				count_time_preset	= 1
+//		SetDataFolder  root:SANS_file:entry1:program_name		
+//				data	= "program data"
+//				description	= "acquisition"
+//				file_name	= "NICE"
+//				type	= "client"
 		SetDataFolder  root:SANS_file:entry1:sample		
-				name	= "My Sample"
-				chemical_formula	= "C8H10N4O2"
+				description	= "My Sample"
+				group_id	= 12345
+//				chemical_formula	= "C8H10N4O2"
 			SetDataFolder  root:SANS_file:entry1:sample:temperature_1		
 					name	= "Sample temperature"
 					attached_to	= "block"
@@ -825,23 +839,23 @@ Proc H_Fill_SANS_wSim()
 			SetDataFolder  root:SANS_file:entry1:sample		
 				changer_position	= 5
 				sample_holder_description	= "10CB"
-				mass	= 0.3
-				density	= 1.02
-				molecular_weight	= 194.19
-				description	= "My Sample"
-				preparation_date	= "2015-02-28T08:15:30-5:00"
-				volume_fraction	= 0.2
-				scattering_length_density	= 6.35e-6
+//				mass	= 0.3
+//				density	= 1.02
+//				molecular_weight	= 194.19
+//				description	= "My Sample"
+//				preparation_date	= "2015-02-28T08:15:30-5:00"
+//				volume_fraction	= 0.2
+//				scattering_length_density	= 6.35e-6
 				thickness	= 0.1
 				rotation_angle	= 30
 				transmission	= 0.888
 				transmission_error	= 0.011
-				xs_incoh	= 5.5
-				xs_coh	= 22.2
-				xs_absorb	= 3.1
+//				xs_incoh	= 5.5
+//				xs_coh	= 22.2
+//				xs_absorb	= 3.1
 		SetDataFolder  root:SANS_file:entry1:instrument		
-				location	= "NCNR"
-				description	= "NGB30mSANS"
+//				location	= "NCNR"
+				name	= "NGB30mSANS"
 				type	= "30 m SANS"
 				local_contact	= "Steve Kline"
 			SetDataFolder  root:SANS_file:entry1:instrument:source		
@@ -855,45 +869,45 @@ Proc H_Fill_SANS_wSim()
 					efficiency	= 0.01
 					nx_distance	= 16
 					saved_count	= 1e8
-			SetDataFolder  root:SANS_file:entry1:instrument:beam	
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:monochromator		
+			SetDataFolder  root:SANS_file:entry1:instrument:monochromator		
+					wavelength	= 6
+					wavelength_spread	= 0.15
+					type	= "VS"
+				SetDataFolder  root:SANS_file:entry1:instrument:monochromator:velocity_selector		
+						rotation_speed	= 5100
 						wavelength	= 6
 						wavelength_spread	= 0.15
-					SetDataFolder  root:SANS_file:entry1:instrument:beam:monochromator:velocity_selector		
-							type	= "VS"
-							rotation_speed	= 5100
-							wavelength	= 6
-							wavelength_spread	= 0.15
-							vs_tilt	= 3
-							nx_distance	= 18.8
-							//table ()	
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:polarizer		
-						type	= "supermirror"
-						composition	= "multilayer"
-						efficiency	= 0.95
-						status	= "in"
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:flipper		
-						status	= "on"
-						driving_current	= 42
-						waveform	= "sine"
-						frequency	= 400
-						transmitted_power	= 0.99
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:polarizer_analyzer		
-						status	= "down"
-						guide_field_current_1	= 33
-						guide_field_current_2	= 32
-						solenoid_current	= 21
-						cell_index	= 1
-						cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
-						cell_parameters	= 1
-				SetDataFolder  root:SANS_file:entry1:instrument:beam:chopper		
-						type	= "single"
-						rotation_speed	= 12000
-						distance_from_source	= 400
-						distance_from_sample	= 1500
-						slits	= 2
-						angular_opening	= 15
-						duty_cycle	= 0.25
+						vs_tilt	= 3
+						nx_distance	= 18.8
+						//table	
+			SetDataFolder  root:SANS_file:entry1:instrument:polarizer		
+					type	= "supermirror"
+					composition	= "multilayer"
+					efficiency	= 0.95
+					status	= "in"
+			SetDataFolder  root:SANS_file:entry1:instrument:flipper		
+					status	= "on"
+					driving_current	= 42
+					waveform	= "sine"
+					frequency	= 400
+					transmitted_power	= 0.99
+			SetDataFolder  root:SANS_file:entry1:instrument:polarizer_analyzer		
+					status	= "down"
+					guide_field_current_1	= 33
+					guide_field_current_2	= 32
+					solenoid_current	= 21
+					cell_index	= 1
+					cell_names	= {"Burgundy","Olaf","Jim","Bob","Joe"}
+					cell_parameters	= 1
+			SetDataFolder  root:SANS_file:entry1:instrument:chopper		
+					type	= "single"
+					status	= "in"
+					rotation_speed	= 12000
+					distance_from_source	= 400
+					distance_from_sample	= 1500
+					slits	= 2
+					angular_opening	= 15
+					duty_cycle	= 0.25
 			SetDataFolder  root:SANS_file:entry1:instrument:attenuator		
 					nx_distance	= 1500
 					type	= "PMMA"
@@ -903,22 +917,27 @@ Proc H_Fill_SANS_wSim()
 					atten_number	= 0
 					index	= 1
 			SetDataFolder  root:SANS_file:entry1:instrument:source_aperture		
-					material	= "Gd"
+//					material	= "Gd"
 					description	= "source aperture"
 					diameter	= 1.27
 					nx_distance	= 13.0
 				SetDataFolder  root:SANS_file:entry1:instrument:source_aperture:shape		
 						size	= 1.27
 			SetDataFolder  root:SANS_file:entry1:instrument:sample_aperture		
-					material	= "Gd"
+//					material	= "Gd"
 					description	= "sample aperture"
 					diameter	= 1.27
 					nx_distance	= 10
 				SetDataFolder  root:SANS_file:entry1:instrument:sample_aperture:shape		
 						size	= 1.27
-			SetDataFolder  root:SANS_file:entry1:instrument		
-				nx_NumGuides	= 1
+			SetDataFolder root:SANS_file:entry1:instrument:collimator		
+				SetDataFolder root:SANS_file:entry1:instrument:collimator:geometry		
+					SetDataFolder root:SANS_file:entry1:instrument:collimator:geometry:shape		
+							shape	= "box"
+							size	= 11
+					nx_NumGuides	= 1
 			SetDataFolder  root:SANS_file:entry1:instrument:lenses		
+					status	= "in"
 					lens_geometry	= "concave_lens"
 					focus_type	= "point"
 					number_of_lenses	= 28
@@ -942,7 +961,7 @@ Proc H_Fill_SANS_wSim()
 					y_motor_position	= 0.55
 			SetDataFolder  root:SANS_file:entry1:instrument:detector		
 					data	= trunc(abs(gnoise(p+q)))
-					data_error	= 0.01*abs(gnoise(p+q))
+//					data_error	= 0.01*abs(gnoise(p+q))
 					nx_distance	= 13.1
 					description	= "Ordela 2660N"
 					settings	= "just right"
@@ -952,8 +971,8 @@ Proc H_Fill_SANS_wSim()
 					beam_center_x	= 65.55
 					beam_center_y	= 62.33
 					type	= "Ordela"
-					flatfield_applied	= 0
-					countrate_correction_applied	= 0
+//					flatfield_applied	= 0
+//					countrate_correction_applied	= 0
 					pixel_mask	= 0
 					integrated_count	= 100111222
 					lateral_offset	= 20
@@ -967,7 +986,7 @@ Proc H_Fill_SANS_wSim()
 					event_file_name	="something.hst"
 		SetDataFolder  root:SANS_file:entry1:data		
 				data	= trunc(abs(gnoise(p+q)))
-				error	= 0.01*abs(gnoise(p+q))
+//				error	= 0.01*abs(gnoise(p+q))
 				variables	= {128,128}
 				data_image	= p
 		SetDataFolder  root:SANS_file:entry1:reduction		
@@ -993,6 +1012,7 @@ Proc H_Fill_SANS_wSim()
 						
 	SetDataFolder  root:SANS_file:DAS_Logs		
 			//...multiple entries and levels... to add	
+
 
 	SetDataFolder root:
 
