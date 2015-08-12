@@ -12,6 +12,8 @@
 #include "HDF5gateway_NCNR"
 #include "Nexus_SANS_Write"
 #include "Nexus_VSANS_Write"
+#include "V_ReadWrite_HDF5"		//AUG2015 beginning of read/write
+#include "V_NexusFromIgor"			//AUG2015 - depricated, but keep for now
 
 // for possible peak fitting
 #include "BroadPeak_Pix_2D"

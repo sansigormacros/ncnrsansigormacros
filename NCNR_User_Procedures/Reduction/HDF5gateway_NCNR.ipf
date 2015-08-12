@@ -396,7 +396,7 @@
 //		:return String: Status: ""=no error, otherwise, error is described in text
 //@-
 
-Function/T H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
+Function/S H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 	String parentFolder, fileName, hdf5Path
 	if ( ParamIsDefault(hdf5Path) )
 		hdf5Path = "/"
@@ -413,12 +413,15 @@ Function/T H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 	else
 		return parentFolder + " (Igor folder) not found"
 	endif
-	
+
+
 	// do the work here:
 	Variable/G fileID = H5GW__OpenHDF5_RO(fileName)
 	if ( fileID == 0 )
 		return fileName + ": could not open as HDF5 file"
 	endif
+	
+s_tic()		//fast 
 	
 	SVAR tmpStr=root:file_name
 	fileName=tmpStr		//SRK - in case the file was chosen from a dialog
@@ -430,6 +433,11 @@ Function/T H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 		SetDataFolder $oldFolder
 		return fileName + ": problem while opening HDF5 file"
 	endif
+
+s_toc()
+	
+//s_tic()		// this is the slow part, 0.7s for Igor-generated. > 9s for NICE (which has DAS_log)
+
 	String/G objectPaths = S_objectPaths  // this gives a clue to renamed datasets (see below for attributes)
 	//   read the attributes
 	H5GW__HDF5ReadAttributes(fileID, hdf5Path, base_name)
@@ -443,8 +451,10 @@ Function/T H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 	Note/K $file_info, "file_name="+fileName
 	Note $file_info, "file_path="+file_path
 
-	KillStrings/Z file_path, file_name, objectPaths, group_name_list, dataset_name_list
+	KillStrings/Z file_path, objectPaths, group_name_list, dataset_name_list // ,file_name
 	KillVariables/Z fileID
+
+//s_toc()
 	
 	SetDataFolder $oldFolder
 	return status
@@ -833,6 +843,7 @@ static Function H5GW__make_xref(parentFolder, objectPaths, group_name_list, ds_l
 		file_infoT[ii][HDF5_col] = StringFromList(0, item, keySep)
 		file_infoT[ii][Igor_col] = StringFromList(1, item, keySep)
 	endfor
+
 End
 
 
@@ -997,6 +1008,7 @@ Static Function H5GW__HDF5ReadAttributes(fileID, hdf5Path, baseName)
 	Variable group_attributes_type = 1
 	Variable dataset_attributes_type = 2
 	
+//s_tic()	// 0.11 s
 	// read and assign group attributes
 	String S_HDF5ListGroup
 	HDF5ListGroup/F/R/TYPE=(group_attributes_type)  fileID, hdf5Path		//	TYPE=1 reads groups
@@ -1023,6 +1035,9 @@ Static Function H5GW__HDF5ReadAttributes(fileID, hdf5Path, baseName)
 		endif
 		SetDataFolder $old_dir
 	endfor
+
+//s_toc()
+//s_tic()	// 3.2 s !!
 	
 	// read and assign dataset attributes
 	HDF5ListGroup/F/R/TYPE=(dataset_attributes_type)  fileID, hdf5Path		//	TYPE=2 reads groups
@@ -1037,6 +1052,9 @@ Static Function H5GW__HDF5ReadAttributes(fileID, hdf5Path, baseName)
 	String file_info
 	sprintf file_info, ":%s:HDF5___xref", baseName
 	Wave/T xref = $file_info
+
+//s_toc()
+//s_tic()	// worst @ 6.3 s
 
 	Variable row
 	String hdf5_path, igor_path
@@ -1054,6 +1072,7 @@ Static Function H5GW__HDF5ReadAttributes(fileID, hdf5Path, baseName)
 			endif
 		endif
 	endfor
+//s_toc()
 
 End
 

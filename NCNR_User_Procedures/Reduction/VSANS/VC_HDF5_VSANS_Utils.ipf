@@ -44,8 +44,46 @@
 //
 
 
+Macro Load_Nexus_V_Template()
+	H_HDF5Gate_Read_Raw("")
+	String tmpStr=root:file_name  //SRK - so I can get the file name
+	
+// this is the folder name
+	String base_name = StringFromList(0,File_Name,".")
+//	Print base_name
+	RenameDataFolder $("root:"+base_name), V_Nexus_Template
+End
 
-Macro Setup_VSANS_Struct()
+
+Macro Fill_Nexus_V_Template()
+
+End
+
+
+Macro Save_Nexus_V_Template()
+	H_HDF5Gate_Write_Raw()
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////
+
+/////////////below is largely depricated, ugly dance to be able to "fake" a file from Igor
+// which was not complete anyways.
+
+
+
+Macro IgorOnly_Setup_VSANS_Struct()
 
 	// lays out the tree and fills with dummy values
 	H_Setup_VSANS_Structure()
@@ -58,7 +96,7 @@ Macro Setup_VSANS_Struct()
 	
 End
 
-Macro Save_VSANS_Nexus(fileName)
+Macro IgorOnly_Save_VSANS_Nexus(fileName)
 	String fileName="Test_VSANS_file"
 
 	// save as HDF5 (no attributes saved yet)
@@ -86,7 +124,7 @@ End
 
 
 
-Macro Setup_SANS_Struct()
+Macro IgorOnly_Setup_SANS_Struct()
 
 	// lays out the tree and fills with dummy values
 	H_Setup_SANS_Structure()
@@ -99,7 +137,7 @@ Macro Setup_SANS_Struct()
 
 End
 
-Macro Save_SANS_Nexus(fileName)
+Macro IgorOnly_Save_SANS_Nexus(fileName)
 	String fileName="Test_SANS_file"
 	
 	// save as HDF5 (no attributes saved yet) (save_VSANS is actually generic HDF...)
@@ -196,7 +234,7 @@ End
 //	
 // this is my procedure to save the folders to HDF5, once I've filled the folder tree
 //
-// this does NOT save attributes, but gets the fodler structure correct
+// this does NOT save attributes, but gets the folder structure correct
 //
 Function H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
 	String dfPath	// e.g., "root:FolderA" or ":"
@@ -223,16 +261,29 @@ Function H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
 	return result
 End
 
+// passing null file string presents a dialog
+// these two procedures will use the full Xrefs, so they can write out full
+// files. They are, however, slow
+Proc Read_Nexus_Xref()
+	H_HDF5Gate_Read_Raw("")
+End
+
+Proc Write_Nexus_Xref()
+	H_HDF5Gate_Write_Raw()
+End
 
 //
 // writes out the contents of a data folder using the gateway
-// -- the HDF5___xref wave must be present at the toep level for it to
+// -- the HDF5___xref wave must be present at the top level for it to
 //    write out anything.
 //
-Proc H_HDF5Gate_Write_Raw(dfPath, filename)
-	String dfPath	="root:VSANS_file"		// e.g., "root:FolderA" or ":"
+Proc H_HDF5Gate_Write_Raw(dfPath,filename)
+	String dfPath	= "root:"	// e.g., "root:FolderA" or ":"
 	String filename = "Test_VSANS_file.h5"
+//	Prompt dfPath, "Data Folder",popup,H_GetAList(4)	
+//	Prompt fileName, "File name"
 	
+//	DoPrompt "Folder and file to write", dfPath,fileName
 	// Check our work so far.
 	// If something prints, there was an error above.
 	print H5GW_ValidateFolder(dfPath)
@@ -249,11 +300,46 @@ End
 //
 Proc H_HDF5Gate_Read_Raw(file)
 	String file
+	
 //	NewDataFolder/O/S root:newdata
 	Print H5GW_ReadHDF5("", file)	// reads into current folder
 	SetDataFolder root:
 End
 
+
+
+// this is in PlotUtils, but duplicated here
+// utility used in the "PlotSmeared...() macros to get a list of data folders
+//
+//1:	Waves.
+//2:	Numeric variables.
+//3:	String variables.
+//4:	Data folders.
+Function/S H_GetAList(type)
+	Variable type
+	
+	SetDataFolder root:
+	
+	String objName,str=""
+	Variable index = 0
+	do
+		objName = GetIndexedObjName(":", type, index)
+		if (strlen(objName) == 0)
+			break
+		endif
+		//Print objName
+		str += objName + ";"
+		index += 1
+	while(1)
+	
+	// remove myGlobals, Packages, etc. from the folder list
+	if(type==4)
+		str = RemoveFromList("myGlobals", str , ";" )
+		str = RemoveFromList("Packages", str, ";")
+	endif
+	
+	return(str)
+End
 
 //
 // after reading in a "partial" file using the gateway (to generate the xref)
