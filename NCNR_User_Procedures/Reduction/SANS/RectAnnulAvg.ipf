@@ -191,7 +191,7 @@ Function RectangularAverageTo1D(type)
 						//determine distance pixel is from beam center (d_pll)
 						//and distance off-line (d_per) and if in forward direction
 						par = 0			//initialize the wave
-						forward = distance(dxx,dyy,phi_x,phi_y,par)
+						forward = s_distance(dxx,dyy,phi_x,phi_y,par)
 						d_per = par[0]
 						d_pll = par[1]
 						//check whether pixel lies within width band
@@ -406,7 +406,7 @@ End
 // distances are returned in  a wave
 // forward (truth) is the function return value
 //
-Function distance(dxx,dyy,phi_x,phi_y,par)
+Function s_distance(dxx,dyy,phi_x,phi_y,par)
 	Variable dxx,dyy,phi_x,phi_y
 	Wave par		//par[0] = d_per
 					//par[1] = d_pll	, both are returned values

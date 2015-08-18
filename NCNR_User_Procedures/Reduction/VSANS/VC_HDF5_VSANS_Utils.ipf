@@ -46,22 +46,21 @@
 
 Macro Load_Nexus_V_Template()
 	H_HDF5Gate_Read_Raw("")
-	String tmpStr=root:file_name  //SRK - so I can get the file name
+	String tmpStr=root:file_name  //SRK - so I can get the file name that was loaded
 	
 // this is the folder name
 	String base_name = StringFromList(0,File_Name,".")
-//	Print base_name
 	RenameDataFolder $("root:"+base_name), V_Nexus_Template
 End
 
 
 Macro Fill_Nexus_V_Template()
-
+	H_Fill_VSANS_Template_wSim()
 End
 
 
 Macro Save_Nexus_V_Template()
-	H_HDF5Gate_Write_Raw()
+	H_HDF5Gate_Write_Raw("root:V_Nexus_Template:","")
 End
 
 
