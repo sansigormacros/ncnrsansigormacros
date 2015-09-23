@@ -11,6 +11,9 @@
 //////////////////////////////
 //////////////////////////////
 
+// TODO -- of the many issues (which may all be superceded by the JS file, 
+// the detector dimensions (nPix) are incorrrect, and are better set as globals.
+
 
 //
 // this is a test of the "new" VSANS file structure that is supposed to be

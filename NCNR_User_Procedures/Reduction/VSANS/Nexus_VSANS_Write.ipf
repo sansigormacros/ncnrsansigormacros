@@ -213,6 +213,10 @@ End
 //   is counted so long that the errors are insignificant compared to the data errors, but that may not
 //   always be the case. A bit of math may prove this. or not. Plus, the situation for VSANS may be different.
 //
+//
+//
+// TODO -- make the number of pixels GLOBAL
+//
 Proc H_Setup_VSANS_DIV_Structure()
 	
 	NewDataFolder/O/S root:VSANS_DIV_file		

@@ -27,7 +27,7 @@
 // three waves XYZ, then converted to a matrix
 //
 Proc PlotBroadPeak_Pix2D(xDim,yDim)						
-	Variable xDim=48, yDim=256
+	Variable xDim=48, yDim=128
 	Prompt xDim "Enter X dimension: "
 	Prompt yDim "Enter Y dimension: "
 		

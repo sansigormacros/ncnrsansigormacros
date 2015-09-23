@@ -270,6 +270,103 @@ Function VCALC_getPixSizeY(type)
 	return(pixSizeY)
 end
 
+
+// return the number of pixels in x-dimension
+Function VCALC_get_nPix_X(type)
+	String type
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC
+			
+	strswitch(type)	
+		case "FL":
+			NVAR nPix = gFront_L_nPix_X
+			break
+		case "FR":		
+			NVAR nPix = gFront_R_nPix_X
+			break
+		case "FT":
+			NVAR nPix = gFront_T_nPix_X
+			break	
+		case "FB":		
+			NVAR nPix = gFront_B_nPix_X
+			break
+			
+		case "ML":
+			NVAR nPix = gMiddle_L_nPix_X
+			break
+		case "MR":		
+			NVAR nPix = gMiddle_R_nPix_X
+			break
+		case "MT":
+			NVAR nPix = gMiddle_T_nPix_X
+			break	
+		case "MB":		
+			NVAR nPix = gMiddle_B_nPix_X
+			break
+						
+		case "B":		
+			NVAR nPix = gBack_nPix_X
+			break
+			
+		default:							
+			Print "Detector type mismatch in 	VCALC_get_nPix_X(type)"
+			return(NaN)
+	endswitch
+
+	setDataFolder root:
+		
+	return(nPix)
+end
+
+// return the number of pixels in y-dimension
+Function VCALC_get_nPix_Y(type)
+	String type
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC
+			
+	strswitch(type)	
+		case "FL":
+			NVAR nPix = gFront_L_nPix_Y
+			break
+		case "FR":		
+			NVAR nPix = gFront_R_nPix_Y
+			break
+		case "FT":
+			NVAR nPix = gFront_T_nPix_Y
+			break	
+		case "FB":		
+			NVAR nPix = gFront_B_nPix_Y
+			break
+			
+		case "ML":
+			NVAR nPix = gMiddle_L_nPix_Y
+			break
+		case "MR":		
+			NVAR nPix = gMiddle_R_nPix_Y
+			break
+		case "MT":
+			NVAR nPix = gMiddle_T_nPix_Y
+			break	
+		case "MB":		
+			NVAR nPix = gMiddle_B_nPix_Y
+			break
+						
+		case "B":		
+			NVAR nPix = gBack_nPix_Y
+			break
+			
+		default:							
+			Print "Detector type mismatch in 	VCALC_get_nPix_Y(type)"
+			return(NaN)
+	endswitch
+
+	setDataFolder root:
+		
+	return(nPix)
+end
+
+
+
 // SDD offset of the top/bottom panels
 // value returned is in mm (so beware)
 //

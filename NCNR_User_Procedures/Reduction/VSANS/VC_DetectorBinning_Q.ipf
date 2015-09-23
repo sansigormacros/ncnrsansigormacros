@@ -103,7 +103,7 @@ End
 //
 Function V_CalculateQFrontPanels()
 
-	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
+	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
 	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_offset
 
 // get the values from the panel + constants	
@@ -125,7 +125,7 @@ Function V_CalculateQFrontPanels()
 	F_sdd_offset = VCALC_getTopBottomSDDOffset("FT") 	//T/B are 300 mm farther back  //TODO: make all detector parameters global, not hard-wired
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-	Wave det_FL,det_FR			// these are (48,256)
+	Wave det_FL,det_FR			// these are (48,128)		(nominal, may change)
 	Wave det_FT,det_FB			// these are (128,48)
 
 //FRONT/LEFT	
@@ -141,9 +141,11 @@ Function V_CalculateQFrontPanels()
 	pixSizeY = VCALC_getPixSizeY("FL")
 //	pixSizeX = 0.8			// 0.8 cm/pixel along width
 //	pixSizeY = 0.4			// approx 0.4 cm/pixel along length
+	nPix_X = VCALC_get_nPix_X("FL")
+	nPix_Y = VCALC_get_nPix_Y("FL")
 	
-	xCtr = 48+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-	yCtr = 127	
+	xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	yCtr = nPix_Y/2	
 	V_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for FL = ",xCtr,yCtr
 	
@@ -167,9 +169,11 @@ Function V_CalculateQFrontPanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FR")
 	pixSizeY = VCALC_getPixSizeY("FR")
+	nPix_X = VCALC_get_nPix_X("FR")
+	nPix_Y = VCALC_get_nPix_Y("FR")
 	
 	xCtr = -(F_LR_sep/2/pixSizeX)-1		
-	yCtr = 127
+	yCtr = nPix_Y/2	
 	V_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for FR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FR),WaveMax(qx_FR),"", det_FR		//this sets the left and right ends of the data scaling
@@ -188,8 +192,10 @@ Function V_CalculateQFrontPanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FT")
 	pixSizeY = VCALC_getPixSizeY("FT")
-
-	xCtr = 64
+	nPix_X = VCALC_get_nPix_X("FT")
+	nPix_Y = VCALC_get_nPix_Y("FT")
+	
+	xCtr = nPix_X/2
 	yCtr = -(F_TB_sep/2/pixSizeY)-1   
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 	V_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
@@ -210,9 +216,11 @@ Function V_CalculateQFrontPanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FB")
 	pixSizeY = VCALC_getPixSizeY("FB")
-	
-	xCtr = 64
-	yCtr = 48+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	nPix_X = VCALC_get_nPix_X("FB")
+	nPix_Y = VCALC_get_nPix_Y("FB")
+		
+	xCtr = nPix_X/2
+	yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 	V_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for FB = ",xCtr,yCtr
@@ -233,7 +241,7 @@ End
 Function V_SetShadow_TopBottom(folderStr,type)
 	String folderStr,type
 	
-	Variable LR_sep,nPix,xCtr,ii,jj,numCol,pixSizeX,pixSizeY
+	Variable LR_sep,nPix,xCtr,ii,jj,numCol,pixSizeX,pixSizeY,nPix_X,nPix_Y
 
 /// !! type passed in will be FT, FB, MT, MB, so I can't ask for the panel separation -- or I'll get the TB separation...
 	if(cmpstr(type[0],"F")==0)
@@ -258,8 +266,11 @@ Function V_SetShadow_TopBottom(folderStr,type)
 	pixSizeX = VCALC_getPixSizeX(type)
 	pixSizeY = VCALC_getPixSizeY(type)
 
+	nPix_X = VCALC_get_nPix_X(type)
+	nPix_Y = VCALC_get_nPix_Y(type)
+	
 	//TODO -- get this from a global
-	xCtr = 64
+	xCtr = nPix_X/2
 	nPix = trunc(LR_sep/2/pixSizeX)		// approx # of pixels Left/right of center that are not obscured by L/R panels
 	
 	numCol = DimSize(det,0)		// x dim (columns)
@@ -441,7 +452,7 @@ End
 //
 Function V_CalculateQMiddlePanels()
 
-	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
+	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
 	Variable M_LR_sep,M_TB_sep,M_offset, M_sdd_offset
 
 	M_LR_sep = VCALC_getPanelSeparation("MLR")
@@ -461,7 +472,7 @@ Function V_CalculateQMiddlePanels()
 	M_sdd_offset = VCALC_getTopBottomSDDOffset("MT") 	//T/B are 30 cm farther back  //TODO: make all detector parameters global, not hard-wired
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-	Wave det_ML,det_MR			// these are (48,256)
+	Wave det_ML,det_MR			// these are (48,128)		nominal, may change
 	Wave det_MT,det_MB			// these are (128,48)
 
 //Middle/LEFT	
@@ -475,9 +486,11 @@ Function V_CalculateQMiddlePanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("ML")
 	pixSizeY = VCALC_getPixSizeY("ML")
+	nPix_X = VCALC_get_nPix_X("ML")
+	nPix_Y = VCALC_get_nPix_Y("ML")
 	
-	xCtr = 48+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-	yCtr = 127	
+	xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	yCtr = nPix_Y/2	
 	V_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for ML = ",xCtr,yCtr
 	
@@ -502,9 +515,12 @@ Function V_CalculateQMiddlePanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MR")
 	pixSizeY = VCALC_getPixSizeY("MR")
+
+	nPix_X = VCALC_get_nPix_X("MR")
+	nPix_Y = VCALC_get_nPix_Y("MR")
 	
 	xCtr = -(M_LR_sep/2/pixSizeX)-1		
-	yCtr = 127
+	yCtr = nPix_Y/2
 	V_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for MR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MR),WaveMax(qx_MR),"", det_MR		//this sets the left and right ends of the data scaling
@@ -523,8 +539,10 @@ Function V_CalculateQMiddlePanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MT")
 	pixSizeY = VCALC_getPixSizeY("MT")
-
-	xCtr = 64
+	nPix_X = VCALC_get_nPix_X("MT")
+	nPix_Y = VCALC_get_nPix_Y("MT")
+	
+	xCtr = nPix_X/2
 	yCtr = -(M_TB_sep/2/pixSizeY)-1 
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
 	V_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
@@ -545,9 +563,11 @@ Function V_CalculateQMiddlePanels()
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MB")
 	pixSizeY = VCALC_getPixSizeY("MB")
-	
-	xCtr = 64
-	yCtr = 48+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	nPix_X = VCALC_get_nPix_X("MB")
+	nPix_Y = VCALC_get_nPix_Y("MB")
+		
+	xCtr = nPix_X/2
+	yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 	V_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for MB = ",xCtr,yCtr

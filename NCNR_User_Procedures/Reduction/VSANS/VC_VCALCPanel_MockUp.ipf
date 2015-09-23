@@ -646,13 +646,6 @@ Proc V_Initialize_Space()
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 	
-	Make/O/D/N=2 fpx1,fpy1,mpx1,mpy1		// for display of the detector panels
-	Make/O/D/N=2 fv_degX,fv_degY
-
-// to fill in:
-// values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;Converging Slits;White Beam;Polarizer;"
-	String/G gBinTypeStr = "One;Two;Four;Slit Mode;"
 
 ///// FRONT DETECTOR BANKS
 // dimensions for the detector banks (then get them in the drawing functions)
@@ -666,9 +659,9 @@ Proc V_Initialize_Space()
 	
 // detector resolution (xy for each bank!)
 	Variable/G gFront_L_pixelX = 0.8			// (cm)		these tubes are vertical
-	Variable/G gFront_L_pixelY = 0.4			// (cm)
+	Variable/G gFront_L_pixelY = 0.8			// (cm)		//!! now 8 mm, since nPix=128, rather than 256
 	Variable/G gFront_R_pixelX = 0.8			// (cm)
-	Variable/G gFront_R_pixelY = 0.4			// (cm)
+	Variable/G gFront_R_pixelY = 0.8			// (cm)
 	
 	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
 	Variable/G gFront_T_pixelY = 0.8			// (cm)
@@ -676,7 +669,16 @@ Proc V_Initialize_Space()
 	Variable/G gFront_B_pixelY = 0.8			// (cm)
 	
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
-// allocate the detector arrays (+2D Q)
+	Variable/G gFront_L_nPix_X = 48		// == number of tubes
+	Variable/G gFront_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+	Variable/G gFront_R_nPix_X = 48		// == number of tubes
+	Variable/G gFront_R_nPix_Y = 128		// == pixels in vertical direction 
+	Variable/G gFront_T_nPix_X = 128		// == pixels in horizontal direction
+	Variable/G gFront_T_nPix_Y = 48		// == number of tubes
+	Variable/G gFront_B_nPix_X = 128		// == pixels in horizontal direction
+	Variable/G gFront_B_nPix_Y = 48		// == number of tubes
+
+
 
 
 ///// MIDDLE DETECTOR BANKS
@@ -689,14 +691,26 @@ Proc V_Initialize_Space()
 	
 // detector resolution (xy for each bank!)
 	Variable/G gMiddle_L_pixelX = 0.8			// (cm)		these tubes are vertical
-	Variable/G gMiddle_L_pixelY = 0.4			// (cm)
+	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
 	Variable/G gMiddle_R_pixelX = 0.8			// (cm)
-	Variable/G gMiddle_R_pixelY = 0.4			// (cm)
+	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
 	
 	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
 	Variable/G gMiddle_T_pixelY = 0.8			// (cm)
 	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
 	Variable/G gMiddle_B_pixelY = 0.8			// (cm)
+
+// number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
+	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes
+	Variable/G gMiddle_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+	Variable/G gMiddle_R_nPix_X = 48		// == number of tubes
+	Variable/G gMiddle_R_nPix_Y = 128		// == pixels in vertical direction 
+	Variable/G gMiddle_T_nPix_X = 128		// == pixels in horizontal direction
+	Variable/G gMiddle_T_nPix_Y = 48		// == number of tubes
+	Variable/G gMiddle_B_nPix_X = 128		// == pixels in horizontal direction
+	Variable/G gMiddle_B_nPix_Y = 48		// == number of tubes
+
+
 
 
 
@@ -705,6 +719,8 @@ Proc V_Initialize_Space()
 	Variable/G gBack_h = 320
 	Variable/G gBack_pixelX = 0.1		// 1mm resolution (units of cm here)
 	Variable/G gBack_pixelY = 0.1
+	Variable/G gBack_nPix_X = 320		// detector pixels in x-direction
+	Variable/G gBack_nPix_Y = 320	
 
 
 // Generate all of the waves used for the detector and the q values
@@ -713,8 +729,10 @@ Proc V_Initialize_Space()
 // FRONT
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
-	Make/O/D/N=(48,256) det_FL,det_FR
-	Make/O/D/N=(128,48) det_FT,det_FB
+	Make/O/D/N=(::gFront_L_nPix_X,::gFront_L_nPix_Y) det_FL
+	Make/O/D/N=(::gFront_R_nPix_X,::gFront_R_nPix_Y) det_FR
+	Make/O/D/N=(::gFront_T_nPix_X,::gFront_T_nPix_Y) det_FT
+	Make/O/D/N=(::gFront_B_nPix_X,::gFront_B_nPix_Y) det_FB
 	Duplicate/O det_FL qTot_FL,qx_FL,qy_FL,qz_FL
 	Duplicate/O det_FR qTot_FR,qx_FR,qy_FR,qz_FR
 	Duplicate/O det_FT qTot_FT,qx_FT,qy_FT,qz_FT
@@ -724,8 +742,10 @@ Proc V_Initialize_Space()
 // TODO: the detector dimensions need to be properly defined here...
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
-	Make/O/D/N=(48,256) det_ML,det_MR
-	Make/O/D/N=(128,48) det_MT,det_MB
+	Make/O/D/N=(::gMiddle_L_nPix_X,::gMiddle_L_nPix_Y) det_ML
+	Make/O/D/N=(::gMiddle_R_nPix_X,::gMiddle_R_nPix_Y) det_MR
+	Make/O/D/N=(::gMiddle_T_nPix_X,::gMiddle_T_nPix_Y) det_MT
+	Make/O/D/N=(::gMiddle_B_nPix_X,::gMiddle_B_nPix_Y) det_MB
 	Duplicate/O det_ML qTot_ML,qx_ML,qy_ML,qz_ML
 	Duplicate/O det_MR qTot_MR,qx_MR,qy_MR,qz_MR
 	Duplicate/O det_MT qTot_MT,qx_MT,qy_MT,qz_MT
@@ -735,13 +755,27 @@ Proc V_Initialize_Space()
 // TODO: the detector dimensions need to be properly defined here...
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 	
-	Make/O/D/N=(320,320) det_B
+	Make/O/D/N=(::gBack_nPix_X,::gBack_nPix_Y) det_B
 	Duplicate/O det_B qTot_B,qx_B,qy_B,qz_B
+
+
 
 
 ////////////	FOR THE PANEL
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
+
+	Make/O/D/N=2 fpx1,fpy1,mpx1,mpy1		// for display of the detector panels
+	Make/O/D/N=2 fv_degX,fv_degY
+
+
+// to fill in:
+// values for always-visible items
+	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;Converging Slits;White Beam;Polarizer;"
+	String/G gBinTypeStr = "One;Two;Four;Slit Mode;"
+
+
+
 
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation

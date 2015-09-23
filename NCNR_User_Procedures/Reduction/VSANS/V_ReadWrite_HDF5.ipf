@@ -8,6 +8,11 @@
 //
 
 
+// thought this would be useful, but the file name (folder) is stuck in the middle...
+Strconstant ksPathPrefix = "root:(folder):entry:entry1:"
+
+
+
 // passing null file string presents a dialog
 Macro Read_HDF5_Raw_No_Attributes()
 	V_LoadHDF5Data("")
