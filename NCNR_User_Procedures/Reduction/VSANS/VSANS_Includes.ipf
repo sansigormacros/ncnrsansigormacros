@@ -18,3 +18,7 @@
 // for possible peak fitting
 #include "BroadPeak_Pix_2D"
 #include "VC_BeamCenter"
+
+// for fitting data to generate tube corrections
+#include "V_TubeAdjustments"
+
