@@ -31,6 +31,12 @@
 //	MakeMatrix_PixCenter()
 //	FillMatrix_Pix_Center(ind)
 //
+//
+// -or- (note that the pack_image wave that is generated here is for display ONLY)
+// --since it is interpolated
+//
+// Interpolate_mm_tubes()
+
 
 // The function most used externally is:
 // V_TubePix_to_mm(c0,c1,c2,pix)
@@ -413,11 +419,38 @@ End
 
 
 
+// set the (linear) range of the y-axis of the matrix to be the
+// range of the 1st tube. This is completely arbitrary
+//
+Proc Interpolate_mm_tubes()
 
+	Duplicate/O pack pack_image
 
-
-
-
+	Variable ii,numTubes=8
+	Variable p1,p2
+	p1 = tube1_mm[0]
+	p2 = tube1_mm[numpnts(tube1_mm)-1]
+	
+	SetScale/I y p1,p2,"", pack_image
+	
+	// then make a temporary 1D wave to help with the interpolation
+	Duplicate/O tube1_mm lin_mm,lin_val
+	SetScale/I x p1,p2,"", lin_mm
+	lin_mm = x			//fill with the linear mm spacing
+	lin_val=0
+	
+	ii=1
+	do
+		lin_val = interp(lin_mm, $("tube"+num2str(ii)+"_mm"), $("tube"+num2str(ii)))
+		pack_image[ii-1][] = lin_val[q]
+		
+		ii+=1
+	while(ii<=numTubes)
+	
+	display;appendimage pack_image
+	ModifyImage pack_image ctab= {*,*,ColdWarm,0}
+	
+End
 
 
 

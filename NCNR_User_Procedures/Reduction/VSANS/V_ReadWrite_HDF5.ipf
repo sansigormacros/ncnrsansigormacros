@@ -149,6 +149,7 @@ End
 //   TODO
 // depricated? in HDF5 - store all of the values as real?
 // Igor sees no difference in real and integer variables (waves are different)
+// BUT-- Igor 7 will have integer variables
 //
 // truncate to integer before returning??
 //
@@ -173,7 +174,7 @@ End
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
-// TODO -- string is checked for length, but returned right or wrong
+// TODO -- string could be checked for length, but returned right or wrong
 //
 Function/S V_getStringFromHDF5(fname,path,num)
 	String fname,path
@@ -204,8 +205,17 @@ Function/S V_getStringFromHDF5(fname,path,num)
 End
 
 
+//
 //Write Wave 'wav' to hdf5 file 'fname'
 //Based on code from ANSTO (N. Hauser. nha 8/1/09)
+//
+// TODO:
+// -- figure out if this will write in the native format of the 
+//     wave as passed in, or if it will only write as DP.
+// -- do I need to write separate functions for real, integer, etc.?
+//	
+// -- change the /P=home to the user-defined data path (which may be home)		
+//
 Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	String fname, groupName, varName
 	Wave wav
@@ -215,7 +225,7 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	String NXentry_name
 	
 	try	
-		HDF5OpenFile /Z fileID  as fname  //open file read-write
+		HDF5OpenFile/P=home /Z fileID  as fname  //open file read-write
 		if(!fileID)
 			err = 1
 			abort "HDF5 file does not exist"
@@ -267,7 +277,8 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	catch
 
 	endtry
-	
+
+// it is not necessary to close the group here. HDF5CloseFile will close the group as well	
 	if(groupID)
 		HDF5CloseGroup /Z groupID
 	endif
@@ -310,14 +321,14 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 			abort "More than one entry under the root node. Ambiguous"
 		endif 
 
-// TODO SRK -- skipping the concatenation of the NXentry_name - may add back in the future, but this
+// TODO SRK -- ??? un-did this... skipping the concatenation of the NXentry_name - may add back in the future, but this
 //   prevents me from accessing the file name which I put on the top node (which may be incorrect style)
 //
 //		NOTE this is only for the texWaves - the writer for real waves does the concatenation , since everything is 
 //     under the "entry" group (/Run1)
 //
 		//concatenate NXentry node name and groupName	
-//		groupName = "/" + NXentry_name + groupName
+		groupName = "/" + NXentry_name + groupName
 		Print "groupName = ",groupName
 
 		HDF5OpenGroup /Z fileID , groupName, groupID
@@ -365,50 +376,202 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 end
 
 
+//////////////////////////////////////////////
+//////////////////////////////////
+// for TESTING of the get functions - to quickly access and se if there are errors
+//
+// -- not sure how to test the string functions -- can't seem to get a FUNCREF to a string function
+// to work -- maybe it's not alllowed?
+//
+//	-- Not sure how to test the "write" functions. writing the wrong data type to the wrong data field will be a disaster
+//    Writing odd, dummy values will also be a mess - no way to know if I'm doing anything correctly
+//
+Function proto_V_get_FP(str)
+	String str
+	return(0)
+end
+
+//Function/S proto_V_get_STR(str)
+//	String str
+//	return("")
+//end
+
+Function Test_V_get_FP(str,fname)
+	String str,fname
+	
+	Variable ii,num
+	String list,item
+	
+	
+	list=FunctionList(str,";","NPARAMS:1") //,VALTYPE:1
+	Print list
+	num = ItemsInlist(list)
+	
+	
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list , ";")
+		FUNCREF proto_V_get_FP f = $item
+		Print item ," = ", f(fname)
+	endfor
+	
+	return(0)
+end
+
+
+//Function Test_V_get_STR(str,fname)
+//	String str,fname
+//	
+//	Variable ii,num
+//	String list,item
+//	
+//	
+//	list=FunctionList(str,";","NPARAMS:1,VALTYPE:4")
+//	Print list
+//	num = ItemsInlist(list)
+//	
+//	
+//	for(ii=0;ii<num;ii+=1)
+//		item = StringFromList(ii, list , ";")
+//		FUNCREF proto_V_get_STR f = $item
+//		Print item ," = ", f(fname)
+//	endfor
+//	
+//	return(0)
+//end
+
+///////////////////////////////////////
+
+
+//////////////////////////////////////////////
+
+
+///////////////////////
+//
+// *These are the specific bits of information to retrieve (or write) to the data file
+// *These functions use the path to the file as input, and each has the specific
+//   path to the variable srting, or wave hard-coded into the access function
+// *They call the generic worker functions to get the values, either from the local copy if present,
+//   or the full file is loaded.
+//
+// *Since the path is the important bit, these are written as get/write pairs to make it easier to 
+//   keep up with any changes in path
+//
+//
+// TODO -- verify the paths, and add more as needed
+//
+
+
+//////// TOP LEVEL
+//////// TOP LEVEL
+//////// TOP LEVEL
 
 
 
+//////// CONTROL
+//////// CONTROL
+//////// CONTROL
 
-//transmission is at byte 158
-Function V_getSampleTrans(fname)
+//monitor count
+Function V_getMonitorCount(fname)
 	String fname
 	
-	String path = "Run1:Sample:TRNS"	
+	String path = "entry:control:monitor_counts"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-//sample transmission is a real value at byte 158
+
+//////// INSTRUMENT
+//////// INSTRUMENT
+//////// INSTRUMENT
+
+//wavelength
+Function V_getWavelength(fname)
+	String fname
+	
+	String path = "entry:instrument:beam:monochromator:wavelength"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//wavelength spread
+Function V_getWavelengthSpread(fname)
+	String fname
+	
+	String path = "entry:instrument:beam:monochromator:wavelength_spread"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+// reactor power (MW)
+Function V_getReactorPower(fname)
+	String fname
+
+	String path = "entry:instrument:source:power"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+//////// SAMPLE
+//////// SAMPLE
+//////// SAMPLE
+
+
+// sample transmission
+Function V_getSampleTransmission(fname)
+	String fname
+	
+	String path = "entry:sample:transmission"	
+//	String path = "QKK0037737:data:Transmission"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+// sample transmission
 Function V_WriteTransmissionToHeader(fname,trans)
 	String fname
 	Variable trans
 	
 	Make/O/D/N=1 wTmpWrite
-	String groupName = "/Sample"	//	/Run1/Sample becomes groupName /Run1/Run1/Sample
-	String varName = "TRNS"
+	String groupName = "/sample"	//	skip "entry" - /entry/sample becomes groupName /entry/entry/sample
+	String varName = "transmission"
+//	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/data"	//	skip "entry" - /entry/sample becomes groupName /entry/entry/sample
+//	String varName = "Transmission"
 	wTmpWrite[0] = trans //
 
 	variable err
 	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-//	Print "HDF write err = ",err
-	
+	if(err)
+		Print "HDF write err = ",err
+	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = V_KillNamedDataFolder(fname)
-//	Print "DataFolder kill err = ",err
-		
-	return(0)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
 End
 
-// sample label (60 characters @ byte 98)
+
+//transmission error (one sigma)
+Function V_getSampleTransError(fname)
+	String fname
+	
+	String path = "entry:sample:transmission_error"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+// sample label 
+// TODO: value of num is currently not used
+//
 Function/S V_getSampleLabel(fname)
 	String fname
 
-	String path = "Run1:runLabel"
+	String path = "entry:sample:description"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
 
-// sample label, starts at byte 98
+// sample label
 //
 // TODO
 // limit to 60 characters?? do I need to do this with HDF5?
@@ -425,20 +588,91 @@ Function V_WriteSamLabelToHeader(fname,str)
 	
 	
 	Make/O/T/N=1 tmpTW
-	String groupName = "/Run1"	//	explicitly state the group
-	String varName = "runLabel"
+	String groupName = "/sample"	//	/entry is automatically prepended -- so just explicitly state the group
+	String varName = "description"
 	tmpTW[0] = str //
 
 	variable err
 	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-//	Print "HDF write err = ",err
+	if(err)
+		Print "HDF write err = ",err
+	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 	err = V_KillNamedDataFolder(fname)
-//	Print "DataFolder kill err = ",err
-	
-	return(0)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+		
+	return(err)
 End
+
+//Sample Thickness
+Function V_getSampleThickness(fname)
+	String fname
+	
+	String path = "entry:sample:thickness"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//Sample Rotation Angle is at byte 170
+Function V_getSampleRotationAngle(fname)
+	String fname
+	
+	String path = "entry:sample:rotation_angle"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//Sample position in changer
+Function V_getSamplePosition(fname)
+	String fname
+	
+	String path = "entry:sample:changer_position"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+
+
+
+///////// REDUCTION
+///////// REDUCTION
+///////// REDUCTION
+
+
+//box counts
+Function V_getBoxCounts(fname)
+	String fname
+	
+	String path = "entry:reduction:box_count"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//box counts error
+Function V_getBoxCountsError(fname)
+	String fname
+	
+	String path = "entry:reduction:box_count_error"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+//whole detector trasmission
+Function V_getSampleTransWholeDetector(fname)
+	String fname
+	
+	String path = "entry:reduction:whole_trans"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//whole detector trasmission error
+Function V_getSampleTransWholeDetErr(fname)
+	String fname
+	
+	String path = "entry:reduction:whole_trans_error"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
 
 
 // fname is the full path to the file
@@ -459,6 +693,8 @@ End
 
 
 
+//////////////////////////////
+//////////////////////////////
 //////////////////////////////
 
 Function V_KillNamedDataFolder(fname)
