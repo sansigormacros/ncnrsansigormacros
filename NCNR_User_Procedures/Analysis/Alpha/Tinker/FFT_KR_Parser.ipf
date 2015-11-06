@@ -236,9 +236,9 @@ Function KR_MultiCylinder(xx,yy,zz,rri,hti,sbp,rotx,roty,sld)
 		for(k=-HH;k<HH;k+=1)  // should have +1 for HH to complete to k=HH?????
 			for(i=-RR;i<RR;i+=1)  //should this have i<RR+1 or in above RR=RR+2????
 				for(j=-RR;j<RR;J+=1)
-					x0=sbp*i+P5
-					y0=SBP*j+P5
-					z0=SBP*k+p5
+					x0=sbp[L]*i+P5
+					y0=SBP[L]*j+P5
+					z0=SBP[L]*k+p5
 					if((((y0^2)/(RRI[L]^2))+((x0^2)/(RRI[L]^2)))<=1)
 						IX=-1
 					else
