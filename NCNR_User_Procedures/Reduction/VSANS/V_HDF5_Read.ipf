@@ -1079,10 +1079,26 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_getDet_PixelFWHM(fname,detStr)
+Function V_getDet_PixelFWHM_X(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":PixelFWHM"
+	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_X"
+
+// TODO -- different behavior for "B"
+	if(cmpstr(detStr,"B") == 0)
+		return(V_getRealValueFromHDF5(fname,path))
+	else
+		return(V_getRealValueFromHDF5(fname,path))
+	endif
+End
+
+// TODO -- write and X and Y version of this. Pixels are not square
+// so the FHWM will be different in each direction. May need to return
+// "dummy" value for "B" detector if pixels there are square
+Function V_getDet_PixelFWHM_Y(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_Y"
 
 // TODO -- different behavior for "B"
 	if(cmpstr(detStr,"B") == 0)
@@ -1472,6 +1488,46 @@ Function V_getSampleAp_size(fname,outW)
 	outW = w
 	return(0)
 End		
+
+///////  sample_aperture_2 (data folder)
+
+Function/S V_getSampleAp2_Description(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture_2:description"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getSampleAp2_distance(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture_2:distance"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+//	shape (data folder)
+
+Function/S V_getSampleAp2_shape(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture_2:shape:shape"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+// TODO -- this needs to return a WAVE, since the shape may be circle, or rectangle
+// and will need to return more than a single dimension
+// TODO -- be careful of the UNITS
+Function V_getSampleAp2_size(fname,outW)
+	String fname
+	Wave outW
+
+	String path = "entry:instrument:sample_aperture_2:shape:size"
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	outW = w
+	return(0)
+End		
 		
 //////  sample_table (data folder)
 // location  = "CHAMBER" or HUBER
@@ -1612,14 +1668,6 @@ Function V_getSample_GroupID(fname)
 end
 
 
-Function V_getSample_rotationAngle(fname)
-	String fname
-	
-	String path = "entry:sample:rotation_angle"	
-	return(V_getRealValueFromHDF5(fname,path))
-end
-
-
 //Sample Rotation Angle
 Function V_getSampleRotationAngle(fname)
 	String fname
@@ -1665,68 +1713,6 @@ Function V_getSampleTransError(fname)
 end
 
 
-
-
-
-// sample label
-//
-// TODO
-// limit to 60 characters?? do I need to do this with HDF5?
-//
-// do I need to pad to 60 characters?
-//
-Function V_WriteSamLabelToHeader(fname,str)
-	String fname,str
-	
-//	if(strlen(str) > 60)
-//		str = str[0,59]
-//	endif	
-	
-	Make/O/T/N=1 tmpTW
-	String groupName = "/sample"	//	/entry is automatically prepended -- so just explicitly state the group
-	String varName = "description"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
-		
-	return(err)
-End
-
-// sample transmission
-Function V_WriteTransmissionToHeader(fname,trans)
-	String fname
-	Variable trans
-	
-	Make/O/D/N=1 wTmpWrite
-	String groupName = "/sample"	//	skip "entry" - /entry/sample becomes groupName /entry/entry/sample
-	String varName = "transmission"
-//	Make/O/R/N=1 wTmpWrite
-//	String groupName = "/data"	//	skip "entry" - /entry/sample becomes groupName /entry/entry/sample
-//	String varName = "Transmission"
-	wTmpWrite[0] = trans //
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
-	return(err)
-End
 
 
 //// SAMPLE / DATA LOGS
@@ -1904,6 +1890,22 @@ Function/S V_getSensitivityFileName(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+Function/S V_getTransmissionFileName(fname)
+	String fname
+
+	String path = "entry:reduction:transmission_file_name"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function/S V_getEmptyBeamFileName(fname)
+	String fname
+
+	String path = "entry:reduction:empty_beam_file_name"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
 
 //whole detector trasmission
 Function V_getSampleTransWholeDetector(fname)
@@ -1999,72 +2001,3 @@ End
 
 
 
-//////////////////////////////
-//////////////////////////////
-//////////////////////////////
-
-Function V_KillNamedDataFolder(fname)
-	String fname
-	
-	Variable err=0
-	
-	String folderStr = V_GetFileNameFromPathNoSemi(fname)
-	folderStr = V_RemoveDotExtension(folderStr)
-	
-	KillDataFolder/Z $("root:"+folderStr)
-	err = V_flag
-	
-	return(err)
-end
-
-//given a filename of a SANS data filename of the form
-// name.anything
-//returns the name as a string without the ".fbdfasga" extension
-//
-// returns the input string if a"." can't be found (maybe it wasn't there"
-Function/S V_RemoveDotExtension(item)
-	String item
-	String invalid = item	//
-	Variable num=-1
-	
-	//find the "dot"
-	String runStr=""
-	Variable pos = strsearch(item,".",0)
-	if(pos == -1)
-		//"dot" not found
-		return (invalid)
-	else
-		//found, get all of the characters preceeding it
-		runStr = item[0,pos-1]
-		return (runStr)
-	Endif
-End
-
-//returns a string containing filename (WITHOUT the ;vers)
-//the input string is a full path to the file (Mac-style, still works on Win in IGOR)
-//with the folders separated by colons
-//
-// called by MaskUtils.ipf, ProtocolAsPanel.ipf, WriteQIS.ipf
-//
-Function/S V_GetFileNameFromPathNoSemi(fullPath)
-	String fullPath
-	
-	Variable offset1,offset2
-	String filename=""
-	//String PartialPath
-	offset1 = 0
-	do
-		offset2 = StrSearch(fullPath, ":", offset1)
-		if (offset2 == -1)				// no more colons ?
-			fileName = FullPath[offset1,strlen(FullPath) ]
-			//PartialPath = FullPath[0, offset1-1]
-			break
-		endif
-		offset1 = offset2+1
-	while (1)
-	
-	//remove version number from name, if it's there - format should be: filename;N
-	filename =  StringFromList(0,filename,";")		//returns null if error
-	
-	Return filename
-End

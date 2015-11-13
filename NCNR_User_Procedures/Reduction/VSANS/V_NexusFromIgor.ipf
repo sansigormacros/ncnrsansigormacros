@@ -4,9 +4,15 @@
 //////////////////////////////
 //////////////////////////////
 // 
-// THIS IS DEPRICATED -- LOAD A NEXUS FILE INSTEAD AS A TEMPLATE
+// This is not really used anymore - but may still be used in the future. I need somenthing like this
+// to be able to write a full Nexus file from Igor, but I still don't know the best way to 
+// do the setup to match the "real" NICE-generated file structure. Modifying the DataFolderTree.ipf
+// to generate the NewDataFolder and Make statements may be a reliable way to reproduce the correct
+// structure from NICE, with the exception that NOT EVERY field is written out from NICE, depending
+// on the experiment setup!!!
 //
 // AUG 2015
+// NOV 2015
 //
 //////////////////////////////
 //////////////////////////////

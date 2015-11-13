@@ -3011,20 +3011,60 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_writeDet_PixelFWHM(fname,detStr)
+Function V_writeDet_PixelFWHM_X(fname,detStr,val)
 	String fname,detStr
+	Variable val
 
-	String path = "entry:instrument:detector_"+detStr+":PixelFWHM"
+//	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_X"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/detector_"+detStr	
+	String varName = "PixelFWHM_X"
+	wTmpWrite[0] = val
 
-// TODO -- different behavior for "B"
-	if(cmpstr(detStr,"B") == 0)
-//		return(V_writeRealValueFromHDF5(fname,path))
-		return(-99999)
-	else
-//		return(V_writeRealValueFromHDF5(fname,path))
-		return(-99999)
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
 	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
 End
+
+
+// TODO -- write and X and Y version of this. Pixels are not square
+// so the FHWM will be different in each direction. May need to return
+// "dummy" value for "B" detector if pixels there are square
+Function V_writeDet_PixelFWHM_Y(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_Y"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/detector_"+detStr	
+	String varName = "PixelFWHM_Y"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
+End
+
 
 Function V_writeDet_PixelNumX(fname,detStr,val)
 	String fname,detStr
@@ -5052,6 +5092,56 @@ Function V_writeSensitivityFileName(fname,str)
 	Make/O/T/N=1 tmpTW
 	String groupName = "/entry/reduction"
 	String varName = "sensitivity_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+		
+	return(err)
+End
+
+Function V_writeTransmissionFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:transmission_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "transmission_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+		
+	return(err)
+End
+
+Function V_writeEmptyBeamFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:empty_beam_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "empty_beam_file_name"
 	tmpTW[0] = str //
 
 	variable err

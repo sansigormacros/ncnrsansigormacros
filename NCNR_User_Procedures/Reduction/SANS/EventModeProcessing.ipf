@@ -2064,7 +2064,7 @@ End
 //	setscale y,-3,3,myHist
 //	IndexForHistogram(data1,data2,myhist)
 //	Wave index=SavedIndex
-//	JointHistogram(data1,data2,myHist,index)
+//	EV_JointHistogram(data1,data2,myHist,index)
 //	NewImage myHist
 //	
 ////	toc()
@@ -2072,7 +2072,7 @@ End
 //End
 
 
-Function JointHistogram(w0,w1,hist,index)
+Function EV_JointHistogram(w0,w1,hist,index)
 	wave w0,w1,hist,index
  
 	variable bins0=dimsize(hist,0)

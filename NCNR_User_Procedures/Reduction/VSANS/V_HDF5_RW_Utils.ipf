@@ -1,17 +1,20 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+//
+// The base functions for R/W from HDF5 files.
+// All of the specific "get" and "write" functions call these base functions which are responsible
+// for all of the open/close mechanics.
+//
+// These VSANS file-specific functions are in:
+// V_HDF5_Read.ipf
+//		 and
+// V_HDF5_Write.ipf
+//
 
-
-//
-// Start to build up and test the r/w accessors for VSANS
-// (SANS has a template, VSANS does not, so just start from scratch here, since the 
-// file structure will be different)
-//
-//
 
 
 // thought this would be useful, but the file name (folder) is stuck in the middle...
-Strconstant ksPathPrefix = "root:(folder):entry:entry1:"
+//Strconstant ksPathPrefix = "root:(folder):entry:entry1:"
 
 
 
@@ -151,6 +154,41 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	
 End
 
+// Returns a wave reference, not just a single value
+// ---then you pick what you need from the wave
+// 
+// - fname passed in is the full path to the file on disk
+// - path is the path to the value in the HDF tree
+//
+// check to see if the value exists (It will be a wave)
+// -- if it does, return the value from the local folder
+// -- if not, read the file in, then return the value
+//
+Function/WAVE V_getTextWaveFromHDF5(fname,path)
+	String fname,path
+
+	String folderStr=""
+	Variable valExists=0
+	
+	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+	
+	if(Exists("root:"+folderStr+":"+path))
+		valExists=1
+	endif
+	
+	if(!valExists)
+		//then read in the file
+		V_LoadHDF5_NoAtt(fname)
+	endif
+
+// this should exist now - if not, I need to see the error
+	Wave/T wOut = $("root:"+folderStr+":"+path)
+	
+	return wOut
+	
+End
+
+
 //
 //   TODO
 // depricated? in HDF5 - store all of the values as real?
@@ -158,6 +196,9 @@ End
 // BUT-- Igor 7 will have integer variables
 //
 // truncate to integer before returning??
+//
+//  TODO
+// write a "getIntegerWave" function??
 //
 //////  integer values
 // reads 32 bit integer
@@ -389,3 +430,73 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 	setDataFolder $cDF
 	return err
 end
+
+//////////////////////////////
+//////////////////////////////
+//////////////////////////////
+
+Function V_KillNamedDataFolder(fname)
+	String fname
+	
+	Variable err=0
+	
+	String folderStr = V_GetFileNameFromPathNoSemi(fname)
+	folderStr = V_RemoveDotExtension(folderStr)
+	
+	KillDataFolder/Z $("root:"+folderStr)
+	err = V_flag
+	
+	return(err)
+end
+
+//given a filename of a SANS data filename of the form
+// name.anything
+//returns the name as a string without the ".fbdfasga" extension
+//
+// returns the input string if a"." can't be found (maybe it wasn't there"
+Function/S V_RemoveDotExtension(item)
+	String item
+	String invalid = item	//
+	Variable num=-1
+	
+	//find the "dot"
+	String runStr=""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, get all of the characters preceeding it
+		runStr = item[0,pos-1]
+		return (runStr)
+	Endif
+End
+
+//returns a string containing filename (WITHOUT the ;vers)
+//the input string is a full path to the file (Mac-style, still works on Win in IGOR)
+//with the folders separated by colons
+//
+// called by MaskUtils.ipf, ProtocolAsPanel.ipf, WriteQIS.ipf
+//
+Function/S V_GetFileNameFromPathNoSemi(fullPath)
+	String fullPath
+	
+	Variable offset1,offset2
+	String filename=""
+	//String PartialPath
+	offset1 = 0
+	do
+		offset2 = StrSearch(fullPath, ":", offset1)
+		if (offset2 == -1)				// no more colons ?
+			fileName = FullPath[offset1,strlen(FullPath) ]
+			//PartialPath = FullPath[0, offset1-1]
+			break
+		endif
+		offset1 = offset2+1
+	while (1)
+	
+	//remove version number from name, if it's there - format should be: filename;N
+	filename =  StringFromList(0,filename,";")		//returns null if error
+	
+	Return filename
+End

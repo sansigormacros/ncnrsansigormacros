@@ -1,12 +1,23 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 //
-// This file has lots of utility procedures to be able to read/write
-// test HDF5 files for SANS and VSANS in Nexus format
+// This file has utility procedures to be able to read/write
+// test HDF5 (from Igor) for SANS and VSANS in Nexus format
 //
-// It doesn't have the NICE logs, but has everything that I 
-// can think of here.
+// It is predominantly to be able to WRITE a full Nexus file from Igor
+// -- this is only necessary to be able to write out "fake" VSANS files from VCALC
+//    since I need a "template" of the Nexus folder structure to start from and fill in
 //
+// It doesn't reproduce the NICE logs, but will leave a spece for them if
+// it is read in and is part of the xref.
+//
+// It may be easier to hard-wire my own folder definition (NewDataFolder)
+// that is MY Nexus file to write out and use that as the base case
+// rather than rely on Pete's code, which is terribly slow for writing.
+// Attributes are the issue, but it may be unimportant if they are missing.
+//
+
+
 
 //
 // There's an odd sequence of steps that need to be done to use HDFGateway
