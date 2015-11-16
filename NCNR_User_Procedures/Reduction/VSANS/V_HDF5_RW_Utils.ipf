@@ -11,10 +11,14 @@
 // V_HDF5_Write.ipf
 //
 
+// data is read into:
+// 	NewDataFolder/O/S root:Packages:NIST:VSANS:RawVSANS
+// so that the data folders of the raw data won't be lying around on the top level, looking like
+// 1D data sets and interfering.
 
 
-// thought this would be useful, but the file name (folder) is stuck in the middle...
-//Strconstant ksPathPrefix = "root:(folder):entry:entry1:"
+// the base data folder path where the raw data is loaded
+Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 
 
@@ -23,10 +27,14 @@ Macro Read_HDF5_Raw_No_Attributes()
 	V_LoadHDF5Data("")
 End
 
+// TODO -- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
+// reduction. be sure that it's duplicated in the VCALC initialization too.
+//
 Proc V_LoadHDF5Data(file)
 	String file
 
-	SetDataFolder root:	
+	NewDataFolder/O/S root:Packages:NIST:VSANS:RawVSANS
+//	SetDataFolder root:
 	Variable err= V_LoadHDF5_NoAtt(file)	// reads into current folder
 	SetDataFolder root:
 End
@@ -101,7 +109,7 @@ Function V_getRealValueFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	if(Exists("root:"+folderStr+":"+path))
+	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
 	
@@ -111,7 +119,7 @@ Function V_getRealValueFromHDF5(fname,path)
 	endif
 
 // this should exist now - if not, I need to see the error
-	Wave/Z w = $("root:"+folderStr+":"+path)
+	Wave/Z w = $(ksBaseDFPath+folderStr+":"+path)
 	
 	if(WaveExists(w))
 		return(w[0])
@@ -138,7 +146,7 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	if(Exists("root:"+folderStr+":"+path))
+	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
 	
@@ -148,7 +156,7 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	endif
 
 // this should exist now - if not, I need to see the error
-	Wave wOut = $("root:"+folderStr+":"+path)
+	Wave wOut = $(ksBaseDFPath+folderStr+":"+path)
 	
 	return wOut
 	
@@ -172,7 +180,7 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	if(Exists("root:"+folderStr+":"+path))
+	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
 	
@@ -182,7 +190,7 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	endif
 
 // this should exist now - if not, I need to see the error
-	Wave/T wOut = $("root:"+folderStr+":"+path)
+	Wave/T wOut = $(ksBaseDFPath+folderStr+":"+path)
 	
 	return wOut
 	
@@ -232,7 +240,7 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	if(Exists("root:"+folderStr+":"+path))
+	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
 	
@@ -242,7 +250,7 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	endif
 
 // this should exist now - if not, I need to see the error
-	Wave/T/Z tw = $("root:"+folderStr+":"+path)
+	Wave/T/Z tw = $(ksBaseDFPath+folderStr+":"+path)
 	
 	if(WaveExists(tw))
 	
@@ -443,7 +451,7 @@ Function V_KillNamedDataFolder(fname)
 	String folderStr = V_GetFileNameFromPathNoSemi(fname)
 	folderStr = V_RemoveDotExtension(folderStr)
 	
-	KillDataFolder/Z $("root:"+folderStr)
+	KillDataFolder/Z $(ksBaseDFPath+folderStr)
 	err = V_flag
 	
 	return(err)

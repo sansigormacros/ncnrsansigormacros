@@ -1666,16 +1666,16 @@ Function V_writeCrystalLattice_parameter(fname,val)
 	return(err)
 end
 
-Function V_writeCrystalnx_distance(fname,val)
+Function V_writeCrystalDistance(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:monochromator:crystal:nx_distance"	
+//	String path = "entry:instrument:beam:monochromator:crystal:distance"	
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam/monochromator/crystal"	
-	String varName = "nx_distance"
+	String varName = "distance"
 	wTmpWrite[0] = val
 
 	variable err
@@ -1892,16 +1892,16 @@ Function V_writeCrystalWavevector(fname,val)
 end
 
 // instrument/beam/monochromator/velocity_selector (data folder)
-Function V_writeVSnx_distance(fname,val)
+Function V_writeVSDistance(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:monochromator:velocity_selector:nx_distance"	
+//	String path = "entry:instrument:beam:monochromator:velocity_selector:distance"	
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam/monochromator/velocity_selector"	
-	String varName = "nx_distance"
+	String varName = "distance"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2504,16 +2504,16 @@ Function V_writeBeamMonLowEfficiency(fname,val)
 	return(err)
 End
 
-Function V_writeBeamMonLownx_distance(fname,val)
+Function V_writeBeamMonLowDistance(fname,val)
 	String fname
 	Variable val
 
-//	String path = "entry:instrument:beam_monitor_low:nx_distance"
+//	String path = "entry:instrument:beam_monitor_low:distance"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_monitor_low"	
-	String varName = "nx_distance"
+	String varName = "distance"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2630,16 +2630,16 @@ Function V_writeBeamMonNormEfficiency(fname,val)
 	return(err)
 End
 
-Function V_writeBeamMonNormnx_distance(fname,val)
+Function V_writeBeamMonNormDistance(fname,val)
 	String fname
 	Variable val
 
-//	String path = "entry:instrument:beam_monitor_norm:nx_distance"
+//	String path = "entry:instrument:beam_monitor_norm:distance"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_monitor_norm"	
-	String varName = "nx_distance"
+	String varName = "distance"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2756,7 +2756,7 @@ Function V_writeBeamStopDist_to_det(fname,val)
 	return(err)
 End
 
-Function V_writeBeamStop_x0(fname,val)
+Function V_writeBeamStop_x_pos(fname,val)
 	String fname
 	Variable val
 
@@ -2765,7 +2765,7 @@ Function V_writeBeamStop_x0(fname,val)
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_stop"	
-	String varName = "x0"
+	String varName = "x_pos"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2781,7 +2781,7 @@ Function V_writeBeamStop_x0(fname,val)
 	return(err)
 End
 
-Function V_writeBeamStop_y0(fname,val)
+Function V_writeBeamStop_y_pos(fname,val)
 	String fname
 	Variable val
 
@@ -2790,7 +2790,7 @@ Function V_writeBeamStop_y0(fname,val)
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_stop"	
-	String varName = "y0"
+	String varName = "y_pos"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2944,7 +2944,7 @@ End
 //
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_writeDet_CALX(fname,detStr,inW)
+Function V_writeDet_cal_x(fname,detStr,inW)
 	String fname,detStr
 	Wave inW
 
@@ -2957,7 +2957,7 @@ Function V_writeDet_CALX(fname,detStr,inW)
 	//	Redimension/T=() wTmpWrite
 	// -- May also need to check the dimension(s) before writing (don't trust the input)
 		String groupName = "/entry/instrument/detector_"+detStr	
-		String varName = "CALX"
+		String varName = "cal_x"
 
 		variable err
 		err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
@@ -2977,7 +2977,7 @@ End
 
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_writeDet_CALY(fname,detStr,inW)
+Function V_writeDet_cal_y(fname,detStr,inW)
 	String fname,detStr
 	Wave inW
 
@@ -2990,7 +2990,7 @@ Function V_writeDet_CALY(fname,detStr,inW)
 	//	Redimension/T=() wTmpWrite
 	// -- May also need to check the dimension(s) before writing (don't trust the input)
 		String groupName = "/entry/instrument/detector_"+detStr	
-		String varName = "CALY"
+		String varName = "cal_y"
 
 		variable err
 		err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
@@ -3011,16 +3011,16 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_writeDet_PixelFWHM_X(fname,detStr,val)
+Function V_writeDet_pixel_fwhm_x(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_X"
+//	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_x"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
-	String varName = "PixelFWHM_X"
+	String varName = "pixel_fwhm_x"
 	wTmpWrite[0] = val
 
 	variable err
@@ -3040,16 +3040,16 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_writeDet_PixelFWHM_Y(fname,detStr,val)
+Function V_writeDet_pixel_fwhm_y(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_Y"
+//	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_y"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
-	String varName = "PixelFWHM_Y"
+	String varName = "pixel_fwhm_y"
 	wTmpWrite[0] = val
 
 	variable err
@@ -3066,16 +3066,16 @@ Function V_writeDet_PixelFWHM_Y(fname,detStr,val)
 End
 
 
-Function V_writeDet_PixelNumX(fname,detStr,val)
+Function V_writeDet_pixel_num_x(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//	String path = "entry:instrument:detector_"+detStr+":PixelNumX"
+//	String path = "entry:instrument:detector_"+detStr+":pixel_nnum_x"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
-	String varName = "PixelNumX"
+	String varName = "pixel_num_x"
 	wTmpWrite[0] = val
 
 	variable err
@@ -3091,16 +3091,16 @@ Function V_writeDet_PixelNumX(fname,detStr,val)
 	return(err)
 End
 
-Function V_writeDet_PixelNumY(fname,detStr,val)
+Function V_writeDet_pixel_num_y(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//	String path = "entry:instrument:detector_"+detStr+":PixelNumY"
+//	String path = "entry:instrument:detector_"+detStr+":pixel_num_y"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
-	String varName = "PixelNumY"
+	String varName = "pixel_num_y"
 	wTmpWrite[0] = val
 
 	variable err
@@ -4146,7 +4146,117 @@ Function V_writeSampleAp_size(fname,inW)
 		Print "DataFolder kill err = ",err
 	endif
 	return(err)
-End		
+End	
+
+
+///////  sample_aperture_2 (data folder)
+
+Function V_writeSampleAp2_Description(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:sample_aperture_2:description"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/sample_aperture_2"
+	String varName = "description"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+		
+	return(err)
+End
+
+Function V_writeSampleAp2_distance(fname,val)
+	String fname
+	Variable val
+
+//	String path = "entry:instrument:sample_aperture_2:distance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/sample_aperture_2"
+	String varName = "distance"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
+End
+//	shape (data folder)
+
+Function V_writeSampleAp2_shape(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:sample_aperture_2:shape:shape"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/sample_aperture_2/shape"
+	String varName = "shape"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+		
+	return(err)
+End
+
+// TODO -- this needs to return a WAVE, since the shape may be circle, or rectangle
+// and will need to return more than a single dimension
+// TODO -- be careful of the UNITS
+Function V_writeSampleAp2_size(fname,inW)
+	String fname
+	Wave inW
+
+//	String path = "entry:instrument:sample_aperture_2:shape:size"
+
+	Duplicate/O inW wTmpWrite 	
+// then use redimension as needed to cast the wave to write to the specified type
+// see WaveType for the proper codes 
+//	Redimension/T=() wTmpWrite
+// -- May also need to check the dimension(s) before writing (don't trust the input)
+	String groupName = "/entry/instrument/sample_aperture_2/shape"	
+	String varName = "size"
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
+End	
+
 		
 //////  sample_table (data folder)
 // location  = "CHAMBER" or HUBER
@@ -4839,7 +4949,7 @@ Function V_writeLog_time(fname,logStr,inW)
 	String fname,logStr
 	Wave inW
 	
-//	String path = "entry:sample:"+logstr+":value_log:nx_time"
+//	String path = "entry:sample:"+logstr+":value_log:time"
 
 	Duplicate/O inW wTmpWrite 	
 // then use redimension as needed to cast the wave to write to the specified type
@@ -4847,7 +4957,7 @@ Function V_writeLog_time(fname,logStr,inW)
 //	Redimension/T=() wTmpWrite
 // -- May also need to check the dimension(s) before writing (don't trust the input)
 	String groupName = "/entry/sample/"+logStr+"/value_log"	
-	String varName = "nx_time"
+	String varName = "time"
 
 	variable err
 	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)

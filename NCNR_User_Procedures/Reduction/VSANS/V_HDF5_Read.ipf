@@ -30,6 +30,12 @@ end
 //	return("")
 //end
 
+Macro Dump_V_getFP(fname)
+	String fname
+	
+	Test_V_get_FP("V_get*",fname)
+end
+
 Function Test_V_get_FP(str,fname)
 	String str,fname
 	
@@ -51,6 +57,12 @@ Function Test_V_get_FP(str,fname)
 	return(0)
 end
 
+Macro Dump_V_getFP_Det(fname,detStr)
+	String fname,detStr="FL"
+	
+	Test_V_get_FP2("V_get*",fname,detStr)
+end
+
 Function Test_V_get_FP2(str,fname,detStr)
 	String str,fname,detStr
 	
@@ -70,6 +82,13 @@ Function Test_V_get_FP2(str,fname,detStr)
 	endfor
 	
 	return(0)
+end
+
+
+Macro Dump_V_getSTR(fname)
+	String fname
+	
+	Test_V_get_STR("V_get*",fname)
 end
 
 Function Test_V_get_STR(str,fname)
@@ -95,6 +114,12 @@ Function Test_V_get_STR(str,fname)
 	endfor
 	
 	return(0)
+end
+
+Macro Dump_V_getSTR_Det(fname,detStr)
+	String fname,detStr="FL"
+	
+	Test_V_get_STR2("V_get*",fname,detStr)
 end
 
 Function Test_V_get_STR2(str,fname,detStr)
@@ -650,10 +675,10 @@ Function V_getCrystalLattice_parameter(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getCrystalnx_distance(fname)
+Function V_getCrystalDistance(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:monochromator:crystal:nx_distance"	
+	String path = "entry:instrument:beam:monochromator:crystal:distance"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
@@ -715,10 +740,10 @@ Function V_getCrystalWavevector(fname)
 end
 
 // instrument/beam/monochromator/velocity_selector (data folder)
-Function V_getVSnx_distance(fname)
+Function V_getVSDistance(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:monochromator:velocity_selector:nx_distance"	
+	String path = "entry:instrument:beam:monochromator:velocity_selector:distance"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
@@ -905,10 +930,10 @@ Function V_getBeamMonLowEfficiency(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamMonLownx_distance(fname)
+Function V_getBeamMonLowDistance(fname)
 	String fname
 
-	String path = "entry:instrument:beam_monitor_low:nx_distance"
+	String path = "entry:instrument:beam_monitor_low:distance"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
@@ -942,10 +967,10 @@ Function V_getBeamMonNormEfficiency(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamMonNormnx_distance(fname)
+Function V_getBeamMonNormDistance(fname)
 	String fname
 
-	String path = "entry:instrument:beam_monitor_norm:nx_distance"
+	String path = "entry:instrument:beam_monitor_norm:distance"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
@@ -980,17 +1005,17 @@ Function V_getBeamStopDist_to_det(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamStop_x0(fname)
+Function V_getBeamStop_x_pos(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:x0"
+	String path = "entry:instrument:beam_stop:x_pos"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamStop_y0(fname)
+Function V_getBeamStop_y_pos(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:y0"
+	String path = "entry:instrument:beam_stop:y_pos"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
@@ -1044,12 +1069,12 @@ End
 //
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_getDet_CALX(fname,detStr,outW)
+Function V_getDet_cal_x(fname,detStr,outW)
 	String fname,detStr
 	Wave outW
 
 	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":CALX"
+		String path = "entry:instrument:detector_"+detStr+":cal_x"
 		WAVE w = V_getRealWaveFromHDF5(fname,path)
 
 		outW = w
@@ -1061,12 +1086,12 @@ End
 
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_getDet_CALY(fname,detStr,outW)
+Function V_getDet_cal_y(fname,detStr,outW)
 	String fname,detStr
 	Wave outW
 
 	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":CALY"
+		String path = "entry:instrument:detector_"+detStr+":cal_y"
 		WAVE w = V_getRealWaveFromHDF5(fname,path)
 	
 		outW = w
@@ -1079,10 +1104,10 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_getDet_PixelFWHM_X(fname,detStr)
+Function V_getDet_pixel_fwhm_x(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_X"
+	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_x"
 
 // TODO -- different behavior for "B"
 	if(cmpstr(detStr,"B") == 0)
@@ -1095,10 +1120,10 @@ End
 // TODO -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
-Function V_getDet_PixelFWHM_Y(fname,detStr)
+Function V_getDet_pixel_fwhm_y(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":PixelFWHM_Y"
+	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_y"
 
 // TODO -- different behavior for "B"
 	if(cmpstr(detStr,"B") == 0)
@@ -1108,17 +1133,17 @@ Function V_getDet_PixelFWHM_Y(fname,detStr)
 	endif
 End
 
-Function V_getDet_PixelNumX(fname,detStr)
+Function V_getDet_pixel_num_x(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":PixelNumX"
+	String path = "entry:instrument:detector_"+detStr+":pixel_num_x"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getDet_PixelNumY(fname,detStr)
+Function V_getDet_pixel_num_y(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":PixelNumY"
+	String path = "entry:instrument:detector_"+detStr+":pixel_num_y"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
@@ -1780,11 +1805,12 @@ Function V_getLog_avgValue(fname,logStr)
 end
 
 // TODO -- this needs to be a WAVE reference
+// TODO -- verify that the field is really read in as "time0"
 Function V_getLog_time(fname,logStr,outW)
 	String fname,logStr
 	Wave outW
 	
-	String path = "entry:sample:"+logstr+":value_log:nx_time"
+	String path = "entry:sample:"+logstr+":value_log:time0"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
 	outW = w

@@ -642,6 +642,7 @@ Proc V_Initialize_Space()
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Front
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Middle
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Back
+	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 	
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
