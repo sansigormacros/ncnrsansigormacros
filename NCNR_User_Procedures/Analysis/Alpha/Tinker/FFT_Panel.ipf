@@ -1061,7 +1061,7 @@ Function NonZeroValues(m)
 //	dim = DimSize(m, 0 )		//assume NxNxN
 	Duplicate/O m,mz
 	
-	MultiThread mz = (m[p][q] != val) ? 1 : 0
+	MultiThread mz = (m[p][q][r] != val) ? 1 : 0
 	
 	WaveStats/Q/M=1 mz		// NaN and Inf are not reported in V_npnts
 	

@@ -342,7 +342,7 @@ function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 end
 
 
-function/S getXMLDataSetTitle(xmlDF,dsNum,[useFilename])
+function/S GetXMLDataSetTitle(xmlDF,dsNum,[useFilename])
 	String xmlDF
 	Variable dsNum
 	Variable useFilename
@@ -392,87 +392,9 @@ function/S getXMLDataSetTitle(xmlDF,dsNum,[useFilename])
 end
 
 
-//AJJ 12/5/08
-
-//Define struct for file contents
-Structure NISTXMLfile
-//	string filename
-	string Run
-	string title
-
-	//<SASdata>
-	Wave Q,I,Idev,Qdev,Qmean,Shadowfactor,dQl
-	string unitsQ,unitsI,unitsIdev,unitsQdev,unitsQmean,unitsShadowfactor,unitsdQl
-
-//	Variable flux_monitor
-//	string Q_resolution
-
-	//<SASsample>
-	string sample_ID
-	variable sample_thickness
-	string unitssample_thickness
-	variable sample_transmission
-
-	//SASinstrument
-	string nameSASinstrument
-	// SASinstrument/SASsource
-	string radiation
-//	string beam_shape
-	variable wavelength
-	string unitswavelength
-	variable wavelength_spread
-	string unitswavelength_spread
- 
-	//<SAScollimation>
-//	variable collimation_length
-//	string unitscollimation_length
-	variable source_aperture
-	string unitssource_aperture
-	string typesource_aperture
-	variable sample_aperture
-	string unitssample_aperture
-	string typesample_aperture
-
-	//SASdetector         <SASdetector>
-	string detector_name
-	variable offset_angle
-	string unitsoffset_angle
-	variable  SDD
-	string unitsSDD
-	variable beamcenter_X
-	string unitsbeamcenter_X
-	variable beamcenter_Y
-	string unitsbeamcenter_Y
-//	variable pixel_sizeX
-//	string unitspixel_sizeX
-//	variable pixel_sizeY
-//	string unitspixel_sizeY
-//	string detectortype 
-
-	// <SASprocess name="NCNR-IGOR">
-	string nameSASprocess
-	string SASprocessnote
-//	string SASprocessdate
-//	string average_type
-//	string SAM_file
-//	string BKD_file
-//	string EMP_file
-//	string DIV_file
-//	string MASK_file
-//	string ABS_parameters
-//	variable TSTAND
-//	variable DSTAND
-//	string unitsDSTAND
-//	variable IZERO
-//	variable XSECT
-//	string unitsXSECT
-	string SASnote
-Endstructure
-
-
 //Function to write NIST canSAS XML files
 //Minimalist XML file - AJJ Dec 2008
-function writeNISTXML(fileName, NISTfile)
+Function WriteNISTXML(fileName, NISTfile)
 	String fileName
 	Struct NISTXMLfile &NISTfile
 
@@ -576,7 +498,7 @@ end
 // !!! nf.Sample_ID is not set correctly here, since it's not read in from the NIST 6-col data file
 // and SASprocessnote does not get set either!
 //
-Function convertNISTtoNISTXML(fileStr)
+Function ConvertNISTtoNISTXML(fileStr)
 	String fileStr
 	
 	Struct NISTXMLfile nf
@@ -680,7 +602,7 @@ Function convertNISTtoNISTXML(fileStr)
 
 end
 
-function setmetadataFromASCHeader(fileStr,NISTfile)
+function SetMetadataFromASCHeader(fileStr,NISTfile)
 	String fileStr
 	Struct NISTXMLfile &NISTfile
 
@@ -1155,15 +1077,32 @@ End
 
 #else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
-	FUNCTION LoadNISTXMLData(fileName,doPlot)
-	    String fileName
-	    Variable doPlot
-	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
-	    RETURN(-6)
-	END
-	
+//	FUNCTION LoadNISTXMLData(fileName,doPlot)
+//	    String fileName
+//	    Variable doPlot
+//	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+//	    RETURN(-6)
+//	END
 
-	Function writeNISTXML(fileName, NISTfile)
+
+	Function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
+		String filestr,outStr
+		Variable doPlot,forceOverwrite
+		
+	   Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return(-6)
+	end		
+
+	Function/S GetXMLDataSetTitle(xmlDF,dsNum,[useFilename])
+		String xmlDF
+		Variable dsNum
+		Variable useFilename
+		
+	   Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return("")
+	end		
+
+	Function WriteNISTXML(fileName, NISTfile)
 		String fileName, NISTfile
 		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 	 	RETURN(-6)
@@ -1192,11 +1131,105 @@ End
 		 Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)
 	end
+	
+	Function SetMetadataFromASCHeader(fileStr,NISTfile)
+		String fileStr
+		Struct NISTXMLfile &NISTfile
+			 
+		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return(-6)
+	end
+		
+	Function ConvertNISTtoNISTXML(fileStr)
+		String fileStr
+		
+		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+		return(-6)
+	end	
+	
+	
 #endif
+
+//AJJ 12/5/08
+
+//Define struct for file contents
+Structure NISTXMLfile
+//	string filename
+	string Run
+	string title
+
+	//<SASdata>
+	Wave Q,I,Idev,Qdev,Qmean,Shadowfactor,dQl
+	string unitsQ,unitsI,unitsIdev,unitsQdev,unitsQmean,unitsShadowfactor,unitsdQl
+
+//	Variable flux_monitor
+//	string Q_resolution
+
+	//<SASsample>
+	string sample_ID
+	variable sample_thickness
+	string unitssample_thickness
+	variable sample_transmission
+
+	//SASinstrument
+	string nameSASinstrument
+	// SASinstrument/SASsource
+	string radiation
+//	string beam_shape
+	variable wavelength
+	string unitswavelength
+	variable wavelength_spread
+	string unitswavelength_spread
+ 
+	//<SAScollimation>
+//	variable collimation_length
+//	string unitscollimation_length
+	variable source_aperture
+	string unitssource_aperture
+	string typesource_aperture
+	variable sample_aperture
+	string unitssample_aperture
+	string typesample_aperture
+
+	//SASdetector         <SASdetector>
+	string detector_name
+	variable offset_angle
+	string unitsoffset_angle
+	variable  SDD
+	string unitsSDD
+	variable beamcenter_X
+	string unitsbeamcenter_X
+	variable beamcenter_Y
+	string unitsbeamcenter_Y
+//	variable pixel_sizeX
+//	string unitspixel_sizeX
+//	variable pixel_sizeY
+//	string unitspixel_sizeY
+//	string detectortype 
+
+	// <SASprocess name="NCNR-IGOR">
+	string nameSASprocess
+	string SASprocessnote
+//	string SASprocessdate
+//	string average_type
+//	string SAM_file
+//	string BKD_file
+//	string EMP_file
+//	string DIV_file
+//	string MASK_file
+//	string ABS_parameters
+//	variable TSTAND
+//	variable DSTAND
+//	string unitsDSTAND
+//	variable IZERO
+//	variable XSECT
+//	string unitsXSECT
+	string SASnote
+Endstructure
 
 	// if( Exists("XmlOpenFile") 
 //Needed to test whether file is XML. The load routine will then either give an error if XMLutils is not present or load the file if it is.
-function isXML(filestr)
+Function isXML(filestr)
 	String filestr
 	
 	String line

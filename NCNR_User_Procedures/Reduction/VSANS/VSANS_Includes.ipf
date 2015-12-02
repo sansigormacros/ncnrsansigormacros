@@ -1,5 +1,14 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+// to properly set up the template for other facility reduction templates, 
+// function NCNR_VSANS() must exist here in the Includes file.
+//
+Function NCNR_VSANS()
+	//does nothing but define NCNR()
+	return(0)
+End
+
+
 #include "VC_DetectorBinning_Q"
 #include "VC_DetectorBinning_Slit"
 #include "VC_DetectorBinning_Utils"
@@ -29,3 +38,10 @@
 #include "V_HDF5_Read"
 #include "V_HDF5_Write"
 #include "V_HDF5_RW_Utils"
+
+// start of VSANS reduction procedures
+#include "V_Initialize"
+#include "V_MainPanel"
+#include "V_Menu"
+#include "V_VSANS_Preferences"
+

@@ -313,9 +313,12 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 		HDF5OpenGroup /Z fileID , groupName, groupID
 
 		if(!groupID)
-			HDF5CreateGroup /Z fileID, groupName, groupID
-			//err = 1
-			//abort "HDF5 group does not exist"
+		// don't create the group it the name isn't right -- throw up an error
+			//HDF5CreateGroup /Z fileID, groupName, groupID
+			err = 1
+			HDF5CloseFile /Z fileID
+			DoAlert 0, "HDF5 group does not exist "+groupName+varname
+			return(err)
 		else
 			// get attributes and save them
 			//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes 
@@ -398,9 +401,12 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 		HDF5OpenGroup /Z fileID , groupName, groupID
 
 		if(!groupID)
-			HDF5CreateGroup /Z fileID, groupName, groupID
-			//err = 1
-			//abort "HDF5 group does not exist"
+		// don't create the group it the name isn't right -- throw up an error
+			//HDF5CreateGroup /Z fileID, groupName, groupID
+			err = 1
+			HDF5CloseFile /Z fileID
+			DoAlert 0, "HDF5 group does not exist "+groupName+varname
+			return(err)
 		else
 			// get attributes and save them
 			//HDF5ListAttributes /Z fileID, groupName    this is returning null. expect it to return semicolon delimited list of attributes 
