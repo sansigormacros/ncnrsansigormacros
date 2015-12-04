@@ -50,9 +50,11 @@ End
 Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Variable err=	LoadRawSANSData("Select a Raw SANS data file")
+	Variable err=	V_LoadHDF5Data("")			// load the data into RawVSANS storage folder (why am I doing this?)
 	if(!err)
-		UpdateDisplayInformation("RAW")
+		String hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+		CopyHDFToWorkFolder(hdfDF,"RAW")		// copy what is needed for data processing (not the DAS_logs)
+		UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
 	endif
 End
 
@@ -188,9 +190,9 @@ End
 
 Proc HelpMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial"
 	if(V_flag !=0)
-		DoAlert 0,"The SANS Data Reduction Tutorial Help file could not be found"
+		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 	endif
 End
 
@@ -292,7 +294,7 @@ End
 Window Main_VSANS_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(500,60,924,320) /K=2 as "VSANS Reduction Controls"
-	ModifyPanel cbRGB=(65535,58981,27524)
+	ModifyPanel cbRGB=(47748,57192,54093)
 	ModifyPanel fixedSize=1
 //////
 //on main portion of panel
@@ -309,7 +311,7 @@ Window Main_VSANS_Panel()
 	TabControl MainTab,tabLabel(1)="Reduction",tabLabel(2)="1-D Ops",tabLabel(3)="2-D Ops",tabLabel(4)="Misc Ops"
 	TabControl MainTab,value=0
 	//
-	TabControl MainTab labelBack=(65535,58981,27524)
+	TabControl MainTab labelBack=(47748,57192,54093)
 	
 //on tab(0) - Raw Data - initially visible
 	Button MainButton_0a,pos={15,90},size={130,20},proc=DisplayMainButtonProc,title="Display Raw Data"

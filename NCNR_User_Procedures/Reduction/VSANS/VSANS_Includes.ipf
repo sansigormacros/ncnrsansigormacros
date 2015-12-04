@@ -44,4 +44,5 @@ End
 #include "V_MainPanel"
 #include "V_Menu"
 #include "V_VSANS_Preferences"
+#include "V_WorkFolderUtils"
 

@@ -27,16 +27,18 @@ Macro Read_HDF5_Raw_No_Attributes()
 	V_LoadHDF5Data("")
 End
 
-// TODO -- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
+// TODO:
+//  x- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
 //
-Proc V_LoadHDF5Data(file)
+Function V_LoadHDF5Data(file)
 	String file
 
-	NewDataFolder/O/S root:Packages:NIST:VSANS:RawVSANS
+	SetDataFolder root:Packages:NIST:VSANS:RawVSANS
 //	SetDataFolder root:
 	Variable err= V_LoadHDF5_NoAtt(file)	// reads into current folder
 	SetDataFolder root:
+	return(err)
 End
 
 
