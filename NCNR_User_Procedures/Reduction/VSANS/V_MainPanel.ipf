@@ -278,7 +278,7 @@ End
 Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Show_Preferences_Panel()
+	Show_VSANSPreferences_Panel()
 End
 
 ////////////////////////////////////////////////
