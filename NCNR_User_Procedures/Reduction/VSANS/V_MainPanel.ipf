@@ -54,7 +54,10 @@ Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	if(!err)
 		String hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
 		CopyHDFToWorkFolder(hdfDF,"RAW")		// copy what is needed for data processing (not the DAS_logs)
+		
+		// this (in SANS) just passes directly to fRawWindowHook()
 		UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+		
 	endif
 End
 

@@ -1,6 +1,12 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-
+//
+// functions for testing and then actually applying the nonlinear corrections to the
+// tube detectors. These routines are for a test bank of 8 tubes (vertical) that were
+// run at a subdivision of 1024. VSANS will be different in practice
+//
+// but the fundamental process is the same, and can be translated into proper functions as needed
+//
 
 
 

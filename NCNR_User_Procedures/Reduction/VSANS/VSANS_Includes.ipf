@@ -25,7 +25,7 @@ End
 #include "V_NexusFromIgor"			//AUG2015 - depricated, but keep for now
 
 // for possible peak fitting
-#include "BroadPeak_Pix_2D"
+#include "V_BroadPeak_Pix_2D"
 #include "VC_BeamCenter"
 
 // for fitting data to generate tube corrections
@@ -46,3 +46,6 @@ End
 #include "V_VSANS_Preferences"
 #include "V_WorkFolderUtils"
 
+// start of raw data display panel
+#include "V_Test_RAW_Panel"		// rename this later when it's done
+//#include "V_WorkFileUtils"		// not ready to add yet

@@ -6,7 +6,10 @@
 //
 //
 
-
+// TODO: write function
+//		KillVANSObjects()		//Kills (/Z) the list of objects that I generate
+//			!! but I must maintain the list
+//
 
 
 //
@@ -19,6 +22,14 @@
 // TODO - decide what exactly I need to copy over. May be best to copy all, and delete
 //       what I know that I don't need
 //
+// TODO !!! DuplicateDataFolder will FAIL - in the base case of RAW data files, the
+//  data is actually in use - so it will fail every time. need an alternate solution. in SANS,
+// there are a limited number of waves to carry over, so Dupliate/O is used for rw, tw, data, etc.
+//
+//
+//
+// TODO : I also need a list of what is generated during processing that may be hanging around - that I need to
+//     be sure to get rid of - like the calibration waves, solidAngle, etc.
 //
 // hdfDF is the name only of the data in storage. May be full file name with extension (clean as needed)
 // type is the destination WORK folder for the copy
@@ -37,6 +48,7 @@ Function CopyHDFToWorkFolder(hdfDF,type)
 	toDF = "root:Packages:NIST:VSANS:"+type+":entry"
 	// copy the folders
 	KillDataFolder/Z toDF			//DuplicateDataFolder will not overwrite, so Kill
+	// this will fail if something was in use
 	DuplicateDataFolder $fromDF,$toDF
 	
 	// make a copy of the file name for my own use, since it's not in the file
@@ -47,6 +59,14 @@ Function CopyHDFToWorkFolder(hdfDF,type)
 	// instrument
 	// reduction
 	// sample
+	
+	
+	
+	KillDataFolder/Z toDF+":control"
+	Print V_flag
+	// if not OK, need to duplicate/O
+	
+	
 	
 	// ***what about the variables @ the top level?
 	// data directory, identifiers, etc.?
