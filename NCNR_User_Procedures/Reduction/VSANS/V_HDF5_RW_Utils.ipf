@@ -23,22 +23,120 @@ Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 
 // passing null file string presents a dialog
-Macro Read_HDF5_Raw_No_Attributes()
-	V_LoadHDF5Data("")
+Proc Read_HDF5_Raw_No_Attributes()
+	V_LoadHDF5Data("","RAW")
 End
 
 // TODO:
 //  x- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
+// -- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
+//    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
-Function V_LoadHDF5Data(file)
-	String file
+Function V_LoadHDF5Data(file,folder)
+	String file,folder
 
-	SetDataFolder root:Packages:NIST:VSANS:RawVSANS
+	String base_name
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
 //	SetDataFolder root:
-	Variable err= V_LoadHDF5_NoAtt(file)	// reads into current folder
+	if(cmpstr(folder,"RAW")==0)
+		base_name="entry"
+	else
+		base_name=""
+	endif
+	
+	Variable err= V_LoadHDF5_NoAtt(file,base_name)	// reads into current folder
+	
+	// if RAW data, then generate the errors and linear data copy
+	// do this 9x
+	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:entry:instrument:" 
+	if(cmpstr(folder,"RAW")==0)
+		V_MakeDataError(tmpStr+"detector_B")
+		V_MakeDataError(tmpStr+"detector_MB")
+		V_MakeDataError(tmpStr+"detector_MT")
+		V_MakeDataError(tmpStr+"detector_ML")
+		V_MakeDataError(tmpStr+"detector_MR")
+		V_MakeDataError(tmpStr+"detector_FB")
+		V_MakeDataError(tmpStr+"detector_FT")
+		V_MakeDataError(tmpStr+"detector_FL")
+		V_MakeDataError(tmpStr+"detector_FR")
+
+// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
+		V_RedimFakeData()
+		
+/// END FAKE DATA CORRECTIONS		
+		
+	endif
+	
 	SetDataFolder root:
 	return(err)
+End
+
+//
+// TODO -- this is all FAKED since all the data arrays are (1,128,128)
+// I'm intentionally using the wrong number of pixels so I'm more likely to go back and get rid of this later.
+//
+// the SetScale parts may be useful later.
+//
+Function V_RedimFakeData()
+	
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
+		Wave det_B=data
+		Redimension/N=(300,300)/E=1 det_B
+		
+		Variable ctr=20,npix=100
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
+		Wave det_MT=data
+		Redimension/N=(npix,48)/E=1 det_MT		
+		SetScale/I x -npix/2,npix/2,"",det_MT
+		SetScale/I y ctr,ctr+48,"",det_MT
+
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
+		Wave det_MB=data
+		Redimension/N=(npix,48)/E=1 det_MB		
+		SetScale/I x -npix/2,npix/2,"",det_MB
+		SetScale/I y -ctr,-ctr-48,"",det_MB
+		
+		ctr=30
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
+		Wave det_ML=data
+		Redimension/N=(48,npix)/E=1 det_ML		
+		SetScale/I x -ctr-48,-ctr,"",det_ML
+		SetScale/I y -npix/2,npix/2,"",det_ML
+		
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
+		Wave det_MR=data
+		Redimension/N=(48,npix)/E=1 det_MR		
+		SetScale/I x ctr,ctr+48,"",det_MR
+		SetScale/I y -npix/2,npix/2,"",det_MR
+		
+		ctr=30
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
+		Wave det_FT=data
+		Redimension/N=(npix,48)/E=1 det_FT		
+		SetScale/I x -npix/2,npix/2,"",det_FT
+		SetScale/I y ctr,ctr+48,"",det_FT
+
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
+		Wave det_FB=data
+		Redimension/N=(npix,48)/E=1 det_FB		
+		SetScale/I x -npix/2,npix/2,"",det_FB
+		SetScale/I y -ctr,-ctr-48,"",det_FB
+		
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
+		Wave det_FL=data
+		Redimension/N=(48,npix)/E=1 det_FL		
+		SetScale/I x -ctr-48,-ctr,"",det_FL
+		SetScale/I y -npix/2,npix/2,"",det_FL
+		
+		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
+		Wave det_FR=data
+		Redimension/N=(48,npix)/E=1 det_FR		
+		SetScale/I x ctr,ctr+48,"",det_FR
+		SetScale/I y -npix/2,npix/2,"",det_FR
+
+
+	return(0)
 End
 
 
@@ -50,13 +148,18 @@ End
 // TODO: remove the P=home restriction top make this more generic
 // -- get rid of bits leftover here that I don't need
 // -- be sure I'm using all of the correct flags in the HDF5LoadGroup operation
+// -- settle on how the base_name is to be used. "entry" for the RAW, fileName for the "rawVSANS"?
 //
-Function V_LoadHDF5_NoAtt(fileName, [hdf5Path])
-	String fileName, hdf5Path
-	if ( ParamIsDefault(hdf5Path) )
-		hdf5Path = "/"
-	endif
+// passing in "" for base_name will take the name from the file name as selected
+//
+Function V_LoadHDF5_NoAtt(fileName,base_name)
+	String fileName, base_name
+	
+//	if ( ParamIsDefault(hdf5Path) )
+//		hdf5Path = "/"
+//	endif
 
+	String hdf5path = "/"		//always read from the top
 	String status = ""
 
 	Variable fileID = 0
@@ -77,10 +180,14 @@ Function V_LoadHDF5_NoAtt(fileName, [hdf5Path])
 //s_tic()		//fast 
 	
 	SVAR tmpStr=root:file_name
-	fileName=tmpStr		//SRK - in case the file was chosen from a dialog
+	fileName=tmpStr		//SRK - in case the file was chosen from a dialog, I'll need access to the name later
 	
 	//   read the data (too bad that HDF5LoadGroup does not read the attributes)
-	String base_name = StringFromList(0,FileName,".")
+	if(cmpstr(base_name,"") == 0)
+		base_name = StringFromList(0,FileName,".")
+	endif
+	//base_name = "entry"
+	
 	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
 	if ( V_Flag != 0 )
 		Print fileName + ": could not open as HDF5 file"
@@ -117,7 +224,7 @@ Function V_getRealValueFromHDF5(fname,path)
 	
 	if(!valExists)
 		//then read in the file
-		V_LoadHDF5_NoAtt(fname)
+		V_LoadHDF5_NoAtt(fname,"")
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -154,7 +261,7 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	
 	if(!valExists)
 		//then read in the file
-		V_LoadHDF5_NoAtt(fname)
+		V_LoadHDF5_NoAtt(fname,"")
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -188,7 +295,7 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	
 	if(!valExists)
 		//then read in the file
-		V_LoadHDF5_NoAtt(fname)
+		V_LoadHDF5_NoAtt(fname,"")
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -248,7 +355,7 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	
 	if(!valExists)
 		//then read in the file
-		V_LoadHDF5_NoAtt(fname)
+		V_LoadHDF5_NoAtt(fname,"")
 	endif
 
 // this should exist now - if not, I need to see the error
