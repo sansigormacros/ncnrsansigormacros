@@ -188,8 +188,8 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
 	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14},proc=V_DoEfficiencyCorrPref
 	CheckBox PrefCtrl_1g value=root:Packages:NIST:VSANS:Globals:gDoDetectorEffCorr,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
-	CheckBox PrefCtrl_1h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
-	CheckBox PrefCtrl_1h value=root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
+//	CheckBox PrefCtrl_1h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
+//	CheckBox PrefCtrl_1h value=root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
 
 //	CheckBox PrefCtrl_1a,disable=1
 //	CheckBox PrefCtrl_1b,disable=1

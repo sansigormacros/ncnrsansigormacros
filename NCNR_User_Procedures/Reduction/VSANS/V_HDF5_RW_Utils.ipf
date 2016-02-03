@@ -27,6 +27,7 @@ Proc Read_HDF5_Raw_No_Attributes()
 	V_LoadHDF5Data("","RAW")
 End
 
+
 // TODO:
 //  x- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
@@ -90,6 +91,7 @@ Function V_RedimFakeData()
 		Redimension/N=(npix,48)/E=1 det_MT		
 		SetScale/I x -npix/2,npix/2,"",det_MT
 		SetScale/I y ctr,ctr+48,"",det_MT
+//		det_mt[][20] = 50
 
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
 		Wave det_MB=data

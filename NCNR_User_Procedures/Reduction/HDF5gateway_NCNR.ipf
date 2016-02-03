@@ -421,7 +421,7 @@ Function/S H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 		return fileName + ": could not open as HDF5 file"
 	endif
 	
-s_tic()		//fast 
+//s_tic()		//fast 
 	
 	SVAR tmpStr=root:file_name
 	fileName=tmpStr		//SRK - in case the file was chosen from a dialog
@@ -434,7 +434,7 @@ s_tic()		//fast
 		return fileName + ": problem while opening HDF5 file"
 	endif
 
-s_toc()
+//s_toc()
 	
 //s_tic()		// this is the slow part, 0.7s for Igor-generated. > 9s for NICE (which has DAS_log)
 
