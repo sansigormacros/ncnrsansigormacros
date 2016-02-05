@@ -659,15 +659,15 @@ Proc V_Initialize_Space()
 	Variable/G gFront_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G gFront_L_pixelX = 0.8			// (cm)		these tubes are vertical
+	Variable/G gFront_L_pixelX = 0.84			// (cm)		these tubes are vertical 8.4 mm spacing (JGB 2/2106)
 	Variable/G gFront_L_pixelY = 0.8			// (cm)		//!! now 8 mm, since nPix=128, rather than 256
-	Variable/G gFront_R_pixelX = 0.8			// (cm)
+	Variable/G gFront_R_pixelX = 0.84			// (cm)
 	Variable/G gFront_R_pixelY = 0.8			// (cm)
 	
 	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G gFront_T_pixelY = 0.8			// (cm)
+	Variable/G gFront_T_pixelY = 0.84			// (cm)
 	Variable/G gFront_B_pixelX = 0.4			// (cm)
-	Variable/G gFront_B_pixelY = 0.8			// (cm)
+	Variable/G gFront_B_pixelY = 0.84			// (cm)
 	
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 	Variable/G gFront_L_nPix_X = 48		// == number of tubes
@@ -691,15 +691,15 @@ Proc V_Initialize_Space()
 	Variable/G gMiddle_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G gMiddle_L_pixelX = 0.8			// (cm)		these tubes are vertical
+	Variable/G gMiddle_L_pixelX = 0.8	4		// (cm)		these tubes are vertical
 	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
-	Variable/G gMiddle_R_pixelX = 0.8			// (cm)
+	Variable/G gMiddle_R_pixelX = 0.8	4		// (cm)
 	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
 	
 	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G gMiddle_T_pixelY = 0.8			// (cm)
+	Variable/G gMiddle_T_pixelY = 0.84			// (cm)
 	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
-	Variable/G gMiddle_B_pixelY = 0.8			// (cm)
+	Variable/G gMiddle_B_pixelY = 0.8	4		// (cm)
 
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes
@@ -772,7 +772,7 @@ Proc V_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;Converging Slits;White Beam;Polarizer;"
+	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;White Beam;Polarizer;"
 	String/G gBinTypeStr = "One;Two;Four;Slit Mode;"
 
 
@@ -781,13 +781,13 @@ Proc V_Initialize_Space()
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
 	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;"
-	String/G gSourceShape = "circular;rectangular;converging pinholes;converging slits;"
+	String/G gSourceShape = "circular;rectangular;converging pinholes;"
 	String/G gSourceDiam = "1.0 cm;2.0 cm;5.0 cm;"
 	String/G gDeltaLambda = "0.10;0.20;0.30;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
-	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;converging slits;"
+	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;"
 	String/G gSampleApertureDiam = "0.5;1.0;1.5;2.0;"
 	
 // tab 2

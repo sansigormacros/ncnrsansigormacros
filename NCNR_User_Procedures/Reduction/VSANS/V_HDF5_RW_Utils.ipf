@@ -92,12 +92,14 @@ Function V_RedimFakeData()
 		SetScale/I x -npix/2,npix/2,"",det_MT
 		SetScale/I y ctr,ctr+48,"",det_MT
 //		det_mt[][20] = 50
+	det_MT *= 10
 
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
 		Wave det_MB=data
 		Redimension/N=(npix,48)/E=1 det_MB		
 		SetScale/I x -npix/2,npix/2,"",det_MB
 		SetScale/I y -ctr,-ctr-48,"",det_MB
+	det_MB *= 5
 		
 		ctr=30
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
@@ -105,6 +107,7 @@ Function V_RedimFakeData()
 		Redimension/N=(48,npix)/E=1 det_ML		
 		SetScale/I x -ctr-48,-ctr,"",det_ML
 		SetScale/I y -npix/2,npix/2,"",det_ML
+	det_ML *= 2
 		
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
 		Wave det_MR=data
@@ -212,6 +215,12 @@ end
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
+// TODO:
+// currently, the work folders have the following path - so passing in "RAW" as fname
+// will take some re-configuring. 
+//  root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL:distance
+// -- be sure this read from work folders is not broken in the future, and is passed to ALL of the
+//    top-level R/W routines. (Write is necessary ONLY for SIM data files. Patch is direct to disk.)
 Function V_getRealValueFromHDF5(fname,path)
 	String fname,path
 
@@ -219,6 +228,12 @@ Function V_getRealValueFromHDF5(fname,path)
 	Variable valExists=0
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+
+// check for a work folder first (note that "entry" is doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
+		Wave/Z w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+		return(w[0])
+	endif
 	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
@@ -256,7 +271,13 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	Variable valExists=0
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
-	
+
+// check for a work folder first (note that "entry" is doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
+		Wave wOut = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+		return wOut
+	endif
+		
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
@@ -290,6 +311,12 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	Variable valExists=0
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+
+// check for a work folder first (note that "entry" is doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
+		Wave/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+		return wOut
+	endif
 	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
@@ -350,6 +377,12 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	Variable valExists=0
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+
+// check for a work folder first (note that "entry" is doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
+		Wave/Z/T tw = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+		return(tw[0])
+	endif
 	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1

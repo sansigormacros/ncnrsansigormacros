@@ -46,7 +46,8 @@ Proc UpdateDisplayInformation(type)
 	
 	// TODO: update the information here  - in either case
 	// what isn't automatically picked up? What is "stale" on the display?
-	
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
+	DoWindow/T VSANS_Data,type + " VSANS_Data"
 end
 
 //
@@ -64,6 +65,7 @@ Function VSANSDataPanelGlobals()
 	Variable/G gNCounts=0
 	String/G gCurDispFile = "default string"
 	String/G gCurTitle = ""
+	String/G gCurDispType = ""
 	
 	SetDataFolder root:
 End
@@ -78,7 +80,8 @@ Window VSANS_DataPanel() : Panel
 	NewPanel /W=(37,45,1038,719) /N=VSANS_Data
 	ShowTools/A
 	
-	DoWindow/T VSANS_Data,"VSANS_Data"//+cur_folder
+	String curFolder = root:Packages:NIST:VSANS:Globals:gCurDispType
+	DoWindow/T VSANS_Data,curFolder + " VSANS_Data"
 	SetWindow VSANS_Data,hook(dataHook)=VSANSDataHook,hookevents=2
 	
 	SetDrawLayer UserBack
@@ -112,7 +115,7 @@ Window VSANS_DataPanel() : Panel
 	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= file_name
-	TitleBox title_status,pos={606,210},size={76,20},variable= file_name
+	TitleBox title_status,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
 	
 	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
 	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
@@ -120,9 +123,9 @@ Window VSANS_DataPanel() : Panel
 // on the tabs, always visible
 	TitleBox title_xy,pos={24,71},size={76,20},variable= file_name
 	Slider slider_hi,pos={558,224},size={16,80},proc=HiMapSliderProc
-	Slider slider_hi,limits={0,2,0},value= 2,ticks= 0
+	Slider slider_hi,limits={0,1,0},value= 1,ticks= 0
 	Slider slider_lo,pos={558,315},size={16,80},proc=LowMapSliderProc
-	Slider slider_lo,limits={0,2,0},value= 0,ticks= 0
+	Slider slider_lo,limits={0,1,0},value= 0,ticks= 0
 
 	SetVariable xpos,pos={22,97},size={50,17},title="X "
 	SetVariable xpos,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gXPos
@@ -181,6 +184,8 @@ EndMacro
 
 //
 // event code 4 = mouse moved
+// 
+// mouse moved is the only event that I really care about for the data display.
 //
 // TODO
 // -- figure out how to respond only to events in the main window
@@ -208,39 +213,125 @@ Function VSANSDataHook(s)
 		case 4:		// mouse moved
 			NVAR xloc = root:Packages:NIST:VSANS:Globals:gXPos
 			NVAR yloc = root:Packages:NIST:VSANS:Globals:gYPos
-			Variable xaxval,yaxval
+			NVAR gQX = root:Packages:NIST:VSANS:Globals:gQX
+			NVAR gQY = root:Packages:NIST:VSANS:Globals:gQY
+			NVAR gQQ = root:Packages:NIST:VSANS:Globals:gQQ
+			NVAR gNCounts = root:Packages:NIST:VSANS:Globals:gNCounts
+			SVAR gCurDispFile = root:Packages:NIST:VSANS:Globals:gCurDispFile
+			SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType		//the current folder
+			Variable xaxval,yaxval,tab
 			
 			// is the mouse location within the "main" display window?
 			// if so, do something, if not, do nothing?
 			// right now, the "main" display is at (50,185,545,620). its name depends on the active tab
 			
+//				xloc = s.mouseLoc.h
+//				yloc = s.mouseLoc.v
+
 //			if out of bounds, exit now
-//		TODO - currently the values are hard-wired. eliminate this
+//		TODO - currently the values are hard-wired. eliminate this later if the size of the graph changes
 			if(s.mouseLoc.h < 50 || s.mouseLoc.h > 545 || s.mouseLoc.v < 185 || s.mouseLoc.v > 620)
 				break
 			endif	
 			
 //			if(in bounds)
 //				get the point location
-//				update the globals
-//				if detectors are drawn to scale on the graph, then qxqy can be calculated
+//				update the globals --
 //				but which data instance am I pointing to?
+//				deduce the carriage and panel, and calculate Q
 //			endif
 
 			GetWindow $s.winName activeSW
-			String activeSubwindow = S_value
-			if (CmpStr(activeSubwindow,"VSANS_Data#det_panelsF") == 0)
-				// front active, do something
-//				xloc = s.mouseLoc.h
-//				yloc = s.mouseLoc.v
+			String activeSubwindow = S_value		// returns something like: "VSANS_Data#det_panelsF"
 				
-				xaxval= AxisValFromPixel("","bottom",s.mouseLoc.h)
-				yaxval= AxisValFromPixel("","left",s.mouseLoc.v)
-				xloc = round(xaxval)
-				yloc = round(yaxval)
+			xaxval= AxisValFromPixel("","bottom",s.mouseLoc.h)
+			yaxval= AxisValFromPixel("","left",s.mouseLoc.v)
+			xloc = round(xaxval)
+			yloc = round(yaxval)
+			
+			// which tab is selected? -this is the main graph panel (subwindow may not be the active one!)
+			ControlInfo/W=VSANS_Data tab0
+			tab = V_Value
+			if(tab == 0)
+				activeSubwindow = "VSANS_Data#det_panelsF"
+			elseif (tab == 1)
+				activeSubwindow = "VSANS_Data#det_panelsM"
+			else
+				activeSubwindow = "VSANS_Data#det_panelsB"
 			endif
 			
+			// which images are here?
+			String detStr="",imStr,carriageStr
+			String currentImageRef
+			String imageList = ImageNameList(activeSubwindow,";")
+			Variable ii,nIm,testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
+			nIm = ItemsInList(imageList,";")
+			gCurDispFile = imageList
+			if(nIm==0)
+				break		//problem, get out
+			endif
+
+			// images were added in the order TBLR, so look back through in the order RLBT, checking each to see if
+			// the xy value is found on that (scaled) array
+						
+			// loop backwards through the list of panels (may only be one if on the back)
+			for(ii=nIm-1;ii>=0;ii-=1)
+				Wave w = ImageNameToWaveRef(activeSubwindow,StringFromList(ii, imageList,";"))
+				
+				// which, if any image is the mouse xy location on?
+				// use a multidemensional equivalent to x2pnt: (ScaledDimPos - DimOffset(waveName, dim))/DimDelta(waveName,dim)
+				testX = trunc( (xloc - DimOffset(w,0))/DimDelta(w,0) )
+				testY = trunc( (yloc - DimOffset(w,1))/DimDelta(w,1) )
+				
+				if( (testX > 0 && testX < DimSize(w,0)) && (testY > 0 && testY < DimSize(w,1)) )
+					// we're in-bounds on this wave
+					
+					// count value to the global
+					gNCounts = w[testX][testY]
+					
+					// deduce the detector panel
+					currentImageRef = StringFromList(ii, imageList,";")	//the image instance ##
+					// string is "data", or "data#2" etc. - so this returns "", "1", "2", or "3"
+					imStr = StringFromList(1, currentImageRef,"#")		
+					carriageStr = activeSubWindow[strlen(activeSubWindow)-1]
+					
+					if(cmpstr(carriageStr,"B")==0)
+						detStr = carriageStr
+					else
+						if(strlen(imStr)==0)
+							imStr = "9"			// a dummy value so I can replace it later
+						endif
+						detStr = carriageStr+imStr		// "F2" or something similar
+						detStr = ReplaceString("9", detStr, "T") 	// ASSUMPTION :::: instances 0123 correspond to TBLR
+						detStr = ReplaceString("1", detStr, "B") 	// ASSUMPTION :::: this is the order that the panels
+						detStr = ReplaceString("2", detStr, "L") 	// ASSUMPTION :::: are ALWAYS added to the graph
+						detStr = ReplaceString("3", detStr, "R") 	// ASSUMPTION :::: 
+					endif
+					gCurDispFile = detStr
+
+					// now figure out q
+					// calculate the q-values, will be different depending on which panel is up (pixel size, geometry, etc.)
+					// TODO: !!!! get rid of the hard-wired values
+					// TODO: be sure that the units from HDF are what I expect
+					// TODO: beam center XY are pixels in the file, expected in the function, but are better suited for mm or cm
+					// TODO: units of xy pixel size are likely wrong
+					xctr = V_getDet_beam_center_x(gCurDispType,detStr)		//written in pixels
+					yctr = V_getDet_beam_center_y(gCurDispType,detStr)
+					sdd = V_getDet_distance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
+					lam = V_getVSWavelength(gCurDispType)		//A
+					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
+					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
+					
+					gQQ = V_CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQX = V_CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQY = V_CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+
+					ii = -1		//look no further, set ii to bad value to exit the for loop
+				endif	//end if(mouse is over a detector panel)
+			endfor		// end loop over list of displayed images
+		
 			break
+			
 		// And so on . . .
 	endswitch
 
@@ -340,12 +431,12 @@ Function VDataTabProc(tca) : TabControl
 				Wave det_FB=data
 				CheckDisplayed /W=VSANS_Data#det_panelsF det_FL
 				if(V_flag == 0)
-					AppendImage/W=VSANS_Data#det_panelsF det_FB
 					AppendImage/W=VSANS_Data#det_panelsF det_FT
+					AppendImage/W=VSANS_Data#det_panelsF det_FB
 					AppendImage/W=VSANS_Data#det_panelsF det_FL
 					AppendImage/W=VSANS_Data#det_panelsF det_FR
-//					ModifyImage/W=VSANS_Data#det_panelsF det_FB ctab= {*,*,ColdWarm,0}
 //					ModifyImage/W=VSANS_Data#det_panelsF det_FT ctab= {*,*,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsF det_FB ctab= {*,*,ColdWarm,0}
 //					ModifyImage/W=VSANS_Data#det_panelsF det_FL ctab= {*,*,ColdWarm,0}
 //					ModifyImage/W=VSANS_Data#det_panelsF det_FR ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {*,*,ColdWarm,0}
@@ -604,6 +695,8 @@ End
 //
 // link this slider to the "high" end of the color mapping for whatever is currently displayed
 //
+// -- see Buttons.ipf for the old SANS implementation
+//
 Function HiMapSliderProc(sa) : SliderControl
 	STRUCT WMSliderAction &sa
 
@@ -624,6 +717,8 @@ End
 //
 // link this slider to the "low" end of the color mapping for whatever is currently displayed
 //
+// -- see Buttons.ipf for the old SANS implementation
+//
 Function LowMapSliderProc(sa) : SliderControl
 	STRUCT WMSliderAction &sa
 
@@ -639,6 +734,5 @@ Function LowMapSliderProc(sa) : SliderControl
 
 	return 0
 End
-
 
 
