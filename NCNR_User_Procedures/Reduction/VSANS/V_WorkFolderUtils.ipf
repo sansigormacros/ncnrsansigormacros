@@ -1,11 +1,32 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma version=1.0
+#pragma IgorVersion=6.1
+
+//*******************
+// Vers 1.0 JAN2016
+//
+//*******************
+//  VSANS Utility procedures for handling of workfiles (each is housed in a separate datafolder)
+//
+// - adding RAW data to a workfile
+// -- this conversion applies the detector corrections
+//
+// - copying workfiles to another folder
+//
+// - absolute scaling
+//
+// - (no) the WorkFile Math panel for simple image math (not done - maybe in the future?)
+// - 
+// - (no) adding work.drk data without normalizing to monitor counts (the case not currently handled)
+//***************************
 
 //
 // Functions used for manipulation of the local Igor "WORK" folder
 // structure as raw data is displayed and processed.
 //
 //
-
+Strconstant ksDetectorListNoB = "FT;FB;FL;FR;MT;MB;ML;MR;"
+Strconstant ksDetectorListAll = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
 
 
 //
@@ -15,10 +36,8 @@ Proc CopyWorkFolder(oldType,newType)
 	String oldType,newType
 	Prompt oldType,"Source WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
 	Prompt newType,"Destination WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
-//	Prompt oldType,"Source WORK data type",popup,"AAA;BBB;CCC;DDD;EEE;FFF;GGG;"
-//	Prompt newType,"Destination WORK data type",popup,"AAA;BBB;CCC;DDD;EEE;FFF;GGG;"
 
-	// data folder "old" will be copied to "new" (and will overwrite)
+	// data folder "old" will be copied to "new" (either kills/copies or will overwrite)
 	CopyHDFToWorkFolder(oldtype,newtype)
 End
 
@@ -57,10 +76,10 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 //	String/G $(toDF+":file_name") = root:
 	
 	// copy the folders
-	KillDataFolder/Z toDF			//DuplicateDataFolder will not overwrite, so Kill
+	KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
 	
 	if(V_flag == 0)		// kill DF was OK
-		DuplicateDataFolder $fromDF,$toDF
+		DuplicateDataFolder $("root:Packages:NIST:VSANS:"+fromStr),$("root:Packages:NIST:VSANS:"+toStr)
 		
 		// I can delete these if they came along with RAW
 		//   DAS_logs
@@ -111,7 +130,7 @@ end
 //
 //
 //
-Proc V_CopyToWorkFolder(dataFolderStr, fromStr, toStr, level, sNBName, recurse)
+Proc V_CopyWorkFolderTest(dataFolderStr, fromStr, toStr, level, sNBName, recurse)
 	String dataFolderStr="root:Packages:NIST:VSANS:RAW"
 	String fromStr = "RAW"
 	String toStr="SAM"
@@ -265,3 +284,518 @@ Function V_MakeDataError(folderStr)
 	SetDataFolder root:
 	return(0)
 End
+
+
+
+
+
+/////////////////////
+
+
+
+
+//
+//Entry procedure from main panel
+//
+Proc AddFolder(oldType,newType)
+	String oldType,newType
+	Prompt oldType,"Source WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
+	Prompt newType,"Destination WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
+
+	// data folder "RAW" will be copied to "new" (either kills/copies or will overwrite)
+	Variable 	err = Raw_to_work(newType)
+//	CopyHDFToWorkFolder(oldtype,newtype)
+End
+
+
+
+//testing procedure
+Proc Add_to_Workfile(newtype, doadd)
+	String newtype,doadd
+	Prompt newtype,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
+	Prompt doadd,"Add to current WORK contents?",popup,"No;Yes;"
+	
+	//macro will take whatever is in RAW folder and "ADD" it to the folder specified
+	//in the popup menu
+	
+	//"add" = yes/no, don't add to previous runs
+	//switch here - two separate functions to avoid (my) confusion
+	Variable err// = Raw_to_work(newtype)
+	if(cmpstr(doadd,"No")==0)
+		//don't add to prev work contents, copy RAW contents to work and convert
+		err = Raw_to_work(newtype)
+	else
+		//yes, add RAW to the current work folder contents
+		err = Add_raw_to_work(newtype)
+	endif
+	
+	String newTitle = "WORK_"+newtype
+	DoWindow/F VSANS_Data
+	DoWindow/T VSANS_Data, newTitle
+	KillStrings/Z newTitle
+	
+	//need to update the display with "data" from the correct dataFolder
+	UpdateDisplayInformation(newtype)
+	
+End
+
+
+//
+//will copy the current contents of the RAW folder to the newType work folder
+//and do the geometric corrections and normalization to monitor counts
+//(the function Add_Raw_to_work(type) adds multiple runs together)
+//
+//the current display type is updated to newType (global)
+//
+Function Raw_to_work(newType)
+	String newType
+	
+	Variable deadTime,defmon,total_mon,total_det,total_trn,total_numruns,total_rtime
+	Variable ii,jj,itim,cntrate,dscale,scale,uscale
+	String destPath
+	
+	String fname = newType
+	String detStr
+	Variable ctTime
+
+	//initialize values before normalization
+	total_mon=0
+	total_det=0
+	total_trn=0
+	total_numruns=0
+	total_rtime=0
+	
+	//Not adding multiple runs, so wipe out the old contents of the work folder and 
+	// replace with the contents of raw
+
+	destPath = "root:Packages:NIST:VSANS:" + newType
+	
+	//copy from current dir (RAW) to work, defined by newType
+	CopyHDFToWorkFolder("RAW",newType)
+	
+	// now work with the waves from the destination folder.	
+	Variable/G $(destPath + ":gIsLogscale")=0			//overwite flag in newType folder, data converted (above) to linear scale
+//	String/G $(destPath + ":fileList") = textread[0]			//a list of names of the files in the work file (1)		//02JUL13
+	
+	// apply corrections ---
+	// switches to control what is done, don't do the transmission correction for the BGD measurement
+	// start with the DIV correction, before conversion to mm
+	// then do all of the other corrections, order doesn't matter.
+	// rescaling to default monitor counts however, must be LAST.
+
+// each correction must loop over each detector. tedious.
+	
+	// (1) DIV correction
+	// do this in terms of pixels. 
+	// TODO : This must also exist at the time the first work folder is generated.
+	//   So it must be in the user folder at the start of the experiment, and defined.
+	NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+	if (gDoDIVCor == 1)
+		// need extra check here for file existence
+		// if not in DIV folder, load.
+		// if unable to load, skip correction and report error (Alert?)
+		for(ii=0;ii<8;ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Print "Doing DIV correction for "+ detStr
+//			DIVCorrection(fill this in)
+			
+		endfor
+	else
+		Print "DIV correction not done"		// not an error since correction was unchecked
+	endif
+	
+	// (2) non-linear correction	
+	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
+	// generate a distance matrix for each of the detectors
+	if (gDoNonLinearCor == 1)
+		for(ii=0;ii<8;ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Print "Doing Non-linear correction for "+ detStr
+//			NonLinearCorrection(fill this in)
+			
+		endfor
+	else
+		Print "Non-linear correction not done"
+	endif
+	
+	// (3) solid angle correction
+	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
+	if (gDoSolidAngleCor == 1)
+		for(ii=0;ii<8;ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Print "Doing Solid Angle correction for "+ detStr
+//			SolidAngleCorrection(fill this in)
+			
+		endfor
+	else
+		Print "Solid Angle correction not done"
+	endif	
+	
+	// (4) dead time correction
+	// TODO: -- remove the hard-wired test
+	// -- test for correct operation
+	// -- loop over all of the detectors
+	// -- B detector is a special case
+	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
+	ctTime = V_getCount_time(fname)
+	if (gDoDeadTimeCor == 1)
+		for(ii=0;ii<8;ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Print "Doing DeadTime correction for "+ detStr
+//			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+				//deadtime corrections
+//	itim = integersread[2]
+//	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
+//	//TODO - do correct dead time correction for tubes
+//	deadtime = 1//DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1],dtime=realsRead[48])	//pick the correct deadtime
+//	dscale = 1/(1-deadTime*cntrate)
+//	
+	
+// dead time correction
+//	data *= dscale		//deadtime correction for everyone else, including NCNR
+//	data_err *= dscale
+
+		endfor
+	else
+		Print "Dead Time correction not done"
+	endif	
+	
+	// (5) angle-dependent tube shadowing
+	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
+	if (gDoTubeShadowCor == 1)
+	
+	else
+		Print "Tube shadowing correction not done"
+	endif	
+		
+	// (6) angle dependent transmission correction
+	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
+	if (gDoTrans == 1)
+		for(ii=0;ii<8;ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Print "Doing Large-angle transmission correction for "+ detStr
+//			TransmissionCorrection(fill this in)
+			
+		endfor
+	else
+		Print "Sample Transmission correction not done"
+	endif	
+	
+	// (7) normalize to default monitor counts
+	// TODO -- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
+	// TODO -- but there are TWO monitors - so how to switch?
+	// TODO -- what do I really need to save?
+	defmon=1e8			//default monitor counts
+	for(ii=0;ii<8;ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		Wave w = V_getDetectorDataW(fname,detStr)
+		Wave w_err = V_getDetectorDataErrW(fname,detStr)
+		Variable monCt = V_getBeamMonNormData(fname)
+		Print "Doing monitor normalization for "+ detStr
+//			MonitorNormalization(fill this in)
+	//scale the data to the default montor counts
+		scale = defmon/monCt
+		w *= scale
+		w_err *= scale		//assumes total monitor count is so large there is essentially no error
+		
+		// V_getBeamMonNormSaved_count()
+		// save the true monitor counts? save the scaling factor?
+		String path = "entry:instrument:beam_monitor_norm:saved_count"
+		Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":entry:"+path)
+		savW[0] = scale
+	endfor
+	
+	
+	// (not done) angle dependent efficiency correction
+	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
+
+	
+// this function, in the past did the non-linear, solid angle, transmission, and efficiency corrections all at once
+//	DetCorr(data,data_err,realsread,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
+
+
+	
+	//update totals to put in the work header (at the end of the function)
+//	total_mon += realsread[0]
+//
+//	total_det += dscale*realsread[2]
+//
+//	total_trn += realsread[39]
+//	total_rtime += integersread[2]
+//	total_numruns +=1
+//	
+
+	//all is done, except for the bookkeeping, updating the header information in the work folder
+
+//	integersread[3] = total_numruns						//numruns = 1
+//	realsread[1] = total_mon			//save the true monitor count
+//	realsread[0] = defmon					//monitor ct = defmon
+//	realsread[2] = scale*total_det			//scaled detector counts
+//	
+	//reset the current displaytype to "newtype"
+	String/G root:myGlobals:gDataDisplayType=newType
+	
+	//return to root folder (redundant)
+	SetDataFolder root:
+	
+	Return(0)
+End
+
+
+//will "ADD" the current contents of the RAW folder to the newType work folder
+//and will ADD the RAW contents to the existing content of the newType folder
+// - used when adding multiple runs together
+//(the function Raw_to_work(type) makes a fresh workfile)
+//
+//the current display type is updated to newType (global)
+Function Add_raw_to_work(newType)
+	String newType
+	
+	// NEW OCT 2014
+	// this corrects for adding raw data files with different attenuation	
+	// does nothing if the attenuation of RAW and destination are the same
+	NVAR doAdjustRAW_Atten = root:Packages:NIST:gDoAdjustRAW_Atten
+	if(doAdjustRAW_Atten)
+		Adjust_RAW_Attenuation(newType)
+	endif
+	
+	String destPath=""
+	
+	// if the desired workfile doesn't exist, let the user know, and just make a new one
+	if(WaveExists($("root:Packages:NIST:"+newType + ":data")) == 0)
+		Print "There is no old work file to add to - a new one will be created"
+		//call Raw_to_work(), then return from this function
+		Raw_to_Work(newType)
+		Return(0)		//does not generate an error - a single file was converted to work.newtype
+	Endif
+	
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
+	//now make references to data in newType folder
+	DestPath="root:Packages:NIST:"+newType	
+	WAVE data=$(destPath +":linear_data")			// these wave references point to the EXISTING work data
+	WAVE data_copy=$(destPath +":data")			// these wave references point to the EXISTING work data
+	WAVE dest_data_err=$(destPath +":linear_data_error")			// these wave references point to the EXISTING work data
+	WAVE/T textread=$(destPath + ":textread")
+	WAVE integersread=$(destPath + ":integersread")
+	WAVE realsread=$(destPath + ":realsread")
+	
+	Variable deadTime,defmon,total_mon,total_det,total_trn,total_numruns,total_rtime
+	Variable ii,jj,itim,cntrate,dscale,scale,uscale,wrk_beamx,wrk_beamy,xshift,yshift
+
+
+	defmon=1e8			//default monitor counts
+	
+	//Yes, add to previous run(s) in work, that does exist
+	//use the actual monitor count run.savmon rather than the normalized monitor count
+	//in run.moncnt and unscale the work data
+	
+	total_mon = realsread[1]	//saved monitor count
+	uscale = total_mon/defmon		//unscaling factor
+	total_det = uscale*realsread[2]		//unscaled detector count
+	total_trn = uscale*realsread[39]	//unscaled trans det count
+	total_numruns = integersread[3]	//number of runs in workfile
+	total_rtime = integersread[2]		//total counting time in workfile
+	//retrieve workfile beamcenter
+	wrk_beamx = realsread[16]
+	wrk_beamy = realsread[17]
+	//unscale the workfile data in "newType"
+	//
+	//check for log-scaling and adjust if necessary
+	// should not be needed now - using display flag instead
+//	ConvertFolderToLinearScale(newType)
+	//
+	//then unscale the data array
+	data *= uscale
+	dest_data_err *= uscale
+	
+	//DetCorr() has not been applied to the data in RAW , do it now in a local reference to the raw data
+	WAVE raw_data = $"root:Packages:NIST:RAW:linear_data"
+	WAVE raw_data_err = $"root:Packages:NIST:RAW:linear_data_error"
+	WAVE raw_reals =  $"root:Packages:NIST:RAW:realsread"
+	WAVE/T raw_text = $"root:Packages:NIST:RAW:textread"
+	WAVE raw_ints = $"root:Packages:NIST:RAW:integersread"
+	
+	//check for log-scaling of the raw data - make sure it's linear
+	// should not be needed now - using display flag instead
+//	ConvertFolderToLinearScale("RAW")
+	
+	// switches to control what is done, don't do the transmission correction for the BGD measurement
+	NVAR doEfficiency = root:Packages:NIST:gDoDetectorEffCorr
+	NVAR gDoTrans = root:Packages:NIST:gDoTransmissionCorr
+	Variable doTrans = gDoTrans
+	if(cmpstr("BGD",newtype) == 0)
+		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
+	endif	
+	
+	DetCorr(raw_data,raw_data_err,raw_reals,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
+	
+	//deadtime corrections to raw data
+	// TODO - do the tube correction for dead time now
+	deadTime = 1//DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
+	itim = raw_ints[2]
+	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
+	dscale = 1/(1-deadTime*cntrate)
+
+#if (exists("ILL_D22")==6)
+	Variable tubeSum
+	// for D22 detector might need to use cntrate/128 as it is the tube response
+	for(ii=0;ii<pixelsX;ii+=1)
+		//sum the counts in each tube
+		tubeSum = 0
+		for(jj=0;jj<pixelsY;jj+=1)
+			tubeSum += data[jj][ii]
+		endfor
+		// countrate in tube ii
+		cntrate = tubeSum/itim
+		// deadtime scaling in tube ii
+		dscale = 1/(1-deadTime*cntrate)
+		// multiply data[ii][] by the dead time
+		raw_data[][ii] *= dscale
+		raw_data_err[][ii] *= dscale
+	endfor
+#else
+	// dead time correction on all other RAW data, including NCNR
+	raw_data *= dscale
+	raw_data_err *= dscale
+#endif
+
+	//update totals by adding RAW values to the local ones (write to work header at end of function)
+	total_mon += raw_reals[0]
+
+	total_det += dscale*raw_reals[2]
+
+	total_trn += raw_reals[39]
+	total_rtime += raw_ints[2]
+	total_numruns +=1
+	
+	//do the beamcenter shifting if there is a mismatch
+	//and then add the two data sets together, changing "data" since it is the workfile data
+	xshift = raw_reals[16] - wrk_beamx
+	yshift = raw_reals[17] - wrk_beamy
+	
+	If((xshift != 0) || (yshift != 0))
+		DoAlert 1,"Do you want to ignore the beam center mismatch?"
+		if(V_flag==1)
+			xshift=0
+			yshift=0
+		endif
+	endif
+	
+	If((xshift == 0) && (yshift == 0))		//no shift, just add them
+		data += raw_data		//deadtime correction has already been done to the raw data
+		dest_data_err = sqrt(dest_data_err^2 + raw_data_err^2)			// error of the sum
+	Endif
+	
+	//scale the data to the default montor counts
+	scale = defmon/total_mon
+	data *= scale
+	dest_data_err *= scale
+	
+	// keep "data" and linear_data in sync in the destination folder
+	data_copy = data
+	
+	//all is done, except for the bookkeeping of updating the header info in the work folder
+	textread[1] = date() + " " + time()		//date + time stamp
+	integersread[3] = total_numruns						//numruns = more than one
+	realsread[1] = total_mon			//save the true monitor count
+	realsread[0] = defmon					//monitor ct = defmon
+	integersread[2] = total_rtime			// total counting time
+	realsread[2] = scale*total_det			//scaled detector counts
+	realsread[39] = scale*total_trn			//scaled transmission counts
+	
+	//Add the added raw filename to the list of files in the workfile
+	String newfile = ";" + raw_text[0]
+	SVAR oldList = $(destPath + ":fileList")
+	String/G $(destPath + ":fileList") = oldList + newfile
+	
+	//reset the current displaytype to "newtype"
+	String/G root:myGlobals:gDataDisplayType=newType
+	
+	//return to root folder (redundant)
+	SetDataFolder root:
+	
+	Return(0)
+End
+
+
+//used for adding DRK (beam shutter CLOSED) data to a workfile
+//force the monitor count to 1, since it's irrelevant
+// run data through normal "add" step, then unscale default monitor counts
+//to get the data back on a simple time basis
+//
+Function Raw_to_Work_NoNorm(type)
+	String type
+	
+	WAVE reals=$("root:Packages:NIST:RAW:realsread")
+	reals[1]=1		//true monitor counts, still in raw
+	Raw_to_work(type)
+	//data is now in "type" folder
+	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
+	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
+	
+	Variable norm_mon,tot_mon,scale
+	
+	norm_mon = new_reals[0]		//should be 1e8
+	tot_mon = new_reals[1]		//should be 1
+	scale= norm_mon/tot_mon
+	
+	data /= scale		//unscale the data
+	data_err /= scale
+	
+	// to keep "data" and linear_data in sync
+	data_copy = data
+	
+	return(0)
+End
+
+//used for adding DRK (beam shutter CLOSED) data to a workfile
+//force the monitor count to 1, since it's irrelevant
+// run data through normal "add" step, then unscale default monitor counts
+//to get the data back on a simple time basis
+//
+Function Add_Raw_to_Work_NoNorm(type)
+	String type
+	
+	WAVE reals=$("root:Packages:NIST:RAW:realsread")
+	reals[1]=1		//true monitor counts, still in raw
+	Add_Raw_to_work(type)
+	//data is now in "type" folder
+	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
+	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
+	
+	Variable norm_mon,tot_mon,scale
+	
+	norm_mon = new_reals[0]		//should be 1e8
+	tot_mon = new_reals[1]		//should be equal to the number of runs (1 count per run)
+	scale= norm_mon/tot_mon
+	
+	data /= scale		//unscale the data
+	data_err /= scale
+	
+	// to keep "data" and linear_data in sync
+	data_copy = data
+	
+	return(0)
+End
+

@@ -201,18 +201,17 @@ End
 
 
 ////////////// fake DIV file tests
-
+//
 //
 //	Make/O/T/N=1	file_name	= "VSANS_DIV_test.h5"
 //
 // simple generation of a fake div file. for sans, nothing other than the creation date was written to the 
 // file header. nothing more is needed (possibly)
 //
-// TODO -- I want to re-visit the propagation of errors in the DIV file. No errors are ever calculated/saved 
+// TODO -- I want to re-visit the propogation of errors in the DIV file. No errors are ever calculated/saved 
 //   during the generation of the file, but there's no reason it couldn't. the idea is that the plex
 //   is counted so long that the errors are insignificant compared to the data errors, but that may not
 //   always be the case. A bit of math may prove this. or not. Plus, the situation for VSANS may be different.
-//
 //
 //
 // TODO -- make the number of pixels GLOBAL
@@ -221,37 +220,37 @@ Proc H_Setup_VSANS_DIV_Structure()
 	
 	NewDataFolder/O/S root:VSANS_DIV_file		
 
-	NewDataFolder/O/S root:VSANS_DIV_file:entry1		
-		Make/O/T/N=1	title	= "title of entry1"
+	NewDataFolder/O/S root:VSANS_DIV_file:entry	
+		Make/O/T/N=1	title	= "This is a fake DIV file for VSANS"
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:instrument		
-			Make/O/T/N=1	name	= "NGB30mSANS"
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_B		
-			Make/O/I/N=(320,320)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
+			Make/O/T/N=1	name	= "NG3_VSANS"
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_B		
+			Make/O/D/N=(320,320)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(320,320)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MR		
-			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MR		
+			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_ML		
-			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_ML		
+			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MT		
-			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MT		
+			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_MB		
-			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MB		
+			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FR		
-			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FR		
+			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FL		
-			Make/O/I/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FL		
+			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FT		
-			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FT		
+			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry1:data_FB		
-			Make/O/I/N=(128,48)	data	= trunc(abs(gnoise(p+q)))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FB		
+			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
 			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
 			
 	SetDataFolder root:

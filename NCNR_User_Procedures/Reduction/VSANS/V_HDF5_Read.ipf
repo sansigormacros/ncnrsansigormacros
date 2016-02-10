@@ -1054,15 +1054,7 @@ Function/S V_getConvPinholeStatus(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-//			converging_slits (data folder)
-Function/S V_getConvSlitStatus(fname)
-	String fname
-
-	String path = "entry:instrument:converging_slits:status"
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
-
+//			converging_slits (not used)
 
 ////// INSTRUMENT/DETECTORS
 //			detector_B (data folder)
@@ -1175,31 +1167,37 @@ End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
-Function V_getDetectorData(fname,detStr,outW)
+Function/WAVE V_getDetectorDataW(fname,detStr)
 	String fname,detStr
-	Wave outW
 
 	String path = "entry:instrument:detector_"+detStr+":data"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 End
 
+// TODO -- write this function to return a WAVE with the data
+// either as a wave reference, or as an input parameter
+Function/WAVE V_getDetectorDataErrW(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":linear_data_error"
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	return w
+End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 // ALSO -- the "B" deadtime will be a single value (probably)
 //  but the tube banks will be 1D arrays of values, one per tube
-Function V_getDetector_deadtime(fname,detStr,outW)
+Function/WAVE V_getDetector_deadtime(fname,detStr)
 	String fname,detStr
-	Wave outW
 
 	String path = "entry:instrument:detector_"+detStr+":dead_time"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 End
 
 

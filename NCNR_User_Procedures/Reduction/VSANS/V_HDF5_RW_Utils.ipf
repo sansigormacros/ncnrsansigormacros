@@ -93,6 +93,7 @@ Function V_RedimFakeData()
 		SetScale/I y ctr,ctr+48,"",det_MT
 //		det_mt[][20] = 50
 	det_MT *= 10
+	det_MT += 2
 
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
 		Wave det_MB=data
@@ -100,6 +101,7 @@ Function V_RedimFakeData()
 		SetScale/I x -npix/2,npix/2,"",det_MB
 		SetScale/I y -ctr,-ctr-48,"",det_MB
 	det_MB *= 5
+	det_MB += 2
 		
 		ctr=30
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
@@ -108,12 +110,14 @@ Function V_RedimFakeData()
 		SetScale/I x -ctr-48,-ctr,"",det_ML
 		SetScale/I y -npix/2,npix/2,"",det_ML
 	det_ML *= 2
-		
+	det_ML += 2
+	
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
 		Wave det_MR=data
 		Redimension/N=(48,npix)/E=1 det_MR		
 		SetScale/I x ctr,ctr+48,"",det_MR
 		SetScale/I y -npix/2,npix/2,"",det_MR
+	det_MR +=2
 		
 		ctr=30
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT

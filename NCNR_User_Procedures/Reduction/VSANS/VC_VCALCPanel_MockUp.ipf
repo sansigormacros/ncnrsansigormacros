@@ -691,15 +691,15 @@ Proc V_Initialize_Space()
 	Variable/G gMiddle_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G gMiddle_L_pixelX = 0.8	4		// (cm)		these tubes are vertical
+	Variable/G gMiddle_L_pixelX = 0.84		// (cm)		these tubes are vertical
 	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
-	Variable/G gMiddle_R_pixelX = 0.8	4		// (cm)
+	Variable/G gMiddle_R_pixelX = 0.84		// (cm)
 	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
 	
 	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
 	Variable/G gMiddle_T_pixelY = 0.84			// (cm)
 	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
-	Variable/G gMiddle_B_pixelY = 0.8	4		// (cm)
+	Variable/G gMiddle_B_pixelY = 0.84		// (cm)
 
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes

@@ -32,7 +32,8 @@
 Proc UpdateDisplayInformation(type)
 	String type 
 	
-	DoWindow VSANS_Data
+	DoWindow/F VSANS_Data
+	Print V_flag
 	if(V_flag==0)
 	
 		VSANSDataPanelGlobals()
@@ -47,7 +48,7 @@ Proc UpdateDisplayInformation(type)
 	// TODO: update the information here  - in either case
 	// what isn't automatically picked up? What is "stale" on the display?
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
-	DoWindow/T VSANS_Data,type + " VSANS_Data"
+//	DoWindow/T VSANS_Data,type + " VSANS_Data"
 end
 
 //
@@ -79,7 +80,8 @@ Window VSANS_DataPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(37,45,1038,719) /N=VSANS_Data
 	ShowTools/A
-	
+	ModifyPanel cbRGB=(65535,60076,49151)
+
 	String curFolder = root:Packages:NIST:VSANS:Globals:gCurDispType
 	DoWindow/T VSANS_Data,curFolder + " VSANS_Data"
 	SetWindow VSANS_Data,hook(dataHook)=VSANSDataHook,hookevents=2

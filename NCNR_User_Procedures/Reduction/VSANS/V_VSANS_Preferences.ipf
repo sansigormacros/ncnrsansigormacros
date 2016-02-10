@@ -65,11 +65,28 @@ Proc Initialize_VSANSPreferences()
 	Variable/G root:Packages:NIST:VSANS:Globals:gNPhiSteps=val
 	
 	// flags to turn detector corrections on/off for testing (you should leave these ON)
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDetectorEffCorr", 1 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gDoDetectorEffCorr = 1
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor = 1
 	
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoTransmissionCorr", 1 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gDoTransmissionCorr = 1
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoTransmissionCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoTransmissionCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDIVCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoDIVCor = 1
+	
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoNonLinearCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoNonLinearCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor = 1
+	
+
 
 // flag to allow adding raw data files with different attenuation (normally not done)	
 //	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten",0)
@@ -140,17 +157,58 @@ Function V_DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function V_DoDIVCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+	gVal = checked
+End
+
+Function V_DoDeadTimeCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
+	gVal = checked
+End
+
+Function V_DoSolidAngleCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
+	gVal = checked
+End
+
+Function V_DoNonLinearCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
+	gVal = checked
+End
+
+Function V_DoTubeShadowCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
+	gVal = checked
+End
+
 Function V_PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	DoWindow/K VSANSPref_Panel
 End
 
+
 Proc VSANSPref_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(646,208,1070,468)/K=2 as "VSANS Preference Panel"
 	DoWindow/C VSANSPref_Panel
-	ModifyPanel cbRGB=(49694,61514,27679)
+	ModifyPanel cbRGB=(47748,57192,54093)
 	SetDrawLayer UserBack
 	ModifyPanel fixedSize=1
 //////
@@ -160,7 +218,7 @@ Proc VSANSPref_Panel()
 	TabControl PrefTab,pos={7,49},size={410,202},tabLabel(0)="General",proc=V_PrefTabProc
 	TabControl PrefTab,tabLabel(1)="VSANS",tabLabel(2)="Analysis"
 	TabControl PrefTab,value=1
-	TabControl PrefTab labelBack=(49694,61514,27679)
+	TabControl PrefTab labelBack=(47748,57192,54093)
 	
 //on tab(0) - General
 	CheckBox PrefCtrl_0a,pos={21,96},size={124,14},proc=V_XMLWritePref,title="Use canSAS XML Output"
@@ -184,13 +242,24 @@ Proc VSANSPref_Panel()
 	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:VSANS:Globals:gBinWidth
 	SetVariable PrefCtrl_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:VSANS:Globals:gNPhiSteps
-	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:VSANS:Globals:gDoTransmissionCorr,proc=V_DoTransCorrPref
+	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:VSANS:Globals:gDoTransmissionCor,proc=V_DoTransCorrPref
 	CheckBox PrefCtrl_1f pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
 	CheckBox PrefCtrl_1g title="Do Efficiency Correction?",size={140,14},proc=V_DoEfficiencyCorrPref
-	CheckBox PrefCtrl_1g value=root:Packages:NIST:VSANS:Globals:gDoDetectorEffCorr,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+	CheckBox PrefCtrl_1g value=root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor,pos={255,120},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
 //	CheckBox PrefCtrl_1h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
 //	CheckBox PrefCtrl_1h value=root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
 
+	CheckBox PrefCtrl_1i title="Do DIV Correction?",size={140,14},proc=V_DoDIVCorPref
+	CheckBox PrefCtrl_1i value=root:Packages:NIST:VSANS:Globals:gDoDIVCor,pos={255,140},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1j title="Do DeadTime Correction?",size={140,14},proc=V_DoDeadTimeCorPref
+	CheckBox PrefCtrl_1j value=root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor,pos={255,160},help={"TURN OFF ONLY FOR DEBUGGING."}	
+	CheckBox PrefCtrl_1k title="Do Solid Angle Correction?",size={140,14},proc=V_DoSolidAngleCorPref
+	CheckBox PrefCtrl_1k value=root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor,pos={255,180},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140,14},proc=V_DoNonLinearCorPref
+	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1m title="Do Tube Shadow Correction?",size={140,14},proc=V_DoTubeShadowCorPref
+	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
+	
 //	CheckBox PrefCtrl_1a,disable=1
 //	CheckBox PrefCtrl_1b,disable=1
 //	CheckBox PrefCtrl_1c,disable=1

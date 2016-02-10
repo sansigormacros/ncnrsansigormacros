@@ -30,6 +30,7 @@ End
 
 // for fitting data to generate tube corrections
 #include "V_TubeAdjustments"
+#include "V_DetectorCorrections"
 
 // for ISO time in Nexus files
 #include "V_ISO8601_Util"
@@ -48,4 +49,4 @@ End
 
 // start of raw data display panel
 #include "V_Test_RAW_Panel"		// rename this later when it's done
-//#include "V_WorkFileUtils"		// not ready to add yet
+#include "V_Utilities_General"		//

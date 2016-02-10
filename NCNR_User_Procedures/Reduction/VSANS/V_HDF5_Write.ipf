@@ -2739,7 +2739,7 @@ Function V_writeBeamStopDist_to_det(fname,val)
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam_monitor_norm"	
+	String groupName = "/entry/instrument/beam_stop"	
 	String varName = "distance_to_detector"
 	wTmpWrite[0] = val
 
@@ -2912,31 +2912,8 @@ Function V_writeConvPinholeStatus(fname,str)
 	return(err)
 End
 
-//			converging_slits (data folder)
-Function V_writeConvSlitStatus(fname,str)
-	String fname,str
+//			converging_slits (not used)
 
-//	String path = "entry:instrument:converging_slits:status"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/converging_slits"	//	
-	String varName = "status"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
-		
-	return(err)
-End
 
 
 ////// INSTRUMENT/DETECTORS

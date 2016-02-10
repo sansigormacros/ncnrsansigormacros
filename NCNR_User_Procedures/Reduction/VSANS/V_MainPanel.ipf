@@ -23,22 +23,22 @@
 Proc PickPath_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	PickPath()
+	V_PickPath()
 	// read in DEFAULT.MASK, if it exists, otherwise, do nothing
 	//
-	PathInfo catPathName
-	if(V_flag==1)
-		String str = S_Path + "DEFAULT.MASK"
-		Variable refnum
-		Open/R/Z=1 refnum as str
-		if(strlen(S_filename) != 0)
-			Close refnum		//file can be found OK
-			ReadMCID_MASK(str)
-		else
-			// file not found, close just in case
-			Close/A
-		endif
-	endif
+//	PathInfo catPathName
+//	if(V_flag==1)
+//		String str = S_Path + "DEFAULT.MASK"
+//		Variable refnum
+//		Open/R/Z=1 refnum as str
+//		if(strlen(S_filename) != 0)
+//			Close refnum		//file can be found OK
+//			ReadMCID_MASK(str)
+//		else
+//			// file not found, close just in case
+//			Close/A
+//		endif
+//	endif
 End
 
 Proc DrawMask_MainButtonProc(ctrlName) : ButtonControl
@@ -54,6 +54,7 @@ Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	Variable err=	V_LoadHDF5Data("","RAW")			// load the data into RawVSANS storage folder (why am I doing this?)
+	Print "Load err = "+num2str(err)
 	if(!err)
 		String hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
 		String folder = StringFromList(0,hdfDF,".")
@@ -300,7 +301,7 @@ End
 Window Main_VSANS_Panel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(500,60,924,320) /K=2 as "VSANS Reduction Controls"
-	ModifyPanel cbRGB=(47748,57192,54093)
+	ModifyPanel cbRGB=(49694,61514,27679)
 	ModifyPanel fixedSize=1
 //////
 //on main portion of panel
