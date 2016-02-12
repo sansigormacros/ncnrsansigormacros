@@ -208,13 +208,15 @@ End
 // simple generation of a fake div file. for sans, nothing other than the creation date was written to the 
 // file header. nothing more is needed (possibly)
 //
-// TODO -- I want to re-visit the propogation of errors in the DIV file. No errors are ever calculated/saved 
+// TODO -- I want to re-visit the propagation of errors in the DIV file. No errors are ever calculated/saved 
 //   during the generation of the file, but there's no reason it couldn't. the idea is that the plex
 //   is counted so long that the errors are insignificant compared to the data errors, but that may not
 //   always be the case. A bit of math may prove this. or not. Plus, the situation for VSANS may be different.
 //
 //
 // TODO -- make the number of pixels GLOBAL
+// TODO -- there will be lots of work to do to develop the procedures necessary to actually generate the 
+//      9 data sets to become the DIV file contents. More complexity here than for the simple SANS case.
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	
@@ -225,33 +227,33 @@ Proc H_Setup_VSANS_DIV_Structure()
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_B		
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
 			Make/O/D/N=(320,320)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(320,320)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MR		
-			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_ML		
-			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MT		
+			Make/O/D/N=(320,320)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
+			Make/O/D/N=(48,128)	data	= abs(gnoise(p+q))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_ML		
+			Make/O/D/N=(48,128)	data	= abs(gnoise(p+q))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MT		
 			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_MB		
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MB		
 			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FR		
-			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FL		
-			Make/O/D/N=(48,256)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(48,256)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FT		
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FR		
+			Make/O/D/N=(48,128)	data	= abs(gnoise(p+q))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FL		
+			Make/O/D/N=(48,128)	data	= abs(gnoise(p+q))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FT		
 			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
-		NewDataFolder/O/S root:VSANS_DIV_file:entry:data_FB		
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(p+q))
+		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FB		
 			Make/O/D/N=(128,48)	data	= abs(gnoise(p+q))
-			Make/O/D/N=(128,48)	error	= 0.01*abs(gnoise(p+q))
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(p+q))
 			
 	SetDataFolder root:
 

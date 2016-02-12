@@ -21,6 +21,10 @@
 Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 
+// passing null file string presents a dialog
+Proc LoadFakeDIVData()
+	V_LoadHDF5Data("","DIV")
+End
 
 // passing null file string presents a dialog
 Proc Read_HDF5_Raw_No_Attributes()
@@ -29,10 +33,12 @@ End
 
 
 // TODO:
-//  x- move the initializtion of the raw data folder to be in the as-yet unwritten initialization routine for
+//  x- move the initialization of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
 // -- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
 //    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
+//
+// TODO: -- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
 //
 Function V_LoadHDF5Data(file,folder)
 	String file,folder
@@ -43,7 +49,7 @@ Function V_LoadHDF5Data(file,folder)
 	if(cmpstr(folder,"RAW")==0)
 		base_name="entry"
 	else
-		base_name=""
+		base_name="entry"		//TODO -- remove this / change behavior in V_LoadHDF5_NoAtt()
 	endif
 	
 	Variable err= V_LoadHDF5_NoAtt(file,base_name)	// reads into current folder
@@ -83,9 +89,9 @@ Function V_RedimFakeData()
 	
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
 		Wave det_B=data
-		Redimension/N=(300,300)/E=1 det_B
+		Redimension/N=(320,320)/E=1 det_B
 		
-		Variable ctr=20,npix=100
+		Variable ctr=20,npix=128
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
 		Wave det_MT=data
 		Redimension/N=(npix,48)/E=1 det_MT		

@@ -108,6 +108,7 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:STO
 	NewDataFolder/O root:Packages:NIST:VSANS:SUB
 	NewDataFolder/O root:Packages:NIST:VSANS:DRK
+	NewDataFolder/O root:Packages:NIST:VSANS:ADJ
 
 
 // ?? anything else

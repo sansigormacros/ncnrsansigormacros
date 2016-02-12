@@ -293,23 +293,11 @@ End
 
 
 
-
-//
-//Entry procedure from main panel
-//
-Proc AddFolder(oldType,newType)
-	String oldType,newType
-	Prompt oldType,"Source WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
-	Prompt newType,"Destination WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
-
-	// data folder "RAW" will be copied to "new" (either kills/copies or will overwrite)
-	Variable 	err = Raw_to_work(newType)
-//	CopyHDFToWorkFolder(oldtype,newtype)
-End
-
-
-
 //testing procedure
+// TODO -- can't duplicate this with another proceudre, but if I change the name of the variable
+//   "newType" to "type", then when Raw_to_work() gets to CopyHDFToWorkFolder(), the KillDataFolder/Z
+//   line fails (but reports no error), then DuplicateDataFolder fails, and reports an error. Trying
+//   to simplify this condition, I can't duplicate the error for WM...
 Proc Add_to_Workfile(newtype, doadd)
 	String newtype,doadd
 	Prompt newtype,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
