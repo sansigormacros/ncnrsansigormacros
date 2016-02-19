@@ -5,9 +5,12 @@
 //
 // this will become the equivalent of "RawWindowHook"
 //
-// Procedures to display the detector data along with whatever visualization tools
-// necessary to understand the data
-//
+// Procedures to:
+// display the detector data
+// visualization tools
+// mouse interaction
+// status information necessary to understand the data
+// buttons to more functionality to process data
 
 
 // TODO
@@ -33,22 +36,30 @@ Proc UpdateDisplayInformation(type)
 	String type 
 	
 	DoWindow/F VSANS_Data
-	Print V_flag
+//	Print V_flag
 	if(V_flag==0)
 	
 		VSANSDataPanelGlobals()
 		
 		VSANS_DataPanel()		//draws the panel
-		// fake a click on all three tabs - to populate the data
-		FakeTabClick(2)
-		FakeTabClick(1)
-		FakeTabClick(0)
+
 	endif
 	
 	// TODO: update the information here  - in either case
 	// what isn't automatically picked up? What is "stale" on the display?
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
+	
+	// fake a click on all three tabs - to populate the data
+	FakeTabClick(2)
+	FakeTabClick(1)
+	FakeTabClick(0)
 //	DoWindow/T VSANS_Data,type + " VSANS_Data"
+
+	String newTitle = "WORK_"+type
+	DoWindow/F VSANS_Data
+	DoWindow/T VSANS_Data, newTitle
+	KillStrings/Z newTitle
+	
 end
 
 //
@@ -353,6 +364,7 @@ End
 //  x- get the panel to be correctly populated first, rather than needing to click everywhere to fill in
 //  x- remove the dependency on VCALC being initialized first, and using dummy waves from there...
 //
+// -- can I use "ReplaceWave" to do this?
 Function VDataTabProc(tca) : TabControl
 	STRUCT WMTabControlAction &tca
 
@@ -367,15 +379,32 @@ Function VDataTabProc(tca) : TabControl
 			RemoveFromGraph/Z /W=VSANS_Data#det_panelsF tmp_asdf
 			SetDataFolder root:
 			
+			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
+			
+			//************
+			// -- can I use "ReplaceWave/W=VSANS_Data#det_panelsB allinCDF" to do this?
+			// -- only works for "B", since for M and F panels, all 4 data sets are named "data"
+			// in their respective folders...
+
+			String tmpStr
+			Variable ii
 			if(tab==2)
-				//SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
-				//Wave det_B
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
+				tmpStr = ImageNameList("VSANS_Data#det_panelsB",";")
+				// for some odd reason, it appears that I need to work from the back of the list
+				// since the traces get "renumbered" as I take them off !! A do loop may be a better choice
+				if(ItemsInList(tmpStr) > 0)
+					do
+						RemoveImage /W=VSANS_Data#det_panelsB $(StringFromList(0,tmpStr,";"))		//get 1st item
+						tmpStr = ImageNameList("VSANS_Data#det_panelsB",";")								//refresh list
+					while(ItemsInList(tmpStr) > 0)
+				endif
+				
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_B")
 				Wave det_B=data
-				CheckDisplayed /W=VSANS_Data#det_panelsB det_B
-				if(V_flag == 0)
+				
+				CheckDisplayed /W=VSANS_Data#det_panelsB det_B	
+				if(V_flag == 0)		// 0 == data is not displayed, so append it
 					AppendImage/W=VSANS_Data#det_panelsB det_B
-//					ModifyImage/W=VSANS_Data#det_panelsB det_B ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctab= {*,*,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,545,620)
@@ -387,26 +416,31 @@ Function VDataTabProc(tca) : TabControl
 			endif
 	
 			if(tab==1)
-				//SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-				//Wave det_MR,det_ML,det_MB,det_MT
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
-				Wave det_ML=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
+				tmpStr = ImageNameList("VSANS_Data#det_panelsM",";")
+				// for some odd reason, it appears that I need to work from the back of the list
+				// since the traces get "renumbered" as I take them off !! A do loop may be a better choice
+				if(ItemsInList(tmpStr) > 0)
+					do
+						RemoveImage /W=VSANS_Data#det_panelsM $(StringFromList(0,tmpStr,";"))		//get 1st item
+						tmpStr = ImageNameList("VSANS_Data#det_panelsM",";")								//refresh list
+					while(ItemsInList(tmpStr) > 0)
+				endif
+
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_ML")
+				Wave det_ML=data				
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MR")
 				Wave det_MR=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MT")
 				Wave det_MT=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MB")
 				Wave det_MB=data
+
 				CheckDisplayed /W=VSANS_Data#det_panelsM det_MR
 				if(V_flag == 0)
 					AppendImage/W=VSANS_Data#det_panelsM det_MT		//order is important here to get LR on "top" of display
 					AppendImage/W=VSANS_Data#det_panelsM det_MB
 					AppendImage/W=VSANS_Data#det_panelsM det_ML
 					AppendImage/W=VSANS_Data#det_panelsM det_MR
-//					ModifyImage/W=VSANS_Data#det_panelsM det_MT ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsM det_MB ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsM det_ML ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsM det_MR ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {*,*,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
 					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {*,*,ColdWarm,0}
@@ -421,26 +455,31 @@ Function VDataTabProc(tca) : TabControl
 			endif
 
 			if(tab==0)
-				//SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-				//Wave det_FL,det_FR,det_FT,det_FB
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
+				tmpStr = ImageNameList("VSANS_Data#det_panelsF",";")
+				// for some odd reason, it appears that I need to work from the back of the list
+				// since the traces get "renumbered" as I take them off !! A do loop may be a better choice
+				if(ItemsInList(tmpStr) > 0)
+					do
+						RemoveImage /W=VSANS_Data#det_panelsF $(StringFromList(0,tmpStr,";"))		//get 1st item
+						tmpStr = ImageNameList("VSANS_Data#det_panelsF",";")								//refresh list
+					while(ItemsInList(tmpStr) > 0)
+				endif
+
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FL")
 				Wave det_FL=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FR")
 				Wave det_FR=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
-				Wave det_FT=data
-				SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FT")
+				Wave det_FT=data				
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FB")
 				Wave det_FB=data
+								
 				CheckDisplayed /W=VSANS_Data#det_panelsF det_FL
 				if(V_flag == 0)
 					AppendImage/W=VSANS_Data#det_panelsF det_FT
 					AppendImage/W=VSANS_Data#det_panelsF det_FB
 					AppendImage/W=VSANS_Data#det_panelsF det_FL
 					AppendImage/W=VSANS_Data#det_panelsF det_FR
-//					ModifyImage/W=VSANS_Data#det_panelsF det_FT ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsF det_FB ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsF det_FL ctab= {*,*,ColdWarm,0}
-//					ModifyImage/W=VSANS_Data#det_panelsF det_FR ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {*,*,ColdWarm,0}
@@ -453,7 +492,24 @@ Function VDataTabProc(tca) : TabControl
 				SetActiveSubWindow VSANS_Data#det_panelsF
 				SetDataFolder root:
 			endif
+
+// make sure log scaling is correct			
+			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
 			
+			// on the front:			
+			ModifyImage/W=VSANS_Data#det_panelsF ''#0 log=State
+			ModifyImage/W=VSANS_Data#det_panelsF ''#1 log=State
+			ModifyImage/W=VSANS_Data#det_panelsF ''#2 log=State
+			ModifyImage/W=VSANS_Data#det_panelsF ''#3 log=State
+			//on the middle:
+			ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=State
+			ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=State
+			ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=State
+			ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=State
+			// on the back:
+			ModifyImage/W=VSANS_Data#det_panelsB ''#0 log=State
+////
+	
 						
 			break
 		case -1: // control being killed
@@ -601,7 +657,7 @@ Function StatusButtonProc(ba) : ButtonControl
 End
 
 
-// TODO
+// TODO -- this appears to be complete...
 // toggle the (z) value of the display log/lin
 //
 Function LogLinButtonProc(ba) : ButtonControl
@@ -657,7 +713,8 @@ End
 
 // TODO
 // possibly function to "tag" files right here in the disaply with things
-// like their intent, or other values that reduction will need, 
+// like their intent, or other values that reduction will need, kind of like a "quick patch"
+// with limited functionality (since full function would be a nightmare!) 
 Function TagFileButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 

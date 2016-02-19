@@ -6,7 +6,10 @@
 // -- multiple fit options with different things held
 // x- when selecting the detector, set the x/y pixel sizes
 // -- figure out how to re-plot the images when swapping between LR and TB panels
-//
+// -- Modify to accept mm (real space dimensions) rather than pixels
+//    -- or be able to swap the answer to mm for a more natural definition of the beam center
+// -- add method to be able to write the values to the local folder / or better, to file on disk
+// -- graphically show the beam center / radius of where it is in relation to the panel
 
 
 //

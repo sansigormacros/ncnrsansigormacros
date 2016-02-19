@@ -75,6 +75,61 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	return(0)
 end
 
+//
+// Non-linear data correction
+// 
+// input is the data array (N tubes x M pixels)
+// input of N x M array of quadratic coefficients
+//
+// output is wave of corrected real space distance corresponding to each pixel of the data
+//
+//
+// TODO
+// -- verify the direction of the tubes and indexing
+// -- be sure I'm working in the right data folder
+// -- clean up when done
+// -- calculate + return the error contribution?
+// -- do I want this to return a wave?
+// -- do I need to write a separate function that returns the distance wave for later calculations?
+// -- do I want to make the distance array 2D to keep the x and y dims together? Calculate them all right now?
+// -- what else do I need to pass to the function? (fname=folder? detStr?)
+//
+//
+//
+Function NonLinearCorrection(dataW,data_errW,coefW)
+	Wave dataW,data_errW,coefW
+	
+	// do I count on the orientation as an input, or do I just figure it out on my own?
+	String orientation
+	Variable dimX,dimY
+	dimX = DimSize(dataW,0)
+	dimY = DimSize(dataw,1)
+	if(dimX > dimY)
+		orientation = "horizontal"
+	else
+		orientation = "vertical"
+	endif
+
+	// make a wave of the same dimensions, in the same data folder for the distance
+	// ?? or a 2D wave?
+	
+	// then per tube, do the quadratic calculation to get the real space distance along the tube
+	// the distance perpendicular to the tube is n*(8.4mm) per tube index
+	
+	if(cmpstr(orientation,"vertical")==0)
+		//	this is data dimensioned as (Ntubes,Npix)
+		
+
+	elseif(cmpstr(orientation,"horizontal")==0)
+		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+
+	
+	else		
+		DoAlert 0,"Orientation not correctly passed in NonLinearCorrection(). No correction done."
+	endif
+	
+	return(0)
+end
 
 
 /////
@@ -100,8 +155,65 @@ End
 //
 ////
 
+// TODO
+// get rid of this in the real data
+//
+// TESTING ONLY
+Macro MakeFakeCalibrationWaves()
+	// make these in the RAW data folder, before converting to a work folder
+	// - then they will be "found" by get()
+	// -- only for the tube, not the Back det
+	
+	DoAlert 0, "re-do this and do a better job of filling the fake data"
+	
+	fMakeFakeCalibrationWaves()
+End
 
 
+
+// TODO
+// get rid of this in the real data
+//
+// TESTING ONLY
+//
+// orientation does not matter, there are 48 tubes in each bank
+// so dimension (3,48) for everything.
+//
+// -- but the orientation does indicate TB vs LR, which has implications for 
+//  the (fictional) dimension of the pixel along the tube axis, at least as far
+// as for making the fake coefficients.
+//
+Function fMakeFakeCalibrationWaves()
+
+	Variable ii,pixSize
+	String detStr,fname="RAW",orientation
+	
+	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+//		Wave w = V_getDetectorDataW(fname,detStr)
+		Make/O/D/N=(3,48) $("root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_"+detStr+":spatial_calibration")
+		Wave calib = $("root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_"+detStr+":spatial_calibration")
+		// !!!! this overwrites what is there
+
+		orientation = V_getDet_tubeOrientation(fname,detStr)
+		if(cmpstr(orientation,"vertical")==0)
+		//	this is vertical tube data dimensioned as (Ntubes,Npix)
+			pixSize = 8			//V_getDet_y_pixel_size(fname,detStr)
+		elseif(cmpstr(orientation,"horizontal")==0)
+		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+			pixSize = 4			//V_getDet_x_pixel_size(fname,detStr)
+		else		
+			DoAlert 0,"Orientation not correctly passed in NonLinearCorrection(). No correction done."
+		endif
+		
+		calib[0][] = -64
+		calib[1][] = pixSize
+		calib[2][] = 2e-4
+		
+	endfor
+	
+	return(0)
+End
 
 
 ////////////
@@ -542,118 +654,73 @@ End
 //unused testing procedure, may not be up-to-date with other procedures
 //check before re-implementing
 //
-Proc DIV_a_Workfile(type)
+Macro DIV_a_Workfile(type)
 	String type
-	Prompt type,"WORK data type",popup,"COR;SAM;EMP;BGD"
+	Prompt type,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	
 	//macro will take whatever is in SELECTED folder and DIVide it by the current
 	//contents of the DIV folder - the function will check for existence 
 	//before proceeding
+
+//DoAlert 0,"This has not yet been updated for VSANS"
 	
 	Variable err
-	err = Divide_work(type)		//returns err = 1 if data doesn't exist in specified folders
+	err = DIVCorrection(type)		//returns err = 1 if data doesn't exist in specified folders
 	
 	if(err)
-		Abort "error in Divide_work"
+		Abort "error in DIVCorrection()"
 	endif
 	
-	//contents are always dumped to CAL
-	type = "CAL"
+	//contents are NOT always dumped to CAL, but are in the new type folder
 	
 	String newTitle = "WORK_"+type
-	DoWindow/F SANS_Data
-	DoWindow/T SANS_Data, newTitle
+	DoWindow/F VSANS_Data
+	DoWindow/T VSANS_Data, newTitle
 	KillStrings/Z newTitle
 	
 	//need to update the display with "data" from the correct dataFolder
 	//reset the current displaytype to "type"
-	String/G root:myGlobals:gDataDisplayType=Type
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=Type
 	
-	fRawWindowHook()
+	UpdateDisplayInformation(type)
 	
 End
+
 
 //
 // TODO:
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
-//function will divide the contents of "type" folder with the contents of 
-//the DIV folder
-// all data is converted to linear scale for the calculation
+//function will divide the contents of "workType" folder with the contents of 
+//the DIV folder + detStr
+// all data is linear scale for the calculation
 //
-Function Divide_work(type)
-	String type
-
-	DoAlert 0,"This has not yet been updated for VSANS"
+Function DIVCorrection(data,data_err,detStr,workType)
+	Wave data,data_err
+	String detStr,workType
 	
 	//check for existence of data in type and DIV
-	// if the desired workfile doesn't exist, let the user know, and abort
+	// if the desired data doesn't exist, let the user know, and abort
 	String destPath=""
 
-	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
-		Print "There is no work file in "+type+"--Aborting"
+	if(WaveExists(data) == 0)
+		Print "The data wave does not exist in DIVCorrection()"
 		Return(1) 		//error condition
 	Endif
+	
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
 
-	if(WaveExists($"root:Packages:NIST:DIV:data") == 0)
-		Print "There is no work file in DIV --Aborting"
+	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:entry:instrument:detector_"+detStr+":data")
+	if(WaveExists(div_data) == 0)
+		Print "The DIV wave does not exist in DIVCorrection()"
 		Return(1)		//error condition
 	Endif
 	//files exist, proceed
-	
-	//check for log-scaling of the "DIV" data and adjust if necessary
-	// should not be needed now - using display flag instead
-//	ConvertFolderToLinearScale("DIV")
-	
-	//copy type information to CAL, wiping out the old contents of the CAL folder first
-	
-	//destPath = "root:Packages:NIST:CAL"
-	//SetDataFolder destPath
-	//KillWaves/A/Z			//get rid of the old data in CAL folder
 
-	//check for log-scaling of the "type" data and adjust if necessary
-	// should not be needed now - using display flag instead
-//	ConvertFolderToLinearScale(type)
-	//then continue
-
-	//copy from current dir (type)=destPath to CAL, overwriting CAL contents
-	destPath = "root:Packages:NIST:" + type
-	Duplicate/O $(destPath + ":data"),$"root:Packages:NIST:CAL:data"
-	Duplicate/O $(destPath + ":linear_data"),$"root:Packages:NIST:CAL:linear_data"
-	Duplicate/O $(destPath + ":linear_data_error"),$"root:Packages:NIST:CAL:linear_data_error"
-//	Duplicate/O $(destPath + ":vlegend"),$"root:Packages:NIST:CAL:vlegend"
-	Duplicate/O $(destPath + ":textread"),$"root:Packages:NIST:CAL:textread"
-	Duplicate/O $(destPath + ":integersread"),$"root:Packages:NIST:CAL:integersread"
-	Duplicate/O $(destPath + ":realsread"),$"root:Packages:NIST:CAL:realsread"
-	//need to save a copy of filelist string too (from the current type folder)
-	SVAR oldFileList = $(destPath + ":fileList")
-
-	//now switch to reference waves in CAL folder
-	destPath = "root:Packages:NIST:CAL"
-	//make appropriate wave references
-	Wave data=$(destPath + ":linear_data")					// these wave references point to the data in CAL
-//	Wave data_err=$(destPath + ":linear_data_err")					// these wave references point to the data in CAL
-	Wave data_copy=$(destPath + ":data")					// these wave references point to the data in CAL
-	Wave/t textread=$(destPath + ":textread")			//that are to be directly operated on
-	Wave integersread=$(destPath + ":integersread")
-	Wave realsread=$(destPath + ":realsread")
-	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in CAL folder, data is linear scale
-	//need to copy filelist string too
-	String/G $(destPath + ":fileList") = oldFileList
-
-	Wave div_data = $"root:Packages:NIST:DIV:data"		//hard-wired in....
-	//do the division, changing data in CAL
 	data /= div_data
 	
 //	data_err /= div_data
-	
-	// keep "data" in sync with linear_data
-	data_copy = data
-	
-	//update CAL header
-	textread[1] = date() + " " + time()		//date + time stamp
 	
 	Return(0)
 End

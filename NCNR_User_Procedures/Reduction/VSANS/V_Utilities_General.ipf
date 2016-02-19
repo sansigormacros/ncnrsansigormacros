@@ -41,6 +41,15 @@ Function V_PickPath()
 	endif
 End
 
+//
+// entry from the Main Panel
+//
+Proc V_ChangeDisplay(type)
+	String type
+	Prompt type,"WORK data type to display",popup,"RAW;SAM;EMP;BGD;ADJ;"
+
+	UpdateDisplayInformation(type)
+End
 
 //
 // tests if two values are close enough to each other

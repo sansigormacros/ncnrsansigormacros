@@ -9,7 +9,7 @@
 //  VSANS Utility procedures for handling of workfiles (each is housed in a separate datafolder)
 //
 // - adding RAW data to a workfile
-// -- this conversion applies the detector corrections
+// -- **this conversion applies the detector corrections**
 //
 // - copying workfiles to another folder
 //
@@ -54,8 +54,6 @@ End
 // TODO !!! DuplicateDataFolder will FAIL - in the base case of RAW data files, the
 //  data is actually in use - so it will fail every time. need an alternate solution. in SANS,
 // there are a limited number of waves to carry over, so Dupliate/O is used for rw, tw, data, etc.
-//
-//
 //
 // TODO : I also need a list of what is generated during processing that may be hanging around - that I need to
 //     be sure to get rid of - like the calibration waves, solidAngle, etc.
@@ -102,15 +100,15 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		// see V_CopyToWorkFolder()
 		
 		// everything on the top level
-		V_DuplicateDataFolder($(toDF+":entry:entry"),fromStr,toStr,0,"",0)	//no recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:entry"),fromStr,toStr,0,"",0)	//no recursion here
 		// control
-		V_DuplicateDataFolder($(toDF+":entry:entry:control"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:entry:control"),fromStr,toStr,0,"",1)	//yes recursion here
 		// instrument
-		V_DuplicateDataFolder($(toDF+":entry:entry:instrument"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:entry:instrument"),fromStr,toStr,0,"",1)	//yes recursion here
 		// reduction
-		V_DuplicateDataFolder($(toDF+":entry:entry:reduction"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:entry:reduction"),fromStr,toStr,0,"",1)	//yes recursion here
 		// sample
-		V_DuplicateDataFolder($(toDF+":entry:entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
 
 	endif	
 	
@@ -265,7 +263,15 @@ End
 ///////////////////////////////
 
 
+//
 // given the folder, duplicate the data -> linear_data and generate the error
+// TODO
+// -- do I want to use different names here? If it turns out that I don't need to drag a copy of
+//    the data around as "linear_data", then I can eliminate that, and rename the error wave
+// -- be sure the data is either properly written as 2D in the file, or converted to 2D before
+//    duplicating here
+// -- ? do I recast to DP here. Probably necessary since I'm doing a DP calculation, but Redimension
+//    is done in the Raw_to_Work step too. very confusing.
 Function V_MakeDataError(folderStr)
 	String folderStr
 	
@@ -286,9 +292,6 @@ Function V_MakeDataError(folderStr)
 End
 
 
-
-
-
 /////////////////////
 
 
@@ -298,7 +301,7 @@ End
 //   "newType" to "type", then when Raw_to_work() gets to CopyHDFToWorkFolder(), the KillDataFolder/Z
 //   line fails (but reports no error), then DuplicateDataFolder fails, and reports an error. Trying
 //   to simplify this condition, I can't duplicate the error for WM...
-Proc Add_to_Workfile(newtype, doadd)
+Macro Convert_to_Workfile(newtype, doadd)
 	String newtype,doadd
 	Prompt newtype,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	Prompt doadd,"Add to current WORK contents?",popup,"No;Yes;"
@@ -314,6 +317,7 @@ Proc Add_to_Workfile(newtype, doadd)
 		err = Raw_to_work(newtype)
 	else
 		//yes, add RAW to the current work folder contents
+		Abort "Adding RAW data files is currently unsupported"
 		err = Add_raw_to_work(newtype)
 	endif
 	
@@ -329,9 +333,11 @@ End
 
 
 //
+// THIS IS THE MAJOR ROUTINE TO APPLY DATA CORRECTIONS
+// 
 //will copy the current contents of the RAW folder to the newType work folder
 //and do the geometric corrections and normalization to monitor counts
-//(the function Add_Raw_to_work(type) adds multiple runs together)
+//(the function Add_Raw_to_work(type) adds multiple runs together - and is LOW priority)
 //
 //the current display type is updated to newType (global)
 //
@@ -362,8 +368,6 @@ Function Raw_to_work(newType)
 	CopyHDFToWorkFolder("RAW",newType)
 	
 	// now work with the waves from the destination folder.	
-	Variable/G $(destPath + ":gIsLogscale")=0			//overwite flag in newType folder, data converted (above) to linear scale
-//	String/G $(destPath + ":fileList") = textread[0]			//a list of names of the files in the work file (1)		//02JUL13
 	
 	// apply corrections ---
 	// switches to control what is done, don't do the transmission correction for the BGD measurement
@@ -372,6 +376,19 @@ Function Raw_to_work(newType)
 	// rescaling to default monitor counts however, must be LAST.
 
 // each correction must loop over each detector. tedious.
+
+	// (0) Redimension the data waves in the destination folder
+	//     so that they are DP, not integer
+	// TODO
+	// -- currently only redimensioning the data and linear_data_error - What else???
+	//
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave w = V_getDetectorDataW(fname,detStr)
+		Wave w_err = V_getDetectorDataErrW(fname,detStr)
+		Redimension/D w,w_err
+	endfor
+	
 	
 	// (1) DIV correction
 	// do this in terms of pixels. 
@@ -381,15 +398,14 @@ Function Raw_to_work(newType)
 	if (gDoDIVCor == 1)
 		// need extra check here for file existence
 		// if not in DIV folder, load.
-		// if unable to load, skip correction and report error (Alert?)
-		for(ii=0;ii<8;ii+=1)
-			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		// if unable to load, skip correction and report error (Alert?) (Ask to Load?)
+		
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Wave w_dt = V_getDetector_deadtime(fname,detStr)
 			Print "Doing DIV correction for "+ detStr
-//			DIVCorrection(fill this in)
-			
+			DIVCorrection(w,w_err,detStr,newType)
 		endfor
 	else
 		Print "DIV correction not done"		// not an error since correction was unchecked
@@ -399,11 +415,11 @@ Function Raw_to_work(newType)
 	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 	// generate a distance matrix for each of the detectors
 	if (gDoNonLinearCor == 1)
-		for(ii=0;ii<8;ii+=1)
-			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			Wave w_calib = V_getDetTube_spatialCalib(fname,detStr)
 			Print "Doing Non-linear correction for "+ detStr
 //			NonLinearCorrection(fill this in)
 			
@@ -415,8 +431,8 @@ Function Raw_to_work(newType)
 	// (3) solid angle correction
 	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
 	if (gDoSolidAngleCor == 1)
-		for(ii=0;ii<8;ii+=1)
-			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
@@ -432,12 +448,12 @@ Function Raw_to_work(newType)
 	// TODO: -- remove the hard-wired test
 	// -- test for correct operation
 	// -- loop over all of the detectors
-	// -- B detector is a special case
+	// -- B detector is a special case (do separately, then loop over NoB)
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
 	ctTime = V_getCount_time(fname)
 	if (gDoDeadTimeCor == 1)
-		for(ii=0;ii<8;ii+=1)
-			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
@@ -471,8 +487,8 @@ Function Raw_to_work(newType)
 	// (6) angle dependent transmission correction
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		for(ii=0;ii<8;ii+=1)
-			detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
@@ -489,18 +505,23 @@ Function Raw_to_work(newType)
 	// TODO -- but there are TWO monitors - so how to switch?
 	// TODO -- what do I really need to save?
 	defmon=1e8			//default monitor counts
-	for(ii=0;ii<8;ii+=1)
-		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
 		Wave w_err = V_getDetectorDataErrW(fname,detStr)
 		Variable monCt = V_getBeamMonNormData(fname)
 		Print "Doing monitor normalization for "+ detStr
 //			MonitorNormalization(fill this in)
 	//scale the data to the default montor counts
-		scale = defmon/monCt
-		w *= scale
-		w_err *= scale		//assumes total monitor count is so large there is essentially no error
-		
+	
+	// TODO -- un-comment these three lines once monitor counts are reasonable - currently monCt = 9!!!
+//		scale = defmon/monCt
+//		w *= scale
+//		w_err *= scale		//assumes total monitor count is so large there is essentially no error
+
+// TODO
+// -- to write back to the local value, get the wave reference rather than the value, then I can 
+//    re-assign the value directly, rather than this method (which is not terrible)	
 		// V_getBeamMonNormSaved_count()
 		// save the true monitor counts? save the scaling factor?
 		String path = "entry:instrument:beam_monitor_norm:saved_count"
@@ -536,7 +557,7 @@ Function Raw_to_work(newType)
 //	realsread[2] = scale*total_det			//scaled detector counts
 //	
 	//reset the current displaytype to "newtype"
-	String/G root:myGlobals:gDataDisplayType=newType
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=newType
 	
 	//return to root folder (redundant)
 	SetDataFolder root:

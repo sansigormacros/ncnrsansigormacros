@@ -22,7 +22,7 @@ Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 
 // passing null file string presents a dialog
-Proc LoadFakeDIVData()
+Macro LoadFakeDIVData()
 	V_LoadHDF5Data("","DIV")
 End
 
@@ -70,7 +70,16 @@ Function V_LoadHDF5Data(file,folder)
 
 // TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
 		V_RedimFakeData()
+//
+// TODO -- for the "real" data, may need a step in here to convert integer detector data to DP, or I'll
+//          get really odd results from the calculations, and may not even notice.
+
+// TODO
+//  -- get rid of these fake calibration waves as "real" ones are filled in
+		Execute "MakeFakeCalibrationWaves()"
+//		fMakeFakeCalibrationWaves()		//skips the alert
 		
+				
 /// END FAKE DATA CORRECTIONS		
 		
 	endif
@@ -90,6 +99,7 @@ Function V_RedimFakeData()
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
 		Wave det_B=data
 		Redimension/N=(320,320)/E=1 det_B
+		det_B = p+q+2
 		
 		Variable ctr=20,npix=128
 		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
@@ -150,6 +160,11 @@ Function V_RedimFakeData()
 		SetScale/I x ctr,ctr+48,"",det_FR
 		SetScale/I y -npix/2,npix/2,"",det_FR
 
+// get rid of zeros
+		det_FL += 2
+		det_FR += 2
+		det_FT += 2
+		det_FB += 2
 
 	return(0)
 End
@@ -160,7 +175,8 @@ End
 // this will load in the whole HDF file all at once.
 // Attributes are NOT loaded at all.
 //
-// TODO: remove the P=home restriction top make this more generic
+// TODO: 
+// -x remove the P=home restriction top make this more generic (replaced with catPathName from PickPath)
 // -- get rid of bits leftover here that I don't need
 // -- be sure I'm using all of the correct flags in the HDF5LoadGroup operation
 // -- settle on how the base_name is to be used. "entry" for the RAW, fileName for the "rawVSANS"?
@@ -178,8 +194,8 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	String status = ""
 
 	Variable fileID = 0
-	HDF5OpenFile/R/P=home/Z fileID as fileName		//read file from home directory?
-//	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
+//	HDF5OpenFile/R/P=home/Z fileID as fileName		//read file from home directory?
+	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
 	if (V_Flag != 0)
 		return 0
 	endif
@@ -431,7 +447,7 @@ End
 //     wave as passed in, or if it will only write as DP.
 // -- do I need to write separate functions for real, integer, etc.?
 //	
-// -- change the /P=home to the user-defined data path (which may be home)		
+// -x change the /P=home to the user-defined data path (catPathName)		
 //
 Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	String fname, groupName, varName
@@ -442,7 +458,7 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	String NXentry_name
 	
 	try	
-		HDF5OpenFile/P=home /Z fileID  as fname  //open file read-write
+		HDF5OpenFile/P=catPathName /Z fileID  as fname  //open file read-write
 		if(!fileID)
 			err = 1
 			abort "HDF5 file does not exist"
@@ -517,7 +533,7 @@ end
 //
 // TODO
 //
-// -- change the /P=home to the user-defined data path (which may be home)		
+// -x change the /P=home to the user-defined data path (catPathName)		
 //
 Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 	String fname, groupName, varName
@@ -528,7 +544,7 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 	String NXentry_name
 	
 	try	
-		HDF5OpenFile/P=home /Z fileID  as fname  //open file read-write
+		HDF5OpenFile/P=catPathName /Z fileID  as fname  //open file read-write
 		if(!fileID)
 			err = 1
 			abort "HDF5 file does not exist"

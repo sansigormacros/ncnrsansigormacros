@@ -142,7 +142,7 @@ End
 Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ChangeDisplay()
+	V_ChangeDisplay()
 End
 
 Proc ReadMask_MainButtonProc(ctrlName) : ButtonControl

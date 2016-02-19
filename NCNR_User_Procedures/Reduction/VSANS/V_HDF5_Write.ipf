@@ -996,6 +996,33 @@ Function V_writeAttenuator_transmission(fname,val)
 	return(err)
 end
 
+// transmission value (error) for the attenuator in the beam
+// use this, but if something wrong, the tables are present
+Function V_writeAttenuator_trans_err(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:attenuator:attenuator_transmission_error"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/attenuator"	
+	String varName = "attenuator_transmission_error"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
+end
+
 
 // distance from the attenuator to the sample (units??)
 Function V_writeAttenDistance(fname,val)
@@ -3375,6 +3402,31 @@ Function V_writeDet_LateralOffset(fname,detStr,val)
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
 	String varName = "lateral_offset"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	err = V_KillNamedDataFolder(fname)
+	if(err)
+		Print "DataFolder kill err = ",err
+	endif
+	return(err)
+End
+
+Function V_writeDet_VerticalOffset(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/detector_"+detStr	
+	String varName = "vertical_offset"
 	wTmpWrite[0] = val
 
 	variable err

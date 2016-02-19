@@ -464,6 +464,14 @@ Function V_getAttenuator_transmission(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
+// transmission value (error) for the attenuator in the beam
+// use this, but if something wrong, the tables are present
+Function V_getAttenuator_trans_err(fname)
+	String fname
+	
+	String path = "entry:instrument:attenuator:attenuator_transmission_error"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
 
 // distance from the attenuator to the sample (units??)
 Function V_getAttenDistance(fname)
@@ -1250,6 +1258,14 @@ Function V_getDet_LateralOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
+Function V_getDet_VerticalOffset(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+
 // only defined for the "B" detector, and only to satisfy NXsas
 Function V_getDet_polar_angle(fname,detStr)
 	String fname,detStr
@@ -1339,18 +1355,15 @@ End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
-Function V_getDetTube_spatialCalib(fname,detStr,outW)
+Function/WAVE V_getDetTube_spatialCalib(fname,detStr)
 	String fname,detStr
-	Wave outW
 
 	String path = "entry:instrument:detector_"+detStr+":spatial_calibration"
 	if(cmpstr(detStr,"B") == 0)
-		return(0)
+		return $("")	// return should be null
 	else
 		WAVE w = V_getRealWaveFromHDF5(fname,path)
-	
-		outW = w
-		return(0)
+		return w
 	endif
 End
 
