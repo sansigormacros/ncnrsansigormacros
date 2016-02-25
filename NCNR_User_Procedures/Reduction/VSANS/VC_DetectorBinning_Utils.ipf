@@ -14,18 +14,21 @@
 
 // TODO: hard wired for a sphere - change this to allow minimal selections and altering of coefficients
 // TODO: add the "fake" 2D simulation to fill the panels which are then later averaged as I(Q)
+//
+// NOTE - this is a VCALC only routine, so it's not been made completely generic
+//
 Function FillPanel_wModelData(det,qTot,type)
 	Wave det,qTot
 	String type
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
 	// q-values and detector arrays already allocated and calculated
 	Duplicate/O det tmpInten,tmpSig,prob_i
 		
 	Variable imon,trans,thick,sdd,pixSizeX,pixSizeY,sdd_offset
 
-	//imon = V_BeamIntensity()*CountTime
+	//imon = VC_BeamIntensity()*CountTime
 	imon = VCALC_getImon()		//TODO: currently from the panel, not calculated
 	trans = 0.8
 	thick = 0.1
@@ -49,31 +52,31 @@ Function FillPanel_wModelData(det,qTot,type)
 	String funcStr = VCALC_getModelFunctionStr()
 	strswitch(funcStr)
 		case "Big Debye":
-			tmpInten = V_Debye(10,3000,0.0001,qTot[p][q])
+			tmpInten = VC_Debye(10,3000,0.0001,qTot[p][q])
 			break
 		case "Big Sphere":
-			tmpInten = V_SphereForm(1,900,1e-6,0.01,qTot[p][q])	
+			tmpInten = VC_SphereForm(1,900,1e-6,0.01,qTot[p][q])	
 			break
 		case "Debye":
-			tmpInten = V_Debye(10,300,0.0001,qTot[p][q])
+			tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])
 			break
 		case "Sphere":
-			tmpInten = V_SphereForm(1,60,1e-6,0.001,qTot[p][q])	
+			tmpInten = VC_SphereForm(1,60,1e-6,0.001,qTot[p][q])	
 			break
 		case "AgBeh":
-			tmpInten = V_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
+			tmpInten = VC_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
 			break
 		case "Vycor":
-			tmpInten = V_BroadPeak(1e-9,3,20,500.0,0.015,3,0.1,qTot[p][q])
+			tmpInten = VC_BroadPeak(1e-9,3,20,500.0,0.015,3,0.1,qTot[p][q])
 			break	
 		case "Empty Cell":
-			tmpInten = V_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
+			tmpInten = VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
 			break
 		case "Blocked Beam":
-			tmpInten = V_BlockedBeam(1,qTot[p][q])
+			tmpInten = VC_BlockedBeam(1,qTot[p][q])
 			break
 		default:
-			tmpInten = V_Debye(10,300,0.1,qTot[p][q])
+			tmpInten = VC_Debye(10,300,0.1,qTot[p][q])
 	endswitch
 
 
@@ -153,16 +156,16 @@ End
 //
 // -- sdd in meters
 // -- lambda in Angstroms
-Function V_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+Function VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	Wave data,qTot,qx,qy,qz
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
 		
 	// loop over the array and calculate the values - this is done as a wave assignment
 // TODO -- be sure that it's p,q -- or maybe p+1,q+1 as used in WriteQIS.ipf	
-	qTot = V_CalcQval(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qx = V_CalcQX(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qy = V_CalcQY(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qz = V_CalcQZ(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qTot = VC_CalcQval(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qx = VC_CalcQX(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qy = VC_CalcQY(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qz = VC_CalcQZ(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	return(0)
 End
@@ -182,7 +185,7 @@ End
 //
 //returned magnitude of Q is in 1/Angstroms
 //
-Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Function VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dx,dy,qval,two_theta,dist
@@ -209,12 +212,12 @@ End
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
 // now properly accounts for qz
 //
-Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Function VC_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 
 	Variable qx,qval,phi,dx,dy,dist,two_theta
 	
-	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	sdd *=100		//convert to cm
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
@@ -239,12 +242,12 @@ End
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
 // now properly accounts for qz
 //
-Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Function VC_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dy,qval,dx,phi,qy,dist,two_theta
 	
-	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	sdd *=100		//convert to cm
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
@@ -268,12 +271,12 @@ End
 //
 // not actually used, but here for completeness if anyone asks
 //
-Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Function VC_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dy,qval,dx,phi,qz,dist,two_theta
 	
-	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	sdd *=100		//convert to cm
 	
@@ -327,7 +330,7 @@ Threadsafe Function V_FindPhi(vx,vy)
 	return(phi)
 end
 
-Function V_SphereForm(scale,radius,delrho,bkg,x)				
+Function VC_SphereForm(scale,radius,delrho,bkg,x)				
 	Variable scale,radius,delrho,bkg
 	Variable x
 	
@@ -368,7 +371,7 @@ Function V_SphereForm(scale,radius,delrho,bkg,x)
 	
 End
 
-Function V_Debye(scale,rg,bkg,x)
+Function VC_Debye(scale,rg,bkg,x)
 	Variable scale,rg,bkg
 	Variable x
 	
@@ -393,7 +396,7 @@ End
 //
 // 	make/O/D coef_ECEmp = {2.2e-8,3.346,0.0065,9.0,0.016}
 //
-Function V_EC_Empirical(aa,mm,scale,rg,bkg,x)
+Function VC_EC_Empirical(aa,mm,scale,rg,bkg,x)
 	Variable aa,mm,scale,rg,bkg
 	Variable x
 	
@@ -426,7 +429,7 @@ End
 
 // blocked beam
 //
-Function V_BlockedBeam(bkg,x)
+Function VC_BlockedBeam(bkg,x)
 	Variable bkg
 	Variable x
 	
@@ -445,7 +448,7 @@ End
 //	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 500.0, 0.015,3,0.1}		
 //
 //
-Function V_BroadPeak(aa,nn,cc,LL,Qzero,mm,bgd,x)
+Function VC_BroadPeak(aa,nn,cc,LL,Qzero,mm,bgd,x)
 	Variable aa,nn,cc,LL,Qzero,mm,bgd
 	Variable x
 	
@@ -470,12 +473,30 @@ Function V_BroadPeak(aa,nn,cc,LL,Qzero,mm,bgd,x)
 	
 End
 
+//
+// updated to new folder structure Feb 2016
+// folderStr = RAW,SAM, VCALC or other
+// detStr is the panel identifer "ML", etc.
+//
+Function SetDeltaQ(folderStr,detStr)
+	String folderStr,detStr
 
+	Variable isVCALC
+	if(cmpstr(folderStr,"VCALC") == 0)
+		isVCALC = 1
+	endif
+	
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:entry:instrument:detector_"
+		
+	if(isVCALC)
+		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
+	else
+		Wave inten = V_getDetectorDataW(folderStr,detStr)
+	endif
 
-Function SetDeltaQ(folderStr,type)
-	String folderStr,type
-
-	WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + folderStr + ":det_"+type)		// 2D detector data
+	Wave qx = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy = $(folderPath+instPath+detStr+":qy_"+detStr)
 	
 	Variable xDim,yDim,delQ
 	
@@ -483,42 +504,43 @@ Function SetDeltaQ(folderStr,type)
 	yDim=DimSize(inten,1)
 	
 	if(xDim<yDim)
-		WAVE qx = $("root:Packages:NIST:VSANS:VCALC:" + folderStr + ":qx_"+type)
 		delQ = abs(qx[0][0] - qx[1][0])/2
 	else
-		WAVE qy = $("root:Packages:NIST:VSANS:VCALC:" + folderStr + ":qy_"+type)
 		delQ = abs(qy[0][1] - qy[0][0])/2
 	endif
 	
 	// set the global
-	Variable/G $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_"+type) = delQ
+	Variable/G $(folderPath+instPath+detStr+":gDelQ_"+detStr) = delQ
 //	Print "SET delQ = ",delQ," for ",type
 	
-	return(0)
+	return(delQ)
 end
 
 
 //TODO -- need a switch here to dispatch to the averaging type
-Proc V_BinQxQy_to_1D(folderStr,type)
+Proc VC_BinQxQy_to_1D(folderStr,type)
 	String folderStr
 	String type
 //	Prompt folderStr,"Pick the data folder containing 2D data",popup,getAList(4)
 //	Prompt type,"detector identifier"
 
 
-	V_fDoBinning_QxQy2D(folderStr, type)
+	VC_fDoBinning_QxQy2D(folderStr, type)
 
 
 /// this is for a tall, narrow slit mode	
-//	V_fBinDetector_byRows(folderStr,type)
+//	VC_fBinDetector_byRows(folderStr,type)
 	
 End
 
 
-Proc V_Graph_1D_detType(folderStr,type)
+// folderStr is RAW, VCALC, SAM, etc.
+// type is "B", "FL" for single binning, "FLR", or "MLRTB" or similar if multiple panels are combined
+//
+Proc VC_Graph_1D_detType(folderStr,type)
 	String folderStr,type
 	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 	
 	Display $("iBin_qxqy"+"_"+type) vs $("qBin_qxqy"+"_"+type)
 	ModifyGraph mirror=2,grid=1,log=1
@@ -550,17 +572,29 @@ End
 //
 // TODO "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
 //
-Function V_fDoBinning_QxQy2D(folderStr,type)
+//
+// updated Feb2016 to take new folder structure
+// TODO
+// -- VERIFY
+// -- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
+//    but this is a lousy choice.
+//
+Function VC_fDoBinning_QxQy2D(folderStr,type)
 	String folderStr,type
 	
 	Variable nSets = 0
 	Variable xDim,yDim
 	Variable ii,jj
 	Variable qVal,nq,var,avesq,aveisq
-	Variable binIndex,val
+	Variable binIndex,val,isVCALC=0
 
-	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:entry:instrument:detector_"
+	String detStr
+		
+	if(cmpstr(folderStr,"VCALC") == 0)
+		isVCALC = 1
+	endif
 	
 // now switch on the type to determine which waves to declare and create
 // since there may be more than one panel to step through. There may be two, there may be four
@@ -569,124 +603,223 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 	strswitch(type)	// string switch
 		case "FL":		// execute if case matches expression
 		case "FR":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_FL")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+type)		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+type)			// 2D q-values
+			detStr = type
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+			endif
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 			nSets = 1
 			break	
 								
 		case "FT":		
 		case "FB":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_FT")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+type)		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+type)			// 2D q-values
+			detStr = type
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+			endif
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 			nSets = 1
 			break
 			
 		case "ML":		
-		case "MR":		
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_ML")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+type)		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+type)			// 2D q-values
+		case "MR":
+			detStr = type
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+			endif	
+			//TODO:
+			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
+			//    determined specifically for that panel (currently using one tube width as deltaQ)
+			// -- this is repeated multiple times in this switch
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 			nSets = 1
 			break	
 					
 		case "MT":		
-		case "MB":		
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_MT")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+type)		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+type)			// 2D q-values
+		case "MB":
+			detStr = type
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+			endif	
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 			nSets = 1
 			break	
 					
-		case "B":		
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_B")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Back" + ":det_"+type)		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Back" +":qTot_"+type)			// 2D q-values
+		case "B":	
+			detStr = type
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+			endif	
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_B")
+			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
 			nSets = 1
 			break	
 			
 		case "FLR":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_FL")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FL")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FL")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FR")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FR")			// 2D q-values
+		// detStr has multiple values now, so unfortuntely, I'm hard-wiring things...
+		// TODO
+		// -- see if I can un-hard-wire some of this below when more than one panel is combined
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
+				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
+				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"FL")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
+				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
+			
+			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"FR"+":qTot_"+"FR")			// 2D q-values	
+		
 			nSets = 2
 			break			
 		
 		case "FTB":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_FT")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FT")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FT")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FB")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FB")			// 2D q-values
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"FT"+":det_"+"FT")
+				WAVE/Z iErr = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"FB"+":det_"+"FB")
+				WAVE/Z iErr2 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"FT")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"FT")
+				Wave inten2 = V_getDetectorDataW(folderStr,"FB")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FB")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"FT"+":gDelQ_FT")
+			
+			Wave qTotal = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"FB"+":qTot_"+"FB")			// 2D q-values	
+	
 			nSets = 2
 			break		
 		
 		case "FLRTB":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_FL")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FL")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FL")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FR")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FR")			// 2D q-values
-			WAVE inten3 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FT")		// 2D detector data
-			WAVE/Z iErr3 = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal3 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FT")			// 2D q-values
-			WAVE inten4 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" + ":det_"+"FB")		// 2D detector data
-			WAVE/Z iErr4 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal4 = $("root:Packages:NIST:VSANS:VCALC:" + "Front" +":qTot_"+"FB")			// 2D q-values
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
+				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
+				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
+				WAVE inten3 = $(folderPath+instPath+"FT"+":det_"+"FT")
+				WAVE/Z iErr3 = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten4 = $(folderPath+instPath+"FB"+":det_"+"FB")
+				WAVE/Z iErr4 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"FL")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
+				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+				Wave inten3 = V_getDetectorDataW(folderStr,"FT")
+				Wave iErr3 = V_getDetectorDataErrW(folderStr,"FT")
+				Wave inten4 = V_getDetectorDataW(folderStr,"FB")
+				Wave iErr4 = V_getDetectorDataErrW(folderStr,"FB")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
+			
+			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"FR"+":qTot_"+"FR")			// 2D q-values	
+			Wave qTotal3 = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
+			Wave qTotal4 = $(folderPath+instPath+"FB"+":qTot_"+"FB")			// 2D q-values	
+		
 			nSets = 4
 			break		
 			
-
 		case "MLR":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_ML")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"ML")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"ML")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MR")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MR")			// 2D q-values
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
+				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
+				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"ML")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
+				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+			
+			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"MR"+":qTot_"+"MR")			// 2D q-values	
+		
 			nSets = 2
 			break			
 		
 		case "MTB":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_MT")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MT")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MT")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MB")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MB")			// 2D q-values
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"MT"+":det_"+"MT")
+				WAVE/Z iErr = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"MB"+":det_"+"MB")
+				WAVE/Z iErr2 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"MT")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"MT")
+				Wave inten2 = V_getDetectorDataW(folderStr,"MB")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MB")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"MT"+":gDelQ_MT")
+			
+			Wave qTotal = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"MB"+":qTot_"+"MB")			// 2D q-values	
+		
 			nSets = 2
 			break				
 		
 		case "MLRTB":
-			NVAR delQ = $("root:Packages:NIST:VSANS:VCALC:" + "gDelQ_ML")
-			WAVE inten = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"ML")		// 2D detector data
-			WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"ML")			// 2D q-values
-			WAVE inten2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MR")		// 2D detector data
-			WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal2 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MR")			// 2D q-values
-			WAVE inten3 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MT")		// 2D detector data
-			WAVE/Z iErr3 = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal3 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MT")			// 2D q-values
-			WAVE inten4 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" + ":det_"+"MB")		// 2D detector data
-			WAVE/Z iErr4 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation
-			Wave qTotal4 = $("root:Packages:NIST:VSANS:VCALC:" + "Middle" +":qTot_"+"MB")			// 2D q-values
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
+				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
+				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
+				WAVE inten3 = $(folderPath+instPath+"MT"+":det_"+"MT")
+				WAVE/Z iErr3 = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten4 = $(folderPath+instPath+"MB"+":det_"+"MB")
+				WAVE/Z iErr4 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"ML")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
+				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+				Wave inten3 = V_getDetectorDataW(folderStr,"MT")
+				Wave iErr3 = V_getDetectorDataErrW(folderStr,"MT")
+				Wave inten4 = V_getDetectorDataW(folderStr,"MB")
+				Wave iErr4 = V_getDetectorDataErrW(folderStr,"MB")
+			endif	
+			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+			
+			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"MR"+":qTot_"+"MR")			// 2D q-values	
+			Wave qTotal3 = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
+			Wave qTotal4 = $(folderPath+instPath+"MB"+":qTot_"+"MB")			// 2D q-values	
+		
 			nSets = 4
 			break									
 					
@@ -698,6 +831,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 //	Print "delQ = ",delQ," for ",type
 
 	if(nSets == 0)
+		SetDataFolder root:
 		return(0)
 	endif
 
@@ -735,19 +869,19 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 
 //******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"iBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"qBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"nBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"iBin2_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"eBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"eBin2D_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"nBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin2_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
 	
-	Wave iBin_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"iBin_qxqy_"+type)
-	Wave qBin_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"qBin_qxqy"+"_"+type)
-	Wave nBin_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"nBin_qxqy"+"_"+type)
-	Wave iBin2_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"iBin2_qxqy"+"_"+type)
-	Wave eBin_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"eBin_qxqy"+"_"+type)
-	Wave eBin2D_qxqy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+"eBin2D_qxqy"+"_"+type)
+	Wave iBin_qxqy = $(folderPath+":"+"iBin_qxqy_"+type)
+	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Wave nBin_qxqy = $(folderPath+":"+"nBin_qxqy"+"_"+type)
+	Wave iBin2_qxqy = $(folderPath+":"+"iBin2_qxqy"+"_"+type)
+	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy"+"_"+type)
+	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
 	
 	
 //	delQ = abs(sqrt(qx[2]^2+qy[2]^2+qz[2]^2) - sqrt(qx[1]^2+qy[1]^2+qz[1]^2))		//use bins of 1 pixel width 
@@ -817,7 +951,7 @@ Function V_fDoBinning_QxQy2D(folderStr,type)
 		
 	endif
 
-// add in set 3 and 4 (set 1 and 2already done)
+// add in set 3 and 4 (set 1 and 2 already done)
 	if(nSets == 4)
 		xDim=DimSize(inten3,0)
 		yDim=DimSize(inten3,1)

@@ -54,7 +54,7 @@ Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	Variable err=	V_LoadHDF5Data("","RAW")			// load the data into RawVSANS storage folder (why am I doing this?)
-	Print "Load err = "+num2str(err)
+//	Print "Load err = "+num2str(err)
 	if(!err)
 		String hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
 		String folder = StringFromList(0,hdfDF,".")

@@ -46,21 +46,33 @@ Function fPlotFrontPanels()
 
 	// space is allocated for all of the detectors and Q's on initialization
 	// calculate Qtot, qxqyqz arrays from geometry
-	V_CalculateQFrontPanels()
+	VC_CalculateQFrontPanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
-	WAVE det_FL = det_FL
-	WAVE det_FR = det_FR
-	WAVE det_FT = det_FT
-	WAVE det_FB = det_FB
+	String folderStr = "VCALC"
+	String detStr = ""
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:entry:instrument:detector_"	
+
+	detStr = "FL"
+	WAVE det_FL = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_FL = $(folderPath+instPath+detStr+":qTot_"+detStr)
 	
-	WAVE qTot_FL = qTot_FL
-	WAVE qTot_FR = qTot_FR
-	WAVE qTot_FT = qTot_FT
-	WAVE qTot_FB = qTot_FB
+	detStr = "FR"
+	WAVE det_FR = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_FR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	
+	detStr = "FT"
+	WAVE det_FT = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_FT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	
+	detStr = "FB"
+	WAVE det_FB = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_FB = $(folderPath+instPath+detStr+":qTot_"+detStr)
 
 	FillPanel_wModelData(det_FL,qTot_FL,"FL")
 	FillPanel_wModelData(det_FR,qTot_FR,"FR")
@@ -73,15 +85,15 @@ Function fPlotFrontPanels()
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
 	//TODO - make this a proper shadow - TB extent of the LR panels matters too, not just the LR separation
-	V_SetShadow_TopBottom("Front","FT")		// TODO: -- be sure the data folder is properly set (within the function...)
-	V_SetShadow_TopBottom("Front","FB")
+	VC_SetShadow_TopBottom("VCALC","FT")		// TODO: -- be sure the data folder is properly set (within the function...)
+	VC_SetShadow_TopBottom("VCALC","FB")
 	
 	// do the q-binning for each of the panels to get I(Q)
 	Execute "BinAllFrontPanels()"
 
 	// plot the results
 	Execute "Front_IQ_Graph()"
-	Execute "FrontPanels_AsQ()"
+	FrontPanels_AsQ()
 	
 	return(0)
 End
@@ -101,10 +113,17 @@ End
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
 //     when anything changes
 //
-Function V_CalculateQFrontPanels()
+// TODO
+// NOTE -- this is VCALC ONLY. data is not referenced for hdf here, and data is rescaled based on VCALC assumptions
+//
+Function VC_CalculateQFrontPanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
 	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_offset
+
+	String folderPath = "root:Packages:NIST:VSANS:VCALC"
+	String instPath = ":entry:entry:instrument:detector_"
+	String detStr=""
 
 // get the values from the panel + constants	
 	F_LR_sep = VCALC_getPanelSeparation("FLR")
@@ -124,12 +143,21 @@ Function V_CalculateQFrontPanels()
 
 	F_sdd_offset = VCALC_getTopBottomSDDOffset("FT") 	//T/B are 300 mm farther back  //TODO: make all detector parameters global, not hard-wired
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-	Wave det_FL,det_FR			// these are (48,128)		(nominal, may change)
-	Wave det_FT,det_FB			// these are (128,48)
+// detector data to bin
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+	Wave det_FL = $(folderPath+instPath+"FL"+":det_FL")
+	Wave det_FR = $(folderPath+instPath+"FR"+":det_FR")		// these are (48,128)		(nominal, may change)
 
-//FRONT/LEFT	
-	WAVE qTot_FL,qx_FL,qy_FL,qz_FL
+	Wave det_FT = $(folderPath+instPath+"FT"+":det_FT")
+	Wave det_FB = $(folderPath+instPath+"FB"+":det_FB")		// these are (128,48)
+
+//FRONT/LEFT
+	detStr = "FL"
+	Wave qTot_FL = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_FL = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_FL = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_FL = $(folderPath+instPath+detStr+":qz_"+detStr)	
+
 	qTot_FL = 0
 	qx_FL = 0
 	qy_FL = 0
@@ -146,7 +174,7 @@ Function V_CalculateQFrontPanels()
 	
 	xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2	
-	V_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for FL = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
@@ -158,8 +186,13 @@ Function V_CalculateQFrontPanels()
 //////////////////
 
 //FRONT/RIGHT
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-	WAVE qTot_FR,qx_FR,qy_FR,qz_FR
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+	detStr = "FR"
+	Wave qTot_FR = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_FR = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_FR = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_FR = $(folderPath+instPath+detStr+":qz_"+detStr)	
+	
 	qTot_FR = 0
 	qx_FR = 0
 	qy_FR = 0
@@ -174,15 +207,20 @@ Function V_CalculateQFrontPanels()
 	
 	xCtr = -(F_LR_sep/2/pixSizeX)-1		
 	yCtr = nPix_Y/2	
-	V_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for FR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FR),WaveMax(qx_FR),"", det_FR		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FR),WaveMax(qy_FR),"", det_FR
 /////////////////
 
 //FRONT/TOP
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-	WAVE qTot_FT,qx_FT,qy_FT,qz_FT
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+	detStr = "FT"
+	Wave qTot_FT = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_FT = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_FT = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_FT = $(folderPath+instPath+detStr+":qz_"+detStr)	
+
 	qTot_FT = 0
 	qx_FT = 0
 	qy_FT = 0
@@ -198,15 +236,20 @@ Function V_CalculateQFrontPanels()
 	xCtr = nPix_X/2
 	yCtr = -(F_TB_sep/2/pixSizeY)-1   
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	V_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for FT = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FT),WaveMax(qx_FT),"", det_FT		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FT),WaveMax(qy_FT),"", det_FT
 //////////////////
 
 //FRONT/BOTTOM
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-	WAVE qTot_FB,qx_FB,qy_FB,qz_FB
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+	detStr = "FB"
+	Wave qTot_FB = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_FB = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_FB = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_FB = $(folderPath+instPath+detStr+":qz_"+detStr)	
+
 	qTot_FB = 0
 	qx_FB = 0
 	qy_FB = 0
@@ -222,7 +265,7 @@ Function V_CalculateQFrontPanels()
 	xCtr = nPix_X/2
 	yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	V_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for FB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FB),WaveMax(qx_FB),"", det_FB		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FB),WaveMax(qy_FB),"", det_FB
@@ -238,7 +281,7 @@ End
 // and the outer edges of the detector are masked even if the TB panels extend past the TB of the LR panels.
 // ? skip the masking? but then I bin the detector data directly to get I(q), skipping the masked NaN values...
 //
-Function V_SetShadow_TopBottom(folderStr,type)
+Function VC_SetShadow_TopBottom(folderStr,type)
 	String folderStr,type
 	
 	Variable LR_sep,nPix,xCtr,ii,jj,numCol,pixSizeX,pixSizeY,nPix_X,nPix_Y
@@ -257,7 +300,7 @@ Function V_SetShadow_TopBottom(folderStr,type)
 	LR_sep /= 10
 
 //detector data
-	Wave det = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":det_"+type)
+	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:entry:instrument:detector_"+type+":det_"+type)
 
 // TODO - these are to be set from globals, not hard-wired
 // pixel sizes are in cm for T/B detector
@@ -289,10 +332,19 @@ end
 // they can be appended to the subwindow. If they are already there, the axes and coloring
 // are rescaled as needed
 //
-Window FrontPanels_AsQ() : Graph
+Function FrontPanels_AsQ()
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
-
+	String frontStr = "root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:"
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+	SetDataFolder $(frontStr+"detector_FB")
+	Wave det_FB = det_FB
+	SetDataFolder $(frontStr+"detector_FT")
+	Wave det_FT = det_FT
+	SetDataFolder $(frontStr+"detector_FL")
+	Wave det_FL = det_FL
+	SetDataFolder $(frontStr+"detector_FR")
+	Wave det_FR = det_FR
+	
 	CheckDisplayed /W=VCALC#Panels_Q det_FB
 	if(V_flag == 0)
 		AppendImage/W=VCALC#Panels_Q det_FB
@@ -345,36 +397,38 @@ EndMacro
 // 
 Proc BinAllFrontPanels()
 
-	SetDeltaQ("Front","FL")
-	SetDeltaQ("Front","FT")
+	SetDeltaQ("VCALC","FL")
+	SetDeltaQ("VCALC","FR")
+	SetDeltaQ("VCALC","FT")
+	SetDeltaQ("VCALC","FB")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
 	if(binType == 1)
-		V_BinQxQy_to_1D("","FL")
-		V_BinQxQy_to_1D("","FR")
-		V_BinQxQy_to_1D("","FT")
-		V_BinQxQy_to_1D("","FB")
+		VC_BinQxQy_to_1D("VCALC","FL")
+		VC_BinQxQy_to_1D("VCALC","FR")
+		VC_BinQxQy_to_1D("VCALC","FT")
+		VC_BinQxQy_to_1D("VCALC","FB")
 	endif
 	
 	if(binType == 2)	
-		V_BinQxQy_to_1D("","FLR")
-		V_BinQxQy_to_1D("","FTB")
+		VC_BinQxQy_to_1D("VCALC","FLR")
+		VC_BinQxQy_to_1D("VCALC","FTB")
 	endif
 
 	if(binType == 3)
-		V_BinQxQy_to_1D("","FLRTB")
+		VC_BinQxQy_to_1D("VCALC","FLRTB")
 	endif
 
 // TODO -- this is only a temporary fix for slit mode	
 	if(binType == 4)
 		/// this is for a tall, narrow slit mode	
-		V_fBinDetector_byRows("Front","FL")
-		V_fBinDetector_byRows("Front","FR")
-		V_fBinDetector_byRows("Front","FT")
-		V_fBinDetector_byRows("Front","FB")
+		VC_fBinDetector_byRows("VCALC","FL")
+		VC_fBinDetector_byRows("VCALC","FR")
+		VC_fBinDetector_byRows("VCALC","FT")
+		VC_fBinDetector_byRows("VCALC","FB")
 	endif
 		
 End
@@ -397,21 +451,33 @@ Function fPlotMiddlePanels()
 
 	// space is allocated for all of the detectors and Q's on initialization
 	// calculate Qtot, qxqyqz arrays from geometry
-	V_CalculateQMiddlePanels()
+	VC_CalculateQMiddlePanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
-	WAVE det_ML = det_ML
-	WAVE det_MR = det_MR
-	WAVE det_MT = det_MT
-	WAVE det_MB = det_MB
-	
-	WAVE qTot_ML = qTot_ML
-	WAVE qTot_MR = qTot_MR
-	WAVE qTot_MT = qTot_MT
-	WAVE qTot_MB = qTot_MB
+	String folderStr = "VCALC"
+	String detStr = ""
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:entry:instrument:detector_"	
+
+	detStr = "ML"
+	WAVE det_ML = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_ML = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MR"
+	WAVE det_MR = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_MR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MT"
+	WAVE det_MT = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_MT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MB"
+	WAVE det_MB = $(folderPath+instPath+detStr+":det_"+detStr)	
+	WAVE qTot_MB = $(folderPath+instPath+detStr+":qTot_"+detStr)
 
 	FillPanel_wModelData(det_ML,qTot_ML,"ML")
 	FillPanel_wModelData(det_MR,qTot_MR,"MR")
@@ -423,15 +489,15 @@ Function fPlotMiddlePanels()
 	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-	V_SetShadow_TopBottom("Middle","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
-	V_SetShadow_TopBottom("Middle","MB")
+	VC_SetShadow_TopBottom("VCALC","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
+	VC_SetShadow_TopBottom("VCALC","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
 	Execute "BinAllMiddlePanels()"
 
 	// plot the results
 	Execute "Middle_IQ_Graph()"
-	Execute "MiddlePanels_AsQ()"
+	MiddlePanels_AsQ()
 	
 	return(0)
 End
@@ -450,11 +516,16 @@ End
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
 //     when anything changes
 //
-Function V_CalculateQMiddlePanels()
+Function VC_CalculateQMiddlePanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
 	Variable M_LR_sep,M_TB_sep,M_offset, M_sdd_offset
 
+
+	String folderPath = "root:Packages:NIST:VSANS:VCALC"
+	String instPath = ":entry:entry:instrument:detector_"
+	String detStr=""
+	
 	M_LR_sep = VCALC_getPanelSeparation("MLR")
 	M_TB_sep = VCALC_getPanelSeparation("MTB")
 	M_offset = VCALC_getLateralOffset("ML")
@@ -471,12 +542,21 @@ Function V_CalculateQMiddlePanels()
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
 	M_sdd_offset = VCALC_getTopBottomSDDOffset("MT") 	//T/B are 30 cm farther back  //TODO: make all detector parameters global, not hard-wired
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-	Wave det_ML,det_MR			// these are (48,128)		nominal, may change
-	Wave det_MT,det_MB			// these are (128,48)
 
-//Middle/LEFT	
-	WAVE qTot_ML,qx_ML,qy_ML,qz_ML
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	Wave det_ML = $(folderPath+instPath+"ML"+":det_ML")
+	Wave det_MR = $(folderPath+instPath+"MR"+":det_MR")		// these are (48,128)		(nominal, may change)
+
+	Wave det_MT = $(folderPath+instPath+"MT"+":det_MT")
+	Wave det_MB = $(folderPath+instPath+"MB"+":det_MB")		// these are (128,48)
+
+//Middle/LEFT
+	detStr = "ML"
+	Wave qTot_ML = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_ML = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_ML = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_ML = $(folderPath+instPath+detStr+":qz_"+detStr)	
+	
 	qTot_ML = 0
 	qx_ML = 0
 	qy_ML = 0
@@ -491,7 +571,7 @@ Function V_CalculateQMiddlePanels()
 	
 	xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2	
-	V_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for ML = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
@@ -504,8 +584,13 @@ Function V_CalculateQMiddlePanels()
 //////////////////
 
 //Middle/RIGHT
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-	WAVE qTot_MR,qx_MR,qy_MR,qz_MR
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	detStr = "MR"
+	Wave qTot_MR = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_MR = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_MR = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_MR = $(folderPath+instPath+detStr+":qz_"+detStr)
+	
 	qTot_MR = 0
 	qx_MR = 0
 	qy_MR = 0
@@ -521,15 +606,20 @@ Function V_CalculateQMiddlePanels()
 	
 	xCtr = -(M_LR_sep/2/pixSizeX)-1		
 	yCtr = nPix_Y/2
-	V_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 //	Print "xy for MR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MR),WaveMax(qx_MR),"", det_MR		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MR),WaveMax(qy_MR),"", det_MR
 /////////////////
 
 //Middle/TOP
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-	WAVE qTot_MT,qx_MT,qy_MT,qz_MT
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	detStr = "MT"
+	Wave qTot_MT = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_MT = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_MT = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_MT = $(folderPath+instPath+detStr+":qz_"+detStr)
+
 	qTot_MT = 0
 	qx_MT = 0
 	qy_MT = 0
@@ -544,16 +634,21 @@ Function V_CalculateQMiddlePanels()
 	
 	xCtr = nPix_X/2
 	yCtr = -(M_TB_sep/2/pixSizeY)-1 
-		// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
-	V_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
+	VC_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for MT = ",xCtr,yCtr
-	SetScale/I x WaveMin(qx_MT),WaveMax(qx_MT),"", det_MT		//this sets the leMT and right ends of the data scaling
+	SetScale/I x WaveMin(qx_MT),WaveMax(qx_MT),"", det_MT		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MT),WaveMax(qy_MT),"", det_MT
 //////////////////
 
 //Middle/BOTTOM
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
-	WAVE qTot_MB,qx_MB,qy_MB,qz_MB
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	detStr = "MB"
+	Wave qTot_MB = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_MB = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_MB = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_MB = $(folderPath+instPath+detStr+":qz_"+detStr)
+
 	qTot_MB = 0
 	qx_MB = 0
 	qy_MB = 0
@@ -569,7 +664,7 @@ Function V_CalculateQMiddlePanels()
 	xCtr = nPix_X/2
 	yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	V_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
 //	Print "xy for MB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MB),WaveMax(qx_MB),"", det_MB		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MB),WaveMax(qy_MB),"", det_MB
@@ -581,15 +676,25 @@ Function V_CalculateQMiddlePanels()
 End
 
 
-Window MiddlePanels_AsQ() : Graph
+Function MiddlePanels_AsQ()
 //	DoWindow/F MiddlePanels_AsQ
 //	if(V_flag == 0)
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	String midStr = "root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:"
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+	SetDataFolder $(midStr+"detector_MB")
+	Wave det_MB = det_MB
+	SetDataFolder $(midStr+"detector_MT")
+	Wave det_MT = det_MT
+	SetDataFolder $(midStr+"detector_ML")
+	Wave det_ML = det_ML
+	SetDataFolder $(midStr+"detector_MR")
+	Wave det_MR = det_MR
 
 	CheckDisplayed /W=VCALC#Panels_Q det_MB
+	
 	if(V_flag == 0)
 		AppendImage/W=VCALC#Panels_Q det_MB
 		ModifyImage/W=VCALC#Panels_Q det_MB ctab= {*,*,ColdWarm,0}
@@ -642,36 +747,38 @@ EndMacro
 // 
 Proc BinAllMiddlePanels()
 
-	SetDeltaQ("Middle","ML")
-	SetDeltaQ("Middle","MT")
+	SetDeltaQ("VCALC","ML")
+	SetDeltaQ("VCALC","MR")
+	SetDeltaQ("VCALC","MT")
+	SetDeltaQ("VCALC","MB")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
 	if(binType == 1)
-		V_BinQxQy_to_1D("","ML")
-		V_BinQxQy_to_1D("","MR")
-		V_BinQxQy_to_1D("","MT")
-		V_BinQxQy_to_1D("","MB")
+		VC_BinQxQy_to_1D("VCALC","ML")
+		VC_BinQxQy_to_1D("VCALC","MR")
+		VC_BinQxQy_to_1D("VCALC","MT")
+		VC_BinQxQy_to_1D("VCALC","MB")
 	endif
 	
 	if(binType == 2)	
-		V_BinQxQy_to_1D("","MLR")
-		V_BinQxQy_to_1D("","MTB")
+		VC_BinQxQy_to_1D("VCALC","MLR")
+		VC_BinQxQy_to_1D("VCALC","MTB")
 	endif
 
 	if(binType == 3)
-		V_BinQxQy_to_1D("","MLRTB")
+		VC_BinQxQy_to_1D("VCALC","MLRTB")
 	endif
 	
 	// TODO -- this is only a temporary fix for slit mode	
 	if(binType == 4)
 		/// this is for a tall, narrow slit mode	
-		V_fBinDetector_byRows("Middle","ML")
-		V_fBinDetector_byRows("Middle","MR")
-		V_fBinDetector_byRows("Middle","MT")
-		V_fBinDetector_byRows("Middle","MB")
+		VC_fBinDetector_byRows("VCALC","ML")
+		VC_fBinDetector_byRows("VCALC","MR")
+		VC_fBinDetector_byRows("VCALC","MT")
+		VC_fBinDetector_byRows("VCALC","MB")
 	endif
 End
 
@@ -686,9 +793,9 @@ Window Middle_IQ_Graph() : Graph
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 	if(binType==1)
-		ClearIQIfDisplayed("MLRTB")
-		ClearIQIfDisplayed("MLR")
-		ClearIQIfDisplayed("MTB")
+		ClearIQIfDisplayed("VCALC","MLRTB")
+		ClearIQIfDisplayed("VCALC","MLR")
+		ClearIQIfDisplayed("VCALC","MTB")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_ML
@@ -710,11 +817,11 @@ Window Middle_IQ_Graph() : Graph
 	endif
 	
 	if(binType==2)
-		ClearIQIfDisplayed("MLRTB")
-		ClearIQIfDisplayed("MT")	
-		ClearIQIfDisplayed("ML")	
-		ClearIQIfDisplayed("MR")	
-		ClearIQIfDisplayed("MB")
+		ClearIQIfDisplayed("VCALC","MLRTB")
+		ClearIQIfDisplayed("VCALC","MT")	
+		ClearIQIfDisplayed("VCALC","ML")	
+		ClearIQIfDisplayed("VCALC","MR")	
+		ClearIQIfDisplayed("VCALC","MB")
 	
 
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -738,12 +845,12 @@ Window Middle_IQ_Graph() : Graph
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed("MLR")
-		ClearIQIfDisplayed("MTB")	
-		ClearIQIfDisplayed("MT")	
-		ClearIQIfDisplayed("ML")	
-		ClearIQIfDisplayed("MR")	
-		ClearIQIfDisplayed("MB")	
+		ClearIQIfDisplayed("VCALC","MLR")
+		ClearIQIfDisplayed("VCALC","MTB")	
+		ClearIQIfDisplayed("VCALC","MT")	
+		ClearIQIfDisplayed("VCALC","ML")	
+		ClearIQIfDisplayed("VCALC","MR")	
+		ClearIQIfDisplayed("VCALC","MB")	
 	
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_MLRTB
@@ -764,9 +871,9 @@ Window Middle_IQ_Graph() : Graph
 	endif
 
 	if(binType==4)		// slit aperture binning - Mt, ML, MR, MB are averaged
-		ClearIQIfDisplayed("MLRTB")
-		ClearIQIfDisplayed("MLR")
-		ClearIQIfDisplayed("MTB")
+		ClearIQIfDisplayed("VCALC","MLRTB")
+		ClearIQIfDisplayed("VCALC","MLR")
+		ClearIQIfDisplayed("VCALC","MTB")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_ML
@@ -804,11 +911,11 @@ Function fPlotBackPanels()
 
 	// space is allocated for all of the detectors and Q's on initialization
 	// calculate Qtot, qxqyqz arrays from geometry
-	V_CalculateQBackPanels()
+	VC_CalculateQBackPanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
 
 	WAVE det_B = det_B
 	WAVE qTot_B = qTot_B
@@ -820,8 +927,8 @@ Function fPlotBackPanels()
 	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-//	V_SetShadow_TopBottom("","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
-//	V_SetShadow_TopBottom("","MB")
+//	VC_SetShadow_TopBottom("","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
+//	VC_SetShadow_TopBottom("","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
 	Execute "BinAllBackPanels()"
@@ -848,22 +955,32 @@ End
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
 //     when anything changes
 //
-Function V_CalculateQBackPanels()
+Function VC_CalculateQBackPanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
 	Variable B_offset
 
+	String folderPath = "root:Packages:NIST:VSANS:VCALC"
+	String instPath = ":entry:entry:instrument:detector_"
+	String detStr = ""
+	
 	B_offset = VCALC_getLateralOffset("B")
 	
 	SDD = VCALC_getSDD("B")		//nominal SDD - need offset for TB
 	lam = VCALC_getWavelength()
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
-	Wave det_B			// this is (320,320)
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
+	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (320,320)
 
 //Back detector
-	WAVE qTot_B,qx_B,qy_B,qz_B
+//root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:qTot_B
+	detStr = "B"
+	Wave qTot_B = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx_B = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy_B = $(folderPath+instPath+detStr+":qy_"+detStr)	
+	Wave qz_B = $(folderPath+instPath+detStr+":qz_"+detStr)
+
 	qTot_B = 0
 	qx_B = 0
 	qy_B = 0
@@ -876,7 +993,7 @@ Function V_CalculateQBackPanels()
 	
 	xCtr = trunc( DimSize(det_B,0)/2 )		//should be 160
 	yCtr = trunc( DimSize(det_B,1)/2 )		//should be 160	
-	V_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
 	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
@@ -897,7 +1014,7 @@ Window BackPanels_AsQ() : Graph
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
 
 	CheckDisplayed /W=VCALC#Panels_Q det_B
 	if(V_flag == 0)
@@ -942,18 +1059,18 @@ EndMacro
 // 
 Proc BinAllBackPanels()
 
-	SetDeltaQ("Back","B")
+	SetDeltaQ("VCALC","B")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 	
-	V_BinQxQy_to_1D("","B")
+	VC_BinQxQy_to_1D("VCALC","B")
 
 // TODO -- this is only a temporary fix for slit mode	
 	if(binType == 4)
 		/// this is for a tall, narrow slit mode	
-		V_fBinDetector_byRows("Back","B")
+		VC_fBinDetector_byRows("VCALC","B")
 	endif	
 	
 End
@@ -961,7 +1078,7 @@ End
 ////////////to plot the back panel I(q)
 Window Back_IQ_Graph() : Graph
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
 
 	Variable binType
 	
@@ -1021,6 +1138,7 @@ EndMacro
 Window Front_IQ_Graph() : Graph
 
 	Variable binType
+	String fldr = "VCALC"
 	
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
@@ -1028,9 +1146,9 @@ Window Front_IQ_Graph() : Graph
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 	if(binType==1)
-		ClearIQIfDisplayed("FLRTB")
-		ClearIQIfDisplayed("FLR")
-		ClearIQIfDisplayed("FTB")
+		ClearIQIfDisplayed("VCALC","FLRTB")
+		ClearIQIfDisplayed("VCALC","FLR")
+		ClearIQIfDisplayed("VCALC","FTB")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FL
@@ -1055,11 +1173,11 @@ Window Front_IQ_Graph() : Graph
 	endif
 
 	if(binType==2)
-		ClearIQIfDisplayed("FLRTB")
-		ClearIQIfDisplayed("FT")	
-		ClearIQIfDisplayed("FL")	
-		ClearIQIfDisplayed("FR")	
-		ClearIQIfDisplayed("FB")
+		ClearIQIfDisplayed("VCALC","FLRTB")
+		ClearIQIfDisplayed("VCALC","FT")	
+		ClearIQIfDisplayed("VCALC","FL")	
+		ClearIQIfDisplayed("VCALC","FR")	
+		ClearIQIfDisplayed("VCALC","FB")
 	
 
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -1083,12 +1201,12 @@ Window Front_IQ_Graph() : Graph
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed("FLR")
-		ClearIQIfDisplayed("FTB")	
-		ClearIQIfDisplayed("FT")	
-		ClearIQIfDisplayed("FL")	
-		ClearIQIfDisplayed("FR")	
-		ClearIQIfDisplayed("FB")	
+		ClearIQIfDisplayed("VCALC","FLR")
+		ClearIQIfDisplayed("VCALC","FTB")	
+		ClearIQIfDisplayed("VCALC","FT")	
+		ClearIQIfDisplayed("VCALC","FL")	
+		ClearIQIfDisplayed("VCALC","FR")	
+		ClearIQIfDisplayed("VCALC","FB")	
 	
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FLRTB
@@ -1110,9 +1228,9 @@ Window Front_IQ_Graph() : Graph
 
 
 	if(binType==4)		//slit mode
-		ClearIQIfDisplayed("FLRTB")
-		ClearIQIfDisplayed("FLR")
-		ClearIQIfDisplayed("FTB")
+		ClearIQIfDisplayed("VCALC","FLRTB")
+		ClearIQIfDisplayed("VCALC","FLR")
+		ClearIQIfDisplayed("VCALC","FTB")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FL
@@ -1141,14 +1259,24 @@ Window Front_IQ_Graph() : Graph
 	
 EndMacro
 
-Function 	ClearIQIfDisplayed(type)
-	String type
-	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
-	CheckDisplayed/W=VCALC#Panels_IQ $("iBin_qxqy_"+type)
-	if(V_flag==1)
-		RemoveFromGraph/W=VCALC#Panels_IQ $("iBin_qxqy_"+type)
+
+Function ClearIQIfDisplayed(fldr,type)
+	String fldr,type
+
+	SetDataFolder $("root:Packages:NIST:VSANS:"+fldr)
+
+	if(cmpstr(fldr,"VCALC") == 0)
+		CheckDisplayed/W=VCALC#Panels_IQ $("iBin_qxqy_"+type)
+		if(V_flag==1)
+			RemoveFromGraph/W=VCALC#Panels_IQ $("iBin_qxqy_"+type)
+		endif
+	else
+		CheckDisplayed/W=V_1D_Data $("iBin_qxqy_"+type)
+		if(V_flag==1)
+			RemoveFromGraph/W=V_1D_Data $("iBin_qxqy_"+type)
+		endif
 	endif
+
 	SetDataFolder root:
 	
 	return(0)

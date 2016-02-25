@@ -15,7 +15,7 @@ Menu "VSANS"
 	"VSANS Help"
 	"-"
 	"Main Control Panel",DoWindow/F Main_VSANS_Panel
-	"Data Display",UpdateDisplayInformation("")
+	"Data Display",DoWindow/F VSANS_Data
 	"VCALC",VCALC_Panel()
 	"-"
 	Submenu "In Progress Panels"

@@ -20,7 +20,7 @@ Macro VCALC_Panel()
 	if(V_flag==0)
 	
 		//initialize space = folders, parameters, instrument constants, etc.
-		V_Initialize_Space()
+		VC_Initialize_Space()
 		
 		//open the panel
 		DrawVCALC_Panel()
@@ -45,9 +45,9 @@ Function FakeFrontMiddleSDDClick()
 	sva.eventCode = 3
 //	sva.dval = 0.3
 
-	V_BDet_SDD_SetVarProc(sva)		
-	V_MDet_SDD_SetVarProc(sva)
-	V_FDet_SDD_SetVarProc(sva)
+	VC_BDet_SDD_SetVarProc(sva)		
+	VC_MDet_SDD_SetVarProc(sva)
+	VC_FDet_SDD_SetVarProc(sva)
 
 	return(0)
 end
@@ -71,7 +71,7 @@ Proc DrawVCALC_Panel()
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
 	PopupMenu popup_a,mode=1,popvalue="Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 
-	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type",proc=V_RebinIQ_PopProc
+	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 	PopupMenu popup_b,mode=1,popvalue="One",value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
 	
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
@@ -144,7 +144,7 @@ Proc DrawVCALC_Panel()
 // tab(0), collimation - initially visible
 	Slider VCALCCtrl_0a,pos={223,324},size={200,45},limits={0,10,1},value= 1,vert= 0
 	SetVariable VCALCCtrl_0b,pos={25,294},size={120,15},title="wavelength"
-	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=V_Lambda_SetVarProc
+	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=VC_Lambda_SetVarProc
 	PopupMenu VCALCCtrl_0c,pos={26,257},size={150,20},title="monochromator"
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector",value= root:Packages:NIST:VSANS:VCALC:gMonochromatorType
 	PopupMenu VCALCCtrl_0d,pos={26,321},size={115,20},title="delta lambda"
@@ -165,39 +165,39 @@ Proc DrawVCALC_Panel()
 	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=V_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2a,limits={0,400,1},disable=1,value=_NUM:100
-	SetVariable VCALCCtrl_2b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=V_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2b,limits={0,400,1},disable=1,value=_NUM:100
 	SetVariable VCALCCtrl_2c,pos={205,290},size={150,15},title="Lateral Offset (mm)"
 	SetVariable VCALCCtrl_2c,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=V_FDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_FDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_2d,limits={1,8,0.1},disable=1	,value=_NUM:1.5
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=V_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3a,limits={0,400,1},disable=1,value=_NUM:120
-	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=V_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3b,limits={0,400,1},disable=1,value=_NUM:120
 	SetVariable VCALCCtrl_3c,pos={205,290},size={150,15},title="Lateral Offset (mm)"
 	SetVariable VCALCCtrl_3c,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=V_MDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_MDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_3d,limits={8,20,0.1},disable=1,value=_NUM:10
 	
 // tab(4) - Back detector panel
 	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (mm)"
 	SetVariable VCALCCtrl_4a,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (m)",proc=V_BDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_BDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_4b,limits={20,25,0.1},disable=1,value=_NUM:22
 	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
 	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
  	SetVariable VCALCCtrl_5a,pos={40,290},size={200,15},title="Neutrons on Sample (imon)"
-	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e10,proc=V_SimImon_SetVarProc
+	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e10,proc=VC_SimImon_SetVarProc
 	PopupMenu VCALCCtrl_5b,pos={40,260},size={180,20},title="Model Function",disable=1
-	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=V_SimModelFunc_PopProc
+	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
 End
 
@@ -296,7 +296,7 @@ End
 //
 // recalculate the detectors with a preset model function
 //
-Function V_SimModelFunc_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function VC_SimModelFunc_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum	// which item is currently selected (1-based)
 	String popStr		// contents of current popup item as string
@@ -311,7 +311,7 @@ End
 // recalculate the I(q) binning. no need to adjust model function or views
 // just rebin
 //
-Function V_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum	// which item is currently selected (1-based)
 	String popStr		// contents of current popup item as string
@@ -338,7 +338,7 @@ End
 //
 // setVar for the wavelength
 //
-Function V_Lambda_SetVarProc(sva) : SetVariableControl
+Function VC_Lambda_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -366,7 +366,7 @@ End
 //
 // setVar for the simulation monitor count
 //
-Function V_SimImon_SetVarProc(sva) : SetVariableControl
+Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -438,7 +438,7 @@ End
 // SDD for the Front detector. triggers a recalculation
 // of the intensity and a redraw of the banks
 //
-Function V_FDet_SDD_SetVarProc(sva) : SetVariableControl
+Function VC_FDet_SDD_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -475,7 +475,7 @@ End
 // SDD for the Middle detector. triggers a recalculation
 // of the intensity and a redraw of the banks
 //
-Function V_MDet_SDD_SetVarProc(sva) : SetVariableControl
+Function VC_MDet_SDD_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -512,7 +512,7 @@ End
 // SDD for the Back detector. triggers a recalculation
 // of the intensity and a redraw of the banks
 //
-Function V_BDet_SDD_SetVarProc(sva) : SetVariableControl
+Function VC_BDet_SDD_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -549,7 +549,7 @@ End
 // separation, either LR or TB of the front detector. triggers a recalculation
 // of the intensity and a redraw of the banks
 //
-Function V_FDet_LR_SetVarProc(sva) : SetVariableControl
+Function VC_FDet_LR_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -587,7 +587,7 @@ End
 // separation, either LR or TB of the middle detector. triggers a recalculation
 // of the intensity and a redraw of the banks
 //
-Function V_MDet_LR_SetVarProc(sva) : SetVariableControl
+Function VC_MDet_LR_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -632,18 +632,40 @@ End
 // -- but the space needs to be allocated.
 // -- parameters and constants need to be defined in their own space
 //
+// FEB 2016 -- changed the data folder space to mimic the HDF folder structure
+// so that the averaging routines could be re-used (along with everything else)
+// -- painful, but better in the long run
 //
-Proc V_Initialize_Space()
+// -- I have not re-named the detector arrays to all be "data" since that is very difficult to
+//   deal with on images. Added a global "gVCALC_Active" as a crude workaround as needed. Turn it
+//   on when needed and then immediately off
+//
+Proc VC_Initialize_Space()
 //
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:VSANS
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
-	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Front
-	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Middle
-	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Back
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL
+		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR
+
+//	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Front
+//	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Middle
+//	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Back
+
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 	
+	Variable/G root:Packages:NIST:VSANS:VCALC:gVCALC_Active = 1
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 	
@@ -728,35 +750,51 @@ Proc V_Initialize_Space()
 //
 // TODO: the detector dimensions need to be properly defined here...
 // FRONT
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
-	Make/O/D/N=(::gFront_L_nPix_X,::gFront_L_nPix_Y) det_FL
-	Make/O/D/N=(::gFront_R_nPix_X,::gFront_R_nPix_Y) det_FR
-	Make/O/D/N=(::gFront_T_nPix_X,::gFront_T_nPix_Y) det_FT
-	Make/O/D/N=(::gFront_B_nPix_X,::gFront_B_nPix_Y) det_FB
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y) det_FL
 	Duplicate/O det_FL qTot_FL,qx_FL,qy_FL,qz_FL
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y) det_FR
 	Duplicate/O det_FR qTot_FR,qx_FR,qy_FR,qz_FR
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y) det_FT
 	Duplicate/O det_FT qTot_FT,qx_FT,qy_FT,qz_FT
+	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y) det_FB
 	Duplicate/O det_FB qTot_FB,qx_FB,qy_FB,qz_FB
+
 
 //MIDDLE
 // TODO: the detector dimensions need to be properly defined here...
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
-	Make/O/D/N=(::gMiddle_L_nPix_X,::gMiddle_L_nPix_Y) det_ML
-	Make/O/D/N=(::gMiddle_R_nPix_X,::gMiddle_R_nPix_Y) det_MR
-	Make/O/D/N=(::gMiddle_T_nPix_X,::gMiddle_T_nPix_Y) det_MT
-	Make/O/D/N=(::gMiddle_B_nPix_X,::gMiddle_B_nPix_Y) det_MB
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y) det_ML
 	Duplicate/O det_ML qTot_ML,qx_ML,qy_ML,qz_ML
+	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y) det_MR
 	Duplicate/O det_MR qTot_MR,qx_MR,qy_MR,qz_MR
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y) det_MT
 	Duplicate/O det_MT qTot_MT,qx_MT,qy_MT,qz_MT
+	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y) det_MB
 	Duplicate/O det_MB qTot_MB,qx_MB,qy_MB,qz_MB
 
 // BACK
 // TODO: the detector dimensions need to be properly defined here...
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
-	
-	Make/O/D/N=(::gBack_nPix_X,::gBack_nPix_Y) det_B
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
+
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gBack_nPix_X,root:Packages:NIST:VSANS:VCALC:gBack_nPix_Y) det_B
 	Duplicate/O det_B qTot_B,qx_B,qy_B,qz_B
 
 

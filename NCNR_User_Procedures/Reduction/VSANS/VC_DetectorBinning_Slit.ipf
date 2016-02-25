@@ -27,21 +27,39 @@
 // seems backwards to call this "byRows", but this is the way that Igor indexes
 // LR banks are defined as (48,256) (n,m), sumRows gives sum w/ dimension (n x 1)
 //
-Function V_fBinDetector_byRows(folderStr,type)
-	String folderStr,type
+// updated to new folder structure Feb 2016
+// folderStr = RAW,SAM, VCALC or other
+// detStr is the panel identifer "ML", etc.
+Function VC_fBinDetector_byRows(folderStr,detStr)
+	String folderStr,detStr
 	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC	
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC	
 	
 	Variable pixSizeX,pixSizeY,delQx, delQy
-
-	WAVE inten = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":det_"+type)		// 2D detector data
-	WAVE/Z iErr = $("iErr_"+type)			// 2D errors -- may not exist, especially for simulation
-	Wave qTotal = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qTot_"+type)			// 2D q-values
-	Wave qx = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qx_"+type)
-	Wave qy = $("root:Packages:NIST:VSANS:VCALC:"+folderStr+":qy_"+type)
+	Variable isVCALC=0
 	
-	pixSizeX = VCALC_getPixSizeX(type)
-	pixSizeY = VCALC_getPixSizeY(type)
+	if(cmpstr(folderStr,"VCALC") == 0)
+		isVCALC = 1
+	endif
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:entry:instrument:detector_"	
+	
+	if(isVCALC)
+		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
+		WAVE/Z iErr = $("asdf_iErr_"+detStr)			// TODO: 2D errors -- may not exist, especially for simulation
+	else
+		Wave inten = V_getDetectorDataW(folderStr,detStr)
+		Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+	endif
+
+	Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+	Wave qx = $(folderPath+instPath+detStr+":qx_"+detStr)
+	Wave qy = $(folderPath+instPath+detStr+":qy_"+detStr)
+
+// ?? TODO not needed here?	
+//	pixSizeX = VCALC_getPixSizeX(detStr)
+//	pixSizeY = VCALC_getPixSizeY(detStr)
 	
 	delQx = abs(qx[0][0] - qx[1][0])
 	delQy = abs(qy[0][1] - qy[0][0])
@@ -51,21 +69,21 @@ Function V_fBinDetector_byRows(folderStr,type)
 	Variable nq,val
 	nq = DimSize(inten,0)		//nq == the number of columns (x dimension)
 	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC	
+//	SetDataFolder $(folderPath+instPath+detStr)	
 
-	Make/O/D/N=(nq)  $("iBin_qxqy_"+type)
-	Make/O/D/N=(nq)  $("qBin_qxqy_"+type)
-	Make/O/D/N=(nq)  $("nBin_qxqy_"+type)
-	Make/O/D/N=(nq)  $("iBin2_qxqy_"+type)
-	Make/O/D/N=(nq)  $("eBin_qxqy_"+type)
-	Make/O/D/N=(nq)  $("eBin2D_qxqy_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"nBin_qxqy_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin2_qxqy_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin_qxqy_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin2D_qxqy_"+detStr)
 	
-	Wave iBin_qxqy = $("iBin_qxqy_"+type)
-	Wave qBin_qxqy = $("qBin_qxqy_"+type)
-	Wave nBin_qxqy = $("nBin_qxqy_"+type)
-	Wave iBin2_qxqy = $("iBin2_qxqy_"+type)
-	Wave eBin_qxqy = $("eBin_qxqy_"+type)
-	Wave eBin2D_qxqy = $("eBin2D_qxqy_"+type)
+	Wave iBin_qxqy = $(folderPath+":"+"iBin_qxqy_"+detStr)
+	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy_"+detStr)
+	Wave nBin_qxqy = $(folderPath+":"+"nBin_qxqy_"+detStr)
+	Wave iBin2_qxqy = $(folderPath+":"+"iBin2_qxqy_"+detStr)
+	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy_"+detStr)
+	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy_"+detStr)
 
 // sum the rows	
 	MatrixOp/O iBin_qxqy = sumRows(inten)	//automatically generates the destination
@@ -95,6 +113,8 @@ Function V_fBinDetector_byRows(folderStr,type)
 End
 
 
+// TODO -- update to new folder structure
+// unused -- update if necessary
 Proc CopyIQWaves()
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC	
@@ -123,6 +143,8 @@ Proc CopyIQWaves()
 	SetDataFolder root:
 End
 
+// TODO -- update to new folder structure
+// unused -- update if necessary
 Window slit_vs_pin_graph() : Graph
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)

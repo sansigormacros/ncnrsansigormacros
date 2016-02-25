@@ -215,6 +215,7 @@ Function VCALC_getPixSizeX(type)
 			
 		default:							
 			Print "Detector type mismatch in 	V_getPixSizeX(type)"
+			setDataFolder root:
 			return(NaN)
 	endswitch
 
@@ -262,6 +263,7 @@ Function VCALC_getPixSizeY(type)
 			
 		default:							
 			Print "Detector type mismatch in 	V_getPixSizeY(type)"
+			SetDataFolder root:
 			return(NaN)
 	endswitch
 
@@ -310,6 +312,7 @@ Function VCALC_get_nPix_X(type)
 			
 		default:							
 			Print "Detector type mismatch in 	VCALC_get_nPix_X(type)"
+			SetDataFolder root:
 			return(NaN)
 	endswitch
 
@@ -357,10 +360,11 @@ Function VCALC_get_nPix_Y(type)
 			
 		default:							
 			Print "Detector type mismatch in 	VCALC_get_nPix_Y(type)"
+			SetDataFolder root:
 			return(NaN)
 	endswitch
 
-	setDataFolder root:
+	SetDataFolder root:
 		
 	return(nPix)
 end
@@ -378,6 +382,7 @@ Function VCALC_getTopBottomSDDOffset(type)
 	strswitch(type)	
 		case "FL":
 		case "FR":
+			SetDataFolder root:
 			return(0)		
 			break		//already zero, do nothing
 		case "FT":
@@ -387,6 +392,7 @@ Function VCALC_getTopBottomSDDOffset(type)
 			
 		case "ML":
 		case "MR":
+			SetDataFolder root:
 			return(0)
 			break		//already zero, do nothing
 		case "MT":
@@ -395,6 +401,7 @@ Function VCALC_getTopBottomSDDOffset(type)
 			break	
 						
 		case "B":
+			SetDataFolder root:
 			return(0)
 			break		//already zero, do nothing
 			

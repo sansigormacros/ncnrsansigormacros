@@ -381,7 +381,7 @@ Function Raw_to_work(newType)
 	//     so that they are DP, not integer
 	// TODO
 	// -- currently only redimensioning the data and linear_data_error - What else???
-	//
+	// -- ?? some of this is done at load time for RAW data
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
@@ -399,12 +399,12 @@ Function Raw_to_work(newType)
 		// need extra check here for file existence
 		// if not in DIV folder, load.
 		// if unable to load, skip correction and report error (Alert?) (Ask to Load?)
-		
+		Print "Doing DIV correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Print "Doing DIV correction for "+ detStr
+			
 			DIVCorrection(w,w_err,detStr,newType)
 		endfor
 	else
@@ -412,31 +412,52 @@ Function Raw_to_work(newType)
 	endif
 	
 	// (2) non-linear correction	
+	// TODO:
+	// -- currently, the "B" detector is skipped
+	// -- document what is generated here:
+	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the mm? position of the pixel)
+	// -- still not sure whether to duplicate these calculations as the RAW data is loaded. It would allow the RAW
+	//    data to be properly displayed, but without all of the (complete) set of corrections
+	// * the corrected distances are calculated into arrays, but nothing is done with them yet
+	// * there is enough information now to calculate the q-arrays -other corrections modify the data
 	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 	// generate a distance matrix for each of the detectors
 	if (gDoNonLinearCor == 1)
-		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-			detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Print "Doing Non-linear correction"// for "+ detStr
+		for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListNoB, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
-			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+//			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_calib = V_getDetTube_spatialCalib(fname,detStr)
-			Print "Doing Non-linear correction for "+ detStr
-//			NonLinearCorrection(fill this in)
+			Variable tube_width = V_getDet_tubeWidth(fname,detStr)
+			NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
+			
+			// (2.5) Calculate the q-values
+			// calculating q-values can't be done unless the non-linear corrections are calculated
+			// so go ahead and put it in this loop.
+			// TODO : 
+			// -- make sure that everything is present before the calculation
+			// -- beam center must be properly defined in terms of real distance
+			// -- distances/zero location/ etc. must be clearly documented for each detector
+			//	** this assumes that NonLinearCorrection() has been run to generate data_RealDistX and Y
+			// ** this routine Makes the waves QTot, qx, qy, qz in each detector folder.
+			//
+			V_Detector_CalcQVals(fname,detStr,destPath)
 			
 		endfor
 	else
 		Print "Non-linear correction not done"
 	endif
-	
+
 	// (3) solid angle correction
 	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
 	if (gDoSolidAngleCor == 1)
+		Print "Doing Solid Angle correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
-			Print "Doing Solid Angle correction for "+ detStr
 //			SolidAngleCorrection(fill this in)
 			
 		endfor
@@ -452,12 +473,12 @@ Function Raw_to_work(newType)
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
 	ctTime = V_getCount_time(fname)
 	if (gDoDeadTimeCor == 1)
+		Print "Doing DeadTime correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
-			Print "Doing DeadTime correction for "+ detStr
 //			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
 				//deadtime corrections
 //	itim = integersread[2]
@@ -487,12 +508,12 @@ Function Raw_to_work(newType)
 	// (6) angle dependent transmission correction
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
+		Print "Doing Large-angle transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_dt = V_getDetector_deadtime(fname,detStr)
-			Print "Doing Large-angle transmission correction for "+ detStr
 //			TransmissionCorrection(fill this in)
 			
 		endfor
@@ -504,13 +525,14 @@ Function Raw_to_work(newType)
 	// TODO -- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
 	// TODO -- what do I really need to save?
+	Print "Doing monitor normalization"// for "+ detStr
+
 	defmon=1e8			//default monitor counts
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
 		Wave w_err = V_getDetectorDataErrW(fname,detStr)
 		Variable monCt = V_getBeamMonNormData(fname)
-		Print "Doing monitor normalization for "+ detStr
 //			MonitorNormalization(fill this in)
 	//scale the data to the default montor counts
 	

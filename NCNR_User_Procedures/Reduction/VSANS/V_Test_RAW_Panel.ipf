@@ -90,7 +90,7 @@ End
 Window VSANS_DataPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(37,45,1038,719) /N=VSANS_Data
-	ShowTools/A
+//	ShowTools/A
 	ModifyPanel cbRGB=(65535,60076,49151)
 
 	String curFolder = root:Packages:NIST:VSANS:Globals:gCurDispType
@@ -221,6 +221,10 @@ Function VSANSDataHook(s)
 			
 		case 3:		//mouse down
 //			Print "mouse down"
+//
+// TODO (Way in the future -- I could make the small graphs into "buttons" by responding to a "mouse up" (not down)
+//    that hits in one of the small graph areas, and treat that as a click on that tab
+//
 			break
 			
 		case 4:		// mouse moved
@@ -334,10 +338,12 @@ Function VSANSDataHook(s)
 					lam = V_getVSWavelength(gCurDispType)		//A
 					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
 					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
-					
-					gQQ = V_CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQX = V_CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQY = V_CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+//
+// TODO: these q-values ignore the non-linear corrections!!!
+// -- What can I do about this?					
+					gQQ = VC_CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQX = VC_CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQY = VC_CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 
 					ii = -1		//look no further, set ii to bad value to exit the for loop
 				endif	//end if(mouse is over a detector panel)
@@ -380,6 +386,9 @@ Function VDataTabProc(tca) : TabControl
 			SetDataFolder root:
 			
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
+// make sure log scaling is correct			
+			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
+			
 			
 			//************
 			// -- can I use "ReplaceWave/W=VSANS_Data#det_panelsB allinCDF" to do this?
@@ -410,6 +419,11 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,545,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
+
+				ModifyImage/W=VSANS_Data#det_panelsB ''#0 log=State
+				
+				// make the plot square
+				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
 				
 				SetActiveSubWindow VSANS_Data#det_panelsB
 				SetDataFolder root:
@@ -449,7 +463,15 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50,185,545,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
+
+				ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=State
+				ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=State
+				ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=State
+				ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=State
 				
+				// make the plot square
+				ModifyGraph/W=VSANS_Data#det_panelsM width={Aspect,1}
+							
 				SetActiveSubWindow VSANS_Data#det_panelsM
 				SetDataFolder root:
 			endif
@@ -489,27 +511,18 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				
+				ModifyImage/W=VSANS_Data#det_panelsF ''#0 log=State
+				ModifyImage/W=VSANS_Data#det_panelsF ''#1 log=State
+				ModifyImage/W=VSANS_Data#det_panelsF ''#2 log=State
+				ModifyImage/W=VSANS_Data#det_panelsF ''#3 log=State
+
+				// make the plot square
+				ModifyGraph/W=VSANS_Data#det_panelsF width={Aspect,1}				
+	
 				SetActiveSubWindow VSANS_Data#det_panelsF
 				SetDataFolder root:
 			endif
 
-// make sure log scaling is correct			
-			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
-			
-			// on the front:			
-			ModifyImage/W=VSANS_Data#det_panelsF ''#0 log=State
-			ModifyImage/W=VSANS_Data#det_panelsF ''#1 log=State
-			ModifyImage/W=VSANS_Data#det_panelsF ''#2 log=State
-			ModifyImage/W=VSANS_Data#det_panelsF ''#3 log=State
-			//on the middle:
-			ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=State
-			ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=State
-			ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=State
-			ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=State
-			// on the back:
-			ModifyImage/W=VSANS_Data#det_panelsB ''#0 log=State
-////
-	
 						
 			break
 		case -1: // control being killed
@@ -629,6 +642,9 @@ Function IvsQPanelButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			
+			V_PlotData_Panel()
+			
 			break
 		case -1: // control being killed
 			break
@@ -742,6 +758,7 @@ Function BeamCtrButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			V_FindBeamCenter()
 			break
 		case -1: // control being killed
 			break

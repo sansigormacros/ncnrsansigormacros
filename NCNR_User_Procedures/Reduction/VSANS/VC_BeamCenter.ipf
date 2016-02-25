@@ -12,6 +12,12 @@
 // -- graphically show the beam center / radius of where it is in relation to the panel
 
 
+Function V_FindBeamCenter()
+	DoWindow/F PanelFit
+	if(V_flag==0)
+		Execute "DetectorPanelFit()"
+	endif
+End
 //
 // TODO - may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
@@ -26,7 +32,7 @@ Macro DetectorPanelFit() : Panel
 
 	NewPanel /W=(662,418,1586,960)/N=PanelFit/K=1
 //	ShowTools/A
-		
+	
 	PopupMenu popup_0,pos={20,20},size={109,20},proc=SetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
@@ -37,7 +43,7 @@ Macro DetectorPanelFit() : Panel
 	Button button_2,pos={744,20},size={80,20},proc=DetFitHelpButtonProc,title="Help"
 
 
-	duplicate/O root:Packages:NIST:VSANS:VCALC:Front:det_FL curDispPanel
+	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL curDispPanel
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 
@@ -154,28 +160,28 @@ Function DrawDetPanel(str)
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
 			break
 		case "FR":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
 			break
 		case "ML":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
 			break
 		case "MR":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
 			break	
 
 		case "FT":
@@ -183,28 +189,28 @@ Function DrawDetPanel(str)
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
 			break
 		case "FB":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
 			break
 		case "MT":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
 			break
 		case "MB":
 			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X
 			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y
 			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelX
 			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelY
-			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
 			break	
 			
 		case "B":
@@ -214,9 +220,8 @@ Function DrawDetPanel(str)
 			return(0)		//just exit
 	endswitch
 	
+	wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
 
-	
-	
 	Variable scale = 5
 	
 	// common values (panel position, etc)
@@ -394,3 +399,77 @@ Function DetFitHelpButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
+// TODO
+// -- some of this is hard-wired in
+// -- this is still alll in terms of pixels, which still may not be what I want
+// -- the x-scale of the T/B panels is artificially compressed to "fake" 4mm per pixel in x-direction
+//
+Function V_RescaleToBeamCenter(folderStr,detStr,xCtr,yCtr)
+	String folderStr,detStr
+	Variable xCtr,yCtr
+	
+	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:entry:instrument:detector_"+detStr+":data")
+	
+	Variable nPix = 128
+	Variable nTubes = 48
+	
+	strswitch(detStr)	// string switch
+		case "MT":		// top panels
+		case "FT":
+//			SetScale/I x -xCtr,npix-xCtr,"",w
+			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w		// fake 4mm by compressing the scale
+			SetScale/I y -yCtr,nTubes-yCtr,"",w
+			break						// exit from switch
+		case "MB":		// bottom panels
+		case "FB":
+//			SetScale/I x -xCtr,npix-xCtr,"",w
+			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w
+			SetScale/I y -yCtr,nTubes-yCtr,"",w
+			break						// exit from switch
+		case "ML":		// left panels
+		case "FL":
+			SetScale/I x -xCtr,nTubes-xCtr,"",w
+			SetScale/I y -yCtr,npix-yCtr,"",w
+			break						// exit from switch
+		case "MR":		// Right panels
+		case "FR":
+			SetScale/I x -xCtr,nTubes-xCtr,"",w
+			SetScale/I y -yCtr,npix-yCtr,"",w
+			break						// exit from switch
+					
+		default:							// optional default expression executed
+			Print "Error in V_RescaleToBeamCenter()"
+	endswitch
+	
+	return(0)
+end
+
+Function V_RestorePanels()
+
+	V_RescaleToBeamCenter("RAW","MB",64,55)
+	V_RescaleToBeamCenter("RAW","MT",64,-8.7)
+	V_RescaleToBeamCenter("RAW","MR",-8.1,64)
+	V_RescaleToBeamCenter("RAW","ML",55,64)
+	V_RescaleToBeamCenter("RAW","FB",64,55)
+	V_RescaleToBeamCenter("RAW","FT",64,-8.7)
+	V_RescaleToBeamCenter("RAW","FR",-8.1,64)
+	V_RescaleToBeamCenter("RAW","FL",55,64)
+
+
+	return(0)
+end
+
+Function V_SpreadOutPanels()
+
+	V_RescaleToBeamCenter("RAW","MB",64,78)
+	V_RescaleToBeamCenter("RAW","MT",64,-30)
+	V_RescaleToBeamCenter("RAW","MR",-30,64)
+	V_RescaleToBeamCenter("RAW","ML",78,64)
+	V_RescaleToBeamCenter("RAW","FB",64,78)
+	V_RescaleToBeamCenter("RAW","FT",64,-30)
+	V_RescaleToBeamCenter("RAW","FR",-30,64)
+	V_RescaleToBeamCenter("RAW","FL",78,64)
+	return(0)
+end

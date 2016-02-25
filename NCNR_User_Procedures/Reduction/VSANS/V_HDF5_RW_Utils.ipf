@@ -39,49 +39,95 @@ End
 //    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
 // TODO: -- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
-//
+//			-- as dumb as it is -- do I just leave it now, or break everything. ont the plus side, removing the extra entry
+//          layer may catch a lot of the hard-wired junk that is present...
 Function V_LoadHDF5Data(file,folder)
 	String file,folder
 
-	String base_name
+	String base_name,detStr
+	String destPath
+	Variable ii
+	
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
-//	SetDataFolder root:
+	destPath = "root:Packages:NIST:VSANS:"+folder
+
 	if(cmpstr(folder,"RAW")==0)
 		base_name="entry"
+//		base_name="RAW"		// this acts as a flag to remove the duplicate "entry" level
 	else
-		base_name="entry"		//TODO -- remove this / change behavior in V_LoadHDF5_NoAtt()
+	// null will use the file name as the top level (above entry)
+		base_name=""		//TODO -- remove this / change behavior in V_LoadHDF5_NoAtt()
 	endif
 	
 	Variable err= V_LoadHDF5_NoAtt(file,base_name)	// reads into current folder
 	
 	// if RAW data, then generate the errors and linear data copy
 	// do this 9x
+	// then do any "massaging" needed to redimension, fake values, etc.
+	//
 	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:entry:instrument:" 
+
 	if(cmpstr(folder,"RAW")==0)
-		V_MakeDataError(tmpStr+"detector_B")
-		V_MakeDataError(tmpStr+"detector_MB")
-		V_MakeDataError(tmpStr+"detector_MT")
-		V_MakeDataError(tmpStr+"detector_ML")
-		V_MakeDataError(tmpStr+"detector_MR")
-		V_MakeDataError(tmpStr+"detector_FB")
-		V_MakeDataError(tmpStr+"detector_FT")
-		V_MakeDataError(tmpStr+"detector_FL")
-		V_MakeDataError(tmpStr+"detector_FR")
-
-// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
+	
+		// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
 		V_RedimFakeData()
-//
-// TODO -- for the "real" data, may need a step in here to convert integer detector data to DP, or I'll
-//          get really odd results from the calculations, and may not even notice.
 
-// TODO
-//  -- get rid of these fake calibration waves as "real" ones are filled in
+		// makes data error and linear copy -- DP waves if V_RedimFakeData() called above 
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			V_MakeDataError(tmpStr+"detector_"+detStr)	
+		endfor
+
+
+		// TODO -- for the "real" data, may need a step in here to convert integer detector data to DP, or I'll
+		//          get really odd results from the calculations, and may not even notice.
+		// !!!! Where do I actually do this? - this is currently done in Raw_to_work()
+		// -- is is better to do here, right as the data is loaded?
+		// TODO -- some of this is done in V_RedimFakeData() above - which will disappear once I get real data
+
+	
+		// TODO
+		//  -- get rid of these fake calibration waves as "real" ones are filled in by NICE
 		Execute "MakeFakeCalibrationWaves()"
-//		fMakeFakeCalibrationWaves()		//skips the alert
-		
+		//		fMakeFakeCalibrationWaves()		//skips the alert
+
+
+		// TODO -- do I want to calculate the nonlinear x/y arrays and the q-values here?
+		// -- otherwise the mouse-over doesn't calculate the correct Q_values
+		// the display currently is not shifted or altered at all to account for the non-linearity
+		// or for display in q-values -- so why bother with this?
+		NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
+		// generate a distance matrix for each of the detectors
+		if (gDoNonLinearCor == 1)
+			Print "Calculating Non-linear correction at RAW load time"// for "+ detStr
+			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave w = V_getDetectorDataW(folder,detStr)
+	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				Wave w_calib = V_getDetTube_spatialCalib(folder,detStr)
+				Variable tube_width = V_getDet_tubeWidth(folder,detStr)
+				NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
 				
-/// END FAKE DATA CORRECTIONS		
-		
+				// (2.5) Calculate the q-values
+				// calculating q-values can't be done unless the non-linear corrections are calculated
+				// so go ahead and put it in this loop.
+				// TODO : 
+				// -- make sure that everything is present before the calculation
+				// -- beam center must be properly defined in terms of real distance
+				// -- distances/zero location/ etc. must be clearly documented for each detector
+				//	** this assumes that NonLinearCorrection() has been run to generate data_RealDistX and Y
+				// ** this routine Makes the waves QTot, qx, qy, qz in each detector folder.
+				//
+				V_Detector_CalcQVals(folder,detStr,destPath)
+				
+			endfor
+		else
+			Print "Non-linear correction not done"
+		endif
+					
+					
+		/// END FAKE DATA CORRECTIONS		
+			
 	endif
 	
 	SetDataFolder root:
@@ -89,82 +135,130 @@ Function V_LoadHDF5Data(file,folder)
 End
 
 //
-// TODO -- this is all FAKED since all the data arrays are (1,128,128)
-// I'm intentionally using the wrong number of pixels so I'm more likely to go back and get rid of this later.
+// TODO -- this is all FAKED since all the data arrays are written to hdf as (1,128,128)
+//  -- try to fill in the bits from VCALC, if it exists (or force it)
 //
 // the SetScale parts may be useful later.
 //
 Function V_RedimFakeData()
 	
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
-		Wave det_B=data
-		Redimension/N=(320,320)/E=1 det_B
-		det_B = p+q+2
-		
-		Variable ctr=20,npix=128
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
-		Wave det_MT=data
-		Redimension/N=(npix,48)/E=1 det_MT		
-		SetScale/I x -npix/2,npix/2,"",det_MT
-		SetScale/I y ctr,ctr+48,"",det_MT
-//		det_mt[][20] = 50
-	det_MT *= 10
-	det_MT += 2
-
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
-		Wave det_MB=data
-		Redimension/N=(npix,48)/E=1 det_MB		
-		SetScale/I x -npix/2,npix/2,"",det_MB
-		SetScale/I y -ctr,-ctr-48,"",det_MB
-	det_MB *= 5
-	det_MB += 2
-		
-		ctr=30
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
-		Wave det_ML=data
-		Redimension/N=(48,npix)/E=1 det_ML		
-		SetScale/I x -ctr-48,-ctr,"",det_ML
-		SetScale/I y -npix/2,npix/2,"",det_ML
-	det_ML *= 2
-	det_ML += 2
+	// check for fake data in VCALC folder...
+	wave/Z tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
+	if(WaveExists(tmpw) == 0)
+		Execute "VCALC_Panel()"
+	endif
 	
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
-		Wave det_MR=data
-		Redimension/N=(48,npix)/E=1 det_MR		
-		SetScale/I x ctr,ctr+48,"",det_MR
-		SetScale/I y -npix/2,npix/2,"",det_MR
-	det_MR +=2
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
+	Wave det_B=data
+	Redimension/N=(320,320)/E=1 det_B	
+	Redimension/D det_B
+//	det_B = p+q+2
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
+	det_B=tmpw
+	det_B += 2
+			
+	Variable ctr=20,npix=128
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
+	Wave det_MT=data
+	Redimension/N=(npix,48)/E=1 det_MT
+	Redimension/D det_MT		
+	SetScale/I x -npix/2,npix/2,"",det_MT
+	SetScale/I y ctr,ctr+48,"",det_MT
+//	det_MT *= 10
+//	det_MT += 2
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT:det_MT"
+	det_MT=tmpw
+	det_MT += 2
+	
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
+	Wave det_MB=data
+	Redimension/N=(npix,48)/E=1 det_MB		
+	Redimension/D det_MB
+	SetScale/I x -npix/2,npix/2,"",det_MB
+	SetScale/I y -ctr-48,-ctr,"",det_MB
+//	det_MB *= 5
+//	det_MB += 2
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB:det_MB"
+	det_MB=tmpw
+	det_MB += 2
+	
+	ctr=30
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
+	Wave det_ML=data
+	Redimension/N=(48,npix)/E=1 det_ML		
+	Redimension/D det_ML
+	SetScale/I x -ctr-48,-ctr,"",det_ML
+	SetScale/I y -npix/2,npix/2,"",det_ML
+//	det_ML *= 2
+//	det_ML += 2
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML:det_ML"
+	det_ML=tmpw
+	det_ML += 2
 		
-		ctr=30
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
-		Wave det_FT=data
-		Redimension/N=(npix,48)/E=1 det_FT		
-		SetScale/I x -npix/2,npix/2,"",det_FT
-		SetScale/I y ctr,ctr+48,"",det_FT
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
+	Wave det_MR=data
+	Redimension/N=(48,npix)/E=1 det_MR		
+	Redimension/D det_MR
+	SetScale/I x ctr,ctr+48,"",det_MR
+	SetScale/I y -npix/2,npix/2,"",det_MR
+//	det_MR +=2
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR:det_MR"
+	det_MR=tmpw
+	det_MR += 2
+	
+	ctr=30
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
+	Wave det_FT=data
+	Redimension/N=(npix,48)/E=1 det_FT		
+	Redimension/D det_FT
+	SetScale/I x -npix/2,npix/2,"",det_FT
+	SetScale/I y ctr,ctr+48,"",det_FT
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT:det_FT"
+	det_FT=tmpw
 
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
-		Wave det_FB=data
-		Redimension/N=(npix,48)/E=1 det_FB		
-		SetScale/I x -npix/2,npix/2,"",det_FB
-		SetScale/I y -ctr,-ctr-48,"",det_FB
-		
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
-		Wave det_FL=data
-		Redimension/N=(48,npix)/E=1 det_FL		
-		SetScale/I x -ctr-48,-ctr,"",det_FL
-		SetScale/I y -npix/2,npix/2,"",det_FL
-		
-		SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
-		Wave det_FR=data
-		Redimension/N=(48,npix)/E=1 det_FR		
-		SetScale/I x ctr,ctr+48,"",det_FR
-		SetScale/I y -npix/2,npix/2,"",det_FR
-
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
+	Wave det_FB=data
+	Redimension/N=(npix,48)/E=1 det_FB		
+	Redimension/D det_FB
+	SetScale/I x -npix/2,npix/2,"",det_FB
+	SetScale/I y -ctr-48,-ctr,"",det_FB
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB:det_FB"
+	det_FB=tmpw
+			
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
+	Wave det_FL=data
+	Redimension/N=(48,npix)/E=1 det_FL		
+	Redimension/D det_FL
+	SetScale/I x -ctr-48,-ctr,"",det_FL
+	SetScale/I y -npix/2,npix/2,"",det_FL
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL"
+	det_FL=tmpw
+	
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
+	Wave det_FR=data
+	Redimension/N=(48,npix)/E=1 det_FR		
+	Redimension/D det_FR
+	SetScale/I x ctr,ctr+48,"",det_FR
+	SetScale/I y -npix/2,npix/2,"",det_FR
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR:det_FR"
+	det_FR=tmpw
+	
 // get rid of zeros
-		det_FL += 2
-		det_FR += 2
-		det_FT += 2
-		det_FB += 2
+	det_FL += 2
+	det_FR += 2
+	det_FT += 2
+	det_FB += 2
+
+V_RescaleToBeamCenter("RAW","MB",64,55)
+V_RescaleToBeamCenter("RAW","MT",64,-8.7)
+V_RescaleToBeamCenter("RAW","MR",-8.1,64)
+V_RescaleToBeamCenter("RAW","ML",55,64)
+V_RescaleToBeamCenter("RAW","FL",55,64)
+V_RescaleToBeamCenter("RAW","FR",-8.1,64)
+V_RescaleToBeamCenter("RAW","FT",64,-8.7)
+V_RescaleToBeamCenter("RAW","FB",64,55)
+
+
 
 	return(0)
 End
@@ -216,6 +310,9 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	//   read the data (too bad that HDF5LoadGroup does not read the attributes)
 	if(cmpstr(base_name,"") == 0)
 		base_name = StringFromList(0,FileName,".")
+	endif
+	if(cmpstr(base_name,"RAW") == 0)
+		base_name = ""
 	endif
 	//base_name = "entry"
 	

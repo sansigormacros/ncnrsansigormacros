@@ -31,7 +31,7 @@ Proc PlotBroadPeak_Pix2D(xDim,yDim)
 	Prompt xDim "Enter X dimension: "
 	Prompt yDim "Enter Y dimension: "
 		
-	Make/O/D coef_PeakPix2D = {10, 3, 10, 0.3, 10, 2, 0.1, 8,4, 100, 100}
+	Make/O/D coef_PeakPix2D = {10, 3, 10, 0.3, 10, 2, 0.1, 8, 8, 100, 100}
 //	Make/O/D tmp_Pix2D = 	{10, 3, 10, 0.3, 10, 2, 0.1}		//without the pixel ctrs					
 	make/o/t parameters_PeakPix2D = {"Porod Scale", "Porod Exponent","Lorentzian Scale","Lor Screening Length","Peak position","Lorentzian Exponent","Bgd [1/cm]", "xPix size (mm)","yPix size (mm)", "xCtr (pixels)", "yCtr (pixels)"}		
 	Edit parameters_PeakPix2D,coef_PeakPix2D				
