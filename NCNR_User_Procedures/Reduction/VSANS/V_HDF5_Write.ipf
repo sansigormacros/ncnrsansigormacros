@@ -21,7 +21,7 @@
 
 //////////////////////////////////////////////
 //////////////////////////////////
-// for TESTING of the get functions - to quickly access and se if there are errors
+// for TESTING of the get functions - to quickly access and see if there are errors
 //
 // -- not sure how to test the string functions -- can't seem to get a FUNCREF to a string function
 // to work -- maybe it's not alllowed?
@@ -182,10 +182,10 @@ Function V_writeNeXus_version(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -210,10 +210,10 @@ Function V_writeCollectionTime(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -235,10 +235,10 @@ Function V_writeData_directory(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -261,10 +261,10 @@ Function V_writeNexusDefinition(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -289,10 +289,10 @@ Function V_writeDataDuration(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -315,10 +315,10 @@ Function V_writeDataEndTime(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -341,10 +341,10 @@ Function V_writeExperiment_description(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -367,10 +367,10 @@ Function V_writeExperiment_identifier(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -393,10 +393,10 @@ Function V_writeFacility(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -421,10 +421,10 @@ Function V_writeFileWriteTime(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 		
@@ -446,10 +446,10 @@ Function V_writeHDF_version(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -472,10 +472,10 @@ Function V_writeProgram_name(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -499,10 +499,10 @@ Function V_writeDataStartTime(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -525,10 +525,10 @@ Function V_writeTitle(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 end
@@ -558,10 +558,10 @@ Function V_writeUserNames(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 end
@@ -591,10 +591,10 @@ Function V_writeCount_end(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -617,10 +617,10 @@ Function V_writeCount_start(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -643,10 +643,10 @@ Function V_writeCount_time(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -669,10 +669,10 @@ Function V_writeCount_time_preset(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -695,10 +695,10 @@ Function V_writeDetector_counts(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -721,10 +721,10 @@ Function V_writeDetector_preset(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -747,10 +747,10 @@ Function V_writeIntegral(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -772,10 +772,10 @@ Function V_writeControlMode(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -799,10 +799,10 @@ Function V_writeMonitorCount(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -824,10 +824,10 @@ Function V_writeMonitor_preset(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -849,10 +849,10 @@ Function V_writePreset(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -881,10 +881,10 @@ Function V_writeLocalContact(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -906,10 +906,10 @@ Function V_writeInstrumentName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -931,10 +931,10 @@ Function V_writeInstrumentType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -961,10 +961,10 @@ Function V_writeAtten_number(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -989,10 +989,10 @@ Function V_writeAttenuator_transmission(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1016,10 +1016,10 @@ Function V_writeAttenuator_trans_err(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1043,10 +1043,10 @@ Function V_writeAttenDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1070,10 +1070,10 @@ Function V_writeAttenIndex(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1099,10 +1099,10 @@ Function V_writeAttenIndex_table(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1125,10 +1125,10 @@ Function V_writeAttenStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1152,10 +1152,10 @@ Function V_writeAttenThickness(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1178,10 +1178,10 @@ Function V_writeAttenType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1207,10 +1207,10 @@ Function V_writeChopperAngular_opening(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1232,10 +1232,10 @@ Function V_writeChopDistance_from_sample(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1257,10 +1257,10 @@ Function V_writeChopDistance_from_source(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1282,10 +1282,10 @@ Function V_writeChopperDuty_cycle(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1307,10 +1307,10 @@ Function V_writeChopperRotation_speed(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1332,10 +1332,10 @@ Function V_writeChopperSlits(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1356,10 +1356,10 @@ Function V_writeChopperstatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1381,10 +1381,10 @@ Function V_writeChoppertype(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1409,10 +1409,10 @@ Function V_writeFlipperDriving_current(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1434,10 +1434,10 @@ Function V_writeFlipperFrequency(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1458,10 +1458,10 @@ Function V_writeFlipperstatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1484,10 +1484,10 @@ Function V_writeFlipperTransmitted_power(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1508,10 +1508,10 @@ Function V_writeFlipperWaveform(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1534,10 +1534,10 @@ Function V_writeMonochromatorType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1560,10 +1560,10 @@ Function V_writeWavelength(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1585,10 +1585,10 @@ Function V_writeWavelength_spread(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1611,10 +1611,10 @@ Function V_writeCrystalEnergy(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1636,10 +1636,10 @@ Function V_writeCrystalHoriz_apert(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1661,10 +1661,10 @@ Function V_writeCrystalHoriz_curvature(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1686,10 +1686,10 @@ Function V_writeCrystalLattice_parameter(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1711,10 +1711,10 @@ Function V_writeCrystalDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1736,10 +1736,10 @@ Function V_writeCrystalReflection(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1761,10 +1761,10 @@ Function V_writeCrystalRotation(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1785,10 +1785,10 @@ Function V_writeCrystalStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -1811,10 +1811,10 @@ Function V_writeCrystalVertical_aperture(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1836,10 +1836,10 @@ Function V_writeCrystalVertical_curv(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1861,10 +1861,10 @@ Function V_writeCrystalWavelength(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1886,10 +1886,10 @@ Function V_writeCrystalWavelength_spread(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1911,10 +1911,10 @@ Function V_writeCrystalWavevector(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1937,10 +1937,10 @@ Function V_writeVSDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1962,10 +1962,10 @@ Function V_writeVSRotation_speed(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -1986,10 +1986,10 @@ Function V_writeVelSelStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2014,10 +2014,10 @@ Function V_writeVSTable(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2040,10 +2040,10 @@ Function V_writeVSTable_parameters(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2065,10 +2065,10 @@ Function V_writeVS_tilt(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2090,10 +2090,10 @@ Function V_writeVSWavelength(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2115,10 +2115,10 @@ Function V_writeVSWavelength_spread(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2140,10 +2140,10 @@ Function V_writeWhiteBeamStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2166,10 +2166,10 @@ Function V_writeWhiteBeamWavelength(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2191,10 +2191,10 @@ Function V_writeWhiteBeamWavel_spread(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2216,10 +2216,10 @@ Function V_writePolarizerComposition(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2242,10 +2242,10 @@ Function V_writePolarizerEfficiency(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -2266,10 +2266,10 @@ Function V_writePolarizerStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2291,10 +2291,10 @@ Function V_writePolarizerType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2318,10 +2318,10 @@ Function V_writePolAnaCell_index(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2342,10 +2342,10 @@ Function V_writePolAnaCell_name(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2370,10 +2370,10 @@ Function V_writePolAnaCell_parameters(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2395,10 +2395,10 @@ Function V_writePolAnaGuideFieldCur_1(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2420,10 +2420,10 @@ Function V_writePolAnaGuideFieldCur_2(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2445,10 +2445,10 @@ Function V_writePolAnaSolenoid_current(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2469,10 +2469,10 @@ Function V_writePolAnaStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2499,10 +2499,10 @@ Function V_writeBeamMonLowData(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2524,10 +2524,10 @@ Function V_writeBeamMonLowEfficiency(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2549,10 +2549,10 @@ Function V_writeBeamMonLowDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2574,10 +2574,10 @@ Function V_writeBeamMonLowSaved_count(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2598,10 +2598,10 @@ Function V_writeBeamMonLowType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2625,10 +2625,10 @@ Function V_writeBeamMonNormData(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2650,10 +2650,10 @@ Function V_writeBeamMonNormEfficiency(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2675,10 +2675,10 @@ Function V_writeBeamMonNormDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2700,10 +2700,10 @@ Function V_writeBeamMonNormSaved_count(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2724,10 +2724,10 @@ Function V_writeBeamMonNormType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2750,10 +2750,10 @@ Function V_writeBeamStopDescription(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2776,10 +2776,10 @@ Function V_writeBeamStopDist_to_det(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2801,10 +2801,10 @@ Function V_writeBeamStop_x_pos(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2826,10 +2826,10 @@ Function V_writeBeamStop_y_pos(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2853,10 +2853,10 @@ Function V_writeNumberOfGuides(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2879,10 +2879,10 @@ Function V_writeGuideShape(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2906,10 +2906,10 @@ Function V_writeGuideSize(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -2931,10 +2931,10 @@ Function V_writeConvPinholeStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -2969,10 +2969,10 @@ Function V_writeDet_cal_x(fname,detStr,inW)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3002,10 +3002,10 @@ Function V_writeDet_cal_y(fname,detStr,inW)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3033,10 +3033,10 @@ Function V_writeDet_pixel_fwhm_x(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3062,10 +3062,10 @@ Function V_writeDet_pixel_fwhm_y(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3088,10 +3088,10 @@ Function V_writeDet_pixel_num_x(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3113,10 +3113,10 @@ Function V_writeDet_pixel_num_y(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3140,10 +3140,10 @@ Function V_writeDet_azimuthalAngle(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3168,11 +3168,30 @@ Function V_writeDet_beam_center_x(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
+End
+
+// fname is a local WORK folder
+Function V_putDet_beam_center_x(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":entry:"
+	path += "entry:instrument:detector_"+detStr+":beam_center_x"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
 End
 
 Function V_writeDet_beam_center_y(fname,detStr,val)
@@ -3193,12 +3212,33 @@ Function V_writeDet_beam_center_y(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
+
+
+// fname is a local WORK folder
+Function V_putDet_beam_center_y(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB:beam_center_y
+	String path = "root:Packages:NIST:VSANS:"+fname+":entry:"
+	path += "entry:instrument:detector_"+detStr+":beam_center_y"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
@@ -3222,10 +3262,10 @@ Function V_writeDetectorData(fname,detStr,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3254,10 +3294,10 @@ Function V_writeDetector_deadtime(fname,detStr,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3279,10 +3319,10 @@ Function V_writeDetDescription(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3305,10 +3345,10 @@ Function V_writeDet_distance(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3332,10 +3372,10 @@ Function V_writeDet_equatorial_angle(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3359,10 +3399,10 @@ Function V_writeDetEventFileName(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3385,10 +3425,10 @@ Function V_writeDet_IntegratedCount(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3410,10 +3450,10 @@ Function V_writeDet_LateralOffset(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3435,10 +3475,10 @@ Function V_writeDet_VerticalOffset(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3462,10 +3502,10 @@ Function V_writeDet_polar_angle(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3492,10 +3532,10 @@ Function V_writeDet_rotational_angle(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	else
 		return(0)
@@ -3519,10 +3559,10 @@ Function V_writeDetSettings(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3546,10 +3586,10 @@ Function V_writeDet_size(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3570,10 +3610,10 @@ Function V_writeDetType(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3596,10 +3636,10 @@ Function V_writeDet_x_pixel_size(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3621,10 +3661,10 @@ Function V_writeDet_y_pixel_size(fname,detStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3651,10 +3691,10 @@ Function V_writeDet_numberOfTubes(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	endif
 End
@@ -3681,10 +3721,10 @@ Function V_writeDetPanelSeparation(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	endif
 End
@@ -3714,10 +3754,10 @@ Function V_writeDetTube_spatialCalib(fname,detStr,inW)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	endif
 End
@@ -3744,10 +3784,10 @@ Function V_writeDet_tubeIndex(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	endif
 End
@@ -3772,10 +3812,10 @@ Function V_writeDet_tubeOrientation(fname,detStr,str)
 		endif
 	
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		
 		return(err)
 
@@ -3804,10 +3844,10 @@ Function V_writeDet_tubeWidth(fname,detStr,val)
 			Print "HDF write err = ",err
 		endif
 		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-		err = V_KillNamedDataFolder(fname)
-		if(err)
-			Print "DataFolder kill err = ",err
-		endif
+//		err = V_KillNamedDataFolder(fname)
+//		if(err)
+//			Print "DataFolder kill err = ",err
+//		endif
 		return(err)
 	endif
 End
@@ -3835,10 +3875,10 @@ Function V_writeLensCurvature(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3859,10 +3899,10 @@ Function V_writeLensesFocusType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3885,10 +3925,10 @@ Function V_writeLensDistance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3909,10 +3949,10 @@ Function V_writeLensGeometry(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3934,10 +3974,10 @@ Function V_writeLensMaterial(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -3960,10 +4000,10 @@ Function V_writeNumber_of_Lenses(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -3985,10 +4025,10 @@ Function V_writeNumber_of_prisms(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -4010,10 +4050,10 @@ Function V_writePrism_distance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 
@@ -4034,10 +4074,10 @@ Function V_writePrismMaterial(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4060,10 +4100,10 @@ Function V_writeLensPrismStatus(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4088,10 +4128,10 @@ Function V_writeSampleAp_Description(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4114,10 +4154,10 @@ Function V_writeSampleAp_distance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 //	shape (data folder)
@@ -4139,10 +4179,10 @@ Function V_writeSampleAp_shape(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4170,10 +4210,10 @@ Function V_writeSampleAp_size(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End	
 
@@ -4197,10 +4237,10 @@ Function V_writeSampleAp2_Description(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4223,10 +4263,10 @@ Function V_writeSampleAp2_distance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 //	shape (data folder)
@@ -4248,10 +4288,10 @@ Function V_writeSampleAp2_shape(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4279,10 +4319,10 @@ Function V_writeSampleAp2_size(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End	
 
@@ -4306,10 +4346,10 @@ Function V_writeSampleTableLocation(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4334,10 +4374,10 @@ Function V_writeSampleTableOffset(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End	
 	
@@ -4360,10 +4400,10 @@ Function V_writeSourceName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4387,10 +4427,10 @@ Function V_writeReactorPower(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End	
 
@@ -4412,10 +4452,10 @@ Function V_writeSourceProbe(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4438,10 +4478,10 @@ Function V_writeSourceType(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4466,10 +4506,10 @@ Function V_writeSourceAp_Description(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4492,10 +4532,10 @@ Function V_writeSourceAp_distance(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End
 //	shape (data folder)
@@ -4517,10 +4557,10 @@ Function V_writeSourceAp_shape(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4548,10 +4588,10 @@ Function V_writeSourceAp_size(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 End		
 
@@ -4582,10 +4622,10 @@ Function V_writeSamplePosition(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4608,10 +4648,10 @@ Function V_writeSampleDescription(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4635,10 +4675,10 @@ Function V_writeSample_equatorial_ang(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4662,10 +4702,10 @@ Function V_writeSample_GroupID(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4689,10 +4729,10 @@ Function V_writeSampleRotationAngle(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4715,10 +4755,10 @@ Function V_writeSampleHolderDescription(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4743,10 +4783,10 @@ Function V_writeSampleThickness(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4770,10 +4810,10 @@ Function V_writeSampleTransmission(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4796,10 +4836,10 @@ Function V_writeSampleTransError(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4834,10 +4874,10 @@ Function V_writeLog_attachedTo(fname,logStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4860,10 +4900,10 @@ Function V_writeLog_measurement(fname,logStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4886,10 +4926,10 @@ Function V_writeLog_Name(fname,logStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4914,10 +4954,10 @@ Function V_writeLog_nomValue(fname,logStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4939,10 +4979,10 @@ Function V_writeLog_startTime(fname,logStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -4966,10 +5006,10 @@ Function V_writeLog_avgValue(fname,logStr,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -4994,10 +5034,10 @@ Function V_writeLog_time(fname,logStr,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5023,10 +5063,10 @@ Function V_writeLog_Value(fname,logStr,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5058,10 +5098,10 @@ Function V_writeAbsolute_Scaling(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5086,10 +5126,10 @@ Function V_writeBoxCoordinates(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5112,10 +5152,10 @@ Function V_writeBoxCounts(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5138,10 +5178,10 @@ Function V_writeBoxCountsError(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5162,10 +5202,10 @@ Function V_writeReductionComments(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5188,10 +5228,10 @@ Function V_writeReductionIntent(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5214,10 +5254,10 @@ Function V_writeLogFileName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5240,10 +5280,10 @@ Function V_writeSensitivityFileName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5265,10 +5305,10 @@ Function V_writeTransmissionFileName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5290,10 +5330,10 @@ Function V_writeEmptyBeamFileName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5318,10 +5358,10 @@ Function V_writeSampleTransWholeDetector(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5344,10 +5384,10 @@ Function V_writeSampleTransWholeDetErr(fname,val)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5371,10 +5411,10 @@ Function V_writePolSANS_cellName(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5402,10 +5442,10 @@ Function V_writePolSANS_cellParams(fname,inW)
 		Print "HDF write err = ",err
 	endif
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 	return(err)
 end
 
@@ -5426,10 +5466,10 @@ Function V_writePolSANS_PolSANSPurpose(fname,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5467,10 +5507,10 @@ Function V_writeDataImage(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5492,10 +5532,10 @@ Function V_writeDataImageDescription(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End
@@ -5517,10 +5557,10 @@ Function V_writeDataImageType(fname,detStr,str)
 	endif
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = V_KillNamedDataFolder(fname)
-	if(err)
-		Print "DataFolder kill err = ",err
-	endif
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
 		
 	return(err)
 End

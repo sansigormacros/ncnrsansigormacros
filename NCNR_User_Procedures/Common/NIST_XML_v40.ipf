@@ -824,10 +824,10 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	Return(0)
 End
 
-Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
 	Wave qw,iw,sw,res
-	String firstFileName,secondFileName,thirdFileName,normTo
-	Variable norm12,norm23
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
 
 	Variable err=0,refNum,numCols,dialog=1
 	String fullPath="",formatStr="",str2
@@ -903,9 +903,9 @@ Function WriteNSORTedXMLFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName
 	nf.nameSASProcess = "NIST IGOR"
 	
 	nf.sasProcessNote = "COMBINED FILE CREATED: "+date()+"\n"
-	nf.sasProcessNote += "NSORT-ed : " +firstFileName+";"+secondFileName+";"+thirdFileName+"\n"
+	nf.sasProcessNote += "NSORT-ed : " +firstFileName+";"+secondFileName+";"+thirdFileName+";"+fourthFileName+"\n"
 	nf.sasProcessNote += "normalized to  "+normTo+"\n"
-	fprintf refNum, "multiplicative factor 1-2 = "+num2str(norm12)+" multiplicative factor 2-3 = "+num2str(norm23)+"\n"
+	fprintf refNum, "multiplicative factor 1-2 = "+num2str(norm12)+" multiplicative factor 2-3 = "+num2str(norm23)+" multiplicative factor 3-4 = "+num2str(norm34)+"\n"
 
 	if (numCols == 3)
 		writeNISTXML(fullpath,nf)

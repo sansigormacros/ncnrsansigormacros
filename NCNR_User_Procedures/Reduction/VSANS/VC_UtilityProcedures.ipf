@@ -180,46 +180,48 @@ end
 Function VCALC_getPixSizeX(type)
 	String type
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
-			
-	strswitch(type)	
-		case "FL":
-			NVAR pixSizeX = gFront_L_pixelX
-			break
-		case "FR":		
-			NVAR pixSizeX = gFront_R_pixelX
-			break
-		case "FT":
-			NVAR pixSizeX = gFront_T_pixelX
-			break	
-		case "FB":		
-			NVAR pixSizeX = gFront_B_pixelX
-			break
-			
-		case "ML":
-			NVAR pixSizeX = gMiddle_L_pixelX
-			break
-		case "MR":		
-			NVAR pixSizeX = gMiddle_R_pixelX
-			break
-		case "MT":
-			NVAR pixSizeX = gMiddle_T_pixelX
-			break	
-		case "MB":		
-			NVAR pixSizeX = gMiddle_B_pixelX
-			break
-						
-		case "B":		
-			NVAR pixSizeX = gBack_pixelX
-			break
-			
-		default:							
-			Print "Detector type mismatch in 	V_getPixSizeX(type)"
-			setDataFolder root:
-			return(NaN)
-	endswitch
+	Variable pixSizeX = V_getDet_x_pixel_size("VCALC",type)
 
-	setDataFolder root:
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC
+//			
+//	strswitch(type)	
+//		case "FL":
+//			NVAR pixSizeX = gFront_L_pixelX
+//			break
+//		case "FR":		
+//			NVAR pixSizeX = gFront_R_pixelX
+//			break
+//		case "FT":
+//			NVAR pixSizeX = gFront_T_pixelX
+//			break	
+//		case "FB":		
+//			NVAR pixSizeX = gFront_B_pixelX
+//			break
+//			
+//		case "ML":
+//			NVAR pixSizeX = gMiddle_L_pixelX
+//			break
+//		case "MR":		
+//			NVAR pixSizeX = gMiddle_R_pixelX
+//			break
+//		case "MT":
+//			NVAR pixSizeX = gMiddle_T_pixelX
+//			break	
+//		case "MB":		
+//			NVAR pixSizeX = gMiddle_B_pixelX
+//			break
+//						
+//		case "B":		
+//			NVAR pixSizeX = gBack_pixelX
+//			break
+//			
+//		default:							
+//			Print "Detector type mismatch in 	V_getPixSizeX(type)"
+//			setDataFolder root:
+//			return(NaN)
+//	endswitch
+//
+//	setDataFolder root:
 		
 	return(pixSizeX)
 end
@@ -228,46 +230,48 @@ end
 Function VCALC_getPixSizeY(type)
 	String type
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
-			
-	strswitch(type)	
-		case "FL":
-			NVAR pixSizeY = gFront_L_pixelY
-			break
-		case "FR":		
-			NVAR pixSizeY = gFront_R_pixelY
-			break
-		case "FT":
-			NVAR pixSizeY = gFront_T_pixelY
-			break	
-		case "FB":		
-			NVAR pixSizeY = gFront_B_pixelY
-			break
-			
-		case "ML":
-			NVAR pixSizeY = gMiddle_L_pixelY
-			break
-		case "MR":		
-			NVAR pixSizeY = gMiddle_R_pixelY
-			break
-		case "MT":
-			NVAR pixSizeY = gMiddle_T_pixelY
-			break	
-		case "MB":		
-			NVAR pixSizeY = gMiddle_B_pixelY
-			break
-						
-		case "B":		
-			NVAR pixSizeY = gBack_pixelY
-			break
-			
-		default:							
-			Print "Detector type mismatch in 	V_getPixSizeY(type)"
-			SetDataFolder root:
-			return(NaN)
-	endswitch
-
-	setDatafolder root:
+	Variable pixSizeY = V_getDet_y_pixel_size("VCALC",type)
+	
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC
+//			
+//	strswitch(type)	
+//		case "FL":
+//			NVAR pixSizeY = gFront_L_pixelY
+//			break
+//		case "FR":		
+//			NVAR pixSizeY = gFront_R_pixelY
+//			break
+//		case "FT":
+//			NVAR pixSizeY = gFront_T_pixelY
+//			break	
+//		case "FB":		
+//			NVAR pixSizeY = gFront_B_pixelY
+//			break
+//			
+//		case "ML":
+//			NVAR pixSizeY = gMiddle_L_pixelY
+//			break
+//		case "MR":		
+//			NVAR pixSizeY = gMiddle_R_pixelY
+//			break
+//		case "MT":
+//			NVAR pixSizeY = gMiddle_T_pixelY
+//			break	
+//		case "MB":		
+//			NVAR pixSizeY = gMiddle_B_pixelY
+//			break
+//						
+//		case "B":		
+//			NVAR pixSizeY = gBack_pixelY
+//			break
+//			
+//		default:							
+//			Print "Detector type mismatch in 	V_getPixSizeY(type)"
+//			SetDataFolder root:
+//			return(NaN)
+//	endswitch
+//
+//	setDatafolder root:
 		
 	return(pixSizeY)
 end
@@ -277,46 +281,48 @@ end
 Function VCALC_get_nPix_X(type)
 	String type
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
-			
-	strswitch(type)	
-		case "FL":
-			NVAR nPix = gFront_L_nPix_X
-			break
-		case "FR":		
-			NVAR nPix = gFront_R_nPix_X
-			break
-		case "FT":
-			NVAR nPix = gFront_T_nPix_X
-			break	
-		case "FB":		
-			NVAR nPix = gFront_B_nPix_X
-			break
-			
-		case "ML":
-			NVAR nPix = gMiddle_L_nPix_X
-			break
-		case "MR":		
-			NVAR nPix = gMiddle_R_nPix_X
-			break
-		case "MT":
-			NVAR nPix = gMiddle_T_nPix_X
-			break	
-		case "MB":		
-			NVAR nPix = gMiddle_B_nPix_X
-			break
-						
-		case "B":		
-			NVAR nPix = gBack_nPix_X
-			break
-			
-		default:							
-			Print "Detector type mismatch in 	VCALC_get_nPix_X(type)"
-			SetDataFolder root:
-			return(NaN)
-	endswitch
-
-	setDataFolder root:
+	Variable nPix = V_getDet_pixel_num_x("VCALC",type)
+	
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC
+//			
+//	strswitch(type)	
+//		case "FL":
+//			NVAR nPix = gFront_L_nPix_X
+//			break
+//		case "FR":		
+//			NVAR nPix = gFront_R_nPix_X
+//			break
+//		case "FT":
+//			NVAR nPix = gFront_T_nPix_X
+//			break	
+//		case "FB":		
+//			NVAR nPix = gFront_B_nPix_X
+//			break
+//			
+//		case "ML":
+//			NVAR nPix = gMiddle_L_nPix_X
+//			break
+//		case "MR":		
+//			NVAR nPix = gMiddle_R_nPix_X
+//			break
+//		case "MT":
+//			NVAR nPix = gMiddle_T_nPix_X
+//			break	
+//		case "MB":		
+//			NVAR nPix = gMiddle_B_nPix_X
+//			break
+//						
+//		case "B":		
+//			NVAR nPix = gBack_nPix_X
+//			break
+//			
+//		default:							
+//			Print "Detector type mismatch in 	VCALC_get_nPix_X(type)"
+//			SetDataFolder root:
+//			return(NaN)
+//	endswitch
+//
+//	setDataFolder root:
 		
 	return(nPix)
 end
@@ -325,46 +331,48 @@ end
 Function VCALC_get_nPix_Y(type)
 	String type
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC
-			
-	strswitch(type)	
-		case "FL":
-			NVAR nPix = gFront_L_nPix_Y
-			break
-		case "FR":		
-			NVAR nPix = gFront_R_nPix_Y
-			break
-		case "FT":
-			NVAR nPix = gFront_T_nPix_Y
-			break	
-		case "FB":		
-			NVAR nPix = gFront_B_nPix_Y
-			break
-			
-		case "ML":
-			NVAR nPix = gMiddle_L_nPix_Y
-			break
-		case "MR":		
-			NVAR nPix = gMiddle_R_nPix_Y
-			break
-		case "MT":
-			NVAR nPix = gMiddle_T_nPix_Y
-			break	
-		case "MB":		
-			NVAR nPix = gMiddle_B_nPix_Y
-			break
-						
-		case "B":		
-			NVAR nPix = gBack_nPix_Y
-			break
-			
-		default:							
-			Print "Detector type mismatch in 	VCALC_get_nPix_Y(type)"
-			SetDataFolder root:
-			return(NaN)
-	endswitch
+	Variable nPix = V_getDet_pixel_num_y("VCALC",type)
 
-	SetDataFolder root:
+//	SetDataFolder root:Packages:NIST:VSANS:VCALC
+//			
+//	strswitch(type)	
+//		case "FL":
+//			NVAR nPix = gFront_L_nPix_Y
+//			break
+//		case "FR":		
+//			NVAR nPix = gFront_R_nPix_Y
+//			break
+//		case "FT":
+//			NVAR nPix = gFront_T_nPix_Y
+//			break	
+//		case "FB":		
+//			NVAR nPix = gFront_B_nPix_Y
+//			break
+//			
+//		case "ML":
+//			NVAR nPix = gMiddle_L_nPix_Y
+//			break
+//		case "MR":		
+//			NVAR nPix = gMiddle_R_nPix_Y
+//			break
+//		case "MT":
+//			NVAR nPix = gMiddle_T_nPix_Y
+//			break	
+//		case "MB":		
+//			NVAR nPix = gMiddle_B_nPix_Y
+//			break
+//						
+//		case "B":		
+//			NVAR nPix = gBack_nPix_Y
+//			break
+//			
+//		default:							
+//			Print "Detector type mismatch in 	VCALC_get_nPix_Y(type)"
+//			SetDataFolder root:
+//			return(NaN)
+//	endswitch
+//
+//	SetDataFolder root:
 		
 	return(nPix)
 end
@@ -418,5 +426,8 @@ End
 
 /////////// procedure to concatenate I(q) files into a single file
 //
-// currently, no rescaling is done, just crude concatentate and sort
+// currently, no rescaling is done, no trimming is done, just crude concatentate and sort
+//
+// TODO
+// -- all of this needs to be done. There's nothing here...
 //

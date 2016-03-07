@@ -33,14 +33,20 @@ Macro DetectorPanelFit() : Panel
 	NewPanel /W=(662,418,1586,960)/N=PanelFit/K=1
 //	ShowTools/A
 	
-	PopupMenu popup_0,pos={20,20},size={109,20},proc=SetDetPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,pos={20,50},size={109,20},proc=SetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
 	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
-	
+	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
+	PopupMenu popup_2,mode=1,popvalue="VCALC",value= #"\"RAW;SAM;VCALC;\""
+		
 	Button button_0,pos={486,20},size={80,20},proc=DetFitGuessButtonProc,title="Guess"
 	Button button_1,pos={615,20},size={80,20},proc=DetFitButtonProc,title="Do Fit"
 	Button button_2,pos={744,20},size={80,20},proc=DetFitHelpButtonProc,title="Help"
+	Button button_3,pos={615,400},size={110,20},proc=WriteCtrButtonProc,title="Write Centers"
+	Button button_4,pos={730,400},size={110,20},proc=CtrTableButtonProc,title="Ctr table"
+	Button button_5,pos={730,440},size={110,20},proc=WriteCtrTableButtonProc,title="Write table"
+
 
 
 	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL curDispPanel
@@ -77,7 +83,7 @@ Macro DetectorPanelFit() : Panel
 
 
 // edit the fit coefficients	
-	Edit/W=(500,80,880,350)/HOST=#  parameters_PeakPix2D,coef_PeakPix2D
+	Edit/W=(550,80,880,370)/HOST=#  parameters_PeakPix2D,coef_PeakPix2D
 	ModifyTable width(Point)=0
 	ModifyTable width(parameters_PeakPix2D)=120
 	ModifyTable width(coef_PeakPix2D)=100
@@ -88,8 +94,9 @@ Macro DetectorPanelFit() : Panel
 EndMacro
 
 
-
-
+//
+// function to choose which detector panel to display, and then to actually display it
+//
 Function SetDetPanelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -125,19 +132,30 @@ Function SetDetPanelPopMenuProc(pa) : PopupMenuControl
 End
 
 
+// TODO - currently is hard-wired for the simulation path!
+//     need to make it more generic, especially for RAW data
+//
+// -- need to adjust the size of the image subwindows to keep the model
+//    calculation from spillon over onto the table (maybe just move the table)
+// -- need to do something for panel "B". currently ignored
+// -- currently the pixel sizes for "real" data is incorrect in the file
+//     and this is why the plots are incorrectly sized
+//
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
 Function DrawDetPanel(str)
 	String str
 	
 	// from the selection, find the path to the data
-	// TODO - currently is hard-wired for the simulation path!
-	//     need to make it more generic, especially for RAW data
+
 
 	Variable xDim,yDim
 	Variable left,top,right,bottom
 	Variable height, width
 	Variable left2,top2,right2,bottom2
+	Variable nPix_X,nPix_Y,pixSize_X,pixSize_Y
+
+	
 	Wave dispW=root:curDispPanel
 	Wave cw = root:coef_PeakPix2D
 
@@ -153,78 +171,106 @@ Function DrawDetPanel(str)
 	// using two switches -- one to set the panel-specific dimensions
 	// and the other to set the "common" values, some of which are based on the panel dimensions
 
-	// panel-specific values
-	strswitch(str)
-		case "FL":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
-			break
-		case "FR":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-			break
-		case "ML":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-			break
-		case "MR":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-			break	
+// set the source of the data. not always VCALC anymore
+	String folder
+	ControlInfo popup_2
+	folder = S_Value
 
-		case "FT":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-			break
-		case "FB":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-			break
-		case "MT":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-			break
-		case "MB":
-			NVAR nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X
-			NVAR nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y
-			NVAR pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelX
-			NVAR pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelY
-//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-			break	
-			
-		case "B":
-			return(0)		//just exit
-			break						
-		default:
-			return(0)		//just exit
-	endswitch
+	// TODO -- fix all of this mess
+	if(cmpstr(folder,"VCALC") == 0)
+		// panel-specific values
+		Variable VC_nPix_X = VCALC_get_nPix_X(str)
+		Variable VC_nPix_Y = VCALC_get_nPix_Y(str)
+		Variable VC_pixSize_X = VCALC_getPixSizeX(str)
+		Variable VC_pixSize_Y = VCALC_getPixSizeY(str)
+//		strswitch(str)
+//			case "FL":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
+//				break
+//			case "FR":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//				break
+//			case "ML":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//				break
+//			case "MR":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//				break	
+//	
+//			case "FT":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//				break
+//			case "FB":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
+//				break
+//			case "MT":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//				break
+//			case "MB":
+//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X
+//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y
+//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelX
+//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelY
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
+//				break	
+//				
+//			case "B":
+//				return(0)		//just exit
+//				break						
+//			default:
+//				return(0)		//just exit
+//		endswitch
 	
-	wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
+	// if VCALC declare this way	
+		wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
+		nPix_X = VC_nPix_X
+		nPix_Y = VC_nPix_Y
+		pixSize_X = VC_pixSize_X
+		pixSize_Y = VC_pixSize_Y
+	
+	else
+	// TODO: if real data, need new declaration w/ data as the wave name
+		wave newW = $("root:Packages:NIST:VSANS:"+folder+":entry:entry:instrument:detector_"+str+":data")
+
+		nPix_X = V_getDet_pixel_num_x(folder,str)
+		nPix_Y = V_getDet_pixel_num_Y(folder,str)
+		pixSize_X = V_getDet_x_pixel_size(folder,str)/10
+		pixSize_Y = V_getDet_y_pixel_size(folder,str)/10
+	endif
+	
 
 	Variable scale = 5
 	
 	// common values (panel position, etc)
+	// TODO -- units are absolute, based on pixels in cm. make sure this is always correct
 	strswitch(str)
 		case "FL":
 		case "FR":
@@ -312,7 +358,11 @@ End
 
 
 
-
+// TODO: 
+// -- allow other model functions as needed.
+//
+// Function to plot the specified 2D model for the detector
+//
 Function DetModelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -356,10 +406,43 @@ Function DetFitGuessButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+// TODO -- currently hard-wired for the only fit function
+//
+Function WriteCtrButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			String detStr,fname
+			Wave coefW=root:coef_PeakPix2D
+			
+			ControlInfo popup_0
+			detStr = S_Value
+			ControlInfo popup_2
+			fname = S_Value
+			
+			V_putDet_beam_center_x(fname,detStr,coefW[9])
+			V_putDet_beam_center_y(fname,detStr,coefW[10])
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 
-
+// TODO
+// -- there is only a single fitting function available, and it's hard-wired
+// -- what values are held during the fitting are hard-wired
+//
+//
+// function to call the fit fucntion (2D)
+//
 Function DetFitButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -400,10 +483,43 @@ Function DetFitHelpButtonProc(ba) : ButtonControl
 	return 0
 End
 
+Function CtrTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			V_BCtrTable()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function WriteCtrTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			V_BeamCtr_WriteTable()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 // TODO
 // -- some of this is hard-wired in
-// -- this is still alll in terms of pixels, which still may not be what I want
+// -- this is still all in terms of pixels, which still may not be what I want
 // -- the x-scale of the T/B panels is artificially compressed to "fake" 4mm per pixel in x-direction
 //
 Function V_RescaleToBeamCenter(folderStr,detStr,xCtr,yCtr)
@@ -446,21 +562,55 @@ Function V_RescaleToBeamCenter(folderStr,detStr,xCtr,yCtr)
 	return(0)
 end
 
+// TODO
+// these are "nominal" beam center values in pixels for the default VCALC configuration
+// This function "restores" the data display to the "instrument" conditions where the panels overlap
+// and is intended to be a TRUE view of what the detectors see - that is - the peaks should appear as rings,
+// the view should be symmetric (if the real data is symmetric)
+//
+// -- this is currently linked to the Vdata panel
+// -- will need to remove the hard-wired values and get the proper values from the data
+// -- ?? will the "proper" values be in pixels or distance? All depends on how I display the data...
+// -- may want to keep the nominal scaling values around in case the proper values aren' in the file
+//
 Function V_RestorePanels()
 
-	V_RescaleToBeamCenter("RAW","MB",64,55)
-	V_RescaleToBeamCenter("RAW","MT",64,-8.7)
-	V_RescaleToBeamCenter("RAW","MR",-8.1,64)
-	V_RescaleToBeamCenter("RAW","ML",55,64)
-	V_RescaleToBeamCenter("RAW","FB",64,55)
-	V_RescaleToBeamCenter("RAW","FT",64,-8.7)
-	V_RescaleToBeamCenter("RAW","FR",-8.1,64)
-	V_RescaleToBeamCenter("RAW","FL",55,64)
+	String fname=""
+	String detStr=""
+	Variable ii,xCtr,yCtr
 
-
+//// this works if the proper centers are in the file - otherwise, it's a mess	
+//	fname = "RAW"
+//	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+//		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+//		xCtr = V_getDet_beam_center_x(fname,detStr)
+//		yCtr = V_getDet_beam_center_y(fname,detStr)
+//		V_RescaleToBeamCenter("RAW",detStr,xCtr,yCtr)
+//	endfor
+		
+		
+		// nominal values... better to use what's in the file
+//
+		V_RescaleToBeamCenter("RAW","MB",64,55)
+		V_RescaleToBeamCenter("RAW","MT",64,-8.7)
+		V_RescaleToBeamCenter("RAW","MR",-8.1,64)
+		V_RescaleToBeamCenter("RAW","ML",55,64)
+		V_RescaleToBeamCenter("RAW","FB",64,55)
+		V_RescaleToBeamCenter("RAW","FT",64,-8.7)
+		V_RescaleToBeamCenter("RAW","FR",-8.1,64)
+		V_RescaleToBeamCenter("RAW","FL",55,64)
 	return(0)
 end
 
+// TODO
+// these are "spread out" values for the data panels
+// This view is meant to spread out the panels so there is (?Less) overlap so the panels can be 
+// viewed a bit easier. Isolation may still be preferred for detailed work.
+//
+// -- this is currently linked to the Vdata panel
+// -- will need to remove the hard-wired values and get the proper values from the data
+// -- ?? will the "proper" values be in pixels or distance? All depends on how I display the data...
+//
 Function V_SpreadOutPanels()
 
 	V_RescaleToBeamCenter("RAW","MB",64,78)
@@ -473,3 +623,76 @@ Function V_SpreadOutPanels()
 	V_RescaleToBeamCenter("RAW","FL",78,64)
 	return(0)
 end
+
+// function to display the beam center values for all of the detectors
+// opens a separate table with the detector label, and the XY values
+// ? Maybe list the XY pair in pixels and in real distance in the table
+//
+// TODO:
+// -- need a way to use this or another table? as input to put the new/fitted/derived
+//    beam center values into the data folders, and ultimately into the data files on disk
+// -- need read/Write for the XY in pixels, and in real-distance
+// -- where are the temporary waves to be located? root?
+// -- need way to access the Ctr_mm values
+Function V_BCtrTable()
+	
+	// order of the panel names will match the constant string
+	//FT;FB;FL;FR;MT;MB;ML;MR;B;
+	Make/O/T/N=9 panelW
+	Make/O/D/N=9 xCtr_pix,yCtr_pix,xCtr_mm,yCtr_mm
+	DoWindow/F BCtrTable
+	if(V_flag == 0)
+		Edit/W=(547,621,1076,943)/N=BCtrTable panelW,xCtr_pix,yCtr_pix,xCtr_mm,yCtr_mm
+	endif
+	
+	Variable ii
+	String detStr,fname
+	
+	fname = "RAW"
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		panelW[ii] = detStr
+		xCtr_pix[ii] = V_getDet_beam_center_x(fname,detStr)
+		yCtr_pix[ii] = V_getDet_beam_center_y(fname,detStr)
+		// TODO
+		// and now the mm values
+		
+	endfor
+	return(0)
+End
+
+//
+// to write the new beam center values to a file on disk:
+// V_writeDet_beam_center_x(fname,detStr,val)
+//
+// to write to a local WORK folder
+// V_putDet_beam_center_x(fname,detStr,val)
+//
+Function V_BeamCtr_WriteTable()
+
+	String folder
+	
+	Variable ii
+	String detStr,fname
+	
+	Wave xCtr_pix = root:xCtr_pix
+	Wave yCtr_pix = root:yCtr_pix
+	Wave/T panelW = root:PanelW
+	
+	ControlInfo popup_2
+	folder = S_Value
+	
+	fname = folder
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+//		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		detStr = panelW[ii]
+		V_putDet_beam_center_x(fname,detStr,xCtr_pix[ii])
+		V_putDet_beam_center_y(fname,detStr,yCtr_pix[ii])
+		
+		// TODO
+		// and now the mm values
+		
+	endfor
+	return(0)
+	
+End

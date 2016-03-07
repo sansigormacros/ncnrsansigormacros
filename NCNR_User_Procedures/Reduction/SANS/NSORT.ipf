@@ -8,6 +8,8 @@
 // NSORT panel for combining and inter-normalizing 2 or 3 datasets
 // that have previously been averaged
 //
+// MAR 2016 SRK added functionality to combine 4 datasets
+//
 // - handles 3 or 6-column datasets
 // allows manual scaling
 // allows user to interactively delete data points from either end of any datset
@@ -35,6 +37,7 @@ Proc ShowNSORTPanel()
 	LowQPopMenuProc("",1,"")
 	MedQPopMenuProc("",1,"")
 	HighQPopMenuProc("",1,"")
+	HighestQPopMenuProc("",1,"")
 End
 
 //initializes globals/folder for the NSORT panel as needed
@@ -47,6 +50,7 @@ Proc InitNSORTPanel()
 	NewDataFolder/O root:myGlobals:NSORT
 	Variable/G root:myGlobals:NSORT:gScale1_2 = 1
 	Variable/G root:myGlobals:NSORT:gScale2_3 = 1
+	Variable/G root:myGlobals:NSORT:gScale3_4 = 1
 	//
 	//save the number of points to trim from beginning/end of the data files
 	//
@@ -56,10 +60,13 @@ Proc InitNSORTPanel()
 	Variable/G root:myGlobals:NSORT:gPtsEnd2 = NumVarOrDefault("root:myGlobals:NSORT:gPtsEnd2", 0 )
 	Variable/G root:myGlobals:NSORT:gPtsBeg3 = NumVarOrDefault("root:myGlobals:NSORT:gPtsBeg3", 0 )
 	Variable/G root:myGlobals:NSORT:gPtsEnd3 = NumVarOrDefault("root:myGlobals:NSORT:gPtsEnd3", 0 )
+	Variable/G root:myGlobals:NSORT:gPtsBeg4 = NumVarOrDefault("root:myGlobals:NSORT:gPtsBeg4", 0 )
+	Variable/G root:myGlobals:NSORT:gPtsEnd4 = NumVarOrDefault("root:myGlobals:NSORT:gPtsEnd4", 0 )
 	
 	Variable/G root:myGlobals:NSORT:gColumns1 = 0
 	Variable/G root:myGlobals:NSORT:gColumns2 = 0
 	Variable/G root:myGlobals:NSORT:gColumns3 = 0
+	Variable/G root:myGlobals:NSORT:gColumns4 = 0
 	Variable/G root:myGlobals:NSORT:gNormToNum = 1
 	String/G root:myGlobals:NSORT:gPathStr = ""
 	String/G root:myGlobals:NSORT:gDataPopList = "none"
@@ -72,7 +79,7 @@ End
 //AJJ Jan 2010
 Function LoadDataForNSORT(fileStr,setNum)
 	String fileStr		//full path:name to a valid file
-	Variable setNum	//number of set (used for naming) = 0, 1, or 2 (ONLY)
+	Variable setNum	//number of set (used for naming) = 0, 1, or 2 (ONLY), (2016) 3 is now valid for 4th data set
 	
 	Variable err=0
 
@@ -83,13 +90,16 @@ Function LoadDataForNSORT(fileStr,setNum)
 	NVAR gColumns1 = root:myGlobals:NSORT:gColumns1
 	NVAR gColumns2 = root:myGlobals:NSORT:gColumns2
 	NVAR gColumns3 = root:myGlobals:NSORT:gColumns3
+	NVAR gColumns4 = root:myGlobals:NSORT:gColumns4
 	NVAR begPts1 = root:myGlobals:NSORT:gPtsBeg1
 	NVAR endPts1 = root:myGlobals:NSORT:gPtsEnd1
 	NVAR begPts2 = root:myGlobals:NSORT:gPtsBeg2
 	NVAR endPts2 = root:myGlobals:NSORT:gPtsEnd2
 	NVAR begPts3 = root:myGlobals:NSORT:gPtsBeg3
 	NVAR endPts3 = root:myGlobals:NSORT:gPtsEnd3
-
+	NVAR begPts4 = root:myGlobals:NSORT:gPtsBeg4
+	NVAR endPts4 = root:myGlobals:NSORT:gPtsEnd4
+	
 	String cmd
 	String typStr= "", trimStr=""
 	
@@ -117,6 +127,14 @@ Function LoadDataForNSORT(fileStr,setNum)
 			trimStr = "TrimHighQSet"
 			begPts = begPts3
 			endPts = endPts3
+			break
+		case 4:
+			sprintf cmd , "A_LoadOneDDataToName(\"%s\",\"%s\",%d,%d)",fileStr,"HighestQSet",0,1
+			Execute cmd
+			typStr = "HighestQSet"
+			trimStr = "TrimHighestQSet"
+			begPts = begPts4
+			endPts = endPts4
 			break
 	endswitch
 		
@@ -167,40 +185,43 @@ Function LoadDataForNSORT(fileStr,setNum)
 		case 3:
 			gColumns3 = numCols
 			break
+		case 4:
+			gColumns4 = numCols
+			break
 	endswitch
 	
 	return(0)
 	
 End
 
-Function WriteNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+Function WriteNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
 	Wave q3,i3,sig3,res
-	String firstFileName,secondFileName,thirdFileName,normTo
-	Variable norm12,norm23
+	String firstFileName,secondFileName,thirdFileName,fourthfileName,normTo
+	Variable norm12,norm23,norm34
 
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 
 	if (useXMLOutput == 1)
 		if(WaveExists(res))
-			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,res=res)
+			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
 		else
-			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23)
+			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
 		endif
 	else
 		if(WaveExists(res))
-			WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,res=res)
+			WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
 		else
-			WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23)
+			WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
 		endif		
 	endif
 
 End
 
 
-Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
 	Wave q3,i3,sig3,res
-	String firstFileName,secondFileName,thirdFileName,normTo
-	Variable norm12,norm23
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
 
 	Variable err=0,refNum,numCols,dialog=1
 	String fullPath="",formatStr="",str2
@@ -286,9 +307,9 @@ Function WriteOLDNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileNa
 //	fprintf refnum, "SECOND File %s",hdr2		//new, Mar 2008
 //	fprintf refnum, "THIRD File %s",hdr3		//new, Mar 2008
 	
-	fprintf refNum, "NSORT-ed   %s \t  +  %s\t  + %s\r\n",firstFileName, secondFileName,thirdFileName
+	fprintf refNum, "NSORT-ed   %s\t  +  %s\t  +  %s\t + %s\r\n",firstFileName, secondFileName,thirdFileName,fourthFileName
 	fprintf refNum, "normalized to   %s\r\n",normTo
-	fprintf refNum, "multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\r\n",norm12,norm23
+	fprintf refNum, "multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\t multiplicative factor 3-4 = %12.8g\r\n",norm12,norm23,norm34
 
 	if (numCols == 3)
 		formatStr = "%15.4g %15.4g %15.4g\r\n"
@@ -375,6 +396,7 @@ Function NSORT_DoneButton(ctrlName) : ButtonControl
 	KillDataFolder/Z LowQSet
 	KillDataFolder/Z MedQSet
 	KillDataFolder/Z HighQSet
+	KillDataFolder/Z HighestQSet
 
 End
 
@@ -392,22 +414,31 @@ Function Plot_0_Button(ctrlName) : ButtonControl
 	String tempName="",partialName=""
 	Variable setNum,err
 	//switch on ctrlName string - Plot_1, Plot_2, Plot_3
-	if(cmpstr(ctrlName,"Plot_1")==0)
-		//low-q
-		setNum = 1
-		ControlInfo/W=NSORT_Panel popup_1
-	else
-		if(cmpstr(ctrlName,"Plot_2")==0)
+	
+	strswitch(ctrlName)	// string switch
+		case "Plot_1":		
+			//low-q
+			setNum = 1
+			ControlInfo/W=NSORT_Panel popup_1
+			break
+		case "Plot_2":		
 			//medium-q
 			setNum = 2
 			ControlInfo/W=NSORT_Panel popup_2
-		else
+			break
+		case "Plot_3":		
 			//high-q
 			setNum = 3
 			ControlInfo/W=NSORT_Panel popup_3
-		Endif
-	Endif
+			break
+		case "Plot_4":		
+			//highest-q
+			setNum = 4
+			ControlInfo/W=NSORT_Panel popup_4
+			break
+	endswitch
 	
+
 	//find the file from the partial filename
 	If( (cmpstr(S_value,"")==0) || (cmpstr(S_value,"none")==0) )
 		//null selection, or "none" from any popup
@@ -438,54 +469,90 @@ Function Plot_0_Button(ctrlName) : ButtonControl
 //	DoWindow/F NSORT_Graph
 	if(WinType("NSORT_Graph")==0)
 		//no window, create one
-		if(cmpstr(ctrlName,"Plot_1")==0)
-			//low-q
-			Display/K=1
-			DoWindow/C NSORT_Graph
-			DisplayLowSet()
-		else
-			if(cmpstr(ctrlName,"Plot_2")==0)
+		strswitch(ctrlName)	// string switch
+			case "Plot_1":		
+				//low-q
+				Display/K=1
+				DoWindow/C NSORT_Graph
+				DisplayLowSet()
+				break
+			case "Plot_2":		
 				//medium-q
 				Display/K=1
 				DoWindow/C NSORT_Graph
 				DisplayMedSet()
-			else
+				break
+			case "Plot_3":		
 				//high-q
 				Display/K=1
 				DoWindow/C NSORT_Graph
 				DisplayHighSet()
-			Endif
-		Endif
+				break
+			case "Plot_4":		
+				//highest-q
+				Display/K=1
+				DoWindow/C NSORT_Graph
+				DisplayHighestSet()
+				break
+		endswitch
 		Legend
 	else
 		//plot already exists, waves have been updated
 		//make sure that the desired waves are actually on the graph, and add them if they aren't
 		list = TraceNameList("NSORT_Graph",";",1)
 	
-		if(cmpstr(ctrlName,"Plot_1")==0)
-			//low-q
-			isOnPlot = strsearch(list, "LowQSet_i", 0)		// isOnPlot == -1 if it is NOT found in the list
-			if(isOnPlot == -1)
-				DisplayLowSet()
-			Endif
-		else
-			if(cmpstr(ctrlName,"Plot_2")==0)
+		strswitch(ctrlName)	// string switch
+			case "Plot_1":		
+				//low-q
+				isOnPlot = strsearch(list, "LowQSet_i", 0)		// isOnPlot == -1 if it is NOT found in the list
+				if(isOnPlot == -1)
+					DisplayLowSet()
+				Endif
+				break
+			case "Plot_2":		
 				//medium-q
 				isOnPlot = strsearch(list, "MedQSet_i", 0)		// isOnPlot == -1 if it is NOT found in the list
 				if(isOnPlot == -1)
 					DisplayMedSet()
 				Endif
-			else
+				break
+			case "Plot_3":		
 				//high-q
 				isOnPlot = strsearch(list, "HighQSet_i", 0)		// isOnPlot == -1 if it is NOT found in the list
 				if(isOnPlot == -1)
 					DisplayHighSet()
 				Endif
-			Endif
-		Endif
-	Endif
-	//the stripPoints variable boxes should also update the graph, if necessary
+				break
+			case "Plot_4":		
+				//highest-q
+				isOnPlot = strsearch(list, "HighestQSet_i", 0)		// isOnPlot == -1 if it is NOT found in the list
+				if(isOnPlot == -1)
+					DisplayHighestSet()
+				Endif
+				break
+		endswitch	
 	
+	Endif
+	
+	
+	//the stripPoints variable boxes should also update the graph, if necessary
+	return(0)
+End
+
+//adds both highest-q sets (full and trimmed) to the graph, which is 
+//assumed to exist along with the high-q waves
+//
+Function DisplayHighestSet()
+	//function assumes that the window "NSORT_Graph" already exists
+//	DoWindow/F NSORT_Graph
+
+	SetDataFolder root:HighestQSet:
+	AppendToGraph/W=NSORT_Graph $"HighestQSet_i" vs $"HighestQSet_q"
+	ModifyGraph/W=NSORT_Graph log=1,mode=3,marker($"HighestQSet_i")=8,msize=2,rgb($"HighestQSet_i")=(65535,32896,0),opaque($"HighestQSet_i")=1
+	ErrorBars/W=NSORT_Graph/T=0 $"HighestQSet_i" Y,wave=($"HighestQSet_s",$"HighestQSet_s")
+	AppendToGraph/W=NSORT_Graph $"TrimHighestQSet_i" vs $"TrimHighestQSet_q"
+	ModifyGraph/W=NSORT_Graph mode($"TrimHighestQSet_i")=3,marker($"TrimHighestQSet_i")=19,msize=2,rgb($"TrimHighestQSet_i")=(65535,32896,0)
+	SetDataFolder root:
 End
 
 //adds both high-q sets (full and trimmed) to the graph, which is 
@@ -558,6 +625,7 @@ Function NSORTPickPathButton(ctrlName) : ButtonControl
 	LowQPopMenuProc("popup_1",1,"")
 	MedQPopMenuProc("popup_2",1,"")
 	HighQPopMenuProc("popup_3",1,"")
+	HighestQPopMenuProc("popup_4",1,"")
 	
 End
 
@@ -571,10 +639,12 @@ End
 // 1 == LowQ
 // 2 == MedQ
 // 3 == HighQ
+// 4 == HighestQ
 //
 //"Plot_1" is the low-q button name
 //"Plot_2" is the med-q button name
 //"Plot_3" is the high-q button name
+//"Plot_4" is the high-q button name
 //
 //calling plot_0_Button() responds as if that named button were pressed
 // and gets the proper number to trim directly from the SetVar
@@ -609,10 +679,11 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 	NVAR Columns1 = root:myGlobals:NSORT:gColumns1
 	NVAR Columns2 = root:myGlobals:NSORT:gColumns2
 	NVAR Columns3 = root:myGlobals:NSORT:gColumns3
-	if( (Columns1 == 3) || (Columns2 == 3) || (Columns3 == 3) ) 
+	NVAR Columns4 = root:myGlobals:NSORT:gColumns4
+	if( (Columns1 == 3) || (Columns2 == 3) || (Columns3 == 3) || (Columns4 == 3)) 
 		isAThree = 1
 	endif
-	if( (Columns1 == 6) || (Columns2 == 6) || (Columns3 == 6) ) 
+	if( (Columns1 == 6) || (Columns2 == 6) || (Columns3 == 6) || (Columns4 == 6)) 
 		isASix = 1
 	endif
 	if( (isAThree == 1) && (isASix == 1))
@@ -620,7 +691,7 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 	endif
 	
 	//is there just one data set? if so, then dispatch to a simpler routine, since no normalization is needed
-	ControlInfo/W=NSORT_Panel popup_2		//if MedQSet is "none", then so is HighQSet
+	ControlInfo/W=NSORT_Panel popup_2		//if MedQSet is "none", then so is HighQSet and HighestQSet
 	fileStr = S_Value
 	if(cmpstr(fileStr,"none") == 0)
 		// just like in the rescaling routines, always RELOAD the data  !!!
@@ -657,9 +728,9 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 			
 		ControlInfo/W=NSORT_Panel popup_1
 		if(isAThree)
-			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none",S_Value,scaleFactor,1)
+			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none","none",S_Value,scaleFactor,1,1)
 		else
-			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none",S_Value,scaleFactor,1,res=lowres)
+			WriteNSORTedFile(lowq,lowi,lows,S_Value,"none","none","none",S_Value,scaleFactor,1,1,res=lowres)
 		endif
 		//  just get the new list and return - don't actually "pop" the menu, or the selected item will change
 		SVAR popList = root:myGlobals:NSORT:gDataPopList
@@ -691,7 +762,7 @@ End
 //
 Window NSORT_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(569,69,944,485)/K=2
+	NewPanel /W=(569,69,944,584)//K=2
 	ModifyPanel cbRGB=(49151,53155,65535)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
@@ -701,21 +772,28 @@ Window NSORT_Panel()
 	DrawLine 0,128,346,128
 	DrawLine 0,214,346,214
 	DrawLine 0,295,346,295
+	DrawLine 0,372,347,372
+	DrawLine 0,460,346,460
+	
 	SetDrawEnv fstyle= 5
 	DrawText 5,74,"Low Q:"
 	SetDrawEnv fstyle= 5
 	DrawText 5,148,"Medium Q:"
 	SetDrawEnv fstyle= 5
 	DrawText 8,234,"High Q: (or none)"
+	SetDrawEnv fstyle= 5
+	DrawText 8,314,"Highest Q: (or none)"
 	SetDrawEnv fstyle= 4
 	DrawText 178,75,"Delete Points?"
 	SetDrawEnv fstyle= 4
 	DrawText 178,146,"Delete Points?"
 	SetDrawEnv fstyle= 4
 	DrawText 184,236,"Delete Points?"
-	DrawLine 0,363,346,363
-	DrawText 31,357,"To Manually scale data, enter scale factors above"
-	Button NSORT_Done,pos={274,387},size={50,20},proc=NSORT_DoneButton,title="Done"
+	SetDrawEnv fstyle= 4
+	DrawText 184,316,"Delete Points?"
+	DrawText 31,456,"To Manually scale data, enter scale factors above"
+	
+	Button NSORT_Done,pos={274,483},size={50,20},proc=NSORT_DoneButton,title="Done"
 	Button NSORT_Done,help={"closes the panel"}
 	Button Plot_1,pos={279,63},size={50,20},proc=Plot_0_Button,title="Plot"
 	Button Plot_1,help={"Plots the dataset from the popup, showing the full set as open circles and the trimmed set as solid circles"}
@@ -723,6 +801,9 @@ Window NSORT_Panel()
 	Button Plot_2,help={"Plots the dataset from the popup, showing the full set as open circles and the trimmed set as solid circles"}
 	Button Plot_3,pos={284,223},size={50,20},proc=Plot_0_Button,title="Plot"
 	Button Plot_3,help={"Plots the dataset from the popup, showing the full set as open circles and the trimmed set as solid circles"}
+	Button Plot_4,pos={284.00,303.00},size={50.00,20.00},proc=Plot_0_Button,title="Plot"
+	Button Plot_4,help={"Plots the dataset from the popup, showing the full set as open circles and the trimmed set as solid circles"}
+
 	Button PathButton,pos={6,26},size={80,20},proc=NSORTPickPathButton,title="Pick Path"
 	Button PathButton,help={"Select the local path to the folder containing your SANS data"}
 	Button helpButton,pos={340,26},size={25,20},proc=ShowNSORTHelp,title="?"
@@ -739,6 +820,10 @@ Window NSORT_Panel()
 	SetVariable end_3,pos={182,269},size={80,14},proc=SetBegOrEnd,title="End Pts"
 	SetVariable end_3,fSize=10,help={"How many points to remove from the high-q end of this dataset"}
 	SetVariable end_3,limits={-Inf,Inf,0},value= root:myGlobals:NSORT:gPtsEnd3
+	SetVariable end_4,pos={182.00,349.00},size={80.00,16.00},proc=SetBegOrEnd,title="End Pts"
+	SetVariable end_4,help={"How many points to remove from the high-q end of this dataset"}
+	SetVariable end_4,fSize=10
+	SetVariable end_4,limits={-inf,inf,0},value= root:myGlobals:NSORT:gPtsEnd4
 	SetVariable beg_1,pos={182,79},size={80,14},proc=SetBegOrEnd,title="Beg Pts"
 	SetVariable beg_1,fSize=10,help={"How many points to remove from the low-q end of this dataset"}
 	SetVariable beg_1,limits={-Inf,Inf,0},value= root:myGlobals:NSORT:gPtsBeg1
@@ -748,20 +833,31 @@ Window NSORT_Panel()
 	SetVariable beg_3,pos={182,246},size={80,14},proc=SetBegOrEnd,title="Beg Pts"
 	SetVariable beg_3,fSize=10,help={"How many points to remove from the low-q end of this dataset"}
 	SetVariable beg_3,limits={-Inf,Inf,0},value= root:myGlobals:NSORT:gPtsBeg3
-	Button DoCombine,pos={13,387},size={160,20},proc=WriteNSORTFileButton,title="Write Combined File"
+	SetVariable beg_4,pos={182.00,326.00},size={80.00,16.00},proc=SetBegOrEnd,title="Beg Pts"
+	SetVariable beg_4,help={"How many points to remove from the low-q end of this dataset"}
+	SetVariable beg_4,fSize=10
+	SetVariable beg_4,limits={-inf,inf,0},value= root:myGlobals:NSORT:gPtsBeg4
+	Button DoCombine,pos={13,483},size={160,20},proc=WriteNSORTFileButton,title="Write Combined File"
 	Button DoCombine,help={"Combine and normalize the selected files as specifed"}
-	SetVariable scale_12,pos={159,305},size={160,14},proc=SetScale_12,title="Mult factor 1-2"
+	SetVariable scale_12,pos={159,381},size={160,14},proc=SetScale_12,title="Mult factor 1-2"
 	SetVariable scale_12,fSize=10,help={"Factor that will multiply medium-q set to scale to low-q set"}
 	SetVariable scale_12,limits={-Inf,Inf,0},value= root:myGlobals:NSORT:gScale1_2
-	SetVariable scale_23,pos={159,325},size={160,14},proc=SetScale_23,title="Mult factor 2-3"
+	SetVariable scale_23,pos={159,401},size={160,14},proc=SetScale_23,title="Mult factor 2-3"
 	SetVariable scale_23,fSize=10,help={"Factor that will multiply high-q set to scale to medium-q set"}
 	SetVariable scale_23,limits={-Inf,Inf,0},value= root:myGlobals:NSORT:gScale2_3
+	SetVariable scale_34,pos={159.00,421.00},size={160.00,16.00},proc=SetScale_34,title="Mult factor 3-4"
+	SetVariable scale_34,help={"Factor that will multiply highest-q set to scale to high-q set"}
+	SetVariable scale_34,fSize=10
+	SetVariable scale_34,limits={-inf,inf,0},value= root:myGlobals:NSORT:gScale3_4
 	CheckBox check1,pos={5,105},size={160,20},proc=CheckProc,title="Normalize to this file",value=1
 	CheckBox check1,help={"If checked, the combined dataset will be normalized to this dataset"}
 	CheckBox check2,pos={5,185},size={160,20},proc=CheckProc,title="Normalize to this file",value=0
 	CheckBox check2,help={"If checked, the combined dataset will be normalized to this dataset"}
 	CheckBox check3,pos={4,270},size={160,20},proc=CheckProc,title="Normalize to this file",value=0
 	CheckBox check3,help={"If checked, the combined dataset will be normalized to this dataset"}
+	CheckBox check4,pos={4.00,350.00},size={107.00,16.00},proc=CheckProc,title="Normalize to this file"
+	CheckBox check4,help={"If checked, the combined dataset will be normalized to this dataset"}
+	CheckBox check4,value= 0
 	PopupMenu popup_1,pos={6,77},size={99,19},proc=LowQPopMenuProc
 	PopupMenu popup_1,mode=1,value= #"root:myGlobals:NSORT:gDataPopList"
 	PopupMenu popup_1,help={"Choose the dataset with the lowest overall q-value (longest detector distance)"}
@@ -771,10 +867,13 @@ Window NSORT_Panel()
 	PopupMenu popup_3,pos={6,239},size={99,19},proc=HighQPopMenuProc
 	PopupMenu popup_3,mode=1,value= #"root:myGlobals:NSORT:gDataPopList_3"
 	PopupMenu popup_3,help={"Choose the dataset with the highest overall q-value (shortest detector distance), or NONE if no third set desired"}
-	CheckBox AutoCheck,pos={14,310},size={100,20},title="Auto Scale",value=0
+	PopupMenu popup_4,pos={6.00,319.00},size={58.00,23.00},proc=HighestQPopMenuProc
+	PopupMenu popup_4,help={"Choose the dataset with the highest overall q-value (shortest detector distance), or NONE if no fourth set desired"}
+	PopupMenu popup_4,mode=1,popvalue="none",value= #"root:myGlobals:NSORT:gDataPopList_3"
+	CheckBox AutoCheck,pos={14,386},size={100,20},title="Auto Scale",value=0
 	CheckBox AutoCheck,help={"If checked, the scale factor will be automatically determined, if not checked, the current values in the fields will be used"}
-	CheckBox PreviewCheck,pos={15,369},size={74,14},title="Preview Only",value= 0
-	CheckBox WarningCheck,pos={111,369},size={93,14},title="Overlap warning?",value= 1
+	CheckBox PreviewCheck,pos={15,465},size={74,14},title="Preview Only",value= 0
+	CheckBox WarningCheck,pos={111,465},size={93,14},title="Overlap warning?",value= 1
 EndMacro
 
 //sets the scale factor (multiplicative) between sets 1 and 2
@@ -802,6 +901,18 @@ Function SetScale_23(ctrlName,varNum,varStr,varName) : SetVariableControl
 	Variable/G root:myGlobals:NSORT:gScale2_3 = varNum
 End
 
+//sets the scale factor (multiplicative) between sets 3 and 4
+//re-sets the global variable
+//
+Function SetScale_34(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+
+	Variable/G root:myGlobals:NSORT:gScale3_4 = varNum
+End
+
 //control procedures for the checkboxes to specify which file is to be
 //held fixed (so all other files are normalized to the checked file
 //the three checkboxes behave as "radio buttons" - only one can be checked
@@ -820,6 +931,7 @@ Function CheckProc(ctrlName,checked) : CheckBoxControl
 			CheckBox check1 value=0
 			CheckBox check2 value=1
 			CheckBox check3 value=0
+			CheckBox check4 value=0
 			Variable/G root:myGlobals:NSORT:gNormToNum = 2
 			break
 		Endif
@@ -827,17 +939,28 @@ Function CheckProc(ctrlName,checked) : CheckBoxControl
 			CheckBox check1 value=0
 			CheckBox check2 value=0
 			CheckBox check3 value=1
+			CheckBox check4 value=0
 			Variable/G root:myGlobals:NSORT:gNormToNum = 3
+			break
+		Endif
+		if(cmpstr(ctrlName,"check4") == 0)
+			CheckBox check1 value=0
+			CheckBox check2 value=0
+			CheckBox check3 value=0
+			CheckBox check4 value=1
+			Variable/G root:myGlobals:NSORT:gNormToNum = 4
 			break
 		Endif
 		//default case is normalize to file1
 		CheckBox check1 value=1
 		CheckBox check2 value=0
 		CheckBox check3 value=0
+			CheckBox check4 value=0
 		Variable/G root:myGlobals:NSORT:gNormToNum = 1
 	While(0)
+	
 	ControlUpdate/A/W=NSORT_Panel
-		DoUpdate
+	DoUpdate
 		
 End
 
@@ -897,6 +1020,34 @@ Function HighQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 End
 
 
+//when menu is popped, it gets a valid list to display and updates the control
+// - will be different, since set 3 can also be "none" if only 2 sets
+//are to be NSORTed
+//
+Function HighestQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum
+	String popStr
+
+	//add the option "none" to the file list (which should already end with a semicolon)
+	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  ReducedDataFileList("")
+
+	ControlUpdate/W=NSORT_Panel popup_4
+	if(cmpstr(popStr,"none")==0)
+		RemoveFromGraph/Z HighestQSet_i,TrimHighestQSet_i		//remove the data from the graph
+	Endif	
+	ControlInfo/W=NSORT_Panel popup_2
+	if(cmpstr(S_Value,"none")==0)
+		PopupMenu popup_3,win=NSORT_Panel,mode=1	//force "none" (item #1) to be the selection if medium is none
+		PopupMenu popup_4,win=NSORT_Panel,mode=1	//force "none" (item #1) to be the selection if medium is none
+	endif
+	ControlInfo/W=NSORT_Panel popup_3
+	if(cmpstr(S_Value,"none")==0)
+		PopupMenu popup_4,win=NSORT_Panel,mode=1	//force "none" (item #1) to be the selection if medium is none
+	endif
+	return(0)	
+End
+
 //be sure to use the "Trim.." datasets that have had the bad points removed
 //and then do the scaling based on the choices in the panel
 //input (auto) is a switch 
@@ -905,8 +1056,8 @@ Function DoAutoScaleFromPanel(auto)
 	Variable auto		//if auto == 1, do the scaling, if 0, use manual scale values
 
 	NVAR normTo = root:myGlobals:NSORT:gNormToNum
-	Variable err=0,setNum,norm12,norm23
-	String fileStr="",tempName="",name1="",name2="",name3="",normToStr=""
+	Variable err=0,setNum,norm12,norm23,norm34
+	String fileStr="",tempName="",name1="",name2="",name3="",normToStr="",name4=""
 	
 //Set the number of output columns
 	Variable numOutputColumns = 0
@@ -914,10 +1065,11 @@ Function DoAutoScaleFromPanel(auto)
 	NVAR Columns1 = root:myGlobals:NSORT:gColumns1
 	NVAR Columns2 = root:myGlobals:NSORT:gColumns2
 	NVAR Columns3 = root:myGlobals:NSORT:gColumns3
-	if( (Columns1 == 3) || (Columns2 == 3) || (Columns3 == 3) ) 
+	NVAR Columns4 = root:myGlobals:NSORT:gColumns4
+	if( (Columns1 == 3) || (Columns2 == 3) || (Columns3 == 3) || (Columns4 == 3) ) 
 		numOutputColumns = 3
 	else
-		if( (Columns1 == 6) && (Columns2 == 6) && ((Columns3 == 0) || (Columns3 == 6)) ) 
+		if( (Columns1 == 6) && (Columns2 == 6) && ((Columns3 == 0) || (Columns3 == 6)) || (Columns4 == 6) ) 
 			numOutputColumns = 6
 		endif
   	endif
@@ -970,19 +1122,45 @@ Function DoAutoScaleFromPanel(auto)
 	Endif
 	//////end load file3
 	
-	//assign filename of file to normalize to
-	if(normTo == 1)
-		normToStr = name1
+	//load file4 , if necessary
+	ControlInfo/W=NSORT_Panel popup_4
+	fileStr = S_Value
+	name4 = fileStr
+	setNum = 4
+	if(cmpstr(fileStr,"none") == 0)
+		//do nothing
 	else
-		if(normTo == 2)
-			normToStr = name2
-		else
-			normToStr = name3
-		Endif
+		//get a valid file based on this partialName and catPathName
+		tempName = FindValidFilename(fileStr)
+	
+		//prepend path to tempName for read routine 
+		PathInfo catPathName
+		tempName = S_path + tempName
+		err = LoadDataForNSORT(tempName,setNum)
 	Endif
+	//////end load file4
+	
+	
+	//assign filename of file to normalize to
+	switch(normTo)
+		case 1:
+			normToStr = name1
+			break
+		case 2:
+			normToStr = name2
+			break
+		case 3:
+			normToStr = name3
+			break
+		case 4:
+			normToStr = name4
+			break
+	endswitch
+
 
 	Variable n1,n2,n12,num2
 	Variable n3,n123
+	Variable n4,n1234
 	
    if(numOutputColumns == 3) //Start the 3-column specific stuff here.
 		//order points in sets 1-2, indexing overlap region
@@ -1070,7 +1248,7 @@ Function DoAutoScaleFromPanel(auto)
 			
 			ControlInfo/W=NSORT_Panel PreviewCheck
 			if( V_Value==0 )		//if zero skip the preview and write out the file
-				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23)
+				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,name4,normToStr,norm12,norm23,norm34)
 			endif
 			//cleanup waves before exiting
 			KillWaves/Z q12,i12,sig12
@@ -1160,10 +1338,127 @@ Function DoAutoScaleFromPanel(auto)
 	
 		ControlInfo/W=NSORT_Panel PreviewCheck
 		if( V_Value==0 )		//if zero skip the preview and write out the file
-			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,normToStr,norm12,norm23)
+			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,name4,normToStr,norm12,norm23,norm34)
 		endif
 		//cleanup waves before exiting
 		KillWaves/Z q12,i12,sig12,q123,i123,sig123
+		
+		
+		//do we need to continue, or write out the set here and stop?
+		if(cmpstr(name4,"none") == 0)
+			//stop here
+			norm34 = 1		//norm34 was not used
+			Variable/G root:myGlobals:NSORT:gScale3_4 = 1
+			//If any of them have three columns write three column data
+			
+			ControlInfo/W=NSORT_Panel PreviewCheck
+			if( V_Value==0 )		//if zero skip the preview and write out the file
+				err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,name4,normToStr,norm12,norm23,norm34)
+			endif
+			//cleanup waves before exiting
+			KillWaves/Z q123,i123,sig123
+			return err
+		Endif
+		
+		//need to add the fourth file... which was already loaded at the top of the function
+		/////
+		//order points in sets 123-4, indexing overlap region
+		//put result in temporary waves
+		WaveStats/Q q123
+		n123 = V_npnts
+		WaveStats/Q $"root:HighestQSet:TrimHighestQSet_q"
+		n4 = V_npnts
+		n1234 = n123 + n4
+		
+		Make/O/N=(n1234) q1234,i1234,sig1234
+		WAVE highestq = $"root:HighestQSet:TrimHighestQSet_q"
+		WAVE highesti = $"root:HighestQSet:TrimHighestQSet_i"
+		WAVE highests = $"root:HighestQSet:TrimHighestQSet_s"
+	
+		q1234[0,n123-1] = q123[p]
+		q1234[n12,n123+n4-1]= highestq[p-n123]
+		i1234[0,n123-1] = i123[p]
+		i1234[n12,n123+n4-1]= highesti[p-n123]
+		sig1234[0,n123-1] = sig123[p]
+		sig1234[n12,n123+n4-1]= highests[p-n123]
+		
+		Sort q1234, q1234,i1234,sig1234
+		/////////////////
+		
+		//find the maximum point number of set 2  in the overlap region
+		FindLevel/P/Q highestq,(q123[n123-1])
+		num2 = trunc(V_levelX)
+		//Print "num2 = ",num2
+		
+		if (auto)
+			//there must be overlap points to use auto-scaling
+			if(numtype(num2) != 0)
+				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
+			endif
+			//do auto-scaling of data
+			norm34 = NCNR_GetScalingInOverlap(num2,q123,i123,highestq,highesti)
+			//Set the global variable for the 123 - 4 scale factor
+			Variable/G root:myGlobals:NSORT:gScale3_4 = norm34
+		else
+			//use the value from the panel ( which is the global)
+			NVAR temp34 = root:myGlobals:NSORT:gScale3_4
+			norm34 = temp34
+		Endif
+		
+// normalization
+		switch (normTo)
+			case 1:
+			case 2:
+			case 3:
+				//normalize to first or second or third file, so multiply fourth by norm34
+				highesti *= norm34
+				highests *= norm34
+				break
+			case 4:
+				//normalize to FOURTH file, 123 by multiplicative factor 1/norm34
+				norm34 = 1/norm34
+				i123 *= norm34
+				sig123 *= norm34
+				// for the display, scale the trimmed sets 1 and 2 and 3
+				lowi *= norm34
+				lows *= norm34
+				medi *= norm34
+				meds *= norm34
+				highi *= norm34
+				highs *= norm34
+				break
+		endswitch
+				
+		ControlUpdate/A/W=NSORT_Panel
+		DoUpdate
+
+		//Print "NSORT-ed ",name1," + ", name2, " + ", name3
+		//Print "normalized to ",normTo
+		//Print "multiplicative factor 1-2 = ",norm12," multiplicative factor 12 - 3 = ",norm23
+		
+		
+		Make/O/N=(n1234) q1234,i1234,sig1234
+		q1234[0,n123-1] = q123[p]
+		q1234[n123,n123+n4-1]= highestq[p-n123]
+		i1234[0,n123-1] = i123[p]
+		i1234[n123,n123+n4-1]= highesti[p-n123]
+		sig1234[0,n123-1] = sig123[p]
+		sig1234[n123,n123+n4-1]= highests[p-n123]
+		
+		Sort q123, q123,i123,sig123
+		//at this point 12 - 3 are combined
+		//write out the set here and stop
+	
+		ControlInfo/W=NSORT_Panel PreviewCheck
+		if( V_Value==0 )		//if zero skip the preview and write out the file
+			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,name4,normToStr,norm12,norm23,norm34)
+		endif
+		//cleanup waves before exiting
+		KillWaves/Z q12,i12,sig12,q123,i123,sig123
+		
+		
+		
+		
 		//combined dataset will already be displayed if the NSORT_Graph is open
 	
 		////////////////
@@ -1187,12 +1482,6 @@ Function DoAutoScaleFromPanel(auto)
 		WAVE medi =  $"root:MedQSet:TrimMedQSet_i"
 		WAVE lows = $"root:LowQSet:TrimLowQSet_s"
 		WAVE meds = $"root:MedQSet:TrimMedQSet_s"
-//		WAVE lowsq = $"root:LowQSet:TrimLowQSet_sq"
-//		WAVE medsq = $"root:MedQSet:TrimMedQSet_sq"
-//		WAVE lowqb = $"root:LowQSet:TrimLowQSet_qb"
-//		WAVE medqb =  $"root:MedQSet:TrimMedQSet_qb"
-//		WAVE lowfs = $"root:LowQSet:TrimLowQSet_fs"
-//		WAVE medfs = $"root:MedQSet:TrimMedQSet_fs"
 		WAVE lowres = $"root:LowQSet:TrimLowQSet_res"
 		WAVE medres = $"root:MedQSet:TrimMedQSet_res"
 		
@@ -1208,12 +1497,6 @@ Function DoAutoScaleFromPanel(auto)
 		qb12[n1,n1+n2-1]= medres[p-n1][1]
 		fs12[0,n1-1] = lowres[p][2]
 		fs12[n1,n1+n2-1]= medres[p-n1][2]
-//		res12[0,n1-1][0]=lowres[p][0]
-//		res12[n1,n1+n2-1][0]=medres[p-n1][0]
-//		res12[0,n1-1][1]=lowres[p][1]
-//		res12[n1,n1+n2-1][1]=medres[p-n1][1]
-//		res12[0,n1-1][2]=lowres[p][2]
-//		res12[n1,n1+n2-1][2]=medres[p-n1][2]
 
 		
 		Sort q12, q12,i12,sig12,sq12,qb12,fs12
@@ -1272,12 +1555,6 @@ Function DoAutoScaleFromPanel(auto)
 		qb12[n1,n1+n2-1]= medres[p-n1][1]
 		fs12[0,n1-1] = lowres[p][2]
 		fs12[n1,n1+n2-1]= medres[p-n1][2]
-//		res12[0,n1-1][0]=lowres[p][0]
-//		res12[n1,n1+n2-1][0]=medres[p-n1][0]
-//		res12[0,n1-1][1]=lowres[p][1]
-//		res12[n1,n1+n2-1][1]=medres[p-n1][1]
-//		res12[0,n1-1][2]=lowres[p][2]
-//		res12[n1,n1+n2-1][2]=medres[p-n1][2]
 
 		
 		Sort q12, q12,i12,sig12,sq12,qb12,fs12
@@ -1293,7 +1570,7 @@ Function DoAutoScaleFromPanel(auto)
 				res12[][0] = sq12[p]
 				res12[][1] = qb12[p]
 				res12[][2] = fs12[p]
-				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,normToStr,norm12,norm23,res=res12)
+				err=WriteNSORTedFile(q12,i12,sig12,name1,name2,name3,name4,normToStr,norm12,norm23,norm34,res=res12)
 			endif
 			// always clean up waves before exiting
 			KillWaves/Z q12,i12,sig12,sq12,qb12,fs12
@@ -1315,30 +1592,21 @@ Function DoAutoScaleFromPanel(auto)
 		WAVE highq = $"root:HighQSet:TrimHighQSet_q"
 		WAVE highi = $"root:HighQSet:TrimHighQSet_i"
 		WAVE highs = $"root:HighQSet:TrimHighQSet_s"
-//		WAVE highsq = $"root:HighQSet:TrimHighQSet_sq"
-//		WAVE highqb = $"root:HighQSet:TrimHighQSet_qb"
-//		WAVE highfs = $"root:HighQSet:TrimHighQSet_fs"
 		WAVE highres = $"root:HighQSet:TrimHighQSet_res"
 	
 	
 		q123[0,n12-1] = q12[p]
-		q123[n1,n12+n3-1]= highq[p-n12]
+		q123[n12,n12+n3-1]= highq[p-n12]
 		i123[0,n12-1] = i12[p]
-		i123[n1,n12+n3-1]= highi[p-n12]
+		i123[n12,n12+n3-1]= highi[p-n12]
 		sig123[0,n12-1] = sig12[p]
-		sig123[n1,n12+n3-1]= highs[p-n12]
+		sig123[n12,n12+n3-1]= highs[p-n12]
 		sq123[0,n12-1] = sq12[p]
-		sq123[n1,n12+n3-1]= highres[p-n12][0]
+		sq123[n12,n12+n3-1]= highres[p-n12][0]
 		qb123[0,n12-1] = qb12[p]
-		qb123[n1,n12+n3-1]= highres[p-n12][1]
+		qb123[n12,n12+n3-1]= highres[p-n12][1]
 		fs123[0,n12-1] = fs12[p]
-		fs123[n1,n12+n3-1]= highres[p-n12][2]
-//		res123[0,n12-1][0] = highres[p][0]
-//		res123[n1,n12+n3-1][0] = highres[p-n12][0]
-//		res123[0,n12-1][1] = highres[p][1]
-//		res123[n1,n12+n3-1][1] = highres[p-n12][1]
-//		res123[0,n12-1][2] = highres[p][2]
-//		res123[n1,n12+n3-1][2] = highres[p-n12][2]
+		fs123[n12,n12+n3-1]= highres[p-n12][2]
 
 		
 		Sort q123, q123,i123,sig123,sq123,qb123,fs123
@@ -1400,33 +1668,158 @@ Function DoAutoScaleFromPanel(auto)
 		qb123[n12,n12+n3-1]= highres[p-n12][1]
 		fs123[0,n12-1] = fs12[p]
 		fs123[n12,n12+n3-1]= highres[p-n12][2]
-//		res123[0,n12-1][0] = highres[p][0]
-//		res123[n1,n12+n3-1][0] = highres[p-n12][0]
-//		res123[0,n12-1][1] = highres[p][1]
-//		res123[n1,n12+n3-1][1] = highres[p-n12][1]
-//		res123[0,n12-1][2] = highres[p][2]
-//		res123[n1,n12+n3-1][2] = highres[p-n12][2]
+
 		
 		Sort q123, q123,i123,sig123,sq123,qb123,fs123
 		//at this point 12 - 3 are combined
-		//write out the set here and stop
+		
+		//do we need to continue, or write out the set here and stop?
+		if(cmpstr(name4,"none") == 0)
+			//stop here
+		
+			ControlInfo/W=NSORT_Panel PreviewCheck
+			if( V_Value==0 )		//if zero skip the preview and write out the file
+				res123[][0] = sq123[p]
+				res123[][1] = qb123[p]
+				res123[][2] = fs123[p]
+				err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,name4,normToStr,norm12,norm23,norm34,res=res123)
+			endif
+			// always clean up waves before exiting
+			KillWaves/Z q12,i12,sig12,q123,i123,sig123,sq123,qb123,fs123 //,res123
+			return err
+		Endif
+		
+		// new 2016 - combine the 4th data set
+
+		//need to add the fourth file... which was already loaded at the top of the function
+		/////
+		//order points in sets 123-4, indexing overlap region
+		//put result in temporary waves
+		WaveStats/Q q123
+		n123 = V_npnts
+		WaveStats/Q $"root:HighestQSet:TrimHighestQSet_q"
+		n4 = V_npnts
+		n1234 = n123 + n4
+		
+		Make/O/N=(n1234) q1234,i1234,sig1234,sq1234,qb1234,fs1234
+		Make/O/N=(n1234,3) res1234
+		WAVE highestq = $"root:HighestQSet:TrimHighestQSet_q"
+		WAVE highesti = $"root:HighestQSet:TrimHighestQSet_i"
+		WAVE highests = $"root:HighestQSet:TrimHighestQSet_s"
+		WAVE highestres = $"root:HighestQSet:TrimHighestQSet_res"
+	
+	
+		q1234[0,n123-1] = q123[p]
+		q1234[n123,n123+n4-1]= highestq[p-n123]
+		i1234[0,n123-1] = i123[p]
+		i1234[n123,n123+n4-1]= highesti[p-n123]
+		sig1234[0,n123-1] = sig123[p]
+		sig1234[n123,n123+n4-1]= highests[p-n123]
+		sq1234[0,n123-1] = sq123[p]
+		sq1234[n123,n123+n4-1]= highestres[p-n123][0]
+		qb1234[0,n123-1] = qb123[p]
+		qb1234[n123,n123+n4-1]= highestres[p-n123][1]
+		fs1234[0,n123-1] = fs123[p]
+		fs1234[n123,n123+n4-1]= highestres[p-n123][2]
+
+		
+		Sort q1234, q1234,i1234,sig1234,sq1234,qb1234,fs1234
+		/////////////////
+		
+		//find the maximum point number of set 2  in the overlap region
+		FindLevel/P/Q highestq,(q123[n123-1])
+		num2 = trunc(V_levelX)
+		//Print "num2 = ",num2
+		
+		if (auto)
+			//there must be overlap points to use auto-scaling
+			if(numtype(num2) != 0)
+				Abort "There are no data points in the overlap region. Either reduce the number of deleted points or use manual scaling."
+			endif
+			//do auto-scaling of data
+			norm34 = NCNR_GetScalingInOverlap(num2,q123,i123,highestq,highesti)
+			//Set the global variable for the 12 - 3 scale factor
+			Variable/G root:myGlobals:NSORT:gScale3_4 = norm34
+		else
+			//use the value from the panel ( which is the global)
+			NVAR temp34 = root:myGlobals:NSORT:gScale3_4
+			norm34 = temp34
+		Endif
+
+// normalization
+		switch (normTo)
+			case 1:
+			case 2:
+			case 3:
+				//normalize to first or second or third file, so multiply fourth by norm34
+				highesti *= norm34
+				highests *= norm34
+				break
+			case 4:
+				//normalize to FOURTH file, 123 by multiplicative factor 1/norm34
+				norm34 = 1/norm34
+				i123 *= norm34
+				sig123 *= norm34
+				// for the display, scale the trimmed sets 1 and 2 and 3
+				lowi *= norm34
+				lows *= norm34
+				medi *= norm34
+				meds *= norm34
+				highi *= norm34
+				highs *= norm34
+				break
+		endswitch
+		
+	
+		//Print "NSORT-ed ",name1," + ", name2, " + ", name3
+		//Print "normalized to ",normTo
+		//Print "multiplicative factor 1-2 = ",norm12," multiplicative factor 12 - 3 = ",norm23
+		ControlUpdate/A/W=NSORT_Panel
+		DoUpdate
+		
+		Make/O/N=(n1234) q1234,i1234,sig1234
+		Make/O/N=(n1234,3) res1234
+		q1234[0,n123-1] = q123[p]
+		q1234[n123,n123+n4-1]= highestq[p-n123]
+		i1234[0,n123-1] = i123[p]
+		i1234[n123,n123+n4-1]= highesti[p-n123]
+		sig1234[0,n123-1] = sig123[p]
+		sig1234[n123,n123+n4-1]= highests[p-n123]
+		sq1234[0,n123-1] = sq123[p]
+		sq1234[n123,n123+n4-1]= highestres[p-n123][0]
+		qb1234[0,n123-1] = qb123[p]
+		qb1234[n123,n123+n4-1]= highestres[p-n123][1]
+		fs1234[0,n123-1] = fs123[p]
+		fs1234[n123,n123+n4-1]= highestres[p-n123][2]
+		
+		Sort q1234, q1234,i1234,sig1234,sq1234,qb1234,fs1234
+		//at this point 123 - 4 are combined
+		
+//write out the set here and stop
+			//stop here
 	
 		ControlInfo/W=NSORT_Panel PreviewCheck
 		if( V_Value==0 )		//if zero skip the preview and write out the file
-			res123[][0] = sq123[p]
-			res123[][1] = qb123[p]
-			res123[][2] = fs123[p]
-			err=WriteNSORTedFile(q123,i123,sig123,name1,name2,name3,normToStr,norm12,norm23,res=res123)
+			res1234[][0] = sq1234[p]
+			res1234[][1] = qb1234[p]
+			res1234[][2] = fs1234[p]
+			err=WriteNSORTedFile(q1234,i1234,sig1234,name1,name2,name3,name4,normToStr,norm12,norm23,norm34,res=res1234)
 		endif
-		//cleanup waves before exiting
-		KillWaves/Z q12,i12,sig12,q123,i123,sig123,sq123,qb123,fs123 //,res123
+		// always clean up waves before exiting
+		KillWaves/Z q123,i123,sig123,q1234,i1234,sig1234,sq1234,qb1234,fs1234 //,res1234
+		return err
+
 		//combined dataset will already be displayed if the NSORT_Graph is open
 	
 		////////////////
 		return err
-   endif // End the 6-column specific stuff here
+   endif // End the if(6-column) specific stuff here
+	
 	
 End
+
+
+
 
 
 
@@ -1487,6 +1880,85 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	else
 		PopupMenu popup_3,win=NSORT_Panel,mode=(1)
 	endif
+End
+
+/////////////////////////////////////////////////////////////
+// testing, may speed up NSORT, NCNR-specific naming scheme of 
+// run numbers and a run prefix
+//
+// it is assumed that you are combining data from the current reduction session,
+// so that the XML y/n hasn't changed.
+//
+// updated to use 4 files
+//
+// TODO:
+// -- still assuming ABS
+//
+Function Set4NSORTFiles(low,med,hi,highest,pref)
+	Variable low,med,hi,highest
+	String pref
+	
+	//make strings from the numbers
+	String absStr="",ext
+	Variable popNum
+	DoWindow/F NSORT_Panel
+	
+	SVAR lowQPopStr = root:myGlobals:NSORT:gDataPopList
+	SVAR medHiQPopStr = root:myGlobals:NSORT:gDataPopList_3
+	
+	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	if(useXMLOutput)
+		ext = ".ABSx"
+	else
+		ext = ".ABS"
+	endif
+	
+	//lowQ menu
+	absStr = pref+RunDigitString(low)+ext
+	popNum = WhichListItem(absStr,lowQPopStr,";",0)
+	if(popNum == -1)
+		Abort "Could not find file: " + absStr +" aborting...  Be sure that your output format is the same as the input"
+	endif
+	popNum += 1		// add 1 to get the item number
+	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
+	
+	//medQ (a different list for the popup)
+	absStr = pref+RunDigitString(med)+ext
+	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
+	if(popNum == -1)
+		Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
+	endif
+	popNum += 1		// add 1 to get the item number
+	PopupMenu popup_2,win=NSORT_Panel,mode=(popNum)
+	
+	
+	//highQ (same pop list as medQ)
+	if(hi != 0)
+		absStr = pref+RunDigitString(hi)+ext
+		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
+		if(popNum == -1)
+			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
+		endif
+		popNum += 1		// add 1 to get the item number
+		PopupMenu popup_3,win=NSORT_Panel,mode=(popNum)
+	else
+		PopupMenu popup_3,win=NSORT_Panel,mode=(1)
+	endif
+	
+	//highestQ (same pop list as medQ)
+	if(highest != 0)
+		absStr = pref+RunDigitString(highest)+ext
+		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
+		if(popNum == -1)
+			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
+		endif
+		popNum += 1		// add 1 to get the item number
+		PopupMenu popup_4,win=NSORT_Panel,mode=(popNum)
+	else
+		PopupMenu popup_4,win=NSORT_Panel,mode=(1)
+	endif
+	
+	return(0)
 End
 
 //more beta procedures - to create a table of scattering runs to combine with NSORT
@@ -1691,17 +2163,19 @@ Function DoCombineFiles(ctrlName)
 	LowQPopMenuProc("",1,"")
 	MedQPopMenuProc("",1,"")
 	HighQPopMenuProc("",1,"")
+	HighestQPopMenuProc("",1,"")
 	
 //	String savedDataFolder = GetDataFolder(1)		// save
 	Wave LowRun = root:myGlobals:CombineTable:LowRun
 	Wave MediumRun = root:myGlobals:CombineTable:MediumRun
 	Wave HighRun = root:myGlobals:CombineTable:HighRun
+	Wave HighestRun = root:myGlobals:CombineTable:HighestRun
 	Wave/T prefix = root:myGlobals:CombineTable:Prefix
 	Wave/T saveName = root:myGlobals:CombineTable:saveName
 
 	Variable/G root:myGlobals:CombineTable:useTable=1
 	
-	Variable num=numpnts(lowRun),ii,lowFile,medFile,hiFile
+	Variable num=numpnts(lowRun),ii,lowFile,medFile,hiFile,highestFile
 	String prefixStr = ""
 	Pathinfo catPathName
 	String path=S_Path
@@ -1711,9 +2185,10 @@ Function DoCombineFiles(ctrlName)
 		lowFile = LowRun[ii]
 		medFile = MediumRun[ii]
 		hiFile = highRun[ii]
+		highestFile = highestRun[ii]
 		prefixStr = prefix[ii]
 		
-		Set3NSORTFiles(lowFile,medFile,hiFile,prefixStr)		//set the files and pop the NSORT popups
+		Set4NSORTFiles(lowFile,medFile,hiFile,highestFile,prefixStr)		//set the files and pop the NSORT popups
 		
 		//pass the new file name in as a global (ugh!)
 		String/G root:myGlobals:CombineTable:SaveNameStr = path+saveName[ii]
@@ -1782,6 +2257,7 @@ Function SendSelectionToTable()
 		Wave low = $"root:myGlobals:CombineTable:LowRun"
 		Wave medium = $"root:myGlobals:CombineTable:MediumRun"
 		Wave high = $"root:myGlobals:CombineTable:HighRun"
+		Wave highest = $"root:myGlobals:CombineTable:HighestRun"
 		Wave/T prefix = $"root:myGlobals:CombineTable:Prefix"
 		Wave/T saveName = $"root:myGlobals:CombineTable:SaveName"
 		
@@ -1804,32 +2280,39 @@ Function SendSelectionToTable()
 		return(1)		//user cancel, get out before anything is set
 	endif
 
-
-	if( !(num==2 || num==3) )
-		Abort "invalid table selection - must select either 2 or 3 files to combine"
+	if( !(num==2 || num==3 || num==4) )
+		Abort "invalid table selection - must select either 2 or 3 or 4 files to combine"
 	endif
-	Make/O/T/N=(3) tmpLbl
-	Make/O/N=(3) tmpSDD,tmpRun
+	Make/O/T/N=(4) tmpLbl
+	Make/O/N=(4) tmpSDD,tmpRun
+	
+	//initialize with fake values in case 2 or 3 files are combined
+	tmpLbl = ""
+	tmpSDD = 0.01		//fake sdd in meters to always be the "highest" Q
+	tmpRun = 0			//pass a run number of zero to be later interpreted as "none"
+	
+	//fill in the real values from the selection
 	for(ii=V_startRow;ii<=V_endRow;ii+=1)
 		tmpLbl[ii-V_startRow] = gLabels[ii]
 		tmpSDD[ii-V_startRow] = gSDD[ii]
 		tmpRun[ii-V_startRow] = gRunNumber[ii]
 	endfor
-	if(num==2)	// then "highest" q run needs to be forced to zero
-		ii=2
-		tmpLbl[ii] = ""
-		tmpSDD[ii] = 0.01		//fake sdd in meters to always be the "highest" Q
-		tmpRun[ii] = 0			//pass a run number of zero to be later interpreted as "none"
-	endif
+//	if(num==2)	// then "highest" q run needs to be forced to zero
+//		ii=2
+//		tmpLbl[ii] = ""
+//		tmpSDD[ii] = 0.01		//fake sdd in meters to always be the "highest" Q
+//		tmpRun[ii] = 0			//pass a run number of zero to be later interpreted as "none"
+//	endif
 	Sort tmpSDD, tmpSDD,tmpLbl,tmpRun
 	
 //	Print tmpSDD
 	
 	num=numpnts(low)
-	InsertPoints num, 1, low,medium,high,prefix,SaveName
-	low[num] = tmpRun[2]
-	medium[num] = tmpRun[1]
-	high[num] = tmpRun[0]
+	InsertPoints num, 1, low,medium,high,highest,prefix,SaveName
+	low[num] = tmpRun[3]
+	medium[num] = tmpRun[2]
+	high[num] = tmpRun[1]
+	highest[num] = tmpRun[0]
 	prefix[num] = GetPrefixStrFromFile(filenames[ii])
 	saveName[num] = saveStr	
 
@@ -1904,13 +2387,14 @@ Function TableToCombineAndSave(clear)
 		Make/O/N=0 $"root:myGlobals:CombineTable:LowRun"
 		Make/O/N=0 $"root:myGlobals:CombineTable:MediumRun"
 		Make/O/N=0 $"root:myGlobals:CombineTable:HighRun"
+		Make/O/N=0 $"root:myGlobals:CombineTable:HighestRun"
 		Make/O/T/N=0 $"root:myGlobals:CombineTable:Prefix"
 		Make/O/T/N=0 $"root:myGlobals:CombineTable:SaveName"
 	endif
 	SetDataFolder root:myGlobals:CombineTable
 	
 	// make the second table
-	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,Prefix,SaveName
+	AppendToTable/W=CombinePanel#RunNumbersToCombine LowRun,MediumRun,HighRun,HighestRun,Prefix,SaveName
 	
 	SetDataFolder root:
 End
@@ -1918,7 +2402,8 @@ End
 
 
 /////////////////////////////////
-
+// currently unused
+//
 Proc MakeCombineTable_byName()
 	NewDataFolder/O root:myGlobals:CombineTable			//in case it doesn't exist yet
 	Make/O/T/N=1 lowQfile,medQfile,hiQfile,saveName
@@ -1927,6 +2412,9 @@ Proc MakeCombineTable_byName()
 	ModifyTable width(saveName)=120	
 End
 
+//
+// currently unused
+//
 // Another beta procedure, to allow files to be combined quickly
 // - make 4 waves (text) with the low, med, hi, and wave names
 // (if there is no hiQ, then pass a wave with "" for all entries)

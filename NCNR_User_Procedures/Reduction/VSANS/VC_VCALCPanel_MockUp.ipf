@@ -672,66 +672,113 @@ Proc VC_Initialize_Space()
 
 ///// FRONT DETECTOR BANKS
 // dimensions for the detector banks (then get them in the drawing functions)
+// Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
+// so keep them as variables
 	Variable/G gFront_LR_w = 384		//front bank, nominal LR panel width (mm)
 	Variable/G gFront_LR_h = 1000
 	Variable/G gFront_TB_w = 500
 	Variable/G gFront_TB_h = 384
 
 // SDD offset of T/B (decide on units??)
+// for the Nexus file, the detector distance should already be corrected for the "setback"
+// of the T/B panels. keep as VCALC variable
 	Variable/G gFront_SDDOffset = 300			// (mm)
 	
-// detector resolution (xy for each bank!)
-	Variable/G gFront_L_pixelX = 0.84			// (cm)		these tubes are vertical 8.4 mm spacing (JGB 2/2106)
-	Variable/G gFront_L_pixelY = 0.8			// (cm)		//!! now 8 mm, since nPix=128, rather than 256
-	Variable/G gFront_R_pixelX = 0.84			// (cm)
-	Variable/G gFront_R_pixelY = 0.8			// (cm)
 	
-	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G gFront_T_pixelY = 0.84			// (cm)
-	Variable/G gFront_B_pixelX = 0.4			// (cm)
-	Variable/G gFront_B_pixelY = 0.84			// (cm)
+// detector resolution (xy for each bank!)
+	Make/O/D/N=1 :entry:entry:instrument:detector_FL:x_pixel_size = 0.84		// (cm)		these tubes are vertical 8.4 mm x-spacing (JGB 2/2106)
+	Make/O/D/N=1 :entry:entry:instrument:detector_FL:y_pixel_size = 0.8		// (cm)		//!! now 8 mm, since nPix=128, rather than 256
+	Make/O/D/N=1 :entry:entry:instrument:detector_FR:x_pixel_size = 0.84
+	Make/O/D/N=1 :entry:entry:instrument:detector_FR:y_pixel_size = 0.8
+	//T/B
+	Make/O/D/N=1 :entry:entry:instrument:detector_FT:x_pixel_size = 0.4		//these tubes are horizontal
+	Make/O/D/N=1 :entry:entry:instrument:detector_FT:y_pixel_size = 0.84
+	Make/O/D/N=1 :entry:entry:instrument:detector_FB:x_pixel_size = 0.4
+	Make/O/D/N=1 :entry:entry:instrument:detector_FB:y_pixel_size = 0.84
+	
+//	Variable/G gFront_L_pixelX = 0.84			
+//	Variable/G gFront_L_pixelY = 0.8			
+//	Variable/G gFront_R_pixelX = 0.84			// (cm)
+//	Variable/G gFront_R_pixelY = 0.8			// (cm)
+//	
+//	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
+//	Variable/G gFront_T_pixelY = 0.84			// (cm)
+//	Variable/G gFront_B_pixelX = 0.4			// (cm)
+//	Variable/G gFront_B_pixelY = 0.84			// (cm)
 	
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
-	Variable/G gFront_L_nPix_X = 48		// == number of tubes
-	Variable/G gFront_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
-	Variable/G gFront_R_nPix_X = 48		// == number of tubes
-	Variable/G gFront_R_nPix_Y = 128		// == pixels in vertical direction 
-	Variable/G gFront_T_nPix_X = 128		// == pixels in horizontal direction
-	Variable/G gFront_T_nPix_Y = 48		// == number of tubes
-	Variable/G gFront_B_nPix_X = 128		// == pixels in horizontal direction
-	Variable/G gFront_B_nPix_Y = 48		// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_FL:pixel_num_x = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_FL:pixel_num_y = 128	// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+	Make/O/D/N=1 :entry:entry:instrument:detector_FR:pixel_num_x = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_FR:pixel_num_y = 128	// == pixels in vertical direction 
+	Make/O/D/N=1 :entry:entry:instrument:detector_FT:pixel_num_x = 128	// == pixels in horizontal direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_FT:pixel_num_y = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_FB:pixel_num_x = 128	// == pixels in horizontal direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_FB:pixel_num_y = 48	// == number of tubes
+
+//	Variable/G gFront_L_nPix_X = 48		// == number of tubes
+//	Variable/G gFront_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+//	Variable/G gFront_R_nPix_X = 48		// == number of tubes
+//	Variable/G gFront_R_nPix_Y = 128		// == pixels in vertical direction 
+//	Variable/G gFront_T_nPix_X = 128		// == pixels in horizontal direction
+//	Variable/G gFront_T_nPix_Y = 48		// == number of tubes
+//	Variable/G gFront_B_nPix_X = 128		// == pixels in horizontal direction
+//	Variable/G gFront_B_nPix_Y = 48		// == number of tubes
 
 
 
 
 ///// MIDDLE DETECTOR BANKS
+// Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
+// so keep them as variables
 	Variable/G gMiddle_LR_w = 384		//middle bank, nominal LR panel width (mm)
 	Variable/G gMiddle_LR_h = 1000
 	Variable/G gMiddle_TB_w = 500
 	Variable/G gMiddle_TB_h = 384
 // SDD offset of T/B (decide on units??)
+// for the Nexus file, the detector distance should already be corrected for the "setback"
+// of the T/B panels. keep as VCALC variable
 	Variable/G gMiddle_SDDOffset = 300			// (mm)
 	
 // detector resolution (xy for each bank!)
-	Variable/G gMiddle_L_pixelX = 0.84		// (cm)		these tubes are vertical
-	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
-	Variable/G gMiddle_R_pixelX = 0.84		// (cm)
-	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
-	
-	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-	Variable/G gMiddle_T_pixelY = 0.84			// (cm)
-	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
-	Variable/G gMiddle_B_pixelY = 0.84		// (cm)
+	Make/O/D/N=1 :entry:entry:instrument:detector_ML:x_pixel_size = 0.84		// (cm)		these tubes are vertical 8.4 mm x-spacing (JGB 2/2106)
+	Make/O/D/N=1 :entry:entry:instrument:detector_ML:y_pixel_size = 0.8		// (cm)		//!! now 8 mm, since nPix=128, rather than 256
+	Make/O/D/N=1 :entry:entry:instrument:detector_MR:x_pixel_size = 0.84
+	Make/O/D/N=1 :entry:entry:instrument:detector_MR:y_pixel_size = 0.8
+	//T/B
+	Make/O/D/N=1 :entry:entry:instrument:detector_MT:x_pixel_size = 0.4		//these tubes are horizontal
+	Make/O/D/N=1 :entry:entry:instrument:detector_MT:y_pixel_size = 0.84
+	Make/O/D/N=1 :entry:entry:instrument:detector_MB:x_pixel_size = 0.4
+	Make/O/D/N=1 :entry:entry:instrument:detector_MB:y_pixel_size = 0.84
+
+//	Variable/G gMiddle_L_pixelX = 0.84		// (cm)		these tubes are vertical
+//	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
+//	Variable/G gMiddle_R_pixelX = 0.84		// (cm)
+//	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
+//	
+//	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
+//	Variable/G gMiddle_T_pixelY = 0.84			// (cm)
+//	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
+//	Variable/G gMiddle_B_pixelY = 0.84		// (cm)
 
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
-	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes
-	Variable/G gMiddle_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
-	Variable/G gMiddle_R_nPix_X = 48		// == number of tubes
-	Variable/G gMiddle_R_nPix_Y = 128		// == pixels in vertical direction 
-	Variable/G gMiddle_T_nPix_X = 128		// == pixels in horizontal direction
-	Variable/G gMiddle_T_nPix_Y = 48		// == number of tubes
-	Variable/G gMiddle_B_nPix_X = 128		// == pixels in horizontal direction
-	Variable/G gMiddle_B_nPix_Y = 48		// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_ML:pixel_num_x = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_ML:pixel_num_y = 128	// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+	Make/O/D/N=1 :entry:entry:instrument:detector_MR:pixel_num_x = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_MR:pixel_num_y = 128	// == pixels in vertical direction 
+	Make/O/D/N=1 :entry:entry:instrument:detector_MT:pixel_num_x = 128	// == pixels in horizontal direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_MT:pixel_num_y = 48	// == number of tubes
+	Make/O/D/N=1 :entry:entry:instrument:detector_MB:pixel_num_x = 128	// == pixels in horizontal direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_MB:pixel_num_y = 48	// == number of tubes
+	
+//	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes
+//	Variable/G gMiddle_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
+//	Variable/G gMiddle_R_nPix_X = 48		// == number of tubes
+//	Variable/G gMiddle_R_nPix_Y = 128		// == pixels in vertical direction 
+//	Variable/G gMiddle_T_nPix_X = 128		// == pixels in horizontal direction
+//	Variable/G gMiddle_T_nPix_Y = 48		// == number of tubes
+//	Variable/G gMiddle_B_nPix_X = 128		// == pixels in horizontal direction
+//	Variable/G gMiddle_B_nPix_Y = 48		// == number of tubes
 
 
 
@@ -740,10 +787,16 @@ Proc VC_Initialize_Space()
 //// BACK DETECTOR
 	Variable/G gBack_w = 320				//w and h for the back detector, (mm)
 	Variable/G gBack_h = 320
-	Variable/G gBack_pixelX = 0.1		// 1mm resolution (units of cm here)
-	Variable/G gBack_pixelY = 0.1
-	Variable/G gBack_nPix_X = 320		// detector pixels in x-direction
-	Variable/G gBack_nPix_Y = 320	
+	
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:x_pixel_size = 0.1		// 1mm resolution (units of cm here)
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:y_pixel_size = 0.1		
+//	Variable/G gBack_pixelX = 0.1		
+//	Variable/G gBack_pixelY = 0.1
+
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_x = 320	// detector pixels in x-direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_y = 320	
+//	Variable/G gBack_nPix_X = 320		
+//	Variable/G gBack_nPix_Y = 320	
 
 
 // Generate all of the waves used for the detector and the q values
@@ -753,19 +806,19 @@ Proc VC_Initialize_Space()
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y) det_FL
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_FL
 	Duplicate/O det_FL qTot_FL,qx_FL,qy_FL,qz_FL
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y) det_FR
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_FR
 	Duplicate/O det_FR qTot_FR,qx_FR,qy_FR,qz_FR
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y) det_FT
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_FT
 	Duplicate/O det_FT qTot_FT,qx_FT,qy_FT,qz_FT
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X,root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y) det_FB
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_FB
 	Duplicate/O det_FB qTot_FB,qx_FB,qy_FB,qz_FB
 
 
@@ -774,19 +827,19 @@ Proc VC_Initialize_Space()
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y) det_ML
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_ML
 	Duplicate/O det_ML qTot_ML,qx_ML,qy_ML,qz_ML
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y) det_MR
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_MR
 	Duplicate/O det_MR qTot_MR,qx_MR,qy_MR,qz_MR
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y) det_MT
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_MT
 	Duplicate/O det_MT qTot_MT,qx_MT,qy_MT,qz_MT
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X,root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y) det_MB
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_MB
 	Duplicate/O det_MB qTot_MB,qx_MB,qy_MB,qz_MB
 
 // BACK
@@ -794,7 +847,7 @@ Proc VC_Initialize_Space()
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
-	Make/O/D/N=(root:Packages:NIST:VSANS:VCALC:gBack_nPix_X,root:Packages:NIST:VSANS:VCALC:gBack_nPix_Y) det_B
+	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_B
 	Duplicate/O det_B qTot_B,qx_B,qy_B,qz_B
 
 

@@ -132,6 +132,8 @@ Window VSANS_DataPanel() : Panel
 	
 	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
 	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
+	Button button_SpreadPanels,pos={603,488},size={100,20},proc=SpreadPanelButtonProc,title="Spread Panels"
+	Button button_RestorePanels,pos={603,526},size={100,20},proc=RestorePanelButtonProc,title="Restore Panels"
 
 // on the tabs, always visible
 	TitleBox title_xy,pos={24,71},size={76,20},variable= file_name
@@ -161,7 +163,8 @@ Window VSANS_DataPanel() : Panel
 	
 	Make/O/D tmp_asdf
 	// for back panels (in pixels?)	
-	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
+//	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
+	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsB
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -172,7 +175,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 	
 	// for middle panels (in pixels?)	
-	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
+	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsM
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -183,7 +186,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 	
 	// for front panels (in pixels?)	
-	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
+	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsF
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -340,10 +343,11 @@ Function VSANSDataHook(s)
 					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
 //
 // TODO: these q-values ignore the non-linear corrections!!!
-// -- What can I do about this?					
-					gQQ = VC_CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQX = VC_CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQY = VC_CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+// -- What can I do about this?	
+// TODO: figure out what coordinates I need to pass -- xloc, yloc, textX, testY, (+1 on any?)				
+					gQQ = VC_CalcQval(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQX = VC_CalcQX(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQY = VC_CalcQY(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 
 					ii = -1		//look no further, set ii to bad value to exit the for loop
 				endif	//end if(mouse is over a detector panel)
@@ -416,7 +420,7 @@ Function VDataTabProc(tca) : TabControl
 					AppendImage/W=VSANS_Data#det_panelsB det_B
 					ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctab= {*,*,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,545,620)
+				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
 
@@ -460,7 +464,7 @@ Function VDataTabProc(tca) : TabControl
 					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {*,*,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50,185,545,620)
+				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
 
@@ -507,7 +511,7 @@ Function VDataTabProc(tca) : TabControl
 					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {*,*,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {*,*,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50,185,545,620)
+				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				
@@ -759,6 +763,44 @@ Function BeamCtrButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			V_FindBeamCenter()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//TODO
+//
+// this "spreads" the display of panels to a nominal separation for easier viewing
+//
+Function SpreadPanelButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_SpreadOutPanels()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//TODO
+//
+// this "restores" the display of panels to their actual position based on the apparent beam center
+//
+Function RestorePanelButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_RestorePanels()
 			break
 		case -1: // control being killed
 			break
