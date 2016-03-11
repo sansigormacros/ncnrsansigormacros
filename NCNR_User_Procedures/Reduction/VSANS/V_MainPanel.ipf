@@ -121,11 +121,11 @@ Proc Fit1D_MainButtonProc(ctrlName) : ButtonControl
 	OpenFITPanel()
 End
 
-Proc FitRPA_MainButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-
-	OpenFITRPAPanel()
-End
+//Proc FitRPA_MainButtonProc(ctrlName) : ButtonControl
+//	String ctrlName
+//
+//	OpenFITRPAPanel()
+//End
 
 Proc Subtract1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -351,8 +351,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_2b,help={"Sorts and combines 2 or 3 separate 1-D datasets into a single file. Use \"Plot\" button to import 1-D data files"}
 	Button MainButton_2c,pos={15,150},size={60,20},proc=Fit1D_MainButtonProc,title="FIT"
 	Button MainButton_2c,help={"Shows panel for performing a variety of linearized fits to 1-D data files. Use \"Plot\" button to import 1-D data files"}
-	Button MainButton_2d,pos={15,180},size={60,20},proc=FITRPA_MainButtonProc,title="FIT/RPA"
-	Button MainButton_2d,help={"Shows panel for performing a fit to a polymer standard."}
+//	Button MainButton_2d,pos={15,180},size={60,20},proc=FITRPA_MainButtonProc,title="FIT/RPA"
+//	Button MainButton_2d,help={"Shows panel for performing a fit to a polymer standard."}
 //	Button MainButton_2e,pos={120,90},size={90,20},proc=Subtract1D_MainButtonProc,title="Subtract 1D"
 //	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
 	Button MainButton_2e,pos={120,90},size={110,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
@@ -362,7 +362,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_2a,disable=1
 	Button MainButton_2b,disable=1
 	Button MainButton_2c,disable=1
-	Button MainButton_2d,disable=1
+//	Button MainButton_2d,disable=1
 	Button MainButton_2e,disable=1
 	Button MainButton_2f,disable=1
 

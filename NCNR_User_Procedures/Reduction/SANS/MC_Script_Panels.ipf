@@ -15,6 +15,8 @@
 //		x- Move everything to a proper data folder so that everything is saved in its proper place
 //    	x- configurations, samples, and listBox waves.
 //
+//   -- the proc=MyListboxProc has been commented out. It was present for Igor 6 and did not generate an error.
+//      I don't think I ever wrote this procedure at all. In Igor 7 it generates an error, so it's out for now.
 //
 //		use Sim_ as a prefix for the functions rather than MC_
 //
@@ -99,7 +101,7 @@ Proc RunListPanel() : Panel
 	
 // always visible
 // clickEventModifiers=8  = ignore the shift key in the list box (I'm using that bit (3) of selWave to flag trans)
-	ListBox RLCtrlA,pos={17,290},size={660,250},proc=MyListboxProc,frame=2,clickEventModifiers=8
+	ListBox RLCtrlA,pos={17,290},size={660,250},frame=2,clickEventModifiers=8//,proc=MyListboxProc
 	ListBox RLCtrlA,listWave=root:Packages:NIST:RunSim:textW,selWave=root:Packages:NIST:RunSim:selW//,colorWave=root:Packages:NIST:RunSim:myColors
 	ListBox RLCtrlA,row= 0,mode= 2,editStyle= 2,widths= {40,70,120,120,50,120,30,30}
 

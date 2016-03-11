@@ -66,6 +66,8 @@ Menu "VSANS"
 		"IgorOnly_Save_SANS_Struct"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"
+		"-"
+		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
 	End
 End
 

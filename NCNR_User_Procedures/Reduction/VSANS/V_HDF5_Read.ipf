@@ -1069,35 +1069,31 @@ End
 //
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_getDet_cal_x(fname,detStr,outW)
+Function/WAVE V_getDet_cal_x(fname,detStr)
 	String fname,detStr
-	Wave outW
 
 	if(cmpstr(detStr,"B") == 0)
 		String path = "entry:instrument:detector_"+detStr+":cal_x"
 		WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-		outW = w
-		return(0)
+		return w
 	else
-		return(0)
+		return $""
 	endif
 End
 
 // only defined for the "B" detector, and may not be necessary?
 // TODO -- write to return an ARRAY
-Function V_getDet_cal_y(fname,detStr,outW)
+Function/WAVE V_getDet_cal_y(fname,detStr)
 	String fname,detStr
-	Wave outW
 
 	if(cmpstr(detStr,"B") == 0)
 		String path = "entry:instrument:detector_"+detStr+":cal_y"
 		WAVE w = V_getRealWaveFromHDF5(fname,path)
 	
-		outW = w
-		return(0)
+		return w
 	else
-		return(0)
+		return $""
 	endif
 End
 
@@ -1172,6 +1168,35 @@ Function V_getDet_beam_center_y(fname,detStr)
 	String path = "entry:instrument:detector_"+detStr+":beam_center_y"
 	return(V_getRealValueFromHDF5(fname,path))
 End
+
+
+//TODO
+//
+// x and y center in mm is currently not part of the NExus definition
+//  does it need to be?
+// these lookups will fail if they have not been generated locally!
+
+Function V_getDet_beam_center_x_mm(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":beam_center_x_mm"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+//TODO
+//
+// x and y center in mm is currently not part of the NExus definition
+//  does it need to be?
+// these lookups will fail if they have not been generated locally!
+
+Function V_getDet_beam_center_y_mm(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":beam_center_y_mm"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter

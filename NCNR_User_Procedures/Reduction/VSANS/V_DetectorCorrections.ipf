@@ -85,6 +85,7 @@ end
 //
 //
 // TODO
+// -- UNITS!!!! currently this is mm, which certainly doesn't match anything else!!!
 // -- verify the direction of the tubes and indexing
 // -- be sure I'm working in the right data folder
 // -- clean up when done
@@ -93,7 +94,7 @@ end
 // -- do I need to write a separate function that returns the distance wave for later calculations?
 // -- do I want to make the distance array 3D to keep the x and y dims together? Calculate them all right now?
 // -- what else do I need to pass to the function? (fname=folder? detStr?)
-//
+// -- need a separate block or function to handle "B" detector which will be ? different
 //
 //
 Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
@@ -106,7 +107,7 @@ Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 	String orientation
 	Variable dimX,dimY
 	dimX = DimSize(dataW,0)
-	dimY = DimSize(dataw,1)
+	dimY = DimSize(dataW,1)
 	if(dimX > dimY)
 		orientation = "horizontal"
 	else
@@ -125,14 +126,12 @@ Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
-		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
-
 		data_realDistX[][] = tube_width*p
-		
+		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
+	
 	elseif(cmpstr(orientation,"horizontal")==0)
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
 		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
-	
 		data_realDistY[][] = tube_width*q
 
 	else		
@@ -141,6 +140,141 @@ Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 	
 	return(0)
 end
+
+// TODO:
+// -- the cal_x and y coefficients are totally fake
+// -- the wave assignment may not be correct.. so beware
+//
+//
+Function NonLinearCorrection_B(folder,detStr,destPath)
+	String folder,detStr,destPath
+
+	if(cmpstr(detStr,"B") != 0)
+		return(0)
+	endif
+	
+	// do I count on the orientation as an input, or do I just figure it out on my own?
+	Variable dimX,dimY
+	
+	Wave dataW = V_getDetectorDataW(folder,detStr)
+	
+	dimX = DimSize(dataW,0)
+	dimY = DimSize(dataW,1)
+
+	// make a wave of the same dimensions, in the same data folder for the distance
+	// ?? or a 3D wave?
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
+	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
+	
+	
+	Wave cal_x = V_getDet_cal_x(folder,detStr)
+	Wave cal_y = V_getDet_cal_y(folder,detStr)
+	
+	data_realDistX[][] = cal_x[0]*p
+	data_realDistY[][] = cal_y[0]*q
+	
+	return(0)
+end
+
+
+//
+//
+// TODO
+// -- VERIFY the calculations
+// -- verify where this needs to be done (if the beam center is changed)
+// -- then the q-calculation needs to be re-done
+// -- the position along the tube length is referenced to tube[0], for no particular reason
+//    It may be better to take an average? but [0] is an ASSUMPTION
+// -- distance along tube is simple interpolation, or do I use the coefficients to
+//    calculate the actual value
+//
+// -- distance in the lateral direction is based on tube width, which is well known
+//
+//
+Function ConvertBeamCtr_to_mm(folder,detStr,destPath)
+	String folder,detStr,destPath
+	
+	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+
+	String orientation
+	Variable dimX,dimY,xCtr,yCtr
+	dimX = DimSize(data_realDistX,0)
+	dimY = DimSize(data_realDistX,1)
+	if(dimX > dimY)
+		orientation = "horizontal"
+	else
+		orientation = "vertical"
+	endif
+	
+	xCtr = V_getDet_beam_center_x(folder,detStr)
+	yCtr = V_getDet_beam_center_y(folder,detStr)	
+	
+	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	WAVE x_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	WAVE y_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+
+	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
+
+//
+	if(cmpstr(orientation,"vertical")==0)
+		//	this is data dimensioned as (Ntubes,Npix)
+//		data_realDistX[][] = tube_width*p
+//		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
+		x_mm[0] = tube_width*xCtr
+		y_mm[0] = data_realDistY[0][yCtr]
+	else
+		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+//		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
+//		data_realDistY[][] = tube_width*q
+		x_mm[0] = data_realDistX[xCtr][0]
+		y_mm[0] = tube_width*yCtr
+	endif
+		
+	return(0)
+end
+
+
+//
+//
+// TODO
+// -- VERIFY the calculations
+// -- verify where this needs to be done (if the beam center is changed)
+// -- then the q-calculation needs to be re-done
+// -- the position along the tube length is referenced to tube[0], for no particular reason
+//    It may be better to take an average? but [0] is an ASSUMPTION
+// -- distance along tube is simple interpolation
+//
+// -- distance in the lateral direction is based on tube width, which is well known
+//
+//
+Function ConvertBeamCtr_to_mmB(folder,detStr,destPath)
+	String folder,detStr,destPath
+	
+	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+	
+	Variable xCtr,yCtr
+	xCtr = V_getDet_beam_center_x(folder,detStr)
+	yCtr = V_getDet_beam_center_y(folder,detStr)	
+	
+	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	WAVE x_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	WAVE y_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+
+	x_mm[0] = data_realDistX[xCtr][0]
+	y_mm[0] = data_realDistY[0][yCtr]
+		
+	return(0)
+end
+
+
+
+
 
 
 /////
@@ -225,11 +359,23 @@ Function fMakeFakeCalibrationWaves()
 		
 	endfor
 	
+	// now fake calibration for "B"
+	Wave cal_x = V_getDet_cal_x("RAW","B")
+	Wave cal_y = V_getDet_cal_y("RAW","B")
+	
+	cal_x = 1		// mm, ignore the other 2 values
+	cal_y = 1		// mm
 	return(0)
 End
 
-
-
+//
+// data_realDistX, Y must be previously generated from running NonLinearCorrection()
+//
+// call with:
+// fname as the WORK folder, "RAW"
+// detStr = detector String, "FL"
+// destPath = path to destination WORK folder ("root:Packages:NIST:VSANS:"+folder)
+//
 Function V_Detector_CalcQVals(fname,detStr,destPath)
 	String fname,detStr,destPath
 
@@ -239,8 +385,13 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 // get all of the geometry information	
 	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = V_getDet_distance(fname,detStr)
-	xCtr = V_getDet_beam_center_x(fname,detStr)
-	yCtr = V_getDet_beam_center_y(fname,detStr)
+	sdd/=100		// sdd reported in cm, pass in m
+	// this is the ctr in pixels
+//	xCtr = V_getDet_beam_center_x(fname,detStr)
+//	yCtr = V_getDet_beam_center_y(fname,detStr)
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
 	lambda = V_getWavelength(fname)
 	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
@@ -270,7 +421,7 @@ End
 //
 // TODO:
 // -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled an wrong...
+// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
@@ -286,9 +437,11 @@ Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable dx,dy,qval,two_theta,dist
 		
 	sdd *=100		//convert to cm
-	dx = (distX[xaxval][yaxval] - xctr)		//delta x in cm
-	dy = (distY[xaxval][yaxval] - yctr)		//delta y in cm
+	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
+	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	dist = sqrt(dx^2 + dy^2)
+	
+	dist /= 10  // convert mm to cm
 	
 	two_theta = atan(dist/sdd)
 
@@ -300,7 +453,7 @@ End
 //calculates just the q-value in the x-direction on the detector
 // TODO:
 // -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled an wrong...
+// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
@@ -316,12 +469,14 @@ Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	sdd *=100		//convert to cm
-	dx = (distX[xaxval][yaxval] - xctr)		//delta x in cm
-	dy = (distY[xaxval][yaxval] - yctr)		//delta y in cm
+	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
+	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	phi = V_FindPhi(dx,dy)
 	
 	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
 	dist = sqrt(dx^2 + dy^2)
+	dist /= 10  // convert mm to cm
+
 	two_theta = atan(dist/sdd)
 
 	qx = qval*cos(two_theta/2)*cos(phi)
@@ -332,7 +487,7 @@ End
 //calculates just the q-value in the y-direction on the detector
 // TODO:
 // -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled an wrong...
+// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
@@ -348,12 +503,14 @@ Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	sdd *=100		//convert to cm
-	dx = (distX[xaxval][yaxval] - xctr)		//delta x in cm
-	dy = (distY[xaxval][yaxval] - yctr)		//delta y in cm
+	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
+	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	phi = V_FindPhi(dx,dy)
 	
 	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
 	dist = sqrt(dx^2 + dy^2)
+	dist /= 10  // convert mm to cm
+
 	two_theta = atan(dist/sdd)
 
 	qy = qval*cos(two_theta/2)*sin(phi)
@@ -364,7 +521,7 @@ End
 //calculates just the q-value in the z-direction on the detector
 // TODO:
 // -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled an wrong...
+// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
@@ -381,11 +538,13 @@ Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	sdd *=100		//convert to cm
-	dx = (distX[xaxval][yaxval] - xctr)		//delta x in cm
-	dy = (distY[xaxval][yaxval] - yctr)		//delta y in cm
+	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
+	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	
 	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
 	dist = sqrt(dx^2 + dy^2)
+	dist /= 10  // convert mm to cm
+
 	two_theta = atan(dist/sdd)
 
 	qz = qval*sin(two_theta/2)

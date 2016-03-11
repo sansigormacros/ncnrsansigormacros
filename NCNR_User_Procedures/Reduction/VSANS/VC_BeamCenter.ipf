@@ -407,8 +407,9 @@ Function DetFitGuessButtonProc(ba) : ButtonControl
 End
 
 //
-// TODO -- currently hard-wired for the only fit function
+// TODO -- currently hard-wired for coefficients from the only fit function
 //
+// -- will need to recalc mm center AND q-values
 Function WriteCtrButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -426,6 +427,8 @@ Function WriteCtrButtonProc(ba) : ButtonControl
 			V_putDet_beam_center_x(fname,detStr,coefW[9])
 			V_putDet_beam_center_y(fname,detStr,coefW[10])
 
+			DoAlert 0, "-- will need to recalc mm center AND q-values"
+			
 			break
 		case -1: // control being killed
 			break
@@ -441,7 +444,7 @@ End
 // -- what values are held during the fitting are hard-wired
 //
 //
-// function to call the fit fucntion (2D)
+// function to call the fit function (2D)
 //
 Function DetFitButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -571,7 +574,14 @@ end
 // -- this is currently linked to the Vdata panel
 // -- will need to remove the hard-wired values and get the proper values from the data
 // -- ?? will the "proper" values be in pixels or distance? All depends on how I display the data...
-// -- may want to keep the nominal scaling values around in case the proper values aren' in the file
+// -- may want to keep the nominal scaling values around in case the proper values aren't in the file
+//
+//
+//
+//•print xCtr_pix
+//  xCtr_pix[0]= {64,64,55,-8.1,64,64,55,-8.1,63.4}
+//•print yCtr_pix
+//  yCtr_pix[0]= {-8.7,55,64,64,-8.7,55,64,64,62.7}
 //
 Function V_RestorePanels()
 
@@ -579,26 +589,29 @@ Function V_RestorePanels()
 	String detStr=""
 	Variable ii,xCtr,yCtr
 
-//// this works if the proper centers are in the file - otherwise, it's a mess	
-//	fname = "RAW"
-//	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-//		detStr = StringFromList(ii, ksDetectorListNoB, ";")
-//		xCtr = V_getDet_beam_center_x(fname,detStr)
-//		yCtr = V_getDet_beam_center_y(fname,detStr)
-//		V_RescaleToBeamCenter("RAW",detStr,xCtr,yCtr)
-//	endfor
+// this works if the proper centers are in the file - otherwise, it's a mess	
+// "B" is skipped here, as it should be...
+	fname = "RAW"
+	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		xCtr = V_getDet_beam_center_x(fname,detStr)
+		yCtr = V_getDet_beam_center_y(fname,detStr)
+		V_RescaleToBeamCenter("RAW",detStr,xCtr,yCtr)
+	endfor
 		
 		
 		// nominal values... better to use what's in the file
-//
-		V_RescaleToBeamCenter("RAW","MB",64,55)
-		V_RescaleToBeamCenter("RAW","MT",64,-8.7)
-		V_RescaleToBeamCenter("RAW","MR",-8.1,64)
-		V_RescaleToBeamCenter("RAW","ML",55,64)
-		V_RescaleToBeamCenter("RAW","FB",64,55)
-		V_RescaleToBeamCenter("RAW","FT",64,-8.7)
-		V_RescaleToBeamCenter("RAW","FR",-8.1,64)
-		V_RescaleToBeamCenter("RAW","FL",55,64)
+////
+//		V_RescaleToBeamCenter("RAW","MB",64,55)
+//		V_RescaleToBeamCenter("RAW","MT",64,-8.7)
+//		V_RescaleToBeamCenter("RAW","MR",-8.1,64)
+//		V_RescaleToBeamCenter("RAW","ML",55,64)
+//		V_RescaleToBeamCenter("RAW","FB",64,55)
+//		V_RescaleToBeamCenter("RAW","FT",64,-8.7)
+//		V_RescaleToBeamCenter("RAW","FR",-8.1,64)
+//		V_RescaleToBeamCenter("RAW","FL",55,64)
+		
+		
 	return(0)
 end
 
@@ -656,6 +669,8 @@ Function V_BCtrTable()
 		yCtr_pix[ii] = V_getDet_beam_center_y(fname,detStr)
 		// TODO
 		// and now the mm values
+		xCtr_mm[ii] = V_getDet_beam_center_x_mm(fname,detStr)
+		yCtr_mm[ii] = V_getDet_beam_center_y_mm(fname,detStr)
 		
 	endfor
 	return(0)

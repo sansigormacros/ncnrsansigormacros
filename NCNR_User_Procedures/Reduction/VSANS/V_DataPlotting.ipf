@@ -16,6 +16,16 @@ Function V_PlotData_Panel()
 	DoWindow V_1D_Data
 	if(V_flag==0)
 		Execute "V_DrawPlotPanel()"
+	else
+		SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
+
+		V_QBinAllPanels(type)
+
+	// TODO:
+	// x- "B" detector is currently skipped - Q is not yet calculated
+		Execute ("V_Back_IQ_Graph(\""+type+"\")")
+		Execute ("V_Middle_IQ_Graph(\""+type+"\")")
+		Execute ("V_Front_IQ_Graph(\""+type+"\")")
 	endif
 End
 
@@ -40,8 +50,9 @@ Proc V_DrawPlotPanel()
 
 	V_QBinAllPanels(type)
 
-// TODO "B" detector is currently skipped - Q is not yet calculated
-//	V_Back_IQ_Graph()
+// TODO 
+// x- "B" detector is currently skipped - Q is not yet calculated
+	V_Back_IQ_Graph(type)
 	V_Middle_IQ_Graph(type)
 	V_Front_IQ_Graph(type)
 	
@@ -53,8 +64,11 @@ End
 // see the VCALC BinAllMiddlePanels() for an example of this
 //
 // TODO 
-// -- detector "B" is currently skipped since the calibration waves are not faked
+// x- detector "B" is currently skipped since the calibration waves are not faked
 //    when the raw data is loaded. Then the qxqyqz waves are not generated.
+//
+// -- REDO the logic here. It's a mess, and will get the calculation wrong 
+//
 // -- figure out the binning type (where is it set?)
 // -- binning type is HARD-WIRED
 // -- figure out when this is to be called to re-calculate the I vs Q
@@ -71,21 +85,22 @@ Function V_QBinAllPanels(folderStr)
 	
 	
 
-//// TODO -- currently the "B" detector is skipped - it was skipped in 
+//// TODO:
+// x- currently the "B" detector is skipped - it was skipped in 
 //       previous functions where q values are calculated	
 //	
-//	delQ = SetDeltaQ("RAW","B")
-//	
-//	// dispatch based on binning type
-//	if(binType == 4)
-//		VC_fDoBinning_QxQy2D("RAW", "B")		//normal binning, nothing to combine
-//	endif
-//
-//// TODO -- this is only a temporary fix for slit mode	
-//	if(binType == 4)
-//		/// this is for a tall, narrow slit mode	
-//		VC_fBinDetector_byRows("VCALC","B")
-//	endif	
+	delQ = SetDeltaQ(folderStr,"B")
+	
+	// dispatch based on binning type
+	if(binType == 1)
+		VC_fDoBinning_QxQy2D(folderStr, "B")		//normal binning, nothing to combine
+	endif
+
+// TODO -- this is only a temporary fix for slit mode	
+	if(binType == 4)
+		/// this is for a tall, narrow slit mode	
+		VC_fBinDetector_byRows(folderStr,"B")
+	endif	
 
 // these are the binning types where detectors are not combined
 // other combined binning is below the loop
@@ -383,4 +398,59 @@ Proc V_Front_IQ_Graph(type)
 End
 
 
+// TODO
+// -- need to set binType
+// -- currently  hard-wired == 1
+//
+////////////to plot the back panel I(q)
+Proc V_Back_IQ_Graph(type)
+	String type
+	
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+
+	Variable binType
+	
+//	ControlInfo/W=VCALC popup_b
+//	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
+
+	bintype = 1
+	
+		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
+
+	if(binType==1 || binType==2 || binType==3)
+		
+		CheckDisplayed/W=V_1D_Data iBin_qxqy_B
+		
+		if(V_flag==0)
+			AppendtoGraph/W=V_1D_Data iBin_qxqy_B vs qBin_qxqy_B
+			ModifyGraph/W=V_1D_Data mode=4
+			ModifyGraph/W=V_1D_Data marker=19
+			ModifyGraph/W=V_1D_Data rgb(iBin_qxqy_B)=(1,52428,52428)
+			ModifyGraph/W=V_1D_Data msize=2
+			ModifyGraph/W=V_1D_Data grid=1
+			ModifyGraph/W=V_1D_Data log=1
+			ModifyGraph/W=V_1D_Data mirror=2
+		endif
+	endif
+
+	//nothing different here since there is ony a single detector to display, but for the future...
+	if(binType==4)
+		
+		CheckDisplayed/W=V_1D_Data iBin_qxqy_B
+		
+		if(V_flag==0)
+			AppendtoGraph/W=V_1D_Data iBin_qxqy_B vs qBin_qxqy_B
+			ModifyGraph/W=V_1D_Data mode=4
+			ModifyGraph/W=V_1D_Data marker=19
+			ModifyGraph/W=V_1D_Data rgb(iBin_qxqy_B)=(1,52428,52428)
+			ModifyGraph/W=V_1D_Data msize=2
+			ModifyGraph/W=V_1D_Data grid=1
+			ModifyGraph/W=V_1D_Data log=1
+			ModifyGraph/W=V_1D_Data mirror=2
+		endif
+	endif
+
+	
+	SetDataFolder root:
+End
 

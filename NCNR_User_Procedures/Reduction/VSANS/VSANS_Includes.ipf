@@ -51,3 +51,6 @@ End
 #include "V_Test_RAW_Panel"		// rename this later when it's done
 #include "V_Utilities_General"		//
 #include "V_DataPlotting"
+
+// 1D binning, combining
+#include "V_IQ_Utilities"

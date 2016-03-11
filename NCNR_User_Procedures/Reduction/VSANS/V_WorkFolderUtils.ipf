@@ -431,7 +431,12 @@ Function Raw_to_work(newType)
 			Wave w_calib = V_getDetTube_spatialCalib(fname,detStr)
 			Variable tube_width = V_getDet_tubeWidth(fname,detStr)
 			NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
-			
+
+			//(2.4) Convert the beam center values from pixels to mm
+			// TODO -- there needs to be a permanent location for these values??
+			//
+			ConvertBeamCtr_to_mm(fname,detStr,destPath)
+							
 			// (2.5) Calculate the q-values
 			// calculating q-values can't be done unless the non-linear corrections are calculated
 			// so go ahead and put it in this loop.
@@ -445,6 +450,12 @@ Function Raw_to_work(newType)
 			V_Detector_CalcQVals(fname,detStr,destPath)
 			
 		endfor
+		
+		//"B" is separate
+		NonLinearCorrection_B(fname,"B",destPath)
+		ConvertBeamCtr_to_mmB(fname,"B",destPath)
+		V_Detector_CalcQVals(fname,"B",destPath)
+		
 	else
 		Print "Non-linear correction not done"
 	endif

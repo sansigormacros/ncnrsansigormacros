@@ -39,7 +39,7 @@ End
 //    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
 // TODO: -- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
-//			-- as dumb as it is -- do I just leave it now, or break everything. ont the plus side, removing the extra entry
+//			-- as dumb as it is -- do I just leave it now, or break everything. On the plus side, removing the extra "entry"
 //          layer may catch a lot of the hard-wired junk that is present...
 Function V_LoadHDF5Data(file,folder)
 	String file,folder
@@ -108,6 +108,12 @@ Function V_LoadHDF5Data(file,folder)
 				Variable tube_width = V_getDet_tubeWidth(folder,detStr)
 				NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
 				
+				
+				//(2.4) Convert the beam center values from pixels to mm
+				// TODO -- there needs to be a permanent location for these values??
+				//
+				ConvertBeamCtr_to_mm(folder,detStr,destPath)
+				
 				// (2.5) Calculate the q-values
 				// calculating q-values can't be done unless the non-linear corrections are calculated
 				// so go ahead and put it in this loop.
@@ -121,6 +127,12 @@ Function V_LoadHDF5Data(file,folder)
 				V_Detector_CalcQVals(folder,detStr,destPath)
 				
 			endfor
+			
+			//"B" is separate
+			NonLinearCorrection_B(folder,"B",destPath)
+			ConvertBeamCtr_to_mmB(folder,"B",destPath)
+			V_Detector_CalcQVals(folder,"B",destPath)
+			
 		else
 			Print "Non-linear correction not done"
 		endif
@@ -156,6 +168,9 @@ Function V_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
 	det_B=tmpw
 	det_B += 2
+	Wave distance=distance
+	distance = 2200
+
 			
 	Variable ctr=20,npix=128
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
@@ -169,6 +184,9 @@ Function V_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT:det_MT"
 	det_MT=tmpw
 	det_MT += 2
+	Wave distance=distance
+	distance = 1030
+
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
 	Wave det_MB=data
@@ -181,6 +199,9 @@ Function V_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB:det_MB"
 	det_MB=tmpw
 	det_MB += 2
+	Wave distance=distance
+	distance = 1030
+
 	
 	ctr=30
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
@@ -194,6 +215,9 @@ Function V_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML:det_ML"
 	det_ML=tmpw
 	det_ML += 2
+	Wave distance=distance
+	distance = 1000
+
 		
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
 	Wave det_MR=data
@@ -205,6 +229,9 @@ Function V_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR:det_MR"
 	det_MR=tmpw
 	det_MR += 2
+	Wave distance=distance
+	distance = 1000
+	
 	
 	ctr=30
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
@@ -215,6 +242,9 @@ Function V_RedimFakeData()
 	SetScale/I y ctr,ctr+48,"",det_FT
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT:det_FT"
 	det_FT=tmpw
+	Wave distance=distance
+	distance = 180
+
 
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
 	Wave det_FB=data
@@ -224,6 +254,9 @@ Function V_RedimFakeData()
 	SetScale/I y -ctr-48,-ctr,"",det_FB
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB:det_FB"
 	det_FB=tmpw
+	Wave distance=distance
+	distance = 180
+
 			
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
 	Wave det_FL=data
@@ -233,6 +266,9 @@ Function V_RedimFakeData()
 	SetScale/I y -npix/2,npix/2,"",det_FL
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL"
 	det_FL=tmpw
+	Wave distance=distance
+	distance = 150
+
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
 	Wave det_FR=data
@@ -242,6 +278,9 @@ Function V_RedimFakeData()
 	SetScale/I y -npix/2,npix/2,"",det_FR
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR:det_FR"
 	det_FR=tmpw
+	Wave distance=distance
+	distance = 150
+
 	
 // get rid of zeros
 	det_FL += 2
@@ -249,14 +288,43 @@ Function V_RedimFakeData()
 	det_FT += 2
 	det_FB += 2
 
-V_RescaleToBeamCenter("RAW","MB",64,55)
-V_RescaleToBeamCenter("RAW","MT",64,-8.7)
-V_RescaleToBeamCenter("RAW","MR",-8.1,64)
-V_RescaleToBeamCenter("RAW","ML",55,64)
-V_RescaleToBeamCenter("RAW","FL",55,64)
-V_RescaleToBeamCenter("RAW","FR",-8.1,64)
-V_RescaleToBeamCenter("RAW","FT",64,-8.7)
-V_RescaleToBeamCenter("RAW","FB",64,55)
+
+// fake beam center values
+	V_putDet_beam_center_x("RAW","B",160)
+	V_putDet_beam_center_y("RAW","B",160)
+
+
+	V_putDet_beam_center_x("RAW","MB",64)
+	V_putDet_beam_center_y("RAW","MB",55)
+	V_putDet_beam_center_x("RAW","MT",64)
+	V_putDet_beam_center_y("RAW","MT",-8.7)
+	V_putDet_beam_center_x("RAW","MR",-8.1)
+	V_putDet_beam_center_y("RAW","MR",64)
+	V_putDet_beam_center_x("RAW","ML",55)
+	V_putDet_beam_center_y("RAW","ML",64)
+
+	V_putDet_beam_center_x("RAW","FB",64)
+	V_putDet_beam_center_y("RAW","FB",55)
+	V_putDet_beam_center_x("RAW","FT",64)
+	V_putDet_beam_center_y("RAW","FT",-8.7)
+	V_putDet_beam_center_x("RAW","FR",-8.1)
+	V_putDet_beam_center_y("RAW","FR",64)
+	V_putDet_beam_center_x("RAW","FL",55)
+	V_putDet_beam_center_y("RAW","FL",64)
+
+
+
+
+
+
+	V_RescaleToBeamCenter("RAW","MB",64,55)
+	V_RescaleToBeamCenter("RAW","MT",64,-8.7)
+	V_RescaleToBeamCenter("RAW","MR",-8.1,64)
+	V_RescaleToBeamCenter("RAW","ML",55,64)
+	V_RescaleToBeamCenter("RAW","FL",55,64)
+	V_RescaleToBeamCenter("RAW","FR",-8.1,64)
+	V_RescaleToBeamCenter("RAW","FT",64,-8.7)
+	V_RescaleToBeamCenter("RAW","FB",64,55)
 
 
 
@@ -269,11 +337,16 @@ End
 // this will load in the whole HDF file all at once.
 // Attributes are NOT loaded at all.
 //
+// -- the Gateway function H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
+//    reads in the attributes too, but is very slow
+//   -- the H5GW function is called by: H_HDF5Gate_Read_Raw(file)
+//
 // TODO: 
 // -x remove the P=home restriction top make this more generic (replaced with catPathName from PickPath)
 // -- get rid of bits leftover here that I don't need
 // -- be sure I'm using all of the correct flags in the HDF5LoadGroup operation
 // -- settle on how the base_name is to be used. "entry" for the RAW, fileName for the "rawVSANS"?
+// x- error check for path existence
 //
 // passing in "" for base_name will take the name from the file name as selected
 //
@@ -283,6 +356,11 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 //	if ( ParamIsDefault(hdf5Path) )
 //		hdf5Path = "/"
 //	endif
+
+	PathInfo/S catPathName
+	if(V_flag == 0)
+		V_PickPath()
+	endif
 
 	String hdf5path = "/"		//always read from the top
 	String status = ""

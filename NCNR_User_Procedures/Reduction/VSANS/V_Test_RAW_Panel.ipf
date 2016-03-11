@@ -335,19 +335,29 @@ Function VSANSDataHook(s)
 					// TODO: be sure that the units from HDF are what I expect
 					// TODO: beam center XY are pixels in the file, expected in the function, but are better suited for mm or cm
 					// TODO: units of xy pixel size are likely wrong
-					xctr = V_getDet_beam_center_x(gCurDispType,detStr)		//written in pixels
-					yctr = V_getDet_beam_center_y(gCurDispType,detStr)
+//					xctr = V_getDet_beam_center_x(gCurDispType,detStr)		//written in pixels
+//					yctr = V_getDet_beam_center_y(gCurDispType,detStr)
+					xctr = V_getDet_beam_center_x_mm(gCurDispType,detStr)		//written in mm
+					yctr = V_getDet_beam_center_y_mm(gCurDispType,detStr)	
+					
 					sdd = V_getDet_distance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
 					lam = V_getVSWavelength(gCurDispType)		//A
-					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
-					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)/10		// written mm? need cm
+//					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)		// written mm? need mm
+//					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //
 // TODO: these q-values ignore the non-linear corrections!!!
-// -- What can I do about this?	
+// -- What can I do about this?
+					String destPath = "root:Packages:NIST:VSANS:"+gCurDispType
+					Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
+					Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+					
 // TODO: figure out what coordinates I need to pass -- xloc, yloc, textX, testY, (+1 on any?)				
-					gQQ = VC_CalcQval(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQX = VC_CalcQX(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-					gQY = VC_CalcQY(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					//gQQ = VC_CalcQval(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					//gQX = VC_CalcQX(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					//gQY = VC_CalcQY(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+					gQQ = V_CalcQval(testX,testY,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
+					gQX = V_CalcQX(testX,testY,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
+					gQY = V_CalcQY(testX,testY,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
 
 					ii = -1		//look no further, set ii to bad value to exit the for loop
 				endif	//end if(mouse is over a detector panel)

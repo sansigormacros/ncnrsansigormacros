@@ -25,7 +25,6 @@ Menu "VSANS"
 End
 
 
-
 //
 Menu "SANS"
 	"Initialize"
