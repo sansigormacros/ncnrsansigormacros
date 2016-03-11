@@ -785,18 +785,18 @@ Proc VC_Initialize_Space()
 
 
 //// BACK DETECTOR
-	Variable/G gBack_w = 320				//w and h for the back detector, (mm)
-	Variable/G gBack_h = 320
+	Variable/G gBack_w = 150				//w and h for the back detector, (mm) 150 pix * 1mm/pix
+	Variable/G gBack_h = 150
 	
 	Make/O/D/N=1 :entry:entry:instrument:detector_B:x_pixel_size = 0.1		// 1mm resolution (units of cm here)
 	Make/O/D/N=1 :entry:entry:instrument:detector_B:y_pixel_size = 0.1		
 //	Variable/G gBack_pixelX = 0.1		
 //	Variable/G gBack_pixelY = 0.1
 
-	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_x = 320	// detector pixels in x-direction
-	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_y = 320	
-//	Variable/G gBack_nPix_X = 320		
-//	Variable/G gBack_nPix_Y = 320	
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_x = 150	// detector pixels in x-direction
+	Make/O/D/N=1 :entry:entry:instrument:detector_B:pixel_num_y = 150
+//	Variable/G gBack_nPix_X = 150		
+//	Variable/G gBack_nPix_Y = 150	
 
 
 // Generate all of the waves used for the detector and the q values

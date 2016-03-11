@@ -162,7 +162,7 @@ Function V_RedimFakeData()
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
 	Wave det_B=data
-	Redimension/N=(320,320)/E=1 det_B	
+	Redimension/N=(150,150)/E=1 det_B	
 	Redimension/D det_B
 //	det_B = p+q+2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
@@ -290,8 +290,8 @@ Function V_RedimFakeData()
 
 
 // fake beam center values
-	V_putDet_beam_center_x("RAW","B",160)
-	V_putDet_beam_center_y("RAW","B",160)
+	V_putDet_beam_center_x("RAW","B",75)
+	V_putDet_beam_center_y("RAW","B",75)
 
 
 	V_putDet_beam_center_x("RAW","MB",64)

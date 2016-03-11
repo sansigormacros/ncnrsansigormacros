@@ -332,8 +332,8 @@ NewDataFolder/O/S root:VSANS_file
 				Make/O/D/N=1	y_motor_position	= 0.55
 					
 			NewDataFolder/O/S root:VSANS_file:entry1:instrument:detector_B		
-				Make/O/I/N=(320,320)	data	= trunc(abs(gnoise(p+q)))
-				//Make/O/D/N=(320,320)	//data_error	= 0.01*abs(gnoise(p+q))
+				Make/O/I/N=(150,150)	data	= trunc(abs(gnoise(p+q)))
+				//Make/O/D/N=(150,150)	//data_error	= 0.01*abs(gnoise(p+q))
 				Make/O/D/N=1	nx_distance	= 21.1
 				Make/O/T/N=1	description	= "fancy model"
 				Make/O/T/N=1	settings	= "just right"
@@ -345,11 +345,11 @@ NewDataFolder/O/S root:VSANS_file
 				Make/O/T/N=1	type	= "??"
 				//Make/O/D/N=1	//flatfield_applied	= 0
 				//Make/O/D/N=1	//countrate_correction_applied	= 0
-				Make/O/D/N=(320,320)	pixel_mask	= 0
+				Make/O/D/N=(150,150)	pixel_mask	= 0
 				Make/O/I/N=1	integrated_count	= 100111222
 				Make/O/D/N=1	lateral_offset	= 20
-				Make/O/I/N=1	PixelNumX	= 320
-				Make/O/I/N=1	PixelNumY	= 320
+				Make/O/I/N=1	PixelNumX	= 150
+				Make/O/I/N=1	PixelNumY	= 150
 				Make/O/D/N=1	PixelFWHM	= 0.5
 				Make/O/D/N=3	CALX	= {0.5,0.5,10000}
 				Make/O/D/N=3	CALY	= {0.5,0.5,10000}
@@ -586,10 +586,10 @@ NewDataFolder/O/S root:VSANS_file
 					
 					
 		NewDataFolder/O/S root:VSANS_file:entry1:data_B		
-			Make/O/I/N=(320,320)	data	= trunc(abs(gnoise(p+q)))
-			//Make/O/D/N=(320,320)	//error	= 0.01*abs(gnoise(p+q))
-			Make/O/D/N=2	variables	= {320,320}
-			Make/O/I/N=(320,320)	data_image	= p
+			Make/O/I/N=(150,150)	data	= trunc(abs(gnoise(p+q)))
+			//Make/O/D/N=(150,150)	//error	= 0.01*abs(gnoise(p+q))
+			Make/O/D/N=2	variables	= {150,150}
+			Make/O/I/N=(150,150)	data_image	= p
 		NewDataFolder/O/S root:VSANS_file:entry1:data_MR		
 			Make/O/i/N=(48,256)	data	= trunc(abs(gnoise(p+q)))
 			//Make/O/D/N=(48,256)	//error	= 0.01*abs(gnoise(p+q))
@@ -1798,8 +1798,8 @@ SetDataFolder  root:VSANS_file
 					pixel_mask	= 0
 					integrated_count	= 100111222
 					lateral_offset	= 20
-					PixelNumX	= 320
-					PixelNumY	= 320
+					PixelNumX	= 150
+					PixelNumY	= 150
 					PixelFWHM	= 0.5
 					CALX	= {0.5,0.5,10000}
 					CALY	= {0.5,0.5,10000}
@@ -2038,7 +2038,7 @@ SetDataFolder  root:VSANS_file
 		SetDataFolder root:VSANS_file:entry1:data_B		
 				data	= trunc(abs(gnoise(p+q)))
 			//WAVE	//error	= 0.01*abs(gnoise(p+q))
-				variables	= {320,320}
+				variables	= {150,150}
 				data_image	= p
 		SetDataFolder root:VSANS_file:entry1:data_MR		
 				data	= trunc(abs(gnoise(p+q)))

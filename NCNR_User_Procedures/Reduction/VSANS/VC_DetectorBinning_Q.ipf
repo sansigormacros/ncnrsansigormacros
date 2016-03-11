@@ -971,7 +971,7 @@ Function VC_CalculateQBackPanels()
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
-	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (320,320)
+	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (150,150)
 
 //Back detector
 //root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:qTot_B
@@ -991,8 +991,8 @@ Function VC_CalculateQBackPanels()
 	pixSizeX = VCALC_getPixSizeX("B")
 	pixSizeY = VCALC_getPixSizeY("B")
 	
-	xCtr = trunc( DimSize(det_B,0)/2 )		//should be 160
-	yCtr = trunc( DimSize(det_B,1)/2 )		//should be 160	
+	xCtr = trunc( DimSize(det_B,0)/2 )		//should be 150/2=75
+	yCtr = trunc( DimSize(det_B,1)/2 )		//should be 150/2=75
 	VC_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
