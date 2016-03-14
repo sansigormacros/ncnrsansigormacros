@@ -877,7 +877,7 @@ Function LookupAtten(lambda,attenNo)
 	
 //	Print "trans = ",trans
 	//nha - delete this line when multiple lambda values
-	trans = att
+	trans = att[0]
 	
 	return trans
 End

@@ -207,7 +207,7 @@ Function getFileAssociations(fileID)
 	ii=0
 	do
 		if(cmpstr(T_Filenames[ii],"")==0 || cmpstr(S_Filenames[ii],"")==0 || cmpstr(EMP_Filenames[ii],"")==0)
-			print "Row is incomplete and therefore being deleted " + T_Filenames + " " + S_Filenames + " " + EMP_Filenames
+			print "Row is incomplete and therefore being deleted " + T_Filenames[ii] + " " + S_Filenames[ii] + " " + EMP_Filenames[ii]
 			DeletePoints ii,1,T_Filenames,S_Filenames,EMP_Filenames
 			ii-=1
 		endif

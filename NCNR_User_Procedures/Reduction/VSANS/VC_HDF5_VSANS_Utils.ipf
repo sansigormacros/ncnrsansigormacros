@@ -68,6 +68,7 @@ Menu "VSANS"
 		"Save_VSANS_DIV_Nexus"
 		"-"
 		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
+		"Write_Nexus with attributes",Write_Nexus_Xref()				//this will write out with attributes if read in by Read_Nexus_Xref
 	End
 End
 
@@ -373,8 +374,9 @@ Proc H_HDF5Gate_Write_Raw(dfPath,filename)
 //	DoPrompt "Folder and file to write", dfPath,fileName
 	// Check our work so far.
 	// If something prints, there was an error above.
-	print H5GW_ValidateFolder(dfPath)
+//	print H5GW_ValidateFolder(dfPath)
 
+// H5GW_WriteHDF5 calls the validate function, so no need to call it before
 	print H5GW_WriteHDF5(dfPath, filename)
 	
 	SetDataFolder root:
