@@ -52,7 +52,7 @@ Function FillPanel_wModelData(det,qTot,type)
 	String funcStr = VCALC_getModelFunctionStr()
 	strswitch(funcStr)
 		case "Big Debye":
-			tmpInten = VC_Debye(10,3000,0.0001,qTot[p][q])
+			tmpInten = VC_Debye(100,3000,0.0001,qTot[p][q])
 			break
 		case "Big Sphere":
 			tmpInten = VC_SphereForm(1,900,1e-6,0.01,qTot[p][q])	
@@ -78,6 +78,20 @@ Function FillPanel_wModelData(det,qTot,type)
 		default:
 			tmpInten = VC_Debye(10,300,0.1,qTot[p][q])
 	endswitch
+
+// TODO: this is faked to get around the singularity at the center of the back detector
+//
+// 
+	if(cmpstr(type,"B") == 0)
+		Variable nx,ny,px,py
+		nx = VCALC_get_nPix_X(type)
+		ny = VCALC_get_nPix_Y(type)
+		px = trunc(nx/2)
+		py = trunc(ny/2)
+		
+		tmpInten[px][py] = (tmpInten[px][py+1] + tmpInten[px][py-1])/2
+	endif
+
 
 
 ///////////////

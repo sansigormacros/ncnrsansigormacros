@@ -73,6 +73,9 @@ Menu "VSANS"
 End
 
 
+
+
+
 Proc Load_Nexus_V_Template()
 	H_HDF5Gate_Read_Raw("")
 	String tmpStr=root:file_name  //SRK - so I can get the file name that was loaded
@@ -529,9 +532,9 @@ End
 
 
 //
-// given a filename of a SANS data filename of the form
-// name.anything
-// returns the name as a string without the ".fbdfasga" extension
+// given a filename of a VSANS data file of the form
+// name.anything.any.other (any number of extensions is OK)
+// returns the name as a string without ANY ".fbdfasga" extension
 //
 // returns the input string if a "." can't be found (maybe it wasn't there)
 //

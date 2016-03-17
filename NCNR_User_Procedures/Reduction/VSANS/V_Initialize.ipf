@@ -158,6 +158,22 @@ Function V_InitGlobals()
 	Execute "Initialize_VSANSPreferences()"	
 
 	
+	// lookup waves for log and linear display of images
+	SetDataFolder root:Packages:NIST:VSANS:Globals
+	Variable num,val,offset
+	num=10000
+	offset = 1/num
+	
+	Make/O/D/N=(num) logLookupWave,linearLookupWave
+	linearLookupWave = (p+1)/num
+	
+	logLookupWave = log(linearLookupWave)
+	val = logLookupWave[0]
+	logLookupWave += -val + offset
+	val = logLookupWave[num-1]
+	logLookupWave /= val
+	
+	SetDataFolder root:
 
 
 	//set flag if Demo Version is detected

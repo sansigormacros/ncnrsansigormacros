@@ -402,7 +402,14 @@ Function VDataTabProc(tca) : TabControl
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
 // make sure log scaling is correct			
 			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
-			
+			if(State == 0)
+				// lookup wave
+				Wave LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
+			else
+				// lookup wave - the linear version
+				Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+			endif
+						
 			
 			//************
 			// -- can I use "ReplaceWave/W=VSANS_Data#det_panelsB allinCDF" to do this?
@@ -434,7 +441,7 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
 
-				ModifyImage/W=VSANS_Data#det_panelsB ''#0 log=State
+				ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctabAutoscale=0,lookup= LookupWave
 				
 				// make the plot square
 				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
@@ -478,10 +485,10 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
 
-				ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=State
-				ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=State
-				ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=State
-				ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=State
+				ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctabAutoscale=0,lookup= LookupWave
 				
 				// make the plot square
 				ModifyGraph/W=VSANS_Data#det_panelsM width={Aspect,1}
@@ -525,10 +532,10 @@ Function VDataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
 				
-				ModifyImage/W=VSANS_Data#det_panelsF ''#0 log=State
-				ModifyImage/W=VSANS_Data#det_panelsF ''#1 log=State
-				ModifyImage/W=VSANS_Data#det_panelsF ''#2 log=State
-				ModifyImage/W=VSANS_Data#det_panelsF ''#3 log=State
+				ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctabAutoscale=0,lookup= LookupWave
+				ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctabAutoscale=0,lookup= LookupWave
 
 				// make the plot square
 				ModifyGraph/W=VSANS_Data#det_panelsF width={Aspect,1}				
@@ -687,7 +694,15 @@ Function StatusButtonProc(ba) : ButtonControl
 End
 
 
-// TODO -- this appears to be complete...
+// TODO:
+// -- come up with a better definition of the log lookup wave (> 1000 pts, what is the first point)
+// -- make an equivalent linear wave
+// -- hard wire it in so it is created at initialization and stored someplace safe
+// -- catch the error if it doesn't exist (re-make the wave as needed)
+//
+// Using the ModifyImage log=1 keyword fails for values of zero in the data, which is a common
+// occurrence with count data. the display just goes all gray, so that's not an option. Use the lookup wave instead
+//
 // toggle the (z) value of the display log/lin
 //
 Function LogLinButtonProc(ba) : ButtonControl
@@ -703,16 +718,21 @@ Function LogLinButtonProc(ba) : ButtonControl
 			Variable curState,newState
 			String newStateStr,newTitleStr
 			
+			
 			curState = str2num(S_UserData)
 			
 			if(curState == 0)
 				newState = 1
 				newStateStr="1"
 				newTitleStr = "isLog"
+				// lookup wave
+				Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
 			else
 				newState = 0
 				newStateStr="0"
 				newTitleStr = "isLin"
+				// lookup wave - the linear version
+				Wave LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
 			endif
 			
 			// update the button and the global value
@@ -721,17 +741,24 @@ Function LogLinButtonProc(ba) : ButtonControl
 			state = newState
 			
 			// on the front:			
-			ModifyImage/W=VSANS_Data#det_panelsF ''#0 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsF ''#1 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsF ''#2 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsF ''#3 log=newState
+			ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctabAutoscale=0,lookup= LookupWave
 			//on the middle:
-			ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=newState
-			ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=newState
+//			ModifyImage/W=VSANS_Data#det_panelsM ''#0 log=newState
+//			ModifyImage/W=VSANS_Data#det_panelsM ''#1 log=newState
+//			ModifyImage/W=VSANS_Data#det_panelsM ''#2 log=newState
+//			ModifyImage/W=VSANS_Data#det_panelsM ''#3 log=newState
+				
+			ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctabAutoscale=0,lookup= LookupWave
+			ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctabAutoscale=0,lookup= LookupWave
+
+
 			// on the back:
-			ModifyImage/W=VSANS_Data#det_panelsB ''#0 log=newState
+			ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctabAutoscale=0,lookup= LookupWave
 
 			break
 		case -1: // control being killed

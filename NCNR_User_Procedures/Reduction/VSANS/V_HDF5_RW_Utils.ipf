@@ -88,7 +88,9 @@ Function V_LoadHDF5Data(file,folder)
 	
 		// TODO
 		//  -- get rid of these fake calibration waves as "real" ones are filled in by NICE
+		
 		Execute "MakeFakeCalibrationWaves()"
+		
 		//		fMakeFakeCalibrationWaves()		//skips the alert
 
 
@@ -162,131 +164,130 @@ Function V_RedimFakeData()
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
 	Wave det_B=data
-	Redimension/N=(150,150)/E=1 det_B	
+//	Redimension/N=(150,150)/E=1 det_B	
 	Redimension/D det_B
-//	det_B = p+q+2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
-	det_B=tmpw
-	det_B += 2
+//	det_B=tmpw
+//	det_B += 2
 	Wave distance=distance
-	distance = 2200
+	distance = VCALC_getSDD("B")*100		// to convert m to cm
 
 			
 	Variable ctr=20,npix=128
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
 	Wave det_MT=data
-	Redimension/N=(npix,48)/E=1 det_MT
+//	Redimension/N=(npix,48)/E=1 det_MT
 	Redimension/D det_MT		
 	SetScale/I x -npix/2,npix/2,"",det_MT
 	SetScale/I y ctr,ctr+48,"",det_MT
 //	det_MT *= 10
 //	det_MT += 2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT:det_MT"
-	det_MT=tmpw
-	det_MT += 2
+//	det_MT=tmpw
+//	det_MT += 2
 	Wave distance=distance
-	distance = 1030
+	distance = VCALC_getSDD("MT")*100		// to convert m to cm
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
 	Wave det_MB=data
-	Redimension/N=(npix,48)/E=1 det_MB		
+//	Redimension/N=(npix,48)/E=1 det_MB		
 	Redimension/D det_MB
 	SetScale/I x -npix/2,npix/2,"",det_MB
 	SetScale/I y -ctr-48,-ctr,"",det_MB
 //	det_MB *= 5
 //	det_MB += 2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB:det_MB"
-	det_MB=tmpw
-	det_MB += 2
+//	det_MB=tmpw
+//	det_MB += 2
 	Wave distance=distance
-	distance = 1030
+	distance = VCALC_getSDD("MB")*100		// to convert m to cm
 
 	
 	ctr=30
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
 	Wave det_ML=data
-	Redimension/N=(48,npix)/E=1 det_ML		
+//	Redimension/N=(48,npix)/E=1 det_ML		
 	Redimension/D det_ML
 	SetScale/I x -ctr-48,-ctr,"",det_ML
 	SetScale/I y -npix/2,npix/2,"",det_ML
 //	det_ML *= 2
 //	det_ML += 2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML:det_ML"
-	det_ML=tmpw
-	det_ML += 2
+//	det_ML=tmpw
+//	det_ML += 2
 	Wave distance=distance
-	distance = 1000
+	distance = VCALC_getSDD("ML")*100		// to convert m to cm
 
 		
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
 	Wave det_MR=data
-	Redimension/N=(48,npix)/E=1 det_MR		
+//	Redimension/N=(48,npix)/E=1 det_MR		
 	Redimension/D det_MR
 	SetScale/I x ctr,ctr+48,"",det_MR
 	SetScale/I y -npix/2,npix/2,"",det_MR
 //	det_MR +=2
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR:det_MR"
-	det_MR=tmpw
-	det_MR += 2
+//	det_MR=tmpw
+//	det_MR += 2
 	Wave distance=distance
-	distance = 1000
+	distance = VCALC_getSDD("MR")*100		// to convert m to cm
 	
 	
 	ctr=30
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
 	Wave det_FT=data
-	Redimension/N=(npix,48)/E=1 det_FT		
+//	Redimension/N=(npix,48)/E=1 det_FT		
 	Redimension/D det_FT
 	SetScale/I x -npix/2,npix/2,"",det_FT
 	SetScale/I y ctr,ctr+48,"",det_FT
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT:det_FT"
-	det_FT=tmpw
+//	det_FT=tmpw
 	Wave distance=distance
-	distance = 180
+	distance = VCALC_getSDD("FT")*100		// to convert m to cm
 
 
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
 	Wave det_FB=data
-	Redimension/N=(npix,48)/E=1 det_FB		
+//	Redimension/N=(npix,48)/E=1 det_FB		
 	Redimension/D det_FB
 	SetScale/I x -npix/2,npix/2,"",det_FB
 	SetScale/I y -ctr-48,-ctr,"",det_FB
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB:det_FB"
-	det_FB=tmpw
+//	det_FB=tmpw
 	Wave distance=distance
-	distance = 180
+	distance = VCALC_getSDD("FB")*100		// to convert m to cm
 
 			
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
 	Wave det_FL=data
-	Redimension/N=(48,npix)/E=1 det_FL		
+//	Redimension/N=(48,npix)/E=1 det_FL		
 	Redimension/D det_FL
 	SetScale/I x -ctr-48,-ctr,"",det_FL
 	SetScale/I y -npix/2,npix/2,"",det_FL
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL"
-	det_FL=tmpw
+//	det_FL=tmpw
 	Wave distance=distance
-	distance = 150
+	distance = VCALC_getSDD("FL")*100		// to convert m to cm
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
 	Wave det_FR=data
-	Redimension/N=(48,npix)/E=1 det_FR		
+//	Redimension/N=(48,npix)/E=1 det_FR		
 	Redimension/D det_FR
 	SetScale/I x ctr,ctr+48,"",det_FR
 	SetScale/I y -npix/2,npix/2,"",det_FR
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR:det_FR"
-	det_FR=tmpw
+//	det_FR=tmpw
 	Wave distance=distance
-	distance = 150
+	distance = VCALC_getSDD("FR")*100		// to convert m to cm
 
 	
 // get rid of zeros
-	det_FL += 2
-	det_FR += 2
-	det_FT += 2
-	det_FB += 2
+//	det_FL += 2
+//	det_FR += 2
+//	det_FT += 2
+//	det_FB += 2
 
 
 // fake beam center values
@@ -625,6 +626,9 @@ End
 //    in missing fields that should have been generated by the data writer. Need to make
 //    a separate function that will write and generate if needed, and use this in specific cases
 //    only if I really have to force it.
+//
+// --Attributes are not currently saved. Fix this, maybe make it optional? See the help file for
+//  DemoAttributes(w) example under the HDF5SaveData operation
 //	
 // -x change the /P=home to the user-defined data path (catPathName)		
 //
@@ -798,75 +802,77 @@ end
 //////////////////////////////
 //////////////////////////////
 
-// TODO:
-// -- this must be called as needed to force a re-read of the data from disk
-//    "as needed" means that when an operation is done that needs to ensure
-//     a fresh read from disk, it must take care of the kill.
-// -- the ksBaseDFPath needs to be removed. It's currently pointing to RawVSANS, which is
-//    really not used as intended anymore.
+
+
+
+//////// function to take VCALC information and 
+// fill in the simulated information as needed to make a "fake" data file
 //
-Function V_KillNamedDataFolder(fname)
-	String fname
+// TODO:
+// -- identify all of the necessary bits to change
+// -- maybe want a panel to make it easier to decide what inputs to change in the file
+// -- decide if it's better to write wholesale, or as individual waves
+//
+Macro Copy_VCALC_to_VSANSFile()
 	
-	Variable err=0
+	String fileName = V_DoSaveFileDialog("pick the file to write to")
+	print fileName
+//	
+	if(strlen(fileName) > 0)
+		writeVCALC_to_file(fileName)
+	endif
+End
+
+//
+// TODO -- fill this in as needed to get fake data that's different
+//
+Function writeVCALC_to_file(fileName)
+	String fileName
+
+// the wavelength
+//	Variable lam = V_getWavelength("VCALC")		//doesn't work, the corresponding folder in VCALC has not been defined
+	V_writeWavelength(fileName,VCALC_getWavelength())
 	
-	String folderStr = V_GetFileNameFromPathNoSemi(fname)
-	folderStr = V_RemoveDotExtension(folderStr)
+// the front SDD (correct units)
+// the middle SDD (correct units)
+// the back SDD (correct units)
 	
-	KillDataFolder/Z $(ksBaseDFPath+folderStr)
-	err = V_flag
+// the detectors, all 9 + the correct SDD (that accounts for the offset of T/B panels
+	Variable ii,val
+	String detStr
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
+		Redimension/I tmpData
+		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
+
+		V_writeDetectorData(fileName,detStr,tmpData)
+		val = VCALC_getTopBottomSDDOffset(detStr)/10 + VCALC_getSDD(detStr)*100		// make sure value is in cm
+		print val
+		V_writeDet_distance(fileName,detStr,val)
+	endfor
 	
-	return(err)
+// the calibration data for each detector
+
+// the dead time for each detector
+
+//? other detector geometry - lateral separation?
+
+
+// description of the sample
+
+// sample information
+// name, title, etc
+	
+// fake the information about the count setup, so I have different numbers to read
+
+// ?? anything else that I'd like to see on the catalog - I could change them here to see different values
+// different collimation types?
+//
+
+	return(0)
 end
 
-//given a filename of a SANS data filename of the form
-// name.anything
-//returns the name as a string without the ".fbdfasga" extension
-//
-// returns the input string if a "." can't be found (maybe it wasn't there)
-Function/S V_RemoveDotExtension(item)
-	String item
-	String invalid = item	//
-	Variable num=-1
-	
-	//find the "dot"
-	String runStr=""
-	Variable pos = strsearch(item,".",0)
-	if(pos == -1)
-		//"dot" not found
-		return (invalid)
-	else
-		//found, get all of the characters preceeding it
-		runStr = item[0,pos-1]
-		return (runStr)
-	Endif
-End
 
-//returns a string containing filename (WITHOUT the ;vers)
-//the input string is a full path to the file (Mac-style, still works on Win in IGOR)
-//with the folders separated by colons
-//
-// called by MaskUtils.ipf, ProtocolAsPanel.ipf, WriteQIS.ipf
-//
-Function/S V_GetFileNameFromPathNoSemi(fullPath)
-	String fullPath
-	
-	Variable offset1,offset2
-	String filename=""
-	//String PartialPath
-	offset1 = 0
-	do
-		offset2 = StrSearch(fullPath, ":", offset1)
-		if (offset2 == -1)				// no more colons ?
-			fileName = FullPath[offset1,strlen(FullPath) ]
-			//PartialPath = FullPath[0, offset1-1]
-			break
-		endif
-		offset1 = offset2+1
-	while (1)
-	
-	//remove version number from name, if it's there - format should be: filename;N
-	filename =  StringFromList(0,filename,";")		//returns null if error
-	
-	Return filename
-End
+
+
