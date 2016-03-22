@@ -829,15 +829,12 @@ End
 Function writeVCALC_to_file(fileName)
 	String fileName
 
-// the wavelength
-//	Variable lam = V_getWavelength("VCALC")		//doesn't work, the corresponding folder in VCALC has not been defined
-	V_writeWavelength(fileName,VCALC_getWavelength())
-	
+
+// the detectors, all 9 + the correct SDD (that accounts for the offset of T/B panels
+// the data itself (as INT32)
 // the front SDD (correct units)
 // the middle SDD (correct units)
 // the back SDD (correct units)
-	
-// the detectors, all 9 + the correct SDD (that accounts for the offset of T/B panels
 	Variable ii,val
 	String detStr
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
@@ -845,19 +842,38 @@ Function writeVCALC_to_file(fileName)
 		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
 		Redimension/I tmpData
 		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
-
 		V_writeDetectorData(fileName,detStr,tmpData)
+		
 		val = VCALC_getTopBottomSDDOffset(detStr)/10 + VCALC_getSDD(detStr)*100		// make sure value is in cm
 		print val
 		V_writeDet_distance(fileName,detStr,val)
-	endfor
+		
+// x and y pixel sizes for each detector
+//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
+//Function VCALC_getPixSizeY(type)
+	V_writeDet_x_pixel_size(fileName,detStr,VCALC_getPixSizeX(detStr)*10)		// data file is expecting mm
+	V_writeDet_y_pixel_size(fileName,detStr,VCALC_getPixSizeY(detStr)*10)
 	
 // the calibration data for each detector
+//V_writeDetTube_spatialCalib(fname,detStr,inW)
+// and for "B"
+//V_writeDet_cal_x(fname,detStr,inW)
+//V_writeDet_cal_y(fname,detStr,inW)
 
 // the dead time for each detector
+// V_writeDetector_deadtime(fname,detStr,inW)
+// TODO: need a new, separate function to write the single deadtime value in/out of "B"
+
+	endfor
+	
+
+
 
 //? other detector geometry - lateral separation?
 
+// the wavelength
+//	Variable lam = V_getWavelength("VCALC")		//doesn't work, the corresponding folder in VCALC has not been defined
+	V_writeWavelength(fileName,VCALC_getWavelength())
 
 // description of the sample
 
@@ -865,6 +881,11 @@ Function writeVCALC_to_file(fileName)
 // name, title, etc
 	
 // fake the information about the count setup, so I have different numbers to read
+// count time = fake
+
+// monitor count (= imon)
+// returns the number of neutrons on the sample
+//Function VCALC_getImon()
 
 // ?? anything else that I'd like to see on the catalog - I could change them here to see different values
 // different collimation types?
