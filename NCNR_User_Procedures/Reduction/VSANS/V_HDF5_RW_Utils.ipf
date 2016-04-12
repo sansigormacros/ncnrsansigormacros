@@ -571,6 +571,8 @@ End
 //
 // TODO -- string could be checked for length, but returned right or wrong
 //
+// -- currently num is completely ignored
+//
 Function/S V_getStringFromHDF5(fname,path,num)
 	String fname,path
 	Variable num

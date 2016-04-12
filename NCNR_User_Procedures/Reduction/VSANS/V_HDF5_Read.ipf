@@ -174,14 +174,14 @@ end
 //////// TOP LEVEL
 //////// TOP LEVEL
 
-// nexus version used for definitions
-Function/S V_getNeXus_version(fname)
-	String fname
-	
-	String path = "entry:NeXus_version"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
+//// nexus version used for definitions
+//Function/S V_getNeXus_version(fname)
+//	String fname
+//	
+//	String path = "entry:NeXus_version"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
 
 // TODO -- not mine, added somewhere by Nexus writer?
 // data collection time (! this is the true counting time??)
@@ -263,6 +263,15 @@ Function V_getFileWriteTime(fname)
 	
 	String path = "entry:file_time"	
 	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// TODO - should be the file name as saved on disk, currently it's not
+Function/S V_getFile_name(fname)
+	String fname
+	
+	String path = "entry:file_name"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
 End
 		
 //
@@ -381,6 +390,7 @@ Function V_getIntegral(fname)
 end
 
 // control mode for data acquisition, "timer"
+// TODO - what are the enumerated types for this?
 Function/S V_getControlMode(fname)
 	String fname
 	
@@ -404,6 +414,7 @@ Function V_getMonitor_preset(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
+// TODO - what are the enumerated types for this?
 Function V_getPreset(fname)
 	String fname
 	
@@ -419,6 +430,7 @@ end
 //////// INSTRUMENT
 //////// INSTRUMENT
 
+// TODO -- this does not appear to be written out
 Function/S V_getLocalContact(fname)
 	String fname
 
@@ -444,16 +456,8 @@ Function/S V_getInstrumentType(fname)
 End
 
 ////// INSTRUMENT/ATTENUATOR
-// TODO
-// attenuator number -- for VSANS I think I want this to be some "binary" representation 
-// of 4 plates in/out - so this may be an integer-> binary, or a text string (4 char)
-Function V_getAtten_number(fname)
-	String fname
-	
-	String path = "entry:instrument:attenuator:atten_number"	
-	return(V_getRealValueFromHDF5(fname,path))
-end
-
+// TODO - be sure of the definition of these terms
+//
 
 // transmission value for the attenuator in the beam
 // use this, but if something wrong, the tables are present
@@ -473,6 +477,16 @@ Function V_getAttenuator_trans_err(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
+// desired thickness
+Function V_getAtten_desired_thickness(fname)
+	String fname
+	
+	String path = "entry:instrument:attenuator:desired_thickness"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+
 // distance from the attenuator to the sample (units??)
 Function V_getAttenDistance(fname)
 	String fname
@@ -482,14 +496,25 @@ Function V_getAttenDistance(fname)
 end
 
 
-// attenuator index, to use in the lookup table of transmission values
-Function V_getAttenIndex(fname)
-	String fname
-	
-	String path = "entry:instrument:attenuator:index"	
-	return(V_getRealValueFromHDF5(fname,path))
-end
+//// attenuator index, to use in the lookup table of transmission values
+//Function V_getAttenIndex(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:attenuator:index"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
 
+// table of the attenuation factor error
+Function V_getAttenIndex_error_table(fname,outW)
+	String fname
+	Wave outW
+	
+	String path = "entry:instrument:attenuator:index_error_table"
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	outW = w
+	return(0)
+end
 
 // table of the attenuation factor
 Function V_getAttenIndex_table(fname,outW)
@@ -502,16 +527,22 @@ Function V_getAttenIndex_table(fname,outW)
 	outW = w
 	return(0)
 end
+//
+//// status "in or out"
+//Function/S V_getAttenStatus(fname)
+//	String fname
+//
+//	String path = "entry:instrument:attenuator:status"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
 
-
-// status "in or out"
-Function/S V_getAttenStatus(fname)
+Function V_getAtten_number(fname)
 	String fname
-
-	String path = "entry:instrument:attenuator:status"
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
+	
+	String path = "entry:instrument:attenuator:num_atten_dropped"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
 
 // thickness of the attenuator (PMMA) - units??
 Function V_getAttenThickness(fname)

@@ -13,6 +13,11 @@
 //
 // -- examples?
 //
+//
+// -- NEW 2016
+//  -- see the proc DisplayForSlicing() that may aid in setting the bins properly by plotting the 
+//     bins along with the differential collection rate
+//
 // -- ?? need way to get correspondence between .hst files and VAX files? Names are all different. See
 //    DateAndTime2HSTName() functions and similar @ bottom of this file
 //
@@ -35,6 +40,16 @@
 //
 // -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
 //     points. Maybe not kosher, but would clean things up.
+//
+// -- when a large stream file is split, and each segment is edited, it is re-loaded from a list and is currently
+//    NOT decimated, and there is no option. There could be an option for this, especially for these
+//    large files. The issue is that the data segments are concatentated (adjusting the time) and can
+//    be too large to handle (a 420 MB event file split and edited and re-loaded becomes a 1.6 GB Igor experiment!!)
+//
+//    -- so allow the option of either decimation of the segments as they are loaded, or create the option to 
+//       bin on the fly so that the full concatentated set does not need to be stored. Users could be 
+//       directed to determine the binning and manipulate the data of a sufficiently decimated data set
+//       first to set the binning, then only process the full set.
 //
 ///////////////////////////////
 //
@@ -176,6 +191,8 @@ Function Init_Event()
 	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 150		// 150 MB considered too large
 	Variable/G root:Packages:NIST:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:Event:gEvent_t_longest_decimated = 0
+	Variable/G root:Packages:NIST:Event:gEvent_t_segment_start = 0
+	Variable/G root:Packages:NIST:Event:gEvent_t_segment_end = 0
 
 // for large file splitting
 	String/G root:Packages:NIST:Event:gSplitFileList = ""		// a list of the file names as split
@@ -204,13 +221,13 @@ Proc EventModePanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(82,44,884,664)/N=EventModePanel/K=2
 	DoWindow/C EventModePanel
-	ModifyPanel fixedSize=1,noEdit =1
+//	ModifyPanel fixedSize=1,noEdit =1
 
 	SetDrawLayer UserBack
 	DrawText 479,345,"Stream Data"
 	DrawLine 563,338,775,338
-	DrawText 479,419,"Oscillatory or Stream Data"
-	DrawLine 647,411,775,411
+	DrawText 479,419,"Oscillatory Data"
+	DrawLine 580,411,775,411
 
 //	ShowTools/A
 	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
@@ -249,9 +266,12 @@ Proc EventModePanel()
 	Button button1,pos={389,103},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
 
 	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
-	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load Split List"
-	Button button19,pos={649,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
-	Button button20,pos={680,376},size={90,20},proc=ShowList_ToLoad,title="Show List"
+	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load+Decimate"
+	Button button19,pos={639,350},size={130,20},proc=Stream_LoadAdjustedList,title="Load+Concatenate"
+	Button button20,pos={680,305},size={90,20},proc=ShowList_ToLoad,title="Show List"
+
+	Button button21,pos={649,378},size={120,20},proc=Stream_LoadAdjList_BinOnFly,title="Load+Accumulate"
+
 	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
 	SetVariable setvar3,fSize=10
 	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
@@ -1198,7 +1218,7 @@ End
 //		Print (K0 & 0x20000000)/536870912		//bit 29 only, shift by 2^29
 //
 // This is duplicated by the XOP, but the Igor code allows quick access to print out
-// all of the gorey details of the events and every little bit of them. the print
+// all of the gory details of the events and every little bit of them. the print
 // statements and flags are kept for this reason, so the code is a bit messy.
 //
 Function LoadEvents()
@@ -1924,7 +1944,7 @@ Proc ShowRescaledTimeGraph()
 		SetDataFolder root:Packages:NIST:Event:
 		Display /W=(25,44,486,356)/K=1/N=RescaledTimeGraph rescaledTime
 		SetDataFolder fldrSav0
-		ModifyGraph mode=4
+		ModifyGraph mode=0
 		ModifyGraph marker=19
 		ModifyGraph rgb(rescaledTime)=(0,0,0)
 		ModifyGraph msize=1
@@ -2171,7 +2191,7 @@ Proc EventCorrectionPanel()
 	if(exists("rescaledTime") == 1)
 		Display /W=(35,44,761,533)/K=2 rescaledTime
 		DoWindow/C EventCorrectionPanel
-		ModifyGraph mode=4
+		ModifyGraph mode=0
 		ModifyGraph marker=19
 		ModifyGraph rgb=(0,0,0)
 		ModifyGraph msize=1
@@ -2186,15 +2206,16 @@ Proc EventCorrectionPanel()
 		Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
 		Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
 		Button button4,pos={295+150,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
-		Button button5,pos={295,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
+		Button button5,pos={285,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
 		Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
 		Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
 		Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
 	
-		Button button9,pos={295,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
-		Button button10,pos={295,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
+		Button button9,pos={285,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
+		Button button10,pos={285,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
 		Button button11,pos={295+150,38},size={110,20},proc=EC_DoDifferential,title="Differential"
-		
+		Button button12,pos={295+150,64},size={110,20},proc=EC_AddFindNext,title="Add Find Next"
+		Button button13,pos={285+120,12},size={20,20},proc=EC_NudgeCursor,title=">"
 		
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
@@ -2203,6 +2224,64 @@ Proc EventCorrectionPanel()
 	SetDataFolder root:
 	
 EndMacro
+
+
+Function EC_NudgeCursor(ba)
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			// nudge the leftmost cursor to the right two points
+			// presumably to bypass a desired time step
+			//
+	
+			Wave rescaledTime = root:Packages:NIST:Event:rescaledTime
+			Variable ptA,ptB,lo
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+			lo=min(ptA,ptB)
+
+			if(lo == ptA)
+				Cursor/P A rescaledTime ptA+2	//at the point + 2
+				Print "Nudged cursor A two points right"
+			else
+				Cursor/P B rescaledTime ptB+2	//at the point + 2
+				Print "Nudged cursor B two points right"
+			endif
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+		
+	return(0)
+End
+
+Function EC_AddFindNext(ba)
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			// add time	
+			EC_AddTimeButtonProc(ba)
+			
+		// re-do the differential
+			EC_DoDifferential("")
+			
+		// find the next step down
+			EC_FindStepButton_down("")
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+		
+	return(0)
+End
+
+
 
 Function EC_AddCursorButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2460,6 +2539,10 @@ Function EC_DoneButtonProc(ba) : ButtonControl
 End
 
 //upDown 5 or -5 looks for spikes +5 or -5 std deviations from mean
+//
+// will search from the leftmost cursor to the end. this allows skipping of oscillations
+// that are not timing errors. It may introduce other issues, but we'll see what happens
+//
 Function PutCursorsAtStep(upDown)
 	Variable upDown
 	
@@ -2468,19 +2551,24 @@ Function PutCursorsAtStep(upDown)
 	Wave rescaledTime=rescaledTime
 	Wave rescaledTime_DIF=rescaledTime_DIF
 	Variable avg,pt,zoom
-	
+	Variable ptA,ptB,startPt
+		
 	zoom = 200		//points in each direction
 	
 	WaveStats/M=1/Q rescaledTime_DIF
 	avg = V_avg
-		
-	FindLevel/P/Q rescaledTime_DIF avg*upDown
+	
+	ptA = pcsr(A)
+	ptB = pcsr(B)
+	startPt = min(ptA,ptB)
+	
+	FindLevel/P/Q/R=[startPt] rescaledTime_DIF avg*upDown
 	if(V_flag==0)
 		pt = V_levelX
-		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-vallues within the point range
+		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-values within the point range
 	else
 		Print "Level not found"
-		return(0)
+//		return(0)
 	endif
 	
 	Variable loLeft,hiLeft, loBottom,hiBottom
@@ -2882,9 +2970,12 @@ End
 Proc SplitBigFile(splitSize, baseStr)
 	Variable splitSize = 100
 	String baseStr="split"
-	Prompt splitSize,"Target file size, in MB"
+	Prompt splitSize,"Target file size, in MB (< 150 MB!!)"
 	Prompt baseStr,"File prefix, number will be appended"
 	
+	if(splitSize > root:Packages:NIST:Event:gEventFileTooLarge)
+		Abort "File split must be less than 150 MB. Please try again"
+	endif
 	
 	fSplitBigFile(splitSize, baseStr)
 	
@@ -3246,6 +3337,32 @@ Function DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
 End
 
 
+Macro DisplayForSlicing()
+
+	// plot the EventBarGraph?
+		SetDataFolder root:Packages:NIST:Event:
+		Display /W=(110,705,610,1132)/N=SliceGraph /K=1 binCount vs binEndTime
+		ModifyGraph mode=5
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=2
+		ModifyGraph hbFill=2
+		ModifyGraph gaps=0
+		ModifyGraph usePlusRGB=1
+		ModifyGraph toMode=1
+		ModifyGraph useBarStrokeRGB=1
+		ModifyGraph standoff=0
+
+		SetDataFolder root:
+
+// append the differential
+	AppendToGraph/R root:Packages:NIST:Event:rescaledTime_DIF vs root:Packages:NIST:Event:rescaledTime
+	ModifyGraph rgb(rescaledTime_DIF)=(1,16019,65535)
+
+End
+
+
 
 // unused, old testing procedure
 Function LoadDecimateButtonProc(ctrlName) : ButtonControl
@@ -3366,7 +3483,7 @@ Function Stream_LoadDecim(ctrlName)
 		t_longest_dec = waveMax(rescaledTime_dTmp)		//should be the last point
 		
 
-// (3) concatenate
+// (3) concatenate the files + adjust the time
 		fConcatenateButton(ii+1)		//passes 1 for the first time, >1 each other time
 	
 	endfor
@@ -3466,7 +3583,7 @@ Function Stream_LoadAdjustedList(ctrlName)
 		Duplicate/O rescaledTime, rescaledTime_dTmp
 
 
-// (3) concatenate
+// (3) concatenate the files + adjust the time
 		fConcatenateButton(ii+1)		//passes 1 for the first time, >1 each other time
 	
 	endfor
@@ -3477,6 +3594,182 @@ Function Stream_LoadAdjustedList(ctrlName)
 
 	return(0)
 End
+
+//
+// loads a list of files that have been adjusted and saved
+// -- does not decimate
+// -- bins as they are loaded
+//
+Function Stream_LoadAdjList_BinOnFly(ctrlName)
+	String ctrlName
+	
+	Variable fileref
+
+	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
+
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_Path
+
+// if "stream" mode is not checked - abort
+	NVAR gEventModeRadioVal= root:Packages:NIST:Event:gEvent_mode
+	if(gEventModeRadioVal != MODE_STREAM)
+		Abort "The mode must be 'Stream' to use this function"
+		return(0)
+	endif
+
+// if the list has been edited, turn it into a list
+	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	if(WaveExists(tw))
+		listStr = TextWave2SemiList(tw)
+	else
+		ShowSplitFileTable()
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
+	endif
+	
+
+	//loop through everything in the list
+	Variable num,ii,jj
+	num = ItemsInList(listStr)
+
+
+////////////////
+// declarations for the binning
+// for the first pass, do all of this
+	Make/O/D/N=(128,128) root:Packages:NIST:Event:binnedData
+	
+	Wave binnedData = root:Packages:NIST:Event:binnedData
+	Wave xLoc = root:Packages:NIST:Event:xLoc
+	Wave yLoc = root:Packages:NIST:Event:yLoc
+
+// now with the number of slices and max time, process the events
+
+	NVAR yesSortStream = root:Packages:NIST:Event:gSortStreamEvents		//do I sort the events?
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+//	NVAR t_longest_dec = root:Packages:NIST:Event:gEvent_t_longest_decimated
+	NVAR t_segment_start = root:Packages:NIST:Event:gEvent_t_segment_start
+	NVAR t_segment_end = root:Packages:NIST:Event:gEvent_t_segment_end
+		
+	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
+	
+	Make/D/O/N=(128,128,nslices) slicedData
+	
+	Wave slicedData = slicedData
+	Wave rescaledTime = rescaledTime
+	Make/O/D/N=(128,128) tmpData
+	Make/O/D/N=(nslices+1) binEndTime,binCount//,binStartTime
+	Make/O/D/N=(nslices) timeWidth
+	Wave binEndTime = binEndTime
+	Wave timeWidth = timeWidth
+	Wave binCount = binCount
+
+	slicedData = 0
+	binCount = 0
+
+	variable p1,p2,t1,t2
+
+	t_segment_start = 0
+// start w/file 1??	
+	for(jj=0;jj<num;jj+=1)
+
+// (1) load the file, prepending the path		
+		filename = pathStr + StringFromList(jj, listStr  ,";")
+		
+		SetDataFolder root:Packages:NIST:Event:
+		LoadWave/T/O fileName
+
+		SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root: ??
+
+// this is what is loaded -- 
+		Wave timePt=timePt
+		Wave xLoc=xLoc
+		Wave yLoc=yLoc
+		Wave rescaledTime=rescaledTime
+
+		if(jj==0)
+			timePt -= timePt[0]			//make sure the first point is zero
+			t_segment_start = 0
+			t_segment_end = rescaledTime[numpnts(rescaledTime)-1]
+		else
+			t_segment_start = t_segment_end
+			t_segment_end += rescaledTime[numpnts(rescaledTime)-1]
+			
+			rescaledTime += t_segment_start		
+		endif
+		
+		Printf "jj=%g\t\tt_segment_start=%g\tt_segment_end=%g\r",jj,t_segment_start,t_segment_end
+		
+// this is the binning--
+
+//		del = t_longest/nslices
+	
+	// TODO
+	// the global exists for this switch, but it is not implemented - not sure whether
+	// it's correct to implement this at all --
+	//
+		if(yesSortStream == 1)
+			SortTimeData()
+		endif
+		
+	// index the events before binning
+	// if there is a sort of these events, I need to re-index the events for the histogram
+	//	SetDataFolder root:Packages:NIST:Event
+		IndexForHistogram(xLoc,yLoc,binnedData)
+	//	SetDataFolder root:
+		Wave index = root:Packages:NIST:Event:SavedIndex		//the index for the histogram
+		
+		for(ii=0;ii<nslices;ii+=1)
+			if(ii==0)
+	//			t1 = ii*del
+	//			t2 = (ii+1)*del
+				p1 = BinarySearch(rescaledTime,0)
+				p2 = BinarySearch(rescaledTime,binEndTime[ii+1])
+			else
+	//			t2 = (ii+1)*del
+				p1 = p2+1		//one more than the old one
+				p2 = BinarySearch(rescaledTime,binEndTime[ii+1]) 		
+			endif
+	
+			if(p1 == -1)
+				Printf "p1 = -1 Binary search off the end %15.10g <?? %15.10g\r", 0, rescaledTime[0]
+				p1 = 0		//set to the first point if it's off the end
+			Endif
+			if(p2 == -2)
+				Printf "p2 = -2 Binary search off the end %15.10g >?? %15.10g\r", binEndTime[ii+1], rescaledTime[numpnts(rescaledTime)-1]
+				p2 = numpnts(rescaledTime)-1		//set to the last point if it's off the end
+			Endif
+	//		Print p1,p2
+	
+			tmpData=0
+			JointHistogramWithRange(xLoc,yLoc,tmpData,index,p1,p2)
+	//		slicedData[][][ii] = tmpData[p][q]
+			slicedData[][][ii] += tmpData[p][q]
+			
+//			Duplicate/O tmpData,$("tmpData_"+num2str(ii)+"_"+num2str(jj))
+			
+	//		binEndTime[ii+1] = t2
+	//		binCount[ii] = sum(tmpData,-inf,inf)
+			binCount[ii] += sum(tmpData,-inf,inf)
+		endfor
+	
+	endfor  //end loop over the file list
+
+// after all of the files have been loaded
+	t_longest = t_segment_end		//this is the total time
+
+	Duplicate/O slicedData,root:Packages:NIST:Event:dispsliceData,root:Packages:NIST:Event:logSlicedData
+	Wave logSlicedData = root:Packages:NIST:Event:logSlicedData
+	logslicedData = log(slicedData)
+	
+		
+	SetDataFolder root:
+
+	return(0)
+End
+
 
 /////////////////////////////////////
 
