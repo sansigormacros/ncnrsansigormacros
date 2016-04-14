@@ -256,14 +256,14 @@ Function/S V_getFacility(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 		
-// file write time (what is this??
-// TODO - figure out if this is supposed to be an integer or text (ISO)
-Function V_getFileWriteTime(fname)
-	String fname
-	
-	String path = "entry:file_time"	
-	return(V_getRealValueFromHDF5(fname,path))
-End
+//// file write time (what is this??
+//// TODO - figure out if this is supposed to be an integer or text (ISO)
+//Function V_getFileWriteTime(fname)
+//	String fname
+//	
+//	String path = "entry:file_time"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//End
 
 // TODO - should be the file name as saved on disk, currently it's not
 Function/S V_getFile_name(fname)
@@ -486,7 +486,6 @@ Function V_getAtten_desired_thickness(fname)
 end
 
 
-
 // distance from the attenuator to the sample (units??)
 Function V_getAttenDistance(fname)
 	String fname
@@ -505,28 +504,25 @@ end
 //end
 
 // table of the attenuation factor error
-Function V_getAttenIndex_error_table(fname,outW)
+Function/WAVE V_getAttenIndex_error_table(fname)
 	String fname
-	Wave outW
 	
 	String path = "entry:instrument:attenuator:index_error_table"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	outW = w
-	return(0)
+	
+	return w
 end
 
 // table of the attenuation factor
-Function V_getAttenIndex_table(fname,outW)
+Function/WAVE V_getAttenIndex_table(fname)
 	String fname
-	Wave outW
 	
 	String path = "entry:instrument:attenuator:index_table"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 end
+
 //
 //// status "in or out"
 //Function/S V_getAttenStatus(fname)
@@ -537,6 +533,7 @@ end
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
 
+// this is equivalent to "status" - if anything is dropped in the beam
 Function V_getAtten_number(fname)
 	String fname
 	
@@ -607,7 +604,7 @@ Function V_getChopperSlits(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getChopperstatus(fname)
+Function/S V_getChopperStatus(fname)
 	String fname
 
 	String path = "entry:instrument:beam:chopper:status"
@@ -615,7 +612,7 @@ Function/S V_getChopperstatus(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function/S V_getChoppertype(fname)
+Function/S V_getChopperType(fname)
 	String fname
 
 	String path = "entry:instrument:beam:chopper:type"
@@ -801,24 +798,23 @@ Function/S V_getVelSelStatus(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getVSTable(fname,outW)
-	String fname
-	Wave outW
-	
-	String path = "entry:instrument:beam:monochromator:velocity_selector:table"	
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	outW = w
-	return(0)
-end
-
-Function V_getVSTable_parameters(fname)
+Function/WAVE V_getVSTable_parameters(fname)
 	String fname
 	
 	String path = "entry:instrument:beam:monochromator:velocity_selector:table_parameters"	
-	return(V_getRealValueFromHDF5(fname,path))
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	return w
 end
 
+//Function V_getVSTable(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:monochromator:velocity_selector:table"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+
+// TODO: this may not exist for VSANS???
 Function V_getVS_tilt(fname)
 	String fname
 	
@@ -911,15 +907,13 @@ Function/S V_getPolAnaCell_name(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getPolAnaCell_parameters(fname,outW)
+Function/WAVE V_getPolAnaCell_parameters(fname)
 	String fname
-	Wave outW
 
 	String path = "entry:instrument:beam:polarizer_analyzer:cell_parameters"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 End
 
 Function V_getPolAnaGuideFieldCur_1(fname)
@@ -1028,43 +1022,158 @@ Function/S V_getBeamMonNormType(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-//beam_stop (data folder)
-Function/S V_getBeamStopDescription(fname)
+//beam_stop C2 (data folder)
+Function/S V_getBeamStopC2Description(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:description"
+	String path = "entry:instrument:beam_stop_C2:description"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getBeamStopDist_to_det(fname)
+Function V_getBeamStopC2Dist_to_det(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:distance_to_detector"
+	String path = "entry:instrument:beam_stop_C2:distance_to_detector"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamStop_x_pos(fname)
+//TODO -- not sure what this really means
+Function V_getBeamStopC2num_beamstops(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:x_pos"
+	String path = "entry:instrument:beam_stop_C2:num_beamstops"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getBeamStop_y_pos(fname)
+Function V_getBeamStopC2_x_pos(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:y_pos"
+	String path = "entry:instrument:beam_stop_C2:x_pos"
 	return(V_getRealValueFromHDF5(fname,path))
 End
+
+Function V_getBeamStopC2_y_pos(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C2:y_pos"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// beam stop shape parameters
+Function V_getBeamStopC2_height(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C2:shape:height"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getBeamStopC2_width(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C2:shape:width"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// == diameter if shape = CIRCLE
+Function V_getBeamStopC2_size(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C2:shape:size"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function/S V_getBeamStopC2_shape(fname)
+	String fname
+
+	Variable num=60
+	String path = "entry:instrument:beam_stop_C2:shape:shape"
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+
+//beam_stop C3 (data folder)
+Function/S V_getBeamStopC3Description(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:description"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getBeamStopC3Dist_to_det(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:distance_to_detector"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+//TODO -- not sure what this really means
+Function V_getBeamStopC3num_beamstops(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:num_beamstops"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getBeamStopC3_x_pos(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:x_pos"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getBeamStopC3_y_pos(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:y_pos"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// beam stop shape parameters
+Function V_getBeamStopC3_height(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:shape:height"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getBeamStopC3_width(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:shape:width"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// == diameter if shape = CIRCLE
+Function V_getBeamStopC3_size(fname)
+	String fname
+
+	String path = "entry:instrument:beam_stop_C3:shape:size"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function/S V_getBeamStopC3_shape(fname)
+	String fname
+
+	Variable num=60
+	String path = "entry:instrument:beam_stop_C3:shape:shape"
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+
+
 
 //// INSTRUMENT/COLLIMATOR
 //collimator (data folder)
-Function V_getNumberOfGuides(fname)
+
+// this is now defined as text, due to selections from GUI
+Function/S V_getNumberOfGuides(fname)
 	String fname
 
+	Variable num=60
 	String path = "entry:instrument:collimator:number_guides"
-	return(V_getRealValueFromHDF5(fname,path))
+	return(V_getStringFromHDF5(fname,path,num))
 End
 
 //				geometry (data folder)
@@ -1128,7 +1237,7 @@ Function/WAVE V_getDet_cal_y(fname,detStr)
 	endif
 End
 
-// TODO -- write and X and Y version of this. Pixels are not square
+//  Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
 Function V_getDet_pixel_fwhm_x(fname,detStr)
@@ -1136,15 +1245,10 @@ Function V_getDet_pixel_fwhm_x(fname,detStr)
 
 	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_x"
 
-// TODO -- different behavior for "B"
-	if(cmpstr(detStr,"B") == 0)
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(V_getRealValueFromHDF5(fname,path))
-	endif
+	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// TODO -- write and X and Y version of this. Pixels are not square
+// Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
 Function V_getDet_pixel_fwhm_y(fname,detStr)
@@ -1152,12 +1256,7 @@ Function V_getDet_pixel_fwhm_y(fname,detStr)
 
 	String path = "entry:instrument:detector_"+detStr+":pixel_fwhm_y"
 
-// TODO -- different behavior for "B"
-	if(cmpstr(detStr,"B") == 0)
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(V_getRealValueFromHDF5(fname,path))
-	endif
+	return(V_getRealValueFromHDF5(fname,path))
 End
 
 Function V_getDet_pixel_num_x(fname,detStr)
@@ -1174,17 +1273,17 @@ Function V_getDet_pixel_num_y(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// only defined for the "B" detector, and only to satisfy NXsas
-Function V_getDet_azimuthalAngle(fname,detStr)
-	String fname,detStr
-
-	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":azimuthal_angle"
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(0)
-	endif
-End
+//// only defined for the "B" detector, and only to satisfy NXsas
+//Function V_getDet_azimuthalAngle(fname,detStr)
+//	String fname,detStr
+//
+//	if(cmpstr(detStr,"B") == 0)
+//		String path = "entry:instrument:detector_"+detStr+":azimuthal_angle"
+//		return(V_getRealValueFromHDF5(fname,path))
+//	else
+//		return(0)
+//	endif
+//End
 
 Function V_getDet_beam_center_x(fname,detStr)
 	String fname,detStr
@@ -1206,7 +1305,6 @@ End
 // x and y center in mm is currently not part of the NExus definition
 //  does it need to be?
 // these lookups will fail if they have not been generated locally!
-
 Function V_getDet_beam_center_x_mm(fname,detStr)
 	String fname,detStr
 
@@ -1219,7 +1317,6 @@ End
 // x and y center in mm is currently not part of the NExus definition
 //  does it need to be?
 // these lookups will fail if they have not been generated locally!
-
 Function V_getDet_beam_center_y_mm(fname,detStr)
 	String fname,detStr
 
@@ -1229,8 +1326,6 @@ End
 
 
 
-// TODO -- write this function to return a WAVE with the data
-// either as a wave reference, or as an input parameter
 Function/WAVE V_getDetectorDataW(fname,detStr)
 	String fname,detStr
 
@@ -1240,8 +1335,10 @@ Function/WAVE V_getDetectorDataW(fname,detStr)
 	return w
 End
 
-// TODO -- write this function to return a WAVE with the data
-// either as a wave reference, or as an input parameter
+//
+// TODO -- this does not exist in the raw data, but does in the processed data
+// !!! how to handle this?? Binning routines need the error wave
+//
 Function/WAVE V_getDetectorDataErrW(fname,detStr)
 	String fname,detStr
 
@@ -1259,11 +1356,25 @@ Function/WAVE V_getDetector_deadtime(fname,detStr)
 	String fname,detStr
 
 	String path = "entry:instrument:detector_"+detStr+":dead_time"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	return w
+	if(cmpstr(detStr,"B") == 0)
+		return $""
+	else	
+		WAVE w = V_getRealWaveFromHDF5(fname,path)
+		return w
+	endif
 End
 
+// for "B" only
+Function V_getDetector_deadtime_B(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":dead_time"
+	if(cmpstr(detStr,"B") == 0)
+		return(V_getRealValueFromHDF5(fname,path))
+	else	
+		return(0)
+	endif
+End
 
 Function/S V_getDetDescription(fname,detStr)
 	String fname,detStr
@@ -1280,17 +1391,17 @@ Function V_getDet_distance(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// only defined for the "B" detector, and only to satisfy NXsas
-Function V_getDet_equatorial_angle(fname,detStr)
-	String fname,detStr
-
-	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":equatorial_angle"
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(0)
-	endif
-End
+//// only defined for the "B" detector, and only to satisfy NXsas
+//Function V_getDet_equatorial_angle(fname,detStr)
+//	String fname,detStr
+//
+//	if(cmpstr(detStr,"B") == 0)
+//		String path = "entry:instrument:detector_"+detStr+":equatorial_angle"
+//		return(V_getRealValueFromHDF5(fname,path))
+//	else
+//		return(0)
+//	endif
+//End
 
 Function/S V_getDetEventFileName(fname,detStr)
 	String fname,detStr
@@ -1314,37 +1425,37 @@ Function V_getDet_LateralOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-Function V_getDet_VerticalOffset(fname,detStr)
-	String fname,detStr
+//Function V_getDet_VerticalOffset(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
+//	return(V_getRealValueFromHDF5(fname,path))
+//End
 
-	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
-	return(V_getRealValueFromHDF5(fname,path))
-End
 
+//// only defined for the "B" detector, and only to satisfy NXsas
+//Function V_getDet_polar_angle(fname,detStr)
+//	String fname,detStr
+//
+//	if(cmpstr(detStr,"B") == 0)
+//		String path = "entry:instrument:detector_"+detStr+":polar_angle"
+//		return(V_getRealValueFromHDF5(fname,path))
+//	else
+//		return(0)
+//	endif
+//End
 
-// only defined for the "B" detector, and only to satisfy NXsas
-Function V_getDet_polar_angle(fname,detStr)
-	String fname,detStr
-
-	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":polar_angle"
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(0)
-	endif
-End
-
-// only defined for the "B" detector, and only to satisfy NXsas
-Function V_getDet_rotational_angle(fname,detStr)
-	String fname,detStr
-
-	if(cmpstr(detStr,"B") == 0)
-		String path = "entry:instrument:detector_"+detStr+":rotational_angle"
-		return(V_getRealValueFromHDF5(fname,path))
-	else
-		return(0)
-	endif
-End
+//// only defined for the "B" detector, and only to satisfy NXsas
+//Function V_getDet_rotational_angle(fname,detStr)
+//	String fname,detStr
+//
+//	if(cmpstr(detStr,"B") == 0)
+//		String path = "entry:instrument:detector_"+detStr+":rotational_angle"
+//		return(V_getRealValueFromHDF5(fname,path))
+//	else
+//		return(0)
+//	endif
+//End
 
 Function/S V_getDetSettings(fname,detStr)
 	String fname,detStr
@@ -1354,13 +1465,13 @@ Function/S V_getDetSettings(fname,detStr)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// really has no meaning at all 
-Function V_getDet_size(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:instrument:detector_"+detStr+":size"
-	return(V_getRealValueFromHDF5(fname,path))
-End
+//// really has no meaning at all 
+//Function V_getDet_size(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:instrument:detector_"+detStr+":size"
+//	return(V_getRealValueFromHDF5(fname,path))
+//End
 
 Function/S V_getDetType(fname,detStr)
 	String fname,detStr
@@ -1423,17 +1534,17 @@ Function/WAVE V_getDetTube_spatialCalib(fname,detStr)
 	endif
 End
 
-// TODO -- be clear on how this is defined.
-Function V_getDet_tubeIndex(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:instrument:detector_"+detStr+":tube_index"
-	if(cmpstr(detStr,"B") == 0)
-		return(0)
-	else
-		return(V_getRealValueFromHDF5(fname,path))
-	endif
-End
+//// TODO -- be clear on how this is defined.
+//Function V_getDet_tubeIndex(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:instrument:detector_"+detStr+":tube_index"
+//	if(cmpstr(detStr,"B") == 0)
+//		return(0)
+//	else
+//		return(V_getRealValueFromHDF5(fname,path))
+//	endif
+//End
 
 Function/S V_getDet_tubeOrientation(fname,detStr)
 	String fname,detStr
@@ -1541,8 +1652,9 @@ Function/S V_getLensPrismStatus(fname)
 End
 	
 
-///////  sample_aperture (data folder)
 
+
+///////  sample_aperture (1) (data folder)
 Function/S V_getSampleAp_Description(fname)
 	String fname
 
@@ -1557,8 +1669,8 @@ Function V_getSampleAp_distance(fname)
 	String path = "entry:instrument:sample_aperture:distance"
 	return(V_getRealValueFromHDF5(fname,path))
 End
-//	shape (data folder)
 
+//	shape (data folder)
 Function/S V_getSampleAp_shape(fname)
 	String fname
 
@@ -1567,19 +1679,30 @@ Function/S V_getSampleAp_shape(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- this needs to return a WAVE, since the shape may be circle, or rectangle
-// and will need to return more than a single dimension
-// TODO -- be careful of the UNITS
-Function V_getSampleAp_size(fname,outW)
+// this returns TEXT, due to GUI input, == to diameter if CIRCLE
+Function/S V_getSampleAp_size(fname)
 	String fname
-	Wave outW
 
 	String path = "entry:instrument:sample_aperture:shape:size"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
 
-	outW = w
-	return(0)
-End		
+Function V_getSampleAp_height(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture:shape:height"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getSampleAp_width(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture:shape:width"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+
 
 ///////  sample_aperture_2 (data folder)
 
@@ -1597,8 +1720,8 @@ Function V_getSampleAp2_distance(fname)
 	String path = "entry:instrument:sample_aperture_2:distance"
 	return(V_getRealValueFromHDF5(fname,path))
 End
-//	shape (data folder)
 
+//	shape (data folder)
 Function/S V_getSampleAp2_shape(fname)
 	String fname
 
@@ -1607,20 +1730,29 @@ Function/S V_getSampleAp2_shape(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- this needs to return a WAVE, since the shape may be circle, or rectangle
-// and will need to return more than a single dimension
-// TODO -- be careful of the UNITS
-Function V_getSampleAp2_size(fname,outW)
+// this returns REAL, DIFFERENT than SampleAp1
+Function V_getSampleAp2_size(fname)
 	String fname
-	Wave outW
 
 	String path = "entry:instrument:sample_aperture_2:shape:size"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
+	return(V_getRealValueFromHDF5(fname,path))
+End
 
-	outW = w
-	return(0)
-End		
-		
+Function V_getSampleAp2_height(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture_2:shape:height"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+Function V_getSampleAp2_width(fname)
+	String fname
+
+	String path = "entry:instrument:sample_aperture_2:shape:width"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+	
 //////  sample_table (data folder)
 // location  = "CHAMBER" or HUBER
 Function/S V_getSampleTableLocation(fname)
@@ -1693,8 +1825,8 @@ Function V_getSourceAp_distance(fname)
 	String path = "entry:instrument:source_aperture:distance"
 	return(V_getRealValueFromHDF5(fname,path))
 End
-//	shape (data folder)
 
+//	shape (data folder)
 Function/S V_getSourceAp_shape(fname)
 	String fname
 
@@ -1703,38 +1835,44 @@ Function/S V_getSourceAp_shape(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- this needs to return a WAVE, since the shape may be circle, or rectangle
-// and will need to return more than a single dimension
-// TODO -- be careful of the UNITS
-Function V_getSourceAp_size(fname,outW)
+// this returns TEXT, due to GUI input, == to diameter if CIRCLE
+Function/S V_getSourceAp_size(fname)
 	String fname
-	Wave outW
 
 	String path = "entry:instrument:source_aperture:shape:size"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
 
-	outW = w
-	return(0)
-End		
+Function V_getSourceAp_height(fname)
+	String fname
 
+	String path = "entry:instrument:source_aperture:shape:height"
+	return(V_getRealValueFromHDF5(fname,path))
+End
 
+Function V_getSourceAp_width(fname)
+	String fname
+
+	String path = "entry:instrument:source_aperture:shape:width"
+	return(V_getRealValueFromHDF5(fname,path))
+End
 
 
 //////// SAMPLE
 //////// SAMPLE
 //////// SAMPLE
 
-//Sample position in changer
-// TODO -- in the NexusWriter, this ends up as a STRING -- which is wrong. it needs to be FP
-Function V_getSamplePosition(fname)
+//Sample position in changer (returned as TEXT)
+Function/S V_getSamplePosition(fname)
 	String fname
 	
 	String path = "entry:sample:changer_position"	
-	return(V_getRealValueFromHDF5(fname,path))
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
 end
 
 // sample label 
-// TODO: value of num is currently not used
 Function/S V_getSampleDescription(fname)
 	String fname
 
@@ -1742,6 +1880,14 @@ Function/S V_getSampleDescription(fname)
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
+
+// for a z-stage??
+Function V_getSampleElevation(fname)
+	String fname
+	
+	String path = "entry:sample:elevation"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
 
 //no meaning to this...
 Function V_getSample_equatorial_ang(fname)
@@ -1784,6 +1930,13 @@ Function V_getSampleThickness(fname)
 	String fname
 	
 	String path = "entry:sample:thickness"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getSampleTranslation(fname)
+	String fname
+	
+	String path = "entry:sample:translation"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
@@ -1863,39 +2016,41 @@ Function/S V_getLog_startTime(fname,logStr)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- 
-Function V_getLog_avgValue(fname,logStr)
-	String fname,logStr
-	
-	String path = "entry:sample:"+logstr+":value_log:average_value"
-	return(V_getRealValueFromHDF5(fname,path))
-end
-
-// TODO -- this needs to be a WAVE reference
-// TODO -- verify that the field is really read in as "time0"
-Function V_getLog_time(fname,logStr,outW)
-	String fname,logStr
-	Wave outW
-	
-	String path = "entry:sample:"+logstr+":value_log:time0"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	outW = w
-	return(0)
-end
-
-
-// TODO -- this needs to be a WAVE reference
-Function V_getLog_Value(fname,logStr,outW)
-	String fname,logStr
-	Wave outW
-	
-	String path = "entry:sample:"+logstr+":value_log:value"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	outW = w
-	return(0)
-end
+// TODO -- thes currently do not exist...
+//
+//// TODO -- 
+//Function V_getLog_avgValue(fname,logStr)
+//	String fname,logStr
+//	
+//	String path = "entry:sample:"+logstr+":value_log:average_value"
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//// TODO -- this needs to be a WAVE reference
+//// TODO -- verify that the field is really read in as "time0"
+//Function V_getLog_time(fname,logStr,outW)
+//	String fname,logStr
+//	Wave outW
+//	
+//	String path = "entry:sample:"+logstr+":value_log:time0"
+//	WAVE w = V_getRealWaveFromHDF5(fname,path)
+//
+//	outW = w
+//	return(0)
+//end
+//
+//
+//// TODO -- this needs to be a WAVE reference
+//Function V_getLog_Value(fname,logStr,outW)
+//	String fname,logStr
+//	Wave outW
+//	
+//	String path = "entry:sample:"+logstr+":value_log:value"
+//	WAVE w = V_getRealWaveFromHDF5(fname,path)
+//
+//	outW = w
+//	return(0)
+//end
 
 
 
@@ -1909,27 +2064,23 @@ end
 
 
 // TODO -- needs to be a WAVE
-Function V_getAbsolute_Scaling(fname,outW)
+Function/WAVE V_getAbsolute_Scaling(fname)
 	String fname
-	Wave outW
 	
 	String path = "entry:reduction:absolute_scaling"	
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
-
-	outW = w
-	return(0)
+	
+	return w
 end
 
 // TODO -- needs to be a WAVE
-Function V_getBoxCoordinates(fname,outW)
+Function/WAVE V_getBoxCoordinates(fname)
 	String fname
-	Wave outW
 	
 	String path = "entry:reduction:box_coordinates"	
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 end
 
 //box counts
@@ -1999,6 +2150,22 @@ Function/S V_getEmptyBeamFileName(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+Function/S V_getEmptyFileName(fname)
+	String fname
+
+	String path = "entry:reduction:empty_file_name"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function/S V_getMaskFileName(fname)
+	String fname
+
+	String path = "entry:reduction:mask_file_name"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
 
 //whole detector trasmission
 Function V_getSampleTransWholeDetector(fname)
@@ -2028,16 +2195,13 @@ Function/S V_getPolSANS_cellName(fname)
 End
 
 
-// TODO -- needs to be a WAVE
-Function V_getPolSANS_cellParams(fname,outW)
+Function/WAVE V_getPolSANS_cellParams(fname)
 	String fname
-	Wave outW
 	
 	String path = "entry:reduction:pol_sans:cell_parameters"	
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
-	outW = w
-	return(0)
+	return w
 end
 
 Function/S V_getPolSANS_PolSANSPurpose(fname)
@@ -2061,36 +2225,33 @@ End
 //			variables (wave) 320
 //			thumbnail (data folder)
 
-//data (wave) "binary"
-// TODO -- this will need to be completely replaced with a function that can 
-// read the binary image data. should be possible, but I don't know the details on either end...
-Function/S V_getDataImage(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:data_"+detStr+":thumbnail:data"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
-
-Function/S V_getDataImageDescription(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:data_"+detStr+":thumbnail:description"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
-								
-Function/S V_getDataImageType(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:data_"+detStr+":thumbnail:type"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
-
-
-
-
-
+////data (wave) "binary"
+//// TODO -- this will need to be completely replaced with a function that can 
+//// read the binary image data. should be possible, but I don't know the details on either end...
+//Function/S V_getDataImage(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:data_"+detStr+":thumbnail:data"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//Function/S V_getDataImageDescription(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:data_"+detStr+":thumbnail:description"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//								
+//Function/S V_getDataImageType(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:data_"+detStr+":thumbnail:type"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//
 
 

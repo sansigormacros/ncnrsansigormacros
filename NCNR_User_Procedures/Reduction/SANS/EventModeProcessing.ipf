@@ -930,7 +930,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
 	String abortStr
 	
-	PathInfo catPathName
+	PathInfo/S catPathName
 	if(V_flag==0)
 		DoAlert 0,"Please 'Pick Path' to the data from the Main (yellow) Panel."
 		return(0)
@@ -2462,6 +2462,7 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			String tmpStr="",fileStr,filePathStr
 			
 			// load in the waves, saved as Igor text to preserve the data type
+			PathInfo/S catPathName		//should set the next dialog to the proper path...
 			LoadWave/T/O/P=catPathName
 			filePathStr = S_fileName
 			if(strlen(S_fileName) == 0)
