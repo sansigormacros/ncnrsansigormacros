@@ -442,8 +442,10 @@ Function V_getRealValueFromHDF5(fname,path)
 	endif
 	
 	if(!valExists)
-		//then read in the file
+		//then read in the file, putting the data in RawVSANS
+		SetDataFolder ksBaseDFPath
 		V_LoadHDF5_NoAtt(fname,"")
+		SetDataFolder root:
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -483,12 +485,14 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
-	
-	if(!valExists)
-		//then read in the file
-		V_LoadHDF5_NoAtt(fname,"")
-	endif
 
+	if(!valExists)
+		//then read in the file, putting the data in RawVSANS
+		SetDataFolder ksBaseDFPath
+		V_LoadHDF5_NoAtt(fname,"")
+		SetDataFolder root:
+	endif
+		
 // this should exist now - if not, I need to see the error
 	Wave wOut = $(ksBaseDFPath+folderStr+":"+path)
 	
@@ -525,8 +529,10 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	endif
 	
 	if(!valExists)
-		//then read in the file
+		//then read in the file, putting the data in RawVSANS
+		SetDataFolder ksBaseDFPath
 		V_LoadHDF5_NoAtt(fname,"")
+		SetDataFolder root:
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -591,10 +597,12 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
-	
+
 	if(!valExists)
-		//then read in the file
+		//then read in the file, putting the data in RawVSANS
+		SetDataFolder ksBaseDFPath
 		V_LoadHDF5_NoAtt(fname,"")
+		SetDataFolder root:
 	endif
 
 // this should exist now - if not, I need to see the error
@@ -637,6 +645,27 @@ End
 Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	String fname, groupName, varName
 	Wave wav
+	
+	
+	// try a local folder first, then try to save to disk
+	//
+	String folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+	
+	String localPath = "root:Packages:NIST:VSANS:"+folderStr+":entry"
+	localPath += groupName + "/" + varName
+	// make everything colons for local data folders
+	localPath = ReplaceString("/", localPath, ":")
+	
+	Wave/Z w = $localPath
+	if(waveExists(w) == 1)
+		w = wav
+		Print "write to local folder done"
+		return(0)		//we're done, get out
+	endif
+	
+	
+	// if the local wave did not exist, then we proceed to write to disk
+
 	
 	variable err=0, fileID,groupID
 	String cDF = getDataFolder(1), temp
@@ -723,6 +752,27 @@ end
 Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 	String fname, groupName, varName
 	Wave/T wav
+
+	// try a local folder first, then try to save to disk
+	//
+	String folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
+	
+	String localPath = "root:Packages:NIST:VSANS:"+folderStr+":entry"
+	localPath += groupName + "/" + varName
+	// make everything colons for local data folders
+	localPath = ReplaceString("/", localPath, ":")
+	
+	Wave/Z/T w = $localPath
+	if(waveExists(w) == 1)
+		w = wav
+		Print "write to local folder done"
+		return(0)		//we're done, get out
+	endif
+	
+	
+	// if the local wave did not exist, then we proceed to write to disk
+
+
 	
 	variable err=0, fileID,groupID
 	String cDF = getDataFolder(1), temp
@@ -862,12 +912,15 @@ Function writeVCALC_to_file(fileName)
 //V_writeDet_cal_x(fname,detStr,inW)
 //V_writeDet_cal_y(fname,detStr,inW)
 
+		
 // the dead time for each detector
 // V_writeDetector_deadtime(fname,detStr,inW)
 // TODO: need a new, separate function to write the single deadtime value in/out of "B"
 
 	endfor
 	
+	// TODO testing - delete this
+		V_writeDet_beam_center_x(fileName,detStr,321)
 
 
 
