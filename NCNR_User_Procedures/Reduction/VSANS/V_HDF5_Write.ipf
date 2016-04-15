@@ -3615,8 +3615,8 @@ Function V_putDet_beam_center_x(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB:beam_center_x
-	String path = "root:Packages:NIST:VSANS:"+fname+":entry:"
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
 	path += "entry:instrument:detector_"+detStr+":beam_center_x"
 	
 	Wave/Z w = $path
@@ -3660,8 +3660,8 @@ Function V_putDet_beam_center_y(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
-//root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB:beam_center_y
-	String path = "root:Packages:NIST:VSANS:"+fname+":entry:"
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_y
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
 	path += "entry:instrument:detector_"+detStr+":beam_center_y"
 	
 	Wave/Z w = $path

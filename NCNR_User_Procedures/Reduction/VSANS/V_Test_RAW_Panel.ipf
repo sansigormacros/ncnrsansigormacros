@@ -348,8 +348,8 @@ Function VSANSDataHook(s)
 // TODO: these q-values ignore the non-linear corrections!!!
 // -- What can I do about this?
 					String destPath = "root:Packages:NIST:VSANS:"+gCurDispType
-					Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-					Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+					Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+					Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
 					
 // TODO: figure out what coordinates I need to pass -- xloc, yloc, textX, testY, (+1 on any?)				
 					//gQQ = VC_CalcQval(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
@@ -429,7 +429,7 @@ Function VDataTabProc(tca) : TabControl
 					while(ItemsInList(tmpStr) > 0)
 				endif
 				
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_B")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_B")
 				Wave det_B=data
 				
 				CheckDisplayed /W=VSANS_Data#det_panelsB det_B	
@@ -461,13 +461,13 @@ Function VDataTabProc(tca) : TabControl
 					while(ItemsInList(tmpStr) > 0)
 				endif
 
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_ML")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_ML")
 				Wave det_ML=data				
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MR")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_MR")
 				Wave det_MR=data
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MT")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_MT")
 				Wave det_MT=data
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_MB")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_MB")
 				Wave det_MB=data
 
 				CheckDisplayed /W=VSANS_Data#det_panelsM det_MR
@@ -508,13 +508,13 @@ Function VDataTabProc(tca) : TabControl
 					while(ItemsInList(tmpStr) > 0)
 				endif
 
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FL")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_FL")
 				Wave det_FL=data
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FR")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_FR")
 				Wave det_FR=data
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FT")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_FT")
 				Wave det_FT=data				
-				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:entry:instrument:detector_FB")
+				SetDataFolder $("root:Packages:NIST:VSANS:"+dataType+":entry:instrument:detector_FB")
 				Wave det_FB=data
 								
 				CheckDisplayed /W=VSANS_Data#det_panelsF det_FL

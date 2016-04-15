@@ -10,6 +10,8 @@
 //
 // - adding RAW data to a workfile
 // -- **this conversion applies the detector corrections**
+// -- Raw_to_work(newType) IS THE MAJOR ROUTINE TO APPLY DETECTOR CORRECTIONS
+//
 //
 // - copying workfiles to another folder
 //
@@ -82,17 +84,17 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		// I can delete these if they came along with RAW
 		//   DAS_logs
 		//   top-level copies of data (duplicate links)
-		KillDataFolder/Z $(toDF+":entry:entry:DAS_logs")
-		KillDataFolder/Z $(toDF+":entry:entry:data")
-		KillDataFolder/Z $(toDF+":entry:entry:data_B")
-		KillDataFolder/Z $(toDF+":entry:entry:data_ML")
-		KillDataFolder/Z $(toDF+":entry:entry:data_MR")
-		KillDataFolder/Z $(toDF+":entry:entry:data_MT")
-		KillDataFolder/Z $(toDF+":entry:entry:data_MB")
-		KillDataFolder/Z $(toDF+":entry:entry:data_FL")
-		KillDataFolder/Z $(toDF+":entry:entry:data_FR")
-		KillDataFolder/Z $(toDF+":entry:entry:data_FT")
-		KillDataFolder/Z $(toDF+":entry:entry:data_FB")
+		KillDataFolder/Z $(toDF+":entry:DAS_logs")
+		KillDataFolder/Z $(toDF+":entry:data")
+		KillDataFolder/Z $(toDF+":entry:data_B")
+		KillDataFolder/Z $(toDF+":entry:data_ML")
+		KillDataFolder/Z $(toDF+":entry:data_MR")
+		KillDataFolder/Z $(toDF+":entry:data_MT")
+		KillDataFolder/Z $(toDF+":entry:data_MB")
+		KillDataFolder/Z $(toDF+":entry:data_FL")
+		KillDataFolder/Z $(toDF+":entry:data_FR")
+		KillDataFolder/Z $(toDF+":entry:data_FT")
+		KillDataFolder/Z $(toDF+":entry:data_FB")
 
 		return(0)
 	else
@@ -100,15 +102,15 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		// see V_CopyToWorkFolder()
 		
 		// everything on the top level
-		V_DuplicateDataFolder($(fromDF+":entry:entry"),fromStr,toStr,0,"",0)	//no recursion here
+		V_DuplicateDataFolder($(fromDF+":entry"),fromStr,toStr,0,"",0)	//no recursion here
 		// control
-		V_DuplicateDataFolder($(fromDF+":entry:entry:control"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:control"),fromStr,toStr,0,"",1)	//yes recursion here
 		// instrument
-		V_DuplicateDataFolder($(fromDF+":entry:entry:instrument"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:instrument"),fromStr,toStr,0,"",1)	//yes recursion here
 		// reduction
-		V_DuplicateDataFolder($(fromDF+":entry:entry:reduction"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:reduction"),fromStr,toStr,0,"",1)	//yes recursion here
 		// sample
-		V_DuplicateDataFolder($(fromDF+":entry:entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
+		V_DuplicateDataFolder($(fromDF+":entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
 
 	endif	
 	
@@ -381,7 +383,7 @@ Function Raw_to_work(newType)
 	//     so that they are DP, not integer
 	// TODO
 	// -- currently only redimensioning the data and linear_data_error - What else???
-	// -- ?? some of this is done at load time for RAW data
+	// -- ?? some of this is done at load time for RAW data. shouldn't be an issue to re-do the redimension
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
@@ -468,7 +470,7 @@ Function Raw_to_work(newType)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+//			Wave w_dt = V_getDetector_deadtime(fname,detStr)
 //			SolidAngleCorrection(fill this in)
 			
 		endfor
@@ -489,24 +491,35 @@ Function Raw_to_work(newType)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Wave w_dt = V_getDetector_deadtime(fname,detStr)
-//			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
-				//deadtime corrections
-//	itim = integersread[2]
-//	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
-//	//TODO - do correct dead time correction for tubes
-//	deadtime = 1//DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1],dtime=realsRead[48])	//pick the correct deadtime
-//	dscale = 1/(1-deadTime*cntrate)
-//	
-	
-// dead time correction
-//	data *= dscale		//deadtime correction for everyone else, including NCNR
-//	data_err *= dscale
+			
+			if(cmpstr(detStr,"B") == 0)
+				Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
+				// do the correction for the back panel
+				
+				//	itim = integersread[2]
+				//	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
+				//	//TODO - do correct dead time correction for tubes
+				//	deadtime = 1//DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1],dtime=realsRead[48])	//pick the correct deadtime
+				//	dscale = 1/(1-deadTime*cntrate)
+				//	
+					
+				// dead time correction
+				//	data *= dscale		//deadtime correction for everyone else, including NCNR
+				//	data_err *= dscale
+				
+				
+			else
+				Wave w_dt = V_getDetector_deadtime(fname,detStr)
+				// do the corrections for 8 tube panels
+				//			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
 
+			endif
 		endfor
+		
 	else
 		Print "Dead Time correction not done"
 	endif	
+	
 	
 	// (5) angle-dependent tube shadowing
 	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
@@ -524,7 +537,6 @@ Function Raw_to_work(newType)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Wave w_dt = V_getDetector_deadtime(fname,detStr)
 //			TransmissionCorrection(fill this in)
 			
 		endfor
@@ -558,7 +570,7 @@ Function Raw_to_work(newType)
 		// V_getBeamMonNormSaved_count()
 		// save the true monitor counts? save the scaling factor?
 		String path = "entry:instrument:beam_monitor_norm:saved_count"
-		Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":entry:"+path)
+		Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":"+path)
 		savW[0] = scale
 	endfor
 	
@@ -767,8 +779,9 @@ Function Add_raw_to_work(newType)
 	SVAR oldList = $(destPath + ":fileList")
 	String/G $(destPath + ":fileList") = oldList + newfile
 	
-	//reset the current displaytype to "newtype"
-	String/G root:myGlobals:gDataDisplayType=newType
+	//reset the current display type to "newtype"
+	SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+	gCurDispType = newType
 	
 	//return to root folder (redundant)
 	SetDataFolder root:

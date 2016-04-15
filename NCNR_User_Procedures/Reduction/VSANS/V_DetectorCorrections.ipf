@@ -116,10 +116,10 @@ Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 
 	// make a wave of the same dimensions, in the same data folder for the distance
 	// ?? or a 3D wave?
-	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
-	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	
 	// then per tube, do the quadratic calculation to get the real space distance along the tube
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
@@ -163,10 +163,10 @@ Function NonLinearCorrection_B(folder,detStr,destPath)
 
 	// make a wave of the same dimensions, in the same data folder for the distance
 	// ?? or a 3D wave?
-	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
-	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	
 	
 	Wave cal_x = V_getDet_cal_x(folder,detStr)
@@ -196,8 +196,8 @@ end
 Function ConvertBeamCtr_to_mm(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
-	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
 
 	String orientation
 	Variable dimX,dimY,xCtr,yCtr
@@ -212,10 +212,10 @@ Function ConvertBeamCtr_to_mm(folder,detStr,destPath)
 	xCtr = V_getDet_beam_center_x(folder,detStr)
 	yCtr = V_getDet_beam_center_y(folder,detStr)	
 	
-	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
-	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
-	WAVE x_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
-	WAVE y_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
 
 	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
 
@@ -254,17 +254,17 @@ end
 Function ConvertBeamCtr_to_mmB(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
-	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")	
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
 	
 	Variable xCtr,yCtr
 	xCtr = V_getDet_beam_center_x(folder,detStr)
 	yCtr = V_getDet_beam_center_y(folder,detStr)	
 	
-	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
-	Make/O/D/N=1 $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
-	WAVE x_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_x_mm")
-	WAVE y_mm = $(destPath + ":entry:entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
 
 	x_mm[0] = data_realDistX[xCtr][0]
 	y_mm[0] = data_realDistY[0][yCtr]
@@ -336,8 +336,8 @@ Function fMakeFakeCalibrationWaves()
 	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 //		Wave w = V_getDetectorDataW(fname,detStr)
-		Make/O/D/N=(3,48) $("root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_"+detStr+":spatial_calibration")
-		Wave calib = $("root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_"+detStr+":spatial_calibration")
+		Make/O/D/N=(3,48) $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_"+detStr+":spatial_calibration")
+		Wave calib = $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_"+detStr+":spatial_calibration")
 		// !!!! this overwrites what is there
 
 		orientation = V_getDet_tubeOrientation(fname,detStr)
@@ -393,18 +393,18 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
 	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
 	lambda = V_getWavelength(fname)
-	Wave data_realDistX = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:entry:instrument:detector_"+detStr+":data_realDistY")
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 
 // make the new waves
-	Duplicate/O data_realDistX $(destPath + ":entry:entry:instrument:detector_"+detStr+":qTot_"+detStr)
-	Duplicate/O data_realDistX $(destPath + ":entry:entry:instrument:detector_"+detStr+":qx_"+detStr)
-	Duplicate/O data_realDistX $(destPath + ":entry:entry:instrument:detector_"+detStr+":qy_"+detStr)
-	Duplicate/O data_realDistX $(destPath + ":entry:entry:instrument:detector_"+detStr+":qz_"+detStr)
-	Wave qTot = $(destPath + ":entry:entry:instrument:detector_"+detStr+":qTot_"+detStr)
-	Wave qx = $(destPath + ":entry:entry:instrument:detector_"+detStr+":qx_"+detStr)
-	Wave qy = $(destPath + ":entry:entry:instrument:detector_"+detStr+":qy_"+detStr)
-	Wave qz = $(destPath + ":entry:entry:instrument:detector_"+detStr+":qz_"+detStr)
+	Duplicate/O data_realDistX $(destPath + ":entry:instrument:detector_"+detStr+":qTot_"+detStr)
+	Duplicate/O data_realDistX $(destPath + ":entry:instrument:detector_"+detStr+":qx_"+detStr)
+	Duplicate/O data_realDistX $(destPath + ":entry:instrument:detector_"+detStr+":qy_"+detStr)
+	Duplicate/O data_realDistX $(destPath + ":entry:instrument:detector_"+detStr+":qz_"+detStr)
+	Wave qTot = $(destPath + ":entry:instrument:detector_"+detStr+":qTot_"+detStr)
+	Wave qx = $(destPath + ":entry:instrument:detector_"+detStr+":qx_"+detStr)
+	Wave qy = $(destPath + ":entry:instrument:detector_"+detStr+":qy_"+detStr)
+	Wave qz = $(destPath + ":entry:instrument:detector_"+detStr+":qz_"+detStr)
 
 // calculate all of the q-values
 	qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
@@ -813,8 +813,9 @@ Proc AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
 	KillStrings/Z newTitle
 	
 	//need to update the display with "data" from the correct dataFolder
-	//reset the current displaytype to "type"
-	String/G root:myGlobals:gDataDisplayType=Type
+	//reset the current display type to "type"
+	SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+	gCurDispType = Type	
 	
 	fRawWindowHook()
 	
@@ -1049,7 +1050,7 @@ Function DIVCorrection(data,data_err,detStr,workType)
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
 
-	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:entry:instrument:detector_"+detStr+":data")
+	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")
 	if(WaveExists(div_data) == 0)
 		Print "The DIV wave does not exist in DIVCorrection()"
 		Return(1)		//error condition

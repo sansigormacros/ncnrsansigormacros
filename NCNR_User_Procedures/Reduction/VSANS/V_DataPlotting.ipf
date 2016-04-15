@@ -406,7 +406,7 @@ End
 Proc V_Back_IQ_Graph(type)
 	String type
 	
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
 	Variable binType
 	

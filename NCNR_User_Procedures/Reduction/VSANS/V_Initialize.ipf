@@ -133,7 +133,7 @@ End
 Function V_InitGlobals()
 	
 	Variable/G root:Packages:NIST:VSANS:Globals:gIsLogScale = 0
-	String/G root:Packages:NIST:VSANS:Globals:gDataDisplayType = "RAW"
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = "RAW"
 	
 	//check platform, so Angstrom can be drawn correctly
 

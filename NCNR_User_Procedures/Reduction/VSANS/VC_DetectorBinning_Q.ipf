@@ -56,7 +56,7 @@ Function fPlotFrontPanels()
 	String detStr = ""
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
-	String instPath = ":entry:entry:instrument:detector_"	
+	String instPath = ":entry:instrument:detector_"	
 
 	detStr = "FL"
 	WAVE det_FL = $(folderPath+instPath+detStr+":det_"+detStr)	
@@ -122,7 +122,7 @@ Function VC_CalculateQFrontPanels()
 	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_offset
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
-	String instPath = ":entry:entry:instrument:detector_"
+	String instPath = ":entry:instrument:detector_"
 	String detStr=""
 
 // get the values from the panel + constants	
@@ -300,7 +300,7 @@ Function VC_SetShadow_TopBottom(folderStr,type)
 	LR_sep /= 10
 
 //detector data
-	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:entry:instrument:detector_"+type+":det_"+type)
+	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+type+":det_"+type)
 
 // TODO - these are to be set from globals, not hard-wired
 // pixel sizes are in cm for T/B detector
@@ -334,7 +334,7 @@ end
 //
 Function FrontPanels_AsQ()
 
-	String frontStr = "root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:"
+	String frontStr = "root:Packages:NIST:VSANS:VCALC:entry:instrument:"
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 	SetDataFolder $(frontStr+"detector_FB")
 	Wave det_FB = det_FB
@@ -461,7 +461,7 @@ Function fPlotMiddlePanels()
 	String detStr = ""
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
-	String instPath = ":entry:entry:instrument:detector_"	
+	String instPath = ":entry:instrument:detector_"	
 
 	detStr = "ML"
 	WAVE det_ML = $(folderPath+instPath+detStr+":det_"+detStr)	
@@ -523,7 +523,7 @@ Function VC_CalculateQMiddlePanels()
 
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
-	String instPath = ":entry:entry:instrument:detector_"
+	String instPath = ":entry:instrument:detector_"
 	String detStr=""
 	
 	M_LR_sep = VCALC_getPanelSeparation("MLR")
@@ -682,7 +682,7 @@ Function MiddlePanels_AsQ()
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	String midStr = "root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:"
+	String midStr = "root:Packages:NIST:VSANS:VCALC:entry:instrument:"
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 	SetDataFolder $(midStr+"detector_MB")
 	Wave det_MB = det_MB
@@ -915,7 +915,7 @@ Function fPlotBackPanels()
 	
 	// fill the panels with fake sphere scattering data
 	// TODO: am I in the right data folder??
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
 	WAVE det_B = det_B
 	WAVE qTot_B = qTot_B
@@ -961,7 +961,7 @@ Function VC_CalculateQBackPanels()
 	Variable B_offset
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
-	String instPath = ":entry:entry:instrument:detector_"
+	String instPath = ":entry:instrument:detector_"
 	String detStr = ""
 	
 	B_offset = VCALC_getLateralOffset("B")
@@ -974,7 +974,7 @@ Function VC_CalculateQBackPanels()
 	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (150,150)
 
 //Back detector
-//root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:qTot_B
+//root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B:qTot_B
 	detStr = "B"
 	Wave qTot_B = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 	Wave qx_B = $(folderPath+instPath+detStr+":qx_"+detStr)
@@ -1014,7 +1014,7 @@ Window BackPanels_AsQ() : Graph
 //	PauseUpdate; Silent 1		// building window...
 //	Display /W=(1477,44,1978,517)
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
 	CheckDisplayed /W=VCALC#Panels_Q det_B
 	if(V_flag == 0)
@@ -1078,7 +1078,7 @@ End
 ////////////to plot the back panel I(q)
 Window Back_IQ_Graph() : Graph
 
-	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B
+	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
 	Variable binType
 	

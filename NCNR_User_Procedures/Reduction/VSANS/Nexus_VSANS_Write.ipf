@@ -30,9 +30,9 @@
 
 /////
 /// to get "useable" data out of the 3D wave (incorrectly written)
-//		Redimension/N=(1,320,320) 	root:V_Nexus_Template:entry:entry1:instrument:detector_B:data	
-//		root:V_Nexus_Template:entry:entry1:instrument:detector_B:data[0][][] = root:Packages:NIST:VSANS:VCALC:Back:det_B[q][r]
-//		root:V_Nexus_Template:entry:entry1:instrument:detector_B:distance = VCALC_getSDD("B")
+//		Redimension/N=(1,320,320) 	root:V_Nexus_Template:entry1:instrument:detector_B:data	
+//		root:V_Nexus_Template:entry1:instrument:detector_B:data[0][][] = root:Packages:NIST:VSANS:VCALC:Back:det_B[q][r]
+//		root:V_Nexus_Template:entry1:instrument:detector_B:distance = VCALC_getSDD("B")
 
 
 
@@ -58,7 +58,7 @@
 Proc H_Fill_VSANS_Template_wSim()
 
 
-	root:V_Nexus_Template:entry:entry1:instrument:beam:monochromator:wavelength = VCALC_getWavelength()
+	root:V_Nexus_Template:entry1:instrument:beam:monochromator:wavelength = VCALC_getWavelength()
 				
 //			SetDataFolder root:VSANS_file:entry1:instrument		
 //				SetDataFolder root:VSANS_file:entry1:instrument:monochromator		
@@ -74,9 +74,9 @@ Proc H_Fill_VSANS_Template_wSim()
 //						//	description_of_distribution
 					
 
-		Redimension/N=(1,150,150) 	root:V_Nexus_Template:entry:entry1:instrument:detector_B:data	
-		root:V_Nexus_Template:entry:entry1:instrument:detector_B:data[0][][] = root:Packages:NIST:VSANS:VCALC:Back:det_B[q][r]
-		root:V_Nexus_Template:entry:entry1:instrument:detector_B:distance = VCALC_getSDD("B")
+		Redimension/N=(1,150,150) 	root:V_Nexus_Template:entry1:instrument:detector_B:data	
+		root:V_Nexus_Template:entry1:instrument:detector_B:data[0][][] = root:Packages:NIST:VSANS:VCALC:Back:det_B[q][r]
+		root:V_Nexus_Template:entry1:instrument:detector_B:distance = VCALC_getSDD("B")
 
 //
 //			SetDataFolder root:VSANS_file:entry1:instrument:detector_MR			

@@ -52,8 +52,8 @@ Function V_LoadHDF5Data(file,folder)
 	destPath = "root:Packages:NIST:VSANS:"+folder
 
 	if(cmpstr(folder,"RAW")==0)
-		base_name="entry"
-//		base_name="RAW"		// this acts as a flag to remove the duplicate "entry" level
+//		base_name="entry"
+		base_name="RAW"		// this acts as a flag to remove the duplicate "entry" level
 	else
 	// null will use the file name as the top level (above entry)
 		base_name=""		//TODO -- remove this / change behavior in V_LoadHDF5_NoAtt()
@@ -65,7 +65,7 @@ Function V_LoadHDF5Data(file,folder)
 	// do this 9x
 	// then do any "massaging" needed to redimension, fake values, etc.
 	//
-	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:entry:instrument:" 
+	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:" 
 
 	if(cmpstr(folder,"RAW")==0)
 	
@@ -157,16 +157,16 @@ End
 Function V_RedimFakeData()
 	
 	// check for fake data in VCALC folder...
-	wave/Z tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
+	wave/Z tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B:det_B"
 	if(WaveExists(tmpw) == 0)
 		Execute "VCALC_Panel()"
 	endif
 	
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_B
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B
 	Wave det_B=data
 //	Redimension/N=(150,150)/E=1 det_B	
 	Redimension/D det_B
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_B:det_B"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B:det_B"
 //	det_B=tmpw
 //	det_B += 2
 	Wave distance=distance
@@ -174,7 +174,7 @@ Function V_RedimFakeData()
 
 			
 	Variable ctr=20,npix=128
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MT
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MT
 	Wave det_MT=data
 //	Redimension/N=(npix,48)/E=1 det_MT
 	Redimension/D det_MT		
@@ -182,14 +182,14 @@ Function V_RedimFakeData()
 	SetScale/I y ctr,ctr+48,"",det_MT
 //	det_MT *= 10
 //	det_MT += 2
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MT:det_MT"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MT:det_MT"
 //	det_MT=tmpw
 //	det_MT += 2
 	Wave distance=distance
 	distance = VCALC_getSDD("MT")*100		// to convert m to cm
 
 	
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MB
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MB
 	Wave det_MB=data
 //	Redimension/N=(npix,48)/E=1 det_MB		
 	Redimension/D det_MB
@@ -197,7 +197,7 @@ Function V_RedimFakeData()
 	SetScale/I y -ctr-48,-ctr,"",det_MB
 //	det_MB *= 5
 //	det_MB += 2
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MB:det_MB"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MB:det_MB"
 //	det_MB=tmpw
 //	det_MB += 2
 	Wave distance=distance
@@ -205,7 +205,7 @@ Function V_RedimFakeData()
 
 	
 	ctr=30
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_ML
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_ML
 	Wave det_ML=data
 //	Redimension/N=(48,npix)/E=1 det_ML		
 	Redimension/D det_ML
@@ -213,21 +213,21 @@ Function V_RedimFakeData()
 	SetScale/I y -npix/2,npix/2,"",det_ML
 //	det_ML *= 2
 //	det_ML += 2
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_ML:det_ML"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_ML:det_ML"
 //	det_ML=tmpw
 //	det_ML += 2
 	Wave distance=distance
 	distance = VCALC_getSDD("ML")*100		// to convert m to cm
 
 		
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_MR
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MR
 	Wave det_MR=data
 //	Redimension/N=(48,npix)/E=1 det_MR		
 	Redimension/D det_MR
 	SetScale/I x ctr,ctr+48,"",det_MR
 	SetScale/I y -npix/2,npix/2,"",det_MR
 //	det_MR +=2
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_MR:det_MR"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MR:det_MR"
 //	det_MR=tmpw
 //	det_MR += 2
 	Wave distance=distance
@@ -235,49 +235,49 @@ Function V_RedimFakeData()
 	
 	
 	ctr=30
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FT
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FT
 	Wave det_FT=data
 //	Redimension/N=(npix,48)/E=1 det_FT		
 	Redimension/D det_FT
 	SetScale/I x -npix/2,npix/2,"",det_FT
 	SetScale/I y ctr,ctr+48,"",det_FT
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FT:det_FT"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FT:det_FT"
 //	det_FT=tmpw
 	Wave distance=distance
 	distance = VCALC_getSDD("FT")*100		// to convert m to cm
 
 
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FB
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB
 	Wave det_FB=data
 //	Redimension/N=(npix,48)/E=1 det_FB		
 	Redimension/D det_FB
 	SetScale/I x -npix/2,npix/2,"",det_FB
 	SetScale/I y -ctr-48,-ctr,"",det_FB
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FB:det_FB"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FB:det_FB"
 //	det_FB=tmpw
 	Wave distance=distance
 	distance = VCALC_getSDD("FB")*100		// to convert m to cm
 
 			
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL
 	Wave det_FL=data
 //	Redimension/N=(48,npix)/E=1 det_FL		
 	Redimension/D det_FL
 	SetScale/I x -ctr-48,-ctr,"",det_FL
 	SetScale/I y -npix/2,npix/2,"",det_FL
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL"
 //	det_FL=tmpw
 	Wave distance=distance
 	distance = VCALC_getSDD("FL")*100		// to convert m to cm
 
 	
-	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FR
+	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR
 	Wave det_FR=data
 //	Redimension/N=(48,npix)/E=1 det_FR		
 	Redimension/D det_FR
 	SetScale/I x ctr,ctr+48,"",det_FR
 	SetScale/I y -npix/2,npix/2,"",det_FR
-	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FR:det_FR"
+	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FR:det_FR"
 //	det_FR=tmpw
 	Wave distance=distance
 	distance = VCALC_getSDD("FR")*100		// to convert m to cm
@@ -420,7 +420,7 @@ end
 // TODO:
 // currently, the work folders have the following path - so passing in "RAW" as fname
 // will take some re-configuring. 
-//  root:Packages:NIST:VSANS:RAW:entry:entry:instrument:detector_FL:distance
+//  root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:distance
 // -- be sure this read from work folders is not broken in the future, and is passed to ALL of the
 //    top-level R/W routines. (Write is necessary ONLY for SIM data files. Patch is direct to disk.)
 Function V_getRealValueFromHDF5(fname,path)
@@ -431,9 +431,9 @@ Function V_getRealValueFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
-		Wave/Z w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+// check for a work folder first (note that "entry" is now NOT doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+		Wave/Z w = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
 		return(w[0])
 	endif
 	
@@ -476,9 +476,9 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
-		Wave wOut = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+// check for a work folder first (note that "entry" is NOT doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+		Wave wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
 		return wOut
 	endif
 		
@@ -518,9 +518,9 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
-		Wave/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+// check for a work folder first (note that "entry" is NOT doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+		Wave/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
 		return wOut
 	endif
 	
@@ -588,9 +588,9 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path))
-		Wave/Z/T tw = $("root:Packages:NIST:VSANS:"+folderStr+":entry:"+path)
+// check for a work folder first (note that "entry" is NOT doubled)
+	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+		Wave/Z/T tw = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
 		return(tw[0])
 	endif
 	
@@ -651,7 +651,7 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	//
 	String folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	String localPath = "root:Packages:NIST:VSANS:"+folderStr+":entry"
+	String localPath = "root:Packages:NIST:VSANS:"+folderStr//+":entry"
 	localPath += groupName + "/" + varName
 	// make everything colons for local data folders
 	localPath = ReplaceString("/", localPath, ":")
@@ -757,7 +757,7 @@ Function V_WriteTextWaveToHDF(fname, groupName, varName, wav)
 	//
 	String folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 	
-	String localPath = "root:Packages:NIST:VSANS:"+folderStr+":entry"
+	String localPath = "root:Packages:NIST:VSANS:"+folderStr//+":entry"
 	localPath += groupName + "/" + varName
 	// make everything colons for local data folders
 	localPath = ReplaceString("/", localPath, ":")
@@ -891,7 +891,7 @@ Function writeVCALC_to_file(fileName)
 	String detStr
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
+		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
 		Redimension/I tmpData
 		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
 		V_writeDetectorData(fileName,detStr,tmpData)

@@ -43,7 +43,7 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	endif
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
-	String instPath = ":entry:entry:instrument:detector_"	
+	String instPath = ":entry:instrument:detector_"	
 	
 	if(isVCALC)
 		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data

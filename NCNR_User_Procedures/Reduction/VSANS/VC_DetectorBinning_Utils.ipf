@@ -501,7 +501,7 @@ Function SetDeltaQ(folderStr,detStr)
 	endif
 	
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
-	String instPath = ":entry:entry:instrument:detector_"
+	String instPath = ":entry:instrument:detector_"
 		
 	if(isVCALC)
 		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
@@ -603,7 +603,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	Variable binIndex,val,isVCALC=0
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
-	String instPath = ":entry:entry:instrument:detector_"
+	String instPath = ":entry:instrument:detector_"
 	String detStr
 		
 	if(cmpstr(folderStr,"VCALC") == 0)

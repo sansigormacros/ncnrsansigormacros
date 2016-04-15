@@ -49,7 +49,7 @@ Macro DetectorPanelFit() : Panel
 
 
 
-	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_FL:det_FL curDispPanel
+	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL curDispPanel
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 
@@ -189,7 +189,7 @@ Function DrawDetPanel(str)
 //				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y
 //				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelX
 //				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
+//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
 //				break
 //			case "FR":
 //				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X
@@ -250,7 +250,7 @@ Function DrawDetPanel(str)
 //		endswitch
 	
 	// if VCALC declare this way	
-		wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:entry:instrument:detector_"+str+":det_"+str)
+		wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
 		nPix_X = VC_nPix_X
 		nPix_Y = VC_nPix_Y
 		pixSize_X = VC_pixSize_X
@@ -258,7 +258,7 @@ Function DrawDetPanel(str)
 	
 	else
 	// TODO: if real data, need new declaration w/ data as the wave name
-		wave newW = $("root:Packages:NIST:VSANS:"+folder+":entry:entry:instrument:detector_"+str+":data")
+		wave newW = $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str+":data")
 
 		nPix_X = V_getDet_pixel_num_x(folder,str)
 		nPix_Y = V_getDet_pixel_num_Y(folder,str)
@@ -529,7 +529,7 @@ Function V_RescaleToBeamCenter(folderStr,detStr,xCtr,yCtr)
 	String folderStr,detStr
 	Variable xCtr,yCtr
 	
-	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:entry:instrument:detector_"+detStr+":data")
+	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")
 	
 	Variable nPix = 128
 	Variable nTubes = 48
