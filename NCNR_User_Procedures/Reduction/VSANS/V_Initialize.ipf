@@ -159,6 +159,9 @@ Function V_InitGlobals()
 
 	
 	// lookup waves for log and linear display of images
+	// this is used for the main data display. With this, I can use the original
+	// detector data (no copy) and the zeros in the data set are tolerated when displaying
+	// on log scale
 	SetDataFolder root:Packages:NIST:VSANS:Globals
 	Variable num,val,offset
 	num=10000

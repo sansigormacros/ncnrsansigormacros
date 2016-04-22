@@ -58,7 +58,7 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 		MatrixOp/O sumTubes = sumRows(dataW)		// n x 1 result
 		sumTubes /= ctTime		//now count rate per tube
 		
-		dataW[][] = dataW[p][q]/(1-sumTubes[p][0]*dtW[p])		//correct the data
+		dataW[][] = dataW[p][q]/(1-sumTubes[p]*dtW[p])		//correct the data
 
 	elseif(cmpstr(orientation,"horizontal")==0)
 	//	this is data (horizontal) dimensioned as (Npix,Ntubes)
@@ -66,7 +66,7 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 		MatrixOp/O sumTubes = sumCols(dataW)		// 1 x m result
 		sumTubes /= ctTime
 		
-		dataW[][] = dataW[p][q]/(1-sumTubes[0][q]*dtW[q])
+		dataW[][] = dataW[p][q]/(1-sumTubes[q]*dtW[q])
 	
 	else		
 		DoAlert 0,"Orientation not correctly passed in DeadTimeCorrectionTubes(). No correction done."
@@ -75,9 +75,31 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	return(0)
 end
 
+// test function
+Function testDTCor()
+
+	String detStr = ""
+	String fname = "RAW"
+	Variable ctTime
+	
+	detStr = "FR"
+	Wave w = V_getDetectorDataW(fname,detStr)
+	Wave w_err = V_getDetectorDataErrW(fname,detStr)
+	Wave w_dt = V_getDetector_deadtime(fname,detStr)
+
+	ctTime = V_getCount_time(fname)
+	
+//	ctTime = 10
+	DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+
+End
+
+
 //
 // Non-linear data correction
 // 
+// DOES NOT modify the data, only calculates the spatial relationship
+//
 // input is the data array (N tubes x M pixels)
 // input of N x M array of quadratic coefficients
 //
@@ -190,7 +212,7 @@ end
 // -- distance along tube is simple interpolation, or do I use the coefficients to
 //    calculate the actual value
 //
-// -- distance in the lateral direction is based on tube width, which is well known
+// -- distance in the lateral direction is based on tube width, which is a fixed parameter
 //
 //
 Function ConvertBeamCtr_to_mm(folder,detStr,destPath)
@@ -309,9 +331,11 @@ Macro MakeFakeCalibrationWaves()
 	// - then they will be "found" by get()
 	// -- only for the tube, not the Back det
 	
-	DoAlert 0, "re-do this and do a better job of filling the fake calibration data"
+//	DoAlert 0, "re-do this and do a better job of filling the fake calibration data"
+
+	DoAlert 0, "Calibration waves are read in from the data file"
 	
-	fMakeFakeCalibrationWaves()
+//	fMakeFakeCalibrationWaves()
 End
 
 
@@ -1029,6 +1053,7 @@ End
 //
 // TODO:
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
+//  -- how is the error propagation  handled?
 //
 //function will divide the contents of "workType" folder with the contents of 
 //the DIV folder + detStr

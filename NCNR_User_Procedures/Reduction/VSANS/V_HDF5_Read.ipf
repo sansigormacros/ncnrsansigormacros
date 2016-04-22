@@ -814,13 +814,13 @@ end
 //	return(V_getRealValueFromHDF5(fname,path))
 //end
 
-// TODO: this may not exist for VSANS???
-Function V_getVS_tilt(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:monochromator:velocity_selector:vs_tilt"	
-	return(V_getRealValueFromHDF5(fname,path))
-end
+//// DONE - this does not exist for VSANS - per JGB 4/2016
+//Function V_getVS_tilt(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:monochromator:velocity_selector:vs_tilt"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
 
 Function V_getVSWavelength(fname)
 	String fname
@@ -1302,7 +1302,7 @@ End
 
 //TODO
 //
-// x and y center in mm is currently not part of the NExus definition
+// x and y center in mm is currently not part of the Nexus definition
 //  does it need to be?
 // these lookups will fail if they have not been generated locally!
 Function V_getDet_beam_center_x_mm(fname,detStr)
@@ -1314,7 +1314,7 @@ End
 
 //TODO
 //
-// x and y center in mm is currently not part of the NExus definition
+// x and y center in mm is currently not part of the Nexus definition
 //  does it need to be?
 // these lookups will fail if they have not been generated locally!
 Function V_getDet_beam_center_y_mm(fname,detStr)

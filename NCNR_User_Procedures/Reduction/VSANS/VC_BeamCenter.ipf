@@ -520,6 +520,11 @@ Function WriteCtrTableButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+// This sets the scale of the data panels to an approximate detector coordinate system with 
+// zero at the center, only for display purposes. It is not exact, and has nothing to do with
+// the calculation of q-values.
+//
 // TODO
 // -- some of this is hard-wired in
 // -- this is still all in terms of pixels, which still may not be what I want
@@ -599,19 +604,7 @@ Function V_RestorePanels()
 		V_RescaleToBeamCenter("RAW",detStr,xCtr,yCtr)
 	endfor
 		
-		
-		// nominal values... better to use what's in the file
-////
-//		V_RescaleToBeamCenter("RAW","MB",64,55)
-//		V_RescaleToBeamCenter("RAW","MT",64,-8.7)
-//		V_RescaleToBeamCenter("RAW","MR",-8.1,64)
-//		V_RescaleToBeamCenter("RAW","ML",55,64)
-//		V_RescaleToBeamCenter("RAW","FB",64,55)
-//		V_RescaleToBeamCenter("RAW","FT",64,-8.7)
-//		V_RescaleToBeamCenter("RAW","FR",-8.1,64)
-//		V_RescaleToBeamCenter("RAW","FL",55,64)
-		
-		
+
 	return(0)
 end
 

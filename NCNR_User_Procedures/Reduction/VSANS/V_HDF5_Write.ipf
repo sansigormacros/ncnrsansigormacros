@@ -2107,31 +2107,31 @@ Function V_writeVSTable_parameters(fname,inW)
 	return(err)
 end
 
-// TODO -- this may not exist for VSANS
-Function V_writeVS_tilt(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:instrument:beam:monochromator:velocity_selector:vs_tilt"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/monochromator/velocity_selector"	
-	String varName = "vs_tilt"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//// DONE - this does not exist for VSANS - per JGB 4/2016
+//Function V_writeVS_tilt(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:monochromator:velocity_selector:vs_tilt"	
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/monochromator/velocity_selector"	
+//	String varName = "vs_tilt"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-end
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
 
 Function V_writeVSWavelength(fname,val)
 	String fname

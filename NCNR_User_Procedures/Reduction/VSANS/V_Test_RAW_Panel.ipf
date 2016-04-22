@@ -53,6 +53,13 @@ Proc UpdateDisplayInformation(type)
 	FakeTabClick(2)
 	FakeTabClick(1)
 	FakeTabClick(0)
+	
+	// either clear the status, or fake a click
+//	root:Packages:NIST:VSANS:Globals:gStatusText = "status info box"
+
+	FakeStatusButtonClick()
+
+	
 //	DoWindow/T VSANS_Data,type + " VSANS_Data"
 
 	String newTitle = "WORK_"+type
@@ -78,6 +85,7 @@ Function VSANSDataPanelGlobals()
 	String/G gCurDispFile = "default string"
 	String/G gCurTitle = ""
 	String/G gCurDispType = ""
+	String/G gStatusText = "status info box"
 	
 	SetDataFolder root:
 End
@@ -128,7 +136,8 @@ Window VSANS_DataPanel() : Panel
 	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= file_name
-	TitleBox title_status,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
+	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
+	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
 	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
@@ -553,6 +562,15 @@ Function VDataTabProc(tca) : TabControl
 	return 0
 End
 
+// fake status button click
+Function FakeStatusButtonClick()
+
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	StatusButtonProc(ba)
+	
+	return(0)
+End
 
 // fake click on each tab to populate the data
 Function FakeTabClick(tab)
@@ -677,7 +695,7 @@ End
 // TODO
 //
 // gets the status of the currently displayed file and dumps it to the panel (not the cmd window)
-// - lots to decide here about what is the important stuff to display. There's a lot more information now
+// - lots to decide here about what is the important stuff to display. There's a lot more information for VSANS
 //
 Function StatusButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -685,6 +703,37 @@ Function StatusButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			
+			// figure out wether to display per carraige, or the whole file
+			SVAR str = root:Packages:NIST:VSANS:Globals:gStatusText
+			SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType		//what folder
+			// which tab active
+			ControlInfo/W=VSANS_Data tab0
+			Variable curTab = V_value
+			
+			str = "Current data is from "+ type + "\r"
+			str += "Description = "+V_getSampleDescription(type) + "\r"
+			str += "Wavelength is "+num2str(V_getWavelength(type)) + " A \r"
+			if(curTab == 2)
+				str += "SDD B = "+num2str(V_getDet_distance(type,"B")) + " cm \r"		//V_getDet_distance(fname,detStr)
+			endif
+			if(curTab == 1)
+				str += "SDD ML = "+num2str(V_getDet_distance(type,"ML")) + " cm \r"
+				str += "SDD MR = "+num2str(V_getDet_distance(type,"MR")) + " cm \r"
+				str += "SDD MT = "+num2str(V_getDet_distance(type,"MT")) + " cm \r"
+				str += "SDD MB = "+num2str(V_getDet_distance(type,"MB")) + " cm \r"
+			endif
+			if(curTab == 0)
+				str += "SDD FL = "+num2str(V_getDet_distance(type,"FL")) + " cm \r"
+				str += "SDD FR = "+num2str(V_getDet_distance(type,"FR")) + " cm \r"
+				str += "SDD FT = "+num2str(V_getDet_distance(type,"FT")) + " cm \r"
+				str += "SDD FB = "+num2str(V_getDet_distance(type,"FB")) + " cm \r"
+			endif
+			
+			
+			
+			
+			
 			break
 		case -1: // control being killed
 			break

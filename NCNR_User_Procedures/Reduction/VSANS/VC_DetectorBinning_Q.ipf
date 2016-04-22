@@ -65,6 +65,7 @@ Function fPlotFrontPanels()
 	detStr = "FR"
 	WAVE det_FR = $(folderPath+instPath+detStr+":det_"+detStr)	
 	WAVE qTot_FR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+//	WAVE qTot_FR = $("root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:qTot_FR")
 	
 	detStr = "FT"
 	WAVE det_FT = $(folderPath+instPath+detStr+":det_"+detStr)	
@@ -74,6 +75,8 @@ Function fPlotFrontPanels()
 	WAVE det_FB = $(folderPath+instPath+detStr+":det_"+detStr)	
 	WAVE qTot_FB = $(folderPath+instPath+detStr+":qTot_"+detStr)
 
+	
+	
 	FillPanel_wModelData(det_FL,qTot_FL,"FL")
 	FillPanel_wModelData(det_FR,qTot_FR,"FR")
 	FillPanel_wModelData(det_FT,qTot_FT,"FT")
@@ -81,7 +84,7 @@ Function fPlotFrontPanels()
 
 	SetDataFolder root:
 		
-	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
+	// set any "shadowed" area of the T/B detectors to NaN to get a realistic
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
 	//TODO - make this a proper shadow - TB extent of the LR panels matters too, not just the LR separation
@@ -174,8 +177,13 @@ Function VC_CalculateQFrontPanels()
 	
 	xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2	
-	VC_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
-//	Print "xy for FL = ",xCtr,yCtr
+	//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","FL",xCtr)
+	V_putDet_beam_center_y("VCALC","FL",yCtr)
+	
+//	VC_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FL")
+	Print "xy for FL = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
 	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
@@ -206,8 +214,13 @@ Function VC_CalculateQFrontPanels()
 	nPix_Y = VCALC_get_nPix_Y("FR")
 	
 	xCtr = -(F_LR_sep/2/pixSizeX)-1		
-	yCtr = nPix_Y/2	
-	VC_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	yCtr = nPix_Y/2
+	//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","FR",xCtr)
+	V_putDet_beam_center_y("VCALC","FR",yCtr)	
+//	VC_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FR")
+
 //	Print "xy for FR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FR),WaveMax(qx_FR),"", det_FR		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FR),WaveMax(qy_FR),"", det_FR
@@ -234,9 +247,15 @@ Function VC_CalculateQFrontPanels()
 	nPix_Y = VCALC_get_nPix_Y("FT")
 	
 	xCtr = nPix_X/2
-	yCtr = -(F_TB_sep/2/pixSizeY)-1   
+	yCtr = -(F_TB_sep/2/pixSizeY)-1 
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","FT",xCtr)
+	V_putDet_beam_center_y("VCALC","FT",yCtr)
+	  
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	VC_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+//	VC_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY,"FT")
+
 //	Print "xy for FT = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FT),WaveMax(qx_FT),"", det_FT		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FT),WaveMax(qy_FT),"", det_FT
@@ -264,8 +283,14 @@ Function VC_CalculateQFrontPanels()
 		
 	xCtr = nPix_X/2
 	yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","FB",xCtr)
+	V_putDet_beam_center_y("VCALC","FB",yCtr)
+	
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	VC_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+//	VC_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY,"FB")
+
 //	Print "xy for FB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FB),WaveMax(qx_FB),"", det_FB		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_FB),WaveMax(qy_FB),"", det_FB
@@ -571,7 +596,13 @@ Function VC_CalculateQMiddlePanels()
 	
 	xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2	
-	VC_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","ML",xCtr)
+	V_putDet_beam_center_y("VCALC","ML",yCtr)
+	
+//	VC_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"ML")
+
 //	Print "xy for ML = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
@@ -606,7 +637,13 @@ Function VC_CalculateQMiddlePanels()
 	
 	xCtr = -(M_LR_sep/2/pixSizeX)-1		
 	yCtr = nPix_Y/2
-	VC_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","MR",xCtr)
+	V_putDet_beam_center_y("VCALC","MR",yCtr)
+	
+//	VC_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"MR")
+
 //	Print "xy for MR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MR),WaveMax(qx_MR),"", det_MR		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MR),WaveMax(qy_MR),"", det_MR
@@ -634,8 +671,14 @@ Function VC_CalculateQMiddlePanels()
 	
 	xCtr = nPix_X/2
 	yCtr = -(M_TB_sep/2/pixSizeY)-1 
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","MT",xCtr)
+	V_putDet_beam_center_y("VCALC","MT",yCtr)
+	
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
-	VC_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+//	VC_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY,"MT")
+
 //	Print "xy for MT = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MT),WaveMax(qx_MT),"", det_MT		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MT),WaveMax(qy_MT),"", det_MT
@@ -663,8 +706,14 @@ Function VC_CalculateQMiddlePanels()
 		
 	xCtr = nPix_X/2
 	yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","MB",xCtr)
+	V_putDet_beam_center_y("VCALC","MB",yCtr)
+	
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation
-	VC_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+//	VC_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
+	VC_Detector_2Q_NonLin(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY,"MB")
+
 //	Print "xy for MB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MB),WaveMax(qx_MB),"", det_MB		//this sets the left and right ends of the data scaling
 	SetScale/I y WaveMin(qy_MB),WaveMax(qy_MB),"", det_MB
@@ -993,7 +1042,14 @@ Function VC_CalculateQBackPanels()
 	
 	xCtr = trunc( DimSize(det_B,0)/2 )		//should be 150/2=75
 	yCtr = trunc( DimSize(det_B,1)/2 )		//should be 150/2=75
-	VC_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+		//put these  beam center values into the local folder
+	V_putDet_beam_center_x("VCALC","B",xCtr)
+	V_putDet_beam_center_y("VCALC","B",yCtr)
+	
+//	VC_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	// this will always do the linear calculation, since the real-space distance waves do not exist
+	VC_Detector_2Q_NonLin(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"B")
+
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
 	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely

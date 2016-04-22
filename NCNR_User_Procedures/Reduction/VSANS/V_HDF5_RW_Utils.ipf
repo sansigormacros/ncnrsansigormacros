@@ -20,10 +20,18 @@
 // the base data folder path where the raw data is loaded
 Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
+// the list of WORK Folders
+Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
+
 
 // passing null file string presents a dialog
 Macro LoadFakeDIVData()
 	V_LoadHDF5Data("","DIV")
+End
+
+// passing null file string presents a dialog
+Macro LoadFakeMASKData()
+	V_LoadHDF5Data("","MSK")
 End
 
 // passing null file string presents a dialog
@@ -38,9 +46,11 @@ End
 // -- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
 //    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
-// TODO: -- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
-//			-- as dumb as it is -- do I just leave it now, or break everything. On the plus side, removing the extra "entry"
+// DONE: x- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
+//			x- as dumb as it is -- do I just leave it now, or break everything. On the plus side, removing the extra "entry"
 //          layer may catch a lot of the hard-wired junk that is present...
+//      extra entry layer is no longer generated for any WORK folders
+//
 Function V_LoadHDF5Data(file,folder)
 	String file,folder
 
@@ -51,15 +61,7 @@ Function V_LoadHDF5Data(file,folder)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
 	destPath = "root:Packages:NIST:VSANS:"+folder
 
-	if(cmpstr(folder,"RAW")==0)
-//		base_name="entry"
-		base_name="RAW"		// this acts as a flag to remove the duplicate "entry" level
-	else
-	// null will use the file name as the top level (above entry)
-		base_name=""		//TODO -- remove this / change behavior in V_LoadHDF5_NoAtt()
-	endif
-	
-	Variable err= V_LoadHDF5_NoAtt(file,base_name)	// reads into current folder
+	Variable err= V_LoadHDF5_NoAtt(file,folder)	// reads into current folder
 	
 	// if RAW data, then generate the errors and linear data copy
 	// do this 9x
@@ -70,26 +72,23 @@ Function V_LoadHDF5Data(file,folder)
 	if(cmpstr(folder,"RAW")==0)
 	
 		// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
-		V_RedimFakeData()
+//		V_RedimFakeData()
+		
+		V_MakeDataWaves_DP(folder)
+//		V_FakeBeamCenters()
+//		V_FakeScaleToCenter()
+		
 
-		// makes data error and linear copy -- DP waves if V_RedimFakeData() called above 
+		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above 
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			V_MakeDataError(tmpStr+"detector_"+detStr)	
 		endfor
 
-
-		// TODO -- for the "real" data, may need a step in here to convert integer detector data to DP, or I'll
-		//          get really odd results from the calculations, and may not even notice.
-		// !!!! Where do I actually do this? - this is currently done in Raw_to_work()
-		// -- is is better to do here, right as the data is loaded?
-		// TODO -- some of this is done in V_RedimFakeData() above - which will disappear once I get real data
-
-	
 		// TODO
 		//  -- get rid of these fake calibration waves as "real" ones are filled in by NICE
-		
-		Execute "MakeFakeCalibrationWaves()"
+//		(currently does nothing)
+//		Execute "MakeFakeCalibrationWaves()"
 		
 		//		fMakeFakeCalibrationWaves()		//skips the alert
 
@@ -148,12 +147,34 @@ Function V_LoadHDF5Data(file,folder)
 	return(err)
 End
 
+// fname is the folder = "RAW"
+Function V_MakeDataWaves_DP(fname)
+	String fname
+	
+	Variable ii
+	String detStr
+	
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave w = V_getDetectorDataW(fname,detStr)
+//		Wave w_err = V_getDetectorDataErrW(fname,detStr)
+		Redimension/D w
+//		Redimension/D w_err
+	endfor
+	
+	return(0)
+End
+
+
+
 //
 // TODO -- this is all FAKED since all the data arrays are written to hdf as (1,128,128)
 //  -- try to fill in the bits from VCALC, if it exists (or force it)
 //
 // the SetScale parts may be useful later.
 //
+// This is NOT CALLED anymore.
+// the rescaling (SetScale) of the data sets is still done separately to a "fake" beam center
 Function V_RedimFakeData()
 	
 	// check for fake data in VCALC folder...
@@ -294,7 +315,6 @@ Function V_RedimFakeData()
 	V_putDet_beam_center_x("RAW","B",75)
 	V_putDet_beam_center_y("RAW","B",75)
 
-
 	V_putDet_beam_center_x("RAW","MB",64)
 	V_putDet_beam_center_y("RAW","MB",55)
 	V_putDet_beam_center_x("RAW","MT",64)
@@ -312,10 +332,6 @@ Function V_RedimFakeData()
 	V_putDet_beam_center_y("RAW","FR",64)
 	V_putDet_beam_center_x("RAW","FL",55)
 	V_putDet_beam_center_y("RAW","FL",64)
-
-
-
-
 
 
 	V_RescaleToBeamCenter("RAW","MB",64,55)
@@ -387,13 +403,18 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	fileName=tmpStr		//SRK - in case the file was chosen from a dialog, I'll need access to the name later
 	
 	//   read the data (too bad that HDF5LoadGroup does not read the attributes)
-	if(cmpstr(base_name,"") == 0)
+//	if(cmpstr(base_name,"") == 0)
+//		base_name = StringFromList(0,FileName,".")
+//	endif
+	
+	// if base_name is from my list of WORK folders, then base_name = ""
+	// use a stringSwitch? WhichListItem?
+	Variable isFolder = WhichListItem(base_name,ksWorkFolderList)
+	if(isFolder != -1)
+		base_name = ""
+	else
 		base_name = StringFromList(0,FileName,".")
 	endif
-	if(cmpstr(base_name,"RAW") == 0)
-		base_name = ""
-	endif
-	//base_name = "entry"
 	
 	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
 	if ( V_Flag != 0 )
@@ -853,102 +874,5 @@ end
 //////////////////////////////
 //////////////////////////////
 //////////////////////////////
-
-
-
-
-//////// function to take VCALC information and 
-// fill in the simulated information as needed to make a "fake" data file
-//
-// TODO:
-// -- identify all of the necessary bits to change
-// -- maybe want a panel to make it easier to decide what inputs to change in the file
-// -- decide if it's better to write wholesale, or as individual waves
-//
-Macro Copy_VCALC_to_VSANSFile()
-	
-	String fileName = V_DoSaveFileDialog("pick the file to write to")
-	print fileName
-//	
-	if(strlen(fileName) > 0)
-		writeVCALC_to_file(fileName)
-	endif
-End
-
-//
-// TODO -- fill this in as needed to get fake data that's different
-//
-Function writeVCALC_to_file(fileName)
-	String fileName
-
-
-// the detectors, all 9 + the correct SDD (that accounts for the offset of T/B panels
-// the data itself (as INT32)
-// the front SDD (correct units)
-// the middle SDD (correct units)
-// the back SDD (correct units)
-	Variable ii,val
-	String detStr
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
-		Redimension/I tmpData
-		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
-		V_writeDetectorData(fileName,detStr,tmpData)
-		
-		val = VCALC_getTopBottomSDDOffset(detStr)/10 + VCALC_getSDD(detStr)*100		// make sure value is in cm
-		print val
-		V_writeDet_distance(fileName,detStr,val)
-		
-// x and y pixel sizes for each detector
-//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
-//Function VCALC_getPixSizeY(type)
-	V_writeDet_x_pixel_size(fileName,detStr,VCALC_getPixSizeX(detStr)*10)		// data file is expecting mm
-	V_writeDet_y_pixel_size(fileName,detStr,VCALC_getPixSizeY(detStr)*10)
-	
-// the calibration data for each detector
-//V_writeDetTube_spatialCalib(fname,detStr,inW)
-// and for "B"
-//V_writeDet_cal_x(fname,detStr,inW)
-//V_writeDet_cal_y(fname,detStr,inW)
-
-		
-// the dead time for each detector
-// V_writeDetector_deadtime(fname,detStr,inW)
-// TODO: need a new, separate function to write the single deadtime value in/out of "B"
-
-	endfor
-	
-	// TODO testing - delete this
-		V_writeDet_beam_center_x(fileName,detStr,321)
-
-
-
-//? other detector geometry - lateral separation?
-
-// the wavelength
-//	Variable lam = V_getWavelength("VCALC")		//doesn't work, the corresponding folder in VCALC has not been defined
-	V_writeWavelength(fileName,VCALC_getWavelength())
-
-// description of the sample
-
-// sample information
-// name, title, etc
-	
-// fake the information about the count setup, so I have different numbers to read
-// count time = fake
-
-// monitor count (= imon)
-// returns the number of neutrons on the sample
-//Function VCALC_getImon()
-
-// ?? anything else that I'd like to see on the catalog - I could change them here to see different values
-// different collimation types?
-//
-
-	return(0)
-end
-
-
 
 

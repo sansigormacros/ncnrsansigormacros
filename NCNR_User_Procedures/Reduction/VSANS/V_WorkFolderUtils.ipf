@@ -415,13 +415,14 @@ Function Raw_to_work(newType)
 	
 	// (2) non-linear correction	
 	// TODO:
-	// -- currently, the "B" detector is skipped
+	// x- currently, the "B" detector is skipped
 	// -- document what is generated here:
 	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the mm? position of the pixel)
 	// -- still not sure whether to duplicate these calculations as the RAW data is loaded. It would allow the RAW
 	//    data to be properly displayed, but without all of the (complete) set of corrections
 	// * the corrected distances are calculated into arrays, but nothing is done with them yet
-	// * there is enough information now to calculate the q-arrays -other corrections modify the data
+	// * there is enough information now to calculate the q-arrays
+	// -other corrections modify the data, this does NOT
 	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 	// generate a distance matrix for each of the detectors
 	if (gDoNonLinearCor == 1)
@@ -484,14 +485,14 @@ Function Raw_to_work(newType)
 	// -- loop over all of the detectors
 	// -- B detector is a special case (do separately, then loop over NoB)
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
-	ctTime = V_getCount_time(fname)
 	if (gDoDeadTimeCor == 1)
 		Print "Doing DeadTime correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			
+			ctTime = V_getCount_time(fname)
+
 			if(cmpstr(detStr,"B") == 0)
 				Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
 				// do the correction for the back panel
@@ -509,9 +510,11 @@ Function Raw_to_work(newType)
 				
 				
 			else
-				Wave w_dt = V_getDetector_deadtime(fname,detStr)
 				// do the corrections for 8 tube panels
+
+				Wave w_dt = V_getDetector_deadtime(fname,detStr)
 				//			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+
 
 			endif
 		endfor

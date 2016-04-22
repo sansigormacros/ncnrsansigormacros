@@ -185,6 +185,77 @@ Function VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 End
 
 
+// for testing, a version that will calculate the q-arrays for VCALC based on whatever nonlinear coefficients
+// exist in the RAW data folder
+//
+// reverts to the "regular" linear detector if waves not found or a flag is set
+//
+// need to convert the beam center to mm
+// need to call the VSANS V_CalcQval routines (these use the real-space distance, not pixel dims)
+//
+// TODO:
+// -- tube width is hard-wired in
+//
+//
+Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,detStr)
+	Wave data,qTot,qx,qy,qz
+	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
+	String detStr
+	
+	String destPath = "root:Packages:NIST:VSANS:RAW"
+			
+	Wave/Z data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave/Z data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
+	NVAR gUseNonLinearDet = root:Packages:NIST:VSANS:VCALC:gUseNonLinearDet
+	
+	if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
+		// convert the beam centers to mm
+		String orientation
+		Variable dimX,dimY,newX,newY
+		dimX = DimSize(data_realDistX,0)
+		dimY = DimSize(data_realDistX,1)
+		if(dimX > dimY)
+			orientation = "horizontal"
+		else
+			orientation = "vertical"
+		endif
+		
+		Variable tube_width = 8.4		//mm
+	
+	//
+		if(cmpstr(orientation,"vertical")==0)
+			//	this is data dimensioned as (Ntubes,Npix)
+			newX = tube_width*xCtr
+			newY = data_realDistY[0][yCtr]
+		else
+			//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+			newX = data_realDistX[xCtr][0]
+			newY = tube_width*yCtr
+		endif	
+
+		//if detector "B", different calculation for the centers (not tubes)
+		if(cmpstr(detStr,"B")==0)
+			newX = data_realDistX[xCtr][0]
+			newY = data_realDistY[0][yCtr]
+		endif		
+				
+		// calculate all of the q-values
+		qTot = V_CalcQval(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+		qx = V_CalcQX(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+		qy = V_CalcQY(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+		qz = V_CalcQZ(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+	
+//		Print "det, x_mm, y_mm ",detStr,num2str(newX),num2str(newY)
+//		Print "det, x_pix, y_pix ",detStr,num2str(xCtr),num2str(yCtr)
+	else
+		// do the q-calculation using linear detector
+		VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	endif
+	
+	return(0)
+End
+
+
 //////////////////////
 // NOTE: The Q calculations are different than what is in GaussUtils in that they take into 
 // accout the different x/y pixel sizes and the beam center not being on the detector - 
@@ -592,7 +663,11 @@ End
 // -- VERIFY
 // -- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
 //    but this is a lousy choice.
+// x- binning is now Mask-aware. If mask is not present, all data is used. If data is from VCALC, all data is used
+// -- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
+//    a blanket correction (matrix multiply) for an entire panel?
 //
+// folderStr = WORK folder, type = the binning type (may include multiple detectors)
 Function VC_fDoBinning_QxQy2D(folderStr,type)
 	String folderStr,type
 	
@@ -600,7 +675,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	Variable xDim,yDim
 	Variable ii,jj
 	Variable qVal,nq,var,avesq,aveisq
-	Variable binIndex,val,isVCALC=0
+	Variable binIndex,val,isVCALC=0,maskMissing
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
 	String instPath = ":entry:instrument:detector_"
@@ -614,6 +689,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // since there may be more than one panel to step through. There may be two, there may be four
 //
 
+// assume that the mask files are missing unless we can find them. If VCALC data, 
+//  then the Mask is missing by definition
+	maskMissing = 1
+
 	strswitch(type)	// string switch
 		case "FL":		// execute if case matches expression
 		case "FR":
@@ -624,6 +703,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
+				
 			endif
 			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
@@ -639,6 +723,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
 			endif
 			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
@@ -654,6 +742,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			//TODO:
 			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
@@ -674,6 +766,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
@@ -688,6 +784,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_B")
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
@@ -708,6 +808,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
 				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
 			
@@ -728,6 +833,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"FT")
 				Wave inten2 = V_getDetectorDataW(folderStr,"FB")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"FT"+":gDelQ_FT")
 			
@@ -756,6 +866,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr3 = V_getDetectorDataErrW(folderStr,"FT")
 				Wave inten4 = V_getDetectorDataW(folderStr,"FB")
 				Wave iErr4 = V_getDetectorDataErrW(folderStr,"FB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
 			
@@ -778,6 +895,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
 				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
 			
@@ -798,6 +920,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"MT")
 				Wave inten2 = V_getDetectorDataW(folderStr,"MB")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"MT"+":gDelQ_MT")
 			
@@ -826,6 +953,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				Wave iErr3 = V_getDetectorDataErrW(folderStr,"MT")
 				Wave inten4 = V_getDetectorDataW(folderStr,"MB")
 				Wave iErr4 = V_getDetectorDataErrW(folderStr,"MB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+					maskMissing = 0
+				endif
 			endif	
 			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
 			
@@ -921,6 +1055,12 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 //
 // this needs to be a double loop now...
 
+// if any of the masks don't exist, display the error, and proceed with the averaging, using all data
+	if(maskMissing == 1)
+		Print "Mask file not found for at least one detector - so all data is used"
+	endif
+
+	Variable mask_val
 // use set 1 (no number) only
 	if(nSets >= 1)
 		xDim=DimSize(inten,0)
@@ -932,7 +1072,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				qVal = qTotal[ii][jj]
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten[ii][jj]
-				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
+				
+				if(isVCALC || maskMissing)		// mask_val == 1 == keep
+					mask_val = 1
+				else
+					mask_val = mask[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
@@ -954,7 +1100,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				qVal = qTotal2[ii][jj]
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten2[ii][jj]
-				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
+				
+				if(isVCALC || maskMissing)
+					mask_val = 1
+				else
+					mask_val = mask2[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr2[ii][jj]*iErr2[ii][jj]
@@ -976,7 +1128,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				qVal = qTotal3[ii][jj]
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten3[ii][jj]
-				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
+				
+				if(isVCALC || maskMissing)
+					mask_val = 1
+				else
+					mask_val = mask3[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr3[ii][jj]*iErr3[ii][jj]
@@ -995,7 +1153,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				qVal = qTotal4[ii][jj]
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten4[ii][jj]
-				if (numType(val)==0)		//count only the good points, ignore Nan or Inf
+				
+				if(isVCALC || maskMissing)
+					mask_val = 1
+				else
+					mask_val = mask4[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr4[ii][jj]*iErr4[ii][jj]

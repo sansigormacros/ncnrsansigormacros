@@ -145,10 +145,12 @@ Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
 	V_ChangeDisplay()
 End
 
+// TODO -- fill in with a proper reader that will display the mask(s)
 Proc ReadMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ReadMask()
+	DoAlert 0, "Loading FAKE MASK data"
+	LoadFakeMaskData()
 End
 
 Proc Draw3D_MainButtonProc(ctrlName) : ButtonControl

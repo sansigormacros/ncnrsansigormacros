@@ -666,6 +666,7 @@ Proc VC_Initialize_Space()
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 	
 	Variable/G root:Packages:NIST:VSANS:VCALC:gVCALC_Active = 1
+	Variable/G root:Packages:NIST:VSANS:VCALC:gUseNonLinearDet = 0		//if == 1, use RAW non-linear corrections
 	
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 	
@@ -725,6 +726,15 @@ Proc VC_Initialize_Space()
 //	Variable/G gFront_B_nPix_X = 128		// == pixels in horizontal direction
 //	Variable/G gFront_B_nPix_Y = 48		// == number of tubes
 
+// pixel beam center - HDF style
+	Make/O/D/N=1 :entry:instrument:detector_FL:beam_center_x = 55		// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_FL:beam_center_y = 64		// == y beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_FR:beam_center_x = -8	
+	Make/O/D/N=1 :entry:instrument:detector_FR:beam_center_y = 64	
+	Make/O/D/N=1 :entry:instrument:detector_FT:beam_center_x = 64	
+	Make/O/D/N=1 :entry:instrument:detector_FT:beam_center_y = -8	
+	Make/O/D/N=1 :entry:instrument:detector_FB:beam_center_x = 64	
+	Make/O/D/N=1 :entry:instrument:detector_FB:beam_center_y = 55	
 
 
 
@@ -780,6 +790,15 @@ Proc VC_Initialize_Space()
 //	Variable/G gMiddle_B_nPix_X = 128		// == pixels in horizontal direction
 //	Variable/G gMiddle_B_nPix_Y = 48		// == number of tubes
 
+// pixel beam center - HDF style
+	Make/O/D/N=1 :entry:instrument:detector_ML:beam_center_x = 55		// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_ML:beam_center_y = 64		// == y beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_MR:beam_center_x = -8	
+	Make/O/D/N=1 :entry:instrument:detector_MR:beam_center_y = 64	
+	Make/O/D/N=1 :entry:instrument:detector_MT:beam_center_x = 64	
+	Make/O/D/N=1 :entry:instrument:detector_MT:beam_center_y = -8	
+	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_x = 64	
+	Make/O/D/N=1 :entry:instrument:detector_MB:beam_center_y = 55	
 
 
 
@@ -797,6 +816,10 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 150
 //	Variable/G gBack_nPix_X = 150		
 //	Variable/G gBack_nPix_Y = 150	
+
+// pixel beam center - HDF style
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 75		// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 75		// == y beam center, in pixels
 
 
 // Generate all of the waves used for the detector and the q values
