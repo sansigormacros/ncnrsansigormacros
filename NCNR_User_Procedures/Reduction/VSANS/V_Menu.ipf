@@ -20,8 +20,15 @@ Menu "VSANS"
 	"-"
 	Submenu "In Progress Panels"
 		"VSANS Preferences",Show_VSANSPreferences_Panel()
-		
+		"Beam Center Panel",DetectorPanelFit()
 	End
+	Submenu "Work Files"
+		"Convert to WORK",Convert_to_Workfile()
+		"Load Fake DIV Data"
+		"DIV a work file",DIV_a_Workfile()
+		"Load Fake MASK Data"
+	End
+	
 End
 
 

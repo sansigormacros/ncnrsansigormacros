@@ -494,8 +494,8 @@ End
 		return(-6)
 	end
 	
-	Function WriteXMLUSANSDesmeared(type,fullpath,lo,hi,dialog)
-		String type,fullpath
+	Function WriteXMLUSANSDesmeared(fullpath,lo,hi,dialog)
+		String fullpath
 		Variable lo,hi,dialog		//=1 will present dialog for name
 	
 	    Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"

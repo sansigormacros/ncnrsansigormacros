@@ -3932,6 +3932,47 @@ Function V_writeDet_LateralOffset(fname,detStr,val)
 	return(err)
 End
 
+
+// TODO - be sure that this is defined correctly
+// -- it needs to exist in the data file, and only for TB detector panels
+Function V_writeDet_TBSetback(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//	String path = "entry:instrument:detector_"+detStr+":setback"
+	
+	if(cmpstr(detStr,"B") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+		return(0)
+	endif	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/detector_"+detStr	
+	String varName = "setback"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
+
+
+	
+
 //Function V_writeDet_VerticalOffset(fname,detStr,val)
 //	String fname,detStr
 //	Variable val

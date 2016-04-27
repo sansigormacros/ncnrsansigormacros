@@ -19,7 +19,9 @@
 //
 
 
-
+// TODO-- decide whether to automatically read in the mask, or not
+// -- there could be a default mask, or look for the mask that is speficied in the
+// next file that is read in from the path
 Proc PickPath_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -48,12 +50,13 @@ Proc DrawMask_MainButtonProc(ctrlName) : ButtonControl
 End
 
 
+//
 // this will only load the data into RAW, overwriting whatever is there. no copy is put in rawVSANS
 //
 Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Variable err=	V_LoadHDF5Data("","RAW")			// load the data into RawVSANS storage folder (why am I doing this?)
+	Variable err=	V_LoadHDF5Data("","RAW")			// load the data 
 //	Print "Load err = "+num2str(err)
 	if(!err)
 		String hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
@@ -61,6 +64,8 @@ Proc DisplayMainButtonProc(ctrlName) : ButtonControl
 		
 		// this (in SANS) just passes directly to fRawWindowHook()
 		UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+		
+		FakeRestorePanelsButtonClick()		//so the panels display correctly
 		
 	endif
 End

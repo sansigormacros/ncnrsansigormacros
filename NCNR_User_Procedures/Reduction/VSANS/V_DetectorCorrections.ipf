@@ -326,7 +326,7 @@ End
 // get rid of this in the real data
 //
 // TESTING ONLY
-Macro MakeFakeCalibrationWaves()
+Proc MakeFakeCalibrationWaves()
 	// make these in the RAW data folder, before converting to a work folder
 	// - then they will be "found" by get()
 	// -- only for the tube, not the Back det
@@ -1017,7 +1017,7 @@ End
 //unused testing procedure, may not be up-to-date with other procedures
 //check before re-implementing
 //
-Macro DIV_a_Workfile(type)
+Proc DIV_a_Workfile(type)
 	String type
 	Prompt type,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	

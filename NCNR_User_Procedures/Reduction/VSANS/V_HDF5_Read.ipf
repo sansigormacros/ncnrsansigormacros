@@ -1425,6 +1425,27 @@ Function V_getDet_LateralOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
+// TODO - be sure this is defined correctly
+// -- only returns for T/B detectors
+Function V_getDet_TBSetback(fname,detStr)
+	String fname,detStr
+
+	if(cmpstr(detStr,"B") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+		return(0)
+	endif	
+	
+	String path = "entry:instrument:detector_"+detStr+":setback"
+	return(V_getRealValueFromHDF5(fname,path))
+	
+	
+End
+
 //Function V_getDet_VerticalOffset(fname,detStr)
 //	String fname,detStr
 //

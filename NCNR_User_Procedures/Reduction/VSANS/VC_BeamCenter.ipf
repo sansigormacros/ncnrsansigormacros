@@ -22,7 +22,7 @@ End
 // TODO - may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
 //
-Macro DetectorPanelFit() : Panel
+Proc DetectorPanelFit() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 // plot the default model to be sure some data is present

@@ -269,32 +269,32 @@ Proc H_Setup_VSANS_DIV_Structure()
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
-			Make/O/D/N=(150,150)	data	= abs(gnoise(10))
-			Make/O/D/N=(150,150)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(150,150)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(150,150)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
-			Make/O/D/N=(48,128)	data	= abs(gnoise(10))
-			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_ML		
-			Make/O/D/N=(48,128)	data	= abs(gnoise(10))
-			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MT		
-			Make/O/D/N=(128,48)	data	= abs(gnoise(10))
-			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MB		
-			Make/O/D/N=(128,48)	data	= abs(gnoise(10))
-			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FR		
-			Make/O/D/N=(48,128)	data	= abs(gnoise(10))
-			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FL		
-			Make/O/D/N=(48,128)	data	= abs(gnoise(10))
-			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FT		
-			Make/O/D/N=(128,48)	data	= abs(gnoise(10))
-			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FB		
-			Make/O/D/N=(128,48)	data	= abs(gnoise(10))
-			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(10))
+			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
 			
 	SetDataFolder root:
 

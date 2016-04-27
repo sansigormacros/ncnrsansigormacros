@@ -1116,10 +1116,10 @@ End
 		return(-6)
 	end
 	
-	Function WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,normTo,norm12,norm23,[res])
+	Function WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
 		Wave q3,i3,sig3,res
-		String firstFileName,secondFileName,thirdFileName,normTo
-		Variable norm12,norm23
+		String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+		Variable norm12,norm23,norm34
 
 		 Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)

@@ -303,7 +303,7 @@ End
 //   "newType" to "type", then when Raw_to_work() gets to CopyHDFToWorkFolder(), the KillDataFolder/Z
 //   line fails (but reports no error), then DuplicateDataFolder fails, and reports an error. Trying
 //   to simplify this condition, I can't reproduce the bug for WM...
-Macro Convert_to_Workfile(newtype, doadd)
+Proc Convert_to_Workfile(newtype, doadd)
 	String newtype,doadd
 	Prompt newtype,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	Prompt doadd,"Add to current WORK contents?",popup,"No;Yes;"

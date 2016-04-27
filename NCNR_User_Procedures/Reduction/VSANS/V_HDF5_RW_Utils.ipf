@@ -25,12 +25,12 @@ Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;
 
 
 // passing null file string presents a dialog
-Macro LoadFakeDIVData()
+Proc LoadFakeDIVData()
 	V_LoadHDF5Data("","DIV")
 End
 
 // passing null file string presents a dialog
-Macro LoadFakeMASKData()
+Proc LoadFakeMASKData()
 	V_LoadHDF5Data("","MSK")
 End
 

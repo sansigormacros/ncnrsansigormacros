@@ -129,8 +129,8 @@ Window VSANS_DataPanel() : Panel
 // on the side	
 	Button button_status,pos={607,146},size={70,20},proc=StatusButtonProc,title="Status"
 	Button button_IvsQ,pos={689,113},size={70,20},proc=IvsQPanelButtonProc,title="I vs. Q"
-	Button button_file_m,pos={619,55},size={50,20},proc=File_m_ButtonProc,title="File <"
-	Button button_file_p,pos={679,55},size={50,20},proc=File_p_ButtonProc,title="File >"
+	Button button_file_m,pos={619,55},size={50,20},proc=File_minus_ButtonProc,title="File <"
+	Button button_file_p,pos={679,55},size={50,20},proc=File_plus_ButtonProc,title="File >"
 	Button button_log,pos={689,146},size={70,20},proc=LogLinButtonProc,title="isLin",userData="0"
 	Button button_tab_p,pos={648,81},size={50,20},proc=Tab_p_ButtonProc,title="Tab >"
 	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
@@ -562,6 +562,17 @@ Function VDataTabProc(tca) : TabControl
 	return 0
 End
 
+// fake restore panels button click
+Function FakeRestorePanelsButtonClick()
+
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2
+	RestorePanelButtonProc(ba)
+	
+	return(0)
+End
+
+
 // fake status button click
 Function FakeStatusButtonClick()
 
@@ -590,12 +601,14 @@ End
 //
 // move one file number back
 //
-Function File_m_ButtonProc(ba) : ButtonControl
+Function File_minus_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			V_LoadPlotAndDisplayRAW(-1)
+			
 			break
 		case -1: // control being killed
 			break
@@ -608,12 +621,14 @@ End
 //
 // move one file number forward
 //
-Function File_p_ButtonProc(ba) : ButtonControl
+Function File_plus_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			V_LoadPlotAndDisplayRAW(1)
+
 			break
 		case -1: // control being killed
 			break
@@ -639,6 +654,7 @@ Function Tab_p_ButtonProc(ba) : ButtonControl
 				V_Value = 0		//reset to 0
 			endif
 			FakeTabClick(V_Value)
+			
 			break
 		case -1: // control being killed
 			break
