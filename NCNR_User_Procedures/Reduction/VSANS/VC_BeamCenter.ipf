@@ -596,12 +596,14 @@ Function V_RestorePanels()
 
 // this works if the proper centers are in the file - otherwise, it's a mess	
 // "B" is skipped here, as it should be...
-	fname = "RAW"
+	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
+
+	fname = type
 	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		xCtr = V_getDet_beam_center_x(fname,detStr)
 		yCtr = V_getDet_beam_center_y(fname,detStr)
-		V_RescaleToBeamCenter("RAW",detStr,xCtr,yCtr)
+		V_RescaleToBeamCenter(type,detStr,xCtr,yCtr)
 	endfor
 		
 
@@ -619,14 +621,16 @@ end
 //
 Function V_SpreadOutPanels()
 
-	V_RescaleToBeamCenter("RAW","MB",64,78)
-	V_RescaleToBeamCenter("RAW","MT",64,-30)
-	V_RescaleToBeamCenter("RAW","MR",-30,64)
-	V_RescaleToBeamCenter("RAW","ML",78,64)
-	V_RescaleToBeamCenter("RAW","FB",64,78)
-	V_RescaleToBeamCenter("RAW","FT",64,-30)
-	V_RescaleToBeamCenter("RAW","FR",-30,64)
-	V_RescaleToBeamCenter("RAW","FL",78,64)
+	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
+
+	V_RescaleToBeamCenter(type,"MB",64,78)
+	V_RescaleToBeamCenter(type,"MT",64,-30)
+	V_RescaleToBeamCenter(type,"MR",-30,64)
+	V_RescaleToBeamCenter(type,"ML",78,64)
+	V_RescaleToBeamCenter(type,"FB",64,78)
+	V_RescaleToBeamCenter(type,"FT",64,-30)
+	V_RescaleToBeamCenter(type,"FR",-30,64)
+	V_RescaleToBeamCenter(type,"FL",78,64)
 	return(0)
 end
 

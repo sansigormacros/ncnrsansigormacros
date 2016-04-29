@@ -33,7 +33,7 @@
 // -- be sure I'm working in the right data folder
 // -- clean up when done
 // -- calculate + return the error contribution?
-//
+// -- verify the error propagation
 Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	Wave dataW,data_errW,dtW
 	Variable ctTime
@@ -59,6 +59,7 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 		sumTubes /= ctTime		//now count rate per tube
 		
 		dataW[][] = dataW[p][q]/(1-sumTubes[p]*dtW[p])		//correct the data
+		data_errW[][] = data_errW[p][q]/(1-sumTubes[p]*dtW[p])		// propagate the error wave
 
 	elseif(cmpstr(orientation,"horizontal")==0)
 	//	this is data (horizontal) dimensioned as (Npix,Ntubes)
@@ -67,6 +68,7 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 		sumTubes /= ctTime
 		
 		dataW[][] = dataW[p][q]/(1-sumTubes[q]*dtW[q])
+		data_errW[][] = data_errW[p][q]/(1-sumTubes[q]*dtW[q])
 	
 	else		
 		DoAlert 0,"Orientation not correctly passed in DeadTimeCorrectionTubes(). No correction done."

@@ -163,11 +163,23 @@ Proc V_Middle_IQ_Graph(type)
 	binType = 1
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
+// clear EVERYTHING
+		ClearAllIQIfDisplayed("MLRTB")
+		ClearAllIQIfDisplayed("MLR")
+		ClearAllIQIfDisplayed("MTB")		//this returns to root:
+		ClearAllIQIfDisplayed("MT")	
+		ClearAllIQIfDisplayed("ML")	
+		ClearAllIQIfDisplayed("MR")	
+		ClearAllIQIfDisplayed("MB")	
+
 	if(binType==1)
-		ClearIQIfDisplayed(type,"MLRTB")
-		ClearIQIfDisplayed(type,"MLR")
-		ClearIQIfDisplayed(type,"MTB")		//this returns to root:
-		
+//		ClearAllIQIfDisplayed("MLRTB")
+//		ClearAllIQIfDisplayed("MLR")
+//		ClearAllIQIfDisplayed("MTB")		//this returns to root:
+//		ClearAllIQIfDisplayed("MT")	
+//		ClearAllIQIfDisplayed("ML")	
+//		ClearAllIQIfDisplayed("MR")	
+//		ClearAllIQIfDisplayed("MB")			
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_ML
 		
@@ -188,11 +200,11 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 	
 	if(binType==2)
-		ClearIQIfDisplayed(type,"MLRTB")
-		ClearIQIfDisplayed(type,"MT")	
-		ClearIQIfDisplayed(type,"ML")	
-		ClearIQIfDisplayed(type,"MR")	
-		ClearIQIfDisplayed(type,"MB")
+//		ClearAllIQIfDisplayed("MLRTB")
+//		ClearAllIQIfDisplayed("MT")	
+//		ClearAllIQIfDisplayed("ML")	
+//		ClearAllIQIfDisplayed("MR")	
+//		ClearAllIQIfDisplayed("MB")
 	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
@@ -216,12 +228,12 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed(type,"MLR")
-		ClearIQIfDisplayed(type,"MTB")	
-		ClearIQIfDisplayed(type,"MT")	
-		ClearIQIfDisplayed(type,"ML")	
-		ClearIQIfDisplayed(type,"MR")	
-		ClearIQIfDisplayed(type,"MB")	
+//		ClearAllIQIfDisplayed("MLR")
+//		ClearAllIQIfDisplayed("MTB")	
+//		ClearAllIQIfDisplayed("MT")	
+//		ClearAllIQIfDisplayed("ML")	
+//		ClearAllIQIfDisplayed("MR")	
+//		ClearAllIQIfDisplayed("MB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_MLRTB
@@ -242,9 +254,9 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 
 	if(binType==4)		// slit aperture binning - Mt, ML, MR, MB are averaged
-		ClearIQIfDisplayed(type,"MLRTB")
-		ClearIQIfDisplayed(type,"MLR")
-		ClearIQIfDisplayed(type,"MTB")
+//		ClearAllIQIfDisplayed("MLRTB")
+//		ClearAllIQIfDisplayed("MLR")
+//		ClearAllIQIfDisplayed("MTB")
 		
 //		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_ML
@@ -291,11 +303,28 @@ Proc V_Front_IQ_Graph(type)
 	binType = 1
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
-	if(binType==1)
-		ClearIQIfDisplayed(type,"FLRTB")
-		ClearIQIfDisplayed(type,"FLR")
-		ClearIQIfDisplayed(type,"FTB")		//this returns to root:
+// clear EVERYTHING
+		ClearAllIQIfDisplayed("FLRTB")
 		
+		ClearAllIQIfDisplayed("FLR")
+		ClearAllIQIfDisplayed("FTB")
+
+		ClearAllIQIfDisplayed("FT")	
+		ClearAllIQIfDisplayed("FL")	
+		ClearAllIQIfDisplayed("FR")	
+		ClearAllIQIfDisplayed("FB")
+		
+	if(binType==1)
+//		ClearAllIQIfDisplayed("FLRTB")
+//		
+//		ClearAllIQIfDisplayed("FLR")
+//		ClearAllIQIfDisplayed("FTB")
+//
+//		ClearAllIQIfDisplayed("FT")	
+//		ClearAllIQIfDisplayed("FL")	
+//		ClearAllIQIfDisplayed("FR")	
+//		ClearAllIQIfDisplayed("FB")
+				
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FL
 		
@@ -316,12 +345,12 @@ Proc V_Front_IQ_Graph(type)
 	endif
 	
 	if(binType==2)
-		ClearIQIfDisplayed(type,"FLRTB")
-		ClearIQIfDisplayed(type,"FT")	
-		ClearIQIfDisplayed(type,"FL")	
-		ClearIQIfDisplayed(type,"FR")	
-		ClearIQIfDisplayed(type,"FB")
-	
+//		ClearAllIQIfDisplayed("FLRTB")
+//		ClearAllIQIfDisplayed("FT")	
+//		ClearAllIQIfDisplayed("FL")	
+//		ClearAllIQIfDisplayed("FR")	
+//		ClearAllIQIfDisplayed("FB")
+//	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FLR
@@ -344,12 +373,12 @@ Proc V_Front_IQ_Graph(type)
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed(type,"FLR")
-		ClearIQIfDisplayed(type,"FTB")	
-		ClearIQIfDisplayed(type,"FT")	
-		ClearIQIfDisplayed(type,"FL")	
-		ClearIQIfDisplayed(type,"FR")	
-		ClearIQIfDisplayed(type,"FB")	
+//		ClearAllIQIfDisplayed("FLR")
+//		ClearAllIQIfDisplayed("FTB")	
+//		ClearAllIQIfDisplayed("FT")	
+//		ClearAllIQIfDisplayed("FL")	
+//		ClearAllIQIfDisplayed("FR")	
+//		ClearAllIQIfDisplayed("FB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FLRTB
@@ -370,9 +399,9 @@ Proc V_Front_IQ_Graph(type)
 	endif
 
 	if(binType==4)		// slit aperture binning - Mt, ML, MR, MB are averaged
-		ClearIQIfDisplayed(type,"FLRTB")
-		ClearIQIfDisplayed(type,"FLR")
-		ClearIQIfDisplayed(type,"FTB")
+//		ClearAllIQIfDisplayed("FLRTB")
+//		ClearAllIQIfDisplayed("FLR")
+//		ClearAllIQIfDisplayed("FTB")
 		
 //		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FL
@@ -418,7 +447,9 @@ Proc V_Back_IQ_Graph(type)
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 
 	if(binType==1 || binType==2 || binType==3)
-		
+	
+		ClearAllIQIfDisplayed("B")
+		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_B
 		
 		if(V_flag==0)
@@ -435,7 +466,9 @@ Proc V_Back_IQ_Graph(type)
 
 	//nothing different here since there is ony a single detector to display, but for the future...
 	if(binType==4)
-		
+	
+		ClearAllIQIfDisplayed("B")
+		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_B
 		
 		if(V_flag==0)

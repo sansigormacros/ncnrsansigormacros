@@ -42,9 +42,14 @@ Function writeVCALC_to_file(fileName)
 		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
 		V_writeDetectorData(fileName,detStr,tmpData)
 		
-		val = VCALC_getTopBottomSDDOffset(detStr)/10 + VCALC_getSDD(detStr)*100		// make sure value is in cm
+		val = VCALC_getSDD(detStr)*100		// make sure value is in cm
 		print val
 		V_writeDet_distance(fileName,detStr,val)
+		
+		val = VCALC_getTopBottomSDDOffset(detStr)		//val is in mm, as for data file
+		if(val != 0)
+			V_writeDet_TBSetback(fileName,detStr,val)
+		endif
 		
 		// x and y pixel sizes for each detector should be correct in the "base" file - but if not...
 		//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
@@ -57,7 +62,6 @@ Function writeVCALC_to_file(fileName)
 		V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))
 		
 		
-	
 		// the calibration data for each detector (except B) is already correct in the "base" file
 		//V_writeDetTube_spatialCalib(fname,detStr,inW)
 		// and for "B"

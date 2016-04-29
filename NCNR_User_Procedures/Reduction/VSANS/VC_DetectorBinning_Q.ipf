@@ -1316,6 +1316,27 @@ Window Front_IQ_Graph() : Graph
 EndMacro
 
 
+// for a given detector binning type ("B", "FLTB", "MTB" etc)
+// all of the work folders will be checked to see if the data is on the graph
+// and if it is, it will be removed
+//
+Function ClearAllIQIfDisplayed(type)
+	String type
+
+//	String folderList = ksWorkFolderListShort
+	String fldr
+	Variable ii
+	
+	for(ii=0;ii<ItemsInList(ksWorkFolderListShort);ii+=1)
+		fldr = StringFromList(ii, ksWorkFolderListShort, ";")
+		ClearIQIfDisplayed(fldr,type)
+	endfor
+	// just in case
+	SetDataFolder root:
+	
+	return(0)
+end
+
 Function ClearIQIfDisplayed(fldr,type)
 	String fldr,type
 

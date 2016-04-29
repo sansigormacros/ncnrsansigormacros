@@ -654,7 +654,12 @@ Function Tab_p_ButtonProc(ba) : ButtonControl
 				V_Value = 0		//reset to 0
 			endif
 			FakeTabClick(V_Value)
-			
+
+// update the status when the tab is clicked			
+			STRUCT WMButtonAction sa
+			sa.eventCode = 2
+			StatusButtonProc(sa)
+
 			break
 		case -1: // control being killed
 			break
@@ -884,6 +889,7 @@ Function SpreadPanelButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			V_SpreadOutPanels()
+			
 			break
 		case -1: // control being killed
 			break
@@ -903,6 +909,7 @@ Function RestorePanelButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			V_RestorePanels()
+				
 			break
 		case -1: // control being killed
 			break

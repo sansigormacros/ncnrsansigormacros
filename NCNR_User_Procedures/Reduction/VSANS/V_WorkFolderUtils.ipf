@@ -471,7 +471,7 @@ Function Raw_to_work(newType)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-//			Wave w_dt = V_getDetector_deadtime(fname,detStr)
+			// any other dimensions to pass in?
 //			SolidAngleCorrection(fill this in)
 			
 		endfor
@@ -484,6 +484,10 @@ Function Raw_to_work(newType)
 	// -- test for correct operation
 	// -- loop over all of the detectors
 	// -- B detector is a special case (do separately, then loop over NoB)
+	// -- this DOES alter the data
+	// -- verify the error propagation
+	//
+	Variable countRate
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
 	if (gDoDeadTimeCor == 1)
 		Print "Doing DeadTime correction"// for "+ detStr
@@ -496,26 +500,16 @@ Function Raw_to_work(newType)
 			if(cmpstr(detStr,"B") == 0)
 				Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
 				// do the correction for the back panel
-				
-				//	itim = integersread[2]
-				//	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
-				//	//TODO - do correct dead time correction for tubes
-				//	deadtime = 1//DetectorDeadtime(textread[3],textread[9],dateAndTimeStr=textRead[1],dtime=realsRead[48])	//pick the correct deadtime
-				//	dscale = 1/(1-deadTime*cntrate)
-				//	
-					
-				// dead time correction
-				//	data *= dscale		//deadtime correction for everyone else, including NCNR
-				//	data_err *= dscale
-				
-				
+				countRate = sum(w,-inf,inf)/ctTime		//use sum of detector counts
+
+				w = w/(1-countRate*b_dt)
+				w_err = w_err/(1-countRate*b_dt)
+								
 			else
 				// do the corrections for 8 tube panels
-
 				Wave w_dt = V_getDetector_deadtime(fname,detStr)
-				//			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
-
-
+				DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+				
 			endif
 		endfor
 		

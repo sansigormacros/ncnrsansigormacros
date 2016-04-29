@@ -22,6 +22,7 @@ Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 // the list of WORK Folders
 Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
+Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
 
 
 // passing null file string presents a dialog
