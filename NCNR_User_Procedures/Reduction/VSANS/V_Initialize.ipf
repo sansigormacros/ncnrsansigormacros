@@ -155,6 +155,7 @@ Function V_InitGlobals()
 	// separate entities. I'm seeing little benefit of the crossover, especially now that 
 	// Analysis is not mine. So for VSANS, there is a new, separate file: V_VSANS_Preferences.ipf
 
+	//this is critical to initialize now - as it has the y/n flags for the detector correction steps
 	Execute "Initialize_VSANSPreferences()"	
 
 	

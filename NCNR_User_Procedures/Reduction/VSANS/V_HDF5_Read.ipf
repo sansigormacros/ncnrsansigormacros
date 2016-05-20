@@ -1384,11 +1384,22 @@ Function/S V_getDetDescription(fname,detStr)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getDet_distance(fname,detStr)
+Function V_getDet_NominalDistance(fname,detStr)
 	String fname,detStr
 
 	String path = "entry:instrument:detector_"+detStr+":distance"
 	return(V_getRealValueFromHDF5(fname,path))
+End
+
+//this is a DERIVED distance, since the nominal sdd is for the carriage (=LR panels)
+Function V_getDet_ActualDistance(fname,detStr)
+	String fname,detStr
+
+	Variable sdd
+	sdd = V_getDet_NominalDistance(fname,detStr)		//[cm]
+	sdd += V_getDet_TBSetback(fname,detStr)/10		// written in [mm], convert to [cm], returns 0 for L/R/B panels
+		
+	return(sdd)
 End
 
 //// only defined for the "B" detector, and only to satisfy NXsas
@@ -1425,7 +1436,7 @@ Function V_getDet_LateralOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// TODO - be sure this is defined correctly
+// TODO - be sure this is defined correctly (with correct units!)
 // -- only returns for T/B detectors
 Function V_getDet_TBSetback(fname,detStr)
 	String fname,detStr

@@ -140,9 +140,11 @@ Window VSANS_DataPanel() : Panel
 	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
+	Button button_saveIQ,pos={720,412},size={70,20},proc=SaveIQ_ButtonProc,title="Save I(Q)"
 	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
 	Button button_SpreadPanels,pos={603,488},size={100,20},proc=SpreadPanelButtonProc,title="Spread Panels"
 	Button button_RestorePanels,pos={603,526},size={100,20},proc=RestorePanelButtonProc,title="Restore Panels"
+
 
 // on the tabs, always visible
 	TitleBox title_xy,pos={24,71},size={76,20},variable= file_name
@@ -349,7 +351,7 @@ Function VSANSDataHook(s)
 					xctr = V_getDet_beam_center_x_mm(gCurDispType,detStr)		//written in mm
 					yctr = V_getDet_beam_center_y_mm(gCurDispType,detStr)	
 					
-					sdd = V_getDet_distance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
+					sdd = V_getDet_ActualDistance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
 					lam = V_getVSWavelength(gCurDispType)		//A
 //					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)		// written mm? need mm
@@ -696,6 +698,8 @@ End
 // opens a separate panel with the I(q) representation of the data
 // ? controls here to select how the data is processed/grouped/saved, etc.
 //
+// -- currently just the graph, no controls
+// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr)
 Function IvsQPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -736,19 +740,19 @@ Function StatusButtonProc(ba) : ButtonControl
 			str += "Description = "+V_getSampleDescription(type) + "\r"
 			str += "Wavelength is "+num2str(V_getWavelength(type)) + " A \r"
 			if(curTab == 2)
-				str += "SDD B = "+num2str(V_getDet_distance(type,"B")) + " cm \r"		//V_getDet_distance(fname,detStr)
+				str += "SDD B = "+num2str(V_getDet_ActualDistance(type,"B")) + " cm \r"		//V_getDet_distance(fname,detStr)
 			endif
 			if(curTab == 1)
-				str += "SDD ML = "+num2str(V_getDet_distance(type,"ML")) + " cm \r"
-				str += "SDD MR = "+num2str(V_getDet_distance(type,"MR")) + " cm \r"
-				str += "SDD MT = "+num2str(V_getDet_distance(type,"MT")) + " cm \r"
-				str += "SDD MB = "+num2str(V_getDet_distance(type,"MB")) + " cm \r"
+				str += "SDD ML = "+num2str(V_getDet_ActualDistance(type,"ML")) + " cm \r"
+				str += "SDD MR = "+num2str(V_getDet_ActualDistance(type,"MR")) + " cm \r"
+				str += "SDD MT = "+num2str(V_getDet_ActualDistance(type,"MT")) + " cm \r"
+				str += "SDD MB = "+num2str(V_getDet_ActualDistance(type,"MB")) + " cm \r"
 			endif
 			if(curTab == 0)
-				str += "SDD FL = "+num2str(V_getDet_distance(type,"FL")) + " cm \r"
-				str += "SDD FR = "+num2str(V_getDet_distance(type,"FR")) + " cm \r"
-				str += "SDD FT = "+num2str(V_getDet_distance(type,"FT")) + " cm \r"
-				str += "SDD FB = "+num2str(V_getDet_distance(type,"FB")) + " cm \r"
+				str += "SDD FL = "+num2str(V_getDet_ActualDistance(type,"FL")) + " cm \r"
+				str += "SDD FR = "+num2str(V_getDet_ActualDistance(type,"FR")) + " cm \r"
+				str += "SDD FT = "+num2str(V_getDet_ActualDistance(type,"FT")) + " cm \r"
+				str += "SDD FB = "+num2str(V_getDet_ActualDistance(type,"FB")) + " cm \r"
 			endif
 			
 			
@@ -848,8 +852,30 @@ Function TagFileButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0, "TagFileButtonProc(ba) unfinished"
+			DoAlert 0, "TagFileButtonProc(ba) unfinished - thes may be used to 'tag' a file as scatter, trans, emp, bkg, etc."
 			
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// TODO
+// -- fill in more functionality
+// -- currently a straight concatentation of all data, no options
+// -- maybe allow save of single panels?
+// -- any other options?
+Function SaveIQ_ButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			Execute "V_Combine1DData()"			
 				
 			break
 		case -1: // control being killed

@@ -9,6 +9,95 @@
 // TODO:
 // -- fill in all of the details...
 //
+
+
+//
+// see the VCALC BinAllMiddlePanels() for an example of this
+// see the binning routines in VC_DetectorBinning_Utils.ipf for the details
+//
+// TODO 
+// x- detector "B" is currently skipped since the calibration waves are not faked
+//    when the raw data is loaded. Then the qxqyqz waves are not generated.
+//
+// -- REDO the logic here. It's a mess, and will get the calculation wrong 
+//
+// -- figure out the binning type (where is it set for VSANS?)
+// -- don't know, so currently VSANS binning type is HARD-WIRED
+// -- figure out when this needs to be called to (force) re-calculate I vs Q
+//
+Function V_QBinAllPanels(folderStr)
+	String folderStr
+
+	// do the back, middle, and front separately
+	
+//	figure out the binning type (where is it set?)
+	Variable binType,ii,delQ
+	String detStr
+	binType = 1
+	
+	
+
+//// TODO:
+// x- currently the "B" detector is skipped - it was skipped in 
+//       previous functions where q values are calculated	
+//	
+	delQ = SetDeltaQ(folderStr,"B")
+	
+	// dispatch based on binning type
+	if(binType == 1)
+		VC_fDoBinning_QxQy2D(folderStr, "B")		//normal binning, nothing to combine
+	endif
+
+// TODO -- this is only a temporary fix for slit mode	
+	if(binType == 4)
+		/// this is for a tall, narrow slit mode	
+		VC_fBinDetector_byRows(folderStr,"B")
+	endif	
+
+
+
+// these are the binning types where detectors are not combined
+// other combined binning is below the loop
+	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		
+		// set delta Q for binning
+		delQ = SetDeltaQ(folderStr,detStr)
+		
+		// dispatch based on binning type
+		if(binType==1)
+			VC_fDoBinning_QxQy2D(folderStr,detStr)
+		endif
+		
+		// TODO -- this is only a temporary fix for slit mode	
+		if(binType == 4)
+			/// this is for a tall, narrow slit mode	
+			VC_fBinDetector_byRows(folderStr,detStr)
+		endif	
+		
+	endfor
+	
+	// bin in pairs
+	if(binType == 2)
+		VC_fDoBinning_QxQy2D(folderStr,"MLR")
+		VC_fDoBinning_QxQy2D(folderStr,"MTB")
+		VC_fDoBinning_QxQy2D(folderStr,"FLR")
+		VC_fDoBinning_QxQy2D(folderStr,"FTB")	
+	endif
+	
+	// bin everything on front or middle together
+	if(binType == 3)
+		VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+		VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+	endif
+
+	return(0)
+End
+
+
+
+
+
 Macro V_Combine1DData()
 
 // get the current display type
@@ -25,12 +114,16 @@ Macro V_Combine1DData()
 	V_TmpSort1D(type)
 	
 // write out the data set to a file
-
+	String/G saveName=""
+	V_GetNameForSave("")
+	V_Write1DData(type,saveName)
 
 End
 
-
-
+Proc V_GetNameForSave(str)
+	String str
+	String/G saveName=str
+End
 
 
 // concatentate data in folderStr
@@ -121,9 +214,13 @@ Function V_1DConcatenate(folderStr)
 End
 
 // TODO:
-// see Auto_Sort() in the SANS Automation ipf for the rest of the details of
-// how to combine the resolution waves (they also need to be concatenated, which is currently not done.
+// -- resolution waves are ignored
+// -- only a sort is done, no rescaling of data sets
+//    (it's too late now anyways, since the data was concatenated
 //
+// see Auto_Sort() in the SANS Automation ipf for the rest of the details of
+// how to combine the resolution waves (they also need to be concatenated, which is currently not done)
+// 
 Function V_TmpSort1D(folderStr)
 	String folderStr
 	
@@ -196,33 +293,34 @@ Function V_Trim1DData(folderStr,nEnd)
 end
 
 
+
 // TODO:
 // -- this is a temporary solution before a real writer is created
 // -- resolution is not handled here (and it shouldn't be) since resolution is not known yet.
 //
-//
 // this will bypass save dialogs
 // -- AND WILL OVERWITE DATA WITH THE SAME NAME
 //
-Function V_Write1DData(folderStr,delim,term)
-	String folderStr,delim,term
+Function V_Write1DData(folderStr,saveName)
+	String folderStr,saveName
 	
 	String formatStr="",fullpath=""
 	Variable refnum,dialog=1
+
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+
+	Wave qw = tmp_q
+	Wave iw = tmp_i
+	Wave sw = tmp_s
 	
 	String dataSetFolderParent,basestr
 	
-	//Abuse ParseFilePath to get path without folder name
-	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
-	//Abuse ParseFilePath to get basestr
-	basestr = ParseFilePath(0,folderStr,":",1,0)
+	// ParseFilePath to get path without folder name
+//	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
+	// ParseFilePath to get basestr
+//	basestr = ParseFilePath(0,folderStr,":",1,0)
 	
 	//make sure the waves exist
-	SetDataFolder $(dataSetFolderParent+basestr)
-	WAVE/Z qw = $(baseStr+"_q")
-	WAVE/Z iw = $(baseStr+"_i")
-	WAVE/Z sw = $(baseStr+"_s")
-	WAVE/Z resw = $(baseStr+"_res")
 	
 	if(WaveExists(qw) == 0)
 		Abort "q is missing"
@@ -233,41 +331,49 @@ Function V_Write1DData(folderStr,delim,term)
 	if(WaveExists(sw) == 0)
 		Abort "s is missing"
 	endif
-	if(WaveExists(resw) == 0)
-		Abort "Resolution information is missing."
-	endif
+//	if(WaveExists(resw) == 0)
+//		Abort "Resolution information is missing."
+//	endif
 	
-	Duplicate/O qw qbar,sigQ,fs
-	if(dimsize(resW,1) > 4)
-		//it's USANS put -dQv back in the last 3 columns
-		NVAR/Z dQv = USANS_dQv
-		if(NVAR_Exists(dQv) == 0)
-			SetDataFolder root:
-			Abort "It's USANS data, and I don't know what the slit height is."
-		endif
-		sigQ = -dQv
-		qbar = -dQv
-		fs = -dQv
-	else
-		//it's SANS
-		sigQ = resw[p][0]
-		qbar = resw[p][1]
-		fs = resw[p][2]
-	endif
-	
+//	Duplicate/O qw qbar,sigQ,fs
+//	if(dimsize(resW,1) > 4)
+//		//it's USANS put -dQv back in the last 3 columns
+//		NVAR/Z dQv = USANS_dQv
+//		if(NVAR_Exists(dQv) == 0)
+//			SetDataFolder root:
+//			Abort "It's USANS data, and I don't know what the slit height is."
+//		endif
+//		sigQ = -dQv
+//		qbar = -dQv
+//		fs = -dQv
+//	else
+//		//it's SANS
+//		sigQ = resw[p][0]
+//		qbar = resw[p][1]
+//		fs = resw[p][2]
+//	endif
+//	
+
 	PathInfo catPathName
-	fullPath = S_Path + folderStr
+	fullPath = S_Path + saveName
 
 	Open refnum as fullpath
 
 	fprintf refnum,"Combined data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
-	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
-	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
 
-	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
+// TODO -- make this work for 6-columns
+//	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
+//	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
+//	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
+
+	//currently, only three columns
+	formatStr = "%15.4g %15.4g %15.4g\r\n"	
+	fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
+
+	wfprintf refnum,formatStr,qw,iw,sw
 	Close refnum
 	
-	KillWaves/Z sigQ,qbar,fs
+//	KillWaves/Z sigQ,qbar,fs
 	
 	SetDataFolder root:
 	return(0)

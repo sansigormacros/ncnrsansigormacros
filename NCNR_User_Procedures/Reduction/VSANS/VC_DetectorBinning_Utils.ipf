@@ -237,6 +237,8 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 		if(cmpstr(detStr,"B")==0)
 			newX = data_realDistX[xCtr][0]
 			newY = data_realDistY[0][yCtr]
+			//newX = xCtr
+			//newY = yCtr
 		endif		
 				
 		// calculate all of the q-values
@@ -667,6 +669,8 @@ End
 // -- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
 //    a blanket correction (matrix multiply) for an entire panel?
 //
+//
+//
 // folderStr = WORK folder, type = the binning type (may include multiple detectors)
 Function VC_fDoBinning_QxQy2D(folderStr,type)
 	String folderStr,type
@@ -689,6 +693,9 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // since there may be more than one panel to step through. There may be two, there may be four
 //
 
+// TODO:
+// -- Solid_Angle -- waves will be present for WORK data other than RAW, but not for RAW
+//
 // assume that the mask files are missing unless we can find them. If VCALC data, 
 //  then the Mask is missing by definition
 	maskMissing = 1
@@ -985,6 +992,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 
 
 //TODO: properly define the errors here - I'll have this if I do the simulation
+// -- need to propagate the errors up to this point
+//
 	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
@@ -1054,6 +1063,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // 4 panels
 //
 // this needs to be a double loop now...
+// TODO:
+// -- the iErr wave and accumulation of error is NOT CALCULATED CORRECTLY YET
+// -- the solid angle per pixel is not yet implemented.
+//    it will be present for WORK data other than RAW, but not for RAW
 
 // if any of the masks don't exist, display the error, and proceed with the averaging, using all data
 	if(maskMissing == 1)
@@ -1073,12 +1086,12 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten[ii][jj]
 				
-				if(isVCALC || maskMissing)		// mask_val == 1 == keep
-					mask_val = 1
+				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+					mask_val = 0
 				else
 					mask_val = mask[ii][jj]
 				endif
-				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
@@ -1102,11 +1115,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				val = inten2[ii][jj]
 				
 				if(isVCALC || maskMissing)
-					mask_val = 1
+					mask_val = 0
 				else
 					mask_val = mask2[ii][jj]
 				endif
-				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr2[ii][jj]*iErr2[ii][jj]
@@ -1130,11 +1143,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				val = inten3[ii][jj]
 				
 				if(isVCALC || maskMissing)
-					mask_val = 1
+					mask_val = 0
 				else
 					mask_val = mask3[ii][jj]
 				endif
-				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr3[ii][jj]*iErr3[ii][jj]
@@ -1155,11 +1168,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				val = inten4[ii][jj]
 				
 				if(isVCALC || maskMissing)
-					mask_val = 1
+					mask_val = 0
 				else
 					mask_val = mask4[ii][jj]
 				endif
-				if (numType(val)==0 && mask_val == 1)		//count only the good points, ignore Nan or Inf
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr4[ii][jj]*iErr4[ii][jj]
@@ -1173,6 +1186,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
+// TODO:
+// -- Errors were NOT properly acculumated above, so this loop of calculations is NOT MEANINGFUL (yet)
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
 			//no pixels in annuli, data unknown

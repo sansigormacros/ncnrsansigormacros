@@ -49,6 +49,7 @@ Menu "SANS"
 		"Create Custom Bins",Show_CustomBinPanel()
 		"-"
 		"Split Large File",SplitBigFile()
+		"Get List of ITX or Split Files",GetListofITXorSplitFiles()
 		"Accumulate First Slice",AccumulateSlices(0)
 		"Add Current Slice",AccumulateSlices(1)
 		"Display Accumulated Slices",AccumulateSlices(2)	

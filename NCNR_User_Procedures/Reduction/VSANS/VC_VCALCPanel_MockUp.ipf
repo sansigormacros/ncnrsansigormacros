@@ -646,18 +646,18 @@ Proc VC_Initialize_Space()
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:VSANS
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MB
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MT
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_ML
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MR
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FB
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FT
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL
-		NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FR
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MB
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MT
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_ML
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MR
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FB
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FT
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FR
 
 //	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Front
 //	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:Middle
@@ -807,7 +807,7 @@ Proc VC_Initialize_Space()
 	Variable/G gBack_w = 150				//w and h for the back detector, (mm) 150 pix * 1mm/pix
 	Variable/G gBack_h = 150
 	
-	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.1		// 1mm resolution (units of cm here)
+	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.1		// 1 mm resolution (units of cm here)
 	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.1		
 //	Variable/G gBack_pixelX = 0.1		
 //	Variable/G gBack_pixelY = 0.1
@@ -872,8 +872,6 @@ Proc VC_Initialize_Space()
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 	Make/O/D/N=(pixel_num_x[0],pixel_num_y[0]) det_B
 	Duplicate/O det_B qTot_B,qx_B,qy_B,qz_B
-
-
 
 
 ////////////	FOR THE PANEL

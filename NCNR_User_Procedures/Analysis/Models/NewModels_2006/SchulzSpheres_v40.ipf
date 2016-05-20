@@ -71,7 +71,29 @@ Proc PlotSmearedSchulzSpheres(str)
 	AddModelToStrings("SmearedSchulzSpheres","smear_coef_sch","smear_parameters_sch","sch")
 End
 	
-
+//
+Proc PlotSchulzSpheresBeta(num,qmin,qmax)
+	Variable num=128,qmin=0.001,qmax=0.7
+	Prompt num "Enter number of data points for model: "
+	Prompt qmin "Enter minimum q-value (A^-1) for model: "
+	Prompt qmax "Enter maximum q-value (A^-1) for model: "
+	
+	Make/O/D/N=(num) xwave_sch_beta,ywave_sch_beta
+	xwave_sch_beta = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
+	Make/O/D coef_sch_beta = {0.01,60,0.2,1e-6,3e-6,0.001}
+	make/O/T parameters_sch_beta = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}
+	Edit parameters_sch_beta,coef_sch_beta
+	
+	Variable/G root:g_sch_beta
+	g_sch_beta := SchulzSpheresBeta(coef_sch_beta,ywave_sch_beta,xwave_sch_beta)
+	Display ywave_sch_beta vs xwave_sch_beta
+	ModifyGraph log=1,marker=29,msize=2,mode=4
+	Label bottom "q (A\\S-1\\M)"
+	Label left "Intensity (cm\\S-1\\M)"
+	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
+	
+	AddModelToStrings("SchulzSpheresBeta","coef_sch_beta","parameters_sch_beta","sch_beta")
+End
 
 Function Schulz_Point(x,avg,zz)
 	Variable x,avg,zz

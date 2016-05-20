@@ -107,7 +107,7 @@ Function Prolate_HS(w,yw,xw) : FitFunc
 	//cleanup waves
 //	Killwaves/Z form_PEF_HS,struct_PEF_HS
 	
-	return (yw)
+	return (0)
 End
 
 Proc PlotProlate_SW(num,qmin,qmax)
@@ -527,7 +527,7 @@ Function Prolate_2Y(w,yw,xw) : FitFunc
 	//cleanup waves
 //	Killwaves/Z form_PEF_2Y,struct_PEF_2Y
 	
-	return (yw)
+	return (0)
 End
 
 // this is all there is to the smeared calculation!

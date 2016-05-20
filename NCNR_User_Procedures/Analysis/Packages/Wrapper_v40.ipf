@@ -626,7 +626,9 @@ Function DoTheFitButton(ba) : ButtonControl
 			endif
 			w[0] += 1e-6
 			w[0] -= 1e-6
+
 	
+					
 			break
 	endswitch
 	

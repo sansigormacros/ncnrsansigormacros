@@ -369,7 +369,7 @@ Function fMakeFakeCalibrationWaves()
 		orientation = V_getDet_tubeOrientation(fname,detStr)
 		if(cmpstr(orientation,"vertical")==0)
 		//	this is vertical tube data dimensioned as (Ntubes,Npix)
-			pixSize = 8			//V_getDet_y_pixel_size(fname,detStr)
+			pixSize = 8.4		//V_getDet_y_pixel_size(fname,detStr)
 			
 		elseif(cmpstr(orientation,"horizontal")==0)
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
@@ -395,6 +395,13 @@ Function fMakeFakeCalibrationWaves()
 End
 
 //
+// TODO:
+// -- MUST VERIFY the definition of SDD and how (if) setback is written to the data files
+// -- currently I'm assuming that the SDD is the "nominal" value which is correct for the 
+//    L/R panels, but is not correct for the T/B panels (must add in the setback)
+//
+//
+//
 // data_realDistX, Y must be previously generated from running NonLinearCorrection()
 //
 // call with:
@@ -410,7 +417,10 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 	
 // get all of the geometry information	
 	orientation = V_getDet_tubeOrientation(fname,detStr)
-	sdd = V_getDet_distance(fname,detStr)
+//	sdd = V_getDet_distance(fname,detStr)		//[cm]
+//	sdd += V_getDet_TBSetback(fname,detStr)/10		// written in [mm], convert to [cm], returns 0 for L/R/B panels
+
+	sdd = V_getDet_ActualDistance(fname,detStr)		//sdd derived, including setback [cm]
 	sdd/=100		// sdd reported in cm, pass in m
 	// this is the ctr in pixels
 //	xCtr = V_getDet_beam_center_x(fname,detStr)
@@ -551,7 +561,7 @@ End
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
-// not actually used for anything, but here for completeness if anyone asks
+// not actually used for any calculations, but here for completeness if anyone asks, or for 2D data export
 //
 // this properly accounts for qz
 //
@@ -578,6 +588,100 @@ Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	return qz
 End
 
+
+//
+// TODO -- VERIFY calculations
+// -- This is the actual solid angle per pixel, not a ratio vs. some "unit SA" 
+//    Do I just correct for the different area vs. the "nominal" central area?
+// -- decide how to implement - either directly change the data values (as was done in the past)
+//    or use this as a weighting for when the data is binned to I(q). In the second method, 2D data
+//    would need this to be applied before exporting
+// -- do I keep a wave note indicating that this correction has been applied to the data
+//    so that it can be "un-applied"?
+// -- do I calculate theta from geometry directly, or get it from Q (Assuming it's present?)
+//    (probably just from geometry, since I need SDD and dx and dy values...)
+//
+//
+Function SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,lambda
+
+// get all of the geometry information	
+//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+	sdd/=100		// sdd in cm, pass in m
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	lambda = V_getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w solid_angle,tmp_theta,tmp_dist		//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
+	
+	tmp_dist /= 10  // convert mm to cm
+	sdd *=100		//convert to cm
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+	
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			if(ii==0)		//do a forward difference if ii==0
+				dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+			else
+				dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+			endif
+			
+			
+			if(jj==0)
+				dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+			else
+				dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+			endif
+	
+			dx /= 10
+			dy /= 10		// convert mm to cm (since sdd is in cm)
+			solid_angle[ii][jj] = dx*dy		//this is in cm^2
+		endfor
+	endfor
+	
+	// to cover up any issues w/negative dx or dy
+	solid_angle = abs(solid_angle)
+	
+	// solid_angle correction
+	// == dx*dy*cos^3/sdd^2
+	solid_angle *= (cos(tmp_theta))^3
+	solid_angle /= sdd^2
+	
+	// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+	w /= solid_angle
+	
+	
+	// TODO:
+	// correctly apply the correction to the error wave (assume a perfect value?)
+	// w_err /= solid_angle		//is this correct??
+
+// TODO -- clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta,tmp_dist
+	
+	return(0)
+end
 
 
 ////////////
@@ -667,8 +771,8 @@ Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
 			// so divide here to get the correct answer (5/22/08 SRK)
 			if(doEfficiency)
-				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
+//				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
+//				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
 //				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
 			endif
 			
@@ -717,30 +821,6 @@ End
 
 
 
-//distances passed in are in mm
-// dtdist is SDD
-// xd and yd are distances from the beam center to the current pixel
-//
-// TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
-//
-Function DetEffCorr(lambda,dtdist,xd,yd)
-	Variable lambda,dtdist,xd,yd
-
-	DoAlert 0,"This has not yet been updated for VSANS"
-	
-	Variable theta,cosT,ff,stAl,stHe
-	
-	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )
-	cosT = cos(theta)
-	
-	stAl = 0.00967*lambda*0.8		//dimensionless, constants from JGB memo
-	stHe = 0.146*lambda*2.5
-	
-	ff = exp(-stAl/cosT)*(1-exp(-stHe/cosT)) / ( exp(-stAl)*(1-exp(-stHe)) )
-		
-	return(ff)
-End
 
 // DIVIDE the intensity by this correction to get the right answer
 // TODO:
@@ -1030,10 +1110,10 @@ Proc DIV_a_Workfile(type)
 //DoAlert 0,"This has not yet been updated for VSANS"
 	
 	Variable err
-	err = DIVCorrection(type)		//returns err = 1 if data doesn't exist in specified folders
+	err = V_DIVCorrection(type)		//returns err = 1 if data doesn't exist in specified folders
 	
 	if(err)
-		Abort "error in DIVCorrection()"
+		Abort "error in V_DIVCorrection()"
 	endif
 	
 	//contents are NOT always dumped to CAL, but are in the new type folder
@@ -1055,13 +1135,13 @@ End
 //
 // TODO:
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
-//  -- how is the error propagation  handled?
+//   -- how is the error propagation handled?
 //
 //function will divide the contents of "workType" folder with the contents of 
 //the DIV folder + detStr
 // all data is linear scale for the calculation
 //
-Function DIVCorrection(data,data_err,detStr,workType)
+Function V_DIVCorrection(data,data_err,detStr,workType)
 	Wave data,data_err
 	String detStr,workType
 	
@@ -1070,7 +1150,7 @@ Function DIVCorrection(data,data_err,detStr,workType)
 	String destPath=""
 
 	if(WaveExists(data) == 0)
-		Print "The data wave does not exist in DIVCorrection()"
+		Print "The data wave does not exist in V_DIVCorrection()"
 		Return(1) 		//error condition
 	Endif
 	
@@ -1079,7 +1159,7 @@ Function DIVCorrection(data,data_err,detStr,workType)
 
 	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")
 	if(WaveExists(div_data) == 0)
-		Print "The DIV wave does not exist in DIVCorrection()"
+		Print "The DIV wave does not exist in V_DIVCorrection()"
 		Return(1)		//error condition
 	Endif
 	//files exist, proceed

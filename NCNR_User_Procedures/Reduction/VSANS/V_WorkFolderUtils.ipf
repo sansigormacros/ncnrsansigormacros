@@ -407,22 +407,22 @@ Function Raw_to_work(newType)
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			
-			DIVCorrection(w,w_err,detStr,newType)
+			V_DIVCorrection(w,w_err,detStr,newType)
 		endfor
 	else
-		Print "DIV correction not done"		// not an error since correction was unchecked
+		Print "DIV correction NOT DONE"		// not an error since correction was unchecked
 	endif
 	
 	// (2) non-linear correction	
 	// TODO:
-	// x- currently, the "B" detector is skipped
+	// x-  the "B" detector is calculated in its own routines
 	// -- document what is generated here:
 	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the mm? position of the pixel)
-	// -- still not sure whether to duplicate these calculations as the RAW data is loaded. It would allow the RAW
-	//    data to be properly displayed, but without all of the (complete) set of corrections
+	// x- these spatial calculations ARE DONE as the RAW data is loaded. It allows the RAW
+	//    data to be properly displayed, but without all of the (complete) set of detector corrections
 	// * the corrected distances are calculated into arrays, but nothing is done with them yet
-	// * there is enough information now to calculate the q-arrays
-	// -other corrections modify the data, this does NOT
+	// * there is enough information now to calculate the q-arrays, so it is done now
+	// - other corrections may modify the data, this calculation does NOT modify the data
 	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 	// generate a distance matrix for each of the detectors
 	if (gDoNonLinearCor == 1)
@@ -460,10 +460,17 @@ Function Raw_to_work(newType)
 		V_Detector_CalcQVals(fname,"B",destPath)
 		
 	else
-		Print "Non-linear correction not done"
+		Print "Non-linear correction NOT DONE"
 	endif
 
 	// (3) solid angle correction
+	// TODO -- this currently calculates the correction factor AND applys it to the data
+	//  -- as a result, the data values are very large since they are divided by a very small
+	//     solid angle per pixel. But all of the count values are now on the basis of 
+	//    counts/(solid angle) --- meaning that they can all be binned together for I(q)
+	//    -and- TODO - this will need to be taken into account for absolute scaling (this part is already done)
+	//
+	// the solid angle correction is calculated for ALL detector panels.
 	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
 	if (gDoSolidAngleCor == 1)
 		Print "Doing Solid Angle correction"// for "+ detStr
@@ -472,20 +479,21 @@ Function Raw_to_work(newType)
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			// any other dimensions to pass in?
-//			SolidAngleCorrection(fill this in)
+			SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 			
 		endfor
 	else
-		Print "Solid Angle correction not done"
+		Print "Solid Angle correction NOT DONE"
 	endif	
 	
 	// (4) dead time correction
-	// TODO: -- remove the hard-wired test
+	// TODO:
+	// x- remove the hard-wired test - done
 	// -- test for correct operation
-	// -- loop over all of the detectors
-	// -- B detector is a special case (do separately, then loop over NoB)
+	// x- loop over all of the detectors
+	// x- B detector is a special case (do separately, then loop over NoB)
 	// -- this DOES alter the data
-	// -- verify the error propagation
+	// -- verify the error propagation (not done yet)
 	//
 	Variable countRate
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
@@ -514,22 +522,30 @@ Function Raw_to_work(newType)
 		endfor
 		
 	else
-		Print "Dead Time correction not done"
+		Print "Dead Time correction NOT DONE"
 	endif	
 	
 	
 	// (5) angle-dependent tube shadowing
+	// TODO:
+	// -- not sure about this correction yet...
+	//
 	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
 	if (gDoTubeShadowCor == 1)
-	
+		Print "(stub)Tube Shadow correction"
 	else
-		Print "Tube shadowing correction not done"
+		Print "Tube shadowing correction NOT DONE"
 	endif	
 		
 	// (6) angle dependent transmission correction
+	// TODO:
+	// -- this still needs to be filled in
+	// -- still some debate of when/where in the corrections that this is best applied
+	//    - do it here, and it's done whether the output is 1D or 2D
+	//    - do it later (where SAMPLE information is used) since this section is ONLY instrument-specific
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		Print "Doing Large-angle transmission correction"// for "+ detStr
+		Print "(stub)Doing Large-angle transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
@@ -538,50 +554,49 @@ Function Raw_to_work(newType)
 			
 		endfor
 	else
-		Print "Sample Transmission correction not done"
+		Print "Sample Transmission correction NOT DONE"
 	endif	
 	
 	// (7) normalize to default monitor counts
 	// TODO -- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
 	// TODO -- what do I really need to save?
-	Print "Doing monitor normalization"// for "+ detStr
-
-	defmon=1e8			//default monitor counts
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		Wave w = V_getDetectorDataW(fname,detStr)
-		Wave w_err = V_getDetectorDataErrW(fname,detStr)
-		Variable monCt = V_getBeamMonNormData(fname)
-//			MonitorNormalization(fill this in)
-	//scale the data to the default montor counts
 	
-	// TODO -- un-comment these three lines once monitor counts are reasonable - currently monCt = 9!!!
-//		scale = defmon/monCt
-//		w *= scale
-//		w_err *= scale		//assumes total monitor count is so large there is essentially no error
-
-// TODO
-// -- to write back to the local value, get the wave reference rather than the value, then I can 
-//    re-assign the value directly, rather than this method (which is not terrible)	
-		// V_getBeamMonNormSaved_count()
-		// save the true monitor counts? save the scaling factor?
-		String path = "entry:instrument:beam_monitor_norm:saved_count"
-		Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":"+path)
-		savW[0] = scale
-	endfor
+	NVAR gDoMonitorNormalizaton = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton
+	if (gDoMonitorNormalizaton == 1)
+		Print "(stub)Doing monitor normalization"// for "+ detStr
+		
+		defmon=1e8			//default monitor counts
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			Variable monCt = V_getBeamMonNormData(fname)
+	//			MonitorNormalization(fill this in)
+		//scale the data to the default montor counts
+		
+		// TODO -- un-comment these three lines once monitor counts are reasonable - currently monCt = 9!!!
+	//		scale = defmon/monCt
+	//		w *= scale
+	//		w_err *= scale		//assumes total monitor count is so large there is essentially no error
 	
+	// TODO
+	// -- to write back to the local value, get the wave reference rather than the value, then I can 
+	//    re-assign the value directly, rather than this method (which is not terrible)	
+			// V_getBeamMonNormSaved_count()
+			// save the true monitor counts? save the scaling factor?
+			String path = "entry:instrument:beam_monitor_norm:saved_count"
+			Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":"+path)
+			savW[0] = scale
+		endfor
+	else
+		Print "Monitor Normalization correction NOT DONE"
+	endif
 	
 	// (not done) angle dependent efficiency correction
 	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 
-	
-// this function, in the past did the non-linear, solid angle, transmission, and efficiency corrections all at once
-//	DetCorr(data,data_err,realsread,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
-
-
-	
-	//update totals to put in the work header (at the end of the function)
+//update totals to put in the work header (at the end of the function)
 //	total_mon += realsread[0]
 //
 //	total_det += dscale*realsread[2]

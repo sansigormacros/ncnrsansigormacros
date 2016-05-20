@@ -74,7 +74,12 @@ Function writeVCALC_to_file(fileName)
 		// TODO: need a new, separate function to write the single deadtime value in/out of "B"
 
 	endfor
+
 	
+// writes out "perfect" detector calibration constants for all 8 tube banks
+	V_WritePerfectSpatialCalib(filename)
+// writes out "perfect" dead time constants for all 8 tube banks + back detector
+	V_WritePerfectDeadTime(filename)
 	
 //? other detector geometry - lateral separation?
 
@@ -105,31 +110,45 @@ end
 
 
 
-// writes out "perfect" detector calibration constants for all 8 tube banks
-Function V_WritePerfectCalibration()
-
+// writes out "perfect" detector calibration constants for all 8 tube banks + back detector
+Function V_WritePerfectSpatialCalib(filename)
+	String filename
+	
+//	String fileName = V_DoSaveFileDialog("pick the file to write to")
+	
 	Make/O/D/N=(3,48) tmpCalib
 	// for the "tall" L/R banks
 	tmpCalib[0][] = -512
 	tmpCalib[1][] = 8
 	tmpCalib[2][] = 0
 	
-	V_writeDetTube_spatialCalib("","FR",tmpCalib)
-	V_writeDetTube_spatialCalib("","FL",tmpCalib)
-	V_writeDetTube_spatialCalib("","MR",tmpCalib)
-	V_writeDetTube_spatialCalib("","ML",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"FR",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"FL",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"MR",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"ML",tmpCalib)
 
 	// for the "short" T/B banks
 	tmpCalib[0][] = -256
 	tmpCalib[1][] = 4
 	tmpCalib[2][] = 0
 	
-	V_writeDetTube_spatialCalib("","FT",tmpCalib)
-	V_writeDetTube_spatialCalib("","FB",tmpCalib)
-	V_writeDetTube_spatialCalib("","MT",tmpCalib)
-	V_writeDetTube_spatialCalib("","MB",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"FT",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"FB",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"MT",tmpCalib)
+	V_writeDetTube_spatialCalib(filename,"MB",tmpCalib)
 	
 	KillWaves tmpCalib
+	
+	// and for the back detector "B"
+	Make/O/D/N=3 tmpCalib
+	tmpCalib[0] = 1
+	tmpCalib[1] = 1
+	tmpcalib[2] = 10000
+	V_writeDet_cal_x(filename,"B",tmpCalib)
+	V_writeDet_cal_y(filename,"B",tmpCalib)
+
+	KillWaves tmpCalib
+
 	return(0)
 end
 
@@ -137,6 +156,32 @@ end
 // to the HDF file
 //V_writeDetector_deadtime(fname,detStr,inW)
 //V_writeDetector_deadtime_B(fname,detStr,val)
+// simulated count rate per tube can be Å 10^8, so I need dt >> 10^-15 to completely cancel this out
+// (partly due to fake I(q), fake count time in file...)
+
+// writes out "perfect" dead time constants for all 8 tube banks + back detector
+Function V_WritePerfectDeadTime(filename)
+	String filename
+		
+	Make/O/D/N=(48) tmpDT
+	tmpDT = 1e-18
+	V_writeDetector_deadtime(filename,"FT",tmpDT)
+	V_writeDetector_deadtime(filename,"FB",tmpDT)
+	V_writeDetector_deadtime(filename,"FL",tmpDT)
+	V_writeDetector_deadtime(filename,"FR",tmpDT)
+	V_writeDetector_deadtime(filename,"MT",tmpDT)
+	V_writeDetector_deadtime(filename,"MB",tmpDT)
+	V_writeDetector_deadtime(filename,"ML",tmpDT)
+	V_writeDetector_deadtime(filename,"MR",tmpDT)
+
+
+	// and for the back detector "B", a single value, not a wave
+	V_writeDetector_deadtime_B(filename,"B",1e-20)
+
+	KillWaves tmpDT
+
+	return(0)
+end
 
 
 Function V_FakeBeamCenters()

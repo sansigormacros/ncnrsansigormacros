@@ -15,6 +15,11 @@
 //
 //
 // -- NEW 2016
+//
+// -- see the Procedure DecodeBinaryEvents(numToPrint) for a first implementation of a "viewer"
+//    for the binary events. Prints out the decoded 32-bit binary to the command window for inspection
+//    Could be modified as needed to flag events, see what bad events really look like, etc. (May 2016)
+
 //  -- see the proc DisplayForSlicing() that may aid in setting the bins properly by plotting the 
 //     bins along with the differential collection rate
 //
@@ -188,7 +193,7 @@ Function Init_Event()
 
 
 // for decimation
-	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 150		// 150 MB considered too large
+	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 2500		// 2500 MB considered too large
 	Variable/G root:Packages:NIST:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:Event:gEvent_t_longest_decimated = 0
 	Variable/G root:Packages:NIST:Event:gEvent_t_segment_start = 0
@@ -279,6 +284,7 @@ Proc EventModePanel()
 	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
 	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
 	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
+	Button button22,pos={620,450},size={120,20},proc=Osc_LoadAdjList_BinOnFly,title="Load+Accumulate"
 
 	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
 	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
@@ -583,22 +589,32 @@ Function Osc_ProcessEventLog(ctrlName)
 
 // now before binning, sort the data
 
-	//this is slow - undoing the sorting and starting over, but if you don't,
+	//MakeIndex is REALLY SLOW - this is slow - to allow undoing the sorting and starting over, but if you don't,
 	// you'll never be able to undo the sort
+	//
+	//
+	// for a 500 MB hst, MakeIndex = 83s, everything else in this function totalled < 5s
 	//
 	SetDataFolder root:Packages:NIST:Event:
 
 	if(WaveExists($"root:Packages:NIST:Event:OscSortIndex") == 0 )
 		Duplicate/O rescaledTime OscSortIndex
+//		tic()
 		MakeIndex rescaledTime OscSortIndex
+//		toc()
+//		tic()
 		IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime	
+//		toc()
 		//SetDataFolder root:Packages:NIST:Event
+//		tic()
 		IndexForHistogram(xLoc,yLoc,binnedData)			// index the events AFTER sorting
+//		toc()
 		//SetDataFolder root:
 	Endif
 	
 	Wave index = root:Packages:NIST:Event:SavedIndex		//this is the histogram index
 
+//	tic()
 	for(ii=0;ii<nslices;ii+=1)
 		if(ii==0)
 //			t1 = ii*del
@@ -633,6 +649,7 @@ Function Osc_ProcessEventLog(ctrlName)
 		binCount[ii] = sum(tmpData,-inf,inf)
 	endfor
 
+//	toc()
 	Duplicate/O slicedData,root:Packages:NIST:Event:dispsliceData,root:Packages:NIST:Event:logSlicedData
 	Wave logSlicedData = root:Packages:NIST:Event:logSlicedData
 	logslicedData = log(slicedData)
@@ -991,7 +1008,15 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	endif
 
 // MODE_TISANE
-
+//TODO -- tisane doesn't do anything different than oscillatory. Is this really correct??
+	if(mode == MODE_TISANE)		// TISANE mode - don't adjust the times, we get periodic t0 to reset t=0
+		Duplicate/O timePt rescaledTime
+		rescaledTime *= 1e-7			//convert to seconds and that's all
+		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
+	
+		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
+	endif
+	
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
@@ -1274,7 +1299,10 @@ Function LoadEvents()
 
 	totBytes = V_logEOF
 	Print "total bytes = ", totBytes
-	
+	if(EventDataType(filePathStr) != 1)		//if not hst extension of raw data
+		Abort "Data must be raw event data with file extension .hst for this operation"
+		return(0)
+	endif	
 //toc()
 //
 
@@ -1767,6 +1795,10 @@ Function LoadEvents_XOP()
 	totBytes = V_logEOF
 	Print "total bytes = ", totBytes
 	
+	if(EventDataType(filePathStr) != 1)		//if not hst extension of raw data
+		Abort "Data must be raw event data with file extension .hst for this operation"
+		return(0)
+	endif
 //
 //	Print "scan only"
 //	tic()
@@ -2435,7 +2467,7 @@ Function EC_SaveWavesButtonProc(ba) : ButtonControl
 			Wave timePt = timePt
 			Wave xLoc = xLoc
 			Wave yLoc = yLoc
-			Save/T xLoc,yLoc,timePt	,rescaledTime		//will ask for a name
+			Save/T xLoc,yLoc,timePt,rescaledTime		//will ask for a name
 			
 			SetDataFolder root:
 			break
@@ -2463,8 +2495,14 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 			
 			// load in the waves, saved as Igor text to preserve the data type
 			PathInfo/S catPathName		//should set the next dialog to the proper path...
-			LoadWave/T/O/P=catPathName
-			filePathStr = S_fileName
+			filePathStr = PromptForPath("Pick the edited event data")
+			if(EventDataType(filePathStr) != 2)		//if not itx extension of edited data
+				Abort "Data must be edited data with file extension .itx for this operation"
+				return(0)
+			endif
+			LoadWave/T/O/P=catPathName filePathStr
+//			filePathStr = S_fileName
+
 			if(strlen(S_fileName) == 0)
 				//user cancelled
 				DoAlert 0,"No file selected, nothing done."
@@ -3046,7 +3084,7 @@ Function/S fSplitBigFile(splitSize, baseStr)
 //	baseStr = "split"
 	
 	for(ii=0;ii<numSplit;ii+=1)
-		outStr = (thePath+baseStr+num2str(ii))
+		outStr = (thePath+baseStr+num2str(ii)+".hst")
 //		Print "outStr = ",outStr
 		Open outRef as outStr
 
@@ -3056,13 +3094,13 @@ Function/S fSplitBigFile(splitSize, baseStr)
 		endfor
 
 		Close outRef
-//		listStr += outStr+";"
-		listStr += baseStr+num2str(ii)+";"
+//		listStr += outStr+";"		//no, this is the FULL path
+		listStr += baseStr+num2str(ii)+".hst"+";"
 	endfor
 
 	Make/O/B/U/N=(frac) leftover
 	// ii was already incremented past the loop
-	outStr = (thePath+baseStr+num2str(ii))
+	outStr = (thePath+baseStr+num2str(ii)+".hst")
 	Open outRef as outStr
 	for(jj=0;jj<num;jj+=1)
 		FBinRead refNum,aBlob
@@ -3073,7 +3111,7 @@ Function/S fSplitBigFile(splitSize, baseStr)
 
 	Close outRef
 //	listStr += outStr+";"
-	listStr += baseStr+num2str(ii)+";"
+	listStr += baseStr+num2str(ii)+".hst"+";"
 
 	FSetPos refNum,V_logEOF
 	Close refNum
@@ -3126,25 +3164,45 @@ Function AccumulateSlicesButton(ctrlName) : ButtonControl
 	return(0)
 End
 
-Function AccumulateSlices(mode)
-	Variable mode
+// added an extra (optional) parameter for silent operation - to be used when a list of
+// files are processed - so the user can walk away as it works. Using the buttons from the
+// panel will still present the alerts
+//
+Function AccumulateSlices(mode,[skipAlert])
+	Variable mode,skipAlert
 	
+	if(ParamIsDefault(skipAlert))
+		skipAlert = 0
+	endif
 	SetDataFolder root:Packages:NIST:Event:
 
 	switch(mode)	
 		case 0:
-			DoAlert 0,"The current data has been copied to the accumulated set. You are now ready to add more data."
+			if(!skipAlert)
+				DoAlert 0,"The current data has been copied to the accumulated set. You are now ready to add more data."
+			endif
 			KillWaves/Z accumulatedData
-			Duplicate/O slicedData accumulatedData		
+			Duplicate/O slicedData accumulatedData	
+			KillWaves/Z accum_BinCount		// the accumulated BinCount
+			Duplicate/O binCount accum_binCount	
 			break
 		case 1:
-			DoAlert 0,"The current data has been added to the accumulated data. You can add more data."
+			if(!skipAlert)
+				DoAlert 0,"The current data has been added to the accumulated data. You can add more data."
+			endif
 			Wave acc=accumulatedData
 			Wave cur=slicedData
 			acc += cur
+			Wave binCount = binCount
+			Wave accum_binCount = accum_BinCount
+			accum_BinCount += binCount
+			binCount = accum_binCount			// !! NOTE - the bin count wave is now the total
+//			AccumulateSlices(2,skipAlert=skipAlert)						// and a recursive call to show the total!
 			break
 		case 2:
-			DoAlert 0,"The accumulated data is now the display data and is ready for display or export."
+			if(!skipAlert)
+				DoAlert 0,"The accumulated data is now the display data and is ready for display or export."
+			endif
 			Duplicate/O accumulatedData slicedData
 			// do something to "touch" the display to force it to update
 			NVAR gLog = root:Packages:NIST:Event:gEvent_logint
@@ -3412,7 +3470,8 @@ Function Stream_LoadDecim(ctrlName)
 	String ctrlName
 	
 	Variable fileref
-
+	Variable num,ii
+	
 	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
 	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
 
@@ -3443,14 +3502,20 @@ Function Stream_LoadDecim(ctrlName)
 	
 
 	//loop through everything in the list
-	Variable num,ii
 	num = ItemsInList(listStr)
+	if(num == 0)
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return (0)
+	endif
 	
 	for(ii=0;ii<num;ii+=1)
 
 // (1) load the file, prepending the path		
 		filename = pathStr + StringFromList(ii, listStr  ,";")
-		
+		if(EventDataType(filename) != 1)		//if not hst extension of raw data
+			Abort "Data must be raw event data with file extension .hst for this operation"
+			return(0)
+		endif		
 
 #if (exists("EventLoadWave")==4)
 		LoadEvents_XOP()
@@ -3554,11 +3619,19 @@ Function Stream_LoadAdjustedList(ctrlName)
 	Variable num,ii
 	num = ItemsInList(listStr)
 	
+	if(num == 0)
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
+	endif
+	
 	for(ii=0;ii<num;ii+=1)
 
 // (1) load the file, prepending the path		
 		filename = pathStr + StringFromList(ii, listStr  ,";")
-		
+		if(EventDataType(filename) != 2)		//if not itx extension of edited data
+			Abort "Data must be edited data with file extension .itx for this operation"
+			return(0)
+		endif		
 		SetDataFolder root:Packages:NIST:Event:
 		LoadWave/T/O fileName
 
@@ -3634,8 +3707,11 @@ Function Stream_LoadAdjList_BinOnFly(ctrlName)
 	//loop through everything in the list
 	Variable num,ii,jj
 	num = ItemsInList(listStr)
-
-
+	if(num == 0)
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
+	endif
+	
 ////////////////
 // declarations for the binning
 // for the first pass, do all of this
@@ -3678,7 +3754,10 @@ Function Stream_LoadAdjList_BinOnFly(ctrlName)
 
 // (1) load the file, prepending the path		
 		filename = pathStr + StringFromList(jj, listStr  ,";")
-		
+		if(EventDataType(filename) != 2)		//if not itx extension of edited data
+			Abort "Data must be edited data with file extension .itx for this operation"
+			return(0)
+		endif		
 		SetDataFolder root:Packages:NIST:Event:
 		LoadWave/T/O fileName
 
@@ -3824,3 +3903,268 @@ Function HSTName2Num(str)
 	return(num)
 end
 /////////////////////////////
+
+Proc GetListofITXorSplitFiles(searchStr)
+	String searchStr = ".itx"
+	ShowList_ToLoad("")
+	GetListofITXHST(searchStr)
+end
+
+// needs SANS_Utilites.ipf
+Function GetListofITXHST(searchStr)
+	String searchStr
+	
+	String fullList = IndexedFile(catpathName, -1, "????" )
+	
+	// list is currently everything -- trim it
+	searchStr = "*" + searchStr + "*"
+	String list = ListMatch(fullList, searchStr )
+	
+	Print "searchString = ",searchStr
+	//
+	Wave/T tw = root:Packages:NIST:Event:SplitFileWave
+	List2TextWave(list,tw)
+	Sort/A tw,tw			//alphanumeric sort
+	Edit tw
+	return(0)
+End
+
+//
+// loads a list of files that have been adjusted and saved
+// -- MUST run one through first manually to set the bin sapcing, then this
+//    won't touch that, just process all of the files
+// -- bins as they are loaded
+//
+Function Osc_LoadAdjList_BinOnFly(ctrlName)
+	String ctrlName
+	
+	Variable fileref
+
+	SVAR filename = root:Packages:NIST:Event:gEvent_logfile
+	SVAR listStr = root:Packages:NIST:Event:gSplitFileList
+
+	String pathStr,fileStr,tmpStr
+	PathInfo catPathName
+	pathStr = S_Path
+
+// if "Osc" mode is not checked - abort
+	NVAR gEventModeRadioVal= root:Packages:NIST:Event:gEvent_mode
+	if(gEventModeRadioVal != MODE_OSCILL)
+		Abort "The mode must be 'Oscillatory' to use this function"
+		return(0)
+	endif
+
+// if the list has been edited, turn it into a list
+	WAVE/T/Z tw = root:Packages:NIST:Event:SplitFileWave
+	if(WaveExists(tw))
+		listStr = TextWave2SemiList(tw)
+	else
+		ShowSplitFileTable()
+		DoAlert 0,"Enter the file names in the table, then click 'Load From List' again."
+		return(0)
+	endif
+	
+
+	//loop through everything in the list
+	Variable num,ii,jj
+	num = ItemsInList(listStr)
+
+//handle the first file differently
+//(1) load (import edited)
+	jj=0
+	filename = pathStr + StringFromList(jj, listStr  ,";")
+	if(EventDataType(filename) != 2)		//if not itx extension of edited data
+		Abort "Data must be edited data with file extension .itx for this operation"
+		return(0)
+	endif
+	
+	SetDataFolder root:Packages:NIST:Event:
+	LoadWave/T/O fileName
+	SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root: ??
+
+	// clear out the old sort index, if present, since new data is being loaded
+	KillWaves/Z OscSortIndex	
+	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
+	sprintf tmpStr, "%s: a user-modified event file\r",StringFromList(jj, listStr  ,";")
+	dispStr = tmpStr	
+	
+//(2) bin
+	Osc_ProcessEventLog("")
+	
+//(3) display bin details
+	Execute "ShowBinTable()"
+	Execute "BinEventBarGraph()"
+	
+//(4) add first
+	AccumulateSlices(0,skipAlert=1)		//bypass the dialog
+
+	// with remaining files
+	// load
+	// bin
+	// add next
+
+// start w/file 1, since "0th" file was already processed
+	for(jj=1;jj<num;jj+=1)
+	
+	//(1) load (import edited)
+		filename = pathStr + StringFromList(jj, listStr  ,";")
+		if(EventDataType(filename) != 2)		//if not itx extension of edited data
+			Abort "Data must be edited data with file extension .itx for this operation"
+			return(0)
+		endif
+		SetDataFolder root:Packages:NIST:Event:
+		LoadWave/T/O fileName
+		SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root: ??
+	
+		// clear out the old sort index, if present, since new data is being loaded
+		KillWaves/Z OscSortIndex	
+		SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
+		sprintf tmpStr, "%s: a user-modified event file\r",StringFromList(jj, listStr  ,";")
+		dispStr = tmpStr	
+		
+	//(2) bin
+		Osc_ProcessEventLog("")
+		
+	//(3) display bin details
+		Execute "ShowBinTable()"
+		Execute "BinEventBarGraph()"
+		
+	//(4) add next
+		AccumulateSlices(1,skipAlert=1)
+	
+	endfor  //end loop over the file list
+
+	
+	//display total
+	AccumulateSlices(2,skipAlert=1)
+
+	// let user know we're done
+	DoAlert 0,"The list has been processed and is ready for export"
+	SetDataFolder root:
+
+	return(0)
+End
+
+
+//returns 0 for unknown data
+// 1 for raw hst files
+// 2 for edited ITX files
+//
+//  TODO
+//  -- currently, this blindly assumes an .hst extension for raw HST data, and .itx for edited data
+//
+Function EventDataType(filename)
+	string filename
+	
+	Variable type
+	Variable offset = strsearch(filename,".",Inf,1)		//work backwards
+	String extension = filename[offset+1,strlen(filename)-1]
+	//Print extension
+	type = 0
+	if(cmpstr(extension,"hst") == 0)
+		type = 1
+	endif
+	if(cmpstr(extension,"itx") == 0)
+		type = 2
+	endif
+	return(type)
+end
+
+////////////
+// this could be jazzed up quite a bit, but it is a first pass at
+// figuring out what is going on with the events
+//
+Proc DecodeBinaryEvents(numToPrint)
+	Variable numToPrint=10
+	
+	DecodeEvents(numToPrint)
+end
+
+//	sscanf %x takes hex input and gives a real value output
+// printf %d val gives the integer representation of the sscanf output
+// printf %b val gives the binary representation.
+Function DecodeEvents(numToPrint)
+	Variable numToPrint
+
+	String filePathStr,buffer
+	Variable fileRef,type,dataval,num0,num1,num2,num3
+	Variable numT0,numPP,numZero,numXYevents,bit29
+	Variable ii
+
+	ii=0
+	Open/R fileref
+	tic()
+	do
+		do
+			FReadLine fileref, buffer			//skip the "blank" lines that have one character
+		while(strlen(buffer) == 1)		
+
+		if (strlen(buffer) == 0)
+			break
+		endif
+		
+		sscanf buffer,"%x",dataval
+		if(ii<numToPrint)
+			printf "%s  %0.32b  ",buffer[0,7],dataval
+		endif
+		
+		// two most sig bits (31-30)
+		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
+
+		if(ii<numToPrint)
+			printf "%0.2b  ",type
+		endif
+						
+		if(type == 0)
+			num0 += 1
+			numXYevents += 1
+		endif
+		if(type == 2)
+			num2 += 1
+			numXYevents += 1
+		endif
+		if(type == 1)
+			num1 += 1
+		endif
+		if(type == 3)
+			num3 += 1
+		endif	
+		
+		bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+		if(ii<numToPrint)
+			printf "%0.1b  ",bit29
+		endif
+				
+		if(type==0 || type==2)
+			numPP += round(bit29)
+		endif
+		
+		if(type==1 || type==3)
+			numT0 += round(bit29)
+		endif
+		
+		if(dataval == 0)
+			numZero += 1
+		endif
+		
+		if(ii<numToPrint)
+			printf "\r"
+			ii += 1
+		endif
+		
+	while(1)
+	Close fileref
+toc()
+
+	Print "(Igor) numT0 = ",numT0	
+	Print "num0 = ",num0	
+	Print "num1 = ",num1	
+	Print "num2 = ",num2	
+	Print "num3 = rollover = ",num3
+	Print "numXY = ",numXYevents
+	Print "numZero = ",numZero
+	Print "numPP = ",numPP
+	
+	return(0)
+
+End

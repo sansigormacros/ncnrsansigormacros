@@ -79,14 +79,31 @@ Proc Init_FileList()
 		Variable/G checkForFiles=1		//set to true initially
 		
 		// always turn off file checking for me
-		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"s*ine"))		//zero for me
-		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"ajj"))		//and zero for me
-		checkForFiles = !(stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"andrewjackson"))		//and zero for me
-		
+		if( stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"s*ine") )
+			checkforfiles = 0
+		endif
+		if( stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"ajj") )
+			checkforfiles = 0
+		endif
+		if( stringmatch(ParseFilePath(0,SpecialDirPath("Desktop",0,0,0),":",1,1),"andrewjackson") )
+			checkforfiles = 0
+		endif
+
 		// turn off file checking if the proper alias to the NCNR procedures is there
 		PathInfo igor
 		NewPath/O/Q tmpUPPath S_Path + "User Procedures"  
 		String fileList = IndexedFile(tmpUPPath,-1,"????")
+		if(strsearch(fileList, "NCNR_User_Procedures", 0  , 2) != -1)	//ignore case
+			checkforfiles = 0
+			Print "found the proper procedures"
+		endif
+
+	// check the Documents:WaveMetrics:IP: UP folder (always writeable)
+	//	print SpecialDirPath("Igor Pro User Files",0,0,0)
+	//	Macintosh HD:Users:srkline:Documents:WaveMetrics:Igor Pro 7 User Files:
+	
+		NewPath/O/Q tmpUPPath  SpecialDirPath("Igor Pro User Files",0,0,0) + "User Procedures" 
+		fileList = IndexedFile(tmpUPPath,-1,"????")
 		if(strsearch(fileList, "NCNR_User_Procedures", 0  , 2) != -1)	//ignore case
 			checkforfiles = 0
 			Print "found the proper procedures"
