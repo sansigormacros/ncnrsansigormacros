@@ -1429,10 +1429,36 @@ Function V_getDet_IntegratedCount(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
+// only return value for B and L/R detectors. everything else returns zero
 Function V_getDet_LateralOffset(fname,detStr)
 	String fname,detStr
 
+	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+		return(0)
+	endif	
+	
 	String path = "entry:instrument:detector_"+detStr+":lateral_offset"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+// only return values for T/B. everything else returns zero
+Function V_getDet_VerticalOffset(fname,detStr)
+	String fname,detStr
+
+	if(cmpstr(detStr,"B") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+		return(0)
+	endif	
+	
+	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
@@ -1457,12 +1483,6 @@ Function V_getDet_TBSetback(fname,detStr)
 	
 End
 
-//Function V_getDet_VerticalOffset(fname,detStr)
-//	String fname,detStr
-//
-//	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
-//	return(V_getRealValueFromHDF5(fname,path))
-//End
 
 
 //// only defined for the "B" detector, and only to satisfy NXsas
@@ -1505,13 +1525,13 @@ End
 //	return(V_getRealValueFromHDF5(fname,path))
 //End
 
-Function/S V_getDetType(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:instrument:detector_"+detStr+":type"
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
+//Function/S V_getDetType(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:instrument:detector_"+detStr+":type"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
 
 Function V_getDet_x_pixel_size(fname,detStr)
 	String fname,detStr
@@ -1540,17 +1560,17 @@ Function V_getDet_numberOfTubes(fname,detStr)
 	endif
 End
 
-// TODO -- be clear on how this is defined. Separation as defined from what point? Units?
-Function V_getDetPanelSeparation(fname,detStr)
-	String fname,detStr
-
-	String path = "entry:instrument:detector_"+detStr+":separation"
-	if(cmpstr(detStr,"B") == 0)
-		return(0)
-	else
-		return(V_getRealValueFromHDF5(fname,path))
-	endif
-End
+// this has been deleted from the definition
+//Function V_getDetPanelSeparation(fname,detStr)
+//	String fname,detStr
+//
+//	String path = "entry:instrument:detector_"+detStr+":separation"
+//	if(cmpstr(detStr,"B") == 0)
+//		return(0)
+//	else
+//		return(V_getRealValueFromHDF5(fname,path))
+//	endif
+//End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
@@ -1687,6 +1707,8 @@ End
 
 
 ///////  sample_aperture (1) (data folder)
+// this is the INTERNAL sample aperture
+//
 Function/S V_getSampleAp_Description(fname)
 	String fname
 
@@ -1737,6 +1759,7 @@ End
 
 
 ///////  sample_aperture_2 (data folder)
+// sample aperture (2) is the external paerture, which may or may not be present
 
 Function/S V_getSampleAp2_Description(fname)
 	String fname

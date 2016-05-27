@@ -55,20 +55,20 @@ End
 Proc MaskEditorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
-	NewPanel /W=(662,418,1586,960)/N=MaskEditPanel/K=1
+	NewPanel /W=(662,418,1300,960)/N=MaskEditPanel	 /K=1
 //	ShowTools/A
 	
 	PopupMenu popup_0,pos={20,50},size={109,20},proc=SetMaskPanelPopMenuProc,title="Detector Panel"
-	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
+	PopupMenu popup_0,mode=1,popvalue="FT",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
-	PopupMenu popup_2,mode=1,popvalue="VCALC",value= #"\"RAW;SAM;VCALC;\""
-		
-//	Button button_0,pos={486,20},size={80,20},proc=DetFitGuessButtonProc,title="Guess"
-//	Button button_1,pos={615,20},size={80,20},proc=DetFitButtonProc,title="Do Fit"
-//	Button button_2,pos={744,20},size={80,20},proc=DetFitHelpButtonProc,title="Help"
-//	Button button_3,pos={615,400},size={110,20},proc=WriteCtrButtonProc,title="Write Centers"
-//	Button button_4,pos={730,400},size={110,20},proc=CtrTableButtonProc,title="Ctr table"
-//	Button button_5,pos={730,440},size={110,20},proc=WriteCtrTableButtonProc,title="Write table"
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
+
+	SetVariable setvar0,pos={247.00,20.00},size={150.00,14.00},title="tube number"
+	SetVariable setvar0,limits={0,128,1},value= _NUM:0
+	Button button_0,pos={249.00,46.00},size={50.00,20.00},proc=AddToMaskButtonProc,title="Add"
+	Button button_1,pos={309.00,46.00},size={50.00,20.00},proc=RemoveFromMaskButtonProc,title="Del"
+	Button button_2,pos={389.00,46.00},size={90.00,20.00},proc=ToggleMaskButtonProc,title="Toggle"
+	Button button_3,pos={489.00,46.00},size={80.00,20.00},proc=SaveMaskButtonProc,title="Save"
 
 // TODO -- need buttons for save? quit?
 // setVariable to add a row to the mask, column to the mask, toggle the mask on/off to see what's
@@ -76,19 +76,99 @@ Proc MaskEditorPanel() : Panel
 
 
 // TODO - get rid of the hard-wired panel choice
-	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL curDispPanel
+//	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL curDispPanel
+	Make/O/D/N=(48,128) curDispPanel		//will this work?
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 
 	// draw the correct images
 	//draw the detector panel
-	DrawPanelToMask("FL")
+	DrawPanelToMask("FT")
 	
 	// overlay the current mask
-	V_OverlayMask("FL",1)
+	V_OverlayMask("FT",1)
 //	OverlayMaskPanel("FL")
 
 EndMacro
+
+
+Function ToggleMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String str=S_Value
+
+			wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
+			
+			CheckDisplayed/W=MaskEditPanel#DetData overlay
+			Variable state = !(V_flag)		//if V_flag == 0, then set to 1 (and vice versa)
+			V_OverlayMask(str,state)
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function AddToMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			ControlInfo popup_0
+			String str=S_Value
+			
+			wave/Z maskData = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
+			
+			Variable val
+			ControlInfo setvar0
+			val = V_Value
+			maskData[val][] = 1
+			
+			V_OverlayMask(str,1)
+			
+//			Print "add tube to mask"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function RemoveFromMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			ControlInfo popup_0
+			String str=S_Value
+			
+			wave/Z maskData = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
+			
+			Variable val
+			ControlInfo setvar0
+			val = V_Value
+			maskData[val][] = 0
+			
+			V_OverlayMask(str,1)			
+//			Print "remove tube from mask"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 //
 // function to choose which detector panel to display, and then to actually display it
@@ -199,7 +279,7 @@ Function DrawPanelToMask(str)
 	endif
 	
 
-	Variable scale = 5
+	Variable scale = 10
 	
 	// common values (panel position, etc)
 	// TODO -- units are absolute, based on pixels in cm. make sure this is always correct
@@ -288,50 +368,82 @@ Function V_OverlayMask(str,state)
 
 	String maskPath = "root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data"
 	if(WaveExists($maskPath) == 1)
-		//duplicate the mask, which is named "data"
-		wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
-
-		Duplicate/O maskW $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
-		wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
-
-		Redimension/D overlay
-		SetScale/P x 0,1, overlay
-		SetScale/P y 0,1, overlay
+		if(state == 1)
+			//duplicate the mask, which is named "data"
+			wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
 	
-		String tempStr = "root:Packages:NIST:MSK:overlay"
-		overlay = (maskW == 1) ? 1 : NaN
-//		ResetLoop(tempStr)		//keeps 1's and sets 0's to NaN
+			Duplicate/O maskW $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
+	
+			Redimension/D overlay
+			SetScale/P x 0,1, overlay
+			SetScale/P y 0,1, overlay
+		
+			String tempStr = "root:Packages:NIST:MSK:overlay"
+	//		overlay = (maskW == 1) ? 1 : NaN			//no need to do this - simply adjust the coloring
+	
+			CheckDisplayed/W=MaskEditPanel#DetData overlay
+			if(V_flag==0)		//so the overlay doesn't get appended more than once
+				AppendImage/W=MaskEditPanel#DetData overlay
+				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
+		//		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
+			endif
+		endif
 
-		AppendImage/W=MaskEditPanel#DetData overlay
-		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
-
-//	
-//		//check to see if mask overlay is currently displayed
-//		DoWindow SANS_Data
-//		if(V_flag==0)
-//			return(0)
-//		endif
-//		
-//		CheckDisplayed/W=SANS_Data root:Packages:NIST:MSK:overlay
-//		//Print "V_flag = ",V_flag
-//	
-//		If(V_Flag == 1)		//overlay is present
-//			if(state==0)
-//				RemoveImage overlay
-//			endif		//don't need to do anything if we want to keep the mask
-//		Else		//overlay is not present
-//			if(state==1)
-//				//append the new overlay
-//				AppendImage/L=left/B=bottom root:Packages:NIST:MSK:overlay
-//				//set the color table to vary from 0 to * (=max data = 1), with blue maximum
-//				//Nan's will appear transparent (just a general feature of images)
-//				ModifyImage/W=SANS_Data overlay ctab={0,*,BlueRedGreen,0}
-//			endif		//don't do anything if we don't want the overlay
-//		Endif
-//		
+		if(state == 0)
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
+			CheckDisplayed/W=MaskEditPanel#DetData overlay
+//			Print "V_flag = ",V_flag
+	
+			If(V_Flag == 1)		//overlay is present
+				RemoveImage/W=MaskEditPanel#DetData overlay
+			endif
+		endif
 	Endif
 	
 	return(0)
+End
+
+
+Function SaveMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			Execute "H_Setup_VSANS_MASK_Structure()"
+			
+			// fill with current "stuff"
+				SetDataFolder root:VSANS_MASK_file:entry	
+			Wave/T title	= title
+			title = "This is a custom MASK file for VSANS"
+			SetDataFolder root:
+			
+			
+		// copy over for all of the detector panels
+
+			Variable ii
+			String str
+			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+				str = StringFromList(ii, ksDetectorListAll, ";")
+				Wave det_str = $("root:VSANS_MASK_file:entry:instrument:detector_"+str+":data")	
+				wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")			
+				det_str = maskW
+			endfor
+
+			//save it
+//			String fileName = "ThisIsAMASK"
+
+			Execute "Save_VSANS_MASK_Nexus()"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	SetDataFolder root:
+	return 0
 End
 
 

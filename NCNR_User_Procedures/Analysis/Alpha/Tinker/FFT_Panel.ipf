@@ -111,7 +111,7 @@ Proc FFT_Panel()
 	Button FFTButton_14a,pos={180,360},size={130,20},proc=FFT_PlotResultsButtonProc,title="Plot SLD Results"
 
 	SetVariable FFTSetVar_4,pos={7,47},size={100,15},title="FFT time(s)"
-	SetVariable FFTSetVar_4,limits={0,0,0},value= FFT_estTime,noedit= 1,live= 1,format="%d"
+	SetVariable FFTSetVar_4,limits={0,0,0},value= FFT_estTime,noedit= 1,live= 1,format="%g"
 	Button FFTButton_9,pos={200,400},size={100,20},proc=FFT_Get2DSlice,title="Get 2D Slice"
 
 	Button FFTButton_19,pos={168,150},size={130,20},proc=FFT_ChangeMatrixValuesButton,title="Replace Voxels"

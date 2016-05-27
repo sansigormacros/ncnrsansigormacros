@@ -46,7 +46,7 @@ End
 Proc DrawMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	DrawMask()
+	Edit_a_Mask()
 End
 
 

@@ -3907,16 +3907,61 @@ Function V_writeDet_IntegratedCount(fname,detStr,val)
 	return(err)
 End
 
+// this is only written for B and L/R detectors
 Function V_writeDet_LateralOffset(fname,detStr,val)
 	String fname,detStr
 	Variable val
 
 //	String path = "entry:instrument:detector_"+detStr+":lateral_offset"
-	
+
+	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+		return(0)
+	endif	
+		
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/detector_"+detStr	
 	String varName = "lateral_offset"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
+
+
+// this is only written for T/B detectors
+Function V_writeDet_VerticalOffset(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
+
+	if(cmpstr(detStr,"B") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0)
+		return(0)
+	endif
+	if(cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+		return(0)
+	endif	
+		
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/detector_"+detStr	
+	String varName = "vertical_offset"
 	wTmpWrite[0] = val
 
 	variable err
@@ -3971,32 +4016,6 @@ Function V_writeDet_TBSetback(fname,detStr,val)
 End
 
 
-	
-
-//Function V_writeDet_VerticalOffset(fname,detStr,val)
-//	String fname,detStr
-//	Variable val
-//
-////	String path = "entry:instrument:detector_"+detStr+":vertical_offset"
-//	
-//	Make/O/D/N=1 wTmpWrite
-////	Make/O/R/N=1 wTmpWrite
-//	String groupName = "/entry/instrument/detector_"+detStr	
-//	String varName = "vertical_offset"
-//	wTmpWrite[0] = val
-//
-//	variable err
-//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-//	if(err)
-//		Print "HDF write err = ",err
-//	endif
-//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-////	err = V_KillNamedDataFolder(fname)
-////	if(err)
-////		Print "DataFolder kill err = ",err
-////	endif
-//	return(err)
-//End
 
 //// only defined for the "B" detector, and only to satisfy NXsas
 //Function V_writeDet_polar_angle(fname,detStr,val)
@@ -4109,30 +4128,30 @@ End
 //	return(err)
 //End
 
-Function V_writeDetType(fname,detStr,str)
-	String fname,detStr,str
-
-//	String path = "entry:instrument:detector_"+detStr+":type"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/detector_"+detStr	//	
-	String varName = "type"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//Function V_writeDetType(fname,detStr,str)
+//	String fname,detStr,str
+//
+////	String path = "entry:instrument:detector_"+detStr+":type"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/detector_"+detStr	//	
+//	String varName = "type"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
 
 Function V_writeDet_x_pixel_size(fname,detStr,val)
 	String fname,detStr
@@ -4216,35 +4235,35 @@ Function V_writeDet_numberOfTubes(fname,detStr,val)
 	endif
 End
 
-// TODO -- be clear on how this is defined. Separation as defined from what point? Units?
-Function V_writeDetPanelSeparation(fname,detStr,val)
-	String fname,detStr
-	Variable val
-
-//	String path = "entry:instrument:detector_"+detStr+":separation"
-	if(cmpstr(detStr,"B") == 0)
-		return(0)
-	else
-	
-		Make/O/D/N=1 wTmpWrite
-	//	Make/O/R/N=1 wTmpWrite
-		String groupName = "/entry/instrument/detector_"+detStr	
-		String varName = "separation"
-		wTmpWrite[0] = val
-
-		variable err
-		err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-		if(err)
-			Print "HDF write err = ",err
-		endif
-		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//		err = V_KillNamedDataFolder(fname)
+// deleted from definition
+//Function V_writeDetPanelSeparation(fname,detStr,val)
+//	String fname,detStr
+//	Variable val
+//
+////	String path = "entry:instrument:detector_"+detStr+":separation"
+//	if(cmpstr(detStr,"B") == 0)
+//		return(0)
+//	else
+//	
+//		Make/O/D/N=1 wTmpWrite
+//	//	Make/O/R/N=1 wTmpWrite
+//		String groupName = "/entry/instrument/detector_"+detStr	
+//		String varName = "separation"
+//		wTmpWrite[0] = val
+//
+//		variable err
+//		err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //		if(err)
-//			Print "DataFolder kill err = ",err
+//			Print "HDF write err = ",err
 //		endif
-		return(err)
-	endif
-End
+//		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////		err = V_KillNamedDataFolder(fname)
+////		if(err)
+////			Print "DataFolder kill err = ",err
+////		endif
+//		return(err)
+//	endif
+//End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
