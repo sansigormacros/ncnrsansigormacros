@@ -55,11 +55,19 @@ Proc Init_FileList()
 	NewDataFolder/O root:Packages:NIST
 	
 	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+		if(IgorVersion() >= 7)
+			String/G root:Packages:NIST:gAngstStr = num2char(8491)
+		else
+			String/G root:Packages:NIST:gAngstStr = num2char(-127)
+		endif
 //		Variable/G root:myGlobals:gIsMac = 1
 	else
 		//either Windows or Windows NT
-		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+		if(IgorVersion() >= 7)
+			String/G root:Packages:NIST:gAngstStr = num2char(8491)
+		else
+			String/G root:Packages:NIST:gAngstStr = num2char(-59)
+		endif
 //		Variable/G root:myGlobals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"

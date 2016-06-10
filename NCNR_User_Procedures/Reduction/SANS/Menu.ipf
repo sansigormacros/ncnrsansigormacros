@@ -47,6 +47,7 @@ Menu "SANS"
 		"Event Mode Process Panel",Show_Event_Panel()
 		"Adjust Events",ShowEventCorrectionPanel()
 		"Create Custom Bins",Show_CustomBinPanel()
+		"Display Data For Slicing",DisplayForSlicing()
 		"-"
 		"Split Large File",SplitBigFile()
 		"Get List of ITX or Split Files",GetListofITXorSplitFiles()

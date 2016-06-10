@@ -156,6 +156,8 @@ Function A_PM_doNewGraph(DF)
 	String qStr,eStr,iStr
 	Variable rr,gg,bb
 	
+	SVAR angst = root:Packages:NIST:gAngstStr
+	
 	SetDataFolder $("root:"+DF)
 	//iStr will end in "i"
 	qStr = DF+"_q"
@@ -174,8 +176,8 @@ Function A_PM_doNewGraph(DF)
 	ModifyGraph tickUnit=1
 				
 	Label left "I(q)"
-	Label bottom "q (A\\S-1\\M)"
-	
+//	Label bottom "q (A\\S-1\\M)"
+	Label bottom "q ("+angst+"\\S-1\\M)"	
 	Legend
 	
 	SetDataFolder root:

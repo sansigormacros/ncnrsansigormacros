@@ -3396,7 +3396,7 @@ Function DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
 End
 
 
-Macro DisplayForSlicing()
+Proc DisplayForSlicing()
 
 	// plot the EventBarGraph?
 		SetDataFolder root:Packages:NIST:Event:

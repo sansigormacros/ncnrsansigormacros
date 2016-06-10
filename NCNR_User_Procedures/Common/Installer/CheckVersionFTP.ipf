@@ -93,7 +93,7 @@ Function OpenTracTicketPage()
 End
 
 Function OpenHelpMoviePage()
-	DoAlert 1,"Your web browser will open to a page where you can view help movies. OK? (You must have QuickTime installed)"
+	DoAlert 1,"Your web browser will open to a page where you can view help movies. OK?"
 	if(V_flag==1)
 //		BrowseURL "ftp://webster.ncnr.nist.gov/pub/sans/kline/movies/"
 		// Andrew has set up a http page too. Try to use this in the future

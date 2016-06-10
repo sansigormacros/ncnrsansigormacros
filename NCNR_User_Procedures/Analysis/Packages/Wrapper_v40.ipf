@@ -821,23 +821,26 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 			break
 			
 		endif
+
+// for Igor 7 -- add the flag /N=0 to force the curve fit to update at each iteration. Some loss in speed
+//   over the new default of no update, but the user can see what is happening.
 		
 		// now useCursors, useEps, and useConstr are all handled w/ /NWOK
 		// so there are only three conditions to test == 1 + 3 + 3 + 1 = 8 conditions
 		
 		if(useResol && useResiduals && useTextBox)		//do it all
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
 			break
 		endif
 		
 		if(useResol && useResiduals)		//res + resid
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /R /NWOK
 			break
 		endif
 
 		
 		if(useResol && useTextBox)		//res + text
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 			break
 		endif
 		
@@ -845,7 +848,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 //			Print "timing test for Cylinder_PolyRadius---"
 //			Variable t0 = stopMStimer(-2)
 
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /STRC=fs /NWOK
 			
 //			t0 = (stopMSTimer(-2) - t0)*1e-6
 //			Printf  "CylPolyRad fit time using res and eps and /NTHR=0 time = %g seconds\r\r",t0
@@ -867,24 +870,24 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 		
 /////	same as above, but all without useResol (no /STRC flag)
 		if(useResiduals && useTextBox)		//resid+ text
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
 			break
 		endif
 		
 		if(useResiduals)		//resid
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /R /NWOK
 			break
 		endif
 
 		
 		if(useTextBox)		//text
-			FuncFit/H=getHStr(hold) /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
+			FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 /TBOX=(tb) $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
 			break
 		endif
 		
 		//just a plain vanilla fit
 
-		FuncFit/H=getHStr(hold) /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
+		FuncFit/H=getHStr(hold) /N=0 /M=2 /NTHR=0 $funcStr cw, yw[pt1,pt2] /X=xw /W=sw /I=1 /E=eps /D=fitYw /C=constr /NWOK
 		
 	while(0)
 	
@@ -923,7 +926,9 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	ModifyGraph lsize(FitYw)=2,rgb(FitYw)=(0,0,0)
 	
 	DoUpdate		//force update of table and graph with fitted values (why doesn't this work? - the table still does not update)
-	
+
+// 	this is the top graph, and I do this in Igor 7 to force update of the infoBox and for the report to appear
+	DoWindow/F $(WinName(0,1))	
 	// report the results (to the panel?)
 	if(useGenCurveFit)
 		V_chisq = chi

@@ -996,9 +996,18 @@ Window Plot_2D_Controls()
 	Button button5,pos={164,85},size={120,20},proc=Plot2DFunctionButtonProc,title="Plot 2D Function"
 EndMacro
 
-
+//
+// in Igor 6, Gizmo windows are code 4096
+// in Igor 7, Gizmo windows are code 65536
+// need to check for version, since code 65536 is not allowed in Igor 6
+// 
+// this function returns only the topmost window from the list
 Function/S TopGizmoWindow()
-	Return(StringFromList(0,WinList("*",";","WIN:4096")))
+	if(IgorVersion() >= 7)
+		return(StringFromList(0,WinList("*",";","WIN:65536")))
+	else
+		return(StringFromList(0,WinList("*",";","WIN:4096")))
+	endif
 end
 
 ////
