@@ -108,6 +108,49 @@ Function V_KillNamedDataFolder(fname)
 	return(err)
 end
 
+// TODO:
+// -- this still does not quite work. If there are no sub folders present in the RawVSANS folder
+//    it still thinks there are (1) item there.
+// -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
+//    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
+//    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
+Function V_CleanOutRawVSANS()
+
+	SetDataFolder root:Packages:NIST:VSANS:RawVSANS:
+	
+	// get a list of the data folders there
+	// kill them all if possible
+	String list,item
+	Variable numFolders,ii,pt
+	
+	list = DataFolderDir(1)
+	// this has FOLDERS: at the beginning and is comma-delimited
+	list = list[8,strlen(list)]
+	pt = strsearch(list,";",inf,1)
+	list = list[0,pt-1]			//remove the ";\r" from the end of the string
+//	print list
+	
+	numFolders = ItemsInList(list , ",")
+//	Print List
+//	print strlen(list)
+
+	for(ii=0;ii<numFolders;ii+=1)
+		item = StringFromList(ii, list ,",")
+//		Print item
+		KillDataFolder/Z $(item)
+	endfor
+
+	list = DataFolderDir(1)
+	list = list[8,strlen(list)]
+	pt = strsearch(list,";",inf,1)
+	list = list[0,pt-1]
+	numFolders = ItemsInList(list, ",")
+	Printf "%g RawVSANS folders could not be killed\r",numFolders
+		
+	SetDataFolder root:
+	return(0)
+End
+
 //given a filename of a SANS data filename of the form
 // name.anything
 //returns the name as a string without the ".fbdfasga" extension
@@ -312,6 +355,9 @@ End
 // Increment should be -1 or 1
 // -1 => previous file
 // 1 => next file
+//
+// V_CheckIfRawData(fname)
+//
 Function/S V_GetPrevNextRawFile(curfilename, prevnext)
 	String curfilename
 	Variable prevnext
@@ -336,7 +382,7 @@ End
 //returns a string containing the full path to the file containing the 
 //run number "num". The null string is returned if no valid file can be found
 //the path "catPathName" used and is hard-wired, will abort if this path does not exist
-//the file returned will be a RAW SANS data file, other types of files are 
+//the file returned will be a RAW VSANS data file, other types of files are 
 //filtered out.
 //
 // called by Buttons.ipf and Transmission.ipf, and locally by parsing routines
@@ -398,6 +444,7 @@ Function/S V_FindFileFromRunNumber(num)
 					//check if RAW, if so,this must be the file!
 					isRAW = V_CheckIfRawData(fullName)
 					if(isRaw)
+						//print "is raw, ",fullname
 						//stop here
 						return(fullname)
 					Endif
@@ -410,20 +457,11 @@ Function/S V_FindFileFromRunNumber(num)
 End
 
 //
-// TODO -- for VSANS Nexus files, how do I quickly identify if a file is
+// TODO x- for VSANS Nexus files, how do I quickly identify if a file is
 //   RAW VSANS data? I don't want to generate any errors, but I want to quickly
 //   weed out the reduced data sets, etc. from file catalogs.
-//
-//function to test a binary file to see if it is a RAW binary SANS file
-//first checks the total bytes in the file (which for raw data is 33316 bytes)
-//**note that the "DIV" file will also show up as a raw file by the run field
-//should be listed in CAT/SHORT and in patch windows
-//
-//Function then checks the file fname (full path:file) for "RAW" run.type field
-//if not found, the data is not raw data and zero is returned
-//
-// called by many procedures (both external and local)
-//
+//	(check the instrument name...)
+
 // TODO -- as was written by SANS, this function is expecting fname to be the path:fileName
 // - but are the V_get() functions OK with getting a full path, and what do they
 //  do when they fail? I don't want them to spit up another open file dialog
@@ -435,8 +473,27 @@ Function V_CheckIfRawData(fname)
 	String testStr=""
 	
 	testStr = V_getInstrumentName(fname)
+
+	if(cmpstr(testStr,"NG3-VSANS") == 0)
+		//testStr exists, ASSUMING it's a raw VSANS data file
+		Return(1)
+	else
+		//some other file
+		Return(0)
+	Endif
+End
+
+// TODO -- need to fill in correctly by determining this from the INTENT field
+//
+Function V_isTransFile(fname)
+	String fname
 	
-	if(cmpstr(testStr,"") != 0)
+	Variable refnum,totalBytes
+	String testStr=""
+	
+//	testStr = V_getInstrumentName(fname)
+
+	if(cmpstr(testStr,"NG3-VSANS") == 0)		//wrong test
 		//testStr exists, ASSUMING it's a raw VSANS data file
 		Return(1)
 	else
@@ -637,3 +694,255 @@ Function/S V_RemoveAllSpaces(str)
 	Return(tempStr)
 		
 End
+
+// returns a list of raw data files in the catPathName directory on disk
+// - list is SEMICOLON-delimited
+//
+// TODO: decide how to do this...
+// (1)
+// checks each file in the directory to see if it is a RAW data file by
+// call to V_CheckIfRawData() which currently looks for the instrument name in the file.
+// -- CON - this is excruciatingly slow, and by checking a field in the file, has to load in the 
+//  ENTIRE data file, and will load EVERY file in the folder. ugh.
+//
+// (2)
+// as was done for VAX files, look for a specific string in the file name as written by the acquisition
+//  (was .saN), now key on ".nxs.ngv"?
+//
+// called by PatchFiles.ipf, Tile_2D.ipf
+//
+Function/S V_GetRawDataFileList()
+	
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use Pick Path button on Main Panel"
+	Endif
+	String path = S_Path
+	
+	String list=IndexedFile(catPathName,-1,"????")
+	String newList="",item="",validName="",fullName=""
+	Variable num=ItemsInList(list,";"),ii
+	
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+
+		validName = V_FindValidFileName(item)
+		if(strlen(validName) != 0)		//non-null return from FindValidFileName()
+			fullName = path + validName		
+
+	//method (1)			
+//			if(V_CheckIfRawData(item))
+//				newlist += item + ";"
+//			endif
+
+	//method (2)			
+			if( stringmatch(item,"*.nxs.ngv*") )
+				newlist += item + ";"
+			endif
+
+			
+		endif
+		//print "ii=",ii
+	endfor
+	newList = SortList(newList,";",0)
+	return(newList)
+End
+
+
+//the following is a WaveMetrics procedure from <StrMatchList>
+// MatchList(matchStr,list,sep)
+// Returns the items of the list whose items match matchStr
+// The lists are separated by the sep character, usually ";"
+//
+// matchStr may be something like "abc", in which case it is identical to CmpStr
+// matchStr may also be "*" to match anything, "abc*" to match anything starting with "abc",
+//	"*abc" to match anything ending with "abc".
+// matchStr may also begin with "!" to indicate a match to anything not matching the rest of
+// 	the pattern.
+// At most one "*" and one "!" are allowed in matchStr, otherwise the results are not guaranteed.
+//
+Function/S V_MyMatchList(matchStr,list,sep)
+	String matchStr,list,sep
+	String item,outList=""
+	Variable n=strlen(list)
+	Variable en,st=0
+	do
+		en= strsearch(list,sep,st)
+		if( en < 0 )
+			if( st < n-1 )
+				en= n	// no trailing separator
+				sep=""  // don't put sep in output, either
+			else
+				break	// no more items in list
+			endif
+		endif
+		item=list[st,en-1]
+		if( V_MyStrMatch(matchStr,item) == 0 )
+			outlist += item+sep
+		Endif
+		st=en+1	
+	while (st < n )	// exit is by break, above
+	return outlist
+End
+
+//the following is a WaveMetrics procedure from <StrMatchList>
+// StrMatch(matchStr,str)
+// Returns 0 if the pattern in matchStr matches str, else it returns 1
+//
+// matchStr may be something like "abc", in which case it is identical to CmpStr
+// matchStr may also be "*" to match anything, "abc*" to match anything starting with "abc",
+//	"*abc" to match anything ending with "abc".
+// matchStr may also begin with "!" to indicate a match to anything not matching the rest of
+// 	the pattern.
+// At most one "*" and one "!" are allowed in matchStr, otherwise the results are not guaranteed.
+//
+Function V_MyStrMatch(matchStr,str)
+	String matchStr,str
+	Variable match = 1		// 0 means match
+	Variable invert= strsearch(matchStr,"!",0) == 0
+	if( invert )
+		matchStr[0,0]=""	// remove the "!"
+	endif
+	Variable st=0,en=strlen(str)-1
+	Variable starPos= strsearch(matchStr,"*",0)
+	if( starPos >= 0 )	// have a star
+		if( starPos == 0 )	// at start
+			matchStr[0,0]=""				// remove star at start
+		else					// at end
+			matchStr[starPos,999999]=""	// remove star and rest of (ignored, illegal) pattern
+		endif
+		Variable len=strlen(matchStr)
+		if( len > 0 )
+			if(starPos == 0)	// star at start, match must be at end
+				st=en-len+1
+			else
+				en=len-1	// star at end, match at start
+			endif
+		else
+			str=""	// so that "*" matches anything
+		endif
+	endif
+	match= !CmpStr(matchStr,str[st,en])==0	// 1 or 0
+	if( invert )
+		match= 1-match
+	endif
+	return match
+End
+
+
+//input is a list of run numbers, and output is a list of filenames (not the full path)
+//*** input list must be COMMA delimited***
+//output is equivalent to selecting from the CAT table
+//if some or all of the list items are valid filenames, keep them...
+//if an error is encountered, notify of the offending element and return a null list
+//
+//output is COMMA delimited
+//
+// this routine is expecting that the "ask", "none" special cases are handled elsewhere
+//and not passed here
+//
+// called by Marquee.ipf, MultipleReduce.ipf, ProtocolAsPanel.ipf
+//
+Function/S ParseRunNumberList(list)
+	String list
+	
+	String newList="",item="",tempStr=""
+	Variable num,ii,runNum
+	
+	//expand number ranges, if any
+	list = V_ExpandNumRanges(list)
+	
+	num=itemsinlist(list,",")
+	
+	for(ii=0;ii<num;ii+=1)
+		//get the item
+		item = StringFromList(ii,list,",")
+		//is it already a valid filename?
+		tempStr=V_FindValidFilename(item) //returns filename if good, null if error
+		if(strlen(tempstr)!=0)
+			//valid name, add to list
+			//Print "it's a file"
+			newList += tempStr + ","
+		else
+			//not a valid name
+			//is it a number?
+			runNum=str2num(item)
+			//print runnum
+			if(numtype(runNum) != 0)
+				//not a number -  maybe an error			
+				DoAlert 0,"List item "+item+" is not a valid run number or filename. Please enter a valid number or filename."
+				return("")
+			else
+				//a run number or an error
+				tempStr = V_GetFileNameFromPathNoSemi( V_FindFileFromRunNumber(runNum) )
+				if(strlen(tempstr)==0)
+					//file not found, error
+					DoAlert 0,"List item "+item+" is not a valid run number. Please enter a valid number."
+					return("")
+				else
+					newList += tempStr + ","
+				endif
+			endif
+		endif
+	endfor		//loop over all items in list
+	
+	return(newList)
+End
+
+//takes a comma delimited list that MAY contain number range, and
+//expands any range of run numbers into a comma-delimited list...
+//and returns the new list - if not a range, return unchanged
+//
+// local function
+//
+Function/S V_ExpandNumRanges(list)
+	String list
+	
+	String newList="",dash="-",item,str
+	Variable num,ii,hasDash
+	
+	num=itemsinlist(list,",")
+//	print num
+	for(ii=0;ii<num;ii+=1)
+		//get the item
+		item = StringFromList(ii,list,",")
+		//does it contain a dash?
+		hasDash = strsearch(item,dash,0)		//-1 if no dash found
+		if(hasDash == -1)
+			//not a range, keep it in the list
+			newList += item + ","
+		else
+			//has a dash (so it's a range), expand (or add null)
+			newList += V_ListFromDash(item)		
+		endif
+	endfor
+	
+	return newList
+End
+
+//be sure to add a trailing comma to the return string...
+//
+// local function
+//
+Function/S V_ListFromDash(item)
+	String item
+	
+	String numList="",loStr="",hiStr=""
+	Variable lo,hi,ii
+	
+	loStr=StringFromList(0,item,"-")	//treat the range as a list
+	hiStr=StringFromList(1,item,"-")
+	lo=str2num(loStr)
+	hi=str2num(hiStr)
+	if( (numtype(lo) != 0) || (numtype(hi) !=0 ) || (lo > hi) )
+		numList=""
+		return numList
+	endif
+	for(ii=lo;ii<=hi;ii+=1)
+		numList += num2str(ii) + ","
+	endfor
+	
+	Return numList
+End
+

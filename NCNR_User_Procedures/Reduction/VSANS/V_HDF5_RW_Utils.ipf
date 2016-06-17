@@ -30,10 +30,11 @@ Proc LoadFakeDIVData()
 	V_LoadHDF5Data("","DIV")
 End
 
+// Moved to V_MaskUtils.ipf
 // passing null file string presents a dialog
-Proc LoadFakeMASKData()
-	V_LoadHDF5Data("","MSK")
-End
+//Proc LoadFakeMASKData()
+//	V_LoadHDF5Data("","MSK")
+//End
 
 // passing null file string presents a dialog
 Proc Read_HDF5_Raw_No_Attributes()
@@ -44,7 +45,7 @@ End
 // TODO:
 //  x- move the initialization of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
-// -- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
+// x- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
 //    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
 // DONE: x- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
@@ -176,7 +177,7 @@ End
 //
 // This is NOT CALLED anymore.
 // the rescaling (SetScale) of the data sets is still done separately to a "fake" beam center
-Function V_RedimFakeData()
+Function xV_RedimFakeData()
 	
 	// check for fake data in VCALC folder...
 	wave/Z tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B:det_B"

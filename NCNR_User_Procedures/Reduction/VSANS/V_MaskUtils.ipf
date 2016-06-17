@@ -1,7 +1,39 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+//
+// Mask utilities:
+// - loader
+// - simple editor
+// - save mask file
+// - assign mask file to data file
+//
+//
+//  this is (at first) to be a very simple editor to generate masks row/column wise, not drawing
+//  masks with arbitrary shape. 
+//
+// 
+//
 
+///// LOADING
+
+// TODO - when maks is loaded, need to be sure to clean up the "extra" waves that may be present
+//  - the overlay and the currentTube waves since these are not overwritten or killed when new mask 
+//  data is read in from HDF. need to manually? check for these and delete then, or the data and
+//  mask overlay will be out of sync.
+//
+
+
+// passing null file string presents a dialog
+// called from the Main Button " Read Mask"
+Proc LoadFakeMASKData()
+	V_LoadHDF5Data("","MSK")
+End
+
+
+
+//// DRAWING/SAVING
+//
 // TODO:
 // x- CHANGE the mask behavior to a more logical choice - and consistent with SANS
 //   x- CHANGE to:
@@ -10,26 +42,30 @@
 // x- and then make the corresponding changes in the I(Q) routines
 
 
-// also, move the mask generating utilities from VC_HDF5_Utils into this procedure - to keep
+// x- move the mask generating utilities from VC_HDF5_Utils into this procedure - to keep
 // all of the mask procedures together
 
 
+// TODO -- document the arrow keys moving the tube number and adding/deleting tubes from the mask
+//  this is done through a window hook function (LR moves tube number, up/down = add/delete)
 //
-// -- this is to be a very simple editor to generate masks row/column wise, not drawing
-//
+// TODO -- make the arrow keys Igor 6 compatible - search for specialKeyCode or Keyboard Events in the help file
+//     and what needs to be replaced for Igor 6
+// TODO -- for L/R panels, the maksing of columns should be sufficient. Tubes are vertical. For the T/B panels
+//         the L/R panels cast a vertical shadow (=vertical mask) AND the tubes are horizontal, so the individual
+//         tubes will likely need to be masked in a horizontal line too, per tube. ADD this in...
 
 
 //TODO
-// -- draw a mask
-// -- save a mask (all panels)
-// -- be able to save the mask name to the file
-// -- be able to read a mask based on what is in the data file
+// x- draw a mask
+// x- save a mask (all panels)
+// -- be able to save the mask name to the RAW data file
+// -- be able to read a mask based on what name is in the data file
 //
 // x- biggest thing now is to re-write the DrawDetPanel() routine from the beamCenter.ipf
 //    to do what this panel needs
 //
-// -- lots to clean up
-// -- add this to the list of includes, move the file to SVN, and add it.
+// x- add this to the list of includes, move the file to SVN, and add it.
 //
 // -- for working with VCALC -- maybe have an automatic generator (if val < -2e6, mask = 0)
 //    this can be checked column-wise to go faster (1st index)
@@ -37,13 +73,18 @@
 // x- re-write V_OverlayMask to make the "overlay" wave that has the NaNs, and then the drawing
 //    routines need to be aware of this
 
-Macro Edit_a_Mask()
+
+
+// called from the main button "Draw Mask"
+Proc Edit_a_Mask()
 	V_EditMask()
 end
 
 Function V_EditMask()
 	DoWindow/F MaskEditPanel
 	if(V_flag==0)
+		Variable/G root:Packages:NIST:VSANS:Globals:gMaskTube = 0
+		Variable/G root:Packages:NIST:VSANS:Globals:gMaskMaxIndex = 47
 		Execute "MaskEditorPanel()"
 	endif
 End
@@ -51,6 +92,10 @@ End
 //
 // TODO - may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
+//
+// TODO -- need buttons for:
+//		-- quit
+//    -- help (button is there, fill in the content)
 //
 Proc MaskEditorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
@@ -63,23 +108,19 @@ Proc MaskEditorPanel() : Panel
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 
-	SetVariable setvar0,pos={247.00,20.00},size={150.00,14.00},title="tube number"
-	SetVariable setvar0,limits={0,128,1},value= _NUM:0
-	Button button_0,pos={249.00,46.00},size={50.00,20.00},proc=AddToMaskButtonProc,title="Add"
-	Button button_1,pos={309.00,46.00},size={50.00,20.00},proc=RemoveFromMaskButtonProc,title="Del"
-	Button button_2,pos={389.00,46.00},size={90.00,20.00},proc=ToggleMaskButtonProc,title="Toggle"
-	Button button_3,pos={489.00,46.00},size={80.00,20.00},proc=SaveMaskButtonProc,title="Save"
+	SetVariable setvar0,pos={257.00,20.00},size={150.00,14.00},title="tube number"
+	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:gMaskTube
+	Button button_0,pos={257,46.00},size={50.00,20.00},proc=AddToMaskButtonProc,title="Add"
+	Button button_1,pos={319.00,46.00},size={50.00,20.00},proc=RemoveFromMaskButtonProc,title="Del"
+	Button button_2,pos={409.00,46.00},size={90.00,20.00},proc=ToggleMaskButtonProc,title="Toggle"
+	Button button_3,pos={509.00,46.00},size={80.00,20.00},proc=SaveMaskButtonProc,title="Save"
+	Button button_4,pos={603.00,10.00},size={20.00,20.00},proc=DrawMaskHelpButtonProc,title="?"
+	CheckBox check_0,pos={190.00,23.00},size={37.00,15.00},proc=DrawMaskRadioCheckProc,title="Row"
+	CheckBox check_0,value= 0,mode=1
+	CheckBox check_1,pos={190.00,46.00},size={32.00,15.00},proc=DrawMaskRadioCheckProc,title="Col"
+	CheckBox check_1,value= 1,mode=1
 
-// TODO -- need buttons for save? quit?
-// setVariable to add a row to the mask, column to the mask, toggle the mask on/off to see what's
-//     happening with the data
-
-
-// TODO - get rid of the hard-wired panel choice
-//	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL curDispPanel
-	Make/O/D/N=(48,128) curDispPanel		//will this work?
-	SetScale/P x 0,1, curDispPanel
-	SetScale/P y 0,1, curDispPanel
+	SetWindow MaskEditPanel, hook(MyHook)=MaskWindowHook
 
 	// draw the correct images
 	//draw the detector panel
@@ -87,10 +128,156 @@ Proc MaskEditorPanel() : Panel
 	
 	// overlay the current mask
 	V_OverlayMask("FT",1)
-//	OverlayMaskPanel("FL")
 
 EndMacro
 
+Function DrawMaskHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DoAlert 0, "Draw Mask Help not written yet..."
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//
+//a simple toggle between the two, so the logic is not done in the cleanest way.
+//
+// update the limits on the tube nubmer based on row/col and the panel (gMaskMaxIndex global)
+//
+Function DrawMaskRadioCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			String name = cba.ctrlName
+			
+			//get information to update the limits on the tube number setvar
+			ControlInfo popup_0
+			String str=S_Value
+			wave data = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
+			Variable val
+			
+			// update the radio button status and the setvar limits			
+			if(cmpstr(name,"check_0") == 0)		// ROW is being selected
+				CheckBox check_0,value = 1
+				CheckBox check_1,value = 0
+				val = DimSize(data, 1) -1
+			else
+				// COL is being selected
+				CheckBox check_0,value = 0
+				CheckBox check_1,value = 1
+				val = DimSize(data, 0) -1
+			endif
+			
+			SetVariable setvar0,limits={0,val,1}
+			NVAR gVal = root:Packages:NIST:VSANS:Globals:gMaskTube
+			NVAR gMax = root:Packages:NIST:VSANS:Globals:gMaskMaxIndex
+			gMax = val
+			if(gVal > val)
+				gVal = val
+			endif
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function MaskWindowHook(s)
+	STRUCT WMWinHookStruct &s
+	
+	Variable hookResult = 0	// 0 if we do not handle event, 1 if we handle it.
+	
+	String message = ""
+
+	switch(s.eventCode)
+		case 11:	// Keyboard event
+//			String keyCodeInfo
+//			sprintf keyCodeInfo, "s.keycode = 0x%04X", s.keycode
+//			if (strlen(message) > 0)
+//				message += "\r"
+//			endif
+//			message +=keyCodeInfo
+//
+//			message += "\r"
+//			String specialKeyCodeInfo
+//			sprintf specialKeyCodeInfo, "s.specialKeyCode = %d", s.specialKeyCode
+//			message +=specialKeyCodeInfo
+//			message += "\r"
+//
+//			String keyTextInfo
+//			sprintf keyTextInfo, "s.keyText = \"%s\"", s.keyText
+//			message +=keyTextInfo
+//
+//			String text = "\\Z24" + message
+//			Textbox /C/N=Message/W=KeyboardEventsGraph/A=MT/X=0/Y=15 text
+
+		// TODO:  this is all Igor-7 ONLY
+
+// Note that I need to keep track of the index value since I'm intercepting the 
+// SetVariable event here. I need to keep the index in range.		
+			STRUCT WMButtonAction ba
+			ba.eventCode = 2
+			NVAR tubeVal = root:Packages:NIST:VSANS:Globals:gMaskTube
+			if(s.specialKeyCode == 100)
+				//left arrow
+				tubeVal -= 1
+			endif
+			if(s.specialKeyCode == 101)
+				//right arrow
+				tubeVal += 1
+			endif
+			if(s.specialKeyCode == 102)
+				//up arrow
+				AddToMaskButtonProc(ba)
+			endif
+			if(s.specialKeyCode == 103)
+				//down arrow
+				RemoveFromMaskButtonProc(ba)
+			endif
+
+// enforce the limits on the setvar
+			NVAR gMax = root:Packages:NIST:VSANS:Globals:gMaskMaxIndex
+			if(tubeVal > gMax)
+				tubeVal = gMax
+			endif
+			if(tubeVal < 0)
+				tubeVal = 0
+			endif
+			
+// draw the "currentTube" every time
+			ControlInfo popup_0
+			String str=S_Value
+			wave currentTube = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":currentTube")
+
+			// update so that the proper row is displayed on the currentTube
+			currentTube = 0
+			
+			ControlInfo check_0		// is it row?
+			Variable isRow = V_value
+			if(isRow)
+				currentTube[][tubeVal] = 1			
+			else
+				currentTube[tubeVal][] = 1
+			endif		
+
+
+			hookResult = 1	// We handled keystroke
+			break
+	endswitch
+	
+	return hookResult		// If non-zero, we handled event and Igor will ignore it.
+End
 
 Function ToggleMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -129,13 +316,19 @@ Function AddToMaskButtonProc(ba) : ButtonControl
 			wave/Z maskData = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
 			
 			Variable val
-			ControlInfo setvar0
+			ControlInfo setvar0		//get the tube number
 			val = V_Value
-			maskData[val][] = 1
+			
+			ControlInfo check_0		// is it row?
+			Variable isRow = V_value
+			if(isRow)
+				maskData[][val] = 1			
+			else
+				maskData[val][] = 1
+			endif
 			
 			V_OverlayMask(str,1)
 			
-//			Print "add tube to mask"
 			break
 		case -1: // control being killed
 			break
@@ -156,12 +349,19 @@ Function RemoveFromMaskButtonProc(ba) : ButtonControl
 			wave/Z maskData = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
 			
 			Variable val
-			ControlInfo setvar0
+			ControlInfo setvar0 // get the tube number
 			val = V_Value
-			maskData[val][] = 0
 			
-			V_OverlayMask(str,1)			
-//			Print "remove tube from mask"
+			ControlInfo check_0		// is it row?
+			Variable isRow = V_value
+			if(isRow)
+				maskData[][val] = 0			
+			else
+				maskData[val][] = 0
+			endif
+			
+			V_OverlayMask(str,1)	
+					
 			break
 		case -1: // control being killed
 			break
@@ -201,8 +401,7 @@ Function SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 
 			//overlay the mask
 			V_OverlayMask(popStr,1)
-//			OverlayMaskPanel(popStr)
-			
+
 			break
 		case -1: // control being killed
 			break
@@ -214,8 +413,8 @@ End
 //
 // SEE DrawDetPanel() in the BeamCenter file
 //
-// TODO - currently is hard-wired for the simulation path!
-//     need to make it more generic, especially for RAW data
+// TODO
+// x- currently is hard-wired for the simulation path!   need to make it more generic, especially for RAW data
 //
 // -- need to adjust the size of the image subwindows to keep the model
 //    calculation from spillon over onto the table (maybe just move the table)
@@ -237,7 +436,7 @@ Function DrawPanelToMask(str)
 	Variable nPix_X,nPix_Y,pixSize_X,pixSize_Y
 
 	
-	Wave dispW=root:curDispPanel
+//	Wave dispW=root:curDispPanel
 
 	//plot it in the subwindow with the proper aspect and positioning
 	// for 48x256 (8mm x 4mm), aspect = (256/2)/48 = 2.67 (LR panels)
@@ -350,17 +549,20 @@ End
 // overlay the mask
 //
 // TODO
-// -- make it work
-// -- remove the old mask first
-// -- make the mask "toggle" to remove it
-// -- go see SANS for color, implementation, etc.
-// -- un-comment the (two) calls
+// x- remove the old mask first
+// x- make the mask "toggle" to remove it
+// x- go see SANS for color, implementation, etc.
+// x- un-comment the (two) calls
 //
 //
 //toggles a mask on/off of the SANS_Data window
 // points directly to window, doesn't need current display type
 //
 // if state==1, show the mask, if ==0, hide the mask
+//
+//** This assumes that if the overlay is/not present on the image display, then the currentTiube is also there/not
+// and is not checked
+//
 Function V_OverlayMask(str,state)
 	String str
 	Variable state
@@ -374,29 +576,50 @@ Function V_OverlayMask(str,state)
 	
 			Duplicate/O maskW $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
 			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
-	
-			Redimension/D overlay
-			SetScale/P x 0,1, overlay
-			SetScale/P y 0,1, overlay
+			Duplicate/O maskW $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":currentTube")
+			wave currentTube = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":currentTube")
+
+			Redimension/D overlay,currentTube
+			SetScale/P x 0,1, overlay,currentTube
+			SetScale/P y 0,1, overlay,currentTube
 		
-			String tempStr = "root:Packages:NIST:MSK:overlay"
-	//		overlay = (maskW == 1) ? 1 : NaN			//no need to do this - simply adjust the coloring
-	
+			//		overlay = (maskW == 1) ? 1 : NaN			//no need to do this - simply adjust the coloring
+
+			// update so that the proper row is displayed on the currentTube
+			currentTube = 0
+						
+			Variable val
+			ControlInfo setvar0		//get the tube number
+			val = V_Value
+			
+			ControlInfo check_0		// is it row?
+			Variable isRow = V_value
+			if(isRow)
+				currentTube[][val] = 1			
+			else
+				currentTube[val][] = 1
+			endif			
+				
 			CheckDisplayed/W=MaskEditPanel#DetData overlay
 			if(V_flag==0)		//so the overlay doesn't get appended more than once
 				AppendImage/W=MaskEditPanel#DetData overlay
+				AppendImage/W=MaskEditPanel#DetData currentTube
 				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
+				ModifyImage/W=MaskEditPanel#DetData currentTube ctab= {0.9,1,CyanMagenta,0}	,minRGB=NaN,maxRGB=0
 		//		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
 			endif
 		endif
 
 		if(state == 0)
 			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
+			wave currentTube = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":currentTube")
+
 			CheckDisplayed/W=MaskEditPanel#DetData overlay
 //			Print "V_flag = ",V_flag
 	
 			If(V_Flag == 1)		//overlay is present
 				RemoveImage/W=MaskEditPanel#DetData overlay
+				RemoveImage/W=MaskEditPanel#DetData currentTube
 			endif
 		endif
 	Endif
@@ -537,22 +760,22 @@ Proc Save_VSANS_MASK_Nexus(fileName)
 	// save as HDF5 (no attributes saved yet)
 	Save_VSANS_file("root:VSANS_MASK_file", fileName+".h5")
 	
-	// read in a data file using the gateway-- reads from the home path
-	H_HDF5Gate_Read_Raw(fileName+".h5")
-	
-	// after reading in a "partial" file using the gateway (to generate the xref)
-	// Save the xref to disk (for later use)
-	Save_HDF5___xref("root:"+fileName,"HDF5___xref")
-	
-	// after you've generated the HDF5___xref, load it in and copy it
-	// to the necessary folder location.
-	Copy_HDF5___xref("root:VSANS_MASK_file", "HDF5___xref")
-	
-	// writes out the contents of a data folder using the gateway
-	H_HDF5Gate_Write_Raw("root:VSANS_MASK_file", fileName+".h5")
-
-	// re-load the data file using the gateway-- reads from the home path
-	// now with attributes
-	H_HDF5Gate_Read_Raw(fileName+".h5")
+//	// read in a data file using the gateway-- reads from the home path
+//	H_HDF5Gate_Read_Raw(fileName+".h5")
+//	
+//	// after reading in a "partial" file using the gateway (to generate the xref)
+//	// Save the xref to disk (for later use)
+//	Save_HDF5___xref("root:"+fileName,"HDF5___xref")
+//	
+//	// after you've generated the HDF5___xref, load it in and copy it
+//	// to the necessary folder location.
+//	Copy_HDF5___xref("root:VSANS_MASK_file", "HDF5___xref")
+//	
+//	// writes out the contents of a data folder using the gateway
+//	H_HDF5Gate_Write_Raw("root:VSANS_MASK_file", fileName+".h5")
+//
+//	// re-load the data file using the gateway-- reads from the home path
+//	// now with attributes
+//	H_HDF5Gate_Read_Raw(fileName+".h5")
 	
 End

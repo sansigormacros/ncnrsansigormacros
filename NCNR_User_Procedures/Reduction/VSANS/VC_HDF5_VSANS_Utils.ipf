@@ -221,23 +221,23 @@ Proc Save_VSANS_DIV_Nexus(fileName)
 	// save as HDF5 (no attributes saved yet)
 	Save_VSANS_file("root:VSANS_DIV_file", fileName+".h5")
 	
-	// read in a data file using the gateway-- reads from the home path
-	H_HDF5Gate_Read_Raw(fileName+".h5")
-	
-	// after reading in a "partial" file using the gateway (to generate the xref)
-	// Save the xref to disk (for later use)
-	Save_HDF5___xref("root:"+fileName,"HDF5___xref")
-	
-	// after you've generated the HDF5___xref, load it in and copy it
-	// to the necessary folder location.
-	Copy_HDF5___xref("root:VSANS_DIV_file", "HDF5___xref")
-	
-	// writes out the contents of a data folder using the gateway
-	H_HDF5Gate_Write_Raw("root:VSANS_DIV_file", fileName+".h5")
-
-	// re-load the data file using the gateway-- reads from the home path
-	// now with attributes
-	H_HDF5Gate_Read_Raw(fileName+".h5")
+//	// read in a data file using the gateway-- reads from the home path
+//	H_HDF5Gate_Read_Raw(fileName+".h5")
+//	
+//	// after reading in a "partial" file using the gateway (to generate the xref)
+//	// Save the xref to disk (for later use)
+//	Save_HDF5___xref("root:"+fileName,"HDF5___xref")
+//	
+//	// after you've generated the HDF5___xref, load it in and copy it
+//	// to the necessary folder location.
+//	Copy_HDF5___xref("root:VSANS_DIV_file", "HDF5___xref")
+//	
+//	// writes out the contents of a data folder using the gateway
+//	H_HDF5Gate_Write_Raw("root:VSANS_DIV_file", fileName+".h5")
+//
+//	// re-load the data file using the gateway-- reads from the home path
+//	// now with attributes
+//	H_HDF5Gate_Read_Raw(fileName+".h5")
 	
 End
 

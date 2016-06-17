@@ -61,4 +61,6 @@ End
 // mask files
 #include "V_MaskUtils"
 
-
+// more functionality
+#include "V_FileCatalog"
+#include "V_PatchFiles"		//still in progress and won't compile

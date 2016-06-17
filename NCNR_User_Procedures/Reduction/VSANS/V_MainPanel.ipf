@@ -73,7 +73,7 @@ End
 Proc PatchMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	PatchFiles()
+	V_PatchFiles()
 End
 
 Proc TransMainButtonProc(ctrlName) : ButtonControl
@@ -164,19 +164,24 @@ Proc Draw3D_MainButtonProc(ctrlName) : ButtonControl
 	Plot3DSurface()
 End
 
-//on Misc Ops tab, generates a notebook
-Proc CatShort_MainButtonProc(ctrlName) : ButtonControl
-	String ctrlName
-
-	BuildCatShortNotebook()
-End
+////on Misc Ops tab, generates a notebook
+//Proc CatShort_MainButtonProc(ctrlName) : ButtonControl
+//	String ctrlName
+//
+//	BuildCatShortNotebook()
+//End
 
 //button is labeled "File Catalog"
 Proc CatVShort_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	//BuildCatVeryShortNotebook()
-	BuildCatVeryShortTable()
+	V_BuildCatVeryShortTable()
+End
+
+Proc CatSort_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Catalog_Sort()
 End
 
 Proc ShowCatShort_MainButtonProc(ctrlName) : ButtonControl
@@ -336,6 +341,10 @@ Window Main_VSANS_Panel()
 	Button MainButton_0c,help={"Shows the \"Patch\" panel which allows calculation of sample transmissions and entering these values into raw data headers"}
 	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
+	Button MainButton_0e,pos={15,210},size={130,20},proc=CatSort_MainButtonProc,title="Sort Catalog"
+	Button MainButton_0e,help={"Sort the Data Catalog, courtesy of ANSTO"}
+
+
 
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
@@ -406,8 +415,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_4b,help={"Use this to show a schematic of the data reduction process for a selected sample file and reduction protocol"}
 	Button MainButton_4c,pos={15,150},size={80,20},proc=ShowAvePanel_MainButtonProc,title="Average"
 	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
-	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
-	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
+//	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
+//	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
 	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
 	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
 	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"

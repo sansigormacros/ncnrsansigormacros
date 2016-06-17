@@ -98,7 +98,7 @@ End
 
 
 
-Macro V_Combine1DData()
+Proc V_Combine1DData()
 
 // get the current display type
 	String type = root:Packages:NIST:VSANS:Globals:gCurDispType
@@ -106,8 +106,15 @@ Macro V_Combine1DData()
 // figure out which binning was used
 
 // trim the data if needed
+	// remove the q=0 point from the back detector, if it's there
+	V_RemoveQ0_B(type)
+
 
 // concatenate the data sets
+	// clear the old tmp waves first, if they still exist
+	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+	Killwaves/Z tmp_q,tmp_i,tmp_s
+	setDataFolder root:
 	V_1DConcatenate(type)
 	
 // sort the data set
@@ -126,6 +133,28 @@ Proc V_GetNameForSave(str)
 End
 
 
+// blindly assumes that there is only one zero at the top of the wave
+// could be more sophisticated in the future...
+Function V_RemoveQ0_B(type)
+	String type
+	
+	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+
+	WAVE/Z qBin = qBin_qxqy_B
+	WAVE/Z iBin = iBin_qxqy_B
+	WAVE/Z eBin = eBin_qxqy_B
+	WAVE/Z nBin = nBin_qxqy_B
+	WAVE/Z iBin2 = iBin2_qxqy_B
+
+	if(qBin[0] == 0)
+		DeletePoints 0, 1, qBin,iBin,eBin,nBin,iBin2
+	endif
+	
+	SetDataFolder root:
+	return(0)
+end
+
+
 // concatentate data in folderStr
 //
 // TODO:
@@ -135,7 +164,7 @@ End
 // -- if different averaging options were chosen (bin type of 2, 4 etc) then
 //    although waves may exist, they may not be the right ones to use. There
 //    will be a somewhat complex selection process
-// -- detector B is currently skipped
+// x- detector B is currently skipped
 //
 // this seems like a lot of extra work to do something so simple...
 //
@@ -206,6 +235,7 @@ Function V_1DConcatenate(folderStr)
 //	Duplicate/O tmp_res2 $("root:"+folder2+":res2")
 //	Duplicate/O tmp_res3 $("root:"+folder2+":res3")
 
+// Can't kill here, since they are still needed to sort and write out!
 //	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_res0,tmp_res1,tmp_res2,tmp_res3	
 	
 	SetDataFolder root:
@@ -214,7 +244,7 @@ Function V_1DConcatenate(folderStr)
 End
 
 // TODO:
-// -- resolution waves are ignored
+// -- resolution waves are ignored, since they don't exist (yet)
 // -- only a sort is done, no rescaling of data sets
 //    (it's too late now anyways, since the data was concatenated
 //
@@ -240,9 +270,16 @@ Function V_TmpSort1D(folderStr)
 End
 
 
-// trims the beamstop out (based on shadow)
-// trims num from the highQ end
-// splits the res wave into individual waves in anticipation of concatenation
+// TODO
+// -- currently, this function is NOT called by anything
+// needs:
+// -- trim the beamstop out (based on shadow)
+// -- trim out zero q from the file (bad actor in analysis functions)
+// -- trim num from the highQ end or lowQ end?
+// -- splits the res wave into individual waves in anticipation of concatenation
+//   -- or -- deal with the res wave after?
+//
+//
 //
 Function V_Trim1DData(folderStr,nEnd)
 	String folderStr

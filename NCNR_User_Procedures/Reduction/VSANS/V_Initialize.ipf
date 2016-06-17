@@ -332,3 +332,16 @@ Function V_IsDemo()
 	DoWindow/K IsDemoGraph
 	return isDemo
 End
+
+// Clean out the RawVSANS folder before saving
+Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
+	Variable rN,kind
+	String fileName,path,type,creator
+
+	// clean out, so that the file SAVE is not slow due to the large experiment size
+	// TODO -- decide if this is really necessary
+//	
+	V_CleanOutRawVSANS()
+	Printf "Hook cleaned out RawVSANS, experiment saved\r"
+
+End
