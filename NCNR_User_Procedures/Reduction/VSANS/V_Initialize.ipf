@@ -341,7 +341,9 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	// clean out, so that the file SAVE is not slow due to the large experiment size
 	// TODO -- decide if this is really necessary
 //	
-	V_CleanOutRawVSANS()
+//	V_CleanOutRawVSANS()
+// present a progress window
+	V_CleanupData_w_Progress(0,1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
 End

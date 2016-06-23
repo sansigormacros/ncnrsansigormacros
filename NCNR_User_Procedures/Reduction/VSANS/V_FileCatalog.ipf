@@ -152,9 +152,9 @@ Function V_BuildCatVeryShortTable()
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
 //
-		V_CleanOutRawVSANS()
-
-
+	//	V_CleanOutRawVSANS()
+// This will display a progress bar
+	V_CleanupData_w_Progress(0,1)
 
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	

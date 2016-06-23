@@ -219,48 +219,16 @@ Function/S GetValidPatchPopupList()
 	Variable ii,num=ItemsInList(newList),val,sdd
 	NVAR gRadioVal= root:Packages:NIST:VSANS:Globals:Patch:gRadioVal
 	
-
-
 	// run number list
 	if(gRadioVal == 1)
-//		list = ParseRunNumberList(match)		//slow, file access every time
-//		list = ReplaceString(",", list, ";")
-//		newList = list
-
-// cut this 0ct 2014 -- the ListMatch at the bottom returns bad results when certain conditions are met:
-// -- for example OCT14nnn runs will return all of the OCT141nn runs if you try to match run 141
-//
-//		
-//		list = ExpandNumRanges(match)		//now simply comma delimited
-//		num=ItemsInList(list,",")
-//		for(ii=0;ii<num;ii+=1)
-//			item = StringFromList(ii,list,",")
-//			val=str2num(item)
-//			//make a three character string of the run number
-//			if(val<10)
-//				numStr = "00"+num2str(val)
-//			else
-//				if(val<100)
-//					numStr = "0"+num2str(val)
-//				else
-//					numStr = num2str(val)
-//				Endif
-//			Endif
-//			runList += ListMatch(newList,"*"+numStr+"*",";")
-//			
-//		endfor		
-		
-// oct 2014 -- try this way:	
-// TODO -- replace call
-//		list = ExpandNumRanges(match)		//now simply comma delimited
+			
+		list = V_ExpandNumRanges(match)		//now simply comma delimited
 		num=ItemsInList(list,",")
 		for(ii=0;ii<num;ii+=1)
 			item = StringFromList(ii,list,",")
 			val=str2num(item)
 
-// TODO -- replace call
-//			runList += GetFileNameFromPathNoSemi(FindFileFromRunNumber(val)) + ";"
-			
+			runList += V_GetFileNameFromPathNoSemi(V_FindFileFromRunNumber(val)) + ";"		
 		endfor
 		newlist = runList
 		
@@ -298,8 +266,8 @@ Function/S GetValidPatchPopupList()
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, newList , ";")
 			fname = path + item
-// TODO -- replace call
-//			sdd = getSDD(fname)
+// TODO -- replace call -- this is hard-wired for "FL"
+			sdd = V_getDet_ActualDistance(fname,"FL")
 			if(pos == -1)
 				//no wildcard
 				if(abs(val - sdd) < 0.01	)		//if numerically within 0.01 meter, they're the same
@@ -689,8 +657,7 @@ End
 //
 Proc V_Patch_Panel()
 	PauseUpdate; Silent 1	   // building window...
-	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw VSANS Data Files"
-//	NewPanel /W=(519,85,950,608) as "Patch Raw SANS Data Files"
+	NewPanel /W=(519,85,950,608)/K=2 as "Patch Raw VSANS Data Files"
 	DoWindow/C V_Patch_Panel
 	ModifyPanel cbRGB=(1,39321,19939)
 	ModifyPanel fixedSize=1
@@ -991,11 +958,19 @@ End
 
 
 //simple action for button to close the panel
+//
+// cleans out the RawVSANS folder on closing 
+//
 Function DoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
+
 	DoWindow/K V_Patch_Panel
+
+//	V_CleanOutRawVSANS()
+// present a progress window
+	V_CleanupData_w_Progress(0,1)	
 	
+	return(0)
 End
 
 //resets the global string corresponding to the sample label 

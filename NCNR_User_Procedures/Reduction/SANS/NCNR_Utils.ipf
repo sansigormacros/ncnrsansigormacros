@@ -35,17 +35,29 @@ Function InitFacilityGlobals()
 //	Variable/G root:myGlobals:PixelResCGB_ORNL = 0.5		// fiction
 
 	Variable/G root:myGlobals:PixelResDefault = 0.5
-	
+
+//Very old - ILL/Cerca-style detectors	
 	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
 	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
 	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
 	Variable/G root:myGlobals:DeadtimeNGB_ILL = 4.0e-6		// fictional
+// retired NG5 (NG1) 8m-sans instrument
+	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
+
+// NG3 SANS, moved to NGB (currently named as CGB)
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_VAX = 3.4e-6		//pre - 23-JUL-2009 used VAX
 	Variable/G root:myGlobals:DeadtimeNG3_ORNL_ICE = 1.5e-6		//post - 23-JUL-2009 used ICE
-	Variable/G root:myGlobals:DeadtimeNG5_ORNL = 0.6e-6			//as of 9 MAY 2002
+	Variable/G root:myGlobals:DeadtimeNG3_ORNL_NISTO = 1.0e-6	//post - 22-JUN-2016 using new NISTO
+	
+// NG7 SANS	
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_VAX = 3.4e-6		//pre 25-FEB-2010 used VAX
 	Variable/G root:myGlobals:DeadtimeNG7_ORNL_ICE = 2.3e-6		//post 25-FEB-2010 used ICE
+	Variable/G root:myGlobals:DeadtimeNG7_ORNL_NISTO = 1.0e-6	//--post 22-JUN-2016 using new NISTO
+
+// 10m sans @ NGB	
 	Variable/G root:myGlobals:DeadtimeNGB_ORNL_ICE = 4.0e-6		//per JGB 16-JAN-2013, best value we have for the oscillating data
+	Variable/G root:myGlobals:DeadtimeNGB_ORNL_NISTO = 1.0e-6		// (not a measured value!) per JGB June 2016, using NISTO, match value to NG7 and CGB 30m as of 27-APR-2016
+
 
 //	Variable/G root:myGlobals:DeadtimeCGB_ORNL_ICE = 1.5e-6		// fiction
 
@@ -483,6 +495,7 @@ End
 // 	NGB							JAN 2013					4 microseconds
 //
 //
+//
 // The day of the switch to ICE on NG7 was 25-FEB-2010 (per J. Krzywon) 
 // The day of the switch to ICE on NG3 was 23-JUL-2009 (per C. Gagnon)
 //
@@ -495,6 +508,16 @@ End
 // MAY 2014 -- if the beam is CGB (now that the NG3 SANS has been moved to NGB), the logic
 //     drops to select the values from NG3, since nothing has changed. When it does, I'll add in specifics for CGB
 //
+//
+// *** JUNE 2016 ***
+// instruments are now using new version of NISTO (all using the same hardware now)
+// ** the day of the switch is 22-JUN-2016 **
+// CGB 30m (former NG3)	 0.96 us == 1.0 us
+// NG7 SANS (measured as 1.02 us == 1.0 us)
+// 10m, yet unmeasured (use 1.0 us) starting 27-APR-2016
+// **************
+//
+//
 Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	String fileStr,detStr,dateAndTimeStr
 	Variable dtime
@@ -506,13 +529,17 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	NVAR DeadtimeNG5_ILL = root:myGlobals:DeadtimeNG5_ILL
 	NVAR DeadtimeNG7_ILL = root:myGlobals:DeadtimeNG7_ILL
 	NVAR DeadtimeNGB_ILL = root:myGlobals:DeadtimeNGB_ILL
+	
 	NVAR DeadtimeNG3_ORNL_VAX = root:myGlobals:DeadtimeNG3_ORNL_VAX
 	NVAR DeadtimeNG3_ORNL_ICE = root:myGlobals:DeadtimeNG3_ORNL_ICE
+	NVAR DeadtimeNG3_ORNL_NISTO = root:myGlobals:DeadtimeNG3_ORNL_NISTO
 //	NVAR DeadtimeCGB_ORNL_ICE = root:myGlobals:DeadtimeCGB_ORNL_ICE
 	NVAR DeadtimeNG5_ORNL = root:myGlobals:DeadtimeNG5_ORNL
 	NVAR DeadtimeNG7_ORNL_VAX = root:myGlobals:DeadtimeNG7_ORNL_VAX
 	NVAR DeadtimeNG7_ORNL_ICE = root:myGlobals:DeadtimeNG7_ORNL_ICE
+	NVAR DeadtimeNG7_ORNL_NISTO = root:myGlobals:DeadtimeNG7_ORNL_NISTO
 	NVAR DeadtimeNGB_ORNL_ICE = root:myGlobals:DeadtimeNGB_ORNL_ICE
+	NVAR DeadtimeNGB_ORNL_NISTO = root:myGlobals:DeadtimeNGB_ORNL_NISTO
 	NVAR DeadtimeDefault = root:myGlobals:DeadtimeDefault
 	
 	// if the deadtime passed in is good, return it and get out. MAY 2014
@@ -527,9 +554,16 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 		dateAndTimeStr = "01-JAN-2011"		//dummy date to force to ICE values
 	endif
 	
-	
+// the switch from VAX to ICE	
 	Variable NG3_to_ICE = ConvertVAXDay2secs("23-JUL-2009")
 	Variable NG7_to_ICE = ConvertVAXDay2secs("25-FEB-2010")
+
+// dates for the new NISTO hardware	
+	Variable NG3_to_NISTO = ConvertVAXDay2secs("22-JUN-2016")
+	Variable NGB_to_NISTO = ConvertVAXDay2secs("22-JUN-2016")
+	Variable NG7_to_NISTO = ConvertVAXDay2secs("27-APR-2016")		//one cycle earlier on 10m
+
+	
 	Variable fileTime = ConvertVAXDay2secs(dateAndTimeStr)
 
 	
@@ -539,10 +573,14 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG3_ILL
 			else
-				if(fileTime > NG3_to_ICE)
+				if(fileTime > NG3_to_NISTO)
+					deadtime = DeadtimeNG3_ORNL_NISTO	//detector is ordella-type, using NISTO hardware
+				endif
+				if(fileTime > NG3_to_ICE && fileTime <= NG3_to_NISTO)
 					deadtime = DeadtimeNG3_ORNL_ICE	//detector is ordella-type, using ICE hardware
-				else
-					deadtime = DeadtimeNG3_ORNL_VAX	//detector is ordella-type
+				endif
+				if(fileTime <= NG3_to_ICE)
+					deadtime = DeadtimeNG3_ORNL_VAX	//detector is ordella-type, VAX hardware
 				endif
 			endif
 			break
@@ -557,11 +595,16 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNG7_ILL
 			else
-				if(fileTime > NG7_to_ICE)
-					deadtime = DeadtimeNG7_ORNL_ICE	//detector is ordella-type, using ICE hardware
-				else
-					deadtime = DeadtimeNG7_ORNL_VAX	//detector is ordella-type
+				if(fileTime > NG7_to_NISTO)
+					deadtime = DeadtimeNG7_ORNL_NISTO	//detector is ordella-type, using NISTO hardware
 				endif
+				if(fileTime > NG7_to_ICE && fileTime <= NG7_to_NISTO)
+					deadtime = DeadtimeNG7_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				endif
+				if(fileTime <= NG7_to_ICE)
+					deadtime = DeadtimeNG7_ORNL_VAX	//detector is ordella-type, VAX hardware
+				endif
+			
 			endif
 			break
 		case "NGA":
@@ -569,7 +612,11 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 			if(cmpstr(detStr, "ILL   ") == 0 )
 				deadtime= DeadtimeNGB_ILL
 			else
-				deadtime = DeadtimeNGB_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				if(fileTime > NGB_to_NISTO)
+					deadtime = DeadtimeNGB_ORNL_NISTO	//detector is ordella-type, using NISTO hardware
+				else
+					deadtime = DeadtimeNGB_ORNL_ICE	//detector is ordella-type, using ICE hardware
+				endif
 			endif
 //			Print "Using fictional values for NGB dead time"
 			break

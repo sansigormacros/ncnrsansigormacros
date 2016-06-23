@@ -109,11 +109,15 @@ Function V_KillNamedDataFolder(fname)
 end
 
 // TODO:
-// -- this still does not quite work. If there are no sub folders present in the RawVSANS folder
+// x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
 //    it still thinks there are (1) item there.
 // -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
 //    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
+//
+// NOTE -- use V_CleanupData_w_Progress(0,1) to get a progress bar - since this will take more than
+//     a few seconds to complete, especially if a file catalog was done, or a "batch" patching, etc.
+//
 Function V_CleanOutRawVSANS()
 
 	SetDataFolder root:Packages:NIST:VSANS:RawVSANS:
@@ -150,6 +154,120 @@ Function V_CleanOutRawVSANS()
 	SetDataFolder root:
 	return(0)
 End
+
+//
+// examples straight from Wavemetrics help file topic "Progress Windows"
+// Try simpletest(0,0) and simpletest(1,0), simpletest(0,1) and simpletest(1,1)
+//
+//
+// look for simpletest() function in Wavemetrics help file topic "Progress Windows"
+//  this is a modified version.
+//
+// call with (1,1) to get the candystripe bar
+// call with (0,1) to the the "countdown" bar as they are killed
+//
+Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
+	Variable indefinite
+	Variable useIgorDraw		// True to use Igor's own draw method rather than native
+	
+	Variable num
+	
+	// is there anything there to be killed?
+	num = V_CleanOutOneRawVSANS()
+	if(num <= 0)
+		return(0)
+	endif
+	
+	// there are some folders to kill, so proceed
+	
+	NewPanel /N=ProgressPanel /W=(285,111,739,193)
+	ValDisplay valdisp0,pos={18,32},size={342,18},limits={0,num,0},barmisc={0,0}
+	ValDisplay valdisp0,value= _NUM:0
+	DrawText 20,24,"Cleaning up old files... Please Wait..."
+	
+	if( indefinite )
+		ValDisplay valdisp0,mode= 4	// candy stripe
+	else
+		ValDisplay valdisp0,mode= 3	// bar with no fractional part
+	endif
+	if( useIgorDraw )
+		ValDisplay valdisp0,highColor=(15000,45535,15000)		//(0,65535,0)
+	endif
+	Button bStop,pos={375,32},size={50,20},title="Stop"
+	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
+
+	do
+		num = V_CleanOutOneRawVSANS()
+		if( V_Flag == 2 || num == 0 || num == -1)	// either "stop" or clean exit, or "done" exit from function
+			break
+		endif
+		
+		ValDisplay valdisp0,value= _NUM:num,win=ProgressPanel
+		DoUpdate /W=ProgressPanel
+	while(1)
+	
+
+	KillWindow ProgressPanel
+	return(0)
+End
+
+
+// TODO:
+// x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
+//    it still thinks there are (1) item there.
+// -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
+//    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
+//    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
+//
+// -- for use with progress bar, kills only one folder, returns the new number of folders left
+// -- if n(in) = n(out), nothing was able to be killed, so return "done" code
+Function V_CleanOutOneRawVSANS()
+
+	SetDataFolder root:Packages:NIST:VSANS:RawVSANS:
+	
+	// get a list of the data folders there
+	// kill them all if possible
+	String list,item
+	Variable numFolders,ii,pt,numIn
+	
+	list = DataFolderDir(1)
+	// this has FOLDERS: at the beginning and is comma-delimited
+	list = list[8,strlen(list)]
+	pt = strsearch(list,";",inf,1)
+	list = list[0,pt-1]			//remove the ";\r" from the end of the string
+//	print list
+	
+	numFolders = ItemsInList(list , ",")
+	numIn = numFolders
+//	Print List
+//	print strlen(list)
+
+	if(numIn > 0)
+		item = StringFromList(0, list ,",")
+//		Print item
+		KillDataFolder/Z $(item)
+	endif
+
+	list = DataFolderDir(1)
+	list = list[8,strlen(list)]
+	pt = strsearch(list,";",inf,1)
+	list = list[0,pt-1]
+	numFolders = ItemsInList(list, ",")
+	
+	if(numIn == numFolders)
+		Printf "%g RawVSANS folders could not be killed\r",numFolders
+		SetDataFolder root:
+
+		return (-1)
+	endif
+	
+	SetDataFolder root:	
+	return(numFolders)
+End
+
+
+
+
 
 //given a filename of a SANS data filename of the form
 // name.anything
