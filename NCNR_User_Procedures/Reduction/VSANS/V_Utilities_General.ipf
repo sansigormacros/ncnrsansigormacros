@@ -503,32 +503,36 @@ End
 //the file returned will be a RAW VSANS data file, other types of files are 
 //filtered out.
 //
+//
+// -- with the run numbers incrementing from 1, there is no need to add leading zeros to the
+//    file names. simply add the number and go.
+//
 // called by Buttons.ipf and Transmission.ipf, and locally by parsing routines
 //
 Function/S V_FindFileFromRunNumber(num)
 	Variable num
 	
 	String fullName="",partialName="",item=""
-	//get list of raw data files in folder that match "num" (add leading zeros)
-	if( (num>9999) || (num<=0) )
-		Print "error in  FindFileFromRunNumber(num), file number too large or too small"
-		Return ("")
-	Endif
-	//make a four character string of the run number
+	//get list of raw data files in folder that match "num"
+//	if( (num>9999) || (num<=0) )
+//		Print "error in  FindFileFromRunNumber(num), file number too large or too small"
+//		Return ("")
+//	Endif
 	String numStr=""
-	if(num<10)
-		numStr = "000"+num2str(num)
-	else
-		if(num<100)
-			numStr = "00"+num2str(num)
-		else
-			if(num<1000)
-				numstr = "0"+num2str(num)
-			else
-				numStr = num2str(num)
-			endif
-		Endif
-	Endif
+	numStr = num2str(num)
+//	if(num<10)
+//		numStr = "000"+num2str(num)
+//	else
+//		if(num<100)
+//			numStr = "00"+num2str(num)
+//		else
+//			if(num<1000)
+//				numstr = "0"+num2str(num)
+//			else
+//				numStr = num2str(num)
+//			endif
+//		Endif
+//	Endif
 	//Print "numstr = ",numstr
 	
 	//make sure that path exists
@@ -635,7 +639,12 @@ end
 //
 //given a filename of a VSANS data filename of the form
 // sansNNNN.nxs.ngv
-//returns the run number "NNNN" as a STRING of FOUR characters
+//returns the run number "NNNN" as a STRING of (x) characters
+//
+// -- the run number incements from 1, so the number of digits is UNKNOWN
+// -- number starts at position [4] (the 5th character)
+// -- number ends with the character prior to the first "."
+//
 //returns "ABCD" as an invalid file number
 //
 // local function to aid in locating files by run number
@@ -653,12 +662,12 @@ Function/S V_GetRunNumStrFromFile(item)
 		//"dot" not found
 		return (invalid)
 	else
-		//found, get the four characters preceeding it
-		if (pos <= numChar-1)
+		//found, get the characters preceeding it, but still after the "sans" characters
+		if (pos-1 <= 4)
 			//not enough characters
 			return (invalid)
 		else
-			runStr = item[pos-numChar,pos-1]
+			runStr = item[4,pos-1]
 			return (runStr)
 		Endif
 	Endif

@@ -200,6 +200,11 @@ Function AppendNotRAWFiles(w)
 	Wave/T w
 	Wave/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
 	Variable lastPoint
+	
+	if(numpnts(w) == 0)
+		return(0)
+	endif
+	
 	lastPoint = numpnts(Filenames)
 	InsertPoints lastPoint,numpnts(w),Filenames
 	Filenames[lastPoint,numpnts(Filenames)-1] = w[p-lastPoint]

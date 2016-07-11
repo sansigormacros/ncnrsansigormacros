@@ -437,25 +437,28 @@ Function GetEditedSetVarBoxes(wt,num)
 	if(num != 20)
 		Abort "wrong number of checkboxes GetEditedSetVarBoxes()"
 	Endif
+	
 	//pass all as a text wave - so only one wave has to be passed (conversion 2x, though)
 	//global is set to the changed value when entered. read others directly from the control
+	
 	//make sure the text label is exactly 60 characters long, to match VAX field length
 	SVAR dum=root:Packages:NIST:VSANS:Globals:Patch:gPS1
-	String str60="", junk="junk" 
-	str60 = PadString(junk,60,0x20)
-	if(strlen(dum) <= 60)
-		if(strlen(dum) == 60)
-		   str60 = dum
-		else
-		   str60 = PadString(dum,60,0x20)
-		Endif
-	else
-		//too long, truncate
-		str60[0,59] = dum[0,59]
-	Endif
-	
-	wt[0] = str60
-	
+//	String str60="", junk="junk" 
+//	str60 = PadString(junk,60,0x20)
+//	if(strlen(dum) <= 60)
+//		if(strlen(dum) == 60)
+//		   str60 = dum
+//		else
+//		   str60 = PadString(dum,60,0x20)
+//		Endif
+//	else
+//		//too long, truncate
+//		str60[0,59] = dum[0,59]
+//	Endif
+//	
+//	wt[0] = str60
+	wt[0] = dum			//with Nexus, no need to enforce 60 character field
+//	
 	Variable ii
 	String baseStr="PV"
 	ii=1
