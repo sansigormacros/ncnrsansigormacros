@@ -589,7 +589,7 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	Endif
 	if(change[5])		//attenuator number
 		num = str2num(textVal[5])
-		V_writeAtten_num_dropped(fname,num)
+		V_writeAttenThickness(fname,num)
 	Endif
 	if(change[6])
 		num =str2num(textVal[6])
@@ -855,7 +855,7 @@ Function ReadHeaderForPatch(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV2 = V_getSampleThickness(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV3 = V_getDet_beam_center_x(fname,detStr)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV4 = V_getDet_beam_center_y(fname,detStr)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV5 = V_getAtten_Number(fname)
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV5 = V_getAttenThickness(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV6 = V_getCount_Time(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV7 = V_getMonitorCount(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV8 = V_getDet_IntegratedCount(fname,detStr)
@@ -992,93 +992,3 @@ Function SetLabelVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 
 End
 
-
-// testing, very dangerous batch changing of the file header labels
-//
-// testStr is the string at the front of a label, that will be moved to the "back"
-// if doIt is 1, it will write to the headers, any other value will only print to history
-Function xMPatchLabel(testStr,doIt)
-	String testStr
-	Variable doIt
-
-//	SVAR list = root:Packages:NIST:VSANS:Globals:Patch:gPatchList
-	String list = GetValidPatchPopupList()
-
-	Variable numitems,ii
-	numitems = ItemsInList(list,";")
-	
-	if(numitems == 0)
-		Abort "no items in list for multiple patch"
-	Endif
-	
-	String partialName="", tempName = ""
-	Variable ok,nvars = 20
-	
-	//loop through all of the files in the list, applying changes as dictated by w and wt waves
-	string str1,str2,str3
-	Variable match,loc,len,spc,jj,len1
-	len=strlen(testStr)
-	ii=0
-	do
-		//get current item in the list
-		partialName = StringFromList(ii, list, ";")
-		   
-		//get a valid file based on this partialName and catPathName
-		tempName = V_FindValidFilename(partialName)
-	
-		//prepend path to tempName for read routine 
-		PathInfo catPathName
-		tempName = S_path + tempName
-	
-		//make sure the file is really a RAW data file
-		ok = V_CheckIfRawData(tempName)
-		if (!ok)
-		   Print "this file is not recognized as a RAW SANS data file = ",tempName
-		else
-		   //go write the changes to the file
-			str1 = V_getSampleDescription(tempName)
-			match = strsearch(str1, testStr, 0)
-			if(match != -1)
-				str2 = ReplaceString(testStr, str1, "", 0, 1)
-				
-				jj=strlen(str2)
-				do
-					jj -= 1
-					spc = cmpstr(str2[jj], " ")		//can add the optional flag ,0), but I don't care about case, and Igor 6.02 is necessary...
-					if (spc != 0)
-						break		//no more spaces found, get out
-					endif
-				While(1)	// jj is the location of the last non-space
-				
-				str2[jj+2,jj+1+len] = testStr
-			
-			// may need to remove leading spaces???
-				str2 = PadString(str2, 60, 0x20 )
-				
-				if(doIt == 1)
-					V_writeSampleDescription(tempName,str2)
-					print str2," ** Written to file **"
-				else
-					//print str2,strlen(str2)
-					print str2," ** Testing, not written to file **"
-				endif
-			else
-				
-				jj=strlen(str1)
-				do
-					jj -= 1
-					spc = cmpstr(str1[jj], " ")
-					if (spc != 0)
-						break		//no more spaces found, get out
-					endif
-				While(1)
-	
-				//print str1, jj, str1[jj]	
-			endif
-		Endif
-		
-		ii+=1
-	while(ii<numitems)
-
-
-end

@@ -568,7 +568,7 @@ end
 ////////// USER
 
 // list of user names
-// TODO -- currently not written out to data file??
+// DONE -- currently not written out to data file??
 Function V_writeUserNames(fname,str)
 	String fname,str
 	
@@ -601,54 +601,53 @@ end
 
 // TODO -- for the control section, document each of the fields
 //
-Function V_writeCount_end(fname,val)
-	String fname
-	Variable val
+Function V_writeCount_end(fname,str)
+	String fname,str
 	
 //	String path = "entry:control:count_end"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/control"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/control"	//	
 	String varName = "count_end"
-	wTmpWrite[0] = val
+	tmpTW[0] = str //
 
 	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 	if(err)
 		Print "HDF write err = ",err
 	endif
+	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 //	err = V_KillNamedDataFolder(fname)
 //	if(err)
 //		Print "DataFolder kill err = ",err
 //	endif
+		
 	return(err)
 end
 
-
-Function V_writeCount_start(fname,val)
-	String fname
-	Variable val
+Function V_writeCount_start(fname,str)
+	String fname,str
 	
 //	String path = "entry:control:count_start"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/control"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/control"	//	
 	String varName = "count_start"
-	wTmpWrite[0] = val
+	tmpTW[0] = str //
 
 	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 	if(err)
 		Print "HDF write err = ",err
 	endif
+	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 //	err = V_KillNamedDataFolder(fname)
 //	if(err)
 //		Print "DataFolder kill err = ",err
 //	endif
+		
 	return(err)
 end
 
@@ -970,31 +969,6 @@ End
 ////// INSTRUMENT/ATTENUATOR
 // TODO - verify the format of how these are written out to the file
 //
-//Function V_writeAtten_number(fname,val)
-//	String fname
-//	Variable val
-//	
-////	String path = "entry:instrument:attenuator:atten_number"	
-//	
-//	Make/O/D/N=1 wTmpWrite
-////	Make/O/R/N=1 wTmpWrite
-//	String groupName = "/entry/instrument/attenuator"	
-//	String varName = "atten_number"
-//	wTmpWrite[0] = val
-//
-//	variable err
-//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-//	if(err)
-//		Print "HDF write err = ",err
-//	endif
-//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-////	err = V_KillNamedDataFolder(fname)
-////	if(err)
-////		Print "DataFolder kill err = ",err
-////	endif
-//	return(err)
-//end
-
 
 // transmission value for the attenuator in the beam
 // use this, but if something wrong, the tables are present
@@ -1103,6 +1077,7 @@ Function V_writeAttenDistance(fname,val)
 	return(err)
 end
 
+
 // table of the attenuation factor error
 Function V_writeAttenIndex_table_err(fname,inW)
 	String fname
@@ -1186,32 +1161,32 @@ end
 //	return(err)
 //End
 
-// number of attenuators actually dropped in
-// an integer value
-Function V_writeAtten_num_dropped(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:instrument:attenuator:thickness"	
-	
-	Make/O/I/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/attenuator"	
-	String varName = "num_atten_dropped"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//// number of attenuators actually dropped in
+//// an integer value
+//Function V_writeAtten_num_dropped(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:attenuator:thickness"	
+//	
+//	Make/O/I/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/attenuator"	
+//	String varName = "num_atten_dropped"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-end
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
 
 // thickness of the attenuator (PMMA) - units??
 Function V_writeAttenThickness(fname,val)
@@ -1267,7 +1242,367 @@ Function V_writeAttenType(fname,str)
 End
 
 
+
+
 ////// INSTRUMENT/BEAM
+//
+Function V_writeAnalyzer_depth(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:depth"
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "depth"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_direction(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:beam:analyzer:direction"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String varName = "direction"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeAnalyzer_height(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:height"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "height"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// ?? TODO is this equivalent to "status" -- is this 0|1 ??
+Function V_writeAnalyzer_inBeam(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:inBeam"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "inBeam"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_innerDiameter(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:innerDiameter"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "innerDiameter"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// one of the most important
+Function V_writeAnalyzer_name(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:beam:analyzer:name"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String varName = "name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeAnalyzer_opacityAt1Ang(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "opacityAt1Ang"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAna_opacityAt1Ang_err(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "opacityAt1AngStd"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_outerDiameter(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:outerDiameter"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "outerDiameter"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_shape(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:beam:analyzer:shape"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String varName = "shape"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeAnalyzer_tE(fname,val)
+	String fname
+	Variable val
+		
+//	String path = "entry:instrument:beam:analyzer:tE"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "tE"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_tE_err(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:tEStd"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "tEStd"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeAnalyzer_type(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:beam:analyzer:type"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String varName = "type"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+
+Function V_writeAnalyzer_width(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:analyzer:width"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/analyzer"	
+	String varName = "width"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
+
+
+
 // instrument/beam/chopper (data folder)
 Function V_writeChopperAngular_opening(fname,val)
 	String fname
@@ -1471,65 +1806,18 @@ Function V_writeChoppertype(fname,str)
 End
 
 
-// instrument/beam/flipper (data folder)
-Function V_writeFlipperDriving_current(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:instrument:beam:flipper:driving_current"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/flipper"	
-	String varName = "driving_current"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-	return(err)
-end
-
-Function V_writeFlipperFrequency(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:instrument:beam:flipper:frequency"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/flipper"	
-	String varName = "frequency"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-	return(err)
-end
-
-Function V_writeFlipperstatus(fname,str)
+///////////////
+// instrument/beam/flipperPolarizer (data folder)
+// this is upstream, after the supermirror but before the sample
+//
+Function V_writeflipperPol_Direction(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:flipper:status"
+//	String path = "entry:instrument:beam:flipperPolarizer:direction"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/flipper"	//	
-	String varName = "status"
+	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+	String varName = "direction"
 	tmpTW[0] = str //
 
 	variable err
@@ -1547,16 +1835,16 @@ Function V_writeFlipperstatus(fname,str)
 	return(err)
 End
 
-Function V_writeFlipperTransmitted_power(fname,val)
+Function V_writeflipperPolarizer_inBeam(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:flipper:transmitted_power"	
+//	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/flipper"	
-	String varName = "transmitted_power"
+	String groupName = "/entry/instrument/beam/flipperPolarizer"	
+	String varName = "inBeam"
 	wTmpWrite[0] = val
 
 	variable err
@@ -1572,14 +1860,13 @@ Function V_writeFlipperTransmitted_power(fname,val)
 	return(err)
 end
 
-Function V_writeFlipperWaveform(fname,str)
+Function V_writeflipperPolarizer_Type(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:flipper:waveform"
-
+//	String path = "entry:instrument:beam:flipperPolarizer:type"
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/flipper"	//	
-	String varName = "waveform"
+	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+	String varName = "type"
 	tmpTW[0] = str //
 
 	variable err
@@ -1596,6 +1883,138 @@ Function V_writeFlipperWaveform(fname,str)
 		
 	return(err)
 End
+
+
+
+
+//////////
+//// instrument/beam/flipper (data folder)
+//Function V_writeFlipperDriving_current(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:flipper:driving_current"	
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/flipper"	
+//	String varName = "driving_current"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeFlipperFrequency(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:flipper:frequency"	
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/flipper"	
+//	String varName = "frequency"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeFlipperstatus(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:flipper:status"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/flipper"	//	
+//	String varName = "status"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writeFlipperTransmitted_power(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:flipper:transmitted_power"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/flipper"	
+//	String varName = "transmitted_power"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeFlipperWaveform(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:flipper:waveform"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/flipper"	//	
+//	String varName = "waveform"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+
+
 
 // instrument/beam/monochromator (data folder)
 Function V_writeMonochromatorType(fname,str)
@@ -1679,6 +2098,32 @@ end
 
 
 // instrument/beam/monochromator/crystal (data folder)
+//
+Function V_writeCrystalDistance(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:beam:monochromator:crystal:distance"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam/monochromator/crystal"	
+	String varName = "distance"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
 Function V_writeCrystalEnergy(fname,val)
 	String fname
 	Variable val
@@ -1779,30 +2224,6 @@ Function V_writeCrystalLattice_parameter(fname,val)
 	return(err)
 end
 
-Function V_writeCrystalDistance(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:instrument:beam:monochromator:crystal:distance"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/monochromator/crystal"	
-	String varName = "distance"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-	return(err)
-end
 
 Function V_writeCrystalReflection(fname,val)
 	String fname
@@ -2004,6 +2425,7 @@ Function V_writeCrystalWavevector(fname,val)
 	return(err)
 end
 
+////////////
 // instrument/beam/monochromator/velocity_selector (data folder)
 Function V_writeVSDistance(fname,val)
 	String fname
@@ -2259,14 +2681,15 @@ Function V_writeWhiteBeamWavel_spread(fname,val)
 	return(err)
 end
 
-// instrument/beam/polarizer (data folder)
+// instrument/beam/superMirror (data folder)
+// This is the upstream polarizer. There are no other choices for polarizer on VSANS
 Function V_writePolarizerComposition(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:polarizer:composition"
+//	String path = "entry:instrument:beam:superMirror:composition"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/polarizer"	//	
+	String groupName = "/entry/instrument/beam/superMirror"	//	
 	String varName = "composition"
 	tmpTW[0] = str //
 
@@ -2289,11 +2712,11 @@ Function V_writePolarizerEfficiency(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:polarizer:efficiency"	
+//	String path = "entry:instrument:beam:superMirror:efficiency"	
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/polarizer"	
+	String groupName = "/entry/instrument/beam/superMirror"	
 	String varName = "efficiency"
 	wTmpWrite[0] = val
 
@@ -2310,14 +2733,14 @@ Function V_writePolarizerEfficiency(fname,val)
 	return(err)
 end
 
-Function V_writePolarizerStatus(fname,str)
+Function V_writePolarizerState(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:polarizer:status"
+//	String path = "entry:instrument:beam:superMirror:state"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/polarizer"	//	
-	String varName = "status"
+	String groupName = "/entry/instrument/beam/superMirror"	//	
+	String varName = "state"
 	tmpTW[0] = str //
 
 	variable err
@@ -2335,209 +2758,209 @@ Function V_writePolarizerStatus(fname,str)
 	return(err)
 End
 
-Function V_writePolarizerType(fname,str)
-	String fname,str
-
-//	String path = "entry:instrument:beam:polarizer:type"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/polarizer"	//	
-	String varName = "type"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//Function V_writePolarizerType(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:polarizer:type"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/polarizer"	//	
+//	String varName = "type"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
-
-// instrument/beam/polarizer_analyzer (data folder)
-// integer value
-Function V_writePolAnaCell_index(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_index"
-	
-	Make/O/I/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
-	String varName = "cell_index"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//// instrument/beam/polarizer_analyzer (data folder)
+//// integer value
+//Function V_writePolAnaCell_index(fname,val)
+//	String fname
+//	Variable val
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:cell_index"
+//	
+//	Make/O/I/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
+//	String varName = "cell_index"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-End
-
-Function V_writePolAnaCell_name(fname,str)
-	String fname,str
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_name"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	//	
-	String varName = "cell_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//End
+//
+//Function V_writePolAnaCell_name(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:cell_name"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	//	
+//	String varName = "cell_name"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
-
-Function V_writePolAnaCell_parameters(fname,inW)
-	String fname
-	Wave inW
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_parameters"
-
-	Duplicate/O inW wTmpWrite 	
-// then use redimension as needed to cast the wave to write to the specified type
-// see WaveType for the proper codes 
-//	Redimension/T=() wTmpWrite
-// -- May also need to check the dimension(s) before writing (don't trust the input)
-	String groupName = "/entry/instrument//beam/polarizer_analyzer"	
-	String varName = "cell_parameters"
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writePolAnaCell_parameters(fname,inW)
+//	String fname
+//	Wave inW
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:cell_parameters"
+//
+//	Duplicate/O inW wTmpWrite 	
+//// then use redimension as needed to cast the wave to write to the specified type
+//// see WaveType for the proper codes 
+////	Redimension/T=() wTmpWrite
+//// -- May also need to check the dimension(s) before writing (don't trust the input)
+//	String groupName = "/entry/instrument//beam/polarizer_analyzer"	
+//	String varName = "cell_parameters"
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-End
-
-Function V_writePolAnaGuideFieldCur_1(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_1"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
-	String varName = "guide_field_current_1"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//End
+//
+//Function V_writePolAnaGuideFieldCur_1(fname,val)
+//	String fname
+//	Variable val
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_1"
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
+//	String varName = "guide_field_current_1"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-End
-
-Function V_writePolAnaGuideFieldCur_2(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_2"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
-	String varName = "guide_field_current_2"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//End
+//
+//Function V_writePolAnaGuideFieldCur_2(fname,val)
+//	String fname
+//	Variable val
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_2"
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
+//	String varName = "guide_field_current_2"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-End
-
-Function V_writePolAnaSolenoid_current(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:solenoid_current"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
-	String varName = "solenoid_current"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//End
+//
+//Function V_writePolAnaSolenoid_current(fname,val)
+//	String fname
+//	Variable val
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:solenoid_current"
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	
+//	String varName = "solenoid_current"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-End
-
-Function V_writePolAnaStatus(fname,str)
-	String fname,str
-
-//	String path = "entry:instrument:beam:polarizer_analyzer:status"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/polarizer_analyzer"	//	
-	String varName = "status"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//End
+//
+//Function V_writePolAnaStatus(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:polarizer_analyzer:status"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/polarizer_analyzer"	//	
+//	String varName = "status"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
 
 
 
@@ -2572,16 +2995,16 @@ Function V_writeBeamMonLowData(fname,val)
 	return(err)
 End
 
-Function V_writeBeamMonLowEfficiency(fname,val)
+Function V_writeBeamMonLowDistance(fname,val)
 	String fname
 	Variable val
 
-//	String path = "entry:instrument:beam_monitor_low:efficiency"
+//	String path = "entry:instrument:beam_monitor_low:distance"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_monitor_low"	
-	String varName = "efficiency"
+	String varName = "distance"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2597,16 +3020,16 @@ Function V_writeBeamMonLowEfficiency(fname,val)
 	return(err)
 End
 
-Function V_writeBeamMonLowDistance(fname,val)
+Function V_writeBeamMonLowEfficiency(fname,val)
 	String fname
 	Variable val
 
-//	String path = "entry:instrument:beam_monitor_low:distance"
+//	String path = "entry:instrument:beam_monitor_low:efficiency"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
 	String groupName = "/entry/instrument/beam_monitor_low"	
-	String varName = "distance"
+	String varName = "efficiency"
 	wTmpWrite[0] = val
 
 	variable err
@@ -2699,6 +3122,31 @@ Function V_writeBeamMonNormData(fname,val)
 	return(err)
 End
 
+Function V_writeBeamMonNormDistance(fname,val)
+	String fname
+	Variable val
+
+//	String path = "entry:instrument:beam_monitor_norm:distance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/beam_monitor_norm"	
+	String varName = "distance"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
+
 Function V_writeBeamMonNormEfficiency(fname,val)
 	String fname
 	Variable val
@@ -2724,30 +3172,6 @@ Function V_writeBeamMonNormEfficiency(fname,val)
 	return(err)
 End
 
-Function V_writeBeamMonNormDistance(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:beam_monitor_norm:distance"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam_monitor_norm"	
-	String varName = "distance"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-	return(err)
-End
 
 Function V_writeBeamMonNormSaved_count(fname,val)
 	String fname
@@ -4647,8 +5071,8 @@ Function V_writeLensPrismStatus(fname,str)
 End
 	
 
-///////  sample_aperture (data folder)
-
+///////  sample_aperture (1) (data folder)
+// this is the INTERNAL sample aperture
 Function V_writeSampleAp_Description(fname,str)
 	String fname,str
 
@@ -4699,7 +5123,31 @@ Function V_writeSampleAp_distance(fname,val)
 	return(err)
 End
 
-//	shape (data folder)
+//	sample_apertuer/shape (data folder)
+Function V_writeSampleAp_height(fname,val)
+	String fname
+	Variable val
+
+//	String path = "entry:instrument:sample_aperture:distance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/sample_aperture/shape"
+	String varName = "height"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
 
 Function V_writeSampleAp_shape(fname,str)
 	String fname,str
@@ -4723,31 +5171,6 @@ Function V_writeSampleAp_shape(fname,str)
 //		Print "DataFolder kill err = ",err
 //	endif
 		
-	return(err)
-End
-
-Function V_writeSampleAp_height(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:sample_aperture:distance"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/sample_aperture/shape"
-	String varName = "height"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
 	return(err)
 End
 
@@ -4802,6 +5225,7 @@ Function V_writeSampleAp_width(fname,val)
 End
 
 ///////  sample_aperture_2 (data folder)
+// sample aperture (2) is the external aperture, which may or may not be present
 
 Function V_writeSampleAp2_Description(fname,str)
 	String fname,str
@@ -4855,6 +5279,30 @@ End
 
 
 //	shape (data folder)
+Function V_writeSampleAp2_height(fname,val)
+	String fname
+	Variable val
+
+//	String path = "entry:instrument:sample_aperture:distance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/sample_aperture_2/shape"
+	String varName = "height"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
 
 Function V_writeSampleAp2_shape(fname,str)
 	String fname,str
@@ -4878,31 +5326,6 @@ Function V_writeSampleAp2_shape(fname,str)
 //		Print "DataFolder kill err = ",err
 //	endif
 		
-	return(err)
-End
-
-Function V_writeSampleAp2_height(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:sample_aperture:distance"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/sample_aperture_2/shape"
-	String varName = "height"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
 	return(err)
 End
 
@@ -5168,7 +5591,33 @@ Function V_writeSourceAp_distance(fname,val)
 //	endif
 	return(err)
 End
+
+
 //	shape (data folder)
+Function V_writeSourceAp_height(fname,val)
+	String fname
+	Variable val
+
+//	String path = "entry:instrument:sample_aperture:distance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/source_aperture/shape"
+	String varName = "height"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
 
 Function V_writeSourceAp_shape(fname,str)
 	String fname,str
@@ -5217,31 +5666,6 @@ Function V_writeSourceAp_size(fname,str)
 //		Print "DataFolder kill err = ",err
 //	endif
 		
-	return(err)
-End
-
-Function V_writeSourceAp_height(fname,val)
-	String fname
-	Variable val
-
-//	String path = "entry:instrument:sample_aperture:distance"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/source_aperture/shape"
-	String varName = "height"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
 	return(err)
 End
 
@@ -5522,7 +5946,6 @@ Function V_writeSampleTransmission(fname,val)
 	Variable val
 	
 	String path = "entry:sample:transmission"	
-//	String path = "QKK0037737:data:Transmission"	
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
@@ -5576,6 +5999,8 @@ end
 //
 // temperature_1
 // temperature_2
+// temperature_3
+// temperature_4
 // shear_field
 // pressure
 // magnetic_field
@@ -5661,7 +6086,59 @@ Function V_writeLog_Name(fname,logStr,str)
 End
 
 
-// TODO -- 
+// TODO -- this may require multiple entries, for each sensor _1, _2, etc.
+Function V_writeLog_setPoint(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:"+logstr+":setpoint_1"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/"+logStr
+	String varName = "setpoint_1"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeLog_startTime(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:"+logstr+":start"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/"+logStr
+	String varName = "start"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+
+// TODO -- this may only exist for electric and magnetic field, or be removed
 Function V_writeLog_nomValue(fname,logStr,val)
 	String fname,logStr
 	Variable val
@@ -5688,31 +6165,7 @@ Function V_writeLog_nomValue(fname,logStr,val)
 end
 
 ////		value_log (data folder)
-Function V_writeLog_startTime(fname,logStr,str)
-	String fname,logStr,str
-
-//	String path = "entry:sample:"+logstr+":value_log:start"
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/sample/"+logStr+"/value_log"
-	String varName = "start"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
-
+//
 // TODO -- 
 Function V_writeLog_avgValue(fname,logStr,val)
 	String fname,logStr
@@ -5739,7 +6192,110 @@ Function V_writeLog_avgValue(fname,logStr,val)
 	return(err)
 end
 
+Function V_writeLog_avgValue_err(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:"+logstr+":value_log:average_value_error"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/"+logStr+"/value_log"
+	String varName = "average_value_error"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeLog_maximumValue(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:"+logstr+":value_log:maximum_value"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/"+logStr+"/value_log"
+	String varName = "maximum_value"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeLog_medianValue(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:"+logstr+":value_log:median_value"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/"+logStr+"/value_log"
+	String varName = "median_value"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeLog_minimumValue(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:"+logstr+":value_log:minimum_value"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/"+logStr+"/value_log"
+	String varName = "minimum_value"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
+
 // TODO -- this needs to be a WAVE reference
+// be sure this gets written as "time", even though it is read in as "time0"
 Function V_writeLog_time(fname,logStr,inW)
 	String fname,logStr
 	Wave inW
@@ -5830,6 +6386,32 @@ Function V_writeAbsolute_Scaling(fname,inW)
 //	endif
 	return(err)
 end
+
+Function V_writeBackgroundFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:background_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "background_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
 
 // TODO -- needs to be a WAVE
 Function V_writeBoxCoordinates(fname,inW)
@@ -5936,6 +6518,106 @@ Function V_writeReductionComments(fname,str)
 	return(err)
 End
 
+Function V_writeEmptyBeamFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:empty_beam_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "empty_beam_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeEmptyFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:empty_beam_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "empty_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writePolReduction_purpose(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:file_purpose"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "file_purpose"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+// TODO -- is this duplicated?
+Function V_writeReduction_group_ID(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:reduction:box_count_error"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/reduction"
+	String varName = "group_id"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
 
 Function V_writeReductionIntent(fname,str)
 	String fname,str
@@ -5961,6 +6643,32 @@ Function V_writeReductionIntent(fname,str)
 		
 	return(err)
 End
+
+Function V_writeMaskFileName(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:empty_beam_file_name"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "mask_file_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
 
 
 Function V_writeLogFileName(fname,str)
@@ -6039,105 +6747,6 @@ Function V_writeTransmissionFileName(fname,str)
 	return(err)
 End
 
-Function V_writeEmptyBeamFileName(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:empty_beam_file_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction"
-	String varName = "empty_beam_file_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
-
-Function V_writeEmptyFileName(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:empty_beam_file_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction"
-	String varName = "empty_file_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
-
-Function V_writeMaskFileName(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:empty_beam_file_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction"
-	String varName = "mask_file_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
-
-Function V_writeBackgroundFileName(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:empty_beam_file_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction"
-	String varName = "background_file_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
 
 //whole detector transmission
 Function V_writeSampleTransWholeDetector(fname,val)
@@ -6192,87 +6801,87 @@ Function V_writeSampleTransWholeDetErr(fname,val)
 end
 
 			
-/////			pol_sans (data folder)
-
-Function V_writePolSANS_cellName(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:pol_sans:cell_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction/pol_sans"
-	String varName = "cell_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+///////			pol_sans (data folder)
+//
+//Function V_writePolSANS_cellName(fname,str)
+//	String fname,str
+//
+////	String path = "entry:reduction:pol_sans:cell_name"	
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/reduction/pol_sans"
+//	String varName = "cell_name"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
-
-
-// TODO -- needs to be a WAVE
-// is this a text wave?? if it's mixed names + values, then what?
-Function V_writePolSANS_cellParams(fname,inW)
-	String fname
-	Wave inW
-	
-//	String path = "entry:reduction:pol_sans:cell_parameters"
-		
-	Duplicate/O inW wTmpWrite 	
-// then use redimension as needed to cast the wave to write to the specified type
-// see WaveType for the proper codes 
-//	Redimension/T=() wTmpWrite
-// -- May also need to check the dimension(s) before writing (don't trust the input)
-	String groupName = "/entry/reduction/pol_sans"	
-	String varName = "cell_parameters"
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//
+//// TODO -- needs to be a WAVE
+//// is this a text wave?? if it's mixed names + values, then what?
+//Function V_writePolSANS_cellParams(fname,inW)
+//	String fname
+//	Wave inW
+//	
+////	String path = "entry:reduction:pol_sans:cell_parameters"
+//		
+//	Duplicate/O inW wTmpWrite 	
+//// then use redimension as needed to cast the wave to write to the specified type
+//// see WaveType for the proper codes 
+////	Redimension/T=() wTmpWrite
+//// -- May also need to check the dimension(s) before writing (don't trust the input)
+//	String groupName = "/entry/reduction/pol_sans"	
+//	String varName = "cell_parameters"
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-end
-
-Function V_writePolSANS_PolSANSPurpose(fname,str)
-	String fname,str
-
-//	String path = "entry:reduction:pol_sans:pol_sans_purpose"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/reduction/pol_sans"
-	String varName = "pol_sans_purpose"
-	tmpTW[0] = str //
-
-	variable err
-	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writePolSANS_PolSANSPurpose(fname,str)
+//	String fname,str
+//
+////	String path = "entry:reduction:pol_sans:pol_sans_purpose"	
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/reduction/pol_sans"
+//	String varName = "pol_sans_purpose"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-		
-	return(err)
-End
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
 
 				
 //////// TOP LEVEL DATA REPRESENTATION

@@ -682,6 +682,8 @@ End
 //
 Function V_BeamCtr_WriteTable()
 
+	DoAlert 0,"this currently only writes pix values locally, not mm, and not to files on disk"
+	
 	String folder
 	
 	Variable ii
