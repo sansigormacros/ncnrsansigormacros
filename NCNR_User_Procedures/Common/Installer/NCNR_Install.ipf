@@ -18,6 +18,13 @@
 //InstallNCNRMacros() // run this function when experiment is loaded
 //InstallerPanel() // run this function when experiment is loaded
 
+// JULY 2016 -- updated for Igor 7
+// specifically the 64- bit version Extensions folder in the user folder is something new
+//
+//
+//
+
+
 //
 // package-6.001
 // - lots more diagnostics added
@@ -89,7 +96,13 @@ Function InstallNCNRMacros(forceInstall)
 	if(cmpstr("Macintosh",IgorInfo(2))==0)
 		isMac=1
 	endif
-	
+
+	//check the 32-bit or 64-bit
+	String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
+	Variable is64Bit = 0
+	if(strsearch(igorKindStr, "64", 0 ) != -1)
+		is64Bit = 1
+	endif
 
 	String igorPathStr,homePathStr,userPathStr
 	PathInfo Igor
@@ -109,8 +122,18 @@ Function InstallNCNRMacros(forceInstall)
 
 //////////////////////////////////////////////////////////////////////
 	
+	
 ////// clean up the Igor Extensions (first the old path -- in the App folder)
-	NewPath /Q/O ExPath, igorPathStr+"Igor Extensions:"
+	String extFolderStr,NCNRExtFolder
+	if(is64Bit)
+		extFolderStr = "Igor Extensions (64-bit):"
+		NCNRExtFolder = "NCNR_Extensions_64bit"
+	else
+		extFolderStr = "Igor Extensions:"
+		NCNRExtFolder = "NCNR_Extensions"
+	endif
+	
+	NewPath /Q/O ExPath, igorPathStr+extFolderStr
 	PathInfo ExPath
 	String extPathStr = S_Path 
 	string strFileList = IndexedFile(ExPath, -1, "????" )
@@ -122,7 +145,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
 			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
-			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+			Print "Move file "+ tmpStr + " from "+extFolderStr+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -135,12 +158,12 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
 			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
-			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+			Print "Move folder "+ tmpStr + " from "+extFolderStr+IsMoveOK(V_flag)
 		endif
 	endfor
 
 ////// then clean up the Igor Extensions (now look in the User Path, by changing the definition of ExPath)
-	NewPath /Q/O ExPath, userPathStr+"Igor Extensions:"
+	NewPath /Q/O ExPath, userPathStr+extFolderStr
 	PathInfo ExPath
 	extPathStr = S_Path 
 	strFileList = IndexedFile(ExPath, -1, "????" )
@@ -150,7 +173,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFiles)
 		if(isThere)
 			MoveFile/O/P=ExPath tmpStr as homePathStr+"NCNR_Moved_Files:"+tmpStr+timeStamp
-			Print "Move file "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+			Print "Move file "+ tmpStr + " from "+extFolderStr+IsMoveOK(V_flag)
 		endif
 	endfor
 	
@@ -161,7 +184,7 @@ Function InstallNCNRMacros(forceInstall)
 		isThere = CheckForMatch(tmpStr,extFolders)
 		if(isThere)
 			MoveFolder extPathStr+tmpStr as homePathStr+"NCNR_Moved_Files:NCNR_Moved_Folders:"+tmpStr+timeStamp
-			Print "Move folder "+ tmpStr + " from Igor Extensions: "+IsMoveOK(V_flag)
+			Print "Move folder "+ tmpStr + " from "+extFolderStr+IsMoveOK(V_flag)
 		endif
 	endfor
 
@@ -382,11 +405,11 @@ Function InstallNCNRMacros(forceInstall)
 
 // Igor Extensions, platform-specific
 	if(isMac)
-		CopyFolder/Z=1 homePathStr+"NCNR_Extensions:Mac_XOP" as extPathStr+"NCNR_Extensions"
+		CopyFolder/Z=1 homePathStr+NCNRExtFolder+":Mac_XOP" as extPathStr+NCNRExtFolder
 	else
-		CopyFolder/Z=1 homePathStr+"NCNR_Extensions:Win_XOP" as extPathStr+"NCNR_Extensions"
+		CopyFolder/Z=1 homePathStr+NCNRExtFolder+":Win_XOP" as extPathStr+NCNRExtFolder
 	endif
-	Print "*******Copy folder NCNR_Extensions:xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
+	Print "*******Copy folder "+NCNRExtFolder+":xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 //	
 
 ////////////////OLD way, moved the Folders//////////
