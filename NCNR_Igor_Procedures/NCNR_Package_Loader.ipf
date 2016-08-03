@@ -47,9 +47,9 @@ Menu "Macros"
 	"Load Polarization Reduction",PolarizationLoader()
 	"Load Real Space Modeling",RealSpaceLoader()
 	"Event Mode Processing",EventModeLoader()
-	"Load Batch Fitting - Beta",BatchFitLoader()
-	"Load Simulation Run Builder",SimSANSRunListLoader()
-	"Automated SANS Reduction - Beta",AutomateSANSLoader()
+//	"Load Batch Fitting - Beta",BatchFitLoader()
+//	"Load Simulation Run Builder",SimSANSRunListLoader()
+//	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 
 //	"-"
 
