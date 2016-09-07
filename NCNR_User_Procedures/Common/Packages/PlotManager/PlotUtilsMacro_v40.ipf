@@ -737,11 +737,15 @@ Function A_PickPath()
 	else
 		//set the global to the path (as a string)
 		// need 4 \ since it is the escape character
-		if(cmpstr("\\\\",dum[0,1])==0)	//Windoze user going through network neighborhood
-			DoAlert 0,alertStr
-			KillPath catPathName
-			return(1)
-		endif
+
+// SRK 2016, for windows 10, try to eliminate this restriction		
+		print igorinfo(3)
+//		if(cmpstr("\\\\",dum[0,1])==0)	//Windoze user going through network neighborhood
+//			DoAlert 0,alertStr
+//			KillPath catPathName
+//			return(1)
+//		endif
+		
 		String/G root:Packages:NIST:gCatPathStr = dum
 		return(0)		//no error
 	endif

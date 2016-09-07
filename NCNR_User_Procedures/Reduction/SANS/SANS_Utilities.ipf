@@ -424,13 +424,17 @@ Function PickPath()
 	else
 		//set the global to the path (as a string)
 		// need 4 \ since it is the escape character
-		if(cmpstr("\\\\",dum[0,1])==0)	//Windoze user going through network neighborhood
-			DoAlert 0,alertStr
-			KillPath catPathName
-			return(1)
-		endif
+		
+// SRK 2016, for windows 10, try to eliminate this restriction		
+		print igorinfo(3)
+//		if(cmpstr("\\\\",dum[0,1])==0)	//Windoze user going through network neighborhood
+//			DoAlert 0,alertStr
+//			KillPath catPathName
+//			return(1)
+//		endif
+		
 		String/G root:myGlobals:gCatPathStr = dum
-		// these are now set in theire respective procedures, since the folders don't exist yet!
+		// these are now set in their respective procedures, since the folders don't exist yet!
 //		String/G root:myGlobals:Patch:gCatPathStr = dum	//and the global used by Patch and Trans
 //		String/G root:myGlobals:TransHeaderInfo:gCatPathStr = dum	//and the global used by Patch and Trans
 		return(0)		//no error

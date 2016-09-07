@@ -13,6 +13,17 @@
 //
 // -- examples?
 //
+// -- added a test function AutoFix_Rollover_Steps() that will search for steps (simple delta) that 
+//    are +/- 0.1s away from the 6.7s missed rollover. This function looks for up, down, then re-calculates
+//    the derivative. ?? should this be set to work only between the cursors? Currently it does the whole set.
+//
+// -- added a test function PutCursorsAtBigStep(tol). that will look for a big "jump", larger than tol.
+//    find a way to work this into the panel, maybe add a button and a setVar to set the value
+//
+//
+// -- EC_FindStepButton_down (and up) now both do the SAME thing -- using the "PutCursorsAtBigStep" function 
+//    as above. This may change in the future...
+//
 //
 // -- NEW 2016
 //
@@ -1031,6 +1042,8 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
 	ShowEventDataButtonProc(ba)
+
+	SetDataFolder root:
 
 	return(0)
 End
@@ -2234,21 +2247,31 @@ Proc EventCorrectionPanel()
 		
 		ControlBar 100
 		Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
-		Button button1,pos={153,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
-		Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
-		Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
-		Button button4,pos={295+150,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
-		Button button5,pos={285,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
-		Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
-		Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
-		Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
-	
-		Button button9,pos={285,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
-		Button button10,pos={285,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
-		Button button11,pos={295+150,38},size={110,20},proc=EC_DoDifferential,title="Differential"
-		Button button12,pos={295+150,64},size={110,20},proc=EC_AddFindNext,title="Add Find Next"
-		Button button13,pos={285+120,12},size={20,20},proc=EC_NudgeCursor,title=">"
+		Button button1,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
+		Button button2,pos={18,64},size={110,20},proc=EC_DoDifferential,title="Differential"
+
+
+		SetVariable setvar0 pos={153,12},title="Tol",size={90,20},value=gStepTolerance
+		Button button3,pos={153,38},size={100,20},proc=EC_AutoCorrectSteps,title="Auto Correct"
+		Button button4,pos={153,64},size={110,20},proc=EC_AddFindNext,title="Add Find Next"
+
 		
+		Button button5,pos={285,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add 6.7s"
+		Button button6,pos={285,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr 6.7s"		
+		Button button7,pos={285,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
+		
+	
+		Button button8,pos={400,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
+		Button button9,pos={400,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
+		Button button10,pos={400,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
+		Button button11,pos={520,12},size={20,20},proc=EC_NudgeCursor,title=">"
+		
+
+		Button button12,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
+		Button button13,pos={625,38},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
+		Button button14,pos={655,64},size={60,20},proc=EC_DoneButtonProc,title="Done"
+	
+
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
 	endif
@@ -2257,6 +2280,22 @@ Proc EventCorrectionPanel()
 	
 EndMacro
 
+
+Function EC_AutoCorrectSteps(ba)
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			AutoFix_Rollover_Steps()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+		
+	return(0)
+End
 
 Function EC_NudgeCursor(ba)
 	STRUCT WMButtonAction &ba
@@ -2601,7 +2640,7 @@ Function PutCursorsAtStep(upDown)
 	ptB = pcsr(B)
 	startPt = min(ptA,ptB)
 	
-	FindLevel/P/Q/R=[startPt] rescaledTime_DIF avg*upDown
+	FindLevel/P/Q/R=[startPt] rescaledTime_DIF abs(avg)*upDown		// in case the average is negative
 	if(V_flag==0)
 		pt = V_levelX
 		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-values within the point range
@@ -2667,7 +2706,8 @@ Function EC_FindStepButton_down(ctrlName) : ButtonControl
 //	Variable upDown = -5
 	NVAR upDown = root:Packages:NIST:Event:gStepTolerance
 	
-	PutCursorsAtStep(-1*upDown)
+	PutCursorsAtBigStep(upDown)
+//	PutCursorsAtStep(-1*upDown)
 
 	return(0)
 end
@@ -2679,7 +2719,8 @@ Function EC_FindStepButton_up(ctrlName) : ButtonControl
 //	Variable upDown = 5
 	NVAR upDown = root:Packages:NIST:Event:gStepTolerance
 
-	PutCursorsAtStep(upDown)
+	PutCursorsAtBigStep(upDown)
+//	PutCursorsAtStep(upDown)
 
 	return(0)
 end
@@ -4167,4 +4208,122 @@ toc()
 	
 	return(0)
 
+End
+
+
+//////////////////
+Function FixStepDown()
+	
+	SetDataFolder root:Packages:NIST:Event:
+	
+	Wave rescaledTime = rescaledTime
+	Wave timePt = timePt
+	Variable rollTime,rollTicks,ii,delta
+	
+	rollTicks = 2^26				// in ticks
+	rollTime = 2^26*1e-7		// in seconds
+
+	for(ii=0;ii<numpnts(rescaledTime)-1;ii+=1)
+		delta = rescaledTime[ii+1] - rescaledTime[ii]
+		if(delta < -6.6 && delta > -6.8)		//assume anything this large is a step down
+		print ii, delta
+			MultiThread timePt[ii+1,] += rollTicks
+			MultiThread rescaledTime[ii+1,] += rollTime
+		
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+		endif
+	
+	endfor
+
+	SetDataFolder root:
+
+	return(0)
+End
+
+Function FixStepUp()
+	
+	SetDataFolder root:Packages:NIST:Event:
+	
+	Wave rescaledTime = rescaledTime
+	Wave timePt = timePt
+	Variable rollTime,rollTicks,ii,delta
+	
+	rollTicks = 2^26				// in ticks
+	rollTime = 2^26*1e-7		// in seconds
+
+	for(ii=0;ii<numpnts(rescaledTime)-1;ii+=1)
+		delta = rescaledTime[ii+1] - rescaledTime[ii]
+		if(delta > 6.6 && delta < 6.8)		//assume anything this large is a step up
+		print ii, delta
+			MultiThread timePt[ii+1,] -= rollTicks
+			MultiThread rescaledTime[ii+1,] -= rollTime
+		
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+		endif
+	
+	endfor
+
+	SetDataFolder root:
+
+	return(0)
+End
+
+//    added a test function AutoFix_Rollover_Steps() that will search for steps (simple delta) that 
+//    are +/- 0.1s away from the 6.7s missed rollover. This function looks for up, down, then re-calculates
+//    the derivative.
+//  - this way, both the simple steps, and the "square" steps can both be corrected.
+//
+Function AutoFix_Rollover_Steps()
+// fix steps up, then down (order doesn't matter)
+	Print "Fixing steps of 6.7s up"	
+	FixStepUp()
+	Print "Fixing steps of 6.7s down"
+	FixStepDown()
+//	re-do the differential
+	DifferentiatedTime()
+	return(0)
+End
+
+
+//upDown looks for a step up or down?
+//
+// plan is to be able to locate large (t0) steps from oscillations that are not timing errors
+//
+//
+// will search from the leftmost cursor to the end. this allows skipping of oscillations
+// that are not timing errors. It may introduce other issues, but we'll see what happens
+//
+Function PutCursorsAtBigStep(tol)
+	Variable tol
+	
+	SetDataFolder root:Packages:NIST:Event:
+
+	Wave rescaledTime=rescaledTime
+	Variable ii,delta,ptA,ptB,startPt,pt
+		
+	ptA = pcsr(A)
+	ptB = pcsr(B)
+	startPt = min(ptA,ptB)
+		
+	for(ii=startPt;ii<numpnts(rescaledTime)-1;ii+=1)
+		delta = rescaledTime[ii+1] - rescaledTime[ii]		//if there is a step down, this will be negative
+		if(abs(delta) > tol)
+			print ii, delta
+			pt = ii
+			break
+		endif	
+	endfor
+	
+	Cursor/P A rescaledTime pt+1	//at the point+1
+	Cursor/P B rescaledTime numpnts(rescaledTime)-1		//at the end
+
+	SetDataFolder root:
+
+	return(0)
+	
+	
 End
