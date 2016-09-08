@@ -143,13 +143,14 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	Variable i,nthreads= ThreadProcessorCount
 
 // make sure that the XOP exists if we are going to thread	
-#if exists("Monte_SANSX4")
+#if exists("Monte_SANSX4NNN")
 	//OK
 	if(nthreads>4)		//only support 4 processors until I can figure out how to properly thread the XOP and to loop it
 							//AND - just use 4 threads rather than the 8 (4 + 4 hyperthread?) my quad-core reports.
 		nthreads=4
 	endif
 #else
+
 	nthreads = 1
 #endif
 
@@ -1349,6 +1350,31 @@ Function MC_DoItButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+#if (exists("Monte_SANSX"))	
+	// XOP exists, all is OK
+#else		
+	// XOP is not present, warn the user to re-run the installer
+	//check the 32-bit or 64-bit
+	String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
+	String alertStr
+	if(strsearch(igorKindStr, "64", 0 ) != -1)
+		alertStr = "The MonteCarlo XOP is not installed for the 64-bit version of Igor. Without it, simulation will "
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the simulation."
+	else
+		alertStr = "The MonteCarlo XOP is not installed for the 32-bit version of Igor. Without it, simulation will "
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the simulation."
+	endif
+	DoAlert 1,alertStr	
+
+	if(V_flag == 1)
+		// get out gracefully
+		SetDataFolder root:
+		return(0)
+	endif
+#endif			
+			
 			NVAR doMC = root:Packages:NIST:SAS:gDoMonteCarlo
 			doMC = 1
 			ReCalculateInten(1)

@@ -44,6 +44,7 @@ Proc ModelPicker_Panel()
 		Init_FileList()
 		Procedure_List()
 //		AutoPositionWindow/M=1/R=WrapperPanel Procedure_List		//keep it on-screen
+
 	endif
 End
 
@@ -574,6 +575,33 @@ End
 
 Function FileList_InsertButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+
+// add a check here to warn users if the XOP functions are not present
+#if exists("SphereFormX")
+	// XOP present, all is OK
+#else
+	// XOP is not present, warn the user to re-run the installer
+	//check the 32-bit or 64-bit
+	String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
+	String alertStr
+	if(strsearch(igorKindStr, "64", 0 ) != -1)
+		alertStr = "The SANSAnalysis XOP is not installed for the 64-bit version of Igor. "
+		alertStr += "It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the analysis."
+	else
+		alertStr = "The SANSAnalysis XOP is not installed for the 32-bit version of Igor. "
+		alertStr += "It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the analysis."
+	endif
+	DoAlert 1,alertStr	
+
+	if(V_flag == 1)
+		// get out gracefully
+		SetDataFolder root:
+		return(0)
+	endif
+
+#endif
 	
 	//loop through the selected files in the list...
 	Wave/T fileWave=$"root:Packages:NIST:FileList:fileWave"

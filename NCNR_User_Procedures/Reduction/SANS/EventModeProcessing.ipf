@@ -988,6 +988,27 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 #if (exists("EventLoadWave")==4)
 	LoadEvents_XOP()
 #else
+	// XOP is not present, warn the user to re-run the installer
+	//check the 32-bit or 64-bit
+	String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
+	String alertStr
+	if(strsearch(igorKindStr, "64", 0 ) != -1)
+		alertStr = "The Event Loader XOP is not installed for the 64-bit version of Igor. Without it, event loading will "
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the file loading."
+	else
+		alertStr = "The Event Loader XOP is not installed for the 32-bit version of Igor. Without it, event loading will "
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+		alertStr += "do the installation, or NO to continue with the file loading."
+	endif
+	DoAlert 1,alertStr
+	
+	if(V_flag == 1)
+		// get out gracefully
+		SetDataFolder root:
+		return(0)
+	endif
+	
 	LoadEvents()
 #endif	
 
