@@ -143,7 +143,7 @@ Function Monte_SANS_Threaded(inputWave,ran_dev,nt,j1,j2,nn,linear_data,results)
 	Variable i,nthreads= ThreadProcessorCount
 
 // make sure that the XOP exists if we are going to thread	
-#if exists("Monte_SANSX4NNN")
+#if exists("Monte_SANSX4")
 	//OK
 	if(nthreads>4)		//only support 4 processors until I can figure out how to properly thread the XOP and to loop it
 							//AND - just use 4 threads rather than the 8 (4 + 4 hyperthread?) my quad-core reports.
