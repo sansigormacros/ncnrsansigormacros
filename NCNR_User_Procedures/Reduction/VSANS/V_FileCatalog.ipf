@@ -392,19 +392,21 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GThickness[lastPoint]=V_getSampleThickness(fname)
 
 	// TODO --  the x and y center have different meaning, since there are multiple panels
+	// TODO -- remove the hard-wiring
+	String detStr = "FL"
 	//XCenter of beam on detector
 	InsertPoints lastPoint,1,GXCenter
-	GXCenter[lastPoint]=123
+	GXCenter[lastPoint]=V_getDet_beam_center_x(fname,detStr)
 	
 	// TODO --  the x and y center have different meaning, since there are multiple panels
 	//YCenter
 	InsertPoints lastPoint,1,GYCenter
-	GYCenter[lastPoint]=321
+	GYCenter[lastPoint]=V_getDet_beam_center_y(fname,detStr)
 
 	// TODO -- SDD has no real meaning - since there are multiple distances to report
 	//SDD
 	InsertPoints lastPoint,1,GSDD
-	GSDD[lastPoint]=44
+	GSDD[lastPoint]=V_getDet_ActualDistance(fname,detStr)
 	
 	//wavelength
 	InsertPoints lastPoint,1,GLambda

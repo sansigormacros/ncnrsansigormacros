@@ -90,6 +90,9 @@ Proc V_CreatePatchGlobals()
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS1 = "no file selected"
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS2 = "no file selected"
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS3 = "no box selected"
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS4 = "no file selected"
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS5 = "no file selected"
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS6 = "no file selected"
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV1 =0
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV2 = 0
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV3 = 0
@@ -402,27 +405,27 @@ End
 //num (input) is a simple check to make sure that the wave is set up properly
 //from the calling routine
 //
-Function GetCheckBoxesState(w,num)
-	Wave w	   //on return, this wave contains the current state of the checkboxes
-	Variable num
-	
-	if(num != 20)
-		Abort "wrong number of checkboxes GetCheckBoxesState()"
-	Endif
-	ControlInfo checkPS1
-	w[0] = V_value
-	
-	Variable ii
-	String baseStr="checkPV"
-	
-	ii=1
-	do
-		ControlInfo $(baseStr + num2str(ii))
-		w[ii] = V_Value
-		ii+=1
-	while(ii<num)
-	return(0)
-End
+//Function GetCheckBoxesState(w,num)
+//	Wave w	   //on return, this wave contains the current state of the checkboxes
+//	Variable num
+//	
+//	if(num != 20)
+//		Abort "wrong number of checkboxes GetCheckBoxesState()"
+//	Endif
+//	ControlInfo checkPS1
+//	w[0] = V_value
+//	
+//	Variable ii
+//	String baseStr="checkPV"
+//	
+//	ii=1
+//	do
+//		ControlInfo $(baseStr + num2str(ii))
+//		w[ii] = V_Value
+//		ii+=1
+//	while(ii<num)
+//	return(0)
+//End
 
 //on return, wt is a TEXT wave with the values in the SetVar boxes
 //will poll the SetVariable controls to get the new values - will get all the values,
@@ -430,46 +433,34 @@ End
 //num (input) is a simple check to make sure that the wave is set up properly
 //from the calling routine
 //
-Function GetEditedSetVarBoxes(wt,num)
-	Wave/T wt	   
-	Variable num
-	
-	if(num != 20)
-		Abort "wrong number of checkboxes GetEditedSetVarBoxes()"
-	Endif
-	
-	//pass all as a text wave - so only one wave has to be passed (conversion 2x, though)
-	//global is set to the changed value when entered. read others directly from the control
-	
-	//make sure the text label is exactly 60 characters long, to match VAX field length
-	SVAR dum=root:Packages:NIST:VSANS:Globals:Patch:gPS1
-//	String str60="", junk="junk" 
-//	str60 = PadString(junk,60,0x20)
-//	if(strlen(dum) <= 60)
-//		if(strlen(dum) == 60)
-//		   str60 = dum
-//		else
-//		   str60 = PadString(dum,60,0x20)
-//		Endif
-//	else
-//		//too long, truncate
-//		str60[0,59] = dum[0,59]
+//Function GetEditedSetVarBoxes(wt,num)
+//	Wave/T wt	   
+//	Variable num
+//	
+//	if(num != 20)
+//		Abort "wrong number of checkboxes GetEditedSetVarBoxes()"
 //	Endif
 //	
-//	wt[0] = str60
-	wt[0] = dum			//with Nexus, no need to enforce 60 character field
+//	//pass all as a text wave - so only one wave has to be passed (conversion 2x, though)
+//	//global is set to the changed value when entered. read others directly from the control
 //	
-	Variable ii
-	String baseStr="PV"
-	ii=1
-	do
-		ControlInfo $(baseStr + num2str(ii))
-		wt[ii] = num2str(V_Value)
-		ii+=1
-	while(ii<num)
-	
-	return(0)	//no error
-End
+//	//make sure the text label is exactly 60 characters long, to match VAX field length
+//	SVAR dum=root:Packages:NIST:VSANS:Globals:Patch:gPS1
+//
+////	wt[0] = str60
+//	wt[0] = dum			//with Nexus, no need to enforce 60 character field
+////	
+//	Variable ii
+//	String baseStr="PV"
+//	ii=1
+//	do
+//		ControlInfo $(baseStr + num2str(ii))
+//		wt[ii] = num2str(V_Value)
+//		ii+=1
+//	while(ii<num)
+//	
+//	return(0)	//no error
+//End
 
 
 //simple function to get the string value from the popup list of filenames
@@ -504,22 +495,22 @@ Function ChangeHeaderButtonProc(CHButton) : ButtonControl
 	String partialName="", tempName = ""
 	Variable ok,nvars = 20,ii
 	
-	Make/O/N=(nvars) tempChange
-	Wave w=tempchange
-	GetCheckBoxesState(w,nvars)
+//	Make/O/N=(nvars) tempChange
+//	Wave w=tempchange
+//	GetCheckBoxesState(w,nvars)
 	//Print "w[0] = ",w[0]
 	
 	
-	//Get the current values in each of the fields - to pass to Write() as a textwave
-	Make/O/T/N=(nvars) tempValues
-	Wave/T wt=tempValues
-	//initialize textwave
-	ii=0
-	do
-		wt[ii] = ""
-		ii+=1
-	while(ii<nvars)
-	GetEditedSetVarBoxes(wt,nvars)
+//	//Get the current values in each of the fields - to pass to Write() as a textwave
+//	Make/O/T/N=(nvars) tempValues
+//	Wave/T wt=tempValues
+//	//initialize textwave
+//	ii=0
+//	do
+//		wt[ii] = ""
+//		ii+=1
+//	while(ii<nvars)
+//	GetEditedSetVarBoxes(wt,nvars)
 	
 	//get the popup string
 	partialName = GetPatchPopupString()
@@ -538,23 +529,38 @@ Function ChangeHeaderButtonProc(CHButton) : ButtonControl
 	Endif
 	
 	//go write the changes to the file
-	WriteHeaderForPatch(tempName,w,wt)
+//	WriteHeaderForPatch(tempName,w,wt)
+	WriteHeaderForPatch(tempName)
 	
 	//clean up wave before leaving
 	KillWaves/Z w,wt
 	
 End
 
+
+//	ControlInfo checkPS1
+//	w[0] = V_value
+//	
+//	Variable ii
+//	String baseStr="checkPV"
+//	
+//	ii=1
+//	do
+//		ControlInfo $(baseStr + num2str(ii))
+//		w[ii] = V_Value
+//		ii+=1
+//	while(ii<num)
+	
 //*****this function actually writes the data to disk*****
 //overwrites the specific bytes the the header that are to be changed
 //real values are written out mimicking VAX format, so that can be properly
 //re-read as raw binary VAX files.
 //if any additional fields are to be edited, the exact byte location must be known
 //
-Function WriteHeaderForPatch(fname,change,textVal)
+Function WriteHeaderForPatch(fname)
 	String fname
-	Wave change
-	Wave/T textVal
+//	Wave change
+//	Wave/T textVal
 	
 	Variable refnum,num
 	String textstr
@@ -562,97 +568,130 @@ Function WriteHeaderForPatch(fname,change,textVal)
 // TODO:
 // -- currently I hard-wired a detector choice. This needs to be changed (somehow), with a better interface
 //
-	String detStr = "FL"
+	ControlInfo popup_0
+	String detStr = S_value
 
-	
-	//change the sample label ?
-	if(change[0])
-		V_writeSampleDescription(fname,textVal[0])
-	Endif
-	
+// handle strings differently
 
-	if(change[1])		//sample transmission
-		num = str2num(textVal[1])
-		V_writeSampleTransmission(fname,num)
+	ControlInfo checkPS1		//change the sample label ?
+	if(V_Value == 1)
+		SVAR gPS1 = root:Packages:NIST:VSANS:Globals:Patch:gPS1
+		V_writeSampleDescription(fname,gPS1)
+	endif
+	
+	ControlInfo checkPV1
+	if(V_Value == 1)		//sample transmission
+		ControlInfo PV1
+		V_writeSampleTransmission(fname,V_value)
 	Endif
-	if(change[2])		//sample thickness
-		num = str2num(textVal[2])
-		V_writeSampleThickness(fname,num)
+	
+	ControlInfo checkPV2
+	if(V_Value == 1)		//sample thickness
+		ControlInfo PV2
+		V_writeSampleThickness(fname,V_Value)
 	Endif
-	if(change[3])		//pixel X
-		num = str2num(textVal[3])
-		V_writeDet_beam_center_x(fname,detStr,num)		// TODO un-hard-wire
+	
+	ControlInfo checkPV5
+	if(V_Value == 1)		//attenuator number
+		ControlInfo PV5
+		V_writeAttenThickness(fname,V_value)
 	Endif
-	if(change[4])		// pixel Y
-		num = str2num(textVal[4])
-		V_writeDet_beam_center_y(fname,detStr,num)		// TODO un-hard-wire
+
+	ControlInfo checkPV6		// count time
+	if(V_Value == 1)
+		ControlInfo PV6
+		V_writeCount_time(fname,V_Value)
 	Endif
-	if(change[5])		//attenuator number
-		num = str2num(textVal[5])
-		V_writeAttenThickness(fname,num)
+
+	ControlInfo checkPV7	
+	if(V_Value == 1)    //monitor count
+		ControlInfo PV7 
+		V_writeMonitorCount(fname,V_Value)
 	Endif
-	if(change[6])
-		num =str2num(textVal[6])
-		V_writeCount_time(fname,num)
+
+	ControlInfo checkPV10	
+	if(V_Value == 1)      //wavelength
+		ControlInfo PV10
+		V_writeWavelength(fname,V_Value)
 	Endif
-	if(change[7])    //monitor count
-		num = str2num(textVal[7]) 
-		V_writeMonitorCount(fname,num)
+
+	ControlInfo checkPV11		
+	if(V_Value == 1)      //wavelength spread
+		ControlInfo PV11
+		V_writeWavelength_spread(fname,V_Value)
+	Endif	
+
+	ControlInfo checkPV14		
+	if(V_Value == 1)      //source aperture
+		ControlInfo PV14
+		textStr = num2str(V_Value)
+		V_writeSourceAp_size(fname,textStr)		//this is expecting a string
 	Endif
-	if(change[8])     //total detector count
-		num = str2num(textVal[8])
-		V_writeDet_IntegratedCount(fname,detStr,num)		// TODO un-hard-wire
+	
+	ControlInfo checkPV15		
+	if(V_Value == 1)      //sample aperture
+		ControlInfo PV15
+		V_writeSampleAp2_size(fname,V_Value)		//TODO -- not sure if this is correct call
 	Endif
-	if(change[9])      //trans det count
-		num = str2num(textVal[9])
-// TODO -- replace call
-//		WriteTransDetCountToHeader(fname,num)
-	Endif
-	if(change[10])      //wavelength
-		num = str2num(textVal[10])
-		V_writeWavelength(fname,num)
-	Endif
-	///
-	if(change[11])      //wavelength spread
-		num = str2num(textVal[11])
-		V_writeWavelength_spread(fname,num)
-	Endif
-	if(change[12])      //temperature
-		num = str2num(textVal[12])
-// TODO -- replace call
-//		WriteTemperatureToHeader(fname,num)
-	Endif
-	if(change[13])      //magnetic field
-		num = str2num(textVal[13])
-// TODO -- replace call
-//		WriteMagnFieldToHeader(fname,num)
-	Endif
-	if(change[14])      //source aperture
-//		num = str2num(textVal[14])
-		V_writeSourceAp_size(fname,textVal[14])		//this is expecting a string
-	Endif
-	if(change[15])      //sample aperture
-		num = str2num(textVal[15])
-		V_writeSampleAp2_size(fname,num)		//TODO -- not sure if this is correct call
-	Endif
-	///
-	if(change[16])      //source-sam dist
-		num = str2num(textVal[16])
+
+	ControlInfo checkPV16
+	if(V_Value == 1)      //source-sam dist
+		ControlInfo PV16
 // TODO -- replace call
 //		WriteSrcToSamDistToHeader(fname,num)
 	Endif
-	if(change[17])      //det offset
-		num = str2num(textVal[17])
-		V_writeDet_LateralOffset(fname,detStr,num)		// TODO lateral or vertical offset, based on detStr
+
+	ControlInfo checkPV18
+	if(V_Value == 1)      //beamstop diam
+		ControlInfo PV18
+		V_writeBeamStopC2_size(fname,V_Value)			//TODO depends on which det carriage I'm working with (2) or (3)
+	Endif	
+
+	ControlInfo checkPS2		//change the DIV file name?
+	if(V_Value == 1)
+		SVAR gPS2 = root:Packages:NIST:VSANS:Globals:Patch:gPS2
+		V_writeSensitivityFileName(fname,gPS2)
+	endif	
+	
+	ControlInfo checkPS3		//change the sample intent?
+	if(V_Value == 1)
+		SVAR gPS3 = root:Packages:NIST:VSANS:Globals:Patch:gPS3
+		V_writeReductionIntent(fname,gPS3)
+	endif	
+
+	
+// individual detector values	
+	ControlInfo checkPV3
+	if(V_Value == 1)		//pixel X
+		ControlInfo PV3
+		V_writeDet_beam_center_x(fname,detStr,V_Value)	
 	Endif
-	if(change[18])      //beamstop diam
-		num = str2num(textVal[18])
-		V_writeBeamStopC2_size(fname,num)			//TODO depends on which det carriage I'm working with (2) or (3)
+	
+	ControlInfo checkPV4
+	if(V_Value == 1)		// pixel Y
+		ControlInfo PV4
+		V_writeDet_beam_center_y(fname,detStr,V_Value)	
 	Endif
-	if(change[19])     //SDD
-		num = str2num(textVal[19])
-		V_writeDet_distance(fname,detStr,num)	// TODO un-hard-wire
+	
+	ControlInfo checkPV17
+	if(V_Value == 1)      //det offset
+		ControlInfo PV17
+		V_writeDet_LateralOffset(fname,detStr,V_Value)		// TODO lateral or vertical offset, based on detStr
 	Endif
+
+	ControlInfo checkPV19
+	if(V_Value == 1)     //SDD
+		ControlInfo PV19
+		V_writeDet_distance(fname,detStr,V_Value)	 
+	Endif
+
+	ControlInfo checkPV8	
+	if(V_Value == 1)     //total detector count
+		ControlInfo PV8
+		V_writeDet_IntegratedCount(fname,detStr,V_value)		
+	Endif
+
+
 	Return(0)
 End
 
@@ -660,9 +699,9 @@ End
 //
 Proc V_Patch_Panel()
 	PauseUpdate; Silent 1	   // building window...
-	NewPanel /W=(519,85,950,608)/K=2 as "Patch Raw VSANS Data Files"
+	NewPanel /W=(519,85,950,688)/K=2 as "Patch Raw VSANS Data Files"
 	DoWindow/C V_Patch_Panel
-	ModifyPanel cbRGB=(1,39321,19939)
+	ModifyPanel cbRGB=(11291,48000,3012)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
 	SetDrawEnv fname= "Courier",fstyle= 1
@@ -670,8 +709,9 @@ Proc V_Patch_Panel()
 	DrawLine 7,30,422,30
 	DrawLine 7,288,422,288
 	DrawLine 7,199,422,199
-	DrawLine 7,378,422,378
-	DrawLine 7,469,422,469
+	DrawLine 7,378+18,422,378+18
+	DrawLine 7,469+18,422,469+18
+	
 	SetVariable PathDisplay,pos={77,7},size={310,13},title="Path"
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while patching. If no files appear in the popup, make sure that this folder is set correctly"}
 	SetVariable PathDisplay,font="Courier",fSize=10
@@ -693,119 +733,161 @@ Proc V_Patch_Panel()
 	SetVariable PMStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPatchMatchStr
 	Button ChAllButton,pos={245,60},size={180,20},proc=ChAllHeadersButtonProc,title="Change All Headers in List"
 	Button ChAllButton,help={"This will change the checked values (ONLY) in ALL of the files in the popup list, not just the top file. If the \"change\" checkbox for the item is not checked, nothing will be changed for that item."}
-	Button DoneButton,pos={310,489},size={110,20},proc=DoneButtonProc,title="Done Patching"
+	Button DoneButton,pos={314,85},size={110,20},proc=DoneButtonProc,title="Done Patching"
 	Button DoneButton,help={"When done Patching files, this will close this control panel."}
-	Button cat_short,pos={9,485},size={100,20},proc=DoCatShort,title="File Catalog"
-	Button cat_short,help={"Use this button to generate a notebook with file header information. Very useful for identifying files."}
-	SetVariable PS1,pos={42,111},size={338,13},proc=SetLabelVarProc,title="label"
-	SetVariable PS1,help={"Current sample label"},font="Courier",fSize=10
-	SetVariable PS1,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS1
-	SetVariable PV1,pos={42,129},size={340,13},title="Transmission"
-	SetVariable PV1,help={"Current transmission\rvalue"},font="Courier",fSize=10
-	SetVariable PV1,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV1
-	SetVariable PV2,pos={42,147},size={340,13},title="Thickness (cm)"
-	SetVariable PV2,help={"Current sample thickness, in units of centimeters"}
-	SetVariable PV2,font="Courier",fSize=10
-	SetVariable PV2,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV2
-	SetVariable PV3,pos={42,165},size={340,13},title="Beamcenter X"
-	SetVariable PV3,help={"Current X-position of the beamcenter, in pixels"}
-	SetVariable PV3,font="Courier",fSize=10
-	SetVariable PV3,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV3
-	SetVariable PV4,pos={42,183},size={340,13},title="Beamcenter Y"
-	SetVariable PV4,help={"Current Y-position of the beamcenter, in pixels"}
-	SetVariable PV4,font="Courier",fSize=10
-	SetVariable PV4,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV4
-	SetVariable PV5,pos={42,202},size={340,13},title="Attenuator number"
-	SetVariable PV5,help={"attenuator number present during data collection"}
-	SetVariable PV5,font="Courier",fSize=10
-	SetVariable PV5,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV5
-	SetVariable PV6,pos={42,219},size={340,13},title="Counting time (s)",font="Courier",fSize=10
-	SetVariable PV6,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV6
-	SetVariable PV6,help={"total counting time in seconds"}
-	SetVariable PV7,pos={42,237},size={340,13},title="Monitor count",font="Courier",fSize=10
-	SetVariable PV7,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV7
-	SetVariable PV7,help={"total monitor counts"}
-	SetVariable PV8,pos={42,255},size={340,13},title="Detector count",font="Courier",fSize=10
-	SetVariable PV8,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV8
-	SetVariable PV8,help={"total detector counts"}
-	SetVariable PV9,pos={42,273},size={340,13},title="Trans. det. count",font="Courier",fSize=10
-	SetVariable PV9,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV9
-	SetVariable PV9,help={"Transmission\r detector counts"}
-	SetVariable PV10,pos={42,291},size={340,13},title="Wavelength (A)",font="Courier",fSize=10
-	SetVariable PV10,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV10
-	SetVariable PV10,help={"neutron wavelength in angstroms"}
-	SetVariable PV11,pos={42,309},size={340,13},title="Wavelength spread (dL/L)",font="Courier",fSize=10
-	SetVariable PV11,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV11
-	SetVariable PV11,help={"wavelength spread (delta lambda)/lambda"}
-	SetVariable PV12,pos={42,327},size={340,13},title="Temperature (C)",font="Courier",fSize=10
-	SetVariable PV12,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV12
-	SetVariable PV12,help={"Set point temperature in centigrade"}
-	SetVariable PV13,pos={42,345},size={340,13},title="Magnetic field (G)",font="Courier",fSize=10
-	SetVariable PV13,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV13
-	SetVariable PV13,help={"magnetic field strength units?"}
-	SetVariable PV14,pos={42,363},size={340,13},title="Source aperture diameter (mm)",font="Courier",fSize=10
-	SetVariable PV14,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV14
-	SetVariable PV14,help={"source aperture diameter, in millimeters"}
-	SetVariable PV15,pos={42,381},size={340,13},title="Sample aperture diameter (mm)",font="Courier",fSize=10
-	SetVariable PV15,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV15
-	SetVariable PV15,help={"sample aperture diameter, in millimeters"}
-	SetVariable PV16,pos={42,399},size={340,13},title="Source to sample distance (m)",font="Courier",fSize=10
-	SetVariable PV16,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV16
-	SetVariable PV16,help={"Source to sample distance in meters"}
-	SetVariable PV17,pos={42,417},size={340,13},title="Detector offset (cm)",font="Courier",fSize=10
-	SetVariable PV17,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV17
-	SetVariable PV17,help={"Detector offset, in centimeters"}
-	SetVariable PV18,pos={42,435},size={340,13},title="Beamstop diameter (mm)",font="Courier",fSize=10
-	SetVariable PV18,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV18
-	SetVariable PV18,help={"beamstop diamter, in millimeters (1 inch = 25.4mm)"}
-	SetVariable PV19,pos={42,453},size={340,13},title="Sample to detector distance (m)",font="Courier",fSize=10
-	SetVariable PV19,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV19
-	SetVariable PV19,help={"sample to detector distance, in meters"}
-	
-	CheckBox checkPS1,pos={18,108},size={20,20},title=""
-	CheckBox checkPS1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV1,pos={18,126},size={20,20},title=""
-	CheckBox checkPV1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV2,pos={18,144},size={20,20},title=""
-	CheckBox checkPV2,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV3,pos={18,162},size={20,20},title=""
-	CheckBox checkPV3,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV4,pos={18,180},size={20,20},title=""
-	CheckBox checkPV4,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV5,pos={18,198},size={20,20},title=""
-	CheckBox checkPV5,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV6,pos={18,216},size={20,20},title=""
-	CheckBox checkPV6,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV7,pos={18,234},size={20,20},title="",value=0
-	CheckBox checkPV7,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV8,pos={18,252},size={20,20},title="",value=0
-	CheckBox checkPV8,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV9,pos={18,270},size={20,20},title="",value=0
-	CheckBox checkPV9,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV10,pos={18,288},size={20,20},title="",value=0
-	CheckBox checkPV10,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV11,pos={18,306},size={20,20},title="",value=0
-	CheckBox checkPV11,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV12,pos={18,324},size={20,20},title="",value=0
-	CheckBox checkPV12,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV13,pos={18,342},size={20,20},title="",value=0
-	CheckBox checkPV13,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV14,pos={18,360},size={20,20},title="",value=0
-	CheckBox checkPV14,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV15,pos={18,378},size={20,20},title="",value=0
-	CheckBox checkPV15,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV16,pos={18,396},size={20,20},title="",value=0
-	CheckBox checkPV16,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV17,pos={18,414},size={20,20},title="",value=0
-	CheckBox checkPV17,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV18,pos={18,432},size={20,20},title="",value=0
-	CheckBox checkPV18,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV19,pos={18,450},size={20,20},title="",value=0
-	CheckBox checkPV19,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-
+//	Button cat_short,pos={9,485},size={100,20},proc=DoCatShort,title="File Catalog"
+//	Button cat_short,help={"Use this button to generate a notebook with file header information. Very useful for identifying files."}
 	CheckBox check0,pos={18,80},size={40,15},title="Run #",value= 1,mode=1,proc=MatchCheckProc
 	CheckBox check1,pos={78,80},size={40,15},title="Text",value= 0,mode=1,proc=MatchCheckProc
 	CheckBox check2,pos={138,80},size={40,15},title="SDD",value= 0,mode=1,proc=MatchCheckProc
+
+	Variable base=111,step=18
+	SetVariable PS1,pos={42,base},size={340,13},proc=SetLabelVarProc,title="label"
+	SetVariable PS1,help={"Current sample label"},font="Courier",fSize=10
+	SetVariable PS1,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS1
+	SetVariable PV1,pos={42,base+step},size={340,13},title="Transmission"
+	SetVariable PV1,help={"Current transmission\rvalue"},font="Courier",fSize=10
+	SetVariable PV1,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV1
+	SetVariable PV2,pos={42,base+2*step},size={340,13},title="Thickness (cm)"
+	SetVariable PV2,help={"Current sample thickness, in units of centimeters"}
+	SetVariable PV2,font="Courier",fSize=10
+	SetVariable PV2,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV2
+
+	SetVariable PV5,pos={42,base+3*step},size={340,13},title="Attenuator number"
+	SetVariable PV5,help={"attenuator number present during data collection"}
+	SetVariable PV5,font="Courier",fSize=10
+	SetVariable PV5,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV5
+	SetVariable PV6,pos={42,base+4*step},size={340,13},title="Counting time (s)",font="Courier",fSize=10
+	SetVariable PV6,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV6
+	SetVariable PV6,help={"total counting time in seconds"}
+	SetVariable PV7,pos={42,base+5*step},size={340,13},title="Monitor count",font="Courier",fSize=10
+	SetVariable PV7,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV7
+	SetVariable PV7,help={"total monitor counts"}
+
+	SetVariable PV10,pos={42,base+6*step},size={340,13},title="Wavelength (A)",font="Courier",fSize=10
+	SetVariable PV10,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV10
+	SetVariable PV10,help={"neutron wavelength in angstroms"}
+	SetVariable PV11,pos={42,base+7*step},size={340,13},title="Wavelength spread (dL/L)",font="Courier",fSize=10
+	SetVariable PV11,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV11
+	SetVariable PV11,help={"wavelength spread (delta lambda)/lambda"}
+
+	SetVariable PV14,pos={42,base+8*step},size={340,13},title="Source aperture diameter (mm)",font="Courier",fSize=10
+	SetVariable PV14,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV14
+	SetVariable PV14,help={"source aperture diameter, in millimeters"}
+	SetVariable PV15,pos={42,base+9*step},size={340,13},title="Sample aperture diameter (mm)",font="Courier",fSize=10
+	SetVariable PV15,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV15
+	SetVariable PV15,help={"sample aperture diameter, in millimeters"}
+	SetVariable PV16,pos={42,base+10*step},size={340,13},title="Source to sample distance (cm)",font="Courier",fSize=10
+	SetVariable PV16,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV16
+	SetVariable PV16,help={"Source to sample distance in centimeters"}
+	
+	SetVariable PV18,pos={42,base+11*step},size={340,13},title="Beamstop diameter (mm)",font="Courier",fSize=10
+	SetVariable PV18,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV18
+	SetVariable PV18,help={"beamstop diamter, in millimeters (1 inch = 25.4mm)"}
+// TODO: add functions for these, make the intent a popup (since it's an enumerated type)
+	SetVariable PS2,pos={42,base+12*step},size={340,13},proc=SetLabelVarProc,title="DIV file name"
+	SetVariable PS2,help={"DIV file name"},font="Courier",fSize=10
+	SetVariable PS2,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS2
+	SetVariable PS3,pos={42,base+13*step},size={340,13},proc=SetLabelVarProc,title="Intent"
+	SetVariable PS3,help={"File Intent"},font="Courier",fSize=10
+	SetVariable PS3,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS3
+	PopupMenu popup_1,pos={42,base+14*step},size={109,20},title="File intent"
+	PopupMenu popup_1,mode=1,popvalue="SCATTER",value= #"\"SCATTER;EMPTY;TRANS;EMPTY BEAM;\""
+	
+	CheckBox checkPS1,pos={18,base},size={20,20},title=""
+	CheckBox checkPS1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV1,pos={18,base+step},size={20,20},title=""
+	CheckBox checkPV1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV2,pos={18,base+2*step},size={20,20},title=""
+	CheckBox checkPV2,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV5,pos={18,base+3*step},size={20,20},title=""
+	CheckBox checkPV5,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV6,pos={18,base+4*step},size={20,20},title=""
+	CheckBox checkPV6,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV7,pos={18,base+5*step},size={20,20},title="",value=0
+	CheckBox checkPV7,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV10,pos={18,base+6*step},size={20,20},title="",value=0
+	CheckBox checkPV10,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV11,pos={18,base+7*step},size={20,20},title="",value=0
+	CheckBox checkPV11,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV14,pos={18,base+8*step},size={20,20},title="",value=0
+	CheckBox checkPV14,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV15,pos={18,base+9*step},size={20,20},title="",value=0
+	CheckBox checkPV15,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV16,pos={18,base+10*step},size={20,20},title="",value=0
+	CheckBox checkPV16,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV18,pos={18,base+11*step},size={20,20},title="",value=0
+	CheckBox checkPV18,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPS2,pos={18,base+12*step},size={20,20},title="",value=0
+	CheckBox checkPS2,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPS3,pos={18,base+13*step},size={20,20},title="",value=0
+	CheckBox checkPS3,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+
+
+
+// put these in a tabbed? section for the 9 different panels
+// will it be able to patch all "FL" with the proper values, then all "FR", etc. to batchwise correct files?
+
+	base = base+19*step
+	PopupMenu popup_0,pos={30,base-step-10},size={109,20},title="Detector Panel",proc=PatchPopMenuProc
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
+
+	SetVariable PV3,pos={42,base},size={340,13},title="Beamcenter X"
+	SetVariable PV3,help={"Current X-position of the beamcenter, in pixels"}
+	SetVariable PV3,font="Courier",fSize=10
+	SetVariable PV3,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV3
+	SetVariable PV4,pos={42,base+step},size={340,13},title="Beamcenter Y"
+	SetVariable PV4,help={"Current Y-position of the beamcenter, in pixels"}
+	SetVariable PV4,font="Courier",fSize=10
+	SetVariable PV4,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV4
+
+
+	SetVariable PV17,pos={42,base+2*step},size={340,13},title="Detector offset (mm)",font="Courier",fSize=10
+	SetVariable PV17,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV17
+	SetVariable PV17,help={"Detector offset, in millimeters"}
+	SetVariable PV19,pos={42,base+3*step},size={340,13},title="Sample to detector distance (cm)",font="Courier",fSize=10
+	SetVariable PV19,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV19
+	SetVariable PV19,help={"sample to detector distance, in centimeters"}
+	
+	SetVariable PV8,pos={42,base+4*step},size={340,13},title="Detector count",font="Courier",fSize=10
+	SetVariable PV8,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV8
+	SetVariable PV8,help={"total detector counts"}
+
+		
+	CheckBox checkPV3,pos={18,base},size={20,20},title=""
+	CheckBox checkPV3,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+	CheckBox checkPV4,pos={18,base+step},size={20,20},title=""
+	CheckBox checkPV4,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV8,pos={18,base+2*step},size={20,20},title="",value=0
+	CheckBox checkPV8,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV17,pos={18,base+3*step},size={20,20},title="",value=0
+	CheckBox checkPV17,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+	CheckBox checkPV19,pos={18,base+4*step},size={20,20},title="",value=0
+	CheckBox checkPV19,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+
+//	SetVariable PV9,pos={42,273},size={340,13},title="Trans. det. count",font="Courier",fSize=10
+//	SetVariable PV9,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV9
+//	SetVariable PV9,help={"Transmission\r detector counts"}
+//	SetVariable PV12,pos={42,327},size={340,13},title="Temperature (C)",font="Courier",fSize=10
+//	SetVariable PV12,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV12
+//	SetVariable PV12,help={"Set point temperature in centigrade"}
+//	SetVariable PV13,pos={42,345},size={340,13},title="Magnetic field (G)",font="Courier",fSize=10
+//	SetVariable PV13,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV13
+//	SetVariable PV13,help={"magnetic field strength units?"}
+//	CheckBox checkPV9,pos={18,270},size={20,20},title="",value=0
+//	CheckBox checkPV9,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+//	CheckBox checkPV12,pos={18,324},size={20,20},title="",value=0
+//	CheckBox checkPV12,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
+//	CheckBox checkPV13,pos={18,342},size={20,20},title="",value=0
+//	CheckBox checkPV13,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
 
 End
 
@@ -848,28 +930,37 @@ Function ReadHeaderForPatch(fname)
 	// -- some are clearly wrong for VSANS
 	
 	// TODO -- remove the hard-wired detStr. This will require some serious interface thought.
-	String detStr = "FL"
+	ControlInfo popup_0
+	String detStr = S_value
 	
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS1= V_getSampleDescription(fname)
+
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV1 = V_getSampleTransmission(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV2 = V_getSampleThickness(fname)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV3 = V_getDet_beam_center_x(fname,detStr)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV4 = V_getDet_beam_center_y(fname,detStr)
+
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV5 = V_getAttenThickness(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV6 = V_getCount_Time(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV7 = V_getMonitorCount(fname)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV8 = V_getDet_IntegratedCount(fname,detStr)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV9 = -999		// TODO no equivalent for VSANS to --getTransDetectorCounts(fname)
+
+//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV9 = -999		// TODO no equivalent for VSANS to --getTransDetectorCounts(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV10 = V_getWavelength(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV11 = V_getWavelength_Spread(fname)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV12 = -999 // TODO no equivalent yet for -- getTemperature(fname)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV13 = -999 // TODO no equivalent yet for -- getFieldStrength(fname)
+//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV12 = -999 // TODO no equivalent yet for -- getTemperature(fname)
+//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV13 = -999 // TODO no equivalent yet for -- getFieldStrength(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV14 = str2num(V_getSourceAp_size(fname))
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV15 = V_getSampleAp2_size(fname)
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV16 = -999 // TODO no equivalent yet for -- getSourceToSampleDist(fname)
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV17 = V_getDet_LateralOffset(fname,detStr)	//TODO lateral vs vertical offset
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV18 = V_getBeamStopC3_size(fname)
+
+// per detector information
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV3 = V_getDet_beam_center_x(fname,detStr)
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV4 = V_getDet_beam_center_y(fname,detStr)
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV17 = V_getDet_LateralOffset(fname,detStr)	//TODO lateral vs vertical offset
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV19 = V_getDet_ActualDistance(fname,detStr)
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV8 = V_getDet_IntegratedCount(fname,detStr)
+		
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS2= V_getSensitivityFileName(fname)	//DIV file name
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS3= V_getReduction_intent(fname)		//intent
 	
 	Return 0
 End
@@ -913,21 +1004,21 @@ Function ChAllHeadersButtonProc(ctrlName) : ButtonControl
 	String partialName="", tempName = ""
 	Variable ok,nvars = 20
 	
-	Make/O/N=(nvars) tempChange
-	Wave w=tempchange
-	GetCheckBoxesState(w,nvars)
+//	Make/O/N=(nvars) tempChange
+//	Wave w=tempchange
+//	GetCheckBoxesState(w,nvars)
 	//Print "w[0] = ",w[0]
 	
-	//Get the current values in each of the fields - to pass to Write() as a textwave
-	Make/O/T/N=(nvars) tempValues
-	Wave/T wt=tempValues
-	//initialize textwave
-	ii=0
-	do
-		wt[ii] = ""
-		ii+=1
-	while(ii<nvars)
-	GetEditedSetVarBoxes(wt,nvars)
+//	//Get the current values in each of the fields - to pass to Write() as a textwave
+//	Make/O/T/N=(nvars) tempValues
+//	Wave/T wt=tempValues
+//	//initialize textwave
+//	ii=0
+//	do
+//		wt[ii] = ""
+//		ii+=1
+//	while(ii<nvars)
+//	GetEditedSetVarBoxes(wt,nvars)
 	
 	//loop through all of the files in the list, applying changes as dictated by w and wt waves
 	ii=0
@@ -948,7 +1039,8 @@ Function ChAllHeadersButtonProc(ctrlName) : ButtonControl
 		   Print "this file is not recognized as a RAW SANS data file = ",tempName
 		else
 		   //go write the changes to the file
-		   WriteHeaderForPatch(tempName,w,wt)
+//		   WriteHeaderForPatch(tempName,w,wt)
+		   WriteHeaderForPatch(tempName)
 		Endif
 		
 		ii+=1

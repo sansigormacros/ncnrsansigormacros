@@ -85,7 +85,8 @@ Function VSANSDataPanelGlobals()
 	String/G gCurDispFile = "default string"
 	String/G gCurTitle = ""
 	String/G gCurDispType = ""
-	String/G gStatusText = "status info box"
+	String/G gStatusText = "status"
+	String/G gLastLoadedFile=""
 	
 	SetDataFolder root:
 End
@@ -135,7 +136,7 @@ Window VSANS_DataPanel() : Panel
 	Button button_tab_p,pos={648,81},size={50,20},proc=Tab_p_ButtonProc,title="Tab >"
 	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
 
-	TitleBox title_file,pos={606,178},size={76,20},variable= file_name
+	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
 	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
@@ -147,7 +148,7 @@ Window VSANS_DataPanel() : Panel
 
 
 // on the tabs, always visible
-	TitleBox title_xy,pos={24,71},size={76,20},variable= file_name
+	TitleBox title_xy,pos={24,71},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	Slider slider_hi,pos={558,224},size={16,80},proc=HiMapSliderProc
 	Slider slider_hi,limits={0,1,0},value= 1,ticks= 0
 	Slider slider_lo,pos={558,315},size={16,80},proc=LowMapSliderProc

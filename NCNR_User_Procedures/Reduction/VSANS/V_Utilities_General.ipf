@@ -181,19 +181,19 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 	// there are some folders to kill, so proceed
 	
 	NewPanel /N=ProgressPanel /W=(285,111,739,193)
-	ValDisplay valdisp0,pos={18,32},size={342,18},limits={0,num,0},barmisc={0,0}
-	ValDisplay valdisp0,value= _NUM:0
+	ValDisplay valdisp0,win=ProgressPanel,pos={18,32},size={342,18},limits={0,num,0},barmisc={0,0}
+	ValDisplay valdisp0,win=ProgressPanel,value= _NUM:0
 	DrawText 20,24,"Cleaning up old files... Please Wait..."
 	
 	if( indefinite )
-		ValDisplay valdisp0,mode= 4	// candy stripe
+		ValDisplay valdisp0,win=ProgressPanel,mode= 4	// candy stripe
 	else
-		ValDisplay valdisp0,mode= 3	// bar with no fractional part
+		ValDisplay valdisp0,win=ProgressPanel,mode= 3	// bar with no fractional part
 	endif
 	if( useIgorDraw )
-		ValDisplay valdisp0,highColor=(15000,45535,15000)		//(0,65535,0)
+		ValDisplay valdisp0,win=ProgressPanel,highColor=(15000,45535,15000)		//(0,65535,0)
 	endif
-	Button bStop,pos={375,32},size={50,20},title="Stop"
+	Button bStop,win=ProgressPanel,pos={375,32},size={50,20},title="Stop"
 	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
 
 	do
@@ -202,7 +202,7 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 			break
 		endif
 		
-		ValDisplay valdisp0,value= _NUM:num,win=ProgressPanel
+		ValDisplay valdisp0,win=ProgressPanel,value= _NUM:num,win=ProgressPanel
 		DoUpdate /W=ProgressPanel
 	while(1)
 	
@@ -413,7 +413,7 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	Variable i,val
 	String filename,tmp,curFileName
 	//take the currently displayed RAW file 
-	SVAR oldName = root:file_name
+	SVAR oldName = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	oldname = V_RemoveAllSpaces(oldname)		// 
 	curFileName = oldName
 //	print oldName
@@ -455,7 +455,10 @@ Function V_LoadPlotAndDisplayRAW(increment)
 		Execute "UpdateDisplayInformation(\"RAW\")"	// plot the data in whatever folder type
 		
 		FakeRestorePanelsButtonClick()		//so the panels display correctly
-		
+		// set the global to display ONLY if the load was called from here, not from the 
+		// other routines that load data (to read in values)
+		SVAR gLastLoad = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+		gLastLoad = hdfDF
 	endif
 
 	// TODO
