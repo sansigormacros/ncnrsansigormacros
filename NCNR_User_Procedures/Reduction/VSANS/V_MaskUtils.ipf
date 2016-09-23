@@ -176,7 +176,9 @@ Function DrawMaskRadioCheckProc(cba) : CheckBoxControl
 				CheckBox check_1,value = 1
 				val = DimSize(data, 0) -1
 			endif
-			
+
+//			print "max = ",val
+						
 			SetVariable setvar0,limits={0,val,1}
 			NVAR gVal = root:Packages:NIST:VSANS:Globals:gMaskTube
 			NVAR gMax = root:Packages:NIST:VSANS:Globals:gMaskMaxIndex
@@ -399,6 +401,19 @@ Function SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 			// draw the correct images
 			DrawPanelToMask(popStr)
 
+			// fake a "click" on the radio buttons to re-set the row/col limits
+			STRUCT WMCheckboxAction cba
+			cba.eventCode = 2
+			
+			ControlInfo check_0
+			if(V_flag == 1)		//row is currently selected
+				cba.ctrlName = "check_0"
+			else
+				cba.ctrlName = "check_1"
+			endif
+			
+			DrawMaskRadioCheckProc(cba)		//call the radio button action proc	
+			
 			//overlay the mask
 			V_OverlayMask(popStr,1)
 
@@ -560,7 +575,7 @@ End
 //
 // if state==1, show the mask, if ==0, hide the mask
 //
-//** This assumes that if the overlay is/not present on the image display, then the currentTiube is also there/not
+//** This assumes that if the overlay is/not present on the image display, then the currentTube is also there/not
 // and is not checked
 //
 Function V_OverlayMask(str,state)

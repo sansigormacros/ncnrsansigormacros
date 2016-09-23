@@ -785,14 +785,14 @@ Proc V_Patch_Panel()
 	SetVariable PV18,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPV18
 	SetVariable PV18,help={"beamstop diamter, in millimeters (1 inch = 25.4mm)"}
 // TODO: add functions for these, make the intent a popup (since it's an enumerated type)
-	SetVariable PS2,pos={42,base+12*step},size={340,13},proc=SetLabelVarProc,title="DIV file name"
+	SetVariable PS2,pos={42,base+12*step},size={340,13},title="DIV file name"//,proc=SetLabelVarProc
 	SetVariable PS2,help={"DIV file name"},font="Courier",fSize=10
 	SetVariable PS2,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS2
-	SetVariable PS3,pos={42,base+13*step},size={340,13},proc=SetLabelVarProc,title="Intent"
+	SetVariable PS3,pos={42,base+13*step},size={340,13},title="Intent"//,proc=SetLabelVarProc
 	SetVariable PS3,help={"File Intent"},font="Courier",fSize=10
 	SetVariable PS3,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPS3
 	PopupMenu popup_1,pos={42,base+14*step},size={109,20},title="File intent"
-	PopupMenu popup_1,mode=1,popvalue="SCATTER",value= #"\"SCATTER;EMPTY;TRANS;EMPTY BEAM;\""
+	PopupMenu popup_1,mode=1,popvalue="SCATTER",value= #"\"SCATTER;EMPTY;BLOCKED BEAM;TRANS;EMPTY BEAM;\""
 	
 	CheckBox checkPS1,pos={18,base},size={20,20},title=""
 	CheckBox checkPS1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
