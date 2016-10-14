@@ -10,11 +10,17 @@
 //    -- or be able to swap the answer to mm for a more natural definition of the beam center
 // -- add method to be able to write the values to the local folder / or better, to file on disk
 // -- graphically show the beam center / radius of where it is in relation to the panel
+//
+// -- move everything into it's own folder, rather than root:
+//
 
 
 Function V_FindBeamCenter()
 	DoWindow/F PanelFit
 	if(V_flag==0)
+	
+		NewDataFolder/O root:Packages:NIST:VSANS:Globals:BeamCenter
+
 		Execute "DetectorPanelFit()"
 	endif
 End
@@ -38,7 +44,7 @@ Proc DetectorPanelFit() : Panel
 	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
 	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
-	PopupMenu popup_2,mode=1,popvalue="VCALC",value= #"\"RAW;SAM;VCALC;\""
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 		
 	Button button_0,pos={486,20},size={80,20},proc=DetFitGuessButtonProc,title="Guess"
 	Button button_1,pos={615,20},size={80,20},proc=DetFitButtonProc,title="Do Fit"
@@ -48,12 +54,14 @@ Proc DetectorPanelFit() : Panel
 	Button button_5,pos={730,440},size={110,20},proc=WriteCtrTableButtonProc,title="Write table"
 
 
+	SetDataFolder root:Packages:NIST:VSANS:Globals:BeamCenter
 
-	duplicate/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL curDispPanel
+	duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data curDispPanel
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 
-
+	SetDataFolder root:
+	
 	// draw the correct images
 	DrawDetPanel("FL")
 
@@ -155,8 +163,8 @@ Function DrawDetPanel(str)
 	Variable left2,top2,right2,bottom2
 	Variable nPix_X,nPix_Y,pixSize_X,pixSize_Y
 
-	
-	Wave dispW=root:curDispPanel
+
+	Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 	Wave cw = root:coef_PeakPix2D
 
 	Wave xwave_PeakPix2D=root:xwave_PeakPix2D
@@ -319,6 +327,7 @@ Function DrawDetPanel(str)
 	cw[7] = pixSize_X*10
 	cw[8] = pixSize_Y*10		
 
+	SetDataFolder root:Packages:NIST:VSANS:Globals:BeamCenter
 	// generate the new panel display
 	duplicate/O newW curDispPanel
 	SetScale/P x 0,1, curDispPanel
@@ -332,6 +341,9 @@ Function DrawDetPanel(str)
 	Label bottom "X pixels"	
 	RenameWindow #,DetData
 	SetActiveSubwindow ##	
+	
+	SetDataFolder root:
+	
 	
 		
 	// re-dimension the model calculation to be the proper dimensions	
@@ -391,7 +403,7 @@ Function DetFitGuessButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Wave dispW=root:curDispPanel
+			Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 			Wave coefW=root:coef_PeakPix2D
 			
 			WaveStats/Q dispW
@@ -453,7 +465,7 @@ Function DetFitButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Wave dispW=root:curDispPanel
+			Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 			Wave coefW=root:coef_PeakPix2D
 			
 			FuncFitMD/H="11000111100"/NTHR=0 BroadPeak_Pix2D coefW  dispW /D			
@@ -596,6 +608,8 @@ Function V_RestorePanels()
 
 // this works if the proper centers are in the file - otherwise, it's a mess	
 // "B" is skipped here, as it should be...
+
+// TODO --?? is this a problem??
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
 	fname = type
@@ -621,6 +635,7 @@ end
 //
 Function V_SpreadOutPanels()
 
+// TODO ?? is this a problem??
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
 	V_RescaleToBeamCenter(type,"MB",64,78)

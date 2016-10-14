@@ -20,7 +20,7 @@ Menu "VSANS"
 	"-"
 	Submenu "In Progress Panels"
 		"VSANS Preferences",Show_VSANSPreferences_Panel()
-		"Beam Center Panel",DetectorPanelFit()
+		"Beam Center Panel",V_FindBeamCenter()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",Convert_to_Workfile()

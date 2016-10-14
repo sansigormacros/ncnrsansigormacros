@@ -20,7 +20,7 @@
 
 ///// LOADING
 
-// TODO - when maks is loaded, need to be sure to clean up the "extra" waves that may be present
+// TODO - when mask is loaded, need to be sure to clean up the "extra" waves that may be present
 //  - the overlay and the currentTube waves since these are not overwritten or killed when new mask 
 //  data is read in from HDF. need to manually? check for these and delete then, or the data and
 //  mask overlay will be out of sync.
@@ -62,6 +62,7 @@ End
 //TODO
 // x- draw a mask
 // x- save a mask (all panels)
+// -- move everything into it's own folder, rather than root:
 // -- be able to save the mask name to the RAW data file
 // -- be able to read a mask based on what name is in the data file
 //
@@ -86,8 +87,19 @@ end
 Function V_EditMask()
 	DoWindow/F MaskEditPanel
 	if(V_flag==0)
-		Variable/G root:Packages:NIST:VSANS:Globals:gMaskTube = 0
-		Variable/G root:Packages:NIST:VSANS:Globals:gMaskMaxIndex = 47
+	
+		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Mask
+
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gMaskTube = 0
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gMaskMaxIndex = 47
+		
+		// check for a mask, if not present, generate a default mask
+		String str="FT"
+		wave/Z maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")	
+		if(!WaveExists(maskW))
+			V_GenerateDefaultMask()
+		endif
+		
 		Execute "MaskEditorPanel()"
 	endif
 End
@@ -112,7 +124,7 @@ Proc MaskEditorPanel() : Panel
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 
 	SetVariable setvar0,pos={257.00,20.00},size={150.00,14.00},title="tube number"
-	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:gMaskTube
+	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
 	Button button_0,pos={257,46.00},size={50.00,20.00},proc=AddToMaskButtonProc,title="Add"
 	Button button_1,pos={319.00,46.00},size={50.00,20.00},proc=RemoveFromMaskButtonProc,title="Del"
 	Button button_2,pos={409.00,46.00},size={90.00,20.00},proc=ToggleMaskButtonProc,title="Toggle"
@@ -183,8 +195,8 @@ Function DrawMaskRadioCheckProc(cba) : CheckBoxControl
 //			print "max = ",val
 						
 			SetVariable setvar0,limits={0,val,1}
-			NVAR gVal = root:Packages:NIST:VSANS:Globals:gMaskTube
-			NVAR gMax = root:Packages:NIST:VSANS:Globals:gMaskMaxIndex
+			NVAR gVal = root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
+			NVAR gMax = root:Packages:NIST:VSANS:Globals:Mask:gMaskMaxIndex
 			gMax = val
 			if(gVal > val)
 				gVal = val
@@ -233,7 +245,7 @@ Function MaskWindowHook(s)
 // SetVariable event here. I need to keep the index in range.		
 			STRUCT WMButtonAction ba
 			ba.eventCode = 2
-			NVAR tubeVal = root:Packages:NIST:VSANS:Globals:gMaskTube
+			NVAR tubeVal = root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
 			if(s.specialKeyCode == 100)
 				//left arrow
 				tubeVal -= 1
@@ -252,7 +264,7 @@ Function MaskWindowHook(s)
 			endif
 
 // enforce the limits on the setvar
-			NVAR gMax = root:Packages:NIST:VSANS:Globals:gMaskMaxIndex
+			NVAR gMax = root:Packages:NIST:VSANS:Globals:Mask:gMaskMaxIndex
 			if(tubeVal > gMax)
 				tubeVal = gMax
 			endif
@@ -544,6 +556,8 @@ Function DrawPanelToMask(str)
 			return(0)		//just exit
 	endswitch
 
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Mask
+	
 	// generate the new panel display
 	duplicate/O newW curDispPanel
 	SetScale/P x 0,1, curDispPanel
@@ -560,6 +574,7 @@ Function DrawPanelToMask(str)
 	
 	DoUpdate
 	
+	SetDataFolder root:
 	return(0)
 End
 
@@ -653,16 +668,17 @@ Function SaveMaskButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
+			// fills in a "default mask" in a separate folder to then write out
 			Execute "H_Setup_VSANS_MASK_Structure()"
 			
 			// fill with current "stuff"
-				SetDataFolder root:VSANS_MASK_file:entry	
+			SetDataFolder root:VSANS_MASK_file:entry	
 			Wave/T title	= title
 			title = "This is a custom MASK file for VSANS"
 			SetDataFolder root:
 			
 			
-		// copy over for all of the detector panels
+		// copy over what was actually drawn for all of the detector panels
 
 			Variable ii
 			String str
@@ -752,6 +768,55 @@ Proc H_Setup_VSANS_MASK_Structure()
 	SetDataFolder root:
 
 End
+
+
+// this default mask is only generated on startup of the panel, if a mask
+// has not been previously loaded. If any mask is present ("FT" is tested) then
+// this function is skipped and the existing mask is not overwritten
+Function V_GenerateDefaultMask()
+
+	NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry	
+		Make/O/T/N=1	title	= "This is a fake MASK file for VSANS"
+		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument		
+			Make/O/T/N=1	name	= "NG3_VSANS"
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B	
+			Make/O/I/N=(150,150)	data	= 0
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR		
+			Make/O/I/N=(48,128)	data	= 0
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML		
+			Make/O/I/N=(48,128)	data	= 0
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT		
+			Make/O/I/N=(128,48)	data	= 0
+			data[0,49][] = 1
+			data[78,127][] = 1
+			data[50,77][] = 0
+			
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB		
+			Make/O/I/N=(128,48)	data	= 0
+			data[0,49][] = 1
+			data[78,127][] = 1
+			data[50,77][] = 0
+			
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR		
+			Make/O/I/N=(48,128)	data	= 0
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL		
+			Make/O/I/N=(48,128)	data	= 0
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT		
+			Make/O/I/N=(128,48)	data	= 0
+			data[0,49][] = 1
+			data[78,127][] = 1
+			data[50,77][] = 0
+
+		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB		
+			Make/O/I/N=(128,48)	data	= 0
+			data[0,49][] = 1
+			data[78,127][] = 1
+			data[50,77][] = 0
+			
+	SetDataFolder root:
+
+end
 
 ////////////////////// MASK FILE
 
