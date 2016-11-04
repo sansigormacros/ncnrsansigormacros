@@ -61,10 +61,12 @@ Function ReadMCID_MASK(fname)
 	SetDataFolder root:Packages:NIST:MSK
 	Killwaves/Z data,data0		//kill the old data, if it exists
 	
-//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
-	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
-		
+//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
+//	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+
+	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
+	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+			
 	Execute cmd 
 	SetDataFolder root:Packages:NIST:MSK						//make sure correct data folder is set
 	WAVE data0 = $"root:Packages:NIST:MSK:data0"
@@ -395,10 +397,13 @@ Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 	
 	SetDataFolder root:myGlobals:DrawMask
 	Killwaves/Z data,data0,tempMask		//kill the old data, if it exists
-//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U=16384 /Q  \"" + fname +"\""
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
-	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
-	
+
+//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
+//	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+
+	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
+	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+		
 	Execute cmd 
 	SetDataFolder root:myGlobals:DrawMask					//make sure correct data folder is set
 	WAVE data0 = $"root:myGlobals:DrawMask:data0"

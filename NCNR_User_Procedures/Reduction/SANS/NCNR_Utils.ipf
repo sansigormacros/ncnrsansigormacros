@@ -989,10 +989,12 @@ Function isTransFile(fName)
 	//pos = 369, read one real value
 	
 	SetDataFolder root:
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+//	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
 	String strToExecute=""
 	// 1 R*4 value
-	strToExecute = GBLoadStr + "/S=368/U=1" + "\"" + fname + "\""
+//	strToExecute = GBLoadStr + "/S=368/U=1" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=368/U=1" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""		//use the path and just the file name
 	Execute strToExecute
 	Wave w=$"root:tempGBWave0"
 	xPos = w[0]

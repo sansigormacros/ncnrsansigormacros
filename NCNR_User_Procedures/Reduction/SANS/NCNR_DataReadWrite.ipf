@@ -243,7 +243,7 @@ Function ReadHeaderAndData(fname)
 	//
 	//FBinRead Cannot handle 32 bit VAX floating point
 	//GBLoadWave, however, can properly read it
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
 	String strToExecute
 	//append "/S=offset/U=numofreals" to control the read
 	// then append fname to give the full file path
@@ -254,7 +254,7 @@ Function ReadHeaderAndData(fname)
 	SetDataFolder curPath
 	
 	// 4 R*4 values
-	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	Wave w=$"root:Packages:NIST:RAW:tempGBWave0"
 	b=4	//num of reals read
@@ -263,7 +263,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 4 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
@@ -272,7 +272,7 @@ Function ReadHeaderAndData(fname)
 ///////////
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2	
 	realw[a,a+b-1] = w[p-a]
@@ -280,7 +280,7 @@ Function ReadHeaderAndData(fname)
 
 	// 6 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=6	
 	realw[a,a+b-1] = w[p-a]
@@ -288,7 +288,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 13 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=13
 	realw[a,a+b-1] = w[p-a]
@@ -296,7 +296,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 3 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=3	
 	realw[a,a+b-1] = w[p-a]
@@ -304,7 +304,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 7 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=7
 	realw[a,a+b-1] = w[p-a]
@@ -312,7 +312,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 4 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
@@ -320,7 +320,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
@@ -328,7 +328,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
@@ -336,7 +336,7 @@ Function ReadHeaderAndData(fname)
 	
 	// 5 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=5	
 	realw[a,a+b-1] = w[p-a]
@@ -357,7 +357,7 @@ Function ReadHeaderAndData(fname)
 	
 	SetDataFolder curPath
 	//read in the data
-	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q" + "\"" + fname + "\""
+	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=catPathName" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 
 	SetDataFolder curPath		//use the full path, so it will always work
@@ -651,7 +651,7 @@ Function ReadHeaderAndWork(type,fname)
 	//
 	//FBinRead Cannot handle 32 bit VAX floating point
 	//GBLoadWave, however, can properly read it
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
 	String strToExecute
 	//append "/S=offset/U=numofreals" to control the read
 	// then append fname to give the full file path
@@ -661,7 +661,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	SetDataFolder curPath
 	// 4 R*4 values
-	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	
 	SetDataFolder curPath
@@ -672,7 +672,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 4 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
@@ -681,7 +681,7 @@ Function ReadHeaderAndWork(type,fname)
 ///////////
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2	
 	realw[a,a+b-1] = w[p-a]
@@ -689,7 +689,7 @@ Function ReadHeaderAndWork(type,fname)
 
 	// 6 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=6	
 	realw[a,a+b-1] = w[p-a]
@@ -697,7 +697,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 13 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=13
 	realw[a,a+b-1] = w[p-a]
@@ -705,7 +705,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 3 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=3	
 	realw[a,a+b-1] = w[p-a]
@@ -713,7 +713,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 7 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=7
 	realw[a,a+b-1] = w[p-a]
@@ -721,7 +721,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 4 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=4	
 	realw[a,a+b-1] = w[p-a]
@@ -729,7 +729,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
@@ -737,7 +737,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 2 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=2
 	realw[a,a+b-1] = w[p-a]
@@ -745,7 +745,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 5 R*4 values
 	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	Execute strToExecute
 	b=5	
 	realw[a,a+b-1] = w[p-a]
@@ -765,7 +765,7 @@ Function ReadHeaderAndWork(type,fname)
 	//endif
 	
 	//read in the data
-	GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
 
 	curPath = "root:Packages:NIST:"+cur_folder
 	SetDataFolder curPath		//use the full path, so it will always work
@@ -792,7 +792,7 @@ Function ReadHeaderAndWork(type,fname)
 	do
 		SetDataFolder curPath
 		
-		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=511" + "\"" + fname + "\""
+		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=511" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 		Execute strToExecute
 		//Print strToExecute
 		b=511
@@ -801,7 +801,7 @@ Function ReadHeaderAndWork(type,fname)
 		
 		offset += 511*4 +2
 		
-		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=510" + "\"" + fname + "\""
+		strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=510" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 		SetDataFolder curPath
 		Execute strToExecute
 		//Print strToExecute
@@ -818,7 +818,7 @@ Function ReadHeaderAndWork(type,fname)
 	
 	// 16336 values have been read in --
 	//read in last 64 values
-	strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=48" + "\"" + fname + "\""
+	strToExecute = GBLoadStr + "/S="+num2str(offset)+"/U=48" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
 	
 	SetDataFolder curPath
 	Execute strToExecute
@@ -1495,13 +1495,22 @@ End
 
 
 // read a single real value with GBLoadWave
+// SRK 2016 changed to use the path, which may be UNC (that is starting with \\ on windows 10)
+//
+//
 Function getRealValueFromHeader(fname,start)
 	String fname
 	Variable start
 
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+// original, if fname is the full path:name
+//	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"	
+//	GBLoadStr += "/S="+num2str(start)+"/U=1" + "\"" + fname + "\""
+
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"			
+//	String fileOnly = ParseFilePath(0, fname, ":", 1, 0)
+	GBLoadStr += "/S="+num2str(start)+"/U=1" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+
 	
-	GBLoadStr += "/S="+num2str(start)+"/U=1" + "\"" + fname + "\""
 	Execute GBLoadStr
 	Wave w=$"tempGBWave0"
 	

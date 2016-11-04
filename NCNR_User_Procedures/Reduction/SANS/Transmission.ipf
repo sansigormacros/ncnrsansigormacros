@@ -741,8 +741,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,sam_atten_err,emp_atten_err
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,samAttenFactor,empAttenFactor,trans_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String strToExecute
+
 	
 	num_t_files = numpnts(T_GFilenames)
 	
@@ -869,8 +868,7 @@ Function CalcTotalTrans(startRow,endRow)
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,samAttenFactor,empAttenFactor,trans_err
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String strToExecute
+
 	
 	num_t_files = numpnts(T_GFilenames)
 	
@@ -1001,8 +999,6 @@ Function CalcWholeTrans(startRow,endRow)
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
 	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String strToExecute
 	
 	num_t_files = numpnts(T_GFilenames)
 	
