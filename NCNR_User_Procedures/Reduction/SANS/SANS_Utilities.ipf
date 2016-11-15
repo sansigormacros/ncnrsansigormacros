@@ -426,8 +426,8 @@ Function PickPath()
 		// need 4 \ since it is the escape character
 		
 // SRK 2016, for windows 10, try to eliminate this restriction		
-		print igorinfo(3)
-//		if(cmpstr("\\\\",dum[0,1])==0)	//Windoze user going through network neighborhood
+//		print igorinfo(3)
+//		if(cmpstr("\\\\",dum[0,1])==0)	//Windows user going through network neighborhood
 //			DoAlert 0,alertStr
 //			KillPath catPathName
 //			return(1)

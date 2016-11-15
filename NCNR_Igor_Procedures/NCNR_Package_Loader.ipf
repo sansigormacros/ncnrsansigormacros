@@ -166,6 +166,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
+//			Execute/P ("PickPath()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
 			// change the facility label, disable the others		

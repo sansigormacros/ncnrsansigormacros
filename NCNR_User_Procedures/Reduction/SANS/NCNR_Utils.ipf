@@ -989,13 +989,25 @@ Function isTransFile(fName)
 	//pos = 369, read one real value
 	
 	SetDataFolder root:
-//	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
-	String strToExecute=""
-	// 1 R*4 value
-//	strToExecute = GBLoadStr + "/S=368/U=1" + "\"" + fname + "\""
-	strToExecute = GBLoadStr + "/S=368/U=1" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""		//use the path and just the file name
-	Execute strToExecute
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+
+	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
+		PathInfo catPathName
+		if(V_flag==1)
+			//catPathName exists, use it
+			GBLoadStr += "/S=368/U=1/P=catPathName " + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+		else
+			// need to create a temporary path
+			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
+			NewPath/O/Q tmpUNCPath tmpPathStr
+			GBLoadStr += "/S=368/U=1/P=tmpUNCPath " + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+		endif
+	else
+	// original case, fname is the full path:name and is Mac (or a mapped drive)
+		GBLoadStr += "/S=368/U=1" + "\"" + fname + "\""
+	endif
+		
+	Execute GBLoadStr
 	Wave w=$"root:tempGBWave0"
 	xPos = w[0]
 	KillWaves/Z w

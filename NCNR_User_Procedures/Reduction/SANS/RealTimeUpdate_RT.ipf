@@ -851,11 +851,30 @@ Function ReadRTAndData(fname)
 	//
 	//FBinRead Cannot handle 32 bit VAX floating point
 	//GBLoadWave, however, can properly read it
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q/P=catPathName"
-	String strToExecute
+	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
+	String strToExecute,tmpfname=""
 	//append "/S=offset/U=numofreals" to control the read
 	// then append fname to give the full file path
 	// then execute
+	
+	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
+		PathInfo catPathName
+		if(V_flag==1)
+			//catPathName exists, use it
+			GBLoadStr += "/P=catPathName"
+		else
+			// need to create a temporary path
+			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
+			NewPath/O/Q tmpUNCPath tmpPathStr
+			GBLoadStr += "/P=tmpUNCPath"
+		endif
+		tmpfname = ParseFilePath(0, fname, ":", 1, 0)
+	else
+	// original case, fname is the full path:name and is Mac (or a mapped drive)
+		GBLoadStr += ""
+		tmpfname = fname
+	endif
+	
 	
 	Variable a=0,b=0
 	
@@ -965,7 +984,22 @@ Function ReadRTAndData(fname)
 	
 	SetDataFolder curPath
 	//read in the data
-	strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=catPathName" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
+		PathInfo catPathName
+		if(V_flag==1)
+			//catPathName exists, use it
+			strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=catPathName" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+		else
+			// need to create a temporary path
+			tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
+			NewPath/O/Q tmpUNCPath tmpPathStr
+			strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=tmpUNCPath" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
+		endif
+	else
+	// original case, fname is the full path:name and is Mac (or a mapped drive)
+		strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q" + "\"" + fname + "\""
+	endif
+	
 	Execute/Z strToExecute
 
 	SetDataFolder curPath		//use the full path, so it will always work

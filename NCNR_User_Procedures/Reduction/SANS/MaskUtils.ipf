@@ -64,10 +64,26 @@ Function ReadMCID_MASK(fname)
 //	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
 //	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
 
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
-	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-			
-	Execute cmd 
+	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1"
+
+
+	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
+		PathInfo catPathName
+		if(V_flag==1)
+			//catPathName exists, use it
+			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=catPathName  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+		else
+			// need to create a temporary path
+			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
+			NewPath/O/Q tmpUNCPath tmpPathStr
+			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=tmpUNCPath  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+		endif
+	else
+	// original case, fname is the full path:name and is Mac (or a mapped drive)
+		GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+	endif
+	
+	Execute GBLoadStr 
 	SetDataFolder root:Packages:NIST:MSK						//make sure correct data folder is set
 	WAVE data0 = $"root:Packages:NIST:MSK:data0"
 	Redimension/N=(pixelsX,pixelsY) data0
@@ -401,10 +417,26 @@ Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 //	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
 //	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
 
-	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
-	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
+
+	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
+		PathInfo catPathName
+		if(V_flag==1)
+			//catPathName exists, use it
+			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=catPathName  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+		else
+			// need to create a temporary path
+			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
+			NewPath/O/Q tmpUNCPath tmpPathStr
+			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=tmpUNCPath  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+		endif
+	else
+	// original case, fname is the full path:name and is Mac (or a mapped drive)
+		GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
+	endif
+
 		
-	Execute cmd 
+	Execute GBLoadStr 
 	SetDataFolder root:myGlobals:DrawMask					//make sure correct data folder is set
 	WAVE data0 = $"root:myGlobals:DrawMask:data0"
 	Redimension/B/N=(pixelsX,pixelsY) data0
