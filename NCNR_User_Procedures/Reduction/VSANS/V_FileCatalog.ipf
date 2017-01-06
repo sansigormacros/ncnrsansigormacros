@@ -458,7 +458,7 @@ End
 
 
 // just to call the function to generate the panel
-Macro Catalog_Sort()
+Proc Catalog_Sort()
 	V_BuildCatSortPanel()
 End
 

@@ -27,8 +27,8 @@
 // structure as raw data is displayed and processed.
 //
 //
-Strconstant ksDetectorListNoB = "FT;FB;FL;FR;MT;MB;ML;MR;"
-Strconstant ksDetectorListAll = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
+Strconstant ksDetectorListNoB = "FL;FR;FT;FB;ML;MR;MT;MB;"
+Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 
 
 //
@@ -545,7 +545,7 @@ Function Raw_to_work(newType)
 	//    - do it later (where SAMPLE information is used) since this section is ONLY instrument-specific
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		Print "(stub)Doing Large-angle transmission correction"// for "+ detStr
+		Print "(stub)Doing Large-angle transmission correction -- INCOMPLETE FUNCTION "// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
@@ -564,7 +564,7 @@ Function Raw_to_work(newType)
 	
 	NVAR gDoMonitorNormalizaton = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton
 	if (gDoMonitorNormalizaton == 1)
-		Print "(stub)Doing monitor normalization"// for "+ detStr
+		Print "(stub)Doing monitor normalization -- INCOMPLETE --"// for "+ detStr
 		
 		defmon=1e8			//default monitor counts
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)

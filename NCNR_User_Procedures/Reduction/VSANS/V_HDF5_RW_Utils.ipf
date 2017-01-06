@@ -106,7 +106,7 @@ Function V_LoadHDF5Data(file,folder)
 			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 				detStr = StringFromList(ii, ksDetectorListNoB, ";")
 				Wave w = V_getDetectorDataW(folder,detStr)
-	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
 				Wave w_calib = V_getDetTube_spatialCalib(folder,detStr)
 				Variable tube_width = V_getDet_tubeWidth(folder,detStr)
 				NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
@@ -159,7 +159,7 @@ Function V_MakeDataWaves_DP(fname)
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
-//		Wave w_err = V_getDetectorDataErrW(fname,detStr)
+//		Wave w_err = V_getDetectorDataErrW(fname,detStr)  //not here, done above w/V_MakeDataError()
 		Redimension/D w
 //		Redimension/D w_err
 	endfor

@@ -393,6 +393,7 @@ Function/S V_getControlMode(fname)
 End
 
 //monitor count
+// TODO - verify that this is the correct monitor
 Function V_getMonitorCount(fname)
 	String fname
 	
