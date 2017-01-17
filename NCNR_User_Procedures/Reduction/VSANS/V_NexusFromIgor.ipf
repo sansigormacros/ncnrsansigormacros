@@ -3277,3 +3277,54 @@ SetDataFolder  root:SANS_file
 End
 
 
+
+
+
+//////////
+//
+// These procedures are needed to write out MASK and DIV files
+//
+////////
+
+
+//
+// saves a specified folder, with a given filename.
+// saves to the home path
+//
+Proc Save_VSANS_file(dfPath, filename)
+	String dfPath	="root:VSANS_file"		// e.g., "root:FolderA" or ":"
+	String filename = "Test_VSANS_file.h5"
+	
+	H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
+End
+
+
+//	
+// this is my procedure to save the folders to HDF5, once I've filled the folder tree
+//
+// this does NOT save attributes, but gets the folder structure correct
+//
+Function H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
+	String dfPath	// e.g., "root:FolderA" or ":"
+	String filename
+
+	Variable result = 0	// 0 means no error
+	
+	Variable fileID
+	HDF5CreateFile/P=home /O /Z fileID as filename
+	if (V_flag != 0)
+		Print "HDF5CreateFile failed"
+		return -1
+	endif
+
+	HDF5SaveGroup /IGOR=0 /O /R /Z $dfPath, fileID, "."
+//	HDF5SaveGroup /O /R /Z $dfPath, fileID, "."
+	if (V_flag != 0)
+		Print "HDF5SaveGroup failed"
+		result = -1
+	endif
+	
+	HDF5CloseFile fileID
+
+	return result
+End

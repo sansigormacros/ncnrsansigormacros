@@ -21,10 +21,12 @@ Function proto_V_get_FP(str)
 	String str
 	return(0)
 end
+
 Function proto_V_get_FP2(str,str2)
 	String str,str2
 	return(0)
 end
+
 //Function/S proto_V_get_STR(str)
 //	String str
 //	return("")

@@ -1107,7 +1107,7 @@ Proc DIV_a_Workfile(type)
 	//contents of the DIV folder - the function will check for existence 
 	//before proceeding
 
-//DoAlert 0,"This has not yet been updated for VSANS"
+	Abort "This has not yet been updated for VSANS"
 	
 	Variable err
 	err = V_DIVCorrection(type)		//returns err = 1 if data doesn't exist in specified folders
@@ -1166,7 +1166,7 @@ Function V_DIVCorrection(data,data_err,detStr,workType)
 
 	data /= div_data
 	
-//	data_err /= div_data
+	data_err /= div_data
 	
 	Return(0)
 End

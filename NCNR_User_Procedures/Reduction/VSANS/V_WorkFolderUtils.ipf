@@ -48,6 +48,7 @@ End
 // from the RawVSANS storage folder to the local WORK folder as needed
 //
 // TODO -- at what stage do I make copies of data in linear/log forms for data display?
+//      -- do I need to make copies, if I'm displaying with the lookup wave (no copy needed if this works)
 //			-- when do I make the 2D error waves?
 //
 // TODO - decide what exactly I need to copy over. May be best to copy all, and delete
@@ -120,7 +121,7 @@ end
 
 ////////
 // see the help entry for IndexedDir for help on (possibly) how to do this faster
-// -- see the function Function ScanDirectories(pathName, printDirNames)
+// -- see  Function ScanDirectories(pathName, printDirNames)
 //
 
 
@@ -130,7 +131,7 @@ end
 //
 //
 //
-Proc V_CopyWorkFolderTest(dataFolderStr, fromStr, toStr, level, sNBName, recurse)
+Proc V_CopyWorkFolderProc(dataFolderStr, fromStr, toStr, level, sNBName, recurse)
 	String dataFolderStr="root:Packages:NIST:VSANS:RAW"
 	String fromStr = "RAW"
 	String toStr="SAM"
@@ -174,7 +175,7 @@ Function V_DuplicateDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 		sprintf sString, "NewDataFolder/O %s\r",toDF
 		NewDataFolder/O $(RemoveEnding(toDF,":"))			// remove trailing semicolon if it's there
 		
-		V_WriteBrowserInfo(sString, 1, sNBName)
+		V_WriteBrowserInfo_test(sString, 1, sNBName)
 	endif
  
  	dfName = GetDataFolder(1, dfr)
@@ -195,21 +196,21 @@ Function V_DuplicateDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 		sPrintf sString, "Duplicate/O  %s,  %s\r",dfName+name,toDF+name
 		Duplicate/O $(dfName+name),$(toDF+name)
 		
-		V_WriteBrowserInfo(sString, 2, sNBName)
+		V_WriteBrowserInfo_test(sString, 2, sNBName)
 	endfor	
  
 	Variable numNumericVariables = CountObjectsDFR(dfr, 2)	
 	for(i=0; i<numNumericVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 2, i)
 		sPrintf sString, "%s%s (numeric variable)\r", indentStr, name
-		V_WriteBrowserInfo(sString, 3, sNBName)
+		V_WriteBrowserInfo_test(sString, 3, sNBName)
 	endfor	
  
 	Variable numStringVariables = CountObjectsDFR(dfr, 3)	
 	for(i=0; i<numStringVariables; i+=1)
 		name = GetIndexedObjNameDFR(dfr, 3, i)
 		sPrintf sString, "%s%s (string variable)\r", indentStr, name
-		V_WriteBrowserInfo(sString, 4, sNBName)
+		V_WriteBrowserInfo_test(sString, 4, sNBName)
 	endfor	
 
 	if(recurse) 
@@ -224,19 +225,16 @@ Function V_DuplicateDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 			NewDataFolder/O $(toDF+name)
 			
 			
-			V_WriteBrowserInfo(sString, 1, sNBName)
+			V_WriteBrowserInfo_test(sString, 1, sNBName)
 			DFREF childDFR = dfr:$(name)
 			V_DuplicateDataFolder(childDFR, fromStr, toStr, level+1, sNBName, recurse)
 		endfor	
 	endif
 	 
-//when finished walking tree, save as RTF with dialog	
-//	if(level == 0 && strlen(sNBName) != 0)
-//		SaveNotebook /I /S=4  $sNBName
-//	endif
+
 End
  
-Function V_WriteBrowserInfo(sString, vType, sNBName)
+Function V_WriteBrowserInfo_test(sString, vType, sNBName)
 	String sString
 	Variable vType
 	String sNBName
@@ -550,6 +548,7 @@ Function Raw_to_work(newType)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			
 //			TransmissionCorrection(fill this in)
 			
 		endfor

@@ -304,6 +304,13 @@ Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
 	Show_VSANSPreferences_Panel()
 End
 
+
+Proc DataTree_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	V_ShowDataFolderTree()
+End
+
 ////////////////////////////////////////////////
 //************* NEW version of Main control Panel *****************
 //
@@ -347,7 +354,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={130,20},proc=CatSort_MainButtonProc,title="Sort Catalog"
 	Button MainButton_0e,help={"Sort the Data Catalog, courtesy of ANSTO"}
-
+	Button MainButton_0f,pos={170,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
+	Button MainButton_0f,help={"Show the header and data tree"}
 
 
 //on tab(1) - Reduction
@@ -433,7 +441,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_4a,disable=1
 	Button MainButton_4b,disable=1
 	Button MainButton_4c,disable=1
-	Button MainButton_4d,disable=1
+//	Button MainButton_4d,disable=1
 	Button MainButton_4e,disable=1
 	Button MainButton_4f,disable=1
 	Button MainButton_4g,disable=1

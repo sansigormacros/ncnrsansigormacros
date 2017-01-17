@@ -61,6 +61,12 @@ End
 // mask files
 #include "V_MaskUtils"
 
+// DIV files
+#include "V_DIVUtils"
+
 // more functionality
 #include "V_FileCatalog"
-#include "V_PatchFiles"		//still in progress and won't compile
+#include "V_PatchFiles"
+#include "V_ShowDataTree"
+
+#include "V_Correct"

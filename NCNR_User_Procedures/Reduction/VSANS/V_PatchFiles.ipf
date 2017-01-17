@@ -149,7 +149,7 @@ Proc V_Patch_Panel()
 	PauseUpdate; Silent 1	   // building window...
 	NewPanel /W=(533,50,1140,588)/K=2 as "Patch Raw VSANS Data Files"
 	DoWindow/C V_Patch_Panel
-	ShowTools/A
+//	ShowTools/A
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch:
 
 	
@@ -186,6 +186,9 @@ Proc V_Patch_Panel()
 	CheckBox check1,pos={78,80},size={40,15},title="Text",value= 0,mode=1,proc=V_MatchCheckProc
 	CheckBox check2,pos={138,80},size={40,15},title="SDD",value= 0,mode=1,proc=V_MatchCheckProc
 
+	PopupMenu popup_0,pos={450,85},size={109,20},title="Detector Panel",proc=V_PatchPopMenuProc
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
+
 
 	TabControl PatchTab,pos={20,120},size={570,400}
 	TabControl PatchTab,tabLabel(0)="Control",tabLabel(1)="Reduction",tabLabel(2)="Sample"
@@ -200,8 +203,6 @@ Proc V_Patch_Panel()
 
 // put these in a tabbed? section for the 9 different panels
 // will it be able to patch all "FL" with the proper values, then all "FR", etc. to batchwise correct files?
-//	PopupMenu popup_0,pos={30,base-step-10},size={109,20},title="Detector Panel",proc=PatchPopMenuProc
-//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 
 // TODO: add functions for these, make the intent a popup (since it's an enumerated type)
 
@@ -493,6 +494,7 @@ End
 
 // fill list boxes based on the tab
 //
+// TODO --
 // DETECTORS
 //
 Function V_FillListBox4(listWave,selWave)
@@ -511,7 +513,7 @@ Function V_FillListBox4(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 3
+	Variable nRows = 12
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -520,9 +522,50 @@ Function V_FillListBox4(listWave,selWave)
 	SelWave[][0] = 2^5		// checkboxes
 	SelWave[][2] = 2^1		// 3rd column editable
 	
+	ControlInfo popup_0			// which detector panel?
+	String detStr = S_value
 	
-	listWave[0][1] = "count_time"
-	listWave[0][2] = num2str(V_getCount_time(fname))	
+	listWave[0][1] = "beam_center_x"
+	listWave[0][2] = num2str(V_getDet_Beam_center_x(fname,detStr))	
+
+	listWave[1][1] = "beam_center_y"
+	listWave[1][2] = num2str(V_getDet_Beam_center_y(fname,detStr))	
+
+	listWave[2][1] = "distance (nominal)"
+	listWave[2][2] = num2str(V_getDet_NominalDistance(fname,detStr))	
+
+	listWave[3][1] = "integrated_count"
+	listWave[3][2] = num2str(V_getDet_IntegratedCount(fname,detStr))	
+
+	listWave[4][1] = "pixel_fwhm_x"
+	listWave[4][2] = num2str(V_getDet_pixel_fwhm_x(fname,detStr))	
+
+	listWave[5][1] = "pixel_fwhm_y"
+	listWave[5][2] = num2str(V_getDet_pixel_fwhm_y(fname,detStr))	
+
+	listWave[6][1] = "pixel_num_x"
+	listWave[6][2] = num2str(V_getDet_pixel_num_x(fname,detStr))	
+
+	listWave[7][1] = "pixel_num_y"
+	listWave[7][2] = num2str(V_getDet_pixel_num_y(fname,detStr))	
+
+	listWave[8][1] = "setback"
+	listWave[8][2] = num2str(V_getDet_TBSetback(fname,detStr))	
+
+	if(cmpstr(detStr,"B") == 0 ||cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+		listWave[9][1] = "lateral_offset"			// "B" detector drops here
+		listWave[9][2] = num2str(V_getDet_LateralOffset(fname,detStr))	
+	else	
+		listWave[9][1] = "vertical_offset"	
+		listWave[9][2] = num2str(V_getDet_VerticalOffset(fname,detStr))	
+	endif	
+
+	listWave[10][1] = "x_pixel_size"
+	listWave[10][2] = num2str(V_getDet_x_pixel_size(fname,detStr))	
+
+	listWave[11][1] = "y_pixel_size"
+	listWave[11][2] = num2str(V_getDet_y_pixel_size(fname,detStr))	
+
 
 	return(0)
 End
@@ -530,6 +573,7 @@ End
 
 // fill list boxes based on the tab
 //
+// TODO --
 // PolSANS
 //
 Function V_FillListBox5(listWave,selWave)
@@ -1293,9 +1337,88 @@ Function V_WriteHeaderForPatch_3(fname)
 	return(0)
 End
 
-// TODO -- not yet implemented
+// DETECTOR
 Function V_WriteHeaderForPatch_4(fname)
 	String fname
+
+	Variable val,err
+	String str
+		
+	Wave/T listWave = root:Packages:NIST:VSANS:Globals:Patch:PP_ListWave
+	Wave selWave = root:Packages:NIST:VSANS:Globals:Patch:PP_selWave
+
+	ControlInfo popup_0
+	String detStr = S_Value
+
+	// test bit 4 to see if the checkbox is selected
+	if ((selWave[0][0] & 2^4) != 0)		// Test if bit 4 is set
+		val = str2num(listWave[0][2])			// "beam_center_x"
+		err = V_writeDet_beam_center_x(fname,detStr,val)	
+	endif
+
+	if ((selWave[1][0] & 2^4) != 0)		// "beam_center_y"
+		val = str2num(listWave[1][2])
+		err = V_writeDet_beam_center_y(fname,detStr,val)
+	endif	
+	
+	if ((selWave[2][0] & 2^4) != 0)		//"distance (nominal)"
+		val = str2num(listWave[2][2])
+		err = V_writeDet_distance(fname,detStr,val)
+	endif	
+	
+	if ((selWave[3][0] & 2^4) != 0)		//"integrated_count"
+		val = str2num(listWave[3][2])
+		err = V_writeDet_IntegratedCount(fname,detStr,val)
+	endif	
+	
+	if ((selWave[4][0] & 2^4) != 0)		//"pixel_fwhm_x"
+		val = str2num(listWave[4][2])
+		err = V_writeDet_pixel_fwhm_x(fname,detStr,val)
+	endif	
+	
+	if ((selWave[5][0] & 2^4) != 0)		//"pixel_fwhm_y"
+		val = str2num(listWave[5][2])
+		err = V_writeDet_pixel_fwhm_y(fname,detStr,val)
+	endif	
+
+	if ((selWave[6][0] & 2^4) != 0)		//"pixel_num_x"
+		val = str2num(listWave[6][2])
+		err = V_writeDet_pixel_num_x(fname,detStr,val)
+	endif	
+	
+	if ((selWave[7][0] & 2^4) != 0)		//"pixel_num_y"
+		val = str2num(listWave[7][2])
+		err = V_writeDet_pixel_num_y(fname,detStr,val)
+	endif		
+	
+	if ((selWave[8][0] & 2^4) != 0)		//"setback" -- only for TB detectors
+		val = str2num(listWave[8][2])
+		if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0 || cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+			err = V_writeDet_TBSetback(fname,detStr,val)
+		endif
+	endif	
+
+	if ((selWave[9][0] & 2^4) != 0)		//"lateral_offset" or "vertical_offset"
+		val = str2num(listWave[9][2])
+		if(cmpstr(detStr,"B") == 0 ||cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
+			err = V_writeDet_LateralOffset(fname,detStr,val)
+		else
+			err = V_writeDet_VerticalOffset(fname,detStr,val)
+		endif
+	endif	
+	
+	if ((selWave[10][0] & 2^4) != 0)		//"x_pixel_size"
+		val = str2num(listWave[10][2])
+		err = V_writeDet_x_pixel_size(fname,detStr,val)
+	endif	
+	
+	if ((selWave[11][0] & 2^4) != 0)		//"y_pixel_size"
+		val = str2num(listWave[11][2])
+		err = V_writeDet_y_pixel_size(fname,detStr,val)
+	endif	
+	
+
+
 	
 	return(0)
 End
@@ -1462,3 +1585,389 @@ End
 
 
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////
+//
+// this is a block to patch waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+// TODO -- need to clear out the contents from RawVSANS, or else re-reading to check the values
+//        will read locally, and it will look like nothing was written. Executing "save" will also 
+//        trigger a cleanout.
+//
+// TODO - link this to a panel somewhere - a button? menu item? will there be a lot more of these little panels?
+//
+Proc V_PatchDetectorDeadtime(firstFile,lastFile,detStr,deadtimeStr)
+	Variable firstFile=1,lastFile=100
+	String detStr = "FL",deadtimeStr="deadTimeWave"
+
+	V_fPatchDetectorDeadtime(firstFile,lastFile,detStr,$deadtimeStr)
+
+End
+
+Proc V_ReadDetectorDeadtime(firstFile,lastFile,detStr)
+	Variable firstFile=1,lastFile=100
+	String detStr = "FL"
+	
+	V_fReadDetectorDeadtime(firstFile,lastFile,detStr)
+End
+
+// simple utility to patch the detector deadtime in the file headers
+// pass in the account name as a string
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
+	Variable lo,hi
+	String detStr
+	Wave deadtimeW
+	
+	Variable ii
+	String fname
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = V_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			V_writeDetector_deadtime(fname,detStr,deadtimeW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function V_fReadDetectorDeadtime(lo,hi,detStr)
+	Variable lo,hi
+	String detStr
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = V_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave deadtimeW = V_getDetector_deadtime(fname,detStr)
+			Duplicate/O deadTimeW root:Packages:NIST:VSANS:Globals:Patch:deadtimeWave
+//			printf "File %d:  Detector Dead time (s) = %g\r",ii,deadtime
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+
+Macro V_PatchDetectorDeadtimePanel()
+	DoWindow/F Patch_Deadtime
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
+
+		Make/O/D/N=48 deadTimeWave
+		
+		SetDataFolder root:
+		
+		Execute "V_DeadtimePatchPanel()"
+	endif
+End
+
+
+//
+// TODO - needs some minor adjustment to be of practical use, but a proof of concept
+//
+Proc V_DeadtimePatchPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+
+	NewPanel /W=(600,400,1000,1000)/N=DeadtimePanel/K=1
+//	ShowTools/A
+	
+	PopupMenu popup_0,pos={20,20},size={109,20},title="Detector Panel"
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+	
+	Button button0,pos={22.00,62.00},size={50.00,20.00},proc=V_ReadDTButtonProc,title="Read"
+	Button button0_1,pos={95.00,62.00},size={50.00,20.00},proc=V_WriteDTButtonProc,title="Write"
+	SetVariable setvar0,pos={19.00,128.00},size={100.00,14.00},title="first"
+	SetVariable setvar0,value= K0
+	SetVariable setvar1,pos={20.00,154.00},size={100.00,14.00},title="last"
+	SetVariable setvar1,value= K1
+
+	
+
+// display the wave	
+	Edit/W=(180,40,380,550)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+	ModifyTable width(Point)=0
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=120
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+Function V_ReadDTButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			V_fReadDetectorDeadtime(lo,hi,detStr)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_WriteDTButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+			
+			V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////
+//
+// this is a block to patch beam centers to the file headers
+// it will patch the headers for all 9 detectors
+// and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents. this is the "good" set of XY
+//  that you want to write out to other files.
+//
+// TODO -- need to clear out the contents from RawVSANS, or else re-reading to check the values
+//        will read locally, and it will look like nothing was written. Executing "save" will also 
+//        trigger a cleanout.
+//
+// TODO - link this to a panel somewhere - a button? menu item? will there be a lot more of these little panels?
+//
+Proc V_PatchDet_xyCenters(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+
+	V_fPatchDet_xyCenters(firstFile,lastFile)
+
+End
+
+Proc V_ReadDet_xyCenters(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+
+	
+	V_fReadDet_xyCenters(firstFile,lastFile)
+End
+
+// simple utility to patch the xy center in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDet_xyCenters(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+	Wave xCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:xCtr_pix
+	Wave yCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:yCtr_pix
+	Wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+				detStr = panelW[ii]
+				V_writeDet_beam_center_x(fname,detStr,xCtr_pix[ii])
+				V_writeDet_beam_center_y(fname,detStr,yCtr_pix[ii])		
+			endfor	
+		
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector xy centers stored in the file header
+Function V_fReadDet_xyCenters(lo,hi)
+	Variable lo,hi
+
+	
+	String fname,detStr
+	Variable ii,jj
+	
+	Wave xCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:xCtr_pix
+	Wave yCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:yCtr_pix
+	Wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
+	
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+				detStr = StringFromList(ii, ksDetectorListAll, ";")
+				panelW[ii] = detStr
+				xCtr_pix[ii] = V_getDet_beam_center_x(fname,detStr)
+				yCtr_pix[ii] = V_getDet_beam_center_y(fname,detStr)
+			endfor
+		
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+
+	
+	return(0)
+End
+
+
+
+Macro V_PatchDet_xyCenters_Panel()
+	DoWindow/F Patch_Deadtime
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
+
+		Make/O/D/N=9 xCtr_pix,yCtr_pix
+		Make/O/T/N=9 panelW
+		
+		SetDataFolder root:
+		
+		Execute "V_Patch_xyCtr_Panel()"
+	endif
+End
+
+
+//
+// TODO - document, make setVar controls larger, make cleaner
+//
+// TODO - link to main panel? link to Patch Panel?
+//
+Proc V_Patch_xyCtr_Panel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+
+	NewPanel /W=(600,400,1150,800)/N=Patch_XY_Panel/K=1
+//	ShowTools/A
+	
+//	PopupMenu popup_0,pos={20,20},size={109,20},title="Detector Panel"
+//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
+	
+	Button button0,pos={22.00,62.00},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
+	Button button0_1,pos={95.00,62.00},size={50.00,20.00},proc=V_WriteXYButtonProc,title="Write"
+	SetVariable setvar0,pos={19.00,128.00},size={100.00,14.00},title="first"
+	SetVariable setvar0,value= K0
+	SetVariable setvar1,pos={20.00,154.00},size={100.00,14.00},title="last"
+	SetVariable setvar1,value= K1
+
+	
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
+// display the wave	
+	Edit/W=(180,40,480,350)/HOST=#  panelW,xCtr_pix,yCtr_pix
+	ModifyTable width(Point)=0
+	ModifyTable width(panelW)=80
+	ModifyTable width(xCtr_pix)=100
+	ModifyTable width(yCtr_pix)=100
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	SetDataFolder root:
+	
+EndMacro
+
+
+Function V_ReadXYButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			V_fReadDet_xyCenters(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_WriteXYButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+//			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+			
+			V_fPatchDet_xyCenters(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////

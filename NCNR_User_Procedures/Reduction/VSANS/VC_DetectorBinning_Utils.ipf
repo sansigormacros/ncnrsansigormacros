@@ -1187,7 +1187,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
 // TODO:
-// -- Errors were NOT properly acculumated above, so this loop of calculations is NOT MEANINGFUL (yet)
+// -- 2D Errors were NOT properly acculumated above, so this loop of calculations is NOT MEANINGFUL (yet)
+// x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
 			//no pixels in annuli, data unknown
@@ -1202,6 +1203,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
 			else
 				//assume that the intensity in each pixel in annuli is normally distributed about mean...
+				//  -- this is correctly calculating the error as the standard error of the mean, as
+				//    was always done for SANS as well.
 				iBin_qxqy[ii] /= nBin_qxqy[ii]
 				avesq = iBin_qxqy[ii]^2
 				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
