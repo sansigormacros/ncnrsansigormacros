@@ -1,6 +1,20 @@
-#pragma rtGlobals=1		// Use modern global access method.
-#pragma version=5.0
-#pragma IgorVersion=6.1
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+//#pragma version=5.0
+//#pragma IgorVersion=6.1
+
+// Updated for VSANS Jan2017
+//
+// largely duplication of the SANS subtractions and error propagation.
+// Changes: (1) the beam center mismatch is ALWAYS ignored. It is flagged, and alerted, but nothing is shifted
+//          (2) the condition of trans == 1 is not flagged, and there is no stopping for user input
+// 
+// TODO -- verify the operation of all modes
+// -- decide if/how to implement/re-implement the trans == 1 check and dialog
+// -- decide if the beam center mismatch is ever to be re-implemented
+// -- check the monitor count calls and rescaled values (correct monitor? where is rescaling written?)
+//
+
+
 
 
 //
@@ -28,7 +42,7 @@
 //********************************
 
 //
-//unused test procedure for Correct() function
+// test procedure for Correct() function
 //must be updated to include "mode" parameter before re-use
 //
 Macro V_CorrectData(cor_mode)
@@ -138,14 +152,14 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_1()
+			err = V_CorrectMode_1()
 			break
 		case 2:
 			err = V_WorkDataExists("BGD")
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_2()
+			err = V_CorrectMode_2()
 			break
 		case 3:
 			err = V_WorkDataExists("EMP")
@@ -164,7 +178,7 @@ Function V_Correct(cor_mode)
 //				endif
 //			endif
 
-// TODO			err = V_CorrectMode_3()
+			err = V_CorrectMode_3()
 			break
 		case 4:
 			err = V_CorrectMode_4()
@@ -193,7 +207,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_11()
+			err = V_CorrectMode_11()
 			break
 		case 12:
 			err = V_WorkDataExists("BGD")
@@ -204,7 +218,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_12()
+			err = V_CorrectMode_12()
 			break
 		case 13:
 			err = V_WorkDataExists("EMP")
@@ -226,14 +240,14 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_13()
+			err = V_CorrectMode_13()
 			break
 		case 14:
 			err = V_WorkDataExists("DRK")
 			if(err==1)
 				return(err)
 			Endif
-// TODO			err = V_CorrectMode_14()
+			err = V_CorrectMode_14()
 			break
 		default:	//something wrong
 			Print "Incorrect mode in V_Correct()"
@@ -252,129 +266,146 @@ End
 //					added explicit reference to use linear_data, instead of trusting that data
 //					was freshly loaded. added final copy of cor result to cor:data and cor:linear_data
 //
-xFunction V_CorrectMode_1()
-	
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
-	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
-	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
-	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
-	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
-	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
-	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
-	
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
-	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err,emp_trans_err
-	sam_trans_err = sam_reals[41]
-	emp_trans_err = emp_reals[41]
-	
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor,emp_AttenFactor
+Function V_CorrectMode_1()
+
+	//get SAM, BGD, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
-	Variable sam_atten_err,emp_atten_err,bgd_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = bgd_text[3]
-	lambda = bgd_reals[26]
-	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
-	fileStr = emp_text[3]
-	lambda = emp_reals[26]
-	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
 	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	bgd_AttenFactor = V_getAttenuator_transmission("BGD")
+	bgd_atten_err = V_getAttenuator_trans_err("BGD")
+	emp_AttenFactor = V_getAttenuator_transmission("EMP")
+	emp_atten_err = V_getAttenuator_trans_err("EMP")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonbgd = bgd_reals[0]		//monitor count in BGD
-	cbgd = bgd_reals[16]
-	rbgd = bgd_reals[17]
-	tmonemp = emp_reals[0]		//monitor count in EMP
-	temp = emp_reals[4]			//trans emp
-	cemp = emp_reals[16]		//beamcenter of EMP
-	remp = emp_reals[17]
-	
-	if(temp==0)
-		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
-		temp=1
-	Endif
-	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
-	//get the shifted data arrays, EMP and BGD, each relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
-	xshift = cbgd-csam
-	yshift = rbgd-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
-	
-	xshift = cemp-csam
-	yshift = remp-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 
-	//do the subtraction
-	fsam=1
-	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
-	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
-	cor1 = fsam*sam_data/sam_attenFactor - fbgd*bgd_temp/bgd_attenFactor
-	cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
-	cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
-
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
-
-	tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
-	tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	temp = V_getSampleTransmission("EMP")			//trans emp
+	emp_trans_err = V_getSampleTransError("EMP")
 	
-	tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
 
-	cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d)
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave bgd_data = V_getDetectorDataW("BGD",detStr)
+		Wave bgd_err = V_getDetectorDataErrW("BGD",detStr)
+		Wave emp_data = V_getDetectorDataW("EMP",detStr)
+		Wave emp_err = V_getDetectorDataErrW("EMP",detStr)
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
+	
+		cbgd = V_getDet_beam_center_x("BGD",detStr)
+		rbgd = V_getDet_beam_center_y("BGD",detStr)
+	
+		cemp = V_getDet_beam_center_x("EMP",detStr)		//beamcenter of EMP
+		remp = V_getDet_beam_center_y("EMP",detStr)
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
+	
+	
+		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
+
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data arrays, EMP and BGD, each relative to SAM
+	
+		xshift = cbgd-csam
+		yshift = rbgd-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the BGD file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+		endif
+		bgd_temp = bgd_data		// no shift, no effect
+		noadd_bgd = 1
+		//GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
+	
+		xshift = cemp-csam
+		yshift = remp-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the EMP file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+		endif
+		emp_temp = emp_data // no shift, no effect
+		noadd_emp = 1
+		//GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
+
+
+		// *******
+		//do the subtraction
+		fsam=1
+		femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+		fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+		cor1 = fsam*sam_data/sam_attenFactor - fbgd*bgd_temp/bgd_attenFactor
+		cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
+		cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
+	
+		// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
+	
+		tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+		tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+		
+		tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+	
+		cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d)
+	
+	endfor
 	
 	//we're done, get out w/no error
-	//set the COR data and linear_data to the result
-	cor_data = cor1
-	cor_data_display = cor1
+
 	
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	//TODO -- do I update COR header?
+//	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
 	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val
+	
 	SetDataFolder root:
 	Return(0)
 End
@@ -382,96 +413,104 @@ End
 //background only
 // existence of data checked by dispatching routine
 // data has already been copied to COR folder
-xFunction V_CorrectMode_2()
+Function V_CorrectMode_2()
 
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
-	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
-	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
-	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
-
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err
-	sam_trans_err = sam_reals[41]
-
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
+	//get SAM, BGD attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable ii
+	String detStr
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
-	Variable wcen=0.001
-	Variable sam_atten_err,bgd_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = bgd_text[3]
-	lambda = bgd_reals[26]
-	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
 	
-	//Print "atten = ",sam_attenFactor,bgd_attenFactor
-	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	bgd_AttenFactor = V_getAttenuator_transmission("BGD")
+	bgd_atten_err = V_getAttenuator_trans_err("BGD")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonbgd = bgd_reals[0]		//monitor count in BGD
-	cbgd = bgd_reals[16]
-	rbgd = bgd_reals[17]
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 
-	// set up beamcenter shift, relative to SAM
-	xshift = cbgd-csam
-	yshift = rbgd-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//get shifted data arrays, relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,bgd_temp,noadd_bgd		//temp arrays
-	GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp is the BGD 
-	
-	//do the sam-bgd subtraction,  deposit result in cor1
-	fsam = 1
-	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
-	
-	//print "fsam,fbgd = ",fsam,fbgd
-	
-	cor1 = fsam*sam_data/sam_AttenFactor - fbgd*bgd_temp/bgd_AttenFactor
-	cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
+	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
 
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_b
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave bgd_data = V_getDetectorDataW("BGD",detStr)
+		Wave bgd_err = V_getDetectorDataErrW("BGD",detStr)
+
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
 	
-	tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+		cbgd = V_getDet_beam_center_x("BGD",detStr)
+		rbgd = V_getDet_beam_center_y("BGD",detStr)
 
-	cor_err = sqrt(tmp_a + tmp_b)
+	
+		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd
 
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data array BGD, relative to SAM
+	
+		xshift = cbgd-csam
+		yshift = rbgd-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the BGD file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+		endif
+		bgd_temp = bgd_data		// no shift, no effect
+		noadd_bgd = 1
+		//GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
+	
+
+		// **********	
+		//do the sam-bgd subtraction,  deposit result in cor1
+		fsam = 1
+		fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+		
+		//print "fsam,fbgd = ",fsam,fbgd
+		
+		cor1 = fsam*sam_data/sam_AttenFactor - fbgd*bgd_temp/bgd_AttenFactor
+		cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
+	
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_b
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+	
+		cor_err = sqrt(tmp_a + tmp_b)
+
+	endfor
 
 	//we're done, get out w/no error
-	//set the COR_data to the result
-	cor_data = cor1
-	cor_data_display = cor1
 
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	// TODO -- do I update COR header?
+	//cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd
 	Killwaves/Z tmp_a,tmp_b
@@ -483,99 +522,109 @@ End
 // empty subtraction only
 // data does exist, checked by dispatch routine
 //
-xFunction V_CorrectMode_3()
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
-	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
-	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
-	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+Function V_CorrectMode_3()
+
+	//get SAM, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
+	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
 	
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err,emp_trans_err
-	sam_trans_err = sam_reals[41]
-	emp_trans_err = emp_reals[41]	
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,emp_attenFactor
-	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
-	Variable wcen=0.001,tsam,temp
-	Variable sam_atten_err,emp_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = emp_text[3]
-	lambda = emp_reals[26]
-	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
-	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	emp_AttenFactor = V_getAttenuator_transmission("EMP")
+	emp_atten_err = V_getAttenuator_trans_err("EMP")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonemp = emp_reals[0]		//monitor count in EMP
-	temp = emp_reals[4]			//trans emp
-	cemp = emp_reals[16]		//beamcenter of EMP
-	remp = emp_reals[17]
-	
-	if(temp==0)
-		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
-		temp=1
-	Endif
-	
-	//Print "rbgd,cbgd = ",rbgd,cbgd
-	// set up beamcenter shift, relative to SAM
-	xshift = cemp-csam
-	yshift = remp-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//get shifted data arrays, relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,emp_temp,noadd_emp		//temp arrays
-	GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp is the EMP
-	
-	//do the sam-bgd subtraction,  deposit result in cor1
-	fsam = 1
-	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
-	
-	cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
-	cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_c ,c_val
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
-	tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	temp = V_getSampleTransmission("EMP")			//trans emp
+	emp_trans_err = V_getSampleTransError("EMP")
+	
 
-	cor_err = sqrt(tmp_a + tmp_c)
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave emp_data = V_getDetectorDataW("EMP",detStr)
+		Wave emp_err = V_getDetectorDataErrW("EMP",detStr)
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
+	
+		cemp = V_getDet_beam_center_x("EMP",detStr)		//beamcenter of EMP
+		remp = V_getDet_beam_center_y("EMP",detStr)
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
+	
+	
+		Duplicate/O cor_data cor1,emp_temp,noadd_emp
+
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data array EMP, each relative to SAM
+	
+		xshift = cemp-csam
+		yshift = remp-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the EMP file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+		endif
+		emp_temp = emp_data // no shift, no effect
+		noadd_emp = 1
+		//GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
+
+		// **********
+	
+		//do the sam-bgd subtraction,  deposit result in cor1
+		fsam = 1
+		femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+		
+		cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
+		cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+	
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_c ,c_val
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
+		tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+	
+		cor_err = sqrt(tmp_a + tmp_c)
+	
+	endfor
 	
 	//we're done, get out w/no error
-	//set the COR data to the result
-	cor_data = cor1
-	cor_data_display = cor1
 
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	// TODO -- do I update COR header?
+	//cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp
 	Killwaves/Z tmp_a,tmp_c,c_val
@@ -588,6 +637,7 @@ End
 // SAM data does exist, checked by dispatch routine
 // SAM data has already been copied to COR (both are the same at the start of the function)
 //
+//  TODO -- do I need to rescale to sam_trans here ??
 //
 //
 Function V_CorrectMode_4()
@@ -606,14 +656,16 @@ Function V_CorrectMode_4()
 		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
 		Wave sam_data = V_getDetectorDataW("SAM",detStr)
 		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+	
+	
+		cor_data = sam_data/sam_AttenFactor		//simply rescale the data
+	
+	// do the error propagation piecewise
+		cor_err = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		cor_err = sqrt(cor_err)
+
 	endfor
 	
-	cor_data = sam_data/sam_AttenFactor		//simply rescale the data
-
-// do the error propagation piecewise
-	cor_err = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
-	cor_err = sqrt(cor_err)
-
 	//TODO -- do I want to update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
@@ -621,139 +673,161 @@ Function V_CorrectMode_4()
 	Return(0)
 End
 
-xFunction V_CorrectMode_11()
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
-	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
-	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
-	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
-	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
-	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
-	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
-	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
-	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
-	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
 
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
-	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
-	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err,emp_trans_err
-	sam_trans_err = sam_reals[41]
-	emp_trans_err = emp_reals[41]
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor,emp_AttenFactor
+
+Function V_CorrectMode_11()
+
+	//get SAM, BGD, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
-	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp,time_sam,time_drk,savmon_sam
-	Variable sam_atten_err,bgd_atten_err,emp_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = bgd_text[3]
-	lambda = bgd_reals[26]
-	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
-	fileStr = emp_text[3]
-	lambda = emp_reals[26]
-	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
+	Variable savmon_sam,time_sam,time_drk
 	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	bgd_AttenFactor = V_getAttenuator_transmission("BGD")
+	bgd_atten_err = V_getAttenuator_trans_err("BGD")
+	emp_AttenFactor = V_getAttenuator_transmission("EMP")
+	emp_atten_err = V_getAttenuator_trans_err("EMP")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonbgd = bgd_reals[0]		//monitor count in BGD
-	cbgd = bgd_reals[16]
-	rbgd = bgd_reals[17]
-	tmonemp = emp_reals[0]		//monitor count in EMP
-	temp = emp_reals[4]			//trans emp
-	cemp = emp_reals[16]		//beamcenter of EMP
-	remp = emp_reals[17]
-	savmon_sam=sam_reals[1]		//true monitor count in SAM
-	time_sam = sam_ints[2]		//count time SAM
-	time_drk = drk_ints[2]		//drk count time
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp, drk_tmp_err
-	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	if(temp==0)
-		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
-		temp=1
-	Endif
+	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	temp = V_getSampleTransmission("EMP")			//trans emp
+	emp_trans_err = V_getSampleTransError("EMP")
 	
-	//get the shifted data arrays, EMP and BGD, each relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
-	xshift = cbgd-csam
-	yshift = rbgd-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
-	
-	xshift = cemp-csam
-	yshift = remp-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
-	//always ignore the DRK center shift
-	
-	//do the subtraction
-	fsam=1
-	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
-	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
-	cor1 = fsam*sam_data/sam_attenFactor
-	cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
-	cor1 -= (fbgd*bgd_temp/bgd_attenFactor - drk_temp)
-	cor1 -= drk_temp/sam_attenFactor
-	cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
-	
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
-	
-	tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
+	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
 
-	tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
-	tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
-	
-	tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+	// for proper scaling, get the time and actual monitor counts
+	// TODO -- make sure that these calls are reading the proper values
+	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
+	time_sam = V_getCount_time("SAM")		//count time SAM
+	time_drk = V_getCount_time("DRK")	//drk count time
 
-	cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d + drk_tmp_err^2)
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave bgd_data = V_getDetectorDataW("BGD",detStr)
+		Wave bgd_err = V_getDetectorDataErrW("BGD",detStr)
+		Wave emp_data = V_getDetectorDataW("EMP",detStr)
+		Wave emp_err = V_getDetectorDataErrW("EMP",detStr)
+		Wave drk_data = V_getDetectorDataW("DRK",detStr)
+		Wave drk_err = V_getDetectorDataErrW("DRK",detStr)
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
+	
+		cbgd = V_getDet_beam_center_x("BGD",detStr)
+		rbgd = V_getDet_beam_center_y("BGD",detStr)
+	
+		cemp = V_getDet_beam_center_x("EMP",detStr)		//beamcenter of EMP
+		remp = V_getDet_beam_center_y("EMP",detStr)
+		
+		//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
+		Duplicate/O drk_data drk_temp, drk_tmp_err
+		drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+		drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK	
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
+	
+		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
+
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data arrays, EMP and BGD, each relative to SAM
+	
+		xshift = cbgd-csam
+		yshift = rbgd-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the BGD file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+		endif
+		bgd_temp = bgd_data		// no shift, no effect
+		noadd_bgd = 1
+		//GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
+	
+		xshift = cemp-csam
+		yshift = remp-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the EMP file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+		endif
+		emp_temp = emp_data // no shift, no effect
+		noadd_emp = 1
+		//GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
+
+
+		//always ignore the DRK center shift
+	
+		// ************	
+		//do the subtraction
+		fsam=1
+		femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+		fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+		cor1 = fsam*sam_data/sam_attenFactor
+		cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
+		cor1 -= (fbgd*bgd_temp/bgd_attenFactor - drk_temp)
+		cor1 -= drk_temp/sam_attenFactor
+		cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
+		
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_b = (bgd_err/bgd_attenFactor)^2*(tsam/temp - 1)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2*(1-tsam/temp)^2		//sig b ^2
+	
+		tmp_c = (sam_trans_err/temp)^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+		tmp_c += (tsam/temp^2)^2*emp_trans_err^2*(emp_data/emp_attenFactor-bgd_data/bgd_attenFactor)^2
+		
+		tmp_d = (tsam/(temp*emp_attenFactor))^2*(emp_err)^2 + (tsam*emp_data/(temp*emp_attenFactor^2))^2*(emp_atten_err)^2
+	
+		cor_err = sqrt(tmp_a + tmp_b + tmp_c + tmp_d + drk_tmp_err^2)
+	
+	endfor
 	
 	//we're done, get out w/no error
-	//set the COR data to the result
-	cor_data = cor1
-	cor_data_display = cor1
 
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+
+	//TODO -- do I update COR header?
+//	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp,drk_temp
 	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val,drk_tmp_err
@@ -764,105 +838,123 @@ End
 
 //bgd and drk subtraction
 //
-xFunction V_CorrectMode_12()
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE bgd_data=$"root:Packages:NIST:BGD:linear_data"
-	WAVE bgd_reals=$"root:Packages:NIST:BGD:realsread"
-	WAVE bgd_ints=$"root:Packages:NIST:BGD:integersread"
-	WAVE/T bgd_text=$"root:Packages:NIST:BGD:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
-	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
-	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
-	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+Function V_CorrectMode_12()
 
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE bgd_err =$"root:Packages:NIST:BGD:linear_data_error"
-	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err
-	sam_trans_err = sam_reals[41]
-	
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
+	//get SAM, BGD, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
-	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
-	Variable sam_atten_err,bgd_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = bgd_text[3]
-	lambda = bgd_reals[26]
-	attenNo = bgd_reals[3]
-	bgd_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
+	Variable savmon_sam,time_sam,time_drk
 	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	bgd_AttenFactor = V_getAttenuator_transmission("BGD")
+	bgd_atten_err = V_getAttenuator_trans_err("BGD")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonbgd = bgd_reals[0]		//monitor count in BGD
-	cbgd = bgd_reals[16]
-	rbgd = bgd_reals[17]
-	savmon_sam=sam_reals[1]		//true monitor count in SAM
-	time_sam = sam_ints[2]		//count time SAM
-	time_drk = drk_ints[2]		//drk count time
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
-	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
-
-	// set up beamcenter shift, relative to SAM
-	xshift = cbgd-csam
-	yshift = rbgd-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	//get shifted data arrays, relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,bgd_temp,noadd_bgd		//temp arrays
-	GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp is the BGD 
-	//always ignore the DRK center shift
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	//do the sam-bgd subtraction,  deposit result in cor1
-	fsam = 1
-	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
+
+	// for proper scaling, get the time and actual monitor counts
+	// TODO -- make sure that these calls are reading the proper values
+	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
+	time_sam = V_getCount_time("SAM")		//count time SAM
+	time_drk = V_getCount_time("DRK")	//drk count time
+
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave bgd_data = V_getDetectorDataW("BGD",detStr)
+		Wave bgd_err = V_getDetectorDataErrW("BGD",detStr)
+		Wave drk_data = V_getDetectorDataW("DRK",detStr)
+		Wave drk_err = V_getDetectorDataErrW("DRK",detStr)
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
 	
-	cor1 = fsam*sam_data/sam_AttenFactor + fbgd*tsam*bgd_temp/bgd_AttenFactor
-	cor1 += -1*(fbgd*bgd_temp/bgd_attenFactor - drk_temp) - drk_temp/sam_attenFactor
-	cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
-
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_b
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		cbgd = V_getDet_beam_center_x("BGD",detStr)
+		rbgd = V_getDet_beam_center_y("BGD",detStr)
+		
+		//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
+		Duplicate/O drk_data drk_temp, drk_tmp_err
+		drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+		drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK	
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
 	
-	tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd
 
-	cor_err = sqrt(tmp_a + tmp_b + drk_tmp_err^2)
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data arrays, EMP and BGD, each relative to SAM
+	
+		xshift = cbgd-csam
+		yshift = rbgd-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the BGD file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for BGD file. Data has NOT been corrected."
+		endif
+		bgd_temp = bgd_data		// no shift, no effect
+		noadd_bgd = 1
+		//GetShiftedArray(bgd_data,bgd_temp,noadd_bgd,xshift,yshift)		//bgd_temp
 
+
+		//always ignore the DRK center shift
+
+		// ************	
+		//do the sam-bgd subtraction,  deposit result in cor1
+		fsam = 1
+		fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+		
+		cor1 = fsam*sam_data/sam_AttenFactor + fbgd*tsam*bgd_temp/bgd_AttenFactor
+		cor1 += -1*(fbgd*bgd_temp/bgd_attenFactor - drk_temp) - drk_temp/sam_attenFactor
+		cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
+	
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_b
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_b = (bgd_err/bgd_attenFactor)^2 + (bgd_atten_err*bgd_data/bgd_attenFactor^2)^2		//sig b ^2
+	
+		cor_err = sqrt(tmp_a + tmp_b + drk_tmp_err^2)
+
+	endfor
+	
 	//we're done, get out w/no error
-	//set the COR_data to the result
-	cor_data = cor1
-	cor_data_display = cor1
-
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	
+	// TODO -- do I update COR header?
+//	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
 	Killwaves/Z tmp_a,tmp_b,drk_tmp_err
@@ -875,114 +967,126 @@ End
 // all data exists, DRK is on a time basis (noNorm)
 //scale DRK by monitor count scaling factor and the ratio of couting times
 //to place the DRK file on equal footing
-xFunction V_CorrectMode_13()
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE emp_data=$"root:Packages:NIST:EMP:linear_data"
-	WAVE emp_reals=$"root:Packages:NIST:EMP:realsread"
-	WAVE emp_ints=$"root:Packages:NIST:EMP:integersread"
-	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
-	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
-	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
-	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+Function V_CorrectMode_13()
 
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE emp_err =$"root:Packages:NIST:EMP:linear_data_error"
-	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
+	//get SAM, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
+	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
+	Variable savmon_sam,time_sam,time_drk
 	
-	Variable sam_trans_err,emp_trans_err
-	sam_trans_err = sam_reals[41]
-	emp_trans_err = emp_reals[41]
-	
-	//get sam and bgd attenuation factors (DRK irrelevant)
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,emp_attenFactor
-	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
-	Variable wcen=0.001,tsam,temp,savmon_sam,time_sam,time_drk
-	Variable sam_atten_err,emp_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
-	fileStr = emp_text[3]
-	lambda = emp_reals[26]
-	attenNo = emp_reals[3]
-	emp_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
-	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+	emp_AttenFactor = V_getAttenuator_transmission("EMP")
+	emp_atten_err = V_getAttenuator_trans_err("EMP")
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-	tmonemp = emp_reals[0]		//monitor count in EMP
-	temp = emp_reals[4]			//trans emp
-	cemp = emp_reals[16]		//beamcenter of EMP
-	remp = emp_reals[17]
-	savmon_sam=sam_reals[1]		//true monitor count in SAM
-	time_sam = sam_ints[2]		//count time SAM
-	time_drk = drk_ints[2]		//drk count time
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
-	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
+	
+	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	temp = V_getSampleTransmission("EMP")			//trans emp
+	emp_trans_err = V_getSampleTransError("EMP")
 
-	
-	if(temp==0)
-		DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
-		temp=1
-	Endif
-	
-	//Print "rbgd,cbgd = ",rbgd,cbgd
-	// set up beamcenter shift, relative to SAM
-	xshift = cemp-csam
-	yshift = remp-rsam
-	if(abs(xshift) <= wcen)
-		xshift = 0
-	Endif
-	if(abs(yshift) <= wcen)
-		yshift = 0
-	Endif
-	//get shifted data arrays, relative to SAM
-	Make/D/O/N=(pixelsX,pixelsY) cor1,emp_temp,noadd_emp		//temp arrays
-	GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp is the EMP
-	//always ignore beamcenter shift for DRK
-	
-	//do the sam-bgd subtraction,  deposit result in cor1
-	fsam = 1
-	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
-	
-	cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
-	cor1 += drk_temp - drk_temp/sam_attenFactor
-	cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+	// for proper scaling, get the time and actual monitor counts
+	// TODO -- make sure that these calls are reading the proper values
+	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
+	time_sam = V_getCount_time("SAM")		//count time SAM
+	time_drk = V_getCount_time("DRK")	//drk count time
 
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a, tmp_c, c_val
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave emp_data = V_getDetectorDataW("EMP",detStr)
+		Wave emp_err = V_getDetectorDataErrW("EMP",detStr)
+		Wave drk_data = V_getDetectorDataW("DRK",detStr)
+		Wave drk_err = V_getDetectorDataErrW("DRK",detStr)
+		
+	// to check for beam center mismatch -- simply warn, but do no shift
+	//
+
+		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
+		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field
 	
-	tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
-	tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+		cemp = V_getDet_beam_center_x("EMP",detStr)		//beamcenter of EMP
+		remp = V_getDet_beam_center_y("EMP",detStr)
+		
+		//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
+		Duplicate/O drk_data drk_temp, drk_tmp_err
+		drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+		drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK	
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
 	
-	cor_err = sqrt(tmp_a + tmp_c + drk_tmp_err^2)
+		Duplicate/O cor_data cor1,emp_temp,noadd_emp
+
+		// TODO -- document this, make a note, so everyone knows this is not done
+		// skip this part, but duplicate the results of no shift condition
+		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
+		
+			//get the shifted data arrays, EMP , each relative to SAM
 	
+		xshift = cemp-csam
+		yshift = remp-rsam
+		if(abs(xshift) <= wcen)
+			xshift = 0
+		Endif
+		if(abs(yshift) <= wcen)
+			yshift = 0
+		Endif
+		// for the EMP file - alert if needed, generate dummy "pass-through" values
+		//
+		if(xshift != 0 || yshift != 0)
+			DoAlert 0, "Beam center mismatch for EMP file. Data has NOT been corrected."
+		endif
+		emp_temp = emp_data // no shift, no effect
+		noadd_emp = 1
+		//GetShiftedArray(emp_data,emp_temp,noadd_emp,xshift,yshift)		//emp_temp
+
+
+		//always ignore the DRK center shift
+		
+		// ***************	
+		//do the sam-bgd subtraction,  deposit result in cor1
+		fsam = 1
+		femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+		
+		cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
+		cor1 += drk_temp - drk_temp/sam_attenFactor
+		cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+	
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a, tmp_c, c_val
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+		
+		tmp_c = (sam_trans_err*emp_data/(temp*emp_attenFactor))^2 + (emp_err*tsam/(temp*emp_attenFactor))^2
+		tmp_c += (tsam*emp_data*emp_trans_err/(temp*temp*emp_attenFactor))^2 + (tsam*emp_data*emp_atten_err/(temp*emp_attenFactor^2))^2//total of 6 terms
+		
+		cor_err = sqrt(tmp_a + tmp_c + drk_tmp_err^2)
+
+	endfor
+		
 	//we're done, get out w/no error
-	//set the COR data to the result
-	cor_data = cor1
-	cor_data_display = cor1
 
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	// TODO -- do I update COR header?
+//	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp,drk_temp
 	Killwaves/Z tmp_a,tmp_c,c_val,drk_tmp_err
@@ -993,80 +1097,84 @@ End
 
 // ONLY drk subtraction
 //
-xFunction V_CorrectMode_14()
-	//create the necessary wave references
-	WAVE sam_data=$"root:Packages:NIST:SAM:linear_data"
-	WAVE sam_reals=$"root:Packages:NIST:SAM:realsread"
-	WAVE sam_ints=$"root:Packages:NIST:SAM:integersread"
-	WAVE/T sam_text=$"root:Packages:NIST:SAM:textread"
-	WAVE drk_data=$"root:Packages:NIST:DRK:linear_data"
-	WAVE drk_reals=$"root:Packages:NIST:DRK:realsread"
-	WAVE drk_ints=$"root:Packages:NIST:DRK:integersread"
-	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
-	WAVE cor_data=$"root:Packages:NIST:COR:linear_data"
-	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+Function V_CorrectMode_14()
 
-	// needed to propagate error
-	WAVE cor_data_display=$"root:Packages:NIST:COR:data"		//just for the final copy
-	WAVE sam_err =$"root:Packages:NIST:SAM:linear_data_error"
-	WAVE drk_err =$"root:Packages:NIST:DRK:linear_data_error"
-	WAVE cor_err =$"root:Packages:NIST:COR:linear_data_error"
-	
-	Variable sam_trans_err
-	sam_trans_err = sam_reals[41]
-	
-	
-	//get sam and bgd attenuation factors
-	String fileStr=""
-	Variable lambda,attenNo,sam_AttenFactor,bgd_attenFactor
+	//get SAM, EMP attenuation factor
+	Variable sam_AttenFactor,sam_atten_err,sam_trans_err
+	Variable bgd_AttenFactor,bgd_atten_err
+	Variable emp_AttenFactor,emp_atten_err,emp_trans_err
+	Variable ii
+	String detStr
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
-	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
-	Variable sam_atten_err
-	fileStr = sam_text[3]
-	lambda = sam_reals[26]
-	attenNo = sam_reals[3]
-	sam_AttenFactor = AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
+	Variable savmon_sam,time_sam,time_drk
 	
+	// these values apply to all of the detectors
+	sam_AttenFactor = V_getAttenuator_transmission("SAM")
+	sam_atten_err = V_getAttenuator_trans_err("SAM")
+
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = sam_reals[0]		//monitor count in SAM
-	tsam = sam_reals[4]		//SAM transmission
-	csam = sam_reals[16]		//x center
-	rsam = sam_reals[17]		//beam (x,y) define center of corrected field
-
-	savmon_sam=sam_reals[1]		//true monitor count in SAM
-	time_sam = sam_ints[2]		//count time SAM
-	time_drk = drk_ints[2]		//drk count time
+	// get transmission and trans error for SAM, EMP
+	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
 	
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
-	Make/D/O/N=(pixelsX,pixelsY) drk_temp,drk_tmp_err
-	drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
-	drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK
-
-	Make/D/O/N=(pixelsX,pixelsY) cor1	//temp arrays
-	//always ignore the DRK center shift
+	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tsam = V_getSampleTransmission("SAM")		//SAM transmission
+	sam_trans_err = V_getSampleTransError("SAM")
 	
-	//do the subtraction,  deposit result in cor1
-	fsam = 1
-	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
-	
-	//correct sam for attenuators, and do the same to drk, since it was scaled to sam count time
-	cor1 = fsam*sam_data/sam_AttenFactor  - drk_temp/sam_attenFactor
 
-// do the error propagation piecewise	
-	Duplicate/O sam_err, tmp_a
-	tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	// for proper scaling, get the time and actual monitor counts
+	// TODO -- make sure that these calls are reading the proper values
+	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
+	time_sam = V_getCount_time("SAM")		//count time SAM
+	time_drk = V_getCount_time("DRK")	//drk count time
 
-	cor_err = sqrt(tmp_a + drk_tmp_err^2)
+
+	// and now loop through all of the detectors
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave cor_data = V_getDetectorDataW("COR",detStr)
+		Wave cor_err = V_getDetectorDataErrW("COR",detStr)
+		Wave sam_data = V_getDetectorDataW("SAM",detStr)
+		Wave sam_err = V_getDetectorDataErrW("SAM",detStr)
+		Wave drk_data = V_getDetectorDataW("DRK",detStr)
+		Wave drk_err = V_getDetectorDataErrW("DRK",detStr)
+		
+		
+		//rescale drk to sam cnt time and then multiply by the same monitor scaling as SAM
+		Duplicate/O drk_data drk_temp, drk_tmp_err
+		drk_temp = drk_data*(time_sam/time_drk)*(tmonsam/savmon_sam)
+		drk_tmp_err *= drk_err*(time_sam/time_drk)*(tmonsam/savmon_sam)			//temporarily rescale the error of DRK	
+		
+		if(temp==0)
+			DoAlert 0,"Empty Cell transmission was zero. It has been reset to one for the subtraction"
+			temp=1
+		Endif
 	
+		Duplicate/O cor_data cor1
+
+		//always ignore the DRK center shift
+
+		// ************
+		//do the subtraction,  deposit result in cor1
+		fsam = 1
+		fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
+		
+		//correct sam for attenuators, and do the same to drk, since it was scaled to sam count time
+		cor1 = fsam*sam_data/sam_AttenFactor  - drk_temp/sam_attenFactor
+	
+	// do the error propagation piecewise	
+		Duplicate/O sam_err, tmp_a
+		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
+	
+		cor_err = sqrt(tmp_a + drk_tmp_err^2)
+
+	endfor
+		
 	//we're done, get out w/no error
-	//set the COR_data to the result
-	cor_data = cor1
-	cor_data_display = cor1
-
-	//update COR header
-	cor_text[1] = date() + " " + time()		//date + time stamp
+	
+	//TODO -- do I update COR header?
+//	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
 	Killwaves/Z tmp_a,tmp_b,tmp_c,tmp_d,c_val,d_val,drk_tmp_err
