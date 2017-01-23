@@ -45,7 +45,7 @@
 // test procedure for Correct() function
 //must be updated to include "mode" parameter before re-use
 //
-Macro V_CorrectData(cor_mode)
+Proc V_CorrectData(cor_mode)
 	Variable cor_mode=4
 	
 	Variable err

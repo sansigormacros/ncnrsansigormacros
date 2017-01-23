@@ -21,12 +21,15 @@ Menu "VSANS"
 	Submenu "In Progress Panels"
 		"VSANS Preferences",Show_VSANSPreferences_Panel()
 		"Beam Center Panel",V_FindBeamCenter()
+		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
+		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",Convert_to_Workfile()
 		"Load Fake DIV Data"
 		"DIV a work file",DIV_a_Workfile()
 		"Load Fake MASK Data"
+		"Correct Data",V_CorrectData()
 	End
 	
 End

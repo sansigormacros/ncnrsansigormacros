@@ -1665,7 +1665,7 @@ End
 
 
 
-Macro V_PatchDetectorDeadtimePanel()
+Proc V_PatchDetectorDeadtimePanel()
 	DoWindow/F Patch_Deadtime
 	if(V_flag==0)
 	
@@ -1867,7 +1867,7 @@ End
 
 
 
-Macro V_PatchDet_xyCenters_Panel()
+Proc V_PatchDet_xyCenters_Panel()
 	DoWindow/F Patch_Deadtime
 	if(V_flag==0)
 	
