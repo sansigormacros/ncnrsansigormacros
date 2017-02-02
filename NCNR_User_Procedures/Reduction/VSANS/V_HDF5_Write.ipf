@@ -5805,9 +5805,15 @@ Function V_writeSample_equatorial_ang(fname,val)
 	return(err)
 end
 
-// TODO -- do  I need to make sure that this is an integer?
+
+//
+// TODO -- I need to make sure that this is an integer in the JSON definition
+// 		-- currently a text value in the data file - see trac ticket
+// x- this is also a duplicated field in the reduction block (reductio/group_id is no longer used)
+//
 // group ID !!! very important for matching up files
 // integer value
+//
 Function V_writeSample_GroupID(fname,val)
 	String fname
 	Variable val
@@ -6593,31 +6599,33 @@ Function V_writePolReduction_purpose(fname,str)
 	return(err)
 End
 
-// TODO -- is this duplicated?
-Function V_writeReduction_group_ID(fname,val)
-	String fname
-	Variable val
-	
-//	String path = "entry:reduction:box_count_error"	
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/reduction"
-	String varName = "group_id"
-	wTmpWrite[0] = val
-
-	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = V_KillNamedDataFolder(fname)
+// DONE x- commented out, not to be used
+//  x- is this duplicated? - yes - this is duplicated in /entry/sample
+//  x- so I need to pick a location, or be sure to fix it in both places
+//Function V_writeReduction_group_ID(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:reduction:group_id"	
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/reduction"
+//	String varName = "group_id"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 //	if(err)
-//		Print "DataFolder kill err = ",err
+//		Print "HDF write err = ",err
 //	endif
-	return(err)
-end
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
 
 Function V_writeReductionIntent(fname,str)
 	String fname,str

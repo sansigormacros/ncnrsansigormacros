@@ -919,7 +919,7 @@ Window Middle_IQ_Graph() : Graph
 			
 	endif
 
-	if(binType==4)		// slit aperture binning - Mt, ML, MR, MB are averaged
+	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
 		ClearIQIfDisplayed("VCALC","MLRTB")
 		ClearIQIfDisplayed("VCALC","MLR")
 		ClearIQIfDisplayed("VCALC","MTB")

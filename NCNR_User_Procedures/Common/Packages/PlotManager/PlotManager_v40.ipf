@@ -156,7 +156,7 @@ Function A_PM_doNewGraph(DF)
 	String qStr,eStr,iStr
 	Variable rr,gg,bb
 	
-	SVAR angst = root:Packages:NIST:gAngstStr
+	SVAR/Z angst = root:Packages:NIST:gAngstStr
 	
 	SetDataFolder $("root:"+DF)
 	//iStr will end in "i"

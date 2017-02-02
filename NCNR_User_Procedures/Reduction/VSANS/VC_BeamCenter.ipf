@@ -144,7 +144,7 @@ End
 //     need to make it more generic, especially for RAW data
 //
 // -- need to adjust the size of the image subwindows to keep the model
-//    calculation from spillon over onto the table (maybe just move the table)
+//    calculation from spilling over onto the table (maybe just move the table)
 // -- need to do something for panel "B". currently ignored
 // -- currently the pixel sizes for "real" data is incorrect in the file
 //     and this is why the plots are incorrectly sized

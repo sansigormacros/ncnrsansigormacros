@@ -48,7 +48,12 @@ Function FillPanel_wModelData(det,qTot,type)
 	//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 100.0, 0.1,3,0.1}		
 	//
 	// peak @ 0.015 in middle of middle detector, maybe not "real" vycor, but that is to be resolved
-	//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 500.0, 0.015,3,0.1}		
+	//	Make/O/D coef_BroadPeak = {1e-9, 3, 20, 500.0, 0.015,3,0.1}	
+	//
+	//
+	Variable addEmpBgd=0
+	
+		
 	String funcStr = VCALC_getModelFunctionStr()
 	strswitch(funcStr)
 		case "Big Debye":
@@ -75,10 +80,29 @@ Function FillPanel_wModelData(det,qTot,type)
 		case "Blocked Beam":
 			tmpInten = VC_BlockedBeam(1,qTot[p][q])
 			break
+		case "Debye +":
+			tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])
+			addEmpBgd = 1
+			break
+		case "AgBeh +":
+			tmpInten = VC_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
+			addEmpBgd = 1
+			break
+		case "Empty Cell +":
+			tmpInten = VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
+			tmpInten += VC_BlockedBeam(1,qTot[p][q])
+			break
 		default:
 			tmpInten = VC_Debye(10,300,0.1,qTot[p][q])
 	endswitch
 
+
+	if(addEmpBgd == 1)
+		tmpInten += VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
+		tmpInten += VC_BlockedBeam(1,qTot[p][q])
+	endif
+
+	
 // TODO: this is faked to get around the singularity at the center of the back detector
 //
 // 

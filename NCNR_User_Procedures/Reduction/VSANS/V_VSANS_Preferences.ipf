@@ -86,8 +86,8 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor = 1
 	
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton", 1 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton = 1
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization = 1
 	
 
 // flag to allow adding raw data files with different attenuation (normally not done)	
@@ -203,7 +203,7 @@ Function V_DoMonitorNormPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization
 	gVal = checked
 End
 
@@ -272,7 +272,7 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1m title="Do Tube Shadow Correction?",size={140,14},proc=V_DoTubeShadowCorPref
 	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1n title="Do Tube Shadow Correction?",size={140,14},proc=V_DoMonitorNormPref
-	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
 		
 	
 //	CheckBox PrefCtrl_1a,disable=1

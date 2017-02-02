@@ -137,13 +137,16 @@ Function V_InitGlobals()
 	
 	//check platform, so Angstrom can be drawn correctly
 
-	//TODO	- this is different on Igor 7
+	//TODO	- this is different on Igor 7. Macintosh # has been updated, but Windows has not
+	// use Print char2num("Å") to find the magic number
 	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-127)
+		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
+		String/G root:Packages:NIST:gAngstStr = num2char(197)
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 1
 	else
 		//either Windows or Windows NT
 		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
+		String/G root:Packages:NIST:gAngstStr = num2char(-59)
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"

@@ -29,16 +29,22 @@ Function V_PickPath()
 		String/G root:Packges:NIST:VSANS:Globals:gCatPathStr = "no folder selected"
 		return(1)
 	else
-		//set the global to the path (as a string)
-		// need 4 \ since it is the escape character
-		if(cmpstr("\\\\",dum[0,1])==0)	//Windows user going through network neighborhood
-			DoAlert 0,alertStr
-			KillPath catPathName
-			return(1)
-		endif
+	// SRK 2016, for windows 10, try to eliminate this restriction	
+	//---- connecting through the network neighborhood seems to be perfectly fine except for 
+	//     path issues with GBLoadWave, which only affects VAX data sets
+		
+//		print igorinfo(3)
+//		//set the global to the path (as a string)
+//		// need 4 \ since it is the escape character
+//		if(cmpstr("\\\\",dum[0,1])==0)	//Windows user going through network neighborhood
+//			DoAlert 0,alertStr
+//			KillPath catPathName
+//			return(1)
+//		endif
 		String/G root:Packges:NIST:VSANS:Globals:gCatPathStr = dum
 		return(0)		//no error
 	endif
+	
 End
 
 //
@@ -517,27 +523,10 @@ Function/S V_FindFileFromRunNumber(num)
 	
 	String fullName="",partialName="",item=""
 	//get list of raw data files in folder that match "num"
-//	if( (num>9999) || (num<=0) )
-//		Print "error in  FindFileFromRunNumber(num), file number too large or too small"
-//		Return ("")
-//	Endif
+
 	String numStr=""
 	numStr = num2str(num)
-//	if(num<10)
-//		numStr = "000"+num2str(num)
-//	else
-//		if(num<100)
-//			numStr = "00"+num2str(num)
-//		else
-//			if(num<1000)
-//				numstr = "0"+num2str(num)
-//			else
-//				numStr = num2str(num)
-//			endif
-//		Endif
-//	Endif
-	//Print "numstr = ",numstr
-	
+
 	//make sure that path exists
 	PathInfo catPathName
 	String path = S_path
@@ -666,7 +655,7 @@ Function/S V_GetRunNumStrFromFile(item)
 		return (invalid)
 	else
 		//found, get the characters preceeding it, but still after the "sans" characters
-		if (pos-1 <= 4)
+		if (pos-1 < 4)
 			//not enough characters
 			return (invalid)
 		else
@@ -974,7 +963,7 @@ End
 //
 // called by Marquee.ipf, MultipleReduce.ipf, ProtocolAsPanel.ipf
 //
-Function/S ParseRunNumberList(list)
+Function/S V_ParseRunNumberList(list)
 	String list
 	
 	String newList="",item="",tempStr=""

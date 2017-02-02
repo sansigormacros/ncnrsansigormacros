@@ -561,8 +561,8 @@ Function Raw_to_work(newType)
 	// TODO -- but there are TWO monitors - so how to switch?
 	// TODO -- what do I really need to save?
 	
-	NVAR gDoMonitorNormalizaton = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalizaton
-	if (gDoMonitorNormalizaton == 1)
+	NVAR gDoMonitorNormalization = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization
+	if (gDoMonitorNormalization == 1)
 		Print "(stub)Doing monitor normalization -- INCOMPLETE --"// for "+ detStr
 		
 		defmon=1e8			//default monitor counts

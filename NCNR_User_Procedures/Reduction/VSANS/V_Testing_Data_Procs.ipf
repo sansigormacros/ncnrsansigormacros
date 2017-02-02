@@ -11,21 +11,25 @@
 // -- maybe want a panel to make it easier to decide what inputs to change in the file
 // -- decide if it's better to write wholesale, or as individual waves
 //
-Macro Copy_VCALC_to_VSANSFile()
+Macro Copy_VCALC_to_VSANSFile(labelStr,intent,group_id)
+	String labelStr = "sample label"
+	String intent = "SAMPLE"
+	variable group_id = 75
 	
 	String fileName = V_DoSaveFileDialog("pick the file to write to")
 	print fileName
 //	
 	if(strlen(fileName) > 0)
-		writeVCALC_to_file(fileName)
+		writeVCALC_to_file(fileName,labelStr,intent,group_id)
 	endif
 End
 
 //
 // TODO -- fill this in as needed to get fake data that's different
 //
-Function writeVCALC_to_file(fileName)
-	String fileName
+Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
+	String fileName,labelStr,intent
+	Variable group_id
 
 
 // the detectors, all 9 + the correct SDD (that accounts for the offset of T/B panels
@@ -33,7 +37,7 @@ Function writeVCALC_to_file(fileName)
 // the front SDD (correct units)
 // the middle SDD (correct units)
 // the back SDD (correct units)
-	Variable ii,val
+	Variable ii,val,sumCts=0
 	String detStr
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
@@ -72,6 +76,10 @@ Function writeVCALC_to_file(fileName)
 		// the dead time for each detector is already correct in the "base" file
 		// V_writeDetector_deadtime(fname,detStr,inW)
 		// TODO: need a new, separate function to write the single deadtime value in/out of "B"
+		
+		// integrated count value on each detector bank
+		sumCts += sum(tmpData)
+		V_writeDet_IntegratedCount(fileName,detStr,sum(tmpData))
 
 	endfor
 
@@ -87,22 +95,37 @@ Function writeVCALC_to_file(fileName)
 //	Variable lam = V_getWavelength("VCALC")		//doesn't work, the corresponding folder in VCALC has not been defined
 	V_writeWavelength(fileName,VCALC_getWavelength())
 
-// description of the sample
-
-// sample information
-// name, title, etc
 	
 // fake the information about the count setup, so I have different numbers to read
 // count time = fake time of 100 s
 	V_writeCount_time(fileName,100)
 
-// monitor count (= imon)
-// returns the number of neutrons on the sample
-//Function VCALC_getImon()
+	// monitor count (= imon)
+		// returns the number of neutrons on the sample
+		//Function VCALC_getImon()
+	V_writeMonitorCount(fileName,VCALC_getImon())
+
+	// total detector count (sum of everything)
+	V_writeDetector_counts(fileName,sumCts)
+
+	// sample description
+	V_writeSampleDescription(fileName,labelStr)
+	
+	// reduction intent
+	V_writeReductionIntent(fileName,intent)
+	
+	// reduction group_id
+	// TODO - skip for now. group_id is incorrectly written to the data file as a text value. trac ticket
+	//        has been written to fix in the future.
+//	V_writeReduction_group_ID(fileName,group_id)
+
+
 
 // ?? anything else that I'd like to see on the catalog - I could change them here to see different values
 // different collimation types?
 //
+
+
 
 	return(0)
 end

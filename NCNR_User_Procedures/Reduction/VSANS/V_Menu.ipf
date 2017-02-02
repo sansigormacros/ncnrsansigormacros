@@ -23,6 +23,7 @@ Menu "VSANS"
 		"Beam Center Panel",V_FindBeamCenter()
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
 		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()
+		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",Convert_to_Workfile()

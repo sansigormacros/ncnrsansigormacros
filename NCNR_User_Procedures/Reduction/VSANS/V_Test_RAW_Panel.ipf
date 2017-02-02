@@ -671,13 +671,13 @@ Function Tab_p_ButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
-//
+
+// See V_Detector_Isolate.ipf
 // isolates a single panel to allow a better view of the details
 // useful for T/B panels which are partially blocked from view
 //
-// will open a separate graph or panel to display the selected detector
-// (lots to do here, depending what is necessary for instrument troubleshooting)
+// will open a separate panel to display the selected detector
+// (more to do here, depending what is necessary for instrument troubleshooting)
 // - like being able to turn corrections on/off and view with different axes (pix, mm, Q)
 //
 Function IsolateButtonProc(ba) : ButtonControl
@@ -686,6 +686,7 @@ Function IsolateButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			V_DetectorIsolate()
 			break
 		case -1: // control being killed
 			break

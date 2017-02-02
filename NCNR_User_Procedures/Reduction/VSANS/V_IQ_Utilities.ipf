@@ -1,13 +1,8 @@
 #pragma TextEncoding = "MacRoman"		// For details execute DisplayHelpTopic "The TextEncoding Pragma"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
-
-//
 //
 // does no scaling, only the basic (default) trim of the ends, concatenate, sort, and save
-//
-// TODO:
-// -- fill in all of the details...
 //
 
 
@@ -16,15 +11,23 @@
 // see the binning routines in VC_DetectorBinning_Utils.ipf for the details
 //
 // TODO 
+//
+// -- verify the binning for slit mode. Looks correct, but verify
+// -- DOCUMENT
+//
 // x- detector "B" is currently skipped since the calibration waves are not faked
 //    when the raw data is loaded. Then the qxqyqz waves are not generated.
 //
-// -- REDO the logic here. It's a mess, and will get the calculation wrong 
+// x- REDO the logic here. It's a mess, and will get the calculation wrong 
 //
-// -- figure out the binning type (where is it set for VSANS?)
-// -- don't know, so currently VSANS binning type is HARD-WIRED
-// -- figure out when this needs to be called to (force) re-calculate I vs Q
+// x- figure out the binning type (where is it set for VSANS?)
+// x- don't know, so currently VSANS binning type is HARD-WIRED
+// x- figure out when this needs to be called to (force) re-calculate I vs Q
 //
+
+
+
+
 Function V_QBinAllPanels(folderStr)
 	String folderStr
 
@@ -33,9 +36,8 @@ Function V_QBinAllPanels(folderStr)
 //	figure out the binning type (where is it set?)
 	Variable binType,ii,delQ
 	String detStr
-	binType = 1
-	
-	
+
+	binType = V_GetBinningPopMode()
 
 //// TODO:
 // x- currently the "B" detector is skipped - it was skipped in 
@@ -93,7 +95,6 @@ Function V_QBinAllPanels(folderStr)
 
 	return(0)
 End
-
 
 
 

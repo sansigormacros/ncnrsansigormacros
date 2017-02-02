@@ -911,7 +911,7 @@ Proc VC_Initialize_Space()
 
 // tab 5
 	String/G gModelFunctionType = "Debye;Sphere;Big Debye;Big Sphere;AgBeh;Vycor;Empty Cell;Blocked Beam;"
-
+	gModelFunctionType += "Debye +;AgBeh +;Empty Cell +;"
 
 ////////////////////
 

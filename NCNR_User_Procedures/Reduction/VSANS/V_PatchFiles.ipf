@@ -14,16 +14,6 @@
 //
 ///////////////////////////////
 
-//
-// Updated for use with VSANS (in process)
-// -- currently very crude, and needs to be changed to accomodate the 
-//   large number of parameters in the file that may/will need to be patched.
-// -- if this turns out to be too crude or too difficult to work with for what 
-//   VSANS needs, I may ditch the entire procedure and start fresh
-//
-// June 2016 SRK
-//
-
 // TODOs have been inserted to comment out all of the calls that don't compile and need to be replaced
 
 // TODO
@@ -40,15 +30,16 @@
 // -- there may be other situations where batch entering needs are
 //		 different, and this may lead to different interface choices
 //
+// -- need to add some mechanism (new panel?) to enter:
+//    -- box coordinates
+//    -- ABS parameters
+//    -- averaging options -- these will have new options versus SANS (binning panels, slit mode, etc.)
 //
 
 
 //**************************
-// Vers. 1.2 092101
 //
-//procedures required to allow patching of raw SANS data headers
-//only a limited number of fields are allowable for changes, although the list could
-//be enhanced quite easily, at the expense of a larger, more complex panel
+//procedures required to allow patching of raw vSANS data headers
 //information for the Patch Panel is stored in the root:Packages:NIST:VSANS:Globals:Patch subfolder
 //
 // writes changes directly to the raw data headers as requested
@@ -71,8 +62,7 @@ Proc V_PatchFiles()
 End
 
 //initialization of the panel, creating the necessary data folder and global
-//variables if necessary - simultaneously initialize the globals for the Trans
-//panel at this time, to make sure they all exist
+//variables if necessary - 
 //
 // root:Packages:NIST:VSANS:Globals:
 Proc V_InitializePatchPanel()
@@ -90,6 +80,8 @@ End
 Proc V_CreatePatchGlobals()
 	//ok, create the globals
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchMatchStr = "*"
+	String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchCurLabel = "no file selected"
+	
 	PathInfo catPathName
 	If(V_flag==1)
 		String dum = S_path
@@ -98,32 +90,7 @@ Proc V_CreatePatchGlobals()
 		String/G root:Packages:NIST:VSANS:Globals:Patch:gCatPathStr = "no path selected"
 	endif
 	String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchList = "none"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS1 = "no file selected"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS2 = "no file selected"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS3 = "no box selected"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS4 = "no file selected"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS5 = "no file selected"
-//	String/G root:Packages:NIST:VSANS:Globals:Patch:gPS6 = "no file selected"
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV1 =0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV2 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV3 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV4 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV5 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV6 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV7 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV8 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV9 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV10 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV11 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV12 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV13 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV14 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV15 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV16 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV17 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV18 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gPV19 = 0
-//	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gTransCts = 0
+
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gRadioVal = 1
 	
 
@@ -170,8 +137,7 @@ Proc V_Patch_Panel()
 	PopupMenu PatchPopup,pos={4,37},size={156,19},proc=V_PatchPopMenuProc,title="File(s) to Patch"
 	PopupMenu PatchPopup,help={"The displayed file is the one that will be edited. The entire list will be edited if \"Change All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh. \r List items are selected from the file based on MatchString"}
 	PopupMenu PatchPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:Patch:gPatchList"
-//	Button SHButton,pos={324,37},size={100,20},proc=ShowHeaderButtonProc,title="Show Header"
-//	Button SHButton,help={"This will display the header of the file indicated in the popup menu."}
+
 	Button CHButton,pos={314,37},size={110,20},proc=V_ChangeHeaderButtonProc,title="Change Header"
 	Button CHButton,help={"This will change the checked values (ONLY) in the single file selected in the popup."}
 	SetVariable PMStr,pos={6,63},size={174,13},proc=V_SetMatchStrProc,title="Match String"
@@ -180,23 +146,28 @@ Proc V_Patch_Panel()
 	SetVariable PMStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPatchMatchStr
 	Button ChAllButton,pos={245,60},size={180,20},proc=V_ChAllHeadersButtonProc,title="Change All Headers in List"
 	Button ChAllButton,help={"This will change the checked values (ONLY) in ALL of the files in the popup list, not just the top file. If the \"change\" checkbox for the item is not checked, nothing will be changed for that item."}
-	Button DoneButton,pos={314,85},size={110,20},proc=V_DoneButtonProc,title="Done Patching"
+	Button DoneButton,pos={450,60},size={110,20},proc=V_DoneButtonProc,title="Done Patching"
 	Button DoneButton,help={"When done Patching files, this will close this control panel."}
 	CheckBox check0,pos={18,80},size={40,15},title="Run #",value= 1,mode=1,proc=V_MatchCheckProc
 	CheckBox check1,pos={78,80},size={40,15},title="Text",value= 0,mode=1,proc=V_MatchCheckProc
-	CheckBox check2,pos={138,80},size={40,15},title="SDD",value= 0,mode=1,proc=V_MatchCheckProc
+	CheckBox check2,pos={138,80},size={40,15},title="Group_ID",value= 0,mode=1,proc=V_MatchCheckProc
 
-	PopupMenu popup_0,pos={450,85},size={109,20},title="Detector Panel",proc=V_PatchPopMenuProc
+	SetVariable curStr,pos={50,112},size={350,20},title="File Label:"
+	SetVariable curStr,help={"Label of current file in popup list"}
+	SetVariable curStr,font="Courier",fSize=10
+	SetVariable curStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPatchCurLabel
+	
+	PopupMenu popup_0,pos={450,112},size={109,20},title="Detector Panel",proc=V_PatchPopMenuProc
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 
 
-	TabControl PatchTab,pos={20,120},size={570,400}
+	TabControl PatchTab,pos={20,140},size={570,380}
 	TabControl PatchTab,tabLabel(0)="Control",tabLabel(1)="Reduction",tabLabel(2)="Sample"
 	TabControl PatchTab,tabLabel(3)="Instrument",tabLabel(4)="Detectors",tabLabel(5)="PolSANS"
 	TabControl PatchTab,value=0,labelBack=(47748,57192,54093),proc=V_PatchTabProc
 
 
-	ListBox list0,pos={30,150.00},size={550.00,350},proc=V_PatchListBoxProc,frame=1
+	ListBox list0,pos={30,170.00},size={550.00,330},proc=V_PatchListBoxProc,frame=1
 	ListBox list0,fSize=10,userColumnResize= 1,listWave=PP_ListWave,selWave=PP_SelWave,titleWave=PP_TitleWave
 	ListBox list0,mode=2,widths={30,200}
 
@@ -235,32 +206,32 @@ Function V_PatchTabProc(name,tab)
 	// switch based on the tab number
 	switch(tab)	
 		case 0:	
-			//Print "tab 0"
+			//Print "tab 0 = CONTROL"
 			
 			V_FillListBox0(PP_ListWave,PP_SelWave)
 			break		
 		case 1:	
-			//Print "tab 1"
+			//Print "tab 1 = REDUCTION"
 			
 			V_FillListBox1(PP_ListWave,PP_SelWave)
 			break
 		case 2:	
-			//Print "tab 2"
+			//Print "tab 2 = SAMPLE"
 			
 			V_FillListBox2(PP_ListWave,PP_SelWave)
 			break
 		case 3:	
-			//Print "tab 3"
+			//Print "tab 3 = INSTRUMENT"
 			
 			V_FillListBox3(PP_ListWave,PP_SelWave)
 			break
 		case 4:	
-			//Print "tab 4"
+			//Print "tab 4 = DETECTORS"
 			
 			V_FillListBox4(PP_ListWave,PP_SelWave)
 			break
 		case 5:	
-			//Print "tab 5"
+			//Print "tab 5 = POL_SANS"
 
 			V_FillListBox5(PP_ListWave,PP_SelWave)
 			break
@@ -275,6 +246,10 @@ Function V_PatchTabProc(name,tab)
 End
 
 // fill list boxes based on the tab
+//
+// *** if the number of elements is changed, then be sure that the variable nRows is updated
+//    * this is the same procedure for all of the tabs
+//    * then be sure that the new listWave assignments are properly indexed
 //
 // CONTROL
 //
@@ -319,7 +294,7 @@ End
 
 // fill list boxes based on the tab
 //
-// Reduction items
+// REDUCTION items
 //
 Function V_FillListBox1(listWave,selWave)
 	Wave/T listWave
@@ -494,7 +469,8 @@ End
 
 // fill list boxes based on the tab
 //
-// TODO --
+// TODO -- is this all of the fields that I want to edit?
+//
 // DETECTORS
 //
 Function V_FillListBox4(listWave,selWave)
@@ -573,7 +549,8 @@ End
 
 // fill list boxes based on the tab
 //
-// TODO --
+// TODO -- this all needs to be filled in, once I figure out what is needed
+//
 // PolSANS
 //
 Function V_FillListBox5(listWave,selWave)
@@ -609,9 +586,9 @@ Function V_FillListBox5(listWave,selWave)
 End
 
 
-// TODO - determine if I really need this --- I don't 
+// TODO -- determine if I really need this --- I don't 
 //  think I really have any reason to respond to events from list box actions
-// or edits. the final action of patching is done with the button
+//  or edits. the final action of patching is done with the button
 //
 Function V_PatchListBoxProc(lba) : ListBoxControl
 	STRUCT WMListboxAction &lba
@@ -648,17 +625,19 @@ End
 
 
 //button action procedure to select the local path to the folder that
-//contains the SANS data
+//contains the vSANS data
 //sets catPathName, updates the path display and the popup of files (in that folder)
 //
 Function V_PickPathButton(PathButton) : ButtonControl
 	String PathButton
 	
-	//set the global string to the selected pathname
+	// call the main procedure to set the data path
 	V_PickPath()
+	
+	//set the global string to the selected pathname
 	//set a local copy of the path for Patch
 	PathInfo/S catPathName
-        String dum = S_path
+   String dum = S_path
 	if (V_flag == 0)
 		//path does not exist - no folder selected
 		String/G root:Packages:NIST:VSANS:Globals:Patch:gCatPathStr = "no folder selected"
@@ -674,9 +653,10 @@ Function V_PickPathButton(PathButton) : ButtonControl
 	//
 	V_SetMatchStrProc("",0,"*","")		//this is equivalent to finding everything, typical startup case
 
+	return(0)
 End
 
-
+//
 //returns a list of valid files (raw data, no version numbers, no averaged files)
 //that is semicolon delimited, and is suitable for display in a popup menu
 //
@@ -705,6 +685,22 @@ Function/S xGetValidPatchPopupList()
 	Return(newList)
 End
 
+
+
+//
+// TODO:
+// -- test all of the filters to be sure they actually work properly.
+//   Run # filter works
+//   Text filter works
+//
+// -- SDD filter does not apply -- what is a better filter choice?
+// -- can I filter intent? group_id?
+// -- can't just search for "sample" - this returns everything
+//
+//
+//
+//
+//
 //returns a list of valid files (raw data, no version numbers, no averaged files)
 //that is semicolon delimited, and is suitable for display in a popup menu
 //
@@ -750,7 +746,7 @@ Function/S V_GetValidPatchPopupList()
 
 	
 	String list="",item="",fname,runList="",numStr=""
-	Variable ii,num=ItemsInList(newList),val,sdd
+	Variable ii,num=ItemsInList(newList),val,group_id
 	NVAR gRadioVal= root:Packages:NIST:VSANS:Globals:Patch:gRadioVal
 	
 	// run number list
@@ -785,9 +781,10 @@ Function/S V_GetValidPatchPopupList()
 		newList = list
 	endif
 	
-	// SDD
+	// group_id
+	// replace this with: V_getSample_GroupID(fname)
 	Variable pos
-	String SDDStr=""
+	String IDStr=""
 	if(gRadioVal == 3)
 		pos = strsearch(match, "*", 0)
 		if(pos == -1)		//no wildcard
@@ -800,28 +797,11 @@ Function/S V_GetValidPatchPopupList()
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, newList , ";")
 			fname = path + item
-// TODO -- replace call -- this is hard-wired for "FL"
-			sdd = V_getDet_ActualDistance(fname,"FL")
-			if(pos == -1)
-				//no wildcard
-				if(abs(val - sdd) < 0.01	)		//if numerically within 0.01 meter, they're the same
-					list += item + ";"
-				endif
-			else
-				//yes, wildcard, try a string match?
-				// string match doesn't work -- 1* returns 1m and 13m data
-				// round the value (or truncate?)
-				
-				//SDDStr = num2str(sdd)
-				//if(strsearch(SDDStr,match[0,pos-1],0) != -1)
-				//	list += item + ";"
-				//endif
-				
-				if(abs(val - round(sdd)) < 0.01	)		//if numerically within 0.01 meter, they're the same
-					list += item + ";"
-				endif
-	
+			group_id = V_getSample_GroupID(fname)
+			if(group_id == val)
+				list += item + ";"
 			endif
+	
 		endfor
 		
 		newList = list
@@ -846,13 +826,12 @@ Function V_PatchPopMenuProc(PatchPopup,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 
-	//change the contents of gPatchList that is displayed
-	//based on selected Path, match str, and
-	//further trim list to include only RAW SANS files
 	
 //	String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchList = list
 //	ControlUpdate PatchPopup
 	V_ShowHeaderButtonProc("SHButton")
+	
+	return(0)
 End
 
 //when text is entered in the match string, the popup list is refined to 
@@ -880,6 +859,7 @@ Function V_SetMatchStrProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	if(strlen(list) > 0)
 		V_ShowHeaderButtonProc("SHButton")
 	endif
+	return(0)
 End
 
 
@@ -926,6 +906,11 @@ Function V_ShowHeaderButtonProc(SHButton) : ButtonControl
 	
 	ControlUpdate/A/W=V_Patch_Panel
 	
+	// no matter what tab is selected, show the file label
+	SVAR fileLabel = root:Packages:NIST:VSANS:Globals:Patch:gPatchCurLabel
+	fileLabel = V_getSampleDescription(tempName)
+	
+	return(0)
 End
 
 
@@ -1051,124 +1036,6 @@ Function V_WriteHeaderForPatch_0(fname)
 	endif	
 	
 
-//
-//	ControlInfo checkPS1		//change the sample label ?
-//	if(V_Value == 1)
-//		SVAR gPS1 = root:Packages:NIST:VSANS:Globals:Patch:gPS1
-//		V_writeSampleDescription(fname,gPS1)
-//	endif
-//	
-//	ControlInfo checkPV1
-//	if(V_Value == 1)		//sample transmission
-//		ControlInfo PV1
-//		V_writeSampleTransmission(fname,V_value)
-//	Endif
-//	
-//	ControlInfo checkPV2
-//	if(V_Value == 1)		//sample thickness
-//		ControlInfo PV2
-//		V_writeSampleThickness(fname,V_Value)
-//	Endif
-//	
-//	ControlInfo checkPV5
-//	if(V_Value == 1)		//attenuator number
-//		ControlInfo PV5
-//		V_writeAttenThickness(fname,V_value)
-//	Endif
-//
-//	ControlInfo checkPV6		// count time
-//	if(V_Value == 1)
-//		ControlInfo PV6
-//		V_writeCount_time(fname,V_Value)
-//	Endif
-//
-//	ControlInfo checkPV7	
-//	if(V_Value == 1)    //monitor count
-//		ControlInfo PV7 
-//		V_writeMonitorCount(fname,V_Value)
-//	Endif
-//
-//	ControlInfo checkPV10	
-//	if(V_Value == 1)      //wavelength
-//		ControlInfo PV10
-//		V_writeWavelength(fname,V_Value)
-//	Endif
-//
-//	ControlInfo checkPV11		
-//	if(V_Value == 1)      //wavelength spread
-//		ControlInfo PV11
-//		V_writeWavelength_spread(fname,V_Value)
-//	Endif	
-//
-//	ControlInfo checkPV14		
-//	if(V_Value == 1)      //source aperture
-//		ControlInfo PV14
-//		textStr = num2str(V_Value)
-//		V_writeSourceAp_size(fname,textStr)		//this is expecting a string
-//	Endif
-//	
-//	ControlInfo checkPV15		
-//	if(V_Value == 1)      //sample aperture
-//		ControlInfo PV15
-//		V_writeSampleAp2_size(fname,V_Value)		//TODO -- not sure if this is correct call
-//	Endif
-//
-//	ControlInfo checkPV16
-//	if(V_Value == 1)      //source-sam dist
-//		ControlInfo PV16
-//// TODO -- replace call
-////		WriteSrcToSamDistToHeader(fname,num)
-//	Endif
-//
-//	ControlInfo checkPV18
-//	if(V_Value == 1)      //beamstop diam
-//		ControlInfo PV18
-//		V_writeBeamStopC2_size(fname,V_Value)			//TODO depends on which det carriage I'm working with (2) or (3)
-//	Endif	
-//
-//	ControlInfo checkPS2		//change the DIV file name?
-//	if(V_Value == 1)
-//		SVAR gPS2 = root:Packages:NIST:VSANS:Globals:Patch:gPS2
-//		V_writeSensitivityFileName(fname,gPS2)
-//	endif	
-//	
-//	ControlInfo checkPS3		//change the sample intent?
-//	if(V_Value == 1)
-//		SVAR gPS3 = root:Packages:NIST:VSANS:Globals:Patch:gPS3
-//		V_writeReductionIntent(fname,gPS3)
-//	endif	
-//
-//	
-//// individual detector values	
-//	ControlInfo checkPV3
-//	if(V_Value == 1)		//pixel X
-//		ControlInfo PV3
-//		V_writeDet_beam_center_x(fname,detStr,V_Value)	
-//	Endif
-//	
-//	ControlInfo checkPV4
-//	if(V_Value == 1)		// pixel Y
-//		ControlInfo PV4
-//		V_writeDet_beam_center_y(fname,detStr,V_Value)	
-//	Endif
-//	
-//	ControlInfo checkPV17
-//	if(V_Value == 1)      //det offset
-//		ControlInfo PV17
-//		V_writeDet_LateralOffset(fname,detStr,V_Value)		// TODO lateral or vertical offset, based on detStr
-//	Endif
-//
-//	ControlInfo checkPV19
-//	if(V_Value == 1)     //SDD
-//		ControlInfo PV19
-//		V_writeDet_distance(fname,detStr,V_Value)	 
-//	Endif
-//
-//	ControlInfo checkPV8	
-//	if(V_Value == 1)     //total detector count
-//		ControlInfo PV8
-//		V_writeDet_IntegratedCount(fname,detStr,V_value)		
-//	Endif
 
 
 	Return(0)
@@ -1229,7 +1096,7 @@ Function V_WriteHeaderForPatch_1(fname)
 
 	if ((selWave[8][0] & 2^4) != 0)		//"group_id (sample)"
 		val = str2num(listWave[8][2])
-		err = V_writeReduction_group_ID(fname,val)
+		err = V_writeSample_GroupID(fname,val)
 	endif	
 	
 	if ((selWave[9][0] & 2^4) != 0)		//"box_count"
@@ -1457,9 +1324,9 @@ End
 
 //This function will read only the selected values editable in the patch panel
 //
-// -- TODO --
-// re-write this to be tab-aware. ShowHeaderForPatch() calls this, but does nothing
-// to update the tab content. Figure out which function is in charge, and update the content.
+// DONE
+// x- re-write this to be tab-aware. ShowHeaderForPatch() calls this, but does nothing
+//    to update the tab content. Figure out which function is in charge, and update the content.
 //
 Function V_ReadHeaderForPatch(fname)
 	String fname
@@ -1478,6 +1345,7 @@ Function V_ShowPatchHelp(ctrlName) : ButtonControl
 //	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 //	endif
+	return(0)
 End
 
 //button action procedure to change the selected information (checked values)
@@ -1589,7 +1457,7 @@ End
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////
 //
-// this is a block to patch waves to the file headers, and can patch multiple files
+// this is a block to patch DEADTIME waves to the file headers, and can patch multiple files
 // 
 // uses a simple panel to show what the table of values is.
 // "read" will read only the first run number contents.
@@ -1598,7 +1466,11 @@ End
 //        will read locally, and it will look like nothing was written. Executing "save" will also 
 //        trigger a cleanout.
 //
-// TODO - link this to a panel somewhere - a button? menu item? will there be a lot more of these little panels?
+// TODO -- link this to a panel somewhere - a button? menu item? will there be a lot more of these little panels?
+//
+// TODO -- currently, this does not patch the deadtime for the back "B" detector. it is a single
+//        value, not a wave see V_WritePerfectDeadTime(filename) for how the perfect (fake) values is written.
+//
 //
 Proc V_PatchDetectorDeadtime(firstFile,lastFile,detStr,deadtimeStr)
 	Variable firstFile=1,lastFile=100
@@ -1613,10 +1485,10 @@ Proc V_ReadDetectorDeadtime(firstFile,lastFile,detStr)
 	String detStr = "FL"
 	
 	V_fReadDetectorDeadtime(firstFile,lastFile,detStr)
+	
 End
 
 // simple utility to patch the detector deadtime in the file headers
-// pass in the account name as a string
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
@@ -1627,6 +1499,11 @@ Function V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
 	
 	Variable ii
 	String fname
+	
+	// check the dimensions of the deadtimeW/N=48
+	if (DimSize(deadtimeW, 0) != 48 )
+		Abort "dead time wave is not of proper dimension (48)"
+	endif
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
@@ -1666,7 +1543,7 @@ End
 
 
 Proc V_PatchDetectorDeadtimePanel()
-	DoWindow/F Patch_Deadtime
+	DoWindow/F DeadtimePanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
@@ -1680,37 +1557,89 @@ Proc V_PatchDetectorDeadtimePanel()
 End
 
 
-//
-// TODO - needs some minor adjustment to be of practical use, but a proof of concept
+// TODO:
+// x- add method for generating "perfect" dead time to write
+// x- check deadtime wave dimension before writing (check for bad paste operation)
+// -- load from file? different ways to import?
+// -- Dead time constants for "B" are different, and not handled here (yet)
+// -- add help button/file
+// -- add done button
+// -- adjust after user testing
 //
 Proc V_DeadtimePatchPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 
-	NewPanel /W=(600,400,1000,1000)/N=DeadtimePanel/K=1
+	NewPanel /W=(600,400,1000,1000)/N=DeadtimePanel /K=1
 //	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	DrawText 85,99,"Current Values"
+	DrawText 21,258,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 209,30,"Dead Time Constants"
+	DrawText 20,133,"Run Number(s)"
 	
-	PopupMenu popup_0,pos={20,20},size={109,20},title="Detector Panel"
+	PopupMenu popup_0,pos={20,40},size={109,20},title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
 	
-	Button button0,pos={22.00,62.00},size={50.00,20.00},proc=V_ReadDTButtonProc,title="Read"
-	Button button0_1,pos={95.00,62.00},size={50.00,20.00},proc=V_WriteDTButtonProc,title="Write"
-	SetVariable setvar0,pos={19.00,128.00},size={100.00,14.00},title="first"
+	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadDTButtonProc,title="Read"
+	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteDTButtonProc,title="Write"
+	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfDTButton,title="Perfect Dead Time"
+	
+	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
 	SetVariable setvar0,value= K0
-	SetVariable setvar1,pos={20.00,154.00},size={100.00,14.00},title="last"
+	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
 	SetVariable setvar1,value= K1
 
-	
 
 // display the wave	
 	Edit/W=(180,40,380,550)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
-	ModifyTable width(Point)=0
+	ModifyTable width(Point)=40
 	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=120
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 
 	
 EndMacro
+
+
+
+Function V_GeneratePerfDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			WAVE deadTimeWave = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+			ControlInfo popup_0
+			strswitch(S_Value)
+				case "FR":
+				case "FL":
+				case "MR":
+				case "ML":
+				case "FT":
+				case "FB":
+				case "MT":
+				case "MB":
+					deadTimeWave = 1e-18
+
+					break
+				default:
+					Print "Det type not found: V_GeneratePerfDTButton()"
+			endswitch
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 
 
 Function V_ReadDTButtonProc(ba) : ButtonControl
@@ -1763,6 +1692,261 @@ End
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
+// this is a block to patch CALIBRATION waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+// TODO -- need to clear out the contents from RawVSANS, or else re-reading to check the values
+//        will read locally, and it will look like nothing was written. Executing "save" will also 
+//        trigger a cleanout.
+//
+// TODO -- link this to a panel somewhere - a button? menu item? will there be a lot more of these little panels?
+//
+// TODO -- currently this does not handle the back detector "B". see V_WritePerfectSpatialCalib(filename)
+//         for how fake data is written to the files
+//
+// TODO -- verify that the calibration waves are not transposed
+//
+Proc V_PatchDetectorCalibration(firstFile,lastFile,detStr,calibStr)
+	Variable firstFile=1,lastFile=100
+	String detStr = "FL",calibStr="calibrationWave"
+
+	V_fPatchDetectorCalibration(firstFile,lastFile,detStr,$calibStr)
+
+End
+
+Proc V_ReadDetectorCalibration(firstFile,lastFile,detStr)
+	Variable firstFile=1,lastFile=100
+	String detStr = "FL"
+	
+	V_fReadDetectorCalibration(firstFile,lastFile,detStr)
+End
+
+// simple utility to patch the detector calibration wave in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDetectorCalibration(lo,hi,detStr,calibW)
+	Variable lo,hi
+	String detStr
+	Wave calibW
+	
+	Variable ii
+	String fname
+	
+	// check the dimensions of the calibW (3,48)
+	if (DimSize(calibW, 0) != 3 || DimSize(calibW, 1) != 48 )
+		Abort "Calibration wave is not of proper dimension (3,48)"
+	endif
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = V_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			V_writeDetTube_spatialCalib(fname,detStr,calibW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function V_fReadDetectorCalibration(lo,hi,detStr)
+	Variable lo,hi
+	String detStr
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = V_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave calibW = V_getDetTube_spatialCalib(fname,detStr)
+			Duplicate/O calibW root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+Proc V_PatchDetectorCalibrationPanel()
+	DoWindow/F CalibrationPanel
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
+
+		Make/O/D/N=(3,48) calibrationWave
+		
+		SetDataFolder root:
+		
+		Execute "V_CalibrationPatchPanel()"
+	endif
+End
+
+
+//
+// TODO:
+// x- add method for generating "perfect" calibration to write
+// x- check Nx3 dimension before writing (check for bad paste operation)
+// -- load from file? different ways to import?
+// -- calibration constants for "B" are different, and not handled here (yet)
+// -- add help button/file
+// -- add done button
+// -- adjust after user testing
+//
+Proc V_CalibrationPatchPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+
+	NewPanel /W=(600,400,1200,1000)/N=CalibrationPanel /K=1
+//	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	DrawText 85,99,"Current Values"
+	DrawText 21,258,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 227,28,"Quadratic Calibration Constants per Tube"
+	DrawText 20,133,"Run Number(s)"
+		
+	PopupMenu popup_0,pos={20,40},size={109,20},title="Detector Panel"
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+	
+	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadCalibButtonProc,title="Read"
+	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteCalibButtonProc,title="Write"
+	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfCalibButton,title="Perfect Calibration"
+		
+	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
+	SetVariable setvar0,value= K0
+	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
+	SetVariable setvar1,value= K1
+
+
+// display the wave	
+	Edit/W=(180,40,580,550)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+	ModifyTable width(Point)=40
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave)=110
+	// the elements() command transposes the view in the table, but does not transpose the wave
+	ModifyTable elements(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave) = (-3, -2)
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+
+//	// and for the back detector "B"
+//	Make/O/D/N=3 tmpCalib
+//	tmpCalib[0] = 1
+//	tmpCalib[1] = 1
+//	tmpcalib[2] = 10000
+//	V_writeDet_cal_x(filename,"B",tmpCalib)
+//	V_writeDet_cal_y(filename,"B",tmpCalib)
+//
+Function V_GeneratePerfCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			WAVE calibrationWave = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+			ControlInfo popup_0
+			strswitch(S_Value)
+				case "FR":
+				case "FL":
+				case "MR":
+				case "ML":
+					//	// for the "tall" L/R banks
+					calibrationWave[0][] = -512
+					calibrationWave[1][] = 8
+					calibrationWave[2][] = 0
+					break
+				case "FT":
+				case "FB":
+				case "MT":
+				case "MB":
+					//	// for the "short" T/B banks
+					calibrationWave[0][] = -256
+					calibrationWave[1][] = 4
+					calibrationWave[2][] = 0
+
+					break
+				default:
+					Print "Det type not found: V_GeneratePerfCalibButton()"
+			endswitch
+
+
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_ReadCalibButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			V_fReadDetectorCalibration(lo,hi,detStr)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_WriteCalibButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave calibW = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+			
+			V_fPatchDetectorCalibration(lo,hi,detStr,calibW)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1811,7 +1995,12 @@ Function V_fPatchDet_xyCenters(lo,hi)
 	Wave xCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:xCtr_pix
 	Wave yCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:yCtr_pix
 	Wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
-		
+	
+	// check the dimensions of the waves (9)
+	if (DimSize(xCtr_pix, 0) != 9 || DimSize(yCtr_pix, 0) != 9 || DimSize(panelW, 0) != 9)
+		Abort "waves are not of proper dimension (9)"
+	endif
+	
 	//loop over all files
 	for(jj=lo;jj<=hi;jj+=1)
 		fname = V_FindFileFromRunNumber(jj)
@@ -1868,7 +2057,7 @@ End
 
 
 Proc V_PatchDet_xyCenters_Panel()
-	DoWindow/F Patch_Deadtime
+	DoWindow/F Patch_XY_Panel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
@@ -1883,32 +2072,41 @@ Proc V_PatchDet_xyCenters_Panel()
 End
 
 
-//
-// TODO - document, make setVar controls larger, make cleaner
-//
-// TODO - link to main panel? link to Patch Panel?
+// TODO:
+// -- add method to read (import) from beam center panel
+// x- check wave dimensions before writing (check for bad paste operation)
+// -- load from file? different ways to import?
+// -- add help button/file
+// -- add done button
+// -- adjust after user testing
 //
 Proc V_Patch_xyCtr_Panel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 
-	NewPanel /W=(600,400,1150,800)/N=Patch_XY_Panel/K=1
+	NewPanel /W=(600,400,1150,800)/N=Patch_XY_Panel /K=1
 //	ShowTools/A
 	
-//	PopupMenu popup_0,pos={20,20},size={109,20},title="Detector Panel"
-//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	DrawText 85,99,"Current Values"
+	DrawText 21,258,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 262,30,"Beam Center (pixels)"
+	DrawText 20,133,"Run Number(s)"
 	
-	Button button0,pos={22.00,62.00},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
-	Button button0_1,pos={95.00,62.00},size={50.00,20.00},proc=V_WriteXYButtonProc,title="Write"
-	SetVariable setvar0,pos={19.00,128.00},size={100.00,14.00},title="first"
+	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
+	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteXYButtonProc,title="Write"
+	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
 	SetVariable setvar0,value= K0
-	SetVariable setvar1,pos={20.00,154.00},size={100.00,14.00},title="last"
+	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
 	SetVariable setvar1,value= K1
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
 // display the wave	
-	Edit/W=(180,40,480,350)/HOST=#  panelW,xCtr_pix,yCtr_pix
+	Edit/W=(180,40,500,370)/HOST=#  panelW,xCtr_pix,yCtr_pix
 	ModifyTable width(Point)=0
 	ModifyTable width(panelW)=80
 	ModifyTable width(xCtr_pix)=100
