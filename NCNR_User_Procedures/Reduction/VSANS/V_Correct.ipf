@@ -266,6 +266,9 @@ End
 //					added explicit reference to use linear_data, instead of trusting that data
 //					was freshly loaded. added final copy of cor result to cor:data and cor:linear_data
 //
+// TODO -- verify the operation
+//  -- check that all "get" reads are returning proper values (+units)
+//
 Function V_CorrectMode_1()
 
 	//get SAM, BGD, EMP attenuation factor
@@ -382,6 +385,8 @@ Function V_CorrectMode_1()
 		cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
 		cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
 	
+		cor_data = cor1		//the final result
+		
 		// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
 		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
@@ -497,6 +502,8 @@ Function V_CorrectMode_2()
 		cor1 = fsam*sam_data/sam_AttenFactor - fbgd*bgd_temp/bgd_AttenFactor
 		cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
 	
+		cor_data = cor1		//the final result
+
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_b
 		tmp_a = (sam_err/sam_attenFactor)^2 + (sam_atten_err*sam_data/sam_attenFactor^2)^2		//sig a ^2
@@ -609,6 +616,8 @@ Function V_CorrectMode_3()
 		
 		cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
 		cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+
+		cor_data = cor1		//the final result
 	
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_c ,c_val
@@ -807,6 +816,8 @@ Function V_CorrectMode_11()
 		cor1 -= (fbgd*bgd_temp/bgd_attenFactor - drk_temp)
 		cor1 -= drk_temp/sam_attenFactor
 		cor1 *= noadd_bgd*noadd_emp		//zero out the array mismatch values
+
+		cor_data = cor1		//the final result
 		
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_b, tmp_c, tmp_d,c_val,d_val
@@ -940,6 +951,8 @@ Function V_CorrectMode_12()
 		cor1 = fsam*sam_data/sam_AttenFactor + fbgd*tsam*bgd_temp/bgd_AttenFactor
 		cor1 += -1*(fbgd*bgd_temp/bgd_attenFactor - drk_temp) - drk_temp/sam_attenFactor
 		cor1 *= noadd_bgd		//zeros out regions where arrays do not overlap, one otherwise
+
+		cor_data = cor1		//the final result
 	
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_b
@@ -1071,6 +1084,8 @@ Function V_CorrectMode_13()
 		cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
 		cor1 += drk_temp - drk_temp/sam_attenFactor
 		cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
+
+		cor_data = cor1		//the final result
 	
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a, tmp_c, c_val
@@ -1162,6 +1177,8 @@ Function V_CorrectMode_14()
 		
 		//correct sam for attenuators, and do the same to drk, since it was scaled to sam count time
 		cor1 = fsam*sam_data/sam_AttenFactor  - drk_temp/sam_attenFactor
+
+		cor_data = cor1		//the final result
 	
 	// do the error propagation piecewise	
 		Duplicate/O sam_err, tmp_a

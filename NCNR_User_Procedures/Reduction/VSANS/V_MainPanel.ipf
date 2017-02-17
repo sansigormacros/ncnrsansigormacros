@@ -429,8 +429,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
 //	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
 //	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
-	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
-	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
+//	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
+//	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
 	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
 	Button MainButton_4f,help={"Merges two stored workfiles (CORrected) into a DIV file, and saves the result"}
 	Button MainButton_4g,pos={180,150},size={130,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
@@ -442,7 +442,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_4b,disable=1
 	Button MainButton_4c,disable=1
 //	Button MainButton_4d,disable=1
-	Button MainButton_4e,disable=1
+//	Button MainButton_4e,disable=1
 	Button MainButton_4f,disable=1
 	Button MainButton_4g,disable=1
 	Button MainButton_4h,disable=1

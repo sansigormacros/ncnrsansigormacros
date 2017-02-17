@@ -162,25 +162,9 @@ Function V_InitGlobals()
 	Execute "Initialize_VSANSPreferences()"	
 
 	
-	// lookup waves for log and linear display of images
-	// this is used for the main data display. With this, I can use the original
-	// detector data (no copy) and the zeros in the data set are tolerated when displaying
-	// on log scale
-	SetDataFolder root:Packages:NIST:VSANS:Globals
-	Variable num,val,offset
-	num=10000
-	offset = 1/num
-	
-	Make/O/D/N=(num) logLookupWave,linearLookupWave
-	linearLookupWave = (p+1)/num
-	
-	logLookupWave = log(linearLookupWave)
-	val = logLookupWave[0]
-	logLookupWave += -val + offset
-	val = logLookupWave[num-1]
-	logLookupWave /= val
-	
-	SetDataFolder root:
+	// set the lookup waves for log/lin display of the detector images
+	V_MakeImageLookupTables(10000,0,1)
+
 
 
 	//set flag if Demo Version is detected
@@ -192,6 +176,42 @@ Function V_InitGlobals()
 	Return(0)
 End
 
+//
+//num = number of points (10000 seeems to be a good number so far)
+// lo = lower value (between 0 and 1)
+// hi = upper value (between 0 and 1)
+//
+// note that it is currenty NOT OK for lo > hi (!= reversed color scale, right now log(negative) == bad)
+//
+// TODO hi, lo not used properly here, seems to mangle log display now that I'm switching the lo,hi of the ctab
+//
+Function V_MakeImageLookupTables(num,lo,hi)
+	Variable num,lo,hi
+
+		// lookup waves for log and linear display of images
+	// this is used for the main data display. With this, I can use the original
+	// detector data (no copy) and the zeros in the data set are tolerated when displaying
+	// on log scale
+	SetDataFolder root:Packages:NIST:VSANS:Globals
+	Variable val,offset
+	
+	offset = 1/num		//can't use 1/lo if lo == 0
+	
+	Make/O/D/N=(num) logLookupWave,linearLookupWave
+	
+	linearLookupWave = (p+1)/num
+	
+	
+	logLookupWave = log(linearLookupWave)
+	val = logLookupWave[0]
+	logLookupWave += -val + offset
+	val = logLookupWave[num-1]
+	logLookupWave /= val
+	
+	SetDataFolder root:
+	
+	return(0)
+end
 
 //
 // initializes globals that are specific to VSANS

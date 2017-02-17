@@ -20,6 +20,9 @@
 // -- color coding of the different panels (data tags/arrows/toggle on/off)?
 // -- VERIFY accuracy
 // -- decide what to add to the control bar
+// -- at the very least, add a log/lin toggle for the axes
+//
+// -- document, document, document
 //
 // -- see Middle_IQ_Graph() and similar for how VCALC does this plot
 //
@@ -29,7 +32,7 @@
 Function V_PlotData_Panel()
 
 
-	DoWindow V_1D_Data
+	DoWindow/F V_1D_Data
 	if(V_flag==0)
 	
 		Display /W=(277,526,748,938)/N=V_1D_Data/K=1
@@ -85,7 +88,6 @@ End
 Function V_AllQ_Plot_1D_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-//	DoWindow/F V_1D_Data
 	SetAxis/A
 End
 
@@ -193,11 +195,20 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 	
 	if(binType==2)
+// clear EVERYTHING
 		ClearAllIQIfDisplayed("MLRTB")
+		ClearAllIQIfDisplayed("MLR")
+		ClearAllIQIfDisplayed("MTB")		//this returns to root:
 		ClearAllIQIfDisplayed("MT")	
 		ClearAllIQIfDisplayed("ML")	
 		ClearAllIQIfDisplayed("MR")	
-		ClearAllIQIfDisplayed("MB")
+		ClearAllIQIfDisplayed("MB")		
+	
+//		ClearAllIQIfDisplayed("MLRTB")
+//		ClearAllIQIfDisplayed("MT")	
+//		ClearAllIQIfDisplayed("ML")	
+//		ClearAllIQIfDisplayed("MR")	
+//		ClearAllIQIfDisplayed("MB")
 	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
@@ -221,12 +232,21 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 	
 	if(binType==3)
+// clear EVERYTHING
+		ClearAllIQIfDisplayed("MLRTB")
 		ClearAllIQIfDisplayed("MLR")
-		ClearAllIQIfDisplayed("MTB")	
+		ClearAllIQIfDisplayed("MTB")		//this returns to root:
 		ClearAllIQIfDisplayed("MT")	
 		ClearAllIQIfDisplayed("ML")	
 		ClearAllIQIfDisplayed("MR")	
-		ClearAllIQIfDisplayed("MB")	
+		ClearAllIQIfDisplayed("MB")		
+	
+//		ClearAllIQIfDisplayed("MLR")
+//		ClearAllIQIfDisplayed("MTB")	
+//		ClearAllIQIfDisplayed("MT")	
+//		ClearAllIQIfDisplayed("ML")	
+//		ClearAllIQIfDisplayed("MR")	
+//		ClearAllIQIfDisplayed("MB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_MLRTB
@@ -247,9 +267,19 @@ Proc V_Middle_IQ_Graph(type)
 	endif
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
+// clear EVERYTHING
 		ClearAllIQIfDisplayed("MLRTB")
 		ClearAllIQIfDisplayed("MLR")
-		ClearAllIQIfDisplayed("MTB")
+		ClearAllIQIfDisplayed("MTB")		//this returns to root:
+		ClearAllIQIfDisplayed("MT")	
+		ClearAllIQIfDisplayed("ML")	
+		ClearAllIQIfDisplayed("MR")	
+		ClearAllIQIfDisplayed("MB")		
+	
+	
+//		ClearAllIQIfDisplayed("MLRTB")
+//		ClearAllIQIfDisplayed("MLR")
+//		ClearAllIQIfDisplayed("MTB")
 		
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_ML
@@ -336,11 +366,21 @@ Proc V_Front_IQ_Graph(type)
 	endif
 	
 	if(binType==2)
+	// clear EVERYTHING
 		ClearAllIQIfDisplayed("FLRTB")
+		
+		ClearAllIQIfDisplayed("FLR")
+		ClearAllIQIfDisplayed("FTB")
+
 		ClearAllIQIfDisplayed("FT")	
 		ClearAllIQIfDisplayed("FL")	
 		ClearAllIQIfDisplayed("FR")	
-		ClearAllIQIfDisplayed("FB")	
+		ClearAllIQIfDisplayed("FB")
+//		ClearAllIQIfDisplayed("FLRTB")
+//		ClearAllIQIfDisplayed("FT")	
+//		ClearAllIQIfDisplayed("FL")	
+//		ClearAllIQIfDisplayed("FR")	
+//		ClearAllIQIfDisplayed("FB")	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FLR
@@ -363,12 +403,23 @@ Proc V_Front_IQ_Graph(type)
 	endif
 	
 	if(binType==3)
+// clear EVERYTHING
+		ClearAllIQIfDisplayed("FLRTB")
+		
 		ClearAllIQIfDisplayed("FLR")
-		ClearAllIQIfDisplayed("FTB")	
+		ClearAllIQIfDisplayed("FTB")
+
 		ClearAllIQIfDisplayed("FT")	
 		ClearAllIQIfDisplayed("FL")	
 		ClearAllIQIfDisplayed("FR")	
 		ClearAllIQIfDisplayed("FB")	
+	
+//		ClearAllIQIfDisplayed("FLR")
+//		ClearAllIQIfDisplayed("FTB")	
+//		ClearAllIQIfDisplayed("FT")	
+//		ClearAllIQIfDisplayed("FL")	
+//		ClearAllIQIfDisplayed("FR")	
+//		ClearAllIQIfDisplayed("FB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FLRTB
@@ -389,9 +440,21 @@ Proc V_Front_IQ_Graph(type)
 	endif
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
+// clear EVERYTHING
 		ClearAllIQIfDisplayed("FLRTB")
+		
 		ClearAllIQIfDisplayed("FLR")
 		ClearAllIQIfDisplayed("FTB")
+
+		ClearAllIQIfDisplayed("FT")	
+		ClearAllIQIfDisplayed("FL")	
+		ClearAllIQIfDisplayed("FR")	
+		ClearAllIQIfDisplayed("FB")	
+	
+	
+//		ClearAllIQIfDisplayed("FLRTB")
+//		ClearAllIQIfDisplayed("FLR")
+//		ClearAllIQIfDisplayed("FTB")
 		
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=V_1D_Data iBin_qxqy_FL

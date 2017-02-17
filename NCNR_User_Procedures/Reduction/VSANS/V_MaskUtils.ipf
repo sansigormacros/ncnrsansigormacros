@@ -832,9 +832,7 @@ Proc Setup_VSANS_MASK_Struct()
 	// writes in the attributes
 //	H_Fill_VSANS_Attributes()
 	
-	// fill in with VCALC simulation bits
-//	H_Fill_VSANS_wSim()
-	
+
 End
 
 Proc Save_VSANS_MASK_Nexus(fileName)

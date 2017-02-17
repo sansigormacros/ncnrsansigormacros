@@ -271,8 +271,8 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,180},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1m title="Do Tube Shadow Correction?",size={140,14},proc=V_DoTubeShadowCorPref
 	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
-	CheckBox PrefCtrl_1n title="Do Tube Shadow Correction?",size={140,14},proc=V_DoMonitorNormPref
-	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
+//	CheckBox PrefCtrl_1n title="Do Tube Shadow Correction?",size={140,14},proc=V_DoMonitorNormPref
+//	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
 		
 	
 //	CheckBox PrefCtrl_1a,disable=1

@@ -53,6 +53,8 @@ Proc UpdateDisplayInformation(type)
 	FakeTabClick(2)
 	FakeTabClick(1)
 	FakeTabClick(0)
+
+	LogLinDisplayPref()		// resets the display depending on the preference state
 	
 	// either clear the status, or fake a click
 //	root:Packages:NIST:VSANS:Globals:gStatusText = "status info box"
@@ -68,6 +70,25 @@ Proc UpdateDisplayInformation(type)
 	KillStrings/Z newTitle
 	
 end
+
+Function LogLinDisplayPref()
+
+	// get the state of the log/lin button, and make sure preferences are obeyed
+	// log/lin current state is in the S_UserData string (0=linear, 1=log)
+	ControlInfo/W=VSANS_Data button_log
+	Variable curState
+	curState = str2num(S_UserData)
+
+	NVAR gLogScalingAsDefault = root:Packages:NIST:VSANS:Globals:gLogScalingAsDefault
+	if(curState != gLogScalingAsDefault)
+		STRUCT WMButtonAction ba
+		ba.eventCode = 2		//fake mouse click
+		LogLinButtonProc(ba)
+	endif
+	
+	return(0)
+end
+
 
 //
 // creates/initializes the globals for display of the data panel
@@ -91,10 +112,15 @@ Function VSANSDataPanelGlobals()
 	SetDataFolder root:
 End
 
+
 // TODO
 //
-// -- fill in the proper window title in the DoWindow/T command
+// -- now that the sliders work, label them and move them to a better location
+// -- logical location for all of the buttons
+// -- add raw data load button, load/draw mask button
+// x- fill in the proper window title in the DoWindow/T command
 // -- add help text for all of the controls
+// -- tab order? can I set this?
 //
 Window VSANS_DataPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
@@ -125,7 +151,7 @@ Window VSANS_DataPanel() : Panel
 
 
 	TabControl tab0,pos={13,41},size={572,617},proc=VDataTabProc,tabLabel(0)="Front"
-	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2
+	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2,focusRing=0
 
 // on the side	
 	Button button_status,pos={607,146},size={70,20},proc=StatusButtonProc,title="Status"
@@ -135,12 +161,14 @@ Window VSANS_DataPanel() : Panel
 	Button button_log,pos={689,146},size={70,20},proc=LogLinButtonProc,title="isLin",userData="0"
 	Button button_tab_p,pos={648,81},size={50,20},proc=Tab_p_ButtonProc,title="Tab >"
 	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
+	Button button_toWork,pos={770,113},size={70,20},proc=ToWorkFileButtonProc,title="to WORK"
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
 	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
+	Button button_tagFile,disable=2
 	Button button_saveIQ,pos={720,412},size={70,20},proc=SaveIQ_ButtonProc,title="Save I(Q)"
 	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
 	Button button_SpreadPanels,pos={603,488},size={100,20},proc=SpreadPanelButtonProc,title="Spread Panels"
@@ -211,13 +239,17 @@ Window VSANS_DataPanel() : Panel
 EndMacro
 
 //
-// event code 4 = mouse moved
+// event code 4: mouse moved
+// event code 11: keyboard events
 // 
 // mouse moved is the only event that I really care about for the data display.
 //
-// TODO
+// TODO:
 // -- figure out how to respond only to events in the main window
 // -- figure out which is the correct image to respond "from"
+// -- More complete documentation of how the hook is identifying what graph is "under" the mouse
+//    AND what assumptions are behind this identification
+//
 //
 Function VSANSDataHook(s)
 	STRUCT WMWinHookStruct &s
@@ -239,6 +271,8 @@ Function VSANSDataHook(s)
 //
 // TODO (Way in the future -- I could make the small graphs into "buttons" by responding to a "mouse up" (not down)
 //    that hits in one of the small graph areas, and treat that as a click on that tab
+// -- instead of this, I can try to get the focus rectangle to work more easily to move with the TAB,
+//    if I can intercept the keystroke (event 11), see below.
 //
 			break
 			
@@ -377,12 +411,25 @@ Function VSANSDataHook(s)
 		
 			break
 			
+			case 11: // keyboard event
+				// TODO -- figure out why I'm not getting the TAB keystroke
+				//  -- I want to be able to use the tab to change the focus only between File <.> and Tab > buttons, not everything
+				// see the help file section "Keyboard Events" for an example and "WMWinHookStruct"
+				
+				//Print "key code = ",s.specialKeyCode
+				//hookresult = 1		//if non-zero, we handled it and Igor will ignore it
+				break
 		// And so on . . .
 	endswitch
 
 	return hookResult		// 0 if nothing done, else 1
 End
 
+
+// ********
+//
+// this procedure does most of the work for drawing the panels, setting the proper log/lin
+// scaling, the color scale, and the location based on the active tab
 //
 //lots to to here:
 //
@@ -396,7 +443,7 @@ End
 //  x- get the panel to be correctly populated first, rather than needing to click everywhere to fill in
 //  x- remove the dependency on VCALC being initialized first, and using dummy waves from there...
 //
-// -- can I use "ReplaceWave" to do this?
+//
 Function VDataTabProc(tca) : TabControl
 	STRUCT WMTabControlAction &tca
 
@@ -412,7 +459,8 @@ Function VDataTabProc(tca) : TabControl
 			SetDataFolder root:
 			
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
-// make sure log scaling is correct			
+			
+// make sure log scaling is correct
 			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
 			if(State == 0)
 				// lookup wave
@@ -427,7 +475,20 @@ Function VDataTabProc(tca) : TabControl
 			// -- can I use "ReplaceWave/W=VSANS_Data#det_panelsB allinCDF" to do this?
 			// -- only works for "B", since for M and F panels, all 4 data sets are named "data"
 			// in their respective folders...
-
+			
+			
+			// get the slider values for the color mapping
+			Variable lo,hi,lo_B,hi_B
+			Variable lo_MT,lo_MB,lo_MR,lo_ML
+			Variable lo_FT,lo_FB,lo_FR,lo_FL
+			Variable hi_MT,hi_MB,hi_MR,hi_ML
+			Variable hi_FT,hi_FB,hi_FR,hi_FL
+			ControlInfo slider_lo
+			lo = V_Value
+			ControlInfo slider_hi
+			hi = V_Value
+			
+			
 			String tmpStr
 			Variable ii
 			if(tab==2)
@@ -447,7 +508,9 @@ Function VDataTabProc(tca) : TabControl
 				CheckDisplayed /W=VSANS_Data#det_panelsB det_B	
 				if(V_flag == 0)		// 0 == data is not displayed, so append it
 					AppendImage/W=VSANS_Data#det_panelsB det_B
-					ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctab= {*,*,ColdWarm,0}
+					lo_B = lo*(WaveMax(det_B) - WaveMin(det_B)) + WaveMin(det_B)
+					hi_B = hi*(WaveMax(det_B) - WaveMin(det_B)) + WaveMin(det_B)
+					ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctab= {lo_B,hi_B,ColdWarm,0}		// don't autoscale {*,*,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
@@ -488,10 +551,19 @@ Function VDataTabProc(tca) : TabControl
 					AppendImage/W=VSANS_Data#det_panelsM det_MB
 					AppendImage/W=VSANS_Data#det_panelsM det_ML
 					AppendImage/W=VSANS_Data#det_panelsM det_MR
-					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {*,*,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
-					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {*,*,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {*,*,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {*,*,ColdWarm,0}
+					lo_MT = lo*(WaveMax(det_MT) - WaveMin(det_MT)) + WaveMin(det_MT)
+					hi_MT = hi*(WaveMax(det_MT) - WaveMin(det_MT)) + WaveMin(det_MT)
+					lo_MB = lo*(WaveMax(det_MB) - WaveMin(det_MB)) + WaveMin(det_MB)
+					hi_MB = hi*(WaveMax(det_MB) - WaveMin(det_MB)) + WaveMin(det_MB)
+					lo_ML = lo*(WaveMax(det_ML) - WaveMin(det_ML)) + WaveMin(det_ML)
+					hi_ML = hi*(WaveMax(det_ML) - WaveMin(det_ML)) + WaveMin(det_ML)
+					lo_MR = lo*(WaveMax(det_MR) - WaveMin(det_MR)) + WaveMin(det_MR)
+					hi_MR = hi*(WaveMax(det_MR) - WaveMin(det_MR)) + WaveMin(det_MR)
+					
+					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {lo_MT,hi_MT,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
+					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {lo_MB,hi_MB,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {lo_ML,hi_ML,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {lo_MR,hi_MR,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
@@ -535,10 +607,19 @@ Function VDataTabProc(tca) : TabControl
 					AppendImage/W=VSANS_Data#det_panelsF det_FB
 					AppendImage/W=VSANS_Data#det_panelsF det_FL
 					AppendImage/W=VSANS_Data#det_panelsF det_FR
-					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {*,*,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {*,*,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {*,*,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {*,*,ColdWarm,0}
+					lo_FT = lo*(WaveMax(det_FT) - WaveMin(det_FT)) + WaveMin(det_FT)
+					hi_FT = hi*(WaveMax(det_FT) - WaveMin(det_FT)) + WaveMin(det_FT)
+					lo_FB = lo*(WaveMax(det_FB) - WaveMin(det_FB)) + WaveMin(det_FB)
+					hi_FB = hi*(WaveMax(det_FB) - WaveMin(det_FB)) + WaveMin(det_FB)
+					lo_FL = lo*(WaveMax(det_FL) - WaveMin(det_FL)) + WaveMin(det_FL)
+					hi_FL = hi*(WaveMax(det_FL) - WaveMin(det_FL)) + WaveMin(det_FL)
+					lo_FR = lo*(WaveMax(det_FR) - WaveMin(det_FR)) + WaveMin(det_FR)
+					hi_FR = hi*(WaveMax(det_FR) - WaveMin(det_FR)) + WaveMin(det_FR)
+					
+					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {lo_FT,hi_FT,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {lo_FB,hi_FB,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {lo_FL,hi_FL,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {lo_FR,hi_FR,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50,185,517,620)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
@@ -695,6 +776,31 @@ Function IsolateButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+// if the data display is RAW, convert to the specified WORK data type
+//
+// TODO
+// -- better error checking
+// -- if the data type is not RAW, can I Copy Folder instead?
+//
+Function ToWorkFileButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			//Convert_to_Workfile(newtype, doadd) // a proc
+			Execute "Convert_to_Workfile()"
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 // TODO
 //
 // opens a separate panel with the I(q) representation of the data
@@ -771,6 +877,8 @@ End
 
 
 // TODO:
+// x- link this to the preferences for the display. this is done in UpdateDisplayInformation (the main call) so that
+//     the panels are rescaled only once, rather than toggled three times (F, M, B) if I call from the tabProc
 // -- come up with a better definition of the log lookup wave (> 1000 pts, what is the first point)
 // -- make an equivalent linear wave
 // -- hard wire it in so it is created at initialization and stored someplace safe
@@ -961,6 +1069,11 @@ Function HiMapSliderProc(sa) : SliderControl
 		default:
 			if( sa.eventCode & 1 ) // value set
 				Variable curval = sa.curval
+				ControlInfo tab0
+				FakeTabClick(V_Value)
+				
+//				ControlInfo slider_lo
+//				V_MakeImageLookupTables(10000,V_Value,curval)
 			endif
 			break
 	endswitch
@@ -983,6 +1096,11 @@ Function LowMapSliderProc(sa) : SliderControl
 		default:
 			if( sa.eventCode & 1 ) // value set
 				Variable curval = sa.curval
+				ControlInfo tab0
+				FakeTabClick(V_Value)
+
+//				ControlInfo slider_hi
+//				V_MakeImageLookupTables(10000,curval,V_Value)
 			endif
 			break
 	endswitch

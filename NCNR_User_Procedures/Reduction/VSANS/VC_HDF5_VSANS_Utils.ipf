@@ -22,7 +22,7 @@
 // -- this is only necessary to be able to write out "fake" VSANS files from VCALC
 //    since I need a "template" of the Nexus folder structure to start from and fill in
 //
-// It doesn't reproduce the NICE logs, but will leave a spece for them if
+// It doesn't reproduce the NICE logs, but will leave a space for them if
 // it is read in and is part of the xref.
 //
 // It may be easier to hard-wire my own folder definition (NewDataFolder)
@@ -49,35 +49,27 @@
 // The basic saving routines are here, just as Proc rather than Macro menu clutter
 //
 
-
-// Next... think of all of R/W access needed
-//
-// the simple read/write works...
-// linear_data does not seem to need to be transposed at all
-//
-//  -- this seems too easy. what am I doing wrong? Is something getting garbled when I 
-// write back any single values back to the file
-//
-// -- try a string value next
-// -- then start to write the generic get/write functions
 //
 
 //
-// do I ditch the RealsRead/IntegersRead/TextRead? It makes little sense now.
-// maybe copy a "dataInfo" folder/subfolders. can't keep them all (bloat)
-// but then what about multiple files added together?
+// FEB 2017: All that is functional right now is the Setup/save of DIV and MASK files, and the attribute routines.
 //
-
+// The DIV and MASK routines are in their respective procedure files, and call save functions for the simplified
+// Nexus structure (in V_HDF5_RW_Utils.ipf).
+//
+// The R/W with attributes is part of the HDF5 Gateway procedure from Pete Jemain, and needs to be kept and functional
+// to be able to work with attributes - if needed.
+//
 Menu "VSANS"
-	SubMenu "Nexus File Testing"
-		"Fill_Nexus_V_Template"
-		"Save_Nexus_V_Template"
-		"Load_Nexus_V_Template"
-		"-"
-		"IgorOnly_Setup_VSANS_Struct"
-		"IgorOnly_Save_VSANS_Nexus"
-		"IgorOnly_Setup_SANS_Struct"
-		"IgorOnly_Save_SANS_Struct"
+	SubMenu "Nexus File RW"
+//		"Fill_Nexus_V_Template"
+//		"Save_Nexus_V_Template"
+//		"Load_Nexus_V_Template"
+//		"-"
+//		"IgorOnly_Setup_VSANS_Struct"
+//		"IgorOnly_Save_VSANS_Nexus"
+//		"IgorOnly_Setup_SANS_Struct"
+//		"IgorOnly_Save_SANS_Struct"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"
 		"Setup_VSANS_MASK_Struct"
@@ -89,6 +81,22 @@ Menu "VSANS"
 End
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////
 
 
 
@@ -113,20 +121,9 @@ End
 
 
 
-
-
-
-
-
-
-
-
-
-
-/////////////////////////////
-
 /////////////below is largely depricated, ugly dance to be able to "fake" a file from Igor
 // which was not complete anyways.
+
 
 
 

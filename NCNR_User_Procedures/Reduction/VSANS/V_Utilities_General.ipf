@@ -176,10 +176,11 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 	Variable indefinite
 	Variable useIgorDraw		// True to use Igor's own draw method rather than native
 	
-	Variable num
+	Variable num,numToClean
 	
 	// is there anything there to be killed?
 	num = V_CleanOutOneRawVSANS()
+	numToClean = num
 	if(num <= 0)
 		return(0)
 	endif
@@ -214,7 +215,7 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 	
 
 	KillWindow ProgressPanel
-	return(0)
+	return(numToClean)
 End
 
 

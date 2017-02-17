@@ -25,9 +25,16 @@
 //    this isolation? Should I make a bigger, more visible detector image?
 // x- link the function to the Isolate button on the main panel
 //
-// x- when selecting the detector, set the x/y pixel sizes
 // -- figure out how to (better?) re-plot the images when swapping between LR and TB panels
 // -- graphically show the beam center / radius of where it is in relation to the panel
+//
+// -- when selecting the detector, set the x/y pixel sizes -- un-do this?
+// -- The xPixels, yPixels axis labels are not correct. The axes are scaled to the beam center, through
+//    a call to V_RestorePanels() when the raw data is loaded. The BeamCenter panel removes this wave scaling
+//    so that the data can be presented (and fit) purely as pixels. On the isolate panel, the scaling has not
+//    been removed and is confusing, especially on T/B panels.
+// -- add a checkbox or button to remove/replace the wave scaling to the beam center. this is in a sense, 
+//    a correction to toggle.
 //
 //
 

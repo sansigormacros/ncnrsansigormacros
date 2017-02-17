@@ -4,7 +4,10 @@
 //////////////////////////////
 //////////////////////////////
 // 
-// This is not really used anymore - but may still be used in the future. I need somenthing like this
+// This is NOT used anymore - as of FEB 2017
+//
+//
+//- but may still be used in the future. I need somenthing like this
 // to be able to write a full Nexus file from Igor, but I still don't know the best way to 
 // do the setup to match the "real" NICE-generated file structure. Modifying the DataFolderTree.ipf
 // to generate the NewDataFolder and Make statements may be a reliable way to reproduce the correct
@@ -17,7 +20,7 @@
 //////////////////////////////
 //////////////////////////////
 
-// TODO -- of the many issues (which may all be superceded by the JS file, 
+// FUTURE -- of the many issues (which may all be superceded by the JS file, 
 // the detector dimensions (nPix) are incorrrect, and are better set as globals.
 
 
@@ -67,6 +70,8 @@
 // lays out the tree and fills with dummy values
 //
 Proc H_Setup_VSANS_Structure()
+	
+	Abort "Don't use this function - H_Setup_VSANS_Structure"
 	
 	Variable n=100
 	Variable tubes=48	
@@ -665,6 +670,9 @@ End
 
 // writes in the attributes
 Proc H_Fill_VSANS_Attributes()
+
+	Abort "Don't use this function - H_Fill_VSANS_Attributes"
+
 
 SetDataFolder  root:VSANS_file		
 	Make/O/N=0 Igor___folder_attributes	
@@ -1504,7 +1512,7 @@ End
 //
 //
 //
-// TODO
+// FUTURE
 // issues here with the potential for Nexus to have data as INTEGER
 // where I'd rather have the data here in Igor be DP, so there are no 
 // conversion/assignment issues
@@ -1515,10 +1523,12 @@ End
 //
 /// break this up into several smaller procedures as this is a VERY lengthy task to do
 
-	// TODO
+	// FUTURE
 // set the "accessible" copies of the data (these are really to be links in the file!)
 
 Proc H_Fill_VSANS_wSim()
+
+	Abort "Don't use this function - H_Fill_VSANS_wSim"
 
 
 SetDataFolder  root:VSANS_file		
@@ -2273,6 +2283,8 @@ End
 //
 Proc H_Setup_SANS_Structure()
 	
+	Abort "Don't use this function - H_Setup_SANS_Structure"
+
 	Variable n=100
 	
 NewDataFolder/O/S root:SANS_file	
@@ -2562,6 +2574,9 @@ End
 
 
 Proc H_Fill_SANS_Attributes()
+
+	Abort "Don't use this function - H_Fill_SANS_Attributes"
+
 
 SetDataFolder  root:SANS_file		
 	Make/O/N=0 Igor___folder_attributes	
@@ -2993,6 +3008,9 @@ End
 //
 Proc H_Fill_SANS_wSim()
 
+	Abort "Don't use this function - H_Fill_SANS_wSim"
+
+
 SetDataFolder  root:SANS_file		
 		file_name	= "SANSTest.h5"
 		file_time	= "2015-02-28T08:15:30-5:00"
@@ -3278,53 +3296,3 @@ End
 
 
 
-
-
-//////////
-//
-// These procedures are needed to write out MASK and DIV files
-//
-////////
-
-
-//
-// saves a specified folder, with a given filename.
-// saves to the home path
-//
-Proc Save_VSANS_file(dfPath, filename)
-	String dfPath	="root:VSANS_file"		// e.g., "root:FolderA" or ":"
-	String filename = "Test_VSANS_file.h5"
-	
-	H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
-End
-
-
-//	
-// this is my procedure to save the folders to HDF5, once I've filled the folder tree
-//
-// this does NOT save attributes, but gets the folder structure correct
-//
-Function H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
-	String dfPath	// e.g., "root:FolderA" or ":"
-	String filename
-
-	Variable result = 0	// 0 means no error
-	
-	Variable fileID
-	HDF5CreateFile/P=home /O /Z fileID as filename
-	if (V_flag != 0)
-		Print "HDF5CreateFile failed"
-		return -1
-	endif
-
-	HDF5SaveGroup /IGOR=0 /O /R /Z $dfPath, fileID, "."
-//	HDF5SaveGroup /O /R /Z $dfPath, fileID, "."
-	if (V_flag != 0)
-		Print "HDF5SaveGroup failed"
-		result = -1
-	endif
-	
-	HDF5CloseFile fileID
-
-	return result
-End

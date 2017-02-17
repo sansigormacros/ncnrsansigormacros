@@ -35,14 +35,14 @@ End
 #include "VC_VCALCPanel_MockUp"
 
 #include "HDF5gateway_NCNR"
-#include "Nexus_SANS_Write"
-#include "Nexus_VSANS_Write"
+#include "Vx_Nexus_SANS_Write"
+#include "Vx_Nexus_VSANS_Write"
 //#include "V_ReadWrite_HDF5"		//AUG2015 beginning of read/write, renamed Nov2015
-#include "V_NexusFromIgor"			//AUG2015 - depricated, but keep for now
+#include "Vx_NexusFromIgor"			//AUG2015 - depricated, but keep for now
 
 // for possible peak fitting
 #include "V_BroadPeak_Pix_2D"
-#include "VC_BeamCenter"
+#include "V_BeamCenter"
 
 // for fitting data to generate tube corrections
 #include "V_TubeAdjustments"

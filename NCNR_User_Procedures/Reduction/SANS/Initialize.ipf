@@ -114,7 +114,8 @@ Function InitGlobals()
 	//check platform, so Angstrom can be drawn correctly
 	
 	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+//		String/G root:Packages:NIST:gAngstStr = num2char(-127)
+		String/G root:Packages:NIST:gAngstStr = num2char(197)
 		Variable/G root:myGlobals:gIsMac = 1
 	else
 		//either Windows or Windows NT

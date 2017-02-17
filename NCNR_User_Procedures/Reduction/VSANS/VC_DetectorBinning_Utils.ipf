@@ -69,28 +69,28 @@ Function FillPanel_wModelData(det,qTot,type)
 			tmpInten = VC_SphereForm(1,60,1e-6,0.001,qTot[p][q])	
 			break
 		case "AgBeh":
-			tmpInten = VC_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
+			tmpInten = VC_BroadPeak(1e-11,3,20,100.0,0.1,3,0.1,qTot[p][q])
 			break
 		case "Vycor":
 			tmpInten = VC_BroadPeak(1e-9,3,20,500.0,0.015,3,0.1,qTot[p][q])
 			break	
 		case "Empty Cell":
-			tmpInten = VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
+			tmpInten = VC_EC_Empirical(2.2e-12,3.346,0.0065,9.0,0.016,qTot[p][q])
 			break
 		case "Blocked Beam":
-			tmpInten = VC_BlockedBeam(1,qTot[p][q])
+			tmpInten = VC_BlockedBeam(0.01,qTot[p][q])
 			break
 		case "Debye +":
 			tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])
 			addEmpBgd = 1
 			break
 		case "AgBeh +":
-			tmpInten = VC_BroadPeak(1e-9,3,20,100.0,0.1,3,0.1,qTot[p][q])
+			tmpInten = VC_BroadPeak(1e-11,3,20,100.0,0.1,3,0.1,qTot[p][q])
 			addEmpBgd = 1
 			break
 		case "Empty Cell +":
-			tmpInten = VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
-			tmpInten += VC_BlockedBeam(1,qTot[p][q])
+			tmpInten = VC_EC_Empirical(2.2e-12,3.346,0.0065,9.0,0.016,qTot[p][q])
+			tmpInten += VC_BlockedBeam(0.01,qTot[p][q])
 			break
 		default:
 			tmpInten = VC_Debye(10,300,0.1,qTot[p][q])
@@ -98,8 +98,8 @@ Function FillPanel_wModelData(det,qTot,type)
 
 
 	if(addEmpBgd == 1)
-		tmpInten += VC_EC_Empirical(2.2e-8,3.346,0.0065,9.0,0.016,qTot[p][q])
-		tmpInten += VC_BlockedBeam(1,qTot[p][q])
+		tmpInten += VC_EC_Empirical(2.2e-12,3.346,0.0065,9.0,0.016,qTot[p][q])
+		tmpInten += VC_BlockedBeam(0.01,qTot[p][q])
 	endif
 
 	
