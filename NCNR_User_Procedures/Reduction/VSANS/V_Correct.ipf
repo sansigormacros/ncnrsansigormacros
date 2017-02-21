@@ -127,7 +127,7 @@ Function V_Correct(cor_mode)
 	//copy SAM information to COR, wiping out the old contents of the COR folder first
 	//do this even if no correction is dispatched (if incorrect mode)
 
-	CopyHDFToWorkFolder("SAM","COR")	
+	V_CopyHDFToWorkFolder("SAM","COR")	
 
 	
 //	Print "dispatching to mode = ",mode

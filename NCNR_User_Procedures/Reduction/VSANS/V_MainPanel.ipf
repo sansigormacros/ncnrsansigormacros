@@ -46,7 +46,7 @@ End
 Proc DrawMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Edit_a_Mask()
+	V_Edit_a_Mask()
 End
 
 
@@ -158,8 +158,8 @@ End
 Proc ReadMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DoAlert 0, "Loading FAKE MASK data"
-	LoadFakeMaskData()
+	DoAlert 0, "Loading MASK data"
+	V_LoadMASKData()
 End
 
 Proc Draw3D_MainButtonProc(ctrlName) : ButtonControl
@@ -185,7 +185,7 @@ End
 Proc CatSort_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	Catalog_Sort()
+	V_Catalog_Sort()
 End
 
 Proc ShowCatShort_MainButtonProc(ctrlName) : ButtonControl
@@ -239,7 +239,7 @@ End
 Proc CopyWork_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	CopyWorkFolder()		//will put up missing param dialog
+	V_CopyWorkFolder()		//will put up missing param dialog
 End
 
 Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl

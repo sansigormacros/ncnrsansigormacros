@@ -26,7 +26,7 @@
 // the calculation is done as for the QxQy data set:
 // three waves XYZ, then converted to a matrix
 //
-Proc PlotBroadPeak_Pix2D(xDim,yDim)						
+Proc V_PlotBroadPeak_Pix2D(xDim,yDim)						
 	Variable xDim=48, yDim=128
 	Prompt xDim "Enter X dimension: "
 	Prompt yDim "Enter Y dimension: "
@@ -38,11 +38,11 @@ Proc PlotBroadPeak_Pix2D(xDim,yDim)
 	
 	// generate the triplet representation
 	Make/O/D/N=(xDim*yDim) xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D	
-	FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
+	V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
 	
 	
 	Variable/G g_PeakPix2D=0
-	g_PeakPix2D := BroadPeak_Pix2D(coef_PeakPix2D,zwave_PeakPix2D,xwave_PeakPix2D,ywave_PeakPix2D)	//AAO 2D calculation
+	g_PeakPix2D := V_BroadPeak_Pix2D(coef_PeakPix2D,zwave_PeakPix2D,xwave_PeakPix2D,ywave_PeakPix2D)	//AAO 2D calculation
 	
 	Display ywave_PeakPix2D vs xwave_PeakPix2D
 	modifygraph log=0
@@ -61,14 +61,14 @@ Proc PlotBroadPeak_Pix2D(xDim,yDim)
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
 	Variable/G g_PeakPix2Dmat=0
-	g_PeakPix2Dmat := UpdatePix2Mat(xwave_PeakPix2D,ywave_PeakPix2D,zwave_PeakPix2D,PeakPix2D_lin,PeakPix2D_mat)
+	g_PeakPix2Dmat := V_UpdatePix2Mat(xwave_PeakPix2D,ywave_PeakPix2D,zwave_PeakPix2D,PeakPix2D_lin,PeakPix2D_mat)
 	
 	
 	SetDataFolder root:
 //	AddModelToStrings("BroadPeak_Pix2D","coef_PeakPix2D","parameters_PeakPix2D","PeakPix2D")
 End
 
-Function FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
+Function V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
 	Wave xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D
 	Variable xDim,yDim
 		
@@ -87,7 +87,7 @@ Function FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yD
 	return(0)
 End
 
-Function UpdatePix2Mat(Qx,Qy,inten,linMat,mat)
+Function V_UpdatePix2Mat(Qx,Qy,inten,linMat,mat)
 	Wave Qx,Qy,inten,linMat,mat
 	
 	Variable xrows=DimSize(mat, 0 )			
@@ -116,27 +116,27 @@ End
 // and the wave indexing works just fine - I tested this with test waves of 7 and 8 points
 // and the points "2.5" and "3.5" evaluate correctly as 2 and 3
 //
-Function BroadPeak_Pix2D(cw,zw,xw,yw) : FitFunc
+Function V_BroadPeak_Pix2D(cw,zw,xw,yw) : FitFunc
 	Wave cw,zw,xw,yw
 	
 #if exists("BroadPeak_Pix2DX")			//to hide the function if XOP not installed
 	MultiThread zw = BroadPeak_Pix2DX(cw,xw,yw)
 #else
-	MultiThread zw = I_BroadPeak_Pix2D(cw,xw,yw)
+	MultiThread zw = V_I_BroadPeak_Pix2D(cw,xw,yw)
 #endif
 	
 	return(0)
 End
 
 //threaded version of the function
-ThreadSafe Function BroadPeak_Pix2D_T(cw,zw,xw,yw,p1,p2)
+ThreadSafe Function V_BroadPeak_Pix2D_T(cw,zw,xw,yw,p1,p2)
 	WAVE cw,zw,xw,yw
 	Variable p1,p2
 	
 #if exists("BroadPeak_Pix2DX")			//to hide the function if XOP not installed
 	zw[p1,p2]= BroadPeak_Pix2DX(cw,xw,yw)
 #else
-	zw[p1,p2]= I_BroadPeak_Pix2D(cw,xw,yw)
+	zw[p1,p2]= V_I_BroadPeak_Pix2D(cw,xw,yw)
 #endif
 
 	return 0
@@ -175,7 +175,7 @@ End
 //
 // This is not an XOP, but is correct in what it is passing and speed seems to be just fine.
 //
-ThreadSafe Function I_BroadPeak_Pix2D(w,xw,yw)
+ThreadSafe Function V_I_BroadPeak_Pix2D(w,xw,yw)
 //ThreadSafe Function fBroadPeak_Pix2D(w,xw,yw)
 	Wave w
 	Variable xw,yw
@@ -244,13 +244,13 @@ End
 //non-threaded version of the function, necessary for the smearing calculation
 // -- the smearing calculation can only calculate (nord) points at a time.
 //
-ThreadSafe Function BroadPeak_Pix2D_noThread(cw,zw,xw,yw)
+ThreadSafe Function V_BroadPeak_Pix2D_noThread(cw,zw,xw,yw)
 	WAVE cw,zw, xw,yw
 	
 #if exists("BroadPeak_Pix2DX")			//to hide the function if XOP not installed
 	zw = BroadPeak_Pix2DX(cw,xw,yw)
 #else
-	zw = I_BroadPeak_Pix2D(cw,xw,yw)
+	zw = V_I_BroadPeak_Pix2D(cw,xw,yw)
 #endif
 
 	return 0

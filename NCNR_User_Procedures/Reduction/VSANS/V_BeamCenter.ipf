@@ -21,37 +21,37 @@ Function V_FindBeamCenter()
 	
 		NewDataFolder/O root:Packages:NIST:VSANS:Globals:BeamCenter
 
-		Execute "DetectorPanelFit()"
+		Execute "V_DetectorPanelFit()"
 	endif
 End
 //
 // TODO - may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
 //
-Proc DetectorPanelFit() : Panel
+Proc V_DetectorPanelFit() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 // plot the default model to be sure some data is present
 	if(exists("xwave_PeakPix2D") == 0)
-		PlotBroadPeak_Pix2D()
+		V_PlotBroadPeak_Pix2D()
 	endif
 
 	NewPanel /W=(662,418,1586,960)/N=PanelFit/K=1
 //	ShowTools/A
 	
-	PopupMenu popup_0,pos={20,50},size={109,20},proc=SetDetPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,pos={20,50},size={109,20},proc=V_SetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
-	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
+	PopupMenu popup_1,pos={200,20},size={157,20},proc=V_DetModelPopMenuProc,title="Model Function"
 	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 		
-	Button button_0,pos={486,20},size={80,20},proc=DetFitGuessButtonProc,title="Guess"
-	Button button_1,pos={615,20},size={80,20},proc=DetFitButtonProc,title="Do Fit"
-	Button button_2,pos={744,20},size={80,20},proc=DetFitHelpButtonProc,title="Help"
-	Button button_3,pos={615,400},size={110,20},proc=WriteCtrButtonProc,title="Write Centers"
-	Button button_4,pos={730,400},size={110,20},proc=CtrTableButtonProc,title="Ctr table"
-	Button button_5,pos={730,440},size={110,20},proc=WriteCtrTableButtonProc,title="Write table"
+	Button button_0,pos={486,20},size={80,20},proc=V_DetFitGuessButtonProc,title="Guess"
+	Button button_1,pos={615,20},size={80,20},proc=V_DetFitButtonProc,title="Do Fit"
+	Button button_2,pos={744,20},size={80,20},proc=V_DetFitHelpButtonProc,title="Help"
+	Button button_3,pos={615,400},size={110,20},proc=V_WriteCtrButtonProc,title="Write Centers"
+	Button button_4,pos={730,400},size={110,20},proc=V_CtrTableButtonProc,title="Ctr table"
+	Button button_5,pos={730,440},size={110,20},proc=V_WriteCtrTableButtonProc,title="Write table"
 
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:BeamCenter
@@ -63,7 +63,7 @@ Proc DetectorPanelFit() : Panel
 	SetDataFolder root:
 	
 	// draw the correct images
-	DrawDetPanel("FL")
+	V_DrawDetPanel("FL")
 
 	
 ////draw the detector panel
@@ -105,7 +105,7 @@ EndMacro
 //
 // function to choose which detector panel to display, and then to actually display it
 //
-Function SetDetPanelPopMenuProc(pa) : PopupMenuControl
+Function V_SetDetPanelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -129,7 +129,7 @@ Function SetDetPanelPopMenuProc(pa) : PopupMenuControl
 			endif
 	
 			// draw the correct images
-			DrawDetPanel(popStr)
+			V_DrawDetPanel(popStr)
 			
 			break
 		case -1: // control being killed
@@ -151,7 +151,7 @@ End
 //
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
-Function DrawDetPanel(str)
+Function V_DrawDetPanel(str)
 	String str
 	
 	// from the selection, find the path to the data
@@ -348,7 +348,7 @@ Function DrawDetPanel(str)
 		
 	// re-dimension the model calculation to be the proper dimensions	
 	Redimension/N=(nPix_X*nPix_Y) xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D	
-	FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,nPix_X,nPix_Y)
+	V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,nPix_X,nPix_Y)
 	Make/O/D/N=(nPix_X,nPix_Y) PeakPix2D_mat		// use the point scaling of the matrix (=pixels)
 
 	Duplicate/O $"PeakPix2D_mat",$"PeakPix2D_lin" 		//keep a linear-scaled version of the data
@@ -375,7 +375,7 @@ End
 //
 // Function to plot the specified 2D model for the detector
 //
-Function DetModelPopMenuProc(pa) : PopupMenuControl
+Function V_DetModelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -383,7 +383,7 @@ Function DetModelPopMenuProc(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
-			Execute "PlotBroadPeak_Pix2D()"
+			Execute "V_PlotBroadPeak_Pix2D()"
 			
 			break
 		case -1: // control being killed
@@ -397,7 +397,7 @@ End
 //
 // TODO - make a better guess (how?)
 //
-Function DetFitGuessButtonProc(ba) : ButtonControl
+Function V_DetFitGuessButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -422,7 +422,7 @@ End
 // TODO -- currently hard-wired for coefficients from the only fit function
 //
 // -- will need to recalc mm center AND q-values
-Function WriteCtrButtonProc(ba) : ButtonControl
+Function V_WriteCtrButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -458,7 +458,7 @@ End
 //
 // function to call the fit function (2D)
 //
-Function DetFitButtonProc(ba) : ButtonControl
+Function V_DetFitButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -468,7 +468,7 @@ Function DetFitButtonProc(ba) : ButtonControl
 			Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 			Wave coefW=root:coef_PeakPix2D
 			
-			FuncFitMD/H="11000111100"/NTHR=0 BroadPeak_Pix2D coefW  dispW /D			
+			FuncFitMD/H="11000111100"/NTHR=0 V_BroadPeak_Pix2D coefW  dispW /D			
 			
 			Wave ws=W_sigma
 			AppendtoTable/W=PanelFit#T0 ws
@@ -481,7 +481,7 @@ Function DetFitButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function DetFitHelpButtonProc(ba) : ButtonControl
+Function V_DetFitHelpButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -498,7 +498,7 @@ Function DetFitHelpButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function CtrTableButtonProc(ba) : ButtonControl
+Function V_CtrTableButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -515,7 +515,7 @@ Function CtrTableButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function WriteCtrTableButtonProc(ba) : ButtonControl
+Function V_WriteCtrTableButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )

@@ -47,7 +47,7 @@
 // Call w/ DateTime as the argument
 //
 // TODO -- verify that this is correct
-Function/S CurrentTime_to_ISO8601String(now)
+Function/S V_CurrentTime_to_ISO8601String(now)
 	Variable now
 	
 	String s1,s2,s3,ISOstr
@@ -73,7 +73,7 @@ End
 // TODO -- verify that this is correct, since I'm not actually parsing the string, but rather
 // counting on the string to be EXACTLY the correct format
 //
-Function ISO8601_to_IgorTime(ISOstr)
+Function V_ISO8601_to_IgorTime(ISOstr)
 	String ISOstr
 	
 	Variable secs

@@ -109,13 +109,13 @@ Function V_LoadHDF5Data(file,folder)
 	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
 				Wave w_calib = V_getDetTube_spatialCalib(folder,detStr)
 				Variable tube_width = V_getDet_tubeWidth(folder,detStr)
-				NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
+				V_NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
 				
 				
 				//(2.4) Convert the beam center values from pixels to mm
 				// TODO -- there needs to be a permanent location for these values??
 				//
-				ConvertBeamCtr_to_mm(folder,detStr,destPath)
+				V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
 				
 				// (2.5) Calculate the q-values
 				// calculating q-values can't be done unless the non-linear corrections are calculated
@@ -132,8 +132,8 @@ Function V_LoadHDF5Data(file,folder)
 			endfor
 			
 			//"B" is separate
-			NonLinearCorrection_B(folder,"B",destPath)
-			ConvertBeamCtr_to_mmB(folder,"B",destPath)
+			V_NonLinearCorrection_B(folder,"B",destPath)
+			V_ConvertBeamCtr_to_mmB(folder,"B",destPath)
 			V_Detector_CalcQVals(folder,"B",destPath)
 			
 		else

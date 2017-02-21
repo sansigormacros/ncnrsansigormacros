@@ -69,7 +69,7 @@
 // (1) -- get the individual tubes into an array
 //
 //
-Proc Tubes_to_Array()
+Proc V_Tubes_to_Array()
 	Make/O/D/N=(8,1127) pack
 	edit pack
 	display;appendimage pack
@@ -104,27 +104,27 @@ End
 // -- then sort the results - they seem to be in no real order...
 //¥Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
 //
-Proc MakeTableForPeaks(numTube,numPeak)
+Proc V_MakeTableForPeaks(numTube,numPeak)
 	Variable numTube,numPeak
 	
 	Make/O/D/N=(numPeak,numTube) PeakTableX,peakTableY		//*2 to store x-location and peak height (y)
 	Edit peakTableX
 End
 
-Proc Identify_AllPeaks()
+Proc V_Identify_AllPeaks()
 
 	Variable ii,numTubes=8
 	String str="tube"
 	
 	ii=1
 	do
-		Identify_Peaks(str+num2str(ii),ii-1)
+		V_Identify_Peaks(str+num2str(ii),ii-1)
 		ii+=1
 	while(ii<=numTubes)
 
 End
 
-Proc Identify_Peaks(tubeStr,ind)
+Proc V_Identify_Peaks(tubeStr,ind)
 	String tubeStr
 	Variable ind
 	
@@ -187,26 +187,26 @@ End
 //
 
 
-Proc MakeTableForFitCoefs(numTube,numCoef)
+Proc V_MakeTableForFitCoefs(numTube,numCoef)
 	Variable numTube,numCoef
 	
 	Make/O/D/N=(numCoef,numTube) TubeCoefTable,TubeSigmaTable		//
 	Edit TubeCoefTable
 End
 
-Proc PlotFit_AllPeaks()
+Proc V_PlotFit_AllPeaks()
 
 	Variable ii,numTubes=8
 	
 	ii=1
 	do
-		PlotFit_Peaks(ii-1)
+		V_PlotFit_Peaks(ii-1)
 		ii+=1
 	while(ii<=numTubes)
 
 End
 
-Proc PlotFit_Peaks(ind)
+Proc V_PlotFit_Peaks(ind)
 	Variable ind
 	
 	//hopefully 20 points - need better control of this
@@ -266,7 +266,7 @@ End
 //	Display;AppendImage adjusted_pack vs {*,adjusted_mm_edge}
 
 
-Proc Make_mm_tubes()
+Proc V_Make_mm_tubes()
 
 	Variable ii,numTubes=8
 	
@@ -280,7 +280,7 @@ Proc Make_mm_tubes()
 End
 
 
-Proc Append_Adjusted_mm()
+Proc V_Append_Adjusted_mm()
 
 // a blank base image
 	Duplicate/O pack junk
@@ -314,14 +314,14 @@ end
 
 ////////////////////////////////
 
-Proc MakeMatrix_PixCenter()
+Proc V_MakeMatrix_PixCenter()
 	Duplicate/O pack pack_centered
 	
 	Variable ii,numTubes=8
 	
 	ii=1
 	do
-		FillMatrix_Pix_Center(ii)
+		V_FillMatrix_Pix_Center(ii)
 		ii+=1
 	while(ii<=numTubes)
 	
@@ -340,7 +340,7 @@ end
 //
 // FindRoots/P=W_coef		can also be used to find the roots (but which one?)
 //
-Function FillMatrix_Pix_Center(ind)
+Function V_FillMatrix_Pix_Center(ind)
 	Variable ind
 	
 	Wave adj=root:pack_centered
@@ -375,7 +375,7 @@ End
 // -- either keep pixels and align centers
 // -- OR -- use mm and append each tube with its own y-axis
 //
-Function FillAdjusted(ind)
+Function V_FillAdjusted(ind)
 	Variable ind
 	
 	Wave adj=root:adjusted_pack
@@ -428,7 +428,7 @@ End
 // set the (linear) range of the y-axis of the matrix to be the
 // range of the 1st tube. This is completely arbitrary
 //
-Proc Interpolate_mm_tubes()
+Proc V_Interpolate_mm_tubes()
 
 	Duplicate/O pack pack_image
 
@@ -472,7 +472,7 @@ End
 
 // this doesn't work - the interpolation step doesn't do what I want
 // and the plot of the triplet with f(z) for color doesn't fill space like I want
-Proc AnotherExample()
+Proc V_AnotherExample()
 
 	Concatenate/O/NP {tube1_mm,tube2_mm,tube3_mm,tube4_mm,tube5_mm,tube6_mm,tube7_mm,tube8_mm},cat_mm
 	Concatenate/O/NP {tube1,tube2,tube3,tube4,tube5,tube6,tube7,tube8},cat_tubes
@@ -512,7 +512,7 @@ end
 // from the WM help file:
 // Plotting a 2D Z Wave With 1D X and Y Center Data
 //
-Function MakeEdgesWave(centers, edgesWave)
+Function V_MakeEdgesWave(centers, edgesWave)
 	Wave centers	// Input
 	Wave edgesWave	// Receives output
 	
@@ -525,12 +525,12 @@ Function MakeEdgesWave(centers, edgesWave)
 End
 
 //This function demonstrates the use of MakeEdgesWave:
-Function DemoPlotXYZAsImage()
+Function V_DemoPlotXYZAsImage()
 	Make/O mat={{0,1,2},{2,3,4},{3,4,5}}	// Matrix containing Z values
 	Make/O centersX = {1, 2.5, 5}		// X centers wave
 	Make/O centersY = {300, 400, 600}		// Y centers wave
-	Make/O edgesX; MakeEdgesWave(centersX, edgesX)	// Create X edges wave
-	Make/O edgesY; MakeEdgesWave(centersY, edgesY)	// Create Y edges wave
+	Make/O edgesX; V_MakeEdgesWave(centersX, edgesX)	// Create X edges wave
+	Make/O edgesY; V_MakeEdgesWave(centersY, edgesY)	// Create Y edges wave
 	Display; AppendImage mat vs {edgesX,edgesY}
 End
 

@@ -29,7 +29,7 @@
 
 // passing null file string presents a dialog
 // called from the Main Button " Read Mask"
-Proc LoadFakeMASKData()
+Proc V_LoadMASKData()
 	V_LoadHDF5Data("","MSK")
 End
 
@@ -80,7 +80,7 @@ End
 
 
 // called from the main button "Draw Mask"
-Proc Edit_a_Mask()
+Proc V_Edit_a_Mask()
 	V_EditMask()
 end
 
@@ -100,7 +100,7 @@ Function V_EditMask()
 			V_GenerateDefaultMask()
 		endif
 		
-		Execute "MaskEditorPanel()"
+		Execute "V_MaskEditorPanel()"
 	endif
 End
 
@@ -112,41 +112,41 @@ End
 //		-- quit
 //    -- help (button is there, fill in the content)
 //
-Proc MaskEditorPanel() : Panel
+Proc V_MaskEditorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 	NewPanel /W=(662,418,1300,960)/N=MaskEditPanel	 /K=1
 //	ShowTools/A
 	
-	PopupMenu popup_0,pos={20,50},size={109,20},proc=SetMaskPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,pos={20,50},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FT",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 
 	SetVariable setvar0,pos={257.00,20.00},size={150.00,14.00},title="tube number"
 	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
-	Button button_0,pos={257,46.00},size={50.00,20.00},proc=AddToMaskButtonProc,title="Add"
-	Button button_1,pos={319.00,46.00},size={50.00,20.00},proc=RemoveFromMaskButtonProc,title="Del"
-	Button button_2,pos={409.00,46.00},size={90.00,20.00},proc=ToggleMaskButtonProc,title="Toggle"
-	Button button_3,pos={509.00,46.00},size={80.00,20.00},proc=SaveMaskButtonProc,title="Save"
-	Button button_4,pos={603.00,10.00},size={20.00,20.00},proc=DrawMaskHelpButtonProc,title="?"
-	CheckBox check_0,pos={190.00,23.00},size={37.00,15.00},proc=DrawMaskRadioCheckProc,title="Row"
+	Button button_0,pos={257,46.00},size={50.00,20.00},proc=V_AddToMaskButtonProc,title="Add"
+	Button button_1,pos={319.00,46.00},size={50.00,20.00},proc=V_RemoveFromMaskButtonProc,title="Del"
+	Button button_2,pos={409.00,46.00},size={90.00,20.00},proc=V_ToggleMaskButtonProc,title="Toggle"
+	Button button_3,pos={509.00,46.00},size={80.00,20.00},proc=V_SaveMaskButtonProc,title="Save"
+	Button button_4,pos={603.00,10.00},size={20.00,20.00},proc=V_DrawMaskHelpButtonProc,title="?"
+	CheckBox check_0,pos={190.00,23.00},size={37.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Row"
 	CheckBox check_0,value= 0,mode=1
-	CheckBox check_1,pos={190.00,46.00},size={32.00,15.00},proc=DrawMaskRadioCheckProc,title="Col"
+	CheckBox check_1,pos={190.00,46.00},size={32.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Col"
 	CheckBox check_1,value= 1,mode=1
 
-	SetWindow MaskEditPanel, hook(MyHook)=MaskWindowHook
+	SetWindow MaskEditPanel, hook(MyHook)=V_MaskWindowHook
 
 	// draw the correct images
 	//draw the detector panel
-	DrawPanelToMask("FT")
+	V_DrawPanelToMask("FT")
 	
 	// overlay the current mask
 	V_OverlayMask("FT",1)
 
 EndMacro
 
-Function DrawMaskHelpButtonProc(ba) : ButtonControl
+Function V_DrawMaskHelpButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -166,7 +166,7 @@ End
 //
 // update the limits on the tube nubmer based on row/col and the panel (gMaskMaxIndex global)
 //
-Function DrawMaskRadioCheckProc(cba) : CheckBoxControl
+Function V_DrawMaskRadioCheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
 	switch( cba.eventCode )
@@ -210,7 +210,7 @@ Function DrawMaskRadioCheckProc(cba) : CheckBoxControl
 	return 0
 End
 
-Function MaskWindowHook(s)
+Function V_MaskWindowHook(s)
 	STRUCT WMWinHookStruct &s
 	
 	Variable hookResult = 0	// 0 if we do not handle event, 1 if we handle it.
@@ -256,11 +256,11 @@ Function MaskWindowHook(s)
 			endif
 			if(s.specialKeyCode == 102)
 				//up arrow
-				AddToMaskButtonProc(ba)
+				V_AddToMaskButtonProc(ba)
 			endif
 			if(s.specialKeyCode == 103)
 				//down arrow
-				RemoveFromMaskButtonProc(ba)
+				V_RemoveFromMaskButtonProc(ba)
 			endif
 
 // enforce the limits on the setvar
@@ -296,7 +296,8 @@ Function MaskWindowHook(s)
 	return hookResult		// If non-zero, we handled event and Igor will ignore it.
 End
 
-Function ToggleMaskButtonProc(ba) : ButtonControl
+
+Function V_ToggleMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -321,7 +322,7 @@ Function ToggleMaskButtonProc(ba) : ButtonControl
 End
 
 
-Function AddToMaskButtonProc(ba) : ButtonControl
+Function V_AddToMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -354,7 +355,7 @@ Function AddToMaskButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function RemoveFromMaskButtonProc(ba) : ButtonControl
+Function V_RemoveFromMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -390,7 +391,7 @@ End
 //
 // function to choose which detector panel to display, and then to actually display it
 //
-Function SetMaskPanelPopMenuProc(pa) : PopupMenuControl
+Function V_SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -414,7 +415,7 @@ Function SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 			endif
 	
 			// draw the correct images
-			DrawPanelToMask(popStr)
+			V_DrawPanelToMask(popStr)
 
 			// fake a "click" on the radio buttons to re-set the row/col limits
 			STRUCT WMCheckboxAction cba
@@ -427,7 +428,7 @@ Function SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 				cba.ctrlName = "check_1"
 			endif
 			
-			DrawMaskRadioCheckProc(cba)		//call the radio button action proc	
+			V_DrawMaskRadioCheckProc(cba)		//call the radio button action proc	
 			
 			//overlay the mask
 			V_OverlayMask(popStr,1)
@@ -454,7 +455,7 @@ End
 //
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
-Function DrawPanelToMask(str)
+Function V_DrawPanelToMask(str)
 	String str
 	
 	// from the selection, find the path to the data
@@ -661,7 +662,7 @@ Function V_OverlayMask(str,state)
 End
 
 
-Function SaveMaskButtonProc(ba) : ButtonControl
+Function V_SaveMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )

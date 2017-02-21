@@ -34,13 +34,13 @@ Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 //
 //Entry procedure from main panel
 //
-Proc CopyWorkFolder(oldType,newType)
+Proc V_CopyWorkFolder(oldType,newType)
 	String oldType,newType
 	Prompt oldType,"Source WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
 	Prompt newType,"Destination WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;"
 
 	// data folder "old" will be copied to "new" (either kills/copies or will overwrite)
-	CopyHDFToWorkFolder(oldtype,newtype)
+	V_CopyHDFToWorkFolder(oldtype,newtype)
 End
 
 //
@@ -64,7 +64,7 @@ End
 // hdfDF is the name only of the data in storage. May be full file name with extension (clean as needed)
 // type is the destination WORK folder for the copy
 //
-Function CopyHDFToWorkFolder(fromStr,toStr)
+Function V_CopyHDFToWorkFolder(fromStr,toStr)
 	String fromStr,toStr
 	
 	String fromDF, toDF
@@ -301,7 +301,7 @@ End
 //   "newType" to "type", then when Raw_to_work() gets to CopyHDFToWorkFolder(), the KillDataFolder/Z
 //   line fails (but reports no error), then DuplicateDataFolder fails, and reports an error. Trying
 //   to simplify this condition, I can't reproduce the bug for WM...
-Proc Convert_to_Workfile(newtype, doadd)
+Proc V_Convert_to_Workfile(newtype, doadd)
 	String newtype,doadd
 	Prompt newtype,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	Prompt doadd,"Add to current WORK contents?",popup,"No;Yes;"
@@ -314,11 +314,11 @@ Proc Convert_to_Workfile(newtype, doadd)
 	Variable err// = Raw_to_work(newtype)
 	if(cmpstr(doadd,"No")==0)
 		//don't add to prev work contents, copy RAW contents to work and convert
-		err = Raw_to_work(newtype)
+		err = V_Raw_to_work(newtype)
 	else
 		//yes, add RAW to the current work folder contents
 		Abort "Adding RAW data files is currently unsupported"
-		err = Add_raw_to_work(newtype)
+		err = V_Add_raw_to_work(newtype)
 	endif
 	
 	String newTitle = "WORK_"+newtype
@@ -327,7 +327,7 @@ Proc Convert_to_Workfile(newtype, doadd)
 	KillStrings/Z newTitle
 	
 	//need to update the display with "data" from the correct dataFolder
-	UpdateDisplayInformation(newtype)
+	V_UpdateDisplayInformation(newtype)
 	
 End
 
@@ -341,7 +341,7 @@ End
 //
 //the current display type is updated to newType (global)
 //
-Function Raw_to_work(newType)
+Function V_Raw_to_work(newType)
 	String newType
 	
 	Variable deadTime,defmon,total_mon,total_det,total_trn,total_numruns,total_rtime
@@ -365,7 +365,7 @@ Function Raw_to_work(newType)
 	destPath = "root:Packages:NIST:VSANS:" + newType
 	
 	//copy from current dir (RAW) to work, defined by newType
-	CopyHDFToWorkFolder("RAW",newType)
+	V_CopyHDFToWorkFolder("RAW",newType)
 	
 	// now work with the waves from the destination folder.	
 	
@@ -431,12 +431,12 @@ Function Raw_to_work(newType)
 //			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_calib = V_getDetTube_spatialCalib(fname,detStr)
 			Variable tube_width = V_getDet_tubeWidth(fname,detStr)
-			NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
+			V_NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
 
 			//(2.4) Convert the beam center values from pixels to mm
 			// TODO -- there needs to be a permanent location for these values??
 			//
-			ConvertBeamCtr_to_mm(fname,detStr,destPath)
+			V_ConvertBeamCtr_to_mm(fname,detStr,destPath)
 							
 			// (2.5) Calculate the q-values
 			// calculating q-values can't be done unless the non-linear corrections are calculated
@@ -453,8 +453,8 @@ Function Raw_to_work(newType)
 		endfor
 		
 		//"B" is separate
-		NonLinearCorrection_B(fname,"B",destPath)
-		ConvertBeamCtr_to_mmB(fname,"B",destPath)
+		V_NonLinearCorrection_B(fname,"B",destPath)
+		V_ConvertBeamCtr_to_mmB(fname,"B",destPath)
 		V_Detector_CalcQVals(fname,"B",destPath)
 		
 	else
@@ -477,7 +477,7 @@ Function Raw_to_work(newType)
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			// any other dimensions to pass in?
-			SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+			V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 			
 		endfor
 	else
@@ -514,7 +514,7 @@ Function Raw_to_work(newType)
 			else
 				// do the corrections for 8 tube panels
 				Wave w_dt = V_getDetector_deadtime(fname,detStr)
-				DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+				V_DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
 				
 			endif
 		endfor
@@ -549,7 +549,7 @@ Function Raw_to_work(newType)
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			
-//			TransmissionCorrection(fill this in)
+//			V_TransmissionCorrection(fill this in)
 			
 		endfor
 	else
@@ -571,7 +571,7 @@ Function Raw_to_work(newType)
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Variable monCt = V_getBeamMonNormData(fname)
-	//			MonitorNormalization(fill this in)
+	//			V_MonitorNormalization(fill this in)
 		//scale the data to the default montor counts
 		
 		// TODO -- un-comment these three lines once monitor counts are reasonable - currently monCt = 9!!!
@@ -628,7 +628,7 @@ End
 //(the function Raw_to_work(type) makes a fresh workfile)
 //
 //the current display type is updated to newType (global)
-Function Add_raw_to_work(newType)
+Function V_Add_raw_to_work(newType)
 	String newType
 	
 	// NEW OCT 2014
@@ -636,7 +636,7 @@ Function Add_raw_to_work(newType)
 	// does nothing if the attenuation of RAW and destination are the same
 	NVAR doAdjustRAW_Atten = root:Packages:NIST:gDoAdjustRAW_Atten
 	if(doAdjustRAW_Atten)
-		Adjust_RAW_Attenuation(newType)
+		V_Adjust_RAW_Attenuation(newType)
 	endif
 	
 	String destPath=""
@@ -645,7 +645,7 @@ Function Add_raw_to_work(newType)
 	if(WaveExists($("root:Packages:NIST:"+newType + ":data")) == 0)
 		Print "There is no old work file to add to - a new one will be created"
 		//call Raw_to_work(), then return from this function
-		Raw_to_Work(newType)
+		V_Raw_to_Work(newType)
 		Return(0)		//does not generate an error - a single file was converted to work.newtype
 	Endif
 	
@@ -709,7 +709,7 @@ Function Add_raw_to_work(newType)
 		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
 	endif	
 	
-	DetCorr(raw_data,raw_data_err,raw_reals,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
+	V_DetCorr(raw_data,raw_data_err,raw_reals,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
 	
 	//deadtime corrections to raw data
 	// TODO - do the tube correction for dead time now
@@ -806,12 +806,12 @@ End
 // run data through normal "add" step, then unscale default monitor counts
 //to get the data back on a simple time basis
 //
-Function Raw_to_Work_NoNorm(type)
+Function V_Raw_to_Work_NoNorm(type)
 	String type
 	
 	WAVE reals=$("root:Packages:NIST:RAW:realsread")
 	reals[1]=1		//true monitor counts, still in raw
-	Raw_to_work(type)
+	V_Raw_to_work(type)
 	//data is now in "type" folder
 	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
 	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
@@ -838,12 +838,12 @@ End
 // run data through normal "add" step, then unscale default monitor counts
 //to get the data back on a simple time basis
 //
-Function Add_Raw_to_Work_NoNorm(type)
+Function V_Add_Raw_to_Work_NoNorm(type)
 	String type
 	
 	WAVE reals=$("root:Packages:NIST:RAW:realsread")
 	reals[1]=1		//true monitor counts, still in raw
-	Add_Raw_to_work(type)
+	V_Add_Raw_to_work(type)
 	//data is now in "type" folder
 	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
 	WAVE data_copy=$("root:Packages:NIST:"+type+":data")

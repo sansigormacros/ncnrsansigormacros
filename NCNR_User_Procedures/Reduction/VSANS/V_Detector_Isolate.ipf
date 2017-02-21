@@ -42,7 +42,7 @@
 Function V_DetectorIsolate()
 	DoWindow/F IsolateDetector
 	if(V_flag==0)
-		Execute "IsolateDetectorPanel()"
+		Execute "V_IsolateDetectorPanel()"
 	endif
 End
 
@@ -51,7 +51,7 @@ End
 // TODO - may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
 //
-Proc IsolateDetectorPanel() : Panel
+Proc V_IsolateDetectorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
 
@@ -97,7 +97,7 @@ Proc IsolateDetectorPanel() : Panel
 
 //	SetDataFolder root:
 	
-	CopyHDFToWorkFolder("RAW","ADJ")
+	V_CopyHDFToWorkFolder("RAW","ADJ")
 	
 	// draw the correct images
 	V_isoDrawDetPanel("FL")
@@ -379,7 +379,7 @@ Function V_isoCorrectButtonProc(ba) : ButtonControl
 			// raw_to_work to apply the selected corrections
 			// TODO -- verify that this works correctly, since ADJ has waves in use and the folder
 			//         can't be directly killed. Copy is the first step - so verify.
-			Raw_to_work("ADJ")
+			V_Raw_to_work("ADJ")
 			
 			
 			
@@ -416,7 +416,7 @@ Function V_SetFldrPopMenuProc(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
-			CopyHDFToWorkFolder(popStr,"ADJ")
+			V_CopyHDFToWorkFolder(popStr,"ADJ")
 			
 			break
 		case -1: // control being killed

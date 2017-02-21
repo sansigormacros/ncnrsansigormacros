@@ -56,8 +56,8 @@ Proc V_ChangeDisplay(type)
 
 // make sure that data exists before passing this on...
 	
-	if(DataExists(type) > 0)
-		UpdateDisplayInformation(type)
+	if(V_DataExists(type) > 0)
+		V_UpdateDisplayInformation(type)
 	else
 		DoAlert 0,"No data in "+type
 	endif
@@ -68,7 +68,7 @@ End
 // very simple function to look for something in a work folder
 // -- only checks for FR data to exist, assumes everything else is there
 // -- can't use the V_get() functions, these will try to load data if it's not there!
-Function DataExists(type)
+Function V_DataExists(type)
 	String type
 	
 	Wave/Z w = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_FR:data")
@@ -81,7 +81,7 @@ end
 //
 // tol is an absolute value (since input v1 or v2 may be zero, can't reliably
 // use a percentage
-Function CloseEnough(v1,v2,tol)
+Function V_CloseEnough(v1,v2,tol)
 	Variable v1, v2, tol
 
 	if(abs(v1-v2) < tol)
@@ -459,9 +459,9 @@ Function V_LoadPlotAndDisplayRAW(increment)
 		String folder = StringFromList(0,hdfDF,".")
 		
 		// this (in SANS) just passes directly to fRawWindowHook()
-		Execute "UpdateDisplayInformation(\"RAW\")"	// plot the data in whatever folder type
+		Execute "V_UpdateDisplayInformation(\"RAW\")"	// plot the data in whatever folder type
 		
-		FakeRestorePanelsButtonClick()		//so the panels display correctly
+		V_FakeRestorePanelsButtonClick()		//so the panels display correctly
 		// set the global to display ONLY if the load was called from here, not from the 
 		// other routines that load data (to read in values)
 		SVAR gLastLoad = root:Packages:NIST:VSANS:Globals:gLastLoadedFile

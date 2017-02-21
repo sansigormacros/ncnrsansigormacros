@@ -34,7 +34,7 @@
 // -- clean up when done
 // -- calculate + return the error contribution?
 // -- verify the error propagation
-Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
+Function V_DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	Wave dataW,data_errW,dtW
 	Variable ctTime
 	
@@ -78,7 +78,7 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 end
 
 // test function
-Function testDTCor()
+Function V_testDTCor()
 
 	String detStr = ""
 	String fname = "RAW"
@@ -92,7 +92,7 @@ Function testDTCor()
 	ctTime = V_getCount_time(fname)
 	
 //	ctTime = 10
-	DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+	V_DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
 
 End
 
@@ -121,7 +121,7 @@ End
 // -- need a separate block or function to handle "B" detector which will be ? different
 //
 //
-Function NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
+Function V_NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 	Wave dataW,coefW
 	Variable tube_width
 	String detStr,destPath
@@ -170,7 +170,7 @@ end
 // -- the wave assignment may not be correct.. so beware
 //
 //
-Function NonLinearCorrection_B(folder,detStr,destPath)
+Function V_NonLinearCorrection_B(folder,detStr,destPath)
 	String folder,detStr,destPath
 
 	if(cmpstr(detStr,"B") != 0)
@@ -217,7 +217,7 @@ end
 // -- distance in the lateral direction is based on tube width, which is a fixed parameter
 //
 //
-Function ConvertBeamCtr_to_mm(folder,detStr,destPath)
+Function V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
@@ -275,7 +275,7 @@ end
 // -- distance in the lateral direction is based on tube width, which is well known
 //
 //
-Function ConvertBeamCtr_to_mmB(folder,detStr,destPath)
+Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
@@ -328,7 +328,7 @@ End
 // get rid of this in the real data
 //
 // TESTING ONLY
-Proc MakeFakeCalibrationWaves()
+Proc V_MakeFakeCalibrationWaves()
 	// make these in the RAW data folder, before converting to a work folder
 	// - then they will be "found" by get()
 	// -- only for the tube, not the Back det
@@ -337,7 +337,7 @@ Proc MakeFakeCalibrationWaves()
 
 	DoAlert 0, "Calibration waves are read in from the data file"
 	
-//	fMakeFakeCalibrationWaves()
+//	V_fMakeFakeCalibrationWaves()
 End
 
 
@@ -354,7 +354,7 @@ End
 //  the (fictional) dimension of the pixel along the tube axis, at least as far
 // as for making the fake coefficients.
 //
-Function fMakeFakeCalibrationWaves()
+Function V_fMakeFakeCalibrationWaves()
 
 	Variable ii,pixSize
 	String detStr,fname="RAW",orientation
@@ -602,7 +602,7 @@ End
 //    (probably just from geometry, since I need SDD and dx and dy values...)
 //
 //
-Function SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave w,w_err
 	String fname,detStr,destPath
 
@@ -696,7 +696,7 @@ end
 //function is called by Raw_to_work() and Add_raw_to_work() functions
 //works on the actual data array, assumes that is is already on LINEAR scale
 //
-Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
+Function V_DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 	Wave data,data_err,realsread
 	Variable doEfficiency,doTrans
 
@@ -792,7 +792,7 @@ Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 				endif
 				
 				// pass in the transmission error, and the error in the correction is returned as the last parameter
-				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+				lat_corr = V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
 				data[ii][jj] /= lat_corr			//divide by the correction factor
 				//
 				//
@@ -827,7 +827,7 @@ End
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
 //
-Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,err)
+Function V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,err)
 	Variable trans,dtdist,xd,yd,trans_err,&err
 
 	DoAlert 0,"This has not yet been updated for VSANS"
@@ -890,7 +890,7 @@ end
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
 //test procedure, not called anymore
-Proc AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
+Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
 	String type
 	Variable c0=1,c1=0.1,c2=0.95,c3=0.1,c4=1,c5=32.0
 	Prompt type,"WORK data type",popup,"CAL;COR;SAM"
@@ -904,7 +904,7 @@ Proc AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
 	Variable err
 	//call the function to do the math
 	//data from "type" will be scaled and deposited in ABS
-	err = Absolute_Scale(type,c0,c1,c2,c3,c4,c5)
+	err = V_Absolute_Scale(type,c0,c1,c2,c3,c4,c5)
 	
 	if(err)
 		Abort "Error in Absolute_Scale()"
@@ -923,7 +923,7 @@ Proc AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
 	SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
 	gCurDispType = Type	
 	
-	fRawWindowHook()
+	V_fRawWindowHook()
 	
 End
 
@@ -934,7 +934,7 @@ End
 //s_ is the standard
 //w_ is the "work" file
 //both are work files and should already be normalized to 10^8 monitor counts
-Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err)
+Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err)
 	String type
 	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err
 
@@ -1051,7 +1051,7 @@ End
 // -- the linear data
 //
 //
-Function Adjust_RAW_Attenuation(type)
+Function V_Adjust_RAW_Attenuation(type)
 	String type
 
 	DoAlert 0,"This has not yet been updated for VSANS"
@@ -1099,7 +1099,7 @@ End
 //unused testing procedure, may not be up-to-date with other procedures
 //check before re-implementing
 //
-Proc DIV_a_Workfile(type)
+Proc V_DIV_a_Workfile(type)
 	String type
 	Prompt type,"WORK data type",popup,"SAM;EMP;BGD;ADJ;"
 	
@@ -1127,7 +1127,7 @@ Proc DIV_a_Workfile(type)
 	//reset the current displaytype to "type"
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=Type
 	
-	UpdateDisplayInformation(type)
+	V_UpdateDisplayInformation(type)
 	
 End
 

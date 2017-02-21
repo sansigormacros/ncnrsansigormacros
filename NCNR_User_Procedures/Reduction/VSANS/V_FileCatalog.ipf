@@ -244,8 +244,8 @@ End
 
 //
 // TODO:
-// -- this is experimental...
-// -- what else to add to the menu?
+//  this is experimental...not been tested by any users yet
+// -- what else to add to the menu? (MSK and DIV now work)
 // -- add directly to WORK files?
 // -- "set" as some special file type, intent, use?
 // -- "check" the reduction protocol for completeness?
@@ -256,32 +256,30 @@ End
 Function V_CatTableHook(infoStr)
 	String infoStr
 	String event= StringByKey("EVENT",infoStr)
-//	print infoStr
 //	Print "EVENT= ",event
 	strswitch(event)
-//		case "mousedown":
 		case "mouseup":
 //			Variable xpix= NumberByKey("MOUSEX",infoStr)
 //			Variable ypix= NumberByKey("MOUSEY",infoStr)
 //			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
-			PopupContextualMenu "Load RAW;no;maybe;"
+			PopupContextualMenu "Load RAW;Load MSK;Load DIV;"
+			
+			WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
+			Variable err
 			strswitch(S_selection)
 				case "Load RAW":
-					// do something because "yes" was chosen
-					//print "yes"
-					WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
 					GetSelection table,CatVSANSTable,1
 //					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
 					Print "Loading " + FileNames[V_StartRow]
-					Variable err = V_LoadHDF5Data(FileNames[V_StartRow],"RAW")
+					err = V_LoadHDF5Data(FileNames[V_StartRow],"RAW")
 					if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
 						SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
 						String folder = StringFromList(0,hdfDF,".")
 						
 						// this (in SANS) just passes directly to fRawWindowHook()
-						Execute "UpdateDisplayInformation(\"RAW\")"		// plot the data in whatever folder type
+						Execute "V_UpdateDisplayInformation(\"RAW\")"		// plot the data in whatever folder type
 						
-						FakeRestorePanelsButtonClick()		//so the panels display correctly
+						V_FakeRestorePanelsButtonClick()		//so the panels display correctly
 						
 						// set the global to display ONLY if the load was called from here, not from the 
 						// other routines that load data (to read in values)
@@ -290,14 +288,26 @@ Function V_CatTableHook(infoStr)
 						
 					endif
 					break;
-				case "no":
-					print "no"
+					
+				case "Load MSK":
+					GetSelection table,CatVSANSTable,1
+//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+					Print "Loading " + FileNames[V_StartRow]
+					err = V_LoadHDF5Data(FileNames[V_StartRow],"MSK")
+					
 					break;
-				case "maybe":
-					// do something because "maybe" was chosen
+					
+				case "Load DIV":
+					GetSelection table,CatVSANSTable,1
+//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+					Print "Loading " + FileNames[V_StartRow]
+					err = V_LoadHDF5Data(FileNames[V_StartRow],"DIV")
+
 					break;
-			endswitch
-	endswitch
+					
+			endswitch		//popup selection
+	endswitch	// event
+	
 	return 0
 End
 
@@ -551,7 +561,7 @@ End
 
 
 // just to call the function to generate the panel
-Proc Catalog_Sort()
+Proc V_Catalog_Sort()
 	V_BuildCatSortPanel()
 End
 

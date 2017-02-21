@@ -32,7 +32,7 @@
 // -- make sure that the "type" input is correctly used for the updating of the data, values, etc.
 // -- add a procedure to define the global variables for pos, counts, QxQy, etc.
 //
-Proc UpdateDisplayInformation(type)
+Proc V_UpdateDisplayInformation(type)
 	String type 
 	
 	DoWindow/F VSANS_Data
@@ -50,16 +50,16 @@ Proc UpdateDisplayInformation(type)
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
 	
 	// fake a click on all three tabs - to populate the data
-	FakeTabClick(2)
-	FakeTabClick(1)
-	FakeTabClick(0)
+	V_FakeTabClick(2)
+	V_FakeTabClick(1)
+	V_FakeTabClick(0)
 
-	LogLinDisplayPref()		// resets the display depending on the preference state
+	V_LogLinDisplayPref()		// resets the display depending on the preference state
 	
 	// either clear the status, or fake a click
 //	root:Packages:NIST:VSANS:Globals:gStatusText = "status info box"
 
-	FakeStatusButtonClick()
+	V_FakeStatusButtonClick()
 
 	
 //	DoWindow/T VSANS_Data,type + " VSANS_Data"
@@ -71,7 +71,7 @@ Proc UpdateDisplayInformation(type)
 	
 end
 
-Function LogLinDisplayPref()
+Function V_LogLinDisplayPref()
 
 	// get the state of the log/lin button, and make sure preferences are obeyed
 	// log/lin current state is in the S_UserData string (0=linear, 1=log)
@@ -83,7 +83,7 @@ Function LogLinDisplayPref()
 	if(curState != gLogScalingAsDefault)
 		STRUCT WMButtonAction ba
 		ba.eventCode = 2		//fake mouse click
-		LogLinButtonProc(ba)
+		V_LogLinButtonProc(ba)
 	endif
 	
 	return(0)
@@ -150,36 +150,36 @@ Window VSANS_DataPanel() : Panel
 	ToolsGrid visible=1
 
 
-	TabControl tab0,pos={13,41},size={572,617},proc=VDataTabProc,tabLabel(0)="Front"
+	TabControl tab0,pos={13,41},size={572,617},proc=V_DataTabProc,tabLabel(0)="Front"
 	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2,focusRing=0
 
 // on the side	
-	Button button_status,pos={607,146},size={70,20},proc=StatusButtonProc,title="Status"
-	Button button_IvsQ,pos={689,113},size={70,20},proc=IvsQPanelButtonProc,title="I vs. Q"
-	Button button_file_m,pos={619,55},size={50,20},proc=File_minus_ButtonProc,title="File <"
-	Button button_file_p,pos={679,55},size={50,20},proc=File_plus_ButtonProc,title="File >"
-	Button button_log,pos={689,146},size={70,20},proc=LogLinButtonProc,title="isLin",userData="0"
-	Button button_tab_p,pos={648,81},size={50,20},proc=Tab_p_ButtonProc,title="Tab >"
-	Button button_isolate,pos={606,114},size={70,20},proc=IsolateButtonProc,title="Isolate"
-	Button button_toWork,pos={770,113},size={70,20},proc=ToWorkFileButtonProc,title="to WORK"
+	Button button_status,pos={607,146},size={70,20},proc=V_StatusButtonProc,title="Status"
+	Button button_IvsQ,pos={689,113},size={70,20},proc=V_IvsQPanelButtonProc,title="I vs. Q"
+	Button button_file_m,pos={619,55},size={50,20},proc=V_File_minus_ButtonProc,title="File <"
+	Button button_file_p,pos={679,55},size={50,20},proc=V_File_plus_ButtonProc,title="File >"
+	Button button_log,pos={689,146},size={70,20},proc=V_LogLinButtonProc,title="isLin",userData="0"
+	Button button_tab_p,pos={648,81},size={50,20},proc=V_Tab_p_ButtonProc,title="Tab >"
+	Button button_isolate,pos={606,114},size={70,20},proc=V_IsolateButtonProc,title="Isolate"
+	Button button_toWork,pos={770,113},size={70,20},proc=V_ToWorkFileButtonProc,title="to WORK"
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
 	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
-	Button button_tagFile,pos={603,412},size={70,20},proc=TagFileButtonProc,title="Tag File"
+	Button button_tagFile,pos={603,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 	Button button_tagFile,disable=2
-	Button button_saveIQ,pos={720,412},size={70,20},proc=SaveIQ_ButtonProc,title="Save I(Q)"
-	Button button_BeamCtr,pos={603,450},size={70,20},proc=BeamCtrButtonProc,title="Beam Ctr"
-	Button button_SpreadPanels,pos={603,488},size={100,20},proc=SpreadPanelButtonProc,title="Spread Panels"
-	Button button_RestorePanels,pos={603,526},size={100,20},proc=RestorePanelButtonProc,title="Restore Panels"
+	Button button_saveIQ,pos={720,412},size={70,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q)"
+	Button button_BeamCtr,pos={603,450},size={70,20},proc=V_BeamCtrButtonProc,title="Beam Ctr"
+	Button button_SpreadPanels,pos={603,488},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
+	Button button_RestorePanels,pos={603,526},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
 
 // on the tabs, always visible
 	TitleBox title_xy,pos={24,71},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
-	Slider slider_hi,pos={558,224},size={16,80},proc=HiMapSliderProc
+	Slider slider_hi,pos={558,224},size={16,80},proc=V_HiMapSliderProc
 	Slider slider_hi,limits={0,1,0},value= 1,ticks= 0
-	Slider slider_lo,pos={558,315},size={16,80},proc=LowMapSliderProc
+	Slider slider_lo,pos={558,315},size={16,80},proc=V_LowMapSliderProc
 	Slider slider_lo,limits={0,1,0},value= 0,ticks= 0
 
 	SetVariable xpos,pos={22,97},size={50,17},title="X "
@@ -444,7 +444,7 @@ End
 //  x- remove the dependency on VCALC being initialized first, and using dummy waves from there...
 //
 //
-Function VDataTabProc(tca) : TabControl
+Function V_DataTabProc(tca) : TabControl
 	STRUCT WMTabControlAction &tca
 
 	switch( tca.eventCode )
@@ -647,35 +647,35 @@ Function VDataTabProc(tca) : TabControl
 End
 
 // fake restore panels button click
-Function FakeRestorePanelsButtonClick()
+Function V_FakeRestorePanelsButtonClick()
 
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
-	RestorePanelButtonProc(ba)
+	V_RestorePanelButtonProc(ba)
 	
 	return(0)
 End
 
 
 // fake status button click
-Function FakeStatusButtonClick()
+Function V_FakeStatusButtonClick()
 
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
-	StatusButtonProc(ba)
+	V_StatusButtonProc(ba)
 	
 	return(0)
 End
 
 // fake click on each tab to populate the data
-Function FakeTabClick(tab)
+Function V_FakeTabClick(tab)
 	Variable tab
 	
 	STRUCT WMTabControlAction tca
 
 	tca.eventCode = 2		//fake mouse up
 	tca.tab = tab
-	VDataTabProc(tca)
+	V_DataTabProc(tca)
 	
 	TabControl tab0,win=VSANS_Data,value= tab		//select the proper tab
 	return(0)
@@ -685,7 +685,7 @@ End
 //
 // move one file number back
 //
-Function File_minus_ButtonProc(ba) : ButtonControl
+Function V_File_minus_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -705,7 +705,7 @@ End
 //
 // move one file number forward
 //
-Function File_plus_ButtonProc(ba) : ButtonControl
+Function V_File_plus_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -725,7 +725,7 @@ End
 // button that mimics a click on the tab, cycling through the tabs 0->1->2->0 etc.
 // only goes one direction
 //
-Function Tab_p_ButtonProc(ba) : ButtonControl
+Function V_Tab_p_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -737,12 +737,12 @@ Function Tab_p_ButtonProc(ba) : ButtonControl
 			if(V_Value == 3)
 				V_Value = 0		//reset to 0
 			endif
-			FakeTabClick(V_Value)
+			V_FakeTabClick(V_Value)
 
 // update the status when the tab is clicked			
 			STRUCT WMButtonAction sa
 			sa.eventCode = 2
-			StatusButtonProc(sa)
+			V_StatusButtonProc(sa)
 
 			break
 		case -1: // control being killed
@@ -761,7 +761,7 @@ End
 // (more to do here, depending what is necessary for instrument troubleshooting)
 // - like being able to turn corrections on/off and view with different axes (pix, mm, Q)
 //
-Function IsolateButtonProc(ba) : ButtonControl
+Function V_IsolateButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -783,14 +783,14 @@ End
 // -- better error checking
 // -- if the data type is not RAW, can I Copy Folder instead?
 //
-Function ToWorkFileButtonProc(ba) : ButtonControl
+Function V_ToWorkFileButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
 			//Convert_to_Workfile(newtype, doadd) // a proc
-			Execute "Convert_to_Workfile()"
+			Execute "V_Convert_to_Workfile()"
 
 			break
 		case -1: // control being killed
@@ -808,7 +808,7 @@ End
 //
 // -- currently just the graph, no controls
 // -- this re-bins the data every time by calling V_QBinAllPanels(folderStr)
-Function IvsQPanelButtonProc(ba) : ButtonControl
+Function V_IvsQPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -830,7 +830,7 @@ End
 // gets the status of the currently displayed file and dumps it to the panel (not the cmd window)
 // - lots to decide here about what is the important stuff to display. There's a lot more information for VSANS
 //
-Function StatusButtonProc(ba) : ButtonControl
+Function V_StatusButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -889,7 +889,7 @@ End
 //
 // toggle the (z) value of the display log/lin
 //
-Function LogLinButtonProc(ba) : ButtonControl
+Function V_LogLinButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -956,13 +956,13 @@ End
 // possibly function to "tag" files right here in the disaply with things
 // like their intent, or other values that reduction will need, kind of like a "quick patch"
 // with limited functionality (since full function would be a nightmare!) 
-Function TagFileButtonProc(ba) : ButtonControl
+Function V_TagFileButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0, "TagFileButtonProc(ba) unfinished - thes may be used to 'tag' a file as scatter, trans, emp, bkg, etc."
+			DoAlert 0, "TagFileButtonProc(ba) unfinished - this may be used to 'tag' a file as scatter, trans, emp, bkg, etc."
 			
 				
 			break
@@ -978,7 +978,7 @@ End
 // -- currently a straight concatentation of all data, no options
 // -- maybe allow save of single panels?
 // -- any other options?
-Function SaveIQ_ButtonProc(ba) : ButtonControl
+Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -999,7 +999,7 @@ End
 //
 //link this to the beam center finding panel
 //
-Function BeamCtrButtonProc(ba) : ButtonControl
+Function V_BeamCtrButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -1018,7 +1018,7 @@ End
 //
 // this "spreads" the display of panels to a nominal separation for easier viewing
 //
-Function SpreadPanelButtonProc(ba) : ButtonControl
+Function V_SpreadPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -1038,7 +1038,7 @@ End
 //
 // this "restores" the display of panels to their actual position based on the apparent beam center
 //
-Function RestorePanelButtonProc(ba) : ButtonControl
+Function V_RestorePanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -1060,7 +1060,7 @@ End
 //
 // -- see Buttons.ipf for the old SANS implementation
 //
-Function HiMapSliderProc(sa) : SliderControl
+Function V_HiMapSliderProc(sa) : SliderControl
 	STRUCT WMSliderAction &sa
 
 	switch( sa.eventCode )
@@ -1070,7 +1070,7 @@ Function HiMapSliderProc(sa) : SliderControl
 			if( sa.eventCode & 1 ) // value set
 				Variable curval = sa.curval
 				ControlInfo tab0
-				FakeTabClick(V_Value)
+				V_FakeTabClick(V_Value)
 				
 //				ControlInfo slider_lo
 //				V_MakeImageLookupTables(10000,V_Value,curval)
@@ -1087,7 +1087,7 @@ End
 //
 // -- see Buttons.ipf for the old SANS implementation
 //
-Function LowMapSliderProc(sa) : SliderControl
+Function V_LowMapSliderProc(sa) : SliderControl
 	STRUCT WMSliderAction &sa
 
 	switch( sa.eventCode )
@@ -1097,7 +1097,7 @@ Function LowMapSliderProc(sa) : SliderControl
 			if( sa.eventCode & 1 ) // value set
 				Variable curval = sa.curval
 				ControlInfo tab0
-				FakeTabClick(V_Value)
+				V_FakeTabClick(V_Value)
 
 //				ControlInfo slider_hi
 //				V_MakeImageLookupTables(10000,curval,V_Value)
