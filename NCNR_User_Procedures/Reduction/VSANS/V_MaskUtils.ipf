@@ -448,10 +448,11 @@ End
 // x- currently is hard-wired for the simulation path!   need to make it more generic, especially for RAW data
 //
 // -- need to adjust the size of the image subwindows to keep the model
-//    calculation from spillon over onto the table (maybe just move the table)
+//    calculation from spilling over onto the table (maybe just move the table)
 // -- need to do something for panel "B". currently ignored
 // -- currently the pixel sizes for "real" data is incorrect in the file
 //     and this is why the plots are incorrectly sized
+// -- error checking if the data does not exist in selected work folder
 //
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
@@ -765,7 +766,14 @@ Proc H_Setup_VSANS_MASK_Structure()
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
-			
+
+
+		// fake, empty folders so that the generic loaders can be used
+		NewDataFolder/O root:VSANS_MASK_file:entry:DAS_logs
+		NewDataFolder/O root:VSANS_MASK_file:entry:control
+		NewDataFolder/O root:VSANS_MASK_file:entry:reduction
+		NewDataFolder/O root:VSANS_MASK_file:entry:sample
+		NewDataFolder/O root:VSANS_MASK_file:entry:user			
 	SetDataFolder root:
 
 End
@@ -777,7 +785,7 @@ End
 Function V_GenerateDefaultMask()
 
 	NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry	
-		Make/O/T/N=1	title	= "This is a fake MASK file for VSANS"
+		Make/O/T/N=1	title	= "This is a MASK file for VSANS: VSANS_MASK"
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"

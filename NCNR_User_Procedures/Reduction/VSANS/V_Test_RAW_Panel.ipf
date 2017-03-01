@@ -32,7 +32,7 @@
 // -- make sure that the "type" input is correctly used for the updating of the data, values, etc.
 // -- add a procedure to define the global variables for pos, counts, QxQy, etc.
 //
-Proc V_UpdateDisplayInformation(type)
+Function V_UpdateDisplayInformation(type)
 	String type 
 	
 	DoWindow/F VSANS_Data
@@ -41,7 +41,7 @@ Proc V_UpdateDisplayInformation(type)
 	
 		VSANSDataPanelGlobals()
 		
-		VSANS_DataPanel()		//draws the panel
+		Execute "VSANS_DataPanel()"		//draws the panel
 
 	endif
 	
@@ -60,6 +60,8 @@ Proc V_UpdateDisplayInformation(type)
 //	root:Packages:NIST:VSANS:Globals:gStatusText = "status info box"
 
 	V_FakeStatusButtonClick()
+
+	V_FakeRestorePanelsButtonClick()		//so the panels display correctly
 
 	
 //	DoWindow/T VSANS_Data,type + " VSANS_Data"

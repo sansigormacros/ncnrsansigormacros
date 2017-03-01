@@ -26,9 +26,9 @@ Menu "VSANS"
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 	End
 	Submenu "Work Files"
-		"Convert to WORK",Convert_to_Workfile()
+		"Convert to WORK",V_Convert_to_Workfile()
 		"Load Fake DIV Data"
-		"DIV a work file",DIV_a_Workfile()
+		"DIV a work file",V_DIV_a_Workfile()
 		"Load Fake MASK Data"
 		"Correct Data",V_CorrectData()
 	End

@@ -277,10 +277,8 @@ Function V_CatTableHook(infoStr)
 						String folder = StringFromList(0,hdfDF,".")
 						
 						// this (in SANS) just passes directly to fRawWindowHook()
-						Execute "V_UpdateDisplayInformation(\"RAW\")"		// plot the data in whatever folder type
-						
-						V_FakeRestorePanelsButtonClick()		//so the panels display correctly
-						
+						V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+												
 						// set the global to display ONLY if the load was called from here, not from the 
 						// other routines that load data (to read in values)
 						SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile

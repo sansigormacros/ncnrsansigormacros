@@ -459,9 +459,8 @@ Function V_LoadPlotAndDisplayRAW(increment)
 		String folder = StringFromList(0,hdfDF,".")
 		
 		// this (in SANS) just passes directly to fRawWindowHook()
-		Execute "V_UpdateDisplayInformation(\"RAW\")"	// plot the data in whatever folder type
+		V_UpdateDisplayInformation("RAW")	// plot the data in whatever folder type
 		
-		V_FakeRestorePanelsButtonClick()		//so the panels display correctly
 		// set the global to display ONLY if the load was called from here, not from the 
 		// other routines that load data (to read in values)
 		SVAR gLastLoad = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
@@ -858,6 +857,49 @@ Function/S V_GetRawDataFileList()
 
 	//method (2)			
 			if( stringmatch(item,"*.nxs.ngv*") )
+				newlist += item + ";"
+			endif
+
+			
+		endif
+		//print "ii=",ii
+	endfor
+	newList = SortList(newList,";",0)
+	return(newList)
+End
+
+//
+// TODO:
+// -- does this need to be more sophisticated?
+//
+// simple "not" of V_GetRawDataFileList()
+Function/S V_Get_NotRawDataFileList()
+	
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use Pick Path button on Main Panel"
+	Endif
+	String path = S_Path
+	
+	String list=IndexedFile(catPathName,-1,"????")
+	String newList="",item="",validName="",fullName=""
+	Variable num=ItemsInList(list,";"),ii
+	
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+
+		validName = V_FindValidFileName(item)
+		if(strlen(validName) != 0)		//non-null return from FindValidFileName()
+			fullName = path + validName		
+
+	//method (1)			
+//			if(V_CheckIfRawData(item))
+//				newlist += item + ";"
+//			endif
+
+	//method (2)			
+			if( !stringmatch(item,"*.nxs.ngv*") )
 				newlist += item + ";"
 			endif
 

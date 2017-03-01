@@ -647,7 +647,6 @@ Proc VC_Initialize_Space()
 	NewDataFolder/O root:Packages:NIST:VSANS
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
-	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_MB

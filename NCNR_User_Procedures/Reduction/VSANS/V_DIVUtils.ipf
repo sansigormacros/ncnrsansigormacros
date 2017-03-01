@@ -79,7 +79,7 @@ Proc H_Setup_VSANS_DIV_Structure()
 	NewDataFolder/O/S root:VSANS_DIV_file		
 
 	NewDataFolder/O/S root:VSANS_DIV_file:entry	
-		Make/O/T/N=1	title	= "This is a fake DIV file for VSANS"
+		Make/O/T/N=1	title	= "This is a DIV file for VSANS: VSANS_DIV"
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
@@ -87,10 +87,14 @@ Proc H_Setup_VSANS_DIV_Structure()
 			Make/O/D/N=(150,150)	data	= 1 + (enoise(0.1))
 			Make/O/D/N=(150,150)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
-			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	data
+			data[][0] = 1+enoise(0.1)
+			data[][] = data[p][0]
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_ML		
-			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	data
+			data[][0] = 1+enoise(0.1)
+			data[][] = data[p][0]
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MT		
 			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
@@ -99,10 +103,14 @@ Proc H_Setup_VSANS_DIV_Structure()
 			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
 			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FR		
-			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	data
+			data[][0] = 1+enoise(0.1)
+			data[][] = data[p][0]
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FL		
-			Make/O/D/N=(48,128)	data	= 1 + (enoise(0.1))
+			Make/O/D/N=(48,128)	data
+			data[][0] = 1+enoise(0.1)
+			data[][] = data[p][0]
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01*abs(gnoise(1))
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FT		
 			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
@@ -110,6 +118,14 @@ Proc H_Setup_VSANS_DIV_Structure()
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_FB		
 			Make/O/D/N=(128,48)	data	= 1 + (enoise(0.1))
 			Make/O/D/N=(128,48)	linear_data_error	= 0.01*abs(gnoise(1))
+		
+		// fake, empty folders so that the generic loaders can be used
+		NewDataFolder/O root:VSANS_DIV_file:entry:DAS_logs
+		NewDataFolder/O root:VSANS_DIV_file:entry:control
+		NewDataFolder/O root:VSANS_DIV_file:entry:reduction
+		NewDataFolder/O root:VSANS_DIV_file:entry:sample
+		NewDataFolder/O root:VSANS_DIV_file:entry:user
+
 			
 	SetDataFolder root:
 

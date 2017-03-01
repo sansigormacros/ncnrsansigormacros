@@ -42,6 +42,9 @@
 Function V_DetectorIsolate()
 	DoWindow/F IsolateDetector
 	if(V_flag==0)
+	
+		Execute "VC_Initialize_Space()"		// initializes VCALC space, so that dummy values are present for MSK and DIV
+	
 		Execute "V_IsolateDetectorPanel()"
 	endif
 End
@@ -63,7 +66,7 @@ Proc V_IsolateDetectorPanel() : Panel
 //	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
 //	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
 	PopupMenu popup_2,pos={20,18},size={109,20},title="Data Source",proc=V_SetFldrPopMenuProc
-	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;VCALC;\""
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;DIV;MSK;\""
 		
 	Button button_0,pos={541,79},size={130,20},proc=V_isoCorrectButtonProc,title="Apply Corrections"
 //	Button button_1,pos={651,79},size={80,20},proc=V_isoDetFitGuessButtonProc,title="Guess"
@@ -158,13 +161,17 @@ End
 //     need to make it more generic, especially for RAW data
 //
 // -- need to adjust the size of the image subwindows to keep the model
-//    calculation from spillon over onto the table (maybe just move the table)
+//    calculation from spilling over onto the table (maybe just move the table)
 // -- need to do something for panel "B". currently ignored
 // -- currently the pixel sizes for "real" data is incorrect in the file
 //     and this is why the plots are incorrectly sized
+// -- need to be able to display MASK and DIV data (or any data without a full set of metadata)
+//
 //
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
+//
+// str input is the panelStr ("FL" for example)
 Function V_isoDrawDetPanel(str)
 	String str
 	
@@ -194,31 +201,51 @@ Function V_isoDrawDetPanel(str)
 	ControlInfo popup_2
 	folder = S_Value
 
+	Variable VC_nPix_X,VC_nPix_Y,VC_pixSize_X,VC_pixSize_Y
 	// TODO -- fix all of this mess
-	if(cmpstr(folder,"VCALC") == 0)
-		// panel-specific values
-		Variable VC_nPix_X = VCALC_get_nPix_X(str)
-		Variable VC_nPix_Y = VCALC_get_nPix_Y(str)
-		Variable VC_pixSize_X = VCALC_getPixSizeX(str)
-		Variable VC_pixSize_Y = VCALC_getPixSizeY(str)
-
+	strswitch(folder)
+		case "VCALC":
+//			VC_nPix_X = VCALC_get_nPix_X(str)
+//			VC_nPix_Y = VCALC_get_nPix_Y(str)
+//			VC_pixSize_X = VCALC_getPixSizeX(str)
+//			VC_pixSize_Y = VCALC_getPixSizeY(str)
+//			wave dispW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
+//			nPix_X = VC_nPix_X
+//			nPix_Y = VC_nPix_Y
+//			pixSize_X = VC_pixSize_X
+//			pixSize_Y = VC_pixSize_Y
 	
-	// if VCALC declare this way	
-		wave dispW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
-		nPix_X = VC_nPix_X
-		nPix_Y = VC_nPix_Y
-		pixSize_X = VC_pixSize_X
-		pixSize_Y = VC_pixSize_Y
-	
-	else
-	// TODO: if real data, need new declaration w/ data as the wave name
-		wave dispW = $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str+":data")
+			break
+			
+		case "DIV":
+		case "MSK":
+		// TODO
+		// -- this takes fake data from VCALC, which is very likely wrong for DIV data
+			VC_nPix_X = VCALC_get_nPix_X(str)
+			VC_nPix_Y = VCALC_get_nPix_Y(str)
+			VC_pixSize_X = VCALC_getPixSizeX(str)
+			VC_pixSize_Y = VCALC_getPixSizeY(str)
+			wave dispW = $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str+":data")
+			nPix_X = VC_nPix_X
+			nPix_Y = VC_nPix_Y
+			pixSize_X = VC_pixSize_X
+			pixSize_Y = VC_pixSize_Y
+			break
 
-		nPix_X = V_getDet_pixel_num_x(folder,str)
-		nPix_Y = V_getDet_pixel_num_Y(folder,str)
-		pixSize_X = V_getDet_x_pixel_size(folder,str)/10
-		pixSize_Y = V_getDet_y_pixel_size(folder,str)/10
-	endif
+		case "RAW":
+		case "ADJ":
+			wave dispW = $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str+":data")
+	
+			nPix_X = V_getDet_pixel_num_x(folder,str)
+			nPix_Y = V_getDet_pixel_num_Y(folder,str)
+			pixSize_X = V_getDet_x_pixel_size(folder,str)/10
+			pixSize_Y = V_getDet_y_pixel_size(folder,str)/10
+			break
+				
+		default:
+			return(0)
+	endswitch
+
 
 	// and the ADJusted wave to display	
 	wave corrW = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+str+":data")
