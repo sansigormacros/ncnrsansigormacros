@@ -1587,6 +1587,8 @@ Proc V_DeadtimePatchPanel() : Panel
 	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadDTButtonProc,title="Read"
 	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteDTButtonProc,title="Write"
 	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfDTButton,title="Perfect Dead Time"
+	Button button0_3,pos={18.00,370.00},size={140.00,20.00},proc=V_LoadCSVDTButton,title="Load Dead Time CSV"
+	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVDTButton,title="Write Dead Time CSV"
 	
 	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
 	SetVariable setvar0,value= K0
@@ -1604,6 +1606,73 @@ Proc V_DeadtimePatchPanel() : Panel
 	
 EndMacro
 
+
+Function V_LoadCSVDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//TODO
+// -- currently this skips detector "B", since its dead time is not like the tubes
+// -- fails miserably if the deadtime_** waves don't exist
+// -- the writing may take a long time. Warn the user.
+// -- if the data files are not "cleaned up", re-reading will pick up the rawVSANS copy and it
+//    will look like nothing was written
+//
+// writes the entire content of the CSV file (all 8 panels) to each detector entry in each data file
+// as specified by the run number range
+//
+Function V_WriteCSVDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+			
+			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave tmpW = $("root:deadtime_"+detStr)
+				deadTimeW = tmpW
+				V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
+			endfor
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2str(ii))
+	endfor
+	return 0
+End
 
 
 Function V_GeneratePerfDTButton(ba) : ButtonControl
@@ -1821,6 +1890,8 @@ Proc V_CalibrationPatchPanel() : Panel
 	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadCalibButtonProc,title="Read"
 	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteCalibButtonProc,title="Write"
 	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfCalibButton,title="Perfect Calibration"
+	Button button0_3,pos={18.00,370.00},size={140.00,20.00},proc=V_LoadCSVCalibButton,title="Load Calibration CSV"
+	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVCalibButton,title="Write Calibration CSV"
 		
 	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
 	SetVariable setvar0,value= K0
@@ -1839,6 +1910,78 @@ Proc V_CalibrationPatchPanel() : Panel
 
 	
 EndMacro
+
+
+Function V_LoadCSVCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//TODO
+// -- currently this skips detector "B", since its calibration is not like the tubes
+// -- fails miserably if the a,b,c_** waves don't exist
+// -- the writing may take a long time. Warn the user.
+// -- if the data files are not "cleaned up", re-reading will pick up the rawVSANS copy and it
+//    will look like nothing was written
+//
+// writes the entire content of the CSV file (all 8 panels) to each detector entry in each data file
+// as specified by the run number range
+//
+Function V_WriteCSVCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			WAVE calibrationWave = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+			
+			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave tmp_a = $("root:a_"+detStr)
+				Wave tmp_b = $("root:b_"+detStr)
+				Wave tmp_c = $("root:c_"+detStr)
+				calibrationWave[0][] = tmp_a[q]
+				calibrationWave[1][] = tmp_b[q]
+				calibrationWave[2][] = tmp_c[q]
+				V_fPatchDetectorCalibration(lo,hi,detStr,calibrationWave)
+			endfor
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2str(ii))
+	endfor
+	return 0
+End
 
 
 

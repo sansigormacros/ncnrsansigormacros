@@ -328,6 +328,7 @@ Function VSANSDataHook(s)
 				activeSubwindow = "VSANS_Data#det_panelsB"
 			endif
 			
+			
 			// which images are here?
 			String detStr="",imStr,carriageStr
 			String currentImageRef
@@ -348,8 +349,10 @@ Function VSANSDataHook(s)
 				
 				// which, if any image is the mouse xy location on?
 				// use a multidemensional equivalent to x2pnt: (ScaledDimPos - DimOffset(waveName, dim))/DimDelta(waveName,dim)
-				testX = trunc( (xloc - DimOffset(w,0))/DimDelta(w,0) )
-				testY = trunc( (yloc - DimOffset(w,1))/DimDelta(w,1) )
+
+				
+				testX = ScaleToIndex(w,xloc,0)
+				testY = ScaleToIndex(w,yloc,1)
 				
 				if( (testX > 0 && testX < DimSize(w,0)) && (testY > 0 && testY < DimSize(w,1)) )
 					// we're in-bounds on this wave
@@ -389,7 +392,7 @@ Function VSANSDataHook(s)
 					yctr = V_getDet_beam_center_y_mm(gCurDispType,detStr)	
 					
 					sdd = V_getDet_ActualDistance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
-					lam = V_getVSWavelength(gCurDispType)		//A
+					lam = V_getWavelength(gCurDispType)		//A
 //					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //
@@ -408,6 +411,12 @@ Function VSANSDataHook(s)
 					gQY = V_CalcQY(testX,testY,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
 
 					ii = -1		//look no further, set ii to bad value to exit the for loop
+					
+					// TODO
+					// -- remove this - it sets the globals to display to the pixel values, unscaled
+//					xloc = testX
+//					yloc = testY
+					
 				endif	//end if(mouse is over a detector panel)
 			endfor		// end loop over list of displayed images
 		

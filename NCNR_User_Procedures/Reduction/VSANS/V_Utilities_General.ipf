@@ -116,7 +116,7 @@ end
 
 // TODO:
 // x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
-//    it still thinks there are (1) item there.
+//    it still thinks there is (1) item there.
 // -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
 //    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
@@ -221,7 +221,7 @@ End
 
 // TODO:
 // x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
-//    it still thinks there are (1) item there.
+//    it still thinks there is (1) item there.
 // -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
 //    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
