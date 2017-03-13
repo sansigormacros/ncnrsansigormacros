@@ -818,7 +818,7 @@ End
 // ? controls here to select how the data is processed/grouped/saved, etc.
 //
 // -- currently just the graph, no controls
-// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr)
+// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType)
 Function V_IvsQPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -826,7 +826,7 @@ Function V_IvsQPanelButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			V_PlotData_Panel()
+			V_PlotData_Panel(-9999)		//-9999 requests a read from the popup on the panel
 			
 			break
 		case -1: // control being killed
@@ -996,7 +996,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 
-			Execute "V_Combine1DData()"			
+			V_SimpleSave1DData("","")		
 				
 			break
 		case -1: // control being killed

@@ -30,25 +30,25 @@
 //
 
 
-Function V_QBinAllPanels(folderStr)
+Function V_QBinAllPanels(folderStr,binType)
 	String folderStr
+	Variable binType
 
 	// do the back, middle, and front separately
 	
 //	figure out the binning type (where is it set?)
-	Variable binType,ii,delQ
+	Variable ii,delQ
 	String detStr
 
-	binType = V_GetBinningPopMode()
+//	binType = V_GetBinningPopMode()
 
 //// TODO:
-// x- currently the "B" detector is skipped - it was skipped in 
-//       previous functions where q values are calculated	
+//
 //	
 	delQ = SetDeltaQ(folderStr,"B")
 	
 	// dispatch based on binning type
-	if(binType == 1)
+	if(binType == 1 || binType == 2 || binType == 3)
 		VC_fDoBinning_QxQy2D(folderStr, "B")		//normal binning, nothing to combine
 	endif
 
@@ -98,19 +98,24 @@ Function V_QBinAllPanels(folderStr)
 	return(0)
 End
 
-
-
-
-Proc V_Combine1DData()
-
-// get the current display type
-	String type = root:Packages:NIST:VSANS:Globals:gCurDispType
-
+// concatenates and sorts the 1D data in "type" WORK folder
+// uses the current display if type==""
+//
+Function V_ConcatenateForSave(type,binType)
+	String type
+	Variable binType
+	
+// get the current display type, if null string passed in
+	SVAR curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
+	
+	if(strlen(type)==0)
+		type = curType
+	endif
 
 // trim the data if needed
 	// remove the q=0 point from the back detector, if it's there
+	// does not need to know binType
 	V_RemoveQ0_B(type)
-
 
 // concatenate the data sets
 // TODO x- figure out which binning was used (this is done in V_1DConcatenate())
@@ -118,21 +123,43 @@ Proc V_Combine1DData()
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 	Killwaves/Z tmp_q,tmp_i,tmp_s
 	setDataFolder root:
-	V_1DConcatenate(type)
+	V_1DConcatenate(type,binType)
 	
 // sort the data set
 	V_TmpSort1D(type)
 	
+	return(0)
+End
+
+//
+// this is only called from the button on the data panel
+// so the type is the currently displayed type, and the binning is from the panel
+//
+Function V_SimpleSave1DData(type,saveName)
+	String type,saveName
+
+// 
+// get the current display type, if null string passed in
+	SVAR curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
+	Variable binType = V_GetBinningPopMode()
+	
+	V_ConcatenateForSave(curType,binType)
+	
 // write out the data set to a file
-	String/G saveName=""
-	V_GetNameForSave("")
+	if(strlen(saveName)==0)
+		Execute "V_GetNameForSave()"
+		SVAR newName = root:saveName
+		saveName = newName
+	endif
+	
 	V_Write1DData(type,saveName)
 
 End
 
+
 Proc V_GetNameForSave(str)
 	String str
-	String/G saveName=str
+	String/G root:saveName=str
 End
 
 
@@ -179,11 +206,16 @@ end
 // binType = 3 = four
 // binType = 4 = Slit Mode
 //
-Function V_1DConcatenate(folderStr)
+// if binType is passed in as -9999, get the binning mode from the popup
+// otherwise the value is assumed good (from a protocol)
+//
+Function V_1DConcatenate(folderStr,binType)
 	String folderStr
+	Variable binType
 	
-	Variable binType = V_GetBinningPopMode()
-	
+	if(binType==-9999)
+		binType = V_GetBinningPopMode()
+	endif	
 	
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 

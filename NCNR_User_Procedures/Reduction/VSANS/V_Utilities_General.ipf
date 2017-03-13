@@ -470,7 +470,7 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	// TODO
 	// -- update the 1D plotting as needed. these are SANS calls (OK for now, but will need to be better)
 	//do the average and plot (either the default, or what is on the panel currently)
-	V_PlotData_Panel()
+	V_PlotData_Panel(-9999)		// read the binType from the panel
 	
 
 	return(0)
@@ -580,21 +580,37 @@ End
 // - but are the V_get() functions OK with getting a full path, and what do they
 //  do when they fail? I don't want them to spit up another open file dialog
 //
+// -- problem -- if "sans1234.abs" is passed, then V_getStringFromHDF5(fname,path,num)
+//  will remove the extension and look for the sans1234 folder -- which may or may not be present.
+//  If it is present, then sans1234 validates as RAW data -- which is incorrect!
+// -- so I need a way to exclude everything that does not have the proper extension...
+//
+//
 Function V_CheckIfRawData(fname)
 	String fname
 	
-	Variable refnum,totalBytes
 	String testStr=""
-	
-	testStr = V_getInstrumentName(fname)
 
-	if(cmpstr(testStr,"NG3-VSANS") == 0)
-		//testStr exists, ASSUMING it's a raw VSANS data file
-		Return(1)
+// check for the proper raw data extension
+	if( stringmatch(fname,"*.nxs.ngv*") )
+		// name appears OK, proceed
+		testStr = V_getInstrumentName(fname)
+
+		if(cmpstr(testStr,"NG3-VSANS") == 0)
+			//testStr exists, ASSUMING it's a raw VSANS data file
+			Return(1)
+		else
+			//some other file
+			Return(0)
+		Endif
+	
 	else
-		//some other file
-		Return(0)
-	Endif
+		// not a proper raw VSANS file name
+		return(0)
+		
+	endif	
+	
+
 End
 
 // TODO -- need to fill in correctly by determining this from the INTENT field
@@ -889,14 +905,9 @@ Function/S V_Get_NotRawDataFileList()
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list  ,";")
 
-		validName = V_FindValidFileName(item)
-		if(strlen(validName) != 0)		//non-null return from FindValidFileName()
-			fullName = path + validName		
-
-	//method (1)			
-//			if(V_CheckIfRawData(item))
-//				newlist += item + ";"
-//			endif
+//		validName = V_FindValidFileName(item)
+//		if(strlen(validName) != 0)		//non-null return from FindValidFileName()
+//			fullName = path + validName		
 
 	//method (2)			
 			if( !stringmatch(item,"*.nxs.ngv*") )
@@ -904,7 +915,7 @@ Function/S V_Get_NotRawDataFileList()
 			endif
 
 			
-		endif
+//		endif
 		//print "ii=",ii
 	endfor
 	newList = SortList(newList,";",0)

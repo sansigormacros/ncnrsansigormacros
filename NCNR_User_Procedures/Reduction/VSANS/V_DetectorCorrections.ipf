@@ -890,9 +890,9 @@ end
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
 //test procedure, not called anymore
-Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
+Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5,I_err)
 	String type
-	Variable c0=1,c1=0.1,c2=0.95,c3=0.1,c4=1,c5=32.0
+	Variable c0=1,c1=0.1,c2=0.95,c3=0.1,c4=1,c5=32.0,I_err=0.32
 	Prompt type,"WORK data type",popup,"CAL;COR;SAM"
 	Prompt c0, "Sample Transmission"
 	Prompt c1, "Sample Thickness (cm)"
@@ -900,37 +900,35 @@ Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
 	Prompt c3, "Standard Thickness (cm)"
 	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"
 	Prompt c5, "Standard Cross-Section (cm-1)"
+	Prompt I_err, "error in I(q=0) (one std dev)"
 
 	Variable err
 	//call the function to do the math
 	//data from "type" will be scaled and deposited in ABS
-	err = V_Absolute_Scale(type,c0,c1,c2,c3,c4,c5)
+	err = V_Absolute_Scale(type,c0,c1,c2,c3,c4,c5,I_err)
 	
 	if(err)
-		Abort "Error in Absolute_Scale()"
+		Abort "Error in V_Absolute_Scale()"
 	endif
 	
 	//contents are always dumped to ABS
 	type = "ABS"
-	
-	String newTitle = "WORK_"+type
-	DoWindow/F SANS_Data
-	DoWindow/T SANS_Data, newTitle
-	KillStrings/Z newTitle
 	
 	//need to update the display with "data" from the correct dataFolder
 	//reset the current display type to "type"
 	SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
 	gCurDispType = Type	
 	
-	V_fRawWindowHook()
+	V_UpdateDisplayInformation(Type)
 	
 End
 
 //
 // TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
+// kappa comes in as s_izero, so be sure to use 1/kappa_err
+//
+//convert the "type" data to absolute scale using the given standard information
 //s_ is the standard
 //w_ is the "work" file
 //both are work files and should already be normalized to 10^8 monitor counts
@@ -938,58 +936,23 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 	String type
 	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err
 
-	DoAlert 0,"This has not yet been updated for VSANS"
-		
-	//convert the "type" data to absolute scale using the given standard information
-	//copying the "type" waves to ABS
-	
-	//check for existence of data, rescale to linear if needed
-	String destPath
-	//check for "type"
-	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
-		Print "There is no work file in "+type+"--Aborting"
-		Return(1) 		//error condition
-	Endif
-	//check for log-scaling of the "type" data and adjust if necessary
-	destPath = "root:Packages:NIST:"+Type
-	NVAR gIsLogScale = $(destPath + ":gIsLogScale")
-	if(gIsLogScale)
-		Duplicate/O $(destPath + ":linear_data") $(destPath + ":data")//back to linear scale
-		Variable/G $(destPath + ":gIsLogScale")=0	//the "type" data is not logscale anymore
-	endif
-	
-	//copy "oldtype" information to ABS
-	//overwriting out the old contents of the ABS folder (/O option in Duplicate)
-	//copy over the waves data,vlegend,text,integers,reals(read)
 
-	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is 
-	//copy from current dir (type) to ABS, defined by destPath
-	Duplicate/O $(oldType + ":data"),$"root:Packages:NIST:ABS:data"
-	Duplicate/O $(oldType + ":linear_data"),$"root:Packages:NIST:ABS:linear_data"
-	Duplicate/O $(oldType + ":linear_data_error"),$"root:Packages:NIST:ABS:linear_data_error"
-//	Duplicate/O $(oldType + ":vlegend"),$"root:Packages:NIST:ABS:vlegend"
-	Duplicate/O $(oldType + ":textread"),$"root:Packages:NIST:ABS:textread"
-	Duplicate/O $(oldType + ":integersread"),$"root:Packages:NIST:ABS:integersread"
-	Duplicate/O $(oldType + ":realsread"),$"root:Packages:NIST:ABS:realsread"
-	//need to save a copy of filelist string too (from the current type folder)
-	SVAR oldFileList = $(oldType + ":fileList")
-	//need to copy filelist string too
-	String/G $"root:Packages:NIST:ABS:fileList" = oldFileList
-	
-	//now switch to ABS folder
-	//make appropriate wave references
-	WAVE data=$"root:Packages:NIST:ABS:linear_data"					// these wave references point to the "type" data in ABS
-	WAVE data_err=$"root:Packages:NIST:ABS:linear_data_error"					// these wave references point to the "type" data in ABS
-	WAVE data_copy=$"root:Packages:NIST:ABS:data"					// just for display
-	WAVE/T textread=$"root:Packages:NIST:ABS:textread"			//that are to be directly operated on
-	WAVE integersread=$"root:Packages:NIST:ABS:integersread"
-	WAVE realsread=$"root:Packages:NIST:ABS:realsread"
-	Variable/G $"root:Packages:NIST:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
-	
-	//do the actual absolute scaling here, modifying the data in ABS
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
+	Variable scale,trans_err
+	Variable err,ii
+	String detStr
 	
-	w_moncount = realsread[0]		//monitor count in "type"
+	// be sure that the starting data exists
+	err = V_WorkDataExists(type)
+	if(err==1)
+		return(err)
+	endif
+		
+	//copy from current dir (type) to ABS
+	V_CopyHDFToWorkFolder(type,"ABS")	
+
+	
+	w_moncount = V_getMonitorCount(type)		//monitor count in "type"
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
@@ -997,37 +960,30 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 	Endif
 	
 	//calculate scale factor
-	Variable scale,trans_err
-	s1 = defmon/realsread[0]		//[0] is monitor count (s1 should be 1)
+	s1 = defmon/w_moncount		// monitor count (s1 should be 1)
 	s2 = s_thick/w_thick
 	s3 = s_trans/w_trans
 	s4 = s_cross/s_izero
+	scale = s1*s2*s3*s4
+
+	trans_err = V_getSampleTransError(type)	
 	
 	// kappa comes in as s_izero, so be sure to use 1/kappa_err
-	
-	data *= s1*s2*s3*s4
-	
-	scale = s1*s2*s3*s4
-	trans_err = realsRead[41]
-	
-//	print scale
-//	print data[0][0]
-	
-	data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
 
-//	print data_err[0][0]
-	
-// keep "data" in sync with linear_data	
-	data_copy = data
+	// and now loop through all of the detectors
+	//do the actual absolute scaling here, modifying the data in ABS
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave data = V_getDetectorDataW("ABS",detStr)
+		Wave data_err = V_getDetectorDataErrW("ABS",detStr)
+		
+		data *= s1*s2*s3*s4
+		data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
+	endfor
 	
 	//********* 15APR02
-	// DO NOt correct for atenuators here - the COR step already does this, putting all of the data one equal
+	// DO NOT correct for atenuators here - the COR step already does this, putting all of the data one equal
 	// footing (zero atten) before doing the subtraction.
-	//
-	//Print "ABS data multiplied by  ",s1*s2*s3*s4/attenFactor
-	
-	//update the ABS header information
-	textread[1] = date() + " " + time()		//date + time stamp
 	
 	Return (0) //no error
 End

@@ -4,7 +4,7 @@
 
 
 //
-// functions to plot the averaged data in various views.
+// functions to plot the averaged data in various views and binning types
 //
 
 
@@ -19,7 +19,15 @@
 // -- automatically position the window next to the 2D data
 // -- color coding of the different panels (data tags/arrows/toggle on/off)?
 // -- VERIFY accuracy
+//
 // -- decide what to add to the control bar
+// ()()() In SANS, there are only 3 waves (q-i-s) and these are copied over to the plot1D folder, and the copy
+//    of the data is plotted, not the data in the WORK folder. Then for rescaling, a "fresh" copy of the data is
+//    fetched, and then rescaled. The plot automatically reflects these changes.
+//  --- for VSANS, this is much more difficult since there are multiple possibilites of 1D data, depending on the
+//     binning chosen. Currently, the data is plotted directly from the WORK folder, so this would need to be changed
+//     at the start, then deciding which waves to copy over. Messy. Very Messy. For now, simply toggle log/lin
+//
 // -- at the very least, add a log/lin toggle for the axes
 //
 // -- document, document, document
@@ -29,60 +37,339 @@
 // -- when/if I want to add phi-averaging to this, go gack to AvgGraphics.ipf for the pink panel
 //    and to the function Draw_Plot1D() for the drawing of the plot
 //
-Function V_PlotData_Panel()
-
+// If -9999 is passed in as the "binType", then read the proper value from the popup on the graph.
+//  otherwise, assume that a proper value has been passed in, say from the reduction protocol
+//
+Function V_PlotData_Panel(binType)
+	Variable binType
 
 	DoWindow/F V_1D_Data
 	if(V_flag==0)
 	
+//		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Plot_1D
+//		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gYMode = 1
+//		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gXMode = 1
+//		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gExpA = 1
+//		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gExpB = 1
+//		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gExpC = 1
+		
+		
 		Display /W=(277,526,748,938)/N=V_1D_Data/K=1
-//		Display /W=(476,96,850,429)/N=V_1D_Data/K=1
+
 		ControlBar 70
 		
 		PopupMenu popup0,pos={16,5},size={71,20},title="Bin Type"
 		PopupMenu popup0,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
 		PopupMenu popup0,value= "One;Two;Four;Slit Mode;"
 		PopupMenu popup0,mode=1,proc=V_BinningModePopup
-//		PopupMenu ymodel,pos={16,5},size={71,20},title="y-axis"
+		
+		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
+		CheckBox check0,value= 1
+	
+//		PopupMenu ymodel,pos={150,5},size={71,20},title="y-axis"
 //		PopupMenu ymodel,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
 //		PopupMenu ymodel,value= #"\"I;log(I);ln(I);1/I;I^a;Iq^a;I^a q^b;1/sqrt(I);ln(Iq);ln(Iq^2)\""
-//		PopupMenu ymodel,mode=NumVarOrDefault("root:myGlobals:Plot_1d:gYMode", 1 ),proc=YMode_PopMenuProc
-//		PopupMenu xmodel,pos={150,5},size={74,20},title="x-axis"
+//		PopupMenu ymodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gYMode", 1 ),proc=V_YMode_PopMenuProc
+//		PopupMenu xmodel,pos={220,5},size={74,20},title="x-axis"
 //		PopupMenu xmodel,help={"This popup selects how the x-axis will be linearized given the chosen data"}
 //		PopupMenu xmodel,value= #"\"q;log(q);q^2;q^c\""
-//		PopupMenu xmodel,mode=NumVarOrDefault("root:myGlobals:Plot_1d:gXMode", 1 ),proc=XMode_PopMenuProc
-//		Button Rescale,pos={281,4},size={70,20},proc=Rescale_Plot_1D_ButtonProc,title="Rescale"
-//		Button Rescale,help={"Rescale the x and y-axes of the data"},disable=1
-
-//		SetVariable expa,pos={28,28},size={80,15},title="pow \"a\""
-//		SetVariable expa,help={"This sets the exponent \"a\" for some y-axis formats. The value is ignored if the model does not use an adjustable exponent"}
-//		SetVariable expa,limits={-2,10,0},value= root:myGlobals:Plot_1d:gExpA
-//		SetVariable expb,pos={27,46},size={80,15},title="pow \"b\""
-//		SetVariable expb,help={"This sets the exponent \"b\" for some x-axis formats. The value is ignored if the model does not use an adjustable exponent"}
-//		SetVariable expb,limits={0,10,0},value= root:myGlobals:Plot_1d:gExpB
+//		PopupMenu xmodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gXMode", 1 ),proc=V_XMode_PopMenuProc
+////		Button Rescale,pos={281,5},size={70,20},proc=V_Rescale_Plot_1D_ButtonProc,title="Rescale"
+////		Button Rescale,help={"Rescale the x and y-axes of the data"},disable=1
 //
-//		SetVariable expc,pos={167,28},size={80,15},title="pow \"c\""
+//		SetVariable expa,pos={120,28},size={80,15},title="pow \"a\""
+//		SetVariable expa,help={"This sets the exponent \"a\" for some y-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+//		SetVariable expa,limits={-2,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpA
+//		SetVariable expb,pos={120,46},size={80,15},title="pow \"b\""
+//		SetVariable expb,help={"This sets the exponent \"b\" for some x-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+//		SetVariable expb,limits={0,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpB
+//
+//		SetVariable expc,pos={220,28},size={80,15},title="pow \"c\""
 //		SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
-//		SetVariable expc,limits={-10,10,0},value= root:myGlobals:Plot_1d:gExpC
+//		SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpC
 		
-		Button AllQ,pos={281,28},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={320,28},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 		
+		Legend/C/N=text0/J/X=72.00/Y=60.00
 	endif
 		
 	
-	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
+	SVAR workType = root:Packages:NIST:VSANS:Globals:gCurDispType
 
-	V_QBinAllPanels(type)
+	if(binType == -9999)
+		binType = V_GetBinningPopMode()		//dummy passed in, replace with value from panel
+	endif
+	V_QBinAllPanels(workType,binType)
 
 // TODO:
 // x- "B" detector is currently skipped - Q is not yet calculated
-	Execute ("V_Back_IQ_Graph(\""+type+"\")")
-	Execute ("V_Middle_IQ_Graph(\""+type+"\")")
-	Execute ("V_Front_IQ_Graph(\""+type+"\")")
+	String str
+	sprintf str,"(\"%s\",%d)",workType,binType
 	
+	Execute ("V_Back_IQ_Graph"+str)
+//	Print "V_Back_IQ_Graph"+str
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
+
 	
 End
+
+Function V_Plot1D_LogCheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+				
+				ModifyGraph log=(checked)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+//
+////function to set the popItem (mode) of the graph, to re-create the graph based on user preferences
+//Function V_YMode_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+//	String ctrlName
+//	Variable popNum
+//	String popStr
+//
+//	Variable/G root:Packages:NIST:VSANS:Globals:Plot_1d:gYMode=popNum
+//	V_Rescale_Plot_1D_ButtonProc("")
+//End
+//
+////function to set the popItem (mode) of the graph, to re-create the graph based on user preferences
+//Function V_XMode_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+//	String ctrlName
+//	Variable popNum
+//	String popStr
+//
+//	Variable/G root:Packages:NIST:VSANS:Globals:Plot_1d:gXMode=popNum
+//	V_Rescale_Plot_1D_ButtonProc("")
+//End
+
+
+//function to rescale the axes of the graph as selected from the popups and the 
+// entered values of the exponents
+//** assumes the current waves are unknown, so it goes and gets a "fresh" copy from
+//the data folder specified by the waves on the graph, which is the same folder that
+//contains the "fresh" copy of the 1D data
+//
+// for log(10) scaling, simply modify the axes, not the data - gives better plots
+//
+//Function V_Rescale_Plot_1D_ButtonProc(ctrlName) : ButtonControl
+//	String ctrlName
+//	
+//	DoWindow/F V_1D_Data
+////Scaling exponents and background value
+//	Variable pow_a,pow_b,pow_c
+//	ControlInfo expa
+//	pow_a = V_value
+//	ControlInfo expb
+//	pow_b = V_value
+//	ControlInfo expc
+//	pow_c = V_value
+//	
+////check for physical limits on exponent values, abort if bad values found
+//	if((pow_a < -2) || (pow_a > 10))
+//		Abort "Exponent a must be in the range (-2,10)"
+//	endif
+//	if((pow_b < 0) || (pow_b > 10))
+//		Abort "Exponent b must be in the range (0,10)"
+//	endif
+//	//if q^c is the x-scaling, c must be be within limits and also non-zero
+//	ControlInfo xModel
+//	If (cmpstr("q^c",S_Value) == 0)
+//		if(pow_c == 0) 
+//			Abort "Exponent c must be non-zero, q^0 = 1"
+//		endif
+//		if((pow_c < -10) || (pow_c > 10))
+//			Abort "Exponent c must be in the range (-10,10)"
+//		endif
+//	endif		//check q^c exponent
+//	
+//// get the current experimental q, I, and std dev. waves
+//	SVAR curFolder=root:Packages:NIST:VSANS:Globals:gDataDisplayType
+//
+//// what is the binning? == what waves do we need to copy over
+//	
+//
+//	//get the untarnished data, so we can rescale it freshly here
+//	Wave yw = $("root:Packages:NIST:"+curFolder+":aveint")
+//	Wave ew = $("root:Packages:NIST:"+curFolder+":sigave")
+//	//get the correct x values
+//	NVAR isPhiAve= root:myGlobals:Plot_1d:isPhiAve 	//0 signifies (normal) x=qvals
+//	if(isPhiAve)
+//		//x is angle
+//		Wave xw=$("root:Packages:NIST:"+curFolder+":phival")
+//	else
+//		//x is q-values
+//		Wave xw=$("root:Packages:NIST:"+curFolder+":qval")
+//	endif
+//	Wave yAxisWave=root:myGlobals:Plot_1d:yAxisWave		//refs to waves to be modified, hard-wired positions
+//	Wave xAxisWave=root:myGlobals:Plot_1d:xAxisWave
+//	Wave yErrWave=root:myGlobals:Plot_1d:yErrWave
+//	
+//	//variables set for each model to control look of graph
+//	String xlabel,ylabel,xstr,ystr
+//	Variable logLeft=0,logBottom=0
+//	//check for proper y-scaling selection, make the necessary waves
+//	ControlInfo yModel
+//	ystr = S_Value
+//	do
+//		If (cmpstr("I",S_Value) == 0)
+//			SetScale d 0,0,"1/cm",yAxisWave
+//			yErrWave = ew
+//			yAxisWave = yw
+//			ylabel = "I(q)"
+//			break	
+//		endif
+//		If (cmpstr("ln(I)",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew/yw
+//			yAxisWave = ln(yw)
+//			ylabel = "ln(I)"
+//			break	
+//		endif
+//		If (cmpstr("log(I)",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yAxisWave = yw
+//			yErrWave = ew
+//			logLeft=1				//scale the axis, not the wave
+//			ylabel = "I(q)"
+////			yErrWave = ew/(2.30*yw)
+////			yAxisWave = log(yw)
+////			ylabel = "log(I)"
+//			break	
+//		endif
+//		If (cmpstr("1/I",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew/yw^2
+//			yAxisWave = 1/yw
+//			ylabel = "1/I"
+//			break
+//		endif
+//		If (cmpstr("I^a",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew*abs(pow_a*(yw^(pow_a-1)))
+//			yAxisWave = yw^pow_a
+//			ylabel = "I^"+num2str(pow_a)
+//			break
+//		endif
+//		If (cmpstr("Iq^a",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew*xw^pow_a
+//			yAxisWave = yw*xw^pow_a
+//			ylabel = "I*q^"+num2str(pow_a)
+//			break
+//		endif
+//		If (cmpstr("I^a q^b",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew*abs(pow_a*(yw^(pow_a-1)))*xw^pow_b
+//			yAxisWave = yw^pow_a*xw^pow_b
+//			ylabel = "I^" + num2str(pow_a) + "q^"+num2str(pow_b)
+//			break
+//		endif
+//		If (cmpstr("1/sqrt(I)",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = 0.5*ew*yw^(-1.5)
+//			yAxisWave = 1/sqrt(yw)
+//			ylabel = "1/sqrt(I)"
+//			break
+//		endif
+//		If (cmpstr("ln(Iq)",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave =ew/yw
+//			yAxisWave = ln(xw*yw)
+//			ylabel = "ln(q*I)"
+//			break
+//		endif
+//		If (cmpstr("ln(Iq^2)",S_Value) == 0)
+//			SetScale d 0,0,"",yAxisWave
+//			yErrWave = ew/yw
+//			yAxisWave = ln(xw*xw*yw)
+//			ylabel = "ln(I*q^2)"
+//			break
+//		endif
+//		//more ifs for each case as they are added
+//		
+//		// if selection not found, abort
+//		DoAlert 0,"Y-axis scaling incorrect. Aborting"
+//		Abort
+//	while(0)	//end of "case" statement for y-axis scaling
+//	
+//	//check for proper x-scaling selection
+//	SVAR/Z angst = root:Packages:NIST:gAngstStr 
+//	String dum
+//	
+//	ControlInfo xModel
+//	xstr = S_Value
+//	do
+//		If (cmpstr("q",S_Value) == 0)	
+//			SetScale d 0,0,"",xAxisWave
+//			xAxisWave = xw
+//			if(isPhiAve)
+//				xlabel="Angle (deg)"
+//			else
+//				xlabel = "q ("+angst+"\\S-1\\M)"
+//			endif
+//			break	
+//		endif
+//		If (cmpstr("q^2",S_Value) == 0)	
+//			SetScale d 0,0,"",xAxisWave
+//			xAxisWave = xw*xw
+//			if(isPhiAve)
+//				xlabel="(Angle (deg) )^2"
+//			else
+//				xlabel = "q^2 ("+angst+"\\S-2\\M)"
+//			endif
+//			break	
+//		endif
+//		If (cmpstr("log(q)",S_Value) == 0)	
+//			SetScale d 0,0,"",xAxisWave
+//			xAxisWave = xw		//scale the axis, not the wave
+//			//xAxisWave = log(xw)
+//			logBottom=1
+//			if(isPhiAve)
+//				//xlabel="log(Angle (deg))"
+//				xlabel="Angle (deg)"
+//			else
+//				//xlabel = "log(q)"
+//				xlabel = "q ("+angst+"\\S-1\\M)"
+//			endif
+//			break	
+//		endif
+//		If (cmpstr("q^c",S_Value) == 0)
+//			SetScale d 0,0,"",xAxisWave
+//			xAxisWave = xw^pow_c
+//			dum = num2str(pow_c)
+//			if(isPhiAve)
+//				xlabel="Angle^"+dum
+//			else
+//				xlabel = "q^"+dum+" ("+angst+"\\S-"+dum+"\\M)"
+//			endif
+//			break
+//		endif
+//	
+//		//more ifs for each case
+//		
+//		// if selection not found, abort
+//		DoAlert 0,"X-axis scaling incorrect. Aborting"
+//		Abort
+//	while(0)	//end of "case" statement for x-axis scaling
+//	
+//	Label left ylabel
+//	Label bottom xlabel	//E denotes "scaling"  - may want to use "units" instead	
+//	ModifyGraph log(left)=(logLeft)
+//	ModifyGraph log(bottom)=(logBottom)
+//	
+//End
+
 
 //function to restore the graph axes to full scale, undoing any zooming
 Function V_AllQ_Plot_1D_ButtonProc(ctrlName) : ButtonControl
@@ -103,11 +390,18 @@ Function V_BinningModePopup(ctrlName,popNum,popStr) : PopupMenuControl
 
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
-	V_QBinAllPanels(type)
+	V_QBinAllPanels(type,popNum)
 
-	Execute ("V_Back_IQ_Graph(\""+type+"\")")
-	Execute ("V_Middle_IQ_Graph(\""+type+"\")")
-	Execute ("V_Front_IQ_Graph(\""+type+"\")")
+	String str
+	sprintf str,"(\"%s\",%d)",Type,popNum
+
+	Execute ("V_Back_IQ_Graph"+str)
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
+		
+//	Execute ("V_Back_IQ_Graph(\""+type+"\")")
+//	Execute ("V_Middle_IQ_Graph(\""+type+"\")")
+//	Execute ("V_Front_IQ_Graph(\""+type+"\")")
 	
 	return(0)	
 End
@@ -115,6 +409,12 @@ End
 Function V_GetBinningPopMode()
 
 	Variable binType
+	
+	if(WinType("V_1D_Data")==0)
+		DoAlert 0,"V_1D_Data window is not open, called from V_GetBinningPopMode()"
+		return(0)
+	endif
+	
 	ControlInfo/W=V_1D_Data popup0
 	strswitch(S_Value)	// string switch
 		case "One":
@@ -132,7 +432,7 @@ Function V_GetBinningPopMode()
 
 		default:			// optional default expression executed
 			binType = 0
-			Abort "Binning mode not found in 	V_QBinAllPanels() "// when no case matches
+			Abort "Binning mode not found in V_GetBinningPopMode() "// when no case matches
 	endswitch
 	
 	return(binType)
@@ -150,12 +450,11 @@ end
 //
 // input "type" is the data type and defines the folder
 //
-Proc V_Middle_IQ_Graph(type) 
+Proc V_Middle_IQ_Graph(type,binType) 
 	String type
-
 	Variable binType
 
-	binType = V_GetBinningPopMode()
+//	binType = V_GetBinningPopMode()
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
 // clear EVERYTHING
@@ -315,13 +614,12 @@ End
 // x- currently  hard-wired == 1
 //
 //
-Proc V_Front_IQ_Graph(type) 
+Proc V_Front_IQ_Graph(type,binType) 
 	String type
-
 	Variable binType
 
 
-	binType = V_GetBinningPopMode()
+//	binType = V_GetBinningPopMode()
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
 // clear EVERYTHING
@@ -485,14 +783,15 @@ End
 // x- currently  hard-wired == 1
 //
 ////////////to plot the back panel I(q)
-Proc V_Back_IQ_Graph(type)
+Proc V_Back_IQ_Graph(type,binType)
 	String type
+	Variable binType
 	
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
-	Variable binType
+//	Variable binType
 
-	binType = V_GetBinningPopMode()
+//	binType = V_GetBinningPopMode()
 	
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 

@@ -46,6 +46,7 @@
 //		SAVE=string		string from set {Yes,No} = truth of saving averaged data to disk
 //		NAME=string		string from set {Auto,Manual} = Automatic name generation or Manual(dialog)
 //
+//    BINTYPE=string (VSANS binning type) "One;Two;Four;Slit Mode;"
 //
 //		For work.DRK usage:
 //		**the list is COMMA delimited, soparator is =
@@ -532,6 +533,9 @@ End
 // TODO
 // -- decide on the way to locate the blocked beam files. Is the enumerated text of the intent
 //    sufficiently unique to locate the file?
+// -- can I use the Data Catalog waves to locate the files  - faster?
+//    (fails if the catalog has not been read in recently enough)
+//
 //
 Function/S V_PickBGDButton(ctrlName) : ButtonControl
 	String ctrlName
@@ -935,6 +939,7 @@ End
 Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
+//	Execute "V_GetAvgInfo_Full()"
 	Execute "V_GetAvgInfo()"
 	
 	//set the global string
@@ -943,10 +948,77 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 
 End
 
+// TODO
+// -- this is a trimmed down version of the "full" set of averaging options
+//    add to this as needed to add in functionality
+//
 //procedure called by protocol panel to ask user for average type choices
 // somewhat confusing and complex, but may be as good as it gets.
 //
-Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
+//Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
+Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
+	String av_typ,autoSave,AutoName,binType
+//	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
+
+//	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+	Prompt av_typ, "Type of Average",popup,"Circular;"
+
+// comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
+//	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
+	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
+	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
+//	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
+//	Prompt side,"Include detector halves?",popup,"both;right;left"
+//	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
+//	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
+//	Prompt width, "Width of Rectangular average (1,128)"
+//	Prompt Qctr, "q-value of center of annulus"
+//	Prompt Qdelta,"Pixel width of annulus"
+	Prompt binType,"Binning Type?",popup,"One;Two;Four;Slit Mode;"
+
+	//assign results of dialog to key=value string, semicolon separated
+	//do only what is necessary, based on av_typ
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr=""
+
+	// TODO:
+	// hard wired value
+	String autoPlot = "No"
+	
+		
+	// all averages need these values
+	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "AVTYPE=" + av_typ + ";"
+	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SAVE=" + autoSave + ";"
+	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "NAME=" + autoName + ";"
+	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PLOT=" + autoPlot + ";"
+	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "BINTYPE=" + binType + ";"
+	
+//	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+//	Endif
+//	
+//	if(cmpstr(av_typ,"Rectangular")==0)
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
+//	Endif
+//	
+//	if(cmpstr(av_typ,"Annular")==0)
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
+//	Endif
+End
+
+
+// TODO
+// -- this is the original(SANS) version, and needs to be updated for VSANS as the averaging options are
+//    worked out
+//
+//procedure called by protocol panel to ask user for average type choices
+// somewhat confusing and complex, but may be as good as it gets.
+//
+Proc V_GetAvgInfo_Full(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
 	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
@@ -989,7 +1061,6 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDe
 		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
 	Endif
 End
-
 
 
 //prompts the user to pick a previously created protocol from a popup list
@@ -1334,6 +1405,11 @@ Function V_ProtocolQuestionnaire(ctrlName)
 	
 	//returns the name of the newly created (= currently in use) protocol wave through a global
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtoStr
+	
+	//reset the panel based on the protocol textwave (currently a string)
+	V_ResetToSavedProtocol(newProtoStr)
+	
+	return(0)
 End
 
 
@@ -1572,6 +1648,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 			Endif
 		Endif
 	While(0)
+	// TODO
+	// -- this may not be the most reliable way to pas the file name
+	SVAR file_name = root:file_Name
+	String sameFileLoaded = file_name		//keep a copy of the sample file loaded
+	
 	//always update
 	V_UpdateDisplayInformation(ActiveType)
 	
@@ -1758,7 +1839,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 ////////////////////////////////////////////////////////
 
-	
+// TODO:
+// -- calculation works, needs proper inputs (solid angle aware)
+// --	Open beam method is only a stub - fill in calculation in V_AskForAbsoluteParams_Quest()
 	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired
 		DoAlert 0,"Abs step incomplete"
@@ -1783,23 +1866,24 @@ Function V_ExecuteProtocol(protStr,samStr)
 			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
-		String destStr = "root:Packages:NIST:"+activeType+":realsread"
-		Wave dest = $destStr
-		Variable c0 = dest[4]		//sample transmission
-		Variable c1 = dest[5]		//sample thickness
+		Variable c0 = V_getSampleTransmission(activeType)		//sample transmission
+		Variable c1 = V_getSampleThickness(activeType)		//sample thickness
 		
 		err = V_Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
 		if(err)
 			SetDataFolder root:
-			Abort "Error in Absolute_Scale(), called from executeProtocol"
+			Abort "Error in V_Absolute_Scale(), called from V_ExecuteProtocol"
 		endif
 		activeType = "ABS"
 		V_UpdateDisplayInformation(ActiveType)			//update before breaking from loop
 	Endif
 
-
+//
 // TODO -- incomplete
 //	
+//mask data if desired (this is done automatically  in the average step) and is
+//not done explicitly here (if no mask in MSK folder, a null mask is created and "used")
+	
 	//check for mask
 	//add mask if needed
 	// can't properly check the filename - so for now always add
@@ -1831,17 +1915,18 @@ Function V_ExecuteProtocol(protStr,samStr)
 		Endif
 	else
 		//if none desired, make sure that the old mask is deleted
-		//junkStr = GetDataFolder(1)
-		//SetDataFolder root:Packages:NIST:MSK
-		KillWaves/Z root:Packages:NIST:VSANS:MSK:data
-		//SetDataFolder junkStr
+// TODO
+// x- clean out the data folder
+// x- note that V_KillNamedDataFolder() points to RawVSANS, and won't work
+// -- what happens if the kill fails? need error handling
+//
+		KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
 	Endif
 	
-	//mask data if desired (this is done automatically  in the average step) and is
-	//not done explicitly here (if no mask in MSK folder, a null mask is created and "used")
 
 
-	
+
+
 	// average/save data as specified
 	
 	//Parse the keyword=<Value> string as needed, based on AVTYPE
@@ -1863,9 +1948,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 	
 	//convert the folder to linear scale before averaging, then revert by calling the window hook
-	// not needed for VSANS, data is always linear scale
+	// (not needed for VSANS, data is always linear scale)
 
-	
+// TODO
+// -- this switch does nothing -- fill it in
+//	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
 			//still do nothing
@@ -1897,26 +1984,59 @@ Function V_ExecuteProtocol(protStr,samStr)
 		default:	
 			//do nothing
 	endswitch
-///// end of averaging dispatch
+	// bin and plot the data
+	// TODO
+	// x- currently this bins and plots based on the V_1D_Data panel, NOT the selections above
+	// now takes the the binType from the protocol, and uses two steps to bin and average
+	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
+	// plotting is not really necessary, and the graph may not be open - so skip for now?
+	Variable binType
+	strswitch(binTypeStr)	// string switch
+		case "One":
+			binType = 1
+			break		// exit from switch
+		case "Two":
+			binType = 2
+			break		// exit from switch
+		case "Four":
+			binType = 3
+			break		// exit from switch
+		case "Slit Mode":
+			binType = 4
+			break		// exit from switch
+
+		default:			// optional default expression executed
+			binType = 0
+			Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
+	endswitch
+	
+	V_PlotData_Panel(binType)		//this bins and plots the *currently displayed* data
+	V_QBinAllPanels(activeType,binType)		//bin the active reduction data
+
+// TODO:
+// x- "B" detector is currently skipped - Q is not yet calculated
+	String str
+	sprintf str,"(\"%s\",%d)",activeType,binType
+	
+	Execute ("V_Back_IQ_Graph"+str)
+//	Print "V_Back_IQ_Graph"+str
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
 
 	
+///// end of averaging dispatch
+
+
+// TODO
+// x- how do I get the sample file name?
+//     sameFileLoaded is the file name loaded (contains the extension)
+//	
 	//save data if desired
 	String fullpath = "", newfileName=""
 	String item = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
 	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
-		//get name from textwave of the activeType dataset
-		String textStr = "root:Packages:NIST:VSANS:"+activeType+":textread"
-		Wave/T textPath = $textStr
-		String tempFilename = samStr
-		If(WaveExists(textPath) == 1)
-
-			newFileName = RemoveEnding("SAMFileName.nxs.ngv",".nxs.ngv")		//NCNR data drops here, trims to 8 chars
-
-		else
-			newFileName = ""			//if the header is missing?
-			//Print "can't read the header - newfilename is null"
-		Endif
+		newFileName = RemoveEnding(sameFileLoaded,".nxs.ngv")
 		
 		//pick ABS or AVE extension
 		String exten = activeType
@@ -1940,6 +2060,8 @@ Function V_ExecuteProtocol(protStr,samStr)
 				
 		//Path is catPathName, symbolic path
 		//if this doesn't exist, a dialog will be presented by setting dialog = 1
+		//
+		//
 		Variable dialog = 0
 		PathInfo/S catPathName
 		item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
@@ -1951,11 +2073,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 		else
 			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
 			//use autoname if present
-			if (cmpstr(autoname,"") != 0)
-				fullPath = S_Path + autoname + "." +exten
-			else
-				fullPath = S_Path + newFileName+"." + exten
-			endif	
+//			if (cmpstr(autoname,"") != 0)
+//				fullPath = S_Path + autoname + "." +exten
+//			else
+//				fullPath = S_Path + newFileName+"." + exten
+//			endif	
 		Endif
 		//
 		strswitch(av_type)	
@@ -1977,6 +2099,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 //				else
 //					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 //				endif
+//
+// TODO:
+// -- fill in all of the cases, default is only the "standard" I(q)
+				V_ConcatenateForSave(activeType,binType)
+				V_Write1DData(activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+
 		endswitch
 		
 		//Print "data written to:  "+ fullpath
@@ -1991,13 +2119,13 @@ End
 //from the user
 //values are passed back as a global string variable (keyword=value)
 //
-Proc V_AskForAbsoluteParams(c2,c3,c4,c5,err)
-	Variable c2=0.95,c3=0.1,c4=1,c5=32.0,err=0
+Proc V_AskForAbsoluteParams(c2,c3,c4,c5,I_err)
+	Variable c2=0.95,c3=0.1,c4=1,c5=32.0,I_err=0.32
 	Prompt c2, "Standard Transmission"
 	Prompt c3, "Standard Thickness (cm)"
 	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"
 	Prompt c5, "Standard Cross-Section (cm-1)"
-	Prompt err, "error in I(q=0) (one std dev)"
+	Prompt I_err, "error in I(q=0) (one std dev)"
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr=""
 	
@@ -2005,7 +2133,7 @@ Proc V_AskForAbsoluteParams(c2,c3,c4,c5,err)
 	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "DSTAND="+num2str(c3)
 	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "IZERO="+num2str(c4)
 	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "XSECT="+num2str(c5)
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "SDEV="+num2str(err)
+	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "SDEV="+num2str(I_err)
 	
 End
 
@@ -2015,15 +2143,14 @@ End
 // -- fill in all of the functionality for calculation from direct beam
 //
 //asks the user for absolute scaling information. the user can either
-//enter the 4 necessary values in manually (missing parameter dialog)
+//enter the 5 necessary values in manually (missing parameter dialog)
 //or the user can select an empty beam file from a standard open dialog
 //if an empty beam file is selected, the "kappa" value is automatically calculated
 //in either case, the global keyword=value string is set.
 //
-//Proc AskForAbsoluteParams_Quest()
 Function V_AskForAbsoluteParams_Quest()	
 	
-	Variable err, isNG5=0,loc,refnum
+	Variable err,loc,refnum
 	//ask user if he wants to use a transmision file for absolute scaling
 	//or if he wants to enter his own information
 	err = V_UseStdOrEmpForABS()
@@ -2080,7 +2207,7 @@ Function V_AskForAbsoluteParams_Quest()
 		// SRK JUL 2006 don't clear the contents - just kill the window to force new data to be loaded
 		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from RAW:RealsRead
 
-		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+		Printf "Kappa was un-successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	Endif
 	
 End

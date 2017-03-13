@@ -2063,7 +2063,6 @@ Function V_getSampleTransmission(fname)
 	String fname
 	
 	String path = "entry:sample:transmission"	
-//	String path = "QKK0037737:data:Transmission"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 

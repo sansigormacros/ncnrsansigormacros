@@ -84,7 +84,7 @@ Function V_CopyHDFToWorkFolder(fromStr,toStr)
 		
 		// I can delete these if they came along with RAW
 		//   DAS_logs
-		//   top-level copies of data (duplicate links)
+		//   top-level copies of data (duplicate links, these should not be present in a proper NICE file)
 		KillDataFolder/Z $(toDF+":entry:DAS_logs")
 		KillDataFolder/Z $(toDF+":entry:data")
 		KillDataFolder/Z $(toDF+":entry:data_B")
