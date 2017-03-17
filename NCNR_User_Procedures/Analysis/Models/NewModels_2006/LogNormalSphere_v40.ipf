@@ -161,7 +161,7 @@ Function fLogNormalSphere(w,xx): FitFunc
 	vb = exp(vb)
 	
 	summ = 0.0		// initialize integral
-	Make/O/N=1 tmp_yw,tmp_xw
+	Make/O/D/N=1 tmp_yw,tmp_xw
 	tmp_xw[0] = xx
 	for(ii=0;ii<nord;ii+=1)
 		// calculate Gauss points on integration interval (r-value for evaluation)

@@ -88,5 +88,6 @@ End
 #include "V_Correct"
 #include "V_Detector_Isolate"
 #include "V_Protocol_Reduction"
+#include "V_Marquee_Operations"
 
 

@@ -43,7 +43,11 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Duplicate/O $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":det_"+detStr) tmpData
 		Redimension/I tmpData
+		//
+		// before, NaN became ugly integer -- now it seems to show up as -1?
+		// then, the "fake" error becomes NaN
 		tmpData	= (tmpData ==   2147483647) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as an ugly integer
+		tmpData	= (tmpData ==   -1) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as -1
 		V_writeDetectorData(fileName,detStr,tmpData)
 		
 		val = VCALC_getSDD(detStr)*100		// make sure value is in cm

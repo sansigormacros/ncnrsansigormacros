@@ -557,44 +557,61 @@ Function V_Raw_to_work(newType)
 	endif	
 	
 	// (7) normalize to default monitor counts
-	// TODO -- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
+	// TODO(DONE) x- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
+	//  --- AND, there is also /entry/control/monitor_counts !!! Which one is the correct value? Which will NICE write
 	// TODO -- what do I really need to save?
 	
 	NVAR gDoMonitorNormalization = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization
 	if (gDoMonitorNormalization == 1)
-		Print "(stub)Doing monitor normalization -- INCOMPLETE --"// for "+ detStr
 		
+		Variable monCount,savedMonCount
 		defmon=1e8			//default monitor counts
+		monCount = V_getMonitorCount(fname)			// TODO -- this is read in since VCALC fakes this on output
+//		monCount = V_getBeamMonNormData(fname)		// TODO -- I think this is the *real* one to read
+		savedMonCount	= monCount
+		scale = defMon/monCount		// scale factor to MULTIPLY data by to rescale to defmon
+
+		// write to newType=fname will put new values in the destination WORK folder
+		V_writeBeamMonNormSaved_count(fname,savedMonCount)			// save the true count
+		V_writeBeamMonNormData(fname,defMon)		// mon ct is now 10^8
+					
+//			// TODO
+//			// the low efficiency monitor, expect to use this for white beam mode
+//				-- need code switch here to determine which monitor to use.
+//
+//			V_getBeamMonLowData(fname)
+//			V_getBeamMonLowSaved_count(fname)	
+			
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			Variable monCt = V_getBeamMonNormData(fname)
-	//			V_MonitorNormalization(fill this in)
-		//scale the data to the default montor counts
+
+			// do the calculation right here. It's a simple scaling and not worth sending to another function.	
+			//scale the data and error to the default montor counts
 		
-		// TODO -- un-comment these three lines once monitor counts are reasonable - currently monCt = 9!!!
-	//		scale = defmon/monCt
-	//		w *= scale
-	//		w_err *= scale		//assumes total monitor count is so large there is essentially no error
-	
-	// TODO
-	// -- to write back to the local value, get the wave reference rather than the value, then I can 
-	//    re-assign the value directly, rather than this method (which is not terrible)	
-			// V_getBeamMonNormSaved_count()
-			// save the true monitor counts? save the scaling factor?
-			String path = "entry:instrument:beam_monitor_norm:saved_count"
-			Wave/Z savW = $("root:Packages:NIST:VSANS:"+fname+":"+path)
-			savW[0] = scale
+//
+			w *= scale
+			w_err *= scale		//assumes total monitor count is so large there is essentially no error
+
+			// TODO
+			// -- do I want to update and save the integrated detector count?
+			Variable integratedCount = V_getDet_IntegratedCount(fname,detStr)
+			V_writeDet_IntegratedCount(fname,detStr,integratedCount*scale)
+
 		endfor
 	else
 		Print "Monitor Normalization correction NOT DONE"
 	endif
 	
+	
 	// (not done) angle dependent efficiency correction
 	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 
+//
+///// these lines are if files are added together, not done (yet) for VSANS
+//
 //update totals to put in the work header (at the end of the function)
 //	total_mon += realsread[0]
 //
@@ -605,12 +622,6 @@ Function V_Raw_to_work(newType)
 //	total_numruns +=1
 //	
 
-	//all is done, except for the bookkeeping, updating the header information in the work folder
-
-//	integersread[3] = total_numruns						//numruns = 1
-//	realsread[1] = total_mon			//save the true monitor count
-//	realsread[0] = defmon					//monitor ct = defmon
-//	realsread[2] = scale*total_det			//scaled detector counts
 //	
 	//reset the current displaytype to "newtype"
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=newType

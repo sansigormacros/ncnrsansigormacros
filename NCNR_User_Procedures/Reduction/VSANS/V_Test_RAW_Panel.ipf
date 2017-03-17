@@ -354,7 +354,7 @@ Function VSANSDataHook(s)
 				testX = ScaleToIndex(w,xloc,0)
 				testY = ScaleToIndex(w,yloc,1)
 				
-				if( (testX > 0 && testX < DimSize(w,0)) && (testY > 0 && testY < DimSize(w,1)) )
+				if( (testX >= 0 && testX < DimSize(w,0)) && (testY >= 0 && testY < DimSize(w,1)) )
 					// we're in-bounds on this wave
 					
 					// count value to the global
