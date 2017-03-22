@@ -288,12 +288,18 @@ End
 Proc RealTime_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	if(exists("Init_for_RealTime")==0)
+	if(exists("V_Init_RT")==0)
 		// procedure file was not loaded
 		DoAlert 0,"This operation is not available in this set of macros"
 	else
 		Show_RealTime_Panel()
 	endif
+End
+
+Proc RTReduce_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	V_ShowOnlineReductionPanel()
 End
 
 Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
@@ -354,6 +360,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_0e,help={"Sort the Data Catalog, courtesy of ANSTO"}
 	Button MainButton_0f,pos={170,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
 	Button MainButton_0f,help={"Show the header and data tree"}
+	Button MainButton_0g,pos={170,180},size={110,20},proc=RTReduce_MainButtonProc,title="RT Reduction"
+	Button MainButton_0g,help={"Reduce live (incomplete) data files during acquisition"}
 
 
 //on tab(1) - Reduction
@@ -363,12 +371,12 @@ Window Main_VSANS_Panel()
 	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
 	Button MainButton_1c,pos={15,150},size={160,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
 	Button MainButton_1c,help={"Use for reducing multiple raw datasets after protocol(s) have been created"}
-	Button MainButton_1d,pos={15,180},size={110,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
-	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}
+//	Button MainButton_1d,pos={15,180},size={110,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
+//	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}
 	Button MainButton_1a,disable=1
 	Button MainButton_1b,disable=1
 	Button MainButton_1c,disable=1
-	Button MainButton_1d,disable=1
+//	Button MainButton_1d,disable=1
 
 //on tab(2) - 1-D operations
 	Button MainButton_2a,pos={15,90},size={60,20},proc=Plot1D_MainButtonProc,title="Plot"
