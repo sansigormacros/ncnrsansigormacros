@@ -14,6 +14,50 @@
 //
 //
 
+
+
+/// TODO:
+// -- this is the basic renormalization that is done in PRODIV. see that file for all of the 
+//    details of how it's used
+// -- update to VSANS file locations and data reads
+// -- expand this to do a basic renormalization of all 9 panels, and move the data into the 
+//    appropriate locations for saving as a DIV file.
+//
+//
+
+//works on the data in "type" folder (expecting data to be reduced to the COR level)
+//sums all of the data, and normalizes by the number of cells (=pixelX*pixelY)
+// calling procedure must make sure that the folder is on linear scale FIRST
+Function V_NormalizeDIV(type)
+	String type
+	
+	WAVE data=$("root:Packages:NIST:"+type+":data")
+	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
+	
+	Variable totCts=sum(data,Inf,-Inf)		//sum all of the data
+	NVAR pixelX = root:myGlobals:gNPixelsX
+	NVAR pixelY = root:myGlobals:gNPixelsY
+
+	
+	data /= totCts
+	data *= pixelX*pixelY
+	
+	data_lin /= totCts
+	data_lin *= pixelX*pixelY
+	
+	data_err /= totCts
+	data_err *= pixelX*pixelY
+		
+	return(0)
+End
+
+
+
+
+
+
+
 // TODO
 // currently, there are no dummy fill values or attributes for the fake DIV file
 //

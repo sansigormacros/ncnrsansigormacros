@@ -4,8 +4,10 @@
 
 //
 // Operation does no scaling, only the basic (default) trim of the ends, concatenate, sort, and save
-// -- if data has been converted to WORK and hte solid angle correction was done, then the data
+// -- if data has been converted to WORK and the solid angle correction was done, then the data
 //   is per unit solid angle, and matches up - at least the simulated data does...
+//   It should match up in real VSANS data since the flux conditions are identical for
+//   all panels, only the geometry is different.
 //
 //
 // V_DataPlotting.ipf is where the I(q) panel is drawn and the binning is set
@@ -359,7 +361,7 @@ End
 // TODO:
 // -- resolution waves are ignored, since they don't exist (yet)
 // -- only a sort is done, no rescaling of data sets
-//    (it's too late now anyways, since the data was concatenated
+//    (it's too late now anyways, since the data was concatenated)
 //
 // see Auto_Sort() in the SANS Automation ipf for the rest of the details of
 // how to combine the resolution waves (they also need to be concatenated, which is currently not done)

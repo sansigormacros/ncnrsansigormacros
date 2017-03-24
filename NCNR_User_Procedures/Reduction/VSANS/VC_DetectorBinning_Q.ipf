@@ -1320,8 +1320,8 @@ EndMacro
 // all of the work folders will be checked to see if the data is on the graph
 // and if it is, it will be removed
 //
-Function ClearAllIQIfDisplayed(type)
-	String type
+Function ClearAllIQIfDisplayed(type,winNameStr)
+	String type,winNameStr
 
 //	String folderList = ksWorkFolderListShort
 	String fldr
@@ -1329,7 +1329,7 @@ Function ClearAllIQIfDisplayed(type)
 	
 	for(ii=0;ii<ItemsInList(ksWorkFolderListShort);ii+=1)
 		fldr = StringFromList(ii, ksWorkFolderListShort, ";")
-		ClearIQIfDisplayed(fldr,type)
+		ClearIQIfDisplayed(fldr,type,winNameStr)
 	endfor
 	// just in case
 	SetDataFolder root:
@@ -1337,8 +1337,8 @@ Function ClearAllIQIfDisplayed(type)
 	return(0)
 end
 
-Function ClearIQIfDisplayed(fldr,type)
-	String fldr,type
+Function ClearIQIfDisplayed(fldr,type,winNameStr)
+	String fldr,type,winNameStr
 
 	SetDataFolder $("root:Packages:NIST:VSANS:"+fldr)
 
@@ -1348,9 +1348,9 @@ Function ClearIQIfDisplayed(fldr,type)
 			RemoveFromGraph/W=VCALC#Panels_IQ $("iBin_qxqy_"+type)
 		endif
 	else
-		CheckDisplayed/W=V_1D_Data $("iBin_qxqy_"+type)
+		CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type)
 		if(V_flag==1)
-			RemoveFromGraph/W=V_1D_Data $("iBin_qxqy_"+type)
+			RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type)
 		endif
 	endif
 

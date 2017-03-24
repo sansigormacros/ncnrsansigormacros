@@ -1070,21 +1070,21 @@ End
 //
 Proc V_PickAProtocol(protocol)
 	String Protocol
-	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","")
+	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","TEXT:1")
 	
 	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = protocol
 End
 
 Proc V_DeleteAProtocol(protocol)
 	String Protocol
-//	Prompt Protocol "Delete A Protocol",popup, WaveList("*",";","")
+//	Prompt Protocol "Delete A Protocol",popup, WaveList("*",";","TEXT:1")
 	Prompt Protocol "Delete A Protocol",popup, V_DeletableProtocols()
 
 	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = protocol
 End
 
 Function/S V_DeletableProtocols()
-	String list=WaveList("*",";","")
+	String list=WaveList("*",";","TEXT:1")
 
 	list= RemoveFromList("Base", list  , ";")
 	list= RemoveFromList("DoAll", list  , ";")
@@ -2015,8 +2015,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 // TODO:
 // x- "B" detector is currently skipped - Q is not yet calculated
-	String str
-	sprintf str,"(\"%s\",%d)",activeType,binType
+
+	String str,winStr="V_1D_Data"
+	sprintf str,"(\"%s\",%d,\"%s\")",activeType,binType,winStr
+
 	
 	Execute ("V_Back_IQ_Graph"+str)
 //	Print "V_Back_IQ_Graph"+str
