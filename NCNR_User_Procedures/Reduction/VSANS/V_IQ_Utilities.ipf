@@ -221,6 +221,9 @@ Function V_1DConcatenate(folderStr,binType)
 	
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 
+	//kill these waves before starting, or the new concatenation will be added to the old
+	KillWaves/Z tmp_q,tmp_i,tmp_s
+	
 	if(binType == 1)	
 		Wave/Z q_fb = qBin_qxqy_FB
 		Wave/Z q_ft = qBin_qxqy_FT

@@ -26,6 +26,9 @@
 //
 ///////////////////
 
+Strconstant ksBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
+
+
 
 Proc PlotFrontPanels()
 	fPlotFrontPanels()
@@ -1320,7 +1323,7 @@ EndMacro
 // all of the work folders will be checked to see if the data is on the graph
 // and if it is, it will be removed
 //
-Function ClearAllIQIfDisplayed(type,winNameStr)
+Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	String type,winNameStr
 
 //	String folderList = ksWorkFolderListShort
@@ -1336,6 +1339,29 @@ Function ClearAllIQIfDisplayed(type,winNameStr)
 	
 	return(0)
 end
+
+// for a given data folder, all detector binning types
+// ("B", "FLTB", "MTB" etc) will be checked to see if the data is on the graph
+// and if it is, it will be removed
+//
+Function ClearIQIfDisplayed_AllBin(fldr,winNameStr)
+	String fldr,winNameStr
+
+//	String folderList = ksWorkFolderListShort
+	String type
+	Variable ii
+	
+	for(ii=0;ii<ItemsInList(ksBinTypeList);ii+=1)
+		type = StringFromList(ii, ksBinTypeList, ";")
+		ClearIQIfDisplayed(fldr,type,winNameStr)
+	endfor
+	// just in case
+	SetDataFolder root:
+	
+	return(0)
+end
+
+
 
 Function ClearIQIfDisplayed(fldr,type,winNameStr)
 	String fldr,type,winNameStr

@@ -713,8 +713,8 @@ Function V_Add_raw_to_work(newType)
 //	ConvertFolderToLinearScale("RAW")
 	
 	// switches to control what is done, don't do the transmission correction for the BGD measurement
-	NVAR doEfficiency = root:Packages:NIST:gDoDetectorEffCorr
-	NVAR gDoTrans = root:Packages:NIST:gDoTransmissionCorr
+	NVAR doEfficiency = root:Packages:NIST:gDoDetectorEffCor
+	NVAR gDoTrans = root:Packages:NIST:gDoTransmissionCor
 	Variable doTrans = gDoTrans
 	if(cmpstr("BGD",newtype) == 0)
 		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global

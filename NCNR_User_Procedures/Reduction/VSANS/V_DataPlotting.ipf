@@ -461,22 +461,22 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
 // clear EVERYTHING
-//		ClearAllIQIfDisplayed("MLRTB")
-//		ClearAllIQIfDisplayed("MLR")
-//		ClearAllIQIfDisplayed("MTB")		//this returns to root:
-//		ClearAllIQIfDisplayed("MT")	
-//		ClearAllIQIfDisplayed("ML")	
-//		ClearAllIQIfDisplayed("MR")	
-//		ClearAllIQIfDisplayed("MB")	
+//		ClearIQIfDisplayed_AllFldr("MLRTB")
+//		ClearIQIfDisplayed_AllFldr("MLR")
+//		ClearIQIfDisplayed_AllFldr("MTB")		//this returns to root:
+//		ClearIQIfDisplayed_AllFldr("MT")	
+//		ClearIQIfDisplayed_AllFldr("ML")	
+//		ClearIQIfDisplayed_AllFldr("MR")	
+//		ClearIQIfDisplayed_AllFldr("MB")	
 
 	if(binType==1)
-		ClearAllIQIfDisplayed("MLRTB",winNameStr)
-		ClearAllIQIfDisplayed("MLR",winNameStr)
-		ClearAllIQIfDisplayed("MTB",winNameStr)		//this returns to root:
-		ClearAllIQIfDisplayed("MT",winNameStr)	
-		ClearAllIQIfDisplayed("ML",winNameStr)	
-		ClearAllIQIfDisplayed("MR",winNameStr)	
-		ClearAllIQIfDisplayed("MB",winNameStr)			
+		ClearIQIfDisplayed_AllFldr("MLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MTB",winNameStr)		//this returns to root:
+		ClearIQIfDisplayed_AllFldr("MT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("ML",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MB",winNameStr)			
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_ML
 		
@@ -498,19 +498,19 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 	
 	if(binType==2)
 // clear EVERYTHING
-		ClearAllIQIfDisplayed("MLRTB",winNameStr)
-		ClearAllIQIfDisplayed("MLR",winNameStr)
-		ClearAllIQIfDisplayed("MTB",winNameStr)		//this returns to root:
-		ClearAllIQIfDisplayed("MT",winNameStr)	
-		ClearAllIQIfDisplayed("ML",winNameStr)	
-		ClearAllIQIfDisplayed("MR",winNameStr)	
-		ClearAllIQIfDisplayed("MB",winNameStr)		
+		ClearIQIfDisplayed_AllFldr("MLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MTB",winNameStr)		//this returns to root:
+		ClearIQIfDisplayed_AllFldr("MT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("ML",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MB",winNameStr)		
 	
-//		ClearAllIQIfDisplayed("MLRTB")
-//		ClearAllIQIfDisplayed("MT")	
-//		ClearAllIQIfDisplayed("ML")	
-//		ClearAllIQIfDisplayed("MR")	
-//		ClearAllIQIfDisplayed("MB")
+//		ClearIQIfDisplayed_AllFldr("MLRTB")
+//		ClearIQIfDisplayed_AllFldr("MT")	
+//		ClearIQIfDisplayed_AllFldr("ML")	
+//		ClearIQIfDisplayed_AllFldr("MR")	
+//		ClearIQIfDisplayed_AllFldr("MB")
 	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
@@ -535,20 +535,20 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 	
 	if(binType==3)
 // clear EVERYTHING
-		ClearAllIQIfDisplayed("MLRTB",winNameStr)
-		ClearAllIQIfDisplayed("MLR",winNameStr)
-		ClearAllIQIfDisplayed("MTB",winNameStr)		//this returns to root:
-		ClearAllIQIfDisplayed("MT",winNameStr)	
-		ClearAllIQIfDisplayed("ML",winNameStr)	
-		ClearAllIQIfDisplayed("MR",winNameStr)	
-		ClearAllIQIfDisplayed("MB",winNameStr)		
+		ClearIQIfDisplayed_AllFldr("MLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MTB",winNameStr)		//this returns to root:
+		ClearIQIfDisplayed_AllFldr("MT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("ML",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MB",winNameStr)		
 	
-//		ClearAllIQIfDisplayed("MLR")
-//		ClearAllIQIfDisplayed("MTB")	
-//		ClearAllIQIfDisplayed("MT")	
-//		ClearAllIQIfDisplayed("ML")	
-//		ClearAllIQIfDisplayed("MR")	
-//		ClearAllIQIfDisplayed("MB")	
+//		ClearIQIfDisplayed_AllFldr("MLR")
+//		ClearIQIfDisplayed_AllFldr("MTB")	
+//		ClearIQIfDisplayed_AllFldr("MT")	
+//		ClearIQIfDisplayed_AllFldr("ML")	
+//		ClearIQIfDisplayed_AllFldr("MR")	
+//		ClearIQIfDisplayed_AllFldr("MB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_MLRTB
@@ -570,18 +570,18 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
 // clear EVERYTHING
-		ClearAllIQIfDisplayed("MLRTB",winNameStr)
-		ClearAllIQIfDisplayed("MLR",winNameStr)
-		ClearAllIQIfDisplayed("MTB",winNameStr)		//this returns to root:
-		ClearAllIQIfDisplayed("MT",winNameStr)	
-		ClearAllIQIfDisplayed("ML",winNameStr)	
-		ClearAllIQIfDisplayed("MR",winNameStr)	
-		ClearAllIQIfDisplayed("MB",winNameStr)		
+		ClearIQIfDisplayed_AllFldr("MLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("MTB",winNameStr)		//this returns to root:
+		ClearIQIfDisplayed_AllFldr("MT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("ML",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("MB",winNameStr)		
 	
 	
-//		ClearAllIQIfDisplayed("MLRTB")
-//		ClearAllIQIfDisplayed("MLR")
-//		ClearAllIQIfDisplayed("MTB")
+//		ClearIQIfDisplayed_AllFldr("MLRTB")
+//		ClearIQIfDisplayed_AllFldr("MLR")
+//		ClearIQIfDisplayed_AllFldr("MTB")
 		
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_ML
@@ -627,26 +627,26 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 
 // clear EVERYTHING
-//		ClearAllIQIfDisplayed("FLRTB")
+//		ClearIQIfDisplayed_AllFldr("FLRTB")
 //		
-//		ClearAllIQIfDisplayed("FLR")
-//		ClearAllIQIfDisplayed("FTB")
+//		ClearIQIfDisplayed_AllFldr("FLR")
+//		ClearIQIfDisplayed_AllFldr("FTB")
 //
-//		ClearAllIQIfDisplayed("FT")	
-//		ClearAllIQIfDisplayed("FL")	
-//		ClearAllIQIfDisplayed("FR")	
-//		ClearAllIQIfDisplayed("FB")
+//		ClearIQIfDisplayed_AllFldr("FT")	
+//		ClearIQIfDisplayed_AllFldr("FL")	
+//		ClearIQIfDisplayed_AllFldr("FR")	
+//		ClearIQIfDisplayed_AllFldr("FB")
 		
 	if(binType==1)
-		ClearAllIQIfDisplayed("FLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLRTB",winNameStr)
 		
-		ClearAllIQIfDisplayed("FLR",winNameStr)
-		ClearAllIQIfDisplayed("FTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FTB",winNameStr)
 
-		ClearAllIQIfDisplayed("FT",winNameStr)	
-		ClearAllIQIfDisplayed("FL",winNameStr)	
-		ClearAllIQIfDisplayed("FR",winNameStr)	
-		ClearAllIQIfDisplayed("FB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FL",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FB",winNameStr)
 				
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL
@@ -669,20 +669,20 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 	
 	if(binType==2)
 	// clear EVERYTHING
-		ClearAllIQIfDisplayed("FLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLRTB",winNameStr)
 		
-		ClearAllIQIfDisplayed("FLR",winNameStr)
-		ClearAllIQIfDisplayed("FTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FTB",winNameStr)
 
-		ClearAllIQIfDisplayed("FT",winNameStr)	
-		ClearAllIQIfDisplayed("FL",winNameStr)	
-		ClearAllIQIfDisplayed("FR",winNameStr)	
-		ClearAllIQIfDisplayed("FB",winNameStr)
-//		ClearAllIQIfDisplayed("FLRTB")
-//		ClearAllIQIfDisplayed("FT")	
-//		ClearAllIQIfDisplayed("FL")	
-//		ClearAllIQIfDisplayed("FR")	
-//		ClearAllIQIfDisplayed("FB")	
+		ClearIQIfDisplayed_AllFldr("FT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FL",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FB",winNameStr)
+//		ClearIQIfDisplayed_AllFldr("FLRTB")
+//		ClearIQIfDisplayed_AllFldr("FT")	
+//		ClearIQIfDisplayed_AllFldr("FL")	
+//		ClearIQIfDisplayed_AllFldr("FR")	
+//		ClearIQIfDisplayed_AllFldr("FB")	
 
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLR
@@ -706,22 +706,22 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 	
 	if(binType==3)
 // clear EVERYTHING
-		ClearAllIQIfDisplayed("FLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLRTB",winNameStr)
 		
-		ClearAllIQIfDisplayed("FLR",winNameStr)
-		ClearAllIQIfDisplayed("FTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FTB",winNameStr)
 
-		ClearAllIQIfDisplayed("FT",winNameStr)	
-		ClearAllIQIfDisplayed("FL",winNameStr)	
-		ClearAllIQIfDisplayed("FR",winNameStr)	
-		ClearAllIQIfDisplayed("FB",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FL",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FB",winNameStr)	
 	
-//		ClearAllIQIfDisplayed("FLR")
-//		ClearAllIQIfDisplayed("FTB")	
-//		ClearAllIQIfDisplayed("FT")	
-//		ClearAllIQIfDisplayed("FL")	
-//		ClearAllIQIfDisplayed("FR")	
-//		ClearAllIQIfDisplayed("FB")	
+//		ClearIQIfDisplayed_AllFldr("FLR")
+//		ClearIQIfDisplayed_AllFldr("FTB")	
+//		ClearIQIfDisplayed_AllFldr("FT")	
+//		ClearIQIfDisplayed_AllFldr("FL")	
+//		ClearIQIfDisplayed_AllFldr("FR")	
+//		ClearIQIfDisplayed_AllFldr("FB")	
 	
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLRTB
@@ -743,20 +743,20 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
 // clear EVERYTHING
-		ClearAllIQIfDisplayed("FLRTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLRTB",winNameStr)
 		
-		ClearAllIQIfDisplayed("FLR",winNameStr)
-		ClearAllIQIfDisplayed("FTB",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FLR",winNameStr)
+		ClearIQIfDisplayed_AllFldr("FTB",winNameStr)
 
-		ClearAllIQIfDisplayed("FT",winNameStr)	
-		ClearAllIQIfDisplayed("FL",winNameStr)	
-		ClearAllIQIfDisplayed("FR",winNameStr)	
-		ClearAllIQIfDisplayed("FB",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FT",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FL",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FR",winNameStr)	
+		ClearIQIfDisplayed_AllFldr("FB",winNameStr)	
 	
 	
-//		ClearAllIQIfDisplayed("FLRTB")
-//		ClearAllIQIfDisplayed("FLR")
-//		ClearAllIQIfDisplayed("FTB")
+//		ClearIQIfDisplayed_AllFldr("FLRTB")
+//		ClearIQIfDisplayed_AllFldr("FLR")
+//		ClearIQIfDisplayed_AllFldr("FTB")
 		
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL
@@ -809,7 +809,7 @@ Proc V_Back_IQ_Graph(type,binType,winNameStr)
 
 	if(binType==1 || binType==2 || binType==3)
 	
-		ClearAllIQIfDisplayed("B",winNameStr)
+		ClearIQIfDisplayed_AllFldr("B",winNameStr)
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B
 		
@@ -824,7 +824,7 @@ Proc V_Back_IQ_Graph(type,binType,winNameStr)
 			ModifyGraph/W=$winNameStr mirror=2
 		endif
 		
-//		ClearAllIQIfDisplayed("B")
+//		ClearIQIfDisplayed_AllFldr("B")
 //		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 //		CheckDisplayed/W=V_1D_Data iBin_qxqy_B
 //		
@@ -844,7 +844,7 @@ Proc V_Back_IQ_Graph(type,binType,winNameStr)
 	//nothing different here since there is ony a single detector to display, but for the future...
 	if(binType==4)
 	
-		ClearAllIQIfDisplayed("B",winNameStr)
+		ClearIQIfDisplayed_AllFldr("B",winNameStr)
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B
 		

@@ -139,7 +139,7 @@ Function V_DoTransCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTransmissionCorr
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	gVal = checked
 End
 
@@ -147,7 +147,7 @@ Function V_DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCorr
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 	gVal = checked
 End
 

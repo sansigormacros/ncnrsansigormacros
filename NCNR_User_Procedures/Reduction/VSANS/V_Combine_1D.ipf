@@ -122,7 +122,8 @@ Proc V_Combine_1D_Graph()
 	PopupMenu C1DControl_0d,mode=1,proc=V_CombineModePopup
 	PopupMenu C1DControl_0e,pos={120,100},size={109,20},title="Data Source"
 	PopupMenu C1DControl_0e,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;COR;ABS;\""		
-
+	Button C1DControl_0f,pos={200,39},size={120,20},proc=C1D_ConcatButtonProc,title="Concatenate"
+	Button C1DControl_0f,help={"Load slit-smeared USANS data = \".cor\" files"}
 
 	
 	//tab(1) Mask
@@ -138,6 +139,11 @@ Proc V_Combine_1D_Graph()
 	Button C1DControl_1d,pos={180,35},size={90,20},proc=C1D_ClearMaskProc,title="Clear Mask"		//bMask
 	Button C1DControl_1d,help={"Clears all mask points"}
 	Button C1DControl_1d,disable=1
+	Button C1DControl_1e,pos={180,65},size={90,20},proc=C1D_MaskPercent,title="Percent Mask"		//bMask
+	Button C1DControl_1e,help={"Clears all mask points"}
+	Button C1DControl_1e,disable=1
+	
+	
 //	Button C1DControl_1b,pos={144,66},size={110,20},proc=C1D_MaskDoneButton,title="Done Masking"
 //	Button C1DControl_1b,disable=1
 	
@@ -250,10 +256,12 @@ Function C1D_TabProc(ctrlName,tab) //: TabControl
 	// remove the mask if I go back to the data?
 	if(tab==0)
 		RemoveMask()
+//		RemoveConcatenated()
 	endif
 	
 	// masking
 	if(tab==1)
+		C1D_ClearMaskProc("")		//starts with a blank mask
 		C1D_MyMaskProc("")		//start masking if you click on the tab
 	else
 		C1D_MaskDoneButton("")		//masking is done if you click off the tab
@@ -318,6 +326,64 @@ Function RemoveMask()
 	setdatafolder root:
 end
 
+
+// concatenate the data, and replace the multiple data sets with the concatenated set
+// - then you can proceed to the mask tab
+//
+Function C1D_ConcatButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+
+	ControlInfo C1DControl_0e
+	String folderStr = S_Value
+
+	SVAR gStr1 = $(ksCombine1DFolder+":gStr1")
+	gStr1 = folderStr
+
+
+	ControlInfo C1DControl_0d
+	Variable binType = V_Value
+	
+	V_1DConcatenate(folderStr,binType)
+
+// sort the data set
+	V_TmpSort1D(folderStr)
+	
+// now copy the concatenated data over to the combine folder	
+	Duplicate/O $("root:Packages:NIST:VSANS:"+folderStr+":tmp_q") $(ksCombine1DFolder+":Q_exp")		
+	Duplicate/O $("root:Packages:NIST:VSANS:"+folderStr+":tmp_i") $(ksCombine1DFolder+":I_exp")		
+	Duplicate/O $("root:Packages:NIST:VSANS:"+folderStr+":tmp_s") $(ksCombine1DFolder+":S_exp")	
+	wave Q_exp = $(ksCombine1DFolder+":Q_exp")
+	Wave I_exp = $(ksCombine1DFolder+":I_exp")
+	Wave S_exp = $(ksCombine1DFolder+":S_exp")
+	
+
+//	
+	Duplicate/O $(ksCombine1DFolder+":Q_exp") $(ksCombine1DFolder+":Q_exp_orig")
+	Duplicate/O $(ksCombine1DFolder+":I_exp") $(ksCombine1DFolder+":I_exp_orig")
+	Duplicate/O $(ksCombine1DFolder+":S_exp") $(ksCombine1DFolder+":S_exp_orig")
+	wave I_exp_orig = $(ksCombine1DFolder+":I_exp_orig")
+	
+	Variable nq = numpnts($(ksCombine1DFolder+":Q_exp"))
+//	
+
+//	// append the (blank) wave note to the intensity wave
+//	Note I_exp,"BOX=0;SPLINE=0;"
+//	Note I_exp_orig,"BOX=0;SPLINE=0;"
+//	
+//	//add data to the graph
+	Execute "AppendConcatenated()"	
+	
+	// TODO:
+	// -- do I clear off the old data here, or somewhere else?
+	// clear off the old data from the individual panels
+	// use ClearAllIQIfDisplayed()
+	ClearIQIfDisplayed_AllBin(folderStr,"V_Combine_1D_Graph")
+
+	RemoveMask()
+	
+	return(0)
+End
 
 // step (1) - get the data from a WORK folder, and plot it
 // clear out all of the "old" waves, remove them from the graph first
@@ -468,10 +534,14 @@ End
 Function C1D_ClearMaskProc(ctrlName) : ButtonControl
 	String ctrlName
 	
+	SetDataFolder $ksCombine1DFolder
 	
-	Wave MaskData=$(ksCombine1DFolder+":MaskData")
-	MaskData = NaN
-	
+	Wave Q_exp_orig
+	Duplicate/O Q_exp_orig MaskData
+	MaskData = NaN		//use all data
+			
+	SetDataFolder root:
+
 	return(0)
 end
 
@@ -578,6 +648,45 @@ Function C1D_MaskGTCursor(ctrlName) : ButtonControl
 	return(0)
 End
 
+// when the mask button is pressed, A must be on the graph
+// Displays MaskData wave on the graph
+//
+Function C1D_MaskPercent(ctrlName) : ButtonControl
+	String ctrlName
+	
+	Variable aExists= strlen(CsrInfo(A)) > 0			//Igor 5
+	
+	if(!aExists)
+		return(1)
+	endif
+
+
+	SetDataFolder $(ksCombine1DFolder)
+
+	Wave data=I_exp_orig
+	Wave s_orig = S_exp_orig
+	Wave MaskData
+
+
+	Variable pct,ii,endPt
+	endPt=numpnts(MaskData)
+
+	pct = 0.25
+	
+	for(ii=0;ii<endPt;ii+=1)
+		// toggle NaN (keep) or Data value (= masked)
+
+		MaskData[ii] = (abs(s_orig[ii]/data[ii]) < pct) ? NaN : data[ii]		//if NaN, doesn't plot 
+	endfor
+
+
+	SetDataFolder root:
+
+	return(0)
+End
+
+
+
 
 Function CleanUpJunk()
 
@@ -585,7 +694,7 @@ Function CleanUpJunk()
 	// TODO:
 	// -- activate both of these functions to clean old data off of the graph
 //	Execute "RemoveOldData()"
-//	Execute "RemoveMask()"
+	Execute "RemoveMask()"
 	
 	//remove the cursor
 	Cursor/K A

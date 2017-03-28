@@ -682,7 +682,7 @@ Function V_WriteWaveToHDF(fname, groupName, varName, wav)
 	Wave/Z w = $localPath
 	if(waveExists(w) == 1)
 		w = wav
-		Print "write to local folder done"
+//		Print "write to local folder done"
 		return(0)		//we're done, get out
 	endif
 	
