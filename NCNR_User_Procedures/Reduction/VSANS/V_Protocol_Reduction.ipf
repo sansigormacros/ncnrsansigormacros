@@ -529,6 +529,88 @@ End
 //	endif
 
 
+Function/S V_GetBGDList()
+
+	String match="BLOCKED BEAM"
+	String list = V_getFileIntentList(match,0)
+
+//	Printf "BGD files = %s\r",list	
+	return(list)
+end
+
+
+Function/S V_GetEMPList()
+
+	String match="EMPTY CELL"
+	String list = V_getFileIntentList(match,0)
+
+//	Printf "EMP files = %s\r",list	
+	return(list)
+end
+
+
+// testStr is the "intent" string, or grep string
+// method is the method to use to find the file
+// 0 = (default) is to use the file catalog (= fastest)
+// 1 = Grep (not terribly slow)
+// 2 = read every file (bad choice)
+//
+Function/S V_getFileIntentList(testStr,method)
+	String testStr
+	Variable method
+	
+	Variable ii,num
+	String list="",item="",fname,newList,intent
+
+	// read every file...
+	if(method == 2)
+		PathInfo catPathName
+		String path = S_path
+		newList = V_GetRawDataFileList()
+		num=ItemsInList(newList)
+		
+		for(ii=0;ii<num;ii+=1)
+			item=StringFromList(ii, newList , ";")
+			fname = path + item
+			intent = V_getReduction_intent(fname)
+			if(cmpstr(intent,testStr) == 0)
+				list += item + ";"
+			endif
+		endfor	
+	endif
+	
+	// use Grep
+	if(method == 1)
+		newList = V_GetRawDataFileList()
+		num=ItemsInList(newList)
+		for(ii=0;ii<num;ii+=1)
+			item=StringFromList(ii, newList , ";")
+			Grep/P=catPathName/Q/E=("(?i)"+testStr) item
+			if( V_value )	// at least one instance was found
+	//				Print "found ", item,ii
+				list += item + ";"
+			endif
+		endfor	
+	
+	else
+	// get the list from the file catalog
+	
+		WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+		WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+		
+		Variable np = numpnts(intentW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
+		for(ii=0;ii<np;ii+=1)
+			if(cmpstr(intentW[ii],testStr)==0)
+				list += fileNameW[ii] + ";"
+			endif		
+		endfor
+		
+		List = SortList(List,";",0)
+	endif
+	
+	return(list)
+end
+
 //
 // TODO
 // -- decide on the way to locate the blocked beam files. Is the enumerated text of the intent
@@ -545,34 +627,54 @@ Function/S V_PickBGDButton(ctrlName) : ButtonControl
 	
 	PathInfo catPathName
 	String path = S_path
+
+	String match="BLOCKED BEAM"
+
+//s_tic()
+// get the list from the file catalog (=0.0007s)
+//	
+	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+	WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 	
-	newList = V_GetRawDataFileList()
-	num=ItemsInList(newList)
+	Variable np = numpnts(intentW)
+	for(ii=0;ii<np;ii+=1)
+		if(cmpstr(intentW[ii],match)==0)
+			list += fileNameW[ii] + ";"
+		endif		
+	endfor
 	
+	List = SortList(List,";",0)
+	Printf "BGD files = %s\r",list	
+//S_toc()	
+	
+	
+////S_tic()			// from grep = 3.3s
+//	newList = V_GetRawDataFileList()
+//	num=ItemsInList(newList)
+//	
+////	for(ii=0;ii<num;ii+=1)
+////		item=StringFromList(ii, newList , ";")
+////		fname = path + item
+////		intent = V_getReduction_intent(fname)
+////		if(cmpstr(intent,"BLOCKED BEAM") == 0)
+////			list += item + ";"
+////		endif
+////
+////	endfor
+//	list = ""	
 //	for(ii=0;ii<num;ii+=1)
 //		item=StringFromList(ii, newList , ";")
-//		fname = path + item
-//		intent = V_getReduction_intent(fname)
-//		if(cmpstr(intent,"BLOCKED BEAM") == 0)
+//		Grep/P=catPathName/Q/E=("(?i)"+match) item
+//		if( V_value )	// at least one instance was found
+////				Print "found ", item,ii
 //			list += item + ";"
 //		endif
-//
 //	endfor
-	
-	String match="BLOCKED BEAM"
-	for(ii=0;ii<num;ii+=1)
-		item=StringFromList(ii, newList , ";")
-		Grep/P=catPathName/Q/E=("(?i)"+match) item
-		if( V_value )	// at least one instance was found
-//				Print "found ", item,ii
-			list += item + ";"
-		endif
-
-	endfor
-		
-		
-	List = SortList(List,";",0)
-	Printf "BGD files = %s\r",list
+//		
+//		
+//	List = SortList(List,";",0)
+//	Printf "BGD files = %s\r",list
+////S_toc()
 	
 	return(list)
 End
@@ -586,46 +688,58 @@ Function/S V_PickEMPButton(ctrlName) : ButtonControl
 	
 	PathInfo catPathName
 	String path = S_path
+
+	String match="EMPTY CELL"
+
+// get the list from the file catalog (=0.0007s)
+//	
+	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+	WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 	
-	newList = V_GetRawDataFileList()
-	num=ItemsInList(newList)
+	Variable np = numpnts(intentW)
+	for(ii=0;ii<np;ii+=1)
+		if(cmpstr(intentW[ii],match)==0)
+			list += fileNameW[ii] + ";"
+		endif		
+	endfor
 	
+	List = SortList(List,";",0)
+	Printf "EMP files = %s\r",list	
+
+
+//	
+//	newList = V_GetRawDataFileList()
+//	num=ItemsInList(newList)
+//	
+////	for(ii=0;ii<num;ii+=1)
+////		item=StringFromList(ii, newList , ";")
+////		fname = path + item
+////		intent = V_getReduction_intent(fname)
+////		if(cmpstr(intent,"EMPTY CELL") == 0)
+////			list += item + ";"
+////		endif
+////
+////	endfor
+//
 //	for(ii=0;ii<num;ii+=1)
 //		item=StringFromList(ii, newList , ";")
-//		fname = path + item
-//		intent = V_getReduction_intent(fname)
-//		if(cmpstr(intent,"EMPTY CELL") == 0)
+//		Grep/P=catPathName/Q/E=("(?i)"+match) item
+//		if( V_value )	// at least one instance was found
+////				Print "found ", item,ii
 //			list += item + ";"
 //		endif
 //
 //	endfor
-
-	String match="EMPTY CELL"
-	for(ii=0;ii<num;ii+=1)
-		item=StringFromList(ii, newList , ";")
-		Grep/P=catPathName/Q/E=("(?i)"+match) item
-		if( V_value )	// at least one instance was found
-//				Print "found ", item,ii
-			list += item + ";"
-		endif
-
-	endfor
-		
-	List = SortList(List,";",0)
-	Printf "EMP files = %s\r",list
+//		
+//	List = SortList(List,";",0)
+//	Printf "EMP files = %s\r",list
 	
 	return(list)
-
-	
 End
 
 
-// TODO
-// -- find proper way to search for these files
-// -- they *may* be written to the file header(reduction block)
-// -- or grep for VSANS_DIV (in the title)
-Function/S V_PickDIVButton(ctrlName) : ButtonControl
-	String ctrlName
+Function/S V_GetDIVList()
+
 	String list="",item="",fname,newList,intent
 	Variable ii,num
 	
@@ -652,7 +766,50 @@ Function/S V_PickDIVButton(ctrlName) : ButtonControl
 //		Grep/P=catPathName/Q/E=("(?i)"+match) item
 		if( V_value )	// at least one instance was found
 //				Print "found ", item,ii
-			list += item + ";"
+			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+				list += item + ";"
+			endif
+		endif
+	endfor
+		
+	List = SortList(List,";",0)
+
+	return(list)
+end
+
+// TODO
+// -- find proper way to search for these files
+// -- they *may* be written to the file header(reduction block)
+// -- or grep for VSANS_DIV (in the title)
+Function/S V_PickDIVButton(ctrlName) : ButtonControl
+	String ctrlName
+	String list="",item="",fname,newList,intent
+	Variable ii,num
+	
+	PathInfo catPathName
+	String path = S_path
+	
+	newList = V_Get_NotRawDataFileList()
+	num=ItemsInList(newList)
+	
+//	for(ii=0;ii<num;ii+=1)
+//		item=StringFromList(ii, newList , ";")
+//		fname = path + item
+//		intent = V_getReduction_intent(fname)
+//		if(cmpstr(intent,"SENSITIVITY") == 0)
+//			list += item + ";"
+//		endif
+//
+//	endfor
+
+	String match="VSANS_DIV"		//this is part of the title of a VSANS DIV file
+	for(ii=0;ii<num;ii+=1)
+		item=StringFromList(ii, newList , ";")
+		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
+//		Grep/P=catPathName/Q/E=("(?i)"+match) item
+		if( V_value )	// at least one instance was found
+//				Print "found ", item,ii
+				list += item + ";"
 		endif
 
 	endfor
@@ -663,6 +820,46 @@ Function/S V_PickDIVButton(ctrlName) : ButtonControl
 	return(list)
 
 End
+
+Function/S V_GetMSKList()
+
+	String list="",item="",fname,newList,intent
+	Variable ii,num
+	
+	PathInfo catPathName
+	String path = S_path
+	
+	newList = V_Get_NotRawDataFileList()
+	num=ItemsInList(newList)
+	
+//	for(ii=0;ii<num;ii+=1)
+//		item=StringFromList(ii, newList , ";")
+//		fname = path + item
+//		intent = V_getReduction_intent(fname)
+//		if(cmpstr(intent,"SENSITIVITY") == 0)
+//			list += item + ";"
+//		endif
+//
+//	endfor
+
+	String match="MASK"		// this is part of the title of a VSANS MASK file
+	for(ii=0;ii<num;ii+=1)
+		item=StringFromList(ii, newList , ";")
+		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
+//		Grep/P=catPathName/Q/E=("(?i)"+match) item
+		if( V_value )	// at least one instance was found
+//				Print "found ", item,ii
+			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+				list += item + ";"
+			endif
+		endif
+
+	endfor
+		
+	List = SortList(List,";",0)
+
+	return(list)
+end
 
 
 //
@@ -805,20 +1002,18 @@ Window V_ProtocolPanel()
 	Button button_quest,pos={20,2},size={150,20},proc=V_ProtocolQuestionnaire,title="Questions"
 	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
 	
-	
+	PopupMenu popup_bkg,pos={85,76},size={51,23},proc=BKGFilePopMenuProc
+	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
+	PopupMenu popup_emp,pos={85,125},size={51,23},proc=EMPFilePopMenuProc
+	PopupMenu popup_emp,mode=1,value= #"V_getEMPList()"
+	PopupMenu popup_div,pos={85,175},size={51,23},proc=DIVFilePopMenuProc
+	PopupMenu popup_div,mode=1,value= #"V_getDIVList()"
+	PopupMenu popup_msk,pos={85,268},size={51,23},proc=MSKFilePopMenuProc
+	PopupMenu popup_msk,mode=1,value= #"V_getMSKList()"	
+		
 	CheckBox prot_check,pos={5,75},size={74,14},title="Background"
 	CheckBox prot_check,help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check,value= 1
-	Button pick_bgd,pos={114,75},size={100,20},proc=V_PickBGDButton,title="set BGD file"
-	Button pick_bgd,help={"This button will set the file selected in the File Catalog table to be the background file."}
-	Button recallProt,pos={7,406},size={107,20},proc=V_RecallProtocolButton,title="Recall Protocol"
-	Button recallProt,help={"Resets the panel to the file choices in  a previously saved protocol"}
-	Button del_protocol,pos={7,428},size={110,20},proc=V_DeleteProtocolButton,title="Delete Protocol"
-	Button del_protocol,help={"Use this to delete a previously saved protocol."}
-	Button done_protocol,pos={225,428},size={45,20},proc=V_DoneProtocolButton,title="Done"
-	Button done_protocol,help={"This button will close the panel. The panel can be recalled at any time from the SANS menu."}
-	Button saveProtocol,pos={7,384},size={100,20},proc=V_SaveProtocolButton,title="Save Protocol"
-	Button saveProtocol,help={"Saves the cerrent selections in the panel to a protocol which can be later recalled"}
 	CheckBox prot_check_1,pos={5,127},size={71,14},title="Empty Cell"
 	CheckBox prot_check_1,help={"If checked, the specified empty cell file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_1,value= 1
@@ -828,12 +1023,37 @@ Window V_ProtocolPanel()
 	CheckBox prot_check_3,pos={9,268},size={43,14},title="Mask"
 	CheckBox prot_check_3,help={"If checked, the specified mask file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_3,value= 1
-	Button pick_emp,pos={113,125},size={100,20},proc=V_PickEMPButton,title="set EMP file"
-	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
-	Button pick_DIV,pos={114,173},size={100,20},proc=V_PickDIVButton,title="set DIV file"
-	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button pick_MASK,pos={119,266},size={100,20},proc=V_PickMASKButton,title="set MASK file"
-	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
+	CheckBox prot_check_4,pos={5,30},size={53,14},title="Sample"
+	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
+	CheckBox prot_check_4,value= 1
+	CheckBox prot_check_5,pos={6,311},size={56,14},title="Average"
+	CheckBox prot_check_5,help={"If checked, the specified averaging will be performed at the end of the data reduction."}
+	CheckBox prot_check_5,value= 1	
+	CheckBox prot_check_9,pos={7,222},size={59,14},title="Absolute"
+	CheckBox prot_check_9,help={"If checked, absolute calibration will be included in the data reduction. If the parameter list is \"ask\", then the user will be prompted for absolue parameters"}
+	CheckBox prot_check_9,value= 1
+	
+
+//	Button pick_sam,pos={214,28},size={70,20},proc=V_PickSAMButton,title="set SAM"
+//	Button pick_sam,help={"This button will set the file selected in the File Catalog table to be the sample file"}	
+//	Button pick_bgd,pos={214,75},size={70,20},proc=V_PickBGDButton,title="set BGD"
+//	Button pick_bgd,help={"This button will set the file selected in the File Catalog table to be the background file."}
+//	Button pick_emp,pos={214,125},size={70,20},proc=V_PickEMPButton,title="set EMP"
+//	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
+//	Button pick_DIV,pos={214,173},size={70,20},proc=V_PickDIVButton,title="set DIV"
+//	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
+	Button pick_ABS,pos={214,220},size={70,20},proc=V_SetABSParamsButton,title="set ABS"
+	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}	
+//	Button pick_MASK,pos={214,266},size={70,20},proc=V_PickMASKButton,title="set MASK"
+//	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
+
+
+	Button pick_AVE,pos={108,313},size={150,20},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
+	Button pick_AVE,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
+	
+	SetVariable samStr,pos={6,50},size={250,15},title="file:"
+	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
+	SetVariable samStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gSAM		
 	SetVariable bgdStr,pos={7,98},size={250,15},title="file:"
 	SetVariable bgdStr,help={"Filename of the background file(s) to be used in the data reduction"}
 	SetVariable bgdStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gBGD
@@ -846,34 +1066,19 @@ Window V_ProtocolPanel()
 	SetVariable maskStr,pos={9,289},size={250,15},title="file:"
 	SetVariable maskStr,help={"Filename of the mask file to be used in the data reduction"}
 	SetVariable maskStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gMASK
-	Button ReduceOne,pos={194,384},size={100,20},proc=V_ReduceOneButton,title="Reduce A File"
-	Button ReduceOne,help={"Using the panel selections, the specified sample file will be reduced. If none is specified, the user will be prompted for a sample file"}
-	CheckBox prot_check_4,pos={5,30},size={53,14},title="Sample"
-	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
-	CheckBox prot_check_4,value= 1
-	Button pick_sam,pos={115,28},size={100,20},proc=V_PickSAMButton,title="set SAM file"
-	Button pick_sam,help={"This button will set the file selected in the File Catalog table to be the sample file"}
-	SetVariable samStr,pos={6,50},size={250,15},title="file:"
-	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
-	SetVariable samStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gSAM
-	Button pick_ABS,pos={115,220},size={110,20},proc=V_SetABSParamsButton,title="set ABS params"
-	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}
-	CheckBox prot_check_9,pos={7,222},size={59,14},title="Absolute"
-	CheckBox prot_check_9,help={"If checked, absolute calibration will be included in the data reduction. If the parameter list is \"ask\", then the user will be prompted for absolue parameters"}
-	CheckBox prot_check_9,value= 1
 	SetVariable absStr,pos={7,243},size={250,15},title="parameters:"
 	SetVariable absStr,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
 	SetVariable absStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-
-
-	CheckBox prot_check_5,pos={6,311},size={56,14},title="Average"
-	CheckBox prot_check_5,help={"If checked, the specified averaging will be performed at the end of the data reduction."}
-	CheckBox prot_check_5,value= 1
-	Button pick_AVE,pos={108,313},size={150,20},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
-	Button pick_AVE,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
 	SetVariable aveStr,pos={9,336},size={250,15},title="parameters:"
 	SetVariable aveStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
 	SetVariable aveStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAVE
+
+
+
+
+
+
+
 	
 	//only show DRK if user wants to see it 
 	//if global = 1,then show => set disable = 0
@@ -888,7 +1093,86 @@ Window V_ProtocolPanel()
 	Button export_button, help={"Exports the protocol to disk for Importing into another experiment"}
 	Button import_button, size={60,20},pos={125,406},title="Import",proc=V_ImportProtocol
 	Button import_button,help={"Imports a protocol from disk for use in this experiment"}
+	Button recallProt,pos={7,406},size={107,20},proc=V_RecallProtocolButton,title="Recall Protocol"
+	Button recallProt,help={"Resets the panel to the file choices in  a previously saved protocol"}
+	Button del_protocol,pos={7,428},size={110,20},proc=V_DeleteProtocolButton,title="Delete Protocol"
+	Button del_protocol,help={"Use this to delete a previously saved protocol."}
+	Button done_protocol,pos={225,428},size={45,20},proc=V_DoneProtocolButton,title="Done"
+	Button done_protocol,help={"This button will close the panel. The panel can be recalled at any time from the SANS menu."}
+	Button saveProtocol,pos={7,384},size={100,20},proc=V_SaveProtocolButton,title="Save Protocol"
+	Button saveProtocol,help={"Saves the cerrent selections in the panel to a protocol which can be later recalled"}
+	Button ReduceOne,pos={194,384},size={100,20},proc=V_ReduceOneButton,title="Reduce A File"
+	Button ReduceOne,help={"Using the panel selections, the specified sample file will be reduced. If none is specified, the user will be prompted for a sample file"}
+
 EndMacro
+
+Function BKGFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gBGD
+			tempStr = popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function EMPFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gEMP
+			tempStr = popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function DIVFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gDIV
+			tempStr = popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function MSKFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gMASK
+			tempStr = popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 ////activated when user checks/unchecks the box
 ////either prompts for a file using a standard dialog, or removes the current file
@@ -1408,6 +1692,8 @@ Function V_ProtocolQuestionnaire(ctrlName)
 	
 	//reset the panel based on the protocol textwave (currently a string)
 	V_ResetToSavedProtocol(newProtoStr)
+	
+	SetDataFolder root:
 	
 	return(0)
 End

@@ -845,9 +845,9 @@ Window Middle_IQ_Graph() : Graph
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 	if(binType==1)
-		ClearIQIfDisplayed("VCALC","MLRTB")
-		ClearIQIfDisplayed("VCALC","MLR")
-		ClearIQIfDisplayed("VCALC","MTB")
+		ClearIQIfDisplayed("VCALC","MLRTB","")
+		ClearIQIfDisplayed("VCALC","MLR","")
+		ClearIQIfDisplayed("VCALC","MTB","")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_ML
@@ -869,11 +869,11 @@ Window Middle_IQ_Graph() : Graph
 	endif
 	
 	if(binType==2)
-		ClearIQIfDisplayed("VCALC","MLRTB")
-		ClearIQIfDisplayed("VCALC","MT")	
-		ClearIQIfDisplayed("VCALC","ML")	
-		ClearIQIfDisplayed("VCALC","MR")	
-		ClearIQIfDisplayed("VCALC","MB")
+		ClearIQIfDisplayed("VCALC","MLRTB","")
+		ClearIQIfDisplayed("VCALC","MT","")	
+		ClearIQIfDisplayed("VCALC","ML","")	
+		ClearIQIfDisplayed("VCALC","MR","")	
+		ClearIQIfDisplayed("VCALC","MB","")
 	
 
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -897,12 +897,12 @@ Window Middle_IQ_Graph() : Graph
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed("VCALC","MLR")
-		ClearIQIfDisplayed("VCALC","MTB")	
-		ClearIQIfDisplayed("VCALC","MT")	
-		ClearIQIfDisplayed("VCALC","ML")	
-		ClearIQIfDisplayed("VCALC","MR")	
-		ClearIQIfDisplayed("VCALC","MB")	
+		ClearIQIfDisplayed("VCALC","MLR","")
+		ClearIQIfDisplayed("VCALC","MTB","")	
+		ClearIQIfDisplayed("VCALC","MT","")	
+		ClearIQIfDisplayed("VCALC","ML","")	
+		ClearIQIfDisplayed("VCALC","MR","")	
+		ClearIQIfDisplayed("VCALC","MB","")	
 	
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_MLRTB
@@ -923,9 +923,9 @@ Window Middle_IQ_Graph() : Graph
 	endif
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
-		ClearIQIfDisplayed("VCALC","MLRTB")
-		ClearIQIfDisplayed("VCALC","MLR")
-		ClearIQIfDisplayed("VCALC","MTB")
+		ClearIQIfDisplayed("VCALC","MLRTB","")
+		ClearIQIfDisplayed("VCALC","MLR","")
+		ClearIQIfDisplayed("VCALC","MTB","")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_ML
@@ -1205,9 +1205,9 @@ Window Front_IQ_Graph() : Graph
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
 
 	if(binType==1)
-		ClearIQIfDisplayed("VCALC","FLRTB")
-		ClearIQIfDisplayed("VCALC","FLR")
-		ClearIQIfDisplayed("VCALC","FTB")
+		ClearIQIfDisplayed("VCALC","FLRTB","")
+		ClearIQIfDisplayed("VCALC","FLR","")
+		ClearIQIfDisplayed("VCALC","FTB","")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FL
@@ -1232,11 +1232,11 @@ Window Front_IQ_Graph() : Graph
 	endif
 
 	if(binType==2)
-		ClearIQIfDisplayed("VCALC","FLRTB")
-		ClearIQIfDisplayed("VCALC","FT")	
-		ClearIQIfDisplayed("VCALC","FL")	
-		ClearIQIfDisplayed("VCALC","FR")	
-		ClearIQIfDisplayed("VCALC","FB")
+		ClearIQIfDisplayed("VCALC","FLRTB","")
+		ClearIQIfDisplayed("VCALC","FT","")	
+		ClearIQIfDisplayed("VCALC","FL","")	
+		ClearIQIfDisplayed("VCALC","FR","")	
+		ClearIQIfDisplayed("VCALC","FB","")
 	
 
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -1260,12 +1260,12 @@ Window Front_IQ_Graph() : Graph
 	endif
 	
 	if(binType==3)
-		ClearIQIfDisplayed("VCALC","FLR")
-		ClearIQIfDisplayed("VCALC","FTB")	
-		ClearIQIfDisplayed("VCALC","FT")	
-		ClearIQIfDisplayed("VCALC","FL")	
-		ClearIQIfDisplayed("VCALC","FR")	
-		ClearIQIfDisplayed("VCALC","FB")	
+		ClearIQIfDisplayed("VCALC","FLR","")
+		ClearIQIfDisplayed("VCALC","FTB","")	
+		ClearIQIfDisplayed("VCALC","FT","")	
+		ClearIQIfDisplayed("VCALC","FL","")	
+		ClearIQIfDisplayed("VCALC","FR","")	
+		ClearIQIfDisplayed("VCALC","FB","")	
 	
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FLRTB
@@ -1287,9 +1287,9 @@ Window Front_IQ_Graph() : Graph
 
 
 	if(binType==4)		//slit mode
-		ClearIQIfDisplayed("VCALC","FLRTB")
-		ClearIQIfDisplayed("VCALC","FLR")
-		ClearIQIfDisplayed("VCALC","FTB")
+		ClearIQIfDisplayed("VCALC","FLRTB","")
+		ClearIQIfDisplayed("VCALC","FLR","")
+		ClearIQIfDisplayed("VCALC","FTB","")
 		
 		SetDataFolder root:Packages:NIST:VSANS:VCALC
 		CheckDisplayed/W=VCALC#Panels_IQ iBin_qxqy_FL
@@ -1323,6 +1323,8 @@ EndMacro
 // all of the work folders will be checked to see if the data is on the graph
 // and if it is, it will be removed
 //
+// VCALC panel can pass in "" for the winNameStr
+//
 Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	String type,winNameStr
 
@@ -1343,6 +1345,8 @@ end
 // for a given data folder, all detector binning types
 // ("B", "FLTB", "MTB" etc) will be checked to see if the data is on the graph
 // and if it is, it will be removed
+//
+// VCALC panel can pass in "" for the winNameStr
 //
 Function ClearIQIfDisplayed_AllBin(fldr,winNameStr)
 	String fldr,winNameStr

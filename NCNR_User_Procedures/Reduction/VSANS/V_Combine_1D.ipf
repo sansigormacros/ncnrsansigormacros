@@ -17,7 +17,7 @@
 ////////////////
 // TODO:
 // x- add a popup to the load tab to set the work folder
-// -- add this file to the Includes list and to the SVN folder
+// x- add this file to the Includes list and to the SVN folder
 // -- add button (mask tab) to save mask
 // -- add button (mask tab) to recall mask
 // -- think of ways to run through the files batchwise (instead of adding this to the protocol)
@@ -43,6 +43,7 @@
 // -- button to mask based on relative error threshold for each data point. may be a good startng point for
 //    masking
 //
+// -- remove the mask by relative error button - this is not really a good idea.
 //
 //
 
@@ -671,7 +672,7 @@ Function C1D_MaskPercent(ctrlName) : ButtonControl
 	Variable pct,ii,endPt
 	endPt=numpnts(MaskData)
 
-	pct = 0.25
+	pct = 0.05
 	
 	for(ii=0;ii<endPt;ii+=1)
 		// toggle NaN (keep) or Data value (= masked)
