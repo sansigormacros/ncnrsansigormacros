@@ -81,7 +81,7 @@ End
 Proc TransMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	 CalcTrans()
+	 V_InitTransmissionPanel()
 End
 
 Proc BuildProtocol_MainButtonProc(ctrlName) : ButtonControl

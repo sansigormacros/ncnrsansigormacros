@@ -312,7 +312,7 @@ Function V_FillListBox1(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 13
+	Variable nRows = 14
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -348,20 +348,22 @@ Function V_FillListBox1(listWave,selWave)
 	
 	listWave[8][1] = "group_id (sample)"
 	listWave[8][2] = num2str(V_getSample_group_ID(fname))
+	
+	listWave[9][1] = "Box Coordinates"
+	WAVE boxCoord = V_getBoxCoordinates(fname)
+	listWave[9][2] = V_NumWave2List(boxCoord,";")
 
-	listWave[9][1] = "box_count"
-	listWave[9][2] = num2str(V_getBoxCounts(fname))
+	listWave[10][1] = "box_count"
+	listWave[10][2] = num2str(V_getBoxCounts(fname))
 	
-	listWave[10][1] = "box_count_error"
-	listWave[10][2] = num2str(V_getBoxCountsError(fname))
+	listWave[11][1] = "box_count_error"
+	listWave[11][2] = num2str(V_getBoxCountsError(fname))
 	
-	listWave[11][1] = "whole_trans"
-	listWave[11][2] = num2str(V_getSampleTransWholeDetector(fname))
+	listWave[12][1] = "whole_trans"
+	listWave[12][2] = num2str(V_getSampleTransWholeDetector(fname))
 	
-	listWave[12][1] = "whole_trans_error"
-	listWave[12][2] = num2str(V_getSampleTransWholeDetErr(fname))
-	
-	
+	listWave[13][1] = "whole_trans_error"
+	listWave[13][2] = num2str(V_getSampleTransWholeDetErr(fname))	
 		
 	
 
@@ -969,22 +971,22 @@ Function V_ChangeHeaderButtonProc(CHButton) : ButtonControl
 	
 	switch(V_Value)	// numeric switch
 		case 0:	// execute if case matches expression
-			V_WriteHeaderForPatch_0(tempName)
+			V_WriteHeaderForPatch_0(tempName)		//control
 			break		// exit from switch
 		case 1:	
-			V_WriteHeaderForPatch_1(tempName)
+			V_WriteHeaderForPatch_1(tempName)		//reduction
 			break
 		case 2:	
-			V_WriteHeaderForPatch_2(tempName)
+			V_WriteHeaderForPatch_2(tempName)		// sample
 			break
 		case 3:	
-			V_WriteHeaderForPatch_3(tempName)
+			V_WriteHeaderForPatch_3(tempName)		// instrument
 			break
 		case 4:	
-			V_WriteHeaderForPatch_4(tempName)
+			V_WriteHeaderForPatch_4(tempName)		//detectors
 			break
 		case 5:	
-			V_WriteHeaderForPatch_5(tempName)
+			V_WriteHeaderForPatch_5(tempName)		// polSANS
 			break
 		default:			// optional default expression executed
 			Abort "Tab not found - V_ChangeHeaderButtonProc"
@@ -1098,24 +1100,33 @@ Function V_WriteHeaderForPatch_1(fname)
 		val = str2num(listWave[8][2])
 		err = V_writeSample_GroupID(fname,val)
 	endif	
+
+
+
+	if ((selWave[9][0] & 2^4) != 0)		//"box coordinates"
+		str = listWave[9][2]
+		err = V_writeBoxCoordinates(fname,V_List2NumWave(str,";","inW"))
+	endif	
 	
-	if ((selWave[9][0] & 2^4) != 0)		//"box_count"
-		val = str2num(listWave[9][2])
+
+	
+	if ((selWave[10][0] & 2^4) != 0)		//"box_count"
+		val = str2num(listWave[10][2])
 		err = V_writeBoxCounts(fname,val)
 	endif	
 	
-	if ((selWave[10][0] & 2^4) != 0)		//"box_count_error"
-		val = str2num(listWave[10][2])
+	if ((selWave[11][0] & 2^4) != 0)		//"box_count_error"
+		val = str2num(listWave[11][2])
 		err = V_writeBoxCountsError(fname,val)
 	endif	
 	
-	if ((selWave[11][0] & 2^4) != 0)		//"whole_trans"
-		val = str2num(listWave[11][2])
+	if ((selWave[12][0] & 2^4) != 0)		//"whole_trans"
+		val = str2num(listWave[12][2])
 		err = V_writeSampleTransWholeDetector(fname,val)
 	endif	
 	
-	if ((selWave[12][0] & 2^4) != 0)		//"whole_trans_error"
-		val = str2num(listWave[12][2])
+	if ((selWave[13][0] & 2^4) != 0)		//"whole_trans_error"
+		val = str2num(listWave[13][2])
 		err = V_writeSampleTransWholeDetErr(fname,val)
 	endif	
 	

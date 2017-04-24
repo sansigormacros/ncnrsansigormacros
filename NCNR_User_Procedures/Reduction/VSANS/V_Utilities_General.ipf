@@ -391,6 +391,30 @@ End
 
 
 //
+// this will only load the data into RAW, overwriting whatever is there. no copy is put in rawVSANS
+//
+Function V_LoadAndPlotRAW_wName(fname)
+	String fname
+
+	Variable err=	V_LoadHDF5Data(fname,"RAW")			// load the data 
+//	Print "Load err = "+num2str(err)
+	if(!err)
+		SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+		String folder = StringFromList(0,hdfDF,".")
+		
+		// this (in SANS) just passes directly to fRawWindowHook()
+		V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+				
+		// set the global to display ONLY if the load was called from here, not from the 
+		// other routines that load data (to read in values)
+		SVAR gLastFile =	root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+		gLastFile = hdfDF
+	endif
+End
+
+
+
+//
 // previous/next button needs these functions
 // as well as many other utilities that manipulate the data file names
 // and parse run numbers.
@@ -1119,3 +1143,52 @@ Function/S V_ListFromDash(item)
 	Return numList
 End
 
+//*********************
+// List utilities
+//*********************
+Function/WAVE V_List2TextWave(list,sep,waveStr)
+	String list,sep,waveStr
+	
+	Variable n= ItemsInList(list,sep)
+	Make/O/T/N=(n) $waveStr= StringFromList(p,list,sep)
+	return $waveStr
+End
+
+Function/WAVE V_List2NumWave(list,sep,waveStr)
+	String list,sep,waveStr
+	
+	Variable n= ItemsInList(list,sep)
+	Make/O/D/N=(n) $waveStr= str2num( StringFromList(p,list,sep) )
+	return $waveStr
+End
+
+Function /S V_TextWave2List(w,sep)
+	Wave/T w
+	String sep
+	
+	String newList=""
+	Variable n=numpnts(w),ii=0
+	do
+		newList += w[ii] + sep
+		ii+=1
+	while(ii<n)
+	return(newList)
+End
+
+//for numerical waves
+Function/S V_NumWave2List(w,sep)
+	Wave w
+	String sep
+	
+	String newList="",temp=""
+	Variable n=numpnts(w),ii=0,val
+	do
+		val=w[ii]
+		temp=""
+		sprintf temp,"%g",val
+		newList += temp
+		newList += sep
+		ii+=1
+	while(ii<n)
+	return(newList)
+End

@@ -9,8 +9,21 @@
 //
 //   JAN 2017
 //
+// TODO:
+// -- complete the description of the steps needed...
+// Data needs to be reduced to the "COR" level - that means that the 
+// PLEX data has been added to work files, and the empty and blocked beam have been
+// subtracted off.
+// -- but what detector corrections should/ should not be done?
+// -- non-linear corrections are not needed, since this will strictly be a per-pixel correction
+// -- solid angle?
+// -- dead time?
+// -- efficiency?
+// -- large angle transmission?
 //
-//
+// we may need to think more carefully about some of these since the front carriage may need to be 
+// closer than the nominal 4m distance on SANS that was deemed far enough back to be "safe" from 
+// the high angle issues.
 //
 //
 
@@ -24,6 +37,11 @@
 //    appropriate locations for saving as a DIV file.
 //
 //
+
+
+
+
+
 
 //works on the data in "type" folder (expecting data to be reduced to the COR level)
 //sums all of the data, and normalizes by the number of cells (=pixelX*pixelY)
