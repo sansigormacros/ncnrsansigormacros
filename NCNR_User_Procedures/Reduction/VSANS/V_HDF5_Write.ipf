@@ -5809,7 +5809,7 @@ end
 //
 // TODO -- I need to make sure that this is an integer in the JSON definition
 // 		-- currently a text value in the data file - see trac ticket
-// x- this is also a duplicated field in the reduction block (reductio/group_id is no longer used)
+// x- this is also a duplicated field in the reduction block (reduction/group_id is no longer used)
 //
 // group ID !!! very important for matching up files
 // integer value

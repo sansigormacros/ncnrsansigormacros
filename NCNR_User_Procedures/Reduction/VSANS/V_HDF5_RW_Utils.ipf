@@ -415,10 +415,83 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	if(isFolder != -1)
 		base_name = ""
 	else
-		base_name = StringFromList(0,FileName,".")
+		base_name = StringFromList(0,FileName,".")		// just the first part of the name, no .nxs.ngv
 	endif
+
+
+// TODO
+// -- write a separate function or add a flag to this one that will read everything, including the DAS_logs
+//   -- the DAS_logs are not needed for reduction, and slow everything down a LOT (0.6 s per file vs 0.04 s per file!)
+
+//
+//// loads everything with one line	 (includes /DAS_logs)
+//	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
+//
+
+
+
+//// to skip DAS_logs. I need to generate all of the data folders myself
+//// must be an easier way to handle the different path syntax, but at least this works
+
+	String curDF = GetDataFolder(1)
+
+// load root/entry
+	hdf5path = "/entry"
+//	NewDataFolder/O $(curDF)
+	if(isFolder == -1)
+		NewDataFolder/O $(curDF+base_name)
+	endif
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry")
+	else
+		// base_name is "", so get rid of the leading ":" on ":entry"
+		NewDataFolder/O/S $(curDF+base_name+"entry")
+	endif
+	HDF5LoadGroup/Z/L=7/O :, fileID, hdf5Path		//	NOT recursive
+
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:control")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:control")
+	endif
+	hdf5path = "/entry/control"
+	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:instrument")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:instrument")
+	endif
+	hdf5path = "/entry/instrument"
+	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:reduction")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:reduction")
+	endif	
+	hdf5path = "/entry/reduction"
+	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:sample")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:sample")
+	endif	
+	hdf5path = "/entry/sample"
+	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:user")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:user")
+	endif	
+	hdf5path = "/entry/user"
+	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+
+
 	
-	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
 	if ( V_Flag != 0 )
 		Print fileName + ": could not open as HDF5 file"
 		setdatafolder root:
@@ -428,6 +501,9 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	HDF5CloseFile fileID
 	
 //s_toc()
+
+	SetDataFolder root:
+	
 	return(0)
 end	 
 

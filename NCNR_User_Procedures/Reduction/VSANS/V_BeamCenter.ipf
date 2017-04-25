@@ -13,6 +13,7 @@
 //
 // -- move everything into it's own folder, rather than root:
 //
+// -- am I working in detector coordinates (1->n) or in array coordinates (0->n-1)??
 
 
 Function V_FindBeamCenter()

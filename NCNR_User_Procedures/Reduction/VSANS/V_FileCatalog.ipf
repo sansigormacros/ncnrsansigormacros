@@ -35,9 +35,15 @@
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
 // -- make a background task to periodically "kill" a few of the files? maybe too dangerous.
+// -- change the V_GetHeaderInfoToWave function to allow "refreshing" of a single row, say after
+//    a file has been patched - then the disk and local copies are in sync
+//
+// -- run a profiler on the catalog to see if there is an obvious place to speed up the process
+//
 
-
-
+Function catalogProfiler()
+	V_BuildCatVeryShortTable()
+End
 
 //
 //	SRK modified 30 JAN07 to include Rotation angle, Temperature, and B-field in the table (at the end)
@@ -551,7 +557,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	
 // group_id (sample)
 	InsertPoints lastPoint,1,G_ID
-	G_ID[lastPoint] = V_getSample_group_ID(fname)
+	G_ID[lastPoint] = V_getSample_groupID(fname)
 
 	return(0)
 End

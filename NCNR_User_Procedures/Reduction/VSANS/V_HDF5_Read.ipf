@@ -2293,21 +2293,22 @@ Function/S V_getReduction_polSANSPurpose(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-//group ID
-// DONE
-// x- is this duplicated?
-// x- yes, this is a duplicated field in the /entry/sample block (and is probably more appropriate there)
-// x- so pick a single location, rather than needing to duplicate.
+////group ID
+//// DONE
+//// x- is this duplicated?
+//// x- yes, this is a duplicated field in the /entry/sample block (and is probably more appropriate there)
+//// x- so pick a single location, rather than needing to duplicate.
+//// x- REPLACE with a single function V_getSample_GroupID()
+////
+//Function V_getSample_group_ID(fname)
+//	String fname
 //
-Function V_getSample_group_ID(fname)
-	String fname
-
-// do not use the entry/reduction location
-//	String path = "entry:reduction:group_id" 
-	String path = "entry:sample:group_id"	
-
-	return(V_getRealValueFromHDF5(fname,path))
-end
+//// do not use the entry/reduction location
+////	String path = "entry:reduction:group_id" 
+//	String path = "entry:sample:group_id"	
+//
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
 
 Function/S V_getReduction_intent(fname)
 	String fname

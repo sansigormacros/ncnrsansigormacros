@@ -218,3 +218,76 @@ Function V_SumCountsInBox(x1,x2,y1,y2,ct_err,type,detStr)
 	
 	Return (counts)
 End
+
+
+Function V_FindCentroid() :  GraphMarquee
+
+//	//get the current displayed data (so the correct folder is used)
+//	SVAR cur_folder=root:myGlobals:gDataDisplayType
+//	String dest = "root:Packages:NIST:" + cur_folder
+	
+	Variable xzsum,yzsum,zsum,xctr,yctr
+	Variable left,right,bottom,top,ii,jj,counts
+	
+
+	
+	GetMarquee left,bottom
+	if(V_flag == 0)
+		Print "There is no Marquee"
+	else
+		left = round(V_left)		//get integer values for selection limits
+		right = round(V_right)
+		top = round(V_top)
+		bottom = round(V_bottom)
+
+		// NOTE:
+		// this function MODIFIES x and y values on return, converting them to panel coordinates
+		// detector panel is identified from the (left,top) coordinate (x1,y2)
+		String detStr = V_FindDetStrFromLoc(left,right,bottom,top)		
+	//	Printf "Detector = %s\r",detStr
+	
+	// 
+		SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType	
+		// this function will modify the x and y values (passed by reference) as needed to keep on the panel
+		V_KeepSelectionInBounds(left,right,bottom,top,detStr,gCurDispType)
+		Print left,right,bottom,top
+			
+		
+		// selection valid now, calculate beamcenter
+		// get the waves of the data and the data_err
+		Wave data = V_getDetectorDataW(gCurDispType,detStr)
+		Wave data_err = V_getDetectorDataErrW(gCurDispType,detStr)
+	
+		xzsum = 0
+		yzsum = 0
+		zsum = 0
+		// count over rectangular selection, doing each row, L-R, bottom to top
+		ii = bottom -1
+		do
+			ii +=1
+			jj = left-1
+			do
+				jj += 1
+				counts = data[jj][ii]
+				xzsum += jj*counts
+				yzsum += ii*counts
+				zsum += counts
+			while(jj<right)
+		while(ii<top)
+		
+		xctr = xzsum/zsum
+		yctr = yzsum/zsum
+		
+		// add 1 to each to get to detector coordinates (1,128)
+		// rather than the data array which is [0,127]
+//		xctr+=1
+//		yctr+=1
+		
+		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
+		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
+	endif
+	
+	//back to root folder (redundant)
+	SetDataFolder root:
+	
+End

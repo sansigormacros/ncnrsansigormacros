@@ -347,7 +347,7 @@ Function V_FillListBox1(listWave,selWave)
 	listWave[7][2] = V_getReduction_polSANSPurpose(fname)
 	
 	listWave[8][1] = "group_id (sample)"
-	listWave[8][2] = num2str(V_getSample_group_ID(fname))
+	listWave[8][2] = num2str(V_getSample_groupID(fname))
 	
 	listWave[9][1] = "Box Coordinates"
 	WAVE boxCoord = V_getBoxCoordinates(fname)
