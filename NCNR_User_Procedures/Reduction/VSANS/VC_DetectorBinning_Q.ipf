@@ -26,7 +26,7 @@
 //
 ///////////////////
 
-Strconstant ksBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
+Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
 
 
 
@@ -1355,8 +1355,8 @@ Function ClearIQIfDisplayed_AllBin(fldr,winNameStr)
 	String type
 	Variable ii
 	
-	for(ii=0;ii<ItemsInList(ksBinTypeList);ii+=1)
-		type = StringFromList(ii, ksBinTypeList, ";")
+	for(ii=0;ii<ItemsInList(ksPanelBinTypeList);ii+=1)
+		type = StringFromList(ii, ksPanelBinTypeList, ";")
 		ClearIQIfDisplayed(fldr,type,winNameStr)
 	endfor
 	// just in case

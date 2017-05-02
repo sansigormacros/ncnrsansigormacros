@@ -1043,10 +1043,12 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
 	endif
 
-	nq = 600
-
+	// TODO -- nq will need to be larger, once the back detector is installed
+	//
 	// note that the back panel of 320x320 (1mm res) results in 447 data points!
 	// - so I upped nq to 600
+
+	nq = 600
 
 //******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	

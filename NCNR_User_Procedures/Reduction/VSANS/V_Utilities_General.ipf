@@ -494,8 +494,12 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	// TODO
 	// -- update the 1D plotting as needed. these are SANS calls (OK for now, but will need to be better)
 	//do the average and plot (either the default, or what is on the panel currently)
-	V_PlotData_Panel(-9999)		// read the binType from the panel
-	
+	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
+	type = "RAW"
+	V_PlotData_Panel()		// read the binType from the panel
+	Variable binType = V_GetBinningPopMode()
+	V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
+
 
 	return(0)
 End

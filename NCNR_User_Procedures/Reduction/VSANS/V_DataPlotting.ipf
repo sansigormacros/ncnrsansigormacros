@@ -40,8 +40,8 @@
 // If -9999 is passed in as the "binType", then read the proper value from the popup on the graph.
 //  otherwise, assume that a proper value has been passed in, say from the reduction protocol
 //
-Function V_PlotData_Panel(binType)
-	Variable binType
+Function V_PlotData_Panel()
+//	Variable binType
 
 	DoWindow/F V_1D_Data
 	if(V_flag==0)
@@ -60,7 +60,7 @@ Function V_PlotData_Panel(binType)
 		
 		PopupMenu popup0,pos={16,5},size={71,20},title="Bin Type"
 		PopupMenu popup0,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
-		PopupMenu popup0,value= "One;Two;Four;Slit Mode;"
+		PopupMenu popup0,value= ksBinTypeStr
 		PopupMenu popup0,mode=1,proc=V_BinningModePopup
 		
 		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
@@ -95,14 +95,26 @@ Function V_PlotData_Panel(binType)
 	endif
 		
 	
-	SVAR workType = root:Packages:NIST:VSANS:Globals:gCurDispType
+//	SVAR workType = root:Packages:NIST:VSANS:Globals:gCurDispType
+//
+//	if(binType == -9999)
+//		binType = V_GetBinningPopMode()		//dummy passed in, replace with value from panel
+//	endif
+//	
+//	
+//	V_QBinAllPanels(workType,binType)
 
-	if(binType == -9999)
-		binType = V_GetBinningPopMode()		//dummy passed in, replace with value from panel
-	endif
-	V_QBinAllPanels(workType,binType)
 
-// TODO:
+	
+End
+
+// TODO
+// -- winStr is currently hard-wired, but this may not be an issue
+Function V_Update1D_Graph(workType,binType)
+	String workType
+	Variable binType
+	
+	// TODO:
 // x- "B" detector is currently skipped - Q is not yet calculated
 	String str,winStr="V_1D_Data"
 	sprintf str,"(\"%s\",%d,\"%s\")",workType,binType,winStr
@@ -113,7 +125,8 @@ Function V_PlotData_Panel(binType)
 	Execute ("V_Front_IQ_Graph"+str)
 
 	
-End
+	return(0)
+end
 
 Function V_Plot1D_LogCheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
@@ -418,24 +431,7 @@ Function V_GetBinningPopMode()
 	endif
 	
 	ControlInfo/W=V_1D_Data popup0
-	strswitch(S_Value)	// string switch
-		case "One":
-			binType = 1
-			break		// exit from switch
-		case "Two":
-			binType = 2
-			break		// exit from switch
-		case "Four":
-			binType = 3
-			break		// exit from switch
-		case "Slit Mode":
-			binType = 4
-			break		// exit from switch
-
-		default:			// optional default expression executed
-			binType = 0
-			Abort "Binning mode not found in V_GetBinningPopMode() "// when no case matches
-	endswitch
+	binType = V_BinTypeStr2Num(S_Value)
 	
 	return(binType)
 end
@@ -485,6 +481,11 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR vs qBin_qxqy_MR
 			AppendToGraph/W=$winNameStr iBin_qxqy_MT vs qBin_qxqy_MT
 			AppendToGraph/W=$winNameStr iBin_qxqy_MB vs qBin_qxqy_MB
+			ErrorBars/T=0 iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
+			ErrorBars/T=0 iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
+			ErrorBars/T=0 iBin_qxqy_MT Y,wave=(:eBin_qxqy_MT,:eBin_qxqy_MT)
+			ErrorBars/T=0 iBin_qxqy_MB Y,wave=(:eBin_qxqy_MB,:eBin_qxqy_MB)
+			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_ML)=(65535,0,0),rgb(iBin_qxqy_MB)=(1,16019,65535),rgb(iBin_qxqy_MR)=(65535,0,0),rgb(iBin_qxqy_MT)=(1,16019,65535)
@@ -519,6 +520,9 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR vs qBin_qxqy_MLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_MTB vs qBin_qxqy_MTB
+			ErrorBars/T=0 iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
+			ErrorBars/T=0 iBin_qxqy_MTB Y,wave=(:eBin_qxqy_MTB,:eBin_qxqy_MTB)
+			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MLR)=(65535,0,0),rgb(iBin_qxqy_MTB)=(1,16019,65535)
@@ -555,6 +559,8 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB vs qBin_qxqy_MLRTB
+			ErrorBars/T=0 iBin_qxqy_MLRTB Y,wave=(:eBin_qxqy_MLRTB,:eBin_qxqy_MLRTB)
+			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MLRTB)=(65535,0,0)
@@ -591,6 +597,11 @@ Proc V_Middle_IQ_Graph(type,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR vs qBin_qxqy_MR
 			AppendToGraph/W=$winNameStr iBin_qxqy_MT vs qBin_qxqy_MT
 			AppendToGraph/W=$winNameStr iBin_qxqy_MB vs qBin_qxqy_MB
+			ErrorBars/T=0 iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
+			ErrorBars/T=0 iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
+			ErrorBars/T=0 iBin_qxqy_MT Y,wave=(:eBin_qxqy_MT,:eBin_qxqy_MT)
+			ErrorBars/T=0 iBin_qxqy_MB Y,wave=(:eBin_qxqy_MB,:eBin_qxqy_MB)
+			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_ML)=(65535,0,0),rgb(iBin_qxqy_MB)=(1,16019,65535),rgb(iBin_qxqy_MR)=(65535,0,0),rgb(iBin_qxqy_MT)=(1,16019,65535)
@@ -615,7 +626,7 @@ End
 // TODO
 // x- need to set binType
 // x- currently  hard-wired == 1
-//
+// x- error bars on the data
 //
 Proc V_Front_IQ_Graph(type,binType,winNameStr) 
 	String type
@@ -656,6 +667,11 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR vs qBin_qxqy_FR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FT vs qBin_qxqy_FT
 			AppendToGraph/W=$winNameStr iBin_qxqy_FB vs qBin_qxqy_FB
+			ErrorBars/T=0 iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
+			ErrorBars/T=0 iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
+			ErrorBars/T=0 iBin_qxqy_FT Y,wave=(:eBin_qxqy_FT,:eBin_qxqy_FT)
+			ErrorBars/T=0 iBin_qxqy_FB Y,wave=(:eBin_qxqy_FB,:eBin_qxqy_FB)
+
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FL)=(39321,26208,1),rgb(iBin_qxqy_FB)=(2,39321,1),rgb(iBin_qxqy_FR)=(39321,26208,1),rgb(iBin_qxqy_FT)=(2,39321,1)
@@ -664,6 +680,8 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 			ModifyGraph/W=$winNameStr grid=1
 			ModifyGraph/W=$winNameStr log=1
 			ModifyGraph/W=$winNameStr mirror=2
+			Label/W=$winNameStr left "Intensity (1/cm)"
+			Label/W=$winNameStr bottom "Q (1/A)"
 		endif		
 	endif
 	
@@ -690,6 +708,9 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR vs qBin_qxqy_FLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB vs qBin_qxqy_FTB
+			ErrorBars/T=0 iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
+			ErrorBars/T=0 iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
+
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FLR)=(39321,26208,1),rgb(iBin_qxqy_FTB)=(2,39321,1)
@@ -698,8 +719,8 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 			ModifyGraph/W=$winNameStr grid=1
 			ModifyGraph/W=$winNameStr log=1
 			ModifyGraph/W=$winNameStr mirror=2
-			Label/W=$winNameStr left "Intensity (1/cm)"
-			Label/W=$winNameStr bottom "Q (1/A)"
+//			Label/W=$winNameStr left "Intensity (1/cm)"
+//			Label/W=$winNameStr bottom "Q (1/A)"
 		endif	
 			
 	endif
@@ -728,6 +749,8 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB vs qBin_qxqy_FLRTB
+			ErrorBars/T=0 iBin_qxqy_FLRTB Y,wave=(:eBin_qxqy_FLRTB,:eBin_qxqy_FLRTB)
+
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FLRTB)=(39321,26208,1)
@@ -766,6 +789,11 @@ Proc V_Front_IQ_Graph(type,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR vs qBin_qxqy_FR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FT vs qBin_qxqy_FT
 			AppendToGraph/W=$winNameStr iBin_qxqy_FB vs qBin_qxqy_FB
+			ErrorBars/T=0 iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
+			ErrorBars/T=0 iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
+			ErrorBars/T=0 iBin_qxqy_FT Y,wave=(:eBin_qxqy_FT,:eBin_qxqy_FT)
+			ErrorBars/T=0 iBin_qxqy_FB Y,wave=(:eBin_qxqy_FB,:eBin_qxqy_FB)
+			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FL)=(39321,26208,1),rgb(iBin_qxqy_FB)=(2,39321,1),rgb(iBin_qxqy_FR)=(39321,26208,1),rgb(iBin_qxqy_FT)=(2,39321,1)
@@ -785,7 +813,7 @@ End
 // TODO
 // x- need to set binType
 // x- currently  hard-wired == 1
-//
+// x- error bars on the data
 //
 //	type = the data folder
 // binType = numerical index of the bin type (1->4)
@@ -815,13 +843,16 @@ Proc V_Back_IQ_Graph(type,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
+			ErrorBars/T=0 iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
 			ModifyGraph/W=$winNameStr mode=4
-			ModifyGraph/W=$winNameStr marker=19
+//			ModifyGraph/W=$winNameStr marker=19
 			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr msize=2
+//			ModifyGraph/W=$winNameStr msize=2
 			ModifyGraph/W=$winNameStr grid=1
 			ModifyGraph/W=$winNameStr log=1
 			ModifyGraph/W=$winNameStr mirror=2
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=3,textMarker(iBin_qxqy_B)={"B","default",1,0,5,0.00,0.00}
+
 		endif
 		
 //		ClearIQIfDisplayed_AllFldr("B")

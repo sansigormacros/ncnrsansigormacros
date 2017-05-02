@@ -884,7 +884,7 @@ Proc VC_Initialize_Space()
 // to fill in:
 // values for always-visible items
 	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;White Beam;Polarizer;"
-	String/G gBinTypeStr = "One;Two;Four;Slit Mode;"
+	String/G gBinTypeStr = ksBinTypeStr
 
 
 

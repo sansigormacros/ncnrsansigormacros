@@ -32,6 +32,42 @@
 //
 
 
+Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
+
+// NOTE
+// this is the master conversion function
+// ***Use no others
+// *** When other bin types are developed, DO NOT reassign these numbers.
+//  instead, skip the old numbers and assign new ones.
+// old modes can be removed from the string constant ksBinTypeStr (above), but the 
+// mode numbers are what many different binning, plotting, and reduction functions are
+// switching on. In the future, it may be necessary to change the key (everywhere) to a string
+// switch, but for now, stick with the numbers.
+Function V_BinTypeStr2Num(binStr)
+	String binStr
+	
+	Variable binType
+	strswitch(binStr)	// string switch
+		case "One":
+			binType = 1
+			break		// exit from switch
+		case "Two":
+			binType = 2
+			break		// exit from switch
+		case "Four":
+			binType = 3
+			break		// exit from switch
+		case "Slit Mode":
+			binType = 4
+			break		// exit from switch
+
+		default:			// optional default expression executed
+			binType = 0
+			Abort "Binning mode not found"// when no case matches
+	endswitch	
+	return(binType)
+end
+
 Function V_QBinAllPanels(folderStr,binType)
 	String folderStr
 	Variable binType
@@ -46,7 +82,8 @@ Function V_QBinAllPanels(folderStr,binType)
 
 //// TODO:
 //
-//	
+//	Back detector is handled spearately since there is nothing to combine
+//
 	delQ = SetDeltaQ(folderStr,"B")
 	
 	// dispatch based on binning type
@@ -154,7 +191,7 @@ Function V_SimpleSave1DData(type,saveName)
 		saveName = newName
 	endif
 	
-	V_Write1DData(type,saveName)
+	V_Write1DData(curtype,saveName)
 
 End
 

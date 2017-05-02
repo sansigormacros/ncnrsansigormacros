@@ -315,6 +315,7 @@ Function V_Read_RT_File(msgStr)
 	NewPath/O RT_Path,pathStr
 //	Variable/G root:Packages:NIST:RealTime:gIsLogScale = 0		//force data to linear scale (1st read)
 	String/G root:Packages:NIST:VSANS:Globals:RT:RT_fileStr=filename	//full path:file of the Run.hst file to re-read
+
 	//read in the data
 	
 	//	get the new data by re-reading the datafile from charlotte?
@@ -432,7 +433,7 @@ Function V_BkgUpdate_RTData()
 			Button $"bkgStop",win=VSANS_RT_Panel,title="Start Updating",rename=bkgStart
 			return(1) //SANS_Data window not open
 		Endif
-		SVAR type=root:Packages:NIST:VSANS:Globals:gDataDisplayType
+		SVAR type=root:Packages:NIST:VSANS:Globals:gCurDispType
 		if(cmpstr("RealTime",type)!=0)
 			Button $"bkgStop",win=VSANS_RT_Panel,title="Start Updating",rename=bkgStart
 			return(1)		//display not RealTime

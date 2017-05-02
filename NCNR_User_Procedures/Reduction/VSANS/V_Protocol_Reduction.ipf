@@ -46,7 +46,7 @@
 //		SAVE=string		string from set {Yes,No} = truth of saving averaged data to disk
 //		NAME=string		string from set {Auto,Manual} = Automatic name generation or Manual(dialog)
 //
-//    BINTYPE=string (VSANS binning type) "One;Two;Four;Slit Mode;"
+//    BINTYPE=string (VSANS binning type) "One;Two;Four;Slit Mode;", defined by ksBinTypeStr
 //
 //		For work.DRK usage:
 //		**the list is COMMA delimited, soparator is =
@@ -1258,7 +1258,7 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
 //	Prompt width, "Width of Rectangular average (1,128)"
 //	Prompt Qctr, "q-value of center of annulus"
 //	Prompt Qdelta,"Pixel width of annulus"
-	Prompt binType,"Binning Type?",popup,"One;Two;Four;Slit Mode;"
+	Prompt binType,"Binning Type?",popup,ksBinTypeStr
 
 	//assign results of dialog to key=value string, semicolon separated
 	//do only what is necessary, based on av_typ
@@ -2166,9 +2166,13 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 //
 // TODO -- incomplete
-//	
-//mask data if desired (this is done automatically  in the average step) and is
-//not done explicitly here (if no mask in MSK folder, a null mask is created and "used")
+//		-- fill in the "ask" step
+//  -- none is OK, except if the kill fails for any reason
+// -- the regular case of the file name specified by the protocol works correctly
+// -- don't create a null mask if not used, it will handle the error and print out that the mask is missing
+
+//mask data if desired (this is done automatically in the average step) and is
+//not done explicitly here
 	
 	//check for mask
 	//add mask if needed
@@ -2177,21 +2181,21 @@ Function V_ExecuteProtocol(protStr,samStr)
 	if(cmpstr("none",prot[3])!=0)
 		If(cmpstr("ask",prot[3])==0)
 			//get file from user
+			// TODO -- fill in the get file prompt, and handle the result
 //			junkStr = PromptForPath("Select Mask file")
 			DoAlert 0,"Mask step incomplete"
 
 			If(strlen(junkStr)==0)
-				//no selection of mask file is not a fatal error, keep going, and let cirave()
-				//make a "null" mask 
 				//if none desired, make sure that the old mask is deleted
 				//junkStr = GetDataFolder(1)
 				//SetDataFolder root:Packages:NIST:MSK
-				KillWaves/Z root:Packages:NIST:MSK:data
+				KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
+				NewDataFolder/O root:Packages:NIST:VSANS:MSK
 				//SetDataFolder junkStr
 				DoAlert 0,"No Mask file selected, data not masked"
 			else
 				//read in the file from the dialog
-				V_LoadHDF5Data("","MSK")
+				V_LoadHDF5Data(junkStr,"MSK")
 			Endif
 		else
 			//just read it in from the protocol
@@ -2207,6 +2211,8 @@ Function V_ExecuteProtocol(protStr,samStr)
 // -- what happens if the kill fails? need error handling
 //
 		KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
+		NewDataFolder/O root:Packages:NIST:VSANS:MSK
+
 	Endif
 	
 
@@ -2236,9 +2242,26 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//convert the folder to linear scale before averaging, then revert by calling the window hook
 	// (not needed for VSANS, data is always linear scale)
 
+	// bin and plot the data
+	// TODO
+	// x- currently this bins and plots based on the V_1D_Data panel, NOT the selections above
+	// now takes the the binType from the protocol, and uses two steps to bin and average
+	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
+	// plotting is not really necessary, and the graph may not be open - so skip for now?
+	Variable binType
+	binType = V_BinTypeStr2Num(binTypeStr)
+	if(binType == 0)
+			Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
+	endif
+
+
+
 // TODO
 // -- this switch does nothing -- fill it in
-//	
+//	 -- need to convert BINTYPE keyword into a numerical value to pass
+//    ?? define a global string and use WhichListItem() to get a number back?
+//
+	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
 			//still do nothing
@@ -2260,6 +2283,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 			break
 		case "Circular":
 //			CircularAverageTo1D(activeType)
+			V_QBinAllPanels(activeType,binType)		// this does a default circular average
 			break
 		case "Sector":
 //			CircularAverageTo1D(activeType)
@@ -2270,47 +2294,13 @@ Function V_ExecuteProtocol(protStr,samStr)
 		default:	
 			//do nothing
 	endswitch
-	// bin and plot the data
-	// TODO
-	// x- currently this bins and plots based on the V_1D_Data panel, NOT the selections above
-	// now takes the the binType from the protocol, and uses two steps to bin and average
-	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
-	// plotting is not really necessary, and the graph may not be open - so skip for now?
-	Variable binType
-	strswitch(binTypeStr)	// string switch
-		case "One":
-			binType = 1
-			break		// exit from switch
-		case "Two":
-			binType = 2
-			break		// exit from switch
-		case "Four":
-			binType = 3
-			break		// exit from switch
-		case "Slit Mode":
-			binType = 4
-			break		// exit from switch
 
-		default:			// optional default expression executed
-			binType = 0
-			Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
-	endswitch
-	
-	V_PlotData_Panel(binType)		//this bins and plots the *currently displayed* data
-	V_QBinAllPanels(activeType,binType)		//bin the active reduction data
-
-// TODO:
-// x- "B" detector is currently skipped - Q is not yet calculated
-
-	String str,winStr="V_1D_Data"
-	sprintf str,"(\"%s\",%d,\"%s\")",activeType,binType,winStr
-
-	
-	Execute ("V_Back_IQ_Graph"+str)
-//	Print "V_Back_IQ_Graph"+str
-	Execute ("V_Middle_IQ_Graph"+str)
-	Execute ("V_Front_IQ_Graph"+str)
-
+// TODO -- this call will bin the active type, then the next call bins the active type
+// -- then later, I dispatch to bin the active type...	
+// -- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
+//
+	V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+	V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
 	
 ///// end of averaging dispatch
 
@@ -2361,11 +2351,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 		else
 			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
 			//use autoname if present
-//			if (cmpstr(autoname,"") != 0)
-//				fullPath = S_Path + autoname + "." +exten
-//			else
-//				fullPath = S_Path + newFileName+"." + exten
-//			endif	
+			if (cmpstr(autoname,"") != 0)
+				fullPath = S_Path + autoname + "." +exten
+			else
+				fullPath = S_Path + newFileName+"." + exten
+			endif	
 		Endif
 		//
 		strswitch(av_type)	
@@ -2395,7 +2385,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 		endswitch
 		
-		//Print "data written to:  "+ fullpath
+		Print "data written to:  "+ newFileName+"."+exten
 	Endif
 	
 	//done with everything in protocol list
@@ -2408,7 +2398,7 @@ End
 //values are passed back as a global string variable (keyword=value)
 //
 Proc V_AskForAbsoluteParams(c2,c3,c4,c5,I_err)
-	Variable c2=0.95,c3=0.1,c4=1,c5=32.0,I_err=0.32
+	Variable c2=1,c3=1,c4=1e8,c5=1,I_err=1
 	Prompt c2, "Standard Transmission"
 	Prompt c3, "Standard Thickness (cm)"
 	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"

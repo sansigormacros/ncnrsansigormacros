@@ -826,7 +826,9 @@ Function V_IvsQPanelButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			V_PlotData_Panel(-9999)		//-9999 requests a read from the popup on the panel
+			V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
+			Variable binType = V_GetBinningPopMode()
+			V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
 			
 			break
 		case -1: // control being killed

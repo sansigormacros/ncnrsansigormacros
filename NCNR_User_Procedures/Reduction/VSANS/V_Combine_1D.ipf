@@ -119,7 +119,7 @@ Proc V_Combine_1D_Graph()
 	TitleBox C1DControl_0c,variable= $(ksCombine1DFolder+":gStr1")
 	PopupMenu C1DControl_0d,pos={120,75},size={71,20},title="Bin Type"
 	PopupMenu C1DControl_0d,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
-	PopupMenu C1DControl_0d,value= "One;Two;Four;Slit Mode;"
+	PopupMenu C1DControl_0d,value= ksBinTypeStr
 	PopupMenu C1DControl_0d,mode=1,proc=V_CombineModePopup
 	PopupMenu C1DControl_0e,pos={120,100},size={109,20},title="Data Source"
 	PopupMenu C1DControl_0e,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;COR;ABS;\""		
@@ -343,7 +343,7 @@ Function C1D_ConcatButtonProc(ctrlName) : ButtonControl
 
 
 	ControlInfo C1DControl_0d
-	Variable binType = V_Value
+	Variable binType = V_BinTypeStr2Num(S_Value)
 	
 	V_1DConcatenate(folderStr,binType)
 
