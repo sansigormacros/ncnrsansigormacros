@@ -3,16 +3,7 @@
 #pragma IgorVersion=6.1
 
 //************************
-//	Vers. 1.2 092101
-//
-//7/2001 converted protocols to simply use the filenames, rather than the path:filename
-//this should allow portability of the protocols between machines
-//**ALL** protocols now depend on the path "catPathName"
-//
-//procedure files for construction of protocols interactively,
-//selecting files from the CAT/VSHORT table, rather than picking blindly
-//from a dialog - the process of selecting/setting files is not as 
-//transparent as it could be for new users
+
 //
 //*************************
 //////////////////////////////////
@@ -43,13 +34,15 @@
 //		QCENTER=value		q-value (1/A) of center of annulus for annular average
 //		QDELTA=value		total width of annulus centered at QCENTER
 //		PLOT=string		string from set {Yes,No} = truth of generating plot of averaged data
-//		SAVE=string		string from set {Yes,No} = truth of saving averaged data to disk
+//		SAVE=string		string from set {Yes,No} = truth of saving averaged data to disk, now with "Concatenate"  or "Individual"
 //		NAME=string		string from set {Auto,Manual} = Automatic name generation or Manual(dialog)
 //
-//    BINTYPE=string (VSANS binning type) "One;Two;Four;Slit Mode;", defined by ksBinTypeStr
+//
+//    BINTYPE=string (VSANS binning type) "One;Two;Four;Slit Mode;", as defined by ksBinTypeStr
+//
 //
 //		For work.DRK usage:
-//		**the list is COMMA delimited, soparator is =
+//		**the list is COMMA delimited, separator is =
 //		DRK=none,DRKMODE=0,
 //		DRK=name 			is the name of the file, must be a full name, expected to be raw data
 //		DRKMODE=value		is a numeric value (0 or 10 to add to the Correct(mode) switch (unused?)
@@ -88,7 +81,7 @@ Proc V_InitProtocolPanel()
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDIV="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gMASK="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr="ask"
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=Yes;"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDRK="DRK=none,DRKMODE=0,"
 	
 	SetDataFolder root:
@@ -529,6 +522,16 @@ End
 //	endif
 
 
+Function/S V_GetSAMList()
+
+	String match="SAMPLE"
+	String list = V_getFileIntentList(match,0)
+
+//	Printf "SAM files = %s\r",list	
+	return(list)
+end
+
+
 Function/S V_GetBGDList()
 
 	String match="BLOCKED BEAM"
@@ -737,6 +740,38 @@ Function/S V_PickEMPButton(ctrlName) : ButtonControl
 	return(list)
 End
 
+
+//
+Function/S V_PickEMPBeamButton(ctrlName) : ButtonControl
+	String ctrlName
+	String list="",item="",fname,newList,intent
+	Variable ii,num
+	
+	PathInfo catPathName
+	String path = S_path
+
+	String match="EMPTY BEAM"
+
+// get the list from the file catalog (=0.0007s)
+//	
+	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+	WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+	
+	Variable np = numpnts(intentW)
+	for(ii=0;ii<np;ii+=1)
+		if(cmpstr(intentW[ii],match)==0)
+			list += fileNameW[ii] + ";"
+		endif		
+	endfor
+	
+	List = SortList(List,";",0)
+	Printf "EMP Beam files = %s\r",list	
+
+
+
+	
+	return(list)
+End
 
 Function/S V_GetDIVList()
 
@@ -1001,7 +1036,9 @@ Window V_ProtocolPanel()
 	Button button_help,help={"Show the help file for setting up a reduction protocol"}
 	Button button_quest,pos={20,2},size={150,20},proc=V_ProtocolQuestionnaire,title="Questions"
 	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
-	
+
+	PopupMenu popup_sam,pos={85,28},size={51,23},proc=SAMFilePopMenuProc
+	PopupMenu popup_sam,mode=1,value= #"V_getSAMList()"	
 	PopupMenu popup_bkg,pos={85,76},size={51,23},proc=BKGFilePopMenuProc
 	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
 	PopupMenu popup_emp,pos={85,125},size={51,23},proc=EMPFilePopMenuProc
@@ -1105,6 +1142,24 @@ Window V_ProtocolPanel()
 	Button ReduceOne,help={"Using the panel selections, the specified sample file will be reduced. If none is specified, the user will be prompted for a sample file"}
 
 EndMacro
+
+Function SAMFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+			tempStr = popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function BKGFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -1234,7 +1289,7 @@ End
 
 // TODO
 // -- this is a trimmed down version of the "full" set of averaging options
-//    add to this as needed to add in functionality
+//    add to this as needed as I figure out what functionality is appropriate
 //
 //procedure called by protocol panel to ask user for average type choices
 // somewhat confusing and complex, but may be as good as it gets.
@@ -1249,7 +1304,7 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
-	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
+	Prompt autoSave,"Save files to disk?",popup,"Yes - Concatenate;Yes - Individual;No"
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 //	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
 //	Prompt side,"Include detector halves?",popup,"both;right;left"
@@ -1849,25 +1904,26 @@ Function V_ExecuteProtocol(protStr,samStr)
 // TODO:
 // x- this is no longer done after the COR step, and CAL is not produced as output of DIV	
 // x- needs to be aware of the file name passed in
-// -- PromptForPath does not exist in VSANS. Need a better (automated) way to find the file.
+// x- PromptForPath does not exist in VSANS. Need a better (automated) way to find the file.
 
 //check for work.div file (prot[2])
 //load in if needed
-// no math is done here, DIV is applied as files are converted to WORK
-// no need to display DIV, or update any data display
+// no math is done here, DIV is applied as files are converted to WORK (the first operation in VSANS)
 //
-//		DoAlert 0,"DIV step incomplete"
+	String divFileName = ""
 
 	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
 		If(cmpstr("ask",prot[2]) == 0)
 			//ask user for file
 //			 junkStr = PromptForPath("Select the detector sensitivity file")
-			junkStr=""
-			If(strlen(junkStr)==0)
+			Prompt divFileName,"DIV File",popup,V_PickDIVButton("")
+			DoPrompt "Select File",divFileName
+
+			If(strlen(divFileName)==0)
 				SetDataFolder root:
 				Abort "No file selected, data reduction aborted"
 			Endif
-			V_LoadHDF5Data(junkStr,"DIV")
+			V_LoadHDF5Data(divFileName,"DIV")
 		else
 			//assume it's a path, and that the first (and only) item is the path:file
 			//list processing is necessary to remove any final comma
@@ -1878,12 +1934,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 
 
-
-
 // TODO:
-// -- currently does not allow adding RAW data files together
+// -- currently does not allow adding RAW data files together, so no parsing is done
 //	
-
+//
 	//prompt for sam data => read raw data, add to sam folder
 	//or parse file(s) from the input paramter string
 	activeType = "SAM"
@@ -1935,9 +1989,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 		Endif
 	While(0)
 	// TODO
-	// -- this may not be the most reliable way to pas the file name
+	// -- this may not be the most reliable way to pass the file name (for naming of the saved file later)
 	SVAR file_name = root:file_Name
-	String sameFileLoaded = file_name		//keep a copy of the sample file loaded
+	String samFileLoaded = file_name		//keep a copy of the sample file loaded
 	
 	//always update
 	V_UpdateDisplayInformation(ActiveType)
@@ -2127,10 +2181,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 // TODO:
 // -- calculation works, needs proper inputs (solid angle aware)
-// --	Open beam method is only a stub - fill in calculation in V_AskForAbsoluteParams_Quest()
+// --	Open beam method needs to be verified in V_AskForAbsoluteParams_Quest()
 	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired
-		DoAlert 0,"Abs step incomplete"
+//		DoAlert 0,"Abs step incomplete"
 
 	if(cmpstr("none",prot[4])!=0)
 		if(cmpstr("ask",prot[4])==0)
@@ -2165,44 +2219,47 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 
 //
-// TODO -- incomplete
-//		-- fill in the "ask" step
+// TODO
+//		x- fill in the "ask" step
 //  -- none is OK, except if the kill fails for any reason
-// -- the regular case of the file name specified by the protocol works correctly
-// -- don't create a null mask if not used, it will handle the error and print out that the mask is missing
+// x- the regular case of the file name specified by the protocol works correctly
+// x- don't create a null mask if not used, it will handle the error and print out that the mask is missing
 
-//mask data if desired (this is done automatically in the average step) and is
+//mask data if desired (this is done automatically when the data is binned to I(q)) and is
 //not done explicitly here
 	
 	//check for mask
-	//add mask if needed
-	// can't properly check the filename - so for now always add
 	//doesn't change the activeType
+	String mskFileName=""
+	
 	if(cmpstr("none",prot[3])!=0)
 		If(cmpstr("ask",prot[3])==0)
 			//get file from user
-			// TODO -- fill in the get file prompt, and handle the result
-//			junkStr = PromptForPath("Select Mask file")
-			DoAlert 0,"Mask step incomplete"
+			// TODO
+			// x- fill in the get file prompt, and handle the result
+			Prompt mskFileName,"MASK File",popup,V_PickMASKButton("")
+			DoPrompt "Select File",mskFileName
+//			if (V_Flag)
+//				return 0									// user cancelled
+//			endif
 
-			If(strlen(junkStr)==0)
+			If(strlen(mskFileName)==0)		//use cancelled
 				//if none desired, make sure that the old mask is deleted
-				//junkStr = GetDataFolder(1)
-				//SetDataFolder root:Packages:NIST:MSK
 				KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
 				NewDataFolder/O root:Packages:NIST:VSANS:MSK
-				//SetDataFolder junkStr
+				
 				DoAlert 0,"No Mask file selected, data not masked"
 			else
-				//read in the file from the dialog
-				V_LoadHDF5Data(junkStr,"MSK")
+				//read in the file from the selection
+				V_LoadHDF5Data(mskFileName,"MSK")
 			Endif
 		else
 			//just read it in from the protocol
 			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[3],"," )
-			V_LoadHDF5Data(junkStr,"MSK")
+			mskFileName = pathStr + StringFromList(0, prot[3],"," )
+			V_LoadHDF5Data(mskFileName,"MSK")
 		Endif
+		
 	else
 		//if none desired, make sure that the old mask is deleted
 // TODO
@@ -2216,19 +2273,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 	
 
-
-
-
 	// average/save data as specified
-	
 	//Parse the keyword=<Value> string as needed, based on AVTYPE
 	
 	//average/plot first 
 	String av_type = StringByKey("AVTYPE",prot[5],"=",";")
 	If(cmpstr(av_type,"none") != 0)
 		If (cmpstr(av_type,"")==0)		//if the key could not be found... (if "ask" the string)
-			//get the averaging parameters from the user, as if the set button was hit
-			//in the panel
+			//get the averaging parameters from the user, as if the set button was hit in the panel
 			V_SetAverageParamsButtonProc("dummy")		//from "ProtocolAsPanel"
 			SVAR tempAveStr = root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr
 			av_type = StringByKey("AVTYPE",tempAveStr,"=",";")
@@ -2243,9 +2295,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 	// (not needed for VSANS, data is always linear scale)
 
 	// bin and plot the data
+	
 	// TODO
-	// x- currently this bins and plots based on the V_1D_Data panel, NOT the selections above
-	// now takes the the binType from the protocol, and uses two steps to bin and average
+// -- this switch does nothing -- fill it in
+//	 x- need to convert BINTYPE keyword into a numerical value to pass
+//
+
 	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
 	// plotting is not really necessary, and the graph may not be open - so skip for now?
 	Variable binType
@@ -2255,13 +2310,6 @@ Function V_ExecuteProtocol(protStr,samStr)
 	endif
 
 
-
-// TODO
-// -- this switch does nothing -- fill it in
-//	 -- need to convert BINTYPE keyword into a numerical value to pass
-//    ?? define a global string and use WhichListItem() to get a number back?
-//
-	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
 			//still do nothing
@@ -2295,9 +2343,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 			//do nothing
 	endswitch
 
-// TODO -- this call will bin the active type, then the next call bins the active type
-// -- then later, I dispatch to bin the active type...	
-// -- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
+// TODO
+// x- this call will bin the active type, then the next call bins the active type
+// x- then later, I dispatch to bin the active type...	
+// x- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
 //
 	V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
 	V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
@@ -2307,14 +2356,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 // TODO
 // x- how do I get the sample file name?
-//     sameFileLoaded is the file name loaded (contains the extension)
+//    local variable samFileLoaded is the file name loaded (contains the extension)
 //	
 	//save data if desired
 	String fullpath = "", newfileName=""
-	String item = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
-	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
+	String saveType = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
+	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
-		newFileName = RemoveEnding(sameFileLoaded,".nxs.ngv")
+		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
 		
 		//pick ABS or AVE extension
 		String exten = activeType
@@ -2341,8 +2390,15 @@ Function V_ExecuteProtocol(protStr,samStr)
 		//
 		//
 		Variable dialog = 0
+
+// TODO
+// -- need to define nBeg and nEnd somewhere
+// -- currently hard-wired
+// --do I need to define these "per-panel"?		
+		Variable nBeg = 3, nEnd = 10
+		
 		PathInfo/S catPathName
-		item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
+		String item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
 		String autoname = StringByKey("AUTONAME",prot[5],"=",";")		//autoname -  will get empty string if not present
 		If((cmpstr(item,"Manual")==0) || (cmpstr(newFileName,"") == 0))
 			//manual name if requested or if no name can be derived from header
@@ -2380,8 +2436,18 @@ Function V_ExecuteProtocol(protStr,samStr)
 //
 // TODO:
 // -- fill in all of the cases, default is only the "standard" I(q)
-				V_ConcatenateForSave(activeType,binType)
-				V_Write1DData(activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+
+				if(cmpstr(saveType,"Yes - Concatenate")==0)
+					V_Trim1DData(activeType,binType,nBeg,nEnd)
+					V_ConcatenateForSave(activeType,binType)		// this removes q=0 point, concatenates, sorts
+					V_Write1DData(activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+				else
+					// remove the q=0 point from the back detector, if it's there
+					// does not need to know binType
+					// does not trim any of the data
+					V_RemoveQ0_B(activeType)
+					V_Write1DData_NoConcat(activeType,newFileName,binType)
+				endif
 
 		endswitch
 		
@@ -2391,6 +2457,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//done with everything in protocol list
 	Return(0)
 End
+
+
+
 
 
 //missing parameter dialog to solicit the 4 absolute intensity parameters
@@ -2419,9 +2488,10 @@ End
 //
 // TODO
 // -- fill in all of the functionality for calculation from direct beam
+//  and verify that the calculations are numerically correct
 //
 //asks the user for absolute scaling information. the user can either
-//enter the 5 necessary values in manually (missing parameter dialog)
+//enter the necessary values in manually (missing parameter dialog)
 //or the user can select an empty beam file from a standard open dialog
 //if an empty beam file is selected, the "kappa" value is automatically calculated
 //in either case, the global keyword=value string is set.
@@ -2439,53 +2509,104 @@ Function V_AskForAbsoluteParams_Quest()
 	else
 		//empty beam flux file selected, prompt for file, and use this to calculate KAPPA
 		Variable kappa=1
+		Variable kappa_err
 			
 		//get the necessary variables for the calculation of kappa
-		Variable detCnt,countTime,attenTrans,monCnt,sdd,pixel
-		String detStr
+		Variable countTime,monCnt,sdd,pixel
+		String detStr,junkStr,errStr
 
-				
-		//lookup table for transmission factor
-		//determine which instrument the measurement was done on from acctStr
-		Variable lambda, attenNo,atten_err
+		Variable empAttenFactor,	emp_atten_err
 		
-		//get the XY box, if needed
-		Variable x1,x2,y1,y2,ct_err
-		String filename,tempStr			//02JUL13
-
-//		err = GetXYBoxFromFile(tempName,x1,x2,y1,y2)		//xy's are passed/returned by reference
-//		Printf "Using Box X(%d,%d),Y(%d,%d)\r",x1,x2,y1,y2
-
+		//get the XY box and files
+		Variable x1,x2,y1,y2,emptyCts,empty_ct_err
+		String emptyFileName,tempStr,divFileName
 		
+		// TODO
+		// x- need an empty beam file name
+		//
+		Prompt emptyFileName,"Empty Beam File",popup,V_PickEMPBeamButton("")
+		DoPrompt "Select File",emptyFileName
+		if (V_Flag)
+			return 0									// user canceled
+		endif
+
 		//need the detector sensitivity file - make a guess, allow to override
+		Prompt divFileName,"DIV File",popup,V_PickDIVButton("")
+		DoPrompt "Select File",divFileName
+		if (V_Flag)
+			return 0									// user canceled
+		endif
+		V_LoadHDF5Data(divFileName,"DIV")
 
 
-		//toggle SANS_Data to linear display if needed, so that we're working with linear scaled data
-//		Wave divData = $"root:Packages:NIST:div:Data"
-//		Wave data = $"root:Packages:NIST:raw:data"		//this will be the linear data
-		// correct by detector sensitivity
-//		data /= divData
+		WAVE xyBoxW = V_getBoxCoordinates(emptyFileName)
+		// TODO
+		// -- need to get the panel string for the sum.
+		// -- the detector string is currently hard-wired
+		detStr = "B"
+
 		
-		// now do the sum, only in the box	
-//		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
+		// load in the data, and use all of the corrections, especially DIV
+		// (be sure the corrections are actually set to "on", don't assume that they are)
+		// save preferences for file loading
+		Variable savDivPref,savSAPref
+		NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+		savDivPref = gDoDIVCor
+		NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
+		savSAPref = gDoSolidAngleCor
+		
+		// set local preferences
+		gDoDIVCor = 1
+		gDoSolidAngleCor = 1
+		
+		V_LoadAndPlotRAW_wName(emptyFileName)
+		// convert raw->SAM
+		V_Raw_to_work("SAM")
+		V_UpdateDisplayInformation("SAM")	
+		
+		// and determine box sum and error
+		// store these locally
+		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"SAM",detStr)
 
-		//		
+		Print "empty counts = ",emptyCts
+		Print "empty err/counts = ",empty_ct_err/emptyCts
+
+		//		TODO
+		// -- get all of the proper values for the calculation
+		// -- verify the calculation (no solid angle needed)
+		
+		// get the attenuation factor for the empty beam
+		empAttenFactor = V_getAttenuator_transmission(emptyFileName)
+		emp_atten_err = V_getAttenuator_trans_err(emptyFileName)
+		
+		countTime = V_getCount_time(emptyFileName)
+		
+		// TODO
+		// -- not sure if this is the correct monitor count to use, but I do know to use "SAM"
+		//   rather than the file.
+		monCnt = V_getBeamMonNormData("SAM")
+		
+		
+		
 //		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
 		
-		Variable kappa_err
-//		kappa_err = (ct_err/detCnt)^2 + (atten_err/attenTrans)^2
-//		kappa_err = sqrt(kappa_err) * kappa
+		kappa_err = (empty_ct_err/emptyCts)^2 + (emp_atten_err/empAttenFactor)^2
+		kappa_err = sqrt(kappa_err) * kappa
 		
-		// set the parameters in the global string
-//		Execute "V_AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"		//no missing parameters, no dialog
+		// TODO
+		// -- set the parameters in the global string
+		junkStr = num2str(kappa)
+		errStr = num2Str(kappa_err)
+		Execute "V_AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"		//no missing parameters, no dialog
 		
-		//should wipe out the data in the RAW folder, since it's not really RAW now
-//		DoWindow/K SANS_Data
 
-		// SRK JUL 2006 don't clear the contents - just kill the window to force new data to be loaded
-		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from RAW:RealsRead
+		Printf "Kappa was (maybe) successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+	
+		// restore preferences on exit
+		gDoDIVCor = savDivPref
+		gDoSolidAngleCor = savSAPref
 
-		Printf "Kappa was un-successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	Endif
 	
 End

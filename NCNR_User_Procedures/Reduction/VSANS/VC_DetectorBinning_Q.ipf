@@ -26,7 +26,6 @@
 //
 ///////////////////
 
-Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
 
 
 

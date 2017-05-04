@@ -34,7 +34,7 @@ Window V_TransmissionPanel() : Panel
 	PopupMenu popup_2,pos={160.00,271.00},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Empty Beam"
 	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
 	Button button_0,pos={22.00,397.00},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
-	Button button_1,pos={23.00,491.00},size={100.00,20.00},proc=V_WriteTransmButtonProc,title="Write"
+//	Button button_1,pos={23.00,491.00},size={100.00,20.00},proc=V_WriteTransmButtonProc,title="Write"
 	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
 	Button button_3,pos={410.00,13.00},size={50.00,20.00},proc=V_DoneTransmButtonProc,title="Done"
 	SetVariable setvar_0,pos={21.00,86.00},size={300.00,14.00},title="Label:"
@@ -83,7 +83,10 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 			WAVE/T labelW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels
 			WAVE groupIDW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID
 			WAVE transmW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission
-				
+			
+			// TODO
+			// I don't have a wave for the transmission error value, so it's not displayed here
+			// -- do I read it in, or just ignore it...	
 			np = numpnts(labelW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
 			for(ii=0;ii<np;ii+=1)
 				if(cmpstr(fileNameW[ii],popStr)==0)
