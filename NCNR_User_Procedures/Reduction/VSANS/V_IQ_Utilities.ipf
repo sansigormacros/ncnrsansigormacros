@@ -775,6 +775,8 @@ Function V_Write1DData_NoConcat(folderStr,saveName,binType)
 	//    to save the data as Igor Text format, since otherwise the command string would be
 	//    too long. Need to come up with an Igor-demo friendly save here
 	//
+	// -- see V_ExportProtocol() for a quick example of how to generate the .ITX format
+	//
 	// -- need a reader/plotter capable of handling this data. The regular data loader won't handle
 	//    all the different number of columns present, or the ITX format. See V_DataPlotting and duplicate these routines
 	//    Most of these routines take "winNameStr" as an argument, so I may be able to use them
@@ -885,5 +887,105 @@ Function V_Write1DData_NoConcat(folderStr,saveName,binType)
 //	KillWaves/Z sigQ,qbar,fs
 	
 	SetDataFolder root:
+	return(0)
+End
+
+
+// TODO
+// -- fill in
+// -- link somewhere?
+//
+// a function to load in the individual I(q) sets which were written out to a single
+// file, in itx format.
+//
+// The data, like other 1D data sets, is to be loaded to its own folder under root
+//
+// Then, the data sets can be plotted as VSANS data sets, depending on which data extensions are present.
+// (and color coded)
+// (and used for setting the trimming)
+// (and...)
+//
+//
+// see A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
+//
+Function V_Load_itx(fileStr,outStr,doPlot,forceOverwrite)
+	String fileStr, outstr
+	Variable doPlot,forceOverwrite
+
+	SetDataFolder root:		//build sub-folders for each data set under root
+
+	// if no fileStr passed in, display dialog now
+	if (cmpStr(fileStr,"") == 0)
+		fileStr = DoOpenFileDialog("Select a data file to load")
+		if (cmpstr(fileStr,"") == 0)
+			String/G root:Packages:NIST:gLastFileName = ""
+			return(0)		//get out if no file selected
+		endif
+	endif
+
+	//Load the waves, using default waveX names
+	//if no path or file is specified for LoadWave, the default Mac open dialog will appear
+	LoadWave/O/T fileStr
+//	LoadWave/G/D/A/Q fileStr
+	String fileNamePath = S_Path+S_fileName
+//		String basestr = ParseFilePath(3,ParseFilePath(5,fileNamePath,":",0,0),":",0,0)
+
+	String basestr
+	if (!cmpstr(outstr, ""))		//Outstr = "", cmpstr returns 0
+//			enforce a short enough name here to keep Igor objects < 31 chars
+		baseStr = ShortFileNameString(CleanupName(S_fileName,0))
+		baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
+		//baseStr = CleanupName(S_fileName,0)
+	else
+		baseStr = outstr			//for output, hopefully correct length as passed in
+	endif
+
+//		print "basestr :"+basestr
+	String fileName =  ParseFilePath(0,ParseFilePath(5,filestr,":",0,0),":",1,0)
+//		print "filename :"+filename
+	
+	Variable ii,num=ItemsinList(S_waveNames)
+	
+	if(DataFolderExists("root:"+baseStr))
+		if (!forceOverwrite)
+			DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
+			if(V_flag==2)	//user selected No, don't load the data
+				SetDataFolder root:
+				for(ii=0;ii<num;ii+=1)		
+					KillWaves $(StringFromList(ii, S_waveNames))	// kill the waves that were loaded
+				endfor
+				if(DataFolderExists("root:Packages:NIST"))
+					String/G root:Packages:NIST:gLastFileName = filename
+				endif
+				return(0)	//quits the macro
+			endif
+		endif
+		SetDataFolder $("root:"+baseStr)
+	else
+		NewDataFolder/S $("root:"+baseStr)
+	endif
+	
+//			////overwrite the existing data, if it exists
+
+// a semicolon-delimited list of wave names loaded
+//S_waveNames
+	for(ii=0;ii<num;ii+=1)		
+		Duplicate/O $("root:"+StringFromList(ii, S_waveNames)), $(StringFromList(ii, S_waveNames))
+	endfor
+
+
+// clean up
+	SetDataFolder root:
+
+	for(ii=0;ii<num;ii+=1)		
+		KillWaves $(StringFromList(ii, S_waveNames))	// kill the waves that were loaded
+	endfor
+//			Duplicate/O $("root:"+n0), $w0
+//			Duplicate/O $("root:"+n1), $w1
+//			Duplicate/O $("root:"+n2), $w2
+	
+			// no resolution matrix to make
+
+	
 	return(0)
 End

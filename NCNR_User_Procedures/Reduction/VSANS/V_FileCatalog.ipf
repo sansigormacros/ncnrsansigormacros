@@ -237,7 +237,8 @@ Function V_BuildCatVeryShortTable()
 	KillWaves/Z notRAWlist
 //
 	Print "Total time (s) = ",(ticks - t1)/60.15
-	Print "Time per raw data file (without cleanup time) (s) = ",( (ticks - t1)/60.15 - cleanupTime)/(numItems-numpnts(notRawList))
+	Print "Time per raw data file (without cleanup time) (s) = ",( (ticks - t1)/60.15 - cleanupTime)/(numItems-numpnts(labels))
+	// (don't use numpnts(notRawList) to normalize, these aren't all raw data files)
 	//
 	// clean out again, so that the file SAVE is not slow due to the large experiment size
 	// TODO -- decide if this is really necessary
