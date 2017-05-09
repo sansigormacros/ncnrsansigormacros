@@ -34,14 +34,18 @@
 
 
 Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
+Strconstant ksBinTrimBegDefault = "B=5;FT=6;FB=6;FL=6;FR=6;MT=6;MB=6;ML=6;MR=6;FTB=7;FLR=7;MTB=7;MLR=7;FLRTB=8;MLRTB=8;"
+Strconstant ksBinTrimEndDefault = "B=10;FT=9;FB=9;FL=9;FR=9;MT=9;MB=9;ML=9;MR=9;FTB=8;FLR=8;MTB=8;MLR=8;FLRTB=7;MLRTB=7;"
 
+
+//////////////////
 Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
 Strconstant ksBinType1 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"		//these are the "active" extensions
 Strconstant ksBinType2 = "B;FTB;FLR;MTB;MLR;"
 Strconstant ksBinType3 = "B;FLRTB;MLRTB;"
 Strconstant ksBinType4 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"
-
-
+///////////////////
+//
 // NOTE
 // this is the master conversion function
 // ***Use no others
@@ -449,6 +453,8 @@ Function V_Trim1DData(dataFolder,binType,nBeg,nEnd)
 		Wave/Z s_ml = eBin_qxqy_ML
 		Wave/Z s_mr = eBin_qxqy_MR
 		Wave/Z s_b = eBin_qxqy_B
+
+
 				
 		DeletePoints 0,nBeg, q_fb,q_ft,q_fl,q_fr,q_mb,q_mt,q_ml,q_mr,q_b
 		DeletePoints 0,nBeg, i_fb,i_ft,i_fl,i_fr,i_mb,i_mt,i_ml,i_mr,i_b
@@ -891,6 +897,10 @@ Function V_Write1DData_NoConcat(folderStr,saveName,binType)
 End
 
 
+Macro V_Load_Data_ITX()
+	V_Load_itx("","",0,0)
+end
+
 // TODO
 // -- fill in
 // -- link somewhere?
@@ -986,6 +996,86 @@ Function V_Load_itx(fileStr,outStr,doPlot,forceOverwrite)
 	
 			// no resolution matrix to make
 
+	
+	return(0)
+End
+
+
+// given strings of the number of points to remove, loop over the detectors
+Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
+	String folderStr
+	Variable binType
+	String nBegStr,nEndStr
+	
+	String detListStr
+	if(binType == 1)
+		detListStr = ksBinType1
+	endif
+	if(binType == 2)
+		detListStr = ksBinType2
+	endif
+	if(binType == 3)
+		detListStr = ksBinType3
+	endif
+	if(binType == 4)
+		detListStr = ksBinType4
+	endif
+	if(strlen(detListStr)==0)
+		return(0)
+	endif
+	
+	//use default values if null string passed in
+	if(strlen(nBegStr)==0)
+		nBegStr = ksBinTrimBegDefault
+		nEndStr = ksBinTrimEndDefault
+	endif	
+
+	Variable num, ii,nBeg,nEnd
+	String item,detstr
+	
+	num = ItemsInList(detListStr)
+	for(ii=0;ii<num;ii+=1)
+		detStr = StringFromList(ii, detListStr)
+		nBeg = NumberByKey(detStr, nBegStr,"=",";")
+		nEnd = NumberByKey(detStr, nEndStr,"=",";")
+		V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
+	endfor
+
+	return(0)
+End
+
+// TODO
+// -- make this resolution-aware
+//
+Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
+	String folderStr,detStr
+	Variable nBeg,nEnd
+	
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+
+	Printf "%d points removed from beginning, %d points from the end  of %s \r",nbeg,nend,detStr
+
+// TODO	
+// for each binType block:
+// --declare the waves
+// --make a copy of the waves??
+//	//--Break out resolution wave into separate waves
+// --delete the beginning points from everything
+	// --trim off the last nEnd points from everything
+//	--DeletePoints num-nEnd,nEnd, qw,iw,sw
+//	// --delete all points where the shadow is < 0.98
+////--Put resolution contents back???
+
+		Wave/Z qw = $("qBin_qxqy_"+detStr)
+		Wave/Z iw = $("iBin_qxqy_"+detStr)
+		Wave/Z ew = $("eBin_qxqy_"+detStr)
+
+			
+		DeletePoints 0,nBeg, qw,iw,ew
+
+		Variable npt
+		npt = numpnts(qw) 
+		DeletePoints npt-nEnd,nEnd, qw,iw,ew
 	
 	return(0)
 End

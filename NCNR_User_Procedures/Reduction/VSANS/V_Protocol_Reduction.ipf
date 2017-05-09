@@ -2435,10 +2435,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 //				endif
 //
 // TODO:
-// -- fill in all of the cases, default is only the "standard" I(q)
+// -- fill in all of the cases, default is only the "standard" circular average I(q)
 
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DData(activeType,binType,nBeg,nEnd)
+					V_Trim1DDataStr(activeType,binType,"","")			// TODO -- passing null strings uses default trimmings
+//					V_Trim1DData(activeType,binType,nBeg,nEnd)
 					V_ConcatenateForSave(activeType,binType)		// this removes q=0 point, concatenates, sorts
 					V_Write1DData(activeType,newFileName+"."+exten)		//don't pass the full path, just the name
 				else

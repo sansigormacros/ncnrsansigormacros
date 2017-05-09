@@ -1341,6 +1341,8 @@ Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	return(0)
 end
 
+
+
 // for a given data folder, all detector binning types
 // ("B", "FLTB", "MTB" etc) will be checked to see if the data is on the graph
 // and if it is, it will be removed

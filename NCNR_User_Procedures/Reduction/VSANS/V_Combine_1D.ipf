@@ -14,6 +14,273 @@
 //  of the data reduction protocol - and anything in work folders will be lost
 //
 
+
+//ksWorkFolderList
+
+//	String str,winStr="V_1D_Data"
+//	sprintf str,"(\"%s\",%d,\"%s\")",type,popNum,winStr
+//
+//	Execute ("V_Back_IQ_Graph"+str)
+//	Execute ("V_Middle_IQ_Graph"+str)
+//	Execute ("V_Front_IQ_Graph"+str)
+
+
+// draws the graph, but does not draw anything on it yet
+//
+// TODO:
+// -- make  the data folder list for the popup
+// -- make the data folder popup do the work of plotting (test for failure)
+//
+// -- make a button to show the default table, and set up dependencies to link to the graph display
+// -- have an "active" data set to trim, or make duplicates for all of the data sets
+//
+// -- button to convert the points to strings that can be used and written to data files?
+//
+// -- table is continually duplicated
+// -- AutoPosition the windows next to each other
+// -- (different)(not ugly) color for the control bar so it's distinguishable from the regular data plot
+// -- "Done" button that kills the root:ToTrim folder (may need to kill the dependency first)
+//
+Proc V_CombineDataGraph()
+
+	DoWindow/F V_1D_Combine
+	if(V_flag==0)
+		Variable num,ii
+		String detStr
+		
+		Display /W=(277,526,748,938)/N=V_1D_Combine/K=1
+
+		ControlBar 70
+		ModifyGraph cbRGB=(44000,44000,44000)
+		
+		PopupMenu popup1,pos={15,5},size={90,20},title="Data Folder"
+		PopupMenu popup1,help={"data folder"}
+		PopupMenu popup1,value= GetAList(4),proc=V_DataFolderPlotPop
+		
+		PopupMenu popup0,pos={200,5},size={70,20},title="Bin Type"
+		PopupMenu popup0,help={"binning type"}
+		PopupMenu popup0,value= ksBinTypeStr
+//		PopupMenu popup0,mode=1,proc=V_BinningModePopup
+
+		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
+		CheckBox check0,value= 1
+
+		Button AllQ,pos={320,28},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,help={"Show the full q-range of the dataset"}
+		
+		Legend/C/N=text0/J/X=72.00/Y=60.00
+
+		//trust that the table is present? No, but don't overwrite the data in the waves
+		// unless any one of the three doesn't exist
+		if(exists("PanelNameW") == 0 || exists("Beg_pts") == 0 || exists("End_pts") == 0)
+			Make/O/T/N=(ItemsInList(ksPanelBinTypeList)) PanelNameW
+			Make/O/D/N=(ItemsInList(ksPanelBinTypeList)) Beg_pts
+			Make/O/D/N=(ItemsInList(ksPanelBinTypeList)) End_pts
+		
+			num = ItemsInList(ksPanelBinTypeList)
+			ii=0
+			do
+				detStr = StringFromList(ii, ksPanelBinTypeList)
+				Beg_pts[ii]  = NumberByKey(detStr, ksBinTrimBegDefault,"=",";")
+				End_pts[ii] = NumberByKey(detStr, ksBinTrimEndDefault,"=",";")
+				PanelNameW[ii] = detStr
+				ii += 1
+			while(ii<num)
+			
+		endif
+		
+		Edit/K=0 root:PanelNameW,root:Beg_pts,root:End_pts		
+
+		Make/O/D/N=1 trimUpdate
+		trimUpdate := V_DummyUpdate(Beg_pts, End_pts)
+		
+//		PopupMenu ymodel,pos={150,5},size={71,20},title="y-axis"
+//		PopupMenu ymodel,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
+//		PopupMenu ymodel,value= #"\"I;log(I);ln(I);1/I;I^a;Iq^a;I^a q^b;1/sqrt(I);ln(Iq);ln(Iq^2)\""
+//		PopupMenu ymodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gYMode", 1 ),proc=V_YMode_PopMenuProc
+//		PopupMenu xmodel,pos={220,5},size={74,20},title="x-axis"
+//		PopupMenu xmodel,help={"This popup selects how the x-axis will be linearized given the chosen data"}
+//		PopupMenu xmodel,value= #"\"q;log(q);q^2;q^c\""
+//		PopupMenu xmodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gXMode", 1 ),proc=V_XMode_PopMenuProc
+////		Button Rescale,pos={281,5},size={70,20},proc=V_Rescale_Plot_1D_ButtonProc,title="Rescale"
+////		Button Rescale,help={"Rescale the x and y-axes of the data"},disable=1
+//
+//		SetVariable expa,pos={120,28},size={80,15},title="pow \"a\""
+//		SetVariable expa,help={"This sets the exponent \"a\" for some y-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+//		SetVariable expa,limits={-2,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpA
+//		SetVariable expb,pos={120,46},size={80,15},title="pow \"b\""
+//		SetVariable expb,help={"This sets the exponent \"b\" for some x-axis formats. The value is ignored if the model does not use an adjustable exponent"}
+//		SetVariable expb,limits={0,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpB
+//
+//		SetVariable expc,pos={220,28},size={80,15},title="pow \"c\""
+//		SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
+//		SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpC
+
+	endif
+		
+	
+End
+
+Function V_DummyUpdate(Beg_pts, End_pts)
+	Wave Beg_pts,End_pts
+	
+	// trim the data displayed
+	// do this by setting the iBin values to NaN, so it won't display
+	// won't hurt to set twice...
+	
+	Wave/T panelStr = root:PanelNameW
+	Wave begW = root:Beg_pts
+	Wave endW = root:End_pts
+	
+	SetDataFolder root:ToTrim
+	
+	Variable num,ii
+	String str,detStr
+	num=numpnts(panelStr)
+	
+	for(ii=0;ii<num;ii+=1)
+		detStr = panelStr[ii]
+		Wave/Z iw = $("iBin_qxqy_"+detStr+"_trim")
+//		Wave/Z iw = $("iBin_qxqy_"+detStr)
+//		Wave/Z ew = $("eBin_qxqy_"+detStr)
+		if(WaveExists(iw))
+			
+//			DeletePoints 0,nBeg, qw,iw,ew
+			iw[0,begW[ii]-1] = NaN
+				
+			Variable npt
+			npt = numpnts(iw) 
+//			DeletePoints npt-nEnd,nEnd, qw,iw,ew
+			iw[npt-endW[ii],npt-1] = NaN
+			
+		endif
+		
+	endfor
+	
+	SetDataFolder root:
+
+	return(0)
+End
+
+
+Function V_DataFolderPlotPop(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum	// which item is currently selected (1-based)
+	String popStr		// contents of current popup item as string
+
+
+	String str,winStr="V_1D_Combine",dataType
+	Variable binType,num,ii
+	ControlInfo popup0
+	binType = V_BinTypeStr2Num(S_Value)
+	
+	//dataType now needs to be the full path to the folder
+	dataType = "root:"+popStr
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",dataType,binType,winStr
+
+	Execute ("V_Back_IQ_Graph"+str)
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
+
+	ModifyGraph marker=8,opaque=1,msize=3		//make the traces open white circles
+
+
+	NewDataFolder/O root:ToTrim
+	
+	//remove all of the "toTrim" data from the graph, if it's there
+	String type
+	
+	SetDataFolder root:ToTrim
+	
+	for(ii=0;ii<ItemsInList(ksPanelBinTypeList);ii+=1)
+		type = StringFromList(ii, ksPanelBinTypeList, ";")
+		CheckDisplayed/W=$winStr $("iBin_qxqy_"+type+"_trim")
+		if(V_flag==1)
+			RemoveFromGraph/W=$winStr $("iBin_qxqy_"+type+"_trim")
+		endif
+	endfor
+	
+	SetDataFolder root:
+	
+//	ClearIQIfDisplayed_AllFldr("B_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("ML_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MR_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MT_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MB_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FL_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FR_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FT_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FB_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MLR_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MTB_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FLR_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FTB_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("MLRTB_trim",winStr)
+//	ClearIQIfDisplayed_AllFldr("FLRTB_trim",winStr)
+
+	//then kill the data folder, so it can be duplicated
+	
+//
+//	// rename all of the data in the new folder
+	SetDataFolder $dataType
+	String list = WaveList("*",";","")		//must be in the correct data folder
+	SetDataFolder root:
+//	Print list	
+	num = ItemsInList(list)
+	for(ii=0;ii<num;ii+=1)
+		str = StringFromList(ii,list)
+		Duplicate/O $(dataType+":"+str), $("root:ToTrim:"+str+"_trim")
+	endfor
+	// plot the linked data
+	sprintf str,"(\"%s\",%d,\"%s\")","root:ToTrim",binType,winStr
+
+	Execute ("V_Back_IQ_Graph_trim"+str)
+	Execute ("V_Middle_IQ_Graph_trim"+str)
+	Execute ("V_Front_IQ_Graph_trim"+str)
+	// and link the data to the table with a dependency
+//	
+	
+	
+	return(0)	
+End
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////// Below is unused -- it was started, but seems like the wrong approach,
+//////////////// so I have abandoned it for now
+
+
+
 ////////////////
 // TODO:
 // x- add a popup to the load tab to set the work folder
