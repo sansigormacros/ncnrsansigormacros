@@ -459,13 +459,7 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 	SetDataFolder $(fullPathToFolder)
 
 // clear EVERYTHING
-//		ClearIQIfDisplayed_AllFldr("MLRTB")
-//		ClearIQIfDisplayed_AllFldr("MLR")
-//		ClearIQIfDisplayed_AllFldr("MTB")		//this returns to root:
-//		ClearIQIfDisplayed_AllFldr("MT")	
-//		ClearIQIfDisplayed_AllFldr("ML")	
-//		ClearIQIfDisplayed_AllFldr("MR")	
-//		ClearIQIfDisplayed_AllFldr("MB")	
+
 
 	if(binType==1)
 		ClearIQIfDisplayed_AllFldr("MLRTB",winNameStr)
@@ -920,7 +914,11 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 
 	if(binType==1 || binType==2 || binType==3)
 	
-		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
+//		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
+		CheckDisplayed/W=$winNameStr $("iBin_qxqy_B_trim")
+		if(V_flag==1)
+			RemoveFromGraph/W=$winNameStr $("iBin_qxqy_B_trim")
+		endif
 		SetDataFolder $(fullPathToFolder)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
 		
@@ -957,7 +955,11 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	//nothing different here since there is ony a single detector to display, but for the future...
 	if(binType==4)
 	
-		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
+//		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
+		CheckDisplayed/W=$winNameStr $("iBin_qxqy_B_trim")
+		if(V_flag==1)
+			RemoveFromGraph/W=$winNameStr $("iBin_qxqy_B_trim")
+		endif
 		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
 		
@@ -993,23 +995,23 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 //	binType = V_GetBinningPopMode()
 	SetDataFolder $(fullPathToFolder)
 
-// clear EVERYTHING
-//		ClearIQIfDisplayed_AllFldr("MLRTB")
-//		ClearIQIfDisplayed_AllFldr("MLR")
-//		ClearIQIfDisplayed_AllFldr("MTB")		//this returns to root:
-//		ClearIQIfDisplayed_AllFldr("MT")	
-//		ClearIQIfDisplayed_AllFldr("ML")	
-//		ClearIQIfDisplayed_AllFldr("MR")	
-//		ClearIQIfDisplayed_AllFldr("MB")	
+	String midList = "ML;MR;MT;MB;MLR;MTB;MLRTB;"
+	String type
+	Variable ii
+	
 
 	if(binType==1)
-		ClearIQIfDisplayed_AllFldr("MLRTB_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MTB_trim",winNameStr)		//this returns to root:
-		ClearIQIfDisplayed_AllFldr("MT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("ML_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MB_trim",winNameStr)			
+		ii=0
+		do
+			type = StringFromList(ii, midlist, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(midList))
+	
+			
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_ML_trim
 		
@@ -1045,19 +1047,17 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	
 	if(binType==2)
 // clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("MLRTB_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MTB_trim",winNameStr)		//this returns to root:
-		ClearIQIfDisplayed_AllFldr("MT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("ML_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MB_trim",winNameStr)		
-	
-//		ClearIQIfDisplayed_AllFldr("MLRTB")
-//		ClearIQIfDisplayed_AllFldr("MT")	
-//		ClearIQIfDisplayed_AllFldr("ML")	
-//		ClearIQIfDisplayed_AllFldr("MR")	
-//		ClearIQIfDisplayed_AllFldr("MB")
+		ii=0
+		do
+			type = StringFromList(ii, midlist, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(midList))
+		
+
 	
 
 		SetDataFolder $(fullPathToFolder)
@@ -1088,20 +1088,16 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	
 	if(binType==3)
 // clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("MLRTB_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MTB_trim",winNameStr)		//this returns to root:
-		ClearIQIfDisplayed_AllFldr("MT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("ML_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MB_trim",winNameStr)		
-	
-//		ClearIQIfDisplayed_AllFldr("MLR")
-//		ClearIQIfDisplayed_AllFldr("MTB")	
-//		ClearIQIfDisplayed_AllFldr("MT")	
-//		ClearIQIfDisplayed_AllFldr("ML")	
-//		ClearIQIfDisplayed_AllFldr("MR")	
-//		ClearIQIfDisplayed_AllFldr("MB")	
+		ii=0
+		do
+			type = StringFromList(ii, midlist, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(midList))
+
 	
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_MLRTB_trim
@@ -1125,18 +1121,17 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
 // clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("MLRTB_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("MTB_trim",winNameStr)		//this returns to root:
-		ClearIQIfDisplayed_AllFldr("MT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("ML_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("MB_trim",winNameStr)		
-	
-	
-//		ClearIQIfDisplayed_AllFldr("MLRTB")
-//		ClearIQIfDisplayed_AllFldr("MLR")
-//		ClearIQIfDisplayed_AllFldr("MTB")
+		ii=0
+		do
+			type = StringFromList(ii, midlist, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(midList))
+		
+
 		
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_ML_trim
@@ -1189,30 +1184,26 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	String winNameStr
 
 
+	String frontList = "FL;FR;FT;FB;FLR;FTB;FLRTB;"
+	String type
+	Variable ii
 //	binType = V_GetBinningPopMode()
 	SetDataFolder $(fullPathToFolder)
 
-// clear EVERYTHING
-//		ClearIQIfDisplayed_AllFldr("FLRTB")
-//		
-//		ClearIQIfDisplayed_AllFldr("FLR")
-//		ClearIQIfDisplayed_AllFldr("FTB")
-//
-//		ClearIQIfDisplayed_AllFldr("FT")	
-//		ClearIQIfDisplayed_AllFldr("FL")	
-//		ClearIQIfDisplayed_AllFldr("FR")	
-//		ClearIQIfDisplayed_AllFldr("FB")
+
 		
 	if(binType==1)
-		ClearIQIfDisplayed_AllFldr("FLRTB_trim",winNameStr)
+		ii=0
+		do
+			type = StringFromList(ii, frontList, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(frontList))
 		
-		ClearIQIfDisplayed_AllFldr("FLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("FTB_trim",winNameStr)
 
-		ClearIQIfDisplayed_AllFldr("FT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FL_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FB_trim",winNameStr)
 				
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL_trim
@@ -1251,20 +1242,17 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	
 	if(binType==2)
 	// clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("FLRTB_trim",winNameStr)
-		
-		ClearIQIfDisplayed_AllFldr("FLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("FTB_trim",winNameStr)
+		ii=0
+		do
+			type = StringFromList(ii, frontList, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(frontList))
+	
 
-		ClearIQIfDisplayed_AllFldr("FT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FL_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FB_trim",winNameStr)
-//		ClearIQIfDisplayed_AllFldr("FLRTB")
-//		ClearIQIfDisplayed_AllFldr("FT")	
-//		ClearIQIfDisplayed_AllFldr("FL")	
-//		ClearIQIfDisplayed_AllFldr("FR")	
-//		ClearIQIfDisplayed_AllFldr("FB")	
 
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLR_trim
@@ -1294,22 +1282,17 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	
 	if(binType==3)
 // clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("FLRTB_trim",winNameStr)
-		
-		ClearIQIfDisplayed_AllFldr("FLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("FTB_trim",winNameStr)
-
-		ClearIQIfDisplayed_AllFldr("FT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FL_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FB_trim",winNameStr)	
+		ii=0
+		do
+			type = StringFromList(ii, frontList, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(frontList))
 	
-//		ClearIQIfDisplayed_AllFldr("FLR")
-//		ClearIQIfDisplayed_AllFldr("FTB")	
-//		ClearIQIfDisplayed_AllFldr("FT")	
-//		ClearIQIfDisplayed_AllFldr("FL")	
-//		ClearIQIfDisplayed_AllFldr("FR")	
-//		ClearIQIfDisplayed_AllFldr("FB")	
+
 	
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLRTB_trim
@@ -1333,20 +1316,17 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
 // clear EVERYTHING
-		ClearIQIfDisplayed_AllFldr("FLRTB_trim",winNameStr)
-		
-		ClearIQIfDisplayed_AllFldr("FLR_trim",winNameStr)
-		ClearIQIfDisplayed_AllFldr("FTB_trim",winNameStr)
+		ii=0
+		do
+			type = StringFromList(ii, frontList, ";")
+			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			if(V_flag==1)
+				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+			endif
+			ii+=1
+		while(ii<ItemsInList(frontList))
+	
 
-		ClearIQIfDisplayed_AllFldr("FT_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FL_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FR_trim",winNameStr)	
-		ClearIQIfDisplayed_AllFldr("FB_trim",winNameStr)	
-	
-	
-//		ClearIQIfDisplayed_AllFldr("FLRTB")
-//		ClearIQIfDisplayed_AllFldr("FLR")
-//		ClearIQIfDisplayed_AllFldr("FTB")
 		
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL_trim

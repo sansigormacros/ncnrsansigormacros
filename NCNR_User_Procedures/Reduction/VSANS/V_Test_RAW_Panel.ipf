@@ -998,7 +998,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 
-			V_SimpleSave1DData("","")		
+			V_SimpleSave1DData("root:Packages:NIST:VSANS:","","","")		
 				
 			break
 		case -1: // control being killed

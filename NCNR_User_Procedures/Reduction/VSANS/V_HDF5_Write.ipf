@@ -6365,6 +6365,43 @@ end
 ///////// REDUCTION
 
 
+// TODO
+// -- come up with a scheme to write the entire protocol to the data file?
+// -- or a scheme to write just the missing bits?
+
+
+// TODO -- needs to be a WAVE, and of the proper size and type!!!
+//  -- this is a test where I write a wave to a field that does not exist...
+Function V_write_TrimWave(fname,inW)
+	String fname
+	Wave inW
+	
+//	String path = "entry:reduction:absolute_scaling"
+	
+	Duplicate/O inW wTmpWrite 	
+// then use redimension as needed to cast the wave to write to the specified type
+// see WaveType for the proper codes 
+//	Redimension/T=() wTmpWrite
+// -- May also need to check the dimension(s) before writing (don't trust the input)
+	String groupName = "/entry/reduction"	
+	String varName = "trim_wave"
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
+
+
 // TODO -- needs to be a WAVE, and of the proper size and type!!!
 Function V_writeAbsolute_Scaling(fname,inW)
 	String fname

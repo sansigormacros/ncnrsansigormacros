@@ -112,7 +112,8 @@ End
 Proc Sort1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ShowNSORTPanel()
+//	ShowNSORTPanel()
+	V_CombineDataGraph()
 End
 
 Proc Combine1D_MainButtonProc(ctrlName) : ButtonControl

@@ -2436,18 +2436,19 @@ Function V_ExecuteProtocol(protStr,samStr)
 //
 // TODO:
 // -- fill in all of the cases, default is only the "standard" circular average I(q)
+// -- get the trim strings from somewhere-- from the file or from the protocol??
+//   then replace the null strings being passed
 
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DDataStr(activeType,binType,"","")			// TODO -- passing null strings uses default trimmings
+					V_Trim1DDataStr(activeType,binType,"","")			// TODO -- passing null strings uses global or default trim values
 //					V_Trim1DData(activeType,binType,nBeg,nEnd)
-					V_ConcatenateForSave(activeType,binType)		// this removes q=0 point, concatenates, sorts
-					V_Write1DData(activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
+					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
 				else
 					// remove the q=0 point from the back detector, if it's there
-					// does not need to know binType
 					// does not trim any of the data
 					V_RemoveQ0_B(activeType)
-					V_Write1DData_NoConcat(activeType,newFileName,binType)
+					V_Write1DData_NoConcat("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
 				endif
 
 		endswitch

@@ -300,6 +300,9 @@ Function V_InitFakeProtocols()
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
 	
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""
+	
 	Return(0)
 End
 

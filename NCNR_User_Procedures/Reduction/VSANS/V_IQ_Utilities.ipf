@@ -152,8 +152,8 @@ End
 // concatenates and sorts the 1D data in "type" WORK folder
 // uses the current display if type==""
 //
-Function V_ConcatenateForSave(type,binType)
-	String type
+Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
+	String pathStr,type,tagStr
 	Variable binType
 	
 // get the current display type, if null string passed in
@@ -171,13 +171,14 @@ Function V_ConcatenateForSave(type,binType)
 // concatenate the data sets
 // TODO x- figure out which binning was used (this is done in V_1DConcatenate())
 	// clear the old tmp waves first, if they still exist
-	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+//	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
+	SetDataFolder $(pathStr+type)
 	Killwaves/Z tmp_q,tmp_i,tmp_s
 	setDataFolder root:
-	V_1DConcatenate(type,binType)
+	V_1DConcatenate(pathStr,type,tagStr,binType)
 	
 // sort the data set
-	V_TmpSort1D(type)
+	V_TmpSort1D(pathStr,type)
 	
 	return(0)
 End
@@ -186,15 +187,15 @@ End
 // this is only called from the button on the data panel
 // so the type is the currently displayed type, and the binning is from the panel
 //
-Function V_SimpleSave1DData(type,saveName)
-	String type,saveName
+Function V_SimpleSave1DData(pathStr,type,tagStr,saveName)
+	String pathStr,type,tagStr,saveName
 
 // 
 // get the current display type, if null string passed in
 	SVAR curtype = root:Packages:NIST:VSANS:Globals:gCurDispType
 	Variable binType = V_GetBinningPopMode()
 	
-	V_ConcatenateForSave(curType,binType)
+	V_ConcatenateForSave(pathStr,curType,tagStr,binType)
 	
 // write out the data set to a file
 	if(strlen(saveName)==0)
@@ -203,7 +204,7 @@ Function V_SimpleSave1DData(type,saveName)
 		saveName = newName
 	endif
 	
-	V_Write1DData(curtype,saveName)
+	V_Write1DData(pathStr,curtype,saveName)
 
 End
 
@@ -261,17 +262,19 @@ end
 // if binType is passed in as -9999, get the binning mode from the popup
 // otherwise the value is assumed good (from a protocol)
 //
+// pathStr must have the trailing colon
+// tagStr is normally null, but is "_trim" for data to be trimmed
 //
-//
-Function V_1DConcatenate(folderStr,binType)
-	String folderStr
+Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
+	String pathStr,folderStr,tagStr
 	Variable binType
 	
 	if(binType==-9999)
 		binType = V_GetBinningPopMode()
 	endif	
 	
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+//	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	SetDataFolder $(pathStr+folderStr)
 
 	//kill these waves before starting, or the new concatenation will be added to the old
 	KillWaves/Z tmp_q,tmp_i,tmp_s
@@ -279,57 +282,112 @@ Function V_1DConcatenate(folderStr,binType)
 	String waveListStr=""
 	if(binType == 1)
 		// q-values
-		waveListStr = "qBin_qxqy_B;qBin_qxqy_MB;qBin_qxqy_MT;qBin_qxqy_ML;qBin_qxqy_MR;"
-		waveListStr += "qBin_qxqy_FB;qBin_qxqy_FT;qBin_qxqy_FL;qBin_qxqy_FR;"
+		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FR" + tagStr + ";"
 
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
-		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
+		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FR" + tagStr + ";"
+//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
+//		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
 		
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
-		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
+		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FR" + tagStr + ";"
+//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
+//		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
 	endif
 
 	if(binType == 2)	
 		// q-values
-		waveListStr = "qBin_qxqy_B;qBin_qxqy_MTB;qBin_qxqy_MLR;"
-		waveListStr += "qBin_qxqy_FTB;qBin_qxqy_FLR;"
+		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MTB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MLR" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FTB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FLR" + tagStr + ";"
+
+//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MTB;qBin_qxqy_MLR;"
+//		waveListStr += "qBin_qxqy_FTB;qBin_qxqy_FLR;"
 
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr = "iBin_qxqy_B;iBin_qxqy_MTB;iBin_qxqy_MLR;"
-		waveListStr += "iBin_qxqy_FTB;iBin_qxqy_FLR;"
+		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MTB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MLR" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FTB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FLR" + tagStr + ";"
+		
+//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MTB;iBin_qxqy_MLR;"
+//		waveListStr += "iBin_qxqy_FTB;iBin_qxqy_FLR;"
 		
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr = "eBin_qxqy_B;eBin_qxqy_MTB;eBin_qxqy_MLR;"
-		waveListStr += "eBin_qxqy_FTB;eBin_qxqy_FLR;"
+		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MTB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MLR" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FTB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FLR" + tagStr + ";"
+		
+//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MTB;eBin_qxqy_MLR;"
+//		waveListStr += "eBin_qxqy_FTB;eBin_qxqy_FLR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
 	endif
 
 	if(binType == 3)	
 		// q-values
-		waveListStr = "qBin_qxqy_B;qBin_qxqy_MLRTB;qBin_qxqy_FLRTB;"
+		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MLRTB;qBin_qxqy_FLRTB;"
 
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr = "iBin_qxqy_B;iBin_qxqy_MLRTB;iBin_qxqy_FLRTB;"
+		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MLRTB;iBin_qxqy_FLRTB;"
 		
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr = "eBin_qxqy_B;eBin_qxqy_MLRTB;eBin_qxqy_FLRTB;"
+		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MLRTB;eBin_qxqy_FLRTB;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
 	endif
@@ -340,20 +398,47 @@ Function V_1DConcatenate(folderStr,binType)
 // and NOT include in the averaging since the Qy range is so limited.
 	if(binType == 4)	
 		// q-values
-		waveListStr = "qBin_qxqy_B;qBin_qxqy_MB;qBin_qxqy_MT;qBin_qxqy_ML;qBin_qxqy_MR;"
-		waveListStr += "qBin_qxqy_FB;qBin_qxqy_FT;qBin_qxqy_FL;qBin_qxqy_FR;"
+		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "qBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "qBin_qxqy_FR" + tagStr + ";"
+//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MB;qBin_qxqy_MT;qBin_qxqy_ML;qBin_qxqy_MR;"
+//		waveListStr += "qBin_qxqy_FB;qBin_qxqy_FT;qBin_qxqy_FL;qBin_qxqy_FR;"
 
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
-		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
+		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "iBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "iBin_qxqy_FR" + tagStr + ";"
+//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
+//		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
 		
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
-		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
+		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
+		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
+		waveListStr += "eBin_qxqy_MR" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FL" + tagStr + ";"
+		waveListStr += "eBin_qxqy_FR" + tagStr + ";"
+//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
+//		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
 	endif
@@ -374,10 +459,10 @@ End
 // see Auto_Sort() in the SANS Automation ipf for the rest of the details of
 // how to combine the resolution waves (they also need to be concatenated, which is currently not done)
 // 
-Function V_TmpSort1D(folderStr)
-	String folderStr
+Function V_TmpSort1D(pathStr,folderStr)
+	String pathStr,folderStr
 	
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	SetDataFolder $(pathStr+folderStr)
 
 	Wave qw = tmp_q
 	Wave iw = tmp_i
@@ -394,6 +479,7 @@ End
 
 
 // TODO
+// (appears to be unused, in favor of the version that uses the global strings)
 // needs:
 // -- trim the beamstop out (based on shadow?)
 // -- trim out zero q from the file (bad actor in analysis functions)
@@ -641,13 +727,13 @@ end
 // this will bypass save dialogs
 // -- AND WILL OVERWITE DATA WITH THE SAME NAME
 //
-Function V_Write1DData(folderStr,saveName)
-	String folderStr,saveName
+Function V_Write1DData(pathStr,folderStr,saveName)
+	String pathStr,folderStr,saveName
 	
 	String formatStr="",fullpath=""
 	Variable refnum,dialog=1
 
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	SetDataFolder $(pathStr+folderStr)
 
 	Wave qw = tmp_q
 	Wave iw = tmp_i
@@ -701,7 +787,7 @@ Function V_Write1DData(folderStr,saveName)
 
 	fprintf refnum,"Combined data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
 
-// TODO -- make this work for 6-columns
+// TODO -- make this work for 6-columns (or??)
 //	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
 //	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
 //	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
@@ -714,6 +800,7 @@ Function V_Write1DData(folderStr,saveName)
 	Close refnum
 	
 //	KillWaves/Z sigQ,qbar,fs
+	Print "Data written to: ",fullpath
 	
 	SetDataFolder root:
 	return(0)
@@ -727,16 +814,16 @@ End
 // -- but a real writer will need to be aware of resolution, and there may be different forms
 //
 // this will bypass save dialogs
-// -- AND WILL OVERWITE DATA WITH THE SAME NAME
+// -- AND WILL OVERWRITE DATA WITH THE SAME NAME
 //
-Function V_Write1DData_NoConcat(folderStr,saveName,binType)
-	String folderStr,saveName
+Function V_Write1DData_NoConcat(pathStr,folderStr,saveName,binType)
+	String pathStr,folderStr,saveName
 	Variable binType
 	
 	String formatStr="",fullpath=""
 	Variable refnum,dialog=1
 
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	SetDataFolder $(pathStr+folderStr)
 
 
 	//TODO
@@ -1002,6 +1089,10 @@ End
 
 
 // given strings of the number of points to remove, loop over the detectors
+//
+// TODO
+// -- currently uses global strings or default strings
+// -- if proper strings (non-null) are passed in, they are used, otherwise global, then default
 Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 	String folderStr
 	Variable binType
@@ -1023,11 +1114,20 @@ Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 	if(strlen(detListStr)==0)
 		return(0)
 	endif
+
 	
-	//use default values if null string passed in
+	//use global, then default values if null string passed in
 	if(strlen(nBegStr)==0)
-		nBegStr = ksBinTrimBegDefault
-		nEndStr = ksBinTrimEndDefault
+		SVAR/Z gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+		SVAR/Z gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
+	
+		if(!SVAR_exists(gBegPtsStr) || !SVAR_exists(gEndPtsStr) || strlen(gBegPtsStr)==0 || strlen(gEndPtsStr)==0)
+			nBegStr = ksBinTrimBegDefault
+			nEndStr = ksBinTrimEndDefault
+		else
+			nBegStr = gBegPtsStr
+			nEndStr = gEndPtsStr
+		endif
 	endif	
 
 	Variable num, ii,nBeg,nEnd
