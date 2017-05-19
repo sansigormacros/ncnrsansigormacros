@@ -2366,6 +2366,22 @@ Function V_getSampleTransWholeDetErr(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
+// this is a NON NICE entered field
+// so I need to catch the error if it's not there
+Function/WAVE V_getReductionProtocolWave(fname)
+	String fname
+	
+	String path = "entry:reduction:protocol"	
+	WAVE/T/Z tw = V_getTextWaveFromHDF5(fname,path)
+	
+	if(waveExists(tw))
+		return tw
+	else
+		Make/O/T/N=0 nullTextWave
+		return nullTextWave
+	endif
+	
+end
 	
 
 

@@ -289,16 +289,16 @@ End
 //
 Function V_InitFakeProtocols()
 	
-	//*****as of 0901, protocols are 8 points long, [6] is used for work.drk, [7] is unused 
+	//*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused 
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Protocols
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,",""}
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,",""}
-	Make/O/T/N=8 $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew"			//null wave
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}
+	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew"			//null wave
 	//Initialize waves to store values in
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=One;"
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""

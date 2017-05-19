@@ -99,7 +99,7 @@ End
 Proc ReduceMultiple_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ReduceMultipleFiles()
+	V_ReduceMultipleFiles()
 End
 
 Proc Plot1D_MainButtonProc(ctrlName) : ButtonControl
@@ -354,7 +354,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_0b,pos={15,120},size={70,20},proc=PatchMainButtonProc,title="Patch"
 	Button MainButton_0b,help={"Patch will update incorrect information in raw data headers"}
 	Button MainButton_0c,pos={15,150},size={110,20},proc=TransMainButtonProc,title="Transmission"
-	Button MainButton_0c,help={"Shows the \"Patch\" panel which allows calculation of sample transmissions and entering these values into raw data headers"}
+	Button MainButton_0c,help={"Shows the panel which allows calculation of sample transmissions and entering these values into raw data headers"}
 	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={130,20},proc=CatSort_MainButtonProc,title="Sort Catalog"

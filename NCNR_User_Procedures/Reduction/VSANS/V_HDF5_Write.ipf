@@ -6370,24 +6370,24 @@ end
 // -- or a scheme to write just the missing bits?
 
 
-// TODO -- needs to be a WAVE, and of the proper size and type!!!
+// TODO -- needs to be a Text WAVE, and of the proper size and type!!!
 //  -- this is a test where I write a wave to a field that does not exist...
-Function V_write_TrimWave(fname,inW)
+Function V_write_ProtocolWave(fname,inTW)
 	String fname
-	Wave inW
+	Wave/T inTW
 	
 //	String path = "entry:reduction:absolute_scaling"
 	
-	Duplicate/O inW wTmpWrite 	
+	Duplicate/O inTW wTTmpWrite 	
 // then use redimension as needed to cast the wave to write to the specified type
 // see WaveType for the proper codes 
 //	Redimension/T=() wTmpWrite
 // -- May also need to check the dimension(s) before writing (don't trust the input)
 	String groupName = "/entry/reduction"	
-	String varName = "trim_wave"
+	String varName = "protocol"
 
 	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTTmpWrite)
 	if(err)
 		Print "HDF write err = ",err
 	endif

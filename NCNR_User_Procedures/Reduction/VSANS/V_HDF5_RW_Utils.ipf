@@ -634,8 +634,8 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 		SetDataFolder root:
 	endif
 
-// this should exist now - if not, I need to see the error
-	Wave/T wOut = $(ksBaseDFPath+folderStr+":"+path)
+// this should exist now - if not, I will see the error in the calling function
+	Wave/T/Z wOut = $(ksBaseDFPath+folderStr+":"+path)
 	
 	return wOut
 	

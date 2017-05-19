@@ -49,6 +49,7 @@
 //
 //////////////////////////////////
 
+Constant kNumProtocolSteps = 12
 
 //main entry procedure for initialzing and displaying the protocol panel
 // initilaizes folders and globals as needed
@@ -70,10 +71,10 @@ Proc V_InitProtocolPanel()
 
 	//set up the global variables needed for the protocol panel
 	//global strings to put in a temporary protocol textwave
-	Variable ii=0,nsteps=8
+	Variable ii=0
 	String waveStr="tempProtocol"
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
-	Make/O/T/N=(nsteps) $"root:Packages:NIST:VSANS:Globals:Protocols:tempProtocol" = ""
+	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:tempProtocol" = ""
 
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gSAM="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBGD="ask"
@@ -81,8 +82,11 @@ Proc V_InitProtocolPanel()
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDIV="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gMASK="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr="ask"
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=Yes;"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=No;BINTYPE=One;"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDRK="DRK=none,DRKMODE=0,"
+	
+	// global strings for trimming data are initialized in the main VSANS initilization
+	//  in case the trimming is done before the protocol panel is opened
 	
 	SetDataFolder root:
 	
@@ -152,9 +156,12 @@ Function V_DeleteProtocolButton(ctrlName) : ButtonControl
 	return(0)
 End
 
-
+//
 //function that actually parses the protocol specified by nameStr
 //which is just the name of the wave, without a datafolder path
+//
+// TODO
+//  -- update this for 12 steps
 //
 Function V_ResetToSavedProtocol(nameStr)
 	String nameStr
@@ -272,8 +279,18 @@ Function V_ResetToSavedProtocol(nameStr)
 //		CheckBox prot_check_6 win=V_ProtocolPanel,value=checked
 //	Endif
 	
-	//7 = unused
+	//7 = beginning trim points
+	SVAR gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+	gBegPtsStr = w[7]
+	//8 = end trim points
+	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
+	gEndPtsStr = w[8]
 	
+	//9 = unused
+	//10 = unused
+	//11 = unused
+
+
 	//all has been reset, get out
 	Return (0)
 End
@@ -328,7 +345,7 @@ Function V_SaveProtocolButton(ctrlName) : ButtonControl
 	
 	//current data folder is  root:Packages:NIST:VSANS:Globals:Protocols
 	if(newProto)
-		Make/O/T/N=8 $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
+		Make/O/T/N=(kNumProtocolSteps) $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
 	Endif
 	
 	V_MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
@@ -342,6 +359,9 @@ End
 //to create the necessary text fields for a protocol
 //Wave/T w (input) is an empty text wave of 8 elements for the protocol
 //on output, w[] is filled with the protocol strings as needed from the panel 
+//
+// TODO
+// -- update for 12 points
 //
 Function V_MakeProtocolFromPanel(w)
 	Wave/T w
@@ -481,9 +501,25 @@ Function V_MakeProtocolFromPanel(w)
 	w[6] = drkStr
 	
 	//w[7]
-	//currently unused
-	w[7] = ""
+	// beginning trim points
+	SVAR gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+	w[7] = gBegPtsStr
 	
+	//w[8]
+	// End trim points
+	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr	
+	w[8] = gEndPtsStr
+	
+	//w[9]
+	//currently unused
+	w[9] = ""
+	//w[10]
+	//currently unused
+	w[10] = ""
+	//w[11]
+	//currently unused
+	w[11] = ""
+		
 	return(0)
 End
 
@@ -521,7 +557,9 @@ End
 //		newList = list
 //	endif
 
-
+// match is the string to look for in the search
+// 0 is a flag to tell it to look in the file catalog (the fastest method)
+// Other options are to grep, or to read the intent field in every file
 Function/S V_GetSAMList()
 
 	String match="SAMPLE"
@@ -960,7 +998,7 @@ Function V_ReduceOneButton(ctrlName) : ButtonControl
 	//and execute
 	String temp="root:Packages:NIST:VSANS:Globals:Protocols:tempProtocol"
 	Wave/T w=$temp
-	Variable ii=0,num=8
+	Variable ii=0,num=12
 	do
 		w[ii] = ""
 		ii+=1
@@ -1018,55 +1056,58 @@ End
 //
 Window V_ProtocolPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(553,48,851,500) /K=1 as "VSANS Reduction Protocol"
+	NewPanel /W=(1280,332,1630,932) /K=1 as "VSANS Reduction Protocol"
 	ModifyPanel cbRGB=(56589,50441,50159), fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 2,25,300,25
-	DrawLine 2,69,300,69
-	DrawLine 2,120,300,120
-	DrawLine 2,169,300,169
-	DrawLine 2,217,300,217
-	DrawLine 2,262,300,262
-	DrawLine 2,357,300,357
-	DrawLine 2,379,300,379
-	DrawLine 2,308,300,308
+	DrawLine 3,65,301,65
+	DrawLine 3,157,301,157
+	DrawLine 3,208,301,208
+	DrawLine 3,257,301,257
+	DrawLine 3,305,301,305
+	DrawLine 3,350,301,350
+	DrawLine 3,445,301,445
+	DrawLine 3,513,303,513
+	DrawLine 3,396,301,396
 
 //
 	Button button_help,pos={260,2},size={25,20},proc=V_ShowProtoHelp,title="?"
 	Button button_help,help={"Show the help file for setting up a reduction protocol"}
 	Button button_quest,pos={20,2},size={150,20},proc=V_ProtocolQuestionnaire,title="Questions"
 	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
+	Button button_quest,disable=2
 
-	PopupMenu popup_sam,pos={85,28},size={51,23},proc=SAMFilePopMenuProc
+
+	PopupMenu popup_sam,pos={85,68},size={51,23},proc=SAMFilePopMenuProc
 	PopupMenu popup_sam,mode=1,value= #"V_getSAMList()"	
-	PopupMenu popup_bkg,pos={85,76},size={51,23},proc=BKGFilePopMenuProc
+	PopupMenu popup_bkg,pos={85,164},size={51,23},proc=BKGFilePopMenuProc
 	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
-	PopupMenu popup_emp,pos={85,125},size={51,23},proc=EMPFilePopMenuProc
+	PopupMenu popup_emp,pos={85,213},size={51,23},proc=EMPFilePopMenuProc
 	PopupMenu popup_emp,mode=1,value= #"V_getEMPList()"
-	PopupMenu popup_div,pos={85,175},size={51,23},proc=DIVFilePopMenuProc
+	PopupMenu popup_div,pos={85,263},size={51,23},proc=DIVFilePopMenuProc
 	PopupMenu popup_div,mode=1,value= #"V_getDIVList()"
-	PopupMenu popup_msk,pos={85,268},size={51,23},proc=MSKFilePopMenuProc
+	PopupMenu popup_msk,pos={85,356},size={51,23},proc=MSKFilePopMenuProc
 	PopupMenu popup_msk,mode=1,value= #"V_getMSKList()"	
 		
-	CheckBox prot_check,pos={5,75},size={74,14},title="Background"
+		
+	CheckBox prot_check,pos={6,163},size={74,14},title="Background"
 	CheckBox prot_check,help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check,value= 1
-	CheckBox prot_check_1,pos={5,127},size={71,14},title="Empty Cell"
+	CheckBox prot_check_1,pos={6,215},size={71,14},title="Empty Cell"
 	CheckBox prot_check_1,help={"If checked, the specified empty cell file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_1,value= 1
-	CheckBox prot_check_2,pos={6,175},size={72,14},title="Sensitivity"
+	CheckBox prot_check_2,pos={6,263},size={72,14},title="Sensitivity"
 	CheckBox prot_check_2,help={"If checked, the specified detector sensitivity file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_2,value= 1
-	CheckBox prot_check_3,pos={9,268},size={43,14},title="Mask"
+	CheckBox prot_check_3,pos={6,356},size={43,14},title="Mask"
 	CheckBox prot_check_3,help={"If checked, the specified mask file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_3,value= 1
-	CheckBox prot_check_4,pos={5,30},size={53,14},title="Sample"
+	CheckBox prot_check_4,pos={6,70},size={53,14},title="Sample"
 	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_4,value= 1
-	CheckBox prot_check_5,pos={6,311},size={56,14},title="Average"
+	CheckBox prot_check_5,pos={6,399},size={56,14},title="Average"
 	CheckBox prot_check_5,help={"If checked, the specified averaging will be performed at the end of the data reduction."}
 	CheckBox prot_check_5,value= 1	
-	CheckBox prot_check_9,pos={7,222},size={59,14},title="Absolute"
+	CheckBox prot_check_9,pos={6,310},size={59,14},title="Absolute"
 	CheckBox prot_check_9,help={"If checked, absolute calibration will be included in the data reduction. If the parameter list is \"ask\", then the user will be prompted for absolue parameters"}
 	CheckBox prot_check_9,value= 1
 	
@@ -1079,41 +1120,48 @@ Window V_ProtocolPanel()
 //	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
 //	Button pick_DIV,pos={214,173},size={70,20},proc=V_PickDIVButton,title="set DIV"
 //	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button pick_ABS,pos={214,220},size={70,20},proc=V_SetABSParamsButton,title="set ABS"
+	Button pick_ABS,pos={264,308},size={70,20},proc=V_SetABSParamsButton,title="set ABS"
 	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}	
 //	Button pick_MASK,pos={214,266},size={70,20},proc=V_PickMASKButton,title="set MASK"
 //	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
 
 
-	Button pick_AVE,pos={108,313},size={150,20},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
+	Button pick_AVE,pos={188,401},size={150,20},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
 	Button pick_AVE,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
+
 	
-	SetVariable samStr,pos={6,50},size={250,15},title="file:"
+	Button pick_trim,pos={264,454},size={70,20},proc=V_TrimDataProtoButton,title="Trim"
+	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
+	
+	
+	SetVariable samStr,pos={6,90},size={250,15},title="file:"
 	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
 	SetVariable samStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gSAM		
-	SetVariable bgdStr,pos={7,98},size={250,15},title="file:"
+	SetVariable bgdStr,pos={7,186},size={250,15},title="file:"
 	SetVariable bgdStr,help={"Filename of the background file(s) to be used in the data reduction"}
 	SetVariable bgdStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gBGD
-	SetVariable empStr,pos={8,148},size={250,15},title="file:"
+	SetVariable empStr,pos={8,236},size={250,15},title="file:"
 	SetVariable empStr,help={"Filename of the empty cell file(s) to be used in the data reduction"}
 	SetVariable empStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gEMP
-	SetVariable divStr,pos={9,197},size={250,15},title="file:"
+	SetVariable divStr,pos={9,285},size={250,15},title="file:"
 	SetVariable divStr,help={"Filename of the detector sensitivity file to be used in the data reduction"}
 	SetVariable divStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gDIV
-	SetVariable maskStr,pos={9,289},size={250,15},title="file:"
+	SetVariable maskStr,pos={9,377},size={250,15},title="file:"
 	SetVariable maskStr,help={"Filename of the mask file to be used in the data reduction"}
 	SetVariable maskStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gMASK
-	SetVariable absStr,pos={7,243},size={250,15},title="parameters:"
+	SetVariable absStr,pos={7,331},size={250,15},title="parameters:"
 	SetVariable absStr,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
 	SetVariable absStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-	SetVariable aveStr,pos={9,336},size={250,15},title="parameters:"
+	SetVariable aveStr,pos={9,424},size={250,15},title="parameters:"
 	SetVariable aveStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
 	SetVariable aveStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAVE
 
-
-
-
-
+	SetVariable begStr,pos={9,464},size={250,15},title="Beg Trim:"
+	SetVariable begStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
+	SetVariable begStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+	SetVariable endStr,pos={9,484},size={250,15},title="End Trim:"
+	SetVariable endStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
+	SetVariable endStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
 
 
 	
@@ -1126,22 +1174,27 @@ Window V_ProtocolPanel()
 //	SetVariable drkStr,help={"DRK detector count file"},disable = (!root:Packages:NIST:gAllowDRK)
 //	SetVariable drkStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gDRK
 
-	Button export_button, size={60,20},pos={125,384},title="Export",proc=V_ExportProtocol
-	Button export_button, help={"Exports the protocol to disk for Importing into another experiment"}
-	Button import_button, size={60,20},pos={125,406},title="Import",proc=V_ImportProtocol
-	Button import_button,help={"Imports a protocol from disk for use in this experiment"}
-	Button recallProt,pos={7,406},size={107,20},proc=V_RecallProtocolButton,title="Recall Protocol"
+
+	Button export_button, size={120,20},pos={125,540},title="Export to Data",proc=V_ExportFileProtocol
+	Button export_button, help={"Exports the protocol to data file on disk for Importing into another experiment"}
+	Button import_button, size={120,20},pos={125,562},title="Import from Data",proc=V_ImportFileProtocol
+	Button import_button,help={"Imports a protocol from a data file on disk for use in this experiment"}
+	Button recallProt,pos={7,540},size={107,20},proc=V_RecallProtocolButton,title="Recall Protocol"
 	Button recallProt,help={"Resets the panel to the file choices in  a previously saved protocol"}
-	Button del_protocol,pos={7,428},size={110,20},proc=V_DeleteProtocolButton,title="Delete Protocol"
+	Button del_protocol,pos={7,562},size={110,20},proc=V_DeleteProtocolButton,title="Delete Protocol"
 	Button del_protocol,help={"Use this to delete a previously saved protocol."}
-	Button done_protocol,pos={225,428},size={45,20},proc=V_DoneProtocolButton,title="Done"
+	Button done_protocol,pos={285,562},size={45,20},proc=V_DoneProtocolButton,title="Done"
 	Button done_protocol,help={"This button will close the panel. The panel can be recalled at any time from the SANS menu."}
-	Button saveProtocol,pos={7,384},size={100,20},proc=V_SaveProtocolButton,title="Save Protocol"
+	Button saveProtocol,pos={7,518},size={100,20},proc=V_SaveProtocolButton,title="Save Protocol"
 	Button saveProtocol,help={"Saves the cerrent selections in the panel to a protocol which can be later recalled"}
-	Button ReduceOne,pos={194,384},size={100,20},proc=V_ReduceOneButton,title="Reduce A File"
+	Button ReduceOne,pos={240,518},size={100,20},proc=V_ReduceOneButton,title="Reduce A File"
 	Button ReduceOne,help={"Using the panel selections, the specified sample file will be reduced. If none is specified, the user will be prompted for a sample file"}
 
 EndMacro
+
+
+
+
 
 Function SAMFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -1407,9 +1460,10 @@ End
 //the chosen protocol is passed back to the calling procedure by a global string
 //the popup is presented as a missing parameter dialog (called with empty parameter list)
 //
+// MAXROWS is present to exclude the PanelNameW from appearing as a protocol
 Proc V_PickAProtocol(protocol)
 	String Protocol
-	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","TEXT:1")
+	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","TEXT:1,MAXROWS:13")
 	
 	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = protocol
 End
@@ -1423,7 +1477,7 @@ Proc V_DeleteAProtocol(protocol)
 End
 
 Function/S V_DeletableProtocols()
-	String list=WaveList("*",";","TEXT:1")
+	String list=WaveList("*",";","TEXT:1,MAXROWS:13")
 
 	list= RemoveFromList("Base", list  , ";")
 	list= RemoveFromList("DoAll", list  , ";")
@@ -1436,7 +1490,7 @@ Function/S V_DeletableProtocols()
 	return(list)
 End
 
-//missing paramater dialog to solicit user for a waveStr for the protocol 
+//missing parameter dialog to solicit user for a waveStr for the protocol 
 //about to be created
 //name is passed back as a global string and calling procedure is responsible for
 //checking for wave conflicts and valid names
@@ -1483,10 +1537,11 @@ Function V_ProtocolQuestionnaire(ctrlName)
 	
 	//Print "protocol questionnaire is "+newProtocol
 	
-	//make a new text wave (8 points) and fill it in, in response to questions
+	//make a new text wave (12 points) and fill it in, in response to questions
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols //(redundant - full wave specs are used)
-	Make/O/T/N=8 $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtoStr)
+	Make/O/T/N=(kNumProtocolSteps) $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtoStr)
 	Wave/T newProtocol = $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtoStr)
+	newProtocol = ""
 	
 	//ask the questions 
 	/////
@@ -1894,7 +1949,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//4 - abs params c2-c5
 	//5 - average params
 	//6 = DRK file (**out of sequence)
-	//7 = unused
+	//7 = beginning trim points
+	//8 = end trim points
+	//9 = unused
+	//10 = unused
+	//11 = unused
 
 // for VSANS, DIV is used on each data file as it is converted to WORK, so it needs to be
 //  the first thing in place, before any data or backgrounds are loaded
@@ -2395,7 +2454,6 @@ Function V_ExecuteProtocol(protStr,samStr)
 // -- need to define nBeg and nEnd somewhere
 // -- currently hard-wired
 // --do I need to define these "per-panel"?		
-		Variable nBeg = 3, nEnd = 10
 		
 		PathInfo/S catPathName
 		String item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
@@ -2440,7 +2498,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 //   then replace the null strings being passed
 
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DDataStr(activeType,binType,"","")			// TODO -- passing null strings uses global or default trim values
+					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// TODO -- passing null strings uses global or default trim values
 //					V_Trim1DData(activeType,binType,nBeg,nEnd)
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
 					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
@@ -2697,6 +2755,82 @@ Function V_UserSelectABS_Continue(ctrlName) :buttonControl
 end
 
 
+Function V_TrimDataProtoButton(ctrlName) :buttonControl
+	String ctrlName
+	
+	Execute "V_CombineDataGraph()"
+	return(0)
+end
+
+//
+// export protocol to a data file
+//
+//
+Function V_ExportFileProtocol(ctrlName) : ButtonControl
+	String ctrlName
+// get a list of protocols
+	String Protocol=""
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
+	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","")
+	DoPrompt "Pick A Protocol to Export",Protocol
+	if(V_flag==1)
+		//Print "user cancel"
+		SetDatafolder root:
+		return(1)
+	endif
+
+	String fileName = V_DoSaveFileDialog("pick the file to write to")
+	print fileName
+//	
+	if(strlen(fileName) == 0)
+		return(0)
+	endif
+
+	V_write_ProtocolWave(fileName,$("root:Packages:NIST:VSANS:Globals:Protocols:"+Protocol) )
+
+	setDataFolder root:
+	return(0)
+
+End
+
+//
+// imports a protocol from a file on disk into the protocols folder
+//
+//
+Function V_ImportFileProtocol(ctrlName) : ButtonControl
+	String ctrlName
+
+//	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
+
+	String fullPath,fileName
+	fullPath = DoOpenFileDialog("Import Protocol from file")
+	print fullPath
+//	
+	if(strlen(fullPath) == 0)
+		return(0)
+	endif
+	
+	fileName = ParseFilePath(0, fullPath, ":", 1, 0)			//just the file name at the end of the full path
+	
+	Wave/T tmpW = V_getReductionProtocolWave(fileName)
+	if(numpnts(tmpW) == 0)
+		DoAlert 0,"No protocol wave has been saved to this data file"
+		return(0)
+	endif
+	
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
+	String newName
+	newName = CleanupName(fileName,0) + "_proto"
+	duplicate/o tmpw $newName
+	
+	
+	SetDataFolder root:
+	return(0)
+end
+
+
+// currently not used - and not updated to 12 point protocols (5/2017)
+//
 //save the protocol as an IGOR text wave (.itx)
 //
 //
@@ -2746,6 +2880,8 @@ Function V_ExportProtocol(ctrlName) : ButtonControl
 
 End
 
+
+// currently not used - and not updated to 12 point protocols (5/2017)
 //imports a protocol from disk into the protocols folder
 //
 // will overwrite existing protocols if necessary
