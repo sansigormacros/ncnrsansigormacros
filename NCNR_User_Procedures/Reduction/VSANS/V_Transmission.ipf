@@ -5,7 +5,7 @@
 
 // TODO
 //-- initialization
-// -- link to main panel
+// x- link to main panel
 //
 // ?? redesign the panel based on the CATALOG?
 // -- refresh the catalog, then work with those waves?
@@ -22,18 +22,18 @@ End
 
 Window V_TransmissionPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(823,45,1301,669)
+	NewPanel /W=(1286,328,1764,952)
 	ModifyPanel cbRGB=(32896,16448,0,19621)
 	DoWindow/C V_TransmissionPanel
 
 //	ShowTools/A
 	PopupMenu popup_0,pos={19.00,55.00},size={86.00,23.00},proc=V_TSamFilePopMenuProc,title="Sample"
-	PopupMenu popup_0,mode=1,value= V_getFileIntentList("SAMPLE",0)
-	PopupMenu popup_1,pos={98.00,166.00},size={72.00,23.00},proc=V_TTransmFilePopMenuProc,title="Transmission"
+	PopupMenu popup_0,mode=1,value= V_getFileIntentList("SAMPLE",0)+V_getFileIntentList("EMPTY CELL",0)
+	PopupMenu popup_1,pos={102,248},size={72.00,23.00},proc=V_TTransmFilePopMenuProc,title="Transmission"
 	PopupMenu popup_1,mode=1,value= V_getFileIntentList("TRANSMISSION",0)
-	PopupMenu popup_2,pos={160.00,271.00},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Empty Beam"
+	PopupMenu popup_2,pos={164,353},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Empty Beam"
 	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
-	Button button_0,pos={22.00,397.00},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
+	Button button_0,pos={37,193},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
 //	Button button_1,pos={23.00,491.00},size={100.00,20.00},proc=V_WriteTransmButtonProc,title="Write"
 	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
 	Button button_3,pos={410.00,13.00},size={50.00,20.00},proc=V_DoneTransmButtonProc,title="Done"
@@ -41,19 +41,19 @@ Window V_TransmissionPanel() : Panel
 	SetVariable setvar_0,limits={-inf,inf,0},value= _STR:"file label"
 	SetVariable setvar_1,pos={21.00,113.00},size={300.00,14.00},title="Group ID:"
 	SetVariable setvar_1,limits={-inf,inf,0},value= VSANS_RED_VERSION
-	SetVariable setvar_2,pos={101.00,194.00},size={300.00,14.00},title="Label:"
+	SetVariable setvar_2,pos={105,276.00},size={300.00,14.00},title="Label:"
 	SetVariable setvar_2,limits={-inf,inf,0},value= _STR:"file label"
-	SetVariable setvar_3,pos={100.00,220.00},size={300.00,14.00},title="Group ID:"
+	SetVariable setvar_3,pos={104,302},size={300.00,14.00},title="Group ID:"
 	SetVariable setvar_3,limits={-inf,inf,0},value= VSANS_RED_VERSION
-	SetVariable setvar_4,pos={161.00,300.00},size={300.00,14.00},title="Label:"
+	SetVariable setvar_4,pos={165,382},size={300.00,14.00},title="Label:"
 	SetVariable setvar_4,limits={-inf,inf,0},value= _STR:"file label"
-	SetVariable setvar_5,pos={161.00,324.00},size={300.00,14.00},title="XY Box:"
+	SetVariable setvar_5,pos={165,406},size={300.00,14.00},title="XY Box:"
 	SetVariable setvar_5,limits={-inf,inf,0},value= _STR:"dummy"
-	SetVariable setvar_6,pos={159.00,349.00},size={300.00,14.00},title="Panel:"
+	SetVariable setvar_6,pos={165,431},size={300.00,14.00},title="Panel:"
 	SetVariable setvar_6,limits={-inf,inf,0},value= _STR:"dummy"
-	SetVariable setvar_7,pos={24.00,426.00},size={300.00,14.00},title="Transmission:"
+	SetVariable setvar_7,pos={21,138},size={300.00,14.00},title="Transmission:"
 	SetVariable setvar_7,limits={-inf,inf,0},value= VSANS_RED_VERSION
-	SetVariable setvar_8,pos={25.00,448.00},size={300.00,14.00},title="Error:"
+	SetVariable setvar_8,pos={21,163},size={300.00,14.00},title="Error:"
 	SetVariable setvar_8,limits={-inf,inf,0},value= VSANS_RED_VERSION
 EndMacro
 
@@ -114,8 +114,9 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 			endfor
 
 		// now loop back through to find the empty beam file
-		// TODO x- fill in the XY box
-		// --  Panel field is hard wired...
+		// TODO 
+		// x- fill in the XY box
+		// --  Detector Panel field is hard-wired for "B"
 		//	
 			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 			list = V_getFileIntentList("EMPTY BEAM",0)
@@ -194,13 +195,17 @@ End
 //
 // TODO
 // -- figure out which detector corrections are necessary to do on loading
-// data for calcualtion. Then set/reset preferences accordingly
+// data for calculation. Then set/reset preferences accordingly
 // (see V_isoCorrectButtonProc() for example of how to do this)
 //
 //  -- DIV (turn off)
 // -- NonLinear (turn off ?)
 // -- solid angle (turn off ?)
 // -- dead time (keep on?)
+//
+// -- once calculated, update the Transmission panel
+// -- update the data file
+// -- update the CATALOG (and/or delete the RawVSANS to force a re-read)
 //
 Function V_CalcTransmButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -232,12 +237,13 @@ Function V_CalcTransmButtonProc(ba) : ButtonControl
 			fileName = S_Value
 			trans = V_getSampleTransmission(fileName)
 			trans_err = V_getSampleTransError(fileName)
-			// TODO
-			// -- this criteria is rather crude. think it through better
-			if(trans != 0 && trans < 1 && trans_err != 0)
-				Printf "Sample transmission, error = %g +/- %g   already exists, nothing calculated\r",trans,trans_err
-				break
-			endif
+//			// TODO
+//			// -- this criteria is rather crude. think it through better
+//			// -- or should I simply let it overwrite? What is the harm in that?
+//			if(trans != 0 && trans < 1 && trans_err != 0)
+//				Printf "Sample transmission, error = %g +/- %g   already exists, nothing calculated\r",trans,trans_err
+//				break
+//			endif
 			
 		// for empty beam
 
@@ -257,7 +263,7 @@ Function V_CalcTransmButtonProc(ba) : ButtonControl
 			// TODO
 			// -- this criteria is rather crude. think it through better
 			if(emptyCts > 1 && empty_ct_err != 0)
-				Printf "Empty beam box counts, error = %g +/- %g   already exists, nothing calculated\r",emptyCts,empty_ct_err
+				Printf "Empty beam box counts, error = %g +/- %g   already exists, box counts not re-calculated\r",emptyCts,empty_ct_err
 				
 			else
 				// else the counts have not been determined
@@ -350,8 +356,12 @@ Function V_CalcTransmButtonProc(ba) : ButtonControl
 			V_writeSampleTransError(fileName,trans_err)	
 			
 			// TODO
-			// (update the value displayed in the table?)
-			// (update the local value?)
+			// -- update the value displayed in the panel 
+			// -- update the local value in the file catalog
+			// -- delete the file from RawVSANS to force a re-read?
+//			SetVariable setvar_7,value= trans
+//			SetVariable setvar_8,value= trans_err
+//			DoUpdate/W=V_TransmissionPanel
 			
 			
 			// done

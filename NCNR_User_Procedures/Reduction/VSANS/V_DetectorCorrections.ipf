@@ -675,7 +675,7 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	
 	// TODO:
 	// correctly apply the correction to the error wave (assume a perfect value?)
-	// w_err /= solid_angle		//is this correct??
+ 	w_err /= solid_angle		//is this correct??
 
 // TODO -- clean up after I'm satisfied computations are correct		
 //	KillWaves/Z tmp_theta,tmp_dist
@@ -792,7 +792,9 @@ Function V_DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 				endif
 				
 				// pass in the transmission error, and the error in the correction is returned as the last parameter
-				lat_corr = V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+
+//				lat_corr = V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+
 				data[ii][jj] /= lat_corr			//divide by the correction factor
 				//
 				//
@@ -821,67 +823,114 @@ End
 
 
 
-
+//
 // DIVIDE the intensity by this correction to get the right answer
 // TODO:
 //   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
 //
-Function V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,err)
-	Variable trans,dtdist,xd,yd,trans_err,&err
 
-	DoAlert 0,"This has not yet been updated for VSANS"
+// Apply the large angle transmssion correction as the data is converted to WORK
+// so that whether the data is saved as 2D or 1D, the correction has properly been done.
+//
+// This is, however, a SAMPLE dependent calculation, not purely instrument geometry.
+//
+Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,trans,trans_err,uval
+
+// get all of the geometry information	
+//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+	sdd/=100		// sdd in cm, pass in m
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	trans = V_getSampleTransmission(fname)
+	trans_err = V_getSampleTransError(fname)
 	
-	//angle dependent transmission correction 
-	Variable uval,arg,cos_th,correction,theta
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
 	
-	////this section is the trans_correct() VAX routine
-//	if(trans<0.1)
-//		Print "***transmission is less than 0.1*** and is a significant correction"
-//	endif
-//	if(trans==0)
-//		Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
-//		trans = 1
-//	endif
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w lat_corr,tmp_theta,tmp_dist,lat_err,tmp_err		//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
 	
-	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )		//theta at the input pixel
+	tmp_dist /= 10  // convert mm to cm
+	sdd *=100		//convert to cm
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+	
 	
 	//optical thickness
 	uval = -ln(trans)		//use natural logarithm
-	cos_th = cos(theta)
-	arg = (1-cos_th)/cos_th
 	
-	// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
-	// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
-	// OR
-	if((uval<0.01) || (cos_th>0.99))	
-		//small arg, approx correction
-		correction= 1-0.5*uval*arg
-	else
-		//large arg, exact correction
-		correction = (1-exp(-uval*arg))/(uval*arg)
-	endif
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			cos_th = cos(tmp_theta[ii][jj])
+			arg = (1-cos_th)/cos_th
+			
+			// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
+			// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
+			// OR
+			if((uval<0.01) || (cos_th>0.99))	
+				//small arg, approx correction
+				lat_corr[ii][jj] = 1-0.5*uval*arg
+			else
+				//large arg, exact correction
+				lat_corr[ii][jj] = (1-exp(-uval*arg))/(uval*arg)
+			endif
+			 
+			// TODO
+			// -- properly calculate and apply the 2D error propagation
+			if(trans == 1)
+				lat_err[ii][jj] = 0		//no correction, no error
+			else
+				//sigT, calculated from the Taylor expansion
+				tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
+				tmp *= tmp
+				tmp *= trans_err^2
+				tmp = sqrt(tmp)		//sigT
+				
+				lat_err[ii][jj] = tmp
+			endif
+			 
+ 
+		endfor
+	endfor
+	
 
-	Variable tmp
 	
-	if(trans == 1)
-		err = 0		//no correction, no error
-	else
-		//sigT, calculated from the Taylor expansion
-		tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
-		tmp *= tmp
-		tmp *= trans_err^2
-		tmp = sqrt(tmp)		//sigT
-		
-		err = tmp
-	endif
-	
-//	Printf "trans error = %g\r",trans_err
-//	Printf "correction = %g +/- %g\r", correction, err
-	
-	//end of transmission/pathlength correction
+	// Here it is! Apply the correction to the intensity (divide -- to get the proper correction)
+	w /= lat_corr
 
-	return(correction)
+	// relative errors add in quadrature to the current 2D error
+	tmp_err = (w_err/lat_corr)^2 + (lat_err/lat_corr)^2*w*w/lat_corr^2
+	tmp_err = sqrt(tmp_err)
+	
+	w_err = tmp_err	
+	
+	// TODO:
+	// correctly apply the correction to the error wave (assume a perfect value?)
+	// w_err /= tmp		//is this correct??
+
+	// TODO -- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	
+	return(0)
 end
 
 

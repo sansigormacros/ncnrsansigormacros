@@ -537,19 +537,22 @@ Function V_Raw_to_work(newType)
 		
 	// (6) angle dependent transmission correction
 	// TODO:
-	// -- this still needs to be filled in
+	// x- this still needs to be filled in
 	// -- still some debate of when/where in the corrections that this is best applied
 	//    - do it here, and it's done whether the output is 1D or 2D
 	//    - do it later (where SAMPLE information is used) since this section is ONLY instrument-specific
+	// -- verify that the calculation is correct
+	// -- verify that the error propagation (in 2D) is correct
+	//
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		Print "(stub)Doing Large-angle transmission correction -- INCOMPLETE FUNCTION "// for "+ detStr
+		Print "Doing Large-angle transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			Wave w = V_getDetectorDataW(fname,detStr)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			
-//			V_TransmissionCorrection(fill this in)
+			V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 			
 		endfor
 	else

@@ -6372,7 +6372,7 @@ end
 
 // TODO -- needs to be a Text WAVE, and of the proper size and type!!!
 //  -- this is a test where I write a wave to a field that does not exist...
-Function V_write_ProtocolWave(fname,inTW)
+Function V_writeReductionProtocolWave(fname,inTW)
 	String fname
 	Wave/T inTW
 	

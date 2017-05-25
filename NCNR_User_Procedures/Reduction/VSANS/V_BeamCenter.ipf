@@ -11,6 +11,9 @@
 // -- add method to be able to write the values to the local folder / or better, to file on disk
 // -- graphically show the beam center / radius of where it is in relation to the panel
 //
+// x- error checking, if data is selected from a folder that does not exist (like VCALC). Otherwise
+//    the user is caught in a long loop of open file dialogs looking for something...
+//
 // -- move everything into it's own folder, rather than root:
 //
 // -- am I working in detector coordinates (1->n) or in array coordinates (0->n-1)??
@@ -185,6 +188,21 @@ Function V_DrawDetPanel(str)
 	ControlInfo popup_2
 	folder = S_Value
 
+// error checking -- if the VCALC folder is the target & does not exist, exit now
+	if( cmpstr(folder,"VCALC") == 0 && DataFolderExists("root:Packages:NIST:VSANS:VCALC") == 0)
+		return(0)
+	endif
+
+// error checking -- if the RAW folder is the target & does not exist, exit now
+	if( cmpstr(folder,"RAW") == 0 && DataFolderExists("root:Packages:NIST:VSANS:RAW:entry") == 0)
+		return(0)
+	endif
+
+// error checking -- if the SAM folder is the target & does not exist, exit now
+	if( cmpstr(folder,"SAM") == 0 && DataFolderExists("root:Packages:NIST:VSANS:SAM:entry") == 0)
+		return(0)
+	endif
+		
 	// TODO -- fix all of this mess
 	if(cmpstr(folder,"VCALC") == 0)
 		// panel-specific values

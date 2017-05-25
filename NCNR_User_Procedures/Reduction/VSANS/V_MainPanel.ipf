@@ -78,6 +78,25 @@ Proc PatchMainButtonProc(ctrlName) : ButtonControl
 	V_PatchFiles()
 End
 
+Proc Patch_XY_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	V_PatchDet_xyCenters_Panel()
+End
+
+Proc Patch_DeadTime_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	V_PatchDetectorDeadtimePanel()
+End
+
+Proc Patch_Calib_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	V_PatchDetectorCalibrationPanel()
+End
+
+
 Proc TransMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -113,13 +132,14 @@ Proc Sort1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 //	ShowNSORTPanel()
-	V_CombineDataGraph()
+	
 End
 
 Proc Combine1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ShowCombinePanel()
+//	ShowCombinePanel()
+	V_CombineDataGraph()
 End
 
 
@@ -359,11 +379,16 @@ Window Main_VSANS_Panel()
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={130,20},proc=CatSort_MainButtonProc,title="Sort Catalog"
 	Button MainButton_0e,help={"Sort the Data Catalog, courtesy of ANSTO"}
-	Button MainButton_0f,pos={170,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
+	Button MainButton_0f,pos={300,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
 	Button MainButton_0f,help={"Show the header and data tree"}
 	Button MainButton_0g,pos={170,180},size={110,20},proc=RTReduce_MainButtonProc,title="RT Reduction"
 	Button MainButton_0g,help={"Reduce live (incomplete) data files during acquisition"}
-
+	Button MainButton_0h,pos={170,90},size={90,20},proc=Patch_XY_MainButtonProc,title="Patch XY"
+	Button MainButton_0h,help={"Patch will update incorrect information in raw data headers"}
+	Button MainButton_0i,pos={170,120},size={110,20},proc=Patch_DeadTime_MainButtonProc,title="Patch DeadTime"
+	Button MainButton_0i,help={"Patch will update incorrect information in raw data headers"}
+	Button MainButton_0j,pos={170,150},size={90,20},proc=Patch_Calib_MainButtonProc,title="Patch Calib"
+	Button MainButton_0j,help={"Patch will update incorrect information in raw data headers"}
 
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
@@ -382,8 +407,8 @@ Window Main_VSANS_Panel()
 //on tab(2) - 1-D operations
 	Button MainButton_2a,pos={15,90},size={60,20},proc=Plot1D_MainButtonProc,title="Plot"
 	Button MainButton_2a,help={"Loads and plots a 1-D dataset in the format expected by \"FIT\""}
-	Button MainButton_2b,pos={15,120},size={60,20},proc=Sort1D_MainButtonProc,title="Sort"
-	Button MainButton_2b,help={"Sorts and combines 2 or 3 separate 1-D datasets into a single file. Use \"Plot\" button to import 1-D data files"}
+//	Button MainButton_2b,pos={15,120},size={60,20},proc=Sort1D_MainButtonProc,title="Sort"
+//	Button MainButton_2b,help={"Sorts and combines 2 or 3 separate 1-D datasets into a single file. Use \"Plot\" button to import 1-D data files"}
 	Button MainButton_2c,pos={15,150},size={60,20},proc=Fit1D_MainButtonProc,title="FIT"
 	Button MainButton_2c,help={"Shows panel for performing a variety of linearized fits to 1-D data files. Use \"Plot\" button to import 1-D data files"}
 //	Button MainButton_2d,pos={15,180},size={60,20},proc=FITRPA_MainButtonProc,title="FIT/RPA"
@@ -395,7 +420,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_2f,pos={120,120},size={130,20},proc=Combine1D_MainButtonProc,title="Combine 1D Files"
 	Button MainButton_2f,help={"Shows panel for batch combination of 1D data files. Use after you're comfortable with NSORT"}
 	Button MainButton_2a,disable=1
-	Button MainButton_2b,disable=1
+//	Button MainButton_2b,disable=1
 	Button MainButton_2c,disable=1
 //	Button MainButton_2d,disable=1
 	Button MainButton_2e,disable=1
@@ -410,48 +435,48 @@ Window Main_VSANS_Panel()
 	Button MainButton_3b,help={"Draw a mask file and save it."}
 	Button MainButton_3c,pos={15,150},size={90,20},proc=ReadMask_MainButtonProc,title="Read Mask"
 	Button MainButton_3c,help={"Reads a mask file into the proper work folder, and displays a small image of the mask. Yellow areas will be excluded from the data"}
-	Button MainButton_3d,pos={15,180},size={100,20},title="Tile RAW 2D",proc=ShowTilePanel_MainButtonProc
-	Button MainButton_3d,help={"Adds selected RAW data files to a layout."}
+//	Button MainButton_3d,pos={15,180},size={100,20},title="Tile RAW 2D",proc=ShowTilePanel_MainButtonProc
+//	Button MainButton_3d,help={"Adds selected RAW data files to a layout."}
 	Button MainButton_3e,pos={150,90},size={100,20},title="Copy Work",proc=CopyWork_MainButtonProc
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
-	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
-	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
+//	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
+//	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
 	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=Event_MainButtonProc
 	Button MainButton_3g,help={"Manipulate TISANE Timeslice data"}
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
 	Button MainButton_3c,disable=1
-	Button MainButton_3d,disable=1
+//	Button MainButton_3d,disable=1
 	Button MainButton_3e,disable=1
-	Button MainButton_3f,disable=1
+//	Button MainButton_3f,disable=1
 	Button MainButton_3g,disable=1
 
 //on tab(4) - Miscellaneous operations
 	Button MainButton_4a,pos={15,90},size={80,20},proc=Draw3D_MainButtonProc,title="3D Display"
 	Button MainButton_4a,help={"Plots a 3-D surface of the selected file type"}
-	Button MainButton_4b,pos={15,120},size={120,20},proc=ShowSchematic_MainButtonProc,title="Show Schematic"
-	Button MainButton_4b,help={"Use this to show a schematic of the data reduction process for a selected sample file and reduction protocol"}
-	Button MainButton_4c,pos={15,150},size={80,20},proc=ShowAvePanel_MainButtonProc,title="Average"
-	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
+//	Button MainButton_4b,pos={15,120},size={120,20},proc=ShowSchematic_MainButtonProc,title="Show Schematic"
+//	Button MainButton_4b,help={"Use this to show a schematic of the data reduction process for a selected sample file and reduction protocol"}
+//	Button MainButton_4c,pos={15,150},size={80,20},proc=ShowAvePanel_MainButtonProc,title="Average"
+//	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
 //	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
 //	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
 //	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
 //	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
 	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
 	Button MainButton_4f,help={"Merges two stored workfiles (CORrected) into a DIV file, and saves the result"}
-	Button MainButton_4g,pos={180,150},size={130,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
-	Button MainButton_4g,help={"Exports selected RAW (2D) data file(s) as ASCII, either as pixel values or I(Qx,Qy)"}
+//	Button MainButton_4g,pos={180,150},size={130,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
+//	Button MainButton_4g,help={"Exports selected RAW (2D) data file(s) as ASCII, either as pixel values or I(Qx,Qy)"}
 	Button MainButton_4h,pos={180,180},size={130,20},proc=Preferences_MainButtonProc,title="Preferences"
 	Button MainButton_4h,help={"Sets user preferences for selected parameters"}
 	
 	Button MainButton_4a,disable=1
-	Button MainButton_4b,disable=1
-	Button MainButton_4c,disable=1
+//	Button MainButton_4b,disable=1
+//	Button MainButton_4c,disable=1
 //	Button MainButton_4d,disable=1
 //	Button MainButton_4e,disable=1
 	Button MainButton_4f,disable=1
-	Button MainButton_4g,disable=1
+//	Button MainButton_4g,disable=1
 	Button MainButton_4h,disable=1
 //	
 EndMacro

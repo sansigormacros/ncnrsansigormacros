@@ -2786,7 +2786,7 @@ Function V_ExportFileProtocol(ctrlName) : ButtonControl
 		return(0)
 	endif
 
-	V_write_ProtocolWave(fileName,$("root:Packages:NIST:VSANS:Globals:Protocols:"+Protocol) )
+	V_writeReductionProtocolWave(fileName,$("root:Packages:NIST:VSANS:Globals:Protocols:"+Protocol) )
 
 	setDataFolder root:
 	return(0)

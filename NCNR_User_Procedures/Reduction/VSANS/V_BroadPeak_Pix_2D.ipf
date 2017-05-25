@@ -68,6 +68,13 @@ Proc V_PlotBroadPeak_Pix2D(xDim,yDim)
 //	AddModelToStrings("BroadPeak_Pix2D","coef_PeakPix2D","parameters_PeakPix2D","PeakPix2D")
 End
 
+
+//
+// this sets the x and y waves of the triplet to be the pixel numbers
+//
+// TODO:
+// -- this will need to be changed if I want to fit based on real-space mm
+//
 Function V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
 	Wave xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D
 	Variable xDim,yDim

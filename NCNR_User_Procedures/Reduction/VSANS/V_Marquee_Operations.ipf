@@ -55,7 +55,7 @@ Function V_PrintMarqueeCoords() :  GraphMarquee
 		SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType	
 		// this function will modify the x and y values (passed by reference) as needed to keep on the panel
 		V_KeepSelectionInBounds(x1,x2,y1,y2,detStr,gCurDispType)
-		Print x1,x2,y1,y2
+		Printf "%d;%d;%d;%d;\r",x1,x2,y1,y2
 
 
 		count = V_SumCountsInBox(x1,x2,y1,y2,ct_err,gCurDispType,detStr)
