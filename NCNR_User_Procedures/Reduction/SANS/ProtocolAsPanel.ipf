@@ -279,7 +279,7 @@ Function ResetToSavedProtocol(nameStr)
 	//print list,item
 	if(cmpstr(item,"none") == 0)
 		checked = 0
-		String/G root:myGlobals:Protocols:gDRK = list
+		String/G root:myGlobals:Protocols:gDRK = "DRK=none,DRKMODE=0,"
 		CheckBox prot_check_6 win=ProtocolPanel,value=checked
 	else
 		checked = 1

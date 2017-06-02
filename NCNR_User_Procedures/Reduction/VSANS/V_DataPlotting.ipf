@@ -871,7 +871,7 @@ Proc V_Back_IQ_Graph(fullPathToFolder,binType,winNameStr)
 	if(binType==4)
 	
 		ClearIQIfDisplayed_AllFldr("B",winNameStr)
-		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
+		SetDataFolder $(fullPathToFolder)				// ClearIQIfDisplayed_AllFldr() resets to root:
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B
 		
 		if(V_flag==0)

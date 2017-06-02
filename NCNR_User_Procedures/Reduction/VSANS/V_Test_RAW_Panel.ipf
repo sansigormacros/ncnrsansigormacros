@@ -998,8 +998,33 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 
-			V_SimpleSave1DData("root:Packages:NIST:VSANS:","","","")		
-				
+//			V_SimpleSave1DData("root:Packages:NIST:VSANS:","","","")	
+
+// this is the same as clicking the I(q) button. Ensures that the current file has been averaged, 
+// and the data being saved is not "stale"
+
+			V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
+			Variable binType = V_GetBinningPopMode()
+			V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
+	
+			SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType		//what folder
+
+			// look for the binning type
+//			Variable binType
+//			ControlInfo/W=V_1D_Data popup0
+//			binType = (V_flag == 0) ? 1 : V_flag		// if binType not defined, set binType == 1
+
+			String saveName=""
+		// write out the data set to a file
+			if(strlen(saveName)==0)
+				Execute "V_GetNameForSave()"
+				SVAR newName = root:saveName
+				saveName = newName
+			endif
+			
+			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+	
+			Print "Saved file: "	+	saveName + ".itx"	
 			break
 		case -1: // control being killed
 			break

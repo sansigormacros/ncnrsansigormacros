@@ -293,7 +293,7 @@ Proc Event_MainButtonProc(ctrlName) : ButtonControl
 	
 	if(exists("Show_Event_Panel")==0)
 		// procedure file was not loaded
-		DoAlert 0,"This operation is not available in this set of macros"
+		DoAlert 0,"Only test procedures exist. See V_VSANS_Event_Testing.ipf"
 	else
 		Show_Event_Panel()
 	endif

@@ -32,7 +32,7 @@ end
 //	return("")
 //end
 
-Macro Dump_V_getFP(fname)
+Proc Dump_V_getFP(fname)
 	String fname
 	
 	Test_V_get_FP("V_get*",fname)
@@ -59,7 +59,7 @@ Function Test_V_get_FP(str,fname)
 	return(0)
 end
 
-Macro Dump_V_getFP_Det(fname,detStr)
+Proc Dump_V_getFP_Det(fname,detStr)
 	String fname,detStr="FL"
 	
 	Test_V_get_FP2("V_get*",fname,detStr)
@@ -87,7 +87,7 @@ Function Test_V_get_FP2(str,fname,detStr)
 end
 
 
-Macro Dump_V_getSTR(fname)
+Proc Dump_V_getSTR(fname)
 	String fname
 	
 	Test_V_get_STR("V_get*",fname)
@@ -118,7 +118,7 @@ Function Test_V_get_STR(str,fname)
 	return(0)
 end
 
-Macro Dump_V_getSTR_Det(fname,detStr)
+Proc Dump_V_getSTR_Det(fname,detStr)
 	String fname,detStr="FL"
 	
 	Test_V_get_STR2("V_get*",fname,detStr)

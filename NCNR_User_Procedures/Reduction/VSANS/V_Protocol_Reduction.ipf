@@ -1463,7 +1463,7 @@ End
 // MAXROWS is present to exclude the PanelNameW from appearing as a protocol
 Proc V_PickAProtocol(protocol)
 	String Protocol
-	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","TEXT:1,MAXROWS:13")
+	Prompt Protocol "Pick A Protocol",popup, V_RecallableProtocols()
 	
 	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = protocol
 End
@@ -1483,12 +1483,29 @@ Function/S V_DeletableProtocols()
 	list= RemoveFromList("DoAll", list  , ";")
 	list= RemoveFromList("CreateNew", list  , ";")
 	list= RemoveFromList("tempProtocol", list  , ";")
+	list= RemoveFromList("wTTmpWrite", list  , ";")
 	if(cmpstr(list,"")==0)
 		list = "_no_protocols_;"
 	endif
 	
 	return(list)
 End
+
+Function/S V_RecallableProtocols()
+	String list=WaveList("*",";","TEXT:1,MAXROWS:13")
+
+//	list= RemoveFromList("Base", list  , ";")
+//	list= RemoveFromList("DoAll", list  , ";")
+	list= RemoveFromList("CreateNew", list  , ";")
+	list= RemoveFromList("tempProtocol", list  , ";")
+	list= RemoveFromList("wTTmpWrite", list  , ";")
+	if(cmpstr(list,"")==0)
+		list = "_no_protocols_;"
+	endif
+	
+	return(list)
+End
+
 
 //missing parameter dialog to solicit user for a waveStr for the protocol 
 //about to be created
@@ -2506,7 +2523,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 					// remove the q=0 point from the back detector, if it's there
 					// does not trim any of the data
 					V_RemoveQ0_B(activeType)
-					V_Write1DData_NoConcat("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
 				endif
 
 		endswitch
@@ -2771,7 +2788,7 @@ Function V_ExportFileProtocol(ctrlName) : ButtonControl
 // get a list of protocols
 	String Protocol=""
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
-	Prompt Protocol "Pick A Protocol",popup, WaveList("*",";","")
+	Prompt Protocol "Pick A Protocol",popup, V_DeletableProtocols()
 	DoPrompt "Pick A Protocol to Export",Protocol
 	if(V_flag==1)
 		//Print "user cancel"

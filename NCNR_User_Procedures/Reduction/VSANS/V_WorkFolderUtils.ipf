@@ -99,6 +99,9 @@ Function V_CopyHDFToWorkFolder(fromStr,toStr)
 
 		return(0)
 	else
+	
+		V_KillWavesFullTree($fromDF,fromStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
+		
 		// need to do this the hard way, duplicate/O recursively
 		// see V_CopyToWorkFolder()
 		
@@ -112,12 +115,27 @@ Function V_CopyHDFToWorkFolder(fromStr,toStr)
 		V_DuplicateDataFolder($(fromDF+":entry:reduction"),fromStr,toStr,0,"",1)	//yes recursion here
 		// sample
 		V_DuplicateDataFolder($(fromDF+":entry:sample"),fromStr,toStr,0,"",1)	//yes recursion here
-
+		// user
+		V_DuplicateDataFolder($(fromDF+":entry:user"),fromStr,toStr,0,"",1)	//yes recursion here
+		
 	endif	
 	
 	return(0)
 end
 
+
+
+Function V_KillWavesInFolder(folderStr)
+	String folderStr
+	
+	if(DataFolderExists(folderStr) && strlen(folderStr) != 0)
+		SetDataFolder $folderStr
+		KillWaves/A/Z
+	endif
+	
+	SetDataFolder root:
+	return(0)
+end
 
 ////////
 // see the help entry for IndexedDir for help on (possibly) how to do this faster
@@ -233,7 +251,104 @@ Function V_DuplicateDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 	 
 
 End
+
+
+// ListDataFolder(dfr, level)
+// Recursively lists objects in data folder.
+// Pass data folder path for dfr and 0 for level.
+// pass level == 0 for the first call
+//  sNBName = "" prints nothing. any name will generate a notebook
+//
+// recurse == 0 will do only the specified folder, anything else will recurse all levels
+// toStr is the string name of the top-level folder only, not the full path
+//
+//
+Function V_KillWavesFullTree(dfr, fromStr, level, sNBName,recurse)
+	DFREF dfr
+	String fromStr
+//	String toStr
+	Variable level			// Pass 0 to start
+ 	String sNBName
+ 	Variable recurse
  
+	String name
+	String dfName
+ 	String sString
+ 	
+ 	String toDF = ""
+ 
+	if (level == 0)		// this is the data folder, generate if needed in the destination
+		name = GetDataFolder(1, dfr)
+		sPrintf sString, "%s (data folder)\r", name
+//		toDF = ReplaceString(fromStr,name,toStr,1)		// case-sensitive replace
+//		sprintf sString, "NewDataFolder/O %s\r",toDF
+//		NewDataFolder/O $(RemoveEnding(toDF,":"))			// remove trailing semicolon if it's there
+		
+		V_WriteBrowserInfo_test(sString, 1, sNBName)
+	endif
+ 
+ 	dfName = GetDataFolder(1, dfr)
+// 	toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
+	Variable i
+ 
+	String indentStr = "\t"
+	for(i=0; i<level; i+=1)
+		indentStr += "\t"
+	endfor
+ 
+	Variable numWaves = CountObjectsDFR(dfr, 1)
+	for(i=0; i<numWaves; i+=1)
+		name = GetIndexedObjNameDFR(dfr, 1, i)
+		//
+		// wave type does not matter now. Kill does not care
+		//
+		sPrintf sString, "Killing  %s\r",dfName+name
+		KillWaves/Z $(dfName+name)
+		
+		V_WriteBrowserInfo_test(sString, 2, sNBName)
+	endfor	
+ 
+ // now kill the data folder if possible
+ 	KillDataFolder/Z $dfName
+ 	
+ 	
+	Variable numNumericVariables = CountObjectsDFR(dfr, 2)	
+	for(i=0; i<numNumericVariables; i+=1)
+		name = GetIndexedObjNameDFR(dfr, 2, i)
+		sPrintf sString, "%s%s (numeric variable)\r", indentStr, name
+		V_WriteBrowserInfo_test(sString, 3, sNBName)
+	endfor	
+ 
+	Variable numStringVariables = CountObjectsDFR(dfr, 3)	
+	for(i=0; i<numStringVariables; i+=1)
+		name = GetIndexedObjNameDFR(dfr, 3, i)
+		sPrintf sString, "%s%s (string variable)\r", indentStr, name
+		V_WriteBrowserInfo_test(sString, 4, sNBName)
+	endfor	
+
+	if(recurse) 
+		Variable numDataFolders = CountObjectsDFR(dfr, 4)	
+		for(i=0; i<numDataFolders; i+=1)
+			name = GetIndexedObjNameDFR(dfr, 4, i)
+			sPrintf sString, "%s%s (data folder)\r", indentStr, name
+			 dfName = GetDataFolder(1, dfr)
+			 
+//			toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
+//			sprintf sString, "NewDataFolder/O %s\r",toDF+name
+//			NewDataFolder/O $(toDF+name)
+			
+			
+			V_WriteBrowserInfo_test(sString, 1, sNBName)
+			DFREF childDFR = dfr:$(name)
+			V_KillWavesFullTree(childDFR, fromStr, level+1, sNBName, recurse)
+		endfor	
+	endif
+	 
+
+End
+ 
+
+
 Function V_WriteBrowserInfo_test(sString, vType, sNBName)
 	String sString
 	Variable vType
@@ -461,30 +576,8 @@ Function V_Raw_to_work(newType)
 		Print "Non-linear correction NOT DONE"
 	endif
 
-	// (3) solid angle correction
-	// TODO -- this currently calculates the correction factor AND applys it to the data
-	//  -- as a result, the data values are very large since they are divided by a very small
-	//     solid angle per pixel. But all of the count values are now on the basis of 
-	//    counts/(solid angle) --- meaning that they can all be binned together for I(q)
-	//    -and- TODO - this will need to be taken into account for absolute scaling (this part is already done)
-	//
-	// the solid angle correction is calculated for ALL detector panels.
-	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
-	if (gDoSolidAngleCor == 1)
-		Print "Doing Solid Angle correction"// for "+ detStr
-		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-			detStr = StringFromList(ii, ksDetectorListAll, ";")
-			Wave w = V_getDetectorDataW(fname,detStr)
-			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			// any other dimensions to pass in?
-			V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
-			
-		endfor
-	else
-		Print "Solid Angle correction NOT DONE"
-	endif	
-	
-	// (4) dead time correction
+
+	// (3) dead time correction
 	// TODO:
 	// x- remove the hard-wired test - done
 	// -- test for correct operation
@@ -523,7 +616,31 @@ Function V_Raw_to_work(newType)
 		Print "Dead Time correction NOT DONE"
 	endif	
 	
+
+	// (4) solid angle correction
+	// TODO -- this currently calculates the correction factor AND applys it to the data
+	//  -- as a result, the data values are very large since they are divided by a very small
+	//     solid angle per pixel. But all of the count values are now on the basis of 
+	//    counts/(solid angle) --- meaning that they can all be binned together for I(q)
+	//    -and- TODO - this will need to be taken into account for absolute scaling (this part is already done)
+	//
+	// the solid angle correction is calculated for ALL detector panels.
+	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
+	if (gDoSolidAngleCor == 1)
+		Print "Doing Solid Angle correction"// for "+ detStr
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave w_err = V_getDetectorDataErrW(fname,detStr)
+			// any other dimensions to pass in?
+			V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+			
+		endfor
+	else
+		Print "Solid Angle correction NOT DONE"
+	endif	
 	
+		
 	// (5) angle-dependent tube shadowing
 	// TODO:
 	// -- not sure about this correction yet...

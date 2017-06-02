@@ -60,37 +60,6 @@
 // The R/W with attributes is part of the HDF5 Gateway procedure from Pete Jemain, and needs to be kept and functional
 // to be able to work with attributes - if needed.
 //
-Menu "VSANS"
-	SubMenu "Nexus File RW"
-//		"Fill_Nexus_V_Template"
-//		"Save_Nexus_V_Template"
-//		"Load_Nexus_V_Template"
-//		"-"
-//		"IgorOnly_Setup_VSANS_Struct"
-//		"IgorOnly_Save_VSANS_Nexus"
-//		"IgorOnly_Setup_SANS_Struct"
-//		"IgorOnly_Save_SANS_Struct"
-		"Setup_VSANS_DIV_Struct"
-		"Save_VSANS_DIV_Nexus"
-		"Setup_VSANS_MASK_Struct"
-		"Save_VSANS_MASK_Nexus"
-		"-"
-		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
-		"Write_Nexus with attributes",Write_Nexus_Xref()				//this will write out with attributes if read in by Read_Nexus_Xref
-	End
-End
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

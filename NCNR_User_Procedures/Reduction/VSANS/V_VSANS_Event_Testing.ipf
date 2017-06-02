@@ -44,6 +44,13 @@
 // -- not sure how this will work with JointHistogram Operation
 // (split to separate "streams" of values for each detector panel?
 //
+//
+// -- can I efficiently use "sort" (on the tube index) to block the data into groups that can be split
+//  into 4 sets of waves
+//  that can then be binned per panel, using the usual Joint histogram procedures? Works only if the 
+// tube indexing is orderly. if it's a mess, Ill need to try something else (indexed sort?) (replace?)
+// (manually? ugh.)
+//
 
 
 //
@@ -162,12 +169,15 @@ Function V_decodeFakeEvent()
 	return(0)
 End
 
-
+/
+// tested up to num=1e8 successfully
+//
 Function V_MakeFakeEventWave()
 
 	Variable num,ii
 
-	num = 1000
+
+	num = 1e3
 	
 //	// /l=64 bit, /U=unsigned
 	Make/O/L/U/N=(num) eventWave
@@ -183,11 +193,12 @@ Function V_MakeFakeEventWave()
 	
 	i64_start = ticks
 	for(ii=0;ii<num;ii+=1)
-		sleep/T 6			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
 		b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
 		b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
 		
-		i64_ticks = ticks-i64_start
+//		i64_ticks = ticks-i64_start
+		i64_ticks = ii+1
 		
 		b2 = b2 << 48
 		b1 = b1 << 56
@@ -195,14 +206,17 @@ Function V_MakeFakeEventWave()
 		i64_num = b1+b2+i64_ticks
 		eventWave[ii] = i64_num
 	endfor
-	
+
+
 	return(0)
 End
 
 
-Function V_decodeFakeEventWave()
+Function V_decodeFakeEventWave(w)
+	Wave w
 
-	WAVE w = eventWave
+s_tic()
+//	WAVE w = eventWave
 	uint64 val,b1,b2,btime
 	val = w[0]
 	
@@ -230,6 +244,8 @@ Function V_decodeFakeEventWave()
 		eventTime[ii] = btime
 		
 	endfor
+
+s_toc()
 		
 	return(0)
 End
@@ -285,6 +301,7 @@ Function V_readFakeEventFile()
 // this reads in uint64 data, to a unit64 wave, skipping 22 bytes	
 //	GBLoadWave/B/T={192,192}/W=1/S=22
 	Variable num,refnum
+	
 
 // so to read:
 //
@@ -307,8 +324,11 @@ Function V_readFakeEventFile()
 
 	vsansStr = PadString(vsansStr,5,0x20)		//pad to 5 bytes
 	detStr = PadString(detStr,1,0x20)				//pad to 1 byte
+
 	Open/R refnum 
 	fname = S_fileName
+
+s_tic()
 
 	FBinRead refnum, vsansStr
 	FBinRead/F=2/U refnum, revision
@@ -332,6 +352,7 @@ Function V_readFakeEventFile()
 	
 	GBLoadWave/B/T={192,192}/W=1/S=22 fname
 	
+s_toc()	
 	
 	return(0)
 End

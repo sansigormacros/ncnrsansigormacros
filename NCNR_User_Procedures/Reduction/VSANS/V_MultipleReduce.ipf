@@ -291,6 +291,10 @@ Function V_MRProtoPopMenuProc(MRProto_pop,popNum,popStr) : PopupMenuControl
 	list = RemoveFromList("CreateNew", list, ";")
 	list = RemoveFromList("tempProtocol", list, ";")
 	list = RemoveFromList("fakeProtocol", list, ";")
+	list = RemoveFromList("PanelNameW", list, ";")
+	list = RemoveFromList("Beg_pts", list, ";")
+	list = RemoveFromList("End_pts", list, ";")
+	list = RemoveFromList("trimUpdate", list, ";")
 	
 	String/G root:Packages:NIST:VSANS:Globals:MRED:gMRProtoList = list
 	ControlUpdate MRProto_pop

@@ -60,8 +60,14 @@ Function V_LoadHDF5Data(file,folder)
 	String destPath
 	Variable ii
 	
-	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
 	destPath = "root:Packages:NIST:VSANS:"+folder
+	// before reading in new data, clean out what old data can be cleaned. hopefully new data will overwrite what is in use
+	V_KillWavesFullTree($destPath,folder,0,"",1)			// this will traverse the whole tree, trying to kill what it can
+
+	if(DataFolderExists("root:Packages:NIST:VSANS:"+folder) == 0)		//if it was just killed?
+		NewDataFolder/O $("root:Packages:NIST:VSANS:"+folder)
+	endif
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
 
 	Variable err= V_LoadHDF5_NoAtt(file,folder)	// reads into current folder
 	

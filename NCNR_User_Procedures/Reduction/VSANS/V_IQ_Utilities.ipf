@@ -813,10 +813,14 @@ End
 // -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
 // -- but a real writer will need to be aware of resolution, and there may be different forms
 //
+// This saves the data in Igor Text format, an ASCII format, but NOT standard SANS columns
+// No concatenation is done. This is meant to be used for input to TRIM, or for general troubleshooting
+//
+//
 // this will bypass save dialogs
 // -- AND WILL OVERWRITE DATA WITH THE SAME NAME
 //
-Function V_Write1DData_NoConcat(pathStr,folderStr,saveName,binType)
+Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 	String pathStr,folderStr,saveName
 	Variable binType
 	
@@ -984,7 +988,7 @@ Function V_Write1DData_NoConcat(pathStr,folderStr,saveName,binType)
 End
 
 
-Macro V_Load_Data_ITX()
+Proc V_Load_Data_ITX()
 	V_Load_itx("","",0,0)
 end
 

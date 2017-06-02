@@ -34,7 +34,7 @@
 // x- (different)(not ugly) color for the control bar so it's distinguishable from the regular data plot
 // x- "Done" button that kills the root:ToTrim folder (may need to kill the dependency first)
 //
-Macro V_CombineDataGraph()
+Proc V_CombineDataGraph()
 
 // this is the "initialization" step
 	NewDataFolder/O root:ToTrim
