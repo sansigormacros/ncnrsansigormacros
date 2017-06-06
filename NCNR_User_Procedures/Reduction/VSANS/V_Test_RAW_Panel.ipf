@@ -171,8 +171,8 @@ Window VSANS_DataPanel() : Panel
 	
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
-	Button button_saveIQ,pos={603,412},size={70,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q)"
-	Button button_BeamCtr,pos={603,450},size={70,20},proc=V_BeamCtrButtonProc,title="Beam Ctr"
+	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
+	Button button_BeamCtr,pos={603,450},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center"
 	Button button_SpreadPanels,pos={603,488},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
 	Button button_RestorePanels,pos={603,526},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 

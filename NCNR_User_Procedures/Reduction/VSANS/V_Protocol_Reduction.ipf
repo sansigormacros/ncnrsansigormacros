@@ -915,7 +915,8 @@ Function/S V_GetMSKList()
 //
 //	endfor
 
-	String match="MASK"		// this is part of the title of a VSANS MASK file
+//	String match="MASK"		// this is part of the title of a VSANS MASK file
+	String match="VSANS_MASK"		// this is part of the title of a VSANS MASK file
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii, newList , ";")
 		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
@@ -1066,11 +1067,11 @@ Window V_ProtocolPanel()
 	DrawLine 3,305,301,305
 	DrawLine 3,350,301,350
 	DrawLine 3,445,301,445
-	DrawLine 3,513,303,513
+	DrawLine 3,513,301,513
 	DrawLine 3,396,301,396
 
 //
-	Button button_help,pos={260,2},size={25,20},proc=V_ShowProtoHelp,title="?"
+	Button button_help,pos={300,2},size={25,20},proc=V_ShowProtoHelp,title="?"
 	Button button_help,help={"Show the help file for setting up a reduction protocol"}
 	Button button_quest,pos={20,2},size={150,20},proc=V_ProtocolQuestionnaire,title="Questions"
 	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}

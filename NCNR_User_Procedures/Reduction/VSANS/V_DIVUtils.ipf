@@ -2,10 +2,9 @@
 
 //
 // ********
-// TODO -- this is only a fake DIV file. need to identify how to generate a real DIV file
-//     for the different detectors, and how to fill it into a file. ProDIV for SANS may be a good
-//     starting point, or it may be cumbersome. Not sure how it will be measured in practice
-//     on VSANS.
+// TODO -- this is an incomplete DIV file. need to identify how to generate a real DIV file
+//     for the different detectors, and how to fill it into a file. 
+//    Not sure how it will be measured in practice on VSANS.
 //
 //   JAN 2017
 //
@@ -25,8 +24,11 @@
 // closer than the nominal 4m distance on SANS that was deemed far enough back to be "safe" from 
 // the high angle issues.
 //
+// -- what about the T/B panels? Since a large chunk of these detectors may be obscured,
+//   the normalization will be way off -- and the "active" area will end up much larger 
+//   than it should be - since the wings of the detector are mostly zero...
 //
-
+//
 
 
 /// TODO:
@@ -39,38 +41,72 @@
 //
 
 
+// Basic function:
+// -- first, reduce the data (to the COR level?)
+// -- next, V_NormalizeDIV()
+// -- then Setup_VSANS_DIV_Struct()
+// -- next, V_CopyDIVToSave()
+// -- last, Save_VSANS_DIV_Nexus() 
 
 
 
 
-//works on the data in "type" folder (expecting data to be reduced to the COR level)
-//sums all of the data, and normalizes by the number of cells (=pixelX*pixelY)
-// calling procedure must make sure that the folder is on linear scale FIRST
+//
+// Normalizes each panel independently
+// Normalizes in-place, replacing whatever was there
+//
+// type is the work folder where the (? corrected) data is currently
+//
+// TODO
+// -- data should be copied to some alternate work folder before this step
+//
 Function V_NormalizeDIV(type)
 	String type
-	
-	WAVE data=$("root:Packages:NIST:"+type+":data")
-	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
-	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
-	
-	Variable totCts=sum(data,Inf,-Inf)		//sum all of the data
-	NVAR pixelX = root:myGlobals:gNPixelsX
-	NVAR pixelY = root:myGlobals:gNPixelsY
 
-	
-	data /= totCts
-	data *= pixelX*pixelY
-	
-	data_lin /= totCts
-	data_lin *= pixelX*pixelY
-	
-	data_err /= totCts
-	data_err *= pixelX*pixelY
+	Variable ii,totCts,pixelX,pixelY
+	String detStr
+
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave w = V_getDetectorDataW(type,detStr)
+		Wave w_err = V_getDetectorDataErrW(type,detStr)
+		pixelX = V_getDet_pixel_num_x(type,detStr)
+		pixelY = V_getDet_pixel_num_y(type,detStr)
+
+		totCts=sum(w,Inf,-Inf)		//sum all of the data
 		
+		w /= totCts
+		w *= pixelX*pixelY
+
+		w_err /= totCts
+		w_err *= pixelX*pixelY
+		
+	endfor
+	
 	return(0)
 End
 
 
+
+Function V_CopyDIVToSave(type)
+	String type
+	
+	Variable ii,totCts,pixelX,pixelY
+	String detStr
+	String topath = "root:VSANS_DIV_file:entry:instrument:detector_"
+	String fromPath = "root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"
+	
+	
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+
+		Duplicate/O $(fromPath+detStr+":data") $(toPath+detStr+":data")
+		Duplicate/O $(fromPath+detStr+":linear_data_error") $(toPath+detStr+":linear_data_error")
+		
+	endfor
+	
+	return(0)
+End
 
 
 

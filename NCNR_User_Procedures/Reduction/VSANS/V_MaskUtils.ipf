@@ -676,7 +676,7 @@ Function V_SaveMaskButtonProc(ba) : ButtonControl
 			// fill with current "stuff"
 			SetDataFolder root:VSANS_MASK_file:entry	
 			Wave/T title	= title
-			title = "This is a custom MASK file for VSANS"
+			title = "This is a custom MASK file for VSANS: VSANS_MASK"
 			SetDataFolder root:
 			
 			
@@ -729,7 +729,7 @@ Proc H_Setup_VSANS_MASK_Structure()
 	NewDataFolder/O/S root:VSANS_MASK_file		
 
 	NewDataFolder/O/S root:VSANS_MASK_file:entry	
-		Make/O/T/N=1	title	= "This is a fake MASK file for VSANS"
+		Make/O/T/N=1	title	= "This is a MASK file for VSANS: VSANS_MASK"
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"

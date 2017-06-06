@@ -53,8 +53,8 @@ Proc V_DetectorPanelFit() : Panel
 	Button button_0,pos={486,20},size={80,20},proc=V_DetFitGuessButtonProc,title="Guess"
 	Button button_1,pos={615,20},size={80,20},proc=V_DetFitButtonProc,title="Do Fit"
 	Button button_2,pos={744,20},size={80,20},proc=V_DetFitHelpButtonProc,title="Help"
-	Button button_3,pos={615,400},size={110,20},proc=V_WriteCtrButtonProc,title="Write Centers"
-	Button button_4,pos={730,400},size={110,20},proc=V_CtrTableButtonProc,title="Ctr table"
+	Button button_3,pos={730,400},size={110,20},proc=V_CopyCtrButtonProc,title="Copy Centers"
+	Button button_4,pos={615,400},size={110,20},proc=V_CtrTableButtonProc,title="Ctr table"
 	Button button_5,pos={730,440},size={110,20},proc=V_WriteCtrTableButtonProc,title="Write table"
 
 
@@ -440,8 +440,10 @@ End
 //
 // TODO -- currently hard-wired for coefficients from the only fit function
 //
+// only copies the center values to the local folder (then read back in by clicking  "Ctr Table")
+//
 // -- will need to recalc mm center AND q-values
-Function V_WriteCtrButtonProc(ba) : ButtonControl
+Function V_CopyCtrButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -458,7 +460,9 @@ Function V_WriteCtrButtonProc(ba) : ButtonControl
 			V_putDet_beam_center_x(fname,detStr,coefW[9])
 			V_putDet_beam_center_y(fname,detStr,coefW[10])
 
-			DoAlert 0, "-- will need to recalc mm center AND q-values"
+//			DoAlert 0, "-- will need to recalc mm center AND q-values"
+			
+			V_BCtrTable()		//reads the values back in
 			
 			break
 		case -1: // control being killed
@@ -716,7 +720,12 @@ End
 //
 Function V_BeamCtr_WriteTable()
 
-	DoAlert 0,"this currently only writes pix values locally, not mm, and not to files on disk"
+	Variable runNumber
+	Prompt runNumber, "enter the run number:"
+	DoPrompt "Pick file to write to",runNumber
+	If(V_flag==1)
+		return(0)
+	endif	
 	
 	String folder
 	
@@ -727,15 +736,14 @@ Function V_BeamCtr_WriteTable()
 	Wave yCtr_pix = root:yCtr_pix
 	Wave/T panelW = root:PanelW
 	
-	ControlInfo popup_2
-	folder = S_Value
-	
-	fname = folder
+
+	fname = V_FindFileFromRunNumber(runNumber)
+
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 //		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		detStr = panelW[ii]
-		V_putDet_beam_center_x(fname,detStr,xCtr_pix[ii])
-		V_putDet_beam_center_y(fname,detStr,yCtr_pix[ii])
+		V_writeDet_beam_center_x(fname,detStr,xCtr_pix[ii])
+		V_writeDet_beam_center_y(fname,detStr,yCtr_pix[ii])
 		
 		// TODO
 		// and now the mm values

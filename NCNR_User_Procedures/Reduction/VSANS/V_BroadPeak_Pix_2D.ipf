@@ -225,6 +225,11 @@ ThreadSafe Function V_I_BroadPeak_Pix2D(w,xw,yw)
 // TODO (change this)
 // base the scaling on the xSize 
 
+// *** NOTE ***
+// "qval" here is NOT q
+// qval is a real space distance in the units of PIXELS. Not mm, not q, PIXELS
+// Don't put any meaning in the fitted values, it's simply a functional shape
+
 	ratio = (xSize/ySize)^2
 	if(ratio > 1)
 	//	qval = sqrt((xw-xCtr)^2+(yw-yCtr)^2)			// use if the pixels are square

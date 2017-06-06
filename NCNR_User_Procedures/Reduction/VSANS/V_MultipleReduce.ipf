@@ -86,7 +86,7 @@ Window V_Multiple_Reduce_Panel()
 	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
 	Button ReduceOneButton,pos={3,98},size={180,20},proc=V_ReduceTopPopupFile,title="Reduce Top File in Popup"
 	Button ReduceOneButton,help={"This will reduce TOP files in the popup list, not all of the files."}
-	Button DoneButton,pos={280,128},size={110,20},proc=V_MRDoneButtonProc,title="Done Reducing"
+	Button DoneButton,pos={290,128},size={110,20},proc=V_MRDoneButtonProc,title="Done Reducing"
 	Button DoneButton,help={"When done reducing files, this will close this control panel."}
 	Button cat_short,pos={310,72},size={90,20},proc=V_ShowCatShort_MRED,title="File Catalog"
 	Button cat_short,help={"Use this button to generate a table with file header information. Very useful for identifying files."}
