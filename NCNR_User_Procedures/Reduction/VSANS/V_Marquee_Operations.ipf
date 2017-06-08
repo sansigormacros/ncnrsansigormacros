@@ -11,7 +11,8 @@
 // -- still many operations in (SANS)Marquee.ipf that will be useful to implement:
 //
 // -- writing the box coordinates and the counts (and error) to the data file
-// -- determining the beam center (centroid) of the selection + writing this to the file
+// x- determining the beam center (centroid) of the selection 
+//  -- writing beam center (centroid) to the file?
 //  -- a box sum over a range of files (with a plot)
 // -- box sum over annular regions
 // -- box sum over arcs

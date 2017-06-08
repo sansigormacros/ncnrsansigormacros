@@ -5807,8 +5807,8 @@ end
 
 
 //
-// TODO -- I need to make sure that this is an integer in the JSON definition
-// 		-- currently a text value in the data file - see trac ticket
+// TODO x- I need to make sure that this is an integer in the JSON definition
+// 		x- currently a text value in the data file - see trac ticket
 // x- this is also a duplicated field in the reduction block (reduction/group_id is no longer used)
 //
 // group ID !!! very important for matching up files
@@ -5893,6 +5893,62 @@ Function V_writeSampleHolderDescription(fname,str)
 	return(err)
 End
 
+
+
+//Sample Temperature
+Function V_writeSampleTemperature(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:sample:temperature"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample"
+	String varName = "temperature"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
+//Sample Temperature set point
+Function V_writeSampleTempSetPoint(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:sample:temperature_setpoint"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample"
+	String varName = "temperature_setpoint"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
 //Sample Thickness
 // TODO -- somehow, this is not set correctly in the acquisition, so NaN results
 Function V_writeSampleThickness(fname,val)
@@ -5919,6 +5975,7 @@ Function V_writeSampleThickness(fname,val)
 //	endif
 	return(err)
 end
+
 
 //Sample Translation
 Function V_writeSampleTranslation(fname,val)
@@ -6003,10 +6060,7 @@ end
 //// SAMPLE / DATA LOGS
 // write this generic , call with the name of the environment log desired
 //
-// temperature_1
-// temperature_2
-// temperature_3
-// temperature_4
+//
 // shear_field
 // pressure
 // magnetic_field
@@ -6092,40 +6146,120 @@ Function V_writeLog_Name(fname,logStr,str)
 End
 
 
-// TODO -- this may require multiple entries, for each sensor _1, _2, etc.
-Function V_writeLog_setPoint(fname,logStr,val)
-	String fname,logStr
-	Variable val
-	
-//	String path = "entry:sample:"+logstr+":setpoint_1"
-	
-	Make/O/D/N=1 wTmpWrite
-//	Make/O/R/N=1 wTmpWrite
+//// TODO -- this may require multiple entries, for each sensor _1, _2, etc.
+//Function V_writeLog_setPoint(fname,logStr,val)
+//	String fname,logStr
+//	Variable val
+//	
+////	String path = "entry:sample:"+logstr+":setpoint_1"
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/sample/"+logStr
+//	String varName = "setpoint_1"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeLog_startTime(fname,logStr,str)
+//	String fname,logStr,str
+//
+////	String path = "entry:sample:"+logstr+":start"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/sample/"+logStr
+//	String varName = "start"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//
+//// TODO -- this may only exist for electric and magnetic field, or be removed
+//Function V_writeLog_nomValue(fname,logStr,val)
+//	String fname,logStr
+//	Variable val
+//	
+////	String path = "entry:sample:"+logstr+":value"
+//	
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/sample/"+logStr
+//	String varName = "value"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+
+
+// for temperature only, logStr must be "temperature_env"
+Function V_writeTempLog_ControlSensor(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:"+logstr+":control_sensor"
+
+	Make/O/T/N=1 tmpTW
 	String groupName = "/entry/sample/"+logStr
-	String varName = "setpoint_1"
-	wTmpWrite[0] = val
+	String varName = "control_sensor"
+	tmpTW[0] = str //
 
 	variable err
-	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
 	if(err)
 		Print "HDF write err = ",err
 	endif
+	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
 //	err = V_KillNamedDataFolder(fname)
 //	if(err)
 //		Print "DataFolder kill err = ",err
 //	endif
+		
 	return(err)
-end
+End
 
-Function V_writeLog_startTime(fname,logStr,str)
+// for temperature only, logStr must be "temperature_env"
+Function V_writeTempLog_MonitorSensor(fname,logStr,str)
 	String fname,logStr,str
 
-//	String path = "entry:sample:"+logstr+":start"
+//	String path = "entry:sample:"+logstr+":monitor_sensor"
 
 	Make/O/T/N=1 tmpTW
 	String groupName = "/entry/sample/"+logStr
-	String varName = "start"
+	String varName = "monitor_sensor"
 	tmpTW[0] = str //
 
 	variable err
@@ -6144,16 +6278,354 @@ Function V_writeLog_startTime(fname,logStr,str)
 End
 
 
-// TODO -- this may only exist for electric and magnetic field, or be removed
-Function V_writeLog_nomValue(fname,logStr,val)
+
+////////////////////
+//
+///////////
+// NOTE
+//
+// for temperature, the "attached_to", "measurement", and "name" fields
+// are one level down farther than before, and down deeper than for other sensors
+//
+//
+// read the value of V_getTemp_MonitorSensor/ControlSensor to get the name of the sensor level .
+//
+
+Function V_writeTempLog_attachedTo(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:temperature_env:"+logstr+":attached_to"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "attached_to"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+
+Function V_writeTempLog_highTrip(fname,logStr,val)
 	String fname,logStr
 	Variable val
 	
-//	String path = "entry:sample:"+logstr+":value"
+//	String path = "entry:sample:temperature_env:"+logstr+":high_trip_value"
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/sample/"+logStr
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "high_trip_value"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_holdTime(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":hold_time"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "hold_time"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_lowTrip(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":low_trip_value"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "low_trip_value"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_measurement(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:temperature_env:"+logstr+":measurement"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "measurement"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeTempLog_model(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:temperature_env:"+logstr+":model"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "model"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeTempLog_name(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:temperature_env:"+logstr+":name"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeTempLog_runControl(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":run_control"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "run_control"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_setPoint(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":setpoint"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "setpoint"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_shortName(fname,logStr,str)
+	String fname,logStr,str
+
+//	String path = "entry:sample:temperature_env:"+logstr+":short_name"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "short_name"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeTempLog_timeout(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":timeout"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "timeout"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_tolerance(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":tolerance"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "tolerance"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_toleranceBand(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":tolerance_band_time"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
+	String varName = "tolerance_band_time"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+Function V_writeTempLog_Value(fname,logStr,val)
+	String fname,logStr
+	Variable val
+	
+//	String path = "entry:sample:temperature_env:"+logstr+":value"
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/sample/temperature_env/"+logStr
 	String varName = "value"
 	wTmpWrite[0] = val
 
@@ -6170,6 +6642,24 @@ Function V_writeLog_nomValue(fname,logStr,val)
 	return(err)
 end
 
+
+
+
+
+//
+// temperature_env:temp_Internal_1:value_log
+//
+////		value_log (data folder)
+//
+// TODO:
+// -- be sure that the calling function properly calls for temperture
+// logs which are down an extra layer:
+//  	for example, logStr = "temperature_env:temp_Internal_1"
+//
+// read the value of V_getTemp_MonitorSensor to get the name of the sensor the next level down.
+//
+//
+/////////////////////////////////////
 ////		value_log (data folder)
 //
 // TODO -- 
@@ -6302,7 +6792,7 @@ end
 
 // TODO -- this needs to be a WAVE reference
 // be sure this gets written as "time", even though it is read in as "time0"
-Function V_writeLog_time(fname,logStr,inW)
+Function V_writeLog_timeWave(fname,logStr,inW)
 	String fname,logStr
 	Wave inW
 	
@@ -6331,7 +6821,7 @@ end
 
 
 // TODO -- this needs to be a WAVE reference
-Function V_writeLog_Value(fname,logStr,inW)
+Function V_writeLog_ValueWave(fname,logStr,inW)
 	String fname,logStr
 	Wave inW
 	
@@ -6357,6 +6847,11 @@ Function V_writeLog_Value(fname,logStr,inW)
 //	endif
 	return(err)
 end
+
+
+
+
+
 
 
 

@@ -690,8 +690,9 @@ End
 // -- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
 //    but this is a lousy choice.
 // x- binning is now Mask-aware. If mask is not present, all data is used. If data is from VCALC, all data is used
-// -- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
-//    a blanket correction (matrix multiply) for an entire panel?
+// x- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
+//    a blanket correction (matrix multiply) for an entire panel? (Solid Angle correction is done in the
+//    step where data is added to a WORK file (see Raw_to_Work())
 //
 //
 //
@@ -1213,7 +1214,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
 // TODO:
-// -- 2D Errors were NOT properly acculumated above, so this loop of calculations is NOT MEANINGFUL (yet)
+// -- 2D Errors were NOT properly acculumated through reduction, so this loop of calculations is NOT MEANINGFUL (yet)
 // x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
@@ -1279,6 +1280,14 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 		endif
 		val -= 1
 	while(val>0)
+	
+	// TODO:
+	// -- is this where I do the resolution calculation?
+	// -- or do I do it as a separate call?
+	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
+	//
+	
+	
 	
 	SetDataFolder root:
 	

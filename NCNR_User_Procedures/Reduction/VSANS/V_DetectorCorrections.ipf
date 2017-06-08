@@ -27,13 +27,13 @@
 // same old equation, just written in a more complex form.
 //
 // TODO
-// -- verify the direction of the tubes and indexing
+// x- verify the direction of the tubes and indexing
 // x- decide on the appropriate functional form for the tubes
 // x- need count time as input
-// -- be sure I'm working in the right data folder
-// -- clean up when done
-// -- calculate + return the error contribution?
-// -- verify the error propagation
+// x- be sure I'm working in the right data folder (all waves are passed in)
+// x- clean up when done
+// x- calculate + return the error contribution?
+// x- verify the error propagation
 Function V_DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	Wave dataW,data_errW,dtW
 	Variable ctTime
@@ -110,15 +110,15 @@ End
 //
 // TODO
 // -- UNITS!!!! currently this is mm, which certainly doesn't match anything else!!!
-// -- verify the direction of the tubes and indexing
-// -- be sure I'm working in the right data folder
-// -- clean up when done
-// -- calculate + return the error contribution?
-// -- do I want this to return a wave?
-// -- do I need to write a separate function that returns the distance wave for later calculations?
-// -- do I want to make the distance array 3D to keep the x and y dims together? Calculate them all right now?
-// -- what else do I need to pass to the function? (fname=folder? detStr?)
-// -- need a separate block or function to handle "B" detector which will be ? different
+// x- verify the direction of the tubes and indexing
+// x- be sure I'm working in the right data folder (it is passed in, and the full path is used)
+// x- clean up when done
+// x- calculate + return the error contribution? (there is none for this operation)
+// x- do I want this to return a wave? (no, default names are generated)
+// x- do I need to write a separate function that returns the distance wave for later calculations?
+// x- do I want to make the distance array 3D to keep the x and y dims together? Calculate them all right now?
+// x- what else do I need to pass to the function? (fname=folder? detStr?)
+// y- (yes,see below) need a separate block or function to handle "B" detector which will be ? different
 //
 //
 Function V_NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
@@ -268,11 +268,9 @@ end
 // -- VERIFY the calculations
 // -- verify where this needs to be done (if the beam center is changed)
 // -- then the q-calculation needs to be re-done
-// -- the position along the tube length is referenced to tube[0], for no particular reason
-//    It may be better to take an average? but [0] is an ASSUMPTION
-// -- distance along tube is simple interpolation
 //
-// -- distance in the lateral direction is based on tube width, which is well known
+// -- not much is known about the "B" detector, so this
+//    all hinges on the non-linear corrections being done correctly for that detector
 //
 //
 Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)

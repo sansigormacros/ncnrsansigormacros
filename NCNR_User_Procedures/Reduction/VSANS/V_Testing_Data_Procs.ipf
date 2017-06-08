@@ -119,9 +119,9 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 	V_writeReductionIntent(fileName,intent)
 	
 	// reduction group_id
-	// TODO - skip for now. group_id is incorrectly written to the data file as a text value. trac ticket
+	// TODO x- (file has been corected)skip for now. group_id is incorrectly written to the data file as a text value. trac ticket
 	//        has been written to fix in the future.
-//	V_writeReduction_group_ID(fileName,group_id)
+	V_writeSample_GroupID(fileName,group_id)
 
 
 

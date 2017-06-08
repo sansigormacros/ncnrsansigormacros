@@ -124,6 +124,8 @@ end
 // NOTE -- use V_CleanupData_w_Progress(0,1) to get a progress bar - since this will take more than
 //     a few seconds to complete, especially if a file catalog was done, or a "batch" patching, etc.
 //
+// *** this appears to be unused, in favor of V_CleanupData_w_Progress(0,1)  **********
+//
 Function V_CleanOutRawVSANS()
 
 	SetDataFolder root:Packages:NIST:VSANS:RawVSANS:
@@ -492,7 +494,7 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	endif
 
 	// TODO
-	// -- update the 1D plotting as needed. these are SANS calls (OK for now, but will need to be better)
+	// x- update the 1D plotting as needed. these are SANS calls (OK for now, but will need to be better)
 	//do the average and plot (either the default, or what is on the panel currently)
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 	type = "RAW"
@@ -641,7 +643,7 @@ Function V_CheckIfRawData(fname)
 
 End
 
-// TODO -- need to fill in correctly by determining this from the INTENT field
+// TODO x- need to fill in correctly by determining this from the INTENT field
 //
 Function V_isTransFile(fname)
 	String fname
@@ -649,13 +651,13 @@ Function V_isTransFile(fname)
 	Variable refnum,totalBytes
 	String testStr=""
 	
-//	testStr = V_getInstrumentName(fname)
+	testStr = V_getReduction_intent(fname)
 
-	if(cmpstr(testStr,"NG3-VSANS") == 0)		//wrong test
-		//testStr exists, ASSUMING it's a raw VSANS data file
+	if(cmpstr(testStr,"TRANSMISSION") == 0)		//
+		//yes, a transmission file
 		Return(1)
 	else
-		//some other file
+		//some other file intent
 		Return(0)
 	Endif
 End

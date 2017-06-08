@@ -109,7 +109,7 @@ Function V_PlotData_Panel()
 End
 
 // TODO
-// -- winStr is currently hard-wired, but this may not be an issue
+// x- winStr is currently hard-wired, but this may not be an issue
 Function V_Update1D_Graph(workType,binType)
 	String workType
 	Variable binType
@@ -407,7 +407,7 @@ Function V_BinningModePopup(ctrlName,popNum,popStr) : PopupMenuControl
 
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
-	V_QBinAllPanels(type,popNum)
+	V_QBinAllPanels_Circular(type,popNum)
 
 	String str,winStr="V_1D_Data",workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+type

@@ -21,7 +21,9 @@
 Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
 // the list of WORK Folders
-Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
+// RawVSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
+// VCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
+//Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
 Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
 
 
@@ -415,9 +417,9 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 //		base_name = StringFromList(0,FileName,".")
 //	endif
 	
-	// if base_name is from my list of WORK folders, then base_name = ""
+	// if base_name is from my list of WORK folders + RawVSANS;, then base_name = ""
 	// use a stringSwitch? WhichListItem?
-	Variable isFolder = WhichListItem(base_name,ksWorkFolderList)
+	Variable isFolder = WhichListItem(base_name,ksWorkFolderListShort+"RawVSANS;")
 	if(isFolder != -1)
 		base_name = ""
 	else
@@ -515,33 +517,45 @@ end
 
 
 // read a single real value 
-// - fname passed in is the full path to the file on disk
+// - fname passed in is the full path to the file on disk --OR-- a WORK folder
 // - path is the path to the value in the HDF tree
 //
+/// -- if data requested from a WORK or VCALC folder:
 // check to see if the value exists (It will be a wave)
+// -- if it does, return the value from the local WORK folder
+//		if it does not exist, return DUMMY value
+//
+//// -- if data requested from a file:
+// check to see if the value exists locally in RawVSANS (It will be a wave)
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
-// TODO:
-// currently, the work folders have the following path - so passing in "RAW" as fname
-// will take some re-configuring. 
-//  root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:distance
-// -- be sure this read from work folders is not broken in the future, and is passed to ALL of the
-//    top-level R/W routines. (Write is necessary ONLY for SIM data files. Patch is direct to disk.)
+//
 Function V_getRealValueFromHDF5(fname,path)
 	String fname,path
 
 	String folderStr=""
 	Variable valExists=0
+	Variable errorValue = -999999
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is now NOT doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
-		Wave/Z w = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
-		return(w[0])
+// (1) if requesting data from a WORK folder, get it, or report error
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	// check for a work folder first (note that "entry" is now NOT doubled)
+		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+			Wave/Z w = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+			return(w[0])
+		else
+			return(errorValue)
+		endif
 	endif
-	
+
+
+	// (2) requesting from a file.
+	// look locally in RawVSANS if possible, or if not, load in the data from disk
+	// - if thee both fail, report an error
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
@@ -559,7 +573,7 @@ Function V_getRealValueFromHDF5(fname,path)
 	if(WaveExists(w))
 		return(w[0])
 	else
-		return(-999999)
+		return(errorValue)
 	endif	
 End
 
@@ -573,6 +587,8 @@ End
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
+// if the wave is null, then that is returned, and the calling function is responsible
+//
 Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	String fname,path
 
@@ -581,12 +597,23 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is NOT doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
-		Wave wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
-		return wOut
+// (1) if requesting data from a WORK folder, get it
+// no need to check for any existence, null return is OK
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+//	// check for a work folder first (note that "entry" is now NOT doubled)
+//		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+			Wave/Z wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+			return wOut
 	endif
-		
+
+//// check for a work folder first (note that "entry" is NOT doubled)
+//	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+//		Wave wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+//		return wOut
+//	endif
+	
+// (2) requesting from a file
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
@@ -615,6 +642,8 @@ End
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
+// if the wave is null, then that is returned, and the calling function is responsible
+//
 Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	String fname,path
 
@@ -623,12 +652,23 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is NOT doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
-		Wave/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
-		return wOut
+// (1) if requesting data from a WORK folder, get it
+// no need to check for any existence, null return is OK
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+//	// check for a work folder first (note that "entry" is now NOT doubled)
+//		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+			Wave/Z/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+			return wOut
 	endif
 	
+//// check for a work folder first (note that "entry" is NOT doubled)
+//	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+//		Wave/T wOut = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+//		return wOut
+//	endif
+
+// (2) requesting from a file	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
@@ -673,10 +713,17 @@ End
 
 
 // read a single string
-// - fname passed in is the full path to the file on disk
+// - fname passed in is the full path to the file on disk --OR-- a WORK folder
 // - path is the path to the value in the HDF tree
 // - num is the number of characters in the VAX string
+//
+/// -- if data requested from a WORK or VCALC folder:
 // check to see if the value exists (It will be a wave)
+// -- if it does, return the value from the local WORK folder
+//		if it does not exist, return DUMMY value
+//
+//// -- if data requested from a file:
+// check to see if the value exists locally in RawVSANS (It will be a wave)
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
@@ -690,15 +737,25 @@ Function/S V_getStringFromHDF5(fname,path,num)
 
 	String folderStr=""
 	Variable valExists=0
+	String errorString = "The specified wave does not exist: " + path
 	
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
-// check for a work folder first (note that "entry" is NOT doubled)
-	if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
-		Wave/Z/T tw = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
-		return(tw[0])
+// (1) if requesting data from a WORK folder, get it, or report error
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	// check for a work folder first (note that "entry" is now NOT doubled)
+		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
+			Wave/Z/T tw = $("root:Packages:NIST:VSANS:"+folderStr+":"+path)
+			return(tw[0])
+		else
+			return(errorSTring)
+		endif
 	endif
-	
+
+// (2) requesting from a file.
+// look locally in RawVSANS if possible, or if not, load in the data from disk
+// - if thee both fail, report an error	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
@@ -721,7 +778,7 @@ Function/S V_getStringFromHDF5(fname,path,num)
 		
 		return(tw[0])
 	else
-		return("The specified wave does not exist: " + path)
+		return(errorString)
 	endif
 End
 

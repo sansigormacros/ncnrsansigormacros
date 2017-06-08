@@ -2387,6 +2387,15 @@ Function V_ExecuteProtocol(protStr,samStr)
 	endif
 
 
+//
+// TODO:
+// -- do I calculate the proper resolution here? I've already decoded the binning type
+//   and the averaging type has been specified by the protocol
+// -- if I calculate the resolution here, then the Trimming routines must be updated
+//    to trim the resolution waves also. This positioning may work for 
+//    pinhole resolution, but anything using the matrix method - it won't work - and I'll need 
+//    a different solution
+//
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
 			//still do nothing
@@ -2407,8 +2416,8 @@ Function V_ExecuteProtocol(protStr,samStr)
 //			AnnularAverageTo1D(activeType)
 			break
 		case "Circular":
-//			CircularAverageTo1D(activeType)
-			V_QBinAllPanels(activeType,binType)		// this does a default circular average
+
+			V_QBinAllPanels_Circular(activeType,binType)		// this does a default circular average
 			break
 		case "Sector":
 //			CircularAverageTo1D(activeType)

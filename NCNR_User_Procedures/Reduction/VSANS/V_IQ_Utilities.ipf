@@ -80,7 +80,12 @@ Function V_BinTypeStr2Num(binStr)
 	return(binType)
 end
 
-Function V_QBinAllPanels(folderStr,binType)
+//
+// TODO -- binType == 4 (slit mode) should never end up here
+// -- new logic in calling routines to dispatch to proper routine
+// -- AND need to write the routine for binning_SlitMode
+//
+Function V_QBinAllPanels_Circular(folderStr,binType)
 	String folderStr
 	Variable binType
 

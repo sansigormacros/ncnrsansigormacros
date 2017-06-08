@@ -11,7 +11,7 @@
 
 //
 // TODO
-// -- clean up and remove all of the references to other facilities, since they will not have VSANS modules
+// x- clean up and remove all of the references to other facilities, since they will not have VSANS modules
 // -- add in more appropriate and some missing fields more useful to VSANS (intent, multiple beam centers, etc.)
 // -- can I make the choice of columns customizable? There are "sets" of columns that are not used for 
 //    some experiments (magnetic, rotation, temperature scans, etc.) but are necessary for others.
@@ -31,7 +31,7 @@
 // clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "bad" local copy will be read in.
 // TODO:
-//  -- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies. If
+//  x- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies. If
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
 // -- make a background task to periodically "kill" a few of the files? maybe too dangerous.
@@ -158,7 +158,7 @@ Function V_BuildCatVeryShortTable()
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 
 // TODO:
-//  -- experimental hook with contextual menu
+//  x- experimental hook with contextual menu
 //		
 		SetWindow kwTopWin hook=V_CatTableHook, hookevents=1	// mouse down events
 
@@ -169,7 +169,7 @@ Function V_BuildCatVeryShortTable()
 // clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "bad" local copy will be read in for any subsequent operations.
 // TODO:
-//  -- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies? If
+//  x- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies? If
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
 //
@@ -241,7 +241,7 @@ Function V_BuildCatVeryShortTable()
 	// (don't use numpnts(notRawList) to normalize, these aren't all raw data files)
 	//
 	// clean out again, so that the file SAVE is not slow due to the large experiment size
-	// TODO -- decide if this is really necessary
+	// TODO x- decide if this is really necessary (not necessary at this point)
 //	
 //	V_CleanOutRawVSANS()
 			
@@ -254,7 +254,7 @@ End
 //  this is experimental...not been tested by any users yet
 // -- what else to add to the menu? (MSK and DIV now work)
 // -- add directly to WORK files?
-// -- "set" as some special file type, intent, use?
+// -- "set" as some special file type, intent, use? (quick "patch" operations)
 // -- "check" the reduction protocol for completeness?
 //
 // x- seems to not "let go" of a selection (missing the mouse up?)
@@ -452,7 +452,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GFilenames[lastPoint]=sname
 	
 //	//read the file alphanumeric suffix
-//	// TODO -- this does not exist for VSANS - so is there an equivalent, or delete?
+//	// TODO x- this does not exist for VSANS - so is there an equivalent, or delete? ((delete))
 //	InsertPoints lastPoint,1,GSuffix
 //	GSuffix[lastPoint]="unknown"
 
@@ -481,7 +481,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GCntRate[lastPoint]=cntrate
 	
 	//Attenuators
-	// TODO -- this is not really the number --
+	// TODO -- this is not really the number -- but rather the thickness
 	InsertPoints lastPoint,1,GNumAttens
 	GNumAttens[lastPoint]=V_getAttenThickness(fname)
 	
@@ -518,15 +518,14 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GRot
 	GRot[lastPoint]=V_getSampleRotationAngle(fname)
 	
-	// TODO -- this is not yet implemented
 	//Sample Temperature
 	InsertPoints lastPoint,1,GTemp
-	GTemp[lastPoint]=-273
+	GTemp[lastPoint]=V_getSampleTemperature(fname)
 
 	// TODO -- this is not yet implemented
 	//Sample Field
 	InsertPoints lastPoint,1,GField
-	GField[lastPoint]=1000
+	GField[lastPoint]=-999
 	
 
 //	//the run number (not displayed in the table, but carried along)

@@ -818,7 +818,7 @@ End
 // ? controls here to select how the data is processed/grouped/saved, etc.
 //
 // -- currently just the graph, no controls
-// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType)
+// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType) from inside V_BinningModePopup()
 Function V_IvsQPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 

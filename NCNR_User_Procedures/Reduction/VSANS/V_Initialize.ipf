@@ -137,7 +137,7 @@ Function V_InitGlobals()
 	
 	//check platform, so Angstrom can be drawn correctly
 
-	//TODO	- this is different on Igor 7. Macintosh # has been updated, but Windows has not
+	//TODO	-- this is different on Igor 7. Macintosh # has been updated, but Windows has not
 	// use Print char2num("Å") to find the magic number
 	if(cmpstr("Macintosh",IgorInfo(2)) == 0)
 		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
@@ -152,8 +152,8 @@ Function V_InitGlobals()
 		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 	
-	// TODO -- find the SANS preferences, copy over and update for VSANS
-	// -- these are all in PlotUtilsMacro_v40.ipf as the preferences are set up as common
+	// TODO x- find the SANS preferences, copy over and update for VSANS
+	// x- these are all in PlotUtilsMacro_v40.ipf as the preferences are set up as common
 	// to all packages. I'm not sure that I want to do this with VSANS, but make the packages
 	// separate entities. I'm seeing little benefit of the crossover, especially now that 
 	// Analysis is not mine. So for VSANS, there is a new, separate file: V_VSANS_Preferences.ipf
@@ -277,19 +277,21 @@ End
 
 
 // TODO
-// do I need to make the protocols any longer for VSANS?
+// do I need to make the protocols any longer for VSANS? (yes -- now 12 points)
 // What other options for processing / averaging / saving are needed??
 // - TODO
-// -- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the 
+// x- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the 
 // entire reduction can be automatic
 //
 //
 // -- creates the "base" protocols that should be available, after creating the data folder
 // -- all protocols are kept in the root:Packages:NIST:VSANS:Globals:Protocols folder, created here
 //
+//
+//*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused 
+//
 Function V_InitFakeProtocols()
 	
-	//*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused 
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Protocols
 	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}
 	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}

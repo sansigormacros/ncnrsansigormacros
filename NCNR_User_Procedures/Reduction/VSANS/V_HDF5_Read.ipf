@@ -258,23 +258,25 @@ Function/S V_getFacility(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO - should be the file name as saved on disk, currently it's not
-Function/S V_getFile_name(fname)
-	String fname
-	
-	String path = "entry:file_name"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
-		
-//
-Function/S V_getHDF_version(fname)
-	String fname
-	
-	String path = "entry:hdf_version"	
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
-End
+// cut in JUNE 2017
+//// TODO - should be the file name as saved on disk, currently it's not
+//Function/S V_getFile_name(fname)
+//	String fname
+//	
+//	String path = "entry:file_name"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+
+// cut in JUNE 2017		
+////
+//Function/S V_getHDF_version(fname)
+//	String fname
+//	
+//	String path = "entry:hdf_version"	
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
 
 // TODO -- not mine, added somewhere by Nexus writer?
 Function/S V_getProgram_name(fname)
@@ -327,22 +329,24 @@ end
 
 // TODO -- for the control section, document each of the fields
 
-Function/S V_getCount_end(fname)
-	String fname
-	
-	Variable num
-	String path = "entry:control:count_end"	
-	return(V_getStringFromHDF5(fname,path,num))
-end
+// cut in JUNE 2017
+//Function/S V_getCount_end(fname)
+//	String fname
+//	
+//	Variable num
+//	String path = "entry:control:count_end"	
+//	return(V_getStringFromHDF5(fname,path,num))
+//end
 
-
-Function/S V_getCount_start(fname)
-	String fname
-	
-	Variable num
-	String path = "entry:control:count_start"	
-	return(V_getStringFromHDF5(fname,path,num))
-end
+// cut in JUNE 2017
+//
+//Function/S V_getCount_start(fname)
+//	String fname
+//	
+//	Variable num
+//	String path = "entry:control:count_start"	
+//	return(V_getStringFromHDF5(fname,path,num))
+//end
 
 
 Function V_getCount_time(fname)
@@ -376,13 +380,14 @@ Function V_getDetector_preset(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-
-Function V_getIntegral(fname)
-	String fname
-	
-	String path = "entry:control:integral"	
-	return(V_getRealValueFromHDF5(fname,path))
-end
+// cut in JUNE 2017
+//
+//Function V_getIntegral(fname)
+//	String fname
+//	
+//	String path = "entry:control:integral"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
 
 // control mode for data acquisition, "timer"
 // TODO - what are the enumerated types for this?
@@ -410,14 +415,15 @@ Function V_getMonitor_preset(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
+// cut in JUNE 2017
 // TODO - what are the enumerated types for this?
-Function/S V_getPreset(fname)
-	String fname
-	
-	Variable num
-	String path = "entry:control:preset"	
-	return(V_getStringFromHDF5(fname,path,num))
-end
+//Function/S V_getPreset(fname)
+//	String fname
+//	
+//	Variable num
+//	String path = "entry:control:preset"	
+//	return(V_getStringFromHDF5(fname,path,num))
+//end
 
 
 
@@ -2042,6 +2048,21 @@ Function/S V_getSampleHolderDescription(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+Function V_getSampleTemperature(fname)
+	String fname
+	
+	String path = "entry:sample:temperature"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getSampleTempSetPoint(fname)
+	String fname
+	
+	String path = "entry:sample:temperature_setpoint"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
 //Sample Thickness
 // TODO -- somehow, this is not set correctly in the acquisition, so NaN results
 Function V_getSampleThickness(fname)
@@ -2076,14 +2097,16 @@ end
 
 
 
-
+//
+// TODO -- this is all a big mess with the changes in the data file structure
+//  in JUNE 2017, which completely wrecks what was decided in 2016.
+// Now, I'm not sure at all what I'll get...or what the field will be called... or what they mean...
+//
+//
 //// SAMPLE / DATA LOGS
 // write this generic , call with the name of the environment log desired
 //
-// temperature_1
-// temperature_2
-// temperature_3
-// temperature_4
+//
 // shear_field
 // pressure
 // magnetic_field
@@ -2117,35 +2140,186 @@ Function/S V_getLog_Name(fname,logStr)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- this may not exist if it is not a "controlling" sensor, but there still may be logged data present
-// TODO -- it may also have different names for each sensor (setpoint_1, setpoint_2, etc. which will be a big hassle)
-Function V_getLog_setPoint(fname,logStr)
+
+
+// for temperature only, logStr = "temperature_env"
+Function/S V_getTemp_ControlSensor(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:"+logstr+":control_sensor"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+// for temperature only, logStr = "temperature_env"
+Function/S V_getTemp_MonitorSensor(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:"+logstr+":monitor_sensor"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+	
+
+//// TODO -- this may not exist if it is not a "controlling" sensor, but there still may be logged data present
+//// TODO -- it may also have different names for each sensor (setpoint_1, setpoint_2, etc. which will be a big hassle)
+//Function V_getLog_setPoint(fname,logStr)
+//	String fname,logStr
+//	
+//	String path = "entry:sample:"+logstr+":setpoint_1"
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function/S V_getLog_startTime(fname,logStr)
+//	String fname,logStr
+//
+//	String path = "entry:sample:"+logstr+":start"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//
+//// TODO -- this may only exist for electric field and magnetic field...
+//// or may be eliminated altogether
+//Function V_getLog_nomValue(fname,logStr)
+//	String fname,logStr
+//	
+//	String path = "entry:sample:"+logstr+":value"
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+
+
+
+///////////
+// for temperature, the "attached_to", "measurement", and "name" fields
+// are one level down farther than before, and down deeper than for other sensors
+//
+//
+// read the value of V_getTemp_MonitorSensor/ControlSensor to get the name of the sensor level .
+//
+
+Function/S V_getTempLog_attachedTo(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:temperature_env:"+logstr+":attached_to"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getTempLog_highTrip(fname,logStr)
 	String fname,logStr
 	
-	String path = "entry:sample:"+logstr+":setpoint_1"
+	String path = "entry:sample:temperature_env:"+logstr+":high_trip_value"
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getLog_startTime(fname,logStr)
+Function V_getTempLog_holdTime(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":hold_time"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getTempLog_lowTrip(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":low_trip_value"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function/S V_getTempLog_measurement(fname,logStr)
 	String fname,logStr
 
-	String path = "entry:sample:"+logstr+":start"
+	String path = "entry:sample:temperature_env:"+logstr+":measurement"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
 
-// TODO -- this may only exist for electric field and magnetic field...
-// or may be elimnated altogether
-Function V_getLog_nomValue(fname,logStr)
+Function/S V_getTempLog_Model(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:temperature_env:"+logstr+":model"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function/S V_getTempLog_Name(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:temperature_env:"+logstr+":name"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getTempLog_runControl(fname,logStr)
 	String fname,logStr
 	
-	String path = "entry:sample:"+logstr+":value"
+	String path = "entry:sample:temperature_env:"+logstr+":run_control"
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-////		value_log (data folder)
+Function V_getTempLog_Setpoint(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":setpoint"
+	return(V_getRealValueFromHDF5(fname,path))
+end
 
+Function/S V_getTempLog_ShortName(fname,logStr)
+	String fname,logStr
+
+	String path = "entry:sample:temperature_env:"+logstr+":short_name"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getTempLog_Timeout(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":timeout"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getTempLog_Tolerance(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":tolerance"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getTempLog_ToleranceBand(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":tolerance_band_time"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+Function V_getTempLog_Value(fname,logStr)
+	String fname,logStr
+	
+	String path = "entry:sample:temperature_env:"+logstr+":value"
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+
+
+
+
+
+//
+// temperature_env:temp_Internal_1:value_log
+//
+////		value_log (data folder)
+//
+// TODO:
+// -- be sure that the calling function properly calls for temperture
+// logs which are down an extra layer:
+//  	for example, logStr = "temperature_env:temp_Internal_1"
+//
+// read the value of V_getTemp_MonitorSensor to get the name of the sensor the next level down.
+//
 Function V_getLog_avgValue(fname,logStr)
 	String fname,logStr
 	
@@ -2183,7 +2357,7 @@ end
 
 // DONE -- this needs to be a WAVE reference
 // DONE -- verify that the field is really read in as "time0"
-Function V_getLog_time(fname,logStr,outW)
+Function V_getLog_timeWave(fname,logStr,outW)
 	String fname,logStr
 	Wave outW
 	
@@ -2195,7 +2369,7 @@ Function V_getLog_time(fname,logStr,outW)
 end
 
 // DONE -- this needs to be a WAVE reference
-Function V_getLog_Value(fname,logStr,outW)
+Function V_getLog_ValueWave(fname,logStr,outW)
 	String fname,logStr
 	Wave outW
 	
