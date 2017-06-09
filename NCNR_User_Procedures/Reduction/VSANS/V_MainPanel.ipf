@@ -291,11 +291,11 @@ End
 Proc Event_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-	if(exists("Show_Event_Panel")==0)
+	if(exists("V_Show_Event_Panel")==0)
 		// procedure file was not loaded
 		DoAlert 0,"Only test procedures exist. See V_VSANS_Event_Testing.ipf"
 	else
-		Show_Event_Panel()
+		V_Show_Event_Panel()
 	endif
 	
 End

@@ -38,7 +38,7 @@
 // and especially the number of disabled tubes (although as long as I have the offset, it shouldn't be that
 // big of an issue.
 //
-// -- don't see the struct idea working out. only in read c-code if needed
+// -- don't see the struct idea working out. only in real c-code if needed
 //
 // -- need to add detector binning to the decoding, to place the counts within the correct panels
 // -- not sure how this will work with JointHistogram Operation
@@ -169,7 +169,7 @@ Function V_decodeFakeEvent()
 	return(0)
 End
 
-/
+//
 // tested up to num=1e8 successfully
 //
 Function V_MakeFakeEventWave()
@@ -352,7 +352,63 @@ s_tic()
 	
 	GBLoadWave/B/T={192,192}/W=1/S=22 fname
 	
+	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
+	KillWaves/Z $(StringFromList(0,S_waveNames))
 s_toc()	
 	
+	return(0)
+End
+
+//
+// tested up to num=1e8 successfully
+//
+Function V_MakeFakeEventWave_TOF()
+
+	Variable num,ii,jj,delayTime,numRepeat,std
+
+
+	num = 1000
+	numRepeat = 100
+	
+	delayTime = 30		//microseconds
+	std = 5					//std deviation, microseconds
+	
+//	// /l=64 bit, /U=unsigned
+	Make/O/L/U/N=(num*numRepeat) eventWave
+	eventWave = 0
+	
+	Make/O/D/N=(num) arrival
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	uint64 i64_ticks,i64_start
+	
+//	i64_start = ticks
+	i64_ticks = 0
+	for(jj=0;jj<numRepeat;jj+=1)
+		arrival = delayTime + gnoise(std)
+		sort arrival,arrival
+		arrival *= 1000		//milliseconds now
+	
+		for(ii=0;ii<num;ii+=1)
+	//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+			b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
+			b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
+			
+			i64_ticks = trunc(arrival[ii])
+			
+			b2 = b2 << 48
+			b1 = b1 << 56
+		
+			i64_num = b1+b2+i64_ticks
+			eventWave[jj*num+ii] = i64_num
+		endfor
+		
+	endfor
+
 	return(0)
 End

@@ -95,3 +95,6 @@ End
 
 #include "V_MultipleReduce"
 #include "V_VSANS_Event_Testing"
+#include "V_EventModeProcessing"
+
+
