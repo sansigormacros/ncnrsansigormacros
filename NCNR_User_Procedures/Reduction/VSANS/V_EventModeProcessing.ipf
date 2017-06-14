@@ -5,6 +5,11 @@
 
 // TODO:
 //
+// -- Can any of this be multithreaded?
+//  -- the histogram operation, the Indexing for the histogram, all are candidates
+//  -- can the decoding be multithreaded as a wave assignment speedup?
+//
+//
 // -- search for TODO for unresolved issues not on this list
 //
 // -- add comments to the code as needed
@@ -13,35 +18,12 @@
 //
 // -- examples?
 //
-// -- ?? need way to get correspondence between .hst files and VAX files? Names are all different. See
-//    DateAndTime2HSTName() functions and similar @ bottom of this file
-//
-// x- add the XOP to the distribution package
-//
-// x- Need to make sure that the rescaledTime and the differentiated time graphs are
-//     being properly updated when the data is processed, modified, etc.
-//
-// -- I need better nomenclature other than "stream" for the "continuous" data set.
-//     It's all a stream, just sometimes it's not oscillatory
-//
 //
 // X- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 //     interprets the data as being RGB - and so does nothing.
 //     need to find a way around this. This was fixed by displaying the data using the G=1 flag on AppendImage
 //     to prevent the "atuo-detection" of data as RGB
 //
-// -- Do something with the PP events. Currently, only the PP events that are XY (just the
-//    type 0 events (since I still need to find out what they realy mean)
-//
-// -- Add a switch to allow Sorting of the Stream data to remove the "time-reversed" data
-//     points. Maybe not kosher, but would clean things up.
-//
-///////////////////////////////
-//
-// NOTE -- to be able to show the T0 and PP event locations/times, force the loader to use the Igor code rather than
-// the XOP. Then there will be waves generated with their locations: T0Time and T0EventNum, PPTime and PPEventNum. Edit these waves
-// and (1) delete the zero points at the end of the waves and (2) multiply the Time wave * 1e-7 to convert to seconds.
-// Then the waves can be plotted on top of the event data, so it can be seen where these events were identified.
 //
 ///////////////   SWITCHES     /////////////////
 //
@@ -52,73 +34,19 @@
 //	Variable/G root:Packages:NIST:VSANS:Event:gStepTolerance = 5		// 5 = # of standard deviations from mean. See PutCursorsAtStep()
 //
 //
-///////// DONE //////////
-//
-// X- memory issues:
-//		-- in LoadEvents -- should I change the MAKE to:
-//				/I/U is unsigned 32-bit integer (for the time)
-//	   			/B/U is unsigned 8-bit integer (max val=255) for the x and y values
-//			-- then how does this affect downstream processing - such as rescaledTime, differentiation, etc.
-//			x- and can I re-write the XOP to create these types of data waves, and properly fill them...
-//
-//  **- any integer waves must be translated by Igor into FP to be able to be displayed or for any
-//    type of analysis. so it's largely a waste of time to use integers. so simply force the XOP to 
-//    generate only SP waves. this will at least save some space.
-//
-//
-//
-// x- Is there any way to improve the speed of the loader? How could an XOP be structured
-//     for maximum flexibility? Leave the post processing to Igor, but how much for the XOP
-//     to do? And can it handle such large amounts of data to pass back and forth, or
-//     does it need to be written as an operation, rather than a function??? I'd really 
-//     rather that Igor handles the memory management, not me, if I write the XOP.
-//
-// **- as of 11/27, the OSX version of the XOP event loader is about 35x faster for the load!
-//    and is taking approx 1.8s/28MB, or about 6.5s/100MB of file. quite reasonable now, and
-//    probably a bit faster yet on the PC.
-//
-//
-// X- fix the log/lin display - it's not working correctly
-// 			I could use ModifyImage and log = 0|1 keyword for the log Z display
-// 			rather than creating a duplicate wave of log(data)
-// 			-- it's in the Function sliceSelectEvent_Proc()
-//
-// X- add controls to show the bar graph
-// x- add popup for selecting the binning type
-// x- add ability to save the slices to RAW VAX files
-// X- add control to show the bin counts and bin end times
-// x- ADD buttons, switches, etc for the oscillatory mode - so that this can be accessed
-//
-// x- How are the headers filled for the VAX files from Teabag???
-// -- I currently read the events 2x. Once to count the events to make the waves the proper
-//     size, then a second time to actualy process the events. Would it be faster to insert points
-//     as needed, or to estimate the size, and make it too large, then trim at the end...
-// ((( NO -- I have no good way of getting a proper estimate of how many XY events there are for a file))
-//
 //
 //
 
 
+// TODO -- these dimensions are hard-wired and will be wrong half of the time
 //
-// These are also defined in the TISANE procedure file. In both files they are declared
-// as Static, so they are local to each procedure
-//
-Static Constant ATXY = 0
-Static Constant ATXYM = 2
-Static Constant ATMIR = 1
-Static Constant ATMAR = 3
-
-Static Constant USECSPERTICK=0.1 // microseconds
-Static Constant TICKSPERUSEC=10
-Static Constant XBINS=128
+Static Constant XBINS=48
 Static Constant YBINS=128
-//
 
 Static Constant MODE_STREAM = 0
 Static Constant MODE_OSCILL = 1
 Static Constant MODE_TISANE = 2
 Static Constant MODE_TOF = 3
-
 
 
 
@@ -130,21 +58,32 @@ Proc V_Show_Event_Panel()
 	EndIf
 End
 
-
+// TODO:
+//  -- need an index table with the tube <-> panel correspondence
+//
 Function V_Init_Event()
 
 	NewDataFolder/O/S root:Packages:NIST:VSANS:Event
 
 	String/G 	root:Packages:NIST:VSANS:Event:gEvent_logfile
 	String/G 	root:Packages:NIST:VSANS:Event:gEventDisplayString="Details of the file load"
-	
-//	Variable/G 	root:Packages:NIST:VSANS:Event:AIMTYPE_XY=0 // XY Event
-//	Variable/G 	root:Packages:NIST:VSANS:Event:AIMTYPE_XYM=2 // XY Minor event
-//	Variable/G 	root:Packages:NIST:VSANS:Event:AIMTYPE_MIR=1 // Minor rollover event
-//	Variable/G 	root:Packages:NIST:VSANS:Event:AIMTYPE_MAR=3 // Major rollover event
 
-	Variable/G root:Packages:NIST:VSANS:Event:gEvent_time_msw = 0
-	Variable/G root:Packages:NIST:VSANS:Event:gEvent_time_lsw = 0
+
+// globals that are the header of the VSANS event file
+	String/G root:Packages:NIST:VSANS:Event:gVsansStr=""
+	Variable/G root:Packages:NIST:VSANS:Event:gRevision = 0
+	Variable/G root:Packages:NIST:VSANS:Event:gOffset=0		// = 22 bytes if no disabled tubes
+	Variable/G root:Packages:NIST:VSANS:Event:gTime1=0
+	Variable/G root:Packages:NIST:VSANS:Event:gTime2=0
+	Variable/G root:Packages:NIST:VSANS:Event:gTime3=0
+	Variable/G root:Packages:NIST:VSANS:Event:gTime4=0	// these 4 time pieces are supposed to be 8 bytes total
+	Variable/G root:Packages:NIST:VSANS:Event:gTime5=0	// these 5 time pieces are supposed to be 10 bytes total
+	String/G root:Packages:NIST:VSANS:Event:gDetStr=""
+	Variable/G root:Packages:NIST:VSANS:Event:gVolt=0
+	Variable/G root:Packages:NIST:VSANS:Event:gResol=0		//time resolution in nanoseconds
+// TODO -- need a wave? for the list of disabled tubes
+// don't know how many there might be, or why I would need to know
+
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_t_longest = 0
 
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_tsdisp //Displayed slice
@@ -152,7 +91,7 @@ Function V_Init_Event()
 	
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:VSANS:Event:gEvent_Mode = 0				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:VSANS:Event:gEvent_Mode = 3				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:VSANS:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:VSANS:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
@@ -180,20 +119,8 @@ Function V_Init_Event()
 	SetDataFolder root:
 End
 
-//
-// -- extra bits of buttons... not used
-//
-//	Button button9 title="Decimation",size={100,20},pos={490,400},proc=E_ShowDecimateButton
-//
-//	Button button11,pos={490,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
-//	Button button12,pos={490,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
-//	Button button13,pos={490,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
-//	
-//	GroupBox group0 title="Manual Controls",size={185,112},pos={490,220}
-//
-//	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
-//	DoWindow/C EventModePanel
-//	ModifyPanel fixedSize=1,noEdit =1
+
+
 Proc VSANS_EventModePanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(82,44,884,664)/N=VSANS_EventModePanel/K=2
@@ -207,29 +134,29 @@ Proc VSANS_EventModePanel()
 	DrawLine 647,411,775,411
 
 //	ShowTools/A
-	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
+	Button button0,pos={14,87},size={150,20},proc=V_LoadEventLog_Button,title="Load Event Log File"
 	Button button0,fSize=12
 	TitleBox tb1,pos={475,500},size={266,86},fSize=10
 	TitleBox tb1,variable= root:Packages:NIST:VSANS:Event:gEventDisplayString
 
-	CheckBox chkbox2,pos={376,151},size={81,15},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,pos={376,151},size={81,15},proc=V_LogIntEvent_Proc,title="Log Intensity"
 	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:VSANS:Event:gEvent_logint
 	CheckBox chkbox3,pos={14,125},size={119,15},title="Remove Bad Events?",fSize=10
 	CheckBox chkbox3,variable= root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 	
-	Button doneButton,pos={738,36},size={50,20},proc=EventDone_Proc,title="Done"
+	Button doneButton,pos={738,36},size={50,20},proc=V_EventDone_Proc,title="Done"
 	Button doneButton,fSize=12
-	Button button2,pos={486,200},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={486,228},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button5,pos={633,228},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
-	Button button6,pos={748,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
+	Button button2,pos={486,200},size={140,20},proc=V_ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={486,228},size={140,20},proc=V_ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button5,pos={633,228},size={140,20},proc=V_ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
+	Button button6,pos={748,9},size={40,20},proc=V_EventModeHelpButtonProc,title="?"
 		
-	Button button7,pos={211,33},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
-	Button button8,pos={653,201},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
-	Button button4,pos={211,63},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button18,pos={211,90},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
+	Button button7,pos={211,33},size={120,20},proc=V_AdjustEventDataButtonProc,title="Adjust Events"
+	Button button8,pos={653,201},size={120,20},proc=V_CustomBinButtonProc,title="Custom Bins"
+	Button button4,pos={211,63},size={120,20},proc=V_UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button18,pos={211,90},size={120,20},proc=V_EC_ImportWavesButtonProc,title="Import Edited"
 	
-	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
+	SetVariable setvar0,pos={208,149},size={160,16},proc=V_sliceSelectEvent_Proc,title="Display Time Slice"
 	SetVariable setvar0,fSize=10
 	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:VSANS:Event:gEvent_tsdisp	
 	SetVariable setvar1,pos={389,29},size={160,16},title="Number of slices",fSize=10
@@ -237,31 +164,31 @@ Proc VSANS_EventModePanel()
 	SetVariable setvar2,pos={389,54},size={160,16},title="Max Time (s)",fSize=10
 	SetVariable setvar2,value= root:Packages:NIST:VSANS:Event:gEvent_t_longest
 	
-	PopupMenu popup0,pos={389,77},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,pos={389,77},size={119,20},proc=V_BinTypePopMenuProc,title="Bin Spacing"
 	PopupMenu popup0,fSize=10
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={389,103},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
+	Button button1,pos={389,103},size={120,20},fSize=12,proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
-	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
-	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load Split List"
-	Button button19,pos={649,350},size={120,20},proc=Stream_LoadAdjustedList,title="Load Edited List"
-	Button button20,pos={680,376},size={90,20},proc=ShowList_ToLoad,title="Show List"
-	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
+	Button button10,pos={488,305},size={100,20},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
+	Button button14,pos={488,350},size={120,20},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
+	Button button19,pos={649,350},size={120,20},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
+	Button button20,pos={680,376},size={90,20},proc=V_ShowList_ToLoad,title="Show List",disable=2
+	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor",disable=2
 	SetVariable setvar3,fSize=10
 	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
 
-	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
-	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
-	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
+	Button button15_0,pos={488,425},size={110,20},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
+	Button button16_1,pos={488,450},size={110,20},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
+	Button button17_2,pos={620,425},size={110,20},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
 
 	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
-	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
+	CheckBox chkbox1_0,mode=1,proc=V_EventModeRadioProc,value=0
 	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
-	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_1,proc=V_EventModeRadioProc,value=0,mode=1
 	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
-	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_2,proc=V_EventModeRadioProc,value=0,mode=1
 	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
-	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_3,proc=V_EventModeRadioProc,value=1,mode=1
 	
 	GroupBox group0_0,pos={5,5},size={174,112},title="(1) Loading Mode",fSize=12,fStyle=1
 	GroupBox group0_1,pos={372,5},size={192,127},title="(3) Bin Events",fSize=12,fStyle=1
@@ -296,7 +223,7 @@ EndMacro
 //Static Constant MODE_TISANE = 2
 //Static Constant MODE_TOF = 3
 //
-Function EventModeRadioProc(name,value)
+Function V_EventModeRadioProc(name,value)
 	String name
 	Variable value
 	
@@ -324,13 +251,13 @@ Function EventModeRadioProc(name,value)
 	return(0)
 End
 
-Function AdjustEventDataButtonProc(ba) : ButtonControl
+Function V_AdjustEventDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "ShowEventCorrectionPanel()"
+			Execute "V_ShowEventCorrectionPanel()"
 			//
 			break
 		case -1: // control being killed
@@ -340,13 +267,13 @@ Function AdjustEventDataButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function CustomBinButtonProc(ba) : ButtonControl
+Function V_CustomBinButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "Show_CustomBinPanel()"
+			Execute "V_Show_CustomBinPanel()"
 			//
 			break
 		case -1: // control being killed
@@ -357,15 +284,15 @@ Function CustomBinButtonProc(ba) : ButtonControl
 End
 
 
-Function ShowEventDataButtonProc(ba) : ButtonControl
+Function V_ShowEventDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "ShowRescaledTimeGraph()"
+			Execute "V_ShowRescaledTimeGraph()"
 			//
-			DifferentiatedTime()
+			V_DifferentiatedTime()
 			//
 			break
 		case -1: // control being killed
@@ -375,7 +302,7 @@ Function ShowEventDataButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function BinTypePopMenuProc(pa) : PopupMenuControl
+Function V_BinTypePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -383,7 +310,7 @@ Function BinTypePopMenuProc(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			if(cmpstr(popStr,"Custom")==0)
-				Execute "Show_CustomBinPanel()"
+				Execute "V_Show_CustomBinPanel()"
 			endif
 			break
 		case -1: // control being killed
@@ -393,14 +320,14 @@ Function BinTypePopMenuProc(pa) : PopupMenuControl
 	return 0
 End
 
-Function ShowBinDetailsButtonProc(ba) : ButtonControl
+Function V_ShowBinDetailsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "ShowBinTable()"
-			Execute "BinEventBarGraph()"
+			Execute "V_ShowBinTable()"
+			Execute "V_BinEventBarGraph()"
 			break
 		case -1: // control being killed
 			break
@@ -409,13 +336,13 @@ Function ShowBinDetailsButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function UndoTimeSortButtonProc(ba) : ButtonControl
+Function V_UndoTimeSortButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "UndoTheSorting()"
+			Execute "V_UndoTheSorting()"
 			break
 		case -1: // control being killed
 			break
@@ -424,13 +351,13 @@ Function UndoTimeSortButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function ExportSlicesButtonProc(ba) : ButtonControl
+Function V_ExportSlicesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "ExportSlicesAsVAX()"		//will invoke the dialog
+			Execute "V_ExportSlicesAsVAX()"		//will invoke the dialog
 			break
 		case -1: // control being killed
 			break
@@ -439,7 +366,7 @@ Function ExportSlicesButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function EventModeHelpButtonProc(ba) : ButtonControl
+Function V_EventModeHelpButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -455,7 +382,7 @@ Function EventModeHelpButtonProc(ba) : ButtonControl
 End
 
 
-Function EventDone_Proc(ba) : ButtonControl
+Function V_EventDone_Proc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 	
 	String win = ba.win
@@ -469,37 +396,37 @@ End
 
 
 
-Function ProcessEventLog_Button(ctrlName) : ButtonControl
+Function V_ProcessEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 	
 	NVAR mode=root:Packages:NIST:VSANS:Event:gEvent_Mode
 	
 	if(mode == MODE_STREAM)
-		Stream_ProcessEventLog("")
+		V_Stream_ProcessEventLog("")
 	endif
 	
 	if(mode == MODE_OSCILL)
-		Osc_ProcessEventLog("")
+		V_Osc_ProcessEventLog("")
 	endif
 	
 	// If TOF mode, process as Oscillatory -- that is, take the times as is
 	if(mode == MODE_TOF)
-		Osc_ProcessEventLog("")
+		V_Osc_ProcessEventLog("")
 	endif
 	
 	// toggle the checkbox for log display to force the display to be correct
 	NVAR gLog = root:Packages:NIST:VSANS:Event:gEvent_logint
-	LogIntEvent_Proc("",gLog)
+	V_LogIntEvent_Proc("",gLog)
 	
 	return(0)
 end
 
 // for oscillatory mode
 //
-Function Osc_ProcessEventLog(ctrlName)
+Function V_Osc_ProcessEventLog(ctrlName)
 	String ctrlName
 
-	Make/O/D/N=(128,128) root:Packages:NIST:VSANS:Event:binnedData
+	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:VSANS:Event:binnedData
 	Wave xLoc = root:Packages:NIST:VSANS:Event:xLoc
@@ -517,7 +444,7 @@ Function Osc_ProcessEventLog(ctrlName)
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
 	Wave timePt = timePt
-	Make/O/D/N=(128,128) tmpData
+	Make/O/D/N=(XBINS,YBINS) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount
 	Make/O/D/N=(nslices) timeWidth
 	Wave timeWidth = timeWidth
@@ -538,20 +465,20 @@ Function Osc_ProcessEventLog(ctrlName)
 	
 	strswitch(binTypeStr)	// string switch
 		case "Equal":		// execute if case matches expression
-			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 			break						// exit from switch
 		case "Fibonacci":		// execute if case matches expression
-			SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Log":		// execute if case matches expression
-			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Custom":		// execute if case matches expression
 			//bins are set by the user on the panel - assume it's good to go
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
-			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
 
@@ -567,7 +494,7 @@ Function Osc_ProcessEventLog(ctrlName)
 		MakeIndex rescaledTime OscSortIndex
 		IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime	
 		//SetDataFolder root:Packages:NIST:VSANS:Event
-		IndexForHistogram(xLoc,yLoc,binnedData)			// index the events AFTER sorting
+		V_IndexForHistogram(xLoc,yLoc,binnedData)			// index the events AFTER sorting
 		//SetDataFolder root:
 	Endif
 	
@@ -600,7 +527,7 @@ Function Osc_ProcessEventLog(ctrlName)
 
 
 		tmpData=0
-		JointHistogramWithRange(xLoc,yLoc,tmpData,index,p1,p2)
+		V_JointHistogramWithRange(xLoc,yLoc,tmpData,index,p1,p2)
 		slicedData[][][ii] = tmpData[p][q]
 		
 //		binEndTime[ii+1] = t2
@@ -622,13 +549,13 @@ End
 // - but with the added complication that I need to always remember to index for the histogram, every time
 // - since I don't know if I've sorted or un-sorted. Osc mode always forces a re-sort and a re-index
 //
-Function Stream_ProcessEventLog(ctrlName)
+Function V_Stream_ProcessEventLog(ctrlName)
 	String ctrlName
 
 //	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
 
 	
-	Make/O/D/N=(128,128) root:Packages:NIST:VSANS:Event:binnedData
+	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:VSANS:Event:binnedData
 	Wave xLoc = root:Packages:NIST:VSANS:Event:xLoc
@@ -646,7 +573,7 @@ Function Stream_ProcessEventLog(ctrlName)
 		
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
-	Make/O/D/N=(128,128) tmpData
+	Make/O/D/N=(XBINS,YBINS) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount//,binStartTime
 	Make/O/D/N=(nslices) timeWidth
 	Wave binEndTime = binEndTime
@@ -666,20 +593,20 @@ Function Stream_ProcessEventLog(ctrlName)
 	
 	strswitch(binTypeStr)	// string switch
 		case "Equal":		// execute if case matches expression
-			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 			break						// exit from switch
 		case "Fibonacci":		// execute if case matches expression
-			SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Log":		// execute if case matches expression
-			SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 			break
 		case "Custom":		// execute if case matches expression
 			//bins are set by the user on the panel - assume it's good to go
 			break
 		default:							// optional default expression executed
 			DoAlert 0,"No match for bin type, Equal bins used"
-			SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+			V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
 // TODO
@@ -687,13 +614,13 @@ Function Stream_ProcessEventLog(ctrlName)
 // it's correct to implement this at all --
 //
 	if(yesSortStream == 1)
-		SortTimeData()
+		V_SortTimeData()
 	endif
 	
 // index the events before binning
 // if there is a sort of these events, I need to re-index the events for the histogram
 //	SetDataFolder root:Packages:NIST:VSANS:Event
-	IndexForHistogram(xLoc,yLoc,binnedData)
+	V_IndexForHistogram(xLoc,yLoc,binnedData)
 //	SetDataFolder root:
 	Wave index = root:Packages:NIST:VSANS:Event:SavedIndex		//the index for the histogram
 	
@@ -722,7 +649,7 @@ Function Stream_ProcessEventLog(ctrlName)
 
 
 		tmpData=0
-		JointHistogramWithRange(xLoc,yLoc,tmpData,index,p1,p2)
+		V_JointHistogramWithRange(xLoc,yLoc,tmpData,index,p1,p2)
 		slicedData[][][ii] = tmpData[p][q]
 		
 //		binEndTime[ii+1] = t2
@@ -738,8 +665,8 @@ Function Stream_ProcessEventLog(ctrlName)
 End
 
 
-Proc	UndoTheSorting()
-	Osc_UndoSort()
+Proc	V_UndoTheSorting()
+	V_Osc_UndoSort()
 End
 
 // for oscillatory mode
@@ -747,7 +674,7 @@ End
 // -- this takes the previously generated index, and un-sorts the data to restore to the
 // "as-collected" state
 //
-Function Osc_UndoSort()
+Function V_Osc_UndoSort()
 
 	SetDataFolder root:Packages:NIST:VSANS:Event		//don't count on the folder remaining here
 	Wave rescaledTime = rescaledTime
@@ -770,7 +697,7 @@ End
 //this is slow - undoing the sorting and starting over, but if you don't,
 // you'll never be able to undo the sort
 //
-Function SortTimeData()
+Function V_SortTimeData()
 
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
@@ -789,7 +716,7 @@ End
 
 
 
-Function SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
+Function V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
@@ -811,7 +738,7 @@ End
 // TODO
 // either get this to work, or scrap it entirely. it currently isn't on the popup
 // so it can't be accessed
-Function SetLogBins(binEndTime,timeWidth,nslices,t_longest)
+Function V_SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
@@ -834,7 +761,7 @@ Function SetLogBins(binEndTime,timeWidth,nslices,t_longest)
 	return(0)
 End
 
-Function MakeFibonacciWave(w,num)
+Function V_MakeFibonacciWave(w,num)
 	Wave w
 	Variable num
 
@@ -853,14 +780,14 @@ Function MakeFibonacciWave(w,num)
 	return(0)
 end
 
-Function SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
+Function V_SetFibonacciBins(binEndTime,timeWidth,nslices,t_longest)
 	Wave binEndTime,timeWidth
 	Variable nslices,t_longest
 
 	Variable tMin,ii,total,t2,tmp
 	Make/O/D/N=(nslices) fibo
 	fibo=0
-	MakeFibonacciWave(fibo,nslices)
+	V_MakeFibonacciWave(fibo,nslices)
 	
 //	Make/O/D tmpFib={1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946}
 
@@ -883,13 +810,9 @@ End
 
 // TODO:
 //
-// ** currently, the "stream" loader uses the first data point as time=0
-//    and rescales everything to that time. "Osc" loading uses the times "as-is"
-//    from the file, trusting the times to be correct.
 //
-// Would TISANE or TOF need a different loader?
 //	
-Function LoadEventLog_Button(ctrlName) : ButtonControl
+Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	String ctrlName
 
 	NVAR mode=root:Packages:NIST:VSANS:Event:gEvent_mode
@@ -910,7 +833,6 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 		return(0)
 	endif
 	
-	
 	Open/R/D/P=catPathName/F=fileFilters fileref
 	filename = S_filename
 	if(strlen(S_filename) == 0)
@@ -918,61 +840,78 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 		DoAlert 0,"No file selected, no file loaded."
 		return(1)
 	endif
-	
-/// Abort if the files are too large
-	Open/R fileref as fileName
-		FStatus fileref
-	Close fileref
 
-	totBytes = V_logEOF/1e6		//in MB
-	if(totBytes > fileTooLarge)
-		sprintf abortStr,"File is %g MB, larger than the limit of %g MB. Split and Decimate.",totBytes,fileTooLarge
-		Abort abortStr
-	endif
-	
-	Print totBytes
-	
+// TODO - decide if I want (or need) to keep this	
+/// Abort if the files are too large
+//	Open/R fileref as fileName
+//		FStatus fileref
+//	Close fileref
 //
-//#if (exists("EventLoadWave")==4)
-//	LoadEvents_XOP()
-//#else
-//	LoadEvents()
-//#endif	
+//	totBytes = V_logEOF/1e6		//in MB
+//	if(totBytes > fileTooLarge)
+//		sprintf abortStr,"File is %g MB, larger than the limit of %g MB. Split and Decimate.",totBytes,fileTooLarge
+//		Abort abortStr
+//	endif
+//	
+//	Print "TotalBytes = ",totBytes
+	
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
-	
-	
-	V_readFakeEventFile()
-	Wave w = V_Events
-	V_decodeFakeEventWave(w)
 
-	KillWaves/Z timePt,xLoc,yLoc
-	Rename tube xLoc
-	Rename location yLoc
-	Rename eventTime timePt
+// load in the event file and decode it
 	
-	Redimension/D xLoc,yLoc,timePt
-	
+//	V_readFakeEventFile(fileName)
+	V_LoadEvents()			// this now loads, decodes, and returns location, tube, and timePt
+	SetDataFolder root:Packages:NIST:VSANS:Event:			//GBLoadWave in V_LoadEvents sets back to root:
+
+
+// Now, I have tube, location, and timePt (no units yet)
+// assign to the proper panels
+
+s_tic()
+	V_SortAndSplitEvents()
+
+Printf "File sort and split time (s) = "
+s_toc()
+
+// TODO -- currently, nothing is assigned, and nothing is assigned properly - just a 
+// fake assignment to get the TOF to use all of the data
+//
+
+//
+// switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
+//
+// copy the set of tubes over to the "active" set that is to be histogrammed
+// and redimension them to be sure that they are double precision
+//
+
+	V_SwitchTubeGroup(1)
+
+//	
 //tic()
 	Wave timePt=timePt
 	Wave xLoc=xLoc
 	Wave yLoc=yLoc
-	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes	
+	V_CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes	
 //toc()
 	
-	
+	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//timeStep in clock frequency (Hz)
 /////
 // now do a little processing of the times based on the type of data
 //	
+
+// TODO:
+//  -- the time scaling is NOT done. it is still in raw ticks.
+//
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
 		Duplicate/O timePt rescaledTime
-		rescaledTime = 1*(timePt-timePt[0])		//convert to seconds and start from zero
+		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
 		t_longest = waveMax(rescaledTime)		//should be the last point	
 	endif
 	
 	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1			//convert to seconds and that's all
+		rescaledTime *= 1			//convert to nanoseconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -983,7 +922,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1			//convert to seconds and that's all
+		rescaledTime *= 1			//convert to nanoseconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -993,107 +932,18 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
-	ShowEventDataButtonProc(ba)
+	V_ShowEventDataButtonProc(ba)
 
 	return(0)
 End
 
-//// for the mode of "one continuous exposure"
-////
-//Function Stream_LoadEventLog(ctrlName)
-//	String ctrlName
-//	
-//	Variable fileref
-//
-//	SVAR filename = root:Packages:NIST:VSANS:Event:gEvent_logfile
-//	NVAR nslices = root:Packages:NIST:VSANS:Event:gEvent_nslices
-//	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-//	
-//	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
-//	
-//	Open/R/D/F=fileFilters fileref
-//	filename = S_filename
-//	if(strlen(S_filename) == 0)
-//		// user cancelled
-//		DoAlert 0,"No file selected, no file loaded."
-//		return(1)
-//	endif
-//
-//#if (exists("EventLoadWave")==4)
-//	LoadEvents_XOP()
-//#else
-//	LoadEvents()
-//#endif	
-//
-//	SetDataFolder root:Packages:NIST:VSANS:Event:
-//
-////tic()
-//	Wave timePt=timePt
-//	Wave xLoc=xLoc
-//	Wave yLoc=yLoc
-//	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
-//	
-////toc()
-//
-//	Duplicate/O timePt rescaledTime
-//	rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
-//	t_longest = waveMax(rescaledTime)		//should be the last point
-//
-//	SetDataFolder root:
-//
-//	return(0)
-//End
-//
-//// for the mode "oscillatory"
-////
-//Function Osc_LoadEventLog(ctrlName)
-//	String ctrlName
-//	
-//	Variable fileref
-//
-//	SVAR filename = root:Packages:NIST:VSANS:Event:gEvent_logfile
-//	NVAR nslices = root:Packages:NIST:VSANS:Event:gEvent_nslices
-//	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-//	
-//	String fileFilters = "All Files:.*;Data Files (*.txt):.txt;"
-//	
-//	Open/R/D/F=fileFilters fileref
-//	filename = S_filename
-//		if(strlen(S_filename) == 0)
-//		// user cancelled
-//		DoAlert 0,"No file selected, no file loaded."
-//		return(1)
-//	endif
-//	
-//#if (exists("EventLoadWave")==4)
-//	LoadEvents_XOP()
-//#else
-//	LoadEvents()
-//#endif	
-//	
-//	SetDataFolder root:Packages:NIST:VSANS:Event:
-//
-//	Wave timePt=timePt
-//	Wave xLoc=xLoc
-//	Wave yLoc=yLoc
-//	CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
-//	
-//	Duplicate/O timePt rescaledTime
-//	rescaledTime *= 1e-7			//convert to seconds and that's all
-//	t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
-//
-//	KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
-//
-//	SetDataFolder root:
-//
-//	return(0)
-//End
+
 
 
 //
 // -- MUCH faster to count the number of lines to remove, then delete (N)
 // rather then delete them one-by-one in the do-loop
-Function CleanupTimes(xLoc,yLoc,timePt)
+Function V_CleanupTimes(xLoc,yLoc,timePt)
 	Wave xLoc,yLoc,timePt
 
 	// start at the back and remove zeros
@@ -1115,7 +965,7 @@ Function CleanupTimes(xLoc,yLoc,timePt)
 	return(0)
 End
 
-Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
+Function V_LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 		
@@ -1134,7 +984,7 @@ Function LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 
 	NVAR selectedslice = root:Packages:NIST:VSANS:Event:gEvent_tsdisp
 
-	sliceSelectEvent_Proc("", selectedslice, "", "")
+	V_sliceSelectEvent_Proc("", selectedslice, "", "")
 
 	SetDataFolder root:
 
@@ -1151,7 +1001,7 @@ End
 // I could modify this procedure to use the log = 0|1 keyword for the log Z display
 // rather than creating a duplicate wave of log(data)
 //
-Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableControl
+Function V_sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -1172,7 +1022,7 @@ Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableC
 
 End
 
-Function DifferentiatedTime()
+Function V_DifferentiatedTime()
 
 	Wave rescaledTime = root:Packages:NIST:VSANS:Event:rescaledTime
 
@@ -1180,9 +1030,9 @@ Function DifferentiatedTime()
 		
 	Differentiate rescaledTime/D=rescaledTime_DIF
 //	Display rescaledTime,rescaledTime_DIF
-	DoWindow/F Differentiated_Time
+	DoWindow/F V_Differentiated_Time
 	if(V_flag == 0)
-		Display/N=Differentiated_Time/K=1 rescaledTime_DIF
+		Display/N=V_Differentiated_Time/K=1 rescaledTime_DIF
 		Legend
 		Modifygraph gaps=0
 		ModifyGraph zero(left)=1
@@ -1199,511 +1049,23 @@ End
 //
 // for the bit shifts, see the decimal-binary conversion
 // http://www.binaryconvert.com/convert_unsigned_int.html
+// and for 64-bit values:
+// http://calc.penjee.com
 //
 //		K0 = 536870912
 // 		Print (K0 & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
 //		Print (K0 & 0x10000000)/268435456		//bit 28 only, shift by 2^28
 //		Print (K0 & 0x20000000)/536870912		//bit 29 only, shift by 2^29
 //
-// This is duplicated by the XOP, but the Igor code allows quick access to print out
-// all of the gorey details of the events and every little bit of them. the print
-// statements and flags are kept for this reason, so the code is a bit messy.
 //
-Function LoadEvents()
-	
-	NVAR time_msw = root:Packages:NIST:VSANS:Event:gEvent_time_msw
-	NVAR time_lsw = root:Packages:NIST:VSANS:Event:gEvent_time_lsw
-	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-	
-	SVAR filepathstr = root:Packages:NIST:VSANS:Event:gEvent_logfile
-	SVAR dispStr = root:Packages:NIST:VSANS:Event:gEventDisplayString
-	
-	
-////	Variable decFac = 10			//decimation factor
-////	Variable jj,keep
-	
-	SetDataFolder root:Packages:NIST:VSANS:Event
-
-	Variable fileref
-	String buffer
-	String fileStr,tmpStr
-	Variable dataval,timeval,type,numLines,verbose,verbose3
-	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
-	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0,tmpT0=0
-	Variable Xmax, yMax
-	
-	xMax = 127		// number the detector from 0->127 
-	yMax = 127
-	
-	verbose3 = 0			//prints out the rollover events (type==3)
-	verbose = 0
-	numLines = 0
-
-	
-	// what I really need is the number of XY events
-	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
-	Variable numRemoved
-	numXYevents = 0
-	num0 = 0
-	num1 = 0
-	num2 = 0
-	num3 = 0
-	numPP = 0
-	numT0 = 0
-	numDL = 0
-	numFF = 0
-	numZero = 0
-	numRemoved = 0
-
-//tic()
-	Open/R fileref as filepathstr
-		FStatus fileref
-	Close fileref
-
-	totBytes = V_logEOF
-	Print "total bytes = ", totBytes
-	
-//toc()
 //
-
-
-// do a "pre-scan to get some of the counts, so that I can allocate space. This does
-// double the read time, but is still faster than adding points to waves as the file is read
-//	
-
-	s_tic()
-
-	Open/R fileref as filepathstr
-	do
-		do
-			FReadLine fileref, buffer			//skip the "blank" lines that have one character
-		while(strlen(buffer) == 1)		
-
-		if (strlen(buffer) == 0)
-			break
-		endif
-		
-		sscanf buffer,"%x",dataval
-		
-		// two most sig bits (31-30)
-		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
-				
-		if(type == 0)
-			num0 += 1
-			numXYevents += 1
-		endif
-		if(type == 2)
-			num2 += 1
-			numXYevents += 1
-		endif
-		if(type == 1)
-			num1 += 1
-		endif
-		if(type == 3)
-			num3 += 1
-		endif	
-		
-		bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-		
-		if(type==0 || type==2)
-			numPP += round(bit29)
-		endif
-		
-		if(type==1 || type==3)
-			numT0 += round(bit29)
-		endif
-		
-		if(dataval == 0)
-			numZero += 1
-		endif
-		
-	while(1)
-	Close fileref
-//		done counting the number of XY events
-	printf("Igor pre-scan done in  ")
-	s_toc()
-	
-
-	Print "(Igor) numT0 = ",numT0	
-	Print "num0 = ",num0	
-	Print "num1 = ",num1	
-	Print "num2 = ",num2	
-	Print "num3 = ",num3	
-
+// This function loads the events, and decodes them.
+// Assigning them to detector panels is a separate function
 //
-//	
-//	Printf "numXYevents = %d\r",numXYevents
-//	Printf "XY = num0 = %d\r",num0
-//	Printf "XY time = num2 = %d\r",num2
-//	Printf "time MSW = num1 = %d\r",num1
-//	Printf "Rollover = num3 = %d\r",num3
-//	Printf "num0 + num2 = %d\r",num0+num2
-
-// dispStr will be displayed on the panel
-	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
-	
-	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
-	dispStr = tmpStr
-	sprintf tmpStr,"numXYevents = %d\r",numXYevents
-	dispStr += tmpStr
-	sprintf tmpStr,"PP = %d  :  ",numPP
-	dispStr += tmpStr
-	sprintf tmpStr,"ZeroData = %d\r",numZero
-	dispStr += tmpStr
-	sprintf tmpStr,"Rollover = %d",num3
-	dispStr += tmpStr
-
-	// /I/U is unsigned 32-bit integer (for the time)
-	// /B/U is unsigned 8-bit integer (max val=255) for the x and y values
-	
-	Make/O/U/N=(numXYevents) xLoc,yLoc
-	Make/O/D/N=(numXYevents) timePt
-////	Make/O/U/N=(numXYevents/decFac) xLoc,yLoc
-////	Make/O/D/N=(numXYevents/decFac) timePt
-//	Make/O/U/N=(totBytes/4) xLoc,yLoc		//too large, trim when done (bad idea)
-//	Make/O/D/N=(totBytes/4) timePt
-	Make/O/D/N=1000 badTimePt,badEventNum,PPTime,PPEventNum,T0Time,T0EventNum
-	badTimePt=0
-	badEventNum=0
-	PPTime=0
-	PPEventNum=0
-	T0Time=0
-	T0EventNum=0
-	xLoc=0
-	yLoc=0
-	timePt=0
-	
-	nRoll = 0		//number of rollover events
-	roll_time = 2^26		//units of 10-7 sec
-	
-	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
-	
-	time_msw=0
-	
-	s_tic()
-	
-	ii = 0		//indexes the points in xLoc,yLoc,timePt
-////	keep = decFac		//keep the first point
-	
-	
-	Open/R fileref as filepathstr
-	
-	// remove events at the beginning up to a type==2 so that the msw and lsw times are reset properly
-	if(RemoveBadEvents == 1)
-		do
-			do
-				FReadLine fileref, buffer			//skip the "blank" lines that have one character
-			while(strlen(buffer) == 1)		
-	
-			if (strlen(buffer) == 0)
-				break
-			endif
-			
-			sscanf buffer,"%x",dataval
-		// two most sig bits (31-30)
-			type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
-			
-			if(type == 2)
-				// this is the first event with a proper time value, so process the XY-time event as ususal
-				// and then break to drop to the main loop, where the next event == type 1
-				
-				xval = xMax - (dataval & 255)						//last 8 bits (7-0)
-				yval = (dataval & 65280)/256						//bits 15-8, right shift by 2^8
-		
-				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
-		
-				if(verbose)
-		//					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
-				endif
-				
-				// this is the first point, be sure that ii = 0, and always keep this point
-////				if(keep==decFac)
-					ii = 0
-					xLoc[ii] = xval
-					yLoc[ii] = yval
-////					keep = 0
-////				endif
-				Print "At beginning of file, numBad = ",numBad
-				break	// the next do loop processes the bulk of the file (** the next event == type 1 = MIR)
-			else
-				numBad += 1
-				numRemoved += 1
-			endif
-			
-			//ii+=1		don't increment the counter
-		while(1)
-	endif
-	
-	// now read the main portion of the file.
-////	// keep is = 0 if bad points were removed, or is decFac is I need to keep the first point
-	do
-		do
-			FReadLine fileref, buffer			//skip the "blank" lines that have one character
-		while(strlen(buffer) == 1)		
-
-		if (strlen(buffer) == 0)				// this marks the end of the file and is our only way out
-			break
-		endif
-		
-		sscanf buffer,"%x",dataval
-		
-
-//		type = (dataval & ~(2^32 - 2^30 -1))/2^30
-
-		// two most sig bits (31-30)
-		type = (dataval & 0xC0000000)/1073741824		//right shift by 2^30
-		
-		//
-		// The defintions of the event types
-		//
-		//Constant ATXY = 0
-		//Constant ATXYM = 2
-		//Constant ATMIR = 1
-		//Constant ATMAR = 3
-		//
-						
-		if(verbose > 0)
-			verbose -= 1
-		endif
-//		
-		switch(type)
-			case ATXY:		// 0
-				if(verbose)		
-					printf "XY : "		
-				endif
-				
-				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously)
-				if(dataval == 0 && RemoveBadEvents == 1)
-					numRemoved += 1
-					//Print "zero at ii= ",ii
-					break		//don't increment ii
-				endif
-				
-				// if it's a pileup event, skip it now (this can be either type 0 or 2)
-				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-				if(bit29 == 1 && RemoveBadEvents == 1)
-					PPTime[tmpPP] = timeval
-					PPEventNum[tmpPP] = ii
-					tmpPP += 1
-					numRemoved += 1
-					break		//don't increment ii
-				endif
-				
-//				xval = ~(dataval & ~(2^32 - 2^8)) & 127
-//				yval = ((dataval & ~(2^32 - 2^16 ))/2^8) & 127
-//				time_lsw = (dataval & ~(2^32 - 2^29))/2^16
-
-				xval = xMax - (dataval & 255)						//last 8 bits (7-0)
-				yval = (dataval & 65280)/256						//bits 15-8, right shift by 2^8
-				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
-
-				timeval = trunc( nRoll*roll_time + (time_msw * (8192)) + time_lsw )		//left shift msw by 2^13, then add in lsw, as an integer
-				if (timeval > t_longest) 
-					t_longest = timeval
-				endif
-				
-				
-				// catch the "bad" events:
-				// if an XY event follows a rollover, time_msw is 0 by definition, but does not immediately get 
-				// re-evalulated here. Throw out only the immediately following points where msw is still 8191
-				if(rolloverHappened && RemoveBadEvents == 1)
-					// maybe a bad event
-					if(time_msw == 8191)
-						badTimePt[numBad] = timeVal
-						badEventNum[numBad] = ii
-						numBad +=1
-						numRemoved += 1
-					else
-						// time_msw has been reset, points are good now, so keep this one
-////						if(keep==decFac)
-							xLoc[ii] = xval
-							yLoc[ii] = yval
-							timePt[ii] = timeval
-							
-	//						if(xval == 127 && yval == 0)
-	//							// check bit 29
-	//							bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-	//							Print "XY=127,0 : bit29 = ",bit29
-	//						endif
-							
-							ii+=1
-							rolloverHappened = 0
-////							keep = 0
-////						else
-////							keep += 1
-////						endif
-					endif
-				else
-					// normal processing of good point, keep it
-////					if(keep==decFac)
-						xLoc[ii] = xval
-						yLoc[ii] = yval
-						timePt[ii] = timeval
-					
-	//					if(xval == 127 && yval == 0)
-	//						// check bit 29
-	//						bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-	//						Printf "XY=127,0 : bit29 = %u : d=%u\r",bit29,dataval
-	//					endif
-						ii+=1
-////						keep = 0
-////					else
-////						keep += 1
-////					endif
-				endif
-
-
-				if(verbose)		
-//					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "d=%u : t=%u : msw=%u : lsw=%u : %u : %u \r",dataval,timeval,time_msw,time_lsw,xval,yval
-				endif				
-	
-//				verbose = 0
-				break
-			case ATXYM: // 2 
-				if(verbose)
-					printf "XYM : "
-				endif
-				
-				// if it's a pileup event, skip it now (this can be either type 0 or 2)
-				// - but can I do this if this is an XY-time event? This will lead to a wrong time, and a time 
-				// assigned to an XY (0,0)...
-//				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-//				if(bit29 == 1 && RemoveBadEvents == 1)
-//					Print "*****Bit 29 (PP) event set for Type==2, but not handled, ii = ",ii
-////					break		//don't increment ii
-//				endif
-				
-//				xval = ~(dataval & ~(2^32 - 2^8)) & 127
-//				yval = ((dataval & ~(2^32 - 2^16 ))/2^8) & 127
-//				time_lsw =  (dataval & ~(2^32 - 2^29 ))/2^16		//this method gives a FP result!! likely since the "^" operation gives FP result...
-
-				xval = xMax - (dataval & 255)						//last 8 bits (7-0)
-				yval = (dataval & 65280)/256						//bits 15-8, right shift by 2^8
-
-				time_lsw = (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16 (result is integer)
-
-				if(verbose)
-//					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "%u : %u : %u : %u\r",dataval,timeval,xval,yval
-				endif
-				
-////				if(keep==decFac)			//don't reset keep yet, do this only when ii increments
-					xLoc[ii] = xval
-					yLoc[ii] = yval
-////				endif
-				
-				// don't fill in the time yet, or increment the index ii
-				// the next event MUST be ATMIR with the MSW time bits
-				//
-//				verbose = 0
-				break
-			case ATMIR:  // 1
-				if(verbose)
-					printf "MIR : "
-				endif
-
-				time_msw =  (dataval & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
-				timeval = trunc( nRoll*roll_time + (time_msw * (8192)) + time_lsw )
-				if (timeval > t_longest) 
-					t_longest = timeval
-				endif
-				if(verbose)
-//					printf "%u : %u : %u : %u\r",dataval,time_lsw,time_msw,timeval
-					printf "d=%u : t=%u : msw=%u : lsw=%u : tlong=%u\r",dataval,timeval,time_msw,time_lsw,t_longest
-				endif
-				
-				// the XY position was in the previous event ATXYM
-////				if(keep == decFac)
-					timePt[ii] = timeval
-////				endif
-
-				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-				if(bit29 != 0)		// bit 29 set is a T0 event
-					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
-					T0Time[tmpT0] = timeval
-					T0EventNum[tmpT0] = ii
-					tmpT0 += 1
-					// reset nRoll = 0 for calcluating the time
-					nRoll = 0
-				endif
-				
-////				if(keep == decFac)			
-					ii+=1
-////					keep = 0
-////				endif
-//				verbose = 0
-				break
-			case ATMAR:  // 3
-				if(verbose3)
-//					verbose = 15
-//					verbose = 2
-					printf "MAR : "
-				endif
-				
-				// do something with the rollover event?
-				
-				// check bit 29
-				bit29 = (dataval & 0x20000000)/536870912		//bit 29 only , shift by 2^29
-				nRoll += 1
-// not doing anything with these bits yet	
-				bit28 = (dataval & 0x10000000)/268435456		//bit 28 only, shift by 2^28	
-				bit27 = (dataval & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
-
-				if(verbose3)
-					printf "d=%u : b29=%u : b28=%u : b27=%u : #Roll=%u \r",dataval,bit29, bit28, bit27,nRoll
-				endif
-				
-				if(bit29 != 0)		// bit 29 set is a T0 event
-					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
-					T0Time[tmpT0] = timeval
-					T0EventNum[tmpT0] = ii
-					tmpT0 += 1
-					// reset nRoll = 0 for calcluating the time
-					nRoll = 0
-				endif
-				
-				rolloverHappened = 1
-
-				break
-		endswitch
-		
-//		if(ii<18)
-//			printf "TYPE=%d : ii=%d : d=%u : t=%u : msw=%u : lsw=%u : %u : %u \r",type,ii,dataval,timeval,time_msw,time_lsw,xval,yval
-//		endif	
-			
-	while(1)
-	
-	Close fileref
-	
-	printf("Igor full file read done in  ")	
-	s_toc()
-	
-	Print "Events removed (Igor) = ",numRemoved
-	
-	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
-	dispStr += tmpStr
-	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
-	dispStr += tmpStr
-	SetDataFolder root:
-	
-	return(0)
-	
-End 
-
-//////////////
 //
-// This calls the XOP, as an operation to load the events
 //
-// -- it's about 35x faster than the Igor code, so I guess that's OK.
-//
-// conditional compile the whole inner workings in case XOP is not present
-Function LoadEvents_XOP()
-#if (exists("EventLoadWave")==4)
+Function V_LoadEvents()
 	
-//	NVAR time_msw = root:Packages:NIST:VSANS:Event:gEvent_time_msw
-//	NVAR time_lsw = root:Packages:NIST:VSANS:Event:gEvent_time_lsw
 	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
 	
 	SVAR filepathstr = root:Packages:NIST:VSANS:Event:gEvent_logfile
@@ -1711,183 +1073,342 @@ Function LoadEvents_XOP()
 	
 	SetDataFolder root:Packages:NIST:VSANS:Event
 
-
-
-	Variable fileref
+	Variable refnum
 	String buffer
 	String fileStr,tmpStr
-	Variable dataval,timeval,type,numLines,verbose,verbose3
-	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
-	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0,tmpT0=0
-	Variable Xmax, yMax
-	
-	xMax = 127		// number the detector from 0->127 
-	yMax = 127
-	
-	numLines = 0
+	Variable verbose
+	Variable xval,yval
+	Variable numXYevents,totBytes
 
-	//Have to declare local variables for Loadwave so that this compiles without XOP.
-	String S_waveNames
-	//  and those for the XOP
-	Variable V_nXYevents,V_num1,V_num2,V_num3,V_num0,V_totBytes,V_numPP,V_numT0,V_numDL,V_numFF,V_numZero
-	Variable V_numBad,V_numRemoved
-	
-	// what I really need is the number of XY events
-	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
-	Variable numRemoved
+//  to read a VSANS event file:
+//
+// - get the file name
+//	- read the header (all of it, since I need parts of it) (maybe read as a struct? but I don't know the size!)
+// - move to EOF and close
+//
+// - Use GBLoadWave to read the 64-bit events in
+
+
+/// globals to report the header back for use or status
+	SVAR gVSANSStr = root:Packages:NIST:VSANS:Event:gVsansStr
+	NVAR gRevision = root:Packages:NIST:VSANS:Event:gRevision
+	NVAR gOffset = root:Packages:NIST:VSANS:Event:gOffset		// = 22 bytes if no disabled tubes
+	NVAR gTime1 = root:Packages:NIST:VSANS:Event:gTime1
+	NVAR gTime2 = root:Packages:NIST:VSANS:Event:gTime2
+	NVAR gTime3 = root:Packages:NIST:VSANS:Event:gTime3
+	NVAR gTime4 = root:Packages:NIST:VSANS:Event:gTime4	// these 4 time pieces are supposed to be 8 bytes total
+	NVAR gTime5 = root:Packages:NIST:VSANS:Event:gTime5	// these 5 time pieces are supposed to be 10 bytes total
+	SVAR gDetStr = root:Packages:NIST:VSANS:Event:gDetStr
+	NVAR gVolt = root:Packages:NIST:VSANS:Event:gVolt
+	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//time resolution in nanoseconds
+/////
+
+	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
+	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
+
 	numXYevents = 0
-	num0 = 0
-	num1 = 0
-	num2 = 0
-	num3 = 0
-	numPP = 0
-	numT0 = 0
-	numDL = 0
-	numFF = 0
-	numZero = 0
-	numRemoved = 0
 
-// get the total number of bytes in the file
-	Open/R fileref as filepathstr
-		FStatus fileref
-	Close fileref
 
-	totBytes = V_logEOF
-	Print "total bytes = ", totBytes
+	Open/R refnum as filepathstr
 	
-//
-//	Print "scan only"
-//	tic()
-//		EventLoadWave/R/N=EventWave/W filepathstr
-//	toc()
-
-////
-//
-//  use the XOP operation to load in the data
-// -- this does everything - the pre-scan and creating the waves
-//
-// need to zero the waves before loading, just in case
-//
-
-	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
-
 s_tic()
 
-//	Wave/Z wave0=wave0
-//	Wave/Z wave1=wave1
-//	Wave/Z wave2=wave2
+	FBinRead refnum, gVSANSStr
+	FBinRead/F=2/U refnum, gRevision
+	FBinRead/F=2/U refnum, gOffset
+	FBinRead/F=2/U refnum, gTime1
+	FBinRead/F=2/U refnum, gTime2
+	FBinRead/F=2/U refnum, gTime3
+	FBinRead/F=2/U refnum, gTime4
+	FBinRead/F=2/U refnum, gTime5
+	FBinRead refnum, gDetStr
+	FBinRead/F=2/U refnum, gVolt
+	FBinRead/F=3/U refnum, gResol
+
+	FStatus refnum
+	FSetPos refnum, V_logEOF
+	
+	Close refnum
+	
+// number of data bytes
+	numXYevents = (V_logEOF-gOffset)/8
+	Print "Number of data values = ",numXYevents
+	
+	GBLoadWave/B/T={192,192}/W=1/S=(gOffset) filepathstr
+	
+	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
+	KillWaves/Z $(StringFromList(0,S_waveNames))
+
+Printf "Time to read file (s) = "
+s_toc()	
+
+
+	totBytes = V_logEOF
+	Print "total bytes = ", totBytes
+	
+
+// V_Events is the uint64 wave that was read in
 //
-//	if(WaveExists(wave0))
-//		MultiThread wave0=0
-//	endif
-//	if(WaveExists(wave1))
-//		MultiThread wave1=0
-//	endif
-//	if(WaveExists(wave2))
-//		MultiThread wave2=0
-//	endif
-
-	if(removeBadEvents)
-		EventLoadWave/R/N=EventWave filepathstr
-	else
-		EventLoadWave/N=EventWave  filepathstr
-	endif
+////// Now decode the events
 
 
-	Print "XOP files loaded = ",S_waveNames
+s_tic()
+	WAVE V_Events = V_Events
+	uint64 val,b1,b2,btime
 
-////		-- copy the waves over to xLoc,yLoc,timePt
-	Wave/Z EventWave0=EventWave0
-	Wave/Z EventWave1=EventWave1
-	Wave/Z EventWave2=EventWave2
 	
+	Variable num,ii
+	num=numpnts(V_Events)
 	
-	Duplicate/O EventWave0,xLoc
-	KillWaves/Z EventWave0
-
-	Duplicate/O EventWave1,yLoc
-	KillWaves/Z EventWave1
-
-	Duplicate/O EventWave2,timePt
-	KillWaves/Z EventWave2
-
-// could do this, but rescaled time will neeed to be converted to SP (or DP)
-// and Igor loader was written with Make generating SP/DP waves
-	// /I/U is unsigned 32-bit integer (for the time)
-	// /B/U is unsigned 8-bit integer (max val=255) for the x and y values
+	Make/O/L/U/N=(num) eventTime			//64 bit unsigned
+	Make/O/U/B/N=(num) tube,location		//8 bit unsigned
 	
-//	Redimension/B/U xLoc,yLoc
-//	Redimension/I/U timePt
+	for(ii=0;ii<num;ii+=1)
+		val = V_Events[ii]
+		
+//		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
+//		b2 = (val >> 48 ) & 0xFF	
+//		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
 
-	// access the variables from the XOP
-	numT0 = V_numT0
-	numPP = V_numPP
-	num0 = V_num0
-	num1 = V_num1
-	num2 = V_num2
-	num3 = V_num3
-	numXYevents = V_nXYevents
-	numZero = V_numZero
-	numBad = V_numBad
-	numRemoved = V_numRemoved
-	
-	Print "(XOP) numT0 = ",numT0	
-	Print "num0 = ",num0	
-	Print "num1 = ",num1	
-	Print "num2 = ",num2	
-	Print "num3 = ",num3	
+		b1 = val & 0xFF
+		b2 = (val >> 8) & 0xFF
+		btime = (val >> 16)
+
+
+		tube[ii] = b1
+		location[ii] = b2
+		eventTime[ii] = btime
+		
+	endfor
+
+Printf "File decode time (s) = "
+s_toc()
+
+//	KillWaves/Z timePt,xLoc,yLoc
+//	Rename tube xLoc
+//	Rename location yLoc
+//	Rename eventTime timePt
+//	
+//	Redimension/D xLoc,yLoc,timePt
 	
 
-// dispStr will be displayed on the panel
+// TODO
+// add more to the status display of the file load/decode
+//	
+	// dispStr will be displayed on the panel
 	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
 	
 	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
-	sprintf tmpStr,"PP = %d  :  ",numPP
-	dispStr += tmpStr
-	sprintf tmpStr,"ZeroData = %d\r",numZero
-	dispStr += tmpStr
-	sprintf tmpStr,"Rollover = %d",num3
-	dispStr += tmpStr
-
-	s_toc()
-	
-	Print "Events removed (XOP) = ",numRemoved
-	
-	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
-	dispStr += tmpStr
-	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
-	dispStr += tmpStr
-
-
-// simply to compile a table of # XY vs # bytes
-//	Wave/Z nxy = root:numberXY
-//	Wave/Z nBytes = root:numberBytes
-//	if(WaveExists(nxy) && WaveExists(nBytes))
-//		InsertPoints 0, 1, nxy,nBytes
-//		nxy[0] = numXYevents
-//		nBytes[0] = totBytes
-//	endif
+//	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
+//	dispStr += tmpStr
+//	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
+//	dispStr += tmpStr
 
 	SetDataFolder root:
-
-#endif	
+	
 	return(0)
 	
 End 
 
+////////////////
+////
+//// This calls the XOP, as an operation to load the events
+////
+//// -- it's about 35x faster than the Igor code, so I guess that's OK.
+////
+//// conditional compile the whole inner workings in case XOP is not present
+//Function LoadEvents_XOP()
+//#if (exists("EventLoadWave")==4)
+//	
+////	NVAR time_msw = root:Packages:NIST:VSANS:Event:gEvent_time_msw
+////	NVAR time_lsw = root:Packages:NIST:VSANS:Event:gEvent_time_lsw
+//	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
+//	
+//	SVAR filepathstr = root:Packages:NIST:VSANS:Event:gEvent_logfile
+//	SVAR dispStr = root:Packages:NIST:VSANS:Event:gEventDisplayString
+//	
+//	SetDataFolder root:Packages:NIST:VSANS:Event
+//
+//
+//
+//	Variable fileref
+//	String buffer
+//	String fileStr,tmpStr
+//	Variable dataval,timeval,type,numLines,verbose,verbose3
+//	Variable xval,yval,rollBit,nRoll,roll_time,bit29,bit28,bit27
+//	Variable ii,flaggedEvent,rolloverHappened,numBad=0,tmpPP=0,tmpT0=0
+//	Variable Xmax, yMax
+//	
+//	xMax = 127		// number the detector from 0->127 
+//	yMax = 127
+//	
+//	numLines = 0
+//
+//	//Have to declare local variables for Loadwave so that this compiles without XOP.
+//	String S_waveNames
+//	//  and those for the XOP
+//	Variable V_nXYevents,V_num1,V_num2,V_num3,V_num0,V_totBytes,V_numPP,V_numT0,V_numDL,V_numFF,V_numZero
+//	Variable V_numBad,V_numRemoved
+//	
+//	// what I really need is the number of XY events
+//	Variable numXYevents,num1,num2,num3,num0,totBytes,numPP,numT0,numDL,numFF,numZero
+//	Variable numRemoved
+//	numXYevents = 0
+//	num0 = 0
+//	num1 = 0
+//	num2 = 0
+//	num3 = 0
+//	numPP = 0
+//	numT0 = 0
+//	numDL = 0
+//	numFF = 0
+//	numZero = 0
+//	numRemoved = 0
+//
+//// get the total number of bytes in the file
+//	Open/R fileref as filepathstr
+//		FStatus fileref
+//	Close fileref
+//
+//	totBytes = V_logEOF
+//	Print "total bytes = ", totBytes
+//	
+////
+////	Print "scan only"
+////	tic()
+////		EventLoadWave/R/N=EventWave/W filepathstr
+////	toc()
+//
+//////
+////
+////  use the XOP operation to load in the data
+//// -- this does everything - the pre-scan and creating the waves
+////
+//// need to zero the waves before loading, just in case
+////
+//
+//	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
+//
+//s_tic()
+//
+////	Wave/Z wave0=wave0
+////	Wave/Z wave1=wave1
+////	Wave/Z wave2=wave2
+////
+////	if(WaveExists(wave0))
+////		MultiThread wave0=0
+////	endif
+////	if(WaveExists(wave1))
+////		MultiThread wave1=0
+////	endif
+////	if(WaveExists(wave2))
+////		MultiThread wave2=0
+////	endif
+//
+//	if(removeBadEvents)
+//		EventLoadWave/R/N=EventWave filepathstr
+//	else
+//		EventLoadWave/N=EventWave  filepathstr
+//	endif
+//
+//
+//	Print "XOP files loaded = ",S_waveNames
+//
+//////		-- copy the waves over to xLoc,yLoc,timePt
+//	Wave/Z EventWave0=EventWave0
+//	Wave/Z EventWave1=EventWave1
+//	Wave/Z EventWave2=EventWave2
+//	
+//	
+//	Duplicate/O EventWave0,xLoc
+//	KillWaves/Z EventWave0
+//
+//	Duplicate/O EventWave1,yLoc
+//	KillWaves/Z EventWave1
+//
+//	Duplicate/O EventWave2,timePt
+//	KillWaves/Z EventWave2
+//
+//// could do this, but rescaled time will neeed to be converted to SP (or DP)
+//// and Igor loader was written with Make generating SP/DP waves
+//	// /I/U is unsigned 32-bit integer (for the time)
+//	// /B/U is unsigned 8-bit integer (max val=255) for the x and y values
+//	
+////	Redimension/B/U xLoc,yLoc
+////	Redimension/I/U timePt
+//
+//	// access the variables from the XOP
+//	numT0 = V_numT0
+//	numPP = V_numPP
+//	num0 = V_num0
+//	num1 = V_num1
+//	num2 = V_num2
+//	num3 = V_num3
+//	numXYevents = V_nXYevents
+//	numZero = V_numZero
+//	numBad = V_numBad
+//	numRemoved = V_numRemoved
+//	
+//	Print "(XOP) numT0 = ",numT0	
+//	Print "num0 = ",num0	
+//	Print "num1 = ",num1	
+//	Print "num2 = ",num2	
+//	Print "num3 = ",num3	
+//	
+//
+//// dispStr will be displayed on the panel
+//	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
+//	
+//	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+//	dispStr = tmpStr
+//	sprintf tmpStr,"numXYevents = %d\r",numXYevents
+//	dispStr += tmpStr
+//	sprintf tmpStr,"PP = %d  :  ",numPP
+//	dispStr += tmpStr
+//	sprintf tmpStr,"ZeroData = %d\r",numZero
+//	dispStr += tmpStr
+//	sprintf tmpStr,"Rollover = %d",num3
+//	dispStr += tmpStr
+//
+//	s_toc()
+//	
+//	Print "Events removed (XOP) = ",numRemoved
+//	
+//	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
+//	dispStr += tmpStr
+//	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
+//	dispStr += tmpStr
+//
+//
+//// simply to compile a table of # XY vs # bytes
+////	Wave/Z nxy = root:numberXY
+////	Wave/Z nBytes = root:numberBytes
+////	if(WaveExists(nxy) && WaveExists(nBytes))
+////		InsertPoints 0, 1, nxy,nBytes
+////		nxy[0] = numXYevents
+////		nBytes[0] = totBytes
+////	endif
+//
+//	SetDataFolder root:
+//
+//#endif	
+//	return(0)
+//	
+//End 
+
 //////////////
 
-Proc BinEventBarGraph()
+Proc V_BinEventBarGraph()
 	
-	DoWindow/F EventBarGraph
+	DoWindow/F V_EventBarGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(110,705,610,1132)/N=EventBarGraph /K=1 binCount vs binEndTime
+		Display /W=(110,705,610,1132)/N=V_EventBarGraph /K=1 binCount vs binEndTime
 		SetDataFolder fldrSav0
 		ModifyGraph mode=5
 		ModifyGraph marker=19
@@ -1897,7 +1418,7 @@ Proc BinEventBarGraph()
 		ModifyGraph hbFill=2
 		ModifyGraph gaps=0
 		ModifyGraph usePlusRGB=1
-		ModifyGraph toMode=1
+		ModifyGraph toMode=0
 		ModifyGraph useBarStrokeRGB=1
 		ModifyGraph standoff=0
 		SetAxis left 0,*
@@ -1907,14 +1428,14 @@ Proc BinEventBarGraph()
 End
 
 
-Proc ShowBinTable() 
+Proc V_ShowBinTable() 
 
-	DoWindow/F BinEventTable
+	DoWindow/F V_BinEventTable
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Edit/W=(498,699,1003,955) /K=1/N=BinEventTable binCount,binEndTime,timeWidth
+		Edit/W=(498,699,1003,955) /K=1/N=V_BinEventTable binCount,binEndTime,timeWidth
 		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100
 		SetDataFolder fldrSav0
 	endif
@@ -1923,14 +1444,14 @@ EndMacro
 
 // only show the first 1500 data points
 //
-Proc ShowRescaledTimeGraph()
+Proc V_ShowRescaledTimeGraph()
 
-	DoWindow/F RescaledTimeGraph
+	DoWindow/F V_RescaledTimeGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(25,44,486,356)/K=1/N=RescaledTimeGraph rescaledTime
+		Display /W=(25,44,486,356)/K=1/N=V_RescaledTimeGraph rescaledTime
 		SetDataFolder fldrSav0
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -2108,7 +1629,7 @@ End
 // histogram operation can be done separately, as the bins require
 //
 //
-Function JointHistogramWithRange(w0,w1,hist,index,pt1,pt2)
+Function V_JointHistogramWithRange(w0,w1,hist,index,pt1,pt2)
 	wave w0,w1,hist,index
 	Variable pt1,pt2
  
@@ -2130,7 +1651,7 @@ End
 
 // just does the indexing, creates wave SavedIndex in the current folder for the index
 //
-Function IndexForHistogram(w0,w1,hist)
+Function V_IndexForHistogram(w0,w1,hist)
 	wave w0,w1,hist
  
 	variable bins0=dimsize(hist,0)
@@ -2164,21 +1685,21 @@ End
 
 
 ////////////// Post-processing of the event mode data
-Proc ShowEventCorrectionPanel()
-	DoWindow/F EventCorrectionPanel
+Proc V_ShowEventCorrectionPanel()
+	DoWindow/F V_EventCorrectionPanel
 	if(V_flag ==0)
-		EventCorrectionPanel()
+		V_EventCorrectionPanel()
 	EndIf
 End
 
-Proc EventCorrectionPanel()
+Proc V_EventCorrectionPanel()
 
 	PauseUpdate; Silent 1		// building window...
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 	
 	if(exists("rescaledTime") == 1)
 		Display /W=(35,44,761,533)/K=2 rescaledTime
-		DoWindow/C EventCorrectionPanel
+		DoWindow/C V_EventCorrectionPanel
 		ModifyGraph mode=4
 		ModifyGraph marker=19
 		ModifyGraph rgb=(0,0,0)
@@ -2189,19 +1710,19 @@ Proc EventCorrectionPanel()
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
 		
 		ControlBar 100
-		Button button0,pos={18,12},size={70,20},proc=EC_AddCursorButtonProc,title="Cursors"
-		Button button1,pos={153,12},size={80,20},proc=EC_AddTimeButtonProc,title="Add time"
-		Button button2,pos={153,38},size={80,20},proc=EC_SubtractTimeButtonProc,title="Subtr time"
-		Button button3,pos={153,64},size={90,20},proc=EC_TrimPointsButtonProc,title="Trim points"
-		Button button4,pos={295+150,12},size={90,20},proc=EC_SaveWavesButtonProc,title="Save Waves"
-		Button button5,pos={295,64},size={100,20},proc=EC_FindOutlierButton,title="Find Outlier"
-		Button button6,pos={18,38},size={80,20},proc=EC_ShowAllButtonProc,title="All Data"
-		Button button7,pos={683,12},size={30,20},proc=EC_HelpButtonProc,title="?"
-		Button button8,pos={658,72},size={60,20},proc=EC_DoneButtonProc,title="Done"
+		Button button0,pos={18,12},size={70,20},proc=V_EC_AddCursorButtonProc,title="Cursors"
+		Button button1,pos={153,12},size={80,20},proc=V_EC_AddTimeButtonProc,title="Add time"
+		Button button2,pos={153,38},size={80,20},proc=V_EC_SubtractTimeButtonProc,title="Subtr time"
+		Button button3,pos={153,64},size={90,20},proc=V_EC_TrimPointsButtonProc,title="Trim points"
+		Button button4,pos={295+150,12},size={90,20},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
+		Button button5,pos={295,64},size={100,20},proc=V_EC_FindOutlierButton,title="Find Outlier"
+		Button button6,pos={18,38},size={80,20},proc=V_EC_ShowAllButtonProc,title="All Data"
+		Button button7,pos={683,12},size={30,20},proc=V_EC_HelpButtonProc,title="?"
+		Button button8,pos={658,72},size={60,20},proc=V_EC_DoneButtonProc,title="Done"
 	
-		Button button9,pos={295,12},size={110,20},proc=EC_FindStepButton_down,title="Find Step Down"
-		Button button10,pos={295,38},size={110,20},proc=EC_FindStepButton_up,title="Find Step Up"
-		Button button11,pos={295+150,38},size={110,20},proc=EC_DoDifferential,title="Differential"
+		Button button9,pos={295,12},size={110,20},proc=V_EC_FindStepButton_down,title="Find Step Down"
+		Button button10,pos={295,38},size={110,20},proc=V_EC_FindStepButton_up,title="Find Step Up"
+		Button button11,pos={295+150,38},size={110,20},proc=V_EC_DoDifferential,title="Differential"
 		
 		
 	else
@@ -2212,7 +1733,7 @@ Proc EventCorrectionPanel()
 	
 EndMacro
 
-Function EC_AddCursorButtonProc(ba) : ButtonControl
+Function V_EC_AddCursorButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2235,7 +1756,7 @@ End
 
 // updates the longest time (as does every operation of adjusting the data)
 //
-Function EC_AddTimeButtonProc(ba) : ButtonControl
+Function V_EC_AddTimeButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2270,7 +1791,7 @@ Function EC_AddTimeButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function EC_SubtractTimeButtonProc(ba) : ButtonControl
+Function V_EC_SubtractTimeButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2310,7 +1831,7 @@ End
 //
 // put both cursors on the same point to remove just that single point
 //
-Function EC_TrimPointsButtonProc(ba) : ButtonControl
+Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2349,7 +1870,7 @@ Function EC_TrimPointsButtonProc(ba) : ButtonControl
 End
 
 // un-sort the data first, then save it
-Function EC_SaveWavesButtonProc(ba) : ButtonControl
+Function V_EC_SaveWavesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2378,7 +1899,7 @@ End
 //
 // this duplicates all of the bits that would be done if the "load" button was pressed
 //
-Function EC_ImportWavesButtonProc(ba) : ButtonControl
+Function V_EC_ImportWavesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2422,7 +1943,7 @@ Function EC_ImportWavesButtonProc(ba) : ButtonControl
 End
 
 
-Function EC_ShowAllButtonProc(ba) : ButtonControl
+Function V_EC_ShowAllButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2437,7 +1958,7 @@ Function EC_ShowAllButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function EC_HelpButtonProc(ba) : ButtonControl
+Function V_EC_HelpButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2452,13 +1973,13 @@ Function EC_HelpButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function EC_DoneButtonProc(ba) : ButtonControl
+Function V_EC_DoneButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoWindow/K EventCorrectionPanel
+			DoWindow/K V_EventCorrectionPanel
 			break
 		case -1: // control being killed
 			break
@@ -2468,7 +1989,7 @@ Function EC_DoneButtonProc(ba) : ButtonControl
 End
 
 //upDown 5 or -5 looks for spikes +5 or -5 std deviations from mean
-Function PutCursorsAtStep(upDown)
+Function V_PutCursorsAtStep(upDown)
 	Variable upDown
 	
 	SetDataFolder root:Packages:NIST:VSANS:Event:
@@ -2509,7 +2030,7 @@ End
 
 // find the max (or min) of the rescaled time set
 // and place both cursors there
-Function fFindOutlier()
+Function V_fFindOutlier()
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
@@ -2542,35 +2063,35 @@ Function fFindOutlier()
 	return(0)
 End
 
-Function EC_FindStepButton_down(ctrlName) : ButtonControl
+Function V_EC_FindStepButton_down(ctrlName) : ButtonControl
 	String ctrlName
 	
 //	Variable upDown = -5
 	NVAR upDown = root:Packages:NIST:VSANS:Event:gStepTolerance
 	
-	PutCursorsAtStep(-1*upDown)
+	V_PutCursorsAtStep(-1*upDown)
 
 	return(0)
 end
 
 
-Function EC_FindStepButton_up(ctrlName) : ButtonControl
+Function V_EC_FindStepButton_up(ctrlName) : ButtonControl
 	String ctrlName
 	
 //	Variable upDown = 5
 	NVAR upDown = root:Packages:NIST:VSANS:Event:gStepTolerance
 
-	PutCursorsAtStep(upDown)
+	V_PutCursorsAtStep(upDown)
 
 	return(0)
 end
 
 // if the Trim button section is uncommented, it's "Zap outlier"
 //
-Function EC_FindOutlierButton(ctrlName) : ButtonControl
+Function V_EC_FindOutlierButton(ctrlName) : ButtonControl
 	String ctrlName
 	
-	fFindOutlier()
+	V_fFindOutlier()
 //
 //	STRUCT WMButtonAction ba
 //	ba.eventCode = 2
@@ -2580,16 +2101,16 @@ Function EC_FindOutlierButton(ctrlName) : ButtonControl
 	return(0)
 end
 
-Function EC_DoDifferential(ctrlName) : ButtonControl
+Function V_EC_DoDifferential(ctrlName) : ButtonControl
 	String ctrlName
 	
-	DifferentiatedTime()
-	DoWindow/F EventCorrectionPanel
+	V_DifferentiatedTime()
+	DoWindow/F V_EventCorrectionPanel
 	
 	//if trace is not on graph, add it
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-	String list = WaveList("*_DIF", ";", "WIN:EventCorrectionPanel")
+	String list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
 	if(strlen(list) == 0)
 		AppendToGraph/R rescaledTime_DIF
 		ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
@@ -2606,16 +2127,16 @@ end
 // make sure that the bins are defined and the waves exist before
 // trying to draw the panel
 //
-Proc Show_CustomBinPanel()
-	DoWindow/F CustomBinPanel
+Proc V_Show_CustomBinPanel()
+	DoWindow/F V_CustomBinPanel
 	if(V_flag ==0)
-		Init_CustomBins()
-		CustomBinPanel()
+		V_Init_CustomBins()
+		V_CustomBinPanel()
 	EndIf
 End
 
 
-Function Init_CustomBins()
+Function V_Init_CustomBins()
 
 	NVAR nSlice = root:Packages:NIST:VSANS:Event:gEvent_nslices
 	NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
@@ -2644,17 +2165,17 @@ End
 //
 // This shares the number of slices and the maximum time with the main panel
 //
-Proc CustomBinPanel()
+Proc V_CustomBinPanel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(130,44,851,455)/K=2 /N=CustomBinPanel
-	DoWindow/C CustomBinPanel
+	NewPanel /W=(130,44,851,455)/K=2 /N=V_CustomBinPanel
+	DoWindow/C V_CustomBinPanel
 	ModifyPanel fixedSize=1//,noEdit =1
 	SetDrawLayer UserBack
 	
 	Button button0,pos={654,42}, size={50,20},title="Done",fSize=12
-	Button button0,proc=CB_Done_Proc
-	Button button1,pos={663,14},size={40,20},proc=CB_HelpButtonProc,title="?"
-	Button button2,pos={216,42},size={80,20},title="Update",proc=CB_UpdateWavesButton	
+	Button button0,proc=V_CB_Done_Proc
+	Button button1,pos={663,14},size={40,20},proc=V_CB_HelpButtonProc,title="?"
+	Button button2,pos={216,42},size={80,20},title="Update",proc=V_CB_UpdateWavesButton	
 	SetVariable setvar1,pos={23,13},size={160,20},title="Number of slices",fSize=12
 	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:VSANS:Event:gEvent_nslices
 	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=10
@@ -2662,12 +2183,12 @@ Proc CustomBinPanel()
 
 	CheckBox chkbox1,pos={216,14},title="Enforce Max Time?"
 	CheckBox chkbox1,variable = root:Packages:NIST:VSANS:Event:gEvent_ForceTmaxBin
-	Button button3,pos={500,14},size={90,20},proc=CB_SaveBinsButtonProc,title="Save Bins"
-	Button button4,pos={500,42},size={100,20},proc=CB_ImportBinsButtonProc,title="Import Bins"	
+	Button button3,pos={500,14},size={90,20},proc=V_CB_SaveBinsButtonProc,title="Save Bins"
+	Button button4,pos={500,42},size={100,20},proc=V_CB_ImportBinsButtonProc,title="Import Bins"	
 		
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-	Display/W=(291,86,706,395)/HOST=CustomBinPanel/N=BarGraph binCount vs binEndTime
+	Display/W=(291,86,706,395)/HOST=V_CustomBinPanel/N=BarGraph binCount vs binEndTime
 	ModifyGraph mode=5
 	ModifyGraph marker=19
 	ModifyGraph lSize=2
@@ -2685,8 +2206,8 @@ Proc CustomBinPanel()
 	SetActiveSubwindow ##
 	
 	// and the table
-	Edit/W=(13,87,280,394)/HOST=CustomBinPanel/N=T0
-	AppendToTable/W=CustomBinPanel#T0 timeWidth,binEndTime
+	Edit/W=(13,87,280,394)/HOST=V_CustomBinPanel/N=T0
+	AppendToTable/W=V_CustomBinPanel#T0 timeWidth,binEndTime
 	ModifyTable width(Point)=40
 	SetActiveSubwindow ##
 	
@@ -2696,7 +2217,7 @@ EndMacro
 
 // save the bins - use Igor Text format
 //
-Function CB_SaveBinsButtonProc(ba) : ButtonControl
+Function V_CB_SaveBinsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2727,7 +2248,7 @@ End
 //
 // -- loads in timeWidth and binEndTime
 //
-Function CB_ImportBinsButtonProc(ba) : ButtonControl
+Function V_CB_ImportBinsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2770,7 +2291,7 @@ End
 // then the last bin width must be reset to force the constraint
 //
 //
-Function CB_UpdateWavesButton(ba) : ButtonControl
+Function V_CB_UpdateWavesButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2805,9 +2326,9 @@ Function CB_UpdateWavesButton(ba) : ButtonControl
 			// make the timeWidth bold and red if the widths are negative
 			WaveStats/Q timeWidth
 			if(V_min < 0)
-				ModifyTable/W=CustomBinPanel#T0 style(timeWidth)=1,rgb(timeWidth)=(65535,0,0)			
+				ModifyTable/W=V_CustomBinPanel#T0 style(timeWidth)=1,rgb(timeWidth)=(65535,0,0)			
 			else
-				ModifyTable/W=CustomBinPanel#T0 style(timeWidth)=0,rgb(timeWidth)=(0,0,0)			
+				ModifyTable/W=V_CustomBinPanel#T0 style(timeWidth)=0,rgb(timeWidth)=(0,0,0)			
 			endif
 			
 			break
@@ -2820,7 +2341,7 @@ Function CB_UpdateWavesButton(ba) : ButtonControl
 	return 0
 End
 
-Function CB_HelpButtonProc(ba) : ButtonControl
+Function V_CB_HelpButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2835,20 +2356,20 @@ Function CB_HelpButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function CB_Done_Proc(ba) : ButtonControl
+Function V_CB_Done_Proc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 	
 	String win = ba.win
 	switch (ba.eventCode)
 		case 2:
-			DoWindow/K CustomBinPanel
+			DoWindow/K V_CustomBinPanel
 			break
 	endswitch
 	return(0)
 End
 
 
-Function CB_NumSlicesSetVarProc(sva) : SetVariableControl
+Function V_CB_NumSlicesSetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
 	switch( sva.eventCode )
@@ -2887,19 +2408,19 @@ End
 //
 //
 
-Proc SplitBigFile(splitSize, baseStr)
+Proc V_SplitBigFile(splitSize, baseStr)
 	Variable splitSize = 100
 	String baseStr="split"
 	Prompt splitSize,"Target file size, in MB"
 	Prompt baseStr,"File prefix, number will be appended"
 	
 	
-	fSplitBigFile(splitSize, baseStr)
+	V_fSplitBigFile(splitSize, baseStr)
 	
-	ShowSplitFileTable()
+	V_ShowSplitFileTable()
 End
 
-Function/S fSplitBigFile(splitSize, baseStr)
+Function/S V_fSplitBigFile(splitSize, baseStr)
 	Variable splitSize
 	String baseStr		
 
@@ -3031,18 +2552,18 @@ End
 //	"Add Current Slice",AccumulateSlices(1)
 //	"Display Accumulated Slices",AccumulateSlices(2)	
 //
-Function AccumulateSlicesButton(ctrlName) : ButtonControl
+Function V_AccumulateSlicesButton(ctrlName) : ButtonControl
 	String ctrlName
 	
 	Variable mode
 	mode = str2num(ctrlName[strlen(ctrlName)-1])
 //	Print "mode=",mode
-	AccumulateSlices(mode)
+	V_AccumulateSlices(mode)
 	
 	return(0)
 End
 
-Function AccumulateSlices(mode)
+Function V_AccumulateSlices(mode)
 	Variable mode
 	
 	SetDataFolder root:Packages:NIST:VSANS:Event:
@@ -3064,7 +2585,7 @@ Function AccumulateSlices(mode)
 			Duplicate/O accumulatedData slicedData
 			// do something to "touch" the display to force it to update
 			NVAR gLog = root:Packages:NIST:VSANS:Event:gEvent_logint
-			LogIntEvent_Proc("",gLog)
+			V_LogIntEvent_Proc("",gLog)
 			break
 		default:			
 				
@@ -3108,23 +2629,23 @@ end
 //EndMacro
 
 
-Function SplitFileButtonProc(ctrlName) : ButtonControl
+Function V_SplitFileButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Execute "SplitBigFile()"
+	Execute "V_SplitBigFile()"
 End
 
 
 // show all of the data
 //
-Proc ShowDecimatedGraph()
+Proc V_ShowDecimatedGraph()
 
-	DoWindow/F DecimatedGraph
+	DoWindow/F V_DecimatedGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(25,44,486,356)/K=1/N=DecimatedGraph rescaledTime_dec
+		Display /W=(25,44,486,356)/K=1/N=V_DecimatedGraph rescaledTime_dec
 		SetDataFolder fldrSav0
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -3142,18 +2663,18 @@ EndMacro
 //
 // so work with x,y,t, and rescaled time
 // variables -- t_longest
-Function ConcatenateButtonProc(ctrlName) : ButtonControl
+Function V_ConcatenateButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	DoAlert 1,"Is this the first file?"
 	Variable first = V_flag
 	
-	fConcatenateButton(first)
+	V_fConcatenateButton(first)
 	
 	return(0)
 End
 
-Function fConcatenateButton(first)
+Function V_fConcatenateButton(first)
 	Variable first
 
 
@@ -3226,7 +2747,7 @@ Function fConcatenateButton(first)
 
 End
 
-Function DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
+Function V_DisplayConcatenatedButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	//copy the files over to the display set for processing
@@ -3256,10 +2777,10 @@ End
 
 
 // unused, old testing procedure
-Function LoadDecimateButtonProc(ctrlName) : ButtonControl
+Function V_LoadDecimateButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	LoadEventLog_Button("")
+	V_LoadEventLog_Button("")
 	
 	// now decimate
 	SetDataFolder root:Packages:NIST:VSANS:Event:
