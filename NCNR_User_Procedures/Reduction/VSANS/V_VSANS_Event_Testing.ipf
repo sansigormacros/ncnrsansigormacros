@@ -237,10 +237,16 @@ End
 // TODO:
 // -- can this be multithreaded (eliminating the loop)?
 //
-// MultiThread tube = (w >> 56 ) & 0xFF	
-// MultiThread location = (w >> 48 ) & 0xFF	
-// MultiThread eventTime = val & 0xFFFFFFFFFFFF	
+// MultiThread tube = (w[p]) & 0xFF	
+// MultiThread location = (w[p] >> 8 ) & 0xFF	
+// MultiThread eventTime = (w[p] >> 16)
 //
+// !!!!- yes - for a 35 MB file:
+// for loop = 4.3 s
+// MultiThread = 0.35 s
+//
+// !!! can I use the bit operations in MatrixOp? 1D waves are valid
+//  to use with MatrixOp. Would it be better than multiThread?
 //
 //
 Function V_decodeFakeEventWave(w)
@@ -261,23 +267,27 @@ s_tic()
 	
 	Make/O/L/U/N=(num) eventTime
 	Make/O/U/B/N=(num) tube,location		//8 bit unsigned
+
+ MultiThread tube = (w[p]) & 0xFF	
+ MultiThread location = (w[p] >> 8 ) & 0xFF	
+ MultiThread eventTime = (w[p] >> 16)
 	
-	for(ii=0;ii<num;ii+=1)
-		val = w[ii]
-		
-//		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
-//		b2 = (val >> 48 ) & 0xFF	
-//		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
-
-		b1 = val & 0xFF
-		b2 = (val >> 8) & 0xFF
-		btime = (val >> 16)
-
-		tube[ii] = b1
-		location[ii] = b2
-		eventTime[ii] = btime
-		
-	endfor
+//	for(ii=0;ii<num;ii+=1)
+//		val = w[ii]
+//		
+////		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
+////		b2 = (val >> 48 ) & 0xFF	
+////		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
+//
+//		b1 = val & 0xFF
+//		b2 = (val >> 8) & 0xFF
+//		btime = (val >> 16)
+//
+//		tube[ii] = b1
+//		location[ii] = b2
+//		eventTime[ii] = btime
+//		
+//	endfor
 
 s_toc()
 		
@@ -548,6 +558,12 @@ End
 
 
 
+
+
+
+
+
+
 // TODO:
 //
 // There may be memory issues with this
@@ -563,8 +579,11 @@ Function V_SortAndSplitEvents()
 	Wave eventTime = EventTime
 	Wave location = location
 	Wave tube = tube
-	
+
+	Variable t1=ticks
+ Print "sort started"	
 	Sort tube,tube,eventTime,location
+print "sort done ",(ticks-t1)/60
 
 	Variable b1,e1,b2,e2,b3,e3,b4,e4	
 	FindValue/S=0/I=48 tube
@@ -624,6 +643,8 @@ End
 //
 // switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
 //
+
+//
 // copy the set of tubes over to the "active" set that is to be histogrammed
 // and redimension them to be sure that they are double precision
 //
@@ -637,12 +658,25 @@ Function V_SwitchTubeGroup(tubeGroup)
 		Wave location = $("location"+num2Str(tubeGroup))
 		Wave eventTime = $("eventTime"+num2Str(tubeGroup))
 		
-		Wave xloc,yLoc,timePt
+		Wave/Z xloc,yLoc,timePt
 		
 		KillWaves/Z timePt,xLoc,yLoc
-		Duplicate/O tube xLoc
-		Duplicate/O location yLoc
 		Duplicate/O eventTime timePt
+
+// TODO:
+// -- for processing, initially treat all of the tubes along x, and 128 pixels along y
+//   panels can be transposed later as needed to get the orientation correct
+
+
+//		if(tubeGroup == 1 || tubeGroup == 4)	
+		// L/R panels, they have tubes along x	
+			Duplicate/O tube xLoc
+			Duplicate/O location yLoc
+//		else
+//		// T/B panels, tubes are along y
+//			Duplicate/O tube yLoc
+//			Duplicate/O location xLoc		
+//		endif
 		
 		Redimension/D xLoc,yLoc,timePt	
 		
@@ -703,5 +737,147 @@ Function V_count(num)
 	Print total
 	
 	SetDataFolder root:
-
+	return(0)
 end
+
+
+
+// Based on the numbering 0-191:
+// group 1 = R (0,47) 			MatrixOp out = ReverseRows(in)
+// group 2 = T (48,95) 		output = slices_T[q][p][r]
+// group 3 = B (96,143) 		output = slices_B[XBINS-q-1][YBINS-p-1][r]		(reverses rows and columns)
+// group 4 = L (144,191) 	MatrixOp out = ReverseCols(in)
+//
+// the transformation flips the panel to the view as if the detector was viewed from the sample position
+// (this is the standard view for SANS and VSANS)
+//
+// Takes the data that was binned, and separates it into the 4 detector panels
+// Waves are 3D waves x-y-time
+//
+// MatrixOp may not be necessary for the R/L transformations, but indexing or MatrixOp are both really fast.
+//
+//
+Function V_SplitBinnedToPanels()
+
+	SetDataFolder root:Packages:NIST:VSANS:Event:	
+	Wave slicedData = slicedData		//this is 3D
+	
+	Variable nSlices = DimSize(slicedData,2)
+	
+	Make/O/D/N=(XBINS,YBINS,nSlices) slices_R, slices_L, slices_T, slices_B, output
+	
+	slices_R = slicedData[p][q][r]
+	slices_T = slicedData[p+48][q][r]
+	slices_B = slicedData[p+96][q][r]
+	slices_L = slicedData[p+144][q][r]
+	
+	MatrixOp/O output = ReverseRows(slices_R)
+	slices_R = output
+	
+	MatrixOp/O output = ReverseCols(slices_L)
+	slices_L = output
+
+		
+	Redimension/N=(YBINS,XBINS,nSlices) output
+	output = slices_T[q][p][r]
+	KillWaves/Z slices_T
+	Duplicate/O output slices_T
+	
+	output = slices_B[XBINS-q-1][YBINS-p-1][r]
+	KillWaves/Z slices_B
+	Duplicate/O output slices_B
+	
+	KillWaves/Z output
+	SetDataFolder root:
+
+	return(0)
+End
+
+
+// simple panel to display the 4 detector panels after the data has been binned and sliced
+//
+// TODO:
+// -- label panels, axes
+// -- add a way to display different slices (this can still be done on the main panel, all at once)
+// -- any other manipulations?
+//
+
+Proc VSANS_EventPanels()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(720,45,1530,570)/N=VSANS_EventPanels/K=1
+	DoWindow/C VSANS_EventPanels
+	ModifyPanel fixedSize=1,noEdit =1
+
+//	Display/W=(745,45,945,425)/HOST=# 
+	Display/W=(10,45,210,425)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:slices_L		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage slices_L ctab= {*,*,ColdWarm,0}
+	ModifyImage slices_L ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Event_slice_L
+	SetActiveSubwindow ##
+
+//	Display/W=(1300,45,1500,425)/HOST=# 
+	Display/W=(565,45,765,425)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:slices_R		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage slices_R ctab= {*,*,ColdWarm,0}
+	ModifyImage slices_R ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Event_slice_R
+	SetActiveSubwindow ##
+
+//	Display/W=(945,45,1300,235)/HOST=# 
+	Display/W=(210,45,565,235)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:slices_T		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage slices_T ctab= {*,*,ColdWarm,0}
+	ModifyImage slices_T ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Event_slice_T
+	SetActiveSubwindow ##
+
+//	Display/W=(945,235,1300,425)/HOST=# 
+	Display/W=(210,235,565,425)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:slices_B		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage slices_B ctab= {*,*,ColdWarm,0}
+	ModifyImage slices_B ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Event_slice_B
+	SetActiveSubwindow ##
+//
+
+
+End
+
+

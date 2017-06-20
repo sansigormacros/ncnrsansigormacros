@@ -84,6 +84,36 @@ Proc V_Tubes_to_Array()
 	ModifyImage pack ctab= {*,*,ColdWarm,0}
 End
 
+Proc V_ArrayToTubes(wStr)
+	String wStr
+	
+	Variable ii,numTubes=48
+	String str="tube"
+	
+	Variable dim0,dim1
+	dim0 = DimSize($wStr,0)
+	dim1 = DimSize($wStr,1)
+	
+	Make/O/D/N=128 tube_pixel
+	tube_pixel = p
+	
+	
+	ii=0
+	do
+		Make/O/D/N=128 $(str+num2str(ii))
+		
+		if(dim0 == 128)
+			$(str+num2str(ii)) = $(wStr)[p][ii]
+		else
+			$(str+num2str(ii)) = $(wStr)[ii][p]
+		endif
+		
+		ii+=1
+	while(ii < numTubes)
+
+End
+
+
 // (2) -- for each of the tubes, find the x-position (in pixels) of each of the (20) peaks
 // -- load the Analysis Package "MultiPeakFit 2"
 //
@@ -113,14 +143,14 @@ End
 
 Proc V_Identify_AllPeaks()
 
-	Variable ii,numTubes=8
+	Variable ii,numTubes=48
 	String str="tube"
 	
-	ii=1
+	ii=0
 	do
-		V_Identify_Peaks(str+num2str(ii),ii-1)
+		V_Identify_Peaks(str+num2str(ii),ii)
 		ii+=1
-	while(ii<=numTubes)
+	while(ii < numTubes)
 
 End
 
@@ -196,13 +226,13 @@ End
 
 Proc V_PlotFit_AllPeaks()
 
-	Variable ii,numTubes=8
+	Variable ii,numTubes=48
 	
-	ii=1
+	ii=0
 	do
-		V_PlotFit_Peaks(ii-1)
+		V_PlotFit_Peaks(ii)
 		ii+=1
-	while(ii<=numTubes)
+	while(ii<numTubes)
 
 End
 

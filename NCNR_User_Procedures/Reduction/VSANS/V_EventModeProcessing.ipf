@@ -1,7 +1,17 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.22
 
-// vers 7.13e
+//
+// Event mode prcessing for VSANS
+//
+// First pass, getting the basics to work
+//
+// -- need TOF processing for wavelength calibration
+//  -- document this so it can be done quickly and easily.
+//
+
+
+
 
 // TODO:
 //
@@ -38,10 +48,12 @@
 //
 
 
-// TODO -- these dimensions are hard-wired and will be wrong half of the time
+// TODO 
+// x- these dimensions are hard-wired (OK)
 //
-Static Constant XBINS=48
-Static Constant YBINS=128
+Constant XBINS=48
+Constant NTUBES=192
+Constant YBINS=128
 
 Static Constant MODE_STREAM = 0
 Static Constant MODE_OSCILL = 1
@@ -59,7 +71,16 @@ Proc V_Show_Event_Panel()
 End
 
 // TODO:
-//  -- need an index table with the tube <-> panel correspondence
+//  x- need an index table with the tube <-> panel correspondence
+//    NO, per Phil, the tube numbering is sequential:
+//
+// Based on the numbering 0-191:
+// group 1 = R (0,47) 			MatrixOp out = ReverseRows(in)
+// group 2 = T (48,95) 		output = slices_T[q][p][r]
+// group 3 = B (96,143) 		output = slices_B[XBINS-q-1][YBINS-p-1][r]		(reverses rows and columns)
+// group 4 = L (144,191) 	MatrixOp out = ReverseCols(in)
+//
+// There is a separate function that does the proper flipping to get the panels into the correct orientation
 //
 Function V_Init_Event()
 
@@ -169,6 +190,10 @@ Proc VSANS_EventModePanel()
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
 	Button button1,pos={389,103},size={120,20},fSize=12,proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
+
+	Button button21,pos={580,70},size={120,20},proc=V_SplitToPanels_Button,title="Split to Panels"
+	Button button22,pos={580,90},size={120,20},proc=V_GraphPanels_Button,title="Show Panels"
+
 	Button button10,pos={488,305},size={100,20},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
 	Button button14,pos={488,350},size={120,20},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
 	Button button19,pos={649,350},size={120,20},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
@@ -215,7 +240,37 @@ Proc VSANS_EventModePanel()
 EndMacro
 
 
+Function V_SplitToPanels_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
 
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_SplitBinnedToPanels()
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_GraphPanels_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "VSANS_EventPanels()"
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 // mode selector
 //Static Constant MODE_STREAM = 0
@@ -426,7 +481,8 @@ end
 Function V_Osc_ProcessEventLog(ctrlName)
 	String ctrlName
 
-	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+	Make/O/D/N=(NTUBES,YBINS) root:Packages:NIST:VSANS:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:VSANS:Event:binnedData
 	Wave xLoc = root:Packages:NIST:VSANS:Event:xLoc
@@ -439,12 +495,14 @@ Function V_Osc_ProcessEventLog(ctrlName)
 
 	SetDataFolder root:Packages:NIST:VSANS:Event		//don't count on the folder remaining here
 	
-	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+//	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+	Make/D/O/N=(NTUBES,YBINS,nslices) slicedData
 		
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
 	Wave timePt = timePt
-	Make/O/D/N=(XBINS,YBINS) tmpData
+//	Make/O/D/N=(XBINS,YBINS) tmpData
+	Make/O/D/N=(NTUBES,YBINS) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount
 	Make/O/D/N=(nslices) timeWidth
 	Wave timeWidth = timeWidth
@@ -489,6 +547,7 @@ Function V_Osc_ProcessEventLog(ctrlName)
 	//
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
+s_tic()
 	if(WaveExists($"root:Packages:NIST:VSANS:Event:OscSortIndex") == 0 )
 		Duplicate/O rescaledTime OscSortIndex
 		MakeIndex rescaledTime OscSortIndex
@@ -498,8 +557,12 @@ Function V_Osc_ProcessEventLog(ctrlName)
 		//SetDataFolder root:
 	Endif
 	
+printf "sort time = "
+s_toc()
+
 	Wave index = root:Packages:NIST:VSANS:Event:SavedIndex		//this is the histogram index
 
+s_tic()
 	for(ii=0;ii<nslices;ii+=1)
 		if(ii==0)
 //			t1 = ii*del
@@ -533,6 +596,8 @@ Function V_Osc_ProcessEventLog(ctrlName)
 //		binEndTime[ii+1] = t2
 		binCount[ii] = sum(tmpData,-inf,inf)
 	endfor
+printf "histogram time = "
+s_toc()
 
 	Duplicate/O slicedData,root:Packages:NIST:VSANS:Event:dispsliceData,root:Packages:NIST:VSANS:Event:logSlicedData
 	Wave logSlicedData = root:Packages:NIST:VSANS:Event:logSlicedData
@@ -555,7 +620,8 @@ Function V_Stream_ProcessEventLog(ctrlName)
 //	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
 
 	
-	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+//	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:VSANS:Event:binnedData
+	Make/O/D/N=(NTUBES,YBINS) root:Packages:NIST:VSANS:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:VSANS:Event:binnedData
 	Wave xLoc = root:Packages:NIST:VSANS:Event:xLoc
@@ -569,11 +635,13 @@ Function V_Stream_ProcessEventLog(ctrlName)
 
 	SetDataFolder root:Packages:NIST:VSANS:Event		//don't count on the folder remaining here
 	
-	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+//	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+	Make/D/O/N=(NTUBES,YBINS,nslices) slicedData
 		
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
-	Make/O/D/N=(XBINS,YBINS) tmpData
+//	Make/O/D/N=(XBINS,YBINS) tmpData
+	Make/O/D/N=(NTUBES,YBINS) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount//,binStartTime
 	Make/O/D/N=(nslices) timeWidth
 	Wave binEndTime = binEndTime
@@ -864,19 +932,35 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	V_LoadEvents()			// this now loads, decodes, and returns location, tube, and timePt
 	SetDataFolder root:Packages:NIST:VSANS:Event:			//GBLoadWave in V_LoadEvents sets back to root:
 
-
 // Now, I have tube, location, and timePt (no units yet)
 // assign to the proper panels
 
-s_tic()
-	V_SortAndSplitEvents()
-
-Printf "File sort and split time (s) = "
-s_toc()
-
-// TODO -- currently, nothing is assigned, and nothing is assigned properly - just a 
-// fake assignment to get the TOF to use all of the data
+// TODO:
+// x- (YES - this is MUCH faster) what if I do the JointHistogram first, then break out the blocks of the 
+//  3D sliced data into the individual panels. Then the sort operation could be skipped,
+//  since it would implicitly be done during the histogram operation
+// x- go back and redimension as needed to get the 128 x 192 histogram to work
+// x- MatrixOp or a wave assignemt should be able to break up the 3D
 //
+
+		KillWaves/Z timePt,xLoc,yLoc
+		Duplicate/O eventTime timePt
+
+// TODO:
+// x- for processing, initially treat all of the tubes along x, and 128 pixels along y
+//   panels can be transposed later as needed to get the orientation correct
+
+		Duplicate/O tube xLoc
+		Duplicate/O location yLoc
+		
+		Redimension/D xLoc,yLoc,timePt	
+		
+//s_tic()
+//	V_SortAndSplitEvents()
+//
+//Printf "File sort and split time (s) = "
+//s_toc()
+
 
 //
 // switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
@@ -885,7 +969,7 @@ s_toc()
 // and redimension them to be sure that they are double precision
 //
 
-	V_SwitchTubeGroup(1)
+//	V_SwitchTubeGroup(1)
 
 //	
 //tic()
@@ -1049,7 +1133,8 @@ End
 //
 // for the bit shifts, see the decimal-binary conversion
 // http://www.binaryconvert.com/convert_unsigned_int.html
-// and for 64-bit values:
+//
+//  for 64-bit values:
 // http://calc.penjee.com
 //
 //		K0 = 536870912
@@ -1162,24 +1247,29 @@ s_tic()
 	
 	Make/O/L/U/N=(num) eventTime			//64 bit unsigned
 	Make/O/U/B/N=(num) tube,location		//8 bit unsigned
+
+// MultiThread is about 10x faster than the for loop
+ MultiThread tube = (V_Events[p]) & 0xFF	
+ MultiThread location = (V_Events[p] >> 8 ) & 0xFF	
+ MultiThread eventTime = (V_Events[p] >> 16)
 	
-	for(ii=0;ii<num;ii+=1)
-		val = V_Events[ii]
-		
-//		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
-//		b2 = (val >> 48 ) & 0xFF	
-//		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
-
-		b1 = val & 0xFF
-		b2 = (val >> 8) & 0xFF
-		btime = (val >> 16)
-
-
-		tube[ii] = b1
-		location[ii] = b2
-		eventTime[ii] = btime
-		
-	endfor
+//	for(ii=0;ii<num;ii+=1)
+//		val = V_Events[ii]
+//		
+////		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
+////		b2 = (val >> 48 ) & 0xFF	
+////		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
+//
+//		b1 = val & 0xFF
+//		b2 = (val >> 8) & 0xFF
+//		btime = (val >> 16)
+//
+//
+//		tube[ii] = b1
+//		location[ii] = b2
+//		eventTime[ii] = btime
+//		
+//	endfor
 
 Printf "File decode time (s) = "
 s_toc()
@@ -1601,6 +1691,8 @@ EndMacro
 //End
 
 
+// this is not used - it now conflicts with the name of a built-in function in Igor 7
+//
 Function xJointHistogram(w0,w1,hist,index)
 	wave w0,w1,hist,index
  
@@ -1685,6 +1777,13 @@ End
 
 
 ////////////// Post-processing of the event mode data
+//
+//
+// TODO:
+// -- this is ALL geared towards ordela event mode data and the 6.7s errors, and bad signal
+//   I don't know if I'll need any of this for the VSANS event data.
+//
+//
 Proc V_ShowEventCorrectionPanel()
 	DoWindow/F V_EventCorrectionPanel
 	if(V_flag ==0)
