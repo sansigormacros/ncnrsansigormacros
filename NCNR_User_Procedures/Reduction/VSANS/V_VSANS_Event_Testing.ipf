@@ -52,13 +52,13 @@
 // (manually? ugh.)
 //
 
-
 //
-Structure eventWord
-	uchar eventTime[6]
-	uchar location
-	uchar tube
-endStructure
+////
+//Structure eventWord
+//	uchar eventTime[6]
+//	uchar location
+//	uchar tube
+//endStructure
 
 
 

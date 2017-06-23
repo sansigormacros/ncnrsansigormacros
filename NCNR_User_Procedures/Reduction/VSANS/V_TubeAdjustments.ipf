@@ -7,28 +7,58 @@
 //
 // but the fundamental process is the same, and can be translated into proper functions as needed
 //
+//
+
+
+//
+// TODO
+// -- need a way to generate the known, physical dimensions of the slots
+// Make/O/D/N=5 peak_spacing_mm_ctr
+// peak_spacing_mm_ctr = {-350,-190,0,190,350} (to be filled in with the correct measurements, 
+//   possibly different for each panel)
+//
+// -- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
+//   procedures to identify the peak positions.
+//
+// -- fit with either gauss or lor function to get non-integer pixel values for the peak locations
+//
+// -- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
+//    custom fit function and guess some good starting values for peak height, location, etc.
+// 
+//
+// -- find a way to display all of the results - in a way that can quickly identify any fits
+//    that may be incorrect
+//
+//
 
 
 
 // the main routines are:
 
 //(1)
-//to get from individual tubes to an array
-//	Tubes_to_Array()			
+//
+// to get from an array to individual tubes
+// V_ArrayToTubes(detector)
+//
+// (not needed) to get from individual tubes to an array
+//	V_Tubes_to_Array()			
 
 //(2)
 // then to locate all of the peak positions
-//	MakeTableForPeaks(numTube,numPeak)		
-//	Identify_AllPeaks()
+//	V_MakeTableForPeaks(numTube,numPeak)		
+//	V_Identify_AllPeaks()
 //		AutoFindPeaksCustom()		// if Identify_AllPeaks  doesn't work -try this, setting the "noise" to 1 and smoothing to 2
 
-//(3)
+// (3) Refine the fitted peak positions
+//
+
+//(4)
 // fit to find all of the quadratic coefficients
 //	MakeTableForFitCoefs(numTube,numCoef)
 //	PlotFit_AllPeaks()
 
 
-//(4)
+//(5)
 // then pick a display method
 //
 //	Make_mm_tubes()
@@ -53,10 +83,7 @@
 
 
 
-
-
-
-
+//
 // (0) -- what I start with:
 // -- a table of the mm spacing of the slots (20 of them)
 // -- masked data from each of the (8) tubes
@@ -65,7 +92,25 @@
 //   distances are relative to that zero point. This is a necessary reference point.
 //
 
+// TODO
+// -- need a routine to set up the actual measurements of the slot positions
+//
+//
+// TODO
+// -- the slot positioning may be different for the L/R and T/B detectors
+//
+Proc V_SetupSlotDimensions()
+	Make/O/D/N=5 peak_spacing_mm_ctr
+	peak_spacing_mm_ctr = {-350,-190,0,190,350}
+	DoWindow/F Real_mm_Table
+	if(V_Flag == 0)
+		Edit/N=Real_mm_Table peak_spacing_mm_ctr
+	endif
+End
 
+
+
+//
 // (1) -- get the individual tubes into an array
 //
 //
@@ -84,6 +129,7 @@ Proc V_Tubes_to_Array()
 	ModifyImage pack ctab= {*,*,ColdWarm,0}
 End
 
+// or the other way around
 Proc V_ArrayToTubes(wStr)
 	String wStr
 	
@@ -93,6 +139,7 @@ Proc V_ArrayToTubes(wStr)
 	Variable dim0,dim1
 	dim0 = DimSize($wStr,0)
 	dim1 = DimSize($wStr,1)
+
 	
 	Make/O/D/N=128 tube_pixel
 	tube_pixel = p
@@ -135,10 +182,15 @@ End
 //¥Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
 //
 Proc V_MakeTableForPeaks(numTube,numPeak)
-	Variable numTube,numPeak
+	Variable numTube=48,numPeak=5
 	
-	Make/O/D/N=(numPeak,numTube) PeakTableX,peakTableY		//*2 to store x-location and peak height (y)
-	Edit peakTableX
+	Make/O/D/N=(numPeak,numTube) PeakTableX,PeakTableY		//*2 to store x-location and peak height (y)
+	
+	DoWindow/F Peak_Pixel_Loc
+	if(V_flag == 0)
+		Edit/N=Peak_Pixel_Loc peakTableX
+	endif
+	DoAlert 0, "Load the Package: Analysis->MultiPeak Fitting->MultiPeak Fitting 2"
 End
 
 Proc V_Identify_AllPeaks()
@@ -175,10 +227,93 @@ Proc V_Identify_Peaks(tubeStr,ind)
 
 	Sort WA_PeakCentersX WA_PeakCentersY,WA_PeakCentersX
 	
-	peakTableX[][ind] = WA_PeakCentersX[p]
-	peakTableY[][ind] = WA_PeakCentersY[p]
+	peakTableX[][ind] = WA_PeakCentersX[p]		// the peak position
+	peakTableY[][ind] = WA_PeakCentersY[p]		// the peak height
 	
 End
+
+
+
+
+// ADD
+// a step to refine the peak positioning - currently an integer value
+//  fit with a gauss or lorentzian
+
+// CurveFit/M=2/W=0/TBOX=(0x310) lor, tube47[29,53]/X=tube_pixel[29,53]/D
+
+//CurveFit/M=2/W=0 lor, tube47[29,53]/X=tube_pixel[29,53]/D
+//fit_tube47= W_coef[0]+W_coef[1]/((x-W_coef[2])^2+W_coef[3])
+//W_coef={-20.37,876.94,40.078,0.5201}
+//W_sigma={6.52,47.3,0.0241,0.0308}
+
+Proc V_MakeTableForRefinedFit(numTube,numPeak)
+	Variable numTube=48,numPeak=5
+	
+	Make/O/D/N=(numPeak,numTube) position_refined,position_refined_err		//
+	
+	DoWindow/F Refined_Positions
+	if(V_flag == 0)
+		Edit/N=Refined_Positions position_refined
+	endif
+End
+
+Proc V_Refine_All_PeakPos()
+
+	Variable ii,numTubes=48
+	
+	ii=0
+	do
+		V_Refine_PeakPos(ii)
+		ii+=1
+	while(ii<numTubes)
+
+End
+
+
+//CurveFit/M=2/W=0 lor, tube47[29,53]/X=tube_pixel[29,53]/D
+//fit_tube47= W_coef[0]+W_coef[1]/((x-W_coef[2])^2+W_coef[3])
+
+Proc V_Refine_PeakPos(ind)
+	Variable ind
+	
+// TODO
+// -- hard-wired for 5 peaks
+
+	Variable ii,lo,hi
+	
+	
+	ii=0
+	do
+	
+		if(ii==0)
+		// 1st peak
+		// define fitting range pixels (integer)
+			lo = 0
+		else
+			lo = trunc(0.5*(peakTableX[ii-1][ind] + peakTableX[ii][ind]))
+		endif
+		
+		if(ii==4)
+			hi = numpnts(tube_pixel)-1
+		else
+			hi = trunc(0.5*(peakTableX[ii][ind] + peakTableX[ii+1][ind]))
+		endif
+		
+		// do I need initial guesses?
+		CurveFit/M=0/W=2 lor, $("tube"+num2str(ind))[lo,hi]/X=tube_pixel[lo,hi]/D
+		
+		position_refined[ii][ind] = W_coef[2]
+		position_refined_err[ii][ind] = W_sigma[2]
+
+		ii += 1
+
+	while(ii < 5)
+	
+End
+
+
+
+
 
 // -- save a copy of the root:WA_PeakCentersY,root:WA_PeakCentersX values
 //    for later in case the fitting failed, then you can go back and re-do
@@ -218,37 +353,42 @@ End
 
 
 Proc V_MakeTableForFitCoefs(numTube,numCoef)
-	Variable numTube,numCoef
+	Variable numTube=48,numCoef=3
 	
-	Make/O/D/N=(numCoef,numTube) TubeCoefTable,TubeSigmaTable		//
-	Edit TubeCoefTable
+	Make/O/D/N=(numTube,numCoef) TubeCoefTable,TubeSigmaTable		//
+	
+	DoWindow/F Quad_Coefficients
+	if(V_flag == 0)
+		Edit/N=Quad_Coefficients TubeCoefTable
+	endif
 End
 
-Proc V_PlotFit_AllPeaks()
+Proc V_PlotFit_AllPeakPosition()
 
 	Variable ii,numTubes=48
 	
 	ii=0
 	do
-		V_PlotFit_Peaks(ii)
+		V_PlotFit_PeakPosition(ii)
 		ii+=1
 	while(ii<numTubes)
 
 End
 
-Proc V_PlotFit_Peaks(ind)
+Proc V_PlotFit_PeakPosition(ind)
 	Variable ind
 	
-	//hopefully 20 points - need better control of this
 	Duplicate/O WA_PeakCentersX, tmpX
 	
-	tmpX = peakTableX[p][ind]
-	Display peak_spacing_mm_ctr vs tmpX
+//	tmpX = peakTableX[p][ind]
+	tmpX = position_refined[p][ind]
+//	Display peak_spacing_mm_ctr vs tmpX
 	
-	CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=tmpX/D
+//	CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=tmpX/D
+	CurveFit/M=0/W=2 poly 3, peak_spacing_mm_ctr/X=tmpX/D
 	
-	TubeCoefTable[][ind] = W_coef[p]
-	TubeSigmaTable[][ind] = W_sigma[p]
+	TubeCoefTable[ind][] = W_coef[q]
+	TubeSigmaTable[ind][] = W_sigma[q]
 	
 End
 
@@ -303,7 +443,7 @@ Proc V_Make_mm_tubes()
 	ii=1
 	do
 		Duplicate $("tube"+num2str(ii)) $("tube"+num2str(ii)+"_mm")
-		$("tube"+num2str(ii)+"_mm") = V_TubePix_to_mm(TubeCoefTable[0][ii-1],TubeCoefTable[1][ii-1],TubeCoefTable[2][ii-1],p)
+		$("tube"+num2str(ii)+"_mm") = V_TubePix_to_mm(TubeCoefTable[ii-1][0],TubeCoefTable[ii-1][1],TubeCoefTable[ii-1][2],p)
 		ii+=1
 	while(ii<=numTubes)
 	
@@ -330,7 +470,7 @@ Proc V_Append_Adjusted_mm()
 		duplicate/O $("tube"+num2str(ii)+"_mm") $("edge"+num2str(ii)+"_mm")
 		InsertPoints 0,1, $("edge"+num2str(ii)+"_mm")		//needs to be one point longer
 	// be sure to use the correct set of coefficients
-		$("edge"+num2str(ii)+"_mm")[0] = V_TubePix_to_mm(TubeCoefTable[0][0],TubeCoefTable[1][0],TubeCoefTable[2][0],-1)
+		$("edge"+num2str(ii)+"_mm")[0] = V_TubePix_to_mm(TubeCoefTable[0][0],TubeCoefTable[0][1],TubeCoefTable[0][2],-1)
 	
 		AppendImage $("tube"+num2str(ii)+"_mm_mat") vs {*,$("edge"+num2str(ii)+"_mm")}
 		ModifyImage $("tube"+num2str(ii)+"_mm_mat") ctab= {*,*,ColdWarm,0}
@@ -563,4 +703,346 @@ Function V_DemoPlotXYZAsImage()
 	Make/O edgesY; V_MakeEdgesWave(centersY, edgesY)	// Create Y edges wave
 	Display; AppendImage mat vs {edgesX,edgesY}
 End
+
+
+
+////////////////////////////
+
+Proc V_TubeCoefPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(973,45,1156,535)/K=1
+	DoWindow/C V_TubeCoefPanel
+//	ShowTools/A
+
+	SetDrawLayer UserBack
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,58,"(1)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,108,"(2)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,158,"(3)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,208,"(4)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,258,"(5)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,308,"(6)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,358,"(7)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,408,"(8)"
+	SetDrawEnv fsize= 14,fstyle= 1
+	DrawText 5,458,"(9)"
+			
+	Button button_0,pos={30.00,40.00},size={120.00,20.00},proc=V_Setup_MasksButton,title="Setup"
+	Button button_1,pos={30.00,90.00},size={120.00,20.00},proc=V_ArrayToTubesButton,title="Array to Tubes"
+	Button button_2,pos={30.00,140.00},size={120.00,20.00},proc=V_TableForPeaksButton,title="Table for Peaks"
+	Button button_3,pos={30.00,190.00},size={120.00,20.00},proc=V_IdentifyPeaksButton,title="Identify Peaks"
+	Button button_4,pos={30.00,240.00},size={120.00,20.00},proc=V_RefineTableButton,title="Refine Peak Table"
+	Button button_5,pos={30.00,290.00},size={120.00,20.00},proc=V_RefinePeaksButton,title="Refine Peaks"
+
+	Button button_6,pos={30.00,340.00},size={120.00,20.00},proc=V_QuadFitTableButton,title="Table for Quad"
+	Button button_7,pos={30.00,390.00},size={120.00,20.00},proc=V_QuadFitButton,title="Fit to Quad"
+	Button button_8,pos={30.00,440},size={120.00,20.00},proc=V_PeakPlotButton,title="Plot Peaks"
+	
+EndMacro
+
+
+Function V_PeakPlotButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_OpenPeakResultsGraph()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_TableForPeaksButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_MakeTableForPeaks()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_IdentifyPeaksButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_Identify_AllPeaks()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_RefineTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_MakeTableForRefinedFit()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_RefinePeaksButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_Refine_All_PeakPos()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_QuadFitTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_MakeTableForFitCoefs()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_QuadFitButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_PlotFit_AllPeakPosition()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function V_Setup_MasksButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_SetupSlotDimensions()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function V_ArrayToTubesButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_ArrayToTubes()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+///////////////////////////
+
+
+Window Gizmo_refinedPositions() : GizmoPlot
+	PauseUpdate; Silent 1		// building window...
+	// Building Gizmo 7 window...
+	NewGizmo/W=(232,448,747,908)
+	ModifyGizmo startRecMacro=700
+	ModifyGizmo scalingOption=63
+	AppendToGizmo Surface=root:position_refined,name=surface0
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ srcMode,0}
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ surfaceCTab,Rainbow}
+	AppendToGizmo Axes=boxAxes,name=axes0
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={0,axisRange,-1,-1,-1,1,-1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={1,axisRange,-1,-1,-1,-1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={2,axisRange,-1,-1,-1,-1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={3,axisRange,-1,1,-1,-1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={4,axisRange,1,1,-1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={5,axisRange,1,-1,-1,1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={6,axisRange,-1,-1,1,-1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={7,axisRange,1,-1,1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={8,axisRange,1,-1,-1,1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={9,axisRange,-1,1,-1,1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={10,axisRange,-1,1,1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={11,axisRange,-1,-1,1,1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisScalingMode,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisColor,0,0,0,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={0,ticks,2}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={1,ticks,2}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={2,ticks,2}
+	ModifyGizmo modifyObject=axes0,objectType=Axes,property={-1,Clipped,0}
+	ModifyGizmo setDisplayList=0, object=surface0
+	ModifyGizmo setDisplayList=1, object=axes0
+	ModifyGizmo autoscaling=1
+	ModifyGizmo currentGroupObject=""
+	ModifyGizmo showInfo
+	ModifyGizmo infoWindow={651,303,1468,602}
+	ModifyGizmo endRecMacro
+	ModifyGizmo SETQUATERNION={0.573113,-0.115160,-0.275160,0.763255}
+EndMacro
+
+Window Gizmo_DetPanel() : GizmoPlot
+	PauseUpdate; Silent 1		// building window...
+	// Building Gizmo 7 window...
+	NewGizmo/W=(96,290,611,750)
+	ModifyGizmo startRecMacro=700
+	ModifyGizmo scalingOption=63
+	AppendToGizmo Surface=root:slices_L,name=surface0
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ srcMode,0}
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ surfaceCTab,ColdWarm}
+	AppendToGizmo Axes=boxAxes,name=axes0
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={0,axisRange,-1,-1,-1,1,-1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={1,axisRange,-1,-1,-1,-1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={2,axisRange,-1,-1,-1,-1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={3,axisRange,-1,1,-1,-1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={4,axisRange,1,1,-1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={5,axisRange,1,-1,-1,1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={6,axisRange,-1,-1,1,-1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={7,axisRange,1,-1,1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={8,axisRange,1,-1,-1,1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={9,axisRange,-1,1,-1,1,1,-1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={10,axisRange,-1,1,1,1,1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={11,axisRange,-1,-1,1,1,-1,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisScalingMode,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisColor,0,0,0,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={0,ticks,3}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={1,ticks,3}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={2,ticks,3}
+	ModifyGizmo modifyObject=axes0,objectType=Axes,property={-1,Clipped,0}
+	AppendToGizmo Surface=root:position_refined,name=surface1
+	ModifyGizmo ModifyObject=surface1,objectType=surface,property={ fillMode,4}
+	ModifyGizmo ModifyObject=surface1,objectType=surface,property={ srcMode,0}
+	ModifyGizmo ModifyObject=surface1,objectType=surface,property={ surfaceCTab,Rainbow}
+	ModifyGizmo setDisplayList=0, object=axes0
+	ModifyGizmo setDisplayList=1, object=surface0
+	ModifyGizmo autoscaling=1
+	ModifyGizmo currentGroupObject=""
+	ModifyGizmo showInfo
+	ModifyGizmo infoWindow={550,23,1367,322}
+	ModifyGizmo endRecMacro
+	ModifyGizmo SETQUATERNION={0.499484,-0.278571,-0.448869,0.686609}
+EndMacro
+
+
+////////////////////////////////////
+//
+// An easy way to see the fit results to check if the peak locations all make sense.
+//
+Proc V_OpenPeakResultsGraph()
+
+	DoWindow/F V_PeakResultsGraph
+	if(V_flag == 0)
+		Make/O/D/N=5 tmpPeak,dummyLevel
+		Make/O/D/N=128 tmpTube
+		
+		tmpPeak = position_refined[p][0]
+		dummyLevel = WaveMax(tube0)
+		tmpTube = tube0
+		
+		V_PeakResultsGraph()
+	endif
+
+End
+
+Window V_PeakResultsGraph() : Graph
+	PauseUpdate; Silent 1		// building window...
+	Display /W=(750,45,1161,376)/K=1 tmpTube vs tube_pixel
+	
+	ControlBar 50
+	
+	
+	AppendToGraph dummyLevel vs tmpPeak
+	ModifyGraph mode(dummyLevel)=3
+	ModifyGraph marker(dummyLevel)=19
+	ModifyGraph rgb(dummyLevel)=(1,16019,65535)
+	
+	SetVariable setvar0,pos={10.00,10.00},size={120.00,14.00},proc=V_TubePeakSetVarProc,title="Tube"
+	SetVariable setvar0,limits={0,47,1},value= _NUM:0
+	
+	Label left "Counts"
+	Label bottom "Pixel Number"
+EndMacro
+
+
+Function V_TubePeakSetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+			Wave tmpPeak = tmpPeak
+			Wave dummyLevel = dummyLevel
+			Wave tmpTube = tmpTube
+			
+			Wave pos_ref = position_refined
+			Wave tube = $("tube"+num2str(dval))
+			
+			tmpPeak = pos_ref[p][dval]
+			dummyLevel = WaveMax(tube)
+			tmpTube = tube
+		
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+////////////////////////////////////
+
 
