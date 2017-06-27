@@ -126,7 +126,7 @@ End
 //
 Window VSANS_DataPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(37,45,1038,719) /N=VSANS_Data
+	NewPanel /W=(37,45,1038,719) /K=1 /N=VSANS_Data
 //	ShowTools/A
 	ModifyPanel cbRGB=(65535,60076,49151)
 

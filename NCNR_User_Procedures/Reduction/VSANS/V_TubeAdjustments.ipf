@@ -97,14 +97,15 @@
 //
 //
 // TODO
-// -- the slot positioning may be different for the L/R and T/B detectors
+// -- the slot positioning is different for the L/R and T/B detectors
 //
 Proc V_SetupSlotDimensions()
-	Make/O/D/N=5 peak_spacing_mm_ctr
-	peak_spacing_mm_ctr = {-350,-190,0,190,350}
+	Make/O/D/N=5 peak_spacing_mm_ctr_TB,peak_spacing_mm_ctr_LR
+	peak_spacing_mm_ctr_TB = {-159.54,-80.17,0,80.17,159.54}
+	peak_spacing_mm_ctr_LR = {-379.4,-189.7,0,189.7,380.2}
 	DoWindow/F Real_mm_Table
 	if(V_Flag == 0)
-		Edit/N=Real_mm_Table peak_spacing_mm_ctr
+		Edit/N=Real_mm_Table peak_spacing_mm_ctr_TB,peak_spacing_mm_ctr_LR
 	endif
 End
 
@@ -132,6 +133,8 @@ End
 // or the other way around
 Proc V_ArrayToTubes(wStr)
 	String wStr
+	
+	String/G root:detUsed = wStr
 	
 	Variable ii,numTubes=48
 	String str="tube"
@@ -255,6 +258,7 @@ Proc V_MakeTableForRefinedFit(numTube,numPeak)
 	if(V_flag == 0)
 		Edit/N=Refined_Positions position_refined
 	endif
+	
 End
 
 Proc V_Refine_All_PeakPos()
@@ -360,6 +364,16 @@ Proc V_MakeTableForFitCoefs(numTube,numCoef)
 	DoWindow/F Quad_Coefficients
 	if(V_flag == 0)
 		Edit/N=Quad_Coefficients TubeCoefTable
+	endif
+
+	String detUsed = root:detUsed
+	
+	if(strsearch(detUsed,"L",0) >= 0 || strsearch(detUsed,"R",0) >= 0)
+		Duplicate/O 	peak_spacing_mm_ctr_LR, peak_spacing_mm_ctr
+		DoAlert 0,"Using peak spacing for L/R"
+	else
+		Duplicate/O 	peak_spacing_mm_ctr_TB, peak_spacing_mm_ctr
+		DoAlert 0,"Using peak spacing for T/B"
 	endif
 End
 
@@ -1044,5 +1058,34 @@ Function V_TubePeakSetVarProc(sva) : SetVariableControl
 End
 
 ////////////////////////////////////
+//
+// TODO 
+// -- document the "simple" save of the detector panels for import and subsequent fitting.
+//
+// takes the data from RAW, by default. This is OK, since even though whatever is in the calibration data
+// of the file is used when loading into RAW, it is only used for the calculation of q. The actual data
+// array is unchanged. Alternatively, the data could be pulled from the RawVSANS folder after a
+// file catalog operation
 
+Macro V_CopyDetectorsToRoot()
 
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data data_B
+
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_ML:data data_ML
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MR:data data_MR
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MT:data data_MT
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MB:data data_MB
+
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data data_FL
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data data_FR
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FT:data data_FT
+	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:data data_FB
+	
+End
+
+Macro V_SaveDetectorsITX()
+// binary save makes each wave an individual file. Igor text groups them all into one file.
+//	Save/C data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT
+	Save/T/M="\r\n" data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT as "data_B++.itx"
+
+End
