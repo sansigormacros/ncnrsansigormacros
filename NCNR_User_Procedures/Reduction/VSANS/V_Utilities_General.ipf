@@ -63,7 +63,7 @@ Proc V_ChangeDisplay(type)
 	endif
 End
 
-// TODO
+// 
 //
 // very simple function to look for something in a work folder
 // -- only checks for FR data to exist, assumes everything else is there
@@ -221,15 +221,15 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 End
 
 
-// TODO:
+// 
 // x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
 //    it still thinks there is (1) item there.
-// -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
+// x- if I replace the semicolon with a comma, it thinks there are two folders present and appears
 //    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
 //
-// -- for use with progress bar, kills only one folder, returns the new number of folders left
-// -- if n(in) = n(out), nothing was able to be killed, so return "done" code
+// x- for use with progress bar, kills only one folder, returns the new number of folders left
+// x- if n(in) = n(out), nothing was able to be killed, so return "done" code
 Function V_CleanOutOneRawVSANS()
 
 	SetDataFolder root:Packages:NIST:VSANS:RawVSANS:
@@ -493,7 +493,7 @@ Function V_LoadPlotAndDisplayRAW(increment)
 		gLastLoad = hdfDF
 	endif
 
-	// TODO
+	// 
 	// x- update the 1D plotting as needed. these are SANS calls (OK for now, but will need to be better)
 	//do the average and plot (either the default, or what is on the panel currently)
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
@@ -601,7 +601,7 @@ Function/S V_FindFileFromRunNumber(num)
 End
 
 //
-// TODO x- for VSANS Nexus files, how do I quickly identify if a file is
+//  x- for VSANS Nexus files, how do I quickly identify if a file is
 //   RAW VSANS data? I don't want to generate any errors, but I want to quickly
 //   weed out the reduced data sets, etc. from file catalogs.
 //	(check the instrument name...)
@@ -643,7 +643,7 @@ Function V_CheckIfRawData(fname)
 
 End
 
-// TODO x- need to fill in correctly by determining this from the INTENT field
+//  x- need to fill in correctly by determining this from the INTENT field
 //
 Function V_isTransFile(fname)
 	String fname
@@ -863,7 +863,7 @@ End
 // returns a list of raw data files in the catPathName directory on disk
 // - list is SEMICOLON-delimited
 //
-// TODO: decide how to do this...
+//  decide how to do this...
 // (1)
 // checks each file in the directory to see if it is a RAW data file by
 // call to V_CheckIfRawData() which currently looks for the instrument name in the file.
@@ -874,7 +874,8 @@ End
 // as was done for VAX files, look for a specific string in the file name as written by the acquisition
 //  (was .saN), now key on ".nxs.ngv"?
 //
-// called by PatchFiles.ipf, Tile_2D.ipf
+// ** use method (2), reading each file is just way too slow
+//
 //
 Function/S V_GetRawDataFileList()
 	
@@ -915,8 +916,8 @@ Function/S V_GetRawDataFileList()
 End
 
 //
-// TODO:
-// -- does this need to be more sophisticated?
+// 
+// x- does this need to be more sophisticated?
 //
 // simple "not" of V_GetRawDataFileList()
 Function/S V_Get_NotRawDataFileList()

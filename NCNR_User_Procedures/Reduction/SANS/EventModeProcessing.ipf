@@ -1550,7 +1550,7 @@ Function LoadEvents()
 				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously)
 				if(dataval == 0 && RemoveBadEvents == 1)
 					numRemoved += 1
-					//Print "zero at ii= ",ii
+//					Print "zero at ii= ",ii
 					break		//don't increment ii
 				endif
 				

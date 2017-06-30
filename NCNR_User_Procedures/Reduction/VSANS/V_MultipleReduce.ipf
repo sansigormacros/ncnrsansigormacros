@@ -118,7 +118,7 @@ EndMacro
 //and contains the full path:file;vers for each file in the list
 //and ensures that files in returned list are RAW data , and can be found on disk
 //
-Function/S  FullNameListFromFileList(list)
+Function/S  V_FullNameListFromFileList(list)
 	String list
 	
 	String newList="",pathStr="",sepStr=","

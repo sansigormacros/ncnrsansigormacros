@@ -48,8 +48,11 @@
 //
 
 
-// TODO 
-// x- these dimensions are hard-wired (OK)
+//  
+// x- these dimensions are hard-wired (OK for now, will need to be additional definitions for Back detector)
+//
+// XBINS is for an individual panel
+// NTUBES is the total number of tubes = (4)(48)=192
 //
 Constant XBINS=48
 Constant NTUBES=192
@@ -62,6 +65,7 @@ Static Constant MODE_TOF = 3
 
 
 
+// Initialization of the VSANS event mode panel
 Proc V_Show_Event_Panel()
 	DoWindow/F VSANS_EventModePanel
 	if(V_flag ==0)
@@ -70,7 +74,7 @@ Proc V_Show_Event_Panel()
 	EndIf
 End
 
-// TODO:
+// 
 //  x- need an index table with the tube <-> panel correspondence
 //    NO, per Phil, the tube numbering is sequential:
 //
@@ -126,22 +130,26 @@ Function V_Init_Event()
 	Duplicate/O slicedData dispsliceData
 
 
-// for decimation
-	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 150		// 150 MB considered too large
+// for decimation (not used for VSANS - may be added back in the future
+	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 1500		// 1500 MB considered too large
 	Variable/G root:Packages:NIST:VSANS:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_t_longest_decimated = 0
 
-// for large file splitting
+// for large file splitting (unused)
 	String/G root:Packages:NIST:VSANS:Event:gSplitFileList = ""		// a list of the file names as split
 	
-// for editing
+// for editing (unused)
 	Variable/G root:Packages:NIST:VSANS:Event:gStepTolerance = 5		// 5 = # of standard deviations from mean. See PutCursorsAtStep()
 	
 	SetDataFolder root:
 End
 
 
-
+//
+// the main panel for VSANS Event mode
+// -- a duplicate of the SANS panel, with the functions I'm not using disabled.
+//  could be added back in the future
+//
 Proc VSANS_EventModePanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(82,44,884,664)/N=VSANS_EventModePanel/K=2
@@ -190,7 +198,7 @@ Proc VSANS_EventModePanel()
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
 	Button button1,pos={389,103},size={120,20},fSize=12,proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
-
+// NEW FOR VSANS
 	Button button21,pos={580,70},size={120,20},proc=V_SplitToPanels_Button,title="Split to Panels"
 	Button button22,pos={580,90},size={120,20},proc=V_GraphPanels_Button,title="Show Panels"
 
@@ -239,7 +247,10 @@ Proc VSANS_EventModePanel()
 	SetActiveSubwindow ##
 EndMacro
 
-
+//
+// takes the data that is loaded and binned as a fake
+// (192 x 128) panel to the four LRTB panels, each with 48 tubes
+//
 Function V_SplitToPanels_Button(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -256,6 +267,10 @@ Function V_SplitToPanels_Button(ba) : ButtonControl
 	return 0
 End
 
+
+//
+// after splitting the data into the 4 panels, draws a simple graph to display the panels
+//
 Function V_GraphPanels_Button(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -271,6 +286,7 @@ Function V_GraphPanels_Button(ba) : ButtonControl
 
 	return 0
 End
+
 
 // mode selector
 //Static Constant MODE_STREAM = 0
@@ -476,7 +492,13 @@ Function V_ProcessEventLog_Button(ctrlName) : ButtonControl
 	return(0)
 end
 
+//
 // for oscillatory mode
+//
+// Allocate the space for the data as if it was a single 192 x 128 pixel array.
+// The (4) 48-tube panels will be split out later. this means that as defined,
+// XBINS is for an individual panel
+// NTUBES is the total number of tubes = (4)(48)=192
 //
 Function V_Osc_ProcessEventLog(ctrlName)
 	String ctrlName
@@ -613,6 +635,12 @@ End
 // - see the oscillatory mode  - and sort the events here, then immediately re-index for the histogram
 // - but with the added complication that I need to always remember to index for the histogram, every time
 // - since I don't know if I've sorted or un-sorted. Osc mode always forces a re-sort and a re-index
+//
+//
+// Allocate the space for the data as if it was a single 192 x 128 pixel array.
+// The (4) 48-tube panels will be split out later. this means that as defined,
+// XBINS is for an individual panel
+// NTUBES is the total number of tubes = (4)(48)=192
 //
 Function V_Stream_ProcessEventLog(ctrlName)
 	String ctrlName
@@ -803,6 +831,7 @@ Function V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	return(0)	
 End
 
+
 // TODO
 // either get this to work, or scrap it entirely. it currently isn't on the popup
 // so it can't be accessed
@@ -876,8 +905,8 @@ End
 
 
 
-// TODO:
-//
+// 
+// -- The "file too large" check has currently been set to 1.5 GB
 //
 //	
 Function V_LoadEventLog_Button(ctrlName) : ButtonControl
@@ -886,7 +915,7 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	NVAR mode=root:Packages:NIST:VSANS:Event:gEvent_mode
 	Variable err=0
 	Variable fileref,totBytes
-	NVAR fileTooLarge = root:Packages:NIST:VSANS:Event:gEventFileTooLarge		//limit load to 150MB
+	NVAR fileTooLarge = root:Packages:NIST:VSANS:Event:gEventFileTooLarge		//limit load to 1500MB
 
 	SVAR filename = root:Packages:NIST:VSANS:Event:gEvent_logfile
 	NVAR nslices = root:Packages:NIST:VSANS:Event:gEvent_nslices
@@ -909,19 +938,20 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 		return(1)
 	endif
 
-// TODO - decide if I want (or need) to keep this	
+//  keep this	, but set to 1.5 GB
+// since I'm now in 64-bit space
 /// Abort if the files are too large
-//	Open/R fileref as fileName
-//		FStatus fileref
-//	Close fileref
+	Open/R fileref as fileName
+		FStatus fileref
+	Close fileref
 //
-//	totBytes = V_logEOF/1e6		//in MB
-//	if(totBytes > fileTooLarge)
-//		sprintf abortStr,"File is %g MB, larger than the limit of %g MB. Split and Decimate.",totBytes,fileTooLarge
-//		Abort abortStr
-//	endif
+	totBytes = V_logEOF/1e6		//in MB
+	if(totBytes > fileTooLarge)
+		sprintf abortStr,"File is %g MB, larger than the limit of %g MB. Split and Decimate.",totBytes,fileTooLarge
+		Abort abortStr
+	endif
 //	
-//	Print "TotalBytes = ",totBytes
+	Print "TotalBytes (MB) = ",totBytes
 	
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
@@ -935,10 +965,10 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 // Now, I have tube, location, and timePt (no units yet)
 // assign to the proper panels
 
-// TODO:
-// x- (YES - this is MUCH faster) what if I do the JointHistogram first, then break out the blocks of the 
-//  3D sliced data into the individual panels. Then the sort operation could be skipped,
-//  since it would implicitly be done during the histogram operation
+// 
+// x- (YES - this is MUCH faster)  if I do the JointHistogram first, then break out the blocks of the 
+//  3D sliced data into the individual panels. Then the sort operation can be skipped,
+//  since it is implicitly be done during the histogram operation
 // x- go back and redimension as needed to get the 128 x 192 histogram to work
 // x- MatrixOp or a wave assignemt should be able to break up the 3D
 //
@@ -946,7 +976,7 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 		KillWaves/Z timePt,xLoc,yLoc
 		Duplicate/O eventTime timePt
 
-// TODO:
+// 
 // x- for processing, initially treat all of the tubes along x, and 128 pixels along y
 //   panels can be transposed later as needed to get the orientation correct
 
@@ -961,17 +991,17 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 //Printf "File sort and split time (s) = "
 //s_toc()
 
-
 //
 // switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
 //
 // copy the set of tubes over to the "active" set that is to be histogrammed
 // and redimension them to be sure that they are double precision
 //
-
+//
 //	V_SwitchTubeGroup(1)
-
+//
 //	
+
 //tic()
 	Wave timePt=timePt
 	Wave xLoc=xLoc
@@ -980,6 +1010,8 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 //toc()
 	
 	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//timeStep in clock frequency (Hz)
+	Printf "Time Step = 1/Frequency (ns) = %g\r",(1/gResol)*1e9
+	
 /////
 // now do a little processing of the times based on the type of data
 //	
@@ -1002,6 +1034,7 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	endif
 
 // MODE_TISANE
+
 
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
@@ -1027,6 +1060,7 @@ End
 //
 // -- MUCH faster to count the number of lines to remove, then delete (N)
 // rather then delete them one-by-one in the do-loop
+//
 Function V_CleanupTimes(xLoc,yLoc,timePt)
 	Wave xLoc,yLoc,timePt
 
@@ -1075,7 +1109,7 @@ Function V_LogIntEvent_Proc(ctrlName,checked) : CheckBoxControl
 End
 
 
-// TODO (DONE)
+// (DONE)
 // this "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
 // interprets the data as being RGB - and so does nothing.
 // need to find a way around this
@@ -1136,6 +1170,8 @@ End
 //
 //  for 64-bit values:
 // http://calc.penjee.com
+//
+//
 //
 //		K0 = 536870912
 // 		Print (K0 & 0x08000000)/134217728 	//bit 27 only, shift by 2^27

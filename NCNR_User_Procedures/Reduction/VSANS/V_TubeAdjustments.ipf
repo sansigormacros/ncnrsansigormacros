@@ -11,22 +11,22 @@
 
 
 //
-// TODO
-// -- need a way to generate the known, physical dimensions of the slots
+// 
+// x- need a way to generate the known, physical dimensions of the slots
 // Make/O/D/N=5 peak_spacing_mm_ctr
 // peak_spacing_mm_ctr = {-350,-190,0,190,350} (to be filled in with the correct measurements, 
 //   possibly different for each panel)
 //
-// -- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
+// x- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
 //   procedures to identify the peak positions.
 //
-// -- fit with either gauss or lor function to get non-integer pixel values for the peak locations
+// x- fit with either gauss or lor function to get non-integer pixel values for the peak locations
 //
-// -- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
+// x- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
 //    custom fit function and guess some good starting values for peak height, location, etc.
 // 
 //
-// -- find a way to display all of the results - in a way that can quickly identify any fits
+// x- find a way to display all of the results - in a way that can quickly identify any fits
 //    that may be incorrect
 //
 //
@@ -92,12 +92,12 @@
 //   distances are relative to that zero point. This is a necessary reference point.
 //
 
-// TODO
-// -- need a routine to set up the actual measurements of the slot positions
+// 
+// x- need a routine to set up the actual measurements of the slot positions
 //
 //
-// TODO
-// -- the slot positioning is different for the L/R and T/B detectors
+// 
+// x- the slot positioning is different for the L/R and T/B detectors
 //
 Proc V_SetupSlotDimensions()
 	Make/O/D/N=5 peak_spacing_mm_ctr_TB,peak_spacing_mm_ctr_LR
@@ -280,8 +280,8 @@ End
 Proc V_Refine_PeakPos(ind)
 	Variable ind
 	
-// TODO
-// -- hard-wired for 5 peaks
+// 
+// x- hard-wired for 5 peaks
 
 	Variable ii,lo,hi
 	
@@ -409,11 +409,8 @@ End
 
 
 
-
 //¥Duplicate tube1 tube1_mm
 //¥tube1_mm = V_TubePix_to_mm(fit_coef[0][0],fit_coef[1][0],fit_coef[2][0],p)
-
-
 
 
 ////////
@@ -721,7 +718,10 @@ End
 
 
 ////////////////////////////
-
+//
+// Main entry - open the panel and go through
+// each of the steps for each of the detector panels
+//
 Proc V_TubeCoefPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(973,45,1156,535)/K=1
@@ -762,6 +762,8 @@ Proc V_TubeCoefPanel() : Panel
 EndMacro
 
 
+// a simple display of the refined results
+//
 Function V_PeakPlotButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -777,7 +779,8 @@ Function V_PeakPlotButton(ba) : ButtonControl
 	return 0
 End
 
-
+// generate the waves and the table
+//
 Function V_TableForPeaksButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -793,7 +796,9 @@ Function V_TableForPeaksButton(ba) : ButtonControl
 	return 0
 End
 
-
+// use the WM procedures to quickly identify the peak position (and height)
+// to be used in the refining fits
+//
 Function V_IdentifyPeaksButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -809,6 +814,8 @@ Function V_IdentifyPeaksButton(ba) : ButtonControl
 	return 0
 End
 
+// generate the waves and the table
+//
 Function V_RefineTableButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -824,6 +831,9 @@ Function V_RefineTableButton(ba) : ButtonControl
 	return 0
 End
 
+// using the initial peak locations from WM, refine the values
+// by fitting each individual peak
+//
 Function V_RefinePeaksButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -839,6 +849,9 @@ Function V_RefinePeaksButton(ba) : ButtonControl
 	return 0
 End
 
+// finally, with the peak positions, make waves and a table for the 
+// quadratic coefficients
+//
 Function V_QuadFitTableButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -854,6 +867,9 @@ Function V_QuadFitTableButton(ba) : ButtonControl
 	return 0
 End
 
+// fit all of the peak positions per tube vs. the actual mm locations to
+// obtain the quadratic coefficients
+//
 Function V_QuadFitButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -870,7 +886,8 @@ Function V_QuadFitButton(ba) : ButtonControl
 End
 
 
-
+// fill the waves and table with the hard-wired slot positions (mm)
+//
 Function V_Setup_MasksButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -887,7 +904,8 @@ Function V_Setup_MasksButton(ba) : ButtonControl
 End
 
 
-
+// convert the named detector array to 48 individual tube waves
+//
 Function V_ArrayToTubesButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -905,8 +923,9 @@ End
 
 
 ///////////////////////////
-
-
+//
+// unused - a simple line graph for each tube is much simpler
+//
 Window Gizmo_refinedPositions() : GizmoPlot
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
@@ -945,6 +964,10 @@ Window Gizmo_refinedPositions() : GizmoPlot
 	ModifyGizmo SETQUATERNION={0.573113,-0.115160,-0.275160,0.763255}
 EndMacro
 
+///////////////////////////
+//
+// unused - a simple line graph for each tube is much simpler
+//
 Window Gizmo_DetPanel() : GizmoPlot
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
@@ -1008,6 +1031,11 @@ Proc V_OpenPeakResultsGraph()
 
 End
 
+
+///////////////
+//
+// An easy way to see the fit results to check if the peak locations all make sense.
+//
 Window V_PeakResultsGraph() : Graph
 	PauseUpdate; Silent 1		// building window...
 	Display /W=(750,45,1161,376)/K=1 tmpTube vs tube_pixel
@@ -1027,7 +1055,9 @@ Window V_PeakResultsGraph() : Graph
 	Label bottom "Pixel Number"
 EndMacro
 
-
+//
+// cycle through the tubes
+//
 Function V_TubePeakSetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
@@ -1066,7 +1096,7 @@ End
 // of the file is used when loading into RAW, it is only used for the calculation of q. The actual data
 // array is unchanged. Alternatively, the data could be pulled from the RawVSANS folder after a
 // file catalog operation
-
+//
 Macro V_CopyDetectorsToRoot()
 
 	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data data_B
@@ -1083,6 +1113,8 @@ Macro V_CopyDetectorsToRoot()
 	
 End
 
+//
+//
 Macro V_SaveDetectorsITX()
 // binary save makes each wave an individual file. Igor text groups them all into one file.
 //	Save/C data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT

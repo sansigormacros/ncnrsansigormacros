@@ -13,14 +13,15 @@
 //**********************
 
 
-// TODO
+// 
 //
-// -- update this to be VSANS-specific, eliminating junk that is SANS only or VAX-specific
+// x- update this to be VSANS-specific, eliminating junk that is SANS only or VAX-specific
 //
 
 
-// TODO-- decide whether to automatically read in the mask, or not
-// -- there could be a default mask, or look for the mask that is speficied in the
+// 
+// x- decide whether to automatically read in the mask, or not (NO)
+// x- there could be a default mask, or look for the mask that is speficied in the
 // next file that is read in from the path
 Proc PickPath_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -173,7 +174,8 @@ Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
 	V_ChangeDisplay()
 End
 
-// TODO -- fill in with a proper reader that will display the mask(s)
+// 
+// - fill in with a proper reader that will display the mask(s)
 Proc ReadMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 

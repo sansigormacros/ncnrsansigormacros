@@ -20,8 +20,10 @@
 
 ///// LOADING
 
-// TODO - when mask is loaded, need to be sure to clean up the "extra" waves that may be present
-//  - the overlay and the currentTube waves since these are not overwritten or killed when new mask 
+// TODO 
+// -- when mask is loaded, need to be sure to clean up the "extra" waves that may be present
+//
+// -- the overlay and the currentTube waves since these are not overwritten or killed when new mask 
 //  data is read in from HDF. need to manually? check for these and delete then, or the data and
 //  mask overlay will be out of sync.
 //
@@ -49,12 +51,15 @@ End
 // all of the mask procedures together
 
 
-// TODO -- document the arrow keys moving the tube number and adding/deleting tubes from the mask
+// TODO
+// -- document the arrow keys moving the tube number and adding/deleting tubes from the mask
 //  this is done through a window hook function (LR moves tube number, up/down = add/delete)
 //
-// TODO -- make the arrow keys Igor 6 compatible - search for specialKeyCode or Keyboard Events in the help file
+// TODO
+// -- make the arrow keys Igor 6 compatible - search for specialKeyCode or Keyboard Events in the help file
 //     and what needs to be replaced for Igor 6
-// TODO -- for L/R panels, the maksing of columns should be sufficient. Tubes are vertical. For the T/B panels
+// TODO
+// -- for L/R panels, the maksing of columns should be sufficient. Tubes are vertical. For the T/B panels
 //         the L/R panels cast a vertical shadow (=vertical mask) AND the tubes are horizontal, so the individual
 //         tubes will likely need to be masked in a horizontal line too, per tube. ADD this in...
 
@@ -105,11 +110,13 @@ Function V_EditMask()
 End
 
 //
-// TODO - may need to adjust the display for the different pixel dimensions
+// TODO
+// -- may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
 //
-// TODO -- need buttons for:
-//		-- quit
+// TODO
+//  need buttons for:
+//		-- quit (to exit gracefully)
 //    -- help (button is there, fill in the content)
 //
 Proc V_MaskEditorPanel() : Panel
@@ -239,7 +246,7 @@ Function V_MaskWindowHook(s)
 //			String text = "\\Z24" + message
 //			Textbox /C/N=Message/W=KeyboardEventsGraph/A=MT/X=0/Y=15 text
 
-		// TODO:  this is all Igor-7 ONLY
+		// NOTE:  these special keyCodes are all Igor-7 ONLY
 
 // Note that I need to keep track of the index value since I'm intercepting the 
 // SetVariable event here. I need to keep the index in range.		
@@ -583,7 +590,7 @@ End
 //
 // overlay the mask
 //
-// TODO
+// 
 // x- remove the old mask first
 // x- make the mask "toggle" to remove it
 // x- go see SANS for color, implementation, etc.
@@ -715,11 +722,12 @@ End
 // file header. nothing more is needed (possibly)
 //
 //
-// TODO -- make the number of pixels GLOBAL
-// TODO -- there will be lots of work to do to develop the procedures necessary to actually generate the 
+// TODO
+// -- make the number of pixels GLOBAL
+//  x- there will be lots of work to do to develop the procedures necessary to actually generate the 
 //      9 data sets to become the MASK file contents. More complexity here than for the simple SANS case.
 //
-// TODO -- this is currently random 0|1 values, need to write an editor
+//  x- this is currently random 0|1 values, need to write an editor
 //
 // currently set up to use 1 = YES MASK == exclude the data
 //      and 0 = NO MASK == keep the data
@@ -831,7 +839,7 @@ end
 
 
 // TODO
-// currently, there are no dummy fill values or attributes for the fake MASK file
+// -- currently, there are no dummy fill values or attributes for the fake MASK file
 //
 Proc Setup_VSANS_MASK_Struct()
 

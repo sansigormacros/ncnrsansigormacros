@@ -183,7 +183,7 @@ Function V_TrimTestUpdate(Beg_pts, End_pts)
 	return(0)
 End
 
-// TODO
+// 
 // x- verify that the proper waves exist for the binning type
 //
 // x- the logic here is wrong. if the ToTrim folder is empty (As on startup)
@@ -202,7 +202,7 @@ Function V_DataFolderPlotPop(ctrlName,popNum,popStr) : PopupMenuControl
 	binType = V_BinTypeStr2Num(S_Value)
 	
 	
-	// TODO: x- need to update this to make sure that the data waves are present before plotting. This
+	//  x- need to update this to make sure that the data waves are present before plotting. This
 	//    currently looks in the ToTrim folder, but the binning could be wrong in the data folder
 	//    and will be an error...
 	
@@ -534,11 +534,11 @@ end
 //
 // take the waves, and convert to strings that can be added to the protocol
 //
-// TODO:
+// 
 // x- get the variables out of root:, and move it to Protocols
-// -- get the waves out of root:, and move it to Protocols
+// x- get the waves out of root:, and move it to Protocols
 // x- be sure that the variables are initialized (done in main initialization
-// -- link this to the panel?
+// x- link this to the panel?
 //
 Function V_TrimWaves2String()
 

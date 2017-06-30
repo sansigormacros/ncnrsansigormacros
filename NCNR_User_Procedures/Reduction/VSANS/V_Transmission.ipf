@@ -4,7 +4,7 @@
 
 
 // TODO
-//-- initialization
+// -- initialization
 // x- link to main panel
 //
 // ?? redesign the panel based on the CATALOG?
@@ -57,7 +57,8 @@ Window V_TransmissionPanel() : Panel
 	SetVariable setvar_8,limits={-inf,inf,0},value= VSANS_RED_VERSION
 EndMacro
 
-// TODO -- fill in the details
+// TODO
+// -- fill in the details
 // -- currently, I pick these from the Catalog, for speed
 // -- ? is the catalog current?
 // -- T error is not part of the Catalog - is that OK?

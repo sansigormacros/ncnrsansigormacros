@@ -108,13 +108,13 @@ Function V_PlotData_Panel()
 	
 End
 
-// TODO
+// 
 // x- winStr is currently hard-wired, but this may not be an issue
 Function V_Update1D_Graph(workType,binType)
 	String workType
 	Variable binType
 	
-	// TODO:
+	// 
 // x- "B" detector is currently skipped - Q is not yet calculated
 	String str,winStr="V_1D_Data",workPathStr
 	workPathStr = "root:Packages:NIST:VSANS:"+worktype
@@ -443,7 +443,7 @@ end
 //
 // V_1D_Data
 //
-// TODO
+// 
 // x- need to set binType
 // x- currently  hard-wired == 1
 //
@@ -619,7 +619,7 @@ End
 //
 // V_1D_Data
 //
-// TODO
+// 
 // x- need to set binType
 // x- currently  hard-wired == 1
 // x- error bars on the data
@@ -806,7 +806,7 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 End
 
 
-// TODO
+// 
 // x- need to set binType
 // x- currently  hard-wired == 1
 // x- error bars on the data
@@ -980,7 +980,7 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 End
 
 
-// TODO
+// 
 // x- need to set binType
 // x- currently  hard-wired == 1
 //
@@ -1173,7 +1173,7 @@ End
 
 
 
-// TODO
+// 
 // x- need to set binType
 // x- currently  hard-wired == 1
 // x- error bars on the data

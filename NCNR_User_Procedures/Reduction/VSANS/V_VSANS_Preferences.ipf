@@ -1,15 +1,15 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
-/// TODO
-// -- update all to be only VSANS-specific
-// -- update all of the function names to be unique to VSANS so that there are no
+/// 
+// x- update all to be only VSANS-specific
+// x- update all of the function names to be unique to VSANS so that there are no
 //    name clashes with the "duplicate" version that is in PlotUtils.ipf
 //
-// -- Make this a VSANS-only panel
-// -- eliminate the USANS tab
-// -- be sure the general tab is either unique, or eliminate it
-// -- be sure the Analysis tab is unique, or eliminate it
+// x- Make this a VSANS-only panel
+// x- eliminate the USANS tab
+// x- be sure the general tab is either unique, or eliminate it
+// x- be sure the Analysis tab is unique, or eliminate it
 //
 //
 // global variables used by VSANS are stored in:
@@ -32,7 +32,7 @@ Proc Show_VSANSPreferences_Panel()
 End
 
 
-// TODO -- there are more detector specific corrections here that need to be added
+//  x- there are more detector specific corrections here that need to be added
 //
 // create the globals here if they are not already present
 // each package initialization should call this to repeat the initialization

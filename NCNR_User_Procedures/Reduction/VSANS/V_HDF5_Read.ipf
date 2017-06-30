@@ -258,8 +258,8 @@ Function/S V_getFacility(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// cut in JUNE 2017
-//// TODO - should be the file name as saved on disk, currently it's not
+// **cut in JUNE 2017
+////  x- should be the file name as saved on disk, currently it's not
 //Function/S V_getFile_name(fname)
 //	String fname
 //	
@@ -268,7 +268,7 @@ End
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
 
-// cut in JUNE 2017		
+// **cut in JUNE 2017		
 ////
 //Function/S V_getHDF_version(fname)
 //	String fname
@@ -313,7 +313,7 @@ end
 ////////// USER
 
 // list of user names
-// TODO -- currently not written out to data file??
+//  x- currently not written out to data file??
 Function/S V_getUserNames(fname)
 	String fname
 	
@@ -329,7 +329,7 @@ end
 
 // TODO -- for the control section, document each of the fields
 
-// cut in JUNE 2017
+// **cut in JUNE 2017
 //Function/S V_getCount_end(fname)
 //	String fname
 //	
@@ -338,7 +338,7 @@ end
 //	return(V_getStringFromHDF5(fname,path,num))
 //end
 
-// cut in JUNE 2017
+// **cut in JUNE 2017
 //
 //Function/S V_getCount_start(fname)
 //	String fname
@@ -380,7 +380,7 @@ Function V_getDetector_preset(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-// cut in JUNE 2017
+// **cut in JUNE 2017
 //
 //Function V_getIntegral(fname)
 //	String fname
@@ -415,8 +415,8 @@ Function V_getMonitor_preset(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-// cut in JUNE 2017
-// TODO - what are the enumerated types for this?
+// **cut in JUNE 2017
+//  - what are the enumerated types for this?
 //Function/S V_getPreset(fname)
 //	String fname
 //	
@@ -433,7 +433,7 @@ end
 //////// INSTRUMENT
 //////// INSTRUMENT
 
-// TODO -- this does not appear to be written out
+// x- this does not appear to be written out
 Function/S V_getLocalContact(fname)
 	String fname
 

@@ -28,13 +28,6 @@
 
 
 
-//
-/// Search for TODO to clean up the missing pieces
-//
-
-
-
-
 
 Proc Initialize_VSANS()
 	V_Initialize()
@@ -80,7 +73,7 @@ End
 //does not overwrite any existing folders of the same name
 //it leaves data in them untouched
 //
-// TODO -- make sure that I have all of the folders that I need
+// x-- make sure that I have all of the folders that I need
 //
 Function V_InitFolders()
 	
@@ -270,22 +263,22 @@ Function V_InitFacilityGlobals()
 End
 
 ///////////////////////////////////////////////
-//
+// TODO
 ////////////// everything below needs to be re-written for VSANS
 //
 //////////////////////////////////////////////
 
 
-// TODO
+// 
 // do I need to make the protocols any longer for VSANS? (yes -- now 12 points)
 // What other options for processing / averaging / saving are needed??
-// - TODO
+//  TODO
 // x- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the 
 // entire reduction can be automatic
 //
 //
-// -- creates the "base" protocols that should be available, after creating the data folder
-// -- all protocols are kept in the root:Packages:NIST:VSANS:Globals:Protocols folder, created here
+// x- creates the "base" protocols that should be available, after creating the data folder
+// x- all protocols are kept in the root:Packages:NIST:VSANS:Globals:Protocols folder, created here
 //
 //
 //*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused 
