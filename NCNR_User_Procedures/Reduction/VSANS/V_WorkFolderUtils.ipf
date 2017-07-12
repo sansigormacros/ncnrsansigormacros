@@ -100,8 +100,12 @@ Function V_CopyHDFToWorkFolder(fromStr,toStr)
 		return(0)
 	else
 	
-		V_KillWavesFullTree($fromDF,fromStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
-		
+		V_KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
+
+		if(DataFolderExists("root:Packages:NIST:VSANS:"+toStr) == 0)		//if the data folder (RAW, SAM, etc.) was just killed?
+			NewDataFolder/O $("root:Packages:NIST:VSANS:"+toStr)
+		endif	
+			
 		// need to do this the hard way, duplicate/O recursively
 		// see V_CopyToWorkFolder()
 		

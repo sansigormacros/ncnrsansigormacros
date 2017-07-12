@@ -41,6 +41,8 @@ Menu "VSANS"
 //		"IgorOnly_Save_VSANS_Nexus"
 //		"IgorOnly_Setup_SANS_Struct"
 //		"IgorOnly_Save_SANS_Struct"
+		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
+		"-"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"
 		"Setup_VSANS_MASK_Struct"

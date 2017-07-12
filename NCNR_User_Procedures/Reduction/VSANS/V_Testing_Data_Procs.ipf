@@ -11,7 +11,7 @@
 // -- maybe want a panel to make it easier to decide what inputs to change in the file
 // -- decide if it's better to write wholesale, or as individual waves
 //
-Macro Copy_VCALC_to_VSANSFile(labelStr,intent,group_id)
+Proc Copy_VCALC_to_VSANSFile(labelStr,intent,group_id)
 	String labelStr = "sample label"
 	String intent = "SAMPLE"
 	variable group_id = 75
@@ -136,7 +136,6 @@ end
 
 
 
-
 // writes out "perfect" detector calibration constants for all 8 tube banks + back detector
 Function V_WritePerfectSpatialCalib(filename)
 	String filename
@@ -250,3 +249,29 @@ Function V_FakeScaleToCenter()
 	
 	return(0)
 End
+
+//
+// a few utilities to patch up the data files so that they are useable
+// even without the Back detector containing real data
+//
+// TODO
+//
+// Hopefully, the data files as generated from NICE will have a dummy for the back detector
+// if not, there's going to be a big mess
+//
+// 		V_writeDetectorData(fileName,detStr,tmpData)
+//
+Function V_Write_BackDet_to_VSANSFile()
+	
+	String fileName = V_DoSaveFileDialog("pick the file to write to")
+	print fileName
+//	
+	String detStr = "B"
+	
+	if(strlen(fileName) > 0)
+		Wave detW = V_getDetectorDataW(filename,detStr)
+		detW = 1
+		V_writeDetectorData(fileName,detStr,detW)
+	endif
+End
+

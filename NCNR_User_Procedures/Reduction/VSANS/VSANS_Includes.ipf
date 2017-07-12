@@ -64,7 +64,7 @@ End
 #include "V_WorkFolderUtils"
 
 // start of raw data display panel
-#include "V_Test_RAW_Panel"		// rename this later when it's done
+#include "V_RAW_Data_Panel"		// rename this later when it's done
 #include "V_Utilities_General"		//
 #include "V_DataPlotting"
 

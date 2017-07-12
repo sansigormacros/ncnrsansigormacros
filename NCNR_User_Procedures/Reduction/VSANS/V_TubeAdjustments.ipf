@@ -131,17 +131,24 @@ Proc V_Tubes_to_Array()
 End
 
 // or the other way around
-Proc V_ArrayToTubes(wStr)
-	String wStr
+// - get the array into individual tubes ready for fitting.
+//
+Proc V_ArrayToTubes(detStr)
+	String detStr
+//	Prompt wStr,"Select detector panel",popup,WaveList("data_*",";","")
+	Prompt detStr,"Select detector panel",popup,ksDetectorListAll
 	
-	String/G root:detUsed = wStr
+	String/G root:detUsed = detStr
 	
 	Variable ii,numTubes=48
 	String str="tube"
 	
 	Variable dim0,dim1
-	dim0 = DimSize($wStr,0)
-	dim1 = DimSize($wStr,1)
+	
+	detStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:detector_"+detStr+":data"
+	
+	dim0 = DimSize($detStr,0)
+	dim1 = DimSize($detStr,1)
 
 	
 	Make/O/D/N=128 tube_pixel
@@ -153,9 +160,9 @@ Proc V_ArrayToTubes(wStr)
 		Make/O/D/N=128 $(str+num2str(ii))
 		
 		if(dim0 == 128)
-			$(str+num2str(ii)) = $(wStr)[p][ii]
+			$(str+num2str(ii)) = $(detStr)[p][ii]
 		else
-			$(str+num2str(ii)) = $(wStr)[ii][p]
+			$(str+num2str(ii)) = $(detStr)[ii][p]
 		endif
 		
 		ii+=1
@@ -165,7 +172,7 @@ End
 
 
 // (2) -- for each of the tubes, find the x-position (in pixels) of each of the (20) peaks
-// -- load the Analysis Package "MultiPeakFit 2"
+// -- automatically loads the Analysis Package "MultiPeakFit 2"
 //
 // automatically find the peaks (after including MultiPeakFit 2)
 //		AutomaticallyFindPeaks()
@@ -193,7 +200,11 @@ Proc V_MakeTableForPeaks(numTube,numPeak)
 	if(V_flag == 0)
 		Edit/N=Peak_Pixel_Loc peakTableX
 	endif
-	DoAlert 0, "Load the Package: Analysis->MultiPeak Fitting->MultiPeak Fitting 2"
+	
+	Execute/P "INSERTINCLUDE <Multi-peak fitting 2.0>"
+	DoWindow/K MultiPeak2StarterPanel
+
+//	DoAlert 0, "Load the Package: Analysis->MultiPeak Fitting->MultiPeak Fitting 2"
 End
 
 Proc V_Identify_AllPeaks()
@@ -1097,7 +1108,7 @@ End
 // array is unchanged. Alternatively, the data could be pulled from the RawVSANS folder after a
 // file catalog operation
 //
-Macro V_CopyDetectorsToRoot()
+Proc V_CopyDetectorsToRoot()
 
 	Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data data_B
 
@@ -1115,7 +1126,7 @@ End
 
 //
 //
-Macro V_SaveDetectorsITX()
+Proc V_SaveDetectorsITX()
 // binary save makes each wave an individual file. Igor text groups them all into one file.
 //	Save/C data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT
 	Save/T/M="\r\n" data_B,data_FB,data_FL,data_FR,data_FT,data_MB,data_ML,data_MR,data_MT as "data_B++.itx"

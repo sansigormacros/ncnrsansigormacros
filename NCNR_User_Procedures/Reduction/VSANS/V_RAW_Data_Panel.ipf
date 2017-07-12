@@ -66,6 +66,14 @@ Function V_UpdateDisplayInformation(type)
 	
 //	DoWindow/T VSANS_Data,type + " VSANS_Data"
 
+	// get the string with the file name that is in the "type" folder
+	// this string is what goes in the status of the display
+	SVAR gFileForDisplay = root:Packages:NIST:VSANS:Globals:gLastLoadedFile		//for the status of the display
+	SVAR gFileList = $("root:Packages:NIST:VSANS:"+type+":gFileList")
+	
+	gFileForDisplay=gFileList
+	
+
 	String newTitle = "WORK_"+type
 	DoWindow/F VSANS_Data
 	DoWindow/T VSANS_Data, newTitle

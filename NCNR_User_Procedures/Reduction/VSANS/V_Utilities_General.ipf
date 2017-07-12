@@ -52,7 +52,7 @@ End
 //
 Proc V_ChangeDisplay(type)
 	String type
-	Prompt type,"WORK data type to display",popup,"RAW;SAM;EMP;BGD;ADJ;"
+	Prompt type,"WORK data type to display",popup,"RAW;SAM;EMP;BGD;COR;ABS;STO;SUB;ADJ;"
 
 // make sure that data exists before passing this on...
 	

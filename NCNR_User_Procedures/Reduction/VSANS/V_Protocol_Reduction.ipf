@@ -69,6 +69,10 @@ End
 //0901, uses 8 points in protocol wave
 Proc V_InitProtocolPanel()
 
+	if(exists("	root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames") == 0)
+		Abort "You must generate a file catalog before building protocols"
+	endif
+	
 	//set up the global variables needed for the protocol panel
 	//global strings to put in a temporary protocol textwave
 	Variable ii=0
@@ -641,7 +645,7 @@ Function/S V_getFileIntentList(testStr,method)
 		
 		Variable np = numpnts(intentW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
 		for(ii=0;ii<np;ii+=1)
-			if(cmpstr(intentW[ii],testStr)==0)
+			if(cmpstr(intentW[ii],testStr)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
 				list += fileNameW[ii] + ";"
 			endif		
 		endfor
@@ -2007,13 +2011,19 @@ Function V_ExecuteProtocol(protStr,samStr)
 			junkStr = pathStr + StringFromList(0, prot[2],"," )
 			V_LoadHDF5Data(junkStr,"DIV")
 		Endif
-
+	
+	else
+	// DIV step is being skipped
+		NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+		Variable saved_gDoDIVCor = gDoDIVCor
+		gDoDIVCor = 0			// protocol says to turn it off for now (reset later)
 	Endif
 
 
 // TODO:
 // -- currently does not allow adding RAW data files together, so no parsing is done
-//	
+//	 -- NOTE detector corrections (including DIV) are done at the V_Raw_to_Work() step
+//   So if the DIV is not part of the protocol, be sure to set/reset the global preference
 //
 	//prompt for sam data => read raw data, add to sam folder
 	//or parse file(s) from the input paramter string
@@ -2542,6 +2552,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 	
 	//done with everything in protocol list
+	
+	
+	// reset any global preferences that I had changed
+	gDoDIVCor = saved_gDoDIVCor
+	
+	
 	Return(0)
 End
 

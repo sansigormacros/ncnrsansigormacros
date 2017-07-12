@@ -117,7 +117,7 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 		// now loop back through to find the empty beam file
 		// TODO 
 		// x- fill in the XY box
-		// --  Detector Panel field is hard-wired for "B"
+		// x-  Detector Panel field is hard-wired for "B"
 		//	
 			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 			list = V_getFileIntentList("EMPTY BEAM",0)
@@ -128,7 +128,7 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 					SetVariable setvar_4,value=labelW[ii]
 					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1
 					
-					SetVariable setvar_6,value =_STR:"B"
+					SetVariable setvar_6,value =_STR:"ML"
 
 					WAVE boxCoord = V_getBoxCoordinates(filenameW[ii])
 					Print boxCoord
@@ -255,9 +255,10 @@ Function V_CalcTransmButtonProc(ba) : ButtonControl
 			empty_ct_err = V_getBoxCountsError(emptyFileName)
 			WAVE xyBoxW = V_getBoxCoordinates(emptyFileName)
 			// TODO
-			// -- need to get the panel string for the sum.
-			// -- the detector string is currently hard-wired
-			detStr = "B"
+			// x- need to get the panel string for the sum.
+			// x- the detector string is currently hard-wired
+			ControlInfo setvar_6
+			detStr = S_Value		//this was hard-wired to "B", but no read from the panel
 			
 			// check for box count + error values
 			// if present, proceed

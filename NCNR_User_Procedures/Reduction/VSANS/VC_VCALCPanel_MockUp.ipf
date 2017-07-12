@@ -15,7 +15,7 @@
 //
 
 
-Macro VCALC_Panel()
+Proc VCALC_Panel()
 	DoWindow/F VCALC
 	if(V_flag==0)
 	

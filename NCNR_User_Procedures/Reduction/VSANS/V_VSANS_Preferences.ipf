@@ -88,7 +88,12 @@ Proc Initialize_VSANSPreferences()
 	
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization = 1
-	
+
+
+	// Special global to prevent fake data from "B" detector from being written out
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 0
+		
 
 // flag to allow adding raw data files with different attenuation (normally not done)	
 //	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten",0)
@@ -207,6 +212,13 @@ Function V_DoMonitorNormPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function V_IgnoreDetBPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gVal = checked
+End
 
 Function V_PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
@@ -273,7 +285,8 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
 //	CheckBox PrefCtrl_1n title="Do Tube Shadow Correction?",size={140,14},proc=V_DoMonitorNormPref
 //	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
-		
+	CheckBox PrefCtrl_1m title="Ignore Back Detector?",size={140,14},proc=V_IgnoreDetBPref
+	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gIgnoreDetB,pos={150,220},help={"Will prevent data from Back detector being written to data files."}		
 	
 //	CheckBox PrefCtrl_1a,disable=1
 //	CheckBox PrefCtrl_1b,disable=1

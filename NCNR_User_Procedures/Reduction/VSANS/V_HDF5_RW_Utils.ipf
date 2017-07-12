@@ -47,8 +47,8 @@ End
 // TODO:
 //  x- move the initialization of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
-// x- as needed, get rid of the FAKE redimension of the data from 3D->2D and from 128x128 to something else for VSANS
-//    This is a fake since I don't have anything close to correct fake data yet. (1/29/16)
+// x- as needed, get rid of the fake redimension of the data from 3D->2D and from 128x128 to something else for VSANS
+//    This is fake since I don't have anything close to correct fake data yet. (1/29/16)
 //
 // DONE: x- is there an extra "entry" heading? Am I adding this by mistake by setting base_name="entry" for RAW data?
 //			x- as dumb as it is -- do I just leave it now, or break everything. On the plus side, removing the extra "entry"
@@ -72,6 +72,8 @@ Function V_LoadHDF5Data(file,folder)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folder)
 
 	Variable err= V_LoadHDF5_NoAtt(file,folder)	// reads into current folder
+	
+
 	
 	// if RAW data, then generate the errors and linear data copy
 	// do this 9x
@@ -149,7 +151,7 @@ Function V_LoadHDF5Data(file,folder)
 		endif
 					
 					
-		/// END FAKE DATA CORRECTIONS		
+		/// END DATA CORRECTIONS FOR LOADER	
 			
 	endif
 	
@@ -386,6 +388,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 
 	PathInfo/S catPathName
 	if(V_flag == 0)
+		DoAlert 0,"Pick the data folder, then the data file"
 		V_PickPath()
 	endif
 
@@ -509,6 +512,12 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	HDF5CloseFile fileID
 	
 //s_toc()
+
+	// save a global string with the file name to be picked up for the status on the display
+	// this string can be carried around as the data is moved to other folders
+	Print curDF+"gFileList"
+	String/G $(curDF+"gFileList") = fileName
+
 
 	SetDataFolder root:
 	

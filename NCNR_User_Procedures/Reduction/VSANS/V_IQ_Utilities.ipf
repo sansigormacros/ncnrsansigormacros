@@ -245,6 +245,8 @@ end
 // concatentate data in folderStr
 //
 // TODO:
+// -- !!! Resolution waves are currently skipped - these must be added
+//
 // x- this currently ignores the binning type (one, two, etc. )
 // x- change the Concatenate call to use the waveList, to eliminate the need to declare all of the waves
 // -- this currently assumes that all of the waves exist
@@ -283,11 +285,16 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 
 	//kill these waves before starting, or the new concatenation will be added to the old
 	KillWaves/Z tmp_q,tmp_i,tmp_s
+
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	
 	String waveListStr=""
 	if(binType == 1)
 		// q-values
-		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
 		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
@@ -300,7 +307,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
 		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
@@ -315,7 +325,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
 		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
@@ -332,7 +345,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 
 	if(binType == 2)	
 		// q-values
-		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "qBin_qxqy_MTB" + tagStr + ";"
 		waveListStr += "qBin_qxqy_MLR" + tagStr + ";"
 		waveListStr += "qBin_qxqy_FTB" + tagStr + ";"
@@ -344,7 +360,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "iBin_qxqy_MTB" + tagStr + ";"
 		waveListStr += "iBin_qxqy_MLR" + tagStr + ";"
 		waveListStr += "iBin_qxqy_FTB" + tagStr + ";"
@@ -356,7 +375,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "eBin_qxqy_MTB" + tagStr + ";"
 		waveListStr += "eBin_qxqy_MLR" + tagStr + ";"
 		waveListStr += "eBin_qxqy_FTB" + tagStr + ";"
@@ -370,7 +392,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 
 	if(binType == 3)	
 		// q-values
-		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "qBin_qxqy_MLRTB" + tagStr + ";"
 		waveListStr += "qBin_qxqy_FLRTB" + tagStr + ";"
 		
@@ -379,7 +404,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "iBin_qxqy_MLRTB" + tagStr + ";"
 		waveListStr += "iBin_qxqy_FLRTB" + tagStr + ";"
 		
@@ -388,7 +416,10 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		endif
 		waveListStr += "eBin_qxqy_MLRTB" + tagStr + ";"
 		waveListStr += "eBin_qxqy_FLRTB" + tagStr + ";"
 		
@@ -403,13 +434,16 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 // and NOT include in the averaging since the Qy range is so limited.
 	if(binType == 4)	
 		// q-values
-		waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
+//		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
 		waveListStr += "qBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
+//		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
+//		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
 		waveListStr += "qBin_qxqy_FL" + tagStr + ";"
 		waveListStr += "qBin_qxqy_FR" + tagStr + ";"
 //		waveListStr = "qBin_qxqy_B;qBin_qxqy_MB;qBin_qxqy_MT;qBin_qxqy_ML;qBin_qxqy_MR;"
@@ -418,13 +452,16 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_q
 
 		//intensity
-		waveListStr =  "iBin_qxqy_B" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
+//		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
 		waveListStr += "iBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
+//		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
+//		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
 		waveListStr += "iBin_qxqy_FL" + tagStr + ";"
 		waveListStr += "iBin_qxqy_FR" + tagStr + ";"
 //		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
@@ -433,13 +470,16 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 		Concatenate/NP/O waveListStr, tmp_i
 
 		//error
-		waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
+//		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
 		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
 		waveListStr += "eBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
+//		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
+//		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
 		waveListStr += "eBin_qxqy_FL" + tagStr + ";"
 		waveListStr += "eBin_qxqy_FR" + tagStr + ";"
 //		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"

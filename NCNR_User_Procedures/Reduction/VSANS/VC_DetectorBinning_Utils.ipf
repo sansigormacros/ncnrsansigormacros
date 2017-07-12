@@ -12,8 +12,8 @@
 
 
 
-// TODO: hard wired for a sphere - change this to allow minimal selections and altering of coefficients
-// TODO: add the "fake" 2D simulation to fill the panels which are then later averaged as I(Q)
+// x- hard wired for a sphere - change this to allow minimal selections and altering of coefficients
+// x- add the "fake" 2D simulation to fill the panels which are then later averaged as I(Q)
 //
 // NOTE - this is a VCALC only routine, so it's not been made completely generic
 //
@@ -103,7 +103,7 @@ Function FillPanel_wModelData(det,qTot,type)
 	endif
 
 	
-// TODO: this is faked to get around the singularity at the center of the back detector
+// x- this is faked to get around the singularity at the center of the back detector
 //
 // 
 	if(cmpstr(type,"B") == 0)
@@ -1016,8 +1016,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	endif
 
 
-//TODO: properly define the errors here - I'll have this if I do the simulation
-// -- need to propagate the errors up to this point
+//TODO: properly define the 2D errors here - I'll have this if I do the simulation
+// -- need to propagate the 2D errors up to this point
 //
 	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
 		Duplicate/O inten,iErr
@@ -1091,8 +1091,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 //
 // this needs to be a double loop now...
 // TODO:
-// -- the iErr wave and accumulation of error is NOT CALCULATED CORRECTLY YET
-// -- the solid angle per pixel is not yet implemented.
+// -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
+// -- the solid angle per pixel is not completely implemented.
 //    it will be present for WORK data other than RAW, but not for RAW
 
 // if any of the masks don't exist, display the error, and proceed with the averaging, using all data
@@ -1282,7 +1282,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	while(val>0)
 	
 	// TODO:
-	// -- is this where I do the resolution calculation?
+	// -- is this where I do the resolution calculation? This is where I calculate the resolution in SANS (see CircSectAve)
 	// -- or do I do it as a separate call?
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
 	//
