@@ -98,3 +98,7 @@ End
 #include "V_EventModeProcessing"
 
 
+//
+#include "V_Instrument_Resolution"
+
+
