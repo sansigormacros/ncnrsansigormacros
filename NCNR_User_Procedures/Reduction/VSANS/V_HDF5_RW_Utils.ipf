@@ -515,7 +515,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 
 	// save a global string with the file name to be picked up for the status on the display
 	// this string can be carried around as the data is moved to other folders
-	Print curDF+"gFileList"
+//	Print curDF+"gFileList"
 	String/G $(curDF+"gFileList") = fileName
 
 

@@ -481,9 +481,10 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GCntRate[lastPoint]=cntrate
 	
 	//Attenuators
-	// TODO -- this is not really the number -- but rather the thickness
+	// TODO -- this is the "number" of the attenuator, but what is its relation to the
+	//   stack of 4 plates? binary representation?
 	InsertPoints lastPoint,1,GNumAttens
-	GNumAttens[lastPoint]=V_getAttenThickness(fname)
+	GNumAttens[lastPoint]=V_getAtten_number(fname)
 	
 	//Transmission
 	InsertPoints lastPoint,1,GTransmission

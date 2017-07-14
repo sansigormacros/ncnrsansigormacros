@@ -662,6 +662,13 @@ Function V_DataTabProc(tca) : TabControl
 			break
 	endswitch
 
+
+// update the status when the tab is clicked			
+	STRUCT WMButtonAction sa
+	sa.eventCode = 2
+	V_StatusButtonProc(sa)
+			
+			
 	return 0
 End
 
@@ -758,10 +765,11 @@ Function V_Tab_p_ButtonProc(ba) : ButtonControl
 			endif
 			V_FakeTabClick(V_Value)
 
-// update the status when the tab is clicked			
-			STRUCT WMButtonAction sa
-			sa.eventCode = 2
-			V_StatusButtonProc(sa)
+// now part of every tab click
+//// update the status when the tab is clicked			
+//			STRUCT WMButtonAction sa
+//			sa.eventCode = 2
+//			V_StatusButtonProc(sa)
 
 			break
 		case -1: // control being killed

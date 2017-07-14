@@ -27,6 +27,14 @@
 //
 
 
+// TODO:
+// -- some of the input geometry is hidden in other locations:
+// Sample Aperture to Gate Valve (cm)  == /instrument/sample_aperture/distance
+// Sample [position] to Gate Valve (cm) = /instrument/sample_table/offset_distance
+//
+// -- the dimensions and the units for the beam stops are very odd, and what is written to the
+//   file is not what is noted in the GUI - so verify the units that I'm actually reading.
+// 
 
 
 

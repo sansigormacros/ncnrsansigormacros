@@ -529,13 +529,14 @@ end
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
 
-//// this is equivalent to "status" - if anything is dropped in the beam
-//Function V_getAtten_number(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:attenuator:num_atten_dropped"	
-//	return(V_getRealValueFromHDF5(fname,path))
-//end
+//// this is the "number" of attenuators dropped in the beam - and should be 
+// what I can use to lookup the actual attenuator transmission
+Function V_getAtten_number(fname)
+	String fname
+	
+	String path = "entry:instrument:attenuator:num_atten_dropped"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
 
 // thickness of the attenuator (PMMA) - units??
 Function V_getAttenThickness(fname)
