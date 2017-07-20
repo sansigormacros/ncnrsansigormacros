@@ -27,6 +27,46 @@
 //stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
 
 
+// for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
+// this need never change from 1
+Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
+Constant kPanelTouchingGap = 4			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
+
+
+// the base data folder path where the raw data is loaded
+Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
+
+
+// the list of WORK Folders
+// RawVSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
+// VCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
+//Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
+Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
+
+
+// for defining which "bin type" corresponds to which set of extensions for I(q) data
+//////////////////
+Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
+Strconstant ksBinType1 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"		//these are the "active" extensions
+Strconstant ksBinType2 = "B;FTB;FLR;MTB;MLR;"
+Strconstant ksBinType3 = "B;FLRTB;MLRTB;"
+Strconstant ksBinType4 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"
+///////////////////
+
+
+// for looping over each detector
+Strconstant ksDetectorListNoB = "FL;FR;FT;FB;ML;MR;MT;MB;"
+Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
+
+
+// for Protocols
+Constant kNumProtocolSteps = 12
+// for trimming of the I(q) data sets, and part of the protocol
+Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
+Strconstant ksBinTrimBegDefault = "B=5;FT=6;FB=6;FL=6;FR=6;MT=6;MB=6;ML=6;MR=6;FTB=7;FLR=7;MTB=7;MLR=7;FLRTB=8;MLRTB=8;"
+Strconstant ksBinTrimEndDefault = "B=10;FT=9;FB=9;FL=9;FR=9;MT=9;MB=9;ML=9;MR=9;FTB=8;FLR=8;MTB=8;MLR=8;FLRTB=7;MLRTB=7;"
+
+
 
 
 Proc Initialize_VSANS()

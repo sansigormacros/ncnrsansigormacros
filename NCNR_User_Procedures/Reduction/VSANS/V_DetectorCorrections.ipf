@@ -121,7 +121,8 @@ End
 // y- (yes,see below) need a separate block or function to handle "B" detector which will be ? different
 //
 //
-Function V_NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
+Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
+	String fname		//can also be a folder such as "RAW"
 	Wave dataW,coefW
 	Variable tube_width
 	String detStr,destPath
@@ -148,30 +149,80 @@ Function V_NonLinearCorrection(dataW,coefW,tube_width,detStr,destPath)
 	// then per tube, do the quadratic calculation to get the real space distance along the tube
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
 	
+	// TODO
+	// -- GAP IS HARD-WIRED
+	Variable offset,gap
+
+// kPanelTouchingGap is in mm	
+	gap = kPanelTouchingGap/10		//cm
+	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
 		data_realDistX[][] = tube_width*p
 		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
+	
+		// adjust the x postion based on the beam center being nominally (0,0) in units of cm, not pixels
+		if(cmpstr(fname,"VCALC")== 0 )
+			offset = VCALC_getPanelSeparation(detStr)
+			offset /= 2			// units of mm
+		else
+			//normal case
+		offset = V_getDet_LateralOffset(fname,detStr)
+		offset *= 10 //convert cm to mm
+		endif
+		
+	// calculation is in mm, not cm
+		if(kBCTR_CM)
+			if(cmpstr("L",detStr[1]) == 0)
+				data_realDistX[][] = -offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
+			else
+				data_realDistX[][] += offset + gap + tube_width			//add to the Right det, not recalculate
+			endif
+		endif
+	
 	
 	elseif(cmpstr(orientation,"horizontal")==0)
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
 		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
 		data_realDistY[][] = tube_width*q
 
+		if(cmpstr(fname,"VCALC")== 0 )
+			offset = VCALC_getPanelSeparation(detStr)
+			offset /= 2			// units of mm
+		else
+			//normal case
+			offset = V_getDet_VerticalOffset(fname,detStr)
+			offset *= 10 //convert cm to mm
+		endif
+		
+		if(kBCTR_CM)
+			if(cmpstr("T",detStr[1]) == 0)
+				data_realDistY[][] += offset + gap + tube_width			
+			else
+				data_realDistY[][] = -offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
+			endif
+		endif
+
 	else		
 		DoAlert 0,"Orientation not correctly passed in NonLinearCorrection(). No correction done."
+		return(0)
 	endif
 	
 	return(0)
 end
+
+
+
 
 // TODO:
 // -- the cal_x and y coefficients are totally fake
 // -- the wave assignment may not be correct.. so beware
 //
 //
-Function V_NonLinearCorrection_B(folder,detStr,destPath)
-	String folder,detStr,destPath
+Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
+	String folder
+	Wave dataW,cal_x,cal_y
+	String detStr,destPath
 
 	if(cmpstr(detStr,"B") != 0)
 		return(0)
@@ -180,7 +231,7 @@ Function V_NonLinearCorrection_B(folder,detStr,destPath)
 	// do I count on the orientation as an input, or do I just figure it out on my own?
 	Variable dimX,dimY
 	
-	Wave dataW = V_getDetectorDataW(folder,detStr)
+//	Wave dataW = V_getDetectorDataW(folder,detStr)
 	
 	dimX = DimSize(dataW,0)
 	dimY = DimSize(dataW,1)
@@ -193,8 +244,8 @@ Function V_NonLinearCorrection_B(folder,detStr,destPath)
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	
 	
-	Wave cal_x = V_getDet_cal_x(folder,detStr)
-	Wave cal_y = V_getDet_cal_y(folder,detStr)
+//	Wave cal_x = V_getDet_cal_x(folder,detStr)
+//	Wave cal_y = V_getDet_cal_y(folder,detStr)
 	
 	data_realDistX[][] = cal_x[0]*p
 	data_realDistY[][] = cal_y[0]*q
@@ -261,6 +312,100 @@ Function V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
 	return(0)
 end
 
+//
+//
+// TODO
+// -- VERIFY the calculations
+// -- verify where this needs to be done (if the beam center is changed)
+// -- then the q-calculation needs to be re-done
+// -- the position along the tube length is referenced to tube[0], for no particular reason
+//    It may be better to take an average? but [0] is an ASSUMPTION
+// -- distance along tube is simple interpolation, or do I use the coefficients to
+//    calculate the actual value
+//
+// -- distance in the lateral direction is based on tube width, which is a fixed parameter
+//
+//
+Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
+	String folder,detStr,destPath
+	
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
+
+	String orientation
+	Variable dimX,dimY,xCtr,yCtr
+	dimX = DimSize(data_realDistX,0)
+	dimY = DimSize(data_realDistX,1)
+	if(dimX > dimY)
+		orientation = "horizontal"
+	else
+		orientation = "vertical"
+	endif
+	
+	xCtr = V_getDet_beam_center_x(folder,detStr)		//these are in cm
+	yCtr = V_getDet_beam_center_y(folder,detStr)	
+	
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	WAVE x_pix = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	WAVE y_pix = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_pix")
+
+	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
+
+	variable edge,delta
+
+//
+	if(cmpstr(orientation,"vertical")==0)
+		//	this is data dimensioned as (Ntubes,Npix)
+
+		if(kBCTR_CM)
+			if(cmpstr("L",detStr[1]) == 0)
+				edge = data_realDistX[47][0]		//tube 47
+				delta = abs(xCtr*10 - edge)
+				x_pix[0] = dimX-1 + delta/tube_width
+			else
+			// R panel
+				edge = data_realDistX[0][0]
+				delta = abs(xCtr*10 - edge + kPanelTouchingGap)
+				x_pix[0] = -delta/tube_width		//since the left edge of the R panel is pixel 0
+			endif
+		endif
+
+		Make/O/D/N=(dimY) tmpTube
+		tmpTube = data_RealDistY[0][p]
+		FindLevel /P/Q tmpTube, yCtr
+		
+		y_pix[0] = V_levelX
+		KillWaves/Z tmpTube
+	else
+		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+
+		if(kBCTR_CM)
+			if(cmpstr("T",detStr[1]) == 0)
+				edge = data_realDistY[0][0]		//tube 0
+				delta = abs(yCtr*10 - edge + kPanelTouchingGap)
+				y_pix[0] =  -delta/tube_width		//since the bottom edge of the T panel is pixel 0
+			else
+			// FM(B) panel
+				edge = data_realDistY[0][47]		//y tube 47
+				delta = abs(yCtr*10 - edge)
+				y_pix[0] = dimY-1 + delta/tube_width		//since the top edge of the B panels is pixel 47		
+			endif
+		endif
+
+		
+		Make/O/D/N=(dimX) tmpTube
+		tmpTube = data_RealDistX[p][0]
+		FindLevel /P/Q tmpTube, xCtr
+		
+		x_pix[0] = V_levelX
+		KillWaves/Z tmpTube
+		
+		
+	endif
+		
+	return(0)
+end
 
 //
 //
@@ -420,7 +565,7 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 
 	sdd = V_getDet_ActualDistance(fname,detStr)		//sdd derived, including setback [cm]
 	sdd/=100		// sdd reported in cm, pass in m
-	// this is the ctr in pixels
+	// this is the ctr in pixels --xx-- (now it is in cm!)
 //	xCtr = V_getDet_beam_center_x(fname,detStr)
 //	yCtr = V_getDet_beam_center_y(fname,detStr)
 	// this is ctr in mm

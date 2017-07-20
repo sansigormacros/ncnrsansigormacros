@@ -17,14 +17,7 @@
 // 1D data sets and interfering.
 
 
-// the base data folder path where the raw data is loaded
-Strconstant ksBaseDFPath = "root:Packages:NIST:VSANS:RawVSANS:"
 
-// the list of WORK Folders
-// RawVSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
-// VCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
-//Strconstant ksWorkFolderList = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;VCALC;RawVSANS;"
-Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
 
 
 // passing null file string presents a dialog
@@ -73,7 +66,10 @@ Function V_LoadHDF5Data(file,folder)
 
 	Variable err= V_LoadHDF5_NoAtt(file,folder)	// reads into current folder
 	
-
+	if(err)
+		DoAlert 0,"User cancelled or other file read error..."
+		return(1)
+	endif
 	
 	// if RAW data, then generate the errors and linear data copy
 	// do this 9x
@@ -119,13 +115,37 @@ Function V_LoadHDF5Data(file,folder)
 	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
 				Wave w_calib = V_getDetTube_spatialCalib(folder,detStr)
 				Variable tube_width = V_getDet_tubeWidth(folder,detStr)
-				V_NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
+				V_NonLinearCorrection(folder,w,w_calib,tube_width,detStr,destPath)
 				
 				
 				//(2.4) Convert the beam center values from pixels to mm
 				// TODO -- there needs to be a permanent location for these values??
 				//
-				V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+				
+				// TODO
+				// -- the beam center value in mm needs to be present - it is used in calculation of Qvalues
+				// -- but having both the same is wrong...
+				// -- the pixel value is needed for display of the panels
+				if(kBCTR_CM)
+					//V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+					//
+	
+					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+					WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+					WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+					x_mm[0] = V_getDet_beam_center_x(folder,detStr) * 10 		// convert cm to mm
+					y_mm[0] = V_getDet_beam_center_y(folder,detStr) * 10 		// convert cm to mm
+					
+					// TODO:::
+				// now I need to convert the beam center in mm to pixels
+				// and have some rational place to look for it...
+					V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
+				else
+					// beam center is in pixels, so use the old routine
+					V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+				endif				
+				
 				
 				// (2.5) Calculate the q-values
 				// calculating q-values can't be done unless the non-linear corrections are calculated
@@ -142,7 +162,11 @@ Function V_LoadHDF5Data(file,folder)
 			endfor
 			
 			//"B" is separate
-			V_NonLinearCorrection_B(folder,"B",destPath)
+			Wave w = V_getDetectorDataW(folder,"B")
+			Wave cal_x = V_getDet_cal_x(folder,"B")
+			Wave cal_y = V_getDet_cal_y(folder,"B")
+			
+			V_NonLinearCorrection_B(folder,w,cal_x,cal_y,"B",destPath)
 			V_ConvertBeamCtr_to_mmB(folder,"B",destPath)
 			V_Detector_CalcQVals(folder,"B",destPath)
 			
@@ -399,7 +423,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 //	HDF5OpenFile/R/P=home/Z fileID as fileName		//read file from home directory?
 	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
 	if (V_Flag != 0)
-		return 0
+		return 1
 	endif
 
 	String/G root:file_path = S_path
@@ -407,7 +431,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	
 	if ( fileID == 0 )
 		Print fileName + ": could not open as HDF5 file"
-		return (0)
+		return (1)
 	endif
 	
 //s_tic()		//fast 
@@ -506,7 +530,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 	if ( V_Flag != 0 )
 		Print fileName + ": could not open as HDF5 file"
 		setdatafolder root:
-		return (0)
+		return (1)
 	endif
 
 	HDF5CloseFile fileID

@@ -164,7 +164,7 @@ Window VSANS_DataPanel() : Panel
 	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2,focusRing=0
 
 // on the side	
-	Button button_status,pos={607,146},size={70,20},proc=V_StatusButtonProc,title="Status"
+	Button button_status,pos={607,146},size={70,20},proc=V_StatusButtonProc,title="Status",disable=2
 	Button button_IvsQ,pos={689,113},size={70,20},proc=V_IvsQPanelButtonProc,title="I vs. Q"
 	Button button_file_m,pos={619,55},size={50,20},proc=V_File_minus_ButtonProc,title="File <"
 	Button button_file_p,pos={679,55},size={50,20},proc=V_File_plus_ButtonProc,title="File >"
@@ -180,7 +180,7 @@ Window VSANS_DataPanel() : Panel
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
 	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
-	Button button_BeamCtr,pos={603,450},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center"
+	Button button_BeamCtr,pos={603,450},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
 	Button button_SpreadPanels,pos={603,488},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
 	Button button_RestorePanels,pos={603,526},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
@@ -1059,7 +1059,8 @@ Function V_BeamCtrButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			V_FindBeamCenter()
+			DoAlert 0,"Beam Center panel is under construction..."
+//			V_FindBeamCenter()
 			break
 		case -1: // control being killed
 			break

@@ -49,7 +49,6 @@
 //
 //////////////////////////////////
 
-Constant kNumProtocolSteps = 12
 
 //main entry procedure for initialzing and displaying the protocol panel
 // initilaizes folders and globals as needed

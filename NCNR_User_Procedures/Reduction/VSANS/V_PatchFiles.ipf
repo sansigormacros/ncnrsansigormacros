@@ -2146,12 +2146,12 @@ Function V_fPatchDet_xyCenters(lo,hi)
 	Variable ii,jj
 	String fname,detStr
 	
-	Wave xCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:xCtr_pix
-	Wave yCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:yCtr_pix
+	Wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+	Wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
 	Wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
 	
 	// check the dimensions of the waves (9)
-	if (DimSize(xCtr_pix, 0) != 9 || DimSize(yCtr_pix, 0) != 9 || DimSize(panelW, 0) != 9)
+	if (DimSize(xCtr_cm, 0) != 9 || DimSize(yCtr_cm, 0) != 9 || DimSize(panelW, 0) != 9)
 		Abort "waves are not of proper dimension (9)"
 	endif
 	
@@ -2162,8 +2162,8 @@ Function V_fPatchDet_xyCenters(lo,hi)
 		
 			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 				detStr = panelW[ii]
-				V_writeDet_beam_center_x(fname,detStr,xCtr_pix[ii])
-				V_writeDet_beam_center_y(fname,detStr,yCtr_pix[ii])		
+				V_writeDet_beam_center_x(fname,detStr,xCtr_cm[ii])
+				V_writeDet_beam_center_y(fname,detStr,yCtr_cm[ii])		
 			endfor	
 		
 		else
@@ -2182,8 +2182,8 @@ Function V_fReadDet_xyCenters(lo,hi)
 	String fname,detStr
 	Variable ii,jj
 	
-	Wave xCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:xCtr_pix
-	Wave yCtr_pix = root:Packages:NIST:VSANS:Globals:Patch:yCtr_pix
+	Wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+	Wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
 	Wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
 	
 	for(jj=lo;jj<=hi;jj+=1)
@@ -2193,8 +2193,8 @@ Function V_fReadDet_xyCenters(lo,hi)
 			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 				detStr = StringFromList(ii, ksDetectorListAll, ";")
 				panelW[ii] = detStr
-				xCtr_pix[ii] = V_getDet_beam_center_x(fname,detStr)
-				yCtr_pix[ii] = V_getDet_beam_center_y(fname,detStr)
+				xCtr_cm[ii] = V_getDet_beam_center_x(fname,detStr)		//these values are in cm, not pixels
+				yCtr_cm[ii] = V_getDet_beam_center_y(fname,detStr)
 			endfor
 		
 		
@@ -2216,7 +2216,7 @@ Proc V_PatchDet_xyCenters_Panel()
 	
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
 
-		Make/O/D/N=9 xCtr_pix,yCtr_pix
+		Make/O/D/N=9 xCtr_cm,yCtr_cm
 		Make/O/T/N=9 panelW
 		
 		SetDataFolder root:
@@ -2247,7 +2247,7 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	DrawText 85,99,"Current Values"
 	DrawText 21,258,"Write to all files (inlcusive)"
 	SetDrawEnv fsize= 14,fstyle= 1
-	DrawText 262,30,"Beam Center (pixels)"
+	DrawText 262,30,"Beam Center (cm)"
 	DrawText 20,133,"Run Number(s)"
 	
 	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
@@ -2260,11 +2260,11 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
 // display the wave	
-	Edit/W=(180,40,500,370)/HOST=#  panelW,xCtr_pix,yCtr_pix
+	Edit/W=(180,40,500,370)/HOST=#  panelW,xCtr_cm,yCtr_cm
 	ModifyTable width(Point)=0
 	ModifyTable width(panelW)=80
-	ModifyTable width(xCtr_pix)=100
-	ModifyTable width(yCtr_pix)=100
+	ModifyTable width(xCtr_cm)=100
+	ModifyTable width(yCtr_cm)=100
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 

@@ -316,7 +316,7 @@ Function V_CorrectMode_1()
 		Wave emp_err = V_getDetectorDataErrW("EMP",detStr)
 		
 	// to check for beam center mismatch -- simply warn, but do no shift
-	//
+	// NOTE - these are now reading the beam center in cm, not pixels
 
 		csam = V_getDet_beam_center_x("SAM",detStr)		//x center
 		rsam = V_getDet_beam_center_y("SAM",detStr)		//beam (x,y) define center of corrected field

@@ -177,19 +177,19 @@ Proc DrawVCALC_Panel()
 
 // tab(3) - Middle detector panels, initially not visible
 	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3a,limits={0,400,1},disable=1,value=_NUM:120
+	SetVariable VCALCCtrl_3a,limits={0,400,1},disable=1,value=_NUM:100
 	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3b,limits={0,400,1},disable=1,value=_NUM:120
+	SetVariable VCALCCtrl_3b,limits={0,400,1},disable=1,value=_NUM:100
 	SetVariable VCALCCtrl_3c,pos={205,290},size={150,15},title="Lateral Offset (mm)"
 	SetVariable VCALCCtrl_3c,limits={0,200,0.1},disable=1,value=_NUM:0
 	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_MDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_3d,limits={8,20,0.1},disable=1,value=_NUM:10
+	SetVariable VCALCCtrl_3d,limits={8,20,0.1},disable=1,value=_NUM:15
 	
 // tab(4) - Back detector panel
 	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (mm)"
 	SetVariable VCALCCtrl_4a,limits={0,200,0.1},disable=1,value=_NUM:0
 	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_BDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_4b,limits={20,25,0.1},disable=1,value=_NUM:22
+	SetVariable VCALCCtrl_4b,limits={20,25,0.1},disable=1,value=_NUM:20
 	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
 	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 

@@ -226,57 +226,130 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY
 	String detStr
 	
-	String destPath = "root:Packages:NIST:VSANS:RAW"
-			
+	String destPath = "root:Packages:NIST:VSANS:VCALC"
+	
+	// be sure that the real distance waves exist
+	// TODO -- this may not be the best location?
+
+// calibration waves do not exist yet, so make some fake ones	'
+	// do I count on the orientation as an input, or do I just figure it out on my own?
+	String orientation
+	Variable dimX,dimY
+	dimX = DimSize(data,0)
+	dimY = DimSize(data,1)
+	if(dimX > dimY)
+		orientation = "horizontal"
+	else
+		orientation = "vertical"
+	endif
+	
+	if(cmpstr(orientation,"vertical")==0)
+		Make/O/D/N=(3,48) tmpCalib
+		// for the "tall" L/R banks
+		tmpCalib[0][] = -512
+		tmpCalib[1][] = 8
+		tmpCalib[2][] = 0
+	else
+		Make/O/D/N=(3,48) tmpCalib
+		// for the "short" T/B banks
+		tmpCalib[0][] = -256
+		tmpCalib[1][] = 4
+		tmpCalib[2][] = 0
+	endif
+	// override if back panel
+	if(cmpstr(detStr,"B") == 0)
+		// and for the back detector "B"
+		Make/O/D/N=3 tmpCalib
+		tmpCalib[0] = 1
+		tmpCalib[1] = 1
+		tmpcalib[2] = 10000
+	endif
+	
+//	Wave w_calib = V_getDetTube_spatialCalib("VCALC",detStr)
+	Variable tube_width = 8.4			// TODO: Hard-wired value!!
+	if(cmpstr(detStr,"B") == 0)
+		V_NonLinearCorrection_B("VCALC",data,tmpCalib,tmpCalib,detStr,destPath)
+	else
+		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
+	endif
+				
 	Wave/Z data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave/Z data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	NVAR gUseNonLinearDet = root:Packages:NIST:VSANS:VCALC:gUseNonLinearDet
-	
-	if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
-		// convert the beam centers to mm
-		String orientation
-		Variable dimX,dimY,newX,newY
-		dimX = DimSize(data_realDistX,0)
-		dimY = DimSize(data_realDistX,1)
-		if(dimX > dimY)
-			orientation = "horizontal"
-		else
-			orientation = "vertical"
-		endif
-		
-		Variable tube_width = 8.4		//mm
-	
-	//
-		if(cmpstr(orientation,"vertical")==0)
-			//	this is data dimensioned as (Ntubes,Npix)
-			newX = tube_width*xCtr
-			newY = data_realDistY[0][yCtr]
-		else
-			//	this is data (horizontal) dimensioned as (Npix,Ntubes)
-			newX = data_realDistX[xCtr][0]
-			newY = tube_width*yCtr
-		endif	
 
-		//if detector "B", different calculation for the centers (not tubes)
-		if(cmpstr(detStr,"B")==0)
-			newX = data_realDistX[xCtr][0]
-			newY = data_realDistY[0][yCtr]
-			//newX = xCtr
-			//newY = yCtr
-		endif		
-				
-		// calculate all of the q-values
-		qTot = V_CalcQval(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
-		qx = V_CalcQX(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
-		qy = V_CalcQY(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
-		qz = V_CalcQZ(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+	if(kBCTR_CM)
+		if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
+			// no need to convert the beam centers to real space, just to mm
+			xCtr *= 10		// convert from cm to mm
+			yCtr *= 10		
+			// calculate all of the q-values
+			qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qz = V_CalcQZ(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+		
+	//		Print "det, x_mm, y_mm ",detStr,num2str(newX),num2str(newY)
+	//		Print "det, x_pix, y_pix ",detStr,num2str(xCtr),num2str(yCtr)
+		else
+			// do the q-calculation using linear detector
+			//VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+			qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+			qz = V_CalcQZ(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
+		endif	
 	
-//		Print "det, x_mm, y_mm ",detStr,num2str(newX),num2str(newY)
-//		Print "det, x_pix, y_pix ",detStr,num2str(xCtr),num2str(yCtr)
+	
 	else
-		// do the q-calculation using linear detector
-		VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+	// using the old calculation with beam center in pixels
+		if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
+			// convert the beam centers to mm
+//			String orientation
+			Variable newX,newY
+			dimX = DimSize(data_realDistX,0)
+			dimY = DimSize(data_realDistX,1)
+			if(dimX > dimY)
+				orientation = "horizontal"
+			else
+				orientation = "vertical"
+			endif
+			
+		
+		//
+			if(cmpstr(orientation,"vertical")==0)
+				//	this is data dimensioned as (Ntubes,Npix)
+				newX = tube_width*xCtr
+				newY = data_realDistY[0][yCtr]
+			else
+				//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+				newX = data_realDistX[xCtr][0]
+				newY = tube_width*yCtr
+			endif	
+	
+			//if detector "B", different calculation for the centers (not tubes)
+			if(cmpstr(detStr,"B")==0)
+				newX = data_realDistX[xCtr][0]
+				newY = data_realDistY[0][yCtr]
+				//newX = xCtr
+				//newY = yCtr
+			endif		
+					
+			// calculate all of the q-values
+			qTot = V_CalcQval(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+			qx = V_CalcQX(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+			qy = V_CalcQY(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+			qz = V_CalcQZ(p,q,newX,newY,sdd,lam,data_realDistX,data_realDistY)
+		
+	//		Print "det, x_mm, y_mm ",detStr,num2str(newX),num2str(newY)
+	//		Print "det, x_pix, y_pix ",detStr,num2str(xCtr),num2str(yCtr)
+		else
+			// do the q-calculation using linear detector
+			VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
+		endif	
+	
 	endif
+	
+	KillWaves/Z tmpCalib
 	
 	return(0)
 End
@@ -295,6 +368,7 @@ End
 //wavelength is in Angstroms
 //
 //returned magnitude of Q is in 1/Angstroms
+//
 //
 Function VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY

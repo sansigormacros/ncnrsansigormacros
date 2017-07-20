@@ -1456,7 +1456,29 @@ Function V_getDet_beam_center_y_mm(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
+//TODO
+//
+// x and y center in pix is currently not part of the Nexus definition
+//  does it need to be?
+// these lookups will fail if they have not been generated locally!
+Function V_getDet_beam_center_x_pix(fname,detStr)
+	String fname,detStr
 
+	String path = "entry:instrument:detector_"+detStr+":beam_center_x_pix"
+	return(V_getRealValueFromHDF5(fname,path))
+End
+
+//TODO
+//
+// x and y center in pix is currently not part of the Nexus definition
+//  does it need to be?
+// these lookups will fail if they have not been generated locally!
+Function V_getDet_beam_center_y_pix(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":beam_center_y_pix"
+	return(V_getRealValueFromHDF5(fname,path))
+End
 
 Function/WAVE V_getDetectorDataW(fname,detStr)
 	String fname,detStr

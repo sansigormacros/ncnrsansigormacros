@@ -27,8 +27,6 @@
 // structure as raw data is displayed and processed.
 //
 //
-Strconstant ksDetectorListNoB = "FL;FR;FT;FB;ML;MR;MT;MB;"
-Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 
 
 //
@@ -550,12 +548,34 @@ Function V_Raw_to_work(newType)
 //			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			Wave w_calib = V_getDetTube_spatialCalib(fname,detStr)
 			Variable tube_width = V_getDet_tubeWidth(fname,detStr)
-			V_NonLinearCorrection(w,w_calib,tube_width,detStr,destPath)
+			V_NonLinearCorrection(fname,w,w_calib,tube_width,detStr,destPath)
 
 			//(2.4) Convert the beam center values from pixels to mm
 			// TODO -- there needs to be a permanent location for these values??
 			//
-			V_ConvertBeamCtr_to_mm(fname,detStr,destPath)
+				// TODO
+				// -- the beam center value in mm needs to be present - it is used in calculation of Qvalues
+				// -- but having both the same is wrong...
+				// -- the pixel value is needed for display of the panels
+				if(kBCTR_CM)
+					//V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+					//
+	
+					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+					WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+					WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+					x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
+					y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
+					
+					// TODO:::
+				// now I need to convert the beam center in mm to pixels
+				// and have some rational place to look for it...
+					V_ConvertBeamCtr_to_pix(fname,detStr,destPath)
+				else
+					// beam center is in pixels, so use the old routine
+					V_ConvertBeamCtr_to_mm(fname,detStr,destPath)
+				endif		
 							
 			// (2.5) Calculate the q-values
 			// calculating q-values can't be done unless the non-linear corrections are calculated
@@ -572,7 +592,10 @@ Function V_Raw_to_work(newType)
 		endfor
 		
 		//"B" is separate
-		V_NonLinearCorrection_B(fname,"B",destPath)
+		Wave w = V_getDetectorDataW(fname,"B")
+		Wave cal_x = V_getDet_cal_x(fname,"B")
+		Wave cal_y = V_getDet_cal_y(fname,"B")
+		V_NonLinearCorrection_B(fname,w,cal_x,cal_y,"B",destPath)
 		V_ConvertBeamCtr_to_mmB(fname,"B",destPath)
 		V_Detector_CalcQVals(fname,"B",destPath)
 		

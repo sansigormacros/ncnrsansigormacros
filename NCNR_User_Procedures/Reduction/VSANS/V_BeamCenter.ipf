@@ -638,8 +638,8 @@ Function V_RestorePanels()
 	fname = type
 	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
-		xCtr = V_getDet_beam_center_x(fname,detStr)
-		yCtr = V_getDet_beam_center_y(fname,detStr)
+		xCtr = V_getDet_beam_center_x_pix(fname,detStr)
+		yCtr = V_getDet_beam_center_y_pix(fname,detStr)
 		V_RescaleToBeamCenter(type,detStr,xCtr,yCtr)
 	endfor
 		
@@ -700,8 +700,8 @@ Function V_BCtrTable()
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		panelW[ii] = detStr
-		xCtr_pix[ii] = V_getDet_beam_center_x(fname,detStr)
-		yCtr_pix[ii] = V_getDet_beam_center_y(fname,detStr)
+		xCtr_pix[ii] = V_getDet_beam_center_x_pix(fname,detStr)
+		yCtr_pix[ii] = V_getDet_beam_center_y_pix(fname,detStr)
 		// TODO
 		// and now the mm values
 		xCtr_mm[ii] = V_getDet_beam_center_x_mm(fname,detStr)

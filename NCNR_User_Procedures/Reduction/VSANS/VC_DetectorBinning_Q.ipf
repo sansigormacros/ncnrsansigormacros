@@ -176,9 +176,14 @@ Function VC_CalculateQFrontPanels()
 //	pixSizeY = 0.4			// approx 0.4 cm/pixel along length
 	nPix_X = VCALC_get_nPix_X("FL")
 	nPix_Y = VCALC_get_nPix_Y("FL")
-	
-	xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-	yCtr = nPix_Y/2	
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		yCtr = nPix_Y/2	
+	endif
 	//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","FL",xCtr)
 	V_putDet_beam_center_y("VCALC","FL",yCtr)
@@ -214,9 +219,15 @@ Function VC_CalculateQFrontPanels()
 	pixSizeY = VCALC_getPixSizeY("FR")
 	nPix_X = VCALC_get_nPix_X("FR")
 	nPix_Y = VCALC_get_nPix_Y("FR")
-	
-	xCtr = -(F_LR_sep/2/pixSizeX)-1		
-	yCtr = nPix_Y/2
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = -(F_LR_sep/2/pixSizeX)-1		
+		yCtr = nPix_Y/2	
+	endif
+
 	//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","FR",xCtr)
 	V_putDet_beam_center_y("VCALC","FR",yCtr)	
@@ -247,9 +258,15 @@ Function VC_CalculateQFrontPanels()
 	pixSizeY = VCALC_getPixSizeY("FT")
 	nPix_X = VCALC_get_nPix_X("FT")
 	nPix_Y = VCALC_get_nPix_Y("FT")
-	
-	xCtr = nPix_X/2
-	yCtr = -(F_TB_sep/2/pixSizeY)-1 
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X/2
+		yCtr = -(F_TB_sep/2/pixSizeY)-1 
+	endif	
+
 		//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","FT",xCtr)
 	V_putDet_beam_center_y("VCALC","FT",yCtr)
@@ -282,10 +299,16 @@ Function VC_CalculateQFrontPanels()
 	pixSizeY = VCALC_getPixSizeY("FB")
 	nPix_X = VCALC_get_nPix_X("FB")
 	nPix_Y = VCALC_get_nPix_Y("FB")
-		
-	xCtr = nPix_X/2
-	yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-		//put these  beam center values into the local folder
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X/2
+		yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	endif	
+			
+	//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","FB",xCtr)
 	V_putDet_beam_center_y("VCALC","FB",yCtr)
 	
@@ -595,9 +618,15 @@ Function VC_CalculateQMiddlePanels()
 	pixSizeY = VCALC_getPixSizeY("ML")
 	nPix_X = VCALC_get_nPix_X("ML")
 	nPix_Y = VCALC_get_nPix_Y("ML")
-	
-	xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-	yCtr = nPix_Y/2	
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		yCtr = nPix_Y/2	
+	endif		
+
 		//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","ML",xCtr)
 	V_putDet_beam_center_y("VCALC","ML",yCtr)
@@ -636,9 +665,16 @@ Function VC_CalculateQMiddlePanels()
 
 	nPix_X = VCALC_get_nPix_X("MR")
 	nPix_Y = VCALC_get_nPix_Y("MR")
-	
-	xCtr = -(M_LR_sep/2/pixSizeX)-1		
-	yCtr = nPix_Y/2
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = -(M_LR_sep/2/pixSizeX)-1		
+		yCtr = nPix_Y/2	
+	endif	
+		
+
 		//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","MR",xCtr)
 	V_putDet_beam_center_y("VCALC","MR",yCtr)
@@ -670,9 +706,16 @@ Function VC_CalculateQMiddlePanels()
 	pixSizeY = VCALC_getPixSizeY("MT")
 	nPix_X = VCALC_get_nPix_X("MT")
 	nPix_Y = VCALC_get_nPix_Y("MT")
-	
-	xCtr = nPix_X/2
-	yCtr = -(M_TB_sep/2/pixSizeY)-1 
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X/2
+		yCtr = -(M_TB_sep/2/pixSizeY)-1 
+	endif
+		
+
 		//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","MT",xCtr)
 	V_putDet_beam_center_y("VCALC","MT",yCtr)
@@ -705,9 +748,15 @@ Function VC_CalculateQMiddlePanels()
 	pixSizeY = VCALC_getPixSizeY("MB")
 	nPix_X = VCALC_get_nPix_X("MB")
 	nPix_Y = VCALC_get_nPix_Y("MB")
-		
-	xCtr = nPix_X/2
-	yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+
+	if(kBCTR_CM)
+		xCtr = 0
+		yCtr = 0			//values in cm
+	else	
+		xCtr = nPix_X/2
+		yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)?? 
+	endif		
+
 	//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","MB",xCtr)
 	V_putDet_beam_center_y("VCALC","MB",yCtr)

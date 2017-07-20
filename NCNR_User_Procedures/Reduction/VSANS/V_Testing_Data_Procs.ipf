@@ -59,6 +59,13 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 			V_writeDet_TBSetback(fileName,detStr,val)
 		endif
 		
+		// returns the total separation (assumed symmetric) in mm
+		val = VCALC_getPanelSeparation(detStr)		
+		val /= 2*10			// to get half of the separation, and convert to cm for the data file
+		// it's OK to call both of these. these functions check detStr for the correct value
+		V_writeDet_LateralOffset(fileName,detStr,val)
+		V_writeDet_VerticalOffset(fileName,detStr,val)
+
 		// x and y pixel sizes for each detector should be correct in the "base" file - but if not...
 		//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
 		//Function VCALC_getPixSizeY(type)
@@ -66,8 +73,21 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		V_writeDet_y_pixel_size(fileName,detStr,VCALC_getPixSizeY(detStr)*10)
 	
 		// write out the xCtr and yCtr (pixels) that was used in the q-calculation, done in VC_CalculateQFrontPanels()
-		V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr))
-		V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))
+		if(kBCTR_CM)
+		//  -- now write out the beam center in cm, not pixels
+			V_writeDet_beam_center_x(fileName,detStr,0)
+			V_writeDet_beam_center_y(fileName,detStr,0)
+		else
+			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr))
+			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))	
+		endif
+
+		if(cmpstr(detStr,"B") == 0)
+			//always write out the center of the detector since this is dummy data
+			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr))
+			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))				
+		endif
+
 		
 		
 		// the calibration data for each detector (except B) is already correct in the "base" file
