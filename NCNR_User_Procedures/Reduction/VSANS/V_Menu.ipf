@@ -24,6 +24,8 @@ Menu "VSANS"
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
 		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
+		"-"
+		"Annular Binning",Annular_Binning()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",V_Convert_to_Workfile()

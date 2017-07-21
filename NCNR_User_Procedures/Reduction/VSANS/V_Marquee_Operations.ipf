@@ -229,7 +229,7 @@ Function V_FindCentroid() :  GraphMarquee
 	
 	Variable xzsum,yzsum,zsum,xctr,yctr
 	Variable left,right,bottom,top,ii,jj,counts
-	
+	Variable x_mm_sum,y_mm_sum,x_mm,y_mm
 
 	
 	GetMarquee left,bottom
@@ -258,10 +258,18 @@ Function V_FindCentroid() :  GraphMarquee
 		// get the waves of the data and the data_err
 		Wave data = V_getDetectorDataW(gCurDispType,detStr)
 		Wave data_err = V_getDetectorDataErrW(gCurDispType,detStr)
+		
+		// get the real-space information
+		String destPath = "root:Packages:NIST:VSANS:"+gCurDispType
+		Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+		Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	
 		xzsum = 0
 		yzsum = 0
 		zsum = 0
+		x_mm_sum = 0
+		y_mm_sum = 0
+		
 		// count over rectangular selection, doing each row, L-R, bottom to top
 		ii = bottom -1
 		do
@@ -273,12 +281,17 @@ Function V_FindCentroid() :  GraphMarquee
 				xzsum += jj*counts
 				yzsum += ii*counts
 				zsum += counts
+				
+				x_mm_sum += data_realDistX[jj][ii]*counts
+				y_mm_sum += data_realDistY[jj][ii]*counts
 			while(jj<right)
 		while(ii<top)
 		
 		xctr = xzsum/zsum
 		yctr = yzsum/zsum
 		
+		x_mm = x_mm_sum/zsum
+		y_mm = y_mm_sum/zsum
 		// add 1 to each to get to detector coordinates (1,128)
 		// rather than the data array which is [0,127]
 //		xctr+=1
@@ -286,6 +299,9 @@ Function V_FindCentroid() :  GraphMarquee
 		
 		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
 		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
+		
+		Print "X-center (mm) = ",x_mm
+		Print "Y-center (mm) = ",y_mm
 	endif
 	
 	//back to root folder (redundant)

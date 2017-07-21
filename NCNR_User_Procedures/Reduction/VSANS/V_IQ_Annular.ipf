@@ -1,0 +1,798 @@
+#pragma TextEncoding = "MacRoman"
+#pragma rtGlobals=3		// Use modern global access method and strict wave access.
+
+
+// Procedures to do an annular binning of the data
+//
+// As for SANS, needs a Q-center and Q-delta to define the annular ring,
+// and the number of bins to divide the 360 circle
+//
+//
+//
+// TODO
+// x- add error bars to the plot of phi
+// -- data writer to export annular data (3-column)
+// -- loader to re-read annular data (will the normal loader work?
+// -- integrate this with the protocol
+// -- integrate this with a more general "average panel"
+// -- draw the q-center and width on the image (as a contour?)
+
+Proc Annular_Binning(folderStr,detGroup,qCtr_Ann,qWidth)
+	String folderStr="SAM",detGroup="F"
+	Variable qCtr_Ann=0.1,qWidth=0.01  	// +/- in A^-1
+	
+	V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
+	
+	Phi_Graph(folderStr)
+	
+End
+
+
+// TODO -- binType == 4 (slit mode) should never end up here, as it makes no sense
+//
+// -- really, the onle binning that makes any sense is "one", treating each panel individually,
+// so I may scrap the parameter, or ignore it. so don't count on it in the future.
+//
+Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
+	String folderStr,detGroup
+	Variable qCtr_Ann,qWidth  	// +/- in A^-1
+
+	Variable ii,delQ
+	String detStr
+	
+	if(cmpstr(detGroup,"F") == 0)
+		detStr = "FLRTB"
+	else
+		detStr = "MLRTB"
+	endif
+	
+// right now, use all of the detectors. There is a lot of waste in this and it could be 
+// done a lot faster, but...
+
+
+// TODO		
+		// detStr = "FLRTB" or "MLRTB", depending which panel the q-ring is centered on/
+		// for now, no crossing of the rings onto different panels
+		
+	V_fDoAnnularBin_QxQy2D(folderStr,detStr,qCtr_Ann,qWidth)
+
+
+	
+
+	return(0)
+End
+
+Window Phi_graph(folderStr) : Graph
+	String folderStr
+	
+	PauseUpdate; Silent 1		// building window...
+	String fldrSav0= GetDataFolder(1)
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
+	Display /W=(35,45,572,419) iBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
+	ModifyGraph mode=4
+	ModifyGraph marker=19
+	ErrorBars iBin_qxqy_FLRTB Y,wave=(eBin_qxqy_FLRTB,eBin_qxqy_FLRTB)
+
+	
+	SetDataFolder fldrSav0
+EndMacro
+
+
+//////////
+//
+//
+//
+// TODO 
+// -- "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
+//
+// ** Currently, type is being passed in as "" and ignored (looping through all of the detector panels
+// to potentially add to the annular bins)
+//
+// folderStr = WORK folder, type = the binning type (may include multiple detectors)
+//
+//	Variable qCtr_Ann = 0.1
+//	Variable qWidth = 0.02		// +/- in A^-1
+//
+Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
+	String folderStr,type
+	Variable qCtr_Ann,qWidth
+	
+	Variable nSets = 0
+	Variable xDim,yDim
+	Variable ii,jj
+	Variable qVal,nq,var,avesq,aveisq
+	Variable binIndex,val,isVCALC=0,maskMissing
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:instrument:detector_"
+	String detStr
+		
+	if(cmpstr(folderStr,"VCALC") == 0)
+		isVCALC = 1
+	endif
+	
+// now switch on the type to determine which waves to declare and create
+// since there may be more than one panel to step through. There may be two, there may be four
+//
+
+// TODO:
+// -- Solid_Angle -- waves will be present for WORK data other than RAW, but not for RAW
+//
+// assume that the mask files are missing unless we can find them. If VCALC data, 
+//  then the Mask is missing by definition
+	maskMissing = 1
+
+	strswitch(type)	// string switch
+//		case "FL":		// execute if case matches expression
+//		case "FR":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//				
+//			endif
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
+//								
+//		case "FT":		
+//		case "FB":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break
+//			
+//		case "ML":		
+//		case "MR":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			//TODO:
+//			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
+//			//    determined specifically for that panel (currently using one tube width as deltaQ)
+//			// -- this is repeated multiple times in this switch
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+////			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
+//					
+//		case "MT":		
+//		case "MB":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
+//					
+//		case "B":	
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_B")
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
+//			nSets = 1
+//			break	
+//			
+//		case "FLR":
+//		// detStr has multiple values now, so unfortuntely, I'm hard-wiring things...
+//		// TODO
+//		// -- see if I can un-hard-wire some of this below when more than one panel is combined
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
+//				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
+//				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"FL")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
+//			
+//			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
+//			Wave qTotal2 = $(folderPath+instPath+"FR"+":qTot_"+"FR")			// 2D q-values	
+//		
+//			nSets = 2
+//			break			
+//		
+//		case "FTB":
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"FT"+":det_"+"FT")
+//				WAVE/Z iErr = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"FB"+":det_"+"FB")
+//				WAVE/Z iErr2 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"FT")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"FT")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"FB")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FB")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+"FT"+":gDelQ_FT")
+//			
+//			Wave qTotal = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
+//			Wave qTotal2 = $(folderPath+instPath+"FB"+":qTot_"+"FB")			// 2D q-values	
+//	
+//			nSets = 2
+//			break		
+		
+		case "FLRTB":
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
+				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
+				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
+				WAVE inten3 = $(folderPath+instPath+"FT"+":det_"+"FT")
+				WAVE/Z iErr3 = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten4 = $(folderPath+instPath+"FB"+":det_"+"FB")
+				WAVE/Z iErr4 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"FL")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
+				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+				Wave inten3 = V_getDetectorDataW(folderStr,"FT")
+				Wave iErr3 = V_getDetectorDataErrW(folderStr,"FT")
+				Wave inten4 = V_getDetectorDataW(folderStr,"FB")
+				Wave iErr4 = V_getDetectorDataErrW(folderStr,"FB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+					maskMissing = 0
+				endif
+			endif	
+//			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
+			
+			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"FR"+":qTot_"+"FR")			// 2D q-values	
+			Wave qTotal3 = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
+			Wave qTotal4 = $(folderPath+instPath+"FB"+":qTot_"+"FB")			// 2D q-values	
+
+			Wave qx = $(folderPath+instPath+"FL"+":qx_"+"FL")			// 2D qx-values	
+			Wave qx2 = $(folderPath+instPath+"FR"+":qx_"+"FR")			// 2D qx-values	
+			Wave qx3 = $(folderPath+instPath+"FT"+":qx_"+"FT")			// 2D qx-values	
+			Wave qx4 = $(folderPath+instPath+"FB"+":qx_"+"FB")			// 2D qx-values	
+
+			Wave qy = $(folderPath+instPath+"FL"+":qy_"+"FL")			// 2D qy-values	
+			Wave qy2 = $(folderPath+instPath+"FR"+":qy_"+"FR")			// 2D qy-values	
+			Wave qy3 = $(folderPath+instPath+"FT"+":qy_"+"FT")			// 2D qy-values	
+			Wave qy4 = $(folderPath+instPath+"FB"+":qy_"+"FB")			// 2D qy-values	
+								
+			nSets = 4
+			break		
+			
+//		case "MLR":
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
+//				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
+//				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"ML")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+//			
+//			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
+//			Wave qTotal2 = $(folderPath+instPath+"MR"+":qTot_"+"MR")			// 2D q-values	
+//		
+//			nSets = 2
+//			break			
+//		
+//		case "MTB":
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"MT"+":det_"+"MT")
+//				WAVE/Z iErr = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"MB"+":det_"+"MB")
+//				WAVE/Z iErr2 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"MT")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"MT")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"MB")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MB")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+"MT"+":gDelQ_MT")
+//			
+//			Wave qTotal = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
+//			Wave qTotal2 = $(folderPath+instPath+"MB"+":qTot_"+"MB")			// 2D q-values	
+//		
+//			nSets = 2
+//			break				
+		
+		case "MLRTB":
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
+				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
+				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
+				WAVE inten3 = $(folderPath+instPath+"MT"+":det_"+"MT")
+				WAVE/Z iErr3 = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation		
+				WAVE inten4 = $(folderPath+instPath+"MB"+":det_"+"MB")
+				WAVE/Z iErr4 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation	
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"ML")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
+				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
+				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+				Wave inten3 = V_getDetectorDataW(folderStr,"MT")
+				Wave iErr3 = V_getDetectorDataErrW(folderStr,"MT")
+				Wave inten4 = V_getDetectorDataW(folderStr,"MB")
+				Wave iErr4 = V_getDetectorDataErrW(folderStr,"MB")
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+					maskMissing = 0
+				endif
+			endif	
+//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+			
+			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
+			Wave qTotal2 = $(folderPath+instPath+"MR"+":qTot_"+"MR")			// 2D q-values	
+			Wave qTotal3 = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
+			Wave qTotal4 = $(folderPath+instPath+"MB"+":qTot_"+"MB")			// 2D q-values	
+
+			Wave qx = $(folderPath+instPath+"ML"+":qx_"+"ML")			// 2D qx-values	
+			Wave qx2 = $(folderPath+instPath+"MR"+":qx_"+"MR")			// 2D qx-values	
+			Wave qx3 = $(folderPath+instPath+"MT"+":qx_"+"MT")			// 2D qx-values	
+			Wave qx4 = $(folderPath+instPath+"MB"+":qx_"+"MB")			// 2D qx-values	
+
+			Wave qy = $(folderPath+instPath+"ML"+":qy_"+"ML")			// 2D qy-values	
+			Wave qy2 = $(folderPath+instPath+"MR"+":qy_"+"MR")			// 2D qy-values	
+			Wave qy3 = $(folderPath+instPath+"MT"+":qy_"+"MT")			// 2D qy-values	
+			Wave qy4 = $(folderPath+instPath+"MB"+":qy_"+"MB")			// 2D qy-values	
+					
+			nSets = 4
+			break									
+					
+		default:
+			nSets = 0							// optional default expression executed
+			Print "ERROR   ---- type is not recognized "
+	endswitch
+
+//	Print "delQ = ",delQ," for ",type
+
+	if(nSets == 0)
+		SetDataFolder root:
+		return(0)
+	endif
+
+
+//TODO: properly define the 2D errors here - I'll have this if I do the simulation
+// -- need to propagate the 2D errors up to this point
+//
+	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
+		Duplicate/O inten,iErr
+		Wave iErr=iErr
+//		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr = sqrt(inten+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr2)==0 && WaveExists(inten2) != 0)
+		Duplicate/O inten2,iErr2
+		Wave iErr2=iErr2
+//		iErr2 = 1+sqrt(inten2+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr2 = sqrt(inten2+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr3)==0  && WaveExists(inten3) != 0)
+		Duplicate/O inten3,iErr3
+		Wave iErr3=iErr3
+//		iErr3 = 1+sqrt(inten3+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr3 = sqrt(inten3+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+	if(WaveExists(iErr4)==0  && WaveExists(inten4) != 0)
+		Duplicate/O inten4,iErr4
+		Wave iErr4=iErr4
+//		iErr4 = 1+sqrt(inten4+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
+	endif
+
+	// TODO -- nq will need to be larger, once the back detector is installed
+	//
+	// note that the back panel of 320x320 (1mm res) results in 447 data points!
+	// - so I upped nq to 600
+
+	nq = 600
+
+//******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
+//	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy"+"_"+type)
+//	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"phiBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"nBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin2_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
+	
+	Wave iBin_qxqy = $(folderPath+":"+"iBin_qxqy_"+type)
+//	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Wave phiBin_qxqy = $(folderPath+":"+"phiBin_qxqy"+"_"+type)
+	Wave nBin_qxqy = $(folderPath+":"+"nBin_qxqy"+"_"+type)
+	Wave iBin2_qxqy = $(folderPath+":"+"iBin2_qxqy"+"_"+type)
+	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy"+"_"+type)
+	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
+	
+	
+// TODO:
+// -- get the q-binning values from the VSANS equivalent
+//	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr	
+//	Variable qc = NumberByKey("QCENTER",keyListStr,"=",";")		// q-center
+//	Variable nw = NumberByKey("QDELTA",keyListStr,"=",";")		// (in SANS - number of pixels wide)
+
+
+	Variable nphi,dphi,isIn,phiij,iphi
+
+// TODO: define nphi
+//	dr = 1 			//minimum annulus width, keep this fixed at one
+	NVAR numPhiSteps = root:Packages:NIST:VSANS:Globals:gNPhiSteps
+	nphi = numPhiSteps		//number of anular sectors is set by users
+	dphi = 360/nphi
+	
+
+	iBin_qxqy = 0
+	iBin2_qxqy = 0
+	eBin_qxqy = 0
+	eBin2D_qxqy = 0
+	nBin_qxqy = 0	//number of intensities added to each bin
+
+
+// 4 panels	 is currently the only situation
+//
+// this needs to be a double loop now...
+// TODO:
+// -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
+// -- the solid angle per pixel is not completely implemented.
+//    it will be present for WORK data other than RAW, but not for RAW
+
+// if any of the masks don't exist, display the error, and proceed with the averaging, using all data
+	if(maskMissing == 1)
+		Print "Mask file not found for at least one detector - so all data is used"
+	endif
+
+	Variable mask_val
+// use set 1 (no number) only
+	if(nSets >= 1)
+		xDim=DimSize(inten,0)
+		yDim=DimSize(inten,1)
+	
+		for(ii=0;ii<xDim;ii+=1)
+			for(jj=0;jj<yDim;jj+=1)
+				//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+				qVal = qTotal[ii][jj]
+				
+				isIn = V_CloseEnough(qVal,qCtr_Ann,qWidth)
+				
+				if(isIn)		// it's in the annulus somewhere, do something
+					// now I need the qx and qy to find phi
+					if (qy[ii][jj] >= 0)
+						//phiij is in degrees
+						phiij = atan2(qy[ii][jj],qx[ii][jj])*180/Pi		//0 to 180 deg
+					else
+						phiij = 360 + atan2(qy[ii][jj],qx[ii][jj])*180/Pi		//180 to 360 deg
+					Endif
+					if (phiij > (360-0.5*dphi))
+						phiij -= 360
+					Endif
+					iphi = trunc(phiij/dphi + 1.501)			// TODO: why the value of 1.501????
+							
+					val = inten[ii][jj]
+					
+					if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+						mask_val = 0
+					else
+						mask_val = mask[ii][jj]
+					endif
+					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+						iBin_qxqy[iphi-1] += val
+						iBin2_qxqy[iphi-1] += val*val
+						eBin2D_qxqy[iphi-1] += iErr[ii][jj]*iErr[ii][jj]
+						nBin_qxqy[iphi-1] += 1
+					endif
+				
+				endif // isIn
+				
+			endfor
+		endfor
+		
+	endif
+
+// add in set 2 (set 1 already done)
+	if(nSets >= 2)
+		xDim=DimSize(inten2,0)
+		yDim=DimSize(inten2,1)
+	
+		for(ii=0;ii<xDim;ii+=1)
+			for(jj=0;jj<yDim;jj+=1)
+				//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+				qVal = qTotal2[ii][jj]
+				
+				isIn = V_CloseEnough(qVal,qCtr_Ann,qWidth)
+				
+				if(isIn)		// it's in the annulus somewhere, do something
+					// now I need the qx and qy to find phi
+					if (qy2[ii][jj] >= 0)
+						//phiij is in degrees
+						phiij = atan2(qy2[ii][jj],qx2[ii][jj])*180/Pi		//0 to 180 deg
+					else
+						phiij = 360 + atan2(qy2[ii][jj],qx2[ii][jj])*180/Pi		//180 to 360 deg
+					Endif
+					if (phiij > (360-0.5*dphi))
+						phiij -= 360
+					Endif
+					iphi = trunc(phiij/dphi + 1.501)			// TODO: why the value of 1.501????
+							
+					val = inten2[ii][jj]
+					
+					if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+						mask_val = 0
+					else
+						mask_val = mask2[ii][jj]
+					endif
+					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+						iBin_qxqy[iphi-1] += val
+						iBin2_qxqy[iphi-1] += val*val
+						eBin2D_qxqy[iphi-1] += iErr2[ii][jj]*iErr2[ii][jj]
+						nBin_qxqy[iphi-1] += 1
+					endif
+				
+				endif // isIn
+
+			endfor		//jj
+		endfor		//ii
+		
+	endif		// set 2
+
+
+// add in set 3 and 4 (set 1 and 2 already done)
+	if(nSets == 4)
+		xDim=DimSize(inten3,0)
+		yDim=DimSize(inten3,1)
+	
+		for(ii=0;ii<xDim;ii+=1)
+			for(jj=0;jj<yDim;jj+=1)
+				//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+				qVal = qTotal3[ii][jj]
+				
+				isIn = V_CloseEnough(qVal,qCtr_Ann,qWidth)
+				
+				if(isIn)		// it's in the annulus somewhere, do something
+					// now I need the qx and qy to find phi
+					if (qy3[ii][jj] >= 0)
+						//phiij is in degrees
+						phiij = atan2(qy3[ii][jj],qx3[ii][jj])*180/Pi		//0 to 180 deg
+					else
+						phiij = 360 + atan2(qy3[ii][jj],qx3[ii][jj])*180/Pi		//180 to 360 deg
+					Endif
+					if (phiij > (360-0.5*dphi))
+						phiij -= 360
+					Endif
+					iphi = trunc(phiij/dphi + 1.501)			// TODO: why the value of 1.501????
+							
+					val = inten3[ii][jj]
+					
+					if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+						mask_val = 0
+					else
+						mask_val = mask3[ii][jj]
+					endif
+					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+						iBin_qxqy[iphi-1] += val
+						iBin2_qxqy[iphi-1] += val*val
+						eBin2D_qxqy[iphi-1] += iErr3[ii][jj]*iErr3[ii][jj]
+						nBin_qxqy[iphi-1] += 1
+					endif
+				
+				endif // isIn
+				
+			
+			endfor
+		endfor		// end of ij loop over set 3
+		
+		
+		xDim=DimSize(inten4,0)
+		yDim=DimSize(inten4,1)
+	
+		for(ii=0;ii<xDim;ii+=1)
+			for(jj=0;jj<yDim;jj+=1)
+				//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+				qVal = qTotal4[ii][jj]
+				
+				isIn = V_CloseEnough(qVal,qCtr_Ann,qWidth)
+				
+				if(isIn)		// it's in the annulus somewhere, do something
+					// now I need the qx and qy to find phi
+					if (qy4[ii][jj] >= 0)
+						//phiij is in degrees
+						phiij = atan2(qy4[ii][jj],qx4[ii][jj])*180/Pi		//0 to 180 deg
+					else
+						phiij = 360 + atan2(qy4[ii][jj],qx4[ii][jj])*180/Pi		//180 to 360 deg
+					Endif
+					if (phiij > (360-0.5*dphi))
+						phiij -= 360
+					Endif
+					iphi = trunc(phiij/dphi + 1.501)			// TODO: why the value of 1.501????
+							
+					val = inten4[ii][jj]
+					
+					if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+						mask_val = 0
+					else
+						mask_val = mask4[ii][jj]
+					endif
+					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+						iBin_qxqy[iphi-1] += val
+						iBin2_qxqy[iphi-1] += val*val
+						eBin2D_qxqy[iphi-1] += iErr4[ii][jj]*iErr4[ii][jj]
+						nBin_qxqy[iphi-1] += 1
+					endif
+				
+				endif // isIn				
+				
+				
+			endfor
+		endfor		// end ij loop over set 4
+		
+	endif	// adding sets 3 and 4
+
+
+// after looping through all of the data on the panels, calculate errors on I(q),
+// just like in CircSectAve.ipf
+// TODO:
+// -- 2D Errors were NOT properly acculumated through reduction, so this loop of calculations is NOT MEANINGFUL (yet)
+// x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
+	for(ii=0;ii<nphi;ii+=1)
+	
+		phiBin_qxqy[ii] = dphi*ii
+		
+		if(nBin_qxqy[ii] == 0)
+			//no pixels in annuli, data unknown
+			iBin_qxqy[ii] = 0
+			eBin_qxqy[ii] = 1
+			eBin2D_qxqy[ii] = NaN
+		else
+			if(nBin_qxqy[ii] <= 1)
+				//need more than one pixel to determine error
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				eBin_qxqy[ii] = 1
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			else
+				//assume that the intensity in each pixel in annuli is normally distributed about mean...
+				//  -- this is correctly calculating the error as the standard error of the mean, as
+				//    was always done for SANS as well.
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				avesq = iBin_qxqy[ii]^2
+				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
+				var = aveisq-avesq
+				if(var<=0)
+					eBin_qxqy[ii] = 1e-6
+				else
+					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
+				endif
+				// and calculate as it is propagated pixel-by-pixel
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			endif
+		endif
+	endfor
+	
+	eBin2D_qxqy = sqrt(eBin2D_qxqy)		// as equation (3) of John's memo
+	
+	// find the last non-zero point, working backwards
+	val=nq
+	do
+		val -= 1
+	while((nBin_qxqy[val] == 0) && val > 0)
+	
+//	print val, nBin_qxqy[val]
+	DeletePoints val, nq-val, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	if(val == 0)
+		// all the points were deleted
+		return(0)
+	endif
+	
+	
+	// since the beam center is not always on the detector, many of the low Q bins will have zero pixels
+	// find the first non-zero point, working forwards
+	val = -1
+	do
+		val += 1
+	while(nBin_qxqy[val] == 0)	
+	DeletePoints 0, val, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	// ?? there still may be a point in the q-range that gets zero pixel contribution - so search this out and get rid of it
+	val = numpnts(nBin_qxqy)-1
+	do
+		if(nBin_qxqy[val] == 0)
+			DeletePoints val, 1, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		endif
+		val -= 1
+	while(val>0)
+	
+	// TODO:
+	// -- is this where I do the resolution calculation? This is where I calculate the resolution in SANS (see CircSectAve)
+	// -- or do I do it as a separate call?
+	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
+	//
+	
+	
+	
+	SetDataFolder root:
+	
+	return(0)
+End
+
+

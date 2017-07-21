@@ -569,7 +569,7 @@ Function V_Osc_ProcessEventLog(ctrlName)
 	//
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-s_tic()
+v_tic()
 	if(WaveExists($"root:Packages:NIST:VSANS:Event:OscSortIndex") == 0 )
 		Duplicate/O rescaledTime OscSortIndex
 		MakeIndex rescaledTime OscSortIndex
@@ -580,11 +580,11 @@ s_tic()
 	Endif
 	
 printf "sort time = "
-s_toc()
+v_toc()
 
 	Wave index = root:Packages:NIST:VSANS:Event:SavedIndex		//this is the histogram index
 
-s_tic()
+v_tic()
 	for(ii=0;ii<nslices;ii+=1)
 		if(ii==0)
 //			t1 = ii*del
@@ -619,7 +619,7 @@ s_tic()
 		binCount[ii] = sum(tmpData,-inf,inf)
 	endfor
 printf "histogram time = "
-s_toc()
+v_toc()
 
 	Duplicate/O slicedData,root:Packages:NIST:VSANS:Event:dispsliceData,root:Packages:NIST:VSANS:Event:logSlicedData
 	Wave logSlicedData = root:Packages:NIST:VSANS:Event:logSlicedData
@@ -985,11 +985,11 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 		
 		Redimension/D xLoc,yLoc,timePt	
 		
-//s_tic()
+//v_tic()
 //	V_SortAndSplitEvents()
 //
 //Printf "File sort and split time (s) = "
-//s_toc()
+//v_toc()
 
 //
 // switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
@@ -1232,7 +1232,7 @@ Function V_LoadEvents()
 
 	Open/R refnum as filepathstr
 	
-s_tic()
+v_tic()
 
 	FBinRead refnum, gVSANSStr
 	FBinRead/F=2/U refnum, gRevision
@@ -1261,7 +1261,7 @@ s_tic()
 	KillWaves/Z $(StringFromList(0,S_waveNames))
 
 Printf "Time to read file (s) = "
-s_toc()	
+v_toc()	
 
 
 	totBytes = V_logEOF
@@ -1273,7 +1273,7 @@ s_toc()
 ////// Now decode the events
 
 
-s_tic()
+v_tic()
 	WAVE V_Events = V_Events
 	uint64 val,b1,b2,btime
 
@@ -1308,7 +1308,7 @@ s_tic()
 //	endfor
 
 Printf "File decode time (s) = "
-s_toc()
+v_toc()
 
 //	KillWaves/Z timePt,xLoc,yLoc
 //	Rename tube xLoc
@@ -1418,7 +1418,7 @@ End
 //
 //	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 //
-//s_tic()
+//v_tic()
 //
 ////	Wave/Z wave0=wave0
 ////	Wave/Z wave1=wave1
@@ -1499,7 +1499,7 @@ End
 //	sprintf tmpStr,"Rollover = %d",num3
 //	dispStr += tmpStr
 //
-//	s_toc()
+//	v_toc()
 //	
 //	Print "Events removed (XOP) = ",numRemoved
 //	

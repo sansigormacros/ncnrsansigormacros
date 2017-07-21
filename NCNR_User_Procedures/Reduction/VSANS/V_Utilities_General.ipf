@@ -1199,3 +1199,24 @@ Function/S V_NumWave2List(w,sep)
 	while(ii<n)
 	return(newList)
 End
+
+
+/////
+// @ IgorExchange
+//TicToc
+//Posted April 16th, 2009 by bgallarda
+//	¥	in Programming 6.10.x
+
+////duplicated here -- for VSANS use
+function v_tic()
+	variable/G tictoc = startMSTimer
+end
+ 
+function v_toc()
+	NVAR/Z tictoc
+	variable ttTime = stopMSTimer(tictoc)
+	printf "%g seconds\r", (ttTime/1e6)
+	killvariables/Z tictoc
+end
+
+

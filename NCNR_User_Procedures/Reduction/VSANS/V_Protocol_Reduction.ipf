@@ -674,7 +674,7 @@ Function/S V_PickBGDButton(ctrlName) : ButtonControl
 
 	String match="BLOCKED BEAM"
 
-//s_tic()
+//v_tic()
 // get the list from the file catalog (=0.0007s)
 //	
 	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
@@ -689,10 +689,10 @@ Function/S V_PickBGDButton(ctrlName) : ButtonControl
 	
 	List = SortList(List,";",0)
 	Printf "BGD files = %s\r",list	
-//S_toc()	
+//v_toc()	
 	
 	
-////S_tic()			// from grep = 3.3s
+////v_tic()			// from grep = 3.3s
 //	newList = V_GetRawDataFileList()
 //	num=ItemsInList(newList)
 //	
@@ -718,7 +718,7 @@ Function/S V_PickBGDButton(ctrlName) : ButtonControl
 //		
 //	List = SortList(List,";",0)
 //	Printf "BGD files = %s\r",list
-////S_toc()
+////v_toc()
 	
 	return(list)
 End
@@ -2675,7 +2675,11 @@ Function V_AskForAbsoluteParams_Quest()
 
 		//		TODO
 		// -- get all of the proper values for the calculation
+		// -- currently the attenuation is incorrect
+		//   such that kappa_err = 1*kappa
 		// -- verify the calculation (no solid angle needed)
+		
+		DoAlert 0,"This calculation is not reliable - attenuation is not calibrated"
 		
 		// get the attenuation factor for the empty beam
 		empAttenFactor = V_getAttenuator_transmission(emptyFileName)

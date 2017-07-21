@@ -61,7 +61,7 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gBinWidth", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gBinWidth=val
 	
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gNPhiSteps", 72 )
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gNPhiSteps", 90 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gNPhiSteps=val
 	
 	// flags to turn detector corrections on/off for testing (you should leave these ON)

@@ -434,7 +434,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		return (1)
 	endif
 	
-//s_tic()		//fast 
+//v_tic()		//fast 
 	
 	SVAR tmpStr=root:file_name
 	fileName=tmpStr		//SRK - in case the file was chosen from a dialog, I'll need access to the name later
@@ -535,7 +535,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 
 	HDF5CloseFile fileID
 	
-//s_toc()
+//v_toc()
 
 	// save a global string with the file name to be picked up for the status on the display
 	// this string can be carried around as the data is moved to other folders

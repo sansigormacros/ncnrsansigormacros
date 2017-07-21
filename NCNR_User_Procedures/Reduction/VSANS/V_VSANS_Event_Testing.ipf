@@ -252,7 +252,7 @@ End
 Function V_decodeFakeEventWave(w)
 	Wave w
 
-s_tic()
+v_tic()
 //	WAVE w = eventWave
 	uint64 val,b1,b2,btime
 	val = w[0]
@@ -289,7 +289,7 @@ s_tic()
 //		
 //	endfor
 
-s_toc()
+v_toc()
 		
 	return(0)
 End
@@ -382,7 +382,7 @@ Function V_readFakeEventFile(fileName)
 	Open/R refnum as filename
 	filename = S_fileName
 
-s_tic()
+v_tic()
 
 	FBinRead refnum, vsansStr
 	FBinRead/F=2/U refnum, revision
@@ -410,7 +410,7 @@ s_tic()
 	
 	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
 	KillWaves/Z $(StringFromList(0,S_waveNames))
-s_toc()	
+v_toc()	
 	
 	Print vsansStr
 	Print revision
