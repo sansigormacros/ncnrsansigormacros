@@ -11,8 +11,8 @@
 //
 // TODO
 // x- add error bars to the plot of phi
-// -- data writer to export annular data (3-column)
-// -- loader to re-read annular data (will the normal loader work?
+// x- data writer to export annular data (3-column)
+// x- loader to re-read annular data (will the normal loader work?) -- yes
 // -- integrate this with the protocol
 // -- integrate this with a more general "average panel"
 // -- draw the q-center and width on the image (as a contour?)
@@ -68,7 +68,7 @@ Window Phi_graph(folderStr) : Graph
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
-	Display /W=(35,45,572,419) iBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
+	Display /W=(35,45,572,419) /K=1 iBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
 	ModifyGraph mode=4
 	ModifyGraph marker=19
 	ErrorBars iBin_qxqy_FLRTB Y,wave=(eBin_qxqy_FLRTB,eBin_qxqy_FLRTB)
@@ -123,158 +123,7 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	maskMissing = 1
 
 	strswitch(type)	// string switch
-//		case "FL":		// execute if case matches expression
-//		case "FR":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//				
-//			endif
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
-//								
-//		case "FT":		
-//		case "FB":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break
-//			
-//		case "ML":		
-//		case "MR":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			//TODO:
-//			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
-//			//    determined specifically for that panel (currently using one tube width as deltaQ)
-//			// -- this is repeated multiple times in this switch
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-////			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
-//					
-//		case "MT":		
-//		case "MB":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
-//					
-//		case "B":	
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_B")
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
-//			nSets = 1
-//			break	
-//			
-//		case "FLR":
-//		// detStr has multiple values now, so unfortuntely, I'm hard-wiring things...
-//		// TODO
-//		// -- see if I can un-hard-wire some of this below when more than one panel is combined
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
-//				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
-//				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
-//				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,"FL")
-//				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
-//				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
-//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
-//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
-//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
-//			
-//			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
-//			Wave qTotal2 = $(folderPath+instPath+"FR"+":qTot_"+"FR")			// 2D q-values	
-//		
-//			nSets = 2
-//			break			
-//		
-//		case "FTB":
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+"FT"+":det_"+"FT")
-//				WAVE/Z iErr = $("iErr_"+"FT")			// 2D errors -- may not exist, especially for simulation		
-//				WAVE inten2 = $(folderPath+instPath+"FB"+":det_"+"FB")
-//				WAVE/Z iErr2 = $("iErr_"+"FB")			// 2D errors -- may not exist, especially for simulation	
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,"FT")
-//				Wave iErr = V_getDetectorDataErrW(folderStr,"FT")
-//				Wave inten2 = V_getDetectorDataW(folderStr,"FB")
-//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FB")
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
-//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
-//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+"FT"+":gDelQ_FT")
-//			
-//			Wave qTotal = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
-//			Wave qTotal2 = $(folderPath+instPath+"FB"+":qTot_"+"FB")			// 2D q-values	
-//	
-//			nSets = 2
-//			break		
+
 		
 		case "FLRTB":
 			if(isVCALC)
@@ -323,55 +172,7 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 			nSets = 4
 			break		
 			
-//		case "MLR":
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
-//				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
-//				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
-//				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,"ML")
-//				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
-//				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
-//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
-//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
-//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
-//			
-//			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
-//			Wave qTotal2 = $(folderPath+instPath+"MR"+":qTot_"+"MR")			// 2D q-values	
-//		
-//			nSets = 2
-//			break			
-//		
-//		case "MTB":
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+"MT"+":det_"+"MT")
-//				WAVE/Z iErr = $("iErr_"+"MT")			// 2D errors -- may not exist, especially for simulation		
-//				WAVE inten2 = $(folderPath+instPath+"MB"+":det_"+"MB")
-//				WAVE/Z iErr2 = $("iErr_"+"MB")			// 2D errors -- may not exist, especially for simulation	
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,"MT")
-//				Wave iErr = V_getDetectorDataErrW(folderStr,"MT")
-//				Wave inten2 = V_getDetectorDataW(folderStr,"MB")
-//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MB")
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
-//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
-//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+"MT"+":gDelQ_MT")
-//			
-//			Wave qTotal = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
-//			Wave qTotal2 = $(folderPath+instPath+"MB"+":qTot_"+"MB")			// 2D q-values	
-//		
-//			nSets = 2
-//			break				
+	
 		
 		case "MLRTB":
 			if(isVCALC)
@@ -788,11 +589,113 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
 	//
 	
-	
-	
 	SetDataFolder root:
 	
 	return(0)
 End
 
 
+Proc V_Write1DAnnular(pathStr,folderStr,detGroup,saveName)
+	String pathStr="root:Packages:NIST:VSANS:"
+	String folderStr="SAM"
+	String detGroup = "F"
+	String saveName = "Annular_Data.dat"
+	
+	
+	V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
+	
+end
+
+// TODO:
+// -- this is a temporary solution before a real writer is created
+// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
+// -- but a real writer will need to be aware of resolution, and there may be different forms
+//
+// this will bypass save dialogs
+// -- AND WILL OVERWITE DATA WITH THE SAME NAME
+//
+//			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+//
+Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
+	String pathStr,folderStr,detGroup,saveName
+	
+	String formatStr="",fullpath=""
+	Variable refnum,dialog=1
+
+	SetDataFolder $(pathStr+folderStr)
+
+	if(cmpstr(detGroup,"F") == 0)
+		Wave/Z pw = phiBin_qxqy_FLRTB
+		Wave/Z iw = iBin_qxqy_FLRTB
+		Wave/Z sw = eBin_qxqy_FLRTB
+	else
+		Wave/Z pw = phiBin_qxqy_MLRTB
+		Wave/Z iw = iBin_qxqy_MLRTB
+		Wave/Z sw = eBin_qxqy_MLRTB
+	endif
+
+	
+	String dataSetFolderParent,basestr
+	
+	//make sure the waves exist
+	
+	if(WaveExists(pw) == 0)
+		SetDataFolder root:
+		Abort "q is missing"
+	endif
+	if(WaveExists(iw) == 0)
+		SetDataFolder root:
+		Abort "i is missing"
+	endif
+	if(WaveExists(sw) == 0)
+		SetDataFolder root:
+		Abort "s is missing"
+	endif
+//	if(WaveExists(resw) == 0)
+//		Abort "Resolution information is missing."
+//	endif
+	
+//	Duplicate/O qw qbar,sigQ,fs
+//	if(dimsize(resW,1) > 4)
+//		//it's USANS put -dQv back in the last 3 columns
+//		NVAR/Z dQv = USANS_dQv
+//		if(NVAR_Exists(dQv) == 0)
+//			SetDataFolder root:
+//			Abort "It's USANS data, and I don't know what the slit height is."
+//		endif
+//		sigQ = -dQv
+//		qbar = -dQv
+//		fs = -dQv
+//	else
+//		//it's SANS
+//		sigQ = resw[p][0]
+//		qbar = resw[p][1]
+//		fs = resw[p][2]
+//	endif
+//	
+
+	PathInfo catPathName
+	fullPath = S_Path + saveName
+
+	Open refnum as fullpath
+
+	fprintf refnum,"Annular data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
+
+// TODO -- make this work for 6-columns (or??)
+//	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
+//	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
+//	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
+
+	//currently, only three columns
+	formatStr = "%15.4g %15.4g %15.4g\r\n"	
+	fprintf refnum, "The 3 columns are | Phi (degrees) | I(phi) (1/cm) | std. dev. I(phi) (1/cm)\r\n"	
+
+	wfprintf refnum,formatStr,pw,iw,sw
+	Close refnum
+	
+//	KillWaves/Z sigQ,qbar,fs
+	Print "Data written to: ",fullpath
+	
+	SetDataFolder root:
+	return(0)
+End

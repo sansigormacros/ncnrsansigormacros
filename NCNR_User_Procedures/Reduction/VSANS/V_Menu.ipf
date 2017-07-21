@@ -26,6 +26,7 @@ Menu "VSANS"
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 		"-"
 		"Annular Binning",Annular_Binning()
+		"Write Annular Data",V_Write1DAnnular()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",V_Convert_to_Workfile()

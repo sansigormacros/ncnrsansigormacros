@@ -177,7 +177,7 @@ Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
 End
 
 //
-// this is only called from the button on the data panel
+// this is only called from the button on the data panel (**not anymore**)
 // so the type is the currently displayed type, and the binning is from the panel
 //
 Function V_SimpleSave1DData(pathStr,type,tagStr,saveName)

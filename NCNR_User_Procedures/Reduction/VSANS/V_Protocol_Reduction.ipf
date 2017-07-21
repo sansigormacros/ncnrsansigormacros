@@ -31,8 +31,11 @@
 //		DPHI=value			+/- angular range around phi for average
 //		WIDTH=value		total width of rectangular section, in pixels
 //		SIDE=string		string from set {left,right,both} **note NOT capitalized
+
 //		QCENTER=value		q-value (1/A) of center of annulus for annular average
-//		QDELTA=value		total width of annulus centered at QCENTER
+//		QDELTA=value		(+/-) width of annulus centered at QCENTER, in units of q
+//		DETGROUP=value	string with "F" or "M" to name the detector group where the annulus lies.
+
 //		PLOT=string		string from set {Yes,No} = truth of generating plot of averaged data
 //		SAVE=string		string from set {Yes,No} = truth of saving averaged data to disk, now with "Concatenate"  or "Individual"
 //		NAME=string		string from set {Auto,Manual} = Automatic name generation or Manual(dialog)
@@ -1352,12 +1355,14 @@ End
 // somewhat confusing and complex, but may be as good as it gets.
 //
 //Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
-Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
+Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 	String av_typ,autoSave,AutoName,binType
 //	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
+	Variable Qctr=0.1,qDelta=0.01
+	String detGroup="F"
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Annular;"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
@@ -1368,10 +1373,12 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
 //	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
 //	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
 //	Prompt width, "Width of Rectangular average (1,128)"
-//	Prompt Qctr, "q-value of center of annulus"
-//	Prompt Qdelta,"Pixel width of annulus"
 	Prompt binType,"Binning Type?",popup,ksBinTypeStr
 
+	Prompt Qctr, "q-value of center of annulus"
+	Prompt Qdelta,"(+/-) q-width of annulus"
+	Prompt detGroup,"Group for annulus"
+	
 	//assign results of dialog to key=value string, semicolon separated
 	//do only what is necessary, based on av_typ
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr=""
@@ -1400,16 +1407,19 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType)
 //		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
 //	Endif
 //	
-//	if(cmpstr(av_typ,"Annular")==0)
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
-//	Endif
+	if(cmpstr(av_typ,"Annular")==0)
+		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
+		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
+		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DETGROUP=" + detGroup + ";"
+	Endif
 End
 
 
 // TODO
 // -- this is the original(SANS) version, and needs to be updated for VSANS as the averaging options are
 //    worked out
+// -- there have been changes made to V_GetAvgInfo() above -- so work from that version, NOT this one.
+//
 //
 //procedure called by protocol panel to ask user for average type choices
 // somewhat confusing and complex, but may be as good as it gets.
@@ -2423,6 +2433,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 			break
 		case "Annular":
 //			AnnularAverageTo1D(activeType)
+			String detGroup = StringByKey("DETGROUP",prot[5],"=",";")
+			Variable qCtr_Ann = NumberByKey("QCENTER",prot[5],"=",";")
+			Variable qWidth = NumberByKey("QDELTA",prot[5],"=",";")
+			V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
 			break
 		case "Circular":
 
@@ -2443,9 +2457,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 // x- then later, I dispatch to bin the active type...	
 // x- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
 //
-	V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
-	V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
-	
+// TODO:
+// -- BAD logic here, skipping the normal graph if annular is chosen. Go back and see how I do this
+// in SANS for a better and more foolproof way to do this
+	//
+	if(cmpstr(av_type,"Annular") != 0)
+		V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+		V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
+	endif
 ///// end of averaging dispatch
 
 
@@ -2511,6 +2530,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 		strswitch(av_type)	
 			case "Annular":
 //				WritePhiave_W_Protocol(activeType,fullPath,dialog)
+				V_fWrite1DAnnular("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
+				Print "data written to:  "+ newFileName+".phi"
+
 				break
 			case "2D_ASCII":
 //				Fast2DExport(activeType,fullPath,dialog)
@@ -2544,10 +2566,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 					V_RemoveQ0_B(activeType)
 					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
 				endif
+				Print "data written to:  "+ newFileName+"."+exten
 
 		endswitch
 		
-		Print "data written to:  "+ newFileName+"."+exten
 	Endif
 	
 	//done with everything in protocol list
