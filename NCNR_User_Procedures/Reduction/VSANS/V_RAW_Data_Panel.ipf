@@ -171,7 +171,8 @@ Window VSANS_DataPanel() : Panel
 	Button button_log,pos={689,146},size={70,20},proc=V_LogLinButtonProc,title="isLin",userData="0"
 	Button button_tab_p,pos={648,81},size={50,20},proc=V_Tab_p_ButtonProc,title="Tab >"
 	Button button_isolate,pos={606,114},size={70,20},proc=V_IsolateButtonProc,title="Isolate"
-	Button button_toWork,pos={770,113},size={70,20},proc=V_ToWorkFileButtonProc,title="to WORK"
+	Button button_toWork,pos={770,146},size={90,20},proc=V_ToWorkFileButtonProc,title="to WORK"
+	Button button_annular,pos={770,114},size={90,20},proc=V_annularAvgButtonProc,title="Annular Avg"
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
@@ -846,6 +847,31 @@ Function V_IvsQPanelButtonProc(ba) : ButtonControl
 			Variable binType = V_GetBinningPopMode()
 			V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
 			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// TODO:
+// -- simply calls the missing parameter dialog to do the average.
+//  see the file V_IQ_Annular.ipf for all of the features yet to be added.
+//
+// -- currently just the graph, no controls
+// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType) from inside V_BinningModePopup()
+Function V_annularAvgButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			Execute "Annular_Binning()"			
+
 			break
 		case -1: // control being killed
 			break

@@ -5,7 +5,7 @@
 // Procedures to do an annular binning of the data
 //
 // As for SANS, needs a Q-center and Q-delta to define the annular ring,
-// and the number of bins to divide the 360 circle
+// and the number of bins to divide the 360 degree circle
 //
 //
 //
@@ -15,16 +15,20 @@
 // x- loader to re-read annular data (will the normal loader work?) -- yes
 // -- integrate this with the protocol
 // -- integrate this with a more general "average panel"
-// -- draw the q-center and width on the image (as a contour?)
+// -- draw the q-center and width on the image (as a contour? - if no, use a draw layer...)
+//    Can I "flag" the pixels that contribute to the annualr average, and overlay them like a 
+//    Mask(translucent?), like a "thresholding" operation, but act on the Q-value, not the Z- value.
 
+//
+//
 Proc Annular_Binning(folderStr,detGroup,qCtr_Ann,qWidth)
 	String folderStr="SAM",detGroup="F"
 	Variable qCtr_Ann=0.1,qWidth=0.01  	// +/- in A^-1
 	
 	V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
-	
-	Phi_Graph(folderStr)
-	
+
+	V_Phi_Graph_Proc(folderStr,detGroup)
+
 End
 
 
@@ -49,7 +53,6 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 // right now, use all of the detectors. There is a lot of waste in this and it could be 
 // done a lot faster, but...
 
-
 // TODO		
 		// detStr = "FLRTB" or "MLRTB", depending which panel the q-ring is centered on/
 		// for now, no crossing of the rings onto different panels
@@ -57,21 +60,42 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 	V_fDoAnnularBin_QxQy2D(folderStr,detStr,qCtr_Ann,qWidth)
 
 
-	
-
 	return(0)
 End
 
-Window Phi_graph(folderStr) : Graph
-	String folderStr
+Proc V_Phi_Graph_Proc(folderStr,detGroup)
+	String folderStr,detGroup
 	
 	PauseUpdate; Silent 1		// building window...
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
-	Display /W=(35,45,572,419) /K=1 iBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
-	ModifyGraph mode=4
-	ModifyGraph marker=19
-	ErrorBars iBin_qxqy_FLRTB Y,wave=(eBin_qxqy_FLRTB,eBin_qxqy_FLRTB)
+
+	DoWindow/F V_Phi_Graph
+	if(V_flag == 0)
+		Display /W=(35,45,572,419)/N=V_Phi_Graph /K=1
+	else
+		RemoveFromGraph/Z iPhiBin_qxqy_FLRTB
+		RemoveFromGraph/Z iPhiBin_qxqy_MLRTB
+	endif
+
+	if(cmpstr(detGroup,"F") == 0)
+		AppendToGraph iPhiBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
+//		Display /W=(35,45,572,419)/N=V_Phi_Graph /K=1 iPhiBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ErrorBars iPhiBin_qxqy_FLRTB Y,wave=(ePhiBin_qxqy_FLRTB,ePhiBin_qxqy_FLRTB)
+		Label left "Counts"
+		Label bottom "Phi (degrees)"
+		Legend
+	else
+		AppendToGraph iPhiBin_qxqy_MLRTB vs phiBin_qxqy_MLRTB
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ErrorBars iPhiBin_qxqy_MLRTB Y,wave=(ePhiBin_qxqy_MLRTB,ePhiBin_qxqy_MLRTB)
+		Label left "Counts"
+		Label bottom "Phi (degrees)"
+		Legend
+	endif
 
 	
 	SetDataFolder fldrSav0
@@ -271,21 +295,21 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 
 //******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
-	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iPhiBin_qxqy"+"_"+type)
 //	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
 	Make/O/D/N=(nq)  $(folderPath+":"+"phiBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $(folderPath+":"+"nBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $(folderPath+":"+"iBin2_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $(folderPath+":"+"eBin_qxqy"+"_"+type)
-	Make/O/D/N=(nq)  $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"nPhiBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"iPhiBin2_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"ePhiBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"ePhiBin2D_qxqy"+"_"+type)
 	
-	Wave iBin_qxqy = $(folderPath+":"+"iBin_qxqy_"+type)
+	Wave iPhiBin_qxqy = $(folderPath+":"+"iPhiBin_qxqy_"+type)
 //	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy"+"_"+type)
 	Wave phiBin_qxqy = $(folderPath+":"+"phiBin_qxqy"+"_"+type)
-	Wave nBin_qxqy = $(folderPath+":"+"nBin_qxqy"+"_"+type)
-	Wave iBin2_qxqy = $(folderPath+":"+"iBin2_qxqy"+"_"+type)
-	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy"+"_"+type)
-	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
+	Wave nPhiBin_qxqy = $(folderPath+":"+"nPhiBin_qxqy"+"_"+type)
+	Wave iPhiBin2_qxqy = $(folderPath+":"+"iPhiBin2_qxqy"+"_"+type)
+	Wave ePhiBin_qxqy = $(folderPath+":"+"ePhiBin_qxqy"+"_"+type)
+	Wave ePhiBin2D_qxqy = $(folderPath+":"+"ePhiBin2D_qxqy"+"_"+type)
 	
 	
 // TODO:
@@ -304,11 +328,11 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	dphi = 360/nphi
 	
 
-	iBin_qxqy = 0
-	iBin2_qxqy = 0
-	eBin_qxqy = 0
-	eBin2D_qxqy = 0
-	nBin_qxqy = 0	//number of intensities added to each bin
+	iPhiBin_qxqy = 0
+	iPhiBin2_qxqy = 0
+	ePhiBin_qxqy = 0
+	ePhiBin2D_qxqy = 0
+	nPhiBin_qxqy = 0	//number of intensities added to each bin
 
 
 // 4 panels	 is currently the only situation
@@ -358,10 +382,10 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 						mask_val = mask[ii][jj]
 					endif
 					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
-						iBin_qxqy[iphi-1] += val
-						iBin2_qxqy[iphi-1] += val*val
-						eBin2D_qxqy[iphi-1] += iErr[ii][jj]*iErr[ii][jj]
-						nBin_qxqy[iphi-1] += 1
+						iPhiBin_qxqy[iphi-1] += val
+						iPhiBin2_qxqy[iphi-1] += val*val
+						ePhiBin2D_qxqy[iphi-1] += iErr[ii][jj]*iErr[ii][jj]
+						nPhiBin_qxqy[iphi-1] += 1
 					endif
 				
 				endif // isIn
@@ -404,10 +428,10 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 						mask_val = mask2[ii][jj]
 					endif
 					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
-						iBin_qxqy[iphi-1] += val
-						iBin2_qxqy[iphi-1] += val*val
-						eBin2D_qxqy[iphi-1] += iErr2[ii][jj]*iErr2[ii][jj]
-						nBin_qxqy[iphi-1] += 1
+						iPhiBin_qxqy[iphi-1] += val
+						iPhiBin2_qxqy[iphi-1] += val*val
+						ePhiBin2D_qxqy[iphi-1] += iErr2[ii][jj]*iErr2[ii][jj]
+						nPhiBin_qxqy[iphi-1] += 1
 					endif
 				
 				endif // isIn
@@ -451,10 +475,10 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 						mask_val = mask3[ii][jj]
 					endif
 					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
-						iBin_qxqy[iphi-1] += val
-						iBin2_qxqy[iphi-1] += val*val
-						eBin2D_qxqy[iphi-1] += iErr3[ii][jj]*iErr3[ii][jj]
-						nBin_qxqy[iphi-1] += 1
+						iPhiBin_qxqy[iphi-1] += val
+						iPhiBin2_qxqy[iphi-1] += val*val
+						ePhiBin2D_qxqy[iphi-1] += iErr3[ii][jj]*iErr3[ii][jj]
+						nPhiBin_qxqy[iphi-1] += 1
 					endif
 				
 				endif // isIn
@@ -495,10 +519,10 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 						mask_val = mask4[ii][jj]
 					endif
 					if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
-						iBin_qxqy[iphi-1] += val
-						iBin2_qxqy[iphi-1] += val*val
-						eBin2D_qxqy[iphi-1] += iErr4[ii][jj]*iErr4[ii][jj]
-						nBin_qxqy[iphi-1] += 1
+						iPhiBin_qxqy[iphi-1] += val
+						iPhiBin2_qxqy[iphi-1] += val*val
+						ePhiBin2D_qxqy[iphi-1] += iErr4[ii][jj]*iErr4[ii][jj]
+						nPhiBin_qxqy[iphi-1] += 1
 					endif
 				
 				endif // isIn				
@@ -519,46 +543,46 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	
 		phiBin_qxqy[ii] = dphi*ii
 		
-		if(nBin_qxqy[ii] == 0)
+		if(nPhiBin_qxqy[ii] == 0)
 			//no pixels in annuli, data unknown
-			iBin_qxqy[ii] = 0
-			eBin_qxqy[ii] = 1
-			eBin2D_qxqy[ii] = NaN
+			iPhiBin_qxqy[ii] = 0
+			ePhiBin_qxqy[ii] = 1
+			ePhiBin2D_qxqy[ii] = NaN
 		else
-			if(nBin_qxqy[ii] <= 1)
+			if(nPhiBin_qxqy[ii] <= 1)
 				//need more than one pixel to determine error
-				iBin_qxqy[ii] /= nBin_qxqy[ii]
-				eBin_qxqy[ii] = 1
-				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+				iPhiBin_qxqy[ii] /= nPhiBin_qxqy[ii]
+				ePhiBin_qxqy[ii] = 1
+				ePhiBin2D_qxqy[ii] /= (nPhiBin_qxqy[ii])^2
 			else
 				//assume that the intensity in each pixel in annuli is normally distributed about mean...
 				//  -- this is correctly calculating the error as the standard error of the mean, as
 				//    was always done for SANS as well.
-				iBin_qxqy[ii] /= nBin_qxqy[ii]
-				avesq = iBin_qxqy[ii]^2
-				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
+				iPhiBin_qxqy[ii] /= nPhiBin_qxqy[ii]
+				avesq = iPhiBin_qxqy[ii]^2
+				aveisq = iPhiBin2_qxqy[ii]/nPhiBin_qxqy[ii]
 				var = aveisq-avesq
 				if(var<=0)
-					eBin_qxqy[ii] = 1e-6
+					ePhiBin_qxqy[ii] = 1e-6
 				else
-					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
+					ePhiBin_qxqy[ii] = sqrt(var/(nPhiBin_qxqy[ii] - 1))
 				endif
 				// and calculate as it is propagated pixel-by-pixel
-				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+				ePhiBin2D_qxqy[ii] /= (nPhiBin_qxqy[ii])^2
 			endif
 		endif
 	endfor
 	
-	eBin2D_qxqy = sqrt(eBin2D_qxqy)		// as equation (3) of John's memo
+	ePhiBin2D_qxqy = sqrt(ePhiBin2D_qxqy)		// as equation (3) of John's memo
 	
 	// find the last non-zero point, working backwards
 	val=nq
 	do
 		val -= 1
-	while((nBin_qxqy[val] == 0) && val > 0)
+	while((nPhiBin_qxqy[val] == 0) && val > 0)
 	
-//	print val, nBin_qxqy[val]
-	DeletePoints val, nq-val, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+//	print val, nPhiBin_qxqy[val]
+	DeletePoints val, nq-val, iPhiBin_qxqy,phiBin_qxqy,nPhiBin_qxqy,iPhiBin2_qxqy,ePhiBin_qxqy,ePhiBin2D_qxqy
 
 	if(val == 0)
 		// all the points were deleted
@@ -571,14 +595,14 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	val = -1
 	do
 		val += 1
-	while(nBin_qxqy[val] == 0)	
-	DeletePoints 0, val, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+	while(nPhiBin_qxqy[val] == 0)	
+	DeletePoints 0, val, iPhiBin_qxqy,phiBin_qxqy,nPhiBin_qxqy,iPhiBin2_qxqy,ePhiBin_qxqy,ePhiBin2D_qxqy
 
 	// ?? there still may be a point in the q-range that gets zero pixel contribution - so search this out and get rid of it
-	val = numpnts(nBin_qxqy)-1
+	val = numpnts(nPhiBin_qxqy)-1
 	do
-		if(nBin_qxqy[val] == 0)
-			DeletePoints val, 1, iBin_qxqy,phiBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		if(nPhiBin_qxqy[val] == 0)
+			DeletePoints val, 1, iPhiBin_qxqy,phiBin_qxqy,nPhiBin_qxqy,iPhiBin2_qxqy,ePhiBin_qxqy,ePhiBin2D_qxqy
 		endif
 		val -= 1
 	while(val>0)
@@ -626,12 +650,12 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 
 	if(cmpstr(detGroup,"F") == 0)
 		Wave/Z pw = phiBin_qxqy_FLRTB
-		Wave/Z iw = iBin_qxqy_FLRTB
-		Wave/Z sw = eBin_qxqy_FLRTB
+		Wave/Z iw = iPhiBin_qxqy_FLRTB
+		Wave/Z sw = ePhiBin_qxqy_FLRTB
 	else
 		Wave/Z pw = phiBin_qxqy_MLRTB
-		Wave/Z iw = iBin_qxqy_MLRTB
-		Wave/Z sw = eBin_qxqy_MLRTB
+		Wave/Z iw = iPhiBin_qxqy_MLRTB
+		Wave/Z sw = ePhiBin_qxqy_MLRTB
 	endif
 
 	
