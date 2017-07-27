@@ -234,6 +234,9 @@ Function V_isoDrawDetPanel(str)
 
 		case "RAW":
 		case "ADJ":
+		case "SAM":
+		case "EMP":
+		case "BGD":
 			wave dispW = $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str+":data")
 	
 			nPix_X = V_getDet_pixel_num_x(folder,str)

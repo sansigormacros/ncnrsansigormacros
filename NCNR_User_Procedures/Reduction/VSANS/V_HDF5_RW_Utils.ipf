@@ -463,7 +463,11 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 //	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
 //
 
-
+// ***NOTE***
+// The temperature block definitons inculde dupilcated groups. As of 7/27/17 (HDF 5 XOP version 1.24, in Igor 7.05)
+// these duplicated blocks are now handled "correctly" by reading in the multiple copies into
+// duplciated data folders. WM (Howard) modifed the XOP to accomodate this condition.
+// This is the R=2 flag for HDF5LoadGroup
 
 //// to skip DAS_logs. I need to generate all of the data folders myself
 //// must be an easier way to handle the different path syntax, but at least this works
@@ -491,7 +495,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		NewDataFolder/O/S $(curDF+base_name+"entry:control")
 	endif
 	hdf5path = "/entry/control"
-	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+base_name+":entry:instrument")
@@ -499,7 +503,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		NewDataFolder/O/S $(curDF+base_name+"entry:instrument")
 	endif
 	hdf5path = "/entry/instrument"
-	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+base_name+":entry:reduction")
@@ -507,7 +511,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		NewDataFolder/O/S $(curDF+base_name+"entry:reduction")
 	endif	
 	hdf5path = "/entry/reduction"
-	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+base_name+":entry:sample")
@@ -515,7 +519,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		NewDataFolder/O/S $(curDF+base_name+"entry:sample")
 	endif	
 	hdf5path = "/entry/sample"
-	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive (This is the only one that may have duplicated groups)
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+base_name+":entry:user")
@@ -523,7 +527,7 @@ Function V_LoadHDF5_NoAtt(fileName,base_name)
 		NewDataFolder/O/S $(curDF+base_name+"entry:user")
 	endif	
 	hdf5path = "/entry/user"
-	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	YES recursive
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 
 	

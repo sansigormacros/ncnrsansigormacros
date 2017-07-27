@@ -428,7 +428,8 @@ Function/S H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])
 	
 	//   read the data (too bad that HDF5LoadGroup does not read the attributes)
 	String base_name = StringFromList(0,FileName,".")
-	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
+	// SRK - added /R=2 flag to allow duplicate groups to be loaded (Jul 2017)
+	HDF5LoadGroup/Z/L=7/O/R=2/T=$base_name  :, fileID, hdf5Path		//	recursive
 	if ( V_Flag != 0 )
 		SetDataFolder $oldFolder
 		return fileName + ": problem while opening HDF5 file"
