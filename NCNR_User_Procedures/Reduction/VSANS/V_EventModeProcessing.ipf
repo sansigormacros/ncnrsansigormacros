@@ -277,7 +277,10 @@ Function V_GraphPanels_Button(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Execute "VSANS_EventPanels()"
+			DoWindow/F VSANS_EventPanels
+			if(V_flag == 0)
+				Execute "VSANS_EventPanels()"
+			endif
 			//
 			break
 		case -1: // control being killed
