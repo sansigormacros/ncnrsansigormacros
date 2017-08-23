@@ -1538,6 +1538,7 @@ Function/S V_getDetDescription(fname,detStr)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+// return value in [cm]
 Function V_getDet_NominalDistance(fname,detStr)
 	String fname,detStr
 
@@ -1546,6 +1547,7 @@ Function V_getDet_NominalDistance(fname,detStr)
 End
 
 //this is a DERIVED distance, since the nominal sdd is for the carriage (=LR panels)
+// return value in [cm]
 Function V_getDet_ActualDistance(fname,detStr)
 	String fname,detStr
 

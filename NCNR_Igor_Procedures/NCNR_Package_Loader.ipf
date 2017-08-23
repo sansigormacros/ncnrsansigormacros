@@ -50,6 +50,8 @@ Menu "Macros"
 	"Load Batch Fitting - Beta",BatchFitLoader()
 	"Load Simulation Run Builder",SimSANSRunListLoader()
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
+	"-"
+	"Load VSANS Procedures",VSANSLoader()
 
 //	"-"
 
@@ -749,3 +751,17 @@ Function SimSANSRunListLoader()
 	BuildMenu "Macros"
 	return(0)
 End
+
+
+// loads the VSANS package and initializes
+Function VSANSLoader()
+	
+	Execute/P "INSERTINCLUDE \"VSANS_Includes\""
+	Execute/P "COMPILEPROCEDURES "
+	Execute/P "Initialize_VSANS()"
+	
+	BuildMenu "Macros"
+
+	return(0)
+End
+

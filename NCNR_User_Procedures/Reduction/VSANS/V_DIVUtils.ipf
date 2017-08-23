@@ -27,6 +27,7 @@
 // -- what about the T/B panels? Since a large chunk of these detectors may be obscured,
 //   the normalization will be way off -- and the "active" area will end up much larger 
 //   than it should be - since the wings of the detector are mostly zero...
+//   ? Can I apply a mask, or will the detectors be set in a different configuration?
 //
 //
 
@@ -37,7 +38,9 @@
 // -- update to VSANS file locations and data reads
 // -- expand this to do a basic renormalization of all 9 panels, and move the data into the 
 //    appropriate locations for saving as a DIV file.
-//
+// x- (YES, done) what about error propogation? Can I store the error in the data file?
+//    Makes a difference if the DIV is not collected for long "enough".
+// x- then I need to be able to read the error in (done)
 //
 
 
@@ -45,9 +48,9 @@
 // -- first, reduce the data (to the COR level?)
 // -- next, V_NormalizeDIV()
 // -- then Setup_VSANS_DIV_Struct()
-// -- next, V_CopyDIVToSave()
+// -- next, V_CopyDIVToSave() -or- V_CopyDIVToSave_OnePanel()
 // -- last, Save_VSANS_DIV_Nexus() 
-
+//
 
 
 
@@ -59,6 +62,12 @@
 //
 // TODO
 // -- data should be copied to some alternate work folder before this step
+// -- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
+//    How to handle? A mask?
+// x- is this the correct calculation of the error? (YES) It should be correct up to this point since the
+//    standard reduction has been used, but now the normalization step is a multiplication
+//    by a constant (w/no error). Be sure this error transformation is correct. (YES - this is correct, and is
+//    what is done in SANS)
 //
 Function V_NormalizeDIV(type)
 	String type
@@ -73,7 +82,7 @@ Function V_NormalizeDIV(type)
 		pixelX = V_getDet_pixel_num_x(type,detStr)
 		pixelY = V_getDet_pixel_num_y(type,detStr)
 
-		totCts=sum(w,Inf,-Inf)		//sum all of the data
+		totCts = sum(w,Inf,-Inf)		//sum all of the data
 		
 		w /= totCts
 		w *= pixelX*pixelY
@@ -87,7 +96,9 @@ Function V_NormalizeDIV(type)
 End
 
 
-
+// copies an entire work folder, all 9 detectors (at COR level)
+// to the DIV structure to write out
+//
 Function V_CopyDIVToSave(type)
 	String type
 	
@@ -108,6 +119,25 @@ Function V_CopyDIVToSave(type)
 	return(0)
 End
 
+//
+// copies only the specified panel from a work folder, (at COR level)
+// to the DIV structure to write out
+//
+// used to replace a single panel, or to fill in carriage by carriage.
+//
+Function V_CopyDIVToSave_OnePanel(type,detStr)
+	String type,detStr
+	
+	Variable ii,totCts,pixelX,pixelY
+	String topath = "root:VSANS_DIV_file:entry:instrument:detector_"
+	String fromPath = "root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"
+	
+	
+		Duplicate/O $(fromPath+detStr+":data") $(toPath+detStr+":data")
+		Duplicate/O $(fromPath+detStr+":linear_data_error") $(toPath+detStr+":linear_data_error")
+			
+	return(0)
+End
 
 
 
@@ -169,8 +199,6 @@ End
 //
 //
 // TODO -- make the number of pixels GLOBAL
-// TODO -- there will be lots of work to do to develop the procedures necessary to actually generate the 
-//      9 data sets to become the DIV file contents. More complexity here than for the simple SANS case.
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	

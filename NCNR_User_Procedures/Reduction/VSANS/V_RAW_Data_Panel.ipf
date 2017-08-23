@@ -400,7 +400,7 @@ Function VSANSDataHook(s)
 					xctr = V_getDet_beam_center_x_mm(gCurDispType,detStr)		//written in mm
 					yctr = V_getDet_beam_center_y_mm(gCurDispType,detStr)	
 					
-					sdd = V_getDet_ActualDistance(gCurDispType,detStr)	/ 100	//written in cm, pass in meters
+					sdd = V_getDet_ActualDistance(gCurDispType,detStr)		//written in cm, pass in [cm]
 					lam = V_getWavelength(gCurDispType)		//A
 //					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)		// written mm? need mm
@@ -768,9 +768,9 @@ Function V_Tab_p_ButtonProc(ba) : ButtonControl
 
 // now part of every tab click
 //// update the status when the tab is clicked			
-//			STRUCT WMButtonAction sa
-//			sa.eventCode = 2
-//			V_StatusButtonProc(sa)
+			STRUCT WMButtonAction sa
+			sa.eventCode = 2
+			V_StatusButtonProc(sa)
 
 			break
 		case -1: // control being killed
@@ -899,6 +899,15 @@ Function V_StatusButtonProc(ba) : ButtonControl
 			ControlInfo/W=VSANS_Data tab0
 			Variable curTab = V_value
 			
+//			// fake this, since if the tab was clicked, it hasn't been updated yet and we're off by one
+//			if(ba.eventCode == 3)
+//				curTab += 1
+//				if(curTab == 3)
+//					curTab = 0
+//				endif
+//			endif
+			
+			//
 			str = "Current data is from "+ type + "\r"
 			str += "Description = "+V_getSampleDescription(type) + "\r"
 			str += "Wavelength is "+num2str(V_getWavelength(type)) + " A \r"

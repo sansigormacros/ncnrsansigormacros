@@ -564,7 +564,7 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 //	sdd += V_getDet_TBSetback(fname,detStr)/10		// written in [mm], convert to [cm], returns 0 for L/R/B panels
 
 	sdd = V_getDet_ActualDistance(fname,detStr)		//sdd derived, including setback [cm]
-	sdd/=100		// sdd reported in cm, pass in m
+
 	// this is the ctr in pixels --xx-- (now it is in cm!)
 //	xCtr = V_getDet_beam_center_x(fname,detStr)
 //	yCtr = V_getDet_beam_center_y(fname,detStr)
@@ -586,6 +586,7 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 	Wave qz = $(destPath + ":entry:instrument:detector_"+detStr+":qz_"+detStr)
 
 // calculate all of the q-values
+// sdd is passed in [cm]
 	qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
 	qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
 	qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
@@ -604,7 +605,8 @@ End
 // -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
-//sdd is in meters
+//sdd is in [cm]
+// distX and distY are in [mm]
 //wavelength is in Angstroms
 //
 //returned magnitude of Q is in 1/Angstroms
@@ -615,7 +617,7 @@ Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	Variable dx,dy,qval,two_theta,dist
 		
-	sdd *=100		//convert to cm
+
 	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
 	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	dist = sqrt(dx^2 + dy^2)
@@ -647,7 +649,7 @@ Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
-	sdd *=100		//convert to cm
+
 	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
 	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	phi = V_FindPhi(dx,dy)
@@ -681,7 +683,7 @@ Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
-	sdd *=100		//convert to cm
+
 	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
 	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	phi = V_FindPhi(dx,dy)
@@ -716,7 +718,7 @@ Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
 	qval = V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	
-	sdd *=100		//convert to cm
+
 	dx = (distX[xaxval][yaxval] - xctr)		//delta x in mm
 	dy = (distY[xaxval][yaxval] - yctr)		//delta y in mm
 	
@@ -754,7 +756,7 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 // get all of the geometry information	
 //	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = V_getDet_ActualDistance(fname,detStr)
-	sdd/=100		// sdd in cm, pass in m
+
 
 	// this is ctr in mm
 	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
@@ -774,7 +776,7 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
 	
 	tmp_dist /= 10  // convert mm to cm
-	sdd *=100		//convert to cm
+	// sdd is in [cm]
 
 	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
 
@@ -987,7 +989,6 @@ Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 // get all of the geometry information	
 //	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = V_getDet_ActualDistance(fname,detStr)
-	sdd/=100		// sdd in cm, pass in m
 
 	// this is ctr in mm
 	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
@@ -1008,7 +1009,7 @@ Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
 	
 	tmp_dist /= 10  // convert mm to cm
-	sdd *=100		//convert to cm
+	// sdd is in [cm]
 
 	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
 
@@ -1282,8 +1283,9 @@ End
 
 //
 // TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
-//   -- how is the error propagation handled?
+//   x- 	DoAlert 0,"This has not yet been updated for VSANS"
+//   -- how is the error propagation handled? Be sure it is calculated correctly when DIV is generated
+//      and is applied correctly here...
 //
 //function will divide the contents of "workType" folder with the contents of 
 //the DIV folder + detStr
@@ -1313,7 +1315,8 @@ Function V_DIVCorrection(data,data_err,detStr,workType)
 	//files exist, proceed
 
 	data /= div_data
-	
+
+// TODO: -- correct the error propagation	
 	data_err /= div_data
 	
 	Return(0)
