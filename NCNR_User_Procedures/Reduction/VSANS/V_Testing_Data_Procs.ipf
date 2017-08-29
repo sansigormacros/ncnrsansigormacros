@@ -50,19 +50,22 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		tmpData	= (tmpData ==   -1) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as -1
 		V_writeDetectorData(fileName,detStr,tmpData)
 		
-		val = VCALC_getSDD(detStr)*100		// make sure value is in cm
+		val = VCALC_getSDD(detStr)		// make sure value is in cm
 		print val
 		V_writeDet_distance(fileName,detStr,val)
 		
-		val = VCALC_getTopBottomSDDOffset(detStr)		//val is in mm, as for data file
+		val = VCALC_getTopBottomSDDSetback(detStr)*10		//val is in mm, as for data file
 		if(val != 0)
 			V_writeDet_TBSetback(fileName,detStr,val)
 		endif
 		
-		// returns the total separation (assumed symmetric) in mm
+		// returns the total separation (assumed symmetric) in cm
 		val = VCALC_getPanelSeparation(detStr)		
-		val /= 2*10			// to get half of the separation, and convert to cm for the data file
+		val /= 2		// to get half of the separation, and cm for the data file
 		// it's OK to call both of these. these functions check detStr for the correct value
+		if(cmpstr("L",detStr[1]) == 0 || cmpstr("B",detStr[1]) == 0)
+			val *= -1	// negative separation position for L and Bottom
+		endif
 		V_writeDet_LateralOffset(fileName,detStr,val)
 		V_writeDet_VerticalOffset(fileName,detStr,val)
 

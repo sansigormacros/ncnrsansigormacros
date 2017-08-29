@@ -124,7 +124,7 @@ End
 Function VC_CalculateQFrontPanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
-	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_offset
+	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_setback
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
 	String instPath = ":entry:instrument:detector_"
@@ -135,18 +135,18 @@ Function VC_CalculateQFrontPanels()
 	F_TB_sep = VCALC_getPanelSeparation("FTB")
 	F_offset = VCALC_getLateralOffset("FL")
 	
-	SDD = VCALC_getSDD("FL")		//nominal SDD - need offset for TB
+	SDD = VCALC_getSDD("FL")		//nominal SDD [cm] - need offset for TB
 	lam = VCALC_getWavelength()
 
-//separations are in mm -- need to watch the units, convert to cm
-	F_LR_sep /= 10
-	F_TB_sep /= 10
+//separations are in cm -- 
+//	F_LR_sep /= 10
+//	F_TB_sep /= 10
 // TODO - I'm treating the separation as the TOTAL width - so the difference
 //      from the "center" to the edge is 1/2 of the separation
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
 
-	F_sdd_offset = VCALC_getTopBottomSDDOffset("FT") 	//T/B are 300 mm farther back  //TODO: make all detector parameters global, not hard-wired
+	F_sdd_setback = VCALC_getTopBottomSDDSetback("FT") 	//T/B are 41 cm farther back  //TODO: make all detector parameters global, not hard-wired
 
 // detector data to bin
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
@@ -273,7 +273,7 @@ Function VC_CalculateQFrontPanels()
 	  
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
-	VC_Detector_2Q_NonLin(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY,"FT")
+	VC_Detector_2Q_NonLin(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_setback,lam,pixSizeX,pixSizeY,"FT")
 
 //	Print "xy for FT = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FT),WaveMax(qx_FT),"", det_FT		//this sets the left and right ends of the data scaling
@@ -314,7 +314,7 @@ Function VC_CalculateQFrontPanels()
 	
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
-	VC_Detector_2Q_NonLin(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY,"FB")
+	VC_Detector_2Q_NonLin(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_setback,lam,pixSizeX,pixSizeY,"FB")
 
 //	Print "xy for FB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FB),WaveMax(qx_FB),"", det_FB		//this sets the left and right ends of the data scaling
@@ -346,8 +346,8 @@ Function VC_SetShadow_TopBottom(folderStr,type)
 		ControlInfo/W=VCALC VCALCCtrl_3a
 		LR_sep = V_Value	
 	endif		
-//separations on panel are in mm -- need to watch the units, convert to cm
-	LR_sep /= 10
+//separations on panel are in cm -- need to watch the units, convert to cm
+//	LR_sep /= 10
 
 //detector data
 	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+type+":det_"+type)
@@ -569,7 +569,7 @@ End
 Function VC_CalculateQMiddlePanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
-	Variable M_LR_sep,M_TB_sep,M_offset, M_sdd_offset
+	Variable M_LR_sep,M_TB_sep,M_offset, M_sdd_setback
 
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
@@ -580,17 +580,17 @@ Function VC_CalculateQMiddlePanels()
 	M_TB_sep = VCALC_getPanelSeparation("MTB")
 	M_offset = VCALC_getLateralOffset("ML")
 	
-	SDD = VCALC_getSDD("ML")		//nominal SDD - need offset for TB
+	SDD = VCALC_getSDD("ML")		//nominal SDD [cm] - need offset for TB
 	lam = VCALC_getWavelength()
 
-//separations are in mm -- need to watch the units, convert to cm
-	M_LR_sep /= 10
-	M_TB_sep /= 10
+//separations are in cm -- need to watch the units, convert to cm
+//	M_LR_sep /= 10
+//	M_TB_sep /= 10
 // TODO - I'm treating the separation as the TOTAL width - so the difference
 //      from the "center" to the edge is 1/2 of the separation
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
-	M_sdd_offset = VCALC_getTopBottomSDDOffset("MT") 	//T/B are 30 cm farther back  //TODO: make all detector parameters global, not hard-wired
+	M_sdd_setback = VCALC_getTopBottomSDDSetback("MT") 	//T/B are 41 cm farther back  //TODO: make all detector parameters global, not hard-wired
 
 
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
@@ -722,7 +722,7 @@ Function VC_CalculateQMiddlePanels()
 	
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
 //	VC_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
-	VC_Detector_2Q_NonLin(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY,"MT")
+	VC_Detector_2Q_NonLin(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_setback,lam,pixSizeX,pixSizeY,"MT")
 
 //	Print "xy for MT = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MT),WaveMax(qx_MT),"", det_MT		//this sets the left and right ends of the data scaling
@@ -763,7 +763,7 @@ Function VC_CalculateQMiddlePanels()
 	
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
-	VC_Detector_2Q_NonLin(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY,"MB")
+	VC_Detector_2Q_NonLin(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_setback,lam,pixSizeX,pixSizeY,"MB")
 
 //	Print "xy for MB = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_MB),WaveMax(qx_MB),"", det_MB		//this sets the left and right ends of the data scaling

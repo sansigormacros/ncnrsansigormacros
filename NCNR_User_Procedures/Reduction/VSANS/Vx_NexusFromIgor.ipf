@@ -2167,7 +2167,7 @@ SetDataFolder  root:VSANS_file
 			SetDataFolder root:VSANS_file:entry1:instrument:detector_MT		
 				data	= root:Packages:NIST:VSANS:VCALC:Middle:det_MT
 				nx_distance	= VCALC_getSDD("MT")
-				sdd_offset = VCALC_getTopBottomSDDOffset("MT")
+				sdd_offset = VCALC_getTopBottomSDDSetback("MT")
 				separation = VCALC_getPanelSeparation("MT")
 				spatial_calibration[0][] = 1.072
 				spatial_calibration[1][] = -4.0e-5
@@ -2175,7 +2175,7 @@ SetDataFolder  root:VSANS_file
 			SetDataFolder root:VSANS_file:entry1:instrument:detector_MB		
 				data	= root:Packages:NIST:VSANS:VCALC:Middle:det_MB
 				nx_distance	= VCALC_getSDD("MB")
-				sdd_offset = VCALC_getTopBottomSDDOffset("MB")
+				sdd_offset = VCALC_getTopBottomSDDSetback("MB")
 				separation = VCALC_getPanelSeparation("MB") 
 				spatial_calibration[0][] = 1.072
 				spatial_calibration[1][] = -4.0e-5
@@ -2197,7 +2197,7 @@ SetDataFolder  root:VSANS_file
 			SetDataFolder root:VSANS_file:entry1:instrument:detector_FT		
 				data	= root:Packages:NIST:VSANS:VCALC:Front:det_FT
 				nx_distance	= VCALC_getSDD("FT")
-				sdd_offset = VCALC_getTopBottomSDDOffset("FT")
+				sdd_offset = VCALC_getTopBottomSDDSetback("FT")
 				separation = VCALC_getPanelSeparation("FT")
 				spatial_calibration[0][] = 1.072
 				spatial_calibration[1][] = -4.0e-5
@@ -2205,7 +2205,7 @@ SetDataFolder  root:VSANS_file
 			SetDataFolder root:VSANS_file:entry1:instrument:detector_FB		
 				data	= root:Packages:NIST:VSANS:VCALC:Front:det_FB
 				nx_distance	= VCALC_getSDD("FB")
-				sdd_offset = VCALC_getTopBottomSDDOffset("FB")
+				sdd_offset = VCALC_getTopBottomSDDSetback("FB")
 				separation = VCALC_getPanelSeparation("FB")
 				spatial_calibration[0][] = 1.072
 				spatial_calibration[1][] = -4.0e-5

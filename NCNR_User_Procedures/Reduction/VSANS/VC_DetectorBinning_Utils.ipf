@@ -35,8 +35,8 @@ Function FillPanel_wModelData(det,qTot,type)
 	
 	// need SDD
 	// need pixel dimensions
-	// nominal sdd in meters, offset in mm, want result in cm !
-	sdd = VCALC_getSDD(type)*100	+  VCALC_getTopBottomSDDOffset(type) / 10		// result is sdd in [cm]
+	// nominal sdd in cm, offset in cm, want result in cm !
+	sdd = VCALC_getSDD(type)	+  VCALC_getTopBottomSDDSetback(type)		// result is sdd in [cm]
 
 	pixSizeX = VCALC_getPixSizeX(type)		// cm
 	pixSizeY = VCALC_getPixSizeY(type)
@@ -192,7 +192,7 @@ End
 // array of error already exists
 //
 //
-// -- sdd in meters
+// -- sdd in cm
 // -- lambda in Angstroms
 Function VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	Wave data,qTot,qx,qy,qz
@@ -214,8 +214,12 @@ End
 //
 // reverts to the "regular" linear detector if waves not found or a flag is set
 //
-// need to convert the beam center to mm
 // need to call the VSANS V_CalcQval routines (these use the real-space distance, not pixel dims)
+//
+// ***** everything passed in is [cm], except for wavelength [A]
+//
+// ****  TODO :: calibration constants are still in [mm]
+//
 //
 // TODO:
 // -- tube width is hard-wired in
@@ -266,7 +270,7 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	endif
 	
 //	Wave w_calib = V_getDetTube_spatialCalib("VCALC",detStr)
-	Variable tube_width = 8.4			// TODO: Hard-wired value!!
+	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
 	if(cmpstr(detStr,"B") == 0)
 		V_NonLinearCorrection_B("VCALC",data,tmpCalib,tmpCalib,detStr,destPath)
 	else
@@ -279,9 +283,8 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 
 	if(kBCTR_CM)
 		if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
-			// no need to convert the beam centers to real space, just to mm
-			xCtr *= 10		// convert from cm to mm
-			yCtr *= 10		
+			// beam ctr is in cm already
+
 			// calculate all of the q-values
 			qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
 			qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lam,data_realDistX,data_realDistY)
@@ -364,7 +367,7 @@ End
 //function to calculate the overall q-value, given all of the necesary trig inputs
 //and are in detector coordinates (1,128) rather than axis values
 //the pixel locations need not be integers, reals are ok inputs
-//sdd is in meters
+//sdd is in [cm]
 //wavelength is in Angstroms
 //
 //returned magnitude of Q is in 1/Angstroms
@@ -375,7 +378,7 @@ Function VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	Variable dx,dy,qval,two_theta,dist
 		
-	sdd *=100		//convert to cm
+
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
 	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
 	dist = sqrt(dx^2 + dy^2)
@@ -391,7 +394,7 @@ End
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
 //
-//sdd is in meters
+//sdd is in [cm]
 //wavelength is in Angstroms
 //
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
@@ -404,7 +407,7 @@ Function VC_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
-	sdd *=100		//convert to cm
+//	sdd *=100		//convert to cm
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
 	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
 	phi = V_FindPhi(dx,dy)
@@ -421,7 +424,7 @@ End
 //calculates just the q-value in the y-direction on the detector
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
-//sdd is in meters
+//sdd is in [cm]
 //wavelength is in Angstroms
 //
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
@@ -434,7 +437,7 @@ Function VC_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
-	sdd *=100		//convert to cm
+//	sdd *=100		//convert to cm
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm
 	dy = (yaxval - yctr)*pixSizeY		//delta y in cm
 	phi = V_FindPhi(dx,dy)
@@ -451,7 +454,7 @@ End
 //calculates just the z-component of the q-vector, not measured on the detector
 //input/output is the same as CalcQval()
 //ALL inputs are in detector coordinates
-//sdd is in meters
+//sdd is in [cm]
 //wavelength is in Angstroms
 //
 // not actually used, but here for completeness if anyone asks
@@ -463,7 +466,7 @@ Function VC_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	qval = VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
-	sdd *=100		//convert to cm
+//	sdd *=100		//convert to cm
 	
 	//get scattering angle to project onto flat detector => Qr = qval*cos(theta)
 	dx = (xaxval - xctr)*pixSizeX		//delta x in cm

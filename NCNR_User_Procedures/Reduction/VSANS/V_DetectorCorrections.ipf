@@ -154,7 +154,7 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	Variable offset,gap
 
 // kPanelTouchingGap is in mm	
-	gap = kPanelTouchingGap/10		//cm
+	gap = kPanelTouchingGap
 	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
@@ -164,17 +164,23 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		// adjust the x postion based on the beam center being nominally (0,0) in units of cm, not pixels
 		if(cmpstr(fname,"VCALC")== 0 )
 			offset = VCALC_getPanelSeparation(detStr)
-			offset /= 2			// units of mm
+			offset *= 10			// convert to units of mm
+			offset /= 2			// 1/2 the total separation
+			if(cmpstr("L",detStr[1]) == 0)
+				offset *= -1		//negative value for L
+			endif
 		else
 			//normal case
-		offset = V_getDet_LateralOffset(fname,detStr)
-		offset *= 10 //convert cm to mm
+			offset = V_getDet_LateralOffset(fname,detStr)
+			offset *= 10 //convert cm to mm
 		endif
 		
 	// calculation is in mm, not cm
+	// offset will be a negative value for the L panel, and positive for the R panel
 		if(kBCTR_CM)
 			if(cmpstr("L",detStr[1]) == 0)
-				data_realDistX[][] = -offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
+				data_realDistX[][] = offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
+//				data_realDistX[][] = -offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
 			else
 				data_realDistX[][] += offset + gap + tube_width			//add to the Right det, not recalculate
 			endif
@@ -188,7 +194,11 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 
 		if(cmpstr(fname,"VCALC")== 0 )
 			offset = VCALC_getPanelSeparation(detStr)
-			offset /= 2			// units of mm
+			offset *= 10			// convert to units of mm
+			offset /= 2			// 1/2 the total separation
+			if(cmpstr("B",detStr[1]) == 0)
+				offset *= -1	// negative value for Bottom det
+			endif
 		else
 			//normal case
 			offset = V_getDet_VerticalOffset(fname,detStr)
@@ -199,7 +209,7 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 			if(cmpstr("T",detStr[1]) == 0)
 				data_realDistY[][] += offset + gap + tube_width			
 			else
-				data_realDistY[][] = -offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
+				data_realDistY[][] = offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
 			endif
 		endif
 

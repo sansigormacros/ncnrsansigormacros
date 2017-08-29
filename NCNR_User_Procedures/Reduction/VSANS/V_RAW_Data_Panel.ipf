@@ -61,6 +61,8 @@ Function V_UpdateDisplayInformation(type)
 
 	V_FakeStatusButtonClick()
 
+// NOTE: This is where the beam center is picked up so that the panel array scaling is reset
+// so that the images will automatically display in relation to the beam center
 	V_FakeRestorePanelsButtonClick()		//so the panels display correctly
 
 	

@@ -18,8 +18,8 @@
 //  Values from the VCALC panel
 
 
-// returns the nominal SDD from the panel -- value is METERS
-// Does NOT include the set back (offset) of the T/B panels. This is a separate value
+// returns the nominal SDD from the panel -- value is [cm]
+// Does NOT include the setback of the T/B panels. This is a separate value
 Function VCALC_getSDD(type)
 	String type
 	
@@ -61,7 +61,7 @@ Function VCALC_getSDD(type)
 	return(sdd)
 end
 
-// returns the panel separation [mm]
+// returns the panel separation [cm]
 Function VCALC_getPanelSeparation(type)
 	String type
 	
@@ -106,7 +106,7 @@ Function VCALC_getPanelSeparation(type)
 	return(sep)
 end
 
-// returns the lateral panel offset [mm]
+// returns the lateral panel offset [cm]
 Function VCALC_getLateralOffset(type)
 	String type
 	
@@ -380,9 +380,9 @@ end
 
 
 // SDD offset of the top/bottom panels
-// value returned is in mm (so beware)
+// value returned is in [cm] 
 //
-Function VCALC_getTopBottomSDDOffset(type)
+Function VCALC_getTopBottomSDDSetback(type)
 	String type
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC
@@ -395,7 +395,7 @@ Function VCALC_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 		case "FT":
 		case "FB":		
-			NVAR sdd_offset = gFront_SDDOffset 	//T/B are 300 mm farther back 
+			NVAR sdd_setback = gFront_SDDsetback 	//T/B are 41 cm farther back 
 			break
 			
 		case "ML":
@@ -405,7 +405,7 @@ Function VCALC_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 		case "MT":
 		case "MB":
-			NVAR sdd_offset = gMiddle_SDDOffset 	//T/B are 300 mm farther back
+			NVAR sdd_setback = gMiddle_SDDsetback 	//T/B are 41 cm farther back
 			break	
 						
 		case "B":
@@ -414,13 +414,13 @@ Function VCALC_getTopBottomSDDOffset(type)
 			break		//already zero, do nothing
 			
 		default:
-			Print "Error -- type not found in	 VCALC_getTopBottomSDDOffset(type)"					
-			sdd_offset = 0		//no match for type		
+			Print "Error -- type not found in	 VCALC_getTopBottomSDDSetback(type)"					
+			sdd_setback = 0		//no match for type		
 	endswitch
 
 	SetDataFolder root:
 		
-	return(sdd_offset)	
+	return(sdd_setback)	
 End
 
 

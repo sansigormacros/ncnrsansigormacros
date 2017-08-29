@@ -165,33 +165,33 @@ Proc DrawVCALC_Panel()
 	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=VC_FDet_LR_SetVarProc
-	SetVariable VCALCCtrl_2a,limits={0,400,1},disable=1,value=_NUM:100
-	SetVariable VCALCCtrl_2b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=VC_FDet_LR_SetVarProc
-	SetVariable VCALCCtrl_2b,limits={0,400,1},disable=1,value=_NUM:100
-	SetVariable VCALCCtrl_2c,pos={205,290},size={150,15},title="Lateral Offset (mm)"
-	SetVariable VCALCCtrl_2c,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_FDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_2d,limits={1,8,0.1},disable=1	,value=_NUM:1.5
+	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="L/R Separation (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,limits={0,40,1},disable=1,value=_NUM:20
+	SetVariable VCALCCtrl_2b,pos={30,290},size={150,15},title="T/B Separation (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,limits={0,40,1},disable=1,value=_NUM:20
+//	SetVariable VCALCCtrl_2c,pos={205,290},size={150,15},title="Lateral Offset (cm)"
+//	SetVariable VCALCCtrl_2c,limits={0,20,0.1},disable=1,value=_NUM:0
+	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_2d,limits={100,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (mm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3a,limits={0,400,1},disable=1,value=_NUM:100
-	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (mm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3b,limits={0,400,1},disable=1,value=_NUM:100
-	SetVariable VCALCCtrl_3c,pos={205,290},size={150,15},title="Lateral Offset (mm)"
-	SetVariable VCALCCtrl_3c,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_MDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_3d,limits={8,20,0.1},disable=1,value=_NUM:15
+	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,limits={0,40.0,1},disable=1,value=_NUM:20
+	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,limits={0,40.0,1},disable=1,value=_NUM:20
+//	SetVariable VCALCCtrl_3c,pos={205,290},size={150,15},title="Lateral Offset (cm)"
+//	SetVariable VCALCCtrl_3c,limits={0,20,0.1},disable=1,value=_NUM:0
+	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1500
 	
 // tab(4) - Back detector panel
-	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (mm)"
-	SetVariable VCALCCtrl_4a,limits={0,200,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (m)",proc=VC_BDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_4b,limits={20,25,0.1},disable=1,value=_NUM:20
-	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
-	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
+	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (cm)"
+	SetVariable VCALCCtrl_4a,limits={0,20,0.1},disable=1,value=_NUM:0
+	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_BDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2000
+//	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
+//	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
  	SetVariable VCALCCtrl_5a,pos={40,290},size={200,15},title="Neutrons on Sample (imon)"
@@ -674,15 +674,15 @@ Proc VC_Initialize_Space()
 // dimensions for the detector banks (then get them in the drawing functions)
 // Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
 // so keep them as variables
-	Variable/G gFront_LR_w = 384		//front bank, nominal LR panel width (mm)
-	Variable/G gFront_LR_h = 1000
-	Variable/G gFront_TB_w = 500
-	Variable/G gFront_TB_h = 384
+	Variable/G gFront_LR_w = 38.4		//front bank, nominal LR panel width [cm]
+	Variable/G gFront_LR_h = 100.0
+	Variable/G gFront_TB_w = 50.0
+	Variable/G gFront_TB_h = 38.4
 
-// SDD offset of T/B (decide on units??)
+// SDD setback of T/B (decide on units??)
 // for the Nexus file, the detector distance should already be corrected for the "setback"
 // of the T/B panels. keep as VCALC variable
-	Variable/G gFront_SDDOffset = 300			// (mm)
+	Variable/G gFront_SDDsetback = 41.0			// [cm]
 	
 	
 // detector resolution (xy for each bank!)
@@ -740,14 +740,14 @@ Proc VC_Initialize_Space()
 ///// MIDDLE DETECTOR BANKS
 // Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
 // so keep them as variables
-	Variable/G gMiddle_LR_w = 384		//middle bank, nominal LR panel width (mm)
-	Variable/G gMiddle_LR_h = 1000
-	Variable/G gMiddle_TB_w = 500
-	Variable/G gMiddle_TB_h = 384
+	Variable/G gMiddle_LR_w = 38.4		//middle bank, nominal LR panel width (cm)
+	Variable/G gMiddle_LR_h = 100.0
+	Variable/G gMiddle_TB_w = 50.0
+	Variable/G gMiddle_TB_h = 38.4
 // SDD offset of T/B (decide on units??)
 // for the Nexus file, the detector distance should already be corrected for the "setback"
 // of the T/B panels. keep as VCALC variable
-	Variable/G gMiddle_SDDOffset = 300			// (mm)
+	Variable/G gMiddle_SDDsetback = 41.0			// [cm]
 	
 // detector resolution (xy for each bank!)
 	Make/O/D/N=1 :entry:instrument:detector_ML:x_pixel_size = 0.84		// (cm)		these tubes are vertical 8.4 mm x-spacing (JGB 2/2106)
@@ -803,8 +803,8 @@ Proc VC_Initialize_Space()
 
 
 //// BACK DETECTOR
-	Variable/G gBack_w = 150				//w and h for the back detector, (mm) 150 pix * 1mm/pix
-	Variable/G gBack_h = 150
+	Variable/G gBack_w = 15.0				//w and h for the back detector, (cm) 150 pix * 1mm/pix
+	Variable/G gBack_h = 15.0
 	
 	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.1		// 1 mm resolution (units of cm here)
 	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.1		

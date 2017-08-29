@@ -80,7 +80,7 @@ Function UpdateSideView()
 	Variable M_LR_sep,M_TB_sep, M_SDD, M_offset
 	Variable B_SDD, B_offset
 
-	NVAR TB_SDD_offset = gFront_SDDOffset		//in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
+	NVAR TB_SDD_setback = gFront_SDDsetback		//in [cm]  distance T/B are behind L/R - not to be confused with lateral offset
 	
 	//front
 //	ControlInfo VCALCCtrl_2a
@@ -114,18 +114,18 @@ Function UpdateSideView()
 			
 
 // FRONT
-	FT_profileX = F_SDD+TB_SDD_offset/1000		//SDD in meters, set back from L/R 	---- convert to meters for the plot
+	FT_profileX = (F_SDD+TB_SDD_setback)		//SDD in [cm], set back from L/R 	---- convert to meters for the plot?
 	FB_profileX = FT_profileX
 	
-	FT_profileY[0] = F_TB_sep		// separation in mm
-	FT_profileY[1] = FT_profileY[0] + F_TB_h	// add in height of T/B panel in mm
+	FT_profileY[0] = F_TB_sep		// separation in cm
+	FT_profileY[1] = FT_profileY[0] + F_TB_h	// add in height of T/B panel in cm
 	
 	FB_profileY = -FT_profileY
 
 	//angles (not calculating anything, just connect the dots)
 	FT_rayX[0] = 0
-	FT_rayX[1] = F_SDD+TB_SDD_offset/1000
-	FT_rayX[2] = F_SDD+TB_SDD_offset/1000
+	FT_rayX[1] = F_SDD+TB_SDD_setback
+	FT_rayX[2] = F_SDD+TB_SDD_setback
 	FT_rayX[3] = 0
 	
 	FT_rayY[0] = 0
@@ -135,8 +135,8 @@ Function UpdateSideView()
 	
 	
 	FB_rayX[0] = 0
-	FB_rayX[1] = F_SDD+TB_SDD_offset/1000
-	FB_rayX[2] = F_SDD+TB_SDD_offset/1000
+	FB_rayX[1] = F_SDD+TB_SDD_setback
+	FB_rayX[2] = F_SDD+TB_SDD_setback
 	FB_rayX[3] = 0
 	
 	FB_rayY[0] = 0
@@ -146,18 +146,18 @@ Function UpdateSideView()
 
 
 // MIDDLE	
-	MT_profileX = M_SDD+TB_SDD_offset/1000		//SDD in meters
+	MT_profileX = M_SDD+TB_SDD_setback		//SDD in [cm]
 	MB_profileX = MT_profileX
 	
-	MT_profileY[0] = M_TB_sep		// separation in mm
-	MT_profileY[1] = MT_profileY[0] + M_TB_h	// add in height of T/B panel in mm
+	MT_profileY[0] = M_TB_sep		// separation in cm
+	MT_profileY[1] = MT_profileY[0] + M_TB_h	// add in height of T/B panel in cm
 	
 	MB_profileY = -MT_profileY
 
 	//angles (not calculating anything, just connect the dots)
 	MT_rayX[0] = 0
-	MT_rayX[1] = M_SDD+TB_SDD_offset/1000
-	MT_rayX[2] = M_SDD+TB_SDD_offset/1000
+	MT_rayX[1] = M_SDD+TB_SDD_setback
+	MT_rayX[2] = M_SDD+TB_SDD_setback
 	MT_rayX[3] = 0
 	
 	MT_rayY[0] = 0
@@ -167,8 +167,8 @@ Function UpdateSideView()
 	
 	
 	MB_rayX[0] = 0
-	MB_rayX[1] = M_SDD+TB_SDD_offset/1000
-	MB_rayX[2] = M_SDD+TB_SDD_offset/1000
+	MB_rayX[1] = M_SDD+TB_SDD_setback
+	MB_rayX[2] = M_SDD+TB_SDD_setback
 	MB_rayX[3] = 0
 	
 	MB_rayY[0] = 0
@@ -177,7 +177,7 @@ Function UpdateSideView()
 	MB_rayY[3] = 0	
 
 // BACK
-	B_S_profileX = B_SDD		//SDDb in meters
+	B_S_profileX = B_SDD		//SDDb in [cm]
 	
 	B_S_profileY[0] = B_h/2		// half-height
 	B_S_profileY[1] = -B_h/2		// half-height
@@ -229,10 +229,10 @@ Window SideView() : Graph
 		ModifyGraph/W=VCALC#SideView grid=1
 		ModifyGraph/W=VCALC#SideView mirror=2
 		ModifyGraph/W=VCALC#SideView nticks(left)=8
-		Label/W=VCALC#SideView left "\\Z10Vertical position (mm)"
-		Label/W=VCALC#SideView bottom "\\Z10SDD (meters)"
-		SetAxis/W=VCALC#SideView left -800,800
-		SetAxis/W=VCALC#SideView bottom 0,25
+		Label/W=VCALC#SideView left "\\Z10Vertical position (cm)"
+		Label/W=VCALC#SideView bottom "\\Z10SDD (cm)"
+		SetAxis/W=VCALC#SideView left -80.0,80.0
+		SetAxis/W=VCALC#SideView bottom 0,2500
 //		TextBox/W=VCALC#SideView/C/N=text0/A=MC/X=22.54/Y=42.04 "\\JCSIDE VIEW\rOnly the Top/Bottom panels are shown"
 		TextBox/W=VCALC#SideView/C/N=text0/A=MC/X=40.15/Y=43.62 "\\JCSIDE VIEW\r= Top/Bottom panels"
 	endif
@@ -336,11 +336,11 @@ Function UpdateTopView()
 			
 
 // FRONT
-	FL_profileX = F_SDD		//SDD in meters
+	FL_profileX = F_SDD		//SDD in [cm]
 	FR_profileX = FL_profileX
 	
-	FL_profileY[0] = F_LR_sep		// separation in mm
-	FL_profileY[1] = FL_profileY[0] + F_LR_w	// add in width of L/R panel in mm
+	FL_profileY[0] = F_LR_sep		// separation in cm
+	FL_profileY[1] = FL_profileY[0] + F_LR_w	// add in width of L/R panel in cm
 	
 	FR_profileY = -FL_profileY
 
@@ -368,11 +368,11 @@ Function UpdateTopView()
 
 
 // MIDDLE	
-	ML_profileX = M_SDD		//SDD in meters
+	ML_profileX = M_SDD		//SDD in [cm]
 	MR_profileX = ML_profileX
 	
-	ML_profileY[0] = M_LR_sep		// separation in mm
-	ML_profileY[1] = ML_profileY[0] + M_LR_w	// add in width of L/R panel in mm
+	ML_profileY[0] = M_LR_sep		// separation in cm
+	ML_profileY[1] = ML_profileY[0] + M_LR_w	// add in width of L/R panel in cm
 	
 	MR_profileY = -ML_profileY
 
@@ -399,7 +399,7 @@ Function UpdateTopView()
 	MR_rayY[3] = 0	
 
 // BACK
-	B_T_profileX = B_SDD		//SDDb in meters
+	B_T_profileX = B_SDD		//SDDb in [cm]
 	
 	B_T_profileY[0] = B_h/2		// half-height
 	B_T_profileY[1] = -B_h/2		// half-height
@@ -451,10 +451,10 @@ Window TopView() : Graph
 		ModifyGraph/W=VCALC#TopView grid=1
 		ModifyGraph/W=VCALC#TopView mirror=2
 		ModifyGraph/W=VCALC#TopView nticks(left)=8
-		Label/W=VCALC#TopView left "\\Z10Horizontal position (mm)"
-		Label/W=VCALC#TopView bottom "\\Z10SDD (meters)"
-		SetAxis/W=VCALC#TopView left -800,800
-		SetAxis/W=VCALC#TopView bottom 0,25
+		Label/W=VCALC#TopView left "\\Z10Horizontal position (cm)"
+		Label/W=VCALC#TopView bottom "\\Z10SDD (cm)"
+		SetAxis/W=VCALC#TopView left -80.0,80.0
+		SetAxis/W=VCALC#TopView bottom 0,2500
 		TextBox/W=VCALC#TopView/C/N=text0/A=MC/X=41.61/Y=43.62 "\\JCTOP VIEW\r= Left/Right panels"
 	endif
 	SetDataFolder fldrSav0

@@ -40,10 +40,10 @@ Function FrontView_1x()
 	Variable B_SDD, B_offset
 	Variable axisRange
 	
-// these offset values are in mm !!
-//in mm !!  distance T/B are behind L/R - not to be confused with lateral offset
-	NVAR front_SDDOffset = root:Packages:NIST:VSANS:VCALC:gFront_SDDOffset
-	NVAR middle_SDDOffset = root:Packages:NIST:VSANS:VCALC:gMiddle_SDDOffset
+// these offset values are in cm !!
+//in cm !!  distance T/B are behind L/R - not to be confused with lateral offset
+	NVAR front_SDDsetback = root:Packages:NIST:VSANS:VCALC:gFront_SDDsetback
+	NVAR middle_SDDsetback = root:Packages:NIST:VSANS:VCALC:gMiddle_SDDsetback
 	
 	
 	//front
@@ -94,13 +94,13 @@ Function FrontView_1x()
 	DrawAction/L=UserBack/W=VCALC#FrontView delete
 
 	//start drawing from the back, and work to the front as would be visible
-	// ********* all of the dimensions are converted to mm
+	// ********* all of the dimensions are in cm
 	Variable tmp_x1,tmp_x2,tmp_y1,tmp_y2
 	
 	// back detector +/- degrees
-	tmp_x1 = -atan(B_w/2/(B_SDD*1000)) *(180/pi)
+	tmp_x1 = -atan(B_w/2/(B_SDD)) *(180/pi)
 	tmp_x2 = -tmp_x1
-	tmp_y1 = -atan(B_h/2/(B_SDD*1000)) *(180/pi)
+	tmp_y1 = -atan(B_h/2/(B_SDD)) *(180/pi)
 	tmp_y2 = -tmp_y1
 	
 	//DrawRect [/W=winName ] left, top, right, bottom
@@ -112,10 +112,10 @@ Function FrontView_1x()
 // MIDDLE 4 panels (T-B then L-R)
 // TO DO -- add in the additional offset (backwards) to the SDD of the T/B panels
 // TOP
-	tmp_x1 = -atan(M_TB_w/2/(M_SDD*1000+middle_SDDOffset))*(180/pi)		// x symmetric y is not
+	tmp_x1 = -atan(M_TB_w/2/(M_SDD+middle_SDDsetback))*(180/pi)		// x symmetric y is not
 	tmp_x2 = -tmp_x1
-	tmp_y1 = atan(M_TB_sep/2/(M_SDD*1000+middle_SDDOffset))*(180/pi)
-	tmp_y2 = atan((M_TB_sep/2+M_TB_h)/(M_SDD*1000+middle_SDDOffset))*(180/pi)
+	tmp_y1 = atan(M_TB_sep/2/(M_SDD+middle_SDDsetback))*(180/pi)
+	tmp_y2 = atan((M_TB_sep/2+M_TB_h)/(M_SDD+middle_SDDsetback))*(180/pi)
 	
 //	Print tmp_x1,tmp_x2,tmp_y1,tmp_y2
 	
@@ -123,21 +123,21 @@ Function FrontView_1x()
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1
 		
 // BOTTOM (x unchanged, negate and swap y1,y2)
-	tmp_y1 = -atan((M_TB_sep/2+M_TB_h)/(M_SDD*1000+middle_SDDOffset))*(180/pi)
-	tmp_y2 = -atan(M_TB_sep/2/(M_SDD*1000+middle_SDDOffset))*(180/pi)
+	tmp_y1 = -atan((M_TB_sep/2+M_TB_h)/(M_SDD+middle_SDDsetback))*(180/pi)
+	tmp_y2 = -atan(M_TB_sep/2/(M_SDD+middle_SDDsetback))*(180/pi)
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (1,16019,65535)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1		
 	
 // LEFT
-	tmp_x1 = -atan((M_LR_w+M_LR_sep/2)/(M_SDD*1000))*(180/pi)		// y symmetric x is not
-	tmp_x2 = -atan((M_LR_sep/2)/(M_SDD*1000))*(180/pi)
-	tmp_y1 = atan(M_LR_h/2/(M_SDD*1000))*(180/pi)
+	tmp_x1 = -atan((M_LR_w+M_LR_sep/2)/(M_SDD))*(180/pi)		// y symmetric x is not
+	tmp_x2 = -atan((M_LR_sep/2)/(M_SDD))*(180/pi)
+	tmp_y1 = atan(M_LR_h/2/(M_SDD))*(180/pi)
 	tmp_y2 = -tmp_y1
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (65535,0,0)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1			
 // RIGHT (x changes, y the same)
-	tmp_x1 = atan((M_LR_sep/2)/(M_SDD*1000))*(180/pi)		// y symmetric x is not
-	tmp_x2 = atan((M_LR_w+M_LR_sep/2)/(M_SDD*1000))*(180/pi)
+	tmp_x1 = atan((M_LR_sep/2)/(M_SDD))*(180/pi)		// y symmetric x is not
+	tmp_x2 = atan((M_LR_w+M_LR_sep/2)/(M_SDD))*(180/pi)
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (65535,0,0)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1	
 
@@ -147,10 +147,10 @@ Function FrontView_1x()
 // FRONT 4 panels (T-B then L-R)
 // TO DO -- add in the additional offset (backwards) to the SDD of the T/B panels
 // TOP
-	tmp_x1 = -atan(F_TB_w/2/(F_SDD*1000+front_SDDOffset))*(180/pi)		// x symmetric y is not
+	tmp_x1 = -atan(F_TB_w/2/(F_SDD+front_SDDsetback))*(180/pi)		// x symmetric y is not
 	tmp_x2 = -tmp_x1
-	tmp_y1 = atan(F_TB_sep/2/(F_SDD*1000+front_SDDOffset))*(180/pi)
-	tmp_y2 = atan((F_TB_sep/2+F_TB_h)/(F_SDD*1000+front_SDDOffset))*(180/pi)
+	tmp_y1 = atan(F_TB_sep/2/(F_SDD+front_SDDsetback))*(180/pi)
+	tmp_y2 = atan((F_TB_sep/2+F_TB_h)/(F_SDD+front_SDDsetback))*(180/pi)
 	
 //	Print tmp_x1,tmp_x2,tmp_y1,tmp_y2
 	
@@ -158,21 +158,21 @@ Function FrontView_1x()
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1
 		
 // BOTTOM (x unchanged, negate and swap y1,y2)
-	tmp_y1 = -atan((F_TB_sep/2+F_TB_h)/(F_SDD*1000+front_SDDOffset))*(180/pi)
-	tmp_y2 = -atan(F_TB_sep/2/(F_SDD*1000+front_SDDOffset))*(180/pi)
+	tmp_y1 = -atan((F_TB_sep/2+F_TB_h)/(F_SDD+front_SDDsetback))*(180/pi)
+	tmp_y2 = -atan(F_TB_sep/2/(F_SDD+front_SDDsetback))*(180/pi)
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (1,52428,26586)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1		
 	
 // LEFT
-	tmp_x1 = -atan((F_LR_w+F_LR_sep/2)/(F_SDD*1000))*(180/pi)		// y symmetric x is not
-	tmp_x2 = -atan((F_LR_sep/2)/(F_SDD*1000))*(180/pi)
-	tmp_y1 = atan(F_LR_h/2/(F_SDD*1000))*(180/pi)
+	tmp_x1 = -atan((F_LR_w+F_LR_sep/2)/(F_SDD))*(180/pi)		// y symmetric x is not
+	tmp_x2 = -atan((F_LR_sep/2)/(F_SDD))*(180/pi)
+	tmp_y1 = atan(F_LR_h/2/(F_SDD))*(180/pi)
 	tmp_y2 = -tmp_y1
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (39321,26208,1)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1			
 // RIGHT (x changes, y the same)
-	tmp_x1 = atan((F_LR_sep/2)/(F_SDD*1000))*(180/pi)		// y symmetric x is not
-	tmp_x2 = atan((F_LR_w+F_LR_sep/2)/(F_SDD*1000))*(180/pi)
+	tmp_x1 = atan((F_LR_sep/2)/(F_SDD))*(180/pi)		// y symmetric x is not
+	tmp_x2 = atan((F_LR_w+F_LR_sep/2)/(F_SDD))*(180/pi)
 	SetDrawEnv/W=VCALC#FrontView xcoord= bottom,ycoord= left,fillfgc= (39321,26208,1)
 	DrawRect/W=VCALC#FrontView tmp_x1,tmp_y2,tmp_x2,tmp_y1	
 	
