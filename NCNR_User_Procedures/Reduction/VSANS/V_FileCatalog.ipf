@@ -101,6 +101,7 @@ Function V_BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"		//added Mar 2010
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 
@@ -128,6 +129,7 @@ Function V_BuildCatVeryShortTable()
 	WAVE MCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
 	WAVE Pos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
 	WAVE/T Intent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	WAVE/T Purpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	WAVE Group_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 	
@@ -359,6 +361,7 @@ Function V_SortWaves()
 	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
 	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 
@@ -366,7 +369,7 @@ Function V_SortWaves()
 // x- the default sort is by SUFFIX, which does not exist for VSANS. So decide on a better key
 //     now, the sort is by FileName by default
 //	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
-	Sort GFilenames, GFilenames, GLabels, GDateTime,  GIntent, G_ID, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,GRot,GTemp,GField,GMCR,GPos,gNumGuides
+	Sort GFilenames, GFilenames, GLabels, GDateTime,  GIntent, GPurpose, G_ID, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 
 	return(0)
 End
@@ -395,13 +398,14 @@ Function V_BuildTableWindow()
 	Wave MCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave Pos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
 	Wave/T Intent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	Wave/T Purpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Wave Group_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 // original order, magnetic at the end
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // with numGuides
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
-	Edit Filenames, Labels, DateAndTime,  Intent, Group_ID, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
+	Edit Filenames, Labels, DateAndTime,  Intent, Purpose, Group_ID, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
 
 
 	String name="CatVSANSTable"
@@ -443,6 +447,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"
 	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
 	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 	lastPoint = numpnts(GLambda)
@@ -555,7 +560,11 @@ Function V_GetHeaderInfoToWave(fname,sname)
 // Intent (text)
 	InsertPoints lastPoint,1,GIntent
 	GIntent[lastPoint] = V_getReduction_intent(fname)
-	
+
+// Purpose (text)
+	InsertPoints lastPoint,1,GPurpose
+	GPurpose[lastPoint] = V_getReduction_purpose(fname)
+		
 // group_id (sample)
 	InsertPoints lastPoint,1,G_ID
 	G_ID[lastPoint] = V_getSample_groupID(fname)
@@ -597,14 +606,14 @@ function V_BuildCatSortPanel()
 	Button SortLabelsButton,			pos={25,38},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Labels"
 	Button SortDateAndTimeButton,	pos={25,68},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Date and Time"
 	Button SortIntentButton,			pos={25,98},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Intent"
-	Button SortIDButton,			pos={25,128},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Group ID"
-	Button SortLambdaButton,			pos={25,158},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Lambda"
-	Button SortCountTimButton,		pos={25,188},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Time"
-	Button SortTotalCountsButton,		pos={25,218},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Total Counts"
-	Button SortCountRateButton,		pos={25,248},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Rate"
-	Button SortMonitorCountsButton,	pos={25,278},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Monitor Counts"
-	Button SortTransmissionButton,	pos={25,308},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Transmission"
-	Button SortThicknessButton,		pos={25,338},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Thickness"
+	Button SortPurposeButton,		pos={25,128},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Purpose"
+	Button SortIDButton,			pos={25,158},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Group ID"
+	Button SortLambdaButton,			pos={25,188},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Lambda"
+	Button SortCountTimButton,		pos={25,218},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Time"
+	Button SortTotalCountsButton,		pos={25,248},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Total Counts"
+	Button SortCountRateButton,		pos={25,278},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Rate"
+	Button SortMonitorCountsButton,	pos={25,308},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Monitor Counts"
+	Button SortTransmissionButton,	pos={25,338},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Transmission"
 
 end
 
@@ -649,6 +658,7 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"
 	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
 	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 	
@@ -667,49 +677,49 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 	
 		case "SortFilenamesButton":
 //			Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GFilenames,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GFilenames,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 			break
 			
 		case "SortLabelsButton":
 //			Sort GLabels, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GLabels,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GLabels,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 			break
 			
 		case "SortDateAndTimeButton":
 //			Sort GDateTime, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GDateTime,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GDateTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
 		case "SortIntentButton":
-			Sort GIntent,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GIntent,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 			break
 			
 		case "SortIDButton":
-			Sort G_ID,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort G_ID,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 			break
 			
 		case "SortLambdaButton":
 //			Sort GLambda, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GLambda,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GLambda,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
 		case "SortCountTimButton":
 //			Sort GCntTime, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GCntTime,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GCntTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
 		case "SortTotalCountsButton":
 //			Sort GTotCnts, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GTotCnts,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GTotCnts,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
 		case "SortCountRateButton":
 //			Sort GCntRate, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GCntRate,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GCntRate,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
@@ -718,13 +728,13 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 			
 		case "SortTransmissionButton":
 //			Sort GTransmission, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GTransmission,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GTransmission,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 			
-		case "SortThicknessButton":
+		case "SortPurposeButton":
 //			Sort GThickness, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GThickness,  GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			Sort GPurpose,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
 
 			break
 	
@@ -736,3 +746,4 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 		GFilenames[rawCount, fileCount-1] = notRAWlist[p-rawCount]
 	endif
 end
+

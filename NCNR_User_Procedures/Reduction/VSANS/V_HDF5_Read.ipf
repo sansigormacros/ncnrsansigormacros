@@ -1553,7 +1553,7 @@ Function V_getDet_ActualDistance(fname,detStr)
 
 	Variable sdd
 	sdd = V_getDet_NominalDistance(fname,detStr)		//[cm]
-	sdd += V_getDet_TBSetback(fname,detStr)/10		// written in [mm], convert to [cm], returns 0 for L/R/B panels
+	sdd += V_getDet_TBSetback(fname,detStr)		// written [cm], returns 0 for L/R/B panels
 		
 	return(sdd)
 End
@@ -1618,7 +1618,7 @@ Function V_getDet_VerticalOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// TODO - be sure this is defined correctly (with correct units!)
+// TODO -DONE be sure this is defined correctly (with correct units-- this is now 41.0 cm)
 // -- only returns for T/B detectors
 Function V_getDet_TBSetback(fname,detStr)
 	String fname,detStr
@@ -2483,8 +2483,10 @@ Function/S V_getEmptyFileName(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// this is (presumably) the polarization "intent"
-Function/S V_getReduction_polSANSPurpose(fname)
+// this is purpose is used for all files, and has different meaning
+// if polarization is used. need the "intent" also to be able to fully decipher what a file
+//  is really being used for. GUI controls this, not me.
+Function/S V_getReduction_purpose(fname)
 	String fname
 
 	String path = "entry:reduction:file_purpose"	

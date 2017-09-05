@@ -570,8 +570,7 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 	
 // get all of the geometry information	
 	orientation = V_getDet_tubeOrientation(fname,detStr)
-//	sdd = V_getDet_distance(fname,detStr)		//[cm]
-//	sdd += V_getDet_TBSetback(fname,detStr)/10		// written in [mm], convert to [cm], returns 0 for L/R/B panels
+
 
 	sdd = V_getDet_ActualDistance(fname,detStr)		//sdd derived, including setback [cm]
 

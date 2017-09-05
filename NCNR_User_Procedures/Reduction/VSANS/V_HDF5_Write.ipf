@@ -7106,7 +7106,7 @@ Function V_writeEmptyFileName(fname,str)
 	return(err)
 End
 
-Function V_writePolReduction_purpose(fname,str)
+Function V_writeReduction_purpose(fname,str)
 	String fname,str
 
 //	String path = "entry:reduction:file_purpose"	

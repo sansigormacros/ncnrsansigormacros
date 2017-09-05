@@ -367,10 +367,10 @@ Function VC_SetShadow_TopBottom(folderStr,type)
 	nPix = trunc(LR_sep/2/pixSizeX)		// approx # of pixels Left/right of center that are not obscured by L/R panels
 	
 	numCol = DimSize(det,0)		// x dim (columns)
-	for(ii=0;ii<(xCtr-nPix-2);ii+=1)
+	for(ii=0;ii<(xCtr-nPix-4);ii+=1)
 		det[ii][] = NaN
 	endfor
-	for(ii=(xCtr+nPix+2);ii<numCol;ii+=1)
+	for(ii=(xCtr+nPix+6);ii<numCol;ii+=1)
 		det[ii][] = NaN
 	endfor
 	

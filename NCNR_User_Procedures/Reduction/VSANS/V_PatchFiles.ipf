@@ -343,8 +343,8 @@ Function V_FillListBox1(listWave,selWave)
 	listWave[6][1] = "intent"
 	listWave[6][2] = V_getReduction_intent(fname)
 	
-	listWave[7][1] = "file_purpose (polSANS)"
-	listWave[7][2] = V_getReduction_polSANSPurpose(fname)
+	listWave[7][1] = "file_purpose"
+	listWave[7][2] = V_getReduction_purpose(fname)
 	
 	listWave[8][1] = "group_id (sample)"
 	listWave[8][2] = num2str(V_getSample_groupID(fname))
@@ -1091,9 +1091,9 @@ Function V_WriteHeaderForPatch_1(fname)
 		err = V_writeReductionIntent(fname,str)
 	endif	
 	
-	if ((selWave[7][0] & 2^4) != 0)		//"file_purpose (polSANS)"
+	if ((selWave[7][0] & 2^4) != 0)		//"file_purpose"
 		str = listWave[7][2]
-		err = V_writePolReduction_purpose(fname,str)
+		err = V_writeReduction_purpose(fname,str)
 	endif		
 
 	if ((selWave[8][0] & 2^4) != 0)		//"group_id (sample)"
