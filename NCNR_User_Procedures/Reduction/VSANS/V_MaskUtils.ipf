@@ -572,10 +572,14 @@ Function V_DrawPanelToMask(str)
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 	
+	Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+
 	//draw the detector panel
 	Display/W=(left,top,right,bottom)/HOST=# 
 	AppendImage curDispPanel
 	ModifyImage curDispPanel ctab= {*,*,ColdWarm,0}
+//	ModifyImage curDispPanel log=1 		// this fails, since there are data values that are zero
+	ModifyImage curDispPanel ctabAutoscale=0,lookup= LookupWave
 	Label left "Y pixels"
 	Label bottom "X pixels"	
 	RenameWindow #,DetData

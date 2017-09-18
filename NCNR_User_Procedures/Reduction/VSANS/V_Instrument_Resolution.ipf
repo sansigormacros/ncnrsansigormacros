@@ -62,7 +62,27 @@
 // apOff is the offset between the sample aperture and the sample position
 //
 //
-Function getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
+// INPUT:
+// inQ = q-value [1/A]
+// lambda = wavelength [A]
+// lambdaWidth = [dimensionless]
+// DDet = detector pixel resolution [cm]	**assumes square pixel
+// apOff = sample aperture to sample distance [cm]
+// S1 = source aperture diameter [mm]
+// S2 = sample aperture diameter [mm]
+// L1 = source to sample distance [m] 
+// L2 = sample to detector distance [m]
+// BS = beam stop diameter [mm]
+// del_r = step size [mm] = binWidth*(mm/pixel) 
+// usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
+//
+// OUPUT:
+// SigmaQ
+// QBar
+// fSubS
+//
+//
+Function V_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses
 	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
 	

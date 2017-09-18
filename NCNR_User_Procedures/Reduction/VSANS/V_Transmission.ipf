@@ -14,9 +14,11 @@
 // TODO
 // -- currently, the initialization does nothing.
 Function V_InitTransmissionPanel()
-
-	Execute "V_TransmissionPanel()"
 	
+	DoWindow/F V_TransmissionPanel
+	if(V_Flag == 0)
+		Execute "V_TransmissionPanel()"
+	endif
 End
 
 
@@ -28,9 +30,9 @@ Window V_TransmissionPanel() : Panel
 
 //	ShowTools/A
 	PopupMenu popup_0,pos={19.00,55.00},size={86.00,23.00},proc=V_TSamFilePopMenuProc,title="Sample"
-	PopupMenu popup_0,mode=1,value= V_getFileIntentList("SAMPLE",0)+V_getFileIntentList("EMPTY CELL",0)
+	PopupMenu popup_0,mode=1,value= V_getFilePurposeList("SCATTERING",0)//+V_getFileIntentList("EMPTY CELL",0)
 	PopupMenu popup_1,pos={102,248},size={72.00,23.00},proc=V_TTransmFilePopMenuProc,title="Transmission"
-	PopupMenu popup_1,mode=1,value= V_getFileIntentList("TRANSMISSION",0)
+	PopupMenu popup_1,mode=1,value= V_getFilePurposeList("TRANSMISSION",0)
 	PopupMenu popup_2,pos={164,353},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Empty Beam"
 	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
 	Button button_0,pos={37,193},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
@@ -102,10 +104,10 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 		// loop back through to find the transmission file with the matching group id
 		// TODO x- set the popup string to the matching name on exit
 			Variable targetID = groupIDW[ii]
-			String list = V_getFileIntentList("TRANSMISSION",0)
-			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+			String list = V_getFilePurposeList("TRANSMISSION",0)
+			WAVE/T purposeW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
 			for(ii=0;ii<np;ii+=1)
-				if(cmpstr(intentW[ii],"TRANSMISSION")==0 && groupIDW[ii] == targetID)
+				if(cmpstr(purposeW[ii],"TRANSMISSION")==0 && groupIDW[ii] == targetID)
 					Print "transmission file match at ",filenameW[ii]
 					SetVariable setvar_2,value=labelW[ii]
 					SetVariable setvar_3,value=groupIDW[ii]
@@ -128,7 +130,7 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 					SetVariable setvar_4,value=labelW[ii]
 					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1
 					
-					SetVariable setvar_6,value =_STR:"ML"
+//					SetVariable setvar_6,value =_STR:"ML"
 
 					WAVE boxCoord = V_getBoxCoordinates(filenameW[ii])
 					Print boxCoord
@@ -181,6 +183,17 @@ Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
 		case 2: // mouse up
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
+			
+			Print "empty beam match at ",popStr
+			SetVariable setvar_4,value=_STR:V_getSampleDescription(popStr)
+			
+//			SetVariable setvar_6,value =_STR:"ML"
+
+			WAVE boxCoord = V_getBoxCoordinates(popStr)
+			Print boxCoord
+			SetVariable setvar_5,value=_STR:V_NumWave2List(boxCoord,";")
+			
+			
 			break
 		case -1: // control being killed
 			break

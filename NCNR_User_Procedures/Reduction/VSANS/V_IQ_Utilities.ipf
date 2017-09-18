@@ -166,7 +166,7 @@ Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
 	// clear the old tmp waves first, if they still exist
 //	SetDataFolder $("root:Packages:NIST:VSANS:"+type)
 	SetDataFolder $(pathStr+type)
-	Killwaves/Z tmp_q,tmp_i,tmp_s
+	Killwaves/Z tmp_q,tmp_i,tmp_s,tmp_sq,tmp_qb,tmp_fs
 	setDataFolder root:
 	V_1DConcatenate(pathStr,type,tagStr,binType)
 	
@@ -221,8 +221,13 @@ Function V_RemoveQ0_B(type)
 	WAVE/Z nBin = nBin_qxqy_B
 	WAVE/Z iBin2 = iBin2_qxqy_B
 
+	// resolution waves
+	Wave/Z sigQ = sigmaQ_qxqy_B
+	Wave/Z qBar = qBar_qxqy_B
+	Wave/Z fSubS = fSubS_qxqy_B
+
 	if(qBin[0] == 0)
-		DeletePoints 0, 1, qBin,iBin,eBin,nBin,iBin2
+		DeletePoints 0, 1, qBin,iBin,eBin,nBin,iBin2,sigQ,qBar,fSubS
 	endif
 	
 	SetDataFolder root:
@@ -272,7 +277,7 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 	SetDataFolder $(pathStr+folderStr)
 
 	//kill these waves before starting, or the new concatenation will be added to the old
-	KillWaves/Z tmp_q,tmp_i,tmp_s
+	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_qb,tmp_sq,tmp_fs
 
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	
@@ -329,6 +334,61 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 //		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
+		
+		//sigma Q
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "sigmaQ_qxqy_MB" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_MT" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_ML" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_MR" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FB" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FT" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FL" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FR" + tagStr + ";"
+//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MB;sigmaQ_qxqy_MT;sigmaQ_qxqy_ML;sigmaQ_qxqy_MR;"
+//		waveListStr += "sigmaQ_qxqy_FB;sigmaQ_qxqy_FT;sigmaQ_qxqy_FL;sigmaQ_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_sq
+
+		//Q bar
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "qBar_qxqy_MB" + tagStr + ";"
+		waveListStr += "qBar_qxqy_MT" + tagStr + ";"
+		waveListStr += "qBar_qxqy_ML" + tagStr + ";"
+		waveListStr += "qBar_qxqy_MR" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FB" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FT" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FL" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FR" + tagStr + ";"
+//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MB;qBar_qxqy_MT;qBar_qxqy_ML;qBar_qxqy_MR;"
+//		waveListStr += "qBar_qxqy_FB;qBar_qxqy_FT;qBar_qxqy_FL;qBar_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_qb
+								
+		//shadow fs
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "fSubS_qxqy_MB" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_MT" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_ML" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_MR" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FB" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FT" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FL" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FR" + tagStr + ";"
+//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MB;fSubS_qxqy_MT;fSubS_qxqy_ML;fSubS_qxqy_MR;"
+//		waveListStr += "fSubS_qxqy_FB;fSubS_qxqy_FT;fSubS_qxqy_FL;fSubS_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_fs
+										
 	endif
 
 	if(binType == 2)	
@@ -376,6 +436,52 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 //		waveListStr += "eBin_qxqy_FTB;eBin_qxqy_FLR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
+		
+		// sigma Q
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "sigmaQ_qxqy_MTB" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_MLR" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FTB" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FLR" + tagStr + ";"
+		
+//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MTB;sigmaQ_qxqy_MLR;"
+//		waveListStr += "sigmaQ_qxqy_FTB;sigmaQ_qxqy_FLR;"
+			
+		Concatenate/NP/O waveListStr, tmp_sq
+		
+				// Q bar
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "qBar_qxqy_MTB" + tagStr + ";"
+		waveListStr += "qBar_qxqy_MLR" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FTB" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FLR" + tagStr + ";"
+		
+//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MTB;qBar_qxqy_MLR;"
+//		waveListStr += "qBar_qxqy_FTB;qBar_qxqy_FLR;"
+			
+		Concatenate/NP/O waveListStr, tmp_qb
+		
+		// shadow fs
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "fSubS_qxqy_MTB" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_MLR" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FTB" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FLR" + tagStr + ";"
+		
+//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MTB;fSubS_qxqy_MLR;"
+//		waveListStr += "fSubS_qxqy_FTB;fSubS_qxqy_FLR;"
+			
+		Concatenate/NP/O waveListStr, tmp_fs
+		
 	endif
 
 	if(binType == 3)	
@@ -414,6 +520,42 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 //		waveListStr = "eBin_qxqy_B;eBin_qxqy_MLRTB;eBin_qxqy_FLRTB;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
+		
+		// sigma Q
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "sigmaQ_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MLRTB;sigmaQ_qxqy_FLRTB;"
+			
+		Concatenate/NP/O waveListStr, tmp_sq
+		
+		// Q bar
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "qBar_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MLRTB;qBar_qxqy_FLRTB;"
+			
+		Concatenate/NP/O waveListStr, tmp_qb
+		
+		// shadow fs
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
+		endif
+		waveListStr += "fSubS_qxqy_MLRTB" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FLRTB" + tagStr + ";"
+		
+//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MLRTB;fSubS_qxqy_FLRTB;"
+			
+		Concatenate/NP/O waveListStr, tmp_fs
 	endif
 
 // TODO - This is the identical set of waves as for the case of binType = 1.
@@ -474,6 +616,61 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 //		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
 			
 		Concatenate/NP/O waveListStr, tmp_s
+		
+		//sigma Q
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "sigmaQ_qxqy_MB" + tagStr + ";"
+//		waveListStr += "sigmaQ_qxqy_MT" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_ML" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_MR" + tagStr + ";"
+//		waveListStr += "sigmaQ_qxqy_FB" + tagStr + ";"
+//		waveListStr += "sigmaQ_qxqy_FT" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FL" + tagStr + ";"
+		waveListStr += "sigmaQ_qxqy_FR" + tagStr + ";"
+//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MB;sigmaQ_qxqy_MT;sigmaQ_qxqy_ML;sigmaQ_qxqy_MR;"
+//		waveListStr += "sigmaQ_qxqy_FB;sigmaQ_qxqy_FT;sigmaQ_qxqy_FL;sigmaQ_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_sq
+
+		//Q bar
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "qBar_qxqy_MB" + tagStr + ";"
+//		waveListStr += "qBar_qxqy_MT" + tagStr + ";"
+		waveListStr += "qBar_qxqy_ML" + tagStr + ";"
+		waveListStr += "qBar_qxqy_MR" + tagStr + ";"
+//		waveListStr += "qBar_qxqy_FB" + tagStr + ";"
+//		waveListStr += "qBar_qxqy_FT" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FL" + tagStr + ";"
+		waveListStr += "qBar_qxqy_FR" + tagStr + ";"
+//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MB;qBar_qxqy_MT;qBar_qxqy_ML;qBar_qxqy_MR;"
+//		waveListStr += "qBar_qxqy_FB;qBar_qxqy_FT;qBar_qxqy_FL;qBar_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_qb
+								
+		//shadow fs
+		waveListStr=""
+		if(!gIgnoreDetB)
+			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
+		endif
+//		waveListStr += "fSubS_qxqy_MB" + tagStr + ";"
+//		waveListStr += "fSubS_qxqy_MT" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_ML" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_MR" + tagStr + ";"
+//		waveListStr += "fSubS_qxqy_FB" + tagStr + ";"
+//		waveListStr += "fSubS_qxqy_FT" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FL" + tagStr + ";"
+		waveListStr += "fSubS_qxqy_FR" + tagStr + ";"
+//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MB;fSubS_qxqy_MT;fSubS_qxqy_ML;fSubS_qxqy_MR;"
+//		waveListStr += "fSubS_qxqy_FB;fSubS_qxqy_FT;fSubS_qxqy_FL;fSubS_qxqy_FR;"
+			
+		Concatenate/NP/O waveListStr, tmp_fs
+		
 	endif
 
 // Can't kill here, since they are still needed to sort and write out!
@@ -500,10 +697,12 @@ Function V_TmpSort1D(pathStr,folderStr)
 	Wave qw = tmp_q
 	Wave iw = tmp_i
 	Wave sw = tmp_s
+	Wave sq = tmp_sq
+	Wave qb = tmp_qb
+	Wave fs = tmp_fs
 	
-//	Sort qw, qw,iw,sw,res0,res1,res2,res3
 
-	Sort qw, qw,iw,sw
+	Sort qw, qw,iw,sw,sq,qb,fs
 
 
 	SetDataFolder root:
@@ -752,275 +951,7 @@ end
 
 
 
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
-//
-// this will bypass save dialogs
-// -- AND WILL OVERWITE DATA WITH THE SAME NAME
-//
-Function V_Write1DData(pathStr,folderStr,saveName)
-	String pathStr,folderStr,saveName
-	
-	String formatStr="",fullpath=""
-	Variable refnum,dialog=1
-
-	SetDataFolder $(pathStr+folderStr)
-
-	Wave qw = tmp_q
-	Wave iw = tmp_i
-	Wave sw = tmp_s
-	
-	String dataSetFolderParent,basestr
-	
-	// ParseFilePath to get path without folder name
-//	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
-	// ParseFilePath to get basestr
-//	basestr = ParseFilePath(0,folderStr,":",1,0)
-	
-	//make sure the waves exist
-	
-	if(WaveExists(qw) == 0)
-		Abort "q is missing"
-	endif
-	if(WaveExists(iw) == 0)
-		Abort "i is missing"
-	endif
-	if(WaveExists(sw) == 0)
-		Abort "s is missing"
-	endif
-//	if(WaveExists(resw) == 0)
-//		Abort "Resolution information is missing."
-//	endif
-	
-//	Duplicate/O qw qbar,sigQ,fs
-//	if(dimsize(resW,1) > 4)
-//		//it's USANS put -dQv back in the last 3 columns
-//		NVAR/Z dQv = USANS_dQv
-//		if(NVAR_Exists(dQv) == 0)
-//			SetDataFolder root:
-//			Abort "It's USANS data, and I don't know what the slit height is."
-//		endif
-//		sigQ = -dQv
-//		qbar = -dQv
-//		fs = -dQv
-//	else
-//		//it's SANS
-//		sigQ = resw[p][0]
-//		qbar = resw[p][1]
-//		fs = resw[p][2]
-//	endif
-//	
-
-	PathInfo catPathName
-	fullPath = S_Path + saveName
-
-	Open refnum as fullpath
-
-	fprintf refnum,"Combined data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
-
-// TODO -- make this work for 6-columns (or??)
-//	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
-//	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
-//	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
-
-	//currently, only three columns
-	formatStr = "%15.4g %15.4g %15.4g\r\n"	
-	fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-
-	wfprintf refnum,formatStr,qw,iw,sw
-	Close refnum
-	
-//	KillWaves/Z sigQ,qbar,fs
-	Print "Data written to: ",fullpath
-	
-	SetDataFolder root:
-	return(0)
-End
-
-
-
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
-//
-// This saves the data in Igor Text format, an ASCII format, but NOT standard SANS columns
-// No concatenation is done. This is meant to be used for input to TRIM, or for general troubleshooting
-//
-//
-// this will bypass save dialogs
-// -- AND WILL OVERWRITE DATA WITH THE SAME NAME
-//
-Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
-	String pathStr,folderStr,saveName
-	Variable binType
-	
-	String formatStr="",fullpath=""
-	Variable refnum,dialog=1
-
-	SetDataFolder $(pathStr+folderStr)
-
-
-	//TODO
-	//-- make sure the waves exist
-	
-//	if(WaveExists(qw) == 0)
-//		Abort "q is missing"
-//	endif
-//	if(WaveExists(iw) == 0)
-//		Abort "i is missing"
-//	endif
-//	if(WaveExists(sw) == 0)
-//		Abort "s is missing"
-//	endif
-//	if(WaveExists(resw) == 0)
-//		Abort "Resolution information is missing."
-//	endif
-	
-//	Duplicate/O qw qbar,sigQ,fs
-//	if(dimsize(resW,1) > 4)
-//		//it's USANS put -dQv back in the last 3 columns
-//		NVAR/Z dQv = USANS_dQv
-//		if(NVAR_Exists(dQv) == 0)
-//			SetDataFolder root:
-//			Abort "It's USANS data, and I don't know what the slit height is."
-//		endif
-//		sigQ = -dQv
-//		qbar = -dQv
-//		fs = -dQv
-//	else
-//		//it's SANS
-//		sigQ = resw[p][0]
-//		qbar = resw[p][1]
-//		fs = resw[p][2]
-//	endif
-//	
-
-
-
-	// TODO:
-	// -- currently I'm using the Save comand and the /B flag
-	//    to save the data as Igor Text format, since otherwise the command string would be
-	//    too long. Need to come up with an Igor-demo friendly save here
-	//
-	// -- see V_ExportProtocol() for a quick example of how to generate the .ITX format
-	//
-	// -- need a reader/plotter capable of handling this data. The regular data loader won't handle
-	//    all the different number of columns present, or the ITX format. See V_DataPlotting and duplicate these routines
-	//    Most of these routines take "winNameStr" as an argument, so I may be able to use them
-	//
-	// -- do I want to add the /O flag to force an overwrite if there is a name conflict?
-
-	PathInfo catPathName
-	fullPath = S_Path + saveName + ".itx"
-
-//	Open refnum as fullpath
-//	fprintf refnum,"Individual data sets written from folder %s on %s\r\n",folderStr,(date()+" "+time())
-
-	String waveStr=""
-	// can be a multiple number of columns
-		
-	switch(binType)
-		case 1:		// 9 sets = 27 waves!
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_ML;iBin_qxqy_ML;eBin_qxqy_ML;"
-			waveStr += "qBin_qxqy_MR;iBin_qxqy_MR;eBin_qxqy_MR;"
-			waveStr += "qBin_qxqy_MT;iBin_qxqy_MT;eBin_qxqy_MT;"
-			waveStr += "qBin_qxqy_MB;iBin_qxqy_MB;eBin_qxqy_MB;"
-			waveStr += "qBin_qxqy_FL;iBin_qxqy_FL;eBin_qxqy_FL;"
-			waveStr += "qBin_qxqy_FR;iBin_qxqy_FR;eBin_qxqy_FR;"
-			waveStr += "qBin_qxqy_FT;iBin_qxqy_FT;eBin_qxqy_FT;"
-			waveStr += "qBin_qxqy_FB;iBin_qxqy_FB;eBin_qxqy_FB;"
-			
-			
-			Save/T/M="\r\n"/B waveStr as fullPath
-
-						
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 2:		// 5 sets
-
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_MLR;iBin_qxqy_MLR;eBin_qxqy_MLR;qBin_qxqy_MTB;iBin_qxqy_MTB;eBin_qxqy_MTB;"
-			waveStr += "qBin_qxqy_FLR;iBin_qxqy_FLR;eBin_qxqy_FLR;qBin_qxqy_FTB;iBin_qxqy_FTB;eBin_qxqy_FTB;"
-
-			Save/T/M="\r\n"/B waveStr as fullPath
-			
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 3:		// 3 sets
-//			WAVE q1 = qBin_qxqy_B
-//			WAVE i1 = iBin_qxqy_B
-//			WAVE s1 = eBin_qxqy_B
-//			WAVE q2 = qBin_qxqy_MLRTB
-//			WAVE i2 = iBin_qxqy_MLRTB
-//			WAVE s2 = eBin_qxqy_MLRTB
-//			WAVE q3 = qBin_qxqy_FLRTB
-//			WAVE i3 = iBin_qxqy_FLRTB
-//			WAVE s3 = eBin_qxqy_FLRTB
-//
-//				
-//			Save/T/M="\r\n" q1,i1,s1,q2,i2,s2,q3,i3,s3 as fullPath
-			
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_MLRTB;iBin_qxqy_MLRTB;eBin_qxqy_MLRTB;qBin_qxqy_FLRTB;iBin_qxqy_FLRTB;eBin_qxqy_FLRTB;"
-
-			Save/T/M="\r\n"/B waveStr as fullPath			
-			
-			
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 4:		// 9 sets
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_ML;iBin_qxqy_ML;eBin_qxqy_ML;"
-			waveStr += "qBin_qxqy_MR;iBin_qxqy_MR;eBin_qxqy_MR;"
-			waveStr += "qBin_qxqy_MT;iBin_qxqy_MT;eBin_qxqy_MT;"
-			waveStr += "qBin_qxqy_MB;iBin_qxqy_MB;eBin_qxqy_MB;"
-			waveStr += "qBin_qxqy_FL;iBin_qxqy_FL;eBin_qxqy_FL;"
-			waveStr += "qBin_qxqy_FR;iBin_qxqy_FR;eBin_qxqy_FR;"
-			waveStr += "qBin_qxqy_FT;iBin_qxqy_FT;eBin_qxqy_FT;"
-			waveStr += "qBin_qxqy_FB;iBin_qxqy_FB;eBin_qxqy_FB;"
-			
-			
-			Save/T/M="\r\n"/B waveStr as fullPath
-
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-					
-		default:
-		// do nothing, just close
-
-	endswitch
-
-//	Close refnum
-
-// TODO
-// -- clean up any waves on exit?	 Only if I generate extra waves
-//	KillWaves/Z sigQ,qbar,fs
-	
-	SetDataFolder root:
-	return(0)
-End
-
-
+/
 Proc V_Load_Data_ITX()
 	V_Load_itx("","",0,0)
 end
@@ -1182,7 +1113,7 @@ Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 End
 
 // TODO
-// -- make this resolution-aware
+// x- make this resolution-aware
 //
 Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 	String folderStr,detStr
@@ -1206,13 +1137,39 @@ Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 		Wave/Z qw = $("qBin_qxqy_"+detStr)
 		Wave/Z iw = $("iBin_qxqy_"+detStr)
 		Wave/Z ew = $("eBin_qxqy_"+detStr)
-
+		// resolution waves
+		Wave/Z sigQ = $("sigmaQ_qxqy_"+detStr)
+		Wave/Z qBar = $("qBar_qxqy_"+detStr)
+		Wave/Z fSubS = $("fSubS_qxqy_"+detStr)
 			
-		DeletePoints 0,nBeg, qw,iw,ew
+		DeletePoints 0,nBeg, qw,iw,ew,sigQ,qBar,fSubS
 
 		Variable npt
 		npt = numpnts(qw) 
-		DeletePoints npt-nEnd,nEnd, qw,iw,ew
+		DeletePoints npt-nEnd,nEnd, qw,iw,ew,sigQ,qBar,fSubS
 	
 	return(0)
 End
+
+
+//
+// returns 1 if the val is non-negative, other value
+// indicates that the resoution data is USANS data.
+//
+// TODO:
+// -- this DUPLICATES a same-named SANS procedure, so there could be a clash at some point
+// -- bigger issue - I'll need a better way to identify and load the different resolution 
+// 		conditions with VSANS
+//
+//
+Function isSANSResolution(val)
+	Variable val
+	
+	if(val >= 0)
+		return(1)
+	else
+		return(0)
+	endif
+End
+
+

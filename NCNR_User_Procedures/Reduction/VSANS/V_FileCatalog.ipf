@@ -235,11 +235,12 @@ Function V_BuildCatVeryShortTable()
 //Now sort them all based on some criterion that may be facility dependent (aim is to order them as collected)
 	V_SortWaves()
 //Append the files that are not raw files to the list
+
 	V_AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
 //
 	Print "Total time (s) = ",(ticks - t1)/60.15
-	Print "Time per raw data file (without cleanup time) (s) = ",( (ticks - t1)/60.15 - cleanupTime)/(numItems-numpnts(labels))
+	Print "Time per raw data file (without cleanup time) (s) = ",( (ticks - t1)/60.15 - cleanupTime)/(numpnts(labels))
 	// (don't use numpnts(notRawList) to normalize, these aren't all raw data files)
 	//
 	// clean out again, so that the file SAVE is not slow due to the large experiment size
@@ -323,13 +324,17 @@ End
 //appends the list of files that are not RAW SANS data to the filename wave (1st column)
 //for display in the table. Note that the filenames column will now be longer than all other
 //waves in the table
+//
+// skip this step if there are no files to tack on
 Function V_AppendNotRAWFiles(w)
 	Wave/T w
-	Wave/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-	Variable lastPoint
-	lastPoint = numpnts(Filenames)
-	InsertPoints lastPoint,numpnts(w),Filenames
-	Filenames[lastPoint,numpnts(Filenames)-1] = w[p-lastPoint]
+	if(numpnts(w) != 0)
+		Wave/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
+		Variable lastPoint
+		lastPoint = numpnts(Filenames)
+		InsertPoints lastPoint,numpnts(w),Filenames
+		Filenames[lastPoint,numpnts(Filenames)-1] = w[p-lastPoint]
+	endif
 	return(0)
 End
 

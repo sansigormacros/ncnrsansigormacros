@@ -68,7 +68,6 @@ End
 //note that :gAbsStr is also shared (common global) to that used in 
 //the questionnare form of the protcol (see protocol.ipf)
 //
-//0901, uses 8 points in protocol wave
 Proc V_InitProtocolPanel()
 
 	if(exists("	root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames") == 0)
@@ -568,8 +567,12 @@ End
 // Other options are to grep, or to read the intent field in every file
 Function/S V_GetSAMList()
 
-	String match="SAMPLE"
-	String list = V_getFileIntentList(match,0)
+//	String match="SAMPLE"
+//	String list = V_getFileIntentList(match,0)
+
+	String intent = "SAMPLE"
+	String purpose = "SCATTERING"
+	String list = V_getFileIntentPurposeList(intent,purpose,0)
 
 //	Printf "SAM files = %s\r",list	
 	return(list)
@@ -595,68 +598,6 @@ Function/S V_GetEMPList()
 	return(list)
 end
 
-
-// testStr is the "intent" string, or grep string
-// method is the method to use to find the file
-// 0 = (default) is to use the file catalog (= fastest)
-// 1 = Grep (not terribly slow)
-// 2 = read every file (bad choice)
-//
-Function/S V_getFileIntentList(testStr,method)
-	String testStr
-	Variable method
-	
-	Variable ii,num
-	String list="",item="",fname,newList,intent
-
-	// read every file...
-	if(method == 2)
-		PathInfo catPathName
-		String path = S_path
-		newList = V_GetRawDataFileList()
-		num=ItemsInList(newList)
-		
-		for(ii=0;ii<num;ii+=1)
-			item=StringFromList(ii, newList , ";")
-			fname = path + item
-			intent = V_getReduction_intent(fname)
-			if(cmpstr(intent,testStr) == 0)
-				list += item + ";"
-			endif
-		endfor	
-	endif
-	
-	// use Grep
-	if(method == 1)
-		newList = V_GetRawDataFileList()
-		num=ItemsInList(newList)
-		for(ii=0;ii<num;ii+=1)
-			item=StringFromList(ii, newList , ";")
-			Grep/P=catPathName/Q/E=("(?i)"+testStr) item
-			if( V_value )	// at least one instance was found
-	//				Print "found ", item,ii
-				list += item + ";"
-			endif
-		endfor	
-	
-	else
-	// get the list from the file catalog
-	
-		WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
-		WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
-		
-		Variable np = numpnts(intentW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
-		for(ii=0;ii<np;ii+=1)
-			if(cmpstr(intentW[ii],testStr)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
-				list += fileNameW[ii] + ";"
-			endif		
-		endfor
-		
-		List = SortList(List,";",0)
-	endif
-	
-	return(list)
-end
 
 //
 // TODO

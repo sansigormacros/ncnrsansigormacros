@@ -35,7 +35,15 @@
 //    -- ABS parameters
 //    -- averaging options -- these will have new options versus SANS (binning panels, slit mode, etc.)
 //
-
+//
+// TODO:
+// V_fPatch_GroupID_catTable()
+//	V_fPatch_Purpose_catTable()
+//	V_fPatch_Intent_catTable()
+/// -- these three functions are part of a growing list for faster patching. edit the file catalog, and 
+//    write out the contents of the column (vs. filename)
+// -- make a simple panel w/buttons (like the sort panel) to call these functions
+//
 
 //**************************
 //
@@ -280,7 +288,7 @@ Function V_FillListBox0(listWave,selWave)
 	
 	
 	
-	listWave[0][1] = "count_time"
+	listWave[0][1] = "count_time (s)"
 	listWave[0][2] = num2str(V_getCount_time(fname))
 	
 	listWave[1][1] = "detector_counts"
@@ -403,7 +411,7 @@ Function V_FillListBox2(listWave,selWave)
 	listWave[0][1] = "description"
 	listWave[0][2] = V_getSampleDescription(fname)
 	
-	listWave[1][1] = "thickness"
+	listWave[1][1] = "thickness (cm)"
 	listWave[1][2] = num2str(V_getSampleThickness(fname))
 	
 	listWave[2][1] = "transmission"
@@ -456,13 +464,13 @@ Function V_FillListBox3(listWave,selWave)
 	listWave[2][1] = "monochromator type"
 	listWave[2][2] = V_getMonochromatorType(fname)
 	
-	listWave[3][1] = "wavelength"
+	listWave[3][1] = "wavelength (A)"
 	listWave[3][2] = num2str(V_getWavelength(fname))	
 	
 	listWave[4][1] = "wavelength_spread"
 	listWave[4][2] = num2str(V_getWavelength_spread(fname))	
 
-	listWave[5][1] = "distance (source aperture)"
+	listWave[5][1] = "distance (source aperture) (cm)"
 	listWave[5][2] = num2str(V_getSourceAp_distance(fname))		
 		
 	return(0)
@@ -503,22 +511,22 @@ Function V_FillListBox4(listWave,selWave)
 	ControlInfo popup_0			// which detector panel?
 	String detStr = S_value
 	
-	listWave[0][1] = "beam_center_x"
+	listWave[0][1] = "beam_center_x (cm)"
 	listWave[0][2] = num2str(V_getDet_Beam_center_x(fname,detStr))	
 
-	listWave[1][1] = "beam_center_y"
+	listWave[1][1] = "beam_center_y (cm)"
 	listWave[1][2] = num2str(V_getDet_Beam_center_y(fname,detStr))	
 
-	listWave[2][1] = "distance (nominal)"
+	listWave[2][1] = "distance (nominal) (cm)"
 	listWave[2][2] = num2str(V_getDet_NominalDistance(fname,detStr))	
 
 	listWave[3][1] = "integrated_count"
 	listWave[3][2] = num2str(V_getDet_IntegratedCount(fname,detStr))	
 
-	listWave[4][1] = "pixel_fwhm_x"
+	listWave[4][1] = "pixel_fwhm_x (cm)"
 	listWave[4][2] = num2str(V_getDet_pixel_fwhm_x(fname,detStr))	
 
-	listWave[5][1] = "pixel_fwhm_y"
+	listWave[5][1] = "pixel_fwhm_y (cm)"
 	listWave[5][2] = num2str(V_getDet_pixel_fwhm_y(fname,detStr))	
 
 	listWave[6][1] = "pixel_num_x"
@@ -527,21 +535,21 @@ Function V_FillListBox4(listWave,selWave)
 	listWave[7][1] = "pixel_num_y"
 	listWave[7][2] = num2str(V_getDet_pixel_num_y(fname,detStr))	
 
-	listWave[8][1] = "setback"
+	listWave[8][1] = "setback (cm)"
 	listWave[8][2] = num2str(V_getDet_TBSetback(fname,detStr))	
 
 	if(cmpstr(detStr,"B") == 0 ||cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
-		listWave[9][1] = "lateral_offset"			// "B" detector drops here
+		listWave[9][1] = "lateral_offset (cm)"			// "B" detector drops here
 		listWave[9][2] = num2str(V_getDet_LateralOffset(fname,detStr))	
 	else	
-		listWave[9][1] = "vertical_offset"	
+		listWave[9][1] = "vertical_offset (cm)"	
 		listWave[9][2] = num2str(V_getDet_VerticalOffset(fname,detStr))	
 	endif	
 
-	listWave[10][1] = "x_pixel_size"
+	listWave[10][1] = "x_pixel_size (mm)"
 	listWave[10][2] = num2str(V_getDet_x_pixel_size(fname,detStr))	
 
-	listWave[11][1] = "y_pixel_size"
+	listWave[11][1] = "y_pixel_size (mm)"
 	listWave[11][2] = num2str(V_getDet_y_pixel_size(fname,detStr))	
 
 
@@ -581,7 +589,7 @@ Function V_FillListBox5(listWave,selWave)
 	SelWave[][2] = 2^1		// 3rd column editable
 	
 	
-	listWave[0][1] = "count_time"
+	listWave[0][1] = "count_time (s)"
 	listWave[0][2] = num2str(V_getCount_time(fname))	
 
 	return(0)
@@ -2167,7 +2175,7 @@ Function V_fPatchDet_xyCenters(lo,hi)
 			endfor	
 		
 		else
-			printf "run number %d not found\r",ii
+			printf "run number %d not found\r",jj
 		endif
 	endfor
 	
@@ -2323,3 +2331,151 @@ End
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// simple utility to patch the offset values in the file headers
+//
+// Swaps only the L/R detector values
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDet_Offset(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+	Variable offset_ML,offset_MR,offset_FL,offset_FR
+
+	
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			offset_FL = V_getDet_LateralOffset(fname,"FL")
+			offset_FR = V_getDet_LateralOffset(fname,"FR")
+
+			offset_ML = V_getDet_LateralOffset(fname,"ML")
+			offset_MR = V_getDet_LateralOffset(fname,"MR")
+		
+		// swap L/R offset values
+			V_WriteDet_LateralOffset(fname,"FL",-offset_FR)
+			V_WriteDet_LateralOffset(fname,"FR",-offset_FL)
+			
+			V_WriteDet_LateralOffset(fname,"ML",-offset_MR)
+			V_WriteDet_LateralOffset(fname,"MR",-offset_ML)
+		
+			Print fname
+			Print "swapped FL, FR = ",-offset_FR,-offset_FL
+			Print "swapped ML, MR = ",-offset_MR,-offset_ML
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector offset stored in the file header
+Function V_fReadDet_Offset(lo,hi)
+	Variable lo,hi
+
+	String fname,detStr
+	Variable jj
+	Variable offset_ML,offset_MR,offset_FL,offset_FR
+	
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			offset_FL = V_getDet_LateralOffset(fname,"FL")
+			offset_FR = V_getDet_LateralOffset(fname,"FR")
+
+			offset_ML = V_getDet_LateralOffset(fname,"ML")
+			offset_MR = V_getDet_LateralOffset(fname,"MR")
+		
+			Print fname
+			Print "FL, FR = ",offset_FL,offset_FR
+			Print "ML, MR = ",offset_ML,offset_MR
+		
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+
+	
+	return(0)
+End
+
+
+// patches the group_ID, based on whatever is in the catTable
+//
+Function V_fPatch_GroupID_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave id = root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID
+	Wave/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+
+	num = numpnts(id)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		V_writeSample_GroupID(fileNameW[jj],id[jj])	
+	endfor
+	
+	return(0)
+End
+
+V_fPatch_GroupID_catTable()
+V_fPatch_Purpose_catTable()
+V_fPatch_Intent_catTable()
+
+// patches the Purpose, based on whatever is in the catTable
+//
+Function V_fPatch_Purpose_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave/T purpose = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
+	Wave/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+
+	num = numpnts(purpose)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		V_writeReduction_Purpose(fileNameW[jj],purpose[jj])	
+	endfor
+	
+	return(0)
+End
+
+// patches the Intent, based on whatever is in the catTable
+//
+Function V_fPatch_Intent_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+	Wave/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
+
+	num = numpnts(intent)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		V_writeReductionIntent(fileNameW[jj],intent[jj])	
+	endfor
+	
+	return(0)
+End

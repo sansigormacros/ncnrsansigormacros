@@ -300,8 +300,8 @@ Function V_FindCentroid() :  GraphMarquee
 		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
 		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
 		
-		Print "X-center (mm) = ",x_mm
-		Print "Y-center (mm) = ",y_mm
+		Print "X-center (cm) = ",x_mm/10
+		Print "Y-center (cm) = ",y_mm/10
 	endif
 	
 	//back to root folder (redundant)

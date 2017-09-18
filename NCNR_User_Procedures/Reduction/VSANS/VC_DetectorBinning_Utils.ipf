@@ -1359,10 +1359,70 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	while(val>0)
 	
 	// TODO:
-	// -- is this where I do the resolution calculation? This is where I calculate the resolution in SANS (see CircSectAve)
-	// -- or do I do it as a separate call?
+	// -- This is where I calculate the resolution in SANS (see CircSectAve)
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
+	// -- from the top of the function, folderStr = work folder, type = "FLRTB" or other type of averaging
 	//
+	nq = numpnts(qBin_qxqy)
+	Make/O/D/N=(nq)  $(folderPath+":"+"sigmaQ_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBar_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"fSubS_qxqy"+"_"+type)
+	Wave sigmaq = $(folderPath+":"+"sigmaQ_qxqy_"+type)
+	Wave qbar = $(folderPath+":"+"qBar_qxqy_"+type)
+	Wave fsubs = $(folderPath+":"+"fSubS_qxqy_"+type)
+				
+
+	Variable ret1,ret2,ret3
+	Variable lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
+
+// TODO: check the units of all of the inputs
+
+// lambda = wavelength [A]
+	lambda = V_getWavelength(folderStr)
+	
+// lambdaWidth = [dimensionless]
+	lambdaWidth = V_getWavelength_spread(folderStr)
+	
+// DDet = detector pixel resolution [cm]	**assumes square pixel
+	DDet = 0.8		// TODO -- this is hard-wired
+	
+// apOff = sample aperture to sample distance [cm]
+	apOff = 10		// TODO -- this is hard-wired
+	
+// S1 = source aperture diameter [mm]
+	S1 = str2num(V_getSourceAp_size(folderStr))
+	
+// S2 = sample aperture diameter [mm]
+	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? the "external" may not exist?
+	
+// L1 = source to sample distance [m] 
+	L1 = V_getSourceAp_distance(folderStr)/100
+
+// L2 = sample to detector distance [m]
+	L2 = V_getDet_ActualDistance(folderStr,type[0]+"L")/100		//TODO "L" panel is hard wired and is WRONG
+	
+// BS = beam stop diameter [mm]
+	//BS = V_getBeamStopC2_size(folderStr)		// TODO: what are the units? which BS is in? carr2, carr3, back, none?
+	BS = 25.4			//TODO hard-wired value
+	
+// del_r = step size [mm] = binWidth*(mm/pixel) 
+	del_r = 1*8			// TODO: 8mm/pixel hard-wired
+
+// usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
+	usingLenses = 0
+
+
+Print "Resolution lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses"
+Print lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
+
+	ii=0
+	do
+		V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+		sigmaq[ii] = ret1	
+		qbar[ii] = ret2	
+		fsubs[ii] = ret3	
+		ii+=1
+	while(ii<nq)
 	
 	
 	

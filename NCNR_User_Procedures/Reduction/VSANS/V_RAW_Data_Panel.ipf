@@ -917,16 +917,24 @@ Function V_StatusButtonProc(ba) : ButtonControl
 				str += "SDD B = "+num2str(V_getDet_ActualDistance(type,"B")) + " cm \r"		//V_getDet_distance(fname,detStr)
 			endif
 			if(curTab == 1)
-				str += "SDD ML = "+num2str(V_getDet_ActualDistance(type,"ML")) + " cm \r"
-				str += "SDD MR = "+num2str(V_getDet_ActualDistance(type,"MR")) + " cm \r"
-				str += "SDD MT = "+num2str(V_getDet_ActualDistance(type,"MT")) + " cm \r"
-				str += "SDD MB = "+num2str(V_getDet_ActualDistance(type,"MB")) + " cm \r"
+				str += "SDD ML = "+num2str(V_getDet_ActualDistance(type,"ML")) + " cm   "
+				str += "offset = "+num2str(V_getDet_LateralOffset(type,"ML")) + " cm \r"
+				str += "SDD MR = "+num2str(V_getDet_ActualDistance(type,"MR")) + " cm   "
+				str += "offset = "+num2str(V_getDet_LateralOffset(type,"MR")) + " cm \r"
+				str += "SDD MT = "+num2str(V_getDet_ActualDistance(type,"MT")) + " cm   "
+				str += "offset = "+num2str(V_getDet_VerticalOffset(type,"MT")) + " cm \r"
+				str += "SDD MB = "+num2str(V_getDet_ActualDistance(type,"MB")) + " cm   "
+				str += "offset = "+num2str(V_getDet_VerticalOffset(type,"MB")) + " cm \r"
 			endif
 			if(curTab == 0)
-				str += "SDD FL = "+num2str(V_getDet_ActualDistance(type,"FL")) + " cm \r"
-				str += "SDD FR = "+num2str(V_getDet_ActualDistance(type,"FR")) + " cm \r"
-				str += "SDD FT = "+num2str(V_getDet_ActualDistance(type,"FT")) + " cm \r"
-				str += "SDD FB = "+num2str(V_getDet_ActualDistance(type,"FB")) + " cm \r"
+				str += "SDD FL = "+num2str(V_getDet_ActualDistance(type,"FL")) + " cm   "
+				str += "offset = "+num2str(V_getDet_LateralOffset(type,"FL")) + " cm \r"
+				str += "SDD FR = "+num2str(V_getDet_ActualDistance(type,"FR")) + " cm   "
+				str += "offset = "+num2str(V_getDet_LateralOffset(type,"FR")) + " cm \r"
+				str += "SDD FT = "+num2str(V_getDet_ActualDistance(type,"FT")) + " cm   "
+				str += "offset = "+num2str(V_getDet_VerticalOffset(type,"FT")) + " cm \r"
+				str += "SDD FB = "+num2str(V_getDet_ActualDistance(type,"FB")) + " cm   "
+				str += "offset = "+num2str(V_getDet_VerticalOffset(type,"FB")) + " cm \r"
 			endif
 			
 			

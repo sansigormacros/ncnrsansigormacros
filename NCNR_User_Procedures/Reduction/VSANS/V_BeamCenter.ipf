@@ -560,6 +560,7 @@ End
 // zero at the center, only for display purposes. It is not exact, and has nothing to do with
 // the calculation of q-values.
 //
+//
 // TODO
 // -- some of this is hard-wired in
 // -- this is still all in terms of pixels, which still may not be what I want
@@ -605,6 +606,89 @@ Function V_RescaleToBeamCenter(folderStr,detStr,xCtr,yCtr)
 	return(0)
 end
 
+// This sets the scale of the data panels to an approximate detector coordinate system with 
+// zero at the center, only for display purposes. It is not exact, and has nothing to do with
+// the calculation of q-values.
+//
+// ****For the panel display, the scaling MUST be in PIXELS for the readout and calculations to be correct.
+// the read out needs pixels, and the calculations use the pixels as the indexes for the real-space (mm) values
+//
+//  Since I'll only know the beam center in mm, and I'll need the relative panel positions to convert to pixels,
+// can I display the panels in their pixel locations relative to each other, based on a zero center and 
+// the panel offset values?
+//
+//
+// TODO
+// -- some of this is hard-wired in
+// -- this is still all in terms of pixels, which still may not be what I want
+// -- the x-scale of the T/B panels is artificially compressed to "fake" 4mm per pixel in x-direction
+//
+// Nominal center is 0,0
+//
+Function V_RescaleToNominalCenter(folderStr,detStr,xCtr,yCtr)
+	String folderStr,detStr
+	Variable xCtr,yCtr
+	
+//	xCtr = 0
+//	yCtr = 0
+	
+	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")
+	
+	Variable nPix = 128
+	Variable nTubes = 48
+	Variable offset = 0
+	Variable pixSizeX,pixSizeY
+	
+	strswitch(detStr)	// string switch
+		case "MT":		// top panels
+		case "FT":
+//			SetScale/I x -xCtr,npix-xCtr,"",w
+			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+			pixSizeY = 0.84
+			yCtr = -(offset/pixSizeY) 
+			
+			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w		// fake 4mm by compressing the scale
+			SetScale/I y -yCtr,nTubes-yCtr,"",w
+			break						// exit from switch
+		case "MB":		// bottom panels
+		case "FB":
+//			SetScale/I x -xCtr,npix-xCtr,"",w
+
+			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+			pixSizeY = 0.84
+			yCtr = nTubes-(offset/pixSizeY) 
+			
+			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w
+			SetScale/I y -yCtr,nTubes-yCtr,"",w
+			break						// exit from switch
+			
+		case "ML":		// left panels
+		case "FL":
+			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+			pixSizeX = 0.84
+			xCtr = nTubes-(offset/pixSizeX)
+			
+			SetScale/I x -xCtr,nTubes-xCtr,"",w
+			SetScale/I y -yCtr,npix-yCtr,"",w
+			break						// exit from switch
+		case "MR":		// Right panels
+		case "FR":
+			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+			pixSizeX = 0.84
+			xCtr = -(offset/pixSizeX)
+		
+			SetScale/I x -xCtr,nTubes-xCtr,"",w
+			SetScale/I y -yCtr,npix-yCtr,"",w
+			break						// exit from switch
+					
+		default:							// optional default expression executed
+			Print "Error in V_RescaleToBeamCenter()"
+	endswitch
+	
+	return(0)
+end
+
+
 // TODO
 // these are "nominal" beam center values in pixels for the default VCALC configuration
 // This function "restores" the data display to the "instrument" conditions where the panels overlap
@@ -640,7 +724,8 @@ Function V_RestorePanels()
 		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		xCtr = V_getDet_beam_center_x_pix(fname,detStr)
 		yCtr = V_getDet_beam_center_y_pix(fname,detStr)
-		V_RescaleToBeamCenter(type,detStr,xCtr,yCtr)
+//		V_RescaleToBeamCenter(type,detStr,xCtr,yCtr)
+		V_RescaleToNominalCenter(type,detStr,xCtr,yCtr)		// xCtr or yCtr value in direction of offset are dummy values here
 	endfor
 		
 

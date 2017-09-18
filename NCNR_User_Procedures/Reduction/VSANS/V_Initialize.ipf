@@ -30,7 +30,7 @@
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
 // this need never change from 1
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
-Constant kPanelTouchingGap = 4			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
+Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
 
 
 // the base data folder path where the raw data is loaded
@@ -63,8 +63,8 @@ Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 Constant kNumProtocolSteps = 12
 // for trimming of the I(q) data sets, and part of the protocol
 Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
-Strconstant ksBinTrimBegDefault = "B=5;FT=6;FB=6;FL=6;FR=6;MT=6;MB=6;ML=6;MR=6;FTB=7;FLR=7;MTB=7;MLR=7;FLRTB=8;MLRTB=8;"
-Strconstant ksBinTrimEndDefault = "B=10;FT=9;FB=9;FL=9;FR=9;MT=9;MB=9;ML=9;MR=9;FTB=8;FLR=8;MTB=8;MLR=8;FLRTB=7;MLRTB=7;"
+Strconstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
+Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
 
 
 
