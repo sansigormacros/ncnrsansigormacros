@@ -121,110 +121,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",sigmaq,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
 	
-	// SASinstrument
-	String instrParent = parentBase + "sasinstrument/"
-	// Create SASinstrument entry
-	String instrumentBase = base + ":entry1:sasinstrument"
-	NewDataFolder/O/S $(instrumentBase)
-	Make/O/T/N=5 $(instrumentBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(instrumentBase + ":attrVals") = {"SASinstrument","NXinstrument"}
-	CreateStrNxCansas(fileID,instrParent,"","",empty,$(instrumentBase + ":attr"),$(instrumentBase + ":attrVals"))
-	
-	// SASaperture
-	String apertureParent = instrParent + "sasaperture/"
-	// Create SASaperture entry
-	String apertureBase = instrumentBase + ":sasaperture"
-	NewDataFolder/O/S $(apertureBase)
-	Make/O/T/N=5 $(apertureBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(apertureBase + ":attrVals") = {"SASaperture","NXaperture"}
-	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
-	// Create SASaperture shape entry
-	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} // TODO: Where do I get rectangular dimensions from?
-	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
-	// Create SASaperture x_gap entry
-	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]} // TODO: Where do I get rectangular dimensions from?
-	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,cm)
-	// Create SASaperture y_gap entry
-	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]} // TODO: Where do I get rectangular dimensions from?
-	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,cm)
-	
-	// SAScollimation
-	String collimationParent = instrParent + "sascollimation/"
-	// Create SAScollimation entry
-	String collimationBase = instrumentBase + ":sascollimation"
-	NewDataFolder/O/S $(collimationBase)
-	Make/O/T/N=5 $(collimationBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
-	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
-	// Create SAScollimation length entry
-	Make/O/N=1 $(collimationBase + ":length") = {15.3} // TODO: Get real value
-	CreateVarNxCansas(fileID,collimationParent,"sasaperture","length",$(collimationBase + ":length"),units,m)
-	// Create SAScollimation distance entry
-	Make/O/N=1 $(collimationBase + ":distance") = {rw[25]}
-	CreateVarNxCansas(fileID,collimationParent,"sasaperture","distance",$(collimationBase + ":distance"),units,m)
-	
-	// SASdetector
-	String detectorParent = instrParent + "sasdetector/"
-	// Create SASdetector entry
-	String detectorBase = instrumentBase + ":sasdetector"
-	NewDataFolder/O/S $(detectorBase)
-	Make/O/T/N=5 $(detectorBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
-	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
-	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
-	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
-	// Create SASdetector distance entry
-	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
-	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,m)
-	// Create SASdetector beam_center_x entry
-	Make/O/N=1 $(detectorBase + ":beam_center_x") = {rw[16]}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,pixel)
-	// Create SASdetector beam_center_y entry
-	Make/O/N=1 $(detectorBase + ":beam_center_y") = {rw[17]}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,pixel)
-	// Create SASdetector x_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {rw[10]}
-	CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
-	// Create SASdetector y_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {rw[13]}
-	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-	
-	// SASsource
-	String sourceParent = instrParent + "sassource/"
-	// Create SASdetector entry
-	String sourceBase = instrumentBase + ":sassource"
-	NewDataFolder/O/S $(sourceBase)
-	Make/O/T/N=5 $(sourceBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
-	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
-	// Create SASsource radiation entry
-	Make/O/T/N=1 $(sourceBase + ":radiation") = {"Reactor Neutron Source"}
-	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
-	// Create SASsource incident_wavelength entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {rw[26]}
-	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)
-	// Create SASsource incident_wavelength_spread entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {rw[27]}
-	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength_spread",$(sourceBase + ":incident_wavelength_spread"),units,angstrom)
-	
-	// SASsample
-	String sampleParent = parentBase + "sassample/"
-	// Create SASsample entry
-	String sampleBase = base + ":entry1:sassample"
-	NewDataFolder/O/S $(sampleBase)
-	Make/O/T/N=5 $(sampleBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
-	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
-	// Create SASsample name entry
-	Make/O/T/N=1 $(sampleBase + ":name") = {textw[6]}
-	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
-	// Create SASsample thickness entry
-	Make/O/N=1 $(sampleBase + ":thickness") = {rw[5]}
-	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
-	// Create SASsample transmission entry
-	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
-	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
+	// Write all meta data
+	WriteMetaData(fileID,base,parentBase,rw,textw)
 	
 	//
 	///////////////////////////////////////////////////////////////////////////
@@ -445,8 +343,43 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Create shadwfactor entry
 	
 	// TODO: Reinstate ShadowFactor
-	
 	// CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",fsubs,empty,empty)
+	
+	// Write all meta data
+	WriteMetaData(fileID,base,parentBase,rw,textw)
+	
+	// Close the file
+	if(fileID)
+		HDF5CloseFile /Z fileID
+	endif
+	
+	// KillDataFolder/Z $base
+	
+End
+
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+// - WriteMetaData - Method used to write non data elements into NXcanSAS
+// format. This is common between 1D and 2D data sets.
+
+Function WriteMetaData(fileID,base,parentBase,rw,textw)
+	String base,parentBase
+	Variable fileID
+	Wave rw
+	Wave/T textw
+	
+	// Define common attribute waves
+	Make/T/N=1 empty = {""}
+	Make/T/N=1 units = {"units"}
+	Make/T/N=1 m = {"m"}
+	Make/T/N=1 mm = {"mm"}
+	Make/T/N=1 cm = {"cm"}
+	Make/T/N=1 pixel = {"pixel"}
+	Make/T/N=1 angstrom = {"A"}
+	Make/T/N=1 inv_cm = {"1/cm"}
+	Make/T/N=1 inv_angstrom = {"1/A"}
 	
 	// SASinstrument
 	String instrParent = parentBase + "sasinstrument/"
@@ -552,21 +485,11 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Create SASsample transmission entry
 	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
 	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
-	
-	//
-	///////////////////////////////////////////////////////////////////////////
-	
-	// Close the file
-	if(fileID)
-		HDF5CloseFile /Z fileID
-	endif
-	
-	// KillDataFolder/Z $base
-	
 End
-
+	
 //
 ///////////////////////////////////////////////////////////////////////////
+
 
 ///////////////////////////////////////////////////////////////////////////
 // Basic file open and initialization routines
