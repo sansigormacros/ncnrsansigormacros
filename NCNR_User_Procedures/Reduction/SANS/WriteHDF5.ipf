@@ -10,15 +10,10 @@
 //************************
 
 
-//
-// TODO: Handle all values
-//
-
-
 ///////////////////////////////////////////////////////////////////////////
-// Main method to be called - WriteNxCansas
-// Creates an HDF5 file and populates it with real values in Igor memory
-// If dialog and fullpath are left blank (0 and "", resp.), a test will be run
+// - WriteNxCanSAS1D - Method for writing 1D NXcanSAS data
+// Creates an HDF5 file, with reduced 1D data and stores all meta data
+// If dialog and fullpath are left blank (0 and ""), fake data will be used
 
 Function WriteNxCanSAS1D(type,fullpath,dialog)
 	// Define input variables
@@ -50,12 +45,10 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
 	else
-		WAVE intw,rw,qvals,inten,sig,qbar,sigmaq,fsubs
-		WAVE/T textw
 		if(stringmatch(type,""))
 			// Test values for each data set
 			Make/N=9 intw = {0,180.0,23,6254,16547,6178,22,2,0}
-			Make/N=5 rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+			Make/N=50 rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
 			Make/T/N=2 textw= {"","","","","","","","","","",""}
 			Make/N=10 qvals = {1,1,1,1,1,1,1,1,1,1} // qvals, inten, siq, qbar, sigmaq must be same length
 			Make/N=10 inten = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
@@ -93,9 +86,9 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	Make/T/N=1 mm = {"mm"}
 	Make/T/N=1 cm = {"cm"}
 	Make/T/N=1 pixel = {"pixel"}
-	Make/T/N=1 angstrom = {"angstrom"}
+	Make/T/N=1 angstrom = {"A"}
 	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/angstrom"}
+	Make/T/N=1 inv_angstrom = {"1/A"}
 	
 	// Run Name and title
 	NewDataFolder/O/S $(base + ":entry1")
@@ -109,8 +102,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	// Create SASdata entry
 	String dataBase = base + ":entry1:sasdata"
 	NewDataFolder/O/S $(dataBase)
-	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0"}
+	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0,1",textw[1]}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
@@ -123,10 +116,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	Make/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",inten,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 	// Create idev entry
-	NewDataFolder/O/S $(dataBase + ":idev")
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",sig,units,$(dataBase + ":idev:attrVals"))
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",sig,units,inv_cm)
 	// Create qdev entry
-	NewDataFolder/O/S $(dataBase + ":qdev")
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",sigmaq,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
 	
@@ -163,7 +154,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	String collimationBase = instrumentBase + ":sascollimation"
 	NewDataFolder/O/S $(collimationBase)
 	Make/O/T/N=5 $(collimationBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimation"}
+	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
 	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
 	// Create SAScollimation length entry
 	Make/O/N=1 $(collimationBase + ":length") = {15.3} // TODO: Get real value
@@ -181,7 +172,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
 	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
 	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {"ORNL"} // TODO: Get real value
+	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
 	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
 	// Create SASdetector distance entry
 	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
@@ -250,6 +241,12 @@ End
 //
 ///////////////////////////////////////////////////////////////////////////
 
+
+///////////////////////////////////////////////////////////////////////////
+// - WriteNxCanSAS2D - Method for writing 2D NXcanSAS data
+// Creates an HDF5 file, generates reduced 2D data and stores all meta data
+// If dialog and fullpath are left blank (0 and ""), fake data will be used
+
 Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Define input variables
 	String type // data location, in memory, relative to root:Packages:NIST:
@@ -281,9 +278,10 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
 	else
-		WAVE intw,rw,qvals,inten,sig,qbar,sigmaq,fsubs
-		WAVE/T textw
 		if(stringmatch(type,""))
+			
+			// TODO: Change the simulated data variables to match those for 2D data
+			
 			// Test values for each data set
 			Make/N=9 intw = {0,180.0,23,6254,16547,6178,22,2,0}
 			Make/N=5 rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
@@ -357,7 +355,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
 	//		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
 	qstar = -2*pi/lambda0*2*yg_d/sdd
-	
 
 	// the gravity center is not the resolution center
 	// gravity center = beam center
@@ -374,7 +371,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
 	//everything in 1D now
 	Duplicate/O qval SigmaQX,SigmaQY,fsubS
-
 
 	//Two parameters DDET and APOFF are instrument dependent.  Determine
 	//these from the instrument name in the header.
@@ -408,9 +404,9 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/T/N=1 mm = {"mm"}
 	Make/T/N=1 cm = {"cm"}
 	Make/T/N=1 pixel = {"pixel"}
-	Make/T/N=1 angstrom = {"angstrom"}
+	Make/T/N=1 angstrom = {"A"}
 	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/angstrom"}
+	Make/T/N=1 inv_angstrom = {"1/A"}
 	
 	// Run Name and title
 	NewDataFolder/O/S $(base + ":entry1")
@@ -419,15 +415,13 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/T/N=1 $(base + ":entry1:run") = {textw[0]}
 	CreateStrNxCansas(fileID,parentBase,"","run",$(base + ":entry1:run"),empty,empty)
 	
-	// TODO: Change the steps to save 2D data instead of 1D
-	
 	// SASData
 	String dataParent = parentBase + "sasdata/"
 	// Create SASdata entry
 	String dataBase = base + ":entry1:sasdata"
 	NewDataFolder/O/S $(dataBase)
-	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Qx,Qy","NXdata","0,1"}
+	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Qx,Qy","NXdata","0,1",textw[1]}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
@@ -435,7 +429,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 	// Create qx and qy entry
-	// data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist 
 	NewDataFolder/O/S $(dataBase + ":qx")
 	Make/T/N=2 $(dataBase + ":qx:attr") = {"units","resolutions"}
 	Make/T/N=2 $(dataBase + ":qx:attrVals") = {"1/angstrom","Qxdev"}
@@ -445,12 +438,15 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/T/N=2 $(dataBase + ":qy:attrVals") = {"1/angstrom","Qydev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qy",qy_val,$(dataBase + ":qy:attr"),$(dataBase + ":qy:attrVals"))
 	// Create idev entry
-	NewDataFolder/O/S $(dataBase + ":idev")
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",data_err,units,$(dataBase + ":idev:attrVals"))
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",data_err,units,inv_cm)
 	// Create qdev entry
-	NewDataFolder/O/S $(dataBase + ":qxdev")
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qxdev",SigmaQX,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qydev",SigmaQY,units,inv_angstrom)
+	// Create shadwfactor entry
+	
+	// TODO: Reinstate ShadowFactor
+	
+	// CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",fsubs,empty,empty)
 	
 	// SASinstrument
 	String instrParent = parentBase + "sasinstrument/"
@@ -485,7 +481,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	String collimationBase = instrumentBase + ":sascollimation"
 	NewDataFolder/O/S $(collimationBase)
 	Make/O/T/N=5 $(collimationBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimation"}
+	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
 	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
 	// Create SAScollimation length entry
 	Make/O/N=1 $(collimationBase + ":length") = {15.3} // TODO: Get real value
@@ -503,7 +499,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
 	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
 	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {"ORNL"} // TODO: Get real value
+	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
 	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
 	// Create SASdetector distance entry
 	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
