@@ -5,7 +5,7 @@
 #include <HDF5 Browser>
 
 //************************
-// Vers 0.75 20170717
+// Vers 1.14 20170928
 //
 //************************
 
@@ -30,8 +30,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	KillDataFolder/Z $base
 	
 	// Define local waves
-	Wave/T vals,attr,attrVals,textw
-	Wave intw,rw,qvals,inten,sig,qbar,sigmaq,fsubs
+	Wave/T vals,attr,attrVals
 	
 	// Define folder for data heirarchy
 	NewDataFolder/O/S root:NXcanSAS_file
@@ -45,48 +44,25 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
 	else
-		if(stringmatch(type,""))
-			// Test values for each data set
-			Make/N=9 intw = {0,180.0,23,6254,16547,6178,22,2,0}
-			Make/N=50 rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-			Make/T/N=2 textw= {"","","","","","","","","","",""}
-			Make/N=10 qvals = {1,1,1,1,1,1,1,1,1,1} // qvals, inten, siq, qbar, sigmaq must be same length
-			Make/N=10 inten = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
-			Make/N=10 sig = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
- 			Make/N=10 qbar = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
-  			Make/N=10 sigmaq = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
- 			Make/N=10 fsubs = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
-		else
-			destStr = "root:Packages:NIST:"+type
-	
-			Variable refNum
-			Variable step=1
-	
-			//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-			WAVE intw = $(destStr + ":integersRead")
-			WAVE rw = $(destStr + ":realsRead")
-			WAVE/T textw=$(destStr + ":textRead")
-			WAVE qvals =$(destStr + ":qval")
-			WAVE inten=$(destStr + ":aveint")
-			WAVE sig=$(destStr + ":sigave")
- 			WAVE qbar = $(destStr + ":QBar")
-  			WAVE sigmaq = $(destStr + ":SigmaQ")
- 			WAVE fsubs = $(destStr + ":fSubS")
- 		endif
+		destStr = "root:Packages:NIST:"+type
+		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+		WAVE intw = $(destStr + ":integersRead")
+		WAVE rw = $(destStr + ":realsRead")
+		WAVE/T textw=$(destStr + ":textRead")
+		WAVE qvals =$(destStr + ":qval")
+		WAVE inten=$(destStr + ":aveint")
+		WAVE sig=$(destStr + ":sigave")
+ 		WAVE qbar = $(destStr + ":QBar")
+  		WAVE sigmaq = $(destStr + ":SigmaQ")
+ 		WAVE fsubs = $(destStr + ":fSubS")
 	endif
 
-	
 	///////////////////////////////////////////////////////////////////////////
 	// Write all data
 	
 	// Define common attribute waves
 	Make/T/N=1 empty = {""}
 	Make/T/N=1 units = {"units"}
-	Make/T/N=1 m = {"m"}
-	Make/T/N=1 mm = {"mm"}
-	Make/T/N=1 cm = {"cm"}
-	Make/T/N=1 pixel = {"pixel"}
-	Make/T/N=1 angstrom = {"A"}
 	Make/T/N=1 inv_cm = {"1/cm"}
 	Make/T/N=1 inv_angstrom = {"1/A"}
 	
@@ -132,8 +108,6 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 		HDF5CloseFile /Z fileID
 	endif
 	
-	// KillDataFolder/Z $base
-	
 End
 
 //
@@ -153,7 +127,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	
 	// Define local function variables
 	Variable fileID
-	Variable step=1,refnum
 	String destStr="",typeStr=""
 	String parentBase = "/sasentry/" // HDF5 base path for all 
 	String/G base = "root:NXcanSAS_file"
@@ -161,8 +134,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	KillDataFolder/Z $base
 	
 	// Define local waves
-	Wave/T vals,attr,attrVals,textw
-	Wave intw,rw,qvals,inten,sig,qbar,sigmaq,fsubs
+	Wave/T vals,attr,attrVals
 	
 	// Define folder for data heirarchy
 	NewDataFolder/O/S root:NXcanSAS_file
@@ -176,41 +148,22 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
 	else
-		if(stringmatch(type,""))
-			
-			// TODO: Change the simulated data variables to match those for 2D data
-			
-			// Test values for each data set
-			Make/N=9 intw = {0,180.0,23,6254,16547,6178,22,2,0}
-			Make/N=5 rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-			Make/T/N=2 textw= {"","","","","","","","","","",""}
-			Make/N=10 qvals = {1,1,1,1,1,1,1,1,1,1} // qvals, inten, siq, qbar, sigmaq must be same length
-			Make/N=10 inten = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
-			Make/N=10 sig = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
- 			Make/N=10 qbar = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
-  			Make/N=10 sigmaq = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
- 			Make/N=10 fsubs = {0,0,0,0,0,0,0,0,0,0} // qvals, inten, siq, qbar, sigmaq must be same length
+		destStr = "root:Packages:NIST:"+type
+
+		//must select the linear_data to export
+		NVAR isLog = $(destStr+":gIsLogScale")
+		if(isLog==1)
+			typeStr = ":linear_data"
 		else
-			destStr = "root:Packages:NIST:"+type
-	
-			//must select the linear_data to export
-			NVAR isLog = $(destStr+":gIsLogScale")
-			if(isLog==1)
-				typeStr = ":linear_data"
-			else
-				typeStr = ":data"
-			endif
-	
+			typeStr = ":data"
+		endif
 			NVAR pixelsX = root:myGlobals:gNPixelsX
-			NVAR pixelsY = root:myGlobals:gNPixelsY
-	
-			Wave data=$(destStr+typeStr)
-			Wave data_err=$(destStr+":linear_data_error")
-			WAVE intw=$(destStr + ":integersRead")
-			WAVE rw=$(destStr + ":realsRead")
-			WAVE/T textw=$(destStr + ":textRead")
-			
- 		endif
+		NVAR pixelsY = root:myGlobals:gNPixelsY
+		Wave data=$(destStr+typeStr)
+		Wave data_err=$(destStr+":linear_data_error")
+		WAVE intw=$(destStr + ":integersRead")
+		WAVE rw=$(destStr + ":realsRead")
+		WAVE/T textw=$(destStr + ":textRead")
 	endif
 	
 	///////////////////////////////////////////////////////////////////////////
@@ -250,8 +203,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	SSD = L1	*100	//1627 		//cm
 	lambda0 = lambda		//		15
 	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
-	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
-	//		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
 	qstar = -2*pi/lambda0*2*yg_d/sdd
 
 	// the gravity center is not the resolution center
@@ -298,11 +249,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Define common attribute waves
 	Make/T/N=1 empty = {""}
 	Make/T/N=1 units = {"units"}
-	Make/T/N=1 m = {"m"}
-	Make/T/N=1 mm = {"mm"}
-	Make/T/N=1 cm = {"cm"}
-	Make/T/N=1 pixel = {"pixel"}
-	Make/T/N=1 angstrom = {"A"}
 	Make/T/N=1 inv_cm = {"1/cm"}
 	Make/T/N=1 inv_angstrom = {"1/A"}
 	
@@ -353,8 +299,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 		HDF5CloseFile /Z fileID
 	endif
 	
-	// KillDataFolder/Z $base
-	
 End
 
 //
@@ -378,8 +322,6 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/T/N=1 cm = {"cm"}
 	Make/T/N=1 pixel = {"pixel"}
 	Make/T/N=1 angstrom = {"A"}
-	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/A"}
 	
 	// SASinstrument
 	String instrParent = parentBase + "sasinstrument/"
@@ -511,11 +453,8 @@ End
 Function NxCansas_CreateFile(fullpath)
 	String fullpath
 	Variable fileID
-	print fullPath
 	fullpath = ReplaceString(":\\", fullpath, ":")
-	print fullPath
 	fullpath = ReplaceString("\\", fullpath, ":")
-	print fullPath
 	HDF5CreateFile /Z fileID as fullpath
 	NXCansas_InitializeFile(fileID)
 	return fileID
