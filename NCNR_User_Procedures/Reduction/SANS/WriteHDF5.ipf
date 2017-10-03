@@ -5,7 +5,7 @@
 #include <HDF5 Browser>
 
 //************************
-// Vers 1.14 20170928
+// Vers 1.15 20171003
 //
 //************************
 
@@ -358,9 +358,6 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(collimationBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
 	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
-	// Create SAScollimation length entry
-	Make/O/N=1 $(collimationBase + ":length") = {15.3} // TODO: Get real value
-	CreateVarNxCansas(fileID,collimationParent,"sasaperture","length",$(collimationBase + ":length"),units,m)
 	// Create SAScollimation distance entry
 	Make/O/N=1 $(collimationBase + ":distance") = {rw[25]}
 	CreateVarNxCansas(fileID,collimationParent,"sasaperture","distance",$(collimationBase + ":distance"),units,m)
@@ -472,29 +469,7 @@ Function NxCansas_InitializeFile(fileID)
 	CreateStrNxCansas(fileID,parent,"","",$(base + ":vals"),$(base + ":attr"),$(base + ":attrVals"))
 	Make/T/N=1 $(base + ":entryAttr") = {""}
 	Make/T/N=1 $(base + ":entryAttrVals") = {""}
-	CreateStrNxCansas(fileID,parent,"","definition",NxCansas_strPtToWave("NXcanSAS"),$(base + ":entryAttr"),$(base + ":entryAttrVals"))
-End
-
-//
-///////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////
-// Functions to put values into usable form for NxCansas
-
-// Convert a number to a string
-Function /WAVE NxCansas_varToWave(number)
-	Variable number
-	Wave returnWave
-	Make/N=1 returnWave = {number}
-	return returnWave
-End
-
-// Create a single point wave from a string
-Function /WAVE NxCansas_strPtToWave(str)
-	String str
-	Wave/T returnWave
-	Make/T/N=1 returnWave = {str}
-	return returnWave
+	CreateStrNxCansas(fileID,parent,"","definition",{"NXcanSAS"},$(base + ":entryAttr"),$(base + ":entryAttrVals"))
 End
 
 //
