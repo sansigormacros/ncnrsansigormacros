@@ -45,6 +45,10 @@ Menu "VSANS"
 //		"IgorOnly_Setup_SANS_Struct"
 //		"IgorOnly_Save_SANS_Struct"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
+		"Flip Lateral Offset",V_PatchDet_Offset()
+		"Patch GroupID using CatTable",V_Patch_GroupID_catTable()
+		"Patch Purpose using CatTable",V_Patch_Purpose_catTable()
+		"Patch Intent using CatTable",V_Patch_Intent_catTable()
 		"-"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"

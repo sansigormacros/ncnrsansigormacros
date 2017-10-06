@@ -772,6 +772,13 @@ End
 //    step where data is added to a WORK file (see Raw_to_Work())
 //
 //
+// TODO:
+// -- some of the input parameters for the resolution calcuation are either assumed (apOff) or are currently
+//    hard-wired. these need to be corrected before even the pinhole resolution is correct
+// x- resolution calculation is in the correct place. The calculation is done per-panel (specified by TYPE),
+//    and then the unwanted points can be discarded (all 6 columns) as the data is trimmed and concatenated
+//    is separate functions that are resolution-aware.
+//
 //
 // folderStr = WORK folder, type = the binning type (may include multiple detectors)
 Function VC_fDoBinning_QxQy2D(folderStr,type)
@@ -1169,9 +1176,12 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // this needs to be a double loop now...
 // TODO:
 // -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
-// -- the solid angle per pixel is not completely implemented.
-//    it will be present for WORK data other than RAW, but not for RAW
+//
+// The 1D error does not use iErr, and IS CALCULATED CORRECTLY
+//
+// x- the solid angle per pixel will be present for WORK data other than RAW, but not for RAW
 
+//
 // if any of the masks don't exist, display the error, and proceed with the averaging, using all data
 	if(maskMissing == 1)
 		Print "Mask file not found for at least one detector - so all data is used"
@@ -1393,13 +1403,16 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	S1 = str2num(V_getSourceAp_size(folderStr))
 	
 // S2 = sample aperture diameter [mm]
-	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? the "external" may not exist?
+	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", but may not exist?
 	
 // L1 = source to sample distance [m] 
 	L1 = V_getSourceAp_distance(folderStr)/100
 
 // L2 = sample to detector distance [m]
-	L2 = V_getDet_ActualDistance(folderStr,type[0]+"L")/100		//TODO "L" panel is hard wired and is WRONG
+// take the first two characters of the "type" to get the correct distance.
+// if the type is say, MLRTB, then the implicit assumption in combining all four panels is that the resolution
+// is not an issue for the slightly different distances.
+	L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
 	
 // BS = beam stop diameter [mm]
 	//BS = V_getBeamStopC2_size(folderStr)		// TODO: what are the units? which BS is in? carr2, carr3, back, none?

@@ -2333,6 +2333,27 @@ End
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+Proc V_PatchDet_Offset(lo,hi)
+	Variable lo,hi
+	
+	V_fPatchDet_Offset(lo,hi)
+End
+
+// V_fReadDet_Offset(lo,hi)
+
+Proc V_Patch_GroupID_catTable()
+	V_fPatch_GroupID_catTable()
+end
+
+Proc V_Patch_Purpose_catTable()
+	V_fPatch_Purpose_catTable()
+end
+
+Proc V_Patch_Intent_catTable()
+	V_fPatch_Intent_catTable()
+end
+
+
 // simple utility to patch the offset values in the file headers
 //
 // Swaps only the L/R detector values
@@ -2434,9 +2455,6 @@ Function V_fPatch_GroupID_catTable()
 	return(0)
 End
 
-V_fPatch_GroupID_catTable()
-V_fPatch_Purpose_catTable()
-V_fPatch_Intent_catTable()
 
 // patches the Purpose, based on whatever is in the catTable
 //
