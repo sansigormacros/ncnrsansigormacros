@@ -2564,6 +2564,22 @@ End
 Function V_AskForAbsoluteParams_Quest()	
 	
 	Variable err,loc,refnum
+	
+	Variable ii
+	
+	Variable kappa=1
+	Variable kappa_err
+		
+	//get the necessary variables for the calculation of kappa
+	Variable countTime,monCnt,sdd,pixel
+	String detStr,junkStr,errStr
+
+	Variable empAttenFactor,	emp_atten_err
+	
+	//get the XY box and files
+	Variable x1,x2,y1,y2,emptyCts,empty_ct_err
+	String emptyFileName,tempStr,divFileName,detPanel_toSum
+		
 	//ask user if he wants to use a transmision file for absolute scaling
 	//or if he wants to enter his own information
 	err = V_UseStdOrEmpForABS()
@@ -2573,24 +2589,21 @@ Function V_AskForAbsoluteParams_Quest()
 		Execute "V_AskForAbsoluteParams()"		//missing parameters
 	else
 		//empty beam flux file selected, prompt for file, and use this to calculate KAPPA
-		Variable kappa=1
-		Variable kappa_err
-			
-		//get the necessary variables for the calculation of kappa
-		Variable countTime,monCnt,sdd,pixel
-		String detStr,junkStr,errStr
 
-		Variable empAttenFactor,	emp_atten_err
-		
-		//get the XY box and files
-		Variable x1,x2,y1,y2,emptyCts,empty_ct_err
-		String emptyFileName,tempStr,divFileName
-		
 		// TODO
 		// x- need an empty beam file name
 		//
 		Prompt emptyFileName,"Empty Beam File",popup,V_PickEMPBeamButton("")
 		DoPrompt "Select File",emptyFileName
+		if (V_Flag)
+			return 0									// user canceled
+		endif
+
+		// TODO
+		// x- need panel
+		//
+		Prompt detPanel_toSum,"Panel with Direct Beam",popup,ksDetectorListAll
+		DoPrompt "Select Panel",detPanel_toSum
 		if (V_Flag)
 			return 0									// user canceled
 		endif
@@ -2605,10 +2618,6 @@ Function V_AskForAbsoluteParams_Quest()
 
 
 		WAVE xyBoxW = V_getBoxCoordinates(emptyFileName)
-		// TODO
-		// -- need to get the panel string for the sum.
-		// -- the detector string is currently hard-wired
-		detStr = "B"
 
 		
 		// load in the data, and use all of the corrections, especially DIV
@@ -2626,39 +2635,70 @@ Function V_AskForAbsoluteParams_Quest()
 		
 		V_LoadAndPlotRAW_wName(emptyFileName)
 		// convert raw->SAM
-		V_Raw_to_work("SAM")
-		V_UpdateDisplayInformation("SAM")	
+//		V_Raw_to_work("SAM")
+//		V_UpdateDisplayInformation("SAM")	
+		V_UpdateDisplayInformation("RAW")	
+		
+		// do the DIV correction
+		if (gDoDIVCor == 1)
+			// need extra check here for file existence
+			// if not in DIV folder, load.
+			// if unable to load, skip correction and report error (Alert?) (Ask to Load?)
+			Print "Doing DIV correction"// for "+ detStr
+			for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+				detStr = StringFromList(ii, ksDetectorListAll, ";")
+				Wave w = V_getDetectorDataW("RAW",detStr)
+				Wave w_err = V_getDetectorDataErrW("RAW",detStr)
+				
+				V_DIVCorrection(w,w_err,detStr,"RAW")		// do the correction in-place
+			endfor
+		else
+			Print "DIV correction NOT DONE"		// not an error since correction was unchecked
+		endif
 		
 		// and determine box sum and error
 		// store these locally
-		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"SAM",detStr)
+		
+		// TODO
+		// x- need to get the panel string for the sum.
+		// x- the detector string is currently hard-wired
+//		detStr = "MR"
+
+		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"RAW",detPanel_toSum)
 
 		Print "empty counts = ",emptyCts
 		Print "empty err/counts = ",empty_ct_err/emptyCts
 
 		//		TODO
 		// -- get all of the proper values for the calculation
-		// -- currently the attenuation is incorrect
+		// -x currently the attenuation is incorrect
 		//   such that kappa_err = 1*kappa
-		// -- verify the calculation (no solid angle needed)
+		// -- verify the calculation (no solid angle needed??)
 		
-		DoAlert 0,"This calculation is not reliable - attenuation is not calibrated"
+		DoAlert 0,"This calculation is not reliable - something is wrong"
 		
 		// get the attenuation factor for the empty beam
-		empAttenFactor = V_getAttenuator_transmission(emptyFileName)
-		emp_atten_err = V_getAttenuator_trans_err(emptyFileName)
-		
+		// TODO -- the attenuation is not written by NICE to the file
+		//  so I need to calculate it myself from the tables
+		// 
+//		empAttenFactor = V_getAttenuator_transmission(emptyFileName)
+//		emp_atten_err = V_getAttenuator_trans_err(emptyFileName)
+		empAttenFactor = V_CalculateAttenuationFactor(emptyFileName)
+		emp_atten_err = V_CalculateAttenuationError(emptyFileName)
+				
 		countTime = V_getCount_time(emptyFileName)
 		
 		// TODO
-		// -- not sure if this is the correct monitor count to use, but I do know to use "SAM"
-		//   rather than the file.
-		monCnt = V_getBeamMonNormData("SAM")
+		// -- not sure if this is the correct monitor count to use
+		monCnt = V_getBeamMonNormData("RAW")
 		
+		pixel = V_getDet_x_pixel_size("RAW",detPanel_toSum)
+		pixel /= 10		//convert mm to cm, since sdd in cm
+		sdd = V_getDet_ActualDistance("RAW",detPanel_toSum)
 		
-		
-//		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+//		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
 		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
+		
 		
 		kappa_err = (empty_ct_err/emptyCts)^2 + (emp_atten_err/empAttenFactor)^2
 		kappa_err = sqrt(kappa_err) * kappa

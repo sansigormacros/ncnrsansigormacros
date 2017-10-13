@@ -1153,8 +1153,13 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 	//copy from current dir (type) to ABS
 	V_CopyHDFToWorkFolder(type,"ABS")	
 
+// TODO: -- which monitor to use? Here, I think it should already be normalized to 10^8
+//	
+//	w_moncount = V_getMonitorCount(type)		//monitor count in "type"
 	
-	w_moncount = V_getMonitorCount(type)		//monitor count in "type"
+	w_moncount = V_getBeamMonNormData(type)
+	
+	
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
