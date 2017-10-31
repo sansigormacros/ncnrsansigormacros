@@ -1163,30 +1163,30 @@ end
 
 //// number of attenuators actually dropped in
 //// an integer value
-//Function V_writeAtten_num_dropped(fname,val)
-//	String fname
-//	Variable val
-//	
-////	String path = "entry:instrument:attenuator:thickness"	
-//	
-//	Make/O/I/N=1 wTmpWrite
-////	Make/O/R/N=1 wTmpWrite
-//	String groupName = "/entry/instrument/attenuator"	
-//	String varName = "num_atten_dropped"
-//	wTmpWrite[0] = val
-//
-//	variable err
-//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+Function V_writeAtten_num_dropped(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:attenuator:thickness"	
+	
+	Make/O/I/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/attenuator"	
+	String varName = "num_atten_dropped"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
 //	if(err)
-//		Print "HDF write err = ",err
+//		Print "DataFolder kill err = ",err
 //	endif
-//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-////	err = V_KillNamedDataFolder(fname)
-////	if(err)
-////		Print "DataFolder kill err = ",err
-////	endif
-//	return(err)
-//end
+	return(err)
+end
 
 // thickness of the attenuator (PMMA) - units??
 Function V_writeAttenThickness(fname,val)

@@ -2571,7 +2571,7 @@ Function V_AskForAbsoluteParams_Quest()
 	Variable kappa_err
 		
 	//get the necessary variables for the calculation of kappa
-	Variable countTime,monCnt,sdd,pixel
+	Variable countTime,monCnt,sdd,pixel_x,pixel_y
 	String detStr,junkStr,errStr
 
 	Variable empAttenFactor,	emp_atten_err
@@ -2692,11 +2692,13 @@ Function V_AskForAbsoluteParams_Quest()
 		// -- not sure if this is the correct monitor count to use
 		monCnt = V_getBeamMonNormData("RAW")
 		
-		pixel = V_getDet_x_pixel_size("RAW",detPanel_toSum)
-		pixel /= 10		//convert mm to cm, since sdd in cm
+		pixel_x = V_getDet_x_pixel_size("RAW",detPanel_toSum)
+		pixel_x /= 10		//convert mm to cm, since sdd in cm
+		pixel_y = V_getDet_y_pixel_size("RAW",detPanel_toSum)
+		pixel_y /= 10		//convert mm to cm, since sdd in cm
 		sdd = V_getDet_ActualDistance("RAW",detPanel_toSum)
 		
-//		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+//		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel_x*pixel_y/sdd^2)
 		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
 		
 		

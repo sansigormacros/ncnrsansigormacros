@@ -86,6 +86,7 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 			WAVE/T labelW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels
 			WAVE groupIDW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID
 			WAVE transmW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission
+			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 			
 			// TODO
 			// I don't have a wave for the transmission error value, so it's not displayed here
@@ -104,14 +105,16 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 		// loop back through to find the transmission file with the matching group id
 		// TODO x- set the popup string to the matching name on exit
 			Variable targetID = groupIDW[ii]
-			String list = V_getFilePurposeList("TRANSMISSION",0)
+//			String list = V_getFilePurposeList("TRANSMISSION",0)
+			String list = V_getFileIntentPurposeList("SAMPLE","TRANSMISSION",0)
+			
 			WAVE/T purposeW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
 			for(ii=0;ii<np;ii+=1)
-				if(cmpstr(purposeW[ii],"TRANSMISSION")==0 && groupIDW[ii] == targetID)
+				if(cmpstr(purposeW[ii],"TRANSMISSION")==0 && cmpstr(intentW[ii],"SAMPLE")==0 && groupIDW[ii] == targetID)
 					Print "transmission file match at ",filenameW[ii]
 					SetVariable setvar_2,value=labelW[ii]
 					SetVariable setvar_3,value=groupIDW[ii]
-					PopupMenu popup_1,mode=WhichListItem(fileNameW[ii], list )+1
+					PopupMenu popup_1,mode=WhichListItem(fileNameW[ii], list )+1,popValue=fileNameW[ii]
 					break
 				endif		
 			endfor
@@ -121,14 +124,13 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 		// x- fill in the XY box
 		// x-  Detector Panel field is hard-wired for "B"
 		//	
-			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
 			list = V_getFileIntentList("EMPTY BEAM",0)
 			
 			for(ii=0;ii<np;ii+=1)
 				if(cmpstr(intentW[ii],"EMPTY BEAM")==0)
 					Print "empty beam match at ",filenameW[ii]
 					SetVariable setvar_4,value=labelW[ii]
-					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1
+					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1,popValue=fileNameW[ii]
 					
 //					SetVariable setvar_6,value =_STR:"ML"
 

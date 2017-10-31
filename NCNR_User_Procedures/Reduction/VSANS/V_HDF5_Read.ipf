@@ -467,6 +467,7 @@ End
 Function V_getAttenuator_transmission(fname)
 	String fname
 	
+	Print "reading atten transmission"
 	String path = "entry:instrument:attenuator:attenuator_transmission"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
