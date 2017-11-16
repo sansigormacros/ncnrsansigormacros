@@ -26,7 +26,7 @@
 // Note that the equation in Roe (eqn 2.15, p. 63) looks different, but it is really the 
 // same old equation, just written in a more complex form.
 //
-// TODO
+// (DONE)
 // x- verify the direction of the tubes and indexing
 // x- decide on the appropriate functional form for the tubes
 // x- need count time as input
@@ -108,8 +108,9 @@ End
 // output is wave of corrected real space distance corresponding to each pixel of the data
 //
 //
-// TODO
-// -- UNITS!!!! currently this is mm, which certainly doesn't match anything else!!!
+// (DONE)
+// x- UNITS!!!! currently this is mm, which certainly doesn't match anything else!!!
+//
 // x- verify the direction of the tubes and indexing
 // x- be sure I'm working in the right data folder (it is passed in, and the full path is used)
 // x- clean up when done
@@ -150,16 +151,16 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
 	
 	// TODO
-	// -- GAP IS HARD-WIRED
+	// -- GAP IS HARD-WIRED as a single constant value (there really are 4 values)
 	Variable offset,gap
 
 // kPanelTouchingGap is in mm	
+// the gap is added to the RIGHT and TOP panels ONLY
+// TODO -- replace with V_getDet_panel_gap(fname,detStr) once it is added to the file
 	gap = kPanelTouchingGap
 	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
-		data_realDistX[][] = tube_width*p
-		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
 	
 		// adjust the x postion based on the beam center being nominally (0,0) in units of cm, not pixels
 		if(cmpstr(fname,"VCALC")== 0 )
@@ -179,17 +180,21 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// offset will be a negative value for the L panel, and positive for the R panel
 		if(kBCTR_CM)
 			if(cmpstr("L",detStr[1]) == 0)
-				data_realDistX[][] = offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
-//				data_realDistX[][] = -offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
+//				data_realDistX[][] = offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
+				data_realDistX[][] = offset - (dimX - p)*tube_width - gap/2		// TODO should this be dimX-1-p = 47-p?
 			else
-				data_realDistX[][] += offset + gap + tube_width			//add to the Right det, not recalculate
+			//	right
+//				data_realDistX[][] = tube_width*(p+1) + offset + gap		//add to the Right det,
+				data_realDistX[][] = tube_width*(p+1) + offset + gap/2		//add to the Right det
 			endif
+		else
+			data_realDistX[][] = tube_width*(p)
 		endif
+		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
 	
 	
 	elseif(cmpstr(orientation,"horizontal")==0)
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
-		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
 		data_realDistY[][] = tube_width*q
 
 		if(cmpstr(fname,"VCALC")== 0 )
@@ -207,11 +212,17 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		
 		if(kBCTR_CM)
 			if(cmpstr("T",detStr[1]) == 0)
-				data_realDistY[][] += offset + gap + tube_width			
+//				data_realDistY[][] = tube_width*(q+1) + offset + gap			
+				data_realDistY[][] = tube_width*(q+1) + offset + gap/2			
 			else
-				data_realDistY[][] = offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
+				// bottom
+//				data_realDistY[][] = offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
+				data_realDistY[][] = offset - (dimY - q)*tube_width - gap/2	// TODO should this be dimY-1-q = 47-q?
 			endif
+		else
+			data_realDistY[][] = tube_width*(q)
 		endif
+		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
 
 	else		
 		DoAlert 0,"Orientation not correctly passed in NonLinearCorrection(). No correction done."
@@ -324,17 +335,17 @@ end
 
 //
 //
-// TODO
-// -- VERIFY the calculations
-// -- verify where this needs to be done (if the beam center is changed)
-// -- then the q-calculation needs to be re-done
-// -- the position along the tube length is referenced to tube[0], for no particular reason
+// (DONE)
+// x- VERIFY the calculations
+// x- verify where this needs to be done (if the beam center is changed)
+// x- then the q-calculation needs to be re-done
+// x- the position along the tube length is referenced to tube[0], for no particular reason
 //    It may be better to take an average? but [0] is an ASSUMPTION
-// -- distance along tube is simple interpolation, or do I use the coefficients to
-//    calculate the actual value
+// x- distance along tube is simple interpolation
 //
-// -- distance in the lateral direction is based on tube width, which is a fixed parameter
+// x- distance in the lateral direction is based on tube width, which is a fixed parameter
 //
+// the value in pixels is written to the local data folder, NOT to disk (it is recalculated as needed)
 //
 Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	String folder,detStr,destPath
@@ -363,6 +374,7 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
 
 	variable edge,delta
+	Variable gap = kPanelTouchingGap		// TODO: -- replace with V_getDet_panel_gap(fname,detStr)
 
 //
 	if(cmpstr(orientation,"vertical")==0)
@@ -376,7 +388,7 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 			else
 			// R panel
 				edge = data_realDistX[0][0]
-				delta = abs(xCtr*10 - edge + kPanelTouchingGap)
+				delta = abs(xCtr*10 - edge + gap)
 				x_pix[0] = -delta/tube_width		//since the left edge of the R panel is pixel 0
 			endif
 		endif
@@ -393,7 +405,7 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 		if(kBCTR_CM)
 			if(cmpstr("T",detStr[1]) == 0)
 				edge = data_realDistY[0][0]		//tube 0
-				delta = abs(yCtr*10 - edge + kPanelTouchingGap)
+				delta = abs(yCtr*10 - edge + gap)
 				y_pix[0] =  -delta/tube_width		//since the bottom edge of the T panel is pixel 0
 			else
 			// FM(B) panel
@@ -477,8 +489,7 @@ End
 //
 ////
 
-// TODO
-// get rid of this in the real data
+
 //
 // TESTING ONLY
 Proc V_MakeFakeCalibrationWaves()
@@ -495,8 +506,6 @@ End
 
 
 
-// TODO
-// get rid of this in the real data
 //
 // TESTING ONLY
 //
@@ -548,9 +557,9 @@ Function V_fMakeFakeCalibrationWaves()
 End
 
 //
-// TODO:
-// -- MUST VERIFY the definition of SDD and how (if) setback is written to the data files
-// -- currently I'm assuming that the SDD is the "nominal" value which is correct for the 
+// (DONE)
+// x- MUST VERIFY the definition of SDD and how (if) setback is written to the data files
+// x- currently I'm assuming that the SDD is the "nominal" value which is correct for the 
 //    L/R panels, but is not correct for the T/B panels (must add in the setback)
 //
 //
@@ -608,10 +617,10 @@ End
 
 //function to calculate the overall q-value, given all of the necesary trig inputs
 //
-// TODO:
-// -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
-// -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
+// (DONE)
+// x- verify the calculation (accuracy - in all input conditions)
+// x- verify the units of everything here, it's currently all jumbled and wrong... and repeated
+// x- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
 //sdd is in [cm]
@@ -641,10 +650,10 @@ Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 End
 
 //calculates just the q-value in the x-direction on the detector
-// TODO:
-// -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
-// -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
+// (DONE)
+// x- verify the calculation (accuracy - in all input conditions)
+// x- verify the units of everything here, it's currently all jumbled and wrong... and repeated
+// x- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
 //
@@ -675,10 +684,10 @@ Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 End
 
 //calculates just the q-value in the y-direction on the detector
-// TODO:
-// -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
-// -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
+// (DONE)
+// x- verify the calculation (accuracy - in all input conditions)
+// x- verify the units of everything here, it's currently all jumbled and wrong... and repeated
+// x- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
 //
@@ -709,15 +718,15 @@ Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 End
 
 //calculates just the q-value in the z-direction on the detector
-// TODO:
-// -- verify the calculation (accuracy - in all input conditions)
-// -- verify the units of everything here, it's currently all jumbled and wrong... and repeated
-// -- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
+// (DONE)
+// x- verify the calculation (accuracy - in all input conditions)
+// x- verify the units of everything here, it's currently all jumbled and wrong... and repeated
+// x- the input data_realDistX and Y are essentially lookup tables of the real space distance corresponding
 //    to each pixel
 //
 // not actually used for any calculations, but here for completeness if anyone asks, or for 2D data export
 //
-// this properly accounts for qz
+// this properly accounts for qz, because it is qz
 //
 Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam
@@ -744,16 +753,17 @@ End
 
 
 //
-// TODO -- VERIFY calculations
-// -- This is the actual solid angle per pixel, not a ratio vs. some "unit SA" 
+// (DONE)
+// x- VERIFY calculations
+// x- This is the actual solid angle per pixel, not a ratio vs. some "unit SA" 
 //    Do I just correct for the different area vs. the "nominal" central area?
-// -- decide how to implement - either directly change the data values (as was done in the past)
-//    or use this as a weighting for when the data is binned to I(q). In the second method, 2D data
-//    would need this to be applied before exporting
-// -- do I keep a wave note indicating that this correction has been applied to the data
-//    so that it can be "un-applied"?
-// -- do I calculate theta from geometry directly, or get it from Q (Assuming it's present?)
-//    (probably just from geometry, since I need SDD and dx and dy values...)
+// x- decide how to implement - YES - directly change the data values (as was done in the past)
+//    or (NOT done this way...use this as a weighting for when the data is binned to I(q). In the second method, 2D data
+//    would need this to be applied before exporting)
+// x- do I keep a wave note indicating that this correction has been applied to the data
+//    so that it can be "un-applied"? NO
+// x- do I calculate theta from geometry directly, or get it from Q (Assuming it's present?)
+//    (YES just from geometry, since I need SDD and dx and dy values...)
 //
 //
 Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
@@ -826,10 +836,9 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
 	w /= solid_angle
 	
-	
-	// TODO:
+	//
 	// correctly apply the correction to the error wave (assume a perfect value?)
- 	w_err /= solid_angle		//is this correct??
+ 	w_err /= solid_angle		//
 
 // TODO -- clean up after I'm satisfied computations are correct		
 //	KillWaves/Z tmp_theta,tmp_dist
@@ -843,8 +852,14 @@ end
 //   copied from SANS
 //
 //
-// TODO : 
-//   -- DoAlert 0,"This has not yet been updated for VSANS"
+// NOV 2017
+// Currently, this is not called from any VSANS routines. it is only referenced
+// from V_Add_raw_to_work(), which would add two VSANS raw data files together. This has
+// not yet been implemented. I am only keeping this function around to be sure that 
+// if/when V_Add_raw_to_work() is implemented, all of the functionality of V_DetCorr() is
+// properly duplicated.
+//
+//
 //
 //performs solid angle and non-linear detector corrections to raw data as it is "added" to a work folder
 //function is called by Raw_to_work() and Add_raw_to_work() functions
@@ -976,14 +991,12 @@ Function V_DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 End
 
 
-
+//
+// Large angle transmission correction
 //
 // DIVIDE the intensity by this correction to get the right answer
-// TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
 //
 //
-
 // Apply the large angle transmssion correction as the data is converted to WORK
 // so that whether the data is saved as 2D or 1D, the correction has properly been done.
 //
@@ -1047,8 +1060,8 @@ Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 				lat_corr[ii][jj] = (1-exp(-uval*arg))/(uval*arg)
 			endif
 			 
-			// TODO
-			// -- properly calculate and apply the 2D error propagation
+			// (DONE)
+			// x- properly calculate and apply the 2D error propagation
 			if(trans == 1)
 				lat_err[ii][jj] = 0		//no correction, no error
 			else
@@ -1076,9 +1089,6 @@ Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 	
 	w_err = tmp_err	
 	
-	// TODO:
-	// correctly apply the correction to the error wave (assume a perfect value?)
-	// w_err /= tmp		//is this correct??
 
 	// TODO -- clean up after I'm satisfied computations are correct		
 	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
@@ -1126,7 +1136,6 @@ Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5,I_err)
 End
 
 //
-// TODO:
 //
 // kappa comes in as s_izero, so be sure to use 1/kappa_err
 //
@@ -1255,12 +1264,7 @@ Function V_Adjust_RAW_Attenuation(type)
 End
 
 //
-// TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
-//
-//************************
-//unused testing procedure, may not be up-to-date with other procedures
-//check before re-implementing
+// testing procedure, called from a menu selection
 //
 Proc V_DIV_a_Workfile(type)
 	String type

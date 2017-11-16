@@ -241,8 +241,6 @@ Function V_FindCentroid() :  GraphMarquee
 		top = round(V_top)
 		bottom = round(V_bottom)
 
-		// NOTE:
-		// this function MODIFIES x and y values on return, converting them to panel coordinates
 		// detector panel is identified from the (left,top) coordinate (x1,y2)
 		String detStr = V_FindDetStrFromLoc(left,right,bottom,top)		
 	//	Printf "Detector = %s\r",detStr

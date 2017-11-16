@@ -606,7 +606,6 @@ Function V_Raw_to_work(newType)
 
 	// (3) dead time correction
 	// TODO:
-	// x- remove the hard-wired test - done
 	// -- test for correct operation
 	// x- loop over all of the detectors
 	// x- B detector is a special case (do separately, then loop over NoB)
@@ -645,11 +644,11 @@ Function V_Raw_to_work(newType)
 	
 
 	// (4) solid angle correction
-	// TODO -- this currently calculates the correction factor AND applys it to the data
+	//  -- this currently calculates the correction factor AND applys it to the data
 	//  -- as a result, the data values are very large since they are divided by a very small
 	//     solid angle per pixel. But all of the count values are now on the basis of 
 	//    counts/(solid angle) --- meaning that they can all be binned together for I(q)
-	//    -and- TODO - this will need to be taken into account for absolute scaling (this part is already done)
+	//    -and- - this is taken into account for absolute scaling (this part is already done)
 	//
 	// the solid angle correction is calculated for ALL detector panels.
 	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor

@@ -39,14 +39,13 @@ End
 
 //// DRAWING/SAVING
 //
-// TODO:
+// (DONE)
 // x- CHANGE the mask behavior to a more logical choice - and consistent with SANS
 //   x- CHANGE to:
 // 1 == mask == discard data
 // 0 == no Mask == keep data
 // x- and then make the corresponding changes in the I(Q) routines
-
-
+//
 // x- move the mask generating utilities from VC_HDF5_Utils into this procedure - to keep
 // all of the mask procedures together
 
@@ -55,11 +54,12 @@ End
 // -- document the arrow keys moving the tube number and adding/deleting tubes from the mask
 //  this is done through a window hook function (LR moves tube number, up/down = add/delete)
 //
-// TODO
-// -- make the arrow keys Igor 6 compatible - search for specialKeyCode or Keyboard Events in the help file
+// (DONE)
+// x- (NO)- Igor 7 is necessary for some VSANS functionality, so do not support Igor 6
+//    x (no)make the arrow keys Igor 6 compatible - search for specialKeyCode or Keyboard Events in the help file
 //     and what needs to be replaced for Igor 6
-// TODO
-// -- for L/R panels, the maksing of columns should be sufficient. Tubes are vertical. For the T/B panels
+// DONE
+// x- for L/R panels, the maksing of columns should be sufficient. Tubes are vertical. For the T/B panels
 //         the L/R panels cast a vertical shadow (=vertical mask) AND the tubes are horizontal, so the individual
 //         tubes will likely need to be masked in a horizontal line too, per tube. ADD this in...
 
@@ -454,12 +454,10 @@ End
 // TODO
 // x- currently is hard-wired for the simulation path!   need to make it more generic, especially for RAW data
 //
-// -- need to adjust the size of the image subwindows to keep the model
-//    calculation from spilling over onto the table (maybe just move the table)
+// -- need to adjust the size of the image subwindows 
+//
 // -- need to do something for panel "B". currently ignored
-// -- currently the pixel sizes for "real" data is incorrect in the file
-//     and this is why the plots are incorrectly sized
-// -- error checking if the data does not exist in selected work folder
+//
 //
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
@@ -594,7 +592,7 @@ End
 //
 // overlay the mask
 //
-// 
+// (DONE)
 // x- remove the old mask first
 // x- make the mask "toggle" to remove it
 // x- go see SANS for color, implementation, etc.
@@ -727,7 +725,7 @@ End
 //
 //
 // TODO
-// -- make the number of pixels GLOBAL
+// -- make the number of pixels GLOBAL to pick up the right numbers for the detector dimensions
 //  x- there will be lots of work to do to develop the procedures necessary to actually generate the 
 //      9 data sets to become the MASK file contents. More complexity here than for the simple SANS case.
 //
@@ -842,8 +840,8 @@ end
 ////////////////////// MASK FILE
 
 
-// TODO
-// -- currently, there are no dummy fill values or attributes for the fake MASK file
+// (DONE)
+// x- currently, there are no dummy fill values or attributes for the fake MASK file
 //
 Proc Setup_VSANS_MASK_Struct()
 

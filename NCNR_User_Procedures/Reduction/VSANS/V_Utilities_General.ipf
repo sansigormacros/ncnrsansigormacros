@@ -5,9 +5,10 @@
 //		general utilities
 //
 // for use by multiple panels and packages
+//
 
 
-//prompts user to choose the local folder that contains the SANS Data
+//prompts user to choose the local folder that contains the VSANS Data
 //only one folder can be used, and its path is catPathName (and is a NAME, not a string)
 //this will overwrite the path selection
 //returns 1 if no path selected as error condition, or if user cancelled
@@ -75,6 +76,8 @@ Function V_DataExists(type)
 	
 	return(WaveExists(w))
 end
+
+
 //
 // tests if two values are close enough to each other
 // very useful since ICE came to be
@@ -93,12 +96,14 @@ End
 
 
 
-// TODO:
-// -- this must be called as needed to force a re-read of the data from disk
+// (DONE):
+// x- this must be called as needed to force a re-read of the data from disk
 //    "as needed" means that when an operation is done that needs to ensure
 //     a fresh read from disk, it must take care of the kill.
-// -- the ksBaseDFPath needs to be removed. It's currently pointing to RawVSANS, which is
+// x- the ksBaseDFPath needs to be removed. It's currently pointing to RawVSANS, which is
 //    really not used as intended anymore.
+//
+// *** this appears to be unused, in favor of V_CleanupData_w_Progress(0,1)  **********
 //
 Function V_KillNamedDataFolder(fname)
 	String fname
@@ -114,10 +119,10 @@ Function V_KillNamedDataFolder(fname)
 	return(err)
 end
 
-// TODO:
+// (DONE)
 // x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
 //    it still thinks there is (1) item there.
-// -- if I replace the semicolon with a comma, it thinks there are two folders present and appears
+// x- if I replace the semicolon with a comma, it thinks there are two folders present and appears
 //    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
 //
@@ -211,7 +216,7 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 			break
 		endif
 		
-		ValDisplay valdisp0,win=ProgressPanel,value= _NUM:num,win=ProgressPanel
+		ValDisplay valdisp0,win=ProgressPanel,value= _NUM:num
 		DoUpdate /W=ProgressPanel
 	while(1)
 	
@@ -500,7 +505,8 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	type = "RAW"
 	V_PlotData_Panel()		// read the binType from the panel
 	Variable binType = V_GetBinningPopMode()
-	V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
+	ControlInfo/W=V_1D_Data popup0
+	V_BinningModePopup("",binType,S_Value)		// does default circular binning and updates the graph
 
 
 	return(0)
@@ -606,14 +612,14 @@ End
 //   weed out the reduced data sets, etc. from file catalogs.
 //	(check the instrument name...)
 
-// TODO -- as was written by SANS, this function is expecting fname to be the path:fileName
+// (DONE) x- as was written by SANS, this function is expecting fname to be the path:fileName
 // - but are the V_get() functions OK with getting a full path, and what do they
 //  do when they fail? I don't want them to spit up another open file dialog
 //
-// -- problem -- if "sans1234.abs" is passed, then V_getStringFromHDF5(fname,path,num)
+// x- problem -- if "sans1234.abs" is passed, then V_getStringFromHDF5(fname,path,num)
 //  will remove the extension and look for the sans1234 folder -- which may or may not be present.
 //  If it is present, then sans1234 validates as RAW data -- which is incorrect!
-// -- so I need a way to exclude everything that does not have the proper extension...
+// x- so I need a way to exclude everything that does not have the proper extension...
 //
 //
 Function V_CheckIfRawData(fname)
@@ -672,7 +678,7 @@ Function V_GetRunNumFromFile(item)
 end
 
 
-// TODO -- the file name structure for VSANS file is undecided
+// (DONE) x- the file name structure for VSANS file is undecided
 // so some of these base functions will need to change
 //
 //given a filename of a VSANS data filename of the form

@@ -2,22 +2,39 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+//
+// 7-NOV-2017
+// 
+// The attenuator tables are more complex now - since there are more ways to select wavelength
+// - there is the standard velocity selector (no tilt)
+// - a white beam mode (with a non-symmetric distribution)
+// - a graphite monochromator, allowing wavelength selection
+//
+// To accomodate this, I have chosen to alter the table to allow all of the wavelength "modes"
+// to be in the same table for interpolation, by use of the "correct" input wavelength
+// velocity_selector lambda is input as is
+// white beam lambda = (lambda * 1e3)
+// graphite crystal lambda = (lambda * 1e6)
+//
+// in this way, the interpolation will work just fine. Otherwise, the only solution I could see was to 
+// have separate tables stored in the header for each of the "modes".
+//
+//
+
+//
 // functions to calculate attenuator values from the tables
 //
 // V_CalculateAttenuationFactor(fname)
 // V_CalculateAttenuationError(fname)
 //
 // interpolate if necessary
-
+//
 
 //
 // patch entire tables if necessary
 //
 //
-//
-
-
-// attenuator tables are currently /N=(8,17)
+// attenuator tables are currently /N=(n,17)
 
 
 Proc V_LoadCSVAttenTable()
@@ -53,14 +70,14 @@ End
 
 Proc V_WriteCSVAttenTable(lo,hi,atten_values)
 	Variable lo,hi
-	String atten_values
+	String atten_values="atten_values"
 
 	V_fPatchAttenValueTable(lo,hi,$atten_values)
 End
 
 Proc V_WriteCSVAttenErrTable(lo,hi,atten_err)
 	Variable lo,hi
-	String atten_err
+	String atten_err="atten_err"
 
 	V_fPatchAttenErrTable(lo,hi,$atten_err)
 End
@@ -77,10 +94,10 @@ Function V_fPatchAttenValueTable(lo,hi,attenW)
 	Variable ii
 	String fname
 	
-	// check the dimensions of the attenW (8,17)
-	if (DimSize(attenW, 0) != 8 || DimSize(attenW, 1) != 17 )
-		Abort "attenuator wave is not of proper dimension (8,17)"
-	endif
+//	// check the dimensions of the attenW (8,17)
+//	if (DimSize(attenW, 0) != 8 || DimSize(attenW, 1) != 17 )
+//		Abort "attenuator wave is not of proper dimension (8,17)"
+//	endif
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
@@ -106,10 +123,10 @@ Function V_fPatchAttenErrTable(lo,hi,attenW)
 	Variable ii
 	String fname
 	
-	// check the dimensions of the attenW (8,17)
-	if (DimSize(attenW, 0) != 8 || DimSize(attenW, 1) != 17 )
-		Abort "attenuator wave is not of proper dimension (8,17)"
-	endif
+//	// check the dimensions of the attenW (8,17)
+//	if (DimSize(attenW, 0) != 8 || DimSize(attenW, 1) != 17 )
+//		Abort "attenuator wave is not of proper dimension (8,17)"
+//	endif
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
@@ -131,13 +148,15 @@ End
 // function to calculate the attenuation factor from the table in the file
 //
 // fill in a "dummy" wavelength for White Beam and graphite
-// == 100 for White Beam
-// == 1000 for graphite
+// *= 1e3 for White Beam
+// *= 1e6 for graphite
 // use these dummy values just for the lookup table
 //
 // TODO -- need the enumerated values for the monochromator type
 // TODO -- V_getMonochromatorType(fname) is NOT written correctly by NICE
-//
+// TODO -- determine the dimensions of the wave, don't hard-wire
+// TODO -- update to use separate tables for each monochromator mode
+// TODO -- (same updates for the error table)
 //
 Function V_CalculateAttenuationFactor(fname)
 	String fname
@@ -161,22 +180,24 @@ Function V_CalculateAttenuationFactor(fname)
 			// use lambda as-is
 			break		// exit from switch
 		case "white_beam":	// execute if case matches expression
-			lambda = 100
+			lambda *= 1e3
 			break
 		case "crystal":
-			lambda = 1000
+			lambda *= 1e6
 			break
 		default:			// optional default expression executed
 			Abort "Monochromator type could not be determined in V_CalculateAttenuationFactor"		// when no case matches
 	endswitch
 	
 	
-	Wave w = V_getAttenIndex_table(fname)		// N=(8,17)
-	Make/O/D/N=8 tmpVal,tmpLam
+	Wave w = V_getAttenIndex_table(fname)		// N=(x,17)
+	Variable num = DimSize(w,0)
+	Make/O/D/N=(num) tmpVal,tmpLam						
 	
 	tmpVal = w[p][numAtt+1]		// offset by one, 1st column is wavelength
 	tmpLam = w[p][0]
 	val = interp(lambda, tmpLam, tmpVal )
+	Print "Calculated Atten = ",val
 	
 	//killwaves/Z tmpVal,tmpLam
 	return(val)
@@ -188,12 +209,13 @@ End
 // function to calculate the attenuation error from the table in the file
 //
 // fill in a "dummy" wavelength for White Beam and graphite
-// == 100 for White Beam
-// == 1000 for graphite
+// *= 1e3 for White Beam
+// *= 1e6 for graphite
 // use these dummy values just for the lookup table
 //
 // TODO -- need the enumerated values for the monochromator type
 // TODO -- V_getMonochromatorType(fname) is NOT written correctly by NICE
+//
 //
 Function V_CalculateAttenuationError(fname)
 	String fname
@@ -205,7 +227,7 @@ Function V_CalculateAttenuationError(fname)
 	lambda = V_getWavelength(fname)
 	
 	// TODO -- need to switch on "type"
-	//  == velocity_selector || ?? for white beam || graphite
+	//  == velocity_selector || ?? for white beam || crystal
 //	monoType = V_getMonochromatorType(fname)
 	
 	monoType = V_DeduceMonochromatorType(fname)
@@ -216,17 +238,18 @@ Function V_CalculateAttenuationError(fname)
 			// use lambda as-is
 			break		// exit from switch
 		case "white_beam":	// execute if case matches expression
-			lambda = 100
+			lambda *= 1e3
 			break
 		case "crystal":
-			lambda = 1000
+			lambda *= 1e6
 			break
 		default:			// optional default expression executed
 			Abort "Monochromator type could not be determined in V_CalculateAttenuationError"		// when no case matches
 	endswitch	
 	
-	Wave w = V_getAttenIndex_error_table(fname)		// N=(8,17)
-	Make/O/D/N=8 tmpVal,tmpLam
+	Wave w = V_getAttenIndex_error_table(fname)		// N=(x,17)
+	Variable num = DimSize(w,0)
+	Make/O/D/N=(num) tmpVal,tmpLam
 	
 	tmpVal = w[p][numAtt+1]		// offset by one, 1st column is wavelength
 	tmpLam = w[p][0]

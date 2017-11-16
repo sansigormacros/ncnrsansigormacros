@@ -39,32 +39,50 @@
 // ***Use no others
 // *** When other bin types are developed, DO NOT reassign these numbers.
 //  instead, skip the old numbers and assign new ones.
-// old modes can be removed from the string constant ksBinTypeStr (above), but the 
+//
+// - the numbers here in the switch can be out of order - it's fine
+//
+// old modes can be removed from the string constant ksBinTypeStr(n) (in V_Initialize.ipf), but the 
 // mode numbers are what many different binning, plotting, and reduction functions are
 // switching on. In the future, it may be necessary to change the key (everywhere) to a string
 // switch, but for now, stick with the numbers.
+//
+// Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
+//
+//
 Function V_BinTypeStr2Num(binStr)
 	String binStr
 	
 	Variable binType
 	strswitch(binStr)	// string switch
-		case "One":
+		case "F4-M4-B":
 			binType = 1
 			break		// exit from switch
-		case "Two":
+		case "F2-M2-B":
 			binType = 2
 			break		// exit from switch
-		case "Four":
+		case "F1-M1-B":
 			binType = 3
 			break		// exit from switch
-		case "Slit Mode":
+		case "SLIT-F2-M2-B":
 			binType = 4
 			break		// exit from switch
 
+		case "F2-M1-B":
+			binType = 5
+			break
+		case "F1-M2xTB-B":
+			binType = 6
+			break
+		case "F2-M2xTB-B":
+			binType = 7
+			break
+			
 		default:			// optional default expression executed
 			binType = 0
 			Abort "Binning mode not found"// when no case matches
 	endswitch	
+	
 	return(binType)
 end
 
@@ -85,59 +103,74 @@ Function V_QBinAllPanels_Circular(folderStr,binType)
 
 //	binType = V_GetBinningPopMode()
 
-//// TODO:
-//
-//	Back detector is handled spearately since there is nothing to combine
-//
-	delQ = SetDeltaQ(folderStr,"B")
-	
-	// dispatch based on binning type
-	if(binType == 1 || binType == 2 || binType == 3)
-		VC_fDoBinning_QxQy2D(folderStr, "B")		//normal binning, nothing to combine
-	endif
-
-// TODO -- this is only a temporary fix for slit mode	
-	if(binType == 4)
-		/// this is for a tall, narrow slit mode	
-		VC_fBinDetector_byRows(folderStr,"B")
-	endif	
-
-
-
-// these are the binning types where detectors are not combined
-// other combined binning is below the loop
-	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		
-		// set delta Q for binning
-		delQ = SetDeltaQ(folderStr,detStr)
-		
-		// dispatch based on binning type
-		if(binType==1)
-			VC_fDoBinning_QxQy2D(folderStr,detStr)
-		endif
-		
-		// TODO -- this is only a temporary fix for slit mode	
-		if(binType == 4)
-			/// this is for a tall, narrow slit mode	
-			VC_fBinDetector_byRows(folderStr,detStr)
-		endif	
-		
+		delQ = SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
 	endfor
 	
-	// bin in pairs
-	if(binType == 2)
-		VC_fDoBinning_QxQy2D(folderStr,"MLR")
-		VC_fDoBinning_QxQy2D(folderStr,"MTB")
-		VC_fDoBinning_QxQy2D(folderStr,"FLR")
-		VC_fDoBinning_QxQy2D(folderStr,"FTB")	
-	endif
+
+	switch(binType)
+		case 1:
+			VC_fDoBinning_QxQy2D(folderStr,"FL")
+			VC_fDoBinning_QxQy2D(folderStr,"FR")
+			VC_fDoBinning_QxQy2D(folderStr,"FT")
+			VC_fDoBinning_QxQy2D(folderStr,"FB")
+			VC_fDoBinning_QxQy2D(folderStr,"ML")
+			VC_fDoBinning_QxQy2D(folderStr,"MR")
+			VC_fDoBinning_QxQy2D(folderStr,"MT")
+			VC_fDoBinning_QxQy2D(folderStr,"MB")			
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 2:
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 3:
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+			VC_fBinDetector_byRows(folderStr,"FL")
+			VC_fBinDetector_byRows(folderStr,"FR")
+			VC_fBinDetector_byRows(folderStr,"ML")
+			VC_fBinDetector_byRows(folderStr,"MR")
+			VC_fBinDetector_byRows(folderStr,"B")
+
+			break
+		case 5:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 6:
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 7:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in V_QBinAllPanels_Circular"// when no case matches	
+	endswitch
 	
-	// bin everything on front or middle together
-	if(binType == 3)
-		VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
-		VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
-	endif
 
 	return(0)
 End
@@ -238,7 +271,7 @@ end
 // concatentate data in folderStr
 //
 // TODO:
-// -- !!! Resolution waves are currently skipped - these must be added
+// x- !!! Resolution waves are currently skipped - these must be added
 //
 // x- this currently ignores the binning type (one, two, etc. )
 // x- change the Concatenate call to use the waveList, to eliminate the need to declare all of the waves
@@ -254,10 +287,14 @@ end
 //
 //  root:Packages:NIST:VSANS:RAW:iBin_qxqy_FB
 //
+// Now, the extensions needed for each binType are handled in a loop using the strings
+// defined globally for each of the numbered binTypes
+//
 // binType = 1 = one
 // binType = 2 = two
 // binType = 3 = four
 // binType = 4 = Slit Mode
+// binType = 5...
 //
 // if binType is passed in as -9999, get the binning mode from the popup
 // otherwise the value is assumed good (from a protocol)
@@ -269,9 +306,16 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 	String pathStr,folderStr,tagStr
 	Variable binType
 	
+
 	if(binType==-9999)
 		binType = V_GetBinningPopMode()
 	endif	
+	
+	String binTypeString = V_getBinTypeString(binType)
+	if(strlen(binTypeString) == 0)
+		DoAlert 0,"binTypeString is null in V_1DConcatenate"
+		return(0)
+	endif
 	
 //	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 	SetDataFolder $(pathStr+folderStr)
@@ -279,399 +323,60 @@ Function V_1DConcatenate(pathStr,folderStr,tagStr,binType)
 	//kill these waves before starting, or the new concatenation will be added to the old
 	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_qb,tmp_sq,tmp_fs
 
-	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	String q_waveListStr=""
+	String i_waveListStr=""
+	String s_waveListStr=""
+	String sq_waveListStr=""
+	String qb_waveListStr=""
+	String fs_waveListStr=""
 	
-	String waveListStr=""
-	if(binType == 1)
-		// q-values
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FR" + tagStr + ";"
+	Variable num,ii
+	String item=""
+	
+	//Generate string lists of the waves to be concatenated based on the 
+	// binTypeString (a global string constant with the extensions)
+	//
+	
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(!gIgnoreDetB)
+		q_waveListStr =  "qBin_qxqy_B" + tagStr + ";"
+		i_waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+		s_waveListStr =  "eBin_qxqy_B" + tagStr + ";"
+		sq_waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
+		qb_waveListStr =  "qBar_qxqy_B" + tagStr + ";"
+		fs_waveListStr =  "fSubS_qxqy_B" + tagStr + ";"	
+	endif
 
-		Concatenate/NP/O waveListStr, tmp_q
-
-		//intensity
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
+	num = ItemsInList(binTypeString, ";")
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, binTypeString  ,";")	
+	
+	// "B" was handled outside the loop, be sure to skip here
+		if(cmpstr(item,"B") != 0)
+			q_waveListStr +=  "qBin_qxqy_" + item + tagStr + ";"
+			i_waveListStr +=  "iBin_qxqy_" + item + tagStr + ";"
+			s_waveListStr +=  "eBin_qxqy_" + item + tagStr + ";"
+			sq_waveListStr +=  "sigmaQ_qxqy_" + item + tagStr + ";"
+			qb_waveListStr +=  "qBar_qxqy_" + item + tagStr + ";"
+			fs_waveListStr +=  "fSubS_qxqy_" + item + tagStr + ";"	
 		endif
-		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FR" + tagStr + ";"
-//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
-//		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
+	endfor
+	
+	// concatenate each of the sets
+
+	Concatenate/NP/O q_waveListStr, tmp_q
+	
+	Concatenate/NP/O i_waveListStr, tmp_i
 		
-		Concatenate/NP/O waveListStr, tmp_i
-
-		//error
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MR" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FR" + tagStr + ";"
-//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
-//		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_s
+	Concatenate/NP/O s_waveListStr, tmp_s
 		
-		//sigma Q
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "sigmaQ_qxqy_MB" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_MT" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_ML" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_MR" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FB" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FT" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FL" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FR" + tagStr + ";"
-//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MB;sigmaQ_qxqy_MT;sigmaQ_qxqy_ML;sigmaQ_qxqy_MR;"
-//		waveListStr += "sigmaQ_qxqy_FB;sigmaQ_qxqy_FT;sigmaQ_qxqy_FL;sigmaQ_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_sq
+	Concatenate/NP/O sq_waveListStr, tmp_sq
 
-		//Q bar
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBar_qxqy_MB" + tagStr + ";"
-		waveListStr += "qBar_qxqy_MT" + tagStr + ";"
-		waveListStr += "qBar_qxqy_ML" + tagStr + ";"
-		waveListStr += "qBar_qxqy_MR" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FB" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FT" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FL" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FR" + tagStr + ";"
-//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MB;qBar_qxqy_MT;qBar_qxqy_ML;qBar_qxqy_MR;"
-//		waveListStr += "qBar_qxqy_FB;qBar_qxqy_FT;qBar_qxqy_FL;qBar_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_qb
-								
-		//shadow fs
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "fSubS_qxqy_MB" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_MT" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_ML" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_MR" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FB" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FT" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FL" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FR" + tagStr + ";"
-//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MB;fSubS_qxqy_MT;fSubS_qxqy_ML;fSubS_qxqy_MR;"
-//		waveListStr += "fSubS_qxqy_FB;fSubS_qxqy_FT;fSubS_qxqy_FL;fSubS_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_fs
+	Concatenate/NP/O qb_waveListStr, tmp_qb
+		
+	Concatenate/NP/O fs_waveListStr, tmp_fs
 										
-	endif
 
-	if(binType == 2)	
-		// q-values
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBin_qxqy_MTB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MLR" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FTB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FLR" + tagStr + ";"
-
-//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MTB;qBin_qxqy_MLR;"
-//		waveListStr += "qBin_qxqy_FTB;qBin_qxqy_FLR;"
-
-		Concatenate/NP/O waveListStr, tmp_q
-
-		//intensity
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "iBin_qxqy_MTB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MLR" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FTB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FLR" + tagStr + ";"
-		
-//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MTB;iBin_qxqy_MLR;"
-//		waveListStr += "iBin_qxqy_FTB;iBin_qxqy_FLR;"
-		
-		Concatenate/NP/O waveListStr, tmp_i
-
-		//error
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "eBin_qxqy_MTB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MLR" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FTB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FLR" + tagStr + ";"
-		
-//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MTB;eBin_qxqy_MLR;"
-//		waveListStr += "eBin_qxqy_FTB;eBin_qxqy_FLR;"
-			
-		Concatenate/NP/O waveListStr, tmp_s
-		
-		// sigma Q
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "sigmaQ_qxqy_MTB" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_MLR" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FTB" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FLR" + tagStr + ";"
-		
-//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MTB;sigmaQ_qxqy_MLR;"
-//		waveListStr += "sigmaQ_qxqy_FTB;sigmaQ_qxqy_FLR;"
-			
-		Concatenate/NP/O waveListStr, tmp_sq
-		
-				// Q bar
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBar_qxqy_MTB" + tagStr + ";"
-		waveListStr += "qBar_qxqy_MLR" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FTB" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FLR" + tagStr + ";"
-		
-//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MTB;qBar_qxqy_MLR;"
-//		waveListStr += "qBar_qxqy_FTB;qBar_qxqy_FLR;"
-			
-		Concatenate/NP/O waveListStr, tmp_qb
-		
-		// shadow fs
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "fSubS_qxqy_MTB" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_MLR" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FTB" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FLR" + tagStr + ";"
-		
-//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MTB;fSubS_qxqy_MLR;"
-//		waveListStr += "fSubS_qxqy_FTB;fSubS_qxqy_FLR;"
-			
-		Concatenate/NP/O waveListStr, tmp_fs
-		
-	endif
-
-	if(binType == 3)	
-		// q-values
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBin_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MLRTB;qBin_qxqy_FLRTB;"
-
-		Concatenate/NP/O waveListStr, tmp_q
-
-		//intensity
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "iBin_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MLRTB;iBin_qxqy_FLRTB;"
-		
-		Concatenate/NP/O waveListStr, tmp_i
-
-		//error
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "eBin_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MLRTB;eBin_qxqy_FLRTB;"
-			
-		Concatenate/NP/O waveListStr, tmp_s
-		
-		// sigma Q
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "sigmaQ_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MLRTB;sigmaQ_qxqy_FLRTB;"
-			
-		Concatenate/NP/O waveListStr, tmp_sq
-		
-		// Q bar
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "qBar_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MLRTB;qBar_qxqy_FLRTB;"
-			
-		Concatenate/NP/O waveListStr, tmp_qb
-		
-		// shadow fs
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
-		endif
-		waveListStr += "fSubS_qxqy_MLRTB" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FLRTB" + tagStr + ";"
-		
-//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MLRTB;fSubS_qxqy_FLRTB;"
-			
-		Concatenate/NP/O waveListStr, tmp_fs
-	endif
-
-// TODO - This is the identical set of waves as for the case of binType = 1.
-// they have the same names, but are averaged differently since it's slit mode.
-// I have separated this, since in practice the TB panels are probably best to ignore
-// and NOT include in the averaging since the Qy range is so limited.
-	if(binType == 4)	
-		// q-values
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBin_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "qBin_qxqy_MB" + tagStr + ";"
-//		waveListStr += "qBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "qBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "qBin_qxqy_MR" + tagStr + ";"
-//		waveListStr += "qBin_qxqy_FB" + tagStr + ";"
-//		waveListStr += "qBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "qBin_qxqy_FR" + tagStr + ";"
-//		waveListStr = "qBin_qxqy_B;qBin_qxqy_MB;qBin_qxqy_MT;qBin_qxqy_ML;qBin_qxqy_MR;"
-//		waveListStr += "qBin_qxqy_FB;qBin_qxqy_FT;qBin_qxqy_FL;qBin_qxqy_FR;"
-
-		Concatenate/NP/O waveListStr, tmp_q
-
-		//intensity
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "iBin_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "iBin_qxqy_MB" + tagStr + ";"
-//		waveListStr += "iBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "iBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "iBin_qxqy_MR" + tagStr + ";"
-//		waveListStr += "iBin_qxqy_FB" + tagStr + ";"
-//		waveListStr += "iBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "iBin_qxqy_FR" + tagStr + ";"
-//		waveListStr = "iBin_qxqy_B;iBin_qxqy_MB;iBin_qxqy_MT;iBin_qxqy_ML;iBin_qxqy_MR;"
-//		waveListStr += "iBin_qxqy_FB;iBin_qxqy_FT;iBin_qxqy_FL;iBin_qxqy_FR;"
-		
-		Concatenate/NP/O waveListStr, tmp_i
-
-		//error
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "eBin_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "eBin_qxqy_MB" + tagStr + ";"
-//		waveListStr += "eBin_qxqy_MT" + tagStr + ";"
-		waveListStr += "eBin_qxqy_ML" + tagStr + ";"
-		waveListStr += "eBin_qxqy_MR" + tagStr + ";"
-//		waveListStr += "eBin_qxqy_FB" + tagStr + ";"
-//		waveListStr += "eBin_qxqy_FT" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FL" + tagStr + ";"
-		waveListStr += "eBin_qxqy_FR" + tagStr + ";"
-//		waveListStr = "eBin_qxqy_B;eBin_qxqy_MB;eBin_qxqy_MT;eBin_qxqy_ML;eBin_qxqy_MR;"
-//		waveListStr += "eBin_qxqy_FB;eBin_qxqy_FT;eBin_qxqy_FL;eBin_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_s
-		
-		//sigma Q
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "sigmaQ_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "sigmaQ_qxqy_MB" + tagStr + ";"
-//		waveListStr += "sigmaQ_qxqy_MT" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_ML" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_MR" + tagStr + ";"
-//		waveListStr += "sigmaQ_qxqy_FB" + tagStr + ";"
-//		waveListStr += "sigmaQ_qxqy_FT" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FL" + tagStr + ";"
-		waveListStr += "sigmaQ_qxqy_FR" + tagStr + ";"
-//		waveListStr = "sigmaQ_qxqy_B;sigmaQ_qxqy_MB;sigmaQ_qxqy_MT;sigmaQ_qxqy_ML;sigmaQ_qxqy_MR;"
-//		waveListStr += "sigmaQ_qxqy_FB;sigmaQ_qxqy_FT;sigmaQ_qxqy_FL;sigmaQ_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_sq
-
-		//Q bar
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "qBar_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "qBar_qxqy_MB" + tagStr + ";"
-//		waveListStr += "qBar_qxqy_MT" + tagStr + ";"
-		waveListStr += "qBar_qxqy_ML" + tagStr + ";"
-		waveListStr += "qBar_qxqy_MR" + tagStr + ";"
-//		waveListStr += "qBar_qxqy_FB" + tagStr + ";"
-//		waveListStr += "qBar_qxqy_FT" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FL" + tagStr + ";"
-		waveListStr += "qBar_qxqy_FR" + tagStr + ";"
-//		waveListStr = "qBar_qxqy_B;qBar_qxqy_MB;qBar_qxqy_MT;qBar_qxqy_ML;qBar_qxqy_MR;"
-//		waveListStr += "qBar_qxqy_FB;qBar_qxqy_FT;qBar_qxqy_FL;qBar_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_qb
-								
-		//shadow fs
-		waveListStr=""
-		if(!gIgnoreDetB)
-			waveListStr =  "fSubS_qxqy_B" + tagStr + ";"
-		endif
-//		waveListStr += "fSubS_qxqy_MB" + tagStr + ";"
-//		waveListStr += "fSubS_qxqy_MT" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_ML" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_MR" + tagStr + ";"
-//		waveListStr += "fSubS_qxqy_FB" + tagStr + ";"
-//		waveListStr += "fSubS_qxqy_FT" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FL" + tagStr + ";"
-		waveListStr += "fSubS_qxqy_FR" + tagStr + ";"
-//		waveListStr = "fSubS_qxqy_B;fSubS_qxqy_MB;fSubS_qxqy_MT;fSubS_qxqy_ML;fSubS_qxqy_MR;"
-//		waveListStr += "fSubS_qxqy_FB;fSubS_qxqy_FT;fSubS_qxqy_FL;fSubS_qxqy_FR;"
-			
-		Concatenate/NP/O waveListStr, tmp_fs
-		
-	endif
 
 // Can't kill here, since they are still needed to sort and write out!
 //	KillWaves/Z tmp_q,tmp_i,tmp_s,tmp_res0,tmp_res1,tmp_res2,tmp_res3	
@@ -710,248 +415,7 @@ Function V_TmpSort1D(pathStr,folderStr)
 End
 
 
-// TODO
-// (appears to be unused, in favor of the version that uses the global strings)
-// needs:
-// -- trim the beamstop out (based on shadow?)
-// -- trim out zero q from the file (bad actor in analysis functions)
-// -- trim num from the highQ end or lowQ end?
-// -- splits the res wave into individual waves in anticipation of concatenation
-//   -- or -- deal with the res wave after?
 //
-// -- make a copy of the waves?
-// -- then, what is the concatenate function looking for??
-//
-Function V_Trim1DData(dataFolder,binType,nBeg,nEnd)
-	String dataFolder
-	Variable binType,nBeg,nEnd
-
-	Variable npt,ii
-   SetDataFolder $("root:Packages:NIST:VSANS:"+dataFolder)
-
-	Printf "%d points removed from beginning, %d points from the end (of each set) before concatenating\r",nbeg,nend
-	
-// for each binType block:
-// declare the waves
-// make a copy of the waves??
-//	//Break out resolution wave into separate waves
-// delete the beginning points from everything
-	// trim off the last nEnd points from everything
-//	DeletePoints num-nEnd,nEnd, qw,iw,sw
-//	// delete all points where the shadow is < 0.98
-////Put resolution contents back???
-
-	if(binType == 1)	
-		Wave/Z q_fb = qBin_qxqy_FB
-		Wave/Z q_ft = qBin_qxqy_FT
-		Wave/Z q_fl = qBin_qxqy_FL
-		Wave/Z q_fr = qBin_qxqy_FR
-		Wave/Z q_mb = qBin_qxqy_MB
-		Wave/Z q_mt = qBin_qxqy_MT
-		Wave/Z q_ml = qBin_qxqy_ML
-		Wave/Z q_mr = qBin_qxqy_MR
-		Wave/Z q_b = qBin_qxqy_B
-	
-		Wave/Z i_fb = iBin_qxqy_FB
-		Wave/Z i_ft = iBin_qxqy_FT
-		Wave/Z i_fl = iBin_qxqy_FL
-		Wave/Z i_fr = iBin_qxqy_FR
-		Wave/Z i_mb = iBin_qxqy_MB
-		Wave/Z i_mt = iBin_qxqy_MT
-		Wave/Z i_ml = iBin_qxqy_ML
-		Wave/Z i_mr = iBin_qxqy_MR
-		Wave/Z i_b = iBin_qxqy_B
-		
-		Wave/Z s_fb = eBin_qxqy_FB
-		Wave/Z s_ft = eBin_qxqy_FT
-		Wave/Z s_fl = eBin_qxqy_FL
-		Wave/Z s_fr = eBin_qxqy_FR
-		Wave/Z s_mb = eBin_qxqy_MB
-		Wave/Z s_mt = eBin_qxqy_MT
-		Wave/Z s_ml = eBin_qxqy_ML
-		Wave/Z s_mr = eBin_qxqy_MR
-		Wave/Z s_b = eBin_qxqy_B
-
-
-				
-		DeletePoints 0,nBeg, q_fb,q_ft,q_fl,q_fr,q_mb,q_mt,q_ml,q_mr,q_b
-		DeletePoints 0,nBeg, i_fb,i_ft,i_fl,i_fr,i_mb,i_mt,i_ml,i_mr,i_b
-		DeletePoints 0,nBeg, s_fb,s_ft,s_fl,s_fr,s_mb,s_mt,s_ml,s_mr,s_b
-		//since each set may have a different number of points
-		npt = numpnts(q_fb) 
-		DeletePoints npt-nEnd,nEnd, q_fb,i_fb,s_fb
-
-		npt = numpnts(q_ft) 
-		DeletePoints npt-nEnd,nEnd, q_ft,i_ft,s_ft
-
-		npt = numpnts(q_fl) 
-		DeletePoints npt-nEnd,nEnd, q_fl,i_fl,s_fl
-
-		npt = numpnts(q_fr) 
-		DeletePoints npt-nEnd,nEnd, q_fr,i_fr,s_fr
-
-		npt = numpnts(q_mb) 
-		DeletePoints npt-nEnd,nEnd, q_mb,i_mb,s_mb
-
-		npt = numpnts(q_mt) 
-		DeletePoints npt-nEnd,nEnd, q_mt,i_mt,s_mt
-
-		npt = numpnts(q_ml) 
-		DeletePoints npt-nEnd,nEnd, q_ml,i_ml,s_ml
-
-		npt = numpnts(q_mr) 
-		DeletePoints npt-nEnd,nEnd, q_mr,i_mr,s_mr
-
-		npt = numpnts(q_b) 
-		DeletePoints npt-nEnd,nEnd, q_b,i_b,s_b
-		
-	endif
-
-	if(binType == 2)	
-		Wave/Z q_ftb = qBin_qxqy_FTB
-		Wave/Z q_flr = qBin_qxqy_FLR
-		Wave/Z q_mtb = qBin_qxqy_MTB
-		Wave/Z q_mlr = qBin_qxqy_MLR
-		Wave/Z q_b = qBin_qxqy_B
-		
-		Wave/Z i_ftb = iBin_qxqy_FTB
-		Wave/Z i_flr = iBin_qxqy_FLR
-		Wave/Z i_mtb = iBin_qxqy_MTB
-		Wave/Z i_mlr = iBin_qxqy_MLR
-		Wave/Z i_b = iBin_qxqy_B
-				
-		Wave/Z s_ftb = eBin_qxqy_FTB
-		Wave/Z s_flr = eBin_qxqy_FLR
-		Wave/Z s_mtb = eBin_qxqy_MTB
-		Wave/Z s_mlr = eBin_qxqy_MLR
-		Wave/Z s_b = eBin_qxqy_B
-		
-
-		DeletePoints 0,nBeg, q_ftb,q_flr,q_mtb,q_mlr,q_b
-		DeletePoints 0,nBeg, i_ftb,i_flr,i_mtb,i_mlr,i_b
-		DeletePoints 0,nBeg, s_ftb,s_flr,s_mtb,s_mlr,s_b
-		//since each set may have a different number of points
-		npt = numpnts(q_ftb) 
-		DeletePoints npt-nEnd,nEnd, q_ftb,i_ftb,s_ftb		
-		
-		npt = numpnts(q_flr) 
-		DeletePoints npt-nEnd,nEnd, q_flr,i_flr,s_flr		
-		
-		npt = numpnts(q_mtb) 
-		DeletePoints npt-nEnd,nEnd, q_mtb,i_mtb,s_mtb		
-		
-		npt = numpnts(q_mlr) 
-		DeletePoints npt-nEnd,nEnd, q_mlr,i_mlr,s_mlr		
-		
-		npt = numpnts(q_b) 
-		DeletePoints npt-nEnd,nEnd, q_b,i_b,s_b		
-		
-
-	endif
-
-	if(binType == 3)	
-		Wave/Z q_flrtb = qBin_qxqy_FLRTB
-		Wave/Z q_mlrtb = qBin_qxqy_MLRTB
-		Wave/Z q_b = qBin_qxqy_B
-		
-		Wave/Z i_flrtb = iBin_qxqy_FLRTB
-		Wave/Z i_mlrtb = iBin_qxqy_MLRTB
-		Wave/Z i_b = iBin_qxqy_B	
-		
-		Wave/Z s_flrtb = eBin_qxqy_FLRTB
-		Wave/Z s_mlrtb = eBin_qxqy_MLRTB
-		Wave/Z s_b = eBin_qxqy_B
-		
-		DeletePoints 0,nBeg, q_flrtb,q_mlrtb,q_b
-		DeletePoints 0,nBeg, i_flrtb,i_mlrtb,i_b
-		DeletePoints 0,nBeg, s_flrtb,s_mlrtb,s_b
-		//since each set may have a different number of points
-		npt = numpnts(q_flrtb) 
-		DeletePoints npt-nEnd,nEnd, q_flrtb,i_flrtb,s_flrtb		
-		
-		npt = numpnts(q_mlrtb) 
-		DeletePoints npt-nEnd,nEnd, q_mlrtb,i_mlrtb,s_mlrtb		
-		
-		npt = numpnts(q_b) 
-		DeletePoints npt-nEnd,nEnd, q_b,i_b,s_b		
-
-	endif
-
-// TODO - This is the identical set of waves as for the case of binType = 1.
-// they have the same names, but are averaged differently since it's slit mode.
-// I have separated this, since in practice the TB panels are probably best to ignore
-// and NOT include in the averaging since the Qy range is so limited.
-	if(binType == 4)	
-		Wave/Z q_fb = qBin_qxqy_FB
-		Wave/Z q_ft = qBin_qxqy_FT
-		Wave/Z q_fl = qBin_qxqy_FL
-		Wave/Z q_fr = qBin_qxqy_FR
-		Wave/Z q_mb = qBin_qxqy_MB
-		Wave/Z q_mt = qBin_qxqy_MT
-		Wave/Z q_ml = qBin_qxqy_ML
-		Wave/Z q_mr = qBin_qxqy_MR
-		Wave/Z q_b = qBin_qxqy_B
-	
-		Wave/Z i_fb = iBin_qxqy_FB
-		Wave/Z i_ft = iBin_qxqy_FT
-		Wave/Z i_fl = iBin_qxqy_FL
-		Wave/Z i_fr = iBin_qxqy_FR
-		Wave/Z i_mb = iBin_qxqy_MB
-		Wave/Z i_mt = iBin_qxqy_MT
-		Wave/Z i_ml = iBin_qxqy_ML
-		Wave/Z i_mr = iBin_qxqy_MR
-		Wave/Z i_b = iBin_qxqy_B
-		
-		Wave/Z s_fb = eBin_qxqy_FB
-		Wave/Z s_ft = eBin_qxqy_FT
-		Wave/Z s_fl = eBin_qxqy_FL
-		Wave/Z s_fr = eBin_qxqy_FR
-		Wave/Z s_mb = eBin_qxqy_MB
-		Wave/Z s_mt = eBin_qxqy_MT
-		Wave/Z s_ml = eBin_qxqy_ML
-		Wave/Z s_mr = eBin_qxqy_MR
-		Wave/Z s_b = eBin_qxqy_B
-				
-		DeletePoints 0,nBeg, q_fb,q_ft,q_fl,q_fr,q_mb,q_mt,q_ml,q_mr,q_b
-		DeletePoints 0,nBeg, i_fb,i_ft,i_fl,i_fr,i_mb,i_mt,i_ml,i_mr,i_b
-		DeletePoints 0,nBeg, s_fb,s_ft,s_fl,s_fr,s_mb,s_mt,s_ml,s_mr,s_b
-		//since each set may have a different number of points
-		npt = numpnts(q_fb) 
-		DeletePoints npt-nEnd,nEnd, q_fb,i_fb,s_fb
-
-		npt = numpnts(q_ft) 
-		DeletePoints npt-nEnd,nEnd, q_ft,i_ft,s_ft
-
-		npt = numpnts(q_fl) 
-		DeletePoints npt-nEnd,nEnd, q_fl,i_fl,s_fl
-
-		npt = numpnts(q_fr) 
-		DeletePoints npt-nEnd,nEnd, q_fr,i_fr,s_fr
-
-		npt = numpnts(q_mb) 
-		DeletePoints npt-nEnd,nEnd, q_mb,i_mb,s_mb
-
-		npt = numpnts(q_mt) 
-		DeletePoints npt-nEnd,nEnd, q_mt,i_mt,s_mt
-
-		npt = numpnts(q_ml) 
-		DeletePoints npt-nEnd,nEnd, q_ml,i_ml,s_ml
-
-		npt = numpnts(q_mr) 
-		DeletePoints npt-nEnd,nEnd, q_mr,i_mr,s_mr
-
-		npt = numpnts(q_b) 
-		DeletePoints npt-nEnd,nEnd, q_b,i_b,s_b
-		
-	endif
-			
-	SetDataFolder root:
-	return(0)
-end
-
-
-
-/
 Proc V_Load_Data_ITX()
 	V_Load_itx("","",0,0)
 end
@@ -1049,24 +513,24 @@ Function V_Load_itx(fileStr,outStr,doPlot,forceOverwrite)
 //			Duplicate/O $("root:"+n1), $w1
 //			Duplicate/O $("root:"+n2), $w2
 	
-			// no resolution matrix to make
+	// no resolution matrix to make
 
 	
 	return(0)
 End
 
 
-// given strings of the number of points to remove, loop over the detectors
+
+// string function to select the correct string constant
+// that corresponds to the selected binType. This string constant
+// contains the list of extensions to be used for plotting, saving, etc.
 //
-// TODO
-// -- currently uses global strings or default strings
-// -- if proper strings (non-null) are passed in, they are used, otherwise global, then default
-Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
-	String folderStr
+// returns null string if no match
+//
+Function/S V_getBinTypeString(binType)
 	Variable binType
-	String nBegStr,nEndStr
 	
-	String detListStr
+	String detListStr=""
 	if(binType == 1)
 		detListStr = ksBinType1
 	endif
@@ -1079,6 +543,33 @@ Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 	if(binType == 4)
 		detListStr = ksBinType4
 	endif
+	if(binType == 5)
+		detListStr = ksBinType5
+	endif
+	if(binType == 6)
+		detListStr = ksBinType6
+	endif
+	if(binType == 7)
+		detListStr = ksBinType7
+	endif
+	
+	
+	return(detListStr)
+End
+
+// given strings of the number of points to remove, loop over the detectors
+//
+// TODO
+// -- currently uses global strings or default strings
+// -- if proper strings (non-null) are passed in, they are used, otherwise global, then default
+Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
+	String folderStr
+	Variable binType
+	String nBegStr,nEndStr
+	
+	String detListStr=""
+
+	detListStr = V_getBinTypeString(binType)		//the list of extensions
 	if(strlen(detListStr)==0)
 		return(0)
 	endif

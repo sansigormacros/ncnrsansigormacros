@@ -16,7 +16,7 @@
 // -- can I make the choice of columns customizable? There are "sets" of columns that are not used for 
 //    some experiments (magnetic, rotation, temperature scans, etc.) but are necessary for others.
 //
-// TODO PRIORITY:
+// (DONE):
 // x- clean up the list of files that now accumulates in the RawVSANS folder!!! Everything is there, including
 //    files that are NOT RAW VSANS data (MASK and DIV, but these are HDF)
 // x- WHY -- because if I PATCH anything, then re-run the catalog, the changes are NOT shown, since the 
@@ -30,12 +30,12 @@
 // NEW for VSANS
 // clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "bad" local copy will be read in.
-// TODO:
+// (DONE)
 //  x- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies. If
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
-// -- make a background task to periodically "kill" a few of the files? maybe too dangerous.
-// -- change the V_GetHeaderInfoToWave function to allow "refreshing" of a single row, say after
+// x- (NO)make a background task to periodically "kill" a few of the files? maybe too dangerous.
+// x- (NO)change the V_GetHeaderInfoToWave function to allow "refreshing" of a single row, say after
 //    a file has been patched - then the disk and local copies are in sync
 //
 // -- run a profiler on the catalog to see if there is an obvious place to speed up the process
@@ -159,7 +159,7 @@ Function V_BuildCatVeryShortTable()
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
 
-// TODO:
+// (DONE)
 //  x- experimental hook with contextual menu
 //		
 		SetWindow kwTopWin hook=V_CatTableHook, hookevents=1	// mouse down events
@@ -170,7 +170,7 @@ Function V_BuildCatVeryShortTable()
 // NEW for VSANS
 // clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "bad" local copy will be read in for any subsequent operations.
-// TODO:
+// (DONE)
 //  x- this *may* be a very slow operation. Warn users. Give them a choice to keep local copies? If
 //     the "patched" values are written locally too, then maybe the update from disk is not needed.
 //     But typically, I'd like to see that the disk version really did get updated...
@@ -191,8 +191,26 @@ Function V_BuildCatVeryShortTable()
 	
 	numitems = ItemsInList(list,";")
 	
+	// show a progress bar for filling the file catalog
+	Variable indefinite=0,useIgorDraw=1
+	NewPanel /N=ProgressPanel /W=(285,111,739,193)
+	ValDisplay valdisp0,win=ProgressPanel,pos={18,32},size={342,18},limits={0,numitems,0},barmisc={0,0}
+	ValDisplay valdisp0,win=ProgressPanel,value= _NUM:0
+	DrawText 20,24,"Refreshing file catalog... Please Wait..."
+
+	if( indefinite )
+		ValDisplay valdisp0,win=ProgressPanel,mode= 4	// candy stripe
+	else
+		ValDisplay valdisp0,win=ProgressPanel,mode= 3	// bar with no fractional part
+	endif
+	if( useIgorDraw )
+		ValDisplay valdisp0,win=ProgressPanel,highColor=(49535,1000,1000)		//(0,65535,0)
+	endif
+	Button bStop,win=ProgressPanel,pos={375,32},size={50,20},title="Stop"
+	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
+	
+	
 	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS
-	//***version numbers have been removed***
 	String str,fullName
 	Variable lastPoint
 	ii=0
@@ -231,11 +249,18 @@ Function V_BuildCatVeryShortTable()
 			Endif
 		Endif
 		ii+=1
+		
+		ValDisplay valdisp0,win=ProgressPanel,value= _NUM:ii
+		DoUpdate /W=ProgressPanel
+		
 	while(ii<numitems)
+	
+	KillWindow ProgressPanel
+
 //Now sort them all based on some criterion that may be facility dependent (aim is to order them as collected)
 	V_SortWaves()
+	
 //Append the files that are not raw files to the list
-
 	V_AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
 //
@@ -244,7 +269,7 @@ Function V_BuildCatVeryShortTable()
 	// (don't use numpnts(notRawList) to normalize, these aren't all raw data files)
 	//
 	// clean out again, so that the file SAVE is not slow due to the large experiment size
-	// TODO x- decide if this is really necessary (not necessary at this point)
+	// (DONE) x- decide if this is really necessary (not necessary at this point)
 //	
 //	V_CleanOutRawVSANS()
 			
@@ -338,9 +363,7 @@ Function V_AppendNotRAWFiles(w)
 	return(0)
 End
 
-//sorts all of the waves of header information using the suffix (A123) 
-//the result is that all of the data is in the order that it was collected,
-// regardless of how the prefix or run numbers were changed by the user
+//
 Function V_SortWaves()
 	Wave/T GFilenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
 //	Wave/T GSuffix = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
@@ -462,7 +485,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GFilenames[lastPoint]=sname
 	
 //	//read the file alphanumeric suffix
-//	// TODO x- this does not exist for VSANS - so is there an equivalent, or delete? ((delete))
+//	// (DONE) x- this does not exist for VSANS - so is there an equivalent, or delete? ((delete))
 //	InsertPoints lastPoint,1,GSuffix
 //	GSuffix[lastPoint]="unknown"
 
@@ -491,8 +514,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GCntRate[lastPoint]=cntrate
 	
 	//Attenuators
-	// TODO -- this is the "number" of the attenuator, but what is its relation to the
-	//   stack of 4 plates? binary representation?
+	// (DONE) x- this is the "number" of the attenuator
 	InsertPoints lastPoint,1,GNumAttens
 	GNumAttens[lastPoint]=V_getAtten_number(fname)
 	

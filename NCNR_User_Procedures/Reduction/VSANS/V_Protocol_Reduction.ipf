@@ -2215,10 +2215,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 
 ////////////////////////////////////////////////////////
+// Absolute scale
 
-// TODO:
-// -- calculation works, needs proper inputs (solid angle aware)
-// --	Open beam method needs to be verified in V_AskForAbsoluteParams_Quest()
+// x- calculation works, needs proper inputs (solid angle aware)
+// x-	Open beam method needs to be verified in V_AskForAbsoluteParams_Quest()
 	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired
 //		DoAlert 0,"Abs step incomplete"
@@ -2272,7 +2272,6 @@ Function V_ExecuteProtocol(protStr,samStr)
 	if(cmpstr("none",prot[3])!=0)
 		If(cmpstr("ask",prot[3])==0)
 			//get file from user
-			// TODO
 			// x- fill in the get file prompt, and handle the result
 			Prompt mskFileName,"MASK File",popup,V_PickMASKButton("")
 			DoPrompt "Select File",mskFileName
@@ -2333,8 +2332,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 	// bin and plot the data
 	
-	// TODO
-// -- this switch does nothing -- fill it in
+//
 //	 x- need to convert BINTYPE keyword into a numerical value to pass
 //
 
@@ -2350,9 +2348,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 //
 // TODO:
 // -- do I calculate the proper resolution here? I've already decoded the binning type
-//   and the averaging type has been specified by the protocol
+//   and the averaging type has been specified by the protocol.
+//
+// currently, the resolution is calculated every time that the data is averaged (in VC_fDoBinning_QxQy2D)
+//
 // -- if I calculate the resolution here, then the Trimming routines must be updated
-//    to trim the resolution waves also. This positioning may work for 
+//    to trim the resolution waves also. This will work for the columns present in
 //    pinhole resolution, but anything using the matrix method - it won't work - and I'll need 
 //    a different solution
 //
@@ -2409,13 +2410,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 ///// end of averaging dispatch
 
 
-// TODO
+// 
 // x- how do I get the sample file name?
 //    local variable samFileLoaded is the file name loaded (contains the extension)
 //	
-	//save data if desired
+	//save data if desired - dispatch as needed
 	String fullpath = "", newfileName=""
 	String saveType = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
+
 	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
 		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
@@ -2443,14 +2445,8 @@ Function V_ExecuteProtocol(protStr,samStr)
 		//Path is catPathName, symbolic path
 		//if this doesn't exist, a dialog will be presented by setting dialog = 1
 		//
-		//
 		Variable dialog = 0
 
-// TODO
-// -- need to define nBeg and nEnd somewhere
-// -- currently hard-wired
-// --do I need to define these "per-panel"?		
-		
 		PathInfo/S catPathName
 		String item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
 		String autoname = StringByKey("AUTONAME",prot[5],"=",";")		//autoname -  will get empty string if not present
@@ -2484,21 +2480,19 @@ Function V_ExecuteProtocol(protStr,samStr)
 			case "PNG_Graphic":
 //				SaveAsPNG(activeType,fullpath,dialog)
 				break
-			default:
+			case "Circular":		//in SANS, this was the default, but is dangerous, so make it explicit here
 //				if (useXMLOutput == 1)
 //					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
 //				else
 //					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 //				endif
 //
-// TODO:
-// -- fill in all of the cases, default is only the "standard" circular average I(q)
-// -- get the trim strings from somewhere-- from the file or from the protocol??
+// x- get the trim strings from somewhere-- from the file or from the protocol??
 //   then replace the null strings being passed
 
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// TODO -- passing null strings uses global or default trim values
-//					V_Trim1DData(activeType,binType,nBeg,nEnd)
+					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// x- passing null strings uses global or default trim values
+
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
 					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
 				else
@@ -2508,6 +2502,10 @@ Function V_ExecuteProtocol(protStr,samStr)
 					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
 				endif
 				Print "data written to:  "+ newFileName+"."+exten
+
+				break
+			default:
+				DoAlert 0, "av_type not found in dispatch to write file"
 
 		endswitch
 		
@@ -2659,7 +2657,7 @@ Function V_AskForAbsoluteParams_Quest()
 		// and determine box sum and error
 		// store these locally
 		
-		// TODO
+
 		// x- need to get the panel string for the sum.
 		// x- the detector string is currently hard-wired
 //		detStr = "MR"
@@ -2669,16 +2667,14 @@ Function V_AskForAbsoluteParams_Quest()
 		Print "empty counts = ",emptyCts
 		Print "empty err/counts = ",empty_ct_err/emptyCts
 
-		//		TODO
-		// -- get all of the proper values for the calculation
+//
+		// x- get all of the proper values for the calculation
 		// -x currently the attenuation is incorrect
 		//   such that kappa_err = 1*kappa
-		// -- verify the calculation (no solid angle needed??)
-		
-		DoAlert 0,"This calculation is not reliable - something is wrong"
-		
+		// x- verify the calculation (no solid angle needed??)
+				
 		// get the attenuation factor for the empty beam
-		// TODO -- the attenuation is not written by NICE to the file
+		//  -- the attenuation is not written by NICE to the file
 		//  so I need to calculate it myself from the tables
 		// 
 //		empAttenFactor = V_getAttenuator_transmission(emptyFileName)
@@ -2705,14 +2701,13 @@ Function V_AskForAbsoluteParams_Quest()
 		kappa_err = (empty_ct_err/emptyCts)^2 + (emp_atten_err/empAttenFactor)^2
 		kappa_err = sqrt(kappa_err) * kappa
 		
-		// TODO
-		// -- set the parameters in the global string
+		// x- set the parameters in the global string
 		junkStr = num2str(kappa)
 		errStr = num2Str(kappa_err)
 		Execute "V_AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"		//no missing parameters, no dialog
 		
 
-		Printf "Kappa was (maybe) successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	
 		// restore preferences on exit
 		gDoDIVCor = savDivPref

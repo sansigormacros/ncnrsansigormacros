@@ -113,7 +113,8 @@ End
 Proc ReduceAFile_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	ReduceAFile()
+	V_ReductionProtocolPanel()
+//	ReduceAFile()
 End
 
 Proc ReduceMultiple_MainButtonProc(ctrlName) : ButtonControl

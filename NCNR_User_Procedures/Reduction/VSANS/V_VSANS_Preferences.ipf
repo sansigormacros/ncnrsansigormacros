@@ -92,9 +92,10 @@ Proc Initialize_VSANSPreferences()
 
 	// Special global to prevent fake data from "B" detector from being written out
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 1
 		
-
+	DoAlert 0,"The Back detector will be ignored. Change this in the Preferences Panel"
+	
 // flag to allow adding raw data files with different attenuation (normally not done)	
 //	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten",0)
 //	Variable/G root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten=val

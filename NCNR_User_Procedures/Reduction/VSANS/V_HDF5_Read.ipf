@@ -467,9 +467,12 @@ End
 Function V_getAttenuator_transmission(fname)
 	String fname
 	
-	Print "reading atten transmission"
-	String path = "entry:instrument:attenuator:attenuator_transmission"	
-	return(V_getRealValueFromHDF5(fname,path))
+	Print "Atten read - diverted to calculation"
+	return(V_CalculateAttenuationFactor(fname))
+	
+//	String path = "entry:instrument:attenuator:attenuator_transmission"	
+//	return(V_getRealValueFromHDF5(fname,path))
+
 end
 
 // transmission value (error) for the attenuator in the beam
@@ -477,8 +480,12 @@ end
 Function V_getAttenuator_trans_err(fname)
 	String fname
 	
-	String path = "entry:instrument:attenuator:attenuator_transmission_error"	
-	return(V_getRealValueFromHDF5(fname,path))
+	Print "Atten_err read - diverted to calculation"
+	return(V_CalculateAttenuationError(fname))
+	
+//	String path = "entry:instrument:attenuator:attenuator_transmission_error"	
+//	return(V_getRealValueFromHDF5(fname,path))
+	
 end
 
 // desired thickness
@@ -1640,6 +1647,31 @@ Function V_getDet_TBSetback(fname,detStr)
 	
 End
 
+// gap when panels are "touching"
+// units are mm
+// returns gap value for TOP and RIGHT
+// returns 0 for BACK, BOTTOM and LEFT
+// force a return for BACK (no field in file)
+// B/L detectors have this field, and it should be set to zero in the file
+//
+Function V_getDet_panel_gap(fname,detStr)
+	String fname,detStr
+
+	if(cmpstr(detStr,"B") == 0)
+		return(0)
+	endif
+//	if(cmpstr(detStr,"FB") == 0 || cmpstr(detStr,"FL") == 0)
+//		return(0)
+//	endif
+//	if(cmpstr(detStr,"MB") == 0 || cmpstr(detStr,"ML") == 0)
+//		return(0)
+//	endif	
+	
+	String path = "entry:instrument:detector_"+detStr+":panel_gap"
+	return(V_getRealValueFromHDF5(fname,path))
+	
+	
+End
 
 Function/S V_getDetSettings(fname,detStr)
 	String fname,detStr

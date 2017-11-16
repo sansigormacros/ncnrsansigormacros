@@ -3,7 +3,7 @@
 
 
 
-/ TODO:
+// TODO:
 // -- this is a temporary solution before a real writer is created
 // -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
 // -- but a real writer will need to be aware of resolution, and there may be different forms

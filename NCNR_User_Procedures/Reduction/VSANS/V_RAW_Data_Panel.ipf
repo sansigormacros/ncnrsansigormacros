@@ -178,7 +178,7 @@ Window VSANS_DataPanel() : Panel
 
 	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
-	TitleBox title_status,pos={606,240},size={200,200},variable= root:Packages:NIST:VSANS:Globals:gStatusText
+	TitleBox title_status,pos={606,240},size={200,200},fsize=12,variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
@@ -831,13 +831,12 @@ Function V_ToWorkFileButtonProc(ba) : ButtonControl
 End
 
 
-// TODO
+//
 //
 // opens a separate panel with the I(q) representation of the data
-// ? controls here to select how the data is processed/grouped/saved, etc.
+//  controls on the panel select how the data is processed/grouped, etc.
 //
-// -- currently just the graph, no controls
-// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType) from inside V_BinningModePopup()
+//
 Function V_IvsQPanelButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -847,7 +846,8 @@ Function V_IvsQPanelButtonProc(ba) : ButtonControl
 			
 			V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
 			Variable binType = V_GetBinningPopMode()
-			V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
+			ControlInfo/W=V_1D_Data popup0
+			V_BinningModePopup("",binType,S_Value)		// does binning of current popString and updates the graph
 			
 			break
 		case -1: // control being killed
@@ -863,8 +863,8 @@ End
 // -- simply calls the missing parameter dialog to do the average.
 //  see the file V_IQ_Annular.ipf for all of the features yet to be added.
 //
-// -- currently just the graph, no controls
-// -- this re-bins the data every time by calling V_QBinAllPanels(folderStr,binType) from inside V_BinningModePopup()
+// x- currently just the graph, no controls
+//
 Function V_annularAvgButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 

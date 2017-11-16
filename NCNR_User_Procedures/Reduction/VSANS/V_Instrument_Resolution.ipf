@@ -227,7 +227,7 @@ End
 //
 // MAR 2011 - removed the del_r terms, they don't apply since no bining is done to the 2D data
 //
-Function get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
+Function V_get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
 	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
 	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
 	

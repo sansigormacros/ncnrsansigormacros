@@ -30,6 +30,8 @@
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
 // this need never change from 1
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
+
+// // TODO: -- replace this constant with V_getDet_panel_gap(fname,detStr)
 Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
 
 
@@ -45,12 +47,19 @@ Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB
 
 
 // for defining which "bin type" corresponds to which set of extensions for I(q) data
+// !! see V_BinTypeStr2Num() for the numbering, not the order of the list
+//
 //////////////////
-Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
-Strconstant ksBinType1 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"		//these are the "active" extensions
-Strconstant ksBinType2 = "B;FTB;FLR;MTB;MLR;"
-Strconstant ksBinType3 = "B;FLRTB;MLRTB;"
-Strconstant ksBinType4 = "B;FT;FB;FL;FR;MT;MB;ML;MR;"
+//Strconstant ksBinTypeStr = "One;Two;Four;Slit Mode;"
+Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-B;SLIT-F2-M2-B;"
+Strconstant ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" extensions
+Strconstant ksBinType2 = "FTB;FLR;MTB;MLR;B;"
+Strconstant ksBinType3 = "FLRTB;MLRTB;B;"
+//Strconstant ksBinType4 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
+Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode
+Strconstant ksBinType5 = "FTB;FLR;MLRTB;B;"
+Strconstant ksBinType6 = "FLRTB;MLR;B;"
+Strconstant ksBinType7 = "FTB;FLR;MLR;B;"
 ///////////////////
 
 

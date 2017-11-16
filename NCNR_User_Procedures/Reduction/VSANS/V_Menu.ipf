@@ -68,7 +68,7 @@ End
 
 
 //
-Menu "SANS"
+xMenu "SANS"
 	"Initialize"
 	"SANS Help"
 	"-"

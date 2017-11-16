@@ -7,6 +7,7 @@
 // As for SANS, needs a Q-center and Q-delta to define the annular ring,
 // and the number of bins to divide the 360 degree circle
 //
+// qWidth is +/- around the q-center
 //
 //
 // TODO
@@ -34,7 +35,7 @@ End
 
 // TODO -- binType == 4 (slit mode) should never end up here, as it makes no sense
 //
-// -- really, the onle binning that makes any sense is "one", treating each panel individually,
+// -- really, the only binning that makes any sense is "one", treating each panel individually,
 // so I may scrap the parameter, or ignore it. so don't count on it in the future.
 //
 Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
@@ -55,7 +56,7 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 
 // TODO		
 		// detStr = "FLRTB" or "MLRTB", depending which panel the q-ring is centered on/
-		// for now, no crossing of the rings onto different panels
+		// for now, no crossing of the rings onto different carriages
 		
 	V_fDoAnnularBin_QxQy2D(folderStr,detStr,qCtr_Ann,qWidth)
 

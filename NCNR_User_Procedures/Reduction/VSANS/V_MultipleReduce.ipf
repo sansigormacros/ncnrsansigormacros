@@ -5,8 +5,6 @@
 //*************************
 //
 // Procedures for the MRED panel to allow quick batch reduction of data files
-// -as of 8/01, use the new method of requiring only run numbers to select the datafiles
-//		and these data failes need not be consecutively numbered
 //
 //****note that much of this file is becoming obsolete as improved methods for 
 //reducing multiple files are introduced. Some of these procedures may not last long***
@@ -16,8 +14,8 @@
 //
 // TODO
 // -- these procedures are in the process of being updated for VSANS
-//    and are highly susceptible to change as user preferences bocome apparent
-
+//    and are highly susceptible to change pending user feedback
+//
 
 //panel to allow reduction of a series of files using a selected  protocol
 //
@@ -101,22 +99,12 @@ Window V_Multiple_Reduce_Panel()
 	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:MRED:gMRProtoList"
 EndMacro
 
-////simple procedure to bring the CAT TABLE to the front if it is present
-////alerts user, but does nothing else if CAT TABLE is not present 
-////called by several panels
-////
-//Proc ShowCATWindow()
-//	DoWindow/F CatVSTable
-//	if(V_flag==0)
-//		DoAlert 0,"There is no File Catalog table. Use the File Catalog button to create one."
-//	Endif
-//End
 
 
 //function takes a list of filenames (just the name, no path , no extension)
 //that is COMMA delimited, and creates a new list that is also COMMA delimited
 //and contains the full path:file;vers for each file in the list
-//and ensures that files in returned list are RAW data , and can be found on disk
+//and ensures that files in returned list are RAW data, and can be found on disk
 //
 Function/S  V_FullNameListFromFileList(list)
 	String list
