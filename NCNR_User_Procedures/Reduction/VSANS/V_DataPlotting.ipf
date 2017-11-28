@@ -961,17 +961,13 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 //	Variable binType
 
 //	binType = V_GetBinningPopMode()
-	
+	ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
+
 
 	SetDataFolder $(fullPathToFolder)	
 
 	if(binType==1 || binType==2 || binType==3)
 	
-//		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
-		CheckDisplayed/W=$winNameStr $("iBin_qxqy_B_trim")
-		if(V_flag==1)
-			RemoveFromGraph/W=$winNameStr $("iBin_qxqy_B_trim")
-		endif
 		SetDataFolder $(fullPathToFolder)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
 		
@@ -988,32 +984,12 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 
 		endif
 		
-//		ClearIQIfDisplayed_AllFldr("B_trim")
-//		SetDataFolder $(fullPathToFolder)	
-//		CheckDisplayed/W=V_1D_Data iBin_qxqy_B_trim
-//		
-//		if(V_flag==0)
-//			AppendtoGraph/W=V_1D_Data iBin_qxqy_B_trim vs qBin_qxqy_B_trim
-//			ModifyGraph/W=V_1D_Data mode=4
-//			ModifyGraph/W=V_1D_Data marker=19
-//			ModifyGraph/W=V_1D_Data rgb(iBin_qxqy_B_trim)=(1,52428,52428)
-//			ModifyGraph/W=V_1D_Data msize=2
-//			ModifyGraph/W=V_1D_Data grid=1
-//			ModifyGraph/W=V_1D_Data log=1
-//			ModifyGraph/W=V_1D_Data mirror=2
-//		endif
-		
 	endif
 
 	//nothing different here since there is ony a single detector to display, but for the future...
 	if(binType==4)
 	
-//		ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
-		CheckDisplayed/W=$winNameStr $("iBin_qxqy_B_trim")
-		if(V_flag==1)
-			RemoveFromGraph/W=$winNameStr $("iBin_qxqy_B_trim")
-		endif
-		SetDataFolder $("root:Packages:NIST:VSANS:"+type)	
+		SetDataFolder $(fullPathToFolder)	
 		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
 		
 		if(V_flag==0)
@@ -1028,6 +1004,22 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		endif
 	endif
 
+	if(binType==5 || binType==6 || binType==7)
+	
+	SetDataFolder $(fullPathToFolder)	
+			CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+		endif
+	endif
 	
 	SetDataFolder root:
 End
@@ -1048,21 +1040,29 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 //	binType = V_GetBinningPopMode()
 	SetDataFolder $(fullPathToFolder)
 
-	String midList = "ML;MR;MT;MB;MLR;MTB;MLRTB;"
+//	String midList = "ML;MR;MT;MB;MLR;MTB;MLRTB;"
 	String type
 	Variable ii
-	
+
+// clear EVERYTHING
+	ClearIQIfDisplayed_AllFldr("MLRTB_trim",winNameStr)
+	ClearIQIfDisplayed_AllFldr("MLR_trim",winNameStr)
+	ClearIQIfDisplayed_AllFldr("MTB_trim",winNameStr)		//this returns to root:
+	ClearIQIfDisplayed_AllFldr("MT_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("ML_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("MR_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("MB_trim",winNameStr)		
 
 	if(binType==1)
-		ii=0
-		do
-			type = StringFromList(ii, midlist, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(midList))
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
 	
 			
 		SetDataFolder $(fullPathToFolder)
@@ -1100,18 +1100,16 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	
 	if(binType==2)
 // clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, midlist, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(midList))
-		
-
-	
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
+//		
 
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_MLR_trim
@@ -1140,16 +1138,16 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	endif
 	
 	if(binType==3)
-// clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, midlist, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(midList))
+//// clear EVERYTHING
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
 
 	
 		SetDataFolder $(fullPathToFolder)
@@ -1173,16 +1171,16 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	endif
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
-// clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, midlist, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(midList))
+//// clear EVERYTHING
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
 		
 
 		
@@ -1192,27 +1190,29 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendToGraph/W=$winNameStr iBin_qxqy_ML_trim vs qBin_qxqy_ML_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR_trim vs qBin_qxqy_MR_trim
-			AppendToGraph/W=$winNameStr iBin_qxqy_MT_trim vs qBin_qxqy_MT_trim
-			AppendToGraph/W=$winNameStr iBin_qxqy_MB_trim vs qBin_qxqy_MB_trim
+//			AppendToGraph/W=$winNameStr iBin_qxqy_MT_trim vs qBin_qxqy_MT_trim
+//			AppendToGraph/W=$winNameStr iBin_qxqy_MB_trim vs qBin_qxqy_MB_trim
 			ErrorBars/T=0 iBin_qxqy_ML_trim Y,wave=(:eBin_qxqy_ML_trim,:eBin_qxqy_ML_trim)
 			ErrorBars/T=0 iBin_qxqy_MR_trim Y,wave=(:eBin_qxqy_MR_trim,:eBin_qxqy_MR_trim)
-			ErrorBars/T=0 iBin_qxqy_MT_trim Y,wave=(:eBin_qxqy_MT_trim,:eBin_qxqy_MT_trim)
-			ErrorBars/T=0 iBin_qxqy_MB_trim Y,wave=(:eBin_qxqy_MB_trim,:eBin_qxqy_MB_trim)
+//			ErrorBars/T=0 iBin_qxqy_MT_trim Y,wave=(:eBin_qxqy_MT_trim,:eBin_qxqy_MT_trim)
+//			ErrorBars/T=0 iBin_qxqy_MB_trim Y,wave=(:eBin_qxqy_MB_trim,:eBin_qxqy_MB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_ML_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MR_trim)=4
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MT_trim)=4
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MB_trim)=4
+//			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MT_trim)=4
+//			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MB_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_ML_trim)=19
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MR_trim)=19
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MT_trim)=19
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MB_trim)=19
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_ML_trim)=(65535,0,0),rgb(iBin_qxqy_MB_trim)=(1,16019,65535),rgb(iBin_qxqy_MR_trim)=(65535,0,0),rgb(iBin_qxqy_MT_trim)=(1,16019,65535)
+//			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MT_trim)=19
+//			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MB_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_ML_trim)=(65535,0,0),rgb(iBin_qxqy_MR_trim)=(65535,0,0)
+//			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MB_trim)=(1,16019,65535),rgb(iBin_qxqy_MT_trim)=(1,16019,65535)
 			ModifyGraph/W=$winNameStr msize(iBin_qxqy_ML_trim)=3
 			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MR_trim)=3
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MT_trim)=3
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MB_trim)=3
-			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_ML_trim)={0,4},muloffset(iBin_qxqy_MB_trim)={0,2},muloffset(iBin_qxqy_MR_trim)={0,8}
+//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MT_trim)=3
+//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MB_trim)=3
+			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_ML_trim)={0,4},muloffset(iBin_qxqy_MR_trim)={0,8}
+//			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_MB_trim)={0,2}
 			ModifyGraph/W=$winNameStr grid=1
 			ModifyGraph/W=$winNameStr log=1
 			ModifyGraph/W=$winNameStr mirror=2
@@ -1220,6 +1220,107 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 			
 	endif
 	
+	if(binType==5)
+//// clear EVERYTHING
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
+
+	
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_MLRTB_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB_trim vs qBin_qxqy_MLRTB_trim
+			ErrorBars/T=0 iBin_qxqy_MLRTB_trim Y,wave=(:eBin_qxqy_MLRTB_trim,:eBin_qxqy_MLRTB_trim)
+			
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLRTB_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLRTB_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MLRTB_trim)=(65535,0,0)
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MLRTB_trim)=3
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+			Label/W=$winNameStr left "Intensity (1/cm)"
+			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif
+	
+	if(binType==6)
+// clear EVERYTHING
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
+//		
+
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_MLR_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR_trim vs qBin_qxqy_MLR_trim
+			ErrorBars/T=0 iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
+			
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLR_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLR_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MLR_trim)=(65535,0,0)
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MLR_trim)=3
+//			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_MLR_trim)={0,2}
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+			Label/W=$winNameStr left "Intensity (1/cm)"
+			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif	
+	
+	if(binType==7)
+// clear EVERYTHING
+//		ii=0
+//		do
+//			type = StringFromList(ii, midlist, ";")
+//			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			if(V_flag==1)
+//				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
+//			endif
+//			ii+=1
+//		while(ii<ItemsInList(midList))
+//		
+
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_MLR_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR_trim vs qBin_qxqy_MLR_trim
+			ErrorBars/T=0 iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
+			
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLR_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLR_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_MLR_trim)=(65535,0,0)
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_MLR_trim)=3
+//			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_MLR_trim)={0,2}
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+			Label/W=$winNameStr left "Intensity (1/cm)"
+			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif	
+		
 	SetDataFolder root:
 End
 
@@ -1240,23 +1341,20 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	String frontList = "FL;FR;FT;FB;FLR;FTB;FLRTB;"
 	String type
 	Variable ii
-//	binType = V_GetBinningPopMode()
 	SetDataFolder $(fullPathToFolder)
 
+// clear EVERYTHING
+	ClearIQIfDisplayed_AllFldr("FLRTB_trim",winNameStr)
+	
+	ClearIQIfDisplayed_AllFldr("FLR_trim",winNameStr)
+	ClearIQIfDisplayed_AllFldr("FTB_trim",winNameStr)
 
+	ClearIQIfDisplayed_AllFldr("FT_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("FL_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("FR_trim",winNameStr)	
+	ClearIQIfDisplayed_AllFldr("FB_trim",winNameStr)
 		
 	if(binType==1)
-		ii=0
-		do
-			type = StringFromList(ii, frontList, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(frontList))
-		
-
 				
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL_trim
@@ -1294,18 +1392,6 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	endif
 	
 	if(binType==2)
-	// clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, frontList, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(frontList))
-	
-
 
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLR_trim
@@ -1334,18 +1420,6 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	endif
 	
 	if(binType==3)
-// clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, frontList, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(frontList))
-	
-
 	
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FLRTB_trim
@@ -1368,18 +1442,6 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 	endif
 
 	if(binType==4)		// slit aperture binning - MT, ML, MR, MB are averaged
-// clear EVERYTHING
-		ii=0
-		do
-			type = StringFromList(ii, frontList, ";")
-			CheckDisplayed/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			if(V_flag==1)
-				RemoveFromGraph/W=$winNameStr $("iBin_qxqy_"+type+"_trim")
-			endif
-			ii+=1
-		while(ii<ItemsInList(frontList))
-	
-
 		
 		SetDataFolder $(fullPathToFolder)
 		CheckDisplayed/W=$winNameStr iBin_qxqy_FL_trim
@@ -1387,34 +1449,116 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FL_trim vs qBin_qxqy_FL_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR_trim vs qBin_qxqy_FR_trim
-			AppendToGraph/W=$winNameStr iBin_qxqy_FT_trim vs qBin_qxqy_FT_trim
-			AppendToGraph/W=$winNameStr iBin_qxqy_FB_trim vs qBin_qxqy_FB_trim
+//			AppendToGraph/W=$winNameStr iBin_qxqy_FT_trim vs qBin_qxqy_FT_trim
+//			AppendToGraph/W=$winNameStr iBin_qxqy_FB_trim vs qBin_qxqy_FB_trim
 			ErrorBars/T=0 iBin_qxqy_FL_trim Y,wave=(:eBin_qxqy_FL_trim,:eBin_qxqy_FL_trim)
 			ErrorBars/T=0 iBin_qxqy_FR_trim Y,wave=(:eBin_qxqy_FR_trim,:eBin_qxqy_FR_trim)
-			ErrorBars/T=0 iBin_qxqy_FT_trim Y,wave=(:eBin_qxqy_FT_trim,:eBin_qxqy_FT_trim)
-			ErrorBars/T=0 iBin_qxqy_FB_trim Y,wave=(:eBin_qxqy_FB_trim,:eBin_qxqy_FB_trim)
+//			ErrorBars/T=0 iBin_qxqy_FT_trim Y,wave=(:eBin_qxqy_FT_trim,:eBin_qxqy_FT_trim)
+//			ErrorBars/T=0 iBin_qxqy_FB_trim Y,wave=(:eBin_qxqy_FB_trim,:eBin_qxqy_FB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FL_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FR_trim)=4
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FT_trim)=4
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FB_trim)=4
+//			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FT_trim)=4
+//			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FB_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FL_trim)=19
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FR_trim)=19
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FT_trim)=19
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FB_trim)=19
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FL_trim)=(39321,26208,1),rgb(iBin_qxqy_FB_trim)=(2,39321,1),rgb(iBin_qxqy_FR_trim)=(39321,26208,1),rgb(iBin_qxqy_FT_trim)=(2,39321,1)
+//			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FT_trim)=19
+//			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FB_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FL_trim)=(39321,26208,1),rgb(iBin_qxqy_FR_trim)=(39321,26208,1)
+//			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FB_trim)=(2,39321,1),rgb(iBin_qxqy_FT_trim)=(2,39321,1)
 			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FL_trim)=3
 			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FR_trim)=3
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FT_trim)=3
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FB_trim)=3
-			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_FL_trim)={0,4},muloffset(iBin_qxqy_FB_trim)={0,2},muloffset(iBin_qxqy_FR_trim)={0,8}
+//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FT_trim)=3
+//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FB_trim)=3
+			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_FL_trim)={0,4},muloffset(iBin_qxqy_FR_trim)={0,8}
+//			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_FB_trim)={0,2}
 			ModifyGraph/W=$winNameStr grid=1
 			ModifyGraph/W=$winNameStr log=1
 			ModifyGraph/W=$winNameStr mirror=2
 		endif		
 			
 	endif
+
+
+	if(binType==5)
+
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_FLR_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR_trim vs qBin_qxqy_FLR_trim
+			AppendToGraph/W=$winNameStr iBin_qxqy_FTB_trim vs qBin_qxqy_FTB_trim
+			ErrorBars/T=0 iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
+			ErrorBars/T=0 iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
+
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLR_trim)=4
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FTB_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FLR_trim)=19
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FTB_trim)=19
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FLR_trim)=(39321,26208,1),rgb(iBin_qxqy_FTB_trim)=(2,39321,1)
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FLR_trim)=3
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FTB_trim)=3
+			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_FLR_trim)={0,2}
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+//			Label/W=$winNameStr left "Intensity (1/cm)"
+//			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif
+
+	if(binType==6)	
 	
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_FLRTB_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB_trim vs qBin_qxqy_FLRTB_trim
+			ErrorBars/T=0 iBin_qxqy_FLRTB_trim Y,wave=(:eBin_qxqy_FLRTB_trim,:eBin_qxqy_FLRTB_trim)
+
+
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLRTB_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FLRTB_trim)=19
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FLRTB_trim)=3
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FLRTB_trim)=(39321,26208,1)
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+			Label/W=$winNameStr left "Intensity (1/cm)"
+			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif
+	
+	if(binType==7)
+
+		SetDataFolder $(fullPathToFolder)
+		CheckDisplayed/W=$winNameStr iBin_qxqy_FLR_trim
+		
+		if(V_flag==0)
+			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR_trim vs qBin_qxqy_FLR_trim
+			AppendToGraph/W=$winNameStr iBin_qxqy_FTB_trim vs qBin_qxqy_FTB_trim
+			ErrorBars/T=0 iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
+			ErrorBars/T=0 iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
+
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLR_trim)=4
+			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FTB_trim)=4
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FLR_trim)=19
+			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FTB_trim)=19
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FLR_trim)=3
+			ModifyGraph/W=$winNameStr msize(iBin_qxqy_FTB_trim)=3
+			
+			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_FLR_trim)=(39321,26208,1),rgb(iBin_qxqy_FTB_trim)=(2,39321,1)
+			ModifyGraph/W=$winNameStr muloffset(iBin_qxqy_FLR_trim)={0,2}
+			ModifyGraph/W=$winNameStr grid=1
+			ModifyGraph/W=$winNameStr log=1
+			ModifyGraph/W=$winNameStr mirror=2
+//			Label/W=$winNameStr left "Intensity (1/cm)"
+//			Label/W=$winNameStr bottom "Q (1/A)"
+		endif	
+			
+	endif	
 	SetDataFolder root:
 End
 

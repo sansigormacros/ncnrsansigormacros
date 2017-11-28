@@ -176,20 +176,23 @@ Window VSANS_DataPanel() : Panel
 	Button button_toWork,pos={770,146},size={90,20},proc=V_ToWorkFileButtonProc,title="to WORK"
 	Button button_annular,pos={770,114},size={90,20},proc=V_annularAvgButtonProc,title="Annular Avg"
 
-	TitleBox title_file,pos={606,178},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
-	TitleBox title_dataPresent,pos={606,210},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
+	TitleBox title_file,pos={606,178},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+	TitleBox title_dataPresent,pos={606,210},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
 	TitleBox title_status,pos={606,240},size={200,200},fsize=12,variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
 	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
-	Button button_BeamCtr,pos={603,450},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
+	Button button_BeamCtr,pos={603,566},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
 	Button button_SpreadPanels,pos={603,488},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
 	Button button_RestorePanels,pos={603,526},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
+	Button pick_trim,pos={603,450},size={120,20},proc=V_TrimDataProtoButton,title="Trim I(Q) Data"
+	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
+	
 
 // on the tabs, always visible
-	TitleBox title_xy,pos={24,71},size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+	TitleBox title_xy,pos={20,65},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	Slider slider_hi,pos={558,224},size={16,80},proc=V_HiMapSliderProc
 	Slider slider_hi,limits={0,1,0},value= 1,ticks= 0
 	Slider slider_lo,pos={558,315},size={16,80},proc=V_LowMapSliderProc

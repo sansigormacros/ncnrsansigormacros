@@ -51,16 +51,16 @@ Proc V_CombineDataGraph()
 		ControlBar 70
 		ModifyGraph cbRGB=(44000,44000,44000)
 		
-		Button button2,pos={15,5},size={70,20},proc=V_Load_ITX_button,title="Load Data"
-		Button button2,help={"Load an ITX file"}
+//		Button button2,pos={15,5},size={70,20},proc=V_Load_ITX_button,title="Load Data"
+//		Button button2,help={"Load an ITX file"}
 		
-		PopupMenu popup1,pos={125,5},size={90,20},title="Data Folder"
-		PopupMenu popup1,help={"data folder"}
-		PopupMenu popup1,value= GetAList(4),proc=V_DataFolderPlotPop
+//		PopupMenu popup1,pos={125,5},size={90,20},title="Data Folder"
+//		PopupMenu popup1,help={"data folder"}
+//		PopupMenu popup1,value= GetAList(4),proc=V_DataFolderPlotPop
 		
-		PopupMenu popup0,pos={320,5},size={70,20},title="Bin Type"
+		PopupMenu popup0,pos={15,5},size={70,20},title="Bin Type"
 		PopupMenu popup0,help={"binning type"}
-		PopupMenu popup0,value= ksBinTypeStr
+		PopupMenu popup0,value= ksBinTypeStr,proc=V_DataBinTypePlotPop
 
 		Button button3,pos={544.00,5},size={30.00,20.00},title="?"
 		Button button3,help={"help file for combining 1D data"}
@@ -74,8 +74,8 @@ Proc V_CombineDataGraph()
 		Button button1,pos={225,36},size={100,20},proc=V_TrimWaves2StringButton,title="Wave 2 Str"
 		Button button1,help={"Convert the waves to global strings"}
 		
-		Button button4,pos={388,36},size={90.00,20.00},title="Trim & Save"
-		Button button4,help={"combine and save 1D data"},proc=V_SaveTrimmed_Button
+//		Button button4,pos={388,36},size={90.00,20.00},title="Trim & Save"
+//		Button button4,help={"combine and save 1D data"},proc=V_SaveTrimmed_Button
 		
 		Button button0,pos={524,36},size={70,20},proc=V_DoneCombine1D_ButtonProc,title="Done"
 		Button button0,help={"Close the panel and kill the temporary folder"}
@@ -146,8 +146,11 @@ Function V_TrimTestUpdate(Beg_pts, End_pts)
 	endif
 	
 //	SetDataFolder root:ToTrim
-	ControlInfo/W=V_1D_Combine popup1
-	String dataFldrStr = S_Value
+//	ControlInfo/W=V_1D_Combine popup1
+//	String dataFldrStr = S_Value
+	
+	SVAR curDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+	String dataFldrStr = "root:Packages:NIST:VSANS:"+curDispType
 	
 	Variable num,ii,p1,p2
 	String str,detStr
@@ -156,7 +159,7 @@ Function V_TrimTestUpdate(Beg_pts, End_pts)
 	for(ii=0;ii<num;ii+=1)
 		detStr = panelStr[ii]
 		Wave/Z iw = $("root:ToTrim:iBin_qxqy_"+detStr+"_trim")
-		Wave/Z iw_orig = $("root:"+dataFldrStr+":iBin_qxqy_"+detStr)
+		Wave/Z iw_orig = $(dataFldrStr+":iBin_qxqy_"+detStr)
 //		Wave/Z iw = $("iBin_qxqy_"+detStr)
 //		Wave/Z ew = $("eBin_qxqy_"+detStr)
 		if(WaveExists(iw) && WaveExists(iw_orig))
@@ -189,6 +192,124 @@ End
 // x- the logic here is wrong. if the ToTrim folder is empty (As on startup)
 //  then the waves are always missing - and the function returns an error - every time
 //
+// now works with the "current" data that is displayed, rather than relying on 
+// a lot of user input regarding the details of the saved data
+//
+Function V_DataBinTypePlotPop(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum	// which item is currently selected (1-based)
+	String popStr		// contents of current popup item as string
+
+
+	String str,winStr="V_1D_Combine"
+	Variable binType,num,ii,err
+
+	binType = V_BinTypeStr2Num(popStr)
+	
+	
+	//  x- need to update this to make sure that the data waves are present before plotting. This
+	//    currently looks in the ToTrim folder, but the binning could be wrong in the data folder
+	//    and will be an error...
+	
+	//dataType now needs to be the full path to the folder
+	// Plot the "real" data. data copy to trim will be plotted later
+	//
+	SVAR dispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+
+
+// dispatch based on the string, not on the number of selection in the pop string
+	V_QBinAllPanels_Circular(dispType,binType)
+
+	String workTypeStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+dispType
+	
+
+//	dataType = "root:"+popStr
+//	
+//	//remove EVERYTHING from the graph, no matter what
+	String type,list,item
+//	list = TraceNameList(winStr,";",1)
+//	for(ii=0;ii<ItemsInList(list);ii+=1)
+//		item = StringFromList(ii, list, ";")
+////		CheckDisplayed/W=$winStr $(item)
+////		if(V_flag==1)
+//			RemoveFromGraph/Z/W=$winStr $(item)
+////		endif
+//	endfor	
+//	
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,binType,winStr
+
+	Execute ("V_Back_IQ_Graph"+str)
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
+
+	ModifyGraph marker=8,opaque=1,msize=3		//make the traces open white circles
+
+
+	NewDataFolder/O root:ToTrim
+	
+	//remove all of the "toTrim" data from the graph, if it's there
+	SetDataFolder root:ToTrim
+	for(ii=0;ii<ItemsInList(ksPanelBinTypeList);ii+=1)
+		type = StringFromList(ii, ksPanelBinTypeList, ";")
+		CheckDisplayed/W=$winStr $("iBin_qxqy_"+type+"_trim")
+		if(V_flag==1)
+			RemoveFromGraph/W=$winStr $("iBin_qxqy_"+type+"_trim")
+		endif
+	endfor	
+	SetDataFolder root:
+
+
+	//then kill the data folder, so it can be duplicated
+	
+//
+//	// duplicate all of the data into the new folder
+	SetDataFolder $workTypeStr
+	list = WaveList("*",";","")		//must be in the correct data folder
+	SetDataFolder root:
+//	Print list	
+	num = ItemsInList(list)
+	for(ii=0;ii<num;ii+=1)
+		str = StringFromList(ii,list)
+		Duplicate/O $(workTypeStr+":"+str), $("root:ToTrim:"+str+"_trim")
+	endfor
+	
+//	// be sure that the data is present in the ToTrim folder before trying to plot
+//	err = V_TrimWavesExist(binType)
+//	if(err)
+//		DoAlert 0,"wrong bin type selected"
+//		return(0)
+//	endif
+	
+	
+	// plot the linked data
+	sprintf str,"(\"%s\",%d,\"%s\")","root:ToTrim",binType,winStr
+
+	Execute ("V_Back_IQ_Graph_trim"+str)
+	Execute ("V_Middle_IQ_Graph_trim"+str)
+	Execute ("V_Front_IQ_Graph_trim"+str)
+	// and link the data to the table with a dependency?
+//	done in the panel macro?
+	
+	// last, force the dependency to update so that the trimmed points are shown
+	Wave w = root:Packages:NIST:VSANS:Globals:Protocols:Beg_pts
+	w[0] += 1
+	w[0] -= 1
+	
+	
+	return(0)	
+End
+
+
+
+// 
+// x- verify that the proper waves exist for the binning type
+//
+// x- the logic here is wrong. if the ToTrim folder is empty (As on startup)
+//  then the waves are always missing - and the function returns an error - every time
+//
+// currently unused, in favor of using the current data rather than saved itx data
 //
 Function V_DataFolderPlotPop(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
@@ -293,6 +414,8 @@ Function V_DataFolderPlotPop(ctrlName,popNum,popStr) : PopupMenuControl
 	
 	return(0)	
 End
+
+
 
 // kill the dependency,
 // kill the panel, then the associated ToTrim folder

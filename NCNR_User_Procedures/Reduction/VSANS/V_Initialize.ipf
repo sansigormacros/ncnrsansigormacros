@@ -28,11 +28,11 @@
 
 
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
-// this need never change from 1
+// this need not ever change from 1
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
 
 // // TODO: -- replace this constant with V_getDet_panel_gap(fname,detStr)
-Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
+//Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
 
 
 // the base data folder path where the raw data is loaded
@@ -56,7 +56,7 @@ Strconstant ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" 
 Strconstant ksBinType2 = "FTB;FLR;MTB;MLR;B;"
 Strconstant ksBinType3 = "FLRTB;MLRTB;B;"
 //Strconstant ksBinType4 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
-Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode
+Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode, disregard the T/B panels
 Strconstant ksBinType5 = "FTB;FLR;MLRTB;B;"
 Strconstant ksBinType6 = "FLRTB;MLR;B;"
 Strconstant ksBinType7 = "FTB;FLR;MLR;B;"

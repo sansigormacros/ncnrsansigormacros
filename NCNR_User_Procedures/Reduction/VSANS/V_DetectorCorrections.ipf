@@ -151,13 +151,28 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
 	
 	// TODO
-	// -- GAP IS HARD-WIRED as a single constant value (there really are 4 values)
+	// -- GAP IS HARD-WIRED as constant values 
 	Variable offset,gap
 
 // kPanelTouchingGap is in mm	
-// the gap is added to the RIGHT and TOP panels ONLY
-// TODO -- replace with V_getDet_panel_gap(fname,detStr) once it is added to the file
-	gap = kPanelTouchingGap
+// the gap is split equally between the panel pairs
+// TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
+// these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
+// both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
+	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
+		gap = 3.2		//mm
+	endif
+	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+		gap = 8		//mm
+	endif
+	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
+		gap = 5.4		//mm
+	endif
+	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+		gap = 5		//mm
+	endif
+// TODO: this is the line to keep, to replace the hard-wired values
+//	gap = V_getDet_panel_gap(fname,detStr)
 	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
@@ -181,11 +196,11 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		if(kBCTR_CM)
 			if(cmpstr("L",detStr[1]) == 0)
 //				data_realDistX[][] = offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
-				data_realDistX[][] = offset - (dimX - p)*tube_width - gap/2		// TODO should this be dimX-1-p = 47-p?
+				data_realDistX[][] = offset - (dimX - p - 1/2)*tube_width - gap/2		// TODO should this be dimX-1-p = 47-p?
 			else
 			//	right
 //				data_realDistX[][] = tube_width*(p+1) + offset + gap		//add to the Right det,
-				data_realDistX[][] = tube_width*(p+1) + offset + gap/2		//add to the Right det
+				data_realDistX[][] = tube_width*(p+1/2) + offset + gap/2		//add to the Right det
 			endif
 		else
 			data_realDistX[][] = tube_width*(p)
@@ -213,11 +228,11 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		if(kBCTR_CM)
 			if(cmpstr("T",detStr[1]) == 0)
 //				data_realDistY[][] = tube_width*(q+1) + offset + gap			
-				data_realDistY[][] = tube_width*(q+1) + offset + gap/2			
+				data_realDistY[][] = tube_width*(q+1/2) + offset + gap/2			
 			else
 				// bottom
 //				data_realDistY[][] = offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
-				data_realDistY[][] = offset - (dimY - q)*tube_width - gap/2	// TODO should this be dimY-1-q = 47-q?
+				data_realDistY[][] = offset - (dimY - q - 1/2)*tube_width - gap/2	// TODO should this be dimY-1-q = 47-q?
 			endif
 		else
 			data_realDistY[][] = tube_width*(q)
@@ -374,8 +389,28 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
 
 	variable edge,delta
-	Variable gap = kPanelTouchingGap		// TODO: -- replace with V_getDet_panel_gap(fname,detStr)
+	Variable gap 
 
+// kPanelTouchingGap is in mm	
+// the gap is split equally between the panel pairs
+// TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
+// these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
+// both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
+	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
+		gap = 16.8		//mm
+	endif
+	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+		gap = 20		//mm
+	endif
+	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
+		gap = 14.6		//mm
+	endif
+	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+		gap = 15		//mm
+	endif
+// TODO: this is the line to keep, to replace the hard-wired values
+//	gap = V_getDet_panel_gap(fname,detStr)
+	
 //
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)

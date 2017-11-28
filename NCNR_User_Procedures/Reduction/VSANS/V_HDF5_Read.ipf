@@ -1649,10 +1649,9 @@ End
 
 // gap when panels are "touching"
 // units are mm
-// returns gap value for TOP and RIGHT
-// returns 0 for BACK, BOTTOM and LEFT
-// force a return for BACK (no field in file)
-// B/L detectors have this field, and it should be set to zero in the file
+// returns gap value for RIGHT and LEFT (they are the same)
+// returns gap value for TOP and BOTTOM (they are the same)
+// returns 0 for BACK, (no such field for this detector)
 //
 Function V_getDet_panel_gap(fname,detStr)
 	String fname,detStr
