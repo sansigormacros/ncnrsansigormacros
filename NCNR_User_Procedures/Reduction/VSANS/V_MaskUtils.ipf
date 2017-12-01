@@ -570,7 +570,12 @@ Function V_DrawPanelToMask(str)
 	SetScale/P x 0,1, curDispPanel
 	SetScale/P y 0,1, curDispPanel
 	
-	Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+	NVAR defaultLogScaling = root:Packages:NIST:VSANS:Globals:gLogScalingAsDefault
+	if(defaultLogScaling)
+		Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+	else
+		Wave LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
+	endif
 
 	//draw the detector panel
 	Display/W=(left,top,right,bottom)/HOST=# 
@@ -648,7 +653,8 @@ Function V_OverlayMask(str,state)
 			if(V_flag==0)		//so the overlay doesn't get appended more than once
 				AppendImage/W=MaskEditPanel#DetData overlay
 				AppendImage/W=MaskEditPanel#DetData currentTube
-				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
+//				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
+				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,40000)
 				ModifyImage/W=MaskEditPanel#DetData currentTube ctab= {0.9,1,CyanMagenta,0}	,minRGB=NaN,maxRGB=0
 		//		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
 			endif

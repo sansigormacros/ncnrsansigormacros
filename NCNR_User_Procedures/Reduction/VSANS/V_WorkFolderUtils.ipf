@@ -382,13 +382,13 @@ End
 
 //
 // given the folder, duplicate the data -> linear_data and generate the error
-// TODO
-// -- do I want to use different names here? If it turns out that I don't need to drag a copy of
+//
+// x- do I want to use different names here? If it turns out that I don't need to drag a copy of
 //    the data around as "linear_data", then I can eliminate that, and rename the error wave
-// -- be sure the data is either properly written as 2D in the file, or converted to 2D before
+// x- be sure the data is either properly written as 2D in the file, or converted to 2D before
 //    duplicating here
-// -- ? do I recast to DP here. Probably necessary since I'm doing a DP calculation, but Redimension
-//    is done in the Raw_to_Work step too. very confusing.
+// x- ? do I recast to DP here? No- V_MakeDataWaves_DP() is called directly prior to this call, so data
+//     coming in is already DP
 Function V_MakeDataError(folderStr)
 	String folderStr
 	

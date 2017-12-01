@@ -267,9 +267,8 @@ End
 Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	//new, May 2009. show a full panel for input
-	BuildDIVPanel()
-//	MakeDIVFile("","")			
+	DIV_Setup_Panel()
+	V_Display_DIV_Panels()	
 End
 
 

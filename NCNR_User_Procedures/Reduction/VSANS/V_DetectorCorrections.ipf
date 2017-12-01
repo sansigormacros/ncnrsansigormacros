@@ -10,8 +10,7 @@
 // these are meant to be called by the procedures that convert "raw" data to 
 // "adjusted" or corrected data sets
 //
-// may be relocated in the future
-//
+
 
 
 

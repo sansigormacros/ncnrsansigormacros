@@ -94,7 +94,7 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 1
 		
-	DoAlert 0,"The Back detector will be ignored. Change this in the Preferences Panel"
+	DoAlert 0,"The Back detector will be ignored. This can be changed in the Preferences Panel"
 	
 // flag to allow adding raw data files with different attenuation (normally not done)	
 //	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten",0)

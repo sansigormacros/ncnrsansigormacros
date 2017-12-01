@@ -193,7 +193,7 @@ Function V_MakeDataWaves_DP(fname)
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
-//		Wave w_err = V_getDetectorDataErrW(fname,detStr)  //not here, done above w/V_MakeDataError()
+//		Wave w_err = V_getDetectorDataErrW(fname,detStr)  //not here, done in V_MakeDataError() by duplicating dataW
 		Redimension/D w
 //		Redimension/D w_err
 	endfor

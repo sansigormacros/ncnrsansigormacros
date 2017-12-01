@@ -328,8 +328,10 @@ Function VSANSDataHook(s)
 				
 			xaxval= AxisValFromPixel("","bottom",s.mouseLoc.h)
 			yaxval= AxisValFromPixel("","left",s.mouseLoc.v)
-			xloc = round(xaxval)
-			yloc = round(yaxval)
+//			xloc = round(xaxval)
+//			yloc = round(yaxval)
+			xloc = xaxval
+			yloc = yaxval
 			
 			// which tab is selected? -this is the main graph panel (subwindow may not be the active one!)
 			ControlInfo/W=VSANS_Data tab0
@@ -372,7 +374,8 @@ Function VSANSDataHook(s)
 					// we're in-bounds on this wave
 					
 					// count value to the global
-					gNCounts = w[testX][testY]
+					gNCounts = w[testX][testY]		//wrong for T/B panels
+
 					
 					// deduce the detector panel
 					currentImageRef = StringFromList(ii, imageList,";")	//the image instance ##
@@ -410,8 +413,7 @@ Function VSANSDataHook(s)
 //					pixSizeX = V_getDet_x_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //					pixSizeY = V_getDet_y_pixel_size(gCurDispType,detStr)		// written mm? need mm
 //
-// TODO: these q-values ignore the non-linear corrections!!!
-// -- What can I do about this?
+
 					String destPath = "root:Packages:NIST:VSANS:"+gCurDispType
 					Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 					Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
@@ -427,11 +429,13 @@ Function VSANSDataHook(s)
 					ii = -1		//look no further, set ii to bad value to exit the for loop
 					
 					// TODO
-					// -- remove this - it sets the globals to display to the pixel values, unscaled
-//					xloc = testX
-//					yloc = testY
+					//  this - it sets the globals to display to the pixel values, unscaled
+					xloc = testX
+					yloc = testY
 					
 				endif	//end if(mouse is over a detector panel)
+				
+
 			endfor		// end loop over list of displayed images
 		
 			break

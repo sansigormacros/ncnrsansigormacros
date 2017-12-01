@@ -810,88 +810,96 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	maskMissing = 1
 
 	strswitch(type)	// string switch
-		case "FL":		// execute if case matches expression
-		case "FR":
-			detStr = type
-			if(isVCALC)
-				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
-			else
-				Wave inten = V_getDetectorDataW(folderStr,detStr)
-				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-				if(WaveExists(mask) == 1)
-					maskMissing = 0
-				endif
-				
-			endif
-			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-			nSets = 1
-			break	
+//		case "FL":		// execute if case matches expression
+//		case "FR":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//				
+//			endif
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
 								
-		case "FT":		
-		case "FB":
-			detStr = type
-			if(isVCALC)
-				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-			else
-				Wave inten = V_getDetectorDataW(folderStr,detStr)
-				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-				if(WaveExists(mask) == 1)
-					maskMissing = 0
-				endif
-			endif
-			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-			nSets = 1
-			break
+//		case "FT":		
+//		case "FB":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break
 			
-		case "ML":		
+//		case "ML":		
+//		case "MR":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			//TODO:
+//			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
+//			//    determined specifically for that panel (currently using one tube width as deltaQ)
+//			// -- this is repeated multiple times in this switch
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
+					
+//		case "MT":		
+//		case "MB":
+//			detStr = type
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,detStr)
+//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//				if(WaveExists(mask) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
+//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
+//			nSets = 1
+//			break	
+
+// only one panel, simply pick that panel and move on out of the switch
+		case "FL":
+		case "FR":
+		case "FT":
+		case "FB":
+		case "ML":
 		case "MR":
-			detStr = type
-			if(isVCALC)
-				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-			else
-				Wave inten = V_getDetectorDataW(folderStr,detStr)
-				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-				if(WaveExists(mask) == 1)
-					maskMissing = 0
-				endif
-			endif	
-			//TODO:
-			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
-			//    determined specifically for that panel (currently using one tube width as deltaQ)
-			// -- this is repeated multiple times in this switch
-			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
-			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-			nSets = 1
-			break	
-					
-		case "MT":		
-		case "MB":
-			detStr = type
-			if(isVCALC)
-				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-			else
-				Wave inten = V_getDetectorDataW(folderStr,detStr)
-				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-				if(WaveExists(mask) == 1)
-					maskMissing = 0
-				endif
-			endif	
-			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-			nSets = 1
-			break	
-					
+		case "MT":
+		case "MB":			
 		case "B":	
 			detStr = type
 			if(isVCALC)
@@ -905,7 +913,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 					maskMissing = 0
 				endif
 			endif	
-			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_B")
+			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
 			nSets = 1
 			break	
@@ -1088,7 +1096,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 			break									
 					
 		default:
-			nSets = 0							// optional default expression executed
+			nSets = 0							
 			Print "ERROR   ---- type is not recognized "
 	endswitch
 
@@ -1100,9 +1108,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	endif
 
 
-//TODO: properly define the 2D errors here - I'll have this if I do the simulation
-// -- need to propagate the 2D errors up to this point
+// RAW data is currently read in and the 2D error wave is correctly generated
+// 2D error is propagated through all reduction steps, but I have not 
+// verified that it is an exact duplication of the 1D error
 //
+//
+//
+// IF ther is no 2D error wave present for some reason, make a fake one
 	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
@@ -1176,6 +1188,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // this needs to be a double loop now...
 // TODO:
 // -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
+// -- verify the 2D error propagation by reducing it to 1D error
+//
 //
 // The 1D error does not use iErr, and IS CALCULATED CORRECTLY
 //
@@ -1301,7 +1315,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
 // TODO:
-// -- 2D Errors were NOT properly acculumated through reduction, so this loop of calculations is NOT MEANINGFUL (yet)
+// -- 2D Errors were (maybe) properly acculumated through reduction, so this loop of calculations is NOT VERIFIED (yet)
 // x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
@@ -1424,9 +1438,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
 	usingLenses = 0
 
-
-Print "Resolution lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses"
-Print lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
+if(cmpstr(detStr,"FL")==0)
+	Print "(FL) Resolution lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses"
+	Print lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
+endif
 
 	ii=0
 	do
