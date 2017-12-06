@@ -192,7 +192,10 @@ Function V_ConcatenateForSave(pathStr,type,tagStr,binType)
 // trim the data if needed
 	// remove the q=0 point from the back detector, if it's there
 	// does not need to know binType
-	V_RemoveQ0_B(type)
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(!gIgnoreDetB)
+		V_RemoveQ0_B(type)
+	endif
 
 // concatenate the data sets
 // TODO x- figure out which binning was used (this is done in V_1DConcatenate())
@@ -643,24 +646,24 @@ Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 End
 
 
-//
-// returns 1 if the val is non-negative, other value
-// indicates that the resoution data is USANS data.
-//
-// TODO:
-// -- this DUPLICATES a same-named SANS procedure, so there could be a clash at some point
-// -- bigger issue - I'll need a better way to identify and load the different resolution 
-// 		conditions with VSANS
-//
-//
-Function isSANSResolution(val)
-	Variable val
-	
-	if(val >= 0)
-		return(1)
-	else
-		return(0)
-	endif
-End
+////
+//// returns 1 if the val is non-negative, other value
+//// indicates that the resoution data is USANS data.
+////
+//// TODO:
+//// -- this DUPLICATES a same-named SANS procedure, so there could be a clash at some point
+//// -- bigger issue - I'll need a better way to identify and load the different resolution 
+//// 		conditions with VSANS
+////
+////
+//xFunction isSANSResolution(val)
+//	Variable val
+//	
+//	if(val >= 0)
+//		return(1)
+//	else
+//		return(0)
+//	endif
+//End
 
 

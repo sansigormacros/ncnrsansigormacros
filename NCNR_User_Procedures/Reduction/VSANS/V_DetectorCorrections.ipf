@@ -157,7 +157,7 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 // the gap is split equally between the panel pairs
 // TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
 // these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
-// both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
+// both beam conditions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
 	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
 		gap = 3.2		//mm
 	endif

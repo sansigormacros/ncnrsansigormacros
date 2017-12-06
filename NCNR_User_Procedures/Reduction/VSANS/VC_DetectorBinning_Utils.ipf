@@ -798,6 +798,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 		isVCALC = 1
 	endif
 	
+	detStr = type
+
 // now switch on the type to determine which waves to declare and create
 // since there may be more than one panel to step through. There may be two, there may be four
 //
@@ -901,7 +903,6 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 		case "MT":
 		case "MB":			
 		case "B":	
-			detStr = type
 			if(isVCALC)
 				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
 				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		

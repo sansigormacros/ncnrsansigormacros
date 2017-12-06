@@ -23,6 +23,9 @@
 /////////////////
 
 
+// TODO:
+// -- verify the error calculation
+// -- add in functionality to handle FLR and MLR cases (2 panels of data)
 //
 // seems backwards to call this "byRows", but this is the way that Igor indexes
 // LR banks are defined as (48,256) (n,m), sumRows gives sum w/ dimension (n x 1)
@@ -35,8 +38,10 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC	
 	
-	Variable pixSizeX,pixSizeY,delQx, delQy
-	Variable isVCALC=0
+	Variable pixSizeX,pixSizeY,delQy
+	Variable isVCALC=0,maskMissing,nsets=0
+	
+	maskMissing = 1		// set to zero if a mask is actually present
 	
 	if(cmpstr(folderStr,"VCALC") == 0)
 		isVCALC = 1
@@ -44,28 +49,91 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 
 	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
 	String instPath = ":entry:instrument:detector_"	
-	
-	if(isVCALC)
-		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
-		WAVE/Z iErr = $("asdf_iErr_"+detStr)			// TODO: 2D errors -- may not exist, especially for simulation
-	else
-		Wave inten = V_getDetectorDataW(folderStr,detStr)
-		Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+
+	strswitch(detStr)	// string switch	
+// only one panel, simply pick that panel and move on out of the switch
+		case "FL":
+		case "FR":
+		case "ML":
+		case "MR":
+		case "B":
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
+				WAVE/Z iErr = $("asdf_iErr_"+detStr)			// TODO: 2D errors -- may not exist, especially for simulation
+			else
+				Wave inten = V_getDetectorDataW(folderStr,detStr)
+				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
+			endif
+			
+			nsets = 1
+			break
+
+//		case "FLR":
+//		// detStr has multiple values now, so unfortuntely, I'm hard-wiring things...
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
+//				WAVE/Z iErr = $("iErr_"+"FL")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"FR"+":det_"+"FR")
+//				WAVE/Z iErr2 = $("iErr_"+"FR")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"FL")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//
+//			nsets = 2
+//			break
+//			
+//		case "MLR":
+//			if(isVCALC)
+//				WAVE inten = $(folderPath+instPath+"ML"+":det_"+"ML")
+//				WAVE/Z iErr = $("iErr_"+"ML")			// 2D errors -- may not exist, especially for simulation		
+//				WAVE inten2 = $(folderPath+instPath+"MR"+":det_"+"MR")
+//				WAVE/Z iErr2 = $("iErr_"+"MR")			// 2D errors -- may not exist, especially for simulation	
+//			else
+//				Wave inten = V_getDetectorDataW(folderStr,"ML")
+//				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
+//				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
+//				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
+//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+//				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+//				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+//					maskMissing = 0
+//				endif
+//			endif	
+//		
+//			nSets = 2
+//			break			
+
+		default:
+			nSets = 0							
+			Print "ERROR   ---- type is not recognized "
+	endswitch
+
+	if(nSets == 0)
+		SetDataFolder root:
+		return(0)
 	endif
+
 
 	Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
 	Wave qx = $(folderPath+instPath+detStr+":qx_"+detStr)
 	Wave qy = $(folderPath+instPath+detStr+":qy_"+detStr)
 
-// ?? TODO not needed here?	
-//	pixSizeX = VCALC_getPixSizeX(detStr)
-//	pixSizeY = VCALC_getPixSizeY(detStr)
-	
-	delQx = abs(qx[0][0] - qx[1][0])
-	delQy = abs(qy[0][1] - qy[0][0])
-	
-	// delta Qx is set by the pixel X dimension of the detector, which is the limiting resolution
 
+// delta Qx is set by the pixel X dimension of the detector, which is the limiting resolution
+//	delQx = abs(qx[0][0] - qx[1][0])
+	
 	Variable nq,val
 	nq = DimSize(inten,0)		//nq == the number of columns (x dimension)
 	
@@ -85,26 +153,124 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy_"+detStr)
 	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy_"+detStr)
 
-// sum the rows	
-	MatrixOp/O iBin_qxqy = sumRows(inten)	//automatically generates the destination
 
+	iBin_qxqy = 0
+	iBin2_qxqy = 0
+	eBin_qxqy = 0
+	eBin2D_qxqy = 0
+	nBin_qxqy = 0	
+
+
+// sum the rows	
+
+// MatrixOp would be fast, but I can't figure out how to apply the mask with sumRows???
+//	MatrixOp/O iBin_qxqy = sumRows(inten)	//automatically generates the destination
+//		
+//// how to properly calculate the error?
+//// This MatrixOp gives values way too large -- larger than the intensity (be sure to correct *delQy below...
+//
+//	MatrixOp/O tmp = sqrt(varCols(inten^t))		// variance: no varRows operation, so use the transpose of the matrix
+//	eBin_qxqy = tmp[0][p]
+
+	Variable ii,jj,ntube,npix,sum_inten, sum_n, sum_inten2,avesq,aveisq,var,mask_val
+	ntube = DimSize(inten,0)
+	npix = DimSize(inten,1)
+	
+	for(ii=0;ii<ntube;ii+=1)
+		sum_inten = 0			// initialize the sum
+		sum_n = 0
+		sum_inten2 = 0
+		
+		for(jj=0;jj<npix;jj+=1)
+				val = inten[ii][jj]
+				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+					mask_val = 0
+				else
+					mask_val = mask[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+					sum_inten += val
+					sum_n += 1
+					sum_inten2 += val*val
+				endif
+		endfor
+		iBin_qxqy[ii] = sum_inten
+		
+		avesq = sum_inten
+		aveisq = sum_inten2/sum_n
+		var = aveisq-avesq
+		if(var<=0)
+			eBin_qxqy[ii] = 1e-6
+		else
+			eBin_qxqy[ii] = sqrt(var/(sum_n - 1))
+		endif
+
+	endfor
+
+	qBin_qxqy =  qx[p][npix/2]		//TODO:  use only the Qx component in the y-center of the detector, not Qtotal
+		
 // if the detectors are "L", then the values are all negative...
-// if the detectors are T/B, then half is negative, and there's a very nearly zero point in the middle...	
-// and it may make no sense to use T/B anyways...
 	qBin_qxqy = abs(qx[p][0])
 
+// for the L panels, sort the q-values (and data) after the abs() step, otherwise the data is reversed
+// won't hurt to sort the R data
+	Sort qBin_qxqy, qBin_qxqy,iBin_qxqy,eBin_qxqy
 	
 	//now get the scaling correct
 	// q-integration (rectangular), matrixOp simply summed, so I need to multiply by dy (pixelSizeY -> as Qy?)
-	
+
+//	delQy = abs(qy[0][1] - qy[0][0]) 	// this is only one pixel
+	delQy = abs(qy[0][npix-1] - qy[0][0])	// TODO: do I use dQ for the height of the panel?
+		
 	iBin_qxqy *= delQy
+	eBin_qxqy *= delQy
 	
+
+/// TODO -- this is not necessary, but just for getting the I(Q) display to look "pretty"
+// clean out the near-zero Q point in the T/B  and Back detectors
+	qBin_qxqy = (abs(qBin_qxqy[p][q]) < 1e-5) ? NaN : qBin_qxqy[p][q]			
+
+
+// clear out zero data values before exiting...
+	// find the last non-zero point, working backwards
+	val = numpnts(iBin_qxqy)
+	do
+		val -= 1
+	while((iBin_qxqy[val] == 0) && val > 0)
+	
+	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,eBin_qxqy
+
+// work forwards? this doesn't work...
+//	val = -1
+//	do
+//		val += 1
+//	while(nBin_qxqy[val] == 0 && val < numpnts(iBin_qxqy)-1)	
+//	DeletePoints 0, val, iBin_qxqy,qBin_qxqy,eBin_qxqy
+
+
+// TODO:
+// -- calculate the slit resolution here. don't really have any idea how to represent this in VSANS
+//    since it's not an infinite slit, and not anything that I expect could be represented as a Gaussian
+
+	// TODO:
+	// -- This is where I calculate the resolution in SANS (see CircSectAve)
+	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
+	// -- from the top of the function, folderStr = work folder, detStr = "FLRTB" or other type of averaging
+	//
+
+	nq = numpnts(qBin_qxqy)
+	Make/O/D/N=(nq)  $(folderPath+":"+"sigmaQ_qxqy"+"_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBar_qxqy"+"_"+detStr)
+	Make/O/D/N=(nq)  $(folderPath+":"+"fSubS_qxqy"+"_"+detStr)
+	Wave sigmaq = $(folderPath+":"+"sigmaQ_qxqy_"+detStr)
+	Wave qbar = $(folderPath+":"+"qBar_qxqy_"+detStr)
+	Wave fsubs = $(folderPath+":"+"fSubS_qxqy_"+detStr)
+
 // TODO
-//	iBin_qxqy *= 4		//why the factor of 4??? -- this is what I needed to do with FFT->USANS. Do I need it here?
-
-
-/// TODO -- this is not correct, but just for getting the I(Q) display to look "pretty"
-	qBin_qxqy = (abs(qBin_qxqy[p][q]) < 1e-5) ? NaN : qBin_qxqy[p][q]			// clean out the near-zero Q point in the T/B  and Back detectors
+// -- these are DUMMY VALUES!!!
+	sigmaq = -delQy
+	qbar = -delQy
+	fsubs = -delQy
 
 
 	SetDataFolder root:

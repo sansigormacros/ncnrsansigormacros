@@ -15,6 +15,7 @@
 // -- add in more appropriate and some missing fields more useful to VSANS (intent, multiple beam centers, etc.)
 // -- can I make the choice of columns customizable? There are "sets" of columns that are not used for 
 //    some experiments (magnetic, rotation, temperature scans, etc.) but are necessary for others.
+// -- SortColumns operation may be of help in managing the long list of files to sort
 //
 // (DONE):
 // x- clean up the list of files that now accumulates in the RawVSANS folder!!! Everything is there, including

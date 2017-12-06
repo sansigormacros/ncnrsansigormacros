@@ -11,9 +11,10 @@ End
 
 // These files are COMMON NCNR FILES
 // the first three are necessary for loading and plotting of 1D data sets
-// using the PlotManager
+// using the PlotManager, including loading of slit-smeared VSANS data
 #include "PlotUtilsMacro_v40"
 #include "PlotManager_v40"
+#include "GaussUtils_v40"
 #include "NIST_XML_v40"
 //
 //#include "NCNR_Utils"		//needed to load linear fits, mostly VAX file name junk
