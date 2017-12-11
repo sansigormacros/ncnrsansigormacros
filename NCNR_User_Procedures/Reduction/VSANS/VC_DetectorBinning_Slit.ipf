@@ -3,7 +3,7 @@
 
 //////////////////
 //
-// Procedures to average data taken in "slit" apertuere geometry. The fake data on the detector panels
+// Procedures to average data taken in "slit" aperture geometry. The fake data on the detector panels
 //  is as would be collected in PINHOLE geometry - I do not currently have a simulation for slit
 //  apertures (this would need to be MonteCarlo) - the I(q) averaging here gives the I(q) that you
 //  would measure in 1D using slit geometry. It is done by simply summing the columns of data on each detector.
@@ -13,19 +13,21 @@
 //
 // TODO - big question about averaging in this way...
 // can the T/B panels really be used at all for slit mode? - since there's a big "hole" in the scattering data
-// collected -- you're not getting the full column of data covering a wide range of Qy. L/R panels should be fine.
+// collected -- you're not getting the full column of data covering a wide range of Qy. L/R panels should be fine,
+//  although the different carriages cover very different "chunks" of Qy
 //
 // - best answer so far is to skip the T/B panels, and simply not use them
 //
-// TODO -- be sure that the absolute scaling of this is correct. I have no guarantee that 
-//			it'll be correct.
+// TODO -- be sure that the absolute scaling of this is correct. Right now, something is off.
+//  -- so write up the documentaiton for this operation, and try to find the error in the process...
+//
 //
 /////////////////
 
 
 // TODO:
 // -- verify the error calculation
-// -- add in functionality to handle FLR and MLR cases (2 panels of data)
+// -- ? add in functionality to handle FLR and MLR cases (2 panels of data)
 //
 // seems backwards to call this "byRows", but this is the way that Igor indexes
 // LR banks are defined as (48,256) (n,m), sumRows gives sum w/ dimension (n x 1)
@@ -194,7 +196,7 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 					sum_inten2 += val*val
 				endif
 		endfor
-		iBin_qxqy[ii] = sum_inten
+		iBin_qxqy[ii] = sum_inten/sum_n		//the average value
 		
 		avesq = sum_inten
 		aveisq = sum_inten2/sum_n
@@ -207,28 +209,25 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 
 	endfor
 
-	qBin_qxqy =  qx[p][npix/2]		//TODO:  use only the Qx component in the y-center of the detector, not Qtotal
-		
-// if the detectors are "L", then the values are all negative...
-	qBin_qxqy = abs(qx[p][0])
+//TODO:  use only the Qx component in the y-center of the detector, not Qtotal
+	qBin_qxqy =  abs(qx[p][npix/2])		
+
+// if the detectors are "L", then the values are all negative...	
+	qBin_qxqy = abs(qBin_qxqy)
 
 // for the L panels, sort the q-values (and data) after the abs() step, otherwise the data is reversed
 // won't hurt to sort the R data
 	Sort qBin_qxqy, qBin_qxqy,iBin_qxqy,eBin_qxqy
 	
-	//now get the scaling correct
-	// q-integration (rectangular), matrixOp simply summed, so I need to multiply by dy (pixelSizeY -> as Qy?)
-
-//	delQy = abs(qy[0][1] - qy[0][0]) 	// this is only one pixel
+	// not needed to corrrect data, but put in the file???
 	delQy = abs(qy[0][npix-1] - qy[0][0])	// TODO: do I use dQ for the height of the panel?
-		
-	iBin_qxqy *= delQy
-	eBin_qxqy *= delQy
+//	iBin_qxqy *= delQy
+//	eBin_qxqy *= delQy
 	
 
 /// TODO -- this is not necessary, but just for getting the I(Q) display to look "pretty"
 // clean out the near-zero Q point in the T/B  and Back detectors
-	qBin_qxqy = (abs(qBin_qxqy[p][q]) < 1e-5) ? NaN : qBin_qxqy[p][q]			
+//	qBin_qxqy = (abs(qBin_qxqy[p][q]) < 1e-5) ? NaN : qBin_qxqy[p][q]			
 
 
 // clear out zero data values before exiting...

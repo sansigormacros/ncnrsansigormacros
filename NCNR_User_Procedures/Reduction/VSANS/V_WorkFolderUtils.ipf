@@ -735,7 +735,7 @@ Function V_Raw_to_work(newType)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 
 			// do the calculation right here. It's a simple scaling and not worth sending to another function.	
-			//scale the data and error to the default montor counts
+			//scale the data and error to the default monitor counts
 		
 //
 			w *= scale
