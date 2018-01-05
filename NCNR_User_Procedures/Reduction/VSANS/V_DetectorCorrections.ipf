@@ -159,13 +159,13 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 // these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
 // both beam conditions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
 	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
-		gap = 3.2		//mm
+		gap = 3.8		//mm (measured, JB 1/4/18)
 	endif
 	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
 		gap = 8		//mm
 	endif
 	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
-		gap = 5.4		//mm
+		gap = 5.9		//mm (measured, JB 1/4/18)
 	endif
 	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
 		gap = 5		//mm
@@ -1227,12 +1227,12 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 		Wave data = V_getDetectorDataW("ABS",detStr)
 		Wave data_err = V_getDetectorDataErrW("ABS",detStr)
 		
-		data *= s1*s2*s3*s4
+		data *= scale
 		data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
 	endfor
 	
 	//********* 15APR02
-	// DO NOT correct for atenuators here - the COR step already does this, putting all of the data one equal
+	// DO NOT correct for atenuators here - the COR step already does this, putting all of the data on equal
 	// footing (zero atten) before doing the subtraction.
 	
 	Return (0) //no error

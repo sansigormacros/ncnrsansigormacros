@@ -32,6 +32,8 @@
 //
 
 
+
+
 /// TODO:
 // -- need a way to view the DIV data (each panel) and see the stats on the values
 //  (maybe a simple panel viewer, one-at-a-time, or all 4 as individuals, not on the same scale)
@@ -49,22 +51,140 @@
 
 // Basic function:
 // -- Setup_VSANS_DIV_Struct()
-// -- then, reduce the data (to the COR level?)
-// -- next, V_NormalizeDIV() (one panel at a time, using the mask)
-// -- next, V_CopyDIVToSave() -or- V_CopyDIVToSave_OnePanel()
-// -- last, Save_VSANS_DIV_Nexus() 
+//
+// -- Clear the DIV data folder: V_KillWavesInFolder("DIV")
+//
+// -- reduce the data (to the COR level?)
+
+// -- V_NormalizeDIV() (one panel at a time, using the mask)
+// -- V_CopyDIVToSave() -or- V_CopyDIVToSave_OnePanel()
+
+// -- Save_VSANS_DIV_Nexus() 
 //
 
 
+//
+// Simple panel to walk through the steps of generating a DIV file
+//
+Proc DIV_Setup_Panel() : Panel
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(1207,593,1444,953)/N=DIV_Setup_Panel/K=1
+	DoWindow/C DIV_Setup_Panel
+	Button button0,pos={54.00,10.00},size={120.00,20.00},proc=V_DIVSetupButtonProc,title="Setup Folder"
+	Button button1,pos={54.00,40.00},size={120.00,20.00},proc=V_DIVClearOldButtonProc,title="Clear Old DIV"
+
+	DrawText 36,110,"Reduce data for one carriage"	
+	DrawText 36,200,"Repeat for the other carriage"
+	Button button1_2,pos={74.00,130.00},size={120.00,20.00},proc=V_DIVMaskButtonProc,title="Mask for DIV"
+	Button button2,pos={74.00,160.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize+Copy"
+
+	DrawText 36,290,"Once data for both carriages has\rbeen normalized, save the file"	
+	
+	Button button3,pos={54.00,300.00},size={120.00,20.00},proc=V_DIVSaveButtonProc,title="Save DIV"
+EndMacro
+
+
+
+// set up the folder structure for the DIV file to fill in
+Function V_DIVSetupButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "Setup_VSANS_DIV_Struct()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+// clear out whatever is in the current DIV folder to ensure that it is not 
+// accidentally applied during the reduction of the DIV file
+//
+Function V_DIVClearOldButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_KillWavesInFolder("DIV")
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_DIVNormalizeButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_NormalizeDIV_proc()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_DIVMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_Edit_a_Mask()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_DIVSaveButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "Save_VSANS_DIV_Nexus()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 
 
-
-Proc V_NormalizeDIV_proc(type,detStr)
-	String type,detStr
-	V_NormalizeDIV_onePanel(type,detStr)
+Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
+	String reducedFolderType="SAM",carriageStr="F"
+	if(cmpstr(carriageStr,"F")==0)
+		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
+		V_NormalizeDIV_onePanel(reducedFolderType,"FR")
+		V_NormalizeDIV_onePanel(reducedFolderType,"FT")
+		V_NormalizeDIV_onePanel(reducedFolderType,"FB")
+	else
+		V_NormalizeDIV_onePanel(reducedFolderType,"ML")
+		V_NormalizeDIV_onePanel(reducedFolderType,"MR")
+		V_NormalizeDIV_onePanel(reducedFolderType,"MT")
+		V_NormalizeDIV_onePanel(reducedFolderType,"MB")	
+	endif
+	
 end
+
 
 // Normalizes a single panel
 // then copies that panel over to the DIV_Struct for later saving
@@ -405,6 +525,7 @@ Proc V_Display_DIV_Panels()
 //	Display/W=(745,45,945,425)/HOST=# 
 	Display/W=(10,45,210,425)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+
 	ModifyImage data ctab= {*,*,ColdWarm,0}
 	ModifyImage data ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
@@ -674,7 +795,11 @@ Function V_UpdateDIVStrings()
 	return(0)
 end
 
+// if there is no operation called, immediately exit
+//
 // if there is a simple operation called, do it
+// TODO -- if there are more than these two simple operations, a more sophisticated switch will be necessary
+//
 Function V_DoDIVOperation()
 
 	ControlInfo popup2
@@ -731,65 +856,3 @@ Function V_DoDIVOperation()
 end
 
 
-//
-// Simple panel to walk through the steps of generating a DIV file
-//
-
-
-
-
-Proc DIV_Setup_Panel() : Panel
-	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(1207,593,1444,953)/N=DIV_Setup_Panel/K=1
-	DoWindow/C DIV_Setup_Panel
-	Button button0,pos={54.00,10.00},size={120.00,20.00},proc=V_DIVSetupButtonProc,title="Setup Folder"
-	Button button1,pos={54.00,100.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize"
-	Button button2,pos={54.00,200.00},size={120.00,20.00},proc=V_DIVSaveButtonProc,title="Save DIV"
-EndMacro
-
-// set up the folder structure for the DIV file to fill in
-Function V_DIVSetupButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
-
-	switch( ba.eventCode )
-		case 2: // mouse up
-			// click code here
-			Execute "Setup_VSANS_DIV_Struct()"
-			break
-		case -1: // control being killed
-			break
-	endswitch
-
-	return 0
-End
-
-
-Function V_DIVNormalizeButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
-
-	switch( ba.eventCode )
-		case 2: // mouse up
-			// click code here
-			Execute "V_NormalizeDIV_proc()"
-			break
-		case -1: // control being killed
-			break
-	endswitch
-
-	return 0
-End
-
-Function V_DIVSaveButtonProc(ba) : ButtonControl
-	STRUCT WMButtonAction &ba
-
-	switch( ba.eventCode )
-		case 2: // mouse up
-			// click code here
-			Execute "Save_VSANS_DIV_Nexus()"
-			break
-		case -1: // control being killed
-			break
-	endswitch
-
-	return 0
-End

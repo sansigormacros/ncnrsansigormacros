@@ -174,16 +174,16 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 //	MatrixOp/O tmp = sqrt(varCols(inten^t))		// variance: no varRows operation, so use the transpose of the matrix
 //	eBin_qxqy = tmp[0][p]
 
-	Variable ii,jj,ntube,npix,sum_inten, sum_n, sum_inten2,avesq,aveisq,var,mask_val
+	Variable ii,jj,ntube,nYpix,sum_inten, sum_n, sum_inten2,avesq,aveisq,var,mask_val
 	ntube = DimSize(inten,0)
-	npix = DimSize(inten,1)
+	nYpix = DimSize(inten,1)
 	
 	for(ii=0;ii<ntube;ii+=1)
 		sum_inten = 0			// initialize the sum
 		sum_n = 0
 		sum_inten2 = 0
 		
-		for(jj=0;jj<npix;jj+=1)
+		for(jj=0;jj<nYpix;jj+=1)
 				val = inten[ii][jj]
 				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
 					mask_val = 0
@@ -198,7 +198,7 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 		endfor
 		iBin_qxqy[ii] = sum_inten/sum_n		//the average value
 		
-		avesq = sum_inten
+		avesq = (sum_inten/sum_n)^2
 		aveisq = sum_inten2/sum_n
 		var = aveisq-avesq
 		if(var<=0)
@@ -210,17 +210,18 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	endfor
 
 //TODO:  use only the Qx component in the y-center of the detector, not Qtotal
-	qBin_qxqy =  abs(qx[p][npix/2])		
-
-// if the detectors are "L", then the values are all negative...	
-	qBin_qxqy = abs(qBin_qxqy)
+// if the detectors are "L", then the values are all negative, so take the absolute value here
+	qBin_qxqy =  abs(qx[p][nYpix/2])		
 
 // for the L panels, sort the q-values (and data) after the abs() step, otherwise the data is reversed
-// won't hurt to sort the R data
+// won't hurt to sort the R panel data
 	Sort qBin_qxqy, qBin_qxqy,iBin_qxqy,eBin_qxqy
-	
-	// not needed to corrrect data, but put in the file???
-	delQy = abs(qy[0][npix-1] - qy[0][0])	// TODO: do I use dQ for the height of the panel?
+
+
+	// TODO: do I use dQ for the height of the panel?
+	// TODO : do I use 1/2 of dQ due to the symmetry of my smearing calculation?	
+	delQy = abs(qy[0][nYpix-1] - qy[0][0])
+
 //	iBin_qxqy *= delQy
 //	eBin_qxqy *= delQy
 	
@@ -247,10 +248,6 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 //	DeletePoints 0, val, iBin_qxqy,qBin_qxqy,eBin_qxqy
 
 
-// TODO:
-// -- calculate the slit resolution here. don't really have any idea how to represent this in VSANS
-//    since it's not an infinite slit, and not anything that I expect could be represented as a Gaussian
-
 	// TODO:
 	// -- This is where I calculate the resolution in SANS (see CircSectAve)
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
@@ -265,11 +262,16 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	Wave qbar = $(folderPath+":"+"qBar_qxqy_"+detStr)
 	Wave fsubs = $(folderPath+":"+"fSubS_qxqy_"+detStr)
 
-// TODO
-// -- these are DUMMY VALUES!!!
-	sigmaq = -delQy
-	qbar = -delQy
-	fsubs = -delQy
+// TODO:
+// -- calculate the slit resolution here. don't really have any idea how to represent this in VSANS
+//    since it's not an infinite slit, and not anything that I expect could be represented as a Gaussian
+// -- there is also wavelength smearing present
+
+// ASSUMPTION: As a first approximation, ignore the wavelength smearing component	
+	// TODO : do I use 1/2 of dQy due to the symmetry of my smearing calculation?	
+	sigmaq = -delQy/2
+	qbar = -delQy/2
+	fsubs = -delQy/2
 
 
 	SetDataFolder root:

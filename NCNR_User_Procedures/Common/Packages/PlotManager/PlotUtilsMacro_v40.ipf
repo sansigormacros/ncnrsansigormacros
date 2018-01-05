@@ -359,8 +359,20 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 				//$(baseStr+"_res")[][2] = $w5[p]		//fShad
 				//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
 				dQv = -$w3[0]
-				
+
+//TODO: be sure that this works correctly and can be included in either
+// a VSANS reduction experiment, or a standalone analysis package
+#if (exists("NCNR_VSANS")==6)			//defined in the main #includes file.
+				DoAlert 0,"**Treating data as VSANS data**"
+				Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
+				$(baseStr+"_dQv") = -$(baseStr+"_dQv")
+				V_USANS_CalcWeights(baseStr,dQv)
+#else
+				DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
 				USANS_CalcWeights(baseStr,dQv)
+#endif				
+
+				
 				
 			endif
 			Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix

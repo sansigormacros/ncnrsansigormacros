@@ -110,6 +110,10 @@ End
 //
 #include "V_Attenuation"
 
+// for loading of slit-smeared VSANS data
+// and generating the smearing matrix
+#include "V_USANS_SlitSmearing_v40"
+
 
 
 
