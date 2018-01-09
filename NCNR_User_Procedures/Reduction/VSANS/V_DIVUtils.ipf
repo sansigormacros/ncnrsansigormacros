@@ -2,14 +2,14 @@
 
 //
 // ********
-// TODO -- this is an incomplete DIV file. need to identify how to generate a real DIV file
-//     for the different detectors, and how to fill it into a file. 
+// TODO -- this file is preliminary. It has not yet been tested on enough real data
+//    to generate a DIV file.
 //    Not sure how it will be measured in practice on VSANS.
 //
-//   JAN 2017
+//   JAN 2018
 //
 // TODO:
-// -- complete the description of the steps needed...
+// x- complete the description of the steps needed...
 // Data needs to be reduced to the "COR" level - that means that the 
 // PLEX data has been added to work files, and the empty and blocked beam have been
 // subtracted off.
@@ -34,8 +34,8 @@
 
 
 
-/// TODO:
-// -- need a way to view the DIV data (each panel) and see the stats on the values
+/// DONE:
+// x- need a way to view the DIV data (each panel) and see the stats on the values
 //  (maybe a simple panel viewer, one-at-a-time, or all 4 as individuals, not on the same scale)
 
 // x- this is the basic renormalization that is done in PRODIV. see that file for all of the 
@@ -47,20 +47,6 @@
 //    Makes a difference if the DIV is not collected for long "enough".
 // x- then I need to be able to read the error in (done)
 
-
-
-// Basic function:
-// -- Setup_VSANS_DIV_Struct()
-//
-// -- Clear the DIV data folder: V_KillWavesInFolder("DIV")
-//
-// -- reduce the data (to the COR level?)
-
-// -- V_NormalizeDIV() (one panel at a time, using the mask)
-// -- V_CopyDIVToSave() -or- V_CopyDIVToSave_OnePanel()
-
-// -- Save_VSANS_DIV_Nexus() 
-//
 
 
 //
@@ -191,7 +177,7 @@ end
 //
 // type is the work folder where the (? corrected) data is currently
 //
-// TODO
+// DONE
 // x- data should be copied to some alternate work folder before this step
 // x- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
 //    How to handle? A mask?
@@ -256,7 +242,8 @@ End
 //
 // type is the work folder where the (? corrected) data is currently
 //
-// TODO
+// NOTE (Currently unused. use V_NormalizeDIV_onePanel() instead)
+//
 // -- data should be copied to some alternate work folder before this step
 // -- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
 //    How to handle? A mask?
@@ -338,7 +325,7 @@ End
 
 
 
-// TODO
+
 // currently, there are no dummy fill values or attributes for the fake DIV file
 //
 Proc Setup_VSANS_DIV_Struct()
@@ -380,7 +367,7 @@ Proc Save_VSANS_DIV_Nexus(fileName)
 	
 End
 
-////////////// fake DIV file tests
+//////////////  DIV file tests
 //
 //
 //	Make/O/T/N=1	file_name	= "VSANS_DIV_test.h5"
@@ -388,13 +375,9 @@ End
 // simple generation of a fake div file. for sans, nothing other than the creation date was written to the 
 // file header. nothing more is needed (possibly)
 //
-// TODO -- I want to re-visit the propagation of errors in the DIV file. No errors are ever calculated/saved 
-//   during the generation of the file, but there's no reason it couldn't. the idea is that the plex
-//   is counted so long that the errors are insignificant compared to the data errors, but that may not
-//   always be the case. A bit of math may prove this. or not. Plus, the situation for VSANS may be different.
 //
 //
-// TODO -- make the number of pixels GLOBAL
+// TODO -- correct the number of pixels for the BACK detector
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	
@@ -499,8 +482,8 @@ End
 // -- label panels, axes
 // x- any manipulations, stats ?
 // x- add an "update" button (to update the status of the data - this may be automatic with an operation)
-// -- add a "load DIV" button
-// -- add a "copy" button
+// -- add a "load DIV" button (to make it easy)
+// -- add a "copy" button (to fill move data to STO and SUB)
 // x- add a "ratio" button
 // x- add a "difference" button
 // -- propagate the error in the arithmetic (see WorkFileMath)

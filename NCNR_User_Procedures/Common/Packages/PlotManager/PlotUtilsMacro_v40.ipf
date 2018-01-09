@@ -362,15 +362,17 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 
 //TODO: be sure that this works correctly and can be included in either
 // a VSANS reduction experiment, or a standalone analysis package
-#if (exists("NCNR_VSANS")==6)			//defined in the main #includes file.
-				DoAlert 0,"**Treating data as VSANS data**"
-				Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
-				$(baseStr+"_dQv") = -$(baseStr+"_dQv")
-				V_USANS_CalcWeights(baseStr,dQv)
-#else
-				DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
-				USANS_CalcWeights(baseStr,dQv)
-#endif				
+// -- since this is a Proc, not a function, #conditional compile does not work,
+// but, since it's a Proc, it is not compiled, so missing functions aren't flagged as a compile error
+				if (exists("NCNR_VSANS")==6)			//defined in the main  VSANS #includes file.
+								DoAlert 0,"**Treating data as VSANS data**"
+								Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
+								$(baseStr+"_dQv") = -$(baseStr+"_dQv")
+								V_USANS_CalcWeights(baseStr,dQv)
+				else
+								DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
+								USANS_CalcWeights(baseStr,dQv)
+				endif				
 
 				
 				
@@ -1343,6 +1345,8 @@ Function/S User_FunctionPopupList()
 // from 2014 Automation of reduction
 	list = RemoveFromList("DoAnnulusGraph;DoArcGraph;",list,";")
 	
+// from 2017-2018 VSANS reduction
+	list = RemoveFromList("V_BroadPeak_Pix2D;V_BroadPeak_Pix2D_noThread;V_CleanupTimes;V_I_BroadPeak_Pix2D;V_IndexForHistogram;V_MakeFibonacciWave;V_UpdatePix2Mat;xJointHistogram;",list,";")
 			
 	list = SortList(list)
 	return(list)

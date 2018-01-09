@@ -72,7 +72,7 @@ End
 //
 // this sets the x and y waves of the triplet to be the pixel numbers
 //
-// TODO:
+//
 // -- this will need to be changed if I want to fit based on real-space mm
 //
 Function V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,yDim)
@@ -222,7 +222,7 @@ ThreadSafe Function V_I_BroadPeak_Pix2D(w,xw,yw)
 //	qval = sqrt(xw^2+yw^2)
 
 // ASSUMPTION
-// TODO (change this)
+//
 // base the scaling on the xSize 
 
 // *** NOTE ***

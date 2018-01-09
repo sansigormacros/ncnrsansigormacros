@@ -1100,8 +1100,11 @@ End
 
 ////////////////////////////////////
 //
-// TODO 
-// -- document the "simple" save of the detector panels for import and subsequent fitting.
+// DONE 
+// x- document the "simple" save of the detector panels for import and subsequent fitting.
+//   Documentation is done in the "main" VSANS documentation, and is largely not needed, since Phil
+//   is doing the nonlinear calibration calculations, not me.
+//
 //
 // takes the data from RAW, by default. This is OK, since even though whatever is in the calibration data
 // of the file is used when loading into RAW, it is only used for the calculation of q. The actual data

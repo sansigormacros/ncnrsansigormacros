@@ -16,12 +16,12 @@
 // TODO
 //
 // -- have the status automatically fill in when a new file is loaded, rather than needing a click of the "status" button
-// -- need a place somewhere to show the currently displayed folder
-// -- checkboxes for "active" corrections?
-// -- display of Q, counts, QxQy, X and Y
-// -- do I need a color bar? or is this not used at all? I like it to be there, or the colors are a waste of information
+// x- need a place somewhere to show the currently displayed folder
+// x- checkboxes for "active" corrections?
+// x- display of Q, counts, QxQy, X and Y
+// x- do I need a color bar? or is this not used at all? I like it to be there, or the colors are a waste of information
 //		(then... where do I put the color bar?)
-// -- define the "hook" function, and attach it to the panel (or the main detector subwindow?)
+// x- define the "hook" function, and attach it to the panel (or the main detector subwindow?)
 //
 
 
@@ -399,10 +399,10 @@ Function VSANSDataHook(s)
 
 					// now figure out q
 					// calculate the q-values, will be different depending on which panel is up (pixel size, geometry, etc.)
-					// TODO: !!!! get rid of the hard-wired values
-					// TODO: be sure that the units from HDF are what I expect
-					// TODO: beam center XY are pixels in the file, expected in the function, but are better suited for mm or cm
-					// TODO: units of xy pixel size are likely wrong
+					// DONE: !!!! get rid of the hard-wired values
+					// DONE: be sure that the units from HDF are what I expect
+					// DONE: beam center XY are pixels in the file, expected in the function, but are better suited for mm or cm
+					// DONE: units of xy pixel size are likely wrong
 //					xctr = V_getDet_beam_center_x(gCurDispType,detStr)		//written in pixels
 //					yctr = V_getDet_beam_center_y(gCurDispType,detStr)
 					xctr = V_getDet_beam_center_x_mm(gCurDispType,detStr)		//written in mm
@@ -418,7 +418,7 @@ Function VSANSDataHook(s)
 					Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 					Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
 					
-// TODO: figure out what coordinates I need to pass -- xloc, yloc, textX, testY, (+1 on any?)				
+// DONE: figure out what coordinates I need to pass -- xloc, yloc, textX, testY, (+1 on any?)				
 					//gQQ = VC_CalcQval(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 					//gQX = VC_CalcQX(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 					//gQY = VC_CalcQY(testX,testY,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
@@ -717,7 +717,7 @@ Function V_FakeTabClick(tab)
 	return(0)
 End
 
-// TODO
+// 
 //
 // move one file number back
 //
@@ -737,7 +737,7 @@ Function V_File_minus_ButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
+// 
 //
 // move one file number forward
 //
@@ -816,9 +816,9 @@ End
 //
 // if the data display is RAW, convert to the specified WORK data type
 //
-// TODO
-// -- better error checking
-// -- if the data type is not RAW, can I Copy Folder instead?
+// DONE
+// x- better error checking
+// x- if the data type is not RAW, can I Copy Folder instead?
 //
 Function V_ToWorkFileButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -826,7 +826,7 @@ Function V_ToWorkFileButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			//Convert_to_Workfile(newtype, doadd) // a proc
+			
 			Execute "V_Convert_to_Workfile()"
 
 			break
@@ -889,7 +889,7 @@ Function V_annularAvgButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
+// 
 //
 // gets the status of the currently displayed file and dumps it to the panel (not the cmd window)
 // - lots to decide here about what is the important stuff to display. There's a lot more information for VSANS
@@ -1121,7 +1121,7 @@ Function V_BeamCtrButtonProc(ba) : ButtonControl
 	return 0
 End
 
-//TODO
+//
 //
 // this "spreads" the display of panels to a nominal separation for easier viewing
 //
@@ -1141,7 +1141,7 @@ Function V_SpreadPanelButtonProc(ba) : ButtonControl
 	return 0
 End
 
-//TODO
+//
 //
 // this "restores" the display of panels to their actual position based on the apparent beam center
 //

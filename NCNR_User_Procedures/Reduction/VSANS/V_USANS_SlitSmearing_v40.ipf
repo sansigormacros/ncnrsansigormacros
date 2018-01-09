@@ -2,6 +2,25 @@
 #pragma version=3.00
 #pragma IgorVersion=6.1
 
+
+///////
+// JAN 2018
+//
+//
+// This is a first approximation to model slit smeared VSANS data
+// - the dQv value is now a "per-Q" quantity, rather than a single global value
+//  -- this still needs to be verified mathematically that this is valid
+// - the wavelength smearing is not accounted for at all.
+//  -- this is significant issue for White Beam conditions
+//
+// To use this, include BOTH the VSANS reduction macros, and the Analysis Macros.
+// (otherwise, slit smeared data will be interpreted as USANS)
+//
+
+
+
+
+
 //Functions for doing USANS Slit smearing by method of weight matrix
 //Routines originally from J Barker fortran code
 //Translated to IGOR by M-H Kim
@@ -17,7 +36,7 @@
 //
 //// July 2008 SRK
 //
-// For fitting withe cursors, the matrix must be recalculated for the exact range of the data
+// For fitting with cursors, the matrix must be recalculated for the exact range of the data
 // - but the inital dependency of the model (any number of them) was (were) set up to use the full matrix
 // -- so:
 //	$_res is the resolution for the dependencies. It is always the full size of the data set. If cursors are used,

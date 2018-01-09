@@ -1932,7 +1932,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 
 //
-// TODO:
+// DONE:
 // x- this is no longer done after the COR step, and CAL is not produced as output of DIV	
 // x- needs to be aware of the file name passed in
 // x- PromptForPath does not exist in VSANS. Need a better (automated) way to find the file.
@@ -2256,9 +2256,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 	Endif
 
 //
-// TODO
+// DONE
 //		x- fill in the "ask" step
-//  -- none is OK, except if the kill fails for any reason
+//  x- none is OK, except if the kill fails for any reason
 // x- the regular case of the file name specified by the protocol works correctly
 // x- don't create a null mask if not used, it will handle the error and print out that the mask is missing
 
@@ -2394,7 +2394,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 			//do nothing
 	endswitch
 
-// TODO
+// DONE
 // x- this call will bin the active type, then the next call bins the active type
 // x- then later, I dispatch to bin the active type...	
 // x- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
@@ -2549,8 +2549,8 @@ End
 
 
 //
-// TODO
-// -- fill in all of the functionality for calculation from direct beam
+// DONE
+// x- fill in all of the functionality for calculation from direct beam
 //  and verify that the calculations are numerically correct
 //
 //asks the user for absolute scaling information. the user can either
@@ -2588,7 +2588,7 @@ Function V_AskForAbsoluteParams_Quest()
 	else
 		//empty beam flux file selected, prompt for file, and use this to calculate KAPPA
 
-		// TODO
+		// DONE
 		// x- need an empty beam file name
 		//
 		Prompt emptyFileName,"Empty Beam File",popup,V_PickEMPBeamButton("")
@@ -2597,7 +2597,7 @@ Function V_AskForAbsoluteParams_Quest()
 			return 0									// user canceled
 		endif
 
-		// TODO
+		// DONE
 		// x- need panel
 		//
 		Prompt detPanel_toSum,"Panel with Direct Beam",popup,ksDetectorListAll

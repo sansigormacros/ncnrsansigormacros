@@ -429,12 +429,14 @@ End
 
 
 // TODO
+// -- getting the file_name from the root: global is a poor choice. 
+//     Need a better, more reliable solution than this
+//
+// DONE
 // x- load in the proper file
 // x- re-click the I(q) button
 // x- be sure that the globals are updated w/ filename
-// -- getting the file_name from the root: global is a poor choice. 
-//     Need a better, more reliable solution than this
-// -- make a copy of "oldName" that is local and not the SVAR, as the SVAR changes
+// x- make a copy of "oldName" that is local and not the SVAR, as the SVAR changes
 //    when the next file is loaded in (if it's not in RawVSANS), resulting in a "skipped" file number
 //
 //displays next (or previous) file in series of run numbers
@@ -787,8 +789,9 @@ End
 //
 // local function
 //
-// TODO -- is this really necessary anymore for the NON-VAX files of VSANS.
-// -- can this be made a pass-through, or will there be another function that is needed for VSANS?
+// DONE 
+// x- this is essentially a pass-through, since there are no version numbers for VSANS data files
+//    it is kept in case there are conditions in the future.
 //
 Function/S V_ValidFileString(partialName)
 	String partialName

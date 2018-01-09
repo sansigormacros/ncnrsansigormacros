@@ -17,7 +17,7 @@
 // TODOs have been inserted to comment out all of the calls that don't compile and need to be replaced
 
 // TODO
-// -- not all of the functions here have been prefixed with "V_", especially the action procedures from the panel
+// x- not all of the functions here have been prefixed with "V_", especially the action procedures from the panel
 //   so this cannot be opened with the SANS Reduction, or there will be clashes
 // -- same file load/reload issue as with other operations that read a field from the file. ANY read requires
 //   that the entire file is read in, even just to check and see if it's raw data... then there is a local
@@ -1011,10 +1011,10 @@ End
 //	
 //*****this function actually writes the data to disk*****
 //
-// TODO - re-write a series of these function to mirror the "fill" functions
+// DONE x- re-write a series of these function to mirror the "fill" functions
 //   specific to each tab
 //
-// TODO x- clear out the old data and force a re-load from disk, or the old data
+// DONE x- clear out the old data and force a re-load from disk, or the old data
 //    will be read in from the RawVSANS folder, and it will look like nothing was written
 //			(done in the calling function)
 //

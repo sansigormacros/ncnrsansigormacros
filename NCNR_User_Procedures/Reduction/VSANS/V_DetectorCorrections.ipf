@@ -396,16 +396,16 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 // these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
 // both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
 	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
-		gap = 16.8		//mm
+		gap = 3.8		//mm
 	endif
 	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
-		gap = 20		//mm
+		gap = 5		//mm
 	endif
 	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
-		gap = 14.6		//mm
+		gap = 5.9		//mm
 	endif
 	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
-		gap = 15		//mm
+		gap = 5		//mm
 	endif
 // TODO: this is the line to keep, to replace the hard-wired values
 //	gap = V_getDet_panel_gap(fname,detStr)
@@ -874,8 +874,8 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	// correctly apply the correction to the error wave (assume a perfect value?)
  	w_err /= solid_angle		//
 
-// TODO -- clean up after I'm satisfied computations are correct		
-//	KillWaves/Z tmp_theta,tmp_dist
+// DONE x- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist
 	
 	return(0)
 end
@@ -1124,16 +1124,14 @@ Function V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
 	w_err = tmp_err	
 	
 
-	// TODO -- clean up after I'm satisfied computations are correct		
+	// DONE x- clean up after I'm satisfied computations are correct		
 	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
 	
 	return(0)
 end
 
 
-//
-// TODO:
-//   -- 	DoAlert 0,"This has not yet been updated for VSANS"
+
 //
 //test procedure, not called anymore
 Proc V_AbsoluteScaling(type,c0,c1,c2,c3,c4,c5,I_err)
