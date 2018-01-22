@@ -17,6 +17,10 @@
 // (otherwise, slit smeared data will be interpreted as USANS)
 //
 
+//
+// TODO --this needs to be made completely separate from USANS, or MERGE
+//    with USANS if the per-Q definition of dQv is valid for the matrix solution
+//
 
 
 

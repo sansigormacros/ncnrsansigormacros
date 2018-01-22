@@ -1357,17 +1357,26 @@ Function V_DIVCorrection(data,data_err,detStr,workType)
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
 
-	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")
+	WAVE/Z div_data_err = V_getDetectorDataErrW("DIV",detStr)
+	WAVE/Z div_data = V_getDetectorDataW("DIV",detStr)
+
+//	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")
 	if(WaveExists(div_data) == 0)
 		Print "The DIV wave does not exist in V_DIVCorrection()"
 		Return(1)		//error condition
 	Endif
+	if(WaveExists(div_data_err) == 0)
+		Print "The DIV error wave does not exist in V_DIVCorrection()"
+		Return(1)		//error condition
+	Endif
 	//files exist, proceed
 
+// do the error propagation first, since data is changed by the correction
+	data_err = sqrt(data_err^2/div_data^2 + div_data_err^2 * data^2/div_data^4 )
+
+// then the correction
 	data /= div_data
 
-// TODO: -- correct the error propagation	
-	data_err /= div_data
 	
 	Return(0)
 End
