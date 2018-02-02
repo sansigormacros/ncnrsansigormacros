@@ -44,7 +44,7 @@ Function SetupSideView()
 End
 
 // TODO: 
-// -x account for the 30cm SDD offset for the T/B detectors. These are only seen in the side view.
+// -x account for the 41cm SDD setback for the T/B detectors. These are only seen in the side view.
 //
 Function UpdateSideView()
 
@@ -76,19 +76,18 @@ Function UpdateSideView()
 
 
 // get the values from the panel
-	Variable F_LR_sep,F_TB_sep, F_SDD, F_offset
-	Variable M_LR_sep,M_TB_sep, M_SDD, M_offset
+	Variable F_LR_sep,F_T_sep, F_B_sep ,F_SDD
+	Variable M_LR_sep,M_T_sep, M_B_sep, M_SDD
 	Variable B_SDD, B_offset
 
 	NVAR TB_SDD_setback = gFront_SDDsetback		//in [cm]  distance T/B are behind L/R - not to be confused with lateral offset
 	
 	//front
-//	ControlInfo VCALCCtrl_2a
-//	F_LR_sep = V_Value
+// separations are [cm] translation from zero (center) position
 	ControlInfo VCALCCtrl_2b
-	F_TB_sep = V_Value
-	ControlInfo VCALCCtrl_2c
-	F_offset = V_Value
+	F_T_sep = V_Value
+	ControlInfo VCALCCtrl_2bb
+	F_B_sep = V_Value
 	ControlInfo VCALCCtrl_2d
 	F_SDD = V_Value
 				
@@ -96,9 +95,9 @@ Function UpdateSideView()
 //	ControlInfo VCALCCtrl_3a
 //	M_LR_sep = V_Value
 	ControlInfo VCALCCtrl_3b
-	M_TB_sep = V_Value
-	ControlInfo VCALCCtrl_3c
-	M_offset = V_Value
+	M_T_sep = V_Value
+	ControlInfo VCALCCtrl_3bb
+	M_B_sep = V_Value
 	ControlInfo VCALCCtrl_3d
 	M_SDD = V_Value
 	
@@ -117,10 +116,11 @@ Function UpdateSideView()
 	FT_profileX = (F_SDD+TB_SDD_setback)		//SDD in [cm], set back from L/R 	---- convert to meters for the plot?
 	FB_profileX = FT_profileX
 	
-	FT_profileY[0] = F_TB_sep		// separation in cm
+	FT_profileY[0] = F_T_sep		// edge closest to zero position [cm]
 	FT_profileY[1] = FT_profileY[0] + F_TB_h	// add in height of T/B panel in cm
 	
-	FB_profileY = -FT_profileY
+	FB_profileY[0] = F_B_sep
+	FB_profileY[1] = F_B_sep - F_TB_h			// height of B panel, negative Y
 
 	//angles (not calculating anything, just connect the dots)
 	FT_rayX[0] = 0
@@ -149,10 +149,11 @@ Function UpdateSideView()
 	MT_profileX = M_SDD+TB_SDD_setback		//SDD in [cm]
 	MB_profileX = MT_profileX
 	
-	MT_profileY[0] = M_TB_sep		// separation in cm
+	MT_profileY[0] = M_T_sep		// separation in cm
 	MT_profileY[1] = MT_profileY[0] + M_TB_h	// add in height of T/B panel in cm
-	
-	MB_profileY = -MT_profileY
+
+	MB_profileY[0] = M_B_sep
+	MB_profileY[1] = M_B_sep - M_TB_h			// height of B panel, negative Y	
 
 	//angles (not calculating anything, just connect the dots)
 	MT_rayX[0] = 0
@@ -301,26 +302,22 @@ Function UpdateTopView()
 
 
 // get the values from the panel
-	Variable F_LR_sep,F_TB_sep, F_SDD, F_offset
-	Variable M_LR_sep,M_TB_sep, M_SDD, M_offset
+	Variable F_L_sep,F_R_sep, F_TB_sep, F_SDD
+	Variable M_L_sep,M_R_sep, M_TB_sep, M_SDD
 	Variable B_SDD, B_offset
 	//front
 	ControlInfo VCALCCtrl_2a
-	F_LR_sep = V_Value
-//	ControlInfo VCALCCtrl_2b
-//	F_TB_sep = V_Value
-	ControlInfo VCALCCtrl_2c
-	F_offset = V_Value
+	F_L_sep = V_Value
+	ControlInfo VCALCCtrl_2aa
+	F_R_sep = V_Value
 	ControlInfo VCALCCtrl_2d
 	F_SDD = V_Value
 				
 	//middle
 	ControlInfo VCALCCtrl_3a
-	M_LR_sep = V_Value
-//	ControlInfo VCALCCtrl_3b
-//	M_TB_sep = V_Value
-	ControlInfo VCALCCtrl_3c
-	M_offset = V_Value
+	M_L_sep = V_Value
+	ControlInfo VCALCCtrl_3aa
+	M_R_sep = V_Value
 	ControlInfo VCALCCtrl_3d
 	M_SDD = V_Value
 	
@@ -339,10 +336,11 @@ Function UpdateTopView()
 	FL_profileX = F_SDD		//SDD in [cm]
 	FR_profileX = FL_profileX
 	
-	FL_profileY[0] = F_LR_sep		// separation in cm
-	FL_profileY[1] = FL_profileY[0] + F_LR_w	// add in width of L/R panel in cm
+	FL_profileY[0] = F_L_sep		// translation from zero in cm
+	FL_profileY[1] = F_L_sep - F_LR_w		// subtract width of L/R panel in cm
 	
-	FR_profileY = -FL_profileY
+	FR_profileY[0] = F_R_sep		// translation from zero in cm
+	FR_profileY[1] = F_R_sep + F_LR_w		// add width of L/R panel in cm
 
 	//angles (not calculating anything, just connect the dots)
 	FL_rayX[0] = 0
@@ -371,10 +369,11 @@ Function UpdateTopView()
 	ML_profileX = M_SDD		//SDD in [cm]
 	MR_profileX = ML_profileX
 	
-	ML_profileY[0] = M_LR_sep		// separation in cm
-	ML_profileY[1] = ML_profileY[0] + M_LR_w	// add in width of L/R panel in cm
+	ML_profileY[0] = M_L_sep		// translation in cm
+	ML_profileY[1] = M_L_sep - M_LR_w		// subtract width of L/R panel in cm
 	
-	MR_profileY = -ML_profileY
+	MR_profileY[0] = M_R_sep		// translation in cm
+	MR_profileY[1] = M_R_sep + M_LR_w		// add width of L/R panel in cm
 
 	//angles (not calculating anything, just connect the dots)
 	ML_rayX[0] = 0

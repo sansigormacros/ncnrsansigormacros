@@ -60,15 +60,13 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		endif
 		
 		// returns the total separation (assumed symmetric) in cm
-		val = VCALC_getPanelSeparation(detStr)		
-		val /= 2		// to get half of the separation, and cm for the data file
+		val = VCALC_getPanelTranslation(detStr)		
 		// it's OK to call both of these. these functions check detStr for the correct value
-		if(cmpstr("L",detStr[1]) == 0 || cmpstr("B",detStr[1]) == 0)
-			val *= -1	// negative separation position for L and Bottom
+		if(cmpstr("T",detStr[1]) == 0 || cmpstr("B",detStr[1]) == 0)
+			V_writeDet_LateralOffset(fileName,detStr,val)		// T/B panels
+		else
+			V_writeDet_VerticalOffset(fileName,detStr,val)		//  L/R panels, or back detector
 		endif
-		V_writeDet_LateralOffset(fileName,detStr,val)
-		V_writeDet_VerticalOffset(fileName,detStr,val)
-
 		// x and y pixel sizes for each detector should be correct in the "base" file - but if not...
 		//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
 		//Function VCALC_getPixSizeY(type)

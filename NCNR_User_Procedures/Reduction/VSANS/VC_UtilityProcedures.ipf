@@ -62,35 +62,43 @@ Function VCALC_getSDD(type)
 end
 
 // returns the panel separation [cm]
-Function VCALC_getPanelSeparation(type)
+Function VCALC_getPanelTranslation(type)
 	String type
 	
 	Variable sep
 	
 	strswitch(type)	
 		case "FL":
-		case "FR":
-		case "FLR":		
 			ControlInfo/W=VCALC VCALCCtrl_2a
 			sep = V_Value
 			break
+		case "FR":
+			ControlInfo/W=VCALC VCALCCtrl_2aa
+			sep = V_Value
+			break
 		case "FT":
-		case "FB":
-		case "FTB":		
 			ControlInfo/W=VCALC VCALCCtrl_2b
+			sep = V_Value	
+			break
+		case "FB":
+			ControlInfo/W=VCALC VCALCCtrl_2bb
 			sep = V_Value	
 			break
 
 		case "ML":
-		case "MR":
-		case "MLR":		
 			ControlInfo/W=VCALC VCALCCtrl_3a
 			sep = V_Value
 			break
+		case "MR":
+			ControlInfo/W=VCALC VCALCCtrl_3aa
+			sep = V_Value
+			break
 		case "MT":
-		case "MB":
-		case "MTB":
 			ControlInfo/W=VCALC VCALCCtrl_3b
+			sep = V_Value
+			break	
+		case "MB":
+			ControlInfo/W=VCALC VCALCCtrl_3bb
 			sep = V_Value
 			break	
 						
@@ -106,45 +114,7 @@ Function VCALC_getPanelSeparation(type)
 	return(sep)
 end
 
-// returns the lateral panel offset [cm]
-Function VCALC_getLateralOffset(type)
-	String type
-	
-	Variable offset
-	
-	strswitch(type)	
-		case "FL":
-		case "FR":
-		case "FLR":
-		case "FT":
-		case "FB":
-		case "FTB":		
-			ControlInfo/W=VCALC VCALCCtrl_2c
-			offset = V_Value	
-			break
 
-		case "ML":
-		case "MR":
-		case "MLR":
-		case "MT":
-		case "MB":
-		case "MTB":
-			ControlInfo/W=VCALC VCALCCtrl_3c
-			offset = V_Value
-			break	
-						
-		case "B":		
-			ControlInfo/W=VCALC VCALCCtrl_4a
-			offset = V_Value
-			break
-			
-		default:
-			Print "Error -- type not found in	 VCALC_getLateralOffset(type)"					
-			offset = NaN		//no match for type		
-	endswitch
-	
-	return(offset)
-end
 
 // returns the (mean) wavelength from the panel -- value is angstroms
 Function VCALC_getWavelength()

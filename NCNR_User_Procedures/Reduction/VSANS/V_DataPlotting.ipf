@@ -481,10 +481,10 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR vs qBin_qxqy_MR
 			AppendToGraph/W=$winNameStr iBin_qxqy_MT vs qBin_qxqy_MT
 			AppendToGraph/W=$winNameStr iBin_qxqy_MB vs qBin_qxqy_MB
-			ErrorBars/T=0 iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
-			ErrorBars/T=0 iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
-			ErrorBars/T=0 iBin_qxqy_MT Y,wave=(:eBin_qxqy_MT,:eBin_qxqy_MT)
-			ErrorBars/T=0 iBin_qxqy_MB Y,wave=(:eBin_qxqy_MB,:eBin_qxqy_MB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MT Y,wave=(:eBin_qxqy_MT,:eBin_qxqy_MT)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MB Y,wave=(:eBin_qxqy_MB,:eBin_qxqy_MB)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -504,8 +504,8 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR vs qBin_qxqy_MLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_MTB vs qBin_qxqy_MTB
-			ErrorBars/T=0 iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
-			ErrorBars/T=0 iBin_qxqy_MTB Y,wave=(:eBin_qxqy_MTB,:eBin_qxqy_MTB)
+
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MTB Y,wave=(:eBin_qxqy_MTB,:eBin_qxqy_MTB)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -528,7 +528,7 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB vs qBin_qxqy_MLRTB
-			ErrorBars/T=0 iBin_qxqy_MLRTB Y,wave=(:eBin_qxqy_MLRTB,:eBin_qxqy_MLRTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLRTB Y,wave=(:eBin_qxqy_MLRTB,:eBin_qxqy_MLRTB)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -553,8 +553,8 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR vs qBin_qxqy_MR
 //			AppendToGraph/W=$winNameStr iBin_qxqy_MT vs qBin_qxqy_MT
 //			AppendToGraph/W=$winNameStr iBin_qxqy_MB vs qBin_qxqy_MB
-			ErrorBars/T=0 iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
-			ErrorBars/T=0 iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_ML Y,wave=(:eBin_qxqy_ML,:eBin_qxqy_ML)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MR Y,wave=(:eBin_qxqy_MR,:eBin_qxqy_MR)
 //			ErrorBars/T=0 iBin_qxqy_MT Y,wave=(:eBin_qxqy_MT,:eBin_qxqy_MT)
 //			ErrorBars/T=0 iBin_qxqy_MB Y,wave=(:eBin_qxqy_MB,:eBin_qxqy_MB)
 			
@@ -579,7 +579,7 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB vs qBin_qxqy_MLRTB
-			ErrorBars/T=0 iBin_qxqy_MLRTB Y,wave=(:eBin_qxqy_MLRTB,:eBin_qxqy_MLRTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLRTB Y,wave=(:eBin_qxqy_MLRTB,:eBin_qxqy_MLRTB)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -601,7 +601,7 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR vs qBin_qxqy_MLR
-			ErrorBars/T=0 iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -623,7 +623,7 @@ Proc V_Middle_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR vs qBin_qxqy_MLR
-			ErrorBars/T=0 iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLR Y,wave=(:eBin_qxqy_MLR,:eBin_qxqy_MLR)
 			
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -682,10 +682,10 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR vs qBin_qxqy_FR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FT vs qBin_qxqy_FT
 			AppendToGraph/W=$winNameStr iBin_qxqy_FB vs qBin_qxqy_FB
-			ErrorBars/T=0 iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
-			ErrorBars/T=0 iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
-			ErrorBars/T=0 iBin_qxqy_FT Y,wave=(:eBin_qxqy_FT,:eBin_qxqy_FT)
-			ErrorBars/T=0 iBin_qxqy_FB Y,wave=(:eBin_qxqy_FB,:eBin_qxqy_FB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FT Y,wave=(:eBin_qxqy_FT,:eBin_qxqy_FT)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FB Y,wave=(:eBin_qxqy_FB,:eBin_qxqy_FB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -708,8 +708,8 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR vs qBin_qxqy_FLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB vs qBin_qxqy_FTB
-			ErrorBars/T=0 iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
-			ErrorBars/T=0 iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -732,7 +732,7 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB vs qBin_qxqy_FLRTB
-			ErrorBars/T=0 iBin_qxqy_FLRTB Y,wave=(:eBin_qxqy_FLRTB,:eBin_qxqy_FLRTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLRTB Y,wave=(:eBin_qxqy_FLRTB,:eBin_qxqy_FLRTB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -757,8 +757,8 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR vs qBin_qxqy_FR
 //			AppendToGraph/W=$winNameStr iBin_qxqy_FT vs qBin_qxqy_FT
 //			AppendToGraph/W=$winNameStr iBin_qxqy_FB vs qBin_qxqy_FB
-			ErrorBars/T=0 iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
-			ErrorBars/T=0 iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FL Y,wave=(:eBin_qxqy_FL,:eBin_qxqy_FL)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FR Y,wave=(:eBin_qxqy_FR,:eBin_qxqy_FR)
 //			ErrorBars/T=0 iBin_qxqy_FT Y,wave=(:eBin_qxqy_FT,:eBin_qxqy_FT)
 //			ErrorBars/T=0 iBin_qxqy_FB Y,wave=(:eBin_qxqy_FB,:eBin_qxqy_FB)
 			
@@ -784,8 +784,8 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR vs qBin_qxqy_FLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB vs qBin_qxqy_FTB
-			ErrorBars/T=0 iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
-			ErrorBars/T=0 iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -808,7 +808,7 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB vs qBin_qxqy_FLRTB
-			ErrorBars/T=0 iBin_qxqy_FLRTB Y,wave=(:eBin_qxqy_FLRTB,:eBin_qxqy_FLRTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLRTB Y,wave=(:eBin_qxqy_FLRTB,:eBin_qxqy_FLRTB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -831,8 +831,8 @@ Proc V_Front_IQ_Graph(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR vs qBin_qxqy_FLR
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB vs qBin_qxqy_FTB
-			ErrorBars/T=0 iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
-			ErrorBars/T=0 iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR Y,wave=(:eBin_qxqy_FLR,:eBin_qxqy_FLR)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB Y,wave=(:eBin_qxqy_FTB,:eBin_qxqy_FTB)
 
 			ModifyGraph/W=$winNameStr mode=4
 			ModifyGraph/W=$winNameStr marker=19
@@ -877,68 +877,69 @@ Proc V_Back_IQ_Graph(fullPathToFolder,binType,winNameStr)
 	
 	ClearIQIfDisplayed_AllFldr("B",winNameStr)
 
-
-	SetDataFolder $(fullPathToFolder)	
-
-//	if(binType==1 || binType==2 || binType==3)
-	if(binType==1 || binType==2 || binType==3)
+// skip everything if back detector is ignored
+	if(!root:Packages:NIST:VSANS:Globals:gIgnoreDetB)
 	
 		SetDataFolder $(fullPathToFolder)	
-		CheckDisplayed/W=$winNameStr iBin_qxqy_B
-		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
-			ErrorBars/T=0 iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19,msize(iBin_qxqy_B)=2
-//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=3,textMarker(iBin_qxqy_B)={"B","default",1,0,5,0.00,0.00}
-
-		endif
-		
-	endif
-
-	//nothing different here since there is ony a single detector to display, but for the future...
-	if(binType==4)
 	
-		SetDataFolder $(fullPathToFolder)				// ClearIQIfDisplayed_AllFldr() resets to root:
-		CheckDisplayed/W=$winNameStr iBin_qxqy_B
+		if(binType==1 || binType==2 || binType==3)
 		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=2
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
+			SetDataFolder $(fullPathToFolder)	
+			CheckDisplayed/W=$winNameStr iBin_qxqy_B
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19,msize(iBin_qxqy_B)=2
+	//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=3,textMarker(iBin_qxqy_B)={"B","default",1,0,5,0.00,0.00}
+			endif
+			
 		endif
-	endif
-
-	if(binType==5 || binType==6 || binType==7)
 	
-		SetDataFolder $(fullPathToFolder)	
-		CheckDisplayed/W=$winNameStr iBin_qxqy_B
+		//nothing different here since there is ony a single detector to display, but for the future...
+		if(binType==4)
 		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
-			ErrorBars/T=0 iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19,msize(iBin_qxqy_B)=2
-//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=3,textMarker(iBin_qxqy_B)={"B","default",1,0,5,0.00,0.00}
-
+			SetDataFolder $(fullPathToFolder)				// ClearIQIfDisplayed_AllFldr() resets to root:
+			CheckDisplayed/W=$winNameStr iBin_qxqy_B
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=2
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+			endif
 		endif
+	
+		if(binType==5 || binType==6 || binType==7)
 		
-	endif
+			SetDataFolder $(fullPathToFolder)	
+			CheckDisplayed/W=$winNameStr iBin_qxqy_B
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B)=19,msize(iBin_qxqy_B)=2
+	//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B)=3,textMarker(iBin_qxqy_B)={"B","default",1,0,5,0.00,0.00}
+			endif
+			
+		endif
 
+	endif		// if (don't ignore back detector)
 	
 	SetDataFolder root:
 End
@@ -963,63 +964,69 @@ Proc V_Back_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 //	binType = V_GetBinningPopMode()
 	ClearIQIfDisplayed_AllFldr("B_trim",winNameStr)
 
-
-	SetDataFolder $(fullPathToFolder)	
-
-	if(binType==1 || binType==2 || binType==3)
+// skip everything if back detector is ignored
+	if(!root:Packages:NIST:VSANS:Globals:gIgnoreDetB)
 	
 		SetDataFolder $(fullPathToFolder)	
-		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
-		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
-			ErrorBars/T=0 iBin_qxqy_B_trim Y,wave=(:eBin_qxqy_B_trim,:eBin_qxqy_B_trim)
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19,msize(iBin_qxqy_B_trim)=3
-//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3,textMarker(iBin_qxqy_B_trim)={"B","default",1,0,5,0.00,0.00}
-
-		endif
-		
-	endif
-
-	//nothing different here since there is ony a single detector to display, but for the future...
-	if(binType==4)
 	
-		SetDataFolder $(fullPathToFolder)	
-		CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
+		if(binType==1 || binType==2 || binType==3)
 		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
-		endif
-	endif
-
-	if(binType==5 || binType==6 || binType==7)
-	
-	SetDataFolder $(fullPathToFolder)	
+			SetDataFolder $(fullPathToFolder)	
 			CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
-		
-		if(V_flag==0)
-			AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
-			ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
-			ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19
-			ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
-			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3
-			ModifyGraph/W=$winNameStr grid=1
-			ModifyGraph/W=$winNameStr log=1
-			ModifyGraph/W=$winNameStr mirror=2
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B_trim Y,wave=(:eBin_qxqy_B_trim,:eBin_qxqy_B_trim)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19,msize(iBin_qxqy_B_trim)=3
+	//			ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3,textMarker(iBin_qxqy_B_trim)={"B","default",1,0,5,0.00,0.00}
+	
+			endif
+			
 		endif
-	endif
+	
+		//nothing different here since there is ony a single detector to display, but for the future...
+		if(binType==4)
+		
+			SetDataFolder $(fullPathToFolder)	
+			CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B_trim Y,wave=(:eBin_qxqy_B_trim,:eBin_qxqy_B_trim)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+			endif
+		endif
+	
+		if(binType==5 || binType==6 || binType==7)
+		
+		SetDataFolder $(fullPathToFolder)	
+				CheckDisplayed/W=$winNameStr iBin_qxqy_B_trim
+			
+			if(V_flag==0)
+				AppendtoGraph/W=$winNameStr iBin_qxqy_B_trim vs qBin_qxqy_B_trim
+				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B_trim Y,wave=(:eBin_qxqy_B_trim,:eBin_qxqy_B_trim)
+				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B_trim)=4
+				ModifyGraph/W=$winNameStr marker(iBin_qxqy_B_trim)=19
+				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B_trim)=(1,52428,52428)
+				ModifyGraph/W=$winNameStr msize(iBin_qxqy_B_trim)=3
+				ModifyGraph/W=$winNameStr grid=1
+				ModifyGraph/W=$winNameStr log=1
+				ModifyGraph/W=$winNameStr mirror=2
+			endif
+		endif
+	
+	endif // if (don't ignore back detector)
 	
 	SetDataFolder root:
 End
@@ -1073,10 +1080,10 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR_trim vs qBin_qxqy_MR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_MT_trim vs qBin_qxqy_MT_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_MB_trim vs qBin_qxqy_MB_trim
-			ErrorBars/T=0 iBin_qxqy_ML_trim Y,wave=(:eBin_qxqy_ML_trim,:eBin_qxqy_ML_trim)
-			ErrorBars/T=0 iBin_qxqy_MR_trim Y,wave=(:eBin_qxqy_MR_trim,:eBin_qxqy_MR_trim)
-			ErrorBars/T=0 iBin_qxqy_MT_trim Y,wave=(:eBin_qxqy_MT_trim,:eBin_qxqy_MT_trim)
-			ErrorBars/T=0 iBin_qxqy_MB_trim Y,wave=(:eBin_qxqy_MB_trim,:eBin_qxqy_MB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_ML_trim Y,wave=(:eBin_qxqy_ML_trim,:eBin_qxqy_ML_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MR_trim Y,wave=(:eBin_qxqy_MR_trim,:eBin_qxqy_MR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MT_trim Y,wave=(:eBin_qxqy_MT_trim,:eBin_qxqy_MT_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MB_trim Y,wave=(:eBin_qxqy_MB_trim,:eBin_qxqy_MB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_ML_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MR_trim)=4
@@ -1117,8 +1124,8 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR_trim vs qBin_qxqy_MLR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_MTB_trim vs qBin_qxqy_MTB_trim
-			ErrorBars/T=0 iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
-			ErrorBars/T=0 iBin_qxqy_MTB_trim Y,wave=(:eBin_qxqy_MTB_trim,:eBin_qxqy_MTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MTB_trim Y,wave=(:eBin_qxqy_MTB_trim,:eBin_qxqy_MTB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLR_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MTB_trim)=4
@@ -1155,7 +1162,7 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB_trim vs qBin_qxqy_MLRTB_trim
-			ErrorBars/T=0 iBin_qxqy_MLRTB_trim Y,wave=(:eBin_qxqy_MLRTB_trim,:eBin_qxqy_MLRTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLRTB_trim Y,wave=(:eBin_qxqy_MLRTB_trim,:eBin_qxqy_MLRTB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLRTB_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLRTB_trim)=19
@@ -1192,8 +1199,8 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_MR_trim vs qBin_qxqy_MR_trim
 //			AppendToGraph/W=$winNameStr iBin_qxqy_MT_trim vs qBin_qxqy_MT_trim
 //			AppendToGraph/W=$winNameStr iBin_qxqy_MB_trim vs qBin_qxqy_MB_trim
-			ErrorBars/T=0 iBin_qxqy_ML_trim Y,wave=(:eBin_qxqy_ML_trim,:eBin_qxqy_ML_trim)
-			ErrorBars/T=0 iBin_qxqy_MR_trim Y,wave=(:eBin_qxqy_MR_trim,:eBin_qxqy_MR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_ML_trim Y,wave=(:eBin_qxqy_ML_trim,:eBin_qxqy_ML_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MR_trim Y,wave=(:eBin_qxqy_MR_trim,:eBin_qxqy_MR_trim)
 //			ErrorBars/T=0 iBin_qxqy_MT_trim Y,wave=(:eBin_qxqy_MT_trim,:eBin_qxqy_MT_trim)
 //			ErrorBars/T=0 iBin_qxqy_MB_trim Y,wave=(:eBin_qxqy_MB_trim,:eBin_qxqy_MB_trim)
 			
@@ -1238,7 +1245,7 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLRTB_trim vs qBin_qxqy_MLRTB_trim
-			ErrorBars/T=0 iBin_qxqy_MLRTB_trim Y,wave=(:eBin_qxqy_MLRTB_trim,:eBin_qxqy_MLRTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLRTB_trim Y,wave=(:eBin_qxqy_MLRTB_trim,:eBin_qxqy_MLRTB_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLRTB_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLRTB_trim)=19
@@ -1271,7 +1278,7 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR_trim vs qBin_qxqy_MLR_trim
-			ErrorBars/T=0 iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLR_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLR_trim)=19
@@ -1305,7 +1312,7 @@ Proc V_Middle_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_MLR_trim vs qBin_qxqy_MLR_trim
-			ErrorBars/T=0 iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_MLR_trim Y,wave=(:eBin_qxqy_MLR_trim,:eBin_qxqy_MLR_trim)
 			
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_MLR_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_MLR_trim)=19
@@ -1364,10 +1371,10 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR_trim vs qBin_qxqy_FR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FT_trim vs qBin_qxqy_FT_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FB_trim vs qBin_qxqy_FB_trim
-			ErrorBars/T=0 iBin_qxqy_FL_trim Y,wave=(:eBin_qxqy_FL_trim,:eBin_qxqy_FL_trim)
-			ErrorBars/T=0 iBin_qxqy_FR_trim Y,wave=(:eBin_qxqy_FR_trim,:eBin_qxqy_FR_trim)
-			ErrorBars/T=0 iBin_qxqy_FT_trim Y,wave=(:eBin_qxqy_FT_trim,:eBin_qxqy_FT_trim)
-			ErrorBars/T=0 iBin_qxqy_FB_trim Y,wave=(:eBin_qxqy_FB_trim,:eBin_qxqy_FB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FL_trim Y,wave=(:eBin_qxqy_FL_trim,:eBin_qxqy_FL_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FR_trim Y,wave=(:eBin_qxqy_FR_trim,:eBin_qxqy_FR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FT_trim Y,wave=(:eBin_qxqy_FT_trim,:eBin_qxqy_FT_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FB_trim Y,wave=(:eBin_qxqy_FB_trim,:eBin_qxqy_FB_trim)
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FL_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FR_trim)=4
@@ -1399,8 +1406,8 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR_trim vs qBin_qxqy_FLR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB_trim vs qBin_qxqy_FTB_trim
-			ErrorBars/T=0 iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
-			ErrorBars/T=0 iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLR_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FTB_trim)=4
@@ -1426,7 +1433,7 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB_trim vs qBin_qxqy_FLRTB_trim
-			ErrorBars/T=0 iBin_qxqy_FLRTB_trim Y,wave=(:eBin_qxqy_FLRTB_trim,:eBin_qxqy_FLRTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLRTB_trim Y,wave=(:eBin_qxqy_FLRTB_trim,:eBin_qxqy_FLRTB_trim)
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLRTB_trim)=4
 			ModifyGraph/W=$winNameStr marker(iBin_qxqy_FLRTB_trim)=19
@@ -1451,8 +1458,8 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 			AppendToGraph/W=$winNameStr iBin_qxqy_FR_trim vs qBin_qxqy_FR_trim
 //			AppendToGraph/W=$winNameStr iBin_qxqy_FT_trim vs qBin_qxqy_FT_trim
 //			AppendToGraph/W=$winNameStr iBin_qxqy_FB_trim vs qBin_qxqy_FB_trim
-			ErrorBars/T=0 iBin_qxqy_FL_trim Y,wave=(:eBin_qxqy_FL_trim,:eBin_qxqy_FL_trim)
-			ErrorBars/T=0 iBin_qxqy_FR_trim Y,wave=(:eBin_qxqy_FR_trim,:eBin_qxqy_FR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FL_trim Y,wave=(:eBin_qxqy_FL_trim,:eBin_qxqy_FL_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FR_trim Y,wave=(:eBin_qxqy_FR_trim,:eBin_qxqy_FR_trim)
 //			ErrorBars/T=0 iBin_qxqy_FT_trim Y,wave=(:eBin_qxqy_FT_trim,:eBin_qxqy_FT_trim)
 //			ErrorBars/T=0 iBin_qxqy_FB_trim Y,wave=(:eBin_qxqy_FB_trim,:eBin_qxqy_FB_trim)
 			
@@ -1488,8 +1495,8 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR_trim vs qBin_qxqy_FLR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB_trim vs qBin_qxqy_FTB_trim
-			ErrorBars/T=0 iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
-			ErrorBars/T=0 iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLR_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FTB_trim)=4
@@ -1515,7 +1522,7 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLRTB_trim vs qBin_qxqy_FLRTB_trim
-			ErrorBars/T=0 iBin_qxqy_FLRTB_trim Y,wave=(:eBin_qxqy_FLRTB_trim,:eBin_qxqy_FLRTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLRTB_trim Y,wave=(:eBin_qxqy_FLRTB_trim,:eBin_qxqy_FLRTB_trim)
 
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLRTB_trim)=4
@@ -1539,8 +1546,8 @@ Proc V_Front_IQ_Graph_trim(fullPathToFolder,binType,winNameStr)
 		if(V_flag==0)
 			AppendtoGraph/W=$winNameStr iBin_qxqy_FLR_trim vs qBin_qxqy_FLR_trim
 			AppendToGraph/W=$winNameStr iBin_qxqy_FTB_trim vs qBin_qxqy_FTB_trim
-			ErrorBars/T=0 iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
-			ErrorBars/T=0 iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FLR_trim Y,wave=(:eBin_qxqy_FLR_trim,:eBin_qxqy_FLR_trim)
+			ErrorBars/T=0/W=$winNameStr iBin_qxqy_FTB_trim Y,wave=(:eBin_qxqy_FTB_trim,:eBin_qxqy_FTB_trim)
 
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FLR_trim)=4
 			ModifyGraph/W=$winNameStr mode(iBin_qxqy_FTB_trim)=4

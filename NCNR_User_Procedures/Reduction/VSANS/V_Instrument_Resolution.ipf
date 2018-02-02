@@ -53,10 +53,9 @@
 //
 // - Aug 07 - added input to switch calculation based on lenses (==1 if in)
 //
-// - called by CircSectAvg.ipf and RectAnnulAvg.ipf
+// - SANS -- called by CircSectAvg.ipf and RectAnnulAvg.ipf
 //
-// passed values are read from RealsRead
-// except DDet and apOff, which are set from globals before passing
+// - VSANS -- called in VC_fDoBinning_QxQy2D(folderStr, binningType)
 //
 // DDet is the detector pixel resolution
 // apOff is the offset between the sample aperture and the sample position
@@ -84,7 +83,7 @@
 //
 Function V_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses
-	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
+	Variable &SigmaQ, &QBar, &fSubS		//these are the output quantities at the input Q value
 	
 	//lots of calculation variables
 	Variable a2, q_small, lp, v_lambda, v_b, v_d, vz, yg, v_g

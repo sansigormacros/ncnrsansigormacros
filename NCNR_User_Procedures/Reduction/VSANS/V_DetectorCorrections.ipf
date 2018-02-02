@@ -159,16 +159,16 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 // these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
 // both beam conditions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
 	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
-		gap = 3.8		//mm (measured, JB 1/4/18)
+		gap = 3.5		//mm (measured, JB 1/4/18)
 	endif
 	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
-		gap = 8		//mm
+		gap = 3.3		//mm (measured, JB 2/1/18)
 	endif
 	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
 		gap = 5.9		//mm (measured, JB 1/4/18)
 	endif
 	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
-		gap = 5		//mm
+		gap = 18.3		//mm (measured, JB 2/1/18)
 	endif
 // TODO: this is the line to keep, to replace the hard-wired values
 //	gap = V_getDet_panel_gap(fname,detStr)
@@ -178,12 +178,11 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	
 		// adjust the x postion based on the beam center being nominally (0,0) in units of cm, not pixels
 		if(cmpstr(fname,"VCALC")== 0 )
-			offset = VCALC_getPanelSeparation(detStr)
+			offset = VCALC_getPanelTranslation(detStr)
 			offset *= 10			// convert to units of mm
-			offset /= 2			// 1/2 the total separation
-			if(cmpstr("L",detStr[1]) == 0)
-				offset *= -1		//negative value for L
-			endif
+//			if(cmpstr("L",detStr[1]) == 0)
+//				offset *= -1		//negative value for L
+//			endif
 		else
 			//normal case
 			offset = V_getDet_LateralOffset(fname,detStr)
@@ -212,12 +211,11 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		data_realDistY[][] = tube_width*q
 
 		if(cmpstr(fname,"VCALC")== 0 )
-			offset = VCALC_getPanelSeparation(detStr)
+			offset = VCALC_getPanelTranslation(detStr)
 			offset *= 10			// convert to units of mm
-			offset /= 2			// 1/2 the total separation
-			if(cmpstr("B",detStr[1]) == 0)
-				offset *= -1	// negative value for Bottom det
-			endif
+//			if(cmpstr("B",detStr[1]) == 0)
+//				offset *= -1	// negative value for Bottom det
+//			endif
 		else
 			//normal case
 			offset = V_getDet_VerticalOffset(fname,detStr)

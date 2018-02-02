@@ -72,7 +72,7 @@ Proc DrawVCALC_Panel()
 	PopupMenu popup_a,mode=1,popvalue="Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 
 	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
-	PopupMenu popup_b,mode=1,popvalue="One",value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
+	PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
 	
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
 	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:20
@@ -138,7 +138,7 @@ Proc DrawVCALC_Panel()
 
 
 	
-// all controls are named VCALCCtrl_NA where N is the tab number and A is the letter denoting
+// all controls are named VCALCCtrl_NA where N is the tab number and A is the letter indexing items on tab
 
 	
 // tab(0), collimation - initially visible
@@ -165,25 +165,34 @@ Proc DrawVCALC_Panel()
 	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="L/R Separation (cm)",proc=VC_FDet_LR_SetVarProc
-	SetVariable VCALCCtrl_2a,limits={0,40,1},disable=1,value=_NUM:20
-	SetVariable VCALCCtrl_2b,pos={30,290},size={150,15},title="T/B Separation (cm)",proc=VC_FDet_LR_SetVarProc
-	SetVariable VCALCCtrl_2b,limits={0,40,1},disable=1,value=_NUM:20
-//	SetVariable VCALCCtrl_2c,pos={205,290},size={150,15},title="Lateral Offset (cm)"
-//	SetVariable VCALCCtrl_2c,limits={0,20,0.1},disable=1,value=_NUM:0
+	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,limits={-20,19,0.1},disable=1,value=_NUM:-10
+	SetVariable VCALCCtrl_2aa,pos={30,290},size={150,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2aa,limits={-19,20,0.1},disable=1,value=_NUM:10
+	
+	SetVariable VCALCCtrl_2b,pos={30,330},size={150,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,limits={0,18,0.1},disable=1,value=_NUM:10
+	SetVariable VCALCCtrl_2bb,pos={30,360},size={150,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2bb,limits={-18,0,0.1},disable=1,value=_NUM:-10
+	
 	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_2d,limits={100,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="L/R Separation (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3a,limits={0,40.0,1},disable=1,value=_NUM:20
-	SetVariable VCALCCtrl_3b,pos={30,290},size={150,15},title="T/B Separation (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3b,limits={0,40.0,1},disable=1,value=_NUM:20
-//	SetVariable VCALCCtrl_3c,pos={205,290},size={150,15},title="Lateral Offset (cm)"
-//	SetVariable VCALCCtrl_3c,limits={0,20,0.1},disable=1,value=_NUM:0
+	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-6
+	SetVariable VCALCCtrl_3aa,pos={30,290},size={150,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:6
+		
+	SetVariable VCALCCtrl_3b,pos={30,330},size={150,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:6
+	SetVariable VCALCCtrl_3bb,pos={30,360},size={150,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-6
+
 	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1500
+
 	
 // tab(4) - Back detector panel
 	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (cm)"
@@ -311,23 +320,42 @@ End
 // recalculate the I(q) binning. no need to adjust model function or views
 // just rebin
 //
+// this is for the VCALC 1-D plot subwindow only. so it is set up to 
+// operate on that window - but uses the same binning and plotting routines
+// as the regualr VSANS data display
+//
 Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum	// which item is currently selected (1-based)
 	String popStr		// contents of current popup item as string
 
-	// do the q-binning for front panels to get I(Q)
-	Execute "BinAllFrontPanels()"
-	Execute "Front_IQ_Graph()"
 
-	// do the q-binning for middle panels to get I(Q)
-	Execute "BinAllMiddlePanels()"
-	Execute "Middle_IQ_Graph()"
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
 	
-	// do the q-binning for the back panel to get I(Q)
-	Execute "BinAllBackPanels()"
-	Execute "Back_IQ_Graph()"
+// dispatch based on the string, not on the number of selection in the pop string
+	V_QBinAllPanels_Circular(type,V_BinTypeStr2Num(popStr))
 	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+
+	Execute ("V_Back_IQ_Graph"+str)
+	Execute ("V_Middle_IQ_Graph"+str)
+	Execute ("V_Front_IQ_Graph"+str)
+
+// OLD - do not use
+//	// do the q-binning for front panels to get I(Q)
+//	Execute "BinAllFrontPanels()"
+//	Execute "Front_IQ_Graph()"
+//
+//	// do the q-binning for middle panels to get I(Q)
+//	Execute "BinAllMiddlePanels()"
+//	Execute "Middle_IQ_Graph()"
+//	
+//	// do the q-binning for the back panel to get I(Q)
+//	Execute "BinAllBackPanels()"
+//	Execute "Back_IQ_Graph()"
+//	
 	return(0)	
 End
 
@@ -559,14 +587,14 @@ Function VC_FDet_LR_SetVarProc(sva) : SetVariableControl
 			Variable dval = sva.dval
 			String sval = sva.sval
 			
-			Variable LR_sep,TB_sep
-			// don't know if LR or TB called, so get the explicit values
-			//
-			ControlInfo VCALCCtrl_2a
-			LR_sep = V_Value
-			ControlInfo VCALCCtrl_2b
-			TB_sep = V_Value
-			
+//			Variable LR_sep,TB_sep
+//			// don't know if LR or TB called, so get the explicit values
+//			//
+//			ControlInfo VCALCCtrl_2a
+//			LR_sep = V_Value
+//			ControlInfo VCALCCtrl_2b
+//			TB_sep = V_Value
+//			
 //			UpdateFrontDetector(LR_sep,TB_sep)
 			
 			UpdateSideView()
@@ -597,13 +625,13 @@ Function VC_MDet_LR_SetVarProc(sva) : SetVariableControl
 			Variable dval = sva.dval
 			String sval = sva.sval
 			
-			Variable LR_sep,TB_sep
-			// don't know if LR or TB called, so get the explicit values
-			//
-			ControlInfo VCALCCtrl_3a
-			LR_sep = V_Value
-			ControlInfo VCALCCtrl_3b
-			TB_sep = V_Value
+//			Variable LR_sep,TB_sep
+//			// don't know if LR or TB called, so get the explicit values
+//			//
+//			ControlInfo VCALCCtrl_3a
+//			LR_sep = V_Value
+//			ControlInfo VCALCCtrl_3b
+//			TB_sep = V_Value
 			
 //			UpdateMiddleDetector(LR_sep,TB_sep)
 			
@@ -696,16 +724,7 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_FB:x_pixel_size = 0.4
 	Make/O/D/N=1 :entry:instrument:detector_FB:y_pixel_size = 0.84
 	
-//	Variable/G gFront_L_pixelX = 0.84			
-//	Variable/G gFront_L_pixelY = 0.8			
-//	Variable/G gFront_R_pixelX = 0.84			// (cm)
-//	Variable/G gFront_R_pixelY = 0.8			// (cm)
-//	
-//	Variable/G gFront_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-//	Variable/G gFront_T_pixelY = 0.84			// (cm)
-//	Variable/G gFront_B_pixelX = 0.4			// (cm)
-//	Variable/G gFront_B_pixelY = 0.84			// (cm)
-	
+
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 	Make/O/D/N=1 :entry:instrument:detector_FL:pixel_num_x = 48	// == number of tubes
 	Make/O/D/N=1 :entry:instrument:detector_FL:pixel_num_y = 128	// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
@@ -716,14 +735,7 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_FB:pixel_num_x = 128	// == pixels in horizontal direction
 	Make/O/D/N=1 :entry:instrument:detector_FB:pixel_num_y = 48	// == number of tubes
 
-//	Variable/G gFront_L_nPix_X = 48		// == number of tubes
-//	Variable/G gFront_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
-//	Variable/G gFront_R_nPix_X = 48		// == number of tubes
-//	Variable/G gFront_R_nPix_Y = 128		// == pixels in vertical direction 
-//	Variable/G gFront_T_nPix_X = 128		// == pixels in horizontal direction
-//	Variable/G gFront_T_nPix_Y = 48		// == number of tubes
-//	Variable/G gFront_B_nPix_X = 128		// == pixels in horizontal direction
-//	Variable/G gFront_B_nPix_Y = 48		// == number of tubes
+
 
 // pixel beam center - HDF style
 	Make/O/D/N=1 :entry:instrument:detector_FL:beam_center_x = 55		// == x beam center, in pixels
@@ -760,15 +772,7 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:x_pixel_size = 0.4
 	Make/O/D/N=1 :entry:instrument:detector_MB:y_pixel_size = 0.84
 
-//	Variable/G gMiddle_L_pixelX = 0.84		// (cm)		these tubes are vertical
-//	Variable/G gMiddle_L_pixelY = 0.8		// (cm)
-//	Variable/G gMiddle_R_pixelX = 0.84		// (cm)
-//	Variable/G gMiddle_R_pixelY = 0.8		// (cm)
-//	
-//	Variable/G gMiddle_T_pixelX = 0.4			// (cm)		these tubes are horizontal
-//	Variable/G gMiddle_T_pixelY = 0.84			// (cm)
-//	Variable/G gMiddle_B_pixelX = 0.4			// (cm)
-//	Variable/G gMiddle_B_pixelY = 0.84		// (cm)
+
 
 // number of pixels in each bank (this can be modified at acquisition time, so it must be adjustable here)
 	Make/O/D/N=1 :entry:instrument:detector_ML:pixel_num_x = 48	// == number of tubes
@@ -780,14 +784,7 @@ Proc VC_Initialize_Space()
 	Make/O/D/N=1 :entry:instrument:detector_MB:pixel_num_x = 128	// == pixels in horizontal direction
 	Make/O/D/N=1 :entry:instrument:detector_MB:pixel_num_y = 48	// == number of tubes
 	
-//	Variable/G gMiddle_L_nPix_X = 48		// == number of tubes
-//	Variable/G gMiddle_L_nPix_Y = 128		// == pixels in vertical direction (was 256, John says likely will run @ 128 9/2015)
-//	Variable/G gMiddle_R_nPix_X = 48		// == number of tubes
-//	Variable/G gMiddle_R_nPix_Y = 128		// == pixels in vertical direction 
-//	Variable/G gMiddle_T_nPix_X = 128		// == pixels in horizontal direction
-//	Variable/G gMiddle_T_nPix_Y = 48		// == number of tubes
-//	Variable/G gMiddle_B_nPix_X = 128		// == pixels in horizontal direction
-//	Variable/G gMiddle_B_nPix_Y = 48		// == number of tubes
+
 
 // pixel beam center - HDF style
 	Make/O/D/N=1 :entry:instrument:detector_ML:beam_center_x = 55		// == x beam center, in pixels
@@ -808,13 +805,11 @@ Proc VC_Initialize_Space()
 	
 	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.1		// 1 mm resolution (units of cm here)
 	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.1		
-//	Variable/G gBack_pixelX = 0.1		
-//	Variable/G gBack_pixelY = 0.1
+
 
 	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 150	// detector pixels in x-direction
 	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 150
-//	Variable/G gBack_nPix_X = 150		
-//	Variable/G gBack_nPix_Y = 150	
+	
 
 // pixel beam center - HDF style
 	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 75		// == x beam center, in pixels

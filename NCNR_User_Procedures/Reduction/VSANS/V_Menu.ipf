@@ -17,9 +17,9 @@ Menu "VSANS"
 	"Main Control Panel",DoWindow/F Main_VSANS_Panel
 	"Data Display",DoWindow/F VSANS_Data
 	"VCALC",VCALC_Panel()
+	"VSANS Preferences",Show_VSANSPreferences_Panel()
 	"-"
 	Submenu "In Progress Panels"
-		"VSANS Preferences",Show_VSANSPreferences_Panel()
 		"Beam Center Panel",V_FindBeamCenter()
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
 		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()

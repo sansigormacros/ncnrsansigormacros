@@ -94,10 +94,23 @@ Function fPlotFrontPanels()
 	VC_SetShadow_TopBottom("VCALC","FB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	Execute "BinAllFrontPanels()"
+	BinAllFrontPanels()
+
 
 	// plot the results
-	Execute "Front_IQ_Graph()"
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
+
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+
+	Execute ("V_Front_IQ_Graph"+str)
+		
+//	Execute "Front_IQ_Graph()"
+
 	FrontPanels_AsQ()
 	
 	return(0)
@@ -124,16 +137,17 @@ End
 Function VC_CalculateQFrontPanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
-	Variable F_LR_sep,F_TB_sep,F_offset,F_sdd_setback
+	Variable F_L_sep,F_R_sep,F_T_sep,F_B_sep,F_sdd_setback
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
 	String instPath = ":entry:instrument:detector_"
 	String detStr=""
 
 // get the values from the panel + constants	
-	F_LR_sep = VCALC_getPanelSeparation("FLR")
-	F_TB_sep = VCALC_getPanelSeparation("FTB")
-	F_offset = VCALC_getLateralOffset("FL")
+	F_L_sep = VCALC_getPanelTranslation("FL")
+	F_R_sep = VCALC_getPanelTranslation("FR")
+	F_T_sep = VCALC_getPanelTranslation("FT")
+	F_B_sep = VCALC_getPanelTranslation("FB")
 	
 	SDD = VCALC_getSDD("FL")		//nominal SDD [cm] - need offset for TB
 	lam = VCALC_getWavelength()
@@ -181,7 +195,7 @@ Function VC_CalculateQFrontPanels()
 		xCtr = 0
 		yCtr = 0			//values in cm
 	else	
-		xCtr = nPix_X+(F_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		xCtr = nPix_X-(F_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 		yCtr = nPix_Y/2	
 	endif
 	//put these  beam center values into the local folder
@@ -224,7 +238,7 @@ Function VC_CalculateQFrontPanels()
 		xCtr = 0
 		yCtr = 0			//values in cm
 	else	
-		xCtr = -(F_LR_sep/2/pixSizeX)-1		
+		xCtr = -(F_R_sep/pixSizeX)-1		
 		yCtr = nPix_Y/2	
 	endif
 
@@ -264,7 +278,7 @@ Function VC_CalculateQFrontPanels()
 		yCtr = 0			//values in cm
 	else	
 		xCtr = nPix_X/2
-		yCtr = -(F_TB_sep/2/pixSizeY)-1 
+		yCtr = -(F_T_sep/2/pixSizeY)-1 
 	endif	
 
 		//put these  beam center values into the local folder
@@ -305,7 +319,7 @@ Function VC_CalculateQFrontPanels()
 		yCtr = 0			//values in cm
 	else	
 		xCtr = nPix_X/2
-		yCtr = nPix_Y+(F_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		yCtr = nPix_Y+(F_B_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	endif	
 			
 	//put these  beam center values into the local folder
@@ -334,20 +348,18 @@ End
 Function VC_SetShadow_TopBottom(folderStr,type)
 	String folderStr,type
 	
-	Variable LR_sep,nPix,xCtr,ii,jj,numCol,pixSizeX,pixSizeY,nPix_X,nPix_Y
+	Variable L_sep,R_sep,nPix_L,nPix_R,xCtr,ii,jj,numCol,pixSizeX,pixSizeY,nPix_X,nPix_Y
 
 /// !! type passed in will be FT, FB, MT, MB, so I can't ask for the panel separation -- or I'll get the TB separation...
-	if(cmpstr(type[0],"F")==0)
-		//front
-		ControlInfo/W=VCALC VCALCCtrl_2a
-		LR_sep = V_Value	
+// translation in [cm]
+	if(cmpstr("F",type[0]) == 0)		// FT or FB passed in
+		L_sep = VCALC_getPanelTranslation("FL")
+		R_sep = VCALC_getPanelTranslation("FR")
 	else
-		//middle
-		ControlInfo/W=VCALC VCALCCtrl_3a
-		LR_sep = V_Value	
-	endif		
-//separations on panel are in cm -- need to watch the units, convert to cm
-//	LR_sep /= 10
+		L_sep = VCALC_getPanelTranslation("ML")
+		R_sep = VCALC_getPanelTranslation("MR")	
+	endif
+
 
 //detector data
 	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+type+":det_"+type)
@@ -364,13 +376,14 @@ Function VC_SetShadow_TopBottom(folderStr,type)
 	
 	//TODO -- get this from a global
 	xCtr = nPix_X/2
-	nPix = trunc(LR_sep/2/pixSizeX)		// approx # of pixels Left/right of center that are not obscured by L/R panels
+	nPix_L = trunc(abs(L_sep)/pixSizeX)		// approx # of pixels Left of center that are not obscured by L/R panels
+	nPix_R = trunc(abs(R_sep)/pixSizeX)		// approx # of pixels Right of center that are not obscured by L/R panels
 	
 	numCol = DimSize(det,0)		// x dim (columns)
-	for(ii=0;ii<(xCtr-nPix-4);ii+=1)
+	for(ii=0;ii<(xCtr-nPix_L-4);ii+=1)
 		det[ii][] = NaN
 	endfor
-	for(ii=(xCtr+nPix+6);ii<numCol;ii+=1)
+	for(ii=(xCtr+nPix_R+6);ii<numCol;ii+=1)
 		det[ii][] = NaN
 	endfor
 	
@@ -445,7 +458,13 @@ EndMacro
 //
 // the results are in iBin_qxqy, qBin_qxqy, and eBin_qxqy, in the folder passed
 // 
-Proc BinAllFrontPanels()
+// TODO -- this is a (partial) duplicated routine... I need to 
+// **** COPY the logic from V_QBinAllPanels_Circular every time I add a new bin type
+//
+// -- see also BinAllMiddlePanels()
+// -- BinAllBackPanels()
+//
+Function BinAllFrontPanels()
 
 	SetDeltaQ("VCALC","FL")
 	SetDeltaQ("VCALC","FR")
@@ -456,30 +475,93 @@ Proc BinAllFrontPanels()
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
-	if(binType == 1)
-		VC_BinQxQy_to_1D("VCALC","FL")
-		VC_BinQxQy_to_1D("VCALC","FR")
-		VC_BinQxQy_to_1D("VCALC","FT")
-		VC_BinQxQy_to_1D("VCALC","FB")
-	endif
+	String folderStr = "VCALC"
 	
-	if(binType == 2)	
-		VC_BinQxQy_to_1D("VCALC","FLR")
-		VC_BinQxQy_to_1D("VCALC","FTB")
-	endif
+	switch(binType)
+		case 1:
+			VC_fDoBinning_QxQy2D(folderStr,"FL")
+			VC_fDoBinning_QxQy2D(folderStr,"FR")
+			VC_fDoBinning_QxQy2D(folderStr,"FT")
+			VC_fDoBinning_QxQy2D(folderStr,"FB")
+//			VC_fDoBinning_QxQy2D(folderStr,"ML")
+//			VC_fDoBinning_QxQy2D(folderStr,"MR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MT")
+//			VC_fDoBinning_QxQy2D(folderStr,"MB")			
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
-	if(binType == 3)
-		VC_BinQxQy_to_1D("VCALC","FLRTB")
-	endif
+			break
+		case 2:
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
-// TODO -- this is only a temporary fix for slit mode	
-	if(binType == 4)
-		/// this is for a tall, narrow slit mode	
-		VC_fBinDetector_byRows("VCALC","FL")
-		VC_fBinDetector_byRows("VCALC","FR")
-		VC_fBinDetector_byRows("VCALC","FT")
-		VC_fBinDetector_byRows("VCALC","FB")
-	endif
+			break
+		case 3:
+//			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+			VC_fBinDetector_byRows(folderStr,"FL")
+			VC_fBinDetector_byRows(folderStr,"FR")
+//			VC_fBinDetector_byRows(folderStr,"ML")
+//			VC_fBinDetector_byRows(folderStr,"MR")
+//			VC_fBinDetector_byRows(folderStr,"B")
+
+			break
+		case 5:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 6:
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 7:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in BinAllFrontPanels "// when no case matches	
+	endswitch
+	
+
+//	if(binType == 1)
+//		VC_BinQxQy_to_1D("VCALC","FL")
+//		VC_BinQxQy_to_1D("VCALC","FR")
+//		VC_BinQxQy_to_1D("VCALC","FT")
+//		VC_BinQxQy_to_1D("VCALC","FB")
+//	endif
+//	
+//	if(binType == 2)	
+//		VC_BinQxQy_to_1D("VCALC","FLR")
+//		VC_BinQxQy_to_1D("VCALC","FTB")
+//	endif
+//
+//	if(binType == 3)
+//		VC_BinQxQy_to_1D("VCALC","FLRTB")
+//	endif
+//
+//// TODO -- this is only a temporary fix for slit mode	
+//	if(binType == 4)
+//		/// this is for a tall, narrow slit mode	
+//		VC_fBinDetector_byRows("VCALC","FL")
+//		VC_fBinDetector_byRows("VCALC","FR")
+//		VC_fBinDetector_byRows("VCALC","FT")
+//		VC_fBinDetector_byRows("VCALC","FB")
+//	endif
 		
 End
 
@@ -543,10 +625,25 @@ Function fPlotMiddlePanels()
 	VC_SetShadow_TopBottom("VCALC","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	Execute "BinAllMiddlePanels()"
+	BinAllMiddlePanels()
 
 	// plot the results
-	Execute "Middle_IQ_Graph()"
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
+
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+
+	Execute ("V_Middle_IQ_Graph"+str)
+		
+
+	// plot the results
+//	Execute "Middle_IQ_Graph()"
+
+
 	MiddlePanels_AsQ()
 	
 	return(0)
@@ -569,16 +666,17 @@ End
 Function VC_CalculateQMiddlePanels()
 
 	Variable xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,nPix_X,nPix_Y
-	Variable M_LR_sep,M_TB_sep,M_offset, M_sdd_setback
+	Variable M_L_sep,M_R_sep,M_T_sep,M_B_sep, M_sdd_setback
 
 
 	String folderPath = "root:Packages:NIST:VSANS:VCALC"
 	String instPath = ":entry:instrument:detector_"
 	String detStr=""
 	
-	M_LR_sep = VCALC_getPanelSeparation("MLR")
-	M_TB_sep = VCALC_getPanelSeparation("MTB")
-	M_offset = VCALC_getLateralOffset("ML")
+	M_L_sep = VCALC_getPanelTranslation("ML")
+	M_R_sep = VCALC_getPanelTranslation("MR")
+	M_T_sep = VCALC_getPanelTranslation("MT")
+	M_B_sep = VCALC_getPanelTranslation("MB")
 	
 	SDD = VCALC_getSDD("ML")		//nominal SDD [cm] - need offset for TB
 	lam = VCALC_getWavelength()
@@ -623,7 +721,7 @@ Function VC_CalculateQMiddlePanels()
 		xCtr = 0
 		yCtr = 0			//values in cm
 	else	
-		xCtr = nPix_X+(M_LR_sep/2/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		xCtr = nPix_X+(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 		yCtr = nPix_Y/2	
 	endif		
 
@@ -670,7 +768,7 @@ Function VC_CalculateQMiddlePanels()
 		xCtr = 0
 		yCtr = 0			//values in cm
 	else	
-		xCtr = -(M_LR_sep/2/pixSizeX)-1		
+		xCtr = -(M_R_sep/pixSizeX)-1		
 		yCtr = nPix_Y/2	
 	endif	
 		
@@ -712,7 +810,7 @@ Function VC_CalculateQMiddlePanels()
 		yCtr = 0			//values in cm
 	else	
 		xCtr = nPix_X/2
-		yCtr = -(M_TB_sep/2/pixSizeY)-1 
+		yCtr = -(M_T_sep/pixSizeY)-1 
 	endif
 		
 
@@ -754,7 +852,7 @@ Function VC_CalculateQMiddlePanels()
 		yCtr = 0			//values in cm
 	else	
 		xCtr = nPix_X/2
-		yCtr = nPix_Y+(M_TB_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)?? 
+		yCtr = nPix_Y+(M_B_sep/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)?? 
 	endif		
 
 	//put these  beam center values into the local folder
@@ -845,7 +943,7 @@ EndMacro
 //
 // the results are in iBin_qxqy, qBin_qxqy, and eBin_qxqy, in the folder passed
 // 
-Proc BinAllMiddlePanels()
+Function BinAllMiddlePanels()
 
 	SetDeltaQ("VCALC","ML")
 	SetDeltaQ("VCALC","MR")
@@ -856,30 +954,94 @@ Proc BinAllMiddlePanels()
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
-	if(binType == 1)
-		VC_BinQxQy_to_1D("VCALC","ML")
-		VC_BinQxQy_to_1D("VCALC","MR")
-		VC_BinQxQy_to_1D("VCALC","MT")
-		VC_BinQxQy_to_1D("VCALC","MB")
-	endif
-	
-	if(binType == 2)	
-		VC_BinQxQy_to_1D("VCALC","MLR")
-		VC_BinQxQy_to_1D("VCALC","MTB")
-	endif
+	String folderStr = "VCALC"
 
-	if(binType == 3)
-		VC_BinQxQy_to_1D("VCALC","MLRTB")
-	endif
+	switch(binType)
+		case 1:
+//			VC_fDoBinning_QxQy2D(folderStr,"FL")
+//			VC_fDoBinning_QxQy2D(folderStr,"FR")
+//			VC_fDoBinning_QxQy2D(folderStr,"FT")
+//			VC_fDoBinning_QxQy2D(folderStr,"FB")
+			VC_fDoBinning_QxQy2D(folderStr,"ML")
+			VC_fDoBinning_QxQy2D(folderStr,"MR")
+			VC_fDoBinning_QxQy2D(folderStr,"MT")
+			VC_fDoBinning_QxQy2D(folderStr,"MB")			
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 2:
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 3:
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+//			VC_fBinDetector_byRows(folderStr,"FL")
+//			VC_fBinDetector_byRows(folderStr,"FR")
+			VC_fBinDetector_byRows(folderStr,"ML")
+			VC_fBinDetector_byRows(folderStr,"MR")
+//			VC_fBinDetector_byRows(folderStr,"B")
+
+			break
+		case 5:
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 6:
+//			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 7:
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in BinAllFrontPanels "// when no case matches	
+	endswitch
 	
-	// TODO -- this is only a temporary fix for slit mode	
-	if(binType == 4)
-		/// this is for a tall, narrow slit mode	
-		VC_fBinDetector_byRows("VCALC","ML")
-		VC_fBinDetector_byRows("VCALC","MR")
-		VC_fBinDetector_byRows("VCALC","MT")
-		VC_fBinDetector_byRows("VCALC","MB")
-	endif
+
+
+//	if(binType == 1)
+//		VC_BinQxQy_to_1D("VCALC","ML")
+//		VC_BinQxQy_to_1D("VCALC","MR")
+//		VC_BinQxQy_to_1D("VCALC","MT")
+//		VC_BinQxQy_to_1D("VCALC","MB")
+//	endif
+//	
+//	if(binType == 2)	
+//		VC_BinQxQy_to_1D("VCALC","MLR")
+//		VC_BinQxQy_to_1D("VCALC","MTB")
+//	endif
+//
+//	if(binType == 3)
+//		VC_BinQxQy_to_1D("VCALC","MLRTB")
+//	endif
+//	
+//	// TODO -- this is only a temporary fix for slit mode	
+//	if(binType == 4)
+//		/// this is for a tall, narrow slit mode	
+//		VC_fBinDetector_byRows("VCALC","ML")
+//		VC_fBinDetector_byRows("VCALC","MR")
+//		VC_fBinDetector_byRows("VCALC","MT")
+//		VC_fBinDetector_byRows("VCALC","MB")
+//	endif
 End
 
 ////////////to plot the (4) 2D panels and to plot the I(Q) data on the same plot
@@ -1031,10 +1193,26 @@ Function fPlotBackPanels()
 //	VC_SetShadow_TopBottom("","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	Execute "BinAllBackPanels()"
+	BinAllBackPanels()
 
 	// plot the results
-	Execute "Back_IQ_Graph()"
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
+
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+
+	Execute ("V_Back_IQ_Graph"+str)
+		
+		
+	// plot the results
+//	Execute "Back_IQ_Graph()"
+
+
+
 	Execute "BackPanels_AsQ()"
 
 	return(0)
@@ -1064,7 +1242,8 @@ Function VC_CalculateQBackPanels()
 	String instPath = ":entry:instrument:detector_"
 	String detStr = ""
 	
-	B_offset = VCALC_getLateralOffset("B")
+	ControlInfo/W=VCALC VCALCCtrl_4a
+	B_offset = V_Value
 	
 	SDD = VCALC_getSDD("B")		//nominal SDD - need offset for TB
 	lam = VCALC_getWavelength()
@@ -1164,21 +1343,83 @@ EndMacro
 //
 // the results are in iBin_qxqy, qBin_qxqy, and eBin_qxqy, in the folder passed
 // 
-Proc BinAllBackPanels()
+Function BinAllBackPanels()
 
 	SetDeltaQ("VCALC","B")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
-	
-	VC_BinQxQy_to_1D("VCALC","B")
 
-// TODO -- this is only a temporary fix for slit mode	
-	if(binType == 4)
-		/// this is for a tall, narrow slit mode	
-		VC_fBinDetector_byRows("VCALC","B")
-	endif	
+	String folderStr = "VCALC"
+
+	switch(binType)
+		case 1:
+//			VC_fDoBinning_QxQy2D(folderStr,"FL")
+//			VC_fDoBinning_QxQy2D(folderStr,"FR")
+//			VC_fDoBinning_QxQy2D(folderStr,"FT")
+//			VC_fDoBinning_QxQy2D(folderStr,"FB")
+//			VC_fDoBinning_QxQy2D(folderStr,"ML")
+//			VC_fDoBinning_QxQy2D(folderStr,"MR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MT")
+//			VC_fDoBinning_QxQy2D(folderStr,"MB")			
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 2:
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+
+			break
+		case 3:
+//			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+//			VC_fBinDetector_byRows(folderStr,"FL")
+//			VC_fBinDetector_byRows(folderStr,"FR")
+//			VC_fBinDetector_byRows(folderStr,"ML")
+//			VC_fBinDetector_byRows(folderStr,"MR")
+			VC_fBinDetector_byRows(folderStr,"B")
+
+			break
+		case 5:
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 6:
+//			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+		case 7:
+//			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+//			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+//			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr, "B")		
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in BinAllFrontPanels "// when no case matches	
+	endswitch
+		
+//	VC_BinQxQy_to_1D("VCALC","B")
+//
+//// TODO -- this is only a temporary fix for slit mode	
+//	if(binType == 4)
+//		/// this is for a tall, narrow slit mode	
+//		VC_fBinDetector_byRows("VCALC","B")
+//	endif	
 	
 End
 
@@ -1380,8 +1621,10 @@ Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	String fldr
 	Variable ii
 	
-	for(ii=0;ii<ItemsInList(ksWorkFolderListShort);ii+=1)
-		fldr = StringFromList(ii, ksWorkFolderListShort, ";")
+	String folderList_plus = ksWorkFolderListShort+";VCALC"
+	
+	for(ii=0;ii<ItemsInList(folderList_plus);ii+=1)
+		fldr = StringFromList(ii, folderList_plus, ";")
 		ClearIQIfDisplayed(fldr,type,winNameStr)
 	endfor
 	// just in case

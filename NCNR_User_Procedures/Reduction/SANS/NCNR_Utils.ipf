@@ -95,7 +95,7 @@ End
 //
 Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses
-	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
+	Variable &SigmaQ, &QBar, &fSubS	//these are the output quantities at the input Q value
 	
 	//lots of calculation variables
 	Variable a2, q_small, lp, v_lambda, v_b, v_d, vz, yg, v_g
