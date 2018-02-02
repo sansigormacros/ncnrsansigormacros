@@ -102,6 +102,9 @@ Proc V_Initialize()
 	endif
 	
 	V_InitFolders()
+	
+	VC_Initialize_Space()		//initialize folders for VCALC
+	
 	V_InitFakeProtocols()
 	V_InitGlobals()	
 	V_InitFacilityGlobals()

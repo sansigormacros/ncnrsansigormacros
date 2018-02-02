@@ -3,19 +3,26 @@
 #pragma IgorVersion=6.1
 
 //
-// UPDATED for VSANS - only the simplest implementation to start with
+// UPDATED for VSANS -
 // June 2016  SRK
+// more columns + improved handling Jan 2018
+//
 // included ANSTO sort panel from david m
+//
+
+// Adding columns to the table now means:
+// 1-Make the wave in V_BuildCatVeryShortTable
+// 2-Declare the wave in V_GetHeaderInfoToWave, and read/fill in the value
 //
 
 
 //
 // TODO
 // x- clean up and remove all of the references to other facilities, since they will not have VSANS modules
-// -- add in more appropriate and some missing fields more useful to VSANS (intent, multiple beam centers, etc.)
+// x- add in more appropriate and some missing fields more useful to VSANS (intent, multiple beam centers, etc.)
 // -- can I make the choice of columns customizable? There are "sets" of columns that are not used for 
 //    some experiments (magnetic, rotation, temperature scans, etc.) but are necessary for others.
-// -- SortColumns operation may be of help in managing the long list of files to sort
+// x- SortColumns operation may be of help in managing the long list of files to sort
 //
 // (DONE):
 // x- clean up the list of files that now accumulates in the RawVSANS folder!!! Everything is there, including
@@ -76,45 +83,61 @@ Function V_BuildCatVeryShortTable()
 			Abort "no path to data was selected, no catalog can be made - use PickPath button"
 		Endif
 	Endif
-	
+
+//
+// WaveList will list waves in the order that they were created - so at a first pass,
+// create the waves in the order that I want them in the table.
+// The user can rearrange the columns, but likely won't
+//	
 	DoWindow/F CatVSANSTable
 	
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-//	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
-//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
-//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
-//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
-	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
-//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
-//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"		//added Mar 2010
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+	
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_F"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_F"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_F"	
+	
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_M"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_M"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_M"	
+	
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_B"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_B"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_B"
+		
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
+	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
+
+
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
+	
+//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
+//	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
+
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"		//added Mar 2010
+
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
+
+
 
 
 	WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-//	WAVE/T Suffix = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
 	WAVE/T Labels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
 	WAVE/T DateAndTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
 //	WAVE SDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
 	WAVE Lambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
 	WAVE CntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	WAVE TotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	WAVE CntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
 	WAVE Transmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
 	WAVE Thickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
 //	WAVE XCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
@@ -122,8 +145,6 @@ Function V_BuildCatVeryShortTable()
 
 	WAVE/T nGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
 	WAVE NumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
-//	WAVE RunNumber = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
-//	WAVE IsTrans = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
 	WAVE RotAngle = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
 	WAVE Temperature = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
 	WAVE Field = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
@@ -136,11 +157,8 @@ Function V_BuildCatVeryShortTable()
 	
 	If(V_Flag==0)
 		V_BuildTableWindow()
-//		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD)=40
 		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda)=40
 		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime)=50
-		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts)=60
-		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate)=60
 		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission)=40
 		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness)=40
 //		ModifyTable width(root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter)=40
@@ -365,80 +383,114 @@ Function V_AppendNotRAWFiles(w)
 End
 
 //
+// this is called BEFORE the notRAWfiles are added to the fileNames wave
+// so that the waves are still all the same length and can properly be sorted.
+//
 Function V_SortWaves()
-	Wave/T GFilenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-//	Wave/T GSuffix = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
-	Wave/T GLabels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
-	Wave/T GDateTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
-//	Wave GSDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
-	Wave GLambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
-	Wave GCntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	Wave GTotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	Wave GCntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
-	Wave GTransmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
-	Wave GThickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
-//	Wave GXCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
-//	Wave GYCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
+//	Wave/T GFilenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
+////	Wave/T GSuffix = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
+//	Wave/T GLabels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
+//	Wave/T GDateTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
+////	Wave GSDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
+//	Wave GLambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
+//	Wave GCntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
+//	Wave GTotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
+//	Wave GCntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
+//	Wave GTransmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
+//	Wave GThickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
+////	Wave GXCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
+////	Wave GYCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
+//
+//	Wave/T GNumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
+//	Wave GNumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
+////	Wave GRunNumber = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
+////	Wave GIsTrans = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
+//	Wave GRot = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
+//	Wave GTemp = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
+//	Wave GField = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
+//	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
+//	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
+//	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+//	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
+//	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+//
+//
+//// DONE
+//// x- the default sort is by SUFFIX, which does not exist for VSANS. So decide on a better key
+////     now, the sort is by FileName by default
+////	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
+//
+//	Sort GFilenames, GFilenames, GLabels, GDateTime,  GIntent, GPurpose, G_ID, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 
-	Wave/T GNumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
-	Wave GNumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
-//	Wave GRunNumber = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
-//	Wave GIsTrans = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
-	Wave GRot = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
-	Wave GTemp = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
-	Wave GField = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
-	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
-	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
-	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
-	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
-	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
-
-
-// DONE
-// x- the default sort is by SUFFIX, which does not exist for VSANS. So decide on a better key
-//     now, the sort is by FileName by default
-//	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
-	Sort GFilenames, GFilenames, GLabels, GDateTime,  GIntent, GPurpose, G_ID, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,GRot,GTemp,GField,GMCR,GPos,gNumGuides
-
+	SetDataFolder root:Packages:NIST:VSANS:CatVSHeaderInfo:
+	
+	String list = WaveList("*",",","")
+	String cmd
+	
+	list = list[0,strlen(list)-2]		//remove the trailing comma or "invalid column name" error
+	
+	sprintf cmd, "Sort Filenames, %s", list
+//	Print cmd			// For debugging
+	
+	Execute cmd
+	
+	SetDataFolder root:
 	return(0)
 End
 
 //function to create the CAT/VSTable to display the header information
 //this table is just like any other table
 Function V_BuildTableWindow()
-	Wave/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-	Wave/T Labels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
-	Wave/T DateAndTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
-//	Wave SDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
-	Wave Lambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
-	Wave CntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	Wave TotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	Wave CntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
-	Wave Transmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
-	Wave Thickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
-//	Wave XCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
-//	Wave YCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
 
-	Wave/T NumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
-	Wave NumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
-	Wave RotAngle =  $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
-	Wave Temperature = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
-	Wave Field= $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
-	Wave MCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
-	Wave Pos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
-	Wave/T Intent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
-	Wave/T Purpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
-	Wave Group_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
-
-// original order, magnetic at the end
-//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
-// with numGuides
-//	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
-	Edit Filenames, Labels, DateAndTime,  Intent, Purpose, Group_ID, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
-
+	SetDataFolder root:Packages:NIST:VSANS:CatVSHeaderInfo:
+	
+	String list = WaveList("*",",","")
+	String cmd
+	
+	list = list[0,strlen(list)-2]		//remove the trailing comma or "invalid column name" error
+	
+	sprintf cmd, "Edit %s", list
+//	Print cmd			// For debugging
+	
+	Execute cmd
 
 	String name="CatVSANSTable"
 	DoWindow/C $name
+	
+	SetDataFolder root:
+	
+//	Wave/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
+//	Wave/T Labels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
+//	Wave/T DateAndTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
+////	Wave SDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
+//	Wave Lambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
+//	Wave CntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
+//	Wave TotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
+//	Wave CntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
+//	Wave Transmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
+//	Wave Thickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
+////	Wave XCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
+////	Wave YCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
+//
+//	Wave/T NumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
+//	Wave NumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
+//	Wave RotAngle =  $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
+//	Wave Temperature = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
+//	Wave Field= $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
+//	Wave MCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"		//added Mar 2008
+//	Wave Pos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
+//	Wave/T Intent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+//	Wave/T Purpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
+//	Wave Group_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+//
+//// original order, magnetic at the end
+////	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
+//// with numGuides
+////	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
+
+//	Edit Filenames, Labels, DateAndTime,  Intent, Purpose, Group_ID, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
+
+
 	return(0)
 End
 
@@ -457,11 +509,20 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	Wave/T GLabels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
 	Wave/T GDateTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
 
-//	Wave GSDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
+	WAVE sdd_f = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_F"
+	WAVE sdd_m = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_M"
+	WAVE sdd_b = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_B"
+
 	Wave GLambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
 	Wave GCntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	Wave GTotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	Wave GCntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
+
+	Wave TotCnts_F = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_F"
+	Wave CntRate_F = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_F"
+	Wave TotCnts_M = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_M"
+	Wave CntRate_M = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_M"
+	Wave TotCnts_B = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_B"
+	Wave CntRate_B = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_B"
+	
 	Wave GTransmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
 	Wave GThickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
 //	Wave GXCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
@@ -506,14 +567,34 @@ Function V_GetHeaderInfoToWave(fname,sname)
 		
 	//read the reals
 	//detector count and (derived) count rate
-	// TODO -- this is hard-wired for a single detector, which is WRONG
 	detcnt = V_getDet_IntegratedCount(fname,"FL")
+	detcnt += V_getDet_IntegratedCount(fname,"FR")
+	detcnt += V_getDet_IntegratedCount(fname,"FT")
+	detcnt += V_getDet_IntegratedCount(fname,"FB")
 	cntrate = detcnt/ctime
-	InsertPoints lastPoint,1,GTotCnts
-	GTotCnts[lastPoint]=detcnt
-	InsertPoints lastPoint,1,GCntRate
-	GCntRate[lastPoint]=cntrate
+	InsertPoints lastPoint,1,TotCnts_F
+	TotCnts_F[lastPoint]=detcnt
+	InsertPoints lastPoint,1,CntRate_F
+	CntRate_F[lastPoint]=cntrate
+
+	detcnt = V_getDet_IntegratedCount(fname,"ML")
+	detcnt += V_getDet_IntegratedCount(fname,"MR")
+	detcnt += V_getDet_IntegratedCount(fname,"MT")
+	detcnt += V_getDet_IntegratedCount(fname,"MB")
+	cntrate = detcnt/ctime
+	InsertPoints lastPoint,1,TotCnts_M
+	TotCnts_M[lastPoint]=detcnt
+	InsertPoints lastPoint,1,CntRate_M
+	CntRate_M[lastPoint]=cntrate
 	
+	detcnt = V_getDet_IntegratedCount(fname,"B")
+	cntrate = detcnt/ctime
+	InsertPoints lastPoint,1,TotCnts_B
+	TotCnts_B[lastPoint]=detcnt
+	InsertPoints lastPoint,1,CntRate_B
+	CntRate_B[lastPoint]=cntrate
+		
+		
 	//Attenuators
 	// (DONE) x- this is the "number" of the attenuator
 	InsertPoints lastPoint,1,GNumAttens
@@ -539,11 +620,17 @@ Function V_GetHeaderInfoToWave(fname,sname)
 //	InsertPoints lastPoint,1,GYCenter
 //	GYCenter[lastPoint]=V_getDet_beam_center_y(fname,detStr)
 
-//	// TODO -- SDD has no real meaning - since there are multiple distances to report
+//	 there are multiple distances to report
 //	//SDD
-//	InsertPoints lastPoint,1,GSDD
-//	GSDD[lastPoint]=V_getDet_ActualDistance(fname,detStr)
+	InsertPoints lastPoint,1,sdd_f
+	sdd_f[lastPoint]=V_getDet_ActualDistance(fname,"FL")
+
+	InsertPoints lastPoint,1,sdd_m
+	sdd_m[lastPoint]=V_getDet_ActualDistance(fname,"ML")
 	
+	InsertPoints lastPoint,1,sdd_b
+	sdd_b[lastPoint]=V_getDet_ActualDistance(fname,"B")
+		
 	//wavelength
 	InsertPoints lastPoint,1,GLambda
 	GLambda[lastPoint]=V_getWavelength(fname)
@@ -560,17 +647,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	//Sample Field
 	InsertPoints lastPoint,1,GField
 	GField[lastPoint]=-999
-	
-
-//	//the run number (not displayed in the table, but carried along)
-//	InsertPoints lastPoint,1,GRunNumber
-//	GRunNumber[lastPoint] = V_GetRunNumFromFile(sname)
-//
-//	// TODO -- the isTransFile utility has not yet been written
-//	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
-//	InsertPoints lastPoint,1,GIsTrans
-//	GIsTrans[lastPoint]  = V_isTransFile(fname)		//returns one if beamstop is "out"
-	
+		
 	// Monitor Count Rate
 	InsertPoints lastPoint,1,GMCR
 	GMCR[lastPoint]  = V_getMonitorCount(fname)/ctime		//total monitor count / total count time
@@ -663,31 +740,32 @@ end
 function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 	String ctrlName
 
+// still need to declare these to access notRaw files and to get count of length
 	Wave/T GFilenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
-//	Wave/T GSuffix = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Suffix"
 	Wave/T GLabels = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels"
-	Wave/T GDateTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
-//	Wave GSDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
-	Wave GLambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
-	Wave GCntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-	Wave GTotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
-	Wave GCntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
-	Wave GTransmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
-	Wave GThickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
-//	Wave GXCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
-//	Wave GYCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
-	Wave/T GNumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
-	Wave GNumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
-//	Wave GRunNumber = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
-//	Wave GIsTrans = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
-	Wave GRot = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
-	Wave GTemp = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
-	Wave GField = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
-	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"
-	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
-	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
-	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
-	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
+
+//	Wave/T GDateTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:DateAndTime"
+////	Wave GSDD = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD"
+//	Wave GLambda = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
+//	Wave GCntTime = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
+//	Wave GTotCnts = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts"
+//	Wave GCntRate = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate"
+//	Wave GTransmission = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
+//	Wave GThickness = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
+////	Wave GXCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
+////	Wave GYCenter = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
+//	Wave/T GNumGuides = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
+//	Wave GNumAttens = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:NumAttens"
+////	Wave GRunNumber = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RunNumber"
+////	Wave GIsTrans = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:IsTrans"
+//	Wave GRot = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:RotAngle"
+//	Wave GTemp = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Temperature"
+//	Wave GField = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Field"
+//	Wave GMCR = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:MCR"
+//	Wave GPos = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Pos"
+//	Wave/T GIntent = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
+//	Wave/T GPurpose = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
+//	Wave G_ID = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
 
 	
 	// take out the "not-RAW-Files"
@@ -700,78 +778,113 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 		notRAWlist[0, notRAWcount-1] = GFilenames[p+rawCount]
 		DeletePoints rawCount, notRAWcount, GFilenames
 	endif
+
+
+// get the list
+	SetDataFolder root:Packages:NIST:VSANS:CatVSHeaderInfo:
 	
+	String list = WaveList("*",",",""),sortKey=""
+	String cmd
+	
+	list = list[0,strlen(list)-2]		//remove the trailing comma or "invalid column name" error
+	
+// set the sortKey string	
 	strswitch (ctrlName)
 	
 		case "SortFilenamesButton":
 //			Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GFilenames,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GFilenames,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Filenames"
 			break
 			
 		case "SortLabelsButton":
 //			Sort GLabels, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GLabels,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GLabels,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Labels"
 			break
 			
 		case "SortDateAndTimeButton":
 //			Sort GDateTime, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR
-			Sort GDateTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GDateTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "DateAndTime"
 
 			break
 			
 		case "SortIntentButton":
-			Sort GIntent,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GIntent,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Intent"
+
 			break
 			
 		case "SortIDButton":
-			Sort G_ID,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort G_ID,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Group_ID"
+
 			break
 			
 		case "SortLambdaButton":
 //			Sort GLambda, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GLambda,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GLambda,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Lambda"
 
 			break
 			
 		case "SortCountTimButton":
 //			Sort GCntTime, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GCntTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GCntTime,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "CntTime"
 
 			break
 			
 		case "SortTotalCountsButton":
 //			Sort GTotCnts, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GTotCnts,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GTotCnts,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "TotCnts"
 
 			break
 			
 		case "SortCountRateButton":
 //			Sort GCntRate, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GCntRate,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GCntRate,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "CntRate"
 
 			break
 			
 		case "SortMonitorCountsButton":
+			SetDataFolder root:
+			return(0)
 			break
 			
 		case "SortTransmissionButton":
 //			Sort GTransmission, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GTransmission,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GTransmission,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Transmission"
 
 			break
 			
 		case "SortPurposeButton":
 //			Sort GThickness, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
-			Sort GPurpose,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+//			Sort GPurpose,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
+			sortKey = "Purpose"
 
 			break
 	
 	endswitch
+	
+	//do the sort
+	sprintf cmd, "Sort %s, %s", sortKey,list
+//	Print cmd			// For debugging
+	
+	Execute cmd
+	
 	
 	// insert the "not-RAW-Files" again
 	if (notRAWcount > 0)
 		InsertPoints rawCount, notRAWcount, GFilenames
 		GFilenames[rawCount, fileCount-1] = notRAWlist[p-rawCount]
 	endif
+	
+	SetDataFolder root:
+
 end
 

@@ -1621,10 +1621,15 @@ Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	String fldr
 	Variable ii
 	
-	String folderList_plus = ksWorkFolderListShort+";VCALC"
+	String folderList = ksWorkFolderListShort
+
+// add in the check on the VCALC  folder only if called from that window	
+	if(cmpstr(winNameStr[0,4],"VCALC") == 0)
+		folderList = "VCALC;"
+	endif
 	
-	for(ii=0;ii<ItemsInList(folderList_plus);ii+=1)
-		fldr = StringFromList(ii, folderList_plus, ";")
+	for(ii=0;ii<ItemsInList(folderList);ii+=1)
+		fldr = StringFromList(ii, folderList, ";")
 		ClearIQIfDisplayed(fldr,type,winNameStr)
 	endfor
 	// just in case
