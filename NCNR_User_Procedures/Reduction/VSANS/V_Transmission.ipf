@@ -9,6 +9,14 @@
 //
 // ?? redesign the panel based on the CATALOG?
 // -- refresh the catalog, then work with those waves?
+//
+// -- this still seems to be very awkward to use. Come up with something better
+//
+// -- need more checks - be sure that the files match
+// -- SDD, wavelength, beam on proper panel, etc.
+//
+// -- need popups (transmission, open) to respond to popup changes and
+//   update their fields, since they may be auto-located incorrectly.
 // 
 
 // TODO
@@ -33,8 +41,9 @@ Window V_TransmissionPanel() : Panel
 	PopupMenu popup_0,mode=1,value= V_getFilePurposeList("SCATTERING",0)//+V_getFileIntentList("EMPTY CELL",0)
 	PopupMenu popup_1,pos={102,248},size={72.00,23.00},proc=V_TTransmFilePopMenuProc,title="Transmission"
 	PopupMenu popup_1,mode=1,value= V_getFilePurposeList("TRANSMISSION",0)
-	PopupMenu popup_2,pos={164,353},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Empty Beam"
-	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
+	PopupMenu popup_2,pos={164,353},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Open Beam"
+//	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
+	PopupMenu popup_2,mode=1,value= V_getFileIntentList("OPEN BEAM",0)
 	Button button_0,pos={37,193},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
 //	Button button_1,pos={23.00,491.00},size={100.00,20.00},proc=V_WriteTransmButtonProc,title="Write"
 	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
@@ -123,12 +132,14 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 		// TODO 
 		// x- fill in the XY box
 		// x-  Detector Panel field is hard-wired for "B"
+		// -- do I use "EMPTY BEAM", "OPEN BEAM" or both?? I think "OPEN BEAM" is what NICE will use in a drop-down menu
 		//	
-			list = V_getFileIntentList("EMPTY BEAM",0)
+//			list = V_getFileIntentList("EMPTY BEAM",0)
+			list = V_getFileIntentList("OPEN BEAM",0)
 			
 			for(ii=0;ii<np;ii+=1)
-				if(cmpstr(intentW[ii],"EMPTY BEAM")==0)
-					Print "empty beam match at ",filenameW[ii]
+				if(cmpstr(intentW[ii],"OPEN BEAM")==0)
+					Print "Open beam match at ",filenameW[ii]
 					SetVariable setvar_4,value=labelW[ii]
 					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1,popValue=fileNameW[ii]
 					

@@ -218,7 +218,7 @@ Window VSANS_DataPanel() : Panel
 	SetVariable q_pos,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gQQ,frame=0,noedit=1
 	
 	Make/O/D tmp_asdf
-	// for back panels (in pixels?)	
+	// for back panels (in pixels)	
 //	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
 	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsB
@@ -226,8 +226,8 @@ Window VSANS_DataPanel() : Panel
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
-	Label left "pixels"
-	Label bottom "pixels"	
+//	Label left "pixels"			//don't bother labeling pixels here - it will get redrawn, do it 
+//	Label bottom "pixels"			// when the selected tab is resized to be the focus
 	SetActiveSubwindow ##
 	
 	// for middle panels (in pixels?)	
@@ -237,8 +237,8 @@ Window VSANS_DataPanel() : Panel
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
-	Label left "pixels"
-	Label bottom "pixels"	
+//	Label left "pixels"
+//	Label bottom "pixels"	
 	SetActiveSubwindow ##
 	
 	// for front panels (in pixels?)	
@@ -248,8 +248,8 @@ Window VSANS_DataPanel() : Panel
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
-	Label left "pixels"
-	Label bottom "pixels"	
+//	Label left "pixels"
+//	Label bottom "pixels"	
 	SetActiveSubwindow ##
 	
 EndMacro
@@ -551,6 +551,8 @@ Function V_DataTabProc(tca) : TabControl
 				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
 				
 				SetActiveSubWindow VSANS_Data#det_panelsB
+				Label left "pixels"
+				Label bottom "pixels"
 				SetDataFolder root:
 			endif
 	
@@ -607,6 +609,8 @@ Function V_DataTabProc(tca) : TabControl
 				ModifyGraph/W=VSANS_Data#det_panelsM width={Aspect,1}
 							
 				SetActiveSubWindow VSANS_Data#det_panelsM
+				Label left "pixels"
+				Label bottom "pixels"
 				SetDataFolder root:
 			endif
 
@@ -663,6 +667,8 @@ Function V_DataTabProc(tca) : TabControl
 				ModifyGraph/W=VSANS_Data#det_panelsF width={Aspect,1}				
 	
 				SetActiveSubWindow VSANS_Data#det_panelsF
+				Label left "pixels"
+				Label bottom "pixels"
 				SetDataFolder root:
 			endif
 

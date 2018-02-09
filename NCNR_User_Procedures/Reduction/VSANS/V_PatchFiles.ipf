@@ -2353,7 +2353,22 @@ Proc V_Patch_Intent_catTable()
 	V_fPatch_Intent_catTable()
 end
 
+Proc V_PatchDet_Gap(lo,hi)
+	Variable lo,hi
+	
+	V_fPatchDet_Gap(lo,hi)
+End
 
+Proc V_ReadDet_Gap(lo,hi)
+	Variable lo,hi
+	
+	V_fReadDet_Gap(lo,hi)
+
+Proc V_PatchDet_Distance(lo,hi,dist_f,dist_m,dist_b)
+	Variable lo,hi,dist_f=400,dist_m=1900,dist_b=2200
+	
+	V_fPatchDet_distance(lo,hi,dist_f,dist_m,dist_b)
+End
 // simple utility to patch the offset values in the file headers
 //
 // Swaps only the L/R detector values
@@ -2493,6 +2508,126 @@ Function V_fPatch_Intent_catTable()
 	for(jj=0;jj<num;jj+=1)
 		Print "update file ",jj,fileNameW[jj]
 		V_writeReductionIntent(fileNameW[jj],intent[jj])	
+	endfor
+	
+	return(0)
+End
+
+
+
+// simple utility to patch the detector gap values in the file headers
+//
+// values are measured values in [mm], not estimated
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDet_Gap(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+		// write gap values
+			V_writeDet_panel_gap(fname,"FL",3.5)
+			V_writeDet_panel_gap(fname,"FR",3.5)
+
+			V_writeDet_panel_gap(fname,"FT",3.3)
+			V_writeDet_panel_gap(fname,"FB",3.3)
+
+			V_writeDet_panel_gap(fname,"ML",5.9)
+			V_writeDet_panel_gap(fname,"MR",5.9)
+
+			V_writeDet_panel_gap(fname,"MT",18.3)
+			V_writeDet_panel_gap(fname,"MB",18.3)		
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector gap values stored in the file header
+Function V_fReadDet_Gap(lo,hi)
+	Variable lo,hi
+
+	String fname,detStr
+	Variable jj
+	Variable gap_FL,gap_FR,gap_FT,gap_FB,gap_ML,gap_MR,gap_MT,gap_MB
+	
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			gap_FL = V_getDet_panel_gap(fname,"FL")
+			gap_FR = V_getDet_panel_gap(fname,"FR")
+			gap_FT = V_getDet_panel_gap(fname,"FT")
+			gap_FB = V_getDet_panel_gap(fname,"FB")
+
+			gap_ML = V_getDet_panel_gap(fname,"ML")
+			gap_MR = V_getDet_panel_gap(fname,"MR")
+			gap_MT = V_getDet_panel_gap(fname,"MT")
+			gap_MB = V_getDet_panel_gap(fname,"MB")
+			
+			print fname	
+			Print "FL, FR, FT, FB = ",gap_FL,gap_FR,gap_FT,gap_FB
+			Print "ML, MR, MT, MB = ",gap_ML,gap_MR,gap_MT,gap_MB
+		
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+
+	
+	return(0)
+End
+
+
+// simple utility to patch the detector distance values in the file headers
+//
+// values are in [cm]
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatchDet_distance(lo,hi,d_f,d_m,d_b)
+	Variable lo,hi,d_f,d_m,d_b
+
+	
+	Variable ii,jj
+	String fname,detStr
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+		// write gap values
+			V_writeDet_distance(fname,"FL",d_f)
+			V_writeDet_distance(fname,"FR",d_f)
+			V_writeDet_distance(fname,"FT",d_f)
+			V_writeDet_distance(fname,"FB",d_f)
+
+			V_writeDet_distance(fname,"ML",d_m)
+			V_writeDet_distance(fname,"MR",d_m)
+			V_writeDet_distance(fname,"MT",d_m)
+			V_writeDet_distance(fname,"MB",d_m)		
+
+			V_writeDet_distance(fname,"B",d_b)		
+		
+		else
+			printf "run number %d not found\r",jj
+		endif
 	endfor
 	
 	return(0)

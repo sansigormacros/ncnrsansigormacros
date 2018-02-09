@@ -837,3 +837,72 @@ Function V_BeamCtr_WriteTable()
 	return(0)
 	
 End
+
+
+
+
+//////////////////
+//
+// Simple utility to calculate beam centers [cm] based on a single measurement
+//  and empirical relations between the panel zero positions
+//
+// Empirical relations are derived from beam center measurements using 6A data and WB data (9/10/17)
+// only measurements on L, R, and x-coordinate of B were used. T panel cannot be translated down far enough
+// to reach the direct beam.
+//
+// Start with the (default) case of a beam center measured on R (MR or FR)
+//
+// Empirical values are averaged as noted
+//
+
+Proc V_DeriveBeamCenters()
+
+	Make/O/T panelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
+	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
+	
+	Edit panelWave,newXCtr_cm,newYCtr_cm
+	
+	DoAlert 0, "enter the measured beam center for FR and MR panels"
+	V_fDeriveBeamCenters()
+	
+End
+
+
+Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+	Variable xFR,yFR,xMR,yMR
+	
+	// start with the front
+	// FR
+	newXCtr_cm[1] = xFR
+	newYCtr_cm[1] = yFR
+	// FL
+	newXCtr_cm[0] = xFR - (0.03 + 0.03)/2
+	newYCtr_cm[0] = yFR + (0.34 + 0.32)/2
+	// FB
+	newXCtr_cm[3] = xFR - (2.02 + 2.06)/2
+	newYCtr_cm[3] = yFR - (0.12 + 0.19)/2
+	// FT (duplicate FB)
+	newXCtr_cm[2] = newXCtr_cm[3]
+	newYCtr_cm[2] = newYCtr_cm[3]
+	
+	// MR
+	newXCtr_cm[5] = xMR
+	newYCtr_cm[5] = yMR
+	// ML
+	newXCtr_cm[4] = xMR - (0.06 + 0.05)/2
+	newYCtr_cm[4] = yMR + (0.14 + 0.01)/2
+	// MB
+	newXCtr_cm[7] = xMR - (0.51 + 0.62)/2
+	newYCtr_cm[7] = yMR + (0.79 + 0.74)/2
+	// MT (duplicate MB)
+	newXCtr_cm[6] = newXCtr_cm[7]
+	newYCtr_cm[6] = newYCtr_cm[7]	
+	
+	
+	// dummy value for B
+	newXCtr_cm[8] = 50
+	newYCtr_cm[8] = 50
+
+		
+	return
+End

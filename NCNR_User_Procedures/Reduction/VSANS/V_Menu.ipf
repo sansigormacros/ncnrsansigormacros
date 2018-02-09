@@ -27,6 +27,8 @@ Menu "VSANS"
 		"-"
 		"Annular Binning",Annular_Binning()
 		"Write Annular Data",V_Write1DAnnular()
+		"-"
+		"Derive Beam Centers",V_DeriveBeamCenters()
 	End
 	Submenu "Work Files"
 		"Convert to WORK",V_Convert_to_Workfile()
@@ -49,6 +51,9 @@ Menu "VSANS"
 		"Patch GroupID using CatTable",V_Patch_GroupID_catTable()
 		"Patch Purpose using CatTable",V_Patch_Purpose_catTable()
 		"Patch Intent using CatTable",V_Patch_Intent_catTable()
+		"Patch Detector Panel Gap",V_PatchDet_Gap()
+		"Read Detetcor Panel Gap",V_ReadDet_Gap()
+		"Patch Detector Distance",V_PatchDet_Distance()
 		"-"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"

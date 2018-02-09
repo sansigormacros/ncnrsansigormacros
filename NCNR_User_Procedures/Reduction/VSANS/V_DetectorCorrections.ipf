@@ -155,23 +155,32 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 
 // kPanelTouchingGap is in mm	
 // the gap is split equally between the panel pairs
-// TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
-// these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
-// both beam conditions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
-	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
-		gap = 3.5		//mm (measured, JB 1/4/18)
+// (DONE) -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
+
+	gap = V_getDet_panel_gap(fname,detStr)
+
+// TODO:
+// -- once the gap fields have been verified, this check can be removed
+// -- it should only apply to data pre-2018 when the field did not exist in the file
+// -- any VSANS data from 2018+ should read gap from the file.
+
+	if(gap < -100)		//-999999 returned if field is missing from file
+	
+		if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
+			gap = 3.5		//mm (measured, JB 1/4/18)
+		endif
+		if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+			gap = 3.3		//mm (measured, JB 2/1/18)
+		endif
+		if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
+			gap = 5.9		//mm (measured, JB 1/4/18)
+		endif
+		if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+			gap = 18.3		//mm (measured, JB 2/1/18)
+		endif
+	
 	endif
-	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
-		gap = 3.3		//mm (measured, JB 2/1/18)
-	endif
-	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
-		gap = 5.9		//mm (measured, JB 1/4/18)
-	endif
-	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
-		gap = 18.3		//mm (measured, JB 2/1/18)
-	endif
-// TODO: this is the line to keep, to replace the hard-wired values
-//	gap = V_getDet_panel_gap(fname,detStr)
+
 	
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
@@ -1354,20 +1363,23 @@ Function V_DIVCorrection(data,data_err,detStr,workType)
 	
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
-
-	WAVE/Z div_data_err = V_getDetectorDataErrW("DIV",detStr)
-	WAVE/Z div_data = V_getDetectorDataW("DIV",detStr)
-
+	// !! be sure to check first, before trying to access the wave
+	
 //	WAVE/Z div_data = $("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")
-	if(WaveExists(div_data) == 0)
+	if(WaveExists($("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":data")) == 0)
 		Print "The DIV wave does not exist in V_DIVCorrection()"
 		Return(1)		//error condition
 	Endif
-	if(WaveExists(div_data_err) == 0)
+	if(WaveExists($("root:Packages:NIST:VSANS:DIV:entry:instrument:detector_"+detStr+":linear_data_error")) == 0)
 		Print "The DIV error wave does not exist in V_DIVCorrection()"
 		Return(1)		//error condition
 	Endif
 	//files exist, proceed
+
+	WAVE/Z div_data_err = V_getDetectorDataErrW("DIV",detStr)
+	WAVE/Z div_data = V_getDetectorDataW("DIV",detStr)
+
+
 
 // do the error propagation first, since data is changed by the correction
 	data_err = sqrt(data_err^2/div_data^2 + div_data_err^2 * data^2/div_data^4 )
