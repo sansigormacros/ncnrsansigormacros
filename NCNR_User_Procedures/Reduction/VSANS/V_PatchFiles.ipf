@@ -1568,6 +1568,7 @@ Proc V_PatchDetectorDeadtimePanel()
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
 
 		Make/O/D/N=48 deadTimeWave
+		Variable/G gFileNum_Lo,gFileNum_Hi
 		
 		SetDataFolder root:
 		
@@ -1610,9 +1611,9 @@ Proc V_DeadtimePatchPanel() : Panel
 	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVDTButton,title="Write Dead Time CSV"
 	
 	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
-	SetVariable setvar0,value= K0
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
 	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
-	SetVariable setvar1,value= K1
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 
 // display the wave	
@@ -1871,6 +1872,7 @@ Proc V_PatchDetectorCalibrationPanel()
 
 		Make/O/D/N=(3,48) calibrationWave
 		
+		Variable/G gFileNum_Lo,gFileNum_Hi
 		SetDataFolder root:
 		
 		Execute "V_CalibrationPatchPanel()"
@@ -1913,9 +1915,9 @@ Proc V_CalibrationPatchPanel() : Panel
 	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVCalibButton,title="Write Calibration CSV"
 		
 	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
-	SetVariable setvar0,value= K0
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
 	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
-	SetVariable setvar1,value= K1
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 
 // display the wave	
@@ -2012,6 +2014,8 @@ End
 //	V_writeDet_cal_x(filename,"B",tmpCalib)
 //	V_writeDet_cal_y(filename,"B",tmpCalib)
 //
+// "Perfect" values here are from Phil (2/2018)
+//
 Function V_GeneratePerfCalibButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -2027,8 +2031,8 @@ Function V_GeneratePerfCalibButton(ba) : ButtonControl
 				case "MR":
 				case "ML":
 					//	// for the "tall" L/R banks
-					calibrationWave[0][] = -512
-					calibrationWave[1][] = 8
+					calibrationWave[0][] = -521
+					calibrationWave[1][] = 8.14
 					calibrationWave[2][] = 0
 					break
 				case "FT":
@@ -2036,8 +2040,8 @@ Function V_GeneratePerfCalibButton(ba) : ButtonControl
 				case "MT":
 				case "MB":
 					//	// for the "short" T/B banks
-					calibrationWave[0][] = -256
-					calibrationWave[1][] = 4
+					calibrationWave[0][] = -266
+					calibrationWave[1][] = 4.16
 					calibrationWave[2][] = 0
 
 					break
@@ -2227,6 +2231,8 @@ Proc V_PatchDet_xyCenters_Panel()
 		Make/O/D/N=9 xCtr_cm,yCtr_cm
 		Make/O/T/N=9 panelW
 		
+		Variable/G gFileNum_Lo,gFileNum_Hi
+		
 		SetDataFolder root:
 		
 		Execute "V_Patch_xyCtr_Panel()"
@@ -2261,9 +2267,9 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
 	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteXYButtonProc,title="Write"
 	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
-	SetVariable setvar0,value= K0
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
 	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
-	SetVariable setvar1,value= K1
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch

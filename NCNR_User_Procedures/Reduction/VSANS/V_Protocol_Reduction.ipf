@@ -735,7 +735,7 @@ Function/S V_PickEMPBeamButton(ctrlName) : ButtonControl
 	PathInfo catPathName
 	String path = S_path
 
-	String match="EMPTY BEAM"
+	String match="OPEN BEAM"
 
 // get the list from the file catalog (=0.0007s)
 //	

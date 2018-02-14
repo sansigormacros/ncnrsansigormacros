@@ -306,3 +306,41 @@ Function V_FindCentroid() :  GraphMarquee
 	SetDataFolder root:
 	
 End
+
+
+
+//
+//function will write new box coordinates to the data file
+//
+Function V_UpdateBoxCoords() :  GraphMarquee
+	GetMarquee left,bottom
+	if(V_flag == 0)
+		Print "There is no Marquee"
+	else
+		Variable count,x1,x2,y1,y2,ct_err
+		x1 = V_left
+		x2 = V_right
+		y1 = V_bottom
+		y2 = V_top
+
+		// NOTE:
+		// this function MODIFIES x and y values on return, converting them to panel coordinates
+		// detector panel is identified from the (left,top) coordinate (x1,y2)
+		String detStr = V_FindDetStrFromLoc(x1,x2,y1,y2)		
+// 
+		SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
+		string boxStr
+		// this function will modify the x and y values (passed by reference) as needed to keep on the panel
+		V_KeepSelectionInBounds(x1,x2,y1,y2,detStr,gCurDispType)
+		sprintf boxStr,"%d;%d;%d;%d;",x1,x2,y1,y2
+
+		SVAR gCurrentFile = root:Packages:NIST:VSANS:Globals:gLastLoadedFile		//for the status of the display
+
+		V_writeBoxCoordinates(gCurrentFile,V_List2NumWave(boxStr,";","inW"))
+
+//		count = V_SumCountsInBox(x1,x2,y1,y2,ct_err,gCurDispType,detStr)		
+//		Print "counts = ",count
+//		Print "err/counts = ",ct_err/count
+
+	endif
+End
