@@ -58,11 +58,12 @@ Proc DIV_Setup_Panel() : Panel
 	DoWindow/C DIV_Setup_Panel
 	Button button0,pos={54.00,10.00},size={120.00,20.00},proc=V_DIVSetupButtonProc,title="Setup Folder"
 	Button button1,pos={54.00,40.00},size={120.00,20.00},proc=V_DIVClearOldButtonProc,title="Clear Old DIV"
+	Button button1_2,pos={54.00,70.00},size={120.00,20.00},proc=V_DIVMaskButtonProc,title="Mask for DIV"
 
-	DrawText 36,110,"Reduce data for one carriage"	
+	DrawText 36,130,"Reduce data for one carriage"	
 	DrawText 36,200,"Repeat for the other carriage"
-	Button button1_2,pos={74.00,130.00},size={120.00,20.00},proc=V_DIVMaskButtonProc,title="Mask for DIV"
-	Button button2,pos={74.00,160.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize+Copy"
+	
+	Button button2,pos={54.00,145.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize+Copy"
 
 	DrawText 36,290,"Once data for both carriages has\rbeen normalized, save the file"	
 	
@@ -97,7 +98,14 @@ Function V_DIVClearOldButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			V_KillWavesInFolder("DIV")
+			
+			KillDataFolder/Z $"root:Packages:NIST:VSANS:DIV"			//many subfolders, so Kill all
+			if(V_flag == 0)		// kill DF was OK
+				NewDataFolder root:Packages:NIST:VSANS:DIV
+				Print "DIV folder cleared successfully"
+			else
+				Print "DIV folder in use - could not be cleared"
+			endif
 			break
 		case -1: // control being killed
 			break

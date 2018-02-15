@@ -267,8 +267,15 @@ End
 Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DIV_Setup_Panel()
-	V_Display_DIV_Panels()	
+	DoWindow/F DIV_Setup_Panel
+	if(V_flag == 0)
+		DIV_Setup_Panel()
+	endif
+	
+	DoWindow/F VSANS_DIVPanels
+	if(V_flag == 0)
+		V_Display_DIV_Panels()	
+	endif
 End
 
 
