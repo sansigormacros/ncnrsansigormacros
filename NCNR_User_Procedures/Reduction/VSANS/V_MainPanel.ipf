@@ -148,7 +148,9 @@ End
 Proc Fit1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	OpenFITPanel()
+	DoAlert 0, "This function has not been updated for VSANS yet..."
+
+//	OpenFITPanel()
 End
 
 //Proc FitRPA_MainButtonProc(ctrlName) : ButtonControl
@@ -166,7 +168,9 @@ End
 Proc Arithmetic1D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	MakeDAPanel()
+	DoAlert 0, "This function has not been updated for VSANS yet..."
+
+//	MakeDAPanel()
 End
 
 Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
@@ -187,7 +191,10 @@ End
 Proc Draw3D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Plot3DSurface()
+	DoAlert 0, "This function has not been updated for VSANS yet..."
+
+//	Plot3DSurface()
+	
 End
 
 ////on Misc Ops tab, generates a notebook
@@ -363,7 +370,7 @@ Window Main_VSANS_Panel()
 //////
 //on main portion of panel
 	Button MainButtonA,pos={8,8},size={80,20},title="Pick Path",proc=PickPath_MainButtonProc
-	Button MainButtonA,help={"Pick the local data folder that contains the SANS data"}
+	Button MainButtonA,help={"Pick the local data folder that contains the VSANS data"}
 	Button MainButtonB,pos={100,8},size={90,20},proc=CatVShort_MainButtonProc,title="File Catalog"
 	Button MainButtonB,help={"This will generate a condensed CATalog table of all files in a specified local folder"}
 	Button MainButtonC,pos={250,8},size={50,20},proc=HelpMainButtonProc,title="Help"
@@ -383,7 +390,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_0b,pos={15,120},size={70,20},proc=PatchMainButtonProc,title="Patch"
 	Button MainButton_0b,help={"Patch will update incorrect information in raw data headers"}
 	Button MainButton_0c,pos={15,150},size={110,20},proc=TransMainButtonProc,title="Transmission"
-	Button MainButton_0c,help={"Shows the panel which allows calculation of sample transmissions and entering these values into raw data headers"}
+	Button MainButton_0c,help={"Shows the panel which allows calculation of sample transmissions and patching values into raw data headers"}
 	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={130,20},proc=CatSort_MainButtonProc,title="Sort Catalog"
@@ -393,23 +400,23 @@ Window Main_VSANS_Panel()
 	Button MainButton_0g,pos={170,180},size={110,20},proc=RTReduce_MainButtonProc,title="RT Reduction"
 	Button MainButton_0g,help={"Reduce live (incomplete) data files during acquisition"}
 	Button MainButton_0h,pos={170,90},size={90,20},proc=Patch_XY_MainButtonProc,title="Patch XY"
-	Button MainButton_0h,help={"Patch will update incorrect information in raw data headers"}
+	Button MainButton_0h,help={"Easy patching of XY beam center to multiple files"}
 	Button MainButton_0i,pos={170,120},size={110,20},proc=Patch_DeadTime_MainButtonProc,title="Patch DeadTime"
-	Button MainButton_0i,help={"Patch will update incorrect information in raw data headers"}
+	Button MainButton_0i,help={"Easy patching of dead time tables to multiple files"}
 	Button MainButton_0j,pos={170,150},size={90,20},proc=Patch_Calib_MainButtonProc,title="Patch Calib"
-	Button MainButton_0j,help={"Patch will update incorrect information in raw data headers"}
+	Button MainButton_0j,help={"Easy patching of nonlinear calibration tables to multiple files"}
 
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
 	Button MainButton_1a,help={"Shows a panel where the CATalog window is used as input for creating a protocol. Can also be used for standard reductions"}
-	Button MainButton_1b,pos={15,120},size={110,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
-	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
+//	Button MainButton_1b,pos={15,120},size={110,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
+//	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
 	Button MainButton_1c,pos={15,150},size={160,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
 	Button MainButton_1c,help={"Use for reducing multiple raw datasets after protocol(s) have been created"}
 //	Button MainButton_1d,pos={15,180},size={110,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
 //	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}
 	Button MainButton_1a,disable=1
-	Button MainButton_1b,disable=1
+//	Button MainButton_1b,disable=1
 	Button MainButton_1c,disable=1
 //	Button MainButton_1d,disable=1
 
@@ -427,7 +434,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_2e,pos={120,90},size={110,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
 	Button MainButton_2e,help={"Shows panel for doing arithmetic on 1D data sets"}
 	Button MainButton_2f,pos={120,120},size={130,20},proc=Combine1D_MainButtonProc,title="Combine 1D Files"
-	Button MainButton_2f,help={"Shows panel for batch combination of 1D data files. Use after you're comfortable with NSORT"}
+	Button MainButton_2f,help={"Shows panel for selecting points to trim before combining files"}
 	Button MainButton_2a,disable=1
 //	Button MainButton_2b,disable=1
 	Button MainButton_2c,disable=1
@@ -443,7 +450,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_3b,pos={15,120},size={90,20},title="Draw Mask",proc=DrawMask_MainButtonProc
 	Button MainButton_3b,help={"Draw a mask file and save it."}
 	Button MainButton_3c,pos={15,150},size={90,20},proc=ReadMask_MainButtonProc,title="Read Mask"
-	Button MainButton_3c,help={"Reads a mask file into the proper work folder, and displays a small image of the mask. Yellow areas will be excluded from the data"}
+	Button MainButton_3c,help={"Reads a mask file into the proper work folder"}
 //	Button MainButton_3d,pos={15,180},size={100,20},title="Tile RAW 2D",proc=ShowTilePanel_MainButtonProc
 //	Button MainButton_3d,help={"Adds selected RAW data files to a layout."}
 	Button MainButton_3e,pos={150,90},size={100,20},title="Copy Work",proc=CopyWork_MainButtonProc
@@ -451,7 +458,7 @@ Window Main_VSANS_Panel()
 //	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 //	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
 	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=Event_MainButtonProc
-	Button MainButton_3g,help={"Manipulate TISANE Timeslice data"}
+	Button MainButton_3g,help={"Manipulate VSANS Event Mode data"}
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
@@ -473,7 +480,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_4e,pos={180,90},size={130,20},proc=NonLinTubes_MainButtonProc,title="Fit NonLinear Tubes"
 	Button MainButton_4e,help={""}
 	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
-	Button MainButton_4f,help={"Merges two stored workfiles (CORrected) into a DIV file, and saves the result"}
+	Button MainButton_4f,help={"Displays panels and outlines the steps for generating a detector sensitivity file"}
 //	Button MainButton_4g,pos={180,150},size={130,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
 //	Button MainButton_4g,help={"Exports selected RAW (2D) data file(s) as ASCII, either as pixel values or I(Qx,Qy)"}
 	Button MainButton_4h,pos={180,180},size={130,20},proc=Preferences_MainButtonProc,title="Preferences"
