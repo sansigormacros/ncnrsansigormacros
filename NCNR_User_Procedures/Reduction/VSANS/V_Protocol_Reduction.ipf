@@ -1,6 +1,7 @@
+#pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion=7
 
 //************************
 
@@ -2336,14 +2337,20 @@ Function V_ExecuteProtocol(protStr,samStr)
 //	 x- need to convert BINTYPE keyword into a numerical value to pass
 //
 
+//
+// (DONE)
+// -x this generates a "Bin Type Not Found" error if reducing only to a 2D level (like for DIV)
+//		because binTypeStr is null
 	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
 	// plotting is not really necessary, and the graph may not be open - so skip for now?
 	Variable binType
-	binType = V_BinTypeStr2Num(binTypeStr)
-	if(binType == 0)
-			Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
+	// only get the binning type if user asks for averaging
+	If(cmpstr(av_type,"none") != 0)
+		binType = V_BinTypeStr2Num(binTypeStr)
+		if(binType == 0)
+				Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
+		endif
 	endif
-
 
 //
 // TODO:
@@ -2402,8 +2409,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 // TODO:
 // -- BAD logic here, skipping the normal graph if annular is chosen. Go back and see how I do this
 // in SANS for a better and more foolproof way to do this
+// x- don't draw the graph if "none" is the average type!
 	//
-	if(cmpstr(av_type,"Annular") != 0)
+	if(cmpstr(av_type,"Annular") != 0 && (cmpstr(av_type,"none") != 0) )
 		V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
 		V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
 	endif

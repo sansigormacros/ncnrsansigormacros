@@ -2325,6 +2325,8 @@ End
 //direction = one of "vertical;horizontal;maximum;"
 // all of this is bypassed if the lenses are in
 //
+// returns beam diameter in [cm]
+//
 Function beamDiameter(direction)
 	String direction
 
@@ -2370,6 +2372,9 @@ Function beamDiameter(direction)
 End
 
 //on NG3 and NG7, allowable sizes are 1,2,3,4" diameter
+//
+// at the NGB-10m instrument, allowable sizes are 1, 1.5, 2, 3 (inches) ( SRK 2018)
+//
 //will return values larger than 4.0*2.54 if a larger beam is needed
 //
 // - in an approximate way, account for lenses
@@ -2377,7 +2382,9 @@ Function beamstopDiam()
 
 	NVAR yesLens = root:Packages:NIST:SAS:gUsingLenses
 	Variable bm=0
-	Variable bs=0.0
+	Variable bs=0.0,pass=0
+ 
+ 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr		// "NG3","NG7","NGB"
    
 	if(yesLens)
 		//bm = sourceApertureDiam()		//ideal result, not needed
@@ -2385,7 +2392,28 @@ Function beamstopDiam()
 	else
 		bm = beamDiameter("maximum")
 		do
-	    	bs += 1
+			if(cmpstr(selInstr,"NGB") == 0)
+				pass +=1
+				if(pass == 1)
+					bs = 1
+				endif
+				if(pass == 2)
+					bs = 1.5
+				endif
+				if(pass == 3)
+					bs = 2
+				endif
+				if(pass == 4)
+					bs = 3
+				endif
+				if(pass > 4)
+					bs += 1
+				endif
+								
+			else
+		    	bs += 1			// always add 1" at a time to the beam stop (NG3B-30m and NG7)
+	    	endif
+	    	
 	   while ( (bs*2.54 < bm) || (bs > 30.0)) 			//30 = ridiculous limit to avoid inf loop
 	endif
 
@@ -2393,7 +2421,7 @@ Function beamstopDiam()
  	WAVE rw=root:Packages:NIST:SAS:realsRead
  	rw[21] = bs*25.4		//store the BS diameter in mm
  	
-    return (bs*2.54)		//return diameter in cm, not inches for txt
+   return (bs*2.54)		//return diameter in cm, not inches for txt
 End
 
 //returns the projected diameter of the beamstop at the anode plane.
