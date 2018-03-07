@@ -1418,6 +1418,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	S1 = str2num(V_getSourceAp_size(folderStr))
 	
 // S2 = sample aperture diameter [mm]
+// as of 3/2018, the "internal" sample aperture is not in use, only the external
 	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", but may not exist?
 	
 // L1 = source to sample distance [m] 
@@ -1443,6 +1444,19 @@ if(cmpstr(detStr,"FL")==0)
 	Print "(FL) Resolution lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses"
 	Print lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
 endif
+
+
+// TODO:
+// this is the point where I need to switch on the different collimation types (white beam, slit, Xtal, etc)
+// to calculate the correct resolution, or fill the waves with the correct "flags"
+//
+
+// For white beam data, the wavelength distribution can't be represented as a gaussian, but all of the other 
+//  geometric corrections still apply. Passing zero for the lambdaWidth will return the grometry contribution,
+//  as long as the wavelength can be handled separately. It appears to be correct to do as a double integral,
+// with the inner(lambda) calculated first, then the outer(geometry).
+//
+
 
 	ii=0
 	do

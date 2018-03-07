@@ -114,7 +114,10 @@ End
 // and generating the smearing matrix
 #include "V_USANS_SlitSmearing_v40"
 
-
-
+// for smearing of White beam data
+//
+#include "V_WhiteBeamSmear"
+#include "V_WhiteBeamDistribution"
+#include "V_DummyFunctions"
 
 
