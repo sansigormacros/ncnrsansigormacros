@@ -670,7 +670,7 @@ End
 //returns a list of valid files (raw data, no version numbers, no averaged files)
 //that is semicolon delimited, and is suitable for display in a popup menu
 //
-Function/S xGetValidPatchPopupList()
+Function/S V_xGetValidPatchPopupList()
 
 	//make sure that path exists
 	PathInfo catPathName

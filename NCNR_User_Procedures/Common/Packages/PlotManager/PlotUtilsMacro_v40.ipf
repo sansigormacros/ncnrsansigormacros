@@ -1204,7 +1204,8 @@ Function/S User_FunctionPopupList()
 
 	tmp = FunctionList("*_proto",";","KIND:10")		//prototypes
 	list = RemoveFromList(tmp, list  ,";")
-	
+
+
 	//prototypes that show up if GF is loaded
 	list = RemoveFromList("GFFitFuncTemplate", list)
 	list = RemoveFromList("GFFitAllAtOnceTemplate", list)
@@ -1347,7 +1348,13 @@ Function/S User_FunctionPopupList()
 	
 // from 2017-2018 VSANS reduction
 	list = RemoveFromList("V_BroadPeak_Pix2D;V_BroadPeak_Pix2D_noThread;V_CleanupTimes;V_I_BroadPeak_Pix2D;V_IndexForHistogram;V_MakeFibonacciWave;V_UpdatePix2Mat;xJointHistogram;",list,";")
-			
+
+	tmp = FunctionList("*X_",";","KIND:10")		// dummy functions with "X_" at the end, for vsans (2018)
+	list = RemoveFromList(tmp, list  ,";")
+	
+	list = RemoveFromList("Integrate_BuiltIn;intgrnd;V_WB_testKernel;",list,";")
+
+				
 	list = SortList(list)
 	return(list)
 End

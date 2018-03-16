@@ -54,13 +54,13 @@ Proc SuperFormulaPanel()
 //	ShowTools/A
 	SetDrawLayer UserBack
 	SetVariable setvar0,pos={37.00,92.00},size={80.00,18.00},title="r",fSize=12
-	SetVariable setvar0,limits={-20,20,1},value= _NUM:3,disable=2
+	SetVariable setvar0,limits={-20,20,1},value= _NUM:3,disable=1
 	SetVariable setvar1,pos={37.00,118.00},size={80.00,18.00},title="t",fSize=12
-	SetVariable setvar1,limits={-20,20,1},value= _NUM:2,disable=2
+	SetVariable setvar1,limits={-20,20,1},value= _NUM:2,disable=1
 	SetVariable setvar2,pos={37.00,145.00},size={80.00,18.00},title="s",fSize=12
-	SetVariable setvar2,limits={-20,20,1},value= _NUM:4,disable=2
+	SetVariable setvar2,limits={-20,20,1},value= _NUM:4,disable=1
 	SetVariable setvar3,pos={37.00,172.00},size={80.00,18.00},title="rad",fSize=12
-	SetVariable setvar3,limits={0,50,1},value= _NUM:15,disable=2
+	SetVariable setvar3,limits={0,50,1},value= _NUM:15,disable=1
 	
 	SetVariable setvar4,pos={162.00,91.00},size={80.00,18.00},title="m",fSize=12
 	SetVariable setvar4,limits={-20,20,1},value= _NUM:15
@@ -87,7 +87,9 @@ Proc SuperFormulaPanel()
 	CheckBox check3,pos={149.00,38.00},size={96.00,15.00},title="SuperFormula"
 	CheckBox check3,fSize=12,value= 1,mode=1,proc=SuperCheckProc
 
-	Button button0,pos={208.00,215.00},size={70.00,20.00},proc=SuperCalcButtonProc,title="Calculate"
+	Button button0,pos={190.00,215.00},size={80.00,20.00},proc=SuperCalcButtonProc,title="Calculate"
+	Button button1,pos={190.00,245.00},size={80.00,20.00},proc=PointCloudButtonProc,title="Point Cloud"
+
 
 End
 
@@ -112,42 +114,42 @@ Function SuperCheckProc(cba) : CheckBoxControl
 					
 					SetVariable setvar0 disable=0
 					SetVariable setvar1 disable=0
-					SetVariable setvar2 disable=2
-					SetVariable setvar3 disable=2
-					SetVariable setvar4 disable=2
-					SetVariable setvar5 disable=2
-					SetVariable setvar6 disable=2
-					SetVariable setvar7 disable=2
+					SetVariable setvar2 disable=1
+					SetVariable setvar3 disable=1
+					SetVariable setvar4 disable=1
+					SetVariable setvar5 disable=1
+					SetVariable setvar6 disable=1
+					SetVariable setvar7 disable=1
 					
 					break
 				case "check1":		// Toroid
 					gRadioVal= 2
 					SetVariable setvar0 disable=0
 					SetVariable setvar1 disable=0
-					SetVariable setvar2 disable=2
+					SetVariable setvar2 disable=1
 					SetVariable setvar3 disable=0
-					SetVariable setvar4 disable=2
-					SetVariable setvar5 disable=2
-					SetVariable setvar6 disable=2
-					SetVariable setvar7 disable=2
+					SetVariable setvar4 disable=1
+					SetVariable setvar5 disable=1
+					SetVariable setvar6 disable=1
+					SetVariable setvar7 disable=1
 					break
 				case "check2":		// Quadric
 					gRadioVal= 3
 					SetVariable setvar0 disable=0
 					SetVariable setvar1 disable=0
 					SetVariable setvar2 disable=0
-					SetVariable setvar3 disable=2
-					SetVariable setvar4 disable=2
-					SetVariable setvar5 disable=2
-					SetVariable setvar6 disable=2
-					SetVariable setvar7 disable=2
+					SetVariable setvar3 disable=1
+					SetVariable setvar4 disable=1
+					SetVariable setvar5 disable=1
+					SetVariable setvar6 disable=1
+					SetVariable setvar7 disable=1
 					break
 				case "check3":		// SuperFormula
 					gRadioVal= 4
-					SetVariable setvar0 disable=2
-					SetVariable setvar1 disable=2
-					SetVariable setvar2 disable=2
-					SetVariable setvar3 disable=2
+					SetVariable setvar0 disable=1
+					SetVariable setvar1 disable=1
+					SetVariable setvar2 disable=1
+					SetVariable setvar3 disable=1
 					SetVariable setvar4 disable=0
 					SetVariable setvar5 disable=0
 					SetVariable setvar6 disable=0
@@ -250,7 +252,21 @@ Function SuperCalcButtonProc(ba) : ButtonControl
 	return 0
 End
 
+Function PointCloudButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
 
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "mat_as_3dCloud()"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 
@@ -411,7 +427,7 @@ End
 
 // will plot either the 2d or 3d version, whichever was most recently
 // calculated -- the M_parametric wave is plotted
-Window Gizmo_superSurface() : GizmoPlot
+Proc Gizmo_superSurface()
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
 	NewGizmo/T="Gizmo0"/W=(286,371,959,941)
@@ -620,7 +636,7 @@ end
 //
 // execute mat = voxW, then the voxelgram can be FFT'd, or Debye's method
 //
-Window Gizmo_superVox() : GizmoPlot
+Proc Gizmo_superVox()
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
 	NewGizmo/W=(1810,345,2232,750)
@@ -779,7 +795,7 @@ End
 // another way to plot data as a cloud of points of an isosurface
 // change the isoValue to plot a different surface
 //
-Window Gizmo_Isosurface() : GizmoPlot
+Proc Gizmo_Isosurface()
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
 	NewGizmo/W=(35,45,550,505)
@@ -817,7 +833,7 @@ EndMacro
 // another cloud. would need a way to set the isoValue here as well, to pick the layer that is
 // viewed
 //
-Window mat_as_3dCloud() : GizmoPlot
+Proc mat_as_3dCloud() : GizmoPlot
 	PauseUpdate; Silent 1		// building window...
 	// Building Gizmo 7 window...
 	NewGizmo/W=(35,45,550,505)

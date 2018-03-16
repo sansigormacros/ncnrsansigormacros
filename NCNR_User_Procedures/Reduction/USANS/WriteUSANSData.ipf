@@ -203,7 +203,9 @@ End
 ///Have to put these here, annoyingly, because we depend on USANS specific functions
 ///Need to think about consolidation of functions.
 
-#if( Exists("XmlOpenFile") )
+//#if( Exists("XmlOpenFile") )
+#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
+
 
 Function WriteXMLUSANSWaves(type,fullpath,lo,hi,dialog)
 	String type,fullpath

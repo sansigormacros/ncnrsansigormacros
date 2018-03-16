@@ -35,7 +35,7 @@
 // Proc to bring the RT control panel to the front, always initializes the panel
 // - always initialize to make sure that the background task is properly set
 //
-Proc Show_RealTime_Panel()
+Proc V_Show_RealTime_Panel()
 	V_Init_RT()		//always init, data folders and globals are created here
 	DoWindow/F VSANS_RT_Panel
 	if(V_flag==0)

@@ -364,9 +364,15 @@ Function V_ShowEventDataButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			v_tic()
+			printf "Show rescaled time graph = "
 			Execute "V_ShowRescaledTimeGraph()"
+			v_toc()
 			//
+			v_tic()
+			printf "calculate and show differential = "
 			V_DifferentiatedTime()
+			v_toc()
 			//
 			break
 		case -1: // control being killed
@@ -957,6 +963,7 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	Print "TotalBytes (MB) = ",totBytes
 	
 
+Variable t1 = ticks
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
 // load in the event file and decode it
@@ -1005,12 +1012,11 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 //
 //	
 
-//tic()
+
 	Wave timePt=timePt
 	Wave xLoc=xLoc
 	Wave yLoc=yLoc
 	V_CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes	
-//toc()
 	
 	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//timeStep in clock frequency (Hz)
 	Printf "Time Step = 1/Frequency (ns) = %g\r",(1/gResol)*1e9
@@ -1022,11 +1028,22 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 // TODO:
 //  -- the time scaling is NOT done. it is still in raw ticks.
 //
+
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
+	v_tic()
+	printf "Duplicate wave = "
 		Duplicate/O timePt rescaledTime
+	v_toc()
+	v_tic()
+	printf "rescale time = "
 		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
+	v_toc()
+	v_tic()
+	printf "find wave Max = "
 		t_longest = waveMax(rescaledTime)		//should be the last point	
+	v_toc()
 	endif
+
 	
 	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
@@ -1050,10 +1067,16 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 
 	SetDataFolder root:
 
+Variable t2 = ticks
+
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
 	V_ShowEventDataButtonProc(ba)
 
+Variable t3 = ticks
+
+	Print "load and process (s) = ",(t2-t1)/60.15
+	Print "Overall including graphs (s) = ",(t3-t1)/60.15
 	return(0)
 End
 

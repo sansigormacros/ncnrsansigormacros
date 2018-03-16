@@ -113,7 +113,7 @@ Proc V_Initialize()
 		//draw panel
 		Main_VSANS_Panel()
 	Endif
-//	ResizeCmdWindow()
+//	V_ResizeCmdWindow()
 
 // TODO - be sure that NCNR is defined correctly	
 	//unload the NCNR_Package_Loader, if NCNR not defined
@@ -360,7 +360,7 @@ End
 // could easily be incorporated into the initialization routines to ensure that the 
 // command window is always visible at startup of the macros. No need for a hook function
 //
-Function ResizeCmdWindow()
+Function V_ResizeCmdWindow()
 
 	String str=IgorInfo(0),rect="",platform=igorinfo(2)
 	Variable depth,left,top,right,bottom,factor

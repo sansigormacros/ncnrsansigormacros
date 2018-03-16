@@ -101,8 +101,8 @@ Function V_DoWavelengthIntegral(folderStr,funcStr,coefStr)
 //	uplim = 9/5.3
 
 // using the "trangular" distribution (cange the function call)
-//	loLim = 4/5.3
-//	upLim = 8/5.3
+	loLim = 4/5.3
+	upLim = 8/5.3
 	
 	answer_Rom_WB = Integrate_BuiltIn(cw,loLim,upLim,qVals)
 

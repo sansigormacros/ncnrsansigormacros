@@ -10,12 +10,15 @@
 // this is an empirical representation of the White Beam wavelength
 // distribution. 
 //
-// using Integrate function -- 
+// using Integrate function -- find the normalization value
 //
 // integral = 20926 (cts*A) for "top"
 // integral = 19933 (cts*A) for "middle"
 // integration of interpolated data (100 pts) = 20051 (3 A to 9 A)
 //
+//
+// gives an average wavelength of 5.302 A
+// median ~ 5.97 A
 //
 //
 // of the three choices, using the fit to the "top" of the distribution gives the best-looking
@@ -33,10 +36,10 @@ Function V_WhiteBeamDist(lam)
 	endif
 	
 	if(lam < 3.84)
-		return(23715 -5649*lam)
+		return(23715 - 5649*lam)
 	endif
 	
-// the "middle" of the spikes	
+//// the "middle" of the spikes	
 //	if(lam < 4.12)
 //		return(-84962 + 22634*lam)
 //	endif
@@ -44,7 +47,7 @@ Function V_WhiteBeamDist(lam)
 //		return(-2336 + 11422*exp(-( (lam-3.043)/4.234 )^2))
 //	endif
 
-// the "top" of the spikes
+//// the "top" of the spikes
 	if(lam < 4.16)
 		return(-84962 + 22634*lam)
 	endif

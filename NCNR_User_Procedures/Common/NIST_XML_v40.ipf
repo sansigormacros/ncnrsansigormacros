@@ -3,7 +3,8 @@
 #pragma IgorVersion=6.1
 
 
-#if( Exists("XmlOpenFile") )
+//#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
+#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
 
 #include "cansasXML", version >= 1.10
 

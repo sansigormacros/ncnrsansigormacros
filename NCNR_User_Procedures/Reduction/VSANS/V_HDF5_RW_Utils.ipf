@@ -1089,7 +1089,12 @@ Function H_NXSANS_SaveGroupAsHDF5(dfPath, filename)
 	Variable result = 0	// 0 means no error
 	
 	Variable fileID
-	HDF5CreateFile/P=home /O /Z fileID as filename
+	PathInfo home
+	if(V_flag == 1)
+		HDF5CreateFile/P=home /O /Z fileID as filename
+	else
+		HDF5CreateFile /O/I /Z fileID as filename
+	endif
 	if (V_flag != 0)
 		Print "HDF5CreateFile failed"
 		return -1
