@@ -961,6 +961,26 @@ Function/S V_Get_NotRawDataFileList()
 	return(newList)
 End
 
+// removes any item with ".EXT" from the list
+// don't pass the "."
+// returns a modified list
+Function/S V_RemoveEXTFromList(list,ext)
+	String list,ext
+	
+	ext = "*."+ext
+	Variable num=ItemsInList(list,";"),ii
+	String item,newList=""
+	
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+
+		if( !stringmatch(item,ext) )
+			newlist += item + ";"
+		endif
+		
+	endfor
+	return(newList)
+End
 
 //the following is a WaveMetrics procedure from <StrMatchList>
 // MatchList(matchStr,list,sep)

@@ -445,7 +445,7 @@ Function V_FillListBox3(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 6
+	Variable nRows = 9
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -472,7 +472,16 @@ Function V_FillListBox3(listWave,selWave)
 
 	listWave[5][1] = "distance (source aperture) (cm)"
 	listWave[5][2] = num2str(V_getSourceAp_distance(fname))		
-		
+
+	listWave[6][1] = "source aperture size (mm)"
+	listWave[6][2] = V_getSourceAp_size(fname)
+	
+	listWave[7][1] = "sample aperture size (internal) (mm)"
+	listWave[7][2] = V_getSampleAp_size(fname)
+
+	listWave[8][1] = "sample aperture diam (external) (cm)"
+	listWave[8][2] = num2str(V_getSampleAp2_size(fname))	
+				
 	return(0)
 End
 
@@ -661,7 +670,10 @@ Function V_PickPathButton(PathButton) : ButtonControl
 	//then update the popup list
 	// (don't update the list - not until someone enters a search critera) -- Jul09
 	//
-	V_SetMatchStrProc("",0,"*","")		//this is equivalent to finding everything, typical startup case
+	
+	STRUCT WMSetVariableAction sva
+	sva.eventCode = 2	
+	V_SetMatchStrProc(sva)		//this is equivalent to finding everything, typical startup case
 
 	return(0)
 End
@@ -844,34 +856,44 @@ Function V_PatchPopMenuProc(PatchPopup,popNum,popStr) : PopupMenuControl
 	return(0)
 End
 
+
 //when text is entered in the match string, the popup list is refined to 
 //include only the selected files, useful for trimming a lengthy list, or selecting
 //a range of files to patch
 //only one wildcard (*) is allowed
 //
-Function V_SetMatchStrProc(ctrlName,varNum,varStr,varName) : SetVariableControl
-	String ctrlName
-	Variable varNum
-	String varStr
-	String varName
+//change the contents of gPatchList that is displayed
+//based on selected Path, match str, and
+//further trim list to include only RAW SANS files
+//this will exclude version numbers, .AVE, .ABS files, etc. from the popup (which can't be patched)
+Function V_SetMatchStrProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
 
-	//change the contents of gPatchList that is displayed
-	//based on selected Path, match str, and
-	//further trim list to include only RAW SANS files
-	//this will exclude version numbers, .AVE, .ABS files, etc. from the popup (which can't be patched)
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 8:		// edit end
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+			String list = V_GetValidPatchPopupList()
 	
-	String list = V_GetValidPatchPopupList()
-	
-	String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchList = list
-	ControlUpdate PatchPopup
-	PopupMenu PatchPopup,mode=1
-	
-	if(strlen(list) > 0)
-		V_ShowHeaderButtonProc("SHButton")
-	endif
-	return(0)
+			String/G root:Packages:NIST:VSANS:Globals:Patch:gPatchList = list
+			ControlUpdate PatchPopup
+			PopupMenu PatchPopup,mode=1
+			
+			if(strlen(list) > 0)
+				V_ShowHeaderButtonProc("SHButton")
+			endif
+		case 3: // Live update
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
 End
-
 
 //displays the header of the selected file (top in the popup) when the button is clicked
 //sort of a redundant button, since the procedure is automatically called (as if it were
@@ -1218,8 +1240,22 @@ Function V_WriteHeaderForPatch_3(fname)
 		val = str2num(listWave[5][2])
 		err = V_writeSourceAp_distance(fname,val)
 	endif		
-	
-	
+
+	if ((selWave[6][0] & 2^4) != 0)		//"source aperture size (mm)" (a string with units)
+		str = listWave[6][2]
+		err = V_writeSourceAp_size(fname,str)
+	endif		
+
+	if ((selWave[7][0] & 2^4) != 0)		//"sample aperture size (internal) (mm)" (a string with units)
+		str = listWave[7][2]
+		err = V_writeSampleAp_size(fname,str)
+	endif	
+		
+	if ((selWave[8][0] & 2^4) != 0)		//"sample aperture diam (external) (cm)"
+		val = str2num(listWave[8][2])
+		err = V_writeSampleAp2_size(fname,val)
+	endif		
+
 	return(0)
 End
 
@@ -2345,7 +2381,18 @@ Proc V_PatchDet_Offset(lo,hi)
 	V_fPatchDet_Offset(lo,hi)
 End
 
-// V_fReadDet_Offset(lo,hi)
+Proc V_MarkLeftRightFlip_Done(lo,hi)
+	Variable lo,hi
+	
+	V_fWriteFlipState(lo,hi,1)	// value == 1 means flip done
+End
+
+Proc V_MarkLeftRightFlip_Not_Done(lo,hi)
+	Variable lo,hi
+	
+	V_fWriteFlipState(lo,hi,-999999)	// value == -999999 means flip not done
+End
+
 
 Proc V_Patch_GroupID_catTable()
 	V_fPatch_GroupID_catTable()
@@ -2375,17 +2422,26 @@ Proc V_PatchDet_Distance(lo,hi,dist_f,dist_m,dist_b)
 	
 	V_fPatchDet_distance(lo,hi,dist_f,dist_m,dist_b)
 End
+
+
 // simple utility to patch the offset values in the file headers
 //
 // Swaps only the L/R detector values
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
+//		V_getLeftRightFlipDone(fname)
+//
+//
+// updated the function to check for the "already done" flag
+// - if already done, report this and do nothing.
+// - if not done, do the flip and set the flag
+//
 Function V_fPatchDet_Offset(lo,hi)
 	Variable lo,hi
 
 	
-	Variable ii,jj
+	Variable ii,jj,flipDone=0
 	String fname,detStr
 	
 	Variable offset_ML,offset_MR,offset_FL,offset_FR
@@ -2396,30 +2452,77 @@ Function V_fPatchDet_Offset(lo,hi)
 		fname = V_FindFileFromRunNumber(jj)
 		if(strlen(fname) != 0)
 		
-			offset_FL = V_getDet_LateralOffset(fname,"FL")
-			offset_FR = V_getDet_LateralOffset(fname,"FR")
-
-			offset_ML = V_getDet_LateralOffset(fname,"ML")
-			offset_MR = V_getDet_LateralOffset(fname,"MR")
-		
-		// swap L/R offset values
-			V_WriteDet_LateralOffset(fname,"FL",-offset_FR)
-			V_WriteDet_LateralOffset(fname,"FR",-offset_FL)
+			flipDone = V_getLeftRightFlipDone(fname)
+			if(flipDone == 1)
+				printf "run number %d already flipped - nothing done\r",jj
+			else
+				offset_FL = V_getDet_LateralOffset(fname,"FL")
+				offset_FR = V_getDet_LateralOffset(fname,"FR")
+	
+				offset_ML = V_getDet_LateralOffset(fname,"ML")
+				offset_MR = V_getDet_LateralOffset(fname,"MR")
 			
-			V_WriteDet_LateralOffset(fname,"ML",-offset_MR)
-			V_WriteDet_LateralOffset(fname,"MR",-offset_ML)
-		
-			Print fname
-			Print "swapped FL, FR = ",-offset_FR,-offset_FL
-			Print "swapped ML, MR = ",-offset_MR,-offset_ML
+			// swap L/R offset values
+				V_WriteDet_LateralOffset(fname,"FL",-offset_FR)
+				V_WriteDet_LateralOffset(fname,"FR",-offset_FL)
+				
+				V_WriteDet_LateralOffset(fname,"ML",-offset_MR)
+				V_WriteDet_LateralOffset(fname,"MR",-offset_ML)
+			
+			// set the flag
+				V_writeLeftRightFlipDone(fname,1)		// value == 1 means the flip was done
+				Print fname
+				Print "swapped FL, FR = ",-offset_FR,-offset_FL
+				Print "swapped ML, MR = ",-offset_MR,-offset_ML
+			
+			endif
 		
 		else
 			printf "run number %d not found\r",jj
 		endif
+		
 	endfor
 	
 	return(0)
 End
+
+//  utility to reset the flip state in the file headers
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+// setting value == 1 means done
+// setting value == -999999 means not done (mimics a missing /entry)
+//
+Function V_fWriteFlipState(lo,hi,val)
+	Variable lo,hi,val
+
+	
+	Variable ii,jj,flipDone=0
+	String fname,detStr
+	
+	Variable offset_ML,offset_MR,offset_FL,offset_FR
+
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+	
+		// set the flag
+			V_writeLeftRightFlipDone(fname,val)		// 
+			Print fname
+			printf "run number %d flag reset to %d\r",jj,val
+			
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+	
+	return(0)
+End
+
+
 
 // simple utility to read the detector offset stored in the file header
 Function V_fReadDet_Offset(lo,hi)

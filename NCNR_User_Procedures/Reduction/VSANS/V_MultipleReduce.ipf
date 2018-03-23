@@ -74,16 +74,16 @@ Window V_Multiple_Reduce_Panel()
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
 	Button helpButton,pos={385,3},size={25,20},proc=V_ShowMRHelp,title="?"
 	Button helpButton,help={"Show the help file for reducing multiple files using the same protocol"}
-	PopupMenu MRFilesPopup,pos={3,44},size={167,19},proc=V_MRedPopMenuProc,title="File(s) to Reduce"
+	PopupMenu MRFilesPopup,pos={3,72},size={167,19},proc=V_MRedPopMenuProc,title="File(s) to Reduce"
 	PopupMenu MRFilesPopup,help={"The displayed file is the one that will be reduced. The entire list will be reduced if \"Reduce All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh."}
 	PopupMenu MRFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:MRED:gMRedList"
-//	SetVariable MRList,pos={3,72},size={350,13},proc=FileNumberListProc,title="File number list: "
-//	SetVariable MRList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
-//	SetVariable MRList,limits={-Inf,Inf,1},value= root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
+	SetVariable MRList,pos={3,48},size={350,13},proc=V_FileNumberListProc,title="File number list: "
+	SetVariable MRList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
+	SetVariable MRList,limits={-Inf,Inf,1},value= root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
 	Button ReduceAllButton,pos={3,128},size={180,20},proc=V_ReduceAllPopupFiles,title="Reduce All Files in Popup"
 	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
-	Button ReduceOneButton,pos={3,98},size={180,20},proc=V_ReduceTopPopupFile,title="Reduce Top File in Popup"
-	Button ReduceOneButton,help={"This will reduce TOP files in the popup list, not all of the files."}
+//	Button ReduceOneButton,pos={3,98},size={180,20},proc=V_ReduceTopPopupFile,title="Reduce Top File in Popup"
+//	Button ReduceOneButton,help={"This will reduce TOP files in the popup list, not all of the files."}
 	Button DoneButton,pos={290,128},size={110,20},proc=V_MRDoneButtonProc,title="Done Reducing"
 	Button DoneButton,help={"When done reducing files, this will close this control panel."}
 	Button cat_short,pos={310,72},size={90,20},proc=V_ShowCatShort_MRED,title="File Catalog"
@@ -94,7 +94,7 @@ Window V_Multiple_Reduce_Panel()
 //	Button sddList,help={"Use this button to generate a table of scattering files at a given ample to detector distance."}
 //	Button acceptList,pos={280,98},size={120,20},proc=AcceptMREDList,title="Accept List"
 //	Button acceptList,help={"Accept the list of files to reduce."}
-	PopupMenu MRProto_pop,pos={3,72},size={119,19},proc=V_MRProtoPopMenuProc,title="Protocol "
+	PopupMenu MRProto_pop,pos={3,98},size={119,19},proc=V_MRProtoPopMenuProc,title="Protocol "
 	PopupMenu MRProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
 	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:MRED:gMRProtoList"
 EndMacro
@@ -253,9 +253,37 @@ End
 
 // get a  list of all of the sample files, based on intent
 //
+//parses the file number list to get valid raw data filenames for reduction
+// -if the numbers and full ranges can be translated to correspond to actual files
+// on disk, the popup list is updated - otherwise the offending number is reported
+// and the user must fix the problem before any reduction can be done
+//
+//		V_ParseRunNumberList() does the work
+//
+// only accepts files in the list that are purpose=scattering
+//
 Function/S V_GetValidMRedPopupList()
 
-	String semiList = V_GetSAMList()
+//	String semiList = V_GetSAMList()
+
+	String commaList="",semiList="",fname="",purpose=""
+	SVAR numList=root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
+	
+	commaList = V_ParseRunNumberList(numList)
+	//convert commaList to a semicolon delimited list, checking that files are SCATTERING
+	Variable num=ItemsinList(commaList,","),ii
+	for(ii=0;ii<num;ii+=1)
+		fname = StringFromList(ii, commaList  ,",")
+		purpose = V_getReduction_Purpose(fname)
+		if(cmpstr(purpose,"SCATTERING") == 0)
+			semiList += StringFromList(ii, commaList  ,",") + ";"
+		endif
+	endfor
+//	print semiList
+//sort the list
+	semiList = SortList(semiList,";",0)
+	return(semiList)
+
 
 	return(semiList)
 End

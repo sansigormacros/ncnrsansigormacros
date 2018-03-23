@@ -1417,9 +1417,14 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // S1 = source aperture diameter [mm]
 	S1 = str2num(V_getSourceAp_size(folderStr))
 	
-// S2 = sample aperture diameter [mm]
+// S2 = sample aperture diameter [cm]
 // as of 3/2018, the "internal" sample aperture is not in use, only the external
-	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", but may not exist?
+// TODO : verify the units on the Ap2 (external)
+// sample aperture 1(internal) is set to report "12.7 mm" as a STRING
+// sample aperture 2(external) reports the number typed in...
+//
+// so I'm trusting [cm] is in the file
+	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [cm]
 	
 // L1 = source to sample distance [m] 
 	L1 = V_getSourceAp_distance(folderStr)/100

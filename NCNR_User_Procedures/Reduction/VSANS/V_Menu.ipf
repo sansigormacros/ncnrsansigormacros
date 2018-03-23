@@ -48,6 +48,9 @@ Menu "VSANS"
 //		"IgorOnly_Save_SANS_Struct"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
 		"Flip Lateral Offset",V_PatchDet_Offset()
+		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
+		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
+		"-"
 		"Patch GroupID using CatTable",V_Patch_GroupID_catTable()
 		"Patch Purpose using CatTable",V_Patch_Purpose_catTable()
 		"Patch Intent using CatTable",V_Patch_Intent_catTable()

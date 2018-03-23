@@ -1094,12 +1094,12 @@ Function/S ListOfValues(m)
 			done = 1
 		else
 			list += num2str(V_max) + ";"
-			MultiThread mz = mz[p][q] == V_max ? V_min : mz[p][q]		// replace the max with min			
+			MultiThread mz = mz[p][q][r] == V_max ? V_min : mz[p][q][r]		// replace the max with min			
 		endif
 	while(!done)	
 	
 //	Print "Found values in matrix = ",list
-	KillWaves/Z mz
+//	KillWaves/Z mz
 
 	return(list)
 End

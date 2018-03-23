@@ -2615,7 +2615,19 @@ Function/WAVE V_getReductionProtocolWave(fname)
 	endif
 	
 end
+
+// this is a NON NICE entered field
+// so if it's not there, it returns -999999
+//
+// this is a flag to mark the file as "flipped" so it prevents a 2nd flip
+// if the flip has been done, the field is written with a value of 1 (= true)
+//
+Function V_getLeftRightFlipDone(fname)
+	String fname
 	
+	String path = "entry:reduction:left_right_flip"	
+	return(V_getRealValueFromHDF5(fname,path))
+end	
 
 
 

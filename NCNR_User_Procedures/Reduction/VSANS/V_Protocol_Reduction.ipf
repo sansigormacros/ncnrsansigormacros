@@ -582,18 +582,24 @@ end
 
 Function/S V_GetBGDList()
 
-	String match="BLOCKED BEAM"
-	String list = V_getFileIntentList(match,0)
-
+	String intent="BLOCKED BEAM"
+	String purpose="SCATTERING"
+//	String list = V_getFileIntentList(match,0)
+	String list = V_getFileIntentPurposeList(intent,purpose,0)
+	
 //	Printf "BGD files = %s\r",list	
 	return(list)
 end
 
-
+//
+// V_getFileIntentPurposeList(intent,purpose,method)
 Function/S V_GetEMPList()
 
-	String match="EMPTY CELL"
-	String list = V_getFileIntentList(match,0)
+	String intent="EMPTY CELL"
+	String purpose="SCATTERING"
+//	String list = V_getFileIntentList(match,0)
+	String list = V_getFileIntentPurposeList(intent,purpose,0)
+
 
 //	Printf "EMP files = %s\r",list	
 	return(list)
@@ -754,7 +760,6 @@ Function/S V_PickEMPBeamButton(ctrlName) : ButtonControl
 	Printf "EMP Beam files = %s\r",list	
 
 
-
 	
 	return(list)
 End
@@ -768,6 +773,10 @@ Function/S V_GetDIVList()
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
+	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
+	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
+	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+
 	num=ItemsInList(newList)
 	
 //	for(ii=0;ii<num;ii+=1)
@@ -811,6 +820,7 @@ Function/S V_PickDIVButton(ctrlName) : ButtonControl
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
+	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	num=ItemsInList(newList)
 	
 //	for(ii=0;ii<num;ii+=1)
@@ -851,6 +861,10 @@ Function/S V_GetMSKList()
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
+	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
+	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
+	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+
 	num=ItemsInList(newList)
 	
 //	for(ii=0;ii<num;ii+=1)
@@ -898,6 +912,7 @@ Function/S V_PickMASKButton(ctrlName) : ButtonControl
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
+	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	num=ItemsInList(newList)
 	
 //	for(ii=0;ii<num;ii+=1)

@@ -889,6 +889,7 @@ Proc VC_Initialize_Space()
 	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;"
 	String/G gSourceShape = "circular;rectangular;converging pinholes;"
 	String/G gSourceDiam = "1.0 cm;2.0 cm;5.0 cm;"
+	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
 	String/G gDeltaLambda = "0.10;0.20;0.30;"
 	
 // tab 1 - sample conditions

@@ -6929,6 +6929,37 @@ Function V_writeReductionProtocolWave(fname,inTW)
 end
 
 
+// this is a NON NICE entered field
+//
+// this is a flag to mark the file as "flipped" so it prevents a 2nd flip
+// if the flip has been done, the field is written with a value of 1 (= true)
+//
+// to "un-mark" the file and allow the flip to be re-done, write -999999
+Function V_writeLeftRightFlipDone(fname,val)
+	String fname
+	Variable val
+	
+	String path = "entry:reduction:left_right_flip"	
+	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/reduction"
+	String varName = "left_right_flip"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
 
 
 // TODO -- needs to be a WAVE, and of the proper size and type!!!
