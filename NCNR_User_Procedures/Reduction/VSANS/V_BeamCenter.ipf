@@ -880,7 +880,7 @@ Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 	newYCtr_cm[0] = yFR + (0.34 + 0.32)/2
 	// FB
 	newXCtr_cm[3] = xFR - (2.02 + 2.06)/2
-	newYCtr_cm[3] = yFR - (0.12 + 0.19)/2
+	newYCtr_cm[3] = yFR - (0.12 + 0.19)/2		// (-) is correct here
 	// FT (duplicate FB)
 	newXCtr_cm[2] = newXCtr_cm[3]
 	newYCtr_cm[2] = newYCtr_cm[3]
@@ -900,8 +900,8 @@ Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 	
 	
 	// dummy value for B
-	newXCtr_cm[8] = 50
-	newYCtr_cm[8] = 50
+	newXCtr_cm[8] = 340
+	newYCtr_cm[8] = 828
 
 		
 	return

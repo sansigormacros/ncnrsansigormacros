@@ -300,6 +300,28 @@ Function V_FindCentroid() :  GraphMarquee
 		
 		Print "X-center (cm) = ",x_mm/10
 		Print "Y-center (cm) = ",y_mm/10
+		
+		if(cmpstr(detStr,"FR") == 0)
+			Print "FRONT Reference X-center (cm) = ",x_mm/10
+			Print "FRONT Reference Y-center (cm) = ",y_mm/10
+		endif
+
+		if(cmpstr(detStr,"MR") == 0)
+			Print "MIDDLE Reference X-center (cm) = ",x_mm/10
+			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10
+		endif
+		
+// if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value	
+// these corrections are exactly the opposite of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+		if(cmpstr(detStr,"FL") == 0)
+			Print "FRONT Reference X-center (cm) = ",x_mm/10 + (0.03 + 0.03)/2
+			Print "FRONT Reference Y-center (cm) = ",y_mm/10 - (0.34 + 0.32)/2
+		endif
+		
+		if(cmpstr(detStr,"ML") == 0)
+			Print "MIDDLE Reference X-center (cm) = ",x_mm/10 + (0.06 + 0.05)/2
+			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 - (0.14 + 0.01)/2
+		endif
 	endif
 	
 	//back to root folder (redundant)
@@ -310,7 +332,9 @@ End
 
 
 //
-//function will write new box coordinates to the data file
+//function writes new box coordinates to the data file
+//
+// also writes the panel where the coordinates were set (non-nice field in /reduction)
 //
 Function V_UpdateBoxCoords() :  GraphMarquee
 	GetMarquee left,bottom
@@ -337,6 +361,8 @@ Function V_UpdateBoxCoords() :  GraphMarquee
 		SVAR gCurrentFile = root:Packages:NIST:VSANS:Globals:gLastLoadedFile		//for the status of the display
 
 		V_writeBoxCoordinates(gCurrentFile,V_List2NumWave(boxStr,";","inW"))
+	
+		V_writeReduction_BoxPanel(gCurrentFile,detStr)
 
 //		count = V_SumCountsInBox(x1,x2,y1,y2,ct_err,gCurDispType,detStr)		
 //		Print "counts = ",count

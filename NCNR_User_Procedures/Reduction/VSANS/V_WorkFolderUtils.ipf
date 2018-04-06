@@ -497,8 +497,8 @@ Function V_Raw_to_work(newType)
 	// (0) Redimension the data waves in the destination folder
 	//     so that they are DP, not integer
 	// TODO
-	// -- currently only redimensioning the data and linear_data_error - What else???
-	// -- ?? some of this is done at load time for RAW data. shouldn't be an issue to re-do the redimension
+	// -- currently only redimensioning the data and linear_data_error - anything else???
+	// -- ?? some of this is done at load time for RAW data. Not a problem to re-do the redimension
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
@@ -532,7 +532,7 @@ Function V_Raw_to_work(newType)
 	// TODO:
 	// x-  the "B" detector is calculated in its own routines
 	// -- document what is generated here:
-	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the mm? position of the pixel)
+	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the [mm] position of each pixel)
 	// x- these spatial calculations ARE DONE as the RAW data is loaded. It allows the RAW
 	//    data to be properly displayed, but without all of the (complete) set of detector corrections
 	// * the corrected distances are calculated into arrays, but nothing is done with them yet
@@ -624,12 +624,12 @@ Function V_Raw_to_work(newType)
 
 
 	// (3) dead time correction
-	// TODO:
-	// -- test for correct operation
+	// DONE:
+	// x- test for correct operation
 	// x- loop over all of the detectors
 	// x- B detector is a special case (do separately, then loop over NoB)
-	// -- this DOES alter the data
-	// -- verify the error propagation (not done yet)
+	// x- this DOES alter the data
+	// x- verify the error propagation (not done yet)
 	//
 	Variable countRate
 	NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor

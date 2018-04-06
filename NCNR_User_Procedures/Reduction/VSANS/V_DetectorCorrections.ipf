@@ -549,6 +549,9 @@ end
 Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
+	
+	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtr_to_mmB()"
+	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
 	

@@ -258,7 +258,8 @@ Function V_TTransmFilePopMenuProc(pa) : PopupMenuControl
 			String quote = "\""
 			gSamMatchList = quote + V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0) + quote
 			// this resets a global string, since I can't pass a parameter (only constants) in value=fn()		
-			PopupMenu popup_0,mode=1,value=#gSamMatchList
+//			PopupMenu popup_0,mode=1,value=#gSamMatchList
+			PopupMenu popup_0,mode=1,value=V_getSamListForPopup()
 			
 			break
 		case -1: // control being killed
@@ -268,6 +269,13 @@ Function V_TTransmFilePopMenuProc(pa) : PopupMenuControl
 	return 0
 End
 
+Function/S V_getSamListForPopup()
+
+//	String quote = "\""
+	NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
+
+	return(V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0))
+End
 
 Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -280,12 +288,13 @@ Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
 			Print "empty beam match at ",popStr
 			SetVariable setvar_4,value=_STR:V_getSampleDescription(popStr)
 			
-//			SetVariable setvar_6,value =_STR:"ML"
 
 			WAVE boxCoord = V_getBoxCoordinates(popStr)
 			Print boxCoord
 			SetVariable setvar_5,value=_STR:V_NumWave2List(boxCoord,";")
 			
+			String detStr = V_getReduction_BoxPanel(popStr)
+			SetVariable setvar_6,value =_STR:detStr
 			
 			break
 		case -1: // control being killed
@@ -372,7 +381,20 @@ Function V_CalcTransmListButtonProc(ba) : ButtonControl
 			num = ItemsInList(list, ";")
 			for(ii=0;ii<num;ii+=1)
 				SamFile = StringFromList(ii, list, ";")
-				V_CalcOneTransmission(SamFile,TransFile,EmptyFile)			
+				
+				if(ii==0)
+					// calculate the transmission for the first file
+					V_CalcOneTransmission(SamFile,TransFile,EmptyFile)	
+				else
+					// then just write in the values (globals) that V_CalcOne determined
+					NVAR gTrans = root:Packages:NIST:VSANS:Globals:Transmission:gTrans
+					NVAR gTransErr = root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
+					
+					// write both out to the sample *scattering* file on disk
+					V_writeSampleTransmission(SamFile,gTrans)
+					V_writeSampleTransError(SamFile,gTransErr)	
+
+				endif		
 			endfor
 			
 			Print "Done Processing Transmission List"

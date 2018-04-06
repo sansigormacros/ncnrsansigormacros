@@ -7044,6 +7044,33 @@ Function V_writeBoxCoordinates(fname,inW)
 	return(err)
 end
 
+// THIS IS A NON-NICE ENTERED FIELD
+// -- this is the panel string where the box coordinates refer to (for the open beam and transmission)
+Function V_writeReduction_BoxPanel(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:comments"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "box_panel"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
 //box counts
 Function V_writeBoxCounts(fname,val)
 	String fname

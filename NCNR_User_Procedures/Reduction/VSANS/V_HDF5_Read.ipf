@@ -2465,6 +2465,16 @@ Function/S V_getBackgroundFileName(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+// THIS IS A NON-NICE ENTERED FIELD
+// -- this is the panel string where the box coordinates refer to (for the open beam and transmission)
+Function/S V_getReduction_BoxPanel(fname)
+	String fname
+
+	String path = "entry:reduction:box_panel"	
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
 Function/WAVE V_getBoxCoordinates(fname)
 	String fname
 	
