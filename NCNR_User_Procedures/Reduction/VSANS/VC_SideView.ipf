@@ -400,8 +400,8 @@ Function UpdateTopView()
 // BACK
 	B_T_profileX = B_SDD		//SDDb in [cm]
 	
-	B_T_profileY[0] = B_h/2		// half-height
-	B_T_profileY[1] = -B_h/2		// half-height
+	B_T_profileY[0] = B_w/2		// from the top, see the width
+	B_T_profileY[1] = -B_w/2		// half-width
 
 	B_T_rayX[0] = 0
 	B_T_rayX[1] = B_SDD

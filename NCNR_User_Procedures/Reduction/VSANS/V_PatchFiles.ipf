@@ -2416,11 +2416,18 @@ Proc V_ReadDet_Gap(lo,hi)
 	Variable lo,hi
 	
 	V_fReadDet_Gap(lo,hi)
+End
 
 Proc V_PatchDet_Distance(lo,hi,dist_f,dist_m,dist_b)
 	Variable lo,hi,dist_f=400,dist_m=1900,dist_b=2200
 	
 	V_fPatchDet_distance(lo,hi,dist_f,dist_m,dist_b)
+End
+
+Proc V_Patch_Back_Detector(lo,hi)
+	Variable lo,hi
+	
+	V_fPatch_BackDetector(lo,hi)
 End
 
 
@@ -2739,5 +2746,78 @@ Function V_fPatchDet_distance(lo,hi,d_f,d_m,d_b)
 		endif
 	endfor
 	
+	return(0)
+End
+
+
+//
+// simple utility to patch all of the values associated with the back detector
+//
+//
+//
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatch_BackDetector(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+	detStr = "B"
+	
+	Make/O/D/N=3 cal_x,cal_y
+	cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	cal_x[1] = 1
+	cal_x[2] = 10000
+	cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	cal_y[1] = 1
+	cal_y[2] = 10000
+	
+	Make/O/I/N=(680,1656) tmpData=1
+	
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+		// patch cal_x and cal_y
+			V_writeDet_cal_x(fname,detStr,cal_x)
+			V_writeDet_cal_y(fname,detStr,cal_y)
+		
+		// patch n_pix_x and y
+			V_writeDet_pixel_num_x(fname,detStr,680)
+			V_writeDet_pixel_num_y(fname,detStr,1656)
+			
+		// patch pixel size x and y [cm]
+			V_writeDet_x_pixel_size(fname,detStr,0.034)
+			V_writeDet_y_pixel_size(fname,detStr,0.034)
+			
+		// patch dead time
+		// TODO: enter a proper value here once it's actually measured
+			V_writeDetector_deadtime_B(fname,detStr,1e-20)
+		
+		// patch fwhm_x and y
+		// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
+			V_writeDet_pixel_fwhm_x(fname,detStr,0.034)
+			V_writeDet_pixel_fwhm_y(fname,detStr,0.034)
+		
+		// patch beam center (nominal x,y) [cm] values
+			V_writeDet_beam_center_x(fname,detStr,11)
+			V_writeDet_beam_center_y(fname,detStr,25)
+		
+		// fake data
+			V_writeDetectorData(fname,detStr,tmpData)
+			
+			
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	KillWaves/Z cal_x,cal_y,tmpData
 	return(0)
 End

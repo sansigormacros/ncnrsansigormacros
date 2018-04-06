@@ -57,6 +57,7 @@ Menu "VSANS"
 		"Patch Detector Panel Gap",V_PatchDet_Gap()
 		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
+		"Patch Back Detector Values",V_Patch_Back_Detector()
 		"-"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"

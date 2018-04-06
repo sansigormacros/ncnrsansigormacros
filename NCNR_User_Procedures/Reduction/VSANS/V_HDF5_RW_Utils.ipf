@@ -161,15 +161,36 @@ Function V_LoadHDF5Data(file,folder)
 				
 			endfor
 			
-			//"B" is separate
-			Wave w = V_getDetectorDataW(folder,"B")
-			Wave cal_x = V_getDet_cal_x(folder,"B")
-			Wave cal_y = V_getDet_cal_y(folder,"B")
-			
-			V_NonLinearCorrection_B(folder,w,cal_x,cal_y,"B",destPath)
-			V_ConvertBeamCtr_to_mmB(folder,"B",destPath)
-			V_Detector_CalcQVals(folder,"B",destPath)
-			
+			//"B" is handled separately
+			//
+			// TODO -- will "B" more naturally be defined initially in terms of pixel centers, then converted to [cm]?
+			//
+			detStr = "B"
+			Wave w = V_getDetectorDataW(folder,detStr)
+			Wave cal_x = V_getDet_cal_x(folder,detStr)
+			Wave cal_y = V_getDet_cal_y(folder,detStr)
+		
+			V_NonLinearCorrection_B(folder,w,cal_x,cal_y,detStr,destPath)
+
+			if(kBCTR_CM)
+
+				Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+				Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+				WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+				WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+				x_mm[0] = V_getDet_beam_center_x(folder,detStr) * 10 		// convert cm to mm
+				y_mm[0] = V_getDet_beam_center_y(folder,detStr) * 10 		// convert cm to mm
+				
+				// now I need to convert the beam center in mm to pixels
+				// and have some rational place to look for it...
+				V_ConvertBeamCtr_to_pixB(folder,detStr,destPath)
+			else
+				// beam center is in pixels, so use the old routine
+				V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
+
+			endif
+			V_Detector_CalcQVals(folder,detStr,destPath)
+
 		else
 			Print "Non-linear correction not done"
 		endif

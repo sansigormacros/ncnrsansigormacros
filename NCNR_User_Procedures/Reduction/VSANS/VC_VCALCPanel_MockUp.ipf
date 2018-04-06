@@ -181,30 +181,30 @@ Proc DrawVCALC_Panel()
 
 // tab(3) - Middle detector panels, initially not visible
 	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-6
+	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-7
 	SetVariable VCALCCtrl_3aa,pos={30,290},size={150,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:6
+	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:7
 		
 	SetVariable VCALCCtrl_3b,pos={30,330},size={150,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:6
+	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:14
 	SetVariable VCALCCtrl_3bb,pos={30,360},size={150,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
-	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-6
+	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-14
 
 	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1500
+	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1000
 
 	
 // tab(4) - Back detector panel
 	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (cm)"
 	SetVariable VCALCCtrl_4a,limits={0,20,0.1},disable=1,value=_NUM:0
 	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_BDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2000
+	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2200
 //	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
  	SetVariable VCALCCtrl_5a,pos={40,290},size={200,15},title="Neutrons on Sample (imon)"
-	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e10,proc=VC_SimImon_SetVarProc
+	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
 	PopupMenu VCALCCtrl_5b,pos={40,260},size={180,20},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
@@ -800,20 +800,20 @@ Proc VC_Initialize_Space()
 
 
 //// BACK DETECTOR
-	Variable/G gBack_w = 15.0				//w and h for the back detector, (cm) 150 pix * 1mm/pix
-	Variable/G gBack_h = 15.0
+	Variable/G gBack_w = 22.2				//w and h for the back detector [cm]
+	Variable/G gBack_h = 50.4
 	
-	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.1		// 1 mm resolution (units of cm here)
-	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.1		
+	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of cm here)
+	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
 
 
-	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 150	// detector pixels in x-direction
-	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 150
+	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 680		// detector pixels in x-direction
+	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 1656
 	
 
 // pixel beam center - HDF style
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 75		// == x beam center, in pixels
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 75		// == y beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340		// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828		// == y beam center, in pixels
 
 
 // Generate all of the waves used for the detector and the q values

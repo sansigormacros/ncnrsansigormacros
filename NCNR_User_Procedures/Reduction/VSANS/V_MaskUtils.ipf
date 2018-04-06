@@ -126,7 +126,7 @@ Proc V_MaskEditorPanel() : Panel
 //	ShowTools/A
 	
 	PopupMenu popup_0,pos={20,50},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
-	PopupMenu popup_0,mode=1,popvalue="FT",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 
@@ -146,10 +146,10 @@ Proc V_MaskEditorPanel() : Panel
 
 	// draw the correct images
 	//draw the detector panel
-	V_DrawPanelToMask("FT")
+	V_DrawPanelToMask("FL")
 	
 	// overlay the current mask
-	V_OverlayMask("FT",1)
+	V_OverlayMask("FL",1)
 
 EndMacro
 
@@ -557,7 +557,16 @@ Function V_DrawPanelToMask(str)
 			
 			break
 		case "B":
-			return(0)		//just exit
+			width = trunc(nPix_X/3.2)			//
+			height = trunc(nPix_Y/3.2)			// 
+			
+			left = 20
+			top = 80
+			right = left+width
+			bottom = top+height
+			
+			Print left,top,right,bottom
+
 			break						
 		default:
 			return(0)		//just exit
@@ -750,11 +759,21 @@ Proc H_Setup_VSANS_MASK_Structure()
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_B	
-			Make/O/I/N=(150,150)	data	= 0
+			Make/O/I/N=(680,1656)	data	= 0
+			data[][0,5] = 1
+			data[][1650,1655] = 1
+			data[0,5][] = 1
+			data[675,679][] = 1
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_MR		
 			Make/O/I/N=(48,128)	data	= 0
+			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_ML		
 			Make/O/I/N=(48,128)	data	= 0
+			data[0,3][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_MT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
@@ -769,8 +788,14 @@ Proc H_Setup_VSANS_MASK_Structure()
 			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FR		
 			Make/O/I/N=(48,128)	data	= 0
+			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FL		
 			Make/O/I/N=(48,128)	data	= 0
+			data[0,3][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
@@ -806,11 +831,23 @@ Function V_GenerateDefaultMask()
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B	
-			Make/O/I/N=(150,150)	data	= 0
+			Make/O/I/N=(680,1656)	data	= 0
+			data[][0,5] = 1
+			data[][1650,1655] = 1
+			data[0,5][] = 1
+			data[675,679][] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR		
 			Make/O/I/N=(48,128)	data	= 0
+//			data[][0,3] = 1
+			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML		
 			Make/O/I/N=(48,128)	data	= 0
+			data[0,3][] = 1
+//			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
@@ -825,8 +862,16 @@ Function V_GenerateDefaultMask()
 			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR		
 			Make/O/I/N=(48,128)	data	= 0
+//			data[][0,3] = 1
+			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL		
 			Make/O/I/N=(48,128)	data	= 0
+			data[0,3][] = 1
+//			data[44,47][] = 1
+			data[][0,4] = 1
+			data[][123,127] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1

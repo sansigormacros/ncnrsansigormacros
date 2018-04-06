@@ -263,16 +263,19 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	// override if back panel
 	if(cmpstr(detStr,"B") == 0)
 		// and for the back detector "B"
-		Make/O/D/N=3 tmpCalib
-		tmpCalib[0] = 1
-		tmpCalib[1] = 1
-		tmpcalib[2] = 10000
+		Make/O/D/N=3 tmpCalibX,tmpCalibY
+		tmpCalibX[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibX[1] = 1
+		tmpcalibX[2] = 10000
+		tmpCalibY[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibY[1] = 1
+		tmpcalibY[2] = 10000
 	endif
 	
 //	Wave w_calib = V_getDetTube_spatialCalib("VCALC",detStr)
 	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
 	if(cmpstr(detStr,"B") == 0)
-		V_NonLinearCorrection_B("VCALC",data,tmpCalib,tmpCalib,detStr,destPath)
+		V_NonLinearCorrection_B("VCALC",data,tmpCalibX,tmpCalibY,detStr,destPath)
 	else
 		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
 	endif
@@ -352,7 +355,7 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	
 	endif
 	
-	KillWaves/Z tmpCalib
+	KillWaves/Z tmpCalib,tmpCalibX,tmpCalibY
 	
 	return(0)
 End
@@ -1146,7 +1149,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	// note that the back panel of 320x320 (1mm res) results in 447 data points!
 	// - so I upped nq to 600
 
-	nq = 600
+	if(cmpstr(type,"B") == 0)
+		nq = 8000
+	else
+		nq=600
+	endif
 
 //******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	

@@ -54,7 +54,7 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		print val
 		V_writeDet_distance(fileName,detStr,val)
 		
-		val = VCALC_getTopBottomSDDSetback(detStr)*10		//val is in mm, as for data file
+		val = VCALC_getTopBottomSDDSetback(detStr)		//val is in cm, as for data file
 		if(val != 0)
 			V_writeDet_TBSetback(fileName,detStr,val)
 		endif
@@ -85,8 +85,13 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 
 		if(cmpstr(detStr,"B") == 0)
 			//always write out the center of the detector since this is dummy data
-			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr))
-			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))				
+			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr)/10)		//write out [cm]
+			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr)/10)	
+			
+			// write out the number of pixels x and y
+			// patch n_pix_x and y
+			V_writeDet_pixel_num_x(fileName,detStr,V_getDet_pixel_num_x("VCALC",detStr))
+			V_writeDet_pixel_num_y(fileName,detStr,V_getDet_pixel_num_y("VCALC",detStr))			
 		endif
 
 		

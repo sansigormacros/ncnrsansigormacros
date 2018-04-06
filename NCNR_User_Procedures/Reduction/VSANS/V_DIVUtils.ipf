@@ -397,8 +397,8 @@ Proc H_Setup_VSANS_DIV_Structure()
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
-			Make/O/D/N=(150,150)	data	= 1 
-			Make/O/D/N=(150,150)	linear_data_error	= 0.01
+			Make/O/D/N=(680,1656)	data	= 1 
+			Make/O/D/N=(680,1656)	linear_data_error	= 0.01
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
 			Make/O/D/N=(48,128)	data = 1
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01

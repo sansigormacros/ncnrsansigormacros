@@ -150,7 +150,7 @@ Window VSANS_DataPanel() : Panel
 	SetDrawEnv linethick= 2,dash= 1,fillpat= 0
 	DrawRect 320,70,430,160
 	SetDrawEnv linethick= 2,dash= 1,fillpat= 0
-	DrawRect 440,70,550,160
+	DrawRect 440,70,535,160
 	
 	SetDrawEnv fsize= 18
 	DrawText 230,115,"Front"
@@ -547,8 +547,10 @@ Function V_DataTabProc(tca) : TabControl
 
 				ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctabAutoscale=0,lookup= LookupWave
 				
-				// make the plot square
-				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
+//				// make the plot square
+//				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
+				// match the aspect ratio of the data
+				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,0.41}			//680/1656 = 0.41
 				
 				SetActiveSubWindow VSANS_Data#det_panelsB
 				Label left "pixels"

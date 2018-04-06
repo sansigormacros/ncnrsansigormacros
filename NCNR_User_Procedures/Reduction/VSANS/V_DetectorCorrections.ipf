@@ -105,6 +105,7 @@ End
 // input of N x M array of quadratic coefficients
 //
 // output is wave of corrected real space distance corresponding to each pixel of the data
+// ** its distance from the nominal beam center of (0,0) **
 //
 //
 // (DONE)
@@ -269,6 +270,16 @@ Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
 	if(cmpstr(detStr,"B") != 0)
 		return(0)
 	endif
+
+Print "***Cal_X and Cal_Y for Back are using default values instead of file values ***"
+
+		cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		cal_x[1] = 1
+		cal_x[2] = 10000
+		cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		cal_y[1] = 1
+		cal_y[2] = 10000
+
 	
 	// do I count on the orientation as an input, or do I just figure it out on my own?
 	Variable dimX,dimY
@@ -284,7 +295,6 @@ Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
 	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
-	
 	
 //	Wave cal_x = V_getDet_cal_x(folder,detStr)
 //	Wave cal_y = V_getDet_cal_y(folder,detStr)
@@ -470,6 +480,56 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	return(0)
 end
 
+// converts from [cm] beam center to pixels
+//
+// the value in pixels is written to the local data folder, NOT to disk (it is recalculated as needed)
+//
+Function V_ConvertBeamCtr_to_pixB(folder,detStr,destPath)
+	String folder,detStr,destPath
+	
+	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
+	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
+
+	Variable dimX,dimY,xCtr,yCtr
+	dimX = DimSize(data_realDistX,0)
+	dimY = DimSize(data_realDistX,1)
+	
+	xCtr = V_getDet_beam_center_x(folder,detStr)			//these are in cm, *10 to get mm
+	yCtr = V_getDet_beam_center_y(folder,detStr)	
+	
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	WAVE x_pix = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	WAVE y_pix = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_pix")
+
+
+// simple wave lookup
+// can't use x_pix[0] = data_RealDistX(xCtr)[0] since the data has no x-scale and (xCtr) is interpreted 
+// as a point value
+
+//
+//xCtr, yCtr are in cm, *10 to get mm to compare to distance array
+
+	Make/O/D/N=(dimX) tmpTube
+	tmpTube = data_RealDistX[p][0]
+	FindLevel /P/Q tmpTube, xCtr*10
+	
+	x_pix[0] = V_levelX
+	KillWaves/Z tmpTube
+	
+	
+	Make/O/D/N=(dimY) tmpTube
+	tmpTube = data_RealDistY[0][p]
+	FindLevel /P/Q tmpTube, yCtr*10
+	
+	y_pix[0] = V_levelX
+	KillWaves/Z tmpTube
+		
+	print "pixel ctr B = ",x_pix[0],y_pix[0]
+		
+	return(0)
+end
+
 //
 //
 // TODO
@@ -479,6 +539,11 @@ end
 //
 // -- not much is known about the "B" detector, so this
 //    all hinges on the non-linear corrections being done correctly for that detector
+//
+// 	Variable detCtrX, detCtrY
+//	// get the pixel center of the detector (not the beam center)
+//	detCtrX = trunc( DimSize(dataW,0)/2 )		//
+//	detCtrY = trunc( DimSize(dataW,1)/2 )
 //
 //
 Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
@@ -592,8 +657,8 @@ Function V_fMakeFakeCalibrationWaves()
 	Wave cal_x = V_getDet_cal_x("RAW","B")
 	Wave cal_y = V_getDet_cal_y("RAW","B")
 	
-	cal_x = 1		// mm, ignore the other 2 values
-	cal_y = 1		// mm
+	cal_x = .34		// mm, ignore the other 2 values
+	cal_y = .34		// mm
 	return(0)
 End
 

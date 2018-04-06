@@ -1250,7 +1250,7 @@ Function VC_CalculateQBackPanels()
 
 // TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
-	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (150,150)
+	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (680,1656)
 
 //Back detector
 //root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B:qTot_B
@@ -1265,13 +1265,19 @@ Function VC_CalculateQBackPanels()
 	qy_B = 0
 	qz_B = 0	
 	
-// TODO - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
+// TODO - these are to be set from globals, not hard-wired. N and pixelSize will be known (or pre-measured)
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("B")
 	pixSizeY = VCALC_getPixSizeY("B")
+
+	if(kBCTR_CM)
+		xCtr = trunc( DimSize(det_B,0)/2 ) *pixSizeX * 10
+		yCtr = trunc( DimSize(det_B,1)/2 ) *pixSizeY * 10	//values in mm -- beam is nominally at 0,0 in space
+	else	
+		xCtr = trunc( DimSize(det_B,0)/2 )		//
+		yCtr = trunc( DimSize(det_B,1)/2 )		//
+	endif
 	
-	xCtr = trunc( DimSize(det_B,0)/2 )		//should be 150/2=75
-	yCtr = trunc( DimSize(det_B,1)/2 )		//should be 150/2=75
 		//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","B",xCtr)
 	V_putDet_beam_center_y("VCALC","B",yCtr)
