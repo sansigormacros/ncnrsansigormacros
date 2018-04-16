@@ -3,8 +3,7 @@
 #pragma IgorVersion=6.1
 
 
-//**************************
-// Vers 1.2 091901
+
 //
 //****************************
 //
@@ -30,23 +29,8 @@ Menu "VSANS"
 		"-"
 		"Derive Beam Centers",V_DeriveBeamCenters()
 	End
-	Submenu "Work Files"
-		"Convert to WORK",V_Convert_to_Workfile()
-		"Load Fake DIV Data"
-		"DIV a work file",V_DIV_a_Workfile()
-		"Load Fake MASK Data"
-		"Correct Data",V_CorrectData()
-	End
-	SubMenu "Nexus File RW"
-//		"Fill_Nexus_V_Template"
-//		"Save_Nexus_V_Template"
-//		"Load_Nexus_V_Template"
-//		"-"
-//		"IgorOnly_Setup_VSANS_Struct"
-//		"IgorOnly_Save_VSANS_Nexus"
-//		"IgorOnly_Setup_SANS_Struct"
-//		"IgorOnly_Save_SANS_Struct"
-		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
+
+	SubMenu "Nexus File Corrections"
 		"Flip Lateral Offset",V_PatchDet_Offset()
 		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
 		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
@@ -57,7 +41,11 @@ Menu "VSANS"
 		"Patch Detector Panel Gap",V_PatchDet_Gap()
 		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
+		"-"
 		"Patch Back Detector Values",V_Patch_Back_Detector()
+	End
+	SubMenu "File Tests"
+		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
 		"-"
 		"Setup_VSANS_DIV_Struct"
 		"Save_VSANS_DIV_Nexus"
@@ -71,8 +59,22 @@ Menu "VSANS"
 		"Dump_V_getFP_Det"
 		"Dump_V_getSTR"
 		"Dump_V_getSTR_Det"
+//		"Fill_Nexus_V_Template"
+//		"Save_Nexus_V_Template"
+//		"Load_Nexus_V_Template"
+//		"-"
+//		"IgorOnly_Setup_VSANS_Struct"
+//		"IgorOnly_Save_VSANS_Nexus"
+//		"IgorOnly_Setup_SANS_Struct"
+//		"IgorOnly_Save_SANS_Struct"
 	End
-	
+	Submenu "Work File Operations"
+		"Convert to WORK",V_Convert_to_Workfile()
+		"Load Fake DIV Data"
+		"DIV a work file",V_DIV_a_Workfile()
+		"Load Fake MASK Data"
+		"Correct Data",V_CorrectData()
+	End
 End
 
 

@@ -669,7 +669,7 @@ End
 // folderStr = RAW,SAM, VCALC or other
 // detStr is the panel identifer "ML", etc.
 //
-Function SetDeltaQ(folderStr,detStr)
+Function V_SetDeltaQ(folderStr,detStr)
 	String folderStr,detStr
 
 	Variable isVCALC
@@ -1208,6 +1208,12 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	if(maskMissing == 1)
 		Print "Mask file not found for at least one detector - so all data is used"
 	endif
+	
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(gIgnoreDetB && cmpstr(type,"B") == 0)
+		maskMissing = 1
+		Print "Mask skipped for B due to possible mismatch (Panel B ignored in preferences)"
+	endif
 
 	Variable mask_val
 // use set 1 (no number) only
@@ -1431,7 +1437,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 // sample aperture 2(external) reports the number typed in...
 //
 // so I'm trusting [cm] is in the file
-	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [cm]
+	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [mm]
 	
 // L1 = source to sample distance [m] 
 	L1 = V_getSourceAp_distance(folderStr)/100
@@ -1443,7 +1449,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type)
 	L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
 	
 // BS = beam stop diameter [mm]
-	//BS = V_getBeamStopC2_size(folderStr)		// TODO: what are the units? which BS is in? carr2, carr3, back, none?
+//TODO:? which BS is in? carr2, carr3, none?
+// -- need to check the num_beamstops field, then description, then shape/size or shape/height and shape/width
+//
+// TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
+//	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 	BS = 25.4			//TODO hard-wired value
 	
 // del_r = step size [mm] = binWidth*(mm/pixel) 
@@ -1464,9 +1474,9 @@ endif
 //
 
 // For white beam data, the wavelength distribution can't be represented as a gaussian, but all of the other 
-//  geometric corrections still apply. Passing zero for the lambdaWidth will return the grometry contribution,
+//  geometric corrections still apply. Passing zero for the lambdaWidth will return the geometry contribution,
 //  as long as the wavelength can be handled separately. It appears to be correct to do as a double integral,
-// with the inner(lambda) calculated first, then the outer(geometry).
+//  with the inner(lambda) calculated first, then the outer(geometry).
 //
 
 

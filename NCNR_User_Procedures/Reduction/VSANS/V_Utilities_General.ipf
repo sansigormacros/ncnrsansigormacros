@@ -562,7 +562,7 @@ Function/S V_FindFileFromRunNumber(num)
 	//get list of raw data files in folder that match "num"
 
 	String numStr=""
-	numStr = num2str(num)
+	numStr = num2istr(num)
 
 	//make sure that path exists
 	PathInfo catPathName
@@ -810,7 +810,7 @@ Function/S V_ValidFileString(partialName)
 				break
 			endif
 		else
-			tempName = partialName + ";" + num2str(ii)
+			tempName = partialName + ";" + num2istr(ii)
 			Open/Z/R/T="????TEXT"/P=catPathName refnum tempName
 			if(V_flag == 0)
 				//file exists
@@ -1172,7 +1172,7 @@ Function/S V_ListFromDash(item)
 		return numList
 	endif
 	for(ii=lo;ii<=hi;ii+=1)
-		numList += num2str(ii) + ","
+		numList += num2istr(ii) + ","
 	endfor
 	
 	Return numList

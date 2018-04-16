@@ -191,7 +191,8 @@ End
 Proc V_Draw3D_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DoAlert 0, "This function has not been updated for VSANS yet..."
+//	DoAlert 0, "This function has not been updated for VSANS yet..."
+	DoAlert 0, "Right-click on the image and select '3D Surface from data'"
 
 //	Plot3DSurface()
 	

@@ -6939,7 +6939,7 @@ Function V_writeLeftRightFlipDone(fname,val)
 	String fname
 	Variable val
 	
-	String path = "entry:reduction:left_right_flip"	
+//	String path = "entry:reduction:left_right_flip"	
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite

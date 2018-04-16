@@ -63,9 +63,9 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		val = VCALC_getPanelTranslation(detStr)		
 		// it's OK to call both of these. these functions check detStr for the correct value
 		if(cmpstr("T",detStr[1]) == 0 || cmpstr("B",detStr[1]) == 0)
-			V_writeDet_LateralOffset(fileName,detStr,val)		// T/B panels
+			V_writeDet_VerticalOffset(fileName,detStr,val)		// T/B panels
 		else
-			V_writeDet_VerticalOffset(fileName,detStr,val)		//  L/R panels, or back detector
+			V_writeDet_LateralOffset(fileName,detStr,val)		//  L/R panels, or back detector
 		endif
 		// x and y pixel sizes for each detector should be correct in the "base" file - but if not...
 		//Function VCALC_getPixSizeX(type)		// returns the pixel X size, in [cm]
@@ -133,7 +133,9 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 	// monitor count (= imon)
 		// returns the number of neutrons on the sample
 		//Function VCALC_getImon()
-	V_writeMonitorCount(fileName,VCALC_getImon())
+		//
+		// divide the monitor count by 1e8 to get a number small enough to write in the field.
+	V_writeMonitorCount(fileName,VCALC_getImon()/1e8)
 
 	// total detector count (sum of everything)
 	V_writeDetector_counts(fileName,sumCts)
@@ -300,4 +302,37 @@ Function V_Write_BackDet_to_VSANSFile()
 		V_writeDetectorData(fileName,detStr,detW)
 	endif
 End
+
+
+
+
+//////
+
+//
+// Function Profiling
+//
+// tests for where the speed bottlenecks are hiding
+//
+// in the built-in procedure, add the line:
+//#include <FunctionProfiling>
+// and check out the instructions in that file.
+//
+// essentially, create a function call with no parameters
+// and run that function as below:
+
+// RunFuncWithProfiling(yourFuncHere)
+
+//
+// function to profile can have no parameters, so hard-wire the file name
+Function V_ProfileFileLoad()
+	V_LoadHDF5Data("sans9999.nxs.ngv","RAW")
+End
+
+
+Function V_ProfileReduceOne()
+	V_ReduceOneButton("")
+End
+
+
+
 

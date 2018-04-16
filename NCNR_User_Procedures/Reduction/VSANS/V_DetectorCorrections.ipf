@@ -714,11 +714,19 @@ Function V_Detector_CalcQVals(fname,detStr,destPath)
 
 // calculate all of the q-values
 // sdd is passed in [cm]
-	qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
-	qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
-	qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
-	qz = V_CalcQZ(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
-	
+
+
+// after adding in the 680x1656 back detector, load time was 7.8s, without multithreading
+// with multithreading, 1.9s
+//	 qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+//	 	qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+//	 	qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+//	 	qz = V_CalcQZ(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)	
+
+	MultiThread qTot = V_CalcQval(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+	MultiThread 	qx = V_CalcQX(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+	MultiThread 	qy = V_CalcQY(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
+	MultiThread 	qz = V_CalcQZ(p,q,xCtr,yCtr,sdd,lambda,data_realDistX,data_realDistY)
 	
 	return(0)
 End
@@ -738,7 +746,7 @@ End
 //
 //returned magnitude of Q is in 1/Angstroms
 //
-Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
+ThreadSafe Function V_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam
 	Wave distX,distY
 	
@@ -768,7 +776,7 @@ End
 //
 // this properly accounts for qz
 //
-Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
+ThreadSafe Function V_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam
 	Wave distX,distY
 
@@ -802,7 +810,7 @@ End
 //
 // this properly accounts for qz
 //
-Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
+ThreadSafe Function V_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam
 	Wave distX,distY
 
@@ -837,7 +845,7 @@ End
 //
 // this properly accounts for qz, because it is qz
 //
-Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
+ThreadSafe Function V_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,distX,distY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam
 	Wave distX,distY
 

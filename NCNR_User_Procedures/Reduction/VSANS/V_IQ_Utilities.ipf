@@ -107,7 +107,7 @@ Function V_QBinAllPanels_Circular(folderStr,binType)
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		
-		delQ = SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
+		delQ = V_SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
 	endfor
 	
 
@@ -594,13 +594,17 @@ Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 
 	Variable num, ii,nBeg,nEnd
 	String item,detstr
+
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	
 	num = ItemsInList(detListStr)
 	for(ii=0;ii<num;ii+=1)
 		detStr = StringFromList(ii, detListStr)
 		nBeg = NumberByKey(detStr, nBegStr,"=",";")
 		nEnd = NumberByKey(detStr, nEndStr,"=",";")
-		V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
+		if(!gIgnoreDetB)
+			V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
+		endif
 	endfor
 
 	return(0)

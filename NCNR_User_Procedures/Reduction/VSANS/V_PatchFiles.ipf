@@ -445,7 +445,7 @@ Function V_FillListBox3(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 9
+	Variable nRows = 11
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -481,6 +481,14 @@ Function V_FillListBox3(listWave,selWave)
 
 	listWave[8][1] = "sample aperture diam (external) (cm)"
 	listWave[8][2] = num2str(V_getSampleAp2_size(fname))	
+
+	listWave[9][1] = "beam stop diameter (Middle) (mm)"
+	listWave[9][2] = num2str(V_getBeamStopC2_size(fname))	
+	
+	listWave[10][1] = "beam stop diameter (Back) (mm)"
+	listWave[10][2] = num2str(V_getBeamStopC3_size(fname))	
+
+
 				
 	return(0)
 End
@@ -1256,6 +1264,16 @@ Function V_WriteHeaderForPatch_3(fname)
 		err = V_writeSampleAp2_size(fname,val)
 	endif		
 
+	if ((selWave[9][0] & 2^4) != 0)		//"beam stop diameter (Middle) (mm)"
+		val = str2num(listWave[9][2])
+		err = V_writeBeamStopC2_size(fname,val)
+	endif		
+	
+	if ((selWave[10][0] & 2^4) != 0)		//"beam stop diameter (Back) (mm)"
+		val = str2num(listWave[10][2])
+		err = V_writeBeamStopC3_size(fname,val)
+	endif		
+	
 	return(0)
 End
 
@@ -1725,7 +1743,7 @@ Function V_WriteCSVDTButton(ba) : ButtonControl
 //
 // root:Packages:NIST:VSANS:RawVSANS:sans1301:
 	for(ii=lo;ii<=hi;ii+=1)
-		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2str(ii))
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2istr(ii))
 	endfor
 	return 0
 End
@@ -2035,7 +2053,7 @@ Function V_WriteCSVCalibButton(ba) : ButtonControl
 //
 // root:Packages:NIST:VSANS:RawVSANS:sans1301:
 	for(ii=lo;ii<=hi;ii+=1)
-		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2str(ii))
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:sans"+num2istr(ii))
 	endfor
 	return 0
 End

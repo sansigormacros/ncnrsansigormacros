@@ -32,9 +32,12 @@
 // TODO:
 // -- a significant problem with using the coef waves that are used in the wrapper are that
 //   they are set up with a dependency, so doing the WB calculation also does the "regular"
-//   calculation, doubling the time required...
+//   smeared calculation, doubling the time required...
 
 
+//
+// needs V_DummyFunctions for the FUNCREF to work - since it fails if I simply call the XOP
+//
 //
 // SANSModel_proto(w,x)		is in GaussUtils_v40.ipf
 //
@@ -47,7 +50,7 @@
 // see DoTheFitButton in Wrapper_v40.ipf
 //
 //
-Macro V_Calc_WB_Smearing()
+Macro V_Calc_WB_Smearing_top()
 
 	String folderStr,funcStr,coefStr
 	
@@ -60,15 +63,71 @@ Macro V_Calc_WB_Smearing()
 	ControlInfo/W=WrapperPanel popup_2
 	coefStr=S_Value
 
-	V_DoWavelengthIntegral(folderStr,funcStr,coefStr)
+	V_DoWavelengthIntegral_top(folderStr,funcStr,coefStr)
 
 	SetDataFolder root:
 End
 
 
+Macro V_Calc_WB_Smearing_mid()
+
+	String folderStr,funcStr,coefStr
+	
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_1
+	funcStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_2
+	coefStr=S_Value
+
+	V_DoWavelengthIntegral_mid(folderStr,funcStr,coefStr)
+
+	SetDataFolder root:
+End
+
+Macro V_Calc_WB_Smearing_interp()
+
+	String folderStr,funcStr,coefStr
+	
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_1
+	funcStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_2
+	coefStr=S_Value
+
+	V_DoWavelengthIntegral_interp(folderStr,funcStr,coefStr)
+
+	SetDataFolder root:
+End
+
+Macro V_Calc_WB_Smearing_triang()
+
+	String folderStr,funcStr,coefStr
+	
+	ControlInfo/W=WrapperPanel popup_0
+	folderStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_1
+	funcStr=S_Value
+	
+	ControlInfo/W=WrapperPanel popup_2
+	coefStr=S_Value
+
+	V_DoWavelengthIntegral_triang(folderStr,funcStr,coefStr)
+
+	SetDataFolder root:
+End
+
+
+
 // uses built-in Integrate1d()
 //
-Function V_DoWavelengthIntegral(folderStr,funcStr,coefStr)
+Function V_DoWavelengthIntegral_top(folderStr,funcStr,coefStr)
 	String folderStr,funcStr,coefStr
 
 	SetDataFolder $("root:"+folderStr)
@@ -82,7 +141,7 @@ Function V_DoWavelengthIntegral(folderStr,funcStr,coefStr)
 	String/G root:gFunctionString = funcStr		// need a global reference to pass to Integrate1D
 	
 	// make a wave for the answer
-	Duplicate/O qvals answer_Rom_WB
+	Duplicate/O qvals answer_Rom_WB_top
 	
 	// do the integration
 	Variable loLim,upLim
@@ -96,30 +155,209 @@ Function V_DoWavelengthIntegral(folderStr,funcStr,coefStr)
 //	loLim = 3.37/5.3
 //	upLim = 8.37/5.3	
 //	
-//	// using the interpolated distribution (change the function call)
+//	// using the interpolated distribution (must change the function call)
 //	lolim = 3/5.3
 //	uplim = 9/5.3
 
-// using the "trangular" distribution (cange the function call)
-	loLim = 4/5.3
-	upLim = 8/5.3
+// using the "triangular" distribution (must change the function call)
+//	loLim = 4/5.3
+//	upLim = 8/5.3
 	
-	answer_Rom_WB = Integrate_BuiltIn(cw,loLim,upLim,qVals)
+	answer_Rom_WB_top = V_Integrate_BuiltIn_top(cw,loLim,upLim,qVals)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	answer_Rom_WB *= 5.3
+	answer_Rom_WB_top *= 5.3
 
 // normalize the integral	
-	answer_Rom_WB /= 20926		// "top"  of peaks
+	answer_Rom_WB_top /= 20926		// "top"  of peaks
 //	answer_Rom_WB /= 19933		// "middle"  of peaks
 //	answer_Rom_WB /= 20051		// interpolated distribution
 //	answer_Rom_WB /= 1		// triangular distribution (it's already normalized)
+
+// additional normalization???
+	answer_Rom_WB_top /= 1.05		// 
 	
 	SetDataFolder root:
 	
 	return 0
 End
+
+
+// uses built-in Integrate1d()
+//
+Function V_DoWavelengthIntegral_mid(folderStr,funcStr,coefStr)
+	String folderStr,funcStr,coefStr
+
+	SetDataFolder $("root:"+folderStr)
+		
+	// gather the input waves
+	WAVE qVals = $(folderStr+"_q")
+//	WAVE cw = smear_coef_BroadPeak
+	WAVE cw = $coefStr
+	
+	funcStr = V_getXFuncStrFromCoef(cw)+"_"		//get the modelX name, tag on "_"
+	String/G root:gFunctionString = funcStr		// need a global reference to pass to Integrate1D
+	
+	// make a wave for the answer
+	Duplicate/O qvals answer_Rom_WB_mid
+	
+	// do the integration
+	Variable loLim,upLim
+		
+	// define limits based on lo/mean, hi/mean of the wavelength distribution
+	// using the empirical definition, "top" of the peaks
+//	loLim = 3.37/5.3
+//	upLim = 8.25/5.3
+	
+//	// using the "middle"
+	loLim = 3.37/5.3
+	upLim = 8.37/5.3	
+//	
+//	// using the interpolated distribution (must change the function call)
+//	lolim = 3/5.3
+//	uplim = 9/5.3
+
+// using the "triangular" distribution (must change the function call)
+//	loLim = 4/5.3
+//	upLim = 8/5.3
+	
+	answer_Rom_WB_mid = V_Integrate_BuiltIn_mid(cw,loLim,upLim,qVals)
+
+// why do I need this? Is this because this is defined as the mean of the distribution
+//  and is needed to normalize the integral? verify this on paper.	
+	answer_Rom_WB_mid *= 5.3
+
+// normalize the integral	
+//	answer_Rom_WB /= 20926		// "top"  of peaks
+	answer_Rom_WB_mid /= 19933		// "middle"  of peaks
+//	answer_Rom_WB /= 20051		// interpolated distribution
+//	answer_Rom_WB /= 1		// triangular distribution (it's already normalized)
+
+// additional normalization???
+	answer_Rom_WB_mid /= 1.05		// "middle"  of peaks
+	
+	SetDataFolder root:
+	
+	return 0
+End
+
+// uses built-in Integrate1d()
+//
+Function V_DoWavelengthIntegral_interp(folderStr,funcStr,coefStr)
+	String folderStr,funcStr,coefStr
+
+	SetDataFolder $("root:"+folderStr)
+		
+	// gather the input waves
+	WAVE qVals = $(folderStr+"_q")
+//	WAVE cw = smear_coef_BroadPeak
+	WAVE cw = $coefStr
+	
+	funcStr = V_getXFuncStrFromCoef(cw)+"_"		//get the modelX name, tag on "_"
+	String/G root:gFunctionString = funcStr		// need a global reference to pass to Integrate1D
+	
+	// make a wave for the answer
+	Duplicate/O qvals answer_Rom_WB_interp
+	
+	// do the integration
+	Variable loLim,upLim
+		
+	// define limits based on lo/mean, hi/mean of the wavelength distribution
+	// using the empirical definition, "top" of the peaks
+//	loLim = 3.37/5.3
+//	upLim = 8.25/5.3
+	
+//	// using the "middle"
+//	loLim = 3.37/5.3
+//	upLim = 8.37/5.3	
+//	
+//	// using the interpolated distribution (must change the function call)
+	lolim = 3/5.3
+	uplim = 9/5.3
+
+// using the "triangular" distribution (must change the function call)
+//	loLim = 4/5.3
+//	upLim = 8/5.3
+	
+	answer_Rom_WB_interp = V_Integrate_BuiltIn_interp(cw,loLim,upLim,qVals)
+
+// why do I need this? Is this because this is defined as the mean of the distribution
+//  and is needed to normalize the integral? verify this on paper.	
+	answer_Rom_WB_interp *= 5.3
+
+// normalize the integral	
+//	answer_Rom_WB /= 20926		// "top"  of peaks
+//	answer_Rom_WB /= 19933		// "middle"  of peaks
+	answer_Rom_WB_interp /= 20051		// interpolated distribution
+//	answer_Rom_WB /= 1		// triangular distribution (it's already normalized)
+
+// additional normalization???
+	answer_Rom_WB_interp /= 1.05		// "middle"  of peaks
+	
+	SetDataFolder root:
+	
+	return 0
+End
+
+// uses built-in Integrate1d()
+//
+Function V_DoWavelengthIntegral_triang(folderStr,funcStr,coefStr)
+	String folderStr,funcStr,coefStr
+
+	SetDataFolder $("root:"+folderStr)
+		
+	// gather the input waves
+	WAVE qVals = $(folderStr+"_q")
+//	WAVE cw = smear_coef_BroadPeak
+	WAVE cw = $coefStr
+	
+	funcStr = V_getXFuncStrFromCoef(cw)+"_"		//get the modelX name, tag on "_"
+	String/G root:gFunctionString = funcStr		// need a global reference to pass to Integrate1D
+	
+	// make a wave for the answer
+	Duplicate/O qvals answer_Rom_WB_triang
+	
+	// do the integration
+	Variable loLim,upLim
+		
+	// define limits based on lo/mean, hi/mean of the wavelength distribution
+	// using the empirical definition, "top" of the peaks
+//	loLim = 3.37/5.3
+//	upLim = 8.25/5.3
+	
+//	// using the "middle"
+//	loLim = 3.37/5.3
+//	upLim = 8.37/5.3	
+//	
+//	// using the interpolated distribution (must change the function call)
+//	lolim = 3/5.3
+//	uplim = 9/5.3
+
+// using the "triangular" distribution (must change the function call)
+	loLim = 4/5.3
+	upLim = 8/5.3
+	
+	answer_Rom_WB_triang = V_Integrate_BuiltIn_triangle(cw,loLim,upLim,qVals)
+
+// why do I need this? Is this because this is defined as the mean of the distribution
+//  and is needed to normalize the integral? verify this on paper.	
+	answer_Rom_WB_triang *= 5.3
+
+// normalize the integral	
+//	answer_Rom_WB /= 20926		// "top"  of peaks
+//	answer_Rom_WB /= 19933		// "middle"  of peaks
+//	answer_Rom_WB /= 20051		// interpolated distribution
+	answer_Rom_WB_triang /= 1		// triangular distribution (it's already normalized)
+
+// additional normalization???
+	answer_Rom_WB_triang /= 1.1		// 
+	
+	SetDataFolder root:
+	
+	return 0
+End
+
 
 //
 // not used anymore - the built-in works fine, but this
@@ -183,7 +421,7 @@ Function V_WB_testKernel(cw,x,dum)
 	val = (1-dum*5.3/8)*func(cw,x/dum)
 	
 //	val = V_WhiteBeamDist(dum*5.3)*BroadPeakX(cw,x/dum)
-	val = V_WhiteBeamDist(dum*5.3)*func(cw,x/dum)
+//	val = V_WhiteBeamDist(dum*5.3)*func(cw,x/dum)
 
 	return (val)
 End
@@ -199,7 +437,7 @@ end
 
 // the trick here is that declaring the last qVal wave as a variable
 // since this is implicitly called N times in the wave assignment of the answer wave
-Function Integrate_BuiltIn(cw,loLim,upLim,qVal)
+Function V_Integrate_BuiltIn_top(cw,loLim,upLim,qVal)
 	Wave cw
 	Variable loLim,upLim
 	Variable qVal
@@ -207,15 +445,62 @@ Function Integrate_BuiltIn(cw,loLim,upLim,qVal)
 	Variable/G root:qq = qval
 	Variable ans
 	
-//	ans = Integrate1D(intgrnd,lolim,uplim,2,0,cw)		//adaptive quadrature
-	ans = Integrate1D(intgrnd,lolim,uplim,1,0,cw)		// Romberg integration
+//	ans = Integrate1D(V_intgrnd_top,lolim,uplim,2,0,cw)		//adaptive quadrature
+	ans = Integrate1D(V_intgrnd_top,lolim,uplim,1,0,cw)		// Romberg integration
 	
 	return ans
 end
 
+// the trick here is that declaring the last qVal wave as a variable
+// since this is implicitly called N times in the wave assignment of the answer wave
+Function V_Integrate_BuiltIn_mid(cw,loLim,upLim,qVal)
+	Wave cw
+	Variable loLim,upLim
+	Variable qVal
+	
+	Variable/G root:qq = qval
+	Variable ans
+	
+//	ans = Integrate1D(V_intgrnd_mid,lolim,uplim,2,0,cw)		//adaptive quadrature
+	ans = Integrate1D(V_intgrnd_mid,lolim,uplim,1,0,cw)		// Romberg integration
+	
+	return ans
+end
+
+// the trick here is that declaring the last qVal wave as a variable
+// since this is implicitly called N times in the wave assignment of the answer wave
+Function V_Integrate_BuiltIn_triangle(cw,loLim,upLim,qVal)
+	Wave cw
+	Variable loLim,upLim
+	Variable qVal
+	
+	Variable/G root:qq = qval
+	Variable ans
+	
+//	ans = Integrate1D(V_intgrnd_triangle,lolim,uplim,2,0,cw)		//adaptive quadrature
+	ans = Integrate1D(V_intgrnd_triangle,lolim,uplim,1,0,cw)		// Romberg integration
+	
+	return ans
+end
+
+// the trick here is that declaring the last qVal wave as a variable
+// since this is implicitly called N times in the wave assignment of the answer wave
+Function V_Integrate_BuiltIn_interp(cw,loLim,upLim,qVal)
+	Wave cw
+	Variable loLim,upLim
+	Variable qVal
+	
+	Variable/G root:qq = qval
+	Variable ans
+	
+//	ans = Integrate1D(V_intgrnd_interp,lolim,uplim,2,0,cw)		//adaptive quadrature
+	ans = Integrate1D(V_intgrnd_interp,lolim,uplim,1,0,cw)		// Romberg integration
+	
+	return ans
+end
 
 //
-// See V_DunnyFunctions.ipf for the full list
+// See V_DummyFunctions.ipf for the full list
 //
 //Function BroadPeakX_(cw,x)
 //	Wave cw
@@ -224,7 +509,7 @@ end
 //	return(BroadPeakX(cw,x))
 //end
 
-Function intgrnd(cw,dum)
+Function V_intgrnd_top(cw,dum)
 	Wave cw
 	Variable dum		// the dummy of the integration
 
@@ -237,9 +522,69 @@ Function intgrnd(cw,dum)
 //	val = (1-dum*5.3/8)*func(cw,qq/dum)
 
 //	val = V_WhiteBeamDist(dum*5.3)*BroadPeakX(cw,qq/dum)
-	val = V_WhiteBeamDist(dum*5.3)*func(cw,qq/dum)
+	val = V_WhiteBeamDist_top(dum*5.3)*func(cw,qq/dum)
 	
 //	val = V_WhiteBeamInterp(dum*5.3)*func(cw,qq/dum)
+
+	return (val)
+End
+
+Function V_intgrnd_mid(cw,dum)
+	Wave cw
+	Variable dum		// the dummy of the integration
+
+	Variable val
+	NVAR qq = root:qq		//the q-value of the integration, not part of cw, so pass global
+	SVAR funcStr = root:gFunctionString
+	FUNCREF SANSModel_proto func = $funcStr
+
+//	val = (1-dum*5.3/8)*BroadPeakX(cw,qq/dum)	
+//	val = (1-dum*5.3/8)*func(cw,qq/dum)
+
+//	val = V_WhiteBeamDist(dum*5.3)*BroadPeakX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*5.3)*func(cw,qq/dum)
+	
+//	val = V_WhiteBeamInterp(dum*5.3)*func(cw,qq/dum)
+
+	return (val)
+End
+
+Function V_intgrnd_triangle(cw,dum)
+	Wave cw
+	Variable dum		// the dummy of the integration
+
+	Variable val
+	NVAR qq = root:qq		//the q-value of the integration, not part of cw, so pass global
+	SVAR funcStr = root:gFunctionString
+	FUNCREF SANSModel_proto func = $funcStr
+
+//	val = (1-dum*5.3/8)*BroadPeakX(cw,qq/dum)	
+	val = (1-dum*5.3/8)*func(cw,qq/dum)
+
+//	val = V_WhiteBeamDist(dum*5.3)*BroadPeakX(cw,qq/dum)
+//	val = V_WhiteBeamDist(dum*5.3)*func(cw,qq/dum)
+	
+//	val = V_WhiteBeamInterp(dum*5.3)*func(cw,qq/dum)
+
+	return (val)
+End
+
+Function V_intgrnd_interp(cw,dum)
+	Wave cw
+	Variable dum		// the dummy of the integration
+
+	Variable val
+	NVAR qq = root:qq		//the q-value of the integration, not part of cw, so pass global
+	SVAR funcStr = root:gFunctionString
+	FUNCREF SANSModel_proto func = $funcStr
+
+//	val = (1-dum*5.3/8)*BroadPeakX(cw,qq/dum)	
+//	val = (1-dum*5.3/8)*func(cw,qq/dum)
+
+//	val = V_WhiteBeamDist(dum*5.3)*BroadPeakX(cw,qq/dum)
+//	val = V_WhiteBeamDist(dum*5.3)*func(cw,qq/dum)
+	
+	val = V_WhiteBeamInterp(dum*5.3)*func(cw,qq/dum)
 
 	return (val)
 End

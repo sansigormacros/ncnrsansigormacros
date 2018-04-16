@@ -2,6 +2,10 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+//
+// used for the White Beam Smearing
+//
+
 // generates dummy functions of the form:
 //
 //Function BroadPeakX_(cw,x)

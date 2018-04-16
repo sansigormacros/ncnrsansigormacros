@@ -764,6 +764,11 @@ Function/S V_PickEMPBeamButton(ctrlName) : ButtonControl
 	return(list)
 End
 
+
+// TODO
+// -- find proper way to search for these files
+// -- they *may* be written to the file header(reduction block)
+// -- or grep for VSANS_DIV (in the title)
 Function/S V_GetDIVList()
 
 	String list="",item="",fname,newList,intent
@@ -776,6 +781,8 @@ Function/S V_GetDIVList()
 	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
 	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
+	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
 
 	num=ItemsInList(newList)
 	
@@ -796,9 +803,9 @@ Function/S V_GetDIVList()
 //		Grep/P=catPathName/Q/E=("(?i)"+match) item
 		if( V_value )	// at least one instance was found
 //				Print "found ", item,ii
-			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+//			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
 				list += item + ";"
-			endif
+//			endif
 		endif
 	endfor
 		
@@ -807,50 +814,6 @@ Function/S V_GetDIVList()
 	return(list)
 end
 
-// TODO
-// -- find proper way to search for these files
-// -- they *may* be written to the file header(reduction block)
-// -- or grep for VSANS_DIV (in the title)
-Function/S V_PickDIVButton(ctrlName) : ButtonControl
-	String ctrlName
-	String list="",item="",fname,newList,intent
-	Variable ii,num
-	
-	PathInfo catPathName
-	String path = S_path
-	
-	newList = V_Get_NotRawDataFileList()
-	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
-	num=ItemsInList(newList)
-	
-//	for(ii=0;ii<num;ii+=1)
-//		item=StringFromList(ii, newList , ";")
-//		fname = path + item
-//		intent = V_getReduction_intent(fname)
-//		if(cmpstr(intent,"SENSITIVITY") == 0)
-//			list += item + ";"
-//		endif
-//
-//	endfor
-
-	String match="VSANS_DIV"		//this is part of the title of a VSANS DIV file
-	for(ii=0;ii<num;ii+=1)
-		item=StringFromList(ii, newList , ";")
-		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
-//		Grep/P=catPathName/Q/E=("(?i)"+match) item
-		if( V_value )	// at least one instance was found
-//				Print "found ", item,ii
-				list += item + ";"
-		endif
-
-	endfor
-		
-	List = SortList(List,";",0)
-	Printf "DIV files = %s\r",list
-	
-	return(list)
-
-End
 
 Function/S V_GetMSKList()
 
@@ -864,7 +827,9 @@ Function/S V_GetMSKList()
 	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
 	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
-
+	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
+	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
+	
 	num=ItemsInList(newList)
 	
 //	for(ii=0;ii<num;ii+=1)
@@ -885,9 +850,9 @@ Function/S V_GetMSKList()
 //		Grep/P=catPathName/Q/E=("(?i)"+match) item
 		if( V_value )	// at least one instance was found
 //				Print "found ", item,ii
-			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+//			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
 				list += item + ";"
-			endif
+//			endif
 		endif
 
 	endfor
@@ -1687,7 +1652,7 @@ Function V_ProtocolQuestionnaire(ctrlName)
 	
 	if(V_flag == 1)		//1=yes
 		
-		Prompt filename,"DIV File",popup,V_PickDIVButton("")
+		Prompt filename,"DIV File",popup,V_GetDIVList()
 		DoPrompt "Select File",filename
 		if (V_Flag)
 			return 0									// user canceled
@@ -1963,7 +1928,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 		If(cmpstr("ask",prot[2]) == 0)
 			//ask user for file
 //			 junkStr = PromptForPath("Select the detector sensitivity file")
-			Prompt divFileName,"DIV File",popup,V_PickDIVButton("")
+			Prompt divFileName,"DIV File",popup,V_GetDIVList()
 			DoPrompt "Select File",divFileName
 
 			If(strlen(divFileName)==0)
@@ -2622,15 +2587,20 @@ Function V_AskForAbsoluteParams_Quest()
 
 		// DONE
 		// x- need panel
-		//
-		Prompt detPanel_toSum,"Panel with Direct Beam",popup,ksDetectorListAll
-		DoPrompt "Select Panel",detPanel_toSum
-		if (V_Flag)
-			return 0									// user canceled
+		// x- now, look for the value in the file, if not there, ask
+		
+		detPanel_toSum = V_getReduction_BoxPanel(emptyFileName)
+		if(strlen(detPanel_toSum) > 2)
+			// it's the error message
+			Prompt detPanel_toSum,"Panel with Direct Beam",popup,ksDetectorListAll
+			DoPrompt "Select Panel",detPanel_toSum
+			if (V_Flag)
+				return 0									// user canceled
+			endif
 		endif
-
+		
 		//need the detector sensitivity file - make a guess, allow to override
-		Prompt divFileName,"DIV File",popup,V_PickDIVButton("")
+		Prompt divFileName,"DIV File",popup,V_GetDIVList()
 		DoPrompt "Select File",divFileName
 		if (V_Flag)
 			return 0									// user canceled

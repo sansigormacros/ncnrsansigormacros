@@ -466,10 +466,10 @@ EndMacro
 //
 Function BinAllFrontPanels()
 
-	SetDeltaQ("VCALC","FL")
-	SetDeltaQ("VCALC","FR")
-	SetDeltaQ("VCALC","FT")
-	SetDeltaQ("VCALC","FB")
+	V_SetDeltaQ("VCALC","FL")
+	V_SetDeltaQ("VCALC","FR")
+	V_SetDeltaQ("VCALC","FT")
+	V_SetDeltaQ("VCALC","FB")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
@@ -945,10 +945,10 @@ EndMacro
 // 
 Function BinAllMiddlePanels()
 
-	SetDeltaQ("VCALC","ML")
-	SetDeltaQ("VCALC","MR")
-	SetDeltaQ("VCALC","MT")
-	SetDeltaQ("VCALC","MB")
+	V_SetDeltaQ("VCALC","ML")
+	V_SetDeltaQ("VCALC","MR")
+	V_SetDeltaQ("VCALC","MT")
+	V_SetDeltaQ("VCALC","MB")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b
@@ -1351,7 +1351,7 @@ EndMacro
 // 
 Function BinAllBackPanels()
 
-	SetDeltaQ("VCALC","B")
+	V_SetDeltaQ("VCALC","B")
 
 	Variable binType	
 	ControlInfo/W=VCALC popup_b

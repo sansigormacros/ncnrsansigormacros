@@ -17,8 +17,12 @@
 // -- integrate this with the protocol
 // -- integrate this with a more general "average panel"
 // -- draw the q-center and width on the image (as a contour? - if no, use a draw layer...)
-//    Can I "flag" the pixels that contribute to the annualr average, and overlay them like a 
+// -- Can I "flag" the pixels that contribute to the annualr average, and overlay them like a 
 //    Mask(translucent?), like a "thresholding" operation, but act on the Q-value, not the Z- value.
+//
+// TODO!!!
+// x- none of these procedures are aware of the BACK detector
+//
 
 //
 //
@@ -45,11 +49,21 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 	Variable ii,delQ
 	String detStr
 	
-	if(cmpstr(detGroup,"F") == 0)
-		detStr = "FLRTB"
-	else
-		detStr = "MLRTB"
-	endif
+	strswitch(detGroup)
+		case "F":
+			detStr = "FLRTB"
+			break
+		case "M":
+			detStr = "MLRTB"
+			break
+		case "B":
+			detStr = "B"
+			break
+		default:
+			DoAlert 0,"No detGroup match in V_QBinAllPanels_Annular"
+			return(0)
+	endswitch
+
 	
 // right now, use all of the detectors. There is a lot of waste in this and it could be 
 // done a lot faster, but...
@@ -77,6 +91,7 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 	else
 		RemoveFromGraph/Z iPhiBin_qxqy_FLRTB
 		RemoveFromGraph/Z iPhiBin_qxqy_MLRTB
+		RemoveFromGraph/Z iPhiBin_qxqy_B
 	endif
 
 	if(cmpstr(detGroup,"F") == 0)
@@ -88,7 +103,8 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 		Label left "Counts"
 		Label bottom "Phi (degrees)"
 		Legend
-	else
+	endif
+	if(cmpstr(detGroup,"M") == 0)
 		AppendToGraph iPhiBin_qxqy_MLRTB vs phiBin_qxqy_MLRTB
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -97,7 +113,15 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 		Label bottom "Phi (degrees)"
 		Legend
 	endif
-
+	if(cmpstr(detGroup,"B") == 0)
+		AppendToGraph iPhiBin_qxqy_B vs phiBin_qxqy_B
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ErrorBars iPhiBin_qxqy_B Y,wave=(ePhiBin_qxqy_B,ePhiBin_qxqy_B)
+		Label left "Counts"
+		Label bottom "Phi (degrees)"
+		Legend
+	endif
 	
 	SetDataFolder fldrSav0
 EndMacro
@@ -245,6 +269,32 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 					
 			nSets = 4
 			break									
+					
+		case "B":
+			if(isVCALC)
+				WAVE inten = $(folderPath+instPath+"B"+":det_"+"B")
+				WAVE/Z iErr = $("iErr_"+"B")			// 2D errors -- may not exist, especially for simulation		
+			else
+				Wave inten = V_getDetectorDataW(folderStr,"B")
+				Wave iErr = V_getDetectorDataErrW(folderStr,"B")
+
+				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"B"+":data")
+				
+				if(WaveExists(mask) == 1)
+					maskMissing = 0
+				endif
+			endif	
+//			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
+			
+			Wave qTotal = $(folderPath+instPath+"B"+":qTot_"+"B")			// 2D q-values	
+	
+			Wave qx = $(folderPath+instPath+"B"+":qx_"+"B")			// 2D qx-values	
+
+			Wave qy = $(folderPath+instPath+"B"+":qy_"+"B")			// 2D qy-values	
+					
+			nSets = 1
+			break								
+
 					
 		default:
 			nSets = 0							// optional default expression executed
@@ -653,12 +703,17 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 		Wave/Z pw = phiBin_qxqy_FLRTB
 		Wave/Z iw = iPhiBin_qxqy_FLRTB
 		Wave/Z sw = ePhiBin_qxqy_FLRTB
-	else
+	endif
+	if(cmpstr(detGroup,"M") == 0)
 		Wave/Z pw = phiBin_qxqy_MLRTB
 		Wave/Z iw = iPhiBin_qxqy_MLRTB
 		Wave/Z sw = ePhiBin_qxqy_MLRTB
 	endif
-
+	if(cmpstr(detGroup,"B") == 0)
+		Wave/Z pw = phiBin_qxqy_B
+		Wave/Z iw = iPhiBin_qxqy_B
+		Wave/Z sw = ePhiBin_qxqy_B
+	endif
 	
 	String dataSetFolderParent,basestr
 	

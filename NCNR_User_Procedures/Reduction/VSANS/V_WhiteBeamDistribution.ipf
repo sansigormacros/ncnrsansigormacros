@@ -24,7 +24,8 @@
 // of the three choices, using the fit to the "top" of the distribution gives the best-looking
 // result when compared to the AgBeh data
 //
-Function V_WhiteBeamDist(lam)
+
+Function V_WhiteBeamDist_top(lam)
 	Variable lam
 	
 	if(lam < 3.37)
@@ -54,6 +55,42 @@ Function V_WhiteBeamDist(lam)
 	if(lam < 8.25)
 		return(-2336 + 12422*exp(-( (lam-3.043)/4.034 )^2))
 	endif
+
+//	 anything larger than 8.37, return 0	
+	return(0)
+	
+End
+
+Function V_WhiteBeamDist_mid(lam)
+	Variable lam
+	
+	if(lam < 3.37)
+		return(0)
+	endif
+	
+	if(lam < 3.69)
+		return(-31013 + 9198*lam)
+	endif
+	
+	if(lam < 3.84)
+		return(23715 - 5649*lam)
+	endif
+	
+//// the "middle" of the spikes	
+	if(lam < 4.12)
+		return(-84962 + 22634*lam)
+	endif
+	if(lam < 8.37)
+		return(-2336 + 11422*exp(-( (lam-3.043)/4.234 )^2))
+	endif
+
+////// the "top" of the spikes
+//	if(lam < 4.16)
+//		return(-84962 + 22634*lam)
+//	endif
+//	if(lam < 8.25)
+//		return(-2336 + 12422*exp(-( (lam-3.043)/4.034 )^2))
+//	endif
 
 //	 anything larger than 8.37, return 0	
 	return(0)
