@@ -274,7 +274,12 @@ Function/S V_getSamListForPopup()
 //	String quote = "\""
 	NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
 
-	return(V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0))
+	String retStr = V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0)
+
+// and be sure to add in the empty cell, since it's not a "sample"
+	retStr += V_getFileIntentPurposeIDList("EMPTY CELL","SCATTERING",gTrnGrpID,0)
+	
+	return(retStr)
 End
 
 Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
@@ -450,8 +455,10 @@ Function V_CalcOneTransmission(SamFileName,TransFileName,EmptyFileName)
 		// TODO
 		// x- need to get the panel string for the sum.
 		// x- the detector string is currently hard-wired
+		detStr = V_getReduction_BoxPanel(emptyFileName)
+		
 		SVAR gEmptyPanel = root:Packages:NIST:VSANS:Globals:Transmission:gEmptyPanel
-		detStr = gEmptyPanel
+		gEmptyPanel = detStr
 
 		
 		// check for box count + error values
