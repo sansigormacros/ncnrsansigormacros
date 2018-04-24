@@ -476,13 +476,14 @@ Function BinAllFrontPanels()
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
 	String folderStr = "VCALC"
+	String collimationStr="pinhole"		// TODO: read this from the VCALC panel
 	
 	switch(binType)
 		case 1:
-			VC_fDoBinning_QxQy2D(folderStr,"FL")
-			VC_fDoBinning_QxQy2D(folderStr,"FR")
-			VC_fDoBinning_QxQy2D(folderStr,"FT")
-			VC_fDoBinning_QxQy2D(folderStr,"FB")
+			VC_fDoBinning_QxQy2D(folderStr,"FL",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FT",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"ML")
 //			VC_fDoBinning_QxQy2D(folderStr,"MR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MT")
@@ -491,8 +492,8 @@ Function BinAllFrontPanels()
 
 			break
 		case 2:
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MTB")
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
@@ -500,7 +501,7 @@ Function BinAllFrontPanels()
 			break
 		case 3:
 //			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 			
 			break
@@ -513,21 +514,21 @@ Function BinAllFrontPanels()
 
 			break
 		case 5:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 6:
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 7:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
@@ -955,6 +956,7 @@ Function BinAllMiddlePanels()
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
 	String folderStr = "VCALC"
+	String collimationStr="pinhole"		// TODO: fill this in from the VCALC panel
 
 	switch(binType)
 		case 1:
@@ -962,23 +964,23 @@ Function BinAllMiddlePanels()
 //			VC_fDoBinning_QxQy2D(folderStr,"FR")
 //			VC_fDoBinning_QxQy2D(folderStr,"FT")
 //			VC_fDoBinning_QxQy2D(folderStr,"FB")
-			VC_fDoBinning_QxQy2D(folderStr,"ML")
-			VC_fDoBinning_QxQy2D(folderStr,"MR")
-			VC_fDoBinning_QxQy2D(folderStr,"MT")
-			VC_fDoBinning_QxQy2D(folderStr,"MB")			
+			VC_fDoBinning_QxQy2D(folderStr,"ML",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MT",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MB",collimationStr)			
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
 			break
 		case 2:
 //			VC_fDoBinning_QxQy2D(folderStr,"FLR")
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
 			break
 		case 3:
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 			
@@ -994,20 +996,20 @@ Function BinAllMiddlePanels()
 		case 5:
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 6:
 //			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 7:
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
 //			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
@@ -1358,6 +1360,7 @@ Function BinAllBackPanels()
 	binType = V_Value		// V_value counts menu items from 1, so 1=1, 2=2, 3=4
 
 	String folderStr = "VCALC"
+	String collimationStr="pinhole"		// TODO: fill this in from the VCALC panel
 
 	switch(binType)
 		case 1:
@@ -1369,7 +1372,7 @@ Function BinAllBackPanels()
 //			VC_fDoBinning_QxQy2D(folderStr,"MR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MT")
 //			VC_fDoBinning_QxQy2D(folderStr,"MB")			
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 
 			break
 		case 2:
@@ -1377,13 +1380,13 @@ Function BinAllBackPanels()
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 
 			break
 		case 3:
 //			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 			
 			break
 		case 4:				/// this is for a tall, narrow slit mode	
@@ -1398,20 +1401,20 @@ Function BinAllBackPanels()
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"FLR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 		
 			break
 		case 6:
 //			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 		
 			break
 		case 7:
 //			VC_fDoBinning_QxQy2D(folderStr,"FTB")
 //			VC_fDoBinning_QxQy2D(folderStr,"FLR")
 //			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
 		
 			break
 			

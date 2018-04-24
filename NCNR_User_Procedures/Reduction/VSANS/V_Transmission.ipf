@@ -41,6 +41,7 @@ Function V_InitTransPanelGlobals()
 	String/G gSamLabel="file label",gTransLabel="file label",gEmptyLabel="file label"
 	String/G gEmptyBoxCoord="1;2;3;4;",gEmptyPanel="ENTER PANEL"
 	String/G gSamMatchList = "_none_"
+	String/G gTransMatchList = "_none_"
 
 
 	SetDataFolder root:
@@ -55,11 +56,11 @@ Window V_TransmissionPanel() : Panel
 
 //	ShowTools/A
 	PopupMenu popup_0,pos={16.00,359.00},size={104.00,23.00},fstyle=1,fsize=12,proc=V_TSamFilePopMenuProc,title="Sample"
-	PopupMenu popup_0,mode=1,popvalue="_none_",value= #"root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList "
+	PopupMenu popup_0,mode=1,popvalue="_none_",value= #"root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList"
 	PopupMenu popup_1,pos={12.00,229.00},size={195.00,23.00},fstyle=1,fsize=12,proc=V_TTransmFilePopMenuProc,title="Transmission"
-	PopupMenu popup_1,mode=1,popvalue="sans3584.nxs.ngv",value= V_getFilePurposeList("TRANSMISSION",0)
+	PopupMenu popup_1,mode=1,popvalue="_none_",value = #"root:Packages:NIST:VSANS:Globals:Transmission:gTransMatchList"//value= V_getFilePurposeList("TRANSMISSION",0)
 	PopupMenu popup_2,pos={17.00,79.00},size={188.00,23.00},fstyle=1,fsize=12,proc=V_TEmpBeamPopMenuProc,title="Open Beam"
-	PopupMenu popup_2,mode=1,popvalue="sans3584.nxs.ngv",value= V_getFileIntentList("OPEN BEAM",0)
+	PopupMenu popup_2,mode=1,popvalue="sans1.nxs.ngv",value= V_getFileIntentList("OPEN BEAM",0)
 	Button button_0,pos={34.00,499.00},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
 	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
 	Button button_3,pos={410.00,13.00},size={50.00,20.00},proc=V_DoneTransmButtonProc,title="Done"
@@ -155,82 +156,6 @@ Function V_TSamFilePopMenuProc(pa) : PopupMenuControl
 
 	return(0)	
 	
-//	switch( pa.eventCode )
-//		case 2: // mouse up
-//			Variable popNum = pa.popNum
-//			String popStr = pa.popStr
-//			
-//			Variable ii,np
-//			
-//			WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
-//			WAVE/T labelW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels
-//			WAVE groupIDW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID
-//			WAVE transmW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission
-//			WAVE/T intentW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
-//			
-//			// TODO
-//			// I don't have a wave for the transmission error value, so it's not displayed here
-//			// -- do I read it in, or just ignore it...	
-//			np = numpnts(labelW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
-//			for(ii=0;ii<np;ii+=1)
-//				if(cmpstr(fileNameW[ii],popStr)==0)
-//				
-//					SetVariable setvar_0,value=labelW[ii]
-//					SetVariable setvar_1,value=groupIDW[ii]
-//					SetVariable setvar_7,value=transmW[ii]
-//					break		//found, get out
-//				endif		
-//			endfor
-//		
-//		// loop back through to find the transmission file with the matching group id
-//		// TODO x- set the popup string to the matching name on exit
-//			Variable targetID = groupIDW[ii]
-////			String list = V_getFilePurposeList("TRANSMISSION",0)
-//			String list = V_getFileIntentPurposeList("SAMPLE","TRANSMISSION",0)
-//			
-//			WAVE/T purposeW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
-//			for(ii=0;ii<np;ii+=1)
-//				if(cmpstr(purposeW[ii],"TRANSMISSION")==0 && cmpstr(intentW[ii],"SAMPLE")==0 && groupIDW[ii] == targetID)
-//					Print "transmission file match at ",filenameW[ii]
-//					SetVariable setvar_2,value=labelW[ii]
-//					SetVariable setvar_3,value=groupIDW[ii]
-//					PopupMenu popup_1,mode=WhichListItem(fileNameW[ii], list )+1,popValue=fileNameW[ii]
-//					break
-//				endif		
-//			endfor
-//
-//		// now loop back through to find the empty beam file
-//		// TODO 
-//		// x- fill in the XY box
-//		// x-  Detector Panel field is hard-wired for "B"
-//		// -- do I use "EMPTY BEAM", "OPEN BEAM" or both?? I think "OPEN BEAM" is what NICE will use in a drop-down menu
-//		//	
-////			list = V_getFileIntentList("EMPTY BEAM",0)
-//			list = V_getFileIntentList("OPEN BEAM",0)
-//			
-//			for(ii=0;ii<np;ii+=1)
-//				if(cmpstr(intentW[ii],"OPEN BEAM")==0)
-//					Print "Open beam match at ",filenameW[ii]
-//					SetVariable setvar_4,value=labelW[ii]
-//					PopupMenu popup_2,mode=WhichListItem(fileNameW[ii], list )+1,popValue=fileNameW[ii]
-//					
-////					SetVariable setvar_6,value =_STR:"ML"
-//
-//					WAVE boxCoord = V_getBoxCoordinates(filenameW[ii])
-//					Print boxCoord
-//					SetVariable setvar_5,value=_STR:V_NumWave2List(boxCoord,";")
-//
-//					
-//					break
-//				endif		
-//			endfor
-//								
-//			break
-//		case -1: // control being killed
-//			break
-//	endswitch
-
-	return 0
 End
 
 // TODO
@@ -254,9 +179,9 @@ Function V_TTransmFilePopMenuProc(pa) : PopupMenuControl
 			NVAR gTrnGrpID = root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
 			gTrnGrpID = V_getSample_GroupID(popStr)			
 			
-			SVAR gSamMatchList = root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList
-			String quote = "\""
-			gSamMatchList = quote + V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0) + quote
+//			SVAR gSamMatchList = root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList
+//			String quote = "\""
+//			gSamMatchList = quote + V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0) + quote
 			// this resets a global string, since I can't pass a parameter (only constants) in value=fn()		
 //			PopupMenu popup_0,mode=1,value=#gSamMatchList
 			PopupMenu popup_0,mode=1,value=V_getSamListForPopup()
@@ -278,8 +203,51 @@ Function/S V_getSamListForPopup()
 
 // and be sure to add in the empty cell, since it's not a "sample"
 	retStr += V_getFileIntentPurposeIDList("EMPTY CELL","SCATTERING",gTrnGrpID,0)
+
+	// now filter through the string to refine the list to only scattering files that match
+	// the transmission file conditions
+	String newList="",item
+	Variable num,ii
 	
-	return(retStr)
+	String transStr
+	ControlInfo popup_1			//the transmission file popup
+	transStr = S_Value
+	
+	num=ItemsInList(retStr)
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, retStr,";")
+		if(V_Scatter_Match_Trans(transStr,item))
+			newList += item + ";"
+		endif
+	endfor
+
+	return(newList)
+End
+
+
+Function/S V_getTransListForPopup()
+
+	String retStr = V_getFilePurposeList("TRANSMISSION",0)
+	
+	// now filter through the string to refine the list to only transmission files that match
+	// the open beam file conditions
+	String newList="",item
+	Variable num,ii
+	
+	String openStr
+	ControlInfo popup_2		//the open beam popup
+	openStr = S_Value
+	
+	num=ItemsInList(retStr)
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, retStr,";")
+		if(V_Trans_Match_Open(openStr,item))
+			newList += item + ";"
+		endif
+	endfor
+
+	return(newList)
+	
 End
 
 Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
@@ -300,6 +268,8 @@ Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
 			
 			String detStr = V_getReduction_BoxPanel(popStr)
 			SetVariable setvar_6,value =_STR:detStr
+			
+			PopupMenu popup_1,mode=1,value=V_getTransListForPopup()
 			
 			break
 		case -1: // control being killed

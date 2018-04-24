@@ -781,6 +781,7 @@ Function/S V_GetDIVList()
 	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
 	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
 	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
 	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
 
@@ -827,6 +828,7 @@ Function/S V_GetMSKList()
 	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
 	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
 	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
 	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
 	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
 	
@@ -1284,7 +1286,7 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 	String detGroup="F"
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;Annular;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
@@ -1307,7 +1309,7 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 
 	// TODO:
 	// hard wired value
-	String autoPlot = "No"
+	String autoPlot = "Yes"
 	
 		
 	// all averages need these values
@@ -2308,11 +2310,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 		Endif
 	Endif
 	
-	//convert the folder to linear scale before averaging, then revert by calling the window hook
-	// (not needed for VSANS, data is always linear scale)
+//convert the folder to linear scale before averaging, then revert by calling the window hook
+// (not needed for VSANS, data is always linear scale)
 
-	// bin and plot the data
-	
 //
 //	 x- need to convert BINTYPE keyword into a numerical value to pass
 //
@@ -2332,6 +2332,28 @@ Function V_ExecuteProtocol(protStr,samStr)
 		endif
 	endif
 
+
+// identify the collimation type
+// this will be a string used to determine how the resolution information is to be calculated
+// and written to the reduced data file
+//
+// possible values are:
+//
+// pinhole
+// pinhole_whiteBeam
+// narrowSlit
+// narrowSlit_whiteBeam
+// convergingPinholes
+//
+
+	String collimationStr
+	collimationStr = V_IdentifyCollimation(activeType)
+
+
+
+////////////////////////////////////////
+// dispatch to averaging and resolution
+/////////////////////////////////////////
 //
 // TODO:
 // -- do I calculate the proper resolution here? I've already decoded the binning type
@@ -2347,7 +2369,36 @@ Function V_ExecuteProtocol(protStr,samStr)
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
 			//still do nothing
+			// set binType and binTypeStr to bad flags
+			binTypeStr = "none"
+			binType = -999999
 			break			
+
+		case "Circular":
+			V_QBinAllPanels_Circular(activeType,binType,collimationStr)		// this does a default circular average
+			break
+			
+		case "Sector":
+//			CircularAverageTo1D(activeType)
+			break
+		case "Sector_PlusMinus":
+//			Sector_PlusMinus1D(activeType)
+			break
+		case "Rectangular":
+//			RectangularAverageTo1D(activeType)
+			break
+
+		case "Annular":
+			String detGroup = StringByKey("DETGROUP",prot[5],"=",";")
+			Variable qCtr_Ann = NumberByKey("QCENTER",prot[5],"=",";")
+			Variable qWidth = NumberByKey("QDELTA",prot[5],"=",";")
+			V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
+			break
+
+		case "Narrow_Slit":
+			V_QBinAllPanels_Slit(activeType,binType)		// this does a tall, narrow slit average
+			break
+			
 		case "2D_ASCII":	
 			//do nothing
 			break
@@ -2357,52 +2408,74 @@ Function V_ExecuteProtocol(protStr,samStr)
 		case "PNG_Graphic":
 			//do nothing
 			break
-		case "Rectangular":
-//			RectangularAverageTo1D(activeType)
-			break
-		case "Annular":
-//			AnnularAverageTo1D(activeType)
-			String detGroup = StringByKey("DETGROUP",prot[5],"=",";")
-			Variable qCtr_Ann = NumberByKey("QCENTER",prot[5],"=",";")
-			Variable qWidth = NumberByKey("QDELTA",prot[5],"=",";")
-			V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
-			break
-		case "Circular":
-
-			V_QBinAllPanels_Circular(activeType,binType)		// this does a default circular average
-			break
-		case "Sector":
-//			CircularAverageTo1D(activeType)
-			break
-		case "Sector_PlusMinus":
-//			Sector_PlusMinus1D(activeType)
-			break
 		default:	
 			//do nothing
 	endswitch
 
-// DONE
-// x- this call will bin the active type, then the next call bins the active type
-// x- then later, I dispatch to bin the active type...	
-// x- !!!need to split out the panel draw and the binning calls from V_PlotData_Panel
-//
-// TODO:
-// -- BAD logic here, skipping the normal graph if annular is chosen. Go back and see how I do this
-// in SANS for a better and more foolproof way to do this
-// x- don't draw the graph if "none" is the average type!
-	//
-	if(cmpstr(av_type,"Annular") != 0 && (cmpstr(av_type,"none") != 0) )
-		V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
-		V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
-	endif
-///// end of averaging dispatch
 
+
+////////////////////////
+// plotting of the data, another strswitch (with an if() out front)
+////////////////////////
+
+	String doPlot = StringByKey("PLOT",prot[5],"=",";")
+	
+	If( (cmpstr(doPlot,"Yes")==0) && (cmpstr(av_type,"none") != 0) )	
+		
+		strswitch(av_type)	//dispatch to the proper routine to PLOT 1D data
+			case "none":		
+				//still do nothing
+				break			
+
+			case "Circular":
+				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned				
+				break
+			case "Sector":
+	//			CircularAverageTo1D(activeType)
+				break
+			case "Sector_PlusMinus":
+	//			Sector_PlusMinus1D(activeType)
+				break
+			case "Rectangular":
+	//			RectangularAverageTo1D(activeType)
+				break
+
+			case "Annular":
+				V_Phi_Graph_Proc(activeType,detGroup)
+				break
+
+			case "Narrow_Slit":
+			// these are the same plotting routines as for standard circular average
+				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
+				break
+			
+			case "2D_ASCII":	
+				//do nothing
+				break
+			case "QxQy_ASCII":
+				//do nothing
+				break
+			case "PNG_Graphic":
+				//do nothing
+				break
+			default:	
+				//do nothing
+		endswitch
+
+	endif		// end of plotting switch
+
+
+
+////////////////////	
+//save data if desired - dispatch as needed
+////////////////////
 
 // 
 // x- how do I get the sample file name?
 //    local variable samFileLoaded is the file name loaded (contains the extension)
-//	
-	//save data if desired - dispatch as needed
+//
 	String fullpath = "", newfileName=""
 	String saveType = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
 
@@ -2415,12 +2488,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 		if(cmpstr(exten,"ABS") != 0)
 			exten = "AVE"
 		endif
-		if(cmpstr(av_type,"2D_ASCII") == 0)
-			exten = "ASC"
-		endif
-		if(cmpstr(av_type,"QxQy_ASCII") == 0)
-			exten = "DAT"
-		endif
+//		if(cmpstr(av_type,"2D_ASCII") == 0)
+//			exten = "ASC"
+//		endif
+//		if(cmpstr(av_type,"QxQy_ASCII") == 0)
+//			exten = "DAT"
+//		endif
 		
 //		// add an "x" to the file extension if the output is XML
 //		// currently (2010), only for ABS and AVE (1D) output
@@ -2454,12 +2527,42 @@ Function V_ExecuteProtocol(protStr,samStr)
 		//
 		strswitch(av_type)	
 			case "Annular":
-//				WritePhiave_W_Protocol(activeType,fullPath,dialog)
 				V_fWrite1DAnnular("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
 				Print "data written to:  "+ newFileName+".phi"
 
 				break
-			case "2D_ASCII":
+
+			case "Circular":		//in SANS, this was the default, but is dangerous, so make it explicit here
+			case "Sector":		// TODO: this falls through - which luckily works for now...
+			case "Rectangular":		// TODO: this falls through - which luckily works for now...
+			case "Narrow_Slit":		// TODO: this falls through - which luckily works for now...
+
+// no VSANS support of XML output at this point			
+//				if (useXMLOutput == 1)
+//					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
+//				else
+//					WriteWaves_W_Protocol(activeType,fullpath,dialog)
+//				endif
+//
+				if(cmpstr(saveType,"Yes - Concatenate")==0)
+					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// x- passing null strings uses global or default trim values
+
+					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
+					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+				endif
+				
+				if(cmpstr(saveType,"Yes - Individual")==0)
+					// remove the q=0 point from the back detector, if it's there
+					// does not trim any other points from the data
+					V_RemoveQ0_B(activeType)
+					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+				endif
+				Print "data written to:  "+ newFileName+"."+exten
+
+				break
+	
+				
+				case "2D_ASCII":
 //				Fast2DExport(activeType,fullPath,dialog)
 				break
 			case "QxQy_ASCII":
@@ -2468,33 +2571,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 			case "PNG_Graphic":
 //				SaveAsPNG(activeType,fullpath,dialog)
 				break
-			case "Circular":		//in SANS, this was the default, but is dangerous, so make it explicit here
-//				if (useXMLOutput == 1)
-//					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
-//				else
-//					WriteWaves_W_Protocol(activeType,fullpath,dialog)
-//				endif
-//
-// x- get the trim strings from somewhere-- from the file or from the protocol??
-//   then replace the null strings being passed
 
-				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// x- passing null strings uses global or default trim values
-
-					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
-					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
-				else
-					// remove the q=0 point from the back detector, if it's there
-					// does not trim any of the data
-					V_RemoveQ0_B(activeType)
-					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
-				endif
-				Print "data written to:  "+ newFileName+"."+exten
-
-				break
 			default:
 				DoAlert 0, "av_type not found in dispatch to write file"
-
 		endswitch
 		
 	Endif

@@ -784,8 +784,8 @@ End
 //
 //
 // folderStr = WORK folder, type = the binning type (may include multiple detectors)
-Function VC_fDoBinning_QxQy2D(folderStr,type)
-	String folderStr,type
+Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
+	String folderStr,type,collimationStr
 	
 	Variable nSets = 0
 	Variable xDim,yDim
@@ -1479,18 +1479,63 @@ endif
 //  with the inner(lambda) calculated first, then the outer(geometry).
 //
 
+// possible values are:
+//
+// pinhole
+// pinhole_whiteBeam
+// narrowSlit
+// narrowSlit_whiteBeam
+// convergingPinholes
 
-	ii=0
-	do
-		V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
-		sigmaq[ii] = ret1	
-		qbar[ii] = ret2	
-		fsubs[ii] = ret3	
-		ii+=1
-	while(ii<nq)
+	if(cmpstr(collimationStr,"pinhole") == 0)
+
+		ii=0
+		do
+			V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+			sigmaq[ii] = ret1	
+			qbar[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)
 	
+	endif
 	
+
+	if(cmpstr(collimationStr,"pinhole_whiteBeam") == 0)
+
+//		set lambdaWidth == 0 so that the gaussian resolution calculates only the geometry contribution.
+// the white beam distribution will need to be flagged some other way
+//
+		lambdaWidth = 0
+		
+		ii=0
+		do
+			V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+			sigmaq[ii] = ret1	
+			qbar[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)
 	
+	endif
+
+	if(cmpstr(collimationStr,"convergingPinholes") == 0)
+
+//		set usingLenses == 1 so that the Gaussian resolution calculation will be for a focus condition
+//
+		usingLenses = 1
+		
+		ii=0
+		do
+			V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+			sigmaq[ii] = ret1	
+			qbar[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)
+	
+	endif
+		
 	SetDataFolder root:
 	
 	return(0)

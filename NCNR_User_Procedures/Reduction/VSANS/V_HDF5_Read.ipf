@@ -27,10 +27,10 @@ Function proto_V_get_FP2(str,str2)
 	return(0)
 end
 
-//Function/S proto_V_get_STR(str)
-//	String str
-//	return("")
-//end
+Function/S proto_V_get_STR(str)
+	String str
+	return("")
+end
 
 Proc Dump_V_getFP(fname)
 	String fname

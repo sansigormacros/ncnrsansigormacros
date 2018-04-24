@@ -36,6 +36,7 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
 	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
 	
+	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
 	
 	//make sure the waves exist
 	
@@ -114,7 +115,7 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 	//6 - DRK (unused in VSANS)
 	//7 - beginning trim points
 	//8 - end trim points
-//	fprintf refnum, "SAM: %s\r\n",samFiles
+	fprintf refnum, "SAM: %s\r\n",samFiles
 	fprintf refnum, "BGD: %s\r\n",proto[0]
 	fprintf refnum, "EMP: %s\r\n",Proto[1]
 	fprintf refnum, "DIV: %s\r\n",Proto[2]

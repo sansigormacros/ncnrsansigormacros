@@ -347,6 +347,8 @@ Function V_UpdateBoxCoords() :  GraphMarquee
 		y1 = V_bottom
 		y2 = V_top
 
+//		Print x1,x2,y1,y2
+
 		// NOTE:
 		// this function MODIFIES x and y values on return, converting them to panel coordinates
 		// detector panel is identified from the (left,top) coordinate (x1,y2)
@@ -358,6 +360,8 @@ Function V_UpdateBoxCoords() :  GraphMarquee
 		V_KeepSelectionInBounds(x1,x2,y1,y2,detStr,gCurDispType)
 		sprintf boxStr,"%d;%d;%d;%d;",x1,x2,y1,y2
 
+//		Print x1,x2,y1,y2
+		
 		SVAR gCurrentFile = root:Packages:NIST:VSANS:Globals:gLastLoadedFile		//for the status of the display
 
 		V_writeBoxCoordinates(gCurrentFile,V_List2NumWave(boxStr,";","inW"))
@@ -368,5 +372,8 @@ Function V_UpdateBoxCoords() :  GraphMarquee
 //		Print "counts = ",count
 //		Print "err/counts = ",ct_err/count
 
+		// kill the file from RawVSANS so that the updated box coordinates will be re-read in
+		//
+		V_KillNamedDataFolder(gCurrentFile)
 	endif
 End

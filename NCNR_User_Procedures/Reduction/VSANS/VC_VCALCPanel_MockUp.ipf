@@ -334,8 +334,10 @@ Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String str,winStr="VCALC#Panels_IQ",workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+type
 	
+	String collimationStr = "pinhole"		//TODO: fill this in from the VCALC panel
+	
 // dispatch based on the string, not on the number of selection in the pop string
-	V_QBinAllPanels_Circular(type,V_BinTypeStr2Num(popStr))
+	V_QBinAllPanels_Circular(type,V_BinTypeStr2Num(popStr),collimationStr)
 	
 	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
 

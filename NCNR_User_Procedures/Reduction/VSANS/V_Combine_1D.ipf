@@ -221,10 +221,10 @@ Function V_DataBinTypePlotPop(ctrlName,popNum,popStr) : PopupMenuControl
 	// Plot the "real" data. data copy to trim will be plotted later
 	//
 	SVAR dispType = root:Packages:NIST:VSANS:Globals:gCurDispType
-
+	String collimationStr="pinhole"		//TODO: where do I get this information from ? does it matter here?
 
 // dispatch based on the string, not on the number of selection in the pop string
-	V_QBinAllPanels_Circular(dispType,binType)
+	V_QBinAllPanels_Circular(dispType,binType,collimationStr)
 
 	String workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+dispType

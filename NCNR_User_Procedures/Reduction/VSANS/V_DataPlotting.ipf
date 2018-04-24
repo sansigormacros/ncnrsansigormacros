@@ -408,7 +408,15 @@ Function V_BinningModePopup(ctrlName,popNum,popStr) : PopupMenuControl
 	SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType
 
 // dispatch based on the string, not on the number of selection in the pop string
-	V_QBinAllPanels_Circular(type,V_BinTypeStr2Num(popStr))
+	variable binType = V_BinTypeStr2Num(popStr)
+	String collimationStr="pinhole"		//TODO: where do I get this information from ? does it matter here?
+	if(binType == 4)
+	// narrow slits
+		V_QBinAllPanels_Slit(type,binType)
+	else
+		V_QBinAllPanels_Circular(type,binType,collimationStr)
+	endif
+	
 
 	String str,winStr="V_1D_Data",workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+type

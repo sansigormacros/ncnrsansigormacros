@@ -100,8 +100,8 @@ End
 // x- this must be called as needed to force a re-read of the data from disk
 //    "as needed" means that when an operation is done that needs to ensure
 //     a fresh read from disk, it must take care of the kill.
-// x- the ksBaseDFPath needs to be removed. It's currently pointing to RawVSANS, which is
-//    really not used as intended anymore.
+//
+// ksBaseDFPath points to RawVSANS
 //
 //
 Function V_KillNamedDataFolder(fname)

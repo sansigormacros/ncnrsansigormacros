@@ -91,7 +91,98 @@ end
 // -- new logic in calling routines to dispatch to proper routine
 // -- AND need to write the routine for binning_SlitMode
 //
-Function V_QBinAllPanels_Circular(folderStr,binType)
+Function V_QBinAllPanels_Circular(folderStr,binType,collimationStr)
+	String folderStr
+	Variable binType
+	String collimationStr
+
+	// do the back, middle, and front separately
+	
+//	figure out the binning type (where is it set?)
+	Variable ii,delQ
+	String detStr
+
+//	binType = V_GetBinningPopMode()
+
+	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		
+		delQ = V_SetDeltaQ(folderStr,detStr)		// this sets (overwrites) the global value for each panel type
+	endfor
+	
+
+	switch(binType)
+		case 1:
+			VC_fDoBinning_QxQy2D(folderStr,"FL",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FT",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"ML",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MT",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MB",collimationStr)			
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+
+			break
+		case 2:
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+
+			break
+		case 3:
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+			VC_fBinDetector_byRows(folderStr,"FL")
+			VC_fBinDetector_byRows(folderStr,"FR")
+			VC_fBinDetector_byRows(folderStr,"ML")
+			VC_fBinDetector_byRows(folderStr,"MR")
+			VC_fBinDetector_byRows(folderStr,"B")
+
+			break
+		case 5:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MLRTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+		
+			break
+		case 6:
+			VC_fDoBinning_QxQy2D(folderStr,"FLRTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+		
+			break
+		case 7:
+			VC_fDoBinning_QxQy2D(folderStr,"FTB",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"FLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr,"MLR",collimationStr)
+			VC_fDoBinning_QxQy2D(folderStr, "B",collimationStr)		
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in V_QBinAllPanels_Circular"// when no case matches	
+	endswitch
+	
+
+	return(0)
+End
+
+
+//
+// TODO -- binType == 4 (slit mode) should be the only case to end up here
+// -- new logic in calling routines to dispatch to proper routine
+// -- AND need to write the routine for binning_SlitMode
+//
+Function V_QBinAllPanels_Slit(folderStr,binType)
 	String folderStr
 	Variable binType
 
@@ -113,30 +204,13 @@ Function V_QBinAllPanels_Circular(folderStr,binType)
 
 	switch(binType)
 		case 1:
-			VC_fDoBinning_QxQy2D(folderStr,"FL")
-			VC_fDoBinning_QxQy2D(folderStr,"FR")
-			VC_fDoBinning_QxQy2D(folderStr,"FT")
-			VC_fDoBinning_QxQy2D(folderStr,"FB")
-			VC_fDoBinning_QxQy2D(folderStr,"ML")
-			VC_fDoBinning_QxQy2D(folderStr,"MR")
-			VC_fDoBinning_QxQy2D(folderStr,"MT")
-			VC_fDoBinning_QxQy2D(folderStr,"MB")			
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
 			break
 		case 2:
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
 
 			break
 		case 3:
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
-			
+
 			break
 		case 4:				/// this is for a tall, narrow slit mode	
 			VC_fBinDetector_byRows(folderStr,"FL")
@@ -147,33 +221,24 @@ Function V_QBinAllPanels_Circular(folderStr,binType)
 
 			break
 		case 5:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MLRTB")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 6:
-			VC_fDoBinning_QxQy2D(folderStr,"FLRTB")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
 		
 			break
 		case 7:
-			VC_fDoBinning_QxQy2D(folderStr,"FTB")
-			VC_fDoBinning_QxQy2D(folderStr,"FLR")
-			VC_fDoBinning_QxQy2D(folderStr,"MLR")
-			VC_fDoBinning_QxQy2D(folderStr, "B")		
-		
+	
 			break
 			
 		default:
-			Abort "Binning mode not found in V_QBinAllPanels_Circular"// when no case matches	
+			Abort "Binning mode not found in V_QBinAllPanels_Slit"// when no case matches	
 	endswitch
 	
 
 	return(0)
 End
+
+
 
 // concatenates and sorts the 1D data in "type" WORK folder
 // uses the current display if type==""

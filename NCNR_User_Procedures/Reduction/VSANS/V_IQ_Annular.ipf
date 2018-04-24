@@ -78,7 +78,7 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 	return(0)
 End
 
-Proc V_Phi_Graph_Proc(folderStr,detGroup)
+Function V_Phi_Graph_Proc(folderStr,detGroup)
 	String folderStr,detGroup
 	
 	PauseUpdate; Silent 1		// building window...
@@ -95,6 +95,10 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 	endif
 
 	if(cmpstr(detGroup,"F") == 0)
+		wave iPhiBin_qxqy_FLRTB=iPhiBin_qxqy_FLRTB
+		wave phiBin_qxqy_FLRTB=phiBin_qxqy_FLRTB
+		wave ePhiBin_qxqy_FLRTB=ePhiBin_qxqy_FLRTB
+		
 		AppendToGraph iPhiBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
 //		Display /W=(35,45,572,419)/N=V_Phi_Graph /K=1 iPhiBin_qxqy_FLRTB vs phiBin_qxqy_FLRTB
 		ModifyGraph mode=4
@@ -105,6 +109,10 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 		Legend
 	endif
 	if(cmpstr(detGroup,"M") == 0)
+		wave iPhiBin_qxqy_MLRTB=iPhiBin_qxqy_MLRTB
+		wave phiBin_qxqy_MLRTB=phiBin_qxqy_MLRTB
+		wave ePhiBin_qxqy_MLRTB=ePhiBin_qxqy_MLRTB
+		
 		AppendToGraph iPhiBin_qxqy_MLRTB vs phiBin_qxqy_MLRTB
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -114,6 +122,10 @@ Proc V_Phi_Graph_Proc(folderStr,detGroup)
 		Legend
 	endif
 	if(cmpstr(detGroup,"B") == 0)
+		wave iPhiBin_qxqy_B=iPhiBin_qxqy_B
+		wave phiBin_qxqy_B=phiBin_qxqy_B
+		wave ePhiBin_qxqy_B=ePhiBin_qxqy_B
+		
 		AppendToGraph iPhiBin_qxqy_B vs phiBin_qxqy_B
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -717,11 +729,16 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 	
 	String dataSetFolderParent,basestr
 	
+	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
+	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
+
+	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	
 	//make sure the waves exist
 	
 	if(WaveExists(pw) == 0)
 		SetDataFolder root:
-		Abort "q is missing"
+		Abort "phi is missing"
 	endif
 	if(WaveExists(iw) == 0)
 		SetDataFolder root:
@@ -731,7 +748,12 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 		SetDataFolder root:
 		Abort "s is missing"
 	endif
+	if(WaveExists(proto) == 0)
+		SetDataFolder root:
+		Abort "protocol information is missing."
+	endif
 //	if(WaveExists(resw) == 0)
+//		SetDataFolder root:
 //		Abort "Resolution information is missing."
 //	endif
 	
@@ -754,12 +776,54 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 //	endif
 //	
 
+
+// no beg/end trimming is used for annular data
+
+//// if the "default" trimming is used, the proto[] values will be null
+//// fill them in with the default values
+//	String protoStr7,protoStr8
+//	if(strlen(proto[7]) == 0)
+//		protoStr7 = "(Default) "+ ksBinTrimBegDefault
+//	else
+//		protoStr7 = proto[7]
+//	endif
+//	if(strlen(proto[8]) == 0)
+//		protoStr8 = "(Default) "+ ksBinTrimEndDefault
+//	else
+//		protoStr8 = proto[8]
+//	endif	
+
+
+
 	PathInfo catPathName
 	fullPath = S_Path + saveName
 
 	Open refnum as fullpath
 
 	fprintf refnum,"Annular data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
+
+
+	//insert protocol information here
+	//-1 list of sample files
+	//0 - bkg
+	//1 - emp
+	//2 - div
+	//3 - mask
+	//4 - abs params c2-c5
+	//5 - average params
+	//6 - DRK (unused in VSANS)
+	//7 - beginning trim points
+	//8 - end trim points
+	fprintf refnum, "SAM: %s\r\n",samFiles
+	fprintf refnum, "BGD: %s\r\n",proto[0]
+	fprintf refnum, "EMP: %s\r\n",Proto[1]
+	fprintf refnum, "DIV: %s\r\n",Proto[2]
+	fprintf refnum, "MASK: %s\r\n",Proto[3]
+	fprintf refnum, "ABS Parameters (3-6): %s\r\n",Proto[4]
+	fprintf refnum, "Average Choices: %s\r\n",Proto[5]
+//	fprintf refnum, "Beginning Trim Points: %s\r\n",ProtoStr7
+//	fprintf refnum, "End Trim Points: %s\r\n",ProtoStr8
+
 
 // TODO -- make this work for 6-columns (or??)
 //	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
