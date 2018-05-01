@@ -365,7 +365,7 @@ Function/S V_IdentifyCollimation(fname)
 	endif	
 	
 	guides = V_getNumberOfGuides(fname)
-	if(cmpstr(guides,"NARROW_SLIT") == 0)
+	if(cmpstr(guides,"NARROW_SLITS") == 0)
 		slit = 1
 	endif
 	

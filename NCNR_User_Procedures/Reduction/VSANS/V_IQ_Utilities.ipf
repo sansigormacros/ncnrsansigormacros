@@ -665,9 +665,12 @@ Function V_Trim1DDataStr(folderStr,binType,nBegStr,nEndStr)
 	num = ItemsInList(detListStr)
 	for(ii=0;ii<num;ii+=1)
 		detStr = StringFromList(ii, detListStr)
-		nBeg = NumberByKey(detStr, nBegStr,"=",";")
-		nEnd = NumberByKey(detStr, nEndStr,"=",";")
-		if(!gIgnoreDetB)
+		if(cmpstr(detStr,"B")==0 && gIgnoreDetB)
+				//skip det B, do nothing
+		else
+			nBeg = NumberByKey(detStr, nBegStr,"=",";")
+			nEnd = NumberByKey(detStr, nEndStr,"=",";")
+
 			V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 		endif
 	endfor

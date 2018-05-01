@@ -124,6 +124,7 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 	fprintf refnum, "Average Choices: %s\r\n",Proto[5]
 	fprintf refnum, "Beginning Trim Points: %s\r\n",ProtoStr7
 	fprintf refnum, "End Trim Points: %s\r\n",ProtoStr8
+	fprintf refnum, "COLLIMATION=%s\r\n",proto[9]
 
 // TODO
 // x- make this work for 6-columns (or??)

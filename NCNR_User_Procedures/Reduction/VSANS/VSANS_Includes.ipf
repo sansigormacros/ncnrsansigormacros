@@ -120,8 +120,8 @@ End
 #include "V_WhiteBeamDistribution"
 #include "V_DummyFunctions"
 // VSANS Analysis functions (under Analysis trunk, not Reduction)
-#include "V_BroadPeak_WB"
-#include "V_GaussSpheres_WB"
+#include "V_WB_BroadPeak"
+#include "V_WB_GaussSpheres"
 
 #include "V_Utilities_Comparisons"
 

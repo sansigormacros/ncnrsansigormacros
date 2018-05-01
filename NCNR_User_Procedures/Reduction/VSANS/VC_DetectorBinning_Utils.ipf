@@ -1422,13 +1422,33 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 	lambdaWidth = V_getWavelength_spread(folderStr)
 	
 // DDet = detector pixel resolution [cm]	**assumes square pixel
-	DDet = 0.8		// TODO -- this is hard-wired
-	
+	// V_getDet_pixel_fwhm_x(folderStr,detStr)
+	// V_getDet_pixel_fwhm_y(folderStr,detStr)
+//	DDet = 0.8		// TODO -- this is hard-wired
+
+	if(strlen(type) == 1)
+		// it's "B"
+		DDet = V_getDet_pixel_fwhm_x(folderStr,type)		// value is already in cm
+	else
+		DDet = V_getDet_pixel_fwhm_x(folderStr,type[0,1])		// value is already in cm
+	endif
+		
 // apOff = sample aperture to sample distance [cm]
 	apOff = 10		// TODO -- this is hard-wired
 	
 // S1 = source aperture diameter [mm]
-	S1 = str2num(V_getSourceAp_size(folderStr))
+// may be either circle or rectangle
+	String s1_shape="",bs_shape=""
+	Variable width,height,equiv_S1,equiv_bs
+	
+	
+	s1_shape = V_getSourceAp_shape(folderStr)
+	if(cmpstr(s1_shape,"CIRCLE") == 0)
+		S1 = str2num(V_getSourceAp_size(folderStr))
+	else
+		S1 = V_getSourceAp_height(folderStr)		// TODO: need the width or at least an equivalent diameter
+	endif
+	
 	
 // S2 = sample aperture diameter [cm]
 // as of 3/2018, the "internal" sample aperture is not in use, only the external
@@ -1446,15 +1466,29 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 // take the first two characters of the "type" to get the correct distance.
 // if the type is say, MLRTB, then the implicit assumption in combining all four panels is that the resolution
 // is not an issue for the slightly different distances.
-	L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
+	if(strlen(type) == 1)
+		// it's "B"
+		L2 = V_getDet_ActualDistance(folderStr,type)/100		//convert cm to m
+	else
+		L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
+	endif
 	
 // BS = beam stop diameter [mm]
 //TODO:? which BS is in? carr2, carr3, none?
-// -- need to check the num_beamstops field, then description, then shape/size or shape/height and shape/width
+// -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
 // TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 	BS = 25.4			//TODO hard-wired value
+	
+//	bs_shape = V_getBeamStopC2_shape(folderStr)
+//	if(cmpstr(s1_shape,"CIRCLE") == 0)
+//		bs = V_getBeamStopC2_size(folderStr)
+//	else
+//		bs = V_getBeamStopC2_height(folderStr)	
+//	endif
+
+
 	
 // del_r = step size [mm] = binWidth*(mm/pixel) 
 	del_r = 1*8			// TODO: 8mm/pixel hard-wired
@@ -1483,9 +1517,11 @@ endif
 //
 // pinhole
 // pinhole_whiteBeam
+// convergingPinholes
+//
+// *slit data should be reduced using the slit routine, not here, proceed but warn
 // narrowSlit
 // narrowSlit_whiteBeam
-// convergingPinholes
 
 	if(cmpstr(collimationStr,"pinhole") == 0)
 
@@ -1535,6 +1571,46 @@ endif
 		while(ii<nq)
 	
 	endif
+
+
+// should not end up here, except for odd testing cases
+	if(cmpstr(collimationStr,"narrowSlit") == 0)
+
+		Print "??? Slit data is being averaged as pinhole - reset the AVERAGE parameters in the protocol ???"
+		ii=0
+		do
+			V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+			sigmaq[ii] = ret1	
+			qbar[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)
+	
+	endif
+	
+// should not end up here, except for odd testing cases
+	if(cmpstr(collimationStr,"narrowSlit_whiteBeam") == 0)
+
+//		set lambdaWidth == 0 so that the gaussian resolution calculates only the geometry contribution.
+// the white beam distribution will need to be flagged some other way
+//
+		Print "??? Slit data is being averaged as pinhole - reset the AVERAGE parameters in the protocol ???"
+
+		lambdaWidth = 0
+		
+		ii=0
+		do
+			V_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,ret1,ret2,ret3)
+			sigmaq[ii] = ret1	
+			qbar[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)
+	
+	endif
+
+
+
 		
 	SetDataFolder root:
 	

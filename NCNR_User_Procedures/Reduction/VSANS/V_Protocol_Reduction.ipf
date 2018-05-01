@@ -2548,7 +2548,11 @@ Function V_ExecuteProtocol(protStr,samStr)
 					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// x- passing null strings uses global or default trim values
 
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
+				
+					prot[9] = collimationStr
+					
 					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+				
 				endif
 				
 				if(cmpstr(saveType,"Yes - Individual")==0)

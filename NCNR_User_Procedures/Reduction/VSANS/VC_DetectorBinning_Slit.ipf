@@ -267,8 +267,10 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 //    since it's not an infinite slit, and not anything that I expect could be represented as a Gaussian
 // -- there is also wavelength smearing present
 
+
+
 // ASSUMPTION: As a first approximation, ignore the wavelength smearing component	
-	// TODO : do I use 1/2 of dQy due to the symmetry of my smearing calculation?	
+	// TODO : do I use 1/2 of dQy due to the symmetry of my smearing calculation?	(as infinite slit)
 	sigmaq = -delQy/2
 	qbar = -delQy/2
 	fsubs = -delQy/2

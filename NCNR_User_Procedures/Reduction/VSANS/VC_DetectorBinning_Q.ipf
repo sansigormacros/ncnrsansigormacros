@@ -1361,6 +1361,7 @@ Function BinAllBackPanels()
 
 	String folderStr = "VCALC"
 	String collimationStr="pinhole"		// TODO: fill this in from the VCALC panel
+	Print "collimationStr hard-wired to pinhole: update as VCALC is filled in"
 
 	switch(binType)
 		case 1:
