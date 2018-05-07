@@ -198,6 +198,10 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 		endfor
 		iBin_qxqy[ii] = sum_inten/sum_n		//the average value
 		
+//		if(numtype(iBin_qxqy[ii]) == 2)
+//			print "asdfasdf"
+//		endif
+		
 		avesq = (sum_inten/sum_n)^2
 		aveisq = sum_inten2/sum_n
 		var = aveisq-avesq
@@ -239,6 +243,10 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	while((iBin_qxqy[val] == 0) && val > 0)
 	
 	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,eBin_qxqy
+
+
+// utility function to remove NaN values from the waves
+	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
 
 // work forwards? this doesn't work...
 //	val = -1

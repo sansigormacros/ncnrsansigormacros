@@ -122,6 +122,8 @@ End
 // VSANS Analysis functions (under Analysis trunk, not Reduction)
 #include "V_WB_BroadPeak"
 #include "V_WB_GaussSpheres"
+#include "V_WB_Beaucage"
+
 
 #include "V_Utilities_Comparisons"
 

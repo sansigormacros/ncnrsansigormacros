@@ -154,7 +154,7 @@ Function V_TrimTestUpdate(Beg_pts, End_pts)
 //	SetDataFolder root:ToTrim
 //	ControlInfo/W=V_1D_Combine popup1
 //	String dataFldrStr = S_Value
-	
+	NVAR gIgnoreBackDet = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	SVAR curDispType = root:Packages:NIST:VSANS:Globals:gCurDispType
 	String dataFldrStr = "root:Packages:NIST:VSANS:"+curDispType
 	
@@ -164,27 +164,34 @@ Function V_TrimTestUpdate(Beg_pts, End_pts)
 	
 	for(ii=0;ii<num;ii+=1)
 		detStr = panelStr[ii]
-		Wave/Z iw = $("root:ToTrim:iBin_qxqy_"+detStr+"_trim")
-		Wave/Z iw_orig = $(dataFldrStr+":iBin_qxqy_"+detStr)
-//		Wave/Z iw = $("iBin_qxqy_"+detStr)
-//		Wave/Z ew = $("eBin_qxqy_"+detStr)
-		if(WaveExists(iw) && WaveExists(iw_orig))
-			
-//			DeletePoints 0,nBeg, qw,iw,ew
-			// start fresh
-			iw = iw_orig
-			
-			p1 = begW[ii]
-			iw[0,p1-1] = NaN
+		if(gIgnoreBackDet && cmpstr(detStr,"B") == 0)
+			// do nothing
+		else
+			Wave/Z iw = $("root:ToTrim:iBin_qxqy_"+detStr+"_trim")
+			Wave/Z iw_orig = $(dataFldrStr+":iBin_qxqy_"+detStr)
+	//		Wave/Z iw = $("iBin_qxqy_"+detStr)
+	//		Wave/Z ew = $("eBin_qxqy_"+detStr)
+			if(WaveExists(iw) && WaveExists(iw_orig))
 				
-			Variable npt
-			npt = numpnts(iw) 
-//			DeletePoints npt-nEnd,nEnd, qw,iw,ew
-			p2 = EndW[ii]
-			iw[npt-p2,npt-1] = NaN
-			
+	//			DeletePoints 0,nBeg, qw,iw,ew
+				// start fresh
+				iw = iw_orig
+				Variable npt
+				npt = numpnts(iw) 
+							
+				p1 = begW[ii]
+				if(p1 > 0 && p1 < npt-1)
+					iw[0,p1-1] = NaN
+				endif
+				
+	//			DeletePoints npt-nEnd,nEnd, qw,iw,ew
+				p2 = EndW[ii]
+				
+				if(p2 > 0 && p2 < npt-1)
+					iw[npt-p2,npt-1] = NaN
+				endif			
+			endif
 		endif
-		
 	endfor
 	
 	SetDataFolder root:

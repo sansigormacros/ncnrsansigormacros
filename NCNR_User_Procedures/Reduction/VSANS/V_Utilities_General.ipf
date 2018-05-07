@@ -1509,7 +1509,42 @@ Function/S V_getFileIntentPurposeIDList(intent,purpose,targetID,method)
 	return(list)
 end
 
+// from WM procedure, extended to three waves for I(q) data sets
+//
+// RemoveNaNsQIS(theQWave, theIWave, theSWave)
+//	Removes all points in an XYZ triple if any of the three waves has the value NaN.
+//	A NaN represents a blank or missing value.
+//	Returns the number of points removed.
+Function V_RemoveNaNsQIS(theXWave, theYWave, theZWave)
+	Wave theXWave
+	Wave theYWave
+	Wave theZWave
 
+	Variable p, numPoints, numNaNs
+	Variable xval, yval, zval
+	
+	numNaNs = 0
+	p = 0											// the loop index
+	numPoints = numpnts(theXWave)			// number of times to loop
 
+	do
+		xval = theXWave[p]
+		yval = theYWave[p]
+		zval = theZWave[p]
+		if ((numtype(xval)==2) %| (numtype(yval)==2) %| (numtype(zval)==2) )		// either is NaN?
+			numNaNs += 1
+		else										// if not an outlier
+			theXWave[p - numNaNs] = xval		// copy to input wave
+			theYWave[p - numNaNs] = yval		// copy to input wave
+			theZWave[p - numNaNs] = zval		// copy to input wave
+		endif
+		p += 1
+	while (p < numPoints)
+	
+	// Truncate the wave
+	DeletePoints numPoints-numNaNs, numNaNs, theXWave, theYWave, theZWave
+	
+	return(numNaNs)
+End
 
 

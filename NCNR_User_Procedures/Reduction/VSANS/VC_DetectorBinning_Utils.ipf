@@ -1395,6 +1395,10 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 		endif
 		val -= 1
 	while(val>0)
+
+// utility function to remove NaN values from the waves
+	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
+
 	
 	// TODO:
 	// -- This is where I calculate the resolution in SANS (see CircSectAve)
