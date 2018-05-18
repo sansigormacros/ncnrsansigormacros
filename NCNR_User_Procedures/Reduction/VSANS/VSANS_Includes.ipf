@@ -112,7 +112,8 @@ End
 
 // for loading of slit-smeared VSANS data
 // and generating the smearing matrix
-#include "V_USANS_SlitSmearing_v40"
+// as of MAY 2018, this has been merged with USANS_SlitSmearing_v40.ipf
+//#include "V_USANS_SlitSmearing_v40"
 
 // for smearing of White beam data
 //

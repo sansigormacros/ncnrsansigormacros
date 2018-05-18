@@ -1,13 +1,15 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.22
 
+
+
 //
 // Event mode prcessing for VSANS
 //
 // First pass, getting the basics to work
 //
-// -- need TOF processing for wavelength calibration
-//  -- document this so it can be done quickly and easily.
+// x- need TOF processing for wavelength calibration
+//  x- document this so it can be done quickly and easily.
 //
 
 
@@ -49,7 +51,7 @@
 
 
 //  
-// x- these dimensions are hard-wired (OK for now, will need to be additional definitions for Back detector)
+// x- these dimensions are hard-wired
 //
 // XBINS is for an individual panel
 // NTUBES is the total number of tubes = (4)(48)=192
@@ -97,7 +99,7 @@ Function V_Init_Event()
 // globals that are the header of the VSANS event file
 	String/G root:Packages:NIST:VSANS:Event:gVsansStr=""
 	Variable/G root:Packages:NIST:VSANS:Event:gRevision = 0
-	Variable/G root:Packages:NIST:VSANS:Event:gOffset=0		// = 22 bytes if no disabled tubes
+	Variable/G root:Packages:NIST:VSANS:Event:gOffset=0		// = 25 bytes if no disabled tubes
 	Variable/G root:Packages:NIST:VSANS:Event:gTime1=0
 	Variable/G root:Packages:NIST:VSANS:Event:gTime2=0
 	Variable/G root:Packages:NIST:VSANS:Event:gTime3=0
@@ -116,7 +118,7 @@ Function V_Init_Event()
 	
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_logint = 1
 
-	Variable/G root:Packages:NIST:VSANS:Event:gEvent_Mode = 3				// ==0 for "stream", ==1 for Oscillatory
+	Variable/G root:Packages:NIST:VSANS:Event:gEvent_Mode = 0				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:VSANS:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
 	Variable/G root:Packages:NIST:VSANS:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
 	
@@ -130,7 +132,7 @@ Function V_Init_Event()
 	Duplicate/O slicedData dispsliceData
 
 
-// for decimation (not used for VSANS - may be added back in the future
+// for decimation (not used for VSANS - may be added back in the future)
 	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 1500		// 1500 MB considered too large
 	Variable/G root:Packages:NIST:VSANS:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_t_longest_decimated = 0
@@ -156,32 +158,37 @@ Proc VSANS_EventModePanel()
 	DoWindow/C VSANS_EventModePanel
 	ModifyPanel fixedSize=1,noEdit =1
 
-	SetDrawLayer UserBack
-	DrawText 479,345,"Stream Data"
-	DrawLine 563,338,775,338
-	DrawText 479,419,"Oscillatory or Stream Data"
-	DrawLine 647,411,775,411
+//	SetDrawLayer UserBack
+//	DrawText 479,345,"Stream Data"
+//	DrawLine 563,338,775,338
+//	DrawText 479,419,"Oscillatory or Stream Data"
+//	DrawLine 647,411,775,411
 
 //	ShowTools/A
-	Button button0,pos={14,87},size={150,20},proc=V_LoadEventLog_Button,title="Load Event Log File"
+	Button button0,pos={14,70},size={150,20},proc=V_LoadEventLog_Button,title="Load Event Log File"
 	Button button0,fSize=12
+	Button button23,pos={14,100},size={150,20},proc=V_LoadEventLog_Button,title="Load From RAW"
+	Button button23,fSize=12
 	TitleBox tb1,pos={475,500},size={266,86},fSize=10
 	TitleBox tb1,variable= root:Packages:NIST:VSANS:Event:gEventDisplayString
 
 	CheckBox chkbox2,pos={376,151},size={81,15},proc=V_LogIntEvent_Proc,title="Log Intensity"
 	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:VSANS:Event:gEvent_logint
-	CheckBox chkbox3,pos={14,125},size={119,15},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox3,pos={14,150},size={119,15},title="Remove Bad Events?",fSize=10
 	CheckBox chkbox3,variable= root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 	
 	Button doneButton,pos={738,36},size={50,20},proc=V_EventDone_Proc,title="Done"
 	Button doneButton,fSize=12
-	Button button2,pos={486,200},size={140,20},proc=V_ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={486,228},size={140,20},proc=V_ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button5,pos={633,228},size={140,20},proc=V_ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
 	Button button6,pos={748,9},size={40,20},proc=V_EventModeHelpButtonProc,title="?"
-		
+
+//	Button button5,pos={633,228},size={140,20},proc=V_ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
+
+	Button button8,pos={570,35},size={120,20},proc=V_CustomBinButtonProc,title="Custom Bins"
+	Button button2,pos={570,65},size={140,20},proc=V_ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={570,95},size={140,20},proc=V_ShowBinDetailsButtonProc,title="Show Bin Details"
+
+			
 	Button button7,pos={211,33},size={120,20},proc=V_AdjustEventDataButtonProc,title="Adjust Events"
-	Button button8,pos={653,201},size={120,20},proc=V_CustomBinButtonProc,title="Custom Bins"
 	Button button4,pos={211,63},size={120,20},proc=V_UndoTimeSortButtonProc,title="Undo Time Sort"
 	Button button18,pos={211,90},size={120,20},proc=V_EC_ImportWavesButtonProc,title="Import Edited"
 	
@@ -199,36 +206,46 @@ Proc VSANS_EventModePanel()
 	Button button1,pos={389,103},size={120,20},fSize=12,proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
 // NEW FOR VSANS
-	Button button21,pos={580,70},size={120,20},proc=V_SplitToPanels_Button,title="Split to Panels"
-	Button button22,pos={580,90},size={120,20},proc=V_GraphPanels_Button,title="Show Panels"
-
-	Button button10,pos={488,305},size={100,20},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
-	Button button14,pos={488,350},size={120,20},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
-	Button button19,pos={649,350},size={120,20},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
-	Button button20,pos={680,376},size={90,20},proc=V_ShowList_ToLoad,title="Show List",disable=2
-	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor",disable=2
-	SetVariable setvar3,fSize=10
-	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
-
-	Button button15_0,pos={488,425},size={110,20},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
-	Button button16_1,pos={488,450},size={110,20},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
-	Button button17_2,pos={620,425},size={110,20},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
-
-	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
-	CheckBox chkbox1_0,mode=1,proc=V_EventModeRadioProc,value=0
-	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
-	CheckBox chkbox1_1,proc=V_EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
-	CheckBox chkbox1_2,proc=V_EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
-	CheckBox chkbox1_3,proc=V_EventModeRadioProc,value=1,mode=1
+	Button button21,pos={488,205},size={120,20},proc=V_SplitToPanels_Button,title="Split to Panels"
+	Button button22,pos={488,240},size={120,20},proc=V_GraphPanels_Button,title="Show Panels"
 	
-	GroupBox group0_0,pos={5,5},size={174,112},title="(1) Loading Mode",fSize=12,fStyle=1
-	GroupBox group0_1,pos={372,5},size={192,127},title="(3) Bin Events",fSize=12,fStyle=1
-	GroupBox group0_2,pos={477,169},size={310,92},title="(4) View / Export",fSize=12,fStyle=1
-	GroupBox group0_3,pos={191,5},size={165,117},title="(2) Edit Events",fSize=12,fStyle=1
-	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
-	GroupBox group0_4,fStyle=1
+	Button button24,pos={488,270},size={180,20},proc=V_DuplRAWForExport_Button,title="Duplicate RAW for Export"
+	Button button25,pos={488,300},size={180,20},proc=V_CopySlicesForExport_Button,title="Copy Slices for Export"
+	Button button26,pos={488,330},size={180,20},proc=V_SaveExportedNexus_Button,title="Save Exported to Nexus"
+
+//	Button button10,pos={488,305},size={100,20},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
+//	Button button14,pos={488,350},size={120,20},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
+//	Button button19,pos={649,350},size={120,20},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
+//	Button button20,pos={680,376},size={90,20},proc=V_ShowList_ToLoad,title="Show List",disable=2
+//	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor",disable=2
+//	SetVariable setvar3,fSize=10
+//	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
+//
+//	Button button15_0,pos={488,425},size={110,20},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
+//	Button button16_1,pos={488,450},size={110,20},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
+//	Button button17_2,pos={620,425},size={110,20},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
+
+	CheckBox chkbox1_0,pos={25,30},size={69,14},title="Oscillatory",fSize=10
+	CheckBox chkbox1_0,mode=1,proc=V_EventModeRadioProc,value=0
+	CheckBox chkbox1_1,pos={25,50},size={53,14},title="Stream",fSize=10
+	CheckBox chkbox1_1,proc=V_EventModeRadioProc,value=1,mode=1
+//	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
+//	CheckBox chkbox1_2,proc=V_EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_3,pos={104,30},size={37,14},title="TOF",fSize=10
+	CheckBox chkbox1_3,proc=V_EventModeRadioProc,value=0,mode=1
+	
+	CheckBox chkbox1_4,pos={30,125},size={37,14},title="F",fSize=10
+	CheckBox chkbox1_4,proc=V_EventCarrRadioProc,value=1,mode=1
+	CheckBox chkbox1_5,pos={90,125},size={37,14},title="M",fSize=10
+	CheckBox chkbox1_5,proc=V_EventCarrRadioProc,value=0,mode=1
+	
+	GroupBox group0_0,pos={5,5},size={174,140},title="(1) Loading Mode",fSize=12,fStyle=1
+	GroupBox group0_3,pos={191,5},size={165,130},title="(2) Edit Events",fSize=12,fStyle=1
+	GroupBox group0_1,pos={372,5},size={350,130},title="(3) Bin Events",fSize=12,fStyle=1
+	GroupBox group0_2,pos={477,169},size={310,300},title="(4) View / Export",fSize=12,fStyle=1
+
+//	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
+//	GroupBox group0_4,fStyle=1
 	
 	Display/W=(10,170,460,610)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:dispsliceData		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
@@ -247,8 +264,80 @@ Proc VSANS_EventModePanel()
 	SetActiveSubwindow ##
 EndMacro
 
+
 //
-// takes the data that is loaded and binned as a fake
+//
+Function V_DuplRAWForExport_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_DuplicateRAWForExport()
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+//
+Function V_CopySlicesForExport_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			String detStr=""
+			ControlInfo chkbox1_4
+			if(V_value == 1)
+				detStr = "F"
+			else
+				detStr = "M"
+			endif
+			//
+			V_CopySlicesForExport(detStr)
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+//
+Function V_SaveExportedNexus_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			String detStr=""
+			
+			//
+			Execute "V_SaveExportedEvents()"
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
+
+//
+// takes the event data that is loaded and binned as a combined
 // (192 x 128) panel to the four LRTB panels, each with 48 tubes
 //
 Function V_SplitToPanels_Button(ba) : ButtonControl
@@ -310,20 +399,39 @@ Function V_EventModeRadioProc(name,value)
 		case "chkbox1_1":
 			gEventModeRadioVal= MODE_STREAM
 			break
-		case "chkbox1_2":
-			gEventModeRadioVal= MODE_TISANE
-			break
+//		case "chkbox1_2":
+//			gEventModeRadioVal= MODE_TISANE
+//			break
 		case "chkbox1_3":
 			gEventModeRadioVal= MODE_TOF
 			break
 	endswitch
 	CheckBox chkbox1_0,value= gEventModeRadioVal==MODE_OSCILL
 	CheckBox chkbox1_1,value= gEventModeRadioVal==MODE_STREAM
-	CheckBox chkbox1_2,value= gEventModeRadioVal==MODE_TISANE
+//	CheckBox chkbox1_2,value= gEventModeRadioVal==MODE_TISANE
 	CheckBox chkbox1_3,value= gEventModeRadioVal==MODE_TOF
 
 	return(0)
 End
+
+Function V_EventCarrRadioProc(name,value)
+	String name
+	Variable value
+		
+	strswitch (name)
+		case "chkbox1_4":
+			CheckBox chkbox1_4,value= 1
+			CheckBox chkbox1_5,value= 0
+			break
+		case "chkbox1_5":
+			CheckBox chkbox1_4,value= 0
+			CheckBox chkbox1_5,value= 1
+			break
+	endswitch
+
+	return(0)
+End
+
 
 Function V_AdjustEventDataButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -939,14 +1047,49 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 		return(0)
 	endif
 	
-	Open/R/D/P=catPathName/F=fileFilters fileref
-	filename = S_filename
-	if(strlen(S_filename) == 0)
-		// user cancelled
-		DoAlert 0,"No file selected, no file loaded."
-		return(1)
+	// load from raw?
+	// if so, which carriage?
+	String loadFromRAW
+	String detStr
+	if(cmpstr(ctrlName,"button23")==0)
+		loadFromRAW = "Yes"
+		ControlInfo chkbox1_4
+		if(V_value == 1)
+			detStr = "F"
+		else
+			detStr = "M"
+		endif		
 	endif
-
+	
+//	Prompt loadFromRAW,"Load from RAW?",popup,"Yes;No;"
+//	Prompt detStr,"Carriage",popup,"M;F;"
+//	DoPrompt "Load data from...",loadFromRAW,detStr
+	
+//	if(V_flag)		//user cancel
+//		return(0)
+//	endif
+	
+	if(cmpstr(loadFromRAW,"Yes")==0)
+		PathInfo catPathName
+		filename = S_Path + V_getDetEventFileName("RAW",detStr+"L")
+		
+		// check here to see if the file can be found. if not report the error and exit
+		Open/R/Z=1 fileref as fileName
+		if(V_flag == 0)
+			Close fileref
+		else
+			DoAlert 0,"The event file associated with RAW cannot be found.       "+filename
+			return(0)
+		endif
+	else
+		Open/R/D/P=catPathName/F=fileFilters fileref
+		filename = S_filename
+		if(strlen(S_filename) == 0)
+			// user cancelled
+			DoAlert 0,"No file selected, no file loaded."
+			return(1)
+		endif
+	endif
 //  keep this	, but set to 1.5 GB
 // since I'm now in 64-bit space
 /// Abort if the files are too large
@@ -1020,14 +1163,20 @@ Variable t1 = ticks
 	
 	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//timeStep in clock frequency (Hz)
 	Printf "Time Step = 1/Frequency (ns) = %g\r",(1/gResol)*1e9
+	variable timeStep_s = (1/gResol)
+
+// DONE:
+//  x- the time scaling is done. 
+// TODO: VERIFY
+// ??? timeStep from the clock frequency is not right--- the step appears to be 100 ns???
+//	
+	timeStep_s = 100e-9
 	
 /////
 // now do a little processing of the times based on the type of data
 //	
 
-// TODO:
-//  -- the time scaling is NOT done. it is still in raw ticks.
-//
+
 
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
 	v_tic()
@@ -1036,7 +1185,8 @@ Variable t1 = ticks
 	v_toc()
 	v_tic()
 	printf "rescale time = "
-		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
+//		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
+		rescaledTime = timeStep_s*(timePt-timePt[0])		//convert to seconds and start from zero
 	v_toc()
 	v_tic()
 	printf "find wave Max = "
@@ -1047,7 +1197,7 @@ Variable t1 = ticks
 	
 	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1			//convert to nanoseconds and that's all
+		rescaledTime *= timeStep_s			//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -1059,7 +1209,7 @@ Variable t1 = ticks
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1			//convert to nanoseconds and that's all
+		rescaledTime *= timeStep_s		//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around

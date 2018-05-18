@@ -420,4 +420,21 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	V_CleanupData_w_Progress(0,1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
+	KillDataFolder/Z root:Packages:NIST:VSANS:RAW
+	KillDataFolder/Z root:Packages:NIST:VSANS:SAM
+	KillDataFolder/Z root:Packages:NIST:VSANS:EMP
+	KillDataFolder/Z root:Packages:NIST:VSANS:BGD
+	KillDataFolder/Z root:Packages:NIST:VSANS:COR
+	KillDataFolder/Z root:Packages:NIST:VSANS:DIV
+	KillDataFolder/Z root:Packages:NIST:VSANS:MSK
+	KillDataFolder/Z root:Packages:NIST:VSANS:ABS
+	KillDataFolder/Z root:Packages:NIST:VSANS:CAL
+	KillDataFolder/Z root:Packages:NIST:VSANS:STO
+	KillDataFolder/Z root:Packages:NIST:VSANS:SUB
+	KillDataFolder/Z root:Packages:NIST:VSANS:DRK
+	KillDataFolder/Z root:Packages:NIST:VSANS:ADJ
+
+// re-create anthing that was killed
+	V_initFolders()
+
 End

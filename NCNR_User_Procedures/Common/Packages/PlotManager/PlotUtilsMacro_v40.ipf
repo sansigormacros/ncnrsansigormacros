@@ -360,19 +360,19 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 				//$(baseStr+"_res")[][3] = $w0[p]		//Qvalues
 				dQv = -$w3[0]
 
-//TODO: be sure that this works correctly and can be included in either
+//DONE: this works correctly and can be included in either
 // a VSANS reduction experiment, or a standalone analysis package
 // -- since this is a Proc, not a function, #conditional compile does not work,
 // but, since it's a Proc, it is not compiled, so missing functions aren't flagged as a compile error
-				if (exists("NCNR_VSANS")==6)			//defined in the main  VSANS #includes file.
-					DoAlert 0,"**Treating data as VSANS data**"
+//				if (exists("NCNR_VSANS")==6)			//defined in the main  VSANS #includes file.
+//					DoAlert 0,"**Treating data as VSANS data**"
 					Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
 					$(baseStr+"_dQv") = -$(baseStr+"_dQv")
-					V_USANS_CalcWeights(baseStr,dQv)
-				else
-					DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
 					USANS_CalcWeights(baseStr,dQv)
-				endif				
+//				else
+//					DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
+//					USANS_CalcWeights(baseStr,dQv)
+//				endif				
 
 				
 				

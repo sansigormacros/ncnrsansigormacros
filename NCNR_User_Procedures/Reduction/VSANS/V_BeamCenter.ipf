@@ -906,3 +906,4 @@ Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 		
 	return
 End
+

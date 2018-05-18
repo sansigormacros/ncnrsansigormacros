@@ -2,6 +2,21 @@
 #pragma version=3.00
 #pragma IgorVersion=6.1
 
+///////
+// JAN-MAY 2018
+//
+//
+// This is a first approximation to model slit smeared VSANS data
+// - the dQv value is now a "per-Q" quantity, rather than a single global value
+// - the wavelength smearing must be accounted for by a separate numerical integral
+//   BEFORE this step is applied.
+//  -- this is significant issue for White Beam conditions
+//
+
+
+
+
+
 //Functions for doing USANS Slit smearing by method of weight matrix
 //Routines originally from J Barker fortran code
 //Translated to IGOR by M-H Kim
@@ -359,6 +374,8 @@ Function USANS_Slope_ButtonProc(ctrlName) : ButtonControl
 
 End
 
+// MAY 2018
+// updated to use dQv as a per-q wave, not a single global value
 Function CalcW1(i,j)
 	Variable i,j
 	
@@ -367,11 +384,12 @@ Function CalcW1(i,j)
 	SetDataFolder $("root:"+USANS_basestr)
 
 	
-	
-	NVAR dQv = USANS_dQv
+// replaced with a wave	
+//	NVAR dQv = USANS_dQv
 	
 	Variable UU,UL,dqj,rU,rL,wU,wL,dqw
 	Wave Qval = $(USANS_basestr+"_q"+trimStr)
+	Wave dQv = $(USANS_basestr+"_dQv"+trimStr)
 	
 	UU =sqrt(Qval[j+1]^2-Qval[i]^2)
 	UL = sqrt(Qval[j]^2-Qval[i]^2)
@@ -379,13 +397,15 @@ Function CalcW1(i,j)
 	rU = sqrt(UU^2+Qval[i]^2)
 	rL = sqrt(UL^2+Qval[i]^2)
 	
-	wU = (1.0/dQv)*(Qval[j+1]*UU/dqw - 0.5*UU*rU/dqw - 0.5*Qval[i]^2*ln(UU+rU)/dqw )
-	wL = (1.0/dQv)*(Qval[j+1]*UL/dqw - 0.5*UL*rL/dqw - 0.5*Qval[i]^2*ln(UL+rL)/dqw )
+	wU = (1.0/dQv[i])*(Qval[j+1]*UU/dqw - 0.5*UU*rU/dqw - 0.5*Qval[i]^2*ln(UU+rU)/dqw )
+	wL = (1.0/dQv[i])*(Qval[j+1]*UL/dqw - 0.5*UL*rL/dqw - 0.5*Qval[i]^2*ln(UL+rL)/dqw )
 	
 	Return wU-wL
 
 End
 
+// MAY 2018
+// updated to use dQv as a per-q wave, not a single global value
 Function CalcW2(i,j)
 	Variable i,j
 	
@@ -394,25 +414,28 @@ Function CalcW2(i,j)
 	SetDataFolder $("root:"+USANS_basestr)
 
 
-
-	NVAR dQv = USANS_dQv
+// replaced with a wave	
+//	NVAR dQv = USANS_dQv
 	
 	variable UU,UL,dqw,rU,rL,wU,wL
 	
 	Wave Qval = $(USANS_basestr+"_q"+trimStr)
+	Wave dQv = $(USANS_basestr+"_dQv"+trimStr)
 
 	UU = sqrt(Qval[j]^2-Qval[i]^2)  		
 	UL = sqrt(Qval[j-1]^2-Qval[i]^2) 		
 	dqw = Qval[j]-Qval[j-1]  		
 	rU = sqrt(UU^2+Qval[i]^2)
 	rL = sqrt(UL^2+Qval[i]^2)
-	wU = (1.0/dQv)*( -Qval[j-1]*UU/dqw + 0.5*UU*rU/dqw + 0.5*Qval[i]^2*ln(UU+rU)/dqw )
-	wL = (1.0/dQv)*( -Qval[j-1]*UL/dqw + 0.5*UL*rL/dqw + 0.5*Qval[i]^2*ln(UL+rL)/dqw )
+	wU = (1.0/dQv[i])*( -Qval[j-1]*UU/dqw + 0.5*UU*rU/dqw + 0.5*Qval[i]^2*ln(UU+rU)/dqw )
+	wL = (1.0/dQv[i])*( -Qval[j-1]*UL/dqw + 0.5*UL*rL/dqw + 0.5*Qval[i]^2*ln(UL+rL)/dqw )
 
 	Return wU-wL
 
 End
 
+// MAY 2018
+// updated to use dQv as a per-q wave, not a single global value
 Function CalcR(i)
 	Variable i
 
@@ -423,15 +446,19 @@ Function CalcR(i)
 
 	NVAR m = USANS_m
 	NVAR N = USANS_N
-	NVAR dQv = USANS_dQv
+// replaced with a wave	
+//	NVAR dQv = USANS_dQv
 	
 	Variable retval
 	Wave Qval = $(USANS_basestr+"_q"+trimStr)
 	Wave Ival = $(USANS_basestr+"_i"+trimStr)
 	Variable/G USANS_intQpt = Qval[i]
+	Wave dQv = $(USANS_basestr+"_dQv"+trimStr)
+
 	
 	Variable lower = sqrt(qval[N-1]^2-qval[i]^2)
-	Variable upper = dQv
+	Variable upper
+	upper = dQv[i]
 
 	if (i == N)
 		lower = 0
@@ -439,7 +466,7 @@ Function CalcR(i)
 	
 	retval = Integrate1D(Remainder,lower,upper)
 	
-	retval *= 1/dQv
+	retval *= 1/dQv[i]
 	
 	Return retval
 

@@ -1008,15 +1008,15 @@ Window V_ProtocolPanel()
 	Button button_quest,disable=2
 
 
-	PopupMenu popup_sam,pos={85,68},size={51,23},proc=SAMFilePopMenuProc
+	PopupMenu popup_sam,pos={85,68},size={51,23},proc=V_SAMFilePopMenuProc
 	PopupMenu popup_sam,mode=1,value= #"V_getSAMList()"	
-	PopupMenu popup_bkg,pos={85,164},size={51,23},proc=BKGFilePopMenuProc
+	PopupMenu popup_bkg,pos={85,164},size={51,23},proc=V_BKGFilePopMenuProc
 	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
-	PopupMenu popup_emp,pos={85,213},size={51,23},proc=EMPFilePopMenuProc
+	PopupMenu popup_emp,pos={85,213},size={51,23},proc=V_EMPFilePopMenuProc
 	PopupMenu popup_emp,mode=1,value= #"V_getEMPList()"
-	PopupMenu popup_div,pos={85,263},size={51,23},proc=DIVFilePopMenuProc
+	PopupMenu popup_div,pos={85,263},size={51,23},proc=V_DIVFilePopMenuProc
 	PopupMenu popup_div,mode=1,value= #"V_getDIVList()"
-	PopupMenu popup_msk,pos={85,356},size={51,23},proc=MSKFilePopMenuProc
+	PopupMenu popup_msk,pos={85,356},size={51,23},proc=V_MSKFilePopMenuProc
 	PopupMenu popup_msk,mode=1,value= #"V_getMSKList()"	
 		
 		
@@ -1127,7 +1127,7 @@ EndMacro
 
 
 
-Function SAMFilePopMenuProc(pa) : PopupMenuControl
+Function V_SAMFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -1145,7 +1145,7 @@ Function SAMFilePopMenuProc(pa) : PopupMenuControl
 End
 
 
-Function BKGFilePopMenuProc(pa) : PopupMenuControl
+Function V_BKGFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -1162,7 +1162,7 @@ Function BKGFilePopMenuProc(pa) : PopupMenuControl
 	return 0
 End
 
-Function EMPFilePopMenuProc(pa) : PopupMenuControl
+Function V_EMPFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -1179,7 +1179,7 @@ Function EMPFilePopMenuProc(pa) : PopupMenuControl
 	return 0
 End
 
-Function DIVFilePopMenuProc(pa) : PopupMenuControl
+Function V_DIVFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -1196,7 +1196,7 @@ Function DIVFilePopMenuProc(pa) : PopupMenuControl
 	return 0
 End
 
-Function MSKFilePopMenuProc(pa) : PopupMenuControl
+Function V_MSKFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
 	switch( pa.eventCode )
@@ -1910,48 +1910,31 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//10 = unused
 	//11 = unused
 
+//////////////////////////////
+// DIV
+//////////////////////////////
 // for VSANS, DIV is used on each data file as it is converted to WORK, so it needs to be
 //  the first thing in place, before any data or backgrounds are loaded
 
+	//check for work.div file (prot[2])
+	//load in if needed
+	// no math is done here, DIV is applied as files are converted to WORK (the first operation in VSANS)
+	//
 
-//
-// DONE:
-// x- this is no longer done after the COR step, and CAL is not produced as output of DIV	
-// x- needs to be aware of the file name passed in
-// x- PromptForPath does not exist in VSANS. Need a better (automated) way to find the file.
-
-//check for work.div file (prot[2])
-//load in if needed
-// no math is done here, DIV is applied as files are converted to WORK (the first operation in VSANS)
-//
-	String divFileName = ""
-
-	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
-		If(cmpstr("ask",prot[2]) == 0)
-			//ask user for file
-//			 junkStr = PromptForPath("Select the detector sensitivity file")
-			Prompt divFileName,"DIV File",popup,V_GetDIVList()
-			DoPrompt "Select File",divFileName
-
-			If(strlen(divFileName)==0)
-				SetDataFolder root:
-				Abort "No file selected, data reduction aborted"
-			Endif
-			V_LoadHDF5Data(divFileName,"DIV")
-		else
-			//assume it's a path, and that the first (and only) item is the path:file
-			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			V_LoadHDF5Data(junkStr,"DIV")
-		Endif
+	// save the state of the DIV preference
+	NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+	Variable saved_gDoDIVCor = gDoDIVCor
 	
-	else
-	// DIV step is being skipped
-		NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
-		Variable saved_gDoDIVCor = gDoDIVCor
-		gDoDIVCor = 0			// protocol says to turn it off for now (reset later)
-	Endif
+	err = V_Proto_LoadDIV(prot[2])
+	
+	if(err)
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
 
+//////////////////////////////
+// SAM
+//////////////////////////////
 
 // TODO:
 // -- currently does not allow adding RAW data files together, so no parsing is done
@@ -1962,52 +1945,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//or parse file(s) from the input paramter string
 	activeType = "SAM"
 	msgStr = "Select sample data"
-	//Ask for SAM file or parse
-	do
-		if((cmpstr(samStr,"ask") == 0) || (cmpstr(samStr,"")==0) )		//zero if strings are equal
-			err = V_LoadHDF5Data("","RAW")		//will prompt for file
-			if(err)
-				PathInfo/S catPathName
-				Abort "reduction sequence aborted"
-			endif
-			V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  V_Raw_to_work(activeType)		//this is the first file (default)
-			//Ask for another SAM file
-			do
-				DoAlert 1,"Do you want to add another Sample file?"
-				if(V_flag == 1)		//yes
-					err = V_LoadHDF5Data("","RAW")		//will prompt for file
-					if(err)
-						PathInfo/S catPathName
-						Abort "reduction sequence aborted"
-					endif
-					V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = V_Add_raw_to_work(activeType)
-					notDone = 1
-				else
-					notDone = 0
-				endif
-			while(notDone)
-			break
-		Endif
-		//"none" is not an option - you always need a sample file - "none" will never return zero
-		//if not "ask" AND not "none" then try to parse the filenames
-		If((cmpstr(samStr,"none") != 0) && (cmpstr(samStr,"ask") != 0))
-			//filesOK = AreFilesThere(activeType,samStr)		//return 1 if correct files are already there
-			filesOK = 0		// Feb 2008, always force a reload of files. Maybe slow, but always correct 
-			if(!filesOK)
-				//add the correct file(s) to SAM
-				
-				// TODO: only one file is allowed currently
-				err = V_AddFilesInList(activeType,samStr)
-				
-				if(err)
-					//Print "samstr = ",samStr
-					Abort "SAM file not found, reset SAM file"
-				Endif
-			Endif
-		Endif
-	While(0)
+	
+	err = V_Proto_LoadFile(samStr,activeType,msgStr)
+	if(err)
+		PathInfo/S catPathName
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
+	
 	// TODO
 	// -- this may not be the most reliable way to pass the file name (for naming of the saved file later)
 	SVAR file_name = root:file_Name
@@ -2015,116 +1960,53 @@ Function V_ExecuteProtocol(protStr,samStr)
 	
 	//always update
 	V_UpdateDisplayInformation(ActiveType)
+
+
+//////////////////////////////
+// BGD
+//////////////////////////////
 	
-	//check for bkg file  -- "ask" might not fail - "ask?" will - ? not allowed in VAX filenames
+	//check for BGD file  -- "ask" might not fail - "ask?" will - ? not allowed in VAX filenames
 	// add if needed
 	//use a "case" statement
 	msgStr = "Select background file"
 	activeType = "BGD"
-	do
-		if(cmpstr(prot[0],"ask") == 0)		//zero if strings are equal
-			err = V_LoadHDF5Data("","RAW")		//will prompt for file
-			if(err)
-				PathInfo/S catPathName
-				Abort "reduction sequence aborted"
-			endif
-			V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  V_Raw_to_work(activeType)		//this is the first file (default)
-			//Ask for another BGD file
-			do
-				DoAlert 1,"Do you want to add another Background file?"
-				if(V_flag == 1)		//yes
-					err = V_LoadHDF5Data("","RAW")		//will prompt for file
-					if(err)
-						PathInfo/S catPathName
-						Abort "reduction sequence aborted"
-					endif
-					V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = V_Add_raw_to_work(activeType)
-					notDone = 1
-				else
-					notDone = 0
-				endif
-			while(notDone)
-			V_UpdateDisplayInformation(ActiveType)	//update before breaking from loop
-			break
-		Endif
-		If(cmpstr(prot[0],"none") == 0)
-			//clean out the BKG folder?
-			//KillDataFolder root:BKG
-			//NewDataFolder/O root:BKG
-			break
-		Endif
-		//if not "ask" AND not "none" then try to parse the filenames
-		If((cmpstr(prot[0],"none") != 0) && (cmpstr(prot[0],"ask") != 0))
-			//filesOK = AreFilesThere(activeType,prot[0])
-			filesOK = 0		// Feb 2008, always force a reload of files. Maybe slow, but always correct 
-			if(!filesOK)
-				//add the correct file(s) to BGD
-				string bgdStr = prot[0]
-				err = V_AddFilesInList(activeType,bgdStr)
-				If(err)
-					Abort "BGD file not found. Reset BGD file list"
-				Endif
-			Endif
-			V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-		Endif
-	While(0)
 	
+	err = V_Proto_LoadFile(prot[0],activeType,msgStr)
+	if(err)
+		PathInfo/S catPathName
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
+
+//	//Loader is in charge of updating, since it knows if data was loaded
+//	V_UpdateDisplayInformation(ActiveType)
+
+
+//////////////////////////////
+// EMP
+//////////////////////////////	
 	
 	//check for emp file (prot[1])
 	// add if needed
 	msgStr = "Select empty cell data"
 	activeType = "EMP"
-	do
-		if(cmpstr(prot[1],"ask") == 0)
-			err = V_LoadHDF5Data("","RAW")		//will prompt for file
-			if(err)
-				PathInfo/S catPathName
-				Abort "reduction sequence aborted"
-			endif
-			V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  V_Raw_to_work(activeType)		//this is the first file (default)
-			//Ask for another EMP file
-			do
-				DoAlert 1,"Do you want to add another Empty Cell file?"
-				if(V_flag == 1)		//yes
-					err = V_LoadHDF5Data("","RAW")		//will prompt for file
-					if(err)
-						PathInfo/S catPathName
-						Abort "reduction sequence aborted"
-					endif
-					V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = V_Add_raw_to_work(activeType)
-					notDone = 1
-				else
-					notDone = 0
-				endif
-			while(notDone)
-			V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-			break
-		Endif
-		If(cmpstr(prot[1],"none") == 0)
-			//clean out the EMP folder?
-			//KillDataFolder root:Packages:NIST:EMP
-			//NewDataFolder/O root:Packages:NIST:EMP
-			break
-		Endif
-		//if not "ask" AND not "none" then try to parse the filenames
-		If((cmpstr(prot[1],"none") != 0) && (cmpstr(prot[1],"ask") != 0))
-			//filesOK = AreFilesThere(activeType,prot[1])
-			filesOK = 0		// Feb 2008, always force a reload of files. Maybe slow, but always correct 
-			if(!filesOK)
-				//add the correct file(s) to BGD
-				err = V_AddFilesInList(activeType,prot[1])
-				If(err)
-					Abort "EMP file not found. Reset EMP file list"
-				Endif
-			Endif
-			V_UpdateDisplayInformation(ActiveType)	//update before breaking from loop
-		Endif
-	While(0)
 	
+	err = V_Proto_LoadFile(prot[1],activeType,msgStr)
+	if(err)
+		PathInfo/S catPathName
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
+
+//	//Loader is in charge of updating, since it knows if data was loaded
+//	V_UpdateDisplayInformation(ActiveType)
+
+
+//////////////////////////////
+// CORRECT
+//////////////////////////////
+
 	//do the CORRECT step based on the answers to emp and bkg subtraction
 	//by setting the proper"mode"
 	//1 = both emp and bgd subtraction
@@ -2162,135 +2044,55 @@ Function V_ExecuteProtocol(protStr,samStr)
 //		err = V_Raw_to_Work_NoNorm("DRK")
 //	endif
 
-
-	
 	//dispatch to the proper "mode" of Correct()
-	Variable mode=4,val
-	do
-		if( (cmpstr("none",prot[0]) == 0)	&& (cmpstr("none",prot[1]) == 0) )
-			//no subtraction (mode = 4),
-			mode = 4
-		Endif
-		If((cmpstr(prot[0],"none") != 0) && (cmpstr(prot[1],"none") == 0))
-			//subtract BGD only
-			mode=2
-		Endif
-		If((cmpstr(prot[0],"none") == 0) && (cmpstr(prot[1],"none") != 0))
-			//subtract EMP only
-			mode=3
-		Endif
-		If((cmpstr(prot[0],"none") != 0) && (cmpstr(prot[1],"none") != 0))
-			// bkg and emp subtraction are to be done (BOTH not "none")
-			mode=1
-		Endif
-		activeType = "COR"
-		//add in DRK mode (0= no used, 10 = used)
-		val = NumberByKey("DRKMODE",prot[6],"=","," )
-		mode += val
-//		print "mode = ",mode
-		err = V_Correct(mode)
-		if(err)
-			SetDataFolder root:
-			Abort "error in Correct, called from executeprotocol, normal cor"
-		endif
-		V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	While(0)
+//	V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
+	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])
+	
+	if(err)
+		PathInfo/S catPathName
+		SetDataFolder root:
+		Abort "error in Correct, called from executeprotocol, normal cor"
+	endif
+	activeType = "COR"
+
+// always update - COR will always be generated
+	V_UpdateDisplayInformation(ActiveType)		
 
 
-////////////////////////////////////////////////////////
-// Absolute scale
+//////////////////////////////
+//  ABSOLUTE SCALE
+//////////////////////////////
 
-// x- calculation works, needs proper inputs (solid angle aware)
-// x-	Open beam method needs to be verified in V_AskForAbsoluteParams_Quest()
-	Variable c2,c3,c4,c5,kappa_err
-	//do absolute scaling if desired
-//		DoAlert 0,"Abs step incomplete"
+	err = V_Proto_ABS_Scale(prot[4],activeType)		//activeType is pass-by-reference and updated IF ABS is used
+	
+	if(err)
+		SetDataFolder root:
+		Abort "Error in V_Absolute_Scale(), called from V_ExecuteProtocol"
+	endif
+//	activeType = "ABS"
 
-	if(cmpstr("none",prot[4])!=0)
-		if(cmpstr("ask",prot[4])==0)
-			//get the params from the user
-			Execute "V_AskForAbsoluteParams_Quest()"
-			//then from the list
-			SVAR junkAbsStr = root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-			c2 = NumberByKey("TSTAND", junkAbsStr, "=", ";")	//parse the list of values
-			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
-			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
-			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
-			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
-		else
-			//get the parames from the list
-			c2 = NumberByKey("TSTAND", prot[4], "=", ";")	//parse the list of values
-			c3 = NumberByKey("DSTAND", prot[4], "=", ";")
-			c4 = NumberByKey("IZERO", prot[4], "=", ";")
-			c5 = NumberByKey("XSECT", prot[4], "=", ";")
-			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
-		Endif
-		//get the sample trans and thickness from the activeType folder
-		Variable c0 = V_getSampleTransmission(activeType)		//sample transmission
-		Variable c1 = V_getSampleThickness(activeType)		//sample thickness
-		
-		err = V_Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
-		if(err)
-			SetDataFolder root:
-			Abort "Error in V_Absolute_Scale(), called from V_ExecuteProtocol"
-		endif
-		activeType = "ABS"
-		V_UpdateDisplayInformation(ActiveType)			//update before breaking from loop
-	Endif
 
+//////////////////////////////
+// MASK
+//////////////////////////////
 //
 // DONE
 //		x- fill in the "ask" step
 //  x- none is OK, except if the kill fails for any reason
 // x- the regular case of the file name specified by the protocol works correctly
 // x- don't create a null mask if not used, it will handle the error and print out that the mask is missing
-
-//mask data if desired (this is done automatically when the data is binned to I(q)) and is
+//
+//mask data if desired (mask is applied when the data is binned to I(q)) and is
 //not done explicitly here
 	
 	//check for mask
 	//doesn't change the activeType
-	String mskFileName=""
-	
-	if(cmpstr("none",prot[3])!=0)
-		If(cmpstr("ask",prot[3])==0)
-			//get file from user
-			// x- fill in the get file prompt, and handle the result
-			Prompt mskFileName,"MASK File",popup,V_PickMASKButton("")
-			DoPrompt "Select File",mskFileName
-//			if (V_Flag)
-//				return 0									// user cancelled
-//			endif
+	V_Proto_ReadMask(prot[3])
 
-			If(strlen(mskFileName)==0)		//use cancelled
-				//if none desired, make sure that the old mask is deleted
-				KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
-				NewDataFolder/O root:Packages:NIST:VSANS:MSK
-				
-				DoAlert 0,"No Mask file selected, data not masked"
-			else
-				//read in the file from the selection
-				V_LoadHDF5Data(mskFileName,"MSK")
-			Endif
-		else
-			//just read it in from the protocol
-			//list processing is necessary to remove any final comma
-			mskFileName = pathStr + StringFromList(0, prot[3],"," )
-			V_LoadHDF5Data(mskFileName,"MSK")
-		Endif
-		
-	else
-		//if none desired, make sure that the old mask is deleted
-// TODO
-// x- clean out the data folder
-// x- note that V_KillNamedDataFolder() points to RawVSANS, and won't work
-// -- what happens if the kill fails? need error handling
-//
-		KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
-		NewDataFolder/O root:Packages:NIST:VSANS:MSK
-
-	Endif
 	
+//////////////////////////////
+// AVERAGING
+//////////////////////////////
 
 	// average/save data as specified
 	//Parse the keyword=<Value> string as needed, based on AVTYPE
@@ -2309,13 +2111,13 @@ Function V_ExecuteProtocol(protStr,samStr)
 			String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = prot[5]
 		Endif
 	Endif
+
+
+	String detGroup = StringByKey("DETGROUP",prot[5],"=",";")		//only for annular, null if not present
+
 	
 //convert the folder to linear scale before averaging, then revert by calling the window hook
 // (not needed for VSANS, data is always linear scale)
-
-//
-//	 x- need to convert BINTYPE keyword into a numerical value to pass
-//
 
 //
 // (DONE)
@@ -2348,242 +2150,53 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 	String collimationStr
 	collimationStr = V_IdentifyCollimation(activeType)
-
-
+	
 
 ////////////////////////////////////////
-// dispatch to averaging and resolution
+// DISPATCH TO AVERAGING
 /////////////////////////////////////////
 //
 // TODO:
-// -- do I calculate the proper resolution here? I've already decoded the binning type
+// -- do I calculate the proper resolution here?, YES, I've already decoded the binning type
 //   and the averaging type has been specified by the protocol.
 //
-// currently, the resolution is calculated every time that the data is averaged (in VC_fDoBinning_QxQy2D)
+// so currently, the resolution is calculated every time that the data is averaged (in VC_fDoBinning_QxQy2D)
 //
 // -- if I calculate the resolution here, then the Trimming routines must be updated
 //    to trim the resolution waves also. This will work for the columns present in
 //    pinhole resolution, but anything using the matrix method - it won't work - and I'll need 
 //    a different solution
 //
-	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
-		case "none":		
-			//still do nothing
-			// set binType and binTypeStr to bad flags
-			binTypeStr = "none"
-			binType = -999999
-			break			
 
-		case "Circular":
-			V_QBinAllPanels_Circular(activeType,binType,collimationStr)		// this does a default circular average
-			break
-			
-		case "Sector":
-//			CircularAverageTo1D(activeType)
-			break
-		case "Sector_PlusMinus":
-//			Sector_PlusMinus1D(activeType)
-			break
-		case "Rectangular":
-//			RectangularAverageTo1D(activeType)
-			break
-
-		case "Annular":
-			String detGroup = StringByKey("DETGROUP",prot[5],"=",";")
-			Variable qCtr_Ann = NumberByKey("QCENTER",prot[5],"=",";")
-			Variable qWidth = NumberByKey("QDELTA",prot[5],"=",";")
-			V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
-			break
-
-		case "Narrow_Slit":
-			V_QBinAllPanels_Slit(activeType,binType)		// this does a tall, narrow slit average
-			break
-			
-		case "2D_ASCII":	
-			//do nothing
-			break
-		case "QxQy_ASCII":
-			//do nothing
-			break
-		case "PNG_Graphic":
-			//do nothing
-			break
-		default:	
-			//do nothing
-	endswitch
+	V_Proto_doAverage(prot[5],av_type,activeType,binType,collimationStr)
 
 
 
 ////////////////////////
-// plotting of the data, another strswitch (with an if() out front)
+// PLOT THE DATA
 ////////////////////////
 
-	String doPlot = StringByKey("PLOT",prot[5],"=",";")
+	V_Proto_doPlot(prot[5],av_type,activeType,binType,detGroup)
 	
-	If( (cmpstr(doPlot,"Yes")==0) && (cmpstr(av_type,"none") != 0) )	
-		
-		strswitch(av_type)	//dispatch to the proper routine to PLOT 1D data
-			case "none":		
-				//still do nothing
-				break			
-
-			case "Circular":
-				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
-				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned				
-				break
-			case "Sector":
-	//			CircularAverageTo1D(activeType)
-				break
-			case "Sector_PlusMinus":
-	//			Sector_PlusMinus1D(activeType)
-				break
-			case "Rectangular":
-	//			RectangularAverageTo1D(activeType)
-				break
-
-			case "Annular":
-				V_Phi_Graph_Proc(activeType,detGroup)
-				break
-
-			case "Narrow_Slit":
-			// these are the same plotting routines as for standard circular average
-				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
-				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
-				break
-			
-			case "2D_ASCII":	
-				//do nothing
-				break
-			case "QxQy_ASCII":
-				//do nothing
-				break
-			case "PNG_Graphic":
-				//do nothing
-				break
-			default:	
-				//do nothing
-		endswitch
-
-	endif		// end of plotting switch
-
-
+	
 
 ////////////////////	
-//save data if desired - dispatch as needed
+// SAVE THE DATA
 ////////////////////
 
 // 
 // x- how do I get the sample file name?
 //    local variable samFileLoaded is the file name loaded (contains the extension)
 //
-	String fullpath = "", newfileName=""
-	String saveType = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
+// V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
 
-	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
-		//then save
-		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
-		
-		//pick ABS or AVE extension
-		String exten = activeType
-		if(cmpstr(exten,"ABS") != 0)
-			exten = "AVE"
-		endif
-//		if(cmpstr(av_type,"2D_ASCII") == 0)
-//			exten = "ASC"
-//		endif
-//		if(cmpstr(av_type,"QxQy_ASCII") == 0)
-//			exten = "DAT"
-//		endif
-		
-//		// add an "x" to the file extension if the output is XML
-//		// currently (2010), only for ABS and AVE (1D) output
-//		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
-//			if(useXMLOutput == 1)
-//				exten += "x"
-//			endif
-//		endif
-				
-		//Path is catPathName, symbolic path
-		//if this doesn't exist, a dialog will be presented by setting dialog = 1
-		//
-		Variable dialog = 0
+	prot[9] = collimationStr
 
-		PathInfo/S catPathName
-		String item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
-		String autoname = StringByKey("AUTONAME",prot[5],"=",";")		//autoname -  will get empty string if not present
-		If((cmpstr(item,"Manual")==0) || (cmpstr(newFileName,"") == 0))
-			//manual name if requested or if no name can be derived from header
-			fullPath = newfileName + "."+ exten //puts possible new name or null string in dialog
-			dialog = 1		//force dialog for user to enter name
-		else
-			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
-			//use autoname if present
-			if (cmpstr(autoname,"") != 0)
-				fullPath = S_Path + autoname + "." +exten
-			else
-				fullPath = S_Path + newFileName+"." + exten
-			endif	
-		Endif
-		//
-		strswitch(av_type)	
-			case "Annular":
-				V_fWrite1DAnnular("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
-				Print "data written to:  "+ newFileName+".phi"
-
-				break
-
-			case "Circular":		//in SANS, this was the default, but is dangerous, so make it explicit here
-			case "Sector":		// TODO: this falls through - which luckily works for now...
-			case "Rectangular":		// TODO: this falls through - which luckily works for now...
-			case "Narrow_Slit":		// TODO: this falls through - which luckily works for now...
-
-// no VSANS support of XML output at this point			
-//				if (useXMLOutput == 1)
-//					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
-//				else
-//					WriteWaves_W_Protocol(activeType,fullpath,dialog)
-//				endif
-//
-				if(cmpstr(saveType,"Yes - Concatenate")==0)
-					V_Trim1DDataStr(activeType,binType,prot[7],prot[8])			// x- passing null strings uses global or default trim values
-
-					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
-				
-					prot[9] = collimationStr
-					
-					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
-				
-				endif
-				
-				if(cmpstr(saveType,"Yes - Individual")==0)
-					// remove the q=0 point from the back detector, if it's there
-					// does not trim any other points from the data
-					V_RemoveQ0_B(activeType)
-					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
-				endif
-				Print "data written to:  "+ newFileName+"."+exten
-
-				break
+	V_Proto_SaveFile(prot[5],activeType,samFileLoaded,av_type,binType,detGroup,prot[7],prot[8])
 	
-				
-				case "2D_ASCII":
-//				Fast2DExport(activeType,fullPath,dialog)
-				break
-			case "QxQy_ASCII":
-//				QxQy_Export(activeType,fullPath,dialog)
-				break
-			case "PNG_Graphic":
-//				SaveAsPNG(activeType,fullpath,dialog)
-				break
-
-			default:
-				DoAlert 0, "av_type not found in dispatch to write file"
-		endswitch
-		
-	Endif
-	
-	//done with everything in protocol list
-	
+//////////////////////////////
+// DONE WITH THE PROTOCOL
+//////////////////////////////	
 	
 	// reset any global preferences that I had changed
 	gDoDIVCor = saved_gDoDIVCor
@@ -3029,3 +2642,488 @@ Function V_ImportProtocol(ctrlName) : ButtonControl
 	SetDataFolder root:
 	return(0)
 end
+
+
+///////////////////////////////////////
+//
+// individual steps in the protocol
+//
+//////////////////////////////////////
+
+Function V_Proto_LoadDIV(protStr)
+	String protStr
+	
+	String divFileName = "",junkStr="",pathStr=""
+	PathInfo catPathName			//this is where the files are
+	pathStr=S_path
+
+	If(cmpstr("none",protStr)!=0)		// if !0, then there's a file requested
+		If(cmpstr("ask",protStr) == 0)
+			//ask user for file
+//			 junkStr = PromptForPath("Select the detector sensitivity file")
+			Prompt divFileName,"DIV File",popup,V_GetDIVList()
+			DoPrompt "Select File",divFileName
+
+			If(strlen(divFileName)==0)
+				//
+				return(1)		//error
+//				SetDataFolder root:
+//				Abort "No file selected, data reduction aborted"
+			Endif
+			V_LoadHDF5Data(divFileName,"DIV")
+		else
+			//assume it's a path, and that the first (and only) item is the path:file
+			//list processing is necessary to remove any final comma
+			junkStr = pathStr + StringFromList(0, protStr,"," )
+			V_LoadHDF5Data(junkStr,"DIV")
+		Endif
+	
+	else
+	// DIV step is being skipped
+		NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+//		Variable saved_gDoDIVCor = gDoDIVCor
+		gDoDIVCor = 0			// protocol says to turn it off for now (reset later)
+	Endif
+	
+	return(0)
+End
+
+//
+// fileStr is the file name (or list of names)
+// activeType is the target work folder
+// msgStr is the string for the prompt
+//
+Function V_Proto_LoadFile(fileStr,activeType,msgStr)
+	String fileStr,activeType,msgStr
+	
+	Variable err,filesOK,notDone
+	
+	//Ask for Type file or parse
+	do
+		if((cmpstr(fileStr,"ask") == 0) || (cmpstr(fileStr,"")==0) )		//zero if strings are equal
+			err = V_LoadHDF5Data("","RAW")		//will prompt for file
+			if(err)
+				return(err)	//error
+				//PathInfo/S catPathName
+				//Abort "reduction sequence aborted"
+			endif
+			V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
+			err =  V_Raw_to_work(activeType)		//this is the first file (default)
+			//Ask for another TYPE file
+			do
+				DoAlert 1,"Do you want to add another "+activeType+" file?"
+				if(V_flag == 1)		//yes
+					err = V_LoadHDF5Data("","RAW")		//will prompt for file
+					if(err)
+						return(1) 		//error
+						//PathInfo/S catPathName
+						//Abort "reduction sequence aborted"
+					endif
+					V_UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
+					err = V_Add_raw_to_work(activeType)
+					notDone = 1
+				else
+					notDone = 0
+				endif
+			while(notDone)
+			//Loader is in charge of updating, since it knows if data was loaded
+			V_UpdateDisplayInformation(ActiveType)
+			break
+		Endif
+		//"none" is not an option - you always need a sample file - "none" will never return zero
+		//if not "ask" AND not "none" then try to parse the filenames
+		If((cmpstr(fileStr,"none") != 0) && (cmpstr(fileStr,"ask") != 0))
+			//filesOK = AreFilesThere(activeType,fileStr)		//return 1 if correct files are already there
+			filesOK = 0		// Feb 2008, always force a reload of files. Maybe slow, but always correct 
+			if(!filesOK)
+				//add the correct file(s) to Type
+				
+				// TODO: only one file is allowed currently
+				err = V_AddFilesInList(activeType,fileStr)
+				
+				if(err)
+					//Print "fileStr = ",fileStr
+					DoAlert 0, fileStr + " file not found, reset file"
+					return(err)		//error
+				Endif
+			Endif
+			//Loader is in charge of updating, since it knows if data was loaded
+			V_UpdateDisplayInformation(ActiveType)
+		Endif
+	While(0)
+	
+
+	
+	return(0)
+End
+
+Function V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
+	String bgdStr,empStr,drkStr
+	
+	Variable mode=4,val,err
+	
+	if( (cmpstr("none",bgdStr) == 0)	&& (cmpstr("none",empStr) == 0) )
+	//no subtraction (mode = 4),
+		mode = 4
+	Endif
+	If((cmpstr(bgdStr,"none") != 0) && (cmpstr(empStr,"none") == 0))
+		//subtract BGD only
+		mode=2
+	Endif
+	If((cmpstr(bgdStr,"none") == 0) && (cmpstr(empStr,"none") != 0))
+		//subtract EMP only
+		mode=3
+	Endif
+	If((cmpstr(bgdStr,"none") != 0) && (cmpstr(empStr,"none") != 0))
+		// bkg and emp subtraction are to be done (BOTH not "none")
+		mode=1
+	Endif
+//	activeType = "COR"
+	//add in DRK mode (0= not used, 10 = used)
+	val = NumberByKey("DRKMODE",drkStr,"=","," )
+	mode += val
+//		print "mode = ",mode
+	err = V_Correct(mode)
+	if(err)
+		return(err)
+//		SetDataFolder root:
+//		Abort "error in Correct, called from executeprotocol, normal cor"
+	endif
+
+//	//Loader is in charge of updating, since it knows if data was loaded
+//	V_UpdateDisplayInformation("COR")
+
+	
+	return(0)
+End
+
+
+
+
+Function V_Proto_ABS_Scale(absStr,activeType)
+	String absStr,&activeType
+	
+	Variable c2,c3,c4,c5,kappa_err,err
+	//do absolute scaling if desired
+//		DoAlert 0,"Abs step incomplete"
+
+	if(cmpstr("none",absStr)!=0)
+		if(cmpstr("ask",absStr)==0)
+			//get the params from the user
+			Execute "V_AskForAbsoluteParams_Quest()"
+			//then from the list
+			SVAR junkAbsStr = root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
+			c2 = NumberByKey("TSTAND", junkAbsStr, "=", ";")	//parse the list of values
+			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
+			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
+			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
+			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
+		else
+			//get the parames from the list
+			c2 = NumberByKey("TSTAND", absStr, "=", ";")	//parse the list of values
+			c3 = NumberByKey("DSTAND", absStr, "=", ";")
+			c4 = NumberByKey("IZERO", absStr, "=", ";")
+			c5 = NumberByKey("XSECT", absStr, "=", ";")
+			kappa_err = NumberByKey("SDEV", absStr, "=", ";")
+		Endif
+		//get the sample trans and thickness from the activeType folder
+		Variable c0 = V_getSampleTransmission(activeType)		//sample transmission
+		Variable c1 = V_getSampleThickness(activeType)		//sample thickness
+		
+		err = V_Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
+		if(err)
+			return(err)
+			SetDataFolder root:
+			Abort "Error in V_Absolute_Scale(), called from V_ExecuteProtocol"
+		endif
+		activeType = "ABS"
+		V_UpdateDisplayInformation(ActiveType)			//update before breaking from loop
+	Endif
+	
+	return(0)
+End
+
+
+Function V_Proto_ReadMask(maskStr)
+	String maskStr
+	
+	//check for mask
+	//doesn't change the activeType
+	String mskFileName="",pathStr=""
+	PathInfo catPathName			//this is where the files are
+	pathStr=S_path
+		
+	if(cmpstr("none",maskStr)!=0)
+		If(cmpstr("ask",maskStr)==0)
+			//get file from user
+			// x- fill in the get file prompt, and handle the result
+			Prompt mskFileName,"MASK File",popup,V_PickMASKButton("")
+			DoPrompt "Select File",mskFileName
+//			if (V_Flag)
+//				return 0									// user cancelled
+//			endif
+
+			If(strlen(mskFileName)==0)		//use cancelled
+				//if none desired, make sure that the old mask is deleted
+				KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
+				NewDataFolder/O root:Packages:NIST:VSANS:MSK
+				
+				DoAlert 0,"No Mask file selected, data not masked"
+			else
+				//read in the file from the selection
+				V_LoadHDF5Data(mskFileName,"MSK")
+			Endif
+		else
+			//just read it in from the protocol
+			//list processing is necessary to remove any final comma
+			mskFileName = pathStr + StringFromList(0, maskStr,"," )
+			V_LoadHDF5Data(mskFileName,"MSK")
+		Endif
+		
+	else
+		//if none desired, make sure that the old mask is deleted
+// TODO
+// x- clean out the data folder
+// x- note that V_KillNamedDataFolder() points to RawVSANS, and won't work
+// -- what happens if the kill fails? need error handling
+//
+		KillDataFolder/Z root:Packages:NIST:VSANS:MSK:
+		NewDataFolder/O root:Packages:NIST:VSANS:MSK
+
+	Endif
+	
+	return(0)
+End
+
+
+Function V_Proto_doAverage(avgStr,av_type,activeType,binType,collimationStr)
+	String avgStr,av_type,activeType
+	Variable binType
+	String collimationStr
+	
+	
+	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
+		case "none":		
+			//still do nothing
+			// set binType and binTypeStr to bad flags
+			String binTypeStr = "none"
+			binType = -999999
+			break			
+
+		case "Circular":
+			V_QBinAllPanels_Circular(activeType,binType,collimationStr)		// this does a default circular average
+			break
+			
+		case "Sector":
+//			CircularAverageTo1D(activeType)
+			break
+		case "Sector_PlusMinus":
+//			Sector_PlusMinus1D(activeType)
+			break
+		case "Rectangular":
+//			RectangularAverageTo1D(activeType)
+			break
+
+		case "Annular":
+			String detGroup = StringByKey("DETGROUP",avgStr,"=",";")
+			Variable qCtr_Ann = NumberByKey("QCENTER",avgStr,"=",";")
+			Variable qWidth = NumberByKey("QDELTA",avgStr,"=",";")
+			V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
+			break
+
+		case "Narrow_Slit":
+			V_QBinAllPanels_Slit(activeType,binType)		// this does a tall, narrow slit average
+			break
+			
+		case "2D_ASCII":	
+			//do nothing
+			break
+		case "QxQy_ASCII":
+			//do nothing
+			break
+		case "PNG_Graphic":
+			//do nothing
+			break
+		default:	
+			//do nothing
+	endswitch
+
+	
+	return(0)
+End
+
+
+
+
+
+Function V_Proto_doPlot(plotStr,av_type,activeType,binType,detGroup)
+	String plotStr,av_type,activeType
+	Variable binType
+	String detGroup
+	
+	String doPlot = StringByKey("PLOT",plotStr,"=",";")
+	
+	If( (cmpstr(doPlot,"Yes")==0) && (cmpstr(av_type,"none") != 0) )	
+		
+		strswitch(av_type)	//dispatch to the proper routine to PLOT 1D data
+			case "none":		
+				//still do nothing
+				break			
+
+			case "Circular":
+				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned				
+				break
+			case "Sector":
+	//			CircularAverageTo1D(activeType)
+				break
+			case "Sector_PlusMinus":
+	//			Sector_PlusMinus1D(activeType)
+				break
+			case "Rectangular":
+	//			RectangularAverageTo1D(activeType)
+				break
+
+			case "Annular":
+				V_Phi_Graph_Proc(activeType,detGroup)
+				break
+
+			case "Narrow_Slit":
+			// these are the same plotting routines as for standard circular average
+				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned
+				break
+			
+			case "2D_ASCII":	
+				//do nothing
+				break
+			case "QxQy_ASCII":
+				//do nothing
+				break
+			case "PNG_Graphic":
+				//do nothing
+				break
+			default:	
+				//do nothing
+		endswitch
+
+	endif		// end of plotting switch
+	
+	return(0)
+end
+
+
+Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
+	String avgStr,activeType,samFileLoaded,av_type
+	Variable binType
+	String detGroup,trimBegStr,trimEndStr
+	
+	String fullpath = "", newfileName=""
+	String saveType = StringByKey("SAVE",avgStr,"=",";")		//does user want to save data?
+
+	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
+		//then save
+		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
+		
+		//pick ABS or AVE extension
+		String exten = activeType
+		if(cmpstr(exten,"ABS") != 0)
+			exten = "AVE"
+		endif
+//		if(cmpstr(av_type,"2D_ASCII") == 0)
+//			exten = "ASC"
+//		endif
+//		if(cmpstr(av_type,"QxQy_ASCII") == 0)
+//			exten = "DAT"
+//		endif
+		
+//		// add an "x" to the file extension if the output is XML
+//		// currently (2010), only for ABS and AVE (1D) output
+//		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
+//			if(useXMLOutput == 1)
+//				exten += "x"
+//			endif
+//		endif
+				
+		//Path is catPathName, symbolic path
+		//if this doesn't exist, a dialog will be presented by setting dialog = 1
+		//
+		Variable dialog = 0
+
+		PathInfo/S catPathName
+		String item = StringByKey("NAME",avgStr,"=",";")		//Auto or Manual naming
+		String autoname = StringByKey("AUTONAME",avgStr,"=",";")		//autoname -  will get empty string if not present
+		If((cmpstr(item,"Manual")==0) || (cmpstr(newFileName,"") == 0))
+			//manual name if requested or if no name can be derived from header
+			fullPath = newfileName + "."+ exten //puts possible new name or null string in dialog
+			dialog = 1		//force dialog for user to enter name
+		else
+			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
+			//use autoname if present
+			if (cmpstr(autoname,"") != 0)
+				fullPath = S_Path + autoname + "." +exten
+			else
+				fullPath = S_Path + newFileName+"." + exten
+			endif	
+		Endif
+		//
+		strswitch(av_type)	
+			case "Annular":
+				V_fWrite1DAnnular("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
+				Print "data written to:  "+ newFileName+".phi"
+
+				break
+
+			case "Circular":		//in SANS, this was the default, but is dangerous, so make it explicit here
+			case "Sector":		// TODO: this falls through - which luckily works for now...
+			case "Rectangular":		// TODO: this falls through - which luckily works for now...
+			case "Narrow_Slit":		// TODO: this falls through - which luckily works for now...
+
+// no VSANS support of XML output at this point			
+//				if (useXMLOutput == 1)
+//					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
+//				else
+//					WriteWaves_W_Protocol(activeType,fullpath,dialog)
+//				endif
+//
+				if(cmpstr(saveType,"Yes - Concatenate")==0)
+					V_Trim1DDataStr(activeType,binType,trimBegStr,trimEndStr)			// x- passing null strings uses global or default trim values
+
+					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
+				
+//					prot[9] = collimationStr
+					
+					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+				
+				endif
+				
+				if(cmpstr(saveType,"Yes - Individual")==0)
+					// remove the q=0 point from the back detector, if it's there
+					// does not trim any other points from the data
+					V_RemoveQ0_B(activeType)
+					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+				endif
+				Print "data written to:  "+ newFileName+"."+exten
+
+				break
+	
+				
+				case "2D_ASCII":
+//				Fast2DExport(activeType,fullPath,dialog)
+				break
+			case "QxQy_ASCII":
+//				QxQy_Export(activeType,fullPath,dialog)
+				break
+			case "PNG_Graphic":
+//				SaveAsPNG(activeType,fullpath,dialog)
+				break
+
+			default:
+				DoAlert 0, "av_type not found in dispatch to write file"
+		endswitch
+		
+	Endif	
+	return(0)
+End
+
+

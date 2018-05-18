@@ -50,7 +50,7 @@
 // see DoTheFitButton in Wrapper_v40.ipf
 //
 //
-Macro V_Calc_WB_Smearing_top()
+Proc V_Calc_WB_Smearing_top()
 
 	String folderStr,funcStr,coefStr
 	
@@ -69,7 +69,7 @@ Macro V_Calc_WB_Smearing_top()
 End
 
 
-Macro V_Calc_WB_Smearing_mid()
+Proc V_Calc_WB_Smearing_mid()
 
 	String folderStr,funcStr,coefStr
 	
@@ -87,7 +87,7 @@ Macro V_Calc_WB_Smearing_mid()
 	SetDataFolder root:
 End
 
-Macro V_Calc_WB_Smearing_interp()
+Proc V_Calc_WB_Smearing_interp()
 
 	String folderStr,funcStr,coefStr
 	
@@ -105,7 +105,7 @@ Macro V_Calc_WB_Smearing_interp()
 	SetDataFolder root:
 End
 
-Macro V_Calc_WB_Smearing_triang()
+Proc V_Calc_WB_Smearing_triang()
 
 	String folderStr,funcStr,coefStr
 	

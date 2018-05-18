@@ -19,7 +19,7 @@
 // - best answer so far is to skip the T/B panels, and simply not use them
 //
 // TODO -- be sure that the absolute scaling of this is correct. Right now, something is off.
-//  -- so write up the documentaiton for this operation, and try to find the error in the process...
+//  -- so write up the documentation for this operation, and try to find the error in the process...
 //
 //
 /////////////////

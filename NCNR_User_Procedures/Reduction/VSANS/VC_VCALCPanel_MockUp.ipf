@@ -814,8 +814,8 @@ Proc VC_Initialize_Space()
 	
 
 // pixel beam center - HDF style
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340		// == x beam center, in pixels
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828		// == y beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
 
 
 // Generate all of the waves used for the detector and the q values

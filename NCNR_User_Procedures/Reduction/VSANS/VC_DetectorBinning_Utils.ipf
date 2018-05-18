@@ -60,7 +60,7 @@ Function FillPanel_wModelData(det,qTot,type)
 			tmpInten = VC_Debye(100,3000,0.0001,qTot[p][q])
 			break
 		case "Big Sphere":
-			tmpInten = VC_SphereForm(1,900,1e-6,0.01,qTot[p][q])	
+			tmpInten = VC_SphereForm(1,2000,1e-6,0.01,qTot[p][q])	
 			break
 		case "Debye":
 			tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])

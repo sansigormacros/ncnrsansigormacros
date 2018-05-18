@@ -161,7 +161,7 @@ Function V_DoReduceList(list)
 	//given protocol - based on WM proc "ExecuteCmdOnList()"
 	//input filenames must be full path:file;ext, so they can be found on disk
 	
-	String cmdTemplate = "V_ExecuteProtocol(\"" + gMredProtoStr + "\",\"%s\")"
+//	String cmdTemplate = "V_ExecuteProtocol(\"" + gMredProtoStr + "\",\"%s\")"
 	String theItem
 	Variable index=0
 	String cmd
@@ -169,9 +169,10 @@ Function V_DoReduceList(list)
 	do
 		theItem = StringFromList(index,list,",")	//COMMA separated list
 		if(strlen(theItem)!=0)
-			sprintf cmd,cmdTemplate,theItem		//null string items will be skipped
+			//sprintf cmd,cmdTemplate,theItem		//null string items will be skipped
 			//Print "cmd = ",cmd
-			Execute cmd
+			//Execute cmd
+			V_ExecuteProtocol(gMredProtoStr,theItem)
 		endif
 		index +=1
 	while(index<num)	//exit after all items have been processed
@@ -264,10 +265,15 @@ End
 //
 Function/S V_GetValidMRedPopupList()
 
-//	String semiList = V_GetSAMList()
 
 	String commaList="",semiList="",fname="",purpose=""
 	SVAR numList=root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
+	
+	// if a "*" is entered, return all of the SAMPLE+SCATTERING files
+	if(cmpstr(numList,"*") == 0)
+		semiList = V_GetSAMList()
+		return(semiList)
+	endif
 	
 	commaList = V_ParseRunNumberList(numList)
 	//convert commaList to a semicolon delimited list, checking that files are SCATTERING

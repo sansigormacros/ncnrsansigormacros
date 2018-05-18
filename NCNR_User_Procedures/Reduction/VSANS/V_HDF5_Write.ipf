@@ -677,6 +677,24 @@ Function V_writeCount_time(fname,val)
 	return(err)
 end
 
+// fname is a local WORK folder
+Function V_putCount_time(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:control:count_time"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 Function V_writeCount_time_preset(fname,val)
 	String fname
@@ -3121,6 +3139,25 @@ Function V_writeBeamMonNormData(fname,val)
 //	endif
 	return(err)
 End
+
+// fname is a local WORK folder
+Function V_putBeamMonNormData(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:instrument:beam_monitor_norm:data"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 
 Function V_writeBeamMonNormDistance(fname,val)
 	String fname
@@ -5786,6 +5823,25 @@ Function V_writeSampleDescription(fname,str)
 		
 	return(err)
 End
+
+// fname is a local WORK folder
+Function V_putSampleDescription(fname,str)
+	String fname,str
+
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:sample:description"
+	
+	Wave/Z/T w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = str
+		return(0)
+	endif
+
+End
+
+
 
 // for a z-stage??
 Function V_writeSample_elevation(fname,val)
