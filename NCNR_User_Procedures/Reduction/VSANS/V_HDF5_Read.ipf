@@ -1215,6 +1215,7 @@ Function/S V_getBeamStopC2_shape(fname)
 End
 
 // == diameter if shape = CIRCLE
+// value is expected in [mm] diameter
 Function V_getBeamStopC2_size(fname)
 	String fname
 
@@ -1903,6 +1904,7 @@ Function V_getSampleAp2_distance(fname)
 End
 
 //	shape (data folder)
+// height and width are reported in [cm]
 Function V_getSampleAp2_height(fname)
 	String fname
 

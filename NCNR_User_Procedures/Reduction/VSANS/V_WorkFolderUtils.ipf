@@ -598,24 +598,27 @@ Function V_Raw_to_work(newType)
 		Wave cal_y = V_getDet_cal_y(fname,detStr)
 		
 		V_NonLinearCorrection_B(fname,w,cal_x,cal_y,detStr,destPath)
-		
-		if(kBCTR_CM)
 
-			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-			WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-			WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-			x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
-			y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
-			
-			// now I need to convert the beam center in mm to pixels
-			// and have some rational place to look for it...
-			V_ConvertBeamCtr_to_pixB(fname,detStr,destPath)
-		else
+// "B" is always naturally defined in terms of a pixel center. This can be converted to mm, 
+// but the experiment will measure pixel x,y - just like ordela detectors.
+		
+//		if(kBCTR_CM)
+//
+//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+//			WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+//			WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+//			x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
+//			y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
+//			
+//			// now I need to convert the beam center in mm to pixels
+//			// and have some rational place to look for it...
+//			V_ConvertBeamCtr_to_pixB(fname,detStr,destPath)
+//		else
 			// beam center is in pixels, so use the old routine
 			V_ConvertBeamCtr_to_mmB(fname,detStr,destPath)
 
-		endif
+//		endif
 		V_Detector_CalcQVals(fname,detStr,destPath)
 		
 	else

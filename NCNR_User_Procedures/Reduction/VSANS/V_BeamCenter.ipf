@@ -862,7 +862,7 @@ Proc V_DeriveBeamCenters()
 	
 	Edit panelWave,newXCtr_cm,newYCtr_cm
 	
-	DoAlert 0, "enter the measured beam center for FR and MR panels"
+	DoAlert 0, "enter the measured beam center reference for Front and Middle panels"
 	V_fDeriveBeamCenters()
 	
 End
@@ -899,9 +899,9 @@ Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 	newYCtr_cm[6] = newYCtr_cm[7]	
 	
 	
-	// dummy value for B
-	newXCtr_cm[8] = 340
-	newYCtr_cm[8] = 828
+	// default value for B
+	newXCtr_cm[8] = 0
+	newYCtr_cm[8] = 0
 
 		
 	return

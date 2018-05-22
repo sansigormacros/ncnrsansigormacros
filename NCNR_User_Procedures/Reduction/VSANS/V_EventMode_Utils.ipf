@@ -997,7 +997,7 @@ End
 //panel to allow reduction of a series of files using a selected  protocol
 //
 //main entry procedure to open the panel, initializing if necessary
-Macro V_ReduceEventFiles()
+Proc V_ReduceEventFilesPanel()
 	
 	DoWindow/F V_Event_Reduce_Panel
 	If(V_flag == 0)

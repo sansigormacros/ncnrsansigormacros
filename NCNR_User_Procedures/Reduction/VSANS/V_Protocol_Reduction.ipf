@@ -88,7 +88,7 @@ Proc V_InitProtocolPanel()
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDIV="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gMASK="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr="ask"
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=No;BINTYPE=One;"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=No;BINTYPE=F4-M4-B;"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDRK="DRK=none,DRKMODE=0,"
 	
 	// global strings for trimming data are initialized in the main VSANS initilization
@@ -2780,9 +2780,12 @@ Function V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
 	Endif
 //	activeType = "COR"
 	//add in DRK mode (0= not used, 10 = used)
-	val = NumberByKey("DRKMODE",drkStr,"=","," )
-	mode += val
+	// TODO: DRK has been de-activated for now
+//	val = NumberByKey("DRKMODE",drkStr,"=","," )
+//	mode += val
+
 //		print "mode = ",mode
+
 	err = V_Correct(mode)
 	if(err)
 		return(err)

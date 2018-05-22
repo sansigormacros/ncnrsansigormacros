@@ -271,14 +271,14 @@ Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
 		return(0)
 	endif
 
-Print "***Cal_X and Cal_Y for Back are using default values instead of file values ***"
+Print "***Cal_X and Cal_Y for Back are using file values ***"
 
-		cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
-		cal_x[1] = 1
-		cal_x[2] = 10000
-		cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
-		cal_y[1] = 1
-		cal_y[2] = 10000
+//		cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+//		cal_x[1] = 1
+//		cal_x[2] = 10000
+//		cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+//		cal_y[1] = 1
+//		cal_y[2] = 10000
 
 	
 	// do I count on the orientation as an input, or do I just figure it out on my own?
@@ -299,8 +299,8 @@ Print "***Cal_X and Cal_Y for Back are using default values instead of file valu
 //	Wave cal_x = V_getDet_cal_x(folder,detStr)
 //	Wave cal_y = V_getDet_cal_y(folder,detStr)
 	
-	data_realDistX[][] = cal_x[0]*p
-	data_realDistY[][] = cal_y[0]*q
+	data_realDistX[][] = cal_x[0]*p*10		// cal_x and cal_y are in [cm], need mm
+	data_realDistY[][] = cal_y[0]*q*10
 	
 	return(0)
 end
@@ -550,7 +550,7 @@ Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
 	
-	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtr_to_mmB()"
+//	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtr_to_mmB()"
 	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
@@ -1431,6 +1431,12 @@ Function V_DIVCorrection(data,data_err,detStr,workType)
 	//check for existence of data in type and DIV
 	// if the desired data doesn't exist, let the user know, and abort
 	String destPath=""
+
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(cmpstr(detStr,"B")==0 && gIgnoreDetB)
+		return(0)
+	endif
+
 
 	if(WaveExists(data) == 0)
 		Print "The data wave does not exist in V_DIVCorrection()"

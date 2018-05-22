@@ -339,14 +339,14 @@ End
 Function V_InitFakeProtocols()
 	
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Protocols
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}
-	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Manual;PLOT=Yes","DRK=none,DRKMODE=0,","","","","",""}
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
+	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
 	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew"			//null wave
 	//Initialize waves to store values in
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=""
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=One;"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;"
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""

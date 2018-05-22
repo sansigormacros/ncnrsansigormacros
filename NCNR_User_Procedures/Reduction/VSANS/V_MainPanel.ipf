@@ -317,6 +317,13 @@ Proc V_Event_MainButtonProc(ctrlName) : ButtonControl
 	
 End
 
+Proc V_Event_MultReduceButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+		V_ReduceEventFilesPanel()
+	
+End
+
 Proc V_Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -458,8 +465,11 @@ Window Main_VSANS_Panel()
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
 //	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=V_WorkMath_MainButtonProc
 //	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
-	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=V_Event_MainButtonProc
+	Button MainButton_3g,pos={150,150},size={100,20},title="Event Data",proc=V_Event_MainButtonProc
 	Button MainButton_3g,help={"Manipulate VSANS Event Mode data"}
+	Button MainButton_3h,pos={150,180},size={140,20},title="Event Reduction",proc=V_Event_MultReduceButtonProc
+	Button MainButton_3h,help={"Reduce VSANS Event Mode data"}
+		
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
@@ -468,6 +478,7 @@ Window Main_VSANS_Panel()
 	Button MainButton_3e,disable=1
 //	Button MainButton_3f,disable=1
 	Button MainButton_3g,disable=1
+	Button MainButton_3h,disable=1
 
 //on tab(4) - Miscellaneous operations
 	Button MainButton_4a,pos={15,90},size={80,20},proc=V_Draw3D_MainButtonProc,title="3D Display"
