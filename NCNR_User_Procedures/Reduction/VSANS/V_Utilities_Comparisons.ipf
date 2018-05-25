@@ -165,21 +165,27 @@ Function V_Trans_Match_Open(fname1,fname2)
 	endif
 	
 	
-// I DO need to check all of the offset values
-	//// only return value for B and L/R detectors. everything else returns zero
-	//Function V_getDet_LateralOffset(fname,detStr)
-	//
-	//// only return values for T/B. everything else returns zero
-	//Function V_getDet_VerticalOffset(fname,detStr)
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		if(!V_FP2_Value_Match(V_getDet_LateralOffset,fname1,fname2,detStr))
-			return(0)	//no match
-		endif
-		if(!V_FP2_Value_Match(V_getDet_VerticalOffset,fname1,fname2,detStr))
-			return(0)	//no match
-		endif
-	endfor
+//// ???Do I need to check all of the offset values
+//	//// only return value for B and L/R detectors. everything else returns zero
+//	//Function V_getDet_LateralOffset(fname,detStr)
+//	//
+//	//// only return values for T/B. everything else returns zero
+//	//Function V_getDet_VerticalOffset(fname,detStr)
+//	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+//		detStr = StringFromList(ii, ksDetectorListAll, ";")
+//		if(!V_FP2_Value_Match(V_getDet_LateralOffset,fname1,fname2,detStr))
+//			return(0)	//no match
+//		endif
+//		if(!V_FP2_Value_Match(V_getDet_VerticalOffset,fname1,fname2,detStr))
+//			return(0)	//no match
+//		endif
+//	endfor
+
+// only check the panel position for the actual panel used for the open beam measurement
+	detStr = V_getReduction_BoxPanel(fname1)
+	if(!V_FP2_Value_Match(V_getDet_LateralOffset,fname1,fname2,detStr))
+		return(0)	//no match
+	endif
 
 	return(1)		// passed all of the tests, OK, it's a match
 End

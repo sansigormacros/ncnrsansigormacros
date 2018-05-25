@@ -221,6 +221,9 @@ Function/S V_getSamListForPopup()
 		endif
 	endfor
 
+	SVAR newSamList = root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList
+	newSamList = newList
+	
 	return(newList)
 End
 
@@ -246,6 +249,9 @@ Function/S V_getTransListForPopup()
 		endif
 	endfor
 
+	SVAR newTransList = root:Packages:NIST:VSANS:Globals:Transmission:gTransMatchList
+	newTransList = newList
+	
 	return(newList)
 	
 End
@@ -270,6 +276,9 @@ Function V_TEmpBeamPopMenuProc(pa) : PopupMenuControl
 			SetVariable setvar_6,value =_STR:detStr
 			
 			PopupMenu popup_1,mode=1,value=V_getTransListForPopup()
+			
+			SVAR newBox = root:Packages:NIST:VSANS:Globals:Transmission:gEmptyBoxCoord
+			newBox = V_NumWave2List(boxCoord,";")
 			
 			break
 		case -1: // control being killed
@@ -346,11 +355,10 @@ Function V_CalcTransmListButtonProc(ba) : ButtonControl
 			ControlInfo/W=V_TransmissionPanel popup_2
 			EmptyFile = S_Value
 		
-			// gSamMatchStr has " at each end. remove these
 			String list
 			list = gSamMatchList
-			list = list[1,strlen(list)-1]
-			list = list[0,strlen(list)-2]
+//			list = list[1,strlen(list)-1]
+//			list = list[0,strlen(list)-2]
 			
 			Variable num,ii
 			num = ItemsInList(list, ";")

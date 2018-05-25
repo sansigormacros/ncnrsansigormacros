@@ -516,7 +516,7 @@ Function V_FillListBox4(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 12
+	Variable nRows = 13
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -569,6 +569,8 @@ Function V_FillListBox4(listWave,selWave)
 	listWave[11][1] = "y_pixel_size (mm)"
 	listWave[11][2] = num2str(V_getDet_y_pixel_size(fname,detStr))	
 
+	listWave[12][1] = "dead time (s) (back only)"
+	listWave[12][2] = num2str(V_getDetector_deadtime_B(fname,detStr))			//returns 0 if not "B"
 
 	return(0)
 End
@@ -1357,7 +1359,12 @@ Function V_WriteHeaderForPatch_4(fname)
 		err = V_writeDet_y_pixel_size(fname,detStr,val)
 	endif	
 	
-
+	if ((selWave[12][0] & 2^4) != 0)		//"dead time, "B" only"
+		val = str2num(listWave[12][2])
+		if(cmpstr(detStr,"B") == 0)
+			err = V_writeDetector_deadtime_B(fname,detStr,val)
+		endif
+	endif	
 
 	
 	return(0)
@@ -2788,10 +2795,10 @@ Function V_fPatch_BackDetector(lo,hi)
 	detStr = "B"
 	
 	Make/O/D/N=3 cal_x,cal_y
-	cal_x[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	cal_x[0] = VCALC_getPixSizeX(detStr)			// pixel size in VCALC_getPixSizeX(detStr) is [cm]
 	cal_x[1] = 1
 	cal_x[2] = 10000
-	cal_y[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+	cal_y[0] = VCALC_getPixSizeY(detStr)			// pixel size in VCALC_getPixSizeX(detStr) is [cm]
 	cal_y[1] = 1
 	cal_y[2] = 10000
 	
