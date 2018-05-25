@@ -868,32 +868,32 @@ Proc V_DeriveBeamCenters()
 End
 
 
-Proc V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
-	Variable xFR,yFR,xMR,yMR
+Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
+	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
 	
 	// start with the front
 	// FR
-	newXCtr_cm[1] = xFR
-	newYCtr_cm[1] = yFR
+	newXCtr_cm[1] = x_FrontReference
+	newYCtr_cm[1] = y_FrontReference
 	// FL
-	newXCtr_cm[0] = xFR - (0.03 + 0.03)/2
-	newYCtr_cm[0] = yFR + (0.34 + 0.32)/2
+	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2
+	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
 	// FB
-	newXCtr_cm[3] = xFR - (2.02 + 2.06)/2
-	newYCtr_cm[3] = yFR - (0.12 + 0.19)/2		// (-) is correct here
+	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2
+	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
 	// FT (duplicate FB)
 	newXCtr_cm[2] = newXCtr_cm[3]
 	newYCtr_cm[2] = newYCtr_cm[3]
 	
 	// MR
-	newXCtr_cm[5] = xMR
-	newYCtr_cm[5] = yMR
+	newXCtr_cm[5] = x_MiddleReference
+	newYCtr_cm[5] = y_MiddleReference
 	// ML
-	newXCtr_cm[4] = xMR - (0.06 + 0.05)/2
-	newYCtr_cm[4] = yMR + (0.14 + 0.01)/2
+	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
+	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
 	// MB
-	newXCtr_cm[7] = xMR - (0.51 + 0.62)/2
-	newYCtr_cm[7] = yMR + (0.79 + 0.74)/2
+	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
+	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
 	// MT (duplicate MB)
 	newXCtr_cm[6] = newXCtr_cm[7]
 	newYCtr_cm[6] = newYCtr_cm[7]	

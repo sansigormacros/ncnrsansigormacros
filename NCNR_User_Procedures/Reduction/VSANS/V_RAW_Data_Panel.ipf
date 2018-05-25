@@ -164,6 +164,7 @@ Window VSANS_DataPanel() : Panel
 
 	TabControl tab0,pos={13,41},size={572,617},proc=V_DataTabProc,tabLabel(0)="Front"
 	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2,focusRing=0
+	TabControl tab0 labelBack=(63535,56076,45151)
 
 // on the side	
 	Button button_status,pos={607,146},size={70,20},proc=V_StatusButtonProc,title="Status",disable=2
