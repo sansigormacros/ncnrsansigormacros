@@ -9,10 +9,6 @@
 // - assign mask file to data file
 //
 //
-//  this is (at first) to be a very simple editor to generate masks row/column wise, not drawing
-//  masks with arbitrary shape. 
-//
-//
 //
 //
 // 
@@ -21,9 +17,9 @@
 ///// LOADING
 
 // TODO 
-// -- when mask is loaded, need to be sure to clean up the "extra" waves that may be present
+// x- when mask is loaded, need to be sure to clean up the "extra" waves that may be present
 //
-// -- the overlay and the currentTube waves since these are not overwritten or killed when new mask 
+// x- the overlay and the currentTube waves since these are not overwritten or killed when new mask 
 //  data is read in from HDF. need to manually? check for these and delete then, or the data and
 //  mask overlay will be out of sync.
 //
@@ -67,7 +63,7 @@ End
 //TODO
 // x- draw a mask
 // x- save a mask (all panels)
-// -- move everything into it's own folder, rather than root:
+// x- move everything into it's own folder, rather than root:
 // -- be able to save the mask name to the RAW data file
 // -- be able to read a mask based on what name is in the data file
 //
@@ -116,31 +112,40 @@ End
 //
 // TODO
 //  need buttons for:
-//		-- quit (to exit gracefully)
-//    -- help (button is there, fill in the content)
+//		x- quit (to exit gracefully) (no, just close the window is fine)
+//    x- help (button is there, fill in the content)
 //
-Proc V_MaskEditorPanel() : Panel
+Proc V_MaskEditorPanel()
 	PauseUpdate; Silent 1		// building window...
 
-	NewPanel /W=(662,418,1300,960)/N=MaskEditPanel	 /K=1
-//	ShowTools/A
-	
-	PopupMenu popup_0,pos={20,50},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
+	Display /W=(662,418,1300,960)/N=MaskEditPanel	 /K=1
+
+	ShowTools rect
+	ControlBar 100
+		
+	PopupMenu popup_0,pos={18,40},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
-	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
+	PopupMenu popup_2,pos={18,10},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 
-	SetVariable setvar0,pos={257.00,20.00},size={150.00,14.00},title="tube number"
+	SetVariable setvar0,pos={226,32},size={112,23},title="tube number"
 	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
-	Button button_0,pos={257,46.00},size={50.00,20.00},proc=V_AddToMaskButtonProc,title="Add"
-	Button button_1,pos={319.00,46.00},size={50.00,20.00},proc=V_RemoveFromMaskButtonProc,title="Del"
-	Button button_2,pos={409.00,46.00},size={90.00,20.00},proc=V_ToggleMaskButtonProc,title="Toggle"
-	Button button_3,pos={509.00,46.00},size={80.00,20.00},proc=V_SaveMaskButtonProc,title="Save"
-	Button button_4,pos={603.00,10.00},size={20.00,20.00},proc=V_DrawMaskHelpButtonProc,title="?"
-	CheckBox check_0,pos={190.00,23.00},size={37.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Row"
+	Button button_0,pos={226,58},size={50.00,20.00},proc=V_AddToMaskButtonProc,title="Add"
+	Button button_1,pos={288,58},size={50.00,20.00},proc=V_RemoveFromMaskButtonProc,title="Del"
+	Button button_2,pos={496,41},size={90.00,20.00},proc=V_ToggleMaskButtonProc,title="Toggle"
+	Button button_3,pos={506,66},size={80.00,20.00},proc=V_SaveMaskButtonProc,title="Save"
+	CheckBox check_0,pos={174,35},size={37.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Row"
 	CheckBox check_0,value= 0,mode=1
-	CheckBox check_1,pos={190.00,46.00},size={32.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Col"
+	CheckBox check_1,pos={174,58},size={32.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Col"
 	CheckBox check_1,value= 1,mode=1
+
+	Button button_5,pos={18,70.00},size={70.00,20.00},proc=V_MaskToolsButton,title="Tools"
+	Button button_6,pos={380,33},size={90.00,20.00},proc=V_AddShapeToMaskButtonProc,title="Add Shape"
+	Button button_7,pos={380,58},size={90.00,20.00},proc=V_AddShapeToMaskButtonProc,title="Del Shape"
+	Button button_8,pos={556.00,14.00},size={30.00,20.00},proc=V_DrawMaskHelpButtonProc,title="?"
+
+	GroupBox group0,pos={163.00,5.00},size={188.00,90.00},title="Mask Tubes"
+	GroupBox group1,pos={365.00,5.00},size={122.00,90.00},title="Mask Shapes"
 
 	SetWindow MaskEditPanel, hook(MyHook)=V_MaskWindowHook
 
@@ -151,6 +156,8 @@ Proc V_MaskEditorPanel() : Panel
 	// overlay the current mask
 	V_OverlayMask("FL",1)
 
+	SetDrawLayer/W=MaskEditPanel ProgFront
+	SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
 EndMacro
 
 Function V_DrawMaskHelpButtonProc(ba) : ButtonControl
@@ -303,7 +310,8 @@ Function V_MaskWindowHook(s)
 	return hookResult		// If non-zero, we handled event and Igor will ignore it.
 End
 
-
+// toggles the view of the mask, either show the mask, or hide it
+//
 Function V_ToggleMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -316,7 +324,7 @@ Function V_ToggleMaskButtonProc(ba) : ButtonControl
 
 			wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
 			
-			CheckDisplayed/W=MaskEditPanel#DetData overlay
+			CheckDisplayed/W=MaskEditPanel overlay
 			Variable state = !(V_flag)		//if V_flag == 0, then set to 1 (and vice versa)
 			V_OverlayMask(str,state)
 
@@ -328,7 +336,8 @@ Function V_ToggleMaskButtonProc(ba) : ButtonControl
 	return 0
 End
 
-
+// adds a row (or column) to the mask
+//
 Function V_AddToMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -362,6 +371,71 @@ Function V_AddToMaskButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+//adds or erases the mask, based on which button was clicked
+// (only checks for "add shape", otherwise erases mask)
+//
+Function V_AddShapeToMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			ControlInfo popup_0
+			String str=S_Value
+			
+			wave/Z data = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")
+
+			SetDrawLayer/W=MaskEditPanel ProgFront
+			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
+
+			ImageGenerateROIMask/W=MaskEditPanel curDispPanel		//M_ROIMask is in the root: folder
+			
+			WAVE M_ROIMask=M_ROIMask
+			if(cmpstr("button_6",ba.ctrlName)==0)
+				data = (data || M_ROIMask)		// 0=0, 1=1		== "drawing" more mask points			
+			else
+				data = (M_ROIMask[p][q] == 1 && data[p][q] == 1) ? 0 : data[p][q]		// if the drawn shape = 1, set the mask to 0 (erase)
+			endif
+			
+			V_OverlayMask(str,1)
+			
+			SetDrawLayer/K ProgFront
+			SetDrawLayer/W=MaskEditPanel ProgFront
+			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// show the tools (they are there by default)
+//
+Function V_MaskToolsButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ShowTools rect
+			
+			SetDrawLayer/W=MaskEditPanel ProgFront
+			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
+			SetDrawEnv/W=MaskEditPanel fillPat=1	
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// un-mask a row or column
+//
 Function V_RemoveFromMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -408,18 +482,18 @@ Function V_SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 						
 			// remove the old image (it may not be the right shape)
 			// -- but make sure it exists first...
-			String childList = ChildWindowList("MaskEditPanel")
-			Variable flag
-			
-			flag = WhichListItem("DetData", ChildList)		//returns -1 if not in list, 0+ otherwise
-			if(flag != -1)
-				KillWindow MaskEditPanel#DetData
-			endif
-			
-			flag = WhichListItem("ModelData", ChildList)
-			if(flag != -1)
-				KillWindow MaskEditPanel#ModelData
-			endif
+
+			String list = ImageNameList("", ";" )
+			Variable num=ItemsInList(list)
+			Variable ii
+			for(ii=0;ii<num;ii+=1)
+//				Wave w = ImageNameToWaveRef("", StringFromList(ii, list,";"))
+//				CheckDisplayed/W=MaskEditPanel w
+				
+				RemoveImage/W=MaskEditPanel $(StringFromList(ii, list,";"))
+			endfor
+
+
 	
 			// draw the correct images
 			V_DrawPanelToMask(popStr)
@@ -437,8 +511,12 @@ Function V_SetMaskPanelPopMenuProc(pa) : PopupMenuControl
 			
 			V_DrawMaskRadioCheckProc(cba)		//call the radio button action proc	
 			
-			//overlay the mask
+			//overlay the mask (removes the old mask first)
 			V_OverlayMask(popStr,1)
+
+			SetDrawLayer/K ProgFront
+			SetDrawLayer/W=MaskEditPanel ProgFront
+			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
 
 			break
 		case -1: // control being killed
@@ -456,7 +534,7 @@ End
 //
 // -- need to adjust the size of the image subwindows 
 //
-// -- need to do something for panel "B". currently ignored
+// x- need to do something for panel "B". currently ignored
 //
 //
 // draw the selected panel and the model calculation, adjusting for the 
@@ -587,15 +665,14 @@ Function V_DrawPanelToMask(str)
 	endif
 
 	//draw the detector panel
-	Display/W=(left,top,right,bottom)/HOST=# 
+//	Display/W=(left,top,right,bottom)
 	AppendImage curDispPanel
 	ModifyImage curDispPanel ctab= {*,*,ColdWarm,0}
 //	ModifyImage curDispPanel log=1 		// this fails, since there are data values that are zero
 	ModifyImage curDispPanel ctabAutoscale=0,lookup= LookupWave
 	Label left "Y pixels"
 	Label bottom "X pixels"	
-	RenameWindow #,DetData
-	SetActiveSubwindow ##	
+
 	
 	DoUpdate
 	
@@ -658,13 +735,13 @@ Function V_OverlayMask(str,state)
 				currentTube[val][] = 1
 			endif			
 				
-			CheckDisplayed/W=MaskEditPanel#DetData overlay
+			CheckDisplayed/W=MaskEditPanel overlay
 			if(V_flag==0)		//so the overlay doesn't get appended more than once
-				AppendImage/W=MaskEditPanel#DetData overlay
-				AppendImage/W=MaskEditPanel#DetData currentTube
+				AppendImage/W=MaskEditPanel overlay
+				AppendImage/W=MaskEditPanel currentTube
 //				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
-				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,40000)
-				ModifyImage/W=MaskEditPanel#DetData currentTube ctab= {0.9,1,CyanMagenta,0}	,minRGB=NaN,maxRGB=0
+				ModifyImage/W=MaskEditPanel overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,40000)
+				ModifyImage/W=MaskEditPanel currentTube ctab= {0.9,1,CyanMagenta,0}	,minRGB=NaN,maxRGB=0
 		//		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
 			endif
 		endif
@@ -673,12 +750,12 @@ Function V_OverlayMask(str,state)
 			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")
 			wave currentTube = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":currentTube")
 
-			CheckDisplayed/W=MaskEditPanel#DetData overlay
+			CheckDisplayed/W=MaskEditPanel overlay
 //			Print "V_flag = ",V_flag
 	
 			If(V_Flag == 1)		//overlay is present
-				RemoveImage/W=MaskEditPanel#DetData overlay
-				RemoveImage/W=MaskEditPanel#DetData currentTube
+				RemoveImage/W=MaskEditPanel overlay
+				RemoveImage/W=MaskEditPanel currentTube
 			endif
 		endif
 	Endif

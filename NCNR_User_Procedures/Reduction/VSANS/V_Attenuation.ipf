@@ -260,28 +260,3 @@ Function V_CalculateAttenuationError(fname)
 	
 End
 
-// TODO -- this may not correctly mimic the enumerated type of the file
-//  but I need to fudge this somehow
-//
-// returns null string if the type cannot be deduced, calling procedure is responsible
-//  for properly handling this error condition
-//
-Function/S V_DeduceMonochromatorType(fname)
-	String fname
-	
-	String typeStr=""
-
-	if(cmpstr(V_getVelSelStatus(fname),"IN") == 0)
-		typeStr = "velocity_selector"
-	endif
-	
-	if(cmpstr(V_getWhiteBeamStatus(fname),"IN") == 0)
-		typeStr = "white_beam"
-	endif
-	
-	if(cmpstr(V_getCrystalStatus(fname),"IN") == 0)
-		typeStr = "crystal"
-	endif	
-	
-	return(typeStr)
-End

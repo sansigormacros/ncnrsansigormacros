@@ -16,6 +16,8 @@ End
 #include "PlotManager_v40"
 #include "GaussUtils_v40"
 #include "NIST_XML_v40"
+#include "USANS_SlitSmearing_v40"
+
 //
 //#include "NCNR_Utils"		//needed to load linear fits, mostly VAX file name junk
 //#include "LinearizedFits_v40"		//won't compile - needs NCNR_Utils (then starts a chain of dependencies...)
