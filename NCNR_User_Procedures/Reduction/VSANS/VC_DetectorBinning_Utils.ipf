@@ -1482,8 +1482,9 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 // -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
 // TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
+	BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
-	BS = 25.4			//TODO hard-wired value
+//	BS = 25.4			//TODO hard-wired value
 	
 //	bs_shape = V_getBeamStopC2_shape(folderStr)
 //	if(cmpstr(s1_shape,"CIRCLE") == 0)
@@ -1495,7 +1496,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 
 	
 // del_r = step size [mm] = binWidth*(mm/pixel) 
-	del_r = 1*8			// TODO: 8mm/pixel hard-wired
+	del_r = 1*DDet*10		// TODO: this is probably not the correct value
 
 // usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
 	usingLenses = 0

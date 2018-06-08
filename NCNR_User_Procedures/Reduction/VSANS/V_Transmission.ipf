@@ -185,6 +185,13 @@ Function V_TTransmFilePopMenuProc(pa) : PopupMenuControl
 			// this resets a global string, since I can't pass a parameter (only constants) in value=fn()		
 //			PopupMenu popup_0,mode=1,value=#gSamMatchList
 			PopupMenu popup_0,mode=1,value=V_getSamListForPopup()
+
+
+// then pop the sample list with the top file to see that it is a match for the transmission file
+			STRUCT WMPopupAction samPopAct
+			ControlInfo popup_0
+			samPopAct.popStr = S_Value		// the top file
+			V_TSamFilePopMenuProc(samPopAct)
 			
 			break
 		case -1: // control being killed
@@ -230,7 +237,12 @@ End
 
 Function/S V_getTransListForPopup()
 
-	String retStr = V_getFilePurposeList("TRANSMISSION",0)
+	String retStr =""
+	
+//	retStr = V_getFilePurposeList("TRANSMISSION",0)
+	
+	retStr = V_getFileIntentPurposeList("Sample","TRANSMISSION",0)
+	retStr += V_getFileIntentPurposeList("Empty Cell","TRANSMISSION",0)
 	
 	// now filter through the string to refine the list to only transmission files that match
 	// the open beam file conditions

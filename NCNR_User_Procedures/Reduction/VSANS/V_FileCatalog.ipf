@@ -851,8 +851,8 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 			break
 			
 		case "SortMonitorCountsButton":
-			SetDataFolder root:
-			return(0)
+			sortKey = "MCR"
+
 			break
 			
 		case "SortTransmissionButton":

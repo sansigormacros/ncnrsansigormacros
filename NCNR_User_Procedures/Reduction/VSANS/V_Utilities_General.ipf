@@ -78,23 +78,6 @@ Function V_DataExists(type)
 end
 
 
-//
-// tests if two values are close enough to each other
-// very useful since ICE came to be
-//
-// tol is an absolute value (since input v1 or v2 may be zero, can't reliably
-// use a percentage
-Function V_CloseEnough(v1,v2,tol)
-	Variable v1, v2, tol
-
-	if(abs(v1-v2) < tol)
-		return(1)
-	else
-		return(0)
-	endif
-End
-
-
 
 // (DONE):
 // x- this must be called as needed to force a re-read of the data from disk
@@ -1443,7 +1426,8 @@ Function/S V_getFileIntentPurposeList(intent,purpose,method)
 end
 
 
-// match BOTH the intent and purpose
+// match the INTENT and PURPOSE and GROUP_ID
+//
 // -- needed to identify the SAMPLE + SCATTERING data files.
 //
 //

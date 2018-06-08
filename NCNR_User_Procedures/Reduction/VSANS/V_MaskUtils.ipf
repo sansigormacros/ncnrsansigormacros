@@ -124,7 +124,7 @@ Proc V_MaskEditorPanel()
 	ControlBar 100
 		
 	PopupMenu popup_0,pos={18,40},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
-	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;MR;ML;MT;MB;B;\""
+	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 	PopupMenu popup_2,pos={18,10},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 

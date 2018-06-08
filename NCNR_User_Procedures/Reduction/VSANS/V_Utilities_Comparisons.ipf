@@ -31,7 +31,7 @@
 // if any of the match conditions fail, exit immediately
 //
 //
-Function V_RawFilesMatch(fname1,fname2)
+Function V_RawFilesMatchConfig(fname1,fname2)
 	String fname1,fname2
 
 	Variable ii
@@ -360,10 +360,16 @@ Function/S V_IdentifyCollimation(fname)
 	String status="",guides=""
 	variable wb_in=0,slit=0
 	
-	status = V_getConvPinholeStatus(fname)
-	if(cmpstr(status,"IN") == 0)
+	guides = V_getNumberOfGuides(fname)
+	if(cmpstr(guides,"CONV_BEAMS") == 0)
 		return("convergingPinholes")
 	endif
+
+// TODO: as of 6/2018 with the converging pinholes IN, status is "out"
+//	status = V_getConvPinholeStatus(fname)
+//	if(cmpstr(status,"IN") == 0)
+//		return("convergingPinholes")
+//	endif
 
 	status = V_getWhiteBeamStatus(fname)
 	if(cmpstr(status,"IN") == 0)
@@ -422,4 +428,61 @@ Function/S V_DeduceMonochromatorType(fname)
 	return(typeStr)
 End
 
+
+// returns the beamstop diameter [mm]
+// if there is no beamtop in front of the specified detector, return 0.01mm
+//
+Function V_DeduceBeamstopDiameter(folderStr,detStr)
+	String folderStr,detStr
+	
+	Variable BS, dummyVal,num
+	dummyVal = 0.01		//[mm]
+	
+	if(cmpstr("F",detStr[0]) == 0)
+		// front carriage has no beamstops
+		return(dummyVal)
+	endif
+	
+	if(cmpstr("M",detStr[0]) == 0)
+		// middle carriage (2)
+		num = V_getBeamStopC2num_beamstops(folderStr)
+		if(num)
+			BS = V_getBeamStopC2_size(folderStr)
+		else
+			//num = 0, no beamstops in the middle.
+			return(dummyVal)
+		endif
+	endif
+
+	if(cmpstr("B",detStr[0]) == 0)
+		// back (3)
+		num = V_getBeamStopC3num_beamstops(folderStr)
+		if(num)
+			BS = V_getBeamStopC3_size(folderStr)
+		else
+			//num = 0, no beamstops on the back
+			return(dummyVal)
+		endif
+	endif	
+	
+	return(BS)
+end
+
+
+
+//
+// tests if two values are close enough to each other
+// very useful since ICE came to be
+//
+// tol is an absolute value (since input v1 or v2 may be zero, can't reliably
+// use a percentage
+Function V_CloseEnough(v1,v2,tol)
+	Variable v1, v2, tol
+
+	if(abs(v1-v2) < tol)
+		return(1)
+	else
+		return(0)
+	endif
+End
 
