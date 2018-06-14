@@ -735,8 +735,8 @@ Function V_Raw_to_work(newType)
 		
 		Variable monCount,savedMonCount
 		defmon=1e8			//default monitor counts
-		monCount = V_getMonitorCount(fname)			// TODO -- this is read in since VCALC fakes this on output
-//		monCount = V_getBeamMonNormData(fname)		// TODO -- I think this is the *real* one to read
+//		monCount = V_getControlMonitorCount(fname)			// TODO -- this is read in since VCALC fakes this on output
+		monCount = V_getBeamMonNormData(fname)		// TODO -- I think this is the *real* one to read
 		savedMonCount	= monCount
 		scale = defMon/monCount		// scale factor to MULTIPLY data by to rescale to defmon
 

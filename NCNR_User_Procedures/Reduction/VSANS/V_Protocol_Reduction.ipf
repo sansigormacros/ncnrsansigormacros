@@ -354,9 +354,14 @@ Function V_SaveProtocolButton(ctrlName) : ButtonControl
 		Make/O/T/N=(kNumProtocolSteps) $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
 	Endif
 	
-	V_MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
-	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtocol
-	
+	Variable err
+	err = V_MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	if(err)
+		DoAlert 0,"BGD and EMP files do not have the same configuration. No protocol saved."
+		KillWaves/Z $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
+	else
+		String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtocol
+	endif
 	//the data folder WAS changed above, this must be reset to root:
 	SetDatafolder root:
 End
@@ -368,6 +373,8 @@ End
 //
 // TODO
 // -- update for 12 points
+//
+// returns error==1 if files (emp, bgd) are not of the same configuration
 //
 Function V_MakeProtocolFromPanel(w)
 	Wave/T w
@@ -525,8 +532,22 @@ Function V_MakeProtocolFromPanel(w)
 	//w[11]
 	//currently unused
 	w[11] = ""
-		
-	return(0)
+
+
+//	check that w[0](BGD) and w[1](EMP) are from matching configurations
+	if(cmpstr(w[0],"none")==0 || cmpstr(w[0],"ask")==0)
+		// no file specified for BGD, so no issues
+		return(0)
+	endif
+	if(cmpstr(w[1],"none")==0 || cmpstr(w[1],"ask")==0)
+		// no file specified for EMP, so no issues
+		return(0)
+	endif
+	Variable matchOK
+	// returns 1 for match , 0 if no match
+	matchOK = V_RawFilesMatchConfig(StringFromList(0, w[0], ","),StringFromList(0, w[1], ","))
+	
+	return(!matchOK)
 End
 
 
@@ -929,14 +950,19 @@ Function V_ReduceOneButton(ctrlName) : ButtonControl
 	//and execute
 	String temp="root:Packages:NIST:VSANS:Globals:Protocols:tempProtocol"
 	Wave/T w=$temp
-	Variable ii=0,num=12
+	Variable ii=0,num=12,err
 	do
 		w[ii] = ""
 		ii+=1
 	while(ii<num)
 	
-	V_MakeProtocolFromPanel(w)
-
+	
+	err = V_MakeProtocolFromPanel(w)
+	if(err)
+		DoAlert 0,"BGD and EMP files do not have the same configuration."
+		return(0)
+	endif
+	
 	//the "current" protocol is the "tempProtocol" that was parsed from the panel input
 	//set the global, so that the data writing routine can find the protocol wave (fatal otherwise)
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr="tempProtocol"
@@ -1906,7 +1932,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 	//6 = DRK file (**out of sequence)
 	//7 = beginning trim points
 	//8 = end trim points
-	//9 = unused
+	//9 = collimation type for reduced data
 	//10 = unused
 	//11 = unused
 
@@ -1956,10 +1982,36 @@ Function V_ExecuteProtocol(protStr,samStr)
 	// TODO
 	// -- this may not be the most reliable way to pass the file name (for naming of the saved file later)
 	SVAR file_name = root:file_Name
-	String samFileLoaded = file_name		//keep a copy of the sample file loaded
+	String samFileLoaded = file_name		//keep a copy of the sample file loaded	
 	
 	//always update
 	V_UpdateDisplayInformation(ActiveType)
+
+
+// TODO -- the logic here is flawed
+// check that the SAM file is of the same configuration as BGD or EMP, if they are used
+// need to be able to handle all of the permutations AND catch the "ask" cases
+	
+	Variable filesMatch=1		//assume OK
+	
+	if(cmpstr("none",prot[0])==0 || cmpstr("ask",prot[0])==0)
+		// BGD not identified, try EMP.
+		if(cmpstr("none",prot[1])==0 || cmpstr("ask",prot[1])==0)
+			// EMP not identified either, no mismatch possible
+		else
+			// compare to EMP
+			filesMatch = V_RawFilesMatchConfig(samFileLoaded,StringFromList(0,prot[1],","))
+		endif
+	else
+		// BGD is identified, compare
+		filesMatch = V_RawFilesMatchConfig(samFileLoaded,StringFromList(0,prot[0],","))
+	endif
+
+	if(filesMatch == 0)
+		Abort "SAM data is not the same configuration as the protocol."
+		SetDataFolder root:
+	endif		
+
 
 
 //////////////////////////////

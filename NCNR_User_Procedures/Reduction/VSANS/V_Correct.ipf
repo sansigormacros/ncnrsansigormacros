@@ -290,17 +290,17 @@ Function V_CorrectMode_1()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = V_getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = V_getSampleTransmission("EMP")			//trans emp
 	emp_trans_err = V_getSampleTransError("EMP")
 	
-	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 
 	// and now loop through all of the detectors
@@ -436,13 +436,13 @@ Function V_CorrectMode_2()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 
 	// and now loop through all of the detectors
@@ -547,13 +547,13 @@ Function V_CorrectMode_3()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = V_getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = V_getSampleTransmission("EMP")			//trans emp
 	emp_trans_err = V_getSampleTransError("EMP")
 	
@@ -706,17 +706,17 @@ Function V_CorrectMode_11()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = V_getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = V_getSampleTransmission("EMP")			//trans emp
 	emp_trans_err = V_getSampleTransError("EMP")
 	
-	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 	// for proper scaling, get the time and actual monitor counts
 	// TODO -- make sure that these calls are reading the proper values
@@ -869,13 +869,13 @@ Function V_CorrectMode_12()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonbgd = V_getMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 	// for proper scaling, get the time and actual monitor counts
 	// TODO -- make sure that these calls are reading the proper values
@@ -1000,13 +1000,13 @@ Function V_CorrectMode_13()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	
-	tmonemp = V_getMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = V_getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = V_getSampleTransmission("EMP")			//trans emp
 	emp_trans_err = V_getSampleTransError("EMP")
 
@@ -1131,9 +1131,9 @@ Function V_CorrectMode_14()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getMonitorCount() is really rescaled to 10^8, and saved is the "true" count
+	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
-	tmonsam = V_getMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
 	sam_trans_err = V_getSampleTransError("SAM")
 	

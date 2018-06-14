@@ -295,7 +295,8 @@ Function V_FillListBox0(listWave,selWave)
 	listWave[1][2] = num2str(V_getDetector_counts(fname))
 	
 	listWave[2][1] = "monitor_counts"
-	listWave[2][2] = num2str(V_getMonitorCount(fname))
+//	listWave[2][2] = num2str(V_getControlMonitorCount(fname))
+	listWave[2][2] = num2str(V_getBeamMonNormData(fname))
 	
 	return(0)
 End
@@ -1074,7 +1075,8 @@ Function V_WriteHeaderForPatch_0(fname)
 	
 	if ((selWave[2][0] & 2^4) != 0)		//"monitor_counts"
 		val = str2num(listWave[2][2])
-		err = V_writeMonitorCount(fname,val)
+//		err = V_writeControlMonitorCount(fname,val)
+		err = V_writeBeamMonNormData(fname,val)
 	endif	
 	
 

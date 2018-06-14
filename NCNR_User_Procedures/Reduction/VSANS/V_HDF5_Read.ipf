@@ -401,14 +401,14 @@ End
 
 //monitor count
 // TODO - verify that this is the correct monitor
-Function V_getMonitorCount(fname)
+Function V_getControlMonitorCount(fname)
 	String fname
 	
 	String path = "entry:control:monitor_counts"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getMonitor_preset(fname)
+Function V_getControlMonitor_preset(fname)
 	String fname
 	
 	String path = "entry:control:monitor_preset"	

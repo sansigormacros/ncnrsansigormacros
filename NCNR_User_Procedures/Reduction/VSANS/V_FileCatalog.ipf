@@ -650,7 +650,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 		
 	// Monitor Count Rate
 	InsertPoints lastPoint,1,GMCR
-	GMCR[lastPoint]  = V_getMonitorCount(fname)/ctime		//total monitor count / total count time
+	GMCR[lastPoint]  = V_getBeamMonNormData(fname)/ctime		//total monitor count / total count time
 
 
 // number of guides and sample position, only for NCNR (a string now)

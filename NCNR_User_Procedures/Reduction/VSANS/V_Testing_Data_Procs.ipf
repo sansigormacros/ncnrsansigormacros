@@ -135,7 +135,7 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		//Function VCALC_getImon()
 		//
 		// divide the monitor count by 1e8 to get a number small enough to write in the field.
-	V_writeMonitorCount(fileName,VCALC_getImon()/1e8)
+	V_writeBeamMonNormData(fileName,VCALC_getImon()/1e8)
 
 	// total detector count (sum of everything)
 	V_writeDetector_counts(fileName,sumCts)

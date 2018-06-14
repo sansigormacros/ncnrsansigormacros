@@ -827,7 +827,7 @@ End
 
 //monitor count
 // integer value
-Function V_writeMonitorCount(fname,val)
+Function V_writeControlMonitorCount(fname,val)
 	String fname
 	Variable val
 	
@@ -853,7 +853,7 @@ Function V_writeMonitorCount(fname,val)
 end
 
 //integer value
-Function V_writeMonitor_preset(fname,val)
+Function V_writeControlMonitor_preset(fname,val)
 	String fname
 	Variable val
 	
@@ -878,7 +878,7 @@ Function V_writeMonitor_preset(fname,val)
 	return(err)
 end
 
-Function V_writePreset(fname,str)
+Function V_writeControlPreset(fname,str)
 	String fname,str
 	
 //	String path = "entry:control:preset"
