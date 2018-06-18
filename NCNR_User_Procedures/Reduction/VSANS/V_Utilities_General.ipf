@@ -433,37 +433,32 @@ Function V_LoadPlotAndDisplayRAW(increment)
 	Variable increment
 
 	Variable i,val
-	String filename,tmp,curFileName
+	String filename,tmp,curFileName,str
 	//take the currently displayed RAW file 
 	SVAR oldName = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	oldname = V_RemoveAllSpaces(oldname)		// 
 	curFileName = oldName
-//	print oldName
 	
 	filename = oldname
-//	for (i = 0; i < abs(increment); i += 1)
-//		filename = GetPrevNextRawFile(filename,increment/abs(increment))
-//	endfor	
+
 	i = 1
 	val = increment
 	do
-//		print filename,val
-		filename = V_GetPrevNextRawFile(filename,val)
-//		print "new= ",filename
-		
+
 		val = i*increment
-		i+=1
-		tmp = ParseFilePath(0, filename, ":", 1, 0)
-
-//		print val,strlen(tmp),strlen(oldname)
-//		print cmpstr(tmp,oldname)
-
-		if(strlen(tmp) == 0)		//in some cases, a null string can be returned - handle gracefully
-			return(0)
-		endif
+		filename = V_GetPrevNextRawFile(oldName,val)
 		
-	while( (cmpstr(tmp,curFileName) == 0) && i < 11)
-//	print filename
+//		printf "i=%d, file=%s\r",i,filename
+		
+		tmp = ParseFilePath(0, filename, ":", 1, 0)
+				
+		i+=1
+	while( strlen(tmp) == 0 && i < 11)
+
+
+	if(strlen(tmp) == 0)		//in some cases, a null string can be returned - handle gracefully
+		return(0)
+	endif
 	
 	// display the specified RAW data file
 	// this is the set of steps done in DisplayMainButtonProc(ctrlName) : ButtonControl
@@ -516,11 +511,6 @@ Function/S V_GetPrevNextRawFile(curfilename, prevnext)
 		
 	//find the next specified file by number
 	fileName = V_FindFileFromRunNumber(num+prevnext)
-
-	if(cmpstr(fileName,"")==0)
-		//null return, do nothing
-		fileName = V_FindFileFromRunNumber(num)		//returns the full path, not just curFileName
-	Endif
 
 	Return filename
 End
