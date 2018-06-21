@@ -329,3 +329,13 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 	return(0)
 End
 
+// awkward, but can't call STRUCT from Proc
+Proc Vm_Write1DData_ITX()
+	Vf_FakeSaveIQITXClick()	
+End
+
+Function Vf_FakeSaveIQITXClick()
+	STRUCT WMButtonAction ba
+	ba.eventCode=2
+	V_SaveIQ_ButtonProc(ba)
+end

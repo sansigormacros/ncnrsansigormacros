@@ -619,7 +619,7 @@ Function fPlotMiddlePanels()
 
 	SetDataFolder root:
 		
-	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
+	// set any "shadowed" area of the T/B detectors to NaN to get a realistic
 	// view of how much of the detectors are actually collecting data
 	// -- I can get the separation L/R from the panel - only this "open" width is visible.
 	VC_SetShadow_TopBottom("VCALC","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
@@ -1267,22 +1267,26 @@ Function VC_CalculateQBackPanels()
 	qy_B = 0
 	qz_B = 0	
 	
-// TODO - these are to be set from globals, not hard-wired. N and pixelSize will be known (or pre-measured)
+// (DONE) - these are set from globals, not hard-wired. N and pixelSize will be known (or pre-measured)
 // pixel sizes are in cm
+// beam center for the back detector is in PIXELS. always.
 	pixSizeX = VCALC_getPixSizeX("B")
 	pixSizeY = VCALC_getPixSizeY("B")
 
-	if(kBCTR_CM)
-		xCtr = trunc( DimSize(det_B,0)/2 ) *pixSizeX * 10
-		yCtr = trunc( DimSize(det_B,1)/2 ) *pixSizeY * 10	//values in mm -- beam is nominally at 0,0 in space
-	else	
-		xCtr = trunc( DimSize(det_B,0)/2 )		//
-		yCtr = trunc( DimSize(det_B,1)/2 )		//
-	endif
-	
-		//put these  beam center values into the local folder
-	V_putDet_beam_center_x("VCALC","B",xCtr)
-	V_putDet_beam_center_y("VCALC","B",yCtr)
+	xCtr = V_getDet_beam_center_x("VCALC","B")
+	yCtr = V_getDet_beam_center_y("VCALC","B")
+
+//	if(kBCTR_CM)
+//		xCtr = trunc( DimSize(det_B,0)/2 ) *pixSizeX * 10
+//		yCtr = trunc( DimSize(det_B,1)/2 ) *pixSizeY * 10	//values in mm -- beam is nominally at 0,0 in space
+//	else	
+//		xCtr = trunc( DimSize(det_B,0)/2 )		//
+//		yCtr = trunc( DimSize(det_B,1)/2 )		//
+//	endif
+//	
+//		//put these  beam center values into the local folder
+//	V_putDet_beam_center_x("VCALC","B",xCtr)
+//	V_putDet_beam_center_y("VCALC","B",yCtr)
 	
 //	VC_Detector_2Q(det_B,qTot_B,qx_B,qy_B,qz_B,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	// this will always do the linear calculation, since the real-space distance waves do not exist

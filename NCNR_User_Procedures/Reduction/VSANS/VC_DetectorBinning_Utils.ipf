@@ -264,10 +264,10 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	if(cmpstr(detStr,"B") == 0)
 		// and for the back detector "B"
 		Make/O/D/N=3 tmpCalibX,tmpCalibY
-		tmpCalibX[0] = VCALC_getPixSizeX(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibX[0] = VCALC_getPixSizeX(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
 		tmpCalibX[1] = 1
 		tmpcalibX[2] = 10000
-		tmpCalibY[0] = VCALC_getPixSizeY(detStr)*10			// pixel size in mm  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibY[0] = VCALC_getPixSizeY(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
 		tmpCalibY[1] = 1
 		tmpcalibY[2] = 10000
 	endif
@@ -276,6 +276,8 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
 	if(cmpstr(detStr,"B") == 0)
 		V_NonLinearCorrection_B("VCALC",data,tmpCalibX,tmpCalibY,detStr,destPath)
+		// beam center is in pixels, so use the old routine
+		V_ConvertBeamCtr_to_mmB("VCALC","B",destPath)
 	else
 		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
 	endif
@@ -284,7 +286,7 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	Wave/Z data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	NVAR gUseNonLinearDet = root:Packages:NIST:VSANS:VCALC:gUseNonLinearDet
 
-	if(kBCTR_CM)
+	if(kBCTR_CM && cmpstr(detStr,"B") != 0)
 		if(gUseNonLinearDet && WaveExists(data_realDistX) && WaveExists(data_realDistY))
 			// beam ctr is in cm already
 

@@ -70,12 +70,20 @@ Proc DrawVCALC_Panel()
 
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
 	PopupMenu popup_a,mode=1,popvalue="Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
+	PopupMenu popup_a,proc=VC_PresetConfigPopup
 
-	PopupMenu popup_b,pos={690,310},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
+	PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 	PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
-	
+	SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
+	SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.3
+	CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+		
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
 	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:20
+
+	ValDisplay valDisp_a,pos={50,100},size={150,15},title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+
+
 
 	// for panels (in degrees)	
 	Display/W=(476,45,757,303)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
@@ -96,8 +104,8 @@ Proc DrawVCALC_Panel()
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
-	Label left "Vertical position (mm)"
-	Label bottom "SDD (m)"	
+	Label left "Vertical position (cm)"
+	Label bottom "SDD (cm)"	
 	SetActiveSubwindow ##	
 	
 	// for top view
@@ -107,8 +115,8 @@ Proc DrawVCALC_Panel()
 	ModifyGraph marker=19
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
-	Label left "Horizontal position (mm)"
-	Label bottom "SDD (m)"	
+	Label left "Horizontal position (cm)"
+	Label bottom "SDD (cm)"	
 	SetActiveSubwindow ##	
 
 	// for panels (as 2D Q)
@@ -123,9 +131,7 @@ Proc DrawVCALC_Panel()
 	Label bottom "Qx"	
 	SetActiveSubwindow ##
 
-	SetVariable setVar_b,pos={476,314},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
-	SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.3
-	CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+
 
 	// for averaged I(Q)
 	Display/W=(842,334,1204,629)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
@@ -147,13 +153,17 @@ Proc DrawVCALC_Panel()
 	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=VC_Lambda_SetVarProc
 	PopupMenu VCALCCtrl_0c,pos={26,257},size={150,20},title="monochromator"
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector",value= root:Packages:NIST:VSANS:VCALC:gMonochromatorType
+	PopupMenu VCALCCtrl_0c,proc=VC_MonochromSelectPopup
 	PopupMenu VCALCCtrl_0d,pos={26,321},size={115,20},title="delta lambda"
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.10",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,proc=VC_DeltaLamSelectPopup
 	PopupMenu VCALCCtrl_0e,pos={291,262},size={132,20},title="source shape"
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSourceShape
+	PopupMenu VCALCCtrl_0e,proc=VC_SourceApShapeSelectPopup
 	PopupMenu VCALCCtrl_0f,pos={283,293},size={141,20},title="source aperture"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="1.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
-	
+	PopupMenu VCALCCtrl_0f,proc=VC_SourceAperDiamSelectPopup
+
 
 // tab(1) - Sample conditions, initially not visible
 	PopupMenu VCALCCtrl_1a,pos={38,270},size={142,20},title="table location",disable=1
@@ -219,6 +229,8 @@ Function Recalculate_AllDetectors()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
 
+	Print "Beam Intensity = ",beamIntensity()
+	
 	return(0)
 End
 
@@ -301,6 +313,185 @@ Function Front2DQ_Log_CheckProc(cba) : CheckBoxControl
 
 	return 0
 End
+
+
+
+	
+
+
+
+
+Function VC_SourceAperDiamSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			Print "Not filled in yet"
+			
+			// a recalculation is needed after the change
+			//Recalculate_AllDetectors()
+					
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			Print "Not filled in yet"
+
+			// a recalculation is needed after the change
+			//Recalculate_AllDetectors()
+									
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function VC_DeltaLamSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			// a recalculation is needed after the change
+			Recalculate_AllDetectors()
+									
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+// change the choices for deltaLam based on the
+// type of monochromator selected
+//
+// some cases force a change of the wavelength
+//
+// then recalculate
+Function VC_MonochromSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+			
+			strswitch(popStr)
+				case "Velocity Selector":
+					DLStr = "0.12;"
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					
+					SetVariable VCALCCtrl_0b,disable=0,noedit=0		// allow user editing again
+
+					break
+				case "Graphite":
+					DLStr = "0.01;"
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					
+					SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2		// wavelength
+					break
+				case "White Beam":
+					DLStr = "0.40;"
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+
+					SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2		//wavelength
+					break		
+				default:
+					Print "Error--No match in VC_MonochromSelectPopup"
+					return(0)
+			endswitch
+			
+
+			// a recalculation is needed after the change
+			Recalculate_AllDetectors()
+								
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function VC_PresetConfigPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+		
+			strswitch(popStr)
+				case "Low Q":
+					
+					break
+				case "High Q":
+					
+					break
+				case "White Beam":
+					
+					break	
+				case "Narrow Slit":
+					
+					break
+				case "Front+Middle Only":
+					VC_FrontMiddlePreset()
+					
+					break
+				case "Converging Pinholes":
+					
+					break
+				case "Polarizer":
+					
+					break
+					
+				default:
+					Print "Error--No match in VC_PresetConfigPopup"
+					return(0)
+			endswitch
+			
+			// update the views
+			VC_UpdateViews()
+			
+			// a recalculation is needed after the change
+			Recalculate_AllDetectors()
+			
+									
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
 
 //
 // recalculate the detectors with a preset model function
@@ -651,11 +842,17 @@ Function VC_MDet_LR_SetVarProc(sva) : SetVariableControl
 	return 0
 End
 
+// call to update the views (not the q-calculation, that is a separate call)
+Function VC_UpdateViews()
 
+	UpdateSideView()
+	UpdateTopView()
+	FrontView_1x()
+	
+	return(0)
+End
 
-
-// this all needs to be fixed and updated - it is all pertinent to SANS (SASCALC)
-// and not yet specific to VSANS
+// this all needs to be fixed and updated - not yet specific to VSANS
 //
 // -- all of the simulation stuff will need to be re-thought
 // -- all of the integersRead, data, etc. will need to be re-thought...
@@ -805,7 +1002,7 @@ Proc VC_Initialize_Space()
 	Variable/G gBack_w = 22.2				//w and h for the back detector [cm]
 	Variable/G gBack_h = 50.4
 	
-	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of cm here)
+	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of [cm] here)
 	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
 
 
@@ -814,7 +1011,7 @@ Proc VC_Initialize_Space()
 	
 
 // pixel beam center - HDF style
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels
+	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels +0.1 so I know it's from here
 	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
 
 
@@ -880,9 +1077,9 @@ Proc VC_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Converging Pinholes;Narrow Slit Aperture;White Beam;Polarizer;"
+	String/G gPresetPopStr = "Low Q;High Q;Front+Middle Only;Converging Pinholes;Narrow Slit;White Beam;Polarizer;"
 	String/G gBinTypeStr = ksBinTypeStr
-
+	Variable/G gBeamIntensity= 0
 
 
 
@@ -892,7 +1089,7 @@ Proc VC_Initialize_Space()
 	String/G gSourceShape = "circular;rectangular;converging pinholes;"
 	String/G gSourceDiam = "1.0 cm;2.0 cm;5.0 cm;"
 	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-	String/G gDeltaLambda = "0.10;0.20;0.30;"
+	String/G gDeltaLambda = "0.01;0.10;0.20;0.30;0.40;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"

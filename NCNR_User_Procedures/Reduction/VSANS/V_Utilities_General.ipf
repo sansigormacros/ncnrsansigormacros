@@ -1522,3 +1522,40 @@ Function V_RemoveNaNsQIS(theXWave, theYWave, theZWave)
 End
 
 
+//
+////// utilities for the back detector to diagnose saturation issues
+//
+
+Proc Vm_NumberSaturated(folderStr)
+	String folderStr="RAW"
+	V_NumberSaturated(folderStr)
+End
+
+Function V_NumberSaturated(folderStr)
+	String folderStr
+	
+	Variable num,saturationValue
+	Duplicate/O $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_B:data") tmpData
+	
+	saturationValue = 16383
+	
+	tmpData = (tmpData == saturationValue) ? NaN : tmpData
+	WaveStats/Q tmpData
+	num = V_numNaNs
+	
+	Printf "Number of saturated pixels = %d (%g %)\r",num,num/(680*1656)*100
+	KillWaves/Z tmpData
+	
+	V_ColorizeSaturated()
+	return(num)
+end
+
+// turns the saturated values to lime green
+Function V_ColorizeSaturated()
+	ModifyImage data ctab= {0,16382,ColdWarm,0},minRGB=0,maxRGB=(32792,65535,1)
+End
+
+
+
+///
+

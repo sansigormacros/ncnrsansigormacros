@@ -37,8 +37,6 @@
 // -- when/if I want to add phi-averaging to this, go gack to AvgGraphics.ipf for the pink panel
 //    and to the function Draw_Plot1D() for the drawing of the plot
 //
-// If -9999 is passed in as the "binType", then read the proper value from the popup on the graph.
-//  otherwise, assume that a proper value has been passed in, say from the reduction protocol
 //
 Function V_PlotData_Panel()
 //	Variable binType

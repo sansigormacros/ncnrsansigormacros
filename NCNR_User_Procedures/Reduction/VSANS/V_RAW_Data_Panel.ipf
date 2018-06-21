@@ -176,6 +176,9 @@ Window VSANS_DataPanel() : Panel
 	Button button_isolate,pos={606,114},size={70,20},proc=V_IsolateButtonProc,title="Isolate"
 	Button button_toWork,pos={770,146},size={90,20},proc=V_ToWorkFileButtonProc,title="to WORK"
 	Button button_annular,pos={770,114},size={90,20},proc=V_annularAvgButtonProc,title="Annular Avg"
+	Button button_SpreadPanels,pos={880,114},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
+	Button button_RestorePanels,pos={880,146},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
+
 
 	TitleBox title_file,pos={606,178},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
 	TitleBox title_dataPresent,pos={606,210},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
@@ -183,13 +186,10 @@ Window VSANS_DataPanel() : Panel
 	
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
-	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
-	Button button_BeamCtr,pos={603,566},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
-	Button button_SpreadPanels,pos={603,488},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
-	Button button_RestorePanels,pos={603,526},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
-
-	Button pick_trim,pos={603,450},size={120,20},proc=V_TrimDataProtoButton,title="Trim I(Q) Data"
-	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
+//	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
+//	Button button_BeamCtr,pos={603,566},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
+//	Button pick_trim,pos={603,450},size={120,20},proc=V_TrimDataProtoButton,title="Trim I(Q) Data"
+//	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
 	
 
 // on the tabs, always visible
@@ -1080,9 +1080,10 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 // this is the same as clicking the I(q) button. Ensures that the current file has been averaged, 
 // and the data being saved is not "stale"
 
-			V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
+			V_PlotData_Panel()		//
 			Variable binType = V_GetBinningPopMode()
-			V_BinningModePopup("",binType,"")		// does default circular binning and updates the graph
+			ControlInfo/W=V_1D_Data popup0
+			V_BinningModePopup("",binType,S_Value)		// does default circular binning and updates the graph
 	
 			SVAR type = root:Packages:NIST:VSANS:Globals:gCurDispType		//what folder
 

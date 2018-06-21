@@ -18,26 +18,27 @@ Menu "VSANS"
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
 	"-"
-	Submenu "In Progress Panels"
-		"Beam Center Panel",V_FindBeamCenter()
+	Submenu "Data Panels"
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
 		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 		"-"
 		"Annular Binning",Annular_Binning()
 		"Write Annular Data",V_Write1DAnnular()
+		"Trim I(q) points",V_CombineDataGraph()
 		"-"
 		"Derive Beam Centers",V_DeriveBeamCenters()
-	End
-
-	SubMenu "Nexus File Corrections"
-		"Flip Lateral Offset",V_PatchDet_Offset()
-		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
-		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
 		"-"
+		"Back Detector Saturation",Vm_NumberSaturated()
+	End
+	SubMenu "Nexus File Corrections"
 		"Patch GroupID using CatTable",V_Patch_GroupID_catTable()
 		"Patch Purpose using CatTable",V_Patch_Purpose_catTable()
 		"Patch Intent using CatTable",V_Patch_Intent_catTable()
+		"-"
+		"Flip Lateral Offset",V_PatchDet_Offset()
+		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
+		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
 		"Patch Detector Panel Gap",V_PatchDet_Gap()
 		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
@@ -47,18 +48,21 @@ Menu "VSANS"
 	SubMenu "File Tests"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
 		"-"
-		"Setup_VSANS_DIV_Struct"
-		"Save_VSANS_DIV_Nexus"
-		"Setup_VSANS_MASK_Struct"
-		"Save_VSANS_MASK_Nexus"
-		"-"
 		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
 		"Write_Nexus with attributes",Write_Nexus_Xref()				//this will write out with attributes if read in by Read_Nexus_Xref
 		"-"
-		"Dump_V_getFP"
-		"Dump_V_getFP_Det"
-		"Dump_V_getSTR"
-		"Dump_V_getSTR_Det"
+		"Beam Center Panel",V_FindBeamCenter()
+		"Save I(Q) as ITX",Vm_Write1DData_ITX()
+		//
+//		"Setup_VSANS_DIV_Struct"
+//		"Save_VSANS_DIV_Nexus"
+//		"Setup_VSANS_MASK_Struct"
+//		"Save_VSANS_MASK_Nexus"
+//		"-"
+//		"Dump_V_getFP"
+//		"Dump_V_getFP_Det"
+//		"Dump_V_getSTR"
+//		"Dump_V_getSTR_Det"
 //		"Fill_Nexus_V_Template"
 //		"Save_Nexus_V_Template"
 //		"Load_Nexus_V_Template"
@@ -68,13 +72,13 @@ Menu "VSANS"
 //		"IgorOnly_Setup_SANS_Struct"
 //		"IgorOnly_Save_SANS_Struct"
 	End
-	Submenu "Work File Operations"
-		"Convert to WORK",V_Convert_to_Workfile()
-		"Load Fake DIV Data"
-		"DIV a work file",V_DIV_a_Workfile()
-		"Load Fake MASK Data"
-		"Correct Data",V_CorrectData()
-	End
+//	Submenu "Work File Operations"
+//		"Convert to WORK",V_Convert_to_Workfile()
+//		"Load Fake DIV Data"
+//		"DIV a work file",V_DIV_a_Workfile()
+//		"Load Fake MASK Data"
+//		"Correct Data",V_CorrectData()
+//	End
 End
 
 
