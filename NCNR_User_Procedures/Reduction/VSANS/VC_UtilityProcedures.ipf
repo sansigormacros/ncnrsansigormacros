@@ -481,7 +481,8 @@ Function VC_FrontMiddlePreset()
 	// wavelength spread
 	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	DLStr = "0.12;"
-	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:8,disable=0	,noedit=0	// allow user editing again
@@ -496,6 +497,78 @@ Function VC_FrontMiddlePreset()
 
 	return(0)
 End
+
+
+// White beam preset
+// - set monochromator (this sets lam, delLam)
+// - disregard the back detector (set as front/middle)
+//
+Function VC_WhiteBeamPreset()
+
+	VC_FrontMiddlePreset()		// moves Middle into contact (but w/ wrong lambda)
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="White Beam"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.40;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40"
+
+// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=0	,noedit=0	// allow user editing again
+	
+	return(0)
+end
+
+
+// Graphite - high resolution beam preset
+// - set monochromator (this sets lam, delLam)
+// - uses the back detector (set as front/middle)
+//
+Function VC_GraphiteMonoPreset()
+
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-8		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:08	//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:18			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-18		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1500		//SDD
+
+	// back carriage	
+	SetVariable VCALCCtrl_4b,value=_NUM:2300		//SDD
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Graphite"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.01;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=0	,noedit=0	// allow user editing again
+
+	//number of guides
+	Slider VCALCCtrl_0a,value= 0
+
+
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F4-M4-B"
+
+	return(0)
+end
+
 
 //
 //direction = one of "vertical;horizontal;maximum;"
@@ -595,7 +668,7 @@ end
 //
 // other values are changed in the initialization routines
 //
-Function beamIntensity()
+Function V_beamIntensity()
 
 	Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
 	Variable a1,a2,retVal
@@ -669,7 +742,7 @@ end
 //
 Function VC_figureOfMerit()
 
-	Variable bi = beamIntensity()
+	Variable bi = V_beamIntensity()
 	Variable lambda = VCALC_getWavelength()
 	
    return (lambda*lambda*bi)

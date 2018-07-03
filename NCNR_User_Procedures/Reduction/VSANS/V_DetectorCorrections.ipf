@@ -964,148 +964,6 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 end
 
 
-////////////
-// TODO: all of below is untested code
-//   copied from SANS
-//
-//
-// NOV 2017
-// Currently, this is not called from any VSANS routines. it is only referenced
-// from V_Add_raw_to_work(), which would add two VSANS raw data files together. This has
-// not yet been implemented. I am only keeping this function around to be sure that 
-// if/when V_Add_raw_to_work() is implemented, all of the functionality of V_DetCorr() is
-// properly duplicated.
-//
-//
-//
-//performs solid angle and non-linear detector corrections to raw data as it is "added" to a work folder
-//function is called by Raw_to_work() and Add_raw_to_work() functions
-//works on the actual data array, assumes that is is already on LINEAR scale
-//
-Function V_DetCorr(data,data_err,realsread,doEfficiency,doTrans)
-	Wave data,data_err,realsread
-	Variable doEfficiency,doTrans
-
-	DoAlert 0,"This has not yet been updated for VSANS"
-	
-	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,xx0,yy0
-	Variable ii,jj,dtdist,dtdis2
-	Variable xi,xd,yd,rad,ratio,domega,xy
-	Variable lambda,trans,trans_err,lat_err,tmp_err,lat_corr
-	
-//	Print "...doing jacobian and non-linear corrections"
-
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
-	//set up values to send to auxiliary trig functions
-	xcenter = pixelsX/2 + 0.5		// == 64.5 for 128x128 Ordela
-	ycenter = pixelsY/2 + 0.5		// == 64.5 for 128x128 Ordela
-
-	x0 = realsread[16]
-	y0 = realsread[17]
-	sx = realsread[10]
-	sx3 = realsread[11]
-	sy = realsread[13]
-	sy3 = realsread[14]
-	
-	dtdist = 1000*realsread[18]	//sdd in mm
-	dtdis2 = dtdist^2
-	
-	lambda = realsRead[26]
-	trans = RealsRead[4]
-	trans_err = RealsRead[41]		//new, March 2011
-	
-
-	//waves to contain repeated function calls
-	Make/O/N=(pixelsX) fyy,xx,yy		//Assumes square detector !!!
-	ii=0
-	do
-		xi = ii
-//		fyy[ii] = dc_fy(ii+1,sy,sy3,ycenter)
-//		xx[ii] = dc_fxn(ii+1,sx,sx3,xcenter)
-//		yy[ii] = dc_fym(ii+1,sy,sy3,ycenter)
-		ii+=1
-	while(ii<pixelsX)
-	
-	Make/O/N=(pixelsX,pixelsY) SolidAngle		// testing only
-	
-	ii=0
-	do
-		xi = ii
-//		xd = dc_fx(ii+1,sx,sx3,xcenter)-xx0
-		jj=0
-		do
-			yd = fyy[jj]-yy0
-			//rad is the distance of pixel ij from the sample
-			//domega is the ratio of the solid angle of pixel ij versus center pixel
-			// product xy = 1 for a detector with a linear spatial response (modern Ordela)
-			// solid angle calculated, dW^3 >=1, so multiply data to raise measured values to correct values.
-			rad = sqrt(dtdis2 + xd^2 + yd^2)
-			domega = rad/dtdist
-			ratio = domega^3
-			xy = xx[ii]*yy[jj]
-			
-			data[ii][jj] *= xy*ratio
-			
-			solidAngle[ii][jj] = xy*ratio		//testing only	
-			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
-			
-			
-			// correction factor for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
-			// correction inserted 11/2007 SRK
-			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
-			// so divide here to get the correct answer (5/22/08 SRK)
-			if(doEfficiency)
-//				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-//				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-//				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
-			endif
-			
-			// large angle transmission calculation is <= 1 and will "bump down" the measured value at the highest angles
-			// so divide here to get the correct answer
-			if(doTrans)
-			
-				if(trans<0.1 && ii==0 && jj==0)
-					Print "***transmission is less than 0.1*** and is a significant correction"
-				endif
-				
-				if(trans==0)
-					if(ii==0 && jj==0)
-						Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
-					endif
-					trans = 1
-				endif
-				
-				// pass in the transmission error, and the error in the correction is returned as the last parameter
-
-//				lat_corr = V_LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
-
-				data[ii][jj] /= lat_corr			//divide by the correction factor
-				//
-				//
-				//
-				// relative errors add in quadrature
-				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
-				tmp_err = sqrt(tmp_err)
-				
-				data_err[ii][jj] = tmp_err
-				
-//				solidAngle[ii][jj] = lat_err
-
-				
-				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
-			endif
-			
-			jj+=1
-		while(jj<pixelsX)
-		ii+=1
-	while(ii<pixelsX)
-	
-	//clean up waves
-	
-	Return(0)
-End
 
 
 //
@@ -1258,10 +1116,11 @@ End
 //s_ is the standard
 //w_ is the "work" file
 //both are work files and should already be normalized to 10^8 monitor counts
-Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err)
-	String type
+Function V_Absolute_Scale(type,absStr)
+	String type,absStr
+	
+	
 	Variable w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kappa_err
-
 
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
 	Variable scale,trans_err
@@ -1282,13 +1141,25 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 //	w_moncount = V_getMonitorCount(type)		//monitor count in "type"
 	
 	w_moncount = V_getBeamMonNormData(type)
-	
-	
+		
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
 		Return(1)		//report error
 	Endif
+
+	w_trans = V_getSampleTransmission(type)		//sample transmission
+	w_thick = V_getSampleThickness(type)		//sample thickness
+	trans_err = V_getSampleTransError(type)	
+	
+	
+	//get the parames from the list
+	s_trans = NumberByKey("TSTAND", absStr, "=", ";")	//parse the list of values
+	s_thick = NumberByKey("DSTAND", absStr, "=", ";")
+	s_izero = NumberByKey("IZERO", absStr, "=", ";")
+	s_cross = NumberByKey("XSECT", absStr, "=", ";")
+	kappa_err = NumberByKey("SDEV", absStr, "=", ";")
+
 	
 	//calculate scale factor
 	s1 = defmon/w_moncount		// monitor count (s1 should be 1)
@@ -1297,20 +1168,44 @@ Function V_Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,k
 	s4 = s_cross/s_izero
 	scale = s1*s2*s3*s4
 
-	trans_err = V_getSampleTransError(type)	
 	
 	// kappa comes in as s_izero, so be sure to use 1/kappa_err
 
 	// and now loop through all of the detectors
 	//do the actual absolute scaling here, modifying the data in ABS
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListAll, ";")
+	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
 		Wave data = V_getDetectorDataW("ABS",detStr)
 		Wave data_err = V_getDetectorDataErrW("ABS",detStr)
 		
 		data *= scale
 		data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
 	endfor
+
+	// do the back detector separately, if it is set to be used
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(gIgnoreDetB == 0)
+		detStr = "B"
+		Wave data = V_getDetectorDataW("ABS",detStr)
+		Wave data_err = V_getDetectorDataErrW("ABS",detStr)
+		
+		//get the parames from the list
+		s_trans = NumberByKey("TSTAND_B", absStr, "=", ";")	//parse the list of values
+		s_thick = NumberByKey("DSTAND_B", absStr, "=", ";")
+		s_izero = NumberByKey("IZERO_B", absStr, "=", ";")
+		s_cross = NumberByKey("XSECT_B", absStr, "=", ";")
+		kappa_err = NumberByKey("SDEV_B", absStr, "=", ";")
+
+		//calculate scale factor
+		s1 = defmon/w_moncount		// monitor count (s1 should be 1)
+		s2 = s_thick/w_thick
+		s3 = s_trans/w_trans
+		s4 = s_cross/s_izero
+		scale = s1*s2*s3*s4
+		
+		data *= scale
+		data_err = sqrt(scale^2*data_err^2 + scale^2*data^2*(kappa_err^2/s_izero^2 +trans_err^2/w_trans^2))
+	endif
 	
 	//********* 15APR02
 	// DO NOT correct for atenuators here - the COR step already does this, putting all of the data on equal
@@ -1475,3 +1370,47 @@ End
 
 
 //////////////////////////
+// detector corrections to stitch the back detector into one proper image
+//
+//
+//
+
+
+//
+// to register the image on the back detector panel
+//
+// middle portion (552 pix in Y) is held fixed
+// top portion of image is shifted right and down
+// bottom portion of image is shifted right and up
+//
+// remainder of image is filled with Zero (NaN causes problems converting to WORK)
+//
+// currently, data is not added together and averaged, but it could be
+//
+Function V_ShiftBackDetImage(w,adjW)
+	Wave w,adjW
+	
+	adjW=0
+	
+	Variable topX,bottomX
+	Variable topY,bottomY
+	
+	topX = 7
+	topY = 105
+	
+	bottomX = 7
+	bottomY = 35
+	
+	// middle
+	adjW[][552,552+552] = w[p][q]
+
+	//top
+	adjW[0+topX,679][552+552,1655-topY] = w[p-topX][q+topY]
+	
+	//bottom
+	adjW[0+bottomX,679][0+bottomY,551] = w[p-bottomX][q-bottomY]
+	
+	return(0)
+End
+
+

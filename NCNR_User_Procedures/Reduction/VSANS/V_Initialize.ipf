@@ -350,6 +350,7 @@ Function V_InitFakeProtocols()
 	
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr=""
 	
 	Return(0)
 End

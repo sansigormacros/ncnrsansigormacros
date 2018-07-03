@@ -178,12 +178,12 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	ntube = DimSize(inten,0)
 	nYpix = DimSize(inten,1)
 	
-	for(ii=0;ii<ntube;ii+=1)
+	for(ii=0;ii<ntube;ii+=1)		//for each tube...
 		sum_inten = 0			// initialize the sum
 		sum_n = 0
 		sum_inten2 = 0
 		
-		for(jj=0;jj<nYpix;jj+=1)
+		for(jj=0;jj<nYpix;jj+=1)			//sum along y...
 				val = inten[ii][jj]
 				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
 					mask_val = 0
@@ -198,10 +198,7 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 		endfor
 		iBin_qxqy[ii] = sum_inten/sum_n		//the average value
 		
-//		if(numtype(iBin_qxqy[ii]) == 2)
-//			print "asdfasdf"
-//		endif
-		
+
 		avesq = (sum_inten/sum_n)^2
 		aveisq = sum_inten2/sum_n
 		var = aveisq-avesq
@@ -213,18 +210,79 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 
 	endfor
 
-//TODO:  use only the Qx component in the y-center of the detector, not Qtotal
+// x- use only the Qx component in the y-center of the detector, not Qtotal
 // if the detectors are "L", then the values are all negative, so take the absolute value here
 	qBin_qxqy =  abs(qx[p][nYpix/2])		
+
 
 // for the L panels, sort the q-values (and data) after the abs() step, otherwise the data is reversed
 // won't hurt to sort the R panel data
 	Sort qBin_qxqy, qBin_qxqy,iBin_qxqy,eBin_qxqy
 
+// average and get rid of the duplicate q-values from the L and R sides
+	Variable q1,q2,tol
+	tol = 0.001 		// 0.1 %
+	q1 = qBin_qxqy[0]
+	ii=0
+	do
+		q2 = qBin_qxqy[ii+1]
+		if(V_CloseEnough(q1,q2,q1*tol))
+			// check to be sure that both values are actually real numbers before trying to average
+			if(numtype(iBin_qxqy[ii])==0 && numtype(iBin_qxqy[ii+1])==0)		//==0 => real number
+				iBin_qxqy[ii] = (iBin_qxqy[ii] + iBin_qxqy[ii+1])/2		//both OK
+			endif
+			if(numtype(iBin_qxqy[ii])==0 && numtype(iBin_qxqy[ii+1])!=0)		//==0 => real number
+				iBin_qxqy[ii] = iBin_qxqy[ii]		//one OK
+			endif
+			if(numtype(iBin_qxqy[ii])!=0 && numtype(iBin_qxqy[ii+1])==0)		//==0 => real number
+				iBin_qxqy[ii] = iBin_qxqy[ii+1]		//other OK
+			endif
+			if(numtype(iBin_qxqy[ii])!=0 && numtype(iBin_qxqy[ii+1])!=0)		//==0 => real number
+				iBin_qxqy[ii] = (iBin_qxqy[ii])		// both NaN, get rid of it later
+			endif
+		
+			if(numtype(eBin_qxqy[ii])==0 && numtype(eBin_qxqy[ii+1])==0)		//==0 => real number
+				eBin_qxqy[ii] = sqrt(eBin_qxqy[ii]^2 + eBin_qxqy[ii+1]^2)		//both OK
+			endif
+			if(numtype(eBin_qxqy[ii])==0 && numtype(eBin_qxqy[ii+1])!=0)		//==0 => real number
+				eBin_qxqy[ii] = eBin_qxqy[ii]		//one OK
+			endif
+			if(numtype(eBin_qxqy[ii])!=0 && numtype(eBin_qxqy[ii+1])==0)		//==0 => real number
+				eBin_qxqy[ii] = eBin_qxqy[ii+1]		//other OK
+			endif
+			if(numtype(eBin_qxqy[ii])!=0 && numtype(eBin_qxqy[ii+1])!=0)		//==0 => real number
+				eBin_qxqy[ii] = (eBin_qxqy[ii])		// both NaN, get rid of it later
+			endif
+			
+			DeletePoints ii+1, 1, qBin_qxqy,iBin_qxqy,eBin_qxqy,iBin2_qxqy,nBin_qxqy,eBin2D_qxqy
+		else
+			ii+=1
+			q1 = q2
+		endif
+	while(ii<numpnts(qBin_qxqy)-2)
 
 	// TODO: do I use dQ for the height of the panel?
-	// TODO : do I use 1/2 of dQ due to the symmetry of my smearing calculation?	
-	delQy = abs(qy[0][nYpix-1] - qy[0][0])
+	// TODO : do I use 1/2 of dQ due to the symmetry of my smearing calculation?
+
+// TODO: use only dQy for the portion of the detector that was not masked!
+	
+	ii = trunc(ntube/4)		//random tube number
+	
+	Make/O/D/N=(nYpix) tmpTube,tmpMaskTube
+	tmpTube = qy[ii][p]
+	tmpMaskTube = mask[ii][p]
+	
+	// along the tube, keep the value, or set to NaN if masked
+	tmpTube = tmpMaskTube == 0 ? tmpTube : NaN
+	WaveStats/Q tmpTube
+//	Print V_max
+//	Print V_min
+	
+	delQy = abs(V_max - V_min)
+//print delQy
+	
+	// not quite correct - this uses the whole detector height, but there is some masked out
+//	delQy = abs(qy[0][nYpix-1] - qy[0][0])
 
 //	iBin_qxqy *= delQy
 //	eBin_qxqy *= delQy

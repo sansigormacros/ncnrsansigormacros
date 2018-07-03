@@ -229,7 +229,7 @@ Function Recalculate_AllDetectors()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
 
-	Print "Beam Intensity = ",beamIntensity()
+	V_beamIntensity()
 	
 	return(0)
 End
@@ -401,20 +401,23 @@ Function VC_MonochromSelectPopup(pa) : PopupMenuControl
 			strswitch(popStr)
 				case "Velocity Selector":
 					DLStr = "0.12;"
-					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+//					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 					
 					SetVariable VCALCCtrl_0b,disable=0,noedit=0		// allow user editing again
 
 					break
 				case "Graphite":
 					DLStr = "0.01;"
-					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+//					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01"
 					
 					SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2		// wavelength
 					break
 				case "White Beam":
 					DLStr = "0.40;"
-					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+//					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40"
 
 					SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2		//wavelength
 					break		
@@ -444,6 +447,7 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
+			String BinStr = "F2-M2xTB-B"
 		
 			strswitch(popStr)
 				case "Low Q":
@@ -453,14 +457,19 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 					
 					break
 				case "White Beam":
-					
+					VC_WhiteBeamPreset()
+					binStr = "F4-M4-B"
 					break	
+				case "Graphite":
+					VC_GraphiteMonoPreset()
+					binStr = "F4-M4-B"
+					break
 				case "Narrow Slit":
 					
 					break
 				case "Front+Middle Only":
 					VC_FrontMiddlePreset()
-					
+					binStr = "F2-M2xTB-B"
 					break
 				case "Converging Pinholes":
 					
@@ -480,7 +489,9 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 			// a recalculation is needed after the change
 			Recalculate_AllDetectors()
 			
-									
+			// re-bin the data?
+			VC_RebinIQ_PopProc("",0,binStr)
+					
 			break
 		case -1: // control being killed
 			break
@@ -1077,7 +1088,7 @@ Proc VC_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Front+Middle Only;Converging Pinholes;Narrow Slit;White Beam;Polarizer;"
+	String/G gPresetPopStr = "Low Q;High Q;Front+Middle Only;Converging Pinholes;Narrow Slit;White Beam;Graphite;Polarizer;"
 	String/G gBinTypeStr = ksBinTypeStr
 	Variable/G gBeamIntensity= 0
 

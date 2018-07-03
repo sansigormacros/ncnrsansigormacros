@@ -524,7 +524,7 @@ Function V_MakeProtocolFromPanel(w)
 	w[8] = gEndPtsStr
 	
 	//w[9]
-	//currently unused
+	//collimation type (filled in at averaging?)
 	w[9] = ""
 	//w[10]
 	//currently unused
@@ -793,45 +793,50 @@ End
 Function/S V_GetDIVList()
 
 	String list="",item="",fname,newList,intent
-	Variable ii,num
+	Variable ii,num,val
 	
 	PathInfo catPathName
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
-	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
-	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
-	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
-	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
-	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
-	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
+//	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
+//	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
+//	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+//	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
+//	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
+//	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
 
 	num=ItemsInList(newList)
 	
-//	for(ii=0;ii<num;ii+=1)
-//		item=StringFromList(ii, newList , ";")
-//		fname = path + item
-//		intent = V_getReduction_intent(fname)
-//		if(cmpstr(intent,"SENSITIVITY") == 0)
-//			list += item + ";"
-//		endif
-//
-//	endfor
+// keep only DIV files in the list
+	num=ItemsInList(newList)
 
-	String match="DIV"
+	String matchStr="*_DIV_*"		// this is part of the title of a VSANS _DIV_ file
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii, newList , ";")
-		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
-//		Grep/P=catPathName/Q/E=("(?i)"+match) item
-		if( V_value )	// at least one instance was found
-//				Print "found ", item,ii
-//			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+		val = stringmatch(item,matchStr)
+		if( val )	// true if the string did match
 				list += item + ";"
-//			endif
 		endif
+
 	endfor
-		
+
 	List = SortList(List,";",0)
+
+//
+//	String match="DIV"
+//	for(ii=0;ii<num;ii+=1)
+//		item=StringFromList(ii, newList , ";")
+//		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
+////		Grep/P=catPathName/Q/E=("(?i)"+match) item
+//		if( V_value )	// at least one instance was found
+////				Print "found ", item,ii
+////			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+//				list += item + ";"
+////			endif
+//		endif
+//	endfor
+//		
 
 	return(list)
 end
@@ -840,46 +845,55 @@ end
 Function/S V_GetMSKList()
 
 	String list="",item="",fname,newList,intent
-	Variable ii,num
+	Variable ii,num,val
 	
 	PathInfo catPathName
 	String path = S_path
 	
 	newList = V_Get_NotRawDataFileList()
-	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
-	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
-	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
-	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
-	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
-	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
-	
-	num=ItemsInList(newList)
-	
-//	for(ii=0;ii<num;ii+=1)
-//		item=StringFromList(ii, newList , ";")
-//		fname = path + item
-//		intent = V_getReduction_intent(fname)
-//		if(cmpstr(intent,"SENSITIVITY") == 0)
-//			list += item + ";"
-//		endif
-//
-//	endfor
+//	newList = V_RemoveEXTFromList(newlist,"hst")		// remove the event files
+//	newList = V_RemoveEXTFromList(newlist,"ave")		// remove the ave files
+//	newList = V_RemoveEXTFromList(newlist,"abs")		// remove the abs files
+//	newList = V_RemoveEXTFromList(newlist,"phi")		// remove the phi files
+//	newList = V_RemoveEXTFromList(newlist,"pxp")		// remove the pxp files
+//	newList = V_RemoveEXTFromList(newlist,"png")		// remove the png files
+//	newList = V_RemoveEXTFromList(newlist,"jpg")		// remove the jpg files
+//	newList = V_RemoveEXTFromList(newlist,"DS_Store")		// remove the DS_Store file (OSX only)
 
-//	String match="MASK"		// this is part of the title of a VSANS MASK file
-	String match="VSANS_MASK"		// this is part of the title of a VSANS MASK file
+// keep only MASK files in the list
+	num=ItemsInList(newList)
+
+	String matchStr="*_MASK_*"		// this is part of the title of a VSANS _MASK_ file
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii, newList , ";")
-		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
-//		Grep/P=catPathName/Q/E=("(?i)"+match) item
-		if( V_value )	// at least one instance was found
-//				Print "found ", item,ii
-//			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+		val = stringmatch(item,matchStr)
+		if( val )	// true if the string did match
 				list += item + ";"
-//			endif
 		endif
 
 	endfor
 		
+	List = SortList(List,";",0)
+	
+
+//
+////	String match="MASK"		// this is part of the title of a VSANS MASK file
+//	String match="VSANS_MASK"		// this is part of the title of a VSANS MASK file
+//	for(ii=0;ii<num;ii+=1)
+//		item=StringFromList(ii, newList , ";")
+//		Grep/P=catPathName/Q/E=("(?i)\\b"+match+"\\b") item
+////		Grep/P=catPathName/Q/E=("(?i)"+match) item
+//		if( V_value )	// at least one instance was found
+////				Print "found ", item,ii
+////			if(strsearch(item,"pxp",0,2) == -1)		//does NOT contain .pxp (the current experiment will be a match)
+//				list += item + ";"
+////			endif
+//		endif
+//
+//	endfor
+//		
+
+
 	List = SortList(List,";",0)
 
 	return(list)
@@ -1002,9 +1016,11 @@ Function V_SetABSParamsButton(ctrlName) : ButtonControl
 	String ctrlName
 
 	//will prompt for a list of ABS parameters (4) through a global string variable
-	
-	Execute "V_AskForAbsoluteParams_Quest()"
-	
+	if(cmpstr(ctrlName,"pick_ABS_B") == 0)
+		Execute "V_AskForAbsoluteParams_Quest(1)"
+	else
+		Execute "V_AskForAbsoluteParams_Quest(0)"
+	endif
 End
 
 
@@ -1077,8 +1093,11 @@ Window V_ProtocolPanel()
 //	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
 //	Button pick_DIV,pos={214,173},size={70,20},proc=V_PickDIVButton,title="set DIV"
 //	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button pick_ABS,pos={264,308},size={70,20},proc=V_SetABSParamsButton,title="set ABS"
+	Button pick_ABS,pos={264,308},size={80,20},proc=V_SetABSParamsButton,title="set ABS MF"
 	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}	
+	
+	Button pick_ABS_B,pos={264,330},size={80,20},proc=V_SetABSParamsButton,title="set ABS B"
+	Button pick_ABS_B,help={"This button will prompt the user for absolute scaling parameters"}	
 //	Button pick_MASK,pos={214,266},size={70,20},proc=V_PickMASKButton,title="set MASK"
 //	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
 
@@ -2265,22 +2284,34 @@ End
 //from the user
 //values are passed back as a global string variable (keyword=value)
 //
-Proc V_AskForAbsoluteParams(c2,c3,c4,c5,I_err)
+Proc V_AskForAbsoluteParams(c2,c3,c4,c5,I_err,back_values)
 	Variable c2=1,c3=1,c4=1e8,c5=1,I_err=1
+	String back_values="no"
 	Prompt c2, "Standard Transmission"
 	Prompt c3, "Standard Thickness (cm)"
 	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"
 	Prompt c5, "Standard Cross-Section (cm-1)"
 	Prompt I_err, "error in I(q=0) (one std dev)"
+	prompt back_values, "are these values for the back detector (yes/no)?"
 	
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr=""
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
 	
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr = "TSTAND="+num2str(c2)
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "DSTAND="+num2str(c3)
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "IZERO="+num2str(c4)
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "XSECT="+num2str(c5)
-	root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr +=  ";" + "SDEV="+num2str(I_err)
+	if(cmpstr(back_values,"no")==0)
+		gAbsStr = ReplaceStringByKey("TSTAND",gAbsStr,num2str(c2),"=",";")
+		gAbsStr = ReplaceStringByKey("DSTAND",gAbsStr,num2str(c3),"=",";")
+		gAbsStr = ReplaceStringByKey("IZERO",gAbsStr,num2str(c4),"=",";")
+		gAbsStr = ReplaceStringByKey("XSECT",gAbsStr,num2str(c5),"=",";")
+		gAbsStr = ReplaceStringByKey("SDEV",gAbsStr,num2str(I_err),"=",";")
+	else
+		gAbsStr = ReplaceStringByKey("TSTAND_B",gAbsStr,num2str(c2),"=",";")
+		gAbsStr = ReplaceStringByKey("DSTAND_B",gAbsStr,num2str(c3),"=",";")
+		gAbsStr = ReplaceStringByKey("IZERO_B",gAbsStr,num2str(c4),"=",";")
+		gAbsStr = ReplaceStringByKey("XSECT_B",gAbsStr,num2str(c5),"=",";")
+		gAbsStr = ReplaceStringByKey("SDEV_B",gAbsStr,num2str(I_err),"=",";")
+	endif
 	
+
+	SetDataFolder root:
 End
 
 
@@ -2295,7 +2326,13 @@ End
 //if an empty beam file is selected, the "kappa" value is automatically calculated
 //in either case, the global keyword=value string is set.
 //
-Function V_AskForAbsoluteParams_Quest()	
+//
+// if isBack == 1, then the values are for the back panel
+// AND there are different steps that must be done to subtract off
+//  the read noise of the CCDs
+//
+Function V_AskForAbsoluteParams_Quest(isBack)	
+	Variable isBack
 	
 	Variable err,loc,refnum
 	
@@ -2373,9 +2410,7 @@ Function V_AskForAbsoluteParams_Quest()
 		gDoSolidAngleCor = 1
 		
 		V_LoadAndPlotRAW_wName(emptyFileName)
-		// convert raw->SAM
-//		V_Raw_to_work("SAM")
-//		V_UpdateDisplayInformation("SAM")	
+
 		V_UpdateDisplayInformation("RAW")	
 		
 		// do the DIV correction
@@ -2403,10 +2438,29 @@ Function V_AskForAbsoluteParams_Quest()
 		// x- the detector string is currently hard-wired
 //		detStr = "MR"
 
+
 		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"RAW",detPanel_toSum)
 
 		Print "empty counts = ",emptyCts
 		Print "empty err/counts = ",empty_ct_err/emptyCts
+
+		// if it's the back panel, find the read noise to subtract
+		// shift the marquee to the right to (hopefully) a blank spot
+		Variable noiseCts,noiseCtsErr,delta
+		if(isBack)
+			delta = xyBoxW[1] - xyBoxW[0]
+			noiseCts = V_SumCountsInBox(xyBoxW[1],xyBoxW[1]+delta,xyBoxW[2],xyBoxW[3],noiseCtsErr,"RAW",detPanel_toSum)
+
+			print "average read noise per pixel = ",noiseCts/(xyBoxW[1]-xyBoxW[0])/(xyBoxW[3]-xyBoxW[2])
+			Print "read noise counts = ",noiseCts
+			Print "read noise err/counts = ",noiseCtsErr/noiseCts
+			
+			emptyCts -= noiseCts
+			empty_ct_err = sqrt(empty_ct_err^2 + noiseCtsErr^2)
+			
+			Print "adjusted empty counts = ",emptyCts
+			Print "adjusted err/counts = ",empty_ct_err/emptyCts
+		endif
 
 //
 		// x- get all of the proper values for the calculation
@@ -2445,8 +2499,16 @@ Function V_AskForAbsoluteParams_Quest()
 		// x- set the parameters in the global string
 		junkStr = num2str(kappa)
 		errStr = num2Str(kappa_err)
-		Execute "V_AskForAbsoluteParams(1,1,"+junkStr+",1,"+errStr+")"		//no missing parameters, no dialog
 		
+		String strToExecute=""
+		
+		if(isBack)
+			sprintf strToExecute, "V_AskForAbsoluteParams(1,1,%g,1,%g,\"%s\")",kappa,kappa_err,"yes"	//no missing parameters, no dialog
+		else
+			sprintf strToExecute, "V_AskForAbsoluteParams(1,1,%g,1,%g,\"%s\")",kappa,kappa_err,"no"	//no missing parameters, no dialog
+		endif
+//		print strToExecute
+		Execute strToExecute
 
 		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	
@@ -2860,19 +2922,18 @@ Function V_Proto_ABS_Scale(absStr,activeType)
 	
 	Variable c2,c3,c4,c5,kappa_err,err
 	//do absolute scaling if desired
-//		DoAlert 0,"Abs step incomplete"
 
 	if(cmpstr("none",absStr)!=0)
 		if(cmpstr("ask",absStr)==0)
-			//get the params from the user
-			Execute "V_AskForAbsoluteParams_Quest()"
-			//then from the list
-			SVAR junkAbsStr = root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-			c2 = NumberByKey("TSTAND", junkAbsStr, "=", ";")	//parse the list of values
-			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
-			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
-			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
-			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
+//			//get the params from the user
+//			Execute "V_AskForAbsoluteParams_Quest()"
+//			//then from the list
+//			SVAR junkAbsStr = root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
+//			c2 = NumberByKey("TSTAND", junkAbsStr, "=", ";")	//parse the list of values
+//			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
+//			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
+//			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
+//			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
 		else
 			//get the parames from the list
 			c2 = NumberByKey("TSTAND", absStr, "=", ";")	//parse the list of values
@@ -2882,10 +2943,10 @@ Function V_Proto_ABS_Scale(absStr,activeType)
 			kappa_err = NumberByKey("SDEV", absStr, "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
-		Variable c0 = V_getSampleTransmission(activeType)		//sample transmission
-		Variable c1 = V_getSampleThickness(activeType)		//sample thickness
+//		Variable c0 = V_getSampleTransmission(activeType)		//sample transmission
+//		Variable c1 = V_getSampleThickness(activeType)		//sample thickness
 		
-		err = V_Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
+		err = V_Absolute_Scale(activeType,absStr)
 		if(err)
 			return(err)
 			SetDataFolder root:

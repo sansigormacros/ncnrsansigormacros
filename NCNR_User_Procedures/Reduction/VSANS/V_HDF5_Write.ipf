@@ -217,6 +217,25 @@ Function V_writeCollectionTime(fname,val)
 	return(err)
 End
 
+// fname is a local WORK folder
+Function V_putCollectionTime(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:collection_time"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 // data directory where data files are stored (for user access, not archive)
 Function V_writeData_directory(fname,str)
 	String fname,str
@@ -747,6 +766,24 @@ Function V_writeDetector_counts(fname,val)
 	return(err)
 end
 
+// fname is a local WORK folder
+Function V_putDetector_counts(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:control:detector_counts"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 Function V_writeDetector_preset(fname,val)
 	String fname
@@ -851,6 +888,25 @@ Function V_writeControlMonitorCount(fname,val)
 //	endif
 	return(err)
 end
+
+// fname is a local WORK folder
+Function V_putControlMonitorCount(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:control:monitor_counts"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 //integer value
 Function V_writeControlMonitor_preset(fname,val)
@@ -3235,6 +3291,26 @@ Function V_writeBeamMonNormSaved_count(fname,val)
 	return(err)
 End
 
+// fname is a local WORK folder
+Function V_putBeamMonNormSaved_count(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:instrument:beam_monitor_norm:saved_count"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
+
 Function V_writeBeamMonNormType(fname,str)
 	String fname,str
 
@@ -4366,6 +4442,25 @@ Function V_writeDet_IntegratedCount(fname,detStr,val)
 //		Print "DataFolder kill err = ",err
 //	endif
 	return(err)
+End
+
+// fname is a local WORK folder
+Function V_putDet_IntegratedCount(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:instrument:detector_"+detStr+":integrated_count"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
 End
 
 // this is only written for B and L/R detectors

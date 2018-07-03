@@ -94,12 +94,16 @@ Function fPlotFrontPanels()
 	VC_SetShadow_TopBottom("VCALC","FB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	BinAllFrontPanels()
-
+//	BinAllFrontPanels()
+	String popStr
+	String collimationStr = "pinhole"
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 
 	// plot the results
 	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+	String str,winStr="VCALC#Panels_IQ",workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+type
 
 	ControlInfo/W=VCALC popup_b
@@ -626,11 +630,16 @@ Function fPlotMiddlePanels()
 	VC_SetShadow_TopBottom("VCALC","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	BinAllMiddlePanels()
+//	BinAllMiddlePanels()
+	String popStr
+	String collimationStr = "pinhole"
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 
 	// plot the results
 	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+	String str,winStr="VCALC#Panels_IQ",workTypeStr
 	workTypeStr = "root:Packages:NIST:VSANS:"+type
 
 	ControlInfo/W=VCALC popup_b

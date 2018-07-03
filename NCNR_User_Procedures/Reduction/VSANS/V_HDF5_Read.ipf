@@ -1498,6 +1498,31 @@ Function/WAVE V_getDetectorDataW(fname,detStr)
 	return w
 End
 
+// NOTE - this is not part of the file as written
+// it is generated when the RAW data is loaded (when the error wave is generated)
+Function/WAVE V_getDetectorLinearDataW(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":linear_data"
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+//
+// TODO -- this does not exist in the raw data, but does in the processed data
+// !!! how to handle this?? Binning routines need the error wave
+//
+Function/WAVE V_getDetectorLinearDataErrW(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":linear_data_error"
+	WAVE w = V_getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+
 //
 // TODO -- this does not exist in the raw data, but does in the processed data
 // !!! how to handle this?? Binning routines need the error wave
@@ -1505,7 +1530,7 @@ End
 Function/WAVE V_getDetectorDataErrW(fname,detStr)
 	String fname,detStr
 
-	String path = "entry:instrument:detector_"+detStr+":linear_data_error"
+	String path = "entry:instrument:detector_"+detStr+":data_error"
 	WAVE w = V_getRealWaveFromHDF5(fname,path)
 
 	return w

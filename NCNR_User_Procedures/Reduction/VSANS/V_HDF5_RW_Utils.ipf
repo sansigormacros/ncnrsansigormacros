@@ -77,6 +77,26 @@ Function V_LoadHDF5Data(file,folder)
 	//
 	string tmpStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:" 
 
+// if the data is DIV, then handle the data errors differently since they are already part of the data file
+// root:Packages:NIST:VSANS:DIV:entry:instrument:detector_B:
+	if(cmpstr(folder,"DIV")==0)
+		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above 
+		tmpStr = "root:Packages:NIST:VSANS:DIV:entry:instrument:"
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			SetDataFolder $(tmpStr+"detector_"+detStr)
+			//V_MakeDataError(tmpStr+"detector_"+detStr)	
+			Wave data=data
+			Duplicate/O data $(tmpStr+"detector_"+detStr+":linear_data")
+			Wave linear_data_error=linear_data_error
+			Duplicate/O linear_data_error $(tmpStr+"detector_"+detStr+":data_error")
+			SetDataFolder root:
+		endfor
+	endif
+
+
+
+
 	if(cmpstr(folder,"RAW")==0)
 	
 		// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
@@ -199,7 +219,25 @@ Function V_LoadHDF5Data(file,folder)
 			Print "Non-linear correction not done"
 		endif
 					
-					
+
+// shift the detector image on the back detector to get the three CCD images to match up 
+// in real space. the distance matrices x and y still apply. be sure to mask out the chunks
+// that were lost in the shift
+
+		// the data wave is altered
+		// the linear_data wave is not altered
+				
+		Wave adjW = V_getDetectorDataW(folder,"B")
+		Wave w = V_getDetectorLinearDataW(folder,"B")
+		V_ShiftBackDetImage(w,adjW)
+
+// and repeat for the error wave
+		Wave adjW = V_getDetectorDataErrW(folder,"B")
+		Wave w = V_getDetectorLinearDataErrW(folder,"B")
+		V_ShiftBackDetImage(w,adjW)
+		
+		
+							
 		/// END DATA CORRECTIONS FOR LOADER	
 			
 	endif

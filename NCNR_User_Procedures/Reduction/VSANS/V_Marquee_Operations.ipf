@@ -221,6 +221,57 @@ Function V_SumCountsInBox(x1,x2,y1,y2,ct_err,type,detStr)
 End
 
 
+//sums the data counts in the box specified by (x1,y1) to (x2,y2)
+//assuming that x1<x2, and y1<y2 
+//the x,y values must also be in array coordinates[0] NOT scaled detector coords.
+//
+// accepts arbitrary detector coordinates. calling function is responsible for 
+// keeping selection in bounds
+//
+// basically the same as V_SumCountsInBox, except the PBR value has been removed so that the
+// function can be used from the command line
+//
+Function V_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
+	Variable x1,x2,y1,y2
+	String type,detStr
+	
+	Variable counts = 0,ii,jj,err2_sum,ct_err
+	
+// get the waves of the data and the data_err
+	Wave w = V_getDetectorDataW(type,detStr)
+	Wave data_err = V_getDetectorDataErrW(type,detStr)
+
+			
+	err2_sum = 0		// running total of the squared error
+	ii=x1
+	jj=y1
+	do
+		do
+			counts += w[ii][jj]
+			err2_sum += data_err[ii][jj]*data_err[ii][jj]
+			jj+=1
+		while(jj<=y2)
+		jj=y1
+		ii+=1
+	while(ii<=x2)
+	
+	err2_sum = sqrt(err2_sum)
+	ct_err = err2_sum
+
+	Print "sum of counts = ",counts	
+	Print "error = ",ct_err
+	Print "error/counts = ",ct_err/counts
+	
+	Return (counts)
+End
+
+Proc pV_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr) : GraphMarquee
+	Variable x1=280,x2=430,y1=350,y2=1020
+	String type="RAW",detStr="B"
+	
+	V_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
+End
+
 Function V_FindCentroid() :  GraphMarquee
 
 //	//get the current displayed data (so the correct folder is used)
