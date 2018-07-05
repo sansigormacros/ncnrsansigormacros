@@ -909,10 +909,10 @@ Function V_GenerateDefaultMask()
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B	
 			Make/O/I/N=(680,1656)	data	= 0
-			data[][0,5] = 1
-			data[][1650,1655] = 1
-			data[0,5][] = 1
-			data[675,679][] = 1
+			data[][0,38] = 1
+			data[][1548,1655] = 1
+			data[0,10][] = 1
+			data[669,679][] = 1
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR		
 			Make/O/I/N=(48,128)	data	= 0
 //			data[][0,3] = 1

@@ -1389,6 +1389,13 @@ End
 //
 Function V_ShiftBackDetImage(w,adjW)
 	Wave w,adjW
+
+// this is necessary for some old data with the 150x150 back (dummy) panel
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(gIgnoreDetB == 1)
+		adjW=w
+		return(0)
+	endif
 	
 	adjW=0
 	

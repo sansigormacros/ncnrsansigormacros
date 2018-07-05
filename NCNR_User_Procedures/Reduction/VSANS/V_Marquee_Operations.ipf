@@ -60,10 +60,11 @@ Function V_PrintMarqueeCoords() :  GraphMarquee
 
 
 		count = V_SumCountsInBox(x1,x2,y1,y2,ct_err,gCurDispType,detStr)
-		
-		Print "counts = ",count
-		Print "err/counts = ",ct_err/count
 
+		
+		Print "total counts = ",count
+		Print "err/counts = ",ct_err/count
+		print "average counts per pixel = ",count/(x2-x1)/(y2-y1)
 	endif
 End
 
@@ -265,7 +266,7 @@ Function V_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
 	Return (counts)
 End
 
-Proc pV_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr) : GraphMarquee
+Proc pV_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr) 
 	Variable x1=280,x2=430,y1=350,y2=1020
 	String type="RAW",detStr="B"
 	
