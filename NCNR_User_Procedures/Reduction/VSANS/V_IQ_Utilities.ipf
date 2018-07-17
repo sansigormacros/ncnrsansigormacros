@@ -234,6 +234,7 @@ Function V_QBinAllPanels_Slit(folderStr,binType)
 			Abort "Binning mode not found in V_QBinAllPanels_Slit"// when no case matches	
 	endswitch
 	
+	
 
 	return(0)
 End
@@ -482,6 +483,65 @@ Function V_TmpSort1D(pathStr,folderStr)
 	return(0)
 End
 
+
+Function V_RemoveDuplicateQvals(pathStr,folderStr)
+	String pathStr,folderStr
+	
+	SetDataFolder $(pathStr+folderStr)
+
+	Wave qw = tmp_q
+	Wave iw = tmp_i
+	Wave sw = tmp_s
+	Wave sq = tmp_sq
+	Wave qb = tmp_qb
+	Wave fs = tmp_fs
+	
+	Variable q1,q2,tol,ii
+	tol = 0.001 		// 0.1 %
+	q1 = qw[0]
+	ii=0
+	do
+		q2 = qw[ii+1]
+		if(V_CloseEnough(q1,q2,q1*tol))
+			// check to be sure that both values are actually real numbers before trying to average
+			if(numtype(iw[ii])==0 && numtype(iw[ii+1])==0)		//==0 => real number
+				iw[ii] = (iw[ii] + iw[ii+1])/2		//both OK
+			endif
+			if(numtype(iw[ii])==0 && numtype(iw[ii+1])!=0)		//==0 => real number
+				iw[ii] = iw[ii]		//one OK
+			endif
+			if(numtype(iw[ii])!=0 && numtype(iw[ii+1])==0)		//==0 => real number
+				iw[ii] = iw[ii+1]		//other OK
+			endif
+			if(numtype(iw[ii])!=0 && numtype(iw[ii+1])!=0)		//==0 => real number
+				iw[ii] = (iw[ii])		// both NaN, get rid of it later
+			endif
+		
+			if(numtype(sw[ii])==0 && numtype(sw[ii+1])==0)		//==0 => real number
+				sw[ii] = sqrt(sw[ii]^2 + sw[ii+1]^2)		//both OK
+			endif
+			if(numtype(sw[ii])==0 && numtype(sw[ii+1])!=0)		//==0 => real number
+				sw[ii] = sw[ii]		//one OK
+			endif
+			if(numtype(sw[ii])!=0 && numtype(sw[ii+1])==0)		//==0 => real number
+				sw[ii] = sw[ii+1]		//other OK
+			endif
+			if(numtype(sw[ii])!=0 && numtype(sw[ii+1])!=0)		//==0 => real number
+				sw[ii] = (sw[ii])		// both NaN, get rid of it later
+			endif
+			
+			DeletePoints ii+1, 1, qw,iw,sw,sq,qb,fs
+		else
+			ii+=1
+			q1 = q2
+		endif
+	while(ii<numpnts(qw)-2)
+	
+	
+
+	SetDataFolder root:
+	return(0)
+End
 
 //
 Proc V_Load_Data_ITX()

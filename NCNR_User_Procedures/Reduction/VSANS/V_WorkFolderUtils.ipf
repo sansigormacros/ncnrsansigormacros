@@ -463,6 +463,10 @@ End
 //and do the geometric corrections and normalization to monitor counts
 //(the function Add_Raw_to_work(type) adds multiple runs together - and is LOW priority)
 //
+// JUL 2018
+// now removes a constant kReadNoiseLevel from the back detector (this is a constant value, not time
+//  or count dependent). It does not appear to be dependent on gain, and is hoepfully stable over time.
+//
 //the current display type is updated to newType (global)
 //
 Function V_Raw_to_work(newType)
@@ -501,6 +505,18 @@ Function V_Raw_to_work(newType)
 
 // each correction must loop over each detector. tedious.
 
+	//except for removing the read noise of the back detector
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+	if(gIgnoreDetB == 0)
+		Wave w = V_getDetectorDataW(fname,"B")
+		w -= kReadNoiseLevel		// a constant value
+		
+		MatrixFilter /N=3 median w
+		Print "*** median noise filter applied to the back detector***"
+	endif
+	
+	
 	// (0) Redimension the data waves in the destination folder
 	//     so that they are DP, not integer
 	// TODO
@@ -818,7 +834,9 @@ Function V_Add_raw_to_work(newType)
 	// this will do all of the necessary corrections to the data
 	// put this in some separate work folder that can be cleaned out at the end (ADJ)
 	String tmpType="ADJ"
-	V_Raw_to_Work(tmpType)
+	
+	//this step removes the read noise from the back so that neither added file will have this constant
+	V_Raw_to_Work(tmpType)		
 			
 	//now make references to data in newType folder
 	DestPath="root:Packages:NIST:VSANS:"+newType	

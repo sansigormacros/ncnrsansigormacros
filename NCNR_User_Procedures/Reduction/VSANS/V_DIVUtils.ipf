@@ -164,7 +164,7 @@ End
 
 
 Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
-	String reducedFolderType="SAM",carriageStr="F"
+	String reducedFolderType="COR",carriageStr="F"
 	if(cmpstr(carriageStr,"F")==0)
 		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
 		V_NormalizeDIV_onePanel(reducedFolderType,"FR")

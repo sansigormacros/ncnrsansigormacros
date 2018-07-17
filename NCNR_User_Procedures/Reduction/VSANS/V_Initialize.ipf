@@ -75,6 +75,33 @@ Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRT
 Strconstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
 Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
 
+// the average read noise level of the back detector
+// taken from multiple runs with the beam off, 6-28-18
+// runs sans12324 - sans12353
+//
+// used in V_Raw_to_Work()
+// average of whole panel (tested several data files) = 208 +/- 14
+//
+// 200 appears to be a better value - (empirical, based on teflon/converging pinhole data)
+Constant kReadNoiseLevel = 200
+//Constant kReadNoiseLevel = 208
+Constant kReadNoiseLevel_Err = 14
+
+
+
+// Pixel shifts for the back detector to bring the three CCDs into registry
+// data from pinholes used to match up CCDs
+// 27 JUN 2018
+// runs 12221,12225,27,33,34,35,38,42
+// middle CCD is not moved
+// See V_ShiftBackDetImage() for implementation
+Constant 	kShift_TopX = 7
+Constant		kShift_TopY = 105
+Constant		kShift_BottomX = 5
+Constant		kShift_BottomY = 35
+
+
+
 
 
 

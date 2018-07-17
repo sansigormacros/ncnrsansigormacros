@@ -1399,23 +1399,23 @@ Function V_ShiftBackDetImage(w,adjW)
 	
 	adjW=0
 	
-	Variable topX,bottomX
-	Variable topY,bottomY
+//	Variable topX,bottomX
+//	Variable topY,bottomY
 	
-	topX = 7
-	topY = 105
+//	topX = 7
+//	topY = 105
 	
-	bottomX = 7
-	bottomY = 35
+//	bottomX = 7
+//	bottomY = 35
 	
 	// middle
 	adjW[][552,552+552] = w[p][q]
 
 	//top
-	adjW[0+topX,679][552+552,1655-topY] = w[p-topX][q+topY]
+	adjW[0+kShift_topX,679][552+552,1655-kShift_topY] = w[p-kShift_topX][q+kShift_topY]
 	
 	//bottom
-	adjW[0+bottomX,679][0+bottomY,551] = w[p-bottomX][q-bottomY]
+	adjW[0+kShift_bottomX,679][0+kShift_bottomY,551] = w[p-kShift_bottomX][q-kShift_bottomY]
 	
 	return(0)
 End

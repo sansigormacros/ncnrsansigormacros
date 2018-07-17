@@ -3207,6 +3207,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
 				
+					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
 					
 					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name

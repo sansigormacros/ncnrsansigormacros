@@ -148,12 +148,15 @@ Function USANS_RE_CalcWeights(baseStr,pt1,pt2)
 	WAVE qval = $(baseStr+"_q")
 	WAVE ival = $(baseStr+"_i")
 	WAVE sval = $(baseStr+"_s")
+	WAVE dQvW = $(baseStr+"_dQv")
 	Duplicate/O/R=[pt1,pt2] qval $(baseStr+"_qt")
 	Duplicate/O/R=[pt1,pt2] ival $(baseStr+"_it")
 	Duplicate/O/R=[pt1,pt2] sval $(baseStr+"_st")
+	Duplicate/O/R=[pt1,pt2] dQvW $(baseStr+"_dQvt")
 	WAVE qt = $(baseStr+"_qt")			//these are trimmed based on the cursor points
 	WAVE it = $(baseStr+"_it")
 	WAVE st = $(baseStr+"_st")
+	WAVE dQvt = $(baseStr+"_dQvt")
 	
 	//Variable/G USANS_m = EnterSlope(baseStr)
 	Variable/G USANS_m = -4
