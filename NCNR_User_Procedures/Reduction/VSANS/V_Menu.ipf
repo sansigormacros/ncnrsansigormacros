@@ -30,6 +30,9 @@ Menu "VSANS"
 		"Derive Beam Centers",V_DeriveBeamCenters()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
+		"Median Filter Back Det",pV_MedianFilterBack()
+		"Subtract Read Noise",pV_SubtractReadNoiseBack()
+		"Median+Read Noise",pV_MedianAndReadNoiseBack()
 	End
 	SubMenu "Nexus File Corrections"
 		"Patch GroupID using CatTable",V_Patch_GroupID_catTable()

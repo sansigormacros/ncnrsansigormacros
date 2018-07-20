@@ -239,7 +239,8 @@ Function V_ResetToSavedProtocol(nameStr)
 	list = w[4]
 	numItems = ItemsInList(list,";")
 	checked = 1
-	if(numitems == 4 || numitems == 5)		//allow for protocols with no SDEV list item
+//	if(numitems == 4 || numitems == 5)		//allow for protocols with no SDEV list item
+	if(numitems > 1)		//
 		//correct number of parameters, assume ok
 		String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr = list
 		CheckBox prot_check_9 win=V_ProtocolPanel,value=checked
@@ -811,7 +812,7 @@ Function/S V_GetDIVList()
 // keep only DIV files in the list
 	num=ItemsInList(newList)
 
-	String matchStr="*_DIV_*"		// this is part of the title of a VSANS _DIV_ file
+	String matchStr="*DIV*"		// this is part of the title of a VSANS _DIV_ file
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii, newList , ";")
 		val = stringmatch(item,matchStr)
@@ -863,7 +864,7 @@ Function/S V_GetMSKList()
 // keep only MASK files in the list
 	num=ItemsInList(newList)
 
-	String matchStr="*_MASK_*"		// this is part of the title of a VSANS _MASK_ file
+	String matchStr="*MASK*"		// this is part of the title of a VSANS _MASK_ file
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii, newList , ";")
 		val = stringmatch(item,matchStr)

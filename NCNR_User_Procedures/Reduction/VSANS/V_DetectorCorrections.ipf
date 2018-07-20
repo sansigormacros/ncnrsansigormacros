@@ -1405,7 +1405,7 @@ Function V_ShiftBackDetImage(w,adjW)
 //	topX = 7
 //	topY = 105
 	
-//	bottomX = 7
+//	bottomX = 5
 //	bottomY = 35
 	
 	// middle
@@ -1420,4 +1420,64 @@ Function V_ShiftBackDetImage(w,adjW)
 	return(0)
 End
 
+
+Proc pV_MedianFilterBack(folder)
+	String folder="RAW"
+	
+	V_MedianFilterBack(folder)
+end
+
+Function V_MedianFilterBack(folder)
+	String folder
+
+	Wave w = V_getDetectorDataW(folder,"B")
+//		w -= kReadNoiseLevel		// a constant value
+	
+	MatrixFilter /N=3 median w
+	Print "*** median noise filter applied to the back detector***"
+	
+	return(0)
+End
+
+
+Proc pV_SubtractReadNoiseBack(folder,ReadNoise)
+	String folder="RAW"
+	Variable readNoise=200
+	
+	V_SubtractReadNoiseBack(folder,readNoise)
+end
+
+Function V_SubtractReadNoiseBack(folder,readNoise)
+	String folder
+	Variable readNoise
+
+		Wave w = V_getDetectorDataW(folder,"B")
+		w -= readNoise		// a constant value
+		
+//		MatrixFilter /N=3 median w
+//		Print "*** median noise filter applied to the back detector***"
+	
+	return(0)
+End
+
+
+Proc pV_MedianAndReadNoiseBack(folder,ReadNoise)
+	String folder="RAW"
+	Variable readNoise=200
+	
+	V_MedianAndReadNoiseBack(folder,readNoise)
+end
+
+Function V_MedianAndReadNoiseBack(folder,readNoise)
+	String folder
+	Variable readNoise
+
+		Wave w = V_getDetectorDataW(folder,"B")
+		w -= readNoise		// a constant value
+		
+		MatrixFilter /N=3 median w
+		Print "*** median noise filter applied to the back detector***"
+	
+	return(0)
+End
 
