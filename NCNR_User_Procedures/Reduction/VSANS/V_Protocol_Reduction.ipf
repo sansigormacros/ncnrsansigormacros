@@ -1300,6 +1300,13 @@ Function V_ShowProtoHelp(ctrlName) : ButtonControl
 	endif
 End
 
+
+
+// TODO
+// -- this is a trimmed down version of the "full" set of averaging options
+//    add to this as needed as I figure out what functionality is appropriate
+//
+//
 //button action procedure to get the type of average requested by the user
 //presented as a missing parameter dialog, which is really user-UN-friendly
 //and will need to be re-thought. Defaults of dialog are set for normal
@@ -1308,28 +1315,28 @@ End
 Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
-//	Execute "V_GetAvgInfo_Full()"
-	Execute "V_GetAvgInfo()"
+	SVAR gAvgInfoStr = root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr
 	
-	//set the global string
-	SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE = tempStr
-
-End
-
-// TODO
-// -- this is a trimmed down version of the "full" set of averaging options
-//    add to this as needed as I figure out what functionality is appropriate
-//
-//procedure called by protocol panel to ask user for average type choices
-// somewhat confusing and complex, but may be as good as it gets.
-//
-//Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
-Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 	String av_typ,autoSave,AutoName,binType
 //	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Variable Qctr=0.1,qDelta=0.01
-	String detGroup="F"
+	Variable Qctr,qDelta
+	String detGroup
+	
+	if(strlen(gAvgInfoStr) > 0)
+//		fill the dialog with the current choice, not resetting to default
+// can't do this, or it will simply bypass the missing parameter dialog!
+//	V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
+	av_typ = StringByKey("AVTYPE", gAvgInfoStr  ,"=",";")
+	autoSave = StringByKey("SAVE", gAvgInfoStr  ,"=",";")
+	autoName = StringByKey("NAME", gAvgInfoStr  ,"=",";")
+	binType = StringByKey("BINTYPE", gAvgInfoStr  ,"=",";")
+	qCtr = NumberByKey("QCENTER", gAvgInfoStr  ,"=",";")
+	qDelta = NumberByKey("QDELTA", gAvgInfoStr  ,"=",";")
+	detGroup = StringByKey("DETGROUP", gAvgInfoStr  ,"=",";")
+//	Execute "V_GetAvgInfo_Full()"
+//		Execute "V_GetAvgInfo()"
+	endif
+
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
 	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;"
@@ -1348,10 +1355,18 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 	Prompt Qctr, "q-value of center of annulus"
 	Prompt Qdelta,"(+/-) q-width of annulus"
 	Prompt detGroup,"Group for annulus"
+
+	
+	DoPrompt "Enter Averaging Parameters",av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup
+	if (V_Flag)
+		return(0)								// User canceled
+	endif	
 	
 	//assign results of dialog to key=value string, semicolon separated
 	//do only what is necessary, based on av_typ
-	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr=""
+	//
+	// reset the string
+	gAvgInfoStr=""
 
 	// TODO:
 	// hard wired value
@@ -1359,30 +1374,104 @@ Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
 	
 		
 	// all averages need these values
-	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "AVTYPE=" + av_typ + ";"
-	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SAVE=" + autoSave + ";"
-	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "NAME=" + autoName + ";"
-	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PLOT=" + autoPlot + ";"
-	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "BINTYPE=" + binType + ";"
+	gAvgInfoStr += "AVTYPE=" + av_typ + ";"
+	gAvgInfoStr += "SAVE=" + autoSave + ";"
+	gAvgInfoStr += "NAME=" + autoName + ";"
+	gAvgInfoStr += "PLOT=" + autoPlot + ";"
+	gAvgInfoStr += "BINTYPE=" + binType + ";"
 	
 //	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+//		gAvgInfoStr += "SIDE=" + side + ";"
+//		gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+//		gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
 //	Endif
 //	
 //	if(cmpstr(av_typ,"Rectangular")==0)
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
-//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
+//		gAvgInfoStr += "SIDE=" + side + ";"
+//		gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+//		gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
 //	Endif
 //	
 	if(cmpstr(av_typ,"Annular")==0)
-		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
-		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
-		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DETGROUP=" + detGroup + ";"
+		gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
+		gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
+		gAvgInfoStr += "DETGROUP=" + detGroup + ";"
 	Endif
+		
+	//set the global string after user choices
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE = gAvgInfoStr
+
+	return(0)
 End
+
+
+//
+// --- To avoid resetting the dialog with default values, the work is done in 
+// V_SetAverageParamsButtonProc -- 
+//
+//
+//procedure called by protocol panel to ask user for average type choices
+// somewhat confusing and complex, but may be as good as it gets.
+//
+//Proc V_GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
+//Proc V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
+//	String av_typ,autoSave,AutoName,binType
+////	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
+//	Variable Qctr=0.1,qDelta=0.01
+//	String detGroup="F"
+//
+////	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+//	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;"
+//
+//// comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
+////	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
+//	Prompt autoSave,"Save files to disk?",popup,"Yes - Concatenate;Yes - Individual;No"
+//	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
+////	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
+////	Prompt side,"Include detector halves?",popup,"both;right;left"
+////	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
+////	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
+////	Prompt width, "Width of Rectangular average (1,128)"
+//	Prompt binType,"Binning Type?",popup,ksBinTypeStr
+//
+//	Prompt Qctr, "q-value of center of annulus"
+//	Prompt Qdelta,"(+/-) q-width of annulus"
+//	Prompt detGroup,"Group for annulus"
+//	
+//	//assign results of dialog to key=value string, semicolon separated
+//	//do only what is necessary, based on av_typ
+//	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr=""
+//
+//	// TODO:
+//	// hard wired value
+//	String autoPlot = "Yes"
+//	
+//		
+//	// all averages need these values
+//	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "AVTYPE=" + av_typ + ";"
+//	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SAVE=" + autoSave + ";"
+//	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "NAME=" + autoName + ";"
+//	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PLOT=" + autoPlot + ";"
+//	root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "BINTYPE=" + binType + ";"
+//	
+////	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+////	Endif
+////	
+////	if(cmpstr(av_typ,"Rectangular")==0)
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+////		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
+////	Endif
+////	
+//	if(cmpstr(av_typ,"Annular")==0)
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
+//		root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr += "DETGROUP=" + detGroup + ";"
+//	Endif
+//End
 
 
 // TODO
@@ -2004,6 +2093,9 @@ Function V_ExecuteProtocol(protStr,samStr)
 	SVAR file_name = root:file_Name
 	String samFileLoaded = file_name		//keep a copy of the sample file loaded	
 	
+	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	samFiles = samStr
+	
 	//always update
 	V_UpdateDisplayInformation(ActiveType)
 
@@ -2435,10 +2527,11 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 		// store these locally
 		
 
-		// x- need to get the panel string for the sum.
-		// x- the detector string is currently hard-wired
-//		detStr = "MR"
-
+		if(cmpstr(detStr,"B") == 0 )
+			Print "Median Filtering RAW data"
+			Wave w = V_getDetectorDataW("RAW",detStr)
+			MatrixFilter /N=3 median w
+		endif
 
 		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"RAW",detPanel_toSum)
 
@@ -2447,18 +2540,29 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 
 		// if it's the back panel, find the read noise to subtract
 		// shift the marquee to the right to (hopefully) a blank spot
-		Variable noiseCts,noiseCtsErr,delta
+		Variable noiseCts,noiseCtsErr,delta,nPixInBox
 		if(isBack)
-			delta = xyBoxW[1] - xyBoxW[0]
-			noiseCts = V_SumCountsInBox(xyBoxW[1],xyBoxW[1]+delta,xyBoxW[2],xyBoxW[3],noiseCtsErr,"RAW",detPanel_toSum)
 
-			print "average read noise per pixel = ",noiseCts/(xyBoxW[1]-xyBoxW[0])/(xyBoxW[3]-xyBoxW[2])
-			Print "read noise counts = ",noiseCts
-			Print "read noise err/counts = ",noiseCtsErr/noiseCts
-			
-			emptyCts -= noiseCts
-			empty_ct_err = sqrt(empty_ct_err^2 + noiseCtsErr^2)
-			
+		
+//			delta = xyBoxW[1] - xyBoxW[0]
+//			noiseCts = V_SumCountsInBox(xyBoxW[1],xyBoxW[1]+delta,xyBoxW[2],xyBoxW[3],noiseCtsErr,"RAW",detPanel_toSum)
+//
+//			print "average read noise per pixel = ",noiseCts/(xyBoxW[1]-xyBoxW[0])/(xyBoxW[3]-xyBoxW[2])
+//			Print "read noise counts = ",noiseCts
+//			Print "read noise err/counts = ",noiseCtsErr/noiseCts
+//			
+//			emptyCts -= noiseCts
+//			empty_ct_err = sqrt(empty_ct_err^2 + noiseCtsErr^2)
+
+
+// Instead, use the defined constant values		
+//		kReadNoiseLevel
+//		kReadNoiseLevel_Err
+//
+			nPixInBox = (xyBoxW[1] - xyBoxW[0])*(xyBoxW[3]-xyBoxW[2])
+			emptyCts -= kReadNoiseLevel*nPixInBox
+			empty_ct_err = sqrt(empty_ct_err^2 + (kReadNoiseLevel_Err*nPixInBox)^2)
+						
 			Print "adjusted empty counts = ",emptyCts
 			Print "adjusted err/counts = ",empty_ct_err/emptyCts
 		endif

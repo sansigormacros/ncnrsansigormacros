@@ -149,7 +149,7 @@ End
 //
 // fill in a "dummy" wavelength for White Beam and graphite
 // *= 1e3 for White Beam
-// *= 1e6 for graphite
+// *= 1e6 for graphite (***NO***) Per John, we can use the VS calibration for HOPG
 // use these dummy values just for the lookup table
 //
 // TODO -- need the enumerated values for the monochromator type
@@ -183,7 +183,9 @@ Function V_CalculateAttenuationFactor(fname)
 			lambda *= 1e3
 			break
 		case "crystal":
-			lambda *= 1e6
+
+//			lambda *= 1e6		// as of July 2018, use the velocity selector tables for the graphite
+
 			break
 		default:			// optional default expression executed
 			Abort "Monochromator type could not be determined in V_CalculateAttenuationFactor"		// when no case matches
@@ -210,7 +212,7 @@ End
 //
 // fill in a "dummy" wavelength for White Beam and graphite
 // *= 1e3 for White Beam
-// *= 1e6 for graphite
+// *= 1e6 for graphite (***NO***) Per John, we can use the VS calibration for HOPG
 // use these dummy values just for the lookup table
 //
 // TODO -- need the enumerated values for the monochromator type
@@ -241,7 +243,9 @@ Function V_CalculateAttenuationError(fname)
 			lambda *= 1e3
 			break
 		case "crystal":
-			lambda *= 1e6
+
+//			lambda *= 1e6		// as of July 2018, use the velocity selector tables for the graphite
+
 			break
 		default:			// optional default expression executed
 			Abort "Monochromator type could not be determined in V_CalculateAttenuationError"		// when no case matches

@@ -512,8 +512,8 @@ Function V_Raw_to_work(newType)
 		Wave w = V_getDetectorDataW(fname,"B")
 		w -= kReadNoiseLevel		// a constant value
 		
-		MatrixFilter /N=3 median w
-		Print "*** median noise filter applied to the back detector***"
+		MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+		Print "*** median noise filter applied to the back detector (3 passes) ***"
 	endif
 	
 	

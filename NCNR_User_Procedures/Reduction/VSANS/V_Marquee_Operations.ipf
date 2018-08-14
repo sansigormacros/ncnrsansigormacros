@@ -198,7 +198,7 @@ Function V_SumCountsInBox(x1,x2,y1,y2,ct_err,type,detStr)
 	Wave w = V_getDetectorDataW(type,detStr)
 	Wave data_err = V_getDetectorDataErrW(type,detStr)
 
-			
+	
 	err2_sum = 0		// running total of the squared error
 	ii=x1
 	jj=y1

@@ -97,7 +97,15 @@ Function V_BuildCatVeryShortTable()
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent"
 	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Group_ID"
-	
+
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
+	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
+
+
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
+	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
+		
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:SDD_F"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_F"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_F"	
@@ -110,14 +118,6 @@ Function V_BuildCatVeryShortTable()
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:TotCnts_B"
 	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntRate_B"
 		
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Lambda"
-	Make/O/T/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:nGuides"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:CntTime"
-
-
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Transmission"
-	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Thickness"
-	
 //	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:XCenter"
 //	Make/O/D/N=0 $"root:Packages:NIST:VSANS:CatVSHeaderInfo:YCenter"
 
