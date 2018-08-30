@@ -4314,6 +4314,39 @@ Function V_writeDetector_deadtime_B(fname,detStr,val)
 	endif
 End
 
+// high res detector gain, a single value, only for detB
+Function V_writeDetector_highResGain(fname,detStr,val)
+	String fname,detStr
+	variable val
+
+//	String path = "entry:instrument:detector_"+detStr+":highResGain"
+	if(cmpstr(detStr,"B") == 0)
+	
+		Make/O/D/N=1 wTmpWrite
+	//	Make/O/R/N=1 wTmpWrite
+		String groupName = "/entry/instrument/detector_"+detStr	
+		String varName = "highResGain"
+		wTmpWrite[0] = val
+	
+		variable err
+		err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+		if(err)
+			Print "HDF write err = ",err
+		endif
+		// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+	//	err = V_KillNamedDataFolder(fname)
+	//	if(err)
+	//		Print "DataFolder kill err = ",err
+	//	endif
+	
+		return(err)	
+	else
+		DoAlert 0,"Bad call to V_writeDetector_highResGain"
+		return(0)
+	endif
+End
+
+
 Function V_writeDetDescription(fname,detStr,str)
 	String fname,detStr,str
 

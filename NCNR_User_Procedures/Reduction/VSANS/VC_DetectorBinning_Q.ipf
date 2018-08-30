@@ -1650,7 +1650,12 @@ Function ClearIQIfDisplayed_AllFldr(type,winNameStr)
 	if(cmpstr(winNameStr[0,4],"VCALC") == 0)
 		folderList = "VCALC;"
 	endif
+
+	if(cmpstr(winNameStr,"WORK_RealTime") == 0)
+		folderList = "RealTime;"
+	endif
 	
+		
 	for(ii=0;ii<ItemsInList(folderList);ii+=1)
 		fldr = StringFromList(ii, folderList, ";")
 		ClearIQIfDisplayed(fldr,type,winNameStr)

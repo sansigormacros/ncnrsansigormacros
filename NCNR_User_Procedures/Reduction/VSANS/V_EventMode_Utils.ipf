@@ -935,9 +935,9 @@ Proc V_SaveExportedEvents()
 	String filename = root:Packages:NIST:VSANS:RAW:gFileList		//name of the data file(s) in raw (take 1st from semi-list)
 	String saveName
 
-	saveName = StringFromList(0, fileName)
+	saveName = StringFromList(0, fileName+";")
 	Save_VSANS_file("root:export", "Events_"+saveName)
-
+	Printf "Saved file %s\r","Events_"+saveName
 End
 
 

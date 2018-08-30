@@ -641,7 +641,7 @@ Function V_getRealValueFromHDF5(fname,path)
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -699,7 +699,7 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -754,7 +754,7 @@ Function/WAVE V_getTextWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -842,7 +842,7 @@ Function/S V_getStringFromHDF5(fname,path,num)
 	folderStr = V_RemoveDotExtension(V_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;")
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))

@@ -417,7 +417,7 @@ Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 //	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
 //	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
 
-	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName/U="
+	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName"
 
 	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
 		PathInfo catPathName

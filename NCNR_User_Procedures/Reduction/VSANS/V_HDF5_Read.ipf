@@ -1564,6 +1564,18 @@ Function V_getDetector_deadtime_B(fname,detStr)
 	endif
 End
 
+// for "B" only
+Function V_getDetector_highResGain(fname,detStr)
+	String fname,detStr
+
+	String path = "entry:instrument:detector_"+detStr+":highResGain"
+	if(cmpstr(detStr,"B") == 0)
+		return(V_getRealValueFromHDF5(fname,path))
+	else	
+		return(0)
+	endif
+End
+
 Function/S V_getDetDescription(fname,detStr)
 	String fname,detStr
 

@@ -181,6 +181,8 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:SUB
 	NewDataFolder/O root:Packages:NIST:VSANS:DRK
 	NewDataFolder/O root:Packages:NIST:VSANS:ADJ
+	NewDataFolder/O root:Packages:NIST:VSANS:RealTime
+	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
 
 
 // ?? anything else
