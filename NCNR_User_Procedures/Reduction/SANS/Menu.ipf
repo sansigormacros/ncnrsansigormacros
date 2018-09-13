@@ -54,6 +54,8 @@ Menu "SANS"
 		"Accumulate First Slice",AccumulateSlices(0)
 		"Add Current Slice",AccumulateSlices(1)
 		"Display Accumulated Slices",AccumulateSlices(2)	
+		"-"
+		"Insert Time Reset",InsertTimeReset()
 	End
 	"-"
 	"NCNR Preferences",Show_Preferences_Panel()

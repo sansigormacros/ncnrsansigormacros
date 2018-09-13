@@ -4348,3 +4348,51 @@ Function PutCursorsAtBigStep(tol)
 	
 	
 End
+
+
+
+Proc InsertTimeReset(period)
+	Variable period
+	
+	fInsertTimeReset(period)
+End
+
+
+//
+// for event data where a time reset signal was not sent, but the data is
+// actually periodic. This function will reset the time at the input period.
+// This assumes that you accurately know the period, and that the start time
+// of the data coincides with the start time of the period, otherwise the 
+// time reset will happen in the middle of the cycle.
+//
+// period = period of reset (s)
+//
+Function fInsertTimeReset(period)
+	Variable period
+	
+	SetDataFolder root:Packages:NIST:Event:
+	
+	Wave rescaledTime = rescaledTime
+	Wave timePt = timePt
+	Variable rollTime,rollTicks,ii,delta
+	
+	Variable period_ticks
+	
+	period_ticks = period*1e7		//period in ticks
+	
+
+	for(ii=0;ii<numpnts(rescaledTime)-1;ii+=1)
+		if(rescaledTime[ii] > period)
+			MultiThread timePt[ii,] -= period_ticks
+			MultiThread rescaledTime[ii,] -= period
+		endif
+	endfor
+
+// updates the longest time (as does every operation of adjusting the data)
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	t_longest = waveMax(rescaledTime)
+	SetDataFolder root:
+
+	return(0)
+End
+

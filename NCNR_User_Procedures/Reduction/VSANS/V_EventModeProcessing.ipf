@@ -1049,7 +1049,7 @@ Function V_LoadEventLog_Button(ctrlName) : ButtonControl
 	
 	// load from raw?
 	// if so, which carriage?
-	String loadFromRAW
+	String loadFromRAW="No"
 	String detStr
 	if(cmpstr(ctrlName,"button23")==0)
 		loadFromRAW = "Yes"
@@ -1179,23 +1179,25 @@ Variable t1 = ticks
 
 
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
-	v_tic()
-	printf "Duplicate wave = "
-		Duplicate/O timePt rescaledTime
-	v_toc()
-	v_tic()
-	printf "rescale time = "
-//		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
-		rescaledTime = timeStep_s*(timePt-timePt[0])		//convert to seconds and start from zero
-	v_toc()
-	v_tic()
-	printf "find wave Max = "
-		t_longest = waveMax(rescaledTime)		//should be the last point	
-	v_toc()
+		v_tic()
+		printf "Duplicate wave = "
+			KillWaves/Z rescaledTime
+			Duplicate/O timePt rescaledTime
+		v_toc()
+		v_tic()
+		printf "rescale time = "
+	//		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
+			rescaledTime = timeStep_s*(timePt-timePt[0])		//convert to seconds and start from zero
+		v_toc()
+		v_tic()
+		printf "find wave Max = "
+			t_longest = waveMax(rescaledTime)		//should be the last point	
+		v_toc()
 	endif
 
 	
 	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
+		KillWaves/Z rescaledTime
 		Duplicate/O timePt rescaledTime
 		rescaledTime *= timeStep_s			//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
@@ -1208,6 +1210,7 @@ Variable t1 = ticks
 
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
+		KillWaves/Z rescaledTime
 		Duplicate/O timePt rescaledTime
 		rescaledTime *= timeStep_s		//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way

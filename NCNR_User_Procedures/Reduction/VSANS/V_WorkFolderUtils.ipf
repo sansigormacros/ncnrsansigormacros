@@ -894,7 +894,7 @@ Function V_Add_raw_to_work(newType)
 	scale_dest = saved_mon_dest/defMon		//un-scaling factor
 	
 	saved_mon_tmp = V_getBeamMonNormSaved_count(tmpType)
-	scale_tmp = saved_mon_dest/defMon			//un-scaling factor
+	scale_tmp = saved_mon_tmp/defMon			//un-scaling factor
 
 	new_scale = defMon / (saved_mon_dest+saved_mon_tmp)
 	
