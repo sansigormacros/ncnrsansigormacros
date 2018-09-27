@@ -1431,10 +1431,9 @@ Function V_MedianFilterBack(folder)
 	String folder
 
 	Wave w = V_getDetectorDataW(folder,"B")
-//		w -= kReadNoiseLevel		// a constant value
 	
 	MatrixFilter /N=3 median w
-	Print "*** median noise filter applied to the back detector***"
+	Print "*** median noise filter (ONE pass) applied to the back detector***"
 	
 	return(0)
 End

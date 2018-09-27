@@ -2528,9 +2528,9 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 		
 
 		if(cmpstr(detStr,"B") == 0 )
-			Print "Median Filtering RAW data"
+			Print "Median Filtering RAW data (3 passes)"
 			Wave w = V_getDetectorDataW("RAW",detStr)
-			MatrixFilter /N=3 median w
+			MatrixFilter /N=3 /P=3 median w
 		endif
 
 		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"RAW",detPanel_toSum)

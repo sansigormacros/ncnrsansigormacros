@@ -133,7 +133,7 @@ Function V_Init_Event()
 
 
 // for decimation (not used for VSANS - may be added back in the future)
-	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 1500		// 1500 MB considered too large
+	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 1501		// 1500 MB considered too large
 	Variable/G root:Packages:NIST:VSANS:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:VSANS:Event:gEvent_t_longest_decimated = 0
 
