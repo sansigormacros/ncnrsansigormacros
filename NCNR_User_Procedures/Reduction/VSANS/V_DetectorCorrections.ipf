@@ -320,7 +320,7 @@ end
 // -- distance in the lateral direction is based on tube width, which is a fixed parameter
 //
 //
-Function V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+Function V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
@@ -412,21 +412,29 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 // TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
 // these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
 // both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
-	if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
-		gap = 3.8		//mm
+
+	gap = V_getDet_panel_gap(folder,detStr)
+
+// TODO:
+// -- once the gap fields have been verified, this check can be removed
+// -- it should only apply to data pre-2018 when the field did not exist in the file
+// -- any VSANS data from 2018+ should read gap from the file.
+
+	if(gap < -100)		//-999999 returned if field is missing from file
+		if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
+			gap = 3.5		//mm (measured, JB 1/4/18)
+		endif
+		if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+			gap = 3.3		//mm (measured, JB 2/1/18)
+		endif
+		if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
+			gap = 5.9		//mm (measured, JB 1/4/18)
+		endif
+		if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+			gap = 18.3		//mm (measured, JB 2/1/18)
+		endif
 	endif
-	if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
-		gap = 5		//mm
-	endif
-	if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0)
-		gap = 5.9		//mm
-	endif
-	if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
-		gap = 5		//mm
-	endif
-// TODO: this is the line to keep, to replace the hard-wired values
-//	gap = V_getDet_panel_gap(fname,detStr)
-	
+
 //
 	if(cmpstr(orientation,"vertical")==0)
 		//	this is data dimensioned as (Ntubes,Npix)
@@ -546,11 +554,11 @@ end
 //	detCtrY = trunc( DimSize(dataW,1)/2 )
 //
 //
-Function V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
+Function V_ConvertBeamCtrPix_to_mmB(folder,detStr,destPath)
 	String folder,detStr,destPath
 	
 	
-//	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtr_to_mmB()"
+//	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtrPix_to_mmB()"
 	
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")	
@@ -1390,6 +1398,8 @@ End
 Function V_ShiftBackDetImage(w,adjW)
 	Wave w,adjW
 
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+
 // this is necessary for some old data with the 150x150 back (dummy) panel
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	if(gIgnoreDetB == 1)
@@ -1398,24 +1408,56 @@ Function V_ShiftBackDetImage(w,adjW)
 	endif
 	
 	adjW=0
-	
-//	Variable topX,bottomX
-//	Variable topY,bottomY
+		
+	Variable topX,bottomX
+	Variable topY,bottomY
+	Variable totalY,ccdX,ccdY
 	
 //	topX = 7
 //	topY = 105
 	
 //	bottomX = 5
 //	bottomY = 35
-	
-	// middle
-	adjW[][552,552+552] = w[p][q]
 
-	//top
-	adjW[0+kShift_topX,679][552+552,1655-kShift_topY] = w[p-kShift_topX][q+kShift_topY]
+// TODOHIGHRES
+// the detector pix dimensions are hard-wired, be sure the are correct
+	switch(gHighResBinning)
+		case 1:
+			topX = kShift_topX_bin1
+			topY = kShift_topY_bin1
+			bottomX = kShift_bottomX_bin1
+			bottomY = kShift_bottomY_bin1
+			
+			totalY = 6624	// total YDim
+			ccdY = 2208		// = YDim/3
+			ccdX = 2720		// = xDim
+			break
+		case 4:
+			topX = kShift_topX_bin4
+			topY = kShift_topY_bin4
+			bottomX = kShift_bottomX_bin4
+			bottomY = kShift_bottomY_bin4
+			
+			totalY = 1656	// total YDim
+			ccdY = 552		// = YDim/3
+			ccdX = 680		// = xDim
+
+			
+			break
+		default:		
+			Abort "No binning case matches in V_ShiftBackDetImage"
+			
+	endswitch
+
+		// middle
+		adjW[][ccdY,ccdY+ccdY] = w[p][q]
 	
-	//bottom
-	adjW[0+kShift_bottomX,679][0+kShift_bottomY,551] = w[p-kShift_bottomX][q-kShift_bottomY]
+		//top
+		adjW[0+topX,ccdX-1][ccdY+ccdY,totalY-1-topY] = w[p-topX][q+topY]
+		
+		//bottom
+		adjW[0+bottomX,ccdX-1][0+bottomY,ccdY-1] = w[p-bottomX][q-bottomY]
+
 	
 	return(0)
 End
@@ -1431,10 +1473,23 @@ Function V_MedianFilterBack(folder)
 	String folder
 
 	Wave w = V_getDetectorDataW(folder,"B")
-	
-	MatrixFilter /N=3 median w
-	Print "*** median noise filter (ONE pass) applied to the back detector***"
-	
+
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	switch(gHighResBinning)
+		case 1:
+			MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+			
+			Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+			break
+		case 4:
+			MatrixFilter /N=3 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+			
+			Print "*** median noise filter 3x3 applied to the back detector (1 pass) ***"
+			break
+		default:
+			Abort "No binning case matches in V_MedianFilterBack"
+	endswitch
+
 	return(0)
 End
 
@@ -1473,10 +1528,23 @@ Function V_MedianAndReadNoiseBack(folder,readNoise)
 
 		Wave w = V_getDetectorDataW(folder,"B")
 		w -= readNoise		// a constant value
+
+		NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+		switch(gHighResBinning)
+			case 1:
+				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+				
+				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+				break
+			case 4:
+				MatrixFilter /N=3 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+				
+				Print "*** median noise filter 3x3 applied to the back detector (1 pass) ***"
+				break
+			default:
+				Abort "No binning case matches in V_MedianAndReadNoiseBack"
+		endswitch
 		
-		MatrixFilter /N=3 median w
-		Print "*** median noise filter applied to the back detector***"
-	
 	return(0)
 End
 

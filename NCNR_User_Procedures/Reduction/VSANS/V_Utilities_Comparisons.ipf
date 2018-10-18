@@ -14,6 +14,9 @@
 // V_CloseEnough tolerance is an absolute value
 // so passing 0.01*val_1 = 1% tolerance, as long as val_1 can't be zero
 //
+// SEP 2018 -- increased the tolerance to 2%, since I was getting false differences
+// especially for the lateral offset after switching from trans->scatter configs. Panel
+// was returning to postion, but within 2% (since the value was near zero)
 //
 
 
@@ -301,9 +304,9 @@ Function V_FP_Value_Match(func,fname1,fname2)
 	endif
 
 	if(val1 != 0)
-		tol = abs(0.01 * val1)
+		tol = abs(0.02 * val1)
 	else
-		tol = abs(0.01 * val2)
+		tol = abs(0.02 * val2)
 	endif
 	
 //	match = V_CloseEnough(val1,val2,0.01*val1)
@@ -327,9 +330,9 @@ Function V_FP2_Value_Match(func,fname1,fname2,detStr)
 	endif
 	
 	if(val1 != 0)
-		tol = abs(0.01 * val1)
+		tol = abs(0.02 * val1)
 	else
-		tol = abs(0.01 * val2)
+		tol = abs(0.02 * val2)
 	endif
 	
 	match = V_CloseEnough(val1,val2,tol)

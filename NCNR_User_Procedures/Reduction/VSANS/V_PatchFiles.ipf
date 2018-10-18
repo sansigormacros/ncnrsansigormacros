@@ -2848,3 +2848,64 @@ Function V_fPatch_BackDetector(lo,hi)
 	KillWaves/Z cal_x,cal_y,tmpData
 	return(0)
 End
+
+//
+// simple utility to patch all of the pixel sizes
+// - in the header, the Y size for LR panels was grossly wrong (4 mm)
+// and all of the values are slightly off from the true values
+//
+// data collected after 10/3/18 should not need this patch since the
+// config.js file was updated
+//
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatch_XYPixelSize(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+	
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+			
+		// patch pixel size x and y [cm] L/R panels
+			V_writeDet_x_pixel_size(fname,"FL",8.4)
+			V_writeDet_y_pixel_size(fname,"FL",8.14)
+
+			V_writeDet_x_pixel_size(fname,"FR",8.4)
+			V_writeDet_y_pixel_size(fname,"FR",8.14)			
+
+			V_writeDet_x_pixel_size(fname,"ML",8.4)
+			V_writeDet_y_pixel_size(fname,"ML",8.14)
+
+			V_writeDet_x_pixel_size(fname,"MR",8.4)
+			V_writeDet_y_pixel_size(fname,"MR",8.14)
+			
+		// patch pixel size x and y [cm] T/B panels
+			V_writeDet_x_pixel_size(fname,"FT",4.16)
+			V_writeDet_y_pixel_size(fname,"FT",8.4)
+
+			V_writeDet_x_pixel_size(fname,"FB",4.16)
+			V_writeDet_y_pixel_size(fname,"FB",8.4)			
+
+			V_writeDet_x_pixel_size(fname,"MT",4.16)
+			V_writeDet_y_pixel_size(fname,"MT",8.4)
+
+			V_writeDet_x_pixel_size(fname,"MB",4.16)
+			V_writeDet_y_pixel_size(fname,"MB",8.4)			
+			
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	return(0)
+End
+

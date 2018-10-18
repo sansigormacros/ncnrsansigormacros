@@ -2525,12 +2525,36 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 		
 		// and determine box sum and error
 		// store these locally
-		
+		Variable tmpReadNoiseLevel,tmpReadNoiseLevel_Err
 
-		if(cmpstr(detStr,"B") == 0 )
-			Print "Median Filtering RAW data (3 passes)"
-			Wave w = V_getDetectorDataW("RAW",detStr)
-			MatrixFilter /N=3 /P=3 median w
+	// TODO: change the math to do the filtering and subtraction both here in this step,
+	// then determine the patch sum and proper error propogation.
+	//
+	// just do the median filter now, do the background subtraction later on the patch
+		if(isBack)
+			Wave w = V_getDetectorDataW("RAW","B")
+			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+			switch(gHighResBinning)
+				case 1:
+					tmpReadNoiseLevel = kReadNoiseLevel_bin1		// a constant value
+					tmpReadNoiseLevel_Err = kReadNoiseLevel_Err_bin1		// a constant value
+					
+					MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+					
+					Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+					break
+				case 4:
+					tmpReadNoiseLevel = kReadNoiseLevel_bin4		// a constant value
+					tmpReadNoiseLevel_Err = kReadNoiseLevel_Err_bin4		// a constant value
+									
+					MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+					
+					Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+					break
+				default:
+					Abort "No binning case matches in V_AskForAbsoluteParams_Quest"
+			endswitch
+			
 		endif
 
 		emptyCts = V_SumCountsInBox(xyBoxW[0],xyBoxW[1],xyBoxW[2],xyBoxW[3],empty_ct_err,"RAW",detPanel_toSum)
@@ -2560,8 +2584,8 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 //		kReadNoiseLevel_Err
 //
 			nPixInBox = (xyBoxW[1] - xyBoxW[0])*(xyBoxW[3]-xyBoxW[2])
-			emptyCts -= kReadNoiseLevel*nPixInBox
-			empty_ct_err = sqrt(empty_ct_err^2 + (kReadNoiseLevel_Err*nPixInBox)^2)
+			emptyCts -= tmpReadNoiseLevel*nPixInBox
+			empty_ct_err = sqrt(empty_ct_err^2 + (tmpReadNoiseLevel_Err*nPixInBox)^2)
 						
 			Print "adjusted empty counts = ",emptyCts
 			Print "adjusted err/counts = ",empty_ct_err/emptyCts

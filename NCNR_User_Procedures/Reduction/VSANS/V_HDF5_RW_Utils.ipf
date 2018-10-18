@@ -147,7 +147,7 @@ Function V_LoadHDF5Data(file,folder)
 				// -- but having both the same is wrong...
 				// -- the pixel value is needed for display of the panels
 				if(kBCTR_CM)
-					//V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+					//V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 					//
 	
 					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
@@ -163,7 +163,7 @@ Function V_LoadHDF5Data(file,folder)
 					V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 				else
 					// beam center is in pixels, so use the old routine
-					V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+					V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 				endif				
 				
 				
@@ -210,7 +210,7 @@ Function V_LoadHDF5Data(file,folder)
 //			else
 
 				// beam center is in pixels, so use the old routine
-				V_ConvertBeamCtr_to_mmB(folder,detStr,destPath)
+				V_ConvertBeamCtrPix_to_mmB(folder,detStr,destPath)
 
 //			endif
 			V_Detector_CalcQVals(folder,detStr,destPath)

@@ -53,9 +53,9 @@ Proc V_DetectorPanelFit() : Panel
 	Button button_0,pos={486,20},size={80,20},proc=V_DetFitGuessButtonProc,title="Guess"
 	Button button_1,pos={615,20},size={80,20},proc=V_DetFitButtonProc,title="Do Fit"
 	Button button_2,pos={744,20},size={80,20},proc=V_DetFitHelpButtonProc,title="Help"
-	Button button_3,pos={730,400},size={110,20},proc=V_CopyCtrButtonProc,title="Copy Centers"
+	Button button_3,pos={730,400},size={110,20},proc=V_CopyCtrButtonProc,title="Copy Centers",disable=2
 	Button button_4,pos={615,400},size={110,20},proc=V_CtrTableButtonProc,title="Ctr table"
-	Button button_5,pos={730,440},size={110,20},proc=V_WriteCtrTableButtonProc,title="Write table"
+	Button button_5,pos={730,440},size={110,20},proc=V_WriteCtrTableButtonProc,title="Write table",disable=2
 
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:BeamCenter
@@ -210,71 +210,7 @@ Function V_DrawDetPanel(str)
 		Variable VC_nPix_Y = VCALC_get_nPix_Y(str)
 		Variable VC_pixSize_X = VCALC_getPixSizeX(str)
 		Variable VC_pixSize_Y = VCALC_getPixSizeY(str)
-//		strswitch(str)
-//			case "FL":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_L_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
-//				break
-//			case "FR":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_R_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-//				break
-//			case "ML":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_L_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-//				break
-//			case "MR":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_R_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-//				break	
-//	
-//			case "FT":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_T_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-//				break
-//			case "FB":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gFront_B_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Front:det_"+str)
-//				break
-//			case "MT":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_T_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-//				break
-//			case "MB":
-//				NVAR VC_nPix_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_X
-//				NVAR VC_nPix_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_nPix_Y
-//				NVAR VC_pixSize_X = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelX
-//				NVAR VC_pixSize_Y = root:Packages:NIST:VSANS:VCALC:gMiddle_B_pixelY
-//	//			wave newW = $("root:Packages:NIST:VSANS:VCALC:Middle:det_"+str)
-//				break	
-//				
-//			case "B":
-//				return(0)		//just exit
-//				break						
-//			default:
-//				return(0)		//just exit
-//		endswitch
+
 	
 	// if VCALC declare this way	
 		wave newW = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+str+":det_"+str)
@@ -426,8 +362,10 @@ Function V_DetFitGuessButtonProc(ba) : ButtonControl
 			Wave coefW=root:coef_PeakPix2D
 			
 			WaveStats/Q dispW
-			coefW[2] = V_max
-			coefW[0] = 1			
+			coefW[2] = V_max		//approx peak height
+			coefW[6] = V_avg		//approx background
+			coefW[0] = 0			// remove the porod scale
+			coefW[3] = 0.9		//peak width, first guess
 			
 			break
 		case -1: // control being killed
@@ -772,10 +710,10 @@ Function V_BCtrTable()
 	// order of the panel names will match the constant string
 	//FT;FB;FL;FR;MT;MB;ML;MR;B;
 	Make/O/T/N=9 panelW
-	Make/O/D/N=9 xCtr_pix,yCtr_pix,xCtr_mm,yCtr_mm
+	Make/O/D/N=9 xCtr_pix,yCtr_pix,xCtr_cm,yCtr_cm
 	DoWindow/F BCtrTable
 	if(V_flag == 0)
-		Edit/W=(547,621,1076,943)/N=BCtrTable panelW,xCtr_pix,yCtr_pix,xCtr_mm,yCtr_mm
+		Edit/W=(547,621,1076,943)/N=BCtrTable panelW,xCtr_pix,yCtr_pix,xCtr_cm,yCtr_cm
 	endif
 	
 	Variable ii
@@ -785,14 +723,15 @@ Function V_BCtrTable()
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		panelW[ii] = detStr
-		xCtr_pix[ii] = V_getDet_beam_center_x_pix(fname,detStr)
-		yCtr_pix[ii] = V_getDet_beam_center_y_pix(fname,detStr)
-		// TODO
-		// and now the mm values
-		xCtr_mm[ii] = V_getDet_beam_center_x_mm(fname,detStr)
-		yCtr_mm[ii] = V_getDet_beam_center_y_mm(fname,detStr)
-		
+
 	endfor
+	
+//		xCtr_pix[ii] = V_getDet_beam_center_x_pix(fname,detStr)
+//		yCtr_pix[ii] = V_getDet_beam_center_y_pix(fname,detStr)
+//		// TODO
+//		// and now the mm values
+//		xCtr_mm[ii] = V_getDet_beam_center_x_mm(fname,detStr)
+//		yCtr_mm[ii] = V_getDet_beam_center_y_mm(fname,detStr)
 	return(0)
 End
 
@@ -867,7 +806,9 @@ Proc V_DeriveBeamCenters()
 	
 End
 
-
+// TODO:
+// if I change any of these values, I need to also change them in the V_FindCentroid function 
+// in V_Marquee_Operation.ipf
 Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
 	

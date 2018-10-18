@@ -53,7 +53,10 @@ Function FillPanel_wModelData(det,qTot,type)
 	//
 	Variable addEmpBgd=0
 	
-		
+// TODOHIGHRES
+// this is a slow step - try to figure out how to multithread this efficiently. simply adding the 
+//  keyword has little effect. maybe only do this for "B", maybe rewrite the calculation to not use pq indexing
+//		
 	String funcStr = VCALC_getModelFunctionStr()
 	strswitch(funcStr)
 		case "Big Debye":
@@ -63,7 +66,7 @@ Function FillPanel_wModelData(det,qTot,type)
 			tmpInten = VC_SphereForm(1,2000,1e-6,0.01,qTot[p][q])	
 			break
 		case "Debye":
-			tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])
+			MultiThread tmpInten = VC_Debye(10,300,0.0001,qTot[p][q])
 			break
 		case "Sphere":
 			tmpInten = VC_SphereForm(1,60,1e-6,0.001,qTot[p][q])	
@@ -277,7 +280,7 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	if(cmpstr(detStr,"B") == 0)
 		V_NonLinearCorrection_B("VCALC",data,tmpCalibX,tmpCalibY,detStr,destPath)
 		// beam center is in pixels, so use the old routine
-		V_ConvertBeamCtr_to_mmB("VCALC","B",destPath)
+		V_ConvertBeamCtrPix_to_mmB("VCALC","B",destPath)
 	else
 		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
 	endif
@@ -564,7 +567,7 @@ Function VC_SphereForm(scale,radius,delrho,bkg,x)
 	
 End
 
-Function VC_Debye(scale,rg,bkg,x)
+ThreadSafe Function VC_Debye(scale,rg,bkg,x)
 	Variable scale,rg,bkg
 	Variable x
 	
@@ -700,6 +703,15 @@ Function V_SetDeltaQ(folderStr,detStr)
 		delQ = abs(qx[0][0] - qx[1][0])/2
 	else
 		delQ = abs(qy[0][1] - qy[0][0])/2
+	endif
+
+// TODOHIGHRES
+// -- is this how I want to handle the too-fine resolution of 1x1 binning?
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+
+	if(cmpstr(detStr,"B") == 0 && gHighResBinning == 1)
+		delQ = 4*delQ
+		Print "Reset delta Q for binning the back detector to 4x pix = ",delQ
 	endif
 	
 	// set the global

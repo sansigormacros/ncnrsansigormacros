@@ -643,7 +643,7 @@ Function V_DrawPanelToMask(str)
 			right = left+width
 			bottom = top+height
 			
-			Print left,top,right,bottom
+//			Print left,top,right,bottom
 
 			break						
 		default:
@@ -835,12 +835,32 @@ Proc H_Setup_VSANS_MASK_Structure()
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
+			
+			
+//	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_B	
-			Make/O/I/N=(680,1656)	data	= 0
-			data[][0,5] = 1
-			data[][1650,1655] = 1
-			data[0,5][] = 1
-			data[675,679][] = 1
+		if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)
+				// TODOHIGHRES - the pixel values are hard-wired
+				Make/O/I/N=(2720,6624)	data	= 0		
+
+			// TODOHIGHRES -- these values are simply the 4x4 values x4
+			// these will need to be updated
+				data[][0,20] = 1
+				data[][6603,6623] = 1		// 
+				data[0,20][] = 1
+				data[2599,2719][] = 1		// 
+				
+			else
+				Make/O/I/N=(680,1656)	data	= 0		
+
+				data[][0,5] = 1
+				data[][1650,1655] = 1
+				data[0,5][] = 1
+				data[675,679][] = 1
+
+		endif
+				
+			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_MR		
 			Make/O/I/N=(48,128)	data	= 0
 			data[44,47][] = 1
@@ -907,12 +927,36 @@ Function V_GenerateDefaultMask()
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
+			
+	
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B	
-			Make/O/I/N=(680,1656)	data	= 0
-			data[][0,38] = 1
-			data[][1548,1655] = 1
-			data[0,10][] = 1
-			data[669,679][] = 1
+		switch(gHighResBinning)
+			case 1:
+			// TODOHIGHRES - the pix values are hard-wired
+				Make/O/I/N=(2720,6624)	data	= 0		
+
+			// TODOHIGHRES -- these values are simply the 4x4 values x4
+			// these will need to be updated
+				data[][0,152] = 1
+				data[][6195,6623] = 1		// 107 pix *4 =428
+				data[0,40][] = 1
+				data[2679,2719][] = 1		// 10 pix (*4)
+				
+				break
+			case 4:
+				Make/O/I/N=(680,1656)	data	= 0		
+
+				data[][0,38] = 1
+				data[][1548,1655] = 1
+				data[0,10][] = 1
+				data[669,679][] = 1
+				break
+			default:
+				Abort "No binning case matches in V_GenerateDefaultMask"
+		endswitch
+	
+			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR		
 			Make/O/I/N=(48,128)	data	= 0
 //			data[][0,3] = 1

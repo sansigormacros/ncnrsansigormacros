@@ -85,8 +85,9 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 
 		if(cmpstr(detStr,"B") == 0)
 			//always write out the center of the detector since this is dummy data
-			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr)/10)		//write out [cm]
-			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr)/10)	
+			// the back detector always has its beam center in pixels
+			V_writeDet_beam_center_x(fileName,detStr,V_getDet_beam_center_x("VCALC",detStr))
+			V_writeDet_beam_center_y(fileName,detStr,V_getDet_beam_center_y("VCALC",detStr))	
 			
 			// write out the number of pixels x and y
 			// patch n_pix_x and y
@@ -114,7 +115,7 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 	endfor
 
 	
-// writes out "perfect" detector calibration constants for all 8 tube banks
+// writes out "perfect" detector calibration constants for all 8 tube banks + back detector
 	V_WritePerfectSpatialCalib(filename)
 // writes out "perfect" dead time constants for all 8 tube banks + back detector
 	V_WritePerfectDeadTime(filename)
@@ -194,8 +195,17 @@ Function V_WritePerfectSpatialCalib(filename)
 	KillWaves tmpCalib
 	
 	// and for the back detector "B"
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	Variable tmpPix
+	if(gHighResBinning == 1)
+		tmpPix = 0.00845		//[cm]
+	else
+		//binning 4x4 assumed
+		tmpPix = 0.034
+	endif
+	
 	Make/O/D/N=3 tmpCalib
-	tmpCalib[0] = 1
+	tmpCalib[0] = tmpPix
 	tmpCalib[1] = 1
 	tmpcalib[2] = 10000
 	V_writeDet_cal_x(filename,"B",tmpCalib)

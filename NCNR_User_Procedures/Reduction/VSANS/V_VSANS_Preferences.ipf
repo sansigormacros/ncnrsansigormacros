@@ -93,11 +93,24 @@ Proc Initialize_VSANSPreferences()
 	// Special global to prevent fake data from "B" detector from being written out
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 1
-		
+
+// TODOHIGHRES
+// OCT 2018
+// new global to flag the highRes detector binning to accomodate the change in binning
+//  that was set 10/16/18 (changed from 4x4 bin to 1x1= no binning)
+// set this flag == 1 for 1x1
+// set flag 4 == 4x4
+	Variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 4
+			
 	DoAlert 1,"Are you using the back detector? (This can be changed later in the Preferences Panel)"
 	if(V_flag == 1)
 		// yes
 		Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 0
+		DoAlert 1,"Are you using 1x1 binning?"
+		if(V_flag == 1)
+			// yes
+			Variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 1
+		endif
 	endif
 	
 // flag to allow adding raw data files with different attenuation (normally not done)	

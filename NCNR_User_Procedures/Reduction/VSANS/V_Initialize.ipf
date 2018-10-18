@@ -29,6 +29,7 @@
 
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
 // this need not ever change from 1
+// the back detector is always treated as a beam center in pixels, since it is the natural definition
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
 
 // // TODO: -- replace this constant with V_getDet_panel_gap(fname,detStr)
@@ -83,9 +84,14 @@ Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;
 // average of whole panel (tested several data files) = 208 +/- 14
 //
 // 200 appears to be a better value - (empirical, based on teflon/converging pinhole data)
-Constant kReadNoiseLevel = 200
-//Constant kReadNoiseLevel = 208
-Constant kReadNoiseLevel_Err = 14
+Constant kReadNoiseLevel_bin4 = 200
+//Constant kReadNoiseLevel_bin4 = 208
+Constant kReadNoiseLevel_Err_bin4 = 14
+
+
+// TODOHIGHRES: these values are complete fiction
+Constant kReadNoiseLevel_bin1 = 20
+Constant kReadNoiseLevel_Err_bin1 = 1
 
 
 
@@ -95,12 +101,16 @@ Constant kReadNoiseLevel_Err = 14
 // runs 12221,12225,27,33,34,35,38,42
 // middle CCD is not moved
 // See V_ShiftBackDetImage() for implementation
-Constant 	kShift_TopX = 7
-Constant		kShift_TopY = 105
-Constant		kShift_BottomX = 5
-Constant		kShift_BottomY = 35
+Constant 	kShift_TopX_bin4 = 7
+Constant		kShift_TopY_bin4 = 105
+Constant		kShift_BottomX_bin4 = 5
+Constant		kShift_BottomY_bin4 = 35
 
-
+// TODOHIGHRES -- these values need to be verified. they are currently simply 4x the bin4 values
+Constant 	kShift_TopX_bin1 = 28
+Constant		kShift_TopY_bin1 = 420
+Constant		kShift_BottomX_bin1 = 20
+Constant		kShift_BottomY_bin1 = 130
 
 
 
@@ -109,7 +119,7 @@ Proc Initialize_VSANS()
 	V_Initialize()
 End
 
-//this is the main initualization procedure that must be the first thing
+//this is the main initialization procedure that must be the first thing
 //done when opening a new Data reduction experiment
 //
 //sets up data folders, globals, protocols, and draws the main panel
@@ -130,7 +140,6 @@ Proc V_Initialize()
 	
 	V_InitFolders()
 	
-	VC_Initialize_Space()		//initialize folders for VCALC
 	
 	V_InitFakeProtocols()
 	V_InitGlobals()	
@@ -141,6 +150,8 @@ Proc V_Initialize()
 		Main_VSANS_Panel()
 	Endif
 //	V_ResizeCmdWindow()
+
+	VC_Initialize_Space()		//initialize folders for VCALC
 
 // TODO - be sure that NCNR is defined correctly	
 	//unload the NCNR_Package_Loader, if NCNR not defined
@@ -244,6 +255,7 @@ Function V_InitGlobals()
 
 	//set flag if Demo Version is detected
 	Variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
+
 	
 	//set XML globals
 //	String/G root:Packages:NIST:gXMLLoader_Title = ""
@@ -450,25 +462,30 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	V_CleanupData_w_Progress(0,1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
-
+	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	if(gHighResBinning == 1)
 // these KillDF are a bad idea - it wipes out all of the current work
 // whenever a save is done - which is the opposite of what you want
 // to happen when you save!
+	
+		Printf "Hook cleaned out WORK folders, experiment saved\r"
 
-//	KillDataFolder/Z root:Packages:NIST:VSANS:RAW
-//	KillDataFolder/Z root:Packages:NIST:VSANS:SAM
-//	KillDataFolder/Z root:Packages:NIST:VSANS:EMP
-//	KillDataFolder/Z root:Packages:NIST:VSANS:BGD
-//	KillDataFolder/Z root:Packages:NIST:VSANS:COR
-//	KillDataFolder/Z root:Packages:NIST:VSANS:DIV
-//	KillDataFolder/Z root:Packages:NIST:VSANS:MSK
-//	KillDataFolder/Z root:Packages:NIST:VSANS:ABS
-//	KillDataFolder/Z root:Packages:NIST:VSANS:CAL
-//	KillDataFolder/Z root:Packages:NIST:VSANS:STO
-//	KillDataFolder/Z root:Packages:NIST:VSANS:SUB
-//	KillDataFolder/Z root:Packages:NIST:VSANS:DRK
-//	KillDataFolder/Z root:Packages:NIST:VSANS:ADJ
+		KillDataFolder/Z root:Packages:NIST:VSANS:RAW
+		KillDataFolder/Z root:Packages:NIST:VSANS:SAM
+		KillDataFolder/Z root:Packages:NIST:VSANS:EMP
+		KillDataFolder/Z root:Packages:NIST:VSANS:BGD
+		KillDataFolder/Z root:Packages:NIST:VSANS:COR
+		KillDataFolder/Z root:Packages:NIST:VSANS:DIV
+		KillDataFolder/Z root:Packages:NIST:VSANS:MSK
+		KillDataFolder/Z root:Packages:NIST:VSANS:ABS
+		KillDataFolder/Z root:Packages:NIST:VSANS:CAL
+		KillDataFolder/Z root:Packages:NIST:VSANS:STO
+		KillDataFolder/Z root:Packages:NIST:VSANS:SUB
+		KillDataFolder/Z root:Packages:NIST:VSANS:DRK
+		KillDataFolder/Z root:Packages:NIST:VSANS:ADJ
+		KillDataFolder/Z root:Packages:NIST:VSANS:VCALC
 
+	endif
 // re-create anthing that was killed
 	V_initFolders()
 

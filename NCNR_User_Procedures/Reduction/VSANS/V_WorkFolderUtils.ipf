@@ -510,10 +510,28 @@ Function V_Raw_to_work(newType)
 
 	if(gIgnoreDetB == 0)
 		Wave w = V_getDetectorDataW(fname,"B")
-		w -= kReadNoiseLevel		// a constant value
 		
-		MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
-		Print "*** median noise filter applied to the back detector (3 passes) ***"
+		NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+		
+		switch(gHighResBinning)
+			case 1:
+				w -= kReadNoiseLevel_bin1		// a constant value
+				
+				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+				
+				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+				break
+			case 4:
+				w -= kReadNoiseLevel_bin4		// a constant value
+				
+				MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+				
+				Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+				break
+			default:
+				Abort "No binning case matches in V_Raw_to_Work"
+		endswitch	
+
 	endif
 	
 	
@@ -581,7 +599,7 @@ Function V_Raw_to_work(newType)
 				// -- but having both the same is wrong...
 				// -- the pixel value is needed for display of the panels
 				if(kBCTR_CM)
-					//V_ConvertBeamCtr_to_mm(folder,detStr,destPath)
+					//V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 					//
 	
 					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
@@ -597,7 +615,7 @@ Function V_Raw_to_work(newType)
 					V_ConvertBeamCtr_to_pix(fname,detStr,destPath)
 				else
 					// beam center is in pixels, so use the old routine
-					V_ConvertBeamCtr_to_mm(fname,detStr,destPath)
+					V_ConvertBeamCtrPix_to_mm(fname,detStr,destPath)
 				endif		
 							
 			// (2.5) Calculate the q-values
@@ -639,7 +657,7 @@ Function V_Raw_to_work(newType)
 //			V_ConvertBeamCtr_to_pixB(fname,detStr,destPath)
 //		else
 			// beam center is in pixels, so use the old routine
-			V_ConvertBeamCtr_to_mmB(fname,detStr,destPath)
+			V_ConvertBeamCtrPix_to_mmB(fname,detStr,destPath)
 
 //		endif
 		V_Detector_CalcQVals(fname,detStr,destPath)

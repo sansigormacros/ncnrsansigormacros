@@ -1013,17 +1013,30 @@ Proc VC_Initialize_Space()
 	Variable/G gBack_w = 22.2				//w and h for the back detector [cm]
 	Variable/G gBack_h = 50.4
 	
-	Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of [cm] here)
-	Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
-
-
-	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 680		// detector pixels in x-direction
-	Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 1656
 	
-
-// pixel beam center - HDF style
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels +0.1 so I know it's from here
-	Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
+	// TODOHIRES -- be sure that all of this is correct, since it is hard-wired values
+	// -- can't use a switch so I'm using an if(), where the default is 4x4 binning
+	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)
+		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.00845		// 340 micron resolution (units of [cm] here)
+		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.00845		
+	
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 2720		// detector pixels in x-direction
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 6624
+		
+	// pixel beam center - HDF style
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 1360.1	// == x beam center, in pixels +0.1 so I know it's from here
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 3312.1		// == y beam center, in pixels
+	else
+		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of [cm] here)
+		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
+	
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 680		// detector pixels in x-direction
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 1656
+		
+	// pixel beam center - HDF style
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels +0.1 so I know it's from here
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
+	endif
 
 
 // Generate all of the waves used for the detector and the q values
