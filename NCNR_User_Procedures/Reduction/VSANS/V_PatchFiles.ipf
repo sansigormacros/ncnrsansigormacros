@@ -2458,6 +2458,12 @@ Proc V_Patch_Back_Detector(lo,hi)
 End
 
 
+Proc V_Patch_XYPixelSize(lo,hi)
+	Variable lo,hi
+	
+	V_fPatch_XYPixelSize(lo,hi)
+End
+
 // simple utility to patch the offset values in the file headers
 //
 // Swaps only the L/R detector values

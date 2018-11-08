@@ -794,7 +794,7 @@ End
 // Empirical values are averaged as noted
 //
 
-Proc V_DeriveBeamCenters()
+Proc V_DeriveBeamCenters_VelSel()
 
 	Make/O/T panelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
 	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
@@ -802,14 +802,17 @@ Proc V_DeriveBeamCenters()
 	Edit panelWave,newXCtr_cm,newYCtr_cm
 	
 	DoAlert 0, "enter the measured beam center reference for Front and Middle panels"
-	V_fDeriveBeamCenters()
+	V_fDeriveBeamCenters_VelSel()
 	
 End
 
 // TODO:
 // if I change any of these values, I need to also change them in the V_FindCentroid function 
 // in V_Marquee_Operation.ipf
-Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
+//
+// ** updated these values for the FRONT only with fitted arcs of AgBeh (March 2018 data, run 4494)
+//
+Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
 	
 	// start with the front
@@ -817,14 +820,18 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	newXCtr_cm[1] = x_FrontReference
 	newYCtr_cm[1] = y_FrontReference
 	// FL
-	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2
-	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
+//	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Nov 2018
+//	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
+	newXCtr_cm[0] = x_FrontReference + 0.26
+	newYCtr_cm[0] = y_FrontReference + 0.33
 	// FB
-	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2
-	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
-	// FT (duplicate FB)
-	newXCtr_cm[2] = newXCtr_cm[3]
-	newYCtr_cm[2] = newYCtr_cm[3]
+//	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Nov 2018
+//	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
+	newXCtr_cm[3] = x_FrontReference - 1.84
+	newYCtr_cm[3] = y_FrontReference + 0.41
+	// FT (not a duplicate of FB anymore)
+	newXCtr_cm[2] = x_FrontReference - 1.33
+	newYCtr_cm[2] = y_FrontReference - 0.30
 	
 	// MR
 	newXCtr_cm[5] = x_MiddleReference
@@ -841,8 +848,64 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	
 	
 	// default value for B
-	newXCtr_cm[8] = 0
-	newYCtr_cm[8] = 0
+	newXCtr_cm[8] = 50
+	newYCtr_cm[8] = 50
+
+		
+	return
+End
+
+//
+// these values for FRONT use improved, fitted arcs from AgBeh. Data was fitted in pixels and converted to cm
+// data from Sept 2018 (run 17994)
+Proc V_DeriveBeamCenters_Graphite()
+
+	Make/O/T panelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
+	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
+	
+	Edit panelWave,newXCtr_cm,newYCtr_cm
+	
+	DoAlert 0, "enter the measured beam center reference for Front and Middle panels"
+	V_fDeriveBeamCenters_Graphite()
+	
+End
+
+// units are in [cm]
+Proc V_fDeriveBeamCenters_Graphite(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
+	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
+	
+	// start with the front
+	// FR
+	newXCtr_cm[1] = x_FrontReference - 0.08
+	newYCtr_cm[1] = y_FrontReference - 0.08
+	// FL
+	newXCtr_cm[0] = x_FrontReference - 0.03
+	newYCtr_cm[0] = y_FrontReference + 0.28
+	// FB
+	newXCtr_cm[3] = x_FrontReference + 1.42
+	newYCtr_cm[3] = y_FrontReference + 0.55
+	// FT 
+	newXCtr_cm[2] = x_FrontReference + 1.92
+	newYCtr_cm[2] = y_FrontReference + 0.05
+	
+	// no new data for the middle detector + graphite, so these values don't change
+	// MR
+	newXCtr_cm[5] = x_MiddleReference
+	newYCtr_cm[5] = y_MiddleReference
+	// ML
+	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
+	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
+	// MB
+	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
+	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
+	// MT (duplicate MB)
+	newXCtr_cm[6] = newXCtr_cm[7]
+	newYCtr_cm[6] = newYCtr_cm[7]	
+	
+	
+	// default value for B
+	newXCtr_cm[8] = 50
+	newYCtr_cm[8] = 50
 
 		
 	return

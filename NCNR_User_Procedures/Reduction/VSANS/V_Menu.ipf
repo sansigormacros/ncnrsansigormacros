@@ -27,7 +27,8 @@ Menu "VSANS"
 		"Write Annular Data",V_Write1DAnnular()
 		"Trim I(q) points",V_CombineDataGraph()
 		"-"
-		"Derive Beam Centers",V_DeriveBeamCenters()
+		"Derive Beam Centers - VelSel",V_DeriveBeamCenters_VelSel()
+		"Derive Beam Centers - Graphite",V_DeriveBeamCenters_Graphite()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
 		"Median Filter Back Det",pV_MedianFilterBack()
@@ -45,6 +46,7 @@ Menu "VSANS"
 		"Patch Detector Panel Gap",V_PatchDet_Gap()
 		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
+		"Patch XY Pixel Size",V_Patch_XYPixelSize()
 		"-"
 		"Patch Back Detector Values",V_Patch_Back_Detector()
 	End
