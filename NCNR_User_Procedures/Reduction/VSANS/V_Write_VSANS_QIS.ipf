@@ -517,12 +517,14 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	//	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
 	//	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
 		Duplicate/O qTot,phi,r_dist
-		Variable pixSizeX,pixSizeY
+		Variable pixSizeX,pixSizeY,xctr,yctr
 		pixSizeX = V_getDet_x_pixel_size(type,detStr)
 		pixSizeY = V_getDet_y_pixel_size(type,detStr)
 
-		phi = V_FindPhi( pixSizeX*((p+1)-bCentX) , pixSizeY*((q+1)-bCentY)+(2)*yg_d)		//(dx,dy+yg_d)
-		r_dist = sqrt(  (pixSizeX*((p+1)-bCentX))^2 +  (pixSizeY*((q+1)-bCentY)+(2)*yg_d)^2 )		//radial distance from ctr to pt
+		xctr = V_getDet_beam_center_x_pix(type,detStr)
+		yctr = V_getDet_beam_center_y_pix(type,detStr)
+		phi = V_FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
+		r_dist = sqrt(  (pixSizeX*((p+1)-xctr))^2 +  (pixSizeY*((q+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
 	
 		//make everything in 1D now
 		Duplicate/O qTot SigmaQX,SigmaQY,fsubS,qval	
@@ -590,7 +592,7 @@ s_toc()
 		
 		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s
 		
-		Killwaves/Z qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS
+		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist
 		
 		Print "QxQy_Export File written: ", V_GetFileNameFromPathNoSemi(detSavePath)
 	
