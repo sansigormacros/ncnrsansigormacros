@@ -1339,7 +1339,7 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;QxQy_ASCII;"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
@@ -2403,6 +2403,7 @@ Proc V_AskForAbsoluteParams(c2,c3,c4,c5,I_err,back_values)
 		gAbsStr = ReplaceStringByKey("SDEV_B",gAbsStr,num2str(I_err),"=",";")
 	endif
 	
+	gAbsStr = RemoveFromList("ask",gAbsStr)		//now that values are added, remove "ask"
 
 	SetDataFolder root:
 End
@@ -3358,7 +3359,8 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 //				Fast2DExport(activeType,fullPath,dialog)
 				break
 			case "QxQy_ASCII":
-//				QxQy_Export(activeType,fullPath,dialog)
+				fullPath = S_Path + newFileName+".DAT"
+				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
 				break
 			case "PNG_Graphic":
 //				SaveAsPNG(activeType,fullpath,dialog)

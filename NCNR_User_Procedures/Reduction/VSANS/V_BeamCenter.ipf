@@ -46,7 +46,7 @@ Proc V_DetectorPanelFit() : Panel
 	PopupMenu popup_0,pos={20,50},size={109,20},proc=V_SetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 	PopupMenu popup_1,pos={200,20},size={157,20},proc=V_DetModelPopMenuProc,title="Model Function"
-	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
+	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;BroadPeak_constrained;PowerLaw;\""
 	PopupMenu popup_2,pos={20,20},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
 		
@@ -56,6 +56,11 @@ Proc V_DetectorPanelFit() : Panel
 	Button button_3,pos={730,400},size={110,20},proc=V_CopyCtrButtonProc,title="Copy Centers",disable=2
 	Button button_4,pos={615,400},size={110,20},proc=V_CtrTableButtonProc,title="Ctr table"
 	Button button_5,pos={730,440},size={110,20},proc=V_WriteCtrTableButtonProc,title="Write table",disable=2
+
+
+	Button button_6,pos={615,470},size={110,20},proc=V_MaskBeforeFitButtonProc,title="Mask Panel"
+	Button button_7,pos={730,470},size={110,20},proc=V_ConvertFitPix2cmButtonProc,title="Convert Pix2Cm"
+	Button button_8,pos={615,500},size={110,20},proc=V_GizmoFitButtonProc,title="Gizmo"
 
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:BeamCenter
@@ -351,6 +356,7 @@ End
 
 //
 // TODO - make a better guess (how?)
+// TODO - make the guess appropriate for the fitted model
 //
 Function V_DetFitGuessButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -374,6 +380,78 @@ Function V_DetFitGuessButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
+Function V_GizmoFitButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			Execute "V_Gizmo_PeakFit()"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_MaskBeforeFitButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			Execute "V_NaN_BeforeFit()"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+// TODO - read from the popup for the panel string
+// TODO - read the appropriate coeffients for xy, depending on the model selected
+//
+Function V_ConvertFitPix2cmButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			String detStr
+			Variable xPix,yPix
+//			Prompt detStr, "enter the panel string"
+//			Prompt xPix, "enter the x pixel center"
+//			Prompt yPix, "enter the y pixel center"
+//			DoPrompt "enter the values",detStr,xPix,yPix
+
+			ControlInfo popup_0
+			detStr = S_Value
+			Wave coefW=root:coef_PeakPix2D
+	
+			xPix = coefW[9]
+			yPix = coefW[10]
+			
+			V_Convert_FittedPix_2_cm(detStr,xPix,yPix)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 //
 // TODO -- currently hard-wired for coefficients from the only fit function
@@ -429,7 +507,7 @@ Function V_DetFitButtonProc(ba) : ButtonControl
 			Wave dispW=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel
 			Wave coefW=root:coef_PeakPix2D
 			
-			FuncFitMD/H="11000111100"/NTHR=0 V_BroadPeak_Pix2D coefW  dispW /D			
+			FuncFitMD/H="11000101100"/NTHR=0/M=2 V_BroadPeak_Pix2D coefW  dispW /D			
 			
 			Wave ws=W_sigma
 			AppendtoTable/W=PanelFit#T0 ws
@@ -810,7 +888,7 @@ End
 // if I change any of these values, I need to also change them in the V_FindCentroid function 
 // in V_Marquee_Operation.ipf
 //
-// ** updated these values for the FRONT only with fitted arcs of AgBeh (March 2018 data, run 4494)
+// ** updated these values for the FRONT only with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
 //
 Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
@@ -820,31 +898,37 @@ Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleRefer
 	newXCtr_cm[1] = x_FrontReference
 	newYCtr_cm[1] = y_FrontReference
 	// FL
-//	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Nov 2018
+//	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Dec 2018
 //	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
-	newXCtr_cm[0] = x_FrontReference + 0.26
-	newYCtr_cm[0] = y_FrontReference + 0.33
+	newXCtr_cm[0] = x_FrontReference + 0.13				//NEW Dec 2018
+	newYCtr_cm[0] = y_FrontReference + 0.35
 	// FB
-//	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Nov 2018
+//	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Dec 2018
 //	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
-	newXCtr_cm[3] = x_FrontReference - 1.84
-	newYCtr_cm[3] = y_FrontReference + 0.41
-	// FT (not a duplicate of FB anymore)
-	newXCtr_cm[2] = x_FrontReference - 1.33
-	newYCtr_cm[2] = y_FrontReference - 0.30
+	newXCtr_cm[3] = x_FrontReference + 0.95					// NEW Dec 2018
+	newYCtr_cm[3] = y_FrontReference + 0.77
+	// FT 
+//	newXCtr_cm[2] = newXCtr_cm[3]				// OLD, pre Dec 2018
+//	newYCtr_cm[2] = newYCtr_cm[3]
+	newXCtr_cm[2] = x_FrontReference + 1.59				// NEW Dec 2018 (not a duplicate of FB anymore)
+	newYCtr_cm[2] = y_FrontReference + 0.09
 	
 	// MR
 	newXCtr_cm[5] = x_MiddleReference
 	newYCtr_cm[5] = y_MiddleReference
 	// ML
-	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
-	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
+//	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
+//	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
+	newXCtr_cm[4] = x_MiddleReference + 0.26
+	newYCtr_cm[4] = y_MiddleReference - 0.16
 	// MB
-	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
-	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
-	// MT (duplicate MB)
-	newXCtr_cm[6] = newXCtr_cm[7]
-	newYCtr_cm[6] = newYCtr_cm[7]	
+//	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
+//	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
+	newXCtr_cm[7] = x_MiddleReference - 0.89
+	newYCtr_cm[7] = y_MiddleReference + 0.96
+	// MT 
+	newXCtr_cm[6] = x_MiddleReference - 0.28
+	newYCtr_cm[6] = y_MiddleReference + 0.60
 	
 	
 	// default value for B
@@ -911,3 +995,114 @@ Proc V_fDeriveBeamCenters_Graphite(x_FrontReference,y_FrontReference,x_MiddleRef
 	return
 End
 
+
+
+
+
+Window V_Gizmo_PeakFit() : GizmoPlot
+	PauseUpdate; Silent 1		// building window...
+	// Building Gizmo 7 window...
+	NewGizmo/W=(35,45,550,505)
+	ModifyGizmo startRecMacro=700
+	ModifyGizmo scalingOption=63
+	AppendToGizmo Surface=root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel,name=surface0
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ srcMode,0}
+	ModifyGizmo ModifyObject=surface0,objectType=surface,property={ surfaceCTab,Rainbow}
+	AppendToGizmo Axes=boxAxes,name=axes0
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisScalingMode,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={-1,axisColor,0,0,0,1}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={0,ticks,3}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={1,ticks,3}
+	ModifyGizmo ModifyObject=axes0,objectType=Axes,property={2,ticks,3}
+	ModifyGizmo modifyObject=axes0,objectType=Axes,property={-1,Clipped,0}
+	AppendToGizmo Surface=root:PeakPix2D_mat,name=surface1
+	ModifyGizmo ModifyObject=surface1,objectType=surface,property={ srcMode,0}
+	ModifyGizmo ModifyObject=surface1,objectType=surface,property={ surfaceCTab,Grays}
+	ModifyGizmo setDisplayList=0, object=surface0
+	ModifyGizmo setDisplayList=1, object=axes0
+	ModifyGizmo setDisplayList=2, object=surface1
+	ModifyGizmo autoscaling=1
+	ModifyGizmo currentGroupObject=""
+	ModifyGizmo showInfo
+	ModifyGizmo infoWindow={551,23,1368,322}
+	ModifyGizmo endRecMacro
+	ModifyGizmo idleEventQuaternion={1.38005e-05,-1.48789e-05,-6.11841e-06,1}
+EndMacro
+
+
+Proc V_NaN_BeforeFit(x1,x2,y1,y2)
+	Variable x1,x2,y1,y2
+	
+	root:Packages:NIST:VSANS:Globals:BeamCenter:curDispPanel[x1,x2][y1,y2] = NaN
+End
+
+
+Function V_Convert_FittedPix_2_cm(panel,xPix,yPix)
+	String panel
+	Variable xPix,yPix
+	
+	Make/O/D/N=128 tmpTube
+	
+	String pathStr = "root:Packages:NIST:VSANS:RAW:entry:instrument:detector_"
+	Variable x_cm,y_cm
+	
+	
+	Wave xW = $(pathStr+panel+":data_realDistX")
+	Wave yW = $(pathStr+panel+":data_realDistY")
+
+	strswitch(panel)	// string switch
+		case "FL":
+		case "ML":
+			// for Left/Right
+			tmpTube = yW[0][p]			
+			// for left
+			x_cm = (xW[47][0] + (xPix-47)*8.4)/10
+			y_cm = tmpTube[yPix]/10	
+	
+			break		
+		case "FR":	
+		case "MR":
+			// for Left/Right
+			tmpTube = yW[0][p]			
+			// for right
+			x_cm = (xW[0][0] + xPix*8.4)/10
+			y_cm = tmpTube[yPix]/10
+			
+			break
+		case "FT":	
+		case "MT":
+			// for Top/Bottom
+			tmpTube = xW[p][0]
+			
+			x_cm = tmpTube[xPix]/10
+			y_cm = (yW[0][0] + yPix*8.4)/10
+			
+			break		
+		case "FB":	
+		case "MB":
+			// for Top/Bottom
+			tmpTube = xW[p][0]
+			
+			x_cm = tmpTube[xPix]/10
+			y_cm = (yW[0][47] + (yPix-47)*8.4)/10
+						
+			break
+		default:			// optional default expression executed
+			Print "No case matched in V_Convert_FittedPix_2_cm"
+			return(1)
+	endswitch
+
+	
+	Print "Converted Center = ",x_cm,y_cm
+	return(0)
+end
+
+Function V_MakeCorrelationMatrix()
+	
+	Wave M_Covar=M_Covar
+	Duplicate M_Covar, CorMat	 // You can use any name instead of CorMat
+	CorMat = M_Covar[p][q]/sqrt(M_Covar[p][p]*M_Covar[q][q])
+	Edit/K=0 root:CorMat
+
+	return(0)
+End

@@ -560,10 +560,15 @@ Function V_Raw_to_work(newType)
 		Print "Doing DIV correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
-			Wave w = V_getDetectorDataW(fname,detStr)
-			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			
-			V_DIVCorrection(w,w_err,detStr,newType)
+			if(cmpstr(detStr,"B") == 0  && gIgnoreDetB == 1)
+				// do nothing
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				
+				V_DIVCorrection(w,w_err,detStr,newType)
+			endif
 		endfor
 	else
 		Print "DIV correction NOT DONE"		// not an error since correction was unchecked
@@ -631,36 +636,39 @@ Function V_Raw_to_work(newType)
 			V_Detector_CalcQVals(fname,detStr,destPath)
 			
 		endfor
-		
-		//"B" is separate
-		detStr = "B"
-		Wave w = V_getDetectorDataW(fname,detStr)
-		Wave cal_x = V_getDet_cal_x(fname,detStr)
-		Wave cal_y = V_getDet_cal_y(fname,detStr)
-		
-		V_NonLinearCorrection_B(fname,w,cal_x,cal_y,detStr,destPath)
 
-// "B" is always naturally defined in terms of a pixel center. This can be converted to mm, 
-// but the experiment will measure pixel x,y - just like ordela detectors.
+		if(gIgnoreDetB==1)		
+			//"B" is separate
+			detStr = "B"
+			Wave w = V_getDetectorDataW(fname,detStr)
+			Wave cal_x = V_getDet_cal_x(fname,detStr)
+			Wave cal_y = V_getDet_cal_y(fname,detStr)
+			
+			V_NonLinearCorrection_B(fname,w,cal_x,cal_y,detStr,destPath)
+	
+	// "B" is always naturally defined in terms of a pixel center. This can be converted to mm, 
+	// but the experiment will measure pixel x,y - just like ordela detectors.
+			
+	//		if(kBCTR_CM)
+	//
+	//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	//			WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
+	//			WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
+	//			x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
+	//			y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
+	//			
+	//			// now I need to convert the beam center in mm to pixels
+	//			// and have some rational place to look for it...
+	//			V_ConvertBeamCtr_to_pixB(fname,detStr,destPath)
+	//		else
+				// beam center is in pixels, so use the old routine
+				V_ConvertBeamCtrPix_to_mmB(fname,detStr,destPath)
+	
+	//		endif
+			V_Detector_CalcQVals(fname,detStr,destPath)
 		
-//		if(kBCTR_CM)
-//
-//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-//			Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-//			WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-//			WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-//			x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
-//			y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
-//			
-//			// now I need to convert the beam center in mm to pixels
-//			// and have some rational place to look for it...
-//			V_ConvertBeamCtr_to_pixB(fname,detStr,destPath)
-//		else
-			// beam center is in pixels, so use the old routine
-			V_ConvertBeamCtrPix_to_mmB(fname,detStr,destPath)
-
-//		endif
-		V_Detector_CalcQVals(fname,detStr,destPath)
+		endif
 		
 	else
 		Print "Non-linear correction NOT DONE"
@@ -685,14 +693,15 @@ Function V_Raw_to_work(newType)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			ctTime = V_getCount_time(fname)
 
-			if(cmpstr(detStr,"B") == 0)
-				Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
-				// do the correction for the back panel
-				countRate = sum(w,-inf,inf)/ctTime		//use sum of detector counts
-
-				w = w/(1-countRate*b_dt)
-				w_err = w_err/(1-countRate*b_dt)
-								
+			if(cmpstr(detStr,"B") == 0 )
+				if(gIgnoreDetB == 0)
+					Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
+					// do the correction for the back panel
+					countRate = sum(w,-inf,inf)/ctTime		//use sum of detector counts
+	
+					w = w/(1-countRate*b_dt)
+					w_err = w_err/(1-countRate*b_dt)
+				endif			
 			else
 				// do the corrections for 8 tube panels
 				Wave w_dt = V_getDetector_deadtime(fname,detStr)
@@ -719,10 +728,15 @@ Function V_Raw_to_work(newType)
 		Print "Doing Solid Angle correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
-			Wave w = V_getDetectorDataW(fname,detStr)
-			Wave w_err = V_getDetectorDataErrW(fname,detStr)
-			// any other dimensions to pass in?
-			V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+			
+			if(cmpstr(detStr,"B") == 0  && gIgnoreDetB == 1)
+				// do nothing
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				// any other dimensions to pass in?
+				V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+			endif
 			
 		endfor
 	else
@@ -755,11 +769,15 @@ Function V_Raw_to_work(newType)
 		Print "Doing Large-angle transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
-			Wave w = V_getDetectorDataW(fname,detStr)
-			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			
-			V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
-			
+			if(cmpstr(detStr,"B") == 0  && gIgnoreDetB == 1)
+				// do nothing
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				
+				V_LargeAngleTransmissionCorr(w,w_err,fname,detStr,destPath)
+			endif
 		endfor
 	else
 		Print "Sample Transmission correction NOT DONE"

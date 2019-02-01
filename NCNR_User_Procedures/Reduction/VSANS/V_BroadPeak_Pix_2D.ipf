@@ -233,9 +233,9 @@ ThreadSafe Function V_I_BroadPeak_Pix2D(w,xw,yw)
 	ratio = (xSize/ySize)^2
 	if(ratio > 1)
 	//	qval = sqrt((xw-xCtr)^2+(yw-yCtr)^2)			// use if the pixels are square
-		qval = sqrt((xw-xCtr)^2+(yw-yCtr)^2/ratio)			// use for LR panels where the y pixels are half the size of x	
+		qval = sqrt((xw-xCtr)^2+((yw-yCtr)^2)/ratio)			// use for LR panels where the y pixels are half the size of x	
 	else
-		qval = sqrt((xw-xCtr)^2*ratio+(yw-yCtr)^2)			// use for TB panels where the y pixels are twice the size of x	
+		qval = sqrt(((xw-xCtr)^2)*ratio+(yw-yCtr)^2)			// use for TB panels where the y pixels are twice the size of x	
 	endif
 
 	if(qval<.001)

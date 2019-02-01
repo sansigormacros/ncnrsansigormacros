@@ -339,3 +339,298 @@ Function Vf_FakeSaveIQITXClick()
 	ba.eventCode=2
 	V_SaveIQ_ButtonProc(ba)
 end
+
+
+///////// QxQy Export  //////////
+//
+// (see the similar-named SANS routine for additonal steps - like resolution, etc.)
+//ASCII export of data as 8-columns qx-qy-Intensity-err-qz-sigmaQ_parall-sigmaQ_perp-fShad
+// + limited header information
+//
+//	Jan 2019 -- first version, simply exports the basic matrix of data with no resolution information
+//
+//
+Function V_QxQy_Export(type,fullpath,newFileName,dialog)
+	String type,fullpath,newFileName
+	Variable dialog		//=1 will present dialog for name
+	
+	String typeStr=""
+	Variable refnum
+	String detStr="",detSavePath
+
+	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
+	
+	// declare, or make a fake protocol if needed (if the export type is RAW)
+	String rawTag=""
+	if(cmpstr(type,"RAW")==0)
+		Make/O/T/N=(kNumProtocolSteps) proto
+		RawTag = "RAW Data File: "	
+	else
+		Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
+	endif
+	
+	SVAR samFiles = $("root:Packages:NIST:VSANS:"+type+":gFileList")
+	
+	//check each wave - MUST exist, or will cause a crash
+//	If(!(WaveExists(data)))
+//		Abort "data DNExist QxQy_Export()"
+//	Endif
+
+	if(dialog)
+		PathInfo/S catPathName
+		fullPath = DoSaveFileDialog("Save data as")
+		If(cmpstr(fullPath,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		//Print "dialog fullpath = ",fullpath
+	Endif
+
+	// data values to populate the file header
+	String fileName,fileDate,fileLabel
+	Variable monCt,lambda,offset,dist,trans,thick
+	Variable bCentX,bCentY,a2,a1a2_dist,deltaLam,bstop
+	String a1Str
+	Variable pixX,pixY
+	Variable numTextLines=19,ii,jj,kk
+
+	Make/O/T/N=(numTextLines) labelWave
+
+	//
+	
+	//loop over all of the detector panels
+	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+	String detList
+	if(gIgnoreDetB)
+		detList = ksDetectorListNoB
+	else
+		detList = ksDetectorListAll
+	endif
+	
+	for(kk=0;kk<ItemsInList(detList);kk+=1)
+
+		detStr = StringFromList(kk, detList, ";")
+		detSavePath = fullPath + "_" + detStr
+		
+		pixX = V_getDet_pixel_num_x(type,detStr)
+		pixY = V_getDet_pixel_num_y(type,detStr)
+		
+		fileName = newFileName
+		fileDate = V_getDataStartTime(type)		// already a string
+		fileLabel = V_getSampleDescription(type)
+		
+		monCt = V_getBeamMonNormData(type)
+		lambda = V_getWavelength(type)
+	
+	// TODO - switch based on panel type
+	//	V_getDet_LateralOffset(fname,detStr)
+	//	V_getDet_VerticalOffset(fname,detStr)
+		offset = V_getDet_LateralOffset(type,detStr)
+	
+		dist = V_getDet_ActualDistance(type,detStr)
+		trans = V_getSampleTransmission(type)
+		thick = V_getSampleThickness(type)
+		
+		bCentX = V_getDet_beam_center_x(type,detStr)
+		bCentY = V_getDet_beam_center_y(type,detStr)
+		a1Str = V_getSourceAp_size(type)		//already a string
+		a2 = V_getSampleAp2_size(type)
+		a1a2_dist = V_getSourceAp_distance(type)
+		deltaLam = V_getWavelength_spread(type)
+		// TODO -- decipher which beamstop, if any is actually in place
+	// or -- V_getBeamStopC3_size(type)
+		bstop = V_getBeamStopC2_size(type)
+		
+	/////////
+		labelWave[0] = "FILE: "+fileName+"   CREATED: "+fileDate
+		labelWave[1] = "LABEL: "+fileLabel
+		labelWave[2] = "MON CNT   LAMBDA (A)  DET_OFF(cm)   DET_DIST(cm)   TRANS   THICK(cm)"
+		labelWave[3] = num2str(monCt)+"  "+num2str(lambda)+"       "+num2str(offset)+"     "+num2str(dist)
+		labelWave[3] += "     "+num2str(trans)+"     "+num2str(thick)
+		labelWave[4] = "BCENT(X,Y)(cm)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)"
+		labelWave[5] = num2str(bCentX)+"  "+num2str(bCentY)+"  "+a1Str+"    "+num2str(a2)+"    "
+		labelWave[5] += num2str(a1a2_dist)+"    "+num2str(deltaLam)+"    "+num2str(bstop)
+		labelWave[6] =  "SAM: "+rawTag+samFiles
+		labelWave[7] =  "BGD: "+proto[0]
+		labelWave[8] =  "EMP: "+proto[1]
+		labelWave[9] =  "DIV: "+proto[2]
+		labelWave[10] =  "MASK: "+proto[3]
+		labelWave[11] =  "ABS Parameters (3-6): "+proto[4]
+		labelWave[12] = "Average Choices: "+proto[5]
+		labelWave[13] = "Collimation type: "+proto[9]
+		labelWave[14] = ""
+		labelWave[15] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
+//		labelWave[16] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
+	//	labelWave[16] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[16] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[17] = "The error wave may not be properly propagated (1/2019)"
+		labelWave[18] = "ASCII data created " +date()+" "+time()
+		//strings can be too long to print-- must trim to 255 chars
+		for(jj=0;jj<numTextLines;jj+=1)
+			labelWave[jj] = (labelWave[jj])[0,240]
+		endfor
+	
+	
+	// get the data waves for output
+	// QxQyQz have already been calculated for VSANS data
+		
+		WAVE data = V_getDetectorDataW(type,detStr)
+		WAVE data_err = V_getDetectorDataErrW(type,detStr)
+		
+		// TOOD - replace hard wired paths with Read functions
+		// hard-wired
+		Wave qx_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qx_"+detStr)
+		Wave qy_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qy_"+detStr)
+		Wave qz_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qz_"+detStr)
+		Wave qTot = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qTot_"+detStr)
+		
+	///// calculation of the resolution function (2D)
+
+	//
+		Variable acc,ssd,lambda0,yg_d,qstar,g,L1,L2,vz_1,sdd
+		// L1 = source to sample distance [cm] 
+		L1 = V_getSourceAp_distance(type)
+	
+	// L2 = sample to detector distance [cm]
+		L2 = V_getDet_ActualDistance(type,detStr)		//cm
+
+	//		
+		G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
+		vz_1 =	3.956E5	//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
+		acc = vz_1
+		SDD = L2		//1317
+		SSD = L1		//1627 		//cm
+		lambda0 = lambda		//		15
+		YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
+		Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
+	////		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
+		qstar = -2*pi/lambda0*2*yg_d/sdd
+	//	
+	//
+	//// the gravity center is not the resolution center
+	//// gravity center = beam center
+	//// resolution center = offset y = dy + (2)*yg_d
+	/////************
+	//// do everything to write out the resolution too
+	//	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
+	//	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+		Duplicate/O qTot,phi,r_dist
+		Variable pixSizeX,pixSizeY
+		pixSizeX = V_getDet_x_pixel_size(type,detStr)
+		pixSizeY = V_getDet_y_pixel_size(type,detStr)
+
+		phi = V_FindPhi( pixSizeX*((p+1)-bCentX) , pixSizeY*((q+1)-bCentY)+(2)*yg_d)		//(dx,dy+yg_d)
+		r_dist = sqrt(  (pixSizeX*((p+1)-bCentX))^2 +  (pixSizeY*((q+1)-bCentY)+(2)*yg_d)^2 )		//radial distance from ctr to pt
+	
+		//make everything in 1D now
+		Duplicate/O qTot SigmaQX,SigmaQY,fsubS,qval	
+		Redimension/N=(pixX*pixY) SigmaQX,SigmaQY,fsubS,qval,phi,r_dist
+
+		Variable ret1,ret2,ret3,nq
+		String collimationStr
+		
+		
+		collimationStr = proto[9]
+		
+		nq = pixX*pixY
+		ii=0
+
+s_tic()	
+// TODO
+// this loop is the slow step. it takes Å 0.7 s for F or M panels, and Å 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
+// find some way to speed this up!
+// MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
+// and there are a lot of them...
+		//type = work folder
+		
+//		(this doesn't work...and isn't any faster)
+//		Duplicate/O qval dum
+//		dum = V_get2DResolution(qval,phi,r_dist,type,detStr,collimationStr,SigmaQX,SigmaQY,fsubS)
+
+		do
+			V_get2DResolution(qval[ii],phi[ii],r_dist[ii],type,detStr,collimationStr,ret1,ret2,ret3)
+			SigmaQX[ii] = ret1	
+			SigmaQY[ii] = ret2	
+			fsubs[ii] = ret3	
+			ii+=1
+		while(ii<nq)	
+s_toc()
+	
+	////*********************	
+		Duplicate/O qx_val,qx_val_s
+		Duplicate/O qy_val,qy_val_s
+		Duplicate/O qz_val,qz_val_s
+		Duplicate/O data,z_val_s
+		Duplicate/O SigmaQx,sigmaQx_s
+		Duplicate/O SigmaQy,sigmaQy_s
+		Duplicate/O fSubS,fSubS_s
+		Duplicate/O data_err,sw_s
+		
+		//so that double precision data is not written out
+		Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
+		Redimension/S SigmaQx_s,SigmaQy_s,fSubS_s
+	
+		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
+		
+		//not demo-compatible, but approx 8x faster!!	
+#if(strsearch(stringbykey("IGORKIND",IgorInfo(0),":",";"), "demo", 0 ) == -1)
+		
+//		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution
+		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s as detSavePath	// write out the resolution information
+#else
+		Open refNum as detSavePath
+		wfprintf refNum,"%s\r\n",labelWave
+		fprintf refnum,"\r\n"
+//		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
+		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val,qy_val,z_val,sw,qz_val,SigmaQx,SigmaQy,fSubS
+		Close refNum
+#endif
+		
+		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s
+		
+		Killwaves/Z qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS
+		
+		Print "QxQy_Export File written: ", V_GetFileNameFromPathNoSemi(detSavePath)
+	
+	endfor
+	
+	KillWaves/Z labelWave,dum
+	return(0)
+End
+
+// this assumes that:
+// --QxQy data was written out in the format specified by the Igor macros, that is the x varies most rapidly
+//
+// TODO -- this needs to be made generic for reading in different panels with different XY dimensions
+// -- add the XY dimensions to the QxQyASCII file header somewhere so that it can be read in and used here
+//
+// the SANS analysis 2D loader assumes that the matrix is square, mangling the VSANS data.
+// the column data (for fitting) is still fine, but the matrix representation is incorrect.
+//
+Function V_ConvertQxQy2Mat(Qx,Qy,inten,matStr)
+	Wave Qx,Qy,inten
+	String matStr
+	
+	String folderStr=GetWavesDataFolder(Qx,1)
+	
+	Variable numX,numY
+	numX=48
+	numY=128
+	Make/O/D/N=(numX,numY) $(folderStr + matStr)
+	Wave mat=$(folderStr + matStr)
+	
+	WaveStats/Q Qx
+	SetScale/I x, V_min, V_max, "", mat
+	WaveStats/Q Qy
+	SetScale/I y, V_min, V_max, "", mat
+	
+	Variable xrows=numX
+	
+	mat = inten[q*xrows+p]
+	
+	return(0)
+End
+
+
