@@ -740,7 +740,7 @@ Function V_OverlayMask(str,state)
 				AppendImage/W=MaskEditPanel overlay
 				AppendImage/W=MaskEditPanel currentTube
 //				ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0.9,1,BlueRedGreen,0}	,minRGB=NaN,maxRGB=0
-				ModifyImage/W=MaskEditPanel overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,40000)
+				ModifyImage/W=MaskEditPanel overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
 				ModifyImage/W=MaskEditPanel currentTube ctab= {0.9,1,CyanMagenta,0}	,minRGB=NaN,maxRGB=0
 		//		ModifyImage/W=MaskEditPanel#DetData overlay ctab= {0,*,BlueRedGreen,0}	
 			endif

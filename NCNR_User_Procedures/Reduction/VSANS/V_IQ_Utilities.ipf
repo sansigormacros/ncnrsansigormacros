@@ -496,6 +496,12 @@ Function V_RemoveDuplicateQvals(pathStr,folderStr)
 	Wave qb = tmp_qb
 	Wave fs = tmp_fs
 	
+	// zero point waves can be generated from sector averages, exit now
+	if(numpnts(qw) == 0)
+		SetDataFolder root:
+		return(1)
+	endif
+	
 	Variable q1,q2,tol,ii
 	tol = 0.001 		// 0.1 %
 	q1 = qw[0]
@@ -747,7 +753,6 @@ Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 	
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 
-	Printf "%d points removed from beginning, %d points from the end  of %s \r",nbeg,nend,detStr
 
 // TODO	
 // for each binType block:
@@ -767,13 +772,45 @@ Function V_TrimOneSet(folderStr,detStr,nBeg,nEnd)
 		Wave/Z sigQ = $("sigmaQ_qxqy_"+detStr)
 		Wave/Z qBar = $("qBar_qxqy_"+detStr)
 		Wave/Z fSubS = $("fSubS_qxqy_"+detStr)
-			
+
+// check for the existence of every wave + non-zero length
+// zero length/null waves can be generated with sector averages
+// exit if something is wrong
+		if(waveExists(qw) == 0 || numpnts(qw) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+		if(waveExists(iw) == 0 || numpnts(iw) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+		if(waveExists(ew) == 0 || numpnts(ew) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+		if(waveExists(sigQ) == 0 || numpnts(sigQ) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+		if(waveExists(qBar) == 0 || numpnts(qBar) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+		if(waveExists(fSubS) == 0 || numpnts(fSubS) == 0)
+			SetDataFolder root:
+			return(1)
+		endif
+
+
+	// waves all exist		
 		DeletePoints 0,nBeg, qw,iw,ew,sigQ,qBar,fSubS
 
 		Variable npt
 		npt = numpnts(qw) 
 		DeletePoints npt-nEnd,nEnd, qw,iw,ew,sigQ,qBar,fSubS
 	
+		Printf "%d points removed from beginning, %d points from the end  of %s \r",nbeg,nend,detStr
+		SetDataFolder root:
 	return(0)
 End
 

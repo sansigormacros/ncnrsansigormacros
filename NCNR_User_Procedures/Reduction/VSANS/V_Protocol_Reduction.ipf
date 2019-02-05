@@ -1317,9 +1317,8 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	
 	SVAR gAvgInfoStr = root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr
 	
-	String av_typ,autoSave,AutoName,binType
-//	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Variable Qctr,qDelta
+	String av_typ,autoSave,AutoName,binType,side
+	Variable phi,dphi,width=10,Qctr = 0.01,qDelta=10
 	String detGroup
 	
 	if(strlen(gAvgInfoStr) > 0)
@@ -1333,22 +1332,25 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	qCtr = NumberByKey("QCENTER", gAvgInfoStr  ,"=",";")
 	qDelta = NumberByKey("QDELTA", gAvgInfoStr  ,"=",";")
 	detGroup = StringByKey("DETGROUP", gAvgInfoStr  ,"=",";")
+	phi = NumberByKey("PHI", gAvgInfoStr  ,"=",";")
+	dphi = NumberByKey("DPHI", gAvgInfoStr  ,"=",";")
+
 //	Execute "V_GetAvgInfo_Full()"
 //		Execute "V_GetAvgInfo()"
 	endif
 
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;QxQy_ASCII;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;Sector;QxQy_ASCII;"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes - Concatenate;Yes - Individual;No"
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 //	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
-//	Prompt side,"Include detector halves?",popup,"both;right;left"
-//	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
-//	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
+	Prompt side,"Include detector halves?",popup,"both;right;left"
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
+	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
 //	Prompt width, "Width of Rectangular average (1,128)"
 	Prompt binType,"Binning Type?",popup,ksBinTypeStr
 
@@ -1357,7 +1359,7 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	Prompt detGroup,"Group for annulus"
 
 	
-	DoPrompt "Enter Averaging Parameters",av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup
+	DoPrompt "Enter Averaging Parameters",av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup,side,phi,dphi
 	if (V_Flag)
 		return(0)								// User canceled
 	endif	
@@ -1380,11 +1382,11 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	gAvgInfoStr += "PLOT=" + autoPlot + ";"
 	gAvgInfoStr += "BINTYPE=" + binType + ";"
 	
-//	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
-//		gAvgInfoStr += "SIDE=" + side + ";"
-//		gAvgInfoStr += "PHI=" + num2str(phi) + ";"
-//		gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
-//	Endif
+	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
+		gAvgInfoStr += "SIDE=" + side + ";"
+		gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+		gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+	Endif
 //	
 //	if(cmpstr(av_typ,"Rectangular")==0)
 //		gAvgInfoStr += "SIDE=" + side + ";"
@@ -3161,7 +3163,10 @@ Function V_Proto_doAverage(avgStr,av_type,activeType,binType,collimationStr)
 			break
 			
 		case "Sector":
-//			CircularAverageTo1D(activeType)
+			String side = StringByKey("SIDE",avgStr,"=",";")
+			Variable phi_rad = (Pi/180)*NumberByKey("PHI",avgStr,"=",";")		//in radians 
+			Variable dphi_rad = (Pi/180)*NumberByKey("DPHI",avgStr,"=",";")
+			V_QBinAllPanels_Sector(activeType,binType,collimationStr,side,phi_rad,dphi_rad)
 			break
 		case "Sector_PlusMinus":
 //			Sector_PlusMinus1D(activeType)
@@ -3217,11 +3222,9 @@ Function V_Proto_doPlot(plotStr,av_type,activeType,binType,detGroup)
 				break			
 
 			case "Circular":
+			case "Sector":
 				V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
 				V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned				
-				break
-			case "Sector":
-	//			CircularAverageTo1D(activeType)
 				break
 			case "Sector_PlusMinus":
 	//			Sector_PlusMinus1D(activeType)

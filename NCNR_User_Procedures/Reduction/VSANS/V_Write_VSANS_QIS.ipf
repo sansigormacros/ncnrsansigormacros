@@ -393,8 +393,10 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	Variable bCentX,bCentY,a2,a1a2_dist,deltaLam,bstop
 	String a1Str
 	Variable pixX,pixY
-	Variable numTextLines=19,ii,jj,kk
+	Variable numTextLines,ii,jj,kk
+	Variable pixSizeX,pixSizeY
 
+	numTextLines = 23
 	Make/O/T/N=(numTextLines) labelWave
 
 	//
@@ -442,6 +444,9 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		// TODO -- decipher which beamstop, if any is actually in place
 	// or -- V_getBeamStopC3_size(type)
 		bstop = V_getBeamStopC2_size(type)
+
+		pixSizeX = V_getDet_x_pixel_size(type,detStr)
+		pixSizeY = V_getDet_y_pixel_size(type,detStr)
 		
 	/////////
 		labelWave[0] = "FILE: "+fileName+"   CREATED: "+fileDate
@@ -460,13 +465,17 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		labelWave[11] =  "ABS Parameters (3-6): "+proto[4]
 		labelWave[12] = "Average Choices: "+proto[5]
 		labelWave[13] = "Collimation type: "+proto[9]
-		labelWave[14] = ""
-		labelWave[15] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-//		labelWave[16] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
-	//	labelWave[16] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-		labelWave[16] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-		labelWave[17] = "The error wave may not be properly propagated (1/2019)"
-		labelWave[18] = "ASCII data created " +date()+" "+time()
+		labelWave[14] = "Panel = "+detStr
+		labelWave[15] = "NumXPixels="+num2str(pixX)
+		labelWave[16] = "XPixelSize_mm="+num2str(pixSizeX)
+		labelWave[17] = "NumYPixels="+num2str(pixY)
+		labelWave[18] = "YPixelSize_mm="+num2str(pixSizeY)
+		labelWave[19] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
+//		labelWave[20] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
+	//	labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[21] = "The error wave may not be properly propagated (1/2019)"
+		labelWave[22] = "ASCII data created " +date()+" "+time()
 		//strings can be too long to print-- must trim to 255 chars
 		for(jj=0;jj<numTextLines;jj+=1)
 			labelWave[jj] = (labelWave[jj])[0,240]
@@ -517,9 +526,8 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	//	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
 	//	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
 		Duplicate/O qTot,phi,r_dist
-		Variable pixSizeX,pixSizeY,xctr,yctr
-		pixSizeX = V_getDet_x_pixel_size(type,detStr)
-		pixSizeY = V_getDet_y_pixel_size(type,detStr)
+		Variable xctr,yctr
+
 
 		xctr = V_getDet_beam_center_x_pix(type,detStr)
 		yctr = V_getDet_beam_center_y_pix(type,detStr)
@@ -599,39 +607,6 @@ s_toc()
 	endfor
 	
 	KillWaves/Z labelWave,dum
-	return(0)
-End
-
-// this assumes that:
-// --QxQy data was written out in the format specified by the Igor macros, that is the x varies most rapidly
-//
-// TODO -- this needs to be made generic for reading in different panels with different XY dimensions
-// -- add the XY dimensions to the QxQyASCII file header somewhere so that it can be read in and used here
-//
-// the SANS analysis 2D loader assumes that the matrix is square, mangling the VSANS data.
-// the column data (for fitting) is still fine, but the matrix representation is incorrect.
-//
-Function V_ConvertQxQy2Mat(Qx,Qy,inten,matStr)
-	Wave Qx,Qy,inten
-	String matStr
-	
-	String folderStr=GetWavesDataFolder(Qx,1)
-	
-	Variable numX,numY
-	numX=48
-	numY=128
-	Make/O/D/N=(numX,numY) $(folderStr + matStr)
-	Wave mat=$(folderStr + matStr)
-	
-	WaveStats/Q Qx
-	SetScale/I x, V_min, V_max, "", mat
-	WaveStats/Q Qy
-	SetScale/I y, V_min, V_max, "", mat
-	
-	Variable xrows=numX
-	
-	mat = inten[q*xrows+p]
-	
 	return(0)
 End
 
