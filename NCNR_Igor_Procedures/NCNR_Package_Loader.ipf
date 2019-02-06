@@ -428,6 +428,9 @@ Function NCNR_USANSReductionLoader(itemStr)
 			Execute/P ("ShowUSANSPanel()")
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
+			Execute/P ("Show_Preferences_Panel()")
+			Execute/P ("PrefTabProc(\"PrefTab\",  2)")		//show the USANS tab
+			
 			// change the facility label, disable the others		
 			gMenuStr3a = "Hide NCNR USANS Reduction Macros"
 			gMenuStr3b += "("

@@ -76,6 +76,30 @@ Function LoadBT5File(fname,type)
 //	print BT5Date2Secs(filedt)
 //	print date2secs(2010,11,7)
 	
+	// as of Feb 6 2019, USANS is using NICE for data collection rather than ICP
+	// as a consequence, the data file is somewhat different. Specifically, the 
+	// order of the detectors in the comma-delimited list is different, with the
+	// 5 main detectors all listed in order, rather than separated.
+	// --- I can either flag on the date, or set a global to switch
+	// I also do not know if there will be any other changes in the data file format
+	
+	Variable useNewDataFormat
+
+// test by date
+//	Variable thisFileSecs,switchSecs
+//	switchSecs = date2secs(2019,2,6)
+//	thisFileSecs = BT5Date2Secs(filedt)		// could use BT5DateTime2Secs() to include HR:MIN
+//	if(thisFileSecs >= switchSecs)
+//		useNewDataFormat = 1
+//	else
+//		useNewDataFormat = 0
+//	endif
+
+// or use the global
+	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat	
+	useNewDataFormat = gVal
+	
+	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	
 	//skip line 2
@@ -105,16 +129,32 @@ Function LoadBT5File(fname,type)
 		sscanf buffer,"%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g",v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16
 		//valuesRead = V_flag
 		//print valuesRead
-		MonCts[numlinesloaded] = v1		//monitor
-		v2 = v2/(1.0-V2*MainDeadTime/countTime)   // Deadtime correction
-		v3 = v3/(1.0-V3*MainDeadTime/countTime)   // Deadtime correction
-		v5 = v5/(1.0-V5*MainDeadTime/countTime)   // Deadtime correction
-		v6 = v6/(1.0-V6*MainDeadTime/countTime)   // Deadtime correction
-		v7 = v7/(1.0-V7*MainDeadTime/countTime)   // Deadtime correction
-		DetCts[numlinesloaded] = v2 + v3 + v5 + v6 + v7		//5 detectors
-		TransCts[numlinesloaded] = v4/(1.0-V4*TransDeadTime/countTime)		//trans detector+deadtime correction
-		ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
-		//values 8-16 are always zero
+		if(useNewDataFormat == 1)
+		// new order is MonCt, det1,det2,det3,det4,det5, Trans
+			MonCts[numlinesloaded] = v1		//monitor
+			v2 = v2/(1.0-v2*MainDeadTime/countTime)   // Deadtime correction
+			v3 = v3/(1.0-v3*MainDeadTime/countTime)   // Deadtime correction
+			v4 = v6/(1.0-v4*MainDeadTime/countTime)   // Deadtime correction
+			v5 = v5/(1.0-v5*MainDeadTime/countTime)   // Deadtime correction
+			v6 = v6/(1.0-v6*MainDeadTime/countTime)   // Deadtime correction
+			DetCts[numlinesloaded] = v2 + v3 + v4 + v5 + v6		//5 detectors
+			TransCts[numlinesloaded] = v7/(1.0-v7*TransDeadTime/countTime)		//trans detector+deadtime correction
+			ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
+			//values 8-16 are always zero
+		else
+		// this is the original format from ICP
+			MonCts[numlinesloaded] = v1		//monitor
+			v2 = v2/(1.0-v2*MainDeadTime/countTime)   // Deadtime correction
+			v3 = v3/(1.0-v3*MainDeadTime/countTime)   // Deadtime correction
+			v5 = v5/(1.0-v5*MainDeadTime/countTime)   // Deadtime correction
+			v6 = v6/(1.0-v6*MainDeadTime/countTime)   // Deadtime correction
+			v7 = v7/(1.0-v7*MainDeadTime/countTime)   // Deadtime correction
+			DetCts[numlinesloaded] = v2 + v3 + v5 + v6 + v7		//5 detectors
+			TransCts[numlinesloaded] = v4/(1.0-v4*TransDeadTime/countTime)		//trans detector+deadtime correction
+			ErrDetCts[numlinesloaded] = sqrt(detCts[numlinesloaded])
+			//values 8-16 are always zero
+		endif
+		
 		numlinesloaded += 1		//2 lines in file read, one "real" line of data
 	while(1)
 		

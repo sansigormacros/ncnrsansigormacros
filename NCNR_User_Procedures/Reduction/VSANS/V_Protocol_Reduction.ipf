@@ -1325,15 +1325,15 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 //		fill the dialog with the current choice, not resetting to default
 // can't do this, or it will simply bypass the missing parameter dialog!
 //	V_GetAvgInfo(av_typ,autoSave,autoName,binType,qCtr,qDelta,detGroup)
-	av_typ = StringByKey("AVTYPE", gAvgInfoStr  ,"=",";")
-	autoSave = StringByKey("SAVE", gAvgInfoStr  ,"=",";")
-	autoName = StringByKey("NAME", gAvgInfoStr  ,"=",";")
-	binType = StringByKey("BINTYPE", gAvgInfoStr  ,"=",";")
-	qCtr = NumberByKey("QCENTER", gAvgInfoStr  ,"=",";")
-	qDelta = NumberByKey("QDELTA", gAvgInfoStr  ,"=",";")
-	detGroup = StringByKey("DETGROUP", gAvgInfoStr  ,"=",";")
-	phi = NumberByKey("PHI", gAvgInfoStr  ,"=",";")
-	dphi = NumberByKey("DPHI", gAvgInfoStr  ,"=",";")
+		av_typ = StringByKey("AVTYPE", gAvgInfoStr  ,"=",";")
+		autoSave = StringByKey("SAVE", gAvgInfoStr  ,"=",";")
+		autoName = StringByKey("NAME", gAvgInfoStr  ,"=",";")
+		binType = StringByKey("BINTYPE", gAvgInfoStr  ,"=",";")
+		qCtr = NumberByKey("QCENTER", gAvgInfoStr  ,"=",";")
+		qDelta = NumberByKey("QDELTA", gAvgInfoStr  ,"=",";")
+		detGroup = StringByKey("DETGROUP", gAvgInfoStr  ,"=",";")
+		phi = NumberByKey("PHI", gAvgInfoStr  ,"=",";")
+		dphi = NumberByKey("DPHI", gAvgInfoStr  ,"=",";")
 
 //	Execute "V_GetAvgInfo_Full()"
 //		Execute "V_GetAvgInfo()"
@@ -1349,8 +1349,8 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 //	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
 	Prompt side,"Include detector halves?",popup,"both;right;left"
-	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
-	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
+	Prompt phi,"Orientation Angle (0,359) degrees (Rectangular or Sector)"
+	Prompt dphi, "Sector range (+/-) degrees (0,45) (Sector only)"
 //	Prompt width, "Width of Rectangular average (1,128)"
 	Prompt binType,"Binning Type?",popup,ksBinTypeStr
 

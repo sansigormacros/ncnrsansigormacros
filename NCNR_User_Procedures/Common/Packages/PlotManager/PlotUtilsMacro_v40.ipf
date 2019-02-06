@@ -1427,7 +1427,8 @@ Proc Initialize_Preferences()
 	
 	
 	/// items for USANS Reduction
-	
+	val = NumVarOrDefault("root:Packages:NIST:gUseNICEDataFormat", 1 )
+	Variable/G root:Packages:NIST:gUseNICEDataFormat=val	
 	
 	/// items for everyone
 	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
@@ -1494,6 +1495,16 @@ Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function UseNICEDataFormat(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat
+	gVal = checked
+End
+
+
+
 Function PrefDoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
@@ -1552,9 +1563,15 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_1h,disable=1
 
 //on tab(2) - USANS
-	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
+//	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
+//	GroupBox PrefCtrl_2a,disable=1
+	CheckBox PrefCtrl_2a,pos={21,100},size={171,14},proc=UseNICEDataFormat,title="Read New NICE data format"
+	CheckBox PrefCtrl_2a,help={"Check this if raw data was collected using NICE. If data was collected using ICP, leave this unchecked."}
+	CheckBox PrefCtrl_2a,value= root:Packages:NIST:gUseNICEDataFormat
 
-	GroupBox PrefCtrl_2a,disable=1
+
+	CheckBox PrefCtrl_2a,disable=1
+
 
 
 //on tab(3) - Analysis
@@ -1610,6 +1627,11 @@ Function PrefTabProc(name,tab)
 	endfor 
 	return(0)
 End
+
+
+
+
+
 
 
 ////////////////////////////////////
