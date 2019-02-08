@@ -28,44 +28,84 @@ Function/WAVE V_MakePhiMatrix(qTotal,folderStr,detStr,folderPath)
 	pixSizeX = V_getDet_x_pixel_size(folderStr,detStr)
 	pixSizeY = V_getDet_y_pixel_size(folderStr,detStr)
 	phi = V_FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr))		//(dx,dy)
-	//phi = V_FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr)+(2)*yg_d)		//with gravity, (dx,dy+yg_d)
 	
 	return phi	
 End
 
 
-// TODO
-// actually, for this to work, I need the inverse of this mask
-// -- I want to mask out everything that is "out" of the sector
+// 
+// x- I want to mask out everything that is "out" of the sector
 //
-Function V_MarkOverlayPixels()
+// 0 = keep the point
+// 1 = yes, mask the point
+Function V_MarkSectorOverlayPixels(phi,overlay,phiCtr,delta,side)
+	Wave phi,overlay
+	Variable phiCtr,delta
+	String side
+	
+	Variable phiVal
 
-	Wave phi=root:phi
-	String str="FL"
-	Wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":overlay")	
+// convert the imput from degrees to radians	, since phi is in radians
+	phiCtr *= pi/180
+	delta *= pi/180		
 	
-	Variable phiCtr,delta,phiVal
-	
-	phiCtr = pi/2
-	delta = 90 * (2*pi)/360		// phi is in radians
-	
-	Variable xDim=48
-	Variable yDim=128
+	Variable xDim=DimSize(phi, 0)
+	Variable yDim=DimSize(phi, 1)
 
-	Variable ii,jj,isIn
+	Variable ii,jj,isIn,forward,mirror
 	
+// initialize the mask to keep everything
+	overlay = 0
 
 	for(ii=0;ii<xDim;ii+=1)
 		for(jj=0;jj<yDim;jj+=1)
 			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
 			phiVal = phi[ii][jj]
-
-//			
+			isIn = 0
+		
 			isIn = V_CloseEnough(phiVal,phiCtr,delta)
-			
 			if(!isIn)		// it's NOT in the sector, do something
 				overlay[ii][jj] = 1
 			endif
+
+//			isIn = V_CloseEnough(phiVal,pi+phiCtr,delta)
+//			if(!isIn)		// it's NOT in the sector, do something
+//				overlay[ii][jj] = 1
+//			endif
+
+//			
+//			if(phiVal < delta)
+//				forward = 1			//within forward sector
+//			else
+//				forward = 0
+//			Endif
+//			if((Pi - phiVal) < delta)
+//				mirror = 1		//within mirror sector
+//			else
+//				mirror = 0
+//			Endif
+//			//check if pixel lies within allowed sector(s)
+//			if(cmpstr(side,"both")==0)		//both sectors
+//				if ( mirror || forward)
+//					//increment
+//					isIn = 1
+//				Endif
+//			else
+//				if(cmpstr(side,"right")==0)		//forward sector only
+//					if(forward)
+//						//increment
+//						isIn = 1
+//					Endif
+//				else			//mirror sector only
+//					if(mirror)
+//						//increment
+//						isIn = 1
+//					Endif
+//				Endif
+//			Endif		//allowable sectors
+//		
+			
+		
 		endfor
 	endfor
 	

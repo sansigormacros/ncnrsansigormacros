@@ -1427,8 +1427,9 @@ Proc Initialize_Preferences()
 	
 	
 	/// items for USANS Reduction
-	val = NumVarOrDefault("root:Packages:NIST:gUseNICEDataFormat", 1 )
-	Variable/G root:Packages:NIST:gUseNICEDataFormat=val	
+	// now keys on date in the file -- see LoadBT5File()
+//	val = NumVarOrDefault("root:Packages:NIST:gUseNICEDataFormat", 1 )
+//	Variable/G root:Packages:NIST:gUseNICEDataFormat=val	
 	
 	/// items for everyone
 	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )

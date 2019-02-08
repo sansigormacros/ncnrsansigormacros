@@ -1051,3 +1051,887 @@ Proc Save_VSANS_MASK_Nexus(fileName)
 //	H_HDF5Gate_Read_Raw(fileName+".h5")
 	
 End
+
+
+
+
+//////////////////
+// procedures for an integrated panel to show the masks for all panels on a carriage
+//
+// also can be used to show the annular or sector ranges selected for averaging
+// (so this block may be better located in one of the averaging procedure files)
+// viewing the standard mask files may be a side benefit
+//
+//
+// generally:
+// - show the 4 panels on a carriage
+// - allow selection of the averaging options
+// - buttons for toggling of the mask, do average
+//
+// copy the general panel structure from DIVUtils, and add a larger control area for input
+// - use the averaging routines from the main data display
+//
+
+
+Proc V_Display_Four_Panels()
+	V_SetupPanelDisplay()
+end
+
+Function V_SetupPanelDisplay()
+	DoWindow/F VSANS_Det_Panels
+	if(V_flag==0)
+	
+		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Mask
+
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr = 0.1
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ = 0.01
+
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle = 30
+		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ = 10
+			
+		Execute "V_Display_Det_Panels()"
+	endif
+End
+
+
+//
+// simple panel to display the 4 detector panels
+//
+// TODO:
+// -- label panels, axes
+// -- add in display of "B"
+
+Proc V_Display_Det_Panels()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(720,45,1500,570)/N=VSANS_Det_Panels/K=1
+	DoWindow/C VSANS_Det_Panels
+//	ModifyPanel fixedSize=1,noEdit =1
+
+
+	PopupMenu popup0,pos={15.00,10.00},size={77.00,23.00},proc=V_PickCarriagePopMenuProc,title="Carriage"
+	PopupMenu popup0,mode=1,value= #"\"F;M;B;\""
+	PopupMenu popup1,pos={100.00,10.00},size={68.00,23.00},proc=V_PickFolderPopMenuProc,title="Folder"
+	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;\""
+	PopupMenu popup2,pos={200.00,10.00},size={83.00,23.00},title="Bin Type"//,proc=V_DummyPopMenuProc
+	PopupMenu popup2,mode=1,value= ksBinTypeStr
+	PopupMenu popup3,pos={350,10.00},size={83.00,23.00},title="Average Type"//,proc=V_DummyPopMenuProc
+	PopupMenu popup3,mode=1,value= #"\"Circular;Sector;Annular;\""
+//	Button button0,pos={520.00,10.00},size={110.00,20.00},proc=V_UpdatePanelsButtonProc,title="Update Display"
+	Button button1,pos={520.00,40.00},size={100.00,20.00},proc=V_ToggleFourMaskButtonProc,title="Toggle Mask"
+	Button button2,pos={350.00,40.00},size={120.00,20.00},proc=V_ShowAvgRangeButtonProc,title="Show Avg Range"
+	Button button3,pos={350.00,70.00},size={100.00,20.00},proc=V_DoPanelAvgButtonProc,title="Do Average"
+	Button button4,pos={720.00,10.00},size={25.00,20.00},proc=V_AvgPanelHelpButtonProc,title="?"
+
+	SetVariable setvar0,pos={50,40},size={140,23},title="Annulus q-center (A)"
+	SetVariable setvar0,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
+	SetVariable setvar1,pos={50,70},size={140,23},title="Annulus (+/-) q (A)"
+	SetVariable setvar1,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ
+	SetVariable setvar2,pos={200,40},size={140,23},title="Sector Angle (deg)"
+	SetVariable setvar2,limits={0,359,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
+	SetVariable setvar3,pos={200,70},size={140,23},title="Sector (+/-) (deg)"
+	SetVariable setvar3,limits={0,359,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
+
+	PopupMenu popup4,pos={200,100},size={90,23.00},proc=V_DummyPopMenuProc,title="Sector Side(s)"
+	PopupMenu popup4,mode=1,value= #"\"both;left;right;\""
+	
+//	Display/W=(745,45,945,425)/HOST=# 
+	Display/W=(10,45+80,210,425+80)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Panel_L
+	SetActiveSubwindow ##
+
+//	Display/W=(1300,45,1500,425)/HOST=# 
+	Display/W=(565,45+80,765,425+80)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Panel_R
+	SetActiveSubwindow ##
+
+//	Display/W=(945,45,1300,235)/HOST=# 
+	Display/W=(210,45+80,565,235+80)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FT:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Panel_T
+	SetActiveSubwindow ##
+
+//	Display/W=(945,235,1300,425)/HOST=# 
+	Display/W=(210,235+80,565,425+80)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Panel_B
+	SetActiveSubwindow ##
+//
+
+End
+
+
+// called by the "update" button
+//
+// must check for overlay of mask and of avgMask
+//
+Function V_UpdateFourPanelDisp()
+
+	ControlInfo popup0
+	String carrStr = S_value
+	
+	ControlInfo popup1
+	String folder = S_Value
+
+
+	String tmpStr=""
+//
+
+	
+	// remove everything from each of the 4 panels
+	tmpStr = ImageNameList("VSANS_Det_Panels#Panel_L",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_Det_Panels#Panel_L $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_Det_Panels#Panel_L",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_Det_Panels#Panel_R",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_Det_Panels#Panel_R $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_Det_Panels#Panel_R",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_Det_Panels#Panel_T",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_Det_Panels#Panel_T $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_Det_Panels#Panel_T",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_Det_Panels#Panel_B",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_Det_Panels#Panel_B $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_Det_Panels#Panel_B",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+
+	// append the new image
+//	RemoveImage/Z/W=VSANS_Det_Panels#Panel_L data
+	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")		
+	SetActiveSubwindow VSANS_Det_Panels#Panel_L
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	SetActiveSubwindow ##
+
+
+//	RemoveImage/Z/W=VSANS_Det_Panels#Panel_T data
+	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:data")		
+	SetActiveSubwindow VSANS_Det_Panels#Panel_T
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	SetActiveSubwindow ##
+	
+//	RemoveImage/Z/W=VSANS_Det_Panels#Panel_B data
+	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:data")		
+	SetActiveSubwindow VSANS_Det_Panels#Panel_B
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	SetActiveSubwindow ##
+
+//	RemoveImage/Z/W=VSANS_Det_Panels#Panel_R data
+	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:data")		
+	SetActiveSubwindow VSANS_Det_Panels#Panel_R
+	ModifyImage data ctab= {*,*,ColdWarm,0}
+	ModifyImage data ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	SetActiveSubwindow ##
+
+End
+
+
+
+Function V_DummyPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			DoAlert 0,"Fill in the dummy procedure"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_PickFolderPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_PickCarriagePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+			// update the data that is displayed
+			V_UpdateFourPanelDisp()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function V_UpdatePanelsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			// do nothing
+			
+			
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function V_ToggleFourMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo/W=VSANS_Det_Panels popup1
+			String folderStr = S_Value
+			Variable state = 1
+
+			ControlInfo/W=VSANS_Det_Panels popup0
+			String carrStr = S_Value
+			
+// test the L image to see if I need to remove the mask
+			String detStr
+			if(cmpstr(carrStr,"F")==0)
+				detStr = "FL"
+			else
+				detStr = "ML"
+			endif
+			
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+			CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+			if(V_Flag == 1)		//overlay is present
+				state = 0
+			else
+				state = 1
+			endif
+			
+			if(cmpstr(carrStr,"F") == 0)
+				V_OverlayFourMask(folderStr,"FL",state)
+				V_OverlayFourMask(folderStr,"FR",state)
+				V_OverlayFourMask(folderStr,"FT",state)
+				V_OverlayFourMask(folderStr,"FB",state)
+			else
+				V_OverlayFourMask(folderStr,"ML",state)
+				V_OverlayFourMask(folderStr,"MR",state)
+				V_OverlayFourMask(folderStr,"MT",state)
+				V_OverlayFourMask(folderStr,"MB",state)						
+			endif
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			ControlInfo/W=VSANS_Det_Panels popup3
+			String av_type = S_Value
+			
+			ControlInfo/W=VSANS_Det_Panels popup1
+			String folderStr = S_Value
+			
+			ControlInfo/W=VSANS_Det_Panels popup0
+			String detGroup = S_Value
+			
+			// calculate the "mask" to add
+			
+			// if circular, do nothing
+			// if annular
+			// if sector		
+			// display the mask on the current data
+			
+			Variable ii
+			String detStr
+			String str1 = "root:Packages:NIST:VSANS:"+folderStr
+			String str2 = ":entry:instrument:detector_"
+
+			strswitch(av_type)	//dispatch to the proper routine to calculate mask
+
+				case "Circular":	
+					//do nothing
+					break			
+		
+				case "Sector":
+					ControlInfo/W=VSANS_Det_Panels popup4
+					String side = S_Value
+					NVAR phi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
+					NVAR dphi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
+					
+					// loop over all of the panels
+					// calculate phi matrix
+					// fill in the mask
+					for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+						detStr = StringFromList(ii, ksDetectorListNoB, ";")
+						Wave qTotal = $(str1+str2+detStr+":qTot_"+detStr)
+						Wave phi = 	V_MakePhiMatrix(qTotal,folderStr,detStr,str1+str2+detStr)
+						Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						Duplicate/O w $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+						Wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+						V_MarkSectorOverlayPixels(phi,overlay,phi_rad,dphi_rad,side)
+					endfor
+					
+					break
+				case "Sector_PlusMinus":
+					break
+				case "Rectangular":
+					break
+		
+				case "Annular":
+
+					NVAR qCtr_Ann = root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
+					NVAR qWidth = root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ				
+
+					break
+		
+				default:	
+					//do nothing
+			endswitch
+				
+			
+			
+			// switch for the overlay
+			strswitch(av_type)
+				case "Sector":
+				case "Annular":	
+				case "Sector_PlusMinus":
+				case "Rectangular":
+										
+					Variable state = 1
+		
+					ControlInfo/W=VSANS_Det_Panels popup0
+					String carrStr = S_Value
+					
+		// test the L image to see if I need to remove the mask
+					if(cmpstr(carrStr,"F")==0)
+						detStr = "FL"
+					else
+						detStr = "ML"
+					endif
+					
+					wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_Flag == 1)		//overlay is present
+						state = 0
+					else
+						state = 1
+					endif
+					
+					if(cmpstr(carrStr,"F") == 0)
+						V_OverlayFourAvgMask(folderStr,"FL",state)
+						V_OverlayFourAvgMask(folderStr,"FR",state)
+						V_OverlayFourAvgMask(folderStr,"FT",state)
+						V_OverlayFourAvgMask(folderStr,"FB",state)
+					else
+						V_OverlayFourAvgMask(folderStr,"ML",state)
+						V_OverlayFourAvgMask(folderStr,"MR",state)
+						V_OverlayFourAvgMask(folderStr,"MT",state)
+						V_OverlayFourAvgMask(folderStr,"MB",state)						
+					endif
+					
+					break
+
+				default:	
+					//do nothing
+			endswitch
+			
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// see V_Proto_doAverage() and V_Proto_doPlot()
+// this duplicates the switch and functionality from these operations
+//
+Function V_DoPanelAvgButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+	
+			ControlInfo/W=VSANS_Det_Panels popup2
+			Variable binType = V_BinTypeStr2Num(S_Value)
+//			V_BinningModePopup("",binType,S_Value)		// does binning of current popString and updates the graph
+
+			ControlInfo/W=VSANS_Det_Panels popup3
+			String av_type = S_Value
+			
+			ControlInfo/W=VSANS_Det_Panels popup1
+			String activeType = S_Value
+
+			String collimationStr="pinhole"
+
+
+			strswitch(av_type)	//dispatch to the proper routine to average to 1D data
+				case "none":		
+					//still do nothing
+					// set binType and binTypeStr to bad flags
+					String binTypeStr = "none"
+					binType = -999999
+					break			
+		
+				case "Circular":
+					V_QBinAllPanels_Circular(activeType,binType,collimationStr)		// this does a default circular average
+					V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+					V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned		
+					break
+					
+				case "Sector":
+					ControlInfo/W=VSANS_Det_Panels popup4
+					String side = S_Value
+					NVAR phi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
+					NVAR dphi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
+								
+					//String side = StringByKey("SIDE",avgStr,"=",";")
+					//Variable phi_rad = (Pi/180)*NumberByKey("PHI",avgStr,"=",";")		//in radians 
+					//Variable dphi_rad = (Pi/180)*NumberByKey("DPHI",avgStr,"=",";")
+					V_QBinAllPanels_Sector(activeType,binType,collimationStr,side,phi_rad,dphi_rad)
+					V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+					V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned		
+					break
+				case "Sector_PlusMinus":
+		//			Sector_PlusMinus1D(activeType)
+					break
+				case "Rectangular":
+		//			RectangularAverageTo1D(activeType)
+					break
+		
+				case "Annular":
+					ControlInfo/W=VSANS_Det_Panels popup0
+					String detGroup = S_Value
+					NVAR qCtr_Ann = root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
+					NVAR qWidth = root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ				
+					//String detGroup = StringByKey("DETGROUP",avgStr,"=",";")
+					//Variable qCtr_Ann = NumberByKey("QCENTER",avgStr,"=",";")
+					//Variable qWidth = NumberByKey("QDELTA",avgStr,"=",";")
+					V_QBinAllPanels_Annular(activeType,detGroup,qCtr_Ann,qWidth)
+					V_Phi_Graph_Proc(activeType,detGroup)
+					break
+		
+				case "Narrow_Slit":
+					V_QBinAllPanels_Slit(activeType,binType)		// this does a tall, narrow slit average
+					V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
+					V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned		
+					
+					break
+					
+				case "2D_ASCII":	
+					//do nothing
+					break
+				case "QxQy_ASCII":
+					//do nothing
+					break
+				case "PNG_Graphic":
+					//do nothing
+					break
+				default:	
+					//do nothing
+			endswitch
+
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+
+
+	return 0
+End
+
+Function V_AvgPanelHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			DoAlert 0,"The help file for this panel has not been written yet."
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+//
+// overlay the mask
+//
+//
+// if state==1, show the mask, if ==0, hide the mask
+//
+//
+Function V_OverlayFourMask(folderStr,detStr,state)
+	String folderStr,detStr
+	Variable state
+
+
+	String maskPath = "root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data"
+	if(WaveExists($maskPath) == 1)
+		
+		
+		if(state == 1)
+			//duplicate the mask, which is named "data"
+			wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+			// for the wave scaling
+			wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
+			Duplicate/O data $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+			overlay = maskW		//this copies the data into the properly scaled wave
+			
+			strswitch(detStr)
+				case "ML":
+				case "FL":
+					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_L overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_L overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_L ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break
+				case "MR":
+				case "FR":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_R overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_R overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_R ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break
+				case "MT":
+				case "FT":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_T overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_T overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_T ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break					
+				case "MB":
+				case "FB":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_B overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_B overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_B ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break					
+				default:			
+					//
+					Print "off bottom of switch"
+			endswitch
+		endif		//state == 1
+
+		if(state == 0)
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+
+			strswitch(detStr)
+				case "ML":
+				case "FL":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_L overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_L ''#1
+					endif
+					break
+				case "MR":
+				case "FR":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_R overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_R ''#1
+					endif
+					break
+				case "MT":
+				case "FT":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_T overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_T ''#1
+					endif
+					break					
+				case "MB":
+				case "FB":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_B overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_B ''#1
+					endif
+					break					
+				default:			
+					//
+					Print "off bottom of switch"
+			endswitch
+		endif		//state == 0
+		
+	Endif
+	
+	return(0)
+End
+
+
+//
+// overlay the mask
+//
+//
+// if state==1, show the mask, if ==0, hide the mask
+//
+//
+Function V_OverlayFourAvgMask(folderStr,detStr,state)
+	String folderStr,detStr
+	Variable state
+
+
+	String maskPath = "root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data"
+	if(WaveExists($maskPath) == 1)
+		
+		
+		if(state == 1)
+			//duplicate the mask, which is named "AvgOverlay_"
+//			wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+//			// for the wave scaling
+//			wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
+//			Duplicate/O data $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+//			overlay = maskW		//this copies the data into the properly scaled wave
+			
+			strswitch(detStr)
+				case "ML":
+				case "FL":
+					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_L overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_L overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_L ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break
+				case "MR":
+				case "FR":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_R overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_R overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_R ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break
+				case "MT":
+				case "FT":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_T overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_T overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_T ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break					
+				case "MB":
+				case "FB":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_B overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_B overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_B ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+					break					
+				default:			
+					//
+					Print "off bottom of switch"
+			endswitch
+		endif		//state == 1
+
+		if(state == 0)
+			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+
+			strswitch(detStr)
+				case "ML":
+				case "FL":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_L overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_L ''#1
+					endif
+					break
+				case "MR":
+				case "FR":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_R overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_R overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_R ''#1
+					endif
+					break
+				case "MT":
+				case "FT":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_T overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_T overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_T ''#1
+					endif
+					break					
+				case "MB":
+				case "FB":
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_B overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_B overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_B ''#1
+					endif
+					break					
+				default:			
+					//
+					Print "off bottom of switch"
+			endswitch
+		endif		//state == 0
+		
+	Endif
+	
+	return(0)
+End
+
+

@@ -30,7 +30,12 @@ Function Init_USANS_Facility()
 	// -- not that the extension as specified here starts with "."
 	String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
 	
-	
+	// on Feb 7 2019 @ 11:00 AM, the order of the columns in the raw BT5 data file was swapped to 
+	// put the 5 detectors in positions 2-6, moving the transmission detector from postion 4 to positon 7
+	// this was the only change made to the data file (done in expectation of NICE being ready soon)
+	// --to switch between the two different read routines, key on the time of data collection in the data file
+	//
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs=date2secs(2019,2,7)+3600*11		// the seconds of the switch
 	
 	return(0)
 end

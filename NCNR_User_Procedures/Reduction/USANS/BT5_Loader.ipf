@@ -86,18 +86,18 @@ Function LoadBT5File(fname,type)
 	Variable useNewDataFormat
 
 // test by date
-//	Variable thisFileSecs,switchSecs
-//	switchSecs = date2secs(2019,2,6)
-//	thisFileSecs = BT5Date2Secs(filedt)		// could use BT5DateTime2Secs() to include HR:MIN
-//	if(thisFileSecs >= switchSecs)
-//		useNewDataFormat = 1
-//	else
-//		useNewDataFormat = 0
-//	endif
+	Variable thisFileSecs
+	NVAR switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
+	thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
+	if(thisFileSecs >= switchSecs)
+		useNewDataFormat = 1
+	else
+		useNewDataFormat = 0
+	endif
 
 // or use the global
-	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat	
-	useNewDataFormat = gVal
+//	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat	
+//	useNewDataFormat = gVal
 	
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)

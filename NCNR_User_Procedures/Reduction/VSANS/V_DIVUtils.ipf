@@ -2,9 +2,6 @@
 
 //
 // ********
-// TODO -- this file is preliminary. It has not yet been tested on enough real data
-//    to generate a DIV file.
-//    Not sure how it will be measured in practice on VSANS.
 //
 //   JAN 2018
 //
