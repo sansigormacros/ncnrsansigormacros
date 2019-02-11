@@ -547,7 +547,6 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		nq = pixX*pixY
 		ii=0
 
-s_tic()	
 // TODO
 // this loop is the slow step. it takes Å 0.7 s for F or M panels, and Å 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
@@ -559,6 +558,7 @@ s_tic()
 //		Duplicate/O qval dum
 //		dum = V_get2DResolution(qval,phi,r_dist,type,detStr,collimationStr,SigmaQX,SigmaQY,fsubS)
 
+v_tic()
 		do
 			V_get2DResolution(qval[ii],phi[ii],r_dist[ii],type,detStr,collimationStr,ret1,ret2,ret3)
 			SigmaQX[ii] = ret1	
@@ -566,8 +566,7 @@ s_tic()
 			fsubs[ii] = ret3	
 			ii+=1
 		while(ii<nq)	
-s_toc()
-	
+v_toc()	
 	////*********************	
 		Duplicate/O qx_val,qx_val_s
 		Duplicate/O qy_val,qy_val_s

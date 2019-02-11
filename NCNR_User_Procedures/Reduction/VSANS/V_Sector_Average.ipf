@@ -52,63 +52,77 @@ Function V_MarkSectorOverlayPixels(phi,overlay,phiCtr,delta,side)
 	Variable xDim=DimSize(phi, 0)
 	Variable yDim=DimSize(phi, 1)
 
-	Variable ii,jj,isIn,forward,mirror
+	Variable ii,jj,exclude,mirror_phiCtr,crossZero
 	
-// initialize the mask to keep everything
-	overlay = 0
+// does the +- delta cross 0?
+	crossZero = 0
+	if((phiCtr - delta) < 0)
+		crossZero = 1
+	endif
+	if((phiCtr + delta) > 2*pi)
+		crossZero = 1
+	endif
+// if "both", what is the mirror_phiCtr?
+	if(cmpstr(side,"both")==0)
+		if(phiCtr < pi)
+			mirror_phiCtr = phiCtr + pi
+		else
+			mirror_phiCtr = phiCtr - pi
+		endif
+	endif
 
+// initialize the mask to == 1 == exclude everything
+	overlay = 1
+
+
+// now give every opportunity to keep pixel in
 	for(ii=0;ii<xDim;ii+=1)
 		for(jj=0;jj<yDim;jj+=1)
 			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
 			phiVal = phi[ii][jj]
-			isIn = 0
+			exclude = 1
 		
-			isIn = V_CloseEnough(phiVal,phiCtr,delta)
-			if(!isIn)		// it's NOT in the sector, do something
-				overlay[ii][jj] = 1
+			// sector as defined
+			if(V_CloseEnough(phiVal,phiCtr,delta))
+				exclude = 0
 			endif
-
-//			isIn = V_CloseEnough(phiVal,pi+phiCtr,delta)
-//			if(!isIn)		// it's NOT in the sector, do something
-//				overlay[ii][jj] = 1
-//			endif
-
-//			
-//			if(phiVal < delta)
-//				forward = 1			//within forward sector
-//			else
-//				forward = 0
-//			Endif
-//			if((Pi - phiVal) < delta)
-//				mirror = 1		//within mirror sector
-//			else
-//				mirror = 0
-//			Endif
-//			//check if pixel lies within allowed sector(s)
-//			if(cmpstr(side,"both")==0)		//both sectors
-//				if ( mirror || forward)
-//					//increment
-//					isIn = 1
-//				Endif
-//			else
-//				if(cmpstr(side,"right")==0)		//forward sector only
-//					if(forward)
-//						//increment
-//						isIn = 1
-//					Endif
-//				else			//mirror sector only
-//					if(mirror)
-//						//increment
-//						isIn = 1
-//					Endif
-//				Endif
-//			Endif		//allowable sectors
-//		
+			//if sector crosses zero, pick up the rest of the sector
+			if(crossZero)
+				if(V_CloseEnough(phiVal-2*pi,phiCtr,delta))
+					exclude = 0
+				endif
+				if(V_CloseEnough(phiVal+2*pi,phiCtr,delta))
+					exclude = 0
+				endif
+			endif
 			
-		
+			//	mirror phi if needed
+			if(cmpstr(side,"both")==0)
+				if(V_CloseEnough(phiVal,mirror_phiCtr,delta))
+					exclude = 0
+				endif
+			endif
+				
+			// if only right or left, exclude everything as needed
+			if(cmpstr(side,"right")==0)
+				//if phi is actually on the left
+				if(phiCtr > pi/2 && phiCtr < 3*pi/2)
+					exclude = 1
+				endif
+			endif
+			if(cmpstr(side,"left")==0)
+				//if phi is actually on the right
+				if( (phiCtr > 0 && phiCtr < pi/2) || (phiCtr > 3*pi/2 && phiCtr < 2*pi) )
+					exclude = 1
+				endif
+			endif
+			
+			// set the mask value
+			overlay[ii][jj] = exclude
 		endfor
 	endfor
-	
+
+
 	return(0)
 End
 

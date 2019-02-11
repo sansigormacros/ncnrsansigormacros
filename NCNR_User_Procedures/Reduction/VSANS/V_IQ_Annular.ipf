@@ -843,3 +843,43 @@ Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 	SetDataFolder root:
 	return(0)
 End
+
+
+// 
+// x- I want to mask out everything that is "out" of the annulus
+//
+// 0 = keep the point
+// 1 = yes, mask the point
+Function V_MarkAnnularOverlayPixels(qTotal,overlay,qCtr_ann,qWidth)
+	Wave qTotal,overlay
+	Variable qCtr_ann,qWidth
+		
+	
+	Variable xDim=DimSize(qTotal, 0)
+	Variable yDim=DimSize(qTotal, 1)
+
+	Variable ii,jj,exclude,qVal
+	
+	// initialize the mask to == 1 == exclude everything
+	overlay = 1
+
+// now give every opportunity to keep pixel in
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			qval = qTotal[ii][jj]
+			exclude = 1
+		
+			// annulus as defined
+			if(V_CloseEnough(qval,qCtr_ann,qWidth))
+				exclude = 0
+			endif
+			
+			// set the mask value
+			overlay[ii][jj] = exclude
+		endfor
+	endfor
+
+
+	return(0)
+End

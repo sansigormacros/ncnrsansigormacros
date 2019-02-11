@@ -1131,7 +1131,7 @@ Proc V_Display_Det_Panels()
 	SetVariable setvar3,pos={200,70},size={140,23},title="Sector (+/-) (deg)"
 	SetVariable setvar3,limits={0,359,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 
-	PopupMenu popup4,pos={200,100},size={90,23.00},proc=V_DummyPopMenuProc,title="Sector Side(s)"
+	PopupMenu popup4,pos={200,100},size={90,23.00},title="Sector Side(s)"//,proc=V_DummyPopMenuProc
 	PopupMenu popup4,mode=1,value= #"\"both;left;right;\""
 	
 //	Display/W=(745,45,945,425)/HOST=# 
@@ -1327,24 +1327,24 @@ Function V_UpdateFourPanelDisp()
 End
 
 
-
-Function V_DummyPopMenuProc(pa) : PopupMenuControl
-	STRUCT WMPopupAction &pa
-
-	switch( pa.eventCode )
-		case 2: // mouse up
-			Variable popNum = pa.popNum
-			String popStr = pa.popStr
-			
-			DoAlert 0,"Fill in the dummy procedure"
-			
-			break
-		case -1: // control being killed
-			break
-	endswitch
-
-	return 0
-End
+//
+//Function V_DummyPopMenuProc(pa) : PopupMenuControl
+//	STRUCT WMPopupAction &pa
+//
+//	switch( pa.eventCode )
+//		case 2: // mouse up
+//			Variable popNum = pa.popNum
+//			String popStr = pa.popStr
+//			
+//			DoAlert 0,"Fill in the dummy procedure"
+//			
+//			break
+//		case -1: // control being killed
+//			break
+//	endswitch
+//
+//	return 0
+//End
 
 
 Function V_PickFolderPopMenuProc(pa) : PopupMenuControl
@@ -1518,8 +1518,18 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 					NVAR qCtr_Ann = root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
 					NVAR qWidth = root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ				
 
+					// loop over all of the panels
+					// fill in the mask
+					for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+						detStr = StringFromList(ii, ksDetectorListNoB, ";")
+						Wave qTotal = $(str1+str2+detStr+":qTot_"+detStr)
+						Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						Duplicate/O w $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+						Wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+						V_MarkAnnularOverlayPixels(qTotal,overlay,qCtr_ann,qWidth)
+					endfor
+
 					break
-		
 				default:	
 					//do nothing
 			endswitch
@@ -1622,13 +1632,11 @@ Function V_DoPanelAvgButtonProc(ba) : ButtonControl
 				case "Sector":
 					ControlInfo/W=VSANS_Det_Panels popup4
 					String side = S_Value
-					NVAR phi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
-					NVAR dphi_rad = root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
+					NVAR phi = root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
+					NVAR delta = root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 								
-					//String side = StringByKey("SIDE",avgStr,"=",";")
-					//Variable phi_rad = (Pi/180)*NumberByKey("PHI",avgStr,"=",";")		//in radians 
-					//Variable dphi_rad = (Pi/180)*NumberByKey("DPHI",avgStr,"=",";")
-					V_QBinAllPanels_Sector(activeType,binType,collimationStr,side,phi_rad,dphi_rad)
+				// convert the angles to radians before passing					
+					V_QBinAllPanels_Sector(activeType,binType,collimationStr,side,phi*pi/180,delta*pi/180)
 					V_PlotData_Panel()		//this brings the plot window to the front, or draws it (ONLY)
 					V_Update1D_Graph(activeType,binType)		//update the graph, data was already binned		
 					break
