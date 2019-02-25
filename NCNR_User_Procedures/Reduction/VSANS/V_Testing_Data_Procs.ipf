@@ -50,7 +50,8 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		tmpData	= (tmpData ==   -1) ? 0 : tmpData		//the NaN "mask" in the sim data (T/B only)shows up as -1
 		V_writeDetectorData(fileName,detStr,tmpData)
 		
-		val = VCALC_getSDD(detStr)		// make sure value is in cm
+	
+		val = VC_getSDD(detStr)		// make sure value is in cm
 		print val
 		V_writeDet_distance(fileName,detStr,val)
 		

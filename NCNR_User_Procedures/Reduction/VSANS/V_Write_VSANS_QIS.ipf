@@ -593,7 +593,7 @@ v_toc()
 		wfprintf refNum,"%s\r\n",labelWave
 		fprintf refnum,"\r\n"
 //		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
-		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val,qy_val,z_val,sw,qz_val,SigmaQx,SigmaQy,fSubS
+		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s
 		Close refNum
 #endif
 		

@@ -18,48 +18,7 @@
 //  Values from the VCALC panel
 
 
-// returns the nominal SDD from the panel -- value is [cm]
-// Does NOT include the setback of the T/B panels. This is a separate value
-Function VCALC_getSDD(type)
-	String type
-	
-	Variable sdd
-	
-	strswitch(type)	
-		case "FL":
-		case "FR":		
-			ControlInfo/W=VCALC VCALCCtrl_2d
-			SDD = V_Value
-			break
-		case "FT":
-		case "FB":		
-			ControlInfo/W=VCALC VCALCCtrl_2d
-			SDD = V_Value	
-			break
 
-		case "ML":
-		case "MR":		
-			ControlInfo/W=VCALC VCALCCtrl_3d
-			SDD = V_Value
-			break
-		case "MT":
-		case "MB":
-			ControlInfo/W=VCALC VCALCCtrl_3d
-			SDD = V_Value
-			break	
-						
-		case "B":		
-			ControlInfo/W=VCALC VCALCCtrl_4b
-			SDD = V_Value
-			break
-			
-		default:
-			Print "Error -- type not found in	 V_getSDD(type)"					
-			sdd = NaN		//no match for type		
-	endswitch
-	
-	return(sdd)
-end
 
 // returns the panel separation [cm]
 Function VCALC_getPanelTranslation(type)
@@ -124,6 +83,14 @@ Function VCALC_getWavelength()
 	return(V_Value)
 end
 
+// returns the wavelength spread from the panel -- value is fraction
+Function VCALC_getWavelengthSpread()
+	
+	ControlInfo/W=VCALC VCALCCtrl_0d
+
+	return(V_Value)
+end
+
 // returns the number of neutrons on the sample
 Function VCALC_getImon()
 	
@@ -152,47 +119,6 @@ Function VCALC_getPixSizeX(type)
 
 	Variable pixSizeX = V_getDet_x_pixel_size("VCALC",type)
 
-//	SetDataFolder root:Packages:NIST:VSANS:VCALC
-//			
-//	strswitch(type)	
-//		case "FL":
-//			NVAR pixSizeX = gFront_L_pixelX
-//			break
-//		case "FR":		
-//			NVAR pixSizeX = gFront_R_pixelX
-//			break
-//		case "FT":
-//			NVAR pixSizeX = gFront_T_pixelX
-//			break	
-//		case "FB":		
-//			NVAR pixSizeX = gFront_B_pixelX
-//			break
-//			
-//		case "ML":
-//			NVAR pixSizeX = gMiddle_L_pixelX
-//			break
-//		case "MR":		
-//			NVAR pixSizeX = gMiddle_R_pixelX
-//			break
-//		case "MT":
-//			NVAR pixSizeX = gMiddle_T_pixelX
-//			break	
-//		case "MB":		
-//			NVAR pixSizeX = gMiddle_B_pixelX
-//			break
-//						
-//		case "B":		
-//			NVAR pixSizeX = gBack_pixelX
-//			break
-//			
-//		default:							
-//			Print "Detector type mismatch in 	V_getPixSizeX(type)"
-//			setDataFolder root:
-//			return(NaN)
-//	endswitch
-//
-//	setDataFolder root:
-		
 	return(pixSizeX)
 end
 
@@ -202,47 +128,6 @@ Function VCALC_getPixSizeY(type)
 
 	Variable pixSizeY = V_getDet_y_pixel_size("VCALC",type)
 	
-//	SetDataFolder root:Packages:NIST:VSANS:VCALC
-//			
-//	strswitch(type)	
-//		case "FL":
-//			NVAR pixSizeY = gFront_L_pixelY
-//			break
-//		case "FR":		
-//			NVAR pixSizeY = gFront_R_pixelY
-//			break
-//		case "FT":
-//			NVAR pixSizeY = gFront_T_pixelY
-//			break	
-//		case "FB":		
-//			NVAR pixSizeY = gFront_B_pixelY
-//			break
-//			
-//		case "ML":
-//			NVAR pixSizeY = gMiddle_L_pixelY
-//			break
-//		case "MR":		
-//			NVAR pixSizeY = gMiddle_R_pixelY
-//			break
-//		case "MT":
-//			NVAR pixSizeY = gMiddle_T_pixelY
-//			break	
-//		case "MB":		
-//			NVAR pixSizeY = gMiddle_B_pixelY
-//			break
-//						
-//		case "B":		
-//			NVAR pixSizeY = gBack_pixelY
-//			break
-//			
-//		default:							
-//			Print "Detector type mismatch in 	V_getPixSizeY(type)"
-//			SetDataFolder root:
-//			return(NaN)
-//	endswitch
-//
-//	setDatafolder root:
-		
 	return(pixSizeY)
 end
 
@@ -253,47 +138,6 @@ Function VCALC_get_nPix_X(type)
 
 	Variable nPix = V_getDet_pixel_num_x("VCALC",type)
 	
-//	SetDataFolder root:Packages:NIST:VSANS:VCALC
-//			
-//	strswitch(type)	
-//		case "FL":
-//			NVAR nPix = gFront_L_nPix_X
-//			break
-//		case "FR":		
-//			NVAR nPix = gFront_R_nPix_X
-//			break
-//		case "FT":
-//			NVAR nPix = gFront_T_nPix_X
-//			break	
-//		case "FB":		
-//			NVAR nPix = gFront_B_nPix_X
-//			break
-//			
-//		case "ML":
-//			NVAR nPix = gMiddle_L_nPix_X
-//			break
-//		case "MR":		
-//			NVAR nPix = gMiddle_R_nPix_X
-//			break
-//		case "MT":
-//			NVAR nPix = gMiddle_T_nPix_X
-//			break	
-//		case "MB":		
-//			NVAR nPix = gMiddle_B_nPix_X
-//			break
-//						
-//		case "B":		
-//			NVAR nPix = gBack_nPix_X
-//			break
-//			
-//		default:							
-//			Print "Detector type mismatch in 	VCALC_get_nPix_X(type)"
-//			SetDataFolder root:
-//			return(NaN)
-//	endswitch
-//
-//	setDataFolder root:
-		
 	return(nPix)
 end
 
@@ -303,47 +147,6 @@ Function VCALC_get_nPix_Y(type)
 
 	Variable nPix = V_getDet_pixel_num_y("VCALC",type)
 
-//	SetDataFolder root:Packages:NIST:VSANS:VCALC
-//			
-//	strswitch(type)	
-//		case "FL":
-//			NVAR nPix = gFront_L_nPix_Y
-//			break
-//		case "FR":		
-//			NVAR nPix = gFront_R_nPix_Y
-//			break
-//		case "FT":
-//			NVAR nPix = gFront_T_nPix_Y
-//			break	
-//		case "FB":		
-//			NVAR nPix = gFront_B_nPix_Y
-//			break
-//			
-//		case "ML":
-//			NVAR nPix = gMiddle_L_nPix_Y
-//			break
-//		case "MR":		
-//			NVAR nPix = gMiddle_R_nPix_Y
-//			break
-//		case "MT":
-//			NVAR nPix = gMiddle_T_nPix_Y
-//			break	
-//		case "MB":		
-//			NVAR nPix = gMiddle_B_nPix_Y
-//			break
-//						
-//		case "B":		
-//			NVAR nPix = gBack_nPix_Y
-//			break
-//			
-//		default:							
-//			Print "Detector type mismatch in 	VCALC_get_nPix_Y(type)"
-//			SetDataFolder root:
-//			return(NaN)
-//	endswitch
-//
-//	SetDataFolder root:
-		
 	return(nPix)
 end
 
@@ -379,6 +182,7 @@ Function VCALC_getTopBottomSDDSetback(type)
 			break	
 						
 		case "B":
+		case "B ":
 			SetDataFolder root:
 			return(0)
 			break		//already zero, do nothing
@@ -401,16 +205,58 @@ End
 //
 //////////////////////////////////
 
-// read the number of guides from the slider
-// return the Source to Sample Distance in [cm]
+// get the sourceAperture_to_GateValve distance from the table
+//
+// correct for the sampleAperture_to_GateValve distance
+//
+// return the SourceAp to SampleAp Distance in [cm]
 Function VC_calcSSD()
 
-	Variable ng,ssd
-	ControlInfo VCALCCtrl_0a
+	Variable ng,ssd,samAp_to_GV
+	ControlInfo/W=VCALC VCALCCtrl_0a
 	ng = V_Value
+
+	ControlInfo/W=VCALC VCALCCtrl_1d
+	samAp_to_GV = V_Value		// [cm]
 	
-	ssd = 2388 - ng*200
-	print "SSD (cm) = ",ssd
+	switch(ng)
+		case 0:
+				ssd = 2441
+			break
+		case 1:
+				ssd = 2157
+			break
+		case 2:
+				ssd = 1976
+			break
+		case 3:
+				ssd = 1782
+			break			
+		case 4:
+				ssd = 1582
+			break			
+		case 5:
+				ssd = 1381
+			break			
+		case 6:
+				ssd = 1181
+			break			
+		case 7:
+				ssd = 980
+			break			
+		case 8:
+				ssd = 780
+			break			
+		case 9:
+				ssd = 579
+			break			
+		default:
+			Print "Error - using default SSD value"
+			ssd = 2441
+	endswitch
+	ssd -= samAp_to_GV
+	
+//	print "SSD (cm) = ",ssd
 	return(ssd)
 End
 
@@ -421,17 +267,31 @@ End
 Function VC_sourceApertureDiam()
 
 	Variable ng,a1
-	ControlInfo VCALCCtrl_0a
+	ControlInfo/W=VCALC VCALCCtrl_0a
 	ng = V_Value
-	
-	a1 = 6		// 60 mm diameter
 
-	Print "Source Ap diam (cm) = ",a1
+	ControlInfo/W=VCALC VCALCCtrl_0f
+	String apStr = S_Value
+	
+
+	if(ng > 0)	
+		a1 = 6		// 60 mm diameter
+	else
+		sscanf apStr, "%g cm", a1
+	endif
+
+//	Print "Source Ap diam (cm) = ",a1
 	return(a1)
 End
 
+// reports tha value in [cm]
+Function VC_sampleApertureDiam()
 
+	ControlInfo/W=VCALC VCALCCtrl_1c
+	Variable val = str2num(S_Value)
 
+	return(val)
+End
 ///////////////////
 //
 // Presets
@@ -467,8 +327,8 @@ Function VC_FrontMiddlePreset()
 	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
 
 	// middle carriage
-	SetVariable VCALCCtrl_3a,value=_NUM:0		//Left offset
-	SetVariable VCALCCtrl_3aa,value=_NUM:0		//Right offset
+	SetVariable VCALCCtrl_3a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:-10		//Right offset
 	SetVariable VCALCCtrl_3b,value=_NUM:4			//Top offset (doesn't matter)
 	SetVariable VCALCCtrl_3bb,value=_NUM:-4		//Bottom offset (doesn't matter)
 
@@ -569,6 +429,20 @@ Function VC_GraphiteMonoPreset()
 	return(0)
 end
 
+// calculates L2, the sample aperture to detector distance
+Function VC_calc_L2(detStr)
+	String detStr
+
+	Variable a2_to_GV,sam_to_GV,sdd,l2
+	sdd = VC_getSDD(detStr)			//sample pos to detector
+	ControlInfo VCALCCtrl_1d
+	a2_to_GV = V_Value
+	ControlInfo VCALCCtrl_1e
+	sam_to_GV = V_Value
+	l2 = sdd - sam_to_GV + a2_to_GV
+	
+	return(l2)
+End
 
 //
 //direction = one of "vertical;horizontal;maximum;"
@@ -577,9 +451,9 @@ end
 // carrNum = 1,2,3 for F,M,B
 //
 // returns a value in [cm]
-Function VC_beamDiameter(direction,carrNum)
+Function VC_beamDiameter(direction,detStr)
 	String direction
-	Variable carrNum
+	String detStr
 
 //	NVAR lens = root:Packages:NIST:SAS:gUsingLenses
 //	if(lens)
@@ -590,20 +464,23 @@ Function VC_beamDiameter(direction,carrNum)
 	Variable d1,d2,bh,bv,bm,umbra,a1,a2
 	Variable lambda,lambda_width,bs_factor
     
-//    NVAR L2diff = root:Packages:NIST:SAS:L2diff
-
-// TODO: proper value for l2Diff, bs_factor
-	l2Diff = 0
+// TODO: proper value for bs_factor
 	bs_factor = 1.05
 	
 	l1 = VC_calcSSD()
 	lambda = VCALC_getWavelength()
-	ControlInfo VCALCCtrl_0d
-	lambda_width = str2num(S_Value)
+	lambda_width = VCALC_getWavelengthSpread()
 	
 	
-	l2 = VC_getSDD(carrNum) + L2diff
-    
+	Variable a2_to_GV,sam_to_GV,sdd
+	sdd = VC_getSDD(detStr)			//sample pos to detector
+	ControlInfo VCALCCtrl_1d
+	a2_to_GV = V_Value
+	ControlInfo VCALCCtrl_1e
+	sam_to_GV = V_Value
+	l2 = sdd - sam_to_GV + a2_to_GV
+   
+   
     // TODO verify that these values are in cm
 	a1 = VC_sourceApertureDiam()
     
@@ -641,73 +518,75 @@ End
 // 2=middle
 // 3=back
 // return value is in cm
-Function VC_getSDD(carrNum)
-	Variable carrNum
+// actual Sample position to detector distance is reported
+// Top/Bottom setback is included
+Function VC_getSDD(detStr)
+	String detStr
 	
-	if(carrNum == 1)
-		ControlInfo VCALCCtrl_2d
-	endif
-	if(carrNum == 2)
-		ControlInfo VCALCCtrl_3d
-	endif
-	if(carrNum == 3)
-		ControlInfo VCALCCtrl_4b
-	endif
+	Variable sdd
+
+	strswitch(detstr)
+		case "B":
+		case "B ":
+			ControlInfo VCALCCtrl_4b
+			break
+		case "ML":
+		case "MR":
+		case "MT":
+		case "MB":
+			ControlInfo VCALCCtrl_3d
+			break
+		case "FL":
+		case "FR":
+		case "FT":
+		case "FB":
+			ControlInfo VCALCCtrl_2d
+			break		
+		default:
+			Print "no case matched in VC_getSDD()"
+	endswitch
+
+	// this is gate valve to detector distance
+	sdd = V_Value
 	
-	return(V_Value)
+	sdd += VCALC_getTopBottomSDDSetback(detStr)
+	
+	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
+	ControlInfo VCALCCtrl_1e
+	sdd += V_Value
+	
+	return(sdd)
 end
 	
 
-// these are numbers from NG3, when it was a SANS instrument
-//	
-// updated with new flux numbers from John Barker
-// NG3 - Feb 2009
-// NG7 - July 2009
-//
-// guide loss has been changed to 0.95 rather than the old value of 0.95
-//
-// other values are changed in the initialization routines
+// TODO
+// -- verify all of the numbers, constants, and "empirical" transmission corrections
+// --
 //
 Function V_beamIntensity()
 
-	Variable alpha,f,t,t4,t5,t6,as,solid_angle,l1,d2_phi
+	Variable as,solid_angle,l1,d2_phi
 	Variable a1,a2,retVal
-	Variable l_gap,guide_width,ng
-	Variable lambda_t,b,c
-	Variable lambda,t1,t2,t3,phi_0
+	Variable ng
+	Variable lambda_t
+	Variable lambda,phi_0
 	Variable lambda_width
-	Variable guide_loss
+	Variable guide_loss,t_guide,t_filter,t_total,t_special
 
 	NVAR gBeamInten = root:Packages:NIST:VSANS:VCALC:gBeamIntensity
-
  
 // TODO
-// these are numbers from NG3, when it was a SANS instrument
-	
-	lambda_t = 5.50
+// -- verify these numbers
+	lambda_t = 6.20
+	phi_0 = 1.82e13
+	guide_loss = 0.97
+	t_special = 1
 
- 	t1 = 0.63
-	t2 = 1.0
-	t3 = 0.75
-	l_gap = 100.0
-	guide_width = 6.0
- 
-	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
-	phi_0 = 2.42e13
-	b = 0.0
-	c = -0.0243
-	guide_loss = 0.924
-	 
-	 
-	 
  	ControlInfo VCALCCtrl_0a
 	ng = V_Value
  
  	lambda = VCALC_getWavelength()
- 	ControlInfo VCALCCtrl_0d
- 	lambda_width = str2num(S_Value)
- 
-    
+ 	lambda_width = VCALC_getWavelengthSpread()
 	l1 = VC_calcSSD()
     
     // TODO verify that these values are in cm
@@ -717,13 +596,15 @@ Function V_beamIntensity()
 	ControlInfo VCALCCtrl_1c
 	a2 = V_Value
     
-    
-	alpha = (a1+a2)/(2*l1)	//angular divergence of beam
-	f = l_gap*alpha/(2*guide_width)
-	t4 = (1-f)*(1-f)
-	t5 = exp(ng*ln(guide_loss))	// trans losses of guides in pre-sample flight
-	t6 = 1 - lambda*(b-(ng/8)*(b-c))		//experimental correction factor
-	t = t1*t2*t3*t4*t5*t6
+//	alpha = (a1+a2)/(2*l1)	//angular divergence of beam
+//	f = l_gap*alpha/(2*guide_width)
+//	t4 = (1-f)*(1-f)
+//	t6 = 1 - lambda*(b-(ng/8)*(b-c))		//experimental correction factor
+
+	t_guide = exp(ng*ln(guide_loss))	// trans losses of guides in pre-sample flight
+	t_filter = exp(-0.371 - 0.0305*lambda - 0.00352*lambda*lambda)
+	t_total = t_special*t_guide*t_filter
+
     
 	as = pi/4*a2*a2		//area of sample in the beam
 	d2_phi = phi_0/(2*pi)
@@ -732,10 +613,11 @@ Function V_beamIntensity()
 
 	solid_angle = pi/4* (a1/l1)*(a1/l1)
 
-	retVal = as * d2_phi * lambda_width * solid_angle * t
+	retVal = as * d2_phi * lambda_width * solid_angle * t_total
 
 	// set the global for display
 	gBeamInten = retVal
+	
 	return (retVal)
 end
 
@@ -749,8 +631,8 @@ Function VC_figureOfMerit()
 End
 
 // return a beamstop diameter (cm) larger than maximum beam dimension
-Function VC_beamstopDiam(carrNum)
-	Variable carrNum
+Function VC_beamstopDiam(detStr)
+	String detStr
 	
 	Variable bm=0
 	Variable bs=0.0
@@ -760,7 +642,7 @@ Function VC_beamstopDiam(carrNum)
 		//bm = sourceApertureDiam()		//ideal result, not needed
 		bs = 1								//force the diameter to 1"
 	else
-		bm = VC_beamDiameter("maximum",carrNum)
+		bm = VC_beamDiameter("maximum",detStr)
 		do
 	    	bs += 1
 	   while ( (bs*2.54 < bm) || (bs > 30.0)) 			//30 = ridiculous limit to avoid inf loop
@@ -769,4 +651,71 @@ Function VC_beamstopDiam(carrNum)
 	return (bs*2.54)		//return diameter in cm, not inches for txt
 End
 
+// multiply the appropriate IQ data by the beamstop shadow factor for display
+//
+Function V_IQ_BeamstopShadow()
 
+	String popStr
+	Variable binType
+	
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value	
+
+	binType = V_BinTypeStr2Num(popStr)	
+	
+	String folderStr = "root:Packages:NIST:VSANS:VCALC:"
+	
+
+	String extStr =""
+	
+	switch(binType)
+		case 1:
+			extStr = ksBinType1		
+
+			break
+		case 2:
+			extStr = ksBinType2		
+
+			break
+		case 3:
+			extStr = ksBinType3	
+			
+			break
+		case 4:				/// this is for a tall, narrow slit mode	
+			extStr = ksBinType4
+
+			break
+		case 5:
+			extStr = ksBinType5	
+		
+			break
+		case 6:
+			extStr = ksBinType6	
+		
+			break
+		case 7:
+			extStr = ksBinType7	
+		
+			break
+			
+		default:
+			Abort "Binning mode not found in V_IQ_BeamstopShadow"// when no case matches	
+	endswitch
+
+
+//	root:Packages:NIST:VSANS:VCALC:fSubS_qxqy_MLR
+//	root:Packages:NIST:VSANS:VCALC:iBin_qxqy_MLR
+	
+	Variable ii
+	String ext
+//	loop over all of the types of data
+	for(ii=0;ii<ItemsInList(extStr);ii+=1)
+		ext = StringFromList(ii, extStr, ";")
+		Wave iq = $(folderStr+"iBin_qxqy_"+ext)
+		Wave fs = $(folderStr+"fSubS_qxqy_"+ext)
+		iq = (fs < 0.1) ? iq*0.1 : iq*fs
+//		iq *= fs
+	endfor	
+	
+	return(0)
+end

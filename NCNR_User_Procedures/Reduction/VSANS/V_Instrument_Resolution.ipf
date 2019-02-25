@@ -91,6 +91,10 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	String folderStr,type,collimationStr
 	Variable &SigmaQ, &QBar, &fSubS		//these are the output quantities at the input Q value
 
+	Variable isVCALC
+	if(cmpstr(folderStr,"VCALC") == 0)
+		isVCALC = 1
+	endif
 
 	Variable lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses
 		
@@ -105,41 +109,58 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 ///////// get all of the values from the header
 // TODO: check the units of all of the inputs
 // lambda = wavelength [A]
-	lambda = V_getWavelength(folderStr)
+	if(isVCALC)
+		lambda = VCALC_getWavelength()
+	else
+		lambda = V_getWavelength(folderStr)
+	endif
 	
 // lambdaWidth = [dimensionless]
-	lambdaWidth = V_getWavelength_spread(folderStr)
+	if(isVCALC)
+		lambdaWidth = VCALC_getWavelengthSpread()
+	else
+		lambdaWidth = V_getWavelength_spread(folderStr)
+	endif
 	
 // DDet = detector pixel resolution [cm]	**assumes square pixel
 	// V_getDet_pixel_fwhm_x(folderStr,detStr)
 	// V_getDet_pixel_fwhm_y(folderStr,detStr)
 //	DDet = 0.8		// TODO -- this is hard-wired
 
-	if(strlen(type) == 1)
-		// it's "B"
-		DDet = V_getDet_pixel_fwhm_x(folderStr,type)		// value is already in cm
+	if(isVCALC)
+		if(strlen(type) == 1)
+			// it's "B"
+			DDet = VCALC_getPixSizeX(type)		// value is already in cm
+		else
+			DDet = VCALC_getPixSizeX(type[0,1])		// value is already in cm
+		endif		
 	else
-		DDet = V_getDet_pixel_fwhm_x(folderStr,type[0,1])		// value is already in cm
-	endif
-		
+		if(strlen(type) == 1)
+			// it's "B"
+			DDet = V_getDet_pixel_fwhm_x(folderStr,type)		// value is already in cm
+		else
+			DDet = V_getDet_pixel_fwhm_x(folderStr,type[0,1])		// value is already in cm
+		endif		
+	endif	
 // apOff = sample aperture to sample distance [cm]
 	apOff = 10		// TODO -- this is hard-wired
 
 
-	
 // S1 = source aperture diameter [mm]
 // may be either circle or rectangle
 	String s1_shape="",bs_shape=""
 	Variable width,height,equiv_S1,equiv_bs
 	
-	
-	s1_shape = V_getSourceAp_shape(folderStr)
-	if(cmpstr(s1_shape,"CIRCLE") == 0)
-		S1 = str2num(V_getSourceAp_size(folderStr))
+	if(isVCALC)
+		S1 = VC_sourceApertureDiam()*10		//VCALC is in cm, conver to [mm]
 	else
-		S1 = V_getSourceAp_height(folderStr)		// TODO: need the width or at least an equivalent diameter
+		s1_shape = V_getSourceAp_shape(folderStr)
+		if(cmpstr(s1_shape,"CIRCLE") == 0)
+			S1 = str2num(V_getSourceAp_size(folderStr))
+		else
+			S1 = V_getSourceAp_height(folderStr)		// TODO: need the width or at least an equivalent diameter
+		endif
 	endif
-	
 	
 // S2 = sample aperture diameter [cm]
 // as of 3/2018, the "internal" sample aperture is not in use, only the external
@@ -147,29 +168,51 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 // sample aperture 1(internal) is set to report "12.7 mm" as a STRING
 // sample aperture 2(external) reports the number typed in...
 //
-// so I'm trusting [cm] is in the file
-	S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [mm]
+	if(isVCALC)
+		S2 = VC_sampleApertureDiam()*10		// convert cm to mm
+	else
+	// I'm trusting [cm] is in the RAW data file
+		S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [mm]
+	endif
 	
-// L1 = source to sample distance [m] 
-	L1 = V_getSourceAp_distance(folderStr)/100
+// L1 = source Ap to sample Ap distance [m] 
+	if(isVCALC)
+		L1 = VC_calcSSD()/100		//convert cm to m
+	else
+		L1 = V_getSourceAp_distance(folderStr)/100
+	endif
 
-// L2 = sample to detector distance [m]
+// L2 = sample aperture to detector distance [m]
 // take the first two characters of the "type" to get the correct distance.
 // if the type is say, MLRTB, then the implicit assumption in combining all four panels is that the resolution
 // is not an issue for the slightly different distances.
-	if(strlen(type) == 1)
-		// it's "B"
-		L2 = V_getDet_ActualDistance(folderStr,type)/100		//convert cm to m
+	if(isVCALC)
+		if(strlen(type) == 1)
+			// it's "B"
+			L2 = VC_calc_L2(type)/100		//convert cm to m
+		else
+			L2 = VC_calc_L2(type[0,1])/100		//convert cm to m
+		endif
 	else
-		L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
+		if(strlen(type) == 1)
+		// it's "B"
+			L2 = V_getDet_ActualDistance(folderStr,type)/100		//convert cm to m
+		else
+			L2 = V_getDet_ActualDistance(folderStr,type[0,1])/100		//convert cm to m
+		endif
 	endif
+
 	
 // BS = beam stop diameter [mm]
 //TODO:? which BS is in? carr2, carr3, none?
 // -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
-// TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
-	BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+
+	if(isVCALC)
+		BS = VC_beamstopDiam(type[0,1])*10 // convert cm to mm
+	else
+		BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+	endif
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 //	BS = 25.4			//TODO hard-wired value
 	

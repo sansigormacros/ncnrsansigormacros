@@ -62,8 +62,8 @@ Proc DrawVCALC_Panel()
 	
 // always visible stuff, not on any tab
 	
-	GroupBox group0,pos={10,10},size={444,180},title="Setup"
-	TabControl Vtab,labelBack=(45000,61000,58000),pos={14,215},size={430,426},tabLabel(0)="Collim"
+	GroupBox group0,pos={10,10},size={440,125},title="Setup"
+	TabControl Vtab,labelBack=(45000,61000,58000),pos={14,150},size={430,200},tabLabel(0)="Collim"
 	TabControl Vtab,tabLabel(1)="Sample",tabLabel(2)="Front Det",tabLabel(3)="Mid Det"
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
 	GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
@@ -81,7 +81,17 @@ Proc DrawVCALC_Panel()
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
 	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:20
 
-	ValDisplay valDisp_a,pos={50,100},size={150,15},title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+	ValDisplay valDisp_a,pos={50,380},size={150,15},title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+
+	ValDisplay valDisp_b,pos={50,410},size={150,15},title="Q min (Front) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_F
+	ValDisplay valDisp_c,pos={250,410},size={150,15},title="Q max (Front) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_F
+	ValDisplay valDisp_d,pos={50,440},size={150,15},title="Q min (Mid) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_M
+	ValDisplay valDisp_e,pos={250,440},size={150,15},title="Q max (Mid) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_M
+	ValDisplay valDisp_f,pos={50,470},size={150,15},title="Q min (Back) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_B
+	ValDisplay valDisp_g,pos={250,470},size={150,15},title="Q max (Back) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_B
+	ValDisplay valDisp_h,pos={50,500},size={200,15},title="Beam Diam (middle) (cm)",value=root:Packages:NIST:VSANS:VCALC:gBeamDiam
+	ValDisplay valDisp_i,pos={50,530},size={200,15},title="Beam Stop Diam (middle) (in)",value=root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
+	ValDisplay valDisp_j,pos={50,560},size={200,15},title="Real Q min (1/A)",value=root:Packages:NIST:VSANS:VCALC:gRealQMin
 
 
 
@@ -148,74 +158,77 @@ Proc DrawVCALC_Panel()
 
 	
 // tab(0), collimation - initially visible
-	Slider VCALCCtrl_0a,pos={223,324},size={200,45},limits={0,10,1},value= 1,vert= 0
-	SetVariable VCALCCtrl_0b,pos={25,294},size={120,15},title="wavelength"
+	Slider VCALCCtrl_0a,pos={223,324-50},size={200,45},limits={0,9,1},value= 1,vert= 0,proc=V_GuideSliderProc
+	SetVariable VCALCCtrl_0b,pos={25,294-50},size={120,15},title="wavelength"
 	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=VC_Lambda_SetVarProc
-	PopupMenu VCALCCtrl_0c,pos={26,257},size={150,20},title="monochromator"
+	PopupMenu VCALCCtrl_0c,pos={26,257-50},size={150,20},title="monochromator"
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector",value= root:Packages:NIST:VSANS:VCALC:gMonochromatorType
 	PopupMenu VCALCCtrl_0c,proc=VC_MonochromSelectPopup
-	PopupMenu VCALCCtrl_0d,pos={26,321},size={115,20},title="delta lambda"
-	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.10",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,pos={26,321-50},size={115,20},title="delta lambda"
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,proc=VC_DeltaLamSelectPopup
-	PopupMenu VCALCCtrl_0e,pos={291,262},size={132,20},title="source shape"
+	PopupMenu VCALCCtrl_0e,pos={291,262-50},size={132,20},title="source shape"
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSourceShape
 	PopupMenu VCALCCtrl_0e,proc=VC_SourceApShapeSelectPopup
-	PopupMenu VCALCCtrl_0f,pos={283,293},size={141,20},title="source aperture"
-	PopupMenu VCALCCtrl_0f,mode=1,popvalue="1.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
+	PopupMenu VCALCCtrl_0f,pos={283,293-50},size={141,20},title="source aperture"
+	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
 	PopupMenu VCALCCtrl_0f,proc=VC_SourceAperDiamSelectPopup
 
 
 // tab(1) - Sample conditions, initially not visible
-	PopupMenu VCALCCtrl_1a,pos={38,270},size={142,20},title="table location",disable=1
+	PopupMenu VCALCCtrl_1a,pos={38,250-50},size={142,20},title="table location",disable=1
 	PopupMenu VCALCCtrl_1a,mode=1,popvalue="Changer",value= root:Packages:NIST:VSANS:VCALC:gTableLocation
-	PopupMenu VCALCCtrl_1b,pos={270,270},size={115,20},title="Aperture Shape",disable=1
+	PopupMenu VCALCCtrl_1b,pos={270,250-50},size={115,20},title="Aperture Shape",disable=1
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureShape 
-	PopupMenu VCALCCtrl_1c,pos={270,330},size={132,20},title="Aperture Size (cm)",disable=1
-	PopupMenu VCALCCtrl_1c,mode=1,popvalue="0.5",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
-	
+	PopupMenu VCALCCtrl_1c,pos={270,310-50},size={132,20},title="Aperture Diam (cm)",disable=1
+	PopupMenu VCALCCtrl_1c,mode=1,popvalue="1.27",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
+	SetVariable VCALCCtrl_1d,pos={25,280-50},size={200,15},title="Sample Aperture to Gate Valve (cm)"
+	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
+	SetVariable VCALCCtrl_1e,pos={25,310-50},size={200,15},title="Sample Pos to Gate Valve (cm)"
+	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260},size={150,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,pos={30,260-50},size={150,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2a,limits={-20,19,0.1},disable=1,value=_NUM:-10
-	SetVariable VCALCCtrl_2aa,pos={30,290},size={150,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2aa,pos={30,290-50},size={150,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2aa,limits={-19,20,0.1},disable=1,value=_NUM:10
 	
-	SetVariable VCALCCtrl_2b,pos={30,330},size={150,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,pos={30,330-50},size={150,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2b,limits={0,18,0.1},disable=1,value=_NUM:10
-	SetVariable VCALCCtrl_2bb,pos={30,360},size={150,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2bb,pos={30,360-50},size={150,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2bb,limits={-18,0,0.1},disable=1,value=_NUM:-10
 	
-	SetVariable VCALCCtrl_2d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_2d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_2d,limits={100,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260},size={150,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,pos={30,260-50},size={150,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-7
-	SetVariable VCALCCtrl_3aa,pos={30,290},size={150,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3aa,pos={30,290-50},size={150,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:7
 		
-	SetVariable VCALCCtrl_3b,pos={30,330},size={150,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,pos={30,330-50},size={150,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:14
-	SetVariable VCALCCtrl_3bb,pos={30,360},size={150,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3bb,pos={30,360-50},size={150,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-14
 
-	SetVariable VCALCCtrl_3d,pos={205,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_3d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1000
 
 	
 // tab(4) - Back detector panel
-	SetVariable VCALCCtrl_4a,pos={188,290},size={150,15},title="Lateral Offset (cm)"
+	SetVariable VCALCCtrl_4a,pos={188,290-50},size={150,15},title="Lateral Offset (cm)"
 	SetVariable VCALCCtrl_4a,limits={0,20,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_4b,pos={188,260},size={230,15},title="Sample to Detector Distance (cm)",proc=VC_BDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_4b,pos={188,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_BDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2200
 //	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
- 	SetVariable VCALCCtrl_5a,pos={40,290},size={200,15},title="Neutrons on Sample (imon)"
+ 	SetVariable VCALCCtrl_5a,pos={40,290-50},size={200,15},title="Neutrons on Sample (imon)"
 	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
-	PopupMenu VCALCCtrl_5b,pos={40,260},size={180,20},title="Model Function",disable=1
+	PopupMenu VCALCCtrl_5b,pos={40,260-50},size={180,20},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
 End
@@ -231,8 +244,30 @@ Function Recalculate_AllDetectors()
 
 	V_beamIntensity()
 	
+//	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
+	
+	// fill in the Qmin and Qmax values
+	V_QMinMax_Back()
+	V_QMinMax_Middle()
+	V_QMinMax_Front()
+	
+	//calculate beam diameter and beamstop size 
+	V_BeamDiamDisplay("maximum", "MR")	//TODO -- hard-wired here for the Middle carriage (and in the SetVar label)
+	V_BeamStopDiamDisplay("MR")
+	
+	//calculate the "real" QMin with the beamstop
+	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
+	
+	
+	//
+//	Print "Still need to truncate the plotted data for Low Q that is behind the beam stop"
+	// multiply the averaged data by the shadow factor to simulate a beamstop
+	V_IQ_BeamstopShadow()
+	
 	return(0)
 End
+
+
 
 // function to control the drawing of controls in the TabControl on the main panel
 // Naming scheme for the controls MUST be strictly adhered to... else controls will 
@@ -290,10 +325,49 @@ Function VCALCTabProc(name,tab)
 		endif
 	endfor
 	
-
-	
 	return(0)
 End
+
+
+
+// TODO
+//changing the number of guides changes the SSD
+// the source aperture popup may need to be updated
+//
+Function V_GuideSliderProc(ctrlName,sliderValue,event)
+	String ctrlName
+	Variable sliderValue
+	Variable event	// bit field: bit 0: value set, 1: mouse down, 2: mouse up, 3: mouse moved
+	
+	Variable recalc=0
+	SVAR apStr = root:Packages:NIST:VSANS:VCALC:gSourceDiam
+	
+	if(event %& 0x1)	// bit 0, value set
+		if(cmpstr(ctrlName,"") != 0)		//here by direct action, so do LensCheck and recalculate
+//			recalc=1
+//			LensCheckProc("",2)		//make sure lenses are deselected
+		endif
+//		sourceToSampleDist()		//updates the SSD global and wave
+		//change the sourceAp popup, SDD range, etc
+		switch(sliderValue)
+			case 0:
+//				ControlInfo/W=SASCALC popup0
+//				mode=V_value
+				apStr = "0.75 cm;1.5 cm;3.0 cm;"
+				break
+			default:
+				apStr = "6 cm;"
+		endswitch
+		ControlUpdate/W=VCALC VCALCCtrl_0f
+//		UpdateControls()				// the Ng global is actually set inside this function
+		Recalculate_AllDetectors()
+	endif
+	return 0
+End
+
+
+
+
 
 Function Front2DQ_Log_CheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
@@ -313,11 +387,6 @@ Function Front2DQ_Log_CheckProc(cba) : CheckBoxControl
 
 	return 0
 End
-
-
-
-	
-
 
 
 
@@ -564,8 +633,56 @@ Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 End
 
 
+//
+// setVar for the distance from Sample Position to Gave Valve
+//
+Function VC_Sam_to_GV_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
 
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+//			// don't need to recalculate the views, but need to recalculate the detectors
+
+			Recalculate_AllDetectors()		
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 	
+
+//
+// setVar for the distance from Sample Aperture to Gave Valve
+//
+Function VC_A2_to_GV_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+//			// don't need to recalculate the views, but need to recalculate the detectors
+
+			Recalculate_AllDetectors()		
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 	
 //
 // setVar for the wavelength
@@ -581,9 +698,6 @@ Function VC_Lambda_SetVarProc(sva) : SetVariableControl
 			String sval = sva.sval
 			
 //			// don't need to recalculate the views, but need to recalculate the detectors
-//			fPlotBackPanels()
-//			fPlotMiddlePanels()
-//			fPlotFrontPanels()
 
 			Recalculate_AllDetectors()		
 				
@@ -1105,20 +1219,22 @@ Proc VC_Initialize_Space()
 	String/G gBinTypeStr = ksBinTypeStr
 	Variable/G gBeamIntensity= 0
 
-
+	Variable/G gQmin_F,gQmax_F,gQmin_M,gQmax_M,gQmin_B,gQmax_B
+	Variable/G gBeamDiam,gBeamStopDiam
+	Variable/G gRealQMin
 
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
 	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;"
 	String/G gSourceShape = "circular;rectangular;converging pinholes;"
-	String/G gSourceDiam = "1.0 cm;2.0 cm;5.0 cm;"
+	String/G gSourceDiam = "6.0 cm;"
 	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-	String/G gDeltaLambda = "0.01;0.10;0.20;0.30;0.40;"
+	String/G gDeltaLambda = "0.12;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
 	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;"
-	String/G gSampleApertureDiam = "0.5;1.0;1.5;2.0;"
+	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
 	
 // tab 2
 
@@ -1143,7 +1259,7 @@ Proc VC_Initialize_Space()
 	Variable/G gNg=0
 //	Variable/G gOffset=0
 	Variable/G gSamAp=1.27		//samAp diameter in cm
-	String/G gSourceApString = "1.43 cm;2.54 cm;3.81 cm;"
+//	String/G gSourceApString = "1.43 cm;2.54 cm;3.81 cm;"
 	String/G gApPopStr = "1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";other;"
 	Variable/G gSamApOther = 10		//non-standard aperture diameter, in mm
 	Variable/G gUsingLenses = 0		//0=no lenses, 1=lenses(or prisms)
@@ -1240,3 +1356,133 @@ Proc VC_Initialize_Space()
 //	
 	SetDataFolder root:
 end
+
+// set the global values for display
+Function V_QMinMax_Back()
+
+	NVAR min_b = root:Packages:NIST:VSANS:VCALC:gQmin_B
+	NVAR max_b = root:Packages:NIST:VSANS:VCALC:gQmax_B
+
+	String folderStr = "VCALC"
+	String detStr = ""
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:instrument:detector_"	
+
+	detStr = "B"
+	WAVE qTot_B = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	min_b = WaveMin(qTot_B)
+	max_b = WaveMax(qTot_B)
+
+
+	return(0)
+end
+
+// set the global values for display
+Function V_QMinMax_Middle()
+
+	NVAR min_m = root:Packages:NIST:VSANS:VCALC:gQmin_M
+	NVAR max_m = root:Packages:NIST:VSANS:VCALC:gQmax_M
+
+	String folderStr = "VCALC"
+	String detStr = ""
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:instrument:detector_"	
+
+	detStr = "ML"
+	WAVE qTot_ML = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MR"
+	WAVE qTot_MR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MT"
+	WAVE qTot_MT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "MB"
+	WAVE qTot_MB = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	min_m = min(WaveMin(qTot_ML),WaveMin(qTot_MT),WaveMin(qTot_MR),WaveMin(qTot_MB))
+	max_m = max(WaveMax(qTot_ML),WaveMax(qTot_MT),WaveMax(qTot_MR),WaveMax(qTot_MB))
+
+
+	return(0)
+end
+
+// set the global values for display
+Function V_QMinMax_Front()
+
+	NVAR min_f = root:Packages:NIST:VSANS:VCALC:gQmin_F
+	NVAR max_f = root:Packages:NIST:VSANS:VCALC:gQmax_F
+
+	String folderStr = "VCALC"
+	String detStr = ""
+	
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:instrument:detector_"	
+
+	detStr = "FL"
+	WAVE qTot_FL = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "FR"
+	WAVE qTot_FR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "FT"
+	WAVE qTot_FT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	detStr = "FB"
+	WAVE qTot_FB = $(folderPath+instPath+detStr+":qTot_"+detStr)
+
+	min_f = min(WaveMin(qTot_FL),WaveMin(qTot_FT),WaveMin(qTot_FR),WaveMin(qTot_FB))
+	max_f = max(WaveMax(qTot_FL),WaveMax(qTot_FT),WaveMax(qTot_FR),WaveMax(qTot_FB))
+
+
+	return(0)
+end
+
+Function V_QMin_withBeamStop(detStr)
+	String detStr
+	
+	NVAR val = root:Packages:NIST:VSANS:VCALC:gRealQMin
+
+	Variable BSDiam,SDD,two_theta,lambda,qMin
+
+	BSDiam = VC_beamstopDiam(detStr)
+	SDD = VC_getSDD(detStr)
+	lambda = VCALC_getWavelength()
+	
+	two_theta = atan(BSDiam/2/SDD)
+	qMin = 4*pi/lambda*sin(two_theta/2)
+		
+	val = qMin
+	
+	return(0)
+End
+
+
+Function V_BeamDiamDisplay(direction, detStr)
+	String direction
+	String detStr
+	
+	NVAR val = root:Packages:NIST:VSANS:VCALC:gBeamDiam
+
+	val = VC_beamDiameter(direction, detStr)		//middle carriage, maximum extent, includes gravity
+
+	return(0)
+End
+
+
+// carrNum 1=front, 2=middle, 3=back
+Function V_BeamStopDiamDisplay(detStr)
+	String detStr
+
+	NVAR val = root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
+
+	val = VC_beamstopDiam(detStr)/2.54		//return the value in inches
+
+	return(0)
+End
+	
+		
+	

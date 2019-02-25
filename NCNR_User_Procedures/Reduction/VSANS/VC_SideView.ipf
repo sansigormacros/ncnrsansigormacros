@@ -452,7 +452,7 @@ Window TopView() : Graph
 		ModifyGraph/W=VCALC#TopView nticks(left)=8
 		Label/W=VCALC#TopView left "\\Z10Horizontal position (cm)"
 		Label/W=VCALC#TopView bottom "\\Z10SDD (cm)"
-		SetAxis/W=VCALC#TopView left -80.0,80.0
+		SetAxis/W=VCALC#TopView left 80.0,-80.0
 		SetAxis/W=VCALC#TopView bottom 0,2500
 		TextBox/W=VCALC#TopView/C/N=text0/A=MC/X=41.61/Y=43.62 "\\JCTOP VIEW\r= Left/Right panels"
 	endif

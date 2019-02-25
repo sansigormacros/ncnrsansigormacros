@@ -290,7 +290,7 @@ Function xV_RedimFakeData()
 //	det_B=tmpw
 //	det_B += 2
 	Wave distance=distance
-	distance = VCALC_getSDD("B")*100		// to convert m to cm
+	distance = VC_getSDD("B")*100		// to convert m to cm
 
 			
 	Variable ctr=20,npix=128
@@ -306,7 +306,7 @@ Function xV_RedimFakeData()
 //	det_MT=tmpw
 //	det_MT += 2
 	Wave distance=distance
-	distance = VCALC_getSDD("MT")*100		// to convert m to cm
+	distance = VC_getSDD("MT")*100		// to convert m to cm
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MB
@@ -321,7 +321,7 @@ Function xV_RedimFakeData()
 //	det_MB=tmpw
 //	det_MB += 2
 	Wave distance=distance
-	distance = VCALC_getSDD("MB")*100		// to convert m to cm
+	distance = VC_getSDD("MB")*100		// to convert m to cm
 
 	
 	ctr=30
@@ -337,7 +337,7 @@ Function xV_RedimFakeData()
 //	det_ML=tmpw
 //	det_ML += 2
 	Wave distance=distance
-	distance = VCALC_getSDD("ML")*100		// to convert m to cm
+	distance = VC_getSDD("ML")*100		// to convert m to cm
 
 		
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MR
@@ -351,7 +351,7 @@ Function xV_RedimFakeData()
 //	det_MR=tmpw
 //	det_MR += 2
 	Wave distance=distance
-	distance = VCALC_getSDD("MR")*100		// to convert m to cm
+	distance = VC_getSDD("MR")*100		// to convert m to cm
 	
 	
 	ctr=30
@@ -364,7 +364,7 @@ Function xV_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FT:det_FT"
 //	det_FT=tmpw
 	Wave distance=distance
-	distance = VCALC_getSDD("FT")*100		// to convert m to cm
+	distance = VC_getSDD("FT")*100		// to convert m to cm
 
 
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB
@@ -376,7 +376,7 @@ Function xV_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FB:det_FB"
 //	det_FB=tmpw
 	Wave distance=distance
-	distance = VCALC_getSDD("FB")*100		// to convert m to cm
+	distance = VC_getSDD("FB")*100		// to convert m to cm
 
 			
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL
@@ -388,7 +388,7 @@ Function xV_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FL:det_FL"
 //	det_FL=tmpw
 	Wave distance=distance
-	distance = VCALC_getSDD("FL")*100		// to convert m to cm
+	distance = VC_getSDD("FL")*100		// to convert m to cm
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR
@@ -400,7 +400,7 @@ Function xV_RedimFakeData()
 	wave tmpw=$"root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_FR:det_FR"
 //	det_FR=tmpw
 	Wave distance=distance
-	distance = VCALC_getSDD("FR")*100		// to convert m to cm
+	distance = VC_getSDD("FR")*100		// to convert m to cm
 
 	
 // get rid of zeros

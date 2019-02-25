@@ -36,7 +36,8 @@ Function FillPanel_wModelData(det,qTot,type)
 	// need SDD
 	// need pixel dimensions
 	// nominal sdd in cm, offset in cm, want result in cm !
-	sdd = VCALC_getSDD(type)	+  VCALC_getTopBottomSDDSetback(type)		// result is sdd in [cm]
+
+	sdd = VC_getSDD(type)	// setback is already included  VCALC_getTopBottomSDDSetback(type)		// result is sdd in [cm]
 
 	pixSizeX = VCALC_getPixSizeX(type)		// cm
 	pixSizeY = VCALC_getPixSizeY(type)
