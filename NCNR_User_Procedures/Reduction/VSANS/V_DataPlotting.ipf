@@ -895,6 +895,7 @@ Proc V_Back_IQ_Graph(fullPathToFolder,binType,winNameStr)
 			
 			if(V_flag==0)
 				AppendtoGraph/W=$winNameStr iBin_qxqy_B vs qBin_qxqy_B
+
 				ErrorBars/T=0/W=$winNameStr iBin_qxqy_B Y,wave=(:eBin_qxqy_B,:eBin_qxqy_B)
 				ModifyGraph/W=$winNameStr mode(iBin_qxqy_B)=4
 				ModifyGraph/W=$winNameStr rgb(iBin_qxqy_B)=(1,52428,52428)

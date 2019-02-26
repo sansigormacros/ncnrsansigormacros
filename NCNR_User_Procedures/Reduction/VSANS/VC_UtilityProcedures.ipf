@@ -88,7 +88,7 @@ Function VCALC_getWavelengthSpread()
 	
 	ControlInfo/W=VCALC VCALCCtrl_0d
 
-	return(V_Value)
+	return(str2num(S_Value))
 end
 
 // returns the number of neutrons on the sample
@@ -292,6 +292,8 @@ Function VC_sampleApertureDiam()
 
 	return(val)
 End
+
+
 ///////////////////
 //
 // Presets
@@ -316,15 +318,19 @@ End
 // x set plot type to F2-M2xTB-B
 //
 // 
-Function VC_FrontMiddlePreset()
+Function VC_Preset_FrontMiddle_Ng0()
 
+// set preference to ignore back detector
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gIgnoreB = 1
+	
 	// front carriage
-	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
-	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
+	SetVariable VCALCCtrl_2a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:10		//Right offset
 	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
 	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
 
-	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
+	SetVariable VCALCCtrl_2d,value=_NUM:400		//SDD
 
 	// middle carriage
 	SetVariable VCALCCtrl_3a,value=_NUM:-10		//Left offset
@@ -345,10 +351,158 @@ Function VC_FrontMiddlePreset()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:8,disable=0	,noedit=0	// allow user editing again
+	SetVariable VCALCCtrl_0b,value=_NUM:6
 
 	//number of guides
-	Slider VCALCCtrl_0a,value= 0
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=0
+
+	
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=3		//set the 3.0 cm aperture
+	
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+
+
+	return(0)
+End
+
+
+Function VC_Preset_FrontMiddle_Ng2()
+
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:10		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:350		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:-10		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:4			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-4		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1600		//SDD
+	
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",2,1)		//Set Ng=2, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=2
+	
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=1		//6.0 cm aperture
+	
+
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+
+
+	return(0)
+End
+
+Function VC_Preset_FrontMiddle_Ng7()
+
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:10		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:230		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:-10		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:4			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-4		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1100		//SDD
+	
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",7,1)		//Set Ng=7, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=7
+
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=1		//6.0 cm aperture
+
+
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+
+
+	return(0)
+End
+
+Function VC_Preset_FrontMiddle_Ng9()
+
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:10		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:100		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-10		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:-10		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:4			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-4		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:450		//SDD
+	
+	
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",9,1)		//Set Ng=9, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=9
+
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=1		//6.0 cm aperture
 
 
 // binning mode
@@ -359,13 +513,15 @@ Function VC_FrontMiddlePreset()
 End
 
 
+
+
 // White beam preset
 // - set monochromator (this sets lam, delLam)
 // - disregard the back detector (set as front/middle)
 //
-Function VC_WhiteBeamPreset()
+Function VC_Preset_WhiteBeam()
 
-	VC_FrontMiddlePreset()		// moves Middle into contact (but w/ wrong lambda)
+	VC_Preset_FrontMiddle_Ng0()		// moves Middle into contact (but w/ wrong lambda)
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="White Beam"
 	
@@ -386,7 +542,7 @@ end
 // - set monochromator (this sets lam, delLam)
 // - uses the back detector (set as front/middle)
 //
-Function VC_GraphiteMonoPreset()
+Function VC_Preset_GraphiteMono()
 
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
@@ -593,8 +749,7 @@ Function V_beamIntensity()
 	a1 = VC_sourceApertureDiam()
     
 	// sample aperture diam [cm]
-	ControlInfo VCALCCtrl_1c
-	a2 = V_Value
+	a2 = VC_sampleApertureDiam()
     
 //	alpha = (a1+a2)/(2*l1)	//angular divergence of beam
 //	f = l_gap*alpha/(2*guide_width)

@@ -95,23 +95,24 @@ Function fPlotFrontPanels()
 	
 	// do the q-binning for each of the panels to get I(Q)
 //	BinAllFrontPanels()
+
 	String popStr
-	String collimationStr = "pinhole"
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
-	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+//	String collimationStr = "pinhole"
+//	ControlInfo/W=VCALC popup_b
+//	popStr = S_Value		//
+//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 
 	// plot the results
-	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr
-	workTypeStr = "root:Packages:NIST:VSANS:"+type
-
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
-	
-	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-
-	Execute ("V_Front_IQ_Graph"+str)
+//	String type = "VCALC"
+//	String str,winStr="VCALC#Panels_IQ",workTypeStr
+//	workTypeStr = "root:Packages:NIST:VSANS:"+type
+//
+//	ControlInfo/W=VCALC popup_b
+//	popStr = S_Value		//
+//	
+//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+//
+//	Execute ("V_Front_IQ_Graph"+str)
 		
 //	Execute "Front_IQ_Graph()"
 
@@ -641,23 +642,24 @@ Function fPlotMiddlePanels()
 	
 	// do the q-binning for each of the panels to get I(Q)
 //	BinAllMiddlePanels()
-	String popStr
-	String collimationStr = "pinhole"
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
-	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
+//	String popStr
+//	String collimationStr = "pinhole"
+//	ControlInfo/W=VCALC popup_b
+//	popStr = S_Value		//
+//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 
 	// plot the results
-	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr
-	workTypeStr = "root:Packages:NIST:VSANS:"+type
+//	String type = "VCALC"
+//	String str,winStr="VCALC#Panels_IQ",workTypeStr
+//	workTypeStr = "root:Packages:NIST:VSANS:"+type
 
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
+//	ControlInfo/W=VCALC popup_b
+//	popStr = S_Value		//
 	
-	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-
-	Execute ("V_Middle_IQ_Graph"+str)
+//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+//
+//	Execute ("V_Middle_IQ_Graph"+str)
 		
 
 	// plot the results
@@ -1221,19 +1223,20 @@ Function fPlotBackPanels()
 //	VC_SetShadow_TopBottom("","MB")
 	
 	// do the q-binning for each of the panels to get I(Q)
-	BinAllBackPanels()
+
+//	BinAllBackPanels()
 
 	// plot the results
-	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
-	workTypeStr = "root:Packages:NIST:VSANS:"+type
+//	String type = "VCALC"
+//	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
+//	workTypeStr = "root:Packages:NIST:VSANS:"+type
 
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
+//	ControlInfo/W=VCALC popup_b
+//	popStr = S_Value		//
 	
-	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-
-	Execute ("V_Back_IQ_Graph"+str)
+//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+//
+//	Execute ("V_Back_IQ_Graph"+str)
 		
 		
 	// plot the results

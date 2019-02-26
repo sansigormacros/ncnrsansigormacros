@@ -69,7 +69,7 @@ Proc DrawVCALC_Panel()
 	GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
 
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
-	PopupMenu popup_a,mode=1,popvalue="Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
+	PopupMenu popup_a,mode=1,popvalue="F+M Ng0 Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 	PopupMenu popup_a,proc=VC_PresetConfigPopup
 
 	PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
@@ -234,14 +234,39 @@ Proc DrawVCALC_Panel()
 End
 
 //
-// just recalculates the detector panels, doesn't adjust the views
+//  recalculates the detector panels, doesn't adjust the views
 //
 Function Recalculate_AllDetectors()
 
+// calculates Q for each panel
+// and fills 2D panels with model data
 	fPlotBackPanels()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
 
+	String popStr
+	String collimationStr = "pinhole"
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value		//
+	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
+
+	// plot the results (1D)
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+	Execute ("V_Back_IQ_Graph"+str)
+		
+	Execute ("V_Middle_IQ_Graph"+str)
+	
+	Execute ("V_Front_IQ_Graph"+str)
+
+
+
+
+	
 	V_beamIntensity()
 	
 //	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
@@ -258,9 +283,6 @@ Function Recalculate_AllDetectors()
 	//calculate the "real" QMin with the beamstop
 	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
 	
-	
-	//
-//	Print "Still need to truncate the plotted data for Low Q that is behind the beam stop"
 	// multiply the averaged data by the shadow factor to simulate a beamstop
 	V_IQ_BeamstopShadow()
 	
@@ -507,7 +529,10 @@ Function VC_MonochromSelectPopup(pa) : PopupMenuControl
 	return 0
 End
 
-
+//
+//
+// "F+M Ng0 Low Q;F+M Ng2 Mid Q;F+M Ng7 Mid Q;F+M Ng9 High Q;Converging Pinholes;Narrow Slit;White Beam;Graphite;Polarizer;"
+//
 Function VC_PresetConfigPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -519,26 +544,27 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 			String BinStr = "F2-M2xTB-B"
 		
 			strswitch(popStr)
-				case "Low Q":
-					
+				case "F+M Ng0 Low Q":
+					VC_Preset_FrontMiddle_Ng0()
 					break
-				case "High Q":
-					
+				case "F+M Ng2 Mid Q":
+					VC_Preset_FrontMiddle_Ng2()
 					break
+				case "F+M Ng7 Mid Q":
+					VC_Preset_FrontMiddle_Ng7()
+					break
+				case "F+M Ng9 High Q":
+					VC_Preset_FrontMiddle_Ng9()
+					break
+					
 				case "White Beam":
-					VC_WhiteBeamPreset()
-					binStr = "F4-M4-B"
+					VC_Preset_WhiteBeam()
 					break	
 				case "Graphite":
-					VC_GraphiteMonoPreset()
-					binStr = "F4-M4-B"
+					VC_Preset_GraphiteMono()
 					break
 				case "Narrow Slit":
 					
-					break
-				case "Front+Middle Only":
-					VC_FrontMiddlePreset()
-					binStr = "F2-M2xTB-B"
 					break
 				case "Converging Pinholes":
 					
@@ -556,10 +582,11 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 			VC_UpdateViews()
 			
 			// a recalculation is needed after the change
+			// this re-bins the data too
 			Recalculate_AllDetectors()
 			
 			// re-bin the data?
-			VC_RebinIQ_PopProc("",0,binStr)
+//			VC_RebinIQ_PopProc("",0,binStr)
 					
 			break
 		case -1: // control being killed
@@ -648,7 +675,7 @@ Function VC_Sam_to_GV_SetVarProc(sva) : SetVariableControl
 			
 //			// don't need to recalculate the views, but need to recalculate the detectors
 
-			Recalculate_AllDetectors()		
+//			Recalculate_AllDetectors()		
 				
 			break
 		case -1: // control being killed
@@ -674,7 +701,7 @@ Function VC_A2_to_GV_SetVarProc(sva) : SetVariableControl
 			
 //			// don't need to recalculate the views, but need to recalculate the detectors
 
-			Recalculate_AllDetectors()		
+//			Recalculate_AllDetectors()		
 				
 			break
 		case -1: // control being killed
@@ -1215,7 +1242,7 @@ Proc VC_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "Low Q;High Q;Front+Middle Only;Converging Pinholes;Narrow Slit;White Beam;Graphite;Polarizer;"
+	String/G gPresetPopStr = "F+M Ng0 Low Q;F+M Ng2 Mid Q;F+M Ng7 Mid Q;F+M Ng9 High Q;Converging Pinholes;Narrow Slit;White Beam;Graphite;Polarizer;"
 	String/G gBinTypeStr = ksBinTypeStr
 	Variable/G gBeamIntensity= 0
 
