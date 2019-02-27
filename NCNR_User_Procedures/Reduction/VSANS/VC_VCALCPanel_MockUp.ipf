@@ -199,7 +199,7 @@ Proc DrawVCALC_Panel()
 	SetVariable VCALCCtrl_2bb,limits={-18,0,0.1},disable=1,value=_NUM:-10
 	
 	SetVariable VCALCCtrl_2d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_2d,limits={100,800,1},disable=1	,value=_NUM:150
+	SetVariable VCALCCtrl_2d,limits={70,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
@@ -214,7 +214,7 @@ Proc DrawVCALC_Panel()
 	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-14
 
 	SetVariable VCALCCtrl_3d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
-	SetVariable VCALCCtrl_3d,limits={800,2000,1},disable=1,value=_NUM:1000
+	SetVariable VCALCCtrl_3d,limits={250,2000,1},disable=1,value=_NUM:1000
 
 	
 // tab(4) - Back detector panel

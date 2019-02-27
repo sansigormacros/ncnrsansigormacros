@@ -310,10 +310,13 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	del_r *= 0.1				//width of annulus, convert mm to [cm]
 	
 	BS *= 0.5*0.1			//nominal BS diameter passed in, convert to radius and [cm]
-	// 21 MAR 07 SRK - use the projected BS diameter, based on a point sample aperture
-	Variable LB
-	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
-	BS = bs + bs*lb/(l2-lb)		//adjusted diameter of shadow from parallax
+
+// TODO -- this empirical correction is for the geometry of the SANS beamstop location and the 
+//   Ordela detector construction. For now on VSANS, don't correct for the projection.
+//	// 21 MAR 07 SRK - use the projected BS diameter, based on a point sample aperture
+//	Variable LB
+//	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
+//	BS = bs + bs*lb/(l2-lb)		//adjusted diameter of shadow from parallax
 	
 	//Start resolution calculation
 	a2 = S1*L2/L1 + S2*(L1+L2)/L1
