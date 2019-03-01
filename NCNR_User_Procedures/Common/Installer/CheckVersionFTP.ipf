@@ -51,10 +51,12 @@ Proc CheckForLatestVersion()
 		if(V_flag != 0)
 			//couldn't find the file, send user to web site to update
 			sprintf str,"I could not determine what version of the SANS Macros you are running."
-			str += " You need to go to the NCNR website for the latest version. Do you want to go there now?"
+//			str += " You need to go to the NCNR website for the latest version. Do you want to go there now?"
+			str += " You need to go to the SANS Trac website for the latest version. Do you want to go there now?"
 			DoAlert 1,str
 			if(V_flag==1)
-				BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/red_anal.html"
+//				BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/red_anal.html"
+				BrowseURL "http://danse.chem.utk.edu/trac/wiki"
 			endif
 			//don't need to close if nothing was opened (/Z)
 			
@@ -73,10 +75,12 @@ Proc CheckForLatestVersion()
 	
 	If(runningVersion != upToDateVersion)
 		sprintf str,"You are running version %g and the latest version is %g.",runningVersion,upToDateVersion
-		str += " You need to go to the NCNR website for the latest version. Do you want to go there now?"
+//		str += " You need to go to the NCNR website for the latest version. Do you want to go there now?"
+		str += " You need to go to the SANS Trac website for the latest version. Do you want to go there now?"
 		DoAlert 1,str
 		if(V_flag==1)
-			BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/red_anal.html"
+//			BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/red_anal.html"
+			BrowseURL "http://danse.chem.utk.edu/trac/wiki"
 		endif
 	else
 		DoAlert 0,"You are running the most up-to-date version = "+StringByKey(StringFromList(0,"PACKAGE_VERSION"), currentStr,"=",";")
