@@ -372,7 +372,7 @@ End
 //
 Window Main_VSANS_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(500,60,924,320) /K=2 as "VSANS Reduction Controls"
+	NewPanel /W=(500,60,924,320) /K=2 as "VSANS Reduction Controls" + " " + num2str(kVSANSVersion)
 	ModifyPanel cbRGB=(49694,61514,27679)
 	ModifyPanel fixedSize=1
 //////

@@ -28,8 +28,7 @@ Menu "VSANS"
 		"Write Annular Data",V_Write1DAnnular()
 		"Trim I(q) points",V_CombineDataGraph()
 		"-"
-		"Derive Beam Centers - VelSel",V_DeriveBeamCenters_VelSel()
-//		"Derive Beam Centers - Graphite",V_DeriveBeamCenters_Graphite()
+		"Derive Beam Centers From Reference",V_DeriveBeamCenters_VelSel()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
 		"Median Filter Back Det",pV_MedianFilterBack()

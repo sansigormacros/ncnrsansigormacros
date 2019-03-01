@@ -884,11 +884,40 @@ Proc V_DeriveBeamCenters_VelSel()
 	
 End
 
-// TODO:
+//these are values from Dec 2018 data and the CENTROID on FR or MR
+Constant kBCtrOffset_FL_x = 0.13
+Constant kBCtrOffset_FL_y = 0.35
+Constant kBCtrOffset_FB_x = 0.95
+Constant kBCtrOffset_FB_y = 0.77
+Constant kBCtrOffset_FT_x = 1.59
+Constant kBCtrOffset_FT_y = 0.09
+Constant kBCtrOffset_ML_x = 0.26
+Constant kBCtrOffset_ML_y = -0.16
+Constant kBCtrOffset_MB_x = -0.89
+Constant kBCtrOffset_MB_y = 0.96
+Constant kBCtrOffset_MT_x = -0.28
+Constant kBCtrOffset_MT_y = 0.60
+
+////these are values from Dec 2018 data and the FITTED ARC on FR or MR
+// don't use these - the values from the centroid are superior) FEB 2019
+//Constant kBCtrOffset_FL_x = 0.49
+//Constant kBCtrOffset_FL_y = 0.48
+//Constant kBCtrOffset_FB_x = 1.31
+//Constant kBCtrOffset_FB_y = 0.90
+//Constant kBCtrOffset_FT_x = 1.95
+//Constant kBCtrOffset_FT_y = 0.22
+//Constant kBCtrOffset_ML_x = 0.44
+//Constant kBCtrOffset_ML_y = -0.32
+//Constant kBCtrOffset_MB_x = -0.71
+//Constant kBCtrOffset_MB_y = 0.80
+//Constant kBCtrOffset_MT_x = -0.10
+//Constant kBCtrOffset_MT_y = 0.44
+
+// (DONE):
 // if I change any of these values, I need to also change them in the V_FindCentroid function 
-// in V_Marquee_Operation.ipf
+// in V_Marquee_Operation.ipf (FEB 2019, this is done automatically with the defined constants)
 //
-// ** updated these values for the FRONT only with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
+// ** updated these values with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
 //
 Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
@@ -900,18 +929,18 @@ Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleRefer
 	// FL
 //	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Dec 2018
 //	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
-	newXCtr_cm[0] = x_FrontReference + 0.13				//NEW Dec 2018
-	newYCtr_cm[0] = y_FrontReference + 0.35
+	newXCtr_cm[0] = x_FrontReference + kBCtrOffset_FL_x				//NEW Dec 2018
+	newYCtr_cm[0] = y_FrontReference + kBCtrOffset_FL_y
 	// FB
 //	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Dec 2018
 //	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
-	newXCtr_cm[3] = x_FrontReference + 0.95					// NEW Dec 2018
-	newYCtr_cm[3] = y_FrontReference + 0.77
+	newXCtr_cm[3] = x_FrontReference + kBCtrOffset_FB_x					// NEW Dec 2018
+	newYCtr_cm[3] = y_FrontReference + kBCtrOffset_FB_y
 	// FT 
 //	newXCtr_cm[2] = newXCtr_cm[3]				// OLD, pre Dec 2018
 //	newYCtr_cm[2] = newYCtr_cm[3]
-	newXCtr_cm[2] = x_FrontReference + 1.59				// NEW Dec 2018 (not a duplicate of FB anymore)
-	newYCtr_cm[2] = y_FrontReference + 0.09
+	newXCtr_cm[2] = x_FrontReference + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
+	newYCtr_cm[2] = y_FrontReference + kBCtrOffset_FT_y
 	
 	// MR
 	newXCtr_cm[5] = x_MiddleReference
@@ -919,16 +948,16 @@ Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleRefer
 	// ML
 //	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
 //	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
-	newXCtr_cm[4] = x_MiddleReference + 0.26
-	newYCtr_cm[4] = y_MiddleReference - 0.16
+	newXCtr_cm[4] = x_MiddleReference + kBCtrOffset_ML_x
+	newYCtr_cm[4] = y_MiddleReference + kBCtrOffset_ML_y
 	// MB
 //	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
 //	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
-	newXCtr_cm[7] = x_MiddleReference - 0.89
-	newYCtr_cm[7] = y_MiddleReference + 0.96
+	newXCtr_cm[7] = x_MiddleReference + kBCtrOffset_MB_x
+	newYCtr_cm[7] = y_MiddleReference + kBCtrOffset_MB_y
 	// MT 
-	newXCtr_cm[6] = x_MiddleReference - 0.28
-	newYCtr_cm[6] = y_MiddleReference + 0.60
+	newXCtr_cm[6] = x_MiddleReference + kBCtrOffset_MT_x
+	newYCtr_cm[6] = y_MiddleReference + kBCtrOffset_MT_y
 	
 	
 	// default value for B
@@ -938,65 +967,6 @@ Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleRefer
 		
 	return
 End
-
-//
-// these values for FRONT use improved, fitted arcs from AgBeh. Data was fitted in pixels and converted to cm
-// data from Sept 2018 (run 17994)
-Proc V_DeriveBeamCenters_Graphite()
-
-	Make/O/T panelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
-	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
-	
-	Edit panelWave,newXCtr_cm,newYCtr_cm
-	
-	DoAlert 0, "enter the measured beam center reference for Front and Middle panels"
-	V_fDeriveBeamCenters_Graphite()
-	
-End
-
-// units are in [cm]
-Proc V_fDeriveBeamCenters_Graphite(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
-	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
-	
-	// start with the front
-	// FR
-	newXCtr_cm[1] = x_FrontReference - 0.08
-	newYCtr_cm[1] = y_FrontReference - 0.08
-	// FL
-	newXCtr_cm[0] = x_FrontReference - 0.03
-	newYCtr_cm[0] = y_FrontReference + 0.28
-	// FB
-	newXCtr_cm[3] = x_FrontReference + 1.42
-	newYCtr_cm[3] = y_FrontReference + 0.55
-	// FT 
-	newXCtr_cm[2] = x_FrontReference + 1.92
-	newYCtr_cm[2] = y_FrontReference + 0.05
-	
-	// no new data for the middle detector + graphite, so these values don't change
-	// MR
-	newXCtr_cm[5] = x_MiddleReference
-	newYCtr_cm[5] = y_MiddleReference
-	// ML
-	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
-	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
-	// MB
-	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
-	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
-	// MT (duplicate MB)
-	newXCtr_cm[6] = newXCtr_cm[7]
-	newYCtr_cm[6] = newYCtr_cm[7]	
-	
-	
-	// default value for B
-	newXCtr_cm[8] = 50
-	newYCtr_cm[8] = 50
-
-		
-	return
-End
-
-
-
 
 
 Window V_Gizmo_PeakFit() : GizmoPlot

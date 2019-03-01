@@ -21,7 +21,7 @@
 //
 //************************
 
-
+Constant kVSANSVersion = 7.88
 
 // TODO -- need to set up a separate file of "constants" or "globals" where the actual numbers are
 //stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
@@ -125,12 +125,12 @@ End
 //sets up data folders, globals, protocols, and draws the main panel
 Proc V_Initialize()
 
-	Variable curVersion = 0.1
+	Variable curVersion = kVSANSVersion
 	Variable oldVersion = NumVarOrDefault("root:VSANS_RED_VERSION",curVersion)
 		
 	if(oldVersion == curVersion)
 		//must just be a new startup with the current version
-		Variable/G root:VSANS_RED_VERSION=0.1
+		Variable/G root:VSANS_RED_VERSION=kVSANSVersion
 	endif
 	
 	if(oldVersion < curVersion)

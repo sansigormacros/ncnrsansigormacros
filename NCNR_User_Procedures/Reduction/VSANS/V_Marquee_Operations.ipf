@@ -364,25 +364,15 @@ Function V_FindCentroid() :  GraphMarquee
 		endif
 		
 // if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value	
-// these corrections are exactly the opposite of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+// these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 		if(cmpstr(detStr,"FL") == 0)
-//			Print "FRONT Reference X-center (cm) (Velocity Selector) = ",x_mm/10 + (0.03 + 0.03)/2	 // OLD pre Dec 2018
-//			Print "FRONT Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - (0.34 + 0.32)/2
-			Print "FRONT Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - 0.13 	// NEW Dec 2018 values
-			Print "FRONT Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - 0.35
-						
-	//		Print "FRONT Reference X-center (cm) (Graphite) = ",x_mm/10 + 0.03
-	//		Print "FRONT Reference Y-center (cm) (Graphite) = ",y_mm/10 - 0.28
+			Print "FRONT Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - kBCtrOffset_FL_x 	// NEW Dec 2018 values
+			Print "FRONT Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - kBCtrOffset_FL_y
 		endif
 		
 		if(cmpstr(detStr,"ML") == 0)
-//			Print "MIDDLE Reference X-center (cm) (Velocity Selector) = ",x_mm/10 + (0.06 + 0.05)/2
-//			Print "MIDDLE Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - (0.14 + 0.01)/2
-			Print "MIDDLE Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - 0.26
-			Print "MIDDLE Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 + 0.16
-					
-	//		Print "MIDDLE Reference X-center (cm) (Graphite) = ",x_mm/10 + (0.06 + 0.05)/2
-	//		Print "MIDDLE Reference Y-center (cm) (Graphite) = ",y_mm/10 - (0.14 + 0.01)/2
+			Print "MIDDLE Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - kBCtrOffset_ML_x
+			Print "MIDDLE Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - kBCtrOffset_ML_y
 		endif
 	endif
 	
