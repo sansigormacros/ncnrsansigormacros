@@ -251,7 +251,15 @@ Proc GraphRawData()
 	ModifyGraph axisEnab(left3)={0.8,1},gridEnab={0.1,1}
 	ModifyGraph axisEnab(bottom1)={0.1,1},gridEnab(bottom1)={0.1,1}
 	ErrorBars/T=0 DetCts Y,wave=(ErrDetCts,ErrDetCts)
-	TextBox/F=0/E=2/A=MB/Y=2/N=text1 "Angle"
+	
+	if(root:Packages:NIST:gRawUSANSisQvalues == 1)
+		TextBox/F=0/E=2/A=MB/Y=2/N=text1 "Q (1/A)"
+		ModifyGraph log(bottom1)=1
+	else
+		TextBox/F=0/E=2/A=MB/Y=2/N=text1 "Angle"
+	endif
+	
+	
 	TextBox/F=0/O=90/E=2/A=LC/X=2/N=text2 "Counts"
 	//TextBox/N=text1/A=RC/X=0.50/Y=-2 textStr
 	//Label bottom1 "Angle (degrees)"
@@ -396,6 +404,10 @@ Function PlotSelectedSAMButtonProc(ctrlName) : ButtonControl
 	DoAngleSort("SAM")
 	
 	//find the peak and convert to Q-values
+	// MAR 2019
+	// for new NICE raw data collected in terms of q-values rather than angle, all of these function still 
+	// work correctly, even though they are named "angle". The conversion is simply set to == 1 so that
+	// q == q
 	Variable zeroAngle = FindZeroAngle("SAM")
 	if(zeroAngle == -9999)
 		DoAlert 0,"Couldn't find a peak - using zero as zero angle"

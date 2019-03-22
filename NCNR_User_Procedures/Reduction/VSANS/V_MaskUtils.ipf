@@ -1111,7 +1111,8 @@ Proc V_Display_Det_Panels()
 	PopupMenu popup0,pos={15.00,10.00},size={77.00,23.00},proc=V_PickCarriagePopMenuProc,title="Carriage"
 	PopupMenu popup0,mode=1,value= #"\"F;M;B;\""
 	PopupMenu popup1,pos={100.00,10.00},size={68.00,23.00},proc=V_PickFolderPopMenuProc,title="Folder"
-	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;\""
+	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;VCALC;\""
+//	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;VCALC;\""
 	PopupMenu popup2,pos={200.00,10.00},size={83.00,23.00},title="Bin Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup2,mode=1,value= ksBinTypeStr
 	PopupMenu popup3,pos={350,10.00},size={83.00,23.00},title="Average Type"//,proc=V_DummyPopMenuProc
@@ -1133,13 +1134,22 @@ Proc V_Display_Det_Panels()
 
 	PopupMenu popup4,pos={200,100},size={90,23.00},title="Sector Side(s)"//,proc=V_DummyPopMenuProc
 	PopupMenu popup4,mode=1,value= #"\"both;left;right;\""
+
+	Make/O/B/N=(48,128) tmpLR
+	Make/O/B/N=(128,48) tmpTB
+	Make/O/B/N=(680,1656) tmpB
+	
+	tmpLR = 1
+	tmpTB = 1
+	tmpB = 1
 	
 //	Display/W=(745,45,945,425)/HOST=# 
 	Display/W=(10,45+80,210,425+80)/HOST=# 
-	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	//  root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data
+	AppendImage/T/G=1 tmpLR		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	ModifyImage tmpLR ctab= {*,*,ColdWarm,0}
+	ModifyImage tmpLR ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1154,9 +1164,9 @@ Proc V_Display_Det_Panels()
 
 //	Display/W=(1300,45,1500,425)/HOST=# 
 	Display/W=(565,45+80,765,425+80)/HOST=# 
-	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	AppendImage/T/G=1 tmpLR		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage tmpLR ctab= {*,*,ColdWarm,0}
+	ModifyImage tmpLR ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1171,9 +1181,9 @@ Proc V_Display_Det_Panels()
 
 //	Display/W=(945,45,1300,235)/HOST=# 
 	Display/W=(210,45+80,565,235+80)/HOST=# 
-	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FT:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	AppendImage/T/G=1 tmpTB		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage tmpTB ctab= {*,*,ColdWarm,0}
+	ModifyImage tmpTB ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1188,9 +1198,9 @@ Proc V_Display_Det_Panels()
 
 //	Display/W=(945,235,1300,425)/HOST=# 
 	Display/W=(210,235+80,565,425+80)/HOST=# 
-	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	AppendImage/T/G=1 tmpTB		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage tmpTB ctab= {*,*,ColdWarm,0}
+	ModifyImage tmpTB ctabAutoscale=3
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1215,10 +1225,19 @@ Function V_UpdateFourPanelDisp()
 
 	ControlInfo popup0
 	String carrStr = S_value
+
+	if(cmpstr("B",carrStr)==0)
+		DoAlert 0, "Detector B plotting not supported yet"
+		return(0)
+	endif
 	
 	ControlInfo popup1
 	String folder = S_Value
 
+	Variable isVCALC=0
+	if(cmpstr("VCALC",folder)==0)
+		isVCALC=1
+	endif
 
 	String tmpStr=""
 //
@@ -1260,10 +1279,17 @@ Function V_UpdateFourPanelDisp()
 
 	// append the new image
 //	RemoveImage/Z/W=VSANS_Det_Panels#Panel_L data
-	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")		
-	SetActiveSubwindow VSANS_Det_Panels#Panel_L
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:det_"+carrStr+"L")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_L
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_L
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3	
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1277,10 +1303,17 @@ Function V_UpdateFourPanelDisp()
 
 
 //	RemoveImage/Z/W=VSANS_Det_Panels#Panel_T data
-	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:data")		
-	SetActiveSubwindow VSANS_Det_Panels#Panel_T
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:det_"+carrStr+"T")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_T
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:data")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_T
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1293,10 +1326,17 @@ Function V_UpdateFourPanelDisp()
 	SetActiveSubwindow ##
 	
 //	RemoveImage/Z/W=VSANS_Det_Panels#Panel_B data
-	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:data")		
-	SetActiveSubwindow VSANS_Det_Panels#Panel_B
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:det_"+carrStr+"B")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_B
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:data")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_B
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1309,10 +1349,17 @@ Function V_UpdateFourPanelDisp()
 	SetActiveSubwindow ##
 
 //	RemoveImage/Z/W=VSANS_Det_Panels#Panel_R data
-	AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:data")		
-	SetActiveSubwindow VSANS_Det_Panels#Panel_R
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:det_"+carrStr+"R")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_R
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:data")		
+		SetActiveSubwindow VSANS_Det_Panels#Panel_R
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1426,7 +1473,7 @@ Function V_ToggleFourMaskButtonProc(ba) : ButtonControl
 				detStr = "ML"
 			endif
 			
-			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+			wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
 			CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 			if(V_Flag == 1)		//overlay is present
 				state = 0
@@ -1721,6 +1768,11 @@ Function V_OverlayFourMask(folderStr,detStr,state)
 	Variable state
 
 
+	Variable isVCALC=0
+	if(cmpstr("VCALC",folderStr)==0)
+		isVCALC=1
+	endif
+	
 	String maskPath = "root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data"
 	if(WaveExists($maskPath) == 1)
 		
@@ -1729,7 +1781,11 @@ Function V_OverlayFourMask(folderStr,detStr,state)
 			//duplicate the mask, which is named "data"
 			wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 			// for the wave scaling
-			wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
+			if(isVCALC)
+				wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":det_"+detStr)	
+			else
+				wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
+			endif
 			Duplicate/O data $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
 			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
 			overlay = maskW		//this copies the data into the properly scaled wave
@@ -1737,7 +1793,7 @@ Function V_OverlayFourMask(folderStr,detStr,state)
 			strswitch(detStr)
 				case "ML":
 				case "FL":
-					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
+//					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_flag==0)		//so the overlay doesn't get appended more than once
 						AppendImage/T/W=VSANS_Det_Panels#Panel_L overlay
@@ -1854,7 +1910,7 @@ Function V_OverlayFourAvgMask(folderStr,detStr,state)
 			strswitch(detStr)
 				case "ML":
 				case "FL":
-					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
+//					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_flag==0)		//so the overlay doesn't get appended more than once
 						AppendImage/T/W=VSANS_Det_Panels#Panel_L overlay

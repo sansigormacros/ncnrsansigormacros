@@ -95,10 +95,6 @@ Function LoadBT5File(fname,type)
 		useNewDataFormat = 0
 	endif
 
-// or use the global
-//	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat	
-//	useNewDataFormat = gVal
-	
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	
@@ -187,6 +183,12 @@ End
 //returns -9999 if error, appends value to wavenote
 // !can't return -1,0,1, since these may be the peak angle!
 //
+// MAR 2019
+// if the data is colleced with NICE, the "angle" is really q-values.
+// in this case the returned value is a q-value, and when this shift is applied to the
+// nominal (raw) q-values, the peak value is not converted from angle to q
+//
+//
 Function FindZeroAngle(type)
 	String type
 	
@@ -210,7 +212,8 @@ Function FindZeroAngle(type)
 		Return (-9999)		//fatal error
 	Endif
 	pkAngle = Angle[pkPt]
-	//Print "Peak Angle = ",pkAngle
+	
+	Print "Peak Angle = ",pkAngle
 	//update the note
 	String str=""
 	str=note(DetCts)
@@ -226,6 +229,12 @@ End
 // convert the angle to Q-values [degrees to (1/A)]
 // makes a new Qvals wave, duplicating the Angle wave, which is assumed to exist
 // Uses a conversion constant supplied by John Barker, and is hard-wired in
+//
+//	Mar 2019
+// if the data is collected from NICE, the data is in terms of Q, not angle since the
+// conversion factor has already been applied. In this case, the "angle" and pkAngle
+// are actually in terms of Q, and the deg2QConv value is set to == 1
+// -- then nothing needs to be changed
 //
 Function ConvertAngle2Qvals(type,pkAngle)
 	String type
@@ -276,7 +285,7 @@ Function FindTWideCts(type)
 //	Print "Using angle, pt = ",V_levelX
 	
 	FindLevel/Q/P Qvals,1e-4		//use angles greater than 2 deg = 2*5.55e-5 = 1e-4 (1/A)
-	Print "Using Qval, pt = ",V_levelX
+//	Print "Using Qval, pt = ",V_levelX
 
 	levNotFound=V_Flag		//V_Flag==1 if no pk found
 	

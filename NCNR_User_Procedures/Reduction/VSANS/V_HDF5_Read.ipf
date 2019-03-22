@@ -2144,6 +2144,9 @@ Function/S V_getSampleHolderDescription(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+// this field is apparently the "average" temperature reading 
+// and can be adversely affected by random faulty readings from the sensor
+// to give an average that is far from the expected value
 Function V_getSampleTemperature(fname)
 	String fname
 	

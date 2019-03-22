@@ -1427,9 +1427,9 @@ Proc Initialize_Preferences()
 	
 	
 	/// items for USANS Reduction
-	// now keys on date in the file -- see LoadBT5File()
-//	val = NumVarOrDefault("root:Packages:NIST:gUseNICEDataFormat", 1 )
-//	Variable/G root:Packages:NIST:gUseNICEDataFormat=val	
+// is the data file from NICE and in terms of QValues rather than angle
+	val = NumVarOrDefault("root:Packages:NIST:gRawUSANSisQvalues", 1 )
+	Variable/G root:Packages:NIST:gRawUSANSisQvalues=val	
 	
 	/// items for everyone
 	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
@@ -1496,12 +1496,22 @@ Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
-Function UseNICEDataFormat(ctrlName,checked) : CheckBoxControl
+//set the angle->Q conversion factor
+// or set the Q->Q "conversion" factor
+// this is the same value that is set in Init_USANS_Facility()
+// Mar 2019
+Function RawUSANSisQPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:gUseNICEDataFormat
+	NVAR gVal = root:Packages:NIST:gRawUSANSisQvalues
 	gVal = checked
+	
+	if(checked == 1)
+		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 1		//so that the q-values are unchanged
+	else
+		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+	endif
 End
 
 
@@ -1566,9 +1576,9 @@ Proc Pref_Panel()
 //on tab(2) - USANS
 //	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12
 //	GroupBox PrefCtrl_2a,disable=1
-	CheckBox PrefCtrl_2a,pos={21,100},size={171,14},proc=UseNICEDataFormat,title="Read New NICE data format"
-	CheckBox PrefCtrl_2a,help={"Check this if raw data was collected using NICE. If data was collected using ICP, leave this unchecked."}
-	CheckBox PrefCtrl_2a,value= root:Packages:NIST:gUseNICEDataFormat
+	CheckBox PrefCtrl_2a,pos={21,100},size={171,14},proc=RawUSANSisQPref,title="Raw USANS Data is Q-values"
+	CheckBox PrefCtrl_2a,help={"Check this if raw data was collected using NICE (q-values). If data was collected using ICP (angle), leave this unchecked."}
+	CheckBox PrefCtrl_2a,value= root:Packages:NIST:gRawUSANSisQvalues
 
 
 	CheckBox PrefCtrl_2a,disable=1

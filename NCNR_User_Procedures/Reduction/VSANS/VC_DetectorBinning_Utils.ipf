@@ -927,11 +927,11 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-				if(WaveExists(mask) == 1)
-					maskMissing = 0
-				endif
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+			if(WaveExists(mask) == 1)
+				maskMissing = 0
+			endif
 			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
 			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values	
 			nSets = 1
@@ -951,12 +951,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"FL")
 				Wave inten2 = V_getDetectorDataW(folderStr,"FR")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FR")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-					maskMissing = 0
-				endif
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+				maskMissing = 0
+			endif
+			
 			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
 			
 			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
@@ -976,12 +977,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"FT")
 				Wave inten2 = V_getDetectorDataW(folderStr,"FB")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"FB")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-					maskMissing = 0
-				endif
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+				maskMissing = 0
+			endif
+			
 			NVAR delQ = $(folderPath+instPath+"FT"+":gDelQ_FT")
 			
 			Wave qTotal = $(folderPath+instPath+"FT"+":qTot_"+"FT")			// 2D q-values	
@@ -1009,14 +1011,16 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr3 = V_getDetectorDataErrW(folderStr,"FT")
 				Wave inten4 = V_getDetectorDataW(folderStr,"FB")
 				Wave iErr4 = V_getDetectorDataErrW(folderStr,"FB")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
-				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
-				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
-					maskMissing = 0
-				endif
+				
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FL"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FR"+":data")
+			Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FT"+":data")
+			Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"FB"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+				maskMissing = 0
+			endif
+			
 			NVAR delQ = $(folderPath+instPath+"FL"+":gDelQ_FL")
 			
 			Wave qTotal = $(folderPath+instPath+"FL"+":qTot_"+"FL")			// 2D q-values	
@@ -1038,12 +1042,14 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"ML")
 				Wave inten2 = V_getDetectorDataW(folderStr,"MR")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MR")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-					maskMissing = 0
-				endif
+				
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+				maskMissing = 0
+			endif
+			
 			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
 			
 			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
@@ -1063,12 +1069,14 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,"MT")
 				Wave inten2 = V_getDetectorDataW(folderStr,"MB")
 				Wave iErr2 = V_getDetectorDataErrW(folderStr,"MB")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
-					maskMissing = 0
-				endif
+				
 			endif	
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1)
+				maskMissing = 0
+			endif
+			
 			NVAR delQ = $(folderPath+instPath+"MT"+":gDelQ_MT")
 			
 			Wave qTotal = $(folderPath+instPath+"MT"+":qTot_"+"MT")			// 2D q-values	
@@ -1096,14 +1104,16 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				Wave iErr3 = V_getDetectorDataErrW(folderStr,"MT")
 				Wave inten4 = V_getDetectorDataW(folderStr,"MB")
 				Wave iErr4 = V_getDetectorDataErrW(folderStr,"MB")
-				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
-				Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
-				Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
-				Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
-				if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
-					maskMissing = 0
-				endif
-			endif	
+				
+			endif
+			Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"ML"+":data")
+			Wave/Z mask2 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MR"+":data")
+			Wave/Z mask3 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MT"+":data")
+			Wave/Z mask4 = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+"MB"+":data")
+			if(WaveExists(mask) == 1 && WaveExists(mask2) == 1 && WaveExists(mask3) == 1 && WaveExists(mask4) == 1)
+				maskMissing = 0
+			endif
+				
 			NVAR delQ = $(folderPath+instPath+"ML"+":gDelQ_ML")
 			
 			Wave qTotal = $(folderPath+instPath+"ML"+":qTot_"+"ML")			// 2D q-values	
@@ -1243,7 +1253,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten[ii][jj]
 				
-				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+//				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+				if(maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
 					mask_val = 0
 				else
 					mask_val = mask[ii][jj]
@@ -1271,7 +1282,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten2[ii][jj]
 				
-				if(isVCALC || maskMissing)
+//				if(isVCALC || maskMissing)
+				if(maskMissing)
 					mask_val = 0
 				else
 					mask_val = mask2[ii][jj]
@@ -1299,7 +1311,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten3[ii][jj]
 				
-				if(isVCALC || maskMissing)
+//				if(isVCALC || maskMissing)
+				if(maskMissing)
 					mask_val = 0
 				else
 					mask_val = mask3[ii][jj]
@@ -1324,7 +1337,8 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 				binIndex = trunc(x2pnt(qBin_qxqy, qVal))
 				val = inten4[ii][jj]
 				
-				if(isVCALC || maskMissing)
+//				if(isVCALC || maskMissing)
+				if(maskMissing)
 					mask_val = 0
 				else
 					mask_val = mask4[ii][jj]

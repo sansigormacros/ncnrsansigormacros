@@ -344,22 +344,44 @@ Function V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 	WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
 	WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
 
-	Variable tube_width = V_getDet_tubeWidth(folder,detStr)
+	Variable tube_width = V_getDet_tubeWidth(folder,detStr)		//this is also in mm
 
 //
-	if(cmpstr(orientation,"vertical")==0)
-		//	this is data dimensioned as (Ntubes,Npix)
-//		data_realDistX[][] = tube_width*p
-//		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
-		x_mm[0] = tube_width*xCtr
-		y_mm[0] = data_realDistY[0][yCtr]
-	else
-		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
-//		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
-//		data_realDistY[][] = tube_width*q
-		x_mm[0] = data_realDistX[xCtr][0]
-		y_mm[0] = tube_width*yCtr
-	endif
+	strswitch(detStr)	// string switch
+		case "FL":
+		case "ML":
+			// for Left/Right
+			// for left
+			x_mm[0] = data_realDistX[dimX-1][0] + (xCtr-dimX-1)*tube_width
+			y_mm[0] = data_realDistY[0][yCtr]
+	
+			break		
+		case "FR":	
+		case "MR":
+			// for Left/Right
+			// for right
+			x_mm[0] = data_realDistX[0][0] + xCtr*tube_width
+			y_mm[0] = data_realDistY[0][yCtr]
+			
+			break
+		case "FT":	
+		case "MT":
+			// for Top			
+			x_mm[0] = data_realDistX[xCtr][0]
+			y_mm[0] = data_realDistY[0][0] + yCtr*tube_width
+			
+			break		
+		case "FB":	
+		case "MB":
+			// for Bottom			
+			x_mm[0] = data_realDistX[xCtr][0]
+			y_mm[0] = data_realDistY[0][dimY-1] + (yCtr-dimY-1)*tube_width
+						
+			break
+		default:			// optional default expression executed
+			Print "No case matched in V_Convert_FittedPix_2_cm"
+			return(1)
+	endswitch
 		
 	return(0)
 end

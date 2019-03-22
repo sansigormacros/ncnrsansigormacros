@@ -640,6 +640,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	GRot[lastPoint]=V_getSampleRotationAngle(fname)
 	
 	//Sample Temperature
+	// this reads sample:temperature which is the average temperature reading (may be affected by noise)
 	InsertPoints lastPoint,1,GTemp
 	GTemp[lastPoint]=V_getSampleTemperature(fname)
 

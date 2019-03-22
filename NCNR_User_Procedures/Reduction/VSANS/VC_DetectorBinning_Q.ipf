@@ -34,12 +34,9 @@ Proc PlotFrontPanels()
 End
 
 //
-// Plot the front panels in 2D and 1D
+// Plot the front panels in 2D 
 //		calcualate Q
 //		fill w/model data
-//		"shadow" the T/B detectors
-//		bin the data to I(q)
-//		draw I(q) graph
 //		draw 2D panel graph
 //
 // *** Call this function when front panels are adjusted, or wavelength, etc. changed
@@ -86,36 +83,6 @@ Function fPlotFrontPanels()
 
 	SetDataFolder root:
 		
-	// set any "shadowed" area of the T/B detectors to NaN to get a realistic
-	// view of how much of the detectors are actually collecting data
-	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-	//TODO - make this a proper shadow - TB extent of the LR panels matters too, not just the LR separation
-	VC_SetShadow_TopBottom("VCALC","FT")		// TODO: -- be sure the data folder is properly set (within the function...)
-	VC_SetShadow_TopBottom("VCALC","FB")
-	
-	// do the q-binning for each of the panels to get I(Q)
-//	BinAllFrontPanels()
-
-	String popStr
-//	String collimationStr = "pinhole"
-//	ControlInfo/W=VCALC popup_b
-//	popStr = S_Value		//
-//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
-
-	// plot the results
-//	String type = "VCALC"
-//	String str,winStr="VCALC#Panels_IQ",workTypeStr
-//	workTypeStr = "root:Packages:NIST:VSANS:"+type
-//
-//	ControlInfo/W=VCALC popup_b
-//	popStr = S_Value		//
-//	
-//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-//
-//	Execute ("V_Front_IQ_Graph"+str)
-		
-//	Execute "Front_IQ_Graph()"
-
 	FrontPanels_AsQ()
 	
 	return(0)
@@ -197,12 +164,16 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FL")
 	nPix_Y = VCALC_get_nPix_Y("FL")
 
-	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X-(F_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-		yCtr = nPix_Y/2	
+	//approx beam center in pixels
+	xCtr = nPix_X-(F_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	yCtr = nPix_Y/2
+	
+	if(kBCTR_CM)		//convert to cm
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//vertical (left) panel
+		xCtr = (data_realDistX[nPix_X-1][0]/10 + (xCtr-nPix_X-1)*pixSizeX)
+		yCtr = data_realDistY[0][yCtr]/10	//this should be close to zero
 	endif
 	//put these  beam center values into the local folder
 	V_putDet_beam_center_x("VCALC","FL",xCtr)
@@ -212,7 +183,7 @@ Function VC_CalculateQFrontPanels()
 		
 //	VC_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FL")
-	Print "xy for FL = ",xCtr,yCtr
+//	Print "xy ctr for FL = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
 	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
@@ -242,12 +213,15 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FR")
 	nPix_Y = VCALC_get_nPix_Y("FR")
 
+// beam center in pixels
+	xCtr = -(F_R_sep/pixSizeX)-1		
+	yCtr = nPix_Y/2	
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = -(F_R_sep/pixSizeX)-1		
-		yCtr = nPix_Y/2	
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")		//in mm
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//vertical (right) panel
+		xCtr = (data_realDistX[0][0]/10 + (xCtr)*pixSizeX)
+		yCtr = data_realDistY[0][yCtr]/10		//this should be close to zero
 	endif
 
 	//put these  beam center values into the local folder
@@ -258,6 +232,7 @@ Function VC_CalculateQFrontPanels()
 	
 //	VC_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FR")
+//	Print "xy ctr for FR = ",xCtr,yCtr
 
 //	Print "xy for FR = ",xCtr,yCtr
 	SetScale/I x WaveMin(qx_FR),WaveMax(qx_FR),"", det_FR		//this sets the left and right ends of the data scaling
@@ -284,12 +259,16 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FT")
 	nPix_Y = VCALC_get_nPix_Y("FT")
 
+// beam center in pixels
+	xCtr = nPix_X/2
+	yCtr = -(F_T_sep/2/pixSizeY)-1 
+		
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X/2
-		yCtr = -(F_T_sep/2/pixSizeY)-1 
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//horizontal (top) panel
+		xCtr = data_realDistX[xCtr][0]/10		//this should be close to zero		//in cm
+		yCtr = data_realDistY[0][0]/10 + yCtr*pixSizeY
 	endif	
 
 		//put these  beam center values into the local folder
@@ -327,12 +306,16 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FB")
 	nPix_Y = VCALC_get_nPix_Y("FB")
 
+// beam center in pixels
+	xCtr = nPix_X/2
+	yCtr = nPix_Y+(F_B_sep/2/pixSizeY) 		
+	
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X/2
-		yCtr = nPix_Y+(F_B_sep/2/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//horizontal (bottom) panel
+		xCtr = data_realDistX[xCtr][0]/10			//this should be close to zero
+		yCtr = data_realDistY[0][nPix_Y-1]/10 + (yCtr-nPix_Y-1)*pixSizeY
 	endif	
 			
 	//put these  beam center values into the local folder
@@ -355,55 +338,6 @@ Function VC_CalculateQFrontPanels()
 	return(0)
 End
 
-
-// TODO - this doesn't quite mask things out as they should be (too much is masked L/R of center)
-// and the outer edges of the detector are masked even if the TB panels extend past the TB of the LR panels.
-// ? skip the masking? but then I bin the detector data directly to get I(q), skipping the masked NaN values...
-//
-Function VC_SetShadow_TopBottom(folderStr,type)
-	String folderStr,type
-	
-	Variable L_sep,R_sep,nPix_L,nPix_R,xCtr,ii,jj,numCol,pixSizeX,pixSizeY,nPix_X,nPix_Y
-
-/// !! type passed in will be FT, FB, MT, MB, so I can't ask for the panel separation -- or I'll get the TB separation...
-// translation in [cm]
-	if(cmpstr("F",type[0]) == 0)		// FT or FB passed in
-		L_sep = VCALC_getPanelTranslation("FL")
-		R_sep = VCALC_getPanelTranslation("FR")
-	else
-		L_sep = VCALC_getPanelTranslation("ML")
-		R_sep = VCALC_getPanelTranslation("MR")	
-	endif
-
-
-//detector data
-	Wave det = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+type+":det_"+type)
-
-// TODO - these are to be set from globals, not hard-wired
-// pixel sizes are in cm for T/B detector
-// TODO - the "FT" check is hard wired for FRONT -- get rid of this...
-
-	pixSizeX = VCALC_getPixSizeX(type)
-	pixSizeY = VCALC_getPixSizeY(type)
-
-	nPix_X = VCALC_get_nPix_X(type)
-	nPix_Y = VCALC_get_nPix_Y(type)
-	
-	//TODO -- get this from a global
-	xCtr = nPix_X/2
-	nPix_L = trunc(abs(L_sep)/pixSizeX)		// approx # of pixels Left of center that are not obscured by L/R panels
-	nPix_R = trunc(abs(R_sep)/pixSizeX)		// approx # of pixels Right of center that are not obscured by L/R panels
-	
-	numCol = DimSize(det,0)		// x dim (columns)
-	for(ii=0;ii<(xCtr-nPix_L-4);ii+=1)
-		det[ii][] = NaN
-	endfor
-	for(ii=(xCtr+nPix_R+6);ii<numCol;ii+=1)
-		det[ii][] = NaN
-	endfor
-	
-	return(0)
-end
 
 
 // After the panels have been calculated and rescaled in terms of Q, and filled with simulated data
@@ -634,37 +568,6 @@ Function fPlotMiddlePanels()
 
 	SetDataFolder root:
 		
-	// set any "shadowed" area of the T/B detectors to NaN to get a realistic
-	// view of how much of the detectors are actually collecting data
-	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-	VC_SetShadow_TopBottom("VCALC","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
-	VC_SetShadow_TopBottom("VCALC","MB")
-	
-	// do the q-binning for each of the panels to get I(Q)
-//	BinAllMiddlePanels()
-
-//	String popStr
-//	String collimationStr = "pinhole"
-//	ControlInfo/W=VCALC popup_b
-//	popStr = S_Value		//
-//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
-
-	// plot the results
-//	String type = "VCALC"
-//	String str,winStr="VCALC#Panels_IQ",workTypeStr
-//	workTypeStr = "root:Packages:NIST:VSANS:"+type
-
-//	ControlInfo/W=VCALC popup_b
-//	popStr = S_Value		//
-	
-//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-//
-//	Execute ("V_Middle_IQ_Graph"+str)
-		
-
-	// plot the results
-//	Execute "Middle_IQ_Graph()"
-
 
 	MiddlePanels_AsQ()
 	
@@ -738,12 +641,15 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("ML")
 	nPix_Y = VCALC_get_nPix_Y("ML")
 
+	xCtr = nPix_X+(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	yCtr = nPix_Y/2
+		
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X+(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
-		yCtr = nPix_Y/2	
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//vertical panel
+		xCtr = (data_realDistX[nPix_X-1][0]/10 + (xCtr-nPix_X-1)*pixSizeX)
+		yCtr = data_realDistY[0][yCtr]/10	//this should be close to zero
 	endif		
 
 		//put these  beam center values into the local folder
@@ -787,12 +693,15 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MR")
 	nPix_Y = VCALC_get_nPix_Y("MR")
 
+	xCtr = -(M_R_sep/pixSizeX)-1		
+	yCtr = nPix_Y/2	
+		
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = -(M_R_sep/pixSizeX)-1		
-		yCtr = nPix_Y/2	
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//vertical (right) panel
+		xCtr = (data_realDistX[0][0]/10 + (xCtr)*pixSizeX)
+		yCtr = data_realDistY[0][yCtr]/10		//this should be close to zero
 	endif	
 		
 
@@ -830,12 +739,15 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MT")
 	nPix_Y = VCALC_get_nPix_Y("MT")
 
+	xCtr = nPix_X/2
+	yCtr = -(M_T_sep/pixSizeY)-1 
+		
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X/2
-		yCtr = -(M_T_sep/pixSizeY)-1 
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//horizontal (top) panel
+		xCtr = data_realDistX[xCtr][0]/10		//this should be close to zero		//in cm
+		yCtr = data_realDistY[0][0]/10 + yCtr*pixSizeY
 	endif
 		
 
@@ -874,12 +786,15 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MB")
 	nPix_Y = VCALC_get_nPix_Y("MB")
 
+	xCtr = nPix_X/2
+	yCtr = nPix_Y+(M_B_sep/pixSizeY) 	
+	
 	if(kBCTR_CM)
-		xCtr = 0
-		yCtr = 0			//values in cm
-	else	
-		xCtr = nPix_X/2
-		yCtr = nPix_Y+(M_B_sep/pixSizeY) 		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)?? 
+		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
+		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
+		//horizontal (bottom) panel
+		xCtr = data_realDistX[xCtr][0]/10			//this should be close to zero
+		yCtr = data_realDistY[0][nPix_Y-1]/10 + (yCtr-nPix_Y-1)*pixSizeY
 	endif		
 
 	//put these  beam center values into the local folder
@@ -1216,33 +1131,6 @@ Function fPlotBackPanels()
 
 	SetDataFolder root:
 		
-	// set any "shadowed" area of the T/B detectors to NaN to get a realitic
-	// view of how much of the detectors are actually collecting data
-	// -- I can get the separation L/R from the panel - only this "open" width is visible.
-//	VC_SetShadow_TopBottom("","MT")		// TODO: -- be sure the data folder is properly set (within the function...)
-//	VC_SetShadow_TopBottom("","MB")
-	
-	// do the q-binning for each of the panels to get I(Q)
-
-//	BinAllBackPanels()
-
-	// plot the results
-//	String type = "VCALC"
-//	String str,winStr="VCALC#Panels_IQ",workTypeStr,popStr
-//	workTypeStr = "root:Packages:NIST:VSANS:"+type
-
-//	ControlInfo/W=VCALC popup_b
-//	popStr = S_Value		//
-	
-//	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-//
-//	Execute ("V_Back_IQ_Graph"+str)
-		
-		
-	// plot the results
-//	Execute "Back_IQ_Graph()"
-
-
 
 	Execute "BackPanels_AsQ()"
 
@@ -1304,6 +1192,8 @@ Function VC_CalculateQBackPanels()
 
 	xCtr = V_getDet_beam_center_x("VCALC","B")
 	yCtr = V_getDet_beam_center_y("VCALC","B")
+
+//	Print "Xctr B = ",xctr,yctr
 
 //	if(kBCTR_CM)
 //		xCtr = trunc( DimSize(det_B,0)/2 ) *pixSizeX * 10

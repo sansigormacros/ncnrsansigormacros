@@ -24,6 +24,11 @@ Proc VCALC_Panel()
 		
 		//open the panel
 		DrawVCALC_Panel()
+
+		// check for a mask, if not present, generate a default mask (this will be updated later)
+		if(!Exists("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:data"))
+			V_GenerateDefaultMask()
+		endif
 		
 		// two graphs with the ray-tracing side/top views
 		SetupSideView()
@@ -32,10 +37,16 @@ Proc VCALC_Panel()
 		// a front view of the panels
 		FrontView_1x()
 		
-		// TODO: fake a "click" on the front SDD to force (almost)everything to update
-		// including the I(q) graph
-		FakeFrontMiddleSDDClick()
-
+		// pop one of the presets to get everything to update
+		VC_Preset_WhiteBeam()
+		
+		// update the views
+		VC_UpdateViews()
+		
+		// a recalculation is needed after the change
+		// this re-bins the I(q) data too
+		Recalculate_AllDetectors()
+		
 	endif
 End
 
@@ -67,31 +78,50 @@ Proc DrawVCALC_Panel()
 	TabControl Vtab,tabLabel(1)="Sample",tabLabel(2)="Front Det",tabLabel(3)="Mid Det"
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
 	GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
+	Button button_a,pos={250,70},size={100,20},title="Show Mask",proc=V_VCALCShowMaskButtonProc
+	Button button_b,pos={250,100},size={100,20},title="Recalculate",proc=V_VCALCRecalcButtonProc
+
 
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
-	PopupMenu popup_a,mode=1,popvalue="F+M Ng0 Low Q",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
+	PopupMenu popup_a,mode=1,popvalue="White Beam",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 	PopupMenu popup_a,proc=VC_PresetConfigPopup
 
 	PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 	PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
 	SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
-	SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.3
+	SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
 	CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
 		
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
-	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:20
+	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:28
 
-	ValDisplay valDisp_a,pos={50,380},size={150,15},title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+	ValDisplay valDisp_a,pos={30,380},size={150,15},fstyle=1,title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
 
-	ValDisplay valDisp_b,pos={50,410},size={150,15},title="Q min (Front) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_F
-	ValDisplay valDisp_c,pos={250,410},size={150,15},title="Q max (Front) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_F
-	ValDisplay valDisp_d,pos={50,440},size={150,15},title="Q min (Mid) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_M
-	ValDisplay valDisp_e,pos={250,440},size={150,15},title="Q max (Mid) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_M
-	ValDisplay valDisp_f,pos={50,470},size={150,15},title="Q min (Back) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmin_B
-	ValDisplay valDisp_g,pos={250,470},size={150,15},title="Q max (Back) (1/A)",value=root:Packages:NIST:VSANS:VCALC:gQmax_B
-	ValDisplay valDisp_h,pos={50,500},size={200,15},title="Beam Diam (middle) (cm)",value=root:Packages:NIST:VSANS:VCALC:gBeamDiam
-	ValDisplay valDisp_i,pos={50,530},size={200,15},title="Beam Stop Diam (middle) (in)",value=root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
-	ValDisplay valDisp_j,pos={50,560},size={200,15},title="Real Q min (1/A)",value=root:Packages:NIST:VSANS:VCALC:gRealQMin
+	SetDrawEnv fstyle= 1
+	DrawText 30,420,"Back"
+	DrawText 80,420,"Q min"
+	DrawText 150,420,"Q max"
+	ValDisplay valDisp_b,pos={30,420},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_B
+	ValDisplay valDisp_c,pos={130,420},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_B
+
+	SetDrawEnv fstyle= 1
+	DrawText 130,460,"Middle"
+	DrawText 180,460,"Q min"
+	DrawText 250,460,"Q max"	
+	ValDisplay valDisp_d,pos={130,460},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_M
+	ValDisplay valDisp_e,pos={230,460},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_M
+
+	SetDrawEnv fstyle= 1
+	DrawText 230,500,"Front"	
+	DrawText 280,500,"Q min"
+	DrawText 350,500,"Q max"	
+	ValDisplay valDisp_f,pos={230,500},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_F
+	ValDisplay valDisp_g,pos={330,500},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_F
+
+
+	ValDisplay valDisp_h,pos={50,530},size={200,15},title="Beam Diam (middle) (cm)",value=root:Packages:NIST:VSANS:VCALC:gBeamDiam
+	ValDisplay valDisp_i,pos={50,560},size={200,15},title="Beam Stop Diam (middle) (in)",value=root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
+	ValDisplay valDisp_j,pos={50,590},size={200,15},title="Beam Stop Q min (1/A)",value=root:Packages:NIST:VSANS:VCALC:gRealQMin
 
 
 
@@ -115,7 +145,8 @@ Proc DrawVCALC_Panel()
 	ModifyGraph rgb=(0,0,0)
 	ModifyGraph tick=2,mirror=1
 	Label left "Vertical position (cm)"
-	Label bottom "SDD (cm)"	
+	Label bottom "SDD (cm)"
+	SetAxis/A/R left	
 	SetActiveSubwindow ##	
 	
 	// for top view
@@ -233,6 +264,54 @@ Proc DrawVCALC_Panel()
 	
 End
 
+Function V_VCALCShowMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			V_SetupPanelDisplay()
+			
+			PopupMenu popup1 win=VSANS_Det_Panels,mode=14,popvalue="VCALC"
+			PopupMenu popup0 win=VSANS_Det_Panels,popvalue="F"
+			ControlUpdate/A/W=VSANS_Det_Panels
+
+		//pop the carriage menu to refresh the VCALC data
+			STRUCT WMPopupAction pa
+			pa.eventCode = 2		//fake click
+			V_PickCarriagePopMenuProc(pa)
+			
+// risky, but I can pass the button "click" to the next button to toggle the mask "On"			
+			V_ToggleFourMaskButtonProc(ba)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function V_VCALCRecalcButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			Recalculate_AllDetectors()
+				
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 //
 //  recalculates the detector panels, doesn't adjust the views
 //
@@ -240,16 +319,22 @@ Function Recalculate_AllDetectors()
 
 // calculates Q for each panel
 // and fills 2D panels with model data
+// then plots the 2D panel
 	fPlotBackPanels()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
 
+// generate a proper mask based on hard+soft shadowing
+	VC_ResetVCALCMask()
+	VC_DrawVCALCMask()
+
+
+// generate the 1D I(q)
 	String popStr
 	String collimationStr = "pinhole"
 	ControlInfo/W=VCALC popup_b
 	popStr = S_Value		//
 	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
-
 
 	// plot the results (1D)
 	String type = "VCALC"
@@ -264,14 +349,12 @@ Function Recalculate_AllDetectors()
 	Execute ("V_Front_IQ_Graph"+str)
 
 
-
-
-	
+// update values on the panel
 	V_beamIntensity()
 	
 //	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
 	
-	// fill in the Qmin and Qmax values
+	// fill in the Qmin and Qmax values, based on Q_Tot for the 2D panels (not including mask)
 	V_QMinMax_Back()
 	V_QMinMax_Middle()
 	V_QMinMax_Front()
@@ -1053,10 +1136,10 @@ Proc VC_Initialize_Space()
 // dimensions for the detector banks (then get them in the drawing functions)
 // Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
 // so keep them as variables
-	Variable/G gFront_LR_w = 38.4		//front bank, nominal LR panel width [cm]
+	Variable/G gFront_LR_w = 40.3		//front bank, nominal LR panel width [cm]  0.84cm/tube*48 = 40.3 cm
 	Variable/G gFront_LR_h = 100.0
 	Variable/G gFront_TB_w = 50.0
-	Variable/G gFront_TB_h = 38.4
+	Variable/G gFront_TB_h = 40.3
 
 // SDD setback of T/B (decide on units??)
 // for the Nexus file, the detector distance should already be corrected for the "setback"
@@ -1103,10 +1186,10 @@ Proc VC_Initialize_Space()
 ///// MIDDLE DETECTOR BANKS
 // Width and height are not part of the Nexus file definition, but are needed for VCALC drawing
 // so keep them as variables
-	Variable/G gMiddle_LR_w = 38.4		//middle bank, nominal LR panel width (cm)
+	Variable/G gMiddle_LR_w = 40.3			//middle bank, nominal LR panel width (cm) 0.84cm/tube*48 = 40.3 cm
 	Variable/G gMiddle_LR_h = 100.0
 	Variable/G gMiddle_TB_w = 50.0
-	Variable/G gMiddle_TB_h = 38.4
+	Variable/G gMiddle_TB_h = 40.3
 // SDD offset of T/B (decide on units??)
 // for the Nexus file, the detector distance should already be corrected for the "setback"
 // of the T/B panels. keep as VCALC variable
@@ -1283,13 +1366,13 @@ Proc VC_Initialize_Space()
 
 //	// for the panel
 
-	Variable/G gNg=0
+//	Variable/G gNg=0
 //	Variable/G gOffset=0
-	Variable/G gSamAp=1.27		//samAp diameter in cm
+//	Variable/G gSamAp=1.27		//samAp diameter in cm
 //	String/G gSourceApString = "1.43 cm;2.54 cm;3.81 cm;"
-	String/G gApPopStr = "1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";other;"
-	Variable/G gSamApOther = 10		//non-standard aperture diameter, in mm
-	Variable/G gUsingLenses = 0		//0=no lenses, 1=lenses(or prisms)
+//	String/G gApPopStr = "1/16\";1/8\";3/16\";1/4\";5/16\";3/8\";7/16\";1/2\";9/16\";5/8\";11/16\";3/4\";other;"
+//	Variable/G gSamApOther = 10		//non-standard aperture diameter, in mm
+//	Variable/G gUsingLenses = 0		//0=no lenses, 1=lenses(or prisms)
 //	Variable/G gModelOffsetFactor = 1
 //	
 //	// for the MC simulation
@@ -1333,53 +1416,51 @@ Proc VC_Initialize_Space()
 //	Variable/G gFreezeCount=1		//start the count at 1 to keep Jeff happy
 //	Variable/G gDoTraceOffset=0		// (1==Yes, offset 2^n), 0==turn off the offset
 
-
-
 //
 // instrument - specific dimensions
 //
 
 //	
-	Variable/G gInstrument = 6		// files (may) be tagged SA6 as the 6th SANS instrument
-	Variable/G gS12 = 54.8
+//	Variable/G gInstrument = 6		// files (may) be tagged SA6 as the 6th SANS instrument
+//	Variable/G gS12 = 54.8
 //	Variable/G d_det = 0.5
 //	Variable/G a_pixel = 0.5
 //	Variable/G del_r = 0.5
 //	Variable/G det_width = 64.0
-	Variable/G gLambda_t = 5.50
-	Variable/G gL2r_lower = 132.3
-	Variable/G gL2r_upper =  1317
-	Variable/G gLambda_lower = 2.5
-	Variable/G gLambda_upper = 20.0
-	Variable/G gD_upper = 25.0
-	Variable/G gBs_factor = 1.05
-	Variable/G gT1 = 0.63
-	Variable/G gT2 = 1.0
-	Variable/G gT3 = 0.75
-	Variable/G gL_gap = 100.0
-	Variable/G gGuide_width = 6.0
-	Variable/G gIdmax = 100.0
+//	Variable/G gLambda_t = 5.50
+//	Variable/G gL2r_lower = 132.3
+//	Variable/G gL2r_upper =  1317
+//	Variable/G gLambda_lower = 2.5
+//	Variable/G gLambda_upper = 20.0
+//	Variable/G gD_upper = 25.0
+//	Variable/G gBs_factor = 1.05
+//	Variable/G gT1 = 0.63
+//	Variable/G gT2 = 1.0
+//	Variable/G gT3 = 0.75
+//	Variable/G gL_gap = 100.0
+//	Variable/G gGuide_width = 6.0
+//	Variable/G gIdmax = 100.0
 
 //
 //	//new values, from 11/2009 --- BeamFluxReport_2009.ifn
-	Variable/G gPhi_0 = 2.42e13
-	Variable/G gB = 0.0
-	Variable/G gC = -0.0243
-	Variable/G gGuide_loss = 0.924
+//	Variable/G gPhi_0 = 2.42e13
+//	Variable/G gB = 0.0
+//	Variable/G gC = -0.0243
+//	Variable/G gGuide_loss = 0.924
 //	
 //	//fwhm values (new variables) (+3, 0, -3, calibrated 2009)
-	Variable/G gFwhm_narrow = 0.109
-	Variable/G gFwhm_mid = 0.125
-	Variable/G gFwhm_wide = 0.236
+//	Variable/G gFwhm_narrow = 0.109
+//	Variable/G gFwhm_mid = 0.125
+//	Variable/G gFwhm_wide = 0.236
 //	
 //	//source apertures (cm)
-	Variable/G gA1_0_0 = 1.43
-	Variable/G gA1_0_1 = 2.54
-	Variable/G gA1_0_2 = 3.81
-	Variable/G gA1_7_0 = 2.5			// after the polarizer		
-	Variable/G gA1_7_1 = 5.0
-	Variable/G gA1_7_1 = 0.95		//
-	Variable/G gA1_def = 5.00
+//	Variable/G gA1_0_0 = 1.43
+//	Variable/G gA1_0_1 = 2.54
+//	Variable/G gA1_0_2 = 3.81
+//	Variable/G gA1_7_0 = 2.5			// after the polarizer		
+//	Variable/G gA1_7_1 = 5.0
+//	Variable/G gA1_7_1 = 0.95		//
+//	Variable/G gA1_def = 5.00
 //	
 	SetDataFolder root:
 end
@@ -1398,10 +1479,18 @@ Function V_QMinMax_Back()
 
 	detStr = "B"
 	WAVE qTot_B = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_B = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
-	min_b = WaveMin(qTot_B)
-	max_b = WaveMax(qTot_B)
+	Duplicate/O qTot_B tmp_B
+	// for the minimum
+	tmp_B = (mask_B == 0) ? qTot_B : 1e6
+	min_b = WaveMin(tmp_B)
 
+	// for the maximum
+	tmp_B = (mask_B == 0) ? qTot_B : -1e6
+	max_b = WaveMax(tmp_B)
+
+	KillWaves/Z tmp_B
 
 	return(0)
 end
@@ -1420,19 +1509,62 @@ Function V_QMinMax_Middle()
 
 	detStr = "ML"
 	WAVE qTot_ML = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_ML = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
 	detStr = "MR"
 	WAVE qTot_MR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_MR = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
 	detStr = "MT"
 	WAVE qTot_MT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_MT = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
 	detStr = "MB"
 	WAVE qTot_MB = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_MB = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
-	min_m = min(WaveMin(qTot_ML),WaveMin(qTot_MT),WaveMin(qTot_MR),WaveMin(qTot_MB))
-	max_m = max(WaveMax(qTot_ML),WaveMax(qTot_MT),WaveMax(qTot_MR),WaveMax(qTot_MB))
+	Variable min1,min2,min3,min4
+	Variable max1,max2,max3,max4
+	// WaveMin(), WaveMax() will report NaN or inf
+	// so for the min, set masked values to 1e6
+	Duplicate/O qTot_ML tmp_ML
+	tmp_ML = (mask_ML == 0) ? qTot_ML : 1e6
 
+	Duplicate/O qTot_MR tmp_MR
+	tmp_MR = (mask_MR == 0) ? qTot_MR : 1e6
+	
+	Duplicate/O qTot_MT tmp_MT
+	tmp_MT = (mask_MT == 0) ? qTot_MT : 1e6
+	
+	Duplicate/O qTot_MB tmp_MB
+	tmp_MB = (mask_MB == 0) ? qTot_MB : 1e6
+	
+	min1 = WaveMin(tmp_ML)
+	min2 = WaveMin(tmp_MR)
+	min3 = WaveMin(tmp_MT)
+	min4 = WaveMin(tmp_MB)
+
+	// so for the max, set masked values to -1e6
+	tmp_ML = (mask_ML == 0) ? qTot_ML : -1e6
+	tmp_MR = (mask_MR == 0) ? qTot_MR : -1e6
+	tmp_MT = (mask_MT == 0) ? qTot_MT : -1e6
+	tmp_MB = (mask_MB == 0) ? qTot_MB : -1e6
+	
+	max1 = WaveMax(tmp_ML)
+	max2 = WaveMax(tmp_MR)
+	max3 = WaveMax(tmp_MT)
+	max4 = WaveMax(tmp_MB)
+
+//	print min1,min2,min3,min4
+//	print max1,max2,max3,max4
+		
+	min_m = min(min1,min2,min3,min4)
+	max_m = max(max1,max2,max3,max4)
+
+//	min_m = min(WaveMin(tmp_ML),WaveMin(tmp_MT),WaveMin(tmp_MR),WaveMin(tmp_MB))
+//	max_m = max(WaveMax(tmp_ML),WaveMax(tmp_MT),WaveMax(tmp_MR),WaveMax(tmp_MB))
+	
+	KillWaves/Z tmp_ML,tmp_MR,tmp_MT,tmp_MB
 
 	return(0)
 end
@@ -1451,20 +1583,63 @@ Function V_QMinMax_Front()
 
 	detStr = "FL"
 	WAVE qTot_FL = $(folderPath+instPath+detStr+":qTot_"+detStr)
-
+	WAVE mask_FL = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+	
 	detStr = "FR"
 	WAVE qTot_FR = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_FR = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
 	detStr = "FT"
 	WAVE qTot_FT = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_FT = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
 	detStr = "FB"
 	WAVE qTot_FB = $(folderPath+instPath+detStr+":qTot_"+detStr)
+	WAVE mask_FB = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
 
-	min_f = min(WaveMin(qTot_FL),WaveMin(qTot_FT),WaveMin(qTot_FR),WaveMin(qTot_FB))
-	max_f = max(WaveMax(qTot_FL),WaveMax(qTot_FT),WaveMax(qTot_FR),WaveMax(qTot_FB))
+	Variable min1,min2,min3,min4
+	Variable max1,max2,max3,max4
+	// WaveMin(), WaveMax() will report NaN or inf
+	// so for the min, set masked values to 1e6
+	Duplicate/O qTot_FL tmp_FL
+	tmp_FL = (mask_FL == 0) ? qTot_FL : 1e6
+
+	Duplicate/O qTot_FR tmp_FR
+	tmp_FR = (mask_FR == 0) ? qTot_FR : 1e6
+	
+	Duplicate/O qTot_FT tmp_FT
+	tmp_FT = (mask_FT == 0) ? qTot_FT : 1e6
+	
+	Duplicate/O qTot_FB tmp_FB
+	tmp_FB = (mask_FB == 0) ? qTot_FB : 1e6
+
+	min1 = WaveMin(tmp_FL)
+	min2 = WaveMin(tmp_FR)
+	min3 = WaveMin(tmp_FT)
+	min4 = WaveMin(tmp_FB)
+	
+	// so for the max, set masked values to -1e6
+	tmp_FL = (mask_FL == 0) ? qTot_FL : -1e6
+	tmp_FR = (mask_FR == 0) ? qTot_FR : -1e6
+	tmp_FT = (mask_FT == 0) ? qTot_FT : -1e6
+	tmp_FB = (mask_FB == 0) ? qTot_FB : -1e6
 
 
+	max1 = WaveMax(tmp_FL)
+	max2 = WaveMax(tmp_FR)
+	max3 = WaveMax(tmp_FT)
+	max4 = WaveMax(tmp_FB)
+
+//	print min1,min2,min3,min4
+//	print max1,max2,max3,max4
+		
+	min_f = min(min1,min2,min3,min4)
+	max_f = max(max1,max2,max3,max4)
+	
+//	min_f = min(WaveMin(tmp_FL),WaveMin(tmp_FT),WaveMin(tmp_FR),WaveMin(tmp_FB))
+//	max_f = max(WaveMax(tmp_FL),WaveMax(tmp_FT),WaveMax(tmp_FR),WaveMax(tmp_FB))
+
+	KillWaves/Z tmp_FL,tmp_FR,tmp_FT,tmp_FB
 	return(0)
 end
 

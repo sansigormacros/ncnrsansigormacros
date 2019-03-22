@@ -521,7 +521,6 @@ End
 //
 Function VC_Preset_WhiteBeam()
 
-	VC_Preset_FrontMiddle_Ng0()		// moves Middle into contact (but w/ wrong lambda)
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="White Beam"
 	
@@ -532,8 +531,32 @@ Function VC_Preset_WhiteBeam()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40"
 
 // wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=0	,noedit=0	// allow user editing again
+	SetVariable VCALCCtrl_0b,value=_NUM:5.3//,disable=0	,noedit=0	// allow user editing again
+
+	// adjust the front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:8			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-8		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-15		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:15		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:15			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-15		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
 	
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F4-M4-B"
+
+// set preference to USE back detector
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gIgnoreB = 0
+	
+			
 	return(0)
 end
 
@@ -573,7 +596,7 @@ Function VC_Preset_GraphiteMono()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=0	,noedit=0	// allow user editing again
+	SetVariable VCALCCtrl_0b,value=_NUM:4.75//,disable=0	,noedit=0	// allow user editing again
 
 	//number of guides
 	Slider VCALCCtrl_0a,value= 0
@@ -591,9 +614,9 @@ Function VC_calc_L2(detStr)
 
 	Variable a2_to_GV,sam_to_GV,sdd,l2
 	sdd = VC_getSDD(detStr)			//sample pos to detector
-	ControlInfo VCALCCtrl_1d
+	ControlInfo/W=VCALC VCALCCtrl_1d
 	a2_to_GV = V_Value
-	ControlInfo VCALCCtrl_1e
+	ControlInfo/W=VCALC VCALCCtrl_1e
 	sam_to_GV = V_Value
 	l2 = sdd - sam_to_GV + a2_to_GV
 	
@@ -630,9 +653,9 @@ Function VC_beamDiameter(direction,detStr)
 	
 	Variable a2_to_GV,sam_to_GV,sdd
 	sdd = VC_getSDD(detStr)			//sample pos to detector
-	ControlInfo VCALCCtrl_1d
+	ControlInfo/W=VCALC VCALCCtrl_1d
 	a2_to_GV = V_Value
-	ControlInfo VCALCCtrl_1e
+	ControlInfo/W=VCALC VCALCCtrl_1e
 	sam_to_GV = V_Value
 	l2 = sdd - sam_to_GV + a2_to_GV
    
@@ -641,7 +664,7 @@ Function VC_beamDiameter(direction,detStr)
 	a1 = VC_sourceApertureDiam()
     
 	// sample aperture diam [cm]
-	ControlInfo VCALCCtrl_1c
+	ControlInfo/W=VCALC VCALCCtrl_1c
 	a2 = V_Value
     
     d1 = a1*l2/l1
@@ -684,19 +707,19 @@ Function VC_getSDD(detStr)
 	strswitch(detstr)
 		case "B":
 		case "B ":
-			ControlInfo VCALCCtrl_4b
+			ControlInfo/W=VCALC VCALCCtrl_4b
 			break
 		case "ML":
 		case "MR":
 		case "MT":
 		case "MB":
-			ControlInfo VCALCCtrl_3d
+			ControlInfo/W=VCALC VCALCCtrl_3d
 			break
 		case "FL":
 		case "FR":
 		case "FT":
 		case "FB":
-			ControlInfo VCALCCtrl_2d
+			ControlInfo/W=VCALC VCALCCtrl_2d
 			break		
 		default:
 			Print "no case matched in VC_getSDD()"
@@ -708,7 +731,7 @@ Function VC_getSDD(detStr)
 	sdd += VCALC_getTopBottomSDDSetback(detStr)
 	
 	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
-	ControlInfo VCALCCtrl_1e
+	ControlInfo/W=VCALC VCALCCtrl_1e
 	sdd += V_Value
 	
 	return(sdd)
@@ -738,7 +761,7 @@ Function V_beamIntensity()
 	guide_loss = 0.97
 	t_special = 1
 
- 	ControlInfo VCALCCtrl_0a
+ 	ControlInfo/W=VCALC VCALCCtrl_0a
 	ng = V_Value
  
  	lambda = VCALC_getWavelength()
@@ -857,9 +880,9 @@ Function V_IQ_BeamstopShadow()
 			Abort "Binning mode not found in V_IQ_BeamstopShadow"// when no case matches	
 	endswitch
 
-
-//	root:Packages:NIST:VSANS:VCALC:fSubS_qxqy_MLR
-//	root:Packages:NIST:VSANS:VCALC:iBin_qxqy_MLR
+// TODO:
+// -- I had to put a lot of conditions on when not to try to apply the shadow factor
+// to avoid errors when iq had no points in the wave, or incorrectly applying the beamstop to the back panel.
 	
 	Variable ii
 	String ext
@@ -867,10 +890,1065 @@ Function V_IQ_BeamstopShadow()
 	for(ii=0;ii<ItemsInList(extStr);ii+=1)
 		ext = StringFromList(ii, extStr, ";")
 		Wave iq = $(folderStr+"iBin_qxqy_"+ext)
-		Wave fs = $(folderStr+"fSubS_qxqy_"+ext)
-		iq = (fs < 0.1) ? iq*0.1 : iq*fs
-//		iq *= fs
+		Wave/Z fs = $(folderStr+"fSubS_qxqy_"+ext)
+		if(WaveExists(fs) && numpnts(iq) > 0 && cmpstr(ext,"B") != 0)
+			iq = (fs < 0.1) ? iq*0.1 : iq*fs
+		endif
 	endfor	
 	
 	return(0)
 end
+
+
+
+//
+// instead of setting some of the data to NaN to exclude it, draw a proper mask to be used
+// during the I(q) averaging
+//
+// use both the "hard" and "soft" shadowing
+// -- chooses the more "conservative" of the shadowing values (soft value at short SDD + T/B)
+//
+// the MSK data will be in its ususal location from the initialization.
+//
+// FL shadows FT, FB, ML
+// FR shadows FT, FB, MR
+// FT shadows ML, MR, MT
+// FB shadows ML, MR, MB
+// ML shadows MT, MB, B
+// MR shadows MT, MB, B
+// MT shadows B
+// MB shadows B
+//
+Function VC_DrawVCALCMask()
+
+	VC_DrawVCALCMask_FL()
+	VC_DrawVCALCMask_FR()
+	VC_DrawVCALCMask_FT()
+	VC_DrawVCALCMask_FB()
+	
+	VC_DrawVCALCMask_ML()
+	VC_DrawVCALCMask_MR()
+	VC_DrawVCALCMask_MT()
+	VC_DrawVCALCMask_MB()
+	
+	return(0)
+end
+
+// FL shadows FT, FB, ML
+Function VC_DrawVCALCMask_FL()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_ML,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_X_pix,delta
+	String type,target
+
+// FL shadows FT,FB,ML
+	type = "FL"
+
+	// lateral offset of FL
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (L/R panels)
+	delta_L = 33		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of FT, or FB, or ML
+/////
+	target = "FT"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FT, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)		//pixels from the center
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the left side of the FT panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[0,nt][] = 1
+	endif
+	
+/////
+	target = "FB"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FB, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the left side of the FB panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[0,nt][] = 1
+	endif
+
+///
+// for ML, there can also be lateral offset of the ML panel
+	target = "ML"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+//	delta = delta_Xh
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of ML, in "pixels"
+	offset_ML = VCALC_getPanelTranslation(target)/pixSizeX		//[cm]
+	offset_ML = -trunc(offset_ML)
+	//since "target" is ML, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+	
+	//is the delta_x_pix still on the left edge of ML?
+	if(delta_x_pix < 0)		//entire panel is shadowed
+		nt = nPix-1
+		mask[0,nt][] = 1
+	else
+		if(delta_X_pix < nPix + offset_ML)
+			nt = nPix + offset_ML - delta_x_pix
+			mask[0,nt][] = 1
+		endif
+	endif
+	
+	return(0)
+end
+
+// FR shadows FT, FB, MR
+Function VC_DrawVCALCMask_FR()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_MR,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_X_pix,delta
+	String type,target
+
+// FR shadows FT, FB, MR
+	type = "FR"
+
+	// lateral offset of FR
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (L/R panels)
+	delta_L = 33		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of FT, or FB, or MR
+/////
+	target = "FT"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FT, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the right side of the FT panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[nPix-nt,nPix-1][] = 1
+	endif
+	
+/////
+	target = "FB"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FB, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the right side of the FB panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[nPix-nt,nPix-1][] = 1
+	endif
+
+///
+// for MR, there can also be lateral offset of the panel
+	target = "MR"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of MR, in "pixels"
+	offset_MR = VCALC_getPanelTranslation(target)/pixSizeX		//[cm]
+	offset_MR = trunc(offset_MR)
+	//since "target" is ML, use x-position
+	// at what "pixel" does the shadow start?
+	nPix = VCALC_get_nPix_X(target)
+	
+	delta_X_pix = trunc(delta/pixSizeX)
+	
+	//is the delta_x_pix still on the right edge of MR?
+	if(delta_x_pix < 0)		//entire panel is shadowed
+		nt = nPix-1
+		mask[0,nt][] = 1
+	else
+		if(delta_X_pix < nPix + offset_MR)
+			nt = nPix + offset_MR - delta_x_pix
+			mask[nPix-nt,nPix-1][] = 1
+		endif
+	endif
+		
+	return(0)
+end
+
+// FT shadows ML, MR, MT
+Function VC_DrawVCALCMask_FT()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_MT,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_Y_pix,delta
+	String type,target
+
+// FT shadows ML, MR, MT
+	type = "FT"
+
+	//  offset of FT
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (T/B panels)
+	delta_L = 61		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of ML, or MR, or MT
+/////
+	target = "ML"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is ML, use Y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][nPix-nt,nPix-1] = 1
+	endif
+
+/////
+	target = "MR"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is MR, use y-position
+	// at what "pixel" does the shadow start?
+	delta_y_pix = trunc(delta/pixSizey)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][nPix-nt,nPix-1] = 1
+	endif
+	
+///
+// for MT, there can also be lateral offset of the MT panel
+	target = "MT"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of MT, in "pixels" -in Y-direction
+	offset_MT = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
+	offset_MT = trunc(offset_MT) 
+	//since "target" is MT, use y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_Y_pix < nPix + offset_MT)
+		nt = nPix + offset_MT - delta_y_pix
+		mask[][nPix-nt,nPix-1] = 1
+	endif
+	
+	
+	return(0)
+end
+
+// FB shadows ML, MR, MB
+Function VC_DrawVCALCMask_FB()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_MB,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_Y_pix,delta
+	String type,target
+
+// FB shadows ML, MR, MB
+	type = "FB"
+
+	//  offset of FB
+	offset = VCALC_getPanelTranslation(type)
+	
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (T/B panels)
+	delta_L = 61		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of ML, or MR, or MB
+/////
+	target = "ML"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is ML, use Y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][0,nt] = 1
+	endif
+	
+/////
+	target = "MR"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is MR, use y-position
+	// at what "pixel" does the shadow start?
+	delta_y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][0,nt] = 1
+	endif
+	
+///
+// for MB, there can also be lateral offset of the MT panel
+	target = "MB"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of MT, in "pixels" -in Y-direction
+	offset_MB = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
+	offset_MB = -trunc(offset_MB)
+	//since "target" is MT, use y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_Y_pix < nPix + offset_MB)
+		nt = nPix + offset_MB - delta_y_pix
+		mask[][0,nt] = 1
+	endif
+	
+
+	return(0)
+end
+
+// ML shadows MT, MB, B
+Function VC_DrawVCALCMask_ML()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_X_pix,delta
+	String type,target
+
+// ML shadows MT, MB, B
+	type = "ML"
+
+	// lateral offset of ML
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (L/R panels)
+	delta_L = 33		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of MT, or MB, or B
+/////
+	target = "MT"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FT, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)		//pixels from the center
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the left side of the FT panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[0,nt][] = 1
+	endif
+	
+/////
+	target = "MB"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is MB, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the left side of the MB panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[0,nt][] = 1
+	endif
+
+///
+// for B, there can also be lateral offset of the B panel
+	target = "B"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+//	delta = delta_Xh
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of B, in "pixels"
+	offset_B = VCALC_getPanelTranslation(target)/pixSizeX		//[cm]
+	offset_B = -trunc(offset_B)
+	//since "target" is B, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+	
+	//is the delta_x_pix still on the left edge of B?
+	if(delta_x_pix < 0)		//entire panel is shadowed
+		nt = nPix-1
+		mask[0,nt][] = 1
+	else
+		if(delta_X_pix < nPix + offset_B)
+			nt = nPix + offset_B - delta_x_pix
+			mask[0,nt][] = 1
+		endif
+	endif
+	
+	return(0)
+end
+
+// MR shadows MT, MB, B
+Function VC_DrawVCALCMask_MR()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_X_pix,delta
+	String type,target
+
+// MR shadows MT, MB, B
+	type = "MR"
+
+	// lateral offset of FR
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (L/R panels)
+	delta_L = 33		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of MT, or MB, or B
+/////
+	target = "MT"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value (this means closer to the center, a larger shadow)
+	delta = min(delta_Xh,delta_Xs)
+
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is MT, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the right side of the MT panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[nPix-nt,nPix-1][] = 1
+	endif
+	
+/////
+	target = "MB"
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+	//since "target" is FB, use x-position
+	// at what "pixel" does the shadow start?
+	delta_X_pix = trunc(delta/pixSizeX)
+	nPix = VCALC_get_nPix_X(target)
+
+	if(delta_x_pix < trunc(nPix/2) )			//still on the right side of the MB panel
+		nt = trunc(nPix/2) - delta_x_pix
+		mask[nPix-nt,nPix-1][] = 1
+	endif
+
+///
+// for B, there can also be lateral offset of the panel
+	target = "B"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of B, in "pixels"
+	offset_B = VCALC_getPanelTranslation(target)/pixSizeX		//[cm]
+	offset_B = trunc(offset_B)
+	//since "target" is B, use x-position
+	// at what "pixel" does the shadow start?
+	nPix = VCALC_get_nPix_X(target)
+	
+	delta_X_pix = trunc(delta/pixSizeX)
+	
+	//is the delta_x_pix still on the right edge of B?
+	if(delta_x_pix < 0)		//entire panel is shadowed
+		nt = nPix-1
+		mask[0,nt][] = 1
+	else
+		if(delta_X_pix < nPix + offset_B)
+			nt = nPix + offset_B - delta_x_pix
+			mask[nPix-nt,nPix-1][] = 1
+		endif
+	endif
+	
+	return(0)
+end
+
+
+// MT shadows B
+Function VC_DrawVCALCMask_MT()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_Y_pix,delta
+	String type,target
+
+// MT shadows B
+	type = "MT"
+
+	//  offset of MT
+	offset = VCALC_getPanelTranslation(type)
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (T/B panels)
+	delta_L = 61		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of ML, or MR, or MT
+///////
+//	target = "ML"
+//	L2_M = VC_calc_L2(target)
+//	// mask data
+//	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+//
+//// extent of shadow in [cm] (starting point of shadow from center of beam)
+//// hard
+//	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+//// soft
+//	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+//
+//	//use the smaller shadow value (this means closer to the center, a larger shadow)
+//	delta = min(delta_Xh,delta_Xs)
+//
+//// how many detector tubes to mask?
+//	pixSizeX = VCALC_getPixSizeX(target)
+//	pixSizeY = VCALC_getPixSizeY(target)
+//
+//	//since "target" is ML, use Y-position
+//	// at what "pixel" does the shadow start?
+//	delta_Y_pix = trunc(delta/pixSizeY)
+//	nPix = VCALC_get_nPix_Y(target)
+//
+//	if(delta_y_pix < trunc(nPix/2))
+//		nt = trunc(nPix/2) - delta_y_pix
+//		mask[][nPix-nt,nPix-1] = 1
+//	endif
+
+/////
+//	target = "MR"
+//	L2_M = VC_calc_L2(target)
+//	// mask data
+//	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+//
+//// extent of shadow in [cm] (starting point of shadow from center of beam)
+//// hard
+//	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+//// soft
+//	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+//
+//	//use the smaller shadow value
+//	delta = min(delta_Xh,delta_Xs)
+//
+//	
+//// how many detector tubes to mask?
+//	pixSizeX = VCALC_getPixSizeX(target)
+//	pixSizeY = VCALC_getPixSizeY(target)
+//
+//	//since "target" is MR, use y-position
+//	// at what "pixel" does the shadow start?
+//	delta_y_pix = trunc(delta/pixSizey)
+//	nPix = VCALC_get_nPix_Y(target)
+//
+//	if(delta_y_pix < trunc(nPix/2))
+//		nt = trunc(nPix/2) - delta_y_pix
+//		mask[][nPix-nt,nPix-1] = 1
+//	endif
+	
+///
+// for B, there can also be lateral offset of the B panel
+	target = "B"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of B, in "pixels" -in Y-direction
+	offset_B = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
+	offset_B = trunc(offset_B) 
+	//since "target" is B, use y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][nPix-nt,nPix-1] = 1
+	endif
+	
+	return(0)
+end
+
+// MB shadows B
+Function VC_DrawVCALCMask_MB()
+	
+	Variable pixSizeX,pixSizeY,nPix,nt
+
+	Variable offset,offset_B,L2_F,L2_M,delta_L,delta_S,D2
+	Variable delta_Xh,delta_Xs,delta_Y_pix,delta
+	String type,target
+
+// MB shadows B
+	type = "MB"
+
+	//  offset of MB
+	offset = VCALC_getPanelTranslation(type)
+	
+	// sample aperture diam [cm]
+	D2 = VC_sampleApertureDiam()
+	// sdd F	 [cm] = sample aperture to detector
+	L2_F = VC_calc_L2(type)
+	// depth of electronics (T/B panels)
+	delta_L = 61		//[cm]
+	// offset of 80/20 frame
+	delta_S = 2.5		//[cm]
+	
+	
+	// sdd of ML, or MR, or MB
+/////
+//	target = "ML"
+//	L2_M = VC_calc_L2(target)
+//	// mask data
+//	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+//
+//// extent of shadow in [cm] (starting point of shadow from center of beam)
+//// hard
+//	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+//// soft
+//	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+//
+//	//use the smaller shadow value (this means closer to the center, a larger shadow)
+//	delta = min(delta_Xh,delta_Xs)
+//
+//	
+//// how many detector tubes to mask?
+//	pixSizeX = VCALC_getPixSizeX(target)
+//	pixSizeY = VCALC_getPixSizeY(target)
+//
+//	//since "target" is ML, use Y-position
+//	// at what "pixel" does the shadow start?
+//	delta_Y_pix = trunc(delta/pixSizeY)
+//	nPix = VCALC_get_nPix_Y(target)
+//
+//	if(delta_y_pix < trunc(nPix/2))
+//		nt = trunc(nPix/2) - delta_y_pix
+//		mask[][0,nt] = 1
+//	endif
+	
+/////
+//	target = "MR"
+//	L2_M = VC_calc_L2(target)
+//	// mask data
+//	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+//
+//// extent of shadow in [cm] (starting point of shadow from center of beam)
+//// hard
+//	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+//// soft
+//	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+//
+//	//use the smaller shadow value
+//	delta = min(delta_Xh,delta_Xs)
+//	
+//// how many detector tubes to mask?
+//	pixSizeX = VCALC_getPixSizeX(target)
+//	pixSizeY = VCALC_getPixSizeY(target)
+//
+//	//since "target" is MR, use y-position
+//	// at what "pixel" does the shadow start?
+//	delta_y_pix = trunc(delta/pixSizeY)
+//	nPix = VCALC_get_nPix_Y(target)
+//
+//	if(delta_y_pix < trunc(nPix/2))
+//		nt = trunc(nPix/2) - delta_y_pix
+//		mask[][0,nt] = 1
+//	endif
+	
+///
+// for B, there can also be lateral offset of the B panel
+	target = "B"
+
+	L2_M = VC_calc_L2(target)
+	// mask data
+	Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+target+":data")
+
+// extent of shadow in [cm] (starting point of shadow from center of beam)
+// hard
+	delta_Xh = D2/2 + (-offset - D2/2)*(L2_M/L2_F)
+// soft
+	delta_Xs = D2/2 + (-offset + delta_S - D2/2)*(L2_M/(L2_F+delta_L))
+
+	//use the smaller shadow value
+	delta = min(delta_Xh,delta_Xs)
+	
+// how many detector tubes to mask?
+	pixSizeX = VCALC_getPixSizeX(target)
+	pixSizeY = VCALC_getPixSizeY(target)
+
+// offset of B, in "pixels" -in Y-direction
+	offset_B = VCALC_getPanelTranslation(target)/pixSizeY		//[cm]
+	offset_B = -trunc(offset_B)
+	//since "target" is MT, use y-position
+	// at what "pixel" does the shadow start?
+	delta_Y_pix = trunc(delta/pixSizeY)
+	nPix = VCALC_get_nPix_Y(target)
+
+	if(delta_y_pix < trunc(nPix/2))
+		nt = trunc(nPix/2) - delta_y_pix
+		mask[][0,nt] = 1
+	endif
+
+	return(0)
+end
+
+
+
+
+//
+// resets the mask to 0 = (use all)
+//
+Function VC_ResetVCALCMask()
+
+	Variable ii
+	String detStr
+	
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+		mask = 0	
+	endfor
+	
+	return(0)
+end
+
+

@@ -23,8 +23,22 @@ Function Init_USANS_Facility()
 	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
 	
 	
+
+// is the data file from NICE and in terms of QValues rather than angle?
+	Variable/G root:Packages:NIST:gRawUSANSisQvalues=1		//== 1 means raw data is in Q, not angle
+
+	DoAlert 0,"The data loader is set to interpret raw data in Q-values (from NICE), not angle (from ICP). If your raw data was collected from ICP, change this setting using the menu item USANS->NCNR Preferences"
+	
 	// to convert from angle (in degrees) to Q (in 1/Angstrom)
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+	// -- or to disable the conversion if the data is "new NICE" (approx Mar 2019)
+	NVAR gRawUSANSisQvalues = root:Packages:NIST:gRawUSANSisQvalues
+	if(gRawUSANSisQvalues == 1)
+		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 1		//so that the q-values are unchanged
+	else
+		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 5.55e-5		//JGB -- 2/24/01
+	endif
+
+
 	
 	// extension string for the raw data files
 	// -- not that the extension as specified here starts with "."

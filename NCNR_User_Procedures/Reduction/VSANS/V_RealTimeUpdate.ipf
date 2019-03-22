@@ -479,23 +479,13 @@ Function V_BkgUpdate_RTData()
 		monitorCountRate = monitorCounts/countTime
 
 
-// TODO:
-// -- is the 1D plot being updated?
-////			
-//		//if the 1D plot is open, update this too
-//		// make sure folders exist first
-//		if(!DataFolderExists("root:myGlobals:Drawing"))
-//			Execute "InitializeAveragePanel()"
-//		endif
-//		
-//		// check for the mask, generate one? Two pixels all around
-//			
-//		// update the 1d plot
-//		if(WinType("Plot_1d")==1)		//if the 1D graph exists
-////			Panel_DoAverageButtonProc("")	
-//			DoWindow/F V_SANS_Data	
-//		endif
-//		///////
+// DONE:
+// x- update the 1D plot
+// repeat what the IQ button does -- V_IvsQPanelButtonProc()
+		V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
+		Variable binType = V_GetBinningPopMode()
+		ControlInfo/W=V_1D_Data popup0
+		V_BinningModePopup("",binType,S_Value)		// does binning of current popString and updates the graph
 		
 //		print "Bkg task time (s) =",(ticks-t1)/60.15
 		return 0		//keep the process going
