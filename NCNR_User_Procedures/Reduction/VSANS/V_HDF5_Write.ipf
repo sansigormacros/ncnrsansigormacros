@@ -4166,6 +4166,25 @@ Function V_putDet_beam_center_x(fname,detStr,val)
 
 End
 
+// fname is a local WORK folder
+Function V_putDet_beam_center_x_pix(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x_pix
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:instrument:detector_"+detStr+":beam_center_x_pix"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 Function V_writeDet_beam_center_y(fname,detStr,val)
 	String fname,detStr
 	Variable val
@@ -4211,6 +4230,24 @@ Function V_putDet_beam_center_y(fname,detStr,val)
 
 End
 
+// fname is a local WORK folder
+Function V_putDet_beam_center_y_pix(fname,detStr,val)
+	String fname,detStr
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_y_pix
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:instrument:detector_"+detStr+":beam_center_y_pix"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 // TODO -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter

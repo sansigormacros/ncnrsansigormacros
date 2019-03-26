@@ -106,11 +106,11 @@ Proc Initialize_VSANSPreferences()
 	if(V_flag == 1)
 		// yes
 		Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 0
-		DoAlert 1,"Are you using 1x1 binning?"
-		if(V_flag == 1)
-			// yes
-			Variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 1
-		endif
+//		DoAlert 1,"Are you using 1x1 binning?"
+//		if(V_flag == 1)
+//			// yes
+//			Variable/G root:Packages:NIST:VSANS:Globals:gHighResBinning = 1
+//		endif
 	endif
 	
 // flag to allow adding raw data files with different attenuation (normally not done)	

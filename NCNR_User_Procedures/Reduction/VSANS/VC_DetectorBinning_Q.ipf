@@ -164,10 +164,17 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FL")
 	nPix_Y = VCALC_get_nPix_Y("FL")
 
+	VC_MakeRealDistXYWaves(det_FL,detStr)
+
 	//approx beam center in pixels
 	xCtr = nPix_X-(F_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2
-	
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC","FL",xCtr)
+	V_putDet_beam_center_y_pix("VCALC","FL",yCtr)
+		
 	if(kBCTR_CM)		//convert to cm
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -213,9 +220,17 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FR")
 	nPix_Y = VCALC_get_nPix_Y("FR")
 
+	VC_MakeRealDistXYWaves(det_FR,detStr)
+
 // beam center in pixels
 	xCtr = -(F_R_sep/pixSizeX)-1		
 	yCtr = nPix_Y/2	
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+	
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")		//in mm
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -259,10 +274,17 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FT")
 	nPix_Y = VCALC_get_nPix_Y("FT")
 
+	VC_MakeRealDistXYWaves(det_FT,detStr)
+
 // beam center in pixels
 	xCtr = nPix_X/2
 	yCtr = -(F_T_sep/2/pixSizeY)-1 
-		
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+			
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -306,10 +328,17 @@ Function VC_CalculateQFrontPanels()
 	nPix_X = VCALC_get_nPix_X("FB")
 	nPix_Y = VCALC_get_nPix_Y("FB")
 
+	VC_MakeRealDistXYWaves(det_FB,detStr)
+
 // beam center in pixels
 	xCtr = nPix_X/2
-	yCtr = nPix_Y+(F_B_sep/2/pixSizeY) 		
-	
+	yCtr = nPix_Y-(F_B_sep/2/pixSizeY) 		
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+		
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -633,7 +662,7 @@ Function VC_CalculateQMiddlePanels()
 	qx_ML = 0
 	qy_ML = 0
 	qz_ML = 0	
-	
+
 // TODO - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("ML")
@@ -641,8 +670,15 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("ML")
 	nPix_Y = VCALC_get_nPix_Y("ML")
 
-	xCtr = nPix_X+(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	VC_MakeRealDistXYWaves(det_ML,detStr)
+
+	xCtr = nPix_X-(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
 		
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
@@ -693,9 +729,17 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MR")
 	nPix_Y = VCALC_get_nPix_Y("MR")
 
+	VC_MakeRealDistXYWaves(det_MR,detStr)
+
+// beam center in pixels
 	xCtr = -(M_R_sep/pixSizeX)-1		
 	yCtr = nPix_Y/2	
-		
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)		
+	
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -739,9 +783,17 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MT")
 	nPix_Y = VCALC_get_nPix_Y("MT")
 
+	VC_MakeRealDistXYWaves(det_MT,detStr)
+
+// beam center in pixels
 	xCtr = nPix_X/2
 	yCtr = -(M_T_sep/pixSizeY)-1 
-		
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+			
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -786,9 +838,17 @@ Function VC_CalculateQMiddlePanels()
 	nPix_X = VCALC_get_nPix_X("MB")
 	nPix_Y = VCALC_get_nPix_Y("MB")
 
+	VC_MakeRealDistXYWaves(det_MB,detStr)
+
+// beam center in pixels
 	xCtr = nPix_X/2
-	yCtr = nPix_Y+(M_B_sep/pixSizeY) 	
-	
+	yCtr = nPix_Y-(M_B_sep/pixSizeY) 	
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+		
 	if(kBCTR_CM)
 		Wave data_realDistX = $(folderPath+instPath+detStr+":data_realDistX")
 		Wave data_realDistY = $(folderPath+instPath+detStr+":data_realDistY")	
@@ -1193,6 +1253,12 @@ Function VC_CalculateQBackPanels()
 	xCtr = V_getDet_beam_center_x("VCALC","B")
 	yCtr = V_getDet_beam_center_y("VCALC","B")
 
+// put these values into the local folder for later use (in masking)
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
+	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_y_pix")
+	V_putDet_beam_center_x_pix("VCALC",detStr,xCtr)
+	V_putDet_beam_center_y_pix("VCALC",detStr,yCtr)
+	
 //	Print "Xctr B = ",xctr,yctr
 
 //	if(kBCTR_CM)

@@ -35,18 +35,18 @@ Proc VCALC_Panel()
 		SetupTopView()
 		
 		// a front view of the panels
-		FrontView_1x()
+//		FrontView_1x()
 		
 		// pop one of the presets to get everything to update
 		VC_Preset_WhiteBeam()
 		
-		// update the views
-		VC_UpdateViews()
-		
 		// a recalculation is needed after the change
 		// this re-bins the I(q) data too
 		Recalculate_AllDetectors()
-		
+
+		// update the views
+		VC_UpdateViews()
+				
 	endif
 End
 
@@ -78,8 +78,10 @@ Proc DrawVCALC_Panel()
 	TabControl Vtab,tabLabel(1)="Sample",tabLabel(2)="Front Det",tabLabel(3)="Mid Det"
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
 	GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
-	Button button_a,pos={250,70},size={100,20},title="Show Mask",proc=V_VCALCShowMaskButtonProc
-	Button button_b,pos={250,100},size={100,20},title="Recalculate",proc=V_VCALCRecalcButtonProc
+	Button button_a,pos={210,70},size={100,20},title="Show Mask",proc=V_VCALCShowMaskButtonProc
+	Button button_b,pos={210,100},size={100,20},title="Recalculate",proc=V_VCALCRecalcButtonProc
+	Button button_c,pos={330,70},size={100,20},title="Save Config",proc=V_VCALCSaveConfiguration
+	Button button_d,pos={330,100},size={100,20},title="Save NICE",proc=V_VCALCSaveNICEConfiguration
 
 
 	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
@@ -294,6 +296,72 @@ Function V_VCALCShowMaskButtonProc(ba) : ButtonControl
 End
 
 
+Function V_VCALCSaveConfiguration(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			V_DisplayConfigurationText()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_DisplayConfigurationText()
+
+	if(WinType("Trial_Configuration")==0)
+		NewNotebook/F=0/K=1/N=Trial_Configuration /W=(480,44,880,369)
+	endif
+	//replace the text
+	Notebook Trial_Configuration selection={startOfFile, endOfFile}
+	Notebook Trial_Configuration font="Monaco",fSize=10,text=V_SetConfigurationText()
+	return(0)
+end
+
+
+//Export NICE VSANS configurations to a plain text noteboox that can be saved as a text file.
+Function V_SaveNICEConfigs()
+
+	String str=""
+
+	if(WinType("NICE_Configuration")==0)
+		NewNotebook/F=0/K=1/N=NICE_Configuration /W=(480,44,880,369)
+	endif
+	//replace the text
+	Notebook NICE_Configuration selection={startOfFile, endOfFile}
+	Notebook NICE_Configuration font="Monaco",fSize=10,text=V_SetNICEConfigText()
+	
+//	SaveNotebook/S=6/I NICE_Configuration as "NICE_Configs.txt"
+//	KillWindow NICE_Configuration	
+			
+	return (0)
+
+end
+
+Function V_VCALCSaveNICEConfiguration(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			Recalculate_AllDetectors()
+			V_SaveNICEConfigs()
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 Function V_VCALCRecalcButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -448,24 +516,19 @@ Function V_GuideSliderProc(ctrlName,sliderValue,event)
 	SVAR apStr = root:Packages:NIST:VSANS:VCALC:gSourceDiam
 	
 	if(event %& 0x1)	// bit 0, value set
-		if(cmpstr(ctrlName,"") != 0)		//here by direct action, so do LensCheck and recalculate
-//			recalc=1
-//			LensCheckProc("",2)		//make sure lenses are deselected
-		endif
-//		sourceToSampleDist()		//updates the SSD global and wave
+
 		//change the sourceAp popup, SDD range, etc
 		switch(sliderValue)
 			case 0:
-//				ControlInfo/W=SASCALC popup0
-//				mode=V_value
 				apStr = "0.75 cm;1.5 cm;3.0 cm;"
 				break
 			default:
 				apStr = "6 cm;"
 		endswitch
 		ControlUpdate/W=VCALC VCALCCtrl_0f
-//		UpdateControls()				// the Ng global is actually set inside this function
-		Recalculate_AllDetectors()
+
+//		Recalculate_AllDetectors()
+
 	endif
 	return 0
 End
@@ -546,7 +609,7 @@ Function VC_DeltaLamSelectPopup(pa) : PopupMenuControl
 			String popStr = pa.popStr
 			
 			// a recalculation is needed after the change
-			Recalculate_AllDetectors()
+//			Recalculate_AllDetectors()
 									
 			break
 		case -1: // control being killed
@@ -602,7 +665,7 @@ Function VC_MonochromSelectPopup(pa) : PopupMenuControl
 			
 
 			// a recalculation is needed after the change
-			Recalculate_AllDetectors()
+//			Recalculate_AllDetectors()
 								
 			break
 		case -1: // control being killed
@@ -668,9 +731,7 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 			// this re-bins the data too
 			Recalculate_AllDetectors()
 			
-			// re-bin the data?
-//			VC_RebinIQ_PopProc("",0,binStr)
-					
+
 			break
 		case -1: // control being killed
 			break
@@ -691,7 +752,7 @@ Function VC_SimModelFunc_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum	// which item is currently selected (1-based)
 	String popStr		// contents of current popup item as string
 
-	Recalculate_AllDetectors()
+//	Recalculate_AllDetectors()
 	
 	return(0)	
 End
@@ -726,18 +787,6 @@ Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Execute ("V_Middle_IQ_Graph"+str)
 	Execute ("V_Front_IQ_Graph"+str)
 
-// OLD - do not use
-//	// do the q-binning for front panels to get I(Q)
-//	Execute "BinAllFrontPanels()"
-//	Execute "Front_IQ_Graph()"
-//
-//	// do the q-binning for middle panels to get I(Q)
-//	Execute "BinAllMiddlePanels()"
-//	Execute "Middle_IQ_Graph()"
-//	
-//	// do the q-binning for the back panel to get I(Q)
-//	Execute "BinAllBackPanels()"
-//	Execute "Back_IQ_Graph()"
 //	
 	return(0)	
 End
@@ -809,7 +858,7 @@ Function VC_Lambda_SetVarProc(sva) : SetVariableControl
 			
 //			// don't need to recalculate the views, but need to recalculate the detectors
 
-			Recalculate_AllDetectors()		
+//			Recalculate_AllDetectors()		
 				
 			break
 		case -1: // control being killed
@@ -832,7 +881,7 @@ Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 			Variable dval = sva.dval
 			String sval = sva.sval
 
-			Recalculate_AllDetectors()		
+//			Recalculate_AllDetectors()		
 				
 			break
 		case -1: // control being killed

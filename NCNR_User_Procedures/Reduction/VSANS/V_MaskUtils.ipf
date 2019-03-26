@@ -1223,15 +1223,15 @@ End
 //
 Function V_UpdateFourPanelDisp()
 
-	ControlInfo popup0
+	ControlInfo/W=VSANS_Det_Panels popup0
 	String carrStr = S_value
 
-	if(cmpstr("B",carrStr)==0)
-		DoAlert 0, "Detector B plotting not supported yet"
-		return(0)
-	endif
+//	if(cmpstr("B",carrStr)==0)
+//		DoAlert 0, "Detector B plotting not supported yet"
+//		return(0)
+//	endif
 	
-	ControlInfo popup1
+	ControlInfo/W=VSANS_Det_Panels popup1
 	String folder = S_Value
 
 	Variable isVCALC=0
@@ -1278,6 +1278,32 @@ Function V_UpdateFourPanelDisp()
 	
 
 	// append the new image
+	// if back, put this in the "left" postion, and nothing else
+	if(cmpstr("B",carrStr)==0)
+		if(isVCALC)
+			AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+":det_"+carrStr)		
+			SetActiveSubwindow VSANS_Det_Panels#Panel_L
+			ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage ''#0 ctabAutoscale=3
+		else
+			AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+":data")		
+			SetActiveSubwindow VSANS_Det_Panels#Panel_L
+			ModifyImage data ctab= {*,*,ColdWarm,0}
+			ModifyImage data ctabAutoscale=3	
+		endif
+		ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+		ModifyGraph mirror=2
+		ModifyGraph nticks=4
+		ModifyGraph minor=1
+		ModifyGraph fSize=9
+		ModifyGraph standoff=0
+		ModifyGraph tkLblRot(left)=90
+		ModifyGraph btLen=3
+		ModifyGraph tlOffset=-2
+		SetActiveSubwindow ##
+		return(0)
+	endif
+	
 //	RemoveImage/Z/W=VSANS_Det_Panels#Panel_L data
 	if(isVCALC)
 		AppendImage/T/G=1/W=VSANS_Det_Panels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:det_"+carrStr+"L")		
@@ -1371,27 +1397,10 @@ Function V_UpdateFourPanelDisp()
 	ModifyGraph tlOffset=-2
 	SetActiveSubwindow ##
 
+	return(0)
 End
 
 
-//
-//Function V_DummyPopMenuProc(pa) : PopupMenuControl
-//	STRUCT WMPopupAction &pa
-//
-//	switch( pa.eventCode )
-//		case 2: // mouse up
-//			Variable popNum = pa.popNum
-//			String popStr = pa.popStr
-//			
-//			DoAlert 0,"Fill in the dummy procedure"
-//			
-//			break
-//		case -1: // control being killed
-//			break
-//	endswitch
-//
-//	return 0
-//End
 
 
 Function V_PickFolderPopMenuProc(pa) : PopupMenuControl
@@ -1449,24 +1458,85 @@ Function V_UpdatePanelsButtonProc(ba) : ButtonControl
 	return 0
 End
 
-
-
+//
+// toggle the mask overlay(s) on/off of the detector panels.
+//
 Function V_ToggleFourMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+
+			String detStr
+			Variable state,isVCALC
 			
 			ControlInfo/W=VSANS_Det_Panels popup1
 			String folderStr = S_Value
-			Variable state = 1
-
+			
 			ControlInfo/W=VSANS_Det_Panels popup0
 			String carrStr = S_Value
-			
+
+			if(cmpstr(folderStr,"VCALC") == 0)
+				isVCALC = 1
+			else
+				isVCALC = 0
+			endif
+
+// handle "B" separately
+			if(cmpstr(carrStr,"B") == 0)
+				detStr = carrStr
+				// is the mask already there?
+				wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+				CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+				if(V_Flag == 1)		//overlay is present, set state = 0 to remove overlay
+					state = 0
+				else
+					state = 1
+				endif
+				
+				if(state == 1)
+					//duplicate the mask, which is named "data"
+					wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+					// for the wave scaling
+					if(isVCALC)
+						wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":det_"+detStr)	
+					else
+						wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
+					endif
+					Duplicate/O data $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+					wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+					overlay = maskW		//this copies the data into the properly scaled wave
+		
+					//"B" uses the L side display			
+			//	Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_flag==0)		//so the overlay doesn't get appended more than once
+						AppendImage/T/W=VSANS_Det_Panels#Panel_L overlay
+		//				ModifyImage/W=VSANS_Det_Panels#Panel_L overlay ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+						ModifyImage/W=VSANS_Det_Panels#Panel_L ''#1 ctab= {0.9,0.95,BlueRedGreen,0}	,minRGB=NaN,maxRGB=(0,65000,0,35000)
+					endif
+		
+				endif		//state == 1
+		
+				if(state == 0)
+					wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
+		
+					//"B" uses the L side display			
+		
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_Flag == 1)		//overlay is present
+		//				RemoveImage/W=VSANS_Det_Panels#Panel_L overlay
+						RemoveImage/W=VSANS_Det_Panels#Panel_L ''#1
+					endif
+				endif		//state == 0
+								
+				return(0)
+			endif		//handle carriage B
+
+
+// now toggle the mask for the F or M carriages			
 // test the L image to see if I need to remove the mask
-			String detStr
 			if(cmpstr(carrStr,"F")==0)
 				detStr = "FL"
 			else
@@ -1475,7 +1545,7 @@ Function V_ToggleFourMaskButtonProc(ba) : ButtonControl
 			
 			wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
 			CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
-			if(V_Flag == 1)		//overlay is present
+			if(V_Flag == 1)		//overlay is present, set state = 0 to remove overlay
 				state = 0
 			else
 				state = 1
@@ -1517,6 +1587,13 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 			ControlInfo/W=VSANS_Det_Panels popup0
 			String detGroup = S_Value
 			
+			Variable isVCALC
+			if(cmpstr(folderStr,"VCALC")==0)
+				isVCALC = 1
+			else
+				isVCALC = 0
+			endif
+			
 			// calculate the "mask" to add
 			
 			// if circular, do nothing
@@ -1544,11 +1621,15 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 					// loop over all of the panels
 					// calculate phi matrix
 					// fill in the mask
-					for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-						detStr = StringFromList(ii, ksDetectorListNoB, ";")
+					for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+						detStr = StringFromList(ii, ksDetectorListAll, ";")
 						Wave qTotal = $(str1+str2+detStr+":qTot_"+detStr)
 						Wave phi = 	V_MakePhiMatrix(qTotal,folderStr,detStr,str1+str2+detStr)
-						Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						if(isVCALC)
+							Wave w = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":det_"+detStr)
+						else
+							Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						endif
 						Duplicate/O w $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
 						Wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
 						V_MarkSectorOverlayPixels(phi,overlay,phi_rad,dphi_rad,side)
@@ -1567,10 +1648,14 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 
 					// loop over all of the panels
 					// fill in the mask
-					for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-						detStr = StringFromList(ii, ksDetectorListNoB, ";")
+					for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+						detStr = StringFromList(ii, ksDetectorListAll, ";")
 						Wave qTotal = $(str1+str2+detStr+":qTot_"+detStr)
-						Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						if(isVCALC)
+							Wave w = $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":det_"+detStr)
+						else						
+							Wave w = V_getDetectorDataW(folderStr,detStr)	//this is simply to get the correct wave scaling on the overlay
+						endif
 						Duplicate/O w $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
 						Wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
 						V_MarkAnnularOverlayPixels(qTotal,overlay,qCtr_ann,qWidth)
@@ -1594,6 +1679,22 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 		
 					ControlInfo/W=VSANS_Det_Panels popup0
 					String carrStr = S_Value
+
+// handle "B" separately
+				if(cmpstr(carrStr,"B") == 0)
+					detStr = carrStr
+					// is the mask already there?
+					wave/Z overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
+					if(V_Flag == 1)		//overlay is present, set state = 0 to remove overlay
+						state = 0
+					else
+						state = 1
+					endif
+					
+					V_OverlayFourAvgMask(folderStr,"B",state)
+					return(0)
+				endif		//carriage "B"
 					
 		// test the L image to see if I need to remove the mask
 					if(cmpstr(carrStr,"F")==0)
@@ -1893,7 +1994,11 @@ Function V_OverlayFourAvgMask(folderStr,detStr,state)
 	String folderStr,detStr
 	Variable state
 
-
+//	Variable isVCALC=0
+//	if(cmpstr("VCALC",folderStr)==0)
+//		isVCALC=1
+//	endif
+	
 	String maskPath = "root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data"
 	if(WaveExists($maskPath) == 1)
 		
@@ -1904,12 +2009,18 @@ Function V_OverlayFourAvgMask(folderStr,detStr,state)
 //			// for the wave scaling
 //			wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")	
 //			Duplicate/O data $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":overlay_"+detStr)
-			wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+
+//			if(isVCALC)
+//				wave overlay = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)	
+//			else
+				wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":AvgOverlay_"+detStr)
+//			endif
 //			overlay = maskW		//this copies the data into the properly scaled wave
 			
 			strswitch(detStr)
 				case "ML":
 				case "FL":
+				case "B":
 //					Print ImageNameList("VSANS_Det_Panels#Panel_L", ";" )
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_flag==0)		//so the overlay doesn't get appended more than once
@@ -1957,6 +2068,7 @@ Function V_OverlayFourAvgMask(folderStr,detStr,state)
 			strswitch(detStr)
 				case "ML":
 				case "FL":
+				case "B":
 					CheckDisplayed/W=VSANS_Det_Panels#Panel_L overlay
 					if(V_Flag == 1)		//overlay is present
 		//				RemoveImage/W=VSANS_Det_Panels#Panel_L overlay

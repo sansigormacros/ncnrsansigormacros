@@ -239,8 +239,8 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	// be sure that the real distance waves exist
 	// TODO -- this may not be the best location?
 
-// calibration waves do not exist yet, so make some fake ones	'
-	// do I count on the orientation as an input, or do I just figure it out on my own?
+	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
+
 	String orientation
 	Variable dimX,dimY
 	dimX = DimSize(data,0)
@@ -251,41 +251,7 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 		orientation = "vertical"
 	endif
 	
-	if(cmpstr(orientation,"vertical")==0)
-		Make/O/D/N=(3,48) tmpCalib
-		// for the "tall" L/R banks
-		tmpCalib[0][] = -512
-		tmpCalib[1][] = 8
-		tmpCalib[2][] = 0
-	else
-		Make/O/D/N=(3,48) tmpCalib
-		// for the "short" T/B banks
-		tmpCalib[0][] = -256
-		tmpCalib[1][] = 4
-		tmpCalib[2][] = 0
-	endif
-	// override if back panel
-	if(cmpstr(detStr,"B") == 0)
-		// and for the back detector "B"
-		Make/O/D/N=3 tmpCalibX,tmpCalibY
-		tmpCalibX[0] = VCALC_getPixSizeX(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
-		tmpCalibX[1] = 1
-		tmpcalibX[2] = 10000
-		tmpCalibY[0] = VCALC_getPixSizeY(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
-		tmpCalibY[1] = 1
-		tmpcalibY[2] = 10000
-	endif
-	
-//	Wave w_calib = V_getDetTube_spatialCalib("VCALC",detStr)
-	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
-	if(cmpstr(detStr,"B") == 0)
-		V_NonLinearCorrection_B("VCALC",data,tmpCalibX,tmpCalibY,detStr,destPath)
-		// beam center is in pixels, so use the old routine
-		V_ConvertBeamCtrPix_to_mmB("VCALC","B",destPath)
-	else
-		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
-	endif
-				
+
 	Wave/Z data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave/Z data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	NVAR gUseNonLinearDet = root:Packages:NIST:VSANS:VCALC:gUseNonLinearDet
@@ -365,6 +331,68 @@ Function VC_Detector_2Q_NonLin(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pix
 	
 	return(0)
 End
+
+
+
+// make the data_realDistX,Y Waves that are needed for the calculation of q
+Function VC_MakeRealDistXYWaves(data,detStr)
+	Wave data
+	String detStr
+	
+	String destPath = "root:Packages:NIST:VSANS:VCALC"
+
+	// calibration waves do not exist yet, so make some fake ones	'
+	// do I count on the orientation as an input, or do I just figure it out on my own?
+	String orientation
+	Variable dimX,dimY
+	dimX = DimSize(data,0)
+	dimY = DimSize(data,1)
+	if(dimX > dimY)
+		orientation = "horizontal"
+	else
+		orientation = "vertical"
+	endif
+	
+	if(cmpstr(orientation,"vertical")==0)
+		Make/O/D/N=(3,48) tmpCalib
+		// for the "tall" L/R banks
+		tmpCalib[0][] = -512
+		tmpCalib[1][] = 8
+		tmpCalib[2][] = 0
+	else
+		Make/O/D/N=(3,48) tmpCalib
+		// for the "short" T/B banks
+		tmpCalib[0][] = -256
+		tmpCalib[1][] = 4
+		tmpCalib[2][] = 0
+	endif
+	// override if back panel
+	if(cmpstr(detStr,"B") == 0)
+		// and for the back detector "B"
+		Make/O/D/N=3 tmpCalibX,tmpCalibY
+		tmpCalibX[0] = VCALC_getPixSizeX(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibX[1] = 1
+		tmpcalibX[2] = 10000
+		tmpCalibY[0] = VCALC_getPixSizeY(detStr)			// pixel size in [cm]  VCALC_getPixSizeX(detStr) is [cm]
+		tmpCalibY[1] = 1
+		tmpcalibY[2] = 10000
+	endif
+
+
+//	Wave w_calib = V_getDetTube_spatialCalib("VCALC",detStr)
+	Variable tube_width = 8.4			// TODO: UNITS!!! Hard-wired value in [mm]
+	if(cmpstr(detStr,"B") == 0)
+		V_NonLinearCorrection_B("VCALC",data,tmpCalibX,tmpCalibY,detStr,destPath)
+		// beam center is in pixels, so use the old routine
+		V_ConvertBeamCtrPix_to_mmB("VCALC","B",destPath)
+	else
+		V_NonLinearCorrection("VCALC",data,tmpCalib,tube_width,detStr,destPath)
+	endif
+	
+	
+	return(0)
+End
+
 
 
 //////////////////////

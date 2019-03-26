@@ -20,7 +20,7 @@
 
 
 
-// returns the panel separation [cm]
+// returns the panel translation [cm]
 Function VCALC_getPanelTranslation(type)
 	String type
 	
@@ -198,7 +198,13 @@ Function VCALC_getTopBottomSDDSetback(type)
 End
 
 
+Function VC_getNumGuides()
 
+	Variable ng
+	ControlInfo/W=VCALC VCALCCtrl_0a
+	ng = V_Value
+	return(ng)
+End
 //////////////////////////////////
 //
 // Actions for the VCALC controls
@@ -736,7 +742,61 @@ Function VC_getSDD(detStr)
 	
 	return(sdd)
 end
+
+
+
+Function V_sampleToGateValve()
+	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
+	ControlInfo/W=VCALC VCALCCtrl_1e
+	return(V_Value)	
+end
+
+
+Function V_sampleApertureToGateValve()
+	// VCALCCtrl_1d is Sample Aperture to Gate Valve (cm)
+	ControlInfo/W=VCALC VCALCCtrl_1d
+	return(V_Value)	
+end
+
+
+
+// 1=front
+// 2=middle
+// 3=back
+// return value is in cm
+// gate valve to detector (= nominal distance) is reported
+// Top/Bottom setback is NOT included
+Function VC_getGateValveToDetDist(detStr)
+	String detStr
 	
+	Variable sdd
+
+	strswitch(detstr)
+		case "B":
+		case "B ":
+			ControlInfo/W=VCALC VCALCCtrl_4b
+			break
+		case "ML":
+		case "MR":
+		case "MT":
+		case "MB":
+			ControlInfo/W=VCALC VCALCCtrl_3d
+			break
+		case "FL":
+		case "FR":
+		case "FT":
+		case "FB":
+			ControlInfo/W=VCALC VCALCCtrl_2d
+			break		
+		default:
+			Print "no case matched in VC_getSDD()"
+	endswitch
+
+	// this is gate valve to detector distance
+	sdd = V_Value
+	
+	return(sdd)
+end	
 
 // TODO
 // -- verify all of the numbers, constants, and "empirical" transmission corrections
@@ -1951,4 +2011,367 @@ Function VC_ResetVCALCMask()
 	return(0)
 end
 
+Function/S V_SetConfigurationText()
+
+	String str="",temp
+
+//	SetDataFolder root:Packages:NIST:SAS
+//	
+//	NVAR numberOfGuides=gNg
+//	NVAR gTable=gTable		//2=chamber, 1=table
+//	NVAR wavelength=gLambda
+//	NVAR lambdaWidth=gDeltaLambda
+////	NVAR instrument = instrument
+//	NVAR L2diff = L2diff
+//   NVAR lens = root:Packages:NIST:SAS:gUsingLenses
+//	SVAR/Z aStr = root:Packages:NIST:gAngstStr
+//	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
+
+	NVAR min_f = root:Packages:NIST:VSANS:VCALC:gQmin_F
+	NVAR max_f = root:Packages:NIST:VSANS:VCALC:gQmax_F
+	NVAR min_m = root:Packages:NIST:VSANS:VCALC:gQmin_M
+	NVAR max_m = root:Packages:NIST:VSANS:VCALC:gQmax_M
+	NVAR min_b = root:Packages:NIST:VSANS:VCALC:gQmin_B
+	NVAR max_b = root:Packages:NIST:VSANS:VCALC:gQmax_B
+	
+	String aStr = "A"
+	
+	sprintf temp,"Source Aperture Diameter =\t\t%6.2f cm\r",VC_sourceApertureDiam()
+	str += temp
+	sprintf temp,"Source to Sample =\t\t\t\t%6.0f cm\r",VC_calcSSD()
+	str += temp
+//	sprintf temp,"Sample Position to Detector =\t%6.0f cm\r",VC_getSDD("ML")
+//	str += temp
+	sprintf temp,"Beam diameter (Mid) =\t\t\t%6.2f cm\r",VC_beamDiameter("maximum","ML")
+	str += temp
+	sprintf temp,"Beamstop diameter =\t\t\t\t%6.2f inches\r",VC_beamstopDiam("ML")/2.54
+	str += temp
+	sprintf temp,"Back: Min -> Max Q-value =\t\t\t%6.4f -> %6.4f 1/%s \r",min_b,max_b,aStr
+	str += temp
+	sprintf temp,"Middle: Min -> Max Q-value =\t\t%6.4f -> %6.4f 1/%s \r",min_m,max_m,aStr
+	str += temp
+	sprintf temp,"Front: Min -> Max Q-value =\t\t%6.4f -> %6.4f 1/%s \r",min_f,max_f,aStr
+	str += temp
+	sprintf temp,"Beam Intensity =\t\t\t\t%.0f counts/s\r",V_beamIntensity()
+	str += temp
+	sprintf temp,"Figure of Merit =\t\t\t\t%3.3g %s^2/s\r",VC_figureOfMerit(),aStr
+	str += temp
+//	sprintf temp,"Attenuator transmission =\t\t%3.3g = Atten # %d\r"//,attenuatorTransmission(),attenuatorNumber()
+//	str += temp
+////	
+//	// add text of the user-edited values
+//	//
+	sprintf temp,"***************** %s *** %s *****************\r","VSANS","VSANS"
+	str += temp
+	sprintf temp,"Sample Aperture Diameter =\t\t\t\t%.2f cm\r",VC_sampleApertureDiam()
+	str += temp
+	sprintf temp,"Number of Guides =\t\t\t\t\t\t%d \r", VC_getNumGuides()
+	str += temp
+	sprintf temp,"Back: Sample Position to Detector =\t\t\t%.1f cm\r", VC_getSDD("B")
+	str += temp
+	sprintf temp,"Middle: Sample Position to Detector =\t\t%.1f cm\r", VC_getSDD("ML")
+	str += temp
+	sprintf temp,"\tOffsets (L,R) (T,B) = (%.2f, %.2f) (%.2f, %.2f) cm\r", VCALC_getPanelTranslation("ML"),VCALC_getPanelTranslation("MR"),VCALC_getPanelTranslation("MT"),VCALC_getPanelTranslation("MB")
+	str += temp
+	sprintf temp,"Front: Sample Position to Detector =\t\t\t%.1f cm\r", VC_getSDD("FL")
+	str += temp
+	sprintf temp,"\tOffsets (L,R) (T,B) = (%.2f, %.2f) (%.2f, %.2f) cm\r", VCALC_getPanelTranslation("FL"),VCALC_getPanelTranslation("FR"),VCALC_getPanelTranslation("FT"),VCALC_getPanelTranslation("FB")
+	str += temp
+//	if(gTable==1)
+//		sprintf temp,"Sample Position is \t\t\t\t\t\tHuber\r"
+//	else
+//		sprintf temp,"Sample Position is \t\t\t\t\t\tChamber\r"
+//	endif 
+//	str += temp
+//	sprintf temp,"Detector Offset =\t\t\t\t\t\t%.1f cm\r", detectorOffset()
+//	str += temp
+	sprintf temp,"Neutron Wavelength =\t\t\t\t\t%.2f %s\r", VCALC_getWavelength(),aStr
+	str += temp
+	sprintf temp,"Wavelength Spread, FWHM =\t\t\t\t%.3f\r", VCALC_getWavelengthSpread()
+	str += temp
+//	sprintf temp,"Sample Aperture to Sample Position =\t%.2f cm\r", L2Diff
+//  	str += temp
+//  	if(lens==1)
+//		sprintf temp,"Lenses are IN\r"
+//	else
+//		sprintf temp,"Lenses are OUT\r"
+//	endif
+//	str += temp 
+   	
+   setDataFolder root:
+   return str			 
+End
+
+//Write String representing NICE VSANS configuration
+Function/S V_SetNICEConfigText()
+	
+	string temp_s
+
+	String titleStr
+	String keyStr,keyStrEnd
+	String valueStr,valueStrEnd
+	String closingStr
+	String nameStr,valStr,str
+
+	keyStr = "        {\r          \"key\": {\r            \"class\": \"java.lang.String\",\r            \"value\": \""
+	keyStrEnd = "\"\r          },\r"
+
+	valueStr = "          \"value\": {\r            \"class\": \"java.lang.String\",\r            \"value\": \""
+	valueStrEnd = "\"\r          }\r        },\r"
+
+	closingStr = "\"\r          }\r        }\r      ]\r    }\r  }\r]\r"
+
+	str = "Dummy filler"
+
+	titleStr = "VCALC Configuration"
+
+	temp_s = ""
+
+	temp_s = "[\r  {\r    \"key\": {\r      \"class\": \"java.lang.String\",\r"
+	temp_s += "      \"value\": \""+titleStr+"\"\r    },\r"
+	temp_s += "    \"value\": {\r      \"class\": \"java.util.HashMap\",\r      \"value\": [\r"
+	
+//front
+	nameStr = "frontTrans.primaryNode"
+	valStr = num2Str(VC_getGateValveToDetDist("FL")) + "cm"		//nominal distance, any panel will do
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "carriage.frontRight"
+	valStr = num2Str(VCALC_getPanelTranslation("FR")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "carriage.frontLeft"
+	valStr = num2Str(VCALC_getPanelTranslation("FL")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd	
+		
+	nameStr = "carriage.frontTop"
+	valStr = num2Str(VCALC_getPanelTranslation("FT")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "carriage.frontBottom"
+	valStr = num2Str(VCALC_getPanelTranslation("FB")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontRightAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","FR")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+		
+	nameStr = "frontRightAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","FR")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontLeftAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","FL")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "frontLeftAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","FL")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontTopAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","FT")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontTopAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","FT")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontBottomAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","FB")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "frontBottomAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","FB")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+
+	
+// middle		
+	nameStr = "middleTrans.primaryNode"
+	valStr = num2Str(VC_getGateValveToDetDist("ML")) + "cm"		//nominal distance, any panel will do
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "carriage.middleRight"
+	valStr = num2Str(VCALC_getPanelTranslation("MR")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "carriage.middleLeft"
+	valStr = num2Str(VCALC_getPanelTranslation("ML")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "carriage.middleTop"
+	valStr = num2Str(VCALC_getPanelTranslation("MT")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "carriage.middleBottom"
+	valStr = num2Str(VCALC_getPanelTranslation("MB")) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "middleRightAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","MR")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "middleRightAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","MR")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "middleLeftAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","ML")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd		
+
+	nameStr = "middleLeftAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","ML")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+		
+	nameStr = "middleTopAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","MT")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "middleTopAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","MT")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "middleBottomAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x("VCALC","MB")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "middleBottomAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y("VCALC","MB")) + "cm"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "C2BeamStop.beamStop"
+	valStr = num2Str(1) 
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "C2BeamStopY.softPosition"
+	valStr = num2Str(0) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "C2BeamStopX.X"
+	valStr = num2Str(0) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+
+// back
+	nameStr = "rearTrans.primaryNode"
+	valStr = num2Str(VC_getGateValveToDetDist("B")) + "cm"		//nominal distance, any panel will do
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "C3DetectorOffset.softPosition"
+	valStr = num2Str(0) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "rearAreaDetector.beamCenterX"
+	valStr = num2Str(V_getDet_beam_center_x_pix("VCALC","B"))
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "rearAreaDetector.beamCenterY"
+	valStr = num2Str(V_getDet_beam_center_y_pix("VCALC","B"))
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "C3BeamStop.beamStop"
+	valStr = num2Str(0)
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "C3BeamStopY.softPosition"
+	valStr = num2Str(0) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "C3BeamStopX.X"
+	valStr = num2Str(0) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+
+
+//geometry, guides, beam...
+
+	nameStr = "guide.guide"
+	valStr = num2Str(VC_getNumGuides())
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "guide.sampleAperture"
+	valStr = num2Str(VC_sampleApertureDiam()) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "guide.sourceAperture"
+	valStr = num2Str(VC_sourceApertureDiam()) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "geometry.externalSampleApertureShape"
+	valStr = "CIRCLE"
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "geometry.externalSampleAperture"
+	valStr = num2Str(VC_sampleApertureDiam()) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "geometry.samplePositionOffset"
+	valStr = num2Str(V_sampleToGateValve()) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "geometry.sampleApertureOffset"
+	valStr = num2Str(V_sampleApertureToGateValve()) + "cm"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "attenuator.attenuator"
+	valStr = num2Str(0)
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+
+	nameStr = "wavelength.wavelength"
+	valStr = num2Str(VCALC_getWavelength()) + "A"		//no space before unit
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + valueStrEnd
+	
+	nameStr = "wavelengthSpread.wavelengthSpread"
+	valStr = num2Str(VCALC_getWavelengthSpread())
+// last one has a different ending sequence	
+	temp_s += keyStr + nameStr + keyStrEnd
+	temp_s += valueStr + valStr + closingStr
+		
+	return temp_s
+end
 
