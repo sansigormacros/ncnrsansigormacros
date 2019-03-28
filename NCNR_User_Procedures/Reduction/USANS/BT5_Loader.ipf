@@ -9,6 +9,19 @@
 // Nearly all of the important information about the data is dragged around
 // with the DetCts wave as a wave note
 //
+
+	// as of Feb 6 2019, USANS is using NICE for data collection rather than ICP
+	// as a consequence, the data file is somewhat different. Specifically, the 
+	// order of the detectors in the comma-delimited list is different, with the
+	// 5 main detectors all listed in order, rather than separated.
+	// --- I can either flag on the date, or set a global to switch
+	// I also do not know if there will be any other changes in the data file format
+	
+	// as of March 2019, data collected from NICE is collected in a single file, in terms of q-values
+	// not A2 angle. An additional consequence is that each data point can be collected for a different
+	// length of time. This is now read in per line and stored in a wave - and is used for the dead time
+	// correction and the normalization to monitor count.
+	
 // - thes wave note is a string of KEY:value items
 //
 //	str = "FILE:"+filen+";"
@@ -101,11 +114,6 @@ Function LoadBT5File(fname,type)
 
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
-	
-//	Print "Overriding Transmission DeadTime, set to 1e-9 s"
-//	TransDeadTime = 1e-9
-//	MainDeadTime = 1e-9
-	
 	
 	//skip line 2
 	FReadLine refnum,buffer
