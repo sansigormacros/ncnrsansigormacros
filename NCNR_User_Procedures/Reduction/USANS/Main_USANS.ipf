@@ -455,6 +455,11 @@ End
 //
 // note that trans detector counts are NOT normalized to 1E6 mon cts (not necessary)
 //
+// 28 Mar 2019
+//  converted CtTime to be a wave, loaded in with the raw data
+// for old-style data, this is a constant value. for new q-value data, each point
+// can be counted for a different time.
+//
 Function Convert2Countrate(type,doNorm)
 	String type
 	Variable doNorm
@@ -462,14 +467,18 @@ Function Convert2Countrate(type,doNorm)
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
 	String noteStr = note($(USANSFolder+":"+Type+":DetCts"))
-	Variable ctTime
-	ctTime = NumberByKey("TIMEPT",noteStr,":",";")
+	
+	Variable ctTimeVal
+//	Variable ctTime
+//	ctTime = NumberByKey("TIMEPT",noteStr,":",";")
+
 //	print ctTime
 	//normalize by counting time
 	Wave detCts = $(USANSFolder+":"+Type+":DetCts")
 	Wave ErrdetCts = $(USANSFolder+":"+Type+":ErrDetCts")
 	Wave MonCts = $(USANSFolder+":"+Type+":MonCts")
 	Wave TransCts = $(USANSFolder+":"+Type+":TransCts")
+	Wave ctTime = $(USANSFolder+":"+Type+":ctTime")
 	
 	detCts /= ctTime
 	ErrDetCts /= ctTime
@@ -485,8 +494,8 @@ Function Convert2Countrate(type,doNorm)
 	endif
 	
 	//adjust the note (now on basis of 1 second)
-	ctTime = 1
-	noteStr = ReplaceNumberByKey("TIMEPT",noteStr,ctTime,":",";")
+	ctTimeVal = 1
+	noteStr = ReplaceNumberByKey("TIMEPT",noteStr,ctTimeVal,":",";")
 	Note/K detCts
 	Note detCts,noteStr
 	

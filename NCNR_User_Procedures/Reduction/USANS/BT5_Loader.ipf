@@ -36,11 +36,13 @@ Function LoadBT5File(fname,type)
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":ErrDetCts")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":MonCts")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":TransCts")
+	Make/O/D/N=(num) $(USANSFolder+":"+type+":CtTime")
 	Wave Angle = $(USANSFolder+":"+type+":Angle")
 	Wave DetCts = $(USANSFolder+":"+type+":DetCts")
 	Wave ErrDetCts = $(USANSFolder+":"+type+":ErrDetCts")
 	Wave MonCts = $(USANSFolder+":"+type+":MonCts")
 	Wave TransCts = $(USANSFolder+":"+type+":TransCts")
+	Wave CtTime = $(USANSFolder+":"+type+":CtTime")
 	
 	Open/R refNum as fname		//if fname is "", a dialog will be presented
 	if(refnum==0)
@@ -84,7 +86,9 @@ Function LoadBT5File(fname,type)
 	// I also do not know if there will be any other changes in the data file format
 	
 	Variable useNewDataFormat
-
+	NVAR 	gRawUSANSisQvalues = root:Packages:NIST:gRawUSANSisQvalues
+	
+	
 // test by date
 	Variable thisFileSecs
 	NVAR switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
@@ -97,6 +101,11 @@ Function LoadBT5File(fname,type)
 
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
+	
+//	Print "Overriding Transmission DeadTime, set to 1e-9 s"
+//	TransDeadTime = 1e-9
+//	MainDeadTime = 1e-9
+	
 	
 	//skip line 2
 	FReadLine refnum,buffer
@@ -118,8 +127,14 @@ Function LoadBT5File(fname,type)
 		if ( (firstChar==10) || (firstChar==13) )
 			break							// Hit blank line. End of data in the file.
 		endif
+		//1st line of pair
 		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
 		angle[numlinesloaded] = v1		//[0] is the ANGLE
+		if(gRawUSANSisQvalues==1)
+			// in this mode, each data point is collected for a different time
+			countTime = v2 * 60		// convert MIN to seconds
+		endif
+		
 		
 		FReadLine refNum,buffer	//assume a 2nd line is there, w/16 values
 		sscanf buffer,"%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g,%g",v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15,v16
@@ -151,13 +166,15 @@ Function LoadBT5File(fname,type)
 			//values 8-16 are always zero
 		endif
 		
+		CtTime[numlinesloaded] = countTime
+		
 		numlinesloaded += 1		//2 lines in file read, one "real" line of data
 	while(1)
 		
 	Close refNum		// Close the file.
 	//Print "numlines = ",numlinesloaded
 	//trim the waves to the correct number of points
-	Redimension/N=(numlinesloaded) Angle,MonCts,DetCts,TransCts,ErrDetCts
+	Redimension/N=(numlinesloaded) Angle,MonCts,DetCts,TransCts,ErrDetCts,CtTime
 	
 	//remove LF from end of filelabel
 	filelabel=fileLabel[0,(strlen(fileLabel)-2)]

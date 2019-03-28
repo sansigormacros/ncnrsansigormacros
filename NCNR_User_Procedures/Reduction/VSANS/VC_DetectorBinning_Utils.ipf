@@ -152,16 +152,16 @@ Function FillPanel_wModelData(det,qTot,type)
 //	Print "Sig_sas = ",sig_sas
 ////////////////////
 	
-	prob_i = trans*thick*pixSizeX*pixSizeY/(sdd)^2*tmpInten			//probability of a neutron in q-bin(i) 
+	MultiThread prob_i = trans*thick*pixSizeX*pixSizeY/(sdd)^2*tmpInten			//probability of a neutron in q-bin(i) 
 		
 	tmpInten = (imon)*prob_i		//tmpInten is not the model calculation anymore!!
 
 
 /// **** can I safely assume a Gaussian error in the count rate??
-	tmpSig = sqrt(tmpInten)		// corrected based on John's memo, from 8/9/99
+	MultiThread tmpSig = sqrt(tmpInten)		// corrected based on John's memo, from 8/9/99
 
-	tmpInten += gnoise(tmpSig)
-	tmpInten = (tmpInten[p][q] < 0) ? 0 : tmpInten[p][q]			// MAR 2013 -- is this the right thing to do
+	MultiThread tmpInten += gnoise(tmpSig)
+	MultiThread tmpInten = (tmpInten[p][q] < 0) ? 0 : tmpInten[p][q]			// MAR 2013 -- is this the right thing to do
 	tmpInten = trunc(tmpInten)
 		
 	
@@ -204,10 +204,10 @@ Function VC_Detector_2Q(data,qTot,qx,qy,qz,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 		
 	// loop over the array and calculate the values - this is done as a wave assignment
 // TODO -- be sure that it's p,q -- or maybe p+1,q+1 as used in WriteQIS.ipf	
-	qTot = VC_CalcQval(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qx = VC_CalcQX(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qy = VC_CalcQY(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
-	qz = VC_CalcQZ(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	MultiThread qTot = VC_CalcQval(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	MultiThread 	qx = VC_CalcQX(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	MultiThread 	qy = VC_CalcQY(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+	MultiThread 	qz = VC_CalcQZ(p,q,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	
 	return(0)
 End
@@ -410,7 +410,7 @@ End
 //returned magnitude of Q is in 1/Angstroms
 //
 //
-Function VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Threadsafe Function VC_CalcQval(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dx,dy,qval,two_theta,dist
@@ -437,7 +437,7 @@ End
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
 // now properly accounts for qz
 //
-Function VC_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Threadsafe Function VC_CalcQX(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 
 	Variable qx,qval,phi,dx,dy,dist,two_theta
@@ -467,7 +467,7 @@ End
 // repaired incorrect qx and qy calculation 3 dec 08 SRK (Lionel and C. Dewhurst)
 // now properly accounts for qz
 //
-Function VC_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Threadsafe Function VC_CalcQY(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dy,qval,dx,phi,qy,dist,two_theta
@@ -496,7 +496,7 @@ End
 //
 // not actually used, but here for completeness if anyone asks
 //
-Function VC_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
+Threadsafe Function VC_CalcQZ(xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY)
 	Variable xaxval,yaxval,xctr,yctr,sdd,lam,pixSizeX,pixSizeY
 	
 	Variable dy,qval,dx,phi,qz,dist,two_theta
