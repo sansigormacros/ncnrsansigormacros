@@ -56,7 +56,7 @@ Proc ShowUSANSPanel()
 	endif
 	
 	//version number
-	Variable/G root:USANS_RED_VERSION=2.3			//distribution as of Jan 2007
+	Variable/G root:USANS_RED_VERSION=2.4			//distribution as of March 2019
 	
 	Init_MainUSANS()
 	DoWindow/F USANS_Panel
