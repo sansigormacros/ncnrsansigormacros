@@ -86,9 +86,12 @@ Function V_PlotData_Panel()
 //		SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
 //		SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpC
 		
-		Button AllQ,pos={320,28},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={320,15},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
-		
+
+		Button Offset,pos={320,38},size={70,20},proc=V_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,help={"Remove the offset"}
+				
 		Legend/C/N=text0/J/X=72.00/Y=60.00
 	endif
 		
@@ -384,11 +387,21 @@ End
 //End
 
 
+//function to remove the trace offset
+Function V_RemoveOffset_ButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ModifyGraph muloffset={0,0}
+	return(0)
+End
+
+
 //function to restore the graph axes to full scale, undoing any zooming
 Function V_AllQ_Plot_1D_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	SetAxis/A
+	return(0)
 End
 
 

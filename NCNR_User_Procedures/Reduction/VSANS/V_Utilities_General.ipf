@@ -1525,6 +1525,19 @@ End
 //
 ////// utilities for the back detector to diagnose saturation issues
 //
+//
+// as of March 2019, the detector data is processed differently, with more 
+// processing done before passing the data to the file. The data is collected
+// in 1x1 mode, then filtered (11x11) and rebinned. This increases the 
+// pixel saturation value to 16399*16 = 262384
+// and the read background to Å 200*16
+//
+//
+//
+// old values were (pre-March 2019) =  saturation value of 16384 and read baackground of 200
+// (before the 1x1 collection)
+//
+
 
 Proc Vm_NumberSaturated(folderStr)
 	String folderStr="RAW"
@@ -1537,9 +1550,9 @@ Function V_NumberSaturated(folderStr)
 	Variable num,saturationValue
 	Duplicate/O $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_B:data") tmpData
 	
-	saturationValue = 16383
+	saturationValue = 16399*16
 	
-	tmpData = (tmpData == saturationValue) ? NaN : tmpData
+	tmpData = (tmpData > saturationValue-1) ? NaN : tmpData
 	WaveStats/Q tmpData
 	num = V_numNaNs
 	
@@ -1552,7 +1565,7 @@ end
 
 // turns the saturated values to lime green
 Function V_ColorizeSaturated()
-	ModifyImage data ctab= {0,16382,ColdWarm,0},minRGB=0,maxRGB=(32792,65535,1)
+	ModifyImage data ctab= {0,16399*16-1,ColdWarm,0},minRGB=0,maxRGB=(32792,65535,1)
 End
 
 

@@ -346,33 +346,63 @@ Function V_FindCentroid() :  GraphMarquee
 		// rather than the data array which is [0,127]
 //		xctr+=1
 //		yctr+=1
+
+// correct for the zero position (y-position) on the L/R panels not being exactly equal
+// the lateral scan data from Dec 2018 is used to correct this. The span of zero points
+// is relatively small (+- 0.5 pixel) but is significant for data using graphite monochromator
+//	
+	// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
+		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
+		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+		if(!WaveExists(tube_num))
+			Execute "V_TubeZeroPointTables()"
+			Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
+			Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+		endif
+		
+		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
+		Variable yPixSize = V_getDet_y_pixel_size(gCurDispType,detStr)
+		yPixSize /= 10		// convert mm to cm
+		// offsets were determined in Dec 2018 using:
+		// FR tube # 7 = 61.70 pix
+		// MR tube # 10 = 61.94 pix
 		
 		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
 		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
 		
 		Print "X-center (cm) = ",x_mm/10
 		Print "Y-center (cm) = ",y_mm/10
-		
+
 		if(cmpstr(detStr,"FR") == 0)
+			Print "Reference Y-Center is corrected for tube #7 zero position"		
+
+			yCorrection = 61.70 - yCorrection
+			Print "yCorrection (pix) = ",yCorrection
+			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			Print "FRONT Reference X-center (cm) = ",x_mm/10
-			Print "FRONT Reference Y-center (cm) = ",y_mm/10
+			Print "FRONT Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
 		endif
 
 		if(cmpstr(detStr,"MR") == 0)
+			Print "Reference Y-Center is corrected for tube #10 zero position"		
+
+			yCorrection = 61.94 - yCorrection
+			Print "yCorrection (pix) = ",yCorrection
+			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			Print "MIDDLE Reference X-center (cm) = ",x_mm/10
-			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10
+			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
 		endif
 		
 // if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value	
 // these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
 		if(cmpstr(detStr,"FL") == 0)
-			Print "FRONT Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - kBCtrOffset_FL_x 	// NEW Dec 2018 values
-			Print "FRONT Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - kBCtrOffset_FL_y
+			Print "FRONT Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_FL_x 	// NEW Dec 2018 values
+			Print "FRONT Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_FL_y
 		endif
 		
 		if(cmpstr(detStr,"ML") == 0)
-			Print "MIDDLE Reference X-center (cm) (Velocity Selector) = ",x_mm/10 - kBCtrOffset_ML_x
-			Print "MIDDLE Reference Y-center (cm) (Velocity Selector) = ",y_mm/10 - kBCtrOffset_ML_y
+			Print "MIDDLE Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_ML_x
+			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_ML_y
 		endif
 	endif
 	

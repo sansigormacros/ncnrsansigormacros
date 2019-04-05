@@ -28,7 +28,7 @@ Menu "VSANS"
 		"Write Annular Data",V_Write1DAnnular()
 		"Trim I(q) points",V_CombineDataGraph()
 		"-"
-		"Derive Beam Centers From Reference",V_DeriveBeamCenters_VelSel()
+		"Derive Beam Centers From Reference",V_DeriveBeamCenters()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
 		"Median Filter Back Det",pV_MedianFilterBack()
@@ -49,6 +49,8 @@ Menu "VSANS"
 		"Patch XY Pixel Size",V_Patch_XYPixelSize()
 		"-"
 		"Patch Back Detector Values",V_Patch_Back_Detector()
+		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()
+		"Patch Beam Stop",V_Patch_BeamStop()
 	End
 	SubMenu "File Tests"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()

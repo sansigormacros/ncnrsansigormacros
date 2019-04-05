@@ -517,16 +517,16 @@ Function V_Raw_to_work(newType)
 			case 1:
 				w -= kReadNoiseLevel_bin1		// a constant value
 				
-				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
-				
-				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+//				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)			
+//				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+				Print "*** 1x1 binning - subtracted ReadNoise - No Filter ***"
 				break
 			case 4:
 				w -= kReadNoiseLevel_bin4		// a constant value
 				
-				MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
-				
-				Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+//				MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)				
+//				Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+				Print "*** 4x4 binning - subtracted ReadNoise - No Filter ***"
 				break
 			default:
 				Abort "No binning case matches in V_Raw_to_Work"

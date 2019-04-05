@@ -10,6 +10,35 @@
 //
 
 
+
+// these are measured values of the yCenter based on the numbered tube found from a lateral
+// scan of the detector panel. Tube ranges are limited due to the limited range of travel of each panel.
+// T/B panels cannot be scanned in this manner.
+//
+// Dec 2018 JGB data
+//
+Proc V_TubeZeroPointTables()
+	SetDataFolder root:Packages:NIST:VSANS:Globals
+	
+	Make/O/D/N=22 tube_MR,yCtr_MR
+	tube_MR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
+	yCtr_MR[0]= {61.49,62.12,61.95,62.29,61.95,62.25,61.94,61.78,61.83,61.75,61.94,61.84,61.79,61.71,62.03,61.98,61.87,61.65,61.7,61.8,61.52,61.63}
+
+	Make/O/D/N=20 tube_ML,yCtr_ML
+	tube_ML[0]= {27,28,29,29.99,30.95,31.89,32.77,33,34,35,36,37,38,39,40,41,42,43,44,45}
+	yCtr_ML[0]= {61.7,61.83,61.9,61.67,61.73,61.5,61.75,61.97,61.77,61.91,61.7,61.95,61.66,62.1,61.21,61.79,61.94,61.82,61.86,61.74}
+	
+	Make/O/D/N=21 tube_FR, yCtr_FR
+	tube_FR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}
+	yCtr_FR[0]= {61.88,61.96,62.15,61.98,62.15,61.94,62.12,61.7,61.82,61.9,61.56,61.7,61.61,62.02,62.07,62.11,62.18,62.35,61.53,61.15,61.86}
+
+	Make/O/D/N=21 tube_FL, yCtr_FL
+	tube_FL[0]= {27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,41.98,42.99,43.98,44.98,45.98,46.98}
+	yCtr_FL[0]= {62.68,62.08,62.73,62.16,62.25,62.53,62,62.42,62.3,62.07,62.26,62.4,62.14,62.34,62.45,62.35,62.15,62.41,62.37,62.24,62.63}
+
+	SetDataFolder root:
+End
+
 //
 // 
 // x- need a way to generate the known, physical dimensions of the slots

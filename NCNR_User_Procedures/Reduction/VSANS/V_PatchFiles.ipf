@@ -446,7 +446,7 @@ Function V_FillListBox3(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 11
+	Variable nRows = 13
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -471,7 +471,7 @@ Function V_FillListBox3(listWave,selWave)
 	listWave[4][1] = "wavelength_spread"
 	listWave[4][2] = num2str(V_getWavelength_spread(fname))	
 
-	listWave[5][1] = "distance (source aperture) (cm)"
+	listWave[5][1] = "distance (source aperture to GV) (cm)"
 	listWave[5][2] = num2str(V_getSourceAp_distance(fname))		
 
 	listWave[6][1] = "source aperture size (mm)"
@@ -480,15 +480,22 @@ Function V_FillListBox3(listWave,selWave)
 	listWave[7][1] = "sample aperture size (internal) (mm)"
 	listWave[7][2] = V_getSampleAp_size(fname)
 
-	listWave[8][1] = "sample aperture diam (external) (cm)"
+	listWave[8][1] = "sample aperture(2) diam (external) (cm)"
 	listWave[8][2] = num2str(V_getSampleAp2_size(fname))	
 
 	listWave[9][1] = "beam stop diameter (Middle) (mm)"
-	listWave[9][2] = num2str(V_getBeamStopC2_size(fname))	
+//	listWave[9][2] = num2str(V_getBeamStopC2_size(fname))	
+	listWave[9][2] = num2str(V_DeduceBeamstopDiameter(fname,"MR"))	
 	
 	listWave[10][1] = "beam stop diameter (Back) (mm)"
-	listWave[10][2] = num2str(V_getBeamStopC3_size(fname))	
+//	listWave[10][2] = num2str(V_getBeamStopC3_size(fname))	
+	listWave[10][2] = num2str(V_DeduceBeamstopDiameter(fname,"B"))	
 
+	listWave[11][1] = "sample aperture(2) to gate valve (cm)"
+	listWave[11][2] = num2str(V_getSampleAp2_distance(fname))	
+
+	listWave[12][1] = "sample to gate valve (cm)"
+	listWave[12][2] = num2str(V_getSampleTableOffset(fname))	
 
 				
 	return(0)
@@ -1276,6 +1283,16 @@ Function V_WriteHeaderForPatch_3(fname)
 	if ((selWave[10][0] & 2^4) != 0)		//"beam stop diameter (Back) (mm)"
 		val = str2num(listWave[10][2])
 		err = V_writeBeamStopC3_size(fname,val)
+	endif		
+
+	if ((selWave[11][0] & 2^4) != 0)		//"sample aperture to gate valve (cm)"
+		val = str2num(listWave[11][2])
+		err = V_writeSampleAp_distance(fname,val)
+	endif	
+
+	if ((selWave[12][0] & 2^4) != 0)		//"sample to gate valve (cm)"
+		val = str2num(listWave[12][2])
+		err = V_writeSampleTableOffset(fname,val)
 	endif		
 	
 	return(0)
@@ -2914,4 +2931,167 @@ Function V_fPatch_XYPixelSize(lo,hi)
 	
 	return(0)
 End
+
+
+Proc V_Patch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
+	Variable lo,hi,numGuides=0,sourceDiam_mm=30
+	
+	V_fPatch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
+End
+
+// simple utility to patch all three at once, since they are all linked and typically
+/// are all incorrectly entered by NICE if the number of guides can't be determined
+//
+// Number of guides
+// source aperture to gate valve distance [cm]
+// source aperture diameter [mm]
+//
+// the source aperture is assumed to be circular and the diameter in mm
+//
+// the value for the A1_to_GV is from tabulated values.  (see VC_calcSSD) 
+// This is the Source aperture to Gate Valve distance
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
+	Variable lo,hi,numGuides,sourceDiam_mm
+
+	
+	Variable ii,jj,A1_to_GV
+	String fname,detStr
+
+	switch(numGuides)
+		case 0:
+				A1_to_GV = 2441
+			break
+		case 1:
+				A1_to_GV = 2157
+			break
+		case 2:
+				A1_to_GV = 1976
+			break
+		case 3:
+				A1_to_GV = 1782
+			break			
+		case 4:
+				A1_to_GV = 1582
+			break			
+		case 5:
+				A1_to_GV = 1381
+			break			
+		case 6:
+				A1_to_GV = 1181
+			break			
+		case 7:
+				A1_to_GV = 980
+			break			
+		case 8:
+				A1_to_GV = 780
+			break			
+		case 9:
+				A1_to_GV = 579
+			break			
+		default:
+			Print "Error - using default A1_to_GV value"
+			A1_to_GV = 2441
+	endswitch
+
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+		// write values
+		V_writeNumberOfGuides(fname,num2str(numGuides))
+
+		V_writeSourceAp_distance(fname,A1_to_GV)
+
+		V_writeSourceAp_shape(fname,"CIRCLE")
+		V_writeSourceAp_size(fname,num2str(sourceDiam_mm))
+
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+//
+// pick the carriage, beamstop number, beamstop shape, and beamstop diameter
+// or height and width
+Proc V_Patch_BeamStop(lo,hi,carriageStr,bs_num,bsShapeStr,bs_diam,bs_width,bs_height)
+	Variable lo,hi
+	String carriageStr="B"
+	Variable bs_num=2
+	String bsShapeStr="CIRCLE"
+	Variable bs_diam=12,bs_width=12,bs_height=300
+	
+	V_fPatch_BeamStop(lo,hi,carriageStr,bs_num,bsShapeStr,bs_diam,bs_width,bs_height)
+End
+
+
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatch_BeamStop(lo,hi,carriageStr,bs_num,bsShapeStr,bs_diam,bs_width,bs_height)
+	Variable lo,hi
+	String carriageStr
+	Variable bs_num
+	String bsShapeStr
+	Variable bs_diam,bs_width,bs_height
+
+	
+	Variable ii,jj,A1_to_GV
+	String fname,detStr
+
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+
+			if(cmpstr("F",carriageStr) == 0)
+				Print "front carriage has no beamstops"
+			endif
+			
+			if(cmpstr("M",carriageStr) == 0)
+				// middle carriage (2)
+				V_writeBeamStopC2num_stop(fname,bs_num)
+				V_writeBeamStopC2_shape(fname,bsShapeStr)
+				if(cmpstr("CIRCLE",bsShapeStr)==0)
+					V_writeBeamStopC2_size(fname,bs_diam)
+				else
+					V_writeBeamStopC2_height(fname,bs_height)
+					V_writeBeamStopC2_width(fname,bs_width)
+				endif
+			endif
+		
+			if(cmpstr("B",carriageStr) == 0)
+				// back carriage (3)
+				V_writeBeamStopC3num_stop(fname,bs_num)
+				V_writeBeamStopC3_shape(fname,bsShapeStr)
+				if(cmpstr("CIRCLE",bsShapeStr)==0)
+					V_writeBeamStopC3_size(fname,bs_diam)
+				else
+					V_writeBeamStopC3_height(fname,bs_height)
+					V_writeBeamStopC3_width(fname,bs_width)				
+				endif
+			endif	
+
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	
+	return(0)
+End
+
+
 

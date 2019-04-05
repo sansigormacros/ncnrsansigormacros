@@ -2542,17 +2542,19 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 					tmpReadNoiseLevel = kReadNoiseLevel_bin1		// a constant value
 					tmpReadNoiseLevel_Err = kReadNoiseLevel_Err_bin1		// a constant value
 					
-					MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)
-					
-					Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+//					MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)				
+//					Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+					Print "*** 1x1 binning, NO FIlTER ***"
 					break
 				case 4:
 					tmpReadNoiseLevel = kReadNoiseLevel_bin4		// a constant value
 					tmpReadNoiseLevel_Err = kReadNoiseLevel_Err_bin4		// a constant value
 									
-					MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
+//					MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)
 					
-					Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+//					Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+					Print "*** 4x4 binning, NO FIlTER ***"
+
 					break
 				default:
 					Abort "No binning case matches in V_AskForAbsoluteParams_Quest"

@@ -872,7 +872,7 @@ End
 // Empirical values are averaged as noted
 //
 
-Proc V_DeriveBeamCenters_VelSel()
+Proc V_DeriveBeamCenters()
 
 	Make/O/T panelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
 	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
@@ -880,7 +880,7 @@ Proc V_DeriveBeamCenters_VelSel()
 	Edit panelWave,newXCtr_cm,newYCtr_cm
 	
 	DoAlert 0, "enter the measured beam center reference for Front and Middle panels"
-	V_fDeriveBeamCenters_VelSel()
+	V_fDeriveBeamCenters()
 	
 End
 
@@ -919,7 +919,7 @@ Constant kBCtrOffset_MT_y = 0.60
 //
 // ** updated these values with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
 //
-Proc V_fDeriveBeamCenters_VelSel(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
+Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	Variable x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference
 	
 	// start with the front

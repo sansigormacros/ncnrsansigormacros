@@ -84,16 +84,15 @@ Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;
 // average of whole panel (tested several data files) = 208 +/- 14
 //
 // 200 appears to be a better value - (empirical, based on teflon/converging pinhole data)
-Constant kReadNoiseLevel_bin4 = 200
-//Constant kReadNoiseLevel_bin4 = 208
-Constant kReadNoiseLevel_Err_bin4 = 14
-
+//Constant kReadNoiseLevel_bin4 = 200
+//Constant kReadNoiseLevel_Err_bin4 = 14
+// after binning/processing changes from March 2019:
+Constant kReadNoiseLevel_bin4 = 3160			// from bkg area of sans30201 (a transmission measurement)
+Constant kReadNoiseLevel_Err_bin4 = 50		//estimated
 
 // TODOHIGHRES: these values are complete fiction
 Constant kReadNoiseLevel_bin1 = 20
 Constant kReadNoiseLevel_Err_bin1 = 1
-
-
 
 // Pixel shifts for the back detector to bring the three CCDs into registry
 // data from pinholes used to match up CCDs
@@ -111,7 +110,6 @@ Constant 	kShift_TopX_bin1 = 28
 Constant		kShift_TopY_bin1 = 420
 Constant		kShift_BottomX_bin1 = 20
 Constant		kShift_BottomY_bin1 = 130
-
 
 
 
@@ -247,6 +245,7 @@ Function V_InitGlobals()
 	//this is critical to initialize now - as it has the y/n flags for the detector correction steps
 	Execute "Initialize_VSANSPreferences()"	
 
+	Execute "V_TubeZeroPointTables()"			// correction to the beam center
 	
 	// set the lookup waves for log/lin display of the detector images
 	V_MakeImageLookupTables(10000,0,1)

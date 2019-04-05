@@ -264,28 +264,23 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	// TODO: do I use dQ for the height of the panel?
 	// TODO : do I use 1/2 of dQ due to the symmetry of my smearing calculation?
 
-// TODO: use only dQy for the portion of the detector that was not masked!
-	
-	ii = trunc(ntube/4)		//random tube number
-	
-	Make/O/D/N=(nYpix) tmpTube,tmpMaskTube
-	tmpTube = qy[ii][p]
-	tmpMaskTube = mask[ii][p]
-	
-	// along the tube, keep the value, or set to NaN if masked
-	tmpTube = tmpMaskTube == 0 ? tmpTube : NaN
-	WaveStats/Q tmpTube
+//	ii = trunc(ntube/4)		//random tube number
+//	
+//	Make/O/D/N=(nYpix) tmpTube,tmpMaskTube
+//	tmpTube = qy[ii][p]
+//	tmpMaskTube = mask[ii][p]
+//	
+//	// along the tube, keep the value, or set to NaN if masked
+//	tmpTube = tmpMaskTube == 0 ? tmpTube : NaN
+//	WaveStats/Q tmpTube
 //	Print V_max
-//	Print V_min
-	
-	delQy = abs(V_max - V_min)
-//print delQy
-	
-	// not quite correct - this uses the whole detector height, but there is some masked out
-//	delQy = abs(qy[0][nYpix-1] - qy[0][0])
+//	Print V_min	
+//	delQy = abs(V_max - V_min)
 
-//	iBin_qxqy *= delQy
-//	eBin_qxqy *= delQy
+// DONE: use only dQy for the portion of the detector that was not masked!
+
+// get delQy from the portion of the detector that is not masked out
+	delQy = V_setDeltaQy_Slit(folderStr,detStr)
 	
 
 /// TODO -- this is not necessary, but just for getting the I(Q) display to look "pretty"
@@ -412,3 +407,33 @@ Window slit_vs_pin_graph() : Graph
 	AppendText "\\s(iBin_qxqy_MR_pin) iBin_qxqy_MR_pin\r\\s(iBin_qxqy_MT) iBin_qxqy_MT\r\\s(iBin_qxqy_MT_pin) iBin_qxqy_MT_pin\r\\s(iBin_qxqy_FR) iBin_qxqy_FR"
 	AppendText "\\s(iBin_qxqy_FR_pin) iBin_qxqy_FR_pin\r\\s(iBin_qxqy_FT) iBin_qxqy_FT\r\\s(iBin_qxqy_FT_pin) iBin_qxqy_FT_pin"
 EndMacro
+
+
+// finds the delta Qy for the slit height from the data that is not masked
+//
+Function V_setDeltaQy_Slit(folderStr,detStr)
+	String folderStr,detStr
+	
+	Variable delQy,min_qy,max_qy
+
+	String folderPath = "root:Packages:NIST:VSANS:"+folderStr
+	String instPath = ":entry:instrument:detector_"	
+
+	WAVE qy = $(folderPath+instPath+detStr+":qy_"+detStr)
+	WAVE mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+
+	Duplicate/O qy tmp_qy
+	// for the minimum
+	tmp_qy = (mask == 0) ? qY : 1e6
+	min_qy = WaveMin(tmp_qy)
+
+	// for the maximum
+	tmp_qy = (mask == 0) ? qY : -1e6
+	max_qy = WaveMax(tmp_qy)
+
+	KillWaves/Z tmp_qy	
+	
+	delQy = max_qy-min_qy
+	
+	return(delQy)
+end
