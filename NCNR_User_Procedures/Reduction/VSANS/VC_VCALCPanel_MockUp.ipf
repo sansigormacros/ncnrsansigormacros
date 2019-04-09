@@ -215,53 +215,53 @@ Proc DrawVCALC_Panel()
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureShape 
 	PopupMenu VCALCCtrl_1c,pos={270,310-50},size={132,20},title="Aperture Diam (cm)",disable=1
 	PopupMenu VCALCCtrl_1c,mode=1,popvalue="1.27",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
-	SetVariable VCALCCtrl_1d,pos={25,280-50},size={200,15},title="Sample Aperture to Gate Valve (cm)"
+	SetVariable VCALCCtrl_1d,pos={25,280-50},size={210,15},title="Sample Aper. to Gate Valve (cm)"//,bodywidth=50
 	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
-	SetVariable VCALCCtrl_1e,pos={25,310-50},size={200,15},title="Sample Pos to Gate Valve (cm)"
+	SetVariable VCALCCtrl_1e,pos={25,310-50},size={210,15},title="Sample Pos to Gate Valve (cm)"
 	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260-50},size={150,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,pos={30,260-50},size={160,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2a,limits={-20,19,0.1},disable=1,value=_NUM:-10
-	SetVariable VCALCCtrl_2aa,pos={30,290-50},size={150,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2aa,pos={30,290-50},size={160,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2aa,limits={-19,20,0.1},disable=1,value=_NUM:10
 	
-	SetVariable VCALCCtrl_2b,pos={30,330-50},size={150,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,pos={30,330-50},size={160,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2b,limits={0,18,0.1},disable=1,value=_NUM:10
-	SetVariable VCALCCtrl_2bb,pos={30,360-50},size={150,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2bb,pos={30,360-50},size={160,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2bb,limits={-18,0,0.1},disable=1,value=_NUM:-10
 	
-	SetVariable VCALCCtrl_2d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_FDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_2d,pos={205,260-50},size={235,15},title="Gate Valve to Detector Dist (cm)",proc=VC_FDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_2d,limits={70,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260-50},size={150,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,pos={30,260-50},size={160,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-7
-	SetVariable VCALCCtrl_3aa,pos={30,290-50},size={150,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3aa,pos={30,290-50},size={160,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:7
 		
-	SetVariable VCALCCtrl_3b,pos={30,330-50},size={150,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,pos={30,330-50},size={160,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:14
-	SetVariable VCALCCtrl_3bb,pos={30,360-50},size={150,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3bb,pos={30,360-50},size={160,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-14
 
-	SetVariable VCALCCtrl_3d,pos={205,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_MDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_3d,pos={205,260-50},size={235,15},title="Gate Valve to Detector Dist (cm)",proc=VC_MDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_3d,limits={250,2000,1},disable=1,value=_NUM:1000
 
 	
 // tab(4) - Back detector panel
-	SetVariable VCALCCtrl_4a,pos={188,290-50},size={150,15},title="Lateral Offset (cm)"
+	SetVariable VCALCCtrl_4a,pos={168,290-50},size={160,15},title="Lateral Offset (cm)"
 	SetVariable VCALCCtrl_4a,limits={0,20,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_4b,pos={188,260-50},size={230,15},title="Gate Valve to Detector Distance (cm)",proc=VC_BDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_4b,pos={168,260-50},size={250,15},title="Gate Valve to Detector Dist (cm)",proc=VC_BDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2200
 //	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
- 	SetVariable VCALCCtrl_5a,pos={40,290-50},size={200,15},title="Neutrons on Sample (imon)"
+ 	SetVariable VCALCCtrl_5a,pos={40,290-50},size={220,15},title="Neutrons on Sample (imon)"
 	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
-	PopupMenu VCALCCtrl_5b,pos={40,260-50},size={180,20},title="Model Function",disable=1
+	PopupMenu VCALCCtrl_5b,pos={40,260-50},size={200,20},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
 End

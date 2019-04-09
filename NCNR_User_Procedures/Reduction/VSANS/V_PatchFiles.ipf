@@ -2860,7 +2860,7 @@ Function V_fPatch_BackDetector(lo,hi)
 			V_writeDet_beam_center_y(fname,detStr,25)
 		
 		// fake data
-			V_writeDetectorData(fname,detStr,tmpData)
+//			V_writeDetectorData(fname,detStr,tmpData)
 			
 			
 		else
@@ -2933,10 +2933,12 @@ Function V_fPatch_XYPixelSize(lo,hi)
 End
 
 
-Proc V_Patch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
-	Variable lo,hi,numGuides=0,sourceDiam_mm=30
+Proc V_Patch_Guide_SSD_Aperture(lo,hi,numGuideStr,sourceDiam_mm)
+	Variable lo,hi
+	String numGuideStr="CONV_BEAMS"
+	Variable sourceDiam_mm=30
 	
-	V_fPatch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
+	V_fPatch_Guide_SSD_Aperture(lo,hi,numGuideStr,sourceDiam_mm)
 End
 
 // simple utility to patch all three at once, since they are all linked and typically
@@ -2955,42 +2957,46 @@ End
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
-Function V_fPatch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
-	Variable lo,hi,numGuides,sourceDiam_mm
+Function V_fPatch_Guide_SSD_Aperture(lo,hi,numGuideStr,sourceDiam_mm)
+	Variable lo,hi
+	String numGuideStr
+	Variable sourceDiam_mm
 
 	
 	Variable ii,jj,A1_to_GV
 	String fname,detStr
 
-	switch(numGuides)
-		case 0:
+	strswitch(numGuideStr)
+		case "CONV_BEAMS":
+		case "NARROW_SLITS":
+		case "0":
 				A1_to_GV = 2441
 			break
-		case 1:
+		case "1":
 				A1_to_GV = 2157
 			break
-		case 2:
+		case "2":
 				A1_to_GV = 1976
 			break
-		case 3:
+		case "3":
 				A1_to_GV = 1782
 			break			
-		case 4:
+		case "4":
 				A1_to_GV = 1582
 			break			
-		case 5:
+		case "5":
 				A1_to_GV = 1381
 			break			
-		case 6:
+		case "6":
 				A1_to_GV = 1181
 			break			
-		case 7:
+		case "7":
 				A1_to_GV = 980
 			break			
-		case 8:
+		case "8":
 				A1_to_GV = 780
 			break			
-		case 9:
+		case "9":
 				A1_to_GV = 579
 			break			
 		default:
@@ -3005,7 +3011,7 @@ Function V_fPatch_Guide_SSD_Aperture(lo,hi,numGuides,sourceDiam_mm)
 		if(strlen(fname) != 0)
 		
 		// write values
-		V_writeNumberOfGuides(fname,num2str(numGuides))
+		V_writeNumberOfGuides(fname,numGuideStr)
 
 		V_writeSourceAp_distance(fname,A1_to_GV)
 
