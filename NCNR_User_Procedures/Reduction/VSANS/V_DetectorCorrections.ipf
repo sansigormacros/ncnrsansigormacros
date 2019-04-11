@@ -1518,7 +1518,7 @@ End
 
 Proc pV_SubtractReadNoiseBack(folder,ReadNoise)
 	String folder="RAW"
-	Variable readNoise=200
+	Variable readNoise=3160
 	
 	V_SubtractReadNoiseBack(folder,readNoise)
 end
@@ -1539,7 +1539,7 @@ End
 
 Proc pV_MedianAndReadNoiseBack(folder,ReadNoise)
 	String folder="RAW"
-	Variable readNoise=200
+	Variable readNoise=3160
 	
 	V_MedianAndReadNoiseBack(folder,readNoise)
 end

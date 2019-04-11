@@ -310,13 +310,16 @@ End
 Function V_CatTableHook(infoStr)
 	String infoStr
 	String event= StringByKey("EVENT",infoStr)
+	
+	Variable ii
+	
 //	Print "EVENT= ",event
 	strswitch(event)
 		case "mouseup":
 //			Variable xpix= NumberByKey("MOUSEX",infoStr)
 //			Variable ypix= NumberByKey("MOUSEY",infoStr)
 //			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
-			PopupContextualMenu "Load RAW;Load MSK;Load DIV;"
+			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"
 			
 			WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
 			Variable err
@@ -339,7 +342,7 @@ Function V_CatTableHook(infoStr)
 						gLast = hdfDF
 						
 					endif
-					break;
+					break
 					
 				case "Load MSK":
 					GetSelection table,CatVSANSTable,1
@@ -347,7 +350,7 @@ Function V_CatTableHook(infoStr)
 					Print "Loading " + FileNames[V_StartRow]
 					err = V_LoadHDF5Data(FileNames[V_StartRow],"MSK")
 					
-					break;
+					break
 					
 				case "Load DIV":
 					GetSelection table,CatVSANSTable,1
@@ -355,7 +358,20 @@ Function V_CatTableHook(infoStr)
 					Print "Loading " + FileNames[V_StartRow]
 					err = V_LoadHDF5Data(FileNames[V_StartRow],"DIV")
 
-					break;
+					break
+				case "Send to MRED":
+					//
+					SVAR/Z numList=root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
+					if(SVAR_Exists(numList))
+						GetSelection table,CatVSANSTable,1
+						for(ii=V_StartRow;ii<=V_endRow;ii+=1)
+	//						Print "selected " + FileNames[ii]
+							numList += fileNames[ii] + ","
+						endfor
+						// pop the menu on the mred panel
+						V_MREDPopMenuProc("",1,"")
+					endif
+					break
 					
 			endswitch		//popup selection
 	endswitch	// event

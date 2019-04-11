@@ -24,9 +24,9 @@ Menu "VSANS"
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 		"-"
 		"Show Mask for Averaging",V_Display_Four_Panels()
-		"Annular Binning",Annular_Binning()
-		"Write Annular Data",V_Write1DAnnular()
-		"Trim I(q) points",V_CombineDataGraph()
+//		"Annular Binning",Annular_Binning()
+//		"Write Annular Data",V_Write1DAnnular()
+//		"Trim I(q) points",V_CombineDataGraph()
 		"-"
 		"Derive Beam Centers From Reference",V_DeriveBeamCenters()
 		"-"
@@ -40,11 +40,11 @@ Menu "VSANS"
 		"Patch Purpose using CatTable",V_Patch_Purpose_catTable()
 		"Patch Intent using CatTable",V_Patch_Intent_catTable()
 		"-"
-		"Flip Lateral Offset",V_PatchDet_Offset()
-		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
-		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
-		"Patch Detector Panel Gap",V_PatchDet_Gap()
-		"Read Detetcor Panel Gap",V_ReadDet_Gap()
+//		"Flip Lateral Offset",V_PatchDet_Offset()
+//		"Mark Lateral Flip Done",V_MarkLeftRightFlip_Done()
+//		"Mark Lateral Flip NOT Done",V_MarkLeftRightFlip_Not_Done()
+//		"Patch Detector Panel Gap",V_PatchDet_Gap()
+//		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
 		"Patch XY Pixel Size",V_Patch_XYPixelSize()
 		"-"

@@ -21,7 +21,7 @@
 //
 //************************
 
-Constant kVSANSVersion = 7.91
+Constant kVSANSVersion = 7.92
 
 // TODO -- need to set up a separate file of "constants" or "globals" where the actual numbers are
 //stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
@@ -461,7 +461,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	V_CleanupData_w_Progress(0,1)
 	Printf "Hook cleaned out RawVSANS, experiment saved\r"
 
-	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+	NVAR/Z gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 	if(gHighResBinning == 1)
 // these KillDF are a bad idea - it wipes out all of the current work
 // whenever a save is done - which is the opposite of what you want
