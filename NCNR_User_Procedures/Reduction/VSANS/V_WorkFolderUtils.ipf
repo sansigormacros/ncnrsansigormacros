@@ -246,6 +246,8 @@ Function V_DuplicateDataFolder(dfr, fromStr, toStr, level, sNBName,recurse)
 			 dfName = GetDataFolder(1, dfr)
 			 
 			toDF = ReplaceString(fromStr,dfName,toStr,1)		// case-sensitive replace
+			
+			name = CleanupName(name,0)			// added April 2019 SRK to handle names of temperature controllers with spaces
 			sprintf sString, "NewDataFolder/O %s\r",toDF+name
 			NewDataFolder/O $(toDF+name)
 			
