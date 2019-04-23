@@ -23,6 +23,8 @@ Menu "VSANS"
 		"Patch Detector Deadtime",V_PatchDetectorDeadtimePanel()
 		"Patch Detector Calibration",V_PatchDetectorCalibrationPanel()
 		"-"
+		"Display Temperature Sensors",V_InitSensorGrapn()
+		"-"
 		"Show Mask for Averaging",V_Display_Four_Panels()
 //		"Annular Binning",Annular_Binning()
 //		"Write Annular Data",V_Write1DAnnular()

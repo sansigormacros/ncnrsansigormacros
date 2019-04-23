@@ -179,10 +179,12 @@ Window VSANS_DataPanel() : Panel
 	Button button_SpreadPanels,pos={880,114},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
 	Button button_RestorePanels,pos={880,146},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
+	Button button_sensor,pos={607,146+33},size={70,20},proc=V_SensorButtonProc,title="Sensors"
 
-	TitleBox title_file,pos={606,178},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
-	TitleBox title_dataPresent,pos={606,210},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
-	TitleBox title_status,pos={606,240},size={200,200},fsize=12,variable= root:Packages:NIST:VSANS:Globals:gStatusText
+
+	TitleBox title_file,pos={606,178+30},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+	TitleBox title_dataPresent,pos={606,210+30},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
+	TitleBox title_status,pos={606,240+30},size={200,200},fsize=12,variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
 //	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
@@ -691,6 +693,7 @@ Function V_DataTabProc(tca) : TabControl
 	return 0
 End
 
+
 // fake restore panels button click
 Function V_FakeRestorePanelsButtonClick()
 
@@ -797,6 +800,25 @@ Function V_Tab_p_ButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+//
+// opens up the graph of the sensors available
+//
+Function V_SensorButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_InitSensorGraph()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 
 // See V_Detector_Isolate.ipf
