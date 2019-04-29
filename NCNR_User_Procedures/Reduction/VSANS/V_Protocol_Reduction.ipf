@@ -2644,7 +2644,7 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 //		print strToExecute
 		Execute strToExecute
 
-		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+		Printf "Kappa was successfully calculated as = %g +/- %g (%g %%)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	
 		// restore preferences on exit
 		gDoDIVCor = savDivPref

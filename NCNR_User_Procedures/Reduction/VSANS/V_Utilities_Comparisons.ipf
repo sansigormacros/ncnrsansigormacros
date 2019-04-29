@@ -43,21 +43,25 @@ Function V_RawFilesMatchConfig(fname1,fname2)
 // collimation conditions	
 // wavelength	
 	if(!V_FP_Value_Match(V_getWavelength,fname1,fname2))
+		Print "Wavelength does not match"
 		return(0)	//no match
 	endif
 	
 // wavelength spread
 	if(!V_FP_Value_Match(V_getWavelength_spread,fname1,fname2))
+		Print "Wavelength spread does not match"
 		return(0)	//no match
 	endif
 
 // monochromator type	
 	if(!V_String_Value_Match(V_getMonochromatorType,fname1,fname2))
+		Print "Monochromator type does not match"
 		return(0)
 	endif
 	
 // number of guides	(or narrow_slit, etc.)
 	if(!V_String_Value_Match(V_getNumberOfGuides,fname1,fname2))
+		Print "Number of guides does not match"
 		return(0)
 	endif
 	
@@ -68,14 +72,17 @@ Function V_RawFilesMatchConfig(fname1,fname2)
 // detector distance and offset
 // I DON'T need to check all of the distances, just three will do
 	if(!V_FP2_Value_Match(V_getDet_NominalDistance,fname1,fname2,"FL"))
+		Print "Front carriage distance does not match"
 		return(0)	//no match
 	endif
 
 	if(!V_FP2_Value_Match(V_getDet_NominalDistance,fname1,fname2,"ML"))
+		Print "Middle carriage distance does not match"
 		return(0)	//no match
 	endif
 	
 	if(!V_FP2_Value_Match(V_getDet_NominalDistance,fname1,fname2,"B"))
+		Print "Back carriage distance does not match"
 		return(0)	//no match
 	endif
 	
@@ -89,9 +96,11 @@ Function V_RawFilesMatchConfig(fname1,fname2)
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		if(!V_FP2_Value_Match(V_getDet_LateralOffset,fname1,fname2,detStr))
+			Print "Lateral offset does not match for "+detStr
 			return(0)	//no match
 		endif
 		if(!V_FP2_Value_Match(V_getDet_VerticalOffset,fname1,fname2,detStr))
+			Print "Vertical offset does not match for "+detStr
 			return(0)	//no match
 		endif
 	endfor
@@ -101,10 +110,12 @@ Function V_RawFilesMatchConfig(fname1,fname2)
 // but if shape=rectangle, look at height and width
 // source aperture shape, size
 	if(!V_String_Value_Match(V_getSourceAp_shape,fname1,fname2))
+		Print "Source aperture shape does not match"
 		return(0)
 	endif
 // sample aperture shape, size
 	if(!V_String_Value_Match(V_getSampleAp2_shape,fname1,fname2))
+		Print "Sample aperture shape does not match"
 		return(0)
 	endif
 

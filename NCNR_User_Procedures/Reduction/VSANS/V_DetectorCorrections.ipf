@@ -463,47 +463,85 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 
 		if(kBCTR_CM)
 			if(cmpstr("L",detStr[1]) == 0)
-				edge = data_realDistX[47][0]		//tube 47
-				delta = abs(xCtr*10 - edge)
-				x_pix[0] = dimX-1 + delta/tube_width
+				Make/O/D/N=(dimX) tmpTube
+				tmpTube = data_RealDistX[p][0]
+				FindLevel/P/Q tmpTube xCtr*10
+				if(V_Flag)
+					edge = data_realDistX[47][0]		//tube 47
+					delta = abs(xCtr*10 - edge)
+					x_pix[0] = dimX-1 + delta/tube_width
+				else
+					// beam center is on the panel, report the pixel value
+					x_pix[0] = V_LevelX
+				endif
+				
 			else
 			// R panel
-				edge = data_realDistX[0][0]
-				delta = abs(xCtr*10 - edge + gap)
-				x_pix[0] = -delta/tube_width		//since the left edge of the R panel is pixel 0
+				Make/O/D/N=(dimX) tmpTube
+				tmpTube = data_RealDistX[p][0]
+				FindLevel/P/Q tmpTube xCtr*10
+				if(V_Flag)
+					//level not found
+					edge = data_realDistX[0][0]
+					delta = abs(xCtr*10 - edge + gap)		// how far past the edge of the panel
+					x_pix[0] = -delta/tube_width		//since the left edge of the R panel is pixel 0
+				else
+					// beam center is on the panel, report the pixel value
+					x_pix[0] = V_LevelX
+				endif
+				
 			endif
+
 		endif
 
+// the y-center will be on the panel in this direction
 		Make/O/D/N=(dimY) tmpTube
 		tmpTube = data_RealDistY[0][p]
-		FindLevel /P/Q tmpTube, yCtr
+		FindLevel /P/Q tmpTube, yCtr*10
 		
 		y_pix[0] = V_levelX
 		KillWaves/Z tmpTube
+//		Print x_pix[0],y_pix[0]
+		
 	else
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
 
 		if(kBCTR_CM)
 			if(cmpstr("T",detStr[1]) == 0)
-				edge = data_realDistY[0][0]		//tube 0
-				delta = abs(yCtr*10 - edge + gap)
-				y_pix[0] =  -delta/tube_width		//since the bottom edge of the T panel is pixel 0
+				Make/O/D/N=(dimY) tmpTube
+				tmpTube = data_RealDistY[p][0]
+				FindLevel/P/Q tmpTube yCtr*10
+				if(V_Flag)
+					edge = data_realDistY[0][0]		//tube 0
+					delta = abs(yCtr*10 - edge + gap)
+					y_pix[0] =  -delta/tube_width		//since the bottom edge of the T panel is pixel 0				
+				else
+					y_pix[0] = V_LevelX
+				endif				
+				
 			else
 			// FM(B) panel
-				edge = data_realDistY[0][47]		//y tube 47
-				delta = abs(yCtr*10 - edge)
-				y_pix[0] = dimY-1 + delta/tube_width		//since the top edge of the B panels is pixel 47		
+				Make/O/D/N=(dimY) tmpTube
+				tmpTube = data_RealDistY[p][0]
+				FindLevel/P/Q tmpTube yCtr*10
+				if(V_Flag)
+					edge = data_realDistY[0][47]		//y tube 47
+					delta = abs(yCtr*10 - edge)
+					y_pix[0] = dimY-1 + delta/tube_width		//since the top edge of the B panels is pixel 47		
+				else
+					y_pix[0] = V_LevelX
+				endif
+
 			endif
 		endif
 
-		
+// the x-center will be on the panel in this direction		
 		Make/O/D/N=(dimX) tmpTube
 		tmpTube = data_RealDistX[p][0]
-		FindLevel /P/Q tmpTube, xCtr
+		FindLevel /P/Q tmpTube, xCtr*10
 		
 		x_pix[0] = V_levelX
 		KillWaves/Z tmpTube
-		
 		
 	endif
 		

@@ -122,7 +122,8 @@ Function InitGlobals()
 		String/G root:Packages:NIST:gAngstStr = num2char(-59)
 		Variable/G root:myGlobals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
-		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
+//		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 	
 	//global to set log scale as the default for display of RAW data
