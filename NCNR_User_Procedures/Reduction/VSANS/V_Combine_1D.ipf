@@ -71,7 +71,7 @@ Proc V_CombineDataGraph()
 		Button AllQ,pos={100,36},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
-		Button button1,pos={225,36},size={100,20},proc=V_TrimWaves2StringButton,title="Wave 2 Str"
+		Button button1,pos={225,36},size={140,20},proc=V_TrimWaves2StringButton,title="Save Trim Points"
 		Button button1,help={"Convert the waves to global strings"}
 		
 //		Button button4,pos={388,36},size={90.00,20.00},title="Trim & Save"

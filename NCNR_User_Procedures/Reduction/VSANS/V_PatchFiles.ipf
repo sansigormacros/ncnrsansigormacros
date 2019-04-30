@@ -2941,6 +2941,8 @@ Proc V_Patch_Guide_SSD_Aperture(lo,hi,numGuideStr,sourceDiam_mm)
 	V_fPatch_Guide_SSD_Aperture(lo,hi,numGuideStr,sourceDiam_mm)
 End
 
+
+
 // simple utility to patch all three at once, since they are all linked and typically
 /// are all incorrectly entered by NICE if the number of guides can't be determined
 //
@@ -3099,5 +3101,53 @@ Function V_fPatch_BeamStop(lo,hi,carriageStr,bs_num,bsShapeStr,bs_diam,bs_width,
 	return(0)
 End
 
+
+Proc V_Patch_SampleAperture2(lo,hi,ShapeStr,diam,width,height)
+	Variable lo,hi
+	String shapeStr="CIRCLE"
+	Variable diam,width,height
+	
+	V_fPatch_SampleAperture2(lo,hi,ShapeStr,diam,width,height)
+End
+
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+// Patches sample aperture (2), the external aperture
+//
+// dimensions are expected to be in [cm]
+//
+Function V_fPatch_SampleAperture2(lo,hi,ShapeStr,diam,width,height)
+	Variable lo,hi
+	String ShapeStr
+	Variable diam,width,height
+
+	Variable jj
+	String fname,detStr
+
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			V_writeSampleAp2_shape(fname,ShapeStr)
+			if(cmpstr("CIRCLE",ShapeStr)==0)
+				V_writeSampleAp2_size(fname,diam)
+			else
+				//RECTANGLE
+				V_writeSampleAp2_height(fname,height)
+				V_writeSampleAp2_width(fname,width)				
+			endif
+
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	
+	return(0)
+End
 
 

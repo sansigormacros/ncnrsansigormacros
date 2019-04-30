@@ -53,6 +53,7 @@ Menu "VSANS"
 		"Patch Back Detector Values",V_Patch_Back_Detector()
 		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()
 		"Patch Beam Stop",V_Patch_BeamStop()
+		"Patch Sample Aperture",V_Patch_SampleAperture2()
 	End
 	SubMenu "File Tests"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()

@@ -732,8 +732,8 @@ function V_BuildCatSortPanel()
 	Button SortIDButton,			pos={25,158},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Group ID"
 	Button SortLambdaButton,			pos={25,188},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Lambda"
 	Button SortCountTimButton,		pos={25,218},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Time"
-	Button SortTotalCountsButton,		pos={25,248},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Total Counts"
-	Button SortCountRateButton,		pos={25,278},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Rate"
+	Button SortSDDFButton,		pos={25,248},	size={140,24},proc=V_CatVSANSTable_SortProc,title="SDD F"
+	Button SortCountRateFButton,		pos={25,278},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Rate F"
 	Button SortMonitorCountsButton,	pos={25,308},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Monitor Counts"
 	Button SortTransmissionButton,	pos={25,338},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Transmission"
 
@@ -853,17 +853,17 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 
 			break
 			
-		case "SortTotalCountsButton":
+		case "SortSDDFButton":
 //			Sort GTotCnts, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
 //			Sort GTotCnts,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
-			sortKey = "TotCnts"
+			sortKey = "SDD_F"
 
 			break
 			
-		case "SortCountRateButton":
+		case "SortCountRateFButton":
 //			Sort GCntRate, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR 
 //			Sort GCntRate,  GPurpose, GFilenames, GLabels, GDateTime,  GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness,   GNumAttens,   GRot, GTemp, GField, GMCR, GIntent, G_ID
-			sortKey = "CntRate"
+			sortKey = "CntRate_F"
 
 			break
 			
@@ -889,7 +889,9 @@ function V_CatVSANSTable_SortFunction(ctrlName) // added by [davidm]
 	endswitch
 	
 	//do the sort
-	sprintf cmd, "Sort %s, %s", sortKey,list
+//	sprintf cmd, "Sort %s, %s", sortKey,list
+// use braces and second key to keep anything with the same first "key" value in numerical run number order
+	sprintf cmd, "Sort {%s,Filenames} %s", sortKey,list
 //	Print cmd			// For debugging
 	
 	Execute cmd

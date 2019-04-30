@@ -38,6 +38,11 @@ End
 //
 // 0 = keep the point
 // 1 = yes, mask the point
+//
+//
+// phiCtr is in the range (-90,90) degrees
+// delta is in the range (0,90) for a total width of 2*delta = 180 degrees
+//
 Function V_MarkSectorOverlayPixels(phi,overlay,phiCtr,delta,side)
 	Wave phi,overlay
 	Variable phiCtr,delta
@@ -52,73 +57,61 @@ Function V_MarkSectorOverlayPixels(phi,overlay,phiCtr,delta,side)
 	Variable xDim=DimSize(phi, 0)
 	Variable yDim=DimSize(phi, 1)
 
-	Variable ii,jj,exclude,mirror_phiCtr,crossZero
+	Variable ii,jj,exclude,mirror_phiCtr,crossZero,keepPix
 	
-// does the +- delta cross 0?
-	crossZero = 0
-	if((phiCtr - delta) < 0)
-		crossZero = 1
-	endif
-	if((phiCtr + delta) > 2*pi)
-		crossZero = 1
-	endif
-// if "both", what is the mirror_phiCtr?
-	if(cmpstr(side,"both")==0)
-		if(phiCtr < pi)
-			mirror_phiCtr = phiCtr + pi
-		else
-			mirror_phiCtr = phiCtr - pi
-		endif
-	endif
-
 // initialize the mask to == 1 == exclude everything
 	overlay = 1
 
-
 // now give every opportunity to keep pixel in
+// comparisons use a modified phiCtr to match the definition of the phi field (0= +x-axis)
+//
 	for(ii=0;ii<xDim;ii+=1)
 		for(jj=0;jj<yDim;jj+=1)
 			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
 			phiVal = phi[ii][jj]
-			exclude = 1
-		
-			// sector as defined
-			if(V_CloseEnough(phiVal,phiCtr,delta))
-				exclude = 0
-			endif
-			//if sector crosses zero, pick up the rest of the sector
-			if(crossZero)
-				if(V_CloseEnough(phiVal-2*pi,phiCtr,delta))
-					exclude = 0
+			keepPix = 0		//start with not keeping
+
+			// if within the right or left, flag to keep the pixel
+			if(cmpstr(side,"right")==0)
+				//right, when 0->pi/2
+				if(V_CloseEnough(phiVal,phiCtr,delta))
+					keepPix = 1
 				endif
-				if(V_CloseEnough(phiVal+2*pi,phiCtr,delta))
-					exclude = 0
+				// condition here to get the 3pi/2 -> 2pi region
+				if(V_CloseEnough(phiVal,phiCtr+2*pi,delta))
+					keepPix = 1
 				endif
 			endif
 			
-			//	mirror phi if needed
-			if(cmpstr(side,"both")==0)
-				if(V_CloseEnough(phiVal,mirror_phiCtr,delta))
-					exclude = 0
+			if(cmpstr(side,"left")==0)
+				if(V_CloseEnough(phiVal,phiCtr+pi,delta))
+					keepPix = 1
 				endif
+			endif
+						
+		//	both sides, duplicates the conditions above
+			if(cmpstr(side,"both")==0)	
+				//right, when 0->pi/2
+				if(V_CloseEnough(phiVal,phiCtr,delta))
+					keepPix = 1
+				endif
+				// right, when 3pi/2 -> 2pi
+				if(V_CloseEnough(phiVal,phiCtr+2*pi,delta))
+					keepPix = 1
+				endif				
+				
+				//left
+				if(V_CloseEnough(phiVal,phiCtr+pi,delta))
+					keepPix = 1
+				endif
+				
 			endif
 				
-			// if only right or left, exclude everything as needed
-			if(cmpstr(side,"right")==0)
-				//if phi is actually on the left
-				if(phiCtr > pi/2 && phiCtr < 3*pi/2)
-					exclude = 1
-				endif
-			endif
-			if(cmpstr(side,"left")==0)
-				//if phi is actually on the right
-				if( (phiCtr > 0 && phiCtr < pi/2) || (phiCtr > 3*pi/2 && phiCtr < 2*pi) )
-					exclude = 1
-				endif
+			// set the mask value (entire overlay initialized to 1 to start)
+			if(keepPix > 0)
+				overlay[ii][jj] = 0
 			endif
 			
-			// set the mask value
-			overlay[ii][jj] = exclude
 		endfor
 	endfor
 
@@ -656,33 +649,47 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 					mask_val = mask[ii][jj]
 				endif
 				
-				phiVal = phi[ii][jj]			
-				isIn = V_CloseEnough(phiVal,phi_rad,dphi_rad)		//  0 | 1 test within the sector?
-
-				//check if pixel lies within allowed sector(s)
-				if(cmpstr(side,"both")==0)		//both sectors
-					// don't change anything (use any pixels in the sector range)
-				else
-					if(cmpstr(side,"left")==0)		// want "left" side of detector sector only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, do nothing
-						else
-							isIn = 0			//ignore the pixel
-						endif
-					else
-						// want the right side only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, ignore the pixel
-							isIn = 0
-						else
-							//it's in the right, do nothing
-						endif
-						//
-					Endif
-				Endif		//allowable "side"
+				phiVal = phi[ii][jj]
+				isIn = 0			// start with exclude, now see if it's a keeper
+						
+				// if within the right or left, flag to keep the pixel
+				if(cmpstr(side,"right")==0)
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// condition here to get the 3pi/2 -> 2pi region
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
 				
+				if(cmpstr(side,"left")==0)
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
+							
+			//	both sides, duplicates the conditions above
+				if(cmpstr(side,"both")==0)	
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// right, when 3pi/2 -> 2pi
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif				
+					
+					//left
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+					
+				endif		//end the check of phiVal within sector and side
 				
-				if (numType(val)==0 && mask_val == 0 && isIn)		//count only the good points, in the sector, and ignore Nan or Inf
+		
+				if (numType(val)==0 && mask_val == 0 && isIn > 0)		//count only the good points, in the sector, and ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
@@ -714,32 +721,46 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 				endif
 				
 				phiVal = phi2[ii][jj]			
-				isIn = V_CloseEnough(phiVal,phi_rad,dphi_rad)		//  0 | 1 test within the sector?
-
-				//check if pixel lies within allowed sector(s)
-				if(cmpstr(side,"both")==0)		//both sectors
-					// don't change anything (use any pixels in the sector range)
-				else
-					if(cmpstr(side,"left")==0)		// want "left" side of detector sector only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, do nothing
-						else
-							isIn = 0			//ignore the pixel
-						endif
-					else
-						// want the right side only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, ignore the pixel
-							isIn = 0
-						else
-							//it's in the right, do nothing
-						endif
-						//
-					Endif
-				Endif		//allowable "side"
+				isIn = 0			// start with exclude, now see if it's a keeper
+						
+				// if within the right or left, flag to keep the pixel
+				if(cmpstr(side,"right")==0)
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// condition here to get the 3pi/2 -> 2pi region
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
+				
+				if(cmpstr(side,"left")==0)
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
+							
+			//	both sides, duplicates the conditions above
+				if(cmpstr(side,"both")==0)	
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// right, when 3pi/2 -> 2pi
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif				
+					
+					//left
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+					
+				endif		//end the check of phiVal within sector and side
 				
 				
-				if (numType(val)==0 && mask_val == 0 && isIn)		//count only the good points, ignore Nan or Inf
+				if (numType(val)==0 && mask_val == 0 && isIn > 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr2[ii][jj]*iErr2[ii][jj]
@@ -769,31 +790,45 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 				endif
 				
 				phiVal = phi3[ii][jj]			
-				isIn = V_CloseEnough(phiVal,phi_rad,dphi_rad)		//  0 | 1 test within the sector?
-
-				//check if pixel lies within allowed sector(s)
-				if(cmpstr(side,"both")==0)		//both sectors
-					// don't change anything (use any pixels in the sector range)
-				else
-					if(cmpstr(side,"left")==0)		// want "left" side of detector sector only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, do nothing
-						else
-							isIn = 0			//ignore the pixel
-						endif
-					else
-						// want the right side only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, ignore the pixel
-							isIn = 0
-						else
-							//it's in the right, do nothing
-						endif
-						//
-					Endif
-				Endif		//allowable "side"
+				isIn = 0			// start with exclude, now see if it's a keeper
+						
+				// if within the right or left, flag to keep the pixel
+				if(cmpstr(side,"right")==0)
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// condition here to get the 3pi/2 -> 2pi region
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
 				
-				if (numType(val)==0 && mask_val == 0 && isIn)		//count only the good points, ignore Nan or Inf
+				if(cmpstr(side,"left")==0)
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
+							
+			//	both sides, duplicates the conditions above
+				if(cmpstr(side,"both")==0)	
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// right, when 3pi/2 -> 2pi
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif				
+					
+					//left
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+					
+				endif		//end the check of phiVal within sector and side
+				
+				if (numType(val)==0 && mask_val == 0 && isIn > 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr3[ii][jj]*iErr3[ii][jj]
@@ -820,31 +855,45 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 				endif
 				
 				phiVal = phi4[ii][jj]			
-				isIn = V_CloseEnough(phiVal,phi_rad,dphi_rad)		//  0 | 1 test within the sector?
-
-				//check if pixel lies within allowed sector(s)
-				if(cmpstr(side,"both")==0)		//both sectors
-					// don't change anything (use any pixels in the sector range)
-				else
-					if(cmpstr(side,"left")==0)		// want "left" side of detector sector only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, do nothing
-						else
-							isIn = 0			//ignore the pixel
-						endif
-					else
-						// want the right side only
-						if(phiVal > pi/2 && phiVal < 3*pi/2)
-							//it's the left, ignore the pixel
-							isIn = 0
-						else
-							//it's in the right, do nothing
-						endif
-						//
-					Endif
-				Endif		//allowable "side"
+				isIn = 0			// start with exclude, now see if it's a keeper
+						
+				// if within the right or left, flag to keep the pixel
+				if(cmpstr(side,"right")==0)
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// condition here to get the 3pi/2 -> 2pi region
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
 				
-				if (numType(val)==0 && mask_val == 0 && isIn)		//count only the good points, ignore Nan or Inf
+				if(cmpstr(side,"left")==0)
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+				endif
+							
+			//	both sides, duplicates the conditions above
+				if(cmpstr(side,"both")==0)	
+					//right, when 0->pi/2
+					if(V_CloseEnough(phiVal,phi_rad,dphi_rad))
+						isIn = 1
+					endif
+					// right, when 3pi/2 -> 2pi
+					if(V_CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+						isIn = 1
+					endif				
+					
+					//left
+					if(V_CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+						isIn = 1
+					endif
+					
+				endif		//end the check of phiVal within sector and side
+				
+				if (numType(val)==0 && mask_val == 0 && isIn > 0)		//count only the good points, ignore Nan or Inf
 					iBin_qxqy[binIndex] += val
 					iBin2_qxqy[binIndex] += val*val
 					eBin2D_qxqy[binIndex] += iErr4[ii][jj]*iErr4[ii][jj]

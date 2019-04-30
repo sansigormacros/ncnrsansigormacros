@@ -1088,6 +1088,13 @@ Function V_SetupPanelDisplay()
 
 		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle = 30
 		Variable/G root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ = 10
+		
+		// check for a mask, if not present, generate a default mask
+		String str="FT"
+		wave/Z maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+str+":data")	
+		if(!WaveExists(maskW))
+			V_GenerateDefaultMask()
+		endif
 			
 		Execute "V_Display_Det_Panels()"
 	endif
@@ -1128,9 +1135,9 @@ Proc V_Display_Det_Panels()
 	SetVariable setvar1,pos={50,70},size={140,23},title="Annulus (+/-) q (A)"
 	SetVariable setvar1,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ
 	SetVariable setvar2,pos={200,40},size={140,23},title="Sector Angle (deg)"
-	SetVariable setvar2,limits={0,359,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
+	SetVariable setvar2,limits={-90,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
 	SetVariable setvar3,pos={200,70},size={140,23},title="Sector (+/-) (deg)"
-	SetVariable setvar3,limits={0,359,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
+	SetVariable setvar3,limits={0,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 
 	PopupMenu popup4,pos={200,100},size={90,23.00},title="Sector Side(s)"//,proc=V_DummyPopMenuProc
 	PopupMenu popup4,mode=1,value= #"\"both;left;right;\""
