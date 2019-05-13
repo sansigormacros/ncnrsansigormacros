@@ -412,7 +412,7 @@ Function V_FillListBox2(listWave,selWave)
 	listWave[0][1] = "description"
 	listWave[0][2] = V_getSampleDescription(fname)
 	
-	listWave[1][1] = "thickness (cm)"
+	listWave[1][1] = "thickness [cm]"
 	listWave[1][2] = num2str(V_getSampleThickness(fname))
 	
 	listWave[2][1] = "transmission"
@@ -446,7 +446,7 @@ Function V_FillListBox3(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 13
+	Variable nRows = 17
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -470,32 +470,44 @@ Function V_FillListBox3(listWave,selWave)
 	
 	listWave[4][1] = "wavelength_spread"
 	listWave[4][2] = num2str(V_getWavelength_spread(fname))	
-
-	listWave[5][1] = "distance (source aperture to GV) (cm)"
-	listWave[5][2] = num2str(V_getSourceAp_distance(fname))		
-
-	listWave[6][1] = "source aperture size (mm)"
-	listWave[6][2] = V_getSourceAp_size(fname)
 	
-	listWave[7][1] = "sample aperture size (internal) (mm)"
-	listWave[7][2] = V_getSampleAp_size(fname)
+	listWave[5][1] = "Number of Guides OR COLLIMATION"
+	listWave[5][2] = V_getNumberOfGuides(fname)
 
-	listWave[8][1] = "sample aperture(2) diam (external) (cm)"
-	listWave[8][2] = num2str(V_getSampleAp2_size(fname))	
+	listWave[6][1] = "distance (source aperture to GV) [cm]"
+	listWave[6][2] = num2str(V_getSourceAp_distance(fname))		
 
-	listWave[9][1] = "beam stop diameter (Middle) (mm)"
-//	listWave[9][2] = num2str(V_getBeamStopC2_size(fname))	
-	listWave[9][2] = num2str(V_DeduceBeamstopDiameter(fname,"MR"))	
+	listWave[7][1] = "source aperture size [mm]"
+	listWave[7][2] = V_getSourceAp_size(fname)
 	
-	listWave[10][1] = "beam stop diameter (Back) (mm)"
-//	listWave[10][2] = num2str(V_getBeamStopC3_size(fname))	
-	listWave[10][2] = num2str(V_DeduceBeamstopDiameter(fname,"B"))	
+	listWave[8][1] = "sample aperture size (internal) [mm]"
+	listWave[8][2] = V_getSampleAp_size(fname)
 
-	listWave[11][1] = "sample aperture(2) to gate valve (cm)"
-	listWave[11][2] = num2str(V_getSampleAp2_distance(fname))	
+	listWave[9][1] = "sample aperture(2) SHAPE (external)"
+	listWave[9][2] = V_getSampleAp2_shape(fname)
+		
+	listWave[10][1] = "sample aperture(2) diam (external) [cm]"
+	listWave[10][2] = num2str(V_getSampleAp2_size(fname))	
+	
+	listWave[11][1] = "sample aperture(2) height (external) [cm]"
+	listWave[11][2] = num2str(V_getSampleAp2_height(fname))	
 
-	listWave[12][1] = "sample to gate valve (cm)"
-	listWave[12][2] = num2str(V_getSampleTableOffset(fname))	
+	listWave[12][1] = "sample aperture(2) width (external) [cm]"
+	listWave[12][2] = num2str(V_getSampleAp2_width(fname))	
+
+	listWave[13][1] = "beam stop diameter (Middle) [mm]"
+//	listWave[13][2] = num2str(V_getBeamStopC2_size(fname))	
+	listWave[13][2] = num2str(V_DeduceBeamstopDiameter(fname,"MR"))	
+	
+	listWave[14][1] = "beam stop diameter (Back) [mm]"
+//	listWave[14][2] = num2str(V_getBeamStopC3_size(fname))	
+	listWave[14][2] = num2str(V_DeduceBeamstopDiameter(fname,"B"))	
+
+	listWave[15][1] = "sample aperture(2) to gate valve [cm]"
+	listWave[15][2] = num2str(V_getSampleAp2_distance(fname))	
+
+	listWave[16][1] = "sample to gate valve [cm]"
+	listWave[16][2] = num2str(V_getSampleTableOffset(fname))	
 
 				
 	return(0)
@@ -536,22 +548,22 @@ Function V_FillListBox4(listWave,selWave)
 	ControlInfo popup_0			// which detector panel?
 	String detStr = S_value
 	
-	listWave[0][1] = "beam_center_x (cm)"
+	listWave[0][1] = "beam_center_x [cm]"
 	listWave[0][2] = num2str(V_getDet_Beam_center_x(fname,detStr))	
 
-	listWave[1][1] = "beam_center_y (cm)"
+	listWave[1][1] = "beam_center_y [cm]"
 	listWave[1][2] = num2str(V_getDet_Beam_center_y(fname,detStr))	
 
-	listWave[2][1] = "distance (nominal) (cm)"
+	listWave[2][1] = "distance (nominal) [cm]"
 	listWave[2][2] = num2str(V_getDet_NominalDistance(fname,detStr))	
 
 	listWave[3][1] = "integrated_count"
 	listWave[3][2] = num2str(V_getDet_IntegratedCount(fname,detStr))	
 
-	listWave[4][1] = "pixel_fwhm_x (cm)"
+	listWave[4][1] = "pixel_fwhm_x [cm]"
 	listWave[4][2] = num2str(V_getDet_pixel_fwhm_x(fname,detStr))	
 
-	listWave[5][1] = "pixel_fwhm_y (cm)"
+	listWave[5][1] = "pixel_fwhm_y [cm]"
 	listWave[5][2] = num2str(V_getDet_pixel_fwhm_y(fname,detStr))	
 
 	listWave[6][1] = "pixel_num_x"
@@ -560,21 +572,21 @@ Function V_FillListBox4(listWave,selWave)
 	listWave[7][1] = "pixel_num_y"
 	listWave[7][2] = num2str(V_getDet_pixel_num_y(fname,detStr))	
 
-	listWave[8][1] = "setback (cm)"
+	listWave[8][1] = "setback [cm]"
 	listWave[8][2] = num2str(V_getDet_TBSetback(fname,detStr))	
 
 	if(cmpstr(detStr,"B") == 0 ||cmpstr(detStr,"FR") == 0 || cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"ML") == 0)
-		listWave[9][1] = "lateral_offset (cm)"			// "B" detector drops here
+		listWave[9][1] = "lateral_offset [cm]"			// "B" detector drops here
 		listWave[9][2] = num2str(V_getDet_LateralOffset(fname,detStr))	
 	else	
-		listWave[9][1] = "vertical_offset (cm)"	
+		listWave[9][1] = "vertical_offset [cm]"	
 		listWave[9][2] = num2str(V_getDet_VerticalOffset(fname,detStr))	
 	endif	
 
-	listWave[10][1] = "x_pixel_size (mm)"
+	listWave[10][1] = "x_pixel_size [mm]"
 	listWave[10][2] = num2str(V_getDet_x_pixel_size(fname,detStr))	
 
-	listWave[11][1] = "y_pixel_size (mm)"
+	listWave[11][1] = "y_pixel_size [mm]"
 	listWave[11][2] = num2str(V_getDet_y_pixel_size(fname,detStr))	
 
 	listWave[12][1] = "dead time (s) (back only)"
@@ -1254,44 +1266,64 @@ Function V_WriteHeaderForPatch_3(fname)
 		val = str2num(listWave[4][2])
 		err = V_writeWavelength_spread(fname,val)
 	endif	
+
+	if ((selWave[5][0] & 2^4) != 0)		//"number of guides (a string value)"
+		str = listWave[5][2]
+		err = V_writeNumberOfGuides(fname,str)
+	endif		
 	
-	if ((selWave[5][0] & 2^4) != 0)		//"distance (source aperture)"
-		val = str2num(listWave[5][2])
+	if ((selWave[6][0] & 2^4) != 0)		//"distance (source aperture)"
+		val = str2num(listWave[6][2])
 		err = V_writeSourceAp_distance(fname,val)
 	endif		
 
-	if ((selWave[6][0] & 2^4) != 0)		//"source aperture size (mm)" (a string with units)
-		str = listWave[6][2]
+	if ((selWave[7][0] & 2^4) != 0)		//"source aperture size [mm]" (a string with units)
+		str = listWave[7][2]
 		err = V_writeSourceAp_size(fname,str)
 	endif		
 
-	if ((selWave[7][0] & 2^4) != 0)		//"sample aperture size (internal) (mm)" (a string with units)
-		str = listWave[7][2]
+	if ((selWave[8][0] & 2^4) != 0)		//"sample aperture size (internal) [mm]" (a string with units)
+		str = listWave[8][2]
 		err = V_writeSampleAp_size(fname,str)
 	endif	
-		
-	if ((selWave[8][0] & 2^4) != 0)		//"sample aperture diam (external) (cm)"
-		val = str2num(listWave[8][2])
+
+	if ((selWave[9][0] & 2^4) != 0)		//"sample aperture SHAPE (external) [cm]"
+		str = listWave[9][2]
+		err = V_writeSampleAp2_shape(fname,str)
+	endif		
+	
+	if ((selWave[10][0] & 2^4) != 0)		//"sample aperture diam (external) [cm]"
+		val = str2num(listWave[10][2])
 		err = V_writeSampleAp2_size(fname,val)
 	endif		
+	
+	if ((selWave[11][0] & 2^4) != 0)		//"sample aperture height (external) [cm]"
+		val = str2num(listWave[11][2])
+		err = V_writeSampleAp2_height(fname,val)
+	endif		
+		
+	if ((selWave[12][0] & 2^4) != 0)		//"sample aperture width (external) [cm]"
+		val = str2num(listWave[12][2])
+		err = V_writeSampleAp2_width(fname,val)
+	endif		
 
-	if ((selWave[9][0] & 2^4) != 0)		//"beam stop diameter (Middle) (mm)"
-		val = str2num(listWave[9][2])
+	if ((selWave[13][0] & 2^4) != 0)		//"beam stop diameter (Middle) [mm]"
+		val = str2num(listWave[13][2])
 		err = V_writeBeamStopC2_size(fname,val)
 	endif		
 	
-	if ((selWave[10][0] & 2^4) != 0)		//"beam stop diameter (Back) (mm)"
-		val = str2num(listWave[10][2])
+	if ((selWave[14][0] & 2^4) != 0)		//"beam stop diameter (Back) [mm]"
+		val = str2num(listWave[14][2])
 		err = V_writeBeamStopC3_size(fname,val)
 	endif		
 
-	if ((selWave[11][0] & 2^4) != 0)		//"sample aperture to gate valve (cm)"
-		val = str2num(listWave[11][2])
+	if ((selWave[15][0] & 2^4) != 0)		//"sample aperture to gate valve [cm]"
+		val = str2num(listWave[15][2])
 		err = V_writeSampleAp_distance(fname,val)
 	endif	
 
-	if ((selWave[12][0] & 2^4) != 0)		//"sample to gate valve (cm)"
-		val = str2num(listWave[12][2])
+	if ((selWave[16][0] & 2^4) != 0)		//"sample to gate valve [cm]"
+		val = str2num(listWave[16][2])
 		err = V_writeSampleTableOffset(fname,val)
 	endif		
 	
@@ -2341,7 +2373,7 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	DrawText 85,99,"Current Values"
 	DrawText 21,258,"Write to all files (inlcusive)"
 	SetDrawEnv fsize= 14,fstyle= 1
-	DrawText 262,30,"Beam Center (cm)"
+	DrawText 262,30,"Beam Center [cm]"
 	DrawText 20,133,"Run Number(s)"
 	
 	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"

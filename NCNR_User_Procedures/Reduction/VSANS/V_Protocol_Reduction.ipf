@@ -1349,8 +1349,8 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 //	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
 	Prompt side,"Include detector halves?",popup,"both;right;left"
-	Prompt phi,"Orientation Angle (0,359) degrees (Rectangular or Sector)"
-	Prompt dphi, "Sector range (+/-) degrees (0,45) (Sector only)"
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
+	Prompt dphi, "Sector range (+/-) degrees (0,90) (Sector only)"
 //	Prompt width, "Width of Rectangular average (1,128)"
 	Prompt binType,"Binning Type?",popup,ksBinTypeStr
 

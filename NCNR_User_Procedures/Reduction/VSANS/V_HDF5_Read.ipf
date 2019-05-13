@@ -1922,9 +1922,30 @@ End
 
 
 
+
+// MAY 2019 SRK
+//
+// there was a change in the GUI and NICE behavior during the shutdown, before startup
+// on 05/22/19 where the units of the sample Ap2 dimensions are changed. supposedly this
+// will ensure consistency of all units as [cm]. From what I found in the code, all the units
+// were already [cm], so I'm not sure what will happen.
+//
+// if I flag things here to switch on the date, I can force the output to always be [cm]
+// V_Compare_ISO_Dates("2019-05-10T13:36:54.200-04:00",fileDate)
+//
+// here the first date is a generic date during the shutdown, but before startup.
+// fileDate is the actual date of file collection
+// if fileDate is more recent (and thus affected by the change), then the function
+// will return a value == 2 (2nd date greater) and I can act on that
+//
+// this change only affects sampleAp2, and this value only affects the resolution calculation
+//
+//  V_Compare_ISO_Dates("2019-05-10T13:36:54.200-04:00",V_getDataStartTime(fname))
+//
+
+
 ///////  sample_aperture_2 (data folder)
 // sample aperture (2) is the external aperture, which may or may not be present
-
 Function/S V_getSampleAp2_Description(fname)
 	String fname
 

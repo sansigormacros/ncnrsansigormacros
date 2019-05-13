@@ -81,8 +81,8 @@ Function V_ISO8601_to_IgorTime(ISOstr)
 	s1 = ISOstr[0,9] 		//taking strictly the first 10 characters YYYY-MM-DD
 	s2 = ISOstr[11,18]		// skip the "T" and take the next 8 chars HH:MM:SS
 	// skip the time zone...
-	print s1
-	print s2
+//	print s1
+//	print s2
 	
 	Variable yr,mo,dy,hh,mm,ss
 	yr = str2num(s1[0,3])
@@ -99,3 +99,28 @@ Function V_ISO8601_to_IgorTime(ISOstr)
 	
 	return(secs)
 End
+
+
+// utility to compare two iso dates
+// returns
+// 1 if iso1 is greater than iso2 (meaning iso1 is more RECENT)
+// 2 if iso2 is greater than iso1 (meaning iso2 is more RECENT)
+// 0 if they are the same time
+//
+//
+Function V_Compare_ISO_Dates(iso1,iso2)
+	String iso1,iso2
+	
+	if(V_ISO8601_to_IgorTime(iso1) == V_ISO8601_to_IgorTime(iso2))
+		return(0)
+	endif
+
+	if(V_ISO8601_to_IgorTime(iso1) > V_ISO8601_to_IgorTime(iso2))
+		return(1)
+	else
+		return(2)
+	endif
+	
+	return(-1)
+End
+

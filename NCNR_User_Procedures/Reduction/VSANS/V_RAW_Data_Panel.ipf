@@ -180,6 +180,7 @@ Window VSANS_DataPanel() : Panel
 	Button button_RestorePanels,pos={880,146},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
 	Button button_sensor,pos={607,146+33},size={70,20},proc=V_SensorButtonProc,title="Sensors"
+	Button button_mask,pos={689,146+33},size={70,20},proc=V_AvgMaskButtonProc,title="Avg Mask"
 
 
 	TitleBox title_file,pos={606,178+30},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
@@ -819,7 +820,23 @@ Function V_SensorButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+// opens up the graph of the masking options
+//
+Function V_AvgMaskButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
 
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_Display_Four_Panels()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 // See V_Detector_Isolate.ipf
 // isolates a single panel to allow a better view of the details
