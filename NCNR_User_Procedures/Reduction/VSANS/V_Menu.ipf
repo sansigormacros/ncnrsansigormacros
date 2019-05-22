@@ -56,6 +56,8 @@ Menu "VSANS"
 		"Patch Sample Aperture",V_Patch_SampleAperture2()
 	End
 	SubMenu "File Tests"
+		"Load High Res Read Noise Data"
+		"-"
 		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
 		"-"
 		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes

@@ -76,6 +76,18 @@ Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRT
 Strconstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
 Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
 
+
+
+//////// HIGH RESOLUTION DETECTOR  ///////////////
+
+
+//
+// In May 2019 - after testing with Phil's procesing, the data from the detector has a
+// larger read noise value. It can also no longer be treated  as a constant value, but rather 
+// a detector file that is read in and subtracted pixel-by-pixel. 
+//
+
+
 // the average read noise level of the back detector
 // taken from multiple runs with the beam off, 6-28-18
 // runs sans12324 - sans12353
@@ -110,6 +122,11 @@ Constant 	kShift_TopX_bin1 = 28
 Constant		kShift_TopY_bin1 = 420
 Constant		kShift_BottomX_bin1 = 20
 Constant		kShift_BottomY_bin1 = 130
+
+
+
+
+
 
 
 
@@ -192,6 +209,7 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:ADJ
 	NewDataFolder/O root:Packages:NIST:VSANS:RealTime
 	NewDataFolder/O root:Packages:NIST:VSANS:VCALC
+	NewDataFolder/O root:Packages:NIST:VSANS:ReadNoise
 
 
 // ?? anything else

@@ -57,12 +57,12 @@ Proc DIV_Setup_Panel() : Panel
 	Button button1,pos={54.00,40.00},size={120.00,20.00},proc=V_DIVClearOldButtonProc,title="Clear Old DIV"
 	Button button1_2,pos={54.00,70.00},size={120.00,20.00},proc=V_DIVMaskButtonProc,title="Mask for DIV"
 
-	DrawText 36,130,"Reduce data for one carriage"	
-	DrawText 36,200,"Repeat for the other carriage"
+	DrawText 32,130,"Reduce data for one carriage"	
+	DrawText 32,200,"Repeat for the other carriage(s)"
 	
 	Button button2,pos={54.00,145.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize+Copy"
 
-	DrawText 36,290,"Once data for both carriages has\rbeen normalized, save the file"	
+	DrawText 32,290,"Once data for both (or 3) carriages\rhas been normalized, save the file"	
 	
 	Button button3,pos={54.00,300.00},size={120.00,20.00},proc=V_DIVSaveButtonProc,title="Save DIV"
 EndMacro
@@ -162,7 +162,10 @@ End
 
 Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
 	String reducedFolderType="COR",carriageStr="F"
-	if(cmpstr(carriageStr,"F")==0)
+	
+	if (cmpstr(carriageStr,"B")==0)
+		V_NormalizeDIV_onePanel(reducedFolderType,"B")
+	elseif (cmpstr(carriageStr,"F")==0)
 		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
 		V_NormalizeDIV_onePanel(reducedFolderType,"FR")
 		V_NormalizeDIV_onePanel(reducedFolderType,"FT")
@@ -502,7 +505,7 @@ Proc V_Display_DIV_Panels()
 
 
 	PopupMenu popup0,pos={17.00,10.00},size={77.00,23.00},proc=V_DispCarriagePopMenuProc,title="Carriage"
-	PopupMenu popup0,mode=1,value= #"\"F;M;\""
+	PopupMenu popup0,mode=1,value= #"\"F;M;B;\""
 	PopupMenu popup1,pos={134.00,10.00},size={68.00,23.00},proc=V_DispFolderPopMenuProc,title="Folder"
 	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;\""
 	PopupMenu popup2,pos={246.00,10.00},size={83.00,23.00},proc=V_DispOperationPopMenuProc,title="Operation"
@@ -597,7 +600,7 @@ End
 
 
 // called by the "update" button
-Proc V_UpdatePanelDisp()
+Function V_UpdatePanelDisp()
 
 	ControlInfo popup0
 	String carrStr = S_value
@@ -605,13 +608,85 @@ Proc V_UpdatePanelDisp()
 	ControlInfo popup1
 	String folder = S_Value
 	
-	// remove the image
+	string tmpStr=""
+	Variable isVCALC=0
+	if(cmpstr("VCALC",folder)==0)
+		isVCALC=1
+	endif
+		
+	// remove everything from each of the 4 panels
+	tmpStr = ImageNameList("VSANS_DIVPanels#Panel_L",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_DIVPanels#Panel_L $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_DIVPanels#Panel_L",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_DIVPanels#Panel_R",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_DIVPanels#Panel_R $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_DIVPanels#Panel_R",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_DIVPanels#Panel_T",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_DIVPanels#Panel_T $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_DIVPanels#Panel_T",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+	tmpStr = ImageNameList("VSANS_DIVPanels#Panel_B",";")
+	if(ItemsInList(tmpStr) > 0)
+		do
+			RemoveImage /W=VSANS_DIVPanels#Panel_B $(StringFromList(0,tmpStr,";"))		//get 1st item
+			tmpStr = ImageNameList("VSANS_DIVPanels#Panel_B",";")								//refresh list
+		while(ItemsInList(tmpStr) > 0)
+	endif
+	
+
 	// append the new image
-	RemoveImage/Z/W=VSANS_DIVPanels#Panel_L data
-	AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")		
-	SetActiveSubwindow VSANS_DIVPanels#Panel_L
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+	// if back, put this in the "left" postion, and nothing else
+	if(cmpstr("B",carrStr)==0)
+		if(isVCALC)
+			AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+":det_"+carrStr)		
+			SetActiveSubwindow VSANS_DIVPanels#Panel_L
+			ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage ''#0 ctabAutoscale=3
+		else
+			AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+":data")		
+			SetActiveSubwindow VSANS_DIVPanels#Panel_L
+			ModifyImage data ctab= {*,*,ColdWarm,0}
+			ModifyImage data ctabAutoscale=3	
+		endif
+		ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+		ModifyGraph mirror=2
+		ModifyGraph nticks=4
+		ModifyGraph minor=1
+		ModifyGraph fSize=9
+		ModifyGraph standoff=0
+		ModifyGraph tkLblRot(left)=90
+		ModifyGraph btLen=3
+		ModifyGraph tlOffset=-2
+		SetActiveSubwindow ##
+		return(0)
+	endif
+	
+//	RemoveImage/Z/W=VSANS_DIVPanels#Panel_L data
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:det_"+carrStr+"L")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_L
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_L $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_L
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3	
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -624,11 +699,18 @@ Proc V_UpdatePanelDisp()
 	SetActiveSubwindow ##
 
 
-	RemoveImage/Z/W=VSANS_DIVPanels#Panel_T data
-	AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:data")		
-	SetActiveSubwindow VSANS_DIVPanels#Panel_T
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+//	RemoveImage/Z/W=VSANS_DIVPanels#Panel_T data
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:det_"+carrStr+"T")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_T
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_T $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"T:data")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_T
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -640,11 +722,18 @@ Proc V_UpdatePanelDisp()
 	ModifyGraph tlOffset=-2
 	SetActiveSubwindow ##
 	
-	RemoveImage/Z/W=VSANS_DIVPanels#Panel_B data
-	AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:data")		
-	SetActiveSubwindow VSANS_DIVPanels#Panel_B
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+//	RemoveImage/Z/W=VSANS_DIVPanels#Panel_B data
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:det_"+carrStr+"B")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_B
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_B $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"B:data")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_B
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -656,11 +745,18 @@ Proc V_UpdatePanelDisp()
 	ModifyGraph tlOffset=-2
 	SetActiveSubwindow ##
 
-	RemoveImage/Z/W=VSANS_DIVPanels#Panel_R data
-	AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:data")		
-	SetActiveSubwindow VSANS_DIVPanels#Panel_R
-	ModifyImage data ctab= {*,*,ColdWarm,0}
-	ModifyImage data ctabAutoscale=3
+//	RemoveImage/Z/W=VSANS_DIVPanels#Panel_R data
+	if(isVCALC)
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:det_"+carrStr+"R")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_R
+		ModifyImage ''#0 ctab= {*,*,ColdWarm,0}
+		ModifyImage ''#0 ctabAutoscale=3
+	else
+		AppendImage/T/G=1/W=VSANS_DIVPanels#Panel_R $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"R:data")		
+		SetActiveSubwindow VSANS_DIVPanels#Panel_R
+		ModifyImage data ctab= {*,*,ColdWarm,0}
+		ModifyImage data ctabAutoscale=3
+	endif
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -672,6 +768,7 @@ Proc V_UpdatePanelDisp()
 	ModifyGraph tlOffset=-2
 	SetActiveSubwindow ##
 
+	return(0)
 End
 
 
@@ -733,7 +830,7 @@ Function V_DispUpdateButtonProc(ba) : ButtonControl
 			V_DoDIVOperation()
 			
 			// update the data that is displayed
-			Execute "V_UpdatePanelDisp()"
+			V_UpdatePanelDisp()
 			
 			
 			// update the global strings
@@ -762,7 +859,20 @@ Function V_UpdateDIVStrings()
 	String folder = S_Value
 	
 	String  formatStr="Avg = %g +/- %g\rMin = %g, Max = %g"
-	
+
+	if(cmpstr(carrStr,"B")==0)
+		WaveStats/Q $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_B:data")
+		sprintf gDIVstr0,formatStr,V_avg,V_sdev,V_min,V_max
+		gDIVStr1 = ""
+		gDIVStr2 = ""
+		gDIVStr3 = ""
+		TitleBox title0 title=gDIVstr0
+		TitleBox title1 title=gDIVstr1
+		TitleBox title2 title=gDIVstr2
+		TitleBox title3 title=gDIVstr3
+		return(0)
+	endif
+		
 	WaveStats/Q $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+carrStr+"L:data")
 	sprintf gDIVstr0,formatStr,V_avg,V_sdev,V_min,V_max
 	
@@ -807,27 +917,47 @@ Function V_DoDIVOperation()
 	//V_CopyWorkFolder("STO","ADJ")		// this is a macro, use the function instead
 	V_CopyHDFToWorkFolder("STO","ADJ")
 
-	WAVE w_sto_L = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"L:data")
-	WAVE w_sub_L = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"L:data")
-	Duplicate/O w_sto_L $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"L:data")
-	WAVE w_adj_L = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"L:data")
 
-	WAVE w_sto_R = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"R:data")
-	WAVE w_sub_R = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"R:data")
-	Duplicate/O w_sto_R $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"R:data")
-	WAVE w_adj_R = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"R:data")
-
-	WAVE w_sto_T = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"T:data")
-	WAVE w_sub_T = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"T:data")
-	Duplicate/O w_sto_T $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"T:data")
-	WAVE w_adj_T = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"T:data")
-
-	WAVE w_sto_B = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"B:data")
-	WAVE w_sub_B = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"B:data")
-	Duplicate/O w_sto_B $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"B:data")
-	WAVE w_adj_B = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"B:data")
-
+	if(cmpstr(carrStr,"B")==0)
+		WAVE w_sto_B = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_B:data")
+		WAVE w_sub_B = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_B:data")
+		Duplicate/O w_sto_B $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_B:data")
+		WAVE w_adj_B = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_B:data") 
+	else
+		WAVE w_sto_L = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"L:data")
+		WAVE w_sub_L = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"L:data")
+		Duplicate/O w_sto_L $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"L:data")
+		WAVE w_adj_L = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"L:data")
 	
+		WAVE w_sto_R = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"R:data")
+		WAVE w_sub_R = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"R:data")
+		Duplicate/O w_sto_R $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"R:data")
+		WAVE w_adj_R = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"R:data")
+	
+		WAVE w_sto_T = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"T:data")
+		WAVE w_sub_T = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"T:data")
+		Duplicate/O w_sto_T $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"T:data")
+		WAVE w_adj_T = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"T:data")
+	
+		WAVE w_sto_B = $("root:Packages:NIST:VSANS:STO:entry:instrument:detector_"+carrStr+"B:data")
+		WAVE w_sub_B = $("root:Packages:NIST:VSANS:SUB:entry:instrument:detector_"+carrStr+"B:data")
+		Duplicate/O w_sto_B $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"B:data")
+		WAVE w_adj_B = $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+carrStr+"B:data")
+	endif
+
+
+//handle the back detector separately, then exit
+	if(cmpstr(carrStr,"B")==0)
+		if(cmpstr(opStr,"ADJ=STO/SUB")==0)
+			w_adj_B = w_sto_B/w_sub_B
+		else
+			w_adj_B = w_sto_B - w_sub_B
+		endif
+		return(0)
+	endif
+
+
+// M or F carriages	
 	if(cmpstr(opStr,"ADJ=STO/SUB")==0)
 		w_adj_L = w_sto_L/w_sub_L
 		w_adj_R = w_sto_R/w_sub_R

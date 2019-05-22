@@ -465,7 +465,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		labelWave[11] =  "ABS Parameters (3-6): "+proto[4]
 		labelWave[12] = "Average Choices: "+proto[5]
 		labelWave[13] = "Collimation type: "+proto[9]
-		labelWave[14] = "Panel = "+detStr
+		labelWave[14] = "Panel="+detStr
 		labelWave[15] = "NumXPixels="+num2str(pixX)
 		labelWave[16] = "XPixelSize_mm="+num2str(pixSizeX)
 		labelWave[17] = "NumYPixels="+num2str(pixY)
@@ -551,7 +551,8 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 // this loop is the slow step. it takes Å 0.7 s for F or M panels, and Å 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
 // MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
-// and there are a lot of them...
+// and there are a lot of them... and I don't know if opening a file multiple times is a threadsafe operation? 
+//  -- multiple open attempts seems like a bad idea.
 		//type = work folder
 		
 //		(this doesn't work...and isn't any faster)

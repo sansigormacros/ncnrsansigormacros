@@ -2263,6 +2263,9 @@ End
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
+//
+//		added in May 2019 -- kill the same numbered files from RawVSANS to force a re-read since the XY
+//  has been changed
 Function V_fPatchDet_xyCenters(lo,hi)
 	Variable lo,hi
 
@@ -2290,6 +2293,9 @@ Function V_fPatchDet_xyCenters(lo,hi)
 				V_writeDet_beam_center_y(fname,detStr,yCtr_cm[ii])		
 			endfor	
 		
+		// then delete the file from RawVSANS
+			V_KillNamedDataFolder(fname)
+			
 		else
 			printf "run number %d not found\r",jj
 		endif
@@ -2436,9 +2442,11 @@ Function V_WriteXYButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 //			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
-			
+
+// this function will write the new centers to the file and then delete the file from
+// RawVSANS to force a re-read of the data			
 			V_fPatchDet_xyCenters(lo,hi)
-			
+
 			break
 		case -1: // control being killed
 			break

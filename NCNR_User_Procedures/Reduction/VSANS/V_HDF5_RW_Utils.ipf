@@ -18,6 +18,13 @@
 
 
 
+// loads a raw data set into RAW, then copies into the ReadNoise folder
+// all I really need from this set is the data from the back detector, nothing else.
+Proc LoadHighResReadNoiseData()
+	V_LoadHDF5Data("","RAW")
+	V_CopyHDFToWorkFolder("RAW","ReadNoise")
+End
+
 
 
 // passing null file string presents a dialog

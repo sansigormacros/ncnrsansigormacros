@@ -469,6 +469,10 @@ End
 // now removes a constant kReadNoiseLevel from the back detector (this is a constant value, not time
 //  or count dependent). It does not appear to be dependent on gain, and is hoepfully stable over time.
 //
+// May 2019
+// If present, a detector image of the back detector containing the read noise (non-uniform values)
+//  is subtracted rather than a single constant value.
+//
 //the current display type is updated to newType (global)
 //
 Function V_Raw_to_work(newType)
@@ -512,29 +516,36 @@ Function V_Raw_to_work(newType)
 
 	if(gIgnoreDetB == 0)
 		Wave w = V_getDetectorDataW(fname,"B")
+		// I hate to hard-wire this, but the data must be in this specific location...
+		Wave/Z w_ReadNoise = $("root:Packages:NIST:VSANS:ReadNoise:entry:instrument:detector_B:data")
+//		Wave/Z w_ReadNoise = V_getDetectorDataW("ReadNoise","B")
 		
-		NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
-		
-		switch(gHighResBinning)
-			case 1:
-				w -= kReadNoiseLevel_bin1		// a constant value
-				
-//				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)			
-//				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
-				Print "*** 1x1 binning - subtracted ReadNoise - No Filter ***"
-				break
-			case 4:
-				w -= kReadNoiseLevel_bin4		// a constant value
-				
-//				MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)				
-//				Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
-				Print "*** 4x4 binning - subtracted ReadNoise - No Filter ***"
-				break
-			default:
-				Abort "No binning case matches in V_Raw_to_Work"
-		endswitch	
-
-	endif
+		if(WaveExists(w_ReadNoise))
+			w -= w_ReadNoise
+			Print "Subtracting ReadNoise Array"
+		else
+			NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
+			
+			switch(gHighResBinning)
+				case 1:
+					w -= kReadNoiseLevel_bin1		// a constant value
+					
+	//				MatrixFilter /N=11 /P=1 median w			//		/P=n flag sets the number of passes (default is 1 pass)			
+	//				Print "*** median noise filter 11x11 applied to the back detector (1 pass) ***"
+					Print "*** 1x1 binning - subtracted ReadNoise Constant - No Filter ***"
+					break
+				case 4:
+					w -= kReadNoiseLevel_bin4		// a constant value
+					
+	//				MatrixFilter /N=3 /P=3 median w			//		/P=n flag sets the number of passes (default is 1 pass)				
+	//				Print "*** median noise filter 3x3 applied to the back detector (3 passes) ***"
+					Print "*** 4x4 binning - subtracted ReadNoise Constant - No Filter ***"
+					break
+				default:
+					Abort "No binning case matches in V_Raw_to_Work"
+			endswitch	
+		endif		//waveExists
+	endif		// using det B
 	
 	
 	// (0) Redimension the data waves in the destination folder
