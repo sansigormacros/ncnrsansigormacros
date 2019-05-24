@@ -948,8 +948,9 @@ Function V_GenerateDefaultMask()
 				Make/O/I/N=(680,1656)	data	= 0		
 
 				data[][0,38] = 1
-				data[][1548,1655] = 1
-				data[0,10][] = 1
+				data[][1535,1655] = 1
+//				data[0,10][] = 1
+				data[0,190][] = 1		//with the beam stop stuck on the detector
 				data[669,679][] = 1
 				break
 			default:

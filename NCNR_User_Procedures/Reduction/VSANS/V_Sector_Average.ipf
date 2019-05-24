@@ -27,7 +27,7 @@ Function/WAVE V_MakePhiMatrix(qTotal,folderStr,detStr,folderPath)
 	Variable pixSizeX,pixSizeY
 	pixSizeX = V_getDet_x_pixel_size(folderStr,detStr)
 	pixSizeY = V_getDet_y_pixel_size(folderStr,detStr)
-	phi = V_FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr))		//(dx,dy)
+	MultiThread phi = V_FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr))		//(dx,dy)
 	
 	return phi	
 End

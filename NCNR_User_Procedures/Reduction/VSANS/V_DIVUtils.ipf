@@ -163,6 +163,12 @@ End
 Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
 	String reducedFolderType="COR",carriageStr="F"
 	
+	Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
+end
+
+Function Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
+	String reducedFolderType,carriageStr
+
 	if (cmpstr(carriageStr,"B")==0)
 		V_NormalizeDIV_onePanel(reducedFolderType,"B")
 	elseif (cmpstr(carriageStr,"F")==0)
@@ -177,8 +183,8 @@ Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
 		V_NormalizeDIV_onePanel(reducedFolderType,"MB")	
 	endif
 	
-end
-
+	return(0)
+End
 
 // Normalizes a single panel
 // then copies that panel over to the DIV_Struct for later saving
@@ -224,8 +230,8 @@ Function V_NormalizeDIV_onePanel(type,detStr)
 	w_err_copy /= totCts
 	w_err_copy *= V_npnts
 
-// TODO:
-// -- do I want to replace the NaN values with 1 for the DIV (the user will mask the data as
+// DONE:
+// x- I replace the NaN values with 1 for the DIV (the user will mask the data as
 //    needed, and the NaN values may be an issue later...
 	w_copy = (numtype(w_copy) == 2) ? 1 : w_copy			//turns 2==NaN into 1
 	
@@ -244,47 +250,47 @@ Function V_NormalizeDIV_onePanel(type,detStr)
 End
 
 
+////
+//// Normalizes each panel independently
+//// Normalizes in-place, replacing whatever was there
+////
+//// type is the work folder where the (? corrected) data is currently
+////
+//// NOTE (Currently unused. use V_NormalizeDIV_onePanel() instead)
+////
+//// -- data should be copied to some alternate work folder before this step
+//// -- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
+////    How to handle? A mask?
+//// x- is this the correct calculation of the error? (YES) It should be correct up to this point since the
+////    standard reduction has been used, but now the normalization step is a multiplication
+////    by a constant (w/no error). Be sure this error transformation is correct. (YES - this is correct, and is
+////    what is done in SANS)
+////
+//Function V_NormalizeDIV(type)
+//	String type
 //
-// Normalizes each panel independently
-// Normalizes in-place, replacing whatever was there
+//	Variable ii,totCts,pixelX,pixelY
+//	String detStr
 //
-// type is the work folder where the (? corrected) data is currently
+//	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+//		detStr = StringFromList(ii, ksDetectorListAll, ";")
+//		Wave w = V_getDetectorDataW(type,detStr)
+//		Wave w_err = V_getDetectorDataErrW(type,detStr)
+//		pixelX = V_getDet_pixel_num_x(type,detStr)
+//		pixelY = V_getDet_pixel_num_y(type,detStr)
 //
-// NOTE (Currently unused. use V_NormalizeDIV_onePanel() instead)
+//		totCts = sum(w,Inf,-Inf)		//sum all of the data
+//		
+//		w /= totCts
+//		w *= pixelX*pixelY
 //
-// -- data should be copied to some alternate work folder before this step
-// -- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
-//    How to handle? A mask?
-// x- is this the correct calculation of the error? (YES) It should be correct up to this point since the
-//    standard reduction has been used, but now the normalization step is a multiplication
-//    by a constant (w/no error). Be sure this error transformation is correct. (YES - this is correct, and is
-//    what is done in SANS)
-//
-Function V_NormalizeDIV(type)
-	String type
-
-	Variable ii,totCts,pixelX,pixelY
-	String detStr
-
-	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
-		detStr = StringFromList(ii, ksDetectorListAll, ";")
-		Wave w = V_getDetectorDataW(type,detStr)
-		Wave w_err = V_getDetectorDataErrW(type,detStr)
-		pixelX = V_getDet_pixel_num_x(type,detStr)
-		pixelY = V_getDet_pixel_num_y(type,detStr)
-
-		totCts = sum(w,Inf,-Inf)		//sum all of the data
-		
-		w /= totCts
-		w *= pixelX*pixelY
-
-		w_err /= totCts
-		w_err *= pixelX*pixelY
-		
-	endfor
-	
-	return(0)
-End
+//		w_err /= totCts
+//		w_err *= pixelX*pixelY
+//		
+//	endfor
+//	
+//	return(0)
+//End
 
 
 // copies an entire work folder, all 9 detectors (at COR level)

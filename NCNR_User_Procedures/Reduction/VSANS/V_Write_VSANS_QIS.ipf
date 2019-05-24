@@ -395,8 +395,9 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	Variable pixX,pixY
 	Variable numTextLines,ii,jj,kk
 	Variable pixSizeX,pixSizeY
+	Variable duration
 
-	numTextLines = 23
+	numTextLines = 30
 	Make/O/T/N=(numTextLines) labelWave
 
 	//
@@ -448,6 +449,8 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		pixSizeX = V_getDet_x_pixel_size(type,detStr)
 		pixSizeY = V_getDet_y_pixel_size(type,detStr)
 		
+		duration = V_getCount_time(type)
+		
 	/////////
 		labelWave[0] = "FILE: "+fileName+"   CREATED: "+fileDate
 		labelWave[1] = "LABEL: "+fileLabel
@@ -470,12 +473,20 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		labelWave[16] = "XPixelSize_mm="+num2str(pixSizeX)
 		labelWave[17] = "NumYPixels="+num2str(pixY)
 		labelWave[18] = "YPixelSize_mm="+num2str(pixSizeY)
-		labelWave[19] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
+		labelWave[19] = "Duration (s)="+num2str(duration)
+		labelWave[20] = "reserved for future file definition changes"
+		labelWave[21] = "reserved for future file definition changes"
+		labelWave[22] = "reserved for future file definition changes"
+		labelWave[23] = "reserved for future file definition changes"
+		labelWave[24] = "reserved for future file definition changes"
+		labelWave[25] = "reserved for future file definition changes"
+
+		labelWave[26] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
 //		labelWave[20] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
 	//	labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-		labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-		labelWave[21] = "The error wave may not be properly propagated (1/2019)"
-		labelWave[22] = "ASCII data created " +date()+" "+time()
+		labelWave[27] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[28] = "The error wave may not be properly propagated (1/2019)"
+		labelWave[29] = "ASCII data created " +date()+" "+time()
 		//strings can be too long to print-- must trim to 255 chars
 		for(jj=0;jj<numTextLines;jj+=1)
 			labelWave[jj] = (labelWave[jj])[0,240]
