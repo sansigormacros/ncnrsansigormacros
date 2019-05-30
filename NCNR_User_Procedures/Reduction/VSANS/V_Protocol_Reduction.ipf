@@ -445,7 +445,9 @@ Function V_MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[2] = str
 		else
-			tempStr = V_ParseRunNumberList(str)
+//			Print itemsinlist(str,",")
+			tempStr = StringFromList(0,str,",")
+//			tempStr = V_ParseRunNumberList(str)
 			if(strlen(tempStr)==0)
 				return(1)
 			else
@@ -469,7 +471,8 @@ Function V_MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[3] = str
 		else
-			tempstr = V_ParseRunNumberList(str)
+			tempStr = StringFromList(0,str,",")
+//			tempstr = V_ParseRunNumberList(str)
 			if(strlen(tempstr)==0)
 				return(1)
 			else

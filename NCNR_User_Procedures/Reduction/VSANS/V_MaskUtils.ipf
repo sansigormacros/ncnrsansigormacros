@@ -1031,7 +1031,7 @@ Proc Save_VSANS_MASK_Nexus(fileName)
 	String fileName="Test_VSANS_MASK_file"
 
 	// save as HDF5 (no attributes saved yet)
-	Save_VSANS_file("root:VSANS_MASK_file", fileName+".h5")
+	Save_VSANS_file("root:VSANS_MASK_file", fileName+".MASK.h5")
 	
 //	// read in a data file using the gateway-- reads from the home path
 //	H_HDF5Gate_Read_Raw(fileName+".h5")
