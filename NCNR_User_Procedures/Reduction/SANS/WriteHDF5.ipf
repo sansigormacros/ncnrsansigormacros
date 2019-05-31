@@ -79,7 +79,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	String dataBase = base + ":entry1:sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0,1",textw[1]}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",textw[1]}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
@@ -218,8 +218,11 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
 	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
 	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
+	Make/O/N=(2,pixelsX,pixelsY) qxy_vals
 	//everything in 1D now
-	Duplicate/O qval SigmaQX,SigmaQY,fsubS
+	Duplicate/O qval SigmaQX,SigmaQY
+	Make/O/N=(pixelsX,pixelsY) shadow
+	Make/O/N=(2,pixelsX,pixelsY) SigmaQ_combined
 
 	//Two parameters DDET and APOFF are instrument dependent.  Determine
 	//these from the instrument name in the header.
@@ -228,17 +231,24 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	NVAR apOff = root:myGlobals:apOff		//in cm
 	DDet = rw[10]/10			// header value (X) is in mm, want cm here
 
-	Variable ret1,ret2,ret3,nq
-	nq = pixelsX*pixelsY
+	Variable ret1,ret2,ret3,jj
+	Variable nq = 0
 	Variable ii = 0
 	
 	do
-		get2DResolution(qval[ii],phi[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[ii],ret1,ret2,ret3)
-		SigmaQX[ii] = ret1	
-		SigmaQY[ii] = ret2	
-		fsubs[ii] = ret3	
+		jj = 0
+		do
+			nq = ii * pixelsX + jj
+			get2DResolution(qval[nq],phi[nq],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[nq],ret1,ret2,ret3)
+			qxy_vals[0][ii][jj] = qx_val[nq]
+			qxy_vals[1][ii][jj] = qy_val[nq]
+			SigmaQ_combined[0][ii][jj] = ret1	
+			SigmaQ_combined[1][ii][jj] = ret2
+			shadow[ii][jj] = ret3	
+			jj+=1
+		while(jj<pixelsX)
 		ii+=1
-	while(ii<nq)
+	while(ii<pixelsY)
 	//
 	///////////////////////////////////////////////////////////////////////////
 
@@ -265,31 +275,30 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	String dataBase = base + ":entry1:sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Qx,Qy","NXdata","0,1",textw[1]}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",textw[1]}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
 	Make/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
 	Make/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
+
+	//
+	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
+	//
+
 	// Create qx and qy entry
-	NewDataFolder/O/S $(dataBase + ":qx")
-	Make/T/N=2 $(dataBase + ":qx:attr") = {"units","resolutions"}
-	Make/T/N=2 $(dataBase + ":qx:attrVals") = {"1/angstrom","Qxdev"}
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Qx",qx_val,$(dataBase + ":qx:attr"),$(dataBase + ":qx:attrVals"))
-	NewDataFolder/O/S $(dataBase + ":qy")
-	Make/T/N=2 $(dataBase + ":qy:attr") = {"units","resolutions"}
-	Make/T/N=2 $(dataBase + ":qy:attrVals") = {"1/angstrom","Qydev"}
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Qy",qy_val,$(dataBase + ":qy:attr"),$(dataBase + ":qy:attrVals"))
+	NewDataFolder/O/S $(dataBase + ":q")
+	Make/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
+	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qxy_vals,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
+	
 	// Create idev entry
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",data_err,units,inv_cm)
 	// Create qdev entry
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Qxdev",SigmaQX,units,inv_angstrom)
-	CreateVarNxCansas(fileID,dataParent,"sasdata","Qydev",SigmaQY,units,inv_angstrom)
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",SigmaQ_combined,units,inv_angstrom)
 	// Create shadwfactor entry
-	
-	// TODO: Reinstate ShadowFactor
-	// CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",fsubs,empty,empty)
+	CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",shadow,empty,empty)
 	
 	// Write all meta data
 	WriteMetaData(fileID,base,parentBase,rw,textw)
@@ -340,15 +349,20 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(apertureBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(apertureBase + ":attrVals") = {"SASaperture","NXaperture"}
 	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
+	
+	//
+	// TODO: Where do I get rectangular dimensions from?
+	//
+	
 	// Create SASaperture shape entry
-	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} // TODO: Where do I get rectangular dimensions from?
+	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} 
 	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
 	// Create SASaperture x_gap entry
-	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]} // TODO: Where do I get rectangular dimensions from?
-	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,cm)
+	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]}
+	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,mm)
 	// Create SASaperture y_gap entry
-	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]} // TODO: Where do I get rectangular dimensions from?
-	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,cm)
+	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]}
+	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,mm)
 	
 	// SAScollimation
 	String collimationParent = instrParent + "sascollimation/"
