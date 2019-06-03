@@ -39,7 +39,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	if(dialog || stringmatch(fullpath, ""))
 		fileID = NxCansas_DoSaveFileDialog()
 	else
-		NxCansas_CreateFile(fullpath)
+		fileID = NxCansas_CreateFile(fullpath)
 	Endif
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
@@ -143,7 +143,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	if(dialog || stringmatch(fullpath, ""))
 		fileID = NxCansas_DoSaveFileDialog()
 	else
-		NxCansas_CreateFile(fullpath)
+		fileID = NxCansas_CreateFile(fullpath)
 	Endif
 	if(!fileID)
 		Print "Unable to create file at " + fullpath + "."
@@ -285,7 +285,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 
 	//
 	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
-	//
+	
 
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
