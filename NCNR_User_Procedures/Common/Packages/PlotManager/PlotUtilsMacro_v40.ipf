@@ -1472,6 +1472,14 @@ Function XMLWritePref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function NXWritePref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gNXcanSAS_Write
+	gVal = checked
+End
+
 Function DoTransCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
@@ -1542,6 +1550,10 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_0a,pos={21,96},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
 	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
 	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gXML_Write
+	CheckBox PrefCtrl_0a,pos={21,116},size={124,14},proc=NXWritePref,title="Use NXcanSAS HDF5 Output"
+	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be NXcanSAS HDF5 rather than NIST 6 column"}
+	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gNXcanSAS_Write
+
 
 //on tab(1) - SANS
 	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"

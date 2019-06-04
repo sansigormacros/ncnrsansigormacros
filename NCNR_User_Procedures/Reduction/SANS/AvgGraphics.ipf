@@ -69,6 +69,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	// average the currently displayed data
 	SVAR type=root:myGlobals:gDataDisplayType
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:GNXcanSAS_Write
 
 	//Check for logscale data in "type" folder
 	String dest = "root:Packages:NIST:"+type
@@ -125,32 +126,14 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	strswitch(choice)
 		case "Rectangular":		
 			RectangularAverageTo1D(type)
-			If(doSave)					//save the file, acting on the currently displayed file
-				if (useXMLOutput == 1)
-					WriteXMLWaves_W_Protocol(type,"",1)
-				else
-					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-				endif
-			Endif
 			break					
 		case "Annular":		
 			AnnularAverageTo1D(type)
-			If(doSave)		// XML here yet
-				//save the file, acting on the currently displayed file
-				WritePhiave_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-			Endif
 			break
 		case "Circular":
 		case "Sector":
 			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
-			If(doSave)
-				if (useXMLOutput == 1)
-					WriteXMLWaves_W_Protocol(type,"",1)
-				else
-					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-				endif
-			Endif
 			break
 		case "2D ASCII":
 			Fast2dExport(type,"",1)
@@ -160,17 +143,28 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			break
 		case "Sector_PlusMinus":
 			Sector_PlusMinus1D(type)
-			If(doSave)
-				if (useXMLOutput == 1)
-					WriteXMLWaves_W_Protocol(type,"",1)
-				else
-					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-				endif
-			Endif
 			break
 		default:						
 			Abort "no case match in average dispatch"
 	endswitch
+	
+	if(doSave)
+		strswitch(choice)
+			case "Annular":
+				WritePhiave_W_Protocol(type,"",1)
+				break
+			case "2D ASCII":
+			case "QxQy ASCII":
+				break
+			default:
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(type,"",1)
+				else if (useNXcanSASOutput == 1)
+					WriteNxCanSAS1D(type,"",1)
+				else
+					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				endif
+	EndIf
 	
 	//convert back to log scaling if I changed it...
 	if(wasLogScale)
