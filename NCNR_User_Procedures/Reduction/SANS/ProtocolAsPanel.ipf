@@ -1476,6 +1476,7 @@ Function ExecuteProtocol(protStr,samStr)
 	pathStr=S_path
 	
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 	
 	//Parse the instructions in the prot wave
 	//0 - bkg
@@ -1914,6 +1915,8 @@ Function ExecuteProtocol(protStr,samStr)
 		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
 			if(useXMLOutput == 1)
 				exten += "x"
+			elseif(useNXcanSASOutput == 1)
+				exten = "h5"
 			endif
 		endif
 				
@@ -1953,6 +1956,8 @@ Function ExecuteProtocol(protStr,samStr)
 			default:
 				if (useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
+				elseif (useNXcanSASOutput == 1)
+					WriteNxCanSAS1D(activeType,fullPath,dialog)
 				else
 					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 				endif

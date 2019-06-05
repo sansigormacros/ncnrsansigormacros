@@ -159,11 +159,12 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			default:
 				if (useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(type,"",1)
-				else if (useNXcanSASOutput == 1)
+				elseif (useNXcanSASOutput == 1)
 					WriteNxCanSAS1D(type,"",1)
 				else
 					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
 				endif
+		endswitch
 	EndIf
 	
 	//convert back to log scaling if I changed it...
