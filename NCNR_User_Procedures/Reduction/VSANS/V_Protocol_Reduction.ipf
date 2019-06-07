@@ -3349,25 +3349,26 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 //					prot[9] = collimationStr
 					
 					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
-				
+					Print "data written to:  "+ newFileName+"."+exten
 				endif
 				
 				if(cmpstr(saveType,"Yes - Individual")==0)
 					// remove the q=0 point from the back detector, if it's there
 					// does not trim any other points from the data
 					V_RemoveQ0_B(activeType)
-					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+//					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+
+					V_Write1DData_Individual("root:Packages:NIST:VSANS:",activeType,newFileName,exten,binType)
 				endif
-				Print "data written to:  "+ newFileName+"."+exten
 
 				break
 	
 				
-				case "2D_ASCII":
+			case "2D_ASCII":
 //				Fast2DExport(activeType,fullPath,dialog)
 				break
 			case "QxQy_ASCII":
-				fullPath = S_Path + newFileName+".DAT"
+				fullPath = S_Path + newFileName  //+".DAT"		add the .DAT and detector panel in the writer, not here
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
 				break
 			case "PNG_Graphic":

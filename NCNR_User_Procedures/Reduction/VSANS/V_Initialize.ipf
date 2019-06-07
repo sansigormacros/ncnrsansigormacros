@@ -56,7 +56,6 @@ Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-
 Strconstant ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" extensions
 Strconstant ksBinType2 = "FTB;FLR;MTB;MLR;B;"
 Strconstant ksBinType3 = "FLRTB;MLRTB;B;"
-//Strconstant ksBinType4 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
 Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode, disregard the T/B panels
 Strconstant ksBinType5 = "FTB;FLR;MLRTB;B;"
 Strconstant ksBinType6 = "FLRTB;MLR;B;"

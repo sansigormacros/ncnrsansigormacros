@@ -2,14 +2,8 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
-
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
 //
-// this will bypass save dialogs
-// -- AND WILL OVERWITE DATA WITH THE SAME NAME
+// this is the general writer for output of 1D averaged I(q) datasets
 //
 Function V_Write1DData(pathStr,folderStr,saveName)
 	String pathStr,folderStr,saveName
@@ -147,6 +141,200 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 	SetDataFolder root:
 	return(0)
 End
+
+
+//
+// this is the general writer for output of 1D averaged I(q) datasets
+// this version is limited to three column data where there is no
+// resolution information present
+//
+Function V_Write1DData_3Col(pathStr,folderStr,saveName)
+	String pathStr,folderStr,saveName
+	
+	String formatStr="",fullpath=""
+	Variable refnum,dialog=1
+
+	SetDataFolder $(pathStr+folderStr)
+
+	Wave qw = tmp_q
+	Wave iw = tmp_i
+	Wave sw = tmp_s
+//	Wave sigQ = tmp_sq
+//	Wave qbar = tmp_qb
+//	Wave fs = tmp_fs
+	
+	String dataSetFolderParent,basestr
+	
+	// ParseFilePath to get path without folder name
+//	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
+	// ParseFilePath to get basestr
+//	basestr = ParseFilePath(0,folderStr,":",1,0)
+	
+	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
+	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
+	
+	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	
+	//make sure the waves exist
+	
+	if(WaveExists(qw) == 0)
+		Abort "q is missing"
+	endif
+	if(WaveExists(iw) == 0)
+		Abort "i is missing"
+	endif
+	if(WaveExists(sw) == 0)
+		Abort "s is missing"
+	endif
+//	if(WaveExists(sigQ) == 0)
+//		Abort "Resolution information is missing."
+//	endif
+	if(WaveExists(proto) == 0)
+		Abort "protocol information is missing."
+	endif
+
+
+// if the "default" trimming is used, the proto[] values will be null
+// fill them in with the default values
+	String protoStr7,protoStr8
+	if(strlen(proto[7]) == 0)
+		protoStr7 = "(Default) "+ ksBinTrimBegDefault
+	else
+		protoStr7 = proto[7]
+	endif
+	if(strlen(proto[8]) == 0)
+		protoStr8 = "(Default) "+ ksBinTrimEndDefault
+	else
+		protoStr8 = proto[8]
+	endif	
+
+	PathInfo catPathName
+	fullPath = S_Path + saveName
+
+	Open refnum as fullpath
+
+	fprintf refnum,"Combined data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
+
+	//insert protocol information here
+	//-1 list of sample files
+	//0 - bkg
+	//1 - emp
+	//2 - div
+	//3 - mask
+	//4 - abs params c2-c5
+	//5 - average params
+	//6 - DRK (unused in VSANS)
+	//7 - beginning trim points
+	//8 - end trim points
+	fprintf refnum, "SAM: %s\r\n",samFiles
+	fprintf refnum, "BGD: %s\r\n",proto[0]
+	fprintf refnum, "EMP: %s\r\n",Proto[1]
+	fprintf refnum, "DIV: %s\r\n",Proto[2]
+	fprintf refnum, "MASK: %s\r\n",Proto[3]
+	fprintf refnum, "ABS Parameters (3-6): %s\r\n",Proto[4]
+	fprintf refnum, "Average Choices: %s\r\n",Proto[5]
+	fprintf refnum, "Beginning Trim Points: %s\r\n",ProtoStr7
+	fprintf refnum, "End Trim Points: %s\r\n",ProtoStr8
+	fprintf refnum, "COLLIMATION=%s\r\n",proto[9]
+
+
+	// three column version
+	formatStr = "%15.4g %15.4g %15.4g\r\n"	
+	fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
+//
+	wfprintf refnum,formatStr,qw,iw,sw
+
+	Close refnum
+	
+//	KillWaves/Z sigQ,qbar,fs
+	Print "Data written to: ",fullpath
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
+//
+// This saves the data in individual files for each detector panel. They are meant only for
+// troubleshooting, but the files are in the general ascii format (without resolution)
+// so only three columns are written out
+//
+// this will bypass save dialogs
+// -- AND WILL OVERWRITE DATA WITH THE SAME NAME
+//
+Function V_Write1DData_Individual(pathStr,folderStr,saveName,exten,binType)
+	String pathStr,folderStr,saveName,exten
+	Variable binType
+	
+	String formatStr="",fullpath="",item,fileName,detList
+	Variable refnum,num,ii
+
+	SetDataFolder $(pathStr+folderStr)
+
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+	// while in the proper data folder, loop through the detector files
+	// and write out each individual panel (or sets of panels) as specified 
+	// by the binning type.
+	//
+	// copy the desired files over to tmp_q, tmp_i, and tmp_s, then 
+	// pass to a worker Function
+	//
+	
+	//
+	//  ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" extensions
+	//  ksBinType2 = "FTB;FLR;MTB;MLR;B;"
+	//  ksBinType3 = "FLRTB;MLRTB;B;"
+	//  ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode, disregard the T/B panels
+	
+	
+	switch(binType)
+		case 1:		// 9 sets = 27 waves!  ksBinType1
+			detList = ksBinType1
+			
+			break
+		case 2:		// 5 sets
+			detList = ksBinType2
+			break
+		case 3:		// 3 sets
+			detList = ksBinType3
+			break
+		case 4:		// 9 sets
+			detList = ksBinType4
+			break
+					
+		default:
+		// do nothing, just close
+
+	endswitch
+
+	num=ItemsInList(detList)
+	for(ii=0;ii<num;ii+=1)
+		SetDataFolder $(pathStr+folderStr)
+
+		item=StringFromList(ii, detList)
+		
+		if(gIgnoreB && cmpstr(item,"B") == 0)
+			//do nothing
+		else
+			fileName = saveName + "_"+item+"."+exten
+			Wave qWave = $("qBin_qxqy_"+item)
+			Wave iWave = $("iBin_qxqy_"+item)
+			Wave eWave = $("eBin_qxqy_"+item)
+			KillWaves/Z tmp_q, tmp_i, tmp_s
+			Duplicate/O qWave tmp_q
+			Duplicate/O iWave tmp_i
+			Duplicate/O eWave tmp_s
+			V_Write1DData_3Col(pathStr,folderStr,fileName)
+		endif
+		
+	endfor
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
 
 
 
@@ -415,7 +603,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
 
 		detStr = StringFromList(kk, detList, ";")
-		detSavePath = fullPath + "_" + detStr
+		detSavePath = fullPath + "_" + detStr + ".DAT"
 		
 		pixX = V_getDet_pixel_num_x(type,detStr)
 		pixY = V_getDet_pixel_num_y(type,detStr)
