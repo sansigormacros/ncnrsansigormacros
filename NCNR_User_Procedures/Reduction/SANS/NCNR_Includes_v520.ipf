@@ -98,7 +98,7 @@ End
 //#include "MC_Script_Panels"
 
 // JRK JUN 2019 -- import NXcanSAS writer
-#include "WriteHDF5"
+#include "NIST_NXcanSAS_v709"
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

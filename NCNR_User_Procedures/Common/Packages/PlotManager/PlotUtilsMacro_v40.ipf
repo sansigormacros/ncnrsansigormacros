@@ -218,9 +218,13 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 		endif
 	endif
 
-	if (isXML(fileStr) == 1)
-		LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
-	else		
+	if (isXML(fileStr) == 1 || isNXcanSAS(fileStr) == 1)
+		if (isNXcanSAS(fileStr) == 1)
+			LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
+		else
+			LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
+		endif
+	else
 		//Load the waves, using default waveX names
 		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 		LoadWave/G/D/A/Q fileStr

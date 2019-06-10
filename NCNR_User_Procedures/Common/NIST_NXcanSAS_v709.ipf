@@ -108,6 +108,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 		HDF5CloseFile /Z fileID
 	endif
 	
+	KillDataFolder/Z $base
+	
 End
 
 //
@@ -285,6 +287,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 
 	//
 	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
+	//
 	
 
 	// Create qx and qy entry
@@ -307,6 +310,8 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	if(fileID)
 		HDF5CloseFile /Z fileID
 	endif
+	
+	KillDataFolder/Z $base
 	
 End
 
@@ -445,7 +450,8 @@ End
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Basic file open and initialization routines
+//
+// Basic file open/create and file initialization routines
 
 // Select/create file through prompt
 Function NxCansas_DoSaveFileDialog()
@@ -464,10 +470,40 @@ End
 Function NxCansas_CreateFile(fullpath)
 	String fullpath
 	Variable fileID
+	Make/T/O/N=1 $("root:file_name") = fullpath
 	fullpath = ReplaceString(":\\", fullpath, ":")
 	fullpath = ReplaceString("\\", fullpath, ":")
 	HDF5CreateFile /Z fileID as fullpath
 	NXCansas_InitializeFile(fileID)
+	return fileID
+End
+
+
+// Open\ file with a known path
+Function NxCansas_OpenFile(fullpath)
+	String fullpath
+	String fileName
+	Variable fileID
+	fileName = ParseFilePath(3,fullpath,":",0,0)
+	Print fileName
+	Make/T/O/N=1 $("root:file_name") = fileName
+	fullpath = ReplaceString(":\\", fullpath, ":")
+	fullpath = ReplaceString("\\", fullpath, ":")
+	HDF5OpenFile /Z fileID as fullpath
+	return fileID
+End
+
+// Select/create file through prompt
+Function NxCansas_DoOpenFileDialog()
+	Variable refNum,fileID
+	String message = "Select a file"
+	String inputPath,fileName
+	String fileFilters = "Data Files (*.h5):.h5;"
+	STRUCT HDF5BrowserData bd
+	fileFilters += "All Files:.*;"
+	Open /D /F=fileFilters /M=message refNum as fileName
+	inputPath = S_fileName
+	fileID = NxCansas_OpenFile(inputPath)
 	return fileID
 End
 
@@ -559,6 +595,7 @@ End
 // Write in a single NxCansas element (from the STRUCTURE)
 // This method should only be called by CreateVarNxCansas
 Function saveNxCansasVars(fileID,parent,group,var,valueWave,attr,attrValues)
+
 	Variable fileID
 	String parent,group,var
 	Wave valueWave
@@ -619,6 +656,139 @@ Function saveNxCansasStrs(fileID,parent,group,var,valueWave,attr,attrValues)
 	endif
 
 	return err
+end
+
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// NXcanSAS Reader and Utilities
+
+Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
+	String fileStr, outstr
+	Variable doPlot,forceOverwrite
+	
+	Variable refnum,fileID
+	Variable rr,gg,bb
+	SetDataFolder root:		//build sub-folders for each data set under root
+	
+	String filename
+	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A")
+	
+	// Check fullpath and dialog
+	if(stringmatch(fileStr, ""))
+		fileID = NxCansas_DoOpenFileDialog()
+	else
+		fileID = NxCansas_OpenFile(fileStr)
+	Endif
+	
+	filename = ParseFilePath(3,fileStr,":",0,0)
+	Print "file string: ",filename
+	String/G loadDir = "root:" + filename
+	
+	String I_dataStore = filename + "_i"
+	String Q_dataStore = filename + "q"
+	String dI_dataStore = filename + "s"
+	
+	//go back to the root folder and clean up before leaving
+	NewDataFolder/O/S $loadDir
+	
+	if(fileID)
+		HDF5ListGroup /F/R/Type=1/Z fileID,"/"
+		String groupList = S_HDF5ListGroup
+		Print "grouplist: ",groupList
+	
+		Variable groupID
+		HDF5OpenGroup /Z fileID, "/sasentry/sasdata", groupID
+		HDF5LoadData /O/N=$I_dataStore fileID, "/sasentry/sasdata/I"
+		HDF5LoadData /O/N=$Q_dataStore fileID, "/sasentry/sasdata/Q"
+		HDF5LoadData /O/N=$dI_dataStore fileID, "/sasentry/sasdata/Idev"
+		
+		//plot if desired
+		if(doPlot)
+			Print GetDataFolder(1)
+			
+			String w0 = loadDir + ":" + Q_dataStore
+			String w1 = loadDir + ":" + I_dataStore
+			String w2 = loadDir + ":" + dI_dataStore
+			
+			// assign colors randomly
+			rr = abs(trunc(enoise(65535)))
+			gg = abs(trunc(enoise(65535)))
+			bb = abs(trunc(enoise(65535)))
+			
+			// if target window is a graph, and user wants to append, do so
+		   DoWindow/B Plot_Manager
+			if(WinType("") == 1)
+				DoAlert 1,"Do you want to append this data to the current graph?"
+				
+				if(V_Flag == 1)
+					AppendToGraph $w1 vs $w0
+					ModifyGraph mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
+					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
+					ModifyGraph tickUnit(left)=1
+				else
+				//new graph
+					SetDataFolder $loadDir	//sometimes I end up back in root: here, and I can't figure out why!
+					Display $w1 vs $w0
+					ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
+					ModifyGraph grid=1,mirror=2,standoff=0
+					ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
+					ModifyGraph tickUnit(left)=1
+					Label left "I(q)"
+					Label bottom "q ("+angst+"\\S-1\\M)"
+					Legend
+				endif
+			else
+			// graph window was not target, make new one
+				Display $w1 vs $w0
+				ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
+				ModifyGraph grid=1,mirror=2,standoff=0
+				ErrorBars/T=0 $w1 Y,wave=($w2,$w2)
+				ModifyGraph tickUnit(left)=1
+				Label left "I(q)"
+				Label bottom "q ("+angst+"\\S-1\\M)"
+				Legend
+			endif
+		endif
+		
+	endif
+	
+	// Close the file
+	if(fileID)
+		HDF5CloseFile /Z fileID
+	endif
+	
+	// KillDataFolder /Z $loadDir
+
+end
+
+//
+///////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Generic Read/Write operations.
+
+//Needed to test whether file is NXcanSAS. The load routine will then either give an error if HDF5 XOP is not present or load the file if it is.
+Function isNXcanSAS(filestr)
+	String filestr
+	
+	Variable fileID = 0
+	Int isHDF5File = 0
+	
+	fileID = NxCansas_OpenFile(filestr)
+	
+	if (fileID != 0)
+		isHDF5File = 1
+		// Close the file
+		HDF5CloseFile /Z fileID
+	endif
+	
+	return isHDF5File
+
 end
 
 //
