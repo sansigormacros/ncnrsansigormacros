@@ -672,7 +672,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		labelWave[26] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
 //		labelWave[20] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
 	//	labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
-		labelWave[27] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
+		labelWave[27] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask"
 		labelWave[28] = "The error wave may not be properly propagated (1/2019)"
 		labelWave[29] = "ASCII data created " +date()+" "+time()
 		//strings can be too long to print-- must trim to 255 chars
@@ -686,6 +686,10 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		
 		WAVE data = V_getDetectorDataW(type,detStr)
 		WAVE data_err = V_getDetectorDataErrW(type,detStr)
+
+// JUN 2019 get the mask data		
+		WAVE MaskData = V_getDetectorDataW("MSK",detStr)
+
 		
 		// TOOD - replace hard wired paths with Read functions
 		// hard-wired
@@ -776,30 +780,31 @@ v_toc()
 		Duplicate/O SigmaQy,sigmaQy_s
 		Duplicate/O fSubS,fSubS_s
 		Duplicate/O data_err,sw_s
+		Duplicate/O MaskData,MaskData_s
 		
 		//so that double precision data is not written out
 		Redimension/S qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
-		Redimension/S SigmaQx_s,SigmaQy_s,fSubS_s
+		Redimension/S SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
 	
-		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
+		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s,MaskData_s
 		
 		//not demo-compatible, but approx 8x faster!!	
 #if(strsearch(stringbykey("IGORKIND",IgorInfo(0),":",";"), "demo", 0 ) == -1)
 		
 //		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution
-		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s as detSavePath	// write out the resolution information
+		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as detSavePath	// write out the resolution information
 #else
 		Open refNum as detSavePath
 		wfprintf refNum,"%s\r\n",labelWave
 		fprintf refnum,"\r\n"
 //		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
-		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s
+		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
 		Close refNum
 #endif
 		
-		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s
+		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s,MaskData_s
 		
-		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist
+		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist,MaskData
 		
 		Print "QxQy_Export File written: ", V_GetFileNameFromPathNoSemi(detSavePath)
 	

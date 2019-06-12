@@ -960,9 +960,9 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	newYCtr_cm[6] = y_MiddleReference + kBCtrOffset_MT_y
 	
 	
-	// default value for B
-	newXCtr_cm[8] = 50
-	newYCtr_cm[8] = 50
+	// default value for B (approx center) in pixels
+	newXCtr_cm[8] = 340
+	newYCtr_cm[8] = 828
 
 		
 	return
