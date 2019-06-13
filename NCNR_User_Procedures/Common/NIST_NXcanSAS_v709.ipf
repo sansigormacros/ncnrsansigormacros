@@ -23,11 +23,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	
 	// Define local function variables
 	Variable fileID
-	String destStr=""
-	String parentBase = "/sasentry/" // HDF5 base path for all 
+	String destStr="", parentBase, nxcansasBase
 	String/G base = "root:NXcanSAS_file"
-	
-	KillDataFolder/Z $base
 	
 	// Define local waves
 	Wave/T vals,attr,attrVals
@@ -42,8 +39,12 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 		fileID = NxCansas_CreateFile(fullpath)
 	Endif
 	if(!fileID)
-		Print "Unable to create file at " + fullpath + "."
+		abort "Unable to create file at " + fullpath + "."
 	else
+		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
+
 		destStr = "root:Packages:NIST:"+type
 		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 		WAVE intw = $(destStr + ":integersRead")
@@ -61,22 +62,22 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	// Write all data
 	
 	// Define common attribute waves
-	Make/T/N=1 empty = {""}
-	Make/T/N=1 units = {"units"}
-	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/A"}
+	Make/T/O/N=1 empty = {""}
+	Make/T/O/N=1 units = {"units"}
+	Make/T/O/N=1 inv_cm = {"1/cm"}
+	Make/T/O/N=1 inv_angstrom = {"1/A"}
 	
 	// Run Name and title
-	NewDataFolder/O/S $(base + ":entry1")
-	Make/T/N=1 $(base + ":entry1:title") = {textw[6]}
-	CreateStrNxCansas(fileID,parentBase,"","title",$(base + ":entry1:title"),empty,empty)
-	Make/T/N=1 $(base + ":entry1:run") = {textw[0]}
-	CreateStrNxCansas(fileID,parentBase,"","run",$(base + ":entry1:run"),empty,empty)
+	NewDataFolder/O/S $(parentBase)
+	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
+	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
-	String dataParent = parentBase + "sasdata/"
+	String dataParent = nxcansasBase + "sasdata/"
 	// Create SASdata entry
-	String dataBase = base + ":entry1:sasdata"
+	String dataBase = parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
 	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",textw[1]}
@@ -88,8 +89,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qvals,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
-	Make/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
-	Make/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
+	Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
+	Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",inten,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 	// Create idev entry
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",sig,units,inv_cm)
@@ -98,7 +99,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
 	
 	// Write all meta data
-	WriteMetaData(fileID,base,parentBase,rw,textw)
+	WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
 	
 	//
 	///////////////////////////////////////////////////////////////////////////
@@ -129,11 +130,8 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	
 	// Define local function variables
 	Variable fileID
-	String destStr="",typeStr=""
-	String parentBase = "/sasentry/" // HDF5 base path for all 
+	String destStr="",typeStr="", parentBase, nxcansasBase
 	String/G base = "root:NXcanSAS_file"
-	
-	KillDataFolder/Z $base
 	
 	// Define local waves
 	Wave/T vals,attr,attrVals
@@ -148,8 +146,12 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 		fileID = NxCansas_CreateFile(fullpath)
 	Endif
 	if(!fileID)
-		Print "Unable to create file at " + fullpath + "."
+		abort "Unable to create file at " + fullpath + "."
 	else
+		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
+		
 		destStr = "root:Packages:NIST:"+type
 
 		//must select the linear_data to export
@@ -159,7 +161,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 		else
 			typeStr = ":data"
 		endif
-			NVAR pixelsX = root:myGlobals:gNPixelsX
+		NVAR pixelsX = root:myGlobals:gNPixelsX
 		NVAR pixelsY = root:myGlobals:gNPixelsY
 		Wave data=$(destStr+typeStr)
 		Wave data_err=$(destStr+":linear_data_error")
@@ -259,30 +261,30 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Write all data
 	
 	// Define common attribute waves
-	Make/T/N=1 empty = {""}
-	Make/T/N=1 units = {"units"}
-	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/A"}
+	Make/O/T/N=1 empty = {""}
+	Make/O/T/N=1 units = {"units"}
+	Make/O/T/N=1 inv_cm = {"1/cm"}
+	Make/O/T/N=1 inv_angstrom = {"1/A"}
 	
 	// Run Name and title
-	NewDataFolder/O/S $(base + ":entry1")
-	Make/T/N=1 $(base + ":entry1:title") = {textw[6]}
-	CreateStrNxCansas(fileID,parentBase,"","title",$(base + ":entry1:title"),empty,empty)
-	Make/T/N=1 $(base + ":entry1:run") = {textw[0]}
-	CreateStrNxCansas(fileID,parentBase,"","run",$(base + ":entry1:run"),empty,empty)
+	NewDataFolder/O/S $(base + parentBase)
+	Make/O/T/N=1 $(base + parentBase + ":title") = {textw[6]}
+	CreateStrNxCansas(fileID,parentBase,"","title",$(base + parentBase + ":title"),empty,empty)
+	Make/O/T/N=1 $(base + parentBase + ":run") = {textw[0]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(base + parentBase + ":run"),empty,empty)
 	
 	// SASData
-	String dataParent = parentBase + "sasdata/"
+	String dataParent = nxcansasBase + "sasdata/"
 	// Create SASdata entry
-	String dataBase = base + ":entry1:sasdata"
+	String dataBase = base + parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
 	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",textw[1]}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
-	Make/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
-	Make/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
+	Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
+	Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 
 	//
@@ -292,8 +294,8 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
-	Make/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
-	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
+	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
+	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qxy_vals,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	
 	// Create idev entry
@@ -304,7 +306,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",shadow,empty,empty)
 	
 	// Write all meta data
-	WriteMetaData(fileID,base,parentBase,rw,textw)
+	WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
 	
 	// Close the file
 	if(fileID)
@@ -329,18 +331,18 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Wave/T textw
 	
 	// Define common attribute waves
-	Make/T/N=1 empty = {""}
-	Make/T/N=1 units = {"units"}
-	Make/T/N=1 m = {"m"}
-	Make/T/N=1 mm = {"mm"}
-	Make/T/N=1 cm = {"cm"}
-	Make/T/N=1 pixel = {"pixel"}
-	Make/T/N=1 angstrom = {"A"}
+	Make/T/O/N=1 empty = {""}
+	Make/T/O/N=1 units = {"units"}
+	Make/T/O/N=1 m = {"m"}
+	Make/T/O/N=1 mm = {"mm"}
+	Make/T/O/N=1 cm = {"cm"}
+	Make/T/O/N=1 pixel = {"pixel"}
+	Make/T/O/N=1 angstrom = {"A"}
 	
 	// SASinstrument
 	String instrParent = parentBase + "sasinstrument/"
 	// Create SASinstrument entry
-	String instrumentBase = base + ":entry1:sasinstrument"
+	String instrumentBase = base + ":sasinstrument"
 	NewDataFolder/O/S $(instrumentBase)
 	Make/O/T/N=5 $(instrumentBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(instrumentBase + ":attrVals") = {"SASinstrument","NXinstrument"}
@@ -429,7 +431,7 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	// SASsample
 	String sampleParent = parentBase + "sassample/"
 	// Create SASsample entry
-	String sampleBase = base + ":entry1:sassample"
+	String sampleBase = base + ":sassample"
 	NewDataFolder/O/S $(sampleBase)
 	Make/O/T/N=5 $(sampleBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
@@ -478,14 +480,12 @@ Function NxCansas_CreateFile(fullpath)
 	return fileID
 End
 
-
 // Open\ file with a known path
 Function NxCansas_OpenFile(fullpath)
 	String fullpath
 	String fileName
 	Variable fileID
 	fileName = ParseFilePath(3,fullpath,":",0,0)
-	Print fileName
 	Make/T/O/N=1 $("root:file_name") = fileName
 	fullpath = ReplaceString(":\\", fullpath, ":")
 	fullpath = ReplaceString("\\", fullpath, ":")
@@ -510,16 +510,20 @@ End
 // Initialize the file to a base state
 Function NxCansas_InitializeFile(fileID)
 	Variable fileID
-	String parent
+	String parent,nxParent
 	String/G base = "root:NXcanSAS_file"
-	Make/T/N=1 $(base + ":vals") = {""}
-	Make/T/N=3 $(base + ":attr") = {"NX_class", "canSAS_class", "version"}
-	Make/T/N=3 $(base + ":attrVals") = {"NXentry", "SASentry", "1.0"}
-	parent = "/sasentry/"
-	CreateStrNxCansas(fileID,parent,"","",$(base + ":vals"),$(base + ":attr"),$(base + ":attrVals"))
-	Make/T/N=1 $(base + ":entryAttr") = {""}
-	Make/T/N=1 $(base + ":entryAttrVals") = {""}
-	CreateStrNxCansas(fileID,parent,"","definition",{"NXcanSAS"},$(base + ":entryAttr"),$(base + ":entryAttrVals"))
+	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+	sPrintf parent,":sasentry%d",sasentry
+	String location = base + parent
+	sPrintf nxParent,"/sasentry%d/",sasentry
+	NewDataFolder/O/S $(location)
+	Make/T/N=1 $(location + ":vals") = {""}
+	Make/T/N=3 $(location + ":attr") = {"NX_class", "canSAS_class", "version"}
+	Make/T/N=3 $(location + ":attrVals") = {"NXentry", "SASentry", "1.0"}
+	CreateStrNxCansas(fileID,nxParent,"","",$(location + ":vals"),$(location + ":attr"),$(location + ":attrVals"))
+	Make/T/N=1 $(location + ":entryAttr") = {""}
+	Make/T/N=1 $(location + ":entryAttrVals") = {""}
+	CreateStrNxCansas(fileID,nxParent,"","definition",{"NXcanSAS"},$(location + ":entryAttr"),$(location + ":entryAttrVals"))
 End
 
 //
@@ -684,34 +688,65 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	Endif
 	
 	filename = ParseFilePath(3,fileStr,":",0,0)
-	Print "file string: ",filename
-	String/G loadDir = "root:" + filename
+	String basestr
+	if (!cmpstr(outstr, ""))		//Outstr = "", cmpstr returns 0
+		baseStr = ShortFileNameString(CleanupName(filename,0))
+		baseStr = CleanupName(baseStr,0)		//in case the user added odd characters
+	else
+		baseStr = outstr			//for output, hopefully correct length as passed in
+	endif
+	String/G loadDir = "root:" + baseStr
 	
-	String I_dataStore = filename + "_i"
-	String Q_dataStore = filename + "q"
-	String dI_dataStore = filename + "s"
+	String I_dataStore = baseStr + "_i"
+	String Q_dataStore = baseStr + "_q"
+	String dQ_dataStore = baseStr + "_dq"
+	String dQl_dataStore = baseStr + "_dql"
+	String dQw_dataStore = baseStr + "_dqw"
+	String dI_dataStore = baseStr + "_s"
 	
 	//go back to the root folder and clean up before leaving
 	NewDataFolder/O/S $loadDir
+	Make/O/N=52 $(loadDir + ":realsRead")
+	Make/O/T/N=11 $(loadDir + ":textRead")
 	
 	if(fileID)
 		HDF5ListGroup /F/R/Type=1/Z fileID,"/"
 		String groupList = S_HDF5ListGroup
-		Print "grouplist: ",groupList
+		
+		//
+		// TODO: Differentiate between 1D, 2D, and USANS data (resolutions) (DO I NEED TO?)
+		//
 	
 		Variable groupID
-		HDF5OpenGroup /Z fileID, "/sasentry/sasdata", groupID
-		HDF5LoadData /O/N=$I_dataStore fileID, "/sasentry/sasdata/I"
-		HDF5LoadData /O/N=$Q_dataStore fileID, "/sasentry/sasdata/Q"
-		HDF5LoadData /O/N=$dI_dataStore fileID, "/sasentry/sasdata/Idev"
+		Variable inc = 1
+		String entryUnformatted = "/sasentry%d/"
+		String entryBase
+		sPrintf entryBase,entryUnformatted,inc
+		// Open first group
+		HDF5OpenGroup /Z fileID, entryBase + "sasdata/", groupID
+		do
+			// Load in data
+			HDF5LoadData /O/Z/N=$I_dataStore fileID, entryBase + "sasdata/I"
+			HDF5LoadData /O/Z/N=$Q_dataStore fileID, entryBase + "sasdata/Q"
+			HDF5LoadData /O/Z/N=$dQ_dataStore fileID, entryBase + "sasdata/dQ"
+			HDF5LoadData /O/Z/N=$dQl_dataStore fileID, entryBase + "sasdata/dQl"
+			HDF5LoadData /O/Z/N=$dQw_dataStore fileID, entryBase + "sasdata/dQw"
+			HDF5LoadData /O/Z/N=$dI_dataStore fileID, entryBase + "sasdata/Idev"
+			// Load in Meta Data
+			LoadMetaData(fileID,loadDir,entryBase)
+			// Open next group to see if it exists
+			inc += 1
+			sPrintf entryBase,entryUnformatted,inc
+			HDF5OpenGroup /Z fileID, entryBase + "sasdata/", groupID
+		while(groupID != 0)
 		
 		//plot if desired
 		if(doPlot)
 			Print GetDataFolder(1)
 			
-			String w0 = loadDir + ":" + Q_dataStore
-			String w1 = loadDir + ":" + I_dataStore
-			String w2 = loadDir + ":" + dI_dataStore
+			String w0 = Q_dataStore
+			String w1 = I_dataStore
+			String w2 = dI_dataStore
 			
 			// assign colors randomly
 			rr = abs(trunc(enoise(65535)))
@@ -730,7 +765,6 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 					ModifyGraph tickUnit(left)=1
 				else
 				//new graph
-					SetDataFolder $loadDir	//sometimes I end up back in root: here, and I can't figure out why!
 					Display $w1 vs $w0
 					ModifyGraph log=1,mode($w1)=3,marker($w1)=19,msize($w1)=2,rgb($w1)=(rr,gg,bb),tickUnit=1
 					ModifyGraph grid=1,mirror=2,standoff=0
@@ -759,10 +793,89 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	if(fileID)
 		HDF5CloseFile /Z fileID
 	endif
-	
-	// KillDataFolder /Z $loadDir
 
 end
+
+Function LoadMetaData(fileID,loadDir,parentBase)
+	String parentBase,loadDir
+	Variable fileID
+	Variable groupID
+	SetDataFolder $(loadDir)
+	Wave rw = $(loadDir + ":realsRead")
+	Wave/T textw = $(loadDir + ":textRead")
+	
+	// Title
+	HDF5OpenGroup /Z fileID, parentBase, groupID
+	HDF5LoadData /O/Z/N=title fileID, parentBase + "title"
+	Wave/T title = $(loadDir + ":title")
+	
+	// SASinstrument
+	String instrParent = parentBase + "sasinstrument/"
+	
+	// SASaperture
+	String apertureParent = instrParent + "sasaperture/"
+	HDF5OpenGroup /Z fileID, apertureParent, groupID
+	HDF5LoadData /O/Z/N=xg fileID, apertureParent + "x_gap"
+	Wave xg = $(loadDir + ":xg")
+	
+	// SAScollimation
+	String collimationParent = instrParent + "sascollimation/"
+	HDF5OpenGroup /Z fileID, collimationParent, groupID
+	HDF5LoadData /O/Z/N=cdis fileID, collimationParent + "distance"
+	Wave cdis = $(loadDir + ":cdis")
+	
+	// SASdetector
+	String detectorParent = instrParent + "sasdetector/"
+	HDF5OpenGroup /Z fileID, detectorParent, groupID
+	HDF5LoadData /O/Z/N=detname fileID, detectorParent + "name"
+	HDF5LoadData /O/Z/N=sdd fileID, detectorParent + "SDD"
+	HDF5LoadData /O/Z/N=bcx fileID, detectorParent + "beam_center_x"
+	HDF5LoadData /O/Z/N=bcy fileID, detectorParent + "beam_center_y"
+	HDF5LoadData /O/Z/N=xps fileID, detectorParent + "x_pixel_size"
+	HDF5LoadData /O/Z/N=xpy fileID, detectorParent + "y_pixel_size"
+	Wave/T detname = $(loadDir + ":detname")
+	Wave sdd = $(loadDir + ":sdd")
+	Wave bcx = $(loadDir + ":bcx")
+	Wave bcy = $(loadDir + ":bcy")
+	Wave xps = $(loadDir + ":xps")
+	Wave xpy = $(loadDir + ":xpy")
+	
+	// SASsource
+	String sourceParent = instrParent + "sassource/"
+	HDF5OpenGroup /Z fileID, sourceParent, groupID
+	HDF5LoadData /O/Z/N=wvel fileID, sourceParent + "incident_wavelength"
+	HDF5LoadData /O/Z/N=wvels fileID, sourceParent + "incident_wavelength_spread"
+	Wave wvel = $(loadDir + ":wvel")
+	Wave wvels = $(loadDir + ":wvels")
+	
+	// SASsample
+	String sampleParent = parentBase + "sassample/"
+	HDF5OpenGroup /Z fileID, sampleParent, groupID
+	HDF5LoadData /O/Z/N=smplname fileID, sampleParent + "name"
+	HDF5LoadData /O/Z/N=smplthick fileID, sampleParent + "thickness"
+	HDF5LoadData /O/Z/N=smpltrans fileID, sampleParent + "transmission"
+	Wave/T smplname = $(loadDir + ":smplname")
+	Wave smplthick = $(loadDir + ":smplthick")
+	Wave smpltrans = $(loadDir + ":smpltrans")
+	
+	textw[0] = title[0]
+	textw[6] = smplname[0]
+	textw[9] = detname[0]
+	rw[4] = smplthick[0]
+	rw[5] = smpltrans[0]
+	rw[10] = xps[0]
+	rw[13] = xpy[0]
+	rw[16] = bcx[0]
+	rw[17] = bcy[0]
+	rw[18] = sdd[0]
+	rw[24] = xg[0]
+	rw[25] = cdis[0]
+	rw[26] = wvel[0]
+	rw[27] = wvels[0]
+	
+	KillWaves title,smplname,detname,smplthick,smpltrans,xps,xpy,bcx,bcy,sdd,xg,cdis,wvel,wvels
+	
+End
 
 //
 ///////////////////////////////////////////////////////////////////////////
@@ -776,13 +889,18 @@ end
 Function isNXcanSAS(filestr)
 	String filestr
 	
-	Variable fileID = 0
+	Variable fileID=0,groupID=0
 	Int isHDF5File = 0
 	
 	fileID = NxCansas_OpenFile(filestr)
+	HDF5ListGroup /F/R/Type=1/Z fileID,"/"
+	Variable length = strlen(S_HDF5ListGroup)
+	
+	if (numtype(length) != 2)
+		isHDF5File = 1
+	endif
 	
 	if (fileID != 0)
-		isHDF5File = 1
 		// Close the file
 		HDF5CloseFile /Z fileID
 	endif

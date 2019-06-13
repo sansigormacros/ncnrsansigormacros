@@ -1427,6 +1427,10 @@ Proc Initialize_Preferences()
 	val = NumVarOrDefault("root:Packages:NIST:gDoAdjustRAW_Atten",0)
 	Variable/G root:Packages:NIST:gDoAdjustRAW_Atten=val
 	
+	// integer for writing multiple sasentries in XML and NXcanSAS data
+	val = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1 )
+	Variable/G root:Packages:NIST:gSASEntryNumber = val
+	
 	/// items for SANS Analysis
 	
 	
