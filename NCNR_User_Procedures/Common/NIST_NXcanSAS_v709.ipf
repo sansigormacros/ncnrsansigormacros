@@ -267,16 +267,16 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/O/T/N=1 inv_angstrom = {"1/A"}
 	
 	// Run Name and title
-	NewDataFolder/O/S $(base + parentBase)
-	Make/O/T/N=1 $(base + parentBase + ":title") = {textw[6]}
-	CreateStrNxCansas(fileID,parentBase,"","title",$(base + parentBase + ":title"),empty,empty)
-	Make/O/T/N=1 $(base + parentBase + ":run") = {textw[0]}
-	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(base + parentBase + ":run"),empty,empty)
+	NewDataFolder/O/S $(parentBase)
+	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
+	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
 	String dataParent = nxcansasBase + "sasdata/"
 	// Create SASdata entry
-	String dataBase = base + parentBase + ":sasdata"
+	String dataBase = parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
 	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",textw[1]}
