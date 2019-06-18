@@ -93,18 +93,9 @@ Function WriteUSANSNXcanSAS(type,fullpath,lo,hi,dialog)
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
 	
-	//
-	// FIXME: Get useful title - For now, sending empty string
-	//
-	
-	Make/T/N=1 $(parentBase + ":title") = {""} //StringByKey("LABEL",note(inten),":",";")}
+	Make/T/N=1 $(parentBase + ":title") = {StringByKey("LABEL",note(inten),":",";")}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
-	
-	//
-	// TODO: Any way to programatically get the old filename?
-	//
-	
-	Make/T/N=1 $(parentBase + ":run") = {""}
+	Make/T/N=1 $(parentBase + ":run") = {StringByKey("FILE",note(inten),":",";")}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
@@ -155,8 +146,7 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 	NVAR dQv = root:Packages:NIST:USANS:Globals:MainPanel:gDQv
 	
 	Variable fileID
-	String destStr=""
-	destStr = USANSFolder+":DSM"
+	String destStr=USANSFolder+":DSM"
 	String dateStr=date()+" "+time()
 
 	String parentBase,nxcansasBase
@@ -166,30 +156,34 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
 	sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
 	
-	KillDataFolder/Z $base
+	NewDataFolder/O/S $(base)
 	
 	// Define common attribute waves
-	Make/T/N=1 empty = {""}
-	Make/T/N=1 units = {"units"}
-	Make/T/N=1 m = {"m"}
-	Make/T/N=1 mm = {"mm"}
-	Make/T/N=1 cm = {"cm"}
-	Make/T/N=1 angstrom = {"A"}
-	Make/T/N=1 inv_cm = {"1/cm"}
-	Make/T/N=1 inv_angstrom = {"1/A"}
+	Make/O/T/N=1 empty = {""}
+	Make/O/T/N=1 units = {"units"}
+	Make/O/T/N=1 m = {"m"}
+	Make/O/T/N=1 mm = {"mm"}
+	Make/O/T/N=1 cm = {"cm"}
+	Make/O/T/N=1 angstrom = {"A"}
+	Make/O/T/N=1 inv_cm = {"1/cm"}
+	Make/O/T/N=1 inv_angstrom = {"1/A"}
 	
 	Variable refNum,integer,realval
-	
-	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-	WAVE qvals =$(destStr + "Q_dsm")
-	WAVE inten=$(destStr + "I_dsm")
-	WAVE sig=$(destStr + "S_dsm")
 		
 	if(dialog || stringmatch(fullpath, ""))
 		fileID = NxCansas_DoSaveFileDialog()
 	else
 		fileID = NxCansas_CreateFile(fullpath)
 	Endif
+	
+	if(!fileID)
+		abort "Unable to create file at " + fullpath + "."
+	else
+		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+		WAVE qvals =$(destStr + "Q_dsm")
+		WAVE inten=$(destStr + "I_dsm")
+		WAVE sig=$(destStr + "S_dsm")
+	endif
 	
 	//check each wave
 	If(!(WaveExists(qvals)))
@@ -202,7 +196,10 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 		Abort "sig DNExist in WriteUSANSWaves()"
 	Endif
 	
-	//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
+	Duplicate/O Q_dsm,res1,res2,res3
+	res3 = 1		// "fake" beamstop shadowing
+	res1 /= 100		//make the sigmaQ so small that there is no smearing
+	
 	//write out partial set?
 	Duplicate/O qvals,tq,ti,te
 	ti=inten
@@ -214,13 +211,18 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 		te=sig[p+lo]
 	endif
 	
-	Make/N= (numpnts(dumWave)) dQw = 0
+	//Use the evil extra column for the resolution "information". Should probably switch to using slit_length in collimation.
+	Duplicate/O qvals,dumWave
+	dumWave = dQv
+	
+	Make/O/N= (numpnts(dumWave)) dQw = 0
 	
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
+	
 	Make/T/N=1 $(parentBase + ":title") = {StringByKey("LABEL",note(inten),":",";")}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
-	Make/T/N=1 $(parentBase + ":run") = {""}
+	Make/T/N=1 $(parentBase + ":run") = {StringByKey("FILE",note(inten),":",";")}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
@@ -234,7 +236,7 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
 	Make/T/N=2 $(dataBase + ":q:attr") = {"units","resolutions"}
-	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom","dQ"}
+	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/A","Qdev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",tq,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
@@ -244,12 +246,12 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 	// Create idev entry
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",te,units,inv_cm)
 	// Create qdev entry
-	CreateVarNxCansas(fileID,dataParent,"sasdata","dQl",dumWave,units,inv_angstrom)
-	CreateVarNxCansas(fileID,dataParent,"sasdata","dQw",res1,units,inv_angstrom)
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",res1,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",res2,units,inv_angstrom)
-
-	// Write USANS meta data
-	WriteUSANSNXcanSASMetaData(fileID,"SMEARED",parentBase,nxcansasBase,dateStr)
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Shadowfactor",res3,units,empty)
+	
+	// Write the meta data to the file
+	WriteUSANSNXcanSASMetaData(fileID,"DSM",parentBase,nxcansasBase,dateStr)
 	
 	//write confirmation of write operation to history area
 	Print "Averaged NXcanSAS File written: ", GetFileNameFromPathNoSemi(fullPath)
@@ -261,7 +263,7 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 		HDF5CloseFile /Z fileID
 	endif
 	
-End	
+End
 
 Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 	Variable fileID
@@ -269,6 +271,8 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 	
 	// tailor the output given the type of data written out...
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
+	String destStr=USANSFolder+":"+type
+	WAVE inten = $(destStr + ":DetCts")
 	WAVE inten_EMP=$(USANSFolder+":EMP:DetCts")
 	String samStr="",empStr="",samLabelStr="",paramStr="",empLevStr="",bkgLevStr=""
 	String pkStr="", processNote=""
@@ -295,7 +299,7 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 			paramStr = "Uncorrected EMP data"
 			pkStr += "EMP PEAK ANGLE: "+num2str(QpkFromNote("EMP"))
 			break
-		case "SMEARED":
+		case "DSM":
 			samStr = "SMEARED FILES: "+StringByKey("FILE",note(inten),":",";")
 			empStr = "EMP FILES: "+StringByKey("FILE",note(inten_EMP),":",";")	
 			empLevStr = "EMP LEVEL: " + num2str(empCts)
@@ -317,7 +321,7 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 			pkStr += " ; EMP PEAK ANGLE: "+num2str(QpkFromNote("EMP"))				
 	endswitch
 
-	processNote = samStr+"\n"+dateStr+"\n"+samLabelStr+"\n"+empStr+"\n"+paramStr+"\n"+pkStr+"\n"
+	processNote = samStr+"\n"+dateStr+"\n"+empStr+"\n"+paramStr+"\n"+pkStr+"\n"
 	processNote += empLevStr + " ; "+bkglevStr+"\n"
 	
 	Make/O/T/N=1 empty = {""}
@@ -395,11 +399,6 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
 	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
 	// Create SASsample name entry
-	
-	//
-	// FIXME: reinstate sample name once format is correct (same as title)
-	//
-	
 	Make/O/T/N=1 $(sampleBase + ":name") = {StringByKey("LABEL",note(inten),":",";")}
 	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
 	// Create SASsample thickness entry
@@ -411,16 +410,16 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 	
 	// SASProcess
 	String processParent = nxcansasBase + "sasprocess/"
-	// Create SASsample entry
+	// Create SASProcess entry
 	String processBase = parentBase + ":sasprocess"
 	NewDataFolder/O/S $(processBase)
 	Make/O/T/N=2 $(processBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=2 $(processBase + ":attrVals") = {"SASprocess","NXprocess"}
 	CreateStrNxCansas(fileID,processParent,"","",empty,$(processBase + ":attr"),$(processBase + ":attrVals"))
-	// Create SASsample name entry
+	// Create SASProcess name entry
 	Make/O/T/N=1 $(processBase + ":name") = {"NIST IGOR"}
 	CreateStrNxCansas(fileID,processParent,"","name",$(processBase + ":name"),empty,empty)
-	// Create SASsample thickness entry
+	// Create SASProcess note entry
 	Make/O/T/N=1 $(processBase + ":processnote") = {processNote}
 	CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":processnote"),empty,empty)
 End
