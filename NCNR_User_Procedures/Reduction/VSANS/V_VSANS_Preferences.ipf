@@ -45,7 +45,8 @@ Proc Initialize_VSANSPreferences()
 	/// General items for everyone
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gXML_Write", 0 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gXML_Write = val
-	
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gNXcanSAS_Write", 0 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gNXcanSAS_Write = val
 	
 	// VSANS tab
 	///// items for VSANS reduction
@@ -262,12 +263,15 @@ Proc VSANSPref_Panel()
 	TabControl PrefTab labelBack=(47748,57192,54093)
 	
 //on tab(0) - General
-	CheckBox PrefCtrl_0a,pos={21,96},size={124,14},proc=V_XMLWritePref,title="Use canSAS XML Output"
-	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
-	CheckBox PrefCtrl_0a,value= root:Packages:NIST:VSANS:Globals:gXML_Write
-
-	CheckBox PrefCtrl_0a,disable=1
-
+	CheckBox PrefCtrl_0,pos={21,100},size={124,14},proc=WritePref,title="Use ASCII 6-column Output (default)",mode=1
+	CheckBox PrefCtrl_0,help={"Checking this will set the default output to the NIST 6 column format"}
+	CheckBox PrefCtrl_0,value= root:Packages:NIST:gASCII_Write
+	CheckBox PrefCtrl_0a,pos={21,120},size={124,14},proc=WritePref,title="Use canSAS XML Output",mode=1
+	CheckBox PrefCtrl_0a,help={"Checking this will set the default output to be canSAS XML format"}
+	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gXML_Write
+	CheckBox PrefCtrl_0b,pos={21,140},size={124,14},proc=WritePref,title="Use NXcanSAS HDF5 Output",mode=1
+	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
+	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
 
 //on tab(1) - VSANS - initially visible
 	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=V_LogScalePrefCheck,title="Use Log scaling for 2D data display"

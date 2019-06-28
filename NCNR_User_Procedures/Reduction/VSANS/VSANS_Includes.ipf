@@ -16,6 +16,7 @@ End
 #include "PlotManager_v40"
 #include "GaussUtils_v40"
 #include "NIST_XML_v40"
+#include "NIST_NXcanSAS_v709"
 #include "USANS_SlitSmearing_v40"
 
 //
@@ -61,6 +62,7 @@ End
 #include "V_HDF5_Read"
 #include "V_HDF5_Write"
 #include "V_HDF5_RW_Utils"
+#include "V_Write_VSANS_NXcanSAS"
 
 // start of VSANS reduction procedures
 #include "V_Initialize"
