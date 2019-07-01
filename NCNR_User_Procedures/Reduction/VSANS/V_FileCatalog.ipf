@@ -587,6 +587,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	detcnt += V_getDet_IntegratedCount(fname,"FR")
 	detcnt += V_getDet_IntegratedCount(fname,"FT")
 	detcnt += V_getDet_IntegratedCount(fname,"FB")
+
 	cntrate = detcnt/ctime
 	InsertPoints lastPoint,1,TotCnts_F
 	TotCnts_F[lastPoint]=detcnt
@@ -597,6 +598,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	detcnt += V_getDet_IntegratedCount(fname,"MR")
 	detcnt += V_getDet_IntegratedCount(fname,"MT")
 	detcnt += V_getDet_IntegratedCount(fname,"MB")
+
 	cntrate = detcnt/ctime
 	InsertPoints lastPoint,1,TotCnts_M
 	TotCnts_M[lastPoint]=detcnt

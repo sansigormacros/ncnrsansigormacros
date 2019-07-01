@@ -639,40 +639,33 @@ end
 // -- this is still all in terms of pixels, which still may not be what I want
 // -- the x-scale of the T/B panels is artificially compressed to "fake" 4mm per pixel in x-direction
 //
-// Nominal center is 0,0
-//
 Function V_RescaleToNominalCenter(folderStr,detStr,xCtr,yCtr)
 	String folderStr,detStr
 	Variable xCtr,yCtr
-	
-//	xCtr = 0
-//	yCtr = 0
+
 	
 	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")
 	
 	Variable nPix = 128
 	Variable nTubes = 48
 	Variable offset = 0
-	Variable pixSizeX,pixSizeY
+	Variable pixSizeX,pixSizeY,yOff,xOff
 	
 	strswitch(detStr)	// string switch
 		case "MT":		// top panels
 		case "FT":
-//			SetScale/I x -xCtr,npix-xCtr,"",w
-			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
-			pixSizeY = 0.84
-			yCtr = -(offset/pixSizeY) 
+//			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+//			pixSizeY = 0.84
+//			yOff = -(offset/pixSizeY) 		// offset is already taken into account with the beam center
 			
-			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w		// fake 4mm by compressing the scale
+			SetScale/I x -xCtr/2,(nPix-xCtr)/2,"",w		// fake 4mm by compressing the scale
 			SetScale/I y -yCtr,nTubes-yCtr,"",w
 			break						// exit from switch
 		case "MB":		// bottom panels
 		case "FB":
-//			SetScale/I x -xCtr,npix-xCtr,"",w
-
-			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
-			pixSizeY = 0.84
-			yCtr = nTubes-(offset/pixSizeY) 
+//			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+//			pixSizeY = 0.84
+//			yOff = nTubes-(offset/pixSizeY) 
 			
 			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w
 			SetScale/I y -yCtr,nTubes-yCtr,"",w
@@ -680,25 +673,25 @@ Function V_RescaleToNominalCenter(folderStr,detStr,xCtr,yCtr)
 			
 		case "ML":		// left panels
 		case "FL":
-			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
-			pixSizeX = 0.84
-			xCtr = nTubes-(offset/pixSizeX)
+//			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+//			pixSizeX = 0.84
+//			xOff = nTubes-(offset/pixSizeX)
 			
 			SetScale/I x -xCtr,nTubes-xCtr,"",w
 			SetScale/I y -yCtr,npix-yCtr,"",w
 			break						// exit from switch
 		case "MR":		// Right panels
 		case "FR":
-			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
-			pixSizeX = 0.84
-			xCtr = -(offset/pixSizeX)
+//			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+//			pixSizeX = 0.84
+//			xOff = -(offset/pixSizeX)
 		
 			SetScale/I x -xCtr,nTubes-xCtr,"",w
 			SetScale/I y -yCtr,npix-yCtr,"",w
 			break						// exit from switch
 					
 		default:							// optional default expression executed
-			Print "Error in V_RescaleToBeamCenter()"
+			Print "Error in V_RescaleToNominalCenter()"
 	endswitch
 	
 	return(0)
