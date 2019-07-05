@@ -519,14 +519,24 @@ Function V_MakeProtocolFromPanel(w)
 	
 	//w[7]
 	// beginning trim points
+	// if null, then write out the default trim string to the protocol so that it will be used if recalled
 	SVAR gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
-	w[7] = gBegPtsStr
+	if(strlen(gBegPtsStr)==0)
+		w[7] = ksBinTrimBegDefault
+	else
+		w[7] = gBegPtsStr
+	endif
 	
 	//w[8]
 	// End trim points
+	// if null, then write out the default trim string to the protocol so that it will be used if recalled
 	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr	
-	w[8] = gEndPtsStr
-	
+	if(strlen(gEndPtsStr)==0)
+		w[8] = ksBinTrimEndDefault
+	else
+		w[8] = gEndPtsStr
+	endif
+
 	//w[9]
 	//collimation type (filled in at averaging?)
 	w[9] = ""
