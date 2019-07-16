@@ -60,7 +60,8 @@ Proc DIV_Setup_Panel() : Panel
 	DrawText 32,130,"Reduce data for one carriage"	
 	DrawText 32,200,"Repeat for the other carriage(s)"
 	
-	Button button2,pos={54.00,145.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize+Copy"
+	Button button2,pos={54.00,145.00},size={120.00,20.00},proc=V_DIVCopyButtonProc,title="Copy"
+	Button button4,pos={54.00,235.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize"
 
 	DrawText 32,290,"Once data for both (or 3) carriages\rhas been normalized, save the file"	
 	
@@ -127,6 +128,24 @@ Function V_DIVNormalizeButtonProc(ba) : ButtonControl
 	return 0
 End
 
+
+// copies the data for a particular carriage that has been reduced to COR
+// to a storage location for later normalization
+Function V_DIVCopyButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			Execute "V_DIVCopy_proc()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 Function V_DIVMaskButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -160,31 +179,286 @@ End
 
 
 
+
+Proc V_DIVCopy_proc(reducedFolderType,carriageStr,first)
+	String reducedFolderType="COR",carriageStr="F"
+	Variable first=1
+	
+	Vf_DIVCopy_proc(reducedFolderType,carriageStr,first)
+end
+
+
+
+Function Vf_DIVCopy_proc(reducedFolderType,carriageStr,first)
+	String reducedFolderType,carriageStr
+	Variable first
+
+	if (cmpstr(carriageStr,"B")==0)
+		V_NormalizeDIV_onePanel(reducedFolderType,"B")
+	else
+		// if it's the first one, copy the whole folder, otherwise just copy over what's needed
+		if(first)
+			V_CopyHDFToWorkFolder("COR","STO")
+		else
+			String topath = "root:Packages:NIST:VSANS:STO:entry:instrument:detector_"
+			String fromPath = "root:Packages:NIST:VSANS:COR:entry:instrument:detector_"
+			String detStrList,detStr
+			Variable num,ii
+
+			if(cmpstr(carriageStr,"F")==0)
+				detStrList = "FL;FR;FT;FB;"
+			else
+				detStrList = "ML;MR;MT;MB;"
+			endif
+			num=ItemsInList(detStrlist)
+	
+			// loop over the list of panels to copy the data
+			for(ii=0;ii<num;ii+=1)
+				detStr = StringFromList(ii, detStrList)
+				Duplicate/O $(fromPath+detStr+":data") $(toPath+detStr+":data")
+				Duplicate/O $(fromPath+detStr+":linear_data_error") $(toPath+detStr+":linear_data_error")
+			endfor
+		endif
+	
+	endif
+	
+	return(0)
+End
+
+
+
+// this is called from the button
+//
 Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
 	String reducedFolderType="COR",carriageStr="F"
 	
 	Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
 end
 
+
+// this function now treats all 8 panels as a single detector
+// for the normalization.
+// it is assuming that data from both carriages has been reduced to the COR stage
+// and has been copied over to the STO folder where it will be normalized before
+// copying to the DIV folder for saving.
+//
 Function Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
 	String reducedFolderType,carriageStr
 
 	if (cmpstr(carriageStr,"B")==0)
 		V_NormalizeDIV_onePanel(reducedFolderType,"B")
-	elseif (cmpstr(carriageStr,"F")==0)
-		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
-		V_NormalizeDIV_onePanel(reducedFolderType,"FR")
-		V_NormalizeDIV_onePanel(reducedFolderType,"FT")
-		V_NormalizeDIV_onePanel(reducedFolderType,"FB")
 	else
-		V_NormalizeDIV_onePanel(reducedFolderType,"ML")
-		V_NormalizeDIV_onePanel(reducedFolderType,"MR")
-		V_NormalizeDIV_onePanel(reducedFolderType,"MT")
-		V_NormalizeDIV_onePanel(reducedFolderType,"MB")	
+		DoAlert 0,"data for both carriages must already be in STO"
+		V_NormalizeDIV_allEight("STO")			//forces reduced folder type to STO
 	endif
+	
+//	if (cmpstr(carriageStr,"B")==0)
+//		V_NormalizeDIV_onePanel(reducedFolderType,"B")
+//	elseif (cmpstr(carriageStr,"F")==0)
+//		DoAlert 0,"data for both carriages must already be in STO"
+//		V_NormalizeDIV_allEight("STO")			//forces reduced folder type to STO
+//	
+////		V_NormalizeDIV_oneCarriage(reducedFolderType,carriageStr)
+//
+////		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"FR")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"FT")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"FB")
+//	else
+//	
+////		V_NormalizeDIV_oneCarriage(reducedFolderType,carriageStr)
+//		
+////		V_NormalizeDIV_onePanel(reducedFolderType,"ML")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"MR")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"MT")
+////		V_NormalizeDIV_onePanel(reducedFolderType,"MB")	
+//	endif
 	
 	return(0)
 End
+
+
+// Normalizes all eight panels (M + F) as a single detector
+// then copies that panel over to the DIV_Struct for later saving
+//
+// type is the work folder where the (? corrected) data is currently
+//
+// DONE
+// x- data should be copied to some alternate work folder before this step
+// x- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
+//    How to handle? A mask?
+// x- is this the correct calculation of the error? (YES) It should be correct up to this point since the
+//    standard reduction has been used, but now the normalization step is a multiplication
+//    by a constant (w/no error). Be sure this error transformation is correct. (YES - this is correct, and is
+//    what is done in SANS)
+//
+Function V_NormalizeDIV_allEight(type)
+	String type
+
+	Variable ii,totCts,pixelX,pixelY,sumCts,sumPts,num
+	String detStr,detStrList
+	
+	detStrList = "FL;FR;FT;FB;ML;MR;MT;MB;"
+	num=ItemsInList(detStrlist)
+	
+	// loop over the list of panels (n=8) to get the sums
+	sumCts = 0
+	sumPts = 0
+	for(ii=0;ii<num;ii+=1)
+		detStr = StringFromList(ii, detStrList)
+		Wave w = V_getDetectorDataW(type,detStr)
+		Wave w_err = V_getDetectorDataErrW(type,detStr)
+	
+		//	WaveStats/Q/M=1 w
+		//	Print detStr
+		//	Print "RAW V_avg = ",V_avg
+		//	Print "RAW V_avg*V_npnts = ",V_avg*V_npnts
+	
+		// get the mask data
+		// 1== mask, 0 == no mask
+		Wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+	
+	// work on a copy of the data and error
+//		Duplicate/O w w_copy
+//		Duplicate/O w_err w_err_copy
+		
+		w = (maskW == 1) ? NaN : w	//set masked areas to NaN
+		WaveStats/Q/M=1 w
+		sumCts += V_npnts*V_avg		// does not count the NaN values
+		sumPts += V_npnts
+		
+//		totCts = V_npnts*V_avg		// does not count the NaN values
+	//	Print "Masked V_avg = ",V_avg
+	//	Print "Masked V_npnts = ",V_npnts
+	//	Print "Masked V_avg*V_npnts = ",V_avg*V_npnts
+
+	endfor
+	
+	// now normalize each panel (in place)
+	for(ii=0;ii<num;ii+=1)
+		detStr = StringFromList(ii, detStrList)
+		Wave w = V_getDetectorDataW(type,detStr)
+		Wave w_err = V_getDetectorDataErrW(type,detStr)
+			
+		w /= sumCts
+		w *= sumPts
+	
+		w_err /= sumCts
+		w_err *= sumPts
+
+	// DONE:
+	// x- I replace the NaN values with 1 for the DIV (the user will mask the data as
+	//    needed, and the NaN values may be an issue later...
+		w = (numtype(w) == 2) ? 1 : w			//turns 2==NaN into 1
+	
+//	
+		// copy the normalized data to the folder to save
+		Wave w_norm = $("root:VSANS_DIV_file:entry:instrument:detector_"+detStr+":data")
+		Wave w_norm_err = $("root:VSANS_DIV_file:entry:instrument:detector_"+detStr+":linear_data_error")
+			
+		w_norm = w
+		w_norm_err = w_err
+	endfor		
+
+//	KillWaves/Z w_copy,w_err_copy
+	
+	return(0)
+End
+
+
+
+
+// Normalizes a single carriage, treating all four panels as a single panel
+// then copies that panel over to the DIV_Struct for later saving
+//
+// type is the work folder where the (? corrected) data is currently
+//
+// DONE
+// x- data should be copied to some alternate work folder before this step
+// x- for T/B detectors, this may not work as intended if the whole detector is not illuminated.
+//    How to handle? A mask?
+// x- is this the correct calculation of the error? (YES) It should be correct up to this point since the
+//    standard reduction has been used, but now the normalization step is a multiplication
+//    by a constant (w/no error). Be sure this error transformation is correct. (YES - this is correct, and is
+//    what is done in SANS)
+//
+Function V_NormalizeDIV_oneCarriage(type,carriageStr)
+	String type,carriageStr
+
+	Variable ii,totCts,pixelX,pixelY,sumCts,sumPts
+	String detStr,detStrList
+	
+	if(cmpstr(carriageStr,"F")==0)
+		detStrList = "FL;FR;FT;FB;"
+	else
+		detStrList = "ML;MR;MT;MB;"
+	endif
+
+	// loop over the list of panels (n=4) to get the sums
+	sumCts = 0
+	sumPts = 0
+	for(ii=0;ii<4;ii+=1)
+		detStr = StringFromList(ii, detStrList)
+		Wave w = V_getDetectorDataW(type,detStr)
+		Wave w_err = V_getDetectorDataErrW(type,detStr)
+	
+		//	WaveStats/Q/M=1 w
+		//	Print detStr
+		//	Print "RAW V_avg = ",V_avg
+		//	Print "RAW V_avg*V_npnts = ",V_avg*V_npnts
+	
+		// get the mask data
+		// 1== mask, 0 == no mask
+		Wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
+	
+	// work on a copy of the data and error
+//		Duplicate/O w w_copy
+//		Duplicate/O w_err w_err_copy
+		
+		w = (maskW == 1) ? NaN : w	//set masked areas to NaN
+		WaveStats/Q/M=1 w
+		sumCts += V_npnts*V_avg		// does not count the NaN values
+		sumPts += V_npnts
+		
+//		totCts = V_npnts*V_avg		// does not count the NaN values
+	//	Print "Masked V_avg = ",V_avg
+	//	Print "Masked V_npnts = ",V_npnts
+	//	Print "Masked V_avg*V_npnts = ",V_avg*V_npnts
+
+	endfor
+	
+	// now normalize each panel (in place)
+	for(ii=0;ii<4;ii+=1)
+		detStr = StringFromList(ii, detStrList)
+		Wave w = V_getDetectorDataW(type,detStr)
+		Wave w_err = V_getDetectorDataErrW(type,detStr)
+			
+		w /= sumCts
+		w *= sumPts
+	
+		w_err /= sumCts
+		w_err *= sumPts
+
+	// DONE:
+	// x- I replace the NaN values with 1 for the DIV (the user will mask the data as
+	//    needed, and the NaN values may be an issue later...
+		w = (numtype(w) == 2) ? 1 : w			//turns 2==NaN into 1
+	
+//	
+		// copy the normalized data to the folder to save
+		Wave w_norm = $("root:VSANS_DIV_file:entry:instrument:detector_"+detStr+":data")
+		Wave w_norm_err = $("root:VSANS_DIV_file:entry:instrument:detector_"+detStr+":linear_data_error")
+			
+		w_norm = w
+		w_norm_err = w_err
+	endfor		
+
+//	KillWaves/Z w_copy,w_err_copy
+	
+	return(0)
+End
+
+
 
 // Normalizes a single panel
 // then copies that panel over to the DIV_Struct for later saving
@@ -211,6 +485,11 @@ Function V_NormalizeDIV_onePanel(type,detStr)
 //	pixelX = V_getDet_pixel_num_x(type,detStr)
 //	pixelY = V_getDet_pixel_num_y(type,detStr)
 
+//	WaveStats/Q/M=1 w
+//	Print detStr
+//	Print "RAW V_avg = ",V_avg
+//	Print "RAW V_avg*V_npnts = ",V_avg*V_npnts
+	
 	// get the mask data
 	// 1== mask, 0 == no mask
 	Wave maskW = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
@@ -222,6 +501,9 @@ Function V_NormalizeDIV_onePanel(type,detStr)
 	w_copy = (maskW == 1) ? NaN : w_copy	
 	WaveStats/Q/M=1 w_copy
 	totCts = V_npnts*V_avg		// does not count the NaN values
+//	Print "Masked V_avg = ",V_avg
+//	Print "Masked V_npnts = ",V_npnts
+//	Print "Masked V_avg*V_npnts = ",V_avg*V_npnts
 
 
 	w_copy /= totCts
