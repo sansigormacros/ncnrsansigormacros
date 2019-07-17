@@ -4,34 +4,47 @@
 
 
 // TODO:
-// -- this is a temporary solution before a real writer is created
+// -- This is a placeholder for the final NXcanSAS writer for VSANS data.
 // -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
+// -- The final writer will need to be aware of resolution, and there may be different forms
 //
-// this will bypass save dialogs
-// -- AND WILL OVERWITE DATA WITH THE SAME NAME
-//
-Function V_Write1DData(pathStr,folderStr,saveName)
+Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	String pathStr,folderStr,saveName
 	
-	String formatStr="",fullpath=""
+	// Define local function variables
+	String formatStr=""
+	String destStr="", parentBase, nxcansasBase
+	Variable fileID
 	Variable refnum,dialog=1
-
+	String/G base = "root:V_NXcanSAS_file"
+	
 	SetDataFolder $(pathStr+folderStr)
+	
+	Make/T textw = {"","","","","","","","",""}
+	Make rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+	
+	// Check fullpath and dialog
+	if(stringmatch(saveName, ""))
+		fileID = NxCansas_DoSaveFileDialog()
+	else
+		fileID = NxCansas_CreateFile(saveName)
+	Endif
+	if(!fileID)
+		abort "Unable to create file at " + saveName + "."
+	else
+		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
 
-	Wave qw = tmp_q
-	Wave iw = tmp_i
-	Wave sw = tmp_s
-	Wave sigQ = tmp_sq
-	Wave qbar = tmp_qb
-	Wave fs = tmp_fs
+		Wave qw = tmp_q
+		Wave iw = tmp_i
+		Wave sw = tmp_s
+		Wave sigQ = tmp_sq
+		Wave qbar = tmp_qb
+		Wave fs = tmp_fs
+	EndIf
 	
 	String dataSetFolderParent,basestr
-	
-	// ParseFilePath to get path without folder name
-//	dataSetFolderParent = ParseFilePath(1,folderStr,":",1,0)
-	// ParseFilePath to get basestr
-//	basestr = ParseFilePath(0,folderStr,":",1,0)
 	
 	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
 	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
@@ -56,289 +69,59 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 		Abort "protocol information is missing."
 	endif
 	
-//	Duplicate/O qw qbar,sigQ,fs
-//	if(dimsize(resW,1) > 4)
-//		//it's USANS put -dQv back in the last 3 columns
-//		NVAR/Z dQv = USANS_dQv
-//		if(NVAR_Exists(dQv) == 0)
-//			SetDataFolder root:
-//			Abort "It's USANS data, and I don't know what the slit height is."
-//		endif
-//		sigQ = -dQv
-//		qbar = -dQv
-//		fs = -dQv
-//	else
-//		//it's SANS
-//		sigQ = resw[p][0]
-//		qbar = resw[p][1]
-//		fs = resw[p][2]
-//	endif
-//	
-
-// TODO -- not sure if I need to implement this. Update to VSANS specs if I do.
-//	//strings can be too long to print-- must trim to 255 chars
-//	Variable ii,num=8
-//	Make/O/T/N=(num) tempShortProto
-//	for(ii=0;ii<num;ii+=1)
-//		tempShortProto[ii] = (proto[ii])[0,240]
-//	endfor
-
-// if the "default" trimming is used, the proto[] values will be null
-// fill them in with the default values
-	String protoStr7,protoStr8
-	if(strlen(proto[7]) == 0)
-		protoStr7 = "(Default) "+ ksBinTrimBegDefault
-	else
-		protoStr7 = proto[7]
-	endif
-	if(strlen(proto[8]) == 0)
-		protoStr8 = "(Default) "+ ksBinTrimEndDefault
-	else
-		protoStr8 = proto[8]
-	endif	
-
-	PathInfo catPathName
-	fullPath = S_Path + saveName
-
-	Open refnum as fullpath
-
-	fprintf refnum,"Combined data written from folder %s on %s\r\n",folderStr,(date()+" "+time())
-
-	//insert protocol information here
-	//-1 list of sample files
-	//0 - bkg
-	//1 - emp
-	//2 - div
-	//3 - mask
-	//4 - abs params c2-c5
-	//5 - average params
-	//6 - DRK (unused in VSANS)
-	//7 - beginning trim points
-	//8 - end trim points
-	fprintf refnum, "SAM: %s\r\n",samFiles
-	fprintf refnum, "BGD: %s\r\n",proto[0]
-	fprintf refnum, "EMP: %s\r\n",Proto[1]
-	fprintf refnum, "DIV: %s\r\n",Proto[2]
-	fprintf refnum, "MASK: %s\r\n",Proto[3]
-	fprintf refnum, "ABS Parameters (3-6): %s\r\n",Proto[4]
-	fprintf refnum, "Average Choices: %s\r\n",Proto[5]
-	fprintf refnum, "Beginning Trim Points: %s\r\n",ProtoStr7
-	fprintf refnum, "End Trim Points: %s\r\n",ProtoStr8
-	fprintf refnum, "COLLIMATION=%s\r\n",proto[9]
-
-// TODO
-// x- make this work for 6-columns (or??)
-	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
-	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
-	wfprintf refnum,formatStr,qw,iw,sw,sigQ,qbar,fs
-
-	// three column vresion
-//	formatStr = "%15.4g %15.4g %15.4g\r\n"	
-//	fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//
-//	wfprintf refnum,formatStr,qw,iw,sw
-
-
-	Close refnum
+	///////////////////////////////////////////////////////////////////////////
+	// Write all data
 	
-//	KillWaves/Z sigQ,qbar,fs
-	Print "Data written to: ",fullpath
+	// Define common attribute waves
+	Make/T/O/N=1 empty = {""}
+	Make/T/O/N=1 units = {"units"}
+	Make/T/O/N=1 inv_cm = {"1/cm"}
+	Make/T/O/N=1 inv_angstrom = {"1/A"}
 	
-	SetDataFolder root:
-	return(0)
+	// Run Name and title
+	NewDataFolder/O/S $(parentBase)
+	
+	
+	//
+	// FIXME: Replace textw and rw with actual data locations
+	//
+	
+	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
+	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
+	
+	// SASData
+	String dataParent = nxcansasBase + "sasdata/"
+	// Create SASdata entry
+	String dataBase = parentBase + ":sasdata"
+	NewDataFolder/O/S $(dataBase)
+	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",textw[1]}
+	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
+	// Create q entry
+	NewDataFolder/O/S $(dataBase + ":q")
+	Make/T/N=2 $(dataBase + ":q:attr") = {"units","resolutions"}
+	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom","Qdev"}
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qw,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
+	// Create i entry
+	NewDataFolder/O/S $(dataBase + ":i")
+	Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
+	Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
+	CreateVarNxCansas(fileID,dataParent,"sasdata","I",iw,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
+	// Create idev entry
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",sw,units,inv_cm)
+	// Create qdev entry
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",sigQ,units,inv_angstrom)
+	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
+	
+	// Write all VSANS meta data
+	V_WriteMetaData(fileID,parentBase,nxcansasBase,proto,textw,rw)
+	
 End
 
-
-
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
 //
-// This saves the data in Igor Text format, an ASCII format, but NOT standard SANS columns
-// No concatenation is done. This is meant to be used for input to TRIM, or for general troubleshooting
-//
-//
-// this will bypass save dialogs
-// -- AND WILL OVERWRITE DATA WITH THE SAME NAME
-//
-Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
-	String pathStr,folderStr,saveName
-	Variable binType
-	
-	String formatStr="",fullpath=""
-	Variable refnum,dialog=1
-
-	SetDataFolder $(pathStr+folderStr)
-
-
-	//TODO
-	//-- make sure the waves exist
-	
-//	if(WaveExists(qw) == 0)
-//		Abort "q is missing"
-//	endif
-//	if(WaveExists(iw) == 0)
-//		Abort "i is missing"
-//	endif
-//	if(WaveExists(sw) == 0)
-//		Abort "s is missing"
-//	endif
-//	if(WaveExists(resw) == 0)
-//		Abort "Resolution information is missing."
-//	endif
-	
-//	Duplicate/O qw qbar,sigQ,fs
-//	if(dimsize(resW,1) > 4)
-//		//it's USANS put -dQv back in the last 3 columns
-//		NVAR/Z dQv = USANS_dQv
-//		if(NVAR_Exists(dQv) == 0)
-//			SetDataFolder root:
-//			Abort "It's USANS data, and I don't know what the slit height is."
-//		endif
-//		sigQ = -dQv
-//		qbar = -dQv
-//		fs = -dQv
-//	else
-//		//it's SANS
-//		sigQ = resw[p][0]
-//		qbar = resw[p][1]
-//		fs = resw[p][2]
-//	endif
-//	
-
-
-
-	// TODO:
-	// -- currently I'm using the Save comand and the /B flag
-	//    to save the data as Igor Text format, since otherwise the command string would be
-	//    too long. Need to come up with an Igor-demo friendly save here
-	//
-	// -- see V_ExportProtocol() for a quick example of how to generate the .ITX format
-	//
-	// -- need a reader/plotter capable of handling this data. The regular data loader won't handle
-	//    all the different number of columns present, or the ITX format. See V_DataPlotting and duplicate these routines
-	//    Most of these routines take "winNameStr" as an argument, so I may be able to use them
-	//
-	// -- do I want to add the /O flag to force an overwrite if there is a name conflict?
-
-	PathInfo catPathName
-	fullPath = S_Path + saveName + ".itx"
-
-//	Open refnum as fullpath
-//	fprintf refnum,"Individual data sets written from folder %s on %s\r\n",folderStr,(date()+" "+time())
-
-	String waveStr=""
-	// can be a multiple number of columns
-		
-	switch(binType)
-		case 1:		// 9 sets = 27 waves!
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_ML;iBin_qxqy_ML;eBin_qxqy_ML;"
-			waveStr += "qBin_qxqy_MR;iBin_qxqy_MR;eBin_qxqy_MR;"
-			waveStr += "qBin_qxqy_MT;iBin_qxqy_MT;eBin_qxqy_MT;"
-			waveStr += "qBin_qxqy_MB;iBin_qxqy_MB;eBin_qxqy_MB;"
-			waveStr += "qBin_qxqy_FL;iBin_qxqy_FL;eBin_qxqy_FL;"
-			waveStr += "qBin_qxqy_FR;iBin_qxqy_FR;eBin_qxqy_FR;"
-			waveStr += "qBin_qxqy_FT;iBin_qxqy_FT;eBin_qxqy_FT;"
-			waveStr += "qBin_qxqy_FB;iBin_qxqy_FB;eBin_qxqy_FB;"
-			
-			
-			Save/T/M="\r\n"/B waveStr as fullPath
-
-						
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 2:		// 5 sets
-
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_MLR;iBin_qxqy_MLR;eBin_qxqy_MLR;qBin_qxqy_MTB;iBin_qxqy_MTB;eBin_qxqy_MTB;"
-			waveStr += "qBin_qxqy_FLR;iBin_qxqy_FLR;eBin_qxqy_FLR;qBin_qxqy_FTB;iBin_qxqy_FTB;eBin_qxqy_FTB;"
-
-			Save/T/M="\r\n"/B waveStr as fullPath
-			
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 3:		// 3 sets
-//			WAVE q1 = qBin_qxqy_B
-//			WAVE i1 = iBin_qxqy_B
-//			WAVE s1 = eBin_qxqy_B
-//			WAVE q2 = qBin_qxqy_MLRTB
-//			WAVE i2 = iBin_qxqy_MLRTB
-//			WAVE s2 = eBin_qxqy_MLRTB
-//			WAVE q3 = qBin_qxqy_FLRTB
-//			WAVE i3 = iBin_qxqy_FLRTB
-//			WAVE s3 = eBin_qxqy_FLRTB
-//
-//				
-//			Save/T/M="\r\n" q1,i1,s1,q2,i2,s2,q3,i3,s3 as fullPath
-			
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_MLRTB;iBin_qxqy_MLRTB;eBin_qxqy_MLRTB;qBin_qxqy_FLRTB;iBin_qxqy_FLRTB;eBin_qxqy_FLRTB;"
-
-			Save/T/M="\r\n"/B waveStr as fullPath			
-			
-			
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-		case 4:		// 9 sets
-			waveStr = "qBin_qxqy_B;iBin_qxqy_B;eBin_qxqy_B;"
-			waveStr += "qBin_qxqy_ML;iBin_qxqy_ML;eBin_qxqy_ML;"
-			waveStr += "qBin_qxqy_MR;iBin_qxqy_MR;eBin_qxqy_MR;"
-			waveStr += "qBin_qxqy_MT;iBin_qxqy_MT;eBin_qxqy_MT;"
-			waveStr += "qBin_qxqy_MB;iBin_qxqy_MB;eBin_qxqy_MB;"
-			waveStr += "qBin_qxqy_FL;iBin_qxqy_FL;eBin_qxqy_FL;"
-			waveStr += "qBin_qxqy_FR;iBin_qxqy_FR;eBin_qxqy_FR;"
-			waveStr += "qBin_qxqy_FT;iBin_qxqy_FT;eBin_qxqy_FT;"
-			waveStr += "qBin_qxqy_FB;iBin_qxqy_FB;eBin_qxqy_FB;"
-			
-			
-			Save/T/M="\r\n"/B waveStr as fullPath
-
-//			formatStr = "%15.4g %15.4g %15.4g\r\n"
-//			
-//			fprintf refnum, "The 3 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm)\r\n"	
-//	
-//			wfprintf refnum,formatStr,qw,iw,sw
-			break
-					
-		default:
-		// do nothing, just close
-
-	endswitch
-
-//	Close refnum
-
-// TODO
-// -- clean up any waves on exit?	 Only if I generate extra waves
-//	KillWaves/Z sigQ,qbar,fs
-	
-	SetDataFolder root:
-	return(0)
-End
-
-// awkward, but can't call STRUCT from Proc
-Proc Vm_Write1DData_ITX()
-	Vf_FakeSaveIQITXClick()	
-End
-
-Function Vf_FakeSaveIQITXClick()
-	STRUCT WMButtonAction ba
-	ba.eventCode=2
-	V_SaveIQ_ButtonProc(ba)
-end
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 ///////// QxQy Export  //////////
@@ -350,7 +133,7 @@ end
 //	Jan 2019 -- first version, simply exports the basic matrix of data with no resolution information
 //
 //
-Function V_QxQy_Export(type,fullpath,newFileName,dialog)
+Function V_WriteNXcanSAS2DData(type,fullpath,newFileName,dialog)
 	String type,fullpath,newFileName
 	Variable dialog		//=1 will present dialog for name
 	
@@ -621,4 +404,170 @@ v_toc()
 	return(0)
 End
 
+///////////////////////////////////////////////////////////////////////////
+// - V_WriteMetaData - Method used to write non data elements into NXcanSAS
+// format. This is common between 1D and 2D data sets.
 
+//
+// FIXME: Remove textw and rw once locations of information are known
+//
+
+Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
+	String base,parentBase
+	Variable fileID
+	Wave/T proto,textw
+	Wave rw
+	
+	// Define common attribute waves
+	Make/T/O/N=1 empty = {""}
+	Make/T/O/N=1 units = {"units"}
+	Make/T/O/N=1 m = {"m"}
+	Make/T/O/N=1 mm = {"mm"}
+	Make/T/O/N=1 cm = {"cm"}
+	Make/T/O/N=1 pixel = {"pixel"}
+	Make/T/O/N=1 angstrom = {"A"}
+	
+	// SASinstrument
+	String instrParent = parentBase + "sasinstrument/"
+	// Create SASinstrument entry
+	String instrumentBase = base + ":sasinstrument"
+	NewDataFolder/O/S $(instrumentBase)
+	Make/O/T/N=5 $(instrumentBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(instrumentBase + ":attrVals") = {"SASinstrument","NXinstrument"}
+	CreateStrNxCansas(fileID,instrParent,"","",empty,$(instrumentBase + ":attr"),$(instrumentBase + ":attrVals"))
+	
+	// SASaperture
+	String apertureParent = instrParent + "sasaperture/"
+	// Create SASaperture entry
+	String apertureBase = instrumentBase + ":sasaperture"
+	NewDataFolder/O/S $(apertureBase)
+	Make/O/T/N=5 $(apertureBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(apertureBase + ":attrVals") = {"SASaperture","NXaperture"}
+	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
+	
+	// Create SASaperture shape entry
+	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} 
+	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
+	// Create SASaperture x_gap entry
+	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]}
+	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,mm)
+	// Create SASaperture y_gap entry
+	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]}
+	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,mm)
+	
+	// SAScollimation
+	String collimationParent = instrParent + "sascollimation/"
+	// Create SAScollimation entry
+	String collimationBase = instrumentBase + ":sascollimation"
+	NewDataFolder/O/S $(collimationBase)
+	Make/O/T/N=5 $(collimationBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
+	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
+	// Create SAScollimation distance entry
+	Make/O/N=1 $(collimationBase + ":distance") = {rw[25]}
+	CreateVarNxCansas(fileID,collimationParent,"sasaperture","distance",$(collimationBase + ":distance"),units,m)
+	
+	// SASdetector
+	String detectorParent = instrParent + "sasdetector/"
+	// Create SASdetector entry
+	String detectorBase = instrumentBase + ":sasdetector"
+	NewDataFolder/O/S $(detectorBase)
+	Make/O/T/N=5 $(detectorBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
+	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
+	// Create SASdetector name entry
+	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
+	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
+	// Create SASdetector distance entry
+	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
+	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,m)
+	// Create SASdetector beam_center_x entry
+	Make/O/N=1 $(detectorBase + ":beam_center_x") = {rw[16]}
+	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,pixel)
+	// Create SASdetector beam_center_y entry
+	Make/O/N=1 $(detectorBase + ":beam_center_y") = {rw[17]}
+	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,pixel)
+	// Create SASdetector x_pixel_size entry
+	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {rw[10]}
+	CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
+	// Create SASdetector y_pixel_size entry
+	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {rw[13]}
+	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
+	
+	// SASsource
+	String sourceParent = instrParent + "sassource/"
+	// Create SASdetector entry
+	String sourceBase = instrumentBase + ":sassource"
+	NewDataFolder/O/S $(sourceBase)
+	Make/O/T/N=5 $(sourceBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
+	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
+	// Create SASsource radiation entry
+	Make/O/T/N=1 $(sourceBase + ":radiation") = {"Reactor Neutron Source"}
+	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
+	// Create SASsource incident_wavelength entry
+	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {rw[26]}
+	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)
+	// Create SASsource incident_wavelength_spread entry
+	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {rw[27]}
+	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength_spread",$(sourceBase + ":incident_wavelength_spread"),units,angstrom)
+	
+	// SASprocess
+	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	String protoStr7,protoStr8
+	if(strlen(proto[7]) == 0)
+		protoStr7 = "(Default) "+ ksBinTrimBegDefault
+	else
+		protoStr7 = proto[7]
+	endif
+	if(strlen(proto[8]) == 0)
+		protoStr8 = "(Default) "+ ksBinTrimEndDefault
+	else
+		protoStr8 = proto[8]
+	endif
+	String processNote = ""
+	sPrintf processNote,"SAM: %s\r\n",samFiles
+	sPrintf processNote,"%sBGD: %s\r\n",processNote,proto[0]
+	sPrintf processNote,"%sEMP: %s\r\n",processNote,Proto[1]
+	sPrintf processNote,"%sDIV: %s\r\n",processNote,Proto[2]
+	sPrintf processNote,"%sMASK: %s\r\n",processNote,Proto[3]
+	sPrintf processNote,"%sABS Parameters (3-6): %s\r\n",processNote,Proto[4]
+	sPrintf processNote,"%sAverage Choices: %s\r\n",processNote,Proto[5]
+	sPrintf processNote,"%sBeginning Trim Points: %s\r\n",processNote,ProtoStr7
+	sPrintf processNote,"%sEnd Trim Points: %s\r\n",processNote,ProtoStr8
+	sPrintf processNote,"%sCOLLIMATION=%s\r\n",processNote,proto[9]
+	String processParent = parentBase + "sasprocess/"
+	// Create SASprocess entry
+	String processBase = base + ":sasprocess"
+	NewDataFolder/O/S $(processBase)
+	Make/O/T/N=5 $(processBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(processBase + ":attrVals") = {"SASprocess","NXprocess"}
+	CreateStrNxCansas(fileID,processParent,"","",empty,$(processBase + ":attr"),$(processBase + ":attrVals"))
+	// Create SASprocess name entry
+	Make/O/T/N=1 $(processBase + ":name") = {samFiles}
+	CreateStrNxCansas(fileID,processParent,"","name",$(processBase + ":name"),empty,empty)
+	// Create SASprocess note entry
+	Make/O/T/N=1 $(processBase + ":note") = {processNote}
+	CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":note"),empty,empty)
+	
+	// SASsample
+	String sampleParent = parentBase + "sassample/"
+	// Create SASsample entry
+	String sampleBase = base + ":sassample"
+	NewDataFolder/O/S $(sampleBase)
+	Make/O/T/N=5 $(sampleBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
+	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
+	// Create SASsample name entry
+	Make/O/T/N=1 $(sampleBase + ":name") = {textw[6]}
+	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
+	// Create SASsample thickness entry
+	Make/O/N=1 $(sampleBase + ":thickness") = {rw[5]}
+	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
+	// Create SASsample transmission entry
+	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
+	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
+End
+	
+//
+///////////////////////////////////////////////////////////////////////////
