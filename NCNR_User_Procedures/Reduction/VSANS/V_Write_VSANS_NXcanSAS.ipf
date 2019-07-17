@@ -20,9 +20,6 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	
 	SetDataFolder $(pathStr+folderStr)
 	
-	Make/T textw = {"","","","","","","","",""}
-	Make rw = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
-	
 	// Check fullpath and dialog
 	if(stringmatch(saveName, ""))
 		fileID = NxCansas_DoSaveFileDialog()
@@ -44,15 +41,10 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 		Wave fs = tmp_fs
 	EndIf
 	
-	String dataSetFolderParent,basestr
-	
 	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
-	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)	
-	
-	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)
 	
 	//make sure the waves exist
-	
 	if(WaveExists(qw) == 0)
 		Abort "q is missing"
 	endif
@@ -81,14 +73,9 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
 	
-	
-	//
-	// FIXME: Replace textw and rw with actual data locations
-	//
-	
-	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	Make/O/T/N=1 $(parentBase + ":title") = {V_getTitle(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
-	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	Make/O/T/N=1 $(parentBase + ":run") = {V_getExperiment_identifier(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
@@ -97,7 +84,7 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	String dataBase = parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",textw[1]}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",V_getDataEndTime(folderStr)}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
@@ -116,7 +103,7 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
 	
 	// Write all VSANS meta data
-	V_WriteMetaData(fileID,parentBase,nxcansasBase,proto,textw,rw)
+	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
 	
 End
 
@@ -412,11 +399,10 @@ End
 // FIXME: Remove textw and rw once locations of information are known
 //
 
-Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
-	String base,parentBase
+Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
+	String base,parentBase,folderStr
 	Variable fileID
-	Wave/T proto,textw
-	Wave rw
+	Wave/T proto
 	
 	// Define common attribute waves
 	Make/T/O/N=1 empty = {""}
@@ -435,6 +421,9 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	Make/O/T/N=5 $(instrumentBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(instrumentBase + ":attrVals") = {"SASinstrument","NXinstrument"}
 	CreateStrNxCansas(fileID,instrParent,"","",empty,$(instrumentBase + ":attr"),$(instrumentBase + ":attrVals"))
+	// Create SASinstrument name entry
+	Make/O/T/N=1 $(instrumentBase + ":name") = {V_getInstrumentName(folderStr)}
+	CreateStrNxCansas(fileID,instrParent,"","name",$(instrumentBase + ":name"),empty,empty)
 	
 	// SASaperture
 	String apertureParent = instrParent + "sasaperture/"
@@ -446,13 +435,13 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
 	
 	// Create SASaperture shape entry
-	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} 
+	Make/O/T/N=1 $(apertureBase + ":shape") = {V_getSampleAp_shape(folderStr)} 
 	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
 	// Create SASaperture x_gap entry
-	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]}
+	Make/O/N=1 $(apertureBase + ":x_gap") = {V_getSampleAp_height(folderStr)}
 	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,mm)
 	// Create SASaperture y_gap entry
-	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]}
+	Make/O/N=1 $(apertureBase + ":y_gap") = {V_getSampleAp_width(folderStr)}
 	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,mm)
 	
 	// SAScollimation
@@ -464,10 +453,14 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
 	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
 	// Create SAScollimation distance entry
-	Make/O/N=1 $(collimationBase + ":distance") = {rw[25]}
+	Make/O/N=1 $(collimationBase + ":distance") = {V_getSourceAp_distance(folderStr)}
 	CreateVarNxCansas(fileID,collimationParent,"sasaperture","distance",$(collimationBase + ":distance"),units,m)
 	
-	// SASdetector
+	//
+	// TODO: Create separate detector entry for each panel
+	//
+	
+	// SASdetector - Front Top
 	String detectorParent = instrParent + "sasdetector/"
 	// Create SASdetector entry
 	String detectorBase = instrumentBase + ":sasdetector"
@@ -476,22 +469,25 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
 	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
 	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
+	Make/O/T/N=1 $(detectorBase + ":name") = {"FrontTop"}
 	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
+	// Create SASdetector type entry
+	Make/O/T/N=1 $(detectorBase + ":type") = {"He3 gas cylinder"}
+	CreateStrNxCansas(fileID,detectorParent,"","type",$(detectorBase + ":type"),empty,empty)
 	// Create SASdetector distance entry
-	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
-	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,m)
+	Make/O/N=1 $(detectorBase + ":SDD") = {V_getDet_ActualDistance(folderStr,"FT")}
+	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,cm)
 	// Create SASdetector beam_center_x entry
-	Make/O/N=1 $(detectorBase + ":beam_center_x") = {rw[16]}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,pixel)
+	Make/O/N=1 $(detectorBase + ":beam_center_x") = {V_getDet_beam_center_x_mm(folderStr,"FT")}
+	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,mm)
 	// Create SASdetector beam_center_y entry
-	Make/O/N=1 $(detectorBase + ":beam_center_y") = {rw[17]}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,pixel)
+	Make/O/N=1 $(detectorBase + ":beam_center_y") = {V_getDet_beam_center_y_mm(folderStr,"FT")}
+	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,mm)
 	// Create SASdetector x_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {rw[10]}
+	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {V_getDet_x_pixel_size(folderStr,"FT")}
 	CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
 	// Create SASdetector y_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {rw[13]}
+	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"FT")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
 	
 	// SASsource
@@ -503,14 +499,32 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	Make/O/T/N=5 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
 	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
 	// Create SASsource radiation entry
-	Make/O/T/N=1 $(sourceBase + ":radiation") = {"Reactor Neutron Source"}
+	Make/O/T/N=1 $(sourceBase + ":radiation") = {V_getSourceType(folderStr}
 	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
 	// Create SASsource incident_wavelength entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {rw[26]}
+	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {V_getWavelength(folderStr)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)
 	// Create SASsource incident_wavelength_spread entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {rw[27]}
+	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {V_getWavelength_spread(folderStr)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength_spread",$(sourceBase + ":incident_wavelength_spread"),units,angstrom)
+	
+	// SASsample
+	String sampleParent = parentBase + "sassample/"
+	// Create SASsample entry
+	String sampleBase = base + ":sassample"
+	NewDataFolder/O/S $(sampleBase)
+	Make/O/T/N=5 $(sampleBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
+	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
+	// Create SASsample name entry
+	Make/O/T/N=1 $(sampleBase + ":name") = {V_getSampleDescription(folderStr)}
+	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
+	// Create SASsample thickness entry
+	Make/O/N=1 $(sampleBase + ":thickness") = {V_getSampleThickness(folderStr)}
+	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
+	// Create SASsample transmission entry
+	Make/O/N=1 $(sampleBase + ":transmission") = {V_getSampleTransmission(folderStr)}
+	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
 	
 	// SASprocess
 	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
@@ -549,24 +563,6 @@ Function V_WriteMetaData(fileID,base,parentBase,proto,textw,rw)
 	// Create SASprocess note entry
 	Make/O/T/N=1 $(processBase + ":note") = {processNote}
 	CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":note"),empty,empty)
-	
-	// SASsample
-	String sampleParent = parentBase + "sassample/"
-	// Create SASsample entry
-	String sampleBase = base + ":sassample"
-	NewDataFolder/O/S $(sampleBase)
-	Make/O/T/N=5 $(sampleBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
-	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
-	// Create SASsample name entry
-	Make/O/T/N=1 $(sampleBase + ":name") = {textw[6]}
-	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
-	// Create SASsample thickness entry
-	Make/O/N=1 $(sampleBase + ":thickness") = {rw[5]}
-	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
-	// Create SASsample transmission entry
-	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
-	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
 End
 	
 //
