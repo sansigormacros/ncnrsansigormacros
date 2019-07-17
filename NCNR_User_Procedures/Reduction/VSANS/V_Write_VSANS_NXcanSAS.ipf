@@ -14,6 +14,8 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	
 	SetDataFolder $(pathStr+folderStr)
 	
+	Print "Starting the process of writing to NXcanSAS files"
+	
 	// Check fullpath and dialog
 	if(stringmatch(saveName, ""))
 		fileID = NxCansas_DoSaveFileDialog()
@@ -72,6 +74,8 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	Make/O/T/N=1 $(parentBase + ":run") = {V_getExperiment_identifier(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
+	Print "Writing VSANS 1D Data in NXcanSAS format"
+	
 	// SASData
 	String dataParent = nxcansasBase + "sasdata/"
 	// Create SASdata entry
@@ -95,6 +99,8 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	// Create qdev entry
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",sigQ,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
+	
+	Print "Writing VSANS Meta Data in NXcanSAS format"
 	
 	// Write all VSANS meta data
 	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
@@ -216,7 +222,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		pixX = V_getDet_pixel_num_x(type,detStr)
 		pixY = V_getDet_pixel_num_y(type,detStr)
 		
-		fileName = newFileName
+		fileName = saveName
 		fileDate = V_getDataStartTime(type)		// already a string
 		fileLabel = V_getSampleDescription(type)
 		
@@ -298,10 +304,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		Redimension/N=(pixX*pixY) SigmaQX,SigmaQY,fsubS,qval,phi,r_dist
 
 		Variable ret1,ret2,ret3,nq
-		String collimationStr
-		
-		
-		collimationStr = proto[9]
+		String collimationStr = proto[9]
 		
 		nq = pixX*pixY
 		ii=0
@@ -320,24 +323,24 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 
 v_tic()
 		Make/O/N=(2,pixX,pixY) qxy_vals
-		//everything in 1D now
 		Make/O/N=(pixX,pixY) shadow
 		Make/O/N=(2,pixX,pixY) SigmaQ_combined
 		do
 			jj = 0
 			do
-				nq = ii * pixelsX + jj
-				get2DResolution(qval[nq],phi[nq],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[nq],ret1,ret2,ret3)
+				nq = ii * pixX + jj
+				V_get2DResolution(qval[nq],phi[nq],r_dist[nq],folderStr,detStr,collimationStr,ret1,ret2,ret3)
 				qxy_vals[0][ii][jj] = qx_val[nq]
 				qxy_vals[1][ii][jj] = qy_val[nq]
-				SigmaQ_combined[0][ii][jj] = ret1	
+				SigmaQ_combined[0][ii][jj] = ret1
 				SigmaQ_combined[1][ii][jj] = ret2
-				shadow[ii][jj] = ret3	
+				shadow[ii][jj] = ret3
 				jj+=1
-			while(jj<pixelsX)
+			while(jj<pixX)
 			ii+=1
-		while(ii<pixelsY)
-v_toc()	
+		while(ii<pixY)
+v_toc()
+
 	////*********************	
 		Duplicate/O qx_val,qx_val_s
 		Duplicate/O qy_val,qy_val_s
@@ -354,13 +357,14 @@ v_toc()
 	
 		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		
+		String dataParent,dataBase
 		// SASData
-		String dataParent = nxcansasBase + "sasdata" + kk + "/"
+		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk
 		// Create SASdata entry
-		String dataBase = parentBase + ":sasdata" + kk
+		sPrintf dataBase,"%s:sasdata%d",parentBase,kk
 		NewDataFolder/O/S $(dataBase)
 		Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-		Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",textw[1]}
+		Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",V_getDataEndTime(folderStr)}
 		CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 		// Create i entry
 		NewDataFolder/O/S $(dataBase + ":i")
@@ -385,19 +389,17 @@ v_toc()
 		///////////////////////////////////////////////////////////////////////////
 		
 		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s
-		
 		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist
-		
-		
 	
 	endfor
 	
 	KillWaves/Z labelWave,dum
 	
-	
-	
-	// Write all meta data
-	WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
+	// Write all VSANS meta data
+	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
+		
+	//
+	///////////////////////////////////////////////////////////////////////////
 	
 	// Close the file
 	if(fileID)

@@ -3274,6 +3274,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 	
 	String fullpath = "", newfileName=""
 	String saveType = StringByKey("SAVE",avgStr,"=",";")		//does user want to save data?
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 
 	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
@@ -3340,6 +3341,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 //					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 //				endif
 //
+				
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
 					V_Trim1DDataStr(activeType,binType,trimBegStr,trimEndStr)			// x- passing null strings uses global or default trim values
 
@@ -3347,8 +3349,11 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 				
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
-					
-					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+					if (useNXcanSASOutput == 1)
+						WriteNxCanSAS1D(activeType,fullPath,dialog)
+					else
+						V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+					EndIf
 				
 				endif
 				
@@ -3369,6 +3374,10 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 			case "QxQy_ASCII":
 				fullPath = S_Path + newFileName+".DAT"
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
+				break
+			case "2D_NXcanSAS":
+				fullPath = S_Path + newFileName+".h5"
+				V_WriteNXcanSAS2DData(activeType,fullPath,newFileName,dialog)
 				break
 			case "PNG_Graphic":
 //				SaveAsPNG(activeType,fullpath,dialog)
