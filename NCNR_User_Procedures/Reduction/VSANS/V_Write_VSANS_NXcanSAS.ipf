@@ -12,9 +12,9 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	Variable refnum,dialog=1
 	String/G base = "root:V_NXcanSAS_file"
 	
-	SetDataFolder $(pathStr+folderStr)
+	NewDataFolder/O/S $(base)
 	
-	Print "Starting the process of writing to NXcanSAS files"
+	SetDataFolder $(pathStr+folderStr)
 	
 	// Check fullpath and dialog
 	if(stringmatch(saveName, ""))
@@ -24,18 +24,18 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	Endif
 	if(!fileID)
 		abort "Unable to create file at " + saveName + "."
-	else
-		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
-		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
-
-		Wave qw = tmp_q
-		Wave iw = tmp_i
-		Wave sw = tmp_s
-		Wave sigQ = tmp_sq
-		Wave qbar = tmp_qb
-		Wave fs = tmp_fs
 	EndIf
+	
+	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+	sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
+
+	Wave qw = tmp_q
+	Wave iw = tmp_i
+	Wave sw = tmp_s
+	Wave sigQ = tmp_sq
+	Wave qbar = tmp_qb
+	Wave fs = tmp_fs
 	
 	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
 	Wave/T proto=$("root:Packages:NIST:VSANS:Globals:Protocols:"+gProtoStr)
@@ -68,13 +68,10 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
-	
 	Make/O/T/N=1 $(parentBase + ":title") = {V_getTitle(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
 	Make/O/T/N=1 $(parentBase + ":run") = {V_getExperiment_identifier(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
-	
-	Print "Writing VSANS 1D Data in NXcanSAS format"
 	
 	// SASData
 	String dataParent = nxcansasBase + "sasdata/"
@@ -99,8 +96,6 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	// Create qdev entry
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",sigQ,units,inv_angstrom)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
-	
-	Print "Writing VSANS Meta Data in NXcanSAS format"
 	
 	// Write all VSANS meta data
 	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
@@ -449,7 +444,6 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	Make/O/T/N=5 $(apertureBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(apertureBase + ":attrVals") = {"SASaperture","NXaperture"}
 	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
-	
 	// Create SASaperture shape entry
 	Make/O/T/N=1 $(apertureBase + ":shape") = {V_getSampleAp_shape(folderStr)} 
 	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
@@ -531,7 +525,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"FB")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)	
-		
+	
 	// SASdetector - Front Left
 	detectorParent = instrParent + "sasdetector3/"
 	// Create SASdetector entry
@@ -561,7 +555,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"FL")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-		
+	
 	// SASdetector - Front Right
 	detectorParent = instrParent + "sasdetector4/"
 	// Create SASdetector entry
@@ -591,7 +585,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"FR")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-		
+	
 	// SASdetector - Middle Top
 	detectorParent = instrParent + "sasdetector5/"
 	// Create SASdetector entry
@@ -621,7 +615,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"MT")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-			
+	
 	// SASdetector - Middle Bottom
 	detectorParent = instrParent + "sasdetector6/"
 	// Create SASdetector entry
@@ -651,7 +645,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"MB")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-			
+	
 	// SASdetector - Middle Left
 	detectorParent = instrParent + "sasdetector7/"
 	// Create SASdetector entry
@@ -681,7 +675,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"ML")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-			
+	
 	// SASdetector - Middle Right
 	detectorParent = instrParent + "sasdetector8/"
 	// Create SASdetector entry
@@ -711,36 +705,39 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASdetector y_pixel_size entry
 	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"MR")}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
-			
-	// SASdetector - Back High Res
-	detectorParent = instrParent + "sasdetector9/"
-	// Create SASdetector entry
-	detectorBase = instrumentBase + ":sasdetector9"
-	NewDataFolder/O/S $(detectorBase)
-	Make/O/T/N=5 $(detectorBase + ":attr") = {"canSAS_class","NX_class"}
-	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
-	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
-	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {"HighResolutionBack"}
-	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
-	// Create SASdetector type entry
-	Make/O/T/N=1 $(detectorBase + ":type") = {"He3 gas cylinder"}
-	CreateStrNxCansas(fileID,detectorParent,"","type",$(detectorBase + ":type"),empty,empty)
-	// Create SASdetector distance entry
-	Make/O/N=1 $(detectorBase + ":SDD") = {V_getDet_ActualDistance(folderStr,"B")}
-	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,cm)
-	// Create SASdetector beam_center_x entry
-	Make/O/N=1 $(detectorBase + ":beam_center_x") = {V_getDet_beam_center_x_mm(folderStr,"B")}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,mm)
-	// Create SASdetector beam_center_y entry
-	Make/O/N=1 $(detectorBase + ":beam_center_y") = {V_getDet_beam_center_y_mm(folderStr,"B")}
-	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,mm)
-	// Create SASdetector x_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {V_getDet_x_pixel_size(folderStr,"B")}
-	CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
-	// Create SASdetector y_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"B")}
-	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
+	
+	NVAR ignoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	if(ignoreBack == 0)	
+		// SASdetector - Back High Res
+		detectorParent = instrParent + "sasdetector9/"
+		// Create SASdetector entry
+		detectorBase = instrumentBase + ":sasdetector9"
+		NewDataFolder/O/S $(detectorBase)
+		Make/O/T/N=5 $(detectorBase + ":attr") = {"canSAS_class","NX_class"}
+		Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
+		CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
+		// Create SASdetector name entry
+		Make/O/T/N=1 $(detectorBase + ":name") = {"HighResolutionBack"}
+		CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
+		// Create SASdetector type entry
+		Make/O/T/N=1 $(detectorBase + ":type") = {"He3 gas cylinder"}
+		CreateStrNxCansas(fileID,detectorParent,"","type",$(detectorBase + ":type"),empty,empty)
+		// Create SASdetector distance entry
+		Make/O/N=1 $(detectorBase + ":SDD") = {V_getDet_ActualDistance(folderStr,"B")}
+		CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,cm)
+		// Create SASdetector beam_center_x entry
+		Make/O/N=1 $(detectorBase + ":beam_center_x") = {V_getDet_beam_center_x_mm(folderStr,"B")}
+		CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,mm)
+		// Create SASdetector beam_center_y entry
+		Make/O/N=1 $(detectorBase + ":beam_center_y") = {V_getDet_beam_center_y_mm(folderStr,"B")}
+		CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,mm)
+		// Create SASdetector x_pixel_size entry
+		Make/O/N=1 $(detectorBase + ":x_pixel_size") = {V_getDet_x_pixel_size(folderStr,"B")}
+		CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
+		// Create SASdetector y_pixel_size entry
+		Make/O/N=1 $(detectorBase + ":y_pixel_size") = {V_getDet_y_pixel_size(folderStr,"B")}
+		CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
+	EndIf
 	
 	// SASsource
 	String sourceParent = instrParent + "sassource/"
@@ -759,7 +756,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASsource incident_wavelength_spread entry
 	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {V_getWavelength_spread(folderStr)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength_spread",$(sourceBase + ":incident_wavelength_spread"),units,angstrom)
-	
+
 	// SASsample
 	String sampleParent = parentBase + "sassample/"
 	// Create SASsample entry
@@ -773,7 +770,7 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
 	// Create SASsample thickness entry
 	Make/O/N=1 $(sampleBase + ":thickness") = {V_getSampleThickness(folderStr)}
-	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
+	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,mm)
 	// Create SASsample transmission entry
 	Make/O/N=1 $(sampleBase + ":transmission") = {V_getSampleTransmission(folderStr)}
 	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
@@ -802,8 +799,8 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	sPrintf processNote,"%sBeginning Trim Points: %s\r\n",processNote,ProtoStr7
 	sPrintf processNote,"%sEnd Trim Points: %s\r\n",processNote,ProtoStr8
 	sPrintf processNote,"%sCOLLIMATION=%s\r\n",processNote,proto[9]
-	String processParent = parentBase + "sasprocess/"
 	// Create SASprocess entry
+	String processParent = parentBase + "sasprocess/"
 	String processBase = base + ":sasprocess"
 	NewDataFolder/O/S $(processBase)
 	Make/O/T/N=5 $(processBase + ":attr") = {"canSAS_class","NX_class"}
@@ -813,8 +810,14 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	Make/O/T/N=1 $(processBase + ":name") = {samFiles}
 	CreateStrNxCansas(fileID,processParent,"","name",$(processBase + ":name"),empty,empty)
 	// Create SASprocess note entry
-	Make/O/T/N=1 $(processBase + ":note") = {processNote}
-	CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":note"),empty,empty)
+	
+	//
+	// TODO: Reinstate SASprocess.note when I figure out why it won't save
+	//
+	
+	//Make/O/T/N=1 $(processBase + ":note") = {processNote}
+	//CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":note"),empty,empty)
+	
 End
 	
 //
