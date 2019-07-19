@@ -136,11 +136,12 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	// Define local function variables
 	String formatStr="",detStr="",detSavePath
 	String destStr="",parentBase,nxcansasBase
-	String type=pathStr
+	String type=folderStr
 	
 	Variable fileID
 	String/G base = "root:V_NXcanSAS_file"
 	
+	NewDataFolder/O/S $(base)
 	SetDataFolder $(pathStr+folderStr)
 	
 	// Check fullpath and dialog
@@ -181,7 +182,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
 	
-	Make/O/T/N=1 $(parentBase + ":title") = {V_getTitle(folderStr)}
+	Make/O/T/N=1 $(parentBase + ":title") = {V_getSampleDescription(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
 	Make/O/T/N=1 $(parentBase + ":run") = {V_getExperiment_identifier(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
@@ -352,8 +353,8 @@ v_toc()
 	
 		Redimension/N=(pixX*pixY) qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		
-		String dataParent,dataBase
 		// SASData
+		String dataParent,dataBase
 		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk
 		// Create SASdata entry
 		sPrintf dataBase,"%s:sasdata%d",parentBase,kk
@@ -364,6 +365,7 @@ v_toc()
 		// Create i entry
 		NewDataFolder/O/S $(dataBase + ":i")
 		Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
+		
 		Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 		CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 		//
