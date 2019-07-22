@@ -1344,7 +1344,7 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;Sector;QxQy_ASCII;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;Sector;QxQy_ASCII;QxQy_NXcanSAS"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
@@ -1491,7 +1491,7 @@ End
 Proc V_GetAvgInfo_Full(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;QxQy_NXcanSAS;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
@@ -3350,7 +3350,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
 					if (useNXcanSASOutput == 1)
-						WriteNxCanSAS1D(activeType,fullPath,dialog)
+						V_WriteNXcanSAS1DData("root:Packages:NIST:VSANS:",activeType,newFileName+".h5")
 					else
 						V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
 					EndIf
@@ -3375,7 +3375,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 				fullPath = S_Path + newFileName+".DAT"
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
 				break
-			case "2D_NXcanSAS":
+			case "QxQy_NXcanSAS":
 				fullPath = S_Path + newFileName+".h5"
 				V_WriteNXcanSAS2DData(activeType,fullPath,newFileName,dialog)
 				break
