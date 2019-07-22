@@ -47,20 +47,13 @@ Function WriteUSANSNXcanSAS(type,fullpath,lo,hi,dialog)
 	
 	Variable refNum,integer,realval
 		
-	if(dialog || stringmatch(fullpath, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(fullpath)
-	Endif
 	
-	if(!fileID)
-		abort "Unable to create file at " + fullpath + "."
-	else
-		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-		WAVE qvals = $(destStr + ":Qvals")
-		WAVE inten = $(destStr + ":DetCts")
-		WAVE sig = $(destStr + ":ErrDetCts")
-	endif
+	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
+		
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE qvals = $(destStr + ":Qvals")
+	WAVE inten = $(destStr + ":DetCts")
+	WAVE sig = $(destStr + ":ErrDetCts")
 	
 	//check each wave
 	If(!(WaveExists(qvals)))
@@ -170,20 +163,13 @@ Function WriteNXcanSASUSANSDesmeared(fullpath,lo,hi,dialog)
 	
 	Variable refNum,integer,realval
 		
-	if(dialog || stringmatch(fullpath, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(fullpath)
-	Endif
+
+	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
 	
-	if(!fileID)
-		abort "Unable to create file at " + fullpath + "."
-	else
-		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-		WAVE qvals =$(destStr + "Q_dsm")
-		WAVE inten=$(destStr + "I_dsm")
-		WAVE sig=$(destStr + "S_dsm")
-	endif
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE qvals =$(destStr + "Q_dsm")
+	WAVE inten=$(destStr + "I_dsm")
+	WAVE sig=$(destStr + "S_dsm")
 	
 	//check each wave
 	If(!(WaveExists(qvals)))

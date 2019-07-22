@@ -14,17 +14,9 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	
 	NewDataFolder/O/S $(base)
 	
-	SetDataFolder $(pathStr+folderStr)
-	
 	// Check fullpath and dialog
-	if(stringmatch(saveName, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(saveName)
-	Endif
-	if(!fileID)
-		abort "Unable to create file at " + saveName + "."
-	EndIf
+	fileID = NXcanSAS_OpenOrCreate(dialog,saveName,base)
+	SetDataFolder $(pathStr+folderStr)
 	
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
 	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
@@ -68,7 +60,7 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
-	Make/O/T/N=1 $(parentBase + ":title") = {V_getTitle(folderStr)}
+	Make/O/T/N=1 $(parentBase + ":title") = {V_getSampleDescription(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
 	Make/O/T/N=1 $(parentBase + ":run") = {V_getExperiment_identifier(folderStr)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
@@ -84,7 +76,7 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	//
 	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
 	//
-	// Create q entry
+	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
 	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
 	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
@@ -147,14 +139,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	SetDataFolder $(pathStr+folderStr)
 	
 	// Check fullpath and dialog
-	if(dialog == 1 || stringmatch(saveName, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(saveName)
-	Endif
-	if(!fileID)
-		abort "Unable to create file at " + saveName + "."
-	EndIf
+	fileID = NXcanSAS_OpenOrCreate(dialog,saveName,base)
 		
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
 	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all

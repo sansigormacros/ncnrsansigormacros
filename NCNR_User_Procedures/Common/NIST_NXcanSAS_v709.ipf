@@ -33,30 +33,24 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	NewDataFolder/O/S root:NXcanSAS_file
 	
 	// Check fullpath and dialog
-	if(dialog || stringmatch(fullpath, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(fullpath)
-	Endif
-	if(!fileID)
-		abort "Unable to create file at " + fullpath + "."
-	else
-		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
-		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
+	print "fullpath: ",fullpath
+	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
+	
+	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+	sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
 
-		destStr = "root:Packages:NIST:"+type
-		//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-		WAVE intw = $(destStr + ":integersRead")
-		WAVE rw = $(destStr + ":realsRead")
-		WAVE/T textw=$(destStr + ":textRead")
-		WAVE qvals =$(destStr + ":qval")
-		WAVE inten=$(destStr + ":aveint")
-		WAVE sig=$(destStr + ":sigave")
- 		WAVE qbar = $(destStr + ":QBar")
-  		WAVE sigmaq = $(destStr + ":SigmaQ")
- 		WAVE fsubs = $(destStr + ":fSubS")
-	endif
+	destStr = "root:Packages:NIST:"+type
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE intw = $(destStr + ":integersRead")
+	WAVE rw = $(destStr + ":realsRead")
+	WAVE/T textw=$(destStr + ":textRead")
+	WAVE qvals =$(destStr + ":qval")
+	WAVE inten=$(destStr + ":aveint")
+	WAVE sig=$(destStr + ":sigave")
+	WAVE qbar = $(destStr + ":QBar")
+	WAVE sigmaq = $(destStr + ":SigmaQ")
+	WAVE fsubs = $(destStr + ":fSubS")
 
 	///////////////////////////////////////////////////////////////////////////
 	// Write all data
@@ -140,35 +134,28 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	NewDataFolder/O/S root:NXcanSAS_file
 	
 	// Check fullpath and dialog
-	if(dialog || stringmatch(fullpath, ""))
-		fileID = NxCansas_DoSaveFileDialog()
-	else
-		fileID = NxCansas_CreateFile(fullpath)
-	Endif
-	if(!fileID)
-		abort "Unable to create file at " + fullpath + "."
-	else
-		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
-		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
-		
-		destStr = "root:Packages:NIST:"+type
+	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
 
-		//must select the linear_data to export
-		NVAR isLog = $(destStr+":gIsLogScale")
-		if(isLog==1)
-			typeStr = ":linear_data"
-		else
-			typeStr = ":data"
-		endif
-		NVAR pixelsX = root:myGlobals:gNPixelsX
-		NVAR pixelsY = root:myGlobals:gNPixelsY
-		Wave data=$(destStr+typeStr)
-		Wave data_err=$(destStr+":linear_data_error")
-		WAVE intw=$(destStr + ":integersRead")
-		WAVE rw=$(destStr + ":realsRead")
-		WAVE/T textw=$(destStr + ":textRead")
+	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+	sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
+	
+	destStr = "root:Packages:NIST:"+type
+
+	//must select the linear_data to export
+	NVAR isLog = $(destStr+":gIsLogScale")
+	if(isLog==1)
+		typeStr = ":linear_data"
+	else
+		typeStr = ":data"
 	endif
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	Wave data=$(destStr+typeStr)
+	Wave data_err=$(destStr+":linear_data_error")
+	WAVE intw=$(destStr + ":integersRead")
+	WAVE rw=$(destStr + ":realsRead")
+	WAVE/T textw=$(destStr + ":textRead")
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Compute Qx, Qy data from pixel space
@@ -455,8 +442,25 @@ End
 //
 // Basic file open/create and file initialization routines
 
+// Generic open or create file
+Function NXcanSAS_OpenOrCreate(dialog,fullpath,base)
+	Variable dialog
+	String fullpath,base
+	Variable fileID
+	if(dialog || stringmatch(fullpath, ""))
+		fileID = NxCansas_DoSaveFileDialog(base)
+	else
+		fileID = NxCansas_CreateFile(fullpath,base)
+	Endif
+	if(!fileID)
+		abort "Unable to create file at " + fullpath + "."
+	EndIf
+	return fileID
+End
+
 // Select/create file through prompt
-Function NxCansas_DoSaveFileDialog()
+Function NxCansas_DoSaveFileDialog(base)
+	String base
 	Variable refNum, fileID
 	String message = "Save a file"
 	String outputPath
@@ -464,19 +468,19 @@ Function NxCansas_DoSaveFileDialog()
 	fileFilters += "All Files:.*;"
 	Open /D /F=fileFilters /M=message refNum
 	outputPath = S_fileName
-	fileID = NxCansas_CreateFile(outputPath)
+	fileID = NxCansas_CreateFile(outputPath,base)
 	return fileID
 End
 
 // Create file with a known path
-Function NxCansas_CreateFile(fullpath)
-	String fullpath
+Function NxCansas_CreateFile(fullpath, base)
+	String fullpath,base
 	Variable fileID
 	Make/T/O/N=1 $("root:file_name") = fullpath
 	fullpath = ReplaceString(":\\", fullpath, ":")
 	fullpath = ReplaceString("\\", fullpath, ":")
 	HDF5CreateFile /Z fileID as fullpath
-	NXCansas_InitializeFile(fileID)
+	NXCansas_InitializeFile(fileID, base)
 	return fileID
 End
 
@@ -508,10 +512,10 @@ Function NxCansas_DoOpenFileDialog()
 End
 
 // Initialize the file to a base state
-Function NxCansas_InitializeFile(fileID)
+Function NxCansas_InitializeFile(fileID, base)
 	Variable fileID
+	String base
 	String parent,nxParent
-	String/G base = "root:NXcanSAS_file"
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
 	sPrintf parent,":sasentry%d",sasentry
 	String location = base + parent
