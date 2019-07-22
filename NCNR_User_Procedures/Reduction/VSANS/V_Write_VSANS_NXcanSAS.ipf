@@ -81,10 +81,13 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
 	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",V_getDataEndTime(folderStr)}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
+	//
+	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
+	//
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
-	Make/T/N=2 $(dataBase + ":q:attr") = {"units","resolutions"}
-	Make/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom","Qdev"}
+	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
+	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qw,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
@@ -125,7 +128,6 @@ End
 //
 //
 // TODO:
-// -- This is a placeholder for the final NXcanSAS writer for VSANS data.
 // -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
 // -- The final writer will need to be aware of resolution, and there may be different forms
 //
@@ -152,11 +154,11 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	Endif
 	if(!fileID)
 		abort "Unable to create file at " + saveName + "."
-	else
-		Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-		sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
-		sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
 	EndIf
+		
+	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
+	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+	sPrintf nxcansasBase,"/sasentry%d/",sasentry // HDF5 base path for all
 	
 	// declare, or make a fake protocol if needed (if the export type is RAW)
 	SVAR gProtoStr = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
@@ -238,7 +240,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		a1a2_dist = V_getSourceAp_distance(type)
 		deltaLam = V_getWavelength_spread(type)
 		// TODO -- decipher which beamstop, if any is actually in place
-	// or -- V_getBeamStopC3_size(type)
+		// or -- V_getBeamStopC3_size(type)
 		bstop = V_getBeamStopC2_size(type)
 
 		pixSizeX = V_getDet_x_pixel_size(type,detStr)
@@ -249,7 +251,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		WAVE data = V_getDetectorDataW(type,detStr)
 		WAVE data_err = V_getDetectorDataErrW(type,detStr)
 		
-		// TOOD - replace hard wired paths with Read functions
+		// TODO - replace hard wired paths with Read functions
 		// hard-wired
 		Wave qx_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qx_"+detStr)
 		Wave qy_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qy_"+detStr)
@@ -777,6 +779,15 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	Make/O/N=1 $(sampleBase + ":transmission") = {V_getSampleTransmission(folderStr)}
 	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
 	
+	// Create SASsample temperature entry
+	If(V_getSampleTemperature(folderStr) != -999999)
+		Make/O/N=1 $(sampleBase + ":temperature") = {V_getSampleTemperature(folderStr)}
+		CreateVarNxCansas(fileID,sampleParent,"","temperature",$(sampleBase + ":temperature"),empty,empty)
+	EndIf
+	
+	//
+	// TODO: Include other sample environment when they are available
+	
 	// SASprocess
 	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
 	String protoStr7,protoStr8
@@ -790,17 +801,18 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	else
 		protoStr8 = proto[8]
 	endif
-	String processNote = ""
-	sPrintf processNote,"SAM: %s\r\n",samFiles
-	sPrintf processNote,"%sBGD: %s\r\n",processNote,proto[0]
-	sPrintf processNote,"%sEMP: %s\r\n",processNote,Proto[1]
-	sPrintf processNote,"%sDIV: %s\r\n",processNote,Proto[2]
-	sPrintf processNote,"%sMASK: %s\r\n",processNote,Proto[3]
-	sPrintf processNote,"%sABS Parameters (3-6): %s\r\n",processNote,Proto[4]
-	sPrintf processNote,"%sAverage Choices: %s\r\n",processNote,Proto[5]
-	sPrintf processNote,"%sBeginning Trim Points: %s\r\n",processNote,ProtoStr7
-	sPrintf processNote,"%sEnd Trim Points: %s\r\n",processNote,ProtoStr8
-	sPrintf processNote,"%sCOLLIMATION=%s\r\n",processNote,proto[9]
+	String processNote0,processNote1,processNote2,processNote3,processNote4
+	String processNote5,processNote6,processNote7,processNote8,processNote9
+	sPrintf processNote0,"SAM: %s",samFiles
+	sPrintf processNote1,"BGD: %s",Proto[0]
+	sPrintf processNote2,"EMP: %s",Proto[1]
+	sPrintf processNote3,"DIV: %s",Proto[2]
+	sPrintf processNote4,"MASK: %s",Proto[3]
+	sPrintf processNote5,"ABS Parameters (3-6): %s",Proto[4]
+	sPrintf processNote6,"Average Choices: %s",Proto[5]
+	sPrintf processNote7,"Beginning Trim Points: %s",ProtoStr7
+	sPrintf processNote8,"End Trim Points: %s",ProtoStr8
+	sPrintf processNote9,"COLLIMATION=%s",proto[9]
 	// Create SASprocess entry
 	String processParent = parentBase + "sasprocess/"
 	String processBase = base + ":sasprocess"
@@ -811,14 +823,27 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// Create SASprocess name entry
 	Make/O/T/N=1 $(processBase + ":name") = {samFiles}
 	CreateStrNxCansas(fileID,processParent,"","name",$(processBase + ":name"),empty,empty)
-	// Create SASprocess note entry
-	
-	//
-	// TODO: Reinstate SASprocess.note when I figure out why it won't save
-	//
-	
-	//Make/O/T/N=1 $(processBase + ":note") = {processNote}
-	//CreateStrNxCansas(fileID,processParent,"","note",$(processBase + ":note"),empty,empty)
+	// Create SASprocess note entries
+	Make/O/T/N=1 $(processBase + ":note0") = {processNote0}
+	CreateStrNxCansas(fileID,processParent,"","note0",$(processBase + ":note0"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note1") = {processNote1}
+	CreateStrNxCansas(fileID,processParent,"","note1",$(processBase + ":note1"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note2") = {processNote2}
+	CreateStrNxCansas(fileID,processParent,"","note2",$(processBase + ":note2"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note3") = {processNote3}
+	CreateStrNxCansas(fileID,processParent,"","note3",$(processBase + ":note3"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note4") = {processNote4}
+	CreateStrNxCansas(fileID,processParent,"","note4",$(processBase + ":note4"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note5") = {processNote5}
+	CreateStrNxCansas(fileID,processParent,"","note5",$(processBase + ":note5"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note6") = {processNote6}
+	CreateStrNxCansas(fileID,processParent,"","note6",$(processBase + ":note6"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note7") = {processNote7}
+	CreateStrNxCansas(fileID,processParent,"","note7",$(processBase + ":note7"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note8") = {processNote8}
+	CreateStrNxCansas(fileID,processParent,"","note8",$(processBase + ":note8"),empty,empty)
+	Make/O/T/N=1 $(processBase + ":note9") = {processNote9}
+	CreateStrNxCansas(fileID,processParent,"","note9",$(processBase + ":note9"),empty,empty)
 	
 End
 	
