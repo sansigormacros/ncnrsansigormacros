@@ -1131,13 +1131,13 @@ Proc V_Display_Det_Panels()
 	Button button3,pos={350.00,70.00},size={100.00,20.00},proc=V_DoPanelAvgButtonProc,title="Do Average"
 	Button button4,pos={720.00,10.00},size={25.00,20.00},proc=V_AvgPanelHelpButtonProc,title="?"
 
-	SetVariable setvar0,pos={50,40},size={140,23},title="Annulus q-center (A)"
+	SetVariable setvar0,pos={20,40},size={160,23},title="Annulus q-center (A)"
 	SetVariable setvar0,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
-	SetVariable setvar1,pos={50,70},size={140,23},title="Annulus (+/-) q (A)"
+	SetVariable setvar1,pos={20,70},size={160,23},title="Annulus (+/-) q (A)"
 	SetVariable setvar1,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ
-	SetVariable setvar2,pos={200,40},size={140,23},title="Sector Angle (deg)"
+	SetVariable setvar2,pos={190,40},size={150,23},title="Sector Angle (deg)"
 	SetVariable setvar2,limits={-90,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
-	SetVariable setvar3,pos={200,70},size={140,23},title="Sector (+/-) (deg)"
+	SetVariable setvar3,pos={190,70},size={150,23},title="Sector (+/-) (deg)"
 	SetVariable setvar3,limits={0,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 
 	PopupMenu popup4,pos={200,100},size={90,23.00},title="Sector Side(s)"//,proc=V_DummyPopMenuProc

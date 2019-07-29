@@ -608,6 +608,106 @@ Function WriteUSANSDesmeared(fullpath,lo,hi,dialog)
 	Return(0)
 End
 
+
+// since this data is only smoothed, repeat the three fake resolution columns with the
+// negative value for the dQv value
+//
+// SRK 29 JUL 2019
+//
+Function WriteUSANS_Smoothed(fullpath,lo,hi,dialog)
+	String fullpath
+	Variable lo,hi,dialog		//=1 will present dialog for name
+	
+	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder	
+	
+	String termStr="\r\n"
+	String destStr = USANSFolder+":DSM:"
+	String formatStr = "%15.6g %15.6g %15.6g %15.6g %15.6g %15.6g"+termStr
+	
+	Variable refNum,integer,realval
+	NVAR gDQV = root:Packages:NIST:USANS:DSM:gDqv
+	
+	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
+	WAVE Q_smth =$(destStr + "Q_smth")
+	WAVE I_smth=$(destStr + "I_smth")
+	WAVE S_smth=$(destStr + "S_smth")
+	
+	//check each wave
+	If(!(WaveExists(Q_smth)))
+		Abort "Q_smth DNExist in WriteUSANS_Smoothed()"
+	Endif
+	If(!(WaveExists(I_smth)))
+		Abort "I_smth DNExist in WriteUSANS_Smoothed()"
+	Endif
+	If(!(WaveExists(S_smth)))
+		Abort "S_smth DNExist in WriteUSANS_Smoothed()"
+	Endif
+	
+	// 06 FEB 06 SRK
+	// make dummy waves to hold the "fake" resolution, and write it as the last 3 columns
+	//
+	Duplicate/O Q_smth,res1,res2,res3
+	res1 = -gDQV
+	res2 = -gDQV
+	res3 = -gDQV
+	
+	if(dialog)
+		Open/D refnum as fullpath+".smth"		//won't actually open the file
+		If(cmpstr(S_filename,"")==0)
+			//user cancel, don't write out a file
+			Close/A
+			Abort "no data file was written"
+		Endif
+		fullpath = S_filename
+	Endif
+	
+	//write out partial set?
+	Duplicate/O Q_smth,tq,ti,te
+	ti=I_smth
+	te=S_smth
+	if( (lo!=hi) && (lo<hi))
+		redimension/N=(hi-lo+1) tq,ti,te,res1,res2,res3		//lo to hi, inclusive
+		tq=Q_smth[p+lo]
+		ti=I_smth[p+lo]
+		te=S_smth[p+lo]
+	endif
+	
+	//tailor the output given the type of data written out...
+	String samStr="",dateStr="",str1,str2
+
+	//get the number of spline passes from the wave note
+	String noteStr
+	Variable boxPass,SplinePass
+	noteStr=note(I_smth)
+	BoxPass = NumberByKey("BOX", noteStr, "=", ";")
+	splinePass = NumberByKey("SPLINE", noteStr, "=", ";")
+	
+
+	samStr = fullpath
+	dateStr="CREATED: "+date()+" at  "+time()
+//	sprintf str1,"Chi^2 = %g   PowerLaw m = %4.2f   Iterations = %d",chiFinal,m,iter
+	str1 = "smoothed data file, not desmeared"
+	sprintf str2,"%d box smooth passes and %d smoothing spline passes",boxPass,splinePass
+
+	
+	//actually open the file
+	Open refNum as fullpath
+	
+	fprintf refnum,"%s"+termStr,samStr
+//	fprintf refnum,"%s"+termStr,str1
+	fprintf refnum,"%s"+termStr,str2
+	fprintf refnum,"%s"+termStr,dateStr
+	
+	wfprintf refnum, formatStr, tq,ti,te,res1,res2,res3
+	
+	Close refnum
+	
+	Killwaves/Z ti,tq,te,res1,res2,res3
+	
+	Return(0)
+End
+
+
 /// procedures to do the extrapolation to high Q
 // very similar to the procedures in the Invariant package
 //
@@ -1558,16 +1658,18 @@ Function DSM_SmoothButtonProc(ctrlName) : ButtonControl
 	
 	ControlInfo/W=Desmear_Graph DSMControl_3c		//SSCheck
 	if(V_value == 1)
-//		Interpolate2/T=3/N=(nq)/I=2/F=1/SWAV=S_ext/Y=Yi_SS/X=Yq_SS Q_ext, I_ext		//Igor 5
-//		Interpolate/T=3/N=(nq)/I=2/F=1/S=S_ext/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext			//Igor 4
-	//Igor 4
-		String str=""
 		nq_ext = numpnts(Q_ext)
-		str = "Interpolate/T=3/N=("+num2str(nq_ext)+")/I=1/F=("+num2str(sParam)+")/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext"		
-		Execute str
+		Interpolate2/T=3/N=(nq_ext)/I=2/F=1/SWAV=S_ext/Y=Yi_SS/X=Yq_SS Q_ext, I_ext		//Igor 5
+//		Interpolate/T=3/N=(nq)/I=2/F=1/S=S_ext/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext			//Igor 4
+//	//Igor 4
+//		String str=""
+//		nq_ext = numpnts(Q_ext)
+//		str = "Interpolate/T=3/N=("+num2str(nq_ext)+")/I=1/F=("+num2str(sParam)+")/Y=Yi_SS/X=Yq_SS I_ext /X=Q_ext"		
+//		Execute str
 //		Print Str
-//		Interpolate2/T=3/N=(nq_ext)/I=1/F=(sParam)/Y=Yi_SS/X=Yq_SS Q_ext, I_ext
 	// end Igor 4	
+//		Interpolate2/T=3/N=(nq_ext)/I=1/F=(sParam)/Y=Yi_SS/X=Yq_SS Q_ext, I_ext
+
 		wave yi_ss = yi_ss		// already in the right DF
 		wave yq_ss = yq_ss
 		// reassign the "working" waves with the result of interpolate, which has the same I/Q values
@@ -1672,11 +1774,25 @@ Function DSM_SaveButtonProc(ctrlName) : ButtonControl
 	saveStr = CleanupName((curFile),0)		//the output filename
 	//
 
-	if (useXMLOutput == 1)	
-		WriteXMLUSANSDesmeared(saveStr,0,0,1)
-	else
-		WriteUSANSDesmeared(saveStr,0,0,1)			//use the full set (lo=hi=0) and present a dialog
-	endif
+	ControlInfo DSM_Tab
+	Variable curTab = V_Value
+	
+	switch(curTab)	// numeric switch
+		case 4:	// data from the desmeared data tab
+			if (useXMLOutput == 1)	
+				WriteXMLUSANSDesmeared(saveStr,0,0,1)
+			else
+				WriteUSANSDesmeared(saveStr,0,0,1)			//use the full set (lo=hi=0) and present a dialog
+			endif
+			break	
+		case 3:	
+				WriteUSANS_Smoothed(saveStr,0,0,1)
+			break
+		default:			
+			DoAlert 0,"Can only save data from the smooth or desmeared tabs"
+	endswitch
+
+
 	
 	SetDataFolder root:
 	return(0)
