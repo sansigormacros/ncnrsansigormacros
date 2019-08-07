@@ -9,7 +9,7 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	String formatStr=""
 	String destStr="", parentBase, nxcansasBase
 	Variable fileID
-	Variable refnum,dialog=1
+	Variable refnum,dialog=0
 	String/G base = "root:V_NXcanSAS_file"
 	
 	NewDataFolder/O/S $(base)
@@ -73,13 +73,10 @@ Function V_WriteNXcanSAS1DData(pathStr,folderStr,saveName)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
 	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",V_getDataEndTime(folderStr)}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
-	//
-	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
-	//
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
-	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
-	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
+	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units","resolutions"}
+	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom","Qdev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qw,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
@@ -136,10 +133,10 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	String/G base = "root:V_NXcanSAS_file"
 	
 	NewDataFolder/O/S $(base)
-	SetDataFolder $(pathStr+folderStr)
+	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 	
 	// Check fullpath and dialog
-	fileID = NXcanSAS_OpenOrCreate(dialog,saveName,base)
+	fileID = NXcanSAS_OpenOrCreate(dialog,pathStr,base)
 		
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
 	sPrintf parentBase,"%s:sasentry%d",base,sasentry // Igor memory base path for all
@@ -308,10 +305,11 @@ v_tic()
 		Make/O/N=(2,pixX,pixY) qxy_vals
 		Make/O/N=(pixX,pixY) shadow
 		Make/O/N=(2,pixX,pixY) SigmaQ_combined
+		ii=0
 		do
 			jj = 0
 			do
-				nq = ii * pixX + jj
+				nq = ii * pixY + jj
 				V_get2DResolution(qval[nq],phi[nq],r_dist[nq],folderStr,detStr,collimationStr,ret1,ret2,ret3)
 				qxy_vals[0][ii][jj] = qx_val[nq]
 				qxy_vals[1][ii][jj] = qy_val[nq]
@@ -319,9 +317,11 @@ v_tic()
 				SigmaQ_combined[1][ii][jj] = ret2
 				shadow[ii][jj] = ret3
 				jj+=1
-			while(jj<pixX)
+//			while(jj<pixX)
+			while(jj<pixY)
 			ii+=1
-		while(ii<pixY)
+//		while(ii<pixY)
+		while(ii<pixX)
 v_toc()
 
 	////*********************	
@@ -352,7 +352,6 @@ v_toc()
 		// Create i entry
 		NewDataFolder/O/S $(dataBase + ":i")
 		Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
-		
 		Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 		CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 		//

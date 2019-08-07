@@ -1441,21 +1441,23 @@ Proc Initialize_Preferences()
 	
 	/// items for everyone
 	val = NumVarOrDefault("root:Packages:NIST:gASCII_Write", 1 )
-	if (val == 1)
-		WritePref("PrefCtrl_0",1)
-	endif
 	Variable/G root:Packages:NIST:gASCII_Write = val
+
 	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
-	if (val == 1)
-		WritePref("PrefCtrl_0a",1)
-	endif
 	Variable/G root:Packages:NIST:gXML_Write = val
+
 	val = NumVarOrDefault("root:Packages:NIST:gNXcanSAS_Write", 0 )
-	if (val == 1)
-		WritePref("PrefCtrl_0b",1)
-	endif
 	Variable/G root:Packages:NIST:gNXcanSAS_Write = val
 	
+//	if (root:Packages:NIST:gASCII_Write == 1)
+//		WritePref("PrefCtrl_0",1)
+//	endif
+//	if (root:Packages:NIST:gXML_Write == 1)
+//		WritePref("PrefCtrl_0a",1)
+//	endif	
+//	if (root:Packages:NIST:gNXcanSAS_Write == 1)
+//		WritePref("PrefCtrl_0b",1)
+//	endif
 end
 
 Function LogScalePrefCheck(ctrlName,checked) : CheckBoxControl

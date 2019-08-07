@@ -97,8 +97,10 @@ End
 // SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
 //#include "MC_Script_Panels"
 
-// JRK JUN 2019 -- import NXcanSAS writer
+// JRK JUN 2019 -- import NXcanSAS read and write utilities
 #include "NIST_NXcanSAS_v709"
+#include "Write_SANS_NXcanSAS"
+
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

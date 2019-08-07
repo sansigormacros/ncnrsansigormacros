@@ -50,3 +50,5 @@ End
 #include "DataSetHandling"
 #Include "WriteModelData_v40"
 #include "PlotManager_v40"
+
+#include "NIST_NXcanSAS_v709"

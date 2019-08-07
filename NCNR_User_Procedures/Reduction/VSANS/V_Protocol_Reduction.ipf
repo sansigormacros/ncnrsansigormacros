@@ -3350,7 +3350,8 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
 					if (useNXcanSASOutput == 1)
-						V_WriteNXcanSAS1DData("root:Packages:NIST:VSANS:",activeType,newFileName+".h5")
+						exten = "h5"
+						V_WriteNXcanSAS1DData("root:Packages:NIST:VSANS:",activeType,fullPath+".h5")	// pass the full path here
 					else
 						V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
 					EndIf
@@ -3376,7 +3377,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
 				break
 			case "QxQy_NXcanSAS":
-				fullPath = S_Path + newFileName+".h5"
+				fullPath = S_Path + newFileName+".2D.h5"
 				V_WriteNXcanSAS2DData(activeType,fullPath,newFileName,dialog)
 				break
 			case "PNG_Graphic":

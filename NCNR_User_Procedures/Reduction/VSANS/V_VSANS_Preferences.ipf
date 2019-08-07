@@ -43,10 +43,12 @@ Proc Initialize_VSANSPreferences()
 
 	// GENERAL tab
 	/// General items for everyone
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gXML_Write", 0 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gXML_Write = val
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gNXcanSAS_Write", 0 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gNXcanSAS_Write = val
+	val = NumVarOrDefault("root:Packages:NIST:gASCII_Write", 1 )
+	Variable/G root:Packages:NIST:gASCII_Write = val
+	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
+	Variable/G root:Packages:NIST:gXML_Write = val
+	val = NumVarOrDefault("root:Packages:NIST:gNXcanSAS_Write", 0 )
+	Variable/G root:Packages:NIST:gNXcanSAS_Write = val
 	
 	// VSANS tab
 	///// items for VSANS reduction
@@ -273,6 +275,10 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
 	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
 
+	CheckBox PrefCtrl_0,disable=1
+	CheckBox PrefCtrl_0a,disable=1
+	CheckBox PrefCtrl_0b,disable=1
+			
 //on tab(1) - VSANS - initially visible
 	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=V_LogScalePrefCheck,title="Use Log scaling for 2D data display"
 	CheckBox PrefCtrl_1a,help={"Checking this will display 2D VSANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
