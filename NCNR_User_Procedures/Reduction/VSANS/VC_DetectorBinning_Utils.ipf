@@ -706,6 +706,8 @@ End
 Function V_SetDeltaQ(folderStr,detStr)
 	String folderStr,detStr
 
+	NVAR binWidth = root:Packages:NIST:VSANS:Globals:gBinWidth
+
 	Variable isVCALC
 	if(cmpstr(folderStr,"VCALC") == 0)
 		isVCALC = 1
@@ -742,6 +744,10 @@ Function V_SetDeltaQ(folderStr,detStr)
 		delQ = 4*delQ
 		Print "Reset delta Q for binning the back detector to 4x pix = ",delQ
 	endif
+	
+	// multiply the deltaQ by the binWidth (=multiple of pixels)
+	// this defaults to 1, and is set in VSANS preferences
+	delQ *= binWidth
 	
 	// set the global
 	Variable/G $(folderPath+instPath+detStr+":gDelQ_"+detStr) = delQ

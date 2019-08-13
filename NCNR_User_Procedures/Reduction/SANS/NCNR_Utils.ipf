@@ -1934,6 +1934,12 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	// to account for ICE occasionally writing out "3" as 2.9998, make sure I can construct
 	// a single digit -> string "3" to identify the proper wave in the lookup table
 	
+	// CGB is the three character identifier for the NGB30 SANS instrument
+	// NGB is the 10m SANS instrument at NGB
+	// NGA does not exist
+	// NG5 hasn't existed for years
+	// NG3 is used when old NG3SANS data is processed (pre-instrument move)
+	
 	attenNo = round(attenNo)
 	
 		

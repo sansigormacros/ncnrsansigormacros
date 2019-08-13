@@ -3285,6 +3285,9 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 	String fullpath = "", newfileName=""
 	String saveType = StringByKey("SAVE",avgStr,"=",";")		//does user want to save data?
 
+	NVAR gIgnoreBackDet = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+
 	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
 		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
@@ -3365,7 +3368,9 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 				if(cmpstr(saveType,"Yes - Individual")==0)
 					// remove the q=0 point from the back detector, if it's there
 					// does not trim any other points from the data
-					V_RemoveQ0_B(activeType)
+					if(!gIgnoreBackDet)
+						V_RemoveQ0_B(activeType)
+					endif
 //					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
 
 					V_Write1DData_Individual("root:Packages:NIST:VSANS:",activeType,newFileName,exten,binType)

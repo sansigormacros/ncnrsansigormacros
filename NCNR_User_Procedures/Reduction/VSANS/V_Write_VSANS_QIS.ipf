@@ -289,9 +289,8 @@ Function V_Write1DData_Individual(pathStr,folderStr,saveName,exten,binType)
 	
 	
 	switch(binType)
-		case 1:		// 9 sets = 27 waves!  ksBinType1
+		case 1:		// 9 sets 
 			detList = ksBinType1
-			
 			break
 		case 2:		// 5 sets
 			detList = ksBinType2
@@ -299,10 +298,19 @@ Function V_Write1DData_Individual(pathStr,folderStr,saveName,exten,binType)
 		case 3:		// 3 sets
 			detList = ksBinType3
 			break
-		case 4:		// 9 sets
+		case 4:		// 5 sets
 			detList = ksBinType4
 			break
-					
+		case 5:		// 4 sets
+			detList = ksBinType5
+			break
+		case 6:		// 3 sets
+			detList = ksBinType6
+			break
+		case 7:		// 4 sets
+			detList = ksBinType7
+			break
+								
 		default:
 		// do nothing, just close
 
