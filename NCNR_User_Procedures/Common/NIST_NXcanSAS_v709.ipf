@@ -254,6 +254,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	SetDataFolder root:		//build sub-folders for each data set under root
 	
 	String filename
+	String I_dataS,Q_dataS,dQ_dataS,dQl_dataS,dQw_dataS,dI_dataS
 	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A")
 	
 	// Check fullpath and dialog
@@ -271,49 +272,75 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	else
 		baseStr = outstr			//for output, hopefully correct length as passed in
 	endif
-	String/G loadDir = "root:" + baseStr
-	
-	String I_dataStore = baseStr + "_i"
-	String Q_dataStore = baseStr + "_q"
-	String dQ_dataStore = baseStr + "_dq"
-	String dQl_dataStore = baseStr + "_dql"
-	String dQw_dataStore = baseStr + "_dqw"
-	String dI_dataStore = baseStr + "_s"
-	
-	//go back to the root folder and clean up before leaving
-	NewDataFolder/O/S $loadDir
-	Make/O/N=52 $(loadDir + ":realsRead")
-	Make/O/T/N=11 $(loadDir + ":textRead")
+	String baseFormat = baseStr + "_%d"
 	
 	if(fileID)
 		HDF5ListGroup /F/R/Type=1/Z fileID,"/"
 		String groupList = S_HDF5ListGroup
-		
-		//
-		// TODO: Differentiate between 1D, 2D, and USANS data (resolutions) (DO I NEED TO?)
-		//
-	
 		Variable groupID
-		Variable inc = 1
+		Variable inc=1,ii=0,isMultiData=0
 		String entryUnformatted = "/sasentry%d/"
+		String dataUnformatted = "sasdata%d/"
+		String addDigit = "%d"
 		String entryBase
+		String dataBase = "sasdata/"
 		sPrintf entryBase,entryUnformatted,inc
 		// Open first group
-		HDF5OpenGroup /Z fileID, entryBase + "sasdata/", groupID
+		HDF5OpenGroup /Z fileID, entryBase + dataBase, groupID
+		If (groupID == 0)
+			sPrintF dataBase,dataUnformatted,0
+			HDF5OpenGroup /z fileID, entryBase + dataBase, groupID
+			isMultiData = 1
+			sPrintF baseStr,baseformat,0
+		EndIf
+		
+		String I_dataStore,Q_dataStore,dQ_dataStore,dQl_dataStore,dQw_dataStore,dI_dataStore
+		
+		// Multiple SASentry groups
 		do
-			// Load in data
-			HDF5LoadData /O/Z/N=$I_dataStore fileID, entryBase + "sasdata/I"
-			HDF5LoadData /O/Z/N=$Q_dataStore fileID, entryBase + "sasdata/Q"
-			HDF5LoadData /O/Z/N=$dQ_dataStore fileID, entryBase + "sasdata/dQ"
-			HDF5LoadData /O/Z/N=$dQl_dataStore fileID, entryBase + "sasdata/dQl"
-			HDF5LoadData /O/Z/N=$dQw_dataStore fileID, entryBase + "sasdata/dQw"
-			HDF5LoadData /O/Z/N=$dI_dataStore fileID, entryBase + "sasdata/Idev"
-			// Load in Meta Data
-			LoadMetaData(fileID,loadDir,entryBase)
-			// Open next group to see if it exists
+			//go back to the root folder and clean up before leaving
+			// Multiple SASdata groups
+			do
+				if (isMultiData == 1)
+					sPrintF baseStr,baseformat,ii
+				EndIf
+				String/G loadDir = "root:" + baseStr
+				NewDataFolder/O/S $loadDir
+				I_dataStore = baseStr + "_i"
+				Q_dataStore = baseStr + "_q"
+				dQ_dataStore = baseStr + "_dq"
+				dQl_dataStore = baseStr + "_dql"
+				dQw_dataStore = baseStr + "_dqw"
+				dI_dataStore = baseStr + "_s"
+				print "loadDir: ",loadDir
+				print "baseStr: ",baseStr
+				print "baseformat: ",baseformat
+				print "I_dataStore: ",I_dataStore
+				// Load in data
+				HDF5LoadData /O/Z/N=$I_dataStore fileID, entryBase + dataBase + "I"
+				HDF5LoadData /O/Z/N=$Q_dataStore fileID, entryBase + dataBase + "Q"
+				HDF5LoadData /O/Z/N=$dQ_dataStore fileID, entryBase + dataBase + "dQ"
+				HDF5LoadData /O/Z/N=$dQl_dataStore fileID, entryBase + dataBase + "dQl"
+				HDF5LoadData /O/Z/N=$dQw_dataStore fileID, entryBase + dataBase + "dQw"
+				HDF5LoadData /O/Z/N=$dI_dataStore fileID, entryBase + dataBase + "Idev"
+				if (isMultiData == 1)
+					sprintf dataBase,dataUnformatted,ii
+					// Open next group to see if it exists
+					HDF5OpenGroup /Z fileID, entryBase + dataBase, groupID
+				else
+					groupID = 0
+				endIf
+				ii += 1
+				// Load in Meta Data
+				LoadMetaData(fileID,loadDir,entryBase)
+			while (groupID != 0)
 			inc += 1
-			sPrintf entryBase,entryUnformatted,inc
-			HDF5OpenGroup /Z fileID, entryBase + "sasdata/", groupID
+			If (isMultiData == 1)
+				sprintf dataBase,dataUnformatted,ii
+			endIf
+			// Open next group to see if it exists
+		sPrintf entryBase,entryUnformatted,inc
+			HDF5OpenGroup /Z fileID, entryBase + dataBase, groupID
 		while(groupID != 0)
 		
 		//plot if desired
@@ -401,6 +428,11 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	Wave cdis = $(loadDir + ":cdis")
 	
 	// SASdetector
+	
+	//
+	// TODO: Check for VSANS multi-detector
+	//
+	
 	String detectorParent = instrParent + "sasdetector/"
 	HDF5OpenGroup /Z fileID, detectorParent, groupID
 	HDF5LoadData /O/Z/N=detname fileID, detectorParent + "name"
