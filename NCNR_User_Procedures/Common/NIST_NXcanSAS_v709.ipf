@@ -89,9 +89,7 @@ Function NxCansas_InitializeFile(fileID, base)
 	String base
 	String parent,nxParent
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-	sPrintf parent,":sasentry%d",sasentry
 	String location = base + parent
-	sPrintf nxParent,"/sasentry%d/",sasentry
 	NewDataFolder/O/S $(location)
 	Make/O/T/N=1 $(location + ":vals") = {""}
 	Make/O/T/N=3 $(location + ":attr") = {"NX_class", "canSAS_class", "version"}
@@ -256,6 +254,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	String filename
 	String I_dataS,Q_dataS,dQ_dataS,dQl_dataS,dQw_dataS,dI_dataS
 	String angst = StrVarOrDefault("root:Packages:NIST:gAngstStr", "A")
+	String/G loadDir = "root:"
 	
 	// Check fullpath and dialog
 	if(stringmatch(fileStr, ""))
@@ -294,8 +293,6 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 			sPrintF baseStr,baseformat,0
 		EndIf
 		
-		String I_dataStore,Q_dataStore,dQ_dataStore,dQl_dataStore,dQw_dataStore,dI_dataStore
-		
 		// Multiple SASentry groups
 		do
 			//go back to the root folder and clean up before leaving
@@ -304,25 +301,15 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				if (isMultiData == 1)
 					sPrintF baseStr,baseformat,ii
 				EndIf
-				String/G loadDir = "root:" + baseStr
-				NewDataFolder/O/S $loadDir
-				I_dataStore = baseStr + "_i"
-				Q_dataStore = baseStr + "_q"
-				dQ_dataStore = baseStr + "_dq"
-				dQl_dataStore = baseStr + "_dql"
-				dQw_dataStore = baseStr + "_dqw"
-				dI_dataStore = baseStr + "_s"
-				print "loadDir: ",loadDir
-				print "baseStr: ",baseStr
-				print "baseformat: ",baseformat
-				print "I_dataStore: ",I_dataStore
+				loadDir = "root:" + baseStr
+				NewDataFolder/O/S $(loadDir)
 				// Load in data
-				HDF5LoadData /O/Z/N=$I_dataStore fileID, entryBase + dataBase + "I"
-				HDF5LoadData /O/Z/N=$Q_dataStore fileID, entryBase + dataBase + "Q"
-				HDF5LoadData /O/Z/N=$dQ_dataStore fileID, entryBase + dataBase + "dQ"
-				HDF5LoadData /O/Z/N=$dQl_dataStore fileID, entryBase + dataBase + "dQl"
-				HDF5LoadData /O/Z/N=$dQw_dataStore fileID, entryBase + dataBase + "dQw"
-				HDF5LoadData /O/Z/N=$dI_dataStore fileID, entryBase + dataBase + "Idev"
+				HDF5LoadData /O/Z/N=$(baseStr + "_i") fileID, entryBase + dataBase + "I"
+				HDF5LoadData /O/Z/N=$(baseStr + "_q") fileID, entryBase + dataBase + "Q"
+				HDF5LoadData /O/Z/N=$(baseStr + "_dq") fileID, entryBase + dataBase + "dQ"
+				HDF5LoadData /O/Z/N=$(baseStr + "_dql") fileID, entryBase + dataBase + "dQl"
+				HDF5LoadData /O/Z/N=$(baseStr + "_dqw") fileID, entryBase + dataBase + "dQw"
+				HDF5LoadData /O/Z/N=$(baseStr + "_s") fileID, entryBase + dataBase + "Idev"
 				if (isMultiData == 1)
 					sprintf dataBase,dataUnformatted,ii
 					// Open next group to see if it exists
@@ -347,9 +334,9 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 		if(doPlot)
 			Print GetDataFolder(1)
 			
-			String w0 = Q_dataStore
-			String w1 = I_dataStore
-			String w2 = dI_dataStore
+			String w0 = (baseStr + "_q")
+			String w1 = (baseStr + "_i")
+			String w2 = (baseStr + "_s")
 			
 			// assign colors randomly
 			rr = abs(trunc(enoise(65535)))
@@ -389,7 +376,6 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				Legend
 			endif
 		endif
-		
 	endif
 	
 	// Close the file
@@ -404,8 +390,12 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	Variable fileID
 	Variable groupID
 	SetDataFolder $(loadDir)
+	Make/O/N=52 $(loadDir + ":realsRead")
+	Make/O/T/N=11 $(loadDir + ":textRead")
 	Wave rw = $(loadDir + ":realsRead")
 	Wave/T textw = $(loadDir + ":textRead")
+	print rw
+	int isMultiDetector = 0, ii = 0
 	
 	// Title
 	HDF5OpenGroup /Z fileID, parentBase, groupID
@@ -428,25 +418,36 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	Wave cdis = $(loadDir + ":cdis")
 	
 	// SASdetector
-	
-	//
-	// TODO: Check for VSANS multi-detector
-	//
-	
 	String detectorParent = instrParent + "sasdetector/"
 	HDF5OpenGroup /Z fileID, detectorParent, groupID
-	HDF5LoadData /O/Z/N=detname fileID, detectorParent + "name"
-	HDF5LoadData /O/Z/N=sdd fileID, detectorParent + "SDD"
-	HDF5LoadData /O/Z/N=bcx fileID, detectorParent + "beam_center_x"
-	HDF5LoadData /O/Z/N=bcy fileID, detectorParent + "beam_center_y"
-	HDF5LoadData /O/Z/N=xps fileID, detectorParent + "x_pixel_size"
-	HDF5LoadData /O/Z/N=xpy fileID, detectorParent + "y_pixel_size"
-	Wave/T detname = $(loadDir + ":detname")
-	Wave sdd = $(loadDir + ":sdd")
-	Wave bcx = $(loadDir + ":bcx")
-	Wave bcy = $(loadDir + ":bcy")
-	Wave xps = $(loadDir + ":xps")
-	Wave xpy = $(loadDir + ":xpy")
+	If (groupID == 0)
+		isMultiDetector = 1
+		ii = 1
+		String detectorUnformatted = "sasdetector%d/"
+		sprintf detectorParent,instrParent + detectorUnformatted,ii
+		HDF5OpenGroup /Z fileID, detectorParent, groupID
+	EndIf
+	do
+		HDF5LoadData /O/Z/N=detname fileID, detectorParent + "name"
+		HDF5LoadData /O/Z/N=sdd fileID, detectorParent + "SDD"
+		HDF5LoadData /O/Z/N=bcx fileID, detectorParent + "beam_center_x"
+		HDF5LoadData /O/Z/N=bcy fileID, detectorParent + "beam_center_y"
+		HDF5LoadData /O/Z/N=xps fileID, detectorParent + "x_pixel_size"
+		HDF5LoadData /O/Z/N=xpy fileID, detectorParent + "y_pixel_size"
+		Wave/T detname = $(loadDir + ":detname")
+		Wave sdd = $(loadDir + ":sdd")
+		Wave bcx = $(loadDir + ":bcx")
+		Wave bcy = $(loadDir + ":bcy")
+		Wave xps = $(loadDir + ":xps")
+		Wave xpy = $(loadDir + ":xpy")
+		If (isMultiDetector)
+			ii += 1
+			sprintf detectorParent,instrParent + detectorUnformatted,ii
+			HDF5OpenGroup /Z fileID, detectorParent, groupID
+		Else
+			groupID = 0
+		EndIf
+	while (groupID != 0)
 	
 	// SASsource
 	String sourceParent = instrParent + "sassource/"
