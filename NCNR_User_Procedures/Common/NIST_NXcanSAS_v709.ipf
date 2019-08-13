@@ -248,7 +248,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 	Variable doPlot,forceOverwrite
 	
 	Variable refnum,fileID
-	Variable rr,gg,bb
+	Variable rr,gg,bb,xdim,ydim
 	SetDataFolder root:		//build sub-folders for each data set under root
 	
 	String filename
@@ -310,7 +310,22 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				HDF5LoadData /O/Z/N=$(baseStr + "_dql") fileID, entryBase + dataBase + "dQl"
 				HDF5LoadData /O/Z/N=$(baseStr + "_dqw") fileID, entryBase + dataBase + "dQw"
 				HDF5LoadData /O/Z/N=$(baseStr + "_s") fileID, entryBase + dataBase + "Idev"
-				if (isMultiData == 1)
+				if (DimSize($(baseStr + "_i"), 1) > 1)
+					// Do not auto-plot 2D data
+					doPlot = 0
+					xdim = DimSize($(baseStr + "_i"), 0)
+					ydim = DimSize($(baseStr + "_i"), 1)
+					Wave q = $(baseStr + "_q")
+					Wave dq = $(baseStr + "_dq")
+					Make/O/N=(xdim,ydim) $(baseStr + "_qx") = q[0]
+					Make/O/N=(xdim,ydim) $(baseStr + "_qy") = q[1]
+					if (numpnts(dq)>0)
+						Make/O/N=(xdim,ydim) $(baseStr + "_dqx") = dq[0]
+						Make/O/N=(xdim,ydim) $(baseStr + "_dqy") = dq[1]
+					EndIf
+					KillWaves $(baseStr + "_q")
+				EndIf
+				if (isMultiData)
 					sprintf dataBase,dataUnformatted,ii
 					// Open next group to see if it exists
 					HDF5OpenGroup /Z fileID, entryBase + dataBase, groupID
@@ -322,7 +337,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				LoadMetaData(fileID,loadDir,entryBase)
 			while (groupID != 0)
 			inc += 1
-			If (isMultiData == 1)
+			If (isMultiData)
 				sprintf dataBase,dataUnformatted,ii
 			endIf
 			// Open next group to see if it exists
