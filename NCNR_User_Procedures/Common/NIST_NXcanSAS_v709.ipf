@@ -87,9 +87,10 @@ End
 Function NxCansas_InitializeFile(fileID, base)
 	Variable fileID
 	String base
-	String parent,nxParent
+	String location,nxParent
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
-	String location = base + parent
+	sPrintf location,"%s:sasentry%d",base,sasentry // Igor memory base path for all
+	sPrintf nxParent,"/sasentry%d/",sasentry // HDF5 base path for all
 	NewDataFolder/O/S $(location)
 	Make/O/T/N=1 $(location + ":vals") = {""}
 	Make/O/T/N=3 $(location + ":attr") = {"NX_class", "canSAS_class", "version"}
@@ -144,7 +145,7 @@ Function NxCansas_writeAttributes(fileID,path,attrNames,attrVals)
 		String vals_i = vals[i]
 		Make/O/T/N=1 vals_i_wave
 		vals_i_wave[0] = vals_i
-		if(!stringmatch(name_i,""))
+		if(!CmpStr(name_i,"") == 0)
 			HDF5SaveData /A=name_i vals_i_wave, fileID, path
 		endif
 	endfor
@@ -216,7 +217,7 @@ Function saveNxCansasStrs(fileID,parent,group,var,valueWave,attr,attrValues)
 	String NXentry_name
 	
 	groupID = NxCansas_CreateGroup(fileID,parent)
-
+	
 	// Save data to disk
 	if(!stringmatch(var,""))
 		HDF5SaveData /O /Z /IGOR=0 valueWave, groupID, var
@@ -225,7 +226,7 @@ Function saveNxCansasStrs(fileID,parent,group,var,valueWave,attr,attrValues)
 			abort "Cannot save wave to HDF5 dataset " + var + " with V_flag of " + num2str(V_flag)
 		endif
 	endif
-		
+	
 	NxCansas_writeAttributes(fileID,parent+var,attr,attrValues)
 	
 	// Close group and file to release resources
@@ -317,6 +318,11 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 					ydim = DimSize($(baseStr + "_i"), 1)
 					Wave q = $(baseStr + "_q")
 					Wave dq = $(baseStr + "_dq")
+					
+					//
+					// FIXME: All points set to the same value - need to loop
+					//
+					
 					Make/O/N=(xdim,ydim) $(baseStr + "_qx") = q[0]
 					Make/O/N=(xdim,ydim) $(baseStr + "_qy") = q[1]
 					if (numpnts(dq)>0)
@@ -409,7 +415,6 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	Make/O/T/N=11 $(loadDir + ":textRead")
 	Wave rw = $(loadDir + ":realsRead")
 	Wave/T textw = $(loadDir + ":textRead")
-	print rw
 	int isMultiDetector = 0, ii = 0
 	
 	// Title
@@ -532,6 +537,84 @@ Function isNXcanSAS(filestr)
 	return isHDF5File
 
 end
+
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Methods related to NSORT
+
+Function WriteNSORTedNXcanSASFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
+	Wave qw,iw,sw,res
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
+	
+	Variable err=0,refNum,numCols,dialog=1,useRes=0
+	String fullPath="",formatStr="",process
+	
+	//check each wave - else REALLY FATAL error when writing file
+	If(!(WaveExists(qw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(iw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(sw)))
+		err = 1
+		return err
+	Endif
+	if(WaveExists(res))
+		useRes = 1
+	endif
+	
+	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
+	if(NVAR_Exists(useTable) && useTable==1)
+		SVAR str=root:myGlobals:CombineTable:SaveNameStr	//messy, but pass in as a global
+		fullPath = str
+		dialog=0
+	endif
+	
+	process = CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+	
+	NewDataFolder/O/S root:Packages:NIST:NSORT
+	SetDataFolder root:Packages:NIST:NSORT
+	
+	Variable pts = numpnts(qw)
+	Make/O/N=(pts) qval = qw
+	Make/O/N=(pts) aveint = iw
+	Make/O/N=(pts) sigave = sw
+	if (useRes)
+		Make/O/N=(dimsize(res,0)) SigmaQ = res[p][0]
+		Make/O/N=(dimsize(res,0)) QBar = res[p][1]
+		Make/O/N=(dimsize(res,0)) fSubS = res[p][2]
+	Else
+		Make/O/N=(pts) SigmaQ = 0
+		Make/O/N=(pts) QBar = 0
+		Make/O/N=(pts) fSubS = 0
+	EndIf
+	
+	Make/O/T/N=11 textRead
+	textRead[6] = firstfileName
+	textRead[0] = "Combined data"
+	
+	Make/O/N=52 realsRead = 0
+	
+	WriteNxCanSAS1D("NSORT",fullpath,dialog)
+	
+End
+
+Function/T CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
+	String process
+	String processFormat = "COMBINED FILE CREATED: %s - NSORT-ed %s\t+ %s\t+ %s\t+%s, normalized to %s, multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\t multiplicative factor 3-4 = %12.8g"
+	
+	sprintf process,processFormat,date(),firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34
+	return process
+End
 
 //
 ///////////////////////////////////////////////////////////////////////////

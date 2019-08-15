@@ -201,16 +201,18 @@ Function WriteNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,
 
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
-	
-	//
-	// TODO: create WriteNSORTedNXcanSASFile
-	//
 
 	if (useXMLOutput == 1)
 		if(WaveExists(res))
 			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
 		else
 			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+		endif
+	elseif (useNXcanSASOutput == 1)
+		if(WaveExists(res))
+			WriteNSORTedNXcanSASFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
+		else
+			WriteNSORTedNXcanSASFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
 		endif
 	else
 		if(WaveExists(res))

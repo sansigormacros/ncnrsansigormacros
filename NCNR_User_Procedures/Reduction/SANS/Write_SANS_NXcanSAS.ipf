@@ -33,7 +33,6 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	NewDataFolder/O/S root:NXcanSAS_file
 	
 	// Check fullpath and dialog
-	print "fullpath: ",fullpath
 	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
 	
 	Variable sasentry = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1)
@@ -93,7 +92,12 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Qmean",qbar,units,inv_angstrom)
 	
 	// Write all meta data
-	WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
+	if (CmpStr(type,"NSORT") == 0)
+		Wave process = $(destStr + ":process")
+		// TODO: Write to file
+	Else
+		WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
+	EndIf
 	
 	//
 	///////////////////////////////////////////////////////////////////////////
@@ -277,7 +281,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	//
 	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
 	//
-	
 
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
@@ -343,11 +346,6 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(apertureBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(apertureBase + ":attrVals") = {"SASaperture","NXaperture"}
 	CreateStrNxCansas(fileID,apertureParent,"","",empty,$(apertureBase + ":attr"),$(apertureBase + ":attrVals"))
-	
-	//
-	// TODO: Where do I get rectangular dimensions from?
-	//
-	
 	// Create SASaperture shape entry
 	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} 
 	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
