@@ -278,7 +278,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 		HDF5ListGroup /F/R/Type=1/Z fileID,"/"
 		String groupList = S_HDF5ListGroup
 		Variable groupID
-		Variable inc=1,ii=0,isMultiData=0
+		Variable inc=1,ii=0,isMultiData=0,i=0,j=0
 		String entryUnformatted = "/sasentry%d/"
 		String dataUnformatted = "sasdata%d/"
 		String addDigit = "%d"
@@ -323,12 +323,27 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 					// FIXME: All points set to the same value - need to loop
 					//
 					
-					Make/O/N=(xdim,ydim) $(baseStr + "_qx") = q[0]
-					Make/O/N=(xdim,ydim) $(baseStr + "_qy") = q[1]
+					Make/O/N=(xdim,ydim) $(baseStr + "_qx")
+					Wave qx = $(baseStr + "_qx")
+					Make/O/N=(xdim,ydim) $(baseStr + "_qy")
+					Wave qy = $(baseStr + "_qy")
 					if (numpnts(dq)>0)
-						Make/O/N=(xdim,ydim) $(baseStr + "_dqx") = dq[0]
-						Make/O/N=(xdim,ydim) $(baseStr + "_dqy") = dq[1]
+						Make/O/N=(xdim,ydim) $(baseStr + "_dqx")
+						Wave dqx = $(baseStr + "_dqx")
+						Make/O/N=(xdim,ydim) $(baseStr + "_dqy")
+						Wave dqy = $(baseStr + "_dqy")
 					EndIf
+					for(i=0; i < xdim; i += 1)
+						for(j=0; j < ydim; j +=1)
+							qx[i][j] = q[0][i][j]
+							qy[i][j] = q[1][i][j]
+							if (numpnts(dq)>0)
+								dqx[i][j] = dq[0][i][j]
+								dqy[i][j] = dq[1][i][j]
+							EndIf
+						endFor
+					endFor
+					
 					KillWaves $(baseStr + "_q")
 				EndIf
 				if (isMultiData)
