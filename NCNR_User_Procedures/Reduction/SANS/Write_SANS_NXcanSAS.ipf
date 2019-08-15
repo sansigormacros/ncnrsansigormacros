@@ -93,8 +93,9 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	
 	// Write all meta data
 	if (CmpStr(type,"NSORT") == 0)
-		Wave process = $(destStr + ":process")
-		// TODO: Write to file
+		Wave/T process = $(destStr + ":processNote")
+		String processNote = process[0]
+		WriteProcess(fileID,nxcansasBase,parentBase,"NSORTed Data",processNote)
 	Else
 		WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
 	EndIf
@@ -431,7 +432,27 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
 	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
 End
-	
+
+Function WriteProcess(fileID,parentBase,base,processName,processNote)
+	Variable fileID
+	String parentBase,base,processName,processNote
+	Print "ProcessNote: ",processNote
+	// Create SASprocess entry
+	Make/T/O/N=1 empty = {""}
+	String processParent = parentBase + "sasprocess/"
+	String processBase = base + ":sasprocess"
+	NewDataFolder/O/S $(processBase)
+	Make/O/T/N=5 $(processBase + ":attr") = {"canSAS_class","NX_class"}
+	Make/O/T/N=5 $(processBase + ":attrVals") = {"SASprocess","NXprocess"}
+	CreateStrNxCansas(fileID,processParent,"","",empty,$(processBase + ":attr"),$(processBase + ":attrVals"))
+	// Create SASprocess name entry
+	Make/O/T/N=1 $(processBase + ":name") = {processName}
+	CreateStrNxCansas(fileID,processParent,"","name",$(processBase + ":name"),empty,empty)
+	// Create SASprocess note entries
+	Make/O/T/N=1 $(processBase + ":note0") = {processNote}
+	CreateStrNxCansas(fileID,processParent,"","note0",$(processBase + ":note0"),empty,empty)
+End
+
 //
 ///////////////////////////////////////////////////////////////////////////
 

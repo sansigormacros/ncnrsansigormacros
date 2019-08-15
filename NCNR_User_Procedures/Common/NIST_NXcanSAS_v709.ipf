@@ -577,10 +577,11 @@ Function WriteNSORTedNXcanSASFile(qw,iw,sw,firstFileName,secondFileName,thirdFil
 		dialog=0
 	endif
 	
-	process = CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
-	
 	NewDataFolder/O/S root:Packages:NIST:NSORT
 	SetDataFolder root:Packages:NIST:NSORT
+	
+	process = CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+	Make/O/T/N=1 processNote = process
 	
 	Variable pts = numpnts(qw)
 	Make/O/N=(pts) qval = qw
