@@ -318,11 +318,6 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 					ydim = DimSize($(baseStr + "_i"), 1)
 					Wave q = $(baseStr + "_q")
 					Wave dq = $(baseStr + "_dq")
-					
-					//
-					// FIXME: All points set to the same value - need to loop
-					//
-					
 					Make/O/N=(xdim,ydim) $(baseStr + "_qx")
 					Wave qx = $(baseStr + "_qx")
 					Make/O/N=(xdim,ydim) $(baseStr + "_qy")
@@ -343,8 +338,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 							EndIf
 						endFor
 					endFor
-					
-					KillWaves $(baseStr + "_q")
+					KillWaves $(baseStr + "_q"),$(baseStr + "_dq"),$(baseStr + "_qx"),$(baseStr + "_qy")
 				EndIf
 				if (isMultiData)
 					sprintf dataBase,dataUnformatted,ii
