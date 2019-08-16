@@ -436,7 +436,6 @@ End
 Function WriteProcess(fileID,parentBase,base,processName,processNote)
 	Variable fileID
 	String parentBase,base,processName,processNote
-	Print "ProcessNote: ",processNote
 	// Create SASprocess entry
 	Make/T/O/N=1 empty = {""}
 	String processParent = parentBase + "sasprocess/"

@@ -1174,7 +1174,7 @@ Function DoAutoScaleFromPanel(auto)
 		//put result in temporary waves
 		WaveStats/Q $"root:LowQSet:TrimLowQSet_q"
 		n1 = V_npnts
-		WaveStats/Q $"root:LowQSet:TrimMedQSet_q"
+		WaveStats/Q $"root:MedQSet:TrimMedQSet_q"
 		n2 = V_npnts
 		n12 = n1+ n2
 		
