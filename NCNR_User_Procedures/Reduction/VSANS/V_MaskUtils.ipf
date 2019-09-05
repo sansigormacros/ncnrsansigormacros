@@ -166,7 +166,10 @@ Function V_DrawMaskHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DoAlert 0, "Draw Mask Help not written yet..."
+			DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Drawing a Mask]"
+			if(V_flag !=0)
+				DoAlert 0,"The VSANS Data Reduction Help file could not be found"
+			endif
 			break
 		case -1: // control being killed
 			break

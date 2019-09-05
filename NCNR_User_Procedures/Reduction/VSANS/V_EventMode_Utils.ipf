@@ -1068,7 +1068,7 @@ Window V_Event_Reduce_Panel()
 	SetVariable ERSelSlice,limits={0,1000,1},value=root:Packages:NIST:VSANS:Globals:EVRED:gCurSlice
 	SetVariable ERSelSlice,proc=V_ChangeSliceViewSetVar
 
-	Button ToSTOButton,pos={305,45},size={100,20},proc=V_EVR_LoadAndSTO,title="to STO"
+	Button ToSTOButton,pos={305,45},size={100,20},proc=V_EVR_LoadAndSTO,title="Load to STO"
 	Button ToSTOButton,help={"Load the event file and copy to STO"}
 
 	Button TimeBinButton,pos={305,75},size={100,20},proc=V_EVR_TimeBins,title="Time Bins"
@@ -1239,6 +1239,14 @@ End
 //
 // locates the time bins and shows the time bin table (and plot?)
 //
+// Can't show the plot of counts/bin since there would be 8 of these now, one for
+// each panel. Could show a total count per slice, but the numbers (binCount) is currently
+// not written to the Event_ file.
+//
+// the macro that is called from the main Event panel shows the total counts/bin for the carriage
+// that is active. Maybe this would be OK, but then there are still two sets of data, one for
+// Front and one for Middle...
+//
 Function V_EVR_TimeBins(PathButton) : ButtonControl
 	String PathButton
 
@@ -1246,6 +1254,30 @@ Function V_EVR_TimeBins(PathButton) : ButtonControl
 	wave timeWidth = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth
 
 	edit binEnd,timeWidth
+	
+//	DoWindow/F V_EventBarGraph
+//	if(V_flag == 0)
+//		PauseUpdate; Silent 1		// building window...
+//		String fldrSav0= GetDataFolder(1)
+//		SetDataFolder root:Packages:NIST:VSANS:Event:
+//		Display /W=(110,705,610,1132)/N=V_EventBarGraph /K=1 binCount vs binEndTime
+//		SetDataFolder fldrSav0
+//		ModifyGraph mode=5
+//		ModifyGraph marker=19
+//		ModifyGraph lSize=2
+//		ModifyGraph rgb=(0,0,0)
+//		ModifyGraph msize=2
+//		ModifyGraph hbFill=2
+//		ModifyGraph gaps=0
+//		ModifyGraph usePlusRGB=1
+//		ModifyGraph toMode=0
+//		ModifyGraph useBarStrokeRGB=1
+//		ModifyGraph standoff=0
+//		SetAxis left 0,*
+//		Label bottom "\\Z14Time (seconds)"
+//		Label left "\\Z14Number of Events"
+//	endif
+	
 	
 	return(0)
 End

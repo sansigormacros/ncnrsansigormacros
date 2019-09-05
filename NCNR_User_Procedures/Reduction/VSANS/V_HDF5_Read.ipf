@@ -464,6 +464,9 @@ End
 
 // transmission value for the attenuator in the beam
 // use this, but if something wrong, the tables are present
+// (and something is wrong -- NICE always writes out "1" for the atten factor (and error)
+//-- so I am forced to use the tables every time
+//
 Function V_getAttenuator_transmission(fname)
 	String fname
 	

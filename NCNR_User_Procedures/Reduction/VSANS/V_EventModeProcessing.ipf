@@ -560,7 +560,7 @@ Function V_EventModeHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "Event Mode Data"
+			DisplayHelpTopic/Z "VSANS Event Mode Data"
 			break
 		case -1: // control being killed
 			break

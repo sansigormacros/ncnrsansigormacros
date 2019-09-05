@@ -2,10 +2,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
-
-
-
-
 //
 // this is an empirical representation of the White Beam wavelength
 // distribution. 
@@ -24,6 +20,19 @@
 // of the three choices, using the fit to the "top" of the distribution gives the best-looking
 // result when compared to the AgBeh data
 //
+
+
+// 9/2019
+// added an empirical functional form for the "Super" white beam mode where the deflector is out
+// and the wavelength is not cut off at the higher wavelength, but extends to 20 Å
+//
+// Integral = 30955 (cts*A) for middle fit
+//
+
+
+
+
+
 
 Function V_WhiteBeamDist_top(lam)
 	Variable lam
@@ -126,4 +135,38 @@ Function V_WB_Mean()
 	
 	return(ans)
 End
+
+
+//
+//
+//
+Function V_SuperWhiteBeamDist_mid(lam)
+	Variable lam
+	
+	if(lam < 3.37)
+		return(0)
+	endif
+	
+	if(lam < 3.72)
+		return(-33536 + 9919*lam)
+	endif
+	
+	if(lam < 3.88)
+		return(28941 - 6848*lam)
+	endif
+	
+//// the "middle" of the spikes	
+	if(lam < 4.16)
+		return(-1.0111e5 + 26689*lam)
+	endif
+	
+	if(lam < 20)
+		return(5 - 10081*exp(-( (lam-4.161)/0.9788 )) + 19776*exp(-( (lam-4.161)/1.921 )) )
+	endif
+
+//	 anything larger than 20, return 0	
+	return(0)
+	
+End
+
 

@@ -454,7 +454,15 @@ Function V_FillListBox3(listWave,selWave)
 	selWave = 0
 	SelWave[][0] = 2^5		// checkboxes
 	SelWave[][2] = 2^1		// 3rd column editable
-	
+
+//
+// TODO - the attenuation factor is always calculated from the table. How do I devise a method to 
+// overrride this behavior if a factor needs to be forced to a new value (old table, lambda out of range, etc.)?
+//	
+// currently, this simply prevents anyone from "patching" the header, which really doesn't work as intended
+//
+	SelWave[0][0] += 2^7		// disable the checkbox for attenuator
+	SelWave[1][0] += 2^7		// disable the checkbox for attenuator_err
 	
 	listWave[0][1] = "attenuator_transmission"
 	listWave[0][2] = num2str(V_getAttenuator_transmission(fname))	
@@ -497,11 +505,11 @@ Function V_FillListBox3(listWave,selWave)
 
 	listWave[13][1] = "beam stop diameter (Middle) [mm]"
 //	listWave[13][2] = num2str(V_getBeamStopC2_size(fname))	
-	listWave[13][2] = num2str(V_DeduceBeamstopDiameter(fname,"MR"))	
+	listWave[13][2] = num2str(V_IdentifyBeamstopDiameter(fname,"MR"))	
 	
 	listWave[14][1] = "beam stop diameter (Back) [mm]"
 //	listWave[14][2] = num2str(V_getBeamStopC3_size(fname))	
-	listWave[14][2] = num2str(V_DeduceBeamstopDiameter(fname,"B"))	
+	listWave[14][2] = num2str(V_IdentifyBeamstopDiameter(fname,"B"))	
 
 	listWave[15][1] = "sample aperture(2) to gate valve [cm]"
 	listWave[15][2] = num2str(V_getSampleAp2_distance(fname))	

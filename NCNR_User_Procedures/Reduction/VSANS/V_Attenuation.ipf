@@ -168,12 +168,16 @@ Function V_CalculateAttenuationFactor(fname)
 	
 	numAtt = V_getAtten_number(fname)
 	lambda = V_getWavelength(fname)
-	
+
+	if(lambda < 4.52 || lambda > 19)
+		Abort "Wavelength out of range for attenuation table"
+	endif
+		
 	// TODO -- need to switch on "type"
 	//  == velocity_selector || ?? for white beam || graphite
 //	monoType = V_getMonochromatorType(fname)
 
-	monoType = V_DeduceMonochromatorType(fname)
+	monoType = V_IdentifyMonochromatorType(fname)
 	print monoType
 
 	// set a fake wavelength for the interpolation or get out
@@ -192,7 +196,6 @@ Function V_CalculateAttenuationFactor(fname)
 		default:			// optional default expression executed
 			Abort "Monochromator type could not be determined in V_CalculateAttenuationFactor"		// when no case matches
 	endswitch
-	
 	
 	Wave w = V_getAttenIndex_table(fname)		// N=(x,17)
 	Variable num = DimSize(w,0)
@@ -229,12 +232,16 @@ Function V_CalculateAttenuationError(fname)
 	
 	numAtt = V_getAtten_number(fname)
 	lambda = V_getWavelength(fname)
-	
+
+	if(lambda < 4.52 || lambda > 19)
+		Abort "Wavelength out of range for attenuation error table"
+	endif
+		
 	// TODO -- need to switch on "type"
 	//  == velocity_selector || ?? for white beam || crystal
 //	monoType = V_getMonochromatorType(fname)
 	
-	monoType = V_DeduceMonochromatorType(fname)
+	monoType = V_IdentifyMonochromatorType(fname)
 	print monoType
 	// set a fake wavelength for the interpolation or get out
 	strswitch(monoType)	// string switch

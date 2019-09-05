@@ -211,7 +211,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	if(isVCALC)
 		BS = VC_beamstopDiam(type[0,1])*10 // convert cm to mm
 	else
-		BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+		BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 	endif
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 //	BS = 25.4			//TODO hard-wired value
@@ -511,7 +511,7 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 // -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
 // TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
-	BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+	BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 //	BS = 25.4			//TODO hard-wired value
 	

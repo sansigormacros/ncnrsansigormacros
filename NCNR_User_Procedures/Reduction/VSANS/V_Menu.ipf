@@ -150,8 +150,8 @@ xMenu "SANS"
 End
 
 Function VSANSHelp()
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation"
 	if(V_flag !=0)
-		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found, because it has not yet been written"
+		DoAlert 0,"The VSANS Data Reduction Help file could not be found"
 	endif
 End

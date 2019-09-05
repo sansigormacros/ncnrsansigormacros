@@ -422,7 +422,7 @@ End
 // returns null string if the type cannot be deduced, calling procedure is responsible
 //  for properly handling this error condition
 //
-Function/S V_DeduceMonochromatorType(fname)
+Function/S V_IdentifyMonochromatorType(fname)
 	String fname
 	
 	String typeStr=""
@@ -446,7 +446,7 @@ End
 // returns the beamstop diameter [mm]
 // if there is no beamtop in front of the specified detector, return 0.01mm
 //
-Function V_DeduceBeamstopDiameter(folderStr,detStr)
+Function V_IdentifyBeamstopDiameter(folderStr,detStr)
 	String folderStr,detStr
 	
 	Variable BS, dummyVal,num
