@@ -659,3 +659,221 @@ Function AnnularAverageTo1D(type)
 	
 	Return 0
 End
+
+//performs an elliptical average using isointensity contours, centered on a 
+//specified q-value (Intensity vs. angle)
+//the parameters in the global keyword-string must have already been set somewhere
+//either directly or from the protocol
+//
+//the input (data in the "type" folder) must be on linear scale - the calling routine is
+//responsible for this
+//averaged data is written to the data folder and plotted. data is not written
+//to disk from this routine.
+//
+Function EllipticalAverageTo1D(type)
+	String type
+	
+	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr
+	
+	//type is the data type to do the averaging on, and will be set as the current folder
+	//get the current displayed data (so the correct folder is used)
+	String destPath = "root:Packages:NIST:"+type
+	
+	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist
+	Variable rcentr,large_num,small_num,dtdis2,nq,xoffst,xbm,ybm,ii
+	Variable rc,delr,rlo,rhi,dphi,nphi,dr
+	Variable lambda,trans
+	Wave reals = $(destPath + ":RealsRead")
+
+	// center of detector, for non-linear corrections
+	NVAR pixelsX = root:myGlobals:gNPixelsX
+	NVAR pixelsY = root:myGlobals:gNPixelsY
+	
+	xcenter = pixelsX/2 + 0.5		// == 64.5 for 128x128 Ordela
+	ycenter = pixelsY/2 + 0.5		// == 64.5 for 128x128 Ordela
+	
+	// beam center, in pixels
+	x0 = reals[16]
+	y0 = reals[17]
+	//detector calibration constants
+	sx = reals[10]		//mm/pixel (x)
+	sx3 = reals[11]		//nonlinear coeff
+	sy = reals[13]		//mm/pixel (y)
+	sy3 = reals[14]		//nonlinear coeff
+	
+	dtsize = 10*reals[20]		//det size in mm
+	dtdist = 1000*reals[18]	// det distance in mm
+	lambda = reals[26]
+	
+	Variable qc = NumberByKey("QCENTER",keyListStr,"=",";")
+	Variable nw = NumberByKey("QDELTA",keyListStr,"=",";")
+	
+	dr = 1 			//minimum annulus width, keep this fixed at one
+	NVAR numPhiSteps = root:Packages:NIST:gNPhiSteps
+	nphi = numPhiSteps		//number of anular sectors is set by users
+	
+	rc = 2*dtdist*asin(qc*lambda/4/Pi)		//in mm
+	delr = nw*sx/2
+	rlo = rc-delr
+	rhi = rc + delr
+	dphi = 360/nphi
+
+	/// data wave is data in the current folder which was set at the top of the function
+	Wave data=$(destPath + ":data")
+	//Check for the existence of the mask, if not, make one (local to this folder) that is null
+	
+	if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
+		Print "There is no mask file loaded (WaveExists)- the data is not masked"
+		Make/O/N=(pixelsX,pixelsY) $(destPath + ":mask")
+		WAVE mask = $(destPath + ":mask")
+		mask = 0
+	else
+		Wave mask=$"root:Packages:NIST:MSK:data"
+	Endif
+	
+	rcentr = 150		//pixels within rcentr of beam center are broken into 9 parts
+	// values for error if unable to estimate value
+	//large_num = 1e10
+	large_num = 1		//1e10 value (typically sig of last data point) plots poorly, arb set to 1
+	small_num = 1e-10
+	
+	// output wave are expected to exist (?) initialized to zero, what length?
+	// 300 points on VAX ---
+	Variable wavePts=500
+	Make/O/N=(wavePts) $(destPath + ":phival"),$(destPath + ":aveint")
+	Make/O/N=(wavePts) $(destPath + ":ncells"),$(destPath + ":sig"),$(destPath + ":sigave")
+	WAVE phival = $(destPath + ":phival")
+	WAVE aveint = $(destPath + ":aveint")
+	WAVE ncells = $(destPath + ":ncells")
+	WAVE sig = $(destPath + ":sig")
+	WAVE sigave = $(destPath + ":sigave")
+
+	phival = 0
+	aveint = 0
+	ncells = 0
+	sig = 0
+	sigave = 0
+
+	dtdis2 = dtdist^2
+	nq = 1
+	xoffst=0
+	//distance of beam center from detector center
+	xbm = FX(x0,sx3,xcenter,sx)
+	ybm = FY(y0,sy3,ycenter,sy)
+		
+	//BEGIN AVERAGE **********
+	Variable xi,xd,x,y,yd,yj,nd,fd,nd2,iphi,ntotal,var
+	Variable jj,data_pixel,xx,yy,ll,kk,rij,phiij,avesq,aveisq
+
+	// IGOR arrays are indexed from [0][0], FORTAN from (1,1) (and the detector too)
+	// loop index corresponds to FORTRAN (old code) 
+	// and the IGOR array indices must be adjusted (-1) to the correct address
+	ntotal = 0
+	ii=1
+	do
+		xi = ii
+		xd = FX(xi,sx3,xcenter,sx)
+		x = xoffst + xd -xbm		//x and y are in mm
+		
+		jj = 1
+		do
+			data_pixel = data[ii-1][jj-1]		//assign to local variable
+			yj = jj
+			yd = FY(yj,sy3,ycenter,sy)
+			y = yd - ybm
+			if(!(mask[ii-1][jj-1]))			//masked pixels = 1, skip if masked (this way works...)
+				nd = 1
+				fd = 1
+				if( (abs(x) > rcentr) || (abs(y) > rcentr))	//break pixel into 9 equal parts
+					nd = 3
+					fd = 2
+				Endif
+				nd2 = nd^2
+				ll = 1		//"el-el" loop index
+				do
+					xx = x + (ll - fd)*sx/3
+					kk = 1
+					do
+						yy = y + (kk - fd)*sy/3
+						//test to see if center of pixel (i,j) lies in annulus
+						rij = sqrt(x*x + y*y)/dr + 1.001
+						//check whether pixel lies within width band
+						if((rij > rlo) && (rij < rhi))
+							//in the annulus, do something
+							if (yy >= 0)
+								//phiij is in degrees
+								phiij = atan2(yy,xx)*180/Pi		//0 to 180 deg
+							else
+								phiij = 360 + atan2(yy,xx)*180/Pi		//180 to 360 deg
+							Endif
+							if (phiij > (360-0.5*dphi))
+								phiij -= 360
+							Endif
+							iphi = trunc(phiij/dphi + 1.501)
+							aveint[iphi-1] += 9*data_pixel/nd2
+							sig[iphi-1] += 9*data_pixel*data_pixel/nd2
+							ncells[iphi-1] += 9/nd2
+							ntotal += 9/nd2
+						Endif		//check if in annulus
+						kk+=1
+					while(kk<=nd)
+					ll += 1
+				while(ll<=nd)
+			Endif		//masked pixel check
+			jj += 1
+		while (jj<=pixelsY)
+		ii += 1
+	while(ii<=pixelsX)		//end of the averaging
+		
+	//compute phi-values and errors
+	
+	ntotal /=9
+	
+	kk = 1
+	do
+		phival[kk-1] = dphi*(kk-1)
+		if(ncells[kk-1] != 0)
+			aveint[kk-1] = aveint[kk-1]/ncells[kk-1]
+			avesq = aveint[kk-1]*aveint[kk-1]
+			aveisq = sig[kk-1]/ncells[kk-1]
+			var = aveisq - avesq
+			if (var <=0 )
+				sig[kk-1] = 0
+				sigave[kk-1] = 0
+				ncells[kk-1] /=9
+			else
+				if(ncells[kk-1] > 9)
+					sigave[kk-1] = sqrt(9*var/(ncells[kk-1]-9))
+					sig[kk-1] = sqrt( abs(aveint[kk-1])/(ncells[kk-1]/9) )
+					ncells[kk-1] /=9
+				else
+					sig[kk-1] = 0
+					sigave[kk-1] = 0
+					ncells[kk-1] /=9
+				Endif
+			Endif
+		Endif
+		kk+=1
+	while(kk<=nphi)
+	
+	// data waves were defined as 200 points (=wavePts), but now have less than that (nphi) points
+	// use DeletePoints to remove junk from end of waves
+	Variable startElement,numElements
+	startElement = nphi
+	numElements = wavePts - startElement
+	DeletePoints startElement,numElements, phival,aveint,ncells,sig,sigave
+	
+	//////////////end of VAX Phibin.for
+		
+	//angle dependent transmission correction is not done in phiave
+	Ann_1D_Graph(aveint,phival,sigave)
+	
+	//get rid of the default mask, if one was created (it is in the current folder)
+	//don't just kill "mask" since it might be pointing to the one in the MSK folder
+	Killwaves/z $(destPath+":mask")
+		
+	//return to root folder (redundant)
+	SetDataFolder root:
+	
+	Return 0
+End

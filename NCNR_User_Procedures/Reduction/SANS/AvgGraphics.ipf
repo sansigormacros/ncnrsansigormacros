@@ -37,6 +37,7 @@ Proc InitializeAveragePanel()
 	Variable/G root:myGlobals:Drawing:gDrawDPhi = 0
 	Variable/G root:myGlobals:Drawing:gDrawQCtr = 0
 	Variable/G root:myGlobals:Drawing:gDrawQDelta = 1
+	Variable/G root:myGlobals:Drawing:gDrawRAxes = 1
 	
 	//return to root
 	SetDataFolder root:
@@ -130,10 +131,16 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 		case "Annular":		
 			AnnularAverageTo1D(type)
 			break
+		case "Elliptical":
+			EllipticalAverageTo1D(type)
+			break
 		case "Circular":
 		case "Sector":
 			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
+			break
+		case "2D_NXcanSAS":
+			WriteNxCanSAS2D(type,"",1)
 			break
 		case "2D ASCII":
 			Fast2dExport(type,"",1)
@@ -155,6 +162,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 				break
 			case "2D ASCII":
 			case "QxQy ASCII":
+			case "2D_NXcanSAS":
 				break
 			default:
 				if (useXMLOutput == 1)
@@ -224,6 +232,7 @@ Function AvTypePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	strswitch(choice)	// string switch
 		case "2D ASCII":		// execute if case matches expression
 		case "QxQy ASCII":
+		case "2D_NXcanSAS":
 			String/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg,title="Save ASCII"
 			break					
@@ -231,6 +240,7 @@ Function AvTypePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		case "Sector":
 		case "Sector_PlusMinus":
 		case "Rectangular":
+		case "Elliptical":
 		case "Annular":
 			String/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg,title="Do Average"
@@ -252,13 +262,15 @@ Function DisableUnusedParameters(choice)
 	
 	strswitch(choice)	// string switch
 		case "2D ASCII":
-		case "QxQy ASCII":					
+		case "QxQy ASCII":	
+		case "2D_NXcanSAS":	
 		case "Circular":		//disable everything for these three choices
 			SetVariable Phi_p,disable=yes
 			SetVariable Qctr_p,disable=yes
 			SetVariable Qdelta_p,disable=yes
 			SetVariable DPhi_p,disable=yes
 			SetVariable width_p,disable=yes
+			SetVariable RAxes_p,disable=yes
 			popupmenu sides,disable=yes
 			break
 		case "Sector":
@@ -268,6 +280,7 @@ Function DisableUnusedParameters(choice)
 			SetVariable Qdelta_p,disable=yes
 			SetVariable DPhi_p,disable=no
 			SetVariable width_p,disable=yes
+			SetVariable RAxes_p,disable=yes
 			popupmenu sides,disable=no
 			break
 		case "Rectangular":
@@ -276,6 +289,7 @@ Function DisableUnusedParameters(choice)
 			SetVariable Qdelta_p,disable=yes
 			SetVariable DPhi_p,disable=yes
 			SetVariable width_p,disable=no
+			SetVariable RAxes_p,disable=yes
 			popupmenu sides,disable=no
 			break
 		case "Annular":
@@ -284,7 +298,17 @@ Function DisableUnusedParameters(choice)
 			SetVariable Qdelta_p,disable=no
 			SetVariable DPhi_p,disable=yes
 			SetVariable width_p,disable=yes
+			SetVariable RAxes_p,disable=yes
 			popupmenu sides,disable=yes
+			break
+		case "Elliptical":
+			SetVariable Phi_p,disable=no
+			SetVariable Qctr_p,disable=yes
+			SetVariable Qdelta_p,disable=yes
+			SetVariable DPhi_p,disable=yes
+			SetVariable width_p,disable=yes
+			SetVariable RAxes_p,disable=no
+			popupmenu sides,disable=no
 			break
 		default:							// optional default expression executed
 			Abort "no case matches from averagePanel type popup"					// when no case matches
@@ -306,7 +330,7 @@ Window Average_Panel()
 	GroupBox sect_rect,pos={7,44},size={134,84},title="Sector/Rectangular"
 	PopupMenu av_choice,pos={61,7},size={144,20},proc=AvTypePopMenuProc,title="AverageType"
 	PopupMenu av_choice,help={"Select the type of average to perform, then make the required selections below and click \"DoAverage\" to plot the results"}
-	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
+	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;Elliptical;2D_NXcanSAS;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
 	Button ave_help,pos={260,7},size={25,20},proc=ShowAvePanelHelp,title="?"
 	Button ave_help,help={"Show the help file for averaging options"}
 	Button ave_done,pos={199,245},size={50,20},proc=AveDoneButtonProc,title="Done"
@@ -325,6 +349,9 @@ Window Average_Panel()
 	SetVariable DPhi_p,pos={166,154},size={110,15},proc=DeltaPhiSetVarProc,title="Delta Phi"
 	SetVariable DPhi_p,help={"Enter the +/- range (0,45) of azimuthal angles to be included in the average.  The bounding angles will be drawin in blue."}
 	SetVariable DPhi_p,limits={0,90,1},value= root:myGlobals:Drawing:gDrawDPhi
+	SetVariable RAxes_p,pos={166,176},size={110,15},proc=DeltaPhiSetVarProc,title="Axis Ratio"
+	SetVariable RAxes_p,help={"Enter the ratio of the minor to major axes for an isointensity contour.  By definition, this value should be less than 1."}
+	SetVariable RAxes_p,limits={0,1,0.001},value= root:myGlobals:Drawing:gDrawRAxes
 	SetVariable width_p,pos={15,155},size={115,15},proc=WidthSetVarProc,title="Width (pixels)"
 	SetVariable width_p,help={"Enter the total width of the rectangular section in pixels. The bounding lines will be drawn in blue."}
 	SetVariable width_p,limits={1,130,1},value= root:myGlobals:Drawing:gDrawWidth
