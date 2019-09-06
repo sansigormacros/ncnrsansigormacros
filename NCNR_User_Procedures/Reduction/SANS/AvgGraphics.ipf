@@ -135,6 +135,9 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
 			break
+		case "2D_NXcanSAS":
+			WriteNxCanSAS2D(type,"",1)
+			break
 		case "2D ASCII":
 			Fast2dExport(type,"",1)
 			break
@@ -155,6 +158,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 				break
 			case "2D ASCII":
 			case "QxQy ASCII":
+			case "2D_NXcanSAS":
 				break
 			default:
 				if (useXMLOutput == 1)
@@ -224,6 +228,7 @@ Function AvTypePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	strswitch(choice)	// string switch
 		case "2D ASCII":		// execute if case matches expression
 		case "QxQy ASCII":
+		case "2D_NXcanSAS":
 			String/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg,title="Save ASCII"
 			break					
@@ -252,7 +257,8 @@ Function DisableUnusedParameters(choice)
 	
 	strswitch(choice)	// string switch
 		case "2D ASCII":
-		case "QxQy ASCII":					
+		case "QxQy ASCII":	
+		case "2D_NXcanSAS":	
 		case "Circular":		//disable everything for these three choices
 			SetVariable Phi_p,disable=yes
 			SetVariable Qctr_p,disable=yes
@@ -306,7 +312,7 @@ Window Average_Panel()
 	GroupBox sect_rect,pos={7,44},size={134,84},title="Sector/Rectangular"
 	PopupMenu av_choice,pos={61,7},size={144,20},proc=AvTypePopMenuProc,title="AverageType"
 	PopupMenu av_choice,help={"Select the type of average to perform, then make the required selections below and click \"DoAverage\" to plot the results"}
-	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
+	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D_NXcanSAS;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
 	Button ave_help,pos={260,7},size={25,20},proc=ShowAvePanelHelp,title="?"
 	Button ave_help,help={"Show the help file for averaging options"}
 	Button ave_done,pos={199,245},size={50,20},proc=AveDoneButtonProc,title="Done"
