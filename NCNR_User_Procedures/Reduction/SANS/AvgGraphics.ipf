@@ -326,7 +326,7 @@ Window Average_Panel()
 //	DrawText 47,190,"(pixels)"
 	GroupBox ann,pos={148,44},size={143,84},title="Annular"
 	GroupBox rect,pos={7,133},size={134,71},title="Rectangular"
-	GroupBox sect,pos={148,133},size={143,71},title="Sector"
+	GroupBox sect,pos={148,133},size={143,71},title="Sector/Elliptical"
 	GroupBox sect_rect,pos={7,44},size={134,84},title="Sector/Rectangular"
 	PopupMenu av_choice,pos={61,7},size={144,20},proc=AvTypePopMenuProc,title="AverageType"
 	PopupMenu av_choice,help={"Select the type of average to perform, then make the required selections below and click \"DoAverage\" to plot the results"}
@@ -475,6 +475,28 @@ Function MasterAngleDraw()
 	 
 		Return 0		//exit the Draw routine
 	Endif
+	
+	// Elliptical
+	if(cmpstr(av_type,"Elliptical")==0)
+		//
+		// TODO: Write the elliptical averaging design
+		//
+		
+		//do the elliptical drawing
+		sdd=reals[18]
+		lam=reals[26]
+		
+		sdd *=100		//convert to cm
+		//find the radius (from the y-direction)
+		variable RAxes = NumberByKey("RATIOAXES",drawStr,"=",";")
+		
+		Make/O/N=(128,128) ellipsewave
+		variable b = 64
+		variable a = RAxes * b
+		DrawAnEllipsoid("ellipsewave",x0,y0,a,b,phi)
+	 
+		Return 0		//exit the Draw routine
+	EndIf
 	
 	//else sector or rectangular - draw the lines
 	
@@ -794,6 +816,47 @@ Function DrawALineRight(x0,y0,phi,rr,gg,bb,thick)
 	DrawLine/W=SANS_Data x0,y0, x1,y1
 End
 
+ 
+// This creates an ellipsoid
+// INPUTS:
+//   wname - name of xywave
+//   (xo,yo) - center position of ellipse
+//   (a, b) - elliptical dimesions to above
+//   phi - angle of rotation (counterclockwise)
+// OUTPUTS:
+//   make all changes directly in xywave
+Function DrawAnEllipsoid(wname,xo,yo,a,b,phi)
+    string wname
+    variable xo,yo,a,b,phi
+    int ii
+
+    wave xywave = $wname
+    
+    make/FREE/n=361 urx,ury
+    make/n=361 xw,yw = 0
+   
+    variable cosalpha = cos(phi*Pi/180), sinalpha = sin(phi*Pi/180)
+   
+    urx = a*(cos(p*Pi/180))
+    ury = b*(sin(p*Pi/180))
+   
+    xw = xo + cosalpha* urx - sinalpha*ury
+    yw = yo + sinalpha*urx + cosalpha*ury
+    
+    // FIXME: No single point mapping in Igor - need to do this automatically
+    
+    xywave[xw,yw] = 1
+    
+    rr=0
+    gg=50000
+    bb=0
+    
+	 //SetDrawEnv/W=SANS_Data xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick),fillpat=0
+	 //AppendImage/W=SANS_Data ellipsewave
+       
+    Return (0) 
+End
+
 //reads the value from the panel and updates the global string
 // redraws the appropriate line on the image
 Function DeltaPhiSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
@@ -865,6 +928,25 @@ Function WidthSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String newStr = ReplaceNumberByKey("WIDTH", tempStr, val, "=", ";")
 	
 	String/G root:myGlobals:Drawing:gDrawInfoStr = newStr
+	
+	//redraw the angles
+	MasterAngleDraw()
+End
+
+//reads the value from the panel and updates the global string
+// redraws the appropriate line on the image
+Function AxisRatioSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+	String ctrlName
+	Variable varNum
+	String varStr
+	String varName
+
+	ControlInfo/W=Average_Panel RAxes_p
+	Variable val = V_Value
+	SVAR tempStr = root:myGlobals:Drawing:gDrawRAxes
+	String newStr = ReplaceNumberByKey("RATIOAXES", tempStr, val, "=", ";")
+	
+	String/G root:myGlobals:Drawing:gDrawRAxes = newStr
 	
 	//redraw the angles
 	MasterAngleDraw()
