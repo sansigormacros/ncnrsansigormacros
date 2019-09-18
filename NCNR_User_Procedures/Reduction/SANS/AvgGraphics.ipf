@@ -31,7 +31,7 @@ Proc InitializeAveragePanel()
 	
 	//ok, create the globals, fill the keyword string with all possible values (default)
 	String/G root:myGlobals:Drawing:gDrawInfoStr = "AVTYPE=Circular;PHI=0;DPHI=0;WIDTH=0;SIDE=both;"
-		root:myGlobals:Drawing:gDrawInfoStr += "QCENTER=0;QDELTA=0;"
+		root:myGlobals:Drawing:gDrawInfoStr += "QCENTER=0;QDELTA=0;RATIOAXES=1;"
 	Variable/G root:myGlobals:Drawing:gDrawPhi =0
 	Variable/G root:myGlobals:Drawing:gDrawWidth = 1
 	Variable/G root:myGlobals:Drawing:gDrawDPhi = 0
@@ -132,11 +132,9 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			AnnularAverageTo1D(type)
 			break
 		case "Elliptical":
-			EllipticalAverageTo1D(type)
-			break
 		case "Circular":
 		case "Sector":
-			//circular or sector
+			//circular, elliptical, or sector
 			CircularAverageTo1D(type)		//graph is drawn here
 			break
 		case "2D_NXcanSAS":
@@ -308,7 +306,7 @@ Function DisableUnusedParameters(choice)
 			SetVariable DPhi_p,disable=yes
 			SetVariable width_p,disable=yes
 			SetVariable RAxes_p,disable=no
-			popupmenu sides,disable=no
+			popupmenu sides,disable=yes
 			break
 		default:							// optional default expression executed
 			Abort "no case matches from averagePanel type popup"					// when no case matches
@@ -349,7 +347,7 @@ Window Average_Panel()
 	SetVariable DPhi_p,pos={166,154},size={110,15},proc=DeltaPhiSetVarProc,title="Delta Phi"
 	SetVariable DPhi_p,help={"Enter the +/- range (0,45) of azimuthal angles to be included in the average.  The bounding angles will be drawin in blue."}
 	SetVariable DPhi_p,limits={0,90,1},value= root:myGlobals:Drawing:gDrawDPhi
-	SetVariable RAxes_p,pos={166,176},size={110,15},proc=DeltaPhiSetVarProc,title="Axis Ratio"
+	SetVariable RAxes_p,pos={166,176},size={110,15},proc=AxisRatioSetVarProc,title="Axis Ratio"
 	SetVariable RAxes_p,help={"Enter the ratio of the minor to major axes for an isointensity contour.  By definition, this value should be less than 1."}
 	SetVariable RAxes_p,limits={0,1,0.001},value= root:myGlobals:Drawing:gDrawRAxes
 	SetVariable width_p,pos={15,155},size={115,15},proc=WidthSetVarProc,title="Width (pixels)"
@@ -490,10 +488,14 @@ Function MasterAngleDraw()
 		//find the radius (from the y-direction)
 		variable RAxes = NumberByKey("RATIOAXES",drawStr,"=",";")
 		
+		rr=0
+		gg=50000
+		bb=0
+		
 		Make/O/N=(128,128) ellipsewave
 		variable b = 64
 		variable a = RAxes * b
-		DrawAnEllipsoid("ellipsewave",x0,y0,a,b,phi)
+		DrawAnEllipsoid("ellipsewave",x0,y0,a,b,phi,rr,gg,bb)
 	 
 		Return 0		//exit the Draw routine
 	EndIf
@@ -825,15 +827,15 @@ End
 //   phi - angle of rotation (counterclockwise)
 // OUTPUTS:
 //   make all changes directly in xywave
-Function DrawAnEllipsoid(wname,xo,yo,a,b,phi)
+Function DrawAnEllipsoid(wname,xo,yo,a,b,phi,rr,gg,bb)
     string wname
-    variable xo,yo,a,b,phi
+    variable xo,yo,a,b,phi,rr,gg,bb
     int ii
 
     wave xywave = $wname
     
-    make/FREE/n=361 urx,ury
-    make/n=361 xw,yw = 0
+    make/O/FREE/N=361 urx,ury
+    make/O/N=361 xw,yw = 0
    
     variable cosalpha = cos(phi*Pi/180), sinalpha = sin(phi*Pi/180)
    
@@ -846,10 +848,6 @@ Function DrawAnEllipsoid(wname,xo,yo,a,b,phi)
     // FIXME: No single point mapping in Igor - need to do this automatically
     
     xywave[xw,yw] = 1
-    
-    rr=0
-    gg=50000
-    bb=0
     
 	 //SetDrawEnv/W=SANS_Data xcoord= bottom,ycoord= left,linefgc= (rr,gg,bb),linethick= (thick),fillpat=0
 	 //AppendImage/W=SANS_Data ellipsewave
@@ -943,10 +941,10 @@ Function AxisRatioSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContro
 
 	ControlInfo/W=Average_Panel RAxes_p
 	Variable val = V_Value
-	SVAR tempStr = root:myGlobals:Drawing:gDrawRAxes
+	SVAR tempStr = root:myGlobals:Drawing:gDrawInfoStr
 	String newStr = ReplaceNumberByKey("RATIOAXES", tempStr, val, "=", ";")
 	
-	String/G root:myGlobals:Drawing:gDrawRAxes = newStr
+	String/G root:myGlobals:Drawing:gDrawInfoStr = newStr
 	
 	//redraw the angles
 	MasterAngleDraw()

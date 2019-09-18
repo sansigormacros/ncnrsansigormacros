@@ -31,10 +31,13 @@ Function CircularAverageTo1D(type)
 	String type
 	
 	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr		//this is the list that has it all
-	Variable isCircular = 0
+	Variable isCircular = 0, isElliptical = 0
 	
 	if( cmpstr("Circular",StringByKey("AVTYPE",keyListStr,"=",";")) ==0)
 		isCircular = 1		//set a switch for later
+	Endif
+	if( cmpstr("Elliptical",StringByKey("AVTYPE",keyListStr,"=",";")) ==0)
+		isElliptical = 1		//set a switch for later
 	Endif
 	
 	//type is the data type to do the averaging on, and will be set as the current folder
@@ -43,7 +46,7 @@ Function CircularAverageTo1D(type)
 	
 	//
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist,dr,ddr
-	Variable lambda,trans
+	Variable lambda,trans,raxes
 	WAVE reals = $(destPath + ":RealsRead")
 	WAVE/T textread = $(destPath + ":TextRead")
 //	String fileStr = textread[3]
@@ -87,6 +90,9 @@ Function CircularAverageTo1D(type)
 		phi_x = cos(phi_rad)
 		phi_y = sin(phi_rad)
 	Endif
+	if(isElliptical)
+		raxes = NumberByKey("RATIOAXES",keyListStr,"=",";")
+	EndIf
 	
 	/// data wave is data in the current folder which was set at the top of the function
 	WAVE data=$(destPath + ":data")
@@ -144,7 +150,7 @@ Function CircularAverageTo1D(type)
 		
 	//BEGIN AVERAGE **********
 	Variable xi,dxi,dx,jj,data_pixel,yj,dyj,dy,mask_val=0.1
-	Variable dr2,nd,fd,nd2,ll,kk,dxx,dyy,ir,dphi_p
+	Variable dr2,nd,fd,nd2,ll,kk,dxx,dyy,ir,dphi_p,rho
 	
 	// IGOR arrays are indexed from [0][0], FORTAN from (1,1) (and the detector too)
 	// loop index corresponds to FORTRAN (old code) 
@@ -177,10 +183,15 @@ Function CircularAverageTo1D(type)
 					kk = 1
 					do
 						dyy = dy + (kk - fd)*sy/3
-						if(isCircular)
-							//circular average, use all pixels
-							//(increment) 
-							nq = IncrementPixel(data_pixel,ddr,dxx,dyy,aveint,dsq,ncells,nq,nd2)
+						if(isCircular || isElliptical)
+							//use all pixels
+							if (isElliptical)
+								rho = atan(dyy/dxx) - phi_rad
+								nq = IncrementEllipticalPixel(data_pixel,ddr,dxx,dyy,rho,raxes, aveint,dsq,ncells,nq,nd2)
+							else
+								//circular average
+								nq = IncrementPixel(data_pixel,ddr,dxx,dyy,aveint,dsq,ncells,nq,nd2)
+							EndIf
 						else
 							//a sector average - determine azimuthal angle
 							dphi_p = dphi_pixel(dxx,dyy,phi_x,phi_y)
@@ -385,6 +396,28 @@ Function IncrementPixel(dataPixel,ddr,dxx,dyy,aveint,dsq,ncells,nq,nd2)
 	Variable ir
 	
 	ir = trunc(sqrt(dxx*dxx+dyy*dyy)/ddr)+1
+	if (ir>nq)
+		nq = ir		//resets maximum number of q-values
+	endif
+	aveint[ir-1] += dataPixel/nd2		//ir-1 must be used, since ir is physical
+	dsq[ir-1] += dataPixel*dataPixel/nd2
+	ncells[ir-1] += 1/nd2
+	
+	Return nq
+End
+
+//returns nq, new number of q-values
+//arrays aveint,dsq,ncells are also changed by this function
+//
+Function IncrementEllipticalPixel(dataPixel,ddr,dxx,dyy,rho,raxes,aveint,dsq,ncells,nq,nd2)
+	Variable dataPixel,ddr,dxx,dyy,rho,raxes
+	Wave aveint,dsq,ncells
+	Variable nq,nd2
+	
+	Variable irCircular,ir
+	
+	irCircular = (sqrt(dxx*dxx+dyy*dyy)/ddr)
+	ir = irCircular*sqrt(cos(rho)*cos(rho) + raxes*raxes*sin(rho)*sin(rho))+1
 	if (ir>nq)
 		nq = ir		//resets maximum number of q-values
 	endif
