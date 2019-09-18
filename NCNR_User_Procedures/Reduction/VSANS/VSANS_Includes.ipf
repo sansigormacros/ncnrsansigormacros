@@ -126,6 +126,7 @@ End
 #include "V_WB_BroadPeak"
 #include "V_SWB_BroadPeak"
 #include "V_WB_GaussSpheres"
+#include "V_SWB_GaussSpheres"
 #include "V_WB_Beaucage"
 
 

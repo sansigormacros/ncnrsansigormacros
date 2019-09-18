@@ -128,6 +128,8 @@ Function V_fBroadPeakSWB(w,x) : FitFunc
 	
 	inten = V_IntegrBroadPeakSWB_mid(w,loLim,upLim,x)
 
+
+	
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= 5.3
@@ -135,8 +137,15 @@ Function V_fBroadPeakSWB(w,x) : FitFunc
 // normalize the integral	
 	inten /= 30955		// "middle"  of peaks
 
+	inten -= w[6]
+
 // additional normalization???
 	inten /= 1.05		// 
+	
+//	inten /= 2			// need this factor to match low q of white beam???
+
+	inten += w[6]
+	
 	Return (inten)
 	
 End

@@ -1480,10 +1480,10 @@ End
 
 Function V_ShowPatchHelp(ctrlName) : ButtonControl
 	String ctrlName
-//	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[Patch File Headers]"
-//	if(V_flag !=0)
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Patch File Headers]"
+	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
-//	endif
+	endif
 	return(0)
 End
 

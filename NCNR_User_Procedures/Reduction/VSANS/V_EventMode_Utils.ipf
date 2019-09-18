@@ -1285,7 +1285,7 @@ End
 Proc V_ShowEVRHelp(ctrlName) : ButtonControl
 	String ctrlName
 
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[Reduce Event Files]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Reducing Event Data]"
 	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 	endif

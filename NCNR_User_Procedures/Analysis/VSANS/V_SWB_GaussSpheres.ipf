@@ -23,31 +23,31 @@
 //switching to an adaptive integration.
 //
 
-Proc PlotGaussSpheresWB(num,qmin,qmax)
+Proc PlotGaussSpheresSWB(num,qmin,qmax)
 	Variable num=128,qmin=0.001,qmax=0.7
 	Prompt num "Enter number of data points for model: "
 	Prompt qmin "Enter minimum q-value (A^-1) for model: "
 	Prompt qmax "Enter maximum q-value (A^-1) for model: "
 	
-	Make/O/D/N=(num) xwave_pgsWB,ywave_pgsWB
-	xwave_pgsWB = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
-	Make/O/D coef_pgsWB = {0.01,60,0.2,1e-6,3e-6,0.001}
-	make/O/T parameters_pgsWB = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}
-	Edit parameters_pgsWB,coef_pgsWB
+	Make/O/D/N=(num) xwave_pgsSWB,ywave_pgsSWB
+	xwave_pgsSWB = alog( log(qmin) + x*((log(qmax)-log(qmin))/num) )
+	Make/O/D coef_pgsSWB = {0.01,60,0.2,1e-6,3e-6,0.001}
+	make/O/T parameters_pgsSWB = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}
+	Edit parameters_pgsSWB,coef_pgsSWB
 	
-	Variable/G root:g_pgsWB
-	g_pgsWB := GaussSpheresWB(coef_pgsWB,ywave_pgsWB,xwave_pgsWB)
-	Display ywave_pgsWB vs xwave_pgsWB
+	Variable/G root:g_pgsSWB
+	g_pgsSWB := GaussSpheresSWB(coef_pgsSWB,ywave_pgsSWB,xwave_pgsSWB)
+	Display ywave_pgsSWB vs xwave_pgsSWB
 	ModifyGraph log=1,marker=29,msize=2,mode=4
 	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
-	AddModelToStrings("GaussSpheresWB","coef_pgsWB","parameters_pgsWB","pgsWB")
+	AddModelToStrings("GaussSpheresSWB","coef_pgsSWB","parameters_pgsSWB","pgsSWB")
 End
 
 // - sets up a dependency to a wrapper, not the actual SmearedModelFunction
-Proc PlotSmearedGaussSpheresWB(str)								
+Proc PlotSmearedGaussSpheresSWB(str)								
 	String str
 	Prompt str,"Pick the data folder containing the resolution you want",popup,getAList(4)
 	
@@ -59,26 +59,26 @@ Proc PlotSmearedGaussSpheresWB(str)
 	SetDataFolder $("root:"+str)
 	
 	// Setup parameter table for model function
-	Make/O/D smear_coef_pgsWB = {0.01,60,0.2,1e-6,3e-6,0.001}					
-	make/o/t smear_parameters_pgsWB = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}	
-	Edit smear_parameters_pgsWB,smear_coef_pgsWB					
+	Make/O/D smear_coef_pgsSWB = {0.01,60,0.2,1e-6,3e-6,0.001}					
+	make/o/t smear_parameters_pgsSWB = {"Volume Fraction (scale)","mean radius (A)","polydisp (sig/avg)","SLD sphere (A-2)","SLD solvent (A-2)","bkg (cm-1 sr-1)"}	
+	Edit smear_parameters_pgsSWB,smear_coef_pgsSWB					
 	
 	// output smeared intensity wave, dimensions are identical to experimental QSIG values
 	// make extra copy of experimental q-values for easy plotting
-	Duplicate/O $(str+"_q") smeared_pgsWB,smeared_qvals				
-	SetScale d,0,0,"1/cm",smeared_pgsWB							
+	Duplicate/O $(str+"_q") smeared_pgsSWB,smeared_qvals				
+	SetScale d,0,0,"1/cm",smeared_pgsSWB							
 					
-	Variable/G gs_pgsWB=0
-	gs_pgsWB := fSmearedGaussSpheresWB(smear_coef_pgsWB,smeared_pgsWB,smeared_qvals)	//this wrapper fills the STRUCT
+	Variable/G gs_pgsSWB=0
+	gs_pgsSWB := fSmearedGaussSpheresSWB(smear_coef_pgsSWB,smeared_pgsSWB,smeared_qvals)	//this wrapper fills the STRUCT
 	
-	Display smeared_pgsWB vs smeared_qvals									
+	Display smeared_pgsSWB vs smeared_qvals									
 	ModifyGraph log=1,marker=29,msize=2,mode=4
 	Label bottom "q (A\\S-1\\M)"
 	Label left "Intensity (cm\\S-1\\M)"
 	AutoPositionWindow/M=1/R=$(WinName(0,1)) $WinName(0,2)
 	
 	SetDataFolder root:
-	AddModelToStrings("SmearedGaussSpheresWB","smear_coef_pgsWB","smear_parameters_pgsWB","pgsWB")
+	AddModelToStrings("SmearedGaussSpheresSWB","smear_coef_pgsSWB","smear_parameters_pgsSWB","pgsSWB")
 End
 	
 
@@ -87,21 +87,21 @@ End
 //AAO version, uses XOP if available
 // simply calls the original single point calculation with
 // a wave assignment (this will behave nicely if given point ranges)
-Function GaussSpheresWB(cw,yw,xw) : FitFunc
+Function GaussSpheresSWB(cw,yw,xw) : FitFunc
 	Wave cw,yw,xw
 	
 #if exists("GaussSpheresX")
 //	MultiThread yw = GaussSpheresX(cw,xw)
-	yw = V_fGaussSpheresWB(cw,xw)
+	yw = V_fGaussSpheresSWB(cw,xw)
 
 #else
-//	yw = fGaussSpheresWB(cw,xw)
+//	yw = fGaussSpheresSWB(cw,xw)
 	yw = 1
 #endif
 	return(0)
 End
 
-Function V_fGaussSpheresWB(w,xx) : FitFunc
+Function V_fGaussSpheresSWB(w,xx) : FitFunc
 	wave w
 	variable xx
 	
@@ -121,20 +121,22 @@ Function V_fGaussSpheresWB(w,xx) : FitFunc
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
 	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	upLim = 20/5.3
 	
-	inten = V_IntegrGaussSphereWB_mid(w,loLim,upLim,xx)
+	inten = V_IntegrGaussSphereSWB_mid(w,loLim,upLim,xx)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= 5.3
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= 30955		// "middle"  of peaks
 
 	inten -= w[5]
 // additional normalization???
 	inten /= 1.05		// 
+	
+//	inten /= 2			// need this factor to match low q of white beam??? -- and to get invariant to work...
 	
 	inten += w[5]
 	Return(inten)
@@ -143,7 +145,7 @@ End
 
 // the trick here is that declaring the last qVal wave as a variable
 // since this is implicitly called N times in the wave assignment of the answer wave
-Function V_IntegrGaussSphereWB_mid(cw,loLim,upLim,qVal)
+Function V_IntegrGaussSphereSWB_mid(cw,loLim,upLim,qVal)
 	Wave cw
 	Variable loLim,upLim
 	Variable qVal
@@ -152,12 +154,12 @@ Function V_IntegrGaussSphereWB_mid(cw,loLim,upLim,qVal)
 	Variable ans
 	
 //	ans = Integrate1D(V_intgrnd_top,lolim,uplim,2,0,cw)		//adaptive quadrature
-	ans = Integrate1D(V_integrand_pgsWB,lolim,uplim,1,0,cw)		// Romberg integration
+	ans = Integrate1D(V_integrand_pgsSWB,lolim,uplim,1,0,cw)		// Romberg integration
 	
 	return ans
 end
 
-Function V_integrand_pgsWB(cw,dum)
+Function V_integrand_pgsSWB(cw,dum)
 	Wave cw
 	Variable dum		// the dummy of the integration
 
@@ -166,7 +168,7 @@ Function V_integrand_pgsWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*GaussSpheresX(cw,qq/dum)
+	val = V_SuperWhiteBeamDist_mid(dum*5.3)*GaussSpheresX(cw,qq/dum)
 	
 	return (val)
 End
@@ -176,7 +178,7 @@ End
 //
 // used only for the dependency, not for fitting
 //
-Function fSmearedGaussSpheresWB(coefW,yW,xW)
+Function fSmearedGaussSpheresSWB(coefW,yW,xW)
 	Wave coefW,yW,xW
 	
 	String str = getWavesDataFolder(yW,0)
@@ -191,17 +193,17 @@ Function fSmearedGaussSpheresWB(coefW,yW,xW)
 	WAVE fs.resW = resW
 	
 	Variable err
-	err = SmearedGaussSpheresWB(fs)
+	err = SmearedGaussSpheresSWB(fs)
 	
 	return (0)
 End
 
 // this is all there is to the smeared calculation!
-Function SmearedGaussSpheresWB(s) :FitFunc
+Function SmearedGaussSpheresSWB(s) :FitFunc
 	Struct ResSmearAAOStruct &s
 
 //	the name of your unsmeared model (AAO) is the first argument
-	Smear_Model_20(GaussSpheresWB,s.coefW,s.xW,s.yW,s.resW)
+	Smear_Model_20(GaussSpheresSWB,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End

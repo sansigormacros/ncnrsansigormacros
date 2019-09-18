@@ -1307,9 +1307,9 @@ End
 
 Function V_ShowProtoHelp(ctrlName) : ButtonControl
 	String ctrlName
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[VSANS Reduction Protocol]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[VSANS Reduction Protocol]"
 	if(V_flag !=0)
-		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+		DoAlert 0,"The VSANS Data Reduction Help file could not be found"
 	endif
 End
 

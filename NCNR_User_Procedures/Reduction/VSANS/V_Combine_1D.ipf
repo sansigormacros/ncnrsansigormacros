@@ -63,7 +63,7 @@ Proc V_CombineDataGraph()
 		PopupMenu popup0,value= ksBinTypeStr,proc=V_DataBinTypePlotPop
 
 		Button button3,pos={544.00,5},size={30.00,20.00},title="?"
-		Button button3,help={"help file for combining 1D data"}
+		Button button3,proc=V_ShowCombine1DHelp,help={"help file for combining 1D data"}
 
 		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
 		CheckBox check0,value= 1
@@ -128,6 +128,15 @@ Proc V_CombineDataGraph()
 		
 End
 
+
+Function V_ShowCombine1DHelp(ctrlName) : ButtonControl
+	String ctrlName
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Combine 1D Files]"
+	if(V_flag !=0)
+		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+	endif
+	return(0)
+End
 
 // function that is a simple dependency, and updates the trimmed waves
 // that are displayed

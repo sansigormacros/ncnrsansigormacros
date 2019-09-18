@@ -2,6 +2,54 @@
 #pragma IgorVersion=6.22
 
 
+/////////////
+//VSANS Event File Format
+// (Phil Chabot)
+//////////////
+//
+// The event file shall be of binary format, with data encoded in little endian format.
+// The file shall have a header section and a data section
+//
+//Header -- The header will contain the following: 
+//File byte offset		Size (bytes)		Value				Description
+//		0							5	 			'VSANS'				magic number
+//		5							2				0xMajorMinor		Revision number = 0x00
+//		7							2				n bytes				Offset to data in bytes
+//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
+//		19							1	 			'F'/'M'/'R'			detector carriage group
+//		20							2				HV (V)				HV Reading in Volt
+//		22							4				clk (Hz)				timestamp clock frequency in Hz
+//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
+
+//Data
+// 
+//File byte offset		Size (bytes)		Value				Description
+//		0							1				tubeID				tube index - 0-191
+//		1							1				pixel					pixel value [0:127]
+//		2							6				timestamp			timestamp in resolution unit
+//		8							1				tubeID				…
+//		…							…				…						…
+
+//
+// Time of origin for timestamp should be in UTC. Any disabled detector tubes can be reported in the header section. 
+// If timestamp n is superior to timestamp n+1, then timestamp n is corrupted. To be discussed. 
+//
+// There is no event mode data for the High Resolution (back) detector
+//
+// each carriage (M, F) is in a single event file. Tubes are numbered 0->(4*48)-1 == 0->191 and once
+// the event data is decoded, the histogram can be split into the 4 panels.
+//
+// Based on the numbering 0-191:
+// group 1 = R (0,47) 			MatrixOp out = ReverseRows(in)
+// group 2 = T (48,95) 		output = slices_T[q][p][r]
+// group 3 = B (96,143) 		output = slices_B[XBINS-q-1][YBINS-p-1][r]		(reverses rows and columns)
+// group 4 = L (144,191) 	MatrixOp out = ReverseCols(in)
+//
+// the transformation flips the panel to the view as if the detector was viewed from the sample position
+// (this is the standard view for SANS and VSANS)
+//
+////////////////////
+
 
 //
 // Event mode prcessing for VSANS

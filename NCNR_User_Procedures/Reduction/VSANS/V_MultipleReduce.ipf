@@ -196,7 +196,7 @@ End
 Proc V_ShowMRHelp(ctrlName) : ButtonControl
 	String ctrlName
 
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[Reduce Multiple Files]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Reduce Multiple Files]"
 	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 	endif

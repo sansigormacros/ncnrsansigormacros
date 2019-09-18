@@ -591,8 +591,10 @@ Function V_HelpTransmButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			
-			DoAlert 0,"Transmission Help not written yet"
+			DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[VSANS Transmission]"
+			if(V_flag !=0)
+				DoAlert 0,"Transmission Help not written yet"
+			endif
 			
 			break
 		case -1: // control being killed

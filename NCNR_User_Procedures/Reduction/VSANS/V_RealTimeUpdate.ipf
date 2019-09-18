@@ -179,8 +179,10 @@ EndMacro
 //
 Proc V_RT_HelpButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	DoAlert 0,"the help file has not been written yet :-("
-//	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[VSANS Real Time Data Display]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[VSANS RealTime Display]"
+	if(V_flag !=0)
+		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+	endif	
 End
 
 //close the panel gracefully, and stop the background task if necessary

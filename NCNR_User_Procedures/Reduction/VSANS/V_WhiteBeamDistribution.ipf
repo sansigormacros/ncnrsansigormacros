@@ -13,9 +13,6 @@
 // integration of interpolated data (100 pts) = 20051 (3 A to 9 A)
 //
 //
-// gives an average wavelength of 5.302 A
-// median ~ 5.97 A
-//
 //
 // of the three choices, using the fit to the "top" of the distribution gives the best-looking
 // result when compared to the AgBeh data
@@ -29,6 +26,13 @@
 // Integral = 30955 (cts*A) for middle fit
 //
 
+//  White Beam:
+//  mean wavelength = 5.29687
+//  sqrt(mean wavelength^2) = 5.40513
+//
+//  Super White Beam:
+//  mean wavelength = 6.2033
+//  sqrt(mean wavelength^2) = 6.56277
 
 
 
@@ -69,6 +73,7 @@ Function V_WhiteBeamDist_top(lam)
 	return(0)
 	
 End
+
 
 Function V_WhiteBeamDist_mid(lam)
 	Variable lam
@@ -136,6 +141,32 @@ Function V_WB_Mean()
 	return(ans)
 End
 
+
+// assumes that the counts and wavelength data for white and superWhite both are loaded and named:
+//
+// white_wavelength, counts_white
+// super_white_wavelength, counts_super_white
+//
+//
+Proc V_WB_Stats()
+
+	duplicate/O counts_white cts_W, intg_W
+	duplicate/O counts_super_white cts_SW intg_SW
+
+	Print "White Beam:"
+	intg_W = cts_W*white_wavelength
+	printf "mean wavelength = %g\r",sum(intg_W)/sum(cts_W)
+	intg_W = cts_W*white_wavelength^2
+	printf "sqrt(mean wavelength^2) = %g\r",sqrt( sum(intg_W)/sum(cts_W) )
+
+	Print
+	Print "Super White Beam:"
+	intg_SW = cts_SW*super_white_wavelength
+	printf "mean wavelength = %g\r",sum(intg_SW)/sum(cts_SW)
+	intg_SW = cts_SW*super_white_wavelength^2
+	printf "sqrt(mean wavelength^2) = %g\r",sqrt( sum(intg_SW)/sum(cts_SW) )
+		
+End
 
 //
 //

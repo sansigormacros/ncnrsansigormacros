@@ -1440,6 +1440,7 @@ End
 //NG1 - (8m SANS) is not supported
 //
 // new calibration done June 2007, John Barker
+// new calibration for 3A only -- September 2019, John Barker
 //
 Proc MakeNG3AttenTable()
 
@@ -1475,34 +1476,36 @@ Proc MakeNG3AttenTable()
 	
 	//each wave has 10 elements, the transmission of att# at the wavelengths 
 	//lambda = 4,5,6,7,8,10,12,14,17,20 (4 A and 20 A are extrapolated values)
-	Make/O/N=(num) root:myGlobals:Attenuators:ng3lambda={4,5,6,7,8,10,12,14,17,20}
+	Make/O/N=(num) root:myGlobals:Attenuators:ng3lambda={3,4,5,6,7,8,10,12,14,17,20}
 	
 	// new calibration done June 2007, John Barker
-	root:myGlobals:Attenuators:ng3att0 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
-	root:myGlobals:Attenuators:ng3att1 = {0.444784,0.419,0.3935,0.3682,0.3492,0.3132,0.2936,0.2767,0.2477,0.22404}
-	root:myGlobals:Attenuators:ng3att2 = {0.207506,0.1848,0.1629,0.1447,0.1292,0.1056,0.09263,0.08171,0.06656,0.0546552}
-	root:myGlobals:Attenuators:ng3att3 = {0.092412,0.07746,0.06422,0.05379,0.04512,0.03321,0.02707,0.02237,0.01643,0.0121969}
-	root:myGlobals:Attenuators:ng3att4 = {0.0417722,0.03302,0.02567,0.02036,0.01604,0.01067,0.00812,0.006316,0.00419,0.00282411}
-	root:myGlobals:Attenuators:ng3att5 = {0.0187129,0.01397,0.01017,0.007591,0.005668,0.003377,0.002423,0.001771,0.001064,0.000651257}
-	root:myGlobals:Attenuators:ng3att6 = {0.00851048,0.005984,0.004104,0.002888,0.002029,0.001098,0.0007419,0.0005141,0.000272833,0.000150624}
-	root:myGlobals:Attenuators:ng3att7 = {0.00170757,0.001084,0.0006469,0.0004142,0.0002607,0.0001201,7.664e-05,4.06624e-05,1.77379e-05,7.30624e-06}
-	root:myGlobals:Attenuators:ng3att8 = {0.000320057,0.0001918,0.0001025,6.085e-05,3.681e-05,1.835e-05,6.74002e-06,3.25288e-06,1.15321e-06,3.98173e-07}
-	root:myGlobals:Attenuators:ng3att9 = {6.27682e-05,3.69e-05,1.908e-05,1.196e-05,8.738e-06,6.996e-06,6.2901e-07,2.60221e-07,7.49748e-08,2.08029e-08}
-	root:myGlobals:Attenuators:ng3att10 = {1.40323e-05,8.51e-06,5.161e-06,4.4e-06,4.273e-06,1.88799e-07,5.87021e-08,2.08169e-08,4.8744e-09,1.08687e-09}
+	// new calibration for 3A only -- September 2019, John Barker
+	root:myGlobals:Attenuators:ng3att0 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
+	root:myGlobals:Attenuators:ng3att1 = {0.49769,0.444784,0.419,0.3935,0.3682,0.3492,0.3132,0.2936,0.2767,0.2477,0.22404}
+	root:myGlobals:Attenuators:ng3att2 = {0.25729,0.207506,0.1848,0.1629,0.1447,0.1292,0.1056,0.09263,0.08171,0.06656,0.0546552}
+	root:myGlobals:Attenuators:ng3att3 = {0.12823,0.092412,0.07746,0.06422,0.05379,0.04512,0.03321,0.02707,0.02237,0.01643,0.0121969}
+	root:myGlobals:Attenuators:ng3att4 = {0.064491,0.0417722,0.03302,0.02567,0.02036,0.01604,0.01067,0.00812,0.006316,0.00419,0.00282411}
+	root:myGlobals:Attenuators:ng3att5 = {0.032216,0.0187129,0.01397,0.01017,0.007591,0.005668,0.003377,0.002423,0.001771,0.001064,0.000651257}
+	root:myGlobals:Attenuators:ng3att6 = {0.016244,0.00851048,0.005984,0.004104,0.002888,0.002029,0.001098,0.0007419,0.0005141,0.000272833,0.000150624}
+	root:myGlobals:Attenuators:ng3att7 = {0.0041106,0.00170757,0.001084,0.0006469,0.0004142,0.0002607,0.0001201,7.664e-05,4.06624e-05,1.77379e-05,7.30624e-06}
+	root:myGlobals:Attenuators:ng3att8 = {0.001029,0.000320057,0.0001918,0.0001025,6.085e-05,3.681e-05,1.835e-05,6.74002e-06,3.25288e-06,1.15321e-06,3.98173e-07}
+	root:myGlobals:Attenuators:ng3att9 = {0.00026462,6.27682e-05,3.69e-05,1.908e-05,1.196e-05,8.738e-06,6.996e-06,6.2901e-07,2.60221e-07,7.49748e-08,2.08029e-08}
+	root:myGlobals:Attenuators:ng3att10 = {0.00015214,1.40323e-05,8.51e-06,5.161e-06,4.4e-06,4.273e-06,1.88799e-07,5.87021e-08,2.08169e-08,4.8744e-09,1.08687e-09}
   
   // percent errors as measured, May 2007 values
+  	// new calibration for 3A only -- September 2019, John Barker
   // zero error for zero attenuators, appropriate average values put in for unknown values
-	root:myGlobals:Attenuators:ng3att0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
-	root:myGlobals:Attenuators:ng3att1_err = {0.15,0.142,0.154,0.183,0.221,0.328,0.136,0.13,0.163,0.15}
-	root:myGlobals:Attenuators:ng3att2_err = {0.25,0.257,0.285,0.223,0.271,0.405,0.212,0.223,0.227,0.25}
-	root:myGlobals:Attenuators:ng3att3_err = {0.3,0.295,0.329,0.263,0.323,0.495,0.307,0.28,0.277,0.3}
-	root:myGlobals:Attenuators:ng3att4_err = {0.35,0.331,0.374,0.303,0.379,0.598,0.367,0.322,0.33,0.35}
-	root:myGlobals:Attenuators:ng3att5_err = {0.4,0.365,0.418,0.355,0.454,0.745,0.411,0.367,0.485,0.4}
-	root:myGlobals:Attenuators:ng3att6_err = {0.45,0.406,0.473,0.385,0.498,0.838,0.454,0.49,0.5,0.5}
-	root:myGlobals:Attenuators:ng3att7_err = {0.6,0.554,0.692,0.425,0.562,0.991,0.715,0.8,0.8,0.8}
-	root:myGlobals:Attenuators:ng3att8_err = {0.7,0.705,0.927,0.503,0.691,1.27,1,1,1,1}
-	root:myGlobals:Attenuators:ng3att9_err = {1,0.862,1.172,0.799,1.104,1.891,1.5,1.5,1.5,1.5}
-	root:myGlobals:Attenuators:ng3att10_err = {1.5,1.054,1.435,1.354,1.742,2,2,2,2,2}
+	root:myGlobals:Attenuators:ng3att0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:ng3att1_err = {0.655,0.15,0.142,0.154,0.183,0.221,0.328,0.136,0.13,0.163,0.15}
+	root:myGlobals:Attenuators:ng3att2_err = {1.0725,0.25,0.257,0.285,0.223,0.271,0.405,0.212,0.223,0.227,0.25}
+	root:myGlobals:Attenuators:ng3att3_err = {1.6862,0.3,0.295,0.329,0.263,0.323,0.495,0.307,0.28,0.277,0.3}
+	root:myGlobals:Attenuators:ng3att4_err = {1.86,0.35,0.331,0.374,0.303,0.379,0.598,0.367,0.322,0.33,0.35}
+	root:myGlobals:Attenuators:ng3att5_err = {1.9755,0.4,0.365,0.418,0.355,0.454,0.745,0.411,0.367,0.485,0.4}
+	root:myGlobals:Attenuators:ng3att6_err = {2.0725,0.45,0.406,0.473,0.385,0.498,0.838,0.454,0.49,0.5,0.5}
+	root:myGlobals:Attenuators:ng3att7_err = {4.0576,0.6,0.554,0.692,0.425,0.562,0.991,0.715,0.8,0.8,0.8}
+	root:myGlobals:Attenuators:ng3att8_err = {8.1442,0.7,0.705,0.927,0.503,0.691,1.27,1,1,1,1}
+	root:myGlobals:Attenuators:ng3att9_err = {10.361,1,0.862,1.172,0.799,1.104,1.891,1.5,1.5,1.5,1.5}
+	root:myGlobals:Attenuators:ng3att10_err = {10.53,1.5,1.054,1.435,1.354,1.742,2,2,2,2,2}
   
   
   //old tables, pre-June 2007
@@ -1727,8 +1730,8 @@ Function LookupAttenNG3(lambda,attenNo,atten_err)
 		return (1)		//no attenuation, return trans == 1
 	endif
 	
-	if( (lambda < 4) || (lambda > 20 ) )
-		Abort "Wavelength out of calibration range (4,20). You must manually enter the absolute parameters"
+	if( (lambda < 3) || (lambda > 20 ) )
+		Abort "Wavelength out of calibration range (3,20). You must manually enter the absolute parameters"
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))

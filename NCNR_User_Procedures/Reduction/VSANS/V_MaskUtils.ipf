@@ -1856,8 +1856,11 @@ Function V_AvgPanelHelpButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			DoAlert 0,"The help file for this panel has not been written yet."
-				
+			DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Show Mask for Averaging]"
+			if(V_flag !=0)
+				DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+			endif	
+						
 			break
 		case -1: // control being killed
 			break
