@@ -968,17 +968,17 @@ End
 Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_NXcanSAS;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;Elliptical;2D_NXcanSAS;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
 	Prompt side,"Include detector halves?",popup,"both;right;left"
-	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular or Sector)"
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular, Elliptical, or Sector)"
 	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
 	Prompt width, "Width of Rectangular average (1,128)"
-	Prompt Qctr, "q-value of center of annulus"
+	Prompt Qctr, "q-value of center of annulus -OR- Ratio of minor to major axes of ellipse"
 	Prompt Qdelta,"Pixel width of annulus"
 
 	//assign results of dialog to key=value string, semicolon separated
@@ -1007,6 +1007,19 @@ Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelt
 		root:myGlobals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
 		root:myGlobals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
 	Endif
+	
+	if(cmpstr(av_typ,"Elliptical")==0)
+		Execute "GetEllipticalAvgInfo()"
+	Endif
+End
+
+Proc GetEllipticalAvgInfo(phi,AxisRatio)
+	Variable phi=0,AxisRatio=1
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular, Elliptical, or Sector)"
+	Prompt AxisRatio, "Ratio of minor to major axes of ellipse"
+	
+	root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "RATIOAXES=" + num2str(AxisRatio) + ";"
 End
 
 //not used????
@@ -1845,9 +1858,9 @@ Function ExecuteProtocol(protStr,samStr)
 			AnnularAverageTo1D(activeType)
 			break
 		case "Circular":
-			CircularAverageTo1D(activeType)
-			break
 		case "Sector":
+		case "Elliptical":
+			//Circular, Sector, and Elliptical Averaging use Circular Averaging Routine
 			CircularAverageTo1D(activeType)
 			break
 		case "Sector_PlusMinus":
