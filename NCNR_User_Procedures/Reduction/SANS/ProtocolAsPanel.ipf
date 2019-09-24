@@ -965,22 +965,16 @@ End
 //procedure called by protocol panel to ask user for average type choices
 // somewhat confusing and complex, but may be as good as it gets.
 //
-Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
-	String av_typ,autoSave,AutoName,autoPlot,side
-	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;Elliptical;2D_NXcanSAS;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot)
+	String av_typ,autoSave,AutoName,autoPlot
+	Prompt av_typ, "Type of Average - A 2nd window will open for averaging specific parameters",popup,"Circular;Sector;Rectangular;Annular;Elliptical;2D_NXcanSAS;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
 	Prompt autoName,"Auto-Name files?",popup,"Auto;Manual"
 	Prompt autoPlot,"Plot the averaged Data?",popup,"Yes;No"
-	Prompt side,"Include detector halves?",popup,"both;right;left"
-	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular, Elliptical, or Sector)"
-	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
-	Prompt width, "Width of Rectangular average (1,128)"
-	Prompt Qctr, "q-value of center of annulus -OR- Ratio of minor to major axes of ellipse"
-	Prompt Qdelta,"Pixel width of annulus"
 
+	Print "TESTING"
 	//assign results of dialog to key=value string, semicolon separated
 	//do only what is necessary, based on av_typ
 	String/G root:myGlobals:Protocols:gAvgInfoStr=""
@@ -992,25 +986,53 @@ Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelt
 	root:myGlobals:Protocols:gAvgInfoStr += "PLOT=" + autoPlot + ";"
 	
 	if(cmpstr(av_typ,"Sector")==0 || cmpstr(av_typ,"Sector_PlusMinus")==0)
-		root:myGlobals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
-		root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
-		root:myGlobals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+		Execute "GetSectorAvgInfo()"
 	Endif
 	
 	if(cmpstr(av_typ,"Rectangular")==0)
-		root:myGlobals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
-		root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
-		root:myGlobals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
+		Execute "GetRectangularAvgInfo()"
 	Endif
 	
 	if(cmpstr(av_typ,"Annular")==0)
-		root:myGlobals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
-		root:myGlobals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
+		Execute "GetAnnularAvgInfo()"
 	Endif
 	
 	if(cmpstr(av_typ,"Elliptical")==0)
 		Execute "GetEllipticalAvgInfo()"
 	Endif
+End
+
+Proc GetSectorAvgInfo(side,phi,width)
+	String side
+	Variable phi=0,dphi=10
+	Prompt side,"Include detector halves?",popup,"both;right;left"
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular, Elliptical, or Sector)"
+	Prompt dphi, "Azimuthal range (0,45) degrees (Sector only)"
+	
+	root:myGlobals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "DPHI=" + num2str(dphi) + ";"
+End
+
+Proc GetRectangularAvgInfo(side,phi,width)
+	String side
+	Variable phi=0,width=10
+	Prompt side,"Include detector halves?",popup,"both;right;left"
+	Prompt phi,"Orientation Angle (-90,90) degrees (Rectangular, Elliptical, or Sector)"
+	Prompt width, "Width of Rectangular average (1,128)"
+	
+	root:myGlobals:Protocols:gAvgInfoStr += "SIDE=" + side + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "PHI=" + num2str(phi) + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "WIDTH=" + num2str(width) + ";"
+End
+
+Proc GetAnnularAvgInfo(QCtr,QDelta)
+	Variable QCtr=0.01,QDelta=10
+	Prompt Qctr, "q-value of center of annulus -OR- Ratio of minor to major axes of ellipse"
+	Prompt Qdelta,"Pixel width of annulus"
+
+	root:myGlobals:Protocols:gAvgInfoStr += "QCENTER=" + num2str(QCtr) + ";"
+	root:myGlobals:Protocols:gAvgInfoStr += "QDELTA=" + num2str(QDelta) + ";"
 End
 
 Proc GetEllipticalAvgInfo(phi,AxisRatio)
