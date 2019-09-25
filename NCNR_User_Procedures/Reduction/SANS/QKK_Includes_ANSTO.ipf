@@ -19,8 +19,6 @@ Function QUOKKA()
 	return(0)
 End
 
-
-
 #include "QKK_AvgGraphics"			version>=5.0
 #include "QKK_Buttons"				version>=5.0
 #include "QKK_CatVSTable"			version>=5.0
@@ -38,6 +36,7 @@ End
 #include "QKK_PatchFiles"			version>=5.0
 //#include "PlotUtils"			version>=5.0
 //AJJ October 2008 - switch to shared file loader
+
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
 //#include "cansasXML"
@@ -82,6 +81,9 @@ End
 #include "DataSetHandling"
 #include "WriteModelData_v40"
 
+// Added Desmearing functionality 
+#include "QKK_DesmearingUtils"
+#include "QKK_LakeDesmearing_JB"						  
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

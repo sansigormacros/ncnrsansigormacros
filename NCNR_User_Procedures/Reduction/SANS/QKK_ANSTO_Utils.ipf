@@ -22,11 +22,6 @@ Function InitFacilityGlobals()
 	//Detector -specific globals
 	Variable/G root:myGlobals:gNPixelsX=192					// number of X and Y pixels
 	Variable/G root:myGlobals:gNPixelsY=192
-	
-	// pixel dimensions are now read directly from the file header.
-//	Variable/G root:myGlobals:PixelResDefault = 0.5			//pixel resolution in cm
-	
-	Variable/G root:myGlobals:DeadtimeDefault = 2.14e-6 // 3.4e-6		//deadtime in seconds ???nha
 
 	Variable/G root:myGlobals:apOff = 5.0		// (cm) distance from sample aperture to sample position
 
@@ -155,24 +150,6 @@ Function xDetectorPixelResolution(fileStr,detStr)
 	//your code here
 	
 	return(DDet)
-End
-
-//Utility function that returns the detector deadtime (in seconds)
-//Global values are set in the Initialize procedure
-//
-// - called by WorkFileUtils.ipf
-//
-// fileStr is passed as TextRead[3] and is the filename
-// detStr is passed as TextRead[9] and is an identifier for the detector
-//
-Function DetectorDeadtime(fileStr,detStr)
-	String fileStr,detStr
-	
-	// [davidm]
-	nvar DeadtimeDefault = root:myGlobals:DeadtimeDefault
-
-	return DeadtimeDefault
-	
 End
 
 //given a filename of a SANS data filename of the form
@@ -689,6 +666,66 @@ Function/S RemoveVersNumsFromList(list)
 	return (list)
 End
 
+Function/S CollapseRuns(lo, hi)
+	Variable lo, hi
+	
+	String seqn
+	if (lo < hi)
+		seqn = num2istr(lo) + "-" + num2istr(hi)
+	else
+		seqn = num2istr(lo)
+	endif
+	return seqn
+End
+
+// generates a comma separate sequence of runs using '-' 
+// collapse a sequential sequence of numbers 	
+Function/S RunListToSequence(runs, emptyValue)
+	WAVE runs
+	Variable emptyValue
+	
+	Variable numRuns = numpnts(runs)
+	String	seqn = ""
+	if (numRuns == 0)
+		return (seqn)
+	endif
+	Variable ix, prv, lo, hi
+	prv = runs[0]
+	lo = runs[0]
+	hi = runs[0]
+	Variable nonEmpty = (hi != emptyValue)
+	for (ix = 1; ix < numRuns; ix += 1)
+		hi = runs[ix]
+		if (hi != emptyValue)
+			nonEmpty = 1
+		endif
+		if (lo == emptyValue) 	// leave blank and restart
+			seqn += ","
+			lo = hi
+			prv = hi
+		elseif (hi == prv + 1)
+			prv = hi		
+		else	
+			seqn += CollapseRuns(lo, prv) + ","
+			lo = hi
+			prv = hi
+		endif
+	endfor
+	if ((lo != emptyValue) && (hi != emptyValue))
+		if (lo != hi)
+			seqn += num2istr(lo) + "-" + num2istr(hi)
+		else
+			seqn += num2istr(hi)
+		endif
+	endif
+	
+	if (nonEmpty)
+		return (seqn + ",")
+	else
+		return ""
+	endif	
+End
+
 //input is a list of run numbers, and output is a list of filenames (not the full path)
 //*** input list must be COMMA delimited***
 //output is equivalent to selecting from the CAT table
@@ -708,7 +745,7 @@ Function/S ParseRunNumberList(list)
 	String list
 	
 	String newList="",item="",tempStr=""
-	Variable num,ii,runNum
+	Variable num,ii,runNum, checkAlerts = 1
 	
 	//expand number ranges, if any
 	list = ExpandNumRanges(list)
@@ -724,20 +761,30 @@ Function/S ParseRunNumberList(list)
 		if(strlen(tempstr)!=0)
 			//valid name, add to list
 			//Print "it's a file"
-				if(strlen(newList)==0)
+				if(ii==0)
 					newList = tempStr
 				else
 					newList += "," + tempStr
 				endif		
-			else
+		else
 			//not a valid name
 			//is it a number?
 			runNum=str2num(item)
 			//print runnum
 			if(numtype(runNum) != 0)
-				//not a number -  maybe an error			
-				DoAlert 0,"List item "+item+" is not a valid run number or filename. Please enter a valid number or filename."
-				return("")
+				//not a number -  maybe an error	
+				if (checkAlerts)
+					DoAlert 1,"List item "+item+" is not a valid run number or filename. Leave items empty and continue?"
+					if (V_Flag == 1)
+						checkAlerts = 0
+					else
+						Abort "Aborting request. Fix run sequence and retry."
+					endif
+				endif
+				// comma is inserted before item so skip if first item
+				if (ii > 0)
+					newList += ","
+				endif
 			else
 				//a run number or an error
 				tempStr = GetFileNameFromPathNoSemi( FindFileFromRunNumber(runNum) )
@@ -746,12 +793,18 @@ Function/S ParseRunNumberList(list)
 					DoAlert 0,"List item "+item+" is not a valid run number. Please enter a valid number."
 					return("")
 				else
-					newList += tempStr + ","
+					newList += "," + tempStr
 				endif
 			endif
 		endif
 	endfor		//loop over all items in list
 	
+	// check if the len newList matches list, if not pad with trailing commas
+	Variable n
+	For (n = itemsinlist(newList,","); n < num; n += 1)
+		newList += ","
+	EndFor
+
 	return(newList)
 End
 
@@ -809,7 +862,7 @@ Function/S ListFromDash(item)
 		return numList
 	endif
 	for(ii=lo;ii<=hi;ii+=1)
-		numList += num2str(ii) + ","
+		numList += RunDigitString(ii) + ","
 	endfor
 	
 	Return numList
@@ -854,30 +907,34 @@ Function LookupAtten(lambda,attenNo)
 		return (1)		//no attenuation, return trans == 1
 	endif
 	
-//	if( (lambda < 5) || (lambda > 5 ) )
-//		Abort "Wavelength out of calibration range (5A). You must manually enter the absolute parameters"
-//	Endif
+	if(WaveExists($attStr))
+		KillWaves $attStr
+	endif
+	if(WaveExists($lamStr))
+		KillWaves $lamStr
+	endif
 	
-	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
-		Execute "MakeAttenTable()"
-	Endif
+	Execute "MakeAttenTable()"
 	//just in case creating the tables fails....
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
 		Abort "Attenuator lookup waves could not be found. You must manually enter the absolute parameters"
 	Endif
 	
-	//lookup the value by interpolating the wavelength
-	//the attenuator must always be an integer
-	
-
 	Wave att = $attStr
 	Wave lam = $lamstr
-	//nha - commented below out until we have attenuation factors over multiple lambda values
-	//trans = interp(lambda,lam,att)
 	
-//	Print "trans = ",trans
-	//nha - delete this line when multiple lambda values
-	trans = att[0]
+	// check range
+	Variable lamMin = WaveMin(lam)
+	Variable lamMax = WaveMax(lam)
+	if ((lambda < lamMin) || (lambda > lamMax))
+		Abort "Wavelength out of calibration range. You must manually enter the absolute parameters"
+	endif
+	
+	//lookup the value by interpolating the wavelength
+	//the attenuator must always be an integer
+	trans = interp(lambda,lam,att)
+	
+	print "lambda: ", lambda, " attenuator:", trans
 	
 	return trans
 End
@@ -887,8 +944,8 @@ Proc MakeAttenTable()
 	NewDataFolder/O root:myGlobals:Attenuators
 	//do explicitly to avoid data folder problems, redundant, but it must work without fail
 
-	//Quokka specific nha.
-	Variable num=12		
+	//Quokka specific
+	Variable num=9
 	
 	Make/O/N=(num) root:myGlobals:Attenuators:att0
 	Make/O/N=(num) root:myGlobals:Attenuators:att1
@@ -902,12 +959,13 @@ Proc MakeAttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:att9
 	Make/O/N=(num) root:myGlobals:Attenuators:att10
 	Make/O/N=(num) root:myGlobals:Attenuators:att11
-	
+
 	// epg
 	// note 5A only at this stage but other wavelengths as measured
 	// these values have to be re-determined as were measured on time and not monitor counts
-	//Make/O/N=(num) root:myGlobals:Attenuators:lambda={5}
-	Make/O/N=(num) root:myGlobals:Attenuators:lambda={4.94}	
+	//Make/O/N=(num) root:myGlobals:Attenuators:lambda={4.94}	
+	//Make/O/N=(num) root:myGlobals:Attenuators:lambda={5, 6, 7, 8, 9}
+	Make/O/N=(num) root:myGlobals:Attenuators:lambda={2.55, 3.5, 4.501, 5, 6, 7, 8, 9, 10, 11, 12}
 
 	//Quokka attenuator factors. 19/1/09 nha
 	//20/3/09 nha updated to 
@@ -928,18 +986,60 @@ Proc MakeAttenTable()
 //	root:myGlobals:Attenuators:att11 = {1.67827e-06}
 	
 	// [davidm] 19/12/2011 new attenuators
- 	root:myGlobals:Attenuators:att0 = {1}
-	root:myGlobals:Attenuators:att1 = {0.493851474862975}
-	root:myGlobals:Attenuators:att2 = {0.172954232066555}
-	root:myGlobals:Attenuators:att3 = {0.0730333204657658}
-	root:myGlobals:Attenuators:att4 = {0.0338860321760628}
-	root:myGlobals:Attenuators:att5 = {0.0123806637881081}
-	root:myGlobals:Attenuators:att6 = {0.00547518298963546}
-	root:myGlobals:Attenuators:att7 = {0.00243389583698184}
-	root:myGlobals:Attenuators:att8 = {0.000833797438995085}
-	root:myGlobals:Attenuators:att9 = {0.000314495412044638}
-	root:myGlobals:Attenuators:att10 = {6.18092704241135e-05}
-	root:myGlobals:Attenuators:att11 = {1.1150347032482e-06}
+// 	root:myGlobals:Attenuators:att0 = {1}
+//	root:myGlobals:Attenuators:att1 = {0.493851474862975}
+//	root:myGlobals:Attenuators:att2 = {0.172954232066555}
+//	root:myGlobals:Attenuators:att3 = {0.0730333204657658}
+//	root:myGlobals:Attenuators:att4 = {0.0338860321760628}
+//	root:myGlobals:Attenuators:att5 = {0.0123806637881081}
+//	root:myGlobals:Attenuators:att6 = {0.00547518298963546}
+//	root:myGlobals:Attenuators:att7 = {0.00243389583698184}
+//	root:myGlobals:Attenuators:att8 = {0.000833797438995085}
+//	root:myGlobals:Attenuators:att9 = {0.000314495412044638}
+//	root:myGlobals:Attenuators:att10 = {6.18092704241135e-05}
+//	root:myGlobals:Attenuators:att11 = {1.1150347032482e-06}
+	
+	// [davidm] 07/06/2013 new attenuators
+//	root:myGlobals:Attenuators:att0 = {1, 1, 1, 1, 1}
+//	root:myGlobals:Attenuators:att1 = {0.4851907714365690, 0.4690588000946720, 0.4476524578618430, 0.4242186524985810, 0.4064643249758360}
+//	root:myGlobals:Attenuators:att2 = {0.1749832052428250, 0.1533207360856960, 0.1334775844094730, 0.1193958669543340, 0.1076837185558930}
+//	root:myGlobals:Attenuators:att3 = {0.0740102935513494, 0.0607995713605108, 0.0502589403877112, 0.0423552403243808, 0.0367911673784652}
+//	root:myGlobals:Attenuators:att4 = {0.0338662640088968, 0.0263695325927806, 0.0206752375996348, 0.0163968351793478, 0.0136583575078807}
+//	root:myGlobals:Attenuators:att5 = {0.0129316048762597, 0.0092424708747183, 0.0068177214056475, 0.0050849439569495, 0.0040301873995815}
+//	root:myGlobals:Attenuators:att6 = {0.0057659775936329, 0.0038824010252366, 0.0027324743768650, 0.0019309536935497, 0.0014790015704855}
+//	root:myGlobals:Attenuators:att7 = {0.0025701666721922, 0.0016193521455181, 0.0010771127904439, 0.0007309304781609, 0.0005396690171419}
+//	root:myGlobals:Attenuators:att8 = {0.0008805002197972, 0.0005182454618666, 0.0003263459159077, 0.0002160554020075, 0.0001648875531385}
+//	root:myGlobals:Attenuators:att9 = {0.0003360142267874, 0.0001881638518150, 0.0001174132554013, 0.0000835561000000, 0.0000673555000000}
+//	root:myGlobals:Attenuators:att10 = {0.0000724312302049, 0.0000424158975402, 0.0000320186000000, 0.0000281932718010, 0.0000260300000000}
+//	root:myGlobals:Attenuators:att11 = {0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032}
+
+	// [davidm] 06/09/2013 new attenuators
+//	root:myGlobals:Attenuators:att0 = {1, 1, 1, 1, 1, 1, 1, 1, 1}
+//	root:myGlobals:Attenuators:att1 = {0.5015120154857073, 0.4851907391153646, 0.4690588000946720, 0.4476524578618430, 0.4242186524985810, 0.4064643249758360, 0.3915825187818079, 0.383155417316738, 0.3691476334100751}
+//	root:myGlobals:Attenuators:att2 = {0.1879599996486973, 0.1749831534458974, 0.1533207360856960, 0.1334775844094730, 0.1193958669543340, 0.1076837185558930, 0.146780838516843, 0.09070379140896381, 0.08469695381015514}
+//	root:myGlobals:Attenuators:att3 = {0.0830522756360301, 0.07401023541505114, 0.0607995713605108, 0.0502589403877112, 0.0423552403243808, 0.0367911673784652, 0.09732611681072782, 0.02850777154582489, 0.02512618567498705}
+//	root:myGlobals:Attenuators:att4 = {0.04126295911722724, 0.03386620335224088, 0.0263695325927806, 0.0206752375996348, 0.0163968351793478, 0.0136583575078807, 0.07443250666451248, 0.009988519969243473, 0.008641262326618814}
+//	root:myGlobals:Attenuators:att5 = {0.01585079879042115, 0.01293154290526562, 0.0092424708747183, 0.0068177214056475, 0.0050849439569495, 0.0040301873995815, 0.02056800794367422, 0.00272693052867672, 0.002208661232545322}
+//	root:myGlobals:Attenuators:att6 = {0.007385904293214549, 0.005754264308460257, 0.0038824010252366, 0.0027324743768650, 0.0019309536935497, 0.0014790015704855, 0.007278118324039542, 0.0009569347878502309, 0.0007197877270150088}
+//	root:myGlobals:Attenuators:att7 = {0.003442395510483513, 0.002583673513066073, 0.0016193521455181, 0.0010771127904439, 0.0007309304781609, 0.0005396690171419, 0.002711562994361441, 0.0003282078764354223, 0.0002481189736315548}
+//	root:myGlobals:Attenuators:att8 = {0.001252411237481238, 0.0008803260406144675, 0.0005182454618666, 0.0003263459159077, 0.0002160554020075, 0.0001648875531385, 0.0007746800906738829, 9.65128643341844e-05, 6.892342768233427e-05}
+//	root:myGlobals:Attenuators:att9 = {0.0004894124083498131, 0.0003406723119465761, 0.0001881638518150, 0.0001174132554013, 0.0000835561000000, 0.0000673555000000, 0.0003052956213536012, 4.18080108490353e-05, 3.065566944060116e-05}
+//	root:myGlobals:Attenuators:att10 = {0.0001094104254873829, 7.344149189383619e-05, 0.0000424158975402, 0.0000320186000000, 0.0000281932718010, 0.0000260300000000, 0.000127680099859085, 2.112291309365988e-05, 1.57968144929931e-05}
+//	root:myGlobals:Attenuators:att11 = {9.569103942045486e-06, 1.66985e-06, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 6.459382963805258e-05, 1.168373206643029e-05, 9.114523175100284e-06}
+
+	// [davidm] 17/04/2015 new attenuators
+	root:myGlobals:Attenuators:att0 = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	root:myGlobals:Attenuators:att1 = {0.5833466663785198, 0.5445353434014982, 0.5015120154857073, 0.4851907391153646, 0.4690588000946720, 0.4476524578618430, 0.4242186524985810, 0.4064643249758360, 0.3915864257771861, 0.383155417316738, 0.3691476334100751}
+	root:myGlobals:Attenuators:att2 = {0.2639110962334992, 0.2212212220703998, 0.1879599996486973, 0.1749831534458974, 0.1533207360856960, 0.1334775844094730, 0.1193958669543340, 0.1076837185558930, 0.0978267819972345, 0.09070379140896381, 0.08469695381015514}
+	root:myGlobals:Attenuators:att3 = {0.1372597677635557, 0.1076917120035716, 0.0830522756360301, 0.07401023541505114, 0.0607995713605108, 0.0502589403877112, 0.0423552403243808, 0.0367911673784652, 0.0324241778063643, 0.02850777154582489, 0.02512618567498705}
+	root:myGlobals:Attenuators:att4 = {0.07647885821139964, 0.05518044441708623, 0.04126295911722724, 0.03386620335224088, 0.0263695325927806, 0.0206752375996348, 0.0163968351793478, 0.0136583575078807, 0.01239678492410995, 0.009988519969243473, 0.008641262326618814}
+	root:myGlobals:Attenuators:att5 = {0.03658821871096959, 0.02408611980401762, 0.01585079879042115, 0.01293154290526562, 0.0092424708747183, 0.0068177214056475, 0.0050849439569495, 0.0040301873995815, 0.003425615799080442, 0.00272693052867672, 0.002208661232545322}
+	root:myGlobals:Attenuators:att6 = {0.02005392374000794, 0.0120842415105319, 0.007385904293214549, 0.005754264308460257, 0.0038824010252366, 0.0027324743768650, 0.0019309536935497, 0.0014790015704855, 0.001212175587771235, 0.0009569347878502309, 0.0007197877270150088}
+	root:myGlobals:Attenuators:att7 = {0.0108062446668512, 0.006010377629875024, 0.003442395510483513, 0.002583673513066073, 0.0016193521455181, 0.0010771127904439, 0.0007309304781609, 0.0005396690171419, 0.0004516126724145509, 0.0003282078764354223, 0.0002481189736315548}
+	root:myGlobals:Attenuators:att8 = {0.004805949253881572, 0.002382365795428234, 0.001252411237481238, 0.0008803260406144675, 0.0005182454618666, 0.0003263459159077, 0.0002160554020075, 0.0001648875531385, 0.0001290234992670594, 9.65128643341844e-05, 6.892342768233427e-05}
+	root:myGlobals:Attenuators:att9 = {0.002296371755067186, 0.001040815202883871, 0.0004894124083498131, 0.0003406723119465761, 0.0001881638518150, 0.0001174132554013, 0.0000835561000000, 0.0000673555000000, 5.084719467062561e-05, 4.18080108490353e-05, 3.065566944060116e-05}
+	root:myGlobals:Attenuators:att10 = {0.0006618554731030182, 0.0002589844830011295, 0.0001094104254873829, 7.344149189383619e-05, 0.0000424158975402, 0.0000320186000000, 0.0000281932718010, 0.0000260300000000, 2.126520801155025e-05, 2.112291309365988e-05, 1.57968144929931e-05}
+	root:myGlobals:Attenuators:att11 = {4.646119982685115e-05, 1.701737969038749e-05, 9.569103942045486e-06, 1.66985e-06, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 0.0000011150347032, 1.075814653208927e-05, 1.168373206643029e-05, 9.114523175100284e-06}
 
 End
 
@@ -976,9 +1076,12 @@ Function/S ReducedDataFileList(ctrlName)
 	for(ii=(num-1);ii>=0;ii-=1)
 		item = StringFromList(ii, list  ,";")
 		//simply remove all that are not raw data files (SA1 SA2 SA3)
-		if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
-			if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
-				newlist += item + ";"
+		// hdf and other file removed on 18th May 2017 by David and Jitendra
+		if( !stringmatch(item,"*.HDF") && !stringmatch(item,"*.XML") && !stringmatch(item,"*.CSV") && !stringmatch(item,"*.PDF") && !stringmatch(item,"*.BMP") && !stringmatch(item,"*.MAS") && !stringmatch(item,"*.DB"))
+			if( !stringmatch(item,"*.SA1*") && !stringmatch(item,"*.SA2*") && !stringmatch(item,"*.SA3*") )
+				if( !stringmatch(item,".*") && !stringmatch(item,"*.pxp") && !stringmatch(item,"*.DIV"))		//eliminate mac "hidden" files, pxp, and div files
+					newlist += item + ";"
+				endif
 			endif
 		endif
 	endfor
@@ -1183,7 +1286,7 @@ function CatVSTable_SortFunction(ctrlName) // added by [davidm]
 	Wave/Z GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"
 	//For ANSTO
 	Wave GSSD = $"root:myGlobals:CatVSHeaderInfo:SSD"
-	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
+	//Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
 	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
 	
 	// take out the "not-RAW-Files"
@@ -1200,51 +1303,51 @@ function CatVSTable_SortFunction(ctrlName) // added by [davidm]
 	strswitch (ctrlName)
 	
 		case "SortFilenamesButton":
-			Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortLabelsButton":
-			Sort GLabels, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GLabels, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortDateAndTimeButton":
-			Sort GDateTime, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GDateTime, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortSSDButton":
-			Sort GSSD, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GSSD, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortSDDButton":
-			Sort GSDD, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GSDD, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortLambdaButton":
-			Sort GLambda, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GLambda, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortCountTimButton":
-			Sort GCntTime, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GCntTime, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortTotalCountsButton":
-			Sort GTotCnts, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GTotCnts, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortCountRateButton":
-			Sort GCntRate, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GCntRate, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortMonitorCountsButton":
-			Sort GMonCnts, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GMonCnts, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortTransmissionButton":
-			Sort GTransmission, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GTransmission, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 			
 		case "SortThicknessButton":
-			Sort GThickness, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GSICS, GHDF
+			Sort GThickness, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens, GRunNumber, GIsTrans, GRot, GTemp, GField, GMCR, GHDF
 			break
 	
 	endswitch

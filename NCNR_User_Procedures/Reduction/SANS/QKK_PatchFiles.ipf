@@ -203,12 +203,12 @@ Function/S GetValidPatchPopupList()
 			val=str2num(item)
 			//make a three character string of the run number
 			if(val<10)
-				numStr = "00"+num2str(val)
+				numStr = "00"+item
 			else
 				if(val<100)
-					numStr = "0"+num2str(val)
+					numStr = "0"+item
 				else
-					numStr = num2str(val)
+					numStr = item
 				Endif
 			Endif
 			runList += ListMatch(newList,"*"+numStr+"*",";")

@@ -187,6 +187,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 			Execute/P "INSERTINCLUDE \"QKK_Includes_ANSTO\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")
+			Execute/P ("Init_MainUSANS()")					 
 			Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
 
 			// change the facility label, disable the others		

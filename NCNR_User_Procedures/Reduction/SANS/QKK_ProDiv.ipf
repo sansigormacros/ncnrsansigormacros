@@ -392,7 +392,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			if(strlen(fileStr) > 0)
 				proto[1] = fileStr
 #if (exists("QUOKKA")==6)
-				err = CheckDIVBeamCenter(fileStr,39,96)
+				err = CheckDIVBeamCenter(fileStr,34,96)
 #else
 				err = CheckDIVBeamCenter(str,105,65)
 #endif
@@ -406,7 +406,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			fileStr = RunNumberListToFilenameList(str) //nha CheckDIVBeamCenter and ExecuteProtocol require full filename with no path.
 			if(strlen(str) > 0)
 #if (exists("QUOKKA")==6)
-				err = CheckDIVBeamCenter(fileStr,39,96)
+				err = CheckDIVBeamCenter(fileStr,34,96)
 #else
 				err = CheckDIVBeamCenter(str,105,65)
 #endif
@@ -672,7 +672,7 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	String str
 	Variable xc,yc
 	
-	Variable err,ii,num,tmpX,tmpY,badCtr,tol=5
+	Variable err,ii,num,tmpX,tmpY,badCtr,tol=10
 	String fileStr,pathStr
 	
 	PathInfo catPathName

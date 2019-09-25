@@ -89,6 +89,7 @@ Proc InitProtocolPanel()
 	String/G root:myGlobals:Protocols:gAbsStr="ask"
 	String/G root:myGlobals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;"
 	String/G root:myGlobals:Protocols:gDRK="DRK=none,DRKMODE=0,"
+	Variable/G root:myGlobals:Protocols:gScaleEMP = 1.0
 	
 	SetDataFolder root:
 	
@@ -184,7 +185,7 @@ Function ResetToSavedProtocol(nameStr)
 	//SetDataFolder root:myGlobals:Protocols		//on windows, data folder seems to get reset (erratically) to root: 
 	Wave/T w=$("root:myGlobals:Protocols:" + nameStr)
 	
-	String fullPath="",comma=",",list="",nameList="",PathStr="",item=""
+	String fullPath="",comma=",",list="",nameList="",PathStr="",item="",strValue=""
 	Variable ii=0,numItems,checked,specialProtocol
 	
 	if((cmpstr(nameStr,"Base")==0) || (cmpstr(nameStr,"DoAll")==0))
@@ -214,6 +215,13 @@ Function ResetToSavedProtocol(nameStr)
 	//set the global string to display and checkbox
 	String/G root:myGlobals:Protocols:gEMP = nameList
 	CheckBox prot_check_1 win=ProtocolPanel,value=checked
+	
+	//empty scale 
+	Variable scaleFactor = str2num(w[7])
+	If (scaleFactor == NaN)
+		scaleFactor = 1.0
+	Endif
+	Variable/G root:myGlobals:Protocols:gScaleEMP = scaleFactor
 	
 	//DIV file
 	checked = 1
@@ -495,9 +503,9 @@ Function MakeProtocolFromPanel(w)
 	SVAR drkStr=root:myGlobals:Protocols:gDRK
 	w[6] = drkStr
 	
-	//w[7]
-	//currently unused
-	w[7] = ""
+	//w[7] = empty scale factor
+	NVAR scale = root:myGlobals:Protocols:gScaleEMP
+	w[7] = num2str(scale)
 	
 	return(0)
 End
@@ -826,7 +834,7 @@ Window ProtocolPanel()
 	CheckBox prot_check,pos={5,75},size={74,14},title="Background"
 	CheckBox prot_check,help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check,value= 1
-	Button pick_bgd,pos={114,75},size={100,20},proc=PickBGDButton,title="set BGD file"
+	Button pick_bgd,pos={105,75},size={100,20},proc=PickBGDButton,title="set BGD file"
 	Button pick_bgd,help={"This button will set the file selected in the File Catalog table to be the background file."}
 	Button recallProt,pos={7,406},size={107,20},proc=RecallProtocolButton,title="Recall Protocol"
 	Button recallProt,help={"Resets the panel to the file choices in  a previously saved protocol"}
@@ -845,11 +853,11 @@ Window ProtocolPanel()
 	CheckBox prot_check_3,pos={9,268},size={43,14},title="Mask"
 	CheckBox prot_check_3,help={"If checked, the specified mask file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_3,value= 1
-	Button pick_emp,pos={113,125},size={100,20},proc=PickEMPButton,title="set EMP file"
+	Button pick_emp,pos={105,125},size={100,20},proc=PickEMPButton,title="set EMP file"
 	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
-	Button pick_DIV,pos={114,173},size={100,20},proc=PickDIVButton,title="set DIV file"
+	Button pick_DIV,pos={105,173},size={100,20},proc=PickDIVButton,title="set DIV file"
 	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button pick_MASK,pos={119,266},size={100,20},proc=PickMASKButton,title="set MASK file"
+	Button pick_MASK,pos={105,266},size={100,20},proc=PickMASKButton,title="set MASK file"
 	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
 	SetVariable bgdStr,pos={7,98},size={250,15},title="file:"
 	SetVariable bgdStr,help={"Filename of the background file(s) to be used in the data reduction"}
@@ -857,6 +865,9 @@ Window ProtocolPanel()
 	SetVariable empStr,pos={8,148},size={250,15},title="file:"
 	SetVariable empStr,help={"Filename of the empty cell file(s) to be used in the data reduction"}
 	SetVariable empStr,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gEMP
+	SetVariable empScale,pos={210,125},size={80,15},title="scale:"
+	SetVariable empScale,help={"Scale the empty cell file(s) to be used in the reduction"}
+	SetVariable empScale,limits={-Inf,Inf,0},value=root:myGlobals:Protocols:gScaleEMP
 	SetVariable divStr,pos={9,197},size={250,15},title="file:"
 	SetVariable divStr,help={"Filename of the detector sensitivity file to be used in the data reduction"}
 	SetVariable divStr,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gDIV
@@ -868,12 +879,12 @@ Window ProtocolPanel()
 	CheckBox prot_check_4,pos={5,30},size={53,14},title="Sample"
 	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_4,value= 1
-	Button pick_sam,pos={115,28},size={100,20},proc=PickSAMButton,title="set SAM file"
+	Button pick_sam,pos={105,28},size={100,20},proc=PickSAMButton,title="set SAM file"
 	Button pick_sam,help={"This button will set the file selected in the File Catalog table to be the sample file"}
 	SetVariable samStr,pos={6,50},size={250,15},title="file:"
 	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
 	SetVariable samStr,limits={-Inf,Inf,0},value= root:myGlobals:Protocols:gSAM
-	Button pick_ABS,pos={115,220},size={110,20},proc=SetABSParamsButton,title="set ABS params"
+	Button pick_ABS,pos={100,220},size={110,20},proc=SetABSParamsButton,title="set ABS params"
 	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}
 	CheckBox prot_check_9,pos={7,222},size={59,14},title="Absolute"
 	CheckBox prot_check_9,help={"If checked, absolute calibration will be included in the data reduction. If the parameter list is \"ask\", then the user will be prompted for absolue parameters"}
@@ -886,7 +897,7 @@ Window ProtocolPanel()
 	CheckBox prot_check_5,pos={6,311},size={56,14},title="Average"
 	CheckBox prot_check_5,help={"If checked, the specified averaging will be performed at the end of the data reduction."}
 	CheckBox prot_check_5,value= 1
-	Button pick_AVE,pos={108,313},size={150,20},proc=SetAverageParamsButtonProc,title="set AVERAGE params"
+	Button pick_AVE,pos={80,313},size={150,20},proc=SetAverageParamsButtonProc,title="set AVERAGE params"
 	Button pick_AVE,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
 	SetVariable aveStr,pos={9,336},size={250,15},title="parameters:"
 	SetVariable aveStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
@@ -1596,6 +1607,16 @@ Function ExecuteProtocol(protStr,samStr)
 	msgStr = "Select empty cell data"
 	activeType = "EMP"
 	do
+		// Update the empty scale factor
+		Variable scale = 1
+		if(cmpstr(prot[7],"") != 0)
+			scale = str2num(prot[7])
+			if (scale == NaN)
+				scale = 1
+			endif
+		endif
+		Add_scale_to_work(activeType, scale)
+		
 		if(cmpstr(prot[1],"ask") == 0)
 			err = LoadRawSANSData(msgStr)		//will prompt for file
 			if(err)

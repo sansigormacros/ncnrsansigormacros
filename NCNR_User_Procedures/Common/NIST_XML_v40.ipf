@@ -2,9 +2,8 @@
 #pragma version=1.00
 #pragma IgorVersion=6.1
 
-
 //#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
-#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
+#if ( exists("XmlOpenFile") )
 
 #include "cansasXML", version >= 1.10
 
@@ -1085,6 +1084,10 @@ End
 //	    RETURN(-6)
 //	END
 
+	Function XMLMissingAbort()
+		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+	 	RETURN(-6)
+	End
 
 	Function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 		String filestr,outStr
@@ -1103,12 +1106,40 @@ End
 		return("")
 	end		
 
+	Function XmlOpenFile(fileName)
+		String fileName
+		
+		Return XMLMissingAbort()
+	End
+	
+	Function XmlCloseFile(fileid, arg)
+		Variable fileid, arg
+		
+		Return XMLMissingAbort()
+	End
+
+	Function XMLWaveFmXpath(fileid, arg1, arg2, arg3)
+		Variable fileid
+		String arg1, arg2, arg3
+		
+		Return XMLMissingAbort()
+	End
+
+	Function XMLListXPath(fileid, arg1, arg2)
+		Variable fileid
+		String arg1, arg2
+		
+		Return XMLMissingAbort()
+	End
+	
 	Function WriteNISTXML(fileName, NISTfile)
-		String fileName, NISTfile
+		String fileName
+		Struct NISTXMLfile &NISTfile
+		
 		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 	 	RETURN(-6)
 	End
-	
+
 	Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 		String type,fullpath
 		Variable dialog		//=1 will present dialog for name

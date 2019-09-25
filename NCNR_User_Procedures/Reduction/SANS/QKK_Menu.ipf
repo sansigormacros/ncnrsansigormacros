@@ -53,6 +53,9 @@ Menu "SANS"
 //	End
 End
 
+Menu "USANS"
+	"Desmear USANS Data",Desmear()
+End
 Function SANSHelp()
 	DisplayHelpTopic/Z/K=1 "SANS Data Reduction Tutorial"
 	if(V_flag !=0)

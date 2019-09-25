@@ -250,6 +250,7 @@ Function CorrectMode_1()
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
 	WAVE cor_data=$"root:Packages:NIST:COR:data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	NVAR emp_scale=$"root:Packages:NIST:EMP:scale"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -314,7 +315,9 @@ Function CorrectMode_1()
 
 	//do the subtraction
 	fsam=1
+
 	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+	femp *= emp_scale			//user scale of the empty data
 	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
 	cor1 = fsam*sam_data/sam_attenFactor - fbgd*bgd_temp/bgd_attenFactor
 	cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
@@ -423,6 +426,7 @@ Function CorrectMode_3()
 	WAVE/T emp_text=$"root:Packages:NIST:EMP:textread"
 	WAVE cor_data=$"root:Packages:NIST:COR:data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	NVAR emp_scale=$"root:Packages:NIST:EMP:scale"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -473,6 +477,7 @@ Function CorrectMode_3()
 	//do the sam-bgd subtraction,  deposit result in cor1
 	fsam = 1
 	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+	femp *= emp_scale			// user defined scale factor
 	
 	cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
 	cor1 *= noadd_emp		//zeros out regions where arrays do not overlap, one otherwise
@@ -548,6 +553,7 @@ Function CorrectMode_11()
 	WAVE/T drk_text=$"root:Packages:NIST:DRK:textread"
 	WAVE cor_data=$"root:Packages:NIST:COR:data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	NVAR emp_scale=$"root:Packages:NIST:EMP:scale"
 	
 	//get sam and bgd attenuation factors
 	String fileStr=""
@@ -620,6 +626,7 @@ Function CorrectMode_11()
 	//do the subtraction
 	fsam=1
 	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+	femp *= emp_scale			//user defined scale factor		
 	fbgd = tmonsam/tmonbgd	//this should be ==1 since normalized files
 	cor1 = fsam*sam_data/sam_attenFactor
 	cor1 -= (tsam/temp)*(femp*emp_temp/emp_attenFactor - fbgd*bgd_temp/bgd_attenFactor)
@@ -742,6 +749,7 @@ Function CorrectMode_13()
 	WAVE/T drk_text=$"root:DRK:textread"
 	WAVE cor_data=$"root:Packages:NIST:COR:data"
 	WAVE/T cor_text=$"root:Packages:NIST:COR:textread"
+	NVAR emp_scale=$"root:Packages:NIST:EMP:scale"
 	
 	//get sam and bgd attenuation factors (DRK irrelevant)
 	String fileStr=""
@@ -799,6 +807,7 @@ Function CorrectMode_13()
 	//do the sam-bgd subtraction,  deposit result in cor1
 	fsam = 1
 	femp = tmonsam/tmonemp		//this should be ==1 since normalized files
+	femp *= emp_scale			//user defined scale factor
 	
 	cor1 = fsam*sam_data/sam_AttenFactor - femp*(tsam/temp)*emp_temp/emp_AttenFactor
 	cor1 += drk_temp - drk_temp/sam_attenFactor
