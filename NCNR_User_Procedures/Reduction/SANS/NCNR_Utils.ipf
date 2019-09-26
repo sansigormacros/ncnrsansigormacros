@@ -1446,7 +1446,8 @@ Proc MakeNG3AttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	//do explicitly to avoid data folder problems, redundant, but it must work without fail
-	Variable num=10		//10 needed for tables after June 2007
+//	Variable num=10		//10 needed for tables after June 2007
+	Variable num=11		//11 needed for tables after Sep 2019
 
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3att0
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3att1
@@ -1607,8 +1608,6 @@ End
 
 // xxxx JAN 2013 -- Using John's measured values from 23 JAN 2013
 //
-// xxxx there are 13 discrete wavelengths in NGBLambda = 13 (only 10 used for 30m)
-// xxxx there are only 9 attenuators, not 10 as in the 30m
 //
 // -- updated MAY 2013 --
 // K. Weigandt's calibration 
@@ -1619,7 +1618,6 @@ Proc MakeNGBAttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
-//	Variable num=13		//13 needed for tables to cover 3A - 30A
 	Variable num=12		//12 needed for tables to cover 3A - 30A
 	
 	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt0
@@ -1647,7 +1645,7 @@ Proc MakeNGBAttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt9_err
 	Make/O/N=(num) root:myGlobals:Attenuators:NGBatt10_err	
 	
-	//NGB wave has 13 elements, the transmission of att# at the wavelengths 
+	//NGB wave has 12 elements, the transmission of att# at the wavelengths 
 	//lambda = 3A to 30A
 	// note that some of the higher attenuations and ALL of the 30A data is interpolated
 	// none of these values are expected to be used in reality since the flux would be too low in practice
@@ -1656,7 +1654,7 @@ Proc MakeNGBAttenTable()
 
 
 // new calibrations MAY 2013
-	root:myGlobals:Attenuators:NGBatt0 = {1,1,1,1,1,1,1,1,1,1,1,1,1}	
+	root:myGlobals:Attenuators:NGBatt0 = {1,1,1,1,1,1,1,1,1,1,1,1}	
 	root:myGlobals:Attenuators:NGBatt1 = {0.512,0.474,0.418,0.392,0.354,0.325,0.294,0.27,0.255,0.222,0.185,0.155}
  	root:myGlobals:Attenuators:NGBatt2 = {0.268,0.227,0.184,0.16,0.129,0.108,0.0904,0.0777,0.0689,0.0526,0.0372,0.0263}
   	root:myGlobals:Attenuators:NGBatt3 = {0.135,0.105,0.0769,0.0629,0.0455,0.0342,0.0266,0.0212,0.0178,0.0117,0.007,0.00429}
@@ -1670,7 +1668,7 @@ Proc MakeNGBAttenTable()
 
   // percent errors as measured, MAY 2013 values
   // zero error for zero attenuators, large values put in for unknown values (either 2% or 5%)
-	root:myGlobals:Attenuators:NGBatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+	root:myGlobals:Attenuators:NGBatt0_err = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 	root:myGlobals:Attenuators:NGBatt1_err = {0.174,0.256,0.21,0.219,0.323,0.613,0.28,0.135,0.195,0.216,0.214,19.8}
 	root:myGlobals:Attenuators:NGBatt2_err = {0.261,0.458,0.388,0.419,0.354,0.668,0.321,0.206,0.302,0.305,0.315,31.1}
 	root:myGlobals:Attenuators:NGBatt3_err = {0.319,0.576,0.416,0.448,0.431,0.688,0.37,0.247,0.368,0.375,0.41,50.6}
@@ -1683,7 +1681,7 @@ Proc MakeNGBAttenTable()
 	root:myGlobals:Attenuators:NGBatt10_err = {0.892,0.921,0.715,0.845,1.09,5,5,5,5,5,5,5}  
 
 
-//// (old) New calibration, Jan 2013 John Barker
+//// (old) calibration, Jan 2013 John Barker
 //	root:myGlobals:Attenuators:NGBatt0 = {1,1,1,1,1,1,1,1,1,1,1,1,1}	
 //	root:myGlobals:Attenuators:NGBatt1 = {0.522,0.476,0.42007,0.39298,0.36996,0.35462,0.31637,0.29422,0.27617,0.24904,0.22263,0.18525,0.15}
 // 	root:myGlobals:Attenuators:NGBatt2 = {0.27046,0.21783,0.17405,0.15566,0.13955,0.1272,0.10114,0.087289,0.077363,0.063607,0.051098,0.0357,0.023}

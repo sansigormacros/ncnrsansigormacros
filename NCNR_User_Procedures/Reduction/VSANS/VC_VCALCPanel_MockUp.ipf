@@ -97,7 +97,7 @@ Proc DrawVCALC_Panel()
 	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
 	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:28
 
-	ValDisplay valDisp_a,pos={30,380},size={150,15},fstyle=1,title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+	ValDisplay valDisp_a,pos={30,380},size={200,15},fstyle=1,title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
 
 	SetDrawEnv fstyle= 1
 	DrawText 30,420,"Back"

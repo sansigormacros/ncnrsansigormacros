@@ -18,9 +18,17 @@ Function/WAVE V_MakePhiMatrix(qTotal,folderStr,detStr,folderPath)
 	Wave qTotal
 	String folderStr,detStr,folderPath
 
+	Variable xctr,yctr
+	
+	if(cmpstr(detStr,"B")==0)
+		//if "B", the center is already in pixels by definition, and x_pix, y_pix fields do not exist
+		xctr = V_getDet_beam_center_x(folderStr,detStr)
+		yctr = V_getDet_beam_center_y(folderStr,detStr)
+	else
+		xctr = V_getDet_beam_center_x_pix(folderStr,detStr)
+		yctr = V_getDet_beam_center_y_pix(folderStr,detStr)
+	endif
 
-	Variable xctr = V_getDet_beam_center_x_pix(folderStr,detStr)
-	Variable yctr = V_getDet_beam_center_y_pix(folderStr,detStr)
 
 	Duplicate/O qTotal,$(folderPath+":phi")
 	Wave phi = $(folderPath+":phi")
