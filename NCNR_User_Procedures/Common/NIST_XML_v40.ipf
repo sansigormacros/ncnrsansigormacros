@@ -4,7 +4,7 @@
 
 
 //#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
-#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
+#if( exists("XmlOpenFile") )
 
 #include "cansasXML", version >= 1.10
 

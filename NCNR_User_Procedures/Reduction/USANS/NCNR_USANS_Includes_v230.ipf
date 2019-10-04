@@ -52,3 +52,4 @@ End
 #include "PlotManager_v40"
 
 #include "NIST_NXcanSAS_v709"
+#include "WriteUSANSNXcanSAS"

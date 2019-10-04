@@ -41,7 +41,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 
 	destStr = "root:Packages:NIST:"+type
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-	WAVE intw = $(destStr + ":integersRead")
+//	WAVE intw = $(destStr + ":integersRead")		// SRK_0920
 	WAVE rw = $(destStr + ":realsRead")
 	WAVE/T textw=$(destStr + ":textRead")
 	WAVE qvals =$(destStr + ":qval")
@@ -451,6 +451,95 @@ Function WriteProcess(fileID,parentBase,base,processName,processNote)
 	Make/O/T/N=1 $(processBase + ":note0") = {processNote}
 	CreateStrNxCansas(fileID,processParent,"","note0",$(processBase + ":note0"),empty,empty)
 End
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Methods related to NSORT
+
+
+//these canSANs NSORT files are only necessary for SANS reduction, not USANS or VSANS. as such, 
+// move them to the SANS-specific NXcanSAS file. Conditional compilation did not work since I can't access
+// user-defined objects through #if
+//
+// SRK 092019
+//
+
+Function WriteNSORTedNXcanSASFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
+	Wave qw,iw,sw,res
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
+	
+	Variable err=0,refNum,numCols,dialog=1,useRes=0
+	String fullPath="",formatStr="",process
+	
+	//check each wave - else REALLY FATAL error when writing file
+	If(!(WaveExists(qw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(iw)))
+		err = 1
+		return err
+	Endif
+	If(!(WaveExists(sw)))
+		err = 1
+		return err
+	Endif
+	if(WaveExists(res))
+		useRes = 1
+	endif
+	
+	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
+	if(NVAR_Exists(useTable) && useTable==1)
+		SVAR str=root:myGlobals:CombineTable:SaveNameStr	//messy, but pass in as a global
+		fullPath = str
+		dialog=0
+	endif
+	
+	NewDataFolder/O/S root:Packages:NIST:NSORT
+	SetDataFolder root:Packages:NIST:NSORT
+	
+	process = CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+	Make/O/T/N=1 processNote = process
+	
+	Variable pts = numpnts(qw)
+	Make/O/N=(pts) qval = qw
+	Make/O/N=(pts) aveint = iw
+	Make/O/N=(pts) sigave = sw
+	if (useRes)
+		Make/O/N=(dimsize(res,0)) SigmaQ = res[p][0]
+		Make/O/N=(dimsize(res,0)) QBar = res[p][1]
+		Make/O/N=(dimsize(res,0)) fSubS = res[p][2]
+	Else
+		Make/O/N=(pts) SigmaQ = 0
+		Make/O/N=(pts) QBar = 0
+		Make/O/N=(pts) fSubS = 0
+	EndIf
+	
+	Make/O/T/N=11 textRead
+	textRead[6] = firstfileName
+	textRead[0] = "Combined data"
+	
+	Make/O/N=52 realsRead = 0
+	
+	WriteNxCanSAS1D("NSORT",fullpath,dialog)
+	
+End
+
+
+Function/T CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
+	Variable norm12,norm23,norm34
+	String process
+	String processFormat = "COMBINED FILE CREATED: %s - NSORT-ed %s\t+ %s\t+ %s\t+%s, normalized to %s, multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\t multiplicative factor 3-4 = %12.8g"
+	
+	sprintf process,processFormat,date(),firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34
+	return process
+End
+
+//
+
 
 //
 ///////////////////////////////////////////////////////////////////////////

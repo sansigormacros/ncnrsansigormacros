@@ -438,13 +438,13 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	String apertureParent = instrParent + "sasaperture/"
 	HDF5OpenGroup /Z fileID, apertureParent, groupID
 	HDF5LoadData /O/Z/N=xg fileID, apertureParent + "x_gap"
-	Wave xg = $(loadDir + ":xg")
+	Wave/Z xg = $(loadDir + ":xg")
 	
 	// SAScollimation
 	String collimationParent = instrParent + "sascollimation/"
 	HDF5OpenGroup /Z fileID, collimationParent, groupID
 	HDF5LoadData /O/Z/N=cdis fileID, collimationParent + "distance"
-	Wave cdis = $(loadDir + ":cdis")
+	Wave/Z cdis = $(loadDir + ":cdis")
 	
 	// SASdetector
 	String detectorParent = instrParent + "sasdetector/"
@@ -463,12 +463,12 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 		HDF5LoadData /O/Z/N=bcy fileID, detectorParent + "beam_center_y"
 		HDF5LoadData /O/Z/N=xps fileID, detectorParent + "x_pixel_size"
 		HDF5LoadData /O/Z/N=xpy fileID, detectorParent + "y_pixel_size"
-		Wave/T detname = $(loadDir + ":detname")
-		Wave sdd = $(loadDir + ":sdd")
-		Wave bcx = $(loadDir + ":bcx")
-		Wave bcy = $(loadDir + ":bcy")
-		Wave xps = $(loadDir + ":xps")
-		Wave xpy = $(loadDir + ":xpy")
+		Wave/Z/T detname = $(loadDir + ":detname")
+		Wave/Z sdd = $(loadDir + ":sdd")
+		Wave/Z bcx = $(loadDir + ":bcx")
+		Wave/Z bcy = $(loadDir + ":bcy")
+		Wave/Z xps = $(loadDir + ":xps")
+		Wave/Z xpy = $(loadDir + ":xpy")
 		If (isMultiDetector)
 			ii += 1
 			sprintf detectorParent,instrParent + detectorUnformatted,ii
@@ -483,8 +483,8 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	HDF5OpenGroup /Z fileID, sourceParent, groupID
 	HDF5LoadData /O/Z/N=wvel fileID, sourceParent + "incident_wavelength"
 	HDF5LoadData /O/Z/N=wvels fileID, sourceParent + "incident_wavelength_spread"
-	Wave wvel = $(loadDir + ":wvel")
-	Wave wvels = $(loadDir + ":wvels")
+	Wave/Z wvel = $(loadDir + ":wvel")
+	Wave/Z wvels = $(loadDir + ":wvels")
 	
 	// SASsample
 	String sampleParent = parentBase + "sassample/"
@@ -492,24 +492,84 @@ Function LoadMetaData(fileID,loadDir,parentBase)
 	HDF5LoadData /O/Z/N=smplname fileID, sampleParent + "name"
 	HDF5LoadData /O/Z/N=smplthick fileID, sampleParent + "thickness"
 	HDF5LoadData /O/Z/N=smpltrans fileID, sampleParent + "transmission"
-	Wave/T smplname = $(loadDir + ":smplname")
-	Wave smplthick = $(loadDir + ":smplthick")
-	Wave smpltrans = $(loadDir + ":smpltrans")
+	Wave/T/Z smplname = $(loadDir + ":smplname")
+	Wave/Z smplthick = $(loadDir + ":smplthick")
+	Wave/Z smpltrans = $(loadDir + ":smpltrans")
+
+// error if any of these waves are not loaded from the metadata. Most of these are NOT present
+// in data that has been passed through NSORT.
+// -- need to check each one. there must be a better way to do this...
+	if(WaveExists(title))
+		textw[0] = title[0]
+	else
+		textw[0] = ""
+	endif
+	if(WaveExists(smplname))
+		textw[6] = smplname[0]
+	else
+		textw[6] = ""
+	endif	
+	if(WaveExists(detname))
+		textw[9] = detname[0]
+	else
+		textw[9] = ""
+	endif		
+	if(WaveExists(smplthick))
+		rw[4] = smplthick[0]
+	else
+		rw[4] = 0
+	endif			
+	if(WaveExists(smpltrans))
+		rw[5] = smpltrans[0]
+	else
+		rw[5] = 0
+	endif			
+	if(WaveExists(xps))
+		rw[10] = xps[0]
+	else
+		rw[10] = 0
+	endif			
+	if(WaveExists(xpy))
+		rw[13] = xpy[0]
+	else
+		rw[13] = 0
+	endif			
+	if(WaveExists(bcx))
+		rw[16] = bcx[0]
+	else
+		rw[16] = 0
+	endif						
+	if(WaveExists(bcy))
+		rw[17] = bcy[0]
+	else
+		rw[17] = 0
+	endif			
+	if(WaveExists(sdd))
+		rw[18] = sdd[0]
+	else
+		rw[18] = 0
+	endif			
+	if(WaveExists(xg))
+		rw[24] = xg[0]
+	else
+		rw[24] = 0
+	endif	
+	if(WaveExists(cdis))
+		rw[25] = cdis[0]
+	else
+		rw[25] = 0
+	endif	
+	if(WaveExists(wvel))
+		rw[26] = wvel[0]
+	else
+		rw[26] = 0
+	endif									
+	if(WaveExists(wvels))
+		rw[27] = wvels[0]
+	else
+		rw[27] = 0
+	endif	
 	
-	textw[0] = title[0]
-	textw[6] = smplname[0]
-	textw[9] = detname[0]
-	rw[4] = smplthick[0]
-	rw[5] = smpltrans[0]
-	rw[10] = xps[0]
-	rw[13] = xpy[0]
-	rw[16] = bcx[0]
-	rw[17] = bcy[0]
-	rw[18] = sdd[0]
-	rw[24] = xg[0]
-	rw[25] = cdis[0]
-	rw[26] = wvel[0]
-	rw[27] = wvels[0]
 	
 	KillWaves title,smplname,detname,smplthick,smpltrans,xps,xpy,bcx,bcy,sdd,xg,cdis,wvel,wvels
 	
@@ -550,81 +610,5 @@ end
 //
 ///////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////
-//
-// Methods related to NSORT
 
-Function WriteNSORTedNXcanSASFile(qw,iw,sw,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,[res])
-	Wave qw,iw,sw,res
-	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
-	Variable norm12,norm23,norm34
-	
-	Variable err=0,refNum,numCols,dialog=1,useRes=0
-	String fullPath="",formatStr="",process
-	
-	//check each wave - else REALLY FATAL error when writing file
-	If(!(WaveExists(qw)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(iw)))
-		err = 1
-		return err
-	Endif
-	If(!(WaveExists(sw)))
-		err = 1
-		return err
-	Endif
-	if(WaveExists(res))
-		useRes = 1
-	endif
-	
-	NVAR/Z useTable = root:myGlobals:CombineTable:useTable
-	if(NVAR_Exists(useTable) && useTable==1)
-		SVAR str=root:myGlobals:CombineTable:SaveNameStr	//messy, but pass in as a global
-		fullPath = str
-		dialog=0
-	endif
-	
-	NewDataFolder/O/S root:Packages:NIST:NSORT
-	SetDataFolder root:Packages:NIST:NSORT
-	
-	process = CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
-	Make/O/T/N=1 processNote = process
-	
-	Variable pts = numpnts(qw)
-	Make/O/N=(pts) qval = qw
-	Make/O/N=(pts) aveint = iw
-	Make/O/N=(pts) sigave = sw
-	if (useRes)
-		Make/O/N=(dimsize(res,0)) SigmaQ = res[p][0]
-		Make/O/N=(dimsize(res,0)) QBar = res[p][1]
-		Make/O/N=(dimsize(res,0)) fSubS = res[p][2]
-	Else
-		Make/O/N=(pts) SigmaQ = 0
-		Make/O/N=(pts) QBar = 0
-		Make/O/N=(pts) fSubS = 0
-	EndIf
-	
-	Make/O/T/N=11 textRead
-	textRead[6] = firstfileName
-	textRead[0] = "Combined data"
-	
-	Make/O/N=52 realsRead = 0
-	
-	WriteNxCanSAS1D("NSORT",fullpath,dialog)
-	
-End
-
-Function/T CreateNSORTProcess(firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
-	String firstFileName,secondFileName,thirdFileName,fourthFileName,normTo
-	Variable norm12,norm23,norm34
-	String process
-	String processFormat = "COMBINED FILE CREATED: %s - NSORT-ed %s\t+ %s\t+ %s\t+%s, normalized to %s, multiplicative factor 1-2 = %12.8g\t multiplicative factor 2-3 = %12.8g\t multiplicative factor 3-4 = %12.8g"
-	
-	sprintf process,processFormat,date(),firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34
-	return process
-End
-
-//
 ///////////////////////////////////////////////////////////////////////////
