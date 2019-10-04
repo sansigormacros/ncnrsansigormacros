@@ -1441,6 +1441,7 @@ End
 //
 // new calibration done June 2007, John Barker
 // new calibration for 3A only -- September 2019, John Barker
+// -- corrected values for  att #9 and att #10 27SEP2019
 //
 Proc MakeNG3AttenTable()
 
@@ -1475,7 +1476,7 @@ Proc MakeNG3AttenTable()
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3att10_err
 	
 	
-	//each wave has 10 elements, the transmission of att# at the wavelengths 
+	//each wave has 11 elements, the transmission of att# at the wavelengths 
 	//lambda = 4,5,6,7,8,10,12,14,17,20 (4 A and 20 A are extrapolated values)
 	Make/O/N=(num) root:myGlobals:Attenuators:ng3lambda={3,4,5,6,7,8,10,12,14,17,20}
 	
@@ -1490,8 +1491,8 @@ Proc MakeNG3AttenTable()
 	root:myGlobals:Attenuators:ng3att6 = {0.016244,0.00851048,0.005984,0.004104,0.002888,0.002029,0.001098,0.0007419,0.0005141,0.000272833,0.000150624}
 	root:myGlobals:Attenuators:ng3att7 = {0.0041106,0.00170757,0.001084,0.0006469,0.0004142,0.0002607,0.0001201,7.664e-05,4.06624e-05,1.77379e-05,7.30624e-06}
 	root:myGlobals:Attenuators:ng3att8 = {0.001029,0.000320057,0.0001918,0.0001025,6.085e-05,3.681e-05,1.835e-05,6.74002e-06,3.25288e-06,1.15321e-06,3.98173e-07}
-	root:myGlobals:Attenuators:ng3att9 = {0.00026462,6.27682e-05,3.69e-05,1.908e-05,1.196e-05,8.738e-06,6.996e-06,6.2901e-07,2.60221e-07,7.49748e-08,2.08029e-08}
-	root:myGlobals:Attenuators:ng3att10 = {0.00015214,1.40323e-05,8.51e-06,5.161e-06,4.4e-06,4.273e-06,1.88799e-07,5.87021e-08,2.08169e-08,4.8744e-09,1.08687e-09}
+	root:myGlobals:Attenuators:ng3att9 = {0.00026462,5.999e-05,3.3937e-05,1.6241e-05,8.9395e-06,5.1975e-06,2.0337e-06,5.9274e-07,2.6022e-07,7.4975e-08,2.1699e-08}
+	root:myGlobals:Attenuators:ng3att10 = {6.9169e-05,1.1244e-05,6.0046e-06,2.5733e-06,1.3133e-06,7.3386e-07,2.3137e-07,5.2128e-08,2.0817e-08,4.8744e-09,1.1826e-09}
   
   // percent errors as measured, May 2007 values
   	// new calibration for 3A only -- September 2019, John Barker

@@ -164,7 +164,7 @@ Function NCNR_SANSReductionLoader(itemStr)
 	SANSRed_WinList += "Trial_Configuration;Saved_Configurations;DataArithmeticPanel;DAPlotPanel;"
 	strswitch(itemStr)	// string switch
 	
-		case "Load NCNR SANS Reduction Macros":	
+		case "Load NCNR SANS Reduction Macros":
 			Execute/P "INSERTINCLUDE \"Includes_v520\""
 			Execute/P "COMPILEPROCEDURES "
 			Execute/P ("Initialize()")

@@ -182,6 +182,9 @@ Function V_CalculateAttenuationFactor(fname)
 
 	// set a fake wavelength for the interpolation or get out
 	strswitch(monoType)	// string switch
+		case "super_white_beam":		// TODO: this is not written into NICE
+			lambda = 6.2e6		//just for the interpolation
+			break
 		case "velocity_selector":	// execute if case matches expression
 			// use lambda as-is
 			break		// exit from switch
@@ -245,6 +248,9 @@ Function V_CalculateAttenuationError(fname)
 	print monoType
 	// set a fake wavelength for the interpolation or get out
 	strswitch(monoType)	// string switch
+		case "super_white_beam":		// TODO: this is not written into NICE
+			lambda = 6.2e6 		//just for the interpolation
+			break
 		case "velocity_selector":	// execute if case matches expression
 			// use lambda as-is
 			break		// exit from switch

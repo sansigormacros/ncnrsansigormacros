@@ -427,6 +427,11 @@ Function/S V_IdentifyMonochromatorType(fname)
 	
 	String typeStr=""
 
+// TODO: if unidentified (all are OUT), then it may be super_white_beam
+//	
+	typeStr = "super_white_beam"
+	
+	
 	if(cmpstr(V_getVelSelStatus(fname),"IN") == 0)
 		typeStr = "velocity_selector"
 	endif
@@ -438,6 +443,8 @@ Function/S V_IdentifyMonochromatorType(fname)
 	if(cmpstr(V_getCrystalStatus(fname),"IN") == 0)
 		typeStr = "crystal"
 	endif	
+
+
 	
 	return(typeStr)
 End

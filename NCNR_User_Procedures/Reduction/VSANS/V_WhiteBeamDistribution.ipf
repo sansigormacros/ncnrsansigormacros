@@ -25,15 +25,17 @@
 //
 // Integral = 30955 (cts*A) for middle fit
 //
+//
+
 
 //  White Beam:
 //  mean wavelength = 5.29687
-//  sqrt(mean wavelength^2) = 5.40513
+//  3rd moment/2nd moment = 5.741
 //
 //  Super White Beam:
 //  mean wavelength = 6.2033
-//  sqrt(mean wavelength^2) = 6.56277
-
+//  3rd moment/2nd moment = 7.93267
+//
 
 
 
@@ -150,21 +152,25 @@ End
 //
 Proc V_WB_Stats()
 
-	duplicate/O counts_white cts_W, intg_W
-	duplicate/O counts_super_white cts_SW intg_SW
+	duplicate/O counts_white cts_W, intg_W,intg_W3
+	duplicate/O counts_super_white cts_SW intg_SW,intg_SW3
 
 	Print "White Beam:"
 	intg_W = cts_W*white_wavelength
 	printf "mean wavelength = %g\r",sum(intg_W)/sum(cts_W)
 	intg_W = cts_W*white_wavelength^2
-	printf "sqrt(mean wavelength^2) = %g\r",sqrt( sum(intg_W)/sum(cts_W) )
+//	printf "sqrt(wavelength^2)/N = %g\r",sqrt( sum(intg_W)/sum(cts_W) )
+	intg_W3 = cts_W*white_wavelength^3
+	printf "3rd moment/2nd moment = %g\r",sum(intg_W3)/sum(intg_W)
 
 	Print
 	Print "Super White Beam:"
 	intg_SW = cts_SW*super_white_wavelength
 	printf "mean wavelength = %g\r",sum(intg_SW)/sum(cts_SW)
 	intg_SW = cts_SW*super_white_wavelength^2
-	printf "sqrt(mean wavelength^2) = %g\r",sqrt( sum(intg_SW)/sum(cts_SW) )
+//	printf "sqrt(wavelength^2)/N = %g\r",sqrt( sum(intg_SW)/sum(cts_SW) )
+	intg_SW3 = cts_SW*super_white_wavelength^3
+	printf "3rd moment/2nd moment = %g\r",sum(intg_SW3)/sum(intg_SW)
 		
 End
 

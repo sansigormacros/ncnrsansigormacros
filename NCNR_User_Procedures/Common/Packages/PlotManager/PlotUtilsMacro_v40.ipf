@@ -1085,12 +1085,22 @@ End
 
 // returns a shortened file name (26 characters max) so that the loader
 // won't try to create Igor objects that have names that are longer than 31
-// 
+//
+// if Igor 8+, use longer names (within reason)
+//
 Function/S ShortFileNameString(inStr)
 	String inStr
 
 	String outStr=""
-	Variable maxLength=25
+	Variable maxLength
+	
+	if(IgorVersion() < 8)
+		maxLength = 25
+	else
+		maxLength = 40
+	endif
+	
+	
 	Variable nameTooLong=0
 	String/G root:Packages:NIST:gShortNameStr = inStr[0,maxLength-1]
 	SVAR newStr = root:Packages:NIST:gShortNameStr

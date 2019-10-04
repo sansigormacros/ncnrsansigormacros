@@ -18,6 +18,8 @@ End
 #include "NIST_XML_v40"
 #include "USANS_SlitSmearing_v40"
 
+#include "V_PlotUtils2D_VSANS"			// basic loaders for the QxQyASCII exported VSANS data
+
 //
 //#include "NCNR_Utils"		//needed to load linear fits, mostly VAX file name junk
 //#include "LinearizedFits_v40"		//won't compile - needs NCNR_Utils (then starts a chain of dependencies...)
@@ -128,6 +130,7 @@ End
 #include "V_WB_GaussSpheres"
 #include "V_SWB_GaussSpheres"
 #include "V_WB_Beaucage"
+#include "V_SWB_Beaucage"
 
 
 #include "V_Utilities_Comparisons"

@@ -171,7 +171,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	if(isVCALC)
 		S2 = VC_sampleApertureDiam()*10		// convert cm to mm
 	else
-	// I'm trusting [cm] is in the RAW data file
+	// I'm trusting [cm] is in the RAW data file, or returned from the function if the date is prior to 5/22/19
 		S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [mm]
 	endif
 	
@@ -259,9 +259,17 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 // narrowSlit
 // narrowSlit_whiteBeam
 
+// TODO: this is a messy way to identify the super white beam condition, and it needs to be 
+// done in a cleaner fashion (through IdentityCollimation) once NICE catches up
+
+	String monoType = V_IdentifyMonochromatorType(folderStr)
+	
 
 	if(cmpstr(collimationStr,"pinhole") == 0)
-		//nothing to change	
+		if(cmpstr(monoType,"super_white_beam")==0)
+			lambdaWidth = 0
+		endif
+		//otherwise, nothing to change	
 	endif
 
 	if(cmpstr(collimationStr,"pinhole_whiteBeam") == 0)
@@ -320,7 +328,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	
 	//Start resolution calculation
 	a2 = S1*L2/L1 + S2*(L1+L2)/L1
-	q_small = 2.0*Pi*(BS-a2)*(1.0-lambdaWidth)/(lambda*L2)
+//	q_small = 2.0*Pi*(BS-a2)*(1.0-lambdaWidth)/(lambda*L2)
 	lp = 1.0/( 1.0/L1 + 1.0/L2)
 
 	v_lambda = lambdaWidth^2/6.0
