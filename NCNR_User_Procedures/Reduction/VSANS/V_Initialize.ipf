@@ -21,7 +21,7 @@
 //
 //************************
 
-Constant kVSANSVersion = 7.96
+Constant kVSANSVersion = 7.97
 
 // TODO -- need to set up a separate file of "constants" or "globals" where the actual numbers are
 //stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
