@@ -841,7 +841,13 @@ Function AskUserToKillHelp()
 		DisplayHelpTopic/Z "Event Mode Data"
 		if(V_flag==0)
 			numHelpFilesOpen += 1
+		endif	
+			
+		DisplayHelpTopic/Z "VSANS Data Reduction Documentation"
+		if(V_flag==0)
+			numHelpFilesOpen += 1
 		endif		
+
 			
 //		PauseForUser		// can't use this, it keeps you from interacting with anything....
 //	while(NumHelpFilesOpen != 0)
