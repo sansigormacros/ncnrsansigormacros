@@ -27,7 +27,6 @@
 //
 //
 
-
 //  White Beam:
 //  mean wavelength = 5.29687
 //  3rd moment/2nd moment = 5.741
@@ -36,6 +35,13 @@
 //  mean wavelength = 6.2033
 //  3rd moment/2nd moment = 7.93267
 //
+Constant kWhiteBeam_Mean = 5.3
+//Constant kWhiteBeam_Mean = 5.7		// mean of lam^2
+Constant kWhiteBeam_Normalization = 19933
+
+Constant kSuperWhiteBeam_Mean = 6.2
+//Constant kSuperWhiteBeam_Mean = 7.9		//mean of lam^2
+Constant kSuperWhiteBeam_Normalization = 30955
 
 
 

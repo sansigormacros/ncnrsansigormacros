@@ -893,8 +893,8 @@ Function CalcRowParamButton(ba) : ButtonControl
 //			err_avg_Po = sqrt(err_avg_Po) / numRows
 //	
 //
-//			Printf "Average muP = %g +/- %g (%g%)\r",avg_muP,err_avg_muP,err_avg_muP/avg_muP*100
-//			Printf "Average Po = %g +/- %g (%g%)\r",avg_Po,err_avg_Po,err_avg_Po/avg_Po*100
+//			Printf "Average muP = %g +/- %g (%g %%)\r",avg_muP,err_avg_muP,err_avg_muP/avg_muP*100
+//			Printf "Average Po = %g +/- %g (%g %%)\r",avg_Po,err_avg_Po,err_avg_Po/avg_Po*100
 //			
 //		E  26 APR 12
 		
@@ -948,7 +948,7 @@ Function Calc_Tmaj(cellStr,Po,err_Po,err_Tmaj)
 	err_Tmaj = (Tmaj/Te)^2*err_Te^2 + (Tmaj*(1-Po))^2*err_mu^2 + (Tmaj*mu)^2*err_Po^2
 	err_Tmaj = sqrt(err_Tmaj)
 	
-	Printf "Tmaj = %g +/- %g (%g%)\r",Tmaj,err_Tmaj,err_Tmaj/Tmaj*100
+	Printf "Tmaj = %g +/- %g (%g %%)\r",Tmaj,err_Tmaj,err_Tmaj/Tmaj*100
 
 	
 	return(Tmaj)
@@ -974,7 +974,7 @@ Function Calc_Tmin(cellStr,Po,err_Po,err_Tmin)
 	err_Tmin = (Tmin/Te)^2*err_Te^2 + (Tmin*(1+Po))^2*err_mu^2 + (Tmin*mu)^2*err_Po^2
 	err_Tmin = sqrt(err_Tmin)
 	
-	Printf "Tmin = %g +/- %g (%g%)\r",Tmin,err_Tmin,err_Tmin/Tmin*100
+	Printf "Tmin = %g +/- %g (%g %%)\r",Tmin,err_Tmin,err_Tmin/Tmin*100
 
 	
 	return(Tmin)
@@ -995,7 +995,7 @@ Function Calc_PCell(muPo,err_muPo,err_PCell)
 	// error (single term, sqrt already done)
 	err_Pcell = (1 - (tanh(muPo))^2) * err_muPo
 	
-	Printf "Pcell = %g +/- %g (%g%)\r",Pcell,err_Pcell,err_Pcell/PCell*100
+	Printf "Pcell = %g +/- %g (%g %%)\r",Pcell,err_Pcell,err_Pcell/PCell*100
 
 	return(PCell)
 End
@@ -1018,7 +1018,7 @@ Function Calc_Po(cellStr,muPo,err_muPo,err_Po)
 //	tmp = 1/mu^2*err_muPo^2 + muPo^2/mu^4*err_mu^2
 //	err_Po = sqrt(tmp)
 	
-	Printf "Po = %g +/- %g (%g%)\r",Po,err_Po,err_Po/Po*100
+	Printf "Po = %g +/- %g (%g %%)\r",Po,err_Po,err_Po/Po*100
 	return(Po)
 End
 
@@ -1073,7 +1073,7 @@ Function testCR(num)
 	
 	Variable noNorm=0
 	Variable cr = TotalCR_FromRun(num,err_cr,noNorm)
-	printf "CR = %g +/- %g (%g%)\r",cr,err_cr,err_cr/cr*100	
+	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100	
 	return(0)
 End
 
@@ -1107,7 +1107,7 @@ Function TotalCR_FromRun(num,err_cr,noNorm)
 	cr = cts/ctTime*1e8/monCts/attenTrans
 	err_cr = cr * sqrt(err_cts^2/cts^2 + atten_err^2/attenTrans^2)
 	
-	printf "CR = %g +/- %g (%g%)\r",cr,err_cr,err_cr/cr*100	
+	printf "CR = %g +/- %g (%g %%)\r",cr,err_cr,err_cr/cr*100	
 
 		
 	return(cr)
@@ -1656,7 +1656,7 @@ Function CalcFlippingRatioButtonProc(ba) : ButtonControl
 			
 			
 			
-			Printf "Flipping ratio = %g +/- %g (%g%)\r",flip,flip_err,flip_err/flip*100
+			Printf "Flipping ratio = %g +/- %g (%g %%)\r",flip,flip_err,flip_err/flip*100
 			str = num2str(flip)+" +/- "+num2str(flip_err)
 			SetVariable setvar3,value=_STR:str
 			

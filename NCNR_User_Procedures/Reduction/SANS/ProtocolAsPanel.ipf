@@ -2151,7 +2151,7 @@ Function AskForAbsoluteParams_Quest()
 		// SRK JUL 2006 don't clear the contents - just kill the window to force new data to be loaded
 		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from RAW:RealsRead
 		//ClearDataFolder("RAW")
-		Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+		Printf "Kappa was successfully calculated as = %g +/- %g (%g %%)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	Endif
 	
 End

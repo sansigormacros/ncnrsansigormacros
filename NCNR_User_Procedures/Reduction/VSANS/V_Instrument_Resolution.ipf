@@ -262,16 +262,13 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 // TODO: this is a messy way to identify the super white beam condition, and it needs to be 
 // done in a cleaner fashion (through IdentityCollimation) once NICE catches up
 
-	String monoType = V_IdentifyMonochromatorType(folderStr)
-	
+//	String monoType = V_IdentifyMonochromatorType(folderStr)
 
-	if(cmpstr(collimationStr,"pinhole") == 0)
-		if(cmpstr(monoType,"super_white_beam")==0)
-			lambdaWidth = 0
-		endif
-		//otherwise, nothing to change	
+
+	if(cmpstr(collimationStr,"pinhole_super_white_beam")==0)
+		lambdaWidth = 0
 	endif
-
+		
 	if(cmpstr(collimationStr,"pinhole_whiteBeam") == 0)
 		//		set lambdaWidth == 0 so that the gaussian resolution calculates only the geometry contribution.
 		// the white beam distribution will need to be flagged some other way

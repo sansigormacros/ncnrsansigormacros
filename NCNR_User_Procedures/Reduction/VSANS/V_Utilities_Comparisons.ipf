@@ -371,13 +371,29 @@ Function/S V_IdentifyCollimation(fname)
 	String fname
 	
 	String collimationStr=""
-	String status="",guides=""
+	String status="",guides="",typeStr=""
 	variable wb_in=0,slit=0
 	
 	guides = V_getNumberOfGuides(fname)
 	if(cmpstr(guides,"CONV_BEAMS") == 0)
 		return("convergingPinholes")
 	endif
+
+	guides = V_getNumberOfGuides(fname)
+	if(cmpstr(guides,"NARROW_SLITS") == 0)
+		slit = 1
+	endif
+	
+// TODO: still not the correct way to identify the super white beam condition
+	typeStr = V_getMonochromatorType(fname)
+	if(cmpstr(typeStr,"super_white_beam")==0)
+		if(slit == 1)
+			return("narrowSlit_super_white_beam")
+		else
+			return("pinhole_super_white_beam")
+		endif
+	endif
+
 
 // TODO: as of 6/2018 with the converging pinholes IN, status is "out"
 //	status = V_getConvPinholeStatus(fname)
@@ -390,10 +406,7 @@ Function/S V_IdentifyCollimation(fname)
 		wb_in = 1
 	endif	
 	
-	guides = V_getNumberOfGuides(fname)
-	if(cmpstr(guides,"NARROW_SLITS") == 0)
-		slit = 1
-	endif
+
 	
 	if(wb_in == 1 && slit == 1)
 		return("narrowSlit_whiteBeam")
@@ -427,9 +440,12 @@ Function/S V_IdentifyMonochromatorType(fname)
 	
 	String typeStr=""
 
-// TODO: if unidentified (all are OUT), then it may be super_white_beam
+// TODO: if super_white_beam, this needs to be patched in the header
 //	
-	typeStr = "super_white_beam"
+	typeStr = V_getMonochromatorType(fname)
+	if(cmpstr(typeStr,"super_white_beam")==0)
+		return(typeStr)
+	endif
 	
 	
 	if(cmpstr(V_getVelSelStatus(fname),"IN") == 0)

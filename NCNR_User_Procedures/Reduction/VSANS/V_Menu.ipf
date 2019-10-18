@@ -49,6 +49,8 @@ Menu "VSANS"
 //		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
 		"Patch XY Pixel Size",V_Patch_XYPixelSize()
+		"Patch Wavelength",V_Patch_Wavelength()
+		"Patch Monochromator Type",V_Patch_MonochromatorType()
 		"-"
 		"Patch Back Detector Values",V_Patch_Back_Detector()
 		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()

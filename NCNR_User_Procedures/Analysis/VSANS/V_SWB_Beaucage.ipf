@@ -277,17 +277,17 @@ Function V_fOneLevelSWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 20/5.3
+	loLim = 3.37/kSuperWhiteBeam_Mean
+	upLim = 20/kSuperWhiteBeam_Mean
 	
 	inten = V_IntegrOneLevelSWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kSuperWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 30955		// "middle"  of peaks
+	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -320,7 +320,7 @@ Function V_integrand_OneLevelSWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_SuperWhiteBeamDist_mid(dum*5.3)*OneLevelX(cw,qq/dum)
+	val = V_SuperWhiteBeamDist_mid(dum*kSuperWhiteBeam_Mean)*OneLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -349,17 +349,17 @@ Function V_fTwoLevelSWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 20/5.3
+	loLim = 3.37/kSuperWhiteBeam_Mean
+	upLim = 20/kSuperWhiteBeam_Mean
 	
 	inten = V_IntegrTwoLevelSWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kSuperWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 30955		// "middle"  of peaks
+	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -392,7 +392,7 @@ Function V_integrand_TwoLevelSWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_SuperWhiteBeamDist_mid(dum*5.3)*TwoLevelX(cw,qq/dum)
+	val = V_SuperWhiteBeamDist_mid(dum*kSuperWhiteBeam_Mean)*TwoLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -421,17 +421,17 @@ Function V_fThreeLevelSWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 20/5.3
+	loLim = 3.37/kSuperWhiteBeam_Mean
+	upLim = 20/kSuperWhiteBeam_Mean
 	
 	inten = V_IntegrThreeLevelSWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kSuperWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 30955		// "middle"  of peaks
+	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -464,7 +464,7 @@ Function V_integrand_ThreeLevelSWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_SuperWhiteBeamDist_mid(dum*5.3)*ThreeLevelX(cw,qq/dum)
+	val = V_SuperWhiteBeamDist_mid(dum*kSuperWhiteBeam_Mean)*ThreeLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -495,17 +495,17 @@ Function V_fFourLevelSWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 20/5.3
+	loLim = 3.37/kSuperWhiteBeam_Mean
+	upLim = 20/kSuperWhiteBeam_Mean
 	
 	inten = V_IntegrFourLevelSWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kSuperWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 30955		// "middle"  of peaks
+	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -538,7 +538,7 @@ Function V_integrand_FourLevelSWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_SuperWhiteBeamDist_mid(dum*5.3)*FourLevelX(cw,qq/dum)
+	val = V_SuperWhiteBeamDist_mid(dum*kSuperWhiteBeam_Mean)*FourLevelX(cw,qq/dum)
 	
 	return (val)
 End

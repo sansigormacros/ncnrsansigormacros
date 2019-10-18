@@ -3199,3 +3199,67 @@ Function V_fPatch_SampleAperture2(lo,hi,ShapeStr,diam,width,height)
 End
 
 
+Proc V_Patch_MonochromatorType(lo,hi,typeStr)
+	Variable lo,hi
+	String typeStr="super_white_beam"
+	
+	V_fPatch_MonochromatorType(lo,hi,typeStr)
+End
+
+//		err = V_writeMonochromatorType(fname,str)
+Function V_fPatch_MonochromatorType(lo,hi,typeStr)
+	Variable lo,hi
+	String typeStr
+
+	Variable jj
+	String fname
+
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			V_writeMonochromatorType(fname,typeStr)
+
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	
+	return(0)
+End
+
+Proc V_Patch_Wavelength(lo,hi,wavelength,delta)
+	Variable lo,hi
+	Variable wavelength=6.2,delta=0.8
+	
+	V_fPatch_Wavelength(lo,hi,wavelength,delta)
+End
+
+//		err = V_writeWavelength(fname,val)
+Function V_fPatch_Wavelength(lo,hi,lam,delta)
+	Variable lo,hi
+	Variable lam,delta
+
+	Variable jj
+	String fname
+
+		
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+			V_writeWavelength(fname,lam)
+			V_writeWavelength_Spread(fname,delta)
+
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	
+	return(0)
+End
