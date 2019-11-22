@@ -297,14 +297,14 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1j value=root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor,pos={255,140},help={"TURN OFF ONLY FOR DEBUGGING."}	
 	CheckBox PrefCtrl_1k title="Do Solid Angle Correction?",size={140,14},proc=V_DoSolidAngleCorPref
 	CheckBox PrefCtrl_1k value=root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor,pos={255,160},help={"TURN OFF ONLY FOR DEBUGGING."}
-	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140,14},proc=V_DoNonLinearCorPref
-	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,180},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140,14},proc=V_DoNonLinearCorPref,disable=2
+	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,180},help={"Non-linear correction can't be turned off"}
 	CheckBox PrefCtrl_1m title="Do Tube Shadow Correction?",size={140,14},proc=V_DoTubeShadowCorPref
 	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
 //	CheckBox PrefCtrl_1n title="Do Tube Shadow Correction?",size={140,14},proc=V_DoMonitorNormPref
 //	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
-	CheckBox PrefCtrl_1m title="Ignore Back Detector?",size={140,14},proc=V_IgnoreDetBPref
-	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gIgnoreDetB,pos={150,220},help={"Will prevent data from Back detector being written to data files."}		
+	CheckBox PrefCtrl_1o title="Ignore Back Detector?",size={140,14},proc=V_IgnoreDetBPref
+	CheckBox PrefCtrl_1o value=root:Packages:NIST:VSANS:Globals:gIgnoreDetB,pos={150,220},help={"Will prevent data from Back detector being written to data files."}		
 	
 //	CheckBox PrefCtrl_1a,disable=1
 //	CheckBox PrefCtrl_1b,disable=1
@@ -314,6 +314,8 @@ Proc VSANSPref_Panel()
 //	CheckBox PrefCtrl_1f,disable=1
 //	CheckBox PrefCtrl_1g,disable=1
 //	CheckBox PrefCtrl_1h,disable=1
+	CheckBox PrefCtrl_1g,value=0,disable=2		// angle dependent efficiency not done yet
+	CheckBox PrefCtrl_1m,value=0,disable=2		// tube shadowing correctionn not done yet
 
 //on tab(2) - Analysis
 	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12

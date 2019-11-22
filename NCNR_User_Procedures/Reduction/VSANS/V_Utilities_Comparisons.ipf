@@ -467,7 +467,21 @@ End
 
 
 // returns the beamstop diameter [mm]
-// if there is no beamtop in front of the specified detector, return 0.01mm
+//
+// checks the field num_beamstops. if this is 0, then there is no beam stop in place
+// 	if there is no beamtop in front of the specified detector, return 0.01mm
+//
+// if the number is non-zero, then for the middle carriage, return the BS size, which
+//  will always be the diameter, since there are only circular beamstops present.
+//
+// TODO
+//  -- for the back carriage, the numbered beam stops are:
+// (1) = 6 mm x 300 mm (RECTANGLE)
+// (2) = 12 mm diameter (CIRCLE)
+// (3) = 12 mm x 300 mm (RECTANGLE)
+//
+//		-- currently this returns the diameter of the beam stop for # 2
+//    and the width ONLY if #1 or #3 (both are 300 mm high)
 //
 Function V_IdentifyBeamstopDiameter(folderStr,detStr)
 	String folderStr,detStr
@@ -494,11 +508,16 @@ Function V_IdentifyBeamstopDiameter(folderStr,detStr)
 	if(cmpstr("B",detStr[0]) == 0)
 		// back (3)
 		num = V_getBeamStopC3num_beamstops(folderStr)
-		if(num)
+		if(num==0)
+			return(dummyVal)
+		endif
+		
+		if(num==2)
+			//2 = circular beamstop
 			BS = V_getBeamStopC3_size(folderStr)
 		else
-			//num = 0, no beamstops on the back
-			return(dummyVal)
+			//1 or 3, these are rectangular -- return the width, since the height of both is 300 mm
+			return(V_getBeamStopC3_width(folderStr))
 		endif
 	endif	
 	

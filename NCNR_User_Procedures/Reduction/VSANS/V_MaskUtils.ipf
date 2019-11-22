@@ -126,7 +126,7 @@ Proc V_MaskEditorPanel()
 	PopupMenu popup_0,pos={18,40},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 	PopupMenu popup_2,pos={18,10},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
-	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;VCALC;\""
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;ABS;VCALC;\""
 
 	SetVariable setvar0,pos={226,32},size={112,23},title="tube number"
 	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:Mask:gMaskTube

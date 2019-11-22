@@ -193,17 +193,26 @@ Function Vf_DIVCopy_proc(reducedFolderType,carriageStr,first)
 	String reducedFolderType,carriageStr
 	Variable first
 
+	String topath = "root:Packages:NIST:VSANS:STO:entry:instrument:detector_"
+	String fromPath = "root:Packages:NIST:VSANS:COR:entry:instrument:detector_"
+	String detStrList,detStr
+	Variable num,ii
+	
+	
 	if (cmpstr(carriageStr,"B")==0)
-		V_NormalizeDIV_onePanel(reducedFolderType,"B")
+		if(first)
+			V_CopyHDFToWorkFolder("COR","STO")
+		else
+			detStr = "B"
+			Duplicate/O $(fromPath+detStr+":data") $(toPath+detStr+":data")
+			Duplicate/O $(fromPath+detStr+":linear_data_error") $(toPath+detStr+":linear_data_error")
+		endif
+//		V_NormalizeDIV_onePanel(reducedFolderType,"B")
 	else
 		// if it's the first one, copy the whole folder, otherwise just copy over what's needed
 		if(first)
 			V_CopyHDFToWorkFolder("COR","STO")
 		else
-			String topath = "root:Packages:NIST:VSANS:STO:entry:instrument:detector_"
-			String fromPath = "root:Packages:NIST:VSANS:COR:entry:instrument:detector_"
-			String detStrList,detStr
-			Variable num,ii
 
 			if(cmpstr(carriageStr,"F")==0)
 				detStrList = "FL;FR;FT;FB;"
@@ -229,10 +238,13 @@ End
 
 // this is called from the button
 //
-Proc V_NormalizeDIV_proc(reducedFolderType,carriageStr)
-	String reducedFolderType="COR",carriageStr="F"
-	
-	Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
+Proc V_NormalizeDIV_proc(carriageStr)
+	String carriageStr="F"
+//	String reducedFolderType="COR",carriageStr="F"
+//	Prompt reducedFolderType, "reduced data folder"
+	Prompt carriageStr,"panels to group",popup,"All 8;All F All M;Individual;B;"
+		
+	Vf_NormalizeDIV_proc(carriageStr)
 end
 
 
@@ -242,37 +254,42 @@ end
 // and has been copied over to the STO folder where it will be normalized before
 // copying to the DIV folder for saving.
 //
-Function Vf_NormalizeDIV_proc(reducedFolderType,carriageStr)
-	String reducedFolderType,carriageStr
+Function Vf_NormalizeDIV_proc(carriageStr)
+	String carriageStr
 
 	if (cmpstr(carriageStr,"B")==0)
-		V_NormalizeDIV_onePanel(reducedFolderType,"B")
-	else
-		DoAlert 0,"data for both carriages must already be in STO"
-		V_NormalizeDIV_allEight("STO")			//forces reduced folder type to STO
+		V_NormalizeDIV_onePanel("STO","B")
+		return (0)
 	endif
 	
-//	if (cmpstr(carriageStr,"B")==0)
-//		V_NormalizeDIV_onePanel(reducedFolderType,"B")
-//	elseif (cmpstr(carriageStr,"F")==0)
+	
+	if(cmpstr(carriageStr,"All 8")==0)
 //		DoAlert 0,"data for both carriages must already be in STO"
-//		V_NormalizeDIV_allEight("STO")			//forces reduced folder type to STO
-//	
-////		V_NormalizeDIV_oneCarriage(reducedFolderType,carriageStr)
-//
-////		V_NormalizeDIV_onePanel(reducedFolderType,"FL")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"FR")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"FT")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"FB")
-//	else
-//	
-////		V_NormalizeDIV_oneCarriage(reducedFolderType,carriageStr)
-//		
-////		V_NormalizeDIV_onePanel(reducedFolderType,"ML")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"MR")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"MT")
-////		V_NormalizeDIV_onePanel(reducedFolderType,"MB")	
-//	endif
+		V_NormalizeDIV_allEight("STO")			//forces reduced folder type to STO
+		return (0)
+	endif
+
+	if(cmpstr(carriageStr,"All F All M")==0)
+//		DoAlert 0,"data for both carriages must already be in STO"
+		V_NormalizeDIV_oneCarriage("STO","F")
+		V_NormalizeDIV_oneCarriage("STO","M")
+		return (0)
+	endif
+
+	if(cmpstr(carriageStr,"Individual")==0)	
+		V_NormalizeDIV_onePanel("STO","B")
+
+		V_NormalizeDIV_onePanel("STO","FL")
+		V_NormalizeDIV_onePanel("STO","FR")
+		V_NormalizeDIV_onePanel("STO","FT")
+		V_NormalizeDIV_onePanel("STO","FB")
+	
+		V_NormalizeDIV_onePanel("STO","ML")
+		V_NormalizeDIV_onePanel("STO","MR")
+		V_NormalizeDIV_onePanel("STO","MT")
+		V_NormalizeDIV_onePanel("STO","MB")	
+		return(0)
+	endif
 	
 	return(0)
 End
