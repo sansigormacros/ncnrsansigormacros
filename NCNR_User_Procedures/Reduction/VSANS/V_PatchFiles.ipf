@@ -2522,6 +2522,11 @@ Proc V_Patch_Back_Detector(lo,hi)
 	V_fPatch_BackDetector(lo,hi)
 End
 
+Proc V_Patch_Back_XYPixelSize(lo,hi)
+	Variable lo,hi
+	
+	V_fPatch_BackDetectorPixel(lo,hi)
+end
 
 Proc V_Patch_XYPixelSize(lo,hi)
 	Variable lo,hi
@@ -2851,8 +2856,8 @@ End
 //
 // simple utility to patch all of the values associated with the back detector
 //
-//
-//
+// as of Dec 2019, this is not used any longer as these values are all written correctly,
+// except for patching old data with the XY pixel dimensions (separate macro)
 //
 //
 // lo is the first file number
@@ -2919,6 +2924,62 @@ Function V_fPatch_BackDetector(lo,hi)
 	KillWaves/Z cal_x,cal_y,tmpData
 	return(0)
 End
+
+
+//
+// simple utility to patch the X and Y Pixel dimensions for the back detector
+// the cal_x(y) values are what is actually used to calculate the real space distance
+// and then ultimately the q-values.
+//
+// **this updated value for the pixel size is from a measurement of a grid of pinholes
+// as a mask in front of the detector (done in Sept 2019,  run 43550 - calculations
+// done in Dec 2019)
+//
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function V_fPatch_BackDetectorPixel(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+	detStr = "B"
+	
+	Make/O/D/N=3 cal_x,cal_y
+	cal_x[0] = 0.03175			// pixel size in VCALC_getPixSizeX(detStr) is [cm]
+	cal_x[1] = 1
+	cal_x[2] = 10000
+	cal_y[0] = 0.03175		// pixel size in VCALC_getPixSizeX(detStr) is [cm]
+	cal_y[1] = 1
+	cal_y[2] = 10000
+	
+	
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = V_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+		
+		// patch cal_x and cal_y
+			V_writeDet_cal_x(fname,detStr,cal_x)
+			V_writeDet_cal_y(fname,detStr,cal_y)
+				
+		// patch pixel size x and y [cm]
+			V_writeDet_x_pixel_size(fname,detStr,0.03175)
+			V_writeDet_y_pixel_size(fname,detStr,0.03175)
+					
+		else
+			printf "run number %d not found\r",jj
+		endif
+	endfor
+	
+	KillWaves/Z cal_x,cal_y
+	return(0)
+End
+
+
 
 //
 // simple utility to patch all of the pixel sizes
