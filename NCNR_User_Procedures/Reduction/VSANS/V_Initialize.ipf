@@ -273,6 +273,11 @@ Function V_InitGlobals()
 	//set flag if Demo Version is detected
 	Variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
 
+
+// for testing
+// if this is set to 1, the OLD (incorrect) cos^3 solid angle will be applied to the tubes
+// and a lot of alerts will pop up...
+	Variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor = 0
 	
 	//set XML globals
 //	String/G root:Packages:NIST:gXMLLoader_Title = ""

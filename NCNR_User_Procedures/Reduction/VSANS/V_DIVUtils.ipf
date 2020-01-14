@@ -242,7 +242,7 @@ Proc V_NormalizeDIV_proc(carriageStr)
 	String carriageStr="F"
 //	String reducedFolderType="COR",carriageStr="F"
 //	Prompt reducedFolderType, "reduced data folder"
-	Prompt carriageStr,"panels to group",popup,"All 8;All F All M;Individual;B;"
+	Prompt carriageStr,"panels to group",popup,"Individual;B;All 8;All F All M;"
 		
 	Vf_NormalizeDIV_proc(carriageStr)
 end

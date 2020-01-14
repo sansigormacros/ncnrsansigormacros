@@ -950,17 +950,26 @@ End
 // x- do I calculate theta from geometry directly, or get it from Q (Assuming it's present?)
 //    (YES just from geometry, since I need SDD and dx and dy values...)
 //
+//		"B" is passed, so I need to check for "B" and for panel orientation
+// -if it is detector "B" (not tubes), then the normal solid angle correction applies
+// -if it is a tube panel, then I need to know the orientation, to know which angles
+//    and pixel dimensions to use
+//
+// *** UPDATED 1/2020 SRK
+// -using new calculation since the lateral direction of the tubes does not affect the solid angle
+// projection (see He (2015) and John's memo)
+//
 //
 Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave w,w_err
 	String fname,detStr,destPath
 
 	Variable sdd,xCtr,yCtr,lambda
-
+	String orientation
+	
 // get all of the geometry information	
-//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = V_getDet_ActualDistance(fname,detStr)
-
 
 	// this is ctr in mm
 	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
@@ -972,7 +981,7 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave data_realDistX = data_realDistX
 	Wave data_realDistY = data_realDistY
 
-	Duplicate/O w solid_angle,tmp_theta,tmp_dist		//in the current df
+	Duplicate/O w solid_angle,tmp_theta,tmp_dist,tmp_theta_i	//in the current df
 
 //// calculate the scattering angle
 //	dx = (distX - xctr)		//delta x in mm
@@ -982,12 +991,160 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	tmp_dist /= 10  // convert mm to cm
 	// sdd is in [cm]
 
-	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the (total) scattering angle
 
 	Variable ii,jj,numx,numy,dx,dy
 	numx = DimSize(tmp_theta,0)
 	numy = DimSize(tmp_theta,1)
+
+	if(cmpstr(detStr,"B")==0)
+		//detector B is a grid, straightforward cos^3 solid angle
+		for(ii=0	;ii<numx;ii+=1)
+			for(jj=0;jj<numy;jj+=1)
+				
+				if(ii==0)		//do a forward difference if ii==0
+					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+				else
+					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+				endif
+				
+				
+				if(jj==0)
+					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+				else
+					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+				endif
+		
+				dx /= 10
+				dy /= 10		// convert mm to cm (since sdd is in cm)
+				solid_angle[ii][jj] = dx*dy		//this is in cm^2
+			endfor
+		endfor
+		
+		// to cover up any issues w/negative dx or dy
+		solid_angle = abs(solid_angle)
+		
+		// solid_angle correction
+		// == dx*dy*cos^3/sdd^2
+		solid_angle *= (cos(tmp_theta))^3
+		solid_angle /= sdd^2
+		
+		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+		w /= solid_angle
+
+		// correctly apply the correction to the error wave (assume a perfect value?)
+	 	w_err /= solid_angle		//
+
+	else
+		//		
+		//different calculation for the tubes, different calculation based on XY orientation
+		//
+		if(cmpstr(orientation,"vertical")==0)
+			// L/R panels, tube axis is y-direction
+			// this is now a different tmp_dist
+			// convert everything to cm first!
+			// sdd is in [cm], everything else is in [mm]
+			tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
+			tmp_theta_i = atan(tmp_dist)		//this is theta_y
+			
+		else
+			// horizontal orientation (T/B panels)
+			// this is now a different tmp_dist
+			// convert everything to cm first!
+			// sdd is in [cm], everything else is in [mm]
+			tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
+			tmp_theta_i = atan(tmp_dist)		//this is theta_x
+		
+		endif
+		
+		for(ii=0	;ii<numx;ii+=1)
+			for(jj=0;jj<numy;jj+=1)
+				
+				if(ii==0)		//do a forward difference if ii==0
+					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+				else
+					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+				endif
+				
+				
+				if(jj==0)
+					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+				else
+					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+				endif
+		
+				dx /= 10
+				dy /= 10		// convert mm to cm (since sdd is in cm)
+				solid_angle[ii][jj] = dx*dy		//this is in cm^2
+			endfor
+		endfor
+		
+		// to cover up any issues w/negative dx or dy
+		solid_angle = abs(solid_angle)
+		
+		// solid_angle correction
+		// == dx*dy*cos(th)^2*cos(th_i)/sdd^2		using either the theta_x or theta_y value
+		solid_angle *= (cos(tmp_theta))^2*cos(tmp_theta_i)
+		solid_angle /= sdd^2
+		
+		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+		w /= solid_angle
+		
+		//
+		// correctly apply the correction to the error wave (assume a perfect value?)
+	 	w_err /= solid_angle		//
 	
+	endif
+	
+
+// DONE x- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
+	
+	return(0)
+end
+
+// this is the incorrect solid angle correction that does not take into 
+// account the tube geometry. It is correct for the high-res detector (and the 30m Ordela)
+//
+// -- only for testing to prove that the cos(th)^2 *cos(th_i) is correct
+//
+Function V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,lambda
+	String orientation
+	
+// get all of the geometry information	
+	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	lambda = V_getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w solid_angle,tmp_theta,tmp_dist	//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
+	
+	tmp_dist /= 10  // convert mm to cm
+	// sdd is in [cm]
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the (total) scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+
 	for(ii=0	;ii<numx;ii+=1)
 		for(jj=0;jj<numy;jj+=1)
 			
@@ -1020,17 +1177,16 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	
 	// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
 	w /= solid_angle
-	
-	//
+
 	// correctly apply the correction to the error wave (assume a perfect value?)
  	w_err /= solid_angle		//
+	
 
 // DONE x- clean up after I'm satisfied computations are correct		
-	KillWaves/Z tmp_theta,tmp_dist
+	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
 	
 	return(0)
 end
-
 
 
 
@@ -1461,8 +1617,9 @@ Function V_ShiftBackDetImage(w,adjW)
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 
 // this is necessary for some old data with the 150x150 back (dummy) panel
-	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
-	if(gIgnoreDetB == 1)
+// the proper back detector has an x-dimension of 680 pixels. Don't do the shift
+// if the dimensions are incorrect.
+	if(DimSize(w,0) < 680)
 		adjW=w
 		return(0)
 	endif
