@@ -2635,7 +2635,13 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 		pixel_y = V_getDet_y_pixel_size("RAW",detPanel_toSum)
 		pixel_y /= 10		//convert mm to cm, since sdd in cm
 		sdd = V_getDet_ActualDistance("RAW",detPanel_toSum)
-		
+
+//
+// ** this kappa is different than for SANS!!
+//	
+// don't use the solid angle here -- the data (COR) that this factor is applied to will already be
+// converted to counts per solid angle per pixel
+//	
 //		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel_x*pixel_y/sdd^2)
 		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
 		

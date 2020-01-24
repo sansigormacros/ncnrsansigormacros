@@ -777,15 +777,37 @@ Function V_Raw_to_work(newType)
 	endif	
 	
 		
-	// (5) angle-dependent tube shadowing
+	// (5) angle-dependent tube shadowing + detection efficiency
+	//  done together as one correction
+	//
 	// TODO:
-	// -- not sure about this correction yet...
+	// -- this correction accounts for the efficiency of the tubes
+	//		(depends on angle and wavelength)
+	//    and the shadowing, only happens at large angles (> 23.7 deg, lateral to tubes)
+	//
+	// V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
 	//
 	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
 	if (gDoTubeShadowCor == 1)
-		Print "(stub)Tube Shadow correction"
+		Print "Doing Tube Efficiency+Shadow correction"
+		
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			
+			if(cmpstr(detStr,"B") == 0)
+				// always ignore "B"
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				
+				V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
+			endif
+
+//			Print "Eff for panel ",detStr
+		endfor
+
 	else
-		Print "Tube shadowing correction NOT DONE"
+		Print "Tube efficiency+shadowing correction NOT DONE"
 	endif	
 		
 	// (6) angle dependent transmission correction
@@ -873,6 +895,7 @@ Function V_Raw_to_work(newType)
 	
 	
 	// (not done) angle dependent efficiency correction
+	// -- efficiency and shadowing are now done together (step 5)
 	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 
 //	

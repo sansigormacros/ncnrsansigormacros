@@ -11,6 +11,22 @@
 // "adjusted" or corrected data sets
 //
 
+////////////////
+// Constants for detector efficiency and shadowing
+//
+// V_TubeEfficiencyShadowCorr()
+//
+// JAN 2020
+///////////////
+Constant kTube_ri = 0.372		// inner radius of tube [cm]
+Constant kTube_cc = 0.84			// center to center spacing [cm]
+Constant kTube_ss = 0.025		// stainless steel shell thickness [cm]
+
+Constant kSig_2b_He = 0.146		// abs xs for 2 bar He(3) [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_8b_He = 0.593		// abs xs for 8 bar He(3) [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_Al = 0.00967		// abs xs for Al [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_ss = 0.146		// abs xs for 304 SS [cm-1 A-1] (multiply this by wavelength)
+
 
 
 
@@ -1764,4 +1780,422 @@ Function V_MedianAndReadNoiseBack(folder,readNoise)
 		
 	return(0)
 End
+
+
+
+////////////////
+// Detector efficiency and shadowing
+///////////////
+
+//
+// Tube efficiency + shadowing
+//
+//
+// -- check for the existence of the proper tables (correct wavelength)
+//  -- generate tables if needed (one-time calculation)
+//
+// interpolate the table for the correction - to avoid repeated integration
+//
+// store the tables in: root:Packages:NIST:VSANS:Globals:Efficiency:
+//
+Function V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,lambda
+	String orientation
+
+// if the panel is "B", exit - since it is not tubes, and this should not be called
+	if(cmpstr(detStr,"B")==0)
+		return(1)
+	endif
+
+// get all of the geometry information	
+	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	lambda = V_getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w tmp_theta_x,tmp_theta_y,tmp_dist,tmp_corr		//in the current df
+
+//// calculate the scattering angles theta_x and theta_y
+
+// flip the definitions of x and y for the T/B panels so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	if(cmpstr(orientation,"vertical")==0)
+		// L/R panels, tube axis is y-direction
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
+		tmp_theta_y = atan(tmp_dist)		//this is theta_y
+		tmp_theta_x = atan( (data_realDistX/10 - xctr/10)/sdd )
+		
+	else
+		// horizontal orientation (T/B panels)
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
+		tmp_theta_y = atan(tmp_dist)		//this is theta_y, along tube direction
+		tmp_theta_x = atan( (data_realDistY/10 - yctr/10)/sdd )		// this is laterally across tubes
+	endif
+
+
+// identify if the 2D efficiency wave has been generated for the data wavelength
+//
+// if so, declare
+// if not, generate
+
+	if(WaveExists($"root:Packages:NIST:VSANS:Globals:Efficiency:eff") == 0)
+		// generate the proper efficiency wave, at lambda
+		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
+		Print "recalculating efficiency table ..."
+		V_TubeShadowEfficiencyTables_oneLam(lambda)
+		// declare the wave
+		Wave/Z effW = root:Packages:NIST:VSANS:Globals:Efficiency:eff
+	else
+		Wave/Z effW = root:Packages:NIST:VSANS:Globals:Efficiency:eff
+		//is the efficiency at the correct wavelength?
+		string str=note(effW)
+//		Print "Note = ",str
+		
+		if(V_CloseEnough(lambda,NumberByKey("LAMBDA", str,"="),0.1))		//absolute difference of < 0.1 A
+				// yes, proceed, no need to do anything
+		else
+			// no, regenerate the efficiency and then proceed (wave already declared)
+			Print "recalculating efficiency table ..."
+			V_TubeShadowEfficiencyTables_oneLam(lambda)
+		endif
+	endif
+	
+	
+	Variable ii,jj,numx,numy,xAngle,yAngle
+	numx = DimSize(w,0)
+	numy = DimSize(w,1)
+
+// loop over all of the pixels of the panel and find the interpolated correction (save as a wave)
+//
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+
+			// from the angles, find the (x,y) point to interpolate to get the efficiency
+		
+			xAngle = tmp_theta_x[ii][jj]
+			yAngle = tmp_theta_y[ii][jj]
+
+			xAngle = abs(xAngle)
+			yAngle = abs(yAngle)
+			
+//			the x and y scaling of the eff wave (2D) was set when it was generated (in radians)
+// 		 simply reading the scaled xy value does not interpolate!!
+//			tmp_corr[ii][jj] = effW(xAngle)(yAngle)		// NO, returns "stepped" values
+			tmp_corr[ii][jj] = Interp2D(effW,xAngle,yAngle)
+
+		endfor
+	endfor
+//	
+//	
+// apply the correction and calculate the error
+//	
+// Here it is! Apply the correction to the intensity (divide -- to get the proper correction)
+	w /= tmp_corr
+//
+// relative errors add in quadrature to the current 2D error
+// assume that this numerical calculation of efficiency is exact
+//
+//	tmp_err = (w_err/tmp_corr)^2 + (lat_err/lat_corr)^2*w*w/lat_corr^2
+//	tmp_err = sqrt(tmp_err)
+//	
+//	w_err = tmp_err	
+//	
+
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta_x,tmp_theta_y,tmp_dist,tmp_err,tmp_corr
+	
+	return(0)
+end
+
+
+
+// the actual integration of the efficiency for an individual pixel
+Function V_Efficiency_Integral(pWave,in_u)
+	Wave pWave
+	Variable in_u
+	
+	Variable lambda,th_x,th_y,u_p,integrand,T_sh,max_x,d_ss,d_He
+	
+	lambda = pWave[0]
+	th_x = pWave[1]
+	th_y = pWave[2]
+	
+	u_p = in_u + kTube_cc * cos(th_x)
+	
+	// calculate shadow if th_x > 23.727 deg. th_x is input in radians
+	max_x = 23.727 / 360 * 2*pi
+	if(th_x < max_x)
+		T_sh = 1
+	else
+		
+		// get d_ss
+		if(abs(u_p) < kTube_ri)
+			d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 ) - sqrt(	kTube_ri^2 - in_u^2	)
+		elseif (abs(u_p) < (kTube_ri + kTube_ss))
+			d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 )
+		else
+			d_ss = 0
+		endif
+		
+		// get d_He
+		if(abs(u_p) < kTube_ri)
+			d_He = 2 * sqrt(	kTube_ri^2 - in_u^2	)
+		else
+			d_He = 0
+		endif
+		
+		//calculate T_sh		
+		T_sh = exp(-2*kSig_ss*lambda*d_ss/cos(th_y)) * exp(-kSig_8b_He*lambda*d_He/cos(th_y))
+		
+	endif
+	
+	
+	// calculate the integrand
+	
+	//note that the in_u value is used here to find d_ss and d_he (not u_p)
+	// get d_ss
+	if(abs(in_u) < kTube_ri)
+		d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 ) - sqrt(	kTube_ri^2 - in_u^2	)
+	elseif (abs(in_u) < (kTube_ri + kTube_ss))
+		d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 )
+	else
+		d_ss = 0
+	endif
+	
+	// get d_He
+	if(abs(in_u) < kTube_ri)
+		d_He = 2 * sqrt(	kTube_ri^2 - in_u^2	)
+	else
+		d_He = 0
+	endif
+	
+	integrand = T_sh*exp(-kSig_ss*lambda*d_ss/cos(th_y))*( 1-exp(-kSig_8b_He*lambda*d_He/cos(th_y)) )
+
+	return(integrand)
+end
+
+//
+// Tube efficiency + shadowing
+//
+// function to generate the table for interpolation
+//
+// table is generated for a specific wavelength and normalized to eff(lam,0,0)
+//
+// below 24 deg (theta_x), there is no shadowing, so the table rows are all identical
+//
+// Only one table is stored, and the wavelength of that table is stored in the wave note
+// -- detector correction checks the note, and recalculates the table if needed
+// (calculation takes approx 5 seconds)
+//
+Function V_TubeShadowEfficiencyTables_oneLam(lambda)
+	Variable lambda
+		
+// storage location for tables
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Efficiency
+
+//make waves that will be filed with the scattering angles and the result of the calculation
+//
+
+//// fill arrays with the scattering angles theta_x and theta_y
+// 0 < x < 50
+// 0 < y < 50
+
+// *** the definitions of x and y for the T/B panels is flipped so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp,normVal
+	numx = 25
+	numy = numx
+
+	Make/O/D/N=(numx,numy) eff
+	Make/O/D/N=(numx) theta_x, theta_y,eff_with_shadow,lam_cos
+	
+	SetScale x 0,(numx*2)/360*2*pi,"", eff
+	SetScale y 0,(numy*2)/360*2*pi,"", eff
+
+	Note/K eff		// clear the note
+	Note eff "LAMBDA="+num2str(lambda)
+	
+//	theta_x = p*2
+	theta_y = p	*2	// value range from 0->45, changes if you change numx
+	
+	//convert degrees to radians
+//	theta_x = theta_x/360*2*pi
+	theta_y = theta_y/360*2*pi
+
+//	Make/O/D/N=12 lam_wave
+//	lam_wave = {0.5,0.7,1,1.5,2,3,4,6,8,10,15,20}
+	
+//	Make/O/D/N=(12*numx) eff_withX_to_interp,lam_cos_theta_y
+//	eff_withX_to_interp=0
+//	lam_cos_theta_y=0
+	
+	Make/O/D/N=3 pWave
+	pWave[0] = lambda
+	
+
+	for(ii=0	;ii<numx;ii+=1)
+
+		for(jj=0;jj<numx;jj+=1)	
+				
+				pWave[1] = indexToScale(eff,ii,0)		//set theta x 
+				pWave[2] = indexToScale(eff,jj,1)		//set theta y
+	
+				eff_with_shadow[jj] = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
+				eff_with_shadow[jj] /= (2*kTube_ri)
+				
+				eff[ii][jj] = eff_with_shadow[jj]
+		endfor
+		
+		//eff[ii][] = eff_with_shadow[q]
+	endfor
+	
+	lam_cos = lambda/cos(theta_y)
+	
+	Sort lam_cos,eff_with_shadow,lam_cos	
+	
+//	
+//////	// value for normalization at current wavelength
+	pWave[0] = lambda
+	pWave[1] = 0
+	pWave[2] = 0
+////	
+	normVal = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
+	normVal /= (2*kTube_ri)
+//	
+//	print normVal
+//	
+	eff_with_shadow /= normVal		// eff(lam,th_x,th_y) / eff(lam,0,0)
+
+	eff /= normVal
+	
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	
+	SetDataFolder root:
+	return(0)
+end
+
+
+
+//
+// Tube efficiency + shadowing
+//
+//
+// TESTING function to generate the tables for interpolation
+// and various combinations of the corrections for plotting
+//
+Function V_TubeShadowEfficiencyTables_withX()
+
+
+	Variable lambda
+	lambda = 6
+	
+	Variable theta_val=3			//the single theta_x value that is used
+	
+// TODO
+// -- better storage location for tables
+// bad place for now...	
+	SetDataFolder root:
+
+//make waves that will be filed with the scattering angles and the result of the calculation
+//
+
+//// fill arrays with the scattering angles theta_x and theta_y
+// 0 < x < 50
+// 0 < y < 50
+
+// *** the definitions of x and y for the T/B panels is flipped so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp,normVal
+	numx = 10
+	numy = 10
+
+//	Make/O/D/N=(numx,numy) eff
+	Make/O/D/N=(numx) theta_x, theta_y,eff_with_shadow,lam_cos
+	
+	theta_x = p*5
+	theta_y = p*5		// value range from 0->45, changes if you change numx
+	
+	//convert degrees to radians
+	theta_x = theta_x/360*2*pi
+	theta_y = theta_y/360*2*pi
+
+	Make/O/D/N=12 lam_wave
+	lam_wave = {0.5,0.7,1,1.5,2,3,4,6,8,10,15,20}
+	
+	Make/O/D/N=(12*numx) eff_withX_to_interp,lam_cos_theta_y
+	eff_withX_to_interp=0
+	lam_cos_theta_y=0
+	
+	Make/O/D/N=3 pWave
+
+	for(jj=0;jj<12;jj+=1)
+
+		pWave[0] = lam_wave[jj]
+
+		for(ii=0	;ii<numx;ii+=1)
+			
+				pWave[1] = theta_val/360*2*pi		//set theta x to any value
+				pWave[2] = theta_y[ii]
+	
+				eff_with_shadow[ii] = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
+				eff_with_shadow[ii] /= (2*kTube_ri)
+				
+		endfor
+		
+		lam_cos = lam_wave[jj]/cos(theta_y)
+
+// messy indexing for the concatentation		
+		lam_cos_theta_y[jj*numx,(jj+1)*numx-1] = lam_cos[p-jj*numx]
+		eff_withX_to_interp[jj*numx,(jj+1)*numx-1] = eff_with_shadow[p-jj*numx]
+		
+	endfor
+	
+	Sort lam_cos_theta_y,eff_withX_to_interp,lam_cos_theta_y	
+	
+//	
+////////	// value for normalization at what wavelength???
+//	pWave[0] = 6
+//	pWave[1] = 0
+//	pWave[2] = 0
+//////	
+//	normVal = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
+//	normVal /= (2*kTube_ri)
+////	
+//	print normVal
+////	
+//	eff_withX_to_interp /= normVal		// eff(lam,th_x,th_y) / eff(lam,0,0)
+
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	
+	return(0)
+end
+
+
+
+/////////////
 

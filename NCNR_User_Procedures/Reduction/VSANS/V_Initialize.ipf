@@ -189,6 +189,8 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:CatVSHeaderInfo
 // for the globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals
+	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
+	
 // for the raw nexus data (so I don't need to reload to get a single value)
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 
