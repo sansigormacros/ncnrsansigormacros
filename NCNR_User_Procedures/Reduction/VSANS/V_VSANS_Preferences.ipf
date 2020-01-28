@@ -58,7 +58,7 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoTransCheck", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gDoTransCheck=val
 	
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gBinWidth", 1 )
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gBinWidth", 1.2 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gBinWidth=val
 	
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gNPhiSteps", 90 )
@@ -91,7 +91,6 @@ Proc Initialize_VSANSPreferences()
 
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref = 0
-	
 
 	// Special global to prevent fake data from "B" detector from being written out
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
@@ -169,11 +168,12 @@ Function V_DoTransCorrPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+// this is efficiency + shadowing
 Function V_DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
 	gVal = checked
 End
 
@@ -217,13 +217,14 @@ Function V_DoNonLinearCorPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
-Function V_DoTubeShadowCorPref(ctrlName,checked) : CheckBoxControl
-	String ctrlName
-	Variable checked
-	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
-	gVal = checked
-End
+// not needed-- efficiency and shadowing are done together
+//Function V_DoTubeShadowCorPref(ctrlName,checked) : CheckBoxControl
+//	String ctrlName
+//	Variable checked
+//	
+//	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
+//	gVal = checked
+//End
 
 Function V_DoMonitorNormPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
@@ -299,7 +300,7 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:VSANS:Globals:gDoTransmissionCor,proc=V_DoTransCorrPref
 	CheckBox PrefCtrl_1f pos={255,80},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
 	CheckBox PrefCtrl_1g title="Do Tube Efficiency+Shadowing?",size={140,14},proc=V_DoEfficiencyCorrPref
-	CheckBox PrefCtrl_1g value=root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor,pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+	CheckBox PrefCtrl_1g value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,100},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
 //	CheckBox PrefCtrl_1h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
 //	CheckBox PrefCtrl_1h value=root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
 
@@ -312,7 +313,7 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140,14},proc=V_DoNonLinearCorPref,disable=2
 	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,180},help={"Non-linear correction can't be turned off"}
 	CheckBox PrefCtrl_1m title="Do Downstream Window Corr?",size={140,14},proc=V_DoDownstreamWindowCorPref
-	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
 //	CheckBox PrefCtrl_1n title="Do Monitor Normalization?",size={140,14},proc=V_DoMonitorNormPref
 //	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1o title="Ignore Back Detector?",size={140,14},proc=V_IgnoreDetBPref
