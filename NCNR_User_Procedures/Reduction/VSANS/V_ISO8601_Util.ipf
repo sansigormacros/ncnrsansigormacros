@@ -44,7 +44,7 @@
 //
 
 //
-// Call w/ DateTime as the argument
+// Call w/ DateTime as the argument as V_CurrentTime_to_ISO8601String(DateTime)
 //
 // TODO -- verify that this is correct
 Function/S V_CurrentTime_to_ISO8601String(now)

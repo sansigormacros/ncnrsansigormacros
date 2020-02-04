@@ -153,7 +153,7 @@ Function LoadBT5File(fname,type)
 			MonCts[numlinesloaded] = v1		//monitor
 			v2 = v2/(1.0-v2*MainDeadTime/countTime)   // Deadtime correction
 			v3 = v3/(1.0-v3*MainDeadTime/countTime)   // Deadtime correction
-			v4 = v6/(1.0-v4*MainDeadTime/countTime)   // Deadtime correction
+			v4 = v4/(1.0-v4*MainDeadTime/countTime)   // Deadtime correction	// bug fix 1/31/20 from B. Maranville
 			v5 = v5/(1.0-v5*MainDeadTime/countTime)   // Deadtime correction
 			v6 = v6/(1.0-v6*MainDeadTime/countTime)   // Deadtime correction
 			DetCts[numlinesloaded] = v2 + v3 + v4 + v5 + v6		//5 detectors

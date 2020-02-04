@@ -178,11 +178,21 @@ End
 
 
 
-
-
-Proc V_DIVCopy_proc(reducedFolderType,carriageStr,first)
+Proc V_DIVCopy_proc(reducedFolderType,carriageStr,firstCopy)
 	String reducedFolderType="COR",carriageStr="F"
-	Variable first=1
+	String firstCopy="Yes"
+
+
+	Prompt reducedFolderType,"Save files to disk?"
+	Prompt carriageStr,"Detector Carriage",popup,"F;M;B;"
+	Prompt firstCopy,"First time copying a carriage?",popup,"Yes;No;"
+	
+	Variable first
+	if(cmpstr(firstCopy,"Yes")==0)
+		first = 1
+	else
+		first = 0
+	endif
 	
 	Vf_DIVCopy_proc(reducedFolderType,carriageStr,first)
 end
@@ -192,6 +202,7 @@ end
 Function Vf_DIVCopy_proc(reducedFolderType,carriageStr,first)
 	String reducedFolderType,carriageStr
 	Variable first
+	
 
 	String topath = "root:Packages:NIST:VSANS:STO:entry:instrument:detector_"
 	String fromPath = "root:Packages:NIST:VSANS:COR:entry:instrument:detector_"
@@ -697,8 +708,8 @@ Proc H_Setup_VSANS_DIV_Structure()
 	NewDataFolder/O/S root:VSANS_DIV_file		
 
 	NewDataFolder/O/S root:VSANS_DIV_file:entry	
-		Make/O/T/N=1	title	= "This is a DIV file for VSANS: VSANS_DIV"
-		Make/O/T/N=1	start_date	= "2017-02-28T08:15:30-5:00"
+		Make/O/T/N=1	title	= "This is a DIV file for VSANS: VSANS_DIV generated on "+V_CurrentTime_to_ISO8601String(DateTime)
+		Make/O/T/N=1	start_date	= V_CurrentTime_to_ISO8601String(DateTime)
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
