@@ -6,6 +6,12 @@
 // testing routines to compare various integration methods and approximations
 // for calculating the resolution smearing from the white beam wavelength distribution
 //
+// none of these functions are used in the final version of the resolution smearing
+// for white beam or super white beam. Functions and definitions of WB and SWB are contatined
+// in the file: V_WhiteBeamDistribution.ipf
+//
+//
+//
 //
 // 
 // IntegrateFn_N is something that I wrote (in GaussUtils) for quadrature with any number of 
@@ -26,10 +32,10 @@
 // Using my built-in quadrature routines (see V_TestWavelengthIntegral) may be of use when
 // writing fitting functions for all of these cases. The built-in Integrate may be limited
 // 
-// TODO -- beware what might happen to the calculations since there is a single global string
+// NOTE: -- beware what might happen to the calculations since there is a single global string
 //   containing the function name.
 //
-// TODO:
+// NOTE:
 // -- a significant problem with using the coef waves that are used in the wrapper are that
 //   they are set up with a dependency, so doing the WB calculation also does the "regular"
 //   smeared calculation, doubling the time required...

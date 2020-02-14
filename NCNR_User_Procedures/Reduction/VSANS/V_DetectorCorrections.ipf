@@ -2199,3 +2199,155 @@ end
 
 /////////////
 
+//
+//
+// testing function to calculate the correction for the attenuation
+// of the scattered beam by windows downstream of the sample
+// (the back window of the sample block, the Si window)
+//
+// For implementation, this function could be made identical
+// to the large angle transmission correction, since the math is
+// identical - only the Tw value is different (and should ideally be
+// quite close to 1). With Tw near 1, this would be a few percent correction
+// at the largest scattering angles.
+//
+//
+Function V_WindowTransmission(tw)
+	Variable tw
+	
+	Make/O/D/N=100 theta,method1,method2,arg
+	
+	theta = p/2
+	theta = theta/360*2*pi		//convert to radians
+	
+//	method1 = exp( -ln(tw)/cos(theta) )/tw
+	
+	Variable tau
+	tau = -ln(tw)
+	arg = (1-cos(theta))/cos(theta)
+	
+	if(tau < 0.01)
+		method2 = 1 - 0.5*tau*arg	
+	else
+		method2 = ( 1 - exp(-tau*arg) )/(tau*arg)
+	endif
+	
+	return(0)
+end
+
+
+//
+// Large angle transmission correction for the downstream window
+//
+// DIVIDE the intensity by this correction to get the right answer
+//
+// -- this is a duplication of the math for the large angle
+// sample tranmission correction. Same situation, but now the 
+// scattered neutrons are attenuated by whatever windows are 
+// downstream of the scattering event.
+// (the back window of the sample block, the Si window)
+//
+// For implementation, this function is made identical
+// to the large angle transmission correction, since the math is
+// identical - only the Tw value is different (and should ideally be
+// quite close to 1). With Tw near 1, this would be a few percent correction
+// at the largest scattering angles.
+//
+//
+Function V_DownstreamWindowTransmission(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,uval
+
+// get all of the geometry information	
+//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+
+// get the value of the overall transmission of the downstream components
+// + error if available.
+//	trans = V_getSampleTransmission(fname)
+//	trans_err = V_getSampleTransError(fname)
+// TODO -- HARD WIRED values, need to set a global or find a place in the header (instrument block?) (reduction?)
+// currently globals are forced to one in WorkFolderUtils.ipf as the correction is done
+	NVAR trans = root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans
+	NVAR trans_err = root:Packages:NIST:VSANS:Globals:gDownstreamWinTransErr	
+
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w dwt_corr,tmp_theta,tmp_dist,dwt_err,tmp_err		//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
+	
+	tmp_dist /= 10  // convert mm to cm
+	// sdd is in [cm]
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+	
+	
+	//optical thickness
+	uval = -ln(trans)		//use natural logarithm
+	
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			cos_th = cos(tmp_theta[ii][jj])
+			arg = (1-cos_th)/cos_th
+			
+			// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
+			// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
+			// OR
+			if((uval<0.01) || (cos_th>0.99))	
+				//small arg, approx correction
+				dwt_corr[ii][jj] = 1-0.5*uval*arg
+			else
+				//large arg, exact correction
+				dwt_corr[ii][jj] = (1-exp(-uval*arg))/(uval*arg)
+			endif
+			 
+			// (DONE)
+			// x- properly calculate and apply the 2D error propagation
+			if(trans == 1)
+				dwt_err[ii][jj] = 0		//no correction, no error
+			else
+				//sigT, calculated from the Taylor expansion
+				tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
+				tmp *= tmp
+				tmp *= trans_err^2
+				tmp = sqrt(tmp)		//sigT
+				
+				dwt_err[ii][jj] = tmp
+			endif
+			 
+		endfor
+	endfor
+	
+	// Here it is! Apply the correction to the intensity (divide -- to get the proper correction)
+	w /= dwt_corr
+
+	// relative errors add in quadrature to the current 2D error
+	tmp_err = (w_err/dwt_corr)^2 + (dwt_err/dwt_corr)^2*w*w/dwt_corr^2
+	tmp_err = sqrt(tmp_err)
+	
+	w_err = tmp_err	
+	
+	// DONE x- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist,tmp_err,dwt_err
+	
+	return(0)
+end
+

@@ -20,13 +20,13 @@
 // -- Can I "flag" the pixels that contribute to the annualr average, and overlay them like a 
 //    Mask(translucent?), like a "thresholding" operation, but act on the Q-value, not the Z- value.
 //
-// TODO!!!
+// DONE
 // x- none of these procedures are aware of the BACK detector
 //
 
 //
 //
-Proc Annular_Binning(folderStr,detGroup,qCtr_Ann,qWidth)
+Proc V_Annular_Binning(folderStr,detGroup,qCtr_Ann,qWidth)
 	String folderStr="SAM",detGroup="F"
 	Variable qCtr_Ann=0.1,qWidth=0.01  	// +/- in A^-1
 	
@@ -36,11 +36,19 @@ Proc Annular_Binning(folderStr,detGroup,qCtr_Ann,qWidth)
 
 End
 
-
-// TODO -- binType == 4 (slit mode) should never end up here, as it makes no sense
 //
-// -- really, the only binning that makes any sense is "one", treating each panel individually,
-// so I may scrap the parameter, or ignore it. so don't count on it in the future.
+// entry procedure for annular averaging
+//
+// detGroup defines which of the three carriages are used for the annulus
+// (defined by qCtr and qWidth)
+//
+// currently the q-range defined is only checked on a single carriage. No crossing
+// of the ring is allowed to spill onto other carriages. Probably not a significant issue
+// but may come up in the future.
+//
+// All of the detector panels for a given carriage are used for the averaging, although
+// in practice this cound be specified as say, ML+MR only if the panels were closed together
+// and MT and MB were blocked. This would speed up the calculation.
 //
 Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 	String folderStr,detGroup
@@ -64,14 +72,12 @@ Function V_QBinAllPanels_Annular(folderStr,detGroup,qCtr_Ann,qWidth)
 			return(0)
 	endswitch
 
-	
-// right now, use all of the detectors. There is a lot of waste in this and it could be 
-// done a lot faster, but...
+	// right now, use all of the detectors. There is a lot of waste in this and it could be 
+	// done a lot faster, but...
 
-// TODO		
-		// detStr = "FLRTB" or "MLRTB", depending which panel the q-ring is centered on/
-		// for now, no crossing of the rings onto different carriages
-		
+	// detStr = "FLRTB" or "MLRTB", depending which panel the q-ring is centered on/
+	// for now, no crossing of the rings onto different carriages
+	
 	V_fDoAnnularBin_QxQy2D(folderStr,detStr,qCtr_Ann,qWidth)
 
 
@@ -349,10 +355,7 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
 	endif
 
-	// TODO -- nq will need to be larger, once the back detector is installed
-	//
-	// note that the back panel of 320x320 (1mm res) results in 447 data points!
-	// - so I upped nq to 600
+	// TODO -- nq may need to be larger, if annular averaging on the back detector
 
 	nq = 600
 
@@ -384,7 +387,7 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 
 	Variable nphi,dphi,isIn,phiij,iphi
 
-// TODO: define nphi
+// DONE: define nphi (this is now set as a preference)
 //	dr = 1 			//minimum annulus width, keep this fixed at one
 	NVAR numPhiSteps = root:Packages:NIST:VSANS:Globals:gNPhiSteps
 	nphi = numPhiSteps		//number of anular sectors is set by users
@@ -401,10 +404,10 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 // 4 panels	 is currently the only situation
 //
 // this needs to be a double loop now...
-// TODO:
-// -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
-// -- the solid angle per pixel is not completely implemented.
-//    it will be present for WORK data other than RAW, but not for RAW
+// DONE:
+// x- the iErr (=2D) wave and accumulation of error is correctly propagated through all steps
+// x- the solid angle per pixel is completely implemented.
+//    -Solid angle will be present for WORK data other than RAW, but not for RAW
 
 // if any of the masks don't exist, display the error, and proceed with the averaging, using all data
 	if(maskMissing == 1)
@@ -599,8 +602,8 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
-// TODO:
-// -- 2D Errors were NOT properly acculumated through reduction, so this loop of calculations is NOT MEANINGFUL (yet)
+// DONE:
+// x- 2D Errors ARE properly acculumated through reduction, so this loop of calculations is correct
 // x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nphi;ii+=1)
 	
@@ -693,15 +696,14 @@ Proc V_Write1DAnnular(pathStr,folderStr,detGroup,saveName)
 	
 end
 
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
+// DONE:
+// - this is a basic solution before a more complete writer is created
+// - resolution is not generated here and is generally not reported for annualr data
+// (although it could be)
 //
 // this will bypass save dialogs
-// -- AND WILL OVERWITE DATA WITH THE SAME NAME
+// - AND WILL OVERWITE DATA WITH THE SAME NAME
 //
-//			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
 //
 Function V_fWrite1DAnnular(pathStr,folderStr,detGroup,saveName)
 	String pathStr,folderStr,detGroup,saveName

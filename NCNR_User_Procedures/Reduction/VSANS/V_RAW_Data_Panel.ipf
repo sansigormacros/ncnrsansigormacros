@@ -3,19 +3,19 @@
 #pragma IgorVersion=6.1
 
 //
-// this will become the equivalent of "RawWindowHook"
+// this panel and proceudres is the equivalent of "RawWindowHook" for SANS
 //
-// Procedures to:
+// This includes procedures to:
 // display the detector data
 // visualization tools
 // mouse interaction
 // status information necessary to understand the data
 // buttons to more functionality to process data
-
-
-// TODO
 //
-// -- have the status automatically fill in when a new file is loaded, rather than needing a click of the "status" button
+
+// DONE
+//
+// x- have the status automatically fill in when a new file is loaded, rather than needing a click of the "status" button
 // x- need a place somewhere to show the currently displayed folder
 // x- checkboxes for "active" corrections?
 // x- display of Q, counts, QxQy, X and Y
@@ -28,9 +28,9 @@
 //
 // call this after loading data to either draw the data display panel or to update the contents
 //
-// TODO
-// -- make sure that the "type" input is correctly used for the updating of the data, values, etc.
-// -- add a procedure to define the global variables for pos, counts, QxQy, etc.
+// DONE
+// x- make sure that the "type" input is correctly used for the updating of the data, values, etc.
+// x- add a procedure to define the global variables for pos, counts, QxQy, etc.
 //
 Function V_UpdateDisplayInformation(type)
 	String type 
@@ -45,8 +45,8 @@ Function V_UpdateDisplayInformation(type)
 
 	endif
 	
-	// TODO: update the information here  - in either case
-	// what isn't automatically picked up? What is "stale" on the display?
+	// DONE: 
+	// faking clicks on the buttons updates the information
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
 	
 	// fake a click on all three tabs - to populate the data
@@ -125,7 +125,7 @@ Function VSANSDataPanelGlobals()
 End
 
 
-// TODO
+// TODO_MEDIUM
 //
 // -- now that the sliders work, label them and move them to a better location
 // -- logical location for all of the buttons
@@ -471,7 +471,7 @@ End
 // -----?? can I draw 3 graphs, and just put the right one on top?? move the other two to the side?
 //
 //
-// TODO 
+// TODO_LOW 
 //  -- add all of the controls of the VCALC panel (log scaling, adjusting the axes, etc.)
 //  x- get the panel to be correctly populated first, rather than needing to click everywhere to fill in
 //  x- remove the dependency on VCALC being initialized first, and using dummy waves from there...
@@ -914,8 +914,8 @@ End
 
 
 //
-// TODO:
-// -- simply calls the missing parameter dialog to do the average.
+// DONE:
+// x- simply calls the missing parameter dialog to do the average.
 //  see the file V_IQ_Annular.ipf for all of the features yet to be added.
 //
 // x- currently just the graph, no controls
@@ -927,7 +927,7 @@ Function V_annularAvgButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Execute "Annular_Binning()"			
+			Execute "V_Annular_Binning()"			
 
 			break
 		case -1: // control being killed
@@ -1005,7 +1005,7 @@ Function V_StatusButtonProc(ba) : ButtonControl
 End
 
 
-// TODO:
+// TODO_VERIFY:
 // x- link this to the preferences for the display. this is done in UpdateDisplayInformation (the main call) so that
 //     the panels are rescaled only once, rather than toggled three times (F, M, B) if I call from the tabProc
 // -- come up with a better definition of the log lookup wave (> 1000 pts, what is the first point)
@@ -1081,8 +1081,8 @@ Function V_LogLinButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
-// possibly function to "tag" files right here in the disaply with things
+// TODO_LOW
+// -- possibly use this function to "tag" files right here in the disaply with things
 // like their intent, or other values that reduction will need, kind of like a "quick patch"
 // with limited functionality (since full function would be a nightmare!) 
 Function V_TagFileButtonProc(ba) : ButtonControl
@@ -1102,7 +1102,9 @@ Function V_TagFileButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
+// TODO_LOW
+// -- currently this button is NOT visible on the RAW data display. Any saving of data
+//    must go through a protocol (RAW can't be saved)
 // -- fill in more functionality
 // -- currently a straight concatentation of all data, no options
 // -- maybe allow save of single panels?
@@ -1131,7 +1133,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 //			ControlInfo/W=V_1D_Data popup0
 //			binType = (V_flag == 0) ? 1 : V_flag		// if binType not defined, set binType == 1
 
-			String saveName=""
+			String saveName="",exten=""
 		// write out the data set to a file
 			if(strlen(saveName)==0)
 				Execute "V_GetNameForSave()"
@@ -1139,7 +1141,9 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 				saveName = newName
 			endif
 			
-			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+//			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+
+			V_Write1DData_Individual("root:Packages:NIST:VSANS:",type,saveName,exten,binType)
 	
 			Print "Saved file: "	+	saveName + ".itx"	
 			break
@@ -1150,7 +1154,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 	return 0
 End
 
-//TODO
+//TODO_LOW
 //
 //link this to the beam center finding panel
 //

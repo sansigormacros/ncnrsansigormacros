@@ -26,6 +26,12 @@ Proc Show_VSANSPreferences_Panel()
 		if( exists("root:Packages:NIST:VSANS:Globals:gLogScalingAsDefault") != 2 )		//if the global variable does not exist, initialize
 			Initialize_VSANSPreferences()
 		endif
+		// these variables were recently created, so they may not exist if someone
+		// opens an old experiment -- then errors will result
+		if(exists("root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor") != 2)
+			V_InitializeWindowTrans()		//set up the globals (need to check in multiple places)
+		endif
+		
 		VSANSPref_Panel()
 	Endif
 //	Print "Preferences Panel stub"
@@ -89,8 +95,9 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization = 1
 
-	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref", 1 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref = 0
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor = 1
+	V_InitializeWindowTrans()		//set up the globals (need to check in multiple places)
 
 	// Special global to prevent fake data from "B" detector from being written out
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
@@ -124,6 +131,18 @@ Proc Initialize_VSANSPreferences()
 	/// items for VSANS Analysis
 	
 	
+end
+
+Function V_InitializeWindowTrans()
+
+	Variable/G root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor = 1
+
+	// TODO -- when correcting this, search for all occurences!!! also in V_WorkFolderUtils !!!
+	// these global values need to be replaced with real numbers
+	// error is currently set to zero
+	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans = 1
+	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTransErr = 0
+
 end
 
 Function V_LogScalePrefCheck(ctrlName,checked) : CheckBoxControl
@@ -238,7 +257,7 @@ Function V_DoDownstreamWindowCorPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor
 	gVal = checked
 End
 
@@ -283,19 +302,22 @@ Proc VSANSPref_Panel()
 
 
 //on tab(1) - VSANS - initially visible
-	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=V_LogScalePrefCheck,title="Use Log scaling for 2D data display"
+	CheckBox PrefCtrl_1a,pos={21,80},size={171,14},proc=V_LogScalePrefCheck,title="Use Log scaling for 2D data display"
 	CheckBox PrefCtrl_1a,help={"Checking this will display 2D VSANS data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
 	CheckBox PrefCtrl_1a,value= root:Packages:NIST:VSANS:Globals:gLogScalingAsDefault
 //	CheckBox PrefCtrl_1b,pos={21,120},size={163,14},proc=V_DRKProtocolPref,title="Allow DRK correction in protocols"
 //	CheckBox PrefCtrl_1b,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
 //	CheckBox PrefCtrl_1b,value= root:Packages:NIST:VSANS:Globals:gAllowDRK
-	CheckBox PrefCtrl_1c,pos={21,140},size={137,14},proc=V_UnityTransPref,title="Check for Transmission = 1"
+	CheckBox PrefCtrl_1c,pos={21,100},size={137,14},proc=V_UnityTransPref,title="Check for Transmission = 1"
 	CheckBox PrefCtrl_1c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
 	CheckBox PrefCtrl_1c,value= root:Packages:NIST:VSANS:Globals:gDoTransCheck
-	SetVariable PrefCtrl_1d,pos={21,170},size={200,15},title="Averaging Bin Width (pixels)"
+	SetVariable PrefCtrl_1d,pos={21,130},size={200,15},title="Averaging Bin Width (pixels)"
 	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:VSANS:Globals:gBinWidth
-	SetVariable PrefCtrl_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
+	SetVariable PrefCtrl_1e,pos={21,155},size={200,15},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:VSANS:Globals:gNPhiSteps
+	SetVariable PrefCtrl_1p,pos={21,180},size={200,15},title="Window Transmission"
+	SetVariable PrefCtrl_1p,limits={0.01,1,0.001},value= root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans
+
 	
 	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:VSANS:Globals:gDoTransmissionCor,proc=V_DoTransCorrPref
 	CheckBox PrefCtrl_1f pos={255,80},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
@@ -313,7 +335,7 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140,14},proc=V_DoNonLinearCorPref,disable=2
 	CheckBox PrefCtrl_1l value=root:Packages:NIST:VSANS:Globals:gDoNonLinearCor,pos={255,180},help={"Non-linear correction can't be turned off"}
 	CheckBox PrefCtrl_1m title="Do Downstream Window Corr?",size={140,14},proc=V_DoDownstreamWindowCorPref
-	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCorPref,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_1m value=root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor,pos={255,200},help={"TURN OFF ONLY FOR DEBUGGING."}
 //	CheckBox PrefCtrl_1n title="Do Monitor Normalization?",size={140,14},proc=V_DoMonitorNormPref
 //	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1o title="Ignore Back Detector?",size={140,14},proc=V_IgnoreDetBPref
@@ -328,7 +350,7 @@ Proc VSANSPref_Panel()
 //	CheckBox PrefCtrl_1g,disable=1
 //	CheckBox PrefCtrl_1h,disable=1
 //	CheckBox PrefCtrl_1g,value=0,disable=2		// angle dependent efficiency not done yet
-	CheckBox PrefCtrl_1m,value=0,disable=2		// downstream window transmission no done yet
+//	CheckBox PrefCtrl_1m,value=0,disable=2		// downstream window transmission no done yet
 
 //on tab(2) - Analysis
 	GroupBox PrefCtrl_2a pos={21,100},size={1,1},title="nothing to set",fSize=12

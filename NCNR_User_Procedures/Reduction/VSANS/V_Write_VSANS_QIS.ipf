@@ -120,7 +120,7 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 	fprintf refnum, "End Trim Points: %s\r\n",ProtoStr8
 	fprintf refnum, "COLLIMATION=%s\r\n",proto[9]
 
-// TODO
+// DONE
 // x- make this work for 6-columns (or??)
 	formatStr = "%15.4g %15.4g %15.4g %15.4g %15.4g %15.4g\r\n"	
 	fprintf refnum, "The 6 columns are | Q (1/A) | I(Q) (1/cm) | std. dev. I(Q) (1/cm) | sigmaQ | meanQ | ShadowFactor|\r\n"	
@@ -346,10 +346,11 @@ End
 
 
 
-// TODO:
-// -- this is a temporary solution before a real writer is created
-// -- resolution is not generated here (and it shouldn't be) since resolution is not known yet.
-// -- but a real writer will need to be aware of resolution, and there may be different forms
+// DONE:
+// - this is a temporary solution before a real writer is created
+// -- it has been replaced with V_Write1DData_Individual
+// - resolution is not generated here (and it shouldn't be) since resolution is not known yet.
+// - but a real writer will need to be aware of resolution, and there may be different forms
 //
 // This saves the data in Igor Text format, an ASCII format, but NOT standard SANS columns
 // No concatenation is done. This is meant to be used for input to TRIM, or for general troubleshooting

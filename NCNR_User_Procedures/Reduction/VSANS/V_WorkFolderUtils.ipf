@@ -809,8 +809,40 @@ Function V_Raw_to_work(newType)
 	else
 		Print "Tube efficiency+shadowing correction NOT DONE"
 	endif	
+
+	// (6) Downstream window angle dependent transmission correction
+	// TODO:
+	// -- HARD WIRED value
+	// x- find a temporary way to pass this value into the function (global?)
+	//
+	// -- currently the transmission is set as a global (in V_VSANS_Preferences.ipf)
+	// -- need a permanent location in the file header to store the transmission value
+	//
+	NVAR/Z gDoWinTrans = root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor
+	if(NVAR_Exists(gDoWinTrans) != 1)
+		V_InitializeWindowTrans()		//set up the globals (need to check in multiple places)
+	endif
 		
-	// (6) angle dependent transmission correction
+	if (gDoWinTrans == 1)
+		Print "Doing Large-angle Downstream window transmission correction"// for "+ detStr
+	
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			
+			if(cmpstr(detStr,"B") == 0  && gIgnoreDetB == 1)
+				// do nothing
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				
+				V_DownstreamWindowTransmission(w,w_err,fname,detStr,destPath)
+			endif
+		endfor
+	else
+		Print "Downstream Window Transmission correction NOT DONE"
+	endif	
+		
+	// (7) angle dependent transmission correction
 	// TODO:
 	// x- this still needs to be filled in
 	// -- still some debate of when/where in the corrections that this is best applied
@@ -821,7 +853,7 @@ Function V_Raw_to_work(newType)
 	//
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		Print "Doing Large-angle transmission correction"// for "+ detStr
+		Print "Doing Large-angle sample transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			
@@ -838,7 +870,8 @@ Function V_Raw_to_work(newType)
 		Print "Sample Transmission correction NOT DONE"
 	endif	
 	
-	// (7) normalize to default monitor counts
+	
+	// (8) normalize to default monitor counts
 	// TODO(DONE) x- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
 	//  --- AND, there is also /entry/control/monitor_counts !!! Which one is the correct value? Which will NICE write
@@ -892,11 +925,16 @@ Function V_Raw_to_work(newType)
 	else
 		Print "Monitor Normalization correction NOT DONE"
 	endif
+
+
+// flag to allow adding raw data files with different attenuation (normally not done)	
+// -- yet to be implemented as a prefrence panel item
+//	NVAR gAdjustRawAtten = root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten	
 	
 	
-	// (not done) angle dependent efficiency correction
-	// -- efficiency and shadowing are now done together (step 5)
-	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
+//	// (not done) angle dependent efficiency correction
+//	// -- efficiency and shadowing are now done together (step 5)
+//	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 
 //	
 	//reset the current displaytype to "newtype"

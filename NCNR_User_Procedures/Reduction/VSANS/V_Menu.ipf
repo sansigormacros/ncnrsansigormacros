@@ -26,7 +26,7 @@ Menu "VSANS"
 		"Display Temperature Sensors",V_InitSensorGrapn()
 		"-"
 		"Show Mask for Averaging",V_Display_Four_Panels()
-//		"Annular Binning",Annular_Binning()
+//		"Annular Binning",V_Annular_Binning()
 //		"Write Annular Data",V_Write1DAnnular()
 //		"Trim I(q) points",V_CombineDataGraph()
 		"-"
