@@ -16,7 +16,7 @@
 
 ///// LOADING
 
-// TODO 
+// DONE 
 // x- when mask is loaded, need to be sure to clean up the "extra" waves that may be present
 //
 // x- the overlay and the currentTube waves since these are not overwritten or killed when new mask 
@@ -110,7 +110,7 @@ End
 // -- may need to adjust the display for the different pixel dimensions
 //	ModifyGraph width={Plan,1,bottom,left}
 //
-// TODO
+// DONE
 //  need buttons for:
 //		x- quit (to exit gracefully) (no, just close the window is fine)
 //    x- help (button is there, fill in the content)
@@ -820,6 +820,7 @@ End
 //
 //
 // TODO
+// -- put in the current date, as is done for the DIV file
 // -- make the number of pixels GLOBAL to pick up the right numbers for the detector dimensions
 //  x- there will be lots of work to do to develop the procedures necessary to actually generate the 
 //      9 data sets to become the MASK file contents. More complexity here than for the simple SANS case.
@@ -1110,7 +1111,7 @@ End
 //
 // TODO:
 // -- label panels, axes
-// -- add in display of "B"
+// x- add in display of "B"
 
 Proc V_Display_Det_Panels()
 	PauseUpdate; Silent 1		// building window...

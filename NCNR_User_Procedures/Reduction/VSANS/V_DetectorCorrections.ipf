@@ -166,20 +166,18 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// then per tube, do the quadratic calculation to get the real space distance along the tube
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
 	
-	// TODO
-	// -- GAP IS HARD-WIRED as constant values 
+	// DONE
+	// -- GAP was hard-wired, but in 2018 proper values for all 4 gaps were measured
+	// and added to the file header for each detector panel. there is now a read from the 
+	// header to get the gap value 
 	Variable offset,gap
-
-// kPanelTouchingGap is in mm	
-// the gap is split equally between the panel pairs
-// (DONE) -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
 
 	gap = V_getDet_panel_gap(fname,detStr)
 
-// TODO:
-// -- once the gap fields have been verified, this check can be removed
+// DONE:
+// -- in case of error, V_getDet_panel_gap() will return -999999
 // -- it should only apply to data pre-2018 when the field did not exist in the file
-// -- any VSANS data from 2018+ should read gap from the file.
+// -- any VSANS data from 2018+ should read gap from the file and bypass the if()
 
 	if(gap < -100)		//-999999 returned if field is missing from file
 	
@@ -445,16 +443,13 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	variable edge,delta
 	Variable gap 
 
-// kPanelTouchingGap is in mm	
 // the gap is split equally between the panel pairs
-// TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
-// these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
-// both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
+// DONE -- replace hard-wired values with V_getDet_panel_gap(fname,detStr) once it is added to the file
 
 	gap = V_getDet_panel_gap(folder,detStr)
 
-// TODO:
-// -- once the gap fields have been verified, this check can be removed
+// DONE:
+// -- check in case of error, value should be read from header
 // -- it should only apply to data pre-2018 when the field did not exist in the file
 // -- any VSANS data from 2018+ should read gap from the file.
 

@@ -23,8 +23,9 @@
 
 Constant kVSANSVersion = 7.99
 
-// TODO -- need to set up a separate file of "constants" or "globals" where the actual numbers are
-//stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
+// DONE -- store all of the constant values here in the initialization routine. no need
+// to set up a separate file of "constants" or "globals" where the actual numbers are
+//stored.
 
 
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
@@ -32,8 +33,8 @@ Constant kVSANSVersion = 7.99
 // the back detector is always treated as a beam center in pixels, since it is the natural definition
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
 
-// // TODO: -- replace this constant with V_getDet_panel_gap(fname,detStr)
-//Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
+// // DONE: -- replace this constant with V_getDet_panel_gap(fname,detStr)
+//Constant kPanelTouchingGap = 10			// DONE -- gap when panels "touch", UNITS OF mm, not cm
 
 
 // the base data folder path where the raw data is loaded
@@ -256,7 +257,7 @@ Function V_InitGlobals()
 //		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 	
-	// TODO x- find the SANS preferences, copy over and update for VSANS
+	// DONE x- find the SANS preferences, copy over and update for VSANS
 	// x- these are all in PlotUtilsMacro_v40.ipf as the preferences are set up as common
 	// to all packages. I'm not sure that I want to do this with VSANS, but make the packages
 	// separate entities. I'm seeing little benefit of the crossover, especially now that 
@@ -479,7 +480,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	String fileName,path,type,creator
 
 	// clean out, so that the file SAVE is not slow due to the large experiment size
-	// TODO -- decide if this is really necessary
+	// DONE -
 //	
 //	V_CleanOutRawVSANS()
 // present a progress window
