@@ -994,22 +994,25 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	String alertStr
 	if(strsearch(igorKindStr, "64", 0 ) != -1)
 		alertStr = "The Event Loader XOP is not installed for the 64-bit version of Igor. Without it, event loading will "
-		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
-		alertStr += "do the installation, or NO to continue with the file loading."
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click NO to stop and "
+		alertStr += "do the installation, or YES to continue with the file loading."
 	else
 		alertStr = "The Event Loader XOP is not installed for the 32-bit version of Igor. Without it, event loading will "
-		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
-		alertStr += "do the installation, or NO to continue with the file loading."
+		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click NO to stop and "
+		alertStr += "do the installation, or YES to continue with the file loading."
 	endif
 	DoAlert 1,alertStr
 	
-	if(V_flag == 1)
+	if(V_flag == 0)
 		// get out gracefully
 		SetDataFolder root:
 		return(0)
 	endif
+
+	LoadEvents_New_noXOP()
+//	LoadEvents()
+
 	
-	LoadEvents()
 #endif	
 
 	SetDataFolder root:Packages:NIST:Event:
@@ -1027,13 +1030,13 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 //	
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
 		Duplicate/O timePt rescaledTime
-		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+		MultiThread rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
 		t_longest = waveMax(rescaledTime)		//should be the last point	
 	endif
 	
 	if(mode == MODE_OSCILL)		// oscillatory mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1e-7			//convert to seconds and that's all
+		MultiThread rescaledTime *= 1e-7			//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -1043,7 +1046,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 //TODO -- tisane doesn't do anything different than oscillatory. Is this really correct??
 	if(mode == MODE_TISANE)		// TISANE mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1e-7			//convert to seconds and that's all
+		MultiThread rescaledTime *= 1e-7			//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -1052,7 +1055,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 // MODE_TOF
 	if(mode == MODE_TOF)		// TOF mode - don't adjust the times, we get periodic t0 to reset t=0
 		Duplicate/O timePt rescaledTime
-		rescaledTime *= 1e-7			//convert to seconds and that's all
+		MultiThread rescaledTime *= 1e-7			//convert to seconds and that's all
 		t_longest = waveMax(rescaledTime)		//if oscillatory, won't be the last point, so get it this way
 	
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
@@ -1280,7 +1283,7 @@ End
 // all of the gory details of the events and every little bit of them. the print
 // statements and flags are kept for this reason, so the code is a bit messy.
 //
-Function LoadEvents()
+Function LoadEvents_OLD()
 	
 	NVAR time_msw = root:Packages:NIST:Event:gEvent_time_msw
 	NVAR time_lsw = root:Packages:NIST:Event:gEvent_time_lsw
@@ -3582,7 +3585,8 @@ Function Stream_LoadDecim(ctrlName)
 #if (exists("EventLoadWave")==4)
 		LoadEvents_XOP()
 #else
-		LoadEvents()
+		LoadEvents_New_noXOP()
+//		LoadEvents()
 #endif	
 
 		SetDataFolder root:Packages:NIST:Event:			//LoadEvents sets back to root:
@@ -3593,7 +3597,7 @@ Function Stream_LoadDecim(ctrlName)
 		CleanupTimes(xLoc,yLoc,timePt)		//remove zeroes
 
 		Duplicate/O timePt rescaledTime
-		rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
+		MultiThread rescaledTime = 1e-7*(timePt-timePt[0])		//convert to seconds and start from zero
 		t_longest = waveMax(rescaledTime)		//should be the last point
 		
 // (2) do the decimation, just on timePt. create rescaledTime from the decimated timePt	
@@ -4396,3 +4400,500 @@ Function fInsertTimeReset(period)
 	return(0)
 End
 
+
+/////////////////////////////////
+//
+//
+//  Improved loading of SANS Event files
+// 	without the use of an XOP (in case macOS / Igor XOPs can't be loaded)
+//
+// 	28 FEB 2020 SRK
+//
+
+// TODO
+// -- still need to clean this up to provide an identical entry point and functionality
+//   to the existing non-XOP loader
+// -- all routines need to be made DataFolder aware. currently everything is in root:
+// -- all waves need to be explicitly declared. currently the assumption is that they exist, in root:
+// -- be sure that global variables are declared and set with the loaded values (t_max, values for status)
+// -- clean up (kill) anything not needed so that I can save memory
+
+
+
+//
+//
+// this now works properly and with reasonable speed:
+// relative times:
+// XOP = 1
+// old Igor code = 28
+// this new code = 6.3
+//
+// loaded variables, times, XY location have all been verified vs. XOP and old Igor routines
+//
+
+// this code loads 563 MB in 114 s (as predicted by scaling up XOP load speed)
+// loads 979 MB in 266 s (slower than predicted)
+
+
+Function LoadEvents_New_noXOP()
+
+	SVAR fname = root:Packages:NIST:Event:gEvent_logfile
+
+	Variable numBad = 0
+	
+//	String fname = DoOpenFileDialog("select an event file")
+
+tic()		
+	LoadEventAsHex(fname)
+	Wave/T/Z newWave = root:Packages:NIST:Event:newWave
+
+	RemoveFFF(newWave)
+	
+	GetBitsFromEvents()
+	Wave/Z bit29 = root:Packages:NIST:Event:bit29
+	Wave/Z events = root:Packages:NIST:Event:events
+	Wave/Z time_lsw = root:Packages:NIST:Event:time_lsw
+	Wave/Z type = root:Packages:NIST:Event:type
+	Wave/Z xloc = root:Packages:NIST:Event:xloc
+	Wave/Z yloc = root:Packages:NIST:Event:yloc
+
+	numBad = CleanUpBeginning(type,events,bit29,xloc,yloc,time_lsw)
+
+	DecodeEvents_New(type,events,bit29,xloc,yloc,time_lsw,numBad)
+	Wave/Z timePt = root:Packages:NIST:Event:timePt
+	Wave/Z deletePtFlag = root:Packages:NIST:Event:deletePtFlag
+
+//
+// see the trick for setting the deletePtFlag wave that I use in DecodeEvents_New
+// -- I needed to do this since the sort operation does not preserve the order of 
+// any items with the same value --- from the help file:
+// "The algorithm used does not maintain the relative position of items with the same key value."
+//
+//
+	Sort deletePtFlag,bit29,events,timePt,time_lsw,type,xloc,yloc,deletePtFlag
+//	FindValue/I=10 deletePtFlag		//bad points are flagged as 1, first real point is 10 (unless it was replaced)
+//	Print V_Value							//so this will fail...
+	
+	FindLevel/P/Q deletePtFlag 10
+//	Print V_LevelX
+	
+	DeletePoints 0,trunc(V_LevelX)+1, bit29,events,timePt,time_lsw,type,xloc,yloc,deletePtFlag
+
+	SetDataFolder root:Packages:NIST:Event:
+
+// this is done after the file load/decode whether the XOP was used or the Igor code
+// (don't do the time rescaling here)	
+//	Duplicate/O timePt 	rescaledTime
+//	// MultiThread shaves off significant time!
+//	MultiThread rescaledTime *= 1e-7			//convert to seconds and that's all 
+
+
+// cleanup as many waves as possible to save space
+// these can be kept as needed for debugging
+	KillWaves/Z bit29,type,time_lsw,events,deletePtFlag
+	KillWaves/Z badTimePt,badEventNum,PPTime,PPEventNum,T0Time,T0EventNum
+	toc()
+	
+	SetDataFolder root:
+	return(0)
+end
+
+//Macro doDecodeOnly()
+//	Variable numBad=0
+//	DecodeEvents_New(type,events,bit29,xloc,yloc,time_lsw,numBad)
+//End
+
+Function LoadEventAsHex(fname)
+	String fname
+	
+	SetDataFolder root:Packages:NIST:Event:
+	
+	LoadWave/J/O/A/K=2/B="C=1,F=10,T=96,N=newWave;"	 fname		//  /E=1 flag will display a table
+	
+	// table is useful to see as hexadecimal -- every other point
+	// is FFFFFFFF = 4294967295 and is garbage to delete
+	
+	SetDataFolder root:
+	return(0)
+end
+
+// no need to remove every other point that is zero
+// (actually 4294967295 = FFFFFFFF)
+// I can to this with a wave assignment
+Function RemoveFFF(w)
+	Wave w 
+	
+	SetDataFolder root:Packages:NIST:Event:
+//	RemoveZeroEvents(w)
+	
+// 32 bit unsigned integer wave	
+	Make/O/U/I/N=(trunc(numpnts(w))/2) events
+	MultiThread events = w[2*p]
+	
+	KillWaves/Z w		//not needed any longer
+	
+	SetDataFolder root:
+	return(0)
+End
+
+
+
+Function GetBitsFromEvents()
+
+//	Wave events=events
+	SetDataFolder root:Packages:NIST:Event:
+	Wave events = root:Packages:NIST:Event:events
+		
+	Make/O/U/B/N=(numpnts(events))  xloc,yloc,type,bit29
+	Make/O/U/I/N=(numpnts(events)) time_lsw
+
+	MultiThread type = (events & 0xC0000000)/1073741824		//right shift by 2^30
+	
+	MultiThread bit29 = (events & 0x20000000)/536870912		//bit 29 only , shift by 2^29
+
+	MultiThread xloc = 127 - (events & 255)						//last 8 bits (7-0)
+	MultiThread yloc = (events & 65280)/256						//bits 15-8, right shift by 2^8
+
+
+	MultiThread time_lsw = (events & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
+	
+	Variable/G numXYevents,num0,num1,num2,num3
+	num0 = CountType(0)
+	num1 = CountType(1)
+	num2 = CountType(2)
+	num3 = CountType(3)
+	
+	numXYevents = num0 + num2
+	Printf "numXYevents = type 0 + type 2 = %d\r",numXYevents
+	Printf "XY = num0 = %d\r",num0
+	Printf "time MSW = num1 = %d\r",num1
+	Printf "XY time = num2 = %d\r",num2
+	Printf "Rollover = num3 = %d\r",num3
+
+
+// dispStr will be displayed on the panel
+	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
+	SVAR filepathStr = root:Packages:NIST:Event:gEvent_logfile
+	
+	String tmpStr="",fileStr=""
+	fileStr = ParseFilePath(0, filepathstr, ":", 1, 0)
+	
+	Variable fileref,totBytes
+	Open/R fileref as filepathstr
+		FStatus fileref
+	Close fileref
+
+	totBytes = V_logEOF
+	
+	sprintf tmpStr, "%s: %d total bytes\r",fileStr,totBytes 
+	dispStr = tmpStr
+	sprintf tmpStr,"numXYevents = %d\r",numXYevents
+	dispStr += tmpStr
+//	sprintf tmpStr,"PP = %d  :  ",numPP
+//	dispStr += tmpStr
+//	sprintf tmpStr,"ZeroData = %d\r",numZero
+//	dispStr += tmpStr
+	sprintf tmpStr,"Rollover = %d",num3
+	dispStr += tmpStr
+
+	
+//	Print 127 - (events[5] & 255)
+//	Print (events[5] & 65280)/256
+
+	SetDataFolder root:
+	return(0)
+End
+
+//
+// a quick way to count the number of a particular value in a wave
+//
+Function CountType(val)
+	Variable val
+	
+	Wave type=type
+	// can't duplicate, since Byte data can't accept NaN
+	Make/O/D/N=(numpnts(type)) tmp
+	MultiThread tmp = type
+	
+	MultiThread tmp = (tmp[p] == val) ? NaN : tmp[p]				// replace matches with NaN
+	
+	WaveStats/Q tmp
+	
+	KillWaves/Z tmp
+	return(V_numNaNs)
+End
+
+Function CleanUpBeginning(type,events,bit29,xloc,yloc,time_lsw)
+	Wave type,events,bit29,xloc,yloc,time_lsw
+	
+	// for all of the waves, remove points from the beginning up to the
+	// first one with a type==2 so that I know that the 
+	// time has been properly reset to start
+	
+	variable ii,num
+	num=numpnts(type)
+	for(ii=0;ii<num;ii+=1)
+		if(type[ii] == 2)
+			break
+		endif
+	endfor
+	
+	Print "Num bad removed from beginning = ",ii
+	DeletePoints 0,ii, type,events,bit29,xloc,yloc,time_lsw	
+
+	return(ii)
+End
+
+
+//
+// for the bit shifts, see the decimal-binary conversion
+// http://www.binaryconvert.com/convert_unsigned_int.html
+//
+//		K0 = 536870912
+// 		Print (K0 & 0x08000000)/134217728 	//bit 27 only, shift by 2^27
+//		Print (K0 & 0x10000000)/268435456		//bit 28 only, shift by 2^28
+//		Print (K0 & 0x20000000)/536870912		//bit 29 only, shift by 2^29
+//
+// This is duplicated by the XOP, but the Igor code allows quick access to print out
+// all of the gory details of the events and every little bit of them. the print
+// statements and flags are kept for this reason, so the code is a bit messy.
+//
+//
+//Static Constant ATXY = 0
+//Static Constant ATXYM = 2
+//Static Constant ATMIR = 1
+//Static Constant ATMAR = 3
+//
+//
+Function DecodeEvents_New(type,events,bit29,xloc,yloc,time_lsw,numBad)
+	Wave type,events,bit29,xloc,yloc,time_lsw
+	Variable numBad		// number of bad points previously removed from beginning of file
+
+//	NVAR time_msw = root:Packages:NIST:Event:gEvent_time_msw
+//	NVAR time_lsw = root:Packages:NIST:Event:gEvent_time_lsw
+	NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+	
+//	SVAR filepathstr = root:Packages:NIST:Event:gEvent_logfile
+	SVAR dispStr = root:Packages:NIST:Event:gEventDisplayString
+	
+	SetDataFolder root:Packages:NIST:Event
+
+
+	variable ii,num,typ
+	Variable nRoll,roll_time,time_msw,timeval
+	Variable tmpPP,tmpT0,numRemoved,rolloverHappened
+	Variable tmpX,tmpY
+
+//	tic()
+	// 32-bit unsigned, max value = 4,294,926,295 (= max number of events I can sort)
+	Make/O/I/U/N=(numpnts(type))  deletePtFlag
+	MultiThread deletePtFlag = p+10		// give them all a different number, starting from 10
+	// flagged "bad" points will be set == 1
+	
+	Make/O/N=500000 badTimePt,badEventNum,PPTime,PPEventNum,T0Time,T0EventNum
+	MultiThread badTimePt=0
+	MultiThread badEventNum=0
+	MultiThread PPTime=0
+	MultiThread PPEventNum=0
+	MultiThread T0Time=0
+	MultiThread T0EventNum=0
+
+	tmpPP=0
+	tmpT0=0
+	numRemoved=0
+	
+	Make/O/D/N=(numpnts(time_lsw)) timePt
+	MultiThread timePt = 0		//need DP wave for time, time_lsw is 32 bit int
+
+
+	nRoll = 0		//number of rollover events
+	roll_time = 2^26		//units of 10-7 sec
+	time_msw=0
+	
+	NVAR removeBadEvents = root:Packages:NIST:Event:gRemoveBadEvents
+	
+	num=numpnts(type)
+
+//
+// 		NOTE: I now have the types in 0123 order in the switch - so they will 
+// 		appear different than the old Igor code which was 0132
+//
+	
+	for(ii=0;ii<num;ii+=1)
+//		if(mod(ii,10000)==0)
+//			Print "step %g of %g",ii,num
+//		endif
+		
+		typ = type[ii]
+		
+		switch(typ)
+			case ATXY:
+			
+				// if the datavalue is == 0, just skip it now (it can only be interpreted as type 0, obviously)
+				if(events[ii] == 0 && RemoveBadEvents == 1)
+					numRemoved += 1
+//					Print "zero at ii= ",ii
+
+// flag for deletion later
+					deletePtFlag[ii] = 1
+					
+//					DeletePoints ii,1, type,events,bit29,xloc,yloc,time_lsw,timePt
+//					num -= 1
+//					ii -= 1
+
+					break		//don't increment ii
+				endif
+				
+				//if bit29=1, it's pileup, delete the point, decrement ii and num and break out
+				if(bit29[ii] == 1)
+					PPTime[tmpPP] = timeval
+					PPEventNum[tmpPP] = ii
+					tmpPP += 1
+					numRemoved += 1
+					// flag for deletion later
+					deletePtFlag[ii] = 1
+//					DeletePoints ii,1, type,events,bit29,xloc,yloc,time_lsw,timePt
+//					num -= 1
+//					ii -= 1
+					break
+				endif
+				
+				//otherwise the point is good, calculate the time 
+				timePt[ii] = trunc( nRoll*roll_time + (time_msw * (8192)) + time_lsw[ii] )		//left shift msw by 2^13, then add in lsw, as an integer
+				if (timePt[ii] > t_longest) 
+					t_longest = timePt[ii]
+				endif
+				
+				// catch the "bad" events:
+				// if an XY event follows a rollover, time_msw is 0 by definition, but does not immediately get 
+				// re-evalulated here. Throw out only the immediately following points where msw is still 8191
+				if(rolloverHappened && RemoveBadEvents == 1)
+					// maybe a bad event, throw it out
+					if(time_msw == 8191)
+						badTimePt[numBad] = timeVal
+						badEventNum[numBad] = ii
+						numBad +=1
+						numRemoved += 1
+						// flag for deletion later
+						deletePtFlag[ii] = 1
+//						DeletePoints ii,1, type,events,bit29,xloc,yloc,time_lsw,timePt
+//						num -= 1
+//						ii -= 1
+					else
+						// time_msw has been reset, points are good now, so keep this one
+						rolloverHappened = 0
+					endif
+				endif
+				
+				break
+
+			case ATMIR:		// 1
+
+				time_msw =  (events[ii] & 536805376)/65536			//13 bits, 28-16, right shift by 2^16
+				timePt[ii] = trunc( nRoll*roll_time + (time_msw * (8192)) + time_lsw[ii] )
+				if (timePt[ii] > t_longest) 
+					t_longest = timePt[ii]
+				endif
+				
+				if(bit29[ii] != 0)		// bit 29 set is a T0 event, not a rollover
+					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
+					T0Time[tmpT0] = time_lsw[ii]
+					T0EventNum[tmpT0] = ii
+					tmpT0 += 1
+					// reset nRoll = 0 for calcluating the time
+					nRoll = 0
+				endif
+				
+				// previous event was "2" (kept XY from there)
+				// 
+				xloc[ii] = tmpX
+				yloc[ii] = tmpY
+				
+				break
+			case ATXYM:		// 2
+	
+				//
+				// keep only the XY position, next event will be ATMIR
+				// where these XY points will be written
+				//
+				tmpX = xloc[ii]
+				tmpY = yloc[ii]
+				// flag for deletion later
+				deletePtFlag[ii] = 1
+//				DeletePoints ii,1, type,events,bit29,xloc,yloc,time_lsw	,timePt
+//				num -= 1
+//				ii -= 1
+				
+				// next event must be ATMIR (type 1) that will contain the MSW time bits
+				break
+			case ATMAR:		// 3
+			
+				nRoll += 1
+				
+				if(bit29[ii] != 0)		// bit 29 set is a T0 event, not a rollover
+					//Printf "bit29 = 1 at ii = %d : type = %d\r",ii,type
+					T0Time[tmpT0] = time_lsw[ii]
+					T0EventNum[tmpT0] = ii
+					tmpT0 += 1
+					// reset nRoll = 0 for calcluating the time
+					nRoll = 0
+				endif
+				
+				rolloverHappened = 1
+				
+				// delete the point since it's not XY
+				// flag for deletion later
+				deletePtFlag[ii] = 1
+//				DeletePoints ii,1, type,events,bit29,xloc,yloc,time_lsw	,timePt
+//				num -= 1
+//				ii -= 1
+					
+				break
+			default:
+		endswitch
+	
+	endfor
+
+//	printf("Igor new method full file decode done in  ")	
+//	toc()
+	
+	Print "Events removed (Igor) = ",numRemoved
+	
+	Variable numXYEvents = numpnts(xloc)
+	String tmpStr=""
+	
+	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
+	dispStr += tmpStr
+	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
+	dispStr += tmpStr
+	SetDataFolder root:
+
+
+	return(0)
+
+end
+
+// not used any longer since the one-by-one deletion of points is
+// WAY too slow to use for any event files of > 50 MB
+Function RemoveZeroEvents(events)
+	Wave events
+	
+	// start at the back and remove zeros
+	Variable num=numpnts(events),ii,numToRemove,count
+
+	count = 0
+	numToRemove = 2		//remove the zero, and the following FFFFFF
+	ii=num
+	do
+		ii -= 1
+		if(events[ii] == 0)
+			DeletePoints ii, numToRemove, events
+			count += 1
+		endif
+	while(ii > 0)
+	
+	print "removed zero events = ",count
+	return(count)
+End
+
+//////////////////////////////

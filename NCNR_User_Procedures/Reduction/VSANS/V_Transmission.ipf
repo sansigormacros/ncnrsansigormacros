@@ -184,12 +184,12 @@ Function V_TTransmFilePopMenuProc(pa) : PopupMenuControl
 //			gSamMatchList = quote + V_getFileIntentPurposeIDList("SAMPLE","SCATTERING",gTrnGrpID,0) + quote
 			// this resets a global string, since I can't pass a parameter (only constants) in value=fn()		
 //			PopupMenu popup_0,mode=1,value=#gSamMatchList
-			PopupMenu popup_0,mode=1,value=V_getSamListForPopup()
+			PopupMenu popup_0,mode=1,win=V_TransmissionPanel,value=V_getSamListForPopup()
 
 
 // then pop the sample list with the top file to see that it is a match for the transmission file
 			STRUCT WMPopupAction samPopAct
-			ControlInfo popup_0
+			ControlInfo/W=V_TransmissionPanel popup_0
 			samPopAct.popStr = S_Value		// the top file
 			V_TSamFilePopMenuProc(samPopAct)
 			
@@ -217,7 +217,7 @@ Function/S V_getSamListForPopup()
 	Variable num,ii
 	
 	String transStr
-	ControlInfo popup_1			//the transmission file popup
+	ControlInfo/W=V_TransmissionPanel popup_1			//the transmission file popup
 	transStr = S_Value
 	
 	num=ItemsInList(retStr)
@@ -250,7 +250,7 @@ Function/S V_getTransListForPopup()
 	Variable num,ii
 	
 	String openStr
-	ControlInfo popup_2		//the open beam popup
+	ControlInfo/W=V_TransmissionPanel popup_2		//the open beam popup
 	openStr = S_Value
 	
 	num=ItemsInList(retStr)
