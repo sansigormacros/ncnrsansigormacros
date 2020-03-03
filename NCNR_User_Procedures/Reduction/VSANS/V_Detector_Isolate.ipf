@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 // Isolation of a single detector panel for inspection, verifying the corrections, troubleshooting, etc.

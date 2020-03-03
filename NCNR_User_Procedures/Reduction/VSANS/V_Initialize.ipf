@@ -1,6 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=0.1
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 //***********************
 // NOV 2015 Vers 0.1

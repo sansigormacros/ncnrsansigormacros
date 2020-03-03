@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 // Start to build up and test the r/w accessors for VSANS

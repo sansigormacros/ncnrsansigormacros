@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 // to properly set up the template for other facility reduction templates, 
 // function NCNR_VSANS() must exist here in the Includes file.
