@@ -428,7 +428,8 @@ Function V_MaskToolsButton(ba) : ButtonControl
 			
 			SetDrawLayer/W=MaskEditPanel ProgFront
 			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
-			SetDrawEnv/W=MaskEditPanel fillPat=1	
+			SetDrawEnv/W=MaskEditPanel fillPat=1	,fillfgc= (65535,65535,65535,39000)		//set the draw fill to translucent white
+			SetDrawEnv/W=MaskEditPanel save
 			
 			break
 		case -1: // control being killed

@@ -31,6 +31,7 @@ Menu "VSANS"
 //		"Trim I(q) points",V_CombineDataGraph()
 		"-"
 		"Derive Beam Centers From Reference",V_DeriveBeamCenters()
+		"Derive Beam Centers From Open Beam Files",V_AutoBeamCenter()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
 		"Median Filter Back Det",pV_MedianFilterBack()

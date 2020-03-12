@@ -2357,6 +2357,8 @@ Proc V_PatchDet_xyCenters_Panel()
 		Make/O/D/N=9 xCtr_cm,yCtr_cm
 		Make/O/T/N=9 panelW
 		
+		PanelW = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
+		
 		Variable/G gFileNum_Lo,gFileNum_Hi
 		
 		SetDataFolder root:

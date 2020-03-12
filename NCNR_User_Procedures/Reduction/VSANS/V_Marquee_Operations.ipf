@@ -274,7 +274,9 @@ Proc pV_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
 	V_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
 End
 
-Function V_FindCentroid() :  GraphMarquee
+
+
+Function V_Find_BeamCentroid() :  GraphMarquee
 
 //	//get the current displayed data (so the correct folder is used)
 //	SVAR cur_folder=root:myGlobals:gDataDisplayType
@@ -283,6 +285,7 @@ Function V_FindCentroid() :  GraphMarquee
 	Variable xzsum,yzsum,zsum,xctr,yctr
 	Variable left,right,bottom,top,ii,jj,counts
 	Variable x_mm_sum,y_mm_sum,x_mm,y_mm
+	Variable xRef,yRef
 
 	
 	GetMarquee left,bottom
@@ -382,6 +385,8 @@ Function V_FindCentroid() :  GraphMarquee
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			Print "FRONT Reference X-center (cm) = ",x_mm/10
 			Print "FRONT Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
+			xRef = x_mm/10
+			yRef = y_mm/10 + yCorrection*yPixSize
 		endif
 
 		if(cmpstr(detStr,"MR") == 0)
@@ -392,6 +397,8 @@ Function V_FindCentroid() :  GraphMarquee
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			Print "MIDDLE Reference X-center (cm) = ",x_mm/10
 			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
+			xRef = x_mm/10
+			yRef = y_mm/10 + yCorrection*yPixSize
 		endif
 		
 // if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value	
@@ -399,13 +406,37 @@ Function V_FindCentroid() :  GraphMarquee
 		if(cmpstr(detStr,"FL") == 0)
 			Print "FRONT Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_FL_x 	// NEW Dec 2018 values
 			Print "FRONT Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_FL_y
+			xRef = x_mm/10 - kBCtrOffset_FL_x
+			yRef = y_mm/10 - kBCtrOffset_FL_y
 		endif
 		
 		if(cmpstr(detStr,"ML") == 0)
 			Print "MIDDLE Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_ML_x
 			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_ML_y
+			xRef = x_mm/10 - kBCtrOffset_ML_x
+			yRef = y_mm/10 - kBCtrOffset_ML_y
 		endif
 	endif
+
+// TODO
+// ?? store the xy reference values somewhere so that the conversion to proper
+// beam center values can be done automatically, rather than copying numbers into a procedure
+//
+// - either I need 6 globals for the three panels, or I need to store the values in the 
+// reduction block of the file (comment?) - but I don't have the fileName here - could I find it
+// somewhere? gFileList in the current data folder?
+//
+	String ctrStr=""
+	if(cmpstr(detStr,"B") == 0)
+		xRef = xCtr
+		yRef = yCtr			//these are in pixels
+	endif
+	sprintf ctrStr,"XREF=%g;YREF=%g;",xRef,yRef
+	SVAR gFileList = $("root:Packages:NIST:VSANS:"+gCurDispType+":gFileList")
+	
+	V_writeReductionComments(gFileList,ctrStr)
+	
+	
 	
 	//back to root folder (redundant)
 	SetDataFolder root:

@@ -1569,7 +1569,50 @@ Function V_ColorizeSaturated()
 	ModifyImage data ctab= {0,16399*16-1,ColdWarm,0},minRGB=0,maxRGB=(32792,65535,1)
 End
 
-
-
 ///
+
+
+Function V_PrintLoHiNum()
+
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)
+	Print "lo = ",lo
+	Print "hi = ",hi
+	
+End
+
+//
+// returns the lo, hi run numbers in the current directory
+// (passed by reference)
+//
+//
+// note that 1111 (is a special number for the ReadNoise file, ignore this run)
+//
+Function V_Find_LoHi_RunNum(lo,hi)
+	Variable &lo,&hi
+	
+	String fileList="",fname=""
+	Variable ii,num,runNum
+	
+	// set to values that will change
+	lo = 1e8
+	hi = 0
+	
+	// get a file listing of all raw data files
+	fileList = V_GetRawDataFileList()
+	num = itemsInList(fileList)
+	
+	for(ii=0;ii<num;ii+=1)
+		fname = stringFromList(ii,fileList)
+		runNum = V_GetRunNumFromFile(fname)
+
+		if(runNum != 1111)		//ignore this run
+			lo = runNum < lo ? runNum : lo		// if runNum < lo, update
+			hi = runNum > hi ? runNum : hi		// if runNum > hi, update
+		endif
+	endfor
+	
+	return(0)
+End
+
 
