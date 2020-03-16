@@ -14,6 +14,9 @@
 // in a similar way as for SANS reduction
 //
 //
+// TODO:
+// -- adjust the size of the panel to better fit a laptop (for my telework)
+//
 
 
 Proc VCALC_Panel()
