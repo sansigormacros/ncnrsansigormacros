@@ -209,13 +209,18 @@ Function V_BuildCatVeryShortTable()
 	Variable numitems,ii,ok
 	
 	numitems = ItemsInList(list,";")
+	Variable sc=1
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 	
 	// show a progress bar for filling the file catalog
 	Variable indefinite=0,useIgorDraw=1
-	NewPanel /N=ProgressPanel /W=(285,111,739,193)
-	ValDisplay valdisp0,win=ProgressPanel,pos={18,32},size={342,18},limits={0,numitems,0},barmisc={0,0}
+	NewPanel /N=ProgressPanel /W=(285*sc,111*sc,739*sc,193*sc)
+	ValDisplay valdisp0,win=ProgressPanel,pos={sc*18,32*sc},size={sc*342,18*sc},limits={0,numitems,0},barmisc={0,0}
 	ValDisplay valdisp0,win=ProgressPanel,value= _NUM:0
-	DrawText 20,24,"Refreshing file catalog... Please Wait..."
+	DrawText 20*sc,24*sc,"Refreshing file catalog... Please Wait..."
 
 	if( indefinite )
 		ValDisplay valdisp0,win=ProgressPanel,mode= 4	// candy stripe
@@ -225,7 +230,7 @@ Function V_BuildCatVeryShortTable()
 	if( useIgorDraw )
 		ValDisplay valdisp0,win=ProgressPanel,highColor=(49535,1000,1000)		//(0,65535,0)
 	endif
-	Button bStop,win=ProgressPanel,pos={375,32},size={50,20},title="Stop"
+	Button bStop,win=ProgressPanel,pos={sc*375,32*sc},size={sc*50,20*sc},title="Stop"
 	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
 	
 	
@@ -720,24 +725,32 @@ function V_BuildCatSortPanel()
 	endif
 	
 	print "Creating CAT Sort-Panel..."
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 		
 	//PauseUpdate
-	NewPanel /W=(600,360,790,730)/K=1 as "CAT - Sort Panel"
+	NewPanel /W=(600*sc,360*sc,790*sc,730*sc)/K=1 as "CAT - Sort Panel"
 	DoWindow/C CatSortPanel
 	ModifyPanel fixedSize=1, cbRGB = (42919, 53970, 60909)
 	
-	Button SortFilenamesButton,		pos={25, 8},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Filenames"
-	Button SortLabelsButton,			pos={25,38},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Labels"
-	Button SortDateAndTimeButton,	pos={25,68},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Date and Time"
-	Button SortIntentButton,			pos={25,98},		size={140,24},proc=V_CatVSANSTable_SortProc,title="Intent"
-	Button SortPurposeButton,		pos={25,128},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Purpose"
-	Button SortIDButton,			pos={25,158},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Group ID"
-	Button SortLambdaButton,			pos={25,188},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Lambda"
-	Button SortCountTimButton,		pos={25,218},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Time"
-	Button SortSDDFButton,		pos={25,248},	size={140,24},proc=V_CatVSANSTable_SortProc,title="SDD F"
-	Button SortCountRateFButton,		pos={25,278},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Count Rate F"
-	Button SortMonitorCountsButton,	pos={25,308},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Monitor Counts"
-	Button SortTransmissionButton,	pos={25,338},	size={140,24},proc=V_CatVSANSTable_SortProc,title="Transmission"
+	Button SortFilenamesButton,		pos={sc*25, 8*sc},		size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Filenames"
+	Button SortLabelsButton,			pos={sc*25,38*sc},		size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Labels"
+	Button SortDateAndTimeButton,	pos={sc*25,68*sc},		size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Date and Time"
+	Button SortIntentButton,			pos={sc*25,98*sc},		size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Intent"
+	Button SortPurposeButton,		pos={sc*25,128*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Purpose"
+	Button SortIDButton,			pos={sc*25,158*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Group ID"
+	Button SortLambdaButton,			pos={sc*25,188*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Lambda"
+	Button SortCountTimButton,		pos={sc*25,218*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Count Time"
+	Button SortSDDFButton,		pos={sc*25,248*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="SDD F"
+	Button SortCountRateFButton,		pos={sc*25,278*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Count Rate F"
+	Button SortMonitorCountsButton,	pos={sc*25,308*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Monitor Counts"
+	Button SortTransmissionButton,	pos={sc*25,338*sc},	size={sc*140,24*sc},proc=V_CatVSANSTable_SortProc,title="Transmission"
 
 end
 

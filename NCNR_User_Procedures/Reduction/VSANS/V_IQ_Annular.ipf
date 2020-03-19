@@ -92,9 +92,17 @@ Function V_Phi_Graph_Proc(folderStr,detGroup)
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	DoWindow/F V_Phi_Graph
 	if(V_flag == 0)
-		Display /W=(35,45,572,419)/N=V_Phi_Graph /K=1
+		Display /W=(35*sc,45*sc,572*sc,419*sc)/N=V_Phi_Graph /K=1
 	else
 		RemoveFromGraph/Z iPhiBin_qxqy_FLRTB
 		RemoveFromGraph/Z iPhiBin_qxqy_MLRTB

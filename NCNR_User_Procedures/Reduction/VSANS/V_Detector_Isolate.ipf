@@ -58,36 +58,41 @@ End
 Proc V_IsolateDetectorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
-	NewPanel /W=(662,418,1586,960)/N=IsolateDetector /K=1
+	NewPanel /W=(662*sc,418*sc,1586*sc,960*sc)/N=IsolateDetector /K=1
 //	ShowTools/A
 	
-	PopupMenu popup_0,pos={169,18},size={109,20},proc=V_isoSetDetPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,pos={sc*169,18*sc},size={sc*109,20*sc},proc=V_isoSetDetPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
-//	PopupMenu popup_1,pos={200,20},size={157,20},proc=DetModelPopMenuProc,title="Model Function"
+//	PopupMenu popup_1,pos={sc*200,20*sc},size={sc*157,20*sc},proc=DetModelPopMenuProc,title="Model Function"
 //	PopupMenu popup_1,mode=1,popvalue="BroadPeak",value= #"\"BroadPeak;other;\""
-	PopupMenu popup_2,pos={20,18},size={109,20},title="Data Source",proc=V_SetFldrPopMenuProc
+	PopupMenu popup_2,pos={sc*20,18*sc},size={sc*109,20*sc},title="Data Source",proc=V_SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;DIV;MSK;\""
 		
-	Button button_0,pos={541,79},size={130,20},proc=V_isoCorrectButtonProc,title="Apply Corrections"
-//	Button button_1,pos={651,79},size={80,20},proc=V_isoDetFitGuessButtonProc,title="Guess"
-	Button button_2,pos={821,20},size={80,20},proc=V_isoHelpButtonProc,title="Help"
+	Button button_0,pos={sc*541,79*sc},size={sc*130,20*sc},proc=V_isoCorrectButtonProc,title="Apply Corrections"
+//	Button button_1,pos={sc*651,79*sc},size={sc*80,20*sc},proc=V_isoDetFitGuessButtonProc,title="Guess"
+	Button button_2,pos={sc*821,20*sc},size={sc*80,20*sc},proc=V_isoHelpButtonProc,title="Help"
 
 
 
-	CheckBox check_0,pos={542.00,131.00},size={110.00,16.00},title="non-linear correction"
+	CheckBox check_0,pos={sc*542.00,131.00*sc},size={sc*110.00,16.00*sc},title="non-linear correction"
 	CheckBox check_0,value= 0
-	CheckBox check_1,pos={542.00,159.00},size={110.00,16.00},title="dead time correction"
+	CheckBox check_1,pos={sc*542.00,159.00*sc},size={sc*110.00,16.00*sc},title="dead time correction"
 	CheckBox check_1,value= 0
-	CheckBox check_2,pos={542.00,187.00},size={110.00,16.00},title="solid angle correction"
+	CheckBox check_2,pos={sc*542.00,187.00*sc},size={sc*110.00,16.00*sc},title="solid angle correction"
 	CheckBox check_2,value= 0
-	CheckBox check_3,pos={542.00,215.00},size={110.00,16.00},title="sensitivity (DIV) correction"
+	CheckBox check_3,pos={sc*542.00,215.00*sc},size={sc*110.00,16.00*sc},title="sensitivity (DIV) correction"
 	CheckBox check_3,value= 0
-	CheckBox check_4,pos={542.00,243.00},size={110.00,16.00},title="transmission correction"
+	CheckBox check_4,pos={sc*542.00,243.00*sc},size={sc*110.00,16.00*sc},title="transmission correction"
 	CheckBox check_4,value= 0
-	CheckBox check_5,pos={542.00,271.00},size={110.00,16.00},title="tube shadow correction"
+	CheckBox check_5,pos={sc*542.00,271.00*sc},size={sc*110.00,16.00*sc},title="tube shadow correction"
 	CheckBox check_5,value= 0
-	CheckBox check_6,pos={542.00,300.00},size={110.00,16.00},title="monitor normalization"
+	CheckBox check_6,pos={sc*542.00,300.00*sc},size={sc*110.00,16.00*sc},title="monitor normalization"
 	CheckBox check_6,value= 0
 
 
@@ -314,6 +319,26 @@ Function V_isoDrawDetPanel(str)
 	// need to be in the same folder as the data
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_"+str)
 	Wave data1 = data
+
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+	left *= sc
+	top *= sc
+	right *= sc
+	bottom *= sc
+	
+	left2 *= sc
+	top2 *= sc
+	right2 *= sc
+	bottom2 *= sc
+	
 	
 	//draw the detector panel
 	Display/W=(left,top,right,bottom)/HOST=# 
@@ -363,43 +388,43 @@ Function V_isoCorrectButtonProc(ba) : ButtonControl
 			// poll the state of the checkboxes
 			// temporarily set the global (preference) flags
 
-//			CheckBox check_0,pos={542.00,131.00},size={110.00,16.00},title="non-linear correction"
+//			CheckBox check_0,pos={sc*542.00,131.00*sc},size={sc*110.00,16.00*sc},title="non-linear correction"
 			NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 			sav0 = gDoNonLinearCor
 			ControlInfo check_0
 			gDoNonLinearCor = V_Value
 			
-//			CheckBox check_1,pos={542.00,159.00},size={110.00,16.00},title="dead time correction"
+//			CheckBox check_1,pos={sc*542.00,159.00*sc},size={sc*110.00,16.00*sc},title="dead time correction"
 			NVAR gDoDeadTimeCor = root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor
 			sav1 = gDoDeadTimeCor
 			ControlInfo check_1
 			gDoDeadTimeCor = V_Value
 			
-//			CheckBox check_2,pos={542.00,187.00},size={110.00,16.00},title="solid angle correction"
+//			CheckBox check_2,pos={sc*542.00,187.00*sc},size={sc*110.00,16.00*sc},title="solid angle correction"
 			NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
 			sav2 = gDoSolidAngleCor
 			ControlInfo check_2
 			gDoSolidAngleCor = V_Value
 			
-//			CheckBox check_3,pos={542.00,215.00},size={110.00,16.00},title="sensitivity (DIV) correction"
+//			CheckBox check_3,pos={sc*542.00,215.00*sc},size={sc*110.00,16.00*sc},title="sensitivity (DIV) correction"
 			NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
 			sav3 = gDoDIVCor
 			ControlInfo check_3
 			gDoDIVCor = V_Value
 			
-//			CheckBox check_4,pos={542.00,243.00},size={110.00,16.00},title="transmission correction"
+//			CheckBox check_4,pos={sc*542.00,243.00*sc},size={sc*110.00,16.00*sc},title="transmission correction"
 			NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 			sav4 = gDoTrans
 			ControlInfo check_4
 			gDoTrans = V_Value
 			
-//			CheckBox check_5,pos={542.00,271.00},size={110.00,16.00},title="tube shadow correction"
+//			CheckBox check_5,pos={sc*542.00,271.00*sc},size={sc*110.00,16.00*sc},title="tube shadow correction"
 			NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
 			sav5 = gDoTubeShadowCor
 			ControlInfo check_5
 			gDoTubeShadowCor = V_Value
 			
-//			CheckBox check_6,pos={542.00,300.00},size={110.00,16.00},title="monitor normalization"
+//			CheckBox check_6,pos={sc*542.00,300.00*sc},size={sc*110.00,16.00*sc},title="monitor normalization"
 			NVAR gDoMonitorNormalization = root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization
 			sav6 = gDoMonitorNormalization
 			ControlInfo check_6

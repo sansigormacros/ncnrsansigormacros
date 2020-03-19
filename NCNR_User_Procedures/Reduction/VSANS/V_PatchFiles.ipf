@@ -121,8 +121,15 @@ End
 //panel recreation macro for the PatchPanel...
 //
 Proc V_Patch_Panel()
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1	   // building window...
-	NewPanel /W=(533,50,1140,588)/K=2 as "Patch Raw VSANS Data Files"
+	NewPanel /W=(533*sc,50*sc,1140*sc,588*sc)/K=1 as "Patch Raw VSANS Data Files"
 	DoWindow/C V_Patch_Panel
 //	ShowTools/A
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch:
@@ -131,52 +138,52 @@ Proc V_Patch_Panel()
 	ModifyPanel cbRGB=(11291,48000,3012)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 7,30,422,30
+	DrawLine 7*sc,30*sc,422*sc,30*sc
 
 	
-	SetVariable PathDisplay,pos={77,7},size={310,13},title="Path"
+	SetVariable PathDisplay,pos={sc*77,7*sc},size={sc*310,13*sc},title="Path"
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while patching. If no files appear in the popup, make sure that this folder is set correctly"}
-	SetVariable PathDisplay,font="Courier",fSize=10
+	SetVariable PathDisplay,font="Courier",fSize=10*sc
 	SetVariable PathDisplay,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gCatPathStr
-	Button PathButton,pos={2,3},size={70,20},proc=V_PickPathButton,title="Pick Path"
+	Button PathButton,pos={sc*2,3*sc},size={sc*70,20*sc},proc=V_PickPathButton,title="Pick Path"
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
-	Button helpButton,pos={400,3},size={25,20},proc=V_ShowPatchHelp,title="?"
+	Button helpButton,pos={sc*400,3*sc},size={sc*25,20*sc},proc=V_ShowPatchHelp,title="?"
 	Button helpButton,help={"Show the help file for patching raw data headers"}
-	PopupMenu PatchPopup,pos={4,37},size={156,19},proc=V_PatchPopMenuProc,title="File(s) to Patch"
+	PopupMenu PatchPopup,pos={sc*4,37*sc},size={sc*156,19*sc},proc=V_PatchPopMenuProc,title="File(s) to Patch"
 	PopupMenu PatchPopup,help={"The displayed file is the one that will be edited. The entire list will be edited if \"Change All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh. \r List items are selected from the file based on MatchString"}
 	PopupMenu PatchPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:Patch:gPatchList"
 
-	Button CHButton,pos={314,37},size={110,20},proc=V_ChangeHeaderButtonProc,title="Change Header"
+	Button CHButton,pos={sc*314,37*sc},size={sc*110,20*sc},proc=V_ChangeHeaderButtonProc,title="Change Header"
 	Button CHButton,help={"This will change the checked values (ONLY) in the single file selected in the popup."}
-	SetVariable PMStr,pos={6,63},size={174,13},proc=V_SetMatchStrProc,title="Match String"
+	SetVariable PMStr,pos={sc*6,63*sc},size={sc*174,13*sc},proc=V_SetMatchStrProc,title="Match String"
 	SetVariable PMStr,help={"Enter the search string to narrow the list of files. \"*\" is the wildcard character. After entering, \"pop\" the menu to refresh the file list."}
-	SetVariable PMStr,font="Courier",fSize=10
+	SetVariable PMStr,font="Courier",fSize=10*sc
 	SetVariable PMStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPatchMatchStr
-	Button ChAllButton,pos={245,60},size={180,20},proc=V_ChAllHeadersButtonProc,title="Change All Headers in List"
+	Button ChAllButton,pos={sc*245,60*sc},size={sc*180,20*sc},proc=V_ChAllHeadersButtonProc,title="Change All Headers in List"
 	Button ChAllButton,help={"This will change the checked values (ONLY) in ALL of the files in the popup list, not just the top file. If the \"change\" checkbox for the item is not checked, nothing will be changed for that item."}
-	Button DoneButton,pos={450,60},size={110,20},proc=V_DoneButtonProc,title="Done Patching"
+	Button DoneButton,pos={sc*450,60*sc},size={sc*110,20*sc},proc=V_DoneButtonProc,title="Done Patching"
 	Button DoneButton,help={"When done Patching files, this will close this control panel."}
-	CheckBox check0,pos={18,80},size={40,15},title="Run #",value= 1,mode=1,proc=V_MatchCheckProc
-	CheckBox check1,pos={78,80},size={40,15},title="Text",value= 0,mode=1,proc=V_MatchCheckProc
-	CheckBox check2,pos={138,80},size={40,15},title="Group_ID",value= 0,mode=1,proc=V_MatchCheckProc
+	CheckBox check0,pos={sc*18,80*sc},size={sc*40,15*sc},title="Run #",value= 1,mode=1,proc=V_MatchCheckProc
+	CheckBox check1,pos={sc*78,80*sc},size={sc*40,15*sc},title="Text",value= 0,mode=1,proc=V_MatchCheckProc
+	CheckBox check2,pos={sc*138,80*sc},size={sc*40,15*sc},title="Group_ID",value= 0,mode=1,proc=V_MatchCheckProc
 
-	SetVariable curStr,pos={50,112},size={350,20},title="File Label:"
+	SetVariable curStr,pos={sc*50,112*sc},size={sc*350,20*sc},title="File Label:"
 	SetVariable curStr,help={"Label of current file in popup list"}
-	SetVariable curStr,font="Courier",fSize=10
+	SetVariable curStr,font="Courier",fSize=10*sc
 	SetVariable curStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Patch:gPatchCurLabel
 	
-	PopupMenu popup_0,pos={450,112},size={109,20},title="Detector Panel",proc=V_PatchPopMenuProc
+	PopupMenu popup_0,pos={sc*450,112*sc},size={sc*109,20*sc},title="Detector Panel",proc=V_PatchPopMenuProc
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
 
 
-	TabControl PatchTab,pos={20,140},size={570,380}
+	TabControl PatchTab,pos={sc*20,140*sc},size={sc*570,380*sc}
 	TabControl PatchTab,tabLabel(0)="Control",tabLabel(1)="Reduction",tabLabel(2)="Sample"
 	TabControl PatchTab,tabLabel(3)="Instrument",tabLabel(4)="Detectors",tabLabel(5)="PolSANS"
 	TabControl PatchTab,value=0,labelBack=(47748,57192,54093),proc=V_PatchTabProc
 
 
-	ListBox list0,pos={30,170.00},size={550.00,330},proc=V_PatchListBoxProc,frame=1
-	ListBox list0,fSize=10,userColumnResize= 1,listWave=PP_ListWave,selWave=PP_SelWave,titleWave=PP_TitleWave
+	ListBox list0,pos={sc*30,170.00*sc},size={sc*550.00,330*sc},proc=V_PatchListBoxProc,frame=1
+	ListBox list0,fSize=10*sc,userColumnResize= 1,listWave=PP_ListWave,selWave=PP_SelWave,titleWave=PP_TitleWave
 	ListBox list0,mode=2,widths={30,200}
 
 
@@ -185,7 +192,7 @@ Proc V_Patch_Panel()
 
 // TODO: add functions for these, make the intent a popup (since it's an enumerated type)
 
-//	PopupMenu popup_1,pos={42,base+14*step},size={109,20},title="File intent"
+//	PopupMenu popup_1,pos={sc*42,base+14*step*sc},size={sc*109,20*sc},title="File intent"
 //	PopupMenu popup_1,mode=1,popvalue="SCATTER",value= #"\"SCATTER;EMPTY;BLOCKED BEAM;TRANS;EMPTY BEAM;\""
 
 
@@ -1709,37 +1716,45 @@ End
 Proc V_DeadtimePatchPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
-	NewPanel /W=(600,400,1000,1000)/N=DeadtimePanel /K=1
+	NewPanel /W=(600*sc,400*sc,1000*sc,1000*sc)/N=DeadtimePanel /K=1
 //	ShowTools/A
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
 
 	SetDrawLayer UserBack
-	DrawText 85,99,"Current Values"
-	DrawText 21,258,"Write to all files (inlcusive)"
-	SetDrawEnv fsize= 14,fstyle= 1
-	DrawText 209,30,"Dead Time Constants"
-	DrawText 20,133,"Run Number(s)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 209*sc,30*sc,"Dead Time Constants"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
 	
-	PopupMenu popup_0,pos={20,40},size={109,20},title="Detector Panel"
+	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
 	
-	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadDTButtonProc,title="Read"
-	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteDTButtonProc,title="Write"
-	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfDTButton,title="Perfect Dead Time"
-	Button button0_3,pos={18.00,370.00},size={140.00,20.00},proc=V_LoadCSVDTButton,title="Load Dead Time CSV"
-	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVDTButton,title="Write Dead Time CSV"
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadDTButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteDTButtonProc,title="Write"
+	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=V_GeneratePerfDTButton,title="Perfect Dead Time"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=V_LoadCSVDTButton,title="Load Dead Time CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=V_WriteCSVDTButton,title="Write Dead Time CSV"
 	
-	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
 	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
 	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 
 // display the wave	
-	Edit/W=(180,40,380,550)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
-	ModifyTable width(Point)=40
-	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=120
+	Edit/W=(180*sc,40*sc,380*sc,550*sc)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=80
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 
@@ -2013,37 +2028,45 @@ End
 Proc V_CalibrationPatchPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
-	NewPanel /W=(600,400,1200,1000)/N=CalibrationPanel /K=1
+	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=CalibrationPanel /K=1
 //	ShowTools/A
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
 
 	SetDrawLayer UserBack
-	DrawText 85,99,"Current Values"
-	DrawText 21,258,"Write to all files (inlcusive)"
-	SetDrawEnv fsize= 14,fstyle= 1
-	DrawText 227,28,"Quadratic Calibration Constants per Tube"
-	DrawText 20,133,"Run Number(s)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 227*sc,28*sc,"Quadratic Calibration Constants per Tube"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
 		
-	PopupMenu popup_0,pos={20,40},size={109,20},title="Detector Panel"
+	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
 	
-	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadCalibButtonProc,title="Read"
-	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteCalibButtonProc,title="Write"
-	Button button0_2,pos={18.00,336.00},size={140.00,20.00},proc=V_GeneratePerfCalibButton,title="Perfect Calibration"
-	Button button0_3,pos={18.00,370.00},size={140.00,20.00},proc=V_LoadCSVCalibButton,title="Load Calibration CSV"
-	Button button0_4,pos={18.00,400.00},size={140.00,20.00},proc=V_WriteCSVCalibButton,title="Write Calibration CSV"
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadCalibButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteCalibButtonProc,title="Write"
+	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=V_GeneratePerfCalibButton,title="Perfect Calibration"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=V_LoadCSVCalibButton,title="Load Calibration CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=V_WriteCSVCalibButton,title="Write Calibration CSV"
 		
-	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
 	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
 	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 
 // display the wave	
-	Edit/W=(180,40,580,550)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
-	ModifyTable width(Point)=40
-	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave)=110
+	Edit/W=(180*sc,40*sc,580*sc,550*sc)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave)=70
 	// the elements() command transposes the view in the table, but does not transpose the wave
 	ModifyTable elements(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave) = (-3, -2)
 	RenameWindow #,T0
@@ -2379,34 +2402,42 @@ End
 Proc V_Patch_xyCtr_Panel() : Panel
 	PauseUpdate; Silent 1		// building window...
 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
-	NewPanel /W=(600,400,1150,800)/N=Patch_XY_Panel /K=1
+	NewPanel /W=(600*sc,400*sc,1150*sc,800*sc)/N=Patch_XY_Panel /K=1
 //	ShowTools/A
 	
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
 
 	SetDrawLayer UserBack
-	DrawText 85,99,"Current Values"
-	DrawText 21,258,"Write to all files (inlcusive)"
-	SetDrawEnv fsize= 14,fstyle= 1
-	DrawText 262,30,"Beam Center [cm]"
-	DrawText 20,133,"Run Number(s)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files(inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 20*sc,133*sc,"Run Number(s)"
+	DrawText 262*sc,30*sc,"Beam Center [cm]"
+
 	
-	Button button0,pos={20,81},size={50.00,20.00},proc=V_ReadXYButtonProc,title="Read"
-	Button button0_1,pos={20,220},size={50.00,20.00},proc=V_WriteXYButtonProc,title="Write"
-	SetVariable setvar0,pos={20,141},size={100.00,14.00},title="first"
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadXYButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteXYButtonProc,title="Write"
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
 	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	SetVariable setvar1,pos={20.00,167},size={100.00,14.00},title="last"
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
 	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
 	
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
 // display the wave	
-	Edit/W=(180,40,500,370)/HOST=#  panelW,xCtr_cm,yCtr_cm
+	Edit/W=(180*sc,40*sc,500*sc,370*sc)/HOST=#  panelW,xCtr_cm,yCtr_cm
 	ModifyTable width(Point)=0
-	ModifyTable width(panelW)=80
-	ModifyTable width(xCtr_cm)=100
-	ModifyTable width(yCtr_cm)=100
+	ModifyTable width(panelW)=50
+	ModifyTable width(xCtr_cm)=60
+	ModifyTable width(yCtr_cm)=60
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 

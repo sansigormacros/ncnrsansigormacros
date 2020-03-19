@@ -50,81 +50,51 @@ Function V_InitTransPanelGlobals()
 End
 
 Window V_TransmissionPanel() : Panel
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(1496,366,1974,990) /K=1
+	NewPanel /W=(1496*sc,366*sc,1950*sc,940*sc) /K=1
 	ModifyPanel cbRGB=(32896,16448,0,19621)
 	DoWindow/C V_TransmissionPanel
 
 //	ShowTools/A
-	PopupMenu popup_0,pos={16.00,359.00},size={104.00,23.00},fstyle=1,fsize=12,proc=V_TSamFilePopMenuProc,title="Sample"
+	PopupMenu popup_0,pos={sc*16.00,359.00*sc},size={sc*104.00,23.00*sc},fstyle=1,fsize=12*sc,proc=V_TSamFilePopMenuProc,title="Sample"
 	PopupMenu popup_0,mode=1,popvalue="_none_",value= #"root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList"
-	PopupMenu popup_1,pos={12.00,229.00},size={195.00,23.00},fstyle=1,fsize=12,proc=V_TTransmFilePopMenuProc,title="Transmission"
+	PopupMenu popup_1,pos={sc*12.00,229.00*sc},size={sc*195.00,23.00*sc},fstyle=1,fsize=12*sc,proc=V_TTransmFilePopMenuProc,title="Transmission"
 	PopupMenu popup_1,mode=1,popvalue="_none_",value = #"root:Packages:NIST:VSANS:Globals:Transmission:gTransMatchList"//value= V_getFilePurposeList("TRANSMISSION",0)
-	PopupMenu popup_2,pos={17.00,79.00},size={188.00,23.00},fstyle=1,fsize=12,proc=V_TEmpBeamPopMenuProc,title="Open Beam"
+	PopupMenu popup_2,pos={sc*17.00,79.00*sc},size={sc*188.00,23.00*sc},fstyle=1,fsize=12*sc,proc=V_TEmpBeamPopMenuProc,title="Open Beam"
 	PopupMenu popup_2,mode=1,popvalue="sans1.nxs.ngv",value= V_getFileIntentList("OPEN BEAM",0)
-	Button button_0,pos={34.00,499.00},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
-	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
-	Button button_3,pos={410.00,13.00},size={50.00,20.00},proc=V_DoneTransmButtonProc,title="Done"
-	Button button_4,pos={164.00,500.00},size={150.00,20.00},proc=V_CalcTransmListButtonProc,title="Calculate All In Popup"
-	SetVariable setvar_0,pos={18.00,390.00},size={300.00,14.00},title="Label:"
+	Button button_0,pos={sc*34.00,499.00*sc},size={sc*100.00,20.00*sc},proc=V_CalcTransmButtonProc,title="Calculate"
+	Button button_2,pos={sc*340.00,13.00*sc},size={sc*30.00,20.00*sc},proc=V_HelpTransmButtonProc,title="?"
+	Button button_3,pos={sc*380.00,13.00*sc},size={sc*50.00,20.00*sc},proc=V_DoneTransmButtonProc,title="Done"
+	Button button_4,pos={sc*164.00,500.00*sc},size={sc*150.00,20.00*sc},proc=V_CalcTransmListButtonProc,title="Calculate All In Popup"
+	SetVariable setvar_0,pos={sc*18.00,390.00*sc},size={sc*300.00,14.00*sc},title="Label:"
 	SetVariable setvar_0,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
-	SetVariable setvar_1,pos={18.00,417.00},size={300.00,14.00},title="Group ID:"
+	SetVariable setvar_1,pos={sc*18.00,417.00*sc},size={sc*300.00,14.00*sc},title="Group ID:"
 	SetVariable setvar_1,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
-	SetVariable setvar_2,pos={15.00,257.00},size={300.00,14.00},title="Label:"
+	SetVariable setvar_2,pos={sc*15.00,257.00*sc},size={sc*300.00,14.00*sc},title="Label:"
 	SetVariable setvar_2,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
-	SetVariable setvar_3,pos={14.00,283.00},size={300.00,14.00},title="Group ID:"
+	SetVariable setvar_3,pos={sc*14.00,283.00*sc},size={sc*300.00,14.00*sc},title="Group ID:"
 	SetVariable setvar_3,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
-	SetVariable setvar_4,pos={18.00,108.00},size={300.00,14.00},title="Label:"
+	SetVariable setvar_4,pos={sc*18.00,108.00*sc},size={sc*300.00,14.00*sc},title="Label:"
 	SetVariable setvar_4,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyLabel
-	SetVariable setvar_5,pos={18.00,132.00},size={300.00,14.00},title="XY Box:"
+	SetVariable setvar_5,pos={sc*18.00,132.00*sc},size={sc*300.00,14.00*sc},title="XY Box:"
 	SetVariable setvar_5,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyBoxCoord
-	SetVariable setvar_6,pos={18.00,157.00},size={300.00,14.00},fstyle=1,fsize=12,title="Panel:"
+	SetVariable setvar_6,pos={sc*18.00,157.00*sc},size={sc*300.00,14.00*sc},title="Panel:"		//,fstyle=1,fsize=12*sc
 	SetVariable setvar_6,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyPanel
-	SetVariable setvar_7,pos={18.00,442.00},size={300.00,14.00},title="Transmission:"
+	SetVariable setvar_7,pos={sc*18.00,442.00*sc},size={sc*300.00,14.00*sc},title="Transmission:"
 	SetVariable setvar_7,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTrans
-	SetVariable setvar_8,pos={18.00,467.00},size={300.00,14.00},title="Error:"
+	SetVariable setvar_8,pos={sc*18.00,467.00*sc},size={sc*300.00,14.00*sc},title="Error:"
 	SetVariable setvar_8,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
 EndMacro
 
 
-//Window V_TransmissionPanel() : Panel
-//	PauseUpdate; Silent 1		// building window...
-//	NewPanel /W=(1286,328,1764,952)
-//	ModifyPanel cbRGB=(32896,16448,0,19621)
-//	DoWindow/C V_TransmissionPanel
-//
-////	ShowTools/A
-//	PopupMenu popup_0,pos={19.00,55.00},size={86.00,23.00},proc=V_TSamFilePopMenuProc,title="Sample"
-////	PopupMenu popup_0,mode=1,value= V_getFilePurposeList("SCATTERING",0)//+V_getFileIntentList("EMPTY CELL",0)
-//	PopupMenu popup_0,mode=1,value=root:Packages:NIST:VSANS:Globals:Transmission:gSamMatchList 
-//	PopupMenu popup_1,pos={102,248},size={72.00,23.00},proc=V_TTransmFilePopMenuProc,title="Transmission"
-//	PopupMenu popup_1,mode=1,value= V_getFilePurposeList("TRANSMISSION",0)
-//	PopupMenu popup_2,pos={164,353},size={72.00,23.00},proc=V_TEmpBeamPopMenuProc,title="Open Beam"
-////	PopupMenu popup_2,mode=1,value= V_getFileIntentList("EMPTY BEAM",0)
-//	PopupMenu popup_2,mode=1,value= V_getFileIntentList("OPEN BEAM",0)
-//	Button button_0,pos={37,193},size={100.00,20.00},proc=V_CalcTransmButtonProc,title="Calculate"
-////	Button button_1,pos={23.00,491.00},size={100.00,20.00},proc=V_WriteTransmButtonProc,title="Write"
-//	Button button_2,pos={349.00,13.00},size={30.00,20.00},proc=V_HelpTransmButtonProc,title="?"
-//	Button button_3,pos={410.00,13.00},size={50.00,20.00},proc=V_DoneTransmButtonProc,title="Done"
-//	SetVariable setvar_0,pos={21.00,86.00},size={300.00,14.00},title="Label:"
-//	SetVariable setvar_0,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gSamLabel
-//	SetVariable setvar_1,pos={21.00,113.00},size={300.00,14.00},title="Group ID:"
-//	SetVariable setvar_1,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gSamGrpID
-//	SetVariable setvar_2,pos={105,276.00},size={300.00,14.00},title="Label:"
-//	SetVariable setvar_2,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTransLabel
-//	SetVariable setvar_3,pos={104,302},size={300.00,14.00},title="Group ID:"
-//	SetVariable setvar_3,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTrnGrpID
-//	SetVariable setvar_4,pos={165,382},size={300.00,14.00},title="Label:"
-//	SetVariable setvar_4,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyLabel
-//	SetVariable setvar_5,pos={165,406},size={300.00,14.00},title="XY Box:"
-//	SetVariable setvar_5,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyBoxCoord
-//	SetVariable setvar_6,pos={165,431},size={300.00,14.00},title="Panel:"
-//	SetVariable setvar_6,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gEmptyPanel
-//	SetVariable setvar_7,pos={21,138},size={300.00,14.00},title="Transmission:"
-//	SetVariable setvar_7,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTrans
-//	SetVariable setvar_8,pos={21,163},size={300.00,14.00},title="Error:"
-//	SetVariable setvar_8,limits={-inf,inf,0},value= root:Packages:NIST:VSANS:Globals:Transmission:gTransErr
-//EndMacro
+
 
 // TODO
 // -- fill in the details

@@ -117,36 +117,42 @@ End
 //    x- help (button is there, fill in the content)
 //
 Proc V_MaskEditorPanel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
 
-	Display /W=(662,418,1300,960)/N=MaskEditPanel	 /K=1
+	Display /W=(662*sc,418*sc,1300*sc,960*sc)/N=MaskEditPanel	 /K=1
 
 	ShowTools rect
-	ControlBar 100
+	ControlBar 100*sc
 		
-	PopupMenu popup_0,pos={18,40},size={109,20},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
+	PopupMenu popup_0,pos={sc*18,40*sc},size={sc*109,20*sc},proc=V_SetMaskPanelPopMenuProc,title="Detector Panel"
 	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
-	PopupMenu popup_2,pos={18,10},size={109,20},title="Data Source"//,proc=SetFldrPopMenuProc
+	PopupMenu popup_2,pos={sc*18,10*sc},size={sc*109,20*sc},title="Data Source"//,proc=SetFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;ABS;VCALC;\""
 
-	SetVariable setvar0,pos={226,32},size={112,23},title="tube number"
+	SetVariable setvar0,pos={sc*226,32*sc},size={sc*112,23*sc},title="tube number"
 	SetVariable setvar0,limits={0,127,1},value=root:Packages:NIST:VSANS:Globals:Mask:gMaskTube
-	Button button_0,pos={226,58},size={50.00,20.00},proc=V_AddToMaskButtonProc,title="Add"
-	Button button_1,pos={288,58},size={50.00,20.00},proc=V_RemoveFromMaskButtonProc,title="Del"
-	Button button_2,pos={496,41},size={90.00,20.00},proc=V_ToggleMaskButtonProc,title="Toggle"
-	Button button_3,pos={506,66},size={80.00,20.00},proc=V_SaveMaskButtonProc,title="Save"
-	CheckBox check_0,pos={174,35},size={37.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Row"
+	Button button_0,pos={sc*226,58*sc},size={sc*50.00,20.00*sc},proc=V_AddToMaskButtonProc,title="Add"
+	Button button_1,pos={sc*288,58*sc},size={sc*50.00,20.00*sc},proc=V_RemoveFromMaskButtonProc,title="Del"
+	Button button_2,pos={sc*496,41*sc},size={sc*90.00,20.00*sc},proc=V_ToggleMaskButtonProc,title="Toggle"
+	Button button_3,pos={sc*506,66*sc},size={sc*80.00,20.00*sc},proc=V_SaveMaskButtonProc,title="Save"
+	CheckBox check_0,pos={sc*174,35*sc},size={sc*37.00,15.00*sc},proc=V_DrawMaskRadioCheckProc,title="Row"
 	CheckBox check_0,value= 0,mode=1
-	CheckBox check_1,pos={174,58},size={32.00,15.00},proc=V_DrawMaskRadioCheckProc,title="Col"
+	CheckBox check_1,pos={sc*174,58*sc},size={sc*32.00,15.00*sc},proc=V_DrawMaskRadioCheckProc,title="Col"
 	CheckBox check_1,value= 1,mode=1
 
-	Button button_5,pos={18,70.00},size={70.00,20.00},proc=V_MaskToolsButton,title="Tools"
-	Button button_6,pos={380,33},size={90.00,20.00},proc=V_AddShapeToMaskButtonProc,title="Add Shape"
-	Button button_7,pos={380,58},size={90.00,20.00},proc=V_AddShapeToMaskButtonProc,title="Del Shape"
-	Button button_8,pos={556.00,14.00},size={30.00,20.00},proc=V_DrawMaskHelpButtonProc,title="?"
+	Button button_5,pos={sc*18,70.00*sc},size={sc*70.00,20.00*sc},proc=V_MaskToolsButton,title="Tools"
+	Button button_6,pos={sc*380,33*sc},size={sc*90.00,20.00*sc},proc=V_AddShapeToMaskButtonProc,title="Add Shape"
+	Button button_7,pos={sc*380,58*sc},size={sc*90.00,20.00*sc},proc=V_AddShapeToMaskButtonProc,title="Del Shape"
+	Button button_8,pos={sc*556.00,14.00*sc},size={sc*30.00,20.00*sc},proc=V_DrawMaskHelpButtonProc,title="?"
 
-	GroupBox group0,pos={163.00,5.00},size={188.00,90.00},title="Mask Tubes"
-	GroupBox group1,pos={365.00,5.00},size={122.00,90.00},title="Mask Shapes"
+	GroupBox group0,pos={sc*163.00,5.00*sc},size={sc*188.00,90.00*sc},title="Mask Tubes"
+	GroupBox group1,pos={sc*365.00,5.00*sc},size={sc*122.00,90.00*sc},title="Mask Shapes"
 
 	SetWindow MaskEditPanel, hook(MyHook)=V_MaskWindowHook
 
@@ -1116,37 +1122,44 @@ End
 // x- add in display of "B"
 
 Proc V_Display_Det_Panels()
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(720,45,1500,570)/N=VSANS_Det_Panels/K=1
+	NewPanel /W=(720*sc,45*sc,1500*sc,570*sc)/N=VSANS_Det_Panels/K=1
 	DoWindow/C VSANS_Det_Panels
 //	ModifyPanel fixedSize=1,noEdit =1
 
 
-	PopupMenu popup0,pos={15.00,10.00},size={77.00,23.00},proc=V_PickCarriagePopMenuProc,title="Carriage"
+	PopupMenu popup0,pos={sc*15.00,10.00*sc},size={sc*77.00,23.00*sc},proc=V_PickCarriagePopMenuProc,title="Carriage"
 	PopupMenu popup0,mode=1,value= #"\"F;M;B;\""
-	PopupMenu popup1,pos={100.00,10.00},size={68.00,23.00},proc=V_PickFolderPopMenuProc,title="Folder"
+	PopupMenu popup1,pos={sc*100.00,10.00*sc},size={sc*68.00,23.00*sc},proc=V_PickFolderPopMenuProc,title="Folder"
 	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;VCALC;\""
 //	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;VCALC;\""
-	PopupMenu popup2,pos={200.00,10.00},size={83.00,23.00},title="Bin Type"//,proc=V_DummyPopMenuProc
+	PopupMenu popup2,pos={sc*200.00,10.00*sc},size={sc*83.00,23.00*sc},title="Bin Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup2,mode=1,value= ksBinTypeStr
-	PopupMenu popup3,pos={350,10.00},size={83.00,23.00},title="Average Type"//,proc=V_DummyPopMenuProc
+	PopupMenu popup3,pos={sc*350,10.00*sc},size={sc*83.00,23.00*sc},title="Average Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup3,mode=1,value= #"\"Circular;Sector;Annular;\""
-//	Button button0,pos={520.00,10.00},size={110.00,20.00},proc=V_UpdatePanelsButtonProc,title="Update Display"
-	Button button1,pos={520.00,40.00},size={100.00,20.00},proc=V_ToggleFourMaskButtonProc,title="Toggle Mask"
-	Button button2,pos={350.00,40.00},size={120.00,20.00},proc=V_ShowAvgRangeButtonProc,title="Show Avg Range"
-	Button button3,pos={350.00,70.00},size={100.00,20.00},proc=V_DoPanelAvgButtonProc,title="Do Average"
-	Button button4,pos={720.00,10.00},size={25.00,20.00},proc=V_AvgPanelHelpButtonProc,title="?"
+//	Button button0,pos={sc*520.00,10.00*sc},size={sc*110.00,20.00*sc},proc=V_UpdatePanelsButtonProc,title="Update Display"
+	Button button1,pos={sc*520.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Toggle Mask"
+	Button button2,pos={sc*350.00,40.00*sc},size={sc*120.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Show Avg Range"
+	Button button3,pos={sc*350.00,70.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
+	Button button4,pos={sc*720.00,10.00*sc},size={sc*25.00,20.00*sc},proc=V_AvgPanelHelpButtonProc,title="?"
 
-	SetVariable setvar0,pos={20,40},size={160,23},title="Annulus q-center (A)"
+	SetVariable setvar0,pos={sc*20,40*sc},size={sc*160,23*sc},title="Annulus q-center (A)"
 	SetVariable setvar0,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
-	SetVariable setvar1,pos={20,70},size={160,23},title="Annulus (+/-) q (A)"
+	SetVariable setvar1,pos={sc*20,70*sc},size={sc*160,23*sc},title="Annulus (+/-) q (A)"
 	SetVariable setvar1,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ
-	SetVariable setvar2,pos={190,40},size={150,23},title="Sector Angle (deg)"
+	SetVariable setvar2,pos={sc*190,40*sc},size={sc*150,23*sc},title="Sector Angle (deg)"
 	SetVariable setvar2,limits={-90,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
-	SetVariable setvar3,pos={190,70},size={150,23},title="Sector (+/-) (deg)"
+	SetVariable setvar3,pos={sc*190,70*sc},size={sc*150,23*sc},title="Sector (+/-) (deg)"
 	SetVariable setvar3,limits={0,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 
-	PopupMenu popup4,pos={200,100},size={90,23.00},title="Sector Side(s)"//,proc=V_DummyPopMenuProc
+	PopupMenu popup4,pos={sc*200,100*sc},size={sc*90,23.00*sc},title="Sector Side(s)"//,proc=V_DummyPopMenuProc
 	PopupMenu popup4,mode=1,value= #"\"both;left;right;\""
 
 	Make/O/B/N=(48,128) tmpLR
@@ -1158,7 +1171,7 @@ Proc V_Display_Det_Panels()
 	tmpB = 1
 	
 //	Display/W=(745,45,945,425)/HOST=# 
-	Display/W=(10,45+80,210,425+80)/HOST=# 
+	Display/W=(10*sc,(45+80)*sc,210*sc,(425+80)*sc)/HOST=# 
 	//  root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data
 	AppendImage/T/G=1 tmpLR		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 
@@ -1177,7 +1190,7 @@ Proc V_Display_Det_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(1300,45,1500,425)/HOST=# 
-	Display/W=(565,45+80,765,425+80)/HOST=# 
+	Display/W=(565*sc,(45+80)*sc,765*sc,(425+80)*sc)/HOST=# 
 	AppendImage/T/G=1 tmpLR		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage tmpLR ctab= {*,*,ColdWarm,0}
 	ModifyImage tmpLR ctabAutoscale=3
@@ -1194,7 +1207,7 @@ Proc V_Display_Det_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(945,45,1300,235)/HOST=# 
-	Display/W=(210,45+80,565,235+80)/HOST=# 
+	Display/W=(210*sc,(45+80)*sc,565*sc,(235+80)*sc)/HOST=# 
 	AppendImage/T/G=1 tmpTB		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage tmpTB ctab= {*,*,ColdWarm,0}
 	ModifyImage tmpTB ctabAutoscale=3
@@ -1211,7 +1224,7 @@ Proc V_Display_Det_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(945,235,1300,425)/HOST=# 
-	Display/W=(210,235+80,565,425+80)/HOST=# 
+	Display/W=(210*sc,(235+80)*sc,565*sc,(425+80)*sc)/HOST=# 
 	AppendImage/T/G=1 tmpTB		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage tmpTB ctab= {*,*,ColdWarm,0}
 	ModifyImage tmpTB ctabAutoscale=3
@@ -1236,6 +1249,15 @@ End
 // must check for overlay of mask and of avgMask
 //
 Function V_UpdateFourPanelDisp()
+
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	ControlInfo/W=VSANS_Det_Panels popup0
 	String carrStr = S_value
