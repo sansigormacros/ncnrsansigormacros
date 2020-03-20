@@ -78,7 +78,7 @@ Proc DrawVCALC_Panel()
 	PauseUpdate; Silent 1		// building window...
 		
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		NewPanel /W=(34*sc,44*sc,1274*sc,630*sc)/N=VCALC/K=1
+		NewPanel /W=(34*sc,44*sc,1274*sc,660*sc)/N=VCALC/K=1
 	else
 		NewPanel /W=(34,44,1274,699)/N=VCALC/K=1
 	endif
@@ -95,7 +95,7 @@ Proc DrawVCALC_Panel()
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		GroupBox group1,pos={sc*460,10*sc},size={sc*762,565*sc},title="Detector Panel Positions + Data"
+		GroupBox group1,pos={sc*460,10*sc},size={sc*762,595*sc},title="Detector Panel Positions + Data"
 	else	
 		GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
 	endif
@@ -201,7 +201,7 @@ Proc DrawVCALC_Panel()
 	// for panels (as 2D Q)
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 	// note that the dimensions here are not strictly followed since the aspect ratio is set below
-		Display/W=(475*sc,310*sc,760*sc,550*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(475*sc,310*sc,790*sc,590*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	else
 		Display/W=(475,332,814,631)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	endif	
@@ -219,7 +219,7 @@ Proc DrawVCALC_Panel()
 
 	// for averaged I(Q)
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
-		Display/W=(842*sc,330*sc,1204*sc,560*sc)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(842*sc,330*sc,1204*sc,590*sc)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	else
 		Display/W=(842,334,1204,629)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	endif	

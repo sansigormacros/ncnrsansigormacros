@@ -144,7 +144,7 @@ Window VSANS_DataPanel() : Panel
 	endif
 	
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode==1)
-		NewPanel /W=(7,36,700,445) /K=1 /N=VSANS_Data
+		NewPanel /W=(7,36,700,480) /K=1 /N=VSANS_Data
 	else
 		NewPanel /W=(37,45,1038,719) /K=1 /N=VSANS_Data
 	endif

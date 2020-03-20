@@ -304,7 +304,7 @@ Proc VSANSPref_Panel()
 	Variable sc=1
 	
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
-		sc = 0.7
+		sc = 0.9
 	endif
 
 	PauseUpdate; Silent 1		// building window...

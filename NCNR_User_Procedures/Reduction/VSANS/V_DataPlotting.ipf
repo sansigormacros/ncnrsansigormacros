@@ -47,7 +47,7 @@ Function V_PlotData_Panel()
 	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
 		
 	if(gLaptopMode == 1)
-		sc = 0.7
+		sc = 0.9
 	endif
 
 	DoWindow/F V_1D_Data
