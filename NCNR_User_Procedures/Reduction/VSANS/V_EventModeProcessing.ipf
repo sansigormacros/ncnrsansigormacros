@@ -202,8 +202,19 @@ End
 //  could be added back in the future
 //
 Proc VSANS_EventModePanel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(82,44,884,664)/N=VSANS_EventModePanel/K=2
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		NewPanel /W=(82*sc,10*sc,884*sc,590*sc)/N=VSANS_EventModePanel/K=2
+	else
+		NewPanel /W=(82,44,884,664)/N=VSANS_EventModePanel/K=2
+	endif
+	
 	DoWindow/C VSANS_EventModePanel
 	ModifyPanel fixedSize=1,noEdit =1
 
@@ -214,89 +225,89 @@ Proc VSANS_EventModePanel()
 //	DrawLine 647,411,775,411
 
 //	ShowTools/A
-	Button button0,pos={14,70},size={150,20},proc=V_LoadEventLog_Button,title="Load Event Log File"
-	Button button0,fSize=12
-	Button button23,pos={14,100},size={150,20},proc=V_LoadEventLog_Button,title="Load From RAW"
-	Button button23,fSize=12
-	TitleBox tb1,pos={475,500},size={266,86},fSize=10
+	Button button0,pos={sc*14,70*sc},size={sc*150,20*sc},proc=V_LoadEventLog_Button,title="Load Event Log File"
+	Button button0,fSize=12*sc
+	Button button23,pos={sc*14,100*sc},size={sc*150,20*sc},proc=V_LoadEventLog_Button,title="Load From RAW"
+	Button button23,fSize=12*sc
+	TitleBox tb1,pos={sc*475,450*sc},size={sc*266,86*sc},fSize=10
 	TitleBox tb1,variable= root:Packages:NIST:VSANS:Event:gEventDisplayString
 
-	CheckBox chkbox2,pos={376,151},size={81,15},proc=V_LogIntEvent_Proc,title="Log Intensity"
-	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:VSANS:Event:gEvent_logint
-	CheckBox chkbox3,pos={14,150},size={119,15},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox2,pos={sc*376,151*sc},size={sc*81,15*sc},proc=V_LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,fSize=10*sc,variable= root:Packages:NIST:VSANS:Event:gEvent_logint
+	CheckBox chkbox3,pos={sc*14,150*sc},size={sc*119,15*sc},title="Remove Bad Events?",fSize=10*sc
 	CheckBox chkbox3,variable= root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 	
-	Button doneButton,pos={738,36},size={50,20},proc=V_EventDone_Proc,title="Done"
-	Button doneButton,fSize=12
-	Button button6,pos={748,9},size={40,20},proc=V_EventModeHelpButtonProc,title="?"
+	Button doneButton,pos={sc*738,36*sc},size={sc*50,20*sc},proc=V_EventDone_Proc,title="Done"
+	Button doneButton,fSize=12*sc
+	Button button6,pos={sc*748,9*sc},size={sc*40,20*sc},proc=V_EventModeHelpButtonProc,title="?"
 
-//	Button button5,pos={633,228},size={140,20},proc=V_ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
+//	Button button5,pos={sc*633,228*sc},size={sc*140,20*sc},proc=V_ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
 
-	Button button8,pos={570,35},size={120,20},proc=V_CustomBinButtonProc,title="Custom Bins"
-	Button button2,pos={570,65},size={140,20},proc=V_ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={570,95},size={140,20},proc=V_ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button8,pos={sc*570,35*sc},size={sc*120,20*sc},proc=V_CustomBinButtonProc,title="Custom Bins"
+	Button button2,pos={sc*570,65*sc},size={sc*140,20*sc},proc=V_ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={sc*570,95*sc},size={sc*140,20*sc},proc=V_ShowBinDetailsButtonProc,title="Show Bin Details"
 
 			
-	Button button7,pos={211,33},size={120,20},proc=V_AdjustEventDataButtonProc,title="Adjust Events"
-	Button button4,pos={211,63},size={120,20},proc=V_UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button18,pos={211,90},size={120,20},proc=V_EC_ImportWavesButtonProc,title="Import Edited"
+	Button button7,pos={sc*211,33*sc},size={sc*120,20*sc},proc=V_AdjustEventDataButtonProc,title="Adjust Events"
+	Button button4,pos={sc*211,63*sc},size={sc*120,20*sc},proc=V_UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button18,pos={sc*211,90*sc},size={sc*120,20*sc},proc=V_EC_ImportWavesButtonProc,title="Import Edited"
 	
-	SetVariable setvar0,pos={208,149},size={160,16},proc=V_sliceSelectEvent_Proc,title="Display Time Slice"
-	SetVariable setvar0,fSize=10
+	SetVariable setvar0,pos={sc*208,149*sc},size={sc*160,16*sc},proc=V_sliceSelectEvent_Proc,title="Display Time Slice"
+	SetVariable setvar0,fSize=10*sc
 	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:VSANS:Event:gEvent_tsdisp	
-	SetVariable setvar1,pos={389,29},size={160,16},title="Number of slices",fSize=10
+	SetVariable setvar1,pos={sc*389,29*sc},size={sc*160,16*sc},title="Number of slices",fSize=10*sc
 	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:VSANS:Event:gEvent_nslices
-	SetVariable setvar2,pos={389,54},size={160,16},title="Max Time (s)",fSize=10
+	SetVariable setvar2,pos={sc*389,54*sc},size={sc*160,16*sc},title="Max Time (s)",fSize=10*sc
 	SetVariable setvar2,value= root:Packages:NIST:VSANS:Event:gEvent_t_longest
 	
-	PopupMenu popup0,pos={389,77},size={119,20},proc=V_BinTypePopMenuProc,title="Bin Spacing"
-	PopupMenu popup0,fSize=10
+	PopupMenu popup0,pos={sc*389,77*sc},size={sc*119,20*sc},proc=V_BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,fSize=10*sc
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={389,103},size={120,20},fSize=12,proc=V_ProcessEventLog_Button,title="Bin Event Data"
+	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},fSize=12*sc,proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
 // NEW FOR VSANS
-	Button button21,pos={488,205},size={120,20},proc=V_SplitToPanels_Button,title="Split to Panels"
-	Button button22,pos={488,240},size={120,20},proc=V_GraphPanels_Button,title="Show Panels"
+	Button button21,pos={sc*488,205*sc},size={sc*120,20*sc},proc=V_SplitToPanels_Button,title="Split to Panels"
+	Button button22,pos={sc*488,240*sc},size={sc*120,20*sc},proc=V_GraphPanels_Button,title="Show Panels"
 	
-	Button button24,pos={488,270},size={180,20},proc=V_DuplRAWForExport_Button,title="Duplicate RAW for Export"
-	Button button25,pos={488,300},size={180,20},proc=V_CopySlicesForExport_Button,title="Copy Slices for Export"
-	Button button26,pos={488,330},size={180,20},proc=V_SaveExportedNexus_Button,title="Save Exported to Nexus"
+	Button button24,pos={sc*488,270*sc},size={sc*180,20*sc},proc=V_DuplRAWForExport_Button,title="Duplicate RAW for Export"
+	Button button25,pos={sc*488,300*sc},size={sc*180,20*sc},proc=V_CopySlicesForExport_Button,title="Copy Slices for Export"
+	Button button26,pos={sc*488,330*sc},size={sc*180,20*sc},proc=V_SaveExportedNexus_Button,title="Save Exported to Nexus"
 
-//	Button button10,pos={488,305},size={100,20},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
-//	Button button14,pos={488,350},size={120,20},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
-//	Button button19,pos={649,350},size={120,20},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
-//	Button button20,pos={680,376},size={90,20},proc=V_ShowList_ToLoad,title="Show List",disable=2
-//	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor",disable=2
+//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=V_SplitFileButtonProc,title="Split Big File",disable=2
+//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadDecim,title="Load Split List",disable=2
+//	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=V_Stream_LoadAdjustedList,title="Load Edited List",disable=2
+//	Button button20,pos={sc*680,376*sc},size={sc*90,20*sc},proc=V_ShowList_ToLoad,title="Show List",disable=2
+//	SetVariable setvar3,pos={sc*487,378*sc},size={sc*150,16*sc},title="Decimation factor",disable=2
 //	SetVariable setvar3,fSize=10
 //	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
 //
-//	Button button15_0,pos={488,425},size={110,20},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
-//	Button button16_1,pos={488,450},size={110,20},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
-//	Button button17_2,pos={620,425},size={110,20},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
+//	Button button15_0,pos={sc*488,425*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Add First Slice",disable=2
+//	Button button16_1,pos={sc*488,450*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Add Next Slice",disable=2
+//	Button button17_2,pos={sc*620,425*sc},size={sc*110,20*sc},proc=V_AccumulateSlicesButton,title="Display Total",disable=2
 
-	CheckBox chkbox1_0,pos={25,30},size={69,14},title="Oscillatory",fSize=10
+	CheckBox chkbox1_0,pos={sc*25,30*sc},size={sc*69,14*sc},title="Oscillatory",fSize=10*sc
 	CheckBox chkbox1_0,mode=1,proc=V_EventModeRadioProc,value=0
-	CheckBox chkbox1_1,pos={25,50},size={53,14},title="Stream",fSize=10
+	CheckBox chkbox1_1,pos={sc*25,50*sc},size={sc*53,14*sc},title="Stream",fSize=10*sc
 	CheckBox chkbox1_1,proc=V_EventModeRadioProc,value=1,mode=1
-//	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
+//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fSize=10
 //	CheckBox chkbox1_2,proc=V_EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_3,pos={104,30},size={37,14},title="TOF",fSize=10
+	CheckBox chkbox1_3,pos={sc*104,30*sc},size={sc*37,14*sc},title="TOF",fSize=10*sc
 	CheckBox chkbox1_3,proc=V_EventModeRadioProc,value=0,mode=1
 	
-	CheckBox chkbox1_4,pos={30,125},size={37,14},title="F",fSize=10
+	CheckBox chkbox1_4,pos={sc*30,125*sc},size={sc*37,14*sc},title="F",fSize=10*sc
 	CheckBox chkbox1_4,proc=V_EventCarrRadioProc,value=1,mode=1
-	CheckBox chkbox1_5,pos={90,125},size={37,14},title="M",fSize=10
+	CheckBox chkbox1_5,pos={sc*90,125*sc},size={sc*37,14*sc},title="M",fSize=10*sc
 	CheckBox chkbox1_5,proc=V_EventCarrRadioProc,value=0,mode=1
 	
-	GroupBox group0_0,pos={5,5},size={174,140},title="(1) Loading Mode",fSize=12,fStyle=1
-	GroupBox group0_3,pos={191,5},size={165,130},title="(2) Edit Events",fSize=12,fStyle=1
-	GroupBox group0_1,pos={372,5},size={350,130},title="(3) Bin Events",fSize=12,fStyle=1
-	GroupBox group0_2,pos={477,169},size={310,300},title="(4) View / Export",fSize=12,fStyle=1
+	GroupBox group0_0,pos={sc*5,5*sc},size={sc*174,140*sc},title="(1) Loading Mode",fSize=12*sc,fStyle=1
+	GroupBox group0_3,pos={sc*191,5*sc},size={sc*165,130*sc},title="(2) Edit Events",fSize=12*sc,fStyle=1
+	GroupBox group0_1,pos={sc*372,5*sc},size={sc*350,130*sc},title="(3) Bin Events",fSize=12*sc,fStyle=1
+	GroupBox group0_2,pos={sc*477,169*sc},size={sc*310,250*sc},title="(4) View / Export",fSize=12*sc,fStyle=1
 
-//	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
+//	GroupBox group0_4,pos={sc*474,278*sc},size={sc*312,200*sc},title="Split / Accumulate Files",fSize=12
 //	GroupBox group0_4,fStyle=1
 	
-	Display/W=(10,170,460,610)/HOST=# 
+	Display/W=(10*sc,170*sc,460*sc,610*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:Event:dispsliceData		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage dispsliceData ctab= {*,*,ColdWarm,0}
 	ModifyImage dispsliceData ctabAutoscale=3
@@ -1756,13 +1767,18 @@ End
 //////////////
 
 Proc V_BinEventBarGraph()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 	
 	DoWindow/F V_EventBarGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(110,705,610,1132)/N=V_EventBarGraph /K=1 binCount vs binEndTime
+		Display /W=(110*sc,705*sc,610*sc,1132*sc)/N=V_EventBarGraph /K=1 binCount vs binEndTime
 		SetDataFolder fldrSav0
 		ModifyGraph mode=5
 		ModifyGraph marker=19
@@ -1783,14 +1799,19 @@ End
 
 
 Proc V_ShowBinTable() 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	DoWindow/F V_BinEventTable
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Edit/W=(498,699,1003,955) /K=1/N=V_BinEventTable binCount,binEndTime,timeWidth
-		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100
+		Edit/W=(498*sc,699*sc,1003*sc,955*sc) /K=1/N=V_BinEventTable binCount,binEndTime,timeWidth
+		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100*sc
 		SetDataFolder fldrSav0
 	endif
 EndMacro
@@ -1799,13 +1820,18 @@ EndMacro
 // only show the first 1500 data points
 //
 Proc V_ShowRescaledTimeGraph()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	DoWindow/F V_RescaledTimeGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(25,44,486,356)/K=1/N=V_RescaledTimeGraph rescaledTime
+		Display /W=(25*sc,44*sc,486*sc,356*sc)/K=1/N=V_RescaledTimeGraph rescaledTime
 		SetDataFolder fldrSav0
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -1814,8 +1840,14 @@ Proc V_ShowRescaledTimeGraph()
 //		SetAxis/A=2 left			//only autoscale the visible data (based on the bottom limits)
 		SetAxis bottom 0,1500
 		ErrorBars rescaledTime OFF 
-		Label left "\\Z14Time (seconds)"
-		Label bottom "\\Z14Event number"
+			
+		if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+			Label left "\\Z10Time (seconds)"
+			Label bottom "\\Z10Event number"
+		else
+			Label left "\\Z14Time (seconds)"
+			Label bottom "\\Z14Event number"
+		endif
 		ShowInfo
 	endif
 	
@@ -2056,36 +2088,47 @@ Proc V_ShowEventCorrectionPanel()
 End
 
 Proc V_EventCorrectionPanel()
-
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1		// building window...
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 	
 	if(exists("rescaledTime") == 1)
-		Display /W=(35,44,761,533)/K=2 rescaledTime
+		Display /W=(35*sc,44*sc,761*sc,533*sc)/K=2 rescaledTime
 		DoWindow/C V_EventCorrectionPanel
 		ModifyGraph mode=4
 		ModifyGraph marker=19
 		ModifyGraph rgb=(0,0,0)
 		ModifyGraph msize=1
-		ErrorBars rescaledTime OFF 
-		Label left "\\Z14Time (seconds)"
-		Label bottom "\\Z14Event number"	
+		ErrorBars rescaledTime OFF
+			
+		if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+			Label left "\\Z10Time (seconds)"
+			Label bottom "\\Z10Event number"	
+		else
+			Label left "\\Z14Time (seconds)"
+			Label bottom "\\Z14Event number"	
+		endif
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
 		
 		ControlBar 100
-		Button button0,pos={18,12},size={70,20},proc=V_EC_AddCursorButtonProc,title="Cursors"
-		Button button1,pos={153,12},size={80,20},proc=V_EC_AddTimeButtonProc,title="Add time"
-		Button button2,pos={153,38},size={80,20},proc=V_EC_SubtractTimeButtonProc,title="Subtr time"
-		Button button3,pos={153,64},size={90,20},proc=V_EC_TrimPointsButtonProc,title="Trim points"
-		Button button4,pos={295+150,12},size={90,20},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
-		Button button5,pos={295,64},size={100,20},proc=V_EC_FindOutlierButton,title="Find Outlier"
-		Button button6,pos={18,38},size={80,20},proc=V_EC_ShowAllButtonProc,title="All Data"
-		Button button7,pos={683,12},size={30,20},proc=V_EC_HelpButtonProc,title="?"
-		Button button8,pos={658,72},size={60,20},proc=V_EC_DoneButtonProc,title="Done"
+		Button button0,pos={sc*18,12*sc},size={sc*70,20*sc},proc=V_EC_AddCursorButtonProc,title="Cursors"
+		Button button1,pos={sc*153,12*sc},size={sc*80,20*sc},proc=V_EC_AddTimeButtonProc,title="Add time"
+		Button button2,pos={sc*153,38*sc},size={sc*80,20*sc},proc=V_EC_SubtractTimeButtonProc,title="Subtr time"
+		Button button3,pos={sc*153,64*sc},size={sc*90,20*sc},proc=V_EC_TrimPointsButtonProc,title="Trim points"
+		Button button4,pos={sc*(295+150),12*sc},size={sc*90,20*sc},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
+		Button button5,pos={sc*295,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Find Outlier"
+		Button button6,pos={sc*18,38*sc},size={sc*80,20*sc},proc=V_EC_ShowAllButtonProc,title="All Data"
+		Button button7,pos={sc*683,12*sc},size={sc*30,20*sc},proc=V_EC_HelpButtonProc,title="?"
+		Button button8,pos={sc*658,72*sc},size={sc*60,20*sc},proc=V_EC_DoneButtonProc,title="Done"
 	
-		Button button9,pos={295,12},size={110,20},proc=V_EC_FindStepButton_down,title="Find Step Down"
-		Button button10,pos={295,38},size={110,20},proc=V_EC_FindStepButton_up,title="Find Step Up"
-		Button button11,pos={295+150,38},size={110,20},proc=V_EC_DoDifferential,title="Differential"
+		Button button9,pos={sc*295,12*sc},size={sc*110,20*sc},proc=V_EC_FindStepButton_down,title="Find Step Down"
+		Button button10,pos={sc*295,38*sc},size={sc*110,20*sc},proc=V_EC_FindStepButton_up,title="Find Step Up"
+		Button button11,pos={sc*(295+150),38*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential"
 		
 		
 	else
@@ -2529,29 +2572,35 @@ End
 // This shares the number of slices and the maximum time with the main panel
 //
 Proc V_CustomBinPanel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(130,44,851,455)/K=2 /N=V_CustomBinPanel
+	NewPanel /W=(130*sc,44*sc,851*sc,455*sc)/K=2 /N=V_CustomBinPanel
 	DoWindow/C V_CustomBinPanel
 	ModifyPanel fixedSize=1//,noEdit =1
 	SetDrawLayer UserBack
 	
-	Button button0,pos={654,42}, size={50,20},title="Done",fSize=12
+	Button button0,pos={sc*654,42*sc}, size={sc*50,20*sc},title="Done",fSize=12
 	Button button0,proc=V_CB_Done_Proc
-	Button button1,pos={663,14},size={40,20},proc=V_CB_HelpButtonProc,title="?"
-	Button button2,pos={216,42},size={80,20},title="Update",proc=V_CB_UpdateWavesButton	
-	SetVariable setvar1,pos={23,13},size={160,20},title="Number of slices",fSize=12
+	Button button1,pos={sc*663,14*sc},size={sc*40,20*sc},proc=V_CB_HelpButtonProc,title="?"
+	Button button2,pos={sc*216,42*sc},size={sc*80,20*sc},title="Update",proc=V_CB_UpdateWavesButton	
+	SetVariable setvar1,pos={sc*23,13*sc},size={sc*160,20*sc},title="Number of slices",fSize=12
 	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:VSANS:Event:gEvent_nslices
-	SetVariable setvar2,pos={24,44},size={160,20},title="Max Time (s)",fSize=10
+	SetVariable setvar2,pos={sc*24,44*sc},size={sc*160,20*sc},title="Max Time (s)",fSize=10
 	SetVariable setvar2,value=root:Packages:NIST:VSANS:Event:gEvent_t_longest	
 
-	CheckBox chkbox1,pos={216,14},title="Enforce Max Time?"
+	CheckBox chkbox1,pos={sc*216,14*sc},title="Enforce Max Time?"
 	CheckBox chkbox1,variable = root:Packages:NIST:VSANS:Event:gEvent_ForceTmaxBin
-	Button button3,pos={500,14},size={90,20},proc=V_CB_SaveBinsButtonProc,title="Save Bins"
-	Button button4,pos={500,42},size={100,20},proc=V_CB_ImportBinsButtonProc,title="Import Bins"	
+	Button button3,pos={sc*500,14*sc},size={sc*90,20*sc},proc=V_CB_SaveBinsButtonProc,title="Save Bins"
+	Button button4,pos={sc*500,42*sc},size={sc*100,20*sc},proc=V_CB_ImportBinsButtonProc,title="Import Bins"	
 		
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-	Display/W=(291,86,706,395)/HOST=V_CustomBinPanel/N=BarGraph binCount vs binEndTime
+	Display/W=(291*sc,86*sc,706*sc,395*sc)/HOST=V_CustomBinPanel/N=BarGraph binCount vs binEndTime
 	ModifyGraph mode=5
 	ModifyGraph marker=19
 	ModifyGraph lSize=2
@@ -2569,7 +2618,7 @@ Proc V_CustomBinPanel()
 	SetActiveSubwindow ##
 	
 	// and the table
-	Edit/W=(13,87,280,394)/HOST=V_CustomBinPanel/N=T0
+	Edit/W=(13*sc,87*sc,280*sc,394*sc)/HOST=V_CustomBinPanel/N=T0
 	AppendToTable/W=V_CustomBinPanel#T0 timeWidth,binEndTime
 	ModifyTable width(Point)=40
 	SetActiveSubwindow ##
@@ -2980,15 +3029,15 @@ end
 //	PauseUpdate; Silent 1		// building window...
 //	NewPanel /W=(1602,44,1961,380)/K=1
 ////	ShowTools/A
-//	Button button0,pos={29,15},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
-//	SetVariable setvar0,pos={182,55},size={150,15},title="Decimation factor",fsize=10
+//	Button button0,pos={sc*29,15*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File"
+//	SetVariable setvar0,pos={sc*182,55*sc},size={sc*150,15*sc},title="Decimation factor",fsize=10
 //	SetVariable setvar0,limits={1,inf,1},value= root:Packages:NIST:VSANS:Event:gDecimation
-//	Button button1,pos={26,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
-//	Button button2,pos={25,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
-//	Button button3,pos={25,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
-//	Button button4,pos={29,52},size={130,20},proc=Stream_LoadDecim,title="Load From List"
+//	Button button1,pos={sc*26,245*sc},size={sc*150,20*sc},proc=LoadDecimateButtonProc,title="Load and Decimate"
+//	Button button2,pos={sc*25,277*sc},size={sc*150,20*sc},proc=ConcatenateButtonProc,title="Concatenate"
+//	Button button3,pos={sc*25,305*sc},size={sc*150,20*sc},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
+//	Button button4,pos={sc*29,52*sc},size={sc*130,20*sc},proc=Stream_LoadDecim,title="Load From List"
 //	
-//	GroupBox group0 title="Manual Controls",size={185,112},pos={14,220}
+//	GroupBox group0 title="Manual Controls",size={sc*185,112*sc},pos={sc*14,220}
 //EndMacro
 
 
@@ -3002,13 +3051,18 @@ End
 // show all of the data
 //
 Proc V_ShowDecimatedGraph()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	DoWindow/F V_DecimatedGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:VSANS:Event:
-		Display /W=(25,44,486,356)/K=1/N=V_DecimatedGraph rescaledTime_dec
+		Display /W=(25*sc,44*sc,486*sc,356*sc)/K=1/N=V_DecimatedGraph rescaledTime_dec
 		SetDataFolder fldrSav0
 		ModifyGraph mode=4
 		ModifyGraph marker=19

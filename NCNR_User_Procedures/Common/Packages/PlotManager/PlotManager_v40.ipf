@@ -24,31 +24,39 @@ Proc Show_Plot_Manager()
 End
 
 Window A_Plot_Manager()
+
+	Variable sc = 1		//default
+	if(exists("root:Packages:NIST:VSANS:Globals:gLaptopMode")==2)	//NVAR does exist
+		if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	//then is the value 1
+			sc = 0.7
+		endif
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(658,347,1018,737)/N=Plot_Manager/K=2 as "Plot Manager"
+	NewPanel /W=(658*sc,347*sc,1018*sc,737*sc)/N=Plot_Manager/K=2 as "Plot Manager"
 	ModifyPanel cbRGB=(37265,65535,32896)
 	ModifyPanel fixedSize=1
 	
-	Button button0,pos={165,353},size={50,20},proc=A_PlotManager_Done,title="Done"
-	PopupMenu popup0,pos={15,225},size={233,20},title="Data in Memory"
+	Button button0,pos={sc*165,353*sc},size={sc*50,20*sc},proc=A_PlotManager_Done,title="Done"
+	PopupMenu popup0,pos={sc*15,225*sc},size={sc*233,20*sc},title="Data in Memory"
 	PopupMenu popup0,mode=1,value= #"A_OneDDataInMemory()"
-	Button button2,pos={122,259},size={100,20},proc=A_PlotManager_Append,title="Append Data"
-	Button button3,pos={15,259},size={80,20},proc=A_PlotManager_newGraph,title="New Graph"
-	Button button4,pos={15,293},size={220,20},proc=A_PlotManager_Kill,title="Remove Selection From Memory"
-	Button button5,pos={15,323},size={220,20},proc=A_PlotManager_KillAll,title="Remove All Data From Memory"
-	ListBox fileList,pos={13,11},size={206,179}
+	Button button2,pos={sc*122,259*sc},size={sc*100,20*sc},proc=A_PlotManager_Append,title="Append Data"
+	Button button3,pos={sc*15,259*sc},size={sc*80,20*sc},proc=A_PlotManager_newGraph,title="New Graph"
+	Button button4,pos={sc*15,293*sc},size={sc*220,20*sc},proc=A_PlotManager_Kill,title="Remove Selection From Memory"
+	Button button5,pos={sc*15,323*sc},size={sc*220,20*sc},proc=A_PlotManager_KillAll,title="Remove All Data From Memory"
+	ListBox fileList,pos={sc*13,11*sc},size={sc*206,179*sc}
 	ListBox fileList,listWave=root:Packages:NIST:OneDLoader:fileWave
 	ListBox fileList,selWave=root:Packages:NIST:OneDLoader:selWave,mode= 4
-	Button button6,pos={238,165},size={100,20},proc=A_OneDLoader_LoadButton,title="Load File(s)"
+	Button button6,pos={sc*238,165*sc},size={sc*100,20*sc},proc=A_OneDLoader_LoadButton,title="Load File(s)"
 	Button button6,help={"Loads the selected files into memory and will graph them if that option is checked"}
-	Button button7,pos={238,20},size={100,20},proc=A_OneDLoader_NewFolderButton,title="New Folder"
+	Button button7,pos={sc*238,20*sc},size={sc*100,20*sc},proc=A_OneDLoader_NewFolderButton,title="New Folder"
 	Button button7,help={"Select a new data folder"}
-	Checkbox check0,pos={240,190},title="Plot data on loading?",noproc,value=1
-	GroupBox group0,pos={222,127},size={50,4},title="Shift-click to load"
-	GroupBox group0_1,pos={222,143},size={50,4},title="multiple files"
-	GroupBox group1,pos={7,207},size={350,4}
-	Button button8,pos={238,76},size={100,20},proc=A_OneDLoader_HelpButton,title="Help"
-	Button button9,pos={238,48},size={100,20},proc=A_PlotManager_Refresh,title="Refresh List"
+	Checkbox check0,pos={sc*240,190*sc},title="Plot data on loading?",noproc,value=1
+	GroupBox group0,pos={sc*222,127*sc},size={sc*50,4*sc},title="Shift-click to load"
+	GroupBox group0_1,pos={sc*222,143*sc},size={sc*50,4*sc},title="multiple files"
+	GroupBox group1,pos={sc*7,207*sc},size={sc*350,4*sc}
+	Button button8,pos={sc*238,76*sc},size={sc*100,20*sc},proc=A_OneDLoader_HelpButton,title="Help"
+	Button button9,pos={sc*238,48*sc},size={sc*100,20*sc},proc=A_PlotManager_Refresh,title="Refresh List"
 EndMacro
 
 //open the Help file for the Fit Manager

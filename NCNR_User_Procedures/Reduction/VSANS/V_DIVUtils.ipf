@@ -51,22 +51,32 @@
 // Simple panel to walk through the steps of generating a DIV file
 //
 Proc DIV_Setup_Panel() : Panel
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(1207,593,1444,953)/N=DIV_Setup_Panel/K=1
+	NewPanel /W=(1207*sc,593*sc,1444*sc,953*sc)/N=DIV_Setup_Panel/K=1
 	DoWindow/C DIV_Setup_Panel
-	Button button0,pos={54.00,10.00},size={120.00,20.00},proc=V_DIVSetupButtonProc,title="Setup Folder"
-	Button button1,pos={54.00,40.00},size={120.00,20.00},proc=V_DIVClearOldButtonProc,title="Clear Old DIV"
-	Button button1_2,pos={54.00,70.00},size={120.00,20.00},proc=V_DIVMaskButtonProc,title="Mask for DIV"
+	Button button0,pos={sc*54.00,10.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVSetupButtonProc,title="Setup Folder"
+	Button button1,pos={sc*54.00,40.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVClearOldButtonProc,title="Clear Old DIV"
+	Button button1_2,pos={sc*54.00,70.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVMaskButtonProc,title="Mask for DIV"
 
-	DrawText 32,130,"Reduce data for one carriage"	
-	DrawText 32,200,"Repeat for the other carriage(s)"
+	SetDrawEnv fsize=12*sc
+	DrawText 32*sc,130*sc,"Reduce data for one carriage"	
+	SetDrawEnv fsize=12*sc
+	DrawText 32*sc,200*sc,"Repeat for the other carriage(s)"
 	
-	Button button2,pos={54.00,145.00},size={120.00,20.00},proc=V_DIVCopyButtonProc,title="Copy"
-	Button button4,pos={54.00,235.00},size={120.00,20.00},proc=V_DIVNormalizeButtonProc,title="Normalize"
+	Button button2,pos={sc*54.00,145.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVCopyButtonProc,title="Copy"
+	Button button4,pos={sc*54.00,235.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVNormalizeButtonProc,title="Normalize"
 
-	DrawText 32,290,"Once data for both (or 3) carriages\rhas been normalized, save the file"	
+	SetDrawEnv fsize=12*sc
+	DrawText 32*sc,290*sc,"Once data for both (or 3) carriages\rhas been normalized, save the file"	
 	
-	Button button3,pos={54.00,300.00},size={120.00,20.00},proc=V_DIVSaveButtonProc,title="Save DIV"
+	Button button3,pos={sc*54.00,300.00*sc},size={sc*120.00,20.00*sc},proc=V_DIVSaveButtonProc,title="Save DIV"
 EndMacro
 
 
@@ -815,23 +825,29 @@ End
 // -- un hard-wire the Front carriage from the panel proc
 
 Proc V_Display_DIV_Panels()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(720,45,1530,570)/N=VSANS_DIVPanels/K=1
+	NewPanel /W=(720*sc,45*sc,1530*sc,570*sc)/N=VSANS_DIVPanels/K=1
 	DoWindow/C VSANS_DIVPanels
 //	ModifyPanel fixedSize=1,noEdit =1
 
 
-	PopupMenu popup0,pos={17.00,10.00},size={77.00,23.00},proc=V_DispCarriagePopMenuProc,title="Carriage"
+	PopupMenu popup0,pos={sc*17.00,10.00*sc},size={sc*77.00,23.00*sc},proc=V_DispCarriagePopMenuProc,title="Carriage"
 	PopupMenu popup0,mode=1,value= #"\"F;M;B;\""
-	PopupMenu popup1,pos={134.00,10.00},size={68.00,23.00},proc=V_DispFolderPopMenuProc,title="Folder"
+	PopupMenu popup1,pos={sc*134.00,10.00*sc},size={sc*68.00,23.00*sc},proc=V_DispFolderPopMenuProc,title="Folder"
 	PopupMenu popup1,mode=1,popvalue="RAW",value= #"\"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;MSK;ADJ;\""
-	PopupMenu popup2,pos={246.00,10.00},size={83.00,23.00},proc=V_DispOperationPopMenuProc,title="Operation"
+	PopupMenu popup2,pos={sc*246.00,10.00*sc},size={sc*83.00,23.00*sc},proc=V_DispOperationPopMenuProc,title="Operation"
 	PopupMenu popup2,mode=1,value= #"\"none;ADJ=STO-SUB;ADJ=STO/SUB;\""
-	Button button0,pos={440.00,10.00},size={70.00,20.00},proc=V_DispUpdateButtonProc,title="Update"
+	Button button0,pos={sc*440.00,10.00*sc},size={sc*70.00,20.00*sc},proc=V_DispUpdateButtonProc,title="Update"
 
 
 //	Display/W=(745,45,945,425)/HOST=# 
-	Display/W=(10,45,210,425)/HOST=# 
+	Display/W=(10*sc,45*sc,210*sc,425*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FL:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 
 	ModifyImage data ctab= {*,*,ColdWarm,0}
@@ -849,7 +865,7 @@ Proc V_Display_DIV_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(1300,45,1500,425)/HOST=# 
-	Display/W=(565,45,765,425)/HOST=# 
+	Display/W=(565*sc,45*sc,765*sc,425*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage data ctab= {*,*,ColdWarm,0}
 	ModifyImage data ctabAutoscale=3
@@ -866,7 +882,7 @@ Proc V_Display_DIV_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(945,45,1300,235)/HOST=# 
-	Display/W=(210,45,565,235)/HOST=# 
+	Display/W=(210*sc,45*sc,565*sc,235*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FT:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage data ctab= {*,*,ColdWarm,0}
 	ModifyImage data ctabAutoscale=3
@@ -883,7 +899,7 @@ Proc V_Display_DIV_Panels()
 	SetActiveSubwindow ##
 
 //	Display/W=(945,235,1300,425)/HOST=# 
-	Display/W=(210,235,565,425)/HOST=# 
+	Display/W=(210*sc,235*sc,565*sc,425*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:data		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage data ctab= {*,*,ColdWarm,0}
 	ModifyImage data ctabAutoscale=3
@@ -906,10 +922,10 @@ Proc V_Display_DIV_Panels()
 	String/G root:Packages:NIST:VSANS:Globals:gDIVstr3 = "this is the title box3\rwith two lines"
 	
 	
-	TitleBox title0 pos={15,450},size={112,36},title=root:Packages:NIST:VSANS:Globals:gDIVstr0,fSize=11
-	TitleBox title1 pos={300,433},size={112,36},title=root:Packages:NIST:VSANS:Globals:gDIVstr1,fSize=11
-	TitleBox title2 pos={300,482},size={112,36},title=root:Packages:NIST:VSANS:Globals:gDIVstr2,fSize=11
-	TitleBox title3 pos={580,450},size={112,36},title=root:Packages:NIST:VSANS:Globals:gDIVstr3,fSize=11
+	TitleBox title0 pos={sc*15,450*sc},size={sc*112,36*sc},title=root:Packages:NIST:VSANS:Globals:gDIVstr0,fSize=11*sc
+	TitleBox title1 pos={sc*300,433*sc},size={sc*112,36*sc},title=root:Packages:NIST:VSANS:Globals:gDIVstr1,fSize=11*sc
+	TitleBox title2 pos={sc*300,482*sc},size={sc*112,36*sc},title=root:Packages:NIST:VSANS:Globals:gDIVstr2,fSize=11*sc
+	TitleBox title3 pos={sc*580,450*sc},size={sc*112,36*sc},title=root:Packages:NIST:VSANS:Globals:gDIVstr3,fSize=11*sc
 
 
 	V_UpdateDIVStrings()

@@ -13,10 +13,14 @@ Menu "VSANS"
 	"Initialize",Initialize_VSANS()
 	"VSANS Help"
 	"-"
-	"Main Control Panel",DoWindow/F Main_VSANS_Panel
-	"Data Display",DoWindow/F VSANS_Data
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
+	"-"
+	Submenu "Find Windows"
+		"Data Catalog",DoWindow/F CatVSANSTable
+		"Main Control Panel",DoWindow/F Main_VSANS_Panel
+		"Data Display",DoWindow/F VSANS_Data
+	End
 	"-"
 	Submenu "Data Panels"
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()

@@ -2753,7 +2753,7 @@ Function V_UseStdOrEmpForABS()
 	DoWindow/C junkABSWindow
 	ModifyPanel cbRGB=(57346,65535,49151)
 	SetDrawLayer UserBack
-	SetDrawEnv fstyle= 1
+	SetDrawEnv fstyle= 1,fsize=12*sc
 	DrawText 21*sc,20*sc,"Method of absolute calibration"
 	Button button0,pos={sc*52,33*sc},size={sc*150,20*sc},proc=V_UserSelectABS_Continue,title="Empty Beam Flux"
 	Button button1,pos={sc*52,65*sc},size={sc*150,20*sc},proc=V_UserSelectABS_Continue,title="Secondary Standard"

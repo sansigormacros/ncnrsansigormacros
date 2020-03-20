@@ -1754,7 +1754,7 @@ Proc V_DeadtimePatchPanel() : Panel
 // display the wave	
 	Edit/W=(180*sc,40*sc,380*sc,550*sc)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
 	ModifyTable width(Point)=30
-	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=80
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave)=110*sc
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 
@@ -2066,7 +2066,7 @@ Proc V_CalibrationPatchPanel() : Panel
 // display the wave	
 	Edit/W=(180*sc,40*sc,580*sc,550*sc)/HOST=#  root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
 	ModifyTable width(Point)=30
-	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave)=70
+	ModifyTable width(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave)=100*sc
 	// the elements() command transposes the view in the table, but does not transpose the wave
 	ModifyTable elements(root:Packages:NIST:VSANS:Globals:Patch:calibrationWave) = (-3, -2)
 	RenameWindow #,T0
@@ -2435,9 +2435,9 @@ Proc V_Patch_xyCtr_Panel() : Panel
 // display the wave	
 	Edit/W=(180*sc,40*sc,500*sc,370*sc)/HOST=#  panelW,xCtr_cm,yCtr_cm
 	ModifyTable width(Point)=0
-	ModifyTable width(panelW)=50
-	ModifyTable width(xCtr_cm)=60
-	ModifyTable width(yCtr_cm)=60
+	ModifyTable width(panelW)=70*sc
+	ModifyTable width(xCtr_cm)=90*sc
+	ModifyTable width(yCtr_cm)=90*sc
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 

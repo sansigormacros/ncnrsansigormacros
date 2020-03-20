@@ -416,7 +416,7 @@ Function FrontPanels_AsQ()
 
 	SetDataFolder root:
 	
-EndMacro
+End
 
 
 
