@@ -187,7 +187,7 @@ Function VC_CalculateQFrontPanels()
 	V_putDet_beam_center_x("VCALC","FL",xCtr)
 	V_putDet_beam_center_y("VCALC","FL",yCtr)
 
-	SDD = VC_getSDD("FL")		// SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("FL")		// SDD [cm] - does not include setback
 		
 //	VC_Detector_2Q(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_FL,qTot_FL,qx_FL,qy_FL,qz_FL,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FL")
@@ -244,7 +244,7 @@ Function VC_CalculateQFrontPanels()
 	V_putDet_beam_center_x("VCALC","FR",xCtr)
 	V_putDet_beam_center_y("VCALC","FR",yCtr)	
 	
-	SDD = VC_getSDD("FR")		// SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("FR")		// SDD [cm] - does not include setback
 	
 //	VC_Detector_2Q(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_FR,qTot_FR,qx_FR,qy_FR,qz_FR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"FR")
@@ -298,7 +298,8 @@ Function VC_CalculateQFrontPanels()
 	V_putDet_beam_center_x("VCALC","FT",xCtr)
 	V_putDet_beam_center_y("VCALC","FT",yCtr)
 
-	SDD = VC_getSDD("FT")		// SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("FT")		// SDD [cm] - does not include setback
+	SDD += VCALC_getTopBottomSDDSetback("FT")
 		  
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_FT,qTot_FT,qx_FT,qy_FT,qz_FT,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
@@ -352,7 +353,8 @@ Function VC_CalculateQFrontPanels()
 	V_putDet_beam_center_x("VCALC","FB",xCtr)
 	V_putDet_beam_center_y("VCALC","FB",yCtr)
 
-	SDD = VC_getSDD("FB")		// SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("FB")		// SDD [cm] - does not include setback
+	SDD += VCALC_getTopBottomSDDSetback("FB")
 		
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_FB,qTot_FB,qx_FB,qy_FB,qz_FB,xCtr,yCtr,sdd+F_sdd_offset/1000,lam,pixSizeX,pixSizeY)
@@ -693,7 +695,7 @@ Function VC_CalculateQMiddlePanels()
 	V_putDet_beam_center_x("VCALC","ML",xCtr)
 	V_putDet_beam_center_y("VCALC","ML",yCtr)
 
-	SDD = VC_getSDD("ML")		//SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("ML")		//SDD [cm] - does not include setback
 	
 //	VC_Detector_2Q(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_ML,qTot_ML,qx_ML,qy_ML,qz_ML,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"ML")
@@ -754,7 +756,7 @@ Function VC_CalculateQMiddlePanels()
 	V_putDet_beam_center_x("VCALC","MR",xCtr)
 	V_putDet_beam_center_y("VCALC","MR",yCtr)
 
-	SDD = VC_getSDD("MR")		//SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("MR")		//SDD [cm] does not include setback
 	
 //	VC_Detector_2Q(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY)
 	VC_Detector_2Q_NonLin(det_MR,qTot_MR,qx_MR,qy_MR,qz_MR,xCtr,yCtr,sdd,lam,pixSizeX,pixSizeY,"MR")
@@ -808,7 +810,8 @@ Function VC_CalculateQMiddlePanels()
 	V_putDet_beam_center_x("VCALC","MT",xCtr)
 	V_putDet_beam_center_y("VCALC","MT",yCtr)
 
-	SDD = VC_getSDD("MT")		//SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("MT")		//SDD [cm] - does not include setback
+	SDD += VCALC_getTopBottomSDDSetback("MT")
 	
 	// global sdd_offset is in (mm), convert to meters here for the Q-calculation  
 //	VC_Detector_2Q(det_MT,qTot_MT,qx_MT,qy_MT,qz_MT,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)
@@ -862,7 +865,8 @@ Function VC_CalculateQMiddlePanels()
 	V_putDet_beam_center_x("VCALC","MB",xCtr)
 	V_putDet_beam_center_y("VCALC","MB",yCtr)
 
-	SDD = VC_getSDD("MB")		//SDD [cm] - INCLUDES offset for TB
+	SDD = VC_getSDD("MB")		//SDD [cm] - does not include setback
+	SDD += VCALC_getTopBottomSDDSetback("MB")
 	
 		// global sdd_offset is in (mm), convert to meters here for the Q-calculation
 //	VC_Detector_2Q(det_MB,qTot_MB,qx_MB,qy_MB,qz_MB,xCtr,yCtr,sdd+M_sdd_offset/1000,lam,pixSizeX,pixSizeY)

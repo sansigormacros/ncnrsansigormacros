@@ -127,11 +127,14 @@ Proc Initialize_VSANSPreferences()
 	endif
 
 
-	DoAlert 1,"Do you want small panels? (this can be changed later in preferences)"
-	if(V_flag == 1)
-		// yes
-		Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = 1
-	endif
+// this is now a VSANS menu item rather than a question at startup
+//	DoAlert 1,"Do you want small panels? (this can be changed later in preferences)"
+//	if(V_flag == 1)
+//		// yes
+//		Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = 1
+//	endif
+
+
 // flag to allow adding raw data files with different attenuation (normally not done)	
 //	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten",0)
 //	Variable/G root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten=val
@@ -291,6 +294,15 @@ Function V_LaptopModePref(ctrlName,checked) : CheckBoxControl
 End
 
 
+Proc V_SetLaptopMode()
+
+	root:Packages:NIST:VSANS:Globals:gLaptopMode = 1	
+	
+	DoWindow/K Main_VSANS_Panel
+	Initialize_VSANS()
+	DoAlert 0,"Laptop Mode is ON, go to VSANS preferences to turn mode off"
+	
+End
 
 
 Function V_PrefDoneButtonProc(ctrlName) : ButtonControl

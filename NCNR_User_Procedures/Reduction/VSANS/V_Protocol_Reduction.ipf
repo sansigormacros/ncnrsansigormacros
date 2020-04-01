@@ -2375,6 +2375,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 //    local variable samFileLoaded is the file name loaded (contains the extension)
 //
 // V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
+//
+// this step does more than save...
+// - trims the selected points from the data set
+// - concatenates the data sets
+// - removes NaN points and removes duplicate q-values by averaging q-values that are within 0.1% of each other
+//
 
 	prot[9] = collimationStr
 
@@ -3388,6 +3394,9 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
 				
+				// RemoveDuplicateQvals -- this step:
+				// --removes NaN values
+				// -- averages intensity from q-values that are within 0.1% of each other
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
 					

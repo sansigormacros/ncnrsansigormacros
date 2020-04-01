@@ -15,6 +15,7 @@ Menu "VSANS"
 	"-"
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
+	"Turn Laptop Mode ON",V_SetLaptopMode()
 	"-"
 	Submenu "Find Windows"
 		"Data Catalog",DoWindow/F CatVSANSTable
@@ -66,7 +67,7 @@ Menu "VSANS"
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
 		"-"
-		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
+		"Copy_VCALC_to_VSANS_File",Copy_VCALC_to_VSANSFile()
 		"-"
 		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
 		"Write_Nexus with attributes",Write_Nexus_Xref()				//this will write out with attributes if read in by Read_Nexus_Xref

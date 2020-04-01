@@ -1746,6 +1746,7 @@ Function V_QMin_withBeamStop(detStr)
 
 	BSDiam = VC_beamstopDiam(detStr)
 	SDD = VC_getSDD(detStr)
+	SDD += VCALC_getTopBottomSDDSetback(detStr)
 	lambda = VCALC_getWavelength()
 	
 	two_theta = atan(BSDiam/2/SDD)

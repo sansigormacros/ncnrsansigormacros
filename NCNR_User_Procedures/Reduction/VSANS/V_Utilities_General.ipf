@@ -379,6 +379,9 @@ Function/S V_DoSaveFileDialog(msg,[fname,suffix])
 				//Print "modified  ",outputPath
 			endif
 			//if(V_flag==2)  do nothing, let it go around again
+		else
+			// length is OK, set the output path, exit loop and return
+			outputPath = testStr
 		endif
 		
 	while(badLength)

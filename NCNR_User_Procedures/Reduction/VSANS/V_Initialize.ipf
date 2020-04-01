@@ -249,8 +249,10 @@ Function V_InitGlobals()
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 1
 	else
 		//either Windows or Windows NT
-		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
-		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+//		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
+//		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
+		String/G root:Packages:NIST:gAngstStr = num2char(197)
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
