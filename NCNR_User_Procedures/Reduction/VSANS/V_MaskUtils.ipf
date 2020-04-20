@@ -3,6 +3,8 @@
 #pragma IgorVersion = 7.00
 
 //
+//
+//
 // Mask utilities:
 // - loader
 // - simple editor
@@ -10,10 +12,7 @@
 // - assign mask file to data file
 //
 //
-//
-//
-// 
-//
+
 
 ///// LOADING
 
