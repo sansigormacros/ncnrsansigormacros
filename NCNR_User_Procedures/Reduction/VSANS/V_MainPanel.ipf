@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion = 7.00
 
-
+//
 //*********************
 //
 //draws main panel of buttons for all data reduction operations
@@ -12,7 +12,7 @@
 // **function names are really self-explanatory...see the called function for the real details
 //
 //**********************
-
+//
 
 // 
 //
