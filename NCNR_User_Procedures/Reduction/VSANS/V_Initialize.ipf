@@ -23,7 +23,8 @@
 //
 //************************
 
-Constant kVSANSVersion = 7.99
+// with three digit numbers - don't end in 0, or it won't show. Skip the 0's (100 -> 101)
+Constant kVSANSVersion = 7.101
 
 // DONE -- store all of the constant values here in the initialization routine. no need
 // to set up a separate file of "constants" or "globals" where the actual numbers are
