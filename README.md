@@ -3,7 +3,7 @@ This is the central repository for the NIST Center for Neutron Research reductio
 
 ## About
 The NCNR SANS reduction macros run in the commercial software suite Igor Pro. You do not need to purchase a license of Igor Pro to run the macros, the trial version will allow macros to operate.
-For more information, please visit  https://www.nist.gov/ncnr/data-reduction-analysis/sans-software and http://danse.chem.utk.edu/trac.
+For more information, please visit  https://www.nist.gov/ncnr/data-reduction-analysis/sans-software and the wiki pages for this project.
 
 ## Latest release
 The current release is [v7.99](https://github.com/krzywon/ncnrsansigormacros/releases/tag/v7.99) released May 1, 2020.
