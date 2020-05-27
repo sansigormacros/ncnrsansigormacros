@@ -1181,13 +1181,13 @@ Function V_AutoBeamCenter()
 // but what if some of the values are bad?
 // these are both procedures, not functions...
 //	V_DeriveBeamCenters()
-//	Make/O/T newPanelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
+	Make/O/T newPanelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
 	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
 	
-//	Wave/T newPanelWave
+	Wave/T newPanelWave
 	Wave newXCtr_cm,newYCtr_cm
 	
-//	Edit newXCtr_cm,newYCtr_cm
+	Edit newPanelWave,newXCtr_cm,newYCtr_cm
 	
 //	V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
 	// start with the front
@@ -1248,6 +1248,7 @@ Function V_AutoBeamCenter()
 	xCtr_cm = newXCtr_cm
 	yCtr_cm = newYCtr_cm
 
+	
 	// open the panel
 	Execute "V_PatchDet_xyCenters_Panel()"
 	

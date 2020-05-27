@@ -2549,11 +2549,16 @@ Proc V_PatchDet_Distance(lo,hi,dist_f,dist_m,dist_b)
 	V_fPatchDet_distance(lo,hi,dist_f,dist_m,dist_b)
 End
 
-Proc V_Patch_Back_Detector(lo,hi)
-	Variable lo,hi
-	
-	V_fPatch_BackDetector(lo,hi)
-End
+
+//
+// Not used any longer - as of 2019
+// this was filling in default values that have since been replaced with proper values
+//
+//Proc V_Patch_Back_Detector(lo,hi)
+//	Variable lo,hi
+//	
+//	V_fPatch_BackDetector(lo,hi)
+//End
 
 Proc V_Patch_Back_XYPixelSize(lo,hi)
 	Variable lo,hi

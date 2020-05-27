@@ -542,7 +542,8 @@ end
 ///////// QxQy Export  //////////
 //
 // (see the similar-named SANS routine for additonal steps - like resolution, etc.)
-//ASCII export of data as 8-columns qx-qy-Intensity-err-qz-sigmaQ_parall-sigmaQ_perp-fShad
+//ASCII export of data as 9-columns qx-qy-Intensity-err-qz-sigmaQ_parall-sigmaQ_perp-fShad-mask
+//
 // + limited header information
 //
 //	Jan 2019 -- first version, simply exports the basic matrix of data with no resolution information
