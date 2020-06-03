@@ -101,6 +101,8 @@ Proc V_CreatePatchGlobals()
 
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gRadioVal = 1
 	
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)		//set the globals
 
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch:	
 	Make/O/T/N=(10,3) PP_ListWave
@@ -1722,6 +1724,9 @@ Proc V_DeadtimePatchPanel() : Panel
 		sc = 0.7
 	endif
 
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)		//set the globals
+	
 	NewPanel /W=(600*sc,400*sc,1000*sc,1000*sc)/N=DeadtimePanel /K=1
 //	ShowTools/A
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
@@ -2033,7 +2038,10 @@ Proc V_CalibrationPatchPanel() : Panel
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		sc = 0.7
 	endif
-
+	
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)		//set the globals
+	
 	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=CalibrationPanel /K=1
 //	ShowTools/A
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
@@ -2408,6 +2416,9 @@ Proc V_Patch_xyCtr_Panel() : Panel
 		sc = 0.7
 	endif
 
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)		//set the globals
+	
 	NewPanel /W=(600*sc,400*sc,1150*sc,800*sc)/N=Patch_XY_Panel /K=1
 //	ShowTools/A
 	
@@ -2562,13 +2573,13 @@ End
 
 Proc V_Patch_Back_XYPixelSize(lo,hi)
 	Variable lo,hi
-	
+		
 	V_fPatch_BackDetectorPixel(lo,hi)
 end
 
 Proc V_Patch_XYPixelSize(lo,hi)
 	Variable lo,hi
-	
+
 	V_fPatch_XYPixelSize(lo,hi)
 End
 
@@ -2983,7 +2994,8 @@ Function V_fPatch_BackDetectorPixel(lo,hi)
 	
 	Variable ii,jj
 	String fname,detStr
-	
+
+
 	detStr = "B"
 	
 	Make/O/D/N=3 cal_x,cal_y

@@ -1,6 +1,17 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion = 7.00
 
+
+//
+//
+// -- as of March 2020, it has been determined that the correct choice for
+// normalization of the sensitivity data is "INDIVIDUAL" - that is, each panel
+// is treated in isolation from other panels. Logical choice, since the counts detected
+// on each are not correlated. So treat them independently. See the documentation/memos for
+// the proof.
+// -- SRK
+
+
 //
 // ********
 //

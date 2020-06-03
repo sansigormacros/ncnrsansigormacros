@@ -1105,6 +1105,7 @@ Function V_AutoBeamCenter()
 // or display the file label along with the file name
 //
 //
+
 	
 // get the file names	
 	Prompt emptyFileName_F,"Empty Beam File, Front Carriage",popup,V_PickEMPBeamButton("")
@@ -1128,7 +1129,7 @@ Function V_AutoBeamCenter()
 	endif
 
 // read the values from the Reduction/comment block
-// "XREF=%g;YREF=%g;"
+// "XREF=%g;YREF=%g;PANEL=%s;"
 	String refStr=""
 	Variable xRef_F,xRef_M,xRef_B
 	Variable yRef_F,yRef_M,yRef_B
@@ -1234,13 +1235,12 @@ Function V_AutoBeamCenter()
 
 	Variable lo,hi
 	V_Find_LoHi_RunNum(lo,hi)
-	NVAR gFileNum_Lo=root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	NVAR gFileNum_Hi=root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
 
-	gFileNum_Lo = lo
-	gFileNum_Hi = hi
 
 //	wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
+	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
+	
 	wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
 	wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
 
