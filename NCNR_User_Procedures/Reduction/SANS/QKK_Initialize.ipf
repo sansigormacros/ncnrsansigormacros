@@ -119,7 +119,7 @@ Function InitGlobals()
 		String/G root:Packages:NIST:gAngstStr = num2char(-59)
 		Variable/G root:myGlobals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
-		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
+		//Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 	
 	//global to set log scale as the default for display of RAW data
