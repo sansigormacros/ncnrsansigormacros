@@ -154,7 +154,7 @@ Proc CatVShort_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	//BuildCatVeryShortNotebook()
-	BuildCatVeryShortTable()
+	BuildCatVeryShortTable(ctrlName)
 End
 
 //button is labeled "Sort Catalog"
@@ -285,25 +285,27 @@ End
 //
 Window Main_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(500,60,924,320) /K=2 as "SANS Reduction Controls"
+	NewPanel /W=(500,60,1015,320) /K=2 as "SANS Reduction Controls"
 	ModifyPanel cbRGB=(65535,58981,27524)
 	ModifyPanel fixedSize=1
 //////
 //on main portion of panel
-	Button MainButtonA,pos={9,8},size={74,20},title="Pick Path",proc=PickPath_MainButtonProc
+	Button MainButtonA,pos={5,8},size={80,20},title="Pick Path",proc=PickPath_MainButtonProc
 	Button MainButtonA,help={"Pick the local data folder that contains the SANS data"}
-	Button MainButtonB,pos={92,8},size={74,20},proc=CatVShort_MainButtonProc,title="File Catalog"
-	Button MainButtonB,help={"This will generate a condensed CATalog table of all files in a specified local folder"}
+	Button FileCatalogButton,pos={90,8},size={80,20},proc=CatVShort_MainButtonProc,title="File Catalog"
+	Button FileCatalogButton,help={"This will generate a condensed CATalog table of all files in the specified local folder"}
+	Button MainButtonU,pos={175,8},size={80,20},proc=CatVShort_MainButtonProc,title="Refresh"
+	Button MainButtonU,help={"This will add any new files to the CATalog table."}
 	// [davidm] create sort Button
-	Button MainButtonS,pos={175,8},size={74,20},proc=CatVShort_SortButtonProc,title="Sort Catalog"
+	Button MainButtonS,pos={260,8},size={80,20},proc=CatVShort_SortButtonProc,title="Sort Catalog"
 	Button MainButtonS,help={"This will display a dialog to sort the CATalog"}
 	
-	Button MainButtonC,pos={258,8},size={74,20},proc=HelpMainButtonProc,title="Help"
+	Button MainButtonC,pos={345,8},size={80,20},proc=HelpMainButtonProc,title="Help"
 	Button MainButtonC,help={"Display the help file"}
-	Button MainButtonD,pos={341,8},size={74,20},proc=SR_OpenTracTicketPage,title="Feedback"
+	Button MainButtonD,pos={430,8},size={80,20},proc=SR_OpenTracTicketPage,title="Feedback"
 	Button MainButtonD,help={"Submit bug reports or feature requests"}
 	
-	TabControl MainTab,pos={7,49},size={410,202},tabLabel(0)="Raw Data",proc=MainTabProc
+	TabControl MainTab,pos={7,49},size={501,202},tabLabel(0)="Raw Data",proc=MainTabProc
 	TabControl MainTab,tabLabel(1)="Reduction",tabLabel(2)="1-D Ops",tabLabel(3)="2-D Ops",tabLabel(4)="Misc Ops"
 	TabControl MainTab,value=0
 	//

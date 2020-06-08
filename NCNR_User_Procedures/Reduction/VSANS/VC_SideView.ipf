@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion = 7.00
 
 
 
@@ -10,7 +11,7 @@
 // These are the side and top views with the "rays" traced out to show
 // where the detector views overlap
 //
-// TODO: 
+// DONE: 
 // -x  make sure that all of the values are from global constants, not hard-wired values
 //
 //
@@ -43,7 +44,7 @@ Function SetupSideView()
 	return(0)
 End
 
-// TODO: 
+// DONE: 
 // -x account for the 41cm SDD setback for the T/B detectors. These are only seen in the side view.
 //
 Function UpdateSideView()

@@ -120,17 +120,17 @@ Function V_fBroadPeakWB(w,x) : FitFunc
 
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	loLim = 3.37/kWhiteBeam_Mean
+	upLim = 8.37/kWhiteBeam_Mean
 	
 	inten = V_IntegrBroadPeakWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -163,7 +163,7 @@ Function V_integrand_BroadPeakWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*BroadPeakX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*BroadPeakX(cw,qq/dum)
 	
 	return (val)
 End

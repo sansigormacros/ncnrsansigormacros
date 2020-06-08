@@ -19,7 +19,19 @@
 // - adding work.drk data without normalizing to monitor counts
 //***************************
 
-
+Function Add_scale_to_work(newType, scale)
+	String newType
+	Variable scale
+	
+	String dest = "root:Packages:NIST:"+newType+":scale"
+	NVAR/Z factor = $(dest)
+	If (NVAR_Exists(factor))
+		factor = scale
+	Else
+		Variable/G $(dest) = scale
+	Endif
+End
+	
 //testing procedure, not called anymore
 Proc Add_to_Workfile(type, add)
 	String type,add
@@ -134,8 +146,8 @@ Function Add_raw_to_work(newType)
 		raw_data /= 4
 	endif
 	
-	//deadtime corrections to raw data
-	deadTime = DetectorDeadtime(raw_text[3],raw_text[9])		//pick the correct detector deadtime
+	//deadtime is added to the reals read when file is loaded
+	deadTime = raw_reals[56]
 	itim = raw_ints[2]
 	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
@@ -304,10 +316,10 @@ Function Raw_to_work(newType)
 		data /= 4
 	endif
 	
-	//deadtime corrections
+	//deadtime is added to the reals read when file is loaded
 	itim = integersread[2]
 	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
-	deadtime = DetectorDeadtime(textread[3],textread[9])	//pick the correct deadtime
+	deadtime = realsread[56]
 	dscale = 1/(1-deadTime*cntrate)
 	
 #if (exists("ILL_D22")==6)
@@ -508,8 +520,8 @@ Function DetCorr(data,realsread,doEfficiency,doTrans)
 				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
 	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
 #else
-				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-//				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
+				data[ii][jj] /= DetEffCorr(realsread,lambda,dtdist,xd,yd)
+//				solidAngle[ii][jj] /= DetEffCorr(realsread,lambda,dtdist,xd,yd)		//testing only
 #endif
 			endif
 			
@@ -587,16 +599,21 @@ End
 // dtdist is SDD
 // xd and yd are distances from the beam center to the current pixel
 //
-Function DetEffCorr(lambda,dtdist,xd,yd)
+Function DetEffCorr(realsread,lambda,dtdist,xd,yd)
+	Wave realsread
 	Variable lambda,dtdist,xd,yd
 	
 	Variable theta,cosT,ff,stAl,stHe
+	Variable alScl = realsread[52]
+	Variable alWnd = realsRead[53]
+	Variable heScl = realsread[54]
+	Variable heWnd = realsread[55]
 	
 	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )
 	cosT = cos(theta)
 	
-	stAl = 0.00967    * lambda * 1.52 //dimensionless, constants provided by epg
-	stHe = 0.055553 * lambda * 3.81
+	stAl = alScl * lambda * alWnd //dimensionless, constants provided by epg
+	stHe = heScl * lambda * heWnd
 	
 	ff = exp(-stAl/cosT)*(1-exp(-stHe/cosT)) / ( exp(-stAl)*(1-exp(-stHe)) )
 		

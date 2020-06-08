@@ -80,7 +80,7 @@ Function ReadHeaderAndData(fname)
 	String sansfname,textstr
 	
 	Make/D/O/N=23 $"root:Packages:NIST:RAW:IntegersRead"
-	Make/D/O/N=52 $"root:Packages:NIST:RAW:RealsRead"
+	Make/D/O/N=57 $"root:Packages:NIST:RAW:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
 	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
 
@@ -102,14 +102,14 @@ Function ReadHeaderAndData(fname)
 	textw[2]= "RAW"
 	
 	// user account identifier (currently used only for NCNR-specific operations)
-	textw[3]= ""
+	textw[3]= getInstrumentType(fname)
 
 	// sample label
 	textw[6]= getSampleLabel(fname)
 	
 	// identifier of detector type, useful for setting detector constants
 	//(currently used only for NCNR-specific operations)
-	textw[9]= ""
+	textw[9]= getDetectorType(fname)
 
 	//total counting time in seconds
 	intw[2] = getCountTime(fname)
@@ -176,10 +176,20 @@ Function ReadHeaderAndData(fname)
 	// wavelength spread (FWHM)
 	realw[27] = getWavelengthSpread(fname)
 	
+	// If lens configuraiton is used, put in a 1, otherwise 0
+	realw[28] = getLens(fname)
+	
 	// beam stop X-position (motor reading, approximate cm from zero position)
 	// currently NCNR-specific use to identify transmission measurements
 	// you return 0
 	realw[37] = 0
+	
+	// add the 4 stAl and stHe constants (scale and thickness by 2)
+	realw[52] = getDetectorParameter(fname, "stAlScale")
+	realw[53] = getDetectorParameter(fname, "stAlWindow")
+	realw[54] = getDetectorParameter(fname, "stHeScale")
+	realw[55] = getDetectorParameter(fname, "stHeWindow")
+	realw[56] = getDetectorParameter(fname, "deadtime")
 
 // the actual data array, dimensions are set as globals in 
 // InitFacilityGlobals()
@@ -436,7 +446,7 @@ End
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
 	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
-	Make/O/D/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
+	Make/O/D/N=57 $("root:Packages:NIST:"+destFolder+":RealsRead")
 	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
 	
 	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")
@@ -774,11 +784,25 @@ Function getDetectorData(fname,data)
 	endif
 
 	Wave hmm_xy = $(dfName+":data:hmm_xy")
+	Wave hmm =  $(dfName+":data:hmm")
 	
 	//redimension /I /N = (dimsize(hmm_xy, 2), dimsize(hmm_xy, 1)), data
 	//nha. Count arrays need to be floating point, since the data will be divided, normalised etc. 
-	redimension /N = (dimsize(hmm_xy, 2), dimsize(hmm_xy, 1)), data
-	data[][] = hmm_xy[0][q][p]
+
+	if (WaveExists(hmm_xy))
+		if (dimsize(hmm_xy, 2) == 0)
+			redimension /N = (dimsize(hmm_xy, 1), dimsize(hmm_xy, 0)), data
+			data[][] = hmm_xy[q][p]
+		else
+			redimension /N = (dimsize(hmm_xy, 2), dimsize(hmm_xy, 1)), data
+			data[][] = hmm_xy[0][q][p]
+		endif
+	elseif (WaveExists(hmm))
+		redimension /N = (dimsize(hmm, 3), dimsize(hmm, 2)), data
+		data[][] = hmm[0][0][q][p]
+	else
+		print "hmm or hmm_xy was not found"
+	endif
 	
 	//nha workaround. for wrongly dimensioned Quokka data 191x192
 	variable x_dim = dimsize(data,0)
@@ -863,6 +887,89 @@ Function/S getSampleLabel(fname)
 	return(str)
 End
 
+// get the detector effeciency parameters for the app. detector
+// ideally try to get it from the hdf file and use the 
+// defaults based on the detector type
+// TBD - the HDF parameter names need to be updated 
+Function getDetectorParameter(fname, pmtag)
+	String fname, pmtag
+	
+	String dfName = ""
+	hdfReadSimulated(fname, dfName)
+	
+	Variable value, scaleAl, thickAl, scaleHe, depthHe
+	Variable deadtime
+
+	String detType = getDetectorType(fname)
+	strswitch(detType)
+		case "BNL":
+			deadtime = 24.2e-9
+			scaleAl = 0.00967
+			thickAl = 2.02
+			scaleHe = 0.146
+			depthHe = 4.0
+			break
+		case "ORD":
+		default:
+			deadtime = 2.14e-6
+			scaleAl = 0.00967
+			thickAl = 1.52
+			scaleHe = 0.055553
+			depthHe = 6.35
+	endswitch
+	strswitch(pmtag)
+		case "deadtime":
+			value = getHdfParameterValue(fname, "deadtime", deadtime)
+			break
+		case "stAlScale":
+			value = scaleAl
+			break
+		case "stAlWindow":
+			value = getHdfParameterValue(fname, "al_window_thickness", thickAl)
+			break			
+		case "stHeScale":
+			value = scaleHe
+			break
+		case "stHeWindow":
+			value = getHdfParameterValue(fname, "he_window_thickness", depthHe)
+			break
+	endswitch
+	return (value)
+End	
+
+// instrument type 
+Function/S getInstrumentType(fpath)
+	String fpath
+	
+	// just uses the the first 3 characters of the fname
+	String fname = ParseFilePath(0, fpath, ":", 1, 0)
+	String instr = fname[0,2]
+	
+	return (instr)
+End
+
+// detector type for QKK is based on date
+// QKK switch from Ordela to BNL detector on 9-Nov-2018
+Function/S getDetectorType(fpath)
+	String fpath
+	
+	String detType = "---"
+	String instr = getInstrumentType(fpath)
+	If (cmpstr(instr, "QKK") == 0)
+		String dateStr = getFileCreationDate(fpath)
+
+		// convert string to igor date
+		Variable rDate = stringDate2Secs("2018-11-09 0:0:0")
+		Variable cDate = stringDate2Secs(dateStr)
+		if (cDate >= rDate)
+			detType = "BNL"
+		else
+			detType = "ORD"
+		endif
+	Endif
+	return detType
+End
+	
 // file creation date
 Function/S getFileCreationDate(fname)
 	String fname
@@ -902,11 +1009,39 @@ Function/S getFileCreationDate(fname)
 	return(str)
 End
 
+// expected format YYYY-MM-DD HH:MM:SS
+Function stringDate2Secs(dateStr)
+	String dateStr
+	Variable year, month, day, hours, mins, secs
+	String formatStr = "%d-%d-%d %d:%d:%d"
+	sscanf dateStr, formatStr, year, month, day, hours, mins, secs
+	Variable dt = date2Secs(year, month, day) + 3600 * hours + 60 * mins + secs
+	return dt
+End
+
+Function getHdfParameterValue(fname, pmtag, defvalue)
+	String fname, pmtag
+	Variable defvalue
+
+	String dfName = ""
+	hdfReadSimulated(fname, dfName)
+	
+	Variable value
+	Wave pmwave = $(dfName + ":" + pmtag)
+	if(WaveExists(pmwave))
+		value = pmwave[0]
+	else
+		print "Can't find parameter " + nameofwave(pmwave)
+		value = defvalue
+	endif	
+	
+	return (value)
+End
 
 //monitor count
 Function getMonitorCount(fname)
 	String fname
-	Variable value
+	Variable value, bmTime, detTime
 	Variable att, err
 	string dfName = ""
 		
@@ -927,6 +1062,19 @@ Function getMonitorCount(fname)
 	else
 		print "Can't find Monitor Count in " + fname
 	endif	
+
+	//[geish]
+	//scale the monitor count to the detector acquisition time	
+	Wave wTime1 = $(dfName+":instrument:detector:time0") 
+	Wave wTime2 = $(dfName+":monitor:bm1_time") 
+	
+	if (WaveExists(wTime1) && WaveExists(wTime2))
+		detTime = wTime1[0]
+		bmTime = wTime2[0]
+		value =  round( value * detTime / bmTime )
+	else
+		print "Can't find Count Time in " + fname
+	endif
 
 	// davidm
 	if (value == 0)
@@ -1253,16 +1401,167 @@ Function getTemperature(fname)
 	
 	// [davidm]
 	hdfReadSimulated(fname, dfName)
-	if (exists(dfName+":sample:tc1:sensor:value") != 1)
+	
+	if(!WaveExists($(dfName+":sample:tc1:sensor:value")) && !WaveExists($(dfName+":sample:tc1:sensor:sensorValueA")) && !WaveExists($(dfName+":sample:tc1:Loop1:start_temperature")))
 		err = hdfRead(fname, dfName)
 		//err not handled here
 	endif
-
-	Wave wSample_tc1_value = $(dfName+":sample:tc1:sensor:value")
-	if (WaveExists(wSample_tc1_value))
-		value = wSample_tc1_value[0]
+	
+	if (WaveExists($(dfName+":sample:tc1:sensor:value")))
+		Wave values = $(dfName+":sample:tc1:sensor:value")
+		value = values[0]
+	elseif(WaveExists($(dfName+":sample:tc1:sensor:sensorValueA")))
+		Wave values = $(dfName+":sample:tc1:sensor:sensorValueA")
+		value = values[0]
+	elseif(WaveExists($(dfName+":sample:tc1:Loop1:start_temperature")))
+		Wave values = $(dfName+":sample:tc1:Loop1:start_temperature")
+		value = values[0]
 	else
-		print "Can't find Sample Rotation Angle in " + fname
+		print "Can't find Temperature in " + fname
+	endif
+	
+	// [davidm]
+	//KillWaves wSample_tc1_value
+	
+	return(value)
+end
+
+// magnetic field strength
+Function getHtrSw(fname)
+	String fname
+	Variable value
+	
+	// your code returning value
+	variable err
+	string dfName = ""
+	
+	// [davidm]
+	hdfReadSimulated(fname, dfName)
+	
+	variable flag = 0
+	if (WaveExists($(dfName+":sample:ma1:htr_sw")))
+		flag = 1
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:htr_sw")))
+		flag = 1
+	endif
+	
+	if (flag == 0)
+		err = hdfRead(fname, dfName)
+		//err not handled here
+	endif
+	
+	if (WaveExists($(dfName+":sample:ma1:htr_sw")))
+		Wave values = $(dfName+":sample:ma1:htr_sw")
+		value = values[0]
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:htr_sw")))
+		Wave values = $(dfName+":sample:ma1:magnet:htr_sw")
+		value = values[0]
+	else
+		value = -1
+	endif
+
+	return(value)
+end
+Function getMSetpoint(fname)
+	String fname
+	Variable value
+	
+	// your code returning value
+	variable err
+	string dfName = ""
+	
+	// [davidm]
+	hdfReadSimulated(fname, dfName)
+	
+	variable flag = 0
+	if (WaveExists($(dfName+":sample:ma1:setpoint")))
+		flag = 1
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:setpoint")))
+		flag = 1
+	endif
+	
+	if (flag == 0)
+		err = hdfRead(fname, dfName)
+		//err not handled here
+	endif
+	
+	if (WaveExists($(dfName+":sample:ma1:setpoint")))
+		Wave values = $(dfName+":sample:ma1:setpoint")
+		value = values[0]
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:setpoint")))
+		Wave values = $(dfName+":sample:ma1:magnet:setpoint")
+		value = values[0]
+	else
+		print "Can't find Magnetic Field Setpoint in " + fname
+	endif
+
+	return(value)
+end
+Function getMField(fname)
+	String fname
+	Variable value
+	
+	// your code returning value
+	variable err
+	string dfName = ""
+	
+	// [davidm]
+	hdfReadSimulated(fname, dfName)
+	
+	variable flag = 0
+	if (WaveExists($(dfName+":sample:ma1:field")))
+		flag = 1
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:field")))
+		flag = 1
+	endif
+	
+	if (flag == 0)
+		err = hdfRead(fname, dfName)
+		//err not handled here
+	endif
+		
+	if (WaveExists($(dfName+":sample:ma1:field")))
+		Wave values = $(dfName+":sample:ma1:field")
+		value = values[0]
+	elseif (WaveExists($(dfName+":sample:ma1:magnet:field")))
+		Wave values = $(dfName+":sample:ma1:magnet:field")
+		value = values[0]
+	else
+		print "Can't find Magnetic Field Strength in " + fname
+	endif
+	
+	if (getHtrSw(fname) == 0)
+		value = getMSetpoint(fname)
+	endif
+	
+	// [davidm]
+	//KillWaves wSample_tc1_value
+	
+	return(value)
+end
+
+// electric field strength
+Function getEField(fname)
+	String fname
+	Variable value
+	
+	// your code returning value
+	variable err
+	string dfName = ""
+	
+	// [davidm]
+	hdfReadSimulated(fname, dfName)
+	
+	if(!WaveExists($(dfName+":sample:volts1")))
+		err = hdfRead(fname, dfName)
+		//err not handled here
+	endif
+	
+	if (WaveExists($(dfName+":sample:volts1")))
+		Wave values = $(dfName+":sample:volts1")
+		value = values[0]
+	else
+		print "Can't find Electric Field Strength in " + fname
 	endif
 	
 	// [davidm]
@@ -1869,6 +2168,47 @@ Function getWavelengthSpread(fname)
 	return(value)
 end
 
+
+
+
+//lens
+Function getLens(fname)
+	String fname
+	String str
+	Variable value = 0
+	// your code returning value
+	variable err
+	string dfName = ""
+	//err = hdfRead(fname, dfName)
+	//err not handled here
+
+	// [davidm]
+	hdfReadSimulated(fname, dfName)
+
+	variable flag = 0
+	if(WaveExists($(dfName+":instrument:parameters:GuideConfig")))  //canonical location
+		flag = 1
+	endif
+
+	if(flag == 0)
+		err = hdfRead(fname, dfName)
+		//err not handled here
+	endif	
+
+	if(WaveExists($(dfName+":instrument:parameters:GuideConfig")))  //canonical location
+		Wave/T guideConfig = $(dfName+":instrument:parameters:GuideConfig")
+		str = guideConfig[0]
+		value = StringMatch(str, "lens")
+	else
+		print "Can't find Guide Config in " + fname
+	endif
+	
+	KillWaves guideConfig
+	
+	return(value)
+end
+
+
 //wavelength spread (FWHM)
 Function WriteWavelengthDistrToHeader(fname,wavelengthSpread)
 	String fname
@@ -1947,8 +2287,8 @@ Function getTransDetectorCounts(fname)
 	return(0)
 end
 
-
-//total count time (seconds)
+//[geish]
+// getCountTime returns the total detector count time (seconds)
 Function getCountTime(fname)
 	String fname
 	Variable value
@@ -1959,13 +2299,16 @@ Function getCountTime(fname)
 	//err not handled here
 	
 	// [davidm]
+	// [geish]
+	// 'time' is a keyword in IGOR and the HDF parameter 'time' is renamed
+	// to 'time0' after the HDF file is loaded
 	hdfReadSimulated(fname, dfName)
-	if (exists(dfName+":monitor:bm1_time")!= 1)
+	if (exists(dfName+":instrument:detector:time0")!= 1)
 		err = hdfRead(fname, dfName)
 		//err not handled here
 	endif
 
-	Wave wTime1 = $(dfName+":monitor:bm1_time") 
+	Wave wTime1 = $(dfName+":instrument:detector:time0") 
 	
 	if (WaveExists(wTime1))
 		value = wTime1[0]
@@ -2070,20 +2413,6 @@ Function/S getHDFversion(fname)
 	return(str)
 end
 
-// read the detector deadtime (in seconds)
-Function getDetectorDeadtime(fname)
-	String fname
-	
-	return(0)
-end
-
-// Write the detector deadtime to the file header (in seconds)
-Function WriteDeadtimeToHeader(fname,num)
-	String fname
-	Variable num
-	
-	return(0)
-End
 
 //reads the wavelength from a reduced data file (not very reliable)
 // - does not work with NSORTed files

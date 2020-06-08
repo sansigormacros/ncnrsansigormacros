@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 // TODO:
@@ -273,7 +274,9 @@ Proc pV_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
 	V_SumCountsInBox_Cmd(x1,x2,y1,y2,type,detStr)
 End
 
-Function V_FindCentroid() :  GraphMarquee
+
+
+Function V_Find_BeamCentroid() :  GraphMarquee
 
 //	//get the current displayed data (so the correct folder is used)
 //	SVAR cur_folder=root:myGlobals:gDataDisplayType
@@ -282,6 +285,7 @@ Function V_FindCentroid() :  GraphMarquee
 	Variable xzsum,yzsum,zsum,xctr,yctr
 	Variable left,right,bottom,top,ii,jj,counts
 	Variable x_mm_sum,y_mm_sum,x_mm,y_mm
+	Variable xRef,yRef
 
 	
 	GetMarquee left,bottom
@@ -374,37 +378,82 @@ Function V_FindCentroid() :  GraphMarquee
 		Print "Y-center (cm) = ",y_mm/10
 
 		if(cmpstr(detStr,"FR") == 0)
-			Print "Reference Y-Center is corrected for tube #7 zero position"		
+			Print "Reference Y-Center is corrected for FR tube #7 zero position"		
 
 			yCorrection = 61.70 - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
-			Print "FRONT Reference X-center (cm) = ",x_mm/10
-			Print "FRONT Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
+			xRef = x_mm/10
+			yRef = y_mm/10 + yCorrection*yPixSize
+			Print "FRONT Reference X-center (cm) = ",xRef
+			Print "FRONT Reference Y-center (cm) = ",yRef
+
 		endif
 
 		if(cmpstr(detStr,"MR") == 0)
-			Print "Reference Y-Center is corrected for tube #10 zero position"		
+			Print "Reference Y-Center is corrected for MR tube #10 zero position"		
 
 			yCorrection = 61.94 - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
-			Print "MIDDLE Reference X-center (cm) = ",x_mm/10
-			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 + yCorrection*yPixSize
+			xRef = x_mm/10
+			yRef = y_mm/10 + yCorrection*yPixSize
+			Print "MIDDLE Reference X-center (cm) = ",xRef
+			Print "MIDDLE Reference Y-center (cm) = ",yRef
+
 		endif
 		
 // if measured on the LEFT panel, convert to the RIGHT coordinates for the reference value	
 // these corrections are exactly the opposite (subtract, not add) of what is done in V_fDeriveBeamCenters(xFR,yFR,xMR,yMR)
+// since the lateral scans to determine the relative centers were done at the same time
+// the pixel values for the zero are on the same y-level, set by the beam height
+//
 		if(cmpstr(detStr,"FL") == 0)
-			Print "FRONT Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_FL_x 	// NEW Dec 2018 values
-			Print "FRONT Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_FL_y
+			Print "Reference Y-Center is corrected for FR tube #7 zero position"		
+
+			yCorrection = 61.70 - yCorrection
+			Print "yCorrection (pix) = ",yCorrection
+			Print "yCorrection (cm) = ",yCorrection*yPixSize		
+			xRef = x_mm/10 - kBCtrOffset_FL_x
+			yRef = y_mm/10 - kBCtrOffset_FL_y + yCorrection*yPixSize		
+			Print "FRONT Reference X-center (cm) = ",xRef	// NEW Dec 2018 values
+			Print "FRONT Reference Y-center (cm) = ",yRef
+
 		endif
 		
 		if(cmpstr(detStr,"ML") == 0)
-			Print "MIDDLE Reference X-center (cm) = ",x_mm/10 - kBCtrOffset_ML_x
-			Print "MIDDLE Reference Y-center (cm) = ",y_mm/10 - kBCtrOffset_ML_y
+			Print "Reference Y-Center is corrected for MR tube #10 zero position"		
+
+			yCorrection = 61.94 - yCorrection
+			Print "yCorrection (pix) = ",yCorrection
+			Print "yCorrection (cm) = ",yCorrection*yPixSize
+			xRef = x_mm/10 - kBCtrOffset_ML_x
+			yRef = y_mm/10 - kBCtrOffset_ML_y + yCorrection*yPixSize			
+			Print "MIDDLE Reference X-center (cm) = ",xRef
+			Print "MIDDLE Reference Y-center (cm) = ",yRef
+
 		endif
 	endif
+
+// TODO
+// ?? store the xy reference values somewhere so that the conversion to proper
+// beam center values can be done automatically, rather than copying numbers into a procedure
+//
+// - either I need 6 globals for the three panels, or I need to store the values in the 
+// reduction block of the file (comment?) - but I don't have the fileName here - could I find it
+// somewhere? gFileList in the current data folder?
+//
+	String ctrStr=""
+	if(cmpstr(detStr,"B") == 0)
+		xRef = xCtr
+		yRef = yCtr			//these are in pixels
+	endif
+	sprintf ctrStr,"XREF=%g;YREF=%g;",xRef,yRef
+	SVAR gFileList = $("root:Packages:NIST:VSANS:"+gCurDispType+":gFileList")
+	
+	V_writeReductionComments(gFileList,ctrStr)
+	
+	
 	
 	//back to root folder (redundant)
 	SetDataFolder root:

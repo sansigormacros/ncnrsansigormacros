@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 ////////////////////////
 //
@@ -620,6 +621,7 @@ Function VC_calc_L2(detStr)
 
 	Variable a2_to_GV,sam_to_GV,sdd,l2
 	sdd = VC_getSDD(detStr)			//sample pos to detector
+	sdd += VCALC_getTopBottomSDDSetback(detStr)		//returns zero for L/R
 	ControlInfo/W=VCALC VCALCCtrl_1d
 	a2_to_GV = V_Value
 	ControlInfo/W=VCALC VCALCCtrl_1e
@@ -659,6 +661,7 @@ Function VC_beamDiameter(direction,detStr)
 	
 	Variable a2_to_GV,sam_to_GV,sdd
 	sdd = VC_getSDD(detStr)			//sample pos to detector
+	sdd += VCALC_getTopBottomSDDSetback(detStr)		//returns zero for L/R
 	ControlInfo/W=VCALC VCALCCtrl_1d
 	a2_to_GV = V_Value
 	ControlInfo/W=VCALC VCALCCtrl_1e
@@ -734,7 +737,8 @@ Function VC_getSDD(detStr)
 	// this is gate valve to detector distance
 	sdd = V_Value
 	
-	sdd += VCALC_getTopBottomSDDSetback(detStr)
+	// MAR 2020 -- don't add in the setback, ask for it when needed
+//	sdd += VCALC_getTopBottomSDDSetback(detStr)
 	
 	// VCALCCtrl_1e is Sample Pos to Gate Valve (cm)
 	ControlInfo/W=VCALC VCALCCtrl_1e
@@ -789,7 +793,7 @@ Function VC_getGateValveToDetDist(detStr)
 			ControlInfo/W=VCALC VCALCCtrl_2d
 			break		
 		default:
-			Print "no case matched in VC_getSDD()"
+			Print "no case matched in VC_getGateValveToDetDistance()"
 	endswitch
 
 	// this is gate valve to detector distance

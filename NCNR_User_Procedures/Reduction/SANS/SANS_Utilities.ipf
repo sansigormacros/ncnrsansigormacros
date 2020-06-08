@@ -25,11 +25,11 @@
 //	¥	in Programming 6.10.x
 	
 function tic()
-	variable/G tictoc = startMSTimer
+	variable/G root:tictoc = startMSTimer
 end
  
 function toc()
-	NVAR/Z tictoc
+	NVAR/Z tictoc = root:tictoc
 	variable ttTime = stopMSTimer(tictoc)
 	printf "%g seconds\r", (ttTime/1e6)
 	killvariables/Z tictoc

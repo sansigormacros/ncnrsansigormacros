@@ -18,7 +18,7 @@
 // obtaining the folder path, parsing the filenames in the list,
 // and (dispatching) to write out the appropriate information to the notebook window
 Proc BuildUSANSNotebook(matchStr)
-	String matchStr="*"
+	String matchStr="*.bt5"
 
 	DoWindow/F CatWin
 	If(V_Flag ==0)

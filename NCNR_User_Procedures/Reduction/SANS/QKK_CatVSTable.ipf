@@ -20,10 +20,12 @@
 //this main procedure does all the work, obtaining the folder path, 
 //parsing the filenames in the list and (dispatching) to write out the 
 //appropriate information to the notebook window
-Function BuildCatVeryShortTable()
+Function BuildCatVeryShortTable(ctrlName)
+	String ctrlName
 	
 	Variable err
 	Variable t1 = ticks
+	Variable reload = (cmpstr(ctrlName,"FileCatalogButton")==0)
 	
 	PathInfo catPathName
 	if(v_flag==0)
@@ -35,35 +37,40 @@ Function BuildCatVeryShortTable()
 	
 	DoWindow/F CatVSTable
 	
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Filenames"
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Suffix"
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Labels"
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SDD"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Lambda"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:CntTime"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:TotCnts"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:CntRate"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MonCnts"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Transmission"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Thickness"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:XCenter"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:YCenter"
-	Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:nGuides"
-	Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:NumAttens"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:RunNumber"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:IsTrans"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:RotAngle"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Temperature"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Pos"		//added Mar 2010
-	//For ANSTO
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SSD" // [davidm] for Quokka
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:SICS"	
-	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:HDF"
+	If(V_Flag==0)
+		Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Filenames"
+		Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Suffix"
+		Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Labels"
+		Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SDD"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Lambda"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:CntTime"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:TotCnts"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:CntRate"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MonCnts"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Transmission"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Thickness"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:XCenter"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:YCenter"
+		Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:nGuides"
+		Make/O/B/N=0 $"root:myGlobals:CatVSHeaderInfo:NumAttens"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:RunNumber"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:IsTrans"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:RotAngle"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Temperature"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Field"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Pos"		//added Mar 2010
+		//For ANSTO
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SSD" // [davidm] for Quokka
+		//Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:SICS"	
+		Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:HDF"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:M_Field"
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:E_Field"
+		
+		Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //only used for for ILL, June 2008,
+	Endif
 	
-	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Reactorpower"       //only used for for ILL, June 2008,
 	WAVE ReactorPower = $"root:myGlobals:CatVSHeaderInfo:Reactorpower"
 
 	WAVE/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
@@ -91,8 +98,17 @@ Function BuildCatVeryShortTable()
 	WAVE Pos = $"root:myGlobals:CatVSHeaderInfo:Pos"
 	//For ANSTO
 	WAVE SSD = $"root:myGlobals:CatVSHeaderInfo:SSD" // [davidm]
-	WAVE SICS = $"root:myGlobals:CatVSHeaderInfo:SICS"	
+	//WAVE SICS = $"root:myGlobals:CatVSHeaderInfo:SICS"	
 	WAVE HDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
+	WAVE M_Field = $"root:myGlobals:CatVSHeaderInfo:M_Field"
+	WAVE E_Field = $"root:myGlobals:CatVSHeaderInfo:E_Field"
+	
+	If (reload)
+		Variable rows = numpnts(Filenames) 
+		DeletePoints 0, rows, Filenames,Suffix,Labels,DateAndTime,SDD,Lambda,CntTime,TotCnts,CntRate,MonCnts,Transmission
+		DeletePoints 0, rows, Thickness,XCenter,YCenter,nGuides,NumAttens,RunNumber,IsTrans,RotAngle,Temperature,Field,MCR,Pos
+		DeletePoints 0, rows, SSD,HDF,M_Field,E_Field
+	Endif
 	
 	If(V_Flag==0)
 		BuildTableWindow()
@@ -108,13 +124,16 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:YCenter)=40
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:NumAttens)=30
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:Temperature)=70
+		//ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
 #if (exists("QUOKKA")==6)
 		//ANSTO
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:SSD)=40 // [davidm]
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:SICS)=80
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:HDF)=40
+		//ModifyTable width(:myGlobals:CatVSHeaderInfo:SICS)=80
+		//ModifyTable width(:myGlobals:CatVSHeaderInfo:HDF)=40
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:M_Field)=50
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:E_Field)=50
 #endif		
 		
 #if (exists("ILL_D22")==6)
@@ -141,12 +160,24 @@ Function BuildCatVeryShortTable()
 	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS
 	//***version numbers have been removed***
 	String str,fullName
-	Variable lastPoint
+	Variable lastPoint, loadFile
 	ii=0
 	
-//	Execute "ProgressWindow open, text=\"Loading Table...\""
+	//Execute "ProgressWindow open, text=\"Loading Table...\""
 	
 	Make/T/O/N=0 notRAWlist
+	
+	// If it is updating the file list then remove the non-RAW files otherwise the column lengths are not
+	// equal when the sort is invoked
+	Variable fileCount = numpnts(Filenames)
+	Variable rawCount = numpnts(Labels)
+	Variable notRAWcount = fileCount - rawCount
+	if (notRAWcount > 0)
+		InsertPoints 0,notRAWcount,notRAWlist
+		notRAWlist[0, notRAWcount-1] = Filenames[p+rawCount]
+		DeletePoints rawCount, notRAWcount, Filenames
+	endif	
+	
 	do
 	
 		//get current item in the list
@@ -164,26 +195,35 @@ Function BuildCatVeryShortTable()
 				//Notebook CatWin,font="Times",fsize=12,text=str
 			Endif
 		else
-//			Execute "ProgressWindow text=\"Loading Table...\n" + tempName + "\""
-		
 			//prepend path to tempName for read routine 
 			PathInfo catPathName
 			FullName = S_path + tempName
-			//make sure the file is really a RAW data file
-			ok = (numtype(str2num(partialName[0])) != 0) && CheckIfRawData(fullName) // first character needs to be a letter		
-			if (!ok)
-				//write to notebook that file was not a RAW SANS file
-				lastPoint = numpnts(notRAWlist)
-				InsertPoints lastPoint,1,notRAWlist
-				notRAWlist[lastPoint]=tempname
+			
+			if (!reload) 
+				FindValue/TEXT=tempName Filenames
+				loadFile = (V_Value == -1)
 			else
-				//go write the header information to the Notebook
-				GetHeaderInfoToWave(fullName,tempName)
+				loadFile = 1
+			Endif
+			if (loadFile)
+				//Execute "ProgressWindow text=\"Loading Table...\n" + tempName + "\""
+							
+				//make sure the file is really a RAW data file
+				ok = (numtype(str2num(partialName[0])) != 0) && CheckIfRawData(fullName) // first character needs to be a letter		
+				if (!ok)
+					//write to notebook that file was not a RAW SANS file
+					lastPoint = numpnts(notRAWlist)
+					InsertPoints lastPoint,1,notRAWlist
+					notRAWlist[lastPoint]=tempname
+				else
+					//go write the header information to the Notebook
+					GetHeaderInfoToWave(fullName,tempName)
+				Endif
 			Endif
 		Endif
 		
 		ii+=1
-//		Execute  "ProgressWindow percent=" + Num2Str(100*ii/numitems)
+		//Execute  "ProgressWindow percent=" + Num2Str(100*ii/numitems)
 		
 	while(ii<numitems)
 //Now sort them all based on some criterion that may be facility dependent (aim is to order them as collected)
@@ -191,7 +231,7 @@ Function BuildCatVeryShortTable()
 //Append the files that are not raw files to the list
 	AppendNotRAWFiles(notRAWlist)	
 	KillWaves/Z notRAWlist
-//	Execute "ProgressWindow close"
+	//Execute "ProgressWindow close"
 //
 //	Print "Total time (s) = ",(ticks - t1)/60.15
 //	Print "Time per raw data file (s) = ",(ticks - t1)/60.15/(numItems-numpnts(notRawList))
@@ -241,8 +281,10 @@ Function SortWaves()
 	Wave/Z GReactPow = $"root:myGlobals:CatVSHeaderInfo:ReactorPower"		//activate for ILL June 2008 ( and the sort line too)
 	//For ANSTO
 	Wave GSSD = $"root:myGlobals:CatVSHeaderInfo:SSD"
-	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
+	//Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
 	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
+	Wave GM_Field = $"root:myGlobals:CatVSHeaderInfo:M_Field"
+	Wave GE_Field = $"root:myGlobals:CatVSHeaderInfo:E_Field"
 
 #if (exists("ILL_D22")==6)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
@@ -250,11 +292,10 @@ Function SortWaves()
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #elif (exists("QUOKKA")==6)
     //ANSTO
-	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR, GSICS, GHDF
+	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSSD, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR, GHDF, GM_Field, GE_Field // , GSICS
 #else
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GMonCnts, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 #endif
-
 
 	return(0)
 End
@@ -284,8 +325,10 @@ Function BuildTableWindow()
 	Wave MCR = $"root:myGlobals:CatVSHeaderInfo:MCR"		//added Mar 2008
 	Wave Pos = $"root:myGlobals:CatVSHeaderInfo:Pos"
 	Wave/Z ReactorPower = $"root:myGlobals:CatVSHeaderInfo:reactorpower"       //activate for ILL, June 08 (+ edit line)
-	Wave/Z SICS = $"root:myGlobals:CatVSHeaderInfo:SICS" // For ANSTO June 2010
+	//Wave/Z SICS = $"root:myGlobals:CatVSHeaderInfo:SICS" // For ANSTO June 2010
 	Wave/Z HDF = $"root:myGlobals:CatVSHeaderInfo:HDF" // For ANSTO June 2010
+	Wave M_Field = $"root:myGlobals:CatVSHeaderInfo:M_Field" // For ANSTO June 2016
+	Wave E_Field = $"root:myGlobals:CatVSHeaderInfo:E_Field" // For ANSTO June 2016
 	
 #if (exists("ILL_D22")==6)
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, MonCnts, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
@@ -298,7 +341,7 @@ Function BuildTableWindow()
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, MonCnts, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
 #elif (exists("QUOKKA")==6)
 	//ANSTO
-	Edit/K=1 Filenames, Labels, DateAndTime, SSD, SDD, Lambda, CntTime, TotCnts, CntRate, MonCnts, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR,SICS, HDF as "Data File Catalog"
+	Edit/K=1 Filenames, Labels, DateAndTime, SSD, SDD, Lambda, CntTime, TotCnts, CntRate, MonCnts, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, M_Field, E_Field, Temperature, MCR as "Data File Catalog"
 #else
 	// HFIR or anything else
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, MonCnts, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
@@ -327,8 +370,10 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave/T GDateTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
 	//ANSTO
 	Wave GSSD = $"root:myGlobals:CatVSHeaderInfo:SSD" // [davidm]
-	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
+	//Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
 	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
+	Wave GM_Field = $"root:myGlobals:CatVSHeaderInfo:M_Field"
+	Wave GE_Field = $"root:myGlobals:CatVSHeaderInfo:E_Field"
 	//END ANSTO
 	Wave GSDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Wave GLambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
@@ -375,12 +420,20 @@ Function GetHeaderInfoToWave(fname,sname)
 	GLabels[lastPoint]=getSampleLabel(fname)
 	
 	#if (exists("QUOKKA")==6)
-		InsertPoints lastPoint,1,GSICS
-		GSICS[lastPoint]=getSICSVersion(fname)
+		//InsertPoints lastPoint,1,GSICS
+		//GSICS[lastPoint]=getSICSVersion(fname)
 			
 		//read the HDF version
 		InsertPoints lastPoint,1,GHDF
 		GHDF[lastPoint]=getHDFVersion(fname)
+		
+		// M_Field
+		InsertPoints lastPoint,1,GM_Field
+		GM_Field[lastPoint]=getMField(fname)
+		
+		// E_Field
+		InsertPoints lastPoint,1,GE_Field
+		GE_Field[lastPoint]=getEField(fname)
 	#endif
 		
 	//read the reals

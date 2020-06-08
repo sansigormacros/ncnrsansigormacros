@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 
 //
@@ -171,7 +171,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	if(isVCALC)
 		S2 = VC_sampleApertureDiam()*10		// convert cm to mm
 	else
-	// I'm trusting [cm] is in the RAW data file
+	// I'm trusting [cm] is in the RAW data file, or returned from the function if the date is prior to 5/22/19
 		S2 = V_getSampleAp2_size(folderStr)*10		// sample ap 1 or 2? 2 = the "external", convert to [mm]
 	endif
 	
@@ -211,7 +211,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	if(isVCALC)
 		BS = VC_beamstopDiam(type[0,1])*10 // convert cm to mm
 	else
-		BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+		BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 	endif
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 //	BS = 25.4			//TODO hard-wired value
@@ -259,11 +259,16 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 // narrowSlit
 // narrowSlit_whiteBeam
 
+// TODO: this is a messy way to identify the super white beam condition, and it needs to be 
+// done in a cleaner fashion (through IdentityCollimation) once NICE catches up
 
-	if(cmpstr(collimationStr,"pinhole") == 0)
-		//nothing to change	
+//	String monoType = V_IdentifyMonochromatorType(folderStr)
+
+
+	if(cmpstr(collimationStr,"pinhole_super_white_beam")==0)
+		lambdaWidth = 0
 	endif
-
+		
 	if(cmpstr(collimationStr,"pinhole_whiteBeam") == 0)
 		//		set lambdaWidth == 0 so that the gaussian resolution calculates only the geometry contribution.
 		// the white beam distribution will need to be flagged some other way
@@ -320,7 +325,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	
 	//Start resolution calculation
 	a2 = S1*L2/L1 + S2*(L1+L2)/L1
-	q_small = 2.0*Pi*(BS-a2)*(1.0-lambdaWidth)/(lambda*L2)
+//	q_small = 2.0*Pi*(BS-a2)*(1.0-lambdaWidth)/(lambda*L2)
 	lp = 1.0/( 1.0/L1 + 1.0/L2)
 
 	v_lambda = lambdaWidth^2/6.0
@@ -511,7 +516,7 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 // -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
 // TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
-	BS = V_DeduceBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
+	BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
 //	BS = 25.4			//TODO hard-wired value
 	

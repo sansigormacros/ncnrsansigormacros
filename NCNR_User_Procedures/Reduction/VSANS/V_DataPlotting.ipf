@@ -1,7 +1,7 @@
 #pragma TextEncoding = "MacRoman"		// For details execute DisplayHelpTopic "The TextEncoding Pragma"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=1.0
-
+#pragma IgorVersion = 7.00
 
 //
 // functions to plot the averaged data in various views and binning types
@@ -41,6 +41,15 @@
 Function V_PlotData_Panel()
 //	Variable binType
 
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.9
+	endif
+
 	DoWindow/F V_1D_Data
 	if(V_flag==0)
 	
@@ -51,45 +60,49 @@ Function V_PlotData_Panel()
 //		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gExpB = 1
 //		Variable/G root:Packages:NIST:VSANS:Globals:Plot_1D:gExpC = 1
 		
-		
-		Display /W=(277,526,748,938)/N=V_1D_Data/K=1
+		if(gLaptopMode == 1)
+			Display /W=(200,50,(200+470)*sc,(50+412)*sc)/N=V_1D_Data/K=1
+		else
+			Display /W=(277,526,748,938)/N=V_1D_Data/K=1
+		endif
+
 
 		ControlBar 70
 		
-		PopupMenu popup0,pos={16,5},size={71,20},title="Bin Type"
+		PopupMenu popup0,pos={sc*16,5*sc},size={sc*71,20*sc},title="Bin Type"
 		PopupMenu popup0,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
 		PopupMenu popup0,value= ksBinTypeStr
 		PopupMenu popup0,mode=1,proc=V_BinningModePopup
 		
-		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
+		CheckBox check0,pos={sc*18.00,36.00*sc},size={sc*57.00,16.00*sc},proc=V_Plot1D_LogCheckProc,title="Log Axes"
 		CheckBox check0,value= 1
 	
-//		PopupMenu ymodel,pos={150,5},size={71,20},title="y-axis"
+//		PopupMenu ymodel,pos={sc*150,5*sc},size={sc*71,20*sc},title="y-axis"
 //		PopupMenu ymodel,help={"This popup selects how the y-axis will be linearized based on the chosen data"}
 //		PopupMenu ymodel,value= #"\"I;log(I);ln(I);1/I;I^a;Iq^a;I^a q^b;1/sqrt(I);ln(Iq);ln(Iq^2)\""
 //		PopupMenu ymodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gYMode", 1 ),proc=V_YMode_PopMenuProc
-//		PopupMenu xmodel,pos={220,5},size={74,20},title="x-axis"
+//		PopupMenu xmodel,pos={sc*220,5*sc},size={sc*74,20*sc},title="x-axis"
 //		PopupMenu xmodel,help={"This popup selects how the x-axis will be linearized given the chosen data"}
 //		PopupMenu xmodel,value= #"\"q;log(q);q^2;q^c\""
 //		PopupMenu xmodel,mode=NumVarOrDefault("root:Packages:NIST:VSANS:Globals:Plot_1d:gXMode", 1 ),proc=V_XMode_PopMenuProc
-////		Button Rescale,pos={281,5},size={70,20},proc=V_Rescale_Plot_1D_ButtonProc,title="Rescale"
+////		Button Rescale,pos={sc*281,5*sc},size={sc*70,20*sc},proc=V_Rescale_Plot_1D_ButtonProc,title="Rescale"
 ////		Button Rescale,help={"Rescale the x and y-axes of the data"},disable=1
 //
-//		SetVariable expa,pos={120,28},size={80,15},title="pow \"a\""
+//		SetVariable expa,pos={sc*120,28*sc},size={sc*80,15*sc},title="pow \"a\""
 //		SetVariable expa,help={"This sets the exponent \"a\" for some y-axis formats. The value is ignored if the model does not use an adjustable exponent"}
 //		SetVariable expa,limits={-2,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpA
-//		SetVariable expb,pos={120,46},size={80,15},title="pow \"b\""
+//		SetVariable expb,pos={sc*120,46*sc},size={sc*80,15*sc},title="pow \"b\""
 //		SetVariable expb,help={"This sets the exponent \"b\" for some x-axis formats. The value is ignored if the model does not use an adjustable exponent"}
 //		SetVariable expb,limits={0,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpB
 //
-//		SetVariable expc,pos={220,28},size={80,15},title="pow \"c\""
+//		SetVariable expc,pos={sc*220,28*sc},size={sc*80,15*sc},title="pow \"c\""
 //		SetVariable expc,help={"This sets the exponent \"c\" for some x-axis formats. The value is ignored if the model does not use \"c\" as an adjustable exponent"}
 //		SetVariable expc,limits={-10,10,0},value= root:Packages:NIST:VSANS:Globals:Plot_1d:gExpC
 		
-		Button AllQ,pos={320,15},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={sc*300,15*sc},size={sc*70,20*sc},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
-		Button Offset,pos={320,38},size={70,20},proc=V_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,pos={sc*300,38*sc},size={sc*70,20*sc},proc=V_RemoveOffset_ButtonProc,title="No Offset"
 		Button Offset,help={"Remove the offset"}
 				
 		Legend/C/N=text0/J/X=72.00/Y=60.00

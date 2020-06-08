@@ -1,6 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=1.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 //*******************
 // Vers 1.0 JAN2016
@@ -650,7 +650,7 @@ Function V_Raw_to_work(newType)
 			
 		endfor
 
-		if(gIgnoreDetB==1)		
+		if(gIgnoreDetB==0)		
 			//"B" is separate
 			detStr = "B"
 			Wave w = V_getDetectorDataW(fname,detStr)
@@ -737,8 +737,95 @@ Function V_Raw_to_work(newType)
 	//
 	// the solid angle correction is calculated for ALL detector panels.
 	NVAR gDoSolidAngleCor = root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor
+	NVAR/Z gDo_OLD_SolidAngleCor = root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor
+	// for older experiments, this won't exist, so generate it and default to zero
+	// so the old calculation is not done
+	if(NVAR_Exists(gDo_OLD_SolidAngleCor)==0)
+		Variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor=0
+	endif
 	if (gDoSolidAngleCor == 1)
 		Print "Doing Solid Angle correction"// for "+ detStr
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			
+			if(cmpstr(detStr,"B") == 0  && gIgnoreDetB == 1)
+				// do nothing if the back is ignored
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				// any other dimensions to pass in?
+				
+				if(gDo_OLD_SolidAngleCor == 0)
+					V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+				else
+					// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
+					// function call above	 correctly handles either high-res grid or tubes. This COS3 function
+					// will incorrectly treat tubes as a grid	
+					//				Print "TESTING -- using incorrect COS^3 solid angle !"		
+					V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
+				endif
+				
+			endif
+			
+		endfor
+		if(gDo_OLD_SolidAngleCor == 1)
+			DoAlert 0,"TESTING -- using incorrect COS^3 solid angle !"		
+		endif
+
+	else
+		Print "Solid Angle correction NOT DONE"
+	endif	
+	
+		
+	// (5) angle-dependent tube shadowing + detection efficiency
+	//  done together as one correction
+	//
+	// TODO:
+	// -- this correction accounts for the efficiency of the tubes
+	//		(depends on angle and wavelength)
+	//    and the shadowing, only happens at large angles (> 23.7 deg, lateral to tubes)
+	//
+	// V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
+	//
+	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
+	if (gDoTubeShadowCor == 1)
+		Print "Doing Tube Efficiency+Shadow correction"
+		
+		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+			detStr = StringFromList(ii, ksDetectorListAll, ";")
+			
+			if(cmpstr(detStr,"B") == 0)
+				// always ignore "B"
+			else
+				Wave w = V_getDetectorDataW(fname,detStr)
+				Wave w_err = V_getDetectorDataErrW(fname,detStr)
+				
+				V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
+			endif
+
+//			Print "Eff for panel ",detStr
+		endfor
+
+	else
+		Print "Tube efficiency+shadowing correction NOT DONE"
+	endif	
+
+	// (6) Downstream window angle dependent transmission correction
+	// TODO:
+	// -- HARD WIRED value
+	// x- find a temporary way to pass this value into the function (global?)
+	//
+	// -- currently the transmission is set as a global (in V_VSANS_Preferences.ipf)
+	// -- need a permanent location in the file header to store the transmission value
+	//
+	NVAR/Z gDoWinTrans = root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor
+	if(NVAR_Exists(gDoWinTrans) != 1)
+		V_InitializeWindowTrans()		//set up the globals (need to check in multiple places)
+	endif
+		
+	if (gDoWinTrans == 1)
+		Print "Doing Large-angle Downstream window transmission correction"// for "+ detStr
+	
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			
@@ -747,28 +834,15 @@ Function V_Raw_to_work(newType)
 			else
 				Wave w = V_getDetectorDataW(fname,detStr)
 				Wave w_err = V_getDetectorDataErrW(fname,detStr)
-				// any other dimensions to pass in?
-				V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+				
+				V_DownstreamWindowTransmission(w,w_err,fname,detStr,destPath)
 			endif
-			
 		endfor
 	else
-		Print "Solid Angle correction NOT DONE"
-	endif	
-	
-		
-	// (5) angle-dependent tube shadowing
-	// TODO:
-	// -- not sure about this correction yet...
-	//
-	NVAR gDoTubeShadowCor = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
-	if (gDoTubeShadowCor == 1)
-		Print "(stub)Tube Shadow correction"
-	else
-		Print "Tube shadowing correction NOT DONE"
+		Print "Downstream Window Transmission correction NOT DONE"
 	endif	
 		
-	// (6) angle dependent transmission correction
+	// (7) angle dependent transmission correction
 	// TODO:
 	// x- this still needs to be filled in
 	// -- still some debate of when/where in the corrections that this is best applied
@@ -779,7 +853,7 @@ Function V_Raw_to_work(newType)
 	//
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
-		Print "Doing Large-angle transmission correction"// for "+ detStr
+		Print "Doing Large-angle sample transmission correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListAll, ";")
 			
@@ -796,7 +870,8 @@ Function V_Raw_to_work(newType)
 		Print "Sample Transmission correction NOT DONE"
 	endif	
 	
-	// (7) normalize to default monitor counts
+	
+	// (8) normalize to default monitor counts
 	// TODO(DONE) x- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
 	//  --- AND, there is also /entry/control/monitor_counts !!! Which one is the correct value? Which will NICE write
@@ -837,17 +912,29 @@ Function V_Raw_to_work(newType)
 
 			// TODO
 			// -- do I want to update and save the integrated detector count?
-			Variable integratedCount = V_getDet_IntegratedCount(fname,detStr)
-			V_writeDet_IntegratedCount(fname,detStr,integratedCount*scale)
+			// I can't trust the integrated count for the back detector (ever) - since the 
+			// data is shifted for registry and some (~ 10% of the detector) is lost
+			// also, ML panel has the wrong value (Oct-nov 2019) and I don't know why. so sum the data
+			//
+			Variable integratedCount = sum(w)
+			V_writeDet_IntegratedCount(fname,detStr,integratedCount)		//already the scaled value for counts
+//			Variable integratedCount = V_getDet_IntegratedCount(fname,detStr)
+//			V_writeDet_IntegratedCount(fname,detStr,integratedCount*scale)
 
 		endfor
 	else
 		Print "Monitor Normalization correction NOT DONE"
 	endif
+
+
+// flag to allow adding raw data files with different attenuation (normally not done)	
+// -- yet to be implemented as a prefrence panel item
+//	NVAR gAdjustRawAtten = root:Packages:NIST:VSANS:Globals:gDoAdjustRAW_Atten	
 	
 	
-	// (not done) angle dependent efficiency correction
-	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
+//	// (not done) angle dependent efficiency correction
+//	// -- efficiency and shadowing are now done together (step 5)
+//	NVAR doEfficiency = root:Packages:NIST:VSANS:Globals:gDoDetectorEffCor
 
 //	
 	//reset the current displaytype to "newtype"
@@ -967,6 +1054,13 @@ Function V_Add_raw_to_work(newType)
 	V_putDetector_counts(newType,detCount_dest+detCount_tmp)
 	V_putControlMonitorCount(newType,saved_mon_dest+saved_mon_tmp)
 
+// TODO (DONE)
+// the new, unscaled monitor count was written to the control block, but it needs to be 
+// written to the BeamMonNormSaved_count field instead, since this is where I read it from.
+// - so this worked in the past for adding two files, but fails on 3+
+// x- write to the NormSaved_count field...
+	V_writeBeamMonNormSaved_count(newType,saved_mon_dest+saved_mon_tmp)			// save the true count
+
 
 // now loop over all of the detector panels
 	// data
@@ -994,9 +1088,14 @@ Function V_Add_raw_to_work(newType)
 		data_tmp *= scale_tmp
 		data_err_tmp *= scale_tmp
 		linear_data_tmp *= scale_tmp
-				
+
+// TODO SRK-ERROR?
+// the integrated count may not be correct (ML error Oct/Nov 2019)
+// and is not correct for the back detector since some pixels were lost due to shifting the image registration
+//				
 		// add them together, the dest is a wave so it is automatically changed in the "dest" folder
-		V_putDet_IntegratedCount(tmpType,detStr,det_integrated_ct_dest+det_integrated_ct_tmp)
+		V_putDet_IntegratedCount(tmpType,detStr,sum(data_dest)+sum(data_tmp))		// adds the unscaled data sums
+//		V_putDet_IntegratedCount(tmpType,detStr,det_integrated_ct_dest+det_integrated_ct_tmp)		// wrong for "B", may be wrong for ML
 		data_dest += data_tmp
 		data_err_dest = sqrt(data_err_dest^2 + data_err_tmp^2)		// add in quadrature
 		linear_data_dest += linear_data_tmp

@@ -580,7 +580,7 @@ Function Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	err_PsmPf += ( dfdx*(-tmp/(crDD-crBB) + tmp/(crDU-crBB)) * err_crBB)^2
 	
 	err_PsmPf = sqrt(err_PsmPf)
-	Printf "At t1=%g  PsmPf = %g +/- %g (%g%)\r",t1,PsmPf,err_PsmPf,err_PsmPf/PsmPf*100
+	Printf "At t1=%g  PsmPf = %g +/- %g (%g %%)\r",t1,PsmPf,err_PsmPf,err_PsmPf/PsmPf*100
 
 
 	return(PsmPf)
@@ -647,7 +647,7 @@ Function Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	err_Psm += ( dfdx*(-tmp/(crUU-crBB) + tmp/(crUD-crBB)) * err_crBB)^2
 	
 	err_Psm = sqrt(err_Psm)
-	Printf "At t1=%g  Psm = %g +/- %g (%g%)\r",t1,Psm,err_Psm,err_Psm/Psm*100
+	Printf "At t1=%g  Psm = %g +/- %g (%g %%)\r",t1,Psm,err_Psm,err_Psm/Psm*100
 
 
 	return(Psm)
@@ -672,7 +672,7 @@ Function Calc_PHe_atT(Po,err_Po,gam,err_gam,t2,err_Pt)
 	
 	err_Pt = sqrt(err_Pt)
 	
-	Printf "At (delta)t=%g  P_He(t) = %g +/- %g (%g%)\r",t2,Pt,err_Pt,err_Pt/Pt*100
+	Printf "At (delta)t=%g  P_He(t) = %g +/- %g (%g %%)\r",t2,Pt,err_Pt,err_Pt/Pt*100
 
 	return(Pt)
 End
@@ -699,7 +699,7 @@ Function Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t2,err_PCell)
 	
 	err_PCell = sqrt(err_Pcell)
 	
-	Printf "At t=%g  Pcell = %g +/- %g (%g%)\r",t2,Pcell,err_Pcell,err_Pcell/PCell*100
+	Printf "At t=%g  Pcell = %g +/- %g (%g %%)\r",t2,Pcell,err_Pcell,err_Pcell/PCell*100
 
 	return(PCell)
 End

@@ -257,8 +257,8 @@ Function DisableUnusedParameters(choice)
 	
 	strswitch(choice)	// string switch
 		case "2D ASCII":
-		case "QxQy ASCII":	
-		case "2D_NXcanSAS":	
+		case "QxQy ASCII":
+		case "2D_NXcanSAS":
 		case "Circular":		//disable everything for these three choices
 			SetVariable Phi_p,disable=yes
 			SetVariable Qctr_p,disable=yes

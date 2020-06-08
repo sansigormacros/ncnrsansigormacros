@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 //////////// READ (GET) FUNCTIONS ////////////////////
@@ -464,6 +465,9 @@ End
 
 // transmission value for the attenuator in the beam
 // use this, but if something wrong, the tables are present
+// (and something is wrong -- NICE always writes out "1" for the atten factor (and error)
+//-- so I am forced to use the tables every time
+//
 Function V_getAttenuator_transmission(fname)
 	String fname
 	
@@ -1978,12 +1982,29 @@ Function/S V_getSampleAp2_shape(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
+//
 // this returns REAL, DIFFERENT than SampleAp1
+// see the note above. after the hard-coded date, the values in the header
+// are values appear to be in [mm]. before that date, the values are in [cm]
+//
+// This function returns a value in [cm]
+//
 Function V_getSampleAp2_size(fname)
 	String fname
 
 	String path = "entry:instrument:sample_aperture_2:shape:size"
-	return(V_getRealValueFromHDF5(fname,path))
+	
+	Variable val = V_Compare_ISO_Dates("2019-05-10T13:36:54.200-04:00",V_getDataStartTime(fname))
+	
+	if(val == 2)		// more "current" data, mm in the header
+		return(V_getRealValueFromHDF5(fname,path)/10)
+	else
+		// "older" data, cm in the header
+		return(V_getRealValueFromHDF5(fname,path))
+	endif
+
+//	return(V_getRealValueFromHDF5(fname,path))
+
 End
 
 Function V_getSampleAp2_width(fname)

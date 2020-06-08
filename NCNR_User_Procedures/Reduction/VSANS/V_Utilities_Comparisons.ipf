@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 //
 //
@@ -371,13 +372,29 @@ Function/S V_IdentifyCollimation(fname)
 	String fname
 	
 	String collimationStr=""
-	String status="",guides=""
+	String status="",guides="",typeStr=""
 	variable wb_in=0,slit=0
 	
 	guides = V_getNumberOfGuides(fname)
 	if(cmpstr(guides,"CONV_BEAMS") == 0)
 		return("convergingPinholes")
 	endif
+
+	guides = V_getNumberOfGuides(fname)
+	if(cmpstr(guides,"NARROW_SLITS") == 0)
+		slit = 1
+	endif
+	
+// TODO: still not the correct way to identify the super white beam condition
+	typeStr = V_getMonochromatorType(fname)
+	if(cmpstr(typeStr,"super_white_beam")==0)
+		if(slit == 1)
+			return("narrowSlit_super_white_beam")
+		else
+			return("pinhole_super_white_beam")
+		endif
+	endif
+
 
 // TODO: as of 6/2018 with the converging pinholes IN, status is "out"
 //	status = V_getConvPinholeStatus(fname)
@@ -390,10 +407,7 @@ Function/S V_IdentifyCollimation(fname)
 		wb_in = 1
 	endif	
 	
-	guides = V_getNumberOfGuides(fname)
-	if(cmpstr(guides,"NARROW_SLITS") == 0)
-		slit = 1
-	endif
+
 	
 	if(wb_in == 1 && slit == 1)
 		return("narrowSlit_whiteBeam")
@@ -422,11 +436,19 @@ End
 // returns null string if the type cannot be deduced, calling procedure is responsible
 //  for properly handling this error condition
 //
-Function/S V_DeduceMonochromatorType(fname)
+Function/S V_IdentifyMonochromatorType(fname)
 	String fname
 	
 	String typeStr=""
 
+// TODO: if super_white_beam, this needs to be patched in the header
+//	
+	typeStr = V_getMonochromatorType(fname)
+	if(cmpstr(typeStr,"super_white_beam")==0)
+		return(typeStr)
+	endif
+	
+	
 	if(cmpstr(V_getVelSelStatus(fname),"IN") == 0)
 		typeStr = "velocity_selector"
 	endif
@@ -438,15 +460,31 @@ Function/S V_DeduceMonochromatorType(fname)
 	if(cmpstr(V_getCrystalStatus(fname),"IN") == 0)
 		typeStr = "crystal"
 	endif	
+
+
 	
 	return(typeStr)
 End
 
 
 // returns the beamstop diameter [mm]
-// if there is no beamtop in front of the specified detector, return 0.01mm
 //
-Function V_DeduceBeamstopDiameter(folderStr,detStr)
+// checks the field num_beamstops. if this is 0, then there is no beam stop in place
+// 	if there is no beamtop in front of the specified detector, return 0.01mm
+//
+// if the number is non-zero, then for the middle carriage, return the BS size, which
+//  will always be the diameter, since there are only circular beamstops present.
+//
+// TODO
+//  -- for the back carriage, the numbered beam stops are:
+// (1) = 6 mm x 300 mm (RECTANGLE)
+// (2) = 12 mm diameter (CIRCLE)
+// (3) = 12 mm x 300 mm (RECTANGLE)
+//
+//		-- currently this returns the diameter of the beam stop for # 2
+//    and the width ONLY if #1 or #3 (both are 300 mm high)
+//
+Function V_IdentifyBeamstopDiameter(folderStr,detStr)
 	String folderStr,detStr
 	
 	Variable BS, dummyVal,num
@@ -471,11 +509,16 @@ Function V_DeduceBeamstopDiameter(folderStr,detStr)
 	if(cmpstr("B",detStr[0]) == 0)
 		// back (3)
 		num = V_getBeamStopC3num_beamstops(folderStr)
-		if(num)
+		if(num==0)
+			return(dummyVal)
+		endif
+		
+		if(num==2)
+			//2 = circular beamstop
 			BS = V_getBeamStopC3_size(folderStr)
 		else
-			//num = 0, no beamstops on the back
-			return(dummyVal)
+			//1 or 3, these are rectangular -- return the width, since the height of both is 300 mm
+			return(V_getBeamStopC3_width(folderStr))
 		endif
 	endif	
 	

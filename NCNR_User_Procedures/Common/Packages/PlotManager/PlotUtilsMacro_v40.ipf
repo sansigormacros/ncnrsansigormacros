@@ -1089,12 +1089,22 @@ End
 
 // returns a shortened file name (26 characters max) so that the loader
 // won't try to create Igor objects that have names that are longer than 31
-// 
+//
+// if Igor 8+, use longer names (within reason)
+//
 Function/S ShortFileNameString(inStr)
 	String inStr
 
 	String outStr=""
-	Variable maxLength=25
+	Variable maxLength
+
+	if(IgorVersion() < 8)
+		maxLength = 25
+	else
+		maxLength = 40
+	endif
+
+
 	Variable nameTooLong=0
 	String/G root:Packages:NIST:gShortNameStr = inStr[0,maxLength-1]
 	SVAR newStr = root:Packages:NIST:gShortNameStr
@@ -1430,7 +1440,7 @@ Proc Initialize_Preferences()
 	// integer for writing multiple sasentries in XML and NXcanSAS data
 	val = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1 )
 	Variable/G root:Packages:NIST:gSASEntryNumber = val
-	
+
 	/// items for SANS Analysis
 	
 	
@@ -1454,7 +1464,7 @@ Proc Initialize_Preferences()
 //	endif
 //	if (root:Packages:NIST:gXML_Write == 1)
 //		WritePref("PrefCtrl_0a",1)
-//	endif	
+//	endif
 //	if (root:Packages:NIST:gNXcanSAS_Write == 1)
 //		WritePref("PrefCtrl_0b",1)
 //	endif
@@ -1489,11 +1499,11 @@ End
 Function WritePref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	
+
 	NVAR asciiVal = root:Packages:NIST:gASCII_Write
 	NVAR xmlVal = root:Packages:NIST:gXML_Write
 	NVAR nxVal = root:Packages:NIST:gNXcanSAS_Write
-	
+
 	strswitch (ctrlName)
 		case "PrefCtrl_0":
 			CheckBox PrefCtrl_0,value=1

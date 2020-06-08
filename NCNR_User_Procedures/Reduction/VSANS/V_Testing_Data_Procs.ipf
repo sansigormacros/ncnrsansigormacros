@@ -1,10 +1,22 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 
 //////// function to take VCALC information and 
 // fill in the simulated information as needed to make a "fake" data file
+//
+// - to make fake data:
+// - copy several existing raw VSANS files to a new folder
+// - renumber them
+// - open a new experiment, get a file catalog (catPathName must be set)
+// - then open VCALC and set the desired conditions
+// - then use the Macro "Copy_VCALC_to_VSANSFile()
+//
+//
+
+
 //
 // TODO:
 // -- identify all of the necessary bits to change
@@ -51,7 +63,7 @@ Function writeVCALC_to_file(fileName,labelStr,intent,group_id)
 		V_writeDetectorData(fileName,detStr,tmpData)
 		
 	
-		val = VC_getSDD(detStr)		// make sure value is in cm
+		val = VC_getSDD(detStr)		// make sure value is in cm. This does not include the setback
 		print val
 		V_writeDet_distance(fileName,detStr,val)
 		

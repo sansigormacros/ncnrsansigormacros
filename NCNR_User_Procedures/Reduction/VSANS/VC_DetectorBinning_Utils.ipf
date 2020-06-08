@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 /////////////////////////
 //
@@ -37,7 +38,8 @@ Function FillPanel_wModelData(det,qTot,type)
 	// need pixel dimensions
 	// nominal sdd in cm, offset in cm, want result in cm !
 
-	sdd = VC_getSDD(type)	// setback is already included  VCALC_getTopBottomSDDSetback(type)		// result is sdd in [cm]
+	sdd = VC_getSDD(type)	// setback is NOT included  VCALC_getTopBottomSDDSetback(type)		// result is sdd in [cm]
+	sdd += VCALC_getTopBottomSDDSetback(type)
 
 	pixSizeX = VCALC_getPixSizeX(type)		// cm
 	pixSizeY = VCALC_getPixSizeY(type)
@@ -706,6 +708,8 @@ End
 Function V_SetDeltaQ(folderStr,detStr)
 	String folderStr,detStr
 
+	NVAR binWidth = root:Packages:NIST:VSANS:Globals:gBinWidth
+
 	Variable isVCALC
 	if(cmpstr(folderStr,"VCALC") == 0)
 		isVCALC = 1
@@ -742,6 +746,10 @@ Function V_SetDeltaQ(folderStr,detStr)
 		delQ = 4*delQ
 		Print "Reset delta Q for binning the back detector to 4x pix = ",delQ
 	endif
+	
+	// multiply the deltaQ by the binWidth (=multiple of pixels)
+	// this defaults to 1, and is set in VSANS preferences
+	delQ *= binWidth
 	
 	// set the global
 	Variable/G $(folderPath+instPath+detStr+":gDelQ_"+detStr) = delQ
@@ -794,7 +802,9 @@ End
 //		Function that bins a 2D detctor panel into I(q) based on the q-value of the pixel
 //		- each pixel QxQyQz has been calculated beforehand
 //		- if multiple panels are selected to be combined, it is done here during the binning
-//		- the setting of deltaQ step is still a little suspect (TODO)
+//		- the setting of deltaQ step is still a little suspect in that it can be the 
+//      cause of "sawtooth" in the I(q) - if the step is too fine. There is now a preference
+//      set so that the deltaQ is by default 1.2 * the minumum q from the first tube.
 //
 //
 // see the equivalent function in PlotUtils2D_v40.ipf

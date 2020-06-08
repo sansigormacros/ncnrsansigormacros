@@ -1,9 +1,11 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
-
-
+//
+// There are functions in this file to generate "fake" event data for testing
+//
 
 
 //
@@ -1044,49 +1046,55 @@ End
 // borrows some of the basic functions from the MRED panel
 //
 Window V_Event_Reduce_Panel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(535,72,951,288) /K=1 as "Event File File Reduction"
+	NewPanel /W=(535*sc,72*sc,951*sc,288*sc) /K=1 as "Event File File Reduction"
 	ModifyPanel cbRGB=(60535,51151,51490)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 7,30,422,30
-	SetVariable PathDisplay,pos={77,7},size={300,13},title="Path"
+	DrawLine 7*sc,30*sc,422*sc,30*sc
+	SetVariable PathDisplay,pos={sc*77,7*sc},size={sc*300,13*sc},title="Path"
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while reducing. If no files appear in the popup, make sure that this folder is set correctly"}
 	SetVariable PathDisplay,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:EVRED:gCatPathStr
-	Button PathButton,pos={3,3},size={70,20},proc=V_PickEVRPathButton,title="Pick Path"
+	Button PathButton,pos={sc*3,3*sc},size={sc*70,20*sc},proc=V_PickEVRPathButton,title="Pick Path"
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
-	Button helpButton,pos={385,3},size={25,20},proc=V_ShowEVRHelp,title="?"
+	Button helpButton,pos={sc*385,3*sc},size={sc*25,20*sc},proc=V_ShowEVRHelp,title="?"
 	Button helpButton,help={"Show the help file for reducing event files"}
-	PopupMenu ERFilesPopup,pos={3,45},size={167,19},proc=V_EVR_RedPopMenuProc,title="File to Reduce"
+	PopupMenu ERFilesPopup,pos={sc*3,45*sc},size={sc*167,19*sc},proc=V_EVR_RedPopMenuProc,title="File to Reduce"
 	PopupMenu ERFilesPopup,help={"The displayed file is the one that will be reduced."}
 	PopupMenu ERFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:EVRED:gMRedList"
 
-	SetVariable ERSlices,pos={3,75},size={100,15},title="# of slices"
+	SetVariable ERSlices,pos={sc*3,75*sc},size={sc*100,15*sc},title="# of slices"
 	SetVariable ERSlices,limits={0,1000,0},value=root:Packages:NIST:VSANS:Globals:EVRED:gNumSlices
 	
-	SetVariable ERSelSlice,pos={150,75},size={100,15},title="current slice"
+	SetVariable ERSelSlice,pos={sc*150,75*sc},size={sc*100,15*sc},title="current slice"
 	SetVariable ERSelSlice,limits={0,1000,1},value=root:Packages:NIST:VSANS:Globals:EVRED:gCurSlice
 	SetVariable ERSelSlice,proc=V_ChangeSliceViewSetVar
 
-	Button ToSTOButton,pos={305,45},size={100,20},proc=V_EVR_LoadAndSTO,title="to STO"
+	Button ToSTOButton,pos={sc*305,45*sc},size={sc*100,20*sc},proc=V_EVR_LoadAndSTO,title="Load to STO"
 	Button ToSTOButton,help={"Load the event file and copy to STO"}
 
-	Button TimeBinButton,pos={305,75},size={100,20},proc=V_EVR_TimeBins,title="Time Bins"
+	Button TimeBinButton,pos={sc*305,75*sc},size={sc*100,20*sc},proc=V_EVR_TimeBins,title="Time Bins"
 	Button TimeBinButton,help={"Display the time bins"}
 				
-//	SetVariable ERList,pos={3,48},size={350,13},proc=V_FileNumberListProc,title="File number list: "
+//	SetVariable ERList,pos={sc*3,48*sc},size={sc*350,13*sc},proc=V_FileNumberListProc,title="File number list: "
 //	SetVariable ERList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
 //	SetVariable ERList,limits={-Inf,Inf,1},value= root:Packages:NIST:VSANS:Globals:EVRED:gFileNumList
 
-	PopupMenu ERProto_pop,pos={3,118},size={119,19},proc=V_EVR_ProtoPopMenuProc,title="Protocol "
+	PopupMenu ERProto_pop,pos={sc*3,118*sc},size={sc*119,19*sc},proc=V_EVR_ProtoPopMenuProc,title="Protocol "
 	PopupMenu ERProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
 	PopupMenu ERProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:EVRED:gMRProtoList"
-	Button ReduceAllButton,pos={3,178},size={180,20},proc=V_EVR_ReduceAllSlices,title="Reduce All Slices"
+	Button ReduceAllButton,pos={sc*3,178*sc},size={sc*180,20*sc},proc=V_EVR_ReduceAllSlices,title="Reduce All Slices"
 	Button ReduceAllButton,help={"This will reduce all slices."}
-	Button ReduceOneButton,pos={3,148},size={180,20},proc=V_EVR_ReduceTopSlice,title="Reduce Selected Slice"
+	Button ReduceOneButton,pos={sc*3,148*sc},size={sc*180,20*sc},proc=V_EVR_ReduceTopSlice,title="Reduce Selected Slice"
 	Button ReduceOneButton,help={"This will reduce the selected slice."}
 	
-	Button DoneButton,pos={290,178},size={110,20},proc=V_EVR_DoneButtonProc,title="Done Reducing"
+	Button DoneButton,pos={sc*290,178*sc},size={sc*110,20*sc},proc=V_EVR_DoneButtonProc,title="Done Reducing"
 	Button DoneButton,help={"When done reducing files, this will close this control panel."}
 EndMacro
 
@@ -1239,6 +1247,14 @@ End
 //
 // locates the time bins and shows the time bin table (and plot?)
 //
+// Can't show the plot of counts/bin since there would be 8 of these now, one for
+// each panel. Could show a total count per slice, but the numbers (binCount) is currently
+// not written to the Event_ file.
+//
+// the macro that is called from the main Event panel shows the total counts/bin for the carriage
+// that is active. Maybe this would be OK, but then there are still two sets of data, one for
+// Front and one for Middle...
+//
 Function V_EVR_TimeBins(PathButton) : ButtonControl
 	String PathButton
 
@@ -1247,13 +1263,37 @@ Function V_EVR_TimeBins(PathButton) : ButtonControl
 
 	edit binEnd,timeWidth
 	
+//	DoWindow/F V_EventBarGraph
+//	if(V_flag == 0)
+//		PauseUpdate; Silent 1		// building window...
+//		String fldrSav0= GetDataFolder(1)
+//		SetDataFolder root:Packages:NIST:VSANS:Event:
+//		Display /W=(110,705,610,1132)/N=V_EventBarGraph /K=1 binCount vs binEndTime
+//		SetDataFolder fldrSav0
+//		ModifyGraph mode=5
+//		ModifyGraph marker=19
+//		ModifyGraph lSize=2
+//		ModifyGraph rgb=(0,0,0)
+//		ModifyGraph msize=2
+//		ModifyGraph hbFill=2
+//		ModifyGraph gaps=0
+//		ModifyGraph usePlusRGB=1
+//		ModifyGraph toMode=0
+//		ModifyGraph useBarStrokeRGB=1
+//		ModifyGraph standoff=0
+//		SetAxis left 0,*
+//		Label bottom "\\Z14Time (seconds)"
+//		Label left "\\Z14Number of Events"
+//	endif
+	
+	
 	return(0)
 End
 
 Proc V_ShowEVRHelp(ctrlName) : ButtonControl
 	String ctrlName
 
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[Reduce Event Files]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Reducing Event Data]"
 	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 	endif

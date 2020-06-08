@@ -1,6 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=1.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 
 
@@ -10,6 +10,22 @@
 // these are meant to be called by the procedures that convert "raw" data to 
 // "adjusted" or corrected data sets
 //
+
+////////////////
+// Constants for detector efficiency and shadowing
+//
+// V_TubeEfficiencyShadowCorr()
+//
+// JAN 2020
+///////////////
+Constant kTube_ri = 0.372		// inner radius of tube [cm]
+Constant kTube_cc = 0.84			// center to center spacing [cm]
+Constant kTube_ss = 0.025		// stainless steel shell thickness [cm]
+
+Constant kSig_2b_He = 0.146		// abs xs for 2 bar He(3) [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_8b_He = 0.593		// abs xs for 8 bar He(3) [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_Al = 0.00967		// abs xs for Al [cm-1 A-1] (multiply this by wavelength)
+Constant kSig_ss = 0.146		// abs xs for 304 SS [cm-1 A-1] (multiply this by wavelength)
 
 
 
@@ -150,20 +166,18 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// then per tube, do the quadratic calculation to get the real space distance along the tube
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
 	
-	// TODO
-	// -- GAP IS HARD-WIRED as constant values 
+	// DONE
+	// -- GAP was hard-wired, but in 2018 proper values for all 4 gaps were measured
+	// and added to the file header for each detector panel. there is now a read from the 
+	// header to get the gap value 
 	Variable offset,gap
-
-// kPanelTouchingGap is in mm	
-// the gap is split equally between the panel pairs
-// (DONE) -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
 
 	gap = V_getDet_panel_gap(fname,detStr)
 
-// TODO:
-// -- once the gap fields have been verified, this check can be removed
+// DONE:
+// -- in case of error, V_getDet_panel_gap() will return -999999
 // -- it should only apply to data pre-2018 when the field did not exist in the file
-// -- any VSANS data from 2018+ should read gap from the file.
+// -- any VSANS data from 2018+ should read gap from the file and bypass the if()
 
 	if(gap < -100)		//-999999 returned if field is missing from file
 	
@@ -429,16 +443,13 @@ Function V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
 	variable edge,delta
 	Variable gap 
 
-// kPanelTouchingGap is in mm	
 // the gap is split equally between the panel pairs
-// TODO -- replace all of this with V_getDet_panel_gap(fname,detStr) once it is added to the file
-// these hard-wired values were determined from 6A and WB beam centers. LR values were exactly the same for
-// both beam considitions (+/- 0.0 mm). FTB was +/- 0.8 mm, MTB +/- 2 mm
+// DONE -- replace hard-wired values with V_getDet_panel_gap(fname,detStr) once it is added to the file
 
 	gap = V_getDet_panel_gap(folder,detStr)
 
-// TODO:
-// -- once the gap fields have been verified, this check can be removed
+// DONE:
+// -- check in case of error, value should be read from header
 // -- it should only apply to data pre-2018 when the field did not exist in the file
 // -- any VSANS data from 2018+ should read gap from the file.
 
@@ -950,17 +961,26 @@ End
 // x- do I calculate theta from geometry directly, or get it from Q (Assuming it's present?)
 //    (YES just from geometry, since I need SDD and dx and dy values...)
 //
+//		"B" is passed, so I need to check for "B" and for panel orientation
+// -if it is detector "B" (not tubes), then the normal solid angle correction applies
+// -if it is a tube panel, then I need to know the orientation, to know which angles
+//    and pixel dimensions to use
+//
+// *** UPDATED 1/2020 SRK
+// -using new calculation since the lateral direction of the tubes does not affect the solid angle
+// projection (see He (2015) and John's memo)
+//
 //
 Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave w,w_err
 	String fname,detStr,destPath
 
 	Variable sdd,xCtr,yCtr,lambda
-
+	String orientation
+	
 // get all of the geometry information	
-//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = V_getDet_ActualDistance(fname,detStr)
-
 
 	// this is ctr in mm
 	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
@@ -972,7 +992,7 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave data_realDistX = data_realDistX
 	Wave data_realDistY = data_realDistY
 
-	Duplicate/O w solid_angle,tmp_theta,tmp_dist		//in the current df
+	Duplicate/O w solid_angle,tmp_theta,tmp_dist,tmp_theta_i	//in the current df
 
 //// calculate the scattering angle
 //	dx = (distX - xctr)		//delta x in mm
@@ -982,12 +1002,160 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	tmp_dist /= 10  // convert mm to cm
 	// sdd is in [cm]
 
-	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the (total) scattering angle
 
 	Variable ii,jj,numx,numy,dx,dy
 	numx = DimSize(tmp_theta,0)
 	numy = DimSize(tmp_theta,1)
+
+	if(cmpstr(detStr,"B")==0)
+		//detector B is a grid, straightforward cos^3 solid angle
+		for(ii=0	;ii<numx;ii+=1)
+			for(jj=0;jj<numy;jj+=1)
+				
+				if(ii==0)		//do a forward difference if ii==0
+					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+				else
+					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+				endif
+				
+				
+				if(jj==0)
+					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+				else
+					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+				endif
+		
+				dx /= 10
+				dy /= 10		// convert mm to cm (since sdd is in cm)
+				solid_angle[ii][jj] = dx*dy		//this is in cm^2
+			endfor
+		endfor
+		
+		// to cover up any issues w/negative dx or dy
+		solid_angle = abs(solid_angle)
+		
+		// solid_angle correction
+		// == dx*dy*cos^3/sdd^2
+		solid_angle *= (cos(tmp_theta))^3
+		solid_angle /= sdd^2
+		
+		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+		w /= solid_angle
+
+		// correctly apply the correction to the error wave (assume a perfect value?)
+	 	w_err /= solid_angle		//
+
+	else
+		//		
+		//different calculation for the tubes, different calculation based on XY orientation
+		//
+		if(cmpstr(orientation,"vertical")==0)
+			// L/R panels, tube axis is y-direction
+			// this is now a different tmp_dist
+			// convert everything to cm first!
+			// sdd is in [cm], everything else is in [mm]
+			tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
+			tmp_theta_i = atan(tmp_dist)		//this is theta_y
+			
+		else
+			// horizontal orientation (T/B panels)
+			// this is now a different tmp_dist
+			// convert everything to cm first!
+			// sdd is in [cm], everything else is in [mm]
+			tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
+			tmp_theta_i = atan(tmp_dist)		//this is theta_x
+		
+		endif
+		
+		for(ii=0	;ii<numx;ii+=1)
+			for(jj=0;jj<numy;jj+=1)
+				
+				if(ii==0)		//do a forward difference if ii==0
+					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+				else
+					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+				endif
+				
+				
+				if(jj==0)
+					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+				else
+					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+				endif
+		
+				dx /= 10
+				dy /= 10		// convert mm to cm (since sdd is in cm)
+				solid_angle[ii][jj] = dx*dy		//this is in cm^2
+			endfor
+		endfor
+		
+		// to cover up any issues w/negative dx or dy
+		solid_angle = abs(solid_angle)
+		
+		// solid_angle correction
+		// == dx*dy*cos(th)^2*cos(th_i)/sdd^2		using either the theta_x or theta_y value
+		solid_angle *= (cos(tmp_theta))^2*cos(tmp_theta_i)
+		solid_angle /= sdd^2
+		
+		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+		w /= solid_angle
+		
+		//
+		// correctly apply the correction to the error wave (assume a perfect value?)
+	 	w_err /= solid_angle		//
 	
+	endif
+	
+
+// DONE x- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
+	
+	return(0)
+end
+
+// this is the incorrect solid angle correction that does not take into 
+// account the tube geometry. It is correct for the high-res detector (and the 30m Ordela)
+//
+// -- only for testing to prove that the cos(th)^2 *cos(th_i) is correct
+//
+Function V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,lambda
+	String orientation
+	
+// get all of the geometry information	
+	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	lambda = V_getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w solid_angle,tmp_theta,tmp_dist	//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
+	
+	tmp_dist /= 10  // convert mm to cm
+	// sdd is in [cm]
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the (total) scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+
 	for(ii=0	;ii<numx;ii+=1)
 		for(jj=0;jj<numy;jj+=1)
 			
@@ -1020,17 +1188,16 @@ Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	
 	// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
 	w /= solid_angle
-	
-	//
+
 	// correctly apply the correction to the error wave (assume a perfect value?)
  	w_err /= solid_angle		//
+	
 
 // DONE x- clean up after I'm satisfied computations are correct		
-	KillWaves/Z tmp_theta,tmp_dist
+	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
 	
 	return(0)
 end
-
 
 
 
@@ -1461,8 +1628,9 @@ Function V_ShiftBackDetImage(w,adjW)
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 
 // this is necessary for some old data with the 150x150 back (dummy) panel
-	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
-	if(gIgnoreDetB == 1)
+// the proper back detector has an x-dimension of 680 pixels. Don't do the shift
+// if the dimensions are incorrect.
+	if(DimSize(w,0) < 680)
 		adjW=w
 		return(0)
 	endif
@@ -1607,4 +1775,574 @@ Function V_MedianAndReadNoiseBack(folder,readNoise)
 		
 	return(0)
 End
+
+
+
+////////////////
+// Detector efficiency and shadowing
+///////////////
+
+//
+// Tube efficiency + shadowing
+//
+//
+// -- check for the existence of the proper tables (correct wavelength)
+//  -- generate tables if needed (one-time calculation)
+//
+// interpolate the table for the correction - to avoid repeated integration
+//
+// store the tables in: root:Packages:NIST:VSANS:Globals:Efficiency:
+//
+Function V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,lambda
+	String orientation
+
+// if the panel is "B", exit - since it is not tubes, and this should not be called
+	if(cmpstr(detStr,"B")==0)
+		return(1)
+	endif
+
+// get all of the geometry information	
+	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+	lambda = V_getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w tmp_theta_x,tmp_theta_y,tmp_dist,tmp_corr		//in the current df
+
+//// calculate the scattering angles theta_x and theta_y
+
+// flip the definitions of x and y for the T/B panels so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	if(cmpstr(orientation,"vertical")==0)
+		// L/R panels, tube axis is y-direction
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
+		tmp_theta_y = atan(tmp_dist)		//this is theta_y
+		tmp_theta_x = atan( (data_realDistX/10 - xctr/10)/sdd )
+		
+	else
+		// horizontal orientation (T/B panels)
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
+		tmp_theta_y = atan(tmp_dist)		//this is theta_y, along tube direction
+		tmp_theta_x = atan( (data_realDistY/10 - yctr/10)/sdd )		// this is laterally across tubes
+	endif
+
+
+// identify if the 2D efficiency wave has been generated for the data wavelength
+//
+// if so, declare
+// if not, generate
+
+	if(WaveExists($"root:Packages:NIST:VSANS:Globals:Efficiency:eff") == 0)
+		// generate the proper efficiency wave, at lambda
+		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
+		Print "recalculating efficiency table ..."
+		V_TubeShadowEfficiencyTables_oneLam(lambda)
+		// declare the wave
+		Wave/Z effW = root:Packages:NIST:VSANS:Globals:Efficiency:eff
+	else
+		Wave/Z effW = root:Packages:NIST:VSANS:Globals:Efficiency:eff
+		//is the efficiency at the correct wavelength?
+		string str=note(effW)
+//		Print "Note = ",str
+		
+		if(V_CloseEnough(lambda,NumberByKey("LAMBDA", str,"="),0.1))		//absolute difference of < 0.1 A
+				// yes, proceed, no need to do anything
+		else
+			// no, regenerate the efficiency and then proceed (wave already declared)
+			Print "recalculating efficiency table ..."
+			V_TubeShadowEfficiencyTables_oneLam(lambda)
+		endif
+	endif
+	
+	
+	Variable ii,jj,numx,numy,xAngle,yAngle
+	numx = DimSize(w,0)
+	numy = DimSize(w,1)
+
+// loop over all of the pixels of the panel and find the interpolated correction (save as a wave)
+//
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+
+			// from the angles, find the (x,y) point to interpolate to get the efficiency
+		
+			xAngle = tmp_theta_x[ii][jj]
+			yAngle = tmp_theta_y[ii][jj]
+
+			xAngle = abs(xAngle)
+			yAngle = abs(yAngle)
+			
+//			the x and y scaling of the eff wave (2D) was set when it was generated (in radians)
+// 		 simply reading the scaled xy value does not interpolate!!
+//			tmp_corr[ii][jj] = effW(xAngle)(yAngle)		// NO, returns "stepped" values
+			tmp_corr[ii][jj] = Interp2D(effW,xAngle,yAngle)
+
+		endfor
+	endfor
+//	
+//	
+// apply the correction and calculate the error
+//	
+// Here it is! Apply the correction to the intensity (divide -- to get the proper correction)
+	w /= tmp_corr
+//
+// relative errors add in quadrature to the current 2D error
+// assume that this numerical calculation of efficiency is exact
+//
+//	tmp_err = (w_err/tmp_corr)^2 + (lat_err/lat_corr)^2*w*w/lat_corr^2
+//	tmp_err = sqrt(tmp_err)
+//	
+//	w_err = tmp_err	
+//	
+
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta_x,tmp_theta_y,tmp_dist,tmp_err,tmp_corr
+	
+	return(0)
+end
+
+
+
+// the actual integration of the efficiency for an individual pixel
+Function V_Efficiency_Integral(pWave,in_u)
+	Wave pWave
+	Variable in_u
+	
+	Variable lambda,th_x,th_y,u_p,integrand,T_sh,max_x,d_ss,d_He
+	
+	lambda = pWave[0]
+	th_x = pWave[1]
+	th_y = pWave[2]
+	
+	u_p = in_u + kTube_cc * cos(th_x)
+	
+	// calculate shadow if th_x > 23.727 deg. th_x is input in radians
+	max_x = 23.727 / 360 * 2*pi
+	if(th_x < max_x)
+		T_sh = 1
+	else
+		
+		// get d_ss
+		if(abs(u_p) < kTube_ri)
+			d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 ) - sqrt(	kTube_ri^2 - in_u^2	)
+		elseif (abs(u_p) < (kTube_ri + kTube_ss))
+			d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 )
+		else
+			d_ss = 0
+		endif
+		
+		// get d_He
+		if(abs(u_p) < kTube_ri)
+			d_He = 2 * sqrt(	kTube_ri^2 - in_u^2	)
+		else
+			d_He = 0
+		endif
+		
+		//calculate T_sh		
+		T_sh = exp(-2*kSig_ss*lambda*d_ss/cos(th_y)) * exp(-kSig_8b_He*lambda*d_He/cos(th_y))
+		
+	endif
+	
+	
+	// calculate the integrand
+	
+	//note that the in_u value is used here to find d_ss and d_he (not u_p)
+	// get d_ss
+	if(abs(in_u) < kTube_ri)
+		d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 ) - sqrt(	kTube_ri^2 - in_u^2	)
+	elseif (abs(in_u) < (kTube_ri + kTube_ss))
+		d_ss = sqrt( (kTube_ri + kTube_ss)^2 - in_u^2 )
+	else
+		d_ss = 0
+	endif
+	
+	// get d_He
+	if(abs(in_u) < kTube_ri)
+		d_He = 2 * sqrt(	kTube_ri^2 - in_u^2	)
+	else
+		d_He = 0
+	endif
+	
+	integrand = T_sh*exp(-kSig_ss*lambda*d_ss/cos(th_y))*( 1-exp(-kSig_8b_He*lambda*d_He/cos(th_y)) )
+
+	return(integrand)
+end
+
+//
+// Tube efficiency + shadowing
+//
+// function to generate the table for interpolation
+//
+// table is generated for a specific wavelength and normalized to eff(lam,0,0)
+//
+// below 24 deg (theta_x), there is no shadowing, so the table rows are all identical
+//
+// Only one table is stored, and the wavelength of that table is stored in the wave note
+// -- detector correction checks the note, and recalculates the table if needed
+// (calculation takes approx 5 seconds)
+//
+Function V_TubeShadowEfficiencyTables_oneLam(lambda)
+	Variable lambda
+		
+// storage location for tables
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Efficiency
+
+//make waves that will be filed with the scattering angles and the result of the calculation
+//
+
+//// fill arrays with the scattering angles theta_x and theta_y
+// 0 < x < 50
+// 0 < y < 50
+
+// *** the definitions of x and y for the T/B panels is flipped so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp,normVal
+	numx = 25
+	numy = numx
+
+	Make/O/D/N=(numx,numy) eff
+	Make/O/D/N=(numx) theta_x, theta_y,eff_with_shadow,lam_cos
+	
+	SetScale x 0,(numx*2)/360*2*pi,"", eff
+	SetScale y 0,(numy*2)/360*2*pi,"", eff
+
+	Note/K eff		// clear the note
+	Note eff "LAMBDA="+num2str(lambda)
+	
+//	theta_x = p*2
+	theta_y = p	*2	// value range from 0->45, changes if you change numx
+	
+	//convert degrees to radians
+//	theta_x = theta_x/360*2*pi
+	theta_y = theta_y/360*2*pi
+
+//	Make/O/D/N=12 lam_wave
+//	lam_wave = {0.5,0.7,1,1.5,2,3,4,6,8,10,15,20}
+	
+//	Make/O/D/N=(12*numx) eff_withX_to_interp,lam_cos_theta_y
+//	eff_withX_to_interp=0
+//	lam_cos_theta_y=0
+	
+	Make/O/D/N=3 pWave
+	pWave[0] = lambda
+	
+
+	for(ii=0	;ii<numx;ii+=1)
+
+		for(jj=0;jj<numx;jj+=1)	
+				
+				pWave[1] = indexToScale(eff,ii,0)		//set theta x 
+				pWave[2] = indexToScale(eff,jj,1)		//set theta y
+	
+				eff_with_shadow[jj] = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
+				eff_with_shadow[jj] /= (2*kTube_ri)
+				
+				eff[ii][jj] = eff_with_shadow[jj]
+		endfor
+		
+		//eff[ii][] = eff_with_shadow[q]
+	endfor
+	
+	lam_cos = lambda/cos(theta_y)
+	
+	Sort lam_cos,eff_with_shadow,lam_cos	
+	
+//	
+//////	// value for normalization at current wavelength
+	pWave[0] = lambda
+	pWave[1] = 0
+	pWave[2] = 0
+////	
+	normVal = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
+	normVal /= (2*kTube_ri)
+//	
+//	print normVal
+//	
+	eff_with_shadow /= normVal		// eff(lam,th_x,th_y) / eff(lam,0,0)
+
+	eff /= normVal
+	
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	
+	SetDataFolder root:
+	return(0)
+end
+
+
+
+//
+// Tube efficiency + shadowing
+//
+//
+// TESTING function to generate the tables for interpolation
+// and various combinations of the corrections for plotting
+//
+Function V_TubeShadowEfficiencyTables_withX()
+
+
+	Variable lambda
+	lambda = 6
+	
+	Variable theta_val=3			//the single theta_x value that is used
+	
+// TODO
+// -- better storage location for tables
+// bad place for now...	
+	SetDataFolder root:
+
+//make waves that will be filed with the scattering angles and the result of the calculation
+//
+
+//// fill arrays with the scattering angles theta_x and theta_y
+// 0 < x < 50
+// 0 < y < 50
+
+// *** the definitions of x and y for the T/B panels is flipped so that x is always lateral WRT the tubes
+// and y is always along the length of the tubes
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp,normVal
+	numx = 10
+	numy = 10
+
+//	Make/O/D/N=(numx,numy) eff
+	Make/O/D/N=(numx) theta_x, theta_y,eff_with_shadow,lam_cos
+	
+	theta_x = p*5
+	theta_y = p*5		// value range from 0->45, changes if you change numx
+	
+	//convert degrees to radians
+	theta_x = theta_x/360*2*pi
+	theta_y = theta_y/360*2*pi
+
+	Make/O/D/N=12 lam_wave
+	lam_wave = {0.5,0.7,1,1.5,2,3,4,6,8,10,15,20}
+	
+	Make/O/D/N=(12*numx) eff_withX_to_interp,lam_cos_theta_y
+	eff_withX_to_interp=0
+	lam_cos_theta_y=0
+	
+	Make/O/D/N=3 pWave
+
+	for(jj=0;jj<12;jj+=1)
+
+		pWave[0] = lam_wave[jj]
+
+		for(ii=0	;ii<numx;ii+=1)
+			
+				pWave[1] = theta_val/360*2*pi		//set theta x to any value
+				pWave[2] = theta_y[ii]
+	
+				eff_with_shadow[ii] = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
+				eff_with_shadow[ii] /= (2*kTube_ri)
+				
+		endfor
+		
+		lam_cos = lam_wave[jj]/cos(theta_y)
+
+// messy indexing for the concatentation		
+		lam_cos_theta_y[jj*numx,(jj+1)*numx-1] = lam_cos[p-jj*numx]
+		eff_withX_to_interp[jj*numx,(jj+1)*numx-1] = eff_with_shadow[p-jj*numx]
+		
+	endfor
+	
+	Sort lam_cos_theta_y,eff_withX_to_interp,lam_cos_theta_y	
+	
+//	
+////////	// value for normalization at what wavelength???
+//	pWave[0] = 6
+//	pWave[1] = 0
+//	pWave[2] = 0
+//////	
+//	normVal = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
+//	normVal /= (2*kTube_ri)
+////	
+//	print normVal
+////	
+//	eff_withX_to_interp /= normVal		// eff(lam,th_x,th_y) / eff(lam,0,0)
+
+	// TODO
+	// - clean up after I'm satisfied computations are correct		
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	
+	return(0)
+end
+
+
+
+/////////////
+
+//
+//
+// testing function to calculate the correction for the attenuation
+// of the scattered beam by windows downstream of the sample
+// (the back window of the sample block, the Si window)
+//
+// For implementation, this function could be made identical
+// to the large angle transmission correction, since the math is
+// identical - only the Tw value is different (and should ideally be
+// quite close to 1). With Tw near 1, this would be a few percent correction
+// at the largest scattering angles.
+//
+//
+Function V_WindowTransmission(tw)
+	Variable tw
+	
+	Make/O/D/N=100 theta,method1,method2,arg
+	
+	theta = p/2
+	theta = theta/360*2*pi		//convert to radians
+	
+//	method1 = exp( -ln(tw)/cos(theta) )/tw
+	
+	Variable tau
+	tau = -ln(tw)
+	arg = (1-cos(theta))/cos(theta)
+	
+	if(tau < 0.01)
+		method2 = 1 - 0.5*tau*arg	
+	else
+		method2 = ( 1 - exp(-tau*arg) )/(tau*arg)
+	endif
+	
+	return(0)
+end
+
+
+//
+// Large angle transmission correction for the downstream window
+//
+// DIVIDE the intensity by this correction to get the right answer
+//
+// -- this is a duplication of the math for the large angle
+// sample tranmission correction. Same situation, but now the 
+// scattered neutrons are attenuated by whatever windows are 
+// downstream of the scattering event.
+// (the back window of the sample block, the Si window)
+//
+// For implementation, this function is made identical
+// to the large angle transmission correction, since the math is
+// identical - only the Tw value is different (and should ideally be
+// quite close to 1). With Tw near 1, this would be a few percent correction
+// at the largest scattering angles.
+//
+//
+Function V_DownstreamWindowTransmission(w,w_err,fname,detStr,destPath)
+	Wave w,w_err
+	String fname,detStr,destPath
+
+	Variable sdd,xCtr,yCtr,uval
+
+// get all of the geometry information	
+//	orientation = V_getDet_tubeOrientation(fname,detStr)
+	sdd = V_getDet_ActualDistance(fname,detStr)
+
+	// this is ctr in mm
+	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
+	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
+
+// get the value of the overall transmission of the downstream components
+// + error if available.
+//	trans = V_getSampleTransmission(fname)
+//	trans_err = V_getSampleTransError(fname)
+// TODO -- HARD WIRED values, need to set a global or find a place in the header (instrument block?) (reduction?)
+// currently globals are forced to one in WorkFolderUtils.ipf as the correction is done
+	NVAR trans = root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans
+	NVAR trans_err = root:Packages:NIST:VSANS:Globals:gDownstreamWinTransErr	
+
+	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w dwt_corr,tmp_theta,tmp_dist,dwt_err,tmp_err		//in the current df
+
+//// calculate the scattering angle
+//	dx = (distX - xctr)		//delta x in mm
+//	dy = (distY - yctr)		//delta y in mm
+	tmp_dist = sqrt((data_realDistX - xctr)^2 + (data_realDistY - yctr)^2)
+	
+	tmp_dist /= 10  // convert mm to cm
+	// sdd is in [cm]
+
+	tmp_theta = atan(tmp_dist/sdd)		//this is two_theta, the scattering angle
+
+	Variable ii,jj,numx,numy,dx,dy,cos_th,arg,tmp
+	numx = DimSize(tmp_theta,0)
+	numy = DimSize(tmp_theta,1)
+	
+	
+	//optical thickness
+	uval = -ln(trans)		//use natural logarithm
+	
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			cos_th = cos(tmp_theta[ii][jj])
+			arg = (1-cos_th)/cos_th
+			
+			// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
+			// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
+			// OR
+			if((uval<0.01) || (cos_th>0.99))	
+				//small arg, approx correction
+				dwt_corr[ii][jj] = 1-0.5*uval*arg
+			else
+				//large arg, exact correction
+				dwt_corr[ii][jj] = (1-exp(-uval*arg))/(uval*arg)
+			endif
+			 
+			// (DONE)
+			// x- properly calculate and apply the 2D error propagation
+			if(trans == 1)
+				dwt_err[ii][jj] = 0		//no correction, no error
+			else
+				//sigT, calculated from the Taylor expansion
+				tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
+				tmp *= tmp
+				tmp *= trans_err^2
+				tmp = sqrt(tmp)		//sigT
+				
+				dwt_err[ii][jj] = tmp
+			endif
+			 
+		endfor
+	endfor
+	
+	// Here it is! Apply the correction to the intensity (divide -- to get the proper correction)
+	w /= dwt_corr
+
+	// relative errors add in quadrature to the current 2D error
+	tmp_err = (w_err/dwt_corr)^2 + (dwt_err/dwt_corr)^2*w*w/dwt_corr^2
+	tmp_err = sqrt(tmp_err)
+	
+	w_err = tmp_err	
+	
+	// DONE x- clean up after I'm satisfied computations are correct		
+	KillWaves/Z tmp_theta,tmp_dist,tmp_err,dwt_err
+	
+	return(0)
+end
 

@@ -344,14 +344,24 @@ Function Coef_PopMenuProc(pa) : PopupMenuControl
 			Variable num=numpnts($popStr)
 			// make the necessary waves if they don't exist already
 			if(exists("Hold_"+suffix) == 0)
-				Make/O/D/N=(num) $("epsilon_"+suffix),$("Hold_"+suffix)
-				Make/O/T/N=(num) $("LoLim_"+suffix),$("HiLim_"+suffix)
-				Wave eps = $("epsilon_"+suffix)
-				Wave coef=$popStr
-				if(eps[0] == 0)		//if eps already if filled, don't change it
-					eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
-				endif
+				Make/O/D/N=(num) $("Hold_"+suffix)
 			endif
+			if(exists("epsilon_"+suffix) == 0)
+				Make/O/D/N=(num) $("epsilon_"+suffix)
+			endif
+			if(exists("LoLim_"+suffix) == 0)
+				Make/O/T/N=(num) $("LoLim_"+suffix)
+			endif
+			if(exists("HiLim_"+suffix) == 0)
+				Make/O/T/N=(num) $("HiLim_"+suffix)
+			endif
+						
+			Wave eps = $("epsilon_"+suffix)
+			Wave coef=$popStr
+			if(eps[0] == 0)		//if eps already if filled, don't change it
+				eps = abs(coef*1e-4) + 1e-10			//default eps is proportional to the coefficients
+			endif
+			
 			// default epsilon values, sometimes needed for the fit
 			
 			WAVE/T LoLim = $("LoLim_"+suffix)
@@ -1168,14 +1178,15 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 	Notebook $nb ruler=Normal
 	
 	// insert graphs
+	// extra flag "2" (Igor >=7.00) is 2x screen resolution
 	if(WaveExists(dataXw))
 //		Notebook $nb picture={$topGraph(0, 0, 400, 300), -5, 1}, text="\r"
-		Notebook $nb scaling={50, 50}, picture={$topGraph(0, 0, 800, 600), -5, 1}, text="\r"
+		Notebook $nb scaling={50, 50}, picture={$topGraph(0, 0, 800, 600), -5, 1,2}, text="\r"
 	//
 	else		//must be 2D Gizmo
 		Execute "ExportGizmo Clip"			//this ALWAYS is a PICT or BMP. Gizmo windows are different...
 		LoadPict/Q/O "Clipboard",tmp_Gizmo
-		Notebook $nb picture={tmp_Gizmo(0, 0, 800, 600), 0, 1}, text="\r"
+		Notebook $nb picture={tmp_Gizmo(0, 0, 800, 600), 0, 1,2}, text="\r"
 	endif
 	
 	// show the top of the report
@@ -1210,7 +1221,7 @@ Function W_GenerateReport(func,dataname,param,ans,yesSave,chiSq,sigWave,npts,fit
 		// E=2 is PICT @2x screen resolution
 ///		SavePICT /E=-5/O/P=home /I/W=(0,0,3,3) as pictStr
 		if(WaveExists(dataXw))
-			SavePICT /E=-5/O/P=home/WIN=$topGraph /W=(0,0,800,600) as pictStr
+			SavePICT /E=-5/O/B=144/P=home/WIN=$topGraph /W=(0,0,800,600) as pictStr
 		else
 			Execute "ExportGizmo /P=home as \""+pictStr+"\""		//this won't be of very high quality
 			//SavePICT /E=-5/O/P=home/WIN=$topGraph /W=(0,0,400,300) as pictStr

@@ -705,6 +705,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 			endif
 			if(GraspASCII)
 				fullPath=pathStr+newFileName+".GSP"
+//				fullPath=pathStr+fileWave[ii]+".GSP"		//NOT COMPATIBLE WITH GRASP!!! SEP2019
 				Fast2dExport_OldStyle("RAW",fullpath,0)
 			endif
 		endif

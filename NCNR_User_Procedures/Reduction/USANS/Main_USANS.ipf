@@ -231,10 +231,11 @@ Proc GraphRawData()
 	SetDataFolder $(USANSFolder+":RAW:")
 	//String textStr = StringForRawGraph()
 	//textStr=StringByKey("FILE",textStr,":",";")+" MONRATE:"+num2str(mean(MonCts)/NumberByKey("TIMEPT",textStr,":",";"))
-	Display /W=(600,525,1015,850)/L=left1/B=bottom1 /K=1 DetCts vs Angle as "Raw Data"
+	Display /W=(500,225,915,550)/L=left1/B=bottom1 /K=1 DetCts vs Angle as "Raw Data"
 	ModifyGraph margin(top)=50
 	//Display /W=(600,525,1015,850) /K=1 DetCts vs Angle as "Raw Data"
 	DoWindow/C RawDataWin
+	DoWindow/F RawDataWin
 	//AppendToGraph/L=left1 /B=bottom1 DetCts vs Angle
 	AppendToGraph/L=left2/B=bottom1 TransCts vs Angle
 	AppendToGraph/L=left3/B=bottom1 MonCts vs Angle
@@ -1050,7 +1051,7 @@ Function TitleForRawGraph()
 	String retStr="\\JC"
 	retStr += StringByKey("FILE",str,":",";")+"\r"
 	retStr += "Count Time: "+StringByKey("TIMEPT",str,":",";")
-	retStr += " \tMonitor Rate: "+num2str(mean(monCts)/NumberByKey("TIMEPT",str,":",";"))+"\r"
+	retStr += "  Monitor Rate: "+num2str(mean(monCts)/NumberByKey("TIMEPT",str,":",";"))+"\r"
 	retStr += "\\s(DetCts) DetCts \\s(TransCts) TransCts \\s(MonCts) MonCts"
 	
 	TextBox/W=RawDataWin/C/E=2/A=MT/X=5/Y=0/N=text0 retStr

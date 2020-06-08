@@ -1,4 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method.
+#pragma IgorVersion = 7.00
 
 //
 //
@@ -12,6 +13,9 @@
 // anticipating that at the same level as VCALC will be all of the reduction folders
 // in a similar way as for SANS reduction
 //
+//
+// TODO:
+// -- adjust the size of the panel to better fit a laptop (for my telework)
 //
 
 
@@ -65,70 +69,101 @@ end
 
 
 Proc DrawVCALC_Panel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(34,44,1274,699)/N=VCALC/K=1
+		
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
+		NewPanel /W=(34*sc,44*sc,1274*sc,660*sc)/N=VCALC/K=1
+	else
+		NewPanel /W=(34,44,1274,699)/N=VCALC/K=1
+	endif
+	
 	ModifyPanel cbRGB=(49151,60031,65535)
 //	ShowTools/A
 	SetDrawLayer UserBack
 	
 // always visible stuff, not on any tab
 	
-	GroupBox group0,pos={10,10},size={440,125},title="Setup"
-	TabControl Vtab,labelBack=(45000,61000,58000),pos={14,150},size={430,200},tabLabel(0)="Collim"
+	GroupBox group0,pos={sc*10,10*sc},size={sc*440,125*sc},title="Setup"
+	TabControl Vtab,labelBack=(45000,61000,58000),pos={sc*14,150*sc},size={sc*430,200*sc},tabLabel(0)="Collim"
 	TabControl Vtab,tabLabel(1)="Sample",tabLabel(2)="Front Det",tabLabel(3)="Mid Det"
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
-	GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
-	Button button_a,pos={210,70},size={100,20},title="Show Mask",proc=V_VCALCShowMaskButtonProc
-	Button button_b,pos={210,100},size={100,20},title="Recalculate",proc=V_VCALCRecalcButtonProc
-	Button button_c,pos={330,70},size={100,20},title="Save Config",proc=V_VCALCSaveConfiguration
-	Button button_d,pos={330,100},size={100,20},title="Save NICE",proc=V_VCALCSaveNICEConfiguration
+
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
+		GroupBox group1,pos={sc*460,10*sc},size={sc*762,595*sc},title="Detector Panel Positions + Data"
+	else	
+		GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
+	endif
+	Button button_a,pos={sc*210,70*sc},size={sc*100,20*sc},title="Show Mask",proc=V_VCALCShowMaskButtonProc
+	Button button_b,pos={sc*210,100*sc},size={sc*100,20*sc},title="Recalculate",proc=V_VCALCRecalcButtonProc
+	Button button_c,pos={sc*330,70*sc},size={sc*100,20*sc},title="Save Config",proc=V_VCALCSaveConfiguration
+	Button button_d,pos={sc*330,100*sc},size={sc*100,20*sc},title="Save NICE",proc=V_VCALCSaveNICEConfiguration
 
 
-	PopupMenu popup_a,pos={50,40},size={142,20},title="Presets"
+	PopupMenu popup_a,pos={sc*50,40*sc},size={sc*142,20*sc},title="Presets"
 	PopupMenu popup_a,mode=1,popvalue="White Beam",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
 	PopupMenu popup_a,proc=VC_PresetConfigPopup
 
-	PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
-	PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
-	SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
-	SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
-	CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
+		PopupMenu popup_b,pos={sc*670,280*sc},size={sc*142,20*sc},title="Binning type",proc=VC_RebinIQ_PopProc
+		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
+		SetVariable setVar_b,pos={sc*476,280*sc},size={sc*120,15*sc},title="axis Q",proc=Front2DQ_Range_SetVarProc
+		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
+		CheckBox check_0a title="Log?",size={sc*60,20*sc},pos={sc*619,280*sc},proc=Front2DQ_Log_CheckProc
+	else	
+		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
+		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
+		SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
+		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
+		CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+	endif
+
+
 		
-	SetVariable setVar_a,pos={476,26},size={120,15},title="axis degrees",proc=FrontView_Range_SetVarProc
+	SetVariable setVar_a,pos={sc*476,26*sc},size={sc*120,15*sc},title="axis degrees",proc=FrontView_Range_SetVarProc
 	SetVariable setVar_a,limits={0.3,30,0.2},value=_NUM:28
 
-	ValDisplay valDisp_a,pos={30,380},size={150,15},fstyle=1,title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
+	ValDisplay valDisp_a,pos={sc*30,380*sc},size={sc*200,15*sc},fstyle=1,title="Beam Intensity",value=root:Packages:NIST:VSANS:VCALC:gBeamIntensity
 
 	SetDrawEnv fstyle= 1
-	DrawText 30,420,"Back"
-	DrawText 80,420,"Q min"
-	DrawText 150,420,"Q max"
-	ValDisplay valDisp_b,pos={30,420},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_B
-	ValDisplay valDisp_c,pos={130,420},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_B
+	DrawText 20*sc,420*sc,"Back"
+	DrawText 80*sc,420*sc,"Q min"
+	DrawText 150*sc,420*sc,"Q max"
+	ValDisplay valDisp_b,pos={sc*30,420*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_B
+	ValDisplay valDisp_c,pos={sc*130,420*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_B
 
 	SetDrawEnv fstyle= 1
-	DrawText 130,460,"Middle"
-	DrawText 180,460,"Q min"
-	DrawText 250,460,"Q max"	
-	ValDisplay valDisp_d,pos={130,460},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_M
-	ValDisplay valDisp_e,pos={230,460},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_M
+	DrawText 120*sc,460*sc,"Middle"
+	DrawText 180*sc,460*sc,"Q min"
+	DrawText 250*sc,460*sc,"Q max"	
+	ValDisplay valDisp_d,pos={sc*130,460*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_M
+	ValDisplay valDisp_e,pos={sc*230,460*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_M
 
 	SetDrawEnv fstyle= 1
-	DrawText 230,500,"Front"	
-	DrawText 280,500,"Q min"
-	DrawText 350,500,"Q max"	
-	ValDisplay valDisp_f,pos={230,500},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_F
-	ValDisplay valDisp_g,pos={330,500},size={100,15},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_F
+	DrawText 220*sc,500*sc,"Front"	
+	DrawText 280*sc,500*sc,"Q min"
+	DrawText 350*sc,500*sc,"Q max"	
+	ValDisplay valDisp_f,pos={sc*230,500*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmin_F
+	ValDisplay valDisp_g,pos={sc*330,500*sc},size={sc*100,15*sc},title="",value=root:Packages:NIST:VSANS:VCALC:gQmax_F
 
 
-	ValDisplay valDisp_h,pos={50,530},size={200,15},title="Beam Diam (middle) (cm)",value=root:Packages:NIST:VSANS:VCALC:gBeamDiam
-	ValDisplay valDisp_i,pos={50,560},size={200,15},title="Beam Stop Diam (middle) (in)",value=root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
-	ValDisplay valDisp_j,pos={50,590},size={200,15},title="Beam Stop Q min (1/A)",value=root:Packages:NIST:VSANS:VCALC:gRealQMin
+	ValDisplay valDisp_h,pos={sc*50,530*sc},size={sc*200,15*sc},title="Beam Diam (middle) (cm)",value=root:Packages:NIST:VSANS:VCALC:gBeamDiam
+	ValDisplay valDisp_i,pos={sc*50,560*sc},size={sc*200,15*sc},title="Beam Stop Diam (middle) (in)",value=root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
+	ValDisplay valDisp_j,pos={sc*50,590*sc},size={sc*200,15*sc},title="Beam Stop Q min (1/A)",value=root:Packages:NIST:VSANS:VCALC:gRealQMin
 
 
 
 	// for panels (in degrees)	
-	Display/W=(476,45,757,303)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		Display/W=(476*sc,45*sc,757*sc,270*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	else
+		Display/W=(476,45,757,303)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	endif
 	RenameWindow #,FrontView
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -140,7 +175,7 @@ Proc DrawVCALC_Panel()
 
 
 	// for side view
-	Display/W=(842,25,1200,170)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	Display/W=(842*sc,25*sc,1200*sc,170*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	RenameWindow #,SideView
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -152,7 +187,7 @@ Proc DrawVCALC_Panel()
 	SetActiveSubwindow ##	
 	
 	// for top view
-	Display/W=(842,180,1200,325)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	Display/W=(842*sc,180*sc,1200*sc,325*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	RenameWindow #,TopView
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -162,8 +197,14 @@ Proc DrawVCALC_Panel()
 	Label bottom "SDD (cm)"	
 	SetActiveSubwindow ##	
 
+
 	// for panels (as 2D Q)
-	Display/W=(475,332,814,631)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+	// note that the dimensions here are not strictly followed since the aspect ratio is set below
+		Display/W=(475*sc,310*sc,790*sc,590*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	else
+		Display/W=(475,332,814,631)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	endif	
 	RenameWindow #,Panels_Q
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph tick=2,mirror=1,grid=2,standoff=0
@@ -177,7 +218,11 @@ Proc DrawVCALC_Panel()
 
 
 	// for averaged I(Q)
-	Display/W=(842,334,1204,629)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		Display/W=(842*sc,330*sc,1204*sc,590*sc)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	else
+		Display/W=(842,334,1204,629)/HOST=# //root:Packages:NIST:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+	endif	
 	RenameWindow #,Panels_IQ
 //	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph tick=2,mirror=1,grid=2
@@ -191,77 +236,77 @@ Proc DrawVCALC_Panel()
 
 	
 // tab(0), collimation - initially visible
-	Slider VCALCCtrl_0a,pos={223,324-50},size={200,45},limits={0,9,1},value= 1,vert= 0,proc=V_GuideSliderProc
-	SetVariable VCALCCtrl_0b,pos={25,294-50},size={120,15},title="wavelength"
+	Slider VCALCCtrl_0a,pos={sc*223,(324-50)*sc},size={sc*200,45*sc},limits={0,9,1},value= 1,vert= 0,proc=V_GuideSliderProc
+	SetVariable VCALCCtrl_0b,pos={sc*25,(294-50)*sc},size={sc*120,15*sc},title="wavelength"
 	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=VC_Lambda_SetVarProc
-	PopupMenu VCALCCtrl_0c,pos={26,257-50},size={150,20},title="monochromator"
+	PopupMenu VCALCCtrl_0c,pos={sc*26,(257-50)*sc},size={sc*150,20*sc},title="monochromator"
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector",value= root:Packages:NIST:VSANS:VCALC:gMonochromatorType
 	PopupMenu VCALCCtrl_0c,proc=VC_MonochromSelectPopup
-	PopupMenu VCALCCtrl_0d,pos={26,321-50},size={115,20},title="delta lambda"
+	PopupMenu VCALCCtrl_0d,pos={sc*26,(321-50)*sc},size={sc*115,20*sc},title="delta lambda"
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,proc=VC_DeltaLamSelectPopup
-	PopupMenu VCALCCtrl_0e,pos={291,262-50},size={132,20},title="source shape"
+	PopupMenu VCALCCtrl_0e,pos={sc*291,(262-50)*sc},size={sc*132,20*sc},title="source shape"
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSourceShape
 	PopupMenu VCALCCtrl_0e,proc=VC_SourceApShapeSelectPopup
-	PopupMenu VCALCCtrl_0f,pos={283,293-50},size={141,20},title="source aperture"
+	PopupMenu VCALCCtrl_0f,pos={sc*283,(293-50)*sc},size={sc*141,20*sc},title="source aperture"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
 	PopupMenu VCALCCtrl_0f,proc=VC_SourceAperDiamSelectPopup
 
 
 // tab(1) - Sample conditions, initially not visible
-	PopupMenu VCALCCtrl_1a,pos={38,250-50},size={142,20},title="table location",disable=1
+	PopupMenu VCALCCtrl_1a,pos={sc*38,(250-50)*sc},size={sc*142,20*sc},title="table location",disable=1
 	PopupMenu VCALCCtrl_1a,mode=1,popvalue="Changer",value= root:Packages:NIST:VSANS:VCALC:gTableLocation
-	PopupMenu VCALCCtrl_1b,pos={270,250-50},size={115,20},title="Aperture Shape",disable=1
+	PopupMenu VCALCCtrl_1b,pos={sc*270,(250-50)*sc},size={sc*115,20*sc},title="Aperture Shape",disable=1
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureShape 
-	PopupMenu VCALCCtrl_1c,pos={270,310-50},size={132,20},title="Aperture Diam (cm)",disable=1
+	PopupMenu VCALCCtrl_1c,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture Diam (cm)",disable=1
 	PopupMenu VCALCCtrl_1c,mode=1,popvalue="1.27",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
-	SetVariable VCALCCtrl_1d,pos={25,280-50},size={210,15},title="Sample Aper. to Gate Valve (cm)"//,bodywidth=50
+	SetVariable VCALCCtrl_1d,pos={sc*25,(280-50)*sc},size={sc*210,15*sc},title="Sample Aper. to Gate Valve (cm)"//,bodywidth=50
 	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
-	SetVariable VCALCCtrl_1e,pos={25,310-50},size={210,15},title="Sample Pos to Gate Valve (cm)"
+	SetVariable VCALCCtrl_1e,pos={sc*25,(310-50)*sc},size={sc*210,15*sc},title="Sample Pos to Gate Valve (cm)"
 	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
 
 // tab(2) - Front detector panels, initially not visible
-	SetVariable VCALCCtrl_2a,pos={30,260-50},size={160,15},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2a,pos={sc*30,(260-50)*sc},size={sc*160,15*sc},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2a,limits={-20,19,0.1},disable=1,value=_NUM:-10
-	SetVariable VCALCCtrl_2aa,pos={30,290-50},size={160,15},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2aa,pos={sc*30,(290-50)*sc},size={sc*160,15*sc},title="RIGHT Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2aa,limits={-19,20,0.1},disable=1,value=_NUM:10
 	
-	SetVariable VCALCCtrl_2b,pos={30,330-50},size={160,15},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2b,pos={sc*30,(330-50)*sc},size={sc*160,15*sc},title="TOP Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2b,limits={0,18,0.1},disable=1,value=_NUM:10
-	SetVariable VCALCCtrl_2bb,pos={30,360-50},size={160,15},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
+	SetVariable VCALCCtrl_2bb,pos={sc*30,(360-50)*sc},size={sc*160,15*sc},title="BOTTOM Offset (cm)",proc=VC_FDet_LR_SetVarProc
 	SetVariable VCALCCtrl_2bb,limits={-18,0,0.1},disable=1,value=_NUM:-10
 	
-	SetVariable VCALCCtrl_2d,pos={205,260-50},size={235,15},title="Gate Valve to Detector Dist (cm)",proc=VC_FDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_2d,pos={sc*205,(260-50)*sc},size={sc*235,15*sc},title="Gate Valve to Detector Dist (cm)",proc=VC_FDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_2d,limits={70,800,1},disable=1	,value=_NUM:150
 	
 
 // tab(3) - Middle detector panels, initially not visible
-	SetVariable VCALCCtrl_3a,pos={30,260-50},size={160,15},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3a,pos={sc*30,(260-50)*sc},size={sc*160,15*sc},title="LEFT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3a,limits={-20,19,0.1},disable=1,value=_NUM:-7
-	SetVariable VCALCCtrl_3aa,pos={30,290-50},size={160,15},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3aa,pos={sc*30,(290-50)*sc},size={sc*160,15*sc},title="RIGHT Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3aa,limits={-19,20,0.1},disable=1,value=_NUM:7
 		
-	SetVariable VCALCCtrl_3b,pos={30,330-50},size={160,15},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3b,pos={sc*30,(330-50)*sc},size={sc*160,15*sc},title="TOP Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3b,limits={0,18,0.1},disable=1,value=_NUM:14
-	SetVariable VCALCCtrl_3bb,pos={30,360-50},size={160,15},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
+	SetVariable VCALCCtrl_3bb,pos={sc*30,(360-50)*sc},size={sc*160,15*sc},title="BOTTOM Offset (cm)",proc=VC_MDet_LR_SetVarProc
 	SetVariable VCALCCtrl_3bb,limits={-18,0,0.1},disable=1,value=_NUM:-14
 
-	SetVariable VCALCCtrl_3d,pos={205,260-50},size={235,15},title="Gate Valve to Detector Dist (cm)",proc=VC_MDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_3d,pos={sc*205,(260-50)*sc},size={sc*235,15*sc},title="Gate Valve to Detector Dist (cm)",proc=VC_MDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_3d,limits={250,2000,1},disable=1,value=_NUM:1000
 
 	
 // tab(4) - Back detector panel
-	SetVariable VCALCCtrl_4a,pos={168,290-50},size={160,15},title="Lateral Offset (cm)"
+	SetVariable VCALCCtrl_4a,pos={sc*168,(290-50)*sc},size={sc*160,15*sc},title="Lateral Offset (cm)"
 	SetVariable VCALCCtrl_4a,limits={0,20,0.1},disable=1,value=_NUM:0
-	SetVariable VCALCCtrl_4b,pos={168,260-50},size={250,15},title="Gate Valve to Detector Dist (cm)",proc=VC_BDet_SDD_SetVarProc
+	SetVariable VCALCCtrl_4b,pos={sc*168,(260-50)*sc},size={sc*250,15*sc},title="Gate Valve to Detector Dist (cm)",proc=VC_BDet_SDD_SetVarProc
 	SetVariable VCALCCtrl_4b,limits={2000,2500,1},disable=1,value=_NUM:2200
-//	PopupMenu VCALCCtrl_4c,pos={40,260},size={180,20},title="Detector type",disable=1
+//	PopupMenu VCALCCtrl_4c,pos={sc*40,260*sc},size={sc*180,20*sc},title="Detector type",disable=1
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
- 	SetVariable VCALCCtrl_5a,pos={40,290-50},size={220,15},title="Neutrons on Sample (imon)"
+ 	SetVariable VCALCCtrl_5a,pos={sc*40,(290-50)*sc},size={sc*220,15*sc},title="Neutrons on Sample (imon)"
 	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
-	PopupMenu VCALCCtrl_5b,pos={40,260-50},size={200,20},title="Model Function",disable=1
+	PopupMenu VCALCCtrl_5b,pos={sc*40,(260-50)*sc},size={sc*200,20*sc},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
 End
@@ -1701,6 +1746,7 @@ Function V_QMin_withBeamStop(detStr)
 
 	BSDiam = VC_beamstopDiam(detStr)
 	SDD = VC_getSDD(detStr)
+	SDD += VCALC_getTopBottomSDDSetback(detStr)
 	lambda = VCALC_getWavelength()
 	
 	two_theta = atan(BSDiam/2/SDD)

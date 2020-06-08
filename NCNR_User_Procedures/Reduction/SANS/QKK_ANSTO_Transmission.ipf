@@ -366,7 +366,7 @@ Function getFileAssociationsSampleEnv(fileID)
 		jj=1  // config iterator
 
 		do
-//			Execute  "ProgressWindow spin"
+			//Execute  "ProgressWindow spin"
 			xpath_config = xpath_SampleEnv + "/config[" + num2str(jj) + "]" //there may be multiple config per report
 
 			// get the positions of the s-samples (used to check if report file does not contain all samples)
@@ -732,7 +732,7 @@ Function GetTransHeaderInfoToWave()
 	
 	variable FilesAreMissing = 0
 
-//	Execute "ProgressWindow open, text=\"Loading Table...\""
+	//Execute "ProgressWindow open, text=\"Loading Table...\""
 	
 	ii = 0
 	do 
@@ -740,7 +740,7 @@ Function GetTransHeaderInfoToWave()
 		t_fname = S_path + T_Filenames[ii]
 		emp_fname = S_path + EMP_Filenames[ii]
 
-//		Execute "ProgressWindow text=\"Loading Table...\n" + S_Filenames[ii] + "\""
+		//Execute "ProgressWindow text=\"Loading Table...\n" + S_Filenames[ii] + "\""
 		
 		InsertPoints ii,1,S_Labels
 		InsertPoints ii,1,S_Transmission
@@ -815,11 +815,11 @@ Function GetTransHeaderInfoToWave()
 		endif
 		
 		ii+=1
-//		Execute  "ProgressWindow percent=" + Num2Str(100*ii/lastPoint)
+		//Execute  "ProgressWindow percent=" + Num2Str(100*ii/lastPoint)
 		
 	while(ii<lastPoint)
 	
-//	Execute "ProgressWindow close"
+	//Execute "ProgressWindow close"
 	
 	if (FilesAreMissing)
 		DoAlert /T="Warning" 0, "The files marked with \"?\" in the table could not be found.\r\n\r\nSome files listed in the XML-Catalog may be missing."

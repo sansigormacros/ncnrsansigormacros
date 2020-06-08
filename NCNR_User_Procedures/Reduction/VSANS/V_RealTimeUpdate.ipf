@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 
@@ -124,54 +125,60 @@ End
 
 //draws the RT panel and enforces bounds on the SetVariable controls for update period and timeout
 //
-Proc VSANS_RT_Panel() 
+Proc VSANS_RT_Panel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+ 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(300,350,602,580) /K=2		// force the user to close using done
+	NewPanel /W=(300*sc,350*sc,602*sc,580*sc) /K=2		// force the user to close using done
 	DoWindow/C VSANS_RT_Panel
 	DoWindow/T RT_Panel,"Real Time Display Controls"
 	ModifyPanel cbRGB=(65535,52428,6168)
 	SetDrawLayer UserBack
-	SetDrawEnv fstyle= 1
-	DrawText 26,21,"Enter values for real-time display"
-	Button bkgStart,pos={171,54},size={120,20},proc=V_UpdateHSTButton,title="Start Updating"
+	SetDrawEnv fstyle= 1,fsize=14*sc
+	DrawText 26*sc,21*sc,"Enter values for real-time display"
+	Button bkgStart,pos={sc*171,54*sc},size={sc*120,20*sc},proc=V_UpdateHSTButton,title="Start Updating"
 	Button bkgStart,help={"Starts or stops the updating of the real-time SANS image"}
-//	SetVariable setvar_0,pos={15,29},size={100,15},proc=RT_Param_SetVarProc,title="X Center"
+//	SetVariable setvar_0,pos={sc*15,29*sc},size={sc*100,15*sc},proc=RT_Param_SetVarProc,title="X Center"
 //	SetVariable setvar_0,help={"Set this to the current beamcenter x-coordinate (in pixels)"}
 //	SetVariable setvar_0,limits={0,128,0},value= root:myGlobals:RT:xCtr
-//	SetVariable setvar_1,pos={14,46},size={100,15},proc=RT_Param_SetVarProc,title="Y Center"
+//	SetVariable setvar_1,pos={sc*14,46*sc},size={sc*100,15*sc},proc=RT_Param_SetVarProc,title="Y Center"
 //	SetVariable setvar_1,help={"Set this to the current beamcenter y-coordinate (in pixels)"}
 //	SetVariable setvar_1,limits={0,128,0},value= root:myGlobals:RT:yCtr
-//	SetVariable setvar_2,pos={14,64},size={100,15},proc=RT_Param_SetVarProc,title="SDD (m)"
+//	SetVariable setvar_2,pos={sc*14,64*sc},size={sc*100,15*sc},proc=RT_Param_SetVarProc,title="SDD (m)"
 //	SetVariable setvar_2,help={"Set this to the sample-to-detector distance of the current instrument configuration"}
 //	SetVariable setvar_2,limits={0,1600,0},value= root:myGlobals:RT:SDD
-//	SetVariable setvar_3,pos={15,82},size={100,15},proc=RT_Param_SetVarProc,title="Lambda (A)"
+//	SetVariable setvar_3,pos={sc*15,82*sc},size={sc*100,15*sc},proc=RT_Param_SetVarProc,title="Lambda (A)"
 //	SetVariable setvar_3,help={"Set this to the wavelength of the current instrument configuration"}
 //	SetVariable setvar_3,limits={0,30,0},value= root:myGlobals:RT:lambda
-	SetVariable setvar_4,pos={11,31},size={150,20},proc=V_UpdateInt_SetVarProc,title="Update Interval (s)"
+	SetVariable setvar_4,pos={sc*11,31*sc},size={sc*150,20*sc},proc=V_UpdateInt_SetVarProc,title="Update Interval (s)"
 	SetVariable setvar_4,help={"This is the period of the update"}
 	SetVariable setvar_4,limits={1,3600,0},value= root:Packages:NIST:VSANS:Globals:RT:updateInt
-//	SetVariable setvar_5,pos={11,56},size={150,20},title="Timeout Interval (s)"
+//	SetVariable setvar_5,pos={sc*11,56*sc},size={sc*150,20*sc},title="Timeout Interval (s)"
 //	SetVariable setvar_5,help={"After the timeout interval has expired, the update process will automatically stop"}
 //	SetVariable setvar_5,limits={1,3600,0},value= root:myGlobals:RT:timeout
-	Button button_1,pos={170,29},size={120,20},proc=V_LoadRTButtonProc,title="Load Live Data"
+	Button button_1,pos={sc*170,29*sc},size={sc*120,20*sc},proc=V_LoadRTButtonProc,title="Load Live Data"
 	Button button_1,help={"Load the data file for real-time display"}
-	Button button_2,pos={250,2},size={30,20},proc=V_RT_HelpButtonProc,title="?"
+	Button button_2,pos={sc*250,2*sc},size={sc*30,20*sc},proc=V_RT_HelpButtonProc,title="?"
 	Button button_2,help={"Display the help file for real-time controls"}
-	Button button_3,pos={230,200},size={60,20},proc=V_RT_DoneButtonProc,title="Done"
+	Button button_3,pos={sc*230,200*sc},size={sc*60,20*sc},proc=V_RT_DoneButtonProc,title="Done"
 	Button button_3,help={"Closes the panel and stops the updating process"}
-	SetVariable setvar_6,pos={11,105},size={250,20},title="Total Detector Counts"
+	SetVariable setvar_6,pos={sc*11,105*sc},size={sc*250,20*sc},title="Total Detector Counts"
 	SetVariable setvar_6,help={"Total counts on the detector, as displayed"},noedit=1
 	SetVariable setvar_6,limits={0,Inf,0},value= root:Packages:NIST:VSANS:Globals:RT:totalCounts
-	SetVariable setvar_7,pos={11,82},size={250,20},title="                  Count Time"
+	SetVariable setvar_7,pos={sc*11,82*sc},size={sc*250,20*sc},title="                  Count Time"
 	SetVariable setvar_7,help={"Count time, as displayed"},noedit=1
 	SetVariable setvar_7,limits={0,Inf,0},value= root:Packages:NIST:VSANS:Globals:RT:countTime
-	SetVariable setvar_8,pos={11,127},size={250,20},title="  Detector Count Rate"
+	SetVariable setvar_8,pos={sc*11,127*sc},size={sc*250,20*sc},title="  Detector Count Rate"
 	SetVariable setvar_8,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_8,limits={0,Inf,0},value= root:Packages:NIST:VSANS:Globals:RT:countRate
-	SetVariable setvar_9,pos={11,149},size={250,20},title="           Monitor Counts"
+	SetVariable setvar_9,pos={sc*11,149*sc},size={sc*250,20*sc},title="           Monitor Counts"
 	SetVariable setvar_9,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_9,limits={0,Inf,0},value= root:Packages:NIST:VSANS:Globals:RT:monitorCounts
-	SetVariable setvar_10,pos={11,171},size={250,20},title="    Monitor Count Rate"
+	SetVariable setvar_10,pos={sc*11,171*sc},size={sc*250,20*sc},title="    Monitor Count Rate"
 	SetVariable setvar_10,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_10,limits={0,Inf,0},value= root:Packages:NIST:VSANS:Globals:RT:monitorCountRate
 EndMacro
@@ -179,8 +186,10 @@ EndMacro
 //
 Proc V_RT_HelpButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	DoAlert 0,"the help file has not been written yet :-("
-//	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[VSANS Real Time Data Display]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[VSANS RealTime Display]"
+	if(V_flag !=0)
+		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+	endif	
 End
 
 //close the panel gracefully, and stop the background task if necessary
@@ -511,6 +520,14 @@ End
 
 Function V_ShowOnlineReductionPanel()
 
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	//check for the path
 	PathInfo catPathName
 	if(V_Flag==0)
@@ -532,7 +549,7 @@ Function V_ShowOnlineReductionPanel()
 	
 	// panel
 	PauseUpdate; Silent 1
-	NewPanel /W=(300,350,702,481) /K=2		//K=2 to force exit using "done" button to exit the background procedure
+	NewPanel /W=(300*sc,350*sc,702*sc,481*sc) /K=2		//K=2 to force exit using "done" button to exit the background procedure
 	
 	DoWindow/C V_ORPanel
 	DoWindow/T V_ORPanel,"Online Reduction"	
@@ -542,9 +559,9 @@ Function V_ShowOnlineReductionPanel()
 	Variable groupWidth = 390
 
 	// filename
-	GroupBox group_Flename		pos={6,top},		size={groupWidth,18+26},		title="select file for online reduction:"
-	PopupMenu popup_Filename	pos={12,top+18},	size={groupWidth-12-0,20},	title=""
-	PopupMenu popup_Filename	mode=1,			value=V_GetRawDataFileList(),			bodyWidth=groupWidth-12-0
+	GroupBox group_Flename		pos={sc*6,top*sc},		size={sc*groupWidth,(18+26)*sc},		title="select file for online reduction:"
+	PopupMenu popup_Filename	pos={sc*12,(top+18)*sc},	size={sc*(groupWidth-12-0),20*sc},	title=""
+	PopupMenu popup_Filename	mode=1,			value=V_GetRawDataFileList(),			bodyWidth=sc*(groupWidth-12-0)
 	PopupMenu popup_Filename	proc=V_ORPopupSelectFileProc
 	
 	string fileList = V_GetRawDataFileList()
@@ -557,19 +574,19 @@ Function V_ShowOnlineReductionPanel()
 	top += 18+26+7
 
 	// protocol
-	GroupBox group_Protocol		pos={6,top},		size={groupWidth,18+22},		title="select protocol for online reduction:"
-	SetVariable setvar_Protocol	pos={12,top+18},	size={groupWidth-12-18,0},	title=" "
+	GroupBox group_Protocol		pos={sc*6,top*sc},		size={sc*groupWidth,(18+22)*sc},		title="select protocol for online reduction:"
+	SetVariable setvar_Protocol	pos={sc*12,(top+18)*sc},	size={sc*(groupWidth-12-18),0*sc},	title=" "
 	SetVariable setvar_Protocol	value=root:Packages:NIST:VSANS:Globals:OnlineReduction:Protocol
 	
-	Button button_SelectProtocol pos={12+groupWidth-12-18,top+18-1}, size={18,18}, title="...", proc=V_ORButtonSelectProtocolProc
+	Button button_SelectProtocol pos={sc*(12+groupWidth-12-18),(top+18-1)*sc}, size={sc*18,18*sc}, title="...", proc=V_ORButtonSelectProtocolProc
 
 	top += 18+22+7
 	Variable left = 12
 	
 	// sart, stop, done	
-	Button button_Start	pos={left + 70 * 0, top},	size={60,20},	title="Start",	proc=V_ORButtonStartProc
-	Button button_Stop	pos={left + 70 * 1, top},	size={60,20},	title="Stop",	proc=V_ORButtonStopProc,	disable=2
-	Button button_Done	pos={left + 70 * 2, top},	size={60,20},	title="Done",	proc=V_ORButtonDoneProc
+	Button button_Start	pos={sc*(left + 70 * 0), top*sc},	size={sc*60,20*sc},	title="Start",	proc=V_ORButtonStartProc
+	Button button_Stop	pos={sc*(left + 70 * 1), top*sc},	size={sc*60,20*sc},	title="Stop",	proc=V_ORButtonStopProc,	disable=2
+	Button button_Done	pos={sc*(left + 70 * 2), top*sc},	size={sc*60,20*sc},	title="Done",	proc=V_ORButtonDoneProc
 	
 end
 

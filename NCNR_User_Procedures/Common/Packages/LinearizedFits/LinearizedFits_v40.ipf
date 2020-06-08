@@ -523,7 +523,13 @@ Function DispatchModel(GoFit) : ButtonControl
 	//if the file name was too long, get the updated name. Can't guarantee that the global string set by
 	// ShortFileNameString is the currently selected data set, so make the user find the right data set
 	//
-	Variable maxLength=25
+	Variable maxLength
+	if(IgorVersion() < 8)
+		maxLength = 25
+	else
+		maxLength = 40
+	endif
+	
 	if(strlen(partialName) > maxLength)
 		// get user input, from a list of all of the data folder names
 		String dfList = sortList(GetAList(4))

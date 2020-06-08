@@ -130,6 +130,11 @@ Function BuildCatVeryShortTable()
 #endif
 
 		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+		
+		// (DONE - FEB 2020)
+	//  x- experimental hook with contextual menu
+	//		
+		SetWindow kwTopWin hook=CatTableHook, hookevents=1	// mouse down events
 	Endif
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
@@ -864,3 +869,92 @@ Function WriteCatVSToNotebook(fname,sname)
 	//temp = num2str(numatten)+", "
 	//Notebook CatWin,text=temp
 End
+
+
+//
+// TODO:
+//  this is experimental...not been tested by any users yet
+// -- FEB 2020 copied this function over from VSANS, since it was popular there
+//
+// -- what else to add to the menu? (MSK and DIV now work)
+// -- add directly to WORK files?
+// -- "set" as some special file type, intent, use? (quick "patch" operations)
+// -- "check" the reduction protocol for completeness?
+//
+// x- seems to not "let go" of a selection (missing the mouse up?)
+//    (possibly) less annoying if I only handle mouseup and present a menu then.
+//
+Function CatTableHook(infoStr)
+	String infoStr
+	String event= StringByKey("EVENT",infoStr)
+	
+	Variable ii
+	
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_path
+	
+//	Print "EVENT= ",event
+	strswitch(event)
+		case "mouseup":
+//			Variable xpix= NumberByKey("MOUSEX",infoStr)
+//			Variable ypix= NumberByKey("MOUSEY",infoStr)
+//			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
+			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"
+	
+	
+	
+
+//		root:myGlobals:CatVSHeaderInfo:Filenames	
+			WAVE/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
+			Variable err
+			strswitch(S_selection)
+				case "Load RAW":
+					GetSelection table,CatVSTable,1
+//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+					Print "Loading " + FileNames[V_StartRow]
+					ReadHeaderAndData(pathStr + FileNames[V_StartRow])	//this is the full Path+file
+//					err = V_LoadHDF5Data(FileNames[V_StartRow],"RAW")
+					if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+						// this (in SANS) just passes directly to fRawWindowHook()
+						UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+					endif
+					break
+					
+				case "Load MSK":
+					GetSelection table,CatVSTable,1
+//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+					Print "Loading " + FileNames[V_StartRow]
+					ReadMCID_MASK(pathStr + FileNames[V_StartRow])
+					Execute "maskButtonProc(\"maskButton\")"
+					
+					break
+					
+				case "Load DIV":
+					GetSelection table,CatVSTable,1
+//					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
+					Print "Loading " + FileNames[V_StartRow]
+					
+					ReadHeaderAndWork("DIV",pathStr + FileNames[V_StartRow])
+					
+					break
+				case "Send to MRED":
+					//  root:myGlobals:MRED:gFileNumList
+					SVAR/Z numList=root:myGlobals:MRED:gFileNumList
+					if(SVAR_Exists(numList))
+						GetSelection table,CatVSTable,1
+						for(ii=V_StartRow;ii<=V_endRow;ii+=1)
+	//						Print "selected " + FileNames[ii]
+							numList += fileNames[ii] + ","
+						endfor
+						// pop the menu on the mred panel
+						MREDPopMenuProc("",1,"")
+					endif
+					break
+					
+			endswitch		//popup selection
+	endswitch	// event
+	
+	return 0
+End
+

@@ -1,7 +1,9 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=0.1
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
+//
+//
 //***********************
 // NOV 2015 Vers 0.1
 //
@@ -21,10 +23,11 @@
 //
 //************************
 
-Constant kVSANSVersion = 7.93
+Constant kVSANSVersion = 7.99
 
-// TODO -- need to set up a separate file of "constants" or "globals" where the actual numbers are
-//stored. If there are not a lot, that place could be here. InitFacilityGlobals() is currently in NCNR_Utils.ipf
+// DONE -- store all of the constant values here in the initialization routine. no need
+// to set up a separate file of "constants" or "globals" where the actual numbers are
+//stored.
 
 
 // for the change in July 2017 where the beam center is now defined in cm, rather than pixels.
@@ -32,8 +35,8 @@ Constant kVSANSVersion = 7.93
 // the back detector is always treated as a beam center in pixels, since it is the natural definition
 Constant kBCTR_CM = 1			//set to 1 to use beam center in cm. O to use pixels
 
-// // TODO: -- replace this constant with V_getDet_panel_gap(fname,detStr)
-//Constant kPanelTouchingGap = 10			// TODO -- measure this gap when panels "touch", UNITS OF mm, not cm
+// // DONE: -- replace this constant with V_getDet_panel_gap(fname,detStr)
+//Constant kPanelTouchingGap = 10			// DONE -- gap when panels "touch", UNITS OF mm, not cm
 
 
 // the base data folder path where the raw data is loaded
@@ -56,7 +59,6 @@ Strconstant ksBinTypeStr = "F4-M4-B;F2-M2-B;F1-M1-B;F2-M1-B;F1-M2xTB-B;F2-M2xTB-
 Strconstant ksBinType1 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"		//these are the "active" extensions
 Strconstant ksBinType2 = "FTB;FLR;MTB;MLR;B;"
 Strconstant ksBinType3 = "FLRTB;MLRTB;B;"
-//Strconstant ksBinType4 = "FT;FB;FL;FR;MT;MB;ML;MR;B;"
 Strconstant ksBinType4 = "FL;FR;ML;MR;B;"		//in SLIT mode, disregard the T/B panels
 Strconstant ksBinType5 = "FTB;FLR;MLRTB;B;"
 Strconstant ksBinType6 = "FLRTB;MLR;B;"
@@ -190,6 +192,8 @@ Function V_InitFolders()
 	NewDataFolder/O root:Packages:NIST:VSANS:CatVSHeaderInfo
 // for the globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals
+	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
+	
 // for the raw nexus data (so I don't need to reload to get a single value)
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 
@@ -247,15 +251,17 @@ Function V_InitGlobals()
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 1
 	else
 		//either Windows or Windows NT
-		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
-		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+//		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(-59)
+//		String/G root:Packages:NIST:gAngstStr = num2char(-59)
+		String/G root:Packages:NIST:VSANS:Globals:gAngstStr = num2char(197)
+		String/G root:Packages:NIST:gAngstStr = num2char(197)
 		Variable/G root:Packages:NIST:VSANS:Globals:gIsMac = 0
 		//SetIgorOption to keep some PC's (graphics cards?) from smoothing the 2D image
 		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
 //		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
 	
-	// TODO x- find the SANS preferences, copy over and update for VSANS
+	// DONE x- find the SANS preferences, copy over and update for VSANS
 	// x- these are all in PlotUtilsMacro_v40.ipf as the preferences are set up as common
 	// to all packages. I'm not sure that I want to do this with VSANS, but make the packages
 	// separate entities. I'm seeing little benefit of the crossover, especially now that 
@@ -274,6 +280,11 @@ Function V_InitGlobals()
 	//set flag if Demo Version is detected
 	Variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
 
+
+// for testing
+// if this is set to 1, the OLD (incorrect) cos^3 solid angle will be applied to the tubes
+// and a lot of alerts will pop up...
+	Variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor = 0
 	
 	//set XML globals
 //	String/G root:Packages:NIST:gXMLLoader_Title = ""
@@ -473,7 +484,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	String fileName,path,type,creator
 
 	// clean out, so that the file SAVE is not slow due to the large experiment size
-	// TODO -- decide if this is really necessary
+	// DONE -
 //	
 //	V_CleanOutRawVSANS()
 // present a progress window

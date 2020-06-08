@@ -39,7 +39,6 @@ Proc InitializeMultReducePanel()
 	else
 		//no, create the folder and the globals
 		NewDataFolder/O root:myGlobals:MRED
-//		String/G root:myGlobals:MRED:gMRedMatchStr = "*"
 		PathInfo catPathName
 		If(V_flag==1)
 			String dum = S_path
@@ -47,26 +46,37 @@ Proc InitializeMultReducePanel()
 		else
 			String/G root:myGlobals:MRED:gCatPathStr = "no path selected"
 		endif
-		String/G root:myGlobals:MRED:gMRedList = "none"
+		String/G root:myGlobals:MRED:gMRedSampleList = "none"
+		String/G root:myGlobals:MRED:gMRedEmptyList = "none"
 		String/G root:myGlobals:MRED:gMRProtoList = "none"
-		String/G root:myGlobals:MRED:gFileNumList=""
-//		String/G root:myGlobals:MRED:gMRS1 = "no file selected"
-//		String/G root:myGlobals:MRED:gMRS2 = "no file selected"
-//		String/G root:myGlobals:MRED:gMRS3 = "no box selected"
-//		Variable/G root:myGlobals:MRED:gMRV1 =0
-//		Variable/G root:myGlobals:MRED:gMRV2 = 999
+		String/G root:myGlobals:MRED:gSampleRuns = ""
+		String/G root:myGlobals:MRED:gEmptyRuns = ""
+		String/G root:myGlobals:MRED:actSampleRuns = ""
+		String/G root:myGlobals:MRED:actEmptyRuns = ""
+		String/G root:myGLobals:MRED:gScaleEMP = ""
+		String/G root:myGlobals:MRED:actScaleEMP = ""
 	Endif 
 End
 
 //panel recreation macro for the MRED panel
 //
 Window Multiple_Reduce_Panel()
+
+	// Layout 
+	//
+	// [Pick Path] Path [      path selected      ] [?]
+	// ------------------------------------------------
+	// Sample Runs   [      sample runs ]
+	// Empty Runs    [      empty runs  ]
+	// ------------------------------------------------
+	// [Runs to Table] [SDD List] [Table to Runs]
+	// [Protocol]                   [Reduce All] [Done]
+	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(535,72,951,228) /K=1 as "Multiple File Reduction"
+	NewPanel /W=(535,72,955,237) /K=1 as "Multiple File Reduction"
 	ModifyPanel cbRGB=(65535,49151,29490)
 	ModifyPanel fixedSize=1
-	SetDrawLayer UserBack
-	DrawLine 7,30,422,30
+
 	SetVariable PathDisplay,pos={77,7},size={300,13},title="Path"
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while reducing. If no files appear in the popup, make sure that this folder is set correctly"}
 	SetVariable PathDisplay,limits={-Inf,Inf,0},value= root:myGlobals:MRED:gCatPathStr
@@ -74,27 +84,45 @@ Window Multiple_Reduce_Panel()
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
 	Button helpButton,pos={385,3},size={25,20},proc=ShowMRHelp,title="?"
 	Button helpButton,help={"Show the help file for reducing multiple files using the same protocol"}
-	PopupMenu MRFilesPopup,pos={3,72},size={167,19},proc=MRedPopMenuProc,title="File(s) to Reduce"
-	PopupMenu MRFilesPopup,help={"The displayed file is the one that will be reduced. The entire list will be reduced if \"Reduce All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh."}
-	PopupMenu MRFilesPopup,mode=1,popvalue="none",value= #"root:myGlobals:MRED:gMRedList"
-	SetVariable MRList,pos={3,48},size={350,13},proc=FileNumberListProc,title="File number list: "
-	SetVariable MRList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
-	SetVariable MRList,limits={-Inf,Inf,1},value= root:myGlobals:MRED:gFileNumList
-	Button ReduceAllButton,pos={3,128},size={180,20},proc=ReduceAllPopupFiles,title="Reduce All Files in Popup"
-	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
-	Button DoneButton,pos={280,128},size={110,20},proc=MRDoneButtonProc,title="Done Reducing"
-	Button DoneButton,help={"When done reducing files, this will close this control panel."}
-//	Button cat_short,pos={310,72},size={90,20},proc=DoCatShort,title="File Catalog"
-//	Button cat_short,help={"Use this button to generate a table with file header information. Very useful for identifying files."}
-//	Button show_cat_short,pos={280,98},size={120,20},proc=ShowCatShort_MRED,title="Show File Catalog"
-//	Button show_cat_short,help={"Use this button to bring the File Catalog window to the front."}
-	Button sddList,pos={280,72},size={120,20},proc=ScatteringAtSDDTableButton,title="Files at SDD List"
-	Button sddList,help={"Use this button to generate a table of scattering files at a given ample to detector distance."}
-	Button acceptList,pos={280,98},size={120,20},proc=AcceptMREDList,title="Accept List"
-	Button acceptList,help={"Accept the list of files to reduce."}
-	PopupMenu MRProto_pop,pos={3,98},size={119,19},proc=MRProtoPopMenuProc,title="Protocol "
+
+	SetDrawLayer UserBack
+	DrawLine 4,30,416,30
+	
+	SetVariable MRSampleList,pos={10,48},size={350,13},proc=FileNumberListProc,title = "Sample Runs:"
+	SetVariable MRSampleList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
+	SetVariable MRSampleList,limits={-Inf,Inf,1},value= root:myGlobals:MRED:gSampleRuns
+
+	SetVariable MREmptyList,pos={10,74},size={300,13},proc=FileNumberListProc,title = "Empty Runs:"
+	SetVariable MREmptyList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
+	SetVariable MREmptyList,limits={-Inf,Inf,1},value= root:myGlobals:MRED:gEmptyRuns
+
+	SetVariable MRScaleEMP,pos={320,74},size={80,13},proc=FileNumberListProc,title = "Scale:"
+	SetVariable MRScaleEMP,help={"Scale to be applied to the empty runs."}
+	SetVariable MRScaleEMP,limits={-Inf,Inf,0},value= root:myGlobals:MRED:gScaleEMP
+	
+	SetDrawLayer UserBack
+	DrawLine 4,105,416,105
+	
+	PopupMenu MRProto_pop,pos={4,112},size={120,19},proc=MRProtoPopMenuProc,title="Protocol "
 	PopupMenu MRProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
-	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:myGlobals:MRED:gMRProtoList"
+	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:myGlobals:MRED:gMRProtoList"		
+	Button ReductionTableBtn,pos={127,112},size={100,20},proc=ShowMRReductionTable,title="Runs to Table"
+	Button ReductionTableBtn,help={"Generates a table that shows the reduction files per row."}
+	Button sddList,pos={232,112},size={90,20},proc=ScatteringAtSDDTableButton,title="Files at SDD"
+	Button sddList,help={"Use this button to generate a table of scattering files at a given ample to detector distance."}
+	Button mapToRuns,pos={327,112},size={90,20},proc=MapTableToRuns,title="Table to Runs"
+	Button mapToRuns,help={"Accept the list of files to reduce."}	
+
+	//SetDrawLayer UserBack
+	//DrawLine 4,135,416,135
+	
+	Button ReduceAllButton,pos={232,140},size={120,20},proc=ReduceAllSampleFiles,title="Reduce All"
+	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
+	Button DoneButton,pos={357,140},size={60,20},proc=MRDoneButtonProc,title="Done"
+	Button DoneButton,help={"When done reducing files, this will close this control panel."}
+	
+
+
 EndMacro
 
 //simple procedure to bring the CAT TABLE to the front if it is present
@@ -108,6 +136,13 @@ Proc ShowCATWindow()
 	Endif
 End
 
+Function/S RunToQuokkaFile(num)
+	Variable num
+	
+	String fname
+	sprintf fname, "QKK%07u.nx.hdf", num
+	return (fname)
+End
 
 //function takes a list of filenames (just the name, no path , no extension)
 //that is COMMA delimited, and creates a new list that is also COMMA delimited
@@ -254,7 +289,7 @@ Function MREDPopMenuProc(MRFilesPopup,popNum,popStr) : PopupMenuControl
 
 	String list = GetValidMRedPopupList()
 //	
-	String/G root:myGlobals:MRED:gMredList = list
+	String/G root:myGlobals:MRED:gMRedSampleList = list
 	ControlUpdate MRFilesPopup
 
 End
@@ -269,7 +304,7 @@ End
 Function/S GetValidMRedPopupList()
 
 	String commaList="",semiList=""
-	SVAR numList=root:myGLobals:MRED:gFileNumList
+	SVAR numList=root:myGLobals:MRED:gSampleRuns
 	
 	commaList = ParseRunNumberList(numList)
 	//convert commaList to a semicolon delimited list
@@ -320,8 +355,130 @@ Function MRDoneButtonProc(ctrlName) : ButtonControl
 	Close/A
 	DoWindow/K Multiple_Reduce_Panel
 	
-	DoWindow/K SDDTable	
+	DoWindow/K CatMRTable	
 	KillDataFolder root:myGlobals:MRED
+End
+
+Function CreateMRTable()
+
+	Make/O/D/N=0 $"root:myGlobals:MRED:SampleRuns"
+	Make/O/T/N=0 $"root:myGlobals:MRED:EmptyRuns"
+	Make/O/T/N=0 $"root:myGlobals:MRED:Suffix"
+	Make/O/T/N=0 $"root:myGlobals:MRED:Labels"
+	Make/O/D/N=0 $"root:myGlobals:MRED:SDD"
+	Make/O/D/N=0 $"root:myGlobals:MRED:IsTrans"
+	Make/O/T/N=0 $"root:myGlobals:MRED:Scale"
+
+	SetDataFolder root:myGlobals:MRED
+	Edit SampleRuns, EmptyRuns, Scale, SDD, Labels as "Multiple Reduction Sequence"
+	DoWindow/C $"CatMRTable"
+	
+	ModifyTable format(SampleRuns)=1		//so that HFIR 8-digit numbers are interpreted correctly as integers
+	ModifyTable format(EmptyRuns)=1		//so that HFIR 8-digit numbers are interpreted correctly as integers
+	ModifyTable width(Scale)=40
+	ModifyTable width(SDD)=40
+	ModifyTable width(Labels)=180
+
+	ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+End
+
+Function ClearMRTable()
+
+	WAVE SampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	WAVE/T EmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	WAVE/T Suffix = $"root:myGlobals:MRED:Suffix"
+	WAVE/T Labels = $"root:myGlobals:MRED:Labels"
+	WAVE SDD = $"root:myGlobals:MRED:SDD"
+	WAVE IsTrans = $"root:myGlobals:MRED:IsTrans"
+	WAVE/T ScaleEMP = $"root:myGlobals:MRED:Scale"
+	
+	DeletePoints 0, numpnts(SampleRuns), SampleRuns
+	DeletePoints 0, numpnts(EmptyRuns), EmptyRuns	
+	DeletePoints 0, numpnts(ScaleEMP), ScaleEMP
+	DeletePoints 0, numpnts(Suffix), Suffix
+	DeletePoints 0, numpnts(Labels), Labels	
+	DeletePoints 0, numpnts(SDD), SDD
+	DeletePoints 0, numpnts(IsTrans), IsTrans	
+End
+
+Function ShowMRReductionTable(ctrlName) : ButtonControl
+	String ctrlName
+
+	// Builds a table that lists the reduction steps to be performed but 
+	// it needs the path to the data
+	Variable err
+	PathInfo catPathName
+	if(v_flag==0)
+		err = PickPath()		//sets the local path to the data (catPathName)
+		if(err)
+			Abort "No path to data was selected, no catalog can be made - use PickPath button"
+		Endif
+	Endif
+	
+	DoWindow/F CatMRTable
+	
+	If(V_Flag==0)
+		CreateMRTable()
+	Else
+		ClearMRTable()
+	Endif
+	
+	// Get a list of the sample and empty files from the runs
+	String sampleCSV="",emptyCSV=""
+	SVAR sampleRuns=root:myGLobals:MRED:gSampleRuns
+	SVAR emptyRuns=root:myGLobals:MRED:gEmptyRuns
+	SVAR scaleEmpty=root:myGLobals:MRED:gScaleEMP
+	
+	// reset the act runs to test need for update
+	String/G root:myGlobals:MRED:actSampleRuns = sampleRuns
+	String/G root:myGlobals:MRED:actEmptyRuns = emptyRuns
+	String/G root:myGLobals:MRED:actScaleEMP = scaleEmpty
+	
+	sampleCSV = ParseRunNumberList(sampleRuns)
+	emptyCSV = ParseRunNumberList(emptyRuns)
+	
+	// If the runs are not empty and not equal raise a warning.
+	Variable numSamples = ItemsInList(sampleCSV,",")
+	Variable numEmpty = ItemsInList(emptyCSV,",")
+	if (numSamples == 0)
+		DoAlert 0,"Specify a valid set of samples runs to run this function"
+		Return(1)
+	Endif
+	Variable fillEmpty = 0
+	if (numEmpty > 0 && numEmpty != numSamples)
+		DoAlert 1,"No 1-1 mapping to the sample runs - fill empty runs with trailing value?"
+		fillEmpty = (V_Flag == 1)
+	Endif
+	
+	Variable ix
+	String sfile, efile, spath, erun
+	String elast = ""
+	for (ix = 0; ix < numSamples; ix += 1)
+	
+		sfile = StringFromList(ix,sampleCSV,",")
+		efile = StringFromList(ix,emptyCSV,",")
+		If (ix < numEmpty)
+			elast = efile
+		Else
+			If (fillEmpty)
+				efile = elast
+			Endif
+		Endif
+		If (cmpstr(sfile,"") == 0)
+			DoAlert 0, "Empty sample run included in the list, do you wish to continue?"
+			If (V_Flag == 1)
+				continue
+			Else
+				return (1)
+			EndIf
+		Endif
+		PathInfo catPathName
+		spath = S_path + sfile
+
+		GetHeaderInfoToSDDWave(spath,sfile,efile,scaleEmpty)
+		
+	EndFor
+	
 End
 
 //button action function caled to reduce all of the files in the "file" popup
@@ -330,42 +487,92 @@ End
 //that can be reduced as a list
 // also sets the current protocol to a global accessible to the list processing routine
 //
-Function ReduceAllPopupFiles(ctrlName) : ButtonControl
+Function ReduceAllSampleFiles(ctrlName) : ButtonControl
 	String ctrlName
 	
-	//popup (and global list) is a semicolon separated list of files, WITHOUT extensions
-	//transform this list into a COMMA delimited list of FULL filenames, and then they can be processed
-	
-	SVAR semiList = root:myGlobals:MRED:gMredList
-	
-	//process each item in the list, and generate commaList
-	Variable num = ItemsInList(semiList,";" )
-	Variable ii=0
-	String commaList = "",item = ""
-	do
-		item = StringFromList(ii, semiList  ,";" )
-
-		// commaList += RunNumberListToFilenameList(item) + ","
-		commaList += item + ","
+	// Firstly confirm that there is a list of files to be processed
+	DoWindow/F CatMRTable
+	If(V_Flag==0)
+		ShowMRReductionTable(ctrlName)
+	Else
+		// check if the runs sequence or scale has changed since the table was built
+		SVAR sampleRunsStr = root:myGlobals:MRED:gSampleRuns
+		SVAR emptyRunsStr = root:myGlobals:MRED:gEmptyRuns
+		SVAR scaleEMPStr = root:myGlobals:MRED:gScaleEMP
+		SVAR sampleTblStr = root:myGlobals:MRED:actSampleRuns
+		SVAR emptyTblStr = root:myGlobals:MRED:actEmptyRuns
+		SVAR scaleTableStr = root:myGlobals:MRED:actScaleEMP
 		
-		ii+=1
-	while(ii<num)
-	//080601 - send only the comma list of filenames, not full path:name	
-	//commaList = FullNameListFromFileList(commaList)		//gets the full file names (including extension) for each item in list
-
-	//get the selected protocol, and pass as a global
+		If (cmpstr(sampleRunsStr, sampleTblStr) != 0 || cmpstr(emptyRunsStr, emptyTblStr) != 0 || cmpstr(scaleEMPStr, scaleTableStr) != 0)
+			ShowMRReductionTable(ctrlName)
+		Endif
+	Endif
+	
+	// Define a copy of the protocol after recovering the protocol from the popup.
+	// The protocol is just a text wave array. The copy just replaces the empty filename.
+	SetDataFolder root:myGlobals:Protocols
 	ControlInfo MRProto_pop
 	String protocolNameStr = S_Value
-	String/G root:myGlobals:Protocols:gMredProtoStr = "root:myGlobals:Protocols:"+protocolNameStr
+	String/G root:myGlobals:Protocols:gMRedProtoStr = "root:myGlobals:Protocols:" + protocolNameStr
+	SVAR baseProtocol = root:myGlobals:Protocols:gMRedProtoStr
 	
-	//also set this as the current protocol, for the function that writes the averaged waves
-	String/G root:myGlobals:Protocols:gProtoStr = protocolNameStr
+	WAVE/T prot = $baseProtocol
+	Duplicate/O prot copyMRedProto
+	String/G root:myGlobals:Protocols:gProtoStr = NameOfWave(copyMRedProto)
+	String actProtStr = "root:myGlobals:Protocols:" + NameOfWave(copyMRedProto)
+	WAVE/T actProt = $actProtStr
 	
-	//reduce all the files in the list here, using the global protocol(the full reference)
-	//DoReduceList is found in MultipleReduce.ipf
-	DoReduceList(commaList)
+	// Set up the list of files from the table
+	WAVE SampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	WAVE/T EmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	WAVE/T ScaleEMP = $"root:myGlobals:MRED:Scale"
 	
-	Return 0
+	// Run through the list of sample files
+	Variable ix
+	Variable numScale = numpnts(ScaleEMP)
+	Variable numSample = numpnts(SampleRuns)
+	for (ix = 0; ix < numSample; ix += 1)
+	
+		String sfile = RunToQuokkaFile(SampleRuns[ix])
+		String efile = ""
+		String erun = EmptyRuns[ix]	
+		Variable scale = 1.0
+		
+		// check if an empty file is required by the protocol
+		// replace file name if "ask" or "", skip if "none"
+		if (cmpstr(prot[1],"ask") == 0 || cmpstr(prot[1],"") == 0)
+			If (cmpstr(erun, "") != 0)
+				efile = RunToQuokkaFile(str2num(erun))
+			Endif
+			if (cmpstr(efile,"") != 0)
+				actProt[1] = efile
+			else
+				actProt[1] = prot[1]
+			Endif
+		Else
+			actProt[1] = prot[1]
+		Endif
+		// 
+		If (ix < numScale && cmpstr(ScaleEMP[ix],"") != 0)
+			scale = str2num(ScaleEMP[ix])
+			If (scale == NaN)
+				DoAlert 0, "Invalid empty scale value in the list, continue with scale = 1?"
+				If (V_Flag == 1)
+					scale = 1
+					continue
+				Else
+					return (1)
+				EndIf
+			Endif
+			actProt[7] = num2str(scale)
+		Else
+			actProt[7] = prot[7]
+		Endif		
+		ExecuteProtocol(actProtStr, sfile)
+	EndFor
+	
+	return(0)
+	
 End
 
 
@@ -528,33 +735,53 @@ End
 
 Function ScatteringAtSDDTableButton(ctrlName)
 	String ctrlName
+
+	Variable err
+	PathInfo catPathName
+	if(v_flag==0)
+		err = PickPath()		//sets the local path to the data (catPathName)
+		if(err)
+			Abort "No path to data was selected, no catalog can be made - use PickPath button"
+		Endif
+	Endif
 	
 	Execute "CreateScatteringAtSDDTable()"
 	return(0)
 End
 
-Function AcceptMREDList(ctrlName)
+Function MapTableToRuns(ctrlName)
 	String ctrlName
 	
-	SVAR/Z list = root:myGlobals:MRED:gFileNumList
-	if(SVAR_Exists(list)==0)		//check for myself
+	// maps the sample and empty in the table to the runs
+	SVAR/Z slist = root:myGlobals:MRED:gSampleRuns
+	SVAR/Z elist = root:myGLobals:MRED:gEmptyRuns
+	if(SVAR_Exists(slist)==0 || SVAR_Exists(elist) == 0)		//check for myself
 		DoAlert 0,"The Multiple Reduce Panel must be open for you to use this function"
 		Return(1)
 	endif
 	
-	// convert the wave to a comma-delimited List
-	wave/Z numW = $"root:myGlobals:MRED:RunNumber"
-	if(waveExists(numW)==0 || numpnts(numW)==0)
-		DoAlert 0, "Generate a list of files at a specific detector distance using the Files at SDD List button"
-		return(0)
-	Endif
+	// convert the sample runs
+	Wave/Z sruns = $"root:myGlobals:MRED:SampleRuns"
+	slist = RunListToSequence(sruns, 0)
 	
-	list = NumWave2IntegerCommaList(numW)
+	// the empty runs is a string list so convert to a list of numbers and use 
+	// 0 as the empty value
+	Wave/T/Z eruns = $"root:myGlobals:MRED:EmptyRuns"
+	Variable ix, num = numpnts(eruns)
+	MAKE/U/O/N=(num) temp 
+	for (ix = 0; ix < num; ix += 1)
+		String run = eruns[ix]
+		if (cmpstr(run,"") != 0)
+			temp[ix] = str2num(run)
+		else
+			temp[ix] = 0
+		endif
+	endfor
+	elist = RunListToSequence(temp, 0)
 	
-	//force an update If the SVAR exists, then the panel does too - MRED cleans up after itself when done
-	DoWindow/F Multiple_Reduce_Panel			//bring to front
-	MRedPopMenuProc("MRFilesPopup",0,"")		//parse the list, pop the menu
-	
+	// copy the act run list to the table
+	String/G root:myGlobals:MRED:actSampleRuns = slist
+	String/G root:myGlobals:MRED:actEmptyRuns = elist
 	
 	return(0)
 End
@@ -564,26 +791,12 @@ Proc CreateScatteringAtSDDTable(SDD_to_Filter)
 	Variable SDD_to_Filter
 	
 	NewDataFolder/O root:myGlobals:MRED
-	DoWindow/F SDDTable
-	
-	Make/O/T/N=0 $"root:myGlobals:MRED:Filenames"
-	Make/O/T/N=0 $"root:myGlobals:MRED:Suffix"
-	Make/O/T/N=0 $"root:myGlobals:MRED:Labels"
-	Make/O/D/N=0 $"root:myGlobals:MRED:SDD"
-	Make/O/D/N=0 $"root:myGlobals:MRED:RunNumber"
-	Make/O/D/N=0 $"root:myGlobals:MRED:IsTrans"
-
+	DoWindow/F CatMRTable
 	If(V_Flag==0)
-		SetDataFolder root:myGlobals:MRED
-		Edit Labels, SDD, runNumber as "Scattering at SDD"
-		DoWindow/C $"SDDTable"
-		
-		ModifyTable width(SDD)=40
-		ModifyTable width(Labels)=180
-		ModifyTable format(RunNumber)=1		//so that HFIR 8-digit numbers are interpreted correctly as integers
-		
-		ModifyTable width(Point)=0		//JUN04, remove point numbers - confuses users since point != run
+		CreateMRTable()
 		SetDataFolder root:
+	Else
+		ClearMRTable()
 	Endif
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
@@ -628,7 +841,8 @@ Proc CreateScatteringAtSDDTable(SDD_to_Filter)
 				notRAWlist[lastPoint]=tempname
 			else
 				//go write the header information to the Notebook
-				GetHeaderInfoToSDDWave(fullName,tempName)
+				GetHeaderInfoToSDDWave(fullName,tempName,"","")
+				// add the scale factor
 			Endif
 		Endif
 		ii+=1
@@ -656,12 +870,12 @@ End
 //
 Function RemoveLabeledFromSDDList(findThisStr)
 	String findThisStr
-	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
-	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
-	Wave/T labels = $"root:myGlobals:MRED:Labels"
-	Wave sdd = $"root:myGlobals:MRED:SDD"
-	Wave runnum = $"root:myGlobals:MRED:RunNumber"
-	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	WAVE SampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	WAVE/T EmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	WAVE/T Suffix = $"root:myGlobals:MRED:Suffix"
+	WAVE/T Labels = $"root:myGlobals:MRED:Labels"
+	WAVE SDD = $"root:myGlobals:MRED:SDD"
+	WAVE IsTrans = $"root:myGlobals:MRED:IsTrans"
 	
 	Variable num=numpnts(Labels),ii,loc
 	ii=num-1
@@ -669,7 +883,7 @@ Function RemoveLabeledFromSDDList(findThisStr)
 		loc = strsearch(labels[ii], findThisStr, 0 ,2)		//2==case insensitive, but Igor 5 specific
 		if(loc != -1)
 			Print "Remove w[ii] = ",num,"  ",labels[ii]
-			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+			DeletePoints ii, 1, SampleRuns,EmptyRuns,Suffix,Labels,SDD,IsTrans
 		endif
 		ii-=1
 	while(ii>=0)
@@ -681,44 +895,44 @@ End
 Function RemoveWrongSDDFromSDDList(tSDD)
 	Variable tSDD
 	
-	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
-	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
-	Wave/T labels = $"root:myGlobals:MRED:Labels"
-	Wave sdd = $"root:myGlobals:MRED:SDD"
-	Wave runnum = $"root:myGlobals:MRED:RunNumber"
-	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	WAVE SampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	WAVE/T EmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	WAVE/T Suffix = $"root:myGlobals:MRED:Suffix"
+	WAVE/T Labels = $"root:myGlobals:MRED:Labels"
+	WAVE SDD = $"root:myGlobals:MRED:SDD"
+	WAVE IsTrans = $"root:myGlobals:MRED:IsTrans"
 	
 	Variable num=numpnts(sdd),ii,tol = 0.1
 	ii=num-1
 	do
 //		if(abs(sdd[ii] - tSDD) > tol)		//if numerically more than 0.001 m different, they're not the same
-//			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+//			DeletePoints ii, 1, SampleRuns,EmptyRuns,Suffix,Labels,SDD,IsTrans
 //		endif
 		if(trunc(abs(sdd[ii] - tSDD)) > tol)		//just get the integer portion of the difference - very coarse comparison
-			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+			DeletePoints ii, 1, SampleRuns,EmptyRuns,Suffix,Labels,SDD,IsTrans
 		endif
 		ii-=1
 	while(ii>=0)
 	
 	// now sort
-	Sort RunNum, 	filenames,suffix,labels,sdd,runnum,isTrans
+	Sort SampleRuns, SampleRuns,EmptyRuns,Suffix,Labels,SDD,IsTrans
 	return(0)
 End
 
 
 Function RemoveTransFilesFromSDDList()
-	Wave/T filenames = $"root:myGlobals:MRED:Filenames"
-	Wave/T suffix = $"root:myGlobals:MRED:Suffix"
-	Wave/T labels = $"root:myGlobals:MRED:Labels"
-	Wave sdd = $"root:myGlobals:MRED:SDD"
-	Wave runnum = $"root:myGlobals:MRED:RunNumber"
-	Wave isTrans = $"root:myGlobals:MRED:IsTrans"
+	WAVE SampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	WAVE/T EmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	WAVE/T Suffix = $"root:myGlobals:MRED:Suffix"
+	WAVE/T Labels = $"root:myGlobals:MRED:Labels"
+	WAVE SDD = $"root:myGlobals:MRED:SDD"
+	WAVE IsTrans = $"root:myGlobals:MRED:IsTrans"
 	
 	Variable num=numpnts(isTrans),ii
 	ii=num-1
 	do
 		if(isTrans[ii] != 0)
-			DeletePoints ii, 1, filenames,suffix,labels,sdd,runnum,isTrans
+			DeletePoints ii, 1, SampleRuns,EmptyRuns,Suffix,Labels,SDD,IsTrans
 		endif
 		ii-=1
 	while(ii>=0)
@@ -729,24 +943,38 @@ End
 //fname is the full path for opening (and reading) information from the file
 //which alreay was found to exist. sname is the file;vers to be written out,
 //avoiding the need to re-extract it from fname.
-Function GetHeaderInfoToSDDWave(fname,sname)
-	String fname,sname
+Function GetHeaderInfoToSDDWave(fname,sname,ename, empscale)
+	String fname,sname,ename,empscale
 	
 	String textstr,temp,lbl,date_time,suffix
 	Variable ctime,lambda,sdd,detcnt,cntrate,refNum,trans,thick,xcenter,ycenter,numatten
 	Variable lastPoint, beamstop
 
-	Wave/T GFilenames = $"root:myGlobals:MRED:Filenames"
 	Wave/T GSuffix = $"root:myGlobals:MRED:Suffix"
 	Wave/T GLabels = $"root:myGlobals:MRED:Labels"
 	Wave GSDD = $"root:myGlobals:MRED:SDD"
-	Wave GRunNumber = $"root:myGlobals:MRED:RunNumber"
+	Wave GSampleRuns = $"root:myGlobals:MRED:SampleRuns"
+	Wave/T GEmptyRuns = $"root:myGlobals:MRED:EmptyRuns"
+	Wave/T GScaleEMP = $"root:myGlobals:MRED:Scale"
 	Wave GIsTrans = $"root:myGlobals:MRED:IsTrans"
 	
-	lastPoint = numpnts(GLambda)
+	lastPoint = numpnts(GSampleRuns)
 		
-	InsertPoints lastPoint,1,GFilenames
-	GFilenames[lastPoint]=sname
+	//the run number
+	InsertPoints lastPoint,1,GSampleRuns
+	GSampleRuns[lastPoint] = GetRunNumFromFile(sname)
+
+	//the empty runs are left as text as they may be empty
+	InsertPoints lastPoint,1,GEmptyRuns
+	If (cmpstr(ename,"")!= 0) 
+		GEmptyRuns[lastPoint] = num2istr(GetRunNumFromFile(ename))
+	Else
+		GEmptyRuns[lastPoint] = ""
+	EndIf
+	
+	// add the scale factor 
+	InsertPoints lastPoint,1,GScaleEMP
+	GScaleEMP[lastPoint] = empscale
 	
 	//read the file suffix
 	InsertPoints lastPoint,1,GSuffix
@@ -759,11 +987,7 @@ Function GetHeaderInfoToSDDWave(fname,sname)
 	//read in the SDD
 	InsertPoints lastPoint,1,GSDD
 	GSDD[lastPoint]= getSDD(fname)
-
-	//the run number (not displayed in the table, but carried along)
-	InsertPoints lastPoint,1,GRunNumber
-	GRunNumber[lastPoint] = GetRunNumFromFile(sname)
-
+		
 	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
 	InsertPoints lastPoint,1,GIsTrans
 	GIsTrans[lastPoint]  = isTransFile(fname)		//returns one if beamstop is "out"

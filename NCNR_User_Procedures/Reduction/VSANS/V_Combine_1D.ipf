@@ -1,6 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
-
+#pragma IgorVersion = 7.00
 
 
 
@@ -36,6 +36,12 @@
 //
 Proc V_CombineDataGraph()
 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 // this is the "initialization" step
 	NewDataFolder/O root:ToTrim
 	
@@ -45,39 +51,43 @@ Proc V_CombineDataGraph()
 	String detStr
 		
 	if(V_flag==0)
+			
+		if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+			Display/W=(100*sc,40*sc,700*sc,590*sc)/N=V_1D_Combine /K=2
+		else
+			Display /W=(277,526,879,1069)/N=V_1D_Combine /K=2
+		endif
 
-		Display /W=(277,526,879,1069)/N=V_1D_Combine /K=2
-
-		ControlBar 70
+		ControlBar 70*sc
 		ModifyGraph cbRGB=(44000,44000,44000)
 		
-//		Button button2,pos={15,5},size={70,20},proc=V_Load_ITX_button,title="Load Data"
+//		Button button2,pos={sc*15,5*sc},size={sc*70,20*sc},proc=V_Load_ITX_button,title="Load Data"
 //		Button button2,help={"Load an ITX file"}
 		
-//		PopupMenu popup1,pos={125,5},size={90,20},title="Data Folder"
+//		PopupMenu popup1,pos={sc*125,5*sc},size={sc*90,20*sc},title="Data Folder"
 //		PopupMenu popup1,help={"data folder"}
 //		PopupMenu popup1,value= GetAList(4),proc=V_DataFolderPlotPop
 		
-		PopupMenu popup0,pos={15,5},size={70,20},title="Bin Type"
+		PopupMenu popup0,pos={sc*15,5*sc},size={sc*70,20*sc},title="Bin Type"
 		PopupMenu popup0,help={"binning type"}
 		PopupMenu popup0,value= ksBinTypeStr,proc=V_DataBinTypePlotPop
 
-		Button button3,pos={544.00,5},size={30.00,20.00},title="?"
-		Button button3,help={"help file for combining 1D data"}
+		Button button3,pos={sc*544.00,5*sc},size={sc*30.00,20.00*sc},title="?"
+		Button button3,proc=V_ShowCombine1DHelp,help={"help file for combining 1D data"}
 
-		CheckBox check0,pos={18.00,36.00},size={57.00,16.00},proc=V_Plot1D_LogCheckProc,title="Log Axes"
+		CheckBox check0,pos={sc*18.00,36.00*sc},size={sc*57.00,16.00*sc},proc=V_Plot1D_LogCheckProc,title="Log Axes"
 		CheckBox check0,value= 1
 
-		Button AllQ,pos={100,36},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={sc*100,36*sc},size={sc*70,20*sc},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
-		Button button1,pos={225,36},size={140,20},proc=V_TrimWaves2StringButton,title="Save Trim Points"
+		Button button1,pos={sc*225,36*sc},size={sc*140,20*sc},proc=V_TrimWaves2StringButton,title="Save Trim Points"
 		Button button1,help={"Convert the waves to global strings"}
 		
-//		Button button4,pos={388,36},size={90.00,20.00},title="Trim & Save"
+//		Button button4,pos={sc*388,36*sc},size={sc*90.00,20.00*sc},title="Trim & Save"
 //		Button button4,help={"combine and save 1D data"},proc=V_SaveTrimmed_Button
 		
-		Button button0,pos={524,36},size={70,20},proc=V_DoneCombine1D_ButtonProc,title="Done"
+		Button button0,pos={sc*524,36*sc},size={sc*70,20*sc},proc=V_DoneCombine1D_ButtonProc,title="Done"
 		Button button0,help={"Close the panel and kill the temporary folder"}
 				
 		Legend/C/N=text0/J/X=72.00/Y=60.00
@@ -128,6 +138,15 @@ Proc V_CombineDataGraph()
 		
 End
 
+
+Function V_ShowCombine1DHelp(ctrlName) : ButtonControl
+	String ctrlName
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Combine 1D Files]"
+	if(V_flag !=0)
+		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+	endif
+	return(0)
+End
 
 // function that is a simple dependency, and updates the trimmed waves
 // that are displayed

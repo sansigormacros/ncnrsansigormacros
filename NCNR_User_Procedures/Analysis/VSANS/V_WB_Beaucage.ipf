@@ -277,17 +277,17 @@ Function V_fOneLevelWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	loLim = 3.37/kWhiteBeam_Mean
+	upLim = 8.37/kWhiteBeam_Mean
 	
 	inten = V_IntegrOneLevelWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -320,7 +320,7 @@ Function V_integrand_OneLevelWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*OneLevelX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*OneLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -349,17 +349,17 @@ Function V_fTwoLevelWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	loLim = 3.37/kWhiteBeam_Mean
+	upLim = 8.37/kWhiteBeam_Mean
 	
 	inten = V_IntegrTwoLevelWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -392,7 +392,7 @@ Function V_integrand_TwoLevelWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*TwoLevelX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*TwoLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -421,17 +421,17 @@ Function V_fThreeLevelWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	loLim = 3.37/kWhiteBeam_Mean
+	upLim = 8.37/kWhiteBeam_Mean
 	
 	inten = V_IntegrThreeLevelWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -464,7 +464,7 @@ Function V_integrand_ThreeLevelWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*ThreeLevelX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*ThreeLevelX(cw,qq/dum)
 	
 	return (val)
 End
@@ -495,17 +495,17 @@ Function V_fFourLevelWB(w,x) :FitFunc
 	
 	// define limits based on lo/mean, hi/mean of the wavelength distribution
 	// using the empirical definition, "middle" of the peaks
-	loLim = 3.37/5.3
-	upLim = 8.37/5.3
+	loLim = 3.37/kWhiteBeam_Mean
+	upLim = 8.37/kWhiteBeam_Mean
 	
 	inten = V_IntegrFourLevelWB_mid(w,loLim,upLim,x)
 
 // why do I need this? Is this because this is defined as the mean of the distribution
 //  and is needed to normalize the integral? verify this on paper.	
-	inten *= 5.3
+	inten *= kWhiteBeam_Mean
 
 // normalize the integral	
-	inten /= 19933		// "middle"  of peaks
+	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
 // additional normalization???
 	inten /= 1.05		// 
@@ -538,7 +538,7 @@ Function V_integrand_FourLevelWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*5.3)*FourLevelX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*FourLevelX(cw,qq/dum)
 	
 	return (val)
 End

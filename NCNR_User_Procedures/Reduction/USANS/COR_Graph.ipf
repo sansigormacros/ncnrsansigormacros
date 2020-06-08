@@ -63,10 +63,10 @@ Function DoCORGraph()
 		CheckBox EMPCheck,help={"Selects EMP data as the saved type"}
 		Button qpkButton,pos={12,61},size={90,20},proc=QpkButtonProc,title="Change Qpk"
 		Button qpkButton,help={"Use this to override the automatically determined peak locations in SAM or EMP datasets"}
-		ValDisplay valdispSAM,pos={10,15},size={100,14},title="Qpk SAM",format="%1.3f"
+		ValDisplay valdispSAM,pos={10,15},size={100,14},title="Qpk SAM",format="%1.3g"
 		ValDisplay valdispSAM,limits={0,0,0},barmisc={0,1000},value=QpkFromNote("SAM")
 		ValDisplay valdispSAM,help={"Displays the peak angle the raw SAM data, determined automatically"}
-		ValDisplay valdispEMP,pos={10,36},size={100,14},title="Qpk EMP",format="%1.3f"
+		ValDisplay valdispEMP,pos={10,36},size={100,14},title="Qpk EMP",format="%1.3g"
 		ValDisplay valdispEMP,limits={0,0,0},barmisc={0,1000},value=QpkFromNote("EMP")
 		ValDisplay valdispEMP,help={"Displays the peak angle the raw EMP data, determined automatically"}
 	

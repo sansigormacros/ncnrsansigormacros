@@ -1,22 +1,27 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 
-
+//
 //
 //****************************
 //
-
+//
 
 Menu "VSANS"
 	"Initialize",Initialize_VSANS()
 	"VSANS Help"
 	"-"
-	"Main Control Panel",DoWindow/F Main_VSANS_Panel
-	"Data Display",DoWindow/F VSANS_Data
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
+	"Turn Laptop Mode ON",V_SetLaptopMode()
+	"-"
+	Submenu "Find Windows"
+		"Data Catalog",DoWindow/F CatVSANSTable
+		"Main Control Panel",DoWindow/F Main_VSANS_Panel
+		"Data Display",DoWindow/F VSANS_Data
+	End
 	"-"
 	Submenu "Data Panels"
 		"Patch Beam Center XY",V_PatchDet_xyCenters_Panel()
@@ -26,11 +31,12 @@ Menu "VSANS"
 		"Display Temperature Sensors",V_InitSensorGrapn()
 		"-"
 		"Show Mask for Averaging",V_Display_Four_Panels()
-//		"Annular Binning",Annular_Binning()
+//		"Annular Binning",V_Annular_Binning()
 //		"Write Annular Data",V_Write1DAnnular()
 //		"Trim I(q) points",V_CombineDataGraph()
 		"-"
 		"Derive Beam Centers From Reference",V_DeriveBeamCenters()
+		"Derive Beam Centers From Open Beam Files",V_AutoBeamCenter()
 		"-"
 		"Back Detector Saturation",Vm_NumberSaturated()
 		"Median Filter Back Det",pV_MedianFilterBack()
@@ -48,9 +54,12 @@ Menu "VSANS"
 //		"Patch Detector Panel Gap",V_PatchDet_Gap()
 //		"Read Detetcor Panel Gap",V_ReadDet_Gap()
 		"Patch Detector Distance",V_PatchDet_Distance()
-		"Patch XY Pixel Size",V_Patch_XYPixelSize()
+		"Patch XY Pixel Size (M,F)",V_Patch_XYPixelSize()
+		"Patch XY Pixel Size (B)",V_Patch_Back_XYPixelSize()
+		"Patch Wavelength",V_Patch_Wavelength()
+		"Patch Monochromator Type",V_Patch_MonochromatorType()
 		"-"
-		"Patch Back Detector Values",V_Patch_Back_Detector()
+//		"Patch Back Detector Values",V_Patch_Back_Detector()
 		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()
 		"Patch Beam Stop",V_Patch_BeamStop()
 		"Patch Sample Aperture",V_Patch_SampleAperture2()
@@ -58,7 +67,7 @@ Menu "VSANS"
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
 		"-"
-		"Copy_VCALC_to_VSANSFile",Copy_VCALC_to_VSANSFile()
+		"Copy_VCALC_to_VSANS_File",Copy_VCALC_to_VSANSFile()
 		"-"
 		"Read_Nexus with attributes",Read_Nexus_Xref()		//this will read with attributes
 		"Write_Nexus with attributes",Write_Nexus_Xref()				//this will write out with attributes if read in by Read_Nexus_Xref
@@ -150,8 +159,8 @@ xMenu "SANS"
 End
 
 Function VSANSHelp()
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation"
 	if(V_flag !=0)
-		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found, because it has not yet been written"
+		DoAlert 0,"The VSANS Data Reduction Help file could not be found"
 	endif
 End

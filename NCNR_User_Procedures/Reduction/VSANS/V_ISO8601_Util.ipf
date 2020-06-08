@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 //
 // The general format of the time string is:
@@ -44,9 +45,9 @@
 //
 
 //
-// Call w/ DateTime as the argument
+// Call w/ DateTime as the argument as V_CurrentTime_to_ISO8601String(DateTime)
 //
-// TODO -- verify that this is correct
+// DONE -- verify that this is correct
 Function/S V_CurrentTime_to_ISO8601String(now)
 	Variable now
 	
@@ -70,7 +71,7 @@ End
 //
 // "The DateTime function returns number of seconds from 1/1/1904 to the current date and time."
 //
-// TODO -- verify that this is correct, since I'm not actually parsing the string, but rather
+// DONE -- verify that this is correct, since I'm not actually parsing the string, but rather
 // counting on the string to be EXACTLY the correct format
 //
 Function V_ISO8601_to_IgorTime(ISOstr)

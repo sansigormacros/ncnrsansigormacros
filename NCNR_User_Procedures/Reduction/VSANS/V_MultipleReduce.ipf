@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 //*************************
 //
@@ -61,40 +61,47 @@ End
 //panel recreation macro for the MRED panel
 //
 Window V_Multiple_Reduce_Panel()
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(535,72,951,228) /K=1 as "Multiple VSANS File Reduction"
+	NewPanel /W=(535*sc,72*sc,951*sc,228*sc) /K=1 as "Multiple VSANS File Reduction"
 	ModifyPanel cbRGB=(64535,49151,48490)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 7,30,422,30
-	SetVariable PathDisplay,pos={77,7},size={300,13},title="Path"
+	DrawLine 7*sc,30*sc,422*sc,30*sc
+	SetVariable PathDisplay,pos={sc*77,7*sc},size={sc*300,13*sc},title="Path"
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while reducing. If no files appear in the popup, make sure that this folder is set correctly"}
 	SetVariable PathDisplay,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:MRED:gCatPathStr
-	Button PathButton,pos={3,3},size={70,20},proc=V_PickMRPathButton,title="Pick Path"
+	Button PathButton,pos={sc*3,3*sc},size={sc*70,20*sc},proc=V_PickMRPathButton,title="Pick Path"
 	Button PathButton,help={"Select the folder containing the raw SANS data files"}
-	Button helpButton,pos={385,3},size={25,20},proc=V_ShowMRHelp,title="?"
+	Button helpButton,pos={sc*385,3*sc},size={sc*25,20*sc},proc=V_ShowMRHelp,title="?"
 	Button helpButton,help={"Show the help file for reducing multiple files using the same protocol"}
-	PopupMenu MRFilesPopup,pos={3,72},size={167,19},proc=V_MRedPopMenuProc,title="File(s) to Reduce"
+	PopupMenu MRFilesPopup,pos={sc*3,72*sc},size={sc*167,19*sc},proc=V_MRedPopMenuProc,title="File(s) to Reduce"
 	PopupMenu MRFilesPopup,help={"The displayed file is the one that will be reduced. The entire list will be reduced if \"Reduce All..\" is selected. \r If no items, or the wrong items appear, click on the popup to refresh."}
 	PopupMenu MRFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:MRED:gMRedList"
-	SetVariable MRList,pos={3,48},size={350,13},proc=V_FileNumberListProc,title="File number list: "
+	SetVariable MRList,pos={sc*3,48*sc},size={sc*350,13*sc},proc=V_FileNumberListProc,title="File number list: "
 	SetVariable MRList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
 	SetVariable MRList,limits={-Inf,Inf,1},value= root:Packages:NIST:VSANS:Globals:MRED:gFileNumList
-	Button ReduceAllButton,pos={3,128},size={180,20},proc=V_ReduceAllPopupFiles,title="Reduce All Files in Popup"
+	Button ReduceAllButton,pos={sc*3,128*sc},size={sc*180,20*sc},proc=V_ReduceAllPopupFiles,title="Reduce All Files in Popup"
 	Button ReduceAllButton,help={"This will reduce ALL of the files in the popup list, not just the top file."}
-//	Button ReduceOneButton,pos={3,98},size={180,20},proc=V_ReduceTopPopupFile,title="Reduce Top File in Popup"
+//	Button ReduceOneButton,pos={sc*3,98*sc},size={sc*180,20*sc},proc=V_ReduceTopPopupFile,title="Reduce Top File in Popup"
 //	Button ReduceOneButton,help={"This will reduce TOP files in the popup list, not all of the files."}
-	Button DoneButton,pos={290,128},size={110,20},proc=V_MRDoneButtonProc,title="Done Reducing"
+	Button DoneButton,pos={sc*290,128*sc},size={sc*110,20*sc},proc=V_MRDoneButtonProc,title="Done Reducing"
 	Button DoneButton,help={"When done reducing files, this will close this control panel."}
-	Button cat_short,pos={310,72},size={90,20},proc=V_ShowCatShort_MRED,title="File Catalog"
+	Button cat_short,pos={sc*310,72*sc},size={sc*90,20*sc},proc=V_ShowCatShort_MRED,title="File Catalog"
 	Button cat_short,help={"Use this button to generate a table with file header information. Very useful for identifying files."}
-//	Button show_cat_short,pos={280,98},size={120,20},proc=ShowCatShort_MRED,title="Show File Catalog"
+//	Button show_cat_short,pos={sc*280,98*sc},size={sc*120,20*sc},proc=ShowCatShort_MRED,title="Show File Catalog"
 //	Button show_cat_short,help={"Use this button to bring the File Catalog window to the front."}
-//	Button sddList,pos={280,72},size={120,20},proc=ScatteringAtSDDTableButton,title="Files at SDD List"
+//	Button sddList,pos={sc*280,72*sc},size={sc*120,20*sc},proc=ScatteringAtSDDTableButton,title="Files at SDD List"
 //	Button sddList,help={"Use this button to generate a table of scattering files at a given ample to detector distance."}
-//	Button acceptList,pos={280,98},size={120,20},proc=AcceptMREDList,title="Accept List"
+//	Button acceptList,pos={sc*280,98*sc},size={sc*120,20*sc},proc=AcceptMREDList,title="Accept List"
 //	Button acceptList,help={"Accept the list of files to reduce."}
-	PopupMenu MRProto_pop,pos={3,98},size={119,19},proc=V_MRProtoPopMenuProc,title="Protocol "
+	PopupMenu MRProto_pop,pos={sc*3,98*sc},size={sc*119,19*sc},proc=V_MRProtoPopMenuProc,title="Protocol "
 	PopupMenu MRProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
 	PopupMenu MRProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:MRED:gMRProtoList"
 EndMacro
@@ -196,7 +203,7 @@ End
 Proc V_ShowMRHelp(ctrlName) : ButtonControl
 	String ctrlName
 
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[Reduce Multiple Files]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[Reduce Multiple Files]"
 	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
 	endif

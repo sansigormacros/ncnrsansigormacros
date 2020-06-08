@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 // to properly set up the template for other facility reduction templates, 
 // function NCNR_VSANS() must exist here in the Includes file.
@@ -18,6 +19,8 @@ End
 #include "NIST_XML_v40"
 #include "NIST_NXcanSAS_v709"
 #include "USANS_SlitSmearing_v40"
+
+#include "V_PlotUtils2D_VSANS"			// basic loaders for the QxQyASCII exported VSANS data
 
 //
 //#include "NCNR_Utils"		//needed to load linear fits, mostly VAX file name junk
@@ -126,8 +129,11 @@ End
 #include "V_DummyFunctions"
 // VSANS Analysis functions (under Analysis trunk, not Reduction)
 #include "V_WB_BroadPeak"
+#include "V_SWB_BroadPeak"
 #include "V_WB_GaussSpheres"
+#include "V_SWB_GaussSpheres"
 #include "V_WB_Beaucage"
+#include "V_SWB_Beaucage"
 
 
 #include "V_Utilities_Comparisons"

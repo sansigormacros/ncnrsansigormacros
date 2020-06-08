@@ -598,7 +598,7 @@ Function/S Auto_CalcKappa(runNum)
 		
 	DoWindow/K SANS_Data
 
-	Printf "Kappa was successfully calculated as = %g +/- %g (%g %)\r",kappa,kappa_err,(kappa_err/kappa)*100
+	Printf "Kappa was successfully calculated as = %g +/- %g (%g %%)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	
 	SVAR kapStr = root:myGlobals:Protocols:gAbsStr	
 	

@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 // April 2019
 // routines to read + plot the data in the temperature_env block
@@ -35,22 +36,43 @@ Function V_InitSensorGraph()
 		Legend
 		Label left,"Sensor Value"
 		Label bottom,"Time (s)"
+		
+		STRUCT WMPopupAction pa
+		pa.eventCode=2
+		pa.popStr="RAW"
+		V_WorkFolderPopMenuProc(pa)
 	endif
 	
 	return(0)
 End
 
 
-Window V_SensorGraph() : Graph
+Proc V_SensorGraph() : Graph
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	Display /W=(1500,350,2300,750)/N=V_SensorGraph/K=1
+//	Display /W=(1500,350,2300,750)/N=V_SensorGraph/K=1
+//	ControlBar/L 300
+		
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		Display /W=(600*sc,50*sc,1050*sc,600*sc)/N=V_SensorGraph/K=1
+		ControlBar/T 300*sc
+	else
+		Display /W=(600,50,1050,780)/N=V_SensorGraph/K=1
+		ControlBar/T 380
+	endif
+	
 //	ShowTools/A
-	ControlBar/L 300
-	PopupMenu popup0,pos={10.00,10.00},size={87.00,23.00},proc=V_WorkFolderPopMenuProc,title="folder"
+	PopupMenu popup0,pos={sc*10.00,10.00*sc},size={sc*87.00,23.00*sc},proc=V_WorkFolderPopMenuProc,title="folder"
 	PopupMenu popup0,mode=1,popvalue="RAW",value= #"\"RAW;SAM;ABS;\""
-	PopupMenu popup1,pos={10.00,40.00},size={84.00,23.00},proc=V_SensorPopMenuProc,title="sensor"
+	PopupMenu popup1,pos={sc*10.00,40.00*sc},size={sc*84.00,23.00*sc},proc=V_SensorPopMenuProc,title="sensor"
 	PopupMenu popup1,mode=1,popvalue="pick folder",value= root:Packages:NIST:VSANS:Globals:gSensorFolders
-	TitleBox title0,pos={10.00,80.00},size={25.00,19.00},fSize=10,variable=root:Packages:NIST:VSANS:Globals:gSensorMetaData
+	TitleBox title0,pos={sc*10.00,80.00*sc},size={sc*25.00,19.00*sc},fSize=10,variable=root:Packages:NIST:VSANS:Globals:gSensorMetaData
 EndMacro
 
 

@@ -3,8 +3,10 @@
 #pragma IgorVersion=6.1
 
 
-//#if( exists("XmlOpenFile") && exists("NCNR_VSANS") )
-#if( exists("XmlOpenFile") )
+// condtional compile to keep the XML functions from compiling
+// if the XOP was not loaded. dummy function are defined instead
+
+#if (exists("XmlOpenFile"))
 
 #include "cansasXML", version >= 1.10
 
@@ -820,7 +822,7 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	SetDataFolder root:		//(redundant)
 	
 	//write confirmation of write operation to history area
-	Print "Averaged XML File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "Averaged XML File written: ", XML_GetFileNameFromPathNoSemi(fullPath)
 	KillWaves/Z tempShortProto
 	Return(0)
 End
@@ -1065,7 +1067,7 @@ Function ReWrite1DXMLData(folderStr)
 	
 	writeNISTXML(fullpath,nf)
 	//write confirmation of write operation to history area
-	Print "XML File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "XML File written: ", XML_GetFileNameFromPathNoSemi(fullPath)
 	KillWaves/Z tempShortProto
 	
 	SetDataFolder root:
@@ -1073,10 +1075,10 @@ Function ReWrite1DXMLData(folderStr)
 	Return(0)
 End
 
+#else
+// the dummy definitions for the case where the XML XOP doesn't exist
 
 
-
-#else	// if( Exists("XmlOpenFile") )
 	// No XMLutils XOP: provide dummy function so that IgorPro can compile dependent support code
 //	FUNCTION LoadNISTXMLData(fileName,doPlot)
 //	    String fileName
@@ -1085,6 +1087,10 @@ End
 //	    RETURN(-6)
 //	END
 
+	Function XMLMissingAbort()
+		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
+	 	RETURN(-6)
+	End
 
 	Function LoadNISTXMLData(filestr,outStr,doPlot,forceOverwrite)
 		String filestr,outStr
@@ -1103,12 +1109,40 @@ End
 		return("")
 	end		
 
+	Function XmlOpenFile(fileName)
+		String fileName
+		
+		Return XMLMissingAbort()
+	End
+	
+	Function XmlCloseFile(fileid, arg)
+		Variable fileid, arg
+		
+		Return XMLMissingAbort()
+	End
+
+	Function XMLWaveFmXpath(fileid, arg1, arg2, arg3)
+		Variable fileid
+		String arg1, arg2, arg3
+		
+		Return XMLMissingAbort()
+	End
+
+	Function XMLListXPath(fileid, arg1, arg2)
+		Variable fileid
+		String arg1, arg2
+		
+		Return XMLMissingAbort()
+	End
+	
 	Function WriteNISTXML(fileName, NISTfile)
-		String fileName, NISTfile
+		String fileName
+		Struct NISTXMLfile &NISTfile
+		
 		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 	 	RETURN(-6)
 	End
-	
+
 	Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 		String type,fullpath
 		Variable dialog		//=1 will present dialog for name
@@ -1147,9 +1181,14 @@ End
 		Abort  "XML function provided by XMLutils XOP is not available, get the XOP from : http://www.igorexchange.com/project/XMLutils (see http://www.smallangles.net/wgwiki/index.php/cansas1d_binding_IgorPro for details)"
 		return(-6)
 	end	
-	
-	
-#endif
+
+#endif   
+
+
+
+/// these functions always compile whether the XMLxop exists or not
+
+
 
 //AJJ 12/5/08
 
@@ -1245,3 +1284,37 @@ Function isXML(filestr)
 	return GrepString(line, "(?iU).*\<.*xml.*")	
 
 end
+
+
+//**** a simple duplication of GetFileNameFromPathNoSemi so that VSANS will not 
+// accidentaly try to compile the XML block and fail since VSANS version is named
+// V_GetFileNameFromPathNoSemi
+//
+//returns a string containing filename (WITHOUT the ;vers)
+//the input string is a full path to the file (Mac-style, still works on Win in IGOR)
+//with the folders separated by colons
+//
+// called by MaskUtils.ipf, ProtocolAsPanel.ipf, WriteQIS.ipf
+//
+Function/S XML_GetFileNameFromPathNoSemi(fullPath)
+	String fullPath
+	
+	Variable offset1,offset2
+	String filename=""
+	//String PartialPath
+	offset1 = 0
+	do
+		offset2 = StrSearch(fullPath, ":", offset1)
+		if (offset2 == -1)				// no more colons ?
+			fileName = FullPath[offset1,strlen(FullPath) ]
+			//PartialPath = FullPath[0, offset1-1]
+			break
+		endif
+		offset1 = offset2+1
+	while (1)
+	
+	//remove version number from name, if it's there - format should be: filename;N
+	filename =  StringFromList(0,filename,";")		//returns null if error
+	
+	Return filename
+End

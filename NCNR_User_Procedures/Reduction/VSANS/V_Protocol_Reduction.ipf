@@ -1,7 +1,7 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=5.0
-#pragma IgorVersion=7
+#pragma IgorVersion = 7.00
 
 //************************
 
@@ -519,14 +519,24 @@ Function V_MakeProtocolFromPanel(w)
 	
 	//w[7]
 	// beginning trim points
+	// if null, then write out the default trim string to the protocol so that it will be used if recalled
 	SVAR gBegPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
-	w[7] = gBegPtsStr
+	if(strlen(gBegPtsStr)==0)
+		w[7] = ksBinTrimBegDefault
+	else
+		w[7] = gBegPtsStr
+	endif
 	
 	//w[8]
 	// End trim points
-	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr	
-	w[8] = gEndPtsStr
-	
+	// if null, then write out the default trim string to the protocol so that it will be used if recalled
+	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
+	if(strlen(gEndPtsStr)==0)
+		w[8] = ksBinTrimEndDefault
+	else
+		w[8] = gEndPtsStr
+	endif
+
 	//w[9]
 	//collimation type (filled in at averaging?)
 	w[9] = ""
@@ -1032,114 +1042,121 @@ End
 //the panel recreation macro
 //
 Window V_ProtocolPanel()
+
+	Variable sc = 1
+
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(1280,332,1630,932) /K=1 as "VSANS Reduction Protocol"
-	ModifyPanel cbRGB=(56589,50441,50159), fixedSize=1
+	NewPanel /W=(1180*sc,332*sc,1530*sc,932*sc) /K=1 as "VSANS Reduction Protocol"
+	ModifyPanel cbRGB=(56589,50441,50159)//, fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 3,65,301,65
-	DrawLine 3,157,301,157
-	DrawLine 3,208,301,208
-	DrawLine 3,257,301,257
-	DrawLine 3,305,301,305
-	DrawLine 3,350,301,350
-	DrawLine 3,445,301,445
-	DrawLine 3,513,301,513
-	DrawLine 3,396,301,396
+	DrawLine 3,65*sc,301*sc,65*sc
+	DrawLine 3,157*sc,301*sc,157*sc
+	DrawLine 3,208*sc,301*sc,208*sc
+	DrawLine 3,257*sc,301*sc,257*sc
+	DrawLine 3,305*sc,301*sc,305*sc
+	DrawLine 3,350*sc,301*sc,350*sc
+	DrawLine 3,445*sc,301*sc,445*sc
+	DrawLine 3,513*sc,301*sc,513*sc
+	DrawLine 3,396*sc,301*sc,396*sc
 
 //
-	Button button_help,pos={300,2},size={25,20},proc=V_ShowProtoHelp,title="?"
+	Button button_help,pos={sc*300,2*sc},size={sc*25,20*sc},proc=V_ShowProtoHelp,title="?"
 	Button button_help,help={"Show the help file for setting up a reduction protocol"}
-	Button button_quest,pos={20,2},size={150,20},proc=V_ProtocolQuestionnaire,title="Questions"
-	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
-	Button button_quest,disable=2
+//	Button button_quest,pos={sc*20,2*sc},size={sc*150,20*sc},proc=V_ProtocolQuestionnaire,title="Questions"
+//	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
+//	Button button_quest,disable=2
 
 
-	PopupMenu popup_sam,pos={85,68},size={51,23},proc=V_SAMFilePopMenuProc
+	PopupMenu popup_sam,pos={sc*85,68*sc},size={sc*51,23*sc},proc=V_SAMFilePopMenuProc
 	PopupMenu popup_sam,mode=1,value= #"V_getSAMList()"	
-	PopupMenu popup_bkg,pos={85,164},size={51,23},proc=V_BKGFilePopMenuProc
+	PopupMenu popup_bkg,pos={sc*85,164*sc},size={sc*51,23*sc},proc=V_BKGFilePopMenuProc
 	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
-	PopupMenu popup_emp,pos={85,213},size={51,23},proc=V_EMPFilePopMenuProc
+	PopupMenu popup_emp,pos={sc*85,213*sc},size={sc*51,23*sc},proc=V_EMPFilePopMenuProc
 	PopupMenu popup_emp,mode=1,value= #"V_getEMPList()"
-	PopupMenu popup_div,pos={85,263},size={51,23},proc=V_DIVFilePopMenuProc
+	PopupMenu popup_div,pos={sc*85,263*sc},size={sc*51,23*sc},proc=V_DIVFilePopMenuProc
 	PopupMenu popup_div,mode=1,value= #"V_getDIVList()"
-	PopupMenu popup_msk,pos={85,356},size={51,23},proc=V_MSKFilePopMenuProc
+	PopupMenu popup_msk,pos={sc*85,356*sc},size={sc*51,23*sc},proc=V_MSKFilePopMenuProc
 	PopupMenu popup_msk,mode=1,value= #"V_getMSKList()"	
 		
 		
-	CheckBox prot_check,pos={6,163},size={74,14},title="Background"
+	CheckBox prot_check,pos={sc*6,163*sc},size={sc*74,14*sc},title="Background"
 	CheckBox prot_check,help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check,value= 1
-	CheckBox prot_check_1,pos={6,215},size={71,14},title="Empty Cell"
+	CheckBox prot_check_1,pos={sc*6,215*sc},size={sc*71,14*sc},title="Empty Cell"
 	CheckBox prot_check_1,help={"If checked, the specified empty cell file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_1,value= 1
-	CheckBox prot_check_2,pos={6,263},size={72,14},title="Sensitivity"
+	CheckBox prot_check_2,pos={sc*6,263*sc},size={sc*72,14*sc},title="Sensitivity"
 	CheckBox prot_check_2,help={"If checked, the specified detector sensitivity file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_2,value= 1
-	CheckBox prot_check_3,pos={6,356},size={43,14},title="Mask"
+	CheckBox prot_check_3,pos={sc*6,356*sc},size={sc*43,14*sc},title="Mask"
 	CheckBox prot_check_3,help={"If checked, the specified mask file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_3,value= 1
-	CheckBox prot_check_4,pos={6,70},size={53,14},title="Sample"
+	CheckBox prot_check_4,pos={sc*6,70*sc},size={sc*53,14*sc},title="Sample"
 	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_4,value= 1
-	CheckBox prot_check_5,pos={6,399},size={56,14},title="Average"
+	CheckBox prot_check_5,pos={sc*6,399*sc},size={sc*56,14*sc},title="Average"
 	CheckBox prot_check_5,help={"If checked, the specified averaging will be performed at the end of the data reduction."}
 	CheckBox prot_check_5,value= 1	
-	CheckBox prot_check_9,pos={6,310},size={59,14},title="Absolute"
+	CheckBox prot_check_9,pos={sc*6,310*sc},size={sc*59,14*sc},title="Absolute"
 	CheckBox prot_check_9,help={"If checked, absolute calibration will be included in the data reduction. If the parameter list is \"ask\", then the user will be prompted for absolue parameters"}
 	CheckBox prot_check_9,value= 1
 	
 
-//	Button pick_sam,pos={214,28},size={70,20},proc=V_PickSAMButton,title="set SAM"
+//	Button pick_sam,pos={sc*214,28*sc},size={sc*70,20*sc},proc=V_PickSAMButton,title="set SAM"
 //	Button pick_sam,help={"This button will set the file selected in the File Catalog table to be the sample file"}	
-//	Button pick_bgd,pos={214,75},size={70,20},proc=V_PickBGDButton,title="set BGD"
+//	Button pick_bgd,pos={sc*214,75*sc},size={sc*70,20*sc},proc=V_PickBGDButton,title="set BGD"
 //	Button pick_bgd,help={"This button will set the file selected in the File Catalog table to be the background file."}
-//	Button pick_emp,pos={214,125},size={70,20},proc=V_PickEMPButton,title="set EMP"
+//	Button pick_emp,pos={sc*214,125*sc},size={sc*70,20*sc},proc=V_PickEMPButton,title="set EMP"
 //	Button pick_emp,help={"This button will set the file selected in the File Catalog table to be the empty cell file."}
-//	Button pick_DIV,pos={214,173},size={70,20},proc=V_PickDIVButton,title="set DIV"
+//	Button pick_DIV,pos={sc*214,173*sc},size={sc*70,20*sc},proc=V_PickDIVButton,title="set DIV"
 //	Button pick_DIV,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button pick_ABS,pos={264,308},size={80,20},proc=V_SetABSParamsButton,title="set ABS MF"
+	Button pick_ABS,pos={sc*264,308*sc},size={sc*80,20*sc},proc=V_SetABSParamsButton,title="set ABS MF"
 	Button pick_ABS,help={"This button will prompt the user for absolute scaling parameters"}	
 	
-	Button pick_ABS_B,pos={264,330},size={80,20},proc=V_SetABSParamsButton,title="set ABS B"
+	Button pick_ABS_B,pos={sc*264,330*sc},size={sc*80,20*sc},proc=V_SetABSParamsButton,title="set ABS B"
 	Button pick_ABS_B,help={"This button will prompt the user for absolute scaling parameters"}	
-//	Button pick_MASK,pos={214,266},size={70,20},proc=V_PickMASKButton,title="set MASK"
+//	Button pick_MASK,pos={sc*214,266*sc},size={sc*70,20*sc},proc=V_PickMASKButton,title="set MASK"
 //	Button pick_MASK,help={"This button will set the file selected in the File Catalog table to be the mask file."}
 
 
-	Button pick_AVE,pos={188,401},size={150,20},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
+	Button pick_AVE,pos={sc*188,401*sc},size={sc*150,20*sc},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
 	Button pick_AVE,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
 
 	
-	Button pick_trim,pos={264,454},size={70,20},proc=V_TrimDataProtoButton,title="Trim"
+	Button pick_trim,pos={sc*264,454*sc},size={sc*70,20*sc},proc=V_TrimDataProtoButton,title="Trim"
 	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
 	
 	
-	SetVariable samStr,pos={6,90},size={250,15},title="file:"
+	SetVariable samStr,pos={sc*6,90*sc},size={sc*250,15*sc},title="file:"
 	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
 	SetVariable samStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gSAM		
-	SetVariable bgdStr,pos={7,186},size={250,15},title="file:"
+	SetVariable bgdStr,pos={sc*7,186*sc},size={sc*250,15*sc},title="file:"
 	SetVariable bgdStr,help={"Filename of the background file(s) to be used in the data reduction"}
 	SetVariable bgdStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gBGD
-	SetVariable empStr,pos={8,236},size={250,15},title="file:"
+	SetVariable empStr,pos={sc*8,236*sc},size={sc*250,15*sc},title="file:"
 	SetVariable empStr,help={"Filename of the empty cell file(s) to be used in the data reduction"}
 	SetVariable empStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gEMP
-	SetVariable divStr,pos={9,285},size={250,15},title="file:"
+	SetVariable divStr,pos={sc*9,285*sc},size={sc*250,15*sc},title="file:"
 	SetVariable divStr,help={"Filename of the detector sensitivity file to be used in the data reduction"}
 	SetVariable divStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gDIV
-	SetVariable maskStr,pos={9,377},size={250,15},title="file:"
+	SetVariable maskStr,pos={sc*9,377*sc},size={sc*250,15*sc},title="file:"
 	SetVariable maskStr,help={"Filename of the mask file to be used in the data reduction"}
 	SetVariable maskStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gMASK
-	SetVariable absStr,pos={7,331},size={250,15},title="parameters:"
+	SetVariable absStr,pos={sc*7,331*sc},size={sc*250,15*sc},title="parameters:"
 	SetVariable absStr,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
 	SetVariable absStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-	SetVariable aveStr,pos={9,424},size={250,15},title="parameters:"
+	SetVariable aveStr,pos={sc*9,424*sc},size={sc*250,15*sc},title="parameters:"
 	SetVariable aveStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
 	SetVariable aveStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gAVE
 
-	SetVariable begStr,pos={9,464},size={250,15},title="Beg Trim:"
+	SetVariable begStr,pos={sc*9,464*sc},size={sc*250,15*sc},title="Beg Trim:"
 	SetVariable begStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
 	SetVariable begStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
-	SetVariable endStr,pos={9,484},size={250,15},title="End Trim:"
+	SetVariable endStr,pos={sc*9,484*sc},size={sc*250,15*sc},title="End Trim:"
 	SetVariable endStr,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
 	SetVariable endStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
 
@@ -1147,27 +1164,27 @@ Window V_ProtocolPanel()
 	
 	//only show DRK if user wants to see it 
 	//if global = 1,then show => set disable = 0
-//	CheckBox prot_check_6,pos={6,363},size={113,14},proc=DrkCheckProc,title="Use DRK correction"
+//	CheckBox prot_check_6,pos={sc*6,363*sc},size={sc*113,14*sc},proc=DrkCheckProc,title="Use DRK correction"
 //	CheckBox prot_check_6,help={"If checked, the selected file will be used for DRK correction. Typically this is NOT checked"}
 //	CheckBox prot_check_6,value= 0,disable = (!root:Packages:NIST:gAllowDRK)
-//	SetVariable drkStr,pos={120,363},size={150,15},title="."
-//	SetVariable drkStr,help={"DRK detector count file"},disable = (!root:Packages:NIST:gAllowDRK)
+//	SetVariable drkStr,pos={sc*120,363*sc},size={sc*150,15*sc},title="."
+//	SetVariable drkStr,help={"DRK detector count file"*sc},disable = (!root:Packages:NIST:gAllowDRK)
 //	SetVariable drkStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gDRK
 
 
-	Button export_button, size={120,20},pos={125,540},title="Export to Data",proc=V_ExportFileProtocol
+	Button export_button, size={sc*120,20*sc},pos={sc*125,540*sc},title="Export to Data",proc=V_ExportFileProtocol
 	Button export_button, help={"Exports the protocol to data file on disk for Importing into another experiment"}
-	Button import_button, size={120,20},pos={125,562},title="Import from Data",proc=V_ImportFileProtocol
+	Button import_button, size={sc*120,20*sc},pos={sc*125,562*sc},title="Import from Data",proc=V_ImportFileProtocol
 	Button import_button,help={"Imports a protocol from a data file on disk for use in this experiment"}
-	Button recallProt,pos={7,540},size={107,20},proc=V_RecallProtocolButton,title="Recall Protocol"
+	Button recallProt,pos={sc*7,540*sc},size={sc*107,20*sc},proc=V_RecallProtocolButton,title="Recall Protocol"
 	Button recallProt,help={"Resets the panel to the file choices in  a previously saved protocol"}
-	Button del_protocol,pos={7,562},size={110,20},proc=V_DeleteProtocolButton,title="Delete Protocol"
+	Button del_protocol,pos={sc*7,562*sc},size={sc*110,20*sc},proc=V_DeleteProtocolButton,title="Delete Protocol"
 	Button del_protocol,help={"Use this to delete a previously saved protocol."}
-	Button done_protocol,pos={285,562},size={45,20},proc=V_DoneProtocolButton,title="Done"
+	Button done_protocol,pos={sc*285,562*sc},size={sc*45,20*sc},proc=V_DoneProtocolButton,title="Done"
 	Button done_protocol,help={"This button will close the panel. The panel can be recalled at any time from the SANS menu."}
-	Button saveProtocol,pos={7,518},size={100,20},proc=V_SaveProtocolButton,title="Save Protocol"
+	Button saveProtocol,pos={sc*7,518*sc},size={sc*100,20*sc},proc=V_SaveProtocolButton,title="Save Protocol"
 	Button saveProtocol,help={"Saves the cerrent selections in the panel to a protocol which can be later recalled"}
-	Button ReduceOne,pos={240,518},size={100,20},proc=V_ReduceOneButton,title="Reduce A File"
+	Button ReduceOne,pos={sc*240,518*sc},size={sc*100,20*sc},proc=V_ReduceOneButton,title="Reduce A File"
 	Button ReduceOne,help={"Using the panel selections, the specified sample file will be reduced. If none is specified, the user will be prompted for a sample file"}
 
 EndMacro
@@ -1297,9 +1314,9 @@ End
 
 Function V_ShowProtoHelp(ctrlName) : ButtonControl
 	String ctrlName
-	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Tutorial[VSANS Reduction Protocol]"
+	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation[VSANS Reduction Protocol]"
 	if(V_flag !=0)
-		DoAlert 0,"The VSANS Data Reduction Tutorial Help file could not be found"
+		DoAlert 0,"The VSANS Data Reduction Help file could not be found"
 	endif
 End
 
@@ -2358,6 +2375,12 @@ Function V_ExecuteProtocol(protStr,samStr)
 //    local variable samFileLoaded is the file name loaded (contains the extension)
 //
 // V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
+//
+// this step does more than save...
+// - trims the selected points from the data set
+// - concatenates the data sets
+// - removes NaN points and removes duplicate q-values by averaging q-values that are within 0.1% of each other
+//
 
 	prot[9] = collimationStr
 
@@ -2625,7 +2648,13 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 		pixel_y = V_getDet_y_pixel_size("RAW",detPanel_toSum)
 		pixel_y /= 10		//convert mm to cm, since sdd in cm
 		sdd = V_getDet_ActualDistance("RAW",detPanel_toSum)
-		
+
+//
+// ** this kappa is different than for SANS!!
+//
+// don't use the solid angle here -- the data (COR) that this factor is applied to will already be
+// converted to counts per solid angle per pixel
+//
 //		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel_x*pixel_y/sdd^2)
 		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
 		
@@ -2665,19 +2694,28 @@ end
 
 Function V_SelectABS_XYBox(x1,x2,y1,y2)
 	Variable &x1,&x2,&y1,&y2
-	
+
+
+	Variable sc = 1
+
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+
 	Variable err=0
 	
 	Variable/G root:V_marquee=1		//sets the sneaky bit to automatically update marquee coords
 	Variable/G root:V_left,root:V_right,root:V_bottom,root:V_top	//must be global for auto-update
 	DoWindow/F SANS_Data
-	NewPanel/K=2 /W=(139,341,382,432) as "Select the primary beam"
+	NewPanel/K=2 /W=(139*sc,341*sc,382*sc,432*sc) as "Select the primary beam"
 	DoWindow/C junkWindow
 	AutoPositionWindow/E/M=1/R=SANS_Data
 	
-	Drawtext 21,20 ,"Select the primary beam with the"
-	DrawText 21,40, "marquee and press continue"
-	Button button0,pos={80,58},size={92,20},title="Continue"
+	Drawtext 21*sc,20*sc ,"Select the primary beam with the"
+	DrawText 21*sc,40*sc, "marquee and press continue"
+	Button button0,pos={sc*80,58*sc},size={sc*92,20*sc},title="Continue"
 	Button button0,proc=V_UserSelectBox_Continue
 	
 	PauseForUser junkWindow,SANS_Data
@@ -2708,15 +2746,23 @@ Function V_SelectABS_XYBox(x1,x2,y1,y2)
 End
 
 Function V_UseStdOrEmpForABS()
-		
-	NewPanel/K=2 /W=(139,341,402,448) as "Absolute Scaling"
+
+	Variable sc = 1
+
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+
+	NewPanel/K=2 /W=(139*sc,341*sc,402*sc,448*sc) as "Absolute Scaling"
 	DoWindow/C junkABSWindow
 	ModifyPanel cbRGB=(57346,65535,49151)
 	SetDrawLayer UserBack
-	SetDrawEnv fstyle= 1
-	DrawText 21,20,"Method of absolute calibration"
-	Button button0,pos={52,33},size={150,20},proc=V_UserSelectABS_Continue,title="Empty Beam Flux"
-	Button button1,pos={52,65},size={150,20},proc=V_UserSelectABS_Continue,title="Secondary Standard"
+	SetDrawEnv fstyle= 1,fsize=12*sc
+	DrawText 21*sc,20*sc,"Method of absolute calibration"
+	Button button0,pos={sc*52,33*sc},size={sc*150,20*sc},proc=V_UserSelectABS_Continue,title="Empty Beam Flux"
+	Button button1,pos={sc*52,65*sc},size={sc*150,20*sc},proc=V_UserSelectABS_Continue,title="Secondary Standard"
 	
 	PauseForUser junkABSWindow
 	NVAR val = root:Packages:NIST:VSANS:Globals:tmpAbsVal
@@ -3276,7 +3322,10 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 	String saveType = StringByKey("SAVE",avgStr,"=",";")		//does user want to save data?
 	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 
-	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
+	NVAR gIgnoreBackDet = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+
+	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )
 		//then save
 		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
 		
@@ -3341,39 +3390,47 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 //					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 //				endif
 //
-				
+
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
 					V_Trim1DDataStr(activeType,binType,trimBegStr,trimEndStr)			// x- passing null strings uses global or default trim values
 
 					V_ConcatenateForSave("root:Packages:NIST:VSANS:",activeType,"",binType)		// this removes q=0 point, concatenates, sorts
 				
+				// RemoveDuplicateQvals -- this step:
+				// --removes NaN values
+				// -- averages intensity from q-values that are within 0.1% of each other
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
 					if (useNXcanSASOutput == 1)
 						exten = "h5"
 						V_WriteNXcanSAS1DData("root:Packages:NIST:VSANS:",activeType,fullPath+".h5")	// pass the full path here
+					    Print "data written to:  "+ fullPath+".h5"
 					else
 						V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+					    Print "data written to:  "+ newFileName+"."+exten
 					EndIf
-				
+
 				endif
 				
 				if(cmpstr(saveType,"Yes - Individual")==0)
 					// remove the q=0 point from the back detector, if it's there
 					// does not trim any other points from the data
-					V_RemoveQ0_B(activeType)
-					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+					if(!gIgnoreBackDet)
+						V_RemoveQ0_B(activeType)
+					endif
+//					V_Write1DData_ITX("root:Packages:NIST:VSANS:",activeType,newFileName,binType)
+
+					V_Write1DData_Individual("root:Packages:NIST:VSANS:",activeType,newFileName,exten,binType)
 				endif
-				Print "data written to:  "+ newFileName+"."+exten
 
 				break
 	
 				
-				case "2D_ASCII":
+			case "2D_ASCII":
 //				Fast2DExport(activeType,fullPath,dialog)
 				break
 			case "QxQy_ASCII":
-				fullPath = S_Path + newFileName+".DAT"
+				fullPath = S_Path + newFileName  //+".DAT"		add the .DAT and detector panel in the writer, not here
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
 				break
 			case "QxQy_NXcanSAS":

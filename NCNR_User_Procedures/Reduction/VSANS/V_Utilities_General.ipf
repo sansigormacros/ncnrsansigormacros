@@ -1,5 +1,6 @@
 #pragma TextEncoding = "MacRoman"		// For details execute DisplayHelpTopic "The TextEncoding Pragma"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 //
 //		general utilities
@@ -176,10 +177,18 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 	
 	// there are some folders to kill, so proceed
 	
-	NewPanel /N=ProgressPanel /W=(285,111,739,193)
-	ValDisplay valdisp0,win=ProgressPanel,pos={18,32},size={342,18},limits={0,num,0},barmisc={0,0}
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+	NewPanel /N=ProgressPanel /W=(285*sc,111*sc,739*sc,193*sc)
+	ValDisplay valdisp0,win=ProgressPanel,pos={sc*18,32*sc},size={sc*342,18*sc},limits={0,num,0},barmisc={0,0}
 	ValDisplay valdisp0,win=ProgressPanel,value= _NUM:0
-	DrawText 20,24,"Cleaning up old files... Please Wait..."
+	DrawText 20*sc,24*sc,"Cleaning up old files... Please Wait..."
 	
 	if( indefinite )
 		ValDisplay valdisp0,win=ProgressPanel,mode= 4	// candy stripe
@@ -189,7 +198,7 @@ Function V_CleanupData_w_Progress(indefinite, useIgorDraw)
 	if( useIgorDraw )
 		ValDisplay valdisp0,win=ProgressPanel,highColor=(15000,45535,15000)		//(0,65535,0)
 	endif
-	Button bStop,win=ProgressPanel,pos={375,32},size={50,20},title="Stop"
+	Button bStop,win=ProgressPanel,pos={sc*375,32*sc},size={sc*50,20*sc},title="Stop"
 	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
 
 	do
@@ -370,6 +379,9 @@ Function/S V_DoSaveFileDialog(msg,[fname,suffix])
 				//Print "modified  ",outputPath
 			endif
 			//if(V_flag==2)  do nothing, let it go around again
+		else
+			// length is OK, set the output path, exit loop and return
+			outputPath = testStr
 		endif
 		
 	while(badLength)
@@ -1568,7 +1580,50 @@ Function V_ColorizeSaturated()
 	ModifyImage data ctab= {0,16399*16-1,ColdWarm,0},minRGB=0,maxRGB=(32792,65535,1)
 End
 
-
-
 ///
+
+
+Function V_PrintLoHiNum()
+
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)
+	Print "lo = ",lo
+	Print "hi = ",hi
+	
+End
+
+//
+// returns the lo, hi run numbers in the current directory
+// (passed by reference)
+//
+//
+// note that 1111 (is a special number for the ReadNoise file, ignore this run)
+//
+Function V_Find_LoHi_RunNum(lo,hi)
+	Variable &lo,&hi
+	
+	String fileList="",fname=""
+	Variable ii,num,runNum
+	
+	// set to values that will change
+	lo = 1e8
+	hi = 0
+	
+	// get a file listing of all raw data files
+	fileList = V_GetRawDataFileList()
+	num = itemsInList(fileList)
+	
+	for(ii=0;ii<num;ii+=1)
+		fname = stringFromList(ii,fileList)
+		runNum = V_GetRunNumFromFile(fname)
+
+		if(runNum != 1111)		//ignore this run
+			lo = runNum < lo ? runNum : lo		// if runNum < lo, update
+			hi = runNum > hi ? runNum : hi		// if runNum > hi, update
+		endif
+	endfor
+	
+	return(0)
+End
+
 

@@ -1,4 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
+#pragma IgorVersion = 7.00
 
 
 // TODO
@@ -639,40 +640,33 @@ end
 // -- this is still all in terms of pixels, which still may not be what I want
 // -- the x-scale of the T/B panels is artificially compressed to "fake" 4mm per pixel in x-direction
 //
-// Nominal center is 0,0
-//
 Function V_RescaleToNominalCenter(folderStr,detStr,xCtr,yCtr)
 	String folderStr,detStr
 	Variable xCtr,yCtr
-	
-//	xCtr = 0
-//	yCtr = 0
+
 	
 	Wave w = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+detStr+":data")
 	
 	Variable nPix = 128
 	Variable nTubes = 48
 	Variable offset = 0
-	Variable pixSizeX,pixSizeY
+	Variable pixSizeX,pixSizeY,yOff,xOff
 	
 	strswitch(detStr)	// string switch
 		case "MT":		// top panels
 		case "FT":
-//			SetScale/I x -xCtr,npix-xCtr,"",w
-			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
-			pixSizeY = 0.84
-			yCtr = -(offset/pixSizeY) 
+//			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+//			pixSizeY = 0.84
+//			yOff = -(offset/pixSizeY) 		// offset is already taken into account with the beam center
 			
-			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w		// fake 4mm by compressing the scale
+			SetScale/I x -xCtr/2,(nPix-xCtr)/2,"",w		// fake 4mm by compressing the scale
 			SetScale/I y -yCtr,nTubes-yCtr,"",w
 			break						// exit from switch
 		case "MB":		// bottom panels
 		case "FB":
-//			SetScale/I x -xCtr,npix-xCtr,"",w
-
-			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
-			pixSizeY = 0.84
-			yCtr = nTubes-(offset/pixSizeY) 
+//			offset = V_getDet_VerticalOffset(folderStr,detStr)		//in cm
+//			pixSizeY = 0.84
+//			yOff = nTubes-(offset/pixSizeY) 
 			
 			SetScale/I x -xCtr/2,(npix-xCtr)/2,"",w
 			SetScale/I y -yCtr,nTubes-yCtr,"",w
@@ -680,25 +674,25 @@ Function V_RescaleToNominalCenter(folderStr,detStr,xCtr,yCtr)
 			
 		case "ML":		// left panels
 		case "FL":
-			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
-			pixSizeX = 0.84
-			xCtr = nTubes-(offset/pixSizeX)
+//			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+//			pixSizeX = 0.84
+//			xOff = nTubes-(offset/pixSizeX)
 			
 			SetScale/I x -xCtr,nTubes-xCtr,"",w
 			SetScale/I y -yCtr,npix-yCtr,"",w
 			break						// exit from switch
 		case "MR":		// Right panels
 		case "FR":
-			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
-			pixSizeX = 0.84
-			xCtr = -(offset/pixSizeX)
+//			offset = V_getDet_LateralOffset(folderStr,detStr)		//in cm
+//			pixSizeX = 0.84
+//			xOff = -(offset/pixSizeX)
 		
 			SetScale/I x -xCtr,nTubes-xCtr,"",w
 			SetScale/I y -yCtr,npix-yCtr,"",w
 			break						// exit from switch
 					
 		default:							// optional default expression executed
-			Print "Error in V_RescaleToBeamCenter()"
+			Print "Error in V_RescaleToNominalCenter()"
 	endswitch
 	
 	return(0)
@@ -960,9 +954,9 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	newYCtr_cm[6] = y_MiddleReference + kBCtrOffset_MT_y
 	
 	
-	// default value for B
-	newXCtr_cm[8] = 50
-	newYCtr_cm[8] = 50
+	// default value for B (approx center) in pixels
+	newXCtr_cm[8] = 340
+	newYCtr_cm[8] = 828
 
 		
 	return
@@ -1076,3 +1070,193 @@ Function V_MakeCorrelationMatrix()
 
 	return(0)
 End
+
+
+
+//////////////////////
+// different way to get the corrected beam centers
+//
+// find the centroid for each file with the marquee as usual
+// then run the macro (to pick each open beam file name)
+// - values for centroid are read from the file
+//
+// - patch xy panel is filled in
+//
+//
+Function V_AutoBeamCenter()
+
+	String emptyFileName_F="",emptyFileName_M="",emptyFileName_B=""
+	
+	
+	NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	
+
+// TODO -- can I auto-identify which is the F, M, B?
+// -- can I determine whether the reference beam center has been found already?
+// -- since the centroid was already picked, can the file be flagged at this time?
+// -- is it easier to have a single panel with three popups? or just two??
+//
+
+//
+// - to figure out which is F, M, B
+// try WaveMax(root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MR:data)
+// and pick the panel with the largest value
+//
+// or display the file label along with the file name
+//
+//
+	
+// get the file names	
+	Prompt emptyFileName_F,"Empty Beam File, Front Carriage",popup,V_PickEMPBeamButton("")
+	DoPrompt "Select File",emptyFileName_F
+	if (V_Flag)
+		return 0									// user canceled
+	endif
+
+	Prompt emptyFileName_M,"Empty Beam File, Middle Carriage",popup,V_PickEMPBeamButton("")
+	DoPrompt "Select File",emptyFileName_M
+	if (V_Flag)
+		return 0									// user canceled
+	endif
+
+	if(!gIgnoreBack)
+		Prompt emptyFileName_B,"Empty Beam File, Back Carriage",popup,V_PickEMPBeamButton("")
+		DoPrompt "Select File",emptyFileName_B
+		if (V_Flag)
+			return 0									// user canceled
+		endif
+	endif
+
+// read the values from the Reduction/comment block
+// "XREF=%g;YREF=%g;"
+	String refStr=""
+	Variable xRef_F,xRef_M,xRef_B
+	Variable yRef_F,yRef_M,yRef_B
+
+
+	//force a cleanup of these three data sets so they are read from disk
+	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_F, ".", 0, 0))
+	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_M, ".", 0, 0))
+	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_B, ".", 0, 0))
+
+//
+// TODO -- need to verify that the values are actually good
+// -- if they aren't, I need to do something about this...
+//
+	
+	refStr = V_getReductionComments(emptyFileName_F)
+	xRef_F = NumberByKey("XREF", refStr ,"=",";")
+	yRef_F = NumberByKey("YREF", refStr ,"=",";")
+
+	if(numtype(xRef_F)!=0 || numtype(yRef_F)!=0)		//not a normal number
+		Abort "Centroid has not been set for the Front carriage. Open the file and use the Marquee to find the centroid."
+	endif
+	
+	refStr = V_getReductionComments(emptyFileName_M)
+	xRef_M = NumberByKey("XREF", refStr ,"=",";")
+	yRef_M = NumberByKey("YREF", refStr ,"=",";")
+
+	if(numtype(xRef_M)!=0 || numtype(yRef_M)!=0)		//not a normal number
+		Abort "Centroid has not been set for the Middle carriage. Open the file and use the Marquee to find the centroid."
+	endif
+//
+//	either read the values or set default values
+	if(!gIgnoreBack)
+		refStr = V_getReductionComments(emptyFileName_B)
+		xRef_B = NumberByKey("XREF", refStr ,"=",";")
+		yRef_B = NumberByKey("YREF", refStr ,"=",";")
+		if(numtype(xRef_B)!=0 || numtype(yRef_B)!=0)		//not a normal number
+			Abort "Centroid has not been set for the Back carriage. Open the file and use the Marquee to find the centroid."
+		endif
+	else
+		//default values
+		xref_B = 340
+		yRef_B = 828
+	endif
+
+	Print xRef_F,xRef_M,xRef_B
+	Print yRef_F,yRef_M,yRef_B
+
+// pass these values to the procedure
+// but what if some of the values are bad?
+// these are both procedures, not functions...
+//	V_DeriveBeamCenters()
+//	Make/O/T newPanelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
+	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
+	
+//	Wave/T newPanelWave
+	Wave newXCtr_cm,newYCtr_cm
+	
+//	Edit newXCtr_cm,newYCtr_cm
+	
+//	V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
+	// start with the front
+	// FR
+	newXCtr_cm[1] = xRef_F
+	newYCtr_cm[1] = yRef_F
+	// FL
+	newXCtr_cm[0] = xRef_F + kBCtrOffset_FL_x				//NEW Dec 2018
+	newYCtr_cm[0] = yRef_F + kBCtrOffset_FL_y
+	// FB
+	newXCtr_cm[3] = xRef_F + kBCtrOffset_FB_x					// NEW Dec 2018
+	newYCtr_cm[3] = yRef_F + kBCtrOffset_FB_y
+	// FT 
+	newXCtr_cm[2] = xRef_F + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
+	newYCtr_cm[2] = yRef_F + kBCtrOffset_FT_y
+	
+	// MR
+	newXCtr_cm[5] = xRef_M
+	newYCtr_cm[5] = yRef_M
+	// ML
+	newXCtr_cm[4] = xRef_M + kBCtrOffset_ML_x
+	newYCtr_cm[4] = yRef_M + kBCtrOffset_ML_y
+	// MB
+	newXCtr_cm[7] = xRef_M + kBCtrOffset_MB_x
+	newYCtr_cm[7] = yRef_M + kBCtrOffset_MB_y
+	// MT 
+	newXCtr_cm[6] = xRef_M + kBCtrOffset_MT_x
+	newYCtr_cm[6] = yRef_M + kBCtrOffset_MT_y
+	
+	// default value for B (approx center) in pixels
+	newXCtr_cm[8] = xref_B
+	newYCtr_cm[8] = yref_B
+
+
+// XY patch panel values are located at:
+//	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+//	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+
+//	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
+// display the wave	
+//	Edit/W=(180,40,500,370)/HOST=#  panelW,xCtr_cm,yCtr_cm
+	
+	// and the panel   Proc V_Patch_xyCtr_Panel() : Panel
+
+	Variable lo,hi
+	V_Find_LoHi_RunNum(lo,hi)
+	NVAR gFileNum_Lo=root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+	NVAR gFileNum_Hi=root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+
+	gFileNum_Lo = lo
+	gFileNum_Hi = hi
+
+//	wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
+	wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+	wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
+
+//	panelW = newPanelW
+	xCtr_cm = newXCtr_cm
+	yCtr_cm = newYCtr_cm
+
+	// open the panel
+	Execute "V_PatchDet_xyCenters_Panel()"
+	
+	DoAlert 0,"These are the new beam centers. Nothing has been written to files. You need to check the file numbers and click Write."
+	
+	return(0)
+End
+
+
+
+
+

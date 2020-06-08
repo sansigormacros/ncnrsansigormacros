@@ -1,21 +1,21 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma version=1.0
-#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 //
-// this will become the equivalent of "RawWindowHook"
+// this panel and proceudres is the equivalent of "RawWindowHook" for SANS
 //
-// Procedures to:
+// This includes procedures to:
 // display the detector data
 // visualization tools
 // mouse interaction
 // status information necessary to understand the data
 // buttons to more functionality to process data
-
-
-// TODO
 //
-// -- have the status automatically fill in when a new file is loaded, rather than needing a click of the "status" button
+
+// DONE
+//
+// x- have the status automatically fill in when a new file is loaded, rather than needing a click of the "status" button
 // x- need a place somewhere to show the currently displayed folder
 // x- checkboxes for "active" corrections?
 // x- display of Q, counts, QxQy, X and Y
@@ -28,9 +28,9 @@
 //
 // call this after loading data to either draw the data display panel or to update the contents
 //
-// TODO
-// -- make sure that the "type" input is correctly used for the updating of the data, values, etc.
-// -- add a procedure to define the global variables for pos, counts, QxQy, etc.
+// DONE
+// x- make sure that the "type" input is correctly used for the updating of the data, values, etc.
+// x- add a procedure to define the global variables for pos, counts, QxQy, etc.
 //
 Function V_UpdateDisplayInformation(type)
 	String type 
@@ -45,8 +45,8 @@ Function V_UpdateDisplayInformation(type)
 
 	endif
 	
-	// TODO: update the information here  - in either case
-	// what isn't automatically picked up? What is "stale" on the display?
+	// DONE: 
+	// faking clicks on the buttons updates the information
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = type
 	
 	// fake a click on all three tabs - to populate the data
@@ -125,7 +125,7 @@ Function VSANSDataPanelGlobals()
 End
 
 
-// TODO
+// TODO_MEDIUM
 //
 // -- now that the sliders work, label them and move them to a better location
 // -- logical location for all of the buttons
@@ -136,7 +136,20 @@ End
 //
 Window VSANS_DataPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(37,45,1038,719) /K=1 /N=VSANS_Data
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode==1)
+		NewPanel /W=(7,36,700,480) /K=1 /N=VSANS_Data
+	else
+		NewPanel /W=(37,45,1038,719) /K=1 /N=VSANS_Data
+	endif
+	
+
 //	ShowTools/A
 	ModifyPanel cbRGB=(65535,60076,49151)
 
@@ -146,85 +159,85 @@ Window VSANS_DataPanel() : Panel
 	
 	SetDrawLayer UserBack
 	SetDrawEnv linethick= 2,dash= 1,fillpat= 0
-	DrawRect 200,70,310,160
+	DrawRect 200*sc,70*sc,310*sc,160*sc
 	SetDrawEnv linethick= 2,dash= 1,fillpat= 0
-	DrawRect 320,70,430,160
+	DrawRect 320*sc,70*sc,430*sc,160*sc
 	SetDrawEnv linethick= 2,dash= 1,fillpat= 0
-	DrawRect 440,70,535,160
+	DrawRect 440*sc,70*sc,535*sc,160*sc
 	
 	SetDrawEnv fsize= 18
-	DrawText 230,115,"Front"
+	DrawText 230*sc,115*sc,"Front"
 	SetDrawEnv fsize= 18
-	DrawText 348,115,"Middle"
+	DrawText 348*sc,115*sc,"Middle"
 	SetDrawEnv fsize= 18
-	DrawText 476,115,"Back"
+	DrawText 476*sc,115*sc,"Back"
 	
 	ToolsGrid visible=1
 
 
-	TabControl tab0,pos={13,41},size={572,617},proc=V_DataTabProc,tabLabel(0)="Front"
+	TabControl tab0,pos={sc*13,41*sc},size={sc*572,617*sc},proc=V_DataTabProc,tabLabel(0)="Front"
 	TabControl tab0,tabLabel(1)="Middle",tabLabel(2)="Back",value= 2,focusRing=0
 	TabControl tab0 labelBack=(63535,56076,45151)
 
 // on the side	
-	Button button_status,pos={607,146},size={70,20},proc=V_StatusButtonProc,title="Status",disable=2
-	Button button_IvsQ,pos={689,113},size={70,20},proc=V_IvsQPanelButtonProc,title="I vs. Q"
-	Button button_file_m,pos={619,55},size={50,20},proc=V_File_minus_ButtonProc,title="File <"
-	Button button_file_p,pos={679,55},size={50,20},proc=V_File_plus_ButtonProc,title="File >"
-	Button button_log,pos={689,146},size={70,20},proc=V_LogLinButtonProc,title="isLin",userData="0"
-	Button button_tab_p,pos={648,81},size={50,20},proc=V_Tab_p_ButtonProc,title="Tab >"
-	Button button_isolate,pos={606,114},size={70,20},proc=V_IsolateButtonProc,title="Isolate"
-	Button button_toWork,pos={770,146},size={90,20},proc=V_ToWorkFileButtonProc,title="to WORK"
-	Button button_annular,pos={770,114},size={90,20},proc=V_annularAvgButtonProc,title="Annular Avg"
-	Button button_SpreadPanels,pos={880,114},size={100,20},proc=V_SpreadPanelButtonProc,title="Spread Panels"
-	Button button_RestorePanels,pos={880,146},size={100,20},proc=V_RestorePanelButtonProc,title="Restore Panels"
+	Button button_status,pos={sc*607,146*sc},size={sc*70,20*sc},proc=V_StatusButtonProc,title="Status",disable=2
+	Button button_IvsQ,pos={sc*689,113*sc},size={sc*70,20*sc},proc=V_IvsQPanelButtonProc,title="I vs. Q"
+	Button button_file_m,pos={sc*619,55*sc},size={sc*50,20*sc},proc=V_File_minus_ButtonProc,title="File <"
+	Button button_file_p,pos={sc*679,55*sc},size={sc*50,20*sc},proc=V_File_plus_ButtonProc,title="File >"
+	Button button_log,pos={sc*689,146*sc},size={sc*70,20*sc},proc=V_LogLinButtonProc,title="isLin",userData="0"
+	Button button_tab_p,pos={sc*648,81*sc},size={sc*50,20*sc},proc=V_Tab_p_ButtonProc,title="Tab >"
+	Button button_isolate,pos={sc*606,114*sc},size={sc*70,20*sc},proc=V_IsolateButtonProc,title="Isolate"
+	Button button_toWork,pos={sc*770,146*sc},size={sc*90,20*sc},proc=V_ToWorkFileButtonProc,title="to WORK"
+	Button button_annular,pos={sc*770,114*sc},size={sc*90,20*sc},proc=V_annularAvgButtonProc,title="Annular Avg"
+	Button button_SpreadPanels,pos={sc*880,114*sc},size={sc*100,20*sc},proc=V_SpreadPanelButtonProc,title="Spread Panels"
+	Button button_RestorePanels,pos={sc*880,146*sc},size={sc*100,20*sc},proc=V_RestorePanelButtonProc,title="Restore Panels"
 
-	Button button_sensor,pos={607,146+33},size={70,20},proc=V_SensorButtonProc,title="Sensors"
-	Button button_mask,pos={689,146+33},size={70,20},proc=V_AvgMaskButtonProc,title="Avg Mask"
+	Button button_sensor,pos={sc*607,(146+33)*sc},size={sc*70,20*sc},proc=V_SensorButtonProc,title="Sensors"
+	Button button_mask,pos={sc*689,(146+33)*sc},size={sc*70,20*sc},proc=V_AvgMaskButtonProc,title="Avg Mask"
 
 
-	TitleBox title_file,pos={606,178+30},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
-	TitleBox title_dataPresent,pos={606,210+30},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
-	TitleBox title_status,pos={606,240+30},size={200,200},fsize=12,variable= root:Packages:NIST:VSANS:Globals:gStatusText
+	TitleBox title_file,pos={sc*606,(178+30)*sc},fsize=12*sc,size={sc*76,20*sc},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+	TitleBox title_dataPresent,pos={sc*606,(210+30)*sc},fsize=12*sc,size={sc*76,20*sc},variable= root:Packages:NIST:VSANS:Globals:gCurDispFile
+	TitleBox title_status,pos={sc*606,(240+30)*sc},size={sc*200,200*sc},fsize=12*sc,variable= root:Packages:NIST:VSANS:Globals:gStatusText
 	
-//	Button button_tagFile,pos={720,412},size={70,20},proc=V_TagFileButtonProc,title="Tag File"
+//	Button button_tagFile,pos={sc*720,412*sc},size={sc*70,20*sc},proc=V_TagFileButtonProc,title="Tag File"
 //	Button button_tagFile,disable=2
-//	Button button_saveIQ,pos={603,412},size={120,20},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
-//	Button button_BeamCtr,pos={603,566},size={110,20},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
-//	Button pick_trim,pos={603,450},size={120,20},proc=V_TrimDataProtoButton,title="Trim I(Q) Data"
+//	Button button_saveIQ,pos={sc*603,412*sc},size={sc*120,20*sc},proc=V_SaveIQ_ButtonProc,title="Save I(Q) as ITX"
+//	Button button_BeamCtr,pos={sc*603,566*sc},size={sc*110,20*sc},proc=V_BeamCtrButtonProc,title="Beam Center",disable=2
+//	Button pick_trim,pos={sc*603,450*sc},size={sc*120,20*sc},proc=V_TrimDataProtoButton,title="Trim I(Q) Data"
 //	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
 	
 
 // on the tabs, always visible
-	TitleBox title_xy,pos={20,65},fsize=12,size={76,20},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
-	Slider slider_hi,pos={558,224},size={16,80},proc=V_HiMapSliderProc
-	Slider slider_hi,limits={0,1,0},value= 1,ticks= 0
-	Slider slider_lo,pos={558,315},size={16,80},proc=V_LowMapSliderProc
-	Slider slider_lo,limits={0,1,0},value= 0,ticks= 0
+	TitleBox title_xy,pos={sc*20,65*sc},fsize=12*sc,size={sc*76,20*sc},variable= root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+	Slider slider_hi,pos={sc*558,224*sc},size={sc*16,80*sc},proc=V_HiMapSliderProc
+	Slider slider_hi,limits={0,1,0*sc},value= 1,ticks= 0
+	Slider slider_lo,pos={sc*558,315*sc},size={sc*16,80*sc},proc=V_LowMapSliderProc
+	Slider slider_lo,limits={0,1,0*sc},value= 0,ticks= 0
 
-	SetVariable xpos,pos={22,97},size={50,17},title="X "
-	SetVariable xpos,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gXPos
+	SetVariable xpos,pos={sc*22,97*sc},size={sc*50,17*sc},title="X "
+	SetVariable xpos,limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gXPos
 	SetVariable xpos,help={"x-position on the detector"},frame=0,noedit=1
-	SetVariable ypos,pos={22,121},size={50,17},title="Y "
-	SetVariable ypos,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gYPos
+	SetVariable ypos,pos={sc*22,121*sc},size={sc*50,17*sc},title="Y "
+	SetVariable ypos,limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gYPos
 	SetVariable ypos,help={"y-position on the detector"},frame=0,noedit=1
-	SetVariable counts,pos={22,151},size={150,17},title="Counts "
-	SetVariable counts,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gNCounts
+	SetVariable counts,pos={sc*22,151*sc},size={sc*150,17*sc},title="Counts "
+	SetVariable counts,limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gNCounts
 	SetVariable counts,help={"Neutron counts"},frame=0,noedit=1
-	SetVariable qxval,pos={83,94},size={85,17},title="qX"
+	SetVariable qxval,pos={sc*83,94*sc},size={sc*85,17*sc},title="qX"
 	SetVariable qxval,help={"q value in the x-direction on the detector"},frame=0,noedit=1
-	SetVariable qxval,format="%+7.5f",limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gQX
-	SetVariable qyval,pos={83,113},size={85,17},title="qY"
+	SetVariable qxval,format="%+7.5f",limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gQX
+	SetVariable qyval,pos={sc*83,113*sc},size={sc*85,17*sc},title="qY"
 	SetVariable qyval,help={"q value in the y-direction on the detector"},frame=0,noedit=1
-	SetVariable qyval,format="%+7.5f",limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gQY
-	SetVariable q_pos,pos={83,132},size={85,17},title="q "
+	SetVariable qyval,format="%+7.5f",limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gQY
+	SetVariable q_pos,pos={sc*83,132*sc},size={sc*85,17*sc},title="q "
 	SetVariable q_pos,help={"q-value on the detector at (x,y)"},format="%+7.5f"
-	SetVariable q_pos,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:gQQ,frame=0,noedit=1
+	SetVariable q_pos,limits={-Inf,Inf,0*sc},value= root:Packages:NIST:VSANS:Globals:gQQ,frame=0,noedit=1
 	
 	Make/O/D tmp_asdf
 	// for back panels (in pixels)	
 //	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
-	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
+	Display/W=(50*sc,185*sc,517*sc,620*sc)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsB
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -235,7 +248,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 	
 	// for middle panels (in pixels?)	
-	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
+	Display/W=(50*sc,185*sc,517*sc,620*sc)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsM
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -246,7 +259,7 @@ Window VSANS_DataPanel() : Panel
 	SetActiveSubwindow ##
 	
 	// for front panels (in pixels?)	
-	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
+	Display/W=(50*sc,185*sc,517*sc,620*sc)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsF
 	ModifyGraph mode=2		// mode = 2 = dots
 	ModifyGraph marker=19
@@ -275,6 +288,14 @@ Function VSANSDataHook(s)
 	STRUCT WMWinHookStruct &s
 
 	Variable hookResult = 0
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	switch(s.eventCode)
 		case 0:				// Activate
@@ -316,7 +337,7 @@ Function VSANSDataHook(s)
 
 //			if out of bounds, exit now
 //		TODO - currently the values are hard-wired. eliminate this later if the size of the graph changes
-			if(s.mouseLoc.h < 50 || s.mouseLoc.h > 545 || s.mouseLoc.v < 185 || s.mouseLoc.v > 620)
+			if(s.mouseLoc.h < 50*sc || s.mouseLoc.h > 545*sc || s.mouseLoc.v < 185*sc || s.mouseLoc.v > 620*sc)
 				break
 			endif	
 			
@@ -471,7 +492,7 @@ End
 // -----?? can I draw 3 graphs, and just put the right one on top?? move the other two to the side?
 //
 //
-// TODO 
+// TODO_LOW 
 //  -- add all of the controls of the VCALC panel (log scaling, adjusting the axes, etc.)
 //  x- get the panel to be correctly populated first, rather than needing to click everywhere to fill in
 //  x- remove the dependency on VCALC being initialized first, and using dummy waves from there...
@@ -479,6 +500,15 @@ End
 //
 Function V_DataTabProc(tca) : TabControl
 	STRUCT WMTabControlAction &tca
+
+
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	switch( tca.eventCode )
 		case 2: // mouse up
@@ -545,9 +575,9 @@ Function V_DataTabProc(tca) : TabControl
 					hi_B = hi*(WaveMax(det_B) - WaveMin(det_B)) + WaveMin(det_B)
 					ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctab= {lo_B,hi_B,ColdWarm,0}		// don't autoscale {*,*,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50,185,517,620)
-				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
-				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
+				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(50*sc,185*sc,517*sc,620*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320*sc,70*sc,430*sc,160*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200*sc,70*sc,310*sc,160*sc)
 
 				ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctabAutoscale=0,lookup= LookupWave
 				
@@ -602,9 +632,9 @@ Function V_DataTabProc(tca) : TabControl
 					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {lo_ML,hi_ML,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {lo_MR,hi_MR,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50,185,517,620)
-				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
-				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200,70,310,160)
+				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50*sc,185*sc,517*sc,620*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440*sc,70*sc,550*sc,160*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200*sc,70*sc,310*sc,160*sc)
 
 				ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctabAutoscale=0,lookup= LookupWave
 				ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctabAutoscale=0,lookup= LookupWave
@@ -660,9 +690,9 @@ Function V_DataTabProc(tca) : TabControl
 					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {lo_FL,hi_FL,ColdWarm,0}
 					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {lo_FR,hi_FR,ColdWarm,0}
 				endif
-				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50,185,517,620)
-				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440,70,550,160)
-				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320,70,430,160)
+				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50*sc,185*sc,517*sc,620*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440*sc,70*sc,550*sc,160*sc)
+				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(320*sc,70*sc,430*sc,160*sc)
 				
 				ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctabAutoscale=0,lookup= LookupWave
 				ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctabAutoscale=0,lookup= LookupWave
@@ -914,8 +944,8 @@ End
 
 
 //
-// TODO:
-// -- simply calls the missing parameter dialog to do the average.
+// DONE:
+// x- simply calls the missing parameter dialog to do the average.
 //  see the file V_IQ_Annular.ipf for all of the features yet to be added.
 //
 // x- currently just the graph, no controls
@@ -927,7 +957,7 @@ Function V_annularAvgButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Execute "Annular_Binning()"			
+			Execute "V_Annular_Binning()"			
 
 			break
 		case -1: // control being killed
@@ -1005,7 +1035,7 @@ Function V_StatusButtonProc(ba) : ButtonControl
 End
 
 
-// TODO:
+// TODO_VERIFY:
 // x- link this to the preferences for the display. this is done in UpdateDisplayInformation (the main call) so that
 //     the panels are rescaled only once, rather than toggled three times (F, M, B) if I call from the tabProc
 // -- come up with a better definition of the log lookup wave (> 1000 pts, what is the first point)
@@ -1081,8 +1111,8 @@ Function V_LogLinButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
-// possibly function to "tag" files right here in the disaply with things
+// TODO_LOW
+// -- possibly use this function to "tag" files right here in the disaply with things
 // like their intent, or other values that reduction will need, kind of like a "quick patch"
 // with limited functionality (since full function would be a nightmare!) 
 Function V_TagFileButtonProc(ba) : ButtonControl
@@ -1102,7 +1132,9 @@ Function V_TagFileButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// TODO
+// TODO_LOW
+// -- currently this button is NOT visible on the RAW data display. Any saving of data
+//    must go through a protocol (RAW can't be saved)
 // -- fill in more functionality
 // -- currently a straight concatentation of all data, no options
 // -- maybe allow save of single panels?
@@ -1131,7 +1163,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 //			ControlInfo/W=V_1D_Data popup0
 //			binType = (V_flag == 0) ? 1 : V_flag		// if binType not defined, set binType == 1
 
-			String saveName=""
+			String saveName="",exten=""
 		// write out the data set to a file
 			if(strlen(saveName)==0)
 				Execute "V_GetNameForSave()"
@@ -1139,7 +1171,9 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 				saveName = newName
 			endif
 			
-			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+//			V_Write1DData_ITX("root:Packages:NIST:VSANS:",type,saveName,binType)
+
+			V_Write1DData_Individual("root:Packages:NIST:VSANS:",type,saveName,exten,binType)
 	
 			Print "Saved file: "	+	saveName + ".itx"	
 			break
@@ -1150,7 +1184,7 @@ Function V_SaveIQ_ButtonProc(ba) : ButtonControl
 	return 0
 End
 
-//TODO
+//TODO_LOW
 //
 //link this to the beam center finding panel
 //

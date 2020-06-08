@@ -1,5 +1,6 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
 
 
 // technically, I'm passing a coefficient wave that's TOO LONG to the XOP

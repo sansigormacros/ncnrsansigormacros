@@ -1,6 +1,7 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 //#pragma version=5.0
-//#pragma IgorVersion=6.1
+#pragma IgorVersion = 7.00
+
 
 // Updated for VSANS Jan2017
 //
