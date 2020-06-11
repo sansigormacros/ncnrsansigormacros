@@ -218,9 +218,13 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 		endif
 	endif
 
-	if (isXML(fileStr) == 1)
-		LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
-	else		
+	if (isXML(fileStr) == 1 || isNXcanSAS(fileStr) == 1)
+		if (isNXcanSAS(fileStr) == 1)
+			LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
+		else
+			LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
+		endif
+	else
 		//Load the waves, using default waveX names
 		//if no path or file is specified for LoadWave, the default Mac open dialog will appear
 		LoadWave/G/D/A/Q fileStr
@@ -1120,14 +1124,14 @@ Function/S ShortFileNameString(inStr)
 
 	String outStr=""
 	Variable maxLength
-	
+
 	if(IgorVersion() < 8)
 		maxLength = 25
 	else
 		maxLength = 40
 	endif
-	
-	
+
+
 	Variable nameTooLong=0
 	String/G root:Packages:NIST:gShortNameStr = inStr[0,maxLength-1]
 	SVAR newStr = root:Packages:NIST:gShortNameStr
@@ -1417,7 +1421,7 @@ Proc Show_Preferences_Panel()
 	DoWindow/F Pref_Panel
 	if(V_flag==0)
 		// only re-initialize if the variables don't exist, so you don't overwrite what users have changed
-		if( exists("root:Packages:NIST:gXML_Write") != 2 )		//if the global variable does not exist, initialize
+		if( exists("root:Packages:NIST:gASCII_Write") != 2 || exists("root:Packages:NIST:gXML_Write") != 2 || exists("root:Packages:NIST:gNXcanSAS_Write") != 2)		//if the global variable does not exist, initialize
 			Initialize_Preferences()
 		endif
 		Pref_Panel()
@@ -1460,6 +1464,10 @@ Proc Initialize_Preferences()
 	val = NumVarOrDefault("root:Packages:NIST:gDoAdjustRAW_Atten",0)
 	Variable/G root:Packages:NIST:gDoAdjustRAW_Atten=val
 	
+	// integer for writing multiple sasentries in XML and NXcanSAS data
+	val = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1 )
+	Variable/G root:Packages:NIST:gSASEntryNumber = val
+
 	/// items for SANS Analysis
 	
 	
@@ -1469,10 +1477,24 @@ Proc Initialize_Preferences()
 	Variable/G root:Packages:NIST:gRawUSANSisQvalues=val	
 	
 	/// items for everyone
+	val = NumVarOrDefault("root:Packages:NIST:gASCII_Write", 1 )
+	Variable/G root:Packages:NIST:gASCII_Write = val
+
 	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
 	Variable/G root:Packages:NIST:gXML_Write = val
+
+	val = NumVarOrDefault("root:Packages:NIST:gNXcanSAS_Write", 0 )
+	Variable/G root:Packages:NIST:gNXcanSAS_Write = val
 	
-	
+//	if (root:Packages:NIST:gASCII_Write == 1)
+//		WritePref("PrefCtrl_0",1)
+//	endif
+//	if (root:Packages:NIST:gXML_Write == 1)
+//		WritePref("PrefCtrl_0a",1)
+//	endif
+//	if (root:Packages:NIST:gNXcanSAS_Write == 1)
+//		WritePref("PrefCtrl_0b",1)
+//	endif
 end
 
 Function LogScalePrefCheck(ctrlName,checked) : CheckBoxControl
@@ -1501,12 +1523,39 @@ Function UnityTransPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
-Function XMLWritePref(ctrlName,checked) : CheckBoxControl
+Function WritePref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	
-	NVAR gVal = root:Packages:NIST:gXML_Write
-	gVal = checked
+
+	NVAR asciiVal = root:Packages:NIST:gASCII_Write
+	NVAR xmlVal = root:Packages:NIST:gXML_Write
+	NVAR nxVal = root:Packages:NIST:gNXcanSAS_Write
+
+	strswitch (ctrlName)
+		case "PrefCtrl_0":
+			CheckBox PrefCtrl_0,value=1
+			asciiVal = checked
+			CheckBox PrefCtrl_0a,value=0
+			xmlVal = 0
+			CheckBox PrefCtrl_0b,value=0
+			nxVal = 0
+			break
+		case "PrefCtrl_0a":
+			CheckBox PrefCtrl_0,value=0
+			asciiVal = 0
+			CheckBox PrefCtrl_0a,value=1
+			xmlVal = checked
+			CheckBox PrefCtrl_0b,value=0
+			nxVal = 0
+			break
+		case "PrefCtrl_0b":
+			CheckBox PrefCtrl_0,value=0
+			asciiVal = 0
+			CheckBox PrefCtrl_0a,value=0
+			xmlVal = 0
+			CheckBox PrefCtrl_0b,value=1
+			nxVal = checked
+	endswitch
 End
 
 Function DoTransCorrPref(ctrlName,checked) : CheckBoxControl
@@ -1576,9 +1625,15 @@ Proc Pref_Panel()
 	TabControl PrefTab labelBack=(49694,61514,27679)
 	
 //on tab(0) - General - initially visible
-	CheckBox PrefCtrl_0a,pos={21,96},size={124,14},proc=XMLWritePref,title="Use canSAS XML Output"
-	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
+	CheckBox PrefCtrl_0,pos={21,100},size={124,14},proc=WritePref,title="Use ASCII 6-column Output (default)",mode=1
+	CheckBox PrefCtrl_0,help={"Checking this will set the default output to the NIST 6 column format"}
+	CheckBox PrefCtrl_0,value= root:Packages:NIST:gASCII_Write
+	CheckBox PrefCtrl_0a,pos={21,120},size={124,14},proc=WritePref,title="Use canSAS XML Output",mode=1
+	CheckBox PrefCtrl_0a,help={"Checking this will set the default output to be canSAS XML format"}
 	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gXML_Write
+	CheckBox PrefCtrl_0b,pos={21,140},size={124,14},proc=WritePref,title="Use NXcanSAS HDF5 Output",mode=1
+	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
+	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
 
 //on tab(1) - SANS
 	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"

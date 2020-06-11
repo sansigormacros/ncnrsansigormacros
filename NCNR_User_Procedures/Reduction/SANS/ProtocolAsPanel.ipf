@@ -968,7 +968,7 @@ End
 Proc GetAvgInfo(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_NXcanSAS;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
@@ -1476,6 +1476,7 @@ Function ExecuteProtocol(protStr,samStr)
 	pathStr=S_path
 	
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 	
 	//Parse the instructions in the prot wave
 	//0 - bkg
@@ -1837,18 +1838,6 @@ Function ExecuteProtocol(protStr,samStr)
 	ConvertFolderToLinearScale(activeType)
 	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
-		case "none":		
-			//still do nothing
-			break			
-		case "2D_ASCII":	
-			//do nothing
-			break
-		case "QxQy_ASCII":
-			//do nothing
-			break
-		case "PNG_Graphic":
-			//do nothing
-			break
 		case "Rectangular":
 			RectangularAverageTo1D(activeType)
 			break
@@ -1864,6 +1853,16 @@ Function ExecuteProtocol(protStr,samStr)
 		case "Sector_PlusMinus":
 			Sector_PlusMinus1D(activeType)
 			break
+		case "none":		
+			//do nothing
+		case "2D_ASCII":	
+			//do nothing
+		case "QxQy_ASCII":
+			//do nothing
+		case "2D_NXcanSAS":
+			//do nothing
+		case "PNG_Graphic":
+			//do nothing
 		default:	
 			//do nothing
 	endswitch
@@ -1908,12 +1907,17 @@ Function ExecuteProtocol(protStr,samStr)
 		if(cmpstr(av_type,"QxQy_ASCII") == 0)
 			exten = "DAT"
 		endif
+		if(cmpstr(av_type,"2D_NXcanSAS") == 0)
+			exten = "h5"
+		endif
 		
 		// add an "x" to the file extension if the output is XML
 		// currently (2010), only for ABS and AVE (1D) output
 		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
 			if(useXMLOutput == 1)
 				exten += "x"
+			elseif(useNXcanSASOutput == 1)
+				exten = "h5"
 			endif
 		endif
 				
@@ -1944,6 +1948,9 @@ Function ExecuteProtocol(protStr,samStr)
 			case "2D_ASCII":
 				Fast2DExport(activeType,fullPath,dialog)
 				break
+			case "2D_NXcanSAS":
+				WriteNxCanSAS2D(activeType,fullPath,dialog)
+				break
 			case "QxQy_ASCII":
 				QxQy_Export(activeType,fullPath,dialog)
 				break
@@ -1953,6 +1960,8 @@ Function ExecuteProtocol(protStr,samStr)
 			default:
 				if (useXMLOutput == 1)
 					WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
+				elseif (useNXcanSASOutput == 1)
+					WriteNxCanSAS1D(activeType,fullPath,dialog)
 				else
 					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 				endif

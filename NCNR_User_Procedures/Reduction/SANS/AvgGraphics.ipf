@@ -69,6 +69,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	// average the currently displayed data
 	SVAR type=root:myGlobals:gDataDisplayType
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:GNXcanSAS_Write
 
 	//Check for logscale data in "type" folder
 	String dest = "root:Packages:NIST:"+type
@@ -125,32 +126,17 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	strswitch(choice)
 		case "Rectangular":		
 			RectangularAverageTo1D(type)
-			If(doSave)
-				if (useXMLOutput == 1)
-					WriteXMLWaves_W_Protocol(type,"",1)
-				else
-					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-				endif
-			EndIf
 			break					
 		case "Annular":		
 			AnnularAverageTo1D(type)
-			If(doSave)		// XML here yet
-				//save the file, acting on the currently displayed file
-				WritePhiave_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-			Endif
 			break
 		case "Circular":
 		case "Sector":
 			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
-			If(doSave)
-				if (useXMLOutput == 1)
-					WriteXMLWaves_W_Protocol(type,"",1)
-				else
-					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
-				endif
-			EndIf
+			break
+		case "2D_NXcanSAS":
+			WriteNxCanSAS2D(type,"",1)
 			break
 		case "2D ASCII":
 			Fast2dExport(type,"",1)
@@ -164,6 +150,26 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 		default:						
 			Abort "no case match in average dispatch"
 	endswitch
+	
+	if(doSave)
+		strswitch(choice)
+			case "Annular":
+				WritePhiave_W_Protocol(type,"",1)
+				break
+			case "2D ASCII":
+			case "QxQy ASCII":
+			case "2D_NXcanSAS":
+				break
+			default:
+				if (useXMLOutput == 1)
+					WriteXMLWaves_W_Protocol(type,"",1)
+				elseif (useNXcanSASOutput == 1)
+					WriteNxCanSAS1D(type,"",1)
+				else
+					WriteWaves_W_Protocol(type,"",1)		//"" is an empty path, 1 will force a dialog
+				endif
+		endswitch
+	EndIf
 	
 	//convert back to log scaling if I changed it...
 	if(wasLogScale)
@@ -222,6 +228,7 @@ Function AvTypePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	strswitch(choice)	// string switch
 		case "2D ASCII":		// execute if case matches expression
 		case "QxQy ASCII":
+		case "2D_NXcanSAS":
 			String/G root:myGlobals:Drawing:gDrawInfoStr = ReplaceStringByKey("AVTYPE", tempStr, choice, "=", ";")
 			Button P_DoAvg,title="Save ASCII"
 			break					
@@ -250,7 +257,8 @@ Function DisableUnusedParameters(choice)
 	
 	strswitch(choice)	// string switch
 		case "2D ASCII":
-		case "QxQy ASCII":					
+		case "QxQy ASCII":
+		case "2D_NXcanSAS":
 		case "Circular":		//disable everything for these three choices
 			SetVariable Phi_p,disable=yes
 			SetVariable Qctr_p,disable=yes
@@ -304,7 +312,7 @@ Window Average_Panel()
 	GroupBox sect_rect,pos={7,44},size={134,84},title="Sector/Rectangular"
 	PopupMenu av_choice,pos={61,7},size={144,20},proc=AvTypePopMenuProc,title="AverageType"
 	PopupMenu av_choice,help={"Select the type of average to perform, then make the required selections below and click \"DoAverage\" to plot the results"}
-	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
+	PopupMenu av_choice,mode=1,popvalue="Circular",value= #"\"Circular;Sector;Annular;Rectangular;2D_NXcanSAS;2D ASCII;QxQy ASCII;Sector_PlusMinus;\""
 	Button ave_help,pos={260,7},size={25,20},proc=ShowAvePanelHelp,title="?"
 	Button ave_help,help={"Show the help file for averaging options"}
 	Button ave_done,pos={199,245},size={50,20},proc=AveDoneButtonProc,title="Done"

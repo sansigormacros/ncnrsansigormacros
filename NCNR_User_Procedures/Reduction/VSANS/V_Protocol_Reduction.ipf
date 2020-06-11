@@ -531,7 +531,7 @@ Function V_MakeProtocolFromPanel(w)
 	//w[8]
 	// End trim points
 	// if null, then write out the default trim string to the protocol so that it will be used if recalled
-	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr	
+	SVAR gEndPtsStr=root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
 	if(strlen(gEndPtsStr)==0)
 		w[8] = ksBinTrimEndDefault
 	else
@@ -1045,7 +1045,7 @@ End
 Window V_ProtocolPanel()
 
 	Variable sc = 1
-			
+
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		sc = 0.7
 	endif
@@ -1391,7 +1391,7 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 
 
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
-	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;Sector;QxQy_ASCII;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Narrow_Slit;Annular;Sector;QxQy_ASCII;QxQy_NXcanSAS"
 
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
@@ -1538,7 +1538,7 @@ End
 Proc V_GetAvgInfo_Full(av_typ,autoSave,autoName,autoPlot,side,phi,dphi,width,QCtr,QDelta)
 	String av_typ,autoSave,AutoName,autoPlot,side
 	Variable phi=0,dphi=10,width=10,Qctr = 0.01,qDelta=10
-	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;PNG_Graphic;Sector_PlusMinus;"
+	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII;QxQy_NXcanSAS;PNG_Graphic;Sector_PlusMinus;"
 // comment out above line in DEMO_MODIFIED version, and uncomment the line below (to disable PNG save)
 //	Prompt av_typ, "Type of Average",popup,"Circular;Sector;Rectangular;Annular;2D_ASCII;QxQy_ASCII"
 	Prompt autoSave,"Save files to disk?",popup,"Yes;No"
@@ -2681,10 +2681,10 @@ Function V_AskForAbsoluteParams_Quest(isBack)
 
 //
 // ** this kappa is different than for SANS!!
-//	
+//
 // don't use the solid angle here -- the data (COR) that this factor is applied to will already be
 // converted to counts per solid angle per pixel
-//	
+//
 //		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)*(pixel_x*pixel_y/sdd^2)
 		kappa = emptyCts/countTime/empAttenFactor*1.0e8/(monCnt/countTime)
 		
@@ -2727,13 +2727,13 @@ Function V_SelectABS_XYBox(x1,x2,y1,y2)
 
 
 	Variable sc = 1
-	
+
 	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
-		
+
 	if(gLaptopMode == 1)
 		sc = 0.7
 	endif
-	
+
 	Variable err=0
 	
 	Variable/G root:V_marquee=1		//sets the sneaky bit to automatically update marquee coords
@@ -2776,15 +2776,15 @@ Function V_SelectABS_XYBox(x1,x2,y1,y2)
 End
 
 Function V_UseStdOrEmpForABS()
-	
+
 	Variable sc = 1
-	
+
 	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
-		
+
 	if(gLaptopMode == 1)
 		sc = 0.7
-	endif	
-	
+	endif
+
 	NewPanel/K=2 /W=(139*sc,341*sc,402*sc,448*sc) as "Absolute Scaling"
 	DoWindow/C junkABSWindow
 	ModifyPanel cbRGB=(57346,65535,49151)
@@ -3350,11 +3350,12 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 	
 	String fullpath = "", newfileName=""
 	String saveType = StringByKey("SAVE",avgStr,"=",";")		//does user want to save data?
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 
 	NVAR gIgnoreBackDet = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 
 
-	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
+	If( (cmpstr(saveType[0,2],"Yes")==0) && (cmpstr(av_type,"none") != 0) )
 		//then save
 		newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
 		
@@ -3419,6 +3420,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 //					WriteWaves_W_Protocol(activeType,fullpath,dialog)
 //				endif
 //
+
 				if(cmpstr(saveType,"Yes - Concatenate")==0)
 					V_Trim1DDataStr(activeType,binType,trimBegStr,trimEndStr)			// x- passing null strings uses global or default trim values
 
@@ -3429,9 +3431,15 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 				// -- averages intensity from q-values that are within 0.1% of each other
 					V_RemoveDuplicateQvals("root:Packages:NIST:VSANS:",activeType)		// works with the "tmp_x" waves from concatenateForSave
 //					prot[9] = collimationStr
-					
-					V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
-					Print "data written to:  "+ newFileName+"."+exten
+					if (useNXcanSASOutput == 1)
+						exten = "h5"
+						V_WriteNXcanSAS1DData("root:Packages:NIST:VSANS:",activeType,fullPath+".h5")	// pass the full path here
+					    Print "data written to:  "+ fullPath+".h5"
+					else
+						V_Write1DData("root:Packages:NIST:VSANS:",activeType,newFileName+"."+exten)		//don't pass the full path, just the name
+					    Print "data written to:  "+ newFileName+"."+exten
+					EndIf
+
 				endif
 				
 				if(cmpstr(saveType,"Yes - Individual")==0)
@@ -3454,6 +3462,10 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 			case "QxQy_ASCII":
 				fullPath = S_Path + newFileName  //+".DAT"		add the .DAT and detector panel in the writer, not here
 				V_QxQy_Export(activeType,fullPath,newFileName,dialog)
+				break
+			case "QxQy_NXcanSAS":
+				fullPath = S_Path + newFileName+".2D.h5"
+				V_WriteNXcanSAS2DData(activeType,fullPath,newFileName,dialog)
 				break
 			case "PNG_Graphic":
 //				SaveAsPNG(activeType,fullpath,dialog)

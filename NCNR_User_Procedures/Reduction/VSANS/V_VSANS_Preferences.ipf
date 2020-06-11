@@ -32,7 +32,7 @@ Proc Show_VSANSPreferences_Panel()
 		if(exists("root:Packages:NIST:VSANS:Globals:gDoDownstreamWindowCor") != 2)
 			V_InitializeWindowTrans()		//set up the globals (need to check in multiple places)
 		endif
-		
+
 		VSANSPref_Panel()
 	Endif
 //	Print "Preferences Panel stub"
@@ -50,13 +50,19 @@ Proc Initialize_VSANSPreferences()
 
 	// GENERAL tab
 	/// General items for everyone
+	val = NumVarOrDefault("root:Packages:NIST:gASCII_Write", 1 )
+	Variable/G root:Packages:NIST:gASCII_Write = val
+	val = NumVarOrDefault("root:Packages:NIST:gXML_Write", 0 )
+	Variable/G root:Packages:NIST:gXML_Write = val
+	val = NumVarOrDefault("root:Packages:NIST:gNXcanSAS_Write", 0 )
+	Variable/G root:Packages:NIST:gNXcanSAS_Write = val
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gXML_Write", 0 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gXML_Write = val
 
 	// flag to set "Laptop Mode" where the panels are drawn smaller and onscreen
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gLaptopMode", 0 )
-	Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = val	
-	
+	Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = val
+
 	// VSANS tab
 	///// items for VSANS reduction
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gLogScalingAsDefault", 1 )
@@ -144,8 +150,8 @@ Proc Initialize_VSANSPreferences()
 	/// items for VSANS Analysis
 	
 
-	
-	
+
+
 end
 
 Function V_InitializeWindowTrans()
@@ -255,7 +261,7 @@ End
 //Function V_DoTubeShadowCorPref(ctrlName,checked) : CheckBoxControl
 //	String ctrlName
 //	Variable checked
-//	
+//
 //	NVAR gVal = root:Packages:NIST:VSANS:Globals:gDoTubeShadowCor
 //	gVal = checked
 //End
@@ -288,7 +294,7 @@ End
 Function V_LaptopModePref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
-	
+
 	NVAR gVal = root:Packages:NIST:VSANS:Globals:gLaptopMode
 	gVal = checked
 End
@@ -301,7 +307,7 @@ Proc V_SetLaptopMode()
 	DoWindow/K Main_VSANS_Panel
 	Initialize_VSANS()
 	DoAlert 0,"Laptop Mode is ON, go to VSANS preferences to turn mode off"
-	
+
 End
 
 
@@ -314,7 +320,7 @@ End
 
 Proc VSANSPref_Panel()
 	Variable sc=1
-	
+
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		sc = 0.9
 	endif
@@ -338,12 +344,17 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_0a,pos={21*sc,96*sc},size={124*sc,14*sc},proc=V_XMLWritePref,title="Use canSAS XML Output"
 	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
 	CheckBox PrefCtrl_0a,value= root:Packages:NIST:VSANS:Globals:gXML_Write
-	CheckBox PrefCtrl_0b,pos={21*sc,120*sc},size={124*sc,14*sc},proc=V_LaptopModePref,title="Laptop Mode for Panels"
-	CheckBox PrefCtrl_0b,help={"Checking this will draw panels smaller to fit on a 1920x1080 laptop screen"}
-	CheckBox PrefCtrl_0b,value= root:Packages:NIST:VSANS:Globals:gLaptopMode
+	CheckBox PrefCtrl_0b,pos={21*sc,140*sc},size={124*sc,14*sc},proc=WritePref,title="Use NXcanSAS HDF5 Output",mode=1
+	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
+	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
+	heckBox PrefCtrl_0c,pos={21*sc,164*sc},size={124*sc,14*sc},proc=V_LaptopModePref,title="Laptop Mode for Panels"
+	CheckBox PrefCtrl_0c,help={"Checking this will draw panels smaller to fit on a 1920x1080 laptop screen"}
+	CheckBox PrefCtrl_0c,value= root:Packages:NIST:VSANS:Globals:gLaptopMode
 
+	CheckBox PrefCtrl_0,disable=1
 	CheckBox PrefCtrl_0a,disable=1
 	CheckBox PrefCtrl_0b,disable=1
+	CheckBox PrefCtrl_0c,disable=1
 
 
 //on tab(1) - VSANS - initially visible
@@ -363,7 +374,7 @@ Proc VSANSPref_Panel()
 	SetVariable PrefCtrl_1p,pos={21*sc,180*sc},size={200*sc,15*sc},title="Window Transmission"
 	SetVariable PrefCtrl_1p,limits={0.01,1,0.001},value= root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans
 
-	
+
 	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140*sc,14*sc},value=root:Packages:NIST:VSANS:Globals:gDoTransmissionCor,proc=V_DoTransCorrPref
 	CheckBox PrefCtrl_1f pos={255*sc,80*sc},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
 	CheckBox PrefCtrl_1g title="Do Tube Efficiency+Shadowing?",size={140*sc,14*sc},proc=V_DoEfficiencyCorrPref
@@ -374,7 +385,7 @@ Proc VSANSPref_Panel()
 	CheckBox PrefCtrl_1i title="Do DIV Correction?",size={140*sc,14*sc},proc=V_DoDIVCorPref
 	CheckBox PrefCtrl_1i value=root:Packages:NIST:VSANS:Globals:gDoDIVCor,pos={255*sc,120*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1j title="Do DeadTime Correction?",size={140*sc,14*sc},proc=V_DoDeadTimeCorPref
-	CheckBox PrefCtrl_1j value=root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor,pos={255*sc,140*sc},help={"TURN OFF ONLY FOR DEBUGGING."}	
+	CheckBox PrefCtrl_1j value=root:Packages:NIST:VSANS:Globals:gDoDeadTimeCor,pos={255*sc,140*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1k title="Do Solid Angle Correction?",size={140*sc,14*sc},proc=V_DoSolidAngleCorPref
 	CheckBox PrefCtrl_1k value=root:Packages:NIST:VSANS:Globals:gDoSolidAngleCor,pos={255*sc,160*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1l title="Do Non-linear Correction?",size={140*sc,14*sc},proc=V_DoNonLinearCorPref,disable=2
@@ -384,7 +395,7 @@ Proc VSANSPref_Panel()
 //	CheckBox PrefCtrl_1n title="Do Monitor Normalization?",size={140,14},proc=V_DoMonitorNormPref
 //	CheckBox PrefCtrl_1n value=root:Packages:NIST:VSANS:Globals:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_1o title="Ignore Back Detector?",size={140*sc,14*sc},proc=V_IgnoreDetBPref
-	CheckBox PrefCtrl_1o value=root:Packages:NIST:VSANS:Globals:gIgnoreDetB,pos={150*sc,220*sc},help={"Will prevent data from Back detector being written to data files."}		
+	CheckBox PrefCtrl_1o value=root:Packages:NIST:VSANS:Globals:gIgnoreDetB,pos={150*sc,220*sc},help={"Will prevent data from Back detector being written to data files."}
 	
 //	CheckBox PrefCtrl_1a,disable=1
 //	CheckBox PrefCtrl_1b,disable=1

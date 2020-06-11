@@ -29,6 +29,10 @@
 #include "DataSetHandling"					//added Nov 2009 AJJ
 #include "Smear_2D"						//for 2D resolution smearing, May 2010
 
+// AUG 2019
+#include "NIST_NXcanSAS_v709"
+
+
 Menu "SANS Models"
 	"Fit Manager", Init_WrapperPanel()
 	"Load Model Functions",Execute/P "INSERTINCLUDE \"SANSModelPicker_v40\"";Execute/P "COMPILEPROCEDURES ";Execute/P "ModelPicker_Panel()"

@@ -200,12 +200,19 @@ Function WriteNSORTedFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,
 	Variable norm12,norm23,norm34
 
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 
 	if (useXMLOutput == 1)
 		if(WaveExists(res))
 			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
 		else
 			WriteNSORTedXMLFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
+		endif
+	elseif (useNXcanSASOutput == 1)
+		if(WaveExists(res))
+			WriteNSORTedNXcanSASFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34,res=res)
+		else
+			WriteNSORTedNXcanSASFile(q3,i3,sig3,firstFileName,secondFileName,thirdFileName,fourthFileName,normTo,norm12,norm23,norm34)
 		endif
 	else
 		if(WaveExists(res))
@@ -1167,7 +1174,7 @@ Function DoAutoScaleFromPanel(auto)
 		//put result in temporary waves
 		WaveStats/Q $"root:LowQSet:TrimLowQSet_q"
 		n1 = V_npnts
-		WaveStats/Q $"root:LowQSet:TrimMedQSet_q"
+		WaveStats/Q $"root:MedQSet:TrimMedQSet_q"
 		n2 = V_npnts
 		n12 = n1+ n2
 		

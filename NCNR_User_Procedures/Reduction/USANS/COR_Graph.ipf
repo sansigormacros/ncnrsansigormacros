@@ -214,6 +214,7 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
+	NVAR useNXcanSASOutput = root:Packages:NIST:gNXcanSAS_Write
 
 	
 	PathInfo/S savePathName
@@ -262,6 +263,8 @@ Function SaveButtonProc(ctrlName) : ButtonControl
 	//fill in the blanks and dispatch to save routine
 	if (useXMLOutput == 1)
 		WriteXMLUSANSWaves(type,"",ptA,ptB,1)
+	elseif (useNXcanSASOutput == 1)
+		WriteUSANSNXCanSAS(type,"",ptA,ptB,1)
 	else
 		WriteUSANSWaves(type,"",ptA,ptB,1)
 	endif
