@@ -90,6 +90,7 @@ Proc V_InitProtocolPanel()
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr="ask"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAVE="AVTYPE=Circular;SAVE=Yes - Concatenate;NAME=Auto;PLOT=No;BINTYPE=F4-M4-B;"
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gDRK="DRK=none,DRKMODE=0,"
+	String/G root:Packages:NIST:VSANS:Globals:Protocols:gHRNoise="not yet loaded"
 	
 	// global strings for trimming data are initialized in the main VSANS initilization
 	//  in case the trimming is done before the protocol panel is opened
@@ -1053,7 +1054,8 @@ Window V_ProtocolPanel()
 	NewPanel /W=(1180*sc,332*sc,1530*sc,932*sc) /K=1 as "VSANS Reduction Protocol"
 	ModifyPanel cbRGB=(56589,50441,50159)//, fixedSize=1
 	SetDrawLayer UserBack
-	DrawLine 3,65*sc,301*sc,65*sc
+	DrawLine 3,40*sc,301*sc,40*sc
+	DrawLine 3,100*sc,301*sc,100*sc
 	DrawLine 3,157*sc,301*sc,157*sc
 	DrawLine 3,208*sc,301*sc,208*sc
 	DrawLine 3,257*sc,301*sc,257*sc
@@ -1066,22 +1068,27 @@ Window V_ProtocolPanel()
 //
 	Button button_help,pos={sc*300,2*sc},size={sc*25,20*sc},proc=V_ShowProtoHelp,title="?"
 	Button button_help,help={"Show the help file for setting up a reduction protocol"}
+
 //	Button button_quest,pos={sc*20,2*sc},size={sc*150,20*sc},proc=V_ProtocolQuestionnaire,title="Questions"
 //	Button button_quest,help={"Run through the questionnaire for setting up a reduction protocol"}
 //	Button button_quest,disable=2
 
 
-	PopupMenu popup_sam,pos={sc*85,68*sc},size={sc*51,23*sc},proc=V_SAMFilePopMenuProc
+	PopupMenu popup_sam,pos={sc*90,105*sc},size={sc*51,23*sc},proc=V_SAMFilePopMenuProc
 	PopupMenu popup_sam,mode=1,value= #"V_getSAMList()"	
-	PopupMenu popup_bkg,pos={sc*85,164*sc},size={sc*51,23*sc},proc=V_BKGFilePopMenuProc
+	PopupMenu popup_bkg,pos={sc*90,164*sc},size={sc*51,23*sc},proc=V_BKGFilePopMenuProc
 	PopupMenu popup_bkg,mode=1,value= #"V_getBGDList()"
-	PopupMenu popup_emp,pos={sc*85,213*sc},size={sc*51,23*sc},proc=V_EMPFilePopMenuProc
+	PopupMenu popup_emp,pos={sc*90,213*sc},size={sc*51,23*sc},proc=V_EMPFilePopMenuProc
 	PopupMenu popup_emp,mode=1,value= #"V_getEMPList()"
-	PopupMenu popup_div,pos={sc*85,263*sc},size={sc*51,23*sc},proc=V_DIVFilePopMenuProc
+	PopupMenu popup_div,pos={sc*90,263*sc},size={sc*51,23*sc},proc=V_DIVFilePopMenuProc
 	PopupMenu popup_div,mode=1,value= #"V_getDIVList()"
-	PopupMenu popup_msk,pos={sc*85,356*sc},size={sc*51,23*sc},proc=V_MSKFilePopMenuProc
+	PopupMenu popup_msk,pos={sc*90,356*sc},size={sc*51,23*sc},proc=V_MSKFilePopMenuProc
 	PopupMenu popup_msk,mode=1,value= #"V_getMSKList()"	
-		
+
+	PopupMenu popup_HRN,pos={sc*10,48*sc},size={sc*51,23*sc},proc=V_HRNoiseFilePopMenuProc
+	PopupMenu popup_HRN,mode=1,value= #"V_getBGDList()"
+	PopupMenu popup_HRN,title="HR Read Noise"
+			
 		
 	CheckBox prot_check,pos={sc*6,163*sc},size={sc*74,14*sc},title="Background"
 	CheckBox prot_check,help={"If checked, the specified background file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
@@ -1095,7 +1102,7 @@ Window V_ProtocolPanel()
 	CheckBox prot_check_3,pos={sc*6,356*sc},size={sc*43,14*sc},title="Mask"
 	CheckBox prot_check_3,help={"If checked, the specified mask file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_3,value= 1
-	CheckBox prot_check_4,pos={sc*6,70*sc},size={sc*53,14*sc},title="Sample"
+	CheckBox prot_check_4,pos={sc*6,105*sc},size={sc*53,14*sc},title="Sample"
 	CheckBox prot_check_4,help={"If checked, the specified sample file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
 	CheckBox prot_check_4,value= 1
 	CheckBox prot_check_5,pos={sc*6,399*sc},size={sc*56,14*sc},title="Average"
@@ -1129,9 +1136,12 @@ Window V_ProtocolPanel()
 	
 	Button pick_trim,pos={sc*264,454*sc},size={sc*70,20*sc},proc=V_TrimDataProtoButton,title="Trim"
 	Button pick_trim,help={"This button will prompt the user for trimming parameters"}	
+
+	SetVariable HRNStr,pos={sc*6,72*sc},size={sc*250,15*sc},title="file:"
+	SetVariable HRNStr,help={"Filename of the high-resolution read noise file to be used in the data reduction"}
+	SetVariable HRNStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gHRNoise		
 	
-	
-	SetVariable samStr,pos={sc*6,90*sc},size={sc*250,15*sc},title="file:"
+	SetVariable samStr,pos={sc*6,130*sc},size={sc*250,15*sc},title="file:"
 	SetVariable samStr,help={"Filename of the sample file(s) to be used in the data reduction"}
 	SetVariable samStr,limits={-Inf,Inf,0},value= root:Packages:NIST:VSANS:Globals:Protocols:gSAM		
 	SetVariable bgdStr,pos={sc*7,186*sc},size={sc*250,15*sc},title="file:"
@@ -1191,7 +1201,27 @@ EndMacro
 
 
 
+Function V_HRNoiseFilePopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
 
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			SVAR tempStr = root:Packages:NIST:VSANS:Globals:Protocols:gHRNoise
+			tempStr = popStr
+			
+			// load the file right now
+			////Execute "LoadHighResReadNoiseData()"
+			V_LoadHDF5Data(tempStr,"RAW")
+			V_CopyHDFToWorkFolder("RAW","ReadNoise")
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 Function V_SAMFilePopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa

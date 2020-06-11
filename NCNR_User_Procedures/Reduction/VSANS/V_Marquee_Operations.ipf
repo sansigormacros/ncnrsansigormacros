@@ -448,7 +448,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		xRef = xCtr
 		yRef = yCtr			//these are in pixels
 	endif
-	sprintf ctrStr,"XREF=%g;YREF=%g;",xRef,yRef
+	sprintf ctrStr,"XREF=%g;YREF=%g;PANEL=%s;",xRef,yRef,detStr
 	SVAR gFileList = $("root:Packages:NIST:VSANS:"+gCurDispType+":gFileList")
 	
 	V_writeReductionComments(gFileList,ctrStr)

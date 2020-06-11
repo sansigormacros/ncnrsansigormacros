@@ -23,7 +23,8 @@
 //
 //************************
 
-Constant kVSANSVersion = 7.99
+// with three digit numbers - don't end in 0, or it won't show. Skip the 0's (100 -> 101)
+Constant kVSANSVersion = 7.101
 
 // DONE -- store all of the constant values here in the initialization routine. no need
 // to set up a separate file of "constants" or "globals" where the actual numbers are
@@ -193,6 +194,7 @@ Function V_InitFolders()
 // for the globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
+	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Patch
 	
 // for the raw nexus data (so I don't need to reload to get a single value)
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
@@ -275,6 +277,9 @@ Function V_InitGlobals()
 	// set the lookup waves for log/lin display of the detector images
 	V_MakeImageLookupTables(10000,0,1)
 
+	// globals that store hi/lo file numbers for multiple patch panels
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi = 0
 
 
 	//set flag if Demo Version is detected

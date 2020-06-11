@@ -344,7 +344,36 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 			Duplicate/O $("root:"+n3), $w3
 			Duplicate/O $("root:"+n4), $w4
 			Duplicate/O $("root:"+n5), $w5
-	
+
+			SetScale d,0,0,"1/A",$w0
+			SetScale d,0,0,"1/cm",$w1
+
+
+	// find the collimation condition from the file header
+	// so that I can read in VSANS narrow slit data differently
+	//
+		Variable ii
+		String buffer
+		ii=0
+//		Print fileNamePath
+		Open/R refNum as fileNamePath
+		FStatus refNum
+		do
+			FReadLine refNum, buffer
+			ii += 1
+		while (ii < 10)
+		
+		FReadLine refNum,buffer
+		Print buffer
+		
+		Close refNum
+			
+		String CollimationStr=StringbyKey("COLLIMATION",buffer,"=",";")
+//		Print "The collimation is: ",collimationStr
+
+		// isVSANSNarrowSlit will be something other than -1 if narrowSlit is found
+		Variable isVSANSNarrowSlit = strsearch(collimationStr,"narrowSlit",0,2)		//2=ignore case
+		
 			// need to switch based on SANS/USANS
 			if (isSANSResolution($w3[0]))		//checks to see if the first point of the wave is <0]
 				// make a resolution matrix for SANS data
@@ -368,23 +397,21 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 // a VSANS reduction experiment, or a standalone analysis package
 // -- since this is a Proc, not a function, #conditional compile does not work,
 // but, since it's a Proc, it is not compiled, so missing functions aren't flagged as a compile error
-//				if (exists("NCNR_VSANS")==6)			//defined in the main  VSANS #includes file.
-//					DoAlert 0,"**Treating data as VSANS data**"
-					Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
-					$(baseStr+"_dQv") = -$(baseStr+"_dQv")
-					USANS_CalcWeights(baseStr,dQv)
-//				else
-//					DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
-//					USANS_CalcWeights(baseStr,dQv)
-//				endif				
+				Duplicate/O $w3,$(baseStr+"_dQv")			//save a copy for VSANS
+				$(baseStr+"_dQv") = -$(baseStr+"_dQv")
 
-				
+				if (isVSANSNarrowSlit != -1)			//COLLIMATION=narrowSlit found in header
+//					DoAlert 0,"**Treating data as VSANS data**"
+					V_CalcVSANSWeights(baseStr)
+				else
+//					DoAlert 0,"Treating data as USANS (normal slit-smeared data)"
+					USANS_CalcWeights(baseStr,dQv)
+				endif				
+				SetDataFolder $("root:"+baseStr)
 				
 			endif
 			Killwaves/Z $w3,$w4,$w5			//get rid of the resolution waves that are in the matrix
 	
-			SetScale d,0,0,"1/A",$w0
-			SetScale d,0,0,"1/cm",$w1
 		
 		endif	//6-col data
 	
