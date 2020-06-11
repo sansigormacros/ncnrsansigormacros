@@ -2,6 +2,17 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+
+
+
+// to use the "interpolated" wavelength distribution, uncomment the appropriate line in
+// Function V_integrand_pgsWB(cw,dum), and comment out the "mid" call
+// -- the waves that the interpolation is using are now hard-wired and will be 
+// generated as needed
+// -- the calculation is NO DIFFERENT than the parametrized form, and is MUCH slower
+
+
+
 // turn the White Beam resolution smearing into a fitting function
 // so that the wavelength smeared function can then be smeared by
 // a gaussian resolution function that has geometry only.
@@ -166,7 +177,12 @@ Function V_integrand_pgsWB(cw,dum)
 //	SVAR funcStr = root:gFunctionString
 //	FUNCREF SANSModel_proto func = $funcStr
 
-	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
+// to use the "interpolated" wavelength distribution, uncomment this line
+// AND be sure that you load the waves in that V_WhiteBeamInterp() is expecting
+// -- the calculation is NO DIFFERENT than the parametrized form, and is MUCH slower
+
+	val = V_WhiteBeamInterp(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
+//	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
 	
 	return (val)
 End

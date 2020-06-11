@@ -200,6 +200,51 @@ Function V_XMLWritePref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+Function V_NXCanSASWritePref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:VSANS:Globals:gNXcanSAS_Write
+	gVal = checked
+End
+
+
+Function V_WritePref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	NVAR asciiVal = root:Packages:NIST:gASCII_Write
+	NVAR xmlVal = root:Packages:NIST:gXML_Write
+	NVAR nxVal = root:Packages:NIST:gNXcanSAS_Write
+
+	strswitch (ctrlName)
+		case "PrefCtrl_0a":
+			CheckBox PrefCtrl_0a,value=1
+			asciiVal = checked
+			CheckBox PrefCtrl_0b,value=0
+			xmlVal = 0
+			CheckBox PrefCtrl_0c,value=0
+			nxVal = 0
+			break
+		case "PrefCtrl_0b":
+			CheckBox PrefCtrl_0a,value=0
+			asciiVal = 0
+			CheckBox PrefCtrl_0b,value=1
+			xmlVal = checked
+			CheckBox PrefCtrl_0c,value=0
+			nxVal = 0
+			break
+		case "PrefCtrl_0c":
+			CheckBox PrefCtrl_0a,value=0
+			asciiVal = 0
+			CheckBox PrefCtrl_0b,value=0
+			xmlVal = 0
+			CheckBox PrefCtrl_0c,value=1
+			nxVal = checked
+	endswitch
+End
+
+
 Function V_DoTransCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
@@ -341,20 +386,27 @@ Proc VSANSPref_Panel()
 	TabControl PrefTab labelBack=(47748,57192,54093)
 	
 //on tab(0) - General
-	CheckBox PrefCtrl_0a,pos={21*sc,96*sc},size={124*sc,14*sc},proc=V_XMLWritePref,title="Use canSAS XML Output"
-	CheckBox PrefCtrl_0a,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
-	CheckBox PrefCtrl_0a,value= root:Packages:NIST:VSANS:Globals:gXML_Write
-	CheckBox PrefCtrl_0b,pos={21*sc,140*sc},size={124*sc,14*sc},proc=WritePref,title="Use NXcanSAS HDF5 Output",mode=1
-	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
-	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
-	heckBox PrefCtrl_0c,pos={21*sc,164*sc},size={124*sc,14*sc},proc=V_LaptopModePref,title="Laptop Mode for Panels"
-	CheckBox PrefCtrl_0c,help={"Checking this will draw panels smaller to fit on a 1920x1080 laptop screen"}
-	CheckBox PrefCtrl_0c,value= root:Packages:NIST:VSANS:Globals:gLaptopMode
 
-	CheckBox PrefCtrl_0,disable=1
+	CheckBox PrefCtrl_0a,pos={21*sc,96*sc},size={124*sc,14*sc},proc=V_WritePref,title="Use NCNR ASCII Output"
+	CheckBox PrefCtrl_0a,help={"Checking this will set the default output to be NCNR ASCII format"}
+	CheckBox PrefCtrl_0a,value= root:Packages:NIST:gASCII_Write, mode=1
+	CheckBox PrefCtrl_0b,pos={21*sc,114*sc},size={124*sc,14*sc},proc=V_WritePref,title="Use canSAS XML Output"
+	CheckBox PrefCtrl_0b,help={"Checking this will set the default output format to be canSAS XML rather than NIST 6 column"}
+	CheckBox PrefCtrl_0b,value= root:Packages:NIST:VSANS:Globals:gXML_Write, mode=1
+	CheckBox PrefCtrl_0c,pos={21*sc,132*sc},size={124*sc,14*sc},proc=V_WritePref,title="Use NXcanSAS HDF5 Output"
+	CheckBox PrefCtrl_0c,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
+	CheckBox PrefCtrl_0c,value= root:Packages:NIST:gNXcanSAS_Write, mode=1
+
+	
+	CheckBox PrefCtrl_0d,pos={21*sc,164*sc},size={124*sc,14*sc},proc=V_LaptopModePref,title="Laptop Mode for Panels"
+	CheckBox PrefCtrl_0d,help={"Checking this will draw panels smaller to fit on a 1920x1080 laptop screen"}
+	CheckBox PrefCtrl_0d,value= root:Packages:NIST:VSANS:Globals:gLaptopMode
+
+//	CheckBox PrefCtrl_0,disable=1
 	CheckBox PrefCtrl_0a,disable=1
 	CheckBox PrefCtrl_0b,disable=1
 	CheckBox PrefCtrl_0c,disable=1
+	CheckBox PrefCtrl_0d,disable=1
 
 
 //on tab(1) - VSANS - initially visible

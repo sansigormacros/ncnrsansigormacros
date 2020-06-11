@@ -638,8 +638,14 @@ Function DoTheFitButton(ba) : ButtonControl
 			w[0] -= 1e-6
 
 		// in Igor 8, the fit results don't seem to update automatically
-			ControlUpdate/W=WrapperPanel grpBox_2
-			ControlUpdate/W=WrapperPanel grpBox_3
+		// unless I click off the wrapper and back on. even a direct ControlUpdate
+		// doesn't work
+			String topWin=WinName(0,1)  // Name of top graph
+			DoWindow/F topWin
+			DoUpdate
+//			ControlUpdate/W=WrapperPanel grpBox_2
+//			ControlUpdate/W=WrapperPanel grpBox_3
+//			DoWindow/F WrapperPanel
 					
 			break
 	endswitch
@@ -985,6 +991,7 @@ Function FitWrapper(folderStr,funcStr,coefStr,useCursors,useEps,useConstr,useRes
 	resultStr = PadString(resultStr,63,0x20)
 	GroupBox grpBox_3 title=resultStr
 	ControlUpdate/W=WrapperPanel grpBox_3
+	DoUpdate/W=WrapperPanel		//this still doesn't update the text...
 	
 	Variable yesSave=0,yesReport=0
 	ControlInfo/W=WrapperPanel check_4
