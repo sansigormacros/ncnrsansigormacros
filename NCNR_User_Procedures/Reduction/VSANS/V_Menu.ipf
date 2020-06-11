@@ -74,6 +74,10 @@ Menu "VSANS"
 		"-"
 		"Beam Center Panel",V_FindBeamCenter()
 		"Save I(Q) as ITX",Vm_Write1DData_ITX()
+		"-"
+		"Recalculate Smearing Matrix",V_RecalcWeights()
+		"Force qTrap Calculation",V_ForceQTrap()
+		"Force Matrix Calculation",V_ForceMatrix()
 		//
 //		"Setup_VSANS_DIV_Struct"
 //		"Save_VSANS_DIV_Nexus"
@@ -100,6 +104,21 @@ Menu "VSANS"
 //		"Load Fake MASK Data"
 //		"Correct Data",V_CorrectData()
 //	End
+End
+
+// for VSANS Analysis -- use the qTrap integration which is more reliable, but slow
+Function V_ForceQTrap()
+	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	useTrap = 1
+	return(0)
+End
+
+// for VSANS Analysis -- use the matrix method, faster, but not always correct
+// (and I don't yet know why)
+Function V_ForceMatrix()
+	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	useTrap = 0
+	return(0)
 End
 
 

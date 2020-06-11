@@ -296,7 +296,7 @@ End
 
 Proc V_SetLaptopMode()
 
-	root:Packages:NIST:VSANS:Globals:gLaptopMode = 1	
+	Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = 1	
 	
 	DoWindow/K Main_VSANS_Panel
 	Initialize_VSANS()

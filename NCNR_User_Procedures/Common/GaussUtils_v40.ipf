@@ -1662,6 +1662,7 @@ Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
 	Wave sm_ans		// wave returned with the smeared model
 
 	NVAR dQv = root:Packages:NIST:USANS_dQv
+	NVAR useTrap = root:Packages:NIST:USANSUseTrap
 
 // local variables
 	Variable ii,jj
@@ -1691,23 +1692,38 @@ Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
 	qbar = interp(x,tmpqvals,tmpqbar)
 	sigq = interp(x,tmpqvals,tmpsigq)
 	
-	// if USANS data, handle separately
+	// if USANS or VSANS data, handle separately
 	// -- but this would only ever be used if the calculation was forced to use trapezoid integration
-	if ( ! isSANSResolution(sigq[0]) )
-			//smear with the USANS routine
+	// by intentionally bypssing the chance to use the matrix calculation byt setting
+	// the global flag useTrap = 1. Without this flag, the matrix is detected and used.
+	//
+//	if ( ! isSANSResolution(sigq[0]) )
+
+	if (dimsize(resW,1) > 4 && useTrap == 1)
+		//smear with the USANS routine
 		// Make global string and local variables
 		// now data folder aware, necessary for GlobalFit = FULL path to wave	
 		String/G gTrap_coefStr = GetWavesDataFolder(w, 2 )	
 		Variable maxiter=20, tol=1e-4,uva,uvb
+//		Variable maxiter=10, tol=1e-2,uva,uvb
 		
+		String df = GetWavesDataFolder(w,0)
+		
+		Wave/Z dQvWave = $("root:"+df+":"+df+"_dQv")
+
 		num=numpnts(x)
 		// set up limits for the integration
 		uva=0
-		uvb=abs(dQv)
+		//uvb=abs(dQv)
 		
 		//loop over the q-values
 		for(jj=0;jj<num;jj+=1)
 			Variable/G gEvalQval = x[jj]
+
+
+			//make dQv a per-point value
+			uvb=abs(dQvWave[jj])
+			dQv = dQvWave[jj]		//update the global value too
 
 			// call qtrap to do actual work
 			sm_ans[jj] = qtrap_USANS(fcn,uva,uvb,tol,maxiter)
