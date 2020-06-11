@@ -138,3 +138,6 @@ End
 #include "V_Sector_Average"
 #include "V_TemperatureSensor"
 
+// new utility to recalculate the smearing matrix for VSANS files
+#include "V_VSANS_ResMatrix"
+

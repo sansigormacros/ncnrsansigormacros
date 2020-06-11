@@ -69,6 +69,7 @@ Proc PlotSmearedGaussSpheresWB(str)
 	SetScale d,0,0,"1/cm",smeared_pgsWB							
 					
 	Variable/G gs_pgsWB=0
+//the proper call
 	gs_pgsWB := fSmearedGaussSpheresWB(smear_coef_pgsWB,smeared_pgsWB,smeared_qvals)	//this wrapper fills the STRUCT
 	
 	Display smeared_pgsWB vs smeared_qvals									
@@ -80,7 +81,6 @@ Proc PlotSmearedGaussSpheresWB(str)
 	SetDataFolder root:
 	AddModelToStrings("SmearedGaussSpheresWB","smear_coef_pgsWB","smear_parameters_pgsWB","pgsWB")
 End
-	
 
 
 
@@ -200,7 +200,15 @@ End
 Function SmearedGaussSpheresWB(s) :FitFunc
 	Struct ResSmearAAOStruct &s
 
+
+// I added this in to force the calculation to use qTrap
+// rather than the matrix method
+//	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+//	useTrap = 1
+	//now see the functions V_ForceQTrap() and V_ForceMatrix() to set the flag
+
 //	the name of your unsmeared model (AAO) is the first argument
+//	
 	Smear_Model_20(GaussSpheresWB,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)

@@ -637,7 +637,9 @@ Function DoTheFitButton(ba) : ButtonControl
 			w[0] += 1e-6
 			w[0] -= 1e-6
 
-	
+		// in Igor 8, the fit results don't seem to update automatically
+			ControlUpdate/W=WrapperPanel grpBox_2
+			ControlUpdate/W=WrapperPanel grpBox_3
 					
 			break
 	endswitch
