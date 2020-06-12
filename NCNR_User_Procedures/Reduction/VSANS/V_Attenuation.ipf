@@ -150,15 +150,14 @@ End
 // function to calculate the attenuation factor from the table in the file
 //
 // fill in a "dummy" wavelength for White Beam and graphite
+// lam *= 1 for velocity selector and graphite Per John, we can use the VS calibration for HOPG
 // *= 1e3 for White Beam
-// *= 1e6 for graphite (***NO***) Per John, we can use the VS calibration for HOPG
+// *= 1e6 for Super White Beam 
 // use these dummy values just for the lookup table
 //
-// TODO -- need the enumerated values for the monochromator type
+// (DONE) -- need the enumerated values for the monochromator type
 // TODO -- V_getMonochromatorType(fname) is NOT written correctly by NICE
-// TODO -- determine the dimensions of the wave, don't hard-wire
-// TODO -- update to use separate tables for each monochromator mode
-// TODO -- (same updates for the error table)
+// (DONE) -- determine the dimensions of the wave, don't hard-wire
 //
 Function V_CalculateAttenuationFactor(fname)
 	String fname
@@ -173,7 +172,7 @@ Function V_CalculateAttenuationFactor(fname)
 		Abort "Wavelength out of range for attenuation table"
 	endif
 		
-	// TODO -- need to switch on "type"
+	// - need to switch on "type"
 	//  == velocity_selector || ?? for white beam || graphite
 //	monoType = V_getMonochromatorType(fname)
 
@@ -223,7 +222,7 @@ End
 // *= 1e6 for graphite (***NO***) Per John, we can use the VS calibration for HOPG
 // use these dummy values just for the lookup table
 //
-// TODO -- need the enumerated values for the monochromator type
+// (DONE) -- need the enumerated values for the monochromator type
 // TODO -- V_getMonochromatorType(fname) is NOT written correctly by NICE
 //
 //
@@ -240,7 +239,7 @@ Function V_CalculateAttenuationError(fname)
 		Abort "Wavelength out of range for attenuation error table"
 	endif
 		
-	// TODO -- need to switch on "type"
+	// - need to switch on "type"
 	//  == velocity_selector || ?? for white beam || crystal
 //	monoType = V_getMonochromatorType(fname)
 	

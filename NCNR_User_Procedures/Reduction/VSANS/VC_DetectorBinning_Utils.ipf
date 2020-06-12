@@ -738,8 +738,8 @@ Function V_SetDeltaQ(folderStr,detStr)
 		delQ = abs(qy[0][1] - qy[0][0])/2
 	endif
 
-// TODOHIGHRES
-// -- is this how I want to handle the too-fine resolution of 1x1 binning?
+// (DONE)_HIGHRES
+// -- this will handle the too-fine resolution of 1x1 binning?
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 
 	if(cmpstr(detStr,"B") == 0 && gHighResBinning == 1)
@@ -748,7 +748,7 @@ Function V_SetDeltaQ(folderStr,detStr)
 	endif
 	
 	// multiply the deltaQ by the binWidth (=multiple of pixels)
-	// this defaults to 1, and is set in VSANS preferences
+	// this defaults to 1.2, and is set in VSANS preferences
 	delQ *= binWidth
 	
 	// set the global
@@ -868,86 +868,6 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 	maskMissing = 1
 
 	strswitch(type)	// string switch
-//		case "FL":		// execute if case matches expression
-//		case "FR":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//				
-//			endif
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
-								
-//		case "FT":		
-//		case "FB":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break
-			
-//		case "ML":		
-//		case "MR":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			//TODO:
-//			// -- decide on the proper deltaQ for binning. either nominal value for LR, or one 
-//			//    determined specifically for that panel (currently using one tube width as deltaQ)
-//			// -- this is repeated multiple times in this switch
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
-					
-//		case "MT":		
-//		case "MB":
-//			detStr = type
-//			if(isVCALC)
-//				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
-//				WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
-//			else
-//				Wave inten = V_getDetectorDataW(folderStr,detStr)
-//				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
-//				Wave/Z mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_"+detStr+":data")
-//				if(WaveExists(mask) == 1)
-//					maskMissing = 0
-//				endif
-//			endif	
-//			NVAR delQ = $(folderPath+instPath+detStr+":gDelQ_"+detStr)
-//			Wave qTotal = $(folderPath+instPath+detStr+":qTot_"+detStr)			// 2D q-values
-//			nSets = 1
-//			break	
 
 // only one panel, simply pick that panel and move on out of the switch
 		case "FL":
@@ -977,7 +897,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 			
 		case "FLR":
 		// detStr has multiple values now, so unfortuntely, I'm hard-wiring things...
-		// TODO
+		// -but what I'm hard-wiring is only the definition of FLR
 		// -- see if I can un-hard-wire some of this below when more than one panel is combined
 			if(isVCALC)
 				WAVE inten = $(folderPath+instPath+"FL"+":det_"+"FL")
@@ -1186,31 +1106,31 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
 //		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr = sqrt(inten+0.75)			// TODO -- here I'm just using some fictional value
+		iErr = sqrt(inten+0.75)			// (DONE) -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr2)==0 && WaveExists(inten2) != 0)
 		Duplicate/O inten2,iErr2
 		Wave iErr2=iErr2
 //		iErr2 = 1+sqrt(inten2+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr2 = sqrt(inten2+0.75)			// TODO -- here I'm just using some fictional value
+		iErr2 = sqrt(inten2+0.75)			// (DONE) -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr3)==0  && WaveExists(inten3) != 0)
 		Duplicate/O inten3,iErr3
 		Wave iErr3=iErr3
 //		iErr3 = 1+sqrt(inten3+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr3 = sqrt(inten3+0.75)			// TODO -- here I'm just using some fictional value
+		iErr3 = sqrt(inten3+0.75)			// (DONE) -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr4)==0  && WaveExists(inten4) != 0)
 		Duplicate/O inten4,iErr4
 		Wave iErr4=iErr4
 //		iErr4 = 1+sqrt(inten4+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
+		iErr4 = sqrt(inten4+0.75)			// (DONE) -- here I'm just using some fictional value
 	endif
 
-	// TODO -- nq will need to be larger, once the back detector is installed
+	// (DONE) -- nq is larger for the back detector
 	//
-	// note that the back panel of 320x320 (1mm res) results in 447 data points!
-	// - so I upped nq to 600
+	// - the needs for the back detector keep shrinkng as the CCDs die...
+	//
 
 	if(cmpstr(type,"B") == 0)
 		nq = 8000
@@ -1218,7 +1138,7 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 		nq=600
 	endif
 
-//******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
+//******(DONE) averaged data stored in the (type) data folder-- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
 	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy"+"_"+type)
 	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
@@ -1235,13 +1155,13 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy"+"_"+type)
 	
 	
-//	delQ = abs(sqrt(qx[2]^2+qy[2]^2+qz[2]^2) - sqrt(qx[1]^2+qy[1]^2+qz[1]^2))		//use bins of 1 pixel width 
-// TODO: not sure if I want to set dQ in x or y direction...
-	// the short dimension is the 8mm tubes, use this direction as dQ?
-	// but don't use the corner of the detector, since dQ will be very different on T/B or L/R due to the location of [0,0]
-	// WRT the beam center. use qx or qy directly. Still not happy with this way...
-
-
+//
+// (DONE): not sure if I want to set dQ in x or y direction..
+// -- delQ is set from a global value for each panel. delQ is found as the q-Width of the 
+// lateral direction of the innermost tube on the panel.
+//
+// delQ can further be modified by the global preference of step size (default is 1.2)
+//
 	qBin_qxqy[] =  p*delQ	
 	SetScale/P x,0,delQ,"",qBin_qxqy		//allows easy binning
 
@@ -1257,9 +1177,6 @@ Function VC_fDoBinning_QxQy2D(folderStr,type,collimationStr)
 // 4 panels
 //
 // this needs to be a double loop now...
-// TODO:
-// -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
-// -- verify the 2D error propagation by reducing it to 1D error
 //
 //
 // The 1D error does not use iErr, and IS CALCULATED CORRECTLY

@@ -566,7 +566,7 @@ Function/T H5GW_ValidateFolder(parentFolder)
 			SetDataFolder $oldFolder
 			return "specified IgorPro object " + item + " was not found in folder " + parentFolder
 		endif
-		// TODO: Check that each corresponding HDF5___xref[ii][0] is a valid HDF5 path name
+		// TODO_low: Check that each corresponding HDF5___xref[ii][0] is a valid HDF5 path name
 		if ( itemsInList(item, ":") != itemsInList(HDF5___xref[ii][0], "/") )
 			SetDataFolder $oldFolder
 			msg = "different lengths between HDF5 and IgorPro paths on row" + num2str(ii) + "of HDF5___xref"
@@ -574,7 +574,7 @@ Function/T H5GW_ValidateFolder(parentFolder)
 		endif
 	endfor
 	
-	// TODO: more validation steps
+	// TODO_low: more validation steps
 
 	SetDataFolder $oldFolder
 	return ""
@@ -827,7 +827,7 @@ static Function H5GW__make_xref(parentFolder, objectPaths, group_name_list, ds_l
 			xref = H5GW__addPathXref(parentFolder, base_name, dataset, igorPath, xref, keySep, listSep)
 		endfor
 	else
-		// TODO: report an error here and return
+		// TODO_low: report an error here and return
 	endif
 	
 	// finally, write the xref contents to a wave

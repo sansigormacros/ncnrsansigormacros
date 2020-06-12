@@ -167,8 +167,8 @@ end
 //   keep up with any changes in path
 //
 //
-// TODO -- verify the paths, and add more as needed
-// TODO -- for all of the String functions -- "num" does nothing right now - 
+// (DONE) -- verify the paths, and add more as needed
+//  -- for all of the String functions -- "num" does nothing right now - 
 //         -- if it ever does, or needs to, a lot of locations will need to be corrected
 //
 
@@ -186,7 +186,7 @@ end
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection time (! this is the true counting time??)
 Function V_getCollectionTime(fname)
 	String fname
@@ -213,7 +213,7 @@ Function/S V_getNexusDefinition(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection duration (may include pauses, other "dead" time)
 Function V_getDataDuration(fname)
 	String fname
@@ -222,7 +222,7 @@ Function V_getDataDuration(fname)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection end time
 Function/S V_getDataEndTime(fname)
 	String fname
@@ -279,7 +279,7 @@ End
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 Function/S V_getProgram_name(fname)
 	String fname
 	
@@ -288,7 +288,7 @@ Function/S V_getProgram_name(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection start time
 Function/S V_getDataStartTime(fname)
 	String fname
@@ -328,7 +328,7 @@ end
 //////// CONTROL
 //////// CONTROL
 
-// TODO -- for the control section, document each of the fields
+// (DONE) -- for the control section, document each of the fields
 
 // **cut in JUNE 2017
 //Function/S V_getCount_end(fname)
@@ -391,7 +391,7 @@ end
 //end
 
 // control mode for data acquisition, "timer"
-// TODO - what are the enumerated types for this?
+//  - what are the enumerated types for this?
 Function/S V_getControlMode(fname)
 	String fname
 	
@@ -460,7 +460,7 @@ Function/S V_getInstrumentType(fname)
 End
 
 ////// INSTRUMENT/ATTENUATOR
-// TODO - be sure of the definition of these terms
+//  - be sure of the definition of these terms
 //
 
 // transmission value for the attenuator in the beam
@@ -1368,7 +1368,7 @@ Function/WAVE V_getDet_cal_x(fname,detStr)
 End
 
 // only defined for the "B" detector, and may not be necessary?
-// TODO -- write to return an ARRAY
+// (DONE) -- write to return an ARRAY
 Function/WAVE V_getDet_cal_y(fname,detStr)
 	String fname,detStr
 
@@ -1445,7 +1445,7 @@ Function V_getDet_beam_center_y(fname,detStr)
 End
 
 
-//TODO
+//(DONE)
 //
 // x and y center in mm is currently not part of the Nexus definition
 //  does it need to be?
@@ -1457,7 +1457,7 @@ Function V_getDet_beam_center_x_mm(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-//TODO
+//(DONE)
 //
 // x and y center in mm is currently not part of the Nexus definition
 //  does it need to be?
@@ -1469,7 +1469,7 @@ Function V_getDet_beam_center_y_mm(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-//TODO
+//(DONE)
 //
 // x and y center in pix is currently not part of the Nexus definition
 //  does it need to be?
@@ -1481,7 +1481,7 @@ Function V_getDet_beam_center_x_pix(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-//TODO
+//(DONE)
 //
 // x and y center in pix is currently not part of the Nexus definition
 //  does it need to be?
@@ -1514,8 +1514,9 @@ Function/WAVE V_getDetectorLinearDataW(fname,detStr)
 End
 
 //
-// TODO -- this does not exist in the raw data, but does in the processed data
+// (DONE) -- this does not exist in the raw data, but does in the processed data
 // !!! how to handle this?? Binning routines need the error wave
+// -- be sure that I generate a local copy of this wave at load time
 //
 Function/WAVE V_getDetectorLinearDataErrW(fname,detStr)
 	String fname,detStr
@@ -1528,9 +1529,11 @@ End
 
 
 //
-// TODO -- this does not exist in the raw data, but does in the processed data
+// (DONE) -- this does not exist in the raw data, but does in the processed data
 // !!! how to handle this?? Binning routines need the error wave
+// -- be sure that I generate a local copy of this wave at load time
 //
+
 Function/WAVE V_getDetectorDataErrW(fname,detStr)
 	String fname,detStr
 
@@ -1540,7 +1543,7 @@ Function/WAVE V_getDetectorDataErrW(fname,detStr)
 	return w
 End
 
-// TODO -- write this function to return a WAVE with the data
+// (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 // ALSO -- the "B" deadtime will be a single value (probably)
 //  but the tube banks will be 1D arrays of values, one per tube
@@ -1668,7 +1671,7 @@ Function V_getDet_VerticalOffset(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
-// TODO -DONE be sure this is defined correctly (with correct units-- this is now 41.0 cm)
+// -DONE be sure this is defined correctly (with correct units-- this is now 41.0 cm)
 // -- only returns for T/B detectors
 Function V_getDet_TBSetback(fname,detStr)
 	String fname,detStr
@@ -1778,7 +1781,7 @@ Function/S V_getDet_tubeOrientation(fname,detStr)
 	endif
 End
 
-// TODO -- be clear on how this is defined. Units?
+// (DONE) -- be clear on how this is defined. Units are in [mm]
 Function V_getDet_tubeWidth(fname,detStr)
 	String fname,detStr
 
@@ -2205,7 +2208,8 @@ end
 
 
 //Sample Thickness
-// TODO -- somehow, this is not set correctly in the acquisition, so NaN results
+// (DONE) -- somehow, this is not set correctly in the acquisition, so NaN results
+// -- this has been corrected in NICE (when??)
 Function V_getSampleThickness(fname)
 	String fname
 	
@@ -2768,7 +2772,7 @@ end
 //			thumbnail (data folder)
 
 ////data (wave) "binary"
-//// TODO -- this will need to be completely replaced with a function that can 
+////  -- this will need to be completely replaced with a function that can 
 //// read the binary image data. should be possible, but I don't know the details on either end...
 //Function/S V_getDataImage(fname,detStr)
 //	String fname,detStr

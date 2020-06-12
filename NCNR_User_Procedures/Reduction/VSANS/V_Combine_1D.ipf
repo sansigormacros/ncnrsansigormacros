@@ -6,23 +6,22 @@
 
 
 //
-// TODO:
+// (DONE):
 // x- make  the data folder list for the popup
 // x- make the data folder popup do the work of plotting 
 //
 // x- (done by invoking the panel)
 //   x-make a button to show the default table, and set up dependencies to link to the graph display
 //
-// -- have an "active" data set to trim, or make duplicates for all of the data sets
+// x-  make duplicates for all of the data sets for trimming
 //
-// -- button to convert the points to strings that can be used and written to data files?
-// -- is this really necessary? if the save button is clicked, the strings are automatically generated
-//  -- but what if it's not? What if I do something else to send the strings to a protocol? or to a file?
+// x- button to convert the points to strings that can be used and written to data reduction protocol
 //
-// -- find a better way to be sure that the dependency does not generate errors if it is not
+//
+// x- find a better way to be sure that the dependency does not generate errors if it is not
 //   properly killed
 //
-// -- help file
+// x- help file
 //
 // x- larger panel
 //
@@ -247,7 +246,8 @@ Function V_DataBinTypePlotPop(ctrlName,popNum,popStr) : PopupMenuControl
 	// Plot the "real" data. data copy to trim will be plotted later
 	//
 	SVAR dispType = root:Packages:NIST:VSANS:Globals:gCurDispType
-	String collimationStr="pinhole"		//TODO: where do I get this information from ? does it matter here?
+	String collimationStr="pinhole"		//(DONE): collimationStr does not matter here, since it only
+	// is used for the resolution function - and this data is not being written to disk.
 
 // dispatch based on the string, not on the number of selection in the pop string
 	V_QBinAllPanels_Circular(dispType,binType,collimationStr)
@@ -465,9 +465,12 @@ Function V_DoneCombine1D_ButtonProc(ctrlName) : ButtonControl
 	return(0)
 End
 
-// TODO
-// -- verify that this works for all binning cases
-// -- see V_Trim1DDataStr to see if they can be combined
+// TODO_low
+//** this function is currently unused. It was called from the Trimming panel,
+// but is not currently called. There is no direct save option from the trim panel.
+// instead, the trim points are sent to a protocol for a complete reduction and save.
+// 
+// -- verify that this works for all binning cases (it currently DOES NOT-- needs 7 cases)
 //
 Function V_SaveTrimmed_Button(ctrlName) : ButtonControl
 	String ctrlName
@@ -606,8 +609,9 @@ Function V_Load_ITX_Button(ctrlName) : ButtonControl
 End
 
 
-// TODO
-// -- document
+// (DONE)
+// -- fill the strings with the number of beginning (or end) points to trim
+// from each panel combination type.
 Function V_TrimWaves2StringButton(ctrlName) : ButtonControl
 	String ctrlName
 	

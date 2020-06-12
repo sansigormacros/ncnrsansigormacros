@@ -303,9 +303,9 @@ End
 
 //
 // TODO:
-//  this is experimental...not been tested by any users yet
+//
 // -- what else to add to the menu? (MSK and DIV now work)
-// -- add directly to WORK files?
+// -- add directly to WORK files? (skip the "to WORK" button)
 // -- "set" as some special file type, intent, use? (quick "patch" operations)
 // -- "check" the reduction protocol for completeness?
 //
@@ -631,14 +631,14 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GThickness
 	GThickness[lastPoint]=V_getSampleThickness(fname)
 
-//	// TODO --  the x and y center have different meaning, since there are multiple panels
-//	// TODO -- remove the hard-wiring
+//	// (DONE) --  the x and y center have different meaning, since there are multiple panels
+//	// (DONE) -- remove the hard-wiring
 //	String detStr = "FL"
 //	//XCenter of beam on detector
 //	InsertPoints lastPoint,1,GXCenter
 //	GXCenter[lastPoint]=V_getDet_beam_center_x(fname,detStr)
 //	
-//	// TODO --  the x and y center have different meaning, since there are multiple panels
+//	// (DONE) --  the x and y center have different meaning, since there are multiple panels
 //	//YCenter
 //	InsertPoints lastPoint,1,GYCenter
 //	GYCenter[lastPoint]=V_getDet_beam_center_y(fname,detStr)
@@ -681,7 +681,7 @@ Function V_GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GNumGuides
 	GNumGuides[lastPoint]  = V_getNumberOfGuides(fname)
 
-// TODO -- maybe this is better to convert to a text wave?	
+// 	
 	//Sample Position (== number position in 10CB)
 	InsertPoints lastPoint,1,GPos
 	GPos[lastPoint] = str2num(V_getSamplePosition(fname))

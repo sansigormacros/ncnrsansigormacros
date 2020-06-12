@@ -328,7 +328,10 @@ End
 // another possibility is to get a listing of the text files, but is unreliable on 
 // Windows, where the data file must be .txt (and possibly OSX)
 //
-// TODO: this is a duplicated procedure. See the equivalent in NCNR_Utils and which one to keep?
+// TODO_low: this is a duplicated procedure. See the equivalent in NCNR_Utils and which one to keep?
+// -- I at least need to keep this here, since VSANS Reduction does not load NCNR_Utils (it also does
+// not call either ReducedDataFileList function
+//
 Function/S A_ReducedDataFileList(ctrlName)
 	String ctrlName
 

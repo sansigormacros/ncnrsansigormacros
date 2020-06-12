@@ -49,7 +49,8 @@ Function fPlotFrontPanels()
 	VC_CalculateQFrontPanels()
 	
 	// fill the panels with fake sphere scattering data
-	// TODO: am I in the right data folder??
+	// (DONE): am I in the right data folder??
+	// -I use absolute paths to make sure I'm referencing correctly
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
 	String folderStr = "VCALC"
@@ -156,7 +157,7 @@ Function VC_CalculateQFrontPanels()
 	qy_FL = 0
 	qz_FL = 0	
 	
-// TODO - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
+// (DONE) - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FL")
 	pixSizeY = VCALC_getPixSizeY("FL")
@@ -194,7 +195,7 @@ Function VC_CalculateQFrontPanels()
 //	Print "xy ctr for FL = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
-	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
+	// (DONE): this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
 	// take the middle value. At very small angles, OK, at 1m, this is a crummy approximation.
 	// since qTot is magnitude only, I need to put in the (-ve)
 	SetScale/I x WaveMin(qx_FL),WaveMax(qx_FL),"", det_FL		//this sets the left and right ends of the data scaling
@@ -214,7 +215,7 @@ Function VC_CalculateQFrontPanels()
 	qy_FR = 0
 	qz_FR = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FR")
 	pixSizeY = VCALC_getPixSizeY("FR")
@@ -268,7 +269,7 @@ Function VC_CalculateQFrontPanels()
 	qy_FT = 0
 	qz_FT = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FT")
 	pixSizeY = VCALC_getPixSizeY("FT")
@@ -323,7 +324,7 @@ Function VC_CalculateQFrontPanels()
 	qy_FB = 0
 	qz_FB = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("FB")
 	pixSizeY = VCALC_getPixSizeY("FB")
@@ -536,7 +537,7 @@ Function BinAllFrontPanels()
 //		VC_BinQxQy_to_1D("VCALC","FLRTB")
 //	endif
 //
-//// TODO -- this is only a temporary fix for slit mode	
+//// for slit mode	
 //	if(binType == 4)
 //		/// this is for a tall, narrow slit mode	
 //		VC_fBinDetector_byRows("VCALC","FL")
@@ -568,7 +569,8 @@ Function fPlotMiddlePanels()
 	VC_CalculateQMiddlePanels()
 	
 	// fill the panels with fake sphere scattering data
-	// TODO: am I in the right data folder??
+	// (DONE): am I in the right data folder??
+	// using full paths to reference correctly
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
 	String folderStr = "VCALC"
@@ -642,8 +644,7 @@ Function VC_CalculateQMiddlePanels()
 //	M_TB_sep /= 10
 // TODO - I'm treating the separation as the TOTAL width - so the difference
 //      from the "center" to the edge is 1/2 of the separation
-
-// TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
+//
 //	M_sdd_setback = VCALC_getTopBottomSDDSetback("MT") 	//T/B are 41 cm farther back  //TODO: make all detector parameters global, not hard-wired
 	M_sdd_setback = 0
 
@@ -666,7 +667,7 @@ Function VC_CalculateQMiddlePanels()
 	qy_ML = 0
 	qz_ML = 0	
 
-// TODO - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
+// (DONE) - these are to be set from globals, not hard-wired. N and pixelSixze will be known (or pre-measured)
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("ML")
 	pixSizeY = VCALC_getPixSizeY("ML")
@@ -703,7 +704,7 @@ Function VC_CalculateQMiddlePanels()
 //	Print "xy for ML = ",xCtr,yCtr
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
-	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
+	// (DONE): this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
 	// take the middle value. At very small angles, OK, at 1m, this is a crummy approximation.
 	// since qTot is magnitude only, I need to put in the (-ve)
 	SetScale/I x WaveMin(qx_ML),WaveMax(qx_ML),"", det_ML		//this sets the left and right ends of the data scaling
@@ -724,7 +725,7 @@ Function VC_CalculateQMiddlePanels()
 	qy_MR = 0
 	qz_MR = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MR")
 	pixSizeY = VCALC_getPixSizeY("MR")
@@ -779,7 +780,7 @@ Function VC_CalculateQMiddlePanels()
 	qy_MT = 0
 	qz_MT = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MT")
 	pixSizeY = VCALC_getPixSizeY("MT")
@@ -1044,7 +1045,7 @@ Function BinAllMiddlePanels()
 //		VC_BinQxQy_to_1D("VCALC","MLRTB")
 //	endif
 //	
-//	// TODO -- this is only a temporary fix for slit mode	
+//	// for slit mode	
 //	if(binType == 4)
 //		/// this is for a tall, narrow slit mode	
 //		VC_fBinDetector_byRows("VCALC","ML")
