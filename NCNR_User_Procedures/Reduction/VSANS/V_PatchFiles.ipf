@@ -635,7 +635,7 @@ Function V_FillListBox5(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 3
+	Variable nRows = 11
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -645,8 +645,39 @@ Function V_FillListBox5(listWave,selWave)
 	SelWave[][2] = 2^1		// 3rd column editable
 	
 	
-	listWave[0][1] = "count_time (s)"
-	listWave[0][2] = num2str(V_getCount_time(fname))	
+	listWave[0][1] = "Front Flipper Direction"
+	listWave[0][2] = V_getFrontFlipper_Direction(fname)
+
+	listWave[1][1] = "Front Flipper Flip State"
+	listWave[1][2] = V_getFrontFlipper_flip(fname)	
+
+	listWave[2][1] = "Front Flipper Type"
+	listWave[2][2] = V_getFrontFlipper_type(fname)	
+
+	listWave[3][1] = "Back Polarizer Direction"
+	listWave[3][2] = V_getBackPolarizer_direction(fname)	
+
+	listWave[4][1] = "Back polarizer in?"
+	listWave[4][2] = num2str(V_getBackPolarizer_inBeam(fname))	
+
+	listWave[5][1] = "Back Polarizer name"
+	listWave[5][2] = V_getBackPolarizer_name(fname)	
+
+	listWave[6][1] = "Opacity at 1 A"
+	listWave[6][2] = num2str(V_getBackPolarizer_opacityAt1Ang(fname))	
+
+	listWave[7][1] = "Opacity error"
+	listWave[7][2] = num2str(V_getBackPolarizer_opacityAt1Ang_err(fname))	
+
+	listWave[8][1] = "tE"
+	listWave[8][2] = num2str(V_getBackPolarizer_tE(fname))	
+
+	listWave[9][1] = "tE err"
+	listWave[9][2] = num2str(V_getBackPolarizer_tE_err(fname))	
+
+	listWave[10][1] = "Time Stamp (s)?"
+	listWave[10][2] = num2str(V_getBackPolarizer_timestamp(fname))	
+
 
 	return(0)
 End
@@ -1441,7 +1472,70 @@ End
 // TODO -- not yet implemented
 Function V_WriteHeaderForPatch_5(fname)
 	String fname
+
+	Variable val,err
+	String str
+		
+	Wave/T listWave = root:Packages:NIST:VSANS:Globals:Patch:PP_ListWave
+	Wave selWave = root:Packages:NIST:VSANS:Globals:Patch:PP_selWave
+
+	// test bit 4 to see if the checkbox is selected
+	if ((selWave[0][0] & 2^4) != 0)		// Test if bit 4 is set
+		str = listWave[0][2]			// "Front Flipper Direction"
+		err = V_writeFrontFlipper_Direction(fname,str)	
+	endif
+
+	if ((selWave[1][0] & 2^4) != 0)		// "Front Flipper Flip State"
+		str = listWave[1][2]
+		err = V_writeFrontFlipper_flip(fname,str)
+	endif	
+
+	if ((selWave[2][0] & 2^4) != 0)		//"Front Flipper Type"
+		str = listWave[2][2]
+		err = V_writeFrontFlipper_type(fname,str)
+	endif	
+
+	if ((selWave[3][0] & 2^4) != 0)		//"Back Polarizer Direction"
+		str = listWave[3][2]
+		err = V_writeBackPolarizer_direction(fname,str)
+	endif	
 	
+	if ((selWave[4][0] & 2^4) != 0)		//"Back polarizer in?"
+		val = str2num(listWave[4][2])
+		err = V_writeBackPolarizer_inBeam(fname,val)
+	endif	
+
+	if ((selWave[5][0] & 2^4) != 0)		//"Back Polarizer name"
+		str = listWave[5][2]
+		err = V_writeBackPolarizer_name(fname,str)
+	endif		
+
+	if ((selWave[6][0] & 2^4) != 0)		//"Opacity at 1 A"
+		val = str2num(listWave[6][2])
+		err = V_writeBackPolarizer_opacityAt1Ang(fname,val)
+	endif		
+
+	if ((selWave[7][0] & 2^4) != 0)		//"Opacity error" 
+		val = str2num(listWave[7][2])
+		err = V_writeBackPolarizer_opacityAt1Ang_err(fname,val)
+	endif		
+
+	if ((selWave[8][0] & 2^4) != 0)		//"tE"
+		val = str2num(listWave[8][2])
+		err = V_writeBackPolarizer_tE(fname,val)
+	endif	
+	
+	if ((selWave[9][0] & 2^4) != 0)		//"tE err"
+		val = str2num(listWave[9][2])
+		err = V_writeBackPolarizer_tE_err(fname,val)
+	endif		
+	
+	if ((selWave[10][0] & 2^4) != 0)		//"Time Stamp (s)?"
+		val = str2num(listWave[10][2])
+		err = V_writeBackPolarizer_timestamp(fname,val)
+	endif		
+
+		
 	return(0)
 End
 

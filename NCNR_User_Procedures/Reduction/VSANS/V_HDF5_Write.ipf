@@ -155,8 +155,8 @@ end
 //   keep up with any changes in path
 //
 //
-// TODO -- verify the paths, and add more as needed
-// TODO -- for all of the String functions -- "num" does nothing right now - 
+// (DONE) -- verify the paths, and add more as needed
+// (DONE) -- for all of the String functions -- "num" does nothing right now - 
 //         -- if it ever does, or needs to, a lot of locations will need to be corrected
 //
 
@@ -191,7 +191,7 @@ end
 //	return(err)
 //End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection time (! this is the true counting time??)
 Function V_writeCollectionTime(fname,val)
 	String fname
@@ -289,7 +289,7 @@ Function V_writeNexusDefinition(fname,str)
 	return(err)
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection duration (may include pauses, other "dead" time)
 Function V_writeDataDuration(fname,val)
 	String fname
@@ -316,7 +316,7 @@ Function V_writeDataDuration(fname,val)
 	return(err)
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection end time
 Function V_writeDataEndTime(fname,str)
 	String fname,str
@@ -502,7 +502,7 @@ Function V_writeHDF_version(fname,str)
 	return(err)
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 Function V_writeProgram_name(fname,str)
 	String fname,str
 	
@@ -528,7 +528,7 @@ Function V_writeProgram_name(fname,str)
 	return(err)
 End
 
-// TODO -- not mine, added somewhere by Nexus writer?
+// (DONE) -- not mine, added somewhere by Nexus writer?
 // data collection start time
 Function V_writeDataStartTime(fname,str)
 	String fname,str
@@ -619,7 +619,7 @@ end
 //////// CONTROL
 //////// CONTROL
 
-// TODO -- for the control section, document each of the fields
+// (DONE) -- for the control section, document each of the fields
 //
 Function V_writeCount_end(fname,str)
 	String fname,str
@@ -1042,7 +1042,7 @@ Function V_writeInstrumentType(fname,str)
 End
 
 ////// INSTRUMENT/ATTENUATOR
-// TODO - verify the format of how these are written out to the file
+// (DONE) - verify the format of how these are written out to the file
 //
 
 // transmission value for the attenuator in the beam
@@ -1317,19 +1317,24 @@ Function V_writeAttenType(fname,str)
 End
 
 
-
-
-////// INSTRUMENT/BEAM
+////////////
+// new back polarizer calls
+// JUN 2020
+// since the location of the original ones that were decided on have changed
+// wihtout my knowledge
 //
-Function V_writeAnalyzer_depth(fname,val)
+
+////// INSTRUMENT
+//
+Function V_writeBackPolarizer_depth(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:depth"
+//	String path = "entry:instrument:backPolarizer:depth"
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "depth"
 	wTmpWrite[0] = val
 
@@ -1346,13 +1351,13 @@ Function V_writeAnalyzer_depth(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_direction(fname,str)
+Function V_writeBackPolarizer_direction(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:analyzer:direction"
+//	String path = "entry:instrument:backPolarizer:direction"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String groupName = "/entry/instrument/backPolarizer"	//	
 	String varName = "direction"
 	tmpTW[0] = str //
 
@@ -1371,15 +1376,15 @@ Function V_writeAnalyzer_direction(fname,str)
 	return(err)
 End
 
-Function V_writeAnalyzer_height(fname,val)
+Function V_writeBackPolarizer_height(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:height"	
+//	String path = "entry:instrument:backPolarizer:height"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "height"
 	wTmpWrite[0] = val
 
@@ -1397,15 +1402,15 @@ Function V_writeAnalyzer_height(fname,val)
 end
 
 // ?? TODO is this equivalent to "status" -- is this 0|1 ??
-Function V_writeAnalyzer_inBeam(fname,val)
+Function V_writeBackPolarizer_inBeam(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:inBeam"	
+//	String path = "entry:instrument:backPolarizer:inBeam"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "inBeam"
 	wTmpWrite[0] = val
 
@@ -1422,16 +1427,16 @@ Function V_writeAnalyzer_inBeam(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_innerDiameter(fname,val)
+Function V_writeBackPolarizer_innerRadius(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:innerDiameter"	
+//	String path = "entry:instrument:backPolarizer:innerRadius"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
-	String varName = "innerDiameter"
+	String groupName = "/entry/instrument/backPolarizer"	
+	String varName = "innerRadius"
 	wTmpWrite[0] = val
 
 	variable err
@@ -1448,13 +1453,13 @@ Function V_writeAnalyzer_innerDiameter(fname,val)
 end
 
 // one of the most important
-Function V_writeAnalyzer_name(fname,str)
+Function V_writeBackPolarizer_name(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:analyzer:name"
+//	String path = "entry:instrument:backPolarizer:name"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String groupName = "/entry/instrument/backPolarizer"	//	
 	String varName = "name"
 	tmpTW[0] = str //
 
@@ -1473,15 +1478,15 @@ Function V_writeAnalyzer_name(fname,str)
 	return(err)
 End
 
-Function V_writeAnalyzer_opacityAt1Ang(fname,val)
+Function V_writeBackPolarizer_opacityAt1Ang(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
+//	String path = "entry:instrument:backPolarizer:opacityAt1Ang"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "opacityAt1Ang"
 	wTmpWrite[0] = val
 
@@ -1498,15 +1503,15 @@ Function V_writeAnalyzer_opacityAt1Ang(fname,val)
 	return(err)
 end
 
-Function V_writeAna_opacityAt1Ang_err(fname,val)
+Function V_writeBackPolarizer_opacityAt1Ang_err(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
+//	String path = "entry:instrument:backPolarizer:opacityAt1AngStd"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "opacityAt1AngStd"
 	wTmpWrite[0] = val
 
@@ -1523,16 +1528,16 @@ Function V_writeAna_opacityAt1Ang_err(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_outerDiameter(fname,val)
+Function V_writeBackPolarizer_outerRadius(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:outerDiameter"	
+//	String path = "entry:instrument:backPolarizer:outerRadius"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
-	String varName = "outerDiameter"
+	String groupName = "/entry/instrument/backPolarizer"	
+	String varName = "outerRadius"
 	wTmpWrite[0] = val
 
 	variable err
@@ -1548,13 +1553,13 @@ Function V_writeAnalyzer_outerDiameter(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_shape(fname,str)
+Function V_writeBackPolarizer_shape(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:analyzer:shape"
+//	String path = "entry:instrument:backPolarizer:shape"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String groupName = "/entry/instrument/backPolarizer"	//	
 	String varName = "shape"
 	tmpTW[0] = str //
 
@@ -1573,15 +1578,15 @@ Function V_writeAnalyzer_shape(fname,str)
 	return(err)
 End
 
-Function V_writeAnalyzer_tE(fname,val)
+Function V_writeBackPolarizer_tE(fname,val)
 	String fname
 	Variable val
 		
-//	String path = "entry:instrument:beam:analyzer:tE"	
+//	String path = "entry:instrument:backPolarizer:tE"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "tE"
 	wTmpWrite[0] = val
 
@@ -1598,15 +1603,15 @@ Function V_writeAnalyzer_tE(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_tE_err(fname,val)
+Function V_writeBackPolarizer_tE_err(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:tEStd"	
+//	String path = "entry:instrument:backPolarizer:tEStd"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "tEStd"
 	wTmpWrite[0] = val
 
@@ -1623,13 +1628,13 @@ Function V_writeAnalyzer_tE_err(fname,val)
 	return(err)
 end
 
-Function V_writeAnalyzer_type(fname,str)
+Function V_writeBackPolarizer_type(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:analyzer:type"
+//	String path = "entry:instrument:backPolarizer:type"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/analyzer"	//	
+	String groupName = "/entry/instrument/backPolarizer"	//	
 	String varName = "type"
 	tmpTW[0] = str //
 
@@ -1649,15 +1654,41 @@ Function V_writeAnalyzer_type(fname,str)
 End
 
 
-Function V_writeAnalyzer_width(fname,val)
+Function V_writeBackPolarizer_timestamp(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:analyzer:width"	
+//	String path = "entry:instrument:backPolarizer:timestamp"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/analyzer"	
+	String groupName = "/entry/instrument/backPolarizer"	
+	String varName = "timestamp"
+	wTmpWrite[0] = val
+
+	variable err
+	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+
+Function V_writeBackPolarizer_width(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:backPolarizer:width"	
+
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/backPolarizer"	
 	String varName = "width"
 	wTmpWrite[0] = val
 
@@ -1673,6 +1704,368 @@ Function V_writeAnalyzer_width(fname,val)
 //	endif
 	return(err)
 end
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////// INSTRUMENT/BEAM
+////
+//Function V_writeAnalyzer_depth(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:depth"
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "depth"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_direction(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:analyzer:direction"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/analyzer"	//	
+//	String varName = "direction"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writeAnalyzer_height(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:height"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "height"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//// ?? TODO is this equivalent to "status" -- is this 0|1 ??
+//Function V_writeAnalyzer_inBeam(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:inBeam"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "inBeam"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_innerDiameter(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:innerDiameter"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "innerDiameter"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//// one of the most important
+//Function V_writeAnalyzer_name(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:analyzer:name"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/analyzer"	//	
+//	String varName = "name"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writeAnalyzer_opacityAt1Ang(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "opacityAt1Ang"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAna_opacityAt1Ang_err(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "opacityAt1AngStd"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_outerDiameter(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:outerDiameter"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "outerDiameter"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_shape(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:analyzer:shape"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/analyzer"	//	
+//	String varName = "shape"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writeAnalyzer_tE(fname,val)
+//	String fname
+//	Variable val
+//		
+////	String path = "entry:instrument:beam:analyzer:tE"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "tE"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_tE_err(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:tEStd"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "tEStd"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeAnalyzer_type(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:analyzer:type"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/analyzer"	//	
+//	String varName = "type"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//
+//Function V_writeAnalyzer_width(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:analyzer:width"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/analyzer"	
+//	String varName = "width"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
 
 
 
@@ -1881,17 +2274,23 @@ Function V_writeChoppertype(fname,str)
 End
 
 
-///////////////
-// instrument/beam/flipperPolarizer (data folder)
-// this is upstream, after the supermirror but before the sample
-//
-Function V_writeflipperPol_Direction(fname,str)
+
+// are these the correct locations in the header for polarization?
+// they are what is in the example polarized beam data I was given in 2019
+// but don't match what was decided for the data file. Nobody ever
+// told me of any changes, so I guess I'm out of the loop as usual.
+
+// the FRONT FLIPPER
+// JUN 2020 -- added these calls
+
+
+Function V_writeFrontFlipper_Direction(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:flipperPolarizer:direction"
+//	String path = "entry:instrument:frontFlipper:direction"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+	String groupName = "/entry/instrument/frontFlipper"	//	
 	String varName = "direction"
 	tmpTW[0] = str //
 
@@ -1910,16 +2309,41 @@ Function V_writeflipperPol_Direction(fname,str)
 	return(err)
 End
 
-Function V_writeflipperPolarizer_inBeam(fname,val)
+Function V_writeFrontFlipper_flip(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:frontFlipper:flip"
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/instrument/frontFlipper"	//	
+	String varName = "flip"
+	tmpTW[0] = str //
+
+	variable err
+	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = V_KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+Function V_writeFrontFlipper_Power(fname,val)
 	String fname
 	Variable val
 	
-//	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
+//	String path = "entry:instrument:frontFlipper:power"	
 
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam/flipperPolarizer"	
-	String varName = "inBeam"
+	String groupName = "/entry/instrument/frontFlipper"	
+	String varName = "power"
 	wTmpWrite[0] = val
 
 	variable err
@@ -1935,12 +2359,14 @@ Function V_writeflipperPolarizer_inBeam(fname,val)
 	return(err)
 end
 
-Function V_writeflipperPolarizer_Type(fname,str)
+
+Function V_writeFrontFlipper_type(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:beam:flipperPolarizer:type"
+//	String path = "entry:instrument:frontFlipper:type"
+
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+	String groupName = "/entry/instrument/frontFlipper"	//	
 	String varName = "type"
 	tmpTW[0] = str //
 
@@ -1959,6 +2385,89 @@ Function V_writeflipperPolarizer_Type(fname,str)
 	return(err)
 End
 
+
+
+
+
+
+///////////////
+// instrument/beam/flipperPolarizer (data folder)
+// this is upstream, after the supermirror but before the sample
+//
+//Function V_writeflipperPol_Direction(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:flipperPolarizer:direction"
+//
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+//	String varName = "direction"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
+//Function V_writeflipperPolarizer_inBeam(fname,val)
+//	String fname
+//	Variable val
+//	
+////	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
+//
+//	Make/O/D/N=1 wTmpWrite
+////	Make/O/R/N=1 wTmpWrite
+//	String groupName = "/entry/instrument/beam/flipperPolarizer"	
+//	String varName = "inBeam"
+//	wTmpWrite[0] = val
+//
+//	variable err
+//	err = V_WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//	return(err)
+//end
+//
+//Function V_writeflipperPolarizer_Type(fname,str)
+//	String fname,str
+//
+////	String path = "entry:instrument:beam:flipperPolarizer:type"
+//	Make/O/T/N=1 tmpTW
+//	String groupName = "/entry/instrument/beam/flipperPolarizer"	//	
+//	String varName = "type"
+//	tmpTW[0] = str //
+//
+//	variable err
+//	err = V_WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+//	if(err)
+//		Print "HDF write err = ",err
+//	endif
+//	
+//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+////	err = V_KillNamedDataFolder(fname)
+////	if(err)
+////		Print "DataFolder kill err = ",err
+////	endif
+//		
+//	return(err)
+//End
+//
 
 
 
@@ -3856,7 +4365,7 @@ Function V_writeGuideShape(fname,str)
 	return(err)
 End
 
-// TODO -- this may need to be a wave to properly describe the dimensions
+// (DONE) -- this may need to be a wave to properly describe the dimensions
 Function V_writeGuideSize(fname,val)
 	String fname
 	Variable val
@@ -3919,7 +4428,7 @@ End
 //			detector_B (data folder)
 //
 // only defined for the "B" detector, and may not be necessary?
-// TODO -- write to return an ARRAY
+// (DONE) -- write to return an ARRAY
 Function V_writeDet_cal_x(fname,detStr,inW)
 	String fname,detStr
 	Wave inW
@@ -3952,7 +4461,7 @@ Function V_writeDet_cal_x(fname,detStr,inW)
 End
 
 // only defined for the "B" detector, and may not be necessary?
-// TODO -- write to return an ARRAY
+// (DONE) -- write to return an ARRAY
 Function V_writeDet_cal_y(fname,detStr,inW)
 	String fname,detStr
 	Wave inW
@@ -3984,7 +4493,7 @@ Function V_writeDet_cal_y(fname,detStr,inW)
 	endif
 End
 
-// TODO -- write and X and Y version of this. Pixels are not square
+// (DONE) -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
 Function V_writeDet_pixel_fwhm_x(fname,detStr,val)
@@ -4013,7 +4522,7 @@ Function V_writeDet_pixel_fwhm_x(fname,detStr,val)
 End
 
 
-// TODO -- write and X and Y version of this. Pixels are not square
+// (DONE) -- write and X and Y version of this. Pixels are not square
 // so the FHWM will be different in each direction. May need to return
 // "dummy" value for "B" detector if pixels there are square
 Function V_writeDet_pixel_fwhm_y(fname,detStr,val)
@@ -4250,7 +4759,7 @@ Function V_putDet_beam_center_y_pix(fname,detStr,val)
 
 End
 
-// TODO -- write this function to return a WAVE with the data
+// (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 Function V_writeDetectorData(fname,detStr,inW)
 	String fname,detStr
@@ -4284,7 +4793,7 @@ End
 /////////////////////////
 
 
-// TODO -- write this function to return a WAVE with the data
+// (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 // ALSO -- the "B" deadtime will be a single value (probably)
 //  but the tube banks will be 1D arrays of values, one per tube
@@ -4605,7 +5114,7 @@ Function V_writeDet_VerticalOffset(fname,detStr,val)
 End
 
 
-// TODO - be sure that this is defined correctly
+// (DONE) - be sure that this is defined correctly
 // -- it needs to exist in the data file, and only for TB detector panels
 Function V_writeDet_TBSetback(fname,detStr,val)
 	String fname,detStr
@@ -4926,7 +5435,7 @@ End
 //	endif
 //End
 
-// TODO -- write this function to return a WAVE with the data
+// (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 Function V_writeDetTube_spatialCalib(fname,detStr,inW)
 	String fname,detStr
@@ -4959,7 +5468,7 @@ Function V_writeDetTube_spatialCalib(fname,detStr,inW)
 	endif
 End
 
-//// TODO -- be clear on how this is defined.
+//// (DONE) -- be clear on how this is defined.
 //Function V_writeDet_tubeIndex(fname,detStr,val)
 //	String fname,detStr
 //	Variable val
@@ -5019,7 +5528,7 @@ Function V_writeDet_tubeOrientation(fname,detStr,str)
 	endif
 End
 
-// TODO -- be clear on how this is defined. Units?
+// (DONE) -- be clear on how this is defined. Units?
 Function V_writeDet_tubeWidth(fname,detStr,val)
 	String fname,detStr
 	Variable val
@@ -5964,7 +6473,7 @@ End
 
 
 // sample label 
-// TODO: value of num is currently not used
+// (DONE): value of num is currently not used
 Function V_writeSampleDescription(fname,str)
 	String fname,str
 
@@ -6063,7 +6572,7 @@ end
 
 
 //
-// TODO x- I need to make sure that this is an integer in the JSON definition
+// (DONE) x- I need to make sure that this is an integer in the JSON definition
 // 		x- currently a text value in the data file - see trac ticket
 // x- this is also a duplicated field in the reduction block (reduction/group_id is no longer used)
 //
@@ -6123,7 +6632,7 @@ Function V_writeSampleRotationAngle(fname,val)
 end
 
 //?? this is huber/chamber??
-// TODO -- then where is the description of 10CB, etc...
+// (DONE) -- then where is the description of 10CB, etc...
 Function V_writeSampleHolderDescription(fname,str)
 	String fname,str
 
@@ -6206,7 +6715,7 @@ end
 
 
 //Sample Thickness
-// TODO -- somehow, this is not set correctly in the acquisition, so NaN results
+// (DONE) -- somehow, this is not set correctly in the acquisition, so NaN results
 Function V_writeSampleThickness(fname,val)
 	String fname
 	Variable val
@@ -6918,7 +7427,7 @@ end
 /////////////////////////////////////
 ////		value_log (data folder)
 //
-// TODO -- 
+// (DONE) -- 
 Function V_writeLog_avgValue(fname,logStr,val)
 	String fname,logStr
 	Variable val
@@ -7238,7 +7747,7 @@ Function V_writeBackgroundFileName(fname,str)
 End
 
 
-// TODO -- needs to be a WAVE
+// (DONE) -- needs to be a WAVE
 Function V_writeBoxCoordinates(fname,inW)
 	String fname
 	Wave inW
@@ -7751,7 +8260,7 @@ end
 //			thumbnail (data folder)
 
 ////data (wave) "binary"
-//// TODO -- this will need to be completely replaced with a function that can 
+//// (DONE) -- this will need to be completely replaced with a function that can 
 //// read the binary image data. should be possible, but I don't know the details on either end...
 //Function V_writeDataImage(fname,detStr,str)
 //	String fname,detStr,str

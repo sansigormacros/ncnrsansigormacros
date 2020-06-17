@@ -16,6 +16,7 @@ Menu "VSANS"
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
 	"Turn Laptop Mode ON",V_SetLaptopMode()
+	"Load VSANS Polarization Reduction",V_PolarizationLoader()
 	"-"
 	Submenu "Find Windows"
 		"Data Catalog",DoWindow/F CatVSANSTable
@@ -118,6 +119,18 @@ End
 Function V_ForceMatrix()
 	NVAR useTrap = root:Packages:NIST:USANSUseTrap
 	useTrap = 0
+	return(0)
+End
+
+Function V_PolarizationLoader()
+
+	// be sure that the SANS reduction is loaded and compiles
+//	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	
+	// then the polarization
+	Execute/P "INSERTINCLUDE \"V_Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	BuildMenu "Macros"
+
 	return(0)
 End
 

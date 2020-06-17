@@ -433,7 +433,8 @@ Function V_BinningModePopup(ctrlName,popNum,popStr) : PopupMenuControl
 
 // dispatch based on the string, not on the number of selection in the pop string
 	variable binType = V_BinTypeStr2Num(popStr)
-	String collimationStr="pinhole"		//TODO: where do I get this information from ? does it matter here?
+	String collimationStr="pinhole"		//I'm passing any string as collimation - doesn't matter here
+													// since I'm not calculating the resolution
 	if(binType == 4)
 	// narrow slits
 		V_QBinAllPanels_Slit(type,binType)

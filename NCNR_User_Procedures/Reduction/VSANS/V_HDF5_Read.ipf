@@ -569,115 +569,238 @@ Function/S V_getAttenType(fname)
 End
 
 
-////// INSTRUMENT/BEAM
-// instrument/beam/analyzer (data folder)
-// this is the He3 analyzer, after the sample (but first alphabetically)
-// TODO -- document what all of the fields represent, and what are the most important to "key" on to read
+// new back polarizer calls
+// JUN 2020
+// since the location of the original ones that were decided on have changed
+// wihtout my knowledge
 //
-Function V_getAnalyzer_depth(fname)
+//
+Function V_getBackPolarizer_depth(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:depth"	
+	String path = "entry:instrument:backPolarizer:depth"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getAnalyzer_direction(fname)
+Function/S V_getBackPolarizer_direction(fname)
 	String fname
 
-	String path = "entry:instrument:beam:analyzer:direction"
+	String path = "entry:instrument:backPolarizer:direction"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getAnalyzer_height(fname)
+Function V_getBackPolarizer_height(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:height"	
+	String path = "entry:instrument:backPolarizer:height"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-// ?? TODO is this equivalent to "status" -- ?? 0|1
-Function V_getAnalyzer_inBeam(fname)
+// ?? is this equivalent to "status" -- ?? 0|1
+Function V_getBackPolarizer_inBeam(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:inBeam"	
+	String path = "entry:instrument:backPolarizer:inBeam"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getAnalyzer_innerDiameter(fname)
+Function V_getBackPolarizer_innerRadius(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:innerDiameter"	
+	String path = "entry:instrument:backPolarizer:innerRadius"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
 // one of the most important
-Function/S V_getAnalyzer_name(fname)
+Function/S V_getBackPolarizer_name(fname)
 	String fname
 
-	String path = "entry:instrument:beam:analyzer:name"
+	String path = "entry:instrument:backPolarizer:name"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getAnalyzer_opacityAt1Ang(fname)
+Function V_getBackPolarizer_opacityAt1Ang(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
+	String path = "entry:instrument:backPolarizer:opacityAt1Ang"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getAnalyzer_opacityAt1Ang_err(fname)
+Function V_getBackPolarizer_opacityAt1Ang_err(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
+	String path = "entry:instrument:backPolarizer:opacityAt1AngStd"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getAnalyzer_outerDiameter(fname)
+Function V_getBackPolarizer_outerRadius(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:outerDiameter"	
+	String path = "entry:instrument:backPolarizer:outerRadius"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getAnalyzer_shape(fname)
+Function/S V_getBackPolarizer_shape(fname)
 	String fname
 
-	String path = "entry:instrument:beam:analyzer:shape"
+	String path = "entry:instrument:backPolarizer:shape"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getAnalyzer_tE(fname)
+Function V_getBackPolarizer_tE(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:tE"	
+	String path = "entry:instrument:backPolarizer:tE"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getAnalyzer_tE_err(fname)
+Function V_getBackPolarizer_tE_err(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:tEStd"	
+	String path = "entry:instrument:backPolarizer:tEStd"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getAnalyzer_type(fname)
+// TODO -- what units, zero, etc is the time stamp??
+Function V_getBackPolarizer_timestamp(fname)
+	String fname
+	
+	String path = "entry:instrument:backPolarizer:timestamp"	
+	return(V_getRealValueFromHDF5(fname,path))
+end
+
+//TODO-- this returns a number now -- what does it mean?
+Function V_getBackPolarizer_type(fname)
 	String fname
 
-	String path = "entry:instrument:beam:analyzer:type"
-	Variable num=60
-	return(V_getStringFromHDF5(fname,path,num))
+	String path = "entry:instrument:backPolarizer:type"
+	return(V_getRealValueFromHDF5(fname,path))
 End
 
-
-Function V_getAnalyzer_width(fname)
+Function V_getBackPolarizer_width(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:analyzer:width"	
+	String path = "entry:instrument:backPolarizer:width"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
+//////////////////
+
+
+////// INSTRUMENT/BEAM
+// instrument/beam/analyzer (data folder)
+// this is the He3 analyzer, after the sample (but first alphabetically)
+// NO -- document what all of the fields represent, and what are the most important to "key" on to read
+//
+// like the flipper fields, all of these have changed location wihtout consulting me
+// JUN 2020
+//
+//Function V_getAnalyzer_depth(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:depth"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function/S V_getAnalyzer_direction(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:analyzer:direction"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//Function V_getAnalyzer_height(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:height"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//// ?? TODO is this equivalent to "status" -- ?? 0|1
+//Function V_getAnalyzer_inBeam(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:inBeam"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function V_getAnalyzer_innerDiameter(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:innerDiameter"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//// one of the most important
+//Function/S V_getAnalyzer_name(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:analyzer:name"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//Function V_getAnalyzer_opacityAt1Ang(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function V_getAnalyzer_opacityAt1Ang_err(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function V_getAnalyzer_outerDiameter(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:outerDiameter"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function/S V_getAnalyzer_shape(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:analyzer:shape"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//Function V_getAnalyzer_tE(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:tE"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function V_getAnalyzer_tE_err(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:tEStd"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function/S V_getAnalyzer_type(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:analyzer:type"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//
+//Function V_getAnalyzer_width(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:analyzer:width"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
 
 
 // instrument/beam/chopper (data folder)
@@ -740,34 +863,81 @@ Function/S V_getChopperType(fname)
 End
 
 
-// instrument/beam/flipperPolarizer (data folder)
-// this is upstream, after the supermirror but before the sample
 
-Function/S V_getflipperPolarizer_Direction(fname)
+
+
+
+// are these the correct locations in the header for polarization?
+// they are what is in the example polarized beam data I was given in 2019
+// but don't match what was decided for the data file. Nobody ever
+// told me of any changes, so I guess I'm out of the loop as usual.
+
+// the FRONT FLIPPER
+// JUN 2020 -- added these calls
+
+Function/S V_getFrontFlipper_Direction(fname)
 	String fname
 
-	String path = "entry:instrument:beam:flipperPolarizer:direction"
+	String path = "entry:instrument:frontFlipper:direction"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getflipperPolarizer_inBeam(fname)
+Function/S V_getFrontFlipper_flip(fname)
+	String fname
+
+	String path = "entry:instrument:frontFlipper:flip"
+	Variable num=60
+	return(V_getStringFromHDF5(fname,path,num))
+End
+
+Function V_getFrontFlipper_power(fname)
 	String fname
 	
-	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
+	String path = "entry:instrument:frontFlipper:transmitted_power"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function/S V_getflipperPolarizer_Type(fname)
+Function/S V_getFrontFlipper_type(fname)
 	String fname
 
-	String path = "entry:instrument:beam:flipperPolarizer:type"
+	String path = "entry:instrument:frontFlipper:type"
 	Variable num=60
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
 
-
+//
+// these apparently have all been changed without telling me...
+//
+// instrument/beam/flipperPolarizer (data folder)
+// this is upstream, after the supermirror but before the sample
+//
+//Function/S V_getflipperPolarizer_Direction(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:flipperPolarizer:direction"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//Function V_getflipperPolarizer_inBeam(fname)
+//	String fname
+//	
+//	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
+//	return(V_getRealValueFromHDF5(fname,path))
+//end
+//
+//Function/S V_getflipperPolarizer_Type(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam:flipperPolarizer:type"
+//	Variable num=60
+//	return(V_getStringFromHDF5(fname,path,num))
+//End
+//
+//
+//
 //Function V_getFlipperDriving_current(fname)
 //	String fname
 //	
@@ -804,7 +974,7 @@ End
 //	Variable num=60
 //	return(V_getStringFromHDF5(fname,path,num))
 //End
-
+//
 
 
 // instrument/beam/monochromator (data folder)

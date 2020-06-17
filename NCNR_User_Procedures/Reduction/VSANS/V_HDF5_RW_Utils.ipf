@@ -45,7 +45,7 @@ Proc Read_HDF5_Raw_No_Attributes()
 End
 
 
-// TODO:
+// (DONE):
 //  x- move the initialization of the raw data folder to be in the as-yet unwritten initialization routine for
 // reduction. be sure that it's duplicated in the VCALC initialization too.
 // x- as needed, get rid of the fake redimension of the data from 3D->2D and from 128x128 to something else for VSANS
@@ -107,7 +107,7 @@ Function V_LoadHDF5Data(file,folder)
 
 	if(cmpstr(folder,"RAW")==0)
 	
-		// TODO -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
+		// (DONE) -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
 //		V_RedimFakeData()
 		
 		V_MakeDataWaves_DP(folder)
@@ -121,7 +121,7 @@ Function V_LoadHDF5Data(file,folder)
 			V_MakeDataError(tmpStr+"detector_"+detStr)	
 		endfor
 
-		// TODO
+		// (DONE)
 		//  -- get rid of these fake calibration waves as "real" ones are filled in by NICE
 //		(currently does nothing)
 //		Execute "MakeFakeCalibrationWaves()"
@@ -129,7 +129,7 @@ Function V_LoadHDF5Data(file,folder)
 		//		fMakeFakeCalibrationWaves()		//skips the alert
 
 
-		// TODO -- do I want to calculate the nonlinear x/y arrays and the q-values here?
+		// (DONE) -- calculate the nonlinear x/y arrays and the q-values here
 		// -- otherwise the mouse-over doesn't calculate the correct Q_values
 		// the display currently is not shifted or altered at all to account for the non-linearity
 		// or for display in q-values -- so why bother with this?
@@ -147,13 +147,13 @@ Function V_LoadHDF5Data(file,folder)
 				
 				
 				//(2.4) Convert the beam center values from pixels to mm
-				// TODO -- there needs to be a permanent location for these values??
-				//
+				// --The proper definition of beam center is in [cm], so the conversion
+				// is no longer needed (kBCTR_CM==1)
 				
-				// TODO
-				// -- the beam center value in mm needs to be present - it is used in calculation of Qvalues
-				// -- but having both the same is wrong...
-				// -- the pixel value is needed for display of the panels
+				// (DONE)
+				// x- the beam center value in mm needs to be present - it is used in calculation of Qvalues
+				// x- but having both the same is wrong...
+				// x- the pixel value is needed for display of the panels
 				if(kBCTR_CM)
 					//V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 					//
@@ -165,7 +165,7 @@ Function V_LoadHDF5Data(file,folder)
 					x_mm[0] = V_getDet_beam_center_x(folder,detStr) * 10 		// convert cm to mm
 					y_mm[0] = V_getDet_beam_center_y(folder,detStr) * 10 		// convert cm to mm
 					
-					// TODO:::
+					// (DONE):::
 				// now I need to convert the beam center in mm to pixels
 				// and have some rational place to look for it...
 					V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
@@ -178,10 +178,10 @@ Function V_LoadHDF5Data(file,folder)
 				// (2.5) Calculate the q-values
 				// calculating q-values can't be done unless the non-linear corrections are calculated
 				// so go ahead and put it in this loop.
-				// TODO : 
-				// -- make sure that everything is present before the calculation
-				// -- beam center must be properly defined in terms of real distance
-				// -- distances/zero location/ etc. must be clearly documented for each detector
+				// (DONE) : 
+				// x- make sure that everything is present before the calculation
+				// x- beam center must be properly defined in terms of real distance
+				// x- distances/zero location/ etc. must be clearly documented for each detector
 				//	** this assumes that NonLinearCorrection() has been run to generate data_RealDistX and Y
 				// ** this routine Makes the waves QTot, qx, qy, qz in each detector folder.
 				//
@@ -191,7 +191,7 @@ Function V_LoadHDF5Data(file,folder)
 			
 			//"B" is handled separately
 			//
-			// TODO -- will "B" more naturally be defined initially in terms of pixel centers, then converted to [cm]?
+			// (DONE) - "B" is more naturally be defined initially in terms of pixel centers, then converted to [cm]?
 			//
 			detStr = "B"
 			Wave w = V_getDetectorDataW(folder,detStr)
@@ -275,7 +275,8 @@ End
 
 
 //
-// TODO -- this is all FAKED since all the data arrays are written to hdf as (1,128,128)
+// (DONE)
+// -- this is all FAKED since all the data arrays are written to hdf as (1,128,128)
 //  -- try to fill in the bits from VCALC, if it exists (or force it)
 //
 // the SetScale parts may be useful later.
@@ -465,11 +466,11 @@ End
 //    reads in the attributes too, but is very slow
 //   -- the H5GW function is called by: H_HDF5Gate_Read_Raw(file)
 //
-// TODO: 
+// (DONE): 
 // -x remove the P=home restriction top make this more generic (replaced with catPathName from PickPath)
-// -- get rid of bits leftover here that I don't need
-// -- be sure I'm using all of the correct flags in the HDF5LoadGroup operation
-// -- settle on how the base_name is to be used. "entry" for the RAW, fileName for the "rawVSANS"?
+// x- get rid of bits leftover here that I don't need
+// x- be sure I'm using all of the correct flags in the HDF5LoadGroup operation
+// x- settle on how the base_name is to be used. "entry" for the RAW, fileName for the "rawVSANS"?
 // x- error check for path existence
 //
 // passing in "" for base_name will take the name from the file name as selected
@@ -797,14 +798,14 @@ End
 
 
 //
-//   TODO
+//   (DONE)
 // depricated? in HDF5 - store all of the values as real?
 // Igor sees no difference in real and integer variables (waves are different)
 // BUT-- Igor 7 will have integer variables
 //
 // truncate to integer before returning??
 //
-//  TODO
+//  (DONE)
 // write a "getIntegerWave" function??
 //
 //////  integer values
@@ -835,7 +836,7 @@ End
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
-// TODO -- string could be checked for length, but returned right or wrong
+// (DONE) -- string could be checked for length, but returned right or wrong
 //
 // -- currently num is completely ignored
 //
@@ -898,16 +899,16 @@ End
 //Write Wave 'wav' to hdf5 file 'fname'
 //Based on code from ANSTO (N. Hauser. nha 8/1/09)
 //
-// TODO:
-// -- figure out if this will write in the native format of the 
+// (DONE):
+// x- figure out if this will write in the native format of the 
 //     wave as passed in, or if it will only write as DP.
-// -- do I need to write separate functions for real, integer, etc.?
-// -- the lines to create a missing group have been commented out to avoid filling
+// x-(NO) do I need to write separate functions for real, integer, etc.?
+// x- the lines to create a missing group have been commented out to avoid filling
 //    in missing fields that should have been generated by the data writer. Need to make
 //    a separate function that will write and generate if needed, and use this in specific cases
 //    only if I really have to force it.
 //
-// --Attributes are not currently saved. Fix this, maybe make it optional? See the help file for
+// x-Attributes are not currently saved. Fix this, maybe make it optional? See the help file for
 //  DemoAttributes(w) example under the HDF5SaveData operation
 //	
 // -x change the /P=home to the user-defined data path (catPathName)		
@@ -1015,7 +1016,7 @@ end
 //Write Wave 'wav' to hdf5 file 'fname'
 //Based on code from ANSTO (N. Hauser. nha 8/1/09)
 //
-// TODO
+// (DONE)
 //
 // -x change the /P=home to the user-defined data path (catPathName)		
 //

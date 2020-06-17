@@ -171,7 +171,7 @@ Proc V_Initialize()
 
 	VC_Initialize_Space()		//initialize folders for VCALC
 
-// TODO - be sure that NCNR is defined correctly	
+// (DONE) - be sure that NCNR is defined correctly	
 	//unload the NCNR_Package_Loader, if NCNR not defined
 	UnloadNCNR_VSANS_Procedures()
 
@@ -304,7 +304,8 @@ End
 //
 // note that it is currenty NOT OK for lo > hi (!= reversed color scale, right now log(negative) == bad)
 //
-// TODO hi, lo not used properly here, seems to mangle log display now that I'm switching the lo,hi of the ctab
+// (DONE) hi, lo not used properly here, seems to mangle log display now that
+// I'm switching the lo,hi of the ctab
 //
 Function V_MakeImageLookupTables(num,lo,hi)
 	Variable num,lo,hi
@@ -391,8 +392,8 @@ Function V_InitFacilityGlobals()
 End
 
 ///////////////////////////////////////////////
-// TODO
-////////////// everything below needs to be re-written for VSANS
+//
+//////////////// everything below needs to be re-written for VSANS
 //
 //////////////////////////////////////////////
 
@@ -400,7 +401,7 @@ End
 // 
 // do I need to make the protocols any longer for VSANS? (yes -- now 12 points)
 // What other options for processing / averaging / saving are needed??
-//  TODO
+//  (DONE)
 // x- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the 
 // entire reduction can be automatic
 //
@@ -455,7 +456,8 @@ End
 // unload this procedure file, and add this to the functions that run at initialization of the 
 // experiment
 //
-// TODO - be sure that this unloads correctly
+// (DONE) - be sure that this unloads correctly
+//
 Function UnloadNCNR_VSANS_Procedures()
 
 #if (exists("NCNR_VSANS")==6)			//defined in the main #includes file.

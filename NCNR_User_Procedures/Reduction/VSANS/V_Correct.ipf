@@ -9,9 +9,9 @@
 // Changes: (1) the beam center mismatch is ALWAYS ignored. It is flagged, and alerted, but nothing is shifted
 //          (2) the condition of trans == 1 is not flagged, and there is no stopping for user input
 // 
-// TODO -- verify the operation of all modes
-// -- decide if/how to implement/re-implement the trans == 1 check and dialog
-// -- decide if the beam center mismatch is ever to be re-implemented
+// TODO x- (DONE)-verify the operation of all modes
+// x- (NO)-decide if/how to implement/re-implement the trans == 1 check and dialog
+// x- (NO)-decide if the beam center mismatch is ever to be re-implemented
 // -- check the monitor count calls and rescaled values (correct monitor? where is rescaling written?)
 //
 
@@ -73,7 +73,7 @@ End
 // dispatch function to correct data
 //
 // --determines the mode of subtraction
-// --TODO (checks for trans=1 in SAM and EMP) - not currently implemented
+// -- (checks for trans=1 in SAM and EMP) - not implemented
 // --checks for existence of data in WORK folders
 // --clears out the COR folder
 // --calls the correct correct
@@ -109,7 +109,7 @@ Function V_Correct(cor_mode)
 		return(err)
 	endif
 	
-	// TODO -- this is currently not implemented	
+	// -- this is not implemented	
 	//check for trans==1
 //	NVAR doCheck=root:Packages:NIST:gDoTransCheck
 //	Wave/Z samR=root:Packages:NIST:SAM:RealsRead
@@ -138,7 +138,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// TODO -- not implemented
+			// -- not implemented
 //			if(doCheck)
 //				trans = empR[4]
 //				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
@@ -167,7 +167,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// TODO - not implemented
+			// - not implemented
 //			if(doCheck)
 //				trans = empR[4]
 //				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
@@ -189,7 +189,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// TODO -- not implemented
+			// -- not implemented
 //			if(doCheck)
 //				trans = empR[4]
 //				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
@@ -226,7 +226,7 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// TODO -- not implemented
+			// -- not implemented
 //			if(doCheck)
 //				trans = empR[4]
 //				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
@@ -267,8 +267,8 @@ End
 //					added explicit reference to use linear_data, instead of trusting that data
 //					was freshly loaded. added final copy of cor result to cor:data and cor:linear_data
 //
-// TODO -- verify the operation
-//  -- check that all "get" reads are returning proper values (+units)
+// (DONE) x- verify the operation
+//  x- check that all "get" reads are returning proper values (+units)
 //
 Function V_CorrectMode_1()
 
@@ -291,7 +291,7 @@ Function V_CorrectMode_1()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) x- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -336,7 +336,7 @@ Function V_CorrectMode_1()
 	
 		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE)- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -406,7 +406,7 @@ Function V_CorrectMode_1()
 	//we're done, get out w/no error
 
 	
-	//TODO -- do I update COR header?
+	//(DONE) x- don't update COR header
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
@@ -437,7 +437,7 @@ Function V_CorrectMode_2()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) x- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -469,7 +469,7 @@ Function V_CorrectMode_2()
 	
 		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE) x- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -517,7 +517,7 @@ Function V_CorrectMode_2()
 
 	//we're done, get out w/no error
 
-	// TODO -- do I update COR header?
+	// (DONE) x- don't update COR header?
 	//cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd
@@ -548,7 +548,7 @@ Function V_CorrectMode_3()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) x- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -586,7 +586,7 @@ Function V_CorrectMode_3()
 	
 		Duplicate/O cor_data cor1,emp_temp,noadd_emp
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE) x- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -633,7 +633,7 @@ Function V_CorrectMode_3()
 	
 	//we're done, get out w/no error
 
-	// TODO -- do I update COR header?
+	// (DONE) x- don't update COR header?
 	//cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp
@@ -676,7 +676,7 @@ Function V_CorrectMode_4()
 
 	endfor
 	
-	//TODO -- do I want to update COR header?
+	//(DONE) x- don't update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	SetDataFolder root:
@@ -707,7 +707,7 @@ Function V_CorrectMode_11()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) x- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -720,7 +720,7 @@ Function V_CorrectMode_11()
 	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 	// for proper scaling, get the time and actual monitor counts
-	// TODO -- make sure that these calls are reading the proper values
+	// (DONE) x- make sure that these calls are reading the proper values
 	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
 	time_sam = V_getCount_time("SAM")		//count time SAM
 	time_drk = V_getCount_time("DRK")	//drk count time
@@ -764,7 +764,7 @@ Function V_CorrectMode_11()
 	
 		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE) x- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -838,7 +838,7 @@ Function V_CorrectMode_11()
 	//we're done, get out w/no error
 
 
-	//TODO -- do I update COR header?
+	//(DONE) x- don't update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,emp_temp,noadd_emp,drk_temp
@@ -870,7 +870,7 @@ Function V_CorrectMode_12()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) x- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -879,7 +879,7 @@ Function V_CorrectMode_12()
 	tmonbgd = V_getBeamMonNormData("BGD")		//monitor count in BGD
 
 	// for proper scaling, get the time and actual monitor counts
-	// TODO -- make sure that these calls are reading the proper values
+	// (DONE) x- make sure that these calls are reading the proper values
 	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
 	time_sam = V_getCount_time("SAM")		//count time SAM
 	time_drk = V_getCount_time("DRK")	//drk count time
@@ -918,7 +918,7 @@ Function V_CorrectMode_12()
 	
 		Duplicate/O cor_data cor1,bgd_temp,noadd_bgd
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE) x- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -967,7 +967,7 @@ Function V_CorrectMode_12()
 	
 	//we're done, get out w/no error
 	
-	// TODO -- do I update COR header?
+	// (DONE) x- do I update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp
@@ -1001,7 +1001,7 @@ Function V_CorrectMode_13()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -1012,7 +1012,7 @@ Function V_CorrectMode_13()
 	emp_trans_err = V_getSampleTransError("EMP")
 
 	// for proper scaling, get the time and actual monitor counts
-	// TODO -- make sure that these calls are reading the proper values
+	// (DONE) -- make sure that these calls are reading the proper values
 	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
 	time_sam = V_getCount_time("SAM")		//count time SAM
 	time_drk = V_getCount_time("DRK")	//drk count time
@@ -1051,7 +1051,7 @@ Function V_CorrectMode_13()
 	
 		Duplicate/O cor_data cor1,emp_temp,noadd_emp
 
-		// TODO -- document this, make a note, so everyone knows this is not done
+		// (DONE) -- document this, make a note, so everyone knows this is not done
 		// skip this part, but duplicate the results of no shift condition
 		//  where bgd_temp = input data, and noadd_bgd = 1 (so no data is zeroed out)
 		
@@ -1101,7 +1101,7 @@ Function V_CorrectMode_13()
 		
 	//we're done, get out w/no error
 
-	// TODO -- do I update COR header?
+	// (DONE) -- do I update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,emp_temp,noadd_emp,drk_temp
@@ -1132,7 +1132,7 @@ Function V_CorrectMode_14()
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	// get transmission and trans error for SAM, EMP
-	// TODO -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
+	// (DONE) -- verify that the  call to V_getBeamMonNormData() is really rescaled to 10^8, and saved is the "true" count
 	
 	tmonsam = V_getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = V_getSampleTransmission("SAM")		//SAM transmission
@@ -1140,7 +1140,7 @@ Function V_CorrectMode_14()
 	
 
 	// for proper scaling, get the time and actual monitor counts
-	// TODO -- make sure that these calls are reading the proper values
+	// (DONE) -- make sure that these calls are reading the proper values
 	savmon_sam = V_getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
 	time_sam = V_getCount_time("SAM")		//count time SAM
 	time_drk = V_getCount_time("DRK")	//drk count time
@@ -1191,7 +1191,7 @@ Function V_CorrectMode_14()
 		
 	//we're done, get out w/no error
 	
-	//TODO -- do I update COR header?
+	//(DONE) -- do I update COR header?
 //	cor_text[1] = date() + " " + time()		//date + time stamp
 
 	KillWaves/Z cor1,bgd_temp,noadd_bgd,drk_temp

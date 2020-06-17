@@ -1138,8 +1138,9 @@ Function V_AutoBeamCenter()
 	//force a cleanup of these three data sets so they are read from disk
 	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_F, ".", 0, 0))
 	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_M, ".", 0, 0))
-	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_B, ".", 0, 0))
-
+	if(strlen(emptyFileName_B) > 0)		//to avoid killing RawVSANS!!
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_B, ".", 0, 0))
+	endif
 //
 // TODO -- need to verify that the values are actually good
 // -- if they aren't, I need to do something about this...

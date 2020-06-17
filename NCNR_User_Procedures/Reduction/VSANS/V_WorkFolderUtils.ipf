@@ -45,18 +45,15 @@ End
 // copy what is needed for data processing (not the DAS_logs)
 // from the RawVSANS storage folder to the local WORK folder as needed
 //
-// TODO -- at what stage do I make copies of data in linear/log forms for data display?
-//      -- do I need to make copies, if I'm displaying with the lookup wave (no copy needed if this works)
-//			-- when do I make the 2D error waves?
 //
-// TODO - decide what exactly I need to copy over. May be best to copy all, and delete
+// (DONE) - decide what exactly I need to copy over. May be best to copy all, and delete
 //       what I know that I don't need
 //
-// TODO !!! DuplicateDataFolder will FAIL - in the base case of RAW data files, the
+// (DONE) !!! DuplicateDataFolder will FAIL - in the base case of RAW data files, the
 //  data is actually in use - so it will fail every time. need an alternate solution. in SANS,
 // there are a limited number of waves to carry over, so Dupliate/O is used for rw, tw, data, etc.
 //
-// TODO : I also need a list of what is generated during processing that may be hanging around - that I need to
+// (DONE) : I also need a list of what is generated during processing that may be hanging around - that I need to
 //     be sure to get rid of - like the calibration waves, solidAngle, etc.
 //
 // hdfDF is the name only of the data in storage. May be full file name with extension (clean as needed)
@@ -423,7 +420,7 @@ End
 
 
 //testing procedure
-// TODO -- can't duplicate this with another proceudre, but if I change the name of the variable
+// (DONE) -- can't duplicate this with another proceudre, but if I change the name of the variable
 //   "newType" to "type", then when Raw_to_work() gets to CopyHDFToWorkFolder(), the KillDataFolder/Z
 //   line fails (but reports no error), then DuplicateDataFolder fails, and reports an error. Trying
 //   to simplify this condition, I can't reproduce the bug for WM...
@@ -550,9 +547,9 @@ Function V_Raw_to_work(newType)
 	
 	// (0) Redimension the data waves in the destination folder
 	//     so that they are DP, not integer
-	// TODO
-	// -- currently only redimensioning the data and linear_data_error - anything else???
-	// -- ?? some of this is done at load time for RAW data. Not a problem to re-do the redimension
+	// (DONE)
+	// x- currently only redimensioning the data and linear_data_error - anything else???
+	// x- ?? some of this is done at load time for RAW data. Not a problem to re-do the redimension
 	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
 		detStr = StringFromList(ii, ksDetectorListAll, ";")
 		Wave w = V_getDetectorDataW(fname,detStr)
@@ -563,7 +560,7 @@ Function V_Raw_to_work(newType)
 	
 	// (1) DIV correction
 	// do this in terms of pixels. 
-	// TODO : This must also exist at the time the first work folder is generated.
+	// (DONE) : This must also exist at the time the first work folder is generated.
 	//   So it must be in the user folder at the start of the experiment, and defined.
 	NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
 	if (gDoDIVCor == 1)
@@ -588,9 +585,9 @@ Function V_Raw_to_work(newType)
 	endif
 	
 	// (2) non-linear correction	
-	// TODO:
+	// (DONE):
 	// x-  the "B" detector is calculated in its own routines
-	// -- document what is generated here:
+	// x- document what is generated here:
 	//    **in each detector folder: data_realDistX and data_realDistY (2D waves of the [mm] position of each pixel)
 	// x- these spatial calculations ARE DONE as the RAW data is loaded. It allows the RAW
 	//    data to be properly displayed, but without all of the (complete) set of detector corrections
@@ -610,12 +607,12 @@ Function V_Raw_to_work(newType)
 			V_NonLinearCorrection(fname,w,w_calib,tube_width,detStr,destPath)
 
 			//(2.4) Convert the beam center values from pixels to mm
-			// TODO -- there needs to be a permanent location for these values??
+			// beam center is always defined in [cm] now
 			//
-				// TODO
-				// -- the beam center value in mm needs to be present - it is used in calculation of Qvalues
-				// -- but having both the same is wrong...
-				// -- the pixel value is needed for display of the panels
+				// (DONE)
+				// x- the beam center value in mm needs to be present - it is used in calculation of Qvalues
+				// x- but having both the same is wrong...
+				// x- the pixel value is needed for display of the panels
 				if(kBCTR_CM)
 					//V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 					//
@@ -627,7 +624,7 @@ Function V_Raw_to_work(newType)
 					x_mm[0] = V_getDet_beam_center_x(fname,detStr) * 10 		// convert cm to mm
 					y_mm[0] = V_getDet_beam_center_y(fname,detStr) * 10 		// convert cm to mm
 					
-					// TODO:::
+					// (DONE):::
 				// now I need to convert the beam center in mm to pixels
 				// and have some rational place to look for it...
 					V_ConvertBeamCtr_to_pix(fname,detStr,destPath)
@@ -639,10 +636,10 @@ Function V_Raw_to_work(newType)
 			// (2.5) Calculate the q-values
 			// calculating q-values can't be done unless the non-linear corrections are calculated
 			// so go ahead and put it in this loop.
-			// TODO : 
-			// -- make sure that everything is present before the calculation
-			// -- beam center must be properly defined in terms of real distance
-			// -- distances/zero location/ etc. must be clearly documented for each detector
+			// (DONE) : 
+			// x- make sure that everything is present before the calculation
+			// x- beam center must be properly defined in terms of real distance
+			// x- distances/zero location/ etc. must be clearly documented for each detector
 			//	** this assumes that NonLinearCorrection() has been run to generate data_RealDistX and Y
 			// ** this routine Makes the waves QTot, qx, qy, qz in each detector folder.
 			//
@@ -780,8 +777,8 @@ Function V_Raw_to_work(newType)
 	// (5) angle-dependent tube shadowing + detection efficiency
 	//  done together as one correction
 	//
-	// TODO:
-	// -- this correction accounts for the efficiency of the tubes
+	// (DONE):
+	// x- this correction accounts for the efficiency of the tubes
 	//		(depends on angle and wavelength)
 	//    and the shadowing, only happens at large angles (> 23.7 deg, lateral to tubes)
 	//
@@ -843,13 +840,13 @@ Function V_Raw_to_work(newType)
 	endif	
 		
 	// (7) angle dependent transmission correction
-	// TODO:
+	// (DONE):
 	// x- this still needs to be filled in
-	// -- still some debate of when/where in the corrections that this is best applied
+	// x- still some debate of when/where in the corrections that this is best applied
 	//    - do it here, and it's done whether the output is 1D or 2D
 	//    - do it later (where SAMPLE information is used) since this section is ONLY instrument-specific
-	// -- verify that the calculation is correct
-	// -- verify that the error propagation (in 2D) is correct
+	// x- verify that the calculation is correct
+	// x- verify that the error propagation (in 2D) is correct
 	//
 	NVAR gDoTrans = root:Packages:NIST:VSANS:Globals:gDoTransmissionCor
 	if (gDoTrans == 1)
@@ -872,7 +869,7 @@ Function V_Raw_to_work(newType)
 	
 	
 	// (8) normalize to default monitor counts
-	// TODO(DONE) x- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
+	// (DONE) x- each detector is rescaled separately, but the rescaling factor is global (only one monitor!)
 	// TODO -- but there are TWO monitors - so how to switch?
 	//  --- AND, there is also /entry/control/monitor_counts !!! Which one is the correct value? Which will NICE write
 	// TODO -- what do I really need to save?
@@ -1054,7 +1051,7 @@ Function V_Add_raw_to_work(newType)
 	V_putDetector_counts(newType,detCount_dest+detCount_tmp)
 	V_putControlMonitorCount(newType,saved_mon_dest+saved_mon_tmp)
 
-// TODO (DONE)
+// (DONE)
 // the new, unscaled monitor count was written to the control block, but it needs to be 
 // written to the BeamMonNormSaved_count field instead, since this is where I read it from.
 // - so this worked in the past for adding two files, but fails on 3+

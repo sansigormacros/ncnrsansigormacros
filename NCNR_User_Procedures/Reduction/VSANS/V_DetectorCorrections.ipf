@@ -217,8 +217,8 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	// offset will be a negative value for the L panel, and positive for the R panel
 		if(kBCTR_CM)
 			if(cmpstr("L",detStr[1]) == 0)
-//				data_realDistX[][] = offset - (dimX - p)*tube_width			// TODO should this be dimX-1-p = 47-p?
-				data_realDistX[][] = offset - (dimX - p - 1/2)*tube_width - gap/2		// TODO should this be dimX-1-p = 47-p?
+//				data_realDistX[][] = offset - (dimX - p)*tube_width			// 
+				data_realDistX[][] = offset - (dimX - p - 1/2)*tube_width - gap/2		// 
 			else
 			//	right
 //				data_realDistX[][] = tube_width*(p+1) + offset + gap		//add to the Right det,
@@ -252,8 +252,8 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 				data_realDistY[][] = tube_width*(q+1/2) + offset + gap/2			
 			else
 				// bottom
-//				data_realDistY[][] = offset - (dimY - q)*tube_width	// TODO should this be dimY-1-q = 47-q?
-				data_realDistY[][] = offset - (dimY - q - 1/2)*tube_width - gap/2	// TODO should this be dimY-1-q = 47-q?
+//				data_realDistY[][] = offset - (dimY - q)*tube_width	// 
+				data_realDistY[][] = offset - (dimY - q - 1/2)*tube_width - gap/2	// 
 			endif
 		else
 			data_realDistY[][] = tube_width*(q)
@@ -270,11 +270,13 @@ end
 
 
 
-
-// TODO:
-// -- the cal_x and y coefficients are totally fake
-// -- the wave assignment may not be correct.. so beware
 //
+// Only the first elelment of the three is actually used
+// - the stored values are in cm, and converted to mm
+//
+// cal_x[0] = 0.03175 [cm] = 0.3175 mm/pixel
+//
+// Since only the first element is used, the "correction" is linear.
 //
 Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
 	String folder
@@ -321,17 +323,19 @@ end
 
 
 //
+// This function is essentially never used as the beam centers are never defined
+// in terms of pixels, so this calculation is never called
 //
-// TODO
-// -- VERIFY the calculations
-// -- verify where this needs to be done (if the beam center is changed)
-// -- then the q-calculation needs to be re-done
-// -- the position along the tube length is referenced to tube[0], for no particular reason
+// 
+// x- VERIFY the calculations
+// x- verify where this needs to be done (if the beam center is changed)
+// x- then the q-calculation needs to be re-done
+// x- the position along the tube length is referenced to tube[0], for no particular reason
 //    It may be better to take an average? but [0] is an ASSUMPTION
-// -- distance along tube is simple interpolation, or do I use the coefficients to
+// x- distance along tube is simple interpolation, or do I use the coefficients to
 //    calculate the actual value
 //
-// -- distance in the lateral direction is based on tube width, which is a fixed parameter
+// x- distance in the lateral direction is based on tube width, which is a fixed parameter
 //
 //
 Function V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
@@ -611,12 +615,12 @@ end
 
 //
 //
-// TODO
-// -- VERIFY the calculations
-// -- verify where this needs to be done (if the beam center is changed)
-// -- then the q-calculation needs to be re-done
+// (DONE)
+// x- VERIFY the calculations
+// x- verify where this needs to be done (if the beam center is changed)
+// x- then the q-calculation needs to be re-done
 //
-// -- not much is known about the "B" detector, so this
+// x- not much is known about the "B" detector, so this
 //    all hinges on the non-linear corrections being done correctly for that detector
 //
 // 	Variable detCtrX, detCtrY
@@ -1545,9 +1549,10 @@ End
 
 
 //
-// TODO:
+// (DONE):
 //   x- 	DoAlert 0,"This has not yet been updated for VSANS"
-//   -- how is the error propagation handled? Be sure it is calculated correctly when DIV is generated
+//   x- how is the error propagation handled? Done the same way as for SANS.
+//      Be sure it is calculated correctly when DIV is generated
 //      and is applied correctly here...
 //
 //function will divide the contents of "workType" folder with the contents of 
@@ -1914,9 +1919,9 @@ Function V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
 //	w_err = tmp_err	
 //	
 
-	// TODO
+	// (DONE)
 	// - clean up after I'm satisfied computations are correct		
-//	KillWaves/Z tmp_theta_x,tmp_theta_y,tmp_dist,tmp_err,tmp_corr
+	KillWaves/Z tmp_theta_x,tmp_theta_y,tmp_dist,tmp_err,tmp_corr
 	
 	return(0)
 end
@@ -2083,9 +2088,9 @@ Function V_TubeShadowEfficiencyTables_oneLam(lambda)
 
 	eff /= normVal
 	
-	// TODO
+	// (DONE)
 	// - clean up after I'm satisfied computations are correct		
-//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
 	
 	SetDataFolder root:
 	return(0)
@@ -2183,9 +2188,9 @@ Function V_TubeShadowEfficiencyTables_withX()
 ////	
 //	eff_withX_to_interp /= normVal		// eff(lam,th_x,th_y) / eff(lam,0,0)
 
-	// TODO
+	// (DONE)
 	// - clean up after I'm satisfied computations are correct		
-//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
+	KillWaves/Z tmp_theta,tmp_dist,tmp_err,lat_err
 	
 	return(0)
 end
