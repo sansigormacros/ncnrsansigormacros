@@ -186,7 +186,8 @@ Function V_InitPolarizationGlobals()
 	String/G gCell_Maverick = "cell=Maverick,lambda=5.0,Te=0.87,err_Te=0.01,mu=3.184,err_mu=0.02,"
 	String/G gCell_Burgundy = "cell=Burgundy,lambda=5.0,Te=0.86,err_Te=0.01,mu=3.138,err_mu=0.015,"
 	String/G gCell_Olaf = "cell=Olaf,lambda=7.5,Te=0.86,err_Te=0.005,mu=2.97,err_mu=0.018,"
-	
+
+	String/G gDecayTransPanel = "none"	
 	
 	SetDataFolder root:
 	return(0)
@@ -505,6 +506,9 @@ Function V_DecayParamPanel()
 	PopupMenu popup_0,mode=1,value= #"V_D_CellNameList()"
 	
 	Button button_0,pos={sc*560,294*sc},size={sc*70,20*sc},proc=V_DecayFitButtonProc,title="Do Fit"
+	SetVariable setvar_4,pos={sc*660,294*sc},size={sc*100,13*sc},title="Panel",fStyle=1
+	SetVariable setvar_4,value=root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
+	
 	
 	GroupBox group_0,pos={sc*560,329*sc},size={sc*230,149*sc},title="FIT RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
@@ -825,7 +829,7 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 				if(selRow == 0 && !overrideT0)
 					//find T0
 					fname = V_FindFileFromRunNumber(w[0][%'Trans_He_In?'])
-					t0str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+					t0str = V_getDataStartTime(fname)		//
 					SVAR gT0 = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gT0
 					gT0 = t0Str		//for display
 					noteStr = note(w)
@@ -897,7 +901,7 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 				
 				// elapsed hours
 				fname = V_FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
-				t1str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+				t1str = V_getDataStartTime(fname)		//
 				w[selRow][%elapsed_hr] = V_ElapsedHours(t0Str,t1Str)
 				
 				// running average of muP and Po
@@ -1108,23 +1112,34 @@ End
 //
 // if noNorm = 1, then the normalization to attenuators is not done
 //
+// -- TODO_POL
+// - I need to be sure that the counts I'm reading are from the correct panel
+// - from SANS, the transmission was on the detector by definition
+//
+// root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
+//
+//		V_getDet_IntegratedCount(fname,detStr)
+//		V_getReduction_BoxPanel(fname)
+//
 Function V_TotalCR_FromRun(num,err_cr,noNorm)
 	Variable num,&err_cr,noNorm
 
 	String fname="",instr="",tmpStr=""
 	Variable cr,cts,err_cts,ctTime,monCts,attenNo,lambda,attenTrans,atten_err
+
+	SVAR gDetStr = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
+
 	
 	fname = V_FindFileFromRunNumber(num)
-	cts = V_getDetector_counts(fname)		//TODO_POL V_getDetCount(fname)
+	cts = V_getDet_IntegratedCount(fname,gDetStr)		// corrected jun 2020
 	err_cts = sqrt(cts)
 	
-	ctTime = V_getCount_time(fname)		//TODO_POL V_getCountTime(fname)
-	monCts = V_getControlMonitorCount(fname)		//TODO_POL V_getMonitorCount(fname)
+	ctTime = V_getCount_time(fname)		
+	monCts = V_getBeamMonNormData(fname)		//
 //	attenNo = V_getAttenNumber(fname)
 //	instr = V_getAcctName(fname)		//this is 11 characters
 //	lambda = V_getWavelength(fname)
-	attenTrans = V_getAttenuator_transmission(fname)		//TODO_POL V_AttenuationFactor(instr,lambda,AttenNo,atten_err)
-	
+	attenTrans = V_getAttenuator_transmission(fname)		//	
 	if(noNorm==1)			//don't normalize to attenuation
 		attenTrans=1
 		atten_err=0

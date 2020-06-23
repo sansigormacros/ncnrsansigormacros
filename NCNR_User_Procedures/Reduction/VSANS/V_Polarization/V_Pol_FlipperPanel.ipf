@@ -569,11 +569,11 @@ Function V_Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	err_gam = NumberByKey("err_gamma", gCellKW, "=", ",", 0)
 
 	fname = V_FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
-	t1str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+	t1str = V_getDataStartTime(fname)		//
 	t1 = V_ElapsedHours(t0Str,t1Str)
 	
 	fname = V_FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
-	t2str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+	t2str = V_getDataStartTime(fname)		//
 	t2 = V_ElapsedHours(t0Str,t2Str)
 
 	PCell_t1 = V_Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell_t1)
@@ -637,11 +637,11 @@ Function V_Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	err_gam = NumberByKey("err_gamma", gCellKW, "=", ",", 0)
 
 	fname = V_FindFileFromRunNumber(w[selRow][%UU_Trans])
-	t1str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+	t1str = V_getDataStartTime(fname)		//
 	t1 = V_ElapsedHours(t0Str,t1Str)
 	
 	fname = V_FindFileFromRunNumber(w[selRow][%DU_Trans])
-	t2str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+	t2str = V_getDataStartTime(fname)		//
 	t2 = V_ElapsedHours(t0Str,t2Str)
 
 	PCell_t1 = V_Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell_t1)
@@ -925,7 +925,7 @@ Function V_ParseFlipperRow(w,selRow)
 	String cell1,cell2,cell3,cell4,cell5
 	
 
-	DoAlert 0,"need better way to match configurations parseFlipperRow"
+	DoAlert 0,"I am trusting that the configurations match in parseFlipperRow"
 	
 	String fname=""
 	
@@ -936,7 +936,7 @@ Function V_ParseFlipperRow(w,selRow)
 		DoAlert 0,"UU_Trans run "+num2str(w[selRow][%'UU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-				Abort "bad flipper"
+//				Abort "bad flipper"
 //		atten1 = V_getAttenNumber(fname)
 //		sdd1 = V_getSDD(fname)
 	endif
@@ -946,7 +946,7 @@ Function V_ParseFlipperRow(w,selRow)
 		DoAlert 0,"DU_Trans run "+num2str(w[selRow][%'DU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-				Abort "bad flipper"
+//				Abort "bad flipper"
 //		atten2 = V_getAttenNumber(fname)
 //		sdd2 = V_getSDD(fname)
 	endif
@@ -956,7 +956,7 @@ Function V_ParseFlipperRow(w,selRow)
 		DoAlert 0,"DD_Trans run "+num2str(w[selRow][%'DD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-				Abort "bad flipper"
+//				Abort "bad flipper"
 //		atten3 = V_getAttenNumber(fname)
 //		sdd3 = V_getSDD(fname)
 	endif
@@ -966,7 +966,7 @@ Function V_ParseFlipperRow(w,selRow)
 		DoAlert 0,"UD_Trans run "+num2str(w[selRow][%'UD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-				Abort "bad flipper"
+//				Abort "bad flipper"
 //		atten4 = V_getAttenNumber(fname)
 //		sdd4 = V_getSDD(fname)
 	endif
@@ -976,7 +976,7 @@ Function V_ParseFlipperRow(w,selRow)
 		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
-				Abort "bad flipper"
+//				Abort "bad flipper"
 //		atten5 = V_getAttenNumber(fname)
 //		sdd5 = V_getSDD(fname)
 	endif
@@ -985,16 +985,16 @@ Function V_ParseFlipperRow(w,selRow)
 	
 	// do a check of the elapsed time from start to finish
 	
-	if( (sdd1 != sdd2) || (sdd2 != sdd3) || (sdd1 != sdd3) )
-		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
-		err = 1
-	endif
-	
-
-	if( (atten1 != atten2) || (atten2 != atten3) || (atten1 != atten3) )
-		DoAlert 0,"Files in row "+num2str(selRow)+" are not all collected with the same attenuation. Just so you know."
-		err = 0
-	endif
+//	if( (sdd1 != sdd2) || (sdd2 != sdd3) || (sdd1 != sdd3) )
+//		DoAlert 0,"Files in row "+num2str(selRow)+" are not all at the same detector distance"
+//		err = 1
+//	endif
+//	
+//
+//	if( (atten1 != atten2) || (atten2 != atten3) || (atten1 != atten3) )
+//		DoAlert 0,"Files in row "+num2str(selRow)+" are not all collected with the same attenuation. Just so you know."
+//		err = 0
+//	endif
 	
 	return(err)
 end

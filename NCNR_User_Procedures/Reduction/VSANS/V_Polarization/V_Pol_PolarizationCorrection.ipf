@@ -424,106 +424,26 @@ Window V_PolCor_Panel()
 
 // SAM Tab	
 	PopupMenu popup_0_1,pos={sc*190,45*sc},size={sc*102,20*sc},title="Condition"
-	PopupMenu popup_0_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"
+	PopupMenu popup_0_1, mode=1,popvalue="none",value= #"V_P_GetConditionNameList()"
 	// UU
 	ListBox ListBox_0_UU,pos={sc*34,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_UU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_0_UU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_0_UU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_0_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_0_UU_0,pos={sc*34,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UU_0
-//	SetVariable setvar_0_UU_1,pos={sc*34,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UU_1
-//	SetVariable setvar_0_UU_2,pos={sc*34,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UU_2
-//	SetVariable setvar_0_UU_3,pos={sc*34,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UU_3
-//	SetVariable setvar_0_UU_4,pos={sc*34,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UU_4
-//	PopupMenu popup_0_UU_0,pos={sc*142,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_UU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UU_1,pos={sc*142,122*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UU_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UU_2,pos={sc*142,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UU_3,pos={sc*142,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UU_4,pos={sc*142,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
 	ListBox ListBox_0_DU,pos={sc*310,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_DU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_0_DU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_0_DU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_0_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_0_DU_0,pos={sc*368,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DU_0
-//	SetVariable setvar_0_DU_1,pos={sc*368,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DU_1
-//	SetVariable setvar_0_DU_2,pos={sc*368,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DU_2
-//	SetVariable setvar_0_DU_3,pos={sc*368,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DU_3
-//	SetVariable setvar_0_DU_4,pos={sc*368,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DU_4
-//	PopupMenu popup_0_DU_0,pos={sc*476,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_DU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DU_1,pos={sc*476,122*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_DU_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DU_2,pos={sc*476,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DU_3,pos={sc*476,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DU_4,pos={sc*476,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
 	ListBox ListBox_0_DD,pos={sc*33,245*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_DD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_0_DD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_0_DD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_0_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_0_DD_0,pos={sc*33,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DD_0
-//	SetVariable setvar_0_DD_1,pos={sc*33,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DD_1
-//	SetVariable setvar_0_DD_2,pos={sc*33,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DD_2
-//	SetVariable setvar_0_DD_3,pos={sc*33,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DD_3
-//	SetVariable setvar_0_DD_4,pos={sc*33,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_DD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_DD_4
-//	PopupMenu popup_0_DD_0,pos={sc*141,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_DD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DD_1,pos={sc*141,306*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DD_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DD_2,pos={sc*141,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DD_3,pos={sc*141,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_DD_4,pos={sc*141,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 	
 // UD
 	ListBox ListBox_0_UD,pos={sc*310,245*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_0_UD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_0_UD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_0_UD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_0_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_0_UD_0,pos={sc*368,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UD_0
-//	SetVariable setvar_0_UD_1,pos={sc*368,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UD_1
-//	SetVariable setvar_0_UD_2,pos={sc*368,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UD_2
-//	SetVariable setvar_0_UD_3,pos={sc*368,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UD_3
-//	SetVariable setvar_0_UD_4,pos={sc*368,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_0_UD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_0_UD_4
-//	PopupMenu popup_0_UD_0,pos={sc*476,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_UD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UD_1,pos={sc*476,306*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_0_UD_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UD_2,pos={sc*476,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UD_3,pos={sc*476,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_0_UD_4,pos={sc*476,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_0_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 
 // EMP Tab
@@ -533,101 +453,21 @@ Window V_PolCor_Panel()
 	ListBox ListBox_1_UU,pos={sc*34,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_1_UU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_1_UU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_1_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_1_UU_0,pos={sc*34,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UU_0
-//	SetVariable setvar_1_UU_1,pos={sc*34,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UU_1
-//	SetVariable setvar_1_UU_2,pos={sc*34,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UU_2
-//	SetVariable setvar_1_UU_3,pos={sc*34,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UU_3
-//	SetVariable setvar_1_UU_4,pos={sc*34,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UU_4
-//	PopupMenu popup_1_UU_0,pos={sc*142,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_UU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UU_1,pos={sc*142,122*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UU_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UU_2,pos={sc*142,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UU_3,pos={sc*142,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UU_4,pos={sc*142,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
 	ListBox ListBox_1_DU,pos={sc*310,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_DU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_1_DU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_1_DU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_1_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_1_DU_0,pos={sc*368,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DU_0
-//	SetVariable setvar_1_DU_1,pos={sc*368,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DU_1
-//	SetVariable setvar_1_DU_2,pos={sc*368,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DU_2
-//	SetVariable setvar_1_DU_3,pos={sc*368,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DU_3
-//	SetVariable setvar_1_DU_4,pos={sc*368,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DU_4
-//	PopupMenu popup_1_DU_0,pos={sc*476,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_DU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DU_1,pos={sc*476,122*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_DU_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DU_2,pos={sc*476,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DU_3,pos={sc*476,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DU_4,pos={sc*476,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
 	ListBox ListBox_1_DD,pos={sc*33,245*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_DD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_1_DD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_1_DD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_1_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_1_DD_0,pos={sc*33,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DD_0
-//	SetVariable setvar_1_DD_1,pos={sc*33,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DD_1
-//	SetVariable setvar_1_DD_2,pos={sc*33,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DD_2
-//	SetVariable setvar_1_DD_3,pos={sc*33,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DD_3
-//	SetVariable setvar_1_DD_4,pos={sc*33,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_DD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_DD_4
-//	PopupMenu popup_1_DD_0,pos={sc*141,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_DD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DD_1,pos={sc*141,306*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DD_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DD_2,pos={sc*141,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DD_3,pos={sc*141,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_DD_4,pos={sc*141,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // UD
 	ListBox ListBox_1_UD,pos={sc*310,245*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_1_UD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_1_UD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_1_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_1_UD_0,pos={sc*368,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UD_0
-//	SetVariable setvar_1_UD_1,pos={sc*368,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UD_1
-//	SetVariable setvar_1_UD_2,pos={sc*368,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UD_2
-//	SetVariable setvar_1_UD_3,pos={sc*368,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UD_3
-//	SetVariable setvar_1_UD_4,pos={sc*368,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_1_UD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_1_UD_4
-//	PopupMenu popup_1_UD_0,pos={sc*476,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_UD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UD_1,pos={sc*476,306*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_1_UD_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UD_2,pos={sc*476,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UD_3,pos={sc*476,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_1_UD_4,pos={sc*476,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_1_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // TODO
 // BKG Tab -- DU, DD, UD are not shown, since the background is not dependent on the flipper states, so only one background
@@ -640,101 +480,21 @@ Window V_PolCor_Panel()
 	ListBox ListBox_2_UU,pos={sc*34,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_2_UU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_2_UU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 	ListBox ListBox_2_UU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_2_UU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_UU_0,pos={sc*34,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UU_0
-//	SetVariable setvar_2_UU_1,pos={sc*34,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UU_1
-//	SetVariable setvar_2_UU_2,pos={sc*34,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UU_2
-//	SetVariable setvar_2_UU_3,pos={sc*34,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UU_3
-//	SetVariable setvar_2_UU_4,pos={sc*34,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UU_4
-//	PopupMenu popup_2_UU_0,pos={sc*142,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_UU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UU_1,pos={sc*142,122*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UU_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UU_2,pos={sc*142,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UU_3,pos={sc*142,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UU_4,pos={sc*142,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 	// DU
 ////////	ListBox ListBox_2_DU,pos={sc*368,102*sc},size={sc*200,130*sc},proc=V_PolCor_FileListBoxProc,frame=2
 ////////	ListBox ListBox_2_DU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_2_DU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 ////////	ListBox ListBox_2_DU,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_2_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_DU_0,pos={sc*368,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DU_0
-//	SetVariable setvar_2_DU_1,pos={sc*368,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DU_1
-//	SetVariable setvar_2_DU_2,pos={sc*368,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DU_2
-//	SetVariable setvar_2_DU_3,pos={sc*368,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DU_3
-//	SetVariable setvar_2_DU_4,pos={sc*368,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DU_4
-//	PopupMenu popup_2_DU_0,pos={sc*476,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_1,pos={sc*476,122*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_2,pos={sc*476,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_3,pos={sc*476,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_4,pos={sc*476,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // DD
 ////////	ListBox ListBox_2_DD,pos={sc*33,286*sc},size={sc*200,130*sc},proc=V_PolCor_FileListBoxProc,frame=2
 ////////	ListBox ListBox_2_DD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_2_DD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 ////////	ListBox ListBox_2_DD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_2_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_DD_0,pos={sc*33,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DD_0
-//	SetVariable setvar_2_DD_1,pos={sc*33,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DD_1
-//	SetVariable setvar_2_DD_2,pos={sc*33,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DD_2
-//	SetVariable setvar_2_DD_3,pos={sc*33,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DD_3
-//	SetVariable setvar_2_DD_4,pos={sc*33,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_DD_4
-//	PopupMenu popup_2_DD_0,pos={sc*141,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_1,pos={sc*141,306*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_2,pos={sc*141,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_3,pos={sc*141,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_4,pos={sc*141,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 // UD
 ////////	ListBox ListBox_2_UD,pos={sc*368,286*sc},size={sc*200,130*sc},proc=V_PolCor_FileListBoxProc,frame=2
 ////////	ListBox ListBox_2_UD,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_2_UD,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
 ////////	ListBox ListBox_2_UD,selWave=root:Packages:NIST:VSANS:Globals:Polarization:lbSelWave_2_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_UD_0,pos={sc*368,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UD_0
-//	SetVariable setvar_2_UD_1,pos={sc*368,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UD_1
-//	SetVariable setvar_2_UD_2,pos={sc*368,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UD_2
-//	SetVariable setvar_2_UD_3,pos={sc*368,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UD_3
-//	SetVariable setvar_2_UD_4,pos={sc*368,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_4,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Polarization:gStr_PolCor_2_UD_4
-//	PopupMenu popup_2_UD_0,pos={sc*476,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_1,pos={sc*476,306*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_2,pos={sc*476,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_3,pos={sc*476,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_4,pos={sc*476,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
 EndMacro
 
@@ -1261,7 +1021,7 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 		runStr = 	lb[ii][0]		//the run number
 		if(cmpstr(runStr, "" ) != 0)
 			fname = V_FindFileFromRunNumber(str2num(runStr))
-			proportion[ii] = V_getBeamMonNormData(fname)		//TODO_POL getMonitorCount(fname)
+			proportion[ii] = V_getBeamMonNormData(fname)		//
 			summedMonCts += proportion[ii]
 		endif
 	endfor
@@ -1293,7 +1053,7 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 			Po = NumberByKey("P0", decayNote, "=", ",", 0)
 			err_Po = NumberByKey("err_P0", decayNote, "=", ",", 0)
 			// get the elapsed time to calculate PCell at the current file time
-			t1str = V_getDataStartTime(fname)		//TODO_POL V_getFileCreationDate(fname)
+			t1str = V_getDataStartTime(fname)		//
 			t1 = V_ElapsedHours(t0Str,t1Str)
 			
 			PCell = V_Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell)
@@ -1503,7 +1263,7 @@ End
 
 // TODO
 // -- clean up the wave note method to get the file loaded information passed around for display
-// a Function V_to tag the data in a particular folder with the UD state
+// a Function to tag the data in a particular folder with the UD state
 Function V_TagLoadedData(type,pType)
 	String type,pType
 
@@ -1840,8 +1600,9 @@ Function V_getTimeMidpoint(listStr)
 		run = str2num( StringFromList(ii, listStr ,",") )
 		fname = V_FindFileFromRunNumber(run)
 		// TODO_POL -- need to get t1 in seconds
-		Abort"Need to convert the time to seconds"
+//		Abort"Need to convert the time to seconds"
 		
+		t1 = V_ISO8601_to_IgorTime(V_getDataStartTime(fname))		//values returned in seconds
 //		t1 = V_ConvertVAXDateTime2Secs(V_getFileCreationDate(fname))
 
 

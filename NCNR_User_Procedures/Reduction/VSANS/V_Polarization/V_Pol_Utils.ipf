@@ -69,6 +69,7 @@ end
 Function V_ScanCellParams()
 
 	Variable ii,num,numcells
+	Variable lam,opacity
 	String newList = "",lastCell="",tmpCell,fname
 	
 	Make/O/T/N=(5,6) foundCells
@@ -88,12 +89,17 @@ Function V_ScanCellParams()
 		if(cmpstr(tmpCell[0,3],"The ")!=0)
 			if(cmpstr(tmpCell,lastCell)!=0)		//different than other cell names
 				// legit string, get the other params
+				
+				// CONVERT the opacity + error to the correct wavelength by multiplying
+				
+				lam = V_getWavelength(fname)
+				opacity = V_getBackPolarizer_opacityAt1Ang(fname)
 				foundCells[numcells][0] = tmpCell
-				foundCells[numcells][1] = num2str(V_getWavelength(fname))	
+				foundCells[numcells][1] = num2str(lam)	
 				foundCells[numcells][2] = num2str(V_getBackPolarizer_tE(fname))	
 				foundCells[numcells][3] = num2str(V_getBackPolarizer_tE_err(fname))	
-				foundCells[numcells][4] = num2str(V_getBackPolarizer_opacityAt1Ang(fname))	
-				foundCells[numcells][5] = num2str(V_getBackPolarizer_opacityAt1Ang_err(fname))	
+				foundCells[numcells][4] = num2str(opacity*lam)	
+				foundCells[numcells][5] = num2str(V_getBackPolarizer_opacityAt1Ang_err(fname)*lam)	
 				
 				// update the saved name
 				numcells += 1
@@ -102,5 +108,7 @@ Function V_ScanCellParams()
 		endif
 	endfor
 
+	Edit foundCells
+	
 	return(0)
 End

@@ -51,7 +51,7 @@ End
 //
 // (DONE) !!! DuplicateDataFolder will FAIL - in the base case of RAW data files, the
 //  data is actually in use - so it will fail every time. need an alternate solution. in SANS,
-// there are a limited number of waves to carry over, so Dupliate/O is used for rw, tw, data, etc.
+// there are a limited number of waves to carry over, so Duplicate/O is used for rw, tw, data, etc.
 //
 // (DONE) : I also need a list of what is generated during processing that may be hanging around - that I need to
 //     be sure to get rid of - like the calibration waves, solidAngle, etc.
