@@ -912,12 +912,12 @@ Function V_LoadPolarizedData(pType)
 	V_TagLoadedData(type,pType)		//see also DisplayTaggedData()
 	
 	// now add the appropriate bits to the matrix
-	if(!WaveExists($("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")))
-		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")
-		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix_err")
+	if(!WaveExists($("root:Packages:NIST:VSANS:"+type+":PolMatrix")))
+		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:"+type+":PolMatrix")
+		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:"+type+":PolMatrix_err")
 	endif
-	WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")
-	WAVE matA_err = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix_err")
+	WAVE matA = $("root:Packages:NIST:VSANS:"+type+":PolMatrix")
+	WAVE matA_err = $("root:Packages:NIST:VSANS:"+type+":PolMatrix_err")
 
 //			listStr = ControlNameList("PolCor_Panel",";","*"+pType+"*")
 
@@ -1245,46 +1245,47 @@ End
 // lots of extra waves, but it makes things easier down the road
 // type is the data folder (=SAM, etc)
 // pType is the pol extension (=UU, etc.)
+//
+// an extra "_pc" is tagged on to indicate that the 
+// polarization correction has been done
+//
 Function V_MakePCResultWaves(type,pType)
 	String type,pType
 
-	ptype = "_" + pType			// add an extra underscore
-	String pcExt = "_pc"
-	String destPath = "root:Packages:NIST:VSANS:Globals:" + type
-	Duplicate/O $(destPath + ":data"+pType), $(destPath + ":data"+pType+pcExt)
-	Duplicate/O $(destPath + ":linear_data"+pType),$(destPath + ":linear_data"+pType+pcExt)
-	Duplicate/O $(destPath + ":linear_data_error"+pType),$(destPath + ":linear_data_error"+pType+pcExt)
-	Duplicate/O $(destPath + ":textread"+pType),$(destPath + ":textread"+pType+pcExt)
-	Duplicate/O $(destPath + ":integersread"+pType),$(destPath + ":integersread"+pType+pcExt)
-	Duplicate/O $(destPath + ":realsread"+pType),$(destPath + ":realsread"+pType+pcExt)
+	
+	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
+	
+	V_CopyHDFToWorkFolder(type,ptype)
+
 	
 	return(0)
 End
 
-// TODO
-// -- clean up the wave note method to get the file loaded information passed around for display
-// a Function to tag the data in a particular folder with the UD state
+//
+// tag the loaded data with the type (spin states)
+// -- for VSANS, do this by duplicating the whole data folder
+//
+// type is the usual "SAM" or "EMP", etc.
+// and ptype is the polarization "UU", etc.
+//
+// TODO_POL: need to test this out to be sure that the size of the Igor
+// experiment does not balloon up too much.
+//
+//
 Function V_TagLoadedData(type,pType)
 	String type,pType
 
 
-// TODO_POL -- what is this function actualy doing? I need to do this with VSANS functions
-// -- don't need to convert to linear scale
 
-//	V_ConvertFolderToLinearScale(type)
-
-
-	ptype = "_" + pType			// add an extra underscore
-	String destPath = "root:Packages:NIST:VSANS:Globals:" + type
-	Duplicate/O $(destPath + ":data"), $(destPath + ":data"+pType)
-	Duplicate/O $(destPath + ":linear_data"),$(destPath + ":linear_data"+pType)
-	Duplicate/O $(destPath + ":linear_data_error"),$(destPath + ":linear_data_error"+pType)
-	Duplicate/O $(destPath + ":textread"),$(destPath + ":textread"+pType)
-	Duplicate/O $(destPath + ":integersread"),$(destPath + ":integersread"+pType)
-	Duplicate/O $(destPath + ":realsread"),$(destPath + ":realsread"+pType)
+	ptype = type+"_" + pType			// add an extra underscore
 	
-	SVAR FileList = $(destPath + ":FileList")		//stick the list of files as a wave note. Very inelegant...
-	Note $(destPath + ":textread"+pType),FileList
+	V_CopyHDFToWorkFolder(type,ptype)
+
+// not sure that I need this at all - since each folder that I duplicate will have its
+// own file list
+//	
+//	SVAR FileList = $(destPath + ":FileList")		//stick the list of files as a wave note. Very inelegant...
+//	Note $(destPath + ":textread"+pType),FileList
 	
 	
 	return(0)

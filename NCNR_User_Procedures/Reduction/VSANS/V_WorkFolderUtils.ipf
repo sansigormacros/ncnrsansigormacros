@@ -71,8 +71,11 @@ Function V_CopyHDFToWorkFolder(fromStr,toStr)
 //	// make a copy of the file name for my own use, since it's not in the file
 //	String/G $(toDF+":file_name") = root:
 	
-	// copy the folders
-	KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
+	// check to see if the data folder exists, if so, try to kill
+	// if it deosn't exist then do nothing (as for duplication for polarized beam)
+	if(DataFolderExists(toDF))
+		KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
+	endif
 	
 	if(V_flag == 0)		// kill DF was OK
 		DuplicateDataFolder $("root:Packages:NIST:VSANS:"+fromStr),$("root:Packages:NIST:VSANS:"+toStr)
