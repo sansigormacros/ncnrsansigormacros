@@ -2123,8 +2123,8 @@ Function V_ExecuteProtocol(protStr,samStr)
 // SAM
 //////////////////////////////
 
-// TODO:
-// -- currently does not allow adding RAW data files together, so no parsing is done
+// (DONE):
+// x- (DONE) - adding multiple files added allowed 
 //	 -- NOTE detector corrections (including DIV) are done at the V_Raw_to_Work() step
 //   So if the DIV is not part of the protocol, be sure to set/reset the global preference
 //
@@ -3065,7 +3065,7 @@ Function V_Proto_LoadFile(fileStr,activeType,msgStr)
 			if(!filesOK)
 				//add the correct file(s) to Type
 				
-				// TODO: only one file is allowed currently
+				// (DONE)-- adding multiple files is allowed
 				err = V_AddFilesInList(activeType,fileStr)
 				
 				if(err)

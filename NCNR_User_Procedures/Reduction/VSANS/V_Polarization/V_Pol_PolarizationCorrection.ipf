@@ -362,7 +362,7 @@ Window V_PolCor_Panel()
 	
 	// always visible
 	Button button0,pos={sc*23,396*sc},size={sc*80,20*sc},proc=V_LoadRawPolarizedButton,title="Load ..."
-	Button button1,pos={sc*136,397*sc},size={sc*130,20*sc},proc=V_PolCorButton,title="Pol Correct Data"
+	Button button1,pos={sc*136,396*sc},size={sc*130,20*sc},proc=V_PolCorButton,title="Pol Correct Data"
 	Button button2,pos={sc*546,92*sc},size={sc*130,20*sc},proc=V_ShowPolMatrixButton,title="Show Coef Matrix"
 	Button button3,pos={sc*546,151*sc},size={sc*160,20*sc},proc=V_ChangeDisplayedPolData,title="Change Display Data"
 	Button button4,pos={sc*503,9*sc},size={sc*30,20*sc},proc=V_PolCorHelpParButtonProc,title="?"
@@ -374,52 +374,65 @@ Window V_PolCor_Panel()
 	TitleBox title1,pos={sc*380,48*sc},size={sc*24,24*sc},title="\\f01DU or - +",fSize=12
 	TitleBox title2,pos={sc*100,210*sc},size={sc*25,24*sc},title="\\f01DD or - -",fSize=12
 	TitleBox title3,pos={sc*380,210*sc},size={sc*24,24*sc},title="\\f01UD or + -",fSize=12
-	
+
+
 	// bits to set up reduction protocol
-	Button button5,pos={sc*129,458*sc},size={sc*100,20*sc},proc=V_PickDIVButton,title="set DIV file"
-	Button button5,help={"This button will set the file selected in the File Catalog table to be the sensitivity file."}
-	Button button6,pos={sc*129,482*sc},size={sc*100,20*sc},proc=V_PickMASKButton,title="set MASK file"
-	Button button6,help={"This button will set the file selected in the File Catalog table to be the mask file."}
-	Button button7,pos={sc*129,506*sc},size={sc*110,20*sc},proc=V_SetABSParamsButton,title="set ABS params"
-	Button button7,help={"This button will prompt the user for absolute scaling parameters"}
-	Button button8,pos={sc*129,530*sc},size={sc*150,20*sc},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
-	Button button8,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
-	Button button9,pos={sc*581,515*sc},size={sc*120,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Data"
+	//
+	// now use the main protocol panel rather than trying to duplicate it here
+	//
+	Button button21,pos={sc*546,396*sc},size={sc*120,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
+	Button button21,help={"Build a PolCor protocol using the standard Protocol Panel"}
+
+	Button button9,pos={sc*546,435*sc},size={sc*120,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Data"
 	Button button9,help={"Reduce PolCor data"}
-	Button button10,pos={sc*581,460*sc},size={sc*120,20*sc},proc=V_SavePolCorProtocolButton,title="Save Protocol"
-	Button button10,help={"Save the PolCor protocol, within this experiment only"}
-	Button button11,pos={sc*546,333*sc},size={sc*120,20*sc},proc=V_RecallPolCorProtocolButton,title="Recall Protocol"
-	Button button11,help={"Recall a PolCor protocol from memory"}
-	Button button14,pos={sc*546,303*sc},size={sc*120,20*sc},proc=V_ExportPolCorProtocolButton,title="Export Protocol"
-	Button button14,help={"Export the PolCor protocol, saving it on disk"}
-	Button button15,pos={sc*546,363*sc},size={sc*120,20*sc},proc=V_ImportPolCorProtocolButton,title="Import Protocol"
-	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
-	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
-	Button button16,help={"Save the state of the panel for later recall"}
-	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
-	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
+
+//	PopupMenu popup5,pos={sc*129,458*sc},size={sc*51,23*sc},proc=V_DIVFilePopMenuProc,title="set DIV file"
+//	PopupMenu popup5,mode=1,value= #"V_getDIVList()"
+//
+//	PopupMenu popup6,pos={sc*129,482*sc},size={sc*51,23*sc},proc=V_MSKFilePopMenuProc,title="set MASK file"
+//	PopupMenu popup6,mode=1,value= #"V_getMSKList()"
+//	
+//	Button button7,pos={sc*129,506*sc},size={sc*110,20*sc},proc=V_SetABSParamsButton,title="set ABS params"
+//	Button button7,help={"This button will prompt the user for absolute scaling parameters"}
+//	
+//	Button button8,pos={sc*129,530*sc},size={sc*150,20*sc},proc=V_SetAverageParamsButtonProc,title="set AVERAGE params"
+//	Button button8,help={"Prompts the user for the type of 1-D averaging to perform, as well as saving options"}
+//	Button button10,pos={sc*581,460*sc},size={sc*120,20*sc},proc=V_SavePolCorProtocolButton,title="Save Protocol"
+//	Button button10,help={"Save the PolCor protocol, within this experiment only"}
+//	Button button11,pos={sc*546,333*sc},size={sc*120,20*sc},proc=V_RecallPolCorProtocolButton,title="Recall Protocol"
+//	Button button11,help={"Recall a PolCor protocol from memory"}
+//	Button button14,pos={sc*546,303*sc},size={sc*120,20*sc},proc=V_ExportPolCorProtocolButton,title="Export Protocol"
+//	Button button14,help={"Export the PolCor protocol, saving it on disk"}
+//	Button button15,pos={sc*546,363*sc},size={sc*120,20*sc},proc=V_ImportPolCorProtocolButton,title="Import Protocol"
+//	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
+//	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
+//	Button button16,help={"Save the state of the panel for later recall"}
+//	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
+//	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
+
+
 			
-	SetVariable setvar0,pos={sc*303,458*sc},size={sc*250,15*sc},title="file:"
-	SetVariable setvar0,help={"Filename of the detector sensitivity file to be used in the data reduction"}
-	SetVariable setvar0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gDIV
-	SetVariable setvar1,pos={sc*303,483*sc},size={sc*250,15*sc},title="file:"
-	SetVariable setvar1,help={"Filename of the mask file to be used in the data reduction"}
-	SetVariable setvar1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gMASK
-	SetVariable setvar2,pos={sc*303,509*sc},size={sc*250,15*sc},title="parameters:"
-	SetVariable setvar2,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
-	SetVariable setvar2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
-	SetVariable setvar3,pos={sc*303,535*sc},size={sc*250,15*sc},title="parameters:"
-	SetVariable setvar3,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
-	SetVariable setvar3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gAVE
+//	SetVariable setvar0,pos={sc*303,458*sc},size={sc*250,15*sc},title="file:"
+//	SetVariable setvar0,help={"Filename of the detector sensitivity file to be used in the data reduction"}
+//	SetVariable setvar0,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gDIV
+//	SetVariable setvar1,pos={sc*303,483*sc},size={sc*250,15*sc},title="file:"
+//	SetVariable setvar1,help={"Filename of the mask file to be used in the data reduction"}
+//	SetVariable setvar1,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gMASK
+//	SetVariable setvar2,pos={sc*303,509*sc},size={sc*250,15*sc},title="parameters:"
+//	SetVariable setvar2,help={"Keyword-string of values necessary for absolute scaling of data. Remaining parameters are taken from the sample file."}
+//	SetVariable setvar2,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
+//	SetVariable setvar3,pos={sc*303,535*sc},size={sc*250,15*sc},title="parameters:"
+//	SetVariable setvar3,help={"Keyword-string of choices used for averaging and saving the 1-D data files"}
+//	SetVariable setvar3,limits={-inf,inf,0*sc},value= root:Packages:NIST:VSANS:Globals:Protocols:gAVE
 	
-	CheckBox check0,pos={sc*13,463*sc},size={sc*63,14*sc},title="Sensitivity"
-	CheckBox check0,help={"If checked, the specified detector sensitivity file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
-	CheckBox check0,value= 1
-	CheckBox check1,pos={sc*13,486*sc},size={sc*39,14*sc},title="Mask",value= 1
-	CheckBox check2,pos={sc*13,509*sc},size={sc*82,14*sc},title="Absolute Scale",value= 1
-	CheckBox check3,pos={sc*13,532*sc},size={sc*96,14*sc},title="Average and Save",value= 1
-	CheckBox check4,pos={sc*13,436*sc},size={sc*59,14*sc},title="Use EMP?",value= 1
-	CheckBox check5,pos={sc*103,436*sc},size={sc*60,14*sc},title="Use BGD?",value= 1
+//	CheckBox check0,pos={sc*13,463*sc},size={sc*63,14*sc},title="Sensitivity"
+//	CheckBox check0,help={"If checked, the specified detector sensitivity file will be included in the data reduction. If the file name is \"ask\", then the user will be prompted for the file"}
+//	CheckBox check0,value= 1
+//	CheckBox check1,pos={sc*13,486*sc},size={sc*39,14*sc},title="Mask",value= 1
+//	CheckBox check2,pos={sc*13,509*sc},size={sc*82,14*sc},title="Absolute Scale",value= 1
+//	CheckBox check3,pos={sc*13,532*sc},size={sc*96,14*sc},title="Average and Save",value= 1
+//	CheckBox check4,pos={sc*13,436*sc},size={sc*59,14*sc},title="Use EMP?",value= 1
+//	CheckBox check5,pos={sc*103,436*sc},size={sc*60,14*sc},title="Use BGD?",value= 1
 	
 
 // SAM Tab	
@@ -448,7 +461,7 @@ Window V_PolCor_Panel()
 
 // EMP Tab
 	PopupMenu popup_1_1,pos={sc*190,45*sc},size={sc*102,20*sc},title="Condition"
-	PopupMenu popup_1_1, mode=1,popvalue="none",value= #"P_GetConditionNameList()"	
+	PopupMenu popup_1_1, mode=1,popvalue="none",value= #"V_P_GetConditionNameList()"	
 	// UU
 	ListBox ListBox_1_UU,pos={sc*34,80*sc},size={sc*200,120*sc},proc=V_PolCor_FileListBoxProc,frame=2
 	ListBox ListBox_1_UU,listWave=root:Packages:NIST:VSANS:Globals:Polarization:ListWave_1_UU,titleWave=root:Packages:NIST:VSANS:Globals:Polarization:lbTitles
@@ -755,8 +768,8 @@ Function V_LoadRawPolarizedButton(ba) : ButtonControl
 // -- first checking to be sure that no rows are zero - this will result in a singular matrix otherwise		
 			ControlInfo/W=V_PolCor_Panel PolCorTab
 			type = S_value
-			WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")
-			WAVE matA_err = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix_err")
+			WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")
+			WAVE matA_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix_err")
 			matA_err = sqrt(matA_err)
 			
 			// check for zero rows before inverting -- means not all data loaded
@@ -769,12 +782,15 @@ Function V_LoadRawPolarizedButton(ba) : ButtonControl
 			endfor
 			if(flag)		//PolMatrix OK
 				// calculate the inverse of the coefficient matrix
-				SetDataFolder $("root:Packages:NIST:VSANS:Globals:"+type)
+//				SetDataFolder $("root:Packages:NIST:VSANS:Globals:")
 				MatrixInverse/G matA
-				Duplicate/O M_Inverse Inv_PolMatrix
+				Duplicate/O M_Inverse $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix")
+				Wave Inv_PolMatrix = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix")
 				
 				// now calculate the error of the inverse matrix
-				Duplicate/O Inv_PolMatrix Inv_PolMatrix_err
+				Duplicate/O Inv_PolMatrix $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix_err")
+				Wave Inv_PolMatrix_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix_err")
+
 				Inv_PolMatrix_err=0
 				
 				for(aa=0;aa<4;aa+=1)
@@ -812,7 +828,7 @@ End
 // -the time midpoint is found from the list of runs (needed for PCell(t) later)
 // -raw data is loaded (from a list of run numbers)
 // -data and loaded waves are tagged with a suffix (_UU, _DU, etc.)
-// -the PolMatrix of coefficients is filled (the specified row)
+// -the PolMatrix of coefficients is filled (the specified row) (in Globals: SAM_PolMatrix, EMP_PolMatrix, etc.
 //
 // *** IF THE DATA IS BGD ***
 // take the file list from UU every time, but load and put this in all 4 XS locations
@@ -912,12 +928,14 @@ Function V_LoadPolarizedData(pType)
 	V_TagLoadedData(type,pType)		//see also DisplayTaggedData()
 	
 	// now add the appropriate bits to the matrix
-	if(!WaveExists($("root:Packages:NIST:VSANS:"+type+":PolMatrix")))
-		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:"+type+":PolMatrix")
-		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:"+type+":PolMatrix_err")
+	if(!WaveExists($("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")))
+		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")
 	endif
-	WAVE matA = $("root:Packages:NIST:VSANS:"+type+":PolMatrix")
-	WAVE matA_err = $("root:Packages:NIST:VSANS:"+type+":PolMatrix_err")
+	if(!WaveExists($("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix_err")))
+		Make/O/D/N=(4,4) $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix_err")
+	endif
+	WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")
+	WAVE matA_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix_err")
 
 //			listStr = ControlNameList("PolCor_Panel",";","*"+pType+"*")
 
@@ -927,6 +945,13 @@ Function V_LoadPolarizedData(pType)
 	// returns the error matrix as the squared error (take sqrt in calling function)		
 	V_AddToPolMatrix(matA,matA_err,pType,tMid)
 
+
+// be sure the flag for polarization correction is cleared (killed)
+	// $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")	
+	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")
+	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DU:PolCorDone")
+	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DD:PolCorDone")
+	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UD:PolCorDone")
 
 	SetDataFolder root:
 	
@@ -1299,30 +1324,14 @@ End
 Proc V_DisplayTaggedData(type,pType)
 	String type="SAM",pType="UU"
 
-	String/G root:myGlobals:gDataDisplayType=type
-// TODO_POL -- what is this function actualy doing? I need to do this with VSANS functions
-// -- don't need to convert to linear scale
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=type
 
-//	V_ConvertFolderToLinearScale(type)
-
-	ptype = "_" + pType			// add an extra underscore
-	String destPath = "root:Packages:NIST:VSANS:Globals:" + type
-	$(destPath + ":linear_data") = $(destPath + ":linear_data"+pType)
-	$(destPath + ":linear_data_error") = $(destPath + ":linear_data_error"+pType)
-	$(destPath + ":textread") = $(destPath + ":textread"+pType)
-	$(destPath + ":integersread") = $(destPath + ":integersread"+pType)
-	$(destPath + ":realsread") = $(destPath + ":realsread"+pType)
-
-// make the data equal to linear data
-	$(destPath + ":data") = $(destPath + ":linear_data"+pType)
-
-
-	root:myGlobals:gDataDisplayType = type + pType
+	V_CopyHDFToWorkFolder(type+"_"+pType,type)
 	
 	V_UpdateDisplayInformation(type)
 
 	//update the displayed filename, using FileList in the current data folder
-	String/G root:myGlobals:gCurDispFile = note($(destPath + ":textread"+pType))		//read from the wave note
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispFile = ("root:Packages:NIST:VSANS:"+type+":gFileList")
 	
 End
 
@@ -1331,7 +1340,9 @@ End
 // polarization corrected result.
 //
 // exp cross sections have _UU extensions
-// polCor result has _UU_pc
+// polCor result has same extesion, _UU
+// but now folder is flagged at the top level with a wave PolCorDone that will only exist if the
+// correction has been done
 //
 // error propagation through the inversion follows the paper...
 //
@@ -1342,10 +1353,10 @@ Function V_PolCorButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			Variable ii,jj,numRows,numCols,row,kk
+			Variable ii,jj,numRows,numCols,row,kk,mm
 			
 			// get the current tab
-			String type
+			String type,detStr
 			Variable tabNum
 			ControlInfo/W=V_PolCor_Panel PolCorTab
 			type = S_value
@@ -1353,119 +1364,162 @@ Function V_PolCorButton(ba) : ButtonControl
 			tabNum = V_Value
 			
 			// make waves for the result
-			// these duplicate the data and add "_pc" for later use
-			// linear_data_error_UU_pc etc. are created
-			V_MakePCResultWaves(type,"UU")
-			V_MakePCResultWaves(type,"DU")
-			V_MakePCResultWaves(type,"DD")
-			V_MakePCResultWaves(type,"UD")
+			// these duplicate the entire data folder and add "_pc" for later use
+			// data waves for all detectors have the same name underneath
 			
+			// Don't do this -- it makes too many folders and the experiment becomes too large
+//			V_MakePCResultWaves(type,"UU")
+//			V_MakePCResultWaves(type,"DU")
+//			V_MakePCResultWaves(type,"DD")
+//			V_MakePCResultWaves(type,"UD")
 			
-			SetDataFolder $("root:Packages:NIST:VSANS:Globals:"+type)
+			if(exists("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone") == 0)
+			// instead, add a flag in the folders (each of the four) to signify that the polarization
+			// correction has been done and to be sure to not do it again
+				Make/O/D/N=1 $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:VSANS:"+type+"_DU:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:VSANS:"+type+"_DD:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:VSANS:"+type+"_UD:PolCorDone")	
+			else
+				DoAlert 0,"Polarization correction already done, skipping"
+				return(0)
+			endif
 
-// the linear data and its errors, declare and initialize			
-			WAVE linear_data_UU_pc = linear_data_UU_pc
-			WAVE linear_data_DU_pc = linear_data_DU_pc
-			WAVE linear_data_DD_pc = linear_data_DD_pc
-			WAVE linear_data_UD_pc = linear_data_UD_pc
-			WAVE linear_data_error_UU_pc = linear_data_error_UU_pc
-			WAVE linear_data_error_DU_pc = linear_data_error_DU_pc
-			WAVE linear_data_error_DD_pc = linear_data_error_DD_pc
-			WAVE linear_data_error_UD_pc = linear_data_error_UD_pc
-						
-			linear_data_UU_pc = 0
-			linear_data_DU_pc = 0
-			linear_data_DD_pc = 0
-			linear_data_UD_pc = 0
-			linear_data_error_UU_pc = 0
-			linear_data_error_DU_pc = 0
-			linear_data_error_DD_pc = 0
-			linear_data_error_UD_pc = 0
-						
-			// make a temp wave for the experimental data vector
-			Make/O/D/N=4 vecB
-			WAVE vecB = vecB
-			
-			// the coefficient matrix and the experimental data
-			WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")
-			WAVE linear_data_UU = linear_data_UU
-			WAVE linear_data_DU = linear_data_DU
-			WAVE linear_data_DD = linear_data_DD
-			WAVE linear_data_UD = linear_data_UD
+			// Now loop over all of the detector panels
+				// in the loop:
+				// -- switch to the correct data folder (dont' copy, SetDataFolder)
+				// -- declare the waves (OK to re-declare them?)
+				// -- duplicate so that I have 
+				// -- do the math
+				//
 
-// everything needed for the error calculation
-// the PolMatrix error matrices
-// and the data error
-			WAVE inv = Inv_PolMatrix
-			WAVE inv_err = Inv_PolMatrix_err			
-			WAVE linear_data_error_UU = linear_data_error_UU
-			WAVE linear_data_error_DU = linear_data_error_DU
-			WAVE linear_data_error_DD = linear_data_error_DD
-			WAVE linear_data_error_UD = linear_data_error_UD			
+			NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 			
-			numRows = DimSize(linear_data_UU_pc, 0 )
-			numCols = DimSize(linear_data_UU_pc, 1 )
-			
-			// this is certainly not slow. takes < 1 second to complete the double loop.
-			for(ii=0;ii<numRows;ii+=1)
-				for(jj=0;jj<numCols;jj+=1)
-					vecB[0] = linear_data_UU[ii][jj]
-					vecB[1] = linear_data_DU[ii][jj]
-					vecB[2] = linear_data_DD[ii][jj]
-					vecB[3] = linear_data_UD[ii][jj]
+			for(mm=0;mm<ItemsInList(ksDetectorListAll);mm+=1)
+				detStr = StringFromList(mm, ksDetectorListAll, ";")
+
+				if(cmpstr(detStr,"B") == 0 && gIgnoreDetB)
+					// do nothing
+				else
+					// do everything
+					
+					// Use the data in "data" since it is always linear in VSANS
+					// Store the result in "linear_data"
+					// copy the PolCor result back into linear_data so that the whole folder is consistent
+					
+					// the linear data and its errors, declare and initialize
+					//  root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:linear_data			
+					//  $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":linear_data")			
+					WAVE linear_data_UU_pc = $("root:Packages:NIST:VSANS:"+type+"_UU:entry:instrument:detector_"+detStr+":linear_data")
+					WAVE linear_data_DU_pc = $("root:Packages:NIST:VSANS:"+type+"_DU:entry:instrument:detector_"+detStr+":linear_data")
+					WAVE linear_data_DD_pc = $("root:Packages:NIST:VSANS:"+type+"_DD:entry:instrument:detector_"+detStr+":linear_data")
+					WAVE linear_data_UD_pc = $("root:Packages:NIST:VSANS:"+type+"_UD:entry:instrument:detector_"+detStr+":linear_data")
+					WAVE linear_data_error_UU_pc = $("root:Packages:NIST:VSANS:"+type+"_UU:entry:instrument:detector_"+detStr+":linear_data_error")
+					WAVE linear_data_error_DU_pc = $("root:Packages:NIST:VSANS:"+type+"_DU:entry:instrument:detector_"+detStr+":linear_data_error")
+					WAVE linear_data_error_DD_pc = $("root:Packages:NIST:VSANS:"+type+"_DD:entry:instrument:detector_"+detStr+":linear_data_error")
+					WAVE linear_data_error_UD_pc = $("root:Packages:NIST:VSANS:"+type+"_UD:entry:instrument:detector_"+detStr+":linear_data_error")
 				
-					MatrixLinearSolve/M=1 matA vecB
-					// result is M_B[][0]
-					WAVE M_B = M_B
-					linear_data_UU_pc[ii][jj] = M_B[0][0]
-					linear_data_DU_pc[ii][jj] = M_B[1][0]
-					linear_data_DD_pc[ii][jj] = M_B[2][0]
-					linear_data_UD_pc[ii][jj] = M_B[3][0]
+					linear_data_UU_pc = 0
+					linear_data_DU_pc = 0
+					linear_data_DD_pc = 0
+					linear_data_UD_pc = 0
+					linear_data_error_UU_pc = 0
+					linear_data_error_DU_pc = 0
+					linear_data_error_DD_pc = 0
+					linear_data_error_UD_pc = 0
 				
+					// make a temp wave for the experimental data vector
+					Make/O/D/N=4 vecB
+					WAVE vecB = vecB
 			
-					// and the error at each pixel, once for each of the four
-					row = 0		//== UU
-					for(kk=0;kk<4;kk+=1)
-						linear_data_error_UU_pc[ii][jj] += inv_err[row][kk]^2*linear_data_UU[ii][jj]^2 + inv[row][kk]^2*linear_data_error_UU[ii][jj]^2
-					endfor
-					row = 1		//== DU
-					for(kk=0;kk<4;kk+=1)
-						linear_data_error_DU_pc[ii][jj] += inv_err[row][kk]^2*linear_data_DU[ii][jj]^2 + inv[row][kk]^2*linear_data_error_DU[ii][jj]^2
-					endfor
-					row = 2		//== DD
-					for(kk=0;kk<4;kk+=1)
-						linear_data_error_DD_pc[ii][jj] += inv_err[row][kk]^2*linear_data_DD[ii][jj]^2 + inv[row][kk]^2*linear_data_error_DD[ii][jj]^2
-					endfor
-					row = 3		//== UD
-					for(kk=0;kk<4;kk+=1)
-						linear_data_error_UD_pc[ii][jj] += inv_err[row][kk]^2*linear_data_UD[ii][jj]^2 + inv[row][kk]^2*linear_data_error_UD[ii][jj]^2
+					// the coefficient matrix and the experimental data
+					WAVE matA = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")
+			
+					//this is the actual data to be corrected (taken from data)
+					WAVE linear_data_UU = $("root:Packages:NIST:VSANS:"+type+"_UU:entry:instrument:detector_"+detStr+":data")
+					WAVE linear_data_DU = $("root:Packages:NIST:VSANS:"+type+"_DU:entry:instrument:detector_"+detStr+":data")
+					WAVE linear_data_DD = $("root:Packages:NIST:VSANS:"+type+"_DD:entry:instrument:detector_"+detStr+":data")
+					WAVE linear_data_UD = $("root:Packages:NIST:VSANS:"+type+"_UD:entry:instrument:detector_"+detStr+":data")
+					WAVE linear_data_error_UU = $("root:Packages:NIST:VSANS:"+type+"_UU:entry:instrument:detector_"+detStr+":data_error")
+					WAVE linear_data_error_DU = $("root:Packages:NIST:VSANS:"+type+"_DU:entry:instrument:detector_"+detStr+":data_error")
+					WAVE linear_data_error_DD = $("root:Packages:NIST:VSANS:"+type+"_DD:entry:instrument:detector_"+detStr+":data_error")
+					WAVE linear_data_error_UD = $("root:Packages:NIST:VSANS:"+type+"_UD:entry:instrument:detector_"+detStr+":data_error")			
+				
+					// everything needed for the error calculation
+					// the PolMatrix error matrices
+					// and the data error
+					
+					
+					
+					// TODO_POL -- where are these matrices??
+					WAVE inv = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix")
+					WAVE inv_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix_err")
+			
+				
+					numRows = DimSize(linear_data_UU_pc, 0 )
+					numCols = DimSize(linear_data_UU_pc, 1 )
+					
+					// this is certainly not slow. takes < 1 second to complete the double loop.
+					for(ii=0;ii<numRows;ii+=1)
+						for(jj=0;jj<numCols;jj+=1)
+							vecB[0] = linear_data_UU[ii][jj]
+							vecB[1] = linear_data_DU[ii][jj]
+							vecB[2] = linear_data_DD[ii][jj]
+							vecB[3] = linear_data_UD[ii][jj]
+						
+							MatrixLinearSolve/M=1 matA vecB
+							// result is M_B[][0]
+							WAVE M_B = M_B
+							linear_data_UU_pc[ii][jj] = M_B[0][0]
+							linear_data_DU_pc[ii][jj] = M_B[1][0]
+							linear_data_DD_pc[ii][jj] = M_B[2][0]
+							linear_data_UD_pc[ii][jj] = M_B[3][0]
+						
+					
+							// and the error at each pixel, once for each of the four
+							row = 0		//== UU
+							for(kk=0;kk<4;kk+=1)
+								linear_data_error_UU_pc[ii][jj] += inv_err[row][kk]^2*linear_data_UU[ii][jj]^2 + inv[row][kk]^2*linear_data_error_UU[ii][jj]^2
+							endfor
+							row = 1		//== DU
+							for(kk=0;kk<4;kk+=1)
+								linear_data_error_DU_pc[ii][jj] += inv_err[row][kk]^2*linear_data_DU[ii][jj]^2 + inv[row][kk]^2*linear_data_error_DU[ii][jj]^2
+							endfor
+							row = 2		//== DD
+							for(kk=0;kk<4;kk+=1)
+								linear_data_error_DD_pc[ii][jj] += inv_err[row][kk]^2*linear_data_DD[ii][jj]^2 + inv[row][kk]^2*linear_data_error_DD[ii][jj]^2
+							endfor
+							row = 3		//== UD
+							for(kk=0;kk<4;kk+=1)
+								linear_data_error_UD_pc[ii][jj] += inv_err[row][kk]^2*linear_data_UD[ii][jj]^2 + inv[row][kk]^2*linear_data_error_UD[ii][jj]^2
+							endfor
+									
+						endfor
+					//	Print ii	
 					endfor
 					
+					// sqrt of the squared error...
+					linear_data_error_UU_pc = sqrt(linear_data_error_UU_pc)
+					linear_data_error_DU_pc = sqrt(linear_data_error_DU_pc)
+					linear_data_error_DD_pc = sqrt(linear_data_error_DD_pc)
+					linear_data_error_UD_pc = sqrt(linear_data_error_UD_pc)
+					
+					// copy the PC result (linear_data) to data in each of the folders
+					linear_data_UU = linear_data_UU_pc
+					linear_data_DU = linear_data_DU_pc
+					linear_data_DD = linear_data_DD_pc
+					linear_data_UD = linear_data_UD_pc
+					linear_data_error_UU = linear_data_error_UU_pc
+					linear_data_error_DU = linear_data_error_DU_pc
+					linear_data_error_DD = linear_data_error_DD_pc
+					linear_data_error_UD = linear_data_error_UD_pc
 				
-				endfor
-			//	Print ii	
+				
+				endif		// if ignoreB
+				
 			endfor
 			
-			// sqrt of the squared error...
-			linear_data_error_UU_pc = sqrt(linear_data_error_UU_pc)
-			linear_data_error_DU_pc = sqrt(linear_data_error_DU_pc)
-			linear_data_error_DD_pc = sqrt(linear_data_error_DD_pc)
-			linear_data_error_UD_pc = sqrt(linear_data_error_UD_pc)
-			
-			
-			//update the data as log of the linear. more correct to use the default scaling
-			// this is necessary for proper display of the data
-			SetDataFolder $("root:Packages:NIST:VSANS:Globals:"+type)			// this should be redundant, but I somehow eneded up in root: here???
-
-			WAVE data_UU_pc = data_UU_pc
-			WAVE data_DU_pc = data_DU_pc
-			WAVE data_DD_pc = data_DD_pc
-			WAVE data_UD_pc = data_UD_pc
-			data_UU_pc = log(linear_data_UU_pc)
-			data_DU_pc = log(linear_data_DU_pc)
-			data_DD_pc = log(linear_data_DD_pc)
-			data_UD_pc = log(linear_data_UD_pc)
-			
+			//// end loop over all of the detector panels			
 			
 			SetDataFolder root:
 			
@@ -1549,19 +1603,19 @@ Function V_ShowPolMatrixButton(ba) : ButtonControl
 			Print "selected data type = ",type
 			tabNum = V_Value
 			
-			Wave/Z Pol = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix")
+			Wave/Z Pol = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix")
 			if(WaveExists(Pol))
 				Edit/W=(5,44,510,251)/K=1 Pol
 			endif
-			Wave/Z Inv_Pol = $("root:Packages:NIST:VSANS:Globals:"+type+":Inv_PolMatrix")
+			Wave/Z Inv_Pol = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix")
 			if(WaveExists(Inv_Pol))
 				Edit/W=(6,506,511,713)/K=1 Inv_Pol
 			endif
-			Wave/Z Pol_err = $("root:Packages:NIST:VSANS:Globals:"+type+":PolMatrix_err")
+			Wave/Z Pol_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_PolMatrix_err")
 			if(WaveExists(Pol_err))
 				Edit/W=(5,275,510,482)/K=1 Pol_err
 			endif
-			Wave/Z Inv_Pol_err = $("root:Packages:NIST:VSANS:Globals:"+type+":Inv_PolMatrix_err")
+			Wave/Z Inv_Pol_err = $("root:Packages:NIST:VSANS:Globals:"+type+"_Inv_PolMatrix_err")
 			if(WaveExists(Inv_Pol_err))
 				Edit/W=(6,736,511,943)/K=1 Inv_Pol_err
 			endif
@@ -1626,6 +1680,8 @@ Function V_getTimeMidpoint(listStr)
 	return(tMid)
 End
 
+
+//
 // options to reduce one or all types, in the same manner as the load.
 //
 // largely copied from ReduceAFile()
@@ -1655,25 +1711,88 @@ Function V_ReducePolCorDataButton(ctrlName) : ButtonControl
 	
 	//pick a protocol wave from the Protocols folder
 	//must switch to protocols folder to get wavelist (missing parameter)
-	SetDataFolder root:myGlobals:Protocols
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols:
 	Execute	"V_PickAProtocol()"
 	
 	//get the selected protocol wave choice through a global string variable
-	SVAR protocolName = root:myGlobals:Protocols:gProtoStr
+	SVAR protocolName = root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr
 	
 	//If "CreateNew" was selected, go to the questionnare, to make a new set
 	//and put the name of the new Protocol wave in gProtoStr
 	if(cmpstr("CreateNew",protocolName) == 0)
+		DoAlert 0,"For Polarization, must choose a pre-saved protocol"
 		return(0)
 	Endif
 	
 	//give the full path:name to the executeProtocol function
-	waveStr = "root:myGlobals:Protocols:"+protocolName
-	//samStr is set at top to "ask", since this is the action always desired from "ReduceAFile"
-		
-	//return data folder to root before Macro is done
-	SetDataFolder root:
+	waveStr = "root:Packages:NIST:VSANS:Globals:Protocols:"+protocolName
+	WAVE/T prot = $waveStr
 	
+	
+	// outside of the protocol execution, load all of the SAM, BGD, and EMP data files as needed
+	// and do the polarization correction to be sure that all of the corrected files
+	// exist - then they can simply be copied into place sequentially for the 4XS
+	// rather than the time-waster of re-loading them 4x4=16 times
+	
+	STRUCT WMButtonAction ba
+	ba.eventCode = 2		// mouse up
+	
+//////////////////////////////
+// SAM
+//////////////////////////////
+// Now ensure that the proper SAM data is loaded, then re-tag it	
+// the Polarization corrected data is UU_pc, DU_pc, etc.
+// this tags it for display, and puts it in the correctly named waves
+//	
+	V_ChangeDataTab(0)		//SAM
+	V_LoadRawPolarizedButton(ba)
+	V_PolCorButton(ba)
+
+// save the name of the last-loaded SAM file for data save later
+	SVAR gSAMFile = root:Packages:NIST:VSANS:SAM:gFileList
+	String samFileLoaded = gSAMFile
+		
+//	dataType="SAM"
+//	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//	Execute str
+
+
+
+//////////////////////////////
+// BGD
+//////////////////////////////
+	// force a re-load of BGD data, then re-tag it	
+	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
+
+		V_ChangeDataTab(2)		//BGD
+		V_LoadRawPolarizedButton(ba)
+		V_PolCorButton(ba)
+		
+//		dataType="BGD"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		Execute str
+	endif
+
+
+
+//////////////////////////////
+// EMP
+//////////////////////////////	
+	
+// force a re-load the EMP data, then re-tag it
+	if(cmpstr(prot[1],"none") != 0)		//if EMP is used, protStr[1] = ""
+
+		V_ChangeDataTab(1)		//EMP
+		V_LoadRawPolarizedButton(ba)
+		V_PolCorButton(ba)
+	
+//		dataType="EMP"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		Execute str
+	endif
+
+	
+	// now reduce the data
 	if(cmpstr(pType,"All") == 0)
 		V_ExecutePolarizedProtocol(waveStr,"UU")
 		V_ExecutePolarizedProtocol(waveStr,"DU")
@@ -1683,11 +1802,17 @@ Function V_ReducePolCorDataButton(ctrlName) : ButtonControl
 		V_ExecutePolarizedProtocol(waveStr,pType)
 	endif	
 	
-	
+	SetDataFolder root:
 	return(0)
 End
 
-// very similar to ExecuteProtocol
+
+//
+// Copied from V_ExecuteProtocol
+// with the changes to copy the data from the tagged data folders for SAM, EMP, BGD
+// instead of reading the files from the protocol. For VSANS, there are no _pc extensions
+// but rather a flag in the folder that signifies that the polarization correction has been done.
+//
 //
 // 
 // OCT 2012 - changed this to force a re-load of all of the data, and a re-calculation 
@@ -1698,19 +1823,24 @@ End
 //
 // -- the "extensions" now all are "_UU_pc" and similar, to use the polarization corrected data and errors
 //
+//
+//function is long, but straightforward logic
+//
 Function V_ExecutePolarizedProtocol(protStr,pType)
 	String protStr,pType
-
+	
 	//protStr is the full path to the selected protocol wave
+	//pType is the "tag" of the polarization spin states
+	
 	WAVE/T prot = $protStr
-	SetDataFolder root:myGlobals:Protocols
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
 	
 	Variable filesOK,err,notDone
-	String activeType, msgStr, junkStr, pathStr="", samStr=""
+	String activeType, msgStr, junkStr, pathStr="",samStr=""
 	PathInfo catPathName			//this is where the files are
 	pathStr=S_path
 	
-	NVAR useXMLOutput = root:Packages:NIST:VSANS:Globals:gXML_Write
+//	NVAR useXMLOutput = root:Packages:NIST:gXML_Write
 	
 	//Parse the instructions in the prot wave
 	//0 - bkg
@@ -1720,7 +1850,35 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	//4 - abs params c2-c5
 	//5 - average params
 	//6 = DRK file (**out of sequence)
+	//7 = beginning trim points
+	//8 = end trim points
+	//9 = collimation type for reduced data
+	//10 = unused
+	//11 = unused
+
+//////////////////////////////
+// DIV
+//////////////////////////////
+// for VSANS, DIV is used on each data file as it is converted to WORK, so it needs to be
+//  the first thing in place, before any data or backgrounds are loaded
+
+	//check for work.div file (prot[2])
+	//load in if needed
+	// no math is done here, DIV is applied as files are converted to WORK (the first operation in VSANS)
+	//
+
+	// save the state of the DIV preference
+	NVAR gDoDIVCor = root:Packages:NIST:VSANS:Globals:gDoDIVCor
+	Variable saved_gDoDIVCor = gDoDIVCor
 	
+	err = V_Proto_LoadDIV(prot[2])
+	
+	if(err)
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
+
+
 	
 	// For each of the tabs (SAM, EMP, BGD)
 	// -- reload the data
@@ -1729,55 +1887,112 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	// then, and only then, after we're sure that all of the data is correct and current, then proceed with the
 	// correction of the data with the selected protocol
 	String dataType,str
+	Variable dfExists,polCorFlag
 
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2		// mouse up
 	
-
+//////////////////////////////
+// SAM
+//////////////////////////////
 // Now ensure that the proper SAM data is loaded, then re-tag it	
 // the Polarization corrected data is UU_pc, DU_pc, etc.
 // this tags it for display, and puts it in the correctly named waves
+//
+// now, for VSANS, the data is already loaded and in SAM_UU, etc. Simply copy it over
+// to the SAM folder
+
+	dfExists = DataFolderExists("root:Packages:NIST:VSANS:SAM_"+pType)
+	polCorflag = Exists("root:Packages:NIST:VSANS:SAM_"+pType+":PolCorDone")	//==1 if wave exists
 	
-	V_ChangeDataTab(0)		//SAM
-	V_LoadRawPolarizedButton(ba)
-	V_PolCorButton(ba)
-	
-	dataType="SAM"
-	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-	Execute str
-	
-// force a re-load of BGD data, then re-tag it	
-	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
-		V_ChangeDataTab(2)		//BGD
-		V_LoadRawPolarizedButton(ba)
-		V_PolCorButton(ba)
+	if(dfExists == 1 && PolCorFlag == 1)
+		V_CopyHDFToWorkFolder("SAM_"+pType,"SAM")
+	else
+		DoAlert 0,"Error with Polarized SAM Data"
+		Return(0)
+	endif	
+//	V_ChangeDataTab(0)		//SAM
+//	V_LoadRawPolarizedButton(ba)
+//	V_PolCorButton(ba)
+
+// save the name of the last-loaded SAM file for data save later
+	SVAR gSAMFile = root:Packages:NIST:VSANS:SAM:gFileList
+	String samFileLoaded = gSAMFile
 		
-		dataType="BGD"
-		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-		Execute str
+//	dataType="SAM"
+//	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//	Execute str
+
+
+
+//////////////////////////////
+// BGD
+//////////////////////////////
+	// force a re-load of BGD data, then re-tag it	
+	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
+
+// simply copy the data to the BGD folder
+		dfExists = DataFolderExists("root:Packages:NIST:VSANS:BGD_"+pType)
+		polCorflag = Exists("root:Packages:NIST:VSANS:BGD_"+pType+":PolCorDone")	//==1 if wave exists
+		
+		if(dfExists == 1 && PolCorFlag == 1)
+			V_CopyHDFToWorkFolder("BGD_"+pType,"BGD")
+		else
+			DoAlert 0,"Error with Polarized BGD Data"
+			Return(0)
+		endif	
+
+//		V_ChangeDataTab(2)		//BGD
+//		V_LoadRawPolarizedButton(ba)
+//		V_PolCorButton(ba)
+		
+//		dataType="BGD"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		Execute str
 	endif
 
+
+
+//////////////////////////////
+// EMP
+//////////////////////////////	
+	
 // force a re-load the EMP data, then re-tag it
 	if(cmpstr(prot[1],"none") != 0)		//if EMP is used, protStr[1] = ""
-		V_ChangeDataTab(1)		//EMP
-		V_LoadRawPolarizedButton(ba)
-		V_PolCorButton(ba)
-	
-		dataType="EMP"
-		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-		Execute str
-	endif
+
+// simply copy the data to the EMP folder
+		dfExists = DataFolderExists("root:Packages:NIST:VSANS:EMP_"+pType)
+		polCorflag = Exists("root:Packages:NIST:VSANS:EMP_"+pType+":PolCorDone")	//==1 if wave exists
 		
+		if(dfExists == 1 && PolCorFlag == 1)
+			V_CopyHDFToWorkFolder("EMP_"+pType,"EMP")
+		else
+			DoAlert 0,"Error with Polarized EMP Data"
+			Return(0)
+		endif	
+
+
+//		V_ChangeDataTab(1)		//EMP
+//		V_LoadRawPolarizedButton(ba)
+//		V_PolCorButton(ba)
+	
+//		dataType="EMP"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		Execute str
+	endif
+
+
 //
 // from here down, the steps are identical
 //
 // - with the exceptions of:
 // - file naming. Names are additionally tagged with pType
-// - if the protocol[0] or [1] are "" <null>, then the step  will be used
-//   the step is only skipped if the protocol is "none"
-//
 
-	
+
+//////////////////////////////
+// CORRECT
+//////////////////////////////
+
 	//do the CORRECT step based on the answers to emp and bkg subtraction
 	//by setting the proper"mode"
 	//1 = both emp and bgd subtraction
@@ -1785,7 +2000,6 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	//3 = only emp subtraction
 	//4 = no subtraction 
 	//additional modes 091301
-	// ------currently, for polarized reduction, DRK mode is not allowed or recognized at all...
 	//11 = emp, bgd, drk
 	//12 = bgd and drk
 	//13 = emp and drk
@@ -1798,476 +2012,357 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	//desired subtractions
 	//Attenuator lookup tables are alredy implemented (NG1 = NG7)
 	//
-		
+
+
+/////// DRK is SKIPPED
+	
+//	//read in the DRK data if necessary
+//	//only one file, assumed to be RAW data
+//	//
+//	String fname="",drkStr=""
+//	drkStr=StringByKey("DRK",prot[6],"=",",")
+//	if(cmpstr(drkStr,"none") != 0)
+//		err = ReadHeaderAndData( (pathStr+drkStr) )
+//		if(err)
+//			PathInfo/S catPathName
+//			Abort "reduction sequence aborted"
+//		endif
+//		err = V_Raw_to_Work_NoNorm("DRK")
+//	endif
+
 	//dispatch to the proper "mode" of Correct()
-	Variable mode=4,val
-	do
-		if( (cmpstr("none",prot[0]) == 0)	&& (cmpstr("none",prot[1]) == 0) )
-			//no subtraction (mode = 4),
-			mode = 4
-		Endif
-		If((cmpstr(prot[0],"none") != 0) && (cmpstr(prot[1],"none") == 0))
-			//subtract BGD only
-			mode=2
-		Endif
-		If((cmpstr(prot[0],"none") == 0) && (cmpstr(prot[1],"none") != 0))
-			//subtract EMP only
-			mode=3
-		Endif
-		If((cmpstr(prot[0],"none") != 0) && (cmpstr(prot[1],"none") != 0))
-			// bkg and emp subtraction are to be done (BOTH not "none")
-			mode=1
-		Endif
-		activeType = "COR"
-//		//add in DRK mode (0= no used, 10 = used)
-//		val = NumberByKey("DRKMODE",prot[6],"=","," )
-//		mode += val
-//		print "Correct mode = ",mode
-		err = V_Correct(mode)
-		if(err)
-			SetDataFolder root:
-			Abort "error in Correct, called from executeprotocol, normal cor"
-		endif
-		V_TagLoadedData(activeType,pType+"_pc")
-		V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	While(0)
+//	V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
+	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])
 	
-	//check for work.div file (prot[2])
-	//add if needed
-	// can't properly check the filename - so for now add and divide, if anything other than "none"
-	//do/skip divide step based on div answer
-	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
-		If(cmpstr("ask",prot[2]) == 0)
-			//ask user for file
+	if(err)
+		PathInfo/S catPathName
+		SetDataFolder root:
+		Abort "error in Correct, called from executeprotocol, normal cor"
+	endif
+	activeType = "COR"
 
-			Abort "Need to fix this 1"
-//			junkStr = V_PromptForPath("Select the detector sensitivity file")
+// always update - COR will always be generated
+	V_UpdateDisplayInformation(ActiveType)		
 
-			If(strlen(junkStr)==0)
-				SetDataFolder root:
-				Abort "No file selected, data reduction aborted"
-			Endif
-						Abort "Need to fix this 2"
 
-//			 V_ReadHeaderAndWork("DIV", junkStr)
-		else
-			//assume it's a path, and that the first (and only) item is the path:file
-			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			Abort "Need to fix this 3"
-//			V_ReadHeaderAndWork("DIV",junkStr)
-		Endif
-		//got a DIV file, select the proper type of work data to DIV (= activeType)
-			Abort "Need to fix this 4"
-//		err = V_Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
-		If(err)
-			SetDataFolder root:
-			Abort "data missing in DIV step, call from executeProtocol"
-		Endif
-		activeType = "CAL"
-		V_TagLoadedData(activeType,pType+"_pc")
-		V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	Endif
+//////////////////////////////
+//  ABSOLUTE SCALE
+//////////////////////////////
+
+	err = V_Proto_ABS_Scale(prot[4],activeType)		//activeType is pass-by-reference and updated IF ABS is used
 	
-	Variable c2,c3,c4,c5,kappa_err
-	//do absolute scaling if desired
-	if(cmpstr("none",prot[4])!=0)
-		if(cmpstr("ask",prot[4])==0)
-			//get the params from the user
-			Execute "AskForAbsoluteParams_Quest()"
-			//then from the list
-			SVAR junkAbsStr = root:myGlobals:Protocols:gAbsStr
-			c2 = NumberByKey("TSTAND", junkAbsStr, "=", ";")	//parse the list of values
-			c3 = NumberByKey("DSTAND", junkAbsStr, "=", ";")
-			c4 = NumberByKey("IZERO", junkAbsStr, "=", ";")
-			c5 = NumberByKey("XSECT", junkAbsStr, "=", ";")
-			kappa_err = NumberByKey("SDEV", junkAbsStr, "=", ";")
-		else
-			//get the parames from the list
-			c2 = NumberByKey("TSTAND", prot[4], "=", ";")	//parse the list of values
-			c3 = NumberByKey("DSTAND", prot[4], "=", ";")
-			c4 = NumberByKey("IZERO", prot[4], "=", ";")
-			c5 = NumberByKey("XSECT", prot[4], "=", ";")
-			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
-		Endif
-		//get the sample trans and thickness from the activeType folder
-		String destStr = "root:Packages:NIST:VSANS:Globals:"+activeType+":realsread"
-		Wave dest = $destStr
-		Variable c0 = dest[4]		//sample transmission
-		Variable c1 = dest[5]		//sample thickness
+	if(err)
+		SetDataFolder root:
+		Abort "Error in V_Absolute_Scale(), called from V_ExecuteProtocol"
+	endif
+//	activeType = "ABS"
 
-		Abort "need to fix abs scale"
-		// V_Absolute_Scale(type,absStr)		
-//		err = V_Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
-		if(err)
-			SetDataFolder root:
-			Abort "Error in Absolute_Scale(), called from executeProtocol"
-		endif
-		activeType = "ABS"
-		V_TagLoadedData(activeType,pType+"_pc")
-		V_UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	Endif
+
+//////////////////////////////
+// MASK
+//////////////////////////////
+//
+// DONE
+//		x- fill in the "ask" step
+//  x- none is OK, except if the kill fails for any reason
+// x- the regular case of the file name specified by the protocol works correctly
+// x- don't create a null mask if not used, it will handle the error and print out that the mask is missing
+//
+//mask data if desired (mask is applied when the data is binned to I(q)) and is
+//not done explicitly here
 	
 	//check for mask
-	//add mask if needed
-	// can't properly check the filename - so for now always add
 	//doesn't change the activeType
-	if(cmpstr("none",prot[3])!=0)
-		If(cmpstr("ask",prot[3])==0)
-			//get file from user
-			Abort "need to fix this 7"
-//			junkStr = PromptForPath("Select Mask file")
-			If(strlen(junkStr)==0)
-				//no selection of mask file is not a fatal error, keep going, and let cirave()
-				//make a "null" mask 
-				//if none desired, make sure that the old mask is deleted
-				//junkStr = GetDataFolder(1)
-				//SetDataFolder root:Packages:NIST:VSANS:Globals:MSK
-				KillWaves/Z root:Packages:NIST:VSANS:Globals:MSK:data
-				//SetDataFolder junkStr
-				DoAlert 0,"No Mask file selected, data not masked"
-			else
-				//read in the file from the dialog
-				Abort "need to fix mask"
-				//V_ReadMCID_MASK(junkStr)
-			Endif
-		else
-			//just read it in from the protocol
-			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[3],"," )
-				Abort "need to fix mask"
-//			V_ReadMCID_MASK(junkStr)
-		Endif
-	else
-		//if none desired, make sure that the old mask is deleted
-		//junkStr = GetDataFolder(1)
-		//SetDataFolder root:Packages:NIST:VSANS:Globals:MSK
-		KillWaves/Z root:Packages:NIST:VSANS:Globals:MSK:data
-		//SetDataFolder junkStr
-	Endif
+	V_Proto_ReadMask(prot[3])
+
 	
-	//mask data if desired (this is done automatically  in the average step) and is
-	//not done explicitly here (if no mask in MSK folder, a null mask is created and "used")
-	
+//////////////////////////////
+// AVERAGING
+//////////////////////////////
+
 	// average/save data as specified
-	
 	//Parse the keyword=<Value> string as needed, based on AVTYPE
 	
 	//average/plot first 
 	String av_type = StringByKey("AVTYPE",prot[5],"=",";")
 	If(cmpstr(av_type,"none") != 0)
 		If (cmpstr(av_type,"")==0)		//if the key could not be found... (if "ask" the string)
-			//get the averaging parameters from the user, as if the set button was hit
-			//in the panel
+			//get the averaging parameters from the user, as if the set button was hit in the panel
 			V_SetAverageParamsButtonProc("dummy")		//from "ProtocolAsPanel"
-			SVAR tempAveStr = root:myGlobals:Protocols:gAvgInfoStr
+			SVAR tempAveStr = root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr
 			av_type = StringByKey("AVTYPE",tempAveStr,"=",";")
 		else
 			//there is info in the string, use the protocol
 			//set the global keyword-string to prot[5]
-			String/G root:myGlobals:Protocols:gAvgInfoStr = prot[5]
+			String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = prot[5]
 		Endif
 	Endif
-	
-	//convert the folder to linear scale before averaging, then revert by calling the window hook
-//	V_ConvertFolderToLinearScale(activeType)
-	
-	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
-		case "none":		
-			//still do nothing
-			break			
-		case "2D_ASCII":	
-			//do nothing
-			break
-		case "QxQy_ASCII":
-			//do nothing
-			break
-		case "PNG_Graphic":
-			//do nothing
-			break
-		case "Rectangular":
-		Abort "average incorrect"
-//			V_RectangularAverageTo1D(activeType)
-			break
-		case "Annular":
-				Abort "average incorrect"
 
-//			V_AnnularAverageTo1D(activeType)
-			break
-		case "Circular":
-		Abort "average incorrect"
-//			V_CircularAverageTo1D(activeType)
-			break
-		case "Sector":
-		Abort "average incorrect"
-//			V_CircularAverageTo1D(activeType)
-			break
-		case "Sector_PlusMinus":
-		Abort "average incorrect"
-//			Sector_PlusMinus1D(activeType)
-			break
-		default:	
-			//do nothing
-	endswitch
-///// end of averaging dispatch
-	// put data back on log or lin scale as set by default
-	V_UpdateDisplayInformation(ActiveType)			//TODO_POL  V_fRawWindowHook()
-			
-	//save data if desired
-	String fullpath = "", newfileName=""
-	String item = StringByKey("SAVE",prot[5],"=",";")		//does user want to save data?
-	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
-		//then save
-		//get name from textwave of the activeType dataset
-		String textStr = "root:Packages:NIST:VSANS:Globals:"+activeType+":textread"
-		Wave/T textPath = $textStr
-		String tempFilename = samStr
-		If(WaveExists(textPath) == 1)
-#if (exists("QUOKKA")==6)
-			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
-#elif (exists("HFIR")==6)
-//			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
-//			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
-//			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
-//			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
-			newFileName = V_GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
-#else
-			newFileName = UpperStr(V_GetFileNameFromPathNoSemi(textPath[0]))		//NCNR data drops here, trims to 8 chars
-#endif
-		else
-			newFileName = ""			//if the header is missing?
-			//Print "can't read the header - newfilename is null"
-		Endif
-		
-		//pick ABS or AVE extension
-		String exten = activeType
-		if(cmpstr(exten,"ABS") != 0)
-			exten = "AVE"
-		endif
-		if(cmpstr(av_type,"2D_ASCII") == 0)
-			exten = "ASC"
-		endif
-		if(cmpstr(av_type,"QxQy_ASCII") == 0)
-			exten = "DAT"
-		endif
-		
-		// add an "x" to the file extension if the output is XML
-		// currently (2010), only for ABS and AVE (1D) output
-		if( cmpstr(exten,"ABS") == 0 || cmpstr(exten,"AVE") == 0 )
-			if(useXMLOutput == 1)
-				exten += "x"
-			endif
-		endif
-				
-		//Path is catPathName, symbolic path
-		//if this doesn't exist, a dialog will be presented by setting dialog = 1
-		//
-		// -- add in pType tag to the name for the polarization "type"
-		//
-		Variable dialog = 0
-		PathInfo/S catPathName
-		item = StringByKey("NAME",prot[5],"=",";")		//Auto or Manual naming
-		String autoname = StringByKey("AUTONAME",prot[5],"=",";")		//autoname -  will get empty string if not present
-		If((cmpstr(item,"Manual")==0) || (cmpstr(newFileName,"") == 0))
-			//manual name if requested or if no name can be derived from header
-			fullPath = newfileName + pType + "."+ exten //puts possible new name or null string in dialog
-			dialog = 1		//force dialog for user to enter name
-		else
-			//auto-generate name and prepend path - won't put up any dialogs since it has all it needs
-			//use autoname if present
-			if (cmpstr(autoname,"") != 0)
-				fullPath = S_Path + autoname + pType + "." +exten
-			else
-				fullPath = S_Path + newFileName + pType + "." + exten
-			endif	
-		Endif
-		//
-		strswitch(av_type)	
-			case "Annular":
-			Abort "bad average function"
-//				V_WritePhiave_W_Protocol(activeType,fullPath,dialog)
-				break
-			case "2D_ASCII":
-			Abort "bad average function"
-//				V_Fast2DExport(activeType,fullPath,dialog)
-				break
-			case "QxQy_ASCII":
-			Abort "bad average function"
-//				V_QxQy_Export(activeType,fullPath,dialog)
-				break
-			case "PNG_Graphic":
-			Abort "bad average function"
-//				V_SaveAsPNG(activeType,fullpath,dialog)
-				break
-			default:
-				if (useXMLOutput == 1)
-			Abort "bad average function"
-//					V_WriteXMLWaves_W_Protocol(activeType,fullPath,dialog)
-				else
-			Abort "bad average function"
-//					V_WriteWaves_W_Protocol(activeType,fullpath,dialog)
-				endif
-		endswitch
-		
-		//Print "data written to:  "+ fullpath
-	Endif
+
+	String detGroup = StringByKey("DETGROUP",prot[5],"=",";")		//only for annular, null if not present
+
 	
-	//done with everything in protocol list
-	return(0)
+//convert the folder to linear scale before averaging, then revert by calling the window hook
+// (not needed for VSANS, data is always linear scale)
+
+//
+// (DONE)
+// -x this generates a "Bin Type Not Found" error if reducing only to a 2D level (like for DIV)
+//		because binTypeStr is null
+	String binTypeStr = StringByKey("BINTYPE",prot[5],"=",";")
+	// plotting is not really necessary, and the graph may not be open - so skip for now?
+	Variable binType
+	// only get the binning type if user asks for averaging
+	If(cmpstr(av_type,"none") != 0)
+		binType = V_BinTypeStr2Num(binTypeStr)
+		if(binType == 0)
+				Abort "Binning mode not found in V_QBinAllPanels() "// when no case matches
+		endif
+	endif
+
+
+// identify the collimation type
+// this will be a string used to determine how the resolution information is to be calculated
+// and written to the reduced data file
+//
+// possible values are:
+//
+// pinhole
+// pinhole_whiteBeam
+// narrowSlit
+// narrowSlit_whiteBeam
+// convergingPinholes
+//
+
+	String collimationStr
+	collimationStr = V_IdentifyCollimation(activeType)
+	
+
+////////////////////////////////////////
+// DISPATCH TO AVERAGING
+/////////////////////////////////////////
+//
+// TODO:
+// -- do I calculate the proper resolution here?, YES, I've already decoded the binning type
+//   and the averaging type has been specified by the protocol.
+//
+// so currently, the resolution is calculated every time that the data is averaged (in VC_fDoBinning_QxQy2D)
+//
+// -- if I calculate the resolution here, then the Trimming routines must be updated
+//    to trim the resolution waves also. This will work for the columns present in
+//    pinhole resolution, but anything using the matrix method - it won't work - and I'll need 
+//    a different solution
+//
+
+	V_Proto_doAverage(prot[5],av_type,activeType,binType,collimationStr)
+
+
+
+////////////////////////
+// PLOT THE DATA
+////////////////////////
+
+	V_Proto_doPlot(prot[5],av_type,activeType,binType,detGroup)
+	
+	
+
+////////////////////	
+// SAVE THE DATA
+////////////////////
+
+// 
+// x- how do I get the sample file name?
+//    local variable samFileLoaded is the file name loaded (contains the extension)
+//
+// V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
+//
+// this step does more than save...
+// - trims the selected points from the data set
+// - concatenates the data sets
+// - removes NaN points and removes duplicate q-values by averaging q-values that are within 0.1% of each other
+//
+
+	prot[9] = collimationStr
+
+	String newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
+	newFileName += "_" + pType
+
+	V_Proto_SaveFile(prot[5],activeType,newFileName,av_type,binType,detGroup,prot[7],prot[8])
+	
+//////////////////////////////
+// DONE WITH THE PROTOCOL
+//////////////////////////////	
+	
+	// reset any global preferences that I had changed
+	gDoDIVCor = saved_gDoDIVCor
+	
+	
+	Return(0)
 End
+
+
+
+
+
 
 
 // just like the RecallProtocolButton
 // - the reset Function V_is different
 //
-Function V_RecallPolCorProtocolButton(ctrlName) : ButtonControl
-	String ctrlName
-	
-	//will reset panel values based on a previously saved protocol
-	//pick a protocol wave from the Protocols folder
-	//MUST move to Protocols folder to get wavelist
-	SetDataFolder root:myGlobals:Protocols
-	Execute "V_PickAProtocol()"
-	
-	//get the selected protocol wave choice through a global string variable
-	SVAR protocolName = root:myGlobals:Protocols:gProtoStr
-
-	//If "CreateNew" was selected, ask user to try again
-	if(cmpstr("CreateNew",protocolName) == 0)
-		Abort "CreateNew is for making a new Protocol. Select a previously saved Protocol"
-	Endif
-	
-	//reset the panel based on the protocol textwave (currently a string)
-	V_ResetToSavedPolProtocol(protocolName)
-	
-	SetDataFolder root:
-	return(0)
-end
-
-//Function V_that actually parses the protocol specified by nameStr
-//which is just the name of the wave, without a datafolder path
+//Function V_RecallPolCorProtocolButton(ctrlName) : ButtonControl
+//	String ctrlName
+//	
+//	//will reset panel values based on a previously saved protocol
+//	//pick a protocol wave from the Protocols folder
+//	//MUST move to Protocols folder to get wavelist
+//	SetDataFolder root:myGlobals:Protocols
+//	Execute "V_PickAProtocol()"
+//	
+//	//get the selected protocol wave choice through a global string variable
+//	SVAR protocolName = root:myGlobals:Protocols:gProtoStr
 //
-Function V_ResetToSavedPolProtocol(nameStr)
-	String nameStr
-	
-	//allow special cases of Base and DoAll Protocols to be recalled to panel - since they "ask"
-	//and don't need paths
-	
-	String catPathStr
-	PathInfo catPathName
-	catPathStr=S_path
-	
-	//SetDataFolder root:myGlobals:Protocols		//on windows, data folder seems to get reset (erratically) to root: 
-	Wave/T w=$("root:myGlobals:Protocols:" + nameStr)
-	
-	String fullPath="",comma=",",list="",nameList="",PathStr="",item=""
-	Variable ii=0,numItems,checked,specialProtocol=0
-	
-	if((cmpstr(nameStr,"Base")==0) || (cmpstr(nameStr,"DoAll")==0))
-		return(0)		//don't allow these
-	Endif
+//	//If "CreateNew" was selected, ask user to try again
+//	if(cmpstr("CreateNew",protocolName) == 0)
+//		Abort "CreateNew is for making a new Protocol. Select a previously saved Protocol"
+//	Endif
+//	
+//	//reset the panel based on the protocol textwave (currently a string)
+//	V_ResetToSavedPolProtocol(protocolName)
+//	
+//	SetDataFolder root:
+//	return(0)
+//end
 
-	//background = check5
-	checked = 1
-	nameList = w[0]
-	If(cmpstr(nameList,"none") ==0)
-		checked = 0
-	Endif
+////Function V_that actually parses the protocol specified by nameStr
+////which is just the name of the wave, without a datafolder path
+////
+//Function V_ResetToSavedPolProtocol(nameStr)
+//	String nameStr
+//	
+//	//allow special cases of Base and DoAll Protocols to be recalled to panel - since they "ask"
+//	//and don't need paths
+//	
+//	String catPathStr
+//	PathInfo catPathName
+//	catPathStr=S_path
+//	
+//	//SetDataFolder root:myGlobals:Protocols		//on windows, data folder seems to get reset (erratically) to root: 
+//	Wave/T w=$("root:myGlobals:Protocols:" + nameStr)
+//	
+//	String fullPath="",comma=",",list="",nameList="",PathStr="",item=""
+//	Variable ii=0,numItems,checked,specialProtocol=0
+//	
+//	if((cmpstr(nameStr,"Base")==0) || (cmpstr(nameStr,"DoAll")==0))
+//		return(0)		//don't allow these
+//	Endif
+//
+//	//background = check5
+//	checked = 1
+//	nameList = w[0]
+//	If(cmpstr(nameList,"none") ==0)
+//		checked = 0
+//	Endif
+//
+//	//set the global string to display and checkbox
+//	CheckBox check5 win=V_PolCor_Panel,value=checked
+//
+//	//EMP = check4
+//	checked = 1
+//	nameList = w[1]
+//	If(cmpstr(nameList,"none") ==0)
+//		checked = 0
+//	Endif
+//
+//	//set the global string to display and checkbox
+//	CheckBox check4 win=V_PolCor_Panel,value=checked
+//	
+//	
+//	//DIV file
+//	checked = 1
+//	nameList = w[2]
+//	If(cmpstr(nameList,"none") ==0)
+//		checked = 0
+//	Endif
+//
+//	//set the global string to display and checkbox
+//	String/G root:myGlobals:Protocols:gDIV = nameList
+//	CheckBox check0 win=V_PolCor_Panel,value=checked
+//	
+//	//Mask file
+//	checked = 1
+//	nameList = w[3]
+//	If(cmpstr(nameList,"none") ==0)
+//		checked = 0
+//	Endif
+//
+//	//set the global string to display and checkbox
+//	String/G root:myGlobals:Protocols:gMASK = nameList
+//	CheckBox check1 win=V_PolCor_Panel,value=checked
+//	
+//	//4 = abs parameters
+//	list = w[4]
+//	numItems = ItemsInList(list,";")
+//	checked = 1
+//	if(numitems == 4 || numitems == 5)		//allow for protocols with no SDEV list item
+//		//correct number of parameters, assume ok
+//		String/G root:myGlobals:Protocols:gAbsStr = list
+//		CheckBox check2 win=V_PolCor_Panel,value=checked
+//	else
+//		item = StringFromList(0,list,";")
+//		if(cmpstr(item,"none")==0)
+//			checked = 0
+//			list = "none"
+//			String/G root:myGlobals:Protocols:gAbsStr = list
+//			CheckBox check2 win=V_PolCor_Panel,value=checked
+//		else
+//			//force to "ask"
+//			checked = 1
+//			String/G root:myGlobals:Protocols:gAbsStr = "ask"
+//			CheckBox check2 win=V_PolCor_Panel,value=checked
+//		Endif
+//	Endif
+//	
+//	//5 = averaging choices
+//	list = w[5]
+//	item = StringByKey("AVTYPE",list,"=",";")
+//	if(cmpstr(item,"none") == 0)
+//		checked = 0
+//		String/G root:myGlobals:Protocols:gAVE = "none"
+//		CheckBox check3 win=V_PolCor_Panel,value=checked
+//	else
+//		checked = 1
+//		String/G root:myGlobals:Protocols:gAVE = list
+//		CheckBox check3 win=V_PolCor_Panel,value=checked
+//	Endif
+//	
+//	//6 = DRK choice
+//
+//	//7 = unused
+//	
+//	//all has been reset, get out
+//	Return (0)
+//End
 
-	//set the global string to display and checkbox
-	CheckBox check5 win=V_PolCor_Panel,value=checked
 
-	//EMP = check4
-	checked = 1
-	nameList = w[1]
-	If(cmpstr(nameList,"none") ==0)
-		checked = 0
-	Endif
+//Function V_ExportPolCorProtocolButton(ctrlName) : ButtonControl
+//	String ctrlName
+//	
+//	V_ExportProtocol(ctrlName)
+//	return(0)
+//End
+//
+//
+//Function V_ImportPolCorProtocolButton(ctrlName) : ButtonControl
+//	String ctrlName
+//	
+//	V_ImportProtocol(ctrlName)
+//	return(0)
+//End
 
-	//set the global string to display and checkbox
-	CheckBox check4 win=V_PolCor_Panel,value=checked
-	
-	
-	//DIV file
-	checked = 1
-	nameList = w[2]
-	If(cmpstr(nameList,"none") ==0)
-		checked = 0
-	Endif
-
-	//set the global string to display and checkbox
-	String/G root:myGlobals:Protocols:gDIV = nameList
-	CheckBox check0 win=V_PolCor_Panel,value=checked
-	
-	//Mask file
-	checked = 1
-	nameList = w[3]
-	If(cmpstr(nameList,"none") ==0)
-		checked = 0
-	Endif
-
-	//set the global string to display and checkbox
-	String/G root:myGlobals:Protocols:gMASK = nameList
-	CheckBox check1 win=V_PolCor_Panel,value=checked
-	
-	//4 = abs parameters
-	list = w[4]
-	numItems = ItemsInList(list,";")
-	checked = 1
-	if(numitems == 4 || numitems == 5)		//allow for protocols with no SDEV list item
-		//correct number of parameters, assume ok
-		String/G root:myGlobals:Protocols:gAbsStr = list
-		CheckBox check2 win=V_PolCor_Panel,value=checked
-	else
-		item = StringFromList(0,list,";")
-		if(cmpstr(item,"none")==0)
-			checked = 0
-			list = "none"
-			String/G root:myGlobals:Protocols:gAbsStr = list
-			CheckBox check2 win=V_PolCor_Panel,value=checked
-		else
-			//force to "ask"
-			checked = 1
-			String/G root:myGlobals:Protocols:gAbsStr = "ask"
-			CheckBox check2 win=V_PolCor_Panel,value=checked
-		Endif
-	Endif
-	
-	//5 = averaging choices
-	list = w[5]
-	item = StringByKey("AVTYPE",list,"=",";")
-	if(cmpstr(item,"none") == 0)
-		checked = 0
-		String/G root:myGlobals:Protocols:gAVE = "none"
-		CheckBox check3 win=V_PolCor_Panel,value=checked
-	else
-		checked = 1
-		String/G root:myGlobals:Protocols:gAVE = list
-		CheckBox check3 win=V_PolCor_Panel,value=checked
-	Endif
-	
-	//6 = DRK choice
-
-	//7 = unused
-	
-	//all has been reset, get out
-	Return (0)
-End
-
-
-Function V_ExportPolCorProtocolButton(ctrlName) : ButtonControl
+Proc V_BuildProtocol_PolCorButtonProc(ctrlName) : ButtonControl
 	String ctrlName
-	
-	V_ExportProtocol(ctrlName)
-	return(0)
-End
 
-
-Function V_ImportPolCorProtocolButton(ctrlName) : ButtonControl
-	String ctrlName
-	
-	V_ImportProtocol(ctrlName)
-	return(0)
+	V_ReductionProtocolPanel()
 End
 
 // at a first pass, uses the regular reduction protocol 	SaveProtocolButton(ctrlName)

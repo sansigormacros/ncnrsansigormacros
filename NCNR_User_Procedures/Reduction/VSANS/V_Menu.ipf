@@ -98,6 +98,9 @@ Menu "VSANS"
 //		"IgorOnly_Setup_SANS_Struct"
 //		"IgorOnly_Save_SANS_Struct"
 	End
+	Submenu "Polarization"
+		"Scan for new cells",V_ScanCellParams()
+	End
 //	Submenu "Work File Operations"
 //		"Convert to WORK",V_Convert_to_Workfile()
 //		"Load Fake DIV Data"

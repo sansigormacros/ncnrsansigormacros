@@ -940,6 +940,24 @@ Function V_Raw_to_work(newType)
 	//reset the current displaytype to "newtype"
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=newType
 	
+	
+	//loop through all of the folders to keep the linear_data in sync with the data (And errors)
+	// by manually setting htem equal after all of the corrections to the data are done.
+	// -- it is the responsibility of the data reduction steps (COR) to keep linear_data up-to-date
+	for(ii=0;ii<ItemsInList(ksDetectorListAll);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListAll, ";")
+		Wave w = V_getDetectorDataW(fname,detStr)
+		Wave w_err = V_getDetectorDataErrW(fname,detStr)
+
+		Wave lin_w = V_getDetectorLinearDataW(fname,detStr)
+		Wave lin_w_err = V_getDetectorLinearDataErrW(fname,detStr)	
+
+		lin_w = w
+		lin_w_err = w_err
+	endfor
+	
+
+
 	//return to root folder (redundant)
 	SetDataFolder root:
 	
