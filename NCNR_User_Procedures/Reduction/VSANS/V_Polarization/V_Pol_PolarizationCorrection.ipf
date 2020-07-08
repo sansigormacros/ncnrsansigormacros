@@ -1,8 +1,10 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=7.0
 
+
+//
 // JUNE 2020
-// first crude implementation of the Polarization routines to work with VSANS
+// first implementation of the Polarization routines to work with VSANS
 // 
 
 
@@ -1549,7 +1551,17 @@ Function V_Display4XSButton(ba) : ButtonControl
 			
 			if(V_flag==0)		//continue
 				V_Display_4(dataType,scaling)
-			endif			
+				
+				// then fill each subwindow with each XS (9 panels)
+				V_FillXSPanels(dataType,"UU")
+				V_FillXSPanels(dataType,"UD")
+				V_FillXSPanels(dataType,"DU")
+				V_FillXSPanels(dataType,"DD")
+			
+			else
+			// bring the window to the front
+				DoWindow/F VSANS_X4
+			endif		
 			break
 		case -1: // control being killed
 			break
@@ -2192,7 +2204,14 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 //////////////////////////////
 // DONE WITH THE PROTOCOL
 //////////////////////////////	
+
+// copy the activeType folder to a _pType extension to save it for display
+//
 	
+	V_CopyHDFToWorkFolder(activeType,activeType+"_"+ptype)
+
+
+
 	// reset any global preferences that I had changed
 	gDoDIVCor = saved_gDoDIVCor
 	
@@ -2417,6 +2436,9 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	return(0)
 End
 
+//
+// -- I use the regular protocol panel instead and this has not been updated
+//
 //Function V_that does the guts of reading the panel controls and globals
 //to create the necessary text fields for a protocol
 //Wave/T w (input) is an empty text wave of 8 elements for the protocol
@@ -2426,7 +2448,10 @@ End
 //
 Function V_MakePolProtocolFromPanel(w)
 	Wave/T w
-	
+
+	DoAlert 0,"Not updated for VSANS -- using regular protocol panel instead"
+	return(0)
+		
 	//construct the protocol text wave form the panel
 	//it is to be parsed by ExecuteProtocol() for the actual data reduction
 	PathInfo catPathName			//this is where the files came from
@@ -2559,100 +2584,134 @@ Function V_Display_4(type,scaling)
 		sc = 0.7
 	endif
 	
-	String dest = "root:Packages:NIST:VSANS:Globals:"+type
-	NVAR isLogscale = $(dest + ":gIsLogScale")
 
-	SetDataFolder $("root:Packages:NIST:VSANS:Globals:"+type)
-	
-	wave uu = linear_data_uu_pc
-	wave d_uu = data_uu_pc
-	
-	wave du = linear_data_du_pc
-	wave d_du = data_du_pc
-	
-	wave dd = linear_data_dd_pc
-	wave d_dd = data_dd_pc
-	
-	wave ud = linear_data_ud_pc
-	wave d_ud = data_ud_pc
-		
-	if(cmpstr(scaling,"log") == 0)
-
-		d_uu = log(uu)
-		d_du = log(du)
-		d_dd = log(dd)
-		d_ud = log(ud)			
-		
-		isLogScale = 1
-			
-	else
-
-		d_uu = uu
-		d_du = du
-		d_dd = dd
-		d_ud = ud
-			
-		isLogScale = 0
-
-	endif
-
-	DoWindow/F V_SANS_X4
+	DoWindow/F VSANS_X4
 	if(V_flag==0)
-		Display /W=(811,44,1479,758)/K=1
-		ControlBar 100
-		DoWindow/C V_SANS_X4
-		DoWindow/T V_SANS_X4,type+"_pc"
+		Display /W=(800*sc,40*sc,1480*sc,780*sc)/K=1
+		ControlBar 100*sc
+		DoWindow/C VSANS_X4
+		DoWindow/T VSANS_X4,type+"_pc"
 		Button button0 pos={sc*130,65*sc},size={sc*50,20*sc},title="Do It",proc=V_Change4xsButtonProc
 		PopupMenu popup0 pos={sc*20,35*sc},title="Data Type",value="SAM;EMP;BGD;COR;CAL;ABS;"		//RAW, SAS, DIV, etc, won't have _pc data and are not valid
-		PopupMenu popup1 pos={sc*190,35*sc},title="Scaling",value="log;linear;"
+//		PopupMenu popup1 pos={sc*190,35*sc},title="Scaling",value="log;linear;"
 		TitleBox title0 title="Only Polarization-corrected sets are displayed",pos={sc*5,5}
 
-	else
-		RemoveImage/Z data_uu_pc		//remove the old images (different data folder)
-		RemoveImage/Z data_du_pc
-		RemoveImage/Z data_dd_pc
-		RemoveImage/Z data_ud_pc
+		DrawText 0.019,0.063,"\\Z18\\f01UU"
+		DrawText 0.50,0.063,"\\Z18\f01UD"
+		DrawText 0.019,0.52,"\\Z18\\f01DU"
+		DrawText 0.50,0.52,"\\Z18\\f01DD"
+
+
+		SetVariable setVar_b,pos={sc*300,35*sc},size={sc*120,15},title="axis Q",proc=V_2DQ_Range_SetVarProc
+		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.12
+		CheckBox check_0a title="Log?",size={sc*60,20*sc},pos={sc*190,35*sc},proc=V_X4_Log_CheckProc
+
+
+	// allocate space for the 4 xs. each will be filled in with the 8 or 9 panels
+	// control bar is 100*sc pixels
+	//		Display /W=(811*sc,44*sc,1479*sc,758*sc)/K=1
+	
+	// top left
+	//	Display/W=(14,20,223,204)/HOST=#  fv_degY vs fv_degX
+	
+		Variable wd=220,ht=220,ll=20,tt=10,gp=2
+	
+	// for UU (as 2D Q)
+		if(gLaptopMode == 1)
+		// note that the dimensions here are not strictly followed since the aspect ratio is set below
+			Display/W=(ll,tt,ll+wd,tt+ht)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		else
+			Display/W=(10/sc,20/sc,200/sc,200/sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		endif	
+		RenameWindow #,UU_Panels_Q
+		ModifyGraph mode=2		// mode = 2 = dots
+		ModifyGraph tick=2,mirror=1,grid=2,standoff=0
+		ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
+		SetAxis left -0.2,0.2
+		SetAxis bottom -0.2,0.2
+		Label left "Qy"
+		Label bottom "Qx"	
+		SetActiveSubwindow ##
+	
+	
+	// for UD (as 2D Q)
+		if(gLaptopMode == 1)
+		// note that the dimensions here are not strictly followed since the aspect ratio is set below
+			Display/W=(ll+wd+gp,tt,ll+wd+gp+wd,tt+ht)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		else
+			Display/W=(220/sc,20/sc,400/sc,200/sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		endif	
+		RenameWindow #,UD_Panels_Q
+		ModifyGraph mode=2		// mode = 2 = dots
+		ModifyGraph tick=2,mirror=1,grid=2,standoff=0
+		ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
+		SetAxis left -0.2,0.2
+		SetAxis bottom -0.2,0.2
+		Label left "Qy"
+		Label bottom "Qx"	
+		SetActiveSubwindow ##
 		
-		DoWindow/T SANS_X4,type+"_pc"
+		// for DU (as 2D Q)
+		if(gLaptopMode == 1)
+		// note that the dimensions here are not strictly followed since the aspect ratio is set below
+			Display/W=(ll,tt+ht+gp,ll+wd,tt+ht+gp+ht)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		else
+			Display/W=(10/sc,220/sc,400/sc,400/sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		endif	
+		RenameWindow #,DU_Panels_Q
+		ModifyGraph mode=2		// mode = 2 = dots
+		ModifyGraph tick=2,mirror=1,grid=2,standoff=0
+		ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
+		SetAxis left -0.2,0.2
+		SetAxis bottom -0.2,0.2
+		Label left "Qy"
+		Label bottom "Qx"	
+		SetActiveSubwindow ##
+		
+		// for DD (as 2D Q)
+		if(gLaptopMode == 1)
+		// note that the dimensions here are not strictly followed since the aspect ratio is set below
+			Display/W=(ll+wd+gp,tt+ht+gp,ll+wd+gp+wd,tt+ht+gp+ht)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		else
+			Display/W=(220/sc,220/sc,400/sc,400/sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		endif	
+		RenameWindow #,DD_Panels_Q
+		ModifyGraph mode=2		// mode = 2 = dots
+		ModifyGraph tick=2,mirror=1,grid=2,standoff=0
+		ModifyGraph width={Aspect,1},height={Aspect,1},gbRGB=(56797,56797,56797)
+		SetAxis left -0.2,0.2
+		SetAxis bottom -0.2,0.2
+		Label left "Qy"
+		Label bottom "Qx"	
+		SetActiveSubwindow ##
 
 	endif
 	
-	AppendImage/B=bot_uu/L=left_uu data_UU_pc
-	ModifyImage data_UU_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_dd/L=left_dd data_DD_pc
-	ModifyImage data_DD_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_du/L=left_du data_DU_pc
-	ModifyImage data_DU_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_ud/L=left_ud data_UD_pc
-	ModifyImage data_UD_pc ctab= {*,*,YellowHot,0}
-	
-	DoUpdate
-			
-	ModifyGraph freePos(left_uu)={0,kwFraction},freePos(bot_uu)={0.6,kwFraction}
-	ModifyGraph freePos(left_dd)={0,kwFraction},freePos(bot_dd)={0,kwFraction}
-	ModifyGraph freePos(left_du)={0.6,kwFraction},freePos(bot_du)={0.6,kwFraction}
-	ModifyGraph freePos(left_ud)={0.6,kwFraction},freePos(bot_ud)={0,kwFraction}
-	
-	ModifyGraph axisEnab(left_uu)={0.6,1},axisEnab(bot_uu)={0,0.4}
-	ModifyGraph axisEnab(left_dd)={0,0.4},axisEnab(bot_dd)={0,0.4}
-	ModifyGraph axisEnab(left_du)={0.6,1},axisEnab(bot_du)={0.6,1}
-	ModifyGraph axisEnab(left_ud)={0,0.4},axisEnab(bot_ud)={0.6,1}
-	
-	ModifyGraph standoff=0
-	ModifyGraph lblPosMode(left_uu)=4,lblPosMode(left_dd)=4,lblPosMode(left_du)=4,lblPosMode(left_ud)=4
-	ModifyGraph lblPos(left_uu)=40,lblPos(left_dd)=40,lblPos(left_du)=40,lblPos(left_ud)=40
-	Label left_uu "UU"
-	Label left_dd "DD"
-	Label left_du "DU"
-	Label left_ud "UD"	
-	
-	ModifyGraph fSize=16
-	// force a redraw to get the axes in the right spot
-	DoUpdate
-	
 	SetDataFolder root:
+	
 	return(0)
 End
+
+
+Function V_X4_Log_CheckProc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			
+			Struct WMButtonAction ba
+			ba.eventCode = 2		//fake mouse up
+			V_Change4xsButtonProc(ba)		//fake click on "do it"
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function V_Change4xsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2664,9 +2723,341 @@ Function V_Change4xsButtonProc(ba) : ButtonControl
 			// click code here
 			ControlInfo popup0
 			dataType = S_Value
-			ControlInfo popup1
-			scaling = S_Value
-			V_Display_4(dataType,scaling)
+
+			
+			// remove all of the old data from the 4 subgraphs
+			// ?? each call here is supposed to clear everything from all 4 subwindows,
+			// but for some reason, I need to do this multiple times...
+			V_ClearXSPanels()
+			V_ClearXSPanels()
+			V_ClearXSPanels()
+			V_ClearXSPanels()
+			
+//			V_Display_4(dataType,scaling)
+
+			// then fill each subwindow with each XS (9 panels)
+			V_FillXSPanels(dataType,"UU")
+			V_FillXSPanels(dataType,"UD")
+			V_FillXSPanels(dataType,"DU")
+			V_FillXSPanels(dataType,"DD")
+						
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+// UU_Panels_Q
+//VSANS_X4
+
+// type is the work folder
+// polType is UU, UD, etc.
+//
+Function V_FillXSPanels(type,polType)
+	String type,polType
+
+	// set the strings
+	
+	
+	//fill the back, if used
+	
+	//fill the middle
+	V_PolPanels_AsQ(type,polType,"M")
+	//fill the front
+	V_PolPanels_AsQ(type,polType,"F")
+
+	
+	return(0)
+end
+
+
+// with a data wave passed in and the detStr,
+//locate the qx and qy waves, and return the min/max values (PBR)
+// to be used for the data scaling
+Function V_getQxQyScaling(dataW,detStr,minQx,maxQx,minQy,maxQy)
+	Wave dataW
+	String detStr
+	Variable &minQx,&maxQx,&minQy,&maxQy
+
+	
+	DFREF dfr = GetWavesDataFolderDFR(dataW)
+	WAVE qx = dfr:$("qx_"+detStr)
+	WAVE qy = dfr:$("qy_"+detStr)
+	
+	minQx = waveMin(qx)
+	maxQx = waveMax(qx)
+	minQy = waveMin(qy)
+	maxQy = waveMax(qy)
+		
+	return(0)
+End
+
+//
+// type = work folder type
+// polType = "nn" spin state
+// carr = det carriage str (F, M, or B)
+//
+Function V_PolPanels_AsQ(type,polType,carr)
+	String type,polType,carr
+
+	Variable dval,minQx,maxQx,minQy,maxQy
+
+	// -- set the log/lin scaling
+	ControlInfo/W=VSANS_X4 check_0a
+	// V_Value == 1 if checked
+	
+//	NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
+	if(V_Value == 0)
+		// lookup wave
+		Wave LookupWave = root:Packages:NIST:VSANS:Globals:linearLookupWave
+	else
+		// lookup wave - the linear version
+		Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
+	endif
+	
+	String pathStr = "root:Packages:NIST:VSANS:"+type+"_"+polType+":entry:instrument:detector_"
+
+	Wave det_xB = $(pathStr + carr+"B:data")
+	Wave det_xT = $(pathStr + carr+"T:data")
+	Wave det_xL = $(pathStr + carr+"L:data")
+	Wave det_xR = $(pathStr + carr+"R:data")
+
+// (DONE) -- for each of the 4 data waves, find qmin, qmax and set the scale to q, rather than pixels
+	//set the wave scaling for the detector image so that it can be plotted in q-space
+	// (DONE): this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
+	// take the middle value. At very small angles, OK, at 1m, this is a crummy approximation.
+	// since qTot is magnitude only, I need to put in the (-ve)
+	V_getQxQyScaling(det_xB,carr+"B",minQx,maxQx,minQy,maxQy)
+	SetScale/I x minQx,maxQx,"", det_xB		//this sets the left and right ends of the data scaling
+	SetScale/I y minQy,maxQy,"", det_xB	
+
+	V_getQxQyScaling(det_xT,carr+"T",minQx,maxQx,minQy,maxQy)
+	SetScale/I x minQx,maxQx,"", det_xT		//this sets the left and right ends of the data scaling
+	SetScale/I y minQy,maxQy,"", det_xT	
+
+	V_getQxQyScaling(det_xL,carr+"L",minQx,maxQx,minQy,maxQy)
+	SetScale/I x minQx,maxQx,"", det_xL		//this sets the left and right ends of the data scaling
+	SetScale/I y minQy,maxQy,"", det_xL	
+
+	V_getQxQyScaling(det_xR,carr+"R",minQx,maxQx,minQy,maxQy)
+	SetScale/I x minQx,maxQx,"", det_xR		//this sets the left and right ends of the data scaling
+	SetScale/I y minQy,maxQy,"", det_xR	
+	
+	
+	String imageList,item
+	Variable ii,num
+
+	
+// UU subwindow
+
+	if(cmpstr(polType,"UU") == 0)
+	// append in this order to get LR on top	
+//		CheckDisplayed /W=VSANS_X4#UU_Panels_Q det_xB
+//		if(V_flag == 0)
+		AppendImage/W=VSANS_X4#UU_Panels_Q det_xT
+		AppendImage/W=VSANS_X4#UU_Panels_Q det_xB
+		AppendImage/W=VSANS_X4#UU_Panels_Q det_xL
+		AppendImage/W=VSANS_X4#UU_Panels_Q det_xR
+		
+		imageList= ImageNameList("VSANS_X4#UU_Panels_Q",";")
+		num = ItemsInList(imageList)			
+		for(ii=0;ii<num;ii+=1)
+			item = StringFromList(ii,imageList,";")
+			// faster way than to write them explicitly
+			//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#UU_Panels_Q $item ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#UU_Panels_Q $item ctabAutoscale=0,lookup= LookupWave
+			//ModifyImage/W=VSANS_X4#UU_Panels_Q $item log=V_Value
+		endfor
+
+	// TODO -- set the q-range of the axes
+		ControlInfo/W=VSANS_X4 setVar_b
+		dval = V_Value
+	
+		SetAxis/W=VSANS_X4#UU_Panels_Q left -dval,dval
+		SetAxis/W=VSANS_X4#UU_Panels_Q bottom -dval,dval	
+	
+	endif
+
+
+// UD subwindow
+
+	if(cmpstr(polType,"UD") == 0)
+	// append in this order to get LR on top	
+		AppendImage/W=VSANS_X4#UD_Panels_Q det_xT
+		AppendImage/W=VSANS_X4#UD_Panels_Q det_xB
+		AppendImage/W=VSANS_X4#UD_Panels_Q det_xL
+		AppendImage/W=VSANS_X4#UD_Panels_Q det_xR
+	
+			
+		imageList= ImageNameList("VSANS_X4#UD_Panels_Q",";")
+		num = ItemsInList(imageList)			
+		for(ii=0;ii<num;ii+=1)
+			item = StringFromList(ii,imageList,";")
+			// faster way than to write them explicitly
+			//				ModifyImage/W=VSANS_X4#UD_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#UD_Panels_Q $item ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#UD_Panels_Q $item ctabAutoscale=0,lookup= LookupWave
+			//ModifyImage/W=VSANS_X4#UD_Panels_Q $item log=V_Value
+		endfor
+	
+	
+	// TODO -- set the q-range of the axes
+		ControlInfo/W=VSANS_X4 setVar_b
+		dval = V_Value
+	
+		SetAxis/W=VSANS_X4#UD_Panels_Q left -dval,dval
+		SetAxis/W=VSANS_X4#UD_Panels_Q bottom -dval,dval	
+	
+	endif
+
+// DU subwindow
+
+	if(cmpstr(polType,"DU") == 0)
+	// append in this order to get LR on top	
+		AppendImage/W=VSANS_X4#DU_Panels_Q det_xT
+		AppendImage/W=VSANS_X4#DU_Panels_Q det_xB
+		AppendImage/W=VSANS_X4#DU_Panels_Q det_xL
+		AppendImage/W=VSANS_X4#DU_Panels_Q det_xR
+
+
+		imageList= ImageNameList("VSANS_X4#DU_Panels_Q",";")
+		num = ItemsInList(imageList)			
+		for(ii=0;ii<num;ii+=1)
+			item = StringFromList(ii,imageList,";")
+			// faster way than to write them explicitly
+			//				ModifyImage/W=VSANS_X4#DU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#DU_Panels_Q $item ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#DU_Panels_Q $item ctabAutoscale=0,lookup= LookupWave
+			//ModifyImage/W=VSANS_X4#DU_Panels_Q $item log=V_Value
+		endfor
+		
+	// TODO -- set the q-range of the axes
+		ControlInfo/W=VSANS_X4 setVar_b
+		dval = V_Value
+	
+		SetAxis/W=VSANS_X4#DU_Panels_Q left -dval,dval
+		SetAxis/W=VSANS_X4#DU_Panels_Q bottom -dval,dval	
+	
+
+	endif
+
+
+// DD subwindow
+
+	if(cmpstr(polType,"DD") == 0)
+	// append in this order to get LR on top	
+		AppendImage/W=VSANS_X4#DD_Panels_Q det_xT
+		AppendImage/W=VSANS_X4#DD_Panels_Q det_xB
+		AppendImage/W=VSANS_X4#DD_Panels_Q det_xL
+		AppendImage/W=VSANS_X4#DD_Panels_Q det_xR
+
+				
+		imageList= ImageNameList("VSANS_X4#DD_Panels_Q",";")
+		num = ItemsInList(imageList)			
+		for(ii=0;ii<num;ii+=1)
+			item = StringFromList(ii,imageList,";")
+			// faster way than to write them explicitly
+			//				ModifyImage/W=VSANS_X4#DD_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#DD_Panels_Q $item ctab= {*,*,ColdWarm,0}
+			ModifyImage/W=VSANS_X4#DD_Panels_Q $item ctabAutoscale=0,lookup= LookupWave
+			//ModifyImage/W=VSANS_X4#DD_Panels_Q $item log=V_Value
+		endfor
+		
+	// TODO -- set the q-range of the axes
+		ControlInfo/W=VSANS_X4 setVar_b
+		dval = V_Value
+	
+		SetAxis/W=VSANS_X4#DD_Panels_Q left -dval,dval
+		SetAxis/W=VSANS_X4#DD_Panels_Q bottom -dval,dval	
+	
+
+	endif
+
+
+	SetDataFolder root:
+	
+End
+
+
+// clear all of the images to start fresh again
+//
+Function V_ClearXSPanels()
+	String type,polType,carr
+
+	
+	String imageList,item
+	Variable ii,num
+
+	imageList= ImageNameList("VSANS_X4#UU_Panels_Q",";")
+	num = ItemsInList(imageList)			
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii,imageList,";")
+		// faster way than to write them explicitly
+		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+		RemoveImage/Z/W=VSANS_X4#UU_Panels_Q  $item 
+	endfor
+
+	imageList= ImageNameList("VSANS_X4#UD_Panels_Q",";")
+	num = ItemsInList(imageList)			
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii,imageList,";")
+		// faster way than to write them explicitly
+		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+		RemoveImage/Z/W=VSANS_X4#UD_Panels_Q  $item 
+	endfor
+	
+	imageList= ImageNameList("VSANS_X4#DU_Panels_Q",";")
+	num = ItemsInList(imageList)			
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii,imageList,";")
+		// faster way than to write them explicitly
+		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+		RemoveImage/Z/W=VSANS_X4#DU_Panels_Q  $item 
+	endfor
+	
+	imageList= ImageNameList("VSANS_X4#DD_Panels_Q",";")
+	num = ItemsInList(imageList)			
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii,imageList,";")
+		// faster way than to write them explicitly
+		//				ModifyImage/W=VSANS_X4#UU_Panels_Q ''#0 ctab= {*,*,ColdWarm,0}
+		RemoveImage/Z/W=VSANS_X4#DD_Panels_Q  $item 
+	endfor
+
+	return(0)
+End
+
+
+
+// setVar for the range (in Q) for the 2D plot of the detectors
+//
+// this assumes that everything (the data) is already updated - this only updates the plot range
+Function V_2DQ_Range_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+			
+			SetAxis/W=VSANS_X4#UU_Panels_Q left -dval,dval
+			SetAxis/W=VSANS_X4#UU_Panels_Q bottom -dval,dval
+
+			SetAxis/W=VSANS_X4#UD_Panels_Q left -dval,dval
+			SetAxis/W=VSANS_X4#UD_Panels_Q bottom -dval,dval
+			
+			SetAxis/W=VSANS_X4#DU_Panels_Q left -dval,dval
+			SetAxis/W=VSANS_X4#DU_Panels_Q bottom -dval,dval
+			
+			SetAxis/W=VSANS_X4#DD_Panels_Q left -dval,dval
+			SetAxis/W=VSANS_X4#DD_Panels_Q bottom -dval,dval			
+//			FrontPanels_AsQ()
 			
 			break
 		case -1: // control being killed
@@ -2675,6 +3066,15 @@ Function V_Change4xsButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
+
+
+
+
+
+
+
 
 // clear the entries for all 4 XS for the currently selected Tab only
 // clears both the run numbers and the cell assignments

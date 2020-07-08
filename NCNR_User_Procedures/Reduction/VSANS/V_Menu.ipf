@@ -20,7 +20,7 @@ Menu "VSANS"
 	"-"
 	Submenu "Find Windows"
 		"Data Catalog",DoWindow/F CatVSANSTable
-		"Main Control Panel",DoWindow/F Main_VSANS_Panel
+		"Main Control Panel",V_Redraw_MainPanel()
 		"Data Display",DoWindow/F VSANS_Data
 	End
 	"-"
@@ -108,6 +108,15 @@ Menu "VSANS"
 //		"Load Fake MASK Data"
 //		"Correct Data",V_CorrectData()
 //	End
+End
+
+
+// to redraw the main panel if it is accidentally closed
+Function V_Redraw_MainPanel()
+	DoWindow/F Main_VSANS_Panel
+	if(V_Flag==0)
+		Execute "Main_VSANS_Panel()"
+	endif
 End
 
 // for VSANS Analysis -- use the qTrap integration which is more reliable, but slow
