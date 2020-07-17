@@ -30,6 +30,8 @@
 // Driven by 4 panels to get the necessary information from the users
 // -1- Fundamental cell parameters: root:Packages:NIST:Polarization:Cells
 //		- default cell parameters are loaded. More cell definitions can be added as more cells are used
+//		---(NEW) "Scan Cell" will scan the metadata of all VSANS files and automaticaly add/update
+//            the table with any cells that it finds. Accidental duplicate cells is not a problem.
 //		- changes are saved per experiment
 //		- important parameters are held in global key=value strings gCell_<name> 
 //		- cell names and parameters are used by the 2nd panel for calculation of the Decay constant
@@ -40,6 +42,9 @@
 //		- Decay_ is the wave presented in the table. Specified transmission run numbers are entered
 //			and "Calc Sel Row" does the calculation of mu and Pcell (for all rows, actually)
 //		- DimLabels are used for the arrays to make the column identity more readable than simply an index
+//		- (NEW) - the name of the PANEL where the transmission is taken must be entered so that the program
+//           knows where to do the summation (this field is next to the "Do Fit" button). This sets a 
+//				global string that is also used for the flipper panel
 //		- time=0 is taken from the first file
 //		- Calculations are based on the count rate of the file, corrected for monitor and attenuation
 //		- alerts are posted for files in any row that are not at the same attenuation or SDD
@@ -58,6 +63,8 @@
 //		- DimLabels are used for the arrays to make the column identity more readable than simply an index
 //		- Enter the name of the cell in the first column (the cell must be defined and decay calculated)
 // 		- enter transmission run numbers as specified in the table
+//		- (NEW) need to enter the PANEL where the transmssion is taken. This global string is taken from 
+//				the decay panel since the conditions are likely the same.
 //		- Do Average will calculate the Psm and PsmPfl values (and errors) and average if more than
 //			one row of data is present (and included)
 //		- results are printed on the panel, and written to the wave note of Cond_<condition>
@@ -79,8 +86,14 @@
 //		- Polarization correction is done with one click (one per tab). "_pc" tags are added to the resulting names,
 //			and copies of all of the associated waves are again copied (wasteful), but makes switching display very easy
 //		- Once all of the polarization correction is done, then the UU_pc (etc.) data can be reduced as usual (xx_pc = 4 passes)
+//		- (NEW) - protocols are built using the normal protocol panel. SAM, EMP, and BGD do not apply, since
+//				these files are all taken from the 4 XS set on the Polarization panel. The "normal" VSANS
+//				protocol panel is used since there are too many other items to try to duplicate the function
+//				on the limited space of the Pol Panel (two ABS, trim)
 //		- protocol is built as ususal, from this panel only (since the SAM, EMP, and BGD need to be switched, rather than loaded
 //		- protocols can be saved/recalled.
+//		- (NEW) Even though the protocol is built on the normal panel, the "Reduce" button on the Pol Panel
+//					must be used to reduce all 4 XS. Otherwise, a standard (incorrect) reduction will be done
 //		- reduction will always ask for a protocol rather than using what's on the panel.
 //		- closing the panel will save the state (except the protocol). NOT initializing when re-opening will restore the 
 //			state of the entered runs and the popups of conditions.
@@ -305,6 +318,8 @@ Function V_DrawCellParamPanel()
 
 	Button button_4,pos={sc*324,10*sc},size={sc*100,20*sc},proc=V_SaveCellPanelButton,title="Save State"
 	Button button_5,pos={sc*324,35*sc},size={sc*100,20*sc},proc=V_RestoreCellPanelButton,title="Restore State"
+
+	Button button_6,pos={sc*10,35*sc},size={sc*90,20*sc},proc=V_ScanForCellsButtonProc,title="Scan Cell"
 	
 	Edit/W=(14*sc,60*sc,582*sc,318*sc)/HOST=#
 	ModifyTable width(Point)=0
@@ -374,6 +389,60 @@ Function V_CellHelpParButtonProc(ba) : ButtonControl
 	return 0
 End
 
+
+// new (2020) function that will scan the metadata for any 
+// cells present, plus their parameters. Results are put in a 
+// table where the rows can be copied and added to the master table
+//
+Function V_ScanForCellsButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_ScanCellParams()
+			
+			// now add the new cell parameters to the table
+			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
+
+			WAVE/T CellName
+			WAVE lambda,Te,err_Te,mu,err_mu
+			
+			Variable num,numCells,ii
+			
+			
+			Wave/T foundCells =foundCells
+			numCells=DimSize(foundCells,0)
+			
+			for(ii=0;ii<numCells;ii+=1)
+				// insert a new row in the table
+				num=numpnts(CellName)
+				InsertPoints  num, 1, CellName,lambda,Te,err_Te,mu,err_mu
+				
+				// fill this row
+				CellName[num] = foundCells[ii][0]
+				lambda[num] = str2num(foundCells[ii][1])
+				Te[num] = str2num(foundCells[ii][2])
+				err_Te[num] = str2num(foundCells[ii][3])
+				mu[num] = str2num(foundCells[ii][4])
+				err_mu[num] = str2num(foundCells[ii][5])
+			endfor
+			
+			
+			SetDataFolder root:
+			
+			// and then update the parameters
+			V_Save_HeCell_ParamWaves()
+			
+
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 Function V_AddCellButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba

@@ -382,11 +382,12 @@ Window V_PolCor_Panel()
 	//
 	// now use the main protocol panel rather than trying to duplicate it here
 	//
-	Button button21,pos={sc*546,396*sc},size={sc*120,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
+	Button button21,pos={sc*500,396*sc},size={sc*160,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
 	Button button21,help={"Build a PolCor protocol using the standard Protocol Panel"}
 
-	Button button9,pos={sc*546,435*sc},size={sc*120,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Data"
+	Button button9,pos={sc*500,435*sc},size={sc*160,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Polarized Data"
 	Button button9,help={"Reduce PolCor data"}
+
 
 //	PopupMenu popup5,pos={sc*129,458*sc},size={sc*51,23*sc},proc=V_DIVFilePopMenuProc,title="set DIV file"
 //	PopupMenu popup5,mode=1,value= #"V_getDIVList()"
@@ -949,11 +950,20 @@ Function V_LoadPolarizedData(pType)
 
 
 // be sure the flag for polarization correction is cleared (killed)
-	// $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")	
-	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")
-	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DU:PolCorDone")
-	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DD:PolCorDone")
-	KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UD:PolCorDone")
+	// $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")
+	// check for their existence first to avoid errors (even though /Z) ???	
+	if(DataFolderExists("root:Packages:NIST:VSANS:"+type+"_UU"))
+		KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:VSANS:"+type+"_DU"))
+		KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DU:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:VSANS:"+type+"_DD"))
+		KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_DD:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:VSANS:"+type+"_UD"))
+		KillWaves/Z $("root:Packages:NIST:VSANS:"+type+"_UD:PolCorDone")
+	endif
 
 	SetDataFolder root:
 	
@@ -1318,22 +1328,31 @@ Function V_TagLoadedData(type,pType)
 	return(0)
 End
 
-// TODO
-// -- Be sure that fRawWindowHook is picking up all of the correct information - identifying what the 
+//
+// BUG -- for WM: If I  declare the parameter workType with the name "type", then the function
+//    fails at the step of DuplicateDataFolder "name already in use" error. This appears to be stopping
+// the duplication at the point where in the /instrument block there is a wave named "type"
+// ---so for some odd reason, if there is a matching local variable (somewhere in the stack) that matches
+//  the name of an object in the data folder that is being copied, it fails.
+//
+//
+//
+// (DONE)
+// x- Be sure that fRawWindowHook is picking up all of the correct information - identifying what the 
 //    displayed data set really is...
 //
 // a procedure (easier than a function) to point the current data to the tagged data
-Proc V_DisplayTaggedData(type,pType)
-	String type="SAM",pType="UU"
+Proc V_DisplayTaggedData(workType,pType)
+	String workType="SAM",pType="UU"
 
-	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=type
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispType=workType
 
-	V_CopyHDFToWorkFolder(type+"_"+pType,type)
-	
-	V_UpdateDisplayInformation(type)
+	V_CopyHDFToWorkFolder(workType+"_"+pType,workType)
+
+	V_UpdateDisplayInformation(workType)
 
 	//update the displayed filename, using FileList in the current data folder
-	String/G root:Packages:NIST:VSANS:Globals:gCurDispFile = ("root:Packages:NIST:VSANS:"+type+":gFileList")
+	String/G root:Packages:NIST:VSANS:Globals:gCurDispFile = ("root:Packages:NIST:VSANS:"+workType+":gFileList")
 	
 End
 
@@ -1544,11 +1563,16 @@ Function V_Display4XSButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			String dataType,pType,str,scaling
-			Prompt dataType,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
-//			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;UU_pc;DU_pc;DD_pc;UD_pc;"
-			Prompt scaling,"scaling",popup,"log;linear;"
-			DoPrompt "Change Display",dataType,scaling
+//			Prompt dataType,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
+////			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;UU_pc;DU_pc;DD_pc;UD_pc;"
+//			Prompt scaling,"scaling",popup,"log;linear;"
+//			DoPrompt "Change Display",dataType,scaling
+	
+			dataType = "SAM"
+			scaling = "log"
 			
+			DoWindow/F VSANS_X4	
+				
 			if(V_flag==0)		//continue
 				V_Display_4(dataType,scaling)
 				
@@ -1557,10 +1581,6 @@ Function V_Display4XSButton(ba) : ButtonControl
 				V_FillXSPanels(dataType,"UD")
 				V_FillXSPanels(dataType,"DU")
 				V_FillXSPanels(dataType,"DD")
-			
-			else
-			// bring the window to the front
-				DoWindow/F VSANS_X4
 			endif		
 			break
 		case -1: // control being killed
@@ -1583,7 +1603,7 @@ Function V_ChangeDisplayedPolData(ba) : ButtonControl
 			// click code here
 			String dataType,pType,str
 			Prompt dataType,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
-			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;UU_pc;DU_pc;DD_pc;UD_pc;"
+			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;"
 			DoPrompt "Change Display",dataType,pType
 			
 			if(V_flag==0)		//continue
@@ -2820,10 +2840,15 @@ Function V_PolPanels_AsQ(type,polType,carr)
 	
 	String pathStr = "root:Packages:NIST:VSANS:"+type+"_"+polType+":entry:instrument:detector_"
 
-	Wave det_xB = $(pathStr + carr+"B:data")
-	Wave det_xT = $(pathStr + carr+"T:data")
-	Wave det_xL = $(pathStr + carr+"L:data")
-	Wave det_xR = $(pathStr + carr+"R:data")
+	Wave/Z det_xB = $(pathStr + carr+"B:data")
+	Wave/Z det_xT = $(pathStr + carr+"T:data")
+	Wave/Z det_xL = $(pathStr + carr+"L:data")
+	Wave/Z det_xR = $(pathStr + carr+"R:data")
+
+// check for the existence of the data - if it doesn't exist, abort gracefully
+	if( !WaveExists(det_xB) || !WaveExists(det_xT) || !WaveExists(det_xL) || !WaveExists(det_xR) )
+		Abort "No Data in the "+type+"_"+polType+" folder"
+	endif
 
 // (DONE) -- for each of the 4 data waves, find qmin, qmax and set the scale to q, rather than pixels
 	//set the wave scaling for the detector image so that it can be plotted in q-space

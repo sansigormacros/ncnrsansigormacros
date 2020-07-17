@@ -6,7 +6,26 @@
 //
 // SRK JUN 2020
 //
+// Currently I do not make full use of the metadata that is supposed to
+// be in the data files, since what data is stored and where it is stored
+// is clearly different than what I was told. Many changes have apparently 
+// been made without keeping me in the loop. Tough to program effectively.
+//
+//
 
+
+// TODO:
+// x- (done)for the cell panel: currenlty I scan for the cells, and open a table with
+// the results. would it be possible to automatically add the row to the table of
+// cells (and update) rather than requiring a manual copy? The potential snag that
+// I see is hitting the button 2X => duplicated row in the table. How can I prevent this,
+// or correct this?
+// ---- even if there are duplicated cells in the table, this does not cause any issues
+// since the "update" step generates a string with the parameters, one for each cell.
+// duplicated cells simply generate a duplicate (overwritten) string.
+// --- the next step, the decay panel gets the active cells from the strings that exist.
+//
+//
 
 
 
@@ -43,27 +62,6 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-//
-//
-// To fill the cell parameters
-// - scan through the metadata in the files
-// -- add anything found to the table
-
-//
-// - or do I find the cell name/data as needed?
-//
-
-
-
 // function to scan through all of the data files and
 // search for possible cell names and parameters
 Function V_ScanCellParams()
@@ -71,8 +69,10 @@ Function V_ScanCellParams()
 	Variable ii,num,numcells
 	Variable lam,opacity
 	String newList = "",lastCell="",tmpCell,fname
+
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells
 	
-	Make/O/T/N=(5,6) foundCells
+	Make/O/T/N=(0,6) foundCells
 	Wave/T foundCells=foundCells
 	foundCells = ""
 	
@@ -89,7 +89,9 @@ Function V_ScanCellParams()
 		if(cmpstr(tmpCell[0,3],"The ")!=0)
 			if(cmpstr(tmpCell,lastCell)!=0)		//different than other cell names
 				// legit string, get the other params
-				
+				// add a point to the wave
+				InsertPoints 0,1, foundCells
+
 				// CONVERT the opacity + error to the correct wavelength by multiplying
 				
 				lam = V_getWavelength(fname)
@@ -108,7 +110,12 @@ Function V_ScanCellParams()
 		endif
 	endfor
 
-	Edit foundCells
+//	Edit foundCells
+
+//
+	SetDataFolder root:
 	
 	return(0)
 End
+
+

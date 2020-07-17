@@ -88,6 +88,9 @@ Function V_DrawFlipperPanel()
 	PopupMenu popup_0,mode=1,value= #"V_D_ConditionNameList()"
 	
 	Button button_0,pos={sc*18,288*sc},size={sc*100,20*sc},proc=V_FlipperAverageButtonProc,title="Do Average"
+
+	SetVariable setvar_4,pos={sc*130,288*sc},size={sc*100,13*sc},title="Panel",fStyle=1
+	SetVariable setvar_4,value=root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
 	
 	GroupBox group_0,pos={sc*18,316*sc},size={sc*290,102*sc},title="AVERAGED RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
@@ -1174,8 +1177,7 @@ End
 // save the state of the pink panel, as CellParamSaveState.itx
 Function V_SaveCellParameterTable()
 
-	SetDataFolder root:Packages:NIST:Polarization:Cells:
-	
+	SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization:Cells:
 	// the waves are:
 	// CellName (T)
 	// lambda
