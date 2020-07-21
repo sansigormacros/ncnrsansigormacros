@@ -317,7 +317,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 					xdim = DimSize($(baseStr + "_i"), 0)
 					ydim = DimSize($(baseStr + "_i"), 1)
 					Wave q = $(baseStr + "_q")
-					Wave dq = $(baseStr + "_dq")
+					Wave/Z dq = $(baseStr + "_dq")		//SRK - no dq data in 2D VSANS
 					Make/O/N=(xdim,ydim) $(baseStr + "_qx")
 					Wave qx = $(baseStr + "_qx")
 					Make/O/N=(xdim,ydim) $(baseStr + "_qy")
@@ -338,7 +338,7 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 							EndIf
 						endFor
 					endFor
-					KillWaves $(baseStr + "_q"),$(baseStr + "_dq"),$(baseStr + "_qx"),$(baseStr + "_qy")
+					KillWaves/Z $(baseStr + "_q"),$(baseStr + "_dq"),$(baseStr + "_qx"),$(baseStr + "_qy")
 				EndIf
 				if (isMultiData)
 					sprintf dataBase,dataUnformatted,ii

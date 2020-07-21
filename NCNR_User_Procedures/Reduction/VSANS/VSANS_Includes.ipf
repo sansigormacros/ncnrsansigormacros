@@ -66,6 +66,7 @@ End
 #include "V_HDF5_Write"
 #include "V_HDF5_RW_Utils"
 #include "V_Write_VSANS_NXcanSAS"
+#include "V_2DLoader_NXcanSAS"		//JUL 2020 load/plot 2D--NXcanSAS
 
 // start of VSANS reduction procedures
 #include "V_Initialize"

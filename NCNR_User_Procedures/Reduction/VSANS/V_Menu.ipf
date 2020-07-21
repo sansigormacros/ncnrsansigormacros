@@ -100,6 +100,8 @@ Menu "VSANS"
 	End
 	Submenu "Polarization"
 		"Scan for new cells",V_ScanCellParams()
+		"Load 2D NXcanSAS",V_Load_2D_NXCS()
+		"Display 2D NXcanSAS",V_Display_2D_VSANS()
 	End
 //	Submenu "Work File Operations"
 //		"Convert to WORK",V_Convert_to_Workfile()
