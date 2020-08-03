@@ -6,15 +6,24 @@
 //JUN 2020 -- first crude modifications to get Polarization running on VSANS
 //
 
-
-// **** search for TODO to find items still to be fixed in other procedures  **********
-
-// TODO:
-// x- on the decay panel. need to be able to manually enter a date that is to or an offset
-// 		number of hours. currently it takes the first file as t=0, which is often not correct
+// TODO
+//
+// contextual menu in V_DecayPanelHook()
+//
+// --look for the active subwindow T0 (the table)
+// then see if I can do somehting with this information - by putting
+// up an appropriate list of files to choose from based on where I am
+// -- get the column lable and switch on this - generating a subset of run numbers
+//
+// -or- parse all of the metadata to try to fill in the table (and then allow it
+// to be copied over to the real table
+//
+// need a whole host of setch functions to deliver subsets of run numbers based on 
+// which slot they fill in the reduction prcess.
 //
 
-
+//******************************************************************
+//******************************************************************
 // Polarized Beam Reduction Procedures
 //
 //
@@ -22,7 +31,7 @@
 // matrix corrections to the cross sections
 //
 // -1- Fundamental Cell Parameters -- these are constants, generally not editable. (this file)
-// -2- Decay Parameters -- these are fitted values based on transmission mearurements (this file)
+// -2- Decay Parameters -- these are fitted values based on transmission measurements (this file)
 // -3- Flipper Panel is in its own procedure (Pol_FlipperPanel.ipf)
 // -4- PolCor_Panel is in Pol_PolarizationCorrection.ipf
 //
@@ -569,6 +578,7 @@ Function V_DecayParamPanel()
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /W=(200*sc,44*sc,1013*sc,664*sc)/N=V_DecayPanel/K=1 as "Cell Decay Parameters"
+
 	ModifyPanel cbRGB=(32768,54615,65535)
 //	Button button_3,pos={sc*505,16*sc},size={sc*35,20*sc},proc=DecayHelpParButtonProc,title="?"
 	PopupMenu popup_0,pos={sc*32,8*sc},size={sc*49,20*sc},title="Cell",proc=V_DecayPanelPopMenuProc
@@ -609,6 +619,7 @@ Function V_DecayParamPanel()
 	// table
 	Edit/W=(14*sc,35*sc,794*sc,240*sc)/HOST=# 
 	ModifyTable format=1,width=60
+	
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 	
@@ -626,9 +637,90 @@ Function V_DecayParamPanel()
 	RenameWindow #,G0
 	SetActiveSubwindow ##
 
+//	//hook to set contextual menu in subwindow
+// sets hook for entire panel, I need to look for subwindow T0
+	SetWindow kwTopWin hook=V_DecayTableHook, hookevents=1	// mouse down events
+
+
 	SetDataFolder root:
 	return(0)
 End
+
+
+
+//
+// TODO
+//
+// look for the active subwindow T0 (the table)
+// then see if I can do somehting with this information - by putting
+// up an appropriate list of files to choose from based on where I am
+//
+//
+// - OR -- do I try to fill in the table based on parsing of the metadata
+// do a "test" fill in, and then allow it to be copied over to the real table?
+//
+//
+Function V_DecayTableHook(infoStr)
+	String infoStr
+	String event= StringByKey("EVENT",infoStr)
+
+
+// check to see that the table is where the click was - if not, exit
+	GetWindow V_DecayPanel activeSW
+	String activeSubwindow = S_value
+	if (CmpStr(activeSubwindow,"V_DecayPanel#T0") != 0)
+		return 0
+	endif
+	
+	Variable ii
+	WAVE dw = root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_Frascati
+	
+//	Print "EVENT= ",event
+	strswitch(event)
+		case "mouseup":
+//
+			GetSelection table,CatVSANSTable,3
+			Print V_startRow, V_StartCol
+			Print S_Selection
+			
+			Print GetDimLabel(dw, 1, V_StartCol )
+//			PopupContextualMenu "1;2;3;"	//Paste Run Number;"
+			PopupContextualMenu V_ListForDecayPanel()
+
+			PutScrapText S_Selection
+			DoIgorMenu "Edit", "Paste"
+
+//			Variable err
+//			strswitch(S_selection)
+//
+//				case "Copy Run Number":
+//					//
+//
+//					GetSelection table,CatVSANSTable,1
+//					// get the run number (as a string) from the name and put it on the clipboard
+//					//Variable runNum = V_GetRunNumFromFile(item)
+//
+//					String str = V_GetRunNumStrFromFile(FileNames[V_StartRow])
+//					PutScrapText str
+//					break	
+//					
+//				case "Paste Run Number":
+//					//
+//					GetSelection table,CatVSANSTable,1
+//					// get the run number from the name and put it on the clipboard
+//					//Variable runNum = V_GetRunNumFromFile(item)
+//					String pasteStr = GetScrapText()
+//					DoIgorMenu "Edit", "Paste"
+//					break						
+
+//			endswitch		//popup selection
+
+	endswitch	// event
+
+
+	return(0)
+end
+
 
 // allows manual entry of Decay values
 //

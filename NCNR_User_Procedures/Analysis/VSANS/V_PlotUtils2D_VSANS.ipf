@@ -3,6 +3,18 @@
 
 
 //
+// JUL 2020
+//
+// this is probably NOT the way to save data. It's probably better to use the NXcanSAS format
+// where each scattering run is stored in a single file, and all can be loaded and plotted
+// in one easy step. Analysis is another issue, but everything is there in the NX file
+// and is in a logical structure.
+
+// so this file may eventually be deleted - as its use is very limited
+
+
+
+//
 // Load in and plot the 9-column VSANS QxQy data file
 //
 //		Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask
