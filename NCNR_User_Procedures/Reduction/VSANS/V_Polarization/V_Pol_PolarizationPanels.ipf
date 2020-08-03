@@ -675,15 +675,22 @@ Function V_DecayTableHook(infoStr)
 	Variable ii
 	WAVE dw = root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_Frascati
 	
+	// the different column labels are:
+	//   	Trans_He_In?
+  	//		Trans_He_Out?
+  	//		Blocked?
+  	// and each of these need a different set of files
+  	// if the label doesn't match, present no popup
+  
 //	Print "EVENT= ",event
 	strswitch(event)
 		case "mouseup":
 //
-			GetSelection table,CatVSANSTable,3
-			Print V_startRow, V_StartCol
-			Print S_Selection
+			GetSelection table,V_DecayPanel#T0,3
+//			Print V_startRow, V_StartCol
+//			Print S_Selection
 			
-			Print GetDimLabel(dw, 1, V_StartCol )
+			Print GetDimLabel(dw, 1, V_StartCol-1 )
 //			PopupContextualMenu "1;2;3;"	//Paste Run Number;"
 			PopupContextualMenu V_ListForDecayPanel()
 
