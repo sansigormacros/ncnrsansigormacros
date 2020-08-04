@@ -366,9 +366,11 @@ Function WriteUSANSNXcanSASMetaData(fileID,type,parentBase,nxcansasBase,dateStr)
 	Make/O/T/N=2 $(sourceBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=2 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
 	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
-	// Create SASsource radiation entry
-	Make/O/T/N=1 $(sourceBase + ":radiation") = {"Reactor Neutron Source"}
-	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
+	// Create SASsource probe and type entries
+	Make/O/T/N=1 $(sourceBase + ":probe") = {"neutron"}
+	CreateStrNxCansas(fileID,sourceParent,"","probe",$(sourceBase + ":probe"),empty,empty)
+	Make/O/T/N=1 $(sourceBase + ":type") = {"Reactor Neutron Source"}
+	CreateStrNxCansas(fileID,sourceParent,"","type",$(sourceBase + ":type"),empty,empty)
 	// Create SASsource incident_wavelength entry
 	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {2.38}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)
