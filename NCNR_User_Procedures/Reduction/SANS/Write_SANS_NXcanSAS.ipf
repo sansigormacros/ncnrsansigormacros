@@ -279,13 +279,10 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 
-    //
-    // TODO: Reinstate Qdev/resolutions when I can fix the reader issue
-    //
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
-	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
-	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
+	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units","resolutions"}
+	Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom","Qdev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","Q",qxy_vals,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
 	
 	// Create idev entry
