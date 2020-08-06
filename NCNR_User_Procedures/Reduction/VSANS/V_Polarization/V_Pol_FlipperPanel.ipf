@@ -1539,6 +1539,10 @@ Function V_FlipperTableHook(infoStr)
 //			Print S_Selection
 //			Print GetDimLabel(dw, 1, V_StartCol -2 )
 
+			if(V_StartCol < 2)
+				break
+			endif
+			
 			dimLbl = GetDimLabel(dw, 1, V_StartCol -2)
 			// what am I looking for?
 			if(cmpstr(dimLbl,"UU_Trans?")==0)

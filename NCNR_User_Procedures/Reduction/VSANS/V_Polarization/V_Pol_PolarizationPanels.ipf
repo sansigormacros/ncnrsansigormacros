@@ -685,7 +685,7 @@ Function V_DecayTableHook(infoStr)
   	// if the label doesn't match, present no popup
   
   	Variable state
-  	String intent,dimLbl
+  	String intent,dimLbl,popList=""
   	
 //	Print "EVENT= ",event
 	strswitch(event)
@@ -701,7 +701,13 @@ Function V_DecayTableHook(infoStr)
 			if(cmpstr(dimLbl,"Trans_He_In?")==0)
 				state = 1
 				intent = "Sample"		// should be "Transmission" , but not correct at collection
-				PopupContextualMenu V_ListForDecayPanel(state,intent)
+				popList = V_ListForDecayPanel(state,intent)
+				intent = "Empty Cell"
+				popList += V_ListForDecayPanel(state,intent)
+				
+				popList=SortList(popList)
+				
+				PopupContextualMenu popList
 	
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
@@ -711,7 +717,13 @@ Function V_DecayTableHook(infoStr)
 			if(cmpstr(dimLbl,"Trans_He_Out?")==0)
 				state = 0
 				intent = "Sample"
-				PopupContextualMenu V_ListForDecayPanel(state,intent)
+				popList = V_ListForDecayPanel(state,intent)
+				intent = "Empty Cell"
+				popList += V_ListForDecayPanel(state,intent)
+				
+				popList=SortList(popList)
+
+				PopupContextualMenu popList
 	
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"

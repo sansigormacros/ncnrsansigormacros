@@ -2,6 +2,12 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+// AUG 2020 this file is almost completely garbage. I don't use any of this
+// see instead the procedures in V_2DLoader_NXcanSAS.ipf
+// for simple load/plot of the 2D NXcanSAS output
+//
+
+
 //
 // JUL 2020
 //

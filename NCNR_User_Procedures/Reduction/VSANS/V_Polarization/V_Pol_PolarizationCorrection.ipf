@@ -328,6 +328,59 @@ Function V_Initialize_PolCorPanel()
 end
 
 
+// 		Button button31,pos={sc*260,9*sc},size={sc*110,20*sc},proc=V_ManualRunEntry,title="Manual Entry"
+//
+// state = 2 = editable, no popup appears
+// state = 1 = not editable, yes popup to fill in numbers
+Function V_ManualRunEntry(ba) : ButtonControl
+	STRUCT WMButtonAction &ba	
+	Variable state
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+		// if button is "->Manual" then we are inAuto entry mode, so set state=2
+			if(cmpstr(ba.userData, "InAuto")==0)
+				state = 2
+				Button button31,title="->Popup Entry",userData="InManual"
+			else
+				state = 1
+				Button button31,title="->Manual Entry",userData="InAuto"
+			endif
+		
+			
+			SetDataFolder root:Packages:NIST:VSANS:Globals:Polarization
+
+
+		// SAM tab
+			Wave lbSelWave_0_UU,lbSelWave_0_DU,lbSelWave_0_DD,lbSelWave_0_UD
+			lbSelWave_0_UU[][0] = state		//Run # column is editable if state = 2, not if = 1
+			lbSelWave_0_DU[][0] = state		//Run # column is editable
+			lbSelWave_0_DD[][0] = state		//Run # column is editable
+			lbSelWave_0_UD[][0] = state		//Run # column is editable
+		
+		// EMP tab
+			Wave lbSelWave_1_UU,lbSelWave_1_DU,lbSelWave_1_DD,lbSelWave_1_UD
+			lbSelWave_1_UU[][0] = state		//Run # column is editable if state = 2, not if = 1
+			lbSelWave_1_DU[][0] = state		//Run # column is editable
+			lbSelWave_1_DD[][0] = state		//Run # column is editable
+			lbSelWave_1_UD[][0] = state		//Run # column is editable
+		
+		// BGD tab (only one listBox)
+			Wave lbSelWave_2_UU
+			lbSelWave_2_UU[][0] = state		//Run # column is editable if state = 2, not if = 1
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+
+
+	SetDataFolder root:
+	return(0)
+End
 
 
 // controls are labeled "name_#_UU_#" where name is the type of control, # is the tab #, and (2nd) # is the control #
@@ -352,7 +405,7 @@ Window V_PolCor_Panel()
 	endif
 
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(300*sc,44*sc,1036*sc,624*sc) /K=1 as "Polarization Correction"
+	NewPanel /W=(300*sc,44*sc,1036*sc,524*sc) /K=1 as "Polarization Correction"
 	ModifyPanel cbRGB=(64349,63913,44660)
 //	ShowTools/A
 	SetDrawEnv linethick= 2.00
@@ -370,6 +423,9 @@ Window V_PolCor_Panel()
 	Button button4,pos={sc*503,9*sc},size={sc*30,20*sc},proc=V_PolCorHelpParButtonProc,title="?"
 	Button button12,pos={sc*546,121*sc},size={sc*120,20*sc},proc=V_Display4XSButton,title="Display 4 XS"
 	Button button13,pos={sc*360,9*sc},size={sc*110,20*sc},proc=V_ClearPolCorEntries,title="Clear Entries"
+
+	Button button31,pos={sc*220,9*sc},size={sc*130,20*sc},proc=V_ManualRunEntry,title="->Popup Entry",userData="InManual"
+
 
 
 	TitleBox title0,pos={sc*100,48*sc},size={sc*24,24*sc},title="\\f01UU or + +",fSize=12
@@ -545,7 +601,7 @@ Function V_RestorePolCorPanelButton(ba) : ButtonControl
 End
 
 
-
+//
 // action procedure for the list box that allows the popup menu
 // -- much easier to make a contextual popup with a list box than on a table/subwindow hook
 //
@@ -557,10 +613,42 @@ Function V_PolCor_FileListBoxProc(lba) : ListBoxControl
 	WAVE/T/Z listWave = lba.listWave
 	WAVE/Z selWave = lba.selWave
 	
+	String intent,flipStr,boxType
+	Variable selTab
+	
 	switch( lba.eventCode )
 		case -1: // control being killed
 			break
 		case 1: // mouse down
+		
+//			Print lba.ctrlName
+//			Print lba.col		//selection column
+//			WAVE/T lba.listWave		// list wave specified by listBox
+			boxType = NameOfWave(lba.listWave)
+			ControlInfo PolCorTab
+			selTab = V_Value
+
+			if (lba.col == 0)											// file list
+				// which tab are we on?
+				if(selTab==0)
+					intent="Sample"
+				elseif(selTab==1)
+					intent="Empty Cell"
+					else
+					intent="Blocked Beam"
+				endif
+				// what is the flip state? ListWave_x_FF
+				flipStr = boxType[11,12]
+				Print flipStr
+				flipStr = "S_"+flipStr
+				
+
+				PopupContextualMenu V_ListForCorrectionPanel(flipStr,intent)
+				if (V_flag > 0)
+					listWave[lba.row][lba.col] = S_Selection
+				endif
+			endif		
+			
 			if (lba.col == 1)											// cell list
 //				SelWave[][][0] = SelWave[p][q] & ~9						// de-select everything to make sure we don't leave something selected in another column
 //				SelWave[][s.col][0] = SelWave[p][s.col] | 1				// select all rows

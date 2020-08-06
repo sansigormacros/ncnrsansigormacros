@@ -22,7 +22,7 @@
 //
 // -- for the decay panel
 //		identify Purpose = (HE3, BLOCKED BEAM)
-//					Intent = (Sample) --- although data is actually transmission configuration
+//					Intent = (Sample or Empty Cell) --- although data is actually transmission configuration
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
 //
@@ -72,14 +72,14 @@
 
 
 
-// TODO:
-// for the decay panel:
-// -- identify the files with:
-// Trans -- HeIN
-// Trans -- HeOUT
-// Blocked beam file
-// all have PURPOSE "HE3" (not TRANSMISSION)
-// INTENT can be anything
+// -- for the decay panel
+//		identify Purpose = (HE3, BLOCKED BEAM)
+//					Intent = (Sample or Empty Cell) --- although data is actually transmission configuration
+//					polarizer state = (HeIn, HeOut) (currently search the file label)
+//
+// NOTE that the table hook V_DecayTableHook() calls the list 2X and adds them
+//  calling once w/intent=Sample, once w/intent=Empty Cell
+//
 //
 // use the results of this search to fill in the table
 // (along with the cell name)
@@ -254,7 +254,7 @@ end
 
 // TODO:
 //
-// -- for the fliper polarization panel
+// -- for the flipper polarization panel
 //
 //		identify Purpose = (TRANSMISSION)
 //					Intent = (Sample, Blocked Beam)
@@ -293,6 +293,46 @@ Function/S V_ListForFlipperPanel(flipStr,intent)
 end
 
 
+
+// TODO:
+//
+// -- for the polarization reduction panel
+//		-- identify to fill in (SAM, EMP, BGD)
+//						Purpose = (SCATTERING)
+//						Intent = (Sample, Empty Cell, Blocked Beam)
+//						flip_identity = (S_UU, S_UD, S_DD, S_DU)
+//
+
+// use the results of this search to fill in the table
+//
+// -- I could read in the flipper information and deduce the UU, DD, UD, DU, etc,
+// -- BUT - in the example data I have, these fields are NOT correctly filled in the header!
+// so- instead I search the file label...
+//
+//
+// flipStr is found from the column label: ("S_UU" | "S_DD" | "S_DU" | "S_UD")
+// intent is either "Sample" or "Blocked Beam", also from the column label
+//
+Function/S V_ListForCorrectionPanel(flipStr,intent)
+	String flipStr,intent
+
+	String purpose
+	Variable method
+	String str,newList,stateStr
+	
+	// method = 0 (fastest, uses catatlog + searches sample label)
+	// method = 2 = read the state field
+	// method = 1 = grep for the text
+	method = 0
+	purpose = "SCATTERING"
+	
+	
+	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+
+	newList = V_ConvertFileListToNumList(str)
+	
+	return(newList)
+end
 
 
 
