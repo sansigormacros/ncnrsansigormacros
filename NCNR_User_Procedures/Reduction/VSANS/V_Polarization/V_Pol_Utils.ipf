@@ -21,23 +21,35 @@
 //    automatically
 //
 // -- for the decay panel
-//		identify (TRANSMISSION) --- although data is collected as SCATTERING
-//					(HeIn, HeOut)
-//					(He3, BLOCKED BEAM)
+//		identify Purpose = (HE3, BLOCKED BEAM)
+//					Intent = (Sample) --- although data is actually transmission configuration
+//					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
 //
 // -- for the fliper polarization panel
-//		identify (TRANSMISSION)
-//					(T_UU, T_UD, T_DD, T_DU)
-//					(SAMPLE, BLOCKED BEAM)
-//
+//		identify Purpose = (TRANSMISSION)
+//					Intent = (Sample, Blocked Beam)
+//					flip_identity = (T_UU, T_UD, T_DD, T_DU)
 //
 //
 // -- for the polarization reduction panel
-//		-- identify (SAM, EMP, BGD)
-//						(SCATTERING)
-//						(S_UU, S_UD, S_DD, S_DU)
+//		-- identify to fill in (SAM, EMP, BGD)
+//						Purpose = (SCATTERING)
+//						Intent = (Sample, Empty Cell, Blocked Beam)
+//						flip_identity = (S_UU, S_UD, S_DD, S_DU)
 //
+
+
+// these are the choices of what to read:
+// "Front Flipper Direction" == V_getFrontFlipper_Direction(fname) == ("UP" | "DOWN")
+//
+// "Front Flipper Flip State" == V_getFrontFlipper_flip(fname) = ("True" | "False")	
+//
+// "Front Flipper Type" == V_getFrontFlipper_type(fname) == ("RF")	
+//
+//	"Back Polarizer Direction" == V_getBackPolarizer_direction(fname)	== ("UP" | "DOWN" | "UNPOLARIZED")
+//
+//	"Back polarizer in?" == V_getBackPolarizer_inBeam(fname) == (0 | 1)	
 
 
 
@@ -56,23 +68,6 @@
 
 
 
-// fields currently used in the patch panel
-//	listWave[0][1] = "Front Flipper Direction"
-//	listWave[0][2] = V_getFrontFlipper_Direction(fname)
-//
-//	listWave[1][1] = "Front Flipper Flip State"
-//	listWave[1][2] = V_getFrontFlipper_flip(fname)	
-//
-//	listWave[2][1] = "Front Flipper Type"
-//	listWave[2][2] = V_getFrontFlipper_type(fname)	
-//
-//	listWave[3][1] = "Back Polarizer Direction"
-//	listWave[3][2] = V_getBackPolarizer_direction(fname)	
-//
-//	listWave[4][1] = "Back polarizer in?"
-//	listWave[4][2] = num2str(V_getBackPolarizer_inBeam(fname))	
-//
-//
 
 
 
@@ -94,27 +89,36 @@
 // -- BUT - in the example data I have, these fields are NOT correctly filled in the header!
 // so- what use is any of this...
 //
+//	// state = 1 = HeIN, 0=HeOUT
+//
 //
 //  TODO:
 // -- filter out the INTENT = blocked beam -- this is a separate file
 // -- and needs to be not in the regular list
 //
 //
-Function/S V_ListForDecayPanel()
-
-	String purpose="HE3"
-	Variable method
-	String str,newList
+Function/S V_ListForDecayPanel(state,intent)
 	Variable state
+	String intent
+
+	String purpose
+	Variable method
+	String str,newList,stateStr
 	
-	// Don't use method = 0 (won't give the correct list)
+	// method = 0 (fastest, uses catatlog + searches sample label)
 	// method = 2 = read the state field
 	// method = 1 = grep for the text
 	method = 0
-	// state = 1 = HeIN, 0=HeOUT
-	state = 1
+	purpose = "HE3"
 	
-	str = V_getFilePurposeDecayList(purpose,state,method)
+	// search for this tag in the sample label
+	if(state==1)
+		stateStr="HeIN"
+	else
+		stateStr="HeOUT"
+	endif
+	
+	str = V_getPurposeIntentLabelList(purpose,intent,stateStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
 	
@@ -123,8 +127,14 @@ end
 
 
 
-// testStr is the "purpose" string, or grep string
+// "purpose" string, or grep string
 // state is the state of the back polarizer (in|out) (1|0)
+// intent
+//
+// *** currently, intent and purpose are filtered quickly from the file catalog
+// -- second, the state of the polarizer (a string) is located by searching the file label
+// ( the state should ideally be found from the metadata too, not the file lablel)
+//
 //
 // method is the method to use to find the file
 // 0 = (default) is to use the file catalog (= fastest)
@@ -137,18 +147,14 @@ end
 //    but depends on whether there was a recent save.
 //
 //
-Function/S V_getFilePurposeDecayList(testStr,state,method)
-	String testStr
-	Variable state,method
+Function/S V_getPurposeIntentLabelList(purpose,intent,labelStr,method)
+	String purpose,intent,labelStr
+	Variable method
 	
-	Variable ii,num
-	String list="",item="",fname,newList="",purpose,stateStr
+	Variable ii,num,np
+	String list="",item="",fname,newList="",tmpLbl
 	
-	if(state==1)
-		stateStr="HeIN"
-	else
-		stateStr="HeOUT"
-	endif
+
 	
 	
 // get a short list of the files with the correct purpose
@@ -159,26 +165,39 @@ Function/S V_getFilePurposeDecayList(testStr,state,method)
 	WAVE/T purposeW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
 	WAVE/T labelsW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels
 	
-	Variable np = numpnts(purposeW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
+	list = V_getFileIntentPurposeList(intent,purpose,method)
+
+	np = itemsinList(list)
 	for(ii=0;ii<np;ii+=1)
-		if(cmpstr(purposeW[ii],testStr)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
-			list += fileNameW[ii] + ";"
-			
+		item=StringFromList(ii, list)
+		tmpLbl = V_getSampleDescription(item)
 			if(method==0)
-				if(strsearch(labelsW[ii],stateStr,0) > 0)
-					newList += fileNameW[ii] + ";"
+				if(strsearch(tmpLbl,labelStr,0) > 0)
+					newList += item + ";"
 				endif
 			endif
-			
-		endif
-		
 	endfor
 	
+//	np = numpnts(purposeW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
+//	for(ii=0;ii<np;ii+=1)
+//		if(cmpstr(purposeW[ii],purpose)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
+//			list += fileNameW[ii] + ";"
+//			
+//			if(method==0)
+//				if(strsearch(labelsW[ii],stateStr,0) > 0)
+//					newList += fileNameW[ii] + ";"
+//				endif
+//			endif
+//			
+//		endif
+//		
+//	endfor
+//	
 	if(method==0)
 		return(sortList(newList,";",0))
 	endif
 	
-	// other methods, proceed
+	// other methods, proceed to use the string to pare the list down
 	
 	List = SortList(List,";",0)
 
@@ -186,28 +205,28 @@ Function/S V_getFilePurposeDecayList(testStr,state,method)
 //now pare down the list (reading each of the files) using the field:
 // V_getBackPolarizer_inBeam(fname) (returns 0|1)
 
-	PathInfo catPathName
-	String path = S_path
-	Variable fileState
-
-	if(method==2)	
-		newList = ""
-		num=ItemsInList(list)
-		
-		for(ii=0;ii<num;ii+=1)
-			item=StringFromList(ii, list , ";")
-			fname = path + item
-			fileState = V_getBackPolarizer_inBeam(fname)
-			if(fileState == state)
-				newList += item + ";"
-			endif
-		endfor	
-	endif
+//	PathInfo catPathName
+//	String path = S_path
+//	Variable fileState,state
+//	
+//	if(method==2)	
+//		newList = ""
+//		num=ItemsInList(list)
+//		
+//		for(ii=0;ii<num;ii+=1)
+//			item=StringFromList(ii, list , ";")
+//			fname = path + item
+//			fileState = V_getBackPolarizer_inBeam(fname)
+//			if(fileState == state)
+//				newList += item + ";"
+//			endif
+//		endfor	
+//	endif
 
 
 // OR-- by using grep and an appropriate string
-// if state == 1, use HeIN, if == 0, use HeOUT
-// (could I grep the sample label field (or strsearch)?
+
+// this greps the whole file, not just the sample label
 //
 	
 	// use Grep
@@ -218,7 +237,7 @@ Function/S V_getFilePurposeDecayList(testStr,state,method)
 		
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, list , ";")
-			Grep/P=catPathName/Q/E=("(?i)"+stateStr) item
+			Grep/P=catPathName/Q/E=("(?i)"+labelStr) item
 			if( V_value )	// at least one instance was found
 	//				Print "found ", item,ii
 				newList += item + ";"
@@ -232,6 +251,46 @@ Function/S V_getFilePurposeDecayList(testStr,state,method)
 	return(newList)
 end
 
+
+// TODO:
+//
+// -- for the fliper polarization panel
+//
+//		identify Purpose = (TRANSMISSION)
+//					Intent = (Sample, Blocked Beam)
+//					flip_identity = (T_UU, T_UD, T_DD, T_DU)
+//
+
+// use the results of this search to fill in the table
+//
+// -- I could read in the flipper information and deduce the UU, DD, UD, DU, etc,
+// -- BUT - in the example data I have, these fields are NOT correctly filled in the header!
+// so- instead I search the file label...
+//
+//
+// flipStr is found from the column label: ("T_UU" | "T_DD" | "T_DU" | "T_UD")
+// intent is either "Sample" or "Blocked Beam", also from the column label
+//
+Function/S V_ListForFlipperPanel(flipStr,intent)
+	String flipStr,intent
+
+	String purpose
+	Variable method
+	String str,newList,stateStr
+	
+	// method = 0 (fastest, uses catatlog + searches sample label)
+	// method = 2 = read the state field
+	// method = 1 = grep for the text
+	method = 0
+	purpose = "TRANSMISSION"
+	
+	
+	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+
+	newList = V_ConvertFileListToNumList(str)
+	
+	return(newList)
+end
 
 
 

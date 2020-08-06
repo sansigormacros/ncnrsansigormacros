@@ -4,13 +4,10 @@
 //
 // TODO
 //
-// add a macro to the VSANS menu
+// x- add a macro to the VSANS menu
+// x- add a "load" button to the panel
 //
-// add a menu option to draw a generic graph (like Display_4)
-// that displays only a single 2D data set. add controls to:
-// -adjust q-scaling
-// -adjust log scaling
-// -pick new 2d data set from popup menu
+//
 //
 // -- document where the data actually is
 //			(the numbering is off by one, and what is the correspondence between numbers
@@ -48,7 +45,9 @@ Function V_Load_2D_NXCS()
 	return(0)
 End
 
-
+//
+// proc to call the function that draws the panel
+//
 Proc V_Display_2D_VSANS()
 
 	V_Display_1()
@@ -77,8 +76,9 @@ Function V_Display_1()
 		Display /W=(800*sc,40*sc,1308*sc,612*sc)/K=1
 		ControlBar 100*sc
 		DoWindow/C VSANS_NXCS
-		Button button0 pos={sc*130,65*sc},size={sc*50,20*sc},title="Do It",proc=V_Change_1_ButtonProc
-		PopupMenu popup0 pos={sc*20,35*sc},title="Data Folder",value=A_OneDDataInMemory()
+		Button button0 pos={sc*20,10*sc},size={sc*130,20*sc},title="Load 2D NXcanSAS",proc=V_Load2DNXCS_ButtonProc
+		Button button1 pos={sc*20,70*sc},size={sc*130,20*sc},title="Change Display",proc=V_Change_1_ButtonProc
+		PopupMenu popup0 pos={sc*20,40*sc},title="Data Folder",value=A_OneDDataInMemory()
 
 
 		SetVariable setVar_b,pos={sc*300,35*sc},size={sc*120,15},title="axis Q",proc=V_2DQ_SetRange_SetVar
@@ -115,6 +115,10 @@ End
 //
 // type is the work folder
 // polType is UU, UD, etc.
+//
+// when the "Change display" button is clicked, this procedure
+// appends each of the data arrays to the graph (after scaling the data
+// to q-values)
 //
 Function V_Fill_1_Panel(folder)
 	String folder
@@ -181,7 +185,8 @@ End
 // Strconstant ksDetectorListAll = "FL;FR;FT;FB;ML;MR;MT;MB;B;"
 // -- so first guess is that LRTB => (F)0123 -- (M)4567 -- (B)8
 
-// TODO -- need to be able to handle the case of "B" (the back detector)
+// (DONE)
+// x- handle the case of "B" (the back detector)
 
 // folder = data folder (under root:)
 // carr = det carriage str (F, M, or B)
@@ -290,7 +295,7 @@ Function V_Panels_AsQ(folder,carr)
 		//ModifyImage/W=VSANS_X4#UU_Panels_Q $item log=V_Value
 	endfor
 
-// TODO -- set the q-range of the axes
+// (DONE) -- set the q-range of the axes
 	ControlInfo/W=VSANS_NXCS setVar_b
 	dval = V_Value
 
@@ -385,7 +390,7 @@ End
 
 
 //
-// this is the "DoIt" button
+// this is the "Change Display6" button
 //
 // - clears all of the old images off of the display
 // then fills in all of the data from the selected folder
@@ -420,3 +425,25 @@ Function V_Change_1_ButtonProc(ba) : ButtonControl
 	return 0
 End
 
+
+//
+// button to load 2D NXcanSAS data files as written out by Igor (Jeff's procedures)
+//
+Function V_Load2DNXCS_ButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	String dataFolder
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			V_Load_2D_NXCS()
+					
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End

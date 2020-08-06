@@ -638,6 +638,7 @@ Function V_DecayParamPanel()
 	SetActiveSubwindow ##
 
 //	//hook to set contextual menu in subwindow
+// can't set a hook for asubwindow, so
 // sets hook for entire panel, I need to look for subwindow T0
 	SetWindow kwTopWin hook=V_DecayTableHook, hookevents=1	// mouse down events
 
@@ -672,8 +673,9 @@ Function V_DecayTableHook(infoStr)
 		return 0
 	endif
 	
+	ControlInfo popup_0
 	Variable ii
-	WAVE dw = root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_Frascati
+	WAVE dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_" + S_Value)
 	
 	// the different column labels are:
 	//   	Trans_He_In?
@@ -682,6 +684,9 @@ Function V_DecayTableHook(infoStr)
   	// and each of these need a different set of files
   	// if the label doesn't match, present no popup
   
+  	Variable state
+  	String intent,dimLbl
+  	
 //	Print "EVENT= ",event
 	strswitch(event)
 		case "mouseup":
@@ -689,38 +694,42 @@ Function V_DecayTableHook(infoStr)
 			GetSelection table,V_DecayPanel#T0,3
 //			Print V_startRow, V_StartCol
 //			Print S_Selection
-			
-			Print GetDimLabel(dw, 1, V_StartCol-1 )
-//			PopupContextualMenu "1;2;3;"	//Paste Run Number;"
-			PopupContextualMenu V_ListForDecayPanel()
+// 		Print GetDimLabel(dw, 1, V_StartCol-1 )
 
-			PutScrapText S_Selection
-			DoIgorMenu "Edit", "Paste"
+			dimLbl = GetDimLabel(dw, 1, V_StartCol-1 )
+			// what am I looking for?
+			if(cmpstr(dimLbl,"Trans_He_In?")==0)
+				state = 1
+				intent = "Sample"		// should be "Transmission" , but not correct at collection
+				PopupContextualMenu V_ListForDecayPanel(state,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
 
-//			Variable err
-//			strswitch(S_selection)
-//
-//				case "Copy Run Number":
-//					//
-//
-//					GetSelection table,CatVSANSTable,1
-//					// get the run number (as a string) from the name and put it on the clipboard
-//					//Variable runNum = V_GetRunNumFromFile(item)
-//
-//					String str = V_GetRunNumStrFromFile(FileNames[V_StartRow])
-//					PutScrapText str
-//					break	
-//					
-//				case "Paste Run Number":
-//					//
-//					GetSelection table,CatVSANSTable,1
-//					// get the run number from the name and put it on the clipboard
-//					//Variable runNum = V_GetRunNumFromFile(item)
-//					String pasteStr = GetScrapText()
-//					DoIgorMenu "Edit", "Paste"
-//					break						
+			endif
 
-//			endswitch		//popup selection
+			if(cmpstr(dimLbl,"Trans_He_Out?")==0)
+				state = 0
+				intent = "Sample"
+				PopupContextualMenu V_ListForDecayPanel(state,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+			if(cmpstr(dimLbl,"Blocked?")==0)
+				state = 0
+				intent = "Blocked Beam"
+				PopupContextualMenu V_ListForDecayPanel(state,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+	// any other column label, don't display anything
+
 
 	endswitch	// event
 

@@ -123,6 +123,11 @@ Function V_DrawFlipperPanel()
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 
+//	//hook to set contextual menu in subwindow
+// can't set a hook for asubwindow, so
+// sets hook for entire panel, I need to look for subwindow T0
+	SetWindow kwTopWin hook=V_FlipperTableHook, hookevents=1	// mouse down events
+
 	SetDataFolder root:
 	return(0)
 End
@@ -782,7 +787,7 @@ Function V_ClearFlipperRowButton(ba) : ButtonControl
 			
 			// Delete just those points
 						
-			GetSelection table, FlipperPanel#T0, 1
+			GetSelection table, V_FlipperPanel#T0, 1
 			selRow = V_startRow
 			DeletePoints selRow,1,cond,calc,cellW			
 			
@@ -1484,3 +1489,113 @@ Function V_RestoreFlipperTable()
 	SetDataFolder root:
 	return(0)
 End
+
+//
+// TODO
+//
+// look for the active subwindow T0 (the table)
+// then see if I can do somehting with this information - by putting
+// up an appropriate list of files to choose from based on where I am
+//
+//
+// - OR -- do I try to fill in the table based on parsing of the metadata
+// do a "test" fill in, and then allow it to be copied over to the real table?
+//
+//
+Function V_FlipperTableHook(infoStr)
+	String infoStr
+	String event= StringByKey("EVENT",infoStr)
+
+
+// check to see that the table is where the click was - if not, exit
+	GetWindow V_FlipperPanel activeSW
+	String activeSubwindow = S_value
+	if (CmpStr(activeSubwindow,"V_FlipperPanel#T0") != 0)
+		return 0
+	endif
+	
+	ControlInfo popup_0
+	Variable ii
+	WAVE dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:"+ S_Value)
+	
+	// the different column labels are:
+	//   	UU_Trans?
+	//   	DU_Trans?
+	//   	DD_Trans?
+	//   	UD_Trans?
+  	//		Blocked?
+  	// and each of these need a different set of files
+  	// if the label doesn't match, present no popup
+  
+  	Variable state
+  	String intent,dimLbl,flipStr
+  	
+//	Print "EVENT= ",event
+	strswitch(event)
+		case "mouseup":
+//
+			GetSelection table,V_FlipperPanel#T0,3
+//			Print V_startRow, V_StartCol
+//			Print S_Selection
+//			Print GetDimLabel(dw, 1, V_StartCol -2 )
+
+			dimLbl = GetDimLabel(dw, 1, V_StartCol -2)
+			// what am I looking for?
+			if(cmpstr(dimLbl,"UU_Trans?")==0)
+				flipStr = "T_UU"
+				intent = "Sample"	
+				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+			if(cmpstr(dimLbl,"DU_Trans?")==0)
+				flipStr = "T_DU"
+				intent = "Sample"	
+				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+			if(cmpstr(dimLbl,"DD_Trans?")==0)
+				flipStr = "T_DD"
+				intent = "Sample"	
+				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+			if(cmpstr(dimLbl,"UD_Trans?")==0)
+				flipStr = "T_UD"
+				intent = "Sample"	
+				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+// this actually looks for a different type of file from the decay panel
+			if(cmpstr(dimLbl,"Blocked?")==0)
+				State = 0
+				intent = "Blocked Beam"
+				PopupContextualMenu V_ListForDecayPanel(state,intent)
+	
+				PutScrapText S_Selection
+				DoIgorMenu "Edit", "Paste"
+
+			endif
+
+	// any other column label, don't display anything
+
+
+	endswitch	// event
+
+
+	return(0)
+end
