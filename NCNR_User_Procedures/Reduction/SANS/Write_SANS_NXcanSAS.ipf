@@ -214,11 +214,11 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
 	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
 	Redimension/N=(pixelsX*pixelsY) qz_val,qval,phi,r_dist
-	Make/O/N=(2,pixelsX,pixelsY) qxy_vals
+	Make/O/N=(2,pixelsY,pixelsX) qxy_vals
 	//everything in 1D now
 	Duplicate/O qval SigmaQX,SigmaQY
-	Make/O/N=(pixelsX,pixelsY) shadow
-	Make/O/N=(2,pixelsX,pixelsY) SigmaQ_combined
+	Make/O/N=(pixelsY,pixelsX) shadow
+	Make/O/N=(2,pixelsY,pixelsX) SigmaQ_combined
 
 	//Two parameters DDET and APOFF are instrument dependent.  Determine
 	//these from the instrument name in the header.
@@ -236,11 +236,11 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 		do
 			nq = ii * pixelsX + jj
 			get2DResolution(qval[nq],phi[nq],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[nq],ret1,ret2,ret3)
-			qxy_vals[0][ii][jj] = qx_val[nq]
-			qxy_vals[1][ii][jj] = qy_val[nq]
-			SigmaQ_combined[0][ii][jj] = ret1	
-			SigmaQ_combined[1][ii][jj] = ret2
-			shadow[ii][jj] = ret3	
+			qxy_vals[0][jj][ii] = qx_val[nq]
+			qxy_vals[1][jj][ii] = qy_val[nq]
+			SigmaQ_combined[0][jj][ii] = ret1
+			SigmaQ_combined[1][jj][ii] = ret2
+			shadow[jj][ii] = ret3
 			jj+=1
 		while(jj<pixelsX)
 		ii+=1
@@ -279,10 +279,9 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
 	CreateVarNxCansas(fileID,dataParent,"sasdata","I",data,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
 
-	//
-	// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
-	//
-
+    //
+    // TODO: Reinstate Qdev/resolutions when I can fix the reader issue
+    //
 	// Create qx and qy entry
 	NewDataFolder/O/S $(dataBase + ":q")
 	Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
@@ -404,9 +403,11 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(sourceBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
 	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
-	// Create SASsource radiation entry
-	Make/O/T/N=1 $(sourceBase + ":radiation") = {"Reactor Neutron Source"}
-	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
+	// Create SASsource probe and type entries
+	Make/O/T/N=1 $(sourceBase + ":probe") = {"neutron"}
+	CreateStrNxCansas(fileID,sourceParent,"","probe",$(sourceBase + ":probe"),empty,empty)
+	Make/O/T/N=1 $(sourceBase + ":type") = {"Reactor Neutron Source"}
+	CreateStrNxCansas(fileID,sourceParent,"","type",$(sourceBase + ":type"),empty,empty)
 	// Create SASsource incident_wavelength entry
 	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {rw[26]}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)

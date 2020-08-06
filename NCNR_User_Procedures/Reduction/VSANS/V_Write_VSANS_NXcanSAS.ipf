@@ -281,16 +281,13 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	
 		//make everything in 1D now
 		Duplicate/O qTot SigmaQX,SigmaQY,fsubS,qval	
-		Redimension/N=(pixX*pixY) SigmaQX,SigmaQY,fsubS,qval,phi,r_dist
+		Redimension/N=(pixY*pixX) SigmaQX,SigmaQY,fsubS,qval,phi,r_dist
 
 		Variable ret1,ret2,ret3,nq
 		String collimationStr = proto[9]
-		
-		nq = pixX*pixY
-		ii=0
 
 // TODO
-// this loop is the slow step. it takes Å 0.7 s for F or M panels, and Å 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
+// this loop is the slow step. it takes ï¿½ 0.7 s for F or M panels, and ï¿½ 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
 // MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
 // and there are a lot of them... and I don't know if opening a file multiple times is a threadsafe operation? 
@@ -309,19 +306,17 @@ v_tic()
 		do
 			jj = 0
 			do
-				nq = ii * pixY + jj
+				nq = ii * pixX + jj
 				V_get2DResolution(qval[nq],phi[nq],r_dist[nq],folderStr,detStr,collimationStr,ret1,ret2,ret3)
-				qxy_vals[0][ii][jj] = qx_val[nq]
-				qxy_vals[1][ii][jj] = qy_val[nq]
-				SigmaQ_combined[0][ii][jj] = ret1
-				SigmaQ_combined[1][ii][jj] = ret2
-				shadow[ii][jj] = ret3
+				qxy_vals[0][jj][ii] = qx_val[nq]
+				qxy_vals[1][jj][ii] = qy_val[nq]
+				SigmaQ_combined[0][jj][ii] = ret1
+				SigmaQ_combined[1][jj][ii] = ret2
+				shadow[jj][ii] = ret3
 				jj+=1
-//			while(jj<pixX)
-			while(jj<pixY)
+			while(jj<pixX)
 			ii+=1
-//		while(ii<pixY)
-		while(ii<pixX)
+		while(ii<pixY)
 v_toc()
 
 	////*********************	
@@ -735,9 +730,11 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	Make/O/T/N=5 $(sourceBase + ":attr") = {"canSAS_class","NX_class"}
 	Make/O/T/N=5 $(sourceBase + ":attrVals") = {"SASsource","NXsource"}
 	CreateStrNxCansas(fileID,sourceParent,"","",empty,$(sourceBase + ":attr"),$(sourceBase + ":attrVals"))
-	// Create SASsource radiation entry
-	Make/O/T/N=1 $(sourceBase + ":radiation") = {V_getSourceType(folderStr)}
-	CreateStrNxCansas(fileID,sourceParent,"","radiation",$(sourceBase + ":radiation"),empty,empty)
+	// Create SASsource probe and type entries
+	Make/O/T/N=1 $(sourceBase + ":probe") = {"neutron"}
+	CreateStrNxCansas(fileID,sourceParent,"","probe",$(sourceBase + ":probe"),empty,empty)
+	Make/O/T/N=1 $(sourceBase + ":type") = {"Reactor Neutron Source"}
+	CreateStrNxCansas(fileID,sourceParent,"","type",$(sourceBase + ":type"),empty,empty)
 	// Create SASsource incident_wavelength entry
 	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {V_getWavelength(folderStr)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)

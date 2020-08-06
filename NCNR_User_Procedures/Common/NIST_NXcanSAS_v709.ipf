@@ -94,7 +94,7 @@ Function NxCansas_InitializeFile(fileID, base)
 	NewDataFolder/O/S $(location)
 	Make/O/T/N=1 $(location + ":vals") = {""}
 	Make/O/T/N=3 $(location + ":attr") = {"NX_class", "canSAS_class", "version"}
-	Make/O/T/N=3 $(location + ":attrVals") = {"NXentry", "SASentry", "1.0"}
+	Make/O/T/N=3 $(location + ":attrVals") = {"NXentry", "SASentry", "1.1"}
 	CreateStrNxCansas(fileID,nxParent,"","",$(location + ":vals"),$(location + ":attr"),$(location + ":attrVals"))
 	Make/O/T/N=1 $(location + ":entryAttr") = {""}
 	Make/O/T/N=1 $(location + ":entryAttrVals") = {""}
