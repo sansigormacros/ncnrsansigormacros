@@ -221,6 +221,7 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 	if (isXML(fileStr) == 1 || isNXcanSAS(fileStr) == 1)
 		if (isNXcanSAS(fileStr) == 1)
 			LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
+			
 		else
 			LoadNISTXMLData(fileStr,outstr,doPlot,forceOverwrite)
 		endif

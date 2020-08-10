@@ -320,7 +320,7 @@ Function V_DrawCellParamPanel()
 	ModifyPanel fixedSize=1
 
 //	ShowTools/A
-	Button button_0,pos={sc*10,10*sc},size={sc*90,20*sc},proc=V_AddCellButtonProc,title="Add Cell"
+	Button button_0,pos={sc*10,35*sc},size={sc*90,20*sc},proc=V_AddCellButtonProc,title="Add Cell"
 	Button button_1,pos={sc*118,10*sc},size={sc*160,20*sc},proc=V_SaveCellParButtonProc,title="Update Parameters"
 	Button button_2,pos={sc*118,35*sc},size={sc*130,20*sc},proc=V_RevertCellParButtonProc,title="Revert Parameters"
 	Button button_3,pos={sc*520,10*sc},size={sc*35,20*sc},proc=V_CellHelpParButtonProc,title="?"
@@ -328,7 +328,7 @@ Function V_DrawCellParamPanel()
 	Button button_4,pos={sc*324,10*sc},size={sc*100,20*sc},proc=V_SaveCellPanelButton,title="Save State"
 	Button button_5,pos={sc*324,35*sc},size={sc*100,20*sc},proc=V_RestoreCellPanelButton,title="Restore State"
 
-	Button button_6,pos={sc*10,35*sc},size={sc*90,20*sc},proc=V_ScanForCellsButtonProc,title="Scan Cell"
+	Button button_6,pos={sc*10,10*sc},size={sc*90,20*sc},proc=V_ScanForCellsButtonProc,title="Scan Cells"
 	
 	Edit/W=(14*sc,60*sc,582*sc,318*sc)/HOST=#
 	ModifyTable width(Point)=0
@@ -675,7 +675,7 @@ Function V_DecayTableHook(infoStr)
 	
 	ControlInfo popup_0
 	Variable ii
-	WAVE dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_" + S_Value)
+	WAVE/Z dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_" + S_Value)
 	
 	// the different column labels are:
 	//   	Trans_He_In?
@@ -704,7 +704,9 @@ Function V_DecayTableHook(infoStr)
 				popList = V_ListForDecayPanel(state,intent)
 				intent = "Empty Cell"
 				popList += V_ListForDecayPanel(state,intent)
-				
+				intent = "Open Beam"
+				popList += V_ListForDecayPanel(state,intent)
+	
 				popList=SortList(popList)
 				
 				PopupContextualMenu popList
@@ -720,6 +722,8 @@ Function V_DecayTableHook(infoStr)
 				popList = V_ListForDecayPanel(state,intent)
 				intent = "Empty Cell"
 				popList += V_ListForDecayPanel(state,intent)
+				intent = "Open Beam"
+				popList += V_ListForDecayPanel(state,intent)
 				
 				popList=SortList(popList)
 
@@ -730,10 +734,14 @@ Function V_DecayTableHook(infoStr)
 
 			endif
 
-			if(cmpstr(dimLbl,"Blocked?")==0)
+			if(cmpstr(dimLbl,"Blocked?")==0) //test for HeIN and HeOUT
 				state = 0
 				intent = "Blocked Beam"
-				PopupContextualMenu V_ListForDecayPanel(state,intent)
+				popList = V_ListForDecayPanel(state,intent)
+				state = 1
+				popList += V_ListForDecayPanel(state,intent)
+				popList = SortList(popList)
+				PopupContextualMenu popList
 	
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"

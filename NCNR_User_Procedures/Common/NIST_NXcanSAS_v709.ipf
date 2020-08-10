@@ -307,9 +307,10 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				// Load in data
 				HDF5LoadData /O/Z/N=$(baseStr + "_i") fileID, entryBase + dataBase + "I"
 				HDF5LoadData /O/Z/N=$(baseStr + "_q") fileID, entryBase + dataBase + "Q"
-				HDF5LoadData /O/Z/N=$(baseStr + "_dq") fileID, entryBase + dataBase + "dQ"
-				HDF5LoadData /O/Z/N=$(baseStr + "_dql") fileID, entryBase + dataBase + "dQl"
-				HDF5LoadData /O/Z/N=$(baseStr + "_dqw") fileID, entryBase + dataBase + "dQw"
+				HDF5LoadData /O/Z/N=$(baseStr + "_dq") fileID, entryBase + dataBase + "Qdev"		//SRK these are the names for Qdev and Qmean
+				HDF5LoadData /O/Z/N=$(baseStr + "_qbar") fileID, entryBase + dataBase + "Qmean"	// in the NXcanSAS file
+//				HDF5LoadData /O/Z/N=$(baseStr + "_dql") fileID, entryBase + dataBase + "dQl"
+//				HDF5LoadData /O/Z/N=$(baseStr + "_dqw") fileID, entryBase + dataBase + "dQw"
 				HDF5LoadData /O/Z/N=$(baseStr + "_s") fileID, entryBase + dataBase + "Idev"
 				if (DimSize($(baseStr + "_i"), 1) > 1)
 					// Do not auto-plot 2D data
@@ -356,9 +357,37 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 				sprintf dataBase,dataUnformatted,ii
 			endIf
 			// Open next group to see if it exists
-		sPrintf entryBase,entryUnformatted,inc
+			sPrintf entryBase,entryUnformatted,inc
 			HDF5OpenGroup /Z fileID, entryBase + dataBase, groupID
 		while(groupID != 0)
+		
+		// SRK-- finish creating the resolution matrix
+		// and add in a fake shadow factor wave
+		
+		// need to switch based on SANS/USANS
+		Wave qval = $(baseStr + "_q")
+		Wave ival = $(baseStr + "_i")
+		Wave ierr = $(baseStr + "_s")
+		Wave qbar = $(baseStr + "_qbar")
+		Wave dq = $(baseStr + "_dq")
+		
+		if (isSANSResolution(dq[0]))		//checks to see if the first point of the wave is <0]
+			// make a resolution matrix for SANS data
+			Variable np=numpnts(qval)
+			Make/D/O/N=(np,4) $(baseStr+"_res")
+			Wave resW = $(baseStr+"_res")
+			resW[][0] = dq[p]		//sigQ
+			resW[][1] = qbar[p]		//qBar
+			resW[][2] = 1		//fShad
+			resW[][3] = qval[p]		//Qvalues
+		else
+			
+			Variable dQv = -dq[0]
+			
+			USANS_CalcWeights(baseStr,dQv)
+			
+		endif
+		
 		
 		//plot if desired
 		if(doPlot)

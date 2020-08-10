@@ -1418,7 +1418,9 @@ Function/S V_getFileIntentPurposeList(intent,purpose,method)
 		Variable np = numpnts(purposeW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
 		for(ii=0;ii<np;ii+=1)
 			if(cmpstr(purposeW[ii],purpose)==0 && cmpstr(intentW[ii],intent)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
+				//print "adding  "+ fileNameW[ii]+"   "+num2str(ii)
 				list += fileNameW[ii] + ";"
+				
 			endif		
 		endfor
 		

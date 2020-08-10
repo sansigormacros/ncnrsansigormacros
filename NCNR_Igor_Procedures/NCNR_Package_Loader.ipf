@@ -49,7 +49,7 @@ Menu "Macros"
 
 	// for testing ONLY
 	"-"
-	"Load Polarization Reduction",PolarizationLoader()
+	"Load SANS Polarization Reduction",PolarizationLoader()
 	"Load Real Space Modeling",RealSpaceLoader()
 	"Event Mode Processing",EventModeLoader()
 	"Load Batch Fitting - Beta",BatchFitLoader()

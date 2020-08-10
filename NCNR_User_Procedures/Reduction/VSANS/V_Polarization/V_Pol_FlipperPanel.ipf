@@ -1528,7 +1528,7 @@ Function V_FlipperTableHook(infoStr)
   	// if the label doesn't match, present no popup
   
   	Variable state
-  	String intent,dimLbl,flipStr
+  	String intent,dimLbl,flipStr,popList
   	
 //	Print "EVENT= ",event
 	strswitch(event)
@@ -1548,7 +1548,13 @@ Function V_FlipperTableHook(infoStr)
 			if(cmpstr(dimLbl,"UU_Trans?")==0)
 				flipStr = "T_UU"
 				intent = "Sample"	
-				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
+				popList = V_ListForFlipperPanel(flipStr,intent)
+				intent = "Open Beam"
+				popList += V_ListForFlipperPanel(flipStr,intent)
+				
+				popList = SortList(popList)
+				
+				PopupContextualMenu popList
 	
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
@@ -1558,8 +1564,14 @@ Function V_FlipperTableHook(infoStr)
 			if(cmpstr(dimLbl,"DU_Trans?")==0)
 				flipStr = "T_DU"
 				intent = "Sample"	
-				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
-	
+				popList = V_ListForFlipperPanel(flipStr,intent)
+				intent = "Open Beam"
+				popList += V_ListForFlipperPanel(flipStr,intent)
+				
+				popList = SortList(popList)
+				
+				PopupContextualMenu popList
+		
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
 
@@ -1568,8 +1580,14 @@ Function V_FlipperTableHook(infoStr)
 			if(cmpstr(dimLbl,"DD_Trans?")==0)
 				flipStr = "T_DD"
 				intent = "Sample"	
-				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
-	
+				popList = V_ListForFlipperPanel(flipStr,intent)
+				intent = "Open Beam"
+				popList += V_ListForFlipperPanel(flipStr,intent)
+				
+				popList = SortList(popList)
+				
+				PopupContextualMenu popList
+		
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
 
@@ -1578,17 +1596,27 @@ Function V_FlipperTableHook(infoStr)
 			if(cmpstr(dimLbl,"UD_Trans?")==0)
 				flipStr = "T_UD"
 				intent = "Sample"	
-				PopupContextualMenu V_ListForFlipperPanel(flipStr,intent)
-	
+				popList = V_ListForFlipperPanel(flipStr,intent)
+				intent = "Open Beam"
+				popList += V_ListForFlipperPanel(flipStr,intent)
+				
+				popList = SortList(popList)
+				
+				PopupContextualMenu popList
+		
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"
 
 			endif
 // this actually looks for a different type of file from the decay panel
-			if(cmpstr(dimLbl,"Blocked?")==0)
+			if(cmpstr(dimLbl,"Blocked?")==0) // check for both HeIN or HeOUT
 				State = 0
 				intent = "Blocked Beam"
-				PopupContextualMenu V_ListForDecayPanel(state,intent)
+				popList = V_ListForDecayPanel(state,intent)
+				state = 1
+				popList += V_ListForDecayPanel(state,intent)
+				popList = SortList(popList)
+				PopupContextualMenu popList
 	
 				PutScrapText S_Selection
 				DoIgorMenu "Edit", "Paste"

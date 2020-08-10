@@ -21,14 +21,14 @@
 //    automatically
 //
 // -- for the decay panel
-//		identify Purpose = (HE3, BLOCKED BEAM)
-//					Intent = (Sample or Empty Cell) --- although data is actually transmission configuration
+//		identify Purpose = (HE3)
+//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam) 
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
 //
 // -- for the fliper polarization panel
 //		identify Purpose = (TRANSMISSION)
-//					Intent = (Sample, Blocked Beam)
+//					Intent = (Sample, Open Beam - or Blocked Beam)
 //					flip_identity = (T_UU, T_UD, T_DD, T_DU)
 //
 //
@@ -73,12 +73,12 @@
 
 
 // -- for the decay panel
-//		identify Purpose = (HE3, BLOCKED BEAM)
-//					Intent = (Sample or Empty Cell) --- although data is actually transmission configuration
+//		identify Purpose = (HE3)
+//					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam) 
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
-// NOTE that the table hook V_DecayTableHook() calls the list 2X and adds them
-//  calling once w/intent=Sample, once w/intent=Empty Cell
+// NOTE that the table hook V_DecayTableHook() calls the list 4X and adds them
+//  calling once w/intent=Sample, once w/intent=Empty Cell, Blocked beam, Open Beam
 //
 //
 // use the results of this search to fill in the table
@@ -94,7 +94,7 @@
 //
 //  TODO:
 // -- filter out the INTENT = blocked beam -- this is a separate file
-// -- and needs to be not in the regular list
+// -- and needs to not be in the regular list
 //
 //
 Function/S V_ListForDecayPanel(state,intent)
@@ -257,7 +257,7 @@ end
 // -- for the flipper polarization panel
 //
 //		identify Purpose = (TRANSMISSION)
-//					Intent = (Sample, Blocked Beam)
+//					Intent = (Sample, Open Beam, -or Blocked Beam)
 //					flip_identity = (T_UU, T_UD, T_DD, T_DU)
 //
 

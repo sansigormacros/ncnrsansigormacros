@@ -2301,10 +2301,19 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 // - concatenates the data sets
 // - removes NaN points and removes duplicate q-values by averaging q-values that are within 0.1% of each other
 //
+// during the polarized beam reduction, the samFileLoaded may be a list of filenames
+// loaded (if multiple files added together. take only the last file name loaded as the 
+// file name to save. this is how the "regular" reduction behaves.
 
 	prot[9] = collimationStr
 
-	String newFileName = RemoveEnding(samFileLoaded,".nxs.ngv")
+	String newFileName 
+	
+	//return the last file name in the list
+	newfileName = StringFromList(ItemsInList(samFileLoaded)-1, samFileLoaded)
+	//remove the ending
+	newFileName = RemoveEnding(newFileName,".nxs.ngv")
+	//add in the polarization type tag
 	newFileName += "_" + pType
 
 	V_Proto_SaveFile(prot[5],activeType,newFileName,av_type,binType,detGroup,prot[7],prot[8])
