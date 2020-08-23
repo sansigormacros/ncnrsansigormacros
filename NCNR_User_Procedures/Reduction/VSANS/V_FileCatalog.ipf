@@ -324,7 +324,7 @@ Function V_CatTableHook(infoStr)
 //			Variable xpix= NumberByKey("MOUSEX",infoStr)
 //			Variable ypix= NumberByKey("MOUSEY",infoStr)
 //			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
-			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;Copy Run Number;"	//Paste Run Number;"
+			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"//Copy Run Number;"	//Paste Run Number;"
 			
 			WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
 			Variable err
@@ -377,16 +377,16 @@ Function V_CatTableHook(infoStr)
 						V_MREDPopMenuProc("",1,"")
 					endif
 					break
-				case "Copy Run Number":
-					//
-
-					GetSelection table,CatVSANSTable,1
-					// get the run number (as a string) from the name and put it on the clipboard
-					//Variable runNum = V_GetRunNumFromFile(item)
-
-					String str = V_GetRunNumStrFromFile(FileNames[V_StartRow])
-					PutScrapText str
-					break	
+//				case "Copy Run Number":
+//					//
+//
+//					GetSelection table,CatVSANSTable,1
+//					// get the run number (as a string) from the name and put it on the clipboard
+//					//Variable runNum = V_GetRunNumFromFile(item)
+//
+//					String str = V_GetRunNumStrFromFile(FileNames[V_StartRow])
+//					PutScrapText str
+//					break	
 					
 //				case "Paste Run Number":
 //					//

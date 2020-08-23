@@ -134,7 +134,7 @@ Proc Initialize_VSANSPreferences()
 
 
 // this is now a VSANS menu item rather than a question at startup
-//	DoAlert 1,"Do you want small panels? (this can be changed later in preferences)"
+//	DoAlert 1,"Do you want small panels fo a laptop? (this can be changed later in preferences)"
 //	if(V_flag == 1)
 //		// yes
 //		Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = 1

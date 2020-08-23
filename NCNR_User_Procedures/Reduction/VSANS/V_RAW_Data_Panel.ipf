@@ -932,6 +932,11 @@ Function V_IvsQPanelButtonProc(ba) : ButtonControl
 			V_PlotData_Panel()		//-9999 requests a read from the popup on the panel
 			Variable binType = V_GetBinningPopMode()
 			ControlInfo/W=V_1D_Data popup0
+			//
+			// generate a default mask to ensure that there are no errors if it is not present
+			V_GenerateDefaultMask()
+			
+			//
 			V_BinningModePopup("",binType,S_Value)		// does binning of current popString and updates the graph
 			
 			break

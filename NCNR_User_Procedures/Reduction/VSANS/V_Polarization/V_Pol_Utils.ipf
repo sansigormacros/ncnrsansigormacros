@@ -16,15 +16,34 @@
 // TODO:
 // -- add functions to identify the files for the different panels
 //
+// *** I also work to build the lists in each of the hook functions in the tables, where I can
+// make decisions about intent based on the table column
+//
+//-------------------------------
+//
+//		V_ScanCellParams()
+//
 // -- for the cell parameter panel
 //    I have a scan function that finds the cell information and populates the table 
 //    automatically
+//
+//----------------
+//
+//		V_ListForDecayPanel()
 //
 // -- for the decay panel
 //		identify Purpose = (HE3)
 //					Intent = (Sample or Empty Cell or Blocked Beam or Open Beam) 
 //					polarizer state = (HeIn, HeOut) (currently search the file label)
 //
+// -- See: V_DecayTableHook()
+//			AND V_FlipperTableHook()  -- the decay list is used in both places
+//
+//
+//--------------
+//
+//
+//		V_ListForFlipperPanel()
 //
 // -- for the fliper polarization panel
 //		identify Purpose = (TRANSMISSION)
@@ -32,13 +51,25 @@
 //					flip_identity = (T_UU, T_UD, T_DD, T_DU)
 //
 //
+// -- See: V_FlipperTableHook()
+//
+//------------------------------
+//
+//		V_ListForCorrectionPanel()
+//
 // -- for the polarization reduction panel
 //		-- identify to fill in (SAM, EMP, BGD)
 //						Purpose = (SCATTERING)
 //						Intent = (Sample, Empty Cell, Blocked Beam)
 //						flip_identity = (S_UU, S_UD, S_DD, S_DU)
 //
-
+// -- this list is a little different since it's in a list box. See:
+//   V_PolCor_FileListBoxProc() for its use
+//
+//---------------------------------
+//
+//
+//
 
 // these are the choices of what to read:
 // "Front Flipper Direction" == V_getFrontFlipper_Direction(fname) == ("UP" | "DOWN")
@@ -95,6 +126,9 @@
 //  TODO:
 // -- filter out the INTENT = blocked beam -- this is a separate file
 // -- and needs to not be in the regular list
+//
+// -- See: V_DecayTableHook()
+//		AND V_FlipperTableHook()  -- this list is used in both places
 //
 //
 Function/S V_ListForDecayPanel(state,intent)

@@ -568,6 +568,53 @@ Function VC_Preset_WhiteBeam()
 end
 
 
+
+// Super White beam preset
+// - set monochromator (this sets lam, delLam)
+// - disregard the back detector (set as front/middle)
+//
+Function VC_Preset_SuperWhiteBeam()
+
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Super White Beam"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.60;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.60"
+
+// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6.2,disable=2	// disable=2 is grayed out	,noedit=0	// allow user editing again
+
+	// adjust the front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:8			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-8		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-15		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:15		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:15			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-15		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1900		//SDD
+	
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F4-M4-B"
+
+// set preference to USE back detector
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gIgnoreB = 0
+	
+			
+	return(0)
+end
+
+
 // Graphite - high resolution beam preset
 // - set monochromator (this sets lam, delLam)
 // - uses the back detector (set as front/middle)
@@ -614,6 +661,65 @@ Function VC_Preset_GraphiteMono()
 
 	return(0)
 end
+
+
+//
+// 
+Function VC_Preset_ConvergingPinholes()
+
+// set preference to NOT ignore back detector
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gIgnoreB = 0
+	
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:11.5			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-12		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:450		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-2.75		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:3.25		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:3.5			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
+	
+	// back detector
+	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
+	
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=0
+
+	
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=3		//set the 3.0 cm aperture
+	
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
+
+
+	return(0)
+End
+
+
 
 // calculates L2, the sample aperture to detector distance
 Function VC_calc_L2(detStr)

@@ -124,7 +124,7 @@ Proc V_MaskEditorPanel()
 
 	PauseUpdate; Silent 1		// building window...
 
-	Display /W=(662*sc,418*sc,1300*sc,960*sc)/N=MaskEditPanel	 /K=1
+	Display /W=(662*sc,218*sc,1300*sc,760*sc)/N=MaskEditPanel	 /K=1
 
 	ShowTools rect
 	ControlBar 100*sc
@@ -938,7 +938,11 @@ Function V_GenerateDefaultMask()
 		Make/O/T/N=1	start_date	= "2015-02-28T08:15:30-5:00"
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
-			
+	
+	// if a mask exists, don't create another, and don't overwrite what's there
+	if(exists("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:data") ==  1)
+		return(0)
+	endif		
 	
 	NVAR gHighResBinning = root:Packages:NIST:VSANS:Globals:gHighResBinning
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_B	
