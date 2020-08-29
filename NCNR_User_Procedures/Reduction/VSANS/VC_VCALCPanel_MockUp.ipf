@@ -46,7 +46,7 @@ Proc VCALC_Panel()
 		
 		// a recalculation is needed after the change
 		// this re-bins the I(q) data too
-		V_Recalculate_AllDetectors()
+		VC_Recalculate_AllDetectors()
 
 		// update the views
 		VC_UpdateViews()
@@ -264,7 +264,7 @@ Proc DrawVCALC_Panel()
 
 	
 // tab(0), collimation - initially visible
-	Slider VCALCCtrl_0a,pos={sc*223,(324-50)*sc},size={sc*200,45*sc},limits={0,9,1},value= 1,vert= 0,proc=V_GuideSliderProc
+	Slider VCALCCtrl_0a,pos={sc*223,(334-50)*sc},size={sc*200,45*sc},limits={0,9,1},value= 1,vert= 0,proc=V_GuideSliderProc
 	SetVariable VCALCCtrl_0b,pos={sc*25,(294-50)*sc},size={sc*120,15*sc},title="wavelength"
 	SetVariable VCALCCtrl_0b,limits={4,20,1},value=_NUM:8,proc=VC_Lambda_SetVarProc
 	PopupMenu VCALCCtrl_0c,pos={sc*26,(257-50)*sc},size={sc*150,20*sc},title="monochromator"
@@ -273,25 +273,30 @@ Proc DrawVCALC_Panel()
 	PopupMenu VCALCCtrl_0d,pos={sc*26,(321-50)*sc},size={sc*115,20*sc},title="delta lambda"
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
 	PopupMenu VCALCCtrl_0d,proc=VC_DeltaLamSelectPopup
-	PopupMenu VCALCCtrl_0e,pos={sc*291,(262-50)*sc},size={sc*132,20*sc},title="source shape"
+	PopupMenu VCALCCtrl_0e,pos={sc*263,(242-50)*sc},size={sc*132,20*sc},title="source shape"
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSourceShape
 	PopupMenu VCALCCtrl_0e,proc=VC_SourceApShapeSelectPopup
-	PopupMenu VCALCCtrl_0f,pos={sc*283,(293-50)*sc},size={sc*141,20*sc},title="source aperture"
+	PopupMenu VCALCCtrl_0f,pos={sc*263,(272-50)*sc},size={sc*141,20*sc},title="source diam"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
 	PopupMenu VCALCCtrl_0f,proc=VC_SourceAperDiamSelectPopup
-
+	PopupMenu VCALCCtrl_0g,pos={sc*263,(302-50)*sc},size={sc*141,20*sc},title="source height"
+	PopupMenu VCALCCtrl_0g,mode=1,popvalue="10 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
+	PopupMenu VCALCCtrl_0g,proc=VC_SourceAperDiamSelectPopup,disable=2
 
 // tab(1) - Sample conditions, initially not visible
 	PopupMenu VCALCCtrl_1a,pos={sc*38,(250-50)*sc},size={sc*142,20*sc},title="table location",disable=1
 	PopupMenu VCALCCtrl_1a,mode=1,popvalue="Changer",value= root:Packages:NIST:VSANS:VCALC:gTableLocation
 	PopupMenu VCALCCtrl_1b,pos={sc*270,(250-50)*sc},size={sc*115,20*sc},title="Aperture Shape",disable=1
 	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureShape 
-	PopupMenu VCALCCtrl_1c,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture Diam (cm)",disable=1
+	PopupMenu VCALCCtrl_1b,proc=VC_SampleApShapeSelectPopup
+	PopupMenu VCALCCtrl_1c,pos={sc*270,(280-50)*sc},size={sc*132,20*sc},title="Aperture Diam (cm)",disable=1
 	PopupMenu VCALCCtrl_1c,mode=1,popvalue="1.27",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
 	SetVariable VCALCCtrl_1d,pos={sc*25,(280-50)*sc},size={sc*210,15*sc},title="Sam Ap to Gate Valve (cm)"//,bodywidth=50
 	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
 	SetVariable VCALCCtrl_1e,pos={sc*25,(310-50)*sc},size={sc*210,15*sc},title="Sam Pos to Gate Valve (cm)"
 	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
+	PopupMenu VCALCCtrl_1f,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture width (mm)",disable=1
+	PopupMenu VCALCCtrl_1f,mode=1,popvalue="1 mm",value= root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
 
 // tab(2) - Front detector panels, initially not visible
 	SetVariable VCALCCtrl_2a,pos={sc*30,(260-50)*sc},size={sc*170,15*sc},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
@@ -652,6 +657,10 @@ Function VC_SourceAperDiamSelectPopup(pa) : PopupMenuControl
 	return 0
 End
 
+
+
+
+// when a given shape is chosen udate the size parameters
 Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -660,11 +669,38 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
+			SVAR diam= root:Packages:NIST:VSANS:VCALC:gSourceDiam
+			SVAR wid= root:Packages:NIST:VSANS:VCALC:gSourceApertureWidth
+			SVAR ht= root:Packages:NIST:VSANS:VCALC:gSourceApertureHeight
+
+			strswitch(popStr)
+				case "circular":
+					PopupMenu VCALCCtrl_0f,title="source diam",value=root:Packages:NIST:VSANS:VCALC:gSourceDiam
+					
+					PopupMenu VCALCCtrl_0g,disable=1
+					
+					break
+				case "rectangular":
+					PopupMenu VCALCCtrl_0f,title="source height"
+					PopupMenu VCALCCtrl_0f,value=root:Packages:NIST:VSANS:VCALC:gSourceApertureHeight
+					
+					PopupMenu VCALCCtrl_0g,disable=0,title="source width"
+					PopupMenu VCALCCtrl_0g,value=root:Packages:NIST:VSANS:VCALC:gSourceApertureWidth
+					
+					break
+				case "converging pinholes":
+					PopupMenu VCALCCtrl_0f,title="source diam",value=root:Packages:NIST:VSANS:VCALC:gSourceDiam
+					
+					PopupMenu VCALCCtrl_0g,disable=1
+					break
+					
+			endswitch	
 			Print "Not filled in yet"
 
 			// a recalculation is needed after the change
 			//Recalculate_AllDetectors()
-									
+			
+
 			break
 		case -1: // control being killed
 			break
@@ -672,6 +708,56 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 
 	return 0
 End
+
+
+
+
+// when a given shape is chosen udate the size parameters
+Function VC_SampleApShapeSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+
+			strswitch(popStr)
+				case "circular":
+					PopupMenu VCALCCtrl_1c,title="Aperture Diam",value=root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
+					
+					PopupMenu VCALCCtrl_1f,disable=1
+					
+					break
+				case "rectangular":
+					PopupMenu VCALCCtrl_1c,title="Aperture Height"
+					PopupMenu VCALCCtrl_1c,value=root:Packages:NIST:VSANS:VCALC:gSampleApertureHeight
+					
+					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width"
+					PopupMenu VCALCCtrl_1f,value=root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
+					
+					break
+				case "converging pinholes":
+					PopupMenu VCALCCtrl_1c,title="Aperture Diam",value=root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
+					
+					PopupMenu VCALCCtrl_1f,disable=1
+					break
+					
+			endswitch	
+			Print "Not filled in yet"
+
+			// a recalculation is needed after the change
+			//Recalculate_AllDetectors()
+			
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 Function VC_DeltaLamSelectPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -783,7 +869,7 @@ Function VC_PresetConfigPopup(pa) : PopupMenuControl
 					VC_Preset_GraphiteMono()
 					break
 				case "Narrow Slit":
-					Print "Preset Narrow Slit not defined yet"
+					VC_Preset_NarrowSlit()
 					break
 				case "Converging Pinholes":
 					VC_Preset_ConvergingPinholes()
@@ -1457,12 +1543,17 @@ Proc VC_Initialize_Space()
 	String/G gSourceShape = "circular;rectangular;converging pinholes;"
 	String/G gSourceDiam = "6.0 cm;"
 	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
+	String/G gSourceApertureWidth = "1 mm;2 mm;3 mm;"
+	String/G gSourceApertureHeight = "100 mm;200 mm;"
+
 	String/G gDeltaLambda = "0.12;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
 	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;"
 	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
+	String/G gSampleApertureWidth = "1 mm;2 mm;3 mm;"
+	String/G gSampleApertureHeight = "100 mm;200 mm;"
 	
 // tab 2
 

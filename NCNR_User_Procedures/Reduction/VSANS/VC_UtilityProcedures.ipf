@@ -291,7 +291,7 @@ Function VC_sourceApertureDiam()
 	return(a1)
 End
 
-// reports tha value in [cm]
+// reports the value in [cm]
 Function VC_sampleApertureDiam()
 
 	ControlInfo/W=VCALC VCALCCtrl_1c
@@ -358,7 +358,7 @@ Function VC_Preset_FrontMiddle_Ng0()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6
+	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -406,7 +406,7 @@ Function VC_Preset_FrontMiddle_Ng2()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6
+	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -453,7 +453,7 @@ Function VC_Preset_FrontMiddle_Ng7()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6
+	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -501,7 +501,7 @@ Function VC_Preset_FrontMiddle_Ng9()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6
+	SetVariable VCALCCtrl_0b,value=_NUM:6,disable=0
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -538,7 +538,7 @@ Function VC_Preset_WhiteBeam()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40"
 
 // wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:5.3//,disable=0	,noedit=0	// allow user editing again
+	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2//	,noedit=0	// allow user editing again
 
 	// adjust the front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
@@ -650,7 +650,7 @@ Function VC_Preset_GraphiteMono()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.01"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:4.75//,disable=0	,noedit=0	// allow user editing again
+	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2//	,noedit=0	// allow user editing again
 
 	//number of guides
 	Slider VCALCCtrl_0a,value= 0
@@ -701,7 +701,7 @@ Function VC_Preset_ConvergingPinholes()
 	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
 	
 	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6
+	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
 
 	//number of guides
 //	Slider VCALCCtrl_0a,value= 0
@@ -718,6 +718,66 @@ Function VC_Preset_ConvergingPinholes()
 
 	return(0)
 End
+
+
+
+// 
+// TODO -- need to define non-circular aperture shape input on the panel
+//
+Function VC_Preset_NarrowSlit()
+
+// set preference to NOT ignore back detector
+	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	gIgnoreB = 0
+	
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:11.5			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-12		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:450		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-2.75		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:3.25		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:3.5			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
+	
+	// back detector
+	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
+	
+	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=0
+
+	
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0f,mode=3		//set the 3.0 cm aperture
+	
+// binning mode
+	PopupMenu popup_b,mode=1,popValue="SLIT-F2-M2-B"
+
+
+	return(0)
+End
+
 
 
 
