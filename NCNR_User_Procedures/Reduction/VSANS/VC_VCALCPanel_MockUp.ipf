@@ -601,7 +601,8 @@ Function V_GuideSliderProc(ctrlName,sliderValue,event)
 				apStr = "0.75 cm;1.5 cm;3.0 cm;"
 				break
 			default:
-				apStr = "6 cm;"
+				apStr = "6.0 cm;"
+				PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"
 		endswitch
 		ControlUpdate/W=VCALC VCALCCtrl_0f
 

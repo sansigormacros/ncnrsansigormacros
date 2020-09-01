@@ -152,13 +152,16 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	Variable width,height,equiv_S1,equiv_bs
 	
 	if(isVCALC)
-		S1 = VC_sourceApertureDiam()*10		//VCALC is in cm, conver to [mm]
+		S1 = VC_sourceApertureDiam()*10		//VCALC is in cm, convert to [mm]
 	else
 		s1_shape = V_getSourceAp_shape(folderStr)
 		if(cmpstr(s1_shape,"CIRCLE") == 0)
 			S1 = str2num(V_getSourceAp_size(folderStr))
 		else
-			S1 = V_getSourceAp_height(folderStr)		// TODO: need the width or at least an equivalent diameter
+			height = V_getSourceAp_height(folderStr)		// DONE: calculate an equivalent diameter
+			width = V_getSourceAp_width(folderStr)			// A = wh = pi*d^2/4
+			equiv_S1 = sqrt(4/pi*width*height)			// resolution is still better described as infinite slit
+			S1 = equiv_S1
 		endif
 	endif
 	
@@ -484,7 +487,10 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	if(cmpstr(s1_shape,"CIRCLE") == 0)
 		S1 = str2num(V_getSourceAp_size(folderStr))
 	else
-		S1 = V_getSourceAp_height(folderStr)		// TODO: need the width or at least an equivalent diameter
+		height = V_getSourceAp_height(folderStr)		// DONE: calculate an equivalent diameter
+		width = V_getSourceAp_width(folderStr)			// A = wh = pi*d^2/4
+		equiv_S1 = sqrt(4/pi*width*height)			// resolution is still better described as infinite slit
+		S1 = equiv_S1
 	endif
 	
 	
