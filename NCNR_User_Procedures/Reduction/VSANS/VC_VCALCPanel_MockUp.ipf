@@ -280,7 +280,7 @@ Proc DrawVCALC_Panel()
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
 	PopupMenu VCALCCtrl_0f,proc=VC_SourceAperDiamSelectPopup
 	PopupMenu VCALCCtrl_0g,pos={sc*263,(302-50)*sc},size={sc*141,20*sc},title="source height"
-	PopupMenu VCALCCtrl_0g,mode=1,popvalue="10 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceDiam
+	PopupMenu VCALCCtrl_0g,mode=1,popvalue="10 cm",value= root:Packages:NIST:VSANS:VCALC:gSourceApertureWidth
 	PopupMenu VCALCCtrl_0g,proc=VC_SourceAperDiamSelectPopup,disable=2
 
 // tab(1) - Sample conditions, initially not visible
@@ -660,7 +660,14 @@ End
 
 
 
-
+//
+// see V_GuideSliderProc() for apossible workaround
+////
+//	String/G gSourceDiam = "6.0 cm;"
+//	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
+//	String/G gSourceApertureWidth = "1 mm;2 mm;3 mm;"
+//	String/G gSourceApertureHeight = "100 mm;200 mm;"
+//	
 // when a given shape is chosen udate the size parameters
 Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
@@ -672,26 +679,40 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 			
 			SVAR diam= root:Packages:NIST:VSANS:VCALC:gSourceDiam
 			SVAR wid= root:Packages:NIST:VSANS:VCALC:gSourceApertureWidth
-			SVAR ht= root:Packages:NIST:VSANS:VCALC:gSourceApertureHeight
+			
+			String apStr
 
 			strswitch(popStr)
 				case "circular":
-					PopupMenu VCALCCtrl_0f,title="source diam",value=root:Packages:NIST:VSANS:VCALC:gSourceDiam
+					ControlInfo VCALCCtrl_0a		// the guide slider
+					if(V_Value == 0)
+						apStr = "0.75 cm;1.5 cm;3.0 cm;"
+						diam = apStr			// change the global value
+						PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
+					else
+						apStr = "6.0 cm"
+						diam = apStr
+						PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="6.0 cm"
+					endif
 					
 					PopupMenu VCALCCtrl_0g,disable=1
 					
 					break
 				case "rectangular":
-					PopupMenu VCALCCtrl_0f,title="source height"
-					PopupMenu VCALCCtrl_0f,value=root:Packages:NIST:VSANS:VCALC:gSourceApertureHeight
-					
-					PopupMenu VCALCCtrl_0g,disable=0,title="source width"
-					PopupMenu VCALCCtrl_0g,value=root:Packages:NIST:VSANS:VCALC:gSourceApertureWidth
+					apStr = "100 mm;200 mm;"
+					diam = apStr
+					PopupMenu VCALCCtrl_0f,title="source height",mode=1,popvalue="100 mm"
+
+					apStr = "1 mm;2 mm;3 mm;"
+					wid = apStr
+					PopupMenu VCALCCtrl_0g,disable=0,title="source width",mode=1,popvalue="1 mm"
 					
 					break
 				case "converging pinholes":
-					PopupMenu VCALCCtrl_0f,title="source diam",value=root:Packages:NIST:VSANS:VCALC:gSourceDiam
-					
+					apStr = "0.75 cm;1.5 cm;3.0 cm;"
+					diam = apStr			// change the global value
+					PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
+
 					PopupMenu VCALCCtrl_0g,disable=1
 					break
 					
@@ -711,7 +732,11 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 End
 
 
-
+//
+//	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
+//	String/G gSampleApertureWidth = "1 mm;2 mm;3 mm;"
+//	String/G gSampleApertureHeight = "100 mm;200 mm;"
+//
 
 // when a given shape is chosen udate the size parameters
 Function VC_SampleApShapeSelectPopup(pa) : PopupMenuControl
@@ -722,25 +747,35 @@ Function VC_SampleApShapeSelectPopup(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
+			SVAR diam = root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
+			SVAR wid = root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
 
+			String  apStr
+			
 			strswitch(popStr)
 				case "circular":
-					PopupMenu VCALCCtrl_1c,title="Aperture Diam",value=root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
-					
+					apStr = "1.27;1.59;1.0;2.0;"
+					diam = apStr
+					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+
 					PopupMenu VCALCCtrl_1f,disable=1
 					
 					break
 				case "rectangular":
-					PopupMenu VCALCCtrl_1c,title="Aperture Height"
-					PopupMenu VCALCCtrl_1c,value=root:Packages:NIST:VSANS:VCALC:gSampleApertureHeight
-					
-					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width"
-					PopupMenu VCALCCtrl_1f,value=root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
-					
+					apStr = "100 mm;200 mm;300 mm"
+					diam = apStr
+					PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="100 mm"
+
+					apStr = "1 mm;2 mm;3 mm"
+					wid = apStr
+					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="1 mm"
+
 					break
 				case "converging pinholes":
-					PopupMenu VCALCCtrl_1c,title="Aperture Diam",value=root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
-					
+					apStr = "1.27;1.59;1.0;2.0;"
+					diam = apStr
+					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+
 					PopupMenu VCALCCtrl_1f,disable=1
 					break
 					
