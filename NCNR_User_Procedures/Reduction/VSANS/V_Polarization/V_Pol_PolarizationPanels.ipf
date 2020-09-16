@@ -11,14 +11,14 @@
 // contextual menu in V_DecayPanelHook()
 //
 // --look for the active subwindow T0 (the table)
-// then see if I can do somehting with this information - by putting
+// then see if I can do something with this information - by putting
 // up an appropriate list of files to choose from based on where I am
-// -- get the column lable and switch on this - generating a subset of run numbers
+// -- get the column label and switch on this - generating a subset of run numbers
 //
 // -or- parse all of the metadata to try to fill in the table (and then allow it
 // to be copied over to the real table
 //
-// need a whole host of setch functions to deliver subsets of run numbers based on 
+// need a whole host of search functions to deliver subsets of run numbers based on 
 // which slot they fill in the reduction prcess.
 //
 
@@ -985,7 +985,12 @@ Function V_CalcRowParamButton(ba) : ButtonControl
 			Variable cr1,cr2,cr3,err_cr1,err_cr2,err_cr3
 			Variable muPo,err_muPo,Po,err_Po,Pcell,err_Pcell,Tmaj,err_Tmaj
 			//Variable Te,err_Te,mu,err_mu
-				
+			
+			SVAR gDetStr = root:Packages:NIST:VSANS:Globals:Polarization:Cells:gDecayTransPanel
+			if(strlen(gDetStr) !=2)
+				Abort "The panel string has not been set"
+			endif
+			
 			ControlInfo/W=V_DecayPanel popup_0
 			cellStr = S_Value
 			WAVE w=$("root:Packages:NIST:VSANS:Globals:Polarization:Cells:Decay_"+cellStr)		//the one that is displayed

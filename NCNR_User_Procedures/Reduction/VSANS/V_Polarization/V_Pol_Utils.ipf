@@ -8,16 +8,25 @@
 //
 // Currently I do not make full use of the metadata that is supposed to
 // be in the data files, since what data is stored and where it is stored
-// is clearly different than what I was told. Many changes have apparently 
-// been made without keeping me in the loop. Tough to program effectively.
+// is clearly different than what I was told. 
 //
+// See the list of text tags farther down this file -- these are the 
+// text tags for the different flipper/purupose/intent combinations
+// -- these tags are added to the file label by the GUI (NICE) so that I
+// can rely on them, rather than the current fautly state of the metadata
 //
 
-// TODO:
-// -- add functions to identify the files for the different panels
+
+
+
+// TODO
+// -- once there has been some testing of the accuracy of the labeling of
+// specific files for different panels, I can moce from popup mode to just fill it in
+// without any need for intervention. 
 //
-// *** I also work to build the lists in each of the hook functions in the tables, where I can
-// make decisions about intent based on the table column
+//  Popups now are made column-specific, and this seems to work correctly.
+//
+//
 //
 //-------------------------------
 //
@@ -151,8 +160,10 @@ Function/S V_ListForDecayPanel(state,intent)
 	else
 		stateStr="HeOUT"
 	endif
+
+	str =  V_PolFileList_LabPurInt(stateStr,purpose,intent)
 	
-	str = V_getPurposeIntentLabelList(purpose,intent,stateStr,method)
+//	str = V_getPurposeIntentLabelList(purpose,intent,stateStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
 	
@@ -161,129 +172,6 @@ end
 
 
 
-// "purpose" string, or grep string
-// state is the state of the back polarizer (in|out) (1|0)
-// intent
-//
-// *** currently, intent and purpose are filtered quickly from the file catalog
-// -- second, the state of the polarizer (a string) is located by searching the file label
-// ( the state should ideally be found from the metadata too, not the file lablel)
-//
-//
-// method is the method to use to find the file
-// 0 = (default) is to use the file catalog (= fastest)
-// 1 = Grep (not terribly slow)
-// 2 = read every file (bad choice)
-//
-//
-//	TODO: replace the "method=0" with a strsearch of the sample label
-//  x- the grep seems rather slow. reading the fields directly is not too bad
-//    but depends on whether there was a recent save.
-//
-//
-Function/S V_getPurposeIntentLabelList(purpose,intent,labelStr,method)
-	String purpose,intent,labelStr
-	Variable method
-	
-	Variable ii,num,np
-	String list="",item="",fname,newList="",tmpLbl
-	
-
-	
-	
-// get a short list of the files with the correct purpose
-
-	// get the list from the file catalog
-	
-	WAVE/T fileNameW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames
-	WAVE/T purposeW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
-	WAVE/T labelsW = root:Packages:NIST:VSANS:CatVSHeaderInfo:Labels
-	
-	list = V_getFileIntentPurposeList(intent,purpose,method)
-
-	np = itemsinList(list)
-	for(ii=0;ii<np;ii+=1)
-		item=StringFromList(ii, list)
-		tmpLbl = V_getSampleDescription(item)
-			if(method==0)
-				if(strsearch(tmpLbl,labelStr,0) > 0)
-					newList += item + ";"
-				endif
-			endif
-	endfor
-	
-//	np = numpnts(purposeW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
-//	for(ii=0;ii<np;ii+=1)
-//		if(cmpstr(purposeW[ii],purpose)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
-//			list += fileNameW[ii] + ";"
-//			
-//			if(method==0)
-//				if(strsearch(labelsW[ii],stateStr,0) > 0)
-//					newList += fileNameW[ii] + ";"
-//				endif
-//			endif
-//			
-//		endif
-//		
-//	endfor
-//	
-	if(method==0)
-		return(sortList(newList,";",0))
-	endif
-	
-	// other methods, proceed to use the string to pare the list down
-	
-	List = SortList(List,";",0)
-
-
-//now pare down the list (reading each of the files) using the field:
-// V_getBackPolarizer_inBeam(fname) (returns 0|1)
-
-//	PathInfo catPathName
-//	String path = S_path
-//	Variable fileState,state
-//	
-//	if(method==2)	
-//		newList = ""
-//		num=ItemsInList(list)
-//		
-//		for(ii=0;ii<num;ii+=1)
-//			item=StringFromList(ii, list , ";")
-//			fname = path + item
-//			fileState = V_getBackPolarizer_inBeam(fname)
-//			if(fileState == state)
-//				newList += item + ";"
-//			endif
-//		endfor	
-//	endif
-
-
-// OR-- by using grep and an appropriate string
-
-// this greps the whole file, not just the sample label
-//
-	
-	// use Grep
-	if(method == 1)
-		newList = ""
-		num=ItemsInList(list)
-
-		
-		for(ii=0;ii<num;ii+=1)
-			item=StringFromList(ii, list , ";")
-			Grep/P=catPathName/Q/E=("(?i)"+labelStr) item
-			if( V_value )	// at least one instance was found
-	//				Print "found ", item,ii
-				newList += item + ";"
-			endif
-		endfor	
-
-	endif
-
-
-	
-	return(newList)
-end
 
 
 // TODO:
@@ -318,8 +206,9 @@ Function/S V_ListForFlipperPanel(flipStr,intent)
 	method = 0
 	purpose = "TRANSMISSION"
 	
-	
-	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+	str =  V_PolFileList_LabPurInt(flipStr,purpose,intent)
+			
+//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
 	
@@ -360,8 +249,8 @@ Function/S V_ListForCorrectionPanel(flipStr,intent)
 	method = 0
 	purpose = "SCATTERING"
 	
-	
-	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
+	str =  V_PolFileList_LabPurInt(flipStr,purpose,intent)
+//	str = V_getPurposeIntentLabelList(purpose,intent,flipStr,method)
 
 	newList = V_ConvertFileListToNumList(str)
 	
@@ -447,4 +336,117 @@ Function/S V_ConvertFileListToNumList(list)
 	endfor
 	
 	return(newList)
+End
+
+
+//(Blocked beam should always be OUT unless otherwise noted)
+
+//Run type: FullPol (assumption is SM in Front and 3He in Back)
+
+//HeBB (frontPolarizer OUT, backPolarizer OUT, BlockBeam IN)
+//HeOUT (frontPolarizer OUT, backPolarizer OUT)	Purpose="HE3"
+//HeIN (frontPolarizer OUT, backPolarizer UP)	Purpose="HE3"
+//T_UU (frontPolarizer UP, backPolarizer UP)		Purpose="TRANSMISSION"
+//T_DU (frontPolarizer DOWN, backPolarizer UP)		Purpose="TRANSMISSION"
+//T_DD (frontPolarizer DOWN, backPolarizer DOWN)		Purpose="TRANSMISSION"
+//T_UD (frontPolarizer UP, backPolarizer DOWN)		Purpose="TRANSMISSION"
+//T_SM (frontPolarizer UP, backPolarizer OUT)		Purpose="TRANSMISSION"
+//S_UU (frontPolarizer UP, backPolarizer UP)		Purpose="SCATTERING"
+//S_DU (frontPolarizer DOWN, backPolarizer UP)		Purpose="SCATTERING"
+//S_DD (frontPolarizer DOWN, backPolarizer DOWN)		Purpose="SCATTERING"
+//S_UD (frontPolarizer UP, backPolarizer DOWN)		Purpose="SCATTERING"
+//BB_FP (frontPolarizer UP, backPolarizer OUT, BlockBeam IN) Intent="Blocked Beam", Purpose="SCATTERING"
+//
+
+//Run type: HalfPol3He (assumption is 3He in Back)
+
+//HeBB (frontPolarizer OUT, backPolarizer OUT, BlockBeam IN)
+//HeOUT (frontPolarizer OUT, backPolarizer OUT)
+//HeIN (frontPolarizer OUT, backPolarizer UP)
+//T_HeO (frontPolarizer OUT, backPolarizer OUT)
+//S_HeU (frontPolarizer OUT, backPolarizer UP)
+//S_HeD (frontPolarizer OUT, backPolarizer DOWN)
+//BB_He (frontPolarizer OUT, backPolarizer OUT, BlockBeam IN)
+//
+
+//Run type: HalfPolSM (assumption is SM in Front)
+
+//T_SM (frontPolarizer UP, backPolarizer OUT)
+//S_SMU (frontPolarizer UP, backPolarizer OUT)
+//S_SMD (frontPolarizer DOWN, backPolarizer OUT)
+//BB_SM (frontPolarizer UP, backPolarizer OUT, BlockBeam IN)
+//
+//Run type: NoPol
+//T_NP (frontPolarizer OUT, backPolarizer OUT)
+//S_NP (frontPolarizer OUT, backPolarizer OUT)
+//BB_NP (frontPolarizer OUT, backPolarizer OUT, BlockBeam IN)
+
+
+// for these list-generating functions:
+// flipStr is the tag string in the file label
+// purpose
+// intent 	are both from the file header
+//
+// *** currently, intent and purpose are filtered quickly from the file catalog
+// -- second, the state of the polarizer (a string) is located by searching the file label
+// ( the state should ideally be found from the metadata too, not the file label)
+// -- but this label is placed by the GUI and should be reliable
+//
+//
+// Only one method is the method to use to find the file
+// 0 = (default) is to use the file catalog (= fastest)
+// NO-1 = Grep (not terribly slow)
+// NO-2 = read every file (bad choice)
+//
+
+
+
+Function/S V_PolFileList_LabPur(labelStr,purpose)
+	String labelStr,purpose
+
+	String list
+	
+	list = V_getFilePurposeList(purpose,0)
+
+	list = V_getLabelList(list,labelStr)		//label matches in purp. list
+	
+//	list = V_Pol_List(frontPol,backPol,purpose)
+	
+	return(list)
+end
+
+Function/S V_PolFileList_LabPurInt(labelStr,purpose,intent)
+	String labelStr,purpose,intent
+
+	String list
+	
+	list = V_getFileIntentPurposeList(intent,purpose,0)
+	list = V_getLabelList(list,labelStr)		//label matches in PI list
+	
+//	list = V_Pol_List(frontPol,backPol,purpose)
+	
+	return(list)
+end
+
+//
+// a short list of the files with the correct purpose is passed in
+// - then the label is searched for the correct labelStr
+//
+Function/S V_getLabelList(list,labelStr)
+	String list,labelStr
+	
+	Variable ii,num,np
+	String item="",fname,newList="",tmpLbl
+	
+
+	np = itemsinList(list)
+	for(ii=0;ii<np;ii+=1)
+		item=StringFromList(ii, list)
+		tmpLbl = V_getSampleDescription(item)
+		if(strsearch(tmpLbl,labelStr,0) > 0)
+			newList += item + ";"
+		endif
+	endfor
+
+	return(sortList(newList,";",0))
 End
