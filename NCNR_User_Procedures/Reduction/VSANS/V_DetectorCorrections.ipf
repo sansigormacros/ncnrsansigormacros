@@ -1860,7 +1860,7 @@ Function V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
 		// generate the proper efficiency wave, at lambda
 		NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
 		Print "recalculating efficiency table ..."
-		V_TubeShadowEfficiencyTables_oneLam(lambda)
+		V_TubeShadowEfficTableOneLam(lambda)
 		// declare the wave
 		Wave/Z effW = root:Packages:NIST:VSANS:Globals:Efficiency:eff
 	else
@@ -1874,7 +1874,7 @@ Function V_TubeEfficiencyShadowCorr(w,w_err,fname,detStr,destPath)
 		else
 			// no, regenerate the efficiency and then proceed (wave already declared)
 			Print "recalculating efficiency table ..."
-			V_TubeShadowEfficiencyTables_oneLam(lambda)
+			V_TubeShadowEfficTableOneLam(lambda)
 		endif
 	endif
 	
@@ -2006,7 +2006,10 @@ end
 // -- detector correction checks the note, and recalculates the table if needed
 // (calculation takes approx 5 seconds)
 //
-Function V_TubeShadowEfficiencyTables_oneLam(lambda)
+//
+// reduced the length of the function name to avoid issues with Igor 7 (31 char max)
+//
+Function V_TubeShadowEfficTableOneLam(lambda)
 	Variable lambda
 		
 // storage location for tables

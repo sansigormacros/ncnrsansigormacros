@@ -1663,11 +1663,14 @@ Function V_getDet_beam_center_y_pix(fname,detStr)
 	return(V_getRealValueFromHDF5(fname,path))
 End
 
+// changed behavior 15 SEP 2020
+// added /Z flag to not generate error if data (highRes) is missing, but 
+// to return a null wave as a flag that the data is missing (as designed by NICE)
 Function/WAVE V_getDetectorDataW(fname,detStr)
 	String fname,detStr
 
 	String path = "entry:instrument:detector_"+detStr+":data"
-	WAVE w = V_getRealWaveFromHDF5(fname,path)
+	WAVE/Z w = V_getRealWaveFromHDF5(fname,path)
 
 	return w
 End

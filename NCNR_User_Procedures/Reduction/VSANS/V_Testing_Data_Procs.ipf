@@ -358,4 +358,70 @@ End
 
 
 
+Proc pV_DetPanelCountReport(fname)
+	String fname
+	
+	V_DetPanelCountReport(fname)
+end
 
+// test function to print out the detector counts as reported in the file:
+//
+// control/detector_counts
+//
+// integrated_count for each panel
+//
+// actual sum of the data on each panel
+//
+Function V_DetPanelCountReport(fname)
+	String fname
+	
+	Variable ctrlCts
+	Variable ctFL,ctFR,ctFT,ctFB,ctB
+	Variable ctML,ctMR,ctMT,ctMB
+	Variable sumFL,sumFR,sumFT,sumFB,sumB
+	Variable sumML,sumMR,sumMT,sumMB
+	
+	
+	ctrlCts = V_getDetector_Counts(fname)
+	ctFL = V_getDet_IntegratedCount(fname,"FL")
+	ctFR = V_getDet_IntegratedCount(fname,"FR")
+	ctFT = V_getDet_IntegratedCount(fname,"FT")
+	ctFB = V_getDet_IntegratedCount(fname,"FB")
+	ctML = V_getDet_IntegratedCount(fname,"ML")
+	ctMR = V_getDet_IntegratedCount(fname,"MR")
+	ctMT = V_getDet_IntegratedCount(fname,"MT")
+	ctMB = V_getDet_IntegratedCount(fname,"MB")	
+	ctB = V_getDet_IntegratedCount(fname,"B")	
+	
+	WAVE w=V_getDetectorDataW(fname,"FL")
+	sumFL = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"FR")
+	sumFR = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"FT")
+	sumFT = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"FB")
+	sumFB = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"ML")
+	sumML = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"MR")
+	sumMR = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"MT")
+	sumMT = sum(w)
+	WAVE w=V_getDetectorDataW(fname,"MB")
+	sumMB = sum(w)
+	WAVE/Z w=V_getDetectorDataW(fname,"B")
+	sumB = sum(w)		
+	
+	Print "control/detector_counts = ",ctrlCts
+	Printf "Integrated count (FL, FR, FT, FB) = %g\t\t%g\t\t%g\t\t%g\r",ctFL,ctFR,ctFT,ctFB
+	Printf "Integrated count (ML, MR, MT, MB) = %g\t\t%g\t\t%g\t\t%g\r",ctML,ctMR,ctMT,ctMB
+	Printf "Integrated count (B) = %g\r",ctB
+		
+	Printf "Summed count (FL, FR, FT, FB) = %g\t\t%g\t\t%g\t\t%g\r",sumFL,sumFR,sumFT,sumFB
+	Printf "Summed count (ML, MR, MT, MB) = %g\t\t%g\t\t%g\t\t%g\r",sumML,sumMR,sumMT,sumMB
+	Printf "Summed count (B) = %g\r",sumB
+	
+	
+	
+	return(0)
+End

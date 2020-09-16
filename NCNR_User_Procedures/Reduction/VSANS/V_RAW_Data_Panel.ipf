@@ -236,7 +236,7 @@ Window VSANS_DataPanel() : Panel
 	
 	Make/O/D tmp_asdf
 	// for back panels (in pixels)	
-//	Display/W=(50,185,545,620)/HOST=# tmp_asdf 
+//	Display/W=(50,185,517,620)/HOST=# tmp_asdf 
 	Display/W=(50*sc,185*sc,517*sc,620*sc)/HOST=# tmp_asdf 
 	RenameWindow #,det_panelsB
 	ModifyGraph mode=2		// mode = 2 = dots
@@ -330,16 +330,19 @@ Function VSANSDataHook(s)
 			
 			// is the mouse location within the "main" display window?
 			// if so, do something, if not, do nothing?
-			// right now, the "main" display is at (50,185,545,620). its name depends on the active tab
+			// right now, the "main" display is at (50,185,517,620). its name depends on the active tab
 			
 //				xloc = s.mouseLoc.h
 //				yloc = s.mouseLoc.v
 
 //			if out of bounds, exit now
 //		TODO - currently the values are hard-wired. eliminate this later if the size of the graph changes
-			if(s.mouseLoc.h < 50*sc || s.mouseLoc.h > 545*sc || s.mouseLoc.v < 185*sc || s.mouseLoc.v > 620*sc)
-				break
-			endif	
+// SEP 2020 ditched the s.mouseLoc read -- can't seem to rely on these values since I don't
+// understand how they relate to the graph position. I'll just have to tolerate the readings that
+// are out-of-bounds
+//			if(s.mouseLoc.h < 50*sc || s.mouseLoc.h > 517*sc || s.mouseLoc.v < 185*sc || s.mouseLoc.v > 620*sc)
+//				break
+//			endif	
 			
 //			if(in bounds)
 //				get the point location
@@ -457,7 +460,11 @@ Function VSANSDataHook(s)
 					//  this - it sets the globals to display to the pixel values, unscaled
 					xloc = testX
 					yloc = testY
-					
+//
+//					xloc = xaxval
+//					yloc = yaxval
+//					xloc = s.mouseLoc.h
+//					yloc = s.mouseLoc.v									
 				endif	//end if(mouse is over a detector panel)
 				
 

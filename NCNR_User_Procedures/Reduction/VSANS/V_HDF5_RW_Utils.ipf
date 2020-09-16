@@ -107,6 +107,64 @@ Function V_LoadHDF5Data(file,folder)
 
 	if(cmpstr(folder,"RAW")==0)
 	
+		// 15 SEP 2020
+		// with the change in how NICE handles data from detectors that are not active,
+		// the data for the highRes detector is no longer written out as dummy values
+		// when it is not in use. Since this generates errors in the reduction
+		// (display, transmission, + other?) - I will generate my own fake data to fill in
+		// the missing data. The data is only filled into the loaded data set, and does not
+		// add the fake data to the data stored on disk (although this is a possibility for the 
+		// future)
+		
+		// ? do I also set the flag here to ignore the back detector? I probably should, since
+		// the data is bogus (one reason NICE doesn't write it out). I may choose to leave the
+		// flag in the hands of the user. Better for debugging since I have control
+		
+		// does the data wave exist?
+		// check for the data wave directly in the file. The data wave in the RAW data folder
+		// may exist if the data display is open and folder is simply overwritten
+		WAVE/Z testB = V_getDetectorDataW(file,"B")
+		if(WaveExists(testB) == 0)		// null wave reference
+			
+			// generate the fake data
+			Make/O/I/N=(680,1656) root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data	= 0		
+			WAVE dataB = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data
+			ii=0
+			do
+				dataB[ii][ii] = 1
+				dataB[20-ii][ii] = 1
+				ii += 1
+			while(ii<20)
+			
+			// beam center (x,y) is also not written out
+			// use put function to work on the local folder only, not the data on disk
+			// must make the wave first, since it doesn't exist
+			// (could write the value in make, but use the call for completeness)
+			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:beam_center_x	= 0		
+			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:beam_center_y	= 0		
+			V_putDet_beam_center_x("RAW","B",340)
+			V_putDet_beam_center_y("RAW","B",828)
+			
+			// the integrated count is not written out - fake this == 1
+			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:integrated_count	= 0		
+			V_putDet_IntegratedCount("RAW","B",1)
+
+			
+//			// set the ignore flag
+//			NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+//			gIgnoreDetB = 1
+	
+//			// write the fake data out to the file
+			// important to write data now, since the data is still integer
+//			V_writeDetectorData(file,"B",dataB)
+//			V_writeDet_beam_center_x(file,"B",340)
+//			V_writeDet_beam_center_y(file,"B",828)
+//			V_writeDet_IntegratedCount(file,"B",1)
+
+			
+		endif
+		///////
+	
 		// (DONE) -- once I get "real" data, get rid of this call to force the data to be proper dimensions.
 //		V_RedimFakeData()
 		
@@ -735,7 +793,7 @@ Function/WAVE V_getRealWaveFromHDF5(fname,path)
 	endif
 		
 // this should exist now - if not, I need to see the error
-	Wave wOut = $(ksBaseDFPath+folderStr+":"+path)
+	Wave/Z wOut = $(ksBaseDFPath+folderStr+":"+path)
 	
 	return wOut
 	

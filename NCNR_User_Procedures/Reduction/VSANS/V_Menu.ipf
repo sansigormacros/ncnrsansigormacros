@@ -79,6 +79,8 @@ Menu "VSANS"
 		"Recalculate Smearing Matrix",V_RecalcWeights()
 		"Force qTrap Calculation",V_ForceQTrap()
 		"Force Matrix Calculation",V_ForceMatrix()
+		"-"
+		"Detector Panel Count Report",pV_DetPanelCountReport()
 		//
 //		"Setup_VSANS_DIV_Struct"
 //		"Save_VSANS_DIV_Nexus"
