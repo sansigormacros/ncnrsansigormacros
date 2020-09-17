@@ -664,10 +664,10 @@ Function V_FillListBox5(listWave,selWave)
 	listWave[5][2] = V_getBackPolarizer_name(fname)	
 
 	listWave[6][1] = "Opacity at 1 A"
-	listWave[6][2] = num2str(V_getBackPolarizer_opacityAt1Ang(fname))	
+	listWave[6][2] = num2str(V_getBackPolarizer_opac1A(fname))	
 
 	listWave[7][1] = "Opacity error"
-	listWave[7][2] = num2str(V_getBackPolarizer_opacityAt1Ang_err(fname))	
+	listWave[7][2] = num2str(V_getBackPolarizer_opac1A_err(fname))	
 
 	listWave[8][1] = "tE"
 	listWave[8][2] = num2str(V_getBackPolarizer_tE(fname))	
@@ -1512,12 +1512,12 @@ Function V_WriteHeaderForPatch_5(fname)
 
 	if ((selWave[6][0] & 2^4) != 0)		//"Opacity at 1 A"
 		val = str2num(listWave[6][2])
-		err = V_writeBackPolarizer_opacityAt1Ang(fname,val)
+		err = V_writeBackPolarizer_opac1A(fname,val)
 	endif		
 
 	if ((selWave[7][0] & 2^4) != 0)		//"Opacity error" 
 		val = str2num(listWave[7][2])
-		err = V_writeBackPolarizer_opacityAt1Ang_err(fname,val)
+		err = V_writeBackPolarizer_opac1A_err(fname,val)
 	endif		
 
 	if ((selWave[8][0] & 2^4) != 0)		//"tE"
