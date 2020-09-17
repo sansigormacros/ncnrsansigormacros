@@ -2108,7 +2108,7 @@ end
 // TESTING function to generate the tables for interpolation
 // and various combinations of the corrections for plotting
 //
-Function V_TubeShadowEfficiencyTables_withX()
+Function V_TubeShadowEffTables_withX()
 
 
 	Variable lambda

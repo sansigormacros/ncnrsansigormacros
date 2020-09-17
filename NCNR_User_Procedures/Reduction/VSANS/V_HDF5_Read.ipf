@@ -621,14 +621,14 @@ Function/S V_getBackPolarizer_name(fname)
 	return(V_getStringFromHDF5(fname,path,num))
 End
 
-Function V_getBackPolarizer_opacityAt1Ang(fname)
+Function V_getBackPolarizer_opac1A(fname)
 	String fname
 	
 	String path = "entry:instrument:backPolarizer:opacityAt1Ang"	
 	return(V_getRealValueFromHDF5(fname,path))
 end
 
-Function V_getBackPolarizer_opacityAt1Ang_err(fname)
+Function V_getBackPolarizer_opac1A_err(fname)
 	String fname
 	
 	String path = "entry:instrument:backPolarizer:opacityAt1AngStd"	

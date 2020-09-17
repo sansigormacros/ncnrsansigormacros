@@ -1427,7 +1427,7 @@ Function V_writeBackPolarizer_inBeam(fname,val)
 	return(err)
 end
 
-Function V_writeBackPolarizer_innerRadius(fname,val)
+Function V_writeBackPolarizer_innerRad(fname,val)
 	String fname
 	Variable val
 	
@@ -1478,7 +1478,7 @@ Function V_writeBackPolarizer_name(fname,str)
 	return(err)
 End
 
-Function V_writeBackPolarizer_opacityAt1Ang(fname,val)
+Function V_writeBackPolarizer_opac1A(fname,val)
 	String fname
 	Variable val
 	
@@ -1503,7 +1503,7 @@ Function V_writeBackPolarizer_opacityAt1Ang(fname,val)
 	return(err)
 end
 
-Function V_writeBackPolarizer_opacityAt1Ang_err(fname,val)
+Function V_writeBackPolarizer_opac1A_err(fname,val)
 	String fname
 	Variable val
 	
@@ -1528,7 +1528,7 @@ Function V_writeBackPolarizer_opacityAt1Ang_err(fname,val)
 	return(err)
 end
 
-Function V_writeBackPolarizer_outerRadius(fname,val)
+Function V_writeBackPolarizer_outerRad(fname,val)
 	String fname
 	Variable val
 	
