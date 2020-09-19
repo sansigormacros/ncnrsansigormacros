@@ -1,5 +1,5 @@
 # ncnrsansigormacros
-This is the central repository for the NIST Center for Neutron Research reduction software for SANS, USANS, and VSANS. This repository was migrated from svn on April 10, 2020.
+This is the NIST Center for Neutron Research's central software repository for reduction of SANS, USANS, and VSANS data. This repository was migrated from svn on April 10, 2020.
 
 ## About
 The NCNR SANS reduction macros run in the commercial software suite Igor Pro. You do not need to purchase a license of Igor Pro to run the macros, the trial version will allow macros to operate.
