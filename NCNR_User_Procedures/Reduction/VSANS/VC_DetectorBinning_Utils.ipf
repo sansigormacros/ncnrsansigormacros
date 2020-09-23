@@ -170,7 +170,7 @@ Function FillPanel_wModelData(det,qTot,type)
 	det = tmpInten
 
 // if I want "absolute" scale -- then I lose the integer nature of the detector (but keep the random)
-//	det /= trans*thick*pixSizeX*pixSizeY/(sdd)^2*imon
+	det /= trans*thick*pixSizeX*pixSizeY/(sdd)^2*imon
 
 	
 	KillWaves/Z tmpInten,tmpSig,prob_i	

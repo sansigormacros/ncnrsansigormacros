@@ -24,7 +24,6 @@ End
 #include "Main_USANS",version >= 2.20	
 #include "PlotUtilsMacro_v40",version >= 2.20
 #include "NIST_XML_v40"					//cansas file writer
-#include "WriteUSANSNXcanSAS"          //NXcanSAS file writer
 #include "USANS_SlitSmearing_v40"	
 #include "WriteUSANSData",version >= 2.20	
 #include "LakeDesmearing_JB",version >= 2.20	
@@ -52,4 +51,4 @@ End
 #include "PlotManager_v40"
 
 #include "NIST_NXcanSAS_v709"
-#include "WriteUSANSNXcanSAS"
+#include "WriteUSANSNXcanSAS"          //NXcanSAS file writer

@@ -292,11 +292,27 @@ Function VC_sourceApertureDiam()
 End
 
 // reports the value in [cm]
+//
+// if the aperture is non-circular, report 1.27 cm
+// TODO -- work out the math for a better approxiamtion of the shadowing
+// -- especially for a rectangular aperture.
+//
 Function VC_sampleApertureDiam()
 
-	ControlInfo/W=VCALC VCALCCtrl_1c
-	Variable val = str2num(S_Value)
+	ControlInfo VCALCCtrl_1b
+	
+	if(cmpstr(S_Value,"circular") == 0)
 
+		ControlInfo/W=VCALC VCALCCtrl_1c
+		Variable val = str2num(S_Value)
+
+	else
+		//non-circular sample aperture
+		// report a dummy value of 1.27 cm
+		Print "using a dummy effective diameter of 1.27 cm"
+		val = 1.27
+		
+	endif
 	return(val)
 End
 
@@ -981,7 +997,8 @@ Function V_beamIntensity()
 	Variable lambda,phi_0
 	Variable lambda_width
 	Variable guide_loss,t_guide,t_filter,t_total,t_special
-
+	Variable a1Area,a2Area
+	
 	NVAR gBeamInten = root:Packages:NIST:VSANS:VCALC:gBeamIntensity
  
 // TODO
@@ -998,11 +1015,15 @@ Function V_beamIntensity()
  	lambda_width = VCALC_getWavelengthSpread()
 	l1 = VC_calcSSD()
     
+    
+   a1Area = VC_SourceApArea()
+   a2Area = VC_SampleApArea()
+   
     // TODO verify that these values are in cm
-	a1 = VC_sourceApertureDiam()
+//	a1 = VC_sourceApertureDiam()
     
 	// sample aperture diam [cm]
-	a2 = VC_sampleApertureDiam()
+//	a2 = VC_sampleApertureDiam()
     
 //	alpha = (a1+a2)/(2*l1)	//angular divergence of beam
 //	f = l_gap*alpha/(2*guide_width)
@@ -1014,12 +1035,14 @@ Function V_beamIntensity()
 	t_total = t_special*t_guide*t_filter
 
     
-	as = pi/4*a2*a2		//area of sample in the beam
+//	as = pi/4*a2*a2		//area of sample in the beam
+	as = a2Area			//area of sample in the beam
 	d2_phi = phi_0/(2*pi)
 	d2_phi *= exp(4*ln(lambda_t/lambda))
 	d2_phi *= exp(-1*(lambda_t*lambda_t/lambda/lambda))
 
-	solid_angle = pi/4* (a1/l1)*(a1/l1)
+//	solid_angle = pi/4* (a1/l1)*(a1/l1)
+	solid_angle = a1Area/(l1*l1)
 
 	retVal = as * d2_phi * lambda_width * solid_angle * t_total
 
@@ -1028,6 +1051,93 @@ Function V_beamIntensity()
 	
 	return (retVal)
 end
+
+
+// return the area (cm)^2 of the source aperture
+//
+Function VC_SourceApArea()
+
+	Variable apArea,diam,ht,wid
+	
+	
+	ControlInfo VCALCCtrl_0e
+	String popStr = S_Value
+
+	strswitch(popStr)
+		case "circular":
+			ControlInfo VCALCCtrl_0f
+			sscanf S_Value,"%g cm",diam
+			
+			apArea = pi/4*diam*diam
+						
+			break
+		case "rectangular":
+			ControlInfo VCALCCtrl_0f
+			sscanf S_Value,"%g mm",ht
+			
+			ControlInfo VCALCCtrl_0g
+			sscanf S_Value,"%g mm",wid
+			
+			apArea = ht*wid/100		//convert mm^2 to cm^2
+		
+			break
+		case "converging pinholes":
+			ControlInfo VCALCCtrl_0f
+			sscanf S_Value,"%g cm",diam
+			
+			apArea = pi/4*diam*diam
+			
+			break
+			
+	endswitch	
+	
+	
+	return(apArea)
+End
+
+// return the area (cm)^2 of the sample aperture
+//
+Function VC_SampleApArea()
+
+	Variable apArea,diam,ht,wid
+	
+	ControlInfo VCALCCtrl_1b
+	String popStr = S_Value
+
+
+	strswitch(popStr)
+		case "circular":
+			ControlInfo VCALCCtrl_1c
+			diam = str2num(S_Value)
+			
+			apArea = pi/4*diam*diam
+			
+			break
+		case "rectangular":
+			ControlInfo VCALCCtrl_1c
+			sscanf S_Value,"%g mm",ht
+
+			ControlInfo VCALCCtrl_1f
+			sscanf S_Value,"%g mm",wid
+
+			apArea = ht*wid/100		//convert mm^2 to cm^2			
+
+
+			break
+		case "converging pinholes":
+			ControlInfo VCALCCtrl_1c
+			diam = str2num(S_Value)
+			
+			apArea = pi/4*diam*diam
+
+			break
+			
+	endswitch	
+	
+	return(apArea)
+End
+
+
 
 //
 Function VC_figureOfMerit()

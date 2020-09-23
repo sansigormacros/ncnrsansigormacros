@@ -296,6 +296,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		right = round(V_right)
 		top = round(V_top)
 		bottom = round(V_bottom)
+		
 
 		// detector panel is identified from the (left,top) coordinate (x1,y2)
 		String detStr = V_FindDetStrFromLoc(left,right,bottom,top)		
@@ -305,6 +306,13 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		SVAR gCurDispType = root:Packages:NIST:VSANS:Globals:gCurDispType	
 		// this function will modify the x and y values (passed by reference) as needed to keep on the panel
 		V_KeepSelectionInBounds(left,right,bottom,top,detStr,gCurDispType)
+				
+//		left = 3
+//		right = 11
+//		bottom = 56
+//		top = 71
+//		Print "OVERRIDE OF MARQUEE -- NEED TO REPLACE CODE"
+	
 		Print left,right,bottom,top
 			
 		
@@ -323,6 +331,16 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		zsum = 0
 		x_mm_sum = 0
 		y_mm_sum = 0
+
+
+		//
+		// NOTE: SEP 2020. The ii,jj indices for this loop can start at zero if using the 
+		//  original definition and tube values, Then the index*count would be weighted as zero.
+		//
+		// re-wrote the multiplier in the loop to add one to the index before multiplying,
+		// then subtract 1 from the final centroid to get back to the basis of 0->(n-1). The
+		// ii,jj index values don't need to be changed.
+		//
 		
 		// count over rectangular selection, doing each row, L-R, bottom to top
 		ii = bottom -1
@@ -332,17 +350,21 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 			do
 				jj += 1
 				counts = data[jj][ii]
-				xzsum += jj*counts
-				yzsum += ii*counts
+				xzsum += (jj+1)*counts
+				yzsum += (ii+1)*counts
 				zsum += counts
 				
 				x_mm_sum += data_realDistX[jj][ii]*counts
 				y_mm_sum += data_realDistY[jj][ii]*counts
 			while(jj<right)
 		while(ii<top)
+//		Print "xzsum = ",xzsum
+//		Print "yzsum = ",yzsum
+//		Print "zsum = ",zsum
+
 		
-		xctr = xzsum/zsum
-		yctr = yzsum/zsum
+		xctr = xzsum/zsum - 1
+		yctr = yzsum/zsum - 1
 		
 		x_mm = x_mm_sum/zsum
 		y_mm = y_mm_sum/zsum
