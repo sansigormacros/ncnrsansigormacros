@@ -390,7 +390,7 @@ Window Main_VSANS_Panel()
 	Button MainButtonB,help={"This will generate a condensed CATalog table of all files in a specified local folder"}
 	Button MainButtonC,pos={sc*250,8*sc},size={sc*50,20*sc},proc=V_HelpMainButtonProc,title="Help"
 	Button MainButtonC,help={"Display the help file"}
-	Button MainButtonD,pos={sc*320,8*sc},size={sc*80,20*sc},proc=V_SR_OpenTracTicketPage,title="Feedback"
+	Button MainButtonD,pos={sc*320,8*sc},size={sc*80,20*sc},proc=V_emailFeedback,title="Feedback"
 	Button MainButtonD,help={"Submit bug reports or feature requests"}
 	
 	TabControl MainTab,pos={sc*7,49*sc},size={sc*410,202*sc},tabLabel(0)="Raw Data",proc=V_MainTabProc
@@ -541,12 +541,14 @@ Function V_MainTabProc(name,tab)
 	endfor 
 End
 
-//
-Function V_SR_OpenTracTicketPage(ctrlName)
+//can't point to the gitHub page - you need to have an account to create a ticket
+Function V_emailFeedback(ctrlName)
 	String ctrlName
-	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
+	DoAlert 0,"To submit your feature/question/bug report, email directly to\r\rsteven.kline@nist.gov"
+//	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
 	if(V_flag==1)
-		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
+//		BrowseURL "https://github.com/sansigormacros/ncnrsansigormacros/issues"
+//		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
 	endif
 End
 

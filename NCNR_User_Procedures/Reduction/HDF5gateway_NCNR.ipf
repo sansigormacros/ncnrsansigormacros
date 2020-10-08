@@ -1,6 +1,8 @@
 #pragma rtGlobals=3		// Use modern global access method.
 
+#if (IgorVersion() < 9)
 #include <HDF5 Browser>
+#endif
 
 //
 // !!! search for "SRK" to see what I have modified to work with NCNR files
@@ -957,6 +959,7 @@ Static Function H5GW__OpenHDF5_RO(fileName)
 //		return 0
 //	endif
 
+	Variable err
 	Variable fileID = 0
 	HDF5OpenFile/R/P=home/Z fileID as fileName
 //	HDF5OpenFile/R/P=catPathName/Z fileID as fileName
@@ -967,7 +970,7 @@ Static Function H5GW__OpenHDF5_RO(fileName)
 	if ( 0 )
 		STRUCT HDF5DataInfo di	// Defined in HDF5 Browser.ipf.
 		InitHDF5DataInfo(di)	// Initialize structure.
-		HDF5AttributeInfo(fileID, "/", 1, "file_name", 0, di)
+		err = HDF5AttributeInfo(fileID, "/", 1, "file_name", 0, di)
 		Print di
 	endif
 

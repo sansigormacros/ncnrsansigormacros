@@ -127,10 +127,10 @@ Proc DrawVCALC_Panel()
 
 		PopupMenu popup_b,pos={sc*820,320*sc},size={sc*142,20*sc},title="Binning type",proc=VC_RebinIQ_PopProc
 		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
-		Button AllQ,pos={sc*820,350*sc},size={sc*70,20*sc},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={sc*820,350*sc},size={sc*70,20*sc},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
-		Button Offset,pos={sc*820,380*sc},size={sc*70,20*sc},proc=V_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,pos={sc*820,380*sc},size={sc*70,20*sc},proc=VC_RemoveOffset_ButtonProc,title="No Offset"
 		Button Offset,help={"Remove the offset"}
 
 	else	
@@ -142,10 +142,10 @@ Proc DrawVCALC_Panel()
 
 		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr		
-		Button AllQ,pos={820,320},size={70,20},proc=V_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={820,320},size={70,20},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
-		Button Offset,pos={820,380},size={70,20},proc=V_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,pos={820,380},size={70,20},proc=VC_RemoveOffset_ButtonProc,title="No Offset"
 		Button Offset,help={"Remove the offset"}
 	endif
 
@@ -357,8 +357,10 @@ Proc DrawVCALC_Panel()
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
- 	SetVariable VCALCCtrl_5a,pos={sc*40,(290-50)*sc},size={sc*220,15*sc},title="Neutrons on Sample (imon)"
+ 	SetVariable VCALCCtrl_5a,pos={sc*40,(290-50)*sc},size={sc*260,15*sc},title="Neutrons on Sample (imon)"
 	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
+ 	SetVariable VCALCCtrl_5c,pos={sc*40,(320-50)*sc},size={sc*220,15*sc},title="Counting Time (s)"
+	SetVariable VCALCCtrl_5c,limits={1,1e6,10},disable=1,value=_NUM:600,proc=VC_SimCtTime_SetVarProc
 	PopupMenu VCALCCtrl_5b,pos={sc*40,(260-50)*sc},size={sc*200,20*sc},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
@@ -393,6 +395,26 @@ Function V_VCALCShowMaskButtonProc(ba) : ButtonControl
 	return 0
 End
 
+
+//function to remove the trace offset
+// VCALC#Panels_IQ
+Function VC_RemoveOffset_ButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ModifyGraph/W=VCALC#Panels_IQ muloffset={0,0}
+	
+	return(0)
+End
+
+
+//function to restore the graph axes to full scale, undoing any zooming
+Function VC_AllQ_Plot_1D_ButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	SetAxis/A/W=VCALC#Panels_IQ
+
+	return(0)
+End
 
 Function V_VCALCSaveConfiguration(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -596,6 +618,82 @@ Function VCALCTabProc(name,tab)
 		endif
 	endfor
 	
+	String str,str2
+	Variable val,val2
+	STRUCT WMPopupAction pa
+
+	// if switching to the collim (tab=0) or sample (tab=1) then pop the source shape menu
+	// if it's circular so that the "width" popup is not displayed
+	//
+	// if rectangular, then the proper values (and saved ones) must be displayed
+
+	if(tab == 0)
+		ControlInfo VCALCCtrl_0e
+		if(cmpstr(S_Value,"circular")==0)
+			ControlInfo VCALCCtrl_0f		//the source diam, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			pa.popStr="circular"
+			pa.eventCode = 2		//mouse up
+			VC_SourceApShapeSelectPopup(pa)
+			PopupMenu VCALCCtrl_0f,popvalue=str,mode=val
+
+		endif
+		if(cmpstr(S_Value,"rectangular")==0)
+			ControlInfo VCALCCtrl_0f		//the source width, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			ControlInfo VCALCCtrl_0g		//the source height, could have different value if Ng=0
+			str2=S_Value
+			val2=V_Value
+			
+			pa.popStr="rectangular"
+			pa.eventCode = 2		//mouse up
+			VC_SourceApShapeSelectPopup(pa)
+			
+			PopupMenu VCALCCtrl_0f,popvalue=str,mode=val
+			PopupMenu VCALCCtrl_0g,popvalue=str2,mode=val2
+
+		endif
+	endif
+	
+	// and the same for the sample tab
+	if(tab == 1)
+		ControlInfo VCALCCtrl_1b
+		if(cmpstr(S_Value,"circular")==0)
+			ControlInfo VCALCCtrl_1c		//the sample diam, save the value
+			str=S_Value
+			val = V_Value
+			
+			pa.popStr="circular"
+			pa.eventCode = 2		//mouse up
+			VC_SampleApShapeSelectPopup(pa)
+			PopupMenu VCALCCtrl_1c,popvalue=str,mode=val
+
+		endif
+		
+		if(cmpstr(S_Value,"rectangular")==0)
+			ControlInfo VCALCCtrl_1c		//the source width, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			ControlInfo VCALCCtrl_1f		//the source height, could have different value if Ng=0
+			str2=S_Value
+			val2=V_Value
+			
+			pa.popStr="rectangular"
+			pa.eventCode = 2		//mouse up
+			VC_SampleApShapeSelectPopup(pa)
+			
+			PopupMenu VCALCCtrl_1c,popvalue=str,mode=val
+			PopupMenu VCALCCtrl_1f,popvalue=str2,mode=val2
+
+		endif
+		
+		
+	endif
 	return(0)
 End
 
@@ -705,14 +803,14 @@ End
 
 
 //
-// see V_GuideSliderProc() for apossible workaround
+// see V_GuideSliderProc() for a possible workaround
 ////
 //	String/G gSourceDiam = "6.0 cm;"
 //	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
 //	String/G gSourceApertureWidth = "1 mm;2.5 mm;5 mm;"
 //	String/G gSourceApertureHeight = "100 mm;150 mm;"
 //	
-// when a given shape is chosen udate the size parameters
+// when a given shape is chosen update the size parameters
 Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -1114,8 +1212,39 @@ Function VC_Lambda_SetVarProc(sva) : SetVariableControl
 	return 0
 End
 
+
+// 
+
+//
+// setVar for the simulation counting time
+//
+Function VC_SimCtTime_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+
+			// calc new iMon
+			Variable iMon = V_beamIntensity() * dval
+	//		Print iMon
+			SetVariable VCALCCtrl_5a,value=_NUM:iMon			//display the value in the iMon control
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 //
 // setVar for the simulation monitor count
+//
 //
 Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
@@ -1128,6 +1257,12 @@ Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 			String sval = sva.sval
 
 //			Recalculate_AllDetectors()		
+
+			// calc new count time
+			Variable ctTime = dval/V_beamIntensity()
+	//		Print ctTime
+			SetVariable VCALCCtrl_5c,value=_NUM:ctTime			//display the value in the ctTime control				
+				
 				
 			break
 		case -1: // control being killed
@@ -1975,7 +2110,7 @@ Function V_BeamStopDiamDisplay(detStr)
 
 	NVAR val = root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
 
-	val = VC_beamstopDiam(detStr)/2.54		//return the value in inches
+	val = VC_beamstopDiam(detStr)		//returns the value in inches
 
 	return(0)
 End

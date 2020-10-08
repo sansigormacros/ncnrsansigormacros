@@ -2,7 +2,9 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+#if (IgorVersion() < 9)
 #include <HDF5 Browser>
+#endif
 
 //************************
 // Vers 1.15 20171003

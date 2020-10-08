@@ -299,6 +299,13 @@ End
 //
 Function VC_sampleApertureDiam()
 
+//// if Converging Pinholes preset, return a tiny value for the sample aperture
+//	ControlInfo popup_a
+//	if(cmpstr(S_Value,"Converging Pinholes")==0)
+//		return(0.1)
+//	endif
+	
+	
 	ControlInfo VCALCCtrl_1b
 	
 	if(cmpstr(S_Value,"circular") == 0)
@@ -544,6 +551,10 @@ End
 //
 Function VC_Preset_WhiteBeam()
 
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 
+	
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="White Beam"
 	
@@ -556,6 +567,20 @@ Function VC_Preset_WhiteBeam()
 // wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2//	,noedit=0	// allow user editing again
 
+// number of guides
+	Slider VCALCCtrl_0a,value= 1
+	
+// source aperture shape/size
+	STRUCT WMPopupAction pa
+	pa.popStr="circular"
+	pa.eventCode = 2		//mouse up
+	VC_SourceApShapeSelectPopup(pa)
+
+// sample aperture shape/size
+//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+	PopupMenu VCALCCtrl_1f,disable=1
+	
 	// adjust the front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
@@ -591,6 +616,10 @@ end
 //
 Function VC_Preset_SuperWhiteBeam()
 
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 
+	
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Super White Beam"
 	
@@ -602,6 +631,20 @@ Function VC_Preset_SuperWhiteBeam()
 
 // wavelength
 	SetVariable VCALCCtrl_0b,value=_NUM:6.2,disable=2	// disable=2 is grayed out	,noedit=0	// allow user editing again
+
+// number of guides
+	Slider VCALCCtrl_0a,value= 1
+	
+// source aperture shape/size
+	STRUCT WMPopupAction pa
+	pa.popStr="circular"
+	pa.eventCode = 2		//mouse up
+	VC_SourceApShapeSelectPopup(pa)
+
+// sample aperture shape/size
+//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+	PopupMenu VCALCCtrl_1f,disable=1
 
 	// adjust the front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
@@ -637,24 +680,10 @@ end
 //
 Function VC_Preset_GraphiteMono()
 
-	// front carriage
-	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
-	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
-	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
-	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
-
-	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
-
-	// middle carriage
-	SetVariable VCALCCtrl_3a,value=_NUM:-8		//Left offset
-	SetVariable VCALCCtrl_3aa,value=_NUM:08	//Right offset
-	SetVariable VCALCCtrl_3b,value=_NUM:18			//Top offset (doesn't matter)
-	SetVariable VCALCCtrl_3bb,value=_NUM:-18		//Bottom offset (doesn't matter)
-
-	SetVariable VCALCCtrl_3d,value=_NUM:1500		//SDD
-
-	// back carriage	
-	SetVariable VCALCCtrl_4b,value=_NUM:2300		//SDD
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 
+	
 	
 	// monochromator
 	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Graphite"
@@ -671,6 +700,35 @@ Function VC_Preset_GraphiteMono()
 	//number of guides
 	Slider VCALCCtrl_0a,value= 0
 
+// source aperture shape/size
+	STRUCT WMPopupAction pa
+	pa.popStr="circular"
+	pa.eventCode = 2		//mouse up
+	VC_SourceApShapeSelectPopup(pa)
+
+// sample aperture shape/size
+//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+	PopupMenu VCALCCtrl_1f,disable=1
+	
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-20		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:20		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:4			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-4		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:120		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-8		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:8	//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:18			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-18		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:1500		//SDD
+
+	// back carriage	
+	SetVariable VCALCCtrl_4b,value=_NUM:2300		//SDD
 
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F4-M4-B"
@@ -686,7 +744,45 @@ Function VC_Preset_ConvergingPinholes()
 // set preference to NOT ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 0
+
+
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 
 	
+	// monochromator
+	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
+	
+	// wavelength spread
+	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	DLStr = "0.12;"
+//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
+	
+	// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
+
+	//number of guides
+//	Slider VCALCCtrl_0a,value= 0
+	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
+	Slider VCALCCtrl_0a,value=0
+
+
+// source aperture shape/size
+	STRUCT WMPopupAction pa
+	pa.popStr="circular"
+	pa.eventCode = 2		//mouse up
+	VC_SourceApShapeSelectPopup(pa)
+
+	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"		//set the 3.0 cm aperture
+	PopupMenu VCALCCtrl_0f,mode=3,popvalue="3.0 cm"		//set the 3.0 cm aperture
+
+// sample aperture shape/size
+//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"		//set the 3.0 cm aperture
+	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+	PopupMenu VCALCCtrl_1f,disable=1
+		
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
@@ -706,27 +802,6 @@ Function VC_Preset_ConvergingPinholes()
 	// back detector
 	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
 	
-	
-	// monochromator
-	PopupMenu VCALCCtrl_0c,mode=1,popvalue="Velocity Selector"
-	
-	// wavelength spread
-	SVAR DLStr = root:Packages:NIST:VSANS:VCALC:gDeltaLambda
-	DLStr = "0.12;"
-//	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
-	PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.12"
-	
-	// wavelength
-	SetVariable VCALCCtrl_0b,value=_NUM:6.7,disable=2
-
-	//number of guides
-//	Slider VCALCCtrl_0a,value= 0
-	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
-	Slider VCALCCtrl_0a,value=0
-
-	
-// source aperture (+new string)
-	PopupMenu VCALCCtrl_0f,mode=3		//set the 3.0 cm aperture
 	
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
@@ -745,25 +820,11 @@ Function VC_Preset_NarrowSlit()
 // set preference to NOT ignore back detector
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 0
-	
-	// front carriage
-	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
-	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
-	SetVariable VCALCCtrl_2b,value=_NUM:11.5			//Top offset
-	SetVariable VCALCCtrl_2bb,value=_NUM:-12		//Bottom offset
 
-	SetVariable VCALCCtrl_2d,value=_NUM:450		//SDD
 
-	// middle carriage
-	SetVariable VCALCCtrl_3a,value=_NUM:-2.75		//Left offset
-	SetVariable VCALCCtrl_3aa,value=_NUM:3.25		//Right offset
-	SetVariable VCALCCtrl_3b,value=_NUM:3.5			//Top offset (doesn't matter)
-	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
-
-	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
-	
-	// back detector
-	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 
 	
 	
 	// monochromator
@@ -783,9 +844,37 @@ Function VC_Preset_NarrowSlit()
 	V_GuideSliderProc("VCALCCtrl_0a",0,1)		//Set Ng=0, resets the aperture string to the new string
 	Slider VCALCCtrl_0a,value=0
 
+// source aperture shape/size
+	STRUCT WMPopupAction pa
+	pa.popStr="rectangular"
+	pa.eventCode = 2		//mouse up
+	VC_SourceApShapeSelectPopup(pa)
+
+// sample aperture shape/size
+//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="75 mm"
+	PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="1.25 mm"
+		
+	// front carriage
+	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
+	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
+	SetVariable VCALCCtrl_2b,value=_NUM:11.5			//Top offset
+	SetVariable VCALCCtrl_2bb,value=_NUM:-12		//Bottom offset
+
+	SetVariable VCALCCtrl_2d,value=_NUM:450		//SDD
+
+	// middle carriage
+	SetVariable VCALCCtrl_3a,value=_NUM:-2.75		//Left offset
+	SetVariable VCALCCtrl_3aa,value=_NUM:3.25		//Right offset
+	SetVariable VCALCCtrl_3b,value=_NUM:3.5			//Top offset (doesn't matter)
+	SetVariable VCALCCtrl_3bb,value=_NUM:-2.5		//Bottom offset (doesn't matter)
+
+	SetVariable VCALCCtrl_3d,value=_NUM:2136		//SDD
 	
-// source aperture (+new string)
-	PopupMenu VCALCCtrl_0f,mode=3		//set the 3.0 cm aperture
+	// back detector
+	SetVariable VCALCCtrl_4b,value=_NUM:2416		//SDD
+	
+
 	
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="SLIT-F2-M2-B"
@@ -1156,9 +1245,11 @@ Function VC_beamstopDiam(detStr)
 	Variable bs=0.0
    Variable yesLens=0
    
+
+   
 	if(yesLens)
-		//bm = sourceApertureDiam()		//ideal result, not needed
-		bs = 1								//force the diameter to 1"
+		bs = VC_sourceApertureDiam()		//ideal result, image of source aperture
+//		bs = .1								//force the diameter to 1"
 	else
 		bm = VC_beamDiameter("maximum",detStr)
 		do
@@ -1872,8 +1963,13 @@ Function VC_DrawVCALCMask_ML()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-//	delta = delta_Xh
-	
+
+	ControlInfo popup_a
+   String str=S_Value
+   if(cmpstr(str,"Converging Pinholes")==0)
+		delta = max(delta_Xh,delta_Xs)
+   endif
+		
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -1999,7 +2095,14 @@ Function VC_DrawVCALCMask_MR()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
+
+	ControlInfo popup_a
+   String str=S_Value
+   if(cmpstr(str,"Converging Pinholes")==0)
+		delta = max(delta_Xh,delta_Xs)
+   endif
 	
+		
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2128,7 +2231,13 @@ Function VC_DrawVCALCMask_MT()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
-	
+
+	ControlInfo popup_a
+   String str=S_Value
+   if(cmpstr(str,"Converging Pinholes")==0)
+		delta = max(delta_Xh,delta_Xs)
+   endif
+		
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
 	pixSizeY = VCALC_getPixSizeY(target)
@@ -2250,6 +2359,12 @@ Function VC_DrawVCALCMask_MB()
 
 	//use the smaller shadow value
 	delta = min(delta_Xh,delta_Xs)
+	  
+	ControlInfo popup_a
+   String str=S_Value
+   if(cmpstr(str,"Converging Pinholes")==0)
+		delta = max(delta_Xh,delta_Xs)
+   endif
 	
 // how many detector tubes to mask?
 	pixSizeX = VCALC_getPixSizeX(target)
