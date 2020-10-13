@@ -1202,7 +1202,9 @@ Function V_UpdateDIVStrings()
 	ControlInfo popup1
 	String folder = S_Value
 	
-	String  formatStr="Avg = %g +/- %g\rMin = %g, Max = %g"
+//	String  formatStr="Avg = %g +/- %g\rMin = %g, Max = %g"
+	String  formatStr="Avg = %f +/- %f\rMin = %f, Max = %f"
+//	String  formatStr="Avg = %8.6f +/- %8.6f\rMin = %8.6f, Max = %8.6f"
 
 	if(cmpstr(carrStr,"B")==0)
 		WaveStats/Q $("root:Packages:NIST:VSANS:"+folder+":entry:instrument:detector_B:data")

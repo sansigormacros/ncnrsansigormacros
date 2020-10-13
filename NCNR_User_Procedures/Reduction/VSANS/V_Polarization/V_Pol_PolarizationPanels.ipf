@@ -700,18 +700,24 @@ Function V_DecayTableHook(infoStr)
 			// what am I looking for?
 			if(cmpstr(dimLbl,"Trans_He_In?")==0)
 				state = 1
-				intent = "Sample"		// should be "Transmission" , but not correct at collection
-				popList = V_ListForDecayPanel(state,intent)
+				intent = "Sample"		// intent is probably listed as sample, but get everything except "Blocked Beam"
+				popList = V_ListForDecayPanel(state,intent)	//purpose is set within to be "HE3"
 				intent = "Empty Cell"
 				popList += V_ListForDecayPanel(state,intent)
 				intent = "Open Beam"
 				popList += V_ListForDecayPanel(state,intent)
 	
-				popList=SortList(popList)
+				popList=SortList(popList)				
 				
-				PopupContextualMenu popList
-	
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -727,9 +733,15 @@ Function V_DecayTableHook(infoStr)
 				
 				popList=SortList(popList)
 
-				PopupContextualMenu popList
-	
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -756,6 +768,7 @@ Function V_DecayTableHook(infoStr)
 
 	return(0)
 end
+
 
 
 // allows manual entry of Decay values

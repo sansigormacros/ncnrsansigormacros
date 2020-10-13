@@ -11,6 +11,16 @@
 // "adjusted" or corrected data sets
 //
 
+
+// the function V_WindowTransmission(tw) is a testing function that can be used to 
+// plot the transmission correction as a function of angle or q-value
+// - it is named for the window transmission, but it is the same equation as the large
+// angle sample transmission correction.
+//
+
+
+
+
 ////////////////
 // Constants for detector efficiency and shadowing
 //
@@ -2218,10 +2228,14 @@ end
 Function V_WindowTransmission(tw)
 	Variable tw
 	
-	Make/O/D/N=100 theta,method1,method2,arg
+	Make/O/D/N=100 theta,method1,method2,arg,qval_6a,theta_deg
 	
 	theta = p/2
 	theta = theta/360*2*pi		//convert to radians
+
+// for plotting
+	qval_6a = 4*pi/6*sin(theta/2)
+	theta_deg = p/2
 	
 //	method1 = exp( -ln(tw)/cos(theta) )/tw
 	

@@ -1516,7 +1516,7 @@ Function V_FlipperTableHook(infoStr)
 	
 	ControlInfo popup_0
 	Variable ii
-	WAVE dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:"+ S_Value)
+	WAVE/Z dw = $("root:Packages:NIST:VSANS:Globals:Polarization:Cells:"+ S_Value)
 	
 	// the different column labels are:
 	//   	UU_Trans?
@@ -1554,9 +1554,15 @@ Function V_FlipperTableHook(infoStr)
 				
 				popList = SortList(popList)
 				
-				PopupContextualMenu popList
-	
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -1570,9 +1576,15 @@ Function V_FlipperTableHook(infoStr)
 				
 				popList = SortList(popList)
 				
-				PopupContextualMenu popList
-		
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -1586,9 +1598,15 @@ Function V_FlipperTableHook(infoStr)
 				
 				popList = SortList(popList)
 				
-				PopupContextualMenu popList
-		
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif
@@ -1602,9 +1620,15 @@ Function V_FlipperTableHook(infoStr)
 				
 				popList = SortList(popList)
 				
-				PopupContextualMenu popList
-		
-				PutScrapText S_Selection
+				PopupContextualMenu "Paste All;"+popList
+
+				if(cmpstr(S_Selection,"Paste All")==0)
+					popList = ReplaceString(";",popList,"\r")		//paste the whole list, in order
+					PutScrapText popList
+				else
+					PutScrapText S_Selection
+				endif	
+				
 				DoIgorMenu "Edit", "Paste"
 
 			endif

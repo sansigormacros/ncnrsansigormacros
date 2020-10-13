@@ -314,8 +314,8 @@ Proc DrawVCALC_Panel()
 	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
 	SetVariable VCALCCtrl_1e,pos={sc*25,(310-50)*sc},size={sc*210,15*sc},title="Sam Pos to Gate Valve (cm)"
 	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
-	PopupMenu VCALCCtrl_1f,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture width (mm)",disable=1
-	PopupMenu VCALCCtrl_1f,mode=1,popvalue="1 mm",value= root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
+	PopupMenu VCALCCtrl_1f,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture width (cm)",disable=1
+	PopupMenu VCALCCtrl_1f,mode=1,popvalue="0.1 cm",value= root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
 	PopupMenu VCALCCtrl_1f,proc=VC_SampleAperDiamSelectPopup
 
 // tab(2) - Front detector panels, initially not visible
@@ -517,12 +517,12 @@ Function VC_Recalculate_AllDetectors()
 	VC_DrawVCALCMask()
 
 
-// generate the 1D I(q)
+//// generate the 1D I(q) - get the values, do the calc at the end
 	String popStr
 	String collimationStr = "pinhole"
 	ControlInfo/W=VCALC popup_b
 	popStr = S_Value		//
-	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 
 	// plot the results (1D)
 	String type = "VCALC"
@@ -556,7 +556,10 @@ Function VC_Recalculate_AllDetectors()
 	
 	// multiply the averaged data by the shadow factor to simulate a beamstop
 	V_IQ_BeamstopShadow()
-	
+
+// generate the 1D I(q)
+	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+		
 	return(0)
 End
 
@@ -807,8 +810,8 @@ End
 ////
 //	String/G gSourceDiam = "6.0 cm;"
 //	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-//	String/G gSourceApertureWidth = "1 mm;2.5 mm;5 mm;"
-//	String/G gSourceApertureHeight = "100 mm;150 mm;"
+//	String/G gSourceApertureWidth = "0.1 cm;0.25 cm;0.5 cm;"
+//	String/G gSourceApertureHeight = "10.0 cm;15.0 cm;"
 //	
 // when a given shape is chosen update the size parameters
 Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
@@ -841,22 +844,22 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 					
 					break
 				case "rectangular":
-					apStr = "100 mm;150 mm;"
+					apStr = "10.0 cm;15.0 cm;"
 					diam = apStr
-					PopupMenu VCALCCtrl_0f,title="source height",mode=2,popvalue="150 mm"
+					PopupMenu VCALCCtrl_0f,title="source height",mode=2,popvalue="15.0 cm"
 
-					apStr = "1 mm;2.5 mm;5 mm;"
+					apStr = "0.1 cm;0.25 cm;0.5 cm;"
 					wid = apStr
-					PopupMenu VCALCCtrl_0g,disable=0,title="source width",mode=2,popvalue="2.5 mm"
+					PopupMenu VCALCCtrl_0g,disable=0,title="source width",mode=2,popvalue="0.25 cm"
 					
 					break
-				case "converging pinholes":
-					apStr = "0.75 cm;1.5 cm;3.0 cm;"
-					diam = apStr			// change the global value
-					PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
-
-					PopupMenu VCALCCtrl_0g,disable=1
-					break
+//				case "converging pinholes":
+//					apStr = "0.75 cm;1.5 cm;3.0 cm;"
+//					diam = apStr			// change the global value
+//					PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
+//
+//					PopupMenu VCALCCtrl_0g,disable=1
+//					break
 					
 			endswitch	
 //			Print "Not filled in yet"
@@ -878,8 +881,8 @@ End
 
 //
 //	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
-//	String/G gSampleApertureWidth = "1.25 mm;2 mm;3 mm;"
-//	String/G gSampleApertureHeight = "75 mm;100 mm;"
+//	String/G gSampleApertureWidth = "0.125 cm;0.2 cm;0.3 cm;"
+//	String/G gSampleApertureHeight = "7.5 cm;10.0 cm;"
 //
 
 // when a given shape is chosen udate the size parameters
@@ -906,22 +909,22 @@ Function VC_SampleApShapeSelectPopup(pa) : PopupMenuControl
 					
 					break
 				case "rectangular":
-					apStr = "75 mm;100 mm;"
+					apStr = "7.5 cm;10.0 cm;"
 					diam = apStr
-					PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="75 mm"
+					PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="7.5 cm"
 
-					apStr = "1.25 mm;2 mm;3 mm"
+					apStr = "0.125 cm;0.2 cm;0.3 cm"
 					wid = apStr
-					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="1.25 mm"
+					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="0.125 cm"
 
 					break
-				case "converging pinholes":
-					apStr = "1.27;1.59;1.0;2.0;"
-					diam = apStr
-					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-
-					PopupMenu VCALCCtrl_1f,disable=1
-					break
+//				case "converging pinholes":
+//					apStr = "1.27;1.59;1.0;2.0;"
+//					diam = apStr
+//					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+//
+//					PopupMenu VCALCCtrl_1f,disable=1
+//					break
 					
 			endswitch	
 //			Print "Not filled in yet"
@@ -1759,20 +1762,20 @@ Proc VC_Initialize_Space()
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
 	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;Super White Beam;"
-	String/G gSourceShape = "circular;rectangular;converging pinholes;"
+	String/G gSourceShape = "circular;rectangular;"		//converging pinholes;"
 	String/G gSourceDiam = "6.0 cm;"
 	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-	String/G gSourceApertureWidth = "1 mm;2.5 mm;5 mm;"
-	String/G gSourceApertureHeight = "100 mm;150 mm;"
+	String/G gSourceApertureWidth = "0.1 cm;0.25 cm;0.5 cm;"
+	String/G gSourceApertureHeight = "10.0 cm;15.0 cm;"
 
 	String/G gDeltaLambda = "0.12;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
-	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;"
+	String/G gSampleApertureShape = "circular;rectangular;"		//converging pinholes;"
 	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
-	String/G gSampleApertureWidth = "1.25 mm;2 mm;3 mm;"
-	String/G gSampleApertureHeight = "75 mm;100 mm;"
+	String/G gSampleApertureWidth = "0.125 cm;0.2 cm;0.3 cm;"
+	String/G gSampleApertureHeight = "7.5 cm;10.0 cm;"
 	
 // tab 2
 
