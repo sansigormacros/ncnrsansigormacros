@@ -517,26 +517,6 @@ Function VC_Recalculate_AllDetectors()
 	VC_DrawVCALCMask()
 
 
-//// generate the 1D I(q) - get the values, do the calc at the end
-	String popStr
-	String collimationStr = "pinhole"
-	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
-//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
-
-	// plot the results (1D)
-	String type = "VCALC"
-	String str,winStr="VCALC#Panels_IQ",workTypeStr
-	workTypeStr = "root:Packages:NIST:VSANS:"+type
-	
-	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
-	Execute ("V_Back_IQ_Graph"+str)
-		
-	Execute ("V_Middle_IQ_Graph"+str)
-	
-	Execute ("V_Front_IQ_Graph"+str)
-
-
 // update values on the panel
 	V_beamIntensity()
 	
@@ -554,11 +534,33 @@ Function VC_Recalculate_AllDetectors()
 	//calculate the "real" QMin with the beamstop
 	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
 	
+
+//// generate the 1D I(q) - get the values, re-do the calc at the end
+	String popStr
+	String collimationStr = "pinhole"
+	ControlInfo/W=VCALC popup_b
+	popStr = S_Value
+	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
+	// plot the results (1D)
+	String type = "VCALC"
+	String str,winStr="VCALC#Panels_IQ",workTypeStr
+	workTypeStr = "root:Packages:NIST:VSANS:"+type
+	
+	sprintf str,"(\"%s\",%d,\"%s\")",workTypeStr,V_BinTypeStr2Num(popStr),winStr
+	Execute ("V_Back_IQ_Graph"+str)
+		
+	Execute ("V_Middle_IQ_Graph"+str)
+	
+	Execute ("V_Front_IQ_Graph"+str)
+
+
+// generate the 1D I(q)
+//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
 	// multiply the averaged data by the shadow factor to simulate a beamstop
 	V_IQ_BeamstopShadow()
 
-// generate the 1D I(q)
-	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
 		
 	return(0)
 End

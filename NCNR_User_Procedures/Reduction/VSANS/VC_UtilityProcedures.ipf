@@ -385,11 +385,17 @@ Function VC_Preset_FrontMiddle_Ng0()
 // source aperture (+new string)
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=3,popvalue="3.0 cm"		//set the 3.0 cm aperture
-	
+
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1	
+
 	
 // binning mode
 	PopupMenu popup_b,mode=1,popValue="F2-M2xTB-B"
@@ -411,6 +417,9 @@ Function VC_Preset_FrontMiddle_Ng0()
 
 	SetVariable VCALCCtrl_3d,value=_NUM:2000		//SDD
 	
+	// make the collimation tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
 	
 	return(0)
 End
@@ -453,8 +462,13 @@ Function VC_Preset_FrontMiddle_Ng2()
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
 	
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
+	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1	
 	
@@ -478,7 +492,10 @@ Function VC_Preset_FrontMiddle_Ng2()
 
 	SetVariable VCALCCtrl_3d,value=_NUM:1600		//SDD
 	
-
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
+		
 
 	return(0)
 End
@@ -520,8 +537,13 @@ Function VC_Preset_FrontMiddle_Ng7()
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
 	
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1	
 	
@@ -544,7 +566,13 @@ Function VC_Preset_FrontMiddle_Ng7()
 	SetVariable VCALCCtrl_3bb,value=_NUM:-8		//Bottom offset (doesn't matter)
 
 	SetVariable VCALCCtrl_3d,value=_NUM:1100		//SDD
-	
+
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
+		
+// sample aperture shape/size
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
 
 	return(0)
 End
@@ -586,8 +614,13 @@ Function VC_Preset_FrontMiddle_Ng9()
 	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
 	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
 	
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1	
 	
@@ -611,7 +644,9 @@ Function VC_Preset_FrontMiddle_Ng9()
 
 	SetVariable VCALCCtrl_3d,value=_NUM:450		//SDD
 	
-
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
 
 	return(0)
 End
@@ -650,8 +685,17 @@ Function VC_Preset_WhiteBeam()
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
 
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
+	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
+
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
 	
@@ -678,7 +722,10 @@ Function VC_Preset_WhiteBeam()
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
 	
-			
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
+					
 	return(0)
 end
 
@@ -715,8 +762,17 @@ Function VC_Preset_SuperWhiteBeam()
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
 
+// source aperture (+new string)
+	PopupMenu VCALCCtrl_0e,mode=1,popvalue="circular"
+	PopupMenu VCALCCtrl_0f,mode=1,popvalue="6.0 cm"		//set the 6.0 cm aperture
+
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"	
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
 
@@ -743,7 +799,10 @@ Function VC_Preset_SuperWhiteBeam()
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
 	
-			
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0 	
+		
 	return(0)
 end
 
@@ -781,8 +840,13 @@ Function VC_Preset_GraphiteMono()
 	pa.eventCode = 2		//mouse up
 	VC_SourceApShapeSelectPopup(pa)
 
+	// make the Sample tab active
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1 	
+		
 // sample aperture shape/size
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+	PopupMenu VCALCCtrl_1b,mode=1,popvalue="circular"
+	VC_SampleApShapeSelectPopup(pa)	//
 	PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
 	PopupMenu VCALCCtrl_1f,disable=1
 	
@@ -809,7 +873,10 @@ Function VC_Preset_GraphiteMono()
 	NVAR gIgnoreB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	gIgnoreB = 1
 	
-
+	// make the Collim tab active
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0
+		
 
 	return(0)
 end
@@ -932,13 +999,18 @@ Function VC_Preset_NarrowSlit()
 	VC_SourceApShapeSelectPopup(pa)
 
 // on other tabs--
+	// make the Sample tab active so the values show up
+	TabControl VTab value=1
+	VCALCTabProc("Sample",1)		//tab 1
 
 // sample aperture shape/size (default values for narrow slits)
-//	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
 	PopupMenu VCALCCtrl_1b,popValue="rectangular",mode=1
 	PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="7.5 cm"
 	PopupMenu VCALCCtrl_1f,disable=1,title="Aperture Width",mode=1,popValue="0.125 cm"
-		
+	VC_SampleApShapeSelectPopup(pa)	//don't pop, it's not the active tab
+
+
+			
 	// front carriage
 	SetVariable VCALCCtrl_2a,value=_NUM:-11		//Left offset
 	SetVariable VCALCCtrl_2aa,value=_NUM:7		//Right offset
@@ -961,8 +1033,11 @@ Function VC_Preset_NarrowSlit()
 
 	
 // binning mode
-	PopupMenu popup_b,mode=1,popValue="SLIT-F2-M2-B"
+	PopupMenu popup_b,mode=7,popValue="SLIT-F2-M2-B"
 
+	// make the Collim tab active again
+	TabControl VTab value=0
+	VCALCTabProc("Collim",0)		//tab 0
 
 	return(0)
 End
@@ -1352,6 +1427,8 @@ End
 
 // multiply the appropriate IQ data by the beamstop shadow factor for display
 //
+// Don't apply a beamstop shadow for the Narrow Slit condition
+//
 Function V_IQ_BeamstopShadow()
 
 	String popStr
@@ -1361,6 +1438,10 @@ Function V_IQ_BeamstopShadow()
 	popStr = S_Value	
 
 	binType = V_BinTypeStr2Num(popStr)	
+	
+	if(binType == 4)		//Narrow Slit
+		return(0)
+	endif
 	
 	String folderStr = "root:Packages:NIST:VSANS:VCALC:"
 	
@@ -2084,7 +2165,7 @@ Function VC_DrawVCALCMask_ML()
 		endif
 	endif
 	
-	printf "from ML: mask[0,%d][] = 1\r",delta_x_pix
+//	printf "from ML: mask[0,%d][] = 1\r",delta_x_pix
 	
 	return(0)
 end
@@ -2220,7 +2301,7 @@ Function VC_DrawVCALCMask_MR()
 		endif
 	endif
 
-	printf "from MR: mask[%d,%d-1][] = 1\r",nt,nPix
+//	printf "from MR: mask[%d,%d-1][] = 1\r",nt,nPix
 	
 	return(0)
 end
@@ -2351,7 +2432,7 @@ Function VC_DrawVCALCMask_MT()
 		mask[][nt,nPix-1] = 1
 	endif
 	
-	printf "from MT: mask[][%d,%d-1] = 1\r",nt,nPix
+//	printf "from MT: mask[][%d,%d-1] = 1\r",nt,nPix
 
 	return(0)
 end
@@ -2482,7 +2563,7 @@ Function VC_DrawVCALCMask_MB()
 		mask[][0,delta_y_pix] = 1
 	endif
 
-	printf "from MB: mask[][0,%d] = 1\r",delta_y_pix
+//	printf "from MB: mask[][0,%d] = 1\r",delta_y_pix
 	return(0)
 end
 
@@ -2529,6 +2610,13 @@ Function/S V_SetConfigurationText()
 	NVAR min_b = root:Packages:NIST:VSANS:VCALC:gQmin_B
 	NVAR max_b = root:Packages:NIST:VSANS:VCALC:gQmax_B
 	
+	if(min_b == 1e6)
+		min_b = 0
+	endif
+	if(max_b == -1e6)
+		max_b = 0
+	endif
+	
 	String aStr = "A"
 	
 	sprintf temp,"Source Aperture Diameter =\t\t%6.2f cm\r",VC_sourceApertureDiam()
@@ -2541,7 +2629,7 @@ Function/S V_SetConfigurationText()
 	str += temp
 	sprintf temp,"Beamstop diameter =\t\t\t\t%6.2f inches\r",VC_beamstopDiam("ML")/2.54
 	str += temp
-	sprintf temp,"Back: Min -> Max Q-value =\t\t\t%6.4f -> %6.4f 1/%s \r",min_b,max_b,aStr
+	sprintf temp,"Back: Min -> Max Q-value =\t\t\t%6.4g -> %6.4g 1/%s \r",min_b,max_b,aStr
 	str += temp
 	sprintf temp,"Middle: Min -> Max Q-value =\t\t%6.4f -> %6.4f 1/%s \r",min_m,max_m,aStr
 	str += temp

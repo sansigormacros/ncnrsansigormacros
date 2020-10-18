@@ -475,7 +475,8 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 	
 	V_writeReductionComments(gFileList,ctrStr)
 	
-	
+
+	V_UpdateBoxCoords()	
 	
 	//back to root folder (redundant)
 	SetDataFolder root:
