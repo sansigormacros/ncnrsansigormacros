@@ -365,7 +365,7 @@ Proc A_LoadOneDDataToName(fileStr,outStr,doPlot,forceOverwrite)
 		while (ii < 10)
 		
 		FReadLine refNum,buffer
-		Print buffer
+//		Print buffer
 		
 		Close refNum
 			
