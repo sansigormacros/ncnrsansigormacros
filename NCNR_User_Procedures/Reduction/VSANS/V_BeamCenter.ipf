@@ -1102,12 +1102,13 @@ End
 Function V_PickOpenForBeamCenter(carrStr)
 	String carrStr
 
-	String emptyFileName_F="",emptyFileName_M="",emptyFileName_B=""
+	String emptyFileName_F="",emptyFileName_M="",emptyFileName_B="",folder=""
 	
 	
 	NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	
-	Variable isF=0,isM=0,isB=0
+	Variable isF=0,isM=0,isB=0,err=0
+	
 	if(cmpstr(carrStr,"F") == 0)
 		isF = 1
 	endif
@@ -1195,7 +1196,26 @@ Function V_PickOpenForBeamCenter(carrStr)
 		yRef_F = NumberByKey("YREF", refStr ,"=",";")
 	
 		if(numtype(xRef_F)!=0 || numtype(yRef_F)!=0)		//not a normal number
-			Abort "Centroid has not been set for the Front carriage. Open the file and use the Marquee to find the centroid."
+			DoAlert 0, "Centroid has not been set for the Front carriage. Use the Marquee to find the centroid and re-set the file."
+		
+		
+			err = V_LoadHDF5Data(emptyFileName_F,"RAW")
+			if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+				SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+				folder = StringFromList(0,hdfDF,".")
+				
+				// this (in SANS) just passes directly to fRawWindowHook()
+				V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+										
+				// set the global to display ONLY if the load was called from here, not from the 
+				// other routines that load data (to read in values)
+				SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+				gLast = hdfDF
+				
+			endif
+		
+			return(0)		//exit
+		
 		endif
 	endif
 
@@ -1205,7 +1225,26 @@ Function V_PickOpenForBeamCenter(carrStr)
 		yRef_M = NumberByKey("YREF", refStr ,"=",";")
 	
 		if(numtype(xRef_M)!=0 || numtype(yRef_M)!=0)		//not a normal number
-			Abort "Centroid has not been set for the Middle carriage. Open the file and use the Marquee to find the centroid."
+			DoAlert 0, "Centroid has not been set for the Middle carriage. Use the Marquee to find the centroid and re-set the file."
+		
+		
+			err = V_LoadHDF5Data(emptyFileName_M,"RAW")
+			if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+				SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+				folder = StringFromList(0,hdfDF,".")
+				
+				// this (in SANS) just passes directly to fRawWindowHook()
+				V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+										
+				// set the global to display ONLY if the load was called from here, not from the 
+				// other routines that load data (to read in values)
+				SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+				gLast = hdfDF
+				
+			endif
+		
+			return(0)		//exit
+
 		endif
 	endif
 //
@@ -1215,8 +1254,27 @@ Function V_PickOpenForBeamCenter(carrStr)
 			refStr = V_getReductionComments(emptyFileName_B)
 			xRef_B = NumberByKey("XREF", refStr ,"=",";")
 			yRef_B = NumberByKey("YREF", refStr ,"=",";")
+		
 			if(numtype(xRef_B)!=0 || numtype(yRef_B)!=0)		//not a normal number
-				Abort "Centroid has not been set for the Back carriage. Open the file and use the Marquee to find the centroid."
+				DoAlert 0, "Centroid has not been set for the Back carriage. Use the Marquee to find the centroid and re-set the file."
+				
+				err = V_LoadHDF5Data(emptyFileName_B,"RAW")
+				if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+					SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+					folder = StringFromList(0,hdfDF,".")
+					
+					// this (in SANS) just passes directly to fRawWindowHook()
+					V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+											
+					// set the global to display ONLY if the load was called from here, not from the 
+					// other routines that load data (to read in values)
+					SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+					gLast = hdfDF
+					
+				endif
+			
+				return(0)		//exit
+
 			endif
 		else
 			//default values

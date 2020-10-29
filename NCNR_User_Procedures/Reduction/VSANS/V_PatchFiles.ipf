@@ -330,7 +330,7 @@ Function V_FillListBox1(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 14
+	Variable nRows = 15
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -383,7 +383,10 @@ Function V_FillListBox1(listWave,selWave)
 	listWave[13][1] = "whole_trans_error"
 	listWave[13][2] = num2str(V_getSampleTransWholeDetErr(fname))	
 		
-	
+	listWave[14][1] = "comments"
+	listWave[14][2] = V_getReductionComments(fname)	
+		
+		
 
 	return(0)
 End
@@ -1239,6 +1242,10 @@ Function V_WriteHeaderForPatch_1(fname)
 		err = V_writeSampleTransWholeDetErr(fname,val)
 	endif	
 	
+	if ((selWave[14][0] & 2^4) != 0)		//"whole_trans_error"
+		str = listWave[14][2]
+		err = V_writeReductionComments(fname,str)
+	endif	
 	
 		
 		
