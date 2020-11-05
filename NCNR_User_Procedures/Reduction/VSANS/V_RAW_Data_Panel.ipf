@@ -553,6 +553,8 @@ Function V_DataTabProc(tca) : TabControl
 			Variable lo_FT,lo_FB,lo_FR,lo_FL
 			Variable hi_MT,hi_MB,hi_MR,hi_ML
 			Variable hi_FT,hi_FB,hi_FR,hi_FL
+			Variable lo_M,hi_M,lo_F,hi_F
+			
 			ControlInfo slider_lo
 			lo = V_Value
 			ControlInfo slider_hi
@@ -634,10 +636,21 @@ Function V_DataTabProc(tca) : TabControl
 					lo_MR = lo*(WaveMax(det_MR) - WaveMin(det_MR)) + WaveMin(det_MR)
 					hi_MR = hi*(WaveMax(det_MR) - WaveMin(det_MR)) + WaveMin(det_MR)
 					
-					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {lo_MT,hi_MT,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
-					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {lo_MB,hi_MB,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {lo_ML,hi_ML,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {lo_MR,hi_MR,ColdWarm,0}
+					// use a global scale for all 4 panels on the carriage
+					lo_M = min(lo_MT,lo_MB,lo_MR,lo_ML)
+					hi_M = max(hi_MT,hi_MB,hi_MR,hi_ML)
+							
+					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {lo_M,hi_M,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
+					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {lo_M,hi_M,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {lo_M,hi_M,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {lo_M,hi_M,ColdWarm,0}
+					
+					//
+					// un comment to use individual color scale (per panel)
+//					ModifyImage/W=VSANS_Data#det_panelsM ''#0 ctab= {lo_MT,hi_MT,ColdWarm,0}		// ''#n means act on the nth image (there are 4)
+//					ModifyImage/W=VSANS_Data#det_panelsM ''#1 ctab= {lo_MB,hi_MB,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsM ''#2 ctab= {lo_ML,hi_ML,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsM ''#3 ctab= {lo_MR,hi_MR,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsM fnum=(50*sc,185*sc,517*sc,620*sc)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440*sc,70*sc,550*sc,160*sc)
@@ -692,10 +705,20 @@ Function V_DataTabProc(tca) : TabControl
 					lo_FR = lo*(WaveMax(det_FR) - WaveMin(det_FR)) + WaveMin(det_FR)
 					hi_FR = hi*(WaveMax(det_FR) - WaveMin(det_FR)) + WaveMin(det_FR)
 					
-					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {lo_FT,hi_FT,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {lo_FB,hi_FB,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {lo_FL,hi_FL,ColdWarm,0}
-					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {lo_FR,hi_FR,ColdWarm,0}
+					// use a global scale for all 4 panels on the carriage
+					lo_F = min(lo_FT,lo_FB,lo_FR,lo_FL)
+					hi_F = max(hi_FT,hi_FB,hi_FR,hi_FL)
+					
+					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {lo_F,hi_F,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {lo_F,hi_F,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {lo_F,hi_F,ColdWarm,0}
+					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {lo_F,hi_F,ColdWarm,0}
+					
+					// un comment to use individual (per panel) color scale
+//					ModifyImage/W=VSANS_Data#det_panelsF ''#0 ctab= {lo_FT,hi_FT,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsF ''#1 ctab= {lo_FB,hi_FB,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsF ''#2 ctab= {lo_FL,hi_FL,ColdWarm,0}
+//					ModifyImage/W=VSANS_Data#det_panelsF ''#3 ctab= {lo_FR,hi_FR,ColdWarm,0}
 				endif
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(50*sc,185*sc,517*sc,620*sc)
 				MoveSubWindow/W=VSANS_Data#det_panelsB fnum=(440*sc,70*sc,550*sc,160*sc)

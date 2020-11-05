@@ -429,7 +429,7 @@ Function V_MaskToolsButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			ShowTools rect
+			ShowTools/A rect			// /A flag added to workaround Igor 9(beta) bug
 			
 			SetDrawLayer/W=MaskEditPanel ProgFront
 			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
@@ -1749,13 +1749,50 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 					else
 						state = 1
 					endif
-					
+
+// SRK 110420					
+					// get the combination of the two masks
 					if(cmpstr(carrStr,"F") == 0)
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL:Overlay_FL")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL:AvgOverlay_FL")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR:Overlay_FR")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR:AvgOverlay_FR")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:Overlay_FT")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:AvgOverlay_FT")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB:Overlay_FB")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB:AvgOverlay_FB")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
 						V_OverlayFourAvgMask(folderStr,"FL",state)
 						V_OverlayFourAvgMask(folderStr,"FR",state)
 						V_OverlayFourAvgMask(folderStr,"FT",state)
 						V_OverlayFourAvgMask(folderStr,"FB",state)
 					else
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML:Overlay_ML")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML:AvgOverlay_ML")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR:Overlay_MR")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR:AvgOverlay_MR")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT:Overlay_MT")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT:AvgOverlay_MT")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB:Overlay_MB")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB:AvgOverlay_MB")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+					
+					
 						V_OverlayFourAvgMask(folderStr,"ML",state)
 						V_OverlayFourAvgMask(folderStr,"MR",state)
 						V_OverlayFourAvgMask(folderStr,"MT",state)
