@@ -130,7 +130,7 @@ Function V_ForceQTrap()
 	return(0)
 End
 
-// for VSANS Analysis -- use the matrix method, faster, but not always correct
+// for VSANS Analysis -- use the matrix method, faster, but if it fails, force qtrap
 // (and I don't yet know why)
 Function V_ForceMatrix()
 	NVAR useTrap = root:Packages:NIST:USANSUseTrap

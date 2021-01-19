@@ -491,7 +491,7 @@ Function V_VCALCRecalcButtonProc(ba) : ButtonControl
 			// click code here
 			
 			VC_Recalculate_AllDetectors()
-				
+			
 			break
 		case -1: // control being killed
 			break
@@ -505,12 +505,16 @@ End
 //
 Function VC_Recalculate_AllDetectors()
 
+//V_tic()
 // calculates Q for each panel
 // and fills 2D panels with model data
 // then plots the 2D panel
 	fPlotBackPanels()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
+
+//V_toc()
+
 
 // generate a proper mask based on hard+soft shadowing
 	VC_ResetVCALCMask()
@@ -519,14 +523,16 @@ Function VC_Recalculate_AllDetectors()
 
 // update values on the panel
 	V_beamIntensity()
-	
+
+
 //	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
 	
 	// fill in the Qmin and Qmax values, based on Q_Tot for the 2D panels (not including mask)
 	V_QMinMax_Back()
 	V_QMinMax_Middle()
 	V_QMinMax_Front()
-	
+
+
 	//calculate beam diameter and beamstop size 
 	V_BeamDiamDisplay("maximum", "MR")	//TODO -- hard-wired here for the Middle carriage (and in the SetVar label)
 	V_BeamStopDiamDisplay("MR")
@@ -535,12 +541,15 @@ Function VC_Recalculate_AllDetectors()
 	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
 	
 
+//V_tic()
 //// generate the 1D I(q) - get the values, re-do the calc at the end
 	String popStr
 	String collimationStr = "pinhole"
 	ControlInfo/W=VCALC popup_b
 	popStr = S_Value
 	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
+//V_toc()
 
 	// plot the results (1D)
 	String type = "VCALC"
@@ -2115,7 +2124,7 @@ Function V_BeamStopDiamDisplay(detStr)
 
 	NVAR val = root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
 
-	val = VC_beamstopDiam(detStr)		//returns the value in inches
+	val = VC_beamstopDiam(detStr)/2.54		//convert the value from cm to inches
 
 	return(0)
 End

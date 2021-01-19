@@ -2293,6 +2293,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 //////////////////////////////
 //
 // DONE
+//	x- be sure that the mask reads only the single listed file, not trying to parse for multiple run numbers
 //		x- fill in the "ask" step
 //  x- none is OK, except if the kill fails for any reason
 // x- the regular case of the file name specified by the protocol works correctly

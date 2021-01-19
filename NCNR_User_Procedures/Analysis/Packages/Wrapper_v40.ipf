@@ -133,7 +133,7 @@ Function FeedbackButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			OpenTracTicketPage()
+			OpenTracTicketPage("")
 			break
 	endswitch
 

@@ -684,7 +684,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 //		labelWave[20] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
 	//	labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
 		labelWave[27] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask"
-		labelWave[28] = "The error wave may not be properly propagated (1/2019)"
+		labelWave[28] = "The 2D error is fully propagated through all correction steps"
 		labelWave[29] = "ASCII data created " +date()+" "+time()
 		//strings can be too long to print-- must trim to 255 chars
 		for(jj=0;jj<numTextLines;jj+=1)

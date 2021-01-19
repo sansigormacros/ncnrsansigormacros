@@ -1148,9 +1148,9 @@ Proc V_Display_Det_Panels()
 	PopupMenu popup3,pos={sc*350,10.00*sc},size={sc*83.00,23.00*sc},title="Average Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup3,mode=1,value= #"\"Circular;Sector;Annular;\""
 //	Button button0,pos={sc*520.00,10.00*sc},size={sc*110.00,20.00*sc},proc=V_UpdatePanelsButtonProc,title="Update Display"
-	Button button1,pos={sc*520.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Toggle Mask"
-	Button button2,pos={sc*350.00,40.00*sc},size={sc*120.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Show Avg Range"
-	Button button3,pos={sc*350.00,70.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
+	Button button1,pos={sc*360.00,40.00*sc},size={sc*160.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Regular Mask"
+	Button button2,pos={sc*360.00,70.00*sc},size={sc*160.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Special+Reg Mask"
+	Button button3,pos={sc*530.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
 	Button button4,pos={sc*720.00,10.00*sc},size={sc*25.00,20.00*sc},proc=V_AvgPanelHelpButtonProc,title="?"
 
 	SetVariable setvar0,pos={sc*20,40*sc},size={sc*160,23*sc},title="Annulus q-center (A)"

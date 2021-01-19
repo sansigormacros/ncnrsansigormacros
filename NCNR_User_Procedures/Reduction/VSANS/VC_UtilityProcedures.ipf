@@ -2609,6 +2609,7 @@ Function/S V_SetConfigurationText()
 	NVAR max_m = root:Packages:NIST:VSANS:VCALC:gQmax_M
 	NVAR min_b = root:Packages:NIST:VSANS:VCALC:gQmin_B
 	NVAR max_b = root:Packages:NIST:VSANS:VCALC:gQmax_B
+	NVAR realQMin = root:Packages:NIST:VSANS:VCALC:gRealQMin
 	
 	if(min_b == 1e6)
 		min_b = 0
@@ -2631,7 +2632,7 @@ Function/S V_SetConfigurationText()
 	str += temp
 	sprintf temp,"Back: Min -> Max Q-value =\t\t\t%6.4g -> %6.4g 1/%s \r",min_b,max_b,aStr
 	str += temp
-	sprintf temp,"Middle: Min -> Max Q-value =\t\t%6.4f -> %6.4f 1/%s \r",min_m,max_m,aStr
+	sprintf temp,"Middle: Min -> Max Q-value =\t\t%6.4f(%6.4f) -> %6.4f 1/%s \r",min_m,realQMin,max_m,aStr
 	str += temp
 	sprintf temp,"Front: Min -> Max Q-value =\t\t%6.4f -> %6.4f 1/%s \r",min_f,max_f,aStr
 	str += temp
