@@ -135,6 +135,10 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	NewDataFolder/O/S $(base)
 	SetDataFolder $("root:Packages:NIST:VSANS:"+folderStr)
 	
+	// TEST: Remove and add a preference when finished testing
+	String writeCombined = "DoIt"
+	// ENDTEST
+	
 	// Check fullpath and dialog
 	fileID = NXcanSAS_OpenOrCreate(dialog,pathStr,base)
 		
@@ -176,7 +180,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	Variable monCt,lambda,offset,dist,trans,thick
 	Variable bCentX,bCentY,a2,a1a2_dist,deltaLam,bstop
 	String a1Str
-	Variable pixX,pixY
+	Variable pixX,pixY,pixXIntermed,pixYIntermed
 	Variable numTextLines,ii,jj,kk
 	Variable pixSizeX,pixSizeY
 	Variable duration
@@ -193,6 +197,21 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	else
 		detList = ksDetectorListAll
 	endif
+	
+	if (!stringMatch(writeCombined,""))
+		Make/O/N=(0) Combined_Qx
+		Make/O/N=(0) Combined_Qy
+		Make/O/N=(0) Combined_Qx_intermediate
+		Make/O/N=(0) Combined_Qy_intermediate
+		Make/O/N=(2,0,0) Combined_QxQy
+		Make/O/N=(2,0,0) Combined_SiqmaQ
+		Make/O/N=(0,0) Combined_I
+		Make/O/N=(0,0) Combined_Idev
+		Make/O/N=(0,0) Combined_Shadow
+	EndIf
+	
+	Print "================================="
+	Print "Starting new data processing step."
 	
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
 
@@ -239,6 +258,22 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		Wave qy_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qy_"+detStr)
 		Wave qz_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qz_"+detStr)
 		Wave qTot = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qTot_"+detStr)
+		
+		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
+		if (!stringMatch(writeCombined,""))
+			Print "Redimesioning waves for combined file."
+			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
+			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
+			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
+			Redimension/N=(pixYIntermed + pixY) Combined_Qy_intermediate
+			Print "Combining waves"
+			Combined_Qx_intermediate[pixXIntermed - 1, pixXIntermed + pixX - 1] = qx_val[p-pixXIntermed]
+			Combined_Qy_intermediate[pixYIntermed - 1, pixYIntermed + pixY - 1] = qy_val[p-pixYIntermed]
+			Print "Finding duplicates and outputting into wave"
+			FindDuplicates /RN=Combined_Qx Combined_Qx_intermediate
+			FindDuplicates /RN=Combined_Qy Combined_Qy_intermediate
+			Print "Finished finding number of unique Qx and Qy."
+		EndIf
 		
 	///// calculation of the resolution function (2D)
 
@@ -287,7 +322,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		String collimationStr = proto[9]
 
 // TODO
-// this loop is the slow step. it takes � 0.7 s for F or M panels, and � 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
+// this loop is the slow step. it takes ~ 0.7 s for F or M panels, and ~ 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
 // MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
 // and there are a lot of them... and I don't know if opening a file multiple times is a threadsafe operation? 
@@ -371,10 +406,54 @@ v_toc()
 	
 	endfor
 	
+	Print "Finished writing indivudal detectors. Start write combined"
+	
+	if (!stringMatch(writeCombined,""))
+		// This should generate a data set of zeroes of the size of the entire detector.
+		Variable xPixelsTotal = DimSize(Combined_Qx, 0)
+		Variable yPixelsTotal = DimSize(Combined_Qy, 0)
+		Redimension/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
+		Redimension/N=(2,xPixelsTotal, yPixelsTotal) Combined_SiqmaQ
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_I
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Idev
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
+		// SASData
+		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk+1
+		// Create SASdata entry
+		sPrintf dataBase,"%s:sasdata%d",parentBase,kk+1
+		NewDataFolder/O/S $(dataBase)
+		Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
+		Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",V_getDataEndTime(folderStr)}
+		CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
+		// Create i entry
+		NewDataFolder/O/S $(dataBase + ":i")
+		Make/O/T/N=2 $(dataBase + ":i:attr") = {"units","uncertainties"}
+		Make/O/T/N=2 $(dataBase + ":i:attrVals") = {"1/cm","Idev"}
+		CreateVarNxCansas(fileID,dataParent,"sasdata","I",Combined_I,$(dataBase + ":i:attr"),$(dataBase + ":i:attrVals"))
+		//
+		// TODO: Reinstate Qdev/resolutions when I can fix the reader issue
+		//
+		// Create qx and qy entry
+		NewDataFolder/O/S $(dataBase + ":q")
+		Make/O/T/N=2 $(dataBase + ":q:attr") = {"units"}//,"resolutions"}
+		Make/O/T/N=2 $(dataBase + ":q:attrVals") = {"1/angstrom"}//,"Qdev"}
+		CreateVarNxCansas(fileID,dataParent,"sasdata","Q",Combined_QxQy,$(dataBase + ":q:attr"),$(dataBase + ":q:attrVals"))
+		// Create idev entry
+		CreateVarNxCansas(fileID,dataParent,"sasdata","Idev",Combined_Idev,units,inv_cm)
+		// Create qdev entry
+		CreateVarNxCansas(fileID,dataParent,"sasdata","Qdev",Combined_SiqmaQ,units,inv_angstrom)
+		// Create shadwfactor entry
+		CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",Combined_Shadow,empty,empty)
+	EndIf
+	
+	Print "Finished writing combined data set. Write meta data"
+	
 	KillWaves/Z labelWave,dum
 	
 	// Write all VSANS meta data
 	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
+	
+	Print "Finished writing meta data."
 		
 	//
 	///////////////////////////////////////////////////////////////////////////
