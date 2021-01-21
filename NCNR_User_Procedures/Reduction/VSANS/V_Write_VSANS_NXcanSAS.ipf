@@ -203,15 +203,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		Make/O/N=(0) Combined_Qy
 		Make/O/N=(0) Combined_Qx_intermediate
 		Make/O/N=(0) Combined_Qy_intermediate
-		Make/O/N=(2,0,0) Combined_QxQy
-		Make/O/N=(2,0,0) Combined_SiqmaQ
-		Make/O/N=(0,0) Combined_I
-		Make/O/N=(0,0) Combined_Idev
-		Make/O/N=(0,0) Combined_Shadow
 	EndIf
-	
-	Print "================================="
-	Print "Starting new data processing step."
 	
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
 
@@ -261,18 +253,16 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		
 		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
 		if (!stringMatch(writeCombined,""))
-			Print "Redimesioning waves for combined file."
 			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
 			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
 			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
 			Redimension/N=(pixYIntermed + pixY) Combined_Qy_intermediate
-			Print "Combining waves"
 			Combined_Qx_intermediate[pixXIntermed - 1, pixXIntermed + pixX - 1] = qx_val[p-pixXIntermed]
 			Combined_Qy_intermediate[pixYIntermed - 1, pixYIntermed + pixY - 1] = qy_val[p-pixYIntermed]
-			Print "Finding duplicates and outputting into wave"
 			FindDuplicates /RN=Combined_Qx Combined_Qx_intermediate
 			FindDuplicates /RN=Combined_Qy Combined_Qy_intermediate
-			Print "Finished finding number of unique Qx and Qy."
+			Sort Combined_Qx,Combined_Qx
+			Sort Combined_Qy,Combined_Qy
 		EndIf
 		
 	///// calculation of the resolution function (2D)
@@ -322,7 +312,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		String collimationStr = proto[9]
 
 // TODO
-// this loop is the slow step. it takes ~ 0.7 s for F or M panels, and ~ 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
+// this loop is the slow step. it takes ÔøΩ 0.7 s for F or M panels, and ÔøΩ 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
 // MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
 // and there are a lot of them... and I don't know if opening a file multiple times is a threadsafe operation? 
@@ -406,17 +396,25 @@ v_toc()
 	
 	endfor
 	
-	Print "Finished writing indivudal detectors. Start write combined"
-	
 	if (!stringMatch(writeCombined,""))
 		// This should generate a data set of zeroes of the size of the entire detector.
 		Variable xPixelsTotal = DimSize(Combined_Qx, 0)
 		Variable yPixelsTotal = DimSize(Combined_Qy, 0)
-		Redimension/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
-		Redimension/N=(2,xPixelsTotal, yPixelsTotal) Combined_SiqmaQ
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_I
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Idev
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
+		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
+		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_SiqmaQ
+		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_I
+		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Idev
+		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
+		// Populate Combined_QxQy
+		For(ii=0;ii<xPixelsTotal;ii+=1)
+			Combined_QxQy[0][ii][] = Combined_Qx[p]
+		EndFor
+		For(ii=0;ii<yPixelsTotal;ii+=1)
+			Combined_QxQy[1][][ii] = Combined_Qy[p]
+		EndFor
+		For(kk=0;kk<ItemsInList(detList);kk+=1)
+			// TODO: Get I for each Qx and Qy and store it
+		EndFor 
 		// SASData
 		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk+1
 		// Create SASdata entry
@@ -446,14 +444,10 @@ v_toc()
 		CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",Combined_Shadow,empty,empty)
 	EndIf
 	
-	Print "Finished writing combined data set. Write meta data"
-	
 	KillWaves/Z labelWave,dum
 	
 	// Write all VSANS meta data
 	V_WriteMetaData(fileID,parentBase,nxcansasBase,folderStr,proto)
-	
-	Print "Finished writing meta data."
 		
 	//
 	///////////////////////////////////////////////////////////////////////////
