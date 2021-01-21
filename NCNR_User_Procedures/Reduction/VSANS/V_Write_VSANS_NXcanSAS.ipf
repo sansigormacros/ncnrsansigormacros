@@ -251,20 +251,6 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		Wave qz_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qz_"+detStr)
 		Wave qTot = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qTot_"+detStr)
 		
-		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
-		if (!stringMatch(writeCombined,""))
-			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
-			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
-			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
-			Redimension/N=(pixYIntermed + pixY) Combined_Qy_intermediate
-			Combined_Qx_intermediate[pixXIntermed - 1, pixXIntermed + pixX - 1] = qx_val[p-pixXIntermed]
-			Combined_Qy_intermediate[pixYIntermed - 1, pixYIntermed + pixY - 1] = qy_val[p-pixYIntermed]
-			FindDuplicates /RN=Combined_Qx Combined_Qx_intermediate
-			FindDuplicates /RN=Combined_Qy Combined_Qy_intermediate
-			Sort Combined_Qx,Combined_Qx
-			Sort Combined_Qy,Combined_Qy
-		EndIf
-		
 	///// calculation of the resolution function (2D)
 
 	//
@@ -344,6 +330,21 @@ v_tic()
 		while(ii<pixY)
 v_toc()
 
+		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
+		if (!stringMatch(writeCombined,""))
+			// TODO: Move this to the end of the loop and auto-combine Qdev, I, etc...
+			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
+			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
+			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
+			Redimension/N=(pixYIntermed + pixY) Combined_Qy_intermediate
+			Combined_Qx_intermediate[pixXIntermed - 1, pixXIntermed + pixX - 1] = qx_val[p-pixXIntermed]
+			Combined_Qy_intermediate[pixYIntermed - 1, pixYIntermed + pixY - 1] = qy_val[p-pixYIntermed]
+			FindDuplicates /RN=Combined_Qx Combined_Qx_intermediate
+			FindDuplicates /RN=Combined_Qy Combined_Qy_intermediate
+			Sort Combined_Qx,Combined_Qx
+			Sort Combined_Qy,Combined_Qy
+		EndIf
+
 	////*********************	
 		Duplicate/O qx_val,qx_val_s
 		Duplicate/O qy_val,qy_val_s
@@ -407,11 +408,12 @@ v_toc()
 		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
 		// Populate Combined_QxQy
 		For(ii=0;ii<xPixelsTotal;ii+=1)
-			Combined_QxQy[0][ii][] = Combined_Qx[p]
+			Combined_QxQy[0][ii][] = Combined_Qx[ii]
 		EndFor
 		For(ii=0;ii<yPixelsTotal;ii+=1)
-			Combined_QxQy[1][][ii] = Combined_Qy[p]
+			Combined_QxQy[1][][ii] = Combined_Qy[ii]
 		EndFor
+		// Populate I, Idev, and Shadow
 		For(kk=0;kk<ItemsInList(detList);kk+=1)
 			// TODO: Get I for each Qx and Qy and store it
 		EndFor 
