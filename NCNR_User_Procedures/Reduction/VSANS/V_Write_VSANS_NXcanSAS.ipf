@@ -180,7 +180,7 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	Variable monCt,lambda,offset,dist,trans,thick
 	Variable bCentX,bCentY,a2,a1a2_dist,deltaLam,bstop
 	String a1Str
-	Variable pixX,pixY,pixXIntermed,pixYIntermed
+	Variable pixX,pixY,pixIntermed
 	Variable numTextLines,ii,jj,kk
 	Variable pixSizeX,pixSizeY
 	Variable duration
@@ -201,8 +201,11 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 	if (!stringMatch(writeCombined,""))
 		Make/O/N=(0) Combined_Qx
 		Make/O/N=(0) Combined_Qy
-		Make/O/N=(0) Combined_Qx_intermediate
-		Make/O/N=(0) Combined_Qy_intermediate
+		Make/O/N=(0) Combined_I_1D
+		Make/O/N=(0) Combined_Idev_1D
+		Make/O/N=(0) Combined_Qxdev_1D
+		Make/O/N=(0) Combined_Qydev_1D
+		Make/O/N=(0) Combined_Shadow_1D
 	EndIf
 	
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
@@ -313,6 +316,10 @@ v_tic()
 		Make/O/N=(2,pixX,pixY) qxy_vals
 		Make/O/N=(pixX,pixY) shadow
 		Make/O/N=(2,pixX,pixY) SigmaQ_combined
+		If (!stringMatch(writeCombined,""))
+			Make/O/N=(pixX*pixY) shadow_1d_i
+			Make/O/N=(pixX*pixY) shadow_1d_i
+		EndIf
 		ii=0
 		do
 			jj = 0
@@ -329,21 +336,6 @@ v_tic()
 			ii+=1
 		while(ii<pixY)
 v_toc()
-
-		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
-		if (!stringMatch(writeCombined,""))
-			// TODO: Auto-combine Qdev, I, etc...
-			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
-			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
-			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
-			Redimension/N=(pixYIntermed + pixY) Combined_Qy_intermediate
-			Combined_Qx_intermediate[pixXIntermed - 1, pixXIntermed + pixX - 1] = qx_val[p-pixXIntermed]
-			Combined_Qy_intermediate[pixYIntermed - 1, pixYIntermed + pixY - 1] = qy_val[p-pixYIntermed]
-			FindDuplicates /RN=Combined_Qx Combined_Qx_intermediate
-			FindDuplicates /RN=Combined_Qy Combined_Qy_intermediate
-			Sort Combined_Qx,Combined_Qx
-			Sort Combined_Qy,Combined_Qy
-		EndIf
 
 	////*********************	
 		Duplicate/O qx_val,qx_val_s
@@ -392,6 +384,31 @@ v_toc()
 		//
 		///////////////////////////////////////////////////////////////////////////
 		
+		
+		///////////////////////////////////////////////////////////////////////////
+		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
+		if (!stringMatch(writeCombined,""))
+			// FIXME: I need to think on this... how many points do I need here? pixX*pixY?
+			pixIntermed = numpnts(Combined_Qx)
+			Redimension/N=(pixX*pixY) data
+			Redimension/N=(pixX*pixY) data_err
+			Redimension/N=(pixX*pixY) qx_val
+			Redimension/N=(pixX*pixY) qy_val
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qx
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qy
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_I_1D
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_Idev_1D
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qxdev_1D
+			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qydev_1D
+			Combined_Qx[pixIntermed-1, pixIntermed + pixX*pixY-1] = qx_val[p-pixIntermed]
+			Combined_Qy[pixIntermed-1, pixIntermed + pixX*pixY-1] = qy_val[p-pixIntermed]
+			Combined_I_1D[pixIntermed-1, pixIntermed + pixX*pixY-1] = data[p-pixIntermed]
+			Combined_Idev_1D[pixIntermed-1, pixIntermed + pixX*pixY-1] = data_err[p-pixIntermed]
+		EndIf
+		//
+		///////////////////////////////////////////////////////////////////////////
+
+		
 		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s
 		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist
 	
@@ -400,50 +417,23 @@ v_toc()
 	if (!stringMatch(writeCombined,""))
 		// This should generate a data set of zeroes of the size of the entire detector.
 		Variable x_index, y_index, qx, qy
-		Variable xPixelsTotal = DimSize(Combined_Qx, 0)
-		Variable yPixelsTotal = DimSize(Combined_Qy, 0)
+		Sort Combined_Qx,Combined_Qx,Combined_Qy,Combined_I_1D,Combined_Idev_1D
+		// FIXME: Not necessarily true... Not always a square
+		Variable xPixelsTotal = sqrt(numpnts(Combined_Qx))
+		Variable yPixelsTotal = sqrt(numpnts(Combined_Qy))
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Qx
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Qy
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_I_1D
+		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Idev_1D
 		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
 		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_SiqmaQ
-		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_I
-		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Idev
+		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_I = Combined_I_1D
+		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Idev = Combined_Idev_1D
 		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
 		// Populate Combined_QxQy
-		For(ii=0;ii<xPixelsTotal;ii+=1)
-			Combined_QxQy[0][ii][] = Combined_Qx[ii]
-		EndFor
-		For(ii=0;ii<yPixelsTotal;ii+=1)
-			Combined_QxQy[1][][ii] = Combined_Qy[ii]
-		EndFor
-		// Populate I, Idev, and Shadow
-		For(kk=0;kk<ItemsInList(detList);kk+=1)
-			// TODO: Get I for each Qx and Qy and store it
-			detStr = StringFromList(kk, detList, ";")
-			WAVE data = V_getDetectorDataW(type,detStr)
-			Redimension /N=-1 data
-			WAVE data_err = V_getDetectorDataErrW(type,detStr)
-			Redimension /N=-1 data_err
-			Wave qx_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qx_"+detStr)
-			Wave qy_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qy_"+detStr)
-			Variable qx_pts = numpnts(qx_val)
-			Variable qy_pts = numpnts(qy_val)
-			Print "==================="
-			Printf "Starting detector %s"
-			For(jj=0;jj<qx_pts;jj+=1)
-				// TODO: Get the qx_val, qy_val, index for the combined_qxqy from them
-				qx = qx_val[jj]
-				qy = qy_val[jj]
-				FindLevel /P/Q Combined_Qx, qx; x_index = V_LevelX
-				FindLevel /P/Q Combined_Qy, qy; y_index = V_LevelX
-				Printf "qx: %.9f - qy: %.9f - x_index: %.0f - y_index: %.0f\r", qx, qy, x_index, y_index
-				// TODO: Get the I and Idev for qx_val and qy_val and add it to position of index found above
-				If (numtype(x_index) == 0 && numtype(y_index) == 0)
-					// Both numerical values - append to data
-					Combined_I[x_index][y_index] = data[ii]
-					Combined_Idev[x_index][y_index] = data_err[ii]
-				EndIf
-			EndFor
-			Print "===================="
-		EndFor 
+		Combined_QxQy[0][][] = Combined_Qx
+		Combined_QxQy[1][][] = Combined_Qy
+
 		// SASData
 		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk+1
 		// Create SASdata entry
