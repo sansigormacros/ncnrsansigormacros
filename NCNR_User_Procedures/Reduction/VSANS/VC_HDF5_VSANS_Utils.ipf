@@ -546,10 +546,14 @@ Function H_HDF_ListAttributes(fname, groupName)
 //        or in FillGroupAttributesList or in FillDatasetAttributesList (from FillLists)
 //			it seems to be ridiculously complex to get such a simple bit of information - the HDF5BrowserData STRUCT
 // 			needs to be filled first. Ugh.
+
+// SRK 01-22-2021 -- comment this out in Igor 9
 #if (IgorVersion() < 9)
+	// HDF5 Browser.ipf is loaded, use the function
 			attrValue = GetPreviewString(fileID, 1, di, "/entry", "cucumber")
 #else
-			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+	// Igor 9, HDF5 Browser is an independent module
+//			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
 #endif
 			Print "attrValue = ",attrValue
 			

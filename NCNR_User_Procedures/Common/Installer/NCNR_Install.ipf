@@ -412,6 +412,10 @@ Function InstallNCNRMacros(forceInstall)
 	Print "*******Copy folder "+NCNRExtFolder+":xxx_XOP into User Special Folder, NO overwrite: "+IsMoveOK(V_flag)
 //	
 
+// Activate the HDF5 XOP if it isn't already active
+	HDF5_Copy_XOP()
+//
+
 ////////////////OLD way, moved the Folders//////////
 //// the help files
 //	MoveFolder/Z=1 homePathStr+"NCNR_Help_Files" as IHPathStr+"NCNR_Help_Files"
@@ -905,6 +909,49 @@ Function/S IsMoveOK(flag)
 	else
 		DoAlert 0,alertStr
 		return(" ERROR")
+	endif
+end
+
+//
+// Check for and, if needed, automatically create the shortcut to the HDF5 xop.
+//
+// A restart is needed to load the xop into the Igor App
+//
+// make an alias to the HDF5 XOP in the user's directory
+// - don't make an alias if Igor 9 (not needed)
+// - don't make an alias if HDF5 library methods are loaded
+//
+Function/S HDF5_Copy_XOP()
+	// Copy HDF5 XOP shortcut/alias to Igor User Procedures
+	String i_folder, i_user_procs, i_list, i_kind, i_extensions, xop_name, xop_locale, u_extensions, u_extension_locale
+	if(igorVersion() >= 9.00)
+		return("OK")
+	endif
+//	String hdf5_exists = FunctionList("*", ";", "")
+//	if(strsearch(hdf5_exists, "HDF5LibraryInfo", 0) < 0)
+	
+	if(exists("HDF5LibraryInfo") == 0)		//SRK - zero if function not found
+		i_folder = SpecialDirPath("Igor Application",0,0,0)
+		i_user_procs = SpecialDirPath("Igor Pro User Files",0,0,0)
+		i_list = IgorInfo(0)
+		i_kind = StringByKey("IGORKIND", i_list)
+		if(strsearch(i_kind, "64", 0) > 0)
+			i_extensions = "More Extensions (64-bit):File Loaders"
+			u_extensions = "Igor Extensions (64-bit)"
+			xop_name = "HDF5-64.xop"
+		else
+			i_extensions = "More Extensions:File Loaders"
+			u_extensions = "Igor Extensions"
+			xop_name = "HDF5.xop"
+		endif
+		xop_locale = i_folder+i_extensions	// these path strings are valid
+		u_extension_locale = i_user_procs+u_extensions
+		NewPath/O i_path, u_extension_locale			//SRK overwrite the path if it exists
+		CreateAliasShortcut/O/I=0 xop_locale+":"+xop_name as u_extension_locale+":"+xop_name
+		print("Shortcut created for "+xop_locale+":"+xop_name+" in directory "+u_extension_locale+".")
+	else
+		// xop name is found, nothing to do
+		print("The HDF5 xop is already enabled.")
 	endif
 end
 

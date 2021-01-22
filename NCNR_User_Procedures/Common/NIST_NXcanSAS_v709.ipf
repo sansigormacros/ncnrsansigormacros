@@ -77,7 +77,7 @@ Function NxCansas_DoOpenFileDialog()
 	String message = "Select a file"
 	String inputPath,fileName
 	String fileFilters = "Data Files (*.h5):.h5;"
-	STRUCT HDF5BrowserData bd
+//	STRUCT HDF5BrowserData bd		//SRK 01-22-2021 not sure why this is needed, fails in Igor9
 	fileFilters += "All Files:.*;"
 	Open /D /F=fileFilters /M=message refNum as fileName
 	inputPath = S_fileName
