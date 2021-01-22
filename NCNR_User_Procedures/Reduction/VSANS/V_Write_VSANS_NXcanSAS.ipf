@@ -332,7 +332,7 @@ v_toc()
 
 		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
 		if (!stringMatch(writeCombined,""))
-			// TODO: Move this to the end of the loop and auto-combine Qdev, I, etc...
+			// TODO: Auto-combine Qdev, I, etc...
 			pixXIntermed = DimSize(Combined_Qx_intermediate,0)
 			pixYIntermed = DimSize(Combined_Qy_intermediate,0)
 			Redimension/N=(pixXIntermed + pixX) Combined_Qx_intermediate
@@ -399,6 +399,7 @@ v_toc()
 	
 	if (!stringMatch(writeCombined,""))
 		// This should generate a data set of zeroes of the size of the entire detector.
+		Variable x_index, y_index, qx, qy
 		Variable xPixelsTotal = DimSize(Combined_Qx, 0)
 		Variable yPixelsTotal = DimSize(Combined_Qy, 0)
 		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
@@ -416,6 +417,32 @@ v_toc()
 		// Populate I, Idev, and Shadow
 		For(kk=0;kk<ItemsInList(detList);kk+=1)
 			// TODO: Get I for each Qx and Qy and store it
+			detStr = StringFromList(kk, detList, ";")
+			WAVE data = V_getDetectorDataW(type,detStr)
+			Redimension /N=-1 data
+			WAVE data_err = V_getDetectorDataErrW(type,detStr)
+			Redimension /N=-1 data_err
+			Wave qx_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qx_"+detStr)
+			Wave qy_val = $("root:Packages:NIST:VSANS:"+type+":entry:instrument:detector_"+detStr+":qy_"+detStr)
+			Variable qx_pts = numpnts(qx_val)
+			Variable qy_pts = numpnts(qy_val)
+			Print "==================="
+			Printf "Starting detector %s"
+			For(jj=0;jj<qx_pts;jj+=1)
+				// TODO: Get the qx_val, qy_val, index for the combined_qxqy from them
+				qx = qx_val[jj]
+				qy = qy_val[jj]
+				FindLevel /P/Q Combined_Qx, qx; x_index = V_LevelX
+				FindLevel /P/Q Combined_Qy, qy; y_index = V_LevelX
+				Printf "qx: %.9f - qy: %.9f - x_index: %.0f - y_index: %.0f\r", qx, qy, x_index, y_index
+				// TODO: Get the I and Idev for qx_val and qy_val and add it to position of index found above
+				If (numtype(x_index) == 0 && numtype(y_index) == 0)
+					// Both numerical values - append to data
+					Combined_I[x_index][y_index] = data[ii]
+					Combined_Idev[x_index][y_index] = data_err[ii]
+				EndIf
+			EndFor
+			Print "===================="
 		EndFor 
 		// SASData
 		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk+1
