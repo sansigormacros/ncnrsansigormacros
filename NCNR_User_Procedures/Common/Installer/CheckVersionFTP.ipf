@@ -123,6 +123,13 @@ Function OpenTracTicketPage()
 //	if(V_flag==1)
 //		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
 //	endif
+	String str = "Your web browser will open to the NCNR software page. "
+	str += "At the bottom of the page there is contact information for where you can submit your bug report or feature request."
+	DoAlert 1,str
+	if(V_flag==1)
+//		BrowseURL "http://danse.chem.utk.edu/trac/newticket"
+		BrowseURL "https://www.nist.gov/ncnr/data-reduction-analysis/sans-software"
+	endif
 End
 
 Function OpenHelpMoviePage()

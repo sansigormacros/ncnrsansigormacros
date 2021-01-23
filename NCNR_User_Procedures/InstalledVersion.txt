@@ -1,15 +1,16 @@
 PACKAGE_VERSION=8.02;
 
 
-SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
 
 Only the first line of the file is read in.
+It MUST be of the format: PACKAGE_VERSION=a.bc;
+
 Igor will use the NumberByKey operation to get the 
 version number from the string
 
-These are the current versions as of:
-30 MAY 2013 SRK
+SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
 
-These version numbers are out-of-date as of March 2020
+These is the current version as of:
+22 JAN 2021 SRK
 
 
