@@ -140,3 +140,4 @@ Function OpenHelpMoviePage()
 		BrowseURL "http://www.ncnr.nist.gov/programs/sans/data/movies/reduction_analysis_movies.html"
 	endif
 End
+
