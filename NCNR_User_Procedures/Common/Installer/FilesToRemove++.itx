@@ -37,41 +37,45 @@ X SetScale/P x 0,1,"", IgProcFolders; SetScale y 0,0,"", IgProcFolders
 
 WAVES/T	IHFiles
 BEGIN
-	"SANS_Reduction_Help_v5.ihf"
+	"BetaSANSRednTools_APR08.ihf"
+	"EventModeData_Help_v1.0.ihf"
+	"NCNR_Help_Files"
+	"Polarization_Reduction_v1.0.ihf"
+	"Put in Igor Help Files"
+	"Real_Space_Modeling_Help_v0.1.ihf"
+	"SANSAnalysisHelp(B).ihf"
 	"SANSReductionHelp_4p2.ihf"
 	"SANS_Analysis_Docs_v3.00.ihf"
-	"SANSAnalysisHelp(B).ihf"
+	"SANS_Analysis_Docs_v4.00.ihf"
+	"SANS_Analysis_Docs_v4.10.ihf"
+	"SANS_Analysis_Docs_09JUN06.ihf"
 	"SANS_Model_Docs_v3.00.ihf"
 	"SANS_Model_Docs_v3.01.ihf"
-	"USANSReductionHelp_v2.20.ihf"
-	"USANSReductionHelp_v2.00.ihf"
-	"USANSReductionHelp_v1.ihf"
-	"SANS_Analysis_Docs_09JUN06.ihf"
-	"SANS_Model_Docs_09JUN06.ihf"
-	"BetaSANSRednTools_APR08.ihf"
-	"SANS_Analysis_Docs_v4.00.ihf"
 	"SANS_Model_Docs_v4.00.ihf"
+	"SANS_Model_Docs_v4.10.ihf"
+	"SANS_Model_Docs_09JUN06.ihf"
+	"SANS_Reduction_Help_v5.ihf"
 	"SANS_Reduction_Help_v5.10.ihf"
+	"SANS_Reduction_Help_v5.20.ihf"
+	"SANS_2D_Resolution.ihf"
+	"Scattering_Simulation_v1.0.ihf"
+	"USANSReductionHelp_v1.ihf"
+	"USANSReductionHelp_v2.00.ihf"
+	"USANSReductionHelp_v2.20.ihf"
 	"USANSReductionHelp_v2.21.ihf"
-	"EventModeData_Help_v1.0.ihf"
-	"Put in Igor Help Files"
-	"NCNR_Help_Files"
+	"USANSReductionHelp_v2.3.ihf"
+	"VSANS_Reduction_Help_v0.1.ihf"
+	"VSANS_Reduction_Help_v0.2.ihf"
 END
 X SetScale/P x 0,1,"", IHFiles; SetScale y 0,0,"", IHFiles
 
-WAVES/T	IHFolders
+WAVES/T	IHFolders	UPFiles
 BEGIN
-	"Put in Igor Help Files"
-	"NCNR_Help_Files"
+	"Put in Igor Help Files"	"SASCALC.ipf"
+	"NCNR_Help_Files"	"NCNR_User_Procedures"
+	"USANSReductionHelp_v2.21.ihf"	"Put in User Procedures"
 END
 X SetScale/P x 0,1,"", IHFolders; SetScale y 0,0,"", IHFolders
-
-WAVES/T	UPFiles
-BEGIN
-	"SASCALC.ipf"
-	"NCNR_User_Procedures"
-	"Put in User Procedures"
-END
 X SetScale/P x 0,1,"", UPFiles; SetScale y 0,0,"", UPFiles
 
 WAVES/T	UPFolders

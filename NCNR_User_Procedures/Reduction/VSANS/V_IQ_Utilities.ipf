@@ -88,7 +88,7 @@ Function V_BinTypeStr2Num(binStr)
 end
 
 //
-// TODO -- binType == 4 (slit mode) should never end up here
+// (DONE) x- binType == 4 (slit mode) should never end up here, but if it does, no problem
 // -- new logic in calling routines to dispatch to proper routine
 // -- AND need to write the routine for binning_SlitMode
 //
@@ -179,7 +179,7 @@ End
 
 
 //
-// TODO -- binType == 4 (slit mode) should be the only case to end up here
+// (DONE) x- binType == 4 (slit mode) should be the only case to end up here
 // -- new logic in calling routines to dispatch to proper routine
 // -- AND need to write the routine for binning_SlitMode
 //

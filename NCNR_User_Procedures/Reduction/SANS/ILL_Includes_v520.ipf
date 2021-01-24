@@ -81,6 +81,10 @@ End
 #include "DataSetHandling"
 #include "WriteModelData_v40"
 
+#include "NIST_NXcanSAS_v709"
+#include "Write_SANS_NXcanSAS"          //NXcanSAS file writer
+
+
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features

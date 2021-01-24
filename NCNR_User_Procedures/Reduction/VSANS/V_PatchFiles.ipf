@@ -330,7 +330,7 @@ Function V_FillListBox1(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 14
+	Variable nRows = 15
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -383,7 +383,10 @@ Function V_FillListBox1(listWave,selWave)
 	listWave[13][1] = "whole_trans_error"
 	listWave[13][2] = num2str(V_getSampleTransWholeDetErr(fname))	
 		
-	
+	listWave[14][1] = "comments"
+	listWave[14][2] = V_getReductionComments(fname)	
+		
+		
 
 	return(0)
 End
@@ -1239,6 +1242,10 @@ Function V_WriteHeaderForPatch_1(fname)
 		err = V_writeSampleTransWholeDetErr(fname,val)
 	endif	
 	
+	if ((selWave[14][0] & 2^4) != 0)		//"whole_trans_error"
+		str = listWave[14][2]
+		err = V_writeReductionComments(fname,str)
+	endif	
 	
 		
 		
@@ -2518,37 +2525,146 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
 
+//
+//// original panel
+//
+//	SetDrawLayer UserBack
+//	SetDrawEnv fsize= 14*sc,fstyle= 1
+//	DrawText 85*sc,99*sc,"Current Values"
+//	SetDrawEnv fsize= 14*sc,fstyle= 1
+//	DrawText 12*sc,258*sc,"Write to all files(inlcusive)"
+//	SetDrawEnv fsize= 14*sc,fstyle= 1
+//	DrawText 12*sc,133*sc,"Run Number(s)"
+//	DrawText 262*sc,30*sc,"Beam Center [cm]"
+//
+//	
+//	Button button0,pos={sc*12,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadXYButtonProc,title="Read"
+//	Button button0_1,pos={sc*12,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteXYButtonProc,title="Write"
+//	SetVariable setvar0,pos={sc*12,141*sc},size={sc*100.00,14.00*sc},title="first"
+//	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+//	SetVariable setvar1,pos={sc*12,167*sc},size={sc*100.00,14.00*sc},title="last"
+//	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+//
+///// original panel
+//
+
+//
+///// new panel
+//
+///// function based on V_AutoBeamCenter()
+//
+	Variable dn=90
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 85*sc,99*sc,"Current Values"
+	DrawText 72*sc,(dn+116)*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files(inlcusive)"
+	DrawText 12*sc,(dn+258)*sc,"Write to all files(inlcusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 20*sc,133*sc,"Run Number(s)"
+	DrawText 12*sc,(dn+144)*sc,"Run Number(s)"
 	DrawText 262*sc,30*sc,"Beam Center [cm]"
-
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 5*sc,40*sc,"Select Open Beam Files"
 	
-	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadXYButtonProc,title="Read"
-	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteXYButtonProc,title="Write"
-	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
+	
+	Button button0,pos={sc*12,(dn+99)*sc},size={sc*50,20*sc},proc=V_ReadXYButtonProc,title="Read"
+	Button button1,pos={sc*12,(dn+220)*sc},size={sc*50,20*sc},proc=V_WriteXYButtonProc,title="Write"
+
+	Button button2,pos={sc*12,50*sc},size={sc*80,20*sc},proc=V_ClearXYButtonProc,title="Clear Table"
+
+	Button button3,pos={sc*12,80*sc},size={sc*50,20*sc},proc=V_FrontRefFileButtonProc,title="Front"
+	Button button4,pos={sc*12,110*sc},size={sc*50,20*sc},proc=V_MiddleRefFileButtonProc,title="Middle"
+	Button button5,pos={sc*12,140*sc},size={sc*50,20*sc},proc=V_BackRefFileButtonProc,title="Back"
+	
+	SetVariable setvar0,pos={sc*12,(dn+152)*sc},size={sc*100.00,14.00*sc},title="first"
 	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
+	SetVariable setvar1,pos={sc*12,(dn+178)*sc},size={sc*100.00,14.00*sc},title="last"
 	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
-
 	
+//
+///// new panel
+//
+
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch
 // display the wave	
 	Edit/W=(180*sc,40*sc,500*sc,370*sc)/HOST=#  panelW,xCtr_cm,yCtr_cm
-	ModifyTable width(Point)=0
+	ModifyTable width(Point)=0,digits=4
 	ModifyTable width(panelW)=70*sc
-	ModifyTable width(xCtr_cm)=90*sc
-	ModifyTable width(yCtr_cm)=90*sc
+	ModifyTable width(xCtr_cm)=90*sc,digits(xCtr_cm)=4
+	ModifyTable width(yCtr_cm)=90*sc,digits(yCtr_cm)=4
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 
 	SetDataFolder root:
 	
 EndMacro
+
+
+Function V_ClearXYButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+			wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
+			xCtr_cm = 0
+			yCtr_cm = 0
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_FrontRefFileButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_PickOpenForBeamCenter("F")
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_MiddleRefFileButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			V_PickOpenForBeamCenter("M")
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function V_BackRefFileButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+			if(!gIgnoreBack)
+				V_PickOpenForBeamCenter("B")
+			endif
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 Function V_ReadXYButtonProc(ba) : ButtonControl

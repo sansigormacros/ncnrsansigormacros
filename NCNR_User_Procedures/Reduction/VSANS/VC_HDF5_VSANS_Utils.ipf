@@ -1,6 +1,14 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion = 7.00
 
+
+// SRK Igor 9 change OCT 2020
+//
+// some of the functions here are from the HDF5 Browser.ipf that is automatically
+// included in Igor 9, and is all declared static, so I can't get to them here.
+// ?? can I get to them if I use the module name? HDF5Browser
+
+
 //
 // ********
 // TODO -- figure out how much of this file is really used, and how much is
@@ -496,6 +504,11 @@ Function H_Test_ListAttributes(fname,groupName)
 	return(0)
 End
 
+// SRK Igor 9 change OCT 2020
+//
+// some of the functions here are from the HDF5 Browser.ipf that is automatically
+// included in Igor 9, and is all declared static, so I can't get to them here.
+//
 Function H_HDF_ListAttributes(fname, groupName)
 	String fname, groupName
 	
@@ -526,14 +539,22 @@ Function H_HDF_ListAttributes(fname, groupName)
 		else
 
 //			HDF5AttributeInfo(fileID, "/", 1, "file_name", 0, di)
-			HDF5AttributeInfo(fileID, "/", 1, "NeXus_version", 0, di)
+			err = HDF5AttributeInfo(fileID, "/", 1, "NeXus_version", 0, di)
 			Print di
 
 //			see the HDF5 Browser  for how to get the actual <value> of the attribute. See GetPreviewString in 
 //        or in FillGroupAttributesList or in FillDatasetAttributesList (from FillLists)
 //			it seems to be ridiculously complex to get such a simple bit of information - the HDF5BrowserData STRUCT
 // 			needs to be filled first. Ugh.
+
+// SRK 01-22-2021 -- comment this out in Igor 9
+#if (IgorVersion() < 9)
+	// HDF5 Browser.ipf is loaded, use the function
 			attrValue = GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+#else
+	// Igor 9, HDF5 Browser is an independent module
+//			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+#endif
 			Print "attrValue = ",attrValue
 			
 			

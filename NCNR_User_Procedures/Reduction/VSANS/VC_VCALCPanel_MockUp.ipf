@@ -87,7 +87,7 @@ Proc DrawVCALC_Panel()
 
 // new panel size with some removed subwindow graphs
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		NewPanel /W=(34*sc,44*sc,850*sc,660*sc)/N=VCALC/K=1
+		NewPanel /W=(34*sc,44*sc,1050*sc,680*sc)/N=VCALC/K=1
 	else
 		NewPanel /W=(34,44,900,699)/N=VCALC/K=1
 	endif
@@ -105,7 +105,7 @@ Proc DrawVCALC_Panel()
 	TabControl Vtab,tabLabel(4)="Back Det",tabLabel(5)="Simul",value= 0,proc=VCALCTabProc
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		GroupBox group1,pos={sc*460,10*sc},size={sc*762,595*sc},title="Detector Panel Positions + Data"
+		GroupBox group1,pos={sc*460,10*sc},size={sc*550,610*sc},title="Detector Panel Positions + Data"
 	else	
 		GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
 	endif
@@ -120,17 +120,33 @@ Proc DrawVCALC_Panel()
 	PopupMenu popup_a,proc=VC_PresetConfigPopup
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		PopupMenu popup_b,pos={sc*670,300*sc},size={sc*142,20*sc},title="Binning type",proc=VC_RebinIQ_PopProc
+
+		SetVariable setVar_b,pos={sc*780,30*sc},size={sc*120,15*sc},title="axis Q",proc=Front2DQ_Range_SetVarProc
+		SetVariable setVar_b,limits={0.01,1,0.02},value=_NUM:0.52
+		CheckBox check_0a title="Log?",size={sc*60,20*sc},pos={sc*780,60*sc},proc=Front2DQ_Log_CheckProc
+
+		PopupMenu popup_b,pos={sc*820,320*sc},size={sc*142,20*sc},title="Binning type",proc=VC_RebinIQ_PopProc
 		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
-		SetVariable setVar_b,pos={sc*476,300*sc},size={sc*120,15*sc},title="axis Q",proc=Front2DQ_Range_SetVarProc
-		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
-		CheckBox check_0a title="Log?",size={sc*60,20*sc},pos={sc*619,300*sc},proc=Front2DQ_Log_CheckProc
+		Button AllQ,pos={sc*820,350*sc},size={sc*70,20*sc},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,help={"Show the full q-range of the dataset"}
+
+		Button Offset,pos={sc*820,380*sc},size={sc*70,20*sc},proc=VC_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,help={"Remove the offset"}
+
 	else	
 		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
 		SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
 		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
 		CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+
+		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
+		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr		
+		Button AllQ,pos={820,320},size={70,20},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,help={"Show the full q-range of the dataset"}
+
+		Button Offset,pos={820,380},size={70,20},proc=VC_RemoveOffset_ButtonProc,title="No Offset"
+		Button Offset,help={"Remove the offset"}
 	endif
 
 
@@ -246,7 +262,7 @@ Proc DrawVCALC_Panel()
 
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 	// note that the dimensions here are not strictly followed since the aspect ratio is set below
-		Display/W=(475*sc,330*sc,755*sc,590*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
+		Display/W=(475*sc,310*sc,800*sc,620*sc)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	else
 		Display/W=(475,332,814,631)/HOST=# root:Packages:NIST:VSANS:VCALC:fv_degY vs root:Packages:NIST:VSANS:VCALC:fv_degX
 	endif	
@@ -256,6 +272,8 @@ Proc DrawVCALC_Panel()
 	ModifyGraph tick=2,mirror=1,grid=2
 //	Label left "Intensity"
 //	Label bottom "Q"	
+//	Legend/A=LB
+	Legend/C/N=text0/J/A=LB "\\Z08"
 	SetActiveSubwindow ##
 
 
@@ -291,12 +309,14 @@ Proc DrawVCALC_Panel()
 	PopupMenu VCALCCtrl_1b,proc=VC_SampleApShapeSelectPopup
 	PopupMenu VCALCCtrl_1c,pos={sc*270,(280-50)*sc},size={sc*132,20*sc},title="Aperture Diam (cm)",disable=1
 	PopupMenu VCALCCtrl_1c,mode=1,popvalue="1.27",value= root:Packages:NIST:VSANS:VCALC:gSampleApertureDiam
+	PopupMenu VCALCCtrl_1c,proc=VC_SampleAperDiamSelectPopup
 	SetVariable VCALCCtrl_1d,pos={sc*25,(280-50)*sc},size={sc*210,15*sc},title="Sam Ap to Gate Valve (cm)"//,bodywidth=50
 	SetVariable VCALCCtrl_1d,limits={4,40,0.1},value=_NUM:22,proc=VC_A2_to_GV_SetVarProc,disable=1
 	SetVariable VCALCCtrl_1e,pos={sc*25,(310-50)*sc},size={sc*210,15*sc},title="Sam Pos to Gate Valve (cm)"
 	SetVariable VCALCCtrl_1e,limits={4,40,0.1},value=_NUM:11,proc=VC_Sam_to_GV_SetVarProc,disable=1	
-	PopupMenu VCALCCtrl_1f,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture width (mm)",disable=1
-	PopupMenu VCALCCtrl_1f,mode=1,popvalue="1 mm",value= root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
+	PopupMenu VCALCCtrl_1f,pos={sc*270,(310-50)*sc},size={sc*132,20*sc},title="Aperture width (cm)",disable=1
+	PopupMenu VCALCCtrl_1f,mode=1,popvalue="0.1 cm",value= root:Packages:NIST:VSANS:VCALC:gSampleAperturewidth
+	PopupMenu VCALCCtrl_1f,proc=VC_SampleAperDiamSelectPopup
 
 // tab(2) - Front detector panels, initially not visible
 	SetVariable VCALCCtrl_2a,pos={sc*30,(260-50)*sc},size={sc*170,15*sc},title="LEFT Offset (cm)",proc=VC_FDet_LR_SetVarProc
@@ -337,8 +357,10 @@ Proc DrawVCALC_Panel()
 //	PopupMenu VCALCCtrl_4c,mode=1,popvalue="2D",value= root:Packages:NIST:VSANS:VCALC:gBackDetType
 
 // tab(5) - Simulation setup
- 	SetVariable VCALCCtrl_5a,pos={sc*40,(290-50)*sc},size={sc*220,15*sc},title="Neutrons on Sample (imon)"
+ 	SetVariable VCALCCtrl_5a,pos={sc*40,(290-50)*sc},size={sc*260,15*sc},title="Neutrons on Sample (imon)"
 	SetVariable VCALCCtrl_5a,limits={1e7,1e15,1e7},disable=1,value=_NUM:1e11,proc=VC_SimImon_SetVarProc
+ 	SetVariable VCALCCtrl_5c,pos={sc*40,(320-50)*sc},size={sc*220,15*sc},title="Counting Time (s)"
+	SetVariable VCALCCtrl_5c,limits={1,1e6,10},disable=1,value=_NUM:600,proc=VC_SimCtTime_SetVarProc
 	PopupMenu VCALCCtrl_5b,pos={sc*40,(260-50)*sc},size={sc*200,20*sc},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
@@ -373,6 +395,26 @@ Function V_VCALCShowMaskButtonProc(ba) : ButtonControl
 	return 0
 End
 
+
+//function to remove the trace offset
+// VCALC#Panels_IQ
+Function VC_RemoveOffset_ButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+	ModifyGraph/W=VCALC#Panels_IQ muloffset={0,0}
+	
+	return(0)
+End
+
+
+//function to restore the graph axes to full scale, undoing any zooming
+Function VC_AllQ_Plot_1D_ButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	SetAxis/A/W=VCALC#Panels_IQ
+
+	return(0)
+End
 
 Function V_VCALCSaveConfiguration(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -449,7 +491,7 @@ Function V_VCALCRecalcButtonProc(ba) : ButtonControl
 			// click code here
 			
 			VC_Recalculate_AllDetectors()
-				
+			
 			break
 		case -1: // control being killed
 			break
@@ -463,6 +505,7 @@ End
 //
 Function VC_Recalculate_AllDetectors()
 
+//V_tic()
 // calculates Q for each panel
 // and fills 2D panels with model data
 // then plots the 2D panel
@@ -470,17 +513,43 @@ Function VC_Recalculate_AllDetectors()
 	fPlotMiddlePanels()
 	fPlotFrontPanels()
 
+//V_toc()
+
+
 // generate a proper mask based on hard+soft shadowing
 	VC_ResetVCALCMask()
 	VC_DrawVCALCMask()
 
 
-// generate the 1D I(q)
+// update values on the panel
+	V_beamIntensity()
+
+
+//	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
+	
+	// fill in the Qmin and Qmax values, based on Q_Tot for the 2D panels (not including mask)
+	V_QMinMax_Back()
+	V_QMinMax_Middle()
+	V_QMinMax_Front()
+
+
+	//calculate beam diameter and beamstop size 
+	V_BeamDiamDisplay("maximum", "MR")	//TODO -- hard-wired here for the Middle carriage (and in the SetVar label)
+	V_BeamStopDiamDisplay("MR")
+	
+	//calculate the "real" QMin with the beamstop
+	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
+	
+
+//V_tic()
+//// generate the 1D I(q) - get the values, re-do the calc at the end
 	String popStr
 	String collimationStr = "pinhole"
 	ControlInfo/W=VCALC popup_b
-	popStr = S_Value		//
+	popStr = S_Value
 	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
+//V_toc()
 
 	// plot the results (1D)
 	String type = "VCALC"
@@ -495,26 +564,13 @@ Function VC_Recalculate_AllDetectors()
 	Execute ("V_Front_IQ_Graph"+str)
 
 
-// update values on the panel
-	V_beamIntensity()
-	
-//	Print "Beam diam (middle) = ",VC_beamDiameter("horizontal",2)		//middle carriage
-	
-	// fill in the Qmin and Qmax values, based on Q_Tot for the 2D panels (not including mask)
-	V_QMinMax_Back()
-	V_QMinMax_Middle()
-	V_QMinMax_Front()
-	
-	//calculate beam diameter and beamstop size 
-	V_BeamDiamDisplay("maximum", "MR")	//TODO -- hard-wired here for the Middle carriage (and in the SetVar label)
-	V_BeamStopDiamDisplay("MR")
-	
-	//calculate the "real" QMin with the beamstop
-	V_QMin_withBeamStop("MR")		//TODO -- hard-wired here as the middle carriage and MR panel
-	
+// generate the 1D I(q)
+//	V_QBinAllPanels_Circular("VCALC",V_BinTypeStr2Num(popStr),collimationStr)
+
 	// multiply the averaged data by the shadow factor to simulate a beamstop
 	V_IQ_BeamstopShadow()
-	
+
+		
 	return(0)
 End
 
@@ -576,6 +632,82 @@ Function VCALCTabProc(name,tab)
 		endif
 	endfor
 	
+	String str,str2
+	Variable val,val2
+	STRUCT WMPopupAction pa
+
+	// if switching to the collim (tab=0) or sample (tab=1) then pop the source shape menu
+	// if it's circular so that the "width" popup is not displayed
+	//
+	// if rectangular, then the proper values (and saved ones) must be displayed
+
+	if(tab == 0)
+		ControlInfo VCALCCtrl_0e
+		if(cmpstr(S_Value,"circular")==0)
+			ControlInfo VCALCCtrl_0f		//the source diam, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			pa.popStr="circular"
+			pa.eventCode = 2		//mouse up
+			VC_SourceApShapeSelectPopup(pa)
+			PopupMenu VCALCCtrl_0f,popvalue=str,mode=val
+
+		endif
+		if(cmpstr(S_Value,"rectangular")==0)
+			ControlInfo VCALCCtrl_0f		//the source width, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			ControlInfo VCALCCtrl_0g		//the source height, could have different value if Ng=0
+			str2=S_Value
+			val2=V_Value
+			
+			pa.popStr="rectangular"
+			pa.eventCode = 2		//mouse up
+			VC_SourceApShapeSelectPopup(pa)
+			
+			PopupMenu VCALCCtrl_0f,popvalue=str,mode=val
+			PopupMenu VCALCCtrl_0g,popvalue=str2,mode=val2
+
+		endif
+	endif
+	
+	// and the same for the sample tab
+	if(tab == 1)
+		ControlInfo VCALCCtrl_1b
+		if(cmpstr(S_Value,"circular")==0)
+			ControlInfo VCALCCtrl_1c		//the sample diam, save the value
+			str=S_Value
+			val = V_Value
+			
+			pa.popStr="circular"
+			pa.eventCode = 2		//mouse up
+			VC_SampleApShapeSelectPopup(pa)
+			PopupMenu VCALCCtrl_1c,popvalue=str,mode=val
+
+		endif
+		
+		if(cmpstr(S_Value,"rectangular")==0)
+			ControlInfo VCALCCtrl_1c		//the source width, could have different value if Ng=0
+			str=S_Value
+			val=V_Value
+			
+			ControlInfo VCALCCtrl_1f		//the source height, could have different value if Ng=0
+			str2=S_Value
+			val2=V_Value
+			
+			pa.popStr="rectangular"
+			pa.eventCode = 2		//mouse up
+			VC_SampleApShapeSelectPopup(pa)
+			
+			PopupMenu VCALCCtrl_1c,popvalue=str,mode=val
+			PopupMenu VCALCCtrl_1f,popvalue=str2,mode=val2
+
+		endif
+		
+		
+	endif
 	return(0)
 End
 
@@ -645,8 +777,9 @@ Function VC_SourceAperDiamSelectPopup(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			
-			Print "Not filled in yet"
-			
+
+			V_beamIntensity()
+						
 			// a recalculation is needed after the change
 			//Recalculate_AllDetectors()
 					
@@ -660,15 +793,38 @@ End
 
 
 
+Function VC_SampleAperDiamSelectPopup(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+
+			V_beamIntensity()
+						
+			// a recalculation is needed after the change
+			//Recalculate_AllDetectors()
+					
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 //
-// see V_GuideSliderProc() for apossible workaround
+// see V_GuideSliderProc() for a possible workaround
 ////
 //	String/G gSourceDiam = "6.0 cm;"
 //	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-//	String/G gSourceApertureWidth = "1 mm;2 mm;3 mm;"
-//	String/G gSourceApertureHeight = "100 mm;200 mm;"
+//	String/G gSourceApertureWidth = "0.1 cm;0.25 cm;0.5 cm;"
+//	String/G gSourceApertureHeight = "10.0 cm;15.0 cm;"
 //	
-// when a given shape is chosen udate the size parameters
+// when a given shape is chosen update the size parameters
 Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
@@ -699,29 +855,31 @@ Function VC_SourceApShapeSelectPopup(pa) : PopupMenuControl
 					
 					break
 				case "rectangular":
-					apStr = "100 mm;200 mm;"
+					apStr = "10.0 cm;15.0 cm;"
 					diam = apStr
-					PopupMenu VCALCCtrl_0f,title="source height",mode=1,popvalue="100 mm"
+					PopupMenu VCALCCtrl_0f,title="source height",mode=2,popvalue="15.0 cm"
 
-					apStr = "1 mm;2 mm;3 mm;"
+					apStr = "0.1 cm;0.25 cm;0.5 cm;"
 					wid = apStr
-					PopupMenu VCALCCtrl_0g,disable=0,title="source width",mode=1,popvalue="1 mm"
+					PopupMenu VCALCCtrl_0g,disable=0,title="source width",mode=2,popvalue="0.25 cm"
 					
 					break
-				case "converging pinholes":
-					apStr = "0.75 cm;1.5 cm;3.0 cm;"
-					diam = apStr			// change the global value
-					PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
-
-					PopupMenu VCALCCtrl_0g,disable=1
-					break
+//				case "converging pinholes":
+//					apStr = "0.75 cm;1.5 cm;3.0 cm;"
+//					diam = apStr			// change the global value
+//					PopupMenu VCALCCtrl_0f,title="source diam",mode=1,popvalue="0.75 cm"
+//
+//					PopupMenu VCALCCtrl_0g,disable=1
+//					break
 					
 			endswitch	
-			Print "Not filled in yet"
+//			Print "Not filled in yet"
 
 			// a recalculation is needed after the change
-			//Recalculate_AllDetectors()
+			//VC_Recalculate_AllDetectors()
 			
+			// ay least update the intensity
+			V_beamIntensity()
 
 			break
 		case -1: // control being killed
@@ -734,8 +892,8 @@ End
 
 //
 //	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
-//	String/G gSampleApertureWidth = "1 mm;2 mm;3 mm;"
-//	String/G gSampleApertureHeight = "100 mm;200 mm;"
+//	String/G gSampleApertureWidth = "0.125 cm;0.2 cm;0.3 cm;"
+//	String/G gSampleApertureHeight = "7.5 cm;10.0 cm;"
 //
 
 // when a given shape is chosen udate the size parameters
@@ -762,29 +920,31 @@ Function VC_SampleApShapeSelectPopup(pa) : PopupMenuControl
 					
 					break
 				case "rectangular":
-					apStr = "100 mm;200 mm;300 mm"
+					apStr = "7.5 cm;10.0 cm;"
 					diam = apStr
-					PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="100 mm"
+					PopupMenu VCALCCtrl_1c,title="Aperture Height",mode=1,popValue="7.5 cm"
 
-					apStr = "1 mm;2 mm;3 mm"
+					apStr = "0.125 cm;0.2 cm;0.3 cm"
 					wid = apStr
-					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="1 mm"
+					PopupMenu VCALCCtrl_1f,disable=0,title="Aperture Width",mode=1,popValue="0.125 cm"
 
 					break
-				case "converging pinholes":
-					apStr = "1.27;1.59;1.0;2.0;"
-					diam = apStr
-					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
-
-					PopupMenu VCALCCtrl_1f,disable=1
-					break
+//				case "converging pinholes":
+//					apStr = "1.27;1.59;1.0;2.0;"
+//					diam = apStr
+//					PopupMenu VCALCCtrl_1c,title="Aperture Diam",mode=1,popValue="1.27"
+//
+//					PopupMenu VCALCCtrl_1f,disable=1
+//					break
 					
 			endswitch	
-			Print "Not filled in yet"
+//			Print "Not filled in yet"
 
 			// a recalculation is needed after the change
-			//Recalculate_AllDetectors()
+			//VC_Recalculate_AllDetectors()
 			
+			//or at least update the beam intensity
+			V_beamIntensity()
 
 			break
 		case -1: // control being killed
@@ -1066,8 +1226,39 @@ Function VC_Lambda_SetVarProc(sva) : SetVariableControl
 	return 0
 End
 
+
+// 
+
+//
+// setVar for the simulation counting time
+//
+Function VC_SimCtTime_SetVarProc(sva) : SetVariableControl
+	STRUCT WMSetVariableAction &sva
+
+	switch( sva.eventCode )
+		case 1: // mouse up
+		case 2: // Enter key
+		case 3: // Live update
+			Variable dval = sva.dval
+			String sval = sva.sval
+
+			// calc new iMon
+			Variable iMon = V_beamIntensity() * dval
+	//		Print iMon
+			SetVariable VCALCCtrl_5a,value=_NUM:iMon			//display the value in the iMon control
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
 //
 // setVar for the simulation monitor count
+//
 //
 Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
@@ -1080,6 +1271,12 @@ Function VC_SimImon_SetVarProc(sva) : SetVariableControl
 			String sval = sva.sval
 
 //			Recalculate_AllDetectors()		
+
+			// calc new count time
+			Variable ctTime = dval/V_beamIntensity()
+	//		Print ctTime
+			SetVariable VCALCCtrl_5c,value=_NUM:ctTime			//display the value in the ctTime control				
+				
 				
 			break
 		case -1: // control being killed
@@ -1576,20 +1773,20 @@ Proc VC_Initialize_Space()
 // popup strings for each tab (then use the string in the panel)
 // tab 0 - collimation
 	String/G gMonochromatorType = "Velocity Selector;Graphite;White Beam;Super White Beam;"
-	String/G gSourceShape = "circular;rectangular;converging pinholes;"
+	String/G gSourceShape = "circular;rectangular;"		//converging pinholes;"
 	String/G gSourceDiam = "6.0 cm;"
 	String/G gSourceDiam_0g = "0.75 cm;1.5 cm;3.0 cm;"		// values from John Mar 2018
-	String/G gSourceApertureWidth = "1 mm;2 mm;3 mm;"
-	String/G gSourceApertureHeight = "100 mm;200 mm;"
+	String/G gSourceApertureWidth = "0.1 cm;0.25 cm;0.5 cm;"
+	String/G gSourceApertureHeight = "10.0 cm;15.0 cm;"
 
 	String/G gDeltaLambda = "0.12;"
 	
 // tab 1 - sample conditions
 	String/G gTableLocation = "Changer;Stage;"
-	String/G gSampleApertureShape = "circular;rectangular;converging pinholes;"
+	String/G gSampleApertureShape = "circular;rectangular;"		//converging pinholes;"
 	String/G gSampleApertureDiam = "1.27;1.59;1.0;2.0;"
-	String/G gSampleApertureWidth = "1 mm;2 mm;3 mm;"
-	String/G gSampleApertureHeight = "100 mm;200 mm;"
+	String/G gSampleApertureWidth = "0.125 cm;0.2 cm;0.3 cm;"
+	String/G gSampleApertureHeight = "7.5 cm;10.0 cm;"
 	
 // tab 2
 
@@ -1927,7 +2124,7 @@ Function V_BeamStopDiamDisplay(detStr)
 
 	NVAR val = root:Packages:NIST:VSANS:VCALC:gBeamStopDiam
 
-	val = VC_beamstopDiam(detStr)/2.54		//return the value in inches
+	val = VC_beamstopDiam(detStr)/2.54		//convert the value from cm to inches
 
 	return(0)
 End

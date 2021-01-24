@@ -1230,6 +1230,7 @@ function v_toc()
 	variable ttTime = stopMSTimer(tictoc)
 	printf "%g seconds\r", (ttTime/1e6)
 	killvariables/Z tictoc
+	return(ttTime/1e6)
 end
 
 

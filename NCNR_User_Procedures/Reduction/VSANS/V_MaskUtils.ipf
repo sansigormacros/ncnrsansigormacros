@@ -429,7 +429,7 @@ Function V_MaskToolsButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			ShowTools rect
+			ShowTools/A rect			// /A flag added to workaround Igor 9(beta) bug
 			
 			SetDrawLayer/W=MaskEditPanel ProgFront
 			SetDrawEnv/W=MaskEditPanel xcoord= bottom,ycoord= left,save	//be sure to use axis coordinate mode
@@ -1148,9 +1148,9 @@ Proc V_Display_Det_Panels()
 	PopupMenu popup3,pos={sc*350,10.00*sc},size={sc*83.00,23.00*sc},title="Average Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup3,mode=1,value= #"\"Circular;Sector;Annular;\""
 //	Button button0,pos={sc*520.00,10.00*sc},size={sc*110.00,20.00*sc},proc=V_UpdatePanelsButtonProc,title="Update Display"
-	Button button1,pos={sc*520.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Toggle Mask"
-	Button button2,pos={sc*350.00,40.00*sc},size={sc*120.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Show Avg Range"
-	Button button3,pos={sc*350.00,70.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
+	Button button1,pos={sc*360.00,40.00*sc},size={sc*160.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Regular Mask"
+	Button button2,pos={sc*360.00,70.00*sc},size={sc*160.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Special+Reg Mask"
+	Button button3,pos={sc*530.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
 	Button button4,pos={sc*720.00,10.00*sc},size={sc*25.00,20.00*sc},proc=V_AvgPanelHelpButtonProc,title="?"
 
 	SetVariable setvar0,pos={sc*20,40*sc},size={sc*160,23*sc},title="Annulus q-center (A)"
@@ -1749,13 +1749,50 @@ Function V_ShowAvgRangeButtonProc(ba) : ButtonControl
 					else
 						state = 1
 					endif
-					
+
+// SRK 110420					
+					// get the combination of the two masks
 					if(cmpstr(carrStr,"F") == 0)
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL:Overlay_FL")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL:AvgOverlay_FL")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR:Overlay_FR")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR:AvgOverlay_FR")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:Overlay_FT")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT:AvgOverlay_FT")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB:Overlay_FB")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB:AvgOverlay_FB")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
 						V_OverlayFourAvgMask(folderStr,"FL",state)
 						V_OverlayFourAvgMask(folderStr,"FR",state)
 						V_OverlayFourAvgMask(folderStr,"FT",state)
 						V_OverlayFourAvgMask(folderStr,"FB",state)
 					else
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML:Overlay_ML")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML:AvgOverlay_ML")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR:Overlay_MR")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MR:AvgOverlay_MR")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT:Overlay_MT")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT:AvgOverlay_MT")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+						wave reg_mask = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB:Overlay_MB")
+						wave overlay = $("root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB:AvgOverlay_MB")
+						overlay = (reg_mask == 1 || overlay == 1) ? 1 : 0
+					
+					
+					
 						V_OverlayFourAvgMask(folderStr,"ML",state)
 						V_OverlayFourAvgMask(folderStr,"MR",state)
 						V_OverlayFourAvgMask(folderStr,"MT",state)

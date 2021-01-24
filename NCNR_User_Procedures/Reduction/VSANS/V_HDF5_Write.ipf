@@ -6794,6 +6794,26 @@ Function V_writeSampleTransmission(fname,val)
 	return(err)
 end
 
+
+// fname is a local WORK folder
+Function V_putSampleTransmission(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:VSANS:"+fname+":"
+	path += "entry:sample:transmission"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 //transmission error (one sigma)
 Function V_writeSampleTransError(fname,val)
 	String fname

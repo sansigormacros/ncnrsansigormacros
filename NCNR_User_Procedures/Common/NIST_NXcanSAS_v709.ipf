@@ -2,7 +2,9 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+#if (IgorVersion() < 9)
 #include <HDF5 Browser>
+#endif
 
 //************************
 // Vers 1.15 20171003
@@ -75,7 +77,7 @@ Function NxCansas_DoOpenFileDialog()
 	String message = "Select a file"
 	String inputPath,fileName
 	String fileFilters = "Data Files (*.h5):.h5;"
-	STRUCT HDF5BrowserData bd
+//	STRUCT HDF5BrowserData bd		//SRK 01-22-2021 not sure why this is needed, fails in Igor9
 	fileFilters += "All Files:.*;"
 	Open /D /F=fileFilters /M=message refNum as fileName
 	inputPath = S_fileName
@@ -622,8 +624,20 @@ Function isNXcanSAS(filestr)
 	fileID = NxCansas_OpenFile(filestr)
 	HDF5ListGroup /F/R/Type=1/Z fileID,"/"
 	Variable length = strlen(S_HDF5ListGroup)
-	
-	if (numtype(length) != 2)
+
+
+// SRK - 19-OCT-2020	
+// in Igor 9, length = 0 for non-HDF5 files, so numtype is a normal number and every file tests
+// as HDF5
+//
+// V_flag will be set to non-zero if there is an error listing the groups.
+// use this as the flag for Y/N
+//	
+//	if (numtype(length) != 2)
+//		isHDF5File = 1
+//	endif
+
+	if(V_flag == 0)
 		isHDF5File = 1
 	endif
 	

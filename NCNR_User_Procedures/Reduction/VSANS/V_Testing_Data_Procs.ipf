@@ -345,6 +345,12 @@ End
 
 // RunFuncWithProfiling(yourFuncHere)
 
+
+// for recalculation of VCALC results
+//
+Function V_ProfileVCALC_Recalc()
+	VC_Recalculate_AllDetectors()
+end
 //
 // function to profile can have no parameters, so hard-wire the file name
 Function V_ProfileFileLoad()

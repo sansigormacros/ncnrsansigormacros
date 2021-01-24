@@ -109,21 +109,20 @@ Function V_Correct(cor_mode)
 		return(err)
 	endif
 	
-	// -- this is not implemented	
 	//check for trans==1
-//	NVAR doCheck=root:Packages:NIST:gDoTransCheck
+	NVAR doCheck = root:Packages:NIST:VSANS:Globals:gDoTransCheck
 //	Wave/Z samR=root:Packages:NIST:SAM:RealsRead
 //	Wave/Z empR=root:Packages:NIST:EMP:RealsRead
-//	if(doCheck)
-//		trans = samR[4]
-//		newTrans=GetNewTrans(trans,"SAM")		//will change value if necessary
-//		if(numtype(newTrans)==0)
-//			samR[4] = newTrans		//avoid user abort assigning NaN
-//		endif
-//		if(trans != newTrans)
-//			print "Using SAM trans = ",samR[4]
-//		endif
-//	endif
+	if(doCheck)
+		trans = V_getSampleTransmission("SAM")
+		newTrans=V_GetNewTrans(trans,"SAM")		//will change value if necessary
+		if(numtype(newTrans)==0)  //avoid user abort assigning NaN
+			V_putSampleTransmission("SAM",newTrans)
+		endif
+		if(trans != newTrans)
+			print "Using SAM trans = ",newTrans
+		endif
+	endif
 	
 	//copy SAM information to COR, wiping out the old contents of the COR folder first
 	//do this even if no correction is dispatched (if incorrect mode)
@@ -138,17 +137,17 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// -- not implemented
-//			if(doCheck)
-//				trans = empR[4]
-//				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
-//				if(numtype(newTrans)==0)
-//					empR[4] = newTrans
-//				endif
-//				if(trans != newTrans)
-//					print "Using EMP trans = ",empR[4]
-//				endif
-//			endif
+			// -- 
+			if(doCheck)
+				trans = V_getSampleTransmission("EMP")
+				newTrans=V_GetNewTrans(trans,"EMP")		//will change value if necessary
+				if(numtype(newTrans)==0)
+					V_putSampleTransmission("EMP",newTrans)
+				endif
+				if(trans != newTrans)
+					print "Using EMP trans = ",newTrans
+				endif
+			endif
 			err = V_WorkDataExists("BGD")
 			if(err==1)
 				return(err)
@@ -167,17 +166,17 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// - not implemented
-//			if(doCheck)
-//				trans = empR[4]
-//				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
-//				if(numtype(newTrans)==0)
-//					empR[4] = newTrans
-//				endif
-//				if(trans != newTrans)
-//					print "Using EMP trans = ",empR[4]
-//				endif
-//			endif
+			// -
+			if(doCheck)
+				trans = V_getSampleTransmission("EMP")
+				newTrans=V_GetNewTrans(trans,"EMP")		//will change value if necessary
+				if(numtype(newTrans)==0)
+					V_putSampleTransmission("EMP",newTrans)
+				endif
+				if(trans != newTrans)
+					print "Using EMP trans = ",newTrans
+				endif
+			endif
 
 			err = V_CorrectMode_3()
 			break
@@ -189,17 +188,17 @@ Function V_Correct(cor_mode)
 			if(err==1)
 				return(err)
 			Endif
-			// -- not implemented
-//			if(doCheck)
-//				trans = empR[4]
-//				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
-//				if(numtype(newTrans)==0)
-//					empR[4] = newTrans
-//				endif
-//				if(trans != newTrans)
-//					print "Using EMP trans = ",empR[4]
-//				endif
-//			endif
+			// -
+			if(doCheck)
+				trans = V_getSampleTransmission("EMP")
+				newTrans=V_GetNewTrans(trans,"EMP")		//will change value if necessary
+				if(numtype(newTrans)==0)
+					V_putSampleTransmission("EMP",newTrans)
+				endif
+				if(trans != newTrans)
+					print "Using EMP trans = ",newTrans
+				endif
+			endif
 			err = V_WorkDataExists("BGD")
 			if(err==1)
 				return(err)
@@ -227,16 +226,16 @@ Function V_Correct(cor_mode)
 				return(err)
 			Endif
 			// -- not implemented
-//			if(doCheck)
-//				trans = empR[4]
-//				newTrans=GetNewTrans(trans,"EMP")		//will change value if necessary
-//				if(numtype(newTrans)==0)
-//					empR[4] = newTrans
-//				endif
-//				if(trans != newTrans)
-//					print "Using EMP trans = ",empR[4]
-//				endif
-//			endif
+			if(doCheck)
+				trans = V_getSampleTransmission("EMP")
+				newTrans=V_GetNewTrans(trans,"EMP")		//will change value if necessary
+				if(numtype(newTrans)==0)
+					V_putSampleTransmission("EMP",newTrans)
+				endif
+				if(trans != newTrans)
+					print "Using EMP trans = ",newTrans
+				endif
+			endif
 			err = V_WorkDataExists("DRK")
 			if(err==1)
 				return(err)
@@ -1280,7 +1279,7 @@ End
 // sample transmission = 1
 // and handle (too many) options
 //
-xFunction V_GetNewTrans(oldTrans,type)
+Function V_GetNewTrans(oldTrans,type)
 	Variable oldTrans
 	String type
 	
@@ -1289,12 +1288,14 @@ xFunction V_GetNewTrans(oldTrans,type)
 		return(oldTrans)		//get out now if trans != 1, don't change anything
 	endif
 	//get input from the user
-	NewDataFolder/O root:myGlobals:tmp_trans
-	Variable/G root:myGlobals:tmp_trans:inputTrans=0.92
-	Variable/G root:myGlobals:tmp_trans:returnCode=0
-	DoTransInput(type)
-	NVAR inputTrans=root:myGlobals:tmp_trans:inputTrans
-	NVAR code=root:myGlobals:tmp_trans:returnCode
+	// ths folder exists for VSANS
+	// root:Packages:NIST:VSANS:Globals
+	// NewDataFolder/O root:myGlobals:tmp_trans
+	Variable/G root:Packages:NIST:VSANS:Globals:inputTrans=0.92
+	Variable/G root:Packages:NIST:VSANS:Globals:returnCode=0
+	V_DoTransInput(type)
+	NVAR inputTrans=root:Packages:NIST:VSANS:Globals:inputTrans
+	NVAR code=root:Packages:NIST:VSANS:Globals:returnCode
 	newTrans=inputTrans		//keep a copy before deleting everything
 	newCode=code
 	if(newCode==4)
@@ -1304,7 +1305,7 @@ xFunction V_GetNewTrans(oldTrans,type)
 //	KillDataFolder root:tmp_trans
 	
 	if(newCode==1)
-		Variable/G root:Packages:NIST:gDoTransCheck=0	//turn off checking
+		Variable/G root:Packages:NIST:VSANS:Globals:gDoTransCheck=0	//turn off checking
 	endif
 	
 	if(newcode==2)		//user changed trans value
@@ -1314,17 +1315,17 @@ xFunction V_GetNewTrans(oldTrans,type)
 	endif
 end
 
-xFunction V_IgnoreNowButton(ctrlName) : ButtonControl
+Function V_IgnoreNowButton(ctrlName) : ButtonControl
 	String ctrlName
 	
 //	Print "ignore now"
-	NVAR val=root:myGlobals:tmp_trans:returnCode
+	NVAR val=root:Packages:NIST:VSANS:Globals:returnCode
 	val=0		//code for ignore once
 	
 	DoWindow/K tmp_GetInputPanel		// Kill self
 End
 
-xFunction V_DoTransInput(str)
+Function V_DoTransInput(str)
 	String str
 	
 	NewPanel /W=(150,50,361,294)
@@ -1333,38 +1334,38 @@ xFunction V_DoTransInput(str)
 	DrawText 15,43,"What do you want to do?"
 	DrawText 15,125,"(Reset this in Preferences)"
 	SetVariable setvar0,pos={20,170},size={160,17},limits={0,1,0.01}
-	SetVariable setvar0,value= root:myGlobals:tmp_trans:inputTrans,title="New Transmission"
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:inputTrans,title="New Transmission"
 
-	Button button0,pos={36,56},size={120,20},proc=IgnoreNowButton,title="Ignore This Time"
-	Button button1,pos={36,86},size={120,20},proc=IgnoreAlwaysButtonProc,title="Ignore Always"
-	Button button2,pos={36,143},size={120,20},proc=UseNewValueButtonProc,title="Use New Value"
-	Button button3,pos={36,213},size={120,20},proc=AbortCorrectionButtonProc,title="Abort Correction"
+	Button button0,pos={36,56},size={120,20},proc=V_IgnoreNowButton,title="Ignore This Time"
+	Button button1,pos={36,86},size={120,20},proc=V_IgnoreAlwaysButtonProc,title="Ignore Always"
+	Button button2,pos={36,143},size={120,20},proc=V_UseNewValueButtonProc,title="Use New Value"
+	Button button3,pos={36,213},size={120,20},proc=V_AbortCorrectionButtonProc,title="Abort Correction"
 	PauseForUser tmp_GetInputPanel
 End
 
-xFunction V_IgnoreAlwaysButtonProc(ctrlName) : ButtonControl
+Function V_IgnoreAlwaysButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 //	Print "ignore always"
-	NVAR val=root:myGlobals:tmp_trans:returnCode
+	NVAR val=root:Packages:NIST:VSANS:Globals:returnCode
 	val=1		//code for ignore always
 	DoWindow/K tmp_GetInputPanel		// Kill self
 End
 
-xFunction V_UseNewValueButtonProc(ctrlName) : ButtonControl
+Function V_UseNewValueButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 //	Print "use new Value"
-	NVAR val=root:myGlobals:tmp_trans:returnCode
+	NVAR val=root:Packages:NIST:VSANS:Globals:returnCode
 	val=2		//code for use new Value
 	DoWindow/K tmp_GetInputPanel		// Kill self
 End
 
-xFunction V_AbortCorrectionButtonProc(ctrlName) : ButtonControl
+Function V_AbortCorrectionButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 //	Print "Abort"
-	NVAR val=root:myGlobals:tmp_trans:returnCode
+	NVAR val=root:Packages:NIST:VSANS:Globals:returnCode
 	val=4		//code for abort
 	DoWindow/K tmp_GetInputPanel		// Kill self
 End

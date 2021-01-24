@@ -1072,6 +1072,18 @@ Function V_MakeCorrelationMatrix()
 End
 
 
+Function V_AutoBeamCenter()
+
+	NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+
+	V_PickOpenForBeamCenter("F")
+	V_PickOpenForBeamCenter("M")
+
+	if(!gIgnoreBack)
+		V_PickOpenForBeamCenter("B")
+	endif
+
+End
 
 //////////////////////
 // different way to get the corrected beam centers
@@ -1082,14 +1094,33 @@ End
 //
 // - patch xy panel is filled in
 //
+////
+//		Call multiple times, one time for each panel in use.
+//	carrStr = "F" | "M" | "B"
 //
-Function V_AutoBeamCenter()
+//
+Function V_PickOpenForBeamCenter(carrStr)
+	String carrStr
 
-	String emptyFileName_F="",emptyFileName_M="",emptyFileName_B=""
+	String emptyFileName_F="",emptyFileName_M="",emptyFileName_B="",folder=""
 	
 	
 	NVAR gIgnoreBack = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
 	
+	Variable isF=0,isM=0,isB=0,err=0
+	
+	if(cmpstr(carrStr,"F") == 0)
+		isF = 1
+	endif
+	if(cmpStr(carrStr,"M") == 0)
+		isM = 1
+	endif
+	if(cmpStr(carrStr,"B") == 0)
+		isB = 1
+	endif
+	if((isF+isM+isB) == 0)	//if nothing set
+		return(0)
+	endif
 
 // TODO -- can I auto-identify which is the F, M, B?
 // -- can I determine whether the reference beam center has been found already?
@@ -1107,24 +1138,30 @@ Function V_AutoBeamCenter()
 //
 
 	
-// get the file names	
-	Prompt emptyFileName_F,"Empty Beam File, Front Carriage",popup,V_PickEMPBeamButton("")
-	DoPrompt "Select File",emptyFileName_F
-	if (V_Flag)
-		return 0									// user canceled
-	endif
-
-	Prompt emptyFileName_M,"Empty Beam File, Middle Carriage",popup,V_PickEMPBeamButton("")
-	DoPrompt "Select File",emptyFileName_M
-	if (V_Flag)
-		return 0									// user canceled
-	endif
-
-	if(!gIgnoreBack)
-		Prompt emptyFileName_B,"Empty Beam File, Back Carriage",popup,V_PickEMPBeamButton("")
-		DoPrompt "Select File",emptyFileName_B
+// get the file names
+	if(isF)	
+		Prompt emptyFileName_F,"Empty Beam File, Front Carriage",popup,V_PickEMPBeamButton("")
+		DoPrompt "Select File",emptyFileName_F
 		if (V_Flag)
 			return 0									// user canceled
+		endif
+	endif
+	
+	if(isM)
+		Prompt emptyFileName_M,"Empty Beam File, Middle Carriage",popup,V_PickEMPBeamButton("")
+		DoPrompt "Select File",emptyFileName_M
+		if (V_Flag)
+			return 0									// user canceled
+		endif
+	endif
+
+	if(isB)
+		if(!gIgnoreBack)
+			Prompt emptyFileName_B,"Empty Beam File, Back Carriage",popup,V_PickEMPBeamButton("")
+			DoPrompt "Select File",emptyFileName_B
+			if (V_Flag)
+				return 0									// user canceled
+			endif
 		endif
 	endif
 
@@ -1136,93 +1173,176 @@ Function V_AutoBeamCenter()
 
 
 	//force a cleanup of these three data sets so they are read from disk
-	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_F, ".", 0, 0))
-	KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_M, ".", 0, 0))
-	if(strlen(emptyFileName_B) > 0)		//to avoid killing RawVSANS!!
-		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_B, ".", 0, 0))
+	if(isF)
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_F, ".", 0, 0))
 	endif
+	if(isM)
+		KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_M, ".", 0, 0))
+	endif
+	if(isB)
+		if(strlen(emptyFileName_B) > 0)		//to avoid killing RawVSANS!!
+			KillDataFolder/Z $("root:Packages:NIST:VSANS:RawVSANS:"+ParseFilePath(0, emptyFileName_B, ".", 0, 0))
+		endif
+	endif
+
 //
 // TODO -- need to verify that the values are actually good
 // -- if they aren't, I need to do something about this...
 //
-	
-	refStr = V_getReductionComments(emptyFileName_F)
-	xRef_F = NumberByKey("XREF", refStr ,"=",";")
-	yRef_F = NumberByKey("YREF", refStr ,"=",";")
 
-	if(numtype(xRef_F)!=0 || numtype(yRef_F)!=0)		//not a normal number
-		Abort "Centroid has not been set for the Front carriage. Open the file and use the Marquee to find the centroid."
+	if(isF)	
+		refStr = V_getReductionComments(emptyFileName_F)
+		xRef_F = NumberByKey("XREF", refStr ,"=",";")
+		yRef_F = NumberByKey("YREF", refStr ,"=",";")
+	
+		if(numtype(xRef_F)!=0 || numtype(yRef_F)!=0)		//not a normal number
+			DoAlert 0, "Centroid has not been set for the Front carriage. Use the Marquee to find the centroid and re-set the file."
+		
+		
+			err = V_LoadHDF5Data(emptyFileName_F,"RAW")
+			if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+				SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+				folder = StringFromList(0,hdfDF,".")
+				
+				// this (in SANS) just passes directly to fRawWindowHook()
+				V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+										
+				// set the global to display ONLY if the load was called from here, not from the 
+				// other routines that load data (to read in values)
+				SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+				gLast = hdfDF
+				
+			endif
+		
+			return(0)		//exit
+		
+		endif
 	endif
-	
-	refStr = V_getReductionComments(emptyFileName_M)
-	xRef_M = NumberByKey("XREF", refStr ,"=",";")
-	yRef_M = NumberByKey("YREF", refStr ,"=",";")
 
-	if(numtype(xRef_M)!=0 || numtype(yRef_M)!=0)		//not a normal number
-		Abort "Centroid has not been set for the Middle carriage. Open the file and use the Marquee to find the centroid."
+	if(isM)	
+		refStr = V_getReductionComments(emptyFileName_M)
+		xRef_M = NumberByKey("XREF", refStr ,"=",";")
+		yRef_M = NumberByKey("YREF", refStr ,"=",";")
+	
+		if(numtype(xRef_M)!=0 || numtype(yRef_M)!=0)		//not a normal number
+			DoAlert 0, "Centroid has not been set for the Middle carriage. Use the Marquee to find the centroid and re-set the file."
+		
+		
+			err = V_LoadHDF5Data(emptyFileName_M,"RAW")
+			if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+				SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+				folder = StringFromList(0,hdfDF,".")
+				
+				// this (in SANS) just passes directly to fRawWindowHook()
+				V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+										
+				// set the global to display ONLY if the load was called from here, not from the 
+				// other routines that load data (to read in values)
+				SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+				gLast = hdfDF
+				
+			endif
+		
+			return(0)		//exit
+
+		endif
 	endif
 //
 //	either read the values or set default values
-	if(!gIgnoreBack)
-		refStr = V_getReductionComments(emptyFileName_B)
-		xRef_B = NumberByKey("XREF", refStr ,"=",";")
-		yRef_B = NumberByKey("YREF", refStr ,"=",";")
-		if(numtype(xRef_B)!=0 || numtype(yRef_B)!=0)		//not a normal number
-			Abort "Centroid has not been set for the Back carriage. Open the file and use the Marquee to find the centroid."
-		endif
-	else
-		//default values
-		xref_B = 340
-		yRef_B = 828
-	endif
+	if(isB)
+		if(!gIgnoreBack)
+			refStr = V_getReductionComments(emptyFileName_B)
+			xRef_B = NumberByKey("XREF", refStr ,"=",";")
+			yRef_B = NumberByKey("YREF", refStr ,"=",";")
+		
+			if(numtype(xRef_B)!=0 || numtype(yRef_B)!=0)		//not a normal number
+				DoAlert 0, "Centroid has not been set for the Back carriage. Use the Marquee to find the centroid and re-set the file."
+				
+				err = V_LoadHDF5Data(emptyFileName_B,"RAW")
+				if(!err)		//directly from, and the same steps as DisplayMainButtonProc(ctrlName)
+					SVAR hdfDF = root:file_name			// last file loaded, may not be the safest way to pass
+					folder = StringFromList(0,hdfDF,".")
+					
+					// this (in SANS) just passes directly to fRawWindowHook()
+					V_UpdateDisplayInformation("RAW")		// plot the data in whatever folder type
+											
+					// set the global to display ONLY if the load was called from here, not from the 
+					// other routines that load data (to read in values)
+					SVAR gLast = root:Packages:NIST:VSANS:Globals:gLastLoadedFile
+					gLast = hdfDF
+					
+				endif
+			
+				return(0)		//exit
 
+			endif
+		else
+			//default values
+			xref_B = 340
+			yRef_B = 828
+		endif
+	endif
+	
 	Print xRef_F,xRef_M,xRef_B
 	Print yRef_F,yRef_M,yRef_B
+
+
+
+///////////////////////////////////////////
+
 
 // pass these values to the procedure
 // but what if some of the values are bad?
 // these are both procedures, not functions...
 //	V_DeriveBeamCenters()
+
+// the waves for the panel will already exist, but I can make these temp waves
 	Make/O/T newPanelWave = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
 	Make/O/D/N=9 newXCtr_cm,newYCtr_cm
 	
 	Wave/T newPanelWave
 	Wave newXCtr_cm,newYCtr_cm
 	
-	Edit newPanelWave,newXCtr_cm,newYCtr_cm
+//	Edit newPanelWave,newXCtr_cm,newYCtr_cm
 	
 //	V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_MiddleReference)
-	// start with the front
-	// FR
-	newXCtr_cm[1] = xRef_F
-	newYCtr_cm[1] = yRef_F
-	// FL
-	newXCtr_cm[0] = xRef_F + kBCtrOffset_FL_x				//NEW Dec 2018
-	newYCtr_cm[0] = yRef_F + kBCtrOffset_FL_y
-	// FB
-	newXCtr_cm[3] = xRef_F + kBCtrOffset_FB_x					// NEW Dec 2018
-	newYCtr_cm[3] = yRef_F + kBCtrOffset_FB_y
-	// FT 
-	newXCtr_cm[2] = xRef_F + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
-	newYCtr_cm[2] = yRef_F + kBCtrOffset_FT_y
-	
-	// MR
-	newXCtr_cm[5] = xRef_M
-	newYCtr_cm[5] = yRef_M
-	// ML
-	newXCtr_cm[4] = xRef_M + kBCtrOffset_ML_x
-	newYCtr_cm[4] = yRef_M + kBCtrOffset_ML_y
-	// MB
-	newXCtr_cm[7] = xRef_M + kBCtrOffset_MB_x
-	newYCtr_cm[7] = yRef_M + kBCtrOffset_MB_y
-	// MT 
-	newXCtr_cm[6] = xRef_M + kBCtrOffset_MT_x
-	newYCtr_cm[6] = yRef_M + kBCtrOffset_MT_y
-	
-	// default value for B (approx center) in pixels
-	newXCtr_cm[8] = xref_B
-	newYCtr_cm[8] = yref_B
 
+	if(isF)
+		// start with the front
+		// FR
+		newXCtr_cm[1] = xRef_F
+		newYCtr_cm[1] = yRef_F
+		// FL
+		newXCtr_cm[0] = xRef_F + kBCtrOffset_FL_x				//NEW Dec 2018
+		newYCtr_cm[0] = yRef_F + kBCtrOffset_FL_y
+		// FB
+		newXCtr_cm[3] = xRef_F + kBCtrOffset_FB_x					// NEW Dec 2018
+		newYCtr_cm[3] = yRef_F + kBCtrOffset_FB_y
+		// FT 
+		newXCtr_cm[2] = xRef_F + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
+		newYCtr_cm[2] = yRef_F + kBCtrOffset_FT_y
+	endif
+
+	if(isM)	
+		// MR
+		newXCtr_cm[5] = xRef_M
+		newYCtr_cm[5] = yRef_M
+		// ML
+		newXCtr_cm[4] = xRef_M + kBCtrOffset_ML_x
+		newYCtr_cm[4] = yRef_M + kBCtrOffset_ML_y
+		// MB
+		newXCtr_cm[7] = xRef_M + kBCtrOffset_MB_x
+		newYCtr_cm[7] = yRef_M + kBCtrOffset_MB_y
+		// MT 
+		newXCtr_cm[6] = xRef_M + kBCtrOffset_MT_x
+		newYCtr_cm[6] = yRef_M + kBCtrOffset_MT_y
+	endif
+	
+	if(isB)	
+		// default value for B (approx center) in pixels
+		newXCtr_cm[8] = xref_B
+		newYCtr_cm[8] = yref_B
+	endif
 
 // XY patch panel values are located at:
 //	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
@@ -1238,22 +1358,33 @@ Function V_AutoBeamCenter()
 	V_Find_LoHi_RunNum(lo,hi)
 
 
+// these waves will exist since the panel is up
 //	wave/T panelW = root:Packages:NIST:VSANS:Globals:Patch:panelW
-	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
-	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
+//	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
+//	Make/O/D/N=9 root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
 	
 	wave xCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:xCtr_cm
 	wave yCtr_cm = root:Packages:NIST:VSANS:Globals:Patch:yCtr_cm
 
 //	panelW = newPanelW
-	xCtr_cm = newXCtr_cm
-	yCtr_cm = newYCtr_cm
-
+	if(isF)
+		xCtr_cm[0,3] = newXCtr_cm[p]
+		yCtr_cm[0,3] = newYCtr_cm[p]
+	endif
+	if(isM)
+		xCtr_cm[4,7] = newXCtr_cm[p]
+		yCtr_cm[4,7] = newYCtr_cm[p]
+	endif	
+	if(isB)
+		xCtr_cm[8] = newXCtr_cm[8]
+		yCtr_cm[8] = newYCtr_cm[8]
+	endif	
+	
 	
 	// open the panel
-	Execute "V_PatchDet_xyCenters_Panel()"
+//	Execute "V_PatchDet_xyCenters_Panel()"
 	
-	DoAlert 0,"These are the new beam centers. Nothing has been written to files. You need to check the file numbers and click Write."
+//	DoAlert 0,"These are the new beam centers. Nothing has been written to files. You need to check the file numbers and click Write."
 	
 	return(0)
 End

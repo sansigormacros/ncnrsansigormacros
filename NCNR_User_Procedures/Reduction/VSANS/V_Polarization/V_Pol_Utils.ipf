@@ -296,13 +296,13 @@ Function V_ScanCellParams()
 				// CONVERT the opacity + error to the correct wavelength by multiplying
 				
 				lam = V_getWavelength(fname)
-				opacity = V_getBackPolarizer_opacityAt1Ang(fname)
+				opacity = V_getBackPolarizer_opac1A(fname)
 				foundCells[numcells][0] = tmpCell
 				foundCells[numcells][1] = num2str(lam)	
 				foundCells[numcells][2] = num2str(V_getBackPolarizer_tE(fname))	
 				foundCells[numcells][3] = num2str(V_getBackPolarizer_tE_err(fname))	
 				foundCells[numcells][4] = num2str(opacity*lam)	
-				foundCells[numcells][5] = num2str(V_getBackPolarizer_opacityAt1Ang_err(fname)*lam)	
+				foundCells[numcells][5] = num2str(V_getBackPolarizer_opac1A_err(fname)*lam)	
 				
 				// update the saved name
 				numcells += 1

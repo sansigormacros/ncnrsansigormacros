@@ -2,7 +2,6 @@
 #pragma version=5.2
 #pragma IgorVersion=6.1
 
-
 // to properly set up the template for other facility reduction templates, 
 // function NCNR() must exist here in the Includes file.
 //
@@ -89,11 +88,24 @@ End
 #include "EventModeProcessing"
 
 // SRK JAN 2013 - to make simulation easier
-#include "MC_SimulationScripting"
+// SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
+//#include "MC_SimulationScripting"
 
 // SRK JUL 2014 -- testing of HDF5 read/write as a raw data format
 #include "HDF5_ConvertVAX_to_HDF5"
 #include "HDF5gateway_NCNR"
+
+// SRK NOV 2014 -- beta of automated reduction routines
+#include "Automated_SANS_Reduction"
+
+// SRK NOV 2014 -- beta of a "run panel" for scripting of simulation
+// SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
+//#include "MC_Script_Panels"
+
+// JRK JUN 2019 -- import NXcanSAS read and write utilities
+#include "NIST_NXcanSAS_v709"
+#include "Write_SANS_NXcanSAS"
+
 
 // a simple list of items to add to the Beta menu
 // to allow testing of these features
