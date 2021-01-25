@@ -206,6 +206,8 @@ Function V_WriteNXcanSAS2DData(folderStr,pathStr,saveName,dialog)
 		Make/O/N=(0) Combined_Qxdev_1D
 		Make/O/N=(0) Combined_Qydev_1D
 		Make/O/N=(0) Combined_Shadow_1D
+		Variable xPixTotal = 0
+		Variable yPixTotal = 0
 	EndIf
 	
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
@@ -388,22 +390,21 @@ v_toc()
 		///////////////////////////////////////////////////////////////////////////
 		// Combine the qx and qy vals into the array and then match the size for combined shadow and I
 		if (!stringMatch(writeCombined,""))
-			// FIXME: I need to think on this... how many points do I need here? pixX*pixY?
 			pixIntermed = numpnts(Combined_Qx)
 			Redimension/N=(pixX*pixY) data
 			Redimension/N=(pixX*pixY) data_err
-			Redimension/N=(pixX*pixY) qx_val
-			Redimension/N=(pixX*pixY) qy_val
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qx
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qy
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_I_1D
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_Idev_1D
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qxdev_1D
 			Redimension/N=(pixIntermed + pixX*pixY) Combined_Qydev_1D
-			Combined_Qx[pixIntermed-1, pixIntermed + pixX*pixY-1] = qx_val[p-pixIntermed]
-			Combined_Qy[pixIntermed-1, pixIntermed + pixX*pixY-1] = qy_val[p-pixIntermed]
-			Combined_I_1D[pixIntermed-1, pixIntermed + pixX*pixY-1] = data[p-pixIntermed]
-			Combined_Idev_1D[pixIntermed-1, pixIntermed + pixX*pixY-1] = data_err[p-pixIntermed]
+			Combined_Qx[pixIntermed, pixIntermed + pixX*pixY-1] = qx_val[p-pixIntermed]
+			Combined_Qy[pixIntermed, pixIntermed + pixX*pixY-1] = qy_val[p-pixIntermed]
+			Combined_I_1D[pixIntermed, pixIntermed + pixX*pixY-1] = data[p-pixIntermed]
+			Combined_Idev_1D[pixIntermed, pixIntermed + pixX*pixY-1] = data_err[p-pixIntermed]
+			xPixTotal += pixX
+			yPixTotal += pixY
 		EndIf
 		//
 		///////////////////////////////////////////////////////////////////////////
@@ -417,22 +418,33 @@ v_toc()
 	if (!stringMatch(writeCombined,""))
 		// This should generate a data set of zeroes of the size of the entire detector.
 		Variable x_index, y_index, qx, qy
-		Sort Combined_Qx,Combined_Qx,Combined_Qy,Combined_I_1D,Combined_Idev_1D
-		// FIXME: Not necessarily true... Not always a square
-		Variable xPixelsTotal = sqrt(numpnts(Combined_Qx))
-		Variable yPixelsTotal = sqrt(numpnts(Combined_Qy))
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Qx
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Qy
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_I_1D
-		Redimension/N=(xPixelsTotal, yPixelsTotal) Combined_Idev_1D
-		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_QxQy
-		Make/O/N=(2,xPixelsTotal, yPixelsTotal) Combined_SiqmaQ
-		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_I = Combined_I_1D
-		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Idev = Combined_Idev_1D
-		Make/O/N=(xPixelsTotal, yPixelsTotal) Combined_Shadow
+		Make/O/N=(2,xPixTotal, yPixTotal) Combined_QxQy
+		Make/O/N=(2,xPixTotal, yPixTotal) Combined_SiqmaQ
+		Make/O/N=(xPixTotal, yPixTotal) Combined_I
+		Make/O/N=(xPixTotal, yPixTotal) Combined_Idev
+		Make/O/N=(xPixTotal, yPixTotal) Combined_Shadow
 		// Populate Combined_QxQy
-		Combined_QxQy[0][][] = Combined_Qx
-		Combined_QxQy[1][][] = Combined_Qy
+		FindDuplicates /DN=uniqueQx /TOL=0.001 Combined_Qx
+		FindDuplicates /DN=uniqueQy /TOL=0.001 Combined_Qy
+		printf "xPixTotal: %f, numpnts(uniqueQx): %f\r", xPixTotal, numpnts(uniqueQx)
+		printf "yPixTotal: %f, numpnts(uniqueQy): %f\r", yPixTotal, numpnts(uniqueQy)
+		For (ii=0;ii<xPixTotal;ii+=1)
+			Combined_QxQy[0][ii][0,xPixTotal-1] = uniqueQx[p]
+		EndFor
+		For (ii=0;ii<yPixTotal;ii+=1)
+			Combined_QxQy[1][0,yPixTotal-1][ii] = uniqueQy[p]
+		EndFor
+		// Populate Combined_I, Combined_Idev, Combined_Shadow, and Combined_SigmaQ
+		For (jj=0;jj<numpnts(Combined_Qx);jj+=1)
+			FindValue /T=0.00001 /V=(Combined_Qx[jj]) /RMD=[0][0][] Combined_QxQy
+			x_index = V_value
+			FindValue /T=0.00001 /V=(Combined_Qy[jj]) /RMD=[1][][0] Combined_QxQy
+			y_index = V_value
+			If (x_index > 0 && y_index > 0)
+				Combined_I[x_index][y_index] = Combined_I_1D[jj]
+				Combined_Idev[x_index][y_index] = Combined_Idev_1D[jj]
+			EndIf
+		EndFor
 
 		// SASData
 		sPrintf dataParent,"%ssasdata%d/",nxcansasBase,kk+1
