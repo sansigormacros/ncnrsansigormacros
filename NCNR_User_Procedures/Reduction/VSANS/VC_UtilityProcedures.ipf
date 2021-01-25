@@ -725,6 +725,11 @@ Function VC_Preset_WhiteBeam()
 	// make the Collim tab active
 	TabControl VTab value=0
 	VCALCTabProc("Collim",0)		//tab 0 	
+
+
+// after all is dont, make the wavelength not editable
+// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2//	,noedit=0	// allow user editing again
 					
 	return(0)
 end
@@ -802,6 +807,10 @@ Function VC_Preset_SuperWhiteBeam()
 	// make the Collim tab active
 	TabControl VTab value=0
 	VCALCTabProc("Collim",0)		//tab 0 	
+
+// after all is dont, make the wavelength not editable
+// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:6.2,disable=2//	,noedit=0	// allow user editing again
 		
 	return(0)
 end
@@ -877,7 +886,10 @@ Function VC_Preset_GraphiteMono()
 	TabControl VTab value=0
 	VCALCTabProc("Collim",0)		//tab 0
 		
-
+// after all is dont, make the wavelength not editable
+// wavelength
+	SetVariable VCALCCtrl_0b,value=_NUM:4.75,disable=2//	,noedit=0	// allow user editing again
+	
 	return(0)
 end
 

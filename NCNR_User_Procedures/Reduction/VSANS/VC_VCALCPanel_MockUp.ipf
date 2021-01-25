@@ -1012,7 +1012,14 @@ Function VC_MonochromSelectPopup(pa) : PopupMenuControl
 					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40"
 
 					SetVariable VCALCCtrl_0b,value=_NUM:5.3,disable=2		//wavelength
-					break		
+					break	
+				case "Super White Beam":
+					DLStr = "0.60;"
+//					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.40",value= root:Packages:NIST:VSANS:VCALC:gDeltaLambda
+					PopupMenu VCALCCtrl_0d,mode=1,popvalue="0.60"
+
+					SetVariable VCALCCtrl_0b,value=_NUM:6.2,disable=2		//wavelength
+					break	
 				default:
 					Print "Error--No match in VC_MonochromSelectPopup"
 					return(0)
@@ -1145,6 +1152,11 @@ Function VC_RebinIQ_PopProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Execute ("V_Middle_IQ_Graph"+str)
 	Execute ("V_Front_IQ_Graph"+str)
 
+//and for VCALC, be sure to multiply with the shadow factor for a 
+// realistic view of what q-range will result from the configuration
+//
+	// multiply the averaged data by the shadow factor to simulate a beamstop
+	V_IQ_BeamstopShadow()
 //	
 	return(0)	
 End
