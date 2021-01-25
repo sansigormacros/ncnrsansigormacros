@@ -611,6 +611,8 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		detList = ksDetectorListAll
 	endif
 	
+	String combinedSavePath = fullPath + "_COMBINED.DAT"
+	
 	for(kk=0;kk<ItemsInList(detList);kk+=1)
 
 		detStr = StringFromList(kk, detList, ";")
@@ -762,7 +764,7 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		ii=0
 
 // TODO
-// this loop is the slow step. it takes Å 0.7 s for F or M panels, and Å 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
+// this loop is the slow step. it takes ? 0.7 s for F or M panels, and ? 120 s for the Back panel (6144 pts vs. 1.12e6 pts)
 // find some way to speed this up!
 // MultiThreading will be difficult as it requires all the dependent functions (HDF5 reads, etc.) to be threadsafe as well
 // and there are a lot of them... and I don't know if opening a file multiple times is a threadsafe operation? 
@@ -804,12 +806,26 @@ v_toc()
 		
 //		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution
 		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as detSavePath	// write out the resolution information
+		if (kk==00)
+			Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
+		Else
+			Save/A=2/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
+		EndIf
 #else
 		Open refNum as detSavePath
 		wfprintf refNum,"%s\r\n",labelWave
 		fprintf refnum,"\r\n"
 //		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
+		Close refNum
+		// Combined file
+		Open refNum as combinedSavePath
+		if (kk==00)
+			wfprintf refNum,"%s\r\n",labelWave
+			fprintf refnum,"\r\n"
+		EndIf
+		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s
+//		wfprintf refNum,"%8g\t%8g\t%8g\t%8g\t%8g\r\n",qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s
 		Close refNum
 #endif
 		
