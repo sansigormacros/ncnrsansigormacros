@@ -87,9 +87,9 @@ Proc DrawVCALC_Panel()
 
 // new panel size with some removed subwindow graphs
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
-		NewPanel /W=(34*sc,44*sc,1050*sc,680*sc)/N=VCALC/K=1
+		NewPanel /W=(34*sc,44*sc,1050*sc,690*sc)/N=VCALC/K=1
 	else
-		NewPanel /W=(34,44,900,699)/N=VCALC/K=1
+		NewPanel /W=(34,44,1050,690)/N=VCALC/K=1
 	endif
 	
 	
@@ -107,7 +107,7 @@ Proc DrawVCALC_Panel()
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)	
 		GroupBox group1,pos={sc*460,10*sc},size={sc*550,610*sc},title="Detector Panel Positions + Data"
 	else	
-		GroupBox group1,pos={460,10},size={762,635},title="Detector Panel Positions + Data"
+		GroupBox group1,pos={460,10},size={550,610},title="Detector Panel Positions + Data"
 	endif
 	Button button_a,pos={sc*210,70*sc},size={sc*100,20*sc},title="Show Mask",proc=V_VCALCShowMaskButtonProc
 	Button button_b,pos={sc*210,100*sc},size={sc*100,20*sc},title="Recalculate",proc=V_VCALCRecalcButtonProc
@@ -134,15 +134,13 @@ Proc DrawVCALC_Panel()
 		Button Offset,help={"Remove the offset"}
 
 	else	
-		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
-		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr
-		SetVariable setVar_b,pos={476,313},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
+		SetVariable setVar_b,pos={780,30},size={120,15},title="axis Q",proc=Front2DQ_Range_SetVarProc
 		SetVariable setVar_b,limits={0.02,1,0.02},value=_NUM:0.52
-		CheckBox check_0a title="Log?",size={60,20},pos={619,313},proc=Front2DQ_Log_CheckProc
+		CheckBox check_0a title="Log?",size={60,20},pos={780,60},proc=Front2DQ_Log_CheckProc
 
-		PopupMenu popup_b,pos={670,311},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
+		PopupMenu popup_b,pos={820,320},size={142,20},title="Binning type",proc=VC_RebinIQ_PopProc
 		PopupMenu popup_b,mode=1,value= root:Packages:NIST:VSANS:VCALC:gBinTypeStr		
-		Button AllQ,pos={820,320},size={70,20},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
+		Button AllQ,pos={820,350},size={70,20},proc=VC_AllQ_Plot_1D_ButtonProc,title="All Q"
 		Button AllQ,help={"Show the full q-range of the dataset"}
 
 		Button Offset,pos={820,380},size={70,20},proc=VC_RemoveOffset_ButtonProc,title="No Offset"

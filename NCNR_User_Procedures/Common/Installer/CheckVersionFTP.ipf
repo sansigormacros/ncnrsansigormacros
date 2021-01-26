@@ -98,7 +98,7 @@ Proc CheckForLatestVersion()
 	runningVersion = NumberByKey(StringFromList(0,"PACKAGE_VERSION"), installedStr,"=",";")
 //	upToDateVersion = NumberByKey(StringFromList(0,"PACKAGE_VERSION"), currentStr,"=",";")
 	
-	If(runningVersion != upToDateVersion)
+	If(runningVersion <= upToDateVersion)
 		sprintf str,"You are running version %g and the latest version is %g.",runningVersion,upToDateVersion
 //		str += " You need to go to the NCNR website for the latest version. Do you want to go there now?"
 //		str += " You need to go to the SANS Trac website for the latest version. Do you want to go there now?"
@@ -112,7 +112,14 @@ Proc CheckForLatestVersion()
 
 		endif
 	else
-		DoAlert 0,"You are running the most up-to-date version = "+StringByKey(StringFromList(0,"PACKAGE_VERSION"), currentStr,"=",";")
+		if(runningVersion == upToDateVersion)
+			DoAlert 0,"You are running the most up-to-date version = "+StringByKey(StringFromList(0,"PACKAGE_VERSION"), currentStr,"=",";")
+		else
+		sprintf str,"You are running version %g and the latest version is %g.",runningVersion,upToDateVersion
+		str += "\r\rYou must be from the future."
+		DoAlert 1,str
+		endif
+
 	endif
 	
 	return
