@@ -809,7 +809,7 @@ v_toc()
 		if (kk==00)
 			Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
 		Else
-			Save/A=2/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
+			Save/A=2/G/M="\r\n" qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
 		EndIf
 #else
 		Open refNum as detSavePath
