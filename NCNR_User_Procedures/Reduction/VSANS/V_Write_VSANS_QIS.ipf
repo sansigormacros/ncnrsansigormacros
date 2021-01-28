@@ -815,7 +815,7 @@ v_toc()
 		
 		KillWaves/Z qx_val_s,qy_val_s,z_val_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,sw,sw_s,MaskData_s
 		
-		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist,MaskData
+		Killwaves/Z qval,sigmaQx,SigmaQy,fSubS,phi,r_dist	//,MaskData
 		
 		Print "QxQy_Export File written: ", V_GetFileNameFromPathNoSemi(detSavePath)
 	
