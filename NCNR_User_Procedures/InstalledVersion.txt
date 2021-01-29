@@ -1,4 +1,4 @@
-PACKAGE_VERSION=8.02;
+PACKAGE_VERSION=8.03;
 
 
 
@@ -10,7 +10,8 @@ version number from the string
 
 SANS_RED_VERSION=5.20;SANS_ANA_VERSION=4.10;USANS_RED_VERSION=2.3;
 
-These is the current version as of:
-22 JAN 2021 SRK
+The previous release version 8.02 was released on:
+27 JAN 2021 SRK
+
 
 

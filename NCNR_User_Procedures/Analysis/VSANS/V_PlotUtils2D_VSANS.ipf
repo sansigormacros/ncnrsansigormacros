@@ -1,22 +1,26 @@
 #pragma TextEncoding = "MacRoman"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
+//
+// JAN 2021
+// 2D NXcanSAS is the preferred output format for VSANS data, but QxQy_ASCII is still
+// a valid output format. 
 
-// AUG 2020 this file is almost completely garbage. I don't use any of this
+// NXcanSAS output puts all of the 2D reduced data into a single nexus file, storing each
+// detector panel in a structure similar to the raw data file.
+//
+// QxQy_ASCII output produces individual .DAT files for each detector
+// panel and a single _COMBINED.DAT file with all panels in one. (meant for sasView)
+//
+
+
+//
+// this file contains simple routines to load/plot .DAT files
+//
 // see instead the procedures in V_2DLoader_NXcanSAS.ipf
 // for simple load/plot of the 2D NXcanSAS output
 //
 
-
-//
-// JUL 2020
-//
-// this is probably NOT the way to save data. It's probably better to use the NXcanSAS format
-// where each scattering run is stored in a single file, and all can be loaded and plotted
-// in one easy step. Analysis is another issue, but everything is there in the NX file
-// and is in a logical structure.
-
-// so this file may eventually be deleted - as its use is very limited
 
 
 
@@ -25,17 +29,16 @@
 //
 //		Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask
 
-Proc V_LoadQxQy_VSANS_TopBottom()
-	V_LoadQxQy_VSANS(128,48)
-End
+//Proc V_LoadQxQy_VSANS_TopBottom()
+//	V_LoadQxQy_VSANS(128,48)
+//End
+//
+//Proc V_LoadQxQy_VSANS_LeftRight()
+//	V_LoadQxQy_VSANS(48,128)
+//End
 
-Proc V_LoadQxQy_VSANS_LeftRight()
-	V_LoadQxQy_VSANS(48,128)
-End
 
-
-Proc V_LoadQxQy_VSANS(numX,numY)
-	Variable numX,numY
+Proc V_LoadQxQy_ASCII_DAT_VSANS()
 	
 	SetDataFolder root:
 	
@@ -44,9 +47,12 @@ Proc V_LoadQxQy_VSANS(numX,numY)
 	String path = S_Path
 	Variable numCols = V_flag
 
+	Variable numX,numY
+
 	String w0,w1,w2,w3,w4,w5,w6,w7,w8
 	String n0,n1,n2,n3,n4,n5,n6,n7,n8
-		
+	
+	
 	if(numCols == 9)
 		// put the names of the 9 loaded waves into local names
 		n0 = StringFromList(0, S_waveNames ,";" )
@@ -112,33 +118,90 @@ Proc V_LoadQxQy_VSANS(numX,numY)
 	endif		//9-columns
 
 
-	
-	/// do this for all 2D data, whether or not resolution information was read in
-	
-	Variable/G gIsLogScale = 0
-	
-	Variable num=numpnts($w0)
-	// assume that the Q-grid is "uniform enough" for DISPLAY ONLY
-	// use the 3 original waves for all of the fitting...
+// figure out if the data was TB, LR, or COMBINED
+//
+	String typeStr=""
 
-// for L/R x=48,y=128
-// for T/B x=128,y=48
-	
-	V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
+	if(strsearch(filename,"_FT",0) > 0)
+		typeStr="TB"
+	endif
+	if(strsearch(filename,"_FB",0) > 0)
+		typeStr="TB"
+	endif
+	if(strsearch(filename,"_MT",0) > 0)
+		typeStr="TB"
+	endif
+	if(strsearch(filename,"_MB",0) > 0)
+		typeStr="TB"
+	endif
 
-	V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
-	Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
-
-	Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
-
-	Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")
-	ModifyImage $(baseStr+"_mat") ctab= {*,*,ColdWarm,0}
-
-	if(exists("root:Packages:NIST:VSANS:Globals:logLookupWave")==1)
-		ModifyImage $(baseStr+"_mat") ctabAutoscale=0,lookup= root:Packages:NIST:VSANS:Globals:logLookupWave
+	if(strsearch(filename,"_FL",0) > 0)
+		typeStr="LR"
+	endif
+	if(strsearch(filename,"_FR",0) > 0)
+		typeStr="LR"
+	endif
+	if(strsearch(filename,"_ML",0) > 0)
+		typeStr="LR"
+	endif
+	if(strsearch(filename,"_MR",0) > 0)
+		typeStr="LR"
 	endif
 	
-//	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
+	if(strsearch(filename,"_COMBINED",0) > 0)
+		typeStr = "COMBINED"
+	endif
+
+	if(cmpstr(typeStr,"TB")==0)
+		numX=128
+		numY=48
+	else
+		numX=48
+		numY=128
+	endif
+	
+	// single panels are converted into a matrix to plot out
+	// the combined panels are plotted as points with f(z) color scale
+	//
+	if(cmpstr(typeStr,"COMBINED")==0)
+	
+		Display /W=(560.4,39.8,942.6,387.2) $w1 vs $w0
+		ModifyGraph mode=3
+		ModifyGraph marker=16
+		ModifyGraph msize=1
+		ModifyGraph zColor($w1)={$w3,*,*,ColdWarm}
+		ModifyGraph logZColor=1
+	
+	else
+	
+		/// do this for all 2D data, whether or not resolution information was read in
+		
+		Variable/G gIsLogScale = 0
+		
+		Variable num=numpnts($w0)
+		// assume that the Q-grid is "uniform enough" for DISPLAY ONLY
+		// use the 3 original waves for all of the fitting...
+	
+	// for L/R x=48,y=128
+	// for T/B x=128,y=48
+		
+		V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
+	
+		V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
+		Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
+	
+		Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
+	
+		Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")
+		ModifyImage $(baseStr+"_mat") ctab= {*,*,ColdWarm,0}
+	
+		if(exists("root:Packages:NIST:VSANS:Globals:logLookupWave")==1)
+			ModifyImage $(baseStr+"_mat") ctabAutoscale=0,lookup= root:Packages:NIST:VSANS:Globals:logLookupWave
+		endif
+		
+	//	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
+
+	endif
 
 	//clean up		
 	SetDataFolder root:

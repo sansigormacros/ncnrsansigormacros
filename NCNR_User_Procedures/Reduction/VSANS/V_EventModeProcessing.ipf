@@ -63,7 +63,7 @@
 
 
 
-
+//
 // TODO:
 //
 // -- Can any of this be multithreaded?
@@ -882,9 +882,13 @@ Function V_Stream_ProcessEventLog(ctrlName)
 			V_SetLinearBins(binEndTime,timeWidth,nslices,t_longest)
 	endswitch
 
-// TODO
-// the global exists for this switch, but it is not implemented - not sure whether
-// it's correct to implement this at all --
+//
+// for VSANS, the stream data shows time reversal due to the communication
+// cycling between the 4 panels (I think), so sort the data to remove this.
+// unfortunately, this removes any chance of seeing other time errors.
+// fortunately, no time encoding errors have been seen with the tubes.
+//
+// -- still, sorting is not routinely done (there is no need)
 //
 	if(yesSortStream == 1)
 		V_SortTimeData()
@@ -1460,6 +1464,15 @@ Function V_LoadEvents()
 
 	numXYevents = 0
 
+//File byte offset		Size (bytes)		Value				Description
+//		0							5	 			'VSANS'				magic number
+//		5							2				0xMajorMinor		Revision number = 0x00
+//		7							2				n bytes				Offset to data in bytes
+//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
+//		19							1	 			'F'/'M'/'R'			detector carriage group
+//		20							2				HV (V)				HV Reading in Volt
+//		22							4				clk (Hz)				timestamp clock frequency in Hz
+//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
 
 	Open/R refnum as filepathstr
 	
