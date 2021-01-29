@@ -81,6 +81,13 @@ Menu "VSANS"
 		"Force Matrix Calculation",V_ForceMatrix()
 		"-"
 		"Detector Panel Count Report",pV_DetPanelCountReport()
+		"Plot Dead Time Per Tube",V_PlotDeadTime()
+		"Plot Event Stream per Panel",V_EventStream_by_Panel()
+		"Differentiate One Panel",pV_Differentiate_onePanel()
+		"-"
+		"Load+Display QxQy_ASCII DAT",V_LoadQxQy_ASCII_DAT_VSANS()
+		"Load+Display 2D NXcanSAS",V_Display_2D_VSANS()
+
 		//
 //		"Setup_VSANS_DIV_Struct"
 //		"Save_VSANS_DIV_Nexus"
@@ -102,8 +109,8 @@ Menu "VSANS"
 	End
 	Submenu "Polarization"
 		"Scan for new cells",V_ScanCellParams()
-		"Load 2D NXcanSAS",V_Load_2D_NXCS()
-		"Display 2D NXcanSAS",V_Display_2D_VSANS()
+//		"Load 2D NXcanSAS",V_Load_2D_NXCS()
+		"Load and Display 2D NXcanSAS",V_Display_2D_VSANS()
 	End
 //	Submenu "Work File Operations"
 //		"Convert to WORK",V_Convert_to_Workfile()

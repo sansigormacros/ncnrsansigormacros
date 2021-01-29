@@ -431,3 +431,97 @@ Function V_DetPanelCountReport(fname)
 	
 	return(0)
 End
+
+
+
+
+Proc V_PlotDeadTime()
+
+	//will ask for a file name or data foldr name
+	//
+	pV_DeadTime_Report()
+	
+	DoWindow/F DeadTimeReport
+	
+	if(V_flag == 0)
+		SetDataFolder root:
+		PauseUpdate; Silent 1		// building window...
+		Display /W=(747,235.4,1142.4,443) /K=1 DeadTimeCorrection_FB,DeadTimeCorrection_FL,DeadTimeCorrection_FR
+		DoWindow/C DeadTimeReport
+		AppendToGraph DeadTimeCorrection_FT,DeadTimeCorrection_MB,DeadTimeCorrection_ML,DeadTimeCorrection_MR
+		AppendToGraph DeadTimeCorrection_MT
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb(DeadTimeCorrection_FB)=(0,0,0),rgb(DeadTimeCorrection_FL)=(65535,16385,16385)
+		ModifyGraph rgb(DeadTimeCorrection_FR)=(2,39321,1),rgb(DeadTimeCorrection_FT)=(0,0,65535)
+		ModifyGraph rgb(DeadTimeCorrection_MB)=(39321,1,31457),rgb(DeadTimeCorrection_ML)=(48059,48059,48059)
+		ModifyGraph rgb(DeadTimeCorrection_MR)=(65535,32768,32768),rgb(DeadTimeCorrection_MT)=(0,65535,0)
+		ModifyGraph msize=2
+		ModifyGraph grid=1
+		ModifyGraph log(left)=1
+		ModifyGraph mirror=2
+		Legend/C/N=text0/J "\\s(DeadTimeCorrection_FB) DeadTimeCorrection_FB\r\\s(DeadTimeCorrection_FL) DeadTimeCorrection_FL"
+		AppendText "\\s(DeadTimeCorrection_FR) DeadTimeCorrection_FR\r\\s(DeadTimeCorrection_FT) DeadTimeCorrection_FT\r\\s(DeadTimeCorrection_MB) DeadTimeCorrection_MB"
+		AppendText "\\s(DeadTimeCorrection_ML) DeadTimeCorrection_ML\r\\s(DeadTimeCorrection_MR) DeadTimeCorrection_MR\r\\s(DeadTimeCorrection_MT) DeadTimeCorrection_MT"
+		Label left "Dead Time Correction (multiplicative)";DelayUpdate
+		Label bottom "Tube Number"
+
+	endif
+End
+
+Proc pV_DeadTime_Report(fname)
+	String fname
+	
+	V_DeadTime_Report(fname)
+end
+
+
+Function V_DeadTime_Report(fname)
+	String fname
+	
+	Variable ii
+	Variable ctTime
+	String detStr
+
+
+	for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+		detStr = StringFromList(ii, ksDetectorListNoB, ";")
+		Wave dataW = V_getDetectorDataW(fname,detStr)
+		ctTime = V_getCount_time(fname)
+
+		
+		// do the corrections for 8 tube panels
+		String orientation = V_getDet_tubeOrientation(fname,detStr)
+		Wave w_dt = V_getDetector_deadtime(fname,detStr)
+
+		Make/O/D/N=48 $("root:DeadTimeCorrection_"+detStr)
+		Wave dtc = $("root:DeadTimeCorrection_"+detStr)
+		
+		if(cmpstr(orientation,"vertical")==0)
+			//	this is data dimensioned as (Ntubes,Npix)
+			
+			MatrixOp/O sumTubes = sumRows(dataW)		// n x 1 result
+			sumTubes /= ctTime		//now count rate per tube
+			
+			dtc = 1/(1-sumTubes*w_dt)		//correction to the data (multiplicative factor)
+	
+		elseif(cmpstr(orientation,"horizontal")==0)
+		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
+	
+			MatrixOp/O sumTubes = sumCols(dataW)		// 1 x m result
+			sumTubes /= ctTime
+			
+			dtc = 1/(1-sumTubes*w_dt)		//correction to the data (multiplicative factor)
+		
+		else		
+			DoAlert 0,"Orientation not correctly passed in DeadTimeCorrectionTubes(). No correction done."
+		endif
+		
+	endfor
+
+		
+	return(0)
+end
+		
+		

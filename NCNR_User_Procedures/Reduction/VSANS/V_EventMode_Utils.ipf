@@ -4,6 +4,19 @@
 
 
 //
+// Jan 2021 -- still trying to resolve issues:
+//
+// -- the clock frequency (time step) is hard wired as 100 x 10-9 s
+//  since I still can't read a correct value from the file header
+// -- see the test function: V_ReadEventHeader()
+//
+// -- The time reversal steps in the data files as the data is collected
+// in sequence from the panels has still not been resolved. It appears to be correct
+// but I need to consult, and find more ways to verify.
+//
+
+
+//
 // There are functions in this file to generate "fake" event data for testing
 //
 
@@ -17,45 +30,19 @@
 //
 // or using FBinRead, again, filling a wave, or a chunk of the data, as needed
 //
-// Then - since the data has sequential timing, not dependent on rollovers, I can
-// chunk the data for parallel processing, and piece it back together 
-// after all of the decoding is done.
-//
 // 
 // I don't know if it's possible to use a STRUCT  definition for each 64 bit word so that I could address
 // the bytes directly - since that may not work properly in Igor, and I'm not sure how to address the 6 byte section
 // -possibly with a uchar(6) definition?
 //
-//
-// 	(from WM help) You can define an array of structures as a field in a structure:
-//		Structure mystruct
-//			STRUCT Point pt[100]			// Allowed as a sub-structure
-//		EndStructure
-//
-// -- which may be of use to read "blocks" of datq from a file using FBinRead
-//
-// -- right now, I'm having issues with being able to "cast" or convert uint64 values to STRUCT
-// (I don't know how to read from the struct if I can't fill it??)
-//
-// TODO:
+
 //
 // (5/2017)
 // The basic bits of reading work, but will need to be customized to be able to accomodate file names in/out
 // and especially the number of disabled tubes (although as long as I have the offset, it shouldn't be that
 // big of an issue.
 //
-// -- don't see the struct idea working out. only in real c-code if needed
-//
-// -- need to add detector binning to the decoding, to place the counts within the correct panels
-// -- not sure how this will work with JointHistogram Operation
-// (split to separate "streams" of values for each detector panel?
-//
-//
-// -- can I efficiently use "sort" (on the tube index) to block the data into groups that can be split
-//  into 4 sets of waves
-//  that can then be binned per panel, using the usual Joint histogram procedures? Works only if the 
-// tube indexing is orderly. if it's a mess, Ill need to try something else (indexed sort?) (replace?)
-// (manually? ugh.)
+
 //
 
 //
@@ -1795,3 +1782,264 @@ End
 
 
 
+
+
+//////////////////////
+
+// functions for testing the arrival time (reversal) seen in stream event data
+// JAN 2021
+
+
+// function to take the first 200 (or different number) of event points and 
+// mark them for which panel they are associated with
+//
+// after V_Group_as_Panel()
+// - use the Event_per_Panel() graph macro to plot the data, marking each different
+// panel with a different color.
+//
+//
+// it is clear that the time reversals are ocurring when data is read from a different panel.
+//
+// there are long stretches in time where the data is exclusively from a single panel - quite
+// improbable. 
+//
+// sorting the time values makes the panel order much more random, as I would expect.
+// (but is this the correct treatment?)
+//
+// -- I need to talk with Phil and find out if this is the expected behavior of "blocks" of data
+// read in from each panel (from a buffer?)
+//
+
+Function V_EventStream_by_Panel()
+	
+	V_Group_as_Panel()			//currently hard-wired as the first 200 points
+	Execute "V_Event_per_Panel()"
+	
+End
+
+//
+// this function takes a portion of the event stream and based on the tube number (0,191)
+// assigns each event the correct panel (1,2,3,4) since all of the events for the 4 panels
+// arrive in the same stream, but as it turns out, not necessarily in chronological order!
+//
+Function V_Group_as_Panel()
+
+	
+	Duplicate/O/R=[0,199] root:Packages:NIST:VSANS:Event:tube root:tube_panel
+	Duplicate/O/R=[0,199] root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
+//	Duplicate/O root:Packages:NIST:VSANS:Event:tube root:tube_panel
+//	Duplicate/O root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
+	
+	WAVE w=root:tube_panel
+	WAVE ti=root:rawTime_panel
+
+	Variable num=numpnts(w)
+	Variable ii,val
+	
+	for(ii=0;ii<num;ii+=1)
+		val=0
+		if(w[ii] < 48)
+			val = 1
+		endif
+		if(w[ii] > 47 && w[ii] < 96)
+			val = 2
+		endif
+		if(w[ii] > 95 && w[ii] < 144)
+			val = 3
+		endif
+		if(w[ii] > 143)
+			val = 4
+		endif
+		
+		w[ii] = val
+		
+	endfor
+	
+	
+	return(0)
+End
+
+
+
+
+
+Proc V_Event_per_Panel()
+
+	DoWindow/F EventPerPanel
+	if(V_Flag==0)
+	
+		PauseUpdate; Silent 1		// building window...
+		Display /W=(34.8,42.2,543,371) /K=1 rawTime_panel
+		DoWindow/C EventPerPanel
+		ModifyGraph mode=4
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph msize=3
+		ModifyGraph gaps=0
+		ModifyGraph useMrkStrokeRGB=1
+		ModifyGraph zColor(rawTime_panel)={tube_panel,*,*,Rainbow16}
+		ModifyGraph grid=1
+		ModifyGraph mirror=2
+		Label left "Time (raw)"
+		Label bottom "neutron event"
+		SetAxis left 0,*
+	//	SetAxis bottom *,100
+		TextBox/C/N=text0/A=MC/X=40.42/Y=4.51 "Right = Red\rTop = Yellow\rBottom = Blue\rLeft = Purple"
+	//	Tag/C/N=text1/X=-17.82/Y=4.69 rawTime_panel, 87, "Bottom"
+	//	Tag/C/N=text2/X=-11.49/Y=16.13 rawTime_panel, 44, "Top"
+	//	Tag/C/N=text3/X=-12.48/Y=23.75 rawTime_panel, 65, "Right"
+	//	Tag/C/N=text4/X=-17.43/Y=18.18 rawTime_panel, 38, "Left"
+	endif
+EndMacro
+
+
+
+//////////////////////
+
+//
+// This test function looks for time reversal in a single panel
+//
+// 1) given a number of points, duplicate the time + tube number
+// 2) replace tube number with panel 1,2,3, or 4
+// 3) for the chosen panel number, keep only the times for than panel, all others set to NaN
+// 4) differentate the time. NaN are skipped in the differential
+//
+// It seems that there are a few "bad" time points, but not that many, and nothing systematic.
+//
+// runs rather quickly, only a few seconds with 1e6 points
+//
+Function V_Differentiate_onePanel(panelVal,numPt)
+	Variable panelVal		// panelVal = 1,2,3,4
+	Variable numPt		// number of points to duplicate
+	
+	Duplicate/O/R=[0,numPt-1] root:Packages:NIST:VSANS:Event:tube root:tube_panel
+	Duplicate/O/R=[0,numPt-1] root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
+	
+	WAVE w=root:tube_panel
+	WAVE ti=root:rawTime_panel
+
+	Variable num=numpnts(w)
+	Variable ii,val
+
+	
+	for(ii=0;ii<num;ii+=1)
+		val=0
+		if(w[ii] < 48)
+			val = 1
+		endif
+		if(w[ii] > 47 && w[ii] < 96)
+			val = 2
+		endif
+		if(w[ii] > 95 && w[ii] < 144)
+			val = 3
+		endif
+		if(w[ii] > 143)
+			val = 4
+		endif
+		
+		w[ii] = val
+		
+	endfor
+	
+	//
+	V_KeepOneGroup(panelVal)
+	
+	Wave onePanel=root:onePanel
+	// differentiate and plot
+	Differentiate onePanel/D=onePanel_DIF;DelayUpdate
+	Display onePanel_DIF
+	
+	Duplicate onePanel_DIF tmp
+	tmp = 0
+	tmp = (onePanel_DIF < 0) ? 1 : 0
+	Print "total # bad points = ",sum(tmp)
+	Print "fraction bad points = ",sum(tmp)/numPt
+	
+	
+	KillWaves/Z tmp
+	
+	return(0)
+End
+
+// as a proc
+Proc pV_Differentiate_onePanel(panelVal,numPt)
+	Variable panelVal,numpt
+	V_Differentiate_onePanel(panelVal,numPt)
+end
+
+Function V_KeepOneGroup(panelVal)
+	Variable panelVal
+
+	WAVE w=root:tube_panel
+	WAVE ti=root:rawTime_panel
+
+	Duplicate/O ti, onePanel
+	Wave one=onePanel
+	one = 0
+	
+	Variable ii
+		
+	
+	one = (w[p] == panelVal) ? ti[p] : NaN
+	
+	return(0)
+End
+
+//File byte offset		Size (bytes)		Value				Description
+//		0							5	 			'VSANS'				magic number
+//		5							2				0xMajorMinor		Revision number = 0x00
+//		7							2				n bytes				Offset to data in bytes
+//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
+//		19							1	 			'F'/'M'/'R'			detector carriage group
+//		20							2				HV (V)				HV Reading in Volt
+//		22							4				clk (Hz)				timestamp clock frequency in Hz
+//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
+//
+Function V_ReadEventHeader()
+
+	String gVSANSStr=""
+	String gDetStr=""
+	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
+	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
+	
+	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol
+	Variable refnum
+	String filePathStr=""
+	
+	Open/R refnum as filepathstr
+	
+
+	FBinRead refnum, gVSANSStr
+	FBinRead/F=2/U/B=3 refnum, gRevision
+	FBinRead/F=2/U/B=3 refnum, gOffset
+	FBinRead/F=2/U/B=3 refnum, gTime1
+	FBinRead/F=2/U/B=3 refnum, gTime2
+	FBinRead/F=2/U/B=3 refnum, gTime3
+	FBinRead/F=2/U/B=3 refnum, gTime4
+	FBinRead/F=2/U/B=3 refnum, gTime5
+	FBinRead refnum, gDetStr
+	FBinRead/F=2/U/B=3 refnum, gVolt
+	FBinRead/F=3/U/B=3 refnum, gResol
+
+	FStatus refnum
+	FSetPos refnum, V_logEOF
+	
+	Close refnum
+	
+
+	Print "string = ",gVSANSStr
+	Print "revision = ",gRevision
+	Print "offset = ",gOffset
+	Print "time part 1 = ",gTime1
+	Print "time part 2 = ",gTime2
+	Print "time part 3 = ",gTime3
+	Print "time part 4 = ",gTime4
+	Print "time part 5 = ",gTime5
+	Print "det group = ",gDetStr
+	Print "voltage (V) = ",gVolt
+	Print "clock freq (Hz) = ",gResol
+	
+	print "1/freq (s) = ",1/gResol
+	
+	return(0)
+End
