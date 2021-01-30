@@ -256,6 +256,12 @@ Proc Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
 	Export_RAW_Ascii_Panel()
 End
 
+Proc FileSort_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	S_Catalog_Sort()
+End
+
 Proc RealTime_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -314,6 +320,8 @@ Window Main_Panel()
 	Button MainButton_0c,help={"Shows the \"Patch\" panel which allows calculation of sample transmissions and entering these values into raw data headers"}
 	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
+	Button MainButton_0e,pos={15,210},size={130,20},proc=FileSort_MainButtonProc,title="Sort Catalog"
+	Button MainButton_0e,help={"Shows the panel for sorting the file catalog"}
 
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"

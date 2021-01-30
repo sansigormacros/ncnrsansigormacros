@@ -958,3 +958,190 @@ Function CatTableHook(infoStr)
 	return 0
 End
 
+
+
+/////////// SORT CATALOG PANEL
+
+
+
+// just to call the function to generate the panel
+Proc S_Catalog_Sort()
+	S_BuildCatSortPanel()
+End
+
+// [davidm] create CAT Sort-Panel
+Function S_BuildCatSortPanel()
+
+	// check if CatSANSTable exists
+	DoWindow CatVSTable
+	if (V_flag==0)
+		DoAlert 0,"There is no File Catalog table. Use the File Catalog button to create one."
+		return 0
+	endif
+	
+	// bring CatSortPanel to front
+	DoWindow/F CatSortPanel
+	if (V_flag != 0)
+		return 0
+	endif
+	
+	print "Creating CAT Sort-Panel..."
+
+	Variable sc = 1
+	
+//	NVAR gLaptopMode = root:myGlobals:Globals:gLaptopMode
+		
+//	if(gLaptopMode == 1)
+//		sc = 0.7
+//	endif
+		
+	//PauseUpdate
+	NewPanel /W=(600*sc,360*sc,790*sc,650*sc)/K=1 as "CAT - Sort Panel"
+	DoWindow/C CatSortPanel
+	ModifyPanel fixedSize=1, cbRGB = (42919, 53970, 60909)
+	
+	Button SortFilenamesButton,	pos={sc*25, 8*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Filenames"
+	Button SortLabelsButton,		pos={sc*25,38*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Labels"
+	Button SortDateAndTimeButton,	pos={sc*25,68*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Date and Time"
+
+	Button SortLambdaButton,		pos={sc*25,98*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Lambda"
+	Button SortCountTimButton,		pos={sc*25,128*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Count Time"
+	Button SortSDDFButton,			pos={sc*25,158*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="SDD"
+	Button SortCountRateFButton,	pos={sc*25,188*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Count Rate"
+	Button SortMonitorCountsButton,	pos={sc*25,218*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Monitor Counts"
+	Button SortTransmissionButton,pos={sc*25,248*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Transmission"
+
+//	Button SortIntentButton,		pos={sc*25,98*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Intent"
+//	Button SortPurposeButton,		pos={sc*25,128*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Purpose"
+//	Button SortIDButton,				pos={sc*25,158*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Group ID"
+end
+
+Proc S_CatSANSTable_SortProc(ctrlName) : ButtonControl // added by [davidm]
+	String ctrlName
+	
+	// check if CatSANSTable exists
+	DoWindow CatVSTable
+	if (V_flag==0)
+		DoAlert 0,"There is no File Catalog table. Use the File Catalog button to create one."
+		return
+	endif
+		
+	// have to use function
+	S_CatSANSTable_SortFunction(ctrlName)
+	
+end
+
+function S_CatSANSTable_SortFunction(ctrlName) // added by [davidm]
+	String ctrlName
+
+// still need to declare these to access notRaw files and to get count of length
+	Wave/T GFilenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
+	Wave/T GLabels = $"root:myGlobals:CatVSHeaderInfo:Labels"
+	
+	// take out the "not-RAW-Files"
+	Variable fileCount = numpnts(GFilenames)
+	Variable rawCount = numpnts(GLabels)
+	Variable notRAWcount = fileCount - rawCount
+	
+	if (notRAWcount > 0)
+		Make/T/O/N=(notRAWcount) notRAWlist
+		notRAWlist[0, notRAWcount-1] = GFilenames[p+rawCount]
+		DeletePoints rawCount, notRAWcount, GFilenames
+	endif
+
+
+// get the list
+	SetDataFolder root:myGlobals:CatVSHeaderInfo:
+	
+	String list = WaveList("*",",",""),sortKey=""
+	String cmd
+	
+	list = list[0,strlen(list)-2]		//remove the trailing comma or "invalid column name" error
+	list = RemoveFromList("HDF",list,",")		//these are not tracked at the NCNR
+	list = RemoveFromList("SICS",list,",")		//these are not tracked at the NCNR
+	list = RemoveFromList("Reactorpower",list,",")	//these are not tracked at the NCNR
+	
+// set the sortKey string	
+	strswitch (ctrlName)
+	
+		case "SortFilenamesButton":
+			sortKey = "Filenames"
+			break
+			
+		case "SortLabelsButton":
+			sortKey = "Labels"
+			break
+			
+		case "SortDateAndTimeButton":
+			sortKey = "DateAndTime"
+
+			break
+			
+//		case "SortIntentButton":
+//			sortKey = "Intent"
+//
+//			break
+//			
+//		case "SortIDButton":
+//			sortKey = "Group_ID"
+//
+//			break
+//			
+		case "SortLambdaButton":
+			sortKey = "Lambda"
+
+			break
+			
+		case "SortCountTimButton":
+			sortKey = "CntTime"
+
+			break
+			
+		case "SortSDDFButton":
+			sortKey = "SDD"
+
+			break
+			
+		case "SortCountRateFButton":
+			sortKey = "CntRate"
+
+			break
+			
+		case "SortMonitorCountsButton":
+			sortKey = "MCR"
+
+			break
+			
+		case "SortTransmissionButton":
+			sortKey = "Transmission"
+
+			break
+			
+//		case "SortPurposeButton":
+//			sortKey = "Purpose"
+//
+//			break
+	
+	endswitch
+	
+	//do the sort
+//	sprintf cmd, "Sort %s, %s", sortKey,list
+// use braces and second key to keep anything with the same first "key" value in numerical run number order
+	sprintf cmd, "Sort {%s,Filenames} %s", sortKey,list
+//	Print cmd			// For debugging
+	
+	Execute cmd
+	
+	
+	// insert the "not-RAW-Files" again
+	if (notRAWcount > 0)
+		InsertPoints rawCount, notRAWcount, GFilenames
+		GFilenames[rawCount, fileCount-1] = notRAWlist[p-rawCount]
+	endif
+	
+	SetDataFolder root:
+
+end
+
+/////////////////
+
