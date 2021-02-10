@@ -53,7 +53,7 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 	String n0,n1,n2,n3,n4,n5,n6,n7,n8
 	
 	
-	if(numCols == 9)
+	if(numCols == 9 || numCols == 8)
 		// put the names of the 9 loaded waves into local names
 		n0 = StringFromList(0, S_waveNames ,";" )
 		n1 = StringFromList(1, S_waveNames ,";" )
@@ -63,7 +63,9 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		n5 = StringFromList(5, S_waveNames ,";" )
 		n6 = StringFromList(6, S_waveNames ,";" )
 		n7 = StringFromList(7, S_waveNames ,";" )
-		n8 = StringFromList(8, S_waveNames ,";" )
+		if(numCols == 9)
+			n8 = StringFromList(8, S_waveNames ,";" )
+		endif
 		
 		//remove the semicolon AND period from file names
 		w0 = CleanupName((S_fileName + "_qx"),0)
@@ -74,8 +76,10 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		w5 = CleanupName((S_fileName + "_sQpl"),0)
 		w6 = CleanupName((S_fileName + "_sQpp"),0)
 		w7 = CleanupName((S_fileName + "_fs"),0)
-		w8 = CleanupName((S_fileName + "_msk"),0)
-	
+		if(numCols ==9)
+			w8 = CleanupName((S_fileName + "_msk"),0)
+		endif
+
 		String baseStr=w1[0,strlen(w1)-4]
 		if(DataFolderExists("root:"+baseStr))
 				DoAlert 1,"The file "+S_filename+" has already been loaded. Do you want to load the new data file, overwriting the data in memory?"
@@ -113,8 +117,9 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		Duplicate/O $("root:"+n5), $w5
 		Duplicate/O $("root:"+n6), $w6
 		Duplicate/O $("root:"+n7), $w7
-		Duplicate/O $("root:"+n8), $w8
-	
+		if(numCols == 9)
+			Duplicate/O $("root:"+n8), $w8
+		endif
 	endif		//9-columns
 
 
@@ -155,10 +160,18 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 	if(cmpstr(typeStr,"TB")==0)
 		numX=128
 		numY=48
-	else
+	endif
+	if(cmpstr(typeStr,"LR")==0)
 		numX=48
 		numY=128
 	endif
+	
+	// it's probably SANS data...
+	if(cmpstr(typeStr,"")==0)
+		numX=128
+		numY=128
+	endif
+	
 	
 	// single panels are converted into a matrix to plot out
 	// the combined panels are plotted as points with f(z) color scale
@@ -187,9 +200,10 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		
 		V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
 	
-		V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
-		Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
-	
+		if(numCols == 9)		//mask is present
+			V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
+			Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
+		endif
 		Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
 	
 		Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")

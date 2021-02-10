@@ -16,11 +16,32 @@
 //		0							5	 			'VSANS'				magic number
 //		5							2				0xMajorMinor		Revision number = 0x00
 //		7							2				n bytes				Offset to data in bytes
-//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
-//		19							1	 			'F'/'M'/'R'			detector carriage group
+//		9	(12 bytes!!)		10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
+//		19	(NO!!)				1	 			'F'/'M'/'R'			detector carriage group
 //		20							2				HV (V)				HV Reading in Volt
 //		22							4				clk (Hz)				timestamp clock frequency in Hz
-//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
+//		26	(NO!!)				N				tubeID				disabled tubes # ; 1 byte/tube if any
+
+
+// *****Feb 2021
+// !! per Phil, bug causes time stamp to be 12 bytes -- and, apparently some of the other bytes
+// in the header are NOT there AT ALL!!
+//
+//
+//	This is the current header from file 20201119164154001_0.hst on vsansdet1:
+//	
+//	56 53 41 4e 53 00 00 1b  00 40 3a 19 10 b3 e6 b6
+//	5f 00 00 00 00 d2 05 80  96 98 00 
+//	
+//	(5 bytes)  56 53 41 4e 53: VSANS – magic number
+//	(2 bytes)  00 00: file format revision
+//	(2 bytes)  1b  00: byte offset in file to event data
+//	(12 bytes)  40 3a 19 10 b3 e6 b6  5f 00 00 00 00 : time of origin (12 bytes instead of 10 as described in doc)
+//	(2 bytes)  d2 05: HV Value  (0x05d2 = 1490)
+//	(4 bytes)  80 96 98 00: timestamp clock frequency (0x989680 = 10000000)
+//
+// This header structure was verified FEB 2021
+//
 
 //Data
 // 
@@ -55,12 +76,6 @@
 //
 // Event mode prcessing for VSANS
 //
-// First pass, getting the basics to work
-//
-// x- need TOF processing for wavelength calibration
-//  x- document this so it can be done quickly and easily.
-//
-
 
 
 //
@@ -86,7 +101,7 @@
 //     to prevent the "atuo-detection" of data as RGB
 //
 //
-///////////////   SWITCHES     /////////////////
+///////////////   SWITCHES (not used for VSANS)     /////////////////
 //
 // for the "File Too Big" limit:
 //	Variable/G root:Packages:NIST:VSANS:Event:gEventFileTooLarge = 150		// 150 MB considered too large
@@ -95,9 +110,6 @@
 //	Variable/G root:Packages:NIST:VSANS:Event:gStepTolerance = 5		// 5 = # of standard deviations from mean. See PutCursorsAtStep()
 //
 //
-//
-//
-
 
 //  
 // x- these dimensions are hard-wired
@@ -154,6 +166,7 @@ Function V_Init_Event()
 	Variable/G root:Packages:NIST:VSANS:Event:gTime3=0
 	Variable/G root:Packages:NIST:VSANS:Event:gTime4=0	// these 4 time pieces are supposed to be 8 bytes total
 	Variable/G root:Packages:NIST:VSANS:Event:gTime5=0	// these 5 time pieces are supposed to be 10 bytes total
+	Variable/G root:Packages:NIST:VSANS:Event:gTime6=0	// these 5 time pieces are supposed to be 10 bytes total
 	String/G root:Packages:NIST:VSANS:Event:gDetStr=""
 	Variable/G root:Packages:NIST:VSANS:Event:gVolt=0
 	Variable/G root:Packages:NIST:VSANS:Event:gResol=0		//time resolution in nanoseconds
@@ -1192,6 +1205,8 @@ Variable t1 = ticks
 
 		KillWaves/Z timePt,xLoc,yLoc
 		Duplicate/O eventTime timePt
+		
+		KillWaves/Z eventTime		// not needed any longer, use timePt or rescaledTime
 
 // 
 // x- for processing, initially treat all of the tubes along x, and 128 pixels along y
@@ -1231,10 +1246,10 @@ Variable t1 = ticks
 
 // DONE:
 //  x- the time scaling is done. 
-// TODO: VERIFY
-// ??? timeStep from the clock frequency is not right--- the step appears to be 100 ns???
+// DONE: VERIFIED -- FEB 2021 -- now reading the clock frequency correctly from the header
 //	
-	timeStep_s = 100e-9
+//	timeStep_s = 100e-9
+//	Print "timeStep (s) = ",timeStep_s
 	
 /////
 // now do a little processing of the times based on the type of data
@@ -1323,6 +1338,7 @@ Function V_CleanupTimes(xLoc,yLoc,timePt)
 		DeletePoints ii, numToRemove, xLoc,yLoc,timePt
 	endif
 	
+	Print "V_CleanupTimes - zeroes removed = ",numToRemove
 	return(0)
 End
 
@@ -1454,6 +1470,7 @@ Function V_LoadEvents()
 	NVAR gTime3 = root:Packages:NIST:VSANS:Event:gTime3
 	NVAR gTime4 = root:Packages:NIST:VSANS:Event:gTime4	// these 4 time pieces are supposed to be 8 bytes total
 	NVAR gTime5 = root:Packages:NIST:VSANS:Event:gTime5	// these 5 time pieces are supposed to be 10 bytes total
+	NVAR gTime6 = root:Packages:NIST:VSANS:Event:gTime6	// these 6 time pieces are supposed to be 12 bytes total
 	SVAR gDetStr = root:Packages:NIST:VSANS:Event:gDetStr
 	NVAR gVolt = root:Packages:NIST:VSANS:Event:gVolt
 	NVAR gResol = root:Packages:NIST:VSANS:Event:gResol		//time resolution in nanoseconds
@@ -1464,15 +1481,18 @@ Function V_LoadEvents()
 
 	numXYevents = 0
 
+//
+//***** !!!!!! *****
+// updated header structure as of FEB 2021 (per Phil)
+//
 //File byte offset		Size (bytes)		Value				Description
 //		0							5	 			'VSANS'				magic number
 //		5							2				0xMajorMinor		Revision number = 0x00
 //		7							2				n bytes				Offset to data in bytes
-//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
-//		19							1	 			'F'/'M'/'R'			detector carriage group
+//		9							12				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
+
 //		20							2				HV (V)				HV Reading in Volt
 //		22							4				clk (Hz)				timestamp clock frequency in Hz
-//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
 
 	Open/R refnum as filepathstr
 	
@@ -1486,7 +1506,8 @@ v_tic()
 	FBinRead/F=2/U refnum, gTime3
 	FBinRead/F=2/U refnum, gTime4
 	FBinRead/F=2/U refnum, gTime5
-	FBinRead refnum, gDetStr
+	FBinRead/F=2/U refnum, gTime6
+//	FBinRead refnum, gDetStr
 	FBinRead/F=2/U refnum, gVolt
 	FBinRead/F=3/U refnum, gResol
 
@@ -1498,7 +1519,8 @@ v_tic()
 // number of data bytes
 	numXYevents = (V_logEOF-gOffset)/8
 	Print "Number of data values = ",numXYevents
-	
+
+// load data as 64-bit unsigned int	
 	GBLoadWave/B/T={192,192}/W=1/S=(gOffset) filepathstr
 	
 	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
@@ -1572,10 +1594,8 @@ v_toc()
 	dispStr = tmpStr
 	sprintf tmpStr,"numXYevents = %d\r",numXYevents
 	dispStr += tmpStr
-//	sPrintf tmpStr,"\rBad Rollover Events = %d (%4.4g %% of events)",numBad,numBad/numXYevents*100
-//	dispStr += tmpStr
-//	sPrintf tmpStr,"\rTotal Events Removed = %d (%4.4g %% of events)",numRemoved,numRemoved/numXYevents*100
-//	dispStr += tmpStr
+
+	KillWaves/Z V_Events
 
 	SetDataFolder root:
 	
@@ -1672,111 +1692,6 @@ Proc V_ShowRescaledTimeGraph()
 	endif
 	
 EndMacro
-
-
-
-//Proc ExportSlicesAsVAX(firstNum,prefix)
-//	Variable firstNum=1
-//	String prefix="SAMPL"
-//
-//	SaveSlicesAsVAX(firstNum,prefix[0,4])		//make sure that the prefix is 5 chars
-//End
-
-////////// procedures to be able to export the slices as RAW VAX files.
-////
-//// 1- load the raw data file to use the header (it must already be in RAW)
-//// 1.5- copy the raw data to the temp folder (STO)
-//// 1.7- ask for the prefix and starting run number (these are passed in)
-//// 2- copy the slice of data to the temp folder (STO)
-//// 3- touch up the time/counts in the slice header values in STO
-//// 4- write out the VAX file
-//// 5- repeat (2-4) for the number of slices
-////
-////
-//Function SaveSlicesAsVAX(firstNum,prefix)
-//	Variable firstNum
-//	String prefix
-//
-//	DoAlert 1,"Is the full data file loaded as a RAW data file? If not, load it and start over..."
-//	if(V_flag == 2)
-//		return (0)
-//	endif
-//	
-//// copy the contents of RAW to STO so I can work from there
-//	CopyWorkContents("RAW","STO")
-//
-//	// now declare all of the waves, now that they are sure to be there
-//
-//	WAVE slicedData=root:Packages:NIST:VSANS:Event:slicedData
-//	Make/O/D/N=(128,128) curSlice
-//	
-//	NVAR nslices = root:Packages:NIST:VSANS:Event:gEvent_nslices
-//	WAVE binEndTime = root:Packages:NIST:VSANS:Event:binEndTime
-//
-//	Wave rw=root:Packages:NIST:STO:realsRead
-//	Wave iw=root:Packages:NIST:STO:integersRead
-//	Wave/T tw=root:Packages:NIST:STO:textRead
-//	Wave data=root:Packages:NIST:STO:data
-//	Wave linear_data=root:Packages:NIST:STO:linear_data
-//	
-//	
-//	Wave rw_raw=root:Packages:NIST:RAW:realsRead
-//	Wave iw_raw=root:Packages:NIST:RAW:integersRead
-//	Wave/T tw_raw=root:Packages:NIST:RAW:textRead
-//
-//// for generating the alphanumeric
-//	String timeStr= secs2date(datetime,-1)
-//	String monthStr=StringFromList(1, timeStr  ,"/")
-//	String numStr="",labelStr
-//
-//	Variable ii,err,binFraction
-//	
-//	for(ii=0;ii<nslices;ii+=1)
-//
-//		//get the current slice and put it in the STO folder
-//		curSlice = slicedData[p][q][ii]
-//		data = curSlice
-//		linear_data = curSlice
-//		
-//		// touch up the header as needed
-//		// count time = iw[2]
-//		// monCt = rw[0]
-//		// detCt = rw[2]
-//		//tw[0] must now be the file name
-//		//
-//		// count time = fraction of total binning * total count time
-//		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
-//		
-//		iw[2] = trunc(binFraction*iw_raw[2])
-//		rw[0] = trunc(binFraction*rw_raw[0])
-//		rw[2] = sum(curSlice,-inf,inf)		//total counts in slice
-//	
-//		if(firstNum<10)
-//			numStr = "00"+num2str(firstNum)
-//		else
-//			if(firstNum<100)
-//				numStr = "0"+num2str(firstNum)
-//			else
-//				numStr = num2str(firstNum)
-//			Endif
-//		Endif	
-//		tw[0] = prefix+numstr+".SA2_EVE_"+(num2char(str2num(monthStr)+64))+numStr
-//		labelStr = tw_raw[6]
-//		
-//		labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
-//		tw[6] = labelStr[0,59]
-//		
-//		//write out the file - this uses the tw[0] and home path
-//		Write_VAXRaw_Data("STO","",0)
-//
-//		//increment the run number, alpha
-//		firstNum += 1	
-//	endfor
-//
-//	return(0)
-//End
-//
-
 
 
 
@@ -1936,21 +1851,31 @@ Proc V_EventCorrectionPanel()
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
 		
 		ControlBar 100
-		Button button0,pos={sc*18,12*sc},size={sc*70,20*sc},proc=V_EC_AddCursorButtonProc,title="Cursors"
-		Button button1,pos={sc*153,12*sc},size={sc*80,20*sc},proc=V_EC_AddTimeButtonProc,title="Add time"
-		Button button2,pos={sc*153,38*sc},size={sc*80,20*sc},proc=V_EC_SubtractTimeButtonProc,title="Subtr time"
-		Button button3,pos={sc*153,64*sc},size={sc*90,20*sc},proc=V_EC_TrimPointsButtonProc,title="Trim points"
-		Button button4,pos={sc*(295+150),12*sc},size={sc*90,20*sc},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
-		Button button5,pos={sc*295,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Find Outlier"
-		Button button6,pos={sc*18,38*sc},size={sc*80,20*sc},proc=V_EC_ShowAllButtonProc,title="All Data"
-		Button button7,pos={sc*683,12*sc},size={sc*30,20*sc},proc=V_EC_HelpButtonProc,title="?"
-		Button button8,pos={sc*658,72*sc},size={sc*60,20*sc},proc=V_EC_DoneButtonProc,title="Done"
+		Button button0,pos={sc*20,12*sc},size={sc*70,20*sc},proc=V_EC_AddCursorButtonProc,title="Cursors"
+		Button button1,pos={sc*20,38*sc},size={sc*80,20*sc},proc=V_EC_ShowAllButtonProc,title="All Data"
+		Button button2,pos={sc*20,64*sc},size={sc*80,20*sc},proc=V_EC_ColorizeTimeButtonProc,title="Colorize"
+
+
+		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-All"
+		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
+		SetVariable setVar0,pos={sc*140,64*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
+		SetVariable setvar0,limits={1,4,1}
+		
 	
-		Button button9,pos={sc*295,12*sc},size={sc*110,20*sc},proc=V_EC_FindStepButton_down,title="Find Step Down"
-		Button button10,pos={sc*295,38*sc},size={sc*110,20*sc},proc=V_EC_FindStepButton_up,title="Find Step Up"
-		Button button11,pos={sc*(295+150),38*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential"
-		
-		
+		Button buttonDiffAll,pos={sc*290,12*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-All"
+		Button button6,pos={sc*290,38*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-One"	
+		Button button7,pos={sc*290,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Zap Outlier"
+
+
+
+		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-All"
+		Button button9,pos={sc*(290+150),38*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-One"
+		Button button10,pos={sc*(290+150),64*sc},size={sc*110,20*sc},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
+
+				
+		Button button11,pos={sc*683,12*sc},size={sc*30,20*sc},proc=V_EC_HelpButtonProc,title="?"
+		Button button12,pos={sc*658,90*sc},size={sc*60,20*sc},proc=V_EC_DoneButtonProc,title="Done"		
+
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
 	endif
@@ -1980,35 +1905,30 @@ Function V_EC_AddCursorButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// updates the longest time (as does every operation of adjusting the data)
 //
-Function V_EC_AddTimeButtonProc(ba) : ButtonControl
+//
+Function V_EC_ColorizeTimeButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			V_Group_as_Panel(-1)		//colorize the entire data set
+
+			// use the tube_panel wave generated in V_Group_as_Panel() to color the z
+			//
 			SetDataFolder root:Packages:NIST:VSANS:Event:
-			
+			Wave tube_panel = tube_panel
 			Wave rescaledTime = rescaledTime
-			Wave timePt = timePt
-			Variable rollTime,rollTicks,ptA,ptB,lo,hi
+			ModifyGraph mode=4
+			ModifyGraph marker=19
+			ModifyGraph lSize=2
+			ModifyGraph msize=3
+			ModifyGraph gaps=0
+			ModifyGraph useMrkStrokeRGB=1
+			ModifyGraph zColor(rescaledTime)={tube_panel,*,*,Rainbow16}
 			
-			rollTicks = 2^26				// in ticks
-			rollTime = 2^26*1e-7		// in seconds
-			ptA = pcsr(A)
-			ptB = pcsr(B)
-			lo=min(ptA,ptB)
-			hi=max(ptA,ptB)
-
-			MultiThread timePt[lo,hi] += rollTicks
-			MultiThread rescaledTime[lo,hi] += rollTime
-
-			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-			t_longest = waveMax(rescaledTime)
-			
-			SetDataFolder root:
+			SetDataFolder root:			
 			break
 		case -1: // control being killed
 			break
@@ -2017,34 +1937,47 @@ Function V_EC_AddTimeButtonProc(ba) : ButtonControl
 	return 0
 End
 
-Function V_EC_SubtractTimeButtonProc(ba) : ButtonControl
+
+
+//
+//
+// switch based on ba.ctrlName
+//
+Function V_EC_DisplayButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			
 			SetDataFolder root:Packages:NIST:VSANS:Event:
+			// save the zoom
+			Variable b_min,b_max,l_min,l_max
+			GetAxis/Q bottom
+			b_min=V_min
+			b_max=V_max
+			GetAxis/Q left
+			l_min=V_min
+			l_max=V_max
 			
-			Wave rescaledTime = rescaledTime
-			Wave timePt = timePt
-			Variable rollTime,rollTicks,ptA,ptB,lo,hi
+			if(cmpstr(ba.ctrlName,"buttonDispAll")==0)
+				// button is Display-All
+				RemoveFromGraph/Z onePanel,rescaledTime
+				AppendToGraph rescaledTime
+			else
+				// button is Display-One
+				ControlInfo setvar0
+				V_KeepOneGroup(V_Value)
+				
+				RemoveFromGraph/Z rescaledTime,onePanel
+				AppendToGraph root:Packages:NIST:VSANS:Event:onePanel
+			endif
 			
-			rollTicks = 2^26				// in ticks
-			rollTime = 2^26*1e-7		// in seconds
-			ptA = pcsr(A)
-			ptB = pcsr(B)
-			lo=min(ptA,ptB)
-			hi=max(ptA,ptB)
+			// restore the zoom
+			SetAxis left, l_min,l_max
+			SetAxis bottom, b_min,b_max
 			
-			MultiThread timePt[lo,hi] -= rollTicks
-			MultiThread rescaledTime[lo,hi] -= rollTime
-
-			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
-			t_longest = waveMax(rescaledTime)
-			
-			SetDataFolder root:
-			
+			SetDataFolder root:			
 			break
 		case -1: // control being killed
 			break
@@ -2052,10 +1985,14 @@ Function V_EC_SubtractTimeButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
 
 // points removed are inclusive
 //
 // put both cursors on the same point to remove just that single point
+//
+// -- setVar0
 //
 Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2071,7 +2008,9 @@ Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 			Wave yLoc = yLoc
 			Variable rollTime,ptA,ptB,numElements,lo,hi
 			
-			rollTime = 2^26*1e-7		// in seconds
+			Wave destWave=destWave		// these are the "time reversal" points
+
+
 			ptA = pcsr(A)
 			ptB = pcsr(B)
 			lo=min(ptA,ptB)
@@ -2103,16 +2042,17 @@ Function V_EC_SaveWavesButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
+			DoAlert 0,"Save not yet implemented"
 //			Execute "UndoTheSorting()"
 			
-			SetDataFolder root:Packages:NIST:VSANS:Event:
-			
-			Wave rescaledTime = rescaledTime
-			Wave timePt = timePt
-			Wave xLoc = xLoc
-			Wave yLoc = yLoc
-			Save/T xLoc,yLoc,timePt	,rescaledTime		//will ask for a name
-			
+//			SetDataFolder root:Packages:NIST:VSANS:Event:
+//			
+//			Wave rescaledTime = rescaledTime
+//			Wave timePt = timePt
+//			Wave xLoc = xLoc
+//			Wave yLoc = yLoc
+//			Save/T xLoc,yLoc,timePt	,rescaledTime		//will ask for a name
+//			
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -2190,7 +2130,7 @@ Function V_EC_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "Event Mode Data[Correcting for things that go wrong]"
+//			DisplayHelpTopic/Z "Event Mode Data[Correcting for things that go wrong]"
 			break
 		case -1: // control being killed
 			break
@@ -2232,7 +2172,7 @@ Function V_PutCursorsAtStep(upDown)
 	FindLevel/P/Q rescaledTime_DIF avg*upDown
 	if(V_flag==0)
 		pt = V_levelX
-		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-vallues within the point range
+		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-values within the point range
 	else
 		Print "Level not found"
 		return(0)
@@ -2254,40 +2194,6 @@ Function V_PutCursorsAtStep(upDown)
 End
 
 
-// find the max (or min) of the rescaled time set
-// and place both cursors there
-Function V_fFindOutlier()
-
-	SetDataFolder root:Packages:NIST:VSANS:Event:
-
-	Wave rescaledTime=rescaledTime
-	Variable avg,pt,zoom,maxPt,minPt,maxVal,minVal
-	
-	zoom = 200		//points in each direction
-	
-	WaveStats/M=1/Q rescaledTime
-	maxPt = V_maxLoc
-	minPt = V_minLoc
-	avg = V_avg
-	maxVal = abs(V_max)
-	minVal = abs(V_min)
-
-	pt = abs(maxVal - avg) > abs(minVal - avg) ? maxPt : minPt
-	
-//	Variable loLeft,hiLeft, loBottom,hiBottom
-//	loLeft = V_min*0.98		//+/- 2%
-//	hiLeft = V_max*1.02
-	
-//	SetAxis left loLeft,hiLeft
-//	SetAxis bottom pnt2x(rescaledTime,pt-zoom),pnt2x(rescaledTime,pt+zoom)
-	
-	Cursor/P A rescaledTime pt		//at the point
-	Cursor/P B rescaledTime pt		//at the same point
-
-	SetDataFolder root:
-	
-	return(0)
-End
 
 Function V_EC_FindStepButton_down(ctrlName) : ButtonControl
 	String ctrlName
@@ -2312,21 +2218,10 @@ Function V_EC_FindStepButton_up(ctrlName) : ButtonControl
 	return(0)
 end
 
-// if the Trim button section is uncommented, it's "Zap outlier"
-//
-Function V_EC_FindOutlierButton(ctrlName) : ButtonControl
-	String ctrlName
-	
-	V_fFindOutlier()
-//
-//	STRUCT WMButtonAction ba
-//	ba.eventCode = 2
-//
-//	EC_TrimPointsButtonProc(ba)
 
-	return(0)
-end
 
+
+// differentiated time - all data
 Function V_EC_DoDifferential(ctrlName) : ButtonControl
 	String ctrlName
 	

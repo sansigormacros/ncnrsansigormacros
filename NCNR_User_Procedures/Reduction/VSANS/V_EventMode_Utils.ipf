@@ -6,15 +6,25 @@
 //
 // Jan 2021 -- still trying to resolve issues:
 //
-// -- the clock frequency (time step) is hard wired as 100 x 10-9 s
-//  since I still can't read a correct value from the file header
-// -- see the test function: V_ReadEventHeader()
+//
+// -- to split out a single panel and take the differental of a single panel:
+//  1) load the data in as usual
+//	2) run V_Differentiate_onePanel(panelVal,numPt) --- panelVal = 1,2,3,4; numPt = number of
+//       points at the beginning of the dat to work with. The data panel is not really
+//       split out, but rather all of the other three panels are set to NaN
+//
 //
 // -- The time reversal steps in the data files as the data is collected
-// in sequence from the panels has still not been resolved. It appears to be correct
+// in sequence from the panels has still not been resolved. The data appears to be good,
 // but I need to consult, and find more ways to verify.
 //
-
+//
+// -- DONE -- Feb 2021 got the "correct" header structure from Phil
+// x- the clock frequency (time step) is hard wired as 100 x 10-9 s
+//  since I still can't read a correct value from the file header
+// x- see the test function: V_ReadEventHeader()
+//
+//
 
 //
 // There are functions in this file to generate "fake" event data for testing
@@ -22,18 +32,22 @@
 
 
 //
-// for the event mode data with the proposed 64 bit structure, I may be able to use Igor for everything.
+// for the event mode data with the proposed 64 bit structure, I use Igor for everything.
+// No need to write an XOP - Igor 8 has uint64 data type, and fast bit manipulation
 //
-// Skipping the appropriate bits of the header (after I read them in) may be possible with
-// either LoadWave (treating the entire wave as 64 bit, unsigned), loading chunks from clipboard?
-// -- see in LoadWave, the suggestions for "Loading Large Waves"
 //
-// or using FBinRead, again, filling a wave, or a chunk of the data, as needed
+// Skipping the appropriate bits of the header (after I read them in) is possible with
+// either GBLoadWave (treating the entire wave as 64 bit, unsigned)
+// -- see in LoadWave, the suggestions for "Loading Large Waves" is speed is an issue
 //
-// 
-// I don't know if it's possible to use a STRUCT  definition for each 64 bit word so that I could address
-// the bytes directly - since that may not work properly in Igor, and I'm not sure how to address the 6 byte section
-// -possibly with a uchar(6) definition?
+// Using a STRUCT for the specific bits of the 64-bit word does not seem possible, and direct decoding
+// seems to work fine. 
+//
+//Structure eventWord
+//	uchar eventTime[6]
+//	uchar location
+//	uchar tube
+//endStructure
 //
 
 //
@@ -42,512 +56,6 @@
 // and especially the number of disabled tubes (although as long as I have the offset, it shouldn't be that
 // big of an issue.
 //
-
-//
-
-//
-////
-//Structure eventWord
-//	uchar eventTime[6]
-//	uchar location
-//	uchar tube
-//endStructure
-
-
-
-//
-//
-Function V_testBitShift()
-
-//	// /l=64 bit, /U=unsigned
-//	Make/L/U/N=100 eventWave
-//	eventWave = 0
-	
-	// for each 64-bit value:
-	// byte 1: tube index [0,191]
-	// byte 2: pixel value [0,127]
-	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
-	
-	int64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
-	int64 i64_ticks,i64_start
-	
-	b1=255
-	b3=255
-	b5=255
-	b7=255
-	b2=0
-	b4=0
-	b6=0
-	b8=0
-	
-	b7 = b7 << 8
-	b6 = b6 << 16
-	b5 = b5 << 24
-	b4 = b4 << 32
-	b3 = b3 << 40
-	b2 = b2 << 48
-	b1 = b1 << 56
-	
-	i64_num = b1+b2+b3+b4+b5+b6+b7+b8
-	printf "%64b\r",i64_num
-	
-	return(0)
-End
-
-Function V_MakeFakeEvents()
-
-//	// /l=64 bit, /U=unsigned
-	Make/O/L/U/N=10 smallEventWave
-	smallEventWave = 0
-	
-	// for each 64-bit value:
-	// byte 1: tube index [0,191]
-	// byte 2: pixel value [0,127]
-	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
-	
-	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
-	uint64 i64_ticks,i64_start
-	
-//	b1 = 47
-//	b2 = 123
-//	i64_ticks = 123456789
-	b1 = 41
-	b2 = 66
-	i64_ticks = 15
-
-
-//	b2 = b2 << 48
-//	b1 = b1 << 56
-//	
-//	i64_num = b1+b2+i64_ticks
-
-	// don't shift b1
-	b2 = b2 << 8
-	i64_ticks = i64_ticks << 16
-
-	i64_num = b1+b2+i64_ticks
-
-	printf "%64b\r",i64_num
-	print i64_num
-	
-	smallEventWave[0] = i64_num
-	
-	return(0)
-End
-
-Function V_decodeFakeEvent()
-
-	WAVE w = smallEventWave
-	uint64 val,b1,b2,btime
-	val = w[0]
-	
-//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
-	printf "%64b\r",val			//correct, assign value to 64bit variable
-//	print w[0]				//wrong
-	print val				// correct
-	
-//	b1 = (val >> 56 ) & 0xFF			// = 255, last byte, after shifting
-//	b2 = (val >> 48 ) & 0xFF	
-//	btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
-
-
-	b1 = val & 0xFF
-	b2 = (val >> 8) & 0xFF
-	btime = (val >> 16)
-
-	
-	print b1
-	print b2
-	print btime
-
-
-//	//test as struct
-//	Print "as STRUCT"
-//	
-//	STRUCT eventWord s
-//	
-//	s = w[0]
-//	
-//	print s.tube
-//	print s.location
-//	print s.eventTime
-	
-
-		
-	return(0)
-End
-
-//
-// tested up to num=1e8 successfully
-//
-Function V_MakeFakeEventWave(num)
-	Variable num
-	
-	Variable ii
-
-
-//	num = 1e3
-	
-//	// /l=64 bit, /U=unsigned
-	Make/O/L/U/N=(num) eventWave
-	eventWave = 0
-	
-	// for each 64-bit value:
-	// byte 1: tube index [0,191]
-	// byte 2: pixel value [0,127]
-	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
-	
-	uint64 i64_num,b1,b2
-	uint64 i64_ticks,i64_start
-	
-	i64_start = ticks
-	for(ii=0;ii<num;ii+=1)
-//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
-		b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
-		b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
-		
-//		i64_ticks = ticks-i64_start
-		i64_ticks = ii+1
-		
-//		b2 = b2 << 48
-//		b1 = b1 << 56
-
-		// don't shift b1
-		b2 = b2 << 8
-		i64_ticks = i64_ticks << 16
-	
-		i64_num = b1+b2+i64_ticks
-	
-		eventWave[ii] = i64_num
-	endfor
-
-
-	return(0)
-End
-
-
-//
-// TODO:
-// -- can this be multithreaded (eliminating the loop)?
-//
-// MultiThread tube = (w[p]) & 0xFF	
-// MultiThread location = (w[p] >> 8 ) & 0xFF	
-// MultiThread eventTime = (w[p] >> 16)
-//
-// !!!!- yes - for a 35 MB file:
-// for loop = 4.3 s
-// MultiThread = 0.35 s
-//
-// !!! can I use the bit operations in MatrixOp? 1D waves are valid
-//  to use with MatrixOp. Would it be better than multiThread?
-//
-//
-Function V_decodeFakeEventWave(w)
-	Wave w
-
-v_tic()
-//	WAVE w = eventWave
-	uint64 val,b1,b2,btime
-	val = w[0]
-	
-//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
-//	printf "%64b\r",val			//correct, assign value to 64bit variable
-//	print w[0]				//wrong
-//	print val				// correct
-	
-	Variable num,ii
-	num=numpnts(w)
-	
-	Make/O/L/U/N=(num) eventTime
-	Make/O/U/B/N=(num) tube,location		//8 bit unsigned
-
- MultiThread tube = (w[p]) & 0xFF	
- MultiThread location = (w[p] >> 8 ) & 0xFF	
- MultiThread eventTime = (w[p] >> 16)
-	
-//	for(ii=0;ii<num;ii+=1)
-//		val = w[ii]
-//		
-////		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
-////		b2 = (val >> 48 ) & 0xFF	
-////		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
-//
-//		b1 = val & 0xFF
-//		b2 = (val >> 8) & 0xFF
-//		btime = (val >> 16)
-//
-//		tube[ii] = b1
-//		location[ii] = b2
-//		eventTime[ii] = btime
-//		
-//	endfor
-
-v_toc()
-		
-	return(0)
-End
-
-
-Function V_writeFakeEventFile(fname)
-	String fname
-
-	WAVE w = eventWave
-	Variable refnum
-	
-	String vsansStr="VSANS"
-	Variable revision = 11
-	Variable offset = 26		// no disabled tubes
-	Variable time1 = 2017
-	Variable time2 = 0525
-	Variable time3 = 1122
-	Variable time4 = 3344		// these 4 time pieces are supposed to be 8 bytes total
-	Variable time5 = 3344		// these 5 time pieces are supposed to be 10 bytes total
-	String detStr = "M"
-	Variable volt = 1500
-	Variable resol = 1e7
-	
-	
-	Open refnum as fname
-
-	FBinWrite refnum, vsansStr
-	FBinWrite/F=2/U refnum, revision
-	FBinWrite/F=2/U refnum, offset
-	FBinWrite/F=2/U refnum, time1
-	FBinWrite/F=2/U refnum, time2
-	FBinWrite/F=2/U refnum, time3
-	FBinWrite/F=2/U refnum, time4
-	FBinWrite/F=2/U refnum, time5
-	FBinWrite refnum, detStr
-	FBinWrite/F=2/U refnum, volt
-	FBinWrite/F=3/U refnum, resol
-
-	FGetPos refnum 
-	Print "End of header = ",V_filePos
-	offset = V_filePos
-	
-	FSetPos refnum,7
-	FBinWrite/F=2/U refnum, offset			//write the correct offset 
-
-	
-	FSetPos refNum, offset
-	
-	FBinWrite refnum, w
-	
-	close refnum
-	
-	return(0)
-End
-
-//
-// use GBLoadWave to do the reading, then I can do the decoding
-//
-Function V_readFakeEventFile(fileName)
-	String filename
-	
-// this reads in uint64 data, to a unit64 wave, skipping 22 bytes	
-//	GBLoadWave/B/T={192,192}/W=1/S=22
-	Variable num,refnum
-	
-
-//  to read a VSANS event file:
-//
-// - get the file name
-//	- read the header (all of it, since I need parts of it) (maybe read as a struct? but I don't know the size!)
-// - move to EOF and close
-//
-// - Use GBLoadWave to read the 64-bit events in
-
-	String vsansStr=""
-	Variable revision
-	Variable offset		// no disabled tubes
-	Variable time1
-	Variable time2
-	Variable time3
-	Variable time4		// these 4 time pieces are supposed to be 8 bytes total
-	Variable time5		// these 5 time pieces are supposed to be 10 bytes total
-	String detStr=""
-	Variable volt
-	Variable resol
-
-	vsansStr = PadString(vsansStr,5,0x20)		//pad to 5 bytes
-	detStr = PadString(detStr,1,0x20)				//pad to 1 byte
-
-	Open/R refnum as filename
-	filename = S_fileName
-
-v_tic()
-
-	FBinRead refnum, vsansStr
-	FBinRead/F=2/U refnum, revision
-	FBinRead/F=2/U refnum, offset
-	FBinRead/F=2/U refnum, time1
-	FBinRead/F=2/U refnum, time2
-	FBinRead/F=2/U refnum, time3
-	FBinRead/F=2/U refnum, time4
-	FBinRead/F=2/U refnum, time5
-	FBinRead refnum, detStr			//NOTE - the example data file Phil sent skipped the detStr (no placeholder!)
-	FBinRead/F=2/U refnum, volt
-	FBinRead/F=3/U refnum, resol
-
-	FStatus refnum
-	FSetPos refnum, V_logEOF
-	
-	Close refnum
-	
-// number of data bytes
-	num = V_logEOF-offset
-	Print "Number of data values = ",num/8
-	
-	GBLoadWave/B/T={192,192}/W=1/S=(offset) filename		// intel, little-endian
-//	GBLoadWave/T={192,192}/W=1/S=(offset) filename			// motorola, big-endian
-	
-	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
-	KillWaves/Z $(StringFromList(0,S_waveNames))
-v_toc()	
-	
-	Print vsansStr
-	Print revision
-	Print offset
-	Print time1
-	Print time2
-	Print time3
-	Print time4
-	Print time5
-	Print detStr
-	print volt
-	print resol
-	
-	return(0)
-End
-
-//
-//
-//
-Function V_MakeFakeEventWave_TOF(delayTime,std)
-	Variable delayTime,std
-
-	Variable num,ii,jj,numRepeat
-
-
-	num = 1000
-	numRepeat = 1000
-	
-//	delayTime = 50		//microseconds
-//	std = 4					//std deviation, microseconds
-	
-//	// /l=64 bit, /U=unsigned
-	Make/O/L/U/N=(num*numRepeat) eventWave
-	eventWave = 0
-	
-	Make/O/D/N=(num) arrival
-	
-	// for each 64-bit value:
-	// byte 1: tube index [0,191]
-	// byte 2: pixel value [0,127]
-	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
-	
-	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
-	uint64 i64_ticks,i64_start
-	
-//	i64_start = ticks
-	i64_ticks = 0
-	for(jj=0;jj<numRepeat;jj+=1)
-		arrival = delayTime + gnoise(std)
-		sort arrival,arrival
-		arrival *= 1000		//milliseconds now
-	
-		for(ii=0;ii<num;ii+=1)
-	//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
-			b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
-			b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
-			
-			i64_ticks = trunc(arrival[ii])
-			
-//			b2 = b2 << 48
-//			b1 = b1 << 56
-
-			// don't shift b1
-			b2 = b2 << 8
-			i64_ticks = i64_ticks << 16
-		
-			i64_num = b1+b2+i64_ticks
-			eventWave[jj*num+ii] = i64_num
-		endfor
-		
-	endfor
-
-	return(0)
-End
-
-
-// TODO:
-//
-// There may be memory issues with this
-//
-// -- do I want to do the time binning first?
-// -- does it really matter?
-//
-Function V_SortAndSplitFakeEvents()
-
-	Wave eventTime = root:EventTime
-	Wave location = root:location
-	Wave tube = root:tube
-	
-	Sort tube,tube,eventTime,location
-
-	Variable b1,e1,b2,e2,b3,e3,b4,e4	
-	FindValue/S=0/I=48 tube
-	b1 = 0
-	e1 = V_Value - 1
-	b2 = V_Value
-	FindValue/S=(b2)/I=96 tube
-	e2 = V_Value - 1
-	b3 = V_Value
-	FindValue/S=(b3)/I=144 tube
-	e3 = V_Value - 1
-	b4 = V_Value
-	e4 = numpnts(tube)-1
-	
-	Print b1,e1
-	Print b2,e2
-	Print b3,e3
-	Print b4,e4
-	
-//	tube and location become x and y, and can be byte data
-// eventTime still needs to be 64 bit - when do I convert it to FP? 
-	Make/O/B/U/N=(e1-b1+1) tube1,location1
-	Make/O/L/U/N=(e1-b1+1) eventTime1
-
-	Make/O/B/U/N=(e2-b2+1) tube2,location2
-	Make/O/L/U/N=(e2-b2+1) eventTime2
-	
-	Make/O/B/U/N=(e3-b3+1) tube3,location3
-	Make/O/L/U/N=(e3-b3+1) eventTime3
-	
-	Make/O/B/U/N=(e4-b4+1) tube4,location4
-	Make/O/L/U/N=(e4-b4+1) eventTime4
-	
-	
-	tube1 = tube[p+b1]
-	tube2 = tube[p+b2]
-	tube3 = tube[p+b3]
-	tube4 = tube[p+b4]
-	
-	location1 = location[p+b1]
-	location2 = location[p+b2]
-	location3 = location[p+b3]
-	location4 = location[p+b4]
-	
-	eventTime1 = eventTime[p+b1]
-	eventTime2 = eventTime[p+b2]
-	eventTime3 = eventTime[p+b3]
-	eventTime4 = eventTime[p+b4]
-	
-	
-	KillWaves/Z eventTime,location,tube
-	
-	return(0)
-End
 
 
 
@@ -703,6 +211,9 @@ Proc V_SwitchGroupAndCleanup(num)
 
 end
 
+// Counts the number of x or y location values at an input number
+// -- does not appear to be used
+//
 Function V_count(num)
 	Variable num
 	
@@ -1229,6 +740,7 @@ Function V_ChangeSliceViewSetVar(ctrlName,varNum,varStr,varName) : SetVariableCo
 	
 	return(0)
 End
+
 
 
 //
@@ -1783,6 +1295,520 @@ End
 
 
 
+////////////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////////   TESTING ROUTINES
+//
+/////////////////////////   "FAKE" EVENT FILES - WRITE/READ
+//
+//
+Function V_testBitShift()
+
+//	// /L=64 bit, /U=unsigned
+//	Make/L/U/N=100 eventWave
+//	eventWave = 0
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	int64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	int64 i64_ticks,i64_start
+	
+	b1=255
+	b3=255
+	b5=255
+	b7=255
+	b2=0
+	b4=0
+	b6=0
+	b8=0
+	
+	b7 = b7 << 8
+	b6 = b6 << 16
+	b5 = b5 << 24
+	b4 = b4 << 32
+	b3 = b3 << 40
+	b2 = b2 << 48
+	b1 = b1 << 56
+	
+	i64_num = b1+b2+b3+b4+b5+b6+b7+b8
+	printf "%64b\r",i64_num
+	
+	return(0)
+End
+
+Function V_MakeFakeEvents()
+
+//	// /L=64 bit, /U=unsigned
+	Make/O/L/U/N=10 smallEventWave
+	smallEventWave = 0
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	uint64 i64_ticks,i64_start
+	
+//	b1 = 47
+//	b2 = 123
+//	i64_ticks = 123456789
+	b1 = 41
+	b2 = 66
+	i64_ticks = 15
+
+
+//	b2 = b2 << 48
+//	b1 = b1 << 56
+//	
+//	i64_num = b1+b2+i64_ticks
+
+	// don't shift b1
+	b2 = b2 << 8
+	i64_ticks = i64_ticks << 16
+
+	i64_num = b1+b2+i64_ticks
+
+	printf "%64b\r",i64_num
+	print i64_num
+	
+	smallEventWave[0] = i64_num
+	
+	return(0)
+End
+
+//Structure eventWord
+//	uchar eventTime[6]
+//	uchar location
+//	uchar tube
+//endStructure
+
+Function V_decodeFakeEvent()
+
+	WAVE w = smallEventWave
+	uint64 val,b1,b2,btime
+	val = w[0]
+	
+//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
+	printf "%64b\r",val			//correct, assign value to 64bit variable
+//	print w[0]				//wrong
+	print val				// correct
+	
+//	b1 = (val >> 56 ) & 0xFF			// = 255, last byte, after shifting
+//	b2 = (val >> 48 ) & 0xFF	
+//	btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
+
+
+	b1 = val & 0xFF
+	b2 = (val >> 8) & 0xFF
+	btime = (val >> 16)
+
+	
+	print b1
+	print b2
+	print btime
+
+
+//	//test as struct
+//	Print "as STRUCT"
+//	
+//	STRUCT eventWord s
+//	
+//	s = w[0]
+//	
+//	print s.tube
+//	print s.location
+//	print s.eventTime
+	
+
+		
+	return(0)
+End
+
+//
+// tested up to num=1e8 successfully
+//
+Function V_MakeFakeEventWave(num)
+	Variable num
+	
+	Variable ii
+
+
+//	num = 1e3
+	
+//	// /l=64 bit, /U=unsigned
+	Make/O/L/U/N=(num) eventWave
+	eventWave = 0
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2
+	uint64 i64_ticks,i64_start
+	
+	i64_start = ticks
+	for(ii=0;ii<num;ii+=1)
+//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+		b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
+		b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
+		
+//		i64_ticks = ticks-i64_start
+		i64_ticks = ii+1
+
+		// don't shift b1
+		b2 = b2 << 8
+		i64_ticks = i64_ticks << 16
+	
+		i64_num = b1+b2+i64_ticks
+	
+		eventWave[ii] = i64_num
+	endfor
+
+
+	return(0)
+End
+
+
+//
+// TODO:
+// -- can this be multithreaded (eliminating the loop)?
+//
+// MultiThread tube = (w[p]) & 0xFF	
+// MultiThread location = (w[p] >> 8 ) & 0xFF	
+// MultiThread eventTime = (w[p] >> 16)
+//
+// !!!!- yes - for a 35 MB file:
+// for loop = 4.3 s
+// MultiThread = 0.35 s
+//
+// !!! can I use the bit operations in MatrixOp? 1D waves are valid
+//  to use with MatrixOp. Would it be better than multiThread?
+//
+//
+Function V_decodeFakeEventWave(w)
+	Wave w
+
+v_tic()
+//	WAVE w = eventWave
+	uint64 val,b1,b2,btime
+	val = w[0]
+	
+//	printf "%64b\r",w[0]		//wrong (drops the last Å 9 bits)
+//	printf "%64b\r",val			//correct, assign value to 64bit variable
+//	print w[0]				//wrong
+//	print val				// correct
+	
+	Variable num,ii
+	num=numpnts(w)
+	
+	Make/O/L/U/N=(num) eventTime
+	Make/O/U/B/N=(num) tube,location		//8 bit unsigned
+
+ MultiThread tube = (w[p]) & 0xFF	
+ MultiThread location = (w[p] >> 8 ) & 0xFF	
+ MultiThread eventTime = (w[p] >> 16)
+	
+//	for(ii=0;ii<num;ii+=1)
+//		val = w[ii]
+//		
+////		b1 = (val >> 56 ) & 0xFF			// = 255, last two bytes, after shifting
+////		b2 = (val >> 48 ) & 0xFF	
+////		btime = val & 0xFFFFFFFFFFFF	// = really big number, last 6 bytes
+//
+//		b1 = val & 0xFF
+//		b2 = (val >> 8) & 0xFF
+//		btime = (val >> 16)
+//
+//		tube[ii] = b1
+//		location[ii] = b2
+//		eventTime[ii] = btime
+//		
+//	endfor
+
+v_toc()
+		
+	return(0)
+End
+
+
+//
+// TODO - Feb 2021
+// -- if I ever need to write out a "clean" event file, be sure to update
+//   the header structure to the actual structure from Feb 2021
+//   where time stamp is 12 bit, and detStr is NOT written
+// -- is the offset really 26? should it be 27?
+//
+Function V_writeFakeEventFile(fname)
+	String fname
+
+	WAVE w = eventWave
+	Variable refnum
+	
+	String vsansStr="VSANS"
+	Variable revision = 11
+	Variable offset = 26		// no disabled tubes
+	Variable time1 = 2017
+	Variable time2 = 0525
+	Variable time3 = 1122
+	Variable time4 = 3344		// these 4 time pieces are supposed to be 8 bytes total
+	Variable time5 = 3344		// these 5 time pieces are supposed to be 10 bytes total
+	String detStr = "M"
+	Variable volt = 1500
+	Variable resol = 1e7
+	
+	
+	Open refnum as fname
+
+	FBinWrite refnum, vsansStr
+	FBinWrite/F=2/U refnum, revision
+	FBinWrite/F=2/U refnum, offset
+	FBinWrite/F=2/U refnum, time1
+	FBinWrite/F=2/U refnum, time2
+	FBinWrite/F=2/U refnum, time3
+	FBinWrite/F=2/U refnum, time4
+	FBinWrite/F=2/U refnum, time5
+	FBinWrite refnum, detStr
+	FBinWrite/F=2/U refnum, volt
+	FBinWrite/F=3/U refnum, resol
+
+	FGetPos refnum 
+	Print "End of header = ",V_filePos
+	offset = V_filePos
+	
+	FSetPos refnum,7
+	FBinWrite/F=2/U refnum, offset			//write the correct offset 
+
+	
+	FSetPos refNum, offset
+	
+	FBinWrite refnum, w
+	
+	close refnum
+	
+	return(0)
+End
+
+//
+// use GBLoadWave to do the reading, then I can do the decoding
+//
+Function V_readFakeEventFile(fileName)
+	String filename
+	
+// this reads in uint64 data, to a unit64 wave, skipping 22 bytes	
+//	GBLoadWave/B/T={192,192}/W=1/S=22
+	Variable num,refnum
+	
+
+//  to read a VSANS event file:
+//
+// - get the file name
+//	- read the header (all of it, since I need parts of it) (maybe read as a struct? but I don't know the size!)
+// - move to EOF and close
+//
+// - Use GBLoadWave to read the 64-bit events in
+
+	String vsansStr=""
+	Variable revision
+	Variable offset		// no disabled tubes
+	Variable time1
+	Variable time2
+	Variable time3
+	Variable time4		// these 4 time pieces are supposed to be 8 bytes total
+	Variable time5		// these 5 time pieces are supposed to be 10 bytes total
+	String detStr=""
+	Variable volt
+	Variable resol
+
+	vsansStr = PadString(vsansStr,5,0x20)		//pad to 5 bytes
+	detStr = PadString(detStr,1,0x20)				//pad to 1 byte
+
+	Open/R refnum as filename
+	filename = S_fileName
+
+v_tic()
+
+	FBinRead refnum, vsansStr
+	FBinRead/F=2/U refnum, revision
+	FBinRead/F=2/U refnum, offset
+	FBinRead/F=2/U refnum, time1
+	FBinRead/F=2/U refnum, time2
+	FBinRead/F=2/U refnum, time3
+	FBinRead/F=2/U refnum, time4
+	FBinRead/F=2/U refnum, time5
+	FBinRead refnum, detStr			//NOTE - the example data file Phil sent skipped the detStr (no placeholder!)
+	FBinRead/F=2/U refnum, volt
+	FBinRead/F=3/U refnum, resol
+
+	FStatus refnum
+	FSetPos refnum, V_logEOF
+	
+	Close refnum
+	
+// number of data bytes
+	num = V_logEOF-offset
+	Print "Number of data values = ",num/8
+	
+	GBLoadWave/B/T={192,192}/W=1/S=(offset) filename		// intel, little-endian
+//	GBLoadWave/T={192,192}/W=1/S=(offset) filename			// motorola, big-endian
+	
+	Duplicate/O $(StringFromList(0,S_waveNames)) V_Events
+	KillWaves/Z $(StringFromList(0,S_waveNames))
+v_toc()	
+	
+	Print vsansStr
+	Print revision
+	Print offset
+	Print time1
+	Print time2
+	Print time3
+	Print time4
+	Print time5
+	Print detStr
+	print volt
+	print resol
+	
+	return(0)
+End
+
+//
+//
+//
+Function V_MakeFakeEventWave_TOF(delayTime,std)
+	Variable delayTime,std
+
+	Variable num,ii,jj,numRepeat
+
+
+	num = 1000
+	numRepeat = 1000
+	
+//	delayTime = 50		//microseconds
+//	std = 4					//std deviation, microseconds
+	
+//	// /l=64 bit, /U=unsigned
+	Make/O/L/U/N=(num*numRepeat) eventWave
+	eventWave = 0
+	
+	Make/O/D/N=(num) arrival
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	uint64 i64_ticks,i64_start
+	
+//	i64_start = ticks
+	i64_ticks = 0
+	for(jj=0;jj<numRepeat;jj+=1)
+		arrival = delayTime + gnoise(std)
+		sort arrival,arrival
+		arrival *= 1000		//milliseconds now
+	
+		for(ii=0;ii<num;ii+=1)
+	//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+			b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
+			b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
+			
+			i64_ticks = trunc(arrival[ii])
+			
+//			b2 = b2 << 48
+//			b1 = b1 << 56
+
+			// don't shift b1
+			b2 = b2 << 8
+			i64_ticks = i64_ticks << 16
+		
+			i64_num = b1+b2+i64_ticks
+			eventWave[jj*num+ii] = i64_num
+		endfor
+		
+	endfor
+
+	return(0)
+End
+
+
+// TODO:
+//
+// There may be memory issues with this
+//
+// -- do I want to do the time binning first?
+// -- does it really matter?
+//
+Function V_SortAndSplitFakeEvents()
+
+	Wave eventTime = root:EventTime
+	Wave location = root:location
+	Wave tube = root:tube
+	
+	Sort tube,tube,eventTime,location
+
+	Variable b1,e1,b2,e2,b3,e3,b4,e4	
+	FindValue/S=0/I=48 tube
+	b1 = 0
+	e1 = V_Value - 1
+	b2 = V_Value
+	FindValue/S=(b2)/I=96 tube
+	e2 = V_Value - 1
+	b3 = V_Value
+	FindValue/S=(b3)/I=144 tube
+	e3 = V_Value - 1
+	b4 = V_Value
+	e4 = numpnts(tube)-1
+	
+	Print b1,e1
+	Print b2,e2
+	Print b3,e3
+	Print b4,e4
+	
+//	tube and location become x and y, and can be byte data
+// eventTime still needs to be 64 bit - when do I convert it to FP? 
+	Make/O/B/U/N=(e1-b1+1) tube1,location1
+	Make/O/L/U/N=(e1-b1+1) eventTime1
+
+	Make/O/B/U/N=(e2-b2+1) tube2,location2
+	Make/O/L/U/N=(e2-b2+1) eventTime2
+	
+	Make/O/B/U/N=(e3-b3+1) tube3,location3
+	Make/O/L/U/N=(e3-b3+1) eventTime3
+	
+	Make/O/B/U/N=(e4-b4+1) tube4,location4
+	Make/O/L/U/N=(e4-b4+1) eventTime4
+	
+	
+	tube1 = tube[p+b1]
+	tube2 = tube[p+b2]
+	tube3 = tube[p+b3]
+	tube4 = tube[p+b4]
+	
+	location1 = location[p+b1]
+	location2 = location[p+b2]
+	location3 = location[p+b3]
+	location4 = location[p+b4]
+	
+	eventTime1 = eventTime[p+b1]
+	eventTime2 = eventTime[p+b2]
+	eventTime3 = eventTime[p+b3]
+	eventTime4 = eventTime[p+b4]
+	
+	
+	KillWaves/Z eventTime,location,tube
+	
+	return(0)
+End
+
+
+
+///////////////////////////////////////////////////////////
+
 
 //////////////////////
 
@@ -1809,11 +1835,12 @@ End
 // -- I need to talk with Phil and find out if this is the expected behavior of "blocks" of data
 // read in from each panel (from a buffer?)
 //
-
-Function V_EventStream_by_Panel()
+// if numPt = -1, then the entire wave is used
+Proc V_EventStream_by_Panel(numPt)
+	Variable numPt=1000
 	
-	V_Group_as_Panel()			//currently hard-wired as the first 200 points
-	Execute "V_Event_per_Panel()"
+	V_Group_as_Panel(numPt)			//currently hard-wired as the first 200 points
+	V_PlotEvent_per_Panel()
 	
 End
 
@@ -1822,39 +1849,57 @@ End
 // assigns each event the correct panel (1,2,3,4) since all of the events for the 4 panels
 // arrive in the same stream, but as it turns out, not necessarily in chronological order!
 //
-Function V_Group_as_Panel()
+// if numPt = -1, then the entire wave is used
+Function V_Group_as_Panel(numPt)
+	Variable numPt
 
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+	Wave tube=tube
+//	Wave timePt=timePt
+	Wave rescaledTime=rescaledTime
+	if(numPt == -1)
+		Duplicate/O tube tube_panel
+		Duplicate/O rescaledTime rescaledTime_panel
+	else	
+		Duplicate/O/R=[0,(numPt-1)] tube tube_panel
+		Duplicate/O/R=[0,(numPt-1)] rescaledTime rescaledTime_panel
+	endif
 	
-	Duplicate/O/R=[0,199] root:Packages:NIST:VSANS:Event:tube root:tube_panel
-	Duplicate/O/R=[0,199] root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
-//	Duplicate/O root:Packages:NIST:VSANS:Event:tube root:tube_panel
-//	Duplicate/O root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
-	
-	WAVE w=root:tube_panel
-	WAVE ti=root:rawTime_panel
+	WAVE w=tube_panel
+	WAVE ti=rescaledTime_panel
 
-	Variable num=numpnts(w)
-	Variable ii,val
+	// do strictly in this order, so that the reassignment works
+	// wave is unsigned byte
+	// max tube number is 191, so assign to a larger number temporarily
+	MultiThread w = (w[p] < 48) ? 201 : w[p]
+	MultiThread w = (w[p] < 96) ? 202 : w[p]
+	MultiThread w = (w[p] < 144) ? 203 : w[p]
+	MultiThread w = (w[p] < 192 ) ? 204 : w[p]
+	MultiThread w -= 200
 	
-	for(ii=0;ii<num;ii+=1)
-		val=0
-		if(w[ii] < 48)
-			val = 1
-		endif
-		if(w[ii] > 47 && w[ii] < 96)
-			val = 2
-		endif
-		if(w[ii] > 95 && w[ii] < 144)
-			val = 3
-		endif
-		if(w[ii] > 143)
-			val = 4
-		endif
-		
-		w[ii] = val
-		
-	endfor
 	
+//	Variable num=numpnts(w)
+//	Variable ii,val
+//	
+//	for(ii=0;ii<num;ii+=1)
+//		val=0
+//		if(w[ii] < 48)
+//			val = 1
+//		endif
+//		if(w[ii] > 47 && w[ii] < 96)
+//			val = 2
+//		endif
+//		if(w[ii] > 95 && w[ii] < 144)
+//			val = 3
+//		endif
+//		if(w[ii] > 143)
+//			val = 4
+//		endif
+//		
+//		w[ii] = val
+//		
+//	endfor
+	SetDataFolder root:
 	
 	return(0)
 End
@@ -1863,13 +1908,13 @@ End
 
 
 
-Proc V_Event_per_Panel()
+Proc V_PlotEvent_per_Panel()
 
 	DoWindow/F EventPerPanel
 	if(V_Flag==0)
-	
+		SetDataFolder root:Packages:NIST:VSANS:Event:
 		PauseUpdate; Silent 1		// building window...
-		Display /W=(34.8,42.2,543,371) /K=1 rawTime_panel
+		Display /W=(34.8,42.2,543,371) /K=1 rescaledTime_panel
 		DoWindow/C EventPerPanel
 		ModifyGraph mode=4
 		ModifyGraph marker=19
@@ -1877,10 +1922,10 @@ Proc V_Event_per_Panel()
 		ModifyGraph msize=3
 		ModifyGraph gaps=0
 		ModifyGraph useMrkStrokeRGB=1
-		ModifyGraph zColor(rawTime_panel)={tube_panel,*,*,Rainbow16}
+		ModifyGraph zColor(rescaledTime_panel)={tube_panel,*,*,Rainbow16}
 		ModifyGraph grid=1
 		ModifyGraph mirror=2
-		Label left "Time (raw)"
+		Label left "Time (s)"
 		Label bottom "neutron event"
 		SetAxis left 0,*
 	//	SetAxis bottom *,100
@@ -1890,12 +1935,12 @@ Proc V_Event_per_Panel()
 	//	Tag/C/N=text3/X=-12.48/Y=23.75 rawTime_panel, 65, "Right"
 	//	Tag/C/N=text4/X=-17.43/Y=18.18 rawTime_panel, 38, "Left"
 	endif
+	SetDataFolder root:
 EndMacro
 
 
 
 //////////////////////
-
 //
 // This test function looks for time reversal in a single panel
 //
@@ -1912,56 +1957,89 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 	Variable panelVal		// panelVal = 1,2,3,4
 	Variable numPt		// number of points to duplicate
 	
-	Duplicate/O/R=[0,numPt-1] root:Packages:NIST:VSANS:Event:tube root:tube_panel
-	Duplicate/O/R=[0,numPt-1] root:Packages:NIST:VSANS:Event:timePt root:rawTime_panel
-	
-	WAVE w=root:tube_panel
-	WAVE ti=root:rawTime_panel
 
-	Variable num=numpnts(w)
-	Variable ii,val
-
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+	Wave tube=tube
+	Wave rescaledTime=rescaledTime
+	if(numPt == -1)
+		Duplicate/O tube tube_panel
+		Duplicate/O rescaledTime rescaledTime_panel
+	else	
+		Duplicate/O/R=[0,(numPt-1)] tube tube_panel
+		Duplicate/O/R=[0,(numPt-1)] rescaledTime rescaledTime_panel
+	endif
 	
-	for(ii=0;ii<num;ii+=1)
-		val=0
-		if(w[ii] < 48)
-			val = 1
-		endif
-		if(w[ii] > 47 && w[ii] < 96)
-			val = 2
-		endif
-		if(w[ii] > 95 && w[ii] < 144)
-			val = 3
-		endif
-		if(w[ii] > 143)
-			val = 4
-		endif
-		
-		w[ii] = val
-		
-	endfor
+	WAVE w=tube_panel
+	WAVE ti=rescaledTime_panel
+
+	// do strictly in this order, so that the reassignment works
+	// wave is unsigned byte
+	// max tube number is 191, so assign to a larger number temporarily
+	MultiThread w = (w[p] < 48) ? 201 : w[p]
+	MultiThread w = (w[p] < 96) ? 202 : w[p]
+	MultiThread w = (w[p] < 144) ? 203 : w[p]
+	MultiThread w = (w[p] < 192 ) ? 204 : w[p]
+	MultiThread w -= 200
+
+
+//	Variable num=numpnts(w)
+//	Variable ii,val
+//
+//	
+//	for(ii=0;ii<num;ii+=1)
+//		val=0
+//		if(w[ii] < 48)
+//			val = 1
+//		endif
+//		if(w[ii] > 47 && w[ii] < 96)
+//			val = 2
+//		endif
+//		if(w[ii] > 95 && w[ii] < 144)
+//			val = 3
+//		endif
+//		if(w[ii] > 143)
+//			val = 4
+//		endif
+//		
+//		w[ii] = val
+//		
+//	endfor
 	
 	//
 	V_KeepOneGroup(panelVal)
 	
-	Wave onePanel=root:onePanel
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+	Wave onePanel=onePanel		//generated in V_KeepOneGroup()
+	
 	// differentiate and plot
 	Differentiate onePanel/D=onePanel_DIF;DelayUpdate
 	Display onePanel_DIF
 	
-	Duplicate onePanel_DIF tmp
+	Duplicate/O onePanel_DIF tmp
 	tmp = 0
-	tmp = (onePanel_DIF < 0) ? 1 : 0
-	Print "total # bad points = ",sum(tmp)
-	Print "fraction bad points = ",sum(tmp)/numPt
+	MultiThread tmp = (onePanel_DIF < 0) ? 1 : 0
 	
+	Print "total # bad points = ",sum(tmp)
+	Print "fraction bad points = ",sum(tmp)/numpnts(tmp)
+
+	Make/O/D/N=0 badPoints
+	FindLevels/P/Q/D=badPoints/EDGE=1 onePanel_DIF, 0
+	if (V_LevelsFound)
+		Print "numLevels = ",V_LevelsFound
+		badPoints = trunc(badPoints)
+//		Print destWave
+	endif
 	
 	KillWaves/Z tmp
+	
+	SetDataFolder root:
 	
 	return(0)
 End
 
 // as a proc
+// panelVal = 1,2,3,4
+//
 Proc pV_Differentiate_onePanel(panelVal,numPt)
 	Variable panelVal,numpt
 	V_Differentiate_onePanel(panelVal,numPt)
@@ -1970,17 +2048,19 @@ end
 Function V_KeepOneGroup(panelVal)
 	Variable panelVal
 
-	WAVE w=root:tube_panel
-	WAVE ti=root:rawTime_panel
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+
+	WAVE w=tube_panel
+	WAVE ti=rescaledTime_panel
 
 	Duplicate/O ti, onePanel
 	Wave one=onePanel
 	one = 0
 	
-	Variable ii
-		
 	
-	one = (w[p] == panelVal) ? ti[p] : NaN
+	MultiThread one = (w[p] == panelVal) ? ti[p] : NaN
+	
+	SetDataFolder root:
 	
 	return(0)
 End
@@ -1995,6 +2075,24 @@ End
 //		22							4				clk (Hz)				timestamp clock frequency in Hz
 //		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
 //
+//
+// Feb 2021
+// !! per Phil, bug causes time stamp to be 12 bytes - but what happens to the remaing data?
+//
+//
+//	This is the current header from file 20201119164154001_0.hst on vsansdet1:
+//	
+//	56 53 41 4e 53 00 00 1b  00 40 3a 19 10 b3 e6 b6
+//	5f 00 00 00 00 d2 05 80  96 98 00 
+//	
+//	(5 b)  56 53 41 4e 53: VSANS Ð magic number
+//	(2 b)  00 00: file format revision
+//	(2 b)  1b  00: byte offset in file to event data
+//	(12 b)  40 3a 19 10 b3 e6 b6  5f 00 00 00 00 : time of origin (12 bytes instead of 10 as described in doc)
+//	(2 b)  d2 05: HV Value  (0x05d2 = 1490)
+//	(4 b)  80 96 98 00: timestamp clock frequency (0x989680 = 10000000)
+
+
 Function V_ReadEventHeader()
 
 	String gVSANSStr=""
@@ -2002,9 +2100,11 @@ Function V_ReadEventHeader()
 	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
 	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
 	
-	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol
-	Variable refnum
+	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol,gTime6
+	Variable refnum,ii
 	String filePathStr=""
+	
+	Make/O/B/U/N=27 byteWave
 	
 	Open/R refnum as filepathstr
 	
@@ -2017,7 +2117,8 @@ Function V_ReadEventHeader()
 	FBinRead/F=2/U/B=3 refnum, gTime3
 	FBinRead/F=2/U/B=3 refnum, gTime4
 	FBinRead/F=2/U/B=3 refnum, gTime5
-	FBinRead refnum, gDetStr
+	FBinRead/F=2/U/B=3 refnum, gTime6
+//	FBinRead refnum, gDetStr
 	FBinRead/F=2/U/B=3 refnum, gVolt
 	FBinRead/F=3/U/B=3 refnum, gResol
 
@@ -2035,11 +2136,35 @@ Function V_ReadEventHeader()
 	Print "time part 3 = ",gTime3
 	Print "time part 4 = ",gTime4
 	Print "time part 5 = ",gTime5
-	Print "det group = ",gDetStr
+	Print "time part 6 = ",gTime6
+//	Print "det group = ",gDetStr
 	Print "voltage (V) = ",gVolt
 	Print "clock freq (Hz) = ",gResol
 	
 	print "1/freq (s) = ",1/gResol
+
+
+//// read all as a byte wave
+	Make/O/B/U/N=27 byteWave
+	
+	Open/R refnum as filepathstr
+	
+
+	FBinRead refnum, byteWave
+
+
+	FStatus refnum
+	FSetPos refnum, V_logEOF
+	
+	Close refnum
+	
+	for(ii=0;ii<numpnts(byteWave);ii+=1)
+		printf "%X  ",byteWave[ii]
+	endfor
+	printf "\r"
 	
 	return(0)
 End
+
+
+

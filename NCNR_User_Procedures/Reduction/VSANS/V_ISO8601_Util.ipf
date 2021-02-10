@@ -23,17 +23,17 @@
 // Unfortunately, there are functions based on the Julian calendar
 // and the ISO standard uses the Gregorian calendar...
 //
-//¥print time()
+// print time()
 //  10:53:42 AM
-//¥print date()
+// print date()
 //  Wed, Oct 7, 2015
-//¥Print DateTime
+// Print DateTime
 //  3.52706e+09
-//¥Print secs2date(DateTime,-2)
+// Print secs2date(DateTime,-2)
 //  2015-10-07
-//¥Print secs2time(DateTime,2)
+// Print secs2time(DateTime,2)
 //  10:55
-//¥Print secs2time(DateTime,3)
+// Print secs2time(DateTime,3)
 //  10:55:50
 
 
