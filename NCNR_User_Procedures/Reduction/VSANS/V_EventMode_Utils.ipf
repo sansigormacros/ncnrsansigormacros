@@ -2012,8 +2012,18 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 	Wave onePanel=onePanel		//generated in V_KeepOneGroup()
 	
 	// differentiate and plot
-	Differentiate onePanel/D=onePanel_DIF;DelayUpdate
-	Display onePanel_DIF
+	Differentiate onePanel/D=onePanel_DIF
+	
+	DoWindow/F V_OnePanel_Differentiated
+	if(V_flag == 0)
+		Display/N=V_OnePanel_Differentiated/K=1 onePanel_DIF
+		Legend
+		Modifygraph gaps=0
+		ModifyGraph zero(left)=1
+		Label left "\\Z14Delta (dt/event)"
+		Label bottom "\\Z14Event number"
+	endif
+
 	
 	Duplicate/O onePanel_DIF tmp
 	tmp = 0

@@ -1964,13 +1964,104 @@ Function V_EC_DisplayButtonProc(ba) : ButtonControl
 				// button is Display-All
 				RemoveFromGraph/Z onePanel,rescaledTime
 				AppendToGraph rescaledTime
+				ModifyGraph rgb(rescaledTime)=(0,0,0)
+
+			else
+				// button is Display-One
+				ControlInfo setvar0
+				V_KeepOneGroup(V_Value)
+			
+				SetDataFolder root:Packages:NIST:VSANS:Event:
+
+				RemoveFromGraph/Z rescaledTime,onePanel
+				AppendToGraph onePanel
+				ModifyGraph rgb(onePanel)=(0,0,0)
+
+			endif
+			
+			// restore the zoom
+			SetAxis left, l_min,l_max
+			SetAxis bottom, b_min,b_max
+			
+			SetDataFolder root:			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+//
+// switch based on ba.ctrlName
+//
+// differentiated time - all data, or part
+
+Function V_EC_DoDifferential(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+						
+			SetDataFolder root:Packages:NIST:VSANS:Event:
+			// save the zoom
+			String list=""
+			Variable b_min,b_max,l_min,l_max
+			GetAxis/Q bottom
+			b_min=V_min
+			b_max=V_max
+			GetAxis/Q left
+			l_min=V_min
+			l_max=V_max
+	
+	
+				
+			if(cmpstr(ba.ctrlName,"buttonDiffAll")==0)
+				// button is Display-All
+				
+				V_DifferentiatedTime()
+				//generates rescaledTime_DIF
+				
+				DoWindow/F V_EventCorrectionPanel
+				//if trace is not on graph, add it
+
+				SetDataFolder root:Packages:NIST:VSANS:Event:
+
+				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
+				if(strlen(list) == 0)
+					AppendToGraph/R rescaledTime_DIF
+					ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
+					ModifyGraph gaps(rescaledTime_DIF)=0
+
+					ReorderTraces _back_, {rescaledTime_DIF}		// put the differential behind the event data
+				endif
+				RemoveFromGraph/Z onePanel_DIF 		//just in case
 			else
 				// button is Display-One
 				ControlInfo setvar0
 				V_KeepOneGroup(V_Value)
 				
-				RemoveFromGraph/Z rescaledTime,onePanel
-				AppendToGraph root:Packages:NIST:VSANS:Event:onePanel
+				V_Differentiate_onePanel(V_Value,-1)		// do the whole data set
+				// generates the wave onePanel_DIF
+
+				DoWindow/F V_EventCorrectionPanel
+				//if trace is not on graph, add it
+				SetDataFolder root:Packages:NIST:VSANS:Event:
+
+
+				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
+				if(strlen(list) == 0)
+					AppendToGraph/R onePanel_DIF
+					ModifyGraph msize=1,rgb(onePanel_DIF)=(65535,0,0)
+					ModifyGraph gaps(onePanel_DIF)=0
+
+					ReorderTraces _back_, {onePanel_DIF}		// put the differential behind the event data
+				endif
+				RemoveFromGraph/Z rescaledTime_DIF 		//just in case
+
 			endif
 			
 			// restore the zoom
@@ -1994,31 +2085,76 @@ End
 //
 // -- setVar0
 //
+// print/D 17553618-471
+// 17553147
+//
 Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+
 			SetDataFolder root:Packages:NIST:VSANS:Event:
+			// save the zoom
+			String list=""
+			Variable b_min,b_max,l_min,l_max
+			GetAxis/Q bottom
+			b_min=V_min
+			b_max=V_max
+			GetAxis/Q left
+			l_min=V_min
+			l_max=V_max
+	
+	
+			// do a fresh differential each time
+				
+			if(cmpstr(ba.ctrlName,"buttonCleanAll")==0)
+				// button is Clean-All
+				V_DifferentiatedTime()
+				//generates rescaledTime_DIF, but not badPoints
+				Make/O/D/N=0 badPoints
+				FindLevels/P/Q/D=badPoints/EDGE=1 rescaledTime_DIF, 0
+				if (V_LevelsFound)
+					Print "numLevels = ",V_LevelsFound
+					badPoints = trunc(badPoints)
+					////		Print destWave
+				endif
 			
+			else
+			
+				ControlInfo setvar0
+				V_KeepOneGroup(V_Value)
+				
+				V_Differentiate_onePanel(V_Value,-1)		// do the whole data set
+				// generates the wave onePanel_DIF and badPoints
+
+
+			endif
+			SetDataFolder root:Packages:NIST:VSANS:Event:
+	
+	/// delete all of the "time reversal" points from the data
 			Wave rescaledTime = rescaledTime
 			Wave timePt = timePt
 			Wave xLoc = xLoc
 			Wave yLoc = yLoc
-			Variable rollTime,ptA,ptB,numElements,lo,hi
+			Wave tube=tube
+			Variable ii,num,pt
 			
-			Wave destWave=destWave		// these are the "time reversal" points
+			Wave bad=badPoints		// these are the "time reversal" points
 
-
-			ptA = pcsr(A)
-			ptB = pcsr(B)
-			lo=min(ptA,ptB)
-			hi=max(ptA,ptB)			
-			numElements = abs(ptA-ptB)+1			//so points removed are inclusive
-			DeletePoints lo, numElements, rescaledTime,timePt,xLoc,yLoc
+			num=numpnts(bad)
 			
-			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
+			// loop through backwards so I don't shift the index
+			for(ii=num-1;ii>=0;ii-=1)
+				pt = bad[ii]-1		// actually want to delete the point before
+			DeletePoints pt, 1, rescaledTime,timePt,xLoc,yLoc,tube
+			endfor
+			
+			// restore the zoom
+			SetAxis left, l_min,l_max
+			SetAxis bottom, b_min,b_max
+
 			
 			// updates the longest time (as does every operation of adjusting the data)
 			NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
@@ -2221,25 +2357,11 @@ end
 
 
 
-// differentiated time - all data
-Function V_EC_DoDifferential(ctrlName) : ButtonControl
-	String ctrlName
-	
-	V_DifferentiatedTime()
-	DoWindow/F V_EventCorrectionPanel
-	
-	//if trace is not on graph, add it
-	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-	String list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
-	if(strlen(list) == 0)
-		AppendToGraph/R rescaledTime_DIF
-		ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
-		ReorderTraces rescaledTime,{rescaledTime_DIF}		// put the differential behind the event data
-	endif
-	SetDataFolder root:
-	return(0)
-end
+
+
+
+
 
 //////////////   Custom Bins  /////////////////////
 //
