@@ -126,6 +126,9 @@ Static Constant MODE_OSCILL = 1
 Static Constant MODE_TISANE = 2
 Static Constant MODE_TOF = 3
 
+// FEB 2021 - 
+Constant kBadStep_s = 0.016		// "bad" step threshold (in seconds) for deleting an event
+
 
 
 // Initialization of the VSANS event mode panel
@@ -1297,6 +1300,24 @@ Variable t1 = ticks
 		KillWaves/Z OscSortIndex			//to make sure that there is no old index hanging around
 	endif
 
+
+// FEB 2021 -- comb through each panel of data (separately) and look for bad time
+// steps. (> 16 ms) -- eliminate these. Do for all 4 panels, then the data is "clean"
+// and any "bad" time steps are OK, just buffering
+//
+	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
+
+	if(RemoveBadEvents)
+		// this loops through all 4 panels, removing bad time steps
+		V_EC_CleanAllPanels()
+	endif
+
+// safe to sort stream data now
+	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
+		V_SortTimeData()
+	Endif
+
+
 	SetDataFolder root:
 
 Variable t2 = ticks
@@ -1856,19 +1877,25 @@ Proc V_EventCorrectionPanel()
 		Button button2,pos={sc*20,64*sc},size={sc*80,20*sc},proc=V_EC_ColorizeTimeButtonProc,title="Colorize"
 
 
-		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-All"
-		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
-		SetVariable setVar0,pos={sc*140,64*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
-		SetVariable setvar0,limits={1,4,1}
-		
+//		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-All"
+//		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
+
+		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-Zoom"
+//		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
+
+		SetVariable setVar1,pos={sc*140,64*sc},size={sc*130,20*sc},title="Zoom Scale",value=_NUM:0.1
+		SetVariable setvar1,limits={0.01,1,0.02}
+			
 	
 		Button buttonDiffAll,pos={sc*290,12*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-All"
 		Button button6,pos={sc*290,38*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-One"	
 		Button button7,pos={sc*290,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Zap Outlier"
 
+		SetVariable setVar0,pos={sc*290,86*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
+		SetVariable setvar0,limits={1,4,1}
+	
 
-
-		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-All"
+		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=V_EC_SortTimeButtonProc,title="Sort-All"
 		Button button9,pos={sc*(290+150),38*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-One"
 		Button button10,pos={sc*(290+150),64*sc},size={sc*110,20*sc},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
 
@@ -1884,6 +1911,10 @@ Proc V_EventCorrectionPanel()
 	
 EndMacro
 
+
+
+// figure out which traces are on the graph - and put the cursors there
+//
 Function V_EC_AddCursorButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -1891,11 +1922,31 @@ Function V_EC_AddCursorButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			SetDataFolder root:Packages:NIST:VSANS:Event:
+
+			String list=""			
+			list = WaveList("*", ";", "WIN:V_EventCorrectionPanel")
+
+			// can be either rescaledTime or onePanel, not both
+			if(strlen(list) == 0)
+				DoAlert 0,"No data on graph"
+			else
+				if(strsearch(list,"rescaled",0) >= 0)
+					Wave rescaledTime = rescaledTime
+					Cursor/P A rescaledTime 0
+					Cursor/P B rescaledTime numpnts(rescaledTime)-1
+				else
+					//must be onePanel
+					Wave onePanel = onePanel
+					Cursor/P A onePanel 0
+					Cursor/P B onePanel numpnts(onePanel)-1
+				endif
 			
-			Wave rescaledTime = rescaledTime
-			Cursor/P A rescaledTime 0
-			Cursor/P B rescaledTime numpnts(rescaledTime)-1
+			endif
+
+
 			ShowInfo
+			
+			
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -1937,11 +1988,35 @@ Function V_EC_ColorizeTimeButtonProc(ba) : ButtonControl
 	return 0
 End
 
+//
+//
+Function V_EC_SortTimeButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			SetDataFolder root:Packages:NIST:VSANS:Event:
+			
+			V_SortTimeData()
+
+			
+			SetDataFolder root:			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
 
 
 //
 //
 // switch based on ba.ctrlName
+//
+// now, this changes the zoom of the display to some fraction of full scale
 //
 Function V_EC_DisplayButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -1951,37 +2026,47 @@ Function V_EC_DisplayButtonProc(ba) : ButtonControl
 			// click code here
 			
 			SetDataFolder root:Packages:NIST:VSANS:Event:
-			// save the zoom
-			Variable b_min,b_max,l_min,l_max
-			GetAxis/Q bottom
-			b_min=V_min
-			b_max=V_max
-			GetAxis/Q left
-			l_min=V_min
-			l_max=V_max
+//			// save the zoom
+//			Variable b_min,b_max,l_min,l_max
+//			GetAxis/Q bottom
+//			b_min=V_min
+//			b_max=V_max
+//			GetAxis/Q left
+//			l_min=V_min
+//			l_max=V_max
+//			
+//			if(cmpstr(ba.ctrlName,"buttonDispAll")==0)
+//				// button is Display-All
+//				RemoveFromGraph/Z onePanel,rescaledTime
+//				AppendToGraph rescaledTime
+//				ModifyGraph rgb(rescaledTime)=(0,0,0)
+//
+//			else
+//				// button is Display-One
+//				ControlInfo setvar0
+//				V_KeepOneGroup(V_Value)
+//			
+//				SetDataFolder root:Packages:NIST:VSANS:Event:
+//
+//				RemoveFromGraph/Z rescaledTime,onePanel
+//				AppendToGraph onePanel
+//				ModifyGraph rgb(onePanel)=(0,0,0)
+//
+//			endif
 			
-			if(cmpstr(ba.ctrlName,"buttonDispAll")==0)
-				// button is Display-All
-				RemoveFromGraph/Z onePanel,rescaledTime
-				AppendToGraph rescaledTime
-				ModifyGraph rgb(rescaledTime)=(0,0,0)
-
-			else
-				// button is Display-One
-				ControlInfo setvar0
-				V_KeepOneGroup(V_Value)
-			
-				SetDataFolder root:Packages:NIST:VSANS:Event:
-
-				RemoveFromGraph/Z rescaledTime,onePanel
-				AppendToGraph onePanel
-				ModifyGraph rgb(onePanel)=(0,0,0)
-
-			endif
+			ControlInfo setvar1
 			
 			// restore the zoom
-			SetAxis left, l_min,l_max
-			SetAxis bottom, b_min,b_max
+		//	SetAxis left, l_min,l_max
+			String list = WaveList("*", ";", "WIN:V_EventCorrectionPanel")
+			String item = StringFromList(0,list,";")
+			Wave w=$item
+			Variable npt = numpnts(w)
+
+			Wave rescaledTime = rescaledTime
+
+			SetAxis bottom, 0,V_Value*npt
+			SetAxis left 0,rescaledTime[trunc(V_Value*npt)]
 			
 			SetDataFolder root:			
 			break
@@ -2042,7 +2127,7 @@ Function V_EC_DoDifferential(ba) : ButtonControl
 			else
 				// button is Display-One
 				ControlInfo setvar0
-				V_KeepOneGroup(V_Value)
+			//	V_KeepOneGroup(V_Value) // not needed here - (fresh) grouping is done in Differentiate
 				
 				V_Differentiate_onePanel(V_Value,-1)		// do the whole data set
 				// generates the wave onePanel_DIF
@@ -2085,8 +2170,7 @@ End
 //
 // -- setVar0
 //
-// print/D 17553618-471
-// 17553147
+// V_SortTimeData()
 //
 Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2106,51 +2190,56 @@ Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 			l_min=V_min
 			l_max=V_max
 	
-	
-			// do a fresh differential each time
-				
-			if(cmpstr(ba.ctrlName,"buttonCleanAll")==0)
-				// button is Clean-All
-				V_DifferentiatedTime()
-				//generates rescaledTime_DIF, but not badPoints
-				Make/O/D/N=0 badPoints
-				FindLevels/P/Q/D=badPoints/EDGE=1 rescaledTime_DIF, 0
-				if (V_LevelsFound)
-					Print "numLevels = ",V_LevelsFound
-					badPoints = trunc(badPoints)
-					////		Print destWave
-				endif
+			// get the panel number
+			ControlInfo setvar0
 			
-			else
+//			V_KeepOneGroup(V_Value)
 			
-				ControlInfo setvar0
-				V_KeepOneGroup(V_Value)
-				
-				V_Differentiate_onePanel(V_Value,-1)		// do the whole data set
-				// generates the wave onePanel_DIF and badPoints
+			// no need to run V_KeepOneGroup() - this is done in V_Differentiate_onePanel
+			// to be sure that the grouping has been immediately done.
+			
+			V_Differentiate_onePanel(V_Value,-1)		// do the whole data set
+			// generates the wave onePanel_DIF and badPoints
 
-
-			endif
 			SetDataFolder root:Packages:NIST:VSANS:Event:
 	
 	/// delete all of the "time reversal" points from the data
 			Wave rescaledTime = rescaledTime
+			Wave/Z rescaledTime_DIF = rescaledTime_DIF
 			Wave timePt = timePt
 			Wave xLoc = xLoc
 			Wave yLoc = yLoc
+			Wave location = location
 			Wave tube=tube
-			Variable ii,num,pt
+			Variable ii,num,pt,step16
 			
 			Wave bad=badPoints		// these are the "time reversal" points
 
 			num=numpnts(bad)
-			
+			step16 = 0
 			// loop through backwards so I don't shift the index
 			for(ii=num-1;ii>=0;ii-=1)
 				pt = bad[ii]-1		// actually want to delete the point before
-			DeletePoints pt, 1, rescaledTime,timePt,xLoc,yLoc,tube
+				// is the time step > 16 ms? 
+				if((rescaledTime[ii] - rescaledTime[ii-1]) > kBadStep_s)
+					DeletePoints pt, 1, rescaledTime,location,timePt,xLoc,yLoc,tube
+					
+					if(WaveExists(rescaledTime_DIF))
+						DeletePoints pt, 1,rescaledTime_DIF		//may not extst
+					endif
+					
+					Printf "(Pt-1)=%d, time step (ms) = %g \r",pt,rescaledTime[ii] - rescaledTime[ii-1]
+					step16 += 1
+				endif
 			endfor
 			
+			//purely to get the grammar right
+			if(step16 == 1)
+				Printf "%d point in set %d had step > 16 ms\r",step16,V_Value
+			else
+				Printf "%d points in set %d had step > 16 ms\r",step16,V_Value
+			endif	
+					
 			// restore the zoom
 			SetAxis left, l_min,l_max
 			SetAxis bottom, b_min,b_max
@@ -2170,7 +2259,132 @@ Function V_EC_TrimPointsButtonProc(ba) : ButtonControl
 	return 0
 End
 
-// un-sort the data first, then save it
+
+// This is the same functionality as the button, but instead loops
+// over all 4 panels.
+//
+// Cleans all of the "bad" > 16 ms points from each panel
+//
+// then follow this call with a sort All, since the remaining steps are
+// simply a consequence of buffering
+//
+Function V_EC_CleanAllPanels()
+		
+
+		SetDataFolder root:Packages:NIST:VSANS:Event:
+
+	/// delete all of the "time reversal" points from the data
+		Wave rescaledTime = rescaledTime
+		Wave/Z rescaledTime_DIF = rescaledTime_DIF
+		Wave timePt = timePt
+		Wave xLoc = xLoc
+		Wave yLoc = yLoc
+		Wave location = location
+		Wave tube=tube
+		Variable ii,num,pt,step16,jj
+		
+		Wave bad=badPoints		// these are the "time reversal" points
+
+
+		for(jj=1;jj<=4;jj+=1)
+
+			// no need to run V_KeepOneGroup() - this is done in V_Differentiate_onePanel
+			// to be sure that the grouping has been immediately done.
+			
+			V_Differentiate_onePanel(jj,-1)		// do the whole data set
+			// generates the wave onePanel_DIF and badPoints
+	
+			num=numpnts(bad)
+			step16 = 0
+			
+			// loop through backwards so I don't shift the index
+			for(ii=num-1;ii>=0;ii-=1)
+				pt = bad[ii]-1		// actually want to delete the point before
+				// is the time step > 16 ms? 
+				if((rescaledTime[ii] - rescaledTime[ii-1]) > kBadStep_s)
+					DeletePoints pt, 1, rescaledTime,location,timePt,xLoc,yLoc,tube
+					
+					if(WaveExists(rescaledTime_DIF))
+						DeletePoints pt, 1, rescaledTime_DIF		// this may not exist
+					endif
+					
+					Print "time step (ms) = ",rescaledTime[ii] - rescaledTime[ii-1]
+					step16 += 1
+				endif
+			endfor
+			
+			//purely to get the grammar right
+			if(step16 == 1)
+				Printf "%d point in set %d had step > 16 ms\r",step16,jj
+			else
+				Printf "%d points in set %d had step > 16 ms\r",step16,jj
+			endif
+		
+		endfor
+		// updates the longest time (as does every operation of adjusting the data)
+		NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
+		t_longest = waveMax(rescaledTime)
+		
+		SetDataFolder root:
+
+	return(0)
+End
+
+
+
+
+
+//
+// Function to delete a single point identified with both cursors
+// -- see SANS event mode for implementation
+//
+Function V_EC_FindOutlierButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			SetDataFolder root:Packages:NIST:VSANS:Event:
+			
+			Wave rescaledTime = rescaledTime
+			Wave onePanel = onePanel
+			Wave timePt = timePt
+			Wave xLoc = xLoc
+			Wave yLoc = yLoc
+			Variable ptA,ptB,numElements,lo,hi
+			
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+//			lo=min(ptA,ptB)
+//			hi=max(ptA,ptB)			
+			numElements = 1			//just remove a single point
+			if(ptA == ptB)
+				DeletePoints ptA, numElements, rescaledTime,timePt,xLoc,yLoc,onePanel
+			endif
+//			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
+			
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:VSANS:Event:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+			
+	
+			SetDataFolder root:
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// don't un-do the sort, that was part of the necessary adjustments
+//
+// not implemented -- saving takes way too long...
+// and the VSANS data appears to be rather clean
+//
 Function V_EC_SaveWavesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
@@ -2178,17 +2392,18 @@ Function V_EC_SaveWavesButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			DoAlert 0,"Save not yet implemented"
-//			Execute "UndoTheSorting()"
-			
+			DoAlert 0,"Save not implemented"
+						
 //			SetDataFolder root:Packages:NIST:VSANS:Event:
 //			
 //			Wave rescaledTime = rescaledTime
 //			Wave timePt = timePt
 //			Wave xLoc = xLoc
 //			Wave yLoc = yLoc
-//			Save/T xLoc,yLoc,timePt	,rescaledTime		//will ask for a name
+//			Wave tube = tube
+//			Save/T xLoc,yLoc,timePt,rescaledTime,tube		//will ask for a name
 //			
+			
 			SetDataFolder root:
 			break
 		case -1: // control being killed
@@ -2290,69 +2505,7 @@ Function V_EC_DoneButtonProc(ba) : ButtonControl
 	return 0
 End
 
-//upDown 5 or -5 looks for spikes +5 or -5 std deviations from mean
-Function V_PutCursorsAtStep(upDown)
-	Variable upDown
-	
-	SetDataFolder root:Packages:NIST:VSANS:Event:
 
-	Wave rescaledTime=rescaledTime
-	Wave rescaledTime_DIF=rescaledTime_DIF
-	Variable avg,pt,zoom
-	
-	zoom = 200		//points in each direction
-	
-	WaveStats/M=1/Q rescaledTime_DIF
-	avg = V_avg
-		
-	FindLevel/P/Q rescaledTime_DIF avg*upDown
-	if(V_flag==0)
-		pt = V_levelX
-		WaveStats/Q/R=[pt-zoom,pt+zoom] rescaledTime		// find the max/min y-values within the point range
-	else
-		Print "Level not found"
-		return(0)
-	endif
-	
-	Variable loLeft,hiLeft, loBottom,hiBottom
-	loLeft = V_min*0.98		//+/- 2%
-	hiLeft = V_max*1.02
-	
-	SetAxis left loLeft,hiLeft
-	SetAxis bottom pnt2x(rescaledTime,pt-zoom),pnt2x(rescaledTime,pt+zoom)
-	
-	Cursor/P A rescaledTime pt+2	//at the point
-	Cursor/P B rescaledTime numpnts(rescaledTime)-1		//at the end
-
-	SetDataFolder root:
-
-	return(0)
-End
-
-
-
-Function V_EC_FindStepButton_down(ctrlName) : ButtonControl
-	String ctrlName
-	
-//	Variable upDown = -5
-	NVAR upDown = root:Packages:NIST:VSANS:Event:gStepTolerance
-	
-	V_PutCursorsAtStep(-1*upDown)
-
-	return(0)
-end
-
-
-Function V_EC_FindStepButton_up(ctrlName) : ButtonControl
-	String ctrlName
-	
-//	Variable upDown = 5
-	NVAR upDown = root:Packages:NIST:VSANS:Event:gStepTolerance
-
-	V_PutCursorsAtStep(upDown)
-
-	return(0)
-end
 
 
 

@@ -2019,7 +2019,7 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 		Display/N=V_OnePanel_Differentiated/K=1 onePanel_DIF
 		Legend
 		Modifygraph gaps=0
-		ModifyGraph zero(left)=1
+//		ModifyGraph zero(left)=1
 		Label left "\\Z14Delta (dt/event)"
 		Label bottom "\\Z14Event number"
 	endif
@@ -2032,14 +2032,37 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 	Print "total # bad points = ",sum(tmp)
 	Print "fraction bad points = ",sum(tmp)/numpnts(tmp)
 
-	Make/O/D/N=0 badPoints
-	FindLevels/P/Q/D=badPoints/EDGE=1 onePanel_DIF, 0
-	if (V_LevelsFound)
-		Print "numLevels = ",V_LevelsFound
-		badPoints = trunc(badPoints)
-//		Print destWave
-	endif
-	
+// want to make a wave directly withe the negative onePanel_DIF point values
+// rather than rely on FindLevels, which seems to miss too many points
+//
+// and a second wave with the actual (negative) time values so I can 
+// directly get the "bad" times without needing to do the math
+//
+	Variable numBadPt=sum(tmp),ii,jj
+	Make/O/D/N=(numBadPt) badPoints,badTime
+
+//v_tic()	
+	ii=0
+	jj=0
+	for(ii=0;ii<numpnts(tmp);ii+=1)
+		if(tmp[ii] == 1)
+			badPoints[jj] = ii
+			badTime[jj] = onePanel_DIF[ii]
+			jj+=1 
+		endif
+	endfor
+//v_toc()
+
+//v_tic()
+//	Make/O/D/N=0 badPoints
+//	FindLevels/P/Q/D=badPoints/EDGE=1 onePanel_DIF, 0
+//	if (V_LevelsFound)
+//		Print "numLevels = ",V_LevelsFound
+//		badPoints = trunc(badPoints)
+////		Print destWave
+//	endif
+//v_toc()
+
 	KillWaves/Z tmp
 	
 	SetDataFolder root:
