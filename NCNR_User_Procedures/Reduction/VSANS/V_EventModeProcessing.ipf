@@ -361,6 +361,8 @@ End
 
 
 //
+// Split the binned to panels right before copying the slices
+// in case the user hasn't done this
 //
 Function V_CopySlicesForExport_Button(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -375,6 +377,8 @@ Function V_CopySlicesForExport_Button(ba) : ButtonControl
 			else
 				detStr = "M"
 			endif
+			//
+			V_SplitBinnedToPanels()
 			//
 			V_CopySlicesForExport(detStr)
 			//
@@ -548,15 +552,15 @@ Function V_ShowEventDataButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			v_tic()
-			printf "Show rescaled time graph = "
+//			v_tic()
+//			printf "Show rescaled time graph = "
 			Execute "V_ShowRescaledTimeGraph()"
-			v_toc()
+//			v_toc()
 			//
-			v_tic()
-			printf "calculate and show differential = "
+//			v_tic()
+//			printf "calculate and show differential = "
 			V_DifferentiatedTime()
-			v_toc()
+//			v_toc()
 			//
 			break
 		case -1: // control being killed
@@ -636,7 +640,7 @@ Function V_EventModeHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "VSANS Event Mode Data"
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
 			break
 		case -1: // control being killed
 			break
@@ -1261,20 +1265,20 @@ Variable t1 = ticks
 
 
 	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
-		v_tic()
-		printf "Duplicate wave = "
+//		v_tic()
+//		printf "Duplicate wave = "
 			KillWaves/Z rescaledTime
 			Duplicate/O timePt rescaledTime
-		v_toc()
-		v_tic()
-		printf "rescale time = "
+//		v_toc()
+//		v_tic()
+//		printf "rescale time = "
 	//		rescaledTime = 1*(timePt-timePt[0])		//convert to nanoseconds and start from zero
 			rescaledTime = timeStep_s*(timePt-timePt[0])		//convert to seconds and start from zero
-		v_toc()
-		v_tic()
-		printf "find wave Max = "
+//		v_toc()
+//		v_tic()
+//		printf "find wave Max = "
 			t_longest = waveMax(rescaledTime)		//should be the last point	
-		v_toc()
+//		v_toc()
 	endif
 
 	
@@ -1312,8 +1316,8 @@ Variable t1 = ticks
 		V_EC_CleanAllPanels()
 	endif
 
-// safe to sort stream data now
-	if(mode == MODE_STREAM)		// continuous "Stream" mode - start from zero
+// safe to sort stream data now if bad steps removed
+	if(mode == MODE_STREAM && RemoveBadEvents)
 		V_SortTimeData()
 	Endif
 
@@ -1880,23 +1884,23 @@ Proc V_EventCorrectionPanel()
 //		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-All"
 //		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
 
-		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-Zoom"
+		Button buttonDispZoom,pos={sc*140,12*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-Zoom"
 //		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=V_EC_DisplayButtonProc,title="Display-One"
 
-		SetVariable setVar1,pos={sc*140,64*sc},size={sc*130,20*sc},title="Zoom Scale",value=_NUM:0.1
+		SetVariable setVar1,pos={sc*140,38*sc},size={sc*100,20*sc},title="Scale",value=_NUM:0.1
 		SetVariable setvar1,limits={0.01,1,0.02}
-			
+		Button button7,pos={sc*140,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Zap Outlier"
+
 	
 		Button buttonDiffAll,pos={sc*290,12*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-All"
 		Button button6,pos={sc*290,38*sc},size={sc*110,20*sc},proc=V_EC_DoDifferential,title="Differential-One"	
-		Button button7,pos={sc*290,64*sc},size={sc*100,20*sc},proc=V_EC_FindOutlierButton,title="Zap Outlier"
+		Button button9,pos={sc*290,64*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-One"
 
-		SetVariable setVar0,pos={sc*290,86*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
+		SetVariable setVar0,pos={sc*290,88*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
 		SetVariable setvar0,limits={1,4,1}
 	
 
 		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=V_EC_SortTimeButtonProc,title="Sort-All"
-		Button button9,pos={sc*(290+150),38*sc},size={sc*110,20*sc},proc=V_EC_TrimPointsButtonProc,title="Clean-One"
 		Button button10,pos={sc*(290+150),64*sc},size={sc*110,20*sc},proc=V_EC_SaveWavesButtonProc,title="Save Waves"
 
 				
@@ -1971,14 +1975,21 @@ Function V_EC_ColorizeTimeButtonProc(ba) : ButtonControl
 			SetDataFolder root:Packages:NIST:VSANS:Event:
 			Wave tube_panel = tube_panel
 			Wave rescaledTime = rescaledTime
-			ModifyGraph mode=4
-			ModifyGraph marker=19
-			ModifyGraph lSize=2
-			ModifyGraph msize=3
-			ModifyGraph gaps=0
-			ModifyGraph useMrkStrokeRGB=1
-			ModifyGraph zColor(rescaledTime)={tube_panel,*,*,Rainbow16}
 			
+			String list = WaveList("*", ";", "WIN:V_EventCorrectionPanel")
+
+			if(strsearch(list,"rescaled",0) >= 0)
+				ModifyGraph mode(rescaledTime)=4
+				ModifyGraph marker(rescaledTime)=19
+				ModifyGraph lSize(rescaledTime)=2
+				ModifyGraph msize(rescaledTime)=3
+				ModifyGraph gaps(rescaledTime)=0
+				ModifyGraph useMrkStrokeRGB(rescaledTime)=1
+				ModifyGraph zColor(rescaledTime)={tube_panel,*,*,Rainbow16}
+			else
+				DoAlert 0,"Show All Data before colorizing"			
+			endif
+		
 			SetDataFolder root:			
 			break
 		case -1: // control being killed
@@ -2035,7 +2046,7 @@ Function V_EC_DisplayButtonProc(ba) : ButtonControl
 //			l_min=V_min
 //			l_max=V_max
 //			
-//			if(cmpstr(ba.ctrlName,"buttonDispAll")==0)
+//			if(cmpstr(ba.ctrlName,"buttonDispZoom")==0)
 //				// button is Display-All
 //				RemoveFromGraph/Z onePanel,rescaledTime
 //				AppendToGraph rescaledTime
@@ -2116,10 +2127,14 @@ Function V_EC_DoDifferential(ba) : ButtonControl
 				SetDataFolder root:Packages:NIST:VSANS:Event:
 
 				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
-				if(strlen(list) == 0)
+				if(WhichListItem("rescaledTime_DIF", list,";") < 0)			// not on the graph
 					AppendToGraph/R rescaledTime_DIF
 					ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
 					ModifyGraph gaps(rescaledTime_DIF)=0
+					
+					RemoveFromGraph/Z onePanel,rescaledTime
+					AppendToGraph rescaledTime
+					ModifyGraph rgb(rescaledTime)=(0,0,0)
 
 					ReorderTraces _back_, {rescaledTime_DIF}		// put the differential behind the event data
 				endif
@@ -2138,15 +2153,29 @@ Function V_EC_DoDifferential(ba) : ButtonControl
 
 
 				list = WaveList("*_DIF", ";", "WIN:V_EventCorrectionPanel")
-				if(strlen(list) == 0)
+				if(WhichListItem("onePanel_DIF", list,";") < 0)			// not on the graph
 					AppendToGraph/R onePanel_DIF
 					ModifyGraph msize=1,rgb(onePanel_DIF)=(65535,0,0)
 					ModifyGraph gaps(onePanel_DIF)=0
 
+					RemoveFromGraph/Z rescaledTime,onePanel
+					AppendToGraph onePanel
+					ModifyGraph rgb(onePanel)=(0,0,0)
+				
 					ReorderTraces _back_, {onePanel_DIF}		// put the differential behind the event data
 				endif
 				RemoveFromGraph/Z rescaledTime_DIF 		//just in case
 
+			endif
+
+			// touch up the graph with labels left and right
+			NVAR laptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+			if(laptopMode == 1)
+				Label left "\\Z10Time (seconds)"
+				Label right "\\Z10Differential (dt/event)"	
+			else
+				Label left "\\Z14Time (seconds)"
+				Label right "\\Z14Differential (dt/event)"	
 			endif
 			
 			// restore the zoom
@@ -2283,7 +2312,6 @@ Function V_EC_CleanAllPanels()
 		Wave tube=tube
 		Variable ii,num,pt,step16,jj
 		
-		Wave bad=badPoints		// these are the "time reversal" points
 
 
 		for(jj=1;jj<=4;jj+=1)
@@ -2293,6 +2321,8 @@ Function V_EC_CleanAllPanels()
 			
 			V_Differentiate_onePanel(jj,-1)		// do the whole data set
 			// generates the wave onePanel_DIF and badPoints
+
+			Wave bad=root:Packages:NIST:VSANS:Event:badPoints		// these are the "time reversal" points
 	
 			num=numpnts(bad)
 			step16 = 0
@@ -2466,7 +2496,31 @@ Function V_EC_ShowAllButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			SetDataFolder root:Packages:NIST:VSANS:Event:
+
+			String list = WaveList("*", ";", "WIN:V_EventCorrectionPanel")
+			if(strsearch(list,"rescaledTime",0) >= 0)
+				// already on graph, do nothing
+				
+			else
+				RemoveFromGraph/Z onePanel,rescaledTime
+				RemoveFromGraph/Z onePanel_DIF,rescaledTime_DIF
+				AppendToGraph rescaledTime
+				
+//				AppendToGraph/R rescaledTime_DIF
+//				ModifyGraph msize=1,rgb(rescaledTime_DIF)=(65535,0,0)
+//				ModifyGraph gaps(rescaledTime_DIF)=0
+//				
+//				ModifyGraph rgb(rescaledTime)=(0,0,0)
+//
+//				ReorderTraces _back_, {rescaledTime_DIF}		// put the differential behind the event data
+			endif
+			
+			
+			
 			SetAxis/A
+			
+			SetDataFolder root:
 			break
 		case -1: // control being killed
 			break
@@ -2481,7 +2535,7 @@ Function V_EC_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-//			DisplayHelpTopic/Z "Event Mode Data[Correcting for things that go wrong]"
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
 			break
 		case -1: // control being killed
 			break
@@ -2749,7 +2803,11 @@ Function V_CB_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "Event Mode Data[Setting up Custom Bin Widths]"
+			//
+			//DisplayHelpTopic/Z "Event Mode Data[Setting up Custom Bin Widths]"
+			//
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
+
 			break
 		case -1: // control being killed
 			break

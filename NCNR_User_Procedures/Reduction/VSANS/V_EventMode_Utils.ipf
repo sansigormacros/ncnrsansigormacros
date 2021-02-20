@@ -9,7 +9,7 @@
 //
 // -- to split out a single panel and take the differental of a single panel:
 //  1) load the data in as usual
-//	2) run V_Differentiate_onePanel(panelVal,numPt) --- panelVal = 1,2,3,4; numPt = number of
+//	 2) run V_Differentiate_onePanel(panelVal,numPt) --- panelVal = 1,2,3,4; numPt = number of
 //       points at the beginning of the dat to work with. The data panel is not really
 //       split out, but rather all of the other three panels are set to NaN
 //
@@ -414,16 +414,24 @@ Function V_CopySlicesForExport(detStr)
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_T root:export:entry:instrument:detector_MT:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_L root:export:entry:instrument:detector_ML:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_R root:export:entry:instrument:detector_MR:slices
+	
+		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime root:export:entry:reduction:binEndTime_M
+		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth root:export:entry:reduction:timeWidth_M	
+		Duplicate/O root:Packages:NIST:VSANS:Event:binCount root:export:entry:reduction:binCount_M
+			
 	else
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_B root:export:entry:instrument:detector_FB:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_T root:export:entry:instrument:detector_FT:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_L root:export:entry:instrument:detector_FL:slices
 		Duplicate/O root:Packages:NIST:VSANS:Event:slices_R root:export:entry:instrument:detector_FR:slices
+	
+		Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime root:export:entry:reduction:binEndTime_F
+		Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth root:export:entry:reduction:timeWidth_F
+		Duplicate/O root:Packages:NIST:VSANS:Event:binCount root:export:entry:reduction:binCount_F
+		
 	endif
 	
-	Duplicate/O root:Packages:NIST:VSANS:Event:binEndTime root:export:entry:reduction:binEndTime
-	Duplicate/O root:Packages:NIST:VSANS:Event:timeWidth root:export:entry:reduction:timeWidth	
-	
+
 	return(0)
 end
 
@@ -567,10 +575,10 @@ Window V_Event_Reduce_Panel()
 	PopupMenu ERFilesPopup,help={"The displayed file is the one that will be reduced."}
 	PopupMenu ERFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:VSANS:Globals:EVRED:gMRedList"
 
-	SetVariable ERSlices,pos={sc*3,75*sc},size={sc*100,15*sc},title="# of slices"
+	SetVariable ERSlices,pos={sc*3,75*sc},size={sc*110,15*sc},title="# of slices"
 	SetVariable ERSlices,limits={0,1000,0},value=root:Packages:NIST:VSANS:Globals:EVRED:gNumSlices
 	
-	SetVariable ERSelSlice,pos={sc*150,75*sc},size={sc*100,15*sc},title="current slice"
+	SetVariable ERSelSlice,pos={sc*130,75*sc},size={sc*130,15*sc},title="current slice"
 	SetVariable ERSelSlice,limits={0,1000,1},value=root:Packages:NIST:VSANS:Globals:EVRED:gCurSlice
 	SetVariable ERSelSlice,proc=V_ChangeSliceViewSetVar
 
@@ -716,12 +724,12 @@ Function V_ChangeSliceViewSetVar(ctrlName,varNum,varStr,varName) : SetVariableCo
 	// TODO: update the times and counts
 	// use a special "put", not "write" so it is written to the RAW folder, not the file
 	//
-	wave binEnd = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime
-	wave timeWidth = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth
+	wave binEnd_F = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_F
+	wave timeWidth_F = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_F
 	
 	Variable timeFract,num
-	num = numpnts(binEnd)
-	timeFract = timeWidth[varNum]/binEnd[num-1]
+	num = numpnts(binEnd_F)
+	timeFract = timeWidth_F[varNum]/binEnd_F[num-1]
 
 // get values from STO
 	Variable mon_STO,ctTime_STO
@@ -744,7 +752,7 @@ End
 
 
 //
-// locates the time bins and shows the time bin table (and plot?)
+// locates the time bins and shows the time bin table (and plot?) - loaded to RAW
 //
 // Can't show the plot of counts/bin since there would be 8 of these now, one for
 // each panel. Could show a total count per slice, but the numbers (binCount) is currently
@@ -754,37 +762,74 @@ End
 // that is active. Maybe this would be OK, but then there are still two sets of data, one for
 // Front and one for Middle...
 //
+// take the aproach of being able to reproduce the bin data that was presented at the time
+// of the data slicing - that is, the total bin counts for each carriage
+//
+// -- so data is saved for each carriage (_F and _M) suffix
+//
 Function V_EVR_TimeBins(PathButton) : ButtonControl
 	String PathButton
 
-	wave binEnd = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime
-	wave timeWidth = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth
+	wave binEnd_F = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_F
+	wave timeWidth_F = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_F
+	wave binCount_F = root:Packages:NIST:VSANS:RAW:entry:reduction:binCount_F
 
-	edit binEnd,timeWidth
+	wave binEnd_M = root:Packages:NIST:VSANS:RAW:entry:reduction:binEndTime_M
+	wave timeWidth_M = root:Packages:NIST:VSANS:RAW:entry:reduction:timeWidth_M
+	wave binCount_M = root:Packages:NIST:VSANS:RAW:entry:reduction:binCount_M
 	
-//	DoWindow/F V_EventBarGraph
-//	if(V_flag == 0)
-//		PauseUpdate; Silent 1		// building window...
-//		String fldrSav0= GetDataFolder(1)
-//		SetDataFolder root:Packages:NIST:VSANS:Event:
-//		Display /W=(110,705,610,1132)/N=V_EventBarGraph /K=1 binCount vs binEndTime
-//		SetDataFolder fldrSav0
-//		ModifyGraph mode=5
-//		ModifyGraph marker=19
-//		ModifyGraph lSize=2
-//		ModifyGraph rgb=(0,0,0)
-//		ModifyGraph msize=2
-//		ModifyGraph hbFill=2
-//		ModifyGraph gaps=0
-//		ModifyGraph usePlusRGB=1
-//		ModifyGraph toMode=0
-//		ModifyGraph useBarStrokeRGB=1
-//		ModifyGraph standoff=0
-//		SetAxis left 0,*
-//		Label bottom "\\Z14Time (seconds)"
-//		Label left "\\Z14Number of Events"
-//	endif
+	DoWindow/F V_EVR_BinTable
+	if(V_flag == 0)
+		edit/K=1/N=V_EVR_BinTable binEnd_F,binEnd_M,binCount_F,binCount_M,timeWidth_F,timeWidth_M
+	endif
 	
+	DoWindow/F V_EVR_F_BarGraph
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+
+		SetDataFolder root:Packages:NIST:VSANS:RAW:
+		Display /W=(70,222,370,486)/N=V_EVR_F_BarGraph /K=1 binCount_F vs binEnd_F
+
+		ModifyGraph mode=5
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=2
+		ModifyGraph hbFill=2
+		ModifyGraph gaps=0
+		ModifyGraph usePlusRGB=1
+		ModifyGraph toMode=0
+		ModifyGraph useBarStrokeRGB=1
+		ModifyGraph standoff=0
+		SetAxis left 0,*
+		Label bottom "\\Z14Time (seconds)"
+		Label left "\\Z14Number of Events"
+	endif
+
+	DoWindow/F V_EVR_M_BarGraph
+	if(V_flag == 0)
+		PauseUpdate; Silent 1		// building window...
+
+		SetDataFolder root:Packages:NIST:VSANS:RAW:
+		Display /W=(400,222,700,486)/N=V_EVR_M_BarGraph /K=1 binCount_M vs binEnd_M
+
+		ModifyGraph mode=5
+		ModifyGraph marker=19
+		ModifyGraph lSize=2
+		ModifyGraph rgb=(0,0,0)
+		ModifyGraph msize=2
+		ModifyGraph hbFill=2
+		ModifyGraph gaps=0
+		ModifyGraph usePlusRGB=1
+		ModifyGraph toMode=0
+		ModifyGraph useBarStrokeRGB=1
+		ModifyGraph standoff=0
+		SetAxis left 0,*
+		Label bottom "\\Z14Time (seconds)"
+		Label left "\\Z14Number of Events"
+	endif
+	
+	SetDataFolder root:
 	
 	return(0)
 End
@@ -819,14 +864,19 @@ End
 
 // get a  list of all of the sample files, based on intent
 //
-//
 // only accepts files in the list that are purpose=scattering
+//
+// then return just the ones that start with "Events_"
 //
 Function/S V_GetValidEVRedPopupList()
 
 	String semiList=""
 
 	semiList = V_GetSAMList()
+	
+	semiList = GrepList(semiList,"Events_")
+	
+	
 	return(semiList)
 
 End
@@ -2029,8 +2079,8 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 	tmp = 0
 	MultiThread tmp = (onePanel_DIF < 0) ? 1 : 0
 	
-	Print "total # bad points = ",sum(tmp)
-	Print "fraction bad points = ",sum(tmp)/numpnts(tmp)
+//	Print "total # bad points = ",sum(tmp)
+//	Print "fraction bad points = ",sum(tmp)/numpnts(tmp)
 
 // want to make a wave directly withe the negative onePanel_DIF point values
 // rather than rely on FindLevels, which seems to miss too many points
@@ -2053,6 +2103,8 @@ Function V_Differentiate_onePanel(panelVal,numPt)
 	endfor
 //v_toc()
 
+//
+//// slightly faster (<1 s for 15M events), but misses a few steps
 //v_tic()
 //	Make/O/D/N=0 badPoints
 //	FindLevels/P/Q/D=badPoints/EDGE=1 onePanel_DIF, 0
