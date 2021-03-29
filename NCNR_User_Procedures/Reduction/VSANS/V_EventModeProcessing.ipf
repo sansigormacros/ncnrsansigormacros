@@ -640,7 +640,7 @@ Function V_EventModeHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[Processing VSANS Event Data]"
 			break
 		case -1: // control being killed
 			break
@@ -2535,7 +2535,7 @@ Function V_EC_HelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[Correcting Errors in VSANS Event Data]"
 			break
 		case -1: // control being killed
 			break
@@ -2804,9 +2804,7 @@ Function V_CB_HelpButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			//
-			//DisplayHelpTopic/Z "Event Mode Data[Setting up Custom Bin Widths]"
-			//
-			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[VSANS Event Mode Data Processing]"
+			DisplayHelpTopic/Z "VSANS Data Reduction Documentation[Setting up Custom Bin Widths - VSANS]"
 
 			break
 		case -1: // control being killed
