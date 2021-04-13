@@ -17,9 +17,9 @@
 // see the binning routines in VC_DetectorBinning_Utils.ipf for the details
 //
 
-// TODO 
+// (DONE) 
 //
-// -- verify the binning for slit mode. Looks correct, but verify
+// x- verify the binning for slit mode. Looks correct, but verify
 // -- DOCUMENT
 //
 // x- detector "B" is currently skipped since the calibration waves are not faked

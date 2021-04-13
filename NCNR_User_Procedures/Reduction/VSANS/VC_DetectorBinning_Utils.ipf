@@ -12,7 +12,9 @@
 
 
 
-
+// TODO:
+// -- hard wired values for transmission and thickness
+//
 // x- hard wired for a sphere - change this to allow minimal selections and altering of coefficients
 // x- add the "fake" 2D simulation to fill the panels which are then later averaged as I(Q)
 //

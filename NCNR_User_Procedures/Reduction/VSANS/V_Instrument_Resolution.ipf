@@ -8,23 +8,38 @@
 //
 // Partially converted (July 2017)
 //
-//
-// -- still missing a lot of physical dimensions for the SANS (1D) case
-// let alone anything more complex
-//
+
 //
 // SANS-like (pinhole) conditions are largely copied from the SANS calcuations
-// and are the traditional extra three columns
+// and produces the traditional extra three columns
 //
 // Other conditions, such as white beam, or narrow slit mode, will likely require some
 // format for the resolution information that is different than the three column format.
-// The USANS solution of a "flag" is clunky, and depends entirely on the analysis package to 
-// know exactly what to do.
+// -- as of 2021, these cases are "handled" in the following ways:
+// 1) white beam and super white beam conditions cannot be forced into a Gaussian 
+//   resolution function since hte wavelength distribution is so asymmetric. The wavelength
+//   integration must be done numerically, separate from the geometry contribution to the
+//   resolution. So the *resolution* reported for white beam and super white beam contains
+//   NO wavelenght component - only geometry. This is done by artificially (and temporarily)
+//   setting the wavelength spread to 0.01 for the calculation. The analysis program must be 
+//   responsible for knowing how to do the proper wavelength distribution integration ***
+//
+// 2) Narrow slit data is written out with the same (-) (negative) dQv values written out
+//   as for USANS data sets. The data is only for L/R and B panels, all data from T/B
+//   is discarded due to the limited Qy coverage. Wavelength spread is ignored (as for USANS).
+//   The dQv values are different for each panel, and allows the analysis package to calculate 
+//   the smearing matrix as for USANS (but blockwise for each carriage). Wavelength distribution
+//   integration must be done separately for white beam and super white beam, just like for 
+//   pinhole data.
+//
+//
+// 2D VSANS data output uses the NXcanSANS output format developed and coded in by Jeff Krzywon
+// -- the details of the 2D resolution and errors are partially verified (for the pinhole case)
 //
 // the 2D SANS-like resolution calculation is also expected to be similar to SANS, but is
 // unverified at this point (July 2017). 2D errors are also unverified.
-// -- Most importantly for 2D VSANS data, there is no defined output format.
 //
+
 
 
 // TODO:
@@ -35,6 +50,10 @@
 // -- the dimensions and the units for the beam stops are very odd, and what is written to the
 //   file is not what is noted in the GUI - so verify the units that I'm actually reading.
 // 
+//
+// -- still missing a lot of physical dimensions for the SANS (1D) case
+// let alone anything more complex
+//
 
 
 
@@ -107,7 +126,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	Variable g = 981.0				//gravity acceleration [cm/s^2]
 
 ///////// get all of the values from the header
-// TODO: check the units of all of the inputs
 // lambda = wavelength [A]
 	if(isVCALC)
 		lambda = VCALC_getWavelength()
@@ -125,7 +143,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 // DDet = detector pixel resolution [cm]	**assumes square pixel
 	// V_getDet_pixel_fwhm_x(folderStr,detStr)
 	// V_getDet_pixel_fwhm_y(folderStr,detStr)
-//	DDet = 0.8		// TODO -- this is hard-wired
 
 	if(isVCALC)
 		if(strlen(type) == 1)
@@ -167,7 +184,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	
 // S2 = sample aperture diameter [cm]
 // as of 3/2018, the "internal" sample aperture is not in use, only the external
-// TODO : verify the units on the Ap2 (external)
 // sample aperture 1(internal) is set to report "12.7 mm" as a STRING
 // sample aperture 2(external) reports the number typed in...
 //
@@ -207,8 +223,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 
 	
 // BS = beam stop diameter [mm]
-//TODO:? which BS is in? carr2, carr3, none?
-// -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
 
 	if(isVCALC)
@@ -217,7 +231,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 		BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 	endif
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
-//	BS = 25.4			//TODO hard-wired value
 	
 //	bs_shape = V_getBeamStopC2_shape(folderStr)
 //	if(cmpstr(s1_shape,"CIRCLE") == 0)
@@ -229,7 +242,7 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 
 	
 // del_r = step size [mm] = binWidth*(mm/pixel) 
-	del_r = 1*DDet*10		// TODO: this is probably not the correct value
+	del_r = 1*DDet*10	// convert to mm from cm
 
 // usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
 	usingLenses = 0
@@ -241,7 +254,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 
 
 
-// TODO:
 // this is the point where I need to switch on the different collimation types (white beam, slit, Xtal, etc)
 // to calculate the correct resolution, or fill the waves with the correct "flags"
 //
@@ -455,7 +467,6 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	//	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr)+(2)*yg_d)^2 )		//radial distance from ctr to pt
 
 ///////// get all of the values from the header
-// TODO: check the units of all of the inputs
 // lambda = wavelength [A]
 	lambda = V_getWavelength(folderStr)
 	
@@ -465,7 +476,6 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 // DDet = detector pixel resolution [cm]	**assumes square pixel
 	// V_getDet_pixel_fwhm_x(folderStr,detStr)
 	// V_getDet_pixel_fwhm_y(folderStr,detStr)
-//	DDet = 0.8		// TODO -- this is hard-wired
 
 	if(strlen(type) == 1)
 		// it's "B"
@@ -496,7 +506,6 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	
 // S2 = sample aperture diameter [cm]
 // as of 3/2018, the "internal" sample aperture is not in use, only the external
-// TODO : verify the units on the Ap2 (external)
 // sample aperture 1(internal) is set to report "12.7 mm" as a STRING
 // sample aperture 2(external) reports the number typed in...
 //
@@ -518,13 +527,9 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	endif
 	
 // BS = beam stop diameter [mm]
-//TODO:? which BS is in? carr2, carr3, none?
-// -- need to check the detector, num_beamstops field, then description, then shape/size or shape/height and shape/width
 //
-// TODO: the values in the file are incorrect!!! BS = 1000 mm diameter!!!
 	BS = V_IdentifyBeamstopDiameter(folderStr,type)		//returns diameter in [mm]
 //	BS = V_getBeamStopC2_size(folderStr)		// Units are [mm] 
-//	BS = 25.4			//TODO hard-wired value
 	
 //	bs_shape = V_getBeamStopC2_shape(folderStr)
 //	if(cmpstr(s1_shape,"CIRCLE") == 0)
@@ -536,7 +541,7 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 
 	
 // del_r = step size [mm] = binWidth*(mm/pixel) 
-	del_r = 1*DDet*10		// TODO: this is probably not the correct value
+	del_r = 1*DDet*10		// convert cm to mm
 
 // usingLenses = flag for lenses = 0 if no lenses, non-zero if lenses are in-beam
 	usingLenses = 0
@@ -548,7 +553,6 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 
 
 
-// TODO:
 // this is the point where I need to switch on the different collimation types (white beam, slit, Xtal, etc)
 // to calculate the correct resolution, or fill the waves with the correct "flags"
 //
@@ -737,9 +741,6 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	sig_perp = kap*kap/12 * (3*(S1/L1)^2 + 3*(S2/LP)^2 + (proj_DDet/L2)^2)
 	sig_perp = sqrt(sig_perp)
 	
-// TODO -- not needed???	
-//	FindQxQy(inQ,phi,qx,qy)
-
 
 // missing a factor of 2 here, and the form is different than the paper, so re-write	
 //	VAR_QLY = SIG_L^2 * (QY+4*PI*YG_d/(2*SDD*LAMBDA0))^2

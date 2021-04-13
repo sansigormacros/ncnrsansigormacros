@@ -12,23 +12,25 @@
 //////////////////
 //
 //
-// TODO - big question about averaging in this way...
+// NOTE - there was a big question about averaging in this way...
 // can the T/B panels really be used at all for slit mode? - since there's a big "hole" in the scattering data
-// collected -- you're not getting the full column of data covering a wide range of Qy. L/R panels should be fine,
-//  although the different carriages cover very different "chunks" of Qy
-//
+// collected -- you're not getting the full column of data covering a wide range of Qy.
 // - best answer so far is to skip the T/B panels, and simply not use them
 //
-// TODO -- be sure that the absolute scaling of this is correct. Right now, something is off.
-//  -- so write up the documentation for this operation, and try to find the error in the process...
+//
+// L/R panels appear to be fine, covering a significnat range of Qy
+//  although it is important to note that the different carriages (B,M,F) cover very different "chunks" of Qy
+//
+// (DONE)
+//  x- be sure that the absolute scaling of this is correct. Right now, something is off.
 //
 //
 /////////////////
 
 
-// TODO:
-// -- verify the error calculation
-// -- ? add in functionality to handle FLR and MLR cases (2 panels of data)
+// (DONE):
+// x- verify the error calculation
+// x- ? add in functionality to handle FLR and MLR cases (2 panels of data)
 //
 // seems backwards to call this "byRows", but this is the way that Igor indexes
 // LR banks are defined as (48,256) (n,m), sumRows gives sum w/ dimension (n x 1)
@@ -62,7 +64,7 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 		case "B":
 			if(isVCALC)
 				WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)		// 2D detector data
-				WAVE/Z iErr = $("asdf_iErr_"+detStr)			// TODO: 2D errors -- may not exist, especially for simulation
+				WAVE/Z iErr = $("asdf_iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation
 			else
 				Wave inten = V_getDetectorDataW(folderStr,detStr)
 				Wave iErr = V_getDetectorDataErrW(folderStr,detStr)
@@ -262,30 +264,18 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 		endif
 	while(ii<numpnts(qBin_qxqy)-2)
 
-	// TODO: do I use dQ for the height of the panel?
-	// TODO : do I use 1/2 of dQ due to the symmetry of my smearing calculation?
 
-//	ii = trunc(ntube/4)		//random tube number
-//	
-//	Make/O/D/N=(nYpix) tmpTube,tmpMaskTube
-//	tmpTube = qy[ii][p]
-//	tmpMaskTube = mask[ii][p]
-//	
-//	// along the tube, keep the value, or set to NaN if masked
-//	tmpTube = tmpMaskTube == 0 ? tmpTube : NaN
-//	WaveStats/Q tmpTube
-//	Print V_max
-//	Print V_min	
-//	delQy = abs(V_max - V_min)
 
 // DONE: use only dQy for the portion of the detector that was not masked!
 
 // get delQy from the portion of the detector that is not masked out
+// this is the full Qy extent of the panel
 	delQy = V_setDeltaQy_Slit(folderStr,detStr)
 	
 
-/// TODO -- this is not necessary, but just for getting the I(Q) display to look "pretty"
+///  DONE(commented out) x- this is not necessary, but just for getting the I(Q) display to look "pretty"
 // clean out the near-zero Q point in the T/B  and Back detectors
+// (but the T/B panels not used for slit mode)
 //	qBin_qxqy = (abs(qBin_qxqy[p][q]) < 1e-5) ? NaN : qBin_qxqy[p][q]			
 
 
@@ -310,11 +300,10 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 //	DeletePoints 0, val, iBin_qxqy,qBin_qxqy,eBin_qxqy
 
 
-	// TODO:
-	// -- This is where I calculate the resolution in SANS (see CircSectAve)
+	// -- This is where I calculate the resolution waves
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
-	// -- from the top of the function, folderStr = work folder, detStr = "FLRTB" or other type of averaging
 	//
+	// for slit data, fill in the slit height
 
 	nq = numpnts(qBin_qxqy)
 	Make/O/D/N=(nq)  $(folderPath+":"+"sigmaQ_qxqy"+"_"+detStr)
@@ -324,15 +313,16 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 	Wave qbar = $(folderPath+":"+"qBar_qxqy_"+detStr)
 	Wave fsubs = $(folderPath+":"+"fSubS_qxqy_"+detStr)
 
-// TODO:
-// -- calculate the slit resolution here. don't really have any idea how to represent this in VSANS
-//    since it's not an infinite slit, and not anything that I expect could be represented as a Gaussian
-// -- there is also wavelength smearing present
 
 
 
-// ASSUMPTION: As a first approximation, ignore the wavelength smearing component	
-	// TODO : do I use 1/2 of dQy due to the symmetry of my smearing calculation?	(as infinite slit)
+// ASSUMPTION: As a first approximation, ignore the wavelength smearing component
+// -- if the data is from white beam or super white beam, then the wavelength smearing can
+// (and should) be done numerically (using the empirical distribution) 	
+
+// Do I use the full DQy for the panel or 1/2(DQy) due to the symmetry of the smearing calculation
+// -- ANSWER = use 1/2 of the full Qy range of the panel for the smearing calculation (as infinite slit)!!
+
 	sigmaq = -delQy/2
 	qbar = -delQy/2
 	fsubs = -delQy/2
@@ -344,7 +334,6 @@ Function VC_fBinDetector_byRows(folderStr,detStr)
 End
 
 
-// TODO -- update to new folder structure
 // unused -- update if necessary
 Proc CopyIQWaves()
 
@@ -374,7 +363,6 @@ Proc CopyIQWaves()
 	SetDataFolder root:
 End
 
-// TODO -- update to new folder structure
 // unused -- update if necessary
 Window slit_vs_pin_graph() : Graph
 	PauseUpdate; Silent 1		// building window...
@@ -411,6 +399,8 @@ EndMacro
 
 
 // finds the delta Qy for the slit height from the data that is not masked
+//
+// this is the full delta Qy of the panel, not just 1/2
 //
 Function V_setDeltaQy_Slit(folderStr,detStr)
 	String folderStr,detStr

@@ -270,7 +270,7 @@ End
 
 // read the number of guides from the slider
 // return the Source aperture diameter [cm]
-// TODO - needs a case statement since a1 can depend on Ng
+// (DONE) - needs a case statement since a1 can depend on Ng
 Function VC_sourceApertureDiam()
 
 	Variable ng,a1
@@ -1114,8 +1114,8 @@ Function VC_beamDiameter(direction,detStr)
 	l2 = sdd - sam_to_GV + a2_to_GV
    
    
-    // TODO verify that these values are in cm
-	a1 = VC_sourceApertureDiam()
+    // (DONE) verify that these values are in cm
+	a1 = VC_sourceApertureDiam()	// reported in cm
     
 	// sample aperture diam [cm]
 	ControlInfo/W=VCALC VCALCCtrl_1c
@@ -1494,8 +1494,8 @@ Function V_IQ_BeamstopShadow()
 			Abort "Binning mode not found in V_IQ_BeamstopShadow"// when no case matches	
 	endswitch
 
-// TODO:
-// -- I had to put a lot of conditions on when not to try to apply the shadow factor
+// DONE:
+// x- I had to put a lot of conditions on when not to try to apply the shadow factor
 // to avoid errors when iq had no points in the wave, or incorrectly applying the beamstop to the back panel.
 	
 	Variable ii
@@ -1505,7 +1505,7 @@ Function V_IQ_BeamstopShadow()
 		ext = StringFromList(ii, extStr, ";")
 		Wave iq = $(folderStr+"iBin_qxqy_"+ext)
 		Wave/Z fs = $(folderStr+"fSubS_qxqy_"+ext)
-		if(WaveExists(fs) && numpnts(iq) > 0 && cmpstr(ext,"B") != 0)
+		if(WaveExists(fs) && numpnts(iq) > 0 && cmpstr(ext,"B") != 0)		//don't apply fs if not appropriate
 			iq = (fs < 0.1) ? iq*0.1 : iq*fs
 		endif
 	endfor	

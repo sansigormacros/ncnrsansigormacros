@@ -17,7 +17,7 @@
 //
 //   JAN 2018
 //
-// TODO:
+// 
 // x- complete the description of the steps needed...
 // Data needs to be reduced to the "COR" level - that means that the 
 // PLEX data has been added to work files, and the empty and blocked beam have been
@@ -29,14 +29,12 @@
 // -- efficiency?
 // -- large angle transmission?
 //
-// we may need to think more carefully about some of these since the front carriage may need to be 
-// closer than the nominal 4m distance on SANS that was deemed far enough back to be "safe" from 
-// the high angle issues.
 //
 // x- what about the T/B panels? Since a large chunk of these detectors may be obscured,
 //   the normalization will be way off -- and the "active" area will end up much larger 
 //   than it should be - since the wings of the detector are mostly zero...
-//   ? Can I apply a mask, or will the detectors be set in a different configuration?
+// --- answer is to apply a mask so that the pixels that are not part of the 
+// plex scattering do not contribute to the normalization.
 //
 //
 
@@ -723,7 +721,7 @@ End
 //
 //
 //
-// TODO -- correct the number of pixels for the BACK detector
+// (DONE) x- correct the number of pixels for the BACK detector
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	
@@ -1259,8 +1257,7 @@ Function V_DoDIVOperation()
 	// hard-wired use of STO and SUB, copy results to ADJ
 	
 	// make sure that something is in ADJ
-	// TODO -- reset the values of the data in ADJ, or it will look like the wrong calculation was done
-	//V_CopyWorkFolder("STO","ADJ")		// this is a macro, use the function instead
+	// (DONE) x- reset the values of the data in ADJ, or it will look like the wrong calculation was done
 	V_CopyHDFToWorkFolder("STO","ADJ")
 
 

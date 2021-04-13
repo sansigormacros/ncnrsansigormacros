@@ -5,6 +5,11 @@
 
 // Isolation of a single detector panel for inspection, verifying the corrections, troubleshooting, etc.
 
+////////////////////////////////
+// As of 2021 - this isolation mode has never been fully worked out or used as I 
+// had originally intended - it's really never been used, At his point I need to see
+// if there is anything salvageable in this procedure file - and scrap the rest.
+////////////////////////////////
 
 // show:
 // graph (raw + corrected?)
@@ -113,15 +118,6 @@ Proc V_IsolateDetectorPanel() : Panel
 
 	
 
-// edit the fit coefficients	
-//	Edit/W=(550,80,880,370)/HOST=#  parameters_PeakPix2D,coef_PeakPix2D
-//	ModifyTable width(Point)=0
-//	ModifyTable width(parameters_PeakPix2D)=120
-//	ModifyTable width(coef_PeakPix2D)=100
-//	RenameWindow #,T0
-//	SetActiveSubwindow ##
-
-	
 EndMacro
 
 
@@ -262,7 +258,7 @@ Function V_isoDrawDetPanel(str)
 	Variable scale = 5
 	
 	// common values (panel position, etc)
-	// TODO -- units are absolute, based on pixels in cm. make sure this is always correct
+	//  -- units are absolute, based on pixels in cm. make sure this is always correct
 	strswitch(str)
 		case "FL":
 		case "FR":

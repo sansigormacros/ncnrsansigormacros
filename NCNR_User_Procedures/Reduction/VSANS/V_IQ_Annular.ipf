@@ -158,8 +158,8 @@ EndMacro
 //
 //
 //
-// TODO 
-// -- "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
+// (DONE) 
+// x- "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
 //
 // ** Currently, type is being passed in as "" and ignored (looping through all of the detector panels
 // to potentially add to the annular bins)
@@ -191,8 +191,8 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 // since there may be more than one panel to step through. There may be two, there may be four
 //
 
-// TODO:
-// -- Solid_Angle -- waves will be present for WORK data other than RAW, but not for RAW
+// (DONE):
+// x- Solid_Angle -- waves will be present for WORK data other than RAW, but not for RAW
 //
 // assume that the mask files are missing unless we can find them. If VCALC data, 
 //  then the Mask is missing by definition
@@ -336,39 +336,39 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	endif
 
 
-//TODO: properly define the 2D errors here - I'll have this if I do the simulation
-// -- need to propagate the 2D errors up to this point
+//(DONE): properly define the 2D errors here - I'll have this if I do the simulation
+// x- need to propagate the 2D errors up to this point
 //
 	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
 //		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr = sqrt(inten+0.75)			// TODO -- here I'm just using some fictional value
+		iErr = sqrt(inten+0.75)			// if the error not properly defined, using some fictional value
 	endif
 	if(WaveExists(iErr2)==0 && WaveExists(inten2) != 0)
 		Duplicate/O inten2,iErr2
 		Wave iErr2=iErr2
 //		iErr2 = 1+sqrt(inten2+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr2 = sqrt(inten2+0.75)			// TODO -- here I'm just using some fictional value
+		iErr2 = sqrt(inten2+0.75)			// if the error not properly defined, using some fictional value
 	endif
 	if(WaveExists(iErr3)==0  && WaveExists(inten3) != 0)
 		Duplicate/O inten3,iErr3
 		Wave iErr3=iErr3
 //		iErr3 = 1+sqrt(inten3+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr3 = sqrt(inten3+0.75)			// TODO -- here I'm just using some fictional value
+		iErr3 = sqrt(inten3+0.75)			// if the error not properly defined, using some fictional value
 	endif
 	if(WaveExists(iErr4)==0  && WaveExists(inten4) != 0)
 		Duplicate/O inten4,iErr4
 		Wave iErr4=iErr4
 //		iErr4 = 1+sqrt(inten4+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
+		iErr4 = sqrt(inten4+0.75)			// if the error not properly defined, using some fictional value
 	endif
 
-	// TODO -- nq may need to be larger, if annular averaging on the back detector
+	// -- nq may need to be larger, if annular averaging on the back detector, but n=600 seems to be OK
 
 	nq = 600
 
-//******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
+// -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
 	Make/O/D/N=(nq)  $(folderPath+":"+"iPhiBin_qxqy"+"_"+type)
 //	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
@@ -387,13 +387,6 @@ Function V_fDoAnnularBin_QxQy2D(folderStr,type,qCtr_Ann,qWidth)
 	Wave ePhiBin2D_qxqy = $(folderPath+":"+"ePhiBin2D_qxqy"+"_"+type)
 	
 	
-// TODO:
-// -- get the q-binning values from the VSANS equivalent
-//	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr	
-//	Variable qc = NumberByKey("QCENTER",keyListStr,"=",";")		// q-center
-//	Variable nw = NumberByKey("QDELTA",keyListStr,"=",";")		// (in SANS - number of pixels wide)
-
-
 	Variable nphi,dphi,isIn,phiij,iphi
 
 // DONE: define nphi (this is now set as a preference)

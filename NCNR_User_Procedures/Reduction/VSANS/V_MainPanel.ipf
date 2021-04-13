@@ -244,6 +244,12 @@ End
 
 Proc V_HelpMainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+	
+//	DoAlert 0,"Do you want video help? You will be taken to the NCNR YouTube page."
+//	BrowseURL "https://youtu.be/_SB2gDxpwcI"
+//	BrowseURL "https://www.nist.gov/video/sans-reduction-macros-installation-instructions"
+	
+	
 	DisplayHelpTopic/Z/K=1 "VSANS Data Reduction Documentation"
 	if(V_flag !=0)
 		DoAlert 0,"The VSANS Data Reduction Help file could not be found"

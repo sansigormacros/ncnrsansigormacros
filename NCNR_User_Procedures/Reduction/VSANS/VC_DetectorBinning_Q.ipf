@@ -93,19 +93,18 @@ End
 
 // works for Left, works for Right... works for T/B too.
 //
-// - TODO: be sure that the Q's are calculated correctly even when the beam is off of the 
+// - (DONE): be sure that the Q's are calculated correctly even when the beam is off of the 
 //     detector, and on different sides of the detector (or T/B) - since it will be in a different
 //     relative postion to 0,0 on the detector. If the postions are symmetric, then the Q's should be identical.
 //     --- test this...
-// TODO -- be sure I'm in the right data folder. nothing is set correctly right now
+// (DONE) -- be sure I'm in the right data folder. nothing is set correctly right now
 //
-// TODO: make all detector parameters global, not hard-wired
+// (DONE): make all detector parameters global, not hard-wired
 //
 //
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
 //     when anything changes
 //
-// TODO
 // NOTE -- this is VCALC ONLY. data is not referenced for hdf here, and data is rescaled based on VCALC assumptions
 //
 Function VC_CalculateQFrontPanels()
@@ -129,10 +128,10 @@ Function VC_CalculateQFrontPanels()
 //separations are in cm -- 
 //	F_LR_sep /= 10
 //	F_TB_sep /= 10
-// TODO - I'm treating the separation as the TOTAL width - so the difference
+// (DONE) - I'm treating the separation as the TOTAL width - so the difference
 //      from the "center" to the edge is 1/2 of the separation
 
-// TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
+// (DONE) (make the N along the tube length a variable, since this can be reset @ acquisition)
 
 //	F_sdd_setback = VCALC_getTopBottomSDDSetback("FT") 	//T/B are 41 cm farther back  //TODO: make all detector parameters global, not hard-wired
 	F_sdd_setback = 0		// this setback is included in the SDD value
@@ -169,7 +168,7 @@ Function VC_CalculateQFrontPanels()
 	VC_MakeRealDistXYWaves(det_FL,detStr)
 
 	//approx beam center in pixels
-	xCtr = nPix_X-(F_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	xCtr = nPix_X-(F_L_sep/pixSizeX)		// -- index starting from 47rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2
 // put these values into the local folder for later use (in masking)
 	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
@@ -610,13 +609,13 @@ End
 
 // works for Left, works for Right... works for T/B too.
 //
-// - TODO: be sure that the Q's are calculated correctly even when the beam is off of the 
+// - (DONE): be sure that the Q's are calculated correctly even when the beam is off of the 
 //     detector, and on different sides of the detector (or T/B) - since it will be in a different
 //     relative postion to 0,0 on the detector. If the postions are symmetric, then the Q's should be identical.
-//     --- test this...
-// TODO -- be sure I'm in the right data folder. nothing is set correctly right now
+//    
+// (DONE) -- be sure I'm in the right data folder. nothing is set correctly right now
 //
-// TODO: make all detector parameters global, not hard-wired
+// (DONE): make all detector parameters global, not hard-wired
 //
 //
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
@@ -642,7 +641,7 @@ Function VC_CalculateQMiddlePanels()
 //separations are in cm -- need to watch the units, convert to cm
 //	M_LR_sep /= 10
 //	M_TB_sep /= 10
-// TODO - I'm treating the separation as the TOTAL width - so the difference
+// (DONE) - I'm treating the separation as the TOTAL width - so the difference
 //      from the "center" to the edge is 1/2 of the separation
 //
 //	M_sdd_setback = VCALC_getTopBottomSDDSetback("MT") 	//T/B are 41 cm farther back  //TODO: make all detector parameters global, not hard-wired
@@ -676,7 +675,7 @@ Function VC_CalculateQMiddlePanels()
 
 	VC_MakeRealDistXYWaves(det_ML,detStr)
 
-	xCtr = nPix_X-(M_L_sep/pixSizeX)		// TODO  -- check -- starting from 47 rather than 48 (but I'm in pixel units for centers)??
+	xCtr = nPix_X-(M_L_sep/pixSizeX)		//index is starting from 47 rather than 48 (but I'm in pixel units for centers)??
 	yCtr = nPix_Y/2
 // put these values into the local folder for later use (in masking)
 	Make/O/D/N=1 $("root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_"+detStr+":beam_center_x_pix")
@@ -836,7 +835,7 @@ Function VC_CalculateQMiddlePanels()
 	qy_MB = 0
 	qz_MB = 0
 
-// TODO - these are to be set from globals, not hard-wired
+// (DONE) - these are to be set from globals, not hard-wired
 // pixel sizes are in cm
 	pixSizeX = VCALC_getPixSizeX("MB")
 	pixSizeY = VCALC_getPixSizeY("MB")
@@ -1187,7 +1186,7 @@ Function fPlotBackPanels()
 	VC_CalculateQBackPanels()
 	
 	// fill the panels with fake sphere scattering data
-	// TODO: am I in the right data folder??
+	// (DONE): am I in the right data folder??
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B
 
 	WAVE det_B = det_B
@@ -1206,13 +1205,13 @@ End
 
 // works for Left, works for Right... works for T/B too.
 //
-// - TODO: be sure that the Q's are calculated correctly even when the beam is off of the 
+// - (DONE): be sure that the Q's are calculated correctly even when the beam is off of the 
 //     detector, and on different sides of the detector (or T/B) - since it will be in a different
 //     relative postion to 0,0 on the detector. If the postions are symmetric, then the Q's should be identical.
 //     --- test this...
-// TODO -- be sure I'm in the right data folder. nothing is set correctly right now
+// (DONE) -- be sure I'm in the right data folder. nothing is set correctly right now
 //
-// TODO: make all detector parameters global, not hard-wired
+// (DONE): make all detector parameters global, not hard-wired
 //
 //
 // --- Panels are all allocated in the initialization. Here, only the q-values are calculated
@@ -1233,7 +1232,7 @@ Function VC_CalculateQBackPanels()
 	SDD = VC_getSDD("B")		// SDD
 	lam = VCALC_getWavelength()
 
-// TODO (make the N along the tube length a variable, since this can be reset @ acquisition)
+// (DONE) (make the N along the tube length a variable, since this can be reset @ acquisition)
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 	WAVE det_B = $(folderPath+instPath+"B"+":det_B")			// this is nominally (680,1656)
 
@@ -1285,7 +1284,7 @@ Function VC_CalculateQBackPanels()
 
 	
 	//set the wave scaling for the detector image so that it can be plotted in q-space
-	// TODO: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
+	// NOTE: this is only approximate - since the left "edge" is not the same from top to bottom, so I crudely
 	// take the middle value. At very small angles, OK, at 1m, this is a crummy approximation.
 	// since qTot is magnitude only, I need to put in the (-ve)
 	SetScale/I x WaveMin(qx_B),WaveMax(qx_B),"", det_B		//this sets the left and right ends of the data scaling
@@ -1418,13 +1417,6 @@ Function BinAllBackPanels()
 			Abort "Binning mode not found in BinAllFrontPanels "// when no case matches	
 	endswitch
 		
-//	VC_BinQxQy_to_1D("VCALC","B")
-//
-//// TODO -- this is only a temporary fix for slit mode	
-//	if(binType == 4)
-//		/// this is for a tall, narrow slit mode	
-//		VC_fBinDetector_byRows("VCALC","B")
-//	endif	
 	
 End
 
@@ -1484,9 +1476,8 @@ EndMacro
 // ** but now I need to check and see if these waves exist before trying to append them
 // since the panels may bave been combined when binned - rather than all separate.
 //
-// TODO
-// -- so maybe I want to clear the traces from the graph?
-// -- set a flag on the panel to know how the binning is applied?
+// (DONE)
+// x- I want to clear the traces from the graph?
 //
 Window Front_IQ_Graph() : Graph
 

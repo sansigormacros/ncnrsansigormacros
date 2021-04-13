@@ -3,12 +3,13 @@
 #pragma IgorVersion = 7.00
 
 
-
-//////// function to take VCALC information and 
+//
+// function to take VCALC information and 
 // fill in the simulated information as needed to make a "fake" data file
 //
 // - to make fake data:
-// - copy several existing raw VSANS files to a new folder
+//
+// - **copy** several existing raw VSANS files to a new folder
 // - renumber them
 // - open a new experiment, get a file catalog (catPathName must be set)
 // - then open VCALC and set the desired conditions
@@ -19,9 +20,13 @@
 
 //
 // TODO:
-// -- identify all of the necessary bits to change
-// -- maybe want a panel to make it easier to decide what inputs to change in the file
-// -- decide if it's better to write wholesale, or as individual waves
+// -- identify any additional fields to enter into the file structure
+//
+
+
+
+
+// main procedure to write out the current state of VCALC to an existing data file
 //
 Proc Copy_VCALC_to_VSANSFile(labelStr,intent,group_id)
 	String labelStr = "sample label"

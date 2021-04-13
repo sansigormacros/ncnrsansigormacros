@@ -51,24 +51,7 @@ Function V_Write1DData(pathStr,folderStr,saveName)
 		Abort "protocol information is missing."
 	endif
 	
-//	Duplicate/O qw qbar,sigQ,fs
-//	if(dimsize(resW,1) > 4)
-//		//it's USANS put -dQv back in the last 3 columns
-//		NVAR/Z dQv = USANS_dQv
-//		if(NVAR_Exists(dQv) == 0)
-//			SetDataFolder root:
-//			Abort "It's USANS data, and I don't know what the slit height is."
-//		endif
-//		sigQ = -dQv
-//		qbar = -dQv
-//		fs = -dQv
-//	else
-//		//it's SANS
-//		sigQ = resw[p][0]
-//		qbar = resw[p][1]
-//		fs = resw[p][2]
-//	endif
-//	
+
 
 // TODO -- not sure if I need to implement this. Update to VSANS specs if I do.
 //	//strings can be too long to print-- must trim to 255 chars
@@ -519,7 +502,7 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 
 //	Close refnum
 
-// TODO
+// 
 // -- clean up any waves on exit?	 Only if I generate extra waves
 //	KillWaves/Z sigQ,qbar,fs
 	
@@ -628,10 +611,21 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		monCt = V_getBeamMonNormData(type)
 		lambda = V_getWavelength(type)
 	
-	// TODO - switch based on panel type
-	//	V_getDet_LateralOffset(fname,detStr)
-	//	V_getDet_VerticalOffset(fname,detStr)
-		offset = V_getDet_LateralOffset(type,detStr)
+	// messy - switch based on panel type to get the correct offset
+		if(cmpstr(detStr,"FT") == 0 || cmpstr(detStr,"FB") == 0)
+			offset = V_getDet_VerticalOffset(type,detStr)
+		endif
+		if(cmpstr(detStr,"MT") == 0 || cmpstr(detStr,"MB") == 0)
+			offset = V_getDet_VerticalOffset(type,detStr)
+		endif	
+		
+		if(cmpstr(detStr,"FL") == 0 || cmpstr(detStr,"FR") == 0)
+			offset = V_getDet_LateralOffset(type,detStr)
+		endif
+		if(cmpstr(detStr,"ML") == 0 || cmpstr(detStr,"MR") == 0 || cmpstr(detStr,"B") == 0)
+			offset = V_getDet_LateralOffset(type,detStr)
+		endif	
+
 	
 		dist = V_getDet_ActualDistance(type,detStr)
 		trans = V_getSampleTransmission(type)
@@ -683,8 +677,6 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 		labelWave[25] = "reserved for future file definition changes"
 
 		labelWave[26] = "*** Data written from "+type+" folder and may not be a fully corrected data file ***"
-//		labelWave[20] = "Data columns are Qx - Qy - Qz - I(Qx,Qy) - Err I(Qx,Qy)"
-	//	labelWave[20] = "Data columns are Qx - Qy - I(Qx,Qy) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow)"
 		labelWave[27] = "Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask"
 		labelWave[28] = "The 2D error is fully propagated through all correction steps"
 		labelWave[29] = "ASCII data created " +date()+" "+time()

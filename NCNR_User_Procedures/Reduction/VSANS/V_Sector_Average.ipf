@@ -130,10 +130,7 @@ End
 
 	
 
-//
-// TODO -- binType == 4 (slit mode) should never end up here
-// -- new logic in calling routines to dispatch to proper routine
-// -- AND need to write the routine for binning_SlitMode
+
 //
 // side = one of "left;right;both;"
 // phi_rad = center of sector in radians
@@ -240,13 +237,13 @@ End
 // this has been modified to accept different detector panels and to take arrays
 // -- type = FL or FR or...other panel identifiers
 //
-// TODO "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
+//  "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
 //
 //
 // updated Feb2016 to take new folder structure
-// TODO
-// -- VERIFY
-// -- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
+// (DONE)
+// x- VERIFY
+// x- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
 //    but this is a lousy choice.
 // x- binning is now Mask-aware. If mask is not present, all data is used. If data is from VCALC, all data is used
 // x- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
@@ -540,9 +537,7 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 
 
 // RAW data is currently read in and the 2D error wave is correctly generated
-// 2D error is propagated through all reduction steps, but I have not 
-// verified that it is an exact duplication of the 1D error
-//
+// 2D error is propagated through all reduction steps, 
 //
 //
 // IF ther is no 2D error wave present for some reason, make a fake one
@@ -550,28 +545,28 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 		Duplicate/O inten,iErr
 		Wave iErr=iErr
 //		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr = sqrt(inten+0.75)			// TODO -- here I'm just using some fictional value
+		iErr = sqrt(inten+0.75)			// -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr2)==0 && WaveExists(inten2) != 0)
 		Duplicate/O inten2,iErr2
 		Wave iErr2=iErr2
 //		iErr2 = 1+sqrt(inten2+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr2 = sqrt(inten2+0.75)			// TODO -- here I'm just using some fictional value
+		iErr2 = sqrt(inten2+0.75)			// -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr3)==0  && WaveExists(inten3) != 0)
 		Duplicate/O inten3,iErr3
 		Wave iErr3=iErr3
 //		iErr3 = 1+sqrt(inten3+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr3 = sqrt(inten3+0.75)			// TODO -- here I'm just using some fictional value
+		iErr3 = sqrt(inten3+0.75)			// -- here I'm just using some fictional value
 	endif
 	if(WaveExists(iErr4)==0  && WaveExists(inten4) != 0)
 		Duplicate/O inten4,iErr4
 		Wave iErr4=iErr4
 //		iErr4 = 1+sqrt(inten4+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
-		iErr4 = sqrt(inten4+0.75)			// TODO -- here I'm just using some fictional value
+		iErr4 = sqrt(inten4+0.75)			// -- here I'm just using some fictional value
 	endif
 
-	// TODO -- nq will need to be larger, once the back detector is installed
+	// -- nq will need to be larger, once the back detector is installed
 	//
 	if(cmpstr(type,"B") == 0)
 		nq = 8000
@@ -579,7 +574,7 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 		nq=600
 	endif
 
-//******TODO****** -- where to put the averaged data -- right now, folderStr is forced to ""	
+// -- where to put the averaged data -- right now, folderStr is forced to ""	
 //	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
 	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy"+"_"+type)
 	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
@@ -618,9 +613,6 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 // 4 panels
 //
 // this needs to be a double loop now...
-// TODO:
-// -- the iErr (=2D) wave and accumulation of error is NOT CALCULATED CORRECTLY YET
-// -- verify the 2D error propagation by reducing it to 1D error
 //
 //
 // The 1D error does not use iErr, and IS CALCULATED CORRECTLY
@@ -916,8 +908,8 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 
 // after looping through all of the data on the panels, calculate errors on I(q),
 // just like in CircSectAve.ipf
-// TODO:
-// -- 2D Errors were (maybe) properly acculumated through reduction, so this loop of calculations is NOT VERIFIED (yet)
+
+// x- 2D Errors are properly acculumated through reduction
 // x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
 	for(ii=0;ii<nq;ii+=1)
 		if(nBin_qxqy[ii] == 0)
@@ -991,7 +983,6 @@ Function V_fDoSectorBin_QxQy2D(folderStr,type,collimationStr,side,phi_rad,dphi_r
 	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
 
 	
-	// TODO:
 	// -- This is where I calculate the resolution in SANS (see CircSectAve)
 	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
 	// -- from the top of the function, folderStr = work folder, type = "FLRTB" or other type of averaging

@@ -82,18 +82,20 @@ Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;
 
 
 //////// HIGH RESOLUTION DETECTOR  ///////////////
-
-
 //
 // In May 2019 - after testing with Phil's procesing, the data from the detector has a
 // larger read noise value. It can also no longer be treated  as a constant value, but rather 
 // a detector file that is read in and subtracted pixel-by-pixel. 
 //
+//
+// Currently, the processing to reduce the noise level on the highRes detector is done through Phil's software
+// and the data is noise-free before I get the data - so I don't need to do this
+// filtering or rebinning
 
 
 // the average read noise level of the back detector
 // taken from multiple runs with the beam off, 6-28-18
-// runs sans12324 - sans12353
+// runs sans12324 to sans12353
 //
 // used in V_Raw_to_Work()
 // average of whole panel (tested several data files) = 208 +/- 14
