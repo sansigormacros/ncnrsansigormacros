@@ -81,6 +81,9 @@ End
 #include "DataSetHandling"
 #include "WriteModelData_v40"
 
+#include "NIST_NXcanSAS_v709"
+#include "Write_SANS_NXcanSAS"          //NXcanSAS file writer
+
 // Added Desmearing functionality 
 #include "QKK_DesmearingUtils"
 #include "QKK_LakeDesmearing_JB"						  
