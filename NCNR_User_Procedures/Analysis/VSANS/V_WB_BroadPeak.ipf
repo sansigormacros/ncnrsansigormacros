@@ -129,11 +129,7 @@ Function V_fBroadPeakWB(w,x) : FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
-// additional normalization???
-	inten /= 1.05		// 
 	Return (inten)
 	
 End
@@ -150,6 +146,7 @@ Function V_IntegrBroadPeakWB_mid(cw,loLim,upLim,qVal)
 	
 //	ans = Integrate1D(V_intgrnd_top,lolim,uplim,2,0,cw)		//adaptive quadrature
 	ans = Integrate1D(V_integrand_BroadPeakWB,lolim,uplim,1,0,cw)		// Romberg integration
+//	ans = Integrate1D(V_integrand_BroadPeakWB,lolim,uplim,1,20,cw)		// Romberg integration, limited
 	
 	return ans
 end
@@ -164,6 +161,8 @@ Function V_integrand_BroadPeakWB(cw,dum)
 //	FUNCREF SANSModel_proto func = $funcStr
 
 	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*BroadPeakX(cw,qq/dum)
+//	val = V_WhiteBeamInterp(dum*kWhiteBeam_Mean)*BroadPeakX(cw,qq/dum)
+	
 	
 	return (val)
 End
@@ -181,7 +180,8 @@ Function SmearedBroadPeakWB(s) : FitFunc
 	Struct ResSmearAAOStruct &s
 
 //	the name of your unsmeared model (AAO) is the first argument
-	Smear_Model_76(BroadPeakWB,s.coefW,s.xW,s.yW,s.resW)
+	Smear_Model_20(BroadPeakWB,s.coefW,s.xW,s.yW,s.resW)
+//	Smear_Model_76(BroadPeakWB,s.coefW,s.xW,s.yW,s.resW)
 
 	return(0)
 End

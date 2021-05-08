@@ -9,10 +9,10 @@
 // Changes: (1) the beam center mismatch is ALWAYS ignored. It is flagged, and alerted, but nothing is shifted
 //          (2) the condition of trans == 1 is not flagged, and there is no stopping for user input
 // 
-// TODO x- (DONE)-verify the operation of all modes
+// x- (DONE)-verify the operation of all modes
 // x- (NO)-decide if/how to implement/re-implement the trans == 1 check and dialog
 // x- (NO)-decide if the beam center mismatch is ever to be re-implemented
-// -- check the monitor count calls and rescaled values (correct monitor? where is rescaling written?)
+// x- check the monitor count calls and rescaled values (correct monitor? where is rescaling written?)
 //
 
 

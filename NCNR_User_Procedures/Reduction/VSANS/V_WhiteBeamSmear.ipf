@@ -8,7 +8,7 @@
 // for calculating the resolution smearing from the white beam wavelength distribution
 //
 // none of these functions are used in the final version of the resolution smearing
-// for white beam or super white beam. Functions and definitions of WB and SWB are contatined
+// for white beam or super white beam. Functions and definitions of WB and SWB are contained
 // in the file: V_WhiteBeamDistribution.ipf
 //
 //

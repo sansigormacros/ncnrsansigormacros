@@ -5,7 +5,7 @@
 
 //////////////////////////////////
 //
-// TODO --  January 2107
+//  --  January 2107
 //
 // This is experimental, making the patch work with list boxes as "groups" of the Nexus file structure
 //
@@ -686,8 +686,8 @@ Function V_FillListBox5(listWave,selWave)
 End
 
 
-// TODO -- determine if I really need this --- I don't 
-//  think I really have any reason to respond to events from list box actions
+// This function is not used -- I really don't need this  
+//  I don't see any reason to respond to events from list box actions
 //  or edits. the final action of patching is done with the button
 //
 Function V_PatchListBoxProc(lba) : ListBoxControl
@@ -980,7 +980,7 @@ End
 //sort of a redundant button, since the procedure is automatically called (as if it were
 //clicked) when a new file is chosen from the popup
 //
-// TODO - make sure this is tab-aware
+//
 //
 Function V_ShowHeaderButtonProc(SHButton) : ButtonControl
 	String SHButton
@@ -1476,7 +1476,12 @@ Function V_WriteHeaderForPatch_4(fname)
 	return(0)
 End
 
-// TODO -- not yet implemented
+
+
+
+//
+// patching polarizer fields
+//
 Function V_WriteHeaderForPatch_5(fname)
 	String fname
 

@@ -8,6 +8,11 @@
 // included in Igor 9, and is all declared static, so I can't get to them here.
 // ?? can I get to them if I use the module name? HDF5Browser
 
+// -- 4/2021
+// There is a routine here that reads in the full nexus file, with attributes and the DAS_logs
+// that needs to be kept for completeness, in case I need to read the whole file.
+
+// Still need to figure out what of the other "fake" data generators are useful.
 
 //
 // ********

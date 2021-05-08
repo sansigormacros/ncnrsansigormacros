@@ -129,16 +129,7 @@ Function V_fGaussSpheresSWB(w,xx) : FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kSuperWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
 
-	inten -= w[5]
-// additional normalization???
-	inten /= 1.05		// 
-	
-//	inten /= 2			// need this factor to match low q of white beam??? -- and to get invariant to work...
-	
-	inten += w[5]
 	Return(inten)
 End
 

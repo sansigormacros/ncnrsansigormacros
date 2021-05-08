@@ -14,8 +14,8 @@
 // in a similar way as for SANS reduction
 //
 //
-// TODO:
-// -- adjust the size of the panel to better fit a laptop (for my telework)
+// :
+// x- adjust the size of the panel to better fit a laptop
 //
 
 
@@ -711,7 +711,7 @@ End
 
 
 
-// TODO
+// 
 //changing the number of guides changes the SSD
 // the source aperture popup may need to be updated
 //
@@ -736,7 +736,7 @@ Function V_GuideSliderProc(ctrlName,sliderValue,event)
 		endswitch
 		ControlUpdate/W=VCALC VCALCCtrl_0f
 
-//		Recalculate_AllDetectors()
+		VC_Recalculate_AllDetectors()
 
 	endif
 	return 0
@@ -1321,7 +1321,8 @@ End
 
 // setVar for the range (in Q) for the FrontView plot of the detectors
 //
-// TODO: this assumes that everything (the data) is already updated - this only updates the plot range
+//  this assumes that everything (the data) is already updated - this only updates the plot range
+//
 Function Front2DQ_Range_SetVarProc(sva) : SetVariableControl
 	STRUCT WMSetVariableAction &sva
 
@@ -1685,7 +1686,7 @@ Proc VC_Initialize_Space()
 	Variable/G gBack_h = 50.4
 	
 	
-	// TODOHIRES -- be sure that all of this is correct, since it is hard-wired values
+	// all of this is correct, hard-wired values
 	// -- can't use a switch so I'm using an if(), where the default is 4x4 binning
 	if(root:Packages:NIST:VSANS:Globals:gHighResBinning == 1)
 		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.00845		// 340 micron resolution (units of [cm] here)
@@ -1712,7 +1713,7 @@ Proc VC_Initialize_Space()
 
 // Generate all of the waves used for the detector and the q values
 //
-// TODO: the detector dimensions need to be properly defined here...
+// the detector dimensions need to be properly defined here...
 // FRONT
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Front
 
@@ -1734,7 +1735,7 @@ Proc VC_Initialize_Space()
 
 
 //MIDDLE
-// TODO: the detector dimensions need to be properly defined here...
+// the detector dimensions need to be properly defined here...
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Middle
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_ML
@@ -1754,7 +1755,7 @@ Proc VC_Initialize_Space()
 	Duplicate/O det_MB qTot_MB,qx_MB,qy_MB,qz_MB
 
 // BACK
-// TODO: the detector dimensions need to be properly defined here...
+// the detector dimensions need to be properly defined here...
 //	SetDataFolder root:Packages:NIST:VSANS:VCALC:Back
 
 	SetDataFolder root:Packages:NIST:VSANS:VCALC:entry:instrument:detector_B

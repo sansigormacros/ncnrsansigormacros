@@ -513,11 +513,12 @@ Function HDF_ListAttributes(fname, groupName)
 //        or in FillGroupAttributesList or in FillDatasetAttributesList (from FillLists)
 //			it seems to be ridiculously complex to get such a simple bit of information - the HDF5BrowserData STRUCT
 // 			needs to be filled first. Ugh.
-#if (IgorVersion() < 9)
-			attrValue = GetPreviewString(fileID, 1, di, "/entry", "cucumber")
-#else
-			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
-#endif
+
+//#if (IgorVersion() < 9)
+//			attrValue = GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+//#else
+//			attrValue = HDF5Browser#GetPreviewString(fileID, 1, di, "/entry", "cucumber")
+//#endif
 			Print "attrValue = ",attrValue
 			
 			

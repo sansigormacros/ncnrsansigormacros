@@ -140,14 +140,7 @@ Function V_fGaussSpheresWB(w,xx) : FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
-	inten -= w[5]
-// additional normalization???
-	inten /= 1.05		// 
-	
-	inten += w[5]
 	Return(inten)
 End
 
@@ -181,8 +174,8 @@ Function V_integrand_pgsWB(cw,dum)
 // AND be sure that you load the waves in that V_WhiteBeamInterp() is expecting
 // -- the calculation is NO DIFFERENT than the parametrized form, and is MUCH slower
 
-	val = V_WhiteBeamInterp(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
-//	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
+//	val = V_WhiteBeamInterp(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
+	val = V_WhiteBeamDist_mid(dum*kWhiteBeam_Mean)*GaussSpheresX(cw,qq/dum)
 	
 	return (val)
 End

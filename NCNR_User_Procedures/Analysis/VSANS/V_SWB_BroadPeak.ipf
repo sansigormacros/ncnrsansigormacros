@@ -134,17 +134,6 @@ Function V_fBroadPeakSWB(w,x) : FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kSuperWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kSuperWhiteBeam_Normalization		// "middle"  of peaks
-
-	inten -= w[6]
-
-// additional normalization???
-	inten /= 1.05		// 
-	
-//	inten /= 2			// need this factor to match low q of white beam???
-
-	inten += w[6]
 	
 	Return (inten)
 	

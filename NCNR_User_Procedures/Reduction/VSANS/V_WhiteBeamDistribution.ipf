@@ -7,16 +7,16 @@
 // this is an empirical representation of the White Beam wavelength
 // distribution. 
 //
-// using Integrate function -- find the normalization value
+// using the built-in Integrate function to find the normalization value
 //
 // integral = 20926 (cts*A) for "top"
-// integral = 19933 (cts*A) for "middle"
+// integral = 19933.2 (cts*A) for "middle"
 // integration of interpolated data (100 pts) = 20051 (3 A to 9 A)
 //
 //
+// As of 2021, both of the "middle" distributions have been normalized
+// for use in models such that the integral of the distribution == 1
 //
-// of the three choices, using the fit to the "top" of the distribution gives the best-looking
-// result when compared to the AgBeh data
 //
 
 
@@ -24,7 +24,7 @@
 // added an empirical functional form for the "Super" white beam mode where the deflector is out
 // and the wavelength is not cut off at the higher wavelength, but extends to 20 Å
 //
-// Integral = 30955 (cts*A) for middle fit
+// Integral = 30969.7 (cts*A) for middle fit
 //
 //
 
@@ -38,13 +38,42 @@
 //
 Constant kWhiteBeam_Mean = 5.3
 //Constant kWhiteBeam_Mean = 5.7		// mean of lam^2
-Constant kWhiteBeam_Normalization = 19933
+Constant kWhiteBeam_Normalization = 19933.2
 
 Constant kSuperWhiteBeam_Mean = 6.2
 //Constant kSuperWhiteBeam_Mean = 7.9		//mean of lam^2
-Constant kSuperWhiteBeam_Normalization = 30955
+Constant kSuperWhiteBeam_Normalization = 30969.7
 
 
+
+// functions to integrate the distributions and find the normalization constant
+//
+Proc V_FindWhiteBeamNormConst()
+
+	make/O/D/N=1000 wb_dist_norm
+	SetScale/I x 3,9,"", wb_dist_norm
+	edit wb_dist_norm
+	wb_dist_norm = V_WhiteBeamDist_mid(x)
+	Integrate/METH=1 wb_dist_norm/D=wb_dist_norm_INT;DelayUpdate
+	Display wb_dist_norm_INT
+	Edit/K=0 root:wb_dist_norm_INT
+
+End
+
+Proc V_FindSuperWhiteBeamNormConst()
+
+	make/O/D/N=1000 swb_dist_norm
+	SetScale/I x 3,21,"", swb_dist_norm
+	edit swb_dist_norm
+	swb_dist_norm = V_SuperWhiteBeamDist_mid(x)
+	Integrate/METH=1 swb_dist_norm/D=swb_dist_norm_INT;DelayUpdate
+	Display swb_dist_norm_INT
+	Edit/K=0 root:swb_dist_norm_INT
+
+End
+
+
+////////////////////////////////////
 
 
 Function V_WhiteBeamDist_top(lam)
@@ -84,7 +113,7 @@ Function V_WhiteBeamDist_top(lam)
 End
 
 
-Function V_WhiteBeamDist_mid(lam)
+Function V_WhiteBeamDist_mid_noNorm(lam)
 	Variable lam
 	
 	if(lam < 3.37)
@@ -120,18 +149,79 @@ Function V_WhiteBeamDist_mid(lam)
 	
 End
 
-// this is not used - there is no improvement in the results when using the "full" shape of the 
+
+// normalized so that the integral over the full distribution
+// 3 -> 9 == 1
+//
+Function V_WhiteBeamDist_mid(lam)
+	Variable lam
+	
+	Variable cts
+	Variable normVal = 19933.2
+	
+	if(lam < 3.37)
+		return(0)
+	endif
+	
+	if(lam < 3.69)
+		cts = (-31013 + 9198*lam)
+		return(cts/normVal)
+	endif
+	
+	if(lam < 3.84)
+		cts = (23715 - 5649*lam)
+		return(cts/normVal)
+	endif
+	
+//// the "middle" of the spikes	
+	if(lam < 4.12)
+		cts = (-84962 + 22634*lam)
+		return(cts/normVal)
+	endif
+	if(lam < 8.37)
+		cts = (-2336 + 11422*exp(-( (lam-3.043)/4.234 )^2))
+		return(cts/normVal)
+	endif
+
+//	 anything larger than 8.37, return 0	
+	return(0)
+	
+End
+
+
+// this is not commonly used - there is no improvement in the results when using the "full" shape of the 
 // WB distribution.
+//
+// This is normalized such that the integral over the fuul range == 1
 Function V_WhiteBeamInterp(lam)
 	Variable lam
 	
 	WAVE/Z interp_lam = root:interp_WB_lam
 	WAVE/Z interp_cts = root:interp_WB_cts
 	
+	Variable normVal = 19933.2
+
 	if(waveExists(interp_lam) == 0 || waveExists(interp_cts) == 0)
 	 V_Generate_WB_Interp()
 	endif
-	return(interp(lam,interp_lam,interp_cts))
+	return(interp(lam,interp_lam,interp_cts)/normVal)
+End
+
+
+// this is not commonly used - there is no improvement in the results when using the "full" shape of the 
+// WB distribution.
+Function V_WhiteBeamInterp_noNorm(lam)
+	Variable lam
+	
+	WAVE/Z interp_lam = root:interp_WB_lam
+	WAVE/Z interp_cts = root:interp_WB_cts
+	
+	Variable normVal = 19933.2
+
+	if(waveExists(interp_lam) == 0 || waveExists(interp_cts) == 0)
+	 V_Generate_WB_Interp()
+	endif
+	return(interp(lam,interp_lam,interp_cts)/normVal)
 End
 
 
@@ -404,7 +494,7 @@ End
 //
 //
 //
-Function V_SuperWhiteBeamDist_mid(lam)
+Function V_SuperWhiteBeamDist_mid_noNorm(lam)
 	Variable lam
 	
 	if(lam < 3.37)
@@ -432,5 +522,44 @@ Function V_SuperWhiteBeamDist_mid(lam)
 	return(0)
 	
 End
+
+//
+// Normalized so that the integral == 1
+//
+Function V_SuperWhiteBeamDist_mid(lam)
+	Variable lam
+	
+	Variable cts
+	Variable normVal = 30969.7
+	if(lam < 3.37)
+		return(0)
+	endif
+	
+	if(lam < 3.72)
+		cts = (-33536 + 9919*lam)
+		return(cts/normVal)
+	endif
+	
+	if(lam < 3.88)
+		cts = (28941 - 6848*lam)
+		return(cts/normVal)
+	endif
+	
+//// the "middle" of the spikes	
+	if(lam < 4.16)
+		cts = (-1.0111e5 + 26689*lam)
+		return(cts/normVal)
+	endif
+	
+	if(lam < 20)
+		cts = (5 - 10081*exp(-( (lam-4.161)/0.9788 )) + 19776*exp(-( (lam-4.161)/1.921 )) )
+		return(cts/normVal)
+	endif
+
+//	 anything larger than 20, return 0	
+	return(0)
+	
+End
+
 
 

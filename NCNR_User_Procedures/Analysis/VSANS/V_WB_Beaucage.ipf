@@ -286,11 +286,7 @@ Function V_fOneLevelWB(w,x) :FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
-// additional normalization???
-	inten /= 1.05		// 
 	Return (inten)
 	
 End
@@ -358,11 +354,7 @@ Function V_fTwoLevelWB(w,x) :FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
-
-// additional normalization???
-	inten /= 1.05		// 
+ 
 	Return (inten)
 
 End
@@ -430,11 +422,7 @@ Function V_fThreeLevelWB(w,x) :FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
-// additional normalization???
-	inten /= 1.05		// 
 	Return (inten)
 	
 End
@@ -504,11 +492,7 @@ Function V_fFourLevelWB(w,x) :FitFunc
 //  and is needed to normalize the integral? verify this on paper.	
 	inten *= kWhiteBeam_Mean
 
-// normalize the integral	
-	inten /= kWhiteBeam_Normalization		// "middle"  of peaks
 
-// additional normalization???
-	inten /= 1.05		// 
 	Return (inten)
 	
 End
