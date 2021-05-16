@@ -556,7 +556,7 @@ Function V_FillListBox4(listWave,selWave)
 	PathInfo catPathName
 	fname = S_path + fname
 
-	Variable nRows = 13
+	Variable nRows = 14
 	Redimension/N=(nRows,3) ListWave
 	Redimension/N=(nRows,3) selWave
 	// clear the contents
@@ -611,6 +611,9 @@ Function V_FillListBox4(listWave,selWave)
 
 	listWave[12][1] = "dead time (s) (back only)"
 	listWave[12][2] = num2str(V_getDetector_deadtime_B(fname,detStr))			//returns 0 if not "B"
+
+	listWave[13][1] = "Event file name"
+	listWave[13][2] = V_getDetEventFileName(fname,detStr)			//
 
 	return(0)
 End
@@ -1472,6 +1475,9 @@ Function V_WriteHeaderForPatch_4(fname)
 		endif
 	endif	
 
+	if ((selWave[13][0] & 2^4) != 0)		//"Event file name"
+		err = V_writeDetEventFileName(fname,detStr,listWave[13][2])
+	endif	
 	
 	return(0)
 End

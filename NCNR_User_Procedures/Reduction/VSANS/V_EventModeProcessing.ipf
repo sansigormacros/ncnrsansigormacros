@@ -2,6 +2,8 @@
 #pragma IgorVersion = 7.00
 
 
+
+
 /////////////
 //VSANS Event File Format
 // (Phil Chabot)
@@ -3052,6 +3054,29 @@ Function V_AccumulateSlices(mode)
 	return(0)
 end
 
+
+// make a table with the associations of the event files and the raw data file
+//
+Function V_MakeEventFileTable()
+
+	String rawList="",item=""
+	Variable num,ii
+	
+	rawList = V_GetRawDataFileList()
+	num = itemsinlist(rawList)
+	Make/O/T/N=(num) RawFiles,Event_Front,Event_Middle
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii,rawList)
+		
+		RawFiles[ii] = item
+		Event_Front[ii] = V_getDetEventFileName(item,"FL")
+		Event_Middle[ii] = V_getDetEventFileName(item,"ML")
+	endfor
+	
+	Edit RawFiles,Event_Front,Event_Middle
+		
+	return(0)
+End
 
 ////////////////////////////////////////////
 //

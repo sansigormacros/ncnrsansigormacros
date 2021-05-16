@@ -1801,6 +1801,9 @@ Function/S V_getDetEventFileName(fname,detStr)
 
 	String path = "entry:instrument:detector_"+detStr+":event_file_name"
 	Variable num=60
+	if(cmpstr(detStr,"B")==0)	//return null string for B
+		return("")
+	endif
 	return(V_getStringFromHDF5(fname,path,num))
 End
 

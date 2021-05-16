@@ -331,6 +331,13 @@ Proc V_Event_MultReduceButtonProc(ctrlName) : ButtonControl
 	
 End
 
+Proc V_Event_FileTableButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+		V_MakeEventFileTable()
+	
+End
+
 Proc V_Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -482,6 +489,8 @@ Window Main_VSANS_Panel()
 	Button MainButton_3g,help={"Manipulate VSANS Event Mode data"}
 	Button MainButton_3h,pos={sc*150,180*sc},size={sc*140,20*sc},title="Event Reduction",proc=V_Event_MultReduceButtonProc
 	Button MainButton_3h,help={"Reduce VSANS Event Mode data"}
+	Button MainButton_3i,pos={sc*150,210*sc},size={sc*140,20*sc},title="Event File Table",proc=V_Event_FileTableButtonProc
+	Button MainButton_3i,help={"Make a table of raw data files and the associated event files"}
 		
 	
 	Button MainButton_3a,disable=1
@@ -492,6 +501,7 @@ Window Main_VSANS_Panel()
 //	Button MainButton_3f,disable=1
 	Button MainButton_3g,disable=1
 	Button MainButton_3h,disable=1
+	Button MainButton_3i,disable=1
 
 //on tab(4) - Miscellaneous operations
 	Button MainButton_4a,pos={sc*15,90*sc},size={sc*80,20*sc},proc=V_Draw3D_MainButtonProc,title="3D Display"

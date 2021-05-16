@@ -65,11 +65,13 @@ Function V_ListDataFolder(dfr, level, sNBName)
 //		Print "wave type = ",WaveType(dfr:$name,1)		//1=numeric, 2=text
 		if(WaveType(dfr:$name,1) == 1)
 			WAVE w=dfr:$name
-			if(numpnts(w) > 0)		//the Igor_Folder_Attributes wave has zero points, catch the error
-//				sPrintf sString, "%s%s (wave) %g\ttyp=%g\r", indentStr, name, w[0], WaveType(w)
-				sPrintf sString, "%s%s   \t%g\r", indentStr, name, w[0]
+			if(numpnts(w) > 1)		//the Igor_Folder_Attributes wave has zero points, catch the error
+				sPrintf sString, "%s%s (wave) %g\ttyp=%g\r", indentStr, name, w[0], WaveType(w)
+//				sPrintf sString, "%s%s   \t%g\r", indentStr, name, w[0]
 			else
-				sPrintf sString, "%s%s (wave)\r", indentStr, name
+			// variables show up as 1-point waves, don't report as (wave)
+//				sPrintf sString, "%s%s (wave)\r", indentStr, name
+				sPrintf sString, "%s%s \r", indentStr, name
 			endif
 		else
 			WAVE/T wt=dfr:$name		// text wave is assumed...
