@@ -4371,6 +4371,8 @@ End
 //
 // period = period of reset (s)
 //
+// This can also be done efficiently with mod(period) (multithreaded?)
+//
 Function fInsertTimeReset(period)
 	Variable period
 	

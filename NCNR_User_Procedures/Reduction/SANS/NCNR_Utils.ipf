@@ -81,6 +81,11 @@ End
 // equivalent to John's routine on the VAX Q_SIGMA_AVE.FOR
 // Incorporates eqn. 3-15 from J. Appl. Cryst. (1995) v. 28 p105-114
 //
+// any references to "JGB eq (x)" are the equation numbers from that paper. I try to follow the
+// notation of that paper as closely as possible
+//
+// -- bug in aperture contribution has been corrected (noted by BM)
+//
 // - 21 MAR 07 uses projected BS diameter on the detector
 // - APR 07 still need to add resolution with lenses. currently there is no flag in the 
 //          raw data header to indicate the presence of lenses.
@@ -132,19 +137,20 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	v_lambda = lambdaWidth^2/6.0
 	
 //	if(usingLenses==1)			//SRK 2007
+// JGB eq (6) and eq (20) from Mildner paper
 	if(usingLenses != 0)			//SRK 2008 allows for the possibility of different numbers of lenses in header
-		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth/lambda)^2*(S2*L2/lp)^2		//correction to 2nd term
+		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth)^2*(S2*L2/lp)^2		//correction to 2nd term
 	else
 		v_b = 0.25*(S1*L2/L1)^2 +0.25*(S2*L2/lp)^2		//original form
 	endif
 	
-	v_d = (DDet/2.3548)^2 + del_r^2/12.0			//the 2.3548 is a conversion from FWHM->Gauss, see http://mathworld.wolfram.com/GaussianFunction.html
+	v_d = (DDet/2.3548)^2 + del_r^2/12.0			//// JGB eq (7) the 2.3548 is a conversion from FWHM->Gauss, see http://mathworld.wolfram.com/GaussianFunction.html
 	vz = vz_1 / lambda
-	yg = 0.5*g*L2*(L1+L2)/vz^2
-	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	yg = 0.5*g*L2*(L1+L2)/vz^2						// JGB eq (8)
+	v_g = 2.0*(2.0*yg^2*v_lambda)					// // JGB eq (9) factor of 2 correction, B. Hammouda, 2007
 
-	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
-	delta = 0.5*(BS - r0)^2/v_d
+	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))			// distance from center of beam to center of pixel
+	delta = 0.5*(BS - r0)^2/v_d						// defined below JGB eq (11)
 
 	if (r0 < BS) 
 		inc_gamma=exp(gammln(1.5))*(1-gammp(1.5,delta))
@@ -152,12 +158,12 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 		inc_gamma=exp(gammln(1.5))*(1+gammp(1.5,delta))
 	endif
 
-	fSubS = 0.5*(1.0+erf( (r0-BS)/sqrt(2.0*v_d) ) )
+	fSubS = 0.5*(1.0+erf( (r0-BS)/sqrt(2.0*v_d) ) )		// JGB eq (11)
 	if (fSubS <= 0.0) 
 		fSubS = 1.e-10
 	endif
-	fr = 1.0 + sqrt(v_d)*exp(-1.0*delta) /(r0*fSubS*sqrt(2.0*Pi))
-	fv = inc_gamma/(fSubS*sqrt(Pi)) - r0^2*(fr-1.0)^2/v_d
+	fr = 1.0 + sqrt(v_d)*exp(-1.0*delta) /(r0*fSubS*sqrt(2.0*Pi))			// JGB eq (12)
+	fv = inc_gamma/(fSubS*sqrt(Pi)) - r0^2*(fr-1.0)^2/v_d						// JGB eq (13)
 
 	rmd = fr*r0
 	v_r1 = v_b + fv*v_d +v_g
@@ -168,7 +174,7 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 		v_r = 0.0
 	endif
 	QBar = (4.0*Pi/lambda)*sin(0.5*atan(rm/L2))
-	SigmaQ = QBar*sqrt(v_r/rmd^2 +v_lambda)
+	SigmaQ = QBar*sqrt(v_r/rmd^2 +v_lambda)				// JGB eq (4)
 
 
 // more readable method for calculating the variance in Q
@@ -281,7 +287,7 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 	
 //	if(usingLenses==1)			//SRK 2007
 	if(usingLenses != 0)			//SRK 2008 allows for the possibility of different numbers of lenses in header
-		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth/lambda)^2*(S2*L2/lp)^2		//correction to 2nd term
+		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth)^2*(S2*L2/lp)^2		//correction to 2nd term
 	else
 		v_b = 0.25*(S1*L2/L1)^2 +0.25*(S2*L2/lp)^2		//original form
 	endif

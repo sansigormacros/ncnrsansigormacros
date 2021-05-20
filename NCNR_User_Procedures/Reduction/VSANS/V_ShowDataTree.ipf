@@ -66,12 +66,13 @@ Function V_ListDataFolder(dfr, level, sNBName)
 		if(WaveType(dfr:$name,1) == 1)
 			WAVE w=dfr:$name
 			if(numpnts(w) > 1)		//the Igor_Folder_Attributes wave has zero points, catch the error
-				sPrintf sString, "%s%s (wave) %g\ttyp=%g\r", indentStr, name, w[0], WaveType(w)
+				sPrintf sString, "%s%s (%d-D wave N=(%s)) val=%g\ttyp=%s\r", indentStr, name, WaveDims(w),V_PrintDims(w),w[0], V_PrintWaveType(w)
+//				sPrintf sString, "%s%s (wave) %g\ttyp=%g\r", indentStr, name, w[0], WaveType(w)
 //				sPrintf sString, "%s%s   \t%g\r", indentStr, name, w[0]
 			else
 			// variables show up as 1-point waves, don't report as (wave)
 //				sPrintf sString, "%s%s (wave)\r", indentStr, name
-				sPrintf sString, "%s%s \r", indentStr, name
+				sPrintf sString, "%s%s \t%g\r", indentStr, name, w[0]
 			endif
 		else
 			WAVE/T wt=dfr:$name		// text wave is assumed...
@@ -137,4 +138,73 @@ Function V_WriteBrowserInfo(sString, vType, sNBName)
 	endif
  
 End
+
+Function/S V_PrintWaveType(w)
+	Wave w
+	
+	String str=""
+	Variable typ
+	typ = WaveType(w)
+	
+	if(typ==0)
+		return("Text")
+	endif
+	
+	Variable waveIsComplex = WaveType(w) & 0x01
+	Variable waveIs32BitFloat = WaveType(w) & 0x02
+	Variable waveIs64BitFloat = WaveType(w) & 0x04
+	Variable waveIs8BitInteger = WaveType(w) & 0x08
+	Variable waveIs16BitInteger = WaveType(w) & 0x10
+	Variable waveIs32BitInteger = WaveType(w) & 0x20
+	Variable waveIs64BitInteger = WaveType(w) & 0x80
+	Variable waveIsUnsigned = WaveType(w) & 0x40
+	
+	if(waveiscomplex != 0)
+		return("Complex")
+	endif
+
+	if(waveIs32BitFloat != 0)
+		return("32bF")
+	endif
+	
+	if(waveIs64BitFloat != 0)
+		return("64bF")
+	endif
+	
+	if(waveIs8BitInteger != 0)
+		return("8bI")
+	endif
+	
+	if(waveIs16BitInteger != 0)
+		return("16bI")
+	endif
+	
+	if(waveIs32BitInteger != 0)
+		return("32bI")
+	endif
+	
+	if(waveIs64BitInteger != 0)
+		return("64bI")
+	endif	
+	
+	return(str)
+End
+
+
+// construct a string with the dims of a wave - no parenthesis
+Function/S V_PrintDims(w)
+	Wave w
+	
+	String str=""
+	Variable num=WaveDims(w),ii
+	
+	for(ii=0;ii<num;ii+=1)
+		str += num2str(DimSize(w,ii)) + ","
+	endfor
+	
+	ii=strlen(str)
+	str = str[0,ii-2] // remove the last comma
+	
+	return(str)
+end
 
