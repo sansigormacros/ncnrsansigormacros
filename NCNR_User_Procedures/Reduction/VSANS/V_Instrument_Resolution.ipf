@@ -657,7 +657,7 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 	
 //	if(usingLenses==1)			//SRK 2007
 	if(usingLenses != 0)			//SRK 2008 allows for the possibility of different numbers of lenses in header
-		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth/lambda)^2*(S2*L2/lp)^2		//correction to 2nd term
+		v_b = 0.25*(S1*L2/L1)^2 +0.25*(2/3)*(lambdaWidth)^2*(S2*L2/lp)^2		//correction to 2nd term
 	else
 		v_b = 0.25*(S1*L2/L1)^2 +0.25*(S2*L2/lp)^2		//original form
 	endif
@@ -700,7 +700,8 @@ Function V_get2DResolution(inQ,phi,r_dist,folderStr,type,collimationStr,SigmaQX,
 
 
 	// the detector pixel is square, so correct for phi
-	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
+	// DDet = DDet when perpendicular to pixel, 1.4*DDet when @ diagonal
+	proj_DDet = DDet*abs(cos(phi)) + DDet*abs(sin(phi))
 
 
 ///////// OLD - don't use ---

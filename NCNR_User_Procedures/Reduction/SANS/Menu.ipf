@@ -56,6 +56,7 @@ Menu "SANS"
 		"Display Accumulated Slices",AccumulateSlices(2)	
 		"-"
 		"Insert Time Reset",InsertTimeReset()
+		"Estimate Frame Overlap",EstFrameOverlap()
 	End
 	"-"
 	"NCNR Preferences",Show_Preferences_Panel()

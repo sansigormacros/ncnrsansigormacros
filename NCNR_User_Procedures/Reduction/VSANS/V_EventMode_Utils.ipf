@@ -2252,4 +2252,40 @@ Function V_ReadEventHeader()
 End
 
 
+Proc V_EstFrameOverlap(lambda,fwhm,sdd)
+	Variable lambda=6,fwhm=0.12,sdd=13
+	V_FrameOverlap(lambda,fwhm,sdd)
+End
+
+//fwhm = 2.355 sigma of the Gaussian
+// two standard deviations = 95% of distribution
+//
+// lam =5A, fwhm = 0.138, sdd=13.7m
+//
+Function V_FrameOverlap(lam,fwhm,sdd)
+	Variable lam,fwhm,sdd
+	
+	Variable speed_lo,speed_hi,sig,lam_lo,lam_hi
+	Variable time_lo,time_hi,delta
+	
+	
+	sig = fwhm/2.355
+	lam_lo = lam - 2*lam*sig
+	lam_hi = lam + 2*lam*sig
+
+
+	speed_lo = 3956/lam_lo		//if lam [=] A, speed [=] m/s
+	speed_hi = 3956/lam_hi		//if lam [=] A, speed [=] m/s
+
+// then the time to travel from sample to detector is:
+	time_lo = sdd/speed_lo
+	time_hi = sdd/speed_hi
+	
+	delta = (time_hi-time_lo)		//hi wavelength is slower
+
+	Print "Accounting for 2 sigma = 95% of distribution"
+	Print "Use bin widths larger than frame overlap time (s) = ",delta
+
+	return(delta)
+end
 

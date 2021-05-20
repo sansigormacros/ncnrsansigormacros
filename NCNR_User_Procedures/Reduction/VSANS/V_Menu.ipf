@@ -84,6 +84,7 @@ Menu "VSANS"
 		"Plot Dead Time Per Tube",V_PlotDeadTime()
 		"Plot Event Stream per Panel",V_EventStream_by_Panel()
 		"Differentiate One Panel",pV_Differentiate_onePanel()
+		"Estimate Frame Overlap",V_EstFrameOverlap()
 		"-"
 		"Load+Display QxQy_ASCII DAT",V_LoadQxQy_ASCII_DAT_VSANS()
 		"Load+Display 2D NXcanSAS",V_Display_2D_VSANS()

@@ -330,8 +330,8 @@ Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,
 
 
 	// the detector pixel is square, so correct for phi
-	proj_DDet = DDet*cos(phi) + DDet*sin(phi)
-
+	// DDet = DDet when perpendicular to pixel, 1.4*DDet when @ diagonal
+	proj_DDet = DDet*abs(cos(phi)) + DDet*abs(sin(phi))
 
 ///////// OLD - don't use ---
 //in terms of Q_parallel ("x") and Q_perp ("y") - this works, since parallel is in the direction of Q and I
