@@ -3,20 +3,7 @@
 #pragma IgorVersion = 7.00
 
 
-//
-// Jan 2021 -- still trying to resolve issues:
-//
-//
-// -- to split out a single panel and take the differental of a single panel:
-//  1) load the data in as usual
-//	 2) run V_Differentiate_onePanel(panelVal,numPt) --- panelVal = 1,2,3,4; numPt = number of
-//       points at the beginning of the dat to work with. The data panel is not really
-//       split out, but rather all of the other three panels are set to NaN
-//
-//
-// -- The time reversal steps in the data files as the data is collected
-// in sequence from the panels has still not been resolved. The data appears to be good,
-// but I need to consult, and find more ways to verify.
+
 //
 //
 // -- DONE -- Feb 2021 got the "correct" header structure from Phil
@@ -1479,6 +1466,12 @@ Function V_decodeFakeEvent()
 	return(0)
 End
 
+// Based on the numbering 0-191:
+// group 1 = R (0,47) 			MatrixOp out = ReverseRows(in)
+// group 2 = T (48,95) 		output = slices_T[q][p][r]
+// group 3 = B (96,143) 		output = slices_B[XBINS-q-1][YBINS-p-1][r]		(reverses rows and columns)
+// group 4 = L (144,191) 	MatrixOp out = ReverseCols(in)
+//
 //
 // tested up to num=1e8 successfully
 //
@@ -1505,7 +1498,10 @@ Function V_MakeFakeEventWave(num)
 	i64_start = ticks
 	for(ii=0;ii<num;ii+=1)
 //		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
-		b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
+
+//		b1 = trunc(abs(enoise(192)))		//since truncated, need 192 as highest random to give 191 after trunc
+		b1 = trunc(mod(ii,192))
+
 		b2 = trunc(abs(enoise(128)))		// same here, to get results [0,127]
 		
 //		i64_ticks = ticks-i64_start
@@ -1608,6 +1604,7 @@ Function V_writeFakeEventFile(fname)
 	Variable time3 = 1122
 	Variable time4 = 3344		// these 4 time pieces are supposed to be 8 bytes total
 	Variable time5 = 3344		// these 5 time pieces are supposed to be 10 bytes total
+	Variable time6 = 5566		// these 6 time pieces are supposed to be 10 bytes total
 	String detStr = "M"
 	Variable volt = 1500
 	Variable resol = 1e7
@@ -1623,7 +1620,8 @@ Function V_writeFakeEventFile(fname)
 	FBinWrite/F=2/U refnum, time3
 	FBinWrite/F=2/U refnum, time4
 	FBinWrite/F=2/U refnum, time5
-	FBinWrite refnum, detStr
+	FBinWrite/F=2/U refnum, time6
+//	FBinWrite refnum, detStr
 	FBinWrite/F=2/U refnum, volt
 	FBinWrite/F=3/U refnum, resol
 

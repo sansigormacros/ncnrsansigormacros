@@ -517,7 +517,8 @@ End
 
 // This loads for speed, since loading the attributes takes a LOT of time.
 //
-// this will load in the whole HDF file all at once.
+// this will load in the whole Nexus file all at once.
+// -- the DAS_Logs are SKIPPED - since they are not needed for reduction
 // Attributes are NOT loaded at all.
 //
 // -- the Gateway function H5GW_ReadHDF5(parentFolder, fileName, [hdf5Path])

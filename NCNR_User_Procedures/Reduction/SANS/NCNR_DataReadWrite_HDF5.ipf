@@ -2,6 +2,13 @@
 #pragma version=6.0
 #pragma IgorVersion=6.3
 
+
+//
+// May 2021 -- starting the process of re-writing to work
+// with a new, more complete nexus file definition
+//
+
+
 //**************************
 //
 // Vers. 1.2 092101
@@ -274,7 +281,7 @@ Function getDetectorData(fname,data)
 	Wave data
 	
 	// get a wave reference to the data
-	String path = "Run1:Detector:data"
+	String path = "entry:instrument:detector:data"
 	WAVE w = getRealWaveFromHDF5(fname,path)
 
 	data = w
@@ -1173,7 +1180,7 @@ Function WriteTransmissionToHeader(fname,trans)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
 	return(0)
@@ -1195,7 +1202,7 @@ Function WriteTransmissionErrorToHeader(fname,transErr)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1216,7 +1223,7 @@ Function WriteWholeTransToHeader(fname,trans)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1236,7 +1243,7 @@ Function WriteBoxCountsToHeader(fname,counts)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1256,7 +1263,7 @@ Function WriteBoxCountsErrorToHeader(fname,rel_err)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1276,7 +1283,7 @@ Function WriteBSXPosToHeader(fname,xpos)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1296,7 +1303,7 @@ Function WriteThicknessToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1316,7 +1323,7 @@ Function WriteBeamCenterXToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1336,7 +1343,7 @@ Function WriteBeamCenterYToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1356,7 +1363,7 @@ Function WriteAttenNumberToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1376,7 +1383,7 @@ Function WriteMonitorCountToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1396,7 +1403,7 @@ Function WriteDetectorCountToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1416,7 +1423,7 @@ Function WriteTransDetCountToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1436,7 +1443,7 @@ Function WriteWavelengthToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1456,7 +1463,7 @@ Function WriteWavelengthDistrToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1476,7 +1483,7 @@ Function WriteTemperatureToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1496,7 +1503,7 @@ Function WriteMagnFieldToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
 	return(0)
@@ -1517,7 +1524,7 @@ Function WriteSourceApDiamToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1537,7 +1544,7 @@ Function WriteSampleApDiamToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1557,7 +1564,7 @@ Function WriteSrcToSamDistToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1577,7 +1584,7 @@ Function WriteDetectorOffsetToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1597,7 +1604,7 @@ Function WriteBeamStopDiamToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1617,7 +1624,7 @@ Function WriteSDDToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1641,7 +1648,7 @@ Function WriteDetPixelXToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
 	return(0)
@@ -1666,7 +1673,7 @@ Function WriteDetPixelYToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1686,7 +1693,7 @@ Function WriteDeadtimeToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1740,7 +1747,7 @@ Function WriteSamLabelToHeader(fname,str)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	
 	return(0)
@@ -1769,7 +1776,7 @@ Function WriteAcctNameToHeader(fname,str)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 
 	return(0)
@@ -1815,7 +1822,7 @@ Function WriteFileNameToHeader(fname,str)
 	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1857,7 +1864,7 @@ Function WriteCountTimeToHeader(fname,num)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	return(0)
 End
@@ -1931,18 +1938,20 @@ End
 Function/S getAssociatedFileSuffix(fname)
 	String fname
 	
-	String path = "Run1:Analysis:ParamRESERVE"
-	Variable num=42
-	String str = getStringFromHDF5(fname,path,num)
+//	String path = "Run1:Analysis:ParamRESERVE"
+//	Variable num=42
+//	String str = getStringFromHDF5(fname,path,num)
 	
-	return(str[0,3])		//return only 1st 4 characters of the string
+	Print "getAssociatedFileSuffix not done"
+	return("")
+//	return(str[0,3])		//return only 1st 4 characters of the string
 End
 
 // sample label (60 characters @ byte 98)
 Function/S getSampleLabel(fname)
 	String fname
 
-	String path = "Run1:runLabel"
+	String path = "entry:sample:description"
 	Variable num=60
 	return(getStringFromHDF5(fname,path,num))
 End
@@ -1951,7 +1960,7 @@ End
 Function/S getFileCreationDate(fname)
 	String fname
 	
-	String path = "Run1:Run:TIMDAT"
+	String path = "entry:start_time"
 	Variable num=20
 	return(getStringFromHDF5(fname,path,num))
 End
@@ -1960,18 +1969,24 @@ End
 Function/S getAcctName(fname)
 	String fname
 	
-	String path = "Run1:Run:DEFDIR"
-	Variable num=11
-	return(getStringFromHDF5(fname,path,num))
+	Print "getAcctName not defined"
+	return("")
+	
+//	String path = "Run1:Run:DEFDIR"
+//	Variable num=11
+//	return(getStringFromHDF5(fname,path,num))
 End
 
 // file name (21 characters @ byte 2)
 Function/S getFileName(fname)
 	String fname
 	
-	String path = "filename"
-	Variable num=21
-	return(getStringFromHDF5(fname,path,num))
+	Print "getFileName not defined"
+	return("")
+	
+//	String path = "filename"
+//	Variable num=21
+//	return(getStringFromHDF5(fname,path,num))
 End
 
 
@@ -2051,15 +2066,16 @@ End
 Function getMonitorCount(fname)
 	String fname
 
-	String path = "Run1:Run:MONCNT"	
+	String path = "entry:control:monitor_counts"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO -- where is the proper place to save this?
 //saved monitor count is at byte 43
 Function getSavMon(fname)
 	String fname
 	
-	String path = "Run1:Run:SAVMON"	
+	String path = "entry:control_monitor_counts"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2067,7 +2083,7 @@ end
 Function getDetCount(fname)
 	String fname
 	
-	String path = "Run1:Run:DETCNT"	
+	String path = "entry:control:detector_counts"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2075,83 +2091,108 @@ end
 Function getAttenNumber(fname)
 	String fname
 	
-	String path = "Run1:Run:ATTEN"	
+	String path = "entry:instrument:attenuator:index"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO!! transmission/error are not defined in the data file!!
 //transmission is at byte 158
 Function getSampleTrans(fname)
 	String fname
 	
-	String path = "Run1:Sample:TRNS"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "transmission not defined"
+	return(1)
+	
+//	String path = "Run1:Sample:TRNS"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO!! transmission/error are not defined in the data file!!
 //transmission error (one sigma) is at byte 396
 Function getSampleTransError(fname)
 	String fname
-	
-	String path = "Run1:Analysis:ParamEXTRA2"	
-	return(getRealValueFromHDF5(fname,path))
+
+	Print "transmissionError not defined"
+	return(1)
+		
+//	String path = "Run1:Analysis:ParamEXTRA2"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO - box counts not defined
 //box counts are stored at byte 494
 Function getBoxCounts(fname)
 	String fname
 	
-	String path = "Run1:Analysis:FACTOR"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "boxCounts not defined"
+	return(1)
+	
+//	String path = "Run1:Analysis:FACTOR"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO - box counts error note defined
 //box counts error are stored at byte 400
 Function getBoxCountsError(fname)
 	String fname
 	
-	String path = "Run1:Analysis:ParamEXTRA3"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "boxCountsError not defined"
+	return(1)
+	
+//	String path = "Run1:Analysis:ParamEXTRA3"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
-
+//TODO TransWholeDet not defined
 //whole detector trasmission is at byte 392
 Function getSampleTransWholeDetector(fname)
 	String fname
 	
-	String path = "Run1:Analysis:ParamEXTRA1"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "transWholeDet not defined"
+	return(1)
+	
+//	String path = "Run1:Analysis:ParamEXTRA1"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //SampleThickness is at byte 162
 Function getSampleThickness(fname)
 	String fname
 	
-	String path = "Run1:Sample:THK"	
+	String path = "entry:sample:thickness"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO -- sample rotation angle not defined
 //Sample Rotation Angle is at byte 170
 Function getSampleRotationAngle(fname)
 	String fname
 	
-	String path = "Run1:Sample:ROTANG"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "sample rotation angle not defined"
+	return(0)
+	
+//	String path = "Run1:Sample:ROTANG"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //Sample position in changer
 Function getSamplePosition(fname)
 	String fname
 	
-	String path = "Run1:Sample:POSITION"	
+	String path = "entry:sample:changer_position"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO -- add in all of the other temperature read functions
 //temperature is at byte 186
 Function getTemperature(fname)
 	String fname
 	
-	String path = "Run1:Sample:TEMP"	
+	String path = "entry:sample:temperature"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TOD - field strength not defined
 //field strength is at byte 190
 // 190 is not the right location, 348 looks to be correct for the electromagnets, 450 for the 
 // superconducting magnet. Although each place is only the voltage, it is correct
@@ -2160,15 +2201,19 @@ Function getFieldStrength(fname)
 	
 //	return(getRealValueFromHeader(fname,190))
 //	return(getRealValueFromHeader(fname,348))
-	String path = "Run1:Sample:FIELD"	
-	return(getRealValueFromHDF5(fname,path))
+
+	Print "field strength not defined"
+	return(0)
+	
+//	String path = "Run1:Sample:FIELD"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //beam xPos is at byte 252
 Function getBeamXPos(fname)
 	String fname
 	
-	String path = "Run1:Detector:BEAMX"	
+	String path = "entry:instrument:detector:beam_center_x"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2176,7 +2221,7 @@ end
 Function getBeamYPos(fname)
 	String fname
 	
-	String path = "Run1:Detector:BEAMY"	
+	String path = "entry:instrument:detector:beam_center_y"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2184,55 +2229,66 @@ end
 Function getSDD(fname)
 	String fname
 	
-	String path = "Run1:Detector:DIS"	
+	String path = "entry:instrument:detector:distance"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO -- detector offset not defined in file!!
 //detector offset is at byte 264
 Function getDetectorOffset(fname)
 	String fname
 	
-	String path = "Run1:Detector:ANG"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "detOffset not defined in raw file"
+	return(0)
+//	String path = "Run1:Detector:ANG"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
+// TODO - beam stop sizn not in file!!
 //Beamstop diameter is at byte 272
 Function getBSDiameter(fname)
 	String fname
 	
-	String path = "Run1:Detector:BSTOP"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "BS diameter not in file"
+	return(1)
+	
+//	String path = "Run1:Detector:BSTOP"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //
 Function getBSXPos(fname)
 	String fname
 	
-	String path = "Run1:Instrument:XPOS"	
+	String path = "entry:instrument:beam_stop:x0"	
 	return(getRealValueFromHDF5(fname,path))
 end
 //
 Function getBSYPos(fname)
 	String fname
 	
-	String path = "Run1:Instrument:YPOS"	
+	String path = "entry:instrument:beam_stop:y0"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
-
+// source aperture is a string of diam w units for example: "50.8 mm"
 //source aperture diameter is at byte 280
 Function getSourceApertureDiam(fname)
 	String fname
 	
-	String path = "Run1:Instrument:AP1"	
-	return(getRealValueFromHDF5(fname,path))
+	String path = "entry:instrument:source_aperture:size"	
+	variable num=10,val
+	String str2=""
+	String str = getStringFromHDF5(fname,path,num)
+	sscanf str, "%g %s\r", val,str2
+	return(val)
 end
 
 //sample aperture diameter is at byte 284
 Function getSampleApertureDiam(fname)
 	String fname
 	
-	String path = "Run1:Instrument:AP2"	
+	String path = "entry:instrument:sample_aperture:size"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2240,7 +2296,7 @@ end
 Function getSourceToSampleDist(fname)
 	String fname
 	
-	String path = "Run1:Instrument:AP12DIS"	
+	String path = "entry:instrument:source_aperture:distance"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2248,7 +2304,7 @@ end
 Function getWavelength(fname)
 	String fname
 	
-	String path = "Run1:Instrument:LMDA"	
+	String path = "entry:instrument:monochromator:wavelength"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -2256,23 +2312,27 @@ end
 Function getWavelengthSpread(fname)
 	String fname
 	
-	String path = "Run1:Instrument:DLMDA"	
+	String path = "entry:instrument:monochromator:wavelength_error"	
 	return(getRealValueFromHDF5(fname,path))
 end
+
 
 //transmission detector count is at byte 388
 Function getTransDetectorCounts(fname)
 	String fname
 	
-	String path = "Run1:Analysis:TRNSCNT"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "transmission det count not implemented"
+	return(0)
+	
+//	String path = "Run1:Analysis:TRNSCNT"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //detector pixel X size is at byte 220
 Function getDetectorPixelXSize(fname)
 	String fname
 	
-	String path = "Run1:Detector:CALX"
+	String path = "entry:instrument:detector:x_pixel_size"
 	WAVE w = getRealWaveFromHDF5(fname,path)
 	return(w[0])		// 1st element is the pixel x size
 end
@@ -2281,7 +2341,7 @@ end
 Function getDetectorPixelYSize(fname)
 	String fname
 	
-	String path = "Run1:Detector:CALY"
+	String path = "entry:instrument:detector:y_pixel_size"
 	WAVE w = getRealWaveFromHDF5(fname,path)
 	return(w[0])		// 1st element is the pixel x size
 end
@@ -2290,6 +2350,7 @@ end
 Function getReactorPower(fname)
 	String fname
 
+	Print "Rx power not implemented"
 	return 0
 
 end
@@ -2298,9 +2359,23 @@ end
 Function getDetectorDeadtime(fname)
 	String fname
 	
-	String path = "Run1:Analysis:AnalysisQMIN"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "detector deadtime not implemented"
+	return(1e-6)
+	
+//	String path = "Run1:Analysis:AnalysisQMIN"	
+//	return(getRealValueFromHDF5(fname,path))
 end
+
+//
+// From experience with HDF5 and VSANS, the integer read is not needed
+// -- all variables are treated as DOUBLE (waves are different, they
+// keep their type
+//
+// -- so the routine below that claims to be integer but is really
+// double precision, is never used in VSANS code, even for values
+// that are expected to be integer - there is no need for the added complexity.
+//
+//
 
 
 //
@@ -2340,8 +2415,8 @@ End
 Function getCountTime(fname)
 	String fname
 	
-	String path = "Run1:run:CTIME"
-	return(getIntegerFromHDF5(fname,path))
+	String path = "entry:control:count_time"
+	return(getRealValueFromHDF5(fname,path))
 end
 
 
@@ -2376,6 +2451,9 @@ Function getXYBoxFromFile(fname,x1,x2,y1,y2)
 	String fname
 	Variable &x1,&x2,&y1,&y2
 
+	Print "XYBOX definition not implemented"
+	return(0)
+
 	String path = "Run1:Analysis:COLS"
 	WAVE col = getRealWaveFromHDF5(fname,path)
 	path = "Run1:Analysis:ROWS"
@@ -2405,6 +2483,9 @@ End
 Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
 	String fname
 	Variable x1,x2,y1,y2
+	
+	Print "XYBOX definition/writing not implemented"
+	return(0)
 	
 //	Variable refnum
 //	Open/A/T="????TEXT" refnum as filename
@@ -2437,7 +2518,7 @@ Function WriteXYBoxToHeader(fname,x1,x2,y1,y2)
 //	Print "HDF write err = ",err
 
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
 	return(0)
@@ -2453,6 +2534,9 @@ End
 //
 Function WriteAssocFileSuffixToHeader(fname,suffix)
 	String fname,suffix
+	
+	Print "AssocFileSuffix definition not implemented"
+	return(0)
 		
 	suffix = suffix[0,3]		//limit to 4 characters
 	
@@ -2466,7 +2550,7 @@ Function WriteAssocFileSuffixToHeader(fname,suffix)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 	
 	return(0)
@@ -2566,7 +2650,7 @@ Function WriteLensFlagToHeader(fname,flag)
 //	Print "HDF write err = ",err
 	
 	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-	err = KillNamedDataFolder(fname)
+//	err = KillNamedDataFolder(fname)
 //	Print "DataFolder kill err = ",err
 		
 	return(0)

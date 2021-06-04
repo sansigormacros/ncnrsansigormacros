@@ -877,22 +877,14 @@ Function CheckIfRawData(fname)
 		return(0)
 	endif
 	
-//	//get the total number of bytes in the file
-//	FStatus refNum
-//	totalBytes = V_logEOF
-//	//Print totalBytes
-//	if(totalBytes < 100)
-//		Close refNum
-//		return(0)		//not a raw file
-//	endif
-//	FSetPos refNum,75
-//	FReadLine/N=3 refNum,testStr
-//	Close refNum
 
 	// just look at the extension, ":" is the path separator
-	extStr = ParseFilePath(4, fname, ":", 0, 0)
-	
-	if( cmpstr(extStr,"h5")==0 )
+//	extStr = ParseFilePath(4, fname, ":", 0, 0)
+//	if( cmpstr(extStr,"h5")==0 )
+
+
+// look for .nxs. of a nexus file name, can't key on last extension
+	if(strsearch(fname,".nxs.",0) != -1)
 		//true, is raw data file
 		Return(1)
 	else

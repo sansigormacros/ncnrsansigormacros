@@ -2099,9 +2099,14 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 		//tw[0] must now be the file name
 		//
 		// count time = fraction of total binning * total count time
+		// ** NOTE that the count time can only be saved to the VAX file as an INTEGER VALUE
+		// so beware what time show up in the file for narrow time bins. Keep track of bin times
+		// manually and adjust the ABS scaling accordingly
+		//
 		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
 		
 		iw[2] = trunc(binFraction*iw_raw[2])
+//		Print (binFraction*iw_raw[2])		//this is the REAL precision value, not the saved integer value
 		rw[0] = trunc(binFraction*rw_raw[0])
 		rw[2] = sum(curSlice,-inf,inf)		//total counts in slice
 	
