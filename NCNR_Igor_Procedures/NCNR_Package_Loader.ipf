@@ -21,7 +21,18 @@
 //  the XML XOP is not available on Igor 8 (or 7), and is not worth the effort to maintain - especially
 //  since Andy Nelson can't do it any longer. Comment out the loader, and see if anyone notices.
 //
-
+// HANARO SANS loader is also commented out - they made their own revisions of the code,
+//  and did not share them back with me (I'm OK with that), but they aren't on the list any more
+// since my code is out-of-date with theirs.
+//
+//  SRK JUNE 2021
+// 	With the upcoming change to the NCNR raw data format to Nexus (driven by the detector change
+//		on the 10m SANS), each of the SANS instruments will require different processing - to some
+//		extent - since the detectors will be different, and the Nexus format will allow for, and require
+//		some different processing possibilities. The different loaders must be mutually exclusive,
+//			such that multiple SANS reduction packages can't be loaded at the same time
+//
+//
 
 
 Menu "Macros"
@@ -148,6 +159,16 @@ Function NCNR_SANSReductionLoader(itemStr)
 	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
 		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
+	
+	// check for ANY SANS package being loaded. if any one is loaded, nothing else can be loaded
+	//
+	
+	if( exists("ILL_D22")==6 || exists("NCNR")==6 || exists("QUOKKA")==6 )
+		DoAlert 0,"A SANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
+		return(0)
+	endif
+	
+	
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
 

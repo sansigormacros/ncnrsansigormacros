@@ -657,6 +657,7 @@ End
 //
 //
 
+
 // From the HDF5 tree as read in from a (converted) raw VAX file,
 // put everything back into its proper place in the RTI waves
 // (and the data!)
@@ -928,6 +929,9 @@ Function FillRTIFromHDFTree(folderStr)
 End
 
 
+
+
+
 //given a filename of a SANS data filename of the form
 // name.anything
 //returns the name as a string without the ".fbdfasga" extension
@@ -985,7 +989,7 @@ Function fBatchConvertToHDF5(lo,hi)
 		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			// load the data
-			ReadHeaderAndData(file)		//file is the full path
+			ReadHeaderAndData(file,"RAW")		//file is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed

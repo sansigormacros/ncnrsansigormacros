@@ -1,11 +1,21 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=6.0
-#pragma IgorVersion=6.3
+#pragma IgorVersion=8.0
 
 
 //
 // May 2021 -- starting the process of re-writing to work
 // with a new, more complete nexus file definition
+//
+// I will need to start by removing calls to the gateway, and replace
+// with the loader from VSANS
+//
+// then pieces from VSANS will need to be added to SANS - replacing the old VAX referenced parts
+//
+// -- SANS reduction will need to be differentiated now - since all three instruments
+// will be slightly different in their file contents, and the differences between the 30m,
+// instruments and the 10m will be VERY significant. Not a place for a million "if" statements
+//
 //
 
 
@@ -127,17 +137,63 @@ Function ReadHeaderAndData(fname)
 	// fill all of the points in the waves.
 	//(1) load the whole file - this takes the name only, and assumes it is located at catPathNem
 	
-	// be sure the "temp" load goes into root:
-	SetDataFolder root:
-	Print H5GW_ReadHDF5("", nameOnlyStr)	// reads into current folder
+//	// be sure the "temp" load goes into root:
+//	SetDataFolder root:
+//	Print H5GW_ReadHDF5("", nameOnlyStr)	// reads into current folder
+
+	PathInfo/S catPathName
+	if(V_flag == 0)
+		DoAlert 0,"Pick the data folder, then the data file"
+		PickPath()
+	endif
+
+	String hdf5path = "/"		//always read from the top
+	String status = ""
+
+	Variable fileID = 0
+//	HDF5OpenFile/R/P=home/Z fileID as fName		//read file from home directory?
+	HDF5OpenFile/R/P=catPathName/Z fileID as fName
+	if (V_Flag != 0)
+		return 1
+	endif
+
+	String/G root:file_path = S_path
+	String/G root:file_name = S_FileName
+	
+	if ( fileID == 0 )
+		Print fName + ": could not open as HDF5 file"
+		return (1)
+	endif
+		
+	SVAR tmpStr=root:file_name
+	fName=tmpStr		//SRK - in case the file was chosen from a dialog, I'll need access to the name later
+
+
+	hdf5path = "/"  //always read from the top
+	
+// clean out the RAW folder, if possible
+	KillDataFolder/Z root:Packages:NIST:RAW
+	NewDataFolder/O/S root:Packages:NIST:RAW
+
+
+//// loads everything with one line	 (includes /DAS_logs)
+//	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
+
+//	HDF5LoadGroup/Z/L=7/O/R  :, fileID, hdf5Path		//	recursive, load into current DF
+
+//		HDF5LoadGroup /O /R=2 /T /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
+		HDF5LoadGroup /O /R=2 /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
+
+
+//
+	HDF5CloseFile/Z fileID
+
 
 	// then fill the waves up (from the tree that was just loaded)
 	// calling each accessor would be the same speed (looking locally)
-	// but wouldn't fill every element, as we need
-
 
 /// this is NCNR-specific and fills in everything we use, more than the "basics" below	
-	FillRTIFromHDFTree(nameOnlyStr)
+//	FillRTIFromHDFTree(nameOnlyStr)
 	
 	SetDataFolder curPath			//now go back to RAW
 

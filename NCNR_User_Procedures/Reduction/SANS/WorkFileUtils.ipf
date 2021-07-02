@@ -549,7 +549,7 @@ Function DetCorr(data,data_err,realsread,doEfficiency,doTrans)
 			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
 			
 			
-			// correction factor for detector efficiency JBG memo det_eff_cor2.doc 3/20/07
+			// correction factor for detector efficiency JGB memo det_eff_cor2.doc 3/20/07
 			// correction inserted 11/2007 SRK
 			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
 			// so divide here to get the correct answer (5/22/08 SRK)

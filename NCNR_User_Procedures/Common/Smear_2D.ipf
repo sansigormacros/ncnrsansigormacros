@@ -392,10 +392,15 @@ Function PlotResolution_atPixel(type,xx,yy)
 	else
 		typeStr = ":data"
 	endif
-	
+
+// This will need to contine to be read in through the globals since it's
+// a common procedure, not specific to Nexus/SANS	
 	NVAR pixelsX = root:myGlobals:gNPixelsX
 	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
+
+//	Variable pixelsX = getDet_pixel_num_x(type)
+//	Variable pixelsY = getDet_pixel_num_y(type)
+		
 	Wave data=$(destStr+typeStr)
 	WAVE intw=$(destStr + ":integersRead")
 	WAVE rw=$(destStr + ":realsRead")

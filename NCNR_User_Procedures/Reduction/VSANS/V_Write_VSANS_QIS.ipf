@@ -596,7 +596,10 @@ Function V_QxQy_Export(type,fullpath,newFileName,dialog)
 	
 	String combinedSavePath = fullPath + "_COMBINED.DAT"
 	
-	for(kk=0;kk<ItemsInList(detList);kk+=1)
+//	for(kk=0;kk<ItemsInList(detList);kk+=1)
+// be sure to write out "B" first, so it ends up in the "back" in the graph
+// so work through the list backwards
+	for(kk=ItemsInList(detList)-1;kk>=0;kk-=1)
 
 		detStr = StringFromList(kk, detList, ";")
 		detSavePath = fullPath + "_" + detStr + ".DAT"
@@ -798,7 +801,8 @@ v_toc()
 		
 //		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,qz_val_s,z_val_s,sw_s as detSavePath	// without resolution
 		Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as detSavePath	// write out the resolution information
-		if (kk==00)
+//		if (kk==00)	//wrong - used when looping in order
+		if (kk==ItemsInList(detList)-1) // use when looping backwards
 			Save/O/G/M="\r\n" labelWave,qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
 		Else
 			Save/A=2/G/M="\r\n" qx_val_s,qy_val_s,z_val_s,sw_s,qz_val_s,SigmaQx_s,SigmaQy_s,fSubS_s,MaskData_s as combinedSavePath	// write out the resolution information
@@ -812,7 +816,8 @@ v_toc()
 		Close refNum
 		// Combined file
 		Open refNum as combinedSavePath
-		if (kk==00)
+//		if (kk==00)	//wrong - used when looping in order
+		if (kk==ItemsInList(detList)-1) // use when looping backwards
 			wfprintf refNum,"%s\r\n",labelWave
 			fprintf refnum,"\r\n"
 		EndIf
