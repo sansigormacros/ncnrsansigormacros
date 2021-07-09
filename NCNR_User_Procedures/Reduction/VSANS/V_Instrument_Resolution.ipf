@@ -298,7 +298,6 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	endif
 
 	if(cmpstr(collimationStr,"convergingPinholes") == 0)
-
 		//		set usingLenses == 1 so that the Gaussian resolution calculation will be for a focus condition
 		usingLenses = 1
 	endif
@@ -396,6 +395,9 @@ Function V_getResolution(inQ,folderStr,type,collimationStr,SigmaQ,QBar,fSubS)
 	QBar = (4.0*Pi/lambda)*sin(0.5*atan(rm/L2))
 	SigmaQ = QBar*sqrt(v_r/rmd^2 +v_lambda)			//JGB eq (4)
 
+		if(numType(sigmaQ) != 0 )
+			print "bad resolution - check the back beamstop"
+		endif
 
 // more readable method for calculating the variance in Q
 // EXCEPT - this is calculated for Qo, NOT qBar

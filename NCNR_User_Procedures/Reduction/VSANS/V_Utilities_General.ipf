@@ -28,7 +28,7 @@ Function V_PickPath()
 	//alertStr += "  Please see the manual for details."
 	if (V_flag == 0)
 		//path does not exist - no folder selected
-		String/G root:Packges:NIST:VSANS:Globals:gCatPathStr = "no folder selected"
+		String/G root:Packages:NIST:VSANS:Globals:gCatPathStr = "no folder selected"
 		return(1)
 	else
 	// SRK 2016, for windows 10, try to eliminate this restriction	
@@ -43,7 +43,7 @@ Function V_PickPath()
 //			KillPath catPathName
 //			return(1)
 //		endif
-		String/G root:Packges:NIST:VSANS:Globals:gCatPathStr = dum
+		String/G root:Packages:NIST:VSANS:Globals:gCatPathStr = dum
 		return(0)		//no error
 	endif
 	
