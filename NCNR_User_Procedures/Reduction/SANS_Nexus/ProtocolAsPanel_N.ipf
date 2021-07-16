@@ -1762,10 +1762,10 @@ Function ExecuteProtocol(protStr,samStr)
 			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
-		String destStr = "root:Packages:NIST:"+activeType+":realsread"
-		Wave dest = $destStr
-		Variable c0 = dest[4]		//sample transmission
-		Variable c1 = dest[5]		//sample thickness
+//		String destStr = "root:Packages:NIST:"+activeType+":realsread"
+//		Wave dest = $destStr
+		Variable c0 = getSampleTransmission(activeType)		//sample transmission
+		Variable c1 = getSampleThickness(activeType)		//sample thickness
 		
 		err = Absolute_Scale(activeType,c0,c1,c2,c3,c4,c5,kappa_err)
 		if(err)
