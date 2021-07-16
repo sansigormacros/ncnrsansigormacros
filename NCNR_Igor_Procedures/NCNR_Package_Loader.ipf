@@ -68,10 +68,26 @@ Menu "Macros"
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
+	"-"
+	"Load HDF5 SANS Testing",LoadHDF5SANS()
 
-//	"-"
 
 end
+
+Proc LoadHDF5SANS()
+
+	if( exists("ILL_D22")==6 || exists("NCNR")==6 || exists("QUOKKA")==6 )
+		DoAlert 0,"A SANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
+	else
+
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_N\""
+		Execute/P "COMPILEPROCEDURES "
+		Execute/P ("Initialize()")
+	//			Execute/P ("PickPath()")
+		Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+	endif
+End
+
 
 Function NCNR_AnalysisLoader(itemStr)
 	String itemStr
