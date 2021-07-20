@@ -2,6 +2,22 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+//
+// The functions in this file are no longer maintained (JUL 2021)
+//
+// Current versions are located in the file NCNR_Utils_HDF5_N.ipf
+// and all of the function names are prepended with "N_" so that there is no
+// namespace clash when reduction and analysis packages are loaded
+//
+// -- eventually, the analysis loader can load the "_N.ipf" file and use only the 
+// current versions.
+//
+// SRK JUL 2021
+//
+
+
+
 // this file contains globals and functions that are specific to a
 // particular facility or data file format
 // branched out 29MAR07 - SRK

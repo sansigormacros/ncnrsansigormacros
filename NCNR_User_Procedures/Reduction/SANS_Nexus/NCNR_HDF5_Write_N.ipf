@@ -3950,6 +3950,28 @@ Function writeBeamStopC2_x_pos(fname,val)
 	return(err)
 End
 
+/
+// DONT DELETE THIS - it is new and needed 
+//
+Function putBeamStop_x_pos(fname,val)
+	String fname
+	Variable val
+
+
+	String path = "root:Packages:"+fname+":"
+	path += "entry:instrument:beam_stop:x0"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 Function writeBeamStopC2_y_pos(fname,val)
 	String fname
 	Variable val
@@ -6741,6 +6763,23 @@ Function writeSampleThickness(fname,val)
 	return(err)
 end
 
+// fname is a local WORK folder
+Function putSampleThickness(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:"+fname+":"
+	path += "entry:sample:thickness"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 //Sample Translation
 Function writeSampleTranslation(fname,val)
@@ -6812,6 +6851,8 @@ Function putSampleTransmission(fname,val)
 	endif
 
 End
+
+
 
 
 //transmission error (one sigma)

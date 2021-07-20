@@ -378,7 +378,7 @@ Function MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[0] = str		//just ask
 		else
-			tempstr = ParseRunNumberList(str)
+			tempstr = N_ParseRunNumberList(str)
 			if(strlen(tempStr)==0)
 				return(1)				//error parsing list
 			else
@@ -402,7 +402,7 @@ Function MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[1] = str
 		else
-			tempstr = ParseRunNumberList(str)
+			tempstr = N_ParseRunNumberList(str)
 			if(strlen(tempStr)==0)
 				return(1)
 			else
@@ -426,7 +426,7 @@ Function MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[2] = str
 		else
-			tempStr = ParseRunNumberList(str)
+			tempStr = N_ParseRunNumberList(str)
 			if(strlen(tempStr)==0)
 				return(1)
 			else
@@ -450,7 +450,7 @@ Function MakeProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[3] = str
 		else
-			tempstr = ParseRunNumberList(str)
+			tempstr = N_ParseRunNumberList(str)
 			if(strlen(tempstr)==0)
 				return(1)
 			else
@@ -764,7 +764,7 @@ Function ReduceOneButton(ctrlName) : ButtonControl
 	Else
 		//parse the list of numbers
 		//send only the filenames, without paths
-		samStr = ParseRunNumberList(tempStr)
+		samStr = N_ParseRunNumberList(tempStr)
 		If(strlen(samStr)==0)
 			DoAlert 0,"The SAM file number cound not be interpreted. Please enter a valid run number or filename"
 			return(1)
@@ -925,7 +925,7 @@ Function DrkCheckProc(ctrlName,checked) : CheckBoxControl
 			CheckBox prot_check_6,value=0		//keep box unchecked
 			return(0)
 		Endif
-		fileStr=GetFileNameFromPathNoSemi(fullPath)
+		fileStr=N_GetFileNameFromPathNoSemi(fullPath)
 		//Print fileStr
 		//update the global string
 		drkStr = ReplaceStringByKey("DRK",drkStr,fileStr,"=",",")
@@ -1017,7 +1017,7 @@ Function CheckProtocolSyntax(ctrlName) : ButtonControl
 	String retStr=""
 	//SAM
 	SVAR list = root:myGlobals:Protocols:gSAM
-	retStr = ParseRunNumberList(list)
+	retStr = N_ParseRunNumberList(list)
 	if(strlen(retStr)==0)
 		//error
 		Print "SAM Syntax Error"
@@ -1029,7 +1029,7 @@ Function CheckProtocolSyntax(ctrlName) : ButtonControl
 
 	//MASK
 	SVAR list = root:myGlobals:Protocols:gMASK
-	retStr = ParseRunNumberList(list)
+	retStr = N_ParseRunNumberList(list)
 	
 End
 //*************
@@ -1187,7 +1187,7 @@ Function ProtocolQuestionnare()
 			Abort "Incomplete protocol has been deleted"
 		Endif
 		//assign filename (just the name) to [6]
-		fileStr = GetFileNameFromPathNoSemi(S_filename)
+		fileStr = N_GetFileNameFromPathNoSemi(S_filename)
 		drkStr = "DRK=none,DRKMODE=0,"
 		drkStr = ReplaceStringByKey("DRK",drkStr,fileStr,"=",",")
 		drkStr = ReplaceNumberByKey("DRKMODE", drkStr, 10 ,"=",",")	
@@ -1212,7 +1212,7 @@ Function ProtocolQuestionnare()
 			Abort "Incomplete protocol has been deleted"
 		Endif
 		//assign filename (full path) to [0]
-		newProtocol[0] = GetFileNameFromPathNoSemi(S_filename)
+		newProtocol[0] = N_GetFileNameFromPathNoSemi(S_filename)
 		
 		notDone=1
 		do
@@ -1228,7 +1228,7 @@ Function ProtocolQuestionnare()
 					Abort "Incomplete protocol has been deleted"
 				Endif
 				//assign filename (full path) to [0]
-				newProtocol[0] += "," + GetFileNameFromPathNoSemi(S_filename)		//***COMMA separated list
+				newProtocol[0] += "," + N_GetFileNameFromPathNoSemi(S_filename)		//***COMMA separated list
 				notDone = 1  		//keep going
 			else
 				notDone = 0			//no more to add
@@ -1250,7 +1250,7 @@ Function ProtocolQuestionnare()
 			Abort "Incomplete protocol has been deleted"
 		Endif
 		//assign filename (full path) to [1]
-		newProtocol[1] = GetFileNameFromPathNoSemi(S_filename)
+		newProtocol[1] = N_GetFileNameFromPathNoSemi(S_filename)
 		
 		notDone=1
 		do
@@ -1266,7 +1266,7 @@ Function ProtocolQuestionnare()
 					Abort "Incomplete protocol has been deleted"
 				Endif
 				//assign filename (full path) to [1]
-				newProtocol[1] += "," + GetFileNameFromPathNoSemi(S_filename)		//***COMMA separated list
+				newProtocol[1] += "," + N_GetFileNameFromPathNoSemi(S_filename)		//***COMMA separated list
 				notDone = 1  		//keep going
 			else
 				notDone = 0			//no more to add
@@ -1288,7 +1288,7 @@ Function ProtocolQuestionnare()
 			Abort "Incomplete protocol has been deleted"
 		Endif
 		//assign filename (full path) to [2]
-		newProtocol[2] = GetFileNameFromPathNoSemi(S_filename)
+		newProtocol[2] = N_GetFileNameFromPathNoSemi(S_filename)
 	else
 		//no Work.DIV desired
 		newProtocol[2] = "none"
@@ -1306,7 +1306,7 @@ Function ProtocolQuestionnare()
 			Abort "Incomplete protocol has been deleted"
 		Endif
 		//assign filename (full path) to [3]
-		newProtocol[3] = GetFileNameFromPathNoSemi(S_filename)
+		newProtocol[3] = N_GetFileNameFromPathNoSemi(S_filename)
 	else
 		//no MASK desired
 		newProtocol[3] = "none"
@@ -1434,7 +1434,7 @@ Function AddFilesInList(type,list)
 	ii=0
 	do
 		//FindValidFilename only needed in case of vax version numbers
-		filename = pathStr + FindValidFilename(StringFromList(ii,list,","))
+		filename = pathStr + N_FindValidFilename(StringFromList(ii,list,","))
 		Open/Z/R refnum as filename
 		if(V_flag != 0)		//file not found
 			//Print "file not found AddFilesInList()"
@@ -1762,8 +1762,7 @@ Function ExecuteProtocol(protStr,samStr)
 			kappa_err = NumberByKey("SDEV", prot[4], "=", ";")
 		Endif
 		//get the sample trans and thickness from the activeType folder
-//		String destStr = "root:Packages:NIST:"+activeType+":realsread"
-//		Wave dest = $destStr
+
 		Variable c0 = getSampleTransmission(activeType)		//sample transmission
 		Variable c1 = getSampleThickness(activeType)		//sample thickness
 		
@@ -1889,7 +1888,7 @@ Function ExecuteProtocol(protStr,samStr)
 //			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
 			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
 #else
-			newFileName = UpperStr(GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
+			newFileName = UpperStr(N_GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
 #endif
 		else
 			newFileName = ""			//if the header is missing?
@@ -2049,38 +2048,34 @@ Function AskForAbsoluteParams_Quest()
 			Abort "reduction sequence aborted"
 		endif
 			
-		Wave/T tw=$"root:Packages:NIST:RAW:TextRead"
-		Wave rw=$"root:Packages:NIST:RAW:RealsRead"
-		Wave iw=$"root:Packages:NIST:RAW:IntegersRead"
-		String acctStr = tw[3]
+		String acctStr = getAcctName("RAW")
 		//NG5 attenuator transmission is assumed to be the same as the table for NG7
 			
 		//get the necessary variables for the calculation of kappa
 		Variable detCnt,countTime,attenTrans,monCnt,sdd,pixel
-		String detStr=tw[9]
 //		pixel = DetectorPixelResolution(acctStr,detStr)		//get the pixel size from the file information
 		//note that reading the detector pixel size from the header ASSUMES SQUARE PIXELS! - Jan2008
-		pixel = rw[10]/10			// header value (X) is in mm, want cm here
+		pixel = getDet_x_pixel_size("RAW")/10			// header value (X) is in mm, want cm here
 	
-		countTime = iw[2]
+		countTime = getCollectionTime("RAW")
 		//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
-		monCnt = rw[0]
-		sdd = rw[18]
+		monCnt = getControlMonitorCount("RAW")
+		sdd = getDet_Distance("RAW")
 		sdd *=100		//convert from meters to cm
 				
 		//lookup table for transmission factor
 		//determine which instrument the measurement was done on from acctStr
-		Variable lambda = rw[26]
-		Variable attenNo = rw[3]
+		Variable lambda = getWavelength("RAW")
+		Variable attenNo = getAtten_number("RAW")
 		Variable atten_err
-		attenTrans = AttenuationFactor(acctStr,lambda,attenNo,atten_err)
+		attenTrans = N_AttenuationFactor(acctStr,lambda,attenNo,atten_err)
 		//Print "attenTrans = ",attenTrans
 		
 		//get the XY box, if needed
 		Variable x1,x2,y1,y2,ct_err
-		String filename=tw[0],tempStr			//02JUL13
+		String filename=getFileNameFromFolder("RAW"),tempStr			//02JUL13
 		PathInfo/S catPathName
-		String tempName = S_Path + FindValidFilename(filename)
+		String tempName = S_Path + N_FindValidFilename(filename)
 		err = GetXYBoxFromFile(tempName,x1,x2,y1,y2)		//xy's are passed/returned by reference
 //		Print x1,x2,y1,y2
 
@@ -2118,7 +2113,7 @@ Function AskForAbsoluteParams_Quest()
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
 			endif
 #else
-			if(strlen(junkStr)==0 || !CheckIfDIVData(junkStr))		//for NCNR, and other data confirm it is DIV if either is false, exit
+			if(strlen(junkStr)==0 || !N_CheckIfDIVData(junkStr))		//for NCNR, and other data confirm it is DIV if either is false, exit
 				SetDataFolder root:
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
 			endif
@@ -2138,11 +2133,11 @@ Function AskForAbsoluteParams_Quest()
 		// now do the sum, only in the box	
 //		detCnt = sum($"root:Packages:NIST:raw:data", -inf, inf )
 //		Print "box is now ",x1,x2,y1,y2
-		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
-		if(cmpstr(tw[9],"ILL   ")==0)
-			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large this is usually corrected in the Add step
-			pixel *= 1.04			// correction for true pixel size of the Cerca
-		endif
+//		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
+//		if(cmpstr(tw[9],"ILL   ")==0)
+//			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large this is usually corrected in the Add step
+//			pixel *= 1.04			// correction for true pixel size of the Cerca
+//		endif
 		//		
 		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
 		
@@ -2159,7 +2154,7 @@ Function AskForAbsoluteParams_Quest()
 		//should wipe out the data in the RAW folder, since it's not really RAW now
 		DoWindow/K SANS_Data
 		// SRK JUL 2006 don't clear the contents - just kill the window to force new data to be loaded
-		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from RAW:RealsRead
+		// - obsucre bug if "ask" in ABS section of protocol clears RAW folder, then Q-axes can't be set from values in RAW folder
 		//ClearDataFolder("RAW")
 		Printf "Kappa was successfully calculated as = %g +/- %g (%g %%)\r",kappa,kappa_err,(kappa_err/kappa)*100
 	Endif

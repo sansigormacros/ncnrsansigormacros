@@ -70,7 +70,7 @@ Proc Initialize()
 	InitFolders()
 	InitFakeProtocols()
 	InitGlobals()	
-	InitFacilityGlobals()
+	N_InitFacilityGlobals()
 	DoWindow/F Main_Panel
 	If(V_flag == 0)
 		//draw panel
@@ -206,7 +206,7 @@ End
 // experiment
 Function UnloadNCNR_Igor_Procedures()
 
-#if (exists("NCNR")==6)			//defined in the main #includes file.
+#if (exists("NCNR_Nexus")==6)			//defined in the main #includes file.
 	//do nothing if an NCNR reduction experiment
 #else
 	if(ItemsInList(WinList("NCNR_Package_Loader.ipf", ";","WIN:128")))

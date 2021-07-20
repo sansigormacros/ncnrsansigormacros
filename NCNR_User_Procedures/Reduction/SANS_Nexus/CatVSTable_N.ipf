@@ -121,7 +121,7 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
 #endif
 
-#if (exists("NCNR")==6)
+#if (exists("NCNR_Nexus")==6)
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Pos)=30
 		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:Pos)=3			//to make the display look nice, given the floating point values from ICE
@@ -199,7 +199,7 @@ Function BuildCatVeryShortTable()
 		//get current item in the list
 		partialName = StringFromList(ii, list, ";")
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 		
 		
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
@@ -214,7 +214,7 @@ Function BuildCatVeryShortTable()
 			PathInfo catPathName
 			FullName = S_path + tempName
 			//make sure the file is really a RAW data file
-			ok = CheckIfRawData(fullName)
+			ok = N_CheckIfRawData(fullName)
 		
 			if (!ok)
 				//write to notebook that file was not a RAW SANS file
@@ -298,7 +298,7 @@ Function SortWaves()
 
 #if (exists("ILL_D22")==6)
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
-#elif (exists("NCNR")==6)
+#elif (exists("NCNR_Nexus")==6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #elif (exists("QUOKKA")==6)
@@ -343,7 +343,7 @@ Function BuildTableWindow()
 	
 #if (exists("ILL_D22")==6)
 	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, ReactorPower as "Data File Catalog"
-#elif (exists("NCNR")==6)
+#elif (exists("NCNR_Nexus")==6)
 // original order, magnetic at the end
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // with numGuides
@@ -494,11 +494,11 @@ Function GetHeaderInfoToWave(fname,sname)
 
 	//the run number (not displayed in the table, but carried along)
 	InsertPoints lastPoint,1,GRunNumber
-	GRunNumber[lastPoint] = GetRunNumFromFile(sname)
+	GRunNumber[lastPoint] = N_GetRunNumFromFile(sname)
 
 	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
 	InsertPoints lastPoint,1,GIsTrans
-	GIsTrans[lastPoint]  = isTransFile(fname)		//returns one if beamstop is "out"
+	GIsTrans[lastPoint]  = N_isTransFile(fname)		//returns one if beamstop is "out"
 	
 	// Monitor Count Rate
 	InsertPoints lastPoint,1,GMCR
@@ -513,7 +513,7 @@ Function GetHeaderInfoToWave(fname,sname)
 #endif	
 
 // number of guides and sample position, only for NCNR
-#if (exists("NCNR")==6)
+#if (exists("NCNR_Nexus")==6)
 //	instrumentNum = str2num(getAcctName(fname)[3])		// "[NGxSANSxx]" -- [3] should be then instrument number
 //	Variable/G root:Packages:NIST:SAS:instrument = instrumentNum		//so that Ng can be correctly calculated
 

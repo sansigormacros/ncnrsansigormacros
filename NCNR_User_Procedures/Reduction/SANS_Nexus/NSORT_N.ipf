@@ -456,7 +456,7 @@ Function Plot_0_Button(ctrlName) : ButtonControl
 		//Print partialName
 	Endif
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(partialName)
+	tempName = N_FindValidFilename(partialName)
 	
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
@@ -706,7 +706,7 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 		ControlInfo/W=NSORT_Panel popup_1
 		fileStr = S_Value
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(fileStr)
+		tempName = N_FindValidFilename(fileStr)
 		
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
@@ -742,8 +742,8 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 		//  just get the new list and return - don't actually "pop" the menu, or the selected item will change
 		SVAR popList = root:myGlobals:NSORT:gDataPopList
 		SVAR popList_3 = root:myGlobals:NSORT:gDataPopList_3
-		popList  = ReducedDataFileList("")
-		popList_3 = "none;" +  ReducedDataFileList("")
+		popList  = N_ReducedDataFileList("")
+		popList_3 = "none;" +  N_ReducedDataFileList("")
 		return(0)
 	endif
 		
@@ -759,8 +759,8 @@ Function WriteNSORTFileButton(ctrlName) : ButtonControl
 	//  just get the new list - don't actually "pop" the menu, or the selected item will change
 	SVAR popList = root:myGlobals:NSORT:gDataPopList
 	SVAR popList_3 = root:myGlobals:NSORT:gDataPopList_3
-	popList  = ReducedDataFileList("")
-	popList_3 = "none;" +  ReducedDataFileList("")
+	popList  = N_ReducedDataFileList("")
+	popList_3 = "none;" +  N_ReducedDataFileList("")
 	
 	return(0)
 End
@@ -979,7 +979,7 @@ Function LowQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 
-	String/G root:myGlobals:NSORT:gDataPopList = ReducedDataFileList("")
+	String/G root:myGlobals:NSORT:gDataPopList = N_ReducedDataFileList("")
 	ControlUpdate popup_1
 
 	return(0)
@@ -992,7 +992,7 @@ Function MedQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 		
-	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  ReducedDataFileList("")
+	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  N_ReducedDataFileList("")
 	ControlUpdate popup_2
 	if(cmpstr(popStr,"none")==0)
 		PopupMenu popup_3,mode=1	//force "none" (item #1) to be the selection
@@ -1013,7 +1013,7 @@ Function HighQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr
 
 	//add the option "none" to the file list (which should already end with a semicolon)
-	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  ReducedDataFileList("")
+	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  N_ReducedDataFileList("")
 
 	ControlUpdate/W=NSORT_Panel popup_3
 	if(cmpstr(popStr,"none")==0)
@@ -1037,7 +1037,7 @@ Function HighestQPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr
 
 	//add the option "none" to the file list (which should already end with a semicolon)
-	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  ReducedDataFileList("")
+	String/G root:myGlobals:NSORT:gDataPopList_3 = "none;" +  N_ReducedDataFileList("")
 
 	ControlUpdate/W=NSORT_Panel popup_4
 	if(cmpstr(popStr,"none")==0)
@@ -1089,7 +1089,7 @@ Function DoAutoScaleFromPanel(auto)
 	name1 = fileStr
 	setNum = 1
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(fileStr)
+	tempName = N_FindValidFilename(fileStr)
 	
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
@@ -1103,7 +1103,7 @@ Function DoAutoScaleFromPanel(auto)
 	name2 = fileStr
 	setNum = 2
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(fileStr)
+	tempName = N_FindValidFilename(fileStr)
 	
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
@@ -1120,7 +1120,7 @@ Function DoAutoScaleFromPanel(auto)
 		//do nothing
 	else
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(fileStr)
+		tempName = N_FindValidFilename(fileStr)
 	
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
@@ -1138,7 +1138,7 @@ Function DoAutoScaleFromPanel(auto)
 		//do nothing
 	else
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(fileStr)
+		tempName = N_FindValidFilename(fileStr)
 	
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
@@ -1857,7 +1857,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	endif
 	
 	//lowQ menu
-	absStr = pref+RunDigitString(low)+ext
+	absStr = pref+N_RunDigitString(low)+ext
 	popNum = WhichListItem(absStr,lowQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: " + absStr +" aborting...  Be sure that your output format is the same as the input"
@@ -1866,7 +1866,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
 	
 	//medQ (a different list for the popup)
-	absStr = pref+RunDigitString(med)+ext
+	absStr = pref+N_RunDigitString(med)+ext
 	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
@@ -1877,7 +1877,7 @@ Function Set3NSORTFiles(low,med,hi,pref)
 	
 	//highQ (same pop list as medQ)
 	if(hi != 0)
-		absStr = pref+RunDigitString(hi)+ext
+		absStr = pref+N_RunDigitString(hi)+ext
 		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 		if(popNum == -1)
 			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
@@ -1921,7 +1921,7 @@ Function Set4NSORTFiles(low,med,hi,highest,pref)
 	endif
 	
 	//lowQ menu
-	absStr = pref+RunDigitString(low)+ext
+	absStr = pref+N_RunDigitString(low)+ext
 	popNum = WhichListItem(absStr,lowQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: " + absStr +" aborting...  Be sure that your output format is the same as the input"
@@ -1930,7 +1930,7 @@ Function Set4NSORTFiles(low,med,hi,highest,pref)
 	PopupMenu popup_1,win=NSORT_Panel,mode=(popNum)
 	
 	//medQ (a different list for the popup)
-	absStr = pref+RunDigitString(med)+ext
+	absStr = pref+N_RunDigitString(med)+ext
 	popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 	if(popNum == -1)
 		Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
@@ -1941,7 +1941,7 @@ Function Set4NSORTFiles(low,med,hi,highest,pref)
 	
 	//highQ (same pop list as medQ)
 	if(hi != 0)
-		absStr = pref+RunDigitString(hi)+ext
+		absStr = pref+N_RunDigitString(hi)+ext
 		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 		if(popNum == -1)
 			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
@@ -1954,7 +1954,7 @@ Function Set4NSORTFiles(low,med,hi,highest,pref)
 	
 	//highestQ (same pop list as medQ)
 	if(highest != 0)
-		absStr = pref+RunDigitString(highest)+ext
+		absStr = pref+N_RunDigitString(highest)+ext
 		popNum = WhichListItem(absStr,medHiQPopStr,";",0)
 		if(popNum == -1)
 			Abort "Could not find file: "+absStr+" aborting...  Be sure that your output format is the same as the input"
@@ -2107,11 +2107,11 @@ Function GetHeaderInfoToCombineWave(fname,sname)
 
 	//the run number (not displayed in the table, but carried along)
 	InsertPoints lastPoint,1,GRunNumber
-	GRunNumber[lastPoint] = GetRunNumFromFile(sname)
+	GRunNumber[lastPoint] = N_GetRunNumFromFile(sname)
 
 	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
 	InsertPoints lastPoint,1,GIsTrans
-	GIsTrans[lastPoint]  = isTransFile(fname)		//returns one if beamstop is "out"
+	GIsTrans[lastPoint]  = N_isTransFile(fname)		//returns one if beamstop is "out"
 	
 	KillWaves/Z w
 	return(0)
@@ -2321,7 +2321,7 @@ Function SendSelectionToTable()
 	medium[num] = tmpRun[2]
 	high[num] = tmpRun[1]
 	highest[num] = tmpRun[0]
-	prefix[num] = GetPrefixStrFromFile(filenames[ii])
+	prefix[num] = N_GetPrefixStrFromFile(filenames[ii])
 	saveName[num] = saveStr	
 
 	KillWaves/Z tmpLbl,tmpRun,tmpSDD

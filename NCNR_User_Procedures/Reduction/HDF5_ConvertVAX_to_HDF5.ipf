@@ -176,7 +176,7 @@ Function FillStructureFromRTI()
 	SetDataFolder root:entry1
     Wave/T filename
 
-	String newFileName= GetNameFromHeader(tw[0])		//02JUL13
+	String newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
 
 	//TODO - not the best choice of file name, (maybe not unique) but this is only a test...     
     filename[0] = newfilename[0,7]+".h5"		//make sure the file name in the header matches that on disk!
@@ -986,14 +986,14 @@ Function fBatchConvertToHDF5(lo,hi)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			// load the data
 			ReadHeaderAndData(file,"RAW")		//file is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
-			newFileName= GetNameFromHeader(tw[0])		//02JUL13
+			newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
 			
 			// convert it
 			FillStructureFromRTI()

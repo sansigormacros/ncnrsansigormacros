@@ -470,8 +470,12 @@ Function PlotResolution_atPixel(type,xx,yy)
 
 	Variable ret1,ret2,ret3,del_r
 	del_r = rw[10]
-	
+
+#if (exists("NCNR_Nexus")==6)
+	N_get2DResolution(qval,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,ret1,ret2,ret3)
+#else
 	get2DResolution(qval,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,ret1,ret2,ret3)
+#endif	
 	SigmaQX = ret1	
 	SigmaQY = ret2	
 	fsubs = ret3	

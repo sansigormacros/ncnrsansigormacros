@@ -1643,8 +1643,8 @@ Function Adjust_RAW_Attenuation(type)
 
 	fileStr = tw[3]
 	lambda = rw[26]
-	raw_AttenFactor = AttenuationFactor(fileStr,lambda,raw_atten,raw_atten_err)
-	dest_AttenFactor = AttenuationFactor(fileStr,lambda,dest_atten,dest_atten_err)
+	raw_AttenFactor = N_AttenuationFactor(fileStr,lambda,raw_atten,raw_atten_err)
+	dest_AttenFactor = N_AttenuationFactor(fileStr,lambda,dest_atten,dest_atten_err)
 		
 	rw[2] *= dest_AttenFactor/raw_AttenFactor
 	linear_data *= dest_AttenFactor/raw_AttenFactor

@@ -2,6 +2,9 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+// RTI clean
+
 //***********************
 // Vers. 1.2 092101
 //
@@ -625,50 +628,33 @@ Proc DrawWinSchematic()
 End
 
 
-//returns a string containg the transmision stored in the file that is 
+//returns a string containg the transmission stored in the file that is 
 //currently in the "type" folder (not from the binary header)
-//returns "none" if the value (in RealsRead) cannot be found
 //
 Function/S getTransStrFromReals(type)
 	String type
 	
-	String name="root:Packages:NIST:"+type+":realsread"
-	WAVE reals = $name
-	if(waveExists(reals))
-		return(num2str(reals[4]))
-	else
-		return("none")
-	endif	
+	Variable val = getSampleTransmission(type)
+	return(num2str(val))
 End
 
 //returns a string containg the sample thickness stored in the file that is 
 //currently in the "type" folder (not from the binary header)
-//returns "none" if the value (in RealsRead) cannot be found
 //
 Function/S getThickStrFromReals(type)
 	String type
 	
-	String name="root:Packages:NIST:"+type+":realsread"
-	WAVE reals = $name
-	if(waveExists(reals))
-		return(num2str(reals[5]))
-	else
-		return("none")
-	endif	
+	Variable val=getSampleThickness(type)
+	return(num2str(val))
 End
 
 //returns a string containg the sample thickness stored in the file that is 
 //currently in the "type" folder (not from the binary header)
-//returns "none" if the value (in RealsRead) cannot be found
 //
 Function/S GetAttenNumStrFromReals(type)
 	String type
 	
-	String name="root:Packages:NIST:"+type+":realsread"
-	WAVE reals = $name
-	if(waveExists(reals))
-		return(num2str(reals[3]))
-	else
-		return("none")
-	endif	
+	Variable val=getAtten_number(type)
+	return(num2str(val))
 End
+

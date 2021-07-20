@@ -253,13 +253,13 @@ Function FindConfigurationFiles(row)
 	num = ItemsinList(list)
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list)
-		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && !isTransFile(pathStr+item))
+		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && !N_isTransFile(pathStr+item))
 			newList += item 
 			break		//only keep the first instance
 		endif	
 	endfor
 	
-	runNum = GetRunNumFromFile(newList)
+	runNum = N_GetRunNumFromFile(newList)
 	w[row][%'BKG'] = runNum
 	
 	Printf "Config %d BKG: %s = %s\r",row,newList,getSampleDescription(pathStr+newList)
@@ -273,13 +273,13 @@ Function FindConfigurationFiles(row)
 	num = ItemsinList(list)
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list)
-		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && !isTransFile(pathStr+item))
+		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && !N_isTransFile(pathStr+item))
 			newList += item
 			break		//only keep the first instance
 		endif	
 	endfor
 	
-	runNum = GetRunNumFromFile(newList)
+	runNum = N_GetRunNumFromFile(newList)
 	w[row][%'EMP'] = runNum	
 	
 	
@@ -294,13 +294,13 @@ Function FindConfigurationFiles(row)
 	num = ItemsinList(list)
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list)
-		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && isTransFile(pathStr+item))
+		if(SameSDD_byName(pathStr+item,sdd) && SameWavelength_byName(pathStr+item,lam) && N_isTransFile(pathStr+item))
 			newList += item
 			break		//only keep the first instance
 		endif	
 	endfor
 	
-	runNum = GetRunNumFromFile(newList)
+	runNum = N_GetRunNumFromFile(newList)
 	w[row][%'Empty Beam'] = runNum
 
 	Printf "Config %d Empty beam: %s = %s\r\r",row,newList,getSampleDescription(pathStr+newList)
@@ -317,7 +317,7 @@ Function/S FindFileContainingString(matchStr)
 	Variable num,ii
 
 	
-	newList = GetRawDataFileList()
+	newList = N_GetRawDataFileList()
 	num=ItemsInList(newList)
 
 	for(ii=0;ii<num;ii+=1)
@@ -375,7 +375,7 @@ Function SameSDD_byRun(runNum,sdd)
 	good = 0
 	fname = ""
 	//generate a name
-	fname = FindFileFromRunNumber(runNum)
+	fname = N_FindFileFromRunNumber(runNum)
 	// test
 	good = SameSDD_byName(fname,sdd) 
 	
@@ -414,7 +414,7 @@ Function SameWavelength_byRun(runNum,lambda)
 	good = 0
 	fname = ""
 	//generate a name
-	fname = FindFileFromRunNumber(runNum)
+	fname = N_FindFileFromRunNumber(runNum)
 	// test
 	good = SameWavelength_byName(fname,lambda) 
 	
@@ -526,7 +526,7 @@ Function/S Auto_CalcKappa(runNum)
 	
 	String filename,pathStr
 	
-	filename = FindFileFromRunNumber(runNum)
+	filename = N_FindFileFromRunNumber(runNum)
 	
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
@@ -553,7 +553,7 @@ Function/S Auto_CalcKappa(runNum)
 	Variable lambda = getWavelength("RAW")
 	Variable attenNo = getAtten_number("RAW")
 	Variable atten_err
-	attenTrans = AttenuationFactor(acctStr,lambda,attenNo,atten_err)
+	attenTrans = N_AttenuationFactor(acctStr,lambda,attenNo,atten_err)
 	//Print "attenTrans = ",attenTrans
 	
 	Variable x1,x2,y1,y2,ct_err
@@ -616,7 +616,7 @@ Function Auto_FindWriteBeamCenter(runNum)
 	
 	String filename,pathStr
 	
-	filename = FindFileFromRunNumber(runNum)
+	filename = N_FindFileFromRunNumber(runNum)
 	
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
@@ -678,7 +678,7 @@ Function Auto_SetXYBox(runNum)
 
 	String filename,pathStr
 	Variable err,xctr,yctr,x1,x2,y1,y2
-	filename = FindFileFromRunNumber(runNum)
+	filename = N_FindFileFromRunNumber(runNum)
 
 // load the data	and convert to SAM
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
@@ -776,7 +776,7 @@ Function Auto_Transmission()
 
 	for(ii=0;ii<nEmpFiles;ii+=1)		//loop over the empty beam files (from Configs)
 		empNum = configs[ii][%'Empty Beam']
-		empName = GetFileNameFromPathNoSemi(FindFileFromRunNumber(empNum))
+		empName = N_GetFileNameFromPathNoSemi(N_FindFileFromRunNumber(empNum))
 		// auto_find the beam center
 		Auto_FindWriteBeamCenter(empNum)
 		// set the XY box for the file, and the counts in the box
@@ -795,7 +795,7 @@ Function Auto_Transmission()
 //		for(jj=0;jj<10;jj+=1)
 		
 			// if it's the same file, skip it
-			testNum = GetRunNumFromFile(TransFiles[jj])
+			testNum = N_GetRunNumFromFile(TransFiles[jj])
 			testName = TransFiles[jj]
 			if(testNum != empNum)		
 				// do the configurations match?
@@ -1042,7 +1042,7 @@ Function Auto_NSORT(tableOnly)
 		for(ii=0;ii<num;ii+=1)
 			item = StringFromList(0, savedMatches[ii])
 			if(cmpstr(item,"") != 0)
-				tmpStr = RemoveAllSpaces(getSampleDescription(path+item))
+				tmpStr = N_RemoveAllSpaces(getSampleDescription(path+item))
 				tmpStr = CleanupName(tmpStr, 0 )
 				saveName[ii] = tmpStr[0,numChars-1]+".abs"
 			endif
@@ -1067,7 +1067,7 @@ Function Auto_NSORT(tableOnly)
 				folderStr = GetPrefixAndNumStrFromFile(item)		//this is where the data will be loaded to
 				
 				// check for existence first - this bypasses cases like the empty cell, which have transmission but are not reduced
-				if(cmpstr("",ValidFileString(folderStr+".ABS")) !=0)
+				if(cmpstr("",N_ValidFileString(folderStr+".ABS")) !=0)
 	
 					sprintf cmd , "A_LoadOneDDataToName(\"%s\",\"%s\",%d,%d)",path+folderStr+".ABS","",0,1
 					Execute cmd		//no plot, force overwrite

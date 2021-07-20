@@ -148,7 +148,7 @@ Function SetXYBoxCoords() :  GraphMarquee
 	//get the filename from the SAM folder (there will only be one file)
 	SVAR partialName = root:Packages:NIST:SAM:FileList
 	//construct valid filename, then prepend path
-	String tempName = FindValidFilename(partialName)
+	String tempName = N_FindValidFilename(partialName)
 	Print "in marquee",partialName
 	//Print tempName
 	if(cmpstr(tempName,"")==0)
@@ -359,7 +359,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	Endif
 	pathStr = S_Path
 	
-	fileList=ParseRunNumberList(fileStr)
+	fileList=N_ParseRunNumberList(fileStr)
 	num=ItemsInList(fileList,",")
 	
 	//loop over the list
@@ -370,7 +370,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 	Print "Results are stored in root:FileID and root:BoxCounts waves"
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,fileList,",")
-		FileID[ii] = GetRunNumFromFile(item)		//do this here, since the list is now valid
+		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
 		ReadHeaderAndData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"
@@ -925,7 +925,7 @@ Function DoAnnulusSum(fileStr,qCtr,delta,type)
 	Endif
 	pathStr = S_Path
 	
-	fileList=ParseRunNumberList(fileStr)
+	fileList=N_ParseRunNumberList(fileStr)
 	num=ItemsInList(fileList,",")
 	
 	//loop over the list
@@ -936,7 +936,7 @@ Function DoAnnulusSum(fileStr,qCtr,delta,type)
 	Print "Results are stored in root:FileID and root:AnnulusCounts waves"
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,fileList,",")
-		FileID[ii] = GetRunNumFromFile(item)		//do this here, since the list is now valid
+		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
 		ReadHeaderAndData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"
@@ -1098,7 +1098,7 @@ Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
 	Endif
 	pathStr = S_Path
 	
-	fileList=ParseRunNumberList(fileStr)
+	fileList=N_ParseRunNumberList(fileStr)
 	num=ItemsInList(fileList,",")
 	
 	//loop over the list
@@ -1109,7 +1109,7 @@ Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
 	Print "Results are stored in root:FileID and root:AnnulusCounts waves"
 	for(ii=0;ii<num;ii+=1)
 		item=StringFromList(ii,fileList,",")
-		FileID[ii] = GetRunNumFromFile(item)		//do this here, since the list is now valid
+		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
 		ReadHeaderAndData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"

@@ -1562,9 +1562,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	Variable estimateOnly
 	
 	NVAR doMonteCarlo = root:Packages:NIST:SAS:gDoMonteCarlo		// == 1 if 2D MonteCarlo set by hidden flag
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	WAVE iw=root:Packages:NIST:SAS:integersRead
-	
+
 // Try to nicely exit from a threading error, if possible
 	Variable err=0
 	if(!exists("root:myGlobals:gThreadGroupID"))
@@ -1591,13 +1589,13 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,deltaLam
 	String coefStr,abortStr,str
 
-	r1 = rw[24]/2/10		// sample diameter convert diam in [mm] to radius in cm
-	xCtr = rw[16]
-	yCtr = rw[17]
-	sdd = rw[18]*100		//conver header of [m] to [cm]
-	pixSize = rw[10]/10		// convert pix size in mm to cm
-	wavelength = rw[26]
-	deltaLam = rw[27]
+	r1 = getSampleAp_size("SAS")/2/10		// sample diameter convert diam in [mm] to radius in cm
+	xCtr = getDet_beam_center_x("SAS")
+	yCtr = getDet_beam_center_y("SAS")
+	sdd = getDet_Distance("SAS")*100		//conver header of [m] to [cm]
+	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
+	wavelength = getWavelength("SAS")
+	deltaLam = getWavelength_spread("SAS")
 	coefStr = MC_getFunctionCoef(funcStr)
 	
 	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
@@ -1736,7 +1734,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	ssd = sourceToSampleDist()
 	YG_d = -0.5*g*SDD*(SSD+SDD)*(wavelength/vz_1)^2		// fall in cm (negative value)
 	
-	xCtr = 64	 + round(2*rw[19])		// I'm always off by one for some reason, so start at 65.5?
+	xCtr = 64	 + round(2*getDet_LateralOffset("SAS"))		// I'm always off by one for some reason, so start at 65.5?
 	yCtr = 64 + yg_d/0.5					// this will lower the beam center
 //	rw[16] = xCtr
 //	rw[17] = yCtr
@@ -1754,9 +1752,9 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 		
 		linear_data *= tmp_mask
 		
-		rw[37] = 0		// make sure BS X = 0 if BS is in
+		putBeamStop_x_pos("SAS",0)		// = 0		// make sure BS X = 0 if BS is in
 	else
-		rw[37] = -10			// fake BS out as X = -10 cm
+		putBeamStop_x_pos("SAS",-10)	// = -10			// fake BS out as X = -10 cm
 	endif
 	
 	results[9] = sum(linear_data,-inf,inf)
@@ -1807,8 +1805,8 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	data = linear_data
 	
 	// fill in bits of the header
-	rw[0] = imon		//the simulated monitor counts
-	iw[2] = ctTime		//simulated counting time in seconds
+	putControlMonitorCount("SAS",imon)		// = imon		//the simulated monitor counts
+	putCollectionTime("SAS",ctTime)		// = ctTime		//simulated counting time in seconds
 	// re-average the 2D data
 	S_CircularAverageTo1D("SAS")
 		
@@ -2079,16 +2077,14 @@ Function Sim_Fill1DHeader(folder)
 	if(cmpstr(folder,"SAS")!=0)		//if not the SAS folder passed in, get out now, and return 1
 		return(1)
 	endif
-	
-	Wave rw=root:Packages:NIST:SAS:realsRead
-	Wave iw=root:Packages:NIST:SAS:integersRead
-	Wave/T tw=root:Packages:NIST:SAS:textRead
+
 	Wave res=root:Packages:NIST:SAS:results
 	
+	String fname="SAS"
 // integers needed:
 	//[2] count time
 	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
-	iw[2] = ctTime
+	putCollectionTime(fname,ctTime)
 	
 //reals are partially set in SASCALC initializtion
 	//remaining values are updated automatically as SASCALC is modified
@@ -2102,10 +2098,10 @@ Function Sim_Fill1DHeader(folder)
 	NVAR trans1D = root:Packages:NIST:SAS:gSamTrans			//this is the input value used
 	NVAR totCts = root:Packages:NIST:SAS:g_1DTotCts
 	NVAR thick = root:Packages:NIST:SAS:gThick
-	rw[0] = imon
-	rw[2] = totCts
-	rw[4] = trans1D
-	rw[5] = thick
+	putControlMonitorCount(fname,imon)
+	putDetector_counts(fname,totCts)
+	putSampleTransmission(fname,trans1D)
+	putSampleThickness(fname,thick)
 	
 // text values needed:
 // be sure they are padded to the correct length
@@ -2120,12 +2116,12 @@ Function Sim_Fill1DHeader(folder)
 
 	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
 		
-	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
-	tw[2] = "SIM"
-	tw[3] = "["+gInstStr+"SANS99]"
-	tw[4] = "C"
-	tw[5] = "01JAN09 "
-	tw[9] = "ORNL  "
+//	tw[1] = Secs2Date(DateTime,-2)+"  "+ Secs2Time(DateTime,3) 		//20 chars, not quite VAX format
+//	tw[2] = "SIM"
+//	tw[3] = "["+gInstStr+"SANS99]"
+//	tw[4] = "C"
+//	tw[5] = "01JAN09 "
+//	tw[9] = "ORNL  "
 	
 	
 	//get the run index and the sample label from the optional parameters, or from a dialog
@@ -2179,10 +2175,10 @@ Function Sim_Fill1DHeader(folder)
 	String timeStr= secs2date(datetime,-1)
 	String monthStr=StringFromList(1, timeStr  ,"/")
 
-	tw[0] = prefix+numstr+".SA2_SIM_"+(num2char(str2num(monthStr)+64))+numStr
+//	tw[0] = prefix+numstr+".SA2_SIM_"+(num2char(str2num(monthStr)+64))+numStr
 	
 	labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
-	tw[6] = labelStr[0,59]
+	putSampleDescription(fname, labelStr[0,59])
 	
 	return(0)
 End
@@ -2265,12 +2261,11 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR mScat = root:Packages:NIST:SAS:g_MultScattFraction
 	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
 	
-	WAVE rw=root:Packages:NIST:SAS:realsRead
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
 					
-	pixSize = rw[10]/10		// convert pix size in mm to cm
-	sdd = rw[18]*100		//convert header of [m] to [cm]
-	wavelength = rw[26]		// in 1/A
+	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
+	sdd = getDet_Distance("SAS")*100		//convert header of [m] to [cm]
+	wavelength = getWavelength("SAS")		// in 1/A
 	
 	imon = beamIntensity()*ctTime
 	
@@ -2473,14 +2468,11 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 // - here, just print them out for now
 	Variable SimDetCts,estDetCR,fracScat,estTrans,mScat
 	
-
-	
-	WAVE rw=root:Packages:NIST:SAS:realsRead
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
 					
-	pixSize = rw[10]/10		// convert pix size in mm to cm
-	sdd = rw[18]*100		//convert header of [m] to [cm]
-	wavelength = rw[26]		// in 1/A
+	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
+	sdd = getDet_Distance("SAS")*100		//convert header of [m] to [cm]
+	wavelength = getWavelength("SAS")		// in 1/A
 	
 	imon = beamIntensity()*ctTime
 	

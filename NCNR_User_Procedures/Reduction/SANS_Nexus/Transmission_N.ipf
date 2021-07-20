@@ -262,7 +262,7 @@ Function GetTransHeaderInfoToWave(fname,sname)
 
 	Variable lastPoint
 
-	isTrans = isTransFile(fname)
+	isTrans = N_isTransFile(fname)
 	// decalre the correct set of waves
 	// S_Whole is only a place holder so the waves are of equal length
 	if (isTrans)
@@ -416,7 +416,7 @@ Function PickEMPTransButton(ctrlName) : ButtonControl
 			
 			//check to make sure that if the box is set, that the count value in the box is set too...
 			// if the box is set by a protocol, then the counts are not set -> and the transmission will be INF
-			String tempName = FindValidFilename(temp)
+			String tempName = N_FindValidFilename(temp)
 			if(cmpstr(tempName,"")==0)
 				//file not found, get out
 				Abort "Empty beam file not found UpdateBoxCoordinates(ctrlName)"
@@ -787,15 +787,14 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
-						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
-						samfileStr = samText[3]
-						lambda = samReals[26]
-						attenSam = samReals[3]
+					
+						samfileStr = getAcctName("SAM")
+						lambda = getWavelength("SAM")
+						attenSam = getAtten_number("SAM")
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						samAttenFactor = AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
-						empAttenFactor = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						samAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						empAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
 						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
@@ -915,15 +914,14 @@ Function CalcTotalTrans(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
-						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
-						samfileStr = samText[3]
-						lambda = samReals[26]
-						attenSam = samReals[3]
+						
+						samfileStr = getAcctName("SAM")
+						lambda = getWavelength("SAM")
+						attenSam = getAtten_number("SAM")
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						samAttenFactor = AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
-						empAttenFactor = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						samAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						empAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
 						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
@@ -1048,14 +1046,13 @@ Function CalcWholeTrans(startRow,endRow)
 						//sum region in SAM
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
-						WAVE/T samText = $"root:Packages:NIST:SAM:textRead"
-						WAVE samReals = $"root:Packages:NIST:SAM:realsRead"
-						samfileStr = samText[3]
-						lambda = samReals[26]
-						attenSam = samReals[3]
+					
+						samfileStr = getAcctName("SAM")
+						lambda = getWavelength("SAM")
+						attenSam = getAtten_number("SAM")
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						AttenRatio = AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)/AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						AttenRatio = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)/N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
 						
@@ -1244,7 +1241,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 	SVAR partialName = root:myGlobals:TransHeaderInfo:gEMP
 	print partialName
 	//get a valid file based on this partialName and catPathName
-	String tempName = FindValidFilename(partialName)
+	String tempName = N_FindValidFilename(partialName)
 	if(cmpstr(tempName,"")==0)
 		//file not found, get out
 		Abort "Empty beam file not found Trn_SetXYBoxButton(ctrlName)"
@@ -1438,7 +1435,7 @@ Function UpdateBoxCoordinates()
 	String textstr=""
 	ControlInfo empStr
 	SVAR item = root:myGlobals:TransHeaderInfo:gEMP
-	String tempName = FindValidFilename(item)
+	String tempName = N_FindValidFilename(item)
 	if(cmpstr(tempName,"")==0)
 		//file not found, get out
 		Abort "Empty beam file not found UpdateBoxCoordinates(ctrlName)"
@@ -1578,7 +1575,7 @@ Function UnConvertButtonProc(ctrlName) : ButtonControl
 	ControlInfo fileNum
 	Variable num = V_Value	//run number to find
 	
-	fullname = FindFileFromRunNumber(num)
+	fullname = N_FindFileFromRunNumber(num)
 	Print fullname
 	//report error or change the file
 	if(cmpstr(fullname,"")==0)
@@ -1600,7 +1597,7 @@ Function ConvertButtonProc(ctrlName) : ButtonControl
 	ControlInfo fileNum
 	Variable num = V_Value	//run number to find
 	
-	fullname = FindFileFromRunNumber(num)
+	fullname = N_FindFileFromRunNumber(num)
 	print fullname
 	//report error or change the file
 	if(cmpstr(fullname,"")==0)
@@ -1651,14 +1648,14 @@ Function BatchConvert_10mTrans(xPos)
 		partialName = StringFromList(ii, list, ";")
 		   
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 	
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
 		tempName = S_path + tempName
 	
 		//make sure the file is really a RAW data file
-		ok = CheckIfRawData(tempName)
+		ok = N_CheckIfRawData(tempName)
 		if (!ok)
 		   Print "this file is not recognized as a RAW SANS data file = ",tempName
 		else

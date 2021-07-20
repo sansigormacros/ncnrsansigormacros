@@ -10,8 +10,6 @@
 //    to pick up any changes there, especially those related to CGB
 //
 //
-//
-//
 
 // this file contains globals and functions that are specific to a
 // particular facility or data file format
@@ -28,7 +26,7 @@
 //
 // called by Initialize.ipf
 //
-Function InitFacilityGlobals()
+Function N_InitFacilityGlobals()
 
 	//Detector -specific globals
 	Variable/G root:myGlobals:gNPixelsX=128
@@ -92,7 +90,7 @@ End
 // except DDet and apOff, which are set from globals before passing
 //
 //
-Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
+Function/S N_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
 	Variable inQ, lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses
 	Variable &fSubS, &QBar, &SigmaQ		//these are the output quantities at the input Q value
 	
@@ -238,9 +236,9 @@ End
 // phi is the azimuthal angle, CCW from +x axis
 // r_dist is the real-space distance from ctr of detector to QxQy pixel location
 //
-// MAR 2011 - removed the del_r terms, they don't apply since no bining is done to the 2D data
+// MAR 2011 - removed the del_r terms, they don't apply since no binning is done to the 2D data
 //
-Function/S get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
+Function/S N_get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,r_dist,SigmaQX,SigmaQY,fSubS)
 	Variable inQ, phi,lambda, lambdaWidth, DDet, apOff, S1, S2, L1, L2, BS, del_r,usingLenses,r_dist
 	Variable &SigmaQX,&SigmaQY,&fSubS		//these are the output quantities at the input Q value
 	
@@ -418,7 +416,7 @@ End
 // *** as of Jan 2008, depricated. Now detector pixel sizes are read from the file header
 // rw[10] = x size (mm); rw[13] = y size (mm)
 //
-Function xDetectorPixelResolution(fileStr,detStr)
+Function N_xDetectorPixelResolution(fileStr,detStr)
 	String fileStr,detStr
 	
 	Variable DDet
@@ -512,7 +510,7 @@ End
 // MAY 2014 -- if the beam is CGB (now that the NG3 SANS has been moved to NGB), the logic
 //     drops to select the values from NG3, since nothing has changed. When it does, I'll add in specifics for CGB
 //
-Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
+Function N_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	String fileStr,detStr,dateAndTimeStr
 	Variable dtime
 	
@@ -548,9 +546,9 @@ Function DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	endif
 	
 	
-	Variable NG3_to_ICE = ConvertVAXDay2secs("23-JUL-2009")
-	Variable NG7_to_ICE = ConvertVAXDay2secs("25-FEB-2010")
-	Variable fileTime = ConvertVAXDay2secs(dateAndTimeStr)
+	Variable NG3_to_ICE = N_ConvertVAXDay2secs("23-JUL-2009")
+	Variable NG7_to_ICE = N_ConvertVAXDay2secs("25-FEB-2010")
+	Variable fileTime = N_ConvertVAXDay2secs(dateAndTimeStr)
 
 	
 	strswitch(instr)
@@ -611,14 +609,14 @@ End
 // dateAndTime is the full string of "dd-mon-yyyy hh:mm:ss" as returned by the function
 // getFileCreationDate(file)
 //
-Function ConvertVAXDay2secs(dateAndTime)
+Function N_ConvertVAXDay2secs(dateAndTime)
 	string dateAndTime
 	
 	Variable day,yr,mon,time_secs
 	string monStr
 
 	sscanf dateandtime,"%d-%3s-%4d",day,monStr,yr
-	mon = monStr2num(monStr)
+	mon = N_monStr2num(monStr)
 //	print yr,mon,day
 	time_secs = date2secs(yr,mon,day)
 
@@ -628,7 +626,7 @@ end
 // dd-mon-yyyy hh:mm:ss -> seconds
 // the VAX uses 24 hr time for hh
 //
-Function ConvertVAXDateTime2secs(dateAndTime)
+Function N_ConvertVAXDateTime2secs(dateAndTime)
 	string dateAndTime
 	
 	Variable day,yr,mon,hh,mm,ss,time_secs
@@ -636,7 +634,7 @@ Function ConvertVAXDateTime2secs(dateAndTime)
 	
 	str=dateandtime
 	sscanf str,"%d-%3s-%4d %d:%d:%d",day,monStr,yr,hh,mm,ss
-	mon = monStr2num(monStr)
+	mon = N_monStr2num(monStr)
 //	print yr,mon,day,hh,mm,ss
 	time_secs = date2secs(yr,mon,day)
 	time_secs += hh*3600 + mm*60 + ss
@@ -647,7 +645,7 @@ end
 
 // takes a month string and returns the corresponding number
 //
-Function monStr2num(monStr)
+Function N_monStr2num(monStr)
 	String monStr
 	
 	String list=";JAN;FEB;MAR;APR;MAY;JUN;JUL;AUG;SEP;OCT;NOV;DEC;"
@@ -657,7 +655,7 @@ end
 
 //make a three character string of the run number
 // no longer need to add leading zeros
-Function/S RunDigitString(num)
+Function/S N_RunDigitString(num)
 	Variable num
 	
 	String numStr=""
@@ -682,7 +680,7 @@ End
 // NCNR-specifc, does not really belong here - but it's a beta procedure used for the
 // Combine Files Panel
 //
-Function/S GetPrefixStrFromFile(item)
+Function/S N_GetPrefixStrFromFile(item)
 	String item
 	String invalid = ""	//"" is not a valid run prefix, since it's text
 	Variable num=-1
@@ -710,10 +708,10 @@ End
 
 // see the equivalent V_ function in the VSANS macros
 //
-Function GetRunNumFromFile(item)
+Function N_GetRunNumFromFile(item)
 	String item
 	
-	String str = GetRunNumStrFromFile(item)
+	String str = N_GetRunNumStrFromFile(item)
 	
 	return(str2num(str))
 end
@@ -734,7 +732,7 @@ end
 //
 // see the equivalent V_ function in the VSANS macros
 //
-Function/S GetRunNumStrFromFile(item)
+Function/S N_GetRunNumStrFromFile(item)
 	String item
 	String invalid = "ABCD"	//"ABCD" is not a valid run number, since it's text
 	Variable num=-1
@@ -773,7 +771,7 @@ End
 //
 // called by Buttons.ipf and Transmission.ipf, and locally by parsing routines
 //
-Function/S FindFileFromRunNumber(num)
+Function/S N_FindFileFromRunNumber(num)
 	Variable num
 	
 	String fullName="",partialName="",item=""
@@ -802,16 +800,16 @@ Function/S FindFileFromRunNumber(num)
 		item = StringFromList(ii, list  ,";" )
 		if(strlen(item) != 0)
 			//find the run number, if it exists as a three character string
-			testStr = GetRunNumStrFromFile(item)
+			testStr = N_GetRunNumStrFromFile(item)
 			runFound= cmpstr(numStr,testStr)	//compare the three character strings, 0 if equal
 			if(runFound == 0)
 				//the run Number was found
 				//build valid filename
-				partialName = FindValidFileName(item)
+				partialName = N_FindValidFileName(item)
 				if(strlen(partialName) != 0)		//non-null return from FindValidFileName()
 					fullName = path + partialName
 					//check if RAW, if so,this must be the file!
-					isRAW = CheckIfRawData(fullName)
+					isRAW = N_CheckIfRawData(fullName)
 					if(isRaw)
 						//print "is raw, ",fullname
 						//stop here
@@ -832,7 +830,7 @@ End
 // see the equivalent V_ function in the VSANS macros
 //
 //
-Function CheckIfRawData(fname)
+Function N_CheckIfRawData(fname)
 	String fname
 	
 	Variable refnum,totalBytes
@@ -867,7 +865,7 @@ End
 //
 // called by many procedures (both external and local)
 //
-Function CheckIfDIVData(fname)
+Function N_CheckIfDIVData(fname)
 	String fname
 	
 	// simply check for the characters "DIV" in the file name...
@@ -914,7 +912,7 @@ End
 //	Endif
 //End
 
-Function isTransFile(fname)
+Function N_isTransFile(fname)
 	String fname
 	
 	Variable refnum,totalBytes
@@ -940,7 +938,7 @@ End
 //
 // local function for file name manipulation
 //
-Function/S RemoveAllSpaces(str)
+Function/S N_RemoveAllSpaces(str)
 	String str
 	
 	String tempstr = str
@@ -979,13 +977,13 @@ End
 //
 // called by many functions, both external and local
 //
-Function/S FindValidFilename(partialName)
+Function/S N_FindValidFilename(partialName)
 	String PartialName
 	
 	String retStr=""
 	
 	//try name with no changes - to allow for ABS files that have spaces in the names 12APR04
-	retStr = ValidFileString(partialName)
+	retStr = N_ValidFileString(partialName)
 	if(cmpstr(retStr,"") !=0)
 		//non-null return
 		return(retStr)
@@ -995,10 +993,10 @@ Function/S FindValidFilename(partialName)
 	//or in the middle of the filename - depending on the prefix and initials used
 	//
 	//remove any leading spaces from the name before starting
-	partialName = RemoveAllSpaces(partialName)
+	partialName = N_RemoveAllSpaces(partialName)
 	
 	//try name with no spaces
-	retStr = ValidFileString(partialName)
+	retStr = N_ValidFileString(partialName)
 	if(cmpstr(retStr,"") !=0)
 		//non-null return
 		return(retStr)
@@ -1006,7 +1004,7 @@ Function/S FindValidFilename(partialName)
 	
 	//try all UPPERCASE
 	partialName = UpperStr(partialName)
-	retStr = ValidFileString(partialName)
+	retStr = N_ValidFileString(partialName)
 	if(cmpstr(retStr,"") !=0)
 		//non-null return
 		return(retStr)
@@ -1014,7 +1012,7 @@ Function/S FindValidFilename(partialName)
 	
 	//try all lowercase (ret null if failure)
 	partialName = LowerStr(partialName)
-	retStr = ValidFileString(partialName)
+	retStr = N_ValidFileString(partialName)
 	if(cmpstr(retStr,"") !=0)
 		//non-null return
 		return(retStr)
@@ -1033,7 +1031,7 @@ End
 //
 // local function
 //
-Function/S ValidFileString(partialName)
+Function/S N_ValidFileString(partialName)
 	String partialName
 	
 	String tempName = "",msg=""
@@ -1080,7 +1078,7 @@ End
 //
 // called by MaskUtils.ipf, ProtocolAsPanel.ipf, WriteQIS.ipf
 //
-Function/S GetFileNameFromPathNoSemi(fullPath)
+Function/S N_GetFileNameFromPathNoSemi(fullPath)
 	String fullPath
 	
 	Variable offset1,offset2
@@ -1109,7 +1107,7 @@ End
 //
 // local, currently unused
 //
-Function/S GetFileNameFromPathKeepSemi(fullPath)
+Function/S N_GetFileNameFromPathKeepSemi(fullPath)
 	String fullPath
 	
 	Variable offset1,offset2
@@ -1139,7 +1137,7 @@ End
 //
 // called by WriteQIS.ipf
 //
-Function/S GetPathStrFromfullName(fullPath)
+Function/S N_GetPathStrFromfullName(fullPath)
 	String fullPath
 	
 	Variable offset1,offset2
@@ -1164,7 +1162,7 @@ End
 //
 // called by ProtocolAsPanel.ipf and Tile_2D.ipf
 //
-Function/S GetNameFromHeader(fullName)
+Function/S N_GetNameFromHeader(fullName)
 	String fullName
 	String temp, newName = ""
 	Variable spc,ii=0
@@ -1206,14 +1204,14 @@ End
 //
 // called by Marquee.ipf, MultipleReduce.ipf, ProtocolAsPanel.ipf
 //
-Function/S ParseRunNumberList(list)
+Function/S N_ParseRunNumberList(list)
 	String list
 	
 	String newList="",item="",tempStr=""
 	Variable num,ii,runNum
 	
 	//expand number ranges, if any
-	list = ExpandNumRanges(list)
+	list = N_ExpandNumRanges(list)
 	
 	num=itemsinlist(list,",")
 	
@@ -1221,7 +1219,7 @@ Function/S ParseRunNumberList(list)
 		//get the item
 		item = StringFromList(ii,list,",")
 		//is it already a valid filename?
-		tempStr=FindValidFilename(item) //returns filename if good, null if error
+		tempStr= N_FindValidFilename(item) //returns filename if good, null if error
 		if(strlen(tempstr)!=0)
 			//valid name, add to list
 			//Print "it's a file"
@@ -1237,7 +1235,7 @@ Function/S ParseRunNumberList(list)
 				return("")
 			else
 				//a run number or an error
-				tempStr = GetFileNameFromPathNoSemi( FindFileFromRunNumber(runNum) )
+				tempStr = N_GetFileNameFromPathNoSemi( N_FindFileFromRunNumber(runNum) )
 				if(strlen(tempstr)==0)
 					//file not found, error
 					DoAlert 0,"List item "+item+" is not a valid run number. Please enter a valid number."
@@ -1258,7 +1256,7 @@ End
 //
 // local function
 //
-Function/S ExpandNumRanges(list)
+Function/S N_ExpandNumRanges(list)
 	String list
 	
 	String newList="",dash="-",item,str
@@ -1276,7 +1274,7 @@ Function/S ExpandNumRanges(list)
 			newList += item + ","
 		else
 			//has a dash (so it's a range), expand (or add null)
-			newList += ListFromDash(item)		
+			newList += N_ListFromDash(item)		
 		endif
 	endfor
 	
@@ -1287,7 +1285,7 @@ End
 //
 // local function
 //
-Function/S ListFromDash(item)
+Function/S N_ListFromDash(item)
 	String item
 	
 	String numList="",loStr="",hiStr=""
@@ -1317,7 +1315,7 @@ End
 //
 // new calibration done June 2007, John Barker
 //
-Proc MakeNG3AttenTable()
+Proc N_MakeNG3AttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	//do explicitly to avoid data folder problems, redundant, but it must work without fail
@@ -1398,7 +1396,7 @@ Proc MakeNG3AttenTable()
 End
 
 // new calibration done June 2007, John Barker
-Proc MakeNG7AttenTable()
+Proc N_MakeNG7AttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
@@ -1488,7 +1486,7 @@ End
 // 12 discrete wavelengths
 // 10 attenuators
 //
-Proc MakeNGBAttenTable()
+Proc N_MakeNGBAttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
@@ -1594,7 +1592,7 @@ End
 //
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function LookupAttenNG3(lambda,attenNo,atten_err)
+Function N_LookupAttenNG3(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1611,7 +1609,7 @@ Function LookupAttenNG3(lambda,attenNo,atten_err)
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
-		Execute "MakeNG3AttenTable()"
+		Execute "N_MakeNG3AttenTable()"
 	Endif
 	//just in case creating the tables fails....
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
@@ -1645,7 +1643,7 @@ End
 // local function - to be used for NG7
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function LookupAttenNG7(lambda,attenNo,atten_err)
+Function N_LookupAttenNG7(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1662,7 +1660,7 @@ Function LookupAttenNG7(lambda,attenNo,atten_err)
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
-		Execute "MakeNG7AttenTable()"
+		Execute "N_MakeNG7AttenTable()"
 	Endif
 	//just in case creating the tables fails....
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
@@ -1698,7 +1696,7 @@ End
 //
 // JAN 2013 -- now correct, NGB table has been added, allowing for 3A to 30A
 //
-Function LookupAttenNGB(lambda,attenNo,atten_err)
+Function N_LookupAttenNGB(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1715,7 +1713,7 @@ Function LookupAttenNGB(lambda,attenNo,atten_err)
 	Endif
 	
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) || !(WaveExists($attErrWStr)))
-		Execute "MakeNGBAttenTable()"
+		Execute "N_MakeNGBAttenTable()"
 	Endif
 	//just in case creating the tables fails....
 	if(!(WaveExists($attStr)) || !(WaveExists($lamStr)) )
@@ -1743,7 +1741,7 @@ End
 // a utility function so that I can get the values from the command line
 // since the atten_err is PBR
 //
-Function PrintAttenuation(instr,lam,attenNo)
+Function N_PrintAttenuation(instr,lam,attenNo)
 	String instr
 	Variable lam,attenNo
 	
@@ -1758,18 +1756,18 @@ Function PrintAttenuation(instr,lam,attenNo)
 	strswitch(instr)
 		case "CGB":
 		case "NG3":
-			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG3(lam,attenNo,atten_err)
 			break
 		case "NG5":
 			//using NG7 lookup Table
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NG7":
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
 		case "NGB":
-			attenFactor = LookupAttenNGB(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNGB(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?
@@ -1801,7 +1799,7 @@ End
 //
 //
 // as of March 2011, returns the error (one standard deviation) in the attenuation factor as the last parameter, by reference
-Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
+Function N_AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
 	Variable lam,attenNo, &atten_err
 	
@@ -1824,20 +1822,20 @@ Function AttenuationFactor(fileStr,lam,attenNo,atten_err)
 		case "CGB":
 		case "NG3":
 		case "ngb30":		// 30m sans on ngb
-			attenFactor = LookupAttenNG3(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG3(lam,attenNo,atten_err)
 			break
 		case "NG5":
 			//using NG7 lookup Table
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NG7":
 		case "ng7":		//ng7 sans
-			attenFactor = LookupAttenNG7(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNG7(lam,attenNo,atten_err)
 			break
 		case "NGA":
 		case "NGB":
 		case "ngb":		//10m nSoft SANS
-			attenFactor = LookupAttenNGB(lam,attenNo,atten_err)
+			attenFactor = N_LookupAttenNGB(lam,attenNo,atten_err)
 			break
 		default:							
 			//return error?
@@ -1859,7 +1857,7 @@ End
 //
 // called by FIT_Ops.ipf, NSORT.ipf, PlotUtils.ipf
 //
-Function/S ReducedDataFileList(ctrlName)
+Function/S N_ReducedDataFileList(ctrlName)
 	String ctrlName
 
 	String list="",newList="",item=""
@@ -1901,7 +1899,7 @@ End
 //
 // called by PatchFiles.ipf, Tile_2D.ipf
 //
-Function/S GetRawDataFileList()
+Function/S N_GetRawDataFileList()
 	
 	//make sure that path exists
 	PathInfo catPathName
@@ -1938,7 +1936,7 @@ Function/S GetRawDataFileList()
 	return(newList)
 End
 
-Function/S GetASCDataFileList()
+Function/S N_GetASCDataFileList()
 	
 	//make sure that path exists
 	PathInfo catPathName
@@ -1967,21 +1965,21 @@ End
 // Increment should be -1 or 1
 // -1 => previous file
 // 1 => next file
-Function/S GetPrevNextRawFile(curfilename, prevnext)
+Function/S N_GetPrevNextRawFile(curfilename, prevnext)
 	String curfilename
 	Variable prevnext
 
 	String filename
 	
 	//get the run number
-	Variable num = GetRunNumFromFile(curfilename)
+	Variable num = N_GetRunNumFromFile(curfilename)
 		
 	//find the next specified file by number
-	fileName = FindFileFromRunNumber(num+prevnext)
+	fileName = N_FindFileFromRunNumber(num+prevnext)
 
 	if(cmpstr(fileName,"")==0)
 		//null return, do nothing
-		fileName = FindFileFromRunNumber(num)
+		fileName = N_FindFileFromRunNumber(num)
 	Endif
 
 //	print "in FU "+filename

@@ -26,12 +26,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	String fname,ave="C",hdrStr1="",hdrStr2=""
 	Variable step=1
 	
-	
-	
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
 	WAVE qvals =$(destStr + ":qval")
 	WAVE inten=$(destStr + ":aveint")
 	WAVE sig=$(destStr + ":sigave")
@@ -43,15 +38,6 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
 	
 	//check each wave
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist BinaryWrite_W_Protocol()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist BinaryWrite_W_Protocol()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist BinaryWrite_W_Protocol()"
-	Endif
 	If(!(WaveExists(qvals)))
 		Abort "qvals DNExist BinaryWrite_W_Protocol()"
 	Endif
@@ -92,19 +78,22 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	hdrStr1 = num2str(rw[0])+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	hdrStr1 += "     "+num2str(rw[4])+"     "+num2str(rw[5]) + ave +"   "+num2str(step) + "\r\n"
+	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
-	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
-	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+textW[9] + "\r\n"
+	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
+	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
+	hdrStr2 += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))
+	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
 	
 	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
 	Open refNum as fullpath
 	
 	//write out the standard header information
-	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
-	fprintf refnum,"LABEL: %s\r\n",textw[6]
+	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",getFileNameFromFolder(type),getDataStartTime(type)
+	fprintf refnum,"LABEL: %s\r\n",getSampleDescription(type)
 	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
 	fprintf refnum,hdrStr1
 	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
@@ -136,7 +125,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	SetDataFolder root:		//(redundant)
 	
 	//write confirmation of write operation to history area
-	Print "Averaged File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "Averaged File written: ", N_GetFileNameFromPathNoSemi(fullPath)
 	KillWaves/Z tempShortProto
 	Return(0)
 End
@@ -162,9 +151,6 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	Variable step=1
 	
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
 	WAVE phival =$(destStr + ":phival")
 	WAVE inten=$(destStr + ":aveint")
 	WAVE sig=$(destStr + ":sigave")
@@ -172,15 +158,6 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	Wave/T proto=$("root:myGlobals:Protocols:"+gProtoStr)
 	
 	//check each wave
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist BinaryWrite_W_Protocol()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist BinaryWrite_W_Protocol()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist BinaryWrite_W_Protocol()"
-	Endif
 	If(!(WaveExists(phival)))
 		Abort "qvals DNExist BinaryWrite_W_Protocol()"
 	Endif
@@ -211,19 +188,23 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	hdrStr1 = num2str(rw[0])+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	hdrStr1 += "     "+num2str(rw[4])+"     "+num2str(rw[5]) + ave +"   "+num2str(step) + "\r\n"
+	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
-	hdrStr2 = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
-	hdrStr2 += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+textW[9] + "\r\n"
+	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
+	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
+	hdrStr2 += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))
+	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
+	
 	
 	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
 	Open refNum as fullpath
 	
 	//write out the standard header information
-	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",textw[0],textw[1]
-	fprintf refnum,"LABEL: %s\r\n",textw[6]
+	fprintf refnum,"FILE: %s\t\t CREATED: %s\r\n",getFileNameFromFolder(type),getDataStartTime(type)
+	fprintf refnum,"LABEL: %s\r\n",getSampleDescription(type)
 	fprintf refnum,"MON CNT   LAMBDA   DET ANG   DET DIST   TRANS   THICK   AVE   STEP\r\n"
 	fprintf refnum,hdrStr1
 	fprintf refnum,"BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP \r\n"
@@ -253,7 +234,7 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	SetDataFolder root:		//(redundant)
 	
 	//write confirmation of write operation to history area
-	Print "Averaged File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "Averaged File written: ", N_GetFileNameFromPathNoSemi(fullPath)
 	KillWaves/Z tempShortProto
 
 	Return(0)
@@ -281,8 +262,8 @@ Function SaveAsPNG(type,fullPath,dialog)
 	
 	//cleanup the filename passed in from Protocol...
 	String oldStr="",newStr="",pathStr=""
-	oldStr=GetFileNameFromPathNoSemi(fullPath)	//just the filename
-	pathStr=GetPathStrFromfullName(fullPath)	//just the path
+	oldStr=N_GetFileNameFromPathNoSemi(fullPath)	//just the filename
+	pathStr=N_GetPathStrFromfullName(fullPath)	//just the path
 	
 	newStr = CleanupName(oldStr, 0 )				//filename with _EXT rather than .EXT
 	fullPath=pathStr+newStr+".png"				//tack on the png extension
@@ -353,10 +334,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
 	
-	Wave data=$(destStr+typeStr)
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
+	Wave data=getDetectorDataW(type)
 
 	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
 	String rawTag=""
@@ -398,16 +376,19 @@ Function Fast2dExport(type,fullpath,dialog)
 /////////
 	Variable numTextLines=20
 	Make/O/T/N=(numTextLines) labelWave
-	labelWave[0] = "FILE: "+textw[0]+"   CREATED: "+textw[1]
-	labelWave[1] = "LABEL: "+textw[6]
+	labelWave[0] = "FILE: "+getFileNameFromFolder(type)+"   CREATED: "+getDataStartTime(type)
+	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA(A)   DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)    COUNT TIME"
-	labelWave[3] = num2str(rw[0])+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	labelWave[3] += "     "+num2str(rw[4])+"     "+num2str(rw[5])+"     "+num2str(intw[2])
+	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	labelWave[3] +="       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
+	labelWave[3] +="     "+num2str(getCollectionTime(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
-	labelWave[5] = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"  "+num2str(rw[24])+"  "
-	labelWave[5] += num2str(rw[25])+"  "+num2str(rw[27])+"  "+num2str(rw[21])+"  "+textW[9]
+	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
+	labelWave[5] +="  "+num2str(getSourceAp_size(type))+"  "+num2str(getSampleAp_size(type))+"  "
+	labelWave[5] += num2str(getSourceAp_distance(type))+"  "+num2str(getWavelength_spread(type))+"  "+num2str(getBeamStop_size(type))+"  "+getInstrumentNameFromFile(type)
 	labelWave[6] = "PIXELS(X)    PIXELS(Y)   PIXELSIZE X (mm)  PIXELSIZE Y (mm)"
-	labelWave[7] += num2str(pixelsX)+"    "+num2str(pixelsY)+"    "+num2str(rw[10])+"    "+num2str(rw[13])
+	labelWave[7] += num2str(pixelsX)+"    "+num2str(pixelsY)+"    "+num2str(getDet_x_pixel_size(type))+"    "+num2str(getDet_y_pixel_size(type))
 	labelWave[8] =  "SAM: "+rawTag+samFiles
 	labelWave[9] =  "BGD: "+proto[0]
 	labelWave[10] =  "EMP: "+proto[1]
@@ -421,7 +402,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[18] = "Data is written by row, starting with Y=1 and X=(1->128)"
 	//labelWave[19] = "ASCII data created " +date()+" "+time()
 	PathInfo catPathName
-	String sfPath = S_Path+RemoveAllSpaces(StringFromList(0,samfiles,";"))		//make sure there are no leading spaces in the file name
+	String sfPath = S_Path+N_RemoveAllSpaces(StringFromList(0,samfiles,";"))		//make sure there are no leading spaces in the file name
 	print sfPath
 	labelWave[19] = "RAW SAM FILE "+StringFromList(0, samfiles  , ";")+ " TIMESTAMP: "+getDataStartTime(sfPath)
 	
@@ -460,7 +441,7 @@ Function Fast2dExport(type,fullpath,dialog)
 
 	Killwaves/Z spWave,labelWave		//don't delete proto!
 	
-	Print "2D ASCII File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "2D ASCII File written: ", N_GetFileNameFromPathNoSemi(fullPath)
 	
 	return(0)
 End
@@ -497,23 +478,11 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
 
-	Wave data=$(destStr+typeStr)
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
+	Wave data=getDetectorDataW(type)
 
 	//check each wave - MUST exist, or will cause a crash
 	If(!(WaveExists(data)))
 		Abort "data DNExist AsciiExport()"
-	Endif
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist AsciiExport()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist AsciiExport()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist AsciiExport()"
 	Endif
 
 	if(dialog)
@@ -530,45 +499,103 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 /////////
 	String tmpStr=""
 	Variable numTextLines=17
+	
+	String tw1=getDataStartTime(type)
+	String tw2=type
+	Variable iw2=getCollectionTime(type)
+	Variable rw0=getControlMonitorCount(type)
+	Variable rw39=0
+	Variable rw2=getDetector_counts(type)
+	Variable rw4=getSampleTransmission(type)
+	Variable rw5=getSampleThickness(type)
+	Variable rw8=getSampleTemperature(type)
+	String textw7="K"			// TODO -- HARD WIRED temperature units
+	Variable rw9=getFieldStrength(type)
+	String textw8="T"			// TODO -- HARD WIRED field units
+	Variable intw4=0			// TODO -- chamber or table position
+	Variable intw5=0			// sample block ID code
+	Variable rw6=str2num(getSamplePosition(type))
+	Variable rw26=getWavelength(type)
+	Variable rw27=getWavelength_spread(type)
+	Variable intw9=0		//TODO - detctor "number" identifier
+	String textw9=getInstrumentNameFromFile(type)
+	Variable rw7=getSampleRotationAngle(type)
+
+	Variable rw16=getDet_beam_center_x(type)
+	Variable rw17=getDet_beam_center_y(type)
+	Variable rw18=getDet_Distance(type)
+	Variable rw19=getDet_LateralOffset(type)
+
+	Variable rw21=getBeamStop_size(type)
+	Variable rw3=getAtten_number(type)
+	
+	Wave cx=getDet_cal_x(type)
+	Wave cy=getDet_cal_y(type)
+	Variable rw10=cx[0]
+	Variable rw11=cx[1]
+	Variable rw12=cx[2]
+	Variable rw13=cy[0]
+	Variable rw14=cy[1]
+	Variable rw15=cy[2]
+	
+	Variable rw23=getSourceAp_size(type)
+	Variable rw24=getSampleAp_size(type)
+	Variable rw25=getSourceAp_distance(type)
+	
+	Variable rw45=0		// TODO HARD WIRED - horizontal polarization
+	Variable rw46=0		// TODO HARD WIRED - vertical polarization
+
+	Wave boxW=getBoxCoordinates(type)	
+	Variable intw19=boxW[0]
+	Variable intw20=boxW[1]
+	Variable intw21=boxW[2]
+	Variable intw22=boxW[3]
+	
+	Variable rw47=getBoxCounts(type)
+	Variable rw48=getDetectordeadtime_value(type)
+	Variable rw49=0			// TODO - hard-wired "qMax value"
+	
+	
+	
 	Make/O/T/N=(numTextLines) labelWave
 	
 //	sprintf tmpStr," '%s'   '%s'   '%s'",textw[0],textw[1],textw[2]
-	sprintf tmpStr," '%s'        '%s'        '%s'     'SAn''ABC''A123'",GetFileNameFromPathNoSemi(fullPath),textw[1],textw[2]
+	sprintf tmpStr," '%s'        '%s'        '%s'     'SAn''ABC''A123'",N_GetFileNameFromPathNoSemi(fullPath),tw1,tw2
 	labelWave[0] = tmpStr
-	labelWave[1] = " "+textw[6]		//label
+	labelWave[1] = " "+getSampleDescription(type)		//label
 	
 //	sprintf tmpStr," %d  %g  %g  %g",intw[2],rw[0],rw[39],rw[2]
-	sprintf tmpStr," %6d        %13.5E     %13.5E     %13.5E",intw[2],rw[0],rw[39],rw[2]
+	sprintf tmpStr," %6d        %13.5E     %13.5E     %13.5E",iw2,rw0,rw39,rw2
 	labelWave[2] = tmpStr
 	labelWave[3] = " Cnt.Time(sec.)    Mon. Cnt.      Trans. Det. Cnt.  Tot. Det. Cnt."
 	
 //	sprintf tmpStr," %g  %g  %g '%s' %g '%s' %d  %d  %g",rw[4],rw[5],rw[8],textw[7],rw[9],textw[8],intw[4],intw[5],rw[6]
-	sprintf tmpStr,"%10.3g   %9.2g%8.2f '%6s'%8.2f '%6s'%7d%7d%7.2f",rw[4],rw[5],rw[8],textw[7],rw[9],textw[8],intw[4],intw[5],rw[6]
+	sprintf tmpStr,"%10.3g   %9.2g%8.2f '%6s'%8.2f '%6s'%7d%7d%7.2f",rw4,rw5,rw8,textw7,rw9,textw8,intw4,intw5,rw6
 	labelWave[4] = tmpStr
 	labelWave[5] = " Trans.      Thckns       Temp.           H Field         Table  Holder  Pos"
 	
 //	sprintf tmpStr," %g  %g  %d  '%s'  %g",rw[26],rw[27],intw[9],textw[9],rw[7]
-	sprintf tmpStr," %8.2f        %5.2f          %2d   '%6s'          %6.2f",rw[26],rw[27],intw[9],textw[9],rw[7]
+	sprintf tmpStr," %8.2f        %5.2f          %2d   '%6s'          %6.2f",rw26,rw27,intw9,textw9,rw7
 	labelWave[6] = tmpStr
 	labelWave[7] = " Wavelength &  Spread(FWHM)    Det.#  Type      Sample Rotation Angle"
 	
 //	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[18],rw[19],rw[16],rw[17],rw[21],rw[3]
-	sprintf tmpStr," %12.2f%12.2f          %6.2f  %6.2f  %10.2f        %4.1f",rw[18],rw[19],rw[16],rw[17],rw[21],rw[3]
+	sprintf tmpStr," %12.2f%12.2f          %6.2f  %6.2f  %10.2f        %4.1f",rw18,rw19,rw16,rw17,rw21,rw3
 	labelWave[8] = tmpStr
 	labelWave[9] = " Sam-Det Dis.(m)   Det.Ang.(cm.)   Beam Center(x,y)  Beam Stop(mm)  Atten.No."
 	
 //	sprintf tmpStr," %g  %g  %g  %g  %g  %g",rw[10],rw[11],rw[12],rw[13],rw[14],rw[15]
-	sprintf tmpStr," %8.3f      %10.4E  %10.4E%8.3f      %10.4E  %10.4E",rw[10],rw[11],rw[12],rw[13],rw[14],rw[15]
+	sprintf tmpStr," %8.3f      %10.4E  %10.4E%8.3f      %10.4E  %10.4E",rw10,rw11,rw12,rw13,rw14,rw15
 	labelWave[10] = tmpStr
 	labelWave[11] = "        Det. Calib Consts. (x)           Det. Calib Consts. (y)"
 	
 //	sprintf tmpStr," %g  %g  %g  '%s'  %g  %g",rw[23],rw[24],rw[25],"    F",rw[45],rw[46]
-	sprintf tmpStr,"%12.2f%12.2f%12.2f      '%s'%8.2f    %8.2f",rw[23],rw[24],rw[25],"     F",rw[45],rw[46]
+	sprintf tmpStr,"%12.2f%12.2f%12.2f      '%s'%8.2f    %8.2f",rw23,rw24,rw25,"     F",rw45,rw46
 	labelWave[12] = tmpStr
 	labelWave[13] = " Aperture (A1,A2) Sizes(mm)    Sep.(m)    Flip ON   Horiz. and Vert. Cur.(amps)"
 	
 //	sprintf tmpStr," %d  %d  %d  %d  %g  %g  %g",intw[19],intw[20],intw[21],intw[22],rw[47],rw[48],rw[49]
-	sprintf tmpStr,"%6d%6d%6d%6d%10.3f%10.6f%10.6f",intw[19],intw[20],intw[21],intw[22],rw[47],rw[48],rw[49]
+	sprintf tmpStr,"%6d%6d%6d%6d%10.3f%10.6f%10.6f",intw19,intw20,intw21,intw22,rw47,rw48,rw49
 	labelWave[14] = tmpStr
 	labelWave[15] = "      Rows        Cols       Factor   Qmin      Qmax"
 	
@@ -607,7 +634,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	
 	Killwaves/Z spWave,labelWave,tw		//clean up
 	
-	Print "2D ASCII File written for Grasp: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "2D ASCII File written for Grasp: ", N_GetFileNameFromPathNoSemi(fullPath)
 	
 	return(0)
 End
@@ -682,11 +709,9 @@ Function QxQy_Export(type,fullpath,dialog)
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
 	
-	Wave data=$(destStr+typeStr)
-	Wave data_err=$(destStr+":linear_data_error")
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
+	Wave data=getDetectorDataW(type)
+	Wave data_err=getDetectorDataErrW(type)
+
 
 	SVAR gProtoStr = root:myGlobals:Protocols:gProtoStr
 	String rawTag=""
@@ -703,15 +728,6 @@ Function QxQy_Export(type,fullpath,dialog)
 	Endif
 	If(!(WaveExists(data_err)))
 		Abort "linear data error DNExist QxQy_Export()"
-	Endif
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist QxQy_Export()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist QxQy_Export()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist QxQy_Export()"
 	Endif
 	If(!(WaveExists(proto)))
 		Abort "current protocol wave DNExist QxQy_Export()"
@@ -731,14 +747,17 @@ Function QxQy_Export(type,fullpath,dialog)
 /////////
 	Variable numTextLines=18
 	Make/O/T/N=(numTextLines) labelWave
-	labelWave[0] = "FILE: "+textw[0]+"   CREATED: "+textw[1]
-	labelWave[1] = "LABEL: "+textw[6]
+//	labelWave[0] = "FILE: "+getFileNameFromFolder(type)+"   CREATED: "+getDataStartTime(type)
+	labelWave[0] = "FILE: "+getFileNameFromFolder(type)+"   CREATED: "+date() +"  "+ time()
+	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA (A)  DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)"
-	labelWave[3] = num2str(rw[0])+"  "+num2str(rw[26])+"       "+num2str(rw[19])+"     "+num2str(rw[18])
-	labelWave[3] += "     "+num2str(rw[4])+"     "+num2str(rw[5])
+	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	labelWave[3] += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
-	labelWave[5] = num2str(rw[16])+"  "+num2str(rw[17])+"  "+num2str(rw[23])+"    "+num2str(rw[24])+"    "
-	labelWave[5] += num2str(rw[25])+"    "+num2str(rw[27])+"    "+num2str(rw[21])+"    "+textW[9]
+	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
+	labelWave[5] += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
+	labelWave[5] += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))+"    "+num2str(getBeamStop_size(type))+"    "+getInstrumentNameFromFile(type) 
 	labelWave[6] =  "SAM: "+rawTag+samFiles
 	labelWave[7] =  "BGD: "+proto[0]
 	labelWave[8] =  "EMP: "+proto[1]
@@ -772,28 +791,30 @@ Function QxQy_Export(type,fullpath,dialog)
 	
 //	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 //	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
-	
+
+
+// TODO -- this will be different for tube panels with beam center in [cm], not pixel	
 	Variable xctr,yctr,sdd,lambda,pixSize
-	xctr = rw[16]
-	yctr = rw[17]
-	sdd = rw[18]
-	lambda = rw[26]
-	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
+	xctr = getDet_beam_center_x(type)
+	yctr = getDet_beam_center_y(type)
+	sdd = getDet_Distance(type)
+	lambda = getWavelength(type)
+	pixSize = getDet_x_pixel_size(type)/10		//convert mm to cm (x and y are the same size pixels)
 	
-	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qx_val = CalcQx(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)		//+1 converts to detector coordinate system
+	qy_val = CalcQy(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
 
 
-	Variable L2 = rw[18]
-	Variable BS = rw[21]
-	Variable S1 = rw[23]
-	Variable S2 = rw[24]
-	Variable L1 = rw[25]
-	Variable lambdaWidth = rw[27]	
-	Variable usingLenses = rw[28]		//new 2007
+	Variable L2 = getDet_Distance(type)
+	Variable BS = getBeamStop_size(type)
+	Variable S1 = getSourceAp_size(type)
+	Variable S2 = getSampleAp_size(type)
+	Variable L1 = getSourceAp_distance(type)
+	Variable lambdaWidth = getWavelength_spread(type)
+	Variable usingLenses = getAreLensesIn(type)		// 2021-HARD WIRED "FALSE: until corrected in header      //new 2007
 
 	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
 	Variable g = 981.0				//gravity acceleration [cm/s^2]
@@ -818,8 +839,9 @@ Function QxQy_Export(type,fullpath,dialog)
 ///************
 // do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qval = CalcQval(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)
+	qz_val = CalcQz(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)  //+1 converts to detector coordinate system
+	
 //	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
 //	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt
 	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
@@ -835,14 +857,14 @@ Function QxQy_Export(type,fullpath,dialog)
 	//From conversation with JB on 01.06.99 these are the current good values
 	Variable DDet
 	NVAR apOff = root:myGlobals:apOff		//in cm
-	DDet = rw[10]/10			// header value (X) is in mm, want cm here
+	DDet = getDet_x_pixel_size(type)/10			// header value (X) is in mm, want cm here
 
 	Variable ret1,ret2,ret3,nq
 	nq = pixelsX*pixelsY
 	ii=0
 	
 	do
-		get2DResolution(qval[ii],phi[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[ii],ret1,ret2,ret3)
+		N_get2DResolution(qval[ii],phi[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[ii],ret1,ret2,ret3)
 		SigmaQX[ii] = ret1	
 		SigmaQY[ii] = ret2	
 		fsubs[ii] = ret3	
@@ -900,7 +922,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	
 	Killwaves/Z spWave,labelWave,qx_val,qy_val,z_val,qval,qz_val,sigmaQx,SigmaQy,fSubS,phi,r_dist
 	
-	Print "QxQy_Export File written: ", GetFileNameFromPathNoSemi(fullPath)
+	Print "QxQy_Export File written: ", N_GetFileNameFromPathNoSemi(fullPath)
 	return(0)
 
 End

@@ -58,7 +58,7 @@ Proc Init_for_RealTime()
 	InitFolders()
 	InitFakeProtocols()
 	InitGlobals()
-	InitFacilityGlobals()
+	N_InitFacilityGlobals()
 
 	// specific for RealTime display
 	//set the current display type to RealTime
@@ -347,7 +347,7 @@ Function Read_RT_File(msgStr)
 		Abort "No file selected, action aborted"
 	Endif
 	//set the globals and reset the RT_Path value
-	pathStr = GetPathStrFromfullName(filename)
+	pathStr = N_GetPathStrFromfullName(filename)
 	NewPath/O RT_Path,pathStr
 	Variable/G root:Packages:NIST:RealTime:gIsLogScale = 0		//force data to linear scale (1st read)
 	String/G root:myGlobals:RT:RT_fileStr=filename	//full path:file of the Run.hst file to re-read

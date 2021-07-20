@@ -237,7 +237,11 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 		jj = 0
 		do
 			nq = ii * pixelsX + jj
+#if (exists("NCNR_Nexus")==6)
+			N_get2DResolution(qval[nq],phi[nq],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[nq],ret1,ret2,ret3)
+#else
 			get2DResolution(qval[nq],phi[nq],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,pixSize,usingLenses,r_dist[nq],ret1,ret2,ret3)
+#endif
 			qxy_vals[0][jj][ii] = qx_val[nq]
 			qxy_vals[1][jj][ii] = qy_val[nq]
 			SigmaQ_combined[0][jj][ii] = ret1

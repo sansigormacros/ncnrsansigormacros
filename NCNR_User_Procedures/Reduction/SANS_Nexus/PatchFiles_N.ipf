@@ -126,7 +126,7 @@ Function/S xGetValidPatchPopupList()
 	
 	String newList = ""
 
-	newList = GetRawDataFileList()
+	newList = N_GetRawDataFileList()
 
 	//trim list to include only selected files
 	SVAR match = root:myGlobals:Patch:gPatchMatchStr
@@ -169,7 +169,7 @@ Function/S GetValidPatchPopupList()
 	
 	String newList = ""
 
-	newList = GetRawDataFileList()
+	newList = N_GetRawDataFileList()
 
 	//trim list to include only selected files
 	SVAR match = root:myGlobals:Patch:gPatchMatchStr
@@ -220,13 +220,13 @@ Function/S GetValidPatchPopupList()
 //		endfor		
 		
 // oct 2014 -- try this way:	
-		list = ExpandNumRanges(match)		//now simply comma delimited
+		list = N_ExpandNumRanges(match)		//now simply comma delimited
 		num=ItemsInList(list,",")
 		for(ii=0;ii<num;ii+=1)
 			item = StringFromList(ii,list,",")
 			val=str2num(item)
 
-			runList += GetFileNameFromPathNoSemi(FindFileFromRunNumber(val)) + ";"
+			runList += N_GetFileNameFromPathNoSemi(N_FindFileFromRunNumber(val)) + ";"
 			
 		endfor
 		newlist = runList
@@ -373,14 +373,14 @@ Function ShowHeaderButtonProc(SHButton) : ButtonControl
 		//Print partialName
 	Endif
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(partialName)
+	tempName = N_FindValidFilename(partialName)
 	
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
 	tempName = S_path + tempName
 	
 	//make sure the file is really a RAW data file
-	ok = CheckIfRawData(tempName)
+	ok = N_CheckIfRawData(tempName)
 	if (!ok)
 		Abort "this file is not recognized as a RAW SANS data file"
 	Endif
@@ -520,14 +520,14 @@ Function ChangeHeaderButtonProc(CHButton) : ButtonControl
 	partialName = GetPatchPopupString()
 	
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(partialName)
+	tempName = N_FindValidFilename(partialName)
 	
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
 	tempName = S_path + tempName
 	
 	//make sure the file is really a RAW data file
-	ok = CheckIfRawData(tempName)
+	ok = N_CheckIfRawData(tempName)
 	if (!ok)
 		Abort "this file is not recognized as a RAW SANS data file"
 	Endif
@@ -922,14 +922,14 @@ Function ChAllHeadersButtonProc(ctrlName) : ButtonControl
 		partialName = StringFromList(ii, list, ";")
 		   
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 	
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
 		tempName = S_path + tempName
 	
 		//make sure the file is really a RAW data file
-		ok = CheckIfRawData(tempName)
+		ok = N_CheckIfRawData(tempName)
 		if (!ok)
 		   Print "this file is not recognized as a RAW SANS data file = ",tempName
 		else
@@ -1002,14 +1002,14 @@ Function MPatchLabel(testStr,doIt)
 		partialName = StringFromList(ii, list, ";")
 		   
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 	
 		//prepend path to tempName for read routine 
 		PathInfo catPathName
 		tempName = S_path + tempName
 	
 		//make sure the file is really a RAW data file
-		ok = CheckIfRawData(tempName)
+		ok = N_CheckIfRawData(tempName)
 		if (!ok)
 		   Print "this file is not recognized as a RAW SANS data file = ",tempName
 		else

@@ -134,12 +134,12 @@ Function/S  FullNameListFromFileList(list)
 		//take each item, and try to find the file (extensions for raw data should be ;1)
 		partialName = StringFromList(ii,list,",")	//COMMA separated list
 		if(strlen(partialName)!=0)		//null string items will be skipped
-			tempName = FindValidFilename(partialName)		//will add the version # if needed	
+			tempName = N_FindValidFilename(partialName)		//will add the version # if needed	
 			fullName = pathStr + tempName						//prepend the path (CAT)
 			
 			//discard strings that are not filenames (print the non-files)
 			//make sure the file is really a RAW data file
-			ok = CheckIfRawData(fullName)		// 1 if RAW, 0 if unknown type
+			ok = N_CheckIfRawData(fullName)		// 1 if RAW, 0 if unknown type
 			if (!ok)
 				//write to cmd window that file was not a RAW SANS file
 				str = "This file is not recognized as a RAW SANS data file: "+tempName+"\r"
@@ -271,7 +271,7 @@ Function/S GetValidMRedPopupList()
 	String commaList="",semiList=""
 	SVAR numList=root:myGLobals:MRED:gFileNumList
 	
-	commaList = ParseRunNumberList(numList)
+	commaList = N_ParseRunNumberList(numList)
 	//convert commaList to a semicolon delimited list
 	Variable num=ItemsinList(commaList,","),ii
 	for(ii=0;ii<num;ii+=1)
@@ -758,11 +758,11 @@ Function GetHeaderInfoToSDDWave(fname,sname)
 
 	//the run number (not displayed in the table, but carried along)
 	InsertPoints lastPoint,1,GRunNumber
-	GRunNumber[lastPoint] = GetRunNumFromFile(sname)
+	GRunNumber[lastPoint] = N_GetRunNumFromFile(sname)
 
 	// 0 if the file is a scattering  file, 1 (truth) if the file is a transmission file
 	InsertPoints lastPoint,1,GIsTrans
-	GIsTrans[lastPoint]  = isTransFile(fname)		//returns one if beamstop is "out"
+	GIsTrans[lastPoint]  = N_isTransFile(fname)		//returns one if beamstop is "out"
 	
 	KillWaves/Z w
 	return(0)

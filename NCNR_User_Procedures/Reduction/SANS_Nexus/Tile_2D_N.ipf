@@ -155,7 +155,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 	defaultScaling = 0		//set the scaling to linear
 	
 	do
-		fname=pathStr + FindValidFilename(fileWave[ii])	//in case of VAX version numbers
+		fname=pathStr + N_FindValidFilename(fileWave[ii])	//in case of VAX version numbers
 		
 		if(sel[ii] == 1)
 			if(stringmatch(fname, "*.ASC"))
@@ -304,7 +304,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 	
 	//make all of the PNG files
 	do
-		fname=pathStr + FindValidFilename(fileWave[ii])	//in case of VAX version numbers
+		fname=pathStr + N_FindValidFilename(fileWave[ii])	//in case of VAX version numbers
 		
 		
 		//Modified for summer student 2014 by mjw
@@ -425,10 +425,10 @@ Function GetListButtonProc(ctrlName) : ButtonControl
 
 	
 	if(stringmatch(DataStr,"RAW"))
-		newList = GetRawDataFileList()
+		newList = N_GetRawDataFileList()
 	endif
 	if(stringmatch(DataStr,"ASC"))
-		newList = GetASCDataFileList()
+		newList = N_GetASCDataFileList()
 	endif
 	
 	num=ItemsInList(newlist,";")
@@ -643,7 +643,7 @@ Function RA_GetListButtonProc(ctrlName) : ButtonControl
 	Endif
 	
 	Variable num
-	String newList = GetRawDataFileList()
+	String newList = N_GetRawDataFileList()
 	
 	num=ItemsInList(newlist,";")
 	WAVE/T fileWave=$"root:myGlobals:RAW2ASCII:fileWave"
@@ -688,12 +688,12 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 	defaultScaling = 0		//set the scaling to linear
 	do
 		if(sel[ii] == 1)
-			fname=pathStr + FindValidFilename(fileWave[ii])		//in case of VAX version numbers
+			fname=pathStr + N_FindValidFilename(fileWave[ii])		//in case of VAX version numbers
 			ReadHeaderAndData(fname,"RAW")		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
-			newFileName= GetNameFromHeader(tw[0])		//02JUL13
+			newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
 			
 			if(qxqy)
 				fullPath=pathStr+newFileName+".DAT"

@@ -71,7 +71,7 @@ Function LoadRawSANSData(file,folder)
 	endif
 	SetDataFolder $("root:Packages:NIST:"+folder)
 
-	String nameOnlyStr=GetFileNameFromPathNoSemi(file)
+	String nameOnlyStr=N_GetFileNameFromPathNoSemi(file)
 	
 	
 //	// be sure the "temp" load goes into root:
@@ -196,16 +196,6 @@ Function ReadHeaderAndData(fname,folderStr)
 		DoAlert 0,"Pick the data folder, then the data file"
 		PickPath()
 	endif
-
-//	Make/O/D/N=23 $"IntegersRead"
-//	Make/O/D/N=52 $"RealsRead"
-//	Make/O/T/N=11 $"TextRead"
-//	Make/O/N=7 $"LogicalsRead"
-	
-//	Wave intw=$"root:Packages:NIST:RAW:IntegersRead"
-//	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
-//	Wave/T textw=$"root:Packages:NIST:RAW:TextRead"
-//	Wave logw=$"root:Packages:NIST:RAW:LogicalsRead"
 
 
 //	String nameOnlyStr=GetFileNameFromPathNoSemi(fname)
@@ -393,7 +383,7 @@ Function getRealValueFromHDF5(fname,path)
 	Variable valExists=0
 	Variable errorValue = -999999
 	
-	folderStr = RemoveDotExtension(GetFileNameFromPathNoSemi(fname))
+	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
@@ -450,7 +440,7 @@ Function/WAVE getRealWaveFromHDF5(fname,path)
 	String folderStr=""
 	Variable valExists=0
 	
-	folderStr = RemoveDotExtension(GetFileNameFromPathNoSemi(fname))
+	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
@@ -505,7 +495,7 @@ Function/WAVE getTextWaveFromHDF5(fname,path)
 	String folderStr=""
 	Variable valExists=0
 	
-	folderStr = RemoveDotExtension(GetFileNameFromPathNoSemi(fname))
+	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
@@ -594,7 +584,7 @@ Function/S getStringFromHDF5(fname,path,num)
 	Variable valExists=0
 	String errorString = "The specified wave does not exist: " + path
 	
-	folderStr = RemoveDotExtension(GetFileNameFromPathNoSemi(fname))
+	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SASCALC;RealTime;")

@@ -353,7 +353,7 @@ Function RectangularAverageTo1D(type)
 
 	Variable ret1,ret2,ret3
 	do
-		getResolution(qval[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,ddr,usingLenses,ret1,ret2,ret3)
+		N_getResolution(qval[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,ddr,usingLenses,ret1,ret2,ret3)
 		sigmaq[ii] = ret1
 		qbar[ii] = ret2	
 		fsubs[ii] = ret3

@@ -97,7 +97,7 @@ Function ReadMCID_MASK(fname)
 	Rename data0,data
 	
 	Variable/G root:Packages:NIST:MSK:gIsLogScale = 0
-	String/G root:Packages:NIST:MSK:fileList = GetFileNameFromPathNoSemi(fname)
+	String/G root:Packages:NIST:MSK:fileList = N_GetFileNameFromPathNoSemi(fname)
 	//back to root folder
 	SetDataFolder root:
 	return(0)

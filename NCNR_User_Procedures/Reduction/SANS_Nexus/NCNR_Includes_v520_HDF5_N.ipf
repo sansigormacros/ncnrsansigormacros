@@ -5,7 +5,7 @@
 // to properly set up the template for other facility reduction templates, 
 // function NCNR() must exist here in the Includes file.
 //
-Function NCNR()
+Function NCNR_Nexus()
 	//does nothing but define NCNR()
 	return(0)
 End

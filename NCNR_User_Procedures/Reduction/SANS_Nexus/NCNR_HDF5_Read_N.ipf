@@ -2517,7 +2517,23 @@ end
 // now with the nexus files, return the final suffix of the file name to identify the instrument
 // = ngv, ngb, ngb30,ng7
 //
+// TODO -- this is NOT really the account, so I'll need to re-define this once/if the
+//   collecion account (IMS id?) gets added to the header
+//
 Function/S getAcctName(fname)
+	String fname
+	
+	String str = StringFromList(2,fname,".")
+	return(str)
+End
+
+// now with the nexus files, return the final suffix of the file name to identify the instrument
+// = ngv, ngb, ngb30,ng7
+//
+// if the full path is passed, not a problem since it's delimited with colons, and this is
+// keying on the "."s in the name
+//
+Function/S getInstrumentNameFromFile(fname)
 	String fname
 	
 	String str = StringFromList(2,fname,".")

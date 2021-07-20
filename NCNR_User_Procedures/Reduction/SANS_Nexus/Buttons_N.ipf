@@ -223,7 +223,7 @@ Function LoadPlotAndDisplayRAW(increment)
 	String filename,tmp
 	//take the currently displayed RAW file (there is only one name in fileList)
 	SVAR oldName = root:Packages:NIST:RAW:fileList
-	oldname = RemoveAllSpaces(oldname)		// the name in the file list will have 21 chars, thus leading spaces if prefix < 5 chars
+	oldname = N_RemoveAllSpaces(oldname)		// the name in the file list will have 21 chars, thus leading spaces if prefix < 5 chars
 	
 	
 	filename = oldname
@@ -231,7 +231,7 @@ Function LoadPlotAndDisplayRAW(increment)
 	ii = 1
 	val = increment
 	do
-		filename = GetPrevNextRawFile(filename,val)
+		filename = N_GetPrevNextRawFile(filename,val)
 //		print "new= ",filename
 		
 		val = ii*increment

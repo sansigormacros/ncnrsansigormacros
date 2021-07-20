@@ -74,10 +74,41 @@ Menu "Macros"
 
 end
 
+//
+// returns 1==true if any conflicting package is about to be loaded
+//
+//
+// loaded is the currently loaded package that you are testing against everything else
+//
+Function ConflictingPackage(loaded)
+	String loaded
+
+	String possible
+	possible = "ILL_D22;NCNR;QUOKKA;NCNR_USANS;NCNR_Nexus;NCNR_VSANS;"
+	
+	Variable conflict=0,num,ii
+	possible = RemoveFromList(loaded,possible)
+	
+	num = ItemsInList(possible)
+	for(ii=0;ii<num;ii+=1)
+		if(exists(stringFromList(ii,possible))==6)
+			conflict +=1
+		endif
+	endfor
+	
+	if(conflict > 0)
+		return(1)
+	else
+		return(0)
+	endif
+
+End
+
+
 Proc LoadHDF5SANS()
 
-	if( exists("ILL_D22")==6 || exists("NCNR")==6 || exists("QUOKKA")==6 )
-		DoAlert 0,"A SANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
+	if(ConflictingPackage("NCNR_Nexus"))
+		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
 	else
 
 		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_N\""
@@ -178,9 +209,9 @@ Function NCNR_SANSReductionLoader(itemStr)
 	
 	// check for ANY SANS package being loaded. if any one is loaded, nothing else can be loaded
 	//
-	
-	if( exists("ILL_D22")==6 || exists("NCNR")==6 || exists("QUOKKA")==6 )
-		DoAlert 0,"A SANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
+	if(ConflictingPackage(""))
+//	if( exists("ILL_D22")==6 || exists("NCNR")==6 || exists("QUOKKA")==6 )
+		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
 		return(0)
 	endif
 	
@@ -455,6 +486,17 @@ Function NCNR_USANSReductionLoader(itemStr)
 	if (str2num(stringByKey("IGORVERS",IgorInfo(0))) < 6.2)
 		Abort "Your version of Igor is lower than 6.2, these macros need version 6.2 or higher.... "
 	endif
+
+
+// if the SANS_Nexus package is loaded, don't load in USANS
+	// check for ANY SANS package being loaded. if any one is loaded, nothing else can be loaded
+	//
+	if(ConflictingPackage("NCNR_USANS"))
+		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."
+		return(0)
+	endif
+
+
 	
 	NewDataFolder/O root:Packages 		//create the folder for string variable
 	String/G root:Packages:NCNRItemStr3a = "Load NCNR USANS Reduction Macros"
@@ -648,21 +690,39 @@ end
 Function WhatSymbolsAreDefined()
 
 #if (exists("QUOKKA")==6)
-		print "function QUOKKA defined"
+		print "yes function QUOKKA defined"
 #else
 		print "function QUOKKA NOT defined"
 #endif
 	
 #if(exists("HFIR")==6)
-		print "function HFIR defined"
+		print "yes function HFIR defined"
 #else
 		print "function HFIR NOT defined"
 #endif
 	
 #if(exists("ILL_D22")==6)
-		print "function ILL_D22 defined"
+		print "yes function ILL_D22 defined"
 #else
 		print "function ILL_D22 NOT defined"
+#endif
+
+#if(exists("NCNR")==6)
+		print "yes function NCNR defined"
+#else
+		print "function NCNR NOT defined"
+#endif
+
+#if(exists("NCNR_USANS")==6)
+		print "yes function NCNR_USANS defined"
+#else
+		print "function NCNR_USANS NOT defined"
+#endif
+
+#if(exists("NCNR_Nexus")==6)
+		print "yes function NCNR_Nexus defined"
+#else
+		print "function NCNR_Nexus NOT defined"
 #endif
 
 
@@ -802,12 +862,19 @@ End
 // loads the VSANS package and initializes
 Function VSANSLoader()
 	
-	Execute/P "INSERTINCLUDE \"VSANS_Includes\""
-	Execute/P "COMPILEPROCEDURES "
-	Execute/P "Initialize_VSANS()"
 	
-	BuildMenu "Macros"
+	if(ConflictingPackage("NCNR_USANS"))
+		DoAlert 0,"A SANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
+		return(0)
+	else
+	
+		Execute/P "INSERTINCLUDE \"VSANS_Includes\""
+		Execute/P "COMPILEPROCEDURES "
+		Execute/P "Initialize_VSANS()"
+		
+		BuildMenu "Macros"
 
-	return(0)
+		return(0)
+	endif
 End
 

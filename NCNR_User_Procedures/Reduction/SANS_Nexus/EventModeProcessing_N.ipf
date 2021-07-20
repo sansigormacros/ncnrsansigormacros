@@ -2051,6 +2051,10 @@ End
 // 5- repeat (2-4) for the number of slices
 //
 //
+// TODO -- this will be replaced with a save of slices into a Nexus file, in the
+//    same way that VSANS event data is saved
+//
+//
 Function SaveSlicesAsVAX(firstNum,prefix)
 	Variable firstNum
 	String prefix
@@ -2071,17 +2075,9 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
 	WAVE binEndTime = root:Packages:NIST:Event:binEndTime
 
-	Wave rw=root:Packages:NIST:STO:realsRead
-	Wave iw=root:Packages:NIST:STO:integersRead
-	Wave/T tw=root:Packages:NIST:STO:textRead
-	Wave data=root:Packages:NIST:STO:data
-	Wave linear_data=root:Packages:NIST:STO:linear_data
+	Wave data=getDetectorDataW("STO")
+	Wave linear_data=data
 	
-	
-	Wave rw_raw=root:Packages:NIST:RAW:realsRead
-	Wave iw_raw=root:Packages:NIST:RAW:integersRead
-	Wave/T tw_raw=root:Packages:NIST:RAW:textRead
-
 // for generating the alphanumeric
 	String timeStr= secs2date(datetime,-1)
 	String monthStr=StringFromList(1, timeStr  ,"/")
@@ -2109,10 +2105,10 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 		//
 		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
 		
-		iw[2] = trunc(binFraction*iw_raw[2])
+		putCollectionTime("STO",trunc(binFraction*getCollectionTime("RAW")))
 //		Print (binFraction*iw_raw[2])		//this is the REAL precision value, not the saved integer value
-		rw[0] = trunc(binFraction*rw_raw[0])
-		rw[2] = sum(curSlice,-inf,inf)		//total counts in slice
+		putControlMonitorCount("STO",trunc(binFraction*getControlMonitorCount("RAW")))
+		putDetector_counts("STO",sum(curSlice,-inf,inf))		//total counts in slice
 	
 		if(firstNum<10)
 			numStr = "00"+num2str(firstNum)
@@ -2123,11 +2119,12 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 				numStr = num2str(firstNum)
 			Endif
 		Endif	
-		tw[0] = prefix+numstr+".SA2_EVE_"+(num2char(str2num(monthStr)+64))+numStr
-		labelStr = tw_raw[6]
+		String tmpStr = prefix+numstr+".SA2_EVE_"+(num2char(str2num(monthStr)+64))+numStr
+//		putFileNameFromFolder(folder,tmpStr) 
+		labelStr = getSampleDescription("RAW")
 		
 		labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
-		tw[6] = labelStr[0,59]
+		putSampleDescription("STO",labelStr[0,59])
 		
 		//write out the file - this uses the tw[0] and home path
 		Write_VAXRaw_Data("STO","",0)
@@ -3941,7 +3938,7 @@ Function/S DateAndTime2HSTName(dateandtime)
 	
 	str=dateandtime
 	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
-	mon = monStr2num(monStr)
+	mon = N_monStr2num(monStr)
 
 	fileStr = "Event"+yr+num2str(mon)+day+hh+mm+ss+".hst"
 	Print fileStr
@@ -3962,7 +3959,7 @@ Function DateAndTime2HSTNumber(dateandtime)
 	
 	str=dateandtime
 	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
-	mon = monStr2num(monStr)
+	mon = N_monStr2num(monStr)
 
 	fileStr = yr+num2str(mon)+day+hh+mm+ss
 	num = str2num(fileStr)

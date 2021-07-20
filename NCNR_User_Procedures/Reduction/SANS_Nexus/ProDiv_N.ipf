@@ -257,7 +257,7 @@ Function ShowBoxButtonProc(ba) : ButtonControl
 				String item,fname
 				
 				item = StringFromList(0, gPlex ,",")
-				fname = FindFileFromRunNumber(str2num(item))
+				fname = N_FindFileFromRunNumber(str2num(item))
 				if(strlen(fname) == 0)
 					Abort "Bad file number in Plex field"
 				endif
@@ -331,7 +331,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			num = ItemsInList(gPlex, ",")
 			for(ii=0;ii<num;ii+=1)
 				item = StringFromList(ii, gPlex ,",")
-				fname = FindFileFromRunNumber(str2num(item))
+				fname = N_FindFileFromRunNumber(str2num(item))
 				if(strlen(fname) == 0)
 					Abort "Bad file number in no offset Plex field"
 				endif
@@ -339,13 +339,13 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			endfor
 			
 			//go through the protocol
-			str = ParseRunNumberList(gPlexBgd)
+			str = N_ParseRunNumberList(gPlexBgd)
 			if(strlen(str) > 0)
 				proto[0] = str
 			else
 				Abort "Bad file number in no offset Bgd"
 			endif
-			str = ParseRunNumberList(gPlexEmp)
+			str = N_ParseRunNumberList(gPlexEmp)
 			if(strlen(str) > 0)
 				proto[1] = str
 				err = CheckDIVBeamCenter(str,65,65)
@@ -355,7 +355,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			else
 				Abort "Bad file number in no offset Emp"
 			endif
-			str = ParseRunNumberList(gPlex)
+			str = N_ParseRunNumberList(gPlex)
 			if(strlen(str) > 0)
 				err = CheckDIVBeamCenter(str,65,65)
 				if(err)
@@ -375,7 +375,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			num = ItemsInList(gPlex_off, ",")
 			for(ii=0;ii<num;ii+=1)
 				item = StringFromList(ii, gPlex_off ,",")
-				fname = FindFileFromRunNumber(str2num(item))
+				fname = N_FindFileFromRunNumber(str2num(item))
 				if(strlen(fname) == 0)
 					Abort "Bad file number in Plex field"
 				endif
@@ -383,13 +383,13 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			endfor
 			
 			//go through the protocol
-			str = ParseRunNumberList(gPlexBgd_off)
+			str = N_ParseRunNumberList(gPlexBgd_off)
 			if(strlen(str) > 0)
 				proto[0] = str
 			else
 				Abort "Bad file number in offset Bgd"
 			endif
-			str = ParseRunNumberList(gPlexEmp_off)
+			str = N_ParseRunNumberList(gPlexEmp_off)
 			if(strlen(str) > 0)
 				proto[1] = str
 				err = CheckDIVBeamCenter(str,110,65)
@@ -399,7 +399,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			else
 				Abort "Bad file number in offset Emp"
 			endif
-			str = ParseRunNumberList(gPlex_off)
+			str = N_ParseRunNumberList(gPlex_off)
 			if(strlen(str) > 0)
 				err = CheckDIVBeamCenter(str,110,65)
 				if(err)

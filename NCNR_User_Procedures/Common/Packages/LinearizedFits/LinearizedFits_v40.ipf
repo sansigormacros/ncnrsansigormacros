@@ -862,7 +862,14 @@ Function FilePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 
-	String tempStr=ReducedDataFileList(ctrlName)
+	String tempStr
+	
+#if (exists("NCNR_Nexus")==6)
+	tempStr=N_ReducedDataFileList(ctrlName)		// function in NCNR_Utils_HDF5_N.ipf
+#else
+	tempStr=ReducedDataFileList(ctrlName)			// function in NCNR_Utils.ipf
+#endif
+
 	if(strlen(tempStr)==0)
 		tempStr = "Pick the data path"
 	Endif

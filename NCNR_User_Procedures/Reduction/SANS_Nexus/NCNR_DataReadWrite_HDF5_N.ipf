@@ -210,6 +210,12 @@ End
 //
 // called by WorkFileUtils.ipf
 //
+//
+// SRK JUL 2021 -- for now, leave this as-is with the RealsRead references
+//
+// I will likely need to replace this somehow, but I'm not sure yet. It may be as simple (tedious)
+// as defining all of the "put" statements
+//
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
 	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
@@ -368,7 +374,7 @@ Function KillNamedDataFolder(fname)
 	
 	Variable err=0
 	
-	String folderStr = GetFileNameFromPathNoSemi(fname)
+	String folderStr = N_GetFileNameFromPathNoSemi(fname)
 	folderStr = RemoveDotExtension(folderStr)
 	
 	KillDataFolder/Z $("root:"+folderStr)
@@ -1222,7 +1228,7 @@ Function fPatchDetectorPixelSize(lo,hi,xdim,ydim)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			WriteDetPixelXToHeader(file,xdim)
 			WriteDetPixelyToHeader(file,ydim)
@@ -1242,7 +1248,7 @@ Function fReadDetectorPixelSize(lo,hi)
 	Variable xdim,ydim,ii
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			xdim = getDet_x_pixel_size(file)
 			ydim = getDet_y_pixel_size(file)
@@ -1307,7 +1313,7 @@ Function HeaderToPinholeResolution(num)
 	//Print "UnConvert"
 	String fullname=""
 	
-	fullname = FindFileFromRunNumber(num)
+	fullname = N_FindFileFromRunNumber(num)
 	Print fullname
 	//report error or change the file
 	if(cmpstr(fullname,"")==0)
@@ -1326,7 +1332,7 @@ Function HeaderToLensResolution(num)
 	//Print "Convert"
 	String fullname=""
 	
-	fullname = FindFileFromRunNumber(num)
+	fullname = N_FindFileFromRunNumber(num)
 	Print fullname
 	//report error or change the file
 	if(cmpstr(fullname,"")==0)
@@ -2153,7 +2159,7 @@ Function fPatchFileName(lo,hi)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			fileName = getFileName(file)
 			WriteFileNameToHeader(file,fileName)
@@ -2173,7 +2179,7 @@ Function fReadFileName(lo,hi)
 	Variable ii
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			fileName = getFileName(file)
 			suffix = getSuffix(file)
@@ -2221,7 +2227,7 @@ Function fPatchUserAccountName(lo,hi,acctName)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			WriteAcctNameToHeader(file,acctName)
 		else
@@ -2240,7 +2246,7 @@ Function fReadUserAccountName(lo,hi)
 	Variable ii
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			acctName = getAcctName(file)
 			printf "File %d:  Account name = %s\r",ii,acctName
@@ -2281,7 +2287,7 @@ Function fPatchMonitorCount(lo,hi,monCtRate)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			ctTime = getCollectionTime(file)
 			WriteMonitorCountToHeader(file,ctTime*monCtRate)			
@@ -2301,7 +2307,7 @@ Function fReadMonitorCount(lo,hi)
 	Variable ii,monitorCount
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			monitorCount = getControlMonitorCount(file)
 			printf "File %d:  Monitor Count = %g\r",ii,monitorCount
@@ -2343,7 +2349,7 @@ Function fPatchDetectorDeadtime(lo,hi,deadtime)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			WriteDeadtimeToHeader(file,deadtime)			
 		else
@@ -2362,7 +2368,7 @@ Function fReadDetectorDeadtime(lo,hi)
 	Variable ii,deadtime
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			deadtime = getDetectorDeadtime_value(file)
 			printf "File %d:  Detector Dead time (s) = %g\r",ii,deadtime
@@ -2393,7 +2399,7 @@ Function fReadDetectorCount(lo,hi)
 	Variable ii,summed
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			ReadHeaderAndData(file,"RAW")
 			Wave rw=root:Packages:NIST:RAW:RealsRead
@@ -2633,7 +2639,7 @@ Function fRenumberRunNumber(add)
 // for each file
 	for(ii=0;ii<numItems;ii+=1)
 		curFile = StringFromList(ii, list  ,";" )
-		runStr = GetRunNumStrFromFile(curFile)
+		runStr = N_GetRunNumStrFromFile(curFile)
 		
 		if(cmpstr(runStr,"ABC") != 0)		// weed out error if run number can't be found
 			newRunStr = num2str( str2num(runStr) + add )
@@ -2661,7 +2667,7 @@ Function fCheckFileNames(lo,hi)
 	Variable ii
 	
 	for(ii=lo;ii<=hi;ii+=1)
-		file = FindFileFromRunNumber(ii)
+		file = N_FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			fileOnDisk = ParseFilePath(0, file, ":", 1, 0)
 			fileInHdr = getFileName(file)
