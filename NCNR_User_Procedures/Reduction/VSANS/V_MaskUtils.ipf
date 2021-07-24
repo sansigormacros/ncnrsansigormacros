@@ -1148,18 +1148,18 @@ Proc V_Display_Det_Panels()
 	PopupMenu popup3,pos={sc*350,10.00*sc},size={sc*83.00,23.00*sc},title="Average Type"//,proc=V_DummyPopMenuProc
 	PopupMenu popup3,mode=1,value= #"\"Circular;Sector;Annular;\""
 //	Button button0,pos={sc*520.00,10.00*sc},size={sc*110.00,20.00*sc},proc=V_UpdatePanelsButtonProc,title="Update Display"
-	Button button1,pos={sc*360.00,40.00*sc},size={sc*160.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Regular Mask"
-	Button button2,pos={sc*360.00,70.00*sc},size={sc*160.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Special+Reg Mask"
+	Button button1,pos={sc*380.00,40.00*sc},size={sc*140.00,20.00*sc},proc=V_ToggleFourMaskButtonProc,title="Regular Mask"
+	Button button2,pos={sc*380.00,70.00*sc},size={sc*140.00,20.00*sc},proc=V_ShowAvgRangeButtonProc,title="Special+Reg Mask"
 	Button button3,pos={sc*530.00,40.00*sc},size={sc*100.00,20.00*sc},proc=V_DoPanelAvgButtonProc,title="Do Average"
 	Button button4,pos={sc*720.00,10.00*sc},size={sc*25.00,20.00*sc},proc=V_AvgPanelHelpButtonProc,title="?"
 
-	SetVariable setvar0,pos={sc*20,40*sc},size={sc*160,23*sc},title="Annulus q-center (A)"
+	SetVariable setvar0,pos={sc*20,40*sc},size={sc*180,23*sc},title="Annulus q-ctr (A)"
 	SetVariable setvar0,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularQCtr
-	SetVariable setvar1,pos={sc*20,70*sc},size={sc*160,23*sc},title="Annulus (+/-) q (A)"
+	SetVariable setvar1,pos={sc*20,70*sc},size={sc*180,23*sc},title="Annulus (+/-) q (A)"
 	SetVariable setvar1,limits={0,1,0.001},value=root:Packages:NIST:VSANS:Globals:Mask:gAnnularDQ
-	SetVariable setvar2,pos={sc*190,40*sc},size={sc*150,23*sc},title="Sector Angle (deg)"
+	SetVariable setvar2,pos={sc*210,40*sc},size={sc*160,23*sc},title="Sector Angle (deg)"
 	SetVariable setvar2,limits={-90,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorAngle
-	SetVariable setvar3,pos={sc*190,70*sc},size={sc*150,23*sc},title="Sector (+/-) (deg)"
+	SetVariable setvar3,pos={sc*210,70*sc},size={sc*160,23*sc},title="Sector (+/-) (deg)"
 	SetVariable setvar3,limits={0,90,1},value=root:Packages:NIST:VSANS:Globals:Mask:gSectorDQ
 
 	PopupMenu popup4,pos={sc*200,100*sc},size={sc*90,23.00*sc},title="Sector Side(s)"//,proc=V_DummyPopMenuProc

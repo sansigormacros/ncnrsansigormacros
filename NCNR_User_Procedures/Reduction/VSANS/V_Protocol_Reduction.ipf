@@ -3349,7 +3349,7 @@ Function V_Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGro
 		//
 		strswitch(av_type)	
 			case "Annular":
-				V_fWrite1DAnnular("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
+				V_fWrite1DAnnular_new("root:Packages:NIST:VSANS:",activeType,detGroup,newFileName+".phi")
 				Print "data written to:  "+ newFileName+".phi"
 
 				break
