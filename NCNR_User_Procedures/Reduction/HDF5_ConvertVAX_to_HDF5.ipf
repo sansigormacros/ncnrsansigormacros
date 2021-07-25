@@ -431,7 +431,7 @@ Function Test_HDFWriteTrans(fname,val)
 	PathInfo home
 	str = S_path
 	
-	WriteTransmissionToHeader(str+fname,val)
+	writeSampleTransmission(str+fname,val)
 	
 	return(0)
 End

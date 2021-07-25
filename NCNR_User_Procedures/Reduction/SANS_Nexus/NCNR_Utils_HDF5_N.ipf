@@ -1786,10 +1786,6 @@ End
 //NG5 values are taken from the NG7 tables (there is very little difference in the
 //values, and NG5 attenuators have not been calibrated (as of 8/01)
 //
-// filestr is passed from TextRead[3] = the default directory
-// lam is passed from RealsRead[26]
-// AttenNo is passed from ReaslRead[3]
-//
 // Attenuation factor as defined here is <= 1
 //
 // HFIR can pass ("",1,attenuationFactor) and have this function simply
@@ -1799,6 +1795,11 @@ End
 //
 //
 // as of March 2011, returns the error (one standard deviation) in the attenuation factor as the last parameter, by reference
+
+//
+// JUL 2021 -- pass in fileStr as getAcctName(fname) = the file name. parse out the suffix of the
+// file name to determine which instrument
+
 Function N_AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
 	Variable lam,attenNo, &atten_err

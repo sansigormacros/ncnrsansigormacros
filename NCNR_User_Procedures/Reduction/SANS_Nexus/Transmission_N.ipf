@@ -658,7 +658,7 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 			WriteAssocFileSuffixToHeader(filename,suffix)
 			
 			//write a trans==1 to the file header of the raw data
-			WriteTransmissionToHeader(filename,1)		//sample trans
+			writeSampleTransmission(filename,1)		//sample trans
 			
 			WriteWholeTransToHeader(filename,1)		//WholeTrans start byte is 392
 			
@@ -684,7 +684,7 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 			WriteAssocFileSuffixToHeader(filename,suffix)
 			
 			//write a trans==1 to the file header of the raw data (open/close done in function)
-			WriteTransmissionToHeader(filename,1)		//sample trans
+			writeSampleTransmission(filename,1)		//sample trans
 			WriteTransmissionErrorToHeader(filename,0)			//reset transmission error to zero
 			WriteBoxCountsErrorToHeader(filename,0)
 			
@@ -815,7 +815,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 							Printf "%s\t\tTrans Counts = %g\tTrans = %g +/- %g\tAttenuatorRatio = %g\r",S_GFilenames[ii], transCts,trans,trans_err,attenRatio
 						endif
 						//write the trans to the file header of the raw data (open/close done in function)
-						WriteTransmissionToHeader(filename,trans)
+						writeSampleTransmission(filename,trans)
 						
 						WriteTransmissionErrorToHeader(filename,trans_err)
 /////						
@@ -944,7 +944,7 @@ Function CalcTotalTrans(startRow,endRow)
 							Printf "%s\t\tBox Counts = %g\t Trans = %g +/- %g\t AttenuatorRatio = %g\r",T_GFilenames[ii], transCts,trans,trans_err,attenRatio
 						endif
 						//write the trans to the file header of the raw data (open/close done in function)
-						WriteTransmissionToHeader(filename,trans)		//transmission start byte is 158
+						writeSampleTransmission(filename,trans)		//transmission start byte is 158
 						
 						WriteTransmissionErrorToHeader(filename,trans_err)
 												

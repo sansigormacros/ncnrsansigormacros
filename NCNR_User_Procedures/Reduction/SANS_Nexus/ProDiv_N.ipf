@@ -335,7 +335,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 				if(strlen(fname) == 0)
 					Abort "Bad file number in no offset Plex field"
 				endif
-				WriteTransmissionToHeader(fname,gPlexTrans)
+				writeSampleTransmission(fname,gPlexTrans)
 			endfor
 			
 			//go through the protocol
@@ -379,7 +379,7 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 				if(strlen(fname) == 0)
 					Abort "Bad file number in Plex field"
 				endif
-				WriteTransmissionToHeader(fname,gPlexTrans)
+				writeSampleTransmission(fname,gPlexTrans)
 			endfor
 			
 			//go through the protocol
@@ -536,21 +536,21 @@ Function CompareDIVButtonProc(ba) : ButtonControl
 			DoAlert 0,"First DIV / Second DIV = Result in SUB folder"
 			
 			Execute "ReadWork_DIV()"
-			Execute "CopyWorkContents(\"DIV\",\"STO\")"		// converts linear, copies data, kills linear_data
-			Execute "CopyWorkContents(\"DIV\",\"SUB\")"		///just to have waves for later
+			CopyWorkContents("DIV","STO")
+			CopyWorkContents("DIV","SUB")
 
 			Execute "ReadWork_DIV()"
-			Execute "CopyWorkContents(\"DIV\",\"DRK\")"		//then data in DRK is guaranteed linear
+			CopyWorkContents("DIV","DRK")
 
-			WAVE sub_d = root:Packages:NIST:SUB:linear_data
-			WAVE sto_d = root:Packages:NIST:STO:linear_data
-			WAVE drk_d = root:Packages:NIST:DRK:linear_data
+			WAVE sub_d = getDetectorDataW("SUB")
+			WAVE sto_d = getDetectorDataW("STO")
+			WAVE drk_d = getDetectorDataW("DRK")
 			
 			sub_d = sto_d/drk_d
 
 //			WaveStats root:Packages:NIST:DIV:data
 //			Print "*"	
-			WAVE sub_data = root:Packages:NIST:SUB:data
+			WAVE sub_data = getDetectorLinearDataW("SUB")
 			sub_data = sub_d		//data = linear_data
 					
 			Execute "ChangeDisplay(\"SUB\")"	
@@ -559,6 +559,8 @@ Function CompareDIVButtonProc(ba) : ButtonControl
 
 	return 0
 End
+
+
 Function CompareDIV()
 
 	STRUCT WMButtonAction ba

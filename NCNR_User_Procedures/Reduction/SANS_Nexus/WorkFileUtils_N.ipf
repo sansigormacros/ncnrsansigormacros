@@ -400,7 +400,6 @@ Function Raw_to_work(newType)
 #else
 	total_det += dscale*getDetector_counts(newType)
 #endif
-//	total_trn += realsread[39]
 	total_rtime += getCollectionTime(newType)
 	total_numruns +=1
 	
@@ -441,26 +440,26 @@ End
 Function Raw_to_Work_NoNorm(type)
 	String type
 	
-	WAVE reals=$("root:Packages:NIST:RAW:realsread")
-	reals[1]=1		//true monitor counts, still in raw
+	putBeamMonNormSaved_count("RAW",1)		//true monitor counts, still in raw, set to 1
 	Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
-	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
-	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
-	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
-	
+	Wave data = getDetectorDataW(type)
+	Wave data_lin = getDetectorLinearDataW(type)
+	Wave data_err = getDetectorDataErrW(type)
+	Wave data_lin_err = getDetectorLinearDataErrW(type)
+		
 	Variable norm_mon,tot_mon,scale
 	
-	norm_mon = new_reals[0]		//should be 1e8
-	tot_mon = new_reals[1]		//should be 1
+	norm_mon = getControlMonitorCount(type)		//should be 1e8
+	tot_mon = getBeamMonNormSaved_count(type)		//should be 1
 	scale= norm_mon/tot_mon
 	
 	data /= scale		//unscale the data
 	data_err /= scale
 	
 	// to keep "data" and linear_data in sync
-	data_copy = data
+	data_lin = data
+	data_lin_err = data_err
 	
 	return(0)
 End
@@ -473,26 +472,26 @@ End
 Function Add_Raw_to_Work_NoNorm(type)
 	String type
 	
-	WAVE reals=$("root:Packages:NIST:RAW:realsread")
-	reals[1]=1		//true monitor counts, still in raw
+	putBeamMonNormSaved_count("RAW",1)		//true monitor counts, still in raw, set to 1
 	Add_Raw_to_work(type)
 	//data is now in "type" folder
-	WAVE data=$("root:Packages:NIST:"+type+":linear_data")
-	WAVE data_copy=$("root:Packages:NIST:"+type+":data")
-	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
-	WAVE new_reals=$("root:Packages:NIST:"+type+":realsread")
+	Wave data = getDetectorDataW(type)
+	Wave data_lin = getDetectorLinearDataW(type)
+	Wave data_err = getDetectorDataErrW(type)
+	Wave data_lin_err = getDetectorLinearDataErrW(type)
 	
 	Variable norm_mon,tot_mon,scale
 	
-	norm_mon = new_reals[0]		//should be 1e8
-	tot_mon = new_reals[1]		//should be equal to the number of runs (1 count per run)
+	norm_mon = getControlMonitorCount(type)		//should be 1e8
+	tot_mon = getBeamMonNormSaved_count(type)		//should be 1
 	scale= norm_mon/tot_mon
 	
 	data /= scale		//unscale the data
 	data_err /= scale
 	
 	// to keep "data" and linear_data in sync
-	data_copy = data
+	data_lin = data
+	data_lin_err = data_err
 	
 	return(0)
 End
@@ -923,6 +922,8 @@ End
 //the DIV folder
 // all data is converted to linear scale for the calculation
 //
+// result is in CAL folder
+//
 Function Divide_work(type)
 	String type
 	
@@ -930,58 +931,44 @@ Function Divide_work(type)
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
 
-	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
+
+	Wave/Z data = getDetectorDataW("CAL")
+	Wave/Z div_data = getDetectorDataW("DIV")		//hard-wired in....
+
+	if(WaveExists(data) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
 	//check for DIV
 	// if the DIV workfile doesn't exist, let the user know,and abort
 
-	if(WaveExists($"root:Packages:NIST:DIV:data") == 0)
+	if(WaveExists(div_data) == 0)
 		Print "There is no work file in DIV --Aborting"
 		Return(1)		//error condition
 	Endif
 	//files exist, proceed
 	
-	//check for log-scaling of the "DIV" data and adjust if necessary
-	ConvertFolderToLinearScale("DIV")
-	
-	//copy type information to CAL, wiping out the old contents of the CAL folder first
-	
-	//destPath = "root:Packages:NIST:CAL"
-	//SetDataFolder destPath
-	//KillWaves/A/Z			//get rid of the old data in CAL folder
-
-	//check for log-scaling of the "type" data and adjust if necessary
-	ConvertFolderToLinearScale(type)
-	//then continue
-
 	//copy from current dir (type)=destPath to CAL, overwriting CAL contents
+	CopyHDFToWorkFolder(type,"CAL")
+	
+	
 	destPath = "root:Packages:NIST:" + type
-	Duplicate/O $(destPath + ":data"),$"root:Packages:NIST:CAL:data"
-	Duplicate/O $(destPath + ":linear_data"),$"root:Packages:NIST:CAL:linear_data"
-	Duplicate/O $(destPath + ":linear_data_error"),$"root:Packages:NIST:CAL:linear_data_error"
-//	Duplicate/O $(destPath + ":vlegend"),$"root:Packages:NIST:CAL:vlegend"
-	Duplicate/O $(destPath + ":textread"),$"root:Packages:NIST:CAL:textread"
-	Duplicate/O $(destPath + ":integersread"),$"root:Packages:NIST:CAL:integersread"
-	Duplicate/O $(destPath + ":realsread"),$"root:Packages:NIST:CAL:realsread"
+
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(destPath + ":fileList")
 
 	//now switch to reference waves in CAL folder
 	destPath = "root:Packages:NIST:CAL"
 	//make appropriate wave references
-	Wave data=$(destPath + ":linear_data")					// these wave references point to the data in CAL
-//	Wave data_err=$(destPath + ":linear_data_err")					// these wave references point to the data in CAL
-	Wave data_copy=$(destPath + ":data")					// these wave references point to the data in CAL
-	Wave/t textread=$(destPath + ":textread")			//that are to be directly operated on
-	Wave integersread=$(destPath + ":integersread")
-	Wave realsread=$(destPath + ":realsread")
+//	Wave data_err = getDetctorDataW("CAL")
+	Wave data_copy = getDetectorLinearDataW("CAL")
+	
+
 	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in CAL folder, data is linear scale
 	//need to copy filelist string too
 	String/G $(destPath + ":fileList") = oldFileList
 
-	Wave div_data = $"root:Packages:NIST:DIV:data"		//hard-wired in....
+
 	//do the division, changing data in CAL
 	data /= div_data
 	
@@ -991,7 +978,7 @@ Function Divide_work(type)
 	data_copy = data
 	
 	//update CAL header
-	textread[1] = date() + " " + time()		//date + time stamp
+//	textread[1] = date() + " " + time()		//date + time stamp
 	
 	Return(0)
 End
@@ -1046,31 +1033,18 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	//check for existence of data, rescale to linear if needed
 	String destPath
 	//check for "type"
-	if(WaveExists($("root:Packages:NIST:"+Type + ":data")) == 0)
+	Wave/Z data_check=getDetectorDataW(type)
+	
+	if(WaveExists(data_check) == 0)
 		Print "There is no work file in "+type+"--Aborting"
 		Return(1) 		//error condition
 	Endif
-	//check for log-scaling of the "type" data and adjust if necessary
-	destPath = "root:Packages:NIST:"+Type
-	NVAR gIsLogScale = $(destPath + ":gIsLogScale")
-	if(gIsLogScale)
-		Duplicate/O $(destPath + ":linear_data") $(destPath + ":data")//back to linear scale
-		Variable/G $(destPath + ":gIsLogScale")=0	//the "type" data is not logscale anymore
-	endif
 	
 	//copy "oldtype" information to ABS
-	//overwriting out the old contents of the ABS folder (/O option in Duplicate)
-	//copy over the waves data,vlegend,text,integers,reals(read)
+	//overwriting out the old contents of the ABS folder (or killing first)
+	CopyHDFToWorkFolder(type,"ABS")
 
 	String oldType= "root:Packages:NIST:"+type  		//this is where the data to be absoluted is 
-	//copy from current dir (type) to ABS, defined by destPath
-	Duplicate/O $(oldType + ":data"),$"root:Packages:NIST:ABS:data"
-	Duplicate/O $(oldType + ":linear_data"),$"root:Packages:NIST:ABS:linear_data"
-	Duplicate/O $(oldType + ":linear_data_error"),$"root:Packages:NIST:ABS:linear_data_error"
-//	Duplicate/O $(oldType + ":vlegend"),$"root:Packages:NIST:ABS:vlegend"
-	Duplicate/O $(oldType + ":textread"),$"root:Packages:NIST:ABS:textread"
-	Duplicate/O $(oldType + ":integersread"),$"root:Packages:NIST:ABS:integersread"
-	Duplicate/O $(oldType + ":realsread"),$"root:Packages:NIST:ABS:realsread"
 	//need to save a copy of filelist string too (from the current type folder)
 	SVAR oldFileList = $(oldType + ":fileList")
 	//need to copy filelist string too
@@ -1078,18 +1052,16 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	
 	//now switch to ABS folder
 	//make appropriate wave references
-	WAVE data=$"root:Packages:NIST:ABS:linear_data"					// these wave references point to the "type" data in ABS
-	WAVE data_err=$"root:Packages:NIST:ABS:linear_data_error"					// these wave references point to the "type" data in ABS
-	WAVE data_copy=$"root:Packages:NIST:ABS:data"					// just for display
-	WAVE/T textread=$"root:Packages:NIST:ABS:textread"			//that are to be directly operated on
-	WAVE integersread=$"root:Packages:NIST:ABS:integersread"
-	WAVE realsread=$"root:Packages:NIST:ABS:realsread"
+	Wave data=getDetectorDataW("ABS")
+	Wave data_copy=getDetectorLinearDataW("RAW")
+	Wave data_err=getDetectorDataErrW("RAW")
+	
 	Variable/G $"root:Packages:NIST:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
 	
 	//do the actual absolute scaling here, modifying the data in ABS
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
 	
-	w_moncount = realsread[0]		//monitor count in "type"
+	w_moncount = getControlMonitorCount("ABS")		//monitor count in "ABS"
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
@@ -1098,7 +1070,7 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	
 	//calculate scale factor
 	Variable scale,trans_err
-	s1 = defmon/realsread[0]		//[0] is monitor count (s1 should be 1)
+	s1 = defmon/getControlMonitorCount("ABS")		//[0] is monitor count (s1 should be 1)
 	s2 = s_thick/w_thick
 	s3 = s_trans/w_trans
 	s4 = s_cross/s_izero
@@ -1108,7 +1080,7 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	data *= s1*s2*s3*s4
 	
 	scale = s1*s2*s3*s4
-	trans_err = realsRead[41]
+	trans_err = getSampleTransError("ABS")
 	
 //	print scale
 //	print data[0][0]
@@ -1127,7 +1099,9 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	//Print "ABS data multiplied by  ",s1*s2*s3*s4/attenFactor
 	
 	//update the ABS header information
-	textread[1] = date() + " " + time()		//date + time stamp
+//	textread[1] = date() + " " + time()		//date + time stamp
+//	textread[1] = date() + " " + time()		//date + time stamp
+	// putDataStartTime(fname) doesn't exist
 	
 	Return (0) //no error
 End
@@ -1141,44 +1115,17 @@ End
 //converted to linear scale before copying
 //******data in newtype is overwritten********
 //
+// a duplicated copy routine that is used in some locations, this points to the
+// single routine that does the copy
+//
 Function CopyWorkContents(oldtype,newtype)
 	String oldtype,newtype
 	
-	//check for existence of data in oldtype
-	// if the desired workfile doesn't exist, let the user know, and abort
-	String destPath=""
-	if(WaveExists($("root:Packages:NIST:"+oldType + ":data")) == 0)
-		Print "There is no work file in "+oldtype+"--Aborting"
-		Return(1) 		//error condition
-	Endif
 	
-	//check for log-scaling of the "type" data and adjust if necessary
-	ConvertFolderToLinearScale(oldtype)
-	Fix_LogLinButtonState(0)		//make sure the button reflects the new linear scaling
-	//then continue
+	CopyHDFToWorkFolder(oldtype,newtype)
+	
+	return(0)
 
-	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
-	destPath = "root:Packages:NIST:" + oldtype
-	Duplicate/O $(destPath + ":data"),$("root:Packages:NIST:"+newtype+":data")
-	Duplicate/O $(destPath + ":linear_data"),$("root:Packages:NIST:"+newtype+":linear_data")
-	Duplicate/O $(destPath + ":linear_data_error"),$("root:Packages:NIST:"+newtype+":linear_data_error")
-	Duplicate/O $(destPath + ":textread"),$("root:Packages:NIST:"+newtype+":textread")
-	Duplicate/O $(destPath + ":integersread"),$("root:Packages:NIST:"+newtype+":integersread")
-	Duplicate/O $(destPath + ":realsread"),$("root:Packages:NIST:"+newtype+":realsread")
-	//
-	// be sure to get rid of the linear_data if it exists in the destination folder
-//	KillWaves/Z $("root:Packages:NIST:"+newtype+":linear_data")
-
-	//need to save a copy of filelist string too (from the current type folder)
-	SVAR oldFileList = $(destPath + ":fileList")
-
-	//now switch to reference waves in newtype folder
-	destPath = "root:Packages:NIST:"+newtype
-	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in newtype folder, data is linear scale
-	//need to copy filelist string too
-	String/G $(destPath + ":fileList") = oldFileList
-
-	Return(0)
 End
 
 //Entry procedure from main panel
@@ -1621,32 +1568,31 @@ End
 Function Adjust_RAW_Attenuation(type)
 	String type
 	
-	WAVE rw=$("root:Packages:NIST:RAW:realsread")
-	WAVE linear_data=$("root:Packages:NIST:RAW:linear_data")
-	WAVE data=$("root:Packages:NIST:RAW:data")
-	WAVE data_err=$("root:Packages:NIST:RAW:linear_data_error")
-	WAVE/T tw = $("root:Packages:NIST:RAW:textRead")
-	
-	WAVE dest_reals=$("root:Packages:NIST:"+type+":realsread")
+	WAVE linear_data=getDetectorLinearDataW("RAW")
+	WAVE data=getDetectorDataW("RAW")
+	WAVE data_err=getDetectorDataErrW("RAW")	
 
-	Variable dest_atten,raw_atten,tol
+	Variable dest_atten,raw_atten,tol,val
 	Variable lambda,raw_atten_err,raw_AttenFactor,dest_attenFactor,dest_atten_err
 	String fileStr
 
-	dest_atten = dest_reals[3]
-	raw_atten = rw[3]
+	dest_atten = getAtten_number(type)
+	raw_atten = getAtten_number("RAW")
 	
 	tol = 0.1		// within 0.1 atten units is OK
 	if(abs(dest_atten - raw_atten) < tol )
 		return(0)
 	endif
 
-	fileStr = tw[3]
-	lambda = rw[26]
+	fileStr = getAcctName("RAW")
+	lambda = getWavelength("RAW")
 	raw_AttenFactor = N_AttenuationFactor(fileStr,lambda,raw_atten,raw_atten_err)
 	dest_AttenFactor = N_AttenuationFactor(fileStr,lambda,dest_atten,dest_atten_err)
 		
-	rw[2] *= dest_AttenFactor/raw_AttenFactor
+	val = getDetector_counts("RAW")
+	val *= dest_AttenFactor/raw_AttenFactor
+	putDetector_counts("RAW", val)
+	
 	linear_data *= dest_AttenFactor/raw_AttenFactor
 	
 	// to keep "data" and linear_data in sync
@@ -1822,7 +1768,7 @@ End
 
 //
 // copy what is needed for data processing (not the DAS_logs)
-// from the RawVSANS storage folder to the local WORK folder as needed
+// from one SANS storage folder to the local WORK folder as needed
 //
 //
 // (DONE) - decide what exactly I need to copy over. May be best to copy all, and delete

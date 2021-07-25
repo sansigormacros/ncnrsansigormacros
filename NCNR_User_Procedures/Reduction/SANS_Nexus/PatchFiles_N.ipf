@@ -568,7 +568,7 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	//ReWriteReal() takes care of open/close on its own
 	if(change[1])		//sample transmission
 		num = str2num(textVal[1])
-		WriteTransmissionToHeader(fname,num)
+		writeSampleTransmission(fname,num)
 	Endif
 	if(change[2])		//sample thickness
 		num = str2num(textVal[2])

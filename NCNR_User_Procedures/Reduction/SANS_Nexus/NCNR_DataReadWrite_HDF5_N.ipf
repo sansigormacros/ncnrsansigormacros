@@ -3,12 +3,21 @@
 #pragma IgorVersion=8.0
 
 //
-// JULY 2021
+// JULY 2021 -- TODO - replace the functions in this file---
+//								or move to the new version
+//
 //
 // all that is left in this file is some odd utility functions that 
 // may or may not be useful to patch (batchwise) bits of the raw data file
-// headers. There are also some old VAX-file R/W routines that have little value
-// within the new nexus format, but they have been kept just in case.
+// headers.
+
+//
+// There are some old VAX-file R/W routines that have no value
+// within the new nexus format, and need to be REPLACED with the correct get, put, or write
+// functions in the files:
+// 	NCNR_HDF5_Read.ipf
+// 	NCNR_HDF5_Write.ipf
+//		NCNR_DataReadWriteUtils_N.ipf
 //
 //
 // I have strayed from the clean split of functions that are "facility-specific"
@@ -382,27 +391,6 @@ Function KillNamedDataFolder(fname)
 	
 	return(err)
 end
-
-//sample transmission is a real value at byte 158
-Function WriteTransmissionToHeader(fname,trans)
-	String fname
-	Variable trans
-	
-	Make/O/D/N=1 wTmpWrite
-	String groupName = "/Sample"	//	/Run1/Sample becomes groupName /Run1/Run1/Sample
-	String varName = "TRNS"
-	wTmpWrite[0] = trans //
-
-	variable err
-	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-//	Print "HDF write err = ",err
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = KillNamedDataFolder(fname)
-//	Print "DataFolder kill err = ",err
-		
-	return(0)
-End
 
 
 //sample transmission error (one sigma) is a real value at byte 396
