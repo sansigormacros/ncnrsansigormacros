@@ -348,11 +348,6 @@ Function Raw_to_work(newType)
 	
 	DetCorr(data,data_err,newTYpe,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
 
-//	//if ILL type detector, correct for same counts being written to 4 pixels
-//	if(cmpstr(textread[9], "ILL   ") == 0 )		//text field in header is 6 characters "ILL---"
-//		data /= 4
-//		data_err /= 4		//rescale error
-//	endif
 
 // TODO -- the dead time correction will be different for the tube detectors,
 // and for the Ordela will be accessed differently - with the dt constant in the file header
