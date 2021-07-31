@@ -32,7 +32,11 @@
 //		some different processing possibilities. The different loaders must be mutually exclusive,
 //			such that multiple SANS reduction packages can't be loaded at the same time
 //
-//
+// -- Added Hook function to run each time an experiment is open that runs the "initialization"
+// routine for any package that is open. This will set any global variables that are "new" and
+// might not be present in an older experiment that a user may have. Need to be careful not to
+// re-set any values that may have been changed from their default. Check each of the 
+// initialization routines for this behavior.
 
 
 Menu "Macros"
@@ -876,5 +880,46 @@ Function VSANSLoader()
 
 		return(0)
 	endif
+End
+
+
+
+//
+// if kind==1, this function will run whenever an existing Igor experiment is opened
+//
+// then, if the initialization routines exist, run them.
+//
+Function AfterFileOpenHook(refNum,file,pathName,type,creator,kind)
+	Variable refNum,kind
+	String file,pathName,type,creator
+
+	if(kind == 1)		// an Igor experiment, not any other kind of file
+	
+		Print "Re-initialization running"
+		
+		// check for VSANS
+		if(exists("Initialize_VSANS") > 2)
+			Execute/P "Initialize_VSANS()"
+		endif
+	
+		//check for SANS
+		if(exists("Initialize") > 2)
+			Execute/P "Initialize()"
+		endif
+	
+		// check for USANS
+		if(exists("ShowUSANSPanel") > 2)
+			Execute/P "ShowUSANSPanel()"
+		endif	
+	
+		// check for the analysis package
+		if(exists("Init_WrapperPanel") > 2)
+			Execute/P "Init_WrapperPanel()"
+		endif
+	
+
+	endif
+	
+	return(0)
 End
 
