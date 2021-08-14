@@ -685,7 +685,7 @@ Function WriteXMLWaves_W_Protocol(type,fullpath,dialog)
 	
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
+	WAVE rw=$(destStr + ":realsRead")		//NOT updating to Nexus structure until(if) needed
 	WAVE/T textw=$(destStr + ":textRead")
 	WAVE qvals =$(destStr + ":qval")
 	WAVE inten=$(destStr + ":aveint")

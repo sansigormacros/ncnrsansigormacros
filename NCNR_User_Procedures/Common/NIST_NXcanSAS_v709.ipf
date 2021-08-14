@@ -446,12 +446,20 @@ Function LoadNXcanSASData(fileStr,outstr,doPlot,forceOverwrite)
 
 end
 
+//
+// AUG 2021
+//
+// this routine still has calls to the RTI structure and has not been updated
+// to use the NExus file structure - for now I will not update it, since I do not know if
+// it is necessary.
+//
+//
 Function LoadMetaData(fileID,loadDir,parentBase)
 	String parentBase,loadDir
 	Variable fileID
 	Variable groupID
 	SetDataFolder $(loadDir)
-	Make/O/N=52 $(loadDir + ":realsRead")
+	Make/O/N=52 $(loadDir + ":realsRead")		//NOT updating to Nexus structure
 	Make/O/T/N=11 $(loadDir + ":textRead")
 	Wave rw = $(loadDir + ":realsRead")
 	Wave/T textw = $(loadDir + ":textRead")

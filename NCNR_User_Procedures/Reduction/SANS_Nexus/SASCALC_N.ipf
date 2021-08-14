@@ -3,6 +3,29 @@
 #pragma IgorVersion=6.1
 #pragma ModuleName=SASCALC
 
+//
+// AUG 2021
+//
+// Can I just leave SASCALC alone - and have it work "internally" as if it was VAX,
+// and then at the very end, if it desired to write out a 2D data file, only then do
+// I convert the VAX RTI to a Nexus tree for writing.
+//
+// -- NO -leaving everything untouched won't completely work, since the SASCALC procedures (for the 2D MC)
+// need to do some "reads" from the SAS folder. In VCALC, I set up the skeleton of the file
+// structure in the folder, enough to cover the variables I'm trying to read from the folder
+// -- I'll need to do this for the SAS folder.
+// -- I've already made some of the read changes in the MC file, so I may be stuck now...
+//
+//
+//
+//
+
+
+
+
+
+
+//
 // SASCALC.ipf
 //
 // 04 OCT 2006 SRK
@@ -1181,16 +1204,31 @@ Function LambdaSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String varStr
 	String varName
 
-	WAVE rw=root:Packages:NIST:SAS:realsRead
+//	WAVE rw=root:Packages:NIST:SAS:realsRead
 	Variable recalc=0
 	
-	rw[26] = str2num(varStr)
+//	rw[26] = str2num(varStr)
 	if(cmpstr(ctrlName,"") != 0)
 		recalc=1
 		LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
 	endif
 	ReCalculateInten(recalc)
 	return(0)
+End
+
+// get the wavelength from the panel control
+Function getSASCALCWavelength()
+
+	ControlInfo setvar0_2
+	Variable val=V_Value
+	return(val)
+End
+
+// get the wavelength spread from the global
+Function getSASCALCWavelengthSpread()
+
+	NVAR val=root:Packages:NIST:SAS:gDeltaLambda
+	return(val)
 End
 
 
@@ -1202,12 +1240,23 @@ Function DeltaLambdaPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 
 	NVAR dl=root:Packages:NIST:SAS:gDeltaLambda
 	dl=str2num(popStr)
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	rw[27] = dl
+//	WAVE rw=root:Packages:NIST:SAS:realsRead
+//	rw[27] = dl
 	ReCalculateInten(popnum)		//skip the calculation if I pass in  zero
 	return(0)
 End
 
+
+// a stored value in [mm]
+// HARD-WIRED at the tube value of 8.4 mm
+//
+// TODO -- add this to the "initialize space" section
+//
+Function getSASCALX_x_pix_size()
+
+	Variable val = 8.4
+	return(val)
+end
 
 // calculate the intensity
 // - either do MC or the straight calculation.
@@ -2178,8 +2227,8 @@ Function sampleApertureDiam()
 		//1st item is 1/16", popup steps by 1/16"
 		a2 = 2.54/16.0 * (V_Value)			//convert to cm		
 	endif
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	rw[24] = a2*10			//sample aperture diameter in mm
+//	WAVE rw=root:Packages:NIST:SAS:realsRead
+//	rw[24] = a2*10			//sample aperture diameter in mm
 	
 	return(a2)
 end
@@ -2299,6 +2348,24 @@ Function detectorOffset()
 	return(val)
 end
 
+// HARD-WIRED for the middle of a 128 pix X-range, corrected for offset
+Function getSASCALCBeamCenter_x()
+
+	NVAR offset = root:Packages:NIST:SAS:gOffset
+	Variable val = 64 + round(2*offset)  //approximate beam X is 64 w/no offset, 114 w/25 cm offset
+	return(val)
+end
+
+
+// HARD-WIRED for the middle of a 128 pix range in Y
+//
+Function getSASCALCBeamCenter_y()
+
+	Variable val=64
+	return(val)
+End
+
+
 //returns the detector distance (slider and setVar are linked by the global)
 //
 Function chamberToDetectorDist()
@@ -2310,15 +2377,16 @@ End
 //sets the SDD (slider and setVar are linked by the global and is the detector position
 //  relative to the chamber)
 // updates the wave
+// SDD is in [cm]
 Function sampleToDetectorDist()
 
 	NVAR detDist = root:Packages:NIST:SAS:gDetDist
 	NVAR S12 = root:Packages:NIST:SAS:S12
-	WAVE rw=root:Packages:NIST:SAS:RealsRead	
+//	WAVE rw=root:Packages:NIST:SAS:RealsRead	
 	Variable SDD	
 	
 	SDD = detDist + s12*(2-tableposition())
-	rw[18] = SDD/100		// convert to meters for header
+//	rw[18] = SDD/100		// convert to meters for header
 	return(SDD)
 End
 

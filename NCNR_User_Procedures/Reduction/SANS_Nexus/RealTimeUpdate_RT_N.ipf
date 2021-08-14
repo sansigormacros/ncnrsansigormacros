@@ -2,6 +2,15 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+//
+// AUG 2021
+//
+// This file and RT operations have NOT been updated for the Nexus file
+// structure, and may not ever be updated if the RT updating is no longer used.
+//
+//
+
+
 //*****************************
 // Vers. 1.0 100401
 //

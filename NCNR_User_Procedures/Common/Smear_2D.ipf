@@ -375,6 +375,9 @@ end
 // then:
 // Display;AppendImage res;AppendMatrixContour res;ModifyContour res labels=0,autoLevels={*,*,3}
 // 
+//
+// AUG 2021 - this has not been updated for the Nexus file structure, and may never be updated
+//
 
 Function PlotResolution_atPixel(type,xx,yy)
 	String type
@@ -403,7 +406,7 @@ Function PlotResolution_atPixel(type,xx,yy)
 		
 	Wave data=$(destStr+typeStr)
 	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
+	WAVE rw=$(destStr + ":realsRead")					//NOT updated for Nexus
 	WAVE/T textw=$(destStr + ":textRead")
 	
 //	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist

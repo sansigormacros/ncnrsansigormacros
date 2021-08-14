@@ -365,13 +365,13 @@ End
 // - fname passed in is the full path to the file on disk --OR-- a WORK folder
 // - path is the path to the value in the HDF tree
 //
-/// -- if data requested from a WORK or VCALC folder:
+/// -- if data requested from a WORK or SAS folder (for SASCALC):
 // check to see if the value exists (It will be a wave)
 // -- if it does, return the value from the local WORK folder
 //		if it does not exist, return DUMMY value
 //
 //// -- if data requested from a file:
-// check to see if the value exists locally in RawVSANS (It will be a wave)
+// check to see if the value exists locally in RawSANS (It will be a wave)
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
@@ -386,7 +386,7 @@ Function getRealValueFromHDF5(fname,path)
 	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"VCALC;RealTime;")
+	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SAS;RealTime;")
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))
@@ -406,7 +406,7 @@ Function getRealValueFromHDF5(fname,path)
 	endif
 	
 	if(!valExists)
-		//then read in the file, putting the data in RawVSANS
+		//then read in the file, putting the data in RawSANS
 		SetDataFolder ksBaseDFPath
 		ReadHeaderAndData(fname,"")
 		SetDataFolder root:

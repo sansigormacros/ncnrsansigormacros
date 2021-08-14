@@ -2,6 +2,18 @@
 #pragma IgorVersion=6.1
 
 
+
+// AUG 2021 -- the 1-D simulation appears to be working, but needs more testing
+// -- the 2D MC does not work - the SAS folder needs to be initialized with a Nexus
+// folder structure, as done in VCALC.
+// -- there are HARD-WIRED bits in 1D and 2D (and from the panel) that are 128 pixels in 
+//    each range
+// -- the pixel x and y dimensions are HARD-WIRED, and need to be updated for the 10m instrument
+//
+///
+/////////////////
+
+
 //
 // Monte Carlo simulator for SASCALC
 // October 2008 SRK
@@ -1589,13 +1601,17 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	Variable r1,xCtr,yCtr,sdd,pixSize,wavelength,deltaLam
 	String coefStr,abortStr,str
 
-	r1 = getSampleAp_size("SAS")/2/10		// sample diameter convert diam in [mm] to radius in cm
-	xCtr = getDet_beam_center_x("SAS")
-	yCtr = getDet_beam_center_y("SAS")
-	sdd = getDet_Distance("SAS")*100		//conver header of [m] to [cm]
-	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
-	wavelength = getWavelength("SAS")
-	deltaLam = getWavelength_spread("SAS")
+
+//	Print "error -- values need to come from panel, not folder read"			
+	// these values are read from the panel or initialized values
+	//
+	r1 = sampleApertureDiam()/2/10		// sample diameter convert diam in [mm] to radius in cm
+	xCtr = getSASCALCBeamCenter_x()
+	yCtr = getSASCALCBeamCenter_y()
+	sdd = sampleToDetectorDist()		//[cm]
+	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	wavelength = getSASCALCWavelength()
+	deltaLam = getSASCALCWavelengthSpread()
 	coefStr = MC_getFunctionCoef(funcStr)
 	
 	if(!MC_CheckFunctionAndCoef(funcStr,coefStr))
@@ -1733,8 +1749,11 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 
 	ssd = sourceToSampleDist()
 	YG_d = -0.5*g*SDD*(SSD+SDD)*(wavelength/vz_1)^2		// fall in cm (negative value)
+
+	Print "error -- values need to come from panel, not folder read"			
 	
-	xCtr = 64	 + round(2*getDet_LateralOffset("SAS"))		// I'm always off by one for some reason, so start at 65.5?
+	// BOTH of these values are HARD_WIRED to 128 pixel range
+	xCtr = getSASCALCBeamCenter_x()	
 	yCtr = 64 + yg_d/0.5					// this will lower the beam center
 //	rw[16] = xCtr
 //	rw[17] = yCtr
@@ -2262,10 +2281,13 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	NVAR detectorEff = root:Packages:NIST:SAS:g_detectorEff
 	
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
-					
-	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
-	sdd = getDet_Distance("SAS")*100		//convert header of [m] to [cm]
-	wavelength = getWavelength("SAS")		// in 1/A
+	//
+
+//	Print "error -- values need to come from panel, not folder read"
+	// these calls get values from either the initialized space, or directly from the panel controls.			
+	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	sdd = sampleToDetectorDist()		// [cm]
+	wavelength = getSASCALCWavelength()		// in 1/A
 	
 	imon = beamIntensity()*ctTime
 	
@@ -2469,10 +2491,12 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 	Variable SimDetCts,estDetCR,fracScat,estTrans,mScat
 	
 	WAVE nCells=root:Packages:NIST:SAS:nCells				
-					
-	pixSize = getDet_x_pixel_size("SAS")/10		// convert pix size in mm to cm
-	sdd = getDet_Distance("SAS")*100		//convert header of [m] to [cm]
-	wavelength = getWavelength("SAS")		// in 1/A
+
+//	Print "error -- values need to come from panel, not folder read"			
+	// these values come from the initialized space, or from the SASCALC panel directly				
+	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	sdd = sampleToDetectorDist()		//[cm]
+	wavelength = getSASCALCWavelength()		// in 1/A
 	
 	imon = beamIntensity()*ctTime
 	
