@@ -1973,16 +1973,24 @@ end
 Function getSampleTransmission(fname)
 	String fname
 	
-	String path = "entry:sample:transmission"	
-	return(getRealValueFromHDF5(fname,path))
+	Print "FAKE TRANSMISSION OF 0.8 USED"
+	
+	return(0.8)
+	
+//	String path = "entry:sample:transmission"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 //transmission error (one sigma)
 Function getSampleTransError(fname)
 	String fname
+
+	Print "FAKE TRANSMISSION ERROR OF 0.1 USED"
 	
-	String path = "entry:sample:transmission_error"	
-	return(getRealValueFromHDF5(fname,path))
+	return(0.1)
+		
+//	String path = "entry:sample:transmission_error"	
+//	return(getRealValueFromHDF5(fname,path))
 end
 
 

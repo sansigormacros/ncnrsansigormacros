@@ -233,25 +233,98 @@ Function ReadHeaderAndData(fname,folderStr)
 	else
 		folderStr = StringFromList(0,FName,".")		// just the first part of the name, no .nxs.ngv
 	endif
-
+	String base_name = folderStr
+	
 	String curDF = GetDataFolder(1)
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+folderStr)
 	endif
 	
-//// loads everything with one line	 (includes /DAS_logs)
-//	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
-// /L=7 flag loads all data types, no /L acts as /L=7
+//////// loads everything with one line	 (includes /DAS_logs)
+//////	HDF5LoadGroup/Z/L=7/O/R/T=$base_name  :, fileID, hdf5Path		//	recursive
+////// /L=7 flag loads all data types, no /L acts as /L=7
+////
+//////		HDF5LoadGroup /O /R=2 /T /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
+////		HDF5LoadGroup /O /R=2 /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
 
-//		HDF5LoadGroup /O /R=2 /T /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
-		HDF5LoadGroup /O /R=2 /IMAG=1 :, fileID, hdf5Path		// Requires HDF5 XOP 1.24 or later
 
+
+// load root/entry
+	hdf5path = "/entry"
+//	NewDataFolder/O $(curDF)
+	if(isFolder == -1)
+		NewDataFolder/O $(curDF+base_name)
+	endif
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry")
+	else
+		// base_name is "", so get rid of the leading ":" on ":entry"
+		NewDataFolder/O/S $(curDF+base_name+"entry")
+	endif
+	HDF5LoadGroup/Z/L=7/O :, fileID, hdf5Path		//	NOT recursive
+
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:control")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:control")
+	endif
+	hdf5path = "/entry/control"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:instrument")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:instrument")
+	endif
+	hdf5path = "/entry/instrument"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:reduction")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:reduction")
+	endif	
+	hdf5path = "/entry/reduction"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:sample")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:sample")
+	endif	
+	hdf5path = "/entry/sample"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive (This is the only one that may have duplicated groups)
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:user")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:user")
+	endif	
+	hdf5path = "/entry/user"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+
+// not sure there's anything useful in this block
+//
+//
+//	if(isFolder == -1)
+//		NewDataFolder/O/S $(curDF+base_name+":entry:program_data")
+//	else
+//		NewDataFolder/O/S $(curDF+base_name+"entry:program_data")
+//	endif	
+//	hdf5path = "/entry/user"
+//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+
+	
 //
 	HDF5CloseFile/Z fileID
 
 
 	//keep a string with the filename in the folder where the data was loaded
+	SetDataFolder $(curDF)
 	String/G fileList = fname
 
 	SetDataFolder root:	
