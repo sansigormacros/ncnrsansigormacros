@@ -571,9 +571,7 @@ Proc BuildCatShortNotebook()
 	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
 	Variable numitems,ii,ok
 	
-	//remove version numbers from semicolon-delimited list
-	list =  RemoveVersNumsFromList(list)
-	
+
 	numitems = ItemsInList(list,";")
 	
 	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS
@@ -585,7 +583,7 @@ Proc BuildCatShortNotebook()
 		//get current item in the list
 		partialName = StringFromList(ii, list, ";")
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
@@ -598,7 +596,7 @@ Proc BuildCatShortNotebook()
 			PathInfo catPathName
 			FullName = S_path + tempName
 			//make sure the file is really a RAW data file
-			ok = CheckIfRawData(fullName)
+			ok = N_CheckIfRawData(fullName)
 			if (!ok)
 				//write to notebook that file was not a RAW SANS file
 				notRAWlist += "This file is not recognized as a RAW SANS data file: "+tempName+"\r"
@@ -802,8 +800,6 @@ Proc BuildCatVeryShortNotebook()
 	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
 	Variable numitems,ii,ok
 	
-	//remove version numbers from semicolon-delimited list
-	list =  RemoveVersNumsFromList(list)
 	
 	numitems = ItemsInList(list,";")
 	
@@ -817,7 +813,7 @@ Proc BuildCatVeryShortNotebook()
 		//get current item in the list
 		partialName = StringFromList(ii, list, ";")
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 		If(cmpstr(tempName,"")==0) 		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
@@ -830,7 +826,7 @@ Proc BuildCatVeryShortNotebook()
 			PathInfo catPathName
 			FullName = S_path + tempName
 			//make sure the file is really a RAW data file
-			ok = CheckIfRawData(fullName)
+			ok = N_CheckIfRawData(fullName)
 			if (!ok)
 				//write to notebook that file was not a RAW SANS file
 				notRAWlist += "This file is not recognized as a RAW SANS data file: "+tempName+"\r"

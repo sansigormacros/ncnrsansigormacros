@@ -1222,14 +1222,19 @@ End
 
 ////duplicated here -- for VSANS use
 function v_tic()
-	variable/G tictoc = startMSTimer
+	NVAR/Z tictoc=root:tictoc
+	if(NVAR_exists(tictoc))
+		print "timer exists"
+	endif
+	variable/G root:tictoc = startMSTimer
 end
  
 function v_toc()
-	NVAR/Z tictoc
+	NVAR/Z tictoc=root:tictoc
 	variable ttTime = stopMSTimer(tictoc)
 	printf "%g seconds\r", (ttTime/1e6)
-	killvariables/Z tictoc
+	killvariables/Z root:tictoc
+	
 	return(ttTime/1e6)
 end
 

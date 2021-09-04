@@ -1521,7 +1521,7 @@ Function S_CircularAverageTo1D(type)
 //	Print "side = ",side
 	
 	/// data wave is data in the current folder which was set at the top of the function
-	WAVE data=$(destPath + ":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
 
 // fake mask that uses all of the detector
 	Make/D/O/N=(pixelsX,pixelsY) $(destPath + ":mask")

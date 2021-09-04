@@ -280,7 +280,7 @@ Proc VSANS_EventModePanel()
 	PopupMenu popup0,pos={sc*389,77*sc},size={sc*119,20*sc},proc=V_BinTypePopMenuProc,title="Bin Spacing"
 	PopupMenu popup0,fSize=10*sc
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},fSize=12*sc,proc=V_ProcessEventLog_Button,title="Bin Event Data"
+	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},proc=V_ProcessEventLog_Button,title="Bin Event Data"
 
 // NEW FOR VSANS
 	Button button21,pos={sc*488,205*sc},size={sc*120,20*sc},proc=V_SplitToPanels_Button,title="Split to Panels"
@@ -772,6 +772,7 @@ v_tic()
 		Duplicate/O rescaledTime OscSortIndex
 		MakeIndex rescaledTime OscSortIndex
 		IndexSort OscSortIndex, yLoc,xLoc,timePt,rescaledTime	
+		
 		//SetDataFolder root:Packages:NIST:VSANS:Event
 		V_IndexForHistogram(xLoc,yLoc,binnedData)			// index the events AFTER sorting
 		//SetDataFolder root:
@@ -996,7 +997,6 @@ End
 // you'll never be able to undo the sort
 //
 Function V_SortTimeData()
-
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 
@@ -1312,24 +1312,34 @@ Variable t1 = ticks
 //
 	NVAR removeBadEvents = root:Packages:NIST:VSANS:Event:gRemoveBadEvents
 
+v_tic()
 	if(RemoveBadEvents)
 		// this loops through all 4 panels, removing bad time steps
 		V_EC_CleanAllPanels()
 	endif
+Printf "cleanup panels = "
+v_toc()
 
-// safe to sort stream data now if bad steps removed
-	if(mode == MODE_STREAM && RemoveBadEvents)
+v_tic()
+// safe to sort stream data now, even if bad steps haven't been removed (the data is probably good)
+//	if(mode == MODE_STREAM && RemoveBadEvents)
+	if(mode == MODE_STREAM)
 		V_SortTimeData()
 	Endif
-
+	printf "sort = "
+v_toc()
 
 	SetDataFolder root:
 
 Variable t2 = ticks
 
+v_tic()
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2
 	V_ShowEventDataButtonProc(ba)
+printf "draw plots = "
+v_toc()
+
 
 Variable t3 = ticks
 
@@ -1427,9 +1437,14 @@ End
 
 Function V_DifferentiatedTime()
 
+
+
 	Wave rescaledTime = root:Packages:NIST:VSANS:Event:rescaledTime
 
 	SetDataFolder root:Packages:NIST:VSANS:Event:
+		
+		
+		
 		
 	Differentiate rescaledTime/D=rescaledTime_DIF
 //	Display rescaledTime,rescaledTime_DIF
@@ -1442,6 +1457,24 @@ Function V_DifferentiatedTime()
 		Label left "\\Z14Delta (dt/event)"
 		Label bottom "\\Z14Event number"
 	endif
+	
+	
+//	
+//	Duplicate/O rescaledTime,rescaledTime_samp
+//	Resample/DOWN=1000 rescaledTime_samp		
+//	
+//	Differentiate rescaledTime_samp/D=rescaledTimeDec_DIF
+////	Display rescaledTime,rescaledTime_DIF
+//	DoWindow/F V_Differentiated_Time_Decim
+//	if(V_flag == 0)
+//		Display/N=V_Differentiated_Time_Decim/K=1 rescaledTimeDec_DIF
+//		Legend
+//		Modifygraph gaps=0
+//		ModifyGraph zero(left)=1
+//		Label left "\\Z14Delta (dt/event)"
+//		Label bottom "\\Z14Event number (decimated)"
+//	endif
+	
 	
 	SetDataFolder root:
 	
@@ -2629,11 +2662,11 @@ Proc V_CustomBinPanel()
 	ModifyPanel fixedSize=1//,noEdit =1
 	SetDrawLayer UserBack
 	
-	Button button0,pos={sc*654,42*sc}, size={sc*50,20*sc},title="Done",fSize=12
+	Button button0,pos={sc*654,42*sc}, size={sc*50,20*sc},title="Done"
 	Button button0,proc=V_CB_Done_Proc
 	Button button1,pos={sc*663,14*sc},size={sc*40,20*sc},proc=V_CB_HelpButtonProc,title="?"
 	Button button2,pos={sc*216,42*sc},size={sc*80,20*sc},title="Update",proc=V_CB_UpdateWavesButton	
-	SetVariable setvar1,pos={sc*23,13*sc},size={sc*160,20*sc},title="Number of slices",fSize=12
+	SetVariable setvar1,pos={sc*23,13*sc},size={sc*160,20*sc},title="Number of slices"
 	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:VSANS:Event:gEvent_nslices
 	SetVariable setvar2,pos={sc*24,44*sc},size={sc*160,20*sc},title="Max Time (s)",fSize=10
 	SetVariable setvar2,value=root:Packages:NIST:VSANS:Event:gEvent_t_longest	

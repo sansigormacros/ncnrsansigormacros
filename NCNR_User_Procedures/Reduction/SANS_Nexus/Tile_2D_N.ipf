@@ -493,7 +493,7 @@ Function MakePNGforLayout(minScale,maxScale,type,ii)
 	Endif
 	
 	WAVE NIHColors = $"root:myGlobals:NIHColors"
-	WAVE data = $("root:Packages:NIST:"+type+":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
 	String nameStr = type +num2str(ii)+ "L_PNG"
 
 	PauseUpdate; Silent 1		// building window...

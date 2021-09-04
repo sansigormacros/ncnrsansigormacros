@@ -107,7 +107,8 @@ Function RectangularAverageTo1D(type)
 	Variable width = NumberByKey("WIDTH",keyListStr,"=",";")
 
 	/// data wave is data in the current folder which was set at the top of the function
-	Wave data=$(destPath + ":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
+	
 	//Check for the existence of the mask, if not, make one (local to this folder) that is null
 	
 	if(WaveExists($"root:Packages:NIST:MSK:data") == 0)

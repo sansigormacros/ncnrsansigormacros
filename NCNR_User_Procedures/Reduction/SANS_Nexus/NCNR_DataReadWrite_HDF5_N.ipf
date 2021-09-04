@@ -2391,7 +2391,7 @@ Function fReadDetectorCount(lo,hi)
 		if(strlen(file) != 0)
 			ReadHeaderAndData(file,"RAW")
 			Wave rw=root:Packages:NIST:RAW:RealsRead
-			Wave data=root:Packages:NIST:RAW:data			//data as read in is linear
+			Wave data = getDetectorDataW("RAW")		//this will be the linear data
 			summed = sum(data,-inf,inf)
 			printf "File %d:  DetCt Header = %g\t Detector Sum = %g\t Ratio sum/hdr = %g\r",ii,rw[2],summed,summed/rw[2]
 		else
@@ -2430,7 +2430,7 @@ End
 Function WriteVAXWorkFile(type)
 	String type
 	
-	Wave data=$("root:Packages:NIST:"+type+":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
 	
 	Variable refnum,ii=0,hdrBytes=516,a,b,offset
 	String fullpath=""

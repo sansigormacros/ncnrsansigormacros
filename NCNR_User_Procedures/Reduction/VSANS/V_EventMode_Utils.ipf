@@ -2287,3 +2287,46 @@ Function V_FrameOverlap(lam,fwhm,sdd)
 	return(delta)
 end
 
+
+// check for the existence of Event waves, and clean them out if the user
+// agrees - this will greatly speed up the save and reduce the experiment size,
+// but the current loaded work will be lost.
+//
+Function V_EventWaveCleanup()
+
+	SetDataFolder root:Packages:NIST:VSANS:Event:
+	Wave/Z rescaledTime = rescaledTime
+
+	String str = ""
+	str = "Do you want to delete the event waves? \r\r"
+	str += "Deleting saves space and time, but you lose your currently loaded data.\r\r"
+	str += "Delete waves?"
+	if(waveExists(rescaledTime) != 0)
+		DoAlert 2,str
+
+		// "no" or "cancel" will pass through and do nothing
+		if(V_flag == 1)		//yes, delete them
+			String list=""
+			Variable ii,num
+			
+			list = WaveList("*", ";", "" )
+			num = ItemsinList(list)
+			for(ii=0;ii<num;ii+=1)
+				Wave w = $(StringFromList(ii, list))
+				KillWaves/Z w			
+			endfor
+							
+		endif	
+		
+	endif
+
+	SetDataFolder root:
+	Return(0)
+End
+
+//
+//
+//Duplicate/O :Packages:NIST:VSANS:Event:rescaledTime,rescaledTime_samp;DelayUpdate
+//Resample/DOWN=1000 rescaledTime_samp;DelayUpdate
+//
+//

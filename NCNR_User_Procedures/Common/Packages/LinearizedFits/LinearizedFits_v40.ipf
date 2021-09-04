@@ -156,7 +156,7 @@ Proc FIT_Load_Proc(ctrlName): ButtonControl
 		partialName = S_value
 	Endif
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(partialName)
+	tempName = N_FindValidFilename(partialName)
 
 	//prepend path to tempName for read routine 
 	PathInfo catPathName
@@ -1123,7 +1123,7 @@ Proc FITRPA_Load_Proc(ctrlName): ButtonControl
 		//Print partialName
 	Endif
 	//get a valid file based on this partialName and catPathName
-	tempName = FindValidFilename(partialName)
+	tempName = N_FindValidFilename(partialName)
 
 	Variable lambdaFromFile=GetLambdaFromReducedData(tempName)
 	Variable/G root:myGlobals:FITRPA:gLambda = lambdaFromFile

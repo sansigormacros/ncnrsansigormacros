@@ -321,7 +321,7 @@ Function SetGraphic(type,choice)
 	else
 		NVAR doLogScaling = root:Packages:NIST:gLogScalingAsDefault
 		
-		wave data = $("root:Packages:NIST:"+type+":data")
+		Wave data = getDetectorDataW(type)		//this will be the linear data
 		if(waveExists(data))
 			PauseUpdate; Silent 1		// building window...
 			Display /W=(40,40,196,196)

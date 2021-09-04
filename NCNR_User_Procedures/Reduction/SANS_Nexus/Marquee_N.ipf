@@ -376,7 +376,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work("SAM")
+			err = Raw_to_work_for_Ordela("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
@@ -538,7 +538,7 @@ Function SANS_Histogram() :  GraphMarquee
 		vsX=0		//sum and graph vs Y
 	endif
 	SVAR cur_folder=root:myGlobals:gDataDisplayType
-	WAVE data=$("root:Packages:NIST:"+cur_folder+":data")		//don't care if it's log or linear scale
+	Wave data = getDetectorDataW(cur_folder)		//this will be the linear data
 	Make/O/N=(max(xwidth,ywidth)+1) Position,AvgCounts
 	AvgCounts=0
 	//set position wave 
@@ -942,7 +942,7 @@ Function DoAnnulusSum(fileStr,qCtr,delta,type)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work("SAM")
+			err = Raw_to_work_for_Ordela("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
@@ -1115,7 +1115,7 @@ Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work("SAM")
+			err = Raw_to_work_for_Ordela("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()

@@ -99,9 +99,6 @@ Proc BuildFileTables()
 	list = IndexedFile(catPathName,-1,"????")	//get all files in folder
 	Variable numitems,ii,ok
 
-	//remove version numbers from semicolon-delimited list
-	list =  RemoveVersNumsFromList(list)
-
 	numitems = ItemsInList(list,";")
 
 	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS
@@ -114,7 +111,7 @@ Proc BuildFileTables()
 		//get current item in the list
 		partialName = StringFromList(ii, list, ";")
 		//get a valid file based on this partialName and catPathName
-		tempName = FindValidFilename(partialName)
+		tempName = N_FindValidFilename(partialName)
 		If(cmpstr(tempName,"")==0)		//a null string was returned
 			//write to notebook that file was not found
 			//if string is not a number, report the error
@@ -127,7 +124,7 @@ Proc BuildFileTables()
 			PathInfo catPathName
 			FullName = S_path + tempName
 			//make sure the file is really a RAW data file
-			ok = CheckIfRawData(fullName)
+			ok = N_CheckIfRawData(fullName)
 			if (ok)
 				GetTransHeaderInfoToWave(fullName,tempName)
 			Endif
@@ -783,7 +780,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//read in trans file then add to SAM
 						ReadHeaderAndData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work("SAM")
+						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
@@ -910,7 +907,7 @@ Function CalcTotalTrans(startRow,endRow)
 						//read in trans file then add to SAM
 						ReadHeaderAndData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work("SAM")
+						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
@@ -1042,7 +1039,7 @@ Function CalcWholeTrans(startRow,endRow)
 						//read in trans file then add to SAM
 						ReadHeaderAndData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work("SAM")
+						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
@@ -1269,7 +1266,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 		//no region selected
 		
 		//add the empty beam file to work.SAM
-		err = Raw_to_work("SAM")
+		err = Raw_to_work_for_Ordela("SAM")
 	
 		//the calling macro must change the display type
 		String/G root:myGlobals:gDataDisplayType="SAM"		//displayed data type is sam
@@ -1295,7 +1292,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 		If((V_flag)==1)
 			//get new box coordinates, same procedure as above
 			//add the empty beam file to work.SAM
-			err = Raw_to_work("SAM")
+			err = Raw_to_work_for_Ordela("SAM")
 	
 			//the calling macro must change the display type
 			String/G root:myGlobals:gDataDisplayType="SAM"		//displayed data type is sam

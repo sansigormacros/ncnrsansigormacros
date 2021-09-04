@@ -491,9 +491,20 @@ Function V_IsDemo()
 End
 
 // Clean out the RawVSANS folder before saving
+//
+// Also, ask if the user wants to delete the event data (to save space and speed)
+//
 Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 	Variable rN,kind
 	String fileName,path,type,creator
+
+
+	// if event waves are detected (rescaledTime)
+	// this will ask the user if they want to delete the event waves
+	// all currently loaded work will be lost, but the save will proceed - rather than take
+	// tens of minutes to save
+	V_EventWaveCleanup()
+
 
 	// clean out, so that the file SAVE is not slow due to the large experiment size
 	// DONE -

@@ -1446,7 +1446,7 @@ Function AddFilesInList(type,list)
 		ReadHeaderAndData(filename,"RAW")
 		if(ii == 0)
 			//first pass, wipe out the old contents of the work file
-			err =  Raw_to_work(type)
+			err =  Raw_to_work_for_Ordela(type)
 		else
 			err = Add_raw_to_work(type)
 		Endif
@@ -1500,7 +1500,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work(activeType)		//this is the first file (default)
+			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
 			//Ask for another SAM file
 			do
 				DoAlert 1,"Do you want to add another Sample file?"
@@ -1550,7 +1550,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work(activeType)		//this is the first file (default)
+			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
 			//Ask for another BGD file
 			do
 				DoAlert 1,"Do you want to add another Background file?"
@@ -1604,7 +1604,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work(activeType)		//this is the first file (default)
+			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
 			//Ask for another EMP file
 			do
 				DoAlert 1,"Do you want to add another Empty Cell file?"
@@ -2125,8 +2125,8 @@ Function AskForAbsoluteParams_Quest()
 		if(V_Flag==1)
 			Log_Lin("bisLog")	
 		endif	
-		Wave divData = $"root:Packages:NIST:div:Data"
-		Wave data = $"root:Packages:NIST:raw:data"		//this will be the linear data
+		Wave divData = getDetectorDataW("DIV")		//this will be the linear data
+		Wave data = getDetectorDataW("RAW")		//this will be the linear data
 		// correct by detector sensitivity
 		data /= divData
 		

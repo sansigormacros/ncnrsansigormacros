@@ -621,7 +621,7 @@ Function Auto_FindWriteBeamCenter(runNum)
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
 
-	Wave data = $"root:Packages:NIST:raw:linear_data"		//this will be the linear data
+	Wave data = getDetectorDataW("RAW")		//this will be the linear data
 
 	Variable xzsum,yzsum,zsum,ii,jj,top,bottom,left,right
 	Variable counts,xctr,yctr
@@ -683,7 +683,7 @@ Function Auto_SetXYBox(runNum)
 // load the data	and convert to SAM
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-	err = Raw_to_work("SAM")
+	err = Raw_to_work_for_Ordela("SAM")
 	String/G root:myGlobals:gDataDisplayType="SAM"
 	UpdateDisplayInformation("SAM")			//display the new type of data that was loaded
 //	fRawWindowHook()

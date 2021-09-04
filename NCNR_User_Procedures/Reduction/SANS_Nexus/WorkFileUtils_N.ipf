@@ -87,7 +87,7 @@ Function Add_raw_to_work(newType)
 	if(WaveExists($("root:Packages:NIST:"+newType + ":data")) == 0)
 		Print "There is no old work file to add to - a new one will be created"
 		//call Raw_to_work(), then return from this function
-		Raw_to_Work(newType)
+		Raw_to_Work_for_Ordela(newType)
 		Return(0)		//does not generate an error - a single file was converted to work.newtype
 	Endif
 	
@@ -288,7 +288,7 @@ End
 //
 //the current display type is updated to newType (global)
 //
-Function Raw_to_work(newType)
+Function Raw_to_work_for_Ordela(newType)
 	String newType
 	
 	Variable deadTime,defmon,total_mon,total_det,total_trn,total_numruns,total_rtime
@@ -312,30 +312,35 @@ Function Raw_to_work(newType)
 
 	destPath = "root:Packages:NIST:" + newType
 	
-	//check for log-scaling of the RAW data and adjust if necessary
-//	ConvertFolderToLinearScale("RAW")
+	//copy from current dir (RAW) to work, defined by newType
+	CopyHDFToWorkFolder("RAW",newType)
+	
+	// now work with the waves from the destination folder.	
+	
+	// apply corrections ---
+	// switches to control what is done, don't do the transmission correction for the BGD measurement
+	// start with the DIV correction, before conversion to mm
+	// then do all of the other corrections, order doesn't matter.
+	// rescaling to default monitor counts however, must be LAST.
 
-	//then continue
 	
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
 	Variable pixelsX = getDet_pixel_num_x(newType)
 	Variable pixelsY = getDet_pixel_num_y(newType)
 	
-	//copy from current dir (RAW) to work, defined by destpath
-	DestPath = "root:Packages:NIST:"+newType
 	Variable/G $(destPath + ":gIsLogscale")=0			//overwite flag in newType folder, data converted (above) to linear scale
 
-	//copy from current dir (RAW) to work, defined by newType
-	CopyHDFToWorkFolder("RAW",newType)
-	
-	// now work with the waves from the destination folder = newType	
 
 	WAVE data=getDetectorDataW(newType)			// these wave references point to the EXISTING work data
 //	WAVE data_copy=$(destPath +":data")			// these wave references point to the EXISTING work data
 	WAVE data_err=getDetectorDataErrW(newType)	
 	
 	String/G $(destPath + ":fileList") = getFileNameFromFolder(newType) 			//a list of names of the files in the work file (1)		//02JUL13
+
+
+
+
 	
 	//apply nonlinear, Jacobian corrections ---
 	// switches to control what is done, don't do the transmission correction for the BGD measurement
@@ -360,41 +365,20 @@ Function Raw_to_work(newType)
 	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
 	
-#if (exists("ILL_D22")==6)
-	Variable tubeSum
-	// for D22 detector might need to use cntrate/128 as it is the tube response
-	for(ii=0;ii<pixelsX;ii+=1)
-		//sum the counts in each tube
-		tubeSum = 0
-		for(jj=0;jj<pixelsY;jj+=1)
-			tubeSum += data[jj][ii]
-		endfor
-		// countrate in tube ii
-		cntrate = tubeSum/itim
-		// deadtime scaling in tube ii
-		dscale = 1/(1-deadTime*cntrate)
-		// multiply data[ii][] by the dead time
-		data[][ii] *= dscale
-		data_err[][ii] *= dscale
-	endfor
-#endif
 
 	// NO xcenter,ycenter shifting is done - this is the first (and only) file in the work folder
 	
 	//only ONE data file- no addition of multiple runs in this function, so data is
 	//just simply corrected for deadtime.
-#if (exists("ILL_D22")==0)		//ILL correction done tube-by-tube above
+
 	data *= dscale		//deadtime correction for everyone else, including NCNR
 	data_err *= dscale
-#endif
 	
 	//update totals to put in the work header (at the end of the function)
 	total_mon += getControlMonitorCount(newType)
-#if (exists("ILL_D22")==6)
-	total_det += sum(data,-inf,inf)			//add the newly scaled detector array
-#else
+
 	total_det += dscale*getDetector_counts(newType)
-#endif
+
 	total_rtime += getCollectionTime(newType)
 	total_numruns +=1
 	
@@ -436,7 +420,7 @@ Function Raw_to_Work_NoNorm(type)
 	String type
 	
 	putBeamMonNormSaved_count("RAW",1)		//true monitor counts, still in raw, set to 1
-	Raw_to_work(type)
+	Raw_to_work_for_Ordela(type)
 	//data is now in "type" folder
 	Wave data = getDetectorDataW(type)
 	Wave data_lin = getDetectorLinearDataW(type)

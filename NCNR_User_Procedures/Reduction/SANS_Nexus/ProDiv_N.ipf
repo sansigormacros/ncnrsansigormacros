@@ -36,7 +36,7 @@
 Function NormalizeDIV(type)
 	String type
 	
-	WAVE data=$("root:Packages:NIST:"+type+":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
 	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
 	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
 	

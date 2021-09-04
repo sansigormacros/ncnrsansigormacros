@@ -373,7 +373,7 @@ Function Read_RT_File(msgStr)
 	//FillFakeHeader() 		//uses info on the panel, if available
 
 	//data is displayed here, and needs header info
-	WAVE data = $"root:Packages:NIST:RealTime:data"
+	Wave data = getDetectorDataW("RealTime")		//this will be the linear data
 	NVAR totCounts = root:myGlobals:RT:totalCounts
 	NVAR countTime = root:myGlobals:RT:countTime
 	NVAR countRate = root:myGlobals:RT:countRate
@@ -383,11 +383,12 @@ Function Read_RT_File(msgStr)
 	
 	title="Real-Time : "+filename
 	//sum the total counts, global variable will automatically update
-	WAVE/Z linear_data = $"root:Packages:NIST:RealTime:linear_data"
+	WAVE/Z linear_data = getDetectorDataW("RealTime")		//this will be the linear data
+
 	if(WaveExists(linear_data))
 		totCounts = sum(linear_data, -Inf, Inf )
 	else
-		WAVE/Z data = $"root:Packages:NIST:RealTime:data"
+		Wave/Z data = getDetectorDataW("RealTime")		//this will be the linear data
 		totCounts = sum(data, -Inf, Inf )
 	endif
 	//Update other live values
@@ -462,15 +463,15 @@ Function ReadOrdelaHST(fname)
 	if(exists("root:Packages:NIST:RealTime:data")!=1)		//wave DN exist
 		Make/O/N=(128,128) $"root:Packages:NIST:RealTime:data"
 	endif
-	WAVE data=$"root:Packages:NIST:RealTime:data"
-	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
-	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
-	lin_data=a1
-	if(isLogScale)
-		data=log(a1)
-	else
+	Wave data = getDetectorDataW("RealTIme")		//this will be the linear data
+//	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
+//	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
+//	lin_data=a1
+//	if(isLogScale)
+//		data=log(a1)
+//	else
 		data=a1
-	Endif
+//	Endif
 	
 	KillWaves/Z a1  
 	
@@ -576,7 +577,7 @@ End
 //
 Function BkgUpdateHST()
 
-	WAVE data = $"root:Packages:NIST:RealTime:data"
+	Wave data = getDetectorDataW("RealTIme")		//this will be the linear data
 	Wave intw = root:Packages:NIST:RealTime:IntegersRead
 	Wave realw = root:Packages:NIST:RealTime:RealsRead
 	Wave/T textw = root:Packages:NIST:RealTime:TextRead

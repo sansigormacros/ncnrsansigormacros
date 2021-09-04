@@ -270,7 +270,7 @@ Function SaveAsPNG(type,fullPath,dialog)
 	
 	print "type=",type
 	//graph the current data and save a little graph
-	Wave data =  $("root:Packages:NIST:"+type+":data")
+	Wave data = getDetectorDataW(type)		//this will be the linear data
 	Wave q_x_axis = $"root:myGlobals:q_x_axis"
 	Wave q_y_axis = $"root:myGlobals:q_y_axis"
 	Wave NIHColors = $"root:myGlobals:NIHColors"
