@@ -90,6 +90,9 @@ Function Test_get_STR(str,fname)
 //	Print list
 	num = ItemsInlist(list)
 	
+	list = RemoveFromList("getFunctionCoef;getFunctionParams;getModelSuffix;", list)
+	list = RemoveFromList("GetAList;", list)
+	
 	
 	for(ii=0;ii<num;ii+=1)
 		item = StringFromList(ii, list , ";")

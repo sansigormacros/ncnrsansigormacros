@@ -2294,6 +2294,11 @@ end
 //
 Function V_EventWaveCleanup()
 
+	if(exists("root:Packages:NIST:VSANS:Event:rescaledTime") == 0)
+		// no event data exists, exit
+		return(0)
+	endif
+
 	SetDataFolder root:Packages:NIST:VSANS:Event:
 	Wave/Z rescaledTime = rescaledTime
 
