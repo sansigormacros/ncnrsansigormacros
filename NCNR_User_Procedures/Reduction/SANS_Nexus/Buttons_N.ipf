@@ -38,7 +38,6 @@ Function Log_Lin(ctrlName) : ButtonControl
 		
 //		err = ConvertFolderToLinearScale(cur_folder)		//will abort if there is an error
 		
-		
 		if( !err )
 			//update the button
 			Button $ctrlName,title="isLin",rename=bisLin,win=SANS_Data

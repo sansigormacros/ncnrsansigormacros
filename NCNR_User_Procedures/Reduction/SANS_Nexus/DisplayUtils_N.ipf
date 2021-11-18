@@ -234,8 +234,16 @@ End
 //to linear scale
 //*** the global :gIsLogScale is checked first
 //if already linear, nothing is done
+//
+// NOV 2021 - this function now does nothing - converting the folder is no longer needed
+//
 Function ConvertFolderToLinearScale(folder)
 	String folder	
+
+
+	return(0)
+	
+	
 	
 	String dest = "root:Packages:NIST:"+folder
 	NVAR isLogscale = $(dest + ":gIsLogScale")
@@ -275,8 +283,15 @@ End
 //
 // works on a copy of the linear_data, so that the original data is always preserved
 //
+///
+// NOV 2021 - this function now does nothing - converting the folder is no longer needed
+//
 Function ConvertFolderToLogScale(folder)
 	String folder	
+
+
+	return(0)
+
 	
 	String dest = "root:Packages:NIST:"+folder
 	NVAR isLogscale = $(dest + ":gIsLogScale")

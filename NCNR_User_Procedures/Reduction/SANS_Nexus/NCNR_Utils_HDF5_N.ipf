@@ -64,7 +64,6 @@ Function N_InitFacilityGlobals()
 	Variable/G root:myGlobals:BeamstopXTol = -8			// (cm) is BS Xpos is -5 cm or less, it's a trans measurement
 	// sample aperture offset is NOT stored in the VAX header, but it should be
 	// - when it is, remove the global and write an accessor AND make a place for 
-	// it in the RealsRead 
 	Variable/G root:myGlobals:apOff = 5.0				// (cm) distance from sample aperture to sample position
 
 End
@@ -86,8 +85,7 @@ End
 //
 // - called by CircSectAvg.ipf and RectAnnulAvg.ipf
 //
-// passed values are read from RealsRead
-// except DDet and apOff, which are set from globals before passing
+// DDet and apOff are set from globals before passing
 //
 //
 Function/S N_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,usingLenses,SigmaQ,QBar,fSubS)
@@ -230,8 +228,7 @@ End
 //
 // - Aug 07 - added input to switch calculation based on lenses (==1 if in)
 //
-// passed values are read from RealsRead
-// except DDet and apOff, which are set from globals before passing
+//  DDet and apOff are set from globals before passing
 //
 // phi is the azimuthal angle, CCW from +x axis
 // r_dist is the real-space distance from ctr of detector to QxQy pixel location

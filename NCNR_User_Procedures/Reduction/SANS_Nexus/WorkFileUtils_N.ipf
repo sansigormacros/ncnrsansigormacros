@@ -504,12 +504,12 @@ Function DetCorr(data,data_err,fname,doEfficiency,doTrans)
 	x0 = getDet_beam_center_x(fname)
 	y0 = getDet_beam_center_y(fname)
 	
-	WAVE calX=getDet_cal_x(fname)
-	WAVE calY=getDet_cal_y(fname)
+//	WAVE calX=getDet_cal_x(fname)
+//	WAVE calY=getDet_cal_y(fname)
 	sx = getDet_x_pixel_size(fname)
-	sx3 = calX[1]
+	sx3 = 10000		// nonlinear correction - (10,000 turns correction "off")
 	sy = getDet_y_pixel_size(fname)
-	sy3 = calY[1]
+	sy3 = 10000
 	
 	dtdist = 1000*getDet_Distance(fname)	//sdd in mm
 	dtdis2 = dtdist^2

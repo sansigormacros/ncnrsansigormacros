@@ -529,14 +529,14 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	Variable rw21=getBeamStop_size(type)
 	Variable rw3=getAtten_number(type)
 	
-	Wave cx=getDet_cal_x(type)
-	Wave cy=getDet_cal_y(type)
-	Variable rw10=cx[0]
-	Variable rw11=cx[1]
-	Variable rw12=cx[2]
-	Variable rw13=cy[0]
-	Variable rw14=cy[1]
-	Variable rw15=cy[2]
+//	Wave cx=getDet_cal_x(type)
+//	Wave cy=getDet_cal_y(type)
+	Variable rw10=getDet_x_pixel_size(type)
+	Variable rw11=10000
+	Variable rw12=0
+	Variable rw13=getDet_y_pixel_size(type)
+	Variable rw14=10000
+	Variable rw15=0
 	
 	Variable rw23=getSourceAp_size(type)
 	Variable rw24=getSampleAp_size(type)

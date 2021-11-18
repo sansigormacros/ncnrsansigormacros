@@ -173,12 +173,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 		endswitch
 	EndIf
 	
-	//convert back to log scaling if I changed it...
-	if(wasLogScale)
-		ConvertFolderToLogScale(type)
-		DoUpdate
-	endif
-	
+
 	//clear the stuff that was created for case of saving files
 	If(doSave)
 		Killwaves/Z root:myGlobals:Protocols:fakeProtocol

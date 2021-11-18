@@ -74,12 +74,12 @@ Function RectangularAverageTo1D(type)
 	y0 = getDet_beam_center_y(type)
 	//detector calibration constants
 	
-	WAVE calX=getDet_cal_x(type)
-	WAVE calY=getDet_cal_y(type)
+//	WAVE calX=getDet_cal_x(type)
+//	WAVE calY=getDet_cal_y(type)
 	sx = getDet_x_pixel_size(type)		//mm/pixel (x)
-	sx3 = calX[1]		//nonlinear coeff (2nd element of the three)
+	sx3 = 10000		//nonlinear coeff (10,000 turns correction "off"
 	sy = getDet_y_pixel_size(type)		//mm/pixel (y)
-	sy3 = calY[1]		//nonlinear coeff
+	sy3 = 10000		//nonlinear coeff
 
 	
 	dtdist = 1000*getDet_Distance(type)	// det distance in mm
@@ -486,12 +486,12 @@ Function AnnularAverageTo1D(type)
 	x0 = getDet_beam_center_x(type)
 	y0 = getDet_beam_center_y(type)
 	//detector calibration constants
-	WAVE calX=getDet_cal_x(type)
-	WAVE calY=getDet_cal_y(type)
+//	WAVE calX=getDet_cal_x(type)
+//	WAVE calY=getDet_cal_y(type)
 	sx = getDet_x_pixel_size(type)		//mm/pixel (x)
-	sx3 = calX[1]		//nonlinear coeff
+	sx3 = 10000		//nonlinear coeff (10,000 turns correction "off")
 	sy = getDet_y_pixel_size(type)		//mm/pixel (y)
-	sy3 = calY[1]		//nonlinear coeff
+	sy3 = 10000		//nonlinear coeff
 	
 	dtdist = 1000*getDet_Distance(type)	// det distance in mm
 	lambda = getWavelength(type)

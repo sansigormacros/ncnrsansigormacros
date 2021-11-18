@@ -62,9 +62,9 @@ Function CircularAverageTo1D(type)
 	y0 = getDet_beam_center_y(type)
 	//detector calibration constants
 	sx = getDet_x_pixel_size(type)		//mm/pixel (x)
-	sx3 = getDet_OrdelaNonLinCoef(type)		//nonlinear coeff !! HARD-WIRED
+	sx3 = 10000		//nonlinear coeff !! HARD-WIRED (10,000 == "off")
 	sy = getDet_y_pixel_size(type)	//mm/pixel (y)
-	sy3 = getDet_OrdelaNonLinCoef(type)		//nonlinear coeff !! HARD-WIRED
+	sy3 = 10000		//nonlinear coeff !! HARD-WIRED
 	
 	dtsize = 10*(pixelsX*sx)		//det size in mm
 	dtdist = 1000*getDet_Distance(type)		// det distance in mm

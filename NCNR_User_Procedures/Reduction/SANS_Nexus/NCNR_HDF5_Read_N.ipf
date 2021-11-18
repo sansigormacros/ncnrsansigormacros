@@ -216,25 +216,6 @@ Function/S getFacility(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// **cut in JUNE 2017
-////  x- should be the file name as saved on disk, currently it's not
-//Function/S getFile_name(fname)
-//	String fname
-//	
-//	String path = "entry:file_name"	
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-
-// **cut in JUNE 2017		
-////
-//Function/S getHDF_version(fname)
-//	String fname
-//	
-//	String path = "entry:hdf_version"	
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
 
 // (DONE) -- not mine, added somewhere by Nexus writer?
 Function/S getProgram_name(fname)
@@ -287,24 +268,22 @@ end
 
 // (DONE) -- for the control section, document each of the fields
 
-// **cut in JUNE 2017
-//Function/S getCount_end(fname)
-//	String fname
-//	
-//	Variable num
-//	String path = "entry:control:count_end"	
-//	return(getStringFromHDF5(fname,path,num))
-//end
+Function/S getCount_end(fname)
+	String fname
+	
+	Variable num
+	String path = "entry:control:count_end"	
+	return(getStringFromHDF5(fname,path,num))
+end
 
-// **cut in JUNE 2017
-//
-//Function/S getCount_start(fname)
-//	String fname
-//	
-//	Variable num
-//	String path = "entry:control:count_start"	
-//	return(getStringFromHDF5(fname,path,num))
-//end
+
+Function/S getCount_start(fname)
+	String fname
+	
+	Variable num
+	String path = "entry:control:count_start"	
+	return(getStringFromHDF5(fname,path,num))
+end
 
 
 Function getCount_time(fname)
@@ -338,14 +317,14 @@ Function getDetector_preset(fname)
 	return(getRealValueFromHDF5(fname,path))
 end
 
-// **cut in JUNE 2017
-//
-//Function getIntegral(fname)
-//	String fname
-//	
-//	String path = "entry:control:integral"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
+// this is efficiency of what?? monitor or detector?
+Function getEfficiency(fname)
+	String fname
+	
+	String path = "entry:control:efficiency"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
 
 // control mode for data acquisition, "timer"
 //  - what are the enumerated types for this?
@@ -373,15 +352,24 @@ Function getControlMonitor_preset(fname)
 	return(getRealValueFromHDF5(fname,path))
 end
 
-// **cut in JUNE 2017
-//  - what are the enumerated types for this?
-//Function/S getPreset(fname)
-//	String fname
-//	
-//	Variable num
-//	String path = "entry:control:preset"	
-//	return(getStringFromHDF5(fname,path,num))
-//end
+Function getControlMonitor_sampled_fraction(fname)
+	String fname
+	
+	String path = "entry:control:sampled_fraction"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+
+//
+// this is not a block that I added, and I will not 
+// call from this block. These values are elsewhere in the Nexus
+// file. This data block is for Nexus compliance and here presumably so that
+// other programs that read this file have easy access to plotting the data
+//
+//////// DATA
+//////// DATA
+//////// DATA
+
 
 
 
@@ -459,11 +447,11 @@ Function getAttenuator_trans_err(fname)
 	
 end
 
-// desired thickness
-Function getAtten_desired_thickness(fname)
+// desired number of attenuators
+Function getAtten_desired_num_atten_dropped(fname)
 	String fname
 	
-	String path = "entry:instrument:attenuator:desired_thickness"	
+	String path = "entry:instrument:attenuator:desired_num_atten_dropped"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -498,22 +486,14 @@ Function/WAVE getAttenIndex_table(fname)
 	return w
 end
 
-//
-//// status "in or out"
-//Function/S getAttenStatus(fname)
-//	String fname
-//
-//	String path = "entry:instrument:attenuator:status"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
 
-//// this is the "number" of attenuators dropped in the beam - and should be 
+
+//// this is the actual "number" of attenuators dropped in the beam - and should be 
 // what I can use to lookup the actual attenuator transmission
 Function getAtten_number(fname)
 	String fname
 	
-	String path = "entry:instrument:attenuator:index"	
+	String path = "entry:instrument:attenuator:num_atten_dropped"	
 	return(getRealValueFromHDF5(fname,path))
 end
 
@@ -536,565 +516,11 @@ Function/S getAttenType(fname)
 End
 
 
-// new back polarizer calls
-// JUN 2020
-// since the location of the original ones that were decided on have changed
-// wihtout my knowledge
-//
-//
-Function getBackPolarizer_depth(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:depth"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function/S getBackPolarizer_direction(fname)
-	String fname
-
-	String path = "entry:instrument:backPolarizer:direction"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getBackPolarizer_height(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:height"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-// ?? is this equivalent to "status" -- ?? 0|1
-Function getBackPolarizer_inBeam(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:inBeam"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getBackPolarizer_innerRadius(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:innerRadius"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-// one of the most important
-Function/S getBackPolarizer_name(fname)
-	String fname
-
-	String path = "entry:instrument:backPolarizer:name"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getBackPolarizer_opac1A(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:opacityAt1Ang"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getBackPolarizer_opac1A_err(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:opacityAt1AngStd"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getBackPolarizer_outerRadius(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:outerRadius"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function/S getBackPolarizer_shape(fname)
-	String fname
-
-	String path = "entry:instrument:backPolarizer:shape"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getBackPolarizer_tE(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:tE"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getBackPolarizer_tE_err(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:tEStd"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-// TODO -- what units, zero, etc is the time stamp??
-Function getBackPolarizer_timestamp(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:timestamp"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-//TODO-- this returns a number now -- what does it mean?
-Function getBackPolarizer_type(fname)
-	String fname
-
-	String path = "entry:instrument:backPolarizer:type"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-Function getBackPolarizer_width(fname)
-	String fname
-	
-	String path = "entry:instrument:backPolarizer:width"	
-	return(getRealValueFromHDF5(fname,path))
-end
-//////////////////
-
-
-////// INSTRUMENT/BEAM
-// instrument/beam/analyzer (data folder)
-// this is the He3 analyzer, after the sample (but first alphabetically)
-// NO -- document what all of the fields represent, and what are the most important to "key" on to read
-//
-// like the flipper fields, all of these have changed location wihtout consulting me
-// JUN 2020
-//
-//Function getAnalyzer_depth(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:depth"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getAnalyzer_direction(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:analyzer:direction"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function getAnalyzer_height(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:height"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//// ?? TODO is this equivalent to "status" -- ?? 0|1
-//Function getAnalyzer_inBeam(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:inBeam"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function getAnalyzer_innerDiameter(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:innerDiameter"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//// one of the most important
-//Function/S getAnalyzer_name(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:analyzer:name"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function getAnalyzer_opacityAt1Ang(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:opacityAt1Ang"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function getAnalyzer_opacityAt1Ang_err(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:opacityAt1AngStd"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function getAnalyzer_outerDiameter(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:outerDiameter"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getAnalyzer_shape(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:analyzer:shape"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function getAnalyzer_tE(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:tE"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function getAnalyzer_tE_err(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:tEStd"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getAnalyzer_type(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:analyzer:type"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//
-//Function getAnalyzer_width(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:analyzer:width"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-
-
-// instrument/beam/chopper (data folder)
-Function getChopperAngular_opening(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:angular_opening"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getChopDistance_from_sample(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:distance_from_sample"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getChopDistance_from_source(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:distance_from_source"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getChopperDuty_cycle(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:duty_cycle"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getChopperRotation_speed(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:rotation_speed"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getChopperSlits(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:chopper:slits"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function/S getChopperStatus(fname)
-	String fname
-
-	String path = "entry:instrument:beam:chopper:status"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function/S getChopperType(fname)
-	String fname
-
-	String path = "entry:instrument:beam:chopper:type"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-
-
-
-
-
-// are these the correct locations in the header for polarization?
-// they are what is in the example polarized beam data I was given in 2019
-// but don't match what was decided for the data file. Nobody ever
-// told me of any changes, so I guess I'm out of the loop as usual.
-
-// the FRONT FLIPPER
-// JUN 2020 -- added these calls
-
-Function/S getFrontFlipper_Direction(fname)
-	String fname
-
-	String path = "entry:instrument:frontFlipper:direction"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function/S getFrontFlipper_flip(fname)
-	String fname
-
-	String path = "entry:instrument:frontFlipper:flip"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getFrontFlipper_power(fname)
-	String fname
-	
-	String path = "entry:instrument:frontFlipper:transmitted_power"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function/S getFrontFlipper_type(fname)
-	String fname
-
-	String path = "entry:instrument:frontFlipper:type"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-
-//
-// these apparently have all been changed without telling me...
-//
-// instrument/beam/flipperPolarizer (data folder)
-// this is upstream, after the supermirror but before the sample
-//
-//Function/S getflipperPolarizer_Direction(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:flipperPolarizer:direction"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function getflipperPolarizer_inBeam(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:flipperPolarizer:inBeam"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getflipperPolarizer_Type(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:flipperPolarizer:type"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//
-//
-//Function getFlipperDriving_current(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:flipper:driving_current"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function getFlipperFrequency(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:flipper:frequency"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getFlipperstatus(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:flipper:status"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function getFlipperTransmitted_power(fname)
-//	String fname
-//	
-//	String path = "entry:instrument:beam:flipper:transmitted_power"	
-//	return(getRealValueFromHDF5(fname,path))
-//end
-//
-//Function/S getFlipperWaveform(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:flipper:waveform"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-
-
-// instrument/beam/monochromator (data folder)
-Function/S getMonochromatorType(fname)
-	String fname
-
-	String path = "entry:instrument:beam:monochromator:type"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-// entry:instrument:monochromator:wavelength
-Function getWavelength(fname)
-	String fname
-	
-	String path = "entry:instrument:monochromator:wavelength"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getWavelength_spread(fname)
-	String fname
-	
-	String path = "entry:instrument:monochromator:wavelength_error"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-
-// instrument/beam/superMirror (data folder)
-// This is the upstream polarizer. There are no other choices for polarizer on VSANS
-Function/S getPolarizerComposition(fname)
-	String fname
-
-	String path = "entry:instrument:beam:superMirror:composition"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getPolarizerEfficiency(fname)
-	String fname
-	
-	String path = "entry:instrument:beam:superMirror:efficiency"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function/S getPolarizerState(fname)
-	String fname
-
-	String path = "entry:instrument:beam:superMirror:state"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-//Function/S getPolarizerType(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer:type"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-
-//// instrument/beam/polarizer_analyzer (data folder)
-//Function getPolAnaCell_index(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_index"
-//	return(getRealValueFromHDF5(fname,path))
-//End
-//
-//Function/S getPolAnaCell_name(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_name"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//Function/WAVE getPolAnaCell_parameters(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:cell_parameters"
-//	WAVE w = getRealWaveFromHDF5(fname,path)
-//
-//	return w
-//End
-//
-//Function getPolAnaGuideFieldCur_1(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_1"
-//	return(getRealValueFromHDF5(fname,path))
-//End
-//
-//Function getPolAnaGuideFieldCur_2(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:guide_field_current_2"
-//	return(getRealValueFromHDF5(fname,path))
-//End
-//
-//Function getPolAnaSolenoid_current(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:solenoid_current"
-//	return(getRealValueFromHDF5(fname,path))
-//End
-//
-//Function/S getPolAnaStatus(fname)
-//	String fname
-//
-//	String path = "entry:instrument:beam:polarizer_analyzer:status"
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
 
 					
 /////// INSTRUMENT/BEAM MONITORS
 
-//beam_monitor_low (data folder)
-Function getBeamMonLowData(fname)
-	String fname
 
-	String path = "entry:instrument:beam_monitor_low:data"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-Function getBeamMonLowDistance(fname)
-	String fname
-
-	String path = "entry:instrument:beam_monitor_low:distance"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-Function getBeamMonLowEfficiency(fname)
-	String fname
-
-	String path = "entry:instrument:beam_monitor_low:efficiency"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-Function getBeamMonLowSaved_count(fname)
-	String fname
-
-	String path = "entry:instrument:beam_monitor_low:saved_count"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-Function/S getBeamMonLowType(fname)
-	String fname
-
-	String path = "entry:instrument:beam_monitor_low:type"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
 
 //beam_monitor_norm (data folder)
 Function getBeamMonNormData(fname)
@@ -1133,7 +559,9 @@ Function/S getBeamMonNormType(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-//beam_stop C2 (data folder)
+
+
+//beam_stop (data folder)
 Function/S getBeamStopDescription(fname)
 	String fname
 
@@ -1154,25 +582,25 @@ End
 Function getBeamStop_x_pos(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:x0"
+	String path = "entry:instrument:beam_stop:x_pos"
 	return(getRealValueFromHDF5(fname,path))
 End
 
 Function getBeamStop_y_pos(fname)
 	String fname
 
-	String path = "entry:instrument:beam_stop:y0"
+	String path = "entry:instrument:beam_stop:y_pos"
 	return(getRealValueFromHDF5(fname,path))
 End
 
 
-//TODO -- not sure what this really means
-Function getBeamStopNum_beamstops(fname)
-	String fname
-
-	String path = "entry:instrument:beam_stop:num_beamstops"
-	return(getRealValueFromHDF5(fname,path))
-End
+////TODO -- not sure what this really means
+//Function getBeamStopNum_beamstops(fname)
+//	String fname
+//
+//	String path = "entry:instrument:beam_stop:num_beamstops"
+//	return(getRealValueFromHDF5(fname,path))
+//End
 
 // beam stop shape parameters
 Function getBeamStop_height(fname)
@@ -1238,18 +666,7 @@ Function getGuideSize(fname)
 End
 
 
-//			converging_pinholes (data folder)
-Function/S getConvPinholeStatus(fname)
-	String fname
-
-	String path = "entry:instrument:converging_pinholes:status"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-//			converging_slits (not used)
-
-////// INSTRUMENT/DETECTORS
+////// INSTRUMENT/DETECTOR
 
 //
 // CAL_X and CAL_Y are dummy values that are used to "inactivate" the 
@@ -1257,45 +674,189 @@ End
 // much older-style Ordela detectors, aren't used for the current ones, and
 // won't be used for the tube detctors...
 
-// DONE -- write to return an ARRAY
-Function/WAVE getDet_cal_x(fname)
-	String fname
-
-//	String path = "entry:instrument:detector:cal_x"
-//	WAVE w = getRealWaveFromHDF5(fname,path)
-//	return w
-	
-	Make/O/D/N=3 tmp
-	tmp[0] = getDet_x_pixel_size(fname)
-	tmp[1] = 10000
-	tmp[2] = 0
-	return tmp
-
-End
-
-// only defined for the "B" detector, and may not be necessary?
-// (DONE) -- write to return an ARRAY
-Function/WAVE getDet_cal_y(fname)
-	String fname
-
-//	String path = "entry:instrument:detector:cal_y"
-//	WAVE w = getRealWaveFromHDF5(fname,path)
-//	return w
-
-	Make/O/D/N=3 tmp
-	tmp[0] = getDet_y_pixel_size(fname)
-	tmp[1] = 10000
-	tmp[2] = 0
-	return tmp
-End
-
-// returns a hard-wired value for all Ordela detectors
+//// DONE -- write to return an ARRAY
+//Function/WAVE getDet_cal_x(fname)
+//	String fname
 //
-Function getDet_OrdelaNonLinCoef(fname)
+////	String path = "entry:instrument:detector:cal_x"
+////	WAVE w = getRealWaveFromHDF5(fname,path)
+////	return w
+//	
+//	Make/O/D/N=3 tmp
+//	tmp[0] = getDet_x_pixel_size(fname)
+//	tmp[1] = 10000
+//	tmp[2] = 0
+//	return tmp
+//
+//End
+
+//// only defined for the "B" detector, and may not be necessary?
+//// (DONE) -- write to return an ARRAY
+//Function/WAVE getDet_cal_y(fname)
+//	String fname
+//
+////	String path = "entry:instrument:detector:cal_y"
+////	WAVE w = getRealWaveFromHDF5(fname,path)
+////	return w
+//
+//	Make/O/D/N=3 tmp
+//	tmp[0] = getDet_y_pixel_size(fname)
+//	tmp[1] = 10000
+//	tmp[2] = 0
+//	return tmp
+//End
+
+//// returns a hard-wired value for all Ordela detectors
+////
+//Function getDet_OrdelaNonLinCoef(fname)
+//	String fname
+//	
+//	return(10000)
+//end
+
+
+
+
+Function getDet_azimuthal_angle(fname)
+	String fname
+
+	String path = "entry:instrument:detector:azimuthal_angle"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+
+Function getDet_beam_center_x(fname)
+	String fname
+
+	String path = "entry:instrument:detector:beam_center_x"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+Function getDet_beam_center_y(fname)
+	String fname
+
+	String path = "entry:instrument:detector:beam_center_y"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+//
+Function/WAVE getDetectorDataW(fname)
+	String fname
+
+	String path = "entry:instrument:detector:data"
+	WAVE/Z w = getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+//
+// (DONE) -- this does not exist in the raw data, but does in the processed data
+// !!! how to handle this?? Binning routines need the error wave
+// -- be sure that I generate a local copy of this wave at load time
+//
+
+Function/WAVE getDetectorDataErrW(fname)
+	String fname
+
+	String path = "entry:instrument:detector:data_error"
+	WAVE w = getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+// NOTE - this is not part of the file as written
+// it is generated when the RAW data is loaded (when the error wave is generated)
+Function/WAVE getDetectorLinearDataW(fname)
+	String fname
+
+	String path = "entry:instrument:detector:linear_data"
+	WAVE w = getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+//
+// (DONE) -- this does not exist in the raw data, but does in the processed data
+// !!! how to handle this?? Binning routines need the error wave
+// -- be sure that I generate a local copy of this wave at load time
+//
+Function/WAVE getDetectorLinearDataErrW(fname)
+	String fname
+
+	String path = "entry:instrument:detector:linear_data_error"
+	WAVE w = getRealWaveFromHDF5(fname,path)
+
+	return w
+End
+
+
+
+
+// (DONE) -- write this function to return a WAVE with the data
+// either as a wave reference, or as an input parameter
+// ALSO -- the "B" deadtime will be a single value (probably)
+//  but the tube banks will be 1D arrays of values, one per tube
+Function/WAVE getDetector_deadtime(fname)
+	String fname
+
+	String path = "entry:instrument:detector:dead_time"
+
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	return w
+	
+End
+
+
+// TODO -- REMOVE calls to this function - only good for Ordela
+// returns fake dead time [s]
+Function getDetectorDeadtime_Value(fname)
 	String fname
 	
-	return(10000)
-end
+	return(1e-6)
+End
+
+Function/S getDetDescription(fname)
+	String fname
+
+	String path = "entry:instrument:detector:description"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// header reports value in [cm]
+// VAX reduction is expecting distance in [m], so return [m]
+Function getDet_Distance(fname)
+	String fname
+
+	String path = "entry:instrument:detector:distance"
+	
+	Variable sdd_in_meters = getRealValueFromHDF5(fname,path) / 100
+	return(sdd_in_meters)
+End
+
+
+Function getDet_IntegratedCount(fname)
+	String fname
+
+	String path = "entry:instrument:detector:integrated_count"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+// not currently defined in the SANS file
+Function getDet_LateralOffset(fname)
+	String fname
+
+	String path = "entry:instrument:detector:lateral_offset"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+
+Function getDet_numberOfTubes(fname)
+	String fname
+
+	String path = "entry:instrument:detector:number_of_tubes"
+	return(getRealValueFromHDF5(fname,path))
+End
 
 
 //  Pixels are not square
@@ -1342,18 +903,102 @@ End
 
 
 
-Function getDet_beam_center_x(fname)
+
+Function getDet_polar_angle(fname)
 	String fname
 
-	String path = "entry:instrument:detector:beam_center_x"
+	String path = "entry:instrument:detector:polar_angle"
 	return(getRealValueFromHDF5(fname,path))
 End
 
-Function getDet_beam_center_y(fname)
+
+Function getDet_rotation_angle(fname)
 	String fname
 
-	String path = "entry:instrument:detector:beam_center_y"
+	String path = "entry:instrument:detector:rotation_angle"
 	return(getRealValueFromHDF5(fname,path))
+End
+
+
+Function/S getDetSettings(fname)
+	String fname
+
+	String path = "entry:instrument:detector:settings"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// DONE -- write this function to return a WAVE with the data
+// either as a wave reference, or as an input parameter
+Function/WAVE getDetTube_spatialCalib(fname)
+	String fname
+
+	String path = "entry:instrument:detector:spatial_calibration"
+
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	return w
+End
+
+
+// (DONE) -- be clear on how this is defined. Units are in [mm]
+Function getDet_tubeWidth(fname)
+	String fname
+
+	String path = "entry:instrument:detector:tube_width"
+
+	return(getRealValueFromHDF5(fname,path))
+End
+
+// not used - I calculate the cprrect values from the nonlinear corretions
+Function/WAVE getDet_x_offset(fname)
+	String fname
+
+	String path = "entry:instrument:detector:x_offset"
+
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	return w
+End
+
+// header lists size in [mm]
+Function getDet_x_pixel_size(fname)
+	String fname
+
+	String path = "entry:instrument:detector:x_pixel_size"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+
+// not used - I calculate the cprrect values from the nonlinear corretions
+Function/WAVE getDet_y_offset(fname)
+	String fname
+
+	String path = "entry:instrument:detector:y_offset"
+
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	return w
+End
+
+
+// header lists size in [mm]
+Function getDet_y_pixel_size(fname)
+	String fname
+
+	String path = "entry:instrument:detector:y_pixel_size"
+	return(getRealValueFromHDF5(fname,path))
+End
+
+
+
+// following subset of funcitons is for detector, but non-standard
+// values, some not initially stored in file
+
+Function/S getDetEventFileName(fname)
+	String fname
+
+	String path = "entry:instrument:detector:event_file_name"
+	Variable num=60
+
+	return(getStringFromHDF5(fname,path,num))
 End
 
 
@@ -1405,200 +1050,8 @@ Function getDet_beam_center_y_pix(fname)
 	return(getRealValueFromHDF5(fname,path))
 End
 
-//
-Function/WAVE getDetectorDataW(fname)
-	String fname
-
-	String path = "entry:instrument:detector:data"
-	WAVE/Z w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
-
-// NOTE - this is not part of the file as written
-// it is generated when the RAW data is loaded (when the error wave is generated)
-Function/WAVE getDetectorLinearDataW(fname)
-	String fname
-
-	String path = "entry:instrument:detector:linear_data"
-	WAVE w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
-
-//
-// (DONE) -- this does not exist in the raw data, but does in the processed data
-// !!! how to handle this?? Binning routines need the error wave
-// -- be sure that I generate a local copy of this wave at load time
-//
-Function/WAVE getDetectorLinearDataErrW(fname)
-	String fname
-
-	String path = "entry:instrument:detector:linear_data_error"
-	WAVE w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
 
 
-//
-// (DONE) -- this does not exist in the raw data, but does in the processed data
-// !!! how to handle this?? Binning routines need the error wave
-// -- be sure that I generate a local copy of this wave at load time
-//
-
-Function/WAVE getDetectorDataErrW(fname)
-	String fname
-
-	String path = "entry:instrument:detector:data_error"
-	WAVE w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
-
-// (DONE) -- write this function to return a WAVE with the data
-// either as a wave reference, or as an input parameter
-// ALSO -- the "B" deadtime will be a single value (probably)
-//  but the tube banks will be 1D arrays of values, one per tube
-Function/WAVE getDetector_deadtime(fname)
-	String fname
-
-	String path = "entry:instrument:detector:dead_time"
-
-	WAVE w = getRealWaveFromHDF5(fname,path)
-	return w
-	
-End
-
-//// for Ordela detectors, the dead time is a single value, set by a global
-// (but should be written to the file!!)
-//
-// TODO -- the 10m SANS will use the wave version (for the tubes)
-// while the NG7 and NGB30 instruments will use the single value version.
-//
-// -HARD-WIRED, single value that is incorrect for all of the instruments
-
-// read the detector deadtime (in seconds)
-Function getDetectorDeadtime_Value(fname)
-	String fname
-	
-	Print "detector deadtime not implemented"
-	return(1e-6)
-
-end
-
-
-Function/S getDetDescription(fname)
-	String fname
-
-	String path = "entry:instrument:detector:description"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-// header reports value in [cm]
-// VAX reduction is expecting distance in [m], so return [m]
-Function getDet_Distance(fname)
-	String fname
-
-	String path = "entry:instrument:detector:distance"
-	
-	Variable sdd_in_meters = getRealValueFromHDF5(fname,path) / 100
-	return(sdd_in_meters)
-End
-
-
-Function/S getDetEventFileName(fname)
-	String fname
-
-	String path = "entry:instrument:detector:event_file_name"
-	Variable num=60
-
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function getDet_IntegratedCount(fname)
-	String fname
-
-	String path = "entry:instrument:detector:integrated_count"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-// not currently defined in the SANS file
-Function getDet_LateralOffset(fname)
-	String fname
-
-	String path = "entry:instrument:detector:lateral_offset"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-
-
-Function/S getDetSettings(fname)
-	String fname
-
-	String path = "entry:instrument:detector:settings"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-
-// header lists size in [mm]
-Function getDet_x_pixel_size(fname)
-	String fname
-
-	String path = "entry:instrument:detector:x_pixel_size"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-// header lists size in [mm]
-
-Function getDet_y_pixel_size(fname)
-	String fname
-
-	String path = "entry:instrument:detector:y_pixel_size"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-/////////			detector_FB (data folder) + ALL other PANEL DETECTORS
-
-Function getDet_numberOfTubes(fname)
-	String fname
-
-	String path = "entry:instrument:detector:number_of_tubes"
-	return(getRealValueFromHDF5(fname,path))
-End
-
-
-// DONE -- write this function to return a WAVE with the data
-// either as a wave reference, or as an input parameter
-Function/WAVE getDetTube_spatialCalib(fname)
-	String fname
-
-	String path = "entry:instrument:detector:spatial_calibration"
-
-	WAVE w = getRealWaveFromHDF5(fname,path)
-	return w
-End
-
-
-Function/S getDet_tubeOrientation(fname)
-	String fname
-
-	String path = "entry:instrument:detector:tube_orientation"
-	Variable num=60
-
-	return(getStringFromHDF5(fname,path,num))
-End
-
-// (DONE) -- be clear on how this is defined. Units are in [mm]
-Function getDet_tubeWidth(fname)
-	String fname
-
-	String path = "entry:instrument:detector:tube_width"
-
-	return(getRealValueFromHDF5(fname,path))
-End
 
 //////////////////////
 
@@ -1672,21 +1125,17 @@ Function/S getPrismMaterial(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// TODO -- this is a HARD-WIRED result - since it's not in the header yet
 //
 // status of lens/prism = lens | prism | both | out
 Function/S getLensPrismStatus(fname)
 	String fname
-
-	return("out")
 
 	String path = "entry:instrument:lenses:status"
 	Variable num=60
 	return(getStringFromHDF5(fname,path,num))
 End
 
-//
-// TODO -- this is HARD WIRED, lenses always OUT
+// not a header value - derived from header value
 //
 // returns the "truth" if the lenses are IN
 // fails otherwise
@@ -1700,6 +1149,59 @@ Function getAreLensesIn(fname)
 		return(0)
 	endif
 end
+
+
+///////////MONOCHROMATOR
+
+// instrument/beam/monochromator (data folder)
+Function/S getMonochromatorType(fname)
+	String fname
+
+	String path = "entry:instrument:monochromator:type"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// entry:instrument:monochromator:wavelength
+Function getWavelength(fname)
+	String fname
+	
+	String path = "entry:instrument:monochromator:wavelength"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+Function getWavelength_spread(fname)
+	String fname
+	
+	String path = "entry:instrument:monochromator:wavelength_error"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+Function getVelocitySel_distance(fname)
+	String fname
+	
+	String path = "entry:instrument:monochromator:velocity_selector:distance"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+Function getVelocitySel_rotation_speed(fname)
+	String fname
+	
+	String path = "entry:instrument:monochromator:velocity_selector:rotation_speed"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// not sure what this is
+Function getVelocitySel_table(fname)
+	String fname
+	
+	String path = "entry:instrument:monochromator:velocity_selector:table"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+
+
+
 
 
 
@@ -1761,6 +1263,7 @@ End
 
 
 
+
 	
 //////  sample_table (data folder)
 // location  = "CHAMBER" or HUBER
@@ -1780,6 +1283,8 @@ Function getSampleTableOffset(fname)
 	String path = "entry:instrument:sample_table:offset_distance"
 	return(getRealValueFromHDF5(fname,path))
 End	
+
+
 	
 //  source (data folder)
 //name "NCNR"
@@ -1872,129 +1377,47 @@ Function getSourceAp_width(fname)
 End
 
 
-//////// SAMPLE
-//////// SAMPLE
-//////// SAMPLE
+//
+//
+// PROGRAM_DATA
+//
+//
 
-//Sample position in changer (returned as TEXT)f
-Function/S getSamplePosition(fname)
-	String fname
-	
-	String path = "entry:sample:changer_position"	
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-end
-
-// sample label 
-Function/S getSampleDescription(fname)
+Function/S getProgram_data_data(fname)
 	String fname
 
-	String path = "entry:sample:description"
+	String path = "entry:program_data:data"
 	Variable num=60
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// for a z-stage??
-Function getSampleElevation(fname)
-	String fname
-	
-	String path = "entry:sample:elevation"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-//no meaning to this...
-Function getSample_equatorial_ang(fname)
-	String fname
-	
-	String path = "entry:sample:equatorial_angle"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-// group ID !!! very important for matching up files
-Function getSample_GroupID(fname)
-	String fname
-	
-	String path = "entry:sample:group_id"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-
-//Sample Rotation Angle
-Function getSampleRotationAngle(fname)
-	String fname
-	
-	String path = "entry:sample:rotation_angle"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-//?? this is huber/chamber??
-// TODO -- then where is the description of 10CB, etc...
-Function/S getSampleHolderDescription(fname)
+Function/S getProgram_data_description(fname)
 	String fname
 
-	String path = "entry:sample:sample_holder_description"
+	String path = "entry:program_data:description"
 	Variable num=60
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// this field is apparently the "average" temperature reading 
-// and can be adversely affected by random faulty readings from the sensor
-// to give an average that is far from the expected value
-Function getSampleTemperature(fname)
-	String fname
-	
-	String path = "entry:sample:temperature"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getSampleTempSetPoint(fname)
-	String fname
-	
-	String path = "entry:sample:temperature_setpoint"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-
-//Sample Thickness
-// (DONE) -- somehow, this is not set correctly in the acquisition, so NaN results
-// -- this has been corrected in NICE (when??)
-Function getSampleThickness(fname)
-	String fname
-	
-	String path = "entry:sample:thickness"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-Function getSampleTranslation(fname)
-	String fname
-	
-	String path = "entry:sample:translation"	
-	return(getRealValueFromHDF5(fname,path))
-end
-
-// sample transmission
-Function getSampleTransmission(fname)
-	String fname
-	
-	Print "FAKE TRANSMISSION OF 0.8 USED"
-	
-	return(0.8)
-	
-//	String path = "entry:sample:transmission"	
-//	return(getRealValueFromHDF5(fname,path))
-end
-
-//transmission error (one sigma)
-Function getSampleTransError(fname)
+Function/S getProgram_data_file_name(fname)
 	String fname
 
-	Print "FAKE TRANSMISSION ERROR OF 0.1 USED"
-	
-	return(0.1)
-		
-//	String path = "entry:sample:transmission_error"	
-//	return(getRealValueFromHDF5(fname,path))
-end
+	String path = "entry:program_data:file_name"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+Function/S getProgram_data_type(fname)
+	String fname
+
+	String path = "entry:program_data:type"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+
+
+
 
 
 
@@ -2282,11 +1705,6 @@ Function getLog_ValueWave(fname,logStr,outW)
 end
 
 
-
-
-
-
-
 ///////// REDUCTION
 ///////// REDUCTION
 ///////// REDUCTION
@@ -2309,15 +1727,7 @@ Function/S getBackgroundFileName(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// THIS IS A NON-NICE ENTERED FIELD
-// -- this is the panel string where the box coordinates refer to (for the open beam and transmission)
-Function/S getReduction_BoxPanel(fname)
-	String fname
 
-	String path = "entry:reduction:box_panel"	
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
 
 Function/WAVE getBoxCoordinates(fname)
 	String fname
@@ -2470,49 +1880,166 @@ Function/WAVE getReductionProtocolWave(fname)
 	
 end
 
-// this is a NON NICE entered field
-// so if it's not there, it returns -999999
-//
-// this is a flag to mark the file as "flipped" so it prevents a 2nd flip
-// if the flip has been done, the field is written with a value of 1 (= true)
-//
-Function getLeftRightFlipDone(fname)
+
+//////// SAMPLE
+//////// SAMPLE
+//////// SAMPLE
+
+//no meaning to this...
+Function getSample_equatorial_ang(fname)
 	String fname
 	
-	String path = "entry:reduction:left_right_flip"	
+	String path = "entry:sample:aequatorial_angle"	
 	return(getRealValueFromHDF5(fname,path))
-end	
+end
+
+// this is huber/chamber?? or description of sample block
+//
+Function/S getSampleChanger(fname)
+	String fname
+
+	String path = "entry:sample:changer"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+//Sample position in changer (returned as TEXT)f
+Function/S getSamplePosition(fname)
+	String fname
+	
+	String path = "entry:sample:changer_position"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+end
+
+// sample label 
+Function/S getSampleDescription(fname)
+	String fname
+
+	String path = "entry:sample:description"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// for a z-stage??
+Function getSampleElevation(fname)
+	String fname
+	
+	String path = "entry:sample:elevation"	
+	return(getRealValueFromHDF5(fname,path))
+end
 
 
+// group ID !!! very important for matching up files
+Function getSample_GroupID(fname)
+	String fname
+	
+	String path = "entry:sample:group_id"	
+	return(getRealValueFromHDF5(fname,path))
+end
 
-// these have all been moved elsewhere			
-///////			pol_sans (data folder)
+
+// sample mass
+Function getSample_mass(fname)
+	String fname
+	
+	String path = "entry:sample:mass"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// sample name
+Function/S getSample_Name(fname)
+	String fname
+
+	String path = "entry:sample:name"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+
+//Sample Rotation Angle
+Function getSampleRotationAngle(fname)
+	String fname
+	
+	String path = "entry:sample:rotation_angle"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+//?? this is huber/chamber??
+// TODO -- then where is the description of 10CB, etc...
+Function/S getSampleHolderDescription(fname)
+	String fname
+
+	String path = "entry:sample:sample_holder_description"
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+//// this field is apparently the "average" temperature reading 
+//// and can be adversely affected by random faulty readings from the sensor
+//// to give an average that is far from the expected value
 //
-//Function/S getPolSANS_cellName(fname)
-//	String fname
 //
-//	String path = "entry:reduction:pol_sans:cell_name"	
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
-//
-//
-//Function/WAVE getPolSANS_cellParams(fname)
-//	String fname
+// -- TODO - these are not currently in the Nexus file. Not sure where the
+// temperature ends up!?
+// 
+Function getSampleTemperature(fname)
+	String fname
+	
+	String path = "entry:sample:temperature"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+Function getSampleTempSetPoint(fname)
+	String fname
+	
+	String path = "entry:sample:temperature_setpoint"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+
+//Sample Thickness
+// (DONE) -- somehow, this is not set correctly in the acquisition, so NaN results
+// -- this has been corrected in NICE (when??)
+Function getSampleThickness(fname)
+	String fname
+	
+	String path = "entry:sample:thickness"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+Function getSampleTranslation(fname)
+	String fname
+	
+	String path = "entry:sample:translation"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// sample transmission
+Function getSampleTransmission(fname)
+	String fname
+	
+//	Print "FAKE TRANSMISSION OF 0.8 USED"
 //	
-//	String path = "entry:reduction:pol_sans:cell_parameters"	
-//	WAVE w = getRealWaveFromHDF5(fname,path)
-//
-//	return w
-//end
-//
-//Function/S getPolSANS_PolSANSPurpose(fname)
-//	String fname
-//
-//	String path = "entry:reduction:pol_sans:pol_sans_purpose"	
-//	Variable num=60
-//	return(getStringFromHDF5(fname,path,num))
-//End
+//	return(0.8)
+	
+	String path = "entry:sample:transmission"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+//transmission error (one sigma)
+Function getSampleTransError(fname)
+	String fname
+
+//	Print "FAKE TRANSMISSION ERROR OF 0.1 USED"
+//	
+//	return(0.1)
+		
+	String path = "entry:sample:transmission_error"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+
 
 				
 
