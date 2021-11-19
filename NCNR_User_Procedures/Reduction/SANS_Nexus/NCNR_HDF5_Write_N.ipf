@@ -421,70 +421,16 @@ Function writeFacility(fname,str)
 	return(err)
 End
 
-
-// file name
-Function writeFile_name(fname,str)
-	String fname,str
 	
-//	String path = "entry:file_name"	
-
-	Make/O/T/N=1 tmpTW
-	String groupName = "/entry"	//	
-	String varName = "file_name"
-	tmpTW[0] = str //
-
-	variable err
-	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
-	if(err)
-		Print "HDF write err = ",err
-	endif
-	
-	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-//	err = KillNamedDataFolder(fname)
-//	if(err)
-//		Print "DataFolder kill err = ",err
-//	endif
-		
-	return(err)
-End
-
-	
-//// file write time (what is this??)
-//// TODO - figure out if this is supposed to be an integer or text (ISO)
-//Function writeFileWriteTime(fname,val)
-//	String fname
-//	Variable val
-//	
-//	String path = "entry:file_time"	
-//	
-//	Make/O/D/N=1 wTmpWrite
-////	Make/O/R/N=1 wTmpWrite
-//	String groupName = "/entry"	
-//	String varName = "file_time"
-//	wTmpWrite[0] = val
 //
-//	variable err
-//	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
-//	if(err)
-//		Print "HDF write err = ",err
-//	endif
-//	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
-////	err = KillNamedDataFolder(fname)
-////	if(err)
-////		Print "DataFolder kill err = ",err
-////	endif
-//	return(err)
-//End
-		
-//
-Function writeHDF_version(fname,str)
+Function write_facility(fname,str)
 	String fname,str
 	
 //	String path = "entry:hdf_version"	
 
 	Make/O/T/N=1 tmpTW
 	String groupName = "/entry"	//	
-	String varName = "hdf_version"
+	String varName = "facility"
 	tmpTW[0] = str //
 
 	variable err

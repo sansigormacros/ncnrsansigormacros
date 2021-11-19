@@ -737,7 +737,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 	Variable num_s_files, num_t_files, ii, jj
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,sam_atten_err,emp_atten_err
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,samAttenFactor,empAttenFactor,trans_err
-	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
+	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr,empFileStr
 
 	
 	num_t_files = numpnts(T_GFilenames)
@@ -786,12 +786,15 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						// get the attenuator, lambda, and sample string (to get the instrument)
 					
 						samfileStr = getAcctName("SAM")
-						lambda = getWavelength("SAM")
-						attenSam = getAtten_number("SAM")
+						empfileStr = getAcctName("EMP")
+						//lambda = getWavelength("SAM")
+						//attenSam = getAtten_number("SAM")
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						samAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
-						empAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						samAttenFactor = getAttenuator_transmission(samFileStr)
+						sam_atten_err = getAttenuator_trans_err(samFileStr)
+						empAttenFactor = getAttenuator_transmission(empFileStr)
+						emp_atten_err = getAttenuator_trans_err(empFileStr)
 						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
@@ -863,7 +866,7 @@ Function CalcTotalTrans(startRow,endRow)
 	Variable num_t_files, ii, jj
 	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,samAttenFactor,empAttenFactor,trans_err
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
-	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
+	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr,empFileStr
 
 	
 	num_t_files = numpnts(T_GFilenames)
@@ -913,12 +916,15 @@ Function CalcTotalTrans(startRow,endRow)
 						// get the attenuator, lambda, and sample string (to get the instrument)
 						
 						samfileStr = getAcctName("SAM")
-						lambda = getWavelength("SAM")
-						attenSam = getAtten_number("SAM")
+						empfileStr = getAcctName("EMP")
+//						lambda = getWavelength("SAM")
+//						attenSam = getAtten_number("SAM")
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						samAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
-						empAttenFactor = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)
+						samAttenFactor = getAttenuator_transmission(samFileStr)
+						sam_atten_err = getAttenuator_trans_err(samFileStr)
+						empAttenFactor = getAttenuator_transmission(empFileStr)
+						emp_atten_err = getAttenuator_trans_err(empFileStr)
 						AttenRatio = empAttenFactor/samAttenFactor
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
@@ -994,9 +1000,9 @@ Function CalcWholeTrans(startRow,endRow)
 	Wave GWhole= $"root:myGlobals:TransHeaderInfo:T_Whole"
 	
 	Variable num_t_files, ii, jj
-	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans
+	Variable refnum, transCts, emptyCts,attenRatio,lambda,trans,sam_atten,emp_atten
 	Variable x1,x2,y1,y2,err,attenEmp,attenSam,empty_ct_err,sam_ct_err,emp_atten_err,sam_atten_err
-	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr
+	String suffix = "",pathName,textStr,abortStr,emptyFile,transFile,samFileStr,empFileStr
 	
 	num_t_files = numpnts(T_GFilenames)
 	
@@ -1045,11 +1051,18 @@ Function CalcWholeTrans(startRow,endRow)
 						// get the attenuator, lambda, and sample string (to get the instrument)
 					
 						samfileStr = getAcctName("SAM")
-						lambda = getWavelength("SAM")
-						attenSam = getAtten_number("SAM")
-						
+						empfileStr = getAcctName("EMP")
+//						lambda = getWavelength("SAM")
+//						attenSam = getAtten_number("SAM")
+//						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
-						AttenRatio = N_AttenuationFactor(samFileStr,lambda,attenEmp,emp_atten_err)/N_AttenuationFactor(samFileStr,lambda,attenSam,sam_atten_err)
+						sam_atten = getAttenuator_transmission(samFileStr)
+						sam_atten_err = getAttenuator_trans_err(samFileStr)
+						emp_atten = getAttenuator_transmission(empFileStr)
+						emp_atten_err = getAttenuator_trans_err(empFileStr)
+
+						AttenRatio = sam_atten/emp_atten
+						
 						//calculate trans based on empty beam value and rescale by attenuation ratio
 						trans= transCts/emptyCts * AttenRatio
 						

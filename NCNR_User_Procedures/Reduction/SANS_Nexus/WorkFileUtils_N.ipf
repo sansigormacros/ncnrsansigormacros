@@ -1564,9 +1564,9 @@ Function Adjust_RAW_Attenuation(type)
 	endif
 
 	fileStr = getAcctName("RAW")
-	lambda = getWavelength("RAW")
-	raw_AttenFactor = N_AttenuationFactor(fileStr,lambda,raw_atten,raw_atten_err)
-	dest_AttenFactor = N_AttenuationFactor(fileStr,lambda,dest_atten,dest_atten_err)
+//	lambda = getWavelength("RAW")
+	raw_AttenFactor = getAttenuator_transmission("RAW")
+	dest_AttenFactor = getAttenuator_transmission(type)
 		
 	val = getDetector_counts("RAW")
 	val *= dest_AttenFactor/raw_AttenFactor

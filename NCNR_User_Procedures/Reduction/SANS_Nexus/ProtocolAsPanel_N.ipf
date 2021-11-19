@@ -2068,7 +2068,9 @@ Function AskForAbsoluteParams_Quest()
 		Variable lambda = getWavelength("RAW")
 		Variable attenNo = getAtten_number("RAW")
 		Variable atten_err
-		attenTrans = N_AttenuationFactor(acctStr,lambda,attenNo,atten_err)
+		
+		attenTrans = getAttenuator_transmission(acctStr)
+		atten_err = getAttenuator_trans_err(acctStr)
 		//Print "attenTrans = ",attenTrans
 		
 		//get the XY box, if needed

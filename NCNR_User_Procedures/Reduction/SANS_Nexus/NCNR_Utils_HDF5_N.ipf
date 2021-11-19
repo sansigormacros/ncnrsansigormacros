@@ -1312,7 +1312,7 @@ End
 //
 // new calibration done June 2007, John Barker
 //
-Proc N_MakeNG3AttenTable()
+xProc N_MakeNG3AttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	//do explicitly to avoid data folder problems, redundant, but it must work without fail
@@ -1393,7 +1393,7 @@ Proc N_MakeNG3AttenTable()
 End
 
 // new calibration done June 2007, John Barker
-Proc N_MakeNG7AttenTable()
+xProc N_MakeNG7AttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
@@ -1483,7 +1483,7 @@ End
 // 12 discrete wavelengths
 // 10 attenuators
 //
-Proc N_MakeNGBAttenTable()
+xProc N_MakeNGBAttenTable()
 
 	NewDataFolder/O root:myGlobals:Attenuators
 	
@@ -1589,7 +1589,7 @@ End
 //
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function N_LookupAttenNG3(lambda,attenNo,atten_err)
+xFunction N_LookupAttenNG3(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1640,7 +1640,7 @@ End
 // local function - to be used for NG7
 //
 // Mar 2010 - abs() added to attStr to account for ICE reporting -0.0001 as an attenuator position, which truncates to "-0"
-Function N_LookupAttenNG7(lambda,attenNo,atten_err)
+xFunction N_LookupAttenNG7(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1693,7 +1693,7 @@ End
 //
 // JAN 2013 -- now correct, NGB table has been added, allowing for 3A to 30A
 //
-Function N_LookupAttenNGB(lambda,attenNo,atten_err)
+xFunction N_LookupAttenNGB(lambda,attenNo,atten_err)
 	Variable lambda, attenNo, &atten_err
 	
 	Variable trans
@@ -1738,7 +1738,7 @@ End
 // a utility function so that I can get the values from the command line
 // since the atten_err is PBR
 //
-Function N_PrintAttenuation(instr,lam,attenNo)
+xFunction N_PrintAttenuation(instr,lam,attenNo)
 	String instr
 	Variable lam,attenNo
 	
@@ -1779,6 +1779,10 @@ End
 
 
 
+
+
+
+
 //returns the proper attenuation factor based on the instrument (NG3, NG5, or NG7)
 //NG5 values are taken from the NG7 tables (there is very little difference in the
 //values, and NG5 attenuators have not been calibrated (as of 8/01)
@@ -1794,10 +1798,90 @@ End
 // as of March 2011, returns the error (one standard deviation) in the attenuation factor as the last parameter, by reference
 
 //
-// JUL 2021 -- pass in fileStr as getAcctName(fname) = the file name. parse out the suffix of the
-// file name to determine which instrument
+// NOV 2021 
+// -- modified to match the functionality of VSANS.
+// now, since the attenuator tables are built-in to the nexus file,
+// there is no need for case statement and separate calls to determine the
+// instrument (and which hard-wired tables) to use.
+// --  pass in fileStr as getAcctName(fname) = the file name.
+// -- then calculate the attenuation (or error) using the tables for that file
 
-Function N_AttenuationFactor(fileStr,lam,attenNo,atten_err)
+
+//////////////////////
+//
+// function to calculate the attenuation factor from the table in the file
+//
+// TODO -- check to be sure that the wavelength is in allowable range
+//
+Function N_CalculateAttenuationFactor(fname)
+	String fname
+	
+	Variable val,lambda,numAtt
+	String monoType
+	
+	numAtt = getAtten_number(fname)
+	lambda = getWavelength(fname)
+
+//	if(lambda < 4.52 || lambda > 19)
+//		Abort "Wavelength out of range for attenuation table"
+//	endif
+	
+	Wave w = getAttenIndex_table(fname)	
+	Variable num = DimSize(w,0)
+	Make/O/D/N=(num) tmpVal,tmpLam						
+	
+	tmpVal = w[p][numAtt+1]		// offset by one, 1st column is wavelength
+	tmpLam = w[p][0]
+	val = interp(lambda, tmpLam, tmpVal )
+	Print "Calculated Atten = ",val
+	
+	//killwaves/Z tmpVal,tmpLam
+	return(val)
+	
+End
+
+//////////////////////
+//
+// function to calculate the attenuation error from the table in the file
+//
+// TODO -- check to be sure that the wavelength is in allowable range
+//
+Function N_CalculateAttenuationError(fname)
+	String fname
+	
+	Variable val,lambda,numAtt
+	String monoType
+	
+	numAtt = getAtten_number(fname)
+	lambda = getWavelength(fname)
+
+//	if(lambda < 4.52 || lambda > 19)
+//		Abort "Wavelength out of range for attenuation error table"
+//	endif
+			
+	Wave w = getAttenIndex_error_table(fname)		// N=(x,17)
+	Variable num = DimSize(w,0)
+	Make/O/D/N=(num) tmpVal,tmpLam
+	
+	tmpVal = w[p][numAtt+1]		// offset by one, 1st column is wavelength
+	tmpLam = w[p][0]
+	val = interp(lambda, tmpLam, tmpVal )
+	
+	//killwaves/Z tmpVal,tmpLam
+	return(val)
+	
+End
+
+
+
+
+
+
+
+//
+// once was the main call, now, no longer used
+//
+xFunction N_AttenuationFactor(fileStr,lam,attenNo,atten_err)
 	String fileStr
 	Variable lam,attenNo, &atten_err
 	

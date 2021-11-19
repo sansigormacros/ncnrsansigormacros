@@ -268,21 +268,19 @@ end
 
 // (DONE) -- for the control section, document each of the fields
 
-Function/S getCount_end(fname)
+
+Function getCount_end(fname)
 	String fname
 	
-	Variable num
 	String path = "entry:control:count_end"	
-	return(getStringFromHDF5(fname,path,num))
+	return(getRealValueFromHDF5(fname,path))
 end
 
-
-Function/S getCount_start(fname)
+Function getCount_start(fname)
 	String fname
 	
-	Variable num
 	String path = "entry:control:count_start"	
-	return(getStringFromHDF5(fname,path,num))
+	return(getRealValueFromHDF5(fname,path))
 end
 
 
@@ -366,14 +364,77 @@ end
 // file. This data block is for Nexus compliance and here presumably so that
 // other programs that read this file have easy access to plotting the data
 //
+// I added calls simply for completeness
+//
 //////// DATA
 //////// DATA
 //////// DATA
 
 
+areaDetector (2-D wave N=(112,128)) val=4605	typ=32bI
+			configuration   	"4m 6A Scatt"
+			sample_description   	"Sample 1"
+			sample_thickness 	1
+			slotIndex   	"1"
+			x0   	"TIME"
+			y0 (2-D wave N=(112,128)) val=4605	typ=32bI
 
+Function/WAVE getData_areaDetector(fname)
+	String fname
+	
+	String path = "entry:data:areaDetector"
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	
+	return w
+end
 
+Function/S getData_configuration(fname)
+	String fname
+	
+	String path = "entry:data:configuration"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End			
 
+Function/S getData_sample_description(fname)
+	String fname
+	
+	String path = "entry:data:sample_description"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+Function getData_Sample_thickness(fname)
+	String fname
+	
+	String path = "entry:data:sample_thickness"	
+	return(getRealValueFromHDF5(fname,path))
+end			
+
+Function/S getData_slotIndex(fname)
+	String fname
+	
+	String path = "entry:data:slotIndex"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+Function/S getData_X0(fname)
+	String fname
+	
+	String path = "entry:data:x0"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+Function/WAVE getData_y0(fname)
+	String fname
+	
+	String path = "entry:data:y0"
+	WAVE w = getRealWaveFromHDF5(fname,path)
+	
+	return w
+end
 
 //////// INSTRUMENT
 //////// INSTRUMENT
@@ -417,14 +478,14 @@ Function getAttenuator_transmission(fname)
 	String fname
 	
 	Print "Atten read - diverted to calculation"
-	Print "***ATTEN IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
+//	Print "***ATTEN IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
 
 // see the equivalent VSANS function for how this is done - and see if SANS can reliably
 // write out the attenuator transmission
 //	
 
-	return(1)
-//	return(CalculateAttenuationFactor(fname))
+//	return(1)
+	return(N_CalculateAttenuationFactor(fname))
 	
 //	String path = "entry:instrument:attenuator:attenuator_transmission"	
 //	return(getRealValueFromHDF5(fname,path))
@@ -437,10 +498,10 @@ Function getAttenuator_trans_err(fname)
 	String fname
 	
 	Print "Atten_err read - diverted to calculation"
-	Print "***ATTEN_ERR IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
+//	Print "***ATTEN_ERR IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
 
-	return(0)
-//	return(CalculateAttenuationError(fname))
+//	return(0)
+	return(N_CalculateAttenuationError(fname))
 	
 //	String path = "entry:instrument:attenuator:attenuator_transmission_error"	
 //	return(getRealValueFromHDF5(fname,path))
@@ -1377,43 +1438,6 @@ Function getSourceAp_width(fname)
 End
 
 
-//
-//
-// PROGRAM_DATA
-//
-//
-
-Function/S getProgram_data_data(fname)
-	String fname
-
-	String path = "entry:program_data:data"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function/S getProgram_data_description(fname)
-	String fname
-
-	String path = "entry:program_data:description"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function/S getProgram_data_file_name(fname)
-	String fname
-
-	String path = "entry:program_data:file_name"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
-
-Function/S getProgram_data_type(fname)
-	String fname
-
-	String path = "entry:program_data:type"
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
 
 
 

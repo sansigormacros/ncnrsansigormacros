@@ -553,7 +553,8 @@ Function/S Auto_CalcKappa(runNum)
 	Variable lambda = getWavelength("RAW")
 	Variable attenNo = getAtten_number("RAW")
 	Variable atten_err
-	attenTrans = N_AttenuationFactor(acctStr,lambda,attenNo,atten_err)
+	attenTrans = getAttenuator_transmission("RAW")
+	atten_err = getAttenuator_trans_err("RAW")
 	//Print "attenTrans = ",attenTrans
 	
 	Variable x1,x2,y1,y2,ct_err

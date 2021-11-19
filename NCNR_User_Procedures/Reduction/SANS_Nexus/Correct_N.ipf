@@ -273,18 +273,17 @@ Function CorrectMode_1()
 	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp
 	Variable sam_atten_err,emp_atten_err,bgd_atten_err
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+
 	fileStr = getFileNameFromFolder("BGD")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("BGD")
-	bgd_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
-	fileStr = getFileNameFromFolder("BGD")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("EMP")
-	emp_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
+	bgd_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
 	
+	fileStr = getFileNameFromFolder("EMP")
+	emp_AttenFactor = getAttenuator_transmission(fileStr)
+	emp_atten_err = getAttenuator_trans_err(fileStr)
+		
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
@@ -394,14 +393,15 @@ Function CorrectMode_2()
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001
 	Variable sam_atten_err,bgd_atten_err
+	
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+
 	fileStr = getFileNameFromFolder("BGD")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("BGD")
-	bgd_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
+	bgd_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+	
 	
 	//Print "atten = ",sam_attenFactor,bgd_attenFactor
 	
@@ -494,14 +494,14 @@ Function CorrectMode_3()
 	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
 	Variable wcen=0.001,tsam,temp
 	Variable sam_atten_err,emp_atten_err
+
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+	
 	fileStr = getFileNameFromFolder("EMP")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("EMP")
-	emp_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
+	emp_AttenFactor = getAttenuator_transmission(fileStr)
+	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
@@ -591,10 +591,11 @@ Function CorrectMode_4()
 	//get sam and bgd attenuation factors
 	String fileStr=""
 	Variable lambda,attenNo,sam_AttenFactor,sam_atten_err
+
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+
 
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -659,17 +660,16 @@ Function CorrectMode_11()
 	Variable wcen=0.001,tsam,temp,remp,cemp,tmonemp,femp,time_sam,time_drk,savmon_sam
 	Variable sam_atten_err,bgd_atten_err,emp_atten_err
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+
 	fileStr = getFileNameFromFolder("BGD")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("BGD")
-	bgd_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
+	bgd_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+	
 	fileStr = getFileNameFromFolder("EMP")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("EMP")
-	emp_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
+	emp_AttenFactor = getAttenuator_transmission(fileStr)
+	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
@@ -794,14 +794,14 @@ Function CorrectMode_12()
 	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
 	Variable sam_atten_err,bgd_atten_err
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+
 	fileStr = getFileNameFromFolder("BGD")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("BGD")
-	bgd_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,bgd_atten_err)
+	bgd_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
 	
+
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
@@ -901,14 +901,14 @@ Function CorrectMode_13()
 	Variable tmonsam,fsam,femp,xshift,yshift,rsam,csam,remp,cemp,tmonemp
 	Variable wcen=0.001,tsam,temp,savmon_sam,time_sam,time_drk
 	Variable sam_atten_err,emp_atten_err
+	
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
+	
 	fileStr = getFileNameFromFolder("EMP")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("EMP")
-	emp_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,emp_atten_err)
+	emp_AttenFactor = getAttenuator_transmission(fileStr)
+	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
@@ -1013,10 +1013,10 @@ Function CorrectMode_14()
 	Variable tmonsam,fsam,fbgd,xshift,yshift,rsam,csam,rbgd,cbgd,tmonbgd
 	Variable wcen=0.001,time_drk,time_sam,savmon_sam,tsam
 	Variable sam_atten_err
+
 	fileStr = getFileNameFromFolder("SAM")
-	lambda = getWavelength(fileStr)
-	attenNo = getAtten_number("SAM")
-	sam_AttenFactor = N_AttenuationFactor(fileStr,lambda,AttenNo,sam_atten_err)
+	sam_AttenFactor = getAttenuator_transmission(fileStr)
+	sam_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
 	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
