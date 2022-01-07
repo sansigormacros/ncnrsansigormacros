@@ -3,8 +3,10 @@
 #pragma IgorVersion=8.0
 
 //
-// JULY 2021 -- TODO - replace the functions in this file---
-//								or move to the new version
+// JULY 2021 -- TODO - replace the functions in this file--- with new equivalents
+//								or move necessary functions to the new procedures
+//
+// -- the goal is to eliminate this file completely
 //
 //
 // all that is left in this file is some odd utility functions that 

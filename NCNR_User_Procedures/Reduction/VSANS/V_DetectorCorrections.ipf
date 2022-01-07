@@ -10,6 +10,8 @@
 // these are meant to be called by the procedures that convert "raw" data to 
 // "adjusted" or corrected data sets
 //
+// 
+
 
 
 // the function V_WindowTransmission(tw) is a testing function that can be used to 
@@ -31,6 +33,9 @@
 Constant kTube_ri = 0.372		// inner radius of tube [cm]
 Constant kTube_cc = 0.84			// center to center spacing [cm]
 Constant kTube_ss = 0.025		// stainless steel shell thickness [cm]
+// note that the total outer diameter of the tubes is 2*0.372 + 2*0.025 = 0.794 cm
+// such that the 0.84 cm c-to-c spacing accounts for the gaps between tubes as mounted.
+
 
 Constant kSig_2b_He = 0.146		// abs xs for 2 bar He(3) [cm-1 A-1] (multiply this by wavelength)
 Constant kSig_8b_He = 0.593		// abs xs for 8 bar He(3) [cm-1 A-1] (multiply this by wavelength)
