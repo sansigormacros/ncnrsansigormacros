@@ -79,16 +79,6 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 	NVAR isLogScale = $(dest + ":gIsLogScale")
 	Variable wasLogScale=isLogScale
 	
-	if(isLogScale)
-		ConvertFolderToLinearScale(type)
-		//rename the button to reflect "isLin" - the displayed name must have been isLog
-//		DoWindow/F SANS_Data
-//		MapSliderProc("reset", 0, 1)		//force default values for color mapping
-//		Button bisLog,title="isLin",rename=bisLin
-//		DoWindow/F Average_Panel
-//		DoUpdate
-	Endif
-
 	//set data folder back to root (redundant)
 	SetDataFolder root:
 	
@@ -421,11 +411,10 @@ Function MasterAngleDraw()
 		//do the annular drawing
 		//need to go from q-value to y-axis value (since x will shift a lot)
 		//and make sure that the (radius) is allowable for drawing
-		Variable sdd=getDet_Distance(type)
+		Variable sdd=getDet_Distance(type)		// return value is in [cm]
 		Variable lam=getWavelength(type)
 
 		
-		sdd *=100		//convert to cm
 		//find the radius (from the y-direction)
 		Variable QCtr = NumberByKey("QCENTER",drawStr,"=",";")
 		Variable QDelta = NumberByKey("QDELTA",drawStr,"=",";")

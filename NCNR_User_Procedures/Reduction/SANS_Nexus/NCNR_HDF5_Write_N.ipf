@@ -1743,7 +1743,7 @@ Function writeBeamStop_size(fname,val)
 	
 	Make/O/D/N=1 wTmpWrite
 //	Make/O/R/N=1 wTmpWrite
-	String groupName = "/entry/instrument/beam_stop_C2/shape"	
+	String groupName = "/entry/instrument/beam_stop/shape"	
 	String varName = "size"
 	wTmpWrite[0] = val
 
@@ -2118,6 +2118,9 @@ Function writeDetDescription(fname,str)
 	return(err)
 End
 
+// header stores value in [cm]
+// patch panel is asking for value in [m] - so be sure to pass SDD [cm] to this function!
+//
 Function writeDet_distance(fname,val)
 	String fname
 	variable val
@@ -3189,6 +3192,26 @@ Function writeSampleAp_size(fname,str)
 	return(err)
 End
 
+
+// fname is a local WORK folder
+Function putSampleAp_size(fname,str)
+	String fname,str
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:sample_aperture:shape:size"
+	
+	Wave/Z/T w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = str
+		return(0)
+	endif
+
+End
+
+
+
 Function writeSampleAp_width(fname,val)
 	String fname
 	Variable val
@@ -4107,6 +4130,56 @@ Function writeReductionProtocolWave(fname,inTW)
 	return(err)
 end
 
+
+///// This is an added field, not part of the Nexus definition
+//
+// this is the associated file for transmission calculation
+//
+Function writeAssocFileSuffix(fname,str)
+	String fname,str
+
+//	String path = "entry:reduction:assoc_file_suffix"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/entry/reduction"
+	String varName = "assoc_file_suffix"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+// fname is a local WORK folder
+// be sure to generate this if it does not exist since it is not part of the nexus definition
+Function putAssocFileSuffix(fname,str)
+	String fname,str
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:reduction:assoc_file_suffix"
+	
+	Wave/Z/T w = $path
+	if(waveExists(w) == 0)
+		Make/O/T/N=1 $path
+		Wave/Z/T tw = $path
+		tw[0] = str
+		return(1)
+	else
+		w[0] = str
+		return(0)
+	endif
+
+End
 
 
 //////// ENTRY/SAMPLE

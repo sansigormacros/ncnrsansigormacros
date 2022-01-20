@@ -82,7 +82,7 @@ Function RectangularAverageTo1D(type)
 	sy3 = 10000		//nonlinear coeff
 
 	
-	dtdist = 1000*getDet_Distance(type)	// det distance in mm
+	dtdist = 10*getDet_Distance(type)	// det distance in [mm] from [cm]
 	
 	
 	NVAR binWidth=root:Packages:NIST:gBinWidth
@@ -320,11 +320,11 @@ Function RectangularAverageTo1D(type)
 //
 // ***************************************************************
 
-	Variable L2 = getDet_Distance(type)
+	Variable L2 = getDet_Distance(type) / 100		// convert [cm] to [m] for N_getResolution
 	Variable BS = getBeamStop_size(type)
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
-	Variable L1 = getSourceAp_distance(type)
+	Variable L1 = getSourceAp_distance(type) / 100		// convert [cm] to [m] for N_getResolution
 	lambda = getWavelength(type)
 	Variable lambdaWidth = getWavelength_spread(type)
 	
@@ -493,7 +493,7 @@ Function AnnularAverageTo1D(type)
 	sy = getDet_y_pixel_size(type)		//mm/pixel (y)
 	sy3 = 10000		//nonlinear coeff
 	
-	dtdist = 1000*getDet_Distance(type)	// det distance in mm
+	dtdist = 10*getDet_Distance(type)	// det distance converted from [cm] to [mm]
 	lambda = getWavelength(type)
 	
 	Variable qc = NumberByKey("QCENTER",keyListStr,"=",";")

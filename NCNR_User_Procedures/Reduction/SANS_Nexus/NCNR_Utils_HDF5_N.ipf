@@ -1803,7 +1803,7 @@ End
 // now, since the attenuator tables are built-in to the nexus file,
 // there is no need for case statement and separate calls to determine the
 // instrument (and which hard-wired tables) to use.
-// --  pass in fileStr as getAcctName(fname) = the file name.
+// --  pass in fileStr = the file name.
 // -- then calculate the attenuation (or error) using the tables for that file
 
 

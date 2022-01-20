@@ -49,12 +49,10 @@ Function SumCountsInBox(x1,x2,y1,y2,ct_err,type)
 	
 	//check for logscale data, but don't change the data
 	NVAR gIsLogScale = $(dest + ":gIsLogScale")
-	if (gIsLogScale)
-		wave data=getDetectorLinearDataW(type)
-	else
+
 		wave data=getDetectorDataW(type)
-	endif
-	wave data_err = getDetectorLinearDataErrW(type)
+
+	wave data_err = getDetectorDataErrW(type)
 	
 	err2_sum = 0		// running total of the squared error
 	ii=x1
@@ -175,14 +173,20 @@ Function SetXYBoxCoords() :  GraphMarquee
 //
 // -- these write statements occur in multiple locations in this file
 //
+	Make/O/D/N=4 tmpW
+	tmpW[0] = x1
+	tmpW[1] = x2
+	tmpW[2] = y1
+	tmpW[3] = y2
 	
-	WriteXYBoxToHeader(filename,x1,x2,y1,y2)
-	
+	writeBoxCoordinates(filename,tmpW)
+		
 	Print counts, " counts in XY box"
-	WriteBoxCountsToHeader(filename,counts)
+	writeBoxCounts(filename,counts)
 	
-	WriteBoxCountsErrorToHeader(filename,ct_err)
+	writeBoxCountsError(filename,ct_err)
 	
+	KillWaves/Z tmpW
 	return(0)
 End
 
@@ -201,11 +205,8 @@ Function FindBeamCenter() :  GraphMarquee
 	
 	// data wave is hard-wired in as the displayed data
 	NVAR dataIsLog=$(dest + ":gIsLogScale")		//check for log-scaling in current data folder
-	if (dataIsLog)
-		wave data=getDetectorLinearDataW(cur_folder)
-	else
-		wave data=getDetectorDataW(cur_folder)
-	endif
+
+	wave data=getDetectorDataW(cur_folder)
 	
 	GetMarquee left,bottom
 	if(V_flag == 0)
@@ -978,7 +979,7 @@ Function SumCountsInAnnulus(qCtr,delta,ct_err,type)
 	wave data_err = getDetectorDataErrW(type)
 	Variable xctr=getDet_beam_center_x(type)
 	Variable yctr=getDet_beam_center_y(type)
-	Variable sdd=getDet_Distance(type)
+	Variable sdd=getDet_Distance(type) / 100   // CalcQval is expecting [m]
 	Variable lam=getWavelength(type)
 	Variable pixSize=getDet_y_pixel_size(type)/10
 
@@ -1152,7 +1153,7 @@ Function SumCountsInArc(qCtr,delta,ct_err,type,sideStr,phi,deltaPhi)
 	wave data_err = getDetectorDataErrW(type)
 	Variable xctr=getDet_beam_center_x(type)
 	Variable yctr=getDet_beam_center_y(type)
-	Variable sdd=getDet_Distance(type)
+	Variable sdd=getDet_Distance(type) / 100		// CalcQval is expecting [m]
 	Variable lam=getWavelength(type)
 	Variable pixSize=getDet_y_pixel_size(type)/10
 	

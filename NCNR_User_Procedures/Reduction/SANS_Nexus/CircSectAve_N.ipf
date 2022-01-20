@@ -67,7 +67,7 @@ Function CircularAverageTo1D(type)
 	sy3 = 10000		//nonlinear coeff !! HARD-WIRED
 	
 	dtsize = 10*(pixelsX*sx)		//det size in mm
-	dtdist = 1000*getDet_Distance(type)		// det distance in mm
+	dtdist = 10*getDet_Distance(type)		// det distance in [mm] from [cm]
 	
 	NVAR binWidth=root:Packages:NIST:gBinWidth
 	
@@ -316,11 +316,11 @@ Function CircularAverageTo1D(type)
 //
 // ***************************************************************
 
-	Variable L2 = getDet_Distance(type)
+	Variable L2 = getDet_Distance(type) / 100		// N_getResolution is expecting [m]
 	Variable BS = getBeamStop_size(type)
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
-	Variable L1 = getSourceAp_distance(type)
+	Variable L1 = getSourceAp_distance(type) / 100 // N_getResolution is expecting [m]
 	lambda = getWavelength(type)
 	Variable lambdaWidth = getWavelength_spread(type)
 	String detStr=getDetDescription(type)

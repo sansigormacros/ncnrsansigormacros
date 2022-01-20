@@ -532,7 +532,7 @@ Function/S Auto_CalcKappa(runNum)
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
 	
 	Wave data = getDetectorDataW("RAW")		//this will be the linear data
-	String acctStr = getAcctName("RAW")
+	String acctStr = "RAW"
 
 
 	//get the necessary variables for the calculation of kappa
@@ -545,8 +545,7 @@ Function/S Auto_CalcKappa(runNum)
 	countTime = getCollectionTime("RAW")
 	//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
 	monCnt = getControlMonitorCount("RAW")
-	sdd = getDet_Distance(filename)
-	sdd *=100		//convert from meters to cm
+	sdd = getDet_Distance(filename)		// return value is in [cm]
 				
 	//lookup table for transmission factor
 	//determine which instrument the measurement was done on from acctStr
@@ -660,8 +659,8 @@ Function Auto_FindWriteBeamCenter(runNum)
 	Print "Automatic Beam Y-center (in detector coordinates) = ",yctr
 
 	//write the center to the header, so I don't need to find it again
-	WriteBeamCenterXToHeader(filename,xctr)
-	WriteBeamCenterYToHeader(filename,yctr)
+	writeDet_beam_center_x(filename,xctr)
+	writeDet_beam_center_y(filename,yctr)
 	
 	return(0)
 	
@@ -711,14 +710,21 @@ Function Auto_SetXYBox(runNum)
 // get the counts and write everything to the header
 	Variable counts,ct_err
 	counts = SumCountsInBox(x1,x2,y1,y2,ct_err,"SAM")
+
+	Make/O/D/N=4 tmpW
+	tmpW[0] = x1
+	tmpW[1] = x2
+	tmpW[2] = y1
+	tmpW[3] = y2
 	
-	WriteXYBoxToHeader(filename,x1,x2,y1,y2)
-	
+	writeBoxCoordinates(filename,tmpW)
+		
 	Print counts, " counts in XY box"
-	WriteBoxCountsToHeader(filename,counts)
+	writeBoxCounts(filename,counts)
 	
-	WriteBoxCountsErrorToHeader(filename,ct_err)
+	writeBoxCountsError(filename,ct_err)
 	
+	KillWaves/Z tmpW
 	
 	return(0)
 End

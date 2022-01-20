@@ -79,12 +79,12 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	Endif
 	
 	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
-	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
 	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
-	hdrStr2 += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))
+	hdrStr2 += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))
 	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
 	
 	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
@@ -189,12 +189,12 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	Endif
 	
 	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
-	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
 	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
-	hdrStr2 += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))
+	hdrStr2 += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))
 	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
 	
 	
@@ -380,13 +380,13 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA(A)   DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)    COUNT TIME"
 	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
-	labelWave[3] +="       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	labelWave[3] +="       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
 	labelWave[3] +="     "+num2str(getCollectionTime(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	labelWave[5] +="  "+num2str(getSourceAp_size(type))+"  "+num2str(getSampleAp_size(type))+"  "
-	labelWave[5] += num2str(getSourceAp_distance(type))+"  "+num2str(getWavelength_spread(type))+"  "+num2str(getBeamStop_size(type))+"  "+getInstrumentNameFromFile(type)
+	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"  "+num2str(getWavelength_spread(type))+"  "+num2str(getBeamStop_size(type))+"  "+getInstrumentNameFromFile(type)
 	labelWave[6] = "PIXELS(X)    PIXELS(Y)   PIXELSIZE X (mm)  PIXELSIZE Y (mm)"
 	labelWave[7] += num2str(pixelsX)+"    "+num2str(pixelsY)+"    "+num2str(getDet_x_pixel_size(type))+"    "+num2str(getDet_y_pixel_size(type))
 	labelWave[8] =  "SAM: "+rawTag+samFiles
@@ -523,7 +523,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 
 	Variable rw16=getDet_beam_center_x(type)
 	Variable rw17=getDet_beam_center_y(type)
-	Variable rw18=getDet_Distance(type)
+	Variable rw18=getDet_Distance(type)/100 		// convert [cm] to [m]
 	Variable rw19=getDet_LateralOffset(type)
 
 	Variable rw21=getBeamStop_size(type)
@@ -540,7 +540,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	
 	Variable rw23=getSourceAp_size(type)
 	Variable rw24=getSampleAp_size(type)
-	Variable rw25=getSourceAp_distance(type)
+	Variable rw25=getSourceAp_distance(type) / 100 		// convert [cm] to [m]
 	
 	Variable rw45=0		// TODO HARD WIRED - horizontal polarization
 	Variable rw46=0		// TODO HARD WIRED - vertical polarization
@@ -752,12 +752,12 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA (A)  DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)"
 	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
-	labelWave[3] += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type))
+	labelWave[3] += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	labelWave[5] += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
-	labelWave[5] += num2str(getSourceAp_distance(type))+"    "+num2str(getWavelength_spread(type))+"    "+num2str(getBeamStop_size(type))+"    "+getInstrumentNameFromFile(type) 
+	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))+"    "+num2str(getBeamStop_size(type))+"    "+getInstrumentNameFromFile(type) 
 	labelWave[6] =  "SAM: "+rawTag+samFiles
 	labelWave[7] =  "BGD: "+proto[0]
 	labelWave[8] =  "EMP: "+proto[1]
@@ -797,7 +797,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	Variable xctr,yctr,sdd,lambda,pixSize
 	xctr = getDet_beam_center_x(type)
 	yctr = getDet_beam_center_y(type)
-	sdd = getDet_Distance(type)
+	sdd = getDet_Distance(type) / 100 		// convert [cm] to [m]
 	lambda = getWavelength(type)
 	pixSize = getDet_x_pixel_size(type)/10		//convert mm to cm (x and y are the same size pixels)
 	
@@ -808,11 +808,11 @@ Function QxQy_Export(type,fullpath,dialog)
 
 
 
-	Variable L2 = getDet_Distance(type)
+	Variable L2 = getDet_Distance(type) / 100 		// convert [cm] to [m]
 	Variable BS = getBeamStop_size(type)
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
-	Variable L1 = getSourceAp_distance(type)
+	Variable L1 = getSourceAp_distance(type) / 100 		// convert [cm] to [m]
 	Variable lambdaWidth = getWavelength_spread(type)
 	Variable usingLenses = getAreLensesIn(type)		// 2021-HARD WIRED "FALSE: until corrected in header      //new 2007
 

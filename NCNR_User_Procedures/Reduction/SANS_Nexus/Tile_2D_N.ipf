@@ -161,18 +161,14 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 			if(stringmatch(fname, "*.ASC"))
 				NewDataFolder/O root:Packages:NIST:ASC
 				Load_NamedASC_File(fname, "ASC")
-				if(makeLog)
-					err = ConvertFolderToLogScale("ASC")
-				endif			
+		
 				MakePNGforLayout(minScale,maxScale,"ASC",ind)
 				ind+=1			//a running count of all of the PNG's
 			else
 				ReadHeaderAndData(fname,"RAW")		//fname is the full path
 				String/G root:myGlobals:gDataDisplayType="RAW"	
 				fRawWindowHook()
-				if(makeLog)
-					err = ConvertFolderToLogScale("RAW")
-				endif
+
 				MakePNGforLayout(minScale,maxScale,"RAW",ind)
 				ind+=1			//a running count of all of the PNG's
 			endif
@@ -323,18 +319,14 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		if(stringmatch(fname, "*.ASC"))
 			NewDataFolder/O root:Packages:NIST:ASC
 			Load_NamedASC_File(fname, "ASC")
-			if(makeLog)
-				err = ConvertFolderToLogScale("ASC")
-			endif			
+		
 			MakePNGforLayout(minScale,maxScale,"ASC",ind)
 			ind+=1			//a running count of all of the PNG's
 		else
 			ReadHeaderAndData(fname,"RAW")		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
-			if(makeLog)
-				err = ConvertFolderToLogScale("RAW")
-			endif
+
 			MakePNGforLayout(minScale,maxScale,"RAW",ind)
 			ind+=1			//a running count of all of the PNG's
 		endif

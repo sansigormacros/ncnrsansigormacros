@@ -2102,7 +2102,7 @@ Function GetHeaderInfoToCombineWave(fname,sname)
 	
 	//read in the SDD
 	InsertPoints lastPoint,1,GSDD
-	GSDD[lastPoint]= getDet_Distance(fname)
+	GSDD[lastPoint]= getDet_Distance(fname) / 100		// convert [cm] to [m]
 
 	//the run number (not displayed in the table, but carried along)
 	InsertPoints lastPoint,1,GRunNumber

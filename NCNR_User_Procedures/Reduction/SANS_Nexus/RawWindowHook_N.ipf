@@ -224,11 +224,8 @@ Function RawWindowHook(s)
 	SetDataFolder "root:Packages:NIST:"+cur_folder		//use the full path, so it will always work
 	String curPath = "root:Packages:NIST:" + cur_folder
 	NVAR/Z dataIsLog=$("root:gIsLogScale")		//now a global variable in the current folder, not the globals folder
-	if (dataIsLog) 
-		wave w=getDetectorLinearDataW(fname)		//the linear copy
-	else
-		wave w=getDetectorDataW(fname)		// the "regular data"
-   endif
+
+	wave w=getDetectorDataW(fname)		// the "regular data"
 	
 	String/G root:myGlobals:gHookStr= s
 	Variable xpix,ypix,xaxval,yaxval,xint,yint,rawval
@@ -257,7 +254,7 @@ Function RawWindowHook(s)
 			if(cmpstr(cur_folder,"MSK")!=0)
 				Variable xctr=getDet_beam_center_x(fname)
 				Variable yctr=getDet_beam_center_y(fname)
-				Variable sdd=getDet_Distance(fname)
+				Variable sdd=getDet_Distance(fname) / 100 		// convert [cm] to [m] for CalcQval
 				Variable lam=getWavelength(fname)
 				Variable pixSize=getDet_x_pixel_size(fname)/10			//TODO -- verify the units!!
 				Variable/G root:myGlobals:gQQ = CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
@@ -303,7 +300,7 @@ Function Set_Q_Axes(qx,qy,curPath)
 
 	Variable xctr=getDet_beam_center_x(curPath)
 	Variable yctr=getDet_beam_center_y(curPath)
-	Variable sdd=getDet_Distance(curPath)
+	Variable sdd=getDet_Distance(curPath) / 100 		// convert [cm] to [m] for CalcQx,y
 	Variable lam=getWavelength(curPath)
 	Variable pixSize=getDet_x_pixel_size(curPath)/10			//TODO -- verify the units!! (need [cm])
 		

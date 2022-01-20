@@ -4,6 +4,17 @@
 
 // RTI clean
 
+// JAN 2022 - updated to add more columns of metadata
+//
+// Adding columns to the table now means:
+// 1-Make the wave in BuildCatVeryShortTable
+// 2-Declare the wave in GetHeaderInfoToWave, and read/fill in the value
+// 3- update declarations in SortWves
+//
+//
+//
+
+
 //
 //	SRK modified 30 JAN07 to include Rotation angle, Temperature, and B-field in the table (at the end)
 //
@@ -41,6 +52,11 @@ Function BuildCatVeryShortTable()
 	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Suffix"
 	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Labels"
 	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	
+	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Intent"
+	Make/O/T/N=0 $"root:myGlobals:CatVSHeaderInfo:Purpose"
+	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Group_ID"	
+	
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:Lambda"
 	Make/O/D/N=0 $"root:myGlobals:CatVSHeaderInfo:CntTime"
@@ -72,6 +88,11 @@ Function BuildCatVeryShortTable()
 	WAVE/T Suffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
 	WAVE/T Labels = $"root:myGlobals:CatVSHeaderInfo:Labels"
 	WAVE/T DateAndTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	
+	WAVE/T Intent = $"root:myGlobals:CatVSHeaderInfo:Intent"
+	WAVE/T Purpose = $"root:myGlobals:CatVSHeaderInfo:Purpose"
+	WAVE Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"		
+	
 	WAVE SDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	WAVE Lambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
 	WAVE CntTime = $"root:myGlobals:CatVSHeaderInfo:CntTime"
@@ -111,17 +132,19 @@ Function BuildCatVeryShortTable()
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:RotAngle)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Field)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:MCR)=50
-#if (exists("QUOKKA")==6)
-		//ANSTO
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:SICS)=80
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:HDF)=40
-#endif		
-		
-#if (exists("ILL_D22")==6)
-		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
-#endif
+//#if (exists("QUOKKA")==6)
+//		//ANSTO
+//		ModifyTable width(:myGlobals:CatVSHeaderInfo:SICS)=80
+//		ModifyTable width(:myGlobals:CatVSHeaderInfo:HDF)=40
+//#endif		
+//		
+//#if (exists("ILL_D22")==6)
+//		ModifyTable width(:myGlobals:CatVSHeaderInfo:Reactorpower)=50		//activate for ILL, June 2008
+//#endif
 
 #if (exists("NCNR_Nexus")==6)
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:intent)=60
+		ModifyTable width(:myGlobals:CatVSHeaderInfo:Group_ID)=50
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:nGuides)=40
 		ModifyTable width(:myGlobals:CatVSHeaderInfo:Pos)=30
 		ModifyTable sigDigits(:myGlobals:CatVSHeaderInfo:Pos)=3			//to make the display look nice, given the floating point values from ICE
@@ -271,6 +294,12 @@ Function SortWaves()
 	Wave/T GSuffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
 	Wave/T GLabels = $"root:myGlobals:CatVSHeaderInfo:Labels"
 	Wave/T GDateTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+
+	WAVE/T Intent = $"root:myGlobals:CatVSHeaderInfo:Intent"
+	WAVE/T Purpose = $"root:myGlobals:CatVSHeaderInfo:Purpose"
+	WAVE Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"		
+
+
 	Wave GSDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Wave GLambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
 	Wave GCntTime = $"root:myGlobals:CatVSHeaderInfo:CntTime"
@@ -300,13 +329,13 @@ Function SortWaves()
 	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GReactPow
 #elif (exists("NCNR_Nexus")==6)
 	//	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
+	Sort GSuffix, GSuffix, GFilenames, Intent,Purpose,Group_ID, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR,GPos,gNumGuides
 #elif (exists("QUOKKA")==6)
     //ANSTO
 	Sort GFilenames, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR, GSICS, GHDF
 #else
 //	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
-	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
+	Sort GSuffix, GSuffix, GFilenames, GLabels, GDateTime, Intent,Purpose,Group_ID, GSDD, GLambda, GCntTime, GTotCnts, GCntRate, GTransmission, GThickness, GXCenter, GYCenter, GNumAttens,GRunNumber,GIsTrans,GRot,GTemp,GField,GMCR
 #endif
 
 
@@ -319,6 +348,11 @@ Function BuildTableWindow()
 	Wave/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
 	Wave/T Labels = $"root:myGlobals:CatVSHeaderInfo:Labels"
 	Wave/T DateAndTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	
+	WAVE/T Intent = $"root:myGlobals:CatVSHeaderInfo:Intent"
+	WAVE/T Purpose = $"root:myGlobals:CatVSHeaderInfo:Purpose"
+	WAVE Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"		
+
 	Wave SDD = $"root:myGlobals:CatVSHeaderInfo:SDD"
 	Wave Lambda = $"root:myGlobals:CatVSHeaderInfo:Lambda"
 	Wave CntTime = $"root:myGlobals:CatVSHeaderInfo:CntTime"
@@ -347,7 +381,7 @@ Function BuildTableWindow()
 // original order, magnetic at the end
 //	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 // with numGuides
-	Edit Filenames, Labels, DateAndTime, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
+	Edit Filenames, Labels, DateAndTime, Intent,Purpose,Group_ID, SDD, Lambda, numGuides, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR, Pos as "Data File Catalog"
 // alternate ordering, put the magnetic information first
 //	Edit Filenames, Labels, RotAngle, Temperature, Field, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens as "Data File Catalog"
 #elif (exists("QUOKKA")==6)
@@ -355,7 +389,7 @@ Function BuildTableWindow()
 	Edit Filenames, Labels, DateAndTime,  SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR,SICS, HDF as "Data File Catalog"
 #else
 	// HFIR or anything else
-	Edit Filenames, Labels, DateAndTime, SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
+	Edit Filenames, Labels, DateAndTime, Intent,Purpose,Group_ID,SDD, Lambda, CntTime, TotCnts, CntRate, Transmission, Thickness, XCenter, YCenter, NumAttens, RotAngle, Temperature, Field, MCR as "Data File Catalog"
 #endif
 
 	String name="CatVSTable"
@@ -379,6 +413,13 @@ Function GetHeaderInfoToWave(fname,sname)
 	Wave/T GSuffix = $"root:myGlobals:CatVSHeaderInfo:Suffix"
 	Wave/T GLabels = $"root:myGlobals:CatVSHeaderInfo:Labels"
 	Wave/T GDateTime = $"root:myGlobals:CatVSHeaderInfo:DateAndTime"
+	
+	WAVE/T Intent = $"root:myGlobals:CatVSHeaderInfo:Intent"
+	WAVE/T Purpose = $"root:myGlobals:CatVSHeaderInfo:Purpose"
+	WAVE Group_ID = $"root:myGlobals:CatVSHeaderInfo:Group_ID"		
+
+	
+	
 	//ANSTO
 	Wave/T GSICS = $"root:myGlobals:CatVSHeaderInfo:SICS"
 	Wave/T GHDF = $"root:myGlobals:CatVSHeaderInfo:HDF"
@@ -471,7 +512,7 @@ Function GetHeaderInfoToWave(fname,sname)
 
 	//SDD
 	InsertPoints lastPoint,1,GSDD
-	GSDD[lastPoint]=getDet_Distance(fname)
+	GSDD[lastPoint]=getDet_Distance(fname) / 100 // convert [cm] to [m]
 	
 	//wavelength
 	InsertPoints lastPoint,1,GLambda
@@ -514,20 +555,27 @@ Function GetHeaderInfoToWave(fname,sname)
 
 // number of guides and sample position, only for NCNR
 #if (exists("NCNR_Nexus")==6)
-//	instrumentNum = str2num(getAcctName(fname)[3])		// "[NGxSANSxx]" -- [3] should be then instrument number
-//	Variable/G root:Packages:NIST:SAS:instrument = instrumentNum		//so that Ng can be correctly calculated
 
 	// acct name is "[NGxSANSxx]" -- [1,3] is the instrument "name" "NGx"
 	//so that Ng can be correctly calculated
-	String/G root:Packages:NIST:SAS:gInstStr = getAcctName(fname) 
+	// in Nexus, this is the last 3 characters of the file name
+	String/G root:Packages:NIST:SAS:gInstStr = getInstrName(fname) 
 	
 	InsertPoints lastPoint,1,GNumGuides
-	GNumGuides[lastPoint]  = numGuides(getSourceAp_distance(fname)/100)		//  /100 to pass correct units
+	GNumGuides[lastPoint]  = numGuides(getSourceAp_distance(fname)/100)		//  convert [cm] to [m]
 	
 	//Sample Position
 	InsertPoints lastPoint,1,GPos
 	GPos[lastPoint] = str2num(getSamplePosition(fname))
 #endif
+
+	//intent, purpose, and group_id
+	InsertPoints lastPoint,1,Intent,Purpose,Group_ID
+	Intent[lastPoint] = getReduction_intent(fname)
+	Purpose[lastPoint] = getReduction_purpose(fname)
+	Group_ID[lastPoint] = getSample_GroupID(fname)
+	
+
 
 	return(0)
 End
@@ -640,7 +688,7 @@ Function WriteCatToNotebook(fname,sname)
 	lambda = getWavelength(fname)
 	
 	//SDD
-	sdd = getDet_Distance(fname)
+	sdd = getDet_Distance(fname) / 100  // convert [cm] to [m]
 	
 	//Transmission
 	trans = getSampleTransmission(fname)
@@ -703,7 +751,7 @@ Function Write_ABSHeader_toNotebook(fname,sname)
 	lambda = getWavelength(fname)
 	
 	//SDD
-	sdd = getDet_Distance(fname)
+	sdd = getDet_Distance(fname) / 100  // convert [cm] to [m]
 	
 	//Transmission
 	trans = getSampleTransmission(fname)
@@ -869,7 +917,7 @@ Function WriteCatVSToNotebook(fname,sname)
 	lambda = getWavelength(fname)
 	
 	//SDD
-	sdd = getDet_Distance(fname)
+	sdd = getDet_Distance(fname) / 100	// convert [cm] to [m]
 	
 	//Transmission
 	trans = getSampleTransmission(fname)
@@ -971,7 +1019,7 @@ Function CatTableHook(infoStr)
 					GetSelection table,CatVSTable,1
 //					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
 					Print "Loading " + FileNames[V_StartRow]
-					ReadMCID_MASK(pathStr + FileNames[V_StartRow])
+					LoadRawSANSData(pathStr + FileNames[V_StartRow],"MSK")
 					Execute "maskButtonProc(\"maskButton\")"
 					
 					break
@@ -981,7 +1029,7 @@ Function CatTableHook(infoStr)
 //					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
 					Print "Loading " + FileNames[V_StartRow]
 					
-					ReadHeaderAndWork("DIV",pathStr + FileNames[V_StartRow])
+					LoadRawSANSData(pathStr + FileNames[V_StartRow], "DIV")
 					
 					break
 				case "Send to MRED":
@@ -1033,7 +1081,7 @@ Function S_BuildCatSortPanel()
 	
 	print "Creating CAT Sort-Panel..."
 
-	Variable sc = 1
+	Variable sc = 0.7
 	
 //	NVAR gLaptopMode = root:myGlobals:Globals:gLaptopMode
 		
@@ -1042,7 +1090,7 @@ Function S_BuildCatSortPanel()
 //	endif
 		
 	//PauseUpdate
-	NewPanel /W=(600*sc,360*sc,790*sc,650*sc)/K=1 as "CAT - Sort Panel"
+	NewPanel /W=(600*sc,360*sc,790*sc,740*sc)/K=1 as "CAT - Sort Panel"
 	DoWindow/C CatSortPanel
 	ModifyPanel fixedSize=1, cbRGB = (42919, 53970, 60909)
 	
@@ -1057,9 +1105,9 @@ Function S_BuildCatSortPanel()
 	Button SortMonitorCountsButton,	pos={sc*25,218*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Monitor Counts"
 	Button SortTransmissionButton,pos={sc*25,248*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Transmission"
 
-//	Button SortIntentButton,		pos={sc*25,98*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Intent"
-//	Button SortPurposeButton,		pos={sc*25,128*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Purpose"
-//	Button SortIDButton,				pos={sc*25,158*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Group ID"
+	Button SortIntentButton,		pos={sc*25,278*sc},		size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Intent"
+	Button SortPurposeButton,		pos={sc*25,308*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Purpose"
+	Button SortIDButton,				pos={sc*25,338*sc},	size={sc*140,24*sc},proc=S_CatSANSTable_SortProc,title="Group ID"
 end
 
 Proc S_CatSANSTable_SortProc(ctrlName) : ButtonControl // added by [davidm]
@@ -1123,16 +1171,16 @@ function S_CatSANSTable_SortFunction(ctrlName) // added by [davidm]
 
 			break
 			
-//		case "SortIntentButton":
-//			sortKey = "Intent"
-//
-//			break
-//			
-//		case "SortIDButton":
-//			sortKey = "Group_ID"
-//
-//			break
-//			
+		case "SortIntentButton":
+			sortKey = "Intent"
+
+			break
+			
+		case "SortIDButton":
+			sortKey = "Group_ID"
+
+			break
+			
 		case "SortLambdaButton":
 			sortKey = "Lambda"
 
@@ -1163,10 +1211,10 @@ function S_CatSANSTable_SortFunction(ctrlName) // added by [davidm]
 
 			break
 			
-//		case "SortPurposeButton":
-//			sortKey = "Purpose"
-//
-//			break
+		case "SortPurposeButton":
+			sortKey = "Purpose"
+
+			break
 	
 	endswitch
 	

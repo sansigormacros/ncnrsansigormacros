@@ -318,7 +318,7 @@ Function GetTransHeaderInfoToWave(fname,sname)
 	    
 	//SDD
 	InsertPoints lastPoint,1,GSDD
-	GSDD[lastPoint]=getDet_Distance(fname)
+	GSDD[lastPoint]=getDet_Distance(fname) / 100		// convert [cm] to [m]
 	    
 	//wavelength
 	InsertPoints lastPoint,1,GLambda
@@ -537,7 +537,7 @@ Function AssignSelTransFilesToData(startRow,endRow)
 				if (cmpstr(T_EMP_Filenames[ii],T_GFilenames[jj])==0)
 					suffix=T_GSuffix[jj]
 					filename = pathname + T_GFilenames[ii]
-					WriteAssocFileSuffixToHeader(filename,suffix)
+					writeAssocFileSuffix(filename,suffix)
 				endif
 				jj+=1
 			while(jj<num_t_files)
@@ -554,7 +554,7 @@ Function AssignSelTransFilesToData(startRow,endRow)
 				if (cmpstr(S_TRANS_Filenames[ii],T_GFilenames[jj])==0)
 					suffix=T_GSuffix[jj]
 					filename = pathname + S_GFilenames[ii]
-					WriteAssocFileSuffixToHeader(filename,suffix)
+					writeAssocFileSuffix(filename,suffix)
 				endif
 				jj+=1
 			while(jj<num_t_files)
@@ -593,7 +593,7 @@ Function AssignTotalTransFilesToData(startRow,endRow)
 				if (cmpstr(T_EMP_Filenames[ii],T_GFilenames[jj])==0)
 					suffix=T_GSuffix[jj]
 					filename = pathname + T_GFilenames[ii]
-					WriteAssocFileSuffixToHeader(filename,suffix)
+					writeAssocFileSuffix(filename,suffix)
 				endif
 				jj+=1
 			while(jj<num_t_files)
@@ -649,18 +649,20 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 			filename = pathname + T_GFilenames[ii]
 			
 			// write in zeros for the box coordinates
-			WriteXYBoxToHeader(filename,0,0,0,0)
+			Make/O/D/N=4 tmpW=0
+
+			writeBoxCoordinates(filename,tmpW)
 			
 			// write in a null suffix
-			WriteAssocFileSuffixToHeader(filename,suffix)
+			WriteAssocFileSuffix(filename,suffix)
 			
 			//write a trans==1 to the file header of the raw data
 			writeSampleTransmission(filename,1)		//sample trans
 			
-			WriteWholeTransToHeader(filename,1)		//WholeTrans start byte is 392
+			writeSampleTransWholeDetector(filename,1)		//WholeTrans start byte is 392
 			
-			WriteTransmissionErrorToHeader(filename,0)			//reset transmission error to zero
-			WriteBoxCountsErrorToHeader(filename,0)
+			writeSampleTransError(filename,0)			//reset transmission error to zero
+			WriteBoxCountsError(filename,0)
 			
 			//then update the table that is displayed
 			T_EMP_Filenames[ii] = ""
@@ -678,12 +680,12 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 		do
 			filename = pathname + S_GFilenames[ii]
 			// write in a null suffix
-			WriteAssocFileSuffixToHeader(filename,suffix)
+			WriteAssocFileSuffix(filename,suffix)
 			
 			//write a trans==1 to the file header of the raw data (open/close done in function)
 			writeSampleTransmission(filename,1)		//sample trans
-			WriteTransmissionErrorToHeader(filename,0)			//reset transmission error to zero
-			WriteBoxCountsErrorToHeader(filename,0)
+			writeSampleTransError(filename,0)			//reset transmission error to zero
+			writeBoxCountsError(filename,0)
 			
 			//then update the table that is displayed
 			S_TRANS_Filenames[ii] = ""
@@ -785,10 +787,11 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 					
-						samfileStr = getAcctName("SAM")
-						empfileStr = getAcctName("EMP")
+
 						//lambda = getWavelength("SAM")
 						//attenSam = getAtten_number("SAM")
+						samFileStr = "SAM"
+						empFileStr = "EMP"
 						
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
 						samAttenFactor = getAttenuator_transmission(samFileStr)
@@ -817,7 +820,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//write the trans to the file header of the raw data (open/close done in function)
 						writeSampleTransmission(filename,trans)
 						
-						WriteTransmissionErrorToHeader(filename,trans_err)
+						writeSampleTransError(filename,trans_err)
 /////						
 						//then update the global that is displayed
 						S_GTransmission[ii] = trans
@@ -915,11 +918,12 @@ Function CalcTotalTrans(startRow,endRow)
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 						
-						samfileStr = getAcctName("SAM")
-						empfileStr = getAcctName("EMP")
+
 //						lambda = getWavelength("SAM")
 //						attenSam = getAtten_number("SAM")
-						
+						samFileStr = "SAM"
+						empFileStr = "EMP"
+												
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
 						samAttenFactor = getAttenuator_transmission(samFileStr)
 						sam_atten_err = getAttenuator_trans_err(samFileStr)
@@ -949,7 +953,7 @@ Function CalcTotalTrans(startRow,endRow)
 						//write the trans to the file header of the raw data (open/close done in function)
 						writeSampleTransmission(filename,trans)		//transmission start byte is 158
 						
-						WriteTransmissionErrorToHeader(filename,trans_err)
+						writeSampleTransError(filename,trans_err)
 												
 						//then update the global that is displayed
 						T_GTransmission[ii] = trans
@@ -1050,11 +1054,12 @@ Function CalcWholeTrans(startRow,endRow)
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
 						// get the attenuator, lambda, and sample string (to get the instrument)
 					
-						samfileStr = getAcctName("SAM")
-						empfileStr = getAcctName("EMP")
+
 //						lambda = getWavelength("SAM")
 //						attenSam = getAtten_number("SAM")
-//						
+						samFileStr = "SAM"
+						empFileStr = "EMP"
+											
 						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
 						sam_atten = getAttenuator_transmission(samFileStr)
 						sam_atten_err = getAttenuator_trans_err(samFileStr)
@@ -1080,7 +1085,7 @@ Function CalcWholeTrans(startRow,endRow)
 							printf " !!! Tbox/Twhole is low !!! = %g\r",T_GTransmission[ii]/trans
 						endif
 						//write the trans to the file header of the raw data (open/close done in function)
-						WriteWholeTransToHeader(filename,trans)
+						writeSampleTransWholeDetector(filename,trans)
 						
 						//then update the global that is displayed
 						GWhole[ii] = trans
@@ -1572,7 +1577,7 @@ Function ChangeBSXPos(fname,xpos)
 	
 	Variable start
 	//x-position starts after byte 368 in VAX files
-	WriteBSXPosToHeader(fname,xpos)
+	writeBeamStop_x_pos(fname,xpos)
 	return(0)
 End
 

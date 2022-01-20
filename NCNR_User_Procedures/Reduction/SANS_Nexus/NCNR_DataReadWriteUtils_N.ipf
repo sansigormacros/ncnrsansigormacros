@@ -51,11 +51,14 @@ End
 
 
 
-
+//
 //simple, main entry procedure that will load a RAW sans data file (not a work file)
 //into the RAW dataFolder. It is up to the calling procedure to display the file
 //
 // called by MainPanel.ipf and ProtocolAsPanel.ipf
+//
+//
+// ALSO - used to read in DIV and MSK data
 //
 Function LoadRawSANSData(file,folder)
 	String file,folder
@@ -309,13 +312,13 @@ Function ReadHeaderAndData(fname,folderStr)
 // not sure there's anything useful in this block
 //
 //
-//	if(isFolder == -1)
-//		NewDataFolder/O/S $(curDF+base_name+":entry:program_data")
-//	else
-//		NewDataFolder/O/S $(curDF+base_name+"entry:program_data")
-//	endif	
-//	hdf5path = "/entry/user"
-//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:program_data")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:program_data")
+	endif	
+	hdf5path = "/entry/program_data"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 
 	

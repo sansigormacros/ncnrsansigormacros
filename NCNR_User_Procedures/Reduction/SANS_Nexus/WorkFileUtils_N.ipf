@@ -255,11 +255,6 @@ Function Add_raw_to_work(newType)
 	data *= scale
 	dest_data_err *= scale
 	
-	// keep "data" and linear_data in sync in the destination folder
-	WAVE linear_data=getDetectorLinearDataW(newType)
-	linear_data = data
-	WAVE linear_data_err=getDetectorLinearDataErrW(newType)
-	linear_data_err = dest_data_err
 		
 	//all is done, except for the bookkeeping of updating the header info in the work folder
 //	textread[1] = date() + " " + time()		//date + time stamp
@@ -388,11 +383,6 @@ Function Raw_to_work_for_Ordela(newType)
 	data *= scale
 	data_err *= scale		//assumes total monitor count is so large there is essentially no error
 
-	// keep "data" and linear_data in sync in the destination folder
-	WAVE linear_data=getDetectorLinearDataW(newType)
-	linear_data = data
-	WAVE linear_data_err=getDetectorLinearDataErrW(newType)
-	linear_data_err = data_err
 
 	
 	//all is done, except for the bookkeeping, updating the header information in the work folder
@@ -423,9 +413,7 @@ Function Raw_to_Work_NoNorm(type)
 	Raw_to_work_for_Ordela(type)
 	//data is now in "type" folder
 	Wave data = getDetectorDataW(type)
-	Wave data_lin = getDetectorLinearDataW(type)
 	Wave data_err = getDetectorDataErrW(type)
-	Wave data_lin_err = getDetectorLinearDataErrW(type)
 		
 	Variable norm_mon,tot_mon,scale
 	
@@ -436,9 +424,6 @@ Function Raw_to_Work_NoNorm(type)
 	data /= scale		//unscale the data
 	data_err /= scale
 	
-	// to keep "data" and linear_data in sync
-	data_lin = data
-	data_lin_err = data_err
 	
 	return(0)
 End
@@ -455,9 +440,7 @@ Function Add_Raw_to_Work_NoNorm(type)
 	Add_Raw_to_work(type)
 	//data is now in "type" folder
 	Wave data = getDetectorDataW(type)
-	Wave data_lin = getDetectorLinearDataW(type)
 	Wave data_err = getDetectorDataErrW(type)
-	Wave data_lin_err = getDetectorLinearDataErrW(type)
 	
 	Variable norm_mon,tot_mon,scale
 	
@@ -468,9 +451,6 @@ Function Add_Raw_to_Work_NoNorm(type)
 	data /= scale		//unscale the data
 	data_err /= scale
 	
-	// to keep "data" and linear_data in sync
-	data_lin = data
-	data_lin_err = data_err
 	
 	return(0)
 End
@@ -511,7 +491,7 @@ Function DetCorr(data,data_err,fname,doEfficiency,doTrans)
 	sy = getDet_y_pixel_size(fname)
 	sy3 = 10000
 	
-	dtdist = 1000*getDet_Distance(fname)	//sdd in mm
+	dtdist = 10*getDet_Distance(fname)	//sdd in mm
 	dtdis2 = dtdist^2
 	
 	lambda = getWavelength(fname)
@@ -940,7 +920,6 @@ Function Divide_work(type)
 	destPath = "root:Packages:NIST:CAL"
 	//make appropriate wave references
 //	Wave data_err = getDetctorDataW("CAL")
-	Wave data_copy = getDetectorLinearDataW("CAL")
 	
 
 	Variable/G $(destPath + ":gIsLogScale")=0			//make new flag in CAL folder, data is linear scale
@@ -953,8 +932,6 @@ Function Divide_work(type)
 	
 //	data_err /= div_data
 	
-	// keep "data" in sync with linear_data
-	data_copy = data
 	
 	//update CAL header
 //	textread[1] = date() + " " + time()		//date + time stamp
@@ -1032,7 +1009,6 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	//now switch to ABS folder
 	//make appropriate wave references
 	Wave data=getDetectorDataW("ABS")
-	Wave data_copy=getDetectorLinearDataW("RAW")
 	Wave data_err=getDetectorDataErrW("RAW")
 	
 	Variable/G $"root:Packages:NIST:ABS:gIsLogscale"=0			//make new flag in ABS folder, data is linear scale
@@ -1068,8 +1044,6 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 
 //	print data_err[0][0]
 	
-// keep "data" in sync with linear_data	
-	data_copy = data
 	
 	//********* 15APR02
 	// DO NOt correct for atenuators here - the COR step already does this, putting all of the data one equal
@@ -1547,7 +1521,6 @@ End
 Function Adjust_RAW_Attenuation(type)
 	String type
 	
-	WAVE linear_data=getDetectorLinearDataW("RAW")
 	WAVE data=getDetectorDataW("RAW")
 	WAVE data_err=getDetectorDataErrW("RAW")	
 
@@ -1563,7 +1536,6 @@ Function Adjust_RAW_Attenuation(type)
 		return(0)
 	endif
 
-	fileStr = getAcctName("RAW")
 //	lambda = getWavelength("RAW")
 	raw_AttenFactor = getAttenuator_transmission("RAW")
 	dest_AttenFactor = getAttenuator_transmission(type)
@@ -1572,10 +1544,9 @@ Function Adjust_RAW_Attenuation(type)
 	val *= dest_AttenFactor/raw_AttenFactor
 	putDetector_counts("RAW", val)
 	
-	linear_data *= dest_AttenFactor/raw_AttenFactor
+	data *= dest_AttenFactor/raw_AttenFactor
 	
-	// to keep "data" and linear_data in sync
-	data = linear_data
+
 	
 	return(0)
 End

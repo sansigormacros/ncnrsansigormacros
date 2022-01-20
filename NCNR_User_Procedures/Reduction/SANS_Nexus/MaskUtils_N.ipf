@@ -2,6 +2,23 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+// JAN 2022
+// updated to read/write mask file in HDF (Nexus) format
+// that is a simplified version of the RAW data file
+// -- mimics what is done in VSANS code
+
+//
+// TODO -- many path references are incorrect, poining to the old data
+// location, not the new Nexus location.
+
+// root:Packages:NIST:RAW:entry:instrument:detector:data
+//
+// TODO - delete the MCID file R/W routines. make sure that they are gone
+// so they can't inadvertantly be called
+//
+
+
 //*********************
 // Vers. 1.2 092101
 //
@@ -29,13 +46,12 @@ Proc ReadMASK()
 	if(strlen(fname)==0)
 		return
 	endif
-	ReadMCID_MASK(fname)
+	
+	LoadRawSANSData(fname,"MSK")
+//	ReadMCID_MASK(fname)
 	
 	//SetDataFolder root:Packages:NIST:MSK
-//// 	SRK SEP06 disable plot of mask data, just show the overlay
-////	String waveStr = "root:Packages:NIST:MSK:data"
-////	NewImage/F/S=2/K=1 $waveStr
-////	ModifyImage '' ctab= {*,*,YellowHot,0}
+
 	maskButtonProc("maskButton")
 //	OverlayMask(1)
 
@@ -43,107 +59,6 @@ Proc ReadMASK()
 	SetDataFolder root:
 End
 
-
-//reads the mask data into the root:Packages:NIST:MSK folder
-//setDataFolder is required here
-//y-values must be flipped to get proper array assignment of the mask
-//
-// SRK -SEP09 - removed hard-wired 16384 (128x128) from GBLoadWave cmd string
-// for general XY compatibility (192x192) = 36864
-//
-Function ReadMCID_MASK(fname)
-	String fname
-	// Reads MCID-format mask files written out by SANS IMAGE
-	// put data into MSK data folder
-	// flip the y-values to correspond to the work file
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-	SVAR type = root:myGlobals:gDataDisplayType
-	Variable pixelsX = getDet_pixel_num_x(type)
-	Variable pixelsY = getDet_pixel_num_y(type)
-	
-	SetDataFolder root:Packages:NIST:MSK
-	Killwaves/Z data,data0		//kill the old data, if it exists
-	
-//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
-//	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
-
-	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1"
-
-
-	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
-		PathInfo catPathName
-		if(V_flag==1)
-			//catPathName exists, use it
-			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=catPathName  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-		else
-			// need to create a temporary path
-			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
-			NewPath/O/Q tmpUNCPath tmpPathStr
-			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=tmpUNCPath  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-		endif
-	else
-	// original case, fname is the full path:name and is Mac (or a mapped drive)
-		GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
-	endif
-	
-	Execute GBLoadStr 
-	SetDataFolder root:Packages:NIST:MSK						//make sure correct data folder is set
-	WAVE data0 = $"root:Packages:NIST:MSK:data0"
-	Redimension/N=(pixelsX,pixelsY) data0
-	Flip_Y(data0)
-	
-	SetDataFolder root:Packages:NIST:MSK
-	Rename data0,data
-	
-	Variable/G root:Packages:NIST:MSK:gIsLogScale = 0
-	String/G root:Packages:NIST:MSK:fileList = N_GetFileNameFromPathNoSemi(fname)
-	//back to root folder
-	SetDataFolder root:
-	return(0)
-End
-
-//
-//flips the y-data of the MCID format array that was read in
-//the input array (pixelsX x pixelsY) is overwritten as output
-//
-// AND MUST BE SQUARE!
-//
-Function Flip_Y(mat)
-	Wave mat
-	
-	//reverses the order of y-indices in an MCID-style matrix output from SANS IMAGE,
-	//so that a mask file will be displayed properly on screen - 
-	//"IMAGE" format is (0,0) in top left
-	//the (WORK)_data matches the detector, with (0,0) in the bottom left corner
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-
-	SVAR type = root:myGlobals:gDataDisplayType
-	Variable pixelsX = getDet_pixel_num_x(type)
-	Variable pixelsY = getDet_pixel_num_y(type)
-		
-	Variable ii,jj,kk
-	Make/O/N=(pixelsX) temp_y
-	
-	ii=0
-	do
-		jj=0
-		do
-			temp_y[jj]=mat[ii][jj]
-			jj+=1
-		while(jj<pixelsY)
-		kk=0
-		do
-			mat[ii][pixelsX-1-kk]=temp_y[kk]
-			kk+=1
-		while(kk<pixelsX)
-		ii+=1
-	while(ii<pixelsX)
-	
-	KillWaves temp_y
-	Return (0)
-End
 
 
 //**********************
@@ -189,10 +104,11 @@ End
 Function OverlayMask(state)
 	Variable state
 	
-	String maskPath = "root:Packages:NIST:MSK:data"
+	
+	String maskPath = "root:Packages:NIST:MSK:entry:instrument:detector:data"
 	if(WaveExists($maskPath) == 1)
 		//duplicate the mask, which is named "data"
-		Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:overlay
+		Duplicate/O root:Packages:NIST:MSK:entry:instrument:detector:data root:Packages:NIST:MSK:overlay
 		Redimension/D root:Packages:NIST:MSK:overlay
 	
 		String tempStr = "root:Packages:NIST:MSK:overlay"
@@ -287,9 +203,21 @@ end
 //
 Function SaveMaskButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+
+// fills in a "default mask" in a separate folder to then write out
+	Execute "H_Setup_SANS_MASK_Structure()"	
 	
-	WriteMask(root:myGlobals:drawMask:tempMask)
+// copy over what was actually drawn to the temp mask folder
+	Wave mask_drawn = $("root:myGlobals:drawMask:tempMask")	
 	
+	wave mask_to_save = $("root:SANS_MASK_file:entry:instrument:detector:data")			
+	mask_to_save = mask_drawn
+
+	Execute "Save_SANS_MASK_Nexus()"	
+
+//	WriteMask(root:myGlobals:drawMask:tempMask)
+	
+	return(0)
 End
 
 //closes the mask drawing window, first asking the user if they have saved their
@@ -332,7 +260,10 @@ End
 Function DrawMask()		//main entry procedure
 	//there must be data in root:curDispType:data FIRST
 	SVAR curType=root:myGlobals:gDataDisplayType
-	if(WaveExists($("root:Packages:NIST:"+curType+":data") ))
+	
+//	root:Packages:NIST:RAW:entry:instrument:detector:data
+	
+	if(WaveExists($("root:Packages:NIST:"+curType+":entry:instrument:detector:data") ))
 		DoWindow/F drawMaskWin
 		If(V_flag == 0)
 			InitializeDrawMask(curType)
@@ -355,7 +286,7 @@ Function InitializeDrawMask(type)
 	If( ! (DataFolderExists("root:myGlobals:drawMask"))  )
 		//create the data folder and the globals
 				NewDataFolder/O root:myGlobals:drawMask
-				Duplicate/O $("root:Packages:NIST:"+type+":data") root:myGlobals:drawMask:data		//copy of the data
+				Duplicate/O $("root:Packages:NIST:"+type+":entry:instrument:detector:data") root:myGlobals:drawMask:data		//copy of the data
 		Endif
 		//if the data folder's there , then the globals must also be there so don't do anything
 End
@@ -404,63 +335,36 @@ Function ShowMaskHelp(ctrlName) : ButtonControl
 	endif
 End
 
+
 //loads a previously saved mask in the the draw layer
-// - does not affect the state of the current mask used for data reduction
+// previous behavior for SANS was that this operation did
+// not affect the state of the current mask used for data reduction
+//  BUT - now it wipes the current MSK data out
 //
-// SRK -SEP09 - removed hard-wired 16384 (128x128) from GBLoadWave cmd string
-// for general XY compatibility (192x192) = 36864
+
+// loads MASK file into MSK, then copies data over
+// to the tmp storage for drawing
+// - then overlays the mask on the data
 //
 Function LoadOldMaskButtonProc(ctrlName) : ButtonControl
 	String ctrlName
+
+
 	
 	//load into temp--- root:myGlobals:drawMask:tempMask
 	String fname = PromptForPath("Select Mask file")
-//	ReadMCID_MASK(fname)
 
-	// Reads MCID-format mask files written out by SANS IMAGE
-	// put data into MSK data folder
-	// flip the y-values to correspond to the work file
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-	SVAR type = root:myGlobals:gDataDisplayType
-	Variable pixelsX = getDet_pixel_num_x(type)
-	Variable pixelsY = getDet_pixel_num_y(type)
+	LoadRawSANSData(fname, "MSK")
 	
 	
 	SetDataFolder root:myGlobals:DrawMask
 	Killwaves/Z data,data0,tempMask		//kill the old data, if it exists
 
-//	String cmd = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/U="
-//	cmd += num2istr(pixelsX*pixelsY) + " /Q  \"" + fname +"\""
+// copy over the loaded mask into the draw layer
+	wave mask_loaded = $("root:Packages:NIST:MSK:entry:instrument:detector:data")	
+	Duplicate/O mask_loaded , $("root:myGlobals:drawMask:tempMask")	
+			
 
-	String GBLoadStr = "GBLoadWave/N=data/T={72,72}/O/S=4/W=1/P=catPathName"
-
-	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
-		PathInfo catPathName
-		if(V_flag==1)
-			//catPathName exists, use it
-			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=catPathName  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-		else
-			// need to create a temporary path
-			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
-			NewPath/O/Q tmpUNCPath tmpPathStr
-			GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q/P=tmpUNCPath  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-		endif
-	else
-	// original case, fname is the full path:name and is Mac (or a mapped drive)
-		GBLoadStr += "/U="+num2istr(pixelsX*pixelsY) + " /Q  \"" + ParseFilePath(0, fname, ":", 1, 0) +"\""
-	endif
-
-		
-	Execute GBLoadStr 
-	SetDataFolder root:myGlobals:DrawMask					//make sure correct data folder is set
-	WAVE data0 = $"root:myGlobals:DrawMask:data0"
-	Redimension/B/N=(pixelsX,pixelsY) data0
-	Flip_Y(data0)
-	
-	SetDataFolder root:myGlobals:DrawMask
-	Rename data0,tempMask		//tempMask can be killed and re-named, since it's not on a graph
-	
 	SetDataFolder root:
 	
 	OverlayTempMask() 		//put the new mask on the image
@@ -542,68 +446,98 @@ Function OverlayTempMask()
 End
 
 
-//********************
-//writes an MCID-style MASK file, exactly as it would be output from NIH Image
-//file is:
-//	4 bytes
-// 128x128=16384 bytes (mask) 	(in the general case, pixelsX x pixelsX = SQUARE)
-// 508 bytes
-// = 16896 bytes
-// incoming data is a 2-D wave of any precision data, 0's and 1's
+
+
+//// NEW UTILS to save MASK files as HDF5/NEXUS
+// JAN 2022
+
+
+
 //
-// tested with 192x192 data, and it works correctly (once the reader was corrected)
-// - should work with generic XY dimensions
+// simple generation of a fake MASK file. for sans, nothing other than the creation date was written to the 
+// file header. nothing more is needed (possibly)
 //
-Function WriteMask(data)
-	Wave data
+//
+//  set up to use 1 = YES MASK == exclude the data
+//      and 0 = NO MASK == keep the data
+//
+Proc H_Setup_SANS_MASK_Structure()
 	
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-	
-		SVAR type = root:myGlobals:gDataDisplayType
-	Variable pixelsX = getDet_pixel_num_x(type)
-	Variable pixelsY = getDet_pixel_num_y(type)
-	
-	Variable refnum,ii=0,jj=0,dummy,num=pixelsX
-	String fullpath=""
-	
-	PathInfo/S catPathName
-	fullPath = DoSaveFileDialog("Save Mask file as",fname="",suffix=".MASK")		//won't actually open the file
-	If(cmpstr(fullPath,"")==0)
-		//user cancel, don't write out a file
-		Close/A
-		Abort "no data file was written"
-	Endif
-	
-	Make /B/O/N=(pixelsX) byteWave
-	
-	//actually open the file
-	Open/C="SANS"/T="MASK" refNum as fullpath
-	FSetPos refNum, 0
-	//write 4 bytes (to be skipped when reading the file)
-	FBinWrite /F=1 refnum,ii
-	FBinWrite /F=1 refnum,ii
-	FBinWrite /F=1 refnum,ii
-	FBinWrite /F=1 refnum,ii
-	
-	ii=num-1
-	jj=0
-	do
-		byteWave=data[p][ii]
-		FBinWrite /F=1 refnum,byteWave
-		ii-=1
-	while(ii>=0)
-	
-	//pad the rest of the file
-	ii=0
-	jj=0
-	do
-		FBinWrite /F=1 refnum,jj
-		ii+=1
-	while(ii<508)
-	
-	//close the file
-	Close refnum
-	ReadMCID_MASK(fullpath)
-	Killwaves/Z byteWave
+	NewDataFolder/O/S root:SANS_MASK_file		
+
+	NewDataFolder/O/S root:SANS_MASK_file:entry	
+		Make/O/T/N=1	title	= "This is a MASK file for NGB 10m SANS: SANS_MASK"
+		Make/O/T/N=1	start_date	= "2022-01-16T06:15:30-5:00"
+		NewDataFolder/O/S root:SANS_MASK_file:entry:instrument		
+			Make/O/T/N=1	name	= "SANS_NGB"
+			
+	NewDataFolder/O/S root:SANS_MASK_file:entry:instrument:detector		
+		Make/O/I/N=(112,128)	data	= 0
+		data[0,2][] = 1
+		data[109,111][] = 1
+		data[][0,2] = 1
+		data[][12125,127] = 1		
+			
+
+	// fake, empty folders so that the generic loaders can be used
+	NewDataFolder/O root:SANS_MASK_file:entry:DAS_logs
+	NewDataFolder/O root:SANS_MASK_file:entry:control
+	NewDataFolder/O root:SANS_MASK_file:entry:reduction
+	NewDataFolder/O root:SANS_MASK_file:entry:sample
+	NewDataFolder/O root:SANS_MASK_file:entry:user			
+	SetDataFolder root:
+
 End
+
+
+// this default mask is only generated on startup of the panel, if a mask
+// has not been previously loaded. If a mask is present then
+// this function is skipped and the existing mask is not overwritten
+Function V_GenerateDefaultMask()
+
+	NewDataFolder/O/S root:Packages:NIST:MSK:entry	
+		Make/O/T/N=1	title	= "This is a MASK file for 10m SANS NGB: SANS_MASK"
+		Make/O/T/N=1	start_date	= "2022-01-16T06:15:30-5:00"
+		NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument		
+			Make/O/T/N=1	name	= "SANS_NGB"
+	
+	// if a mask exists, don't create another, and don't overwrite what's there
+	if(exists("root:Packages:NIST:MSK:entry:instrument:detector:data") ==  1)
+		return(0)
+	endif		
+	
+			
+	NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument:detector		
+			Make/O/I/N=(112,128)	data	= 0
+			data[0,2][] = 1
+			data[109,111][] = 1
+			data[][0,2] = 1
+			data[][12125,127] = 1
+			
+	SetDataFolder root:
+
+end
+
+////////////////////// MASK FILE
+
+
+// (DONE)
+// x- currently, there are no dummy fill values or attributes for the fake MASK file
+//
+Proc Setup_SANS_MASK_Struct()
+
+	// lays out the tree and fills with dummy values
+	H_Setup_SANS_MASK_Structure()
+	
+
+End
+
+Proc Save_SANS_MASK_Nexus(fileName)
+	String fileName="Test_SANS_MASK_file"
+
+	// save as HDF5 (no attributes saved yet)
+	Save_SANS_file("root:SANS_MASK_file", fileName+".MASK.h5")
+	
+End
+
+

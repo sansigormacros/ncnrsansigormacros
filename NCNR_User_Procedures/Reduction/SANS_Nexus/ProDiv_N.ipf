@@ -409,7 +409,6 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 			else
 				Abort "Bad file number in offset Emp"
 			endif
-			ConvertFolderToLinearScale("COR")
 			
 #if (exists("QUOKKA")==6)
 			//corrects edge rows and columns by copy data from adjacent column
@@ -550,8 +549,6 @@ Function CompareDIVButtonProc(ba) : ButtonControl
 
 //			WaveStats root:Packages:NIST:DIV:data
 //			Print "*"	
-			WAVE sub_data = getDetectorLinearDataW("SUB")
-			sub_data = sub_d		//data = linear_data
 					
 			Execute "ChangeDisplay(\"SUB\")"	
 			break
@@ -593,7 +590,7 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	
 	// get the account, to identify the instrument
 	fileStr = pathStr + StringFromList(ii, str,",")
-//	acct = getAcctName(fileStr)
+//	acct = getInstrName(fileStr)
 //	String instr=acct[1,3]	//filestr is "[NGnSANSn] " or "[NGnSANSnn]" (11 characters total)	
 //	if(cmpstr(instr,"NGA")==0 || cmpstr(instr,"NGB")==0 )
 //		tol=20		//if the 10m SANS, give an extra-wide tolerance, and show an alert

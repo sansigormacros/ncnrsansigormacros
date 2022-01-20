@@ -332,17 +332,12 @@ Function SetGraphic(type,choice)
    		 	//Make the mask look green
 	       	if(cmpstr(type,"MSK")==0)
 	       		//don't convert the scaling of the mask file
-	 			ModifyImage data ctab= {0,1,BlueRedGreen,0}
-	         	else
-	         		//convert the data to log/lin as requested
-	         		If(doLogScaling)
-					ConvertFolderToLogScale(type)
-				Else
-					ConvertFolderToLinearScale(type)
-				Endif
-	         		WaveStats/Q data
-	          		ScaleColorsToData(V_min, V_max, NIHColors)
-				ModifyImage data cindex=NIHColors
+		 			ModifyImage data ctab= {0,1,BlueRedGreen,0}
+         	else
+	         		
+         		WaveStats/Q data
+          		ScaleColorsToData(V_min, V_max, NIHColors)
+					ModifyImage data cindex=NIHColors
 	       	endif
 	       	//If we are working on the last step and overlaying
 	       	//a mask on it do this

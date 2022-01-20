@@ -1794,13 +1794,17 @@ Function ExecuteProtocol(protStr,samStr)
 				DoAlert 0,"No Mask file selected, data not masked"
 			else
 				//read in the file from the dialog
-				ReadMCID_MASK(junkStr)
+				LoadRawSANSData(junkStr,"MSK")
+
+//				ReadMCID_MASK(junkStr)
 			Endif
 		else
 			//just read it in from the protocol
 			//list processing is necessary to remove any final comma
 			junkStr = pathStr + StringFromList(0, prot[3],"," )
-			ReadMCID_MASK(junkStr)
+			LoadRawSANSData(junkStr,"MSK")
+			
+//			ReadMCID_MASK(junkStr)
 		Endif
 	else
 		//if none desired, make sure that the old mask is deleted
@@ -1833,8 +1837,6 @@ Function ExecuteProtocol(protStr,samStr)
 		Endif
 	Endif
 	
-	//convert the folder to linear scale before averaging, then revert by calling the window hook
-	ConvertFolderToLinearScale(activeType)
 	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "Rectangular":
@@ -2048,7 +2050,7 @@ Function AskForAbsoluteParams_Quest()
 			Abort "reduction sequence aborted"
 		endif
 			
-		String acctStr = getAcctName("RAW")
+		String acctStr = "RAW"
 		//NG5 attenuator transmission is assumed to be the same as the table for NG7
 			
 		//get the necessary variables for the calculation of kappa
@@ -2060,8 +2062,7 @@ Function AskForAbsoluteParams_Quest()
 		countTime = getCollectionTime("RAW")
 		//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
 		monCnt = getControlMonitorCount("RAW")
-		sdd = getDet_Distance("RAW")
-		sdd *=100		//convert from meters to cm
+		sdd = getDet_Distance("RAW")		// sdd is in [cm]
 				
 		//lookup table for transmission factor
 		//determine which instrument the measurement was done on from acctStr
@@ -2086,8 +2087,17 @@ Function AskForAbsoluteParams_Quest()
 			if(err)
 				Abort "Box not selected properly - Please re-set the ABS parameters"
 			Endif
-			//box is OK, write box values to file
-			WriteXYBoxToHeader(tempName,x1,x2,y1,y2)
+			//box is OK, write box values to file		
+			Make/O/D/N=4 tmpW
+			tmpW[0] = x1
+			tmpW[1] = x2
+			tmpW[2] = y1
+			tmpW[3] = y2
+			
+			writeBoxCoordinates(tempName,tmpW)
+			
+			KillWaves/Z tmpW
+			
 		else
 			//give option to override
 			tempStr = "X=("+num2str(x1)+","+num2str(x2)+") Y=("+num2str(y1)+","+num2str(y2)+")"

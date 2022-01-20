@@ -13,6 +13,7 @@
 //
 //
 
+// TODO --- what can  getExperiment_identifier  be used for?
 
 
 //////////////////////////////////////////////
@@ -825,30 +826,30 @@ Function/WAVE getDetectorDataErrW(fname)
 	return w
 End
 
-// NOTE - this is not part of the file as written
-// it is generated when the RAW data is loaded (when the error wave is generated)
-Function/WAVE getDetectorLinearDataW(fname)
-	String fname
-
-	String path = "entry:instrument:detector:linear_data"
-	WAVE w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
-
+//// NOTE - this is not part of the file as written
+//// it is generated when the RAW data is loaded (when the error wave is generated)
+//Function/WAVE getDetectorLinearDataW(fname)
+//	String fname
 //
-// (DONE) -- this does not exist in the raw data, but does in the processed data
-// !!! how to handle this?? Binning routines need the error wave
-// -- be sure that I generate a local copy of this wave at load time
+//	String path = "entry:instrument:detector:linear_data"
+//	WAVE w = getRealWaveFromHDF5(fname,path)
 //
-Function/WAVE getDetectorLinearDataErrW(fname)
-	String fname
+//	return w
+//End
 
-	String path = "entry:instrument:detector:linear_data_error"
-	WAVE w = getRealWaveFromHDF5(fname,path)
-
-	return w
-End
+////
+//// (DONE) -- this does not exist in the raw data, but does in the processed data
+//// !!! how to handle this?? Binning routines need the error wave
+//// -- be sure that I generate a local copy of this wave at load time
+////
+//Function/WAVE getDetectorLinearDataErrW(fname)
+//	String fname
+//
+//	String path = "entry:instrument:detector:linear_data_error"
+//	WAVE w = getRealWaveFromHDF5(fname,path)
+//
+//	return w
+//End
 
 
 
@@ -884,15 +885,15 @@ Function/S getDetDescription(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// header reports value in [cm]
-// VAX reduction is expecting distance in [m], so return [m]
+// header reports value in [cm], so [cm is returned here
+// IF reduction is expecting distance in [m] it is up to calling function to convert
 Function getDet_Distance(fname)
 	String fname
 
 	String path = "entry:instrument:detector:distance"
 	
-	Variable sdd_in_meters = getRealValueFromHDF5(fname,path) / 100
-	return(sdd_in_meters)
+	Variable sdd = getRealValueFromHDF5(fname,path)
+	return(sdd)
 End
 
 
@@ -932,8 +933,7 @@ Function getDet_pixel_fwhm_x(fname)
 End
 
 // Pixels are not square
-// so the FHWM will be different in each direction. May need to return
-// "dummy" value for "B" detector if pixels there are square
+// so the FHWM will be different in each direction
 Function getDet_pixel_fwhm_y(fname)
 	String fname
 
@@ -945,9 +945,6 @@ End
 Function getDet_pixel_num_x(fname)
 	String fname
 
-	//TODO -- remove HARD-WIRED value once value is written (or patched) to data file
-	return(128)
-
 	String path = "entry:instrument:detector:pixel_num_x"
 	return(getRealValueFromHDF5(fname,path))
 End
@@ -955,14 +952,9 @@ End
 Function getDet_pixel_num_y(fname)
 	String fname
 
-	//TODO -- remove HARD-WIRED value once value is written (or patched) to data file
-	return(128)
-
 	String path = "entry:instrument:detector:pixel_num_y"
 	return(getRealValueFromHDF5(fname,path))
 End
-
-
 
 
 Function getDet_polar_angle(fname)
@@ -1394,6 +1386,8 @@ Function/S getSourceAp_Description(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
+//
+// this value is stored in [cm], so [cm] is returned
 Function getSourceAp_distance(fname)
 	String fname
 
@@ -2079,10 +2073,10 @@ end
 // now with the nexus files, return the final suffix of the file name to identify the instrument
 // = ngv, ngb, ngb30,ng7
 //
-// TODO -- this is NOT really the account, so I'll need to re-define this once/if the
-//   collecion account (IMS id?) gets added to the header
+// this returns tha last three characters from the file name to be able to idnetify the instrument
+// as was done with the VAX account
 //
-Function/S getAcctName(fname)
+Function/S getInstrName(fname)
 	String fname
 	
 	String str = StringFromList(2,fname,".")

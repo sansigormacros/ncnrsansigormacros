@@ -265,7 +265,7 @@ Function/S GetValidPatchPopupList()
 		for(ii=0;ii<num;ii+=1)
 			item=StringFromList(ii, newList , ";")
 			fname = path + item
-			sdd = getDet_Distance(fname)
+			sdd = getDet_Distance(fname) / 100 		// convert [cm] to [m]
 			if(pos == -1)
 				//no wildcard
 				if(abs(val - sdd) < 0.01	)		//if numerically within 0.01 meter, they're the same
@@ -556,13 +556,14 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	
 	//change the sample label ?
 	if(change[0])
-		WriteSamLabelToHeader(fname,textVal[0])
+		writeSampleDescription(fname,textVal[0])
 	Endif
 	
 	//total count time is an integer, handle separately
 	if(change[6])
 		num =str2num(textVal[6])
-		WriteCountTimeToHeader(fname,num)
+		writeCount_time(fname,num)		// in entry/control
+		writeCollectionTime(fname,num)		// in entry/
 	Endif
 	
 	//ReWriteReal() takes care of open/close on its own
@@ -572,74 +573,77 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	Endif
 	if(change[2])		//sample thickness
 		num = str2num(textVal[2])
-		WriteThicknessToHeader(fname,num)
+		writeSampleThickness(fname,num)
 	Endif
 	if(change[3])		//pixel X
 		num = str2num(textVal[3])
-		WriteBeamCenterXToHeader(fname,num)
+		writeDet_beam_center_x(fname,num)
 	Endif
 	if(change[4])		// pixel Y
 		num = str2num(textVal[4])
-		WriteBeamCenterYToHeader(fname,num)
+		writeDet_beam_center_y(fname,num)
 	Endif
 	if(change[5])		//attenuator number
 		num = str2num(textVal[5])
-		WriteAttenNumberToHeader(fname,num)
+		writeAtten_num_dropped(fname,num)
 	Endif
 	//[6] was the counting time, integer written above
 	if(change[7])    //monitor count
 		num = str2num(textVal[7]) 
-		WriteMonitorCountToHeader(fname,num)
+		writeControlMonitorCount(fname,num)
 	Endif
 	if(change[8])     //total detector count
 		num = str2num(textVal[8])
-		WriteDetectorCountToHeader(fname,num)
+		writeDetector_counts(fname,num)
 	Endif
 	if(change[9])      //trans det count
 		num = str2num(textVal[9])
-		WriteTransDetCountToHeader(fname,num)
+		DoAlert 0,"Trans Det Count field DNE - not written"
+//		WriteTransDetCountToHeader(fname,num)		// TODO: replace this with something that actually exists
 	Endif
 	if(change[10])      //wavelength
 		num = str2num(textVal[10])
-		WriteWavelengthToHeader(fname,num)
+		writeWavelength(fname,num)
 	Endif
 	///
 	if(change[11])      //wavelength spread
 		num = str2num(textVal[11])
-		WriteWavelengthDistrToHeader(fname,num)
+		writeWavelength_spread(fname,num)
 	Endif
 	if(change[12])      //temperature
 		num = str2num(textVal[12])
-		WriteTemperatureToHeader(fname,num)
+		writeSampleTemperature(fname,num)
 	Endif
 	if(change[13])      //magnetic field
 		num = str2num(textVal[13])
-		WriteMagnFieldToHeader(fname,num)
+		DoAlert 0,"Magnetic field DNE - not written"
+//		WriteMagnFieldToHeader(fname,num)			//TODO: this is currently not in the header
 	Endif
-	if(change[14])      //source aperture
-		num = str2num(textVal[14])
-		WriteSourceApDiamToHeader(fname,num)
+	if(change[14])      //source aperture, a string
+		writeSourceAp_size(fname,textVal[14])
 	Endif
-	if(change[15])      //sample aperture
-		num = str2num(textVal[15])
-		WriteSampleApDiamToHeader(fname,num)
+	if(change[15])      //sample aperture, a text value
+		writeSampleAp_size(fname,textVal[15])
 	Endif
 	///
 	if(change[16])      //source-sam dist
 		num = str2num(textVal[16])
-		WriteSrcToSamDistToHeader(fname,num)
+		num *= 100		// asking for [m], convert to [cm] to write
+		DoAlert 0,"Verify in the code that this is the correct distance (source ap to sample ap)"
+		writeSourceAp_distance(fname,num)		// TODO verify that this is the correct distance
 	Endif
 	if(change[17])      //det offset
 		num = str2num(textVal[17])
-		WriteDetectorOffsetToHeader(fname,num)
+		writeDet_LateralOffset(fname,num)
 	Endif
 	if(change[18])      //beamstop diam
 		num = str2num(textVal[18])
-		WriteBeamStopDiamToHeader(fname,num)
+		writeBeamStop_size(fname,num)
 	Endif
 	if(change[19])     //SDD
 		num = str2num(textVal[19])
-		WriteSDDToHeader(fname,num)
+		num *= 100			//convert [m] as requested to [cm] as stored in the header
+		writeDet_distance(fname,num)
 	Endif
 	Return(0)
 End
@@ -651,7 +655,8 @@ Proc Patch_Panel()
 	NewPanel /W=(519,85,950,608)/K=1 as "Patch Raw SANS Data Files"
 //	NewPanel /W=(519,85,950,608) as "Patch Raw SANS Data Files"
 	DoWindow/C Patch_Panel
-	ModifyPanel cbRGB=(1,39321,19939)
+//	ModifyPanel cbRGB=(1,39321,19939)
+	ModifyPanel cbRGB=(30000,55000,39000)
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
 	SetDrawEnv fname= "Courier",fstyle= 1
@@ -751,45 +756,45 @@ Proc Patch_Panel()
 	SetVariable PV19,limits={-Inf,Inf,0},value= root:myGlobals:Patch:gPV19
 	SetVariable PV19,help={"sample to detector distance, in meters"}
 	
-	CheckBox checkPS1,pos={18,108},size={20,20},title=""
+	CheckBox checkPS1,pos={18,111},size={20,20},title=""
 	CheckBox checkPS1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV1,pos={18,126},size={20,20},title=""
+	CheckBox checkPV1,pos={18,129},size={20,20},title=""
 	CheckBox checkPV1,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV2,pos={18,144},size={20,20},title=""
+	CheckBox checkPV2,pos={18,147},size={20,20},title=""
 	CheckBox checkPV2,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV3,pos={18,162},size={20,20},title=""
+	CheckBox checkPV3,pos={18,165},size={20,20},title=""
 	CheckBox checkPV3,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV4,pos={18,180},size={20,20},title=""
+	CheckBox checkPV4,pos={18,183},size={20,20},title=""
 	CheckBox checkPV4,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV5,pos={18,198},size={20,20},title=""
+	CheckBox checkPV5,pos={18,201},size={20,20},title=""
 	CheckBox checkPV5,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV6,pos={18,216},size={20,20},title=""
+	CheckBox checkPV6,pos={18,219},size={20,20},title=""
 	CheckBox checkPV6,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV7,pos={18,234},size={20,20},title="",value=0
+	CheckBox checkPV7,pos={18,237},size={20,20},title="",value=0
 	CheckBox checkPV7,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV8,pos={18,252},size={20,20},title="",value=0
+	CheckBox checkPV8,pos={18,255},size={20,20},title="",value=0
 	CheckBox checkPV8,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV9,pos={18,270},size={20,20},title="",value=0
+	CheckBox checkPV9,pos={18,273},size={20,20},title="",value=0
 	CheckBox checkPV9,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV10,pos={18,288},size={20,20},title="",value=0
+	CheckBox checkPV10,pos={18,291},size={20,20},title="",value=0
 	CheckBox checkPV10,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV11,pos={18,306},size={20,20},title="",value=0
+	CheckBox checkPV11,pos={18,309},size={20,20},title="",value=0
 	CheckBox checkPV11,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV12,pos={18,324},size={20,20},title="",value=0
+	CheckBox checkPV12,pos={18,327},size={20,20},title="",value=0
 	CheckBox checkPV12,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV13,pos={18,342},size={20,20},title="",value=0
+	CheckBox checkPV13,pos={18,345},size={20,20},title="",value=0
 	CheckBox checkPV13,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV14,pos={18,360},size={20,20},title="",value=0
+	CheckBox checkPV14,pos={18,363},size={20,20},title="",value=0
 	CheckBox checkPV14,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV15,pos={18,378},size={20,20},title="",value=0
+	CheckBox checkPV15,pos={18,381},size={20,20},title="",value=0
 	CheckBox checkPV15,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV16,pos={18,396},size={20,20},title="",value=0
+	CheckBox checkPV16,pos={18,399},size={20,20},title="",value=0
 	CheckBox checkPV16,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV17,pos={18,414},size={20,20},title="",value=0
+	CheckBox checkPV17,pos={18,417},size={20,20},title="",value=0
 	CheckBox checkPV17,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV18,pos={18,432},size={20,20},title="",value=0
+	CheckBox checkPV18,pos={18,435},size={20,20},title="",value=0
 	CheckBox checkPV18,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
-	CheckBox checkPV19,pos={18,450},size={20,20},title="",value=0
+	CheckBox checkPV19,pos={18,453},size={20,20},title="",value=0
 	CheckBox checkPV19,help={"If checked, the entered value will be written to the data file if either of the \"Change..\" buttons is pressed."},value=0
 
 	CheckBox check0,pos={18,80},size={40,15},title="Run #",value= 1,mode=1,proc=MatchCheckProc
@@ -842,7 +847,7 @@ Function ReadHeaderForPatch(fname)
 	Variable/G root:myGlobals:Patch:gPV3 = getDet_beam_center_x(fname)
 	Variable/G root:myGlobals:Patch:gPV4 = getDet_beam_center_y(fname)
 	Variable/G root:myGlobals:Patch:gPV5 = getAtten_number(fname)
-	Variable/G root:myGlobals:Patch:gPV6 = getCollectionTime(fname)
+	Variable/G root:myGlobals:Patch:gPV6 = getCount_time(fname)
 	Variable/G root:myGlobals:Patch:gPV7 = getControlMonitorCount(fname)
 	Variable/G root:myGlobals:Patch:gPV8 = getDetector_counts(fname)
 	Variable/G root:myGlobals:Patch:gPV9 = 0  // replace this value --getTransDetectorCounts(fname)
@@ -852,10 +857,10 @@ Function ReadHeaderForPatch(fname)
 	Variable/G root:myGlobals:Patch:gPV13 = getFieldStrength(fname)
 	Variable/G root:myGlobals:Patch:gPV14 = getSourceAp_size(fname)
 	Variable/G root:myGlobals:Patch:gPV15 = getSampleAp_size(fname)
-	Variable/G root:myGlobals:Patch:gPV16 = getSourceAp_distance(fname)
+	Variable/G root:myGlobals:Patch:gPV16 = getSourceAp_distance(fname) / 100 // convert [cm] to [m]
 	Variable/G root:myGlobals:Patch:gPV17 = getDet_LateralOffset(fname)
 	Variable/G root:myGlobals:Patch:gPV18 = getBeamStop_size(fname)
-	Variable/G root:myGlobals:Patch:gPV19 = getDet_Distance(fname)
+	Variable/G root:myGlobals:Patch:gPV19 = getDet_Distance(fname) / 100		// convert [cm] to [m]
 	
 	Return 0
 End
@@ -950,6 +955,16 @@ End
 Function DoneButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
+	// This will display a progress bar and cleanup all files so that updated values will be read in
+	// NOTE that this only clears the data, does not update the Cat Table
+	// since the user may not want to immediately do this (and it may be slow)
+	Variable numToClean
+	numToClean = CleanupData_w_Progress(0,1)
+
+//  BUT I may want to do this instead -- does a cleanup AND reloads the Cat Table
+//	Execute "BuildCatVeryShortTable()"
+
+
 	DoWindow/K Patch_Panel
 	
 End
@@ -1034,7 +1049,7 @@ Function MPatchLabel(testStr,doIt)
 				str2 = PadString(str2, 60, 0x20 )
 				
 				if(doIt == 1)
-					WriteSamLabelToHeader(tempName,str2)
+					writeSampleDescription(tempName,str2)
 					print str2," ** Written to file **"
 				else
 					//print str2,strlen(str2)
@@ -1060,3 +1075,54 @@ Function MPatchLabel(testStr,doIt)
 
 
 end
+
+
+///////////////////////
+// functions to patch/correct items that are missing/incorrect in the test Nexus files
+//
+
+Macro Patch_PixelsPlus(lo,hi)
+	Variable lo,hi
+	
+	fPatch_PixelsPlus(lo,hi)
+End
+
+//  utility to reset the pixel sizes, pixel_num_x, plus more in the file headers
+//
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+//
+Function fPatch_PixelsPlus(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj
+	String fname,detStr
+	
+
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+	
+			// pix num x = 112, not 128
+			writeDet_pixel_num_x(fname,112)		//
+			writeDet_x_pixel_size(fname,8.4)
+			writeDet_y_pixel_size(fname,8.14)	// guessing, if the tubes are equivalent to VSANS
+			
+			writeSampleAp_size(fname,"1.27 cm")		// not sure if this is to be [cm]?
+			
+			Print fname
+			printf "run number %d reset to correct values\r",jj
+			
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+	
+	return(0)
+End
+
+
