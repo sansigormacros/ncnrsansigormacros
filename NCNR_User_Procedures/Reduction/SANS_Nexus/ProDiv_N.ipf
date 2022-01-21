@@ -3,6 +3,15 @@
 #pragma IgorVersion=6.1
 
 
+// JAN 2022
+//
+// Updated to read/write a Nexus-style DIV file
+//
+//
+
+
+
+
 //********************
 // Vers. 1.2 092101
 //
@@ -84,14 +93,6 @@ Function MakeDIVFile(ctrType,offType)
 		return(1)
 	endif
 
-#if (exists("QUOKKA")==6)
-	//corrects edge rows and columns by copy data from adjacent column
-	DoAlert 1,"Do edge correction for Quokka detector?"
-	if(V_flag==1)
-		DoEdgeCorrection(ctrType)
-		DoEdgeCorrection(offType)		
-	endif
-#endif
 	
 	//show the ctrType
 	//get the xy range to replace
@@ -123,11 +124,44 @@ Function MakeDIVFile(ctrType,offType)
 	//normalize the new data (and show it)
 	NormalizeDiv(ctrtype)
 	UpdateDisplayInformation(ctrtype)
+	
+	// setup the Nexus DIV structure
+	Execute "Setup_SANS_DIV_Struct()"
+	
+	// copy the DIV file to the new structure
+	CopyDIVToSave_OnePanel(ctrtype)
+	
 	//write out the new data file
-	Write_DIV_File(ctrtype)
+	Execute "Save_SANS_DIV_Nexus(\"Test_SANS_DIV_file\")"
+//	Write_DIV_File(ctrtype)
+	
+	
 	gLog = oldState		//set log/lin pref back to user - set preference
 	Return(0)
 End
+
+
+
+//
+// copies the detector panel from a work folder, (at COR level)
+// to the DIV structure to write out
+//
+//
+Function CopyDIVToSave_OnePanel(type)
+	String type
+	
+	String topath = "root:SANS_DIV_file:entry:instrument:detector"
+	String fromPath = "root:Packages:NIST:"+type+":entry:instrument:detector"
+	
+	
+	Duplicate/O $(fromPath+":data") $(toPath+":data")
+	Duplicate/O $(fromPath+":linear_data_error") $(toPath+":linear_data_error")
+			
+	return(0)
+End
+
+
+
 
 //ctrData is changed -- offData is not touched
 //simple replacement of the selected data...
@@ -410,24 +444,26 @@ Function GenerateDIVButtonProc(ba) : ButtonControl
 				Abort "Bad file number in offset Emp"
 			endif
 			
-#if (exists("QUOKKA")==6)
-			//corrects edge rows and columns by copy data from adjacent column
-			String ctrType="STO",offType="COR"
-			DoAlert 1,"Do edge correction for Quokka detector?"
-			if(V_flag==1)
-				DoEdgeCorrection(ctrType)
-				DoEdgeCorrection(offType)		
-			endif
-#endif
-			
+		
 		// replace the patch
 		// on-center data is changed (STO)
 			ReplaceDataBlock("STO","COR",x1,x2,y1,y2)
 		// normalize
 			NormalizeDiv("STO")
 			UpdateDisplayInformation("STO")
-		//write out the new data file
-			Write_DIV_File("STO")
+			
+			
+			// setup the Nexus DIV structure
+			Execute "Setup_SANS_DIV_Struct()"
+			
+			// copy the DIV file to the new structure
+			CopyDIVToSave_OnePanel("STO")
+			
+			//write out the new data file
+			Execute "Save_SANS_DIV_Nexus(\"Test_SANS_DIV_file\")"
+	
+//		//write out the new data file
+//			Write_DIV_File("STO")
 				
 			gLog=oldState		//revert display preference to old state	
 			break
@@ -613,3 +649,61 @@ Function CheckDIVBeamCenter(str,xc,yc)
 	return(badCtr)
 //	return(0)
 end
+
+
+//////////////  DIV file Utils
+
+
+
+// currently, there are no dummy fill values or attributes for the fake DIV file
+//
+Proc Setup_SANS_DIV_Struct()
+
+	// lays out the tree and fills with dummy values
+	H_Setup_SANS_DIV_Structure()
+	
+End
+
+Proc Save_SANS_DIV_Nexus(fileName)
+	String fileName="Test_SANS_DIV_file"
+
+	// save as HDF5 (no attributes saved yet)
+	Save_SANS_file("root:SANS_DIV_file", fileName+".h5")
+	
+End
+
+//
+//
+// simple generation of a fake div file. for sans, nothing other than the creation date was written to the 
+// file header. nothing more is needed (possibly)
+//
+//
+Proc H_Setup_SANS_DIV_Structure()
+	
+	NewDataFolder/O/S root:SANS_DIV_file		
+
+	NewDataFolder/O/S root:SANS_DIV_file:entry	
+		Make/O/T/N=1	title	= "This is a DIV file for the 10m SANS: SANS_DIV"
+//		Make/O/T/N=1	start_date	= V_CurrentTime_to_ISO8601String(DateTime)
+		Make/O/T/N=1	start_date	= "2022-01-16T06:15:30-5:00"
+
+		NewDataFolder/O/S root:SANS_DIV_file:entry:instrument		
+			Make/O/T/N=1	name	= "SANS_NGB"
+		NewDataFolder/O/S root:SANS_DIV_file:entry:instrument:detector
+			Make/O/D/N=(112,128)	data	= 1 
+			Make/O/D/N=(112,128)	linear_data_error	= 0.01
+
+		
+		// fake, empty folders so that the generic loaders can be used
+		NewDataFolder/O root:SANS_DIV_file:entry:DAS_logs
+		NewDataFolder/O root:SANS_DIV_file:entry:control
+		NewDataFolder/O root:SANS_DIV_file:entry:reduction
+		NewDataFolder/O root:SANS_DIV_file:entry:sample
+		NewDataFolder/O root:SANS_DIV_file:entry:user
+
+			
+	SetDataFolder root:
+
+End
+
+

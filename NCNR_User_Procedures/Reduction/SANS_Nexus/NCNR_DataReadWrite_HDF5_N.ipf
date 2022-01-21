@@ -1216,11 +1216,15 @@ End
 //
 // the header of this file is rather unimportant. Filling in a title at least would be helpful/
 //
-Function Write_DIV_File(type)
+Function Write_DIV_File()
 	String type
 	
 	// Your file writing function here. Don't try to duplicate the VAX binary format...
 	WriteVAXWorkFile(type)
+	
+	//
+
+	
 	
 	return(0)
 End

@@ -1723,12 +1723,14 @@ Function ExecuteProtocol(protStr,samStr)
 				SetDataFolder root:
 				Abort "No file selected, data reduction aborted"
 			Endif
-			 ReadHeaderAndWork("DIV", junkStr)
+			
+			LoadRawSANSData(junkStr, "DIV")
+
 		else
 			//assume it's a path, and that the first (and only) item is the path:file
 			//list processing is necessary to remove any final comma
 			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			ReadHeaderAndWork("DIV",junkStr)
+			LoadRawSANSData(junkStr, "DIV")
 		Endif
 		//got a DIV file, select the proper type of work data to DIV (= activeType)
 		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
@@ -2117,20 +2119,13 @@ Function AskForAbsoluteParams_Quest()
 		if(! waveexists($"root:Packages:NIST:DIV:data"))
 			junkStr = PromptForPath("Select the detector sensitivity file")
 			Print junkStr
-#if(exists("HFIR")==6)
-			if(strlen(junkStr)==0 || !CheckIfDIVData(junkStr))		//if either is false, exit
-				//Print strlen(junkStr)
-				//Print CheckIfDIVData(junkStr)
-				SetDataFolder root:
-				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
-			endif
-#else
+
 			if(strlen(junkStr)==0 || !N_CheckIfDIVData(junkStr))		//for NCNR, and other data confirm it is DIV if either is false, exit
 				SetDataFolder root:
 				Abort "No DIV (PLEX) file selected. Please use setABSParams again, selecting the empty beam file and then the detector sensitivity (Plex_) file"
 			endif
-#endif
-			ReadHeaderAndWork("DIV", junkStr)
+
+			LoadRawSANSData(junkStr, "DIV")
 		endif
 		//toggle SANS_Data to linear display if needed, so that we're working with linear scaled data
 		ControlInfo/W=SANS_Data bisLog

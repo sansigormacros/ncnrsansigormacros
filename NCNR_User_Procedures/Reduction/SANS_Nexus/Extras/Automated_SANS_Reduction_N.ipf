@@ -491,9 +491,9 @@ Function FillInProtocol(index)
 	String pathStr
 	PathInfo catPathName
 	pathStr = S_path
-	
-	ReadHeaderAndWork("DIV",pathStr+div)
-	
+
+	LoadRawSANSData(pathStr+div, "DIV")
+		
 	// be sure that the beam center is properly set
 	Auto_FindWriteBeamCenter(configs[index][%'Empty Beam'])
 	

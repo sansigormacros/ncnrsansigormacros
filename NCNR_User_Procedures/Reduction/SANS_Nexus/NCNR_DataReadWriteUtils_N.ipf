@@ -96,7 +96,6 @@ Function LoadRawSANSData(file,folder)
 	Duplicate/O data $(tmpStr+"detector:linear_data")
 
 // if the data is DIV, then handle the data errors differently since they are already part of the data file
-// root:Packages:NIST:VSANS:DIV:entry:instrument:detector_B:
 	if(cmpstr(folder,"DIV")==0)
 		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above 
 		tmpStr = "root:Packages:NIST:DIV:entry:instrument:"
@@ -354,9 +353,10 @@ Proc ReadWork_DIV()
 //	Silent 1
 	
 	String fname = PromptForPath("Select detector sensitivity file")
-	ReadHeaderAndWork("DIV",fname)		//puts what is read in work.div
 	
-	String waveStr = "root:Packages:NIST:DIV:data"
+	LoadRawSANSData(fname, "DIV")
+	
+//	String waveStr = "root:Packages:NIST:DIV:data"
 //	NewImage/F/K=1/S=2 $waveStr		//this is an experimental IGOR operation
 //	ModifyImage '' ctab= {*,*,YellowHot,0}
 	//Display;AppendImage $waveStr
@@ -379,7 +379,7 @@ End
 // called from ProtocolAsPanel.ipf
 //
 //
-Function ReadHeaderAndWork(type,fname)
+xFunction ReadHeaderAndWork(type,fname)
 	String type,fname
 	
 	//type is the desired folder to read the workfile to
