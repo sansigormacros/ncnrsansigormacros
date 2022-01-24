@@ -120,7 +120,7 @@ Function Add_raw_to_work(newType)
 	uscale = total_mon/defmon		//unscaling factor
 	total_det = uscale*getDetector_counts(newType)		//unscaled detector count
 
-	total_rtime = getCollectionTime(newType)		//total counting time in workfile
+	total_rtime = getCount_time(newType)		//total counting time in workfile
 	
 	//retrieve workfile beamcenter
 	wrk_beamx = getDet_beam_center_x(newType)
@@ -166,7 +166,7 @@ Function Add_raw_to_work(newType)
 	//deadtime corrections to raw data
 //	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
 	deadTime = getDetectorDeadtime_Value("RAW")			// TODO -- returns a HARD WIRED value of 1e-6!!!
-	itim = getCollectionTime("RAW")
+	itim = getCount_time("RAW")
 	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
 	
@@ -205,7 +205,7 @@ Function Add_raw_to_work(newType)
 	total_det += dscale*getDetector_counts("RAW")
 #endif
 //	total_trn += raw_reals[39]
-	total_rtime += getCollectionTime("RAW")
+	total_rtime += getCount_time("RAW")
 	total_numruns +=1
 	
 	//do the beamcenter shifting if there is a mismatch
@@ -356,7 +356,7 @@ Function Raw_to_work_for_Ordela(newType)
 	//deadtime corrections to raw data
 //	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
 	deadTime = getDetectorDeadtime_Value("RAW")			// TODO -- returns a HARD WIRED value of 1e-6!!!	
-	itim = getCollectionTime(newType)
+	itim = getCount_time(newType)
 	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
 	
@@ -374,7 +374,7 @@ Function Raw_to_work_for_Ordela(newType)
 
 	total_det += dscale*getDetector_counts(newType)
 
-	total_rtime += getCollectionTime(newType)
+	total_rtime += getCount_time(newType)
 	total_numruns +=1
 	
 	

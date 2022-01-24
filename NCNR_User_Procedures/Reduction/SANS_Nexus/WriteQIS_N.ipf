@@ -382,7 +382,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
 	labelWave[3] +="       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
-	labelWave[3] +="     "+num2str(getCollectionTime(type))
+	labelWave[3] +="     "+num2str(getCount_time(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	labelWave[5] +="  "+num2str(getSourceAp_size(type))+"  "+num2str(getSampleAp_size(type))+"  "
@@ -502,7 +502,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	
 	String tw1=getDataStartTime(type)
 	String tw2=type
-	Variable iw2=getCollectionTime(type)
+	Variable iw2=getCount_time(type)
 	Variable rw0=getControlMonitorCount(type)
 	Variable rw39=0
 	Variable rw2=getDetector_counts(type)

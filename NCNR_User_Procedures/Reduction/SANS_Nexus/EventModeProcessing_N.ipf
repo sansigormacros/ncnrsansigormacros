@@ -2105,7 +2105,7 @@ Function SaveSlicesAsVAX(firstNum,prefix)
 		//
 		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
 		
-		putCollectionTime("STO",trunc(binFraction*getCollectionTime("RAW")))
+		putCollectionTime("STO",trunc(binFraction*getCount_time("RAW")))
 //		Print (binFraction*iw_raw[2])		//this is the REAL precision value, not the saved integer value
 		putControlMonitorCount("STO",trunc(binFraction*getControlMonitorCount("RAW")))
 		putDetector_counts("STO",sum(curSlice,-inf,inf))		//total counts in slice

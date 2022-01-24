@@ -10,6 +10,8 @@ Function NCNR()
 	return(0)
 End
 
+Menu "VAX MODE"
+End
 
 //*************
 // the list of files to include in the SANS reduction experiment

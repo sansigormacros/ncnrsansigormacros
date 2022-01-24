@@ -1,25 +1,42 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
+///
 //
-// DON'T TOSS THIS FILE-- THERE ARE USEFUL PROCEDURES HERE
-// -- some that may be in use elsewhere in reading/writing of HDF files
+// JAN 2022
+// This file needs to be modified to convert VAX data to the new Nexus format
+// as best at possible. This file must be included in the "regular" VAX reduction
+// procedures so that the conversion can be done
+//
+// TODO:
+// -- update the tree structure to match the new Nexus
+// -- update the corresponding RTI data to fill in
+// -- update the writer so a proper HDF file can be written
+// -- do I need to change the file name or extension?
+//
+//
+// -- for testing, how can I get data to test the DIV Read/Write/Generation?
+//		do I have old VAX data for this?
+//
+// -- how do I best truncate the detector data? 
+// -- how will this affect my comparison to the VAX-reduced data?
+//
+//
+// ** I had to move some of the declarations -- compiler
+// complained that it was the wrong type (sample_aperture:shape:size declared as /D
+// -- but it's in a different data folder???)
+// -- is it because it's in the same function?
 
 
 
+
+
 //
 //
-// crudely converts the VAX format as read into RAW into an HDF5 file
 //
-// Not any thought was given to HDF5 structure
+// converts the VAX format as read into RAW into an HDF5 file
 //
-// the simple read/write works...
-// linear_data does not seem to need to be transposed at all
-//
-//  -- this seems too easy. what am I doing wrong? Is something getting garbled when I 
-// write back any single values back to the file
-//
-// -- try a string value next
-//
+
+
 
 
 // lays out the tree
@@ -28,431 +45,679 @@ Function SetupStructure()
 
 	SetDataFolder root:
 	
-	NewDataFolder/O root:entry1
-	NewDataFolder/O root:entry1:Run1
-	NewDataFolder/O root:entry1:Run1:Sample
-	NewDataFolder/O root:entry1:Run1:Run
-	NewDataFolder/O root:entry1:Run1:Detector
-	NewDataFolder/O root:entry1:Run1:Instrument
-	NewDataFolder/O root:entry1:Run1:Analysis
+	NewDataFolder/O root:toExport
+	NewDataFolder/O root:toExport:entry
+	NewDataFolder/O root:toExport:entry:control
+	NewDataFolder/O root:toExport:entry:data
+	NewDataFolder/O root:toExport:entry:instrument
+	NewDataFolder/O root:toExport:entry:instrument:attenuator
+	NewDataFolder/O root:toExport:entry:instrument:beam_monitor_norm
+	NewDataFolder/O root:toExport:entry:instrument:beam_stop
+	NewDataFolder/O root:toExport:entry:instrument:beam_stop:shape
+	NewDataFolder/O root:toExport:entry:instrument:collimator
+	NewDataFolder/O root:toExport:entry:instrument:collimator:geometry
+	NewDataFolder/O root:toExport:entry:instrument:collimator:geometry:shape
+	NewDataFolder/O root:toExport:entry:instrument:detector
+	NewDataFolder/O root:toExport:entry:instrument:lenses
+	NewDataFolder/O root:toExport:entry:instrument:monochromator
+	NewDataFolder/O root:toExport:entry:instrument:monochromator:velocity_selector
+	NewDataFolder/O root:toExport:entry:instrument:sample_aperture
+	NewDataFolder/O root:toExport:entry:instrument:sample_aperture:shape
+	NewDataFolder/O root:toExport:entry:instrument:sample_table
+	NewDataFolder/O root:toExport:entry:instrument:source
+	NewDataFolder/O root:toExport:entry:instrument:source_aperture
+	NewDataFolder/O root:toExport:entry:instrument:source_aperture:shape
+	NewDataFolder/O root:toExport:entry:program_data
+	NewDataFolder/O root:toExport:entry:reduction
+	NewDataFolder/O root:toExport:entry:sample
+	NewDataFolder/O root:toExport:entry:user
 
 
-	SetDataFolder root:entry1
-    Make/O/T/N=1 filename
+	SetDataFolder root:toExport:entry
     
-	SetDataFolder root:entry1:Run1
-      	Make/O/T/N=1 runLabel
+  	 Make/O/I/N=1	collection_time 	//600
+	 Make/O/T/N=1	data_directory   	//"C:\Users\jkrzywon\devel\NICE\server_data\experiments\nonims0\data"
+	 Make/O/T/N=1	definition   	//"NXsas"
+	 Make/O/D/N=1	duration 	//8.133
+	 Make/O/T/N=1	end_time   	//"2021-09-17T12:37:49.273-04:00"
+	 Make/O/T/N=1	experiment_description   	//"Modify Current Experiment"
+	 Make/O/T/N=1	experiment_identifier   	//"nonims0"
+	 Make/O/T/N=1	facility   	//"NCNR"
+	 Make/O/T/N=1	program_name   	//"NICE"
+	 Make/O/T/N=1	start_time   	//"2021-09-17T12:37:41.140-04:00"
+	 Make/O/T/N=1	title   	//"sans"  
+    
+    
+	SetDataFolder root:toExport:entry:control
 
-	SetDataFolder root:entry1:Run1:Sample
-// SAMPLE      
-        Make/O/D/N=1 TRNS
-        Make/O/D/N=1 THK
-        Make/O/D/N=1 POSITION
-        Make/O/D/N=1 ROTANG
-        Make/O/I/N=1 TABLE
-        Make/O/I/N=1 HOLDER
-        Make/O/I/N=1 BLANK
-        Make/O/D/N=1 TEMP
-        Make/O/D/N=1 FIELD
-        Make/O/I/N=1 TCTRLR
-        Make/O/D/N=1 MAGNET
-        Make/O/T/N=1 TUNITS
-        Make/O/T/N=1 FUNITS
+		Make/O/D/N=1	count_end 	//8.096
+		Make/O/D/N=1	count_start 	//2.259
+		Make/O/D/N=1	count_time 	//600
+		Make/O/D/N=1	count_time_preset 	//600
+		Make/O/D/N=1	detector_counts 	//1.76832e+08
+		Make/O/D/N=1	detector_preset 	//0
+		Make/O/D/N=1	efficiency 	//1
+		Make/O/T/N=1		mode   	//"TIME"
+		Make/O/I/N=1	monitor_counts 	//19099
+		Make/O/D/N=1	monitor_preset 	//1800
+		Make/O/D/N=1	sampled_fraction 	//0.0833
 
-	SetDataFolder root:entry1:Run1:Run
-// RUN
-        Make/O/I/N=1 NPRE
-        Make/O/I/N=1 CTIME
-        Make/O/I/N=1 RTIME
-        Make/O/I/N=1 NUMRUNS
-        Make/O/D/N=1 MONCNT
-        Make/O/D/N=1 SAVMON
-        Make/O/D/N=1 DETCNT
-        Make/O/D/N=1 ATTEN
-        Make/O/T/N=1 TIMDAT
-        Make/O/T/N=1 TYPE
-        Make/O/T/N=1 DEFDIR
-        Make/O/T/N=1 MODE
-        Make/O/T/N=1 RESERVE
-//        Make/O/T/N=1 LOGDATIM
-        
-        
-	SetDataFolder root:entry1:Run1:Detector
-// DET
-        Make/O/T/N=1 TYP
-        Make/O/D/N=3 CALX
-        Make/O/D/N=3 CALY
-        Make/O/I/N=1 NUM
-        Make/O/I/N=1 DetSPACER
-        Make/O/D/N=1 BEAMX
-        Make/O/D/N=1 BEAMY
-        Make/O/D/N=1 DIS
-        Make/O/D/N=1 ANG
-        Make/O/D/N=1 SIZ
-        Make/O/D/N=1 BSTOP
-        Make/O/D/N=1 DetBLANK
+	SetDataFolder root:toExport:entry:data
+	
+		Make/O/D/N=(112,128)	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/T/N=1	configuration   	//"4m 6A Scatt"
+		Make/O/T/N=1	sample_description   	//"Sample 1"
+		Make/O/D/N=1	sample_thickness 	//1
+		Make/O/T/N=1	slotIndex   	//"1"
+		Make/O/T/N=1	x0   	//"TIME"
+		Make/O/D/N=(112,128)	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
 
-		Make/O/D/N=(128,128) data
+	SetDataFolder root:toExport:entry:instrument
+	
+		Make/O/T/N=1	local_contact   	//"Jeff Krzywon"
+		Make/O/T/N=1	name   	//"SANS:NGB"
+		Make/O/T/N=1	type   	//"SANS"
 
-	SetDataFolder root:entry1:Run1:Instrument
-// RESOLUTION
-        Make/O/D/N=1 AP1
-        Make/O/D/N=1 AP2
-        Make/O/D/N=1 AP12DIS
-        Make/O/D/N=1 LMDA
-        Make/O/D/N=1 DLMDA
-        Make/O/D/N=1 SAVEFlag
-// BMSTP
-        Make/O/D/N=1 XPOS
-        Make/O/D/N=1 YPOS        
-// TIMESLICING
-        Make/O/T/N=1 SLICING
-        Make/O/I/N=1 MULTFACT
-        Make/O/I/N=1 LTSLICE
+	SetDataFolder root:toExport:entry:instrument:attenuator
 
-// POLARIZATION
-        Make/O/T/N=1 PRINTPOL
-        Make/O/T/N=1 FLIPPER
-        Make/O/D/N=1 HORIZ
-        Make/O/D/N=1 VERT        
-// TEMP
-        Make/O/T/N=1 PRINTEMP
-        Make/O/D/N=1 HOLD
-//        Make/O/D/N=1 ERR
-        Make/O/D/N=1 ERR_TEMP
-        Make/O/D/N=1 TempBLANK
-        Make/O/T/N=1 EXTEMP
-        Make/O/T/N=1 EXTCNTL 
-        Make/O/T/N=1 TempEXTRA2
-        Make/O/I/N=1 TempRESERVE
-// MAGNET
-        Make/O/T/N=1 PRINTMAG
-        Make/O/T/N=1 SENSOR
-        Make/O/D/N=1 CURRENT
-        Make/O/D/N=1 CONV
-        Make/O/D/N=1 FIELDLAST
-        Make/O/D/N=1 MagnetBLANK
-        Make/O/D/N=1 MagnetSPACER
-// VOLTAGE
-        Make/O/T/N=1 PRINTVOLT
-        Make/O/D/N=1 VOLTS
-        Make/O/D/N=1 VoltBLANK
-        Make/O/I/N=1 VoltSPACER
-     
-	SetDataFolder root:entry1:Run1:Analysis
-// ANALYSIS
-        Make/O/I/N=2 ROWS
-        Make/O/I/N=2 COLS
-        Make/O/D/N=1 FACTOR
-        Make/O/D/N=1 AnalysisQMIN
-        Make/O/D/N=1 AnalysisQMAX
-        Make/O/D/N=1 IMIN
-        Make/O/D/N=1 IMAX
+		Make/O/D/N=1		attenuator_transmission 	//1
+		Make/O/D/N=1		attenuator_transmission_error 	//1
+		Make/O/I/N=1		desired_num_atten_dropped 	//3
+		Make/O/D/N=1		distance 	//15
+		Make/O/D/N=(12,12)		index_error_table //(2-D wave N=(12,12)) val=3	typ=32bF
+		Make/O/D/N=(12,12)		index_table //(2-D wave N=(12,12)) val=3	typ=32bF
+		Make/O/D/N=1		num_atten_dropped 	//3
+		Make/O/D/N=1		thickness 	//0.187559
+		Make/O/T/N=1		type   	//"PMMA"
 
-// PARAMS
-        Make/O/I/N=1 BLANK1
-        Make/O/I/N=1 BLANK2
-        Make/O/I/N=1 BLANK3
-        Make/O/D/N=1 TRNSCNT
-        Make/O/D/N=1 ParamEXTRA1
-        Make/O/D/N=1 ParamEXTRA2
-        Make/O/D/N=1 ParamEXTRA3
-        Make/O/T/N=1 ParamRESERVE
+	SetDataFolder root:toExport:entry:instrument:beam_monitor_norm 
+		Make/O/I/N=1		data 	//19099
+		Make/O/D/N=1		distance 	//15
+		Make/O/D/N=1		efficiency 	//0.01
+		Make/O/D/N=1		saved_count 	//1e+08
+		Make/O/T/N=1		type   	//"monitor"
+		
+	SetDataFolder root:toExport:entry:instrument:beam_stop 
+		Make/O/T/N=1		description   	//"circular"
+		Make/O/D/N=1		distance_to_detector 	//0
+		Make/O/D/N=1		x_pos 	//0
+		Make/O/D/N=1		y_pos 	//6.85408
+				
+	SetDataFolder root:toExport:entry:instrument:beam_stop:shape 
+		Make/O/D/N=1			height 	//nan
+		Make/O/T/N=1			shape   	//"CIRCLE"
+		Make/O/D/N=1			size 	//5.08
+		Make/O/D/N=1			width 	//nan
+
+	SetupCollimator()					
+
+	SetupDetector()						
+
+				
+	SetDataFolder root:toExport:entry:instrument:lenses 
+		Make/O/D/N=1		curvature 	//25.4
+		Make/O/T/N=1		focus_type   	//"point"
+		Make/O/D/N=1		lens_distance 	//15
+		Make/O/T/N=1		lens_geometry   	//"concave_lens"
+		Make/O/T/N=1		lens_material   	//"MgF2"
+		Make/O/I/N=1		number_of_lenses 	//28
+		Make/O/I/N=1		number_of_prisms 	//7
+		Make/O/D/N=1		prism_distance 	//14.5
+		Make/O/T/N=1		prism_material   	//"MgF2"
+		Make/O/T/N=1		status   	//"out"
+				
+	SetDataFolder root:toExport:entry:instrument:monochromator
+		Make/O/T/N=1		type   	//"velocity_selector"
+		Make/O/D/N=1		wavelength 	//6.00747
+		Make/O/D/N=1		wavelength_error 	//0.14
+		SetDataFolder root:toExport:entry:instrument:monochromator:velocity_selector 
+			Make/O/D/N=1		distance 	//11.1
+			Make/O/D/N=1		rotation_speed 	//3648.81
+			Make/O/D/N=1		table 	//0.0028183
+
+	SetupSampleAperture()					
+
+					
+	SetDataFolder root:toExport:entry:instrument:sample_table 
+			Make/O/T/N=1	location   	//"CHAMBER"
+			Make/O/D/N=1	offset_distance 	//0
+				
+	SetDataFolder root:toExport:entry:instrument:source 
+			Make/O/T/N=1	name   	//"NCNR"
+			Make/O/D/N=1	power 	//20
+			Make/O/T/N=1	probe   	//"neutron"
+			Make/O/T/N=1	type   	//"Reactor Neutron Source"
+
+	SetupSourceAperture()				
+
+
+	SetupProgramData()
+
+			
+	SetDataFolder root:toExport:entry:reduction 
+		Make/O/D/N=4	absolute_scaling //(1-D wave N=(4)) val=1	typ=32bF
+		Make/O/T/N=1	background_file_name   //	"placeholder.h5"
+		Make/O/D/N=4	box_coordinates //(1-D wave N=(4)) val=50	typ=32bF
+		Make/O/D/N=1	box_count 	//1
+		Make/O/D/N=1	box_count_error 	//0.01
+		Make/O/T/N=1	comments   //	"extra data comments"
+		Make/O/T/N=1	empty_beam_file_name   //	"placeholder.h5"
+		Make/O/T/N=1	empty_file_name   	//"placeholder.h5"
+		Make/O/T/N=1	file_purpose   	//"SCATTERING"
+		Make/O/T/N=1	intent   //	"Sample"
+		Make/O/T/N=1	mask_file_name   //	"placeholder.h5"
+		Make/O/T/N=1	sans_log_file_name   	//"placeholder.txt"
+		Make/O/T/N=1	sensitivity_file_name   	//""
+		Make/O/T/N=1	transmission_file_name   	//"placeholder.h5"
+		Make/O/D/N=1	whole_trans 	//1
+		Make/O/D/N=1	whole_trans_error //	0.01
+			
+	SetDataFolder root:toExport:entry:sample 
+		Make/O/D/N=1	aequatorial_angle 	//0
+		Make/O/T/N=1	changer   	//"CHAMBER"
+		Make/O/T/N=1	changer_position  // 	"1"
+		Make/O/T/N=1	description   //	"Sample 1"
+		Make/O/D/N=1	elevation 	//-900
+		Make/O/I/N=1	group_id 	//101
+		Make/O/D/N=1	mass 	//nan
+		Make/O/T/N=1	name   	//""
+		Make/O/D/N=1	rotation_angle 	//-999
+		Make/O/T/N=1	sample_holder_description   //	""
+		Make/O/D/N=1	thickness 	//1
+		Make/O/D/N=1	translation 	//-999
+		Make/O/D/N=1	transmission 	//1
+		Make/O/D/N=1	transmission_error 	//0.01
+			
+	SetDataFolder root:toExport:entry:user 
+		Make/O/T/N=1	name   //	"[{"name":"Jeff Krzywon","orcid":"","email":"jkrzywon@nist.gov"}]"
+					
+
 
 	SetDataFolder root:
 	
 End
 
+Function 	SetupCollimator()
+					
+	SetDataFolder root:toExport:entry:instrument:collimator 
+			Make/O/T/N=1	number_guides   	//"0"
+		SetDataFolder root:toExport:entry:instrument:collimator:geometry 
+			SetDataFolder root:toExport:entry:instrument:collimator:geometry:shape 
+			Make/O/T/N=1			shape   //"RECTANGLE"
+			Make/O/D/N=1			size 	//10
+			
+	SetDataFolder root:
+end
 
-// fills the tree structure based on the RTI from RAW
-// logicals are skipped
+Function	SetupDetector()						
+	SetDataFolder root:toExport:entry:instrument:detector 
+		Make/O/D/N=1		azimuthal_angle 	//0
+		Make/O/D/N=1		beam_center_x 	//113
+		Make/O/D/N=1		beam_center_y 	//63.3
+		Make/O/D/N=(112,128)		data //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(1,112)		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+		Make/O/T/N=1		description   	//"fancy model"
+		Make/O/D/N=1		distance 	//120.009
+		Make/O/D/N=1		integrated_count //	1.76832e+08
+		Make/O/D/N=1		lateral_offset 	//0
+		Make/O/I/N=1		number_of_tubes 	//112
+		Make/O/D/N=1		pixel_fwhm_x 	//0.508
+		Make/O/D/N=1		pixel_fwhm_y 	//0.508
+		Make/O/I/N=1		pixel_num_x 	//112
+		Make/O/I/N=1		pixel_num_y 	//128
+		Make/O/D/N=1		polar_angle 	//0
+		Make/O/D/N=1		rotation_angle 	//0
+		Make/O/T/N=1		settings   //	"just right"
+		Make/O/D/N=(3,112)		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
+		Make/O/D/N=1		tube_width 	//8.4
+		Make/O/D/N=128		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=1		x_pixel_size 	//5.08
+		Make/O/D/N=128		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=1		y_pixel_size 	//5.08
+		
+	SetDataFolder root:
+end
+
+Function	SetupSampleAperture()					
+	SetDataFolder root:toExport:entry:instrument:sample_aperture 
+		Make/O/T/N=1		description   	//"sample aperture"
+		Make/O/D/N=1		distance //	5
+		SetDataFolder root:toExport:entry:instrument:sample_aperture:shape 
+			Make/O/D/N=1		height 	//0
+			Make/O/T/N=1			shape   	//"CIRCLE"
+			Make/O/T/N=1		size 	//"6.35 mm"
+			Make/O/D/N=1		width 	//0
+			
+	SetDataFolder root:
+end
+
+
+Function 	SetupSourceAperture()				
+	SetDataFolder root:toExport:entry:instrument:source_aperture 
+			Make/O/T/N=1	description   	//"source aperture"
+			Make/O/D/N=1	distance 	//508
+		SetDataFolder root:toExport:entry:instrument:source_aperture:shape 
+			Make/O/T/N=1		shape   	//"CIRCLE"
+			Make/O/T/N=1		size   	//"38.1 mm"
+
+	SetDataFolder root:
+end
+
+Function SetupProgramData()
+		
+	SetDataFolder root:toExport:entry:program_data 
+		Make/O/T/N=1	data   	//"runPoint {"counter.countAgainst"="TIME", "configuration"="4m 6A Scatt", "groupid"="101", "filePurpose"="SCATTERING", "sample.description"="Sample 1", "sample.thickness"="1.0", "intent"="Sample", "counter.timePreset"="600.0", "slotIndex"="1.0"} -g 1 -p "MTHYR" -u "NGB""
+		Make/O/T/N=1	description   //	"Additional program data, such as the script file which the program ran"
+		Make/O/T/N=1	file_name   	//"null"
+		Make/O/T/N=1	type   	//"application/json"
+
+	SetDataFolder root:
+	
+End
+
+// updated to the new Nexus structure.
+// not all fields are present in VAX data, so there are
+// many holes that will need to be patched post-conversion to be
+// able to process the converted data sets
+//
+// (make a list of missing fields)
+//
 Function FillStructureFromRTI()
 
 	WAVE rw = root:Packages:NIST:RAW:RealsRead
 	WAVE iw = root:Packages:NIST:RAW:IntegersRead
 	WAVE/T tw = root:Packages:NIST:RAW:TextRead
 
-	
-	SetDataFolder root:entry1
-    Wave/T filename
 
-	String newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
-
-	//TODO - not the best choice of file name, (maybe not unique) but this is only a test...     
-    filename[0] = newfilename[0,7]+".h5"		//make sure the file name in the header matches that on disk!
+	SetDataFolder root:toExport:entry
     
-	SetDataFolder root:entry1:Run1
-    Wave/T runLabel
+  	 WAVE	collection_time 	//600
+	 WAVE/T	data_directory   	//"C:\Users\jkrzywon\devel\NICE\server_data\experiments\nonims0\data"
+	 WAVE/T	definition   	//"NXsas"
+	 WAVE	duration 	//8.133
+	 WAVE/T	end_time   	//"2021-09-17T12:37:49.273-04:00"
+	 WAVE/T	experiment_description   	//"Modify Current Experiment"
+	 WAVE/T	experiment_identifier   	//"nonims0"
+	 WAVE/T	facility   	//"NCNR"
+	 WAVE/T	program_name   	//"NICE"
+	 WAVE/T	start_time   	//"2021-09-17T12:37:41.140-04:00"
+	 WAVE/T	title   	//"sans"  
+    
+//    collection_time = 600
+    experiment_identifier  = "nonims0"
+    start_time = tw[1]
+    
+	SetDataFolder root:toExport:entry:control
 
-	runLabel[0] = tw[6]
-
-	SetDataFolder root:entry1:Run1:Sample
-// SAMPLE      
-        Wave TRNS
-        Wave THK
-        Wave POSITION
-        Wave ROTANG
-        Wave TABLE
-        Wave HOLDER
-        Wave BLANK
-        Wave TEMP
-        Wave FIELD
-        Wave TCTRLR
-        Wave MAGNET
-        Wave/T TUNITS
-        Wave/T FUNITS
-
-        TRNS[0] = rw[4]
-        THK[0] = rw[5]
-        POSITION[0] = rw[6]
-        ROTANG[0] = rw[7]
-        TABLE[0] = iw[4]
-        HOLDER[0] = iw[5]
-        BLANK[0] = iw[6]
-        TEMP[0] = rw[8]
-        FIELD[0] = rw[9]
-        TCTRLR[0] = iw[7]
-        MAGNET[0] = iw[8]
-        TUNITS[0] = tw[7]
-        FUNITS[0] = tw[8]
-
-
-	SetDataFolder root:entry1:Run1:Run
-// RUN
-        Wave NPRE
-        Wave CTIME
-        Wave RTIME
-        Wave NUMRUNS
-        Wave MONCNT
-        Wave SAVMON
-        Wave DETCNT
-        Wave ATTEN
-        Wave/T TIMDAT
-        Wave/T TYPE
-        Wave/T DEFDIR
-        Wave/T MODE
-        Wave/T RESERVE
-//        Wave/T LOGDATIM
-        
-        
-        NPRE[0] = iw[0]
-        CTIME[0] = iw[1]
-        RTIME[0] = iw[2]
-        NUMRUNS[0] = iw[3]
-        MONCNT[0] = rw[0]
-        SAVMON[0] = rw[1]
-        DETCNT[0] = rw[2]
-        ATTEN[0] = rw[3]
-        TIMDAT[0] = tw[1]
-        TYPE[0] = tw[2]
-        DEFDIR[0] = tw[3]
-        MODE[0] = tw[4]
-        RESERVE[0] = tw[5]
-//        LOGDATIM
-        
-        
-	SetDataFolder root:entry1:Run1:Detector
-// DET
-        Wave/T TYP
-        Wave CALX
-        Wave CALY
-        Wave NUM
-        Wave DetSPACER
-        Wave BEAMX
-        Wave BEAMY
-        Wave DIS
-        Wave ANG
-        Wave SIZ
-        Wave BSTOP
-        Wave DetBLANK
-        
-		 Wave data
-
-		//CALX is 3 pts
-		//CALY is 3 pts
-		//data is 128,128
+		WAVE	count_end 	//8.096
+		WAVE	count_start 	//2.259
+		WAVE	count_time 	//600
+		WAVE	count_time_preset 	//600
+		WAVE	detector_counts 	//1.76832e+08
+		WAVE	detector_preset 	//0
+		WAVE	efficiency 	//1
+		WAVE/T		mode   	//"TIME"
+		WAVE	monitor_counts 	//19099
+		WAVE	monitor_preset 	//1800
+		WAVE	sampled_fraction 	//0.0833
 		
-       TYP[0] = tw[9]
-        CALX[0] = rw[10]
-        CALX[1] = rw[11]
-        CALX[2] = rw[12]
-        CALY[0] = rw[13]
-        CALY[1] = rw[14]
-        CALY[2] = rw[15]
-        NUM[0] = iw[9]
-        DetSPACER[0] = iw[10]
-        BEAMX[0] = rw[16]
-        BEAMY[0] = rw[17]
-        DIS[0] = rw[18]
-        ANG[0] = rw[19]
-        SIZ[0] = rw[20]
-        BSTOP[0] = rw[21]
-        DetBLANK[0] = rw[22]
-
-		 Wave linear_data = root:Packages:NIST:RAW:linear_data
- 		 data = linear_data
+		count_time = iw[1]
+		count_time_preset = iw[1]
+		monitor_counts = rw[0]
+		detector_counts = rw[2]
 		
-		
-	SetDataFolder root:entry1:Run1:Instrument
-// RESOLUTION
-        Wave AP1
-        Wave AP2
-        Wave AP12DIS
-        Wave LMDA
-        Wave DLMDA
-        Wave SAVEFlag
-// BMSTP
-        Wave XPOS
-        Wave YPOS        
-// TIMESLICING
-        Wave/T SLICING		//logical
-        Wave MULTFACT
-        Wave LTSLICE
+//		print iw[0]*iw[1],iw[2]
 
-// POLARIZATION
-        Wave/T PRINTPOL			//logical
-        Wave/T FLIPPER			//logical
-        Wave HORIZ
-        Wave VERT        
-// TEMP
-        Wave/T PRINTEMP			//logical
-        Wave HOLD
-        Wave ERR_TEMP
-        Wave TempBLANK
-        Wave/T EXTEMP			//logical
-        Wave/T EXTCNTL 			//logical
-        Wave/T TempEXTRA2		//logical
-        Wave TempRESERVE
-// MAGNET
-        Wave/T PRINTMAG			//logical
-        Wave/T SENSOR			//logical
-        Wave CURRENT
-        Wave CONV
-        Wave FIELDLAST
-        Wave MagnetBLANK
-        Wave MagnetSPACER
-// VOLTAGE
-        Wave/T PRINTVOLT		//logical
-        Wave VOLTS
-        Wave VoltBLANK
-        Wave VoltSPACER
-  
-  
-        AP1[0] = rw[23]
-        AP2[0] = rw[24]
-        AP12DIS[0] = rw[25]
-        LMDA[0] = rw[26]
-        DLMDA[0] = rw[27]
-        SAVEFlag[0] = rw[28]
-  
-        XPOS[0] = rw[37]
-        YPOS[0] = rw[38]
-     
-        MULTFACT[0] = iw[11]
-        LTSLICE[0] = iw[12]
-     
-        HORIZ[0] = rw[45]
-        VERT[0] = rw[46]
-// TEMP
-        HOLD[0] = rw[29]
-        ERR_TEMP[0] = rw[30]
-        TempBLANK[0] = rw[31]
-        TempRESERVE[0] = iw[14]
-// MAGNET
-        CURRENT[0] = rw[32]
-        CONV[0] = rw[33]
-        FIELDLAST[0] = rw[34]
-        MagnetBLANK[0] = rw[35]
-        MagnetSPACER[0] = rw[36]
-// VOLTAGE
-        VOLTS[0] = rw[43]
-        VoltBLANK[0] = rw[44]
-        VoltSPACER[0] = iw[18]
-     
-	SetDataFolder root:entry1:Run1:Analysis
-// ANALYSIS
-        Wave ROWS
-        Wave COLS
-        Wave FACTOR
-        Wave AnalysisQMIN
-        Wave AnalysisQMAX
-        Wave IMIN
-        Wave IMAX
-
-// PARAMS
-        Wave BLANK1
-        Wave BLANK2
-        Wave BLANK3
-        Wave TRNSCNT
-        Wave ParamEXTRA1
-        Wave ParamEXTRA2
-        Wave ParamEXTRA3
-        Wave/T ParamRESERVE	
+	SetDataFolder root:toExport:entry:data
 	
-			// ROWS is 2 pts
-			// COLS is 2 pts
-			
-// ANALYSIS
-        ROWS[0] = iw[19]
-        ROWS[1] = iw[20]
-        COLS[0] = iw[21]
-        COLS[1] = iw[22]
+		WAVE	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
+		WAVE/T	configuration   	//"4m 6A Scatt"
+		WAVE/T	sample_description   	//"Sample 1"
+		WAVE	sample_thickness 	//1
+		WAVE/T	slotIndex   	//"1"
+		WAVE/T	x0   	//"TIME"
+		WAVE	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
 
-        FACTOR[0] = rw[47]
-        AnalysisQMIN[0] = rw[48]
-        AnalysisQMAX[0] = rw[49]
-        IMIN[0] = rw[50]
-        IMAX[0] = rw[51]
+		sample_description = tw[6]
+		sample_thickness = rw[5]
+		 Wave linear_data = root:Packages:NIST:RAW:linear_data
+		 areaDetector = linear_data[p][q] // result areaDetector is (112,128)
+		
+	SetDataFolder root:toExport:entry:instrument
+	
+		WAVE/T	local_contact   	//"Jeff Krzywon"
+		WAVE/T	name   	//"SANS:NGB"
+		WAVE/T	type   	//"SANS"
+		
+		local_contact = "Jeff Krzywon"
+		name = "SANS_NGB"
+		type = "SANS"
 
-// PARAMS
-        BLANK1[0] = iw[15]
-        BLANK2[0] = iw[16]
-        BLANK3[0] = iw[17]
-        TRNSCNT[0] = rw[39]
-        ParamEXTRA1[0] = rw[40]
-        ParamEXTRA2[0] = rw[41]
-        ParamEXTRA3[0] = rw[42]
-        ParamRESERVE[0] = tw[10]
+	SetDataFolder root:toExport:entry:instrument:attenuator
+
+		WAVE		attenuator_transmission 	//1
+		WAVE		attenuator_transmission_error 	//1
+		WAVE		desired_num_atten_dropped 	//3
+		WAVE		distance 	//15
+		WAVE		index_error_table //(2-D wave N=(12,12)) val=3	typ=32bF
+		WAVE		index_table //(2-D wave N=(12,12)) val=3	typ=32bF
+		WAVE		num_atten_dropped 	//3
+		WAVE		thickness 	//0.187559
+		WAVE/T		type   	//"PMMA"
+
+		num_atten_dropped = rw[3]
+		
+	SetDataFolder root:toExport:entry:instrument:beam_monitor_norm 
+		WAVE		data 	//19099
+		WAVE		distance 	//15
+		WAVE		efficiency 	//0.01
+		WAVE		saved_count 	//1e+08
+		WAVE/T		type   	//"monitor"
+		
+		data = rw[0]
+
+		
+	SetDataFolder root:toExport:entry:instrument:beam_stop 
+		WAVE/T		description   	//"circular"
+		WAVE		distance_to_detector 	//0
+		WAVE		x_pos 	//0
+		WAVE		y_pos 	//6.85408
+		
+		description = "circular"
+		distance_to_detector = 0
+		x_pos = rw[37]
+		y_pos = rw[38]
+				
+		SetDataFolder root:toExport:entry:instrument:beam_stop:shape 
+			WAVE			height 	//nan
+			WAVE/T			shape   	//"CIRCLE"
+			WAVE			size 	//5.08
+			WAVE			width 	//nan
 			
+			size = rw[21]		// wrong units?
+			shape = "CIRCLE"
+			
+	FillCollimator()					
+
+	FillDetector(rw,tw,iw)						
+
+				
+	SetDataFolder root:toExport:entry:instrument:lenses 
+		WAVE		curvature 	//25.4
+		WAVE/T		focus_type   	//"point"
+		WAVE		lens_distance 	//15
+		WAVE/T		lens_geometry   	//"concave_lens"
+		WAVE/T		lens_material   	//"MgF2"
+		WAVE		number_of_lenses 	//28
+		WAVE		number_of_prisms 	//7
+		WAVE		prism_distance 	//14.5
+		WAVE/T		prism_material   	//"MgF2"
+		WAVE/T		status   	//"out"
+		
+		status = "out"
+				
+	SetDataFolder root:toExport:entry:instrument:monochromator
+		WAVE/T		type   	//"velocity_selector"
+		WAVE		wavelength 	//6.00747
+		WAVE		wavelength_error 	//0.14
+		
+		type = "velocity selector"
+		wavelength = rw[26]
+		wavelength_error = rw[27]
+		
+		SetDataFolder root:toExport:entry:instrument:monochromator:velocity_selector 
+			WAVE		distance 	//11.1
+			WAVE		rotation_speed 	//3648.81
+			WAVE		table 	//0.0028183
+
+	FillSampleAperture(rw,tw,iw)					
+
+					
+	SetDataFolder root:toExport:entry:instrument:sample_table 
+			WAVE/T	location   	//"CHAMBER"
+			WAVE	offset_distance 	//0
+			
+			if(iw[4] == 1)		// guessng at this?
+				location = "CHAMBER"
+			else
+				location = "HUBER"
+			endif
+			
+	SetDataFolder root:toExport:entry:instrument:source 
+			WAVE/T	name   	//"NCNR"
+			WAVE	power 	//20
+			WAVE/T	probe   	//"neutron"
+			WAVE/T	type   	//"Reactor Neutron Source"
+
+			name = "NCNR"
+			power = 20
+			probe = "neutron"
+			type = "Reactor Neutron Source"
+
+	FillSourceAperture(rw,tw,iw)				
+
+
+	FillProgramData()
+
+			
+	SetDataFolder root:toExport:entry:reduction 
+		WAVE	absolute_scaling //(1-D wave N=(4)) val=1	typ=32bF
+		WAVE/T	background_file_name   //	"placeholder.h5"
+		WAVE	box_coordinates //(1-D wave N=(4)) val=50	typ=32bF
+		WAVE	box_count 	//1
+		WAVE	box_count_error 	//0.01
+		WAVE/T	comments   //	"extra data comments"
+		WAVE/T	empty_beam_file_name   //	"placeholder.h5"
+		WAVE/T	empty_file_name   	//"placeholder.h5"
+		WAVE/T	file_purpose   	//"SCATTERING"
+		WAVE/T	intent   //	"Sample"
+		WAVE/T	mask_file_name   //	"placeholder.h5"
+		WAVE/T	sans_log_file_name   	//"placeholder.txt"
+		WAVE/T	sensitivity_file_name   	//""
+		WAVE/T	transmission_file_name   	//"placeholder.h5"
+		WAVE	whole_trans 	//1
+		WAVE	whole_trans_error //	0.01
+		
+		file_purpose = "SCATTERING"
+		intent = "Sample"
+		
+	SetDataFolder root:toExport:entry:sample 
+		WAVE	aequatorial_angle 	//0
+		WAVE/T	changer   	//"CHAMBER"
+		WAVE/T	changer_position  // 	"1"
+		WAVE/T	description   //	"Sample 1"
+		WAVE	elevation 	//-900
+		WAVE	group_id 	//101
+		WAVE	mass 	//nan
+		WAVE/T	name   	//""
+		WAVE	rotation_angle 	//-999
+		WAVE/T	sample_holder_description   //	""
+		WAVE	thickness 	//1
+		WAVE	translation 	//-999
+		WAVE	transmission 	//1
+		WAVE	transmission_error 	//0.01
+		
+		description = tw[6]
+		transmission = rw[4]
+		thickness = rw[5]
+		changer_position = num2str(rw[6])
+		rotation_angle = rw[7]
+		sample_holder_description = num2str(iw[5])
+			
+	SetDataFolder root:toExport:entry:user 
+		WAVE/T	name   //	"[{"name":"Jeff Krzywon","orcid":"","email":"jkrzywon@nist.gov"}]"
+					
+
+	SetDataFolder root:
+
+End
+
+
+Function FillCollimator()
+					
+	SetDataFolder root:toExport:entry:instrument:collimator 
+			WAVE/T	number_guides   	//"0"
+		SetDataFolder root:toExport:entry:instrument:collimator:geometry 
+			SetDataFolder root:toExport:entry:instrument:collimator:geometry:shape 
+			WAVE/T			shape   //"RECTANGLE"
+			WAVE			size 	//10
+		
+			shape = "RECTANGLE"
+			size = 10	
+	SetDataFolder root:
+end
+
+// VAX data w/Ordela detector has different calibration than the
+// projected tubes for 10m SANS. Pretend that the VAX data is tubes?
+//
+Function	FillDetector(rw,tw,iw)
+	WAVE rw
+	WAVE/T tw
+	WAVE iw
+							
+	SetDataFolder root:toExport:entry:instrument:detector 
+		WAVE		azimuthal_angle 	//0
+		WAVE		beam_center_x 	//113
+		WAVE		beam_center_y 	//63.3
+		WAVE		data //(2-D wave N=(112,128)) val=4605	typ=32bI
+		WAVE		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+		WAVE/T		description   	//"fancy model"
+		WAVE		distance 	//120.009
+		WAVE		integrated_count //	1.76832e+08
+		WAVE		lateral_offset 	//0
+		WAVE		number_of_tubes 	//112
+		WAVE		pixel_fwhm_x 	//0.508
+		WAVE		pixel_fwhm_y 	//0.508
+		WAVE		pixel_num_x 	//112
+		WAVE		pixel_num_y 	//128
+		WAVE		polar_angle 	//0
+		WAVE		rotation_angle 	//0
+		WAVE/T		settings   //	"just right"
+		WAVE		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
+		WAVE		tube_width 	//8.4
+		WAVE		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		WAVE		x_pixel_size 	//5.08
+		WAVE		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		WAVE		y_pixel_size 	//5.08
+	
+		description = tw[9]
+
+// in pixels
+		beam_center_x = rw[16]
+		beam_center_y = rw[17]
+		distance = rw[18]	*100				// convert the value of [m] to [cm]
+		lateral_offset = rw[19]
+		
+// cut the right edge of the detector off since data is declared as 
+// (112,128), and Ordela is (128,128)
+		 Wave linear_data = root:Packages:NIST:RAW:linear_data
+//		 data = linear_data[p][q] // result data is (112,128)
+
+// trim evenly from each side L/R
+// 128-112 = 16, so start at the 8th col [7]
+// index runs from [7] to [7+111]
+//		 data = linear_data[p+7][q] // result data is (112,128)
+	
+// cut the left edge of the detector, since offset is to the right
+		 data = linear_data[p+15][q] // result data is (112,128)
+	
+		
+		
+// different fill if i'm faking TUBES vs. verifying Ordela/30m SANS
+//
+
+// for TUBES
+	tube_width = 8.4
+	number_of_tubes = 112
+	
+	x_pixel_size = 8.4
+	y_pixel_size = 5
+	pixel_num_x = 112
+	pixel_num_y = 128
+	pixel_fwhm_x = 0.84
+	pixel_fwhm_y = 0.5		
+		
+		
+// for 30m SANS/ duplicating Ordela:
+//
+//	x_pixel_size = 5.08
+//	y_pixel_size = 5.08
+//	pixel_num_x = 128
+//	pixel_num_y = 128
+//	pixel_fwhm_x = 0.508
+//	pixel_fwhm_y = 0.508		
+//       CALX[0] = rw[10]
+//        CALX[1] = rw[11]
+//        CALX[2] = rw[12]
+//        CALY[0] = rw[13]
+//        CALY[1] = rw[14]
+//        CALY[2] = rw[15]	
+	
+		
+	SetDataFolder root:
+end
+
+Function	FillSampleAperture(rw,tw,iw)
+	WAVE rw
+	WAVE/T tw
+	WAVE iw
+						
+	SetDataFolder root:toExport:entry:instrument:sample_aperture 
+		WAVE/T		description   	//"sample aperture"
+		WAVE		distance //	5
+		
+		description = "sample aperture"
+		distance = 5
+		
+		SetDataFolder root:toExport:entry:instrument:sample_aperture:shape 
+			WAVE		height 	//0
+			WAVE/T			shape   	//"CIRCLE"
+			WAVE/T		size 	//6.35
+			WAVE		width 	//0
+			
+			size = num2Str(rw[24])
+			shape = "CIRCLE"
 			
 	SetDataFolder root:
+			
+end
+
+
+Function 	FillSourceAperture(rw,tw,iw)
+	WAVE rw
+	WAVE/T tw
+	WAVE iw
+					
+	SetDataFolder root:toExport:entry:instrument:source_aperture 
+			WAVE/T	description   	//"source aperture"
+			WAVE	distance 	//508
+			
+			description = "source aperture"
+			distance = rw[25]
+			
+		SetDataFolder root:toExport:entry:instrument:source_aperture:shape 
+			WAVE/T		shape   	//"CIRCLE"
+			WAVE/T		size   	//"38.1 mm"
+
+			shape = "CIRCLE"
+			size = num2str(rw[23]) + " mm"		//correct units?
+	SetDataFolder root:
+end
+
+Function FillProgramData()
 		
-	return(0)
+	SetDataFolder root:toExport:entry:program_data 
+		WAVE/T	data   	//"runPoint {"counter.countAgainst"="TIME", "configuration"="4m 6A Scatt", "groupid"="101", "filePurpose"="SCATTERING", "sample.description"="Sample 1", "sample.thickness"="1.0", "intent"="Sample", "counter.timePreset"="600.0", "slotIndex"="1.0"} -g 1 -p "MTHYR" -u "NGB""
+		WAVE/T	description   //	"Additional program data, such as the script file which the program ran"
+		WAVE/T	file_name   	//"null"
+		WAVE/T	type   	//"application/json"
+		
+	SetDataFolder root:
+	
 End
 
 
 
-Function Test_HDFWriteTrans(fname,val)
-	String fname
-	Variable val
-	
-	
-	String str
-	PathInfo home
-	str = S_path
-	
-	writeSampleTransmission(str+fname,val)
-	
-	return(0)
-End
-
-//Function WriteTransmissionToHeader(fname,trans)
-//	String fname
-//	Variable trans
-//	
-//	Make/O/D/N=1 wTmpWrite
-//	String groupName = "/Sample"	//	/Run1/Sample becomes groupName /Run1/Run1/Sample
-//	String varName = "TRNS"
-//	wTmpWrite[0] = trans //
-//
-//	variable err
-//	err = HDFWrite_Wave(fname, groupName, varName, wTmpWrite)
-//	KillWaves wTmpWrite
-//	
-//	//err not handled here
-//		
-//	return(0)
-//End
 
 
 
@@ -548,7 +813,12 @@ Function HDF_ListAttributes(fname, groupName)
 	return err
 end
 
+
+
 // this is my procedure to save VAX to HDF5, once I've filled the folder tree
+//
+// called as:
+// 	VAXSaveGroupAsHDF5("root:toExport", newfilename[0,7]+".nxs.ngb")
 //
 Function VAXSaveGroupAsHDF5(dfPath, filename)
 	String dfPath	// e.g., "root:FolderA" or ":"
@@ -588,7 +858,7 @@ End
 // I'm completely baffled about what to do with attributes. Are they needed, is this the best way to deal
 // with them, do I care about reading them in, and if I do, why?
 //
-Proc HDF5Gate_WriteTest()
+xProc HDF5Gate_WriteTest()
 
 	// create the folder structure
 	NewDataFolder/O/S root:mydata
@@ -635,7 +905,7 @@ Proc HDF5Gate_WriteTest()
 	SetDataFolder root:
 End
 
-Proc HDF5Gate_ReadTest(file)
+xProc HDF5Gate_ReadTest(file)
 	String file
 //	NewDataFolder/O/S root:newdata
 	Print H5GW_ReadHDF5("", file)	// reads into current folder
@@ -662,7 +932,7 @@ End
 // put everything back into its proper place in the RTI waves
 // (and the data!)
 // 
-Function FillRTIFromHDFTree(folderStr)
+xFunction FillRTIFromHDFTree(folderStr)
 	String folderStr
 
 	WAVE rw = root:Packages:NIST:RAW:RealsRead
@@ -932,31 +1202,6 @@ End
 
 
 
-//given a filename of a SANS data filename of the form
-// name.anything
-//returns the name as a string without the ".fbdfasga" extension
-//
-// returns the input string if a"." can't be found (maybe it wasn't there"
-Function/S RemoveDotExtension(item)
-	String item
-	String invalid = item	//
-	Variable num=-1
-	
-	//find the "dot"
-	String runStr=""
-	Variable pos = strsearch(item,".",0)
-	if(pos == -1)
-		//"dot" not found
-		return (invalid)
-	else
-		//found, get all of the characters preceeding it
-		runStr = item[0,pos-1]
-		return (runStr)
-	Endif
-End
-
-
-
 
 //////////////////////////////////////////////////
 
@@ -986,20 +1231,20 @@ Function fBatchConvertToHDF5(lo,hi)
 	
 	//loop over all files
 	for(ii=lo;ii<=hi;ii+=1)
-		file = N_FindFileFromRunNumber(ii)
+		file = FindFileFromRunNumber(ii)
 		if(strlen(file) != 0)
 			// load the data
-			ReadHeaderAndData(file,"RAW")		//file is the full path
+			ReadHeaderAndData(file)		//file is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
-			newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
+			newFileName= GetNameFromHeader(tw[0])		//02JUL13
 			
 			// convert it
 			FillStructureFromRTI()
 			
 			// save it
-			VAXSaveGroupAsHDF5("root:entry1", newfilename[0,7]+".h5")
+			VAXSaveGroupAsHDF5("root:toExport", newfilename[0,7]+".nxs.ngb")
 
 		else
 			printf "run number %d not found\r",ii

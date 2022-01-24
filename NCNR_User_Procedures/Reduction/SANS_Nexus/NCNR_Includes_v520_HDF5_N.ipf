@@ -10,6 +10,8 @@ Function NCNR_Nexus()
 	return(0)
 End
 
+Menu "NEXUS 10m-SANS MODE"
+End
 
 //*************
 // the list of files to include in the SANS reduction experiment
@@ -95,8 +97,10 @@ End
 //#include "MC_SimulationScripting"
 
 // SRK JUL 2014 -- testing of HDF5 read/write as a raw data format
-#include "HDF5_ConvertVAX_to_HDF5"
-#include "HDF5gateway_NCNR"
+// SRK JAN 2022 -- remove these VAX->HDF converters. They are out-of-date
+//  keep with the old VAX package where they can be updated to write 2022 version Nexus
+//#include "HDF5_ConvertVAX_to_HDF5"
+//#include "HDF5gateway_NCNR"
 
 // SRK NOV 2014 -- beta of automated reduction routines
 #include "Automated_SANS_Reduction_N"
@@ -106,8 +110,8 @@ End
 //#include "MC_Script_Panels"
 
 // JRK JUN 2019 -- import NXcanSAS read and write utilities
-#include "NIST_NXcanSAS_v709"
-#include "Write_SANS_NXcanSAS"
+#include "NIST_NXcanSAS_v709_N"
+#include "Write_SANS_NXcanSAS_N"
 
 // SRK JUL 2021 -- additions for Nexus handling
 #include "Utilities_General_N"

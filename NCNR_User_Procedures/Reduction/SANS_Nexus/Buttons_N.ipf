@@ -86,7 +86,7 @@ Function StatusButton(ctrlName) : ButtonControl
 	Print "\r***Current file status***"
 	Print "FILE(S) : " + fileList
 	Print "LABEL:  "+ getSampleDescription(cur_folder)
-	sprintf toPrint, "Counting time = %g seconds",getCollectionTime(cur_folder)
+	sprintf toPrint, "Counting time = %g seconds",getCount_time(cur_folder)
 	Print toPrint
 	sprintf toPrint,"Detector counts = %g for %g monitor counts",detCts,monCts
 	Print toPrint

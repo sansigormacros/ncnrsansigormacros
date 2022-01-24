@@ -542,7 +542,7 @@ Function/S Auto_CalcKappa(runNum)
 
 	pixel = getDet_x_pixel_size("RAW")/10			// header value (X) is in mm, want cm here
 
-	countTime = getCollectionTime("RAW")
+	countTime = getCount_time("RAW")
 	//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
 	monCnt = getControlMonitorCount("RAW")
 	sdd = getDet_Distance(filename)		// return value is in [cm]

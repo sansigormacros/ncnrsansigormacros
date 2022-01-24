@@ -7,6 +7,12 @@
 // May 2021 -- starting the process of re-writing to work
 // with a new, more complete nexus file definition
 //
+//
+//
+// DON'T change this file. New work is to be in the "_N" tagged file
+//
+//
+//
 // I will need to start by removing calls to the gateway, and replace
 // with the loader from VSANS
 //

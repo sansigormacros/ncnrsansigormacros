@@ -885,7 +885,7 @@ Function/S getDetDescription(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// header reports value in [cm], so [cm is returned here
+// header reports value in [cm], so [cm] is returned here
 // IF reduction is expecting distance in [m] it is up to calling function to convert
 Function getDet_Distance(fname)
 	String fname
@@ -1294,6 +1294,9 @@ Function/S getSampleAp_shape(fname)
 End
 
 // this returns REAL - but input is TEXT, due to GUI input, == to diameter if CIRCLE
+//
+// TODO -- what are the units?? [mm] or [cm]
+//
 Function getSampleAp_size(fname)
 	String fname
 
@@ -1797,6 +1800,24 @@ Function/S getEmptyFileName(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
+
+
+//
+//INTENT:
+//
+//1. “Transmission”
+//2. “Scattering”
+//3. “He3”
+//
+//PURPOSE:
+//a. “Sample” (Default value for new rows)
+//b. “Empty Cell”
+//c. “Blocked Beam”
+//d. “Open Beam”
+//e. “Standard”
+//
+
+
 // this is purpose is used for all files, and has different meaning
 // if polarization is used. need the "intent" also to be able to fully decipher what a file
 //  is really being used for. GUI controls this, not me.
@@ -1804,6 +1825,15 @@ Function/S getReduction_purpose(fname)
 	String fname
 
 	String path = "entry:reduction:file_purpose"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+
+Function/S getReduction_intent(fname)
+	String fname
+
+	String path = "entry:reduction:intent"	
 	Variable num=60
 	return(getStringFromHDF5(fname,path,num))
 End
@@ -1825,13 +1855,6 @@ End
 //	return(getRealValueFromHDF5(fname,path))
 //end
 
-Function/S getReduction_intent(fname)
-	String fname
-
-	String path = "entry:reduction:intent"	
-	Variable num=60
-	return(getStringFromHDF5(fname,path,num))
-End
 
 Function/S getMaskFileName(fname)
 	String fname

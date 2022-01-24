@@ -8,6 +8,9 @@
 // Updated to read/write a Nexus-style DIV file
 //
 //
+// -- as of 20 JAN 2022
+// ** Read/Write are UNTESTED -- I need more data to practice with
+//
 
 
 

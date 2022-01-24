@@ -684,8 +684,8 @@ Function CorrectMode_11()
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
 	savmon_sam = getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
-	time_sam = getCollectionTime("SAM")		//count time SAM
-	time_drk = getCollectionTime("DRK")		//drk count time
+	time_sam = getCount_time("SAM")		//count time SAM
+	time_drk = getCount_time("DRK")		//drk count time
 	
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -811,8 +811,8 @@ Function CorrectMode_12()
 	cbgd = getDet_beam_center_x("BGD")
 	rbgd = getDet_beam_center_y("BGD")
 	savmon_sam=getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
-	time_sam = getCollectionTime("SAM")		//count time SAM
-	time_drk = getCollectionTime("DRK")		//drk count time
+	time_sam = getCount_time("SAM")		//count time SAM
+	time_drk = getCount_time("DRK")		//drk count time
 	
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -920,8 +920,8 @@ Function CorrectMode_13()
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
 	savmon_sam=getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
-	time_sam = getCollectionTime("SAM")		//count time SAM
-	time_drk = getCollectionTime("DRK")		//drk count time
+	time_sam = getCount_time("SAM")		//count time SAM
+	time_drk = getCount_time("DRK")		//drk count time
 	
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
@@ -1025,8 +1025,8 @@ Function CorrectMode_14()
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
 
 	savmon_sam=getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
-	time_sam = getCollectionTime("SAM")		//count time SAM
-	time_drk = getCollectionTime("DRK")		//drk count time
+	time_sam = getCount_time("SAM")		//count time SAM
+	time_drk = getCount_time("DRK")		//drk count time
 	
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY

@@ -461,7 +461,7 @@ Function GetHeaderInfoToWave(fname,sname)
 
 	//read the counting time (integer)
 	InsertPoints lastPoint,1,GCntTime
-	ctime = getCollectionTime(fname)
+	ctime = getCount_time(fname)
 	GCntTime[lastPoint]=ctime
 	
 	//read the file creation date
@@ -676,7 +676,7 @@ Function WriteCatToNotebook(fname,sname)
 	lbl = getSampleDescription(fname)
 	
 	//read the counting time (integer)
-	ctime = getCollectionTime(fname)
+	ctime = getCount_time(fname)
 		
 	//read the reals
 	
@@ -739,7 +739,7 @@ Function Write_ABSHeader_toNotebook(fname,sname)
 	lbl = getSampleDescription(fname)
 	
 	//read the counting time (integer)
-	ctime = getCollectionTime(fname)
+	ctime = getCount_time(fname)
 		
 	//read the reals
 	
@@ -906,7 +906,7 @@ Function WriteCatVSToNotebook(fname,sname)
 	lbl = getSampleDescription(fname)
 	
 	//read the counting time (integer)
-	ctime = getCollectionTime(fname)
+	ctime = getCount_time(fname)
 		
 	//read the reals
 	//detector count + countrate

@@ -608,3 +608,27 @@ Function str2hex(str)
 	
 	return(hex)
 End
+
+//given a filename of a SANS data filename of the form
+// name.anything
+//returns the name as a string without the ".fbdfasga" extension
+//
+// returns the input string if a"." can't be found (maybe it wasn't there"
+Function/S RemoveDotExtension(item)
+	String item
+	String invalid = item	//
+	Variable num=-1
+	
+	//find the "dot"
+	String runStr=""
+	Variable pos = strsearch(item,".",0)
+	if(pos == -1)
+		//"dot" not found
+		return (invalid)
+	else
+		//found, get all of the characters preceeding it
+		runStr = item[0,pos-1]
+		return (runStr)
+	Endif
+End
+

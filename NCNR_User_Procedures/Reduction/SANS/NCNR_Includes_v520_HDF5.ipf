@@ -11,6 +11,10 @@ Function NCNR()
 End
 
 
+Menu "OLD VAX HDF MODE"
+End
+
+
 //*************
 // the list of files to include in the SANS reduction experiment
 //  - files must be located somewhere in the User Procedures folder
