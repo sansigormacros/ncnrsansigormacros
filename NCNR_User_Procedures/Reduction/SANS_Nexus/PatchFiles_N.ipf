@@ -1126,3 +1126,1245 @@ Function fPatch_PixelsPlus(lo,hi)
 End
 
 
+
+
+
+// added functionality for Nexus files
+//
+// more things to patch...
+//
+
+
+Proc Patch_GroupID_catTable()
+	fPatch_GroupID_catTable()
+end
+
+Proc Patch_Purpose_catTable()
+	fPatch_Purpose_catTable()
+end
+
+Proc Patch_Intent_catTable()
+	fPatch_Intent_catTable()
+end
+
+
+// patches the group_ID, based on whatever is in the catTable
+//
+Function fPatch_GroupID_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave id = root:myGlobals:CatVSHeaderInfo:Group_ID
+	Wave/T fileNameW = root:myGlobals:CatVSHeaderInfo:Filenames
+
+	num = numpnts(id)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		writeSample_GroupID(fileNameW[jj],id[jj])	
+	endfor
+	
+	return(0)
+End
+
+
+// patches the Purpose, based on whatever is in the catTable
+//
+Function fPatch_Purpose_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave/T purpose = root:myGlobals:CatVSHeaderInfo:Purpose
+	Wave/T fileNameW = root:myGlobals:CatVSHeaderInfo:Filenames
+
+	num = numpnts(purpose)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		writeReduction_Purpose(fileNameW[jj],purpose[jj])	
+	endfor
+	
+	return(0)
+End
+
+// patches the Intent, based on whatever is in the catTable
+//
+Function fPatch_Intent_catTable()
+	Variable lo,hi
+
+	
+	Variable ii,jj,num
+	
+	Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+	Wave/T fileNameW = root:myGlobals:CatVSHeaderInfo:Filenames
+
+	num = numpnts(intent)	
+	//loop over all files
+	for(jj=0;jj<num;jj+=1)
+		Print "update file ",jj,fileNameW[jj]
+		writeReductionIntent(fileNameW[jj],intent[jj])	
+	endfor
+	
+	return(0)
+End
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////
+//
+// this is a block to patch DEADTIME waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+//
+Proc PatchDetectorDeadtime(firstFile,lastFile,deadtimeStr)
+	Variable firstFile=1,lastFile=100
+	String deadtimeStr="deadTimeWave"
+
+	fPatchDetectorDeadtime(firstFile,lastFile,$deadtimeStr)
+
+End
+
+Proc ReadDetectorDeadtime(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadDetectorDeadtime(firstFile,lastFile)
+	
+End
+
+// simple utility to patch the detector deadtime in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchDetectorDeadtime(lo,hi,deadtimeW)
+	Variable lo,hi
+	Wave deadtimeW
+	
+	Variable ii
+	String fname
+	
+	// check the dimensions of the deadtimeW/N=112
+	if (DimSize(deadtimeW, 0) != 112 )
+		Abort "dead time wave is not of proper dimension (112)"
+	endif
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			writeDetector_deadtime(fname,deadtimeW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+// root:myGlobals:Patch:
+Function fReadDetectorDeadtime(lo,hi)
+	Variable lo,hi
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave deadtimeW = getDetector_deadtime(fname)
+			Duplicate/O deadTimeW root:myGlobals:Patch:deadtimeWave
+//			printf "File %d:  Detector Dead time (s) = %g\r",ii,deadtime
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+
+Proc PatchDetectorDeadtimePanel()
+	DoWindow/F DeadtimePanel
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:myGlobals:Patch
+
+		Make/O/D/N=112 deadTimeWave
+		Variable/G gFileNum_Lo,gFileNum_Hi
+		
+		SetDataFolder root:
+		
+		Execute "DeadtimePatchPanel()"
+	endif
+End
+
+
+
+//
+Proc DeadtimePatchPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+//	endif
+
+	Variable lo,hi
+	Find_LoHi_RunNum(lo,hi)		//set the globals
+	
+	NewPanel /W=(600*sc,400*sc,1000*sc,1000*sc)/N=DeadtimePanel /K=1
+//	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 209*sc,30*sc,"Dead Time Constants"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
+	
+//	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
+//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+	
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=ReadDTButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=WriteDTButtonProc,title="Write"
+	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=GeneratePerfDTButton,title="Perfect Dead Time"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=LoadCSVDTButton,title="Load Dead Time CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVDTButton,title="Write Dead Time CSV"
+	
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+
+
+// display the wave	
+	Edit/W=(180*sc,40*sc,380*sc,550*sc)/HOST=#  root:myGlobals:Patch:deadTimeWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:myGlobals:Patch:deadTimeWave)=110*sc
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+Function LoadCSVDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// writes the entire content of the CSV file (all 8 panels) to each detector entry in each data file
+// as specified by the run number range
+//
+Function WriteCSVDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave deadTimeW = root:myGlobals:Patch:deadTimeWave
+			
+				fPatchDetectorDeadtime(lo,hi,deadtimeW)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+	//
+	// -- Problem - for converted data, I don't know the file name
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:RawSANS:sans"+num2istr(ii))
+	endfor
+	
+//	// This will display a progress bar
+//	Variable numToClean
+//	numToClean = CleanupData_w_Progress(0,1)
+	
+	return 0
+End
+
+
+Function GeneratePerfDTButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			WAVE deadTimeWave = root:myGlobals:Patch:deadTimeWave
+
+					deadTimeWave = 1e-18
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
+Function ReadDTButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			fReadDetectorDeadtime(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function WriteDTButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			ControlInfo popup_0
+			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave deadTimeW = root:myGlobals:Patch:deadTimeWave
+			
+			fPatchDetectorDeadtime(lo,hi,deadtimeW)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// this is a block to patch CALIBRATION waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+// TODO -- verify that the calibration waves are not transposed
+//
+Proc PatchDetectorCalibration(firstFile,lastFile,calibStr)
+	Variable firstFile=1,lastFile=100
+	String calibStr="calibrationWave"
+
+	fPatchDetectorCalibration(firstFile,lastFile,$calibStr)
+
+End
+
+Proc ReadDetectorCalibration(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadDetectorCalibration(firstFile,lastFile)
+End
+
+// simple utility to patch the detector calibration wave in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchDetectorCalibration(lo,hi,calibW)
+	Variable lo,hi
+	Wave calibW
+	
+	Variable ii
+	String fname
+	
+	// check the dimensions of the calibW (3,112)
+	if (DimSize(calibW, 0) != 3 || DimSize(calibW, 1) != 112 )
+		Abort "Calibration wave is not of proper dimension (3,112)"
+	endif
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			writeDetTube_spatialCalib(fname,calibW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function fReadDetectorCalibration(lo,hi)
+	Variable lo,hi
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave calibW = getDetTube_spatialCalib(fname)
+			Duplicate/O calibW root:myGlobals:Patch:calibrationWave
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+Proc PatchDetectorCalibrationPanel()
+	DoWindow/F CalibrationPanel
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:myGlobals:Patch
+
+		Make/O/D/N=(3,112) calibrationWave
+		
+		Variable/G gFileNum_Lo,gFileNum_Hi
+		SetDataFolder root:
+		
+		Execute "CalibrationPatchPanel()"
+	endif
+End
+
+
+//
+//
+Proc CalibrationPatchPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+//	endif
+	
+	Variable lo,hi
+	Find_LoHi_RunNum(lo,hi)		//set the globals
+	
+	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=CalibrationPanel /K=1
+//	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 227*sc,28*sc,"Quadratic Calibration Constants per Tube"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
+		
+//	PopupMenu popup_0,pos={sc*20,40*sc},size={sc*109,20*sc},title="Detector Panel"
+//	PopupMenu popup_0,mode=1,popvalue="FL",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+	
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=ReadCalibButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=WriteCalibButtonProc,title="Write"
+	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=GeneratePerfCalibButton,title="Perfect Calibration"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=LoadCSVCalibButton,title="Load Calibration CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVCalibButton,title="Write Calibration CSV"
+		
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+
+
+// display the wave	
+	Edit/W=(180*sc,40*sc,580*sc,550*sc)/HOST=#  root:myGlobals:Patch:calibrationWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:myGlobals:Patch:calibrationWave)=100*sc
+	// the elements() command transposes the view in the table, but does not transpose the wave
+	ModifyTable elements(root:myGlobals:Patch:calibrationWave) = (-3, -2)
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+Function LoadCSVCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// writes the entire content of the CSV file (all 8 panels) to each detector entry in each data file
+// as specified by the run number range
+//
+Function WriteCSVCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			WAVE calibrationWave = root:myGlobals:Patch:calibrationWave
+			
+//			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+//				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave tmp_a = $("root:tmp_a")
+				Wave tmp_b = $("root:tmp_b")
+				Wave tmp_c = $("root:tmp_c")
+				calibrationWave[0][] = tmp_a[q]
+				calibrationWave[1][] = tmp_b[q]
+				calibrationWave[2][] = tmp_c[q]
+				fPatchDetectorCalibration(lo,hi,calibrationWave)
+//			endfor
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:RawSANS:sans"+num2istr(ii))
+	endfor
+	return 0
+End
+
+
+
+//
+// "Perfect" values here are from Phil (2/2018)
+//
+Function GeneratePerfCalibButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			WAVE calibrationWave = root:myGlobals:Patch:calibrationWave
+
+			calibrationWave[0][] = -521
+			calibrationWave[1][] = 8.14
+			calibrationWave[2][] = 0
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function ReadCalibButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			fReadDetectorCalibration(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function WriteCalibButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave calibW = root:myGlobals:Patch:calibrationWave
+			
+			fPatchDetectorCalibration(lo,hi,calibW)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// this is a block to patch ATTENUATION waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+//
+Proc PatchAttenTable(firstFile,lastFile,attenStr)
+	Variable firstFile=1,lastFile=100
+	String attenStr="AttenWave"
+
+	fPatchAttenTable(firstFile,lastFile,$attenStr)
+
+End
+
+Proc ReadAttenTable(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadAttenTable(firstFile,lastFile)
+
+End
+
+// simple utility to patch the detector calibration wave in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchAttenTable(lo,hi,attW)
+	Variable lo,hi
+	Wave attW
+	
+	Variable ii
+	String fname
+	
+	// check the dimensions of the attW (12,12)
+	if (DimSize(attW, 0) != 12 || DimSize(attW, 1) != 12 )
+		Abort "attenuator table wave is not of proper dimension (12,12)"
+	endif
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			writeAttenIndex_table(fname,attW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function fReadAttenTable(lo,hi)
+	Variable lo,hi
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave attW = getAttenIndex_table(fname)
+			Duplicate/O attW root:myGlobals:Patch:attenWave
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+Proc PatchAttenTablePanel()
+	DoWindow/F AttenTablePanel
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:myGlobals:Patch
+
+		Make/O/D/N=(12,12) attenWave
+		
+		Variable/G gFileNum_Lo,gFileNum_Hi
+		SetDataFolder root:
+		
+		Execute "DrawPatchAttenTablePanel()"
+	endif
+End
+
+
+//
+//
+Proc DrawPatchAttenTablePanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+//	endif
+	
+	Variable lo,hi
+	Find_LoHi_RunNum(lo,hi)		//set the globals
+	
+	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=AttenTablePanel /K=1
+//	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 227*sc,28*sc,"Attenuation Table"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
+		
+	
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=ReadAttTableButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=WriteAttTableButtonProc,title="Write"
+//	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=GeneratePerfCalibButton,title="Perfect Calibration"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=LoadCSVAttTableButton,title="Load Att Table CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVAttTableButton,title="Write Att Table CSV"
+		
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+
+
+// display the wave	
+	Edit/W=(180*sc,40*sc,580*sc,550*sc)/HOST=#  root:myGlobals:Patch:attenWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:myGlobals:Patch:attenWave)=100*sc
+	// the elements() command transposes the view in the table, but does not transpose the wave
+//	ModifyTable elements(root:myGlobals:Patch:calibrationWave) = (-3, -2)
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+Function LoadCSVAttTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// writes the entire content of the CSV file 
+//
+// first need to put the 12 1D wves into a 2D wve to write to file
+//
+Function WriteCSVAttTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			DoAlert 0,"incomplete function WriteCSVAttTableButton()"
+			
+			return(0)
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			WAVE attenWave = root:myGlobals:Patch:attenWave
+			
+//			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+//				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave tmp_a = $("root:tmp_a")
+				Wave tmp_b = $("root:tmp_b")
+				Wave tmp_c = $("root:tmp_c")
+				attenWave[0][] = tmp_a[q]
+				attenWave[1][] = tmp_b[q]
+				attenWave[2][] = tmp_c[q]
+				fPatchAttenTable(lo,hi,attenWave)
+//			endfor
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:RawSANS:sans"+num2istr(ii))
+	endfor
+	return 0
+End
+
+
+Function ReadAttTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			fReadAttenTable(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function WriteAttTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave attenWave = root:myGlobals:Patch:attenWave
+			
+			fPatchAttenTable(lo,hi,attenWave)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// this is a block to patch ATTENUATION ERROR waves to the file headers, and can patch multiple files
+// 
+// uses a simple panel to show what the table of values is.
+// "read" will read only the first run number contents.
+//
+//
+Proc PatchAttenErrTable(firstFile,lastFile,attenErrStr)
+	Variable firstFile=1,lastFile=100
+	String attenErrStr="AttenErrWave"
+
+	fPatchAttenErrTable(firstFile,lastFile,$attenErrStr)
+
+End
+
+Proc ReadAttenErrTable(firstFile,lastFile)
+	Variable firstFile=1,lastFile=100
+	
+	fReadAttenErrTable(firstFile,lastFile)
+
+End
+
+// simple utility to patch the detector Atten Error wave in the file headers
+// lo is the first file number
+// hi is the last file number (inclusive)
+//
+Function fPatchAttenErrTable(lo,hi,attErrW)
+	Variable lo,hi
+	Wave attErrW
+	
+	Variable ii
+	String fname
+	
+	// check the dimensions of the attErrW (12,12)
+	if (DimSize(attErrW, 0) != 12 || DimSize(attErrW, 1) != 12 )
+		Abort "attenuator Err table wave is not of proper dimension (12,12)"
+	endif
+	
+	//loop over all files
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			writeAttenIndex_table_err(fname,attErrW)			
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+
+
+/// clear out the freshly patched files so that they are forced to be read in from disk next time
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:RawSANS:sans"+num2istr(ii))
+	endfor
+	
+	return(0)
+End
+
+// simple utility to read the detector deadtime stored in the file header
+Function fReadAttenErrTable(lo,hi)
+	Variable lo,hi
+	
+	String fname
+	Variable ii
+	
+	for(ii=lo;ii<=hi;ii+=1)
+		fname = N_FindFileFromRunNumber(ii)
+		if(strlen(fname) != 0)
+			Wave attW = getAttenIndex_error_table(fname)
+			Duplicate/O attW root:myGlobals:Patch:attenErrWave
+		else
+			printf "run number %d not found\r",ii
+		endif
+	endfor
+	
+	return(0)
+End
+
+
+Proc PatchAttenErrTablePanel()
+	DoWindow/F AttenErrTablePanel
+	if(V_flag==0)
+	
+		NewDataFolder/O/S root:myGlobals:Patch
+
+		Make/O/D/N=(12,12) attenErrWave
+		
+		Variable/G gFileNum_Lo,gFileNum_Hi
+		SetDataFolder root:
+		
+		Execute "DrawPatchAttenErrTablePanel()"
+	endif
+End
+
+
+//
+//
+Proc DrawPatchAttenErrTablePanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+//	endif
+	
+	Variable lo,hi
+	Find_LoHi_RunNum(lo,hi)		//set the globals
+	
+	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=AttenErrTablePanel /K=1
+//	ShowTools/A
+	ModifyPanel cbRGB=(16266,47753,2552,23355)
+
+	SetDrawLayer UserBack
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 85*sc,99*sc,"Current Values"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 227*sc,28*sc,"Attenuation Error Table"
+	SetDrawEnv fsize= 14*sc,fstyle= 1
+	DrawText 18*sc,133*sc,"Run Number(s)"
+		
+	
+	Button button0,pos={sc*20,81*sc},size={sc*50.00,20.00*sc},proc=ReadAttErrTableButtonProc,title="Read"
+	Button button0_1,pos={sc*20,220*sc},size={sc*50.00,20.00*sc},proc=WriteAttErrTableButtonProc,title="Write"
+//	Button button0_2,pos={sc*18.00,336.00*sc},size={sc*140.00,20.00*sc},proc=GeneratePerfCalibButton,title="Perfect Calibration"
+	Button button0_3,pos={sc*18.00,370.00*sc},size={sc*140.00,20.00*sc},proc=LoadCSVAttErrTableButton,title="Load Att Err Table CSV"
+	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVAttErrTableButton,title="Write Att Err Table CSV"
+		
+	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+
+
+// display the wave	
+	Edit/W=(180*sc,40*sc,580*sc,550*sc)/HOST=#  root:myGlobals:Patch:attenErrWave
+	ModifyTable width(Point)=30
+	ModifyTable width(root:myGlobals:Patch:attenErrWave)=100*sc
+	// the elements() command transposes the view in the table, but does not transpose the wave
+//	ModifyTable elements(root:myGlobals:Patch:calibrationWave) = (-3, -2)
+	RenameWindow #,T0
+	SetActiveSubwindow ##
+
+	
+EndMacro
+
+
+Function LoadCSVAttErrTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+
+			LoadWave/J/A/D/O/W/E=1/K=0				//will prompt for the file, auto name
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// writes the entire content of the CSV file 
+//
+// first need to put the 12 1D wves into a 2D wve to write to file
+//
+Function WriteCSVAttErrTableButton(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	Variable ii
+	String detStr
+	
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			DoAlert 0,"incomplete function WriteCSVAttErrTableButton()"
+			
+			return(0)
+			
+//			ControlInfo popup_0
+//			String detStr = S_Value
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			WAVE attenErrWave = root:myGlobals:Patch:attenErrWave
+			
+//			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+//				detStr = StringFromList(ii, ksDetectorListNoB, ";")
+				Wave tmp_a = $("root:tmp_a")
+				Wave tmp_b = $("root:tmp_b")
+				Wave tmp_c = $("root:tmp_c")
+				attenErrWave[0][] = tmp_a[q]
+				attenErrWave[1][] = tmp_b[q]
+				attenErrWave[2][] = tmp_c[q]
+				fPatchAttenErrTable(lo,hi,attenErrWave)
+//			endfor
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	// TODO
+	// -- clear out the data folders (from lo to hi?)
+//
+// root:Packages:NIST:VSANS:RawVSANS:sans1301:
+	for(ii=lo;ii<=hi;ii+=1)
+		KillDataFolder/Z $("root:Packages:NIST:RawSANS:sans"+num2istr(ii))
+	endfor
+	return 0
+End
+
+
+Function ReadAttErrTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			
+			ControlInfo setvar0
+			Variable lo=V_Value
+			Variable hi=lo
+			
+			fReadAttenErrTable(lo,hi)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+Function WriteAttErrTableButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+
+			ControlInfo setvar0
+			Variable lo=V_Value
+			ControlInfo setvar1
+			Variable hi=V_Value
+			Wave attenErrWave = root:myGlobals:Patch:attenErrWave
+			
+			fPatchAttenErrTable(lo,hi,attenErrWave)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//
+// finds the lo, hi run numbers in the current directory
+// - sets the global values for later use
+// - you don't really need to pass anything in, the parameters are leftovers from 
+// the initial version where the values were pass-by-reference and returned
+//
+Function Find_LoHi_RunNum(lo,hi)
+	Variable lo,hi
+	
+	String fileList="",fname=""
+	Variable ii,num,runNum
+	
+	// set to values that will change
+	lo = 1e8
+	hi = 0
+	
+	// get a file listing of all raw data files
+	fileList = N_GetRawDataFileList()
+	num = itemsInList(fileList)
+	
+	for(ii=0;ii<num;ii+=1)
+		fname = stringFromList(ii,fileList)
+		runNum = N_GetRunNumFromFile(fname)
+
+		lo = runNum < lo ? runNum : lo		// if runNum < lo, update
+		hi = runNum > hi ? runNum : hi		// if runNum > hi, update
+	endfor
+
+	// set the globals	
+	NVAR loVal = root:myGlobals:Patch:gFileNum_Lo
+	NVAR hiVal = root:myGlobals:Patch:gFileNum_Hi
+	
+	loVal = lo
+	hiVal = hi
+	
+	return(0)
+End
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

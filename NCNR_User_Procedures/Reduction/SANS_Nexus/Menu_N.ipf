@@ -68,6 +68,16 @@ Menu "SANS"
 //		"Clear Work Folders"
 //		"Clear Root Folder"
 //	End
+	Submenu "Patch Files"
+		"Patch Group ID",Patch_GroupID_catTable()
+		"Patch Purpose",Patch_Purpose_catTable()
+		"Patch Intent",Patch_Intent_catTable()
+		"-"
+		"Patch Detector Calibration Panel"
+		"Patch Detector Deadtime Panel"
+		"Patch Atten Table Panel"
+		"Patch AttenErr Table Panel"
+	End
 End
 
 Function SANSHelp()

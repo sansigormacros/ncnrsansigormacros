@@ -141,11 +141,21 @@ Function/S N_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
 	delta = 0.5*(BS - r0)^2/v_d
 
+	// correction Jan 2022. inc_gamma now correctly written to match
+	// eqn(13) in Barker ref. [per E. Gilbert and JGB]
+	//
 	if (r0 < BS) 
-		inc_gamma=exp(gammln(1.5))*(1-gammp(1.5,delta))
+		inc_gamma = 1 - exp(gammln(1.5))*gammp(1.5,delta)
 	else
-		inc_gamma=exp(gammln(1.5))*(1+gammp(1.5,delta))
+		inc_gamma = 1 + exp(gammln(1.5))*gammp(1.5,delta)
 	endif
+
+//
+//	if (r0 < BS) 
+//		inc_gamma=exp(gammln(1.5))*(1-gammp(1.5,delta))
+//	else
+//		inc_gamma=exp(gammln(1.5))*(1+gammp(1.5,delta))
+//	endif
 
 	fSubS = 0.5*(1.0+erf( (r0-BS)/sqrt(2.0*v_d) ) )
 	if (fSubS <= 0.0) 
