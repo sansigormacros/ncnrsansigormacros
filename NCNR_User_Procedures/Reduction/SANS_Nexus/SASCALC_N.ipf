@@ -1,12 +1,12 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma version=1.0
 #pragma IgorVersion=6.1
-#pragma ModuleName=SASCALC
+#pragma ModuleName=SASCALC_N
 
 //
 // AUG 2021
 //
-// Can I just leave SASCALC alone - and have it work "internally" as if it was VAX,
+// Can I just leave SASCALC alone? - and have it work "internally" as if it was VAX,
 // and then at the very end, if it desired to write out a 2D data file, only then do
 // I convert the VAX RTI to a Nexus tree for writing.
 //
@@ -18,6 +18,18 @@
 //
 //
 //
+//
+// JAN 2022
+// - updating SASCALC to work with new 10m detector and new Nexus file format
+//
+// -- this means:
+// x- starting life as 10m SANS (NGB)
+// x- disabling the 30m instruments (for now - leave this open in the future)
+// x- populating SAS folder with the necessary folder tree + constants + waves
+//
+//
+// x- replace RTI calls to replace with calls to the file/work folder
+// x- remove references to the VAX structure to read and write
 //
 
 
@@ -124,27 +136,36 @@ Proc SASCALC()
 	DoWindow/F SASCALC
 	if(V_flag==0)
 		S_initialize_space()
-		initNG3()		//start life as NG3
+//		initNG3()		//start life as NG3
+		initNGB()		//start life as 10m SANS
 		Sascalc_Panel()
+		// add fake call to SelectInstrumentCheckProc so that the panel is correctly drawn for NGB
+		SelectInstrumentCheckProc("checkNGB",1)
+
 		ReCalculateInten(1)		//will use defaults
 	Endif
 
 End
+
 
 Proc S_initialize_space()
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:SAS
 	
-	Make/O/D/N=23 root:Packages:NIST:SAS:integersRead
-	Make/O/D/N=52 root:Packages:NIST:SAS:realsRead
-	Make/O/T/N=11 root:Packages:NIST:SAS:textRead
 	// data
-	Make/O/D/N=(128,128) root:Packages:NIST:SAS:data,root:Packages:NIST:SAS:linear_data
+//	Make/O/D/N=(128,128) root:Packages:NIST:SAS:data,root:Packages:NIST:SAS:linear_data
 	Make/O/D/N=2 root:Packages:NIST:SAS:aveint,root:Packages:NIST:SAS:qval,root:Packages:NIST:SAS:sigave
-	root:Packages:NIST:SAS:data = 1
-	root:Packages:NIST:SAS:linear_data = 1
+//	root:Packages:NIST:SAS:data = 1
+//	root:Packages:NIST:SAS:linear_data = 1
 
+
+// set up the Neuxs tree in the SAS folder
+//
+	SetupNexusStructure("root:Packages:NIST:SAS")
+	// fill w/default values
+	FillFakeNexusStructure("root:Packages:NIST:SAS")
+	
 	
 	// other variables
 	// -(hard coded right now - look for NVAR declarations)
@@ -159,7 +180,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gNg=0
 	Variable/G root:Packages:NIST:SAS:gTable=2		//2=chamber, 1=table
 	Variable/G root:Packages:NIST:SAS:gDetDist=1000		//sample chamber to detector in cm
-	Variable/G root:Packages:NIST:SAS:gSSD=1632		//!!SSD in cm fo 0 guides (derived from Ng)
+	Variable/G root:Packages:NIST:SAS:gSSD=1632		//!!SSD in cm for 0 guides (derived from Ng)
 	Variable/G root:Packages:NIST:SAS:gOffset=0
 	Variable/G root:Packages:NIST:SAS:gSamAp=1.27		//samAp diameter in cm
 	Variable/G root:Packages:NIST:SAS:gLambda=6
@@ -232,12 +253,9 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gTouched=0
 	Variable/G root:Packages:NIST:SAS:gCalculate=0
 	//for plotting
-	Variable/G root:Packages:NIST:SAS:gFreezeCount=1		//start the count at 1 to keep Jeff happy
+	Variable/G root:Packages:NIST:SAS:gFreezeCount=1		//start the count at 1
 	Variable/G root:Packages:NIST:SAS:gDoTraceOffset=0		// (1==Yes, offset 2^n), 0==turn off the offset
 	
-	// fill a fake data header
-	// fill w/default values
-	S_fillDefaultHeader(root:Packages:NIST:SAS:integersRead,root:Packages:NIST:SAS:realsRead,root:Packages:NIST:SAS:textRead)
 	
 End
 
@@ -450,14 +468,33 @@ end
 // -- this should be taken care of in SimulationVAXHeader(), so this is really redundant
 Function UpdateSASHeader()
 
-	Wave/T tw=root:Packages:NIST:SAS:textRead
+	String fStr = "root:Packages:NIST:SAS"
+	SetDataFolder $(fStr + ":entry:instrument")
+		WAVE/T	name   	//"SANS:NGB"
+
 	// fill in the instrument
 	SVAR gInstStr = root:Packages:NIST:SAS:gInstStr
-	tw[3] = "["+gInstStr+"SANS99]"
+	name = "SANS_"+gInstStr
 
+	SetDataFolder root:
+	return(0)
 End
 
-Function S_fillDefaultHeader(iW,rW,tW)
+
+// these input RTI waves are in the folder root:Packages:NIST:SAS
+//
+//  new Neuxs calls need to be "put", not "write" so that the work locally
+// -- could also simply write directly to the wave in the SAS folder
+// (create the wave if it doesn't exist?)
+//
+// need to add default non-linear constants (table)
+// + dead time table
+// + attenuator tables? (do I need these?)
+///
+// -- see how I do this in VSANS --
+//
+//
+xFunction S_fillDefaultHeader(iW,rW,tW)
 	Wave iW,rW
 	Wave/T tW
 
@@ -497,36 +534,12 @@ Function S_fillDefaultHeader(iW,rW,tW)
 End
 
 //
+//
 Window SASCALC_Panel()
 
 	PauseUpdate; Silent 1		// building window...
 
 // if I make the graph a subwindow in a panel, it breaks the "append 1d" from the wrapper	
-//	NewPanel/W=(5,44,463,570)/K=1 as "SASCALC"
-//	DoWindow/C SASCALC
-//	ModifyPanel cbRGB=(49151,53155,65535)
-//
-//	
-//	String fldrSav0= GetDataFolder(1)
-//	SetDataFolder root:Packages:NIST:SAS:
-//	
-//	Display/HOST=#/W=(5,200,463,570) aveint vs qval
-//	ModifyGraph mode=3
-//	ModifyGraph marker=19
-//	ModifyGraph rgb=(0,0,0)
-//	Modifygraph log=1
-//	Modifygraph grid=1
-//	Modifygraph mirror=2
-//	ModifyGraph msize(aveint)=2
-//	ErrorBars/T=0 aveint Y,wave=(sigave,sigave)
-//	Label bottom, "Q (1/A)"
-//	Label left, "Relative Intensity"
-//	legend
-//	
-//	RenameWindow #,G_aveint
-//	SetActiveSubwindow ##
-
-//// end panel commands
 
 /// draw as a graph
 	String fldrSav0= GetDataFolder(1)
@@ -561,19 +574,21 @@ Window SASCALC_Panel()
 //	CheckBox checkNG3,pos={20,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG3"
 //	CheckBox checkNG3,value=1,mode=1
 	CheckBox checkCGB,pos={17,19},size={36,14},proc=SelectInstrumentCheckProc,title="NGB30"
-	CheckBox checkCGB,value=1,mode=1
+	CheckBox checkCGB,value=0,mode=1
 	CheckBox checkNG7,pos={70,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
 	CheckBox checkNG7,value=0,mode=1
+	CheckBox checkCGB,disable=2		//hide the selection of NGB30 and NG7 for now
+	CheckBox checkNG7,disable=2
 
 	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
 	CheckBox checkChamber,value=1,mode=1
 	CheckBox checkHuber,pos={172,27},size={44,14},proc=TableCheckProc,title="Huber"
 	CheckBox checkHuber,value=0,mode=1
 //	-- hide/unhide the 10m SANS
-	if(show10mSANS)
+//	if(show10mSANS)
 		CheckBox checkNGB,pos={114,19},size={40,14},proc=SelectInstrumentCheckProc,title="NGB"
-		CheckBox checkNGB,value=0,mode=1
-	endif
+		CheckBox checkNGB,value=1,mode=1
+//	endif
 //		
 	PopupMenu popup0,pos={6,94},size={76,20},proc=SourceAperturePopMenuProc
 	PopupMenu popup0,mode=1,popvalue="3.81 cm",value= root:Packages:NIST:SAS:gSourceApString
@@ -954,16 +969,16 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	NVAR ng = root:Packages:NIST:SAS:gNg
 	NVAR lam = root:Packages:NIST:SAS:gLambda
 	NVAR dist = root:Packages:NIST:SAS:gDetDist
-//	NVAR instrument = root:Packages:NIST:SAS:instrument
-	Wave rw=root:Packages:NIST:SAS:realsRead
 	
+	Wave/T statusW = $"root:Packages:NIST:SAS:entry:instrument:lenses:status" 
+
 	SVAR selInstr = root:Packages:NIST:SAS:gInstStr
 		
 	// directly uncheck the box, just set the flag and get out
 	if(checked == 0)
 		lens = 0
 		CheckBox checkLens,win=SASCALC,value=0
-		rw[28]=0		//flag for lenses out
+		statusW[0] = "out"	//flag for lenses out
 		ReCalculateInten(1)
 		return(0)
 	endif
@@ -989,7 +1004,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
 				ControlInfo/W=SASCALC popup0_2
 				DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
-				rw[28]=1		//flag for lenses in (not the true number, but OK)
+				statusW[0] = "in"		//flag for lenses in (not the true number, but OK)
 		
 				break
 			case "NG7":
@@ -1008,7 +1023,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				PopupMenu popup0_2,win=SASCALC,mode=2		//deltaLambda
 				ControlInfo/W=SASCALC popup0_2
 				DeltaLambdaPopMenuProc("",0,S_value)			//zero as 2nd param skips recalculation
-				rw[28]=1		//flag for lenses in (not the true number, but OK)
+				statusW[0] = "in"		//flag for lenses in (not the true number, but OK)
 				
 				break
 			case "NGB":
@@ -1016,7 +1031,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 				// TODO:  -- put in CORRECT VALUES -- THESE ARE FICTIONAL
 				lens = 0		//no lenses
 				CheckBox checkLens,win=SASCALC,value=0
-				rw[28]=0		//flag for lenses out
+				statusW[0] = "out"		//flag for lenses out
 
 				break
 			default:
@@ -1070,7 +1085,7 @@ Function LensCheckProc(ctrlName,checked) : CheckBoxControl
 	if(lensNotAllowed)
 		lens = 0
 		CheckBox checkLens,win=SASCALC,value=0
-		rw[28]=0		//flag for lenses out
+		statusW[0] = "out"		//flag for lenses out
 		return(0)
 	endif
 
@@ -1204,10 +1219,10 @@ Function LambdaSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String varStr
 	String varName
 
-//	WAVE rw=root:Packages:NIST:SAS:realsRead
 	Variable recalc=0
 	
-//	rw[26] = str2num(varStr)
+	putWavelength("SAS",str2num(varStr))
+	
 	if(cmpstr(ctrlName,"") != 0)
 		recalc=1
 		LensCheckProc("",2)		//make sure lenses are only selected for valid configurations
@@ -1240,8 +1255,11 @@ Function DeltaLambdaPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 
 	NVAR dl=root:Packages:NIST:SAS:gDeltaLambda
 	dl=str2num(popStr)
-//	WAVE rw=root:Packages:NIST:SAS:realsRead
-//	rw[27] = dl
+	
+	WAVE lam_err = root:Packages:NIST:SAS:entry:instrument:monochromator:wavelength_error
+	
+	lam_err[0] = dl
+
 	ReCalculateInten(popnum)		//skip the calculation if I pass in  zero
 	return(0)
 End
@@ -1484,27 +1502,27 @@ Function S_CircularAverageTo1D(type)
 	//
 	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,dtsize,dtdist,dr,ddr
 	Variable lambda,trans
-	WAVE reals = $(destPath + ":RealsRead")
-//	WAVE/T textread = $(destPath + ":TextRead")
-//	String fileStr = textread[3]
+
 	
 	// center of detector, for non-linear corrections
 	Variable pixelsX=128,pixelsY=128
+	pixelsx = getDet_pixel_num_x(type)
+	pixelsy = getDet_pixel_num_y(type)
 	
 	xcenter = pixelsX/2 + 0.5		// == 64.5 for 128x128 Ordela
 	ycenter = pixelsY/2 + 0.5		// == 64.5 for 128x128 Ordela
 	
 	// beam center, in pixels
-	x0 = reals[16]
-	y0 = reals[17]
+	x0 = getDet_beam_center_x(type)
+	y0 = getDet_beam_center_y(type)
 	//detector calibration constants
-	sx = reals[10]		//mm/pixel (x)
-	sx3 = reals[11]		//nonlinear coeff
-	sy = reals[13]		//mm/pixel (y)
-	sy3 = reals[14]		//nonlinear coeff
+	sx = getDet_x_pixel_size(type)		//mm/pixel (x)
+	sx3 = 10000		//nonlinear coeff
+	sy = getDet_x_pixel_size(type)		//mm/pixel (y)
+	sy3 = 10000		//nonlinear coeff
 	
-	dtsize = 10*reals[20]		//det size in mm
-	dtdist = 1000*reals[18]		// det distance in mm
+	dtsize = 10*65		//det size in mm
+	dtdist = 10*getDet_Distance(type)		// det distance in mm
 	
 	NVAR binWidth=root:Packages:NIST:gBinWidth
 //	Variable binWidth = 1
@@ -1529,7 +1547,7 @@ Function S_CircularAverageTo1D(type)
 	mask = 0
 	//three pixels all around
 	mask[0,2][] = 1
-	mask[125,127][] = 1
+	mask[pixelsX-3,pixelsX-1][] = 1
 	mask[][0,2] = 1
 	mask[][125,127] = 1
 	//
@@ -1658,7 +1676,7 @@ Function S_CircularAverageTo1D(type)
 	//compute q-values and errors
 	Variable ntotal,rr,theta,avesq,aveisq,var
 	
-	lambda = reals[26]
+	lambda = getWavelength(type)
 	ntotal = 0
 	kk = 1
 	do
@@ -1712,22 +1730,20 @@ Function S_CircularAverageTo1D(type)
 //
 // ***************************************************************
 
-	Variable L2 = reals[18]
-	Variable BS = reals[21]		//this the diameter is stored in mm
-//  SRK - why was I using the projected diameter of the beam stop?? I added a step at the beginning of every recalculation
-// of the intensity to get the right beamstop diameter into RealsRead...
-//	Variable BS = beamstopDiamProjection(1) * 10		//calculated projection in cm *10 = mm
-	Variable S1 = reals[23]
-	Variable S2 = reals[24]
-	Variable L1 = reals[25]
-	lambda = reals[26]
-	Variable lambdaWidth = reals[27]
-
+	Variable L2 = getDet_Distance(type) / 100		// convert [cm] to [m] for N_getResolution
+	Variable BS = getBeamStop_size(type)
+	Variable S1 = getSourceAp_size(type)
+	Variable S2 = getSampleAp_size(type)
+	Variable L1 = getSourceAp_distance(type) / 100		// convert [cm] to [m] for N_getResolution
+	lambda = getWavelength(type)
+	Variable lambdaWidth = getWavelength_spread(type)
+	
 	Variable DDet, apOff
 	//typical value for NG3 and NG7 - distance between sample aperture and sample in (cm)
 	apOff=5.0
 	// hard wire value for Ordela detectors
-	DDet = 0.5		// resolution in cm
+	DDet = getDet_x_pixel_size(type)/10			// header value (X) is in mm, want cm here
+
 	//	String detStr=textRead[9]
 	//	DDet = DetectorPixelResolution(fileStr,detStr)		//needs detector type and beamline
 
@@ -2184,13 +2200,18 @@ end
 
 //parses the control for A1 diam
 // updates the wave
+// diamter repoted in mm
+//
+// return value is in cm
 Function sourceApertureDiam()
 	ControlInfo/W=SASCALC popup0
 	Variable diam
 	sscanf S_Value, "%g cm", diam
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	rw[23] = diam*10			//sample aperture diameter in mm
-	return(diam)
+
+	diam *= 10			//source aperture diameter in mm
+	putSourceAp_size("SAS",num2str(diam) + " mm")
+	
+	return(diam/10)
 end
 
 // change the sample aperture to a non-standard value
@@ -2200,8 +2221,8 @@ Function SampleApOtherSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableCo
 	String varStr
 	String varName
 		
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	rw[24] = varNum			//sample aperture diameter in mm
+	putSampleAp_size("SAS",num2str(varNum) + " mm")		//sample aperture diameter in mm
+		
 	ReCalculateInten(1)
 	return(0)
 End
@@ -2227,9 +2248,9 @@ Function sampleApertureDiam()
 		//1st item is 1/16", popup steps by 1/16"
 		a2 = 2.54/16.0 * (V_Value)			//convert to cm		
 	endif
-//	WAVE rw=root:Packages:NIST:SAS:realsRead
-//	rw[24] = a2*10			//sample aperture diameter in mm
 	
+	putSampleAp_size("SAS",num2str(a2*10) + " mm")		//sample aperture diameter in mm
+
 	return(a2)
 end
 
@@ -2280,9 +2301,8 @@ Function sourceToSampleDist()
 			DoAlert 0,"No matching instrument! sourceToSampleDist"
 	endswitch
 
-	
-	WAVE rw=root:Packages:NIST:SAS:realsRead
-	rw[25] = SSD/100		// in meters
+	putSourceAp_distance("SAS",SSD)
+
 	return(SSD)
 End
 
@@ -2338,12 +2358,18 @@ End
 // does not account for the fall due to gravity in y-direction
 Function detectorOffset()
 	
-	WAVE rw=root:Packages:NIST:SAS:RealsRead
 	NVAR val = root:Packages:NIST:SAS:gOffset
-	rw[19] = val		// already in cm
+	
+	Variable xCtr,yCtr,numX
+	
+	putDet_LateralOffset("SAS",val)		// already in cm
 	//move the beamcenter, make it an integer value for the MC simulation
-	rw[16] = 64  + round(2*rw[19]) //+ 0.5		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
-	rw[17] = 64 	//+ 0.5 //typical value
+	numX = getDet_pixel_num_x("SAS")
+	xCtr = numX/2  + round(2*val) //+ 0.5		//approximate beam X is 64 w/no offset, 114 w/25 cm offset 
+	yCtr = 64 	//+ 0.5 //typical value
+
+	putDet_beam_center_x_pix("SAS",xCtr)
+	putDet_beam_center_y_pix("SAS",yCtr)
 
 	return(val)
 end
@@ -2382,11 +2408,13 @@ Function sampleToDetectorDist()
 
 	NVAR detDist = root:Packages:NIST:SAS:gDetDist
 	NVAR S12 = root:Packages:NIST:SAS:S12
-//	WAVE rw=root:Packages:NIST:SAS:RealsRead	
+
 	Variable SDD	
 	
 	SDD = detDist + s12*(2-tableposition())
-//	rw[18] = SDD/100		// convert to meters for header
+	
+	putDet_distance("SAS",SDD)
+
 	return(SDD)
 End
 
@@ -2486,8 +2514,7 @@ Function beamstopDiam()
 	endif
 
  	//update the wave
- 	WAVE rw=root:Packages:NIST:SAS:realsRead
- 	rw[21] = bs*25.4		//store the BS diameter in mm
+	putBeamStop_size("SAS",bs*2.54)		//store the BS diameter in [cm]
  	
    return (bs*2.54)		//return diameter in cm, not inches for txt
 End
@@ -2689,3 +2716,4 @@ Function attenuatorNumber()
     SetDatafolder root:
     return (numAtten)
 End
+

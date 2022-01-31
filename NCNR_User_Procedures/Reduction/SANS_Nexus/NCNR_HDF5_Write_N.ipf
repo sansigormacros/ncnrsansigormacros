@@ -1636,7 +1636,7 @@ Function writeBeamStop_x_pos(fname,val)
 	return(err)
 End
 
-/
+
 // DONT DELETE THIS - it is new and needed 
 //
 Function putBeamStop_x_pos(fname,val)
@@ -1759,6 +1759,26 @@ Function writeBeamStop_size(fname,val)
 //	endif
 	return(err)
 End
+
+// size in [cm]
+Function putBeamStop_size(fname,val)
+	String fname
+	Variable val
+
+
+	String path = "root:Packages:"+fname+":"
+	path += "entry:instrument:beam_stop:shape:size"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 
 Function writeBeamStop_width(fname,val)
 	String fname
@@ -2146,6 +2166,26 @@ Function writeDet_distance(fname,val)
 	return(err)
 End
 
+// fname is a local WORK folder
+Function putDet_distance(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_y
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:distance"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 Function writeDet_IntegratedCount(fname,val)
 	String fname
 	Variable val
@@ -2215,6 +2255,25 @@ Function writeDet_LateralOffset(fname,val)
 //	endif
 	return(err)
 End
+
+// fname is a local WORK folder
+Function putDet_LateralOffset(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:lateral_offset"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 
 // integer value
 Function writeDet_numberOfTubes(fname,val)
@@ -2953,6 +3012,27 @@ Function writeWavelength(fname,val)
 	return(err)
 end
 
+
+// fname is a local WORK folder
+Function putWavelength(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_y
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:monochromator:wavelength"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 Function writeWavelength_spread(fname,val)
 	String fname
 	Variable val
@@ -3462,6 +3542,23 @@ Function writeSourceAp_distance(fname,val)
 	return(err)
 End
 
+// fname is a local WORK folder
+Function putSourceAp_distance(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:source_aperture:distance"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 //	shape (data folder)
 Function writeSourceAp_height(fname,val)
@@ -3537,6 +3634,23 @@ Function writeSourceAp_size(fname,str)
 //	endif
 		
 	return(err)
+End
+
+// fname is a local WORK folder
+Function putSourceAp_size(fname,str)
+	String fname,str
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:source_aperture:shape:size"
+	
+	Wave/Z/T w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = str
+		return(0)
+	endif
+
 End
 
 Function writeSourceAp_width(fname,val)

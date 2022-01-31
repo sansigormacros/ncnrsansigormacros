@@ -110,7 +110,7 @@ End
 //#include "MC_Script_Panels"
 
 // JRK JUN 2019 -- import NXcanSAS read and write utilities
-#include "NIST_NXcanSAS_v709_N"
+#include "NIST_NXcanSAS_v709"		// JAN 2022 "_N" tagged file is not needed
 #include "Write_SANS_NXcanSAS_N"
 
 // SRK JUL 2021 -- additions for Nexus handling

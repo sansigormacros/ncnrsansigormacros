@@ -1510,6 +1510,8 @@ Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 	String fullpath="",destStr=""
 	Variable refnum
 	
+	// this function needs to be replaced with the Nexus equivalent
+	// 
 	fullpath = Write_RawData_File("SAS","",0)
 	
 	// write out the results into a text file

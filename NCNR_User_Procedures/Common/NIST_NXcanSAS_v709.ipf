@@ -6,6 +6,24 @@
 #include <HDF5 Browser>
 #endif
 
+
+// Nexus - VAX compatiblity
+// Jan 2022
+//
+//
+// this routine still has calls to the RTI structure and has not been updated
+// to use the Nexus file structure - for now I will not update it, since I do not know if
+// it is necessary.
+//
+// The RTI calls are only to artificially fill them after loading previously reduced data
+// -- which are not used with reduced data
+//
+// so these calls can stay as-is, with no issues with Nexus - VAX compatibility
+//
+
+
+
+
 //************************
 // Vers 1.15 20171003
 //

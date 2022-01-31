@@ -1016,7 +1016,7 @@ Function ReadRTAndData(fname)
 	
 	Make/O/N=16384 $"root:Packages:NIST:RealTime:data"
 	WAVE data=$"root:Packages:NIST:RealTime:data"
-	SkipAndDecompressVAX(w,data)
+//	SkipAndDecompressVAX(w,data)
 	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
 	
 	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"

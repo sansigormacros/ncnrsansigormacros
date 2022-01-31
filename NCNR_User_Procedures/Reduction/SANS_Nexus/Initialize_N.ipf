@@ -29,7 +29,7 @@ Strconstant ksBaseDFPath = "root:Packages:NIST:RawSANS:"
 // the list of WORK Folders
 // RawSANS does not behave as a WORK folder, but it is local. so add it in explicitly to the list if needed
 // SASCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
-Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;"
+Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;SAS;"
 
 
 

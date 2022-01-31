@@ -7,7 +7,25 @@
 #endif
 
 
+//
+// DO NOT USE THIS FILE
+//
+// use the "regular" ipf file without the "_N" tag.
+//
+// the _N tagged file is not needed
+//
 
+//
+// AUG 2021
+//
+// this routine still has calls to the RTI structure and has not been updated
+// to use the Nexus file structure - for now I will not update it, since I do not know if
+// it is necessary.
+//
+// The RTI calls are only to artificially fill them after loading previously reduced data
+// -- which are not used with reduced data
+//
+// so these calls can stay as-is, with no issues with Nexus - VAX compatibility
 
 
 
@@ -457,8 +475,13 @@ end
 // AUG 2021
 //
 // this routine still has calls to the RTI structure and has not been updated
-// to use the NExus file structure - for now I will not update it, since I do not know if
+// to use the Nexus file structure - for now I will not update it, since I do not know if
 // it is necessary.
+//
+// The RTI calls are only to artificially fill them after loading previously reduced data
+// -- which are not used with reduced data
+//
+// so these calls can stay as-is, with no issues with Nexus - VAX compatibility
 //
 //
 Function LoadMetaData(fileID,loadDir,parentBase)
