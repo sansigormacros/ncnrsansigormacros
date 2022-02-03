@@ -2134,10 +2134,10 @@ Function/S getFileNameFromFolder(folder)
 End
 
 // not in the SANS definition
-Function/S getFileName(fname)
-	String fname
+Function/S getFileName(fullPath)
+	String fullPath
 	
-
+	String fname = N_GetFileNameFromPathNoSemi(fullPath)
 	return(fname)	
 End
 

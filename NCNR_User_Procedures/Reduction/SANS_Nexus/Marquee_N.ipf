@@ -87,7 +87,7 @@ End
 //4 integers and one real value are written
 //
 //re-written to work with Transmission panel as well as PatchPanel
-//which now bothe work from the same folder (:Patch)
+//which now both work from the same folder (:Patch)
 //
 Function SetXYBoxCoords() :  GraphMarquee
 

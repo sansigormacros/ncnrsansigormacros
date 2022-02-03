@@ -925,9 +925,9 @@ Function N_isTransFile(fname)
 	Variable refnum,totalBytes
 	String testStr=""
 	
-	testStr = getReduction_intent(fname)
+	testStr = getReduction_purpose(fname)
 
-	if(cmpstr(testStr,"TRANSMISSION") == 0)		//
+	if(cmpstr(testStr,"TRANSMISSION",1) == 1)		// case-insensitive comparison
 		//yes, a transmission file
 		Return(1)
 	else

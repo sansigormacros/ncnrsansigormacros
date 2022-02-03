@@ -3,6 +3,34 @@
 
 
 
+// NEW for SANS, from VSANS
+// clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
+// will not be read in, the "stale" local copy will be read in for any subsequent operations.
+//
+// This operation is typically necessary after data files have been patched, or
+// transmissions have been calculated, etc.
+//
+// this will, by default, display a progress bar
+//
+//
+Function CleanoutRawSANS()
+
+	Variable numToClean,t1
+	
+	t1 = ticks
+	numToClean = CleanupData_w_Progress(0,1)
+
+	Print "Cleaned # files = ",numToClean
+	Print "Cleanup time (s) = ",(ticks - t1)/60.15
+	Variable cleanupTime = (ticks - t1)/60.15
+
+
+	return(0)
+End
+
+
+
+
 //
 // examples straight from Wavemetrics help file topic "Progress Windows"
 // Try simpletest(0,0) and simpletest(1,0), simpletest(0,1) and simpletest(1,1)

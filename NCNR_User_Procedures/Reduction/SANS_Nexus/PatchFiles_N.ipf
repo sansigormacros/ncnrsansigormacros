@@ -1479,8 +1479,6 @@ Function WriteDTButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			ControlInfo popup_0
-			String detStr = S_Value
 			ControlInfo setvar0
 			Variable lo=V_Value
 			ControlInfo setvar1

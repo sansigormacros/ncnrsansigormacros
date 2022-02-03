@@ -170,12 +170,16 @@ Function BuildCatVeryShortTable()
 // will not be read in, the "bad" local copy will be read in for any subsequent operations.
 //
 // This will display a progress bar
-	Variable numToClean
-	numToClean = CleanupData_w_Progress(0,1)
+	CleanoutRawSANS()
 
-	Print "Cleaned # files = ",numToClean
-	Print "Cleanup time (s) = ",(ticks - t1)/60.15
-	Variable cleanupTime = (ticks - t1)/60.15
+//	Variable numToClean
+//	numToClean = CleanupData_w_Progress(0,1)
+//
+//	Print "Cleaned # files = ",numToClean
+//	Print "Cleanup time (s) = ",(ticks - t1)/60.15
+//	Variable cleanupTime = (ticks - t1)/60.15
+
+// NOW - re-load all of the data in the folder to RawSANS
 
 	//get a list of all files in the folder, some will be junk version numbers that don't exist	
 	String list,partialName,tempName,temp=""
@@ -207,7 +211,8 @@ Function BuildCatVeryShortTable()
 	Button bStop,win=ProgressPanel,pos={sc*375,32*sc},size={sc*50,20*sc},title="Stop"
 	DoUpdate /W=ProgressPanel /E=1	// mark this as our progress window
 	
-	//////////
+	
+	//////////Now, build a fresh listing of files
 
 
 	//loop through all of the files in the list, reading CAT/SHORT information if the file is RAW SANS

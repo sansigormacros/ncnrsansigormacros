@@ -291,7 +291,7 @@ Function Raw_to_work_for_Ordela(newType)
 	String destPath
 	
 // 08/01 detector constants are now returned from a function, based on the detector type and beamline
-//	dt_ornl = 3.4e-6		//deadtime of Ordella detectors	as of 30-AUG-99
+//	dt_ornl = 3.4e-6		//deadtime of Ordela detectors	as of 30-AUG-99
 //	dt_ill=3.0e-6			//Cerca detector deadtime constant as of 30-AUG-99
 	defmon=1e8			//default monitor counts
 	
@@ -346,7 +346,7 @@ Function Raw_to_work_for_Ordela(newType)
 		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
 	endif
 	
-	DetCorr(data,data_err,newTYpe,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
+	DetCorr(data,data_err,newType,doEfficiency,doTrans)		//the parameters are waves, and will be changed by the function
 
 
 // TODO -- the dead time correction will be different for the tube detectors,
@@ -355,7 +355,7 @@ Function Raw_to_work_for_Ordela(newType)
 
 	//deadtime corrections to raw data
 //	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
-	deadTime = getDetectorDeadtime_Value("RAW")			// TODO -- returns a HARD WIRED value of 1e-6!!!	
+	deadTime = getDetectorDeadtime_Value(newType)			// 	
 	itim = getCount_time(newType)
 	cntrate = sum(data,-inf,inf)/itim		//use sum of detector counts rather than scaler value
 	dscale = 1/(1-deadTime*cntrate)
@@ -1757,14 +1757,16 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		
 		// I can delete these if they came along with RAW
 		//   DAS_logs
-		//   top-level copies of data (duplicate links, these should not be present in a proper NICE file)
+		//   top-level copies of data (duplicate links, these should not be present in a proper Nexus file)
+		// and I have no need of them during reduction
 		KillDataFolder/Z $(toDF+":entry:DAS_logs")
-		KillDataFolder/Z $(toDF+":entry:data")
+//		KillDataFolder/Z $(toDF+":entry:data")
 
 
 		return(0)
 	else
 	
+		
 		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
 
 		if(DataFolderExists("root:Packages:NIST:"+toStr) == 0)		//if the data folder (RAW, SAM, etc.) was just killed?
@@ -1774,9 +1776,9 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 		// need to do this the hard way, duplicate/O recursively
 		// see V_CopyToWorkFolder()
 
-		// gFileList is above "entry" which is my additions
-		SVAR fileList_dest = $("root:Packages:NIST:"+toStr+":gFileList")
-		SVAR fileList_tmp = $("root:Packages:NIST:"+fromStr+":gFileList")
+		// FileList is above "entry" which is my additions
+		SVAR fileList_dest = $("root:Packages:NIST:"+toStr+":FileList")
+		SVAR fileList_tmp = $("root:Packages:NIST:"+fromStr+":FileList")
 		fileList_dest = fileList_tmp
 	
 		// everything on the top level

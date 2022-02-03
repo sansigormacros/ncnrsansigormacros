@@ -2,8 +2,19 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+//
+// updated Feb 2022
+//
+// appears to function correctly
+//
+// - alphanumeric suffix to keep track of file associations has been replaced with the file name
+// - stale files are cleaned out after operations that do any calculations or set XY box
+//   so that the fresh information will be read from disk
+//
+
+//
 //*************************
-// Vers. 1.2 092101
+// Vers. 1.2 092101 (DEPRICATED VAX VERSION)
 //
 // - procedures for (easier) caluclation of transmissions along with
 //  simultaneous patching of the calculated transmission in designated 
@@ -30,9 +41,9 @@ Proc CalcTrans()
 	Endif
 End
 
-// The BuildFileTables routine will build two tables:  one containing the
+// The BuildFileTables routine builds two tables:  one containing the
 // data from the headers of transmission files in the folder and one 
-// containing the header data from all other SANS data files.  They will
+// containing the header data from all other SANS data files.  They 
 // each have the first column empty for, in the case of transmission files,
 // the empty beam file and, in the case of scattering files, the scattering
 // run file name.
@@ -215,7 +226,7 @@ Function SortTransByDate()
 	
 End
 
-// sorts files alphabetically byt the sample label
+// sorts files alphabetically by the sample label
 // - consistent and descriptive sample labels really pay off here
 //
 Function SortTransByLabel()
@@ -250,7 +261,7 @@ End
 //fname - is the full path:name of the datafile (used by Open)
 //sname - is the name only, used as the filename field
 //
-// takes care of all necessary open/close of file
+// takes care of all necessary open/close of files
 //
 Function GetTransHeaderInfoToWave(fname,sname)
 	String fname,sname
@@ -383,7 +394,7 @@ Function GetFilenamesFromSuffices()
 	while(ii<num_s_files)
 End
 
-// gets the selected transmission filename, and puts its name as the 
+// gets the selected transmission filename, and sets its name as the 
 //empty beam reference file
 // lists the xy box coordinates as read from the file header (zeros if not yet assigned)
 //
@@ -429,7 +440,6 @@ Function PickEMPTransButton(ctrlName) : ButtonControl
 			if( (boxCounts == 0) && (x1!=0) && (x2!=0) && (y1!=0) && (y2!=0) )
 				DoAlert 0,"Box Counts were not recorded. Please re-select the box using SetXYBox"
 			endif
-			
 			
 		Else
 			DoWindow/F TransFileTable
@@ -495,21 +505,16 @@ Proc CreateTransGlobals()
 
 End
 
-
-//function that writes out (to the header of a raw binary SANS file)
-//characters representing the empty beam file and the sample transmission file
-//the 4-character file suffix is written, rather than the run numbers
-//from this, the trans files can be located, and the 
-//sample file contains all the information needed to calculate its transmission
 //
-//uses first 4 bytes of params.reserve (character field) starting at byte 404
-//(previous version (AM) used run.reserve field @ byte 91, which was not empty, and not at the start of the field!)
+//function that writes to the header of a raw SANS file
+//
+// writes file name of the empty beam file and the sample transmission file
+// so that the trans files can be located, and then the sample file
+// header contains all the information needed to calculate its transmission
 //
 Function AssignSelTransFilesToData(startRow,endRow)
 	Variable startRow,endRow
 
-//	GetSelection table,ScatterFileTable,1
-	
 	Wave/T T_EMP_Filenames = $"root:myGlobals:TransHeaderInfo:T_EMP_Filenames"
 	Wave/T T_GSuffices = $"root:myGlobals:TransHeaderInfo:T_Suffices"
 	Wave/T T_GFilenames = $"root:myGlobals:TransHeaderInfo:T_Filenames"
@@ -528,7 +533,7 @@ Function AssignSelTransFilesToData(startRow,endRow)
 	String pathname = S_path
 	String filename
 
-	// Write suffix of empty beam file into transmission files
+	// Write suffix (now the name) of empty beam file into transmission files
 	ii= 0
 	do
 		if (cmpstr(T_EMP_Filenames[ii],"")!=0)
@@ -545,7 +550,7 @@ Function AssignSelTransFilesToData(startRow,endRow)
 	ii+=1
 	while(ii<num_t_files)
  
-	// Write suffix of transmission files into scattering files
+	// Write suffix (now the name) of transmission files into scattering files
 	ii= startRow
 	do
 		if (cmpstr(S_TRANS_Filenames[ii],"")!=0)
@@ -564,13 +569,14 @@ Function AssignSelTransFilesToData(startRow,endRow)
 	return(0)
 End
 
-// Allows to calculate transmissions without need of a scattering file. Used with the Calculate Total Trans button.
 
+// Allows calculation of transmissions without need of a scattering file.
+// Used with the Calculate Total Trans button.
+//
 Function AssignTotalTransFilesToData(startRow,endRow)
 	Variable startRow,endRow
 
-//	GetSelection table,ScatterFileTable,1
-	
+
 	Wave/T T_EMP_Filenames = $"root:myGlobals:TransHeaderInfo:T_EMP_Filenames"
 	Wave/T T_GSuffices = $"root:myGlobals:TransHeaderInfo:T_Suffices"
 	Wave/T T_GFilenames = $"root:myGlobals:TransHeaderInfo:T_Filenames"
@@ -584,7 +590,7 @@ Function AssignTotalTransFilesToData(startRow,endRow)
 	String pathname = S_path
 	String filename
 
-	// Write suffix of empty beam file into transmission files
+	// Write suffix (now the file name) of empty beam file into transmission files
 	ii= 0
 	do
 		if (cmpstr(T_EMP_Filenames[ii],"")!=0)
@@ -612,6 +618,7 @@ End
 //
 // target = 1 = ScatterFileTable
 // target = 2 = TransFileTable
+//
 Function fClearSelectedAssignments(startRow,endRow,target)
 	Variable startRow,endRow,target
 	
@@ -699,18 +706,19 @@ Function fClearSelectedAssignments(startRow,endRow,target)
 	return(0)
 End
 
-//given a selection of scattering files, calculates the transmission
-//and writes the new transmission to the file header
+//given a selection of scattering files, calculate the transmission
+//and write the new transmission to the file header
 //
-//given the full path;name;vers  (= filenmame), of a raw binary SANS file,
+//given the full path+name (= filenmame), of a raw SANS file,
 //the transmission of the sample is calculated (if possible) from information
-//in the file header. empty beam and sample transmision run numbers are extracted
-//and the files are located from the run number (if possible)
+//in the file header. empty beam and sample transmision file names are read
 //from the header of the empty beam file, the XY box coordinates and "empty" 
 //counts are determined
+//
 //once all information is located, the transmission is calculated and the 
 //transmission field of the sample file is automatically "Patched"
 // - updates the global variable that is displayed in the panel
+//
 //can be run in batch mode, sequentially passing each item from a list of filenames
 //this is the single step of the batch mode
 // 
@@ -719,13 +727,15 @@ End
 //(for a blocked beam, for example), then that is displayed as well, and the 
 //raw data is not modified
 //
-// now takes the attenuation of the sample trans and empty beam trans into account, (normally this == 1)
-// and rescales the transmission as appropriate
+//
+// IF the open beam transmission and sample transmission were collected with different
+// attenuation, this is OK. Functions now take the attenuation of the sample trans
+// and empty beam trans file into account, (normally this == 1)
+// and rescales the counts as appropriate so that the calculated transmission is correct
 // 3/31/04  SRK
 //
 Function CalcSelTransFromHeader(startRow,endRow)
 	Variable startRow,endRow
-//	GetSelection table,ScatterFileTable,1
 
 	String filename
 	Wave/T T_EMP_Filenames = $"root:myGlobals:TransHeaderInfo:T_EMP_Filenames"
@@ -761,14 +771,20 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//////////
 						// check the empty beam file for previously selected coordinates
 						//if they exist, set the xy string , save the normalized counts somewhere
-						//the value was written to an unused r*4 header analysis.factor (@b494)
+						
+						//read in empty beam file then add to EMP
+						//I previously did not need to load the Empty beam file to EMP since the 
+						// attenuator tables were stored in the package code, but with Nexus, the
+						// tables are part of the data file, so the data must be loaded
+						LoadRawSANSData(emptyFile,"RAW")
+						//adds to EMP
+						err = Raw_to_work_for_Ordela("EMP")
+						
+						
 						GetXYBoxFromFile(emptyFile,x1,x2,y1,y2)
 						
-						//read the real count value
-						emptyCts = getBoxCounts(emptyFile)
-						// get the error in count value
-						empty_ct_err = getBoxCountsError(emptyFile)
-						
+						emptyCts =  SumCountsInBox(x1,x2,y1,y2,empty_ct_err,"EMP")	
+
 						// read the attenuator number of the empty beam file
 						attenEmp = getAtten_number(emptyFile)
 						//
@@ -780,20 +796,16 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						Endif
 		
 						//read in trans file then add to SAM
-						ReadHeaderAndData(transFile,"RAW")
+						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
 						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
-						// get the attenuator, lambda, and sample string (to get the instrument)
 					
-
-						//lambda = getWavelength("SAM")
-						//attenSam = getAtten_number("SAM")
 						samFileStr = "SAM"
 						empFileStr = "EMP"
 						
-						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
+						//calculate the ratio of attenuation factors
 						samAttenFactor = getAttenuator_transmission(samFileStr)
 						sam_atten_err = getAttenuator_trans_err(samFileStr)
 						empAttenFactor = getAttenuator_transmission(empFileStr)
@@ -851,6 +863,7 @@ End
 // Uses only the information on the transmissionFiles screen to calculate 
 // a "box" Transmission for comparison with the Whole Transmission
 // updated 5/11/2006 by Bryan Greenwald
+//
 Function CalcTotalTrans(startRow,endRow)
 	Variable startRow,endRow
 //	GetSelection table,ScatterFileTable,1
@@ -891,13 +904,19 @@ Function CalcTotalTrans(startRow,endRow)
 						//////////
 						// check the empty beam file for previously selected coordinates
 						//if they exist, set the xy string , save the normalized counts somewhere
-						//the value was written to an unused r*4 header analysis.factor (@b494)
+
+						//read in empty beam file then add to EMP
+						//I previously did not need to load the Empty beam file to EMP since the 
+						// attenuator tables were stored in the package code, but with Nexus, the
+						// tables are part of the data file, so the data must be loaded
+						LoadRawSANSData(emptyFile,"RAW")
+						//adds to EMP
+						err = Raw_to_work_for_Ordela("EMP")
+						
 						getXYBoxFromFile(emptyFile,x1,x2,y1,y2)
 						
-						//read the real count value
-						emptyCts = getBoxCounts(emptyFile)
-						// get the count error
-						empty_ct_err = getBoxCountsError(emptyFile)
+						emptyCts =  SumCountsInBox(x1,x2,y1,y2,empty_ct_err,"EMP")	
+
 						
 						// read the attenuator number of the empty beam file
 						attenEmp = getAtten_number(emptyFile)
@@ -911,20 +930,16 @@ Function CalcTotalTrans(startRow,endRow)
 						Endif
 		
 						//read in trans file then add to SAM
-						ReadHeaderAndData(transFile,"RAW")
+						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
 						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
-						// get the attenuator, lambda, and sample string (to get the instrument)
-						
 
-//						lambda = getWavelength("SAM")
-//						attenSam = getAtten_number("SAM")
 						samFileStr = "SAM"
 						empFileStr = "EMP"
 												
-						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
+						//calculate the ratio of attenuation factors
 						samAttenFactor = getAttenuator_transmission(samFileStr)
 						sam_atten_err = getAttenuator_trans_err(samFileStr)
 						empAttenFactor = getAttenuator_transmission(empFileStr)
@@ -982,12 +997,11 @@ End
 // Used to compute the transmission for the TransmissionFiles table using
 // the entire detector. For comparison with the "box" trans
 // updated: 5/11/2006 by Bryan Greenwald
+//
 Function CalcWholeTrans(startRow,endRow)
 	Variable startRow,endRow
 //	GetSelection table,ScatterFileTable,1
 
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
 	SVAR type = root:myGlobals:gDataDisplayType
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
@@ -1027,14 +1041,20 @@ Function CalcWholeTrans(startRow,endRow)
 						//////////
 						// check the empty beam file for previously selected coordinates
 						//if they exist, set the xy string , save the normalized counts somewhere
-						//the value was written to an unused r*4 header analysis.factor (@b494)
+						
+						//read in empty beam file then add to EMP
+						//I previously did not need to load the Empty beam file to EMP since the 
+						// attenuator tables were stored in the package code, but with Nexus, the
+						// tables are part of the data file, so the data must be loaded
+						LoadRawSANSData(emptyFile,"RAW")
+						//adds to EMP
+						err = Raw_to_work_for_Ordela("EMP")
 						
 						getXYBoxFromFile(emptyFile,x1,x2,y1,y2)
-						//read the real count value
-						emptyCts = getBoxCounts(emptyFile)
-						// get the box count error
-						empty_ct_err = getBoxCountsError(emptyFile)
 						
+						emptyCts =  SumCountsInBox(x1,x2,y1,y2,empty_ct_err,"EMP")	
+						
+					
 						// read the attenuator number of the empty beam file
 						attenEmp = getAtten_number(emptyFile)
 						
@@ -1047,20 +1067,16 @@ Function CalcWholeTrans(startRow,endRow)
 						Endif
 		
 						//read in trans file then add to SAM
-						ReadHeaderAndData(transFile,"RAW")
+						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
 						err = Raw_to_work_for_Ordela("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
-						// get the attenuator, lambda, and sample string (to get the instrument)
-					
-
-//						lambda = getWavelength("SAM")
-//						attenSam = getAtten_number("SAM")
+				
 						samFileStr = "SAM"
 						empFileStr = "EMP"
 											
-						//calculate the ratio of attenuation factors - assumes that same instrument used for each, AND same lambda
+						//calculate the ratio of attenuation factors 
 						sam_atten = getAttenuator_transmission(samFileStr)
 						sam_atten_err = getAttenuator_trans_err(samFileStr)
 						emp_atten = getAttenuator_transmission(empFileStr)
@@ -1182,10 +1198,11 @@ End
 //
 Proc Trn_RefreshProc(ctrlName) : ButtonControl
 	String ctrlName
+	CleanoutRawSANS()
 	BuildFileTables()
 End
 
-//shows a noteboox of help text describing how to calculate transmissions
+//shows a notebook of help text describing how to calculate transmissions
 // - better that the user read the igor or pdf file, but it's a victory to get
 //users to read anything at all
 //
@@ -1266,7 +1283,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 	filename = S_path + tempName
 	
 	//read the file in - check for previous coordinates
-	ReadHeaderAndData(filename,"RAW")
+	LoadRawSANSData(filename,"RAW")
 	//data is displayed here (go through the normal display steps, so all is created properly
 	String/G root:myGlobals:gDataDisplayType="RAW"
 	fRawWindowHook()
@@ -1329,6 +1346,9 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 	Endif
 	
 	UpdateBoxCoordinates()
+	
+	CleanoutRawSANS()
+	
 	Return (0)
 End
 
@@ -1369,10 +1389,13 @@ Function Trn_CalcAllFilesButton(ctrlName) : ButtonControl
 	AssignSelTransFilesToData(0,num_s_files-1)		//do all the files (points 0 to n-1, inclusive)
 	CalcSelTransFromHeader(0,num_s_files-1)	
 	
+	CleanoutRawSANS()
+	return(0)
 End
 
+//
 //for selected scattering files in the scattering table,
-// the "Annn" association of trans file is written to the data file,
+// the "suffix" association of trans file is written to the data file,
 // the the transmission is actually calculated
 //
 Function Trn_CalcSelectedFilesButton(ctrlName) : ButtonControl
@@ -1392,10 +1415,13 @@ Function Trn_CalcSelectedFilesButton(ctrlName) : ButtonControl
    Else
 		DoAlert 0,"No file selected from Scattering Files table or no Scattering Files table available"
    Endif
+   
+   CleanoutRawSANS()
+   return(0)
 End
 
 //
-// I am not sure what the difference is inthe function of CalcTotalTrans and CalcWholeTrans ? 
+// I am not sure what the difference is in the function of CalcTotalTrans and CalcWholeTrans ? 
 // do they really do anything different?
 // is it a useful calculation at all?
 // 
@@ -1421,6 +1447,9 @@ End
 
 
 //simple button procedure to close the trans panel
+//
+// cleans out rawSANS folders to force a refresh of data
+//
 // - automatically kills the two tables as well
 //
 Function Trn_PanelDoneButtonProc(ctrlName) : ButtonControl
@@ -1433,15 +1462,19 @@ Function Trn_PanelDoneButtonProc(ctrlName) : ButtonControl
 	DoWindow/K Trans_Panel
 	DoWindow/K ScatterFileTable
 	DoWindow/K TransFileTable
+	
+	CleanoutRawSANS()
+	return(0)
 End
 
 
 //function to update the box coordinates of the file selected as the 
-//empty beam file - takes the file that is currently popped from the list
-//reads the 4 "analysis" integers that hold the box coordinates
-//resets the globals string that is displayed with the new values
-//should be called whenever the "empty" popup is popped, to ensure
-//that current header information is displayed
+//empty beam file
+// - takes the file that is currently popped from the list
+//   and reads the box coordinates
+// -resets the globals string that is displayed with the new values
+// - should be called whenever the "empty" popup is popped, to ensure
+//   that current header information is displayed
 //
 Function UpdateBoxCoordinates()
 
@@ -1642,46 +1675,6 @@ Proc Convert2Trans()
 	Button UndoButton,help={"Converts the chosen file to appear as a scattering file"}
 EndMacro
 
-//
-// The proper list of transmission files MUST be present in the Patch Popup list
-// -- using Grep for "trans" is a possible choice
-//
-// testing only TODO_10m -- a quick fix for the missing BS xpos to identify trans
-Function BatchConvert_10mTrans(xPos)
-	Variable xPos			//pass -10 to make it trans, pass 0 to make it scattering again
-	
-	//this will change (checked) values in ALL of the headers in the popup list
-	SVAR list = root:myGlobals:Patch:gPatchList
-	String partialName="", tempName = ""
-	Variable numitems,ii,ok
-	numitems = ItemsInList(list,";")
-	
-	//loop through all of the files in the list, applying changes as dictated by w and wt waves
-	ii=0
-	do
-		//get current item in the list
-		partialName = StringFromList(ii, list, ";")
-		   
-		//get a valid file based on this partialName and catPathName
-		tempName = N_FindValidFilename(partialName)
-	
-		//prepend path to tempName for read routine 
-		PathInfo catPathName
-		tempName = S_path + tempName
-	
-		//make sure the file is really a RAW data file
-		ok = N_CheckIfRawData(tempName)
-		if (!ok)
-		   Print "this file is not recognized as a RAW SANS data file = ",tempName
-		else
-		   //go write the changes to the file
-		   ChangeBSXPos(tempName,xPos)
-		Endif
-		
-		ii+=1
-	while(ii<numitems)
-	
-End
 
 /////
 //  A quick way to fill all the T_EMP_Filenames with the selected empty beam file
@@ -2286,3 +2279,4 @@ Function ClearSelectedAssignments(ctrlName)
 //	endif
 	return(0)
 End
+
