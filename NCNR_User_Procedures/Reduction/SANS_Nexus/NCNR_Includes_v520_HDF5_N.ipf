@@ -37,12 +37,15 @@ End
 #include "NSORT_N"					version>=5.0
 #include "PatchFiles_N"			version>=5.0
 //#include "PlotUtils"			version>=5.0
+
+// these common files are necessary to load/plot 1D reduced data
 //AJJ October 2008 - switch to shared file loader
 #include "PlotUtilsMacro_v40"
 #include "NIST_XML_v40"
 //#include "cansasXML"
 #include "USANS_SlitSmearing_v40"
 #include "GaussUtils_v40" // for isSANSResolution - could put this function elsewhere
+//
 //
 #include "ProDiv_N"				version>=5.0
 #include "ProtocolAsPanel_N"		version>=5.0
@@ -54,10 +57,8 @@ End
 #include "Transmission_N"			version>=5.0
 //#include "VAXFileUtils"			version>=5.0		//branched 29MAR07
 #include "WorkFileUtils_N"		version>=5.0
+
 #include "WriteQIS_N"				version>=5.0 
-// removed RT button from main panel AUG2006
-// removed RT ipf file in 29MAR07 branch (do not delete, but do not include or maintain)
-//Add back Real Time for ICE
 #include "RealTimeUpdate_RT_N"		version>=5.0		
 #include "Subtract_1D_N"				version>=5.0 			//NEW 14MAY03
 
@@ -115,6 +116,11 @@ End
 
 // SRK JUL 2021 -- additions for Nexus handling
 #include "Utilities_General_N"
+
+// SRK FEB 2022 -- split out corrections to specific detector types
+#include "WorkFileUtils_Tubes_N"
+//#include "WorkFileUtils_Ordela_N"
+
 
 
 // a simple list of items to add to the Beta menu

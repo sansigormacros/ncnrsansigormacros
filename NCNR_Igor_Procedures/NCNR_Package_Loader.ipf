@@ -73,7 +73,8 @@ Menu "Macros"
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
 	"-"
-	"Load HDF5 SANS Testing",LoadHDF5SANS()
+	"Load HDF5 SANS Test 10m",LoadHDF5SANS()
+	"Load HDF5 SANS Test Ordela",LoadHDF5SANS_Ordela()
 
 
 end
@@ -82,7 +83,8 @@ end
 // returns 1==true if any conflicting package is about to be loaded
 //
 //
-// loaded is the currently loaded package that you are testing against everything else
+// loaded is the currently loaded package that you are testing against everything else, including
+// the currently loaded package type
 //
 Function ConflictingPackage(loaded)
 	String loaded
@@ -91,7 +93,7 @@ Function ConflictingPackage(loaded)
 	possible = "ILL_D22;NCNR;QUOKKA;NCNR_USANS;NCNR_Nexus;NCNR_VSANS;"
 	
 	Variable conflict=0,num,ii
-	possible = RemoveFromList(loaded,possible)
+//	possible = RemoveFromList(loaded,possible)
 	
 	num = ItemsInList(possible)
 	for(ii=0;ii<num;ii+=1)
@@ -116,6 +118,20 @@ Proc LoadHDF5SANS()
 	else
 
 		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_N\""
+		Execute/P "COMPILEPROCEDURES "
+		Execute/P ("Initialize()")
+	//			Execute/P ("PickPath()")
+		Execute/P ("DoIgorMenu \"Control\" \"Retrieve All Windows\"")
+	endif
+End
+
+Proc LoadHDF5SANS_Ordela()
+
+	if(ConflictingPackage("NCNR_Nexus"))
+		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
+	else
+
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_Ordela_N\""
 		Execute/P "COMPILEPROCEDURES "
 		Execute/P ("Initialize()")
 	//			Execute/P ("PickPath()")

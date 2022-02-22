@@ -40,13 +40,13 @@
 
 // passing null file string presents a dialog
 Proc LoadFakeDIVData()
-	LoadHDF5Data("","DIV")
+	LoadRawSANSData("","DIV")
 End
 
 // Moved to V_MaskUtils.ipf
 // passing null file string presents a dialog
 //Proc LoadFakeMASKData()
-//	V_LoadHDF5Data("","MSK")
+//	LoadRawSANSData("","MSK")
 //End
 
 

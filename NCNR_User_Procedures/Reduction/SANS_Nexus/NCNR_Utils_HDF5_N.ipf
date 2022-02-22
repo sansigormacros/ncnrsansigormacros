@@ -136,19 +136,11 @@ Function/S N_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	v_d = (DDet/2.3548)^2 + del_r^2/12.0			//the 2.3548 is a conversion from FWHM->Gauss, see http://mathworld.wolfram.com/GaussianFunction.html
 	vz = vz_1 / lambda
 	yg = 0.5*g*L2*(L1+L2)/vz^2
-	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+//	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	v_g = (2.0*yg^2*v_lambda)					// 2022 - factor of 2 added in 2007 was incorrect - see JGB memo
 
 	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
 	delta = 0.5*(BS - r0)^2/v_d
-
-//	// correction Jan 2022. inc_gamma now correctly written to match
-//	// eqn(13) in Barker ref. [per E. Gilbert and JGB]
-//	//
-//	if (r0 < BS) 
-//		inc_gamma = 1 - exp(gammln(1.5))*gammp(1.5,delta)
-//	else
-//		inc_gamma = 1 + exp(gammln(1.5))*gammp(1.5,delta)
-//	endif
 
 //
 	if (r0 < BS) 
@@ -293,8 +285,9 @@ Function/S N_get2DResolution(inQ,phi,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,B
 	v_d = (DDet/2.3548)^2 + del_r^2/12.0
 	vz = vz_1 / lambda
 	yg = 0.5*g*L2*(L1+L2)/vz^2
-	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
-
+//	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	v_g = (2.0*yg^2*v_lambda)					// 2022 - factor of 2 added in 2007 was incorrect - see JGB memo
+	
 	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
 	delta = 0.5*(BS - r0)^2/v_d
 

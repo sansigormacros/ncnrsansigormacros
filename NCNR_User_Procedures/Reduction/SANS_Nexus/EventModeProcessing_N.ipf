@@ -1,6 +1,16 @@
 #pragma rtGlobals=1		// Use modern global access method.
 #pragma IgorVersion=6.22
 
+
+// FEB 2022
+//
+// TODO
+// this  file will need to be duplciated, one version for the Ordela-style event files and 
+// one for the new tube-style event files. The Ordela style requires little change, the tube-style
+// loading can be ported from VSANS, assuming the format will be the same
+//
+
+
 // The only RTI references here are in the routine SaveSlicesAsVAX(), which will
 // not be used in the Nexus version - so there is no need to bother converting it.
 
