@@ -561,17 +561,20 @@ Function DetCorr(data,data_err,fname,doEfficiency,doTrans)
 					trans = 1
 				endif
 				
-				// pass in the transmission error, and the error in the correction is returned as the last parameter
-				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
-				data[ii][jj] /= lat_corr			//divide by the correction factor
-				//
-				//
-				//
-				// relative errors add in quadrature
-				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
-				tmp_err = sqrt(tmp_err)
-				
-				data_err[ii][jj] = tmp_err
+				// this function modifies the data + data_err
+				LargeAngleTransmissionCorr(data,data_err,fname,"root:Packages:NIST:"+fname)
+			
+//				// pass in the transmission error, and the error in the correction is returned as the last parameter
+//				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+//				data[ii][jj] /= lat_corr			//divide by the correction factor
+//				//
+//				//
+//				//
+//				// relative errors add in quadrature
+//				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
+//				tmp_err = sqrt(tmp_err)
+//				
+//				data_err[ii][jj] = tmp_err
 				
 //				solidAngle[ii][jj] = lat_err
 
@@ -650,61 +653,6 @@ Function DetEffCorr(lambda,dtdist,xd,yd)
 	return(ff)
 End
 
-// DIVIDE the intensity by this correction to get the right answer
-Function LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,err)
-	Variable trans,dtdist,xd,yd,trans_err,&err
-
-	//angle dependent transmission correction 
-	Variable uval,arg,cos_th,correction,theta
-	
-	////this section is the trans_correct() VAX routine
-//	if(trans<0.1)
-//		Print "***transmission is less than 0.1*** and is a significant correction"
-//	endif
-//	if(trans==0)
-//		Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
-//		trans = 1
-//	endif
-	
-	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )		//theta at the input pixel
-	
-	//optical thickness
-	uval = -ln(trans)		//use natural logarithm
-	cos_th = cos(theta)
-	arg = (1-cos_th)/cos_th
-	
-	// a Taylor series around uval*arg=0 only needs about 4 terms for very good accuracy
-	// 			correction= 1 - 0.5*uval*arg + (uval*arg)^2/6 - (uval*arg)^3/24 + (uval*arg)^4/120
-	// OR
-	if((uval<0.01) || (cos_th>0.99))	
-		//small arg, approx correction
-		correction= 1-0.5*uval*arg
-	else
-		//large arg, exact correction
-		correction = (1-exp(-uval*arg))/(uval*arg)
-	endif
-
-	Variable tmp
-	
-	if(trans == 1)
-		err = 0		//no correction, no error
-	else
-		//sigT, calculated from the Taylor expansion
-		tmp = (1/trans)*(arg/2-arg^2/3*uval+arg^3/8*uval^2-arg^4/30*uval^3)
-		tmp *= tmp
-		tmp *= trans_err^2
-		tmp = sqrt(tmp)		//sigT
-		
-		err = tmp
-	endif
-	
-//	Printf "trans error = %g\r",trans_err
-//	Printf "correction = %g +/- %g\r", correction, err
-	
-	//end of transmission/pathlength correction
-
-	return(correction)
-end
 
 //******************
 //direct port of the FORTRAN code for calculating the weighted

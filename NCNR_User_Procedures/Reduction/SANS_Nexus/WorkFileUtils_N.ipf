@@ -57,6 +57,10 @@ Proc DIV_a_Workfile(type)
 	Variable err
 	err = Divide_work(type)		//returns err = 1 if data doesn't exist in specified folders
 	
+//	// or do I use this call (based on VSANS, in DetectorCorrections_N.ipf)
+//	DIVCorrection(data,data_err,workType)
+//	
+	
 	if(err)
 		Abort "error in Divide_work"
 	endif
@@ -136,42 +140,6 @@ Function Divide_work(type)
 	Return(0)
 End
 
-//test procedure, not called anymore
-Proc AbsoluteScaling(type,c0,c1,c2,c3,c4,c5)
-	String type
-	Variable c0=1,c1=0.1,c2=0.95,c3=0.1,c4=1,c5=32.0
-	Prompt type,"WORK data type",popup,"CAL;COR;SAM"
-	Prompt c0, "Sample Transmission"
-	Prompt c1, "Sample Thickness (cm)"
-	Prompt c2, "Standard Transmission"
-	Prompt c3, "Standard Thickness (cm)"
-	Prompt c4, "I(0) from standard fit (normalized to 1E8 monitor cts)"
-	Prompt c5, "Standard Cross-Section (cm-1)"
-
-	Variable err
-	//call the function to do the math
-	//data from "type" will be scaled and deposited in ABS
-	err = Absolute_Scale(type,c0,c1,c2,c3,c4,c5)
-	
-	if(err)
-		Abort "Error in Absolute_Scale()"
-	endif
-	
-	//contents are always dumped to ABS
-	type = "ABS"
-	
-	String newTitle = "WORK_"+type
-	DoWindow/F SANS_Data
-	DoWindow/T SANS_Data, newTitle
-	KillStrings/Z newTitle
-	
-	//need to update the display with "data" from the correct dataFolder
-	//reset the current displaytype to "type"
-	String/G root:myGlobals:gDataDisplayType=Type
-	
-	fRawWindowHook()
-	
-End
 
 //s_ is the standard
 //w_ is the "work" file

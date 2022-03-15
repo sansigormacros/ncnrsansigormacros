@@ -202,11 +202,17 @@ Function FindBeamCenter() :  GraphMarquee
 	
 	Variable xzsum,yzsum,zsum,xctr,yctr
 	Variable left,right,bottom,top,ii,jj,counts
+	Variable x_mm_sum,y_mm_sum,x_mm,y_mm,yRef,xRef
 	
 	// data wave is hard-wired in as the displayed data
 	NVAR dataIsLog=$(dest + ":gIsLogScale")		//check for log-scaling in current data folder
-
 	wave data=getDetectorDataW(cur_folder)
+	
+	// get the real-space information
+//	Wave data_realDistX = $(dest + ":entry:instrument:detector:data_realDistX")
+//	Wave data_realDistY = $(dest + ":entry:instrument:detector:data_realDistY")
+	
+	
 	
 	GetMarquee left,bottom
 	if(V_flag == 0)
@@ -223,6 +229,9 @@ Function FindBeamCenter() :  GraphMarquee
 		xzsum = 0
 		yzsum = 0
 		zsum = 0
+		
+		x_mm_sum = 0
+		y_mm_sum = 0
 		// count over rectangular selection, doing each row, L-R, bottom to top
 		ii = bottom -1
 		do
@@ -233,6 +242,10 @@ Function FindBeamCenter() :  GraphMarquee
 				counts = data[jj][ii]
 				xzsum += jj*counts
 				yzsum += ii*counts
+				
+//				x_mm_sum += data_realDistX[jj][ii]*counts
+//				y_mm_sum += data_realDistY[jj][ii]*counts
+				
 				zsum += counts
 			while(jj<right)
 		while(ii<top)
@@ -240,13 +253,60 @@ Function FindBeamCenter() :  GraphMarquee
 		xctr = xzsum/zsum
 		yctr = yzsum/zsum
 		
+//		x_mm = x_mm_sum/zsum
+//		y_mm = y_mm_sum/zsum
+		
 		// add 1 to each to get to detector coordinates (1,128)
 		// rather than the data array which is [0,127]
 		xctr+=1
 		yctr+=1
 		
+//		Print "X-center (cm) = ",x_mm/10
+//		Print "Y-center (cm) = ",y_mm/10
+		
 		Print "X-center (in detector coordinates) = ",xctr
 		Print "Y-center (in detector coordinates) = ",yctr
+		
+		
+//******* TODO -- zero postions have not yet been measured
+// correct for the zero position (y-position) on each tube not being exactly equal
+// the lateral scan data (yet to be taken) is used to correct this. The span of zero points
+// is relatively small (+- 0.5 pixel) but is significant for certain conditions
+//	
+	// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
+//		Wave/Z tube_num = $("root:Packages:NIST:tube")
+//		Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr")
+//		if(!WaveExists(tube_num))
+//			Execute "TubeZeroPointTables()"
+//			Wave/Z tube_num = $("root:Packages:NIST:tube")
+//			Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr")
+//		endif
+//		
+//		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
+//		Variable yPixSize = getDet_y_pixel_size(cur_folder)
+//		yPixSize /= 10		// convert mm to cm
+//		// offsets were determined in Dec 2018 using:
+//		// FR tube # 7 = 61.70 pix
+//		// MR tube # 10 = 61.94 pix
+//		
+//		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
+//		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
+//		
+//		Print "X-center (cm) = ",x_mm/10
+//		Print "Y-center (cm) = ",y_mm/10
+//
+//// TODO -- need to select a "zero" tube and make all of the other zero values relative to this one
+//		Print "Reference Y-Center is corrected for FR tube #7 zero position"		
+//
+//		yCorrection = 61.70 - yCorrection
+//		Print "yCorrection (pix) = ",yCorrection
+//		Print "yCorrection (cm) = ",yCorrection*yPixSize
+//		xRef = x_mm/10
+//		yRef = y_mm/10 + yCorrection*yPixSize
+//		Print "FRONT Reference X-center (cm) = ",xRef
+//		Print "FRONT Reference Y-center (cm) = ",yRef
+
+	
 	endif
 	
 	//back to root folder (redundant)
@@ -969,6 +1029,10 @@ Function SumCountsInAnnulus(qCtr,delta,ct_err,type)
 	
 	String dest =  "root:Packages:NIST:"+type
 	
+// destPath = path to destination WORK folder ("root:Packages:NIST:"+folder)
+	Wave data_realDistX = $(dest + ":entry:instrument:detector:data_realDistX")
+	Wave data_realDistY = $(dest + ":entry:instrument:detector:data_realDistY")
+	
 	//check for logscale data, but don't change the data
 	NVAR gIsLogScale = $(dest + ":gIsLogScale")
 	if (gIsLogScale)
@@ -983,12 +1047,16 @@ Function SumCountsInAnnulus(qCtr,delta,ct_err,type)
 	Variable lam=getWavelength(type)
 	Variable pixSize=getDet_y_pixel_size(type)/10
 
+	Variable tube_width=getDet_tubeWidth(type)
+	WAVE coefW = getDetTube_spatialCalib(type)
+
+
 	err2_sum = 0		// running total of the squared error
 	
 	for(ii=0;ii<128;ii+=1)
 		for(jj=0;jj<128;jj+=1)
 			//test each q-value, sum if within range of annulus
-			testQ = CalcQval(ii+1,jj+1,xctr,yctr,sdd,lam,pixSize)
+			testQ = T_CalcQval(ii+1,jj+1,xctr,yctr,tube_width,sdd,lam,coefW)
 			
 			if(testQ > (qCtr - delta) && testQ < (qCtr + delta))
 				counts += w[ii][jj]
@@ -1143,6 +1211,9 @@ Function SumCountsInArc(qCtr,delta,ct_err,type,sideStr,phi,deltaPhi)
 	
 	String dest =  "root:Packages:NIST:"+type
 	
+	Wave data_realDistX = $(dest + ":entry:instrument:detector:data_realDistX")
+	Wave data_realDistY = $(dest + ":entry:instrument:detector:data_realDistY")
+
 	//check for logscale data, but don't change the data
 	NVAR gIsLogScale = $(dest + ":gIsLogScale")
 	if (gIsLogScale)
@@ -1156,15 +1227,17 @@ Function SumCountsInArc(qCtr,delta,ct_err,type,sideStr,phi,deltaPhi)
 	Variable sdd=getDet_Distance(type) / 100		// CalcQval is expecting [m]
 	Variable lam=getWavelength(type)
 	Variable pixSize=getDet_y_pixel_size(type)/10
-	
 
+	Variable tube_width=getDet_tubeWidth(type)
+	WAVE coefW = getDetTube_spatialCalib(type)
+	
 
 	err2_sum = 0		// running total of the squared error
 	
 	for(ii=0;ii<128;ii+=1)
 		for(jj=0;jj<128;jj+=1)
 			//test each q-value, sum if within range of annulus
-			testQ = CalcQval(ii+1,jj+1,xctr,yctr,sdd,lam,pixSize)			
+			testQ = T_CalcQval(ii+1,jj+1,xctr,yctr,tube_width,sdd,lam,coefW)			
 			if(testQ > (qCtr - delta) && testQ < (qCtr + delta))
 				//then test the arc
 				testPhi = FindPhi(ii+1-xCtr, jj+1-yctr)			//does not need to be in cm, pixels is fine

@@ -706,6 +706,9 @@ Function QxQy_Export(type,fullpath,dialog)
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
 
+	Wave data_realDistX = $(destStr + ":entry:instrument:detector:data_realDistX")
+	Wave data_realDistY = $(destStr + ":entry:instrument:detector:data_realDistY")
+
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
 	
@@ -839,8 +842,13 @@ Function QxQy_Export(type,fullpath,dialog)
 ///************
 // do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	qval = CalcQval(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)
-	qz_val = CalcQz(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)  //+1 converts to detector coordinate system
+	Variable tube_width=getDet_tubeWidth(type)
+	WAVE coefW = getDetTube_spatialCalib(type)
+		
+	
+	
+	qval = T_CalcQval(p+1,q+1,xctr,yctr,tube_width,sdd,lambda,coefW)
+	qz_val = T_CalcQz(p+1,q+1,xctr,yctr,tube_width,sdd,lambda,coefW)  //+1 converts to detector coordinate system
 	
 //	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
 //	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt

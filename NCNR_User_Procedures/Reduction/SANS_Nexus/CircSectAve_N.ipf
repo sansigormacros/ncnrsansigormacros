@@ -29,9 +29,10 @@
 // TYPE parameter determines which data folder to work from
 //
 //annnulus (step) size is currently fixed at 1 (variable dr, below)
-Function CircularAverageTo1D(type)
+//Function CircularAverageTo1D(type)
+Function CircularAverageTo1D_old(type)
 	String type
-	
+
 	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr		//this is the list that has it all
 	Variable isCircular = 0
 	
@@ -606,3 +607,924 @@ Function Sector_PlusMinus1D(type)
 	
 	return(0)
 End
+
+
+
+//////////////// new averaging for TUBES on 10m SANS
+// since they are referenced as mm positions, not strictly pixels
+//
+
+
+//////////
+//
+//		Function that bins a 2D detctor panel into I(q) based on the q-value of the pixel
+//		- each pixel QxQyQz has been calculated beforehand
+//
+// this replaces the older version of CircularAverageTo1D() which was pixel-based.
+// -- the tube detctectors are properly described in real-space, so the old methods
+//   of IncrementPixels() did not make sense.
+//
+//Function CircularAverageTo1D_new(type)
+Function CircularAverageTo1D(type)
+	String type
+	
+	Variable xDim,yDim
+	Variable ii,jj
+	Variable qVal_i,nq,var,avesq,aveisq
+	Variable binIndex,val,maskMissing
+
+	//type is the data type to do the averaging on, and will be set as the current folder
+	//get the current displayed data (so the correct folder is used)
+	String destPath = "root:Packages:NIST:"+type
+	String instrPath = ":entry:instrument:detector:"
+
+	NVAR binWidth=root:Packages:NIST:gBinWidth
+
+	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr		//this is the list that has it all
+	Variable isCircular = 0
+	
+	if( cmpstr("Circular",StringByKey("AVTYPE",keyListStr,"=",";")) ==0)
+		isCircular = 1		//set a switch for later
+	Endif
+	
+//
+// assume that the mask files are missing unless we can find them. If VCALC data, 
+//  then the Mask is missing by definition
+	maskMissing = 1
+
+//	if(isVCALC)
+//		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//		WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//	else
+		Wave inten = getDetectorDataW(type)
+		Wave iErr = getDetectorDataErrW(type)
+//	endif
+	WAVE/Z mask = getDetectorDataW("MSK")
+	if(WaveExists(mask) == 1)
+		maskMissing = 0
+	endif
+	
+	SetDeltaQ(type)
+
+	NVAR delQ = $(destPath+instrPath+"gDelQ")
+	Wave qTotal = $(destPath+instrPath+"qTot")			// 2D q-values	
+			
+//	Print "delQ = ",delQ," for ",type
+
+
+// RAW data is currently read in and the 2D error wave is correctly generated
+// 2D error is propagated through all reduction steps, but I have not 
+// verified that it is an exact duplication of the 1D error
+//
+//
+//
+// IF there is no 2D error wave present for some reason, make a fake one
+	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
+		Duplicate/O inten,iErr
+		Wave iErr=iErr
+//		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr = sqrt(inten+0.75)			// (DONE) -- here I'm just using some fictional value
+	endif
+
+	Variable defWavePts=500
+	nq=defWavePts
+	
+
+//******(DONE) averaged data stored in the (type) data folder-- right now, folderStr is forced to ""	
+//	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
+	Make/O/D/N=(nq)  $(destPath+":"+"iBin_qxqy")
+	Make/O/D/N=(nq)  $(destPath+":"+"qBin_qxqy")
+	Make/O/D/N=(nq)  $(destPath+":"+"nBin_qxqy")
+	Make/O/D/N=(nq)  $(destPath+":"+"iBin2_qxqy")
+	Make/O/D/N=(nq)  $(destPath+":"+"eBin_qxqy")
+	Make/O/D/N=(nq)  $(destPath+":"+"eBin2D_qxqy")
+	
+	Wave iBin_qxqy = $(destPath+":"+"iBin_qxqy")
+	Wave qBin_qxqy = $(destPath+":"+"qBin_qxqy")
+	Wave nBin_qxqy = $(destPath+":"+"nBin_qxqy")
+	Wave iBin2_qxqy = $(destPath+":"+"iBin2_qxqy")
+	Wave eBin_qxqy = $(destPath+":"+"eBin_qxqy")
+	Wave eBin2D_qxqy = $(destPath+":"+"eBin2D_qxqy")
+	
+	
+//
+// (DONE): not sure if I want to set dQ in x or y direction..
+// -- delQ is set from a global value for each panel. delQ is found as the q-Width of the 
+// lateral direction of the innermost tube on the panel.
+//
+// delQ can further be modified by the global preference of step size (default is 1.2)
+//
+	qBin_qxqy[] =  p*delQ	
+	SetScale/P x,0,delQ,"",qBin_qxqy		//allows easy binning
+
+	iBin_qxqy = 0
+	iBin2_qxqy = 0
+	eBin_qxqy = 0
+	eBin2D_qxqy = 0
+	nBin_qxqy = 0	//number of intensities added to each bin
+
+//
+// The 1D error does not use iErr, and IS CALCULATED CORRECTLY
+//
+// x- the solid angle per pixel will be present for WORK data other than RAW, but not for RAW
+
+//
+// if any of the masks don't exist, display the error, and proceed with the averaging, using all data
+	if(maskMissing == 1)
+		Print "Mask file not found - so all data is used"
+	endif
+	
+	Variable mask_val
+
+	xDim=DimSize(inten,0)
+	yDim=DimSize(inten,1)
+
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			qVal_i = qTotal[ii][jj]
+			binIndex = trunc(x2pnt(qBin_qxqy, qVal_i))
+			val = inten[ii][jj]
+			
+//				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+			if(maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+				mask_val = 0
+			else
+				mask_val = mask[ii][jj]
+			endif
+			if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+				iBin_qxqy[binIndex] += val
+				iBin2_qxqy[binIndex] += val*val
+				eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
+				nBin_qxqy[binIndex] += 1
+			endif
+		endfor
+	endfor
+		
+
+// after looping through all of the data on the panels, calculate errors on I(q),
+// just like in CircSectAve.ipf
+// TODO:
+// -- 2D Errors were (maybe) properly acculumated through reduction, so this loop of calculations is NOT VERIFIED (yet)
+// x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
+	for(ii=0;ii<nq;ii+=1)
+		if(nBin_qxqy[ii] == 0)
+			//no pixels in annuli, data unknown
+			iBin_qxqy[ii] = 0
+			eBin_qxqy[ii] = 1
+			eBin2D_qxqy[ii] = NaN
+		else
+			if(nBin_qxqy[ii] <= 1)
+				//need more than one pixel to determine error
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				eBin_qxqy[ii] = 1
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			else
+				//assume that the intensity in each pixel in annuli is normally distributed about mean...
+				//  -- this is correctly calculating the error as the standard error of the mean, as
+				//    was always done for SANS as well.
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				avesq = iBin_qxqy[ii]^2
+				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
+				var = aveisq-avesq
+				if(var<=0)
+					eBin_qxqy[ii] = 1e-6
+				else
+					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
+				endif
+				// and calculate as it is propagated pixel-by-pixel
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			endif
+		endif
+	endfor
+	
+	eBin2D_qxqy = sqrt(eBin2D_qxqy)		// as equation (3) of John's memo
+	
+	// find the last non-zero point, working backwards
+	val=nq
+	do
+		val -= 1
+	while((nBin_qxqy[val] == 0) && val > 0)
+	
+//	print val, nBin_qxqy[val]
+	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	if(val == 0)
+		// all the points were deleted
+		return(0)
+	endif
+	
+	
+	// just in case, find the first non-zero point, working forwards
+	val = -1
+	do
+		val += 1
+	while(nBin_qxqy[val] == 0)	
+	DeletePoints 0, val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	// ?? there still may be a point in the q-range that gets zero pixel contribution - so search this out and get rid of it
+	val = numpnts(nBin_qxqy)-1
+	do
+		if(nBin_qxqy[val] == 0)
+			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		endif
+		val -= 1
+	while(val>0)
+
+// utility function to remove NaN values from the waves
+//	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
+
+	
+	// TODO:
+	// -- This is where I calculate the resolution in SANS (see CircSectAve)
+	// -- from the top of the function, type = work folder
+	//
+	nq = numpnts(qBin_qxqy)
+	Make/O/D/N=(nq)  $(destPath+":"+"sigmaQ")
+	Make/O/D/N=(nq)  $(destPath+":"+"qBar")
+	Make/O/D/N=(nq)  $(destPath+":"+"fSubS")
+	Wave sigmaq = $(destPath+":"+"sigmaQ")
+	Wave qbar = $(destPath+":"+"qBar")
+	Wave fsubs = $(destPath+":"+"fSubS")
+
+// ***************************************************************
+//
+// Do the extra 3 columns of resolution calculations starting here.
+//
+// ***************************************************************
+
+	//angle dependent transmission correction 
+	Variable uval,arg,cos_th
+	Variable lambda,trans
+	trans = getSampleTransmission(type)
+	
+	
+	Variable L2 = getDet_Distance(type) / 100		// N_getResolution is expecting [m]
+	Variable BS = getBeamStop_size(type)
+	Variable S1 = getSourceAp_size(type)
+	Variable S2 = getSampleAp_size(type)
+	Variable L1 = getSourceAp_distance(type) // N_getResolution is expecting [m]
+	lambda = getWavelength(type)
+	Variable lambdaWidth = getWavelength_spread(type)
+	String detStr=getDetDescription(type)
+	
+	Variable usingLenses = 0		//
+
+	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+		// lenses and prisms are out
+		usingLenses = 0
+	else
+		usingLenses = 1
+	endif
+	
+	//Two parameters DDET and APOFF are instrument dependent.  Determine
+	//these from the instrument name in the header.
+	//From conversation with JB on 01.06.99 these are the current
+	//good values
+
+	Variable DDet
+	NVAR apOff = root:myGlobals:apOff		//in cm
+	
+//	DDet = DetectorPixelResolution(fileStr,detStr)		//needs detector type and beamline
+	//note that reading the detector pixel size from the header ASSUMES SQUARE PIXELS! - Jan2008
+	DDet = getDet_x_pixel_size(type)/10			// header value (X) is in mm, want cm here
+	
+	
+	//Width of annulus used for the average is gotten from the
+	//input dialog before.  This also must be passed to the resolution
+	//calculator. Currently the default is dr=1 so just keeping that.
+
+	//Go from 0 to nq doing the calc for all three values at
+	//every Q value
+
+	ii=0
+
+	Variable ret1,ret2,ret3,ddr
+	
+	ddr = binWidth*getDet_x_pixel_size(type)		// step size, in [mm]
+	do
+		N_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,ddr,usingLenses,ret1,ret2,ret3)
+		sigmaq[ii] = ret1	
+		qbar[ii] = ret2	
+		fsubs[ii] = ret3	
+		ii+=1
+	while(ii<nq)
+
+// End of resolution calculations
+// ***************************************************************
+
+// now -- rename all of the waves to names that SANS is expecting, since this calculation was
+// taken from VSANS
+// -- resolution waves were named correctly as they were generated above
+//
+
+// can't rename if they exist, duplicate/kill steps work
+
+	SetDataFolder destPath
+	
+	Duplicate/O iBin_qxqy,aveint
+	Duplicate/O qBin_qxqy,qval
+	Duplicate/O nBin_qxqy,ncells
+	Duplicate/O eBin_qxqy,sigave
+	Duplicate/O iBin2_qxqy,dsq
+
+	WAVE qval = $(destPath + ":qval")
+	WAVE aveint = $(destPath + ":aveint")
+	WAVE sigave = $(destPath + ":sigave")	
+	
+	//Plot the data in the Plot_1d window
+	Avg_1D_Graph(aveint,qval,sigave)
+	
+	KillWaves/Z iBin_qxqy,iBin_qxqy,qBin_qxqy,nBin_qxqy,eBin_qxqy,iBin2_qxqy
+	
+
+	SetDataFolder root:
+	
+	return(0)
+End
+
+
+
+
+//
+// updated to new folder structure Feb 2016
+// folderStr = RAW,SAM, VCALC or other
+//
+Function SetDeltaQ(folderStr)
+	String folderStr
+
+	NVAR binWidth=root:Packages:NIST:gBinWidth
+
+	
+	String folderPath = "root:Packages:NIST:"+folderStr
+	String instPath = ":entry:instrument:detector:"
+
+// root:Packages:NIST:RAW:entry:instrument:detector:qx
+		
+	Wave qx = $(folderPath+instPath+"qx")
+	Wave qy = $(folderPath+instPath+"qy")
+	
+	Variable xDim,yDim,delQ
+	
+	// q-step laterally across the vertical tubes
+		delQ = abs(qx[0][0] - qx[1][0])/2
+
+	// multiply the deltaQ by the binWidth (=multiple of pixels)
+	// this defaults to 1.2, and is set in VSANS preferences
+	delQ *= binWidth
+	
+	// set the global
+	Variable/G $(folderPath+instPath+"gDelQ") = delQ
+//	Print "SET delQ = ",delQ," for ",type
+	
+	return(delQ)
+end
+
+
+/////
+//////////SECTOR AVERAGING
+//////////////////////////////////////////////////////////////
+
+//
+// routines to do a sector average
+//
+
+
+// Sector definition is passed in through a global string
+//
+// side = one of "left;right;both;"
+// phi_rad = center of sector in radians
+// dphi_rad = half-width of sector, also in radians
+//
+Function SectorAverageTo1D(folderStr)
+	String folderStr
+
+	String side
+	Variable phi_rad,dphi_rad
+	Variable delQ
+
+	// set delta Q for binning (used later inside VC_fDoBinning_QxQy2D)
+		
+	delQ = SetDeltaQ(folderStr)		// this sets (overwrites) the global value
+	
+
+	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr		//this is the list that has it all
+
+//	Variable phi_x,phi_y
+	
+	side = StringByKey("SIDE",keyListStr,"=",";")
+	
+	//convert from degrees to radians
+	phi_rad = (Pi/180)*NumberByKey("PHI",keyListStr,"=",";")
+	dphi_rad = (Pi/180)*NumberByKey("DPHI",keyListStr,"=",";")
+	
+//	//create cartesian values for unit vector in phi direction
+//	phi_x = cos(phi_rad)
+//	phi_y = sin(phi_rad)
+
+	fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
+
+	return(0)
+End
+
+
+//////////
+//
+//		Function that bins a 2D detctor panel into I(q) based on the q-value of the pixel
+//		- each pixel QxQyQz has been calculated beforehand
+//		- if multiple panels are selected to be combined, it is done here during the binning
+//		- the setting of deltaQ step is still a little suspect (TODO)
+//
+//
+// see the equivalent function in PlotUtils2D_v40.ipf
+//
+//Function fDoBinning_QxQy2D(inten,qx,qy,qz)
+//
+//
+//  "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
+//
+//
+// updated Feb2016 to take new folder structure
+// (DONE)
+// x- VERIFY
+// x- figure out what the best location is to put the averaged data? currently @ top level of WORK folder
+//    but this is a lousy choice.
+// x- binning is now Mask-aware. If mask is not present, all data is used. If data is from VCALC, all data is used
+// x- Where do I put the solid angle correction? In here as a weight for each point, or later on as 
+//    a blanket correction (matrix multiply) for an entire panel? (Solid Angle correction is done in the
+//    step where data is added to a WORK file (see Raw_to_Work())
+//
+//
+// TODO:
+// -- some of the input parameters for the resolution calcuation are either assumed (apOff) or are currently
+//    hard-wired. these need to be corrected before even the pinhole resolution is correct
+// x- resolution calculation is in the correct place. The calculation is done per-panel (specified by TYPE),
+//    and then the unwanted points can be discarded (all 6 columns) as the data is trimmed and concatenated
+//    is separate functions that are resolution-aware.
+//
+//
+// folderStr = WORK folder, type = the binning type (may include multiple detectors)
+//
+// side = one of "left;right;both;"
+// phi_rad = center of sector in radians
+// dphi_rad = half-width of sector, also in radians
+//
+Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
+	String folderStr,side
+	Variable phi_rad,dphi_rad
+	
+	Variable nSets = 0
+	Variable xDim,yDim
+	Variable ii,jj
+	Variable qVal_i,nq,var,avesq,aveisq
+	Variable binIndex,val,isVCALC=0,maskMissing
+
+	String folderPath = "root:Packages:NIST:"+folderStr
+	String instPath = ":entry:instrument:detector"
+	String detStr
+		
+
+// assume that the mask files are missing unless we can find them. If VCALC data, 
+//  then the Mask is missing by definition
+	maskMissing = 1
+
+	
+//	if(isVCALC)
+//		WAVE inten = $(folderPath+instPath+detStr+":det_"+detStr)
+//		WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation		
+//	else
+		Wave inten = getDetectorDataW(folderStr)
+		Wave iErr = getDetectorDataErrW(folderStr)
+		Wave/Z mask = $("root:Packages:NIST::MSK:entry:instrument:detector:data")
+		if(WaveExists(mask) == 1)
+			maskMissing = 0
+		endif
+//	endif	
+	NVAR delQ = $(folderPath+instPath+":gDelQ")
+	Wave qTotal = $(folderPath+instPath+":qTot")			// 2D q-values	
+	Wave phi = MakePhiMatrix(qTotal,folderStr,folderPath+instPath)
+//	nSets = 1
+//	break	
+			
+
+
+
+// RAW data is currently read in and the 2D error wave is correctly generated
+// 2D error is propagated through all reduction steps, 
+//
+//
+// IF ther is no 2D error wave present for some reason, make a fake one
+	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
+		Duplicate/O inten,iErr
+		Wave iErr=iErr
+//		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr = sqrt(inten+0.75)			// -- here I'm just using some fictional value
+	endif
+
+
+	nq=500
+
+// -- where to put the averaged data -- right now, folderStr is forced to ""	
+//	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"nBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"iBin2_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"eBin2D_qxqy")
+	
+	Wave iBin_qxqy = $(folderPath+":"+"iBin_qxqy")
+	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy")
+	Wave nBin_qxqy = $(folderPath+":"+"nBin_qxqy")
+	Wave iBin2_qxqy = $(folderPath+":"+"iBin2_qxqy")
+	Wave eBin_qxqy = $(folderPath+":"+"eBin_qxqy")
+	Wave eBin2D_qxqy = $(folderPath+":"+"eBin2D_qxqy")
+	
+	
+	qBin_qxqy[] =  p*delQ	
+	SetScale/P x,0,delQ,"",qBin_qxqy		//allows easy binning
+
+	iBin_qxqy = 0
+	iBin2_qxqy = 0
+	eBin_qxqy = 0
+	eBin2D_qxqy = 0
+	nBin_qxqy = 0	//number of intensities added to each bin
+
+//
+//
+// The 1D error does not use iErr, and IS CALCULATED CORRECTLY
+//
+// x- the solid angle per pixel will be present for WORK data other than RAW, but not for RAW
+
+//
+// if any of the masks don't exist, display the error, and proceed with the averaging, using all data
+	if(maskMissing == 1)
+		Print "Mask file not found for at least one detector - so all data is used"
+	endif
+	
+
+
+	Variable mask_val,phiVal,isIn
+
+	xDim=DimSize(inten,0)
+	yDim=DimSize(inten,1)
+
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			qVal_i = qTotal[ii][jj]
+			binIndex = trunc(x2pnt(qBin_qxqy, qVal_i))
+			val = inten[ii][jj]
+			
+			if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+				mask_val = 0
+			else
+				mask_val = mask[ii][jj]
+			endif
+			
+			phiVal = phi[ii][jj]
+			isIn = 0			// start with exclude, now see if it's a keeper
+					
+			// if within the right or left, flag to keep the pixel
+			if(cmpstr(side,"right")==0)
+				//right, when 0->pi/2
+				if(CloseEnough(phiVal,phi_rad,dphi_rad))
+					isIn = 1
+				endif
+				// condition here to get the 3pi/2 -> 2pi region
+				if(CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+					isIn = 1
+				endif
+			endif
+			
+			if(cmpstr(side,"left")==0)
+				if(CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+					isIn = 1
+				endif
+			endif
+						
+		//	both sides, duplicates the conditions above
+			if(cmpstr(side,"both")==0)	
+				//right, when 0->pi/2
+				if(CloseEnough(phiVal,phi_rad,dphi_rad))
+					isIn = 1
+				endif
+				// right, when 3pi/2 -> 2pi
+				if(CloseEnough(phiVal,phi_rad+2*pi,dphi_rad))
+					isIn = 1
+				endif				
+				
+				//left
+				if(CloseEnough(phiVal,phi_rad+pi,dphi_rad))
+					isIn = 1
+				endif
+				
+			endif		//end the check of phiVal within sector and side
+			
+	
+			if (numType(val)==0 && mask_val == 0 && isIn > 0)		//count only the good points, in the sector, and ignore Nan or Inf
+				iBin_qxqy[binIndex] += val
+				iBin2_qxqy[binIndex] += val*val
+				eBin2D_qxqy[binIndex] += iErr[ii][jj]*iErr[ii][jj]
+				nBin_qxqy[binIndex] += 1
+			endif
+			
+			
+		endfor
+	endfor
+		
+
+// after looping through all of the data on the panels, calculate errors on I(q),
+// just like in CircSectAve.ipf
+
+// x- 2D Errors are properly acculumated through reduction
+// x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
+	for(ii=0;ii<nq;ii+=1)
+		if(nBin_qxqy[ii] == 0)
+			//no pixels in annuli, data unknown
+			iBin_qxqy[ii] = 0
+			eBin_qxqy[ii] = 1
+			eBin2D_qxqy[ii] = NaN
+		else
+			if(nBin_qxqy[ii] <= 1)
+				//need more than one pixel to determine error
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				eBin_qxqy[ii] = 1
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			else
+				//assume that the intensity in each pixel in annuli is normally distributed about mean...
+				//  -- this is correctly calculating the error as the standard error of the mean, as
+				//    was always done for SANS as well.
+				iBin_qxqy[ii] /= nBin_qxqy[ii]
+				avesq = iBin_qxqy[ii]^2
+				aveisq = iBin2_qxqy[ii]/nBin_qxqy[ii]
+				var = aveisq-avesq
+				if(var<=0)
+					eBin_qxqy[ii] = 1e-6
+				else
+					eBin_qxqy[ii] = sqrt(var/(nBin_qxqy[ii] - 1))
+				endif
+				// and calculate as it is propagated pixel-by-pixel
+				eBin2D_qxqy[ii] /= (nBin_qxqy[ii])^2
+			endif
+		endif
+	endfor
+	
+	eBin2D_qxqy = sqrt(eBin2D_qxqy)		// as equation (3) of John's memo
+	
+	// find the last non-zero point, working backwards
+	val=nq
+	do
+		val -= 1
+	while((nBin_qxqy[val] == 0) && val > 0)
+	
+//	print val, nBin_qxqy[val]
+	DeletePoints val, nq-val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	if(val == 0)
+		// all the points were deleted, make dummy waves for resolution
+		Make/O/D/N=0  $(folderPath+":"+"sigmaQ")
+		Make/O/D/N=0  $(folderPath+":"+"qBar")
+		Make/O/D/N=0  $(folderPath+":"+"fSubS")
+		return(0)
+	endif
+	
+	
+	// since the beam center is not always on the detector, many of the low Q bins will have zero pixels
+	// find the first non-zero point, working forwards
+	val = -1
+	do
+		val += 1
+	while(nBin_qxqy[val] == 0)	
+	DeletePoints 0, val, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+
+	// ?? there still may be a point in the q-range that gets zero pixel contribution - so search this out and get rid of it
+	val = numpnts(nBin_qxqy)-1
+	do
+		if(nBin_qxqy[val] == 0)
+			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		endif
+		val -= 1
+	while(val>0)
+
+// utility function to remove NaN values from the waves
+//
+//	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
+//
+	
+	// -- This is where I calculate the resolution in SANS (see CircSectAve)
+	// -- use the isVCALC flag to exclude VCALC from the resolution calculation if necessary
+	// -- from the top of the function, folderStr = work folder, type = "FLRTB" or other type of averaging
+	//
+	nq = numpnts(qBin_qxqy)
+	Make/O/D/N=(nq)  $(folderPath+":"+"sigmaQ")
+	Make/O/D/N=(nq)  $(folderPath+":"+"qBar")
+	Make/O/D/N=(nq)  $(folderPath+":"+"fSubS")
+	Wave sigmaq = $(folderPath+":"+"sigmaQ")
+	Wave qbar = $(folderPath+":"+"qBar")
+	Wave fsubs = $(folderPath+":"+"fSubS")
+
+
+// ***************************************************************
+//
+// Do the extra 3 columns of resolution calculations starting here.
+//
+// ***************************************************************
+
+	//angle dependent transmission correction 
+	Variable uval,arg,cos_th
+	Variable lambda,trans
+	trans = getSampleTransmission(folderStr)
+	
+	
+	Variable L2 = getDet_Distance(folderStr) / 100		// N_getResolution is expecting [m]
+	Variable BS = getBeamStop_size(folderStr)
+	Variable S1 = getSourceAp_size(folderStr)
+	Variable S2 = getSampleAp_size(folderStr)
+	Variable L1 = getSourceAp_distance(folderStr) // N_getResolution is expecting [m]
+	lambda = getWavelength(folderStr)
+	Variable lambdaWidth = getWavelength_spread(folderStr)
+	
+	Variable usingLenses = 0		//
+
+	if(cmpstr(getLensPrismStatus(folderStr),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+		// lenses and prisms are out
+		usingLenses = 0
+	else
+		usingLenses = 1
+	endif
+
+
+
+	//Two parameters DDET and APOFF are instrument dependent.  Determine
+	//these from the instrument name in the header.
+	//From conversation with JB on 01.06.99 these are the current
+	//good values
+
+	Variable DDet
+	NVAR apOff = root:myGlobals:apOff		//in cm
+	
+//	DDet = DetectorPixelResolution(fileStr,detStr)		//needs detector type and beamline
+	//note that reading the detector pixel size from the header ASSUMES SQUARE PIXELS! - Jan2008
+	DDet = getDet_x_pixel_size(folderStr)/10			// header value (X) is in mm, want cm here
+	
+
+
+//
+//
+	ii=0
+	Variable ret1,ret2,ret3,ddr,binWidth
+	
+	ddr = binWidth*getDet_x_pixel_size(folderStr)		// step size, in [mm]
+	do
+		N_getResolution(qBin_qxqy[ii],lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,ddr,usingLenses,ret1,ret2,ret3)
+		sigmaq[ii] = ret1	
+		qbar[ii] = ret2	
+		fsubs[ii] = ret3	
+		ii+=1
+	while(ii<nq)
+	
+	
+// now -- rename all of the waves to names that SANS is expecting, since this calculation was
+// taken from VSANS
+// -- resolution waves were named correctly as they were generated above
+//
+
+// can't rename if they exist, duplicate/kill steps work
+
+	SetDataFolder folderPath
+	
+	Duplicate/O iBin_qxqy,aveint
+	Duplicate/O qBin_qxqy,qval
+	Duplicate/O nBin_qxqy,ncells
+	Duplicate/O eBin_qxqy,sigave
+	Duplicate/O iBin2_qxqy,dsq
+
+	WAVE qval = $(folderPath + ":qval")
+	WAVE aveint = $(folderPath + ":aveint")
+	WAVE sigave = $(folderPath + ":sigave")	
+	
+	//Plot the data in the Plot_1d window
+	Avg_1D_Graph(aveint,qval,sigave)
+	
+	KillWaves/Z iBin_qxqy,iBin_qxqy,qBin_qxqy,nBin_qxqy,eBin_qxqy,iBin2_qxqy
+	
+	
+
+	SetDataFolder root:
+	
+	return(0)
+End
+
+
+
+
+
+Function/WAVE MakePhiMatrix(qTotal,folderStr,folderPath)
+	Wave qTotal
+	String folderStr,folderPath
+
+	Variable xctr,yctr
+	
+	xctr = getDet_beam_center_x(folderStr)
+	yctr = getDet_beam_center_y(folderStr)
+
+
+	Duplicate/O qTotal,$(folderPath+":phi")
+	Wave phi = $(folderPath+":phi")
+	Variable pixSizeX,pixSizeY
+	pixSizeX = getDet_x_pixel_size(folderStr)
+	pixSizeY = getDet_y_pixel_size(folderStr)
+	MultiThread phi = FindPhi( pixSizeX*((p+1)-xctr) , pixSizeY*((q+1)-yctr))		//(dx,dy)
+	
+	return phi	
+End
+
+
+// 
+// x- I want to mask out everything that is "out" of the sector
+//
+// 0 = keep the point
+// 1 = yes, mask the point
+//
+//
+// phiCtr is in the range (-90,90) degrees
+// delta is in the range (0,90) for a total width of 2*delta = 180 degrees
+//
+Function MarkSectorOverlayPixels(phi,overlay,phiCtr,delta,side)
+	Wave phi,overlay
+	Variable phiCtr,delta
+	String side
+	
+	Variable phiVal
+
+// convert the imput from degrees to radians	, since phi is in radians
+	phiCtr *= pi/180
+	delta *= pi/180		
+	
+	Variable xDim=DimSize(phi, 0)
+	Variable yDim=DimSize(phi, 1)
+
+	Variable ii,jj,exclude,mirror_phiCtr,crossZero,keepPix
+	
+// initialize the mask to == 1 == exclude everything
+	overlay = 1
+
+// now give every opportunity to keep pixel in
+// comparisons use a modified phiCtr to match the definition of the phi field (0= +x-axis)
+//
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			phiVal = phi[ii][jj]
+			keepPix = 0		//start with not keeping
+
+			// if within the right or left, flag to keep the pixel
+			if(cmpstr(side,"right")==0)
+				//right, when 0->pi/2
+				if(CloseEnough(phiVal,phiCtr,delta))
+					keepPix = 1
+				endif
+				// condition here to get the 3pi/2 -> 2pi region
+				if(CloseEnough(phiVal,phiCtr+2*pi,delta))
+					keepPix = 1
+				endif
+			endif
+			
+			if(cmpstr(side,"left")==0)
+				if(CloseEnough(phiVal,phiCtr+pi,delta))
+					keepPix = 1
+				endif
+			endif
+						
+		//	both sides, duplicates the conditions above
+			if(cmpstr(side,"both")==0)	
+				//right, when 0->pi/2
+				if(CloseEnough(phiVal,phiCtr,delta))
+					keepPix = 1
+				endif
+				// right, when 3pi/2 -> 2pi
+				if(CloseEnough(phiVal,phiCtr+2*pi,delta))
+					keepPix = 1
+				endif				
+				
+				//left
+				if(CloseEnough(phiVal,phiCtr+pi,delta))
+					keepPix = 1
+				endif
+				
+			endif
+				
+			// set the mask value (entire overlay initialized to 1 to start)
+			if(keepPix > 0)
+				overlay[ii][jj] = 0
+			endif
+			
+		endfor
+	endfor
+
+
+	return(0)
+End
+
+	

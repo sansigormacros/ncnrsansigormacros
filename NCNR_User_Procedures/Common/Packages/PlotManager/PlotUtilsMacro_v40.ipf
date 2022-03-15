@@ -1460,6 +1460,34 @@ Proc Initialize_Preferences()
 	
 	val = NumVarOrDefault("root:Packages:NIST:gDoTransmissionCorr", 1 )
 	Variable/G root:Packages:NIST:gDoTransmissionCorr = 1
+	
+
+// added 2022 for tube detectors + new corrections	
+	val = NumVarOrDefault("root:Packages:NIST:gDoDIVCor", 1 )
+	Variable/G root:Packages:NIST:gDoDIVCor = 1
+	
+	val = NumVarOrDefault("root:Packages:NIST:gDoDeadTimeCor", 1 )
+	Variable/G root:Packages:NIST:gDoDeadTimeCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:gDoSolidAngleCor", 1 )
+	Variable/G root:Packages:NIST:gDoSolidAngleCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:gDoNonLinearCor", 1 )
+	Variable/G root:Packages:NIST:gDoNonLinearCor = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:gDoTubeShadowCor", 1 )
+	Variable/G root:Packages:NIST:gDoTubeShadowCor = 1
+	
+	val = NumVarOrDefault("root:Packages:NIST:gDoMonitorNormalization", 1 )
+	Variable/G root:Packages:NIST:gDoMonitorNormalization = 1
+
+	val = NumVarOrDefault("root:Packages:NIST:gDoDownstreamWindowCor", 1 )
+	Variable/G root:Packages:NIST:gDoDownstreamWindowCor = 1
+	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1
+	Variable/G root:Packages:NIST:gDownstreamWinTransErr = 0
+
+	
+	
 
 // flag to allow adding raw data files with different attenuation (normally not done)	
 	val = NumVarOrDefault("root:Packages:NIST:gDoAdjustRAW_Atten",0)
@@ -1583,6 +1611,59 @@ Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+// 2022 - not yet added to panel for SANS
+Function InitializeWindowTrans()
+
+	Variable/G root:Packages:NIST:gDoDownstreamWindowCor = 1
+
+	// TODO -- when correcting this, search for all occurences!!! also in V_WorkFolderUtils !!!
+	// these global values need to be replaced with real numbers
+	// error is currently set to zero
+	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1
+	Variable/G root:Packages:NIST:gDownstreamWinTransErr = 0
+
+end
+
+Function DoDIVCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoDIVCor
+	gVal = checked
+End
+
+Function DoDeadTimeCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoDeadTimeCor
+	gVal = checked
+End
+
+Function DoSolidAngleCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoSolidAngleCor
+	gVal = checked
+End
+
+Function DoNonLinearCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoNonLinearCor
+	gVal = checked
+End
+
+Function DoDownstreamWindowCorPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoDownstreamWindowCor
+	gVal = checked
+End
+
 //set the angle->Q conversion factor
 // or set the Q->Q "conversion" factor
 // this is the same value that is set in Init_USANS_Facility()
@@ -1622,6 +1703,7 @@ Proc Pref_Panel()
 
 	TabControl PrefTab,pos={7,49},size={410,202},tabLabel(0)="General",proc=PrefTabProc
 	TabControl PrefTab,tabLabel(1)="SANS",tabLabel(2)="USANS",tabLabel(3)="Analysis"
+	TabControl PrefTab,tabLabel(4)="10m-SANS"
 	TabControl PrefTab,value=0
 	TabControl PrefTab labelBack=(49694,61514,27679)
 	
@@ -1682,6 +1764,70 @@ Proc Pref_Panel()
 	GroupBox PrefCtrl_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
 	
 	GroupBox PrefCtrl_3a,disable=1
+	
+	
+	Variable sc = 1
+	
+// tab(4) -- 10m-SANS
+
+	CheckBox PrefCtrl_4a,pos={21*sc,80*sc},size={171*sc,14*sc},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"
+	CheckBox PrefCtrl_4a,help={"Checking this will display 2D data with a logarithmic color scale of neutron counts. If not checked, the color mapping will be linear."}
+	CheckBox PrefCtrl_4a,value= root:Packages:NIST:gLogScalingAsDefault
+//	CheckBox PrefCtrl_4b,pos={21,120},size={163,14},proc=V_DRKProtocolPref,title="Allow DRK correction in protocols"
+//	CheckBox PrefCtrl_4b,help={"Checking this will allow DRK correction to be used in reduction protocols. You will need to re-draw the protocol panel for this change to be visible."}
+//	CheckBox PrefCtrl_4b,value= root:Packages:NIST:gAllowDRK
+	CheckBox PrefCtrl_4c,pos={21*sc,100*sc},size={137*sc,14*sc},proc=UnityTransPref,title="Check for Transmission = 1"
+	CheckBox PrefCtrl_4c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
+	CheckBox PrefCtrl_4c,value= root:Packages:NIST:gDoTransCheck
+	SetVariable PrefCtrl_4d,pos={21*sc,130*sc},size={200*sc,15*sc},title="Averaging Bin Width (pixels)"
+	SetVariable PrefCtrl_4d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
+	SetVariable PrefCtrl_4e,pos={21*sc,155*sc},size={200*sc,15*sc},title="# Phi Steps (annular avg)"
+	SetVariable PrefCtrl_4e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
+	SetVariable PrefCtrl_4p,pos={21*sc,180*sc},size={200*sc,15*sc},title="Window Transmission"
+	SetVariable PrefCtrl_4p,limits={0.01,1,0.001},value= root:Packages:NIST:gDownstreamWinTrans
+
+	CheckBox PrefCtrl_4f title="Do Transmssion Correction?",size={140*sc,14*sc},value=root:Packages:NIST:gDoTransmissionCorr,proc=DoTransCorrPref
+	CheckBox PrefCtrl_4f pos={255*sc,80*sc},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
+	CheckBox PrefCtrl_4g title="Do Tube Efficiency+Shadowing?",size={140*sc,14*sc},proc=DoEfficiencyCorrPref
+	CheckBox PrefCtrl_4g value=root:Packages:NIST:gDoTubeShadowCor,pos={255*sc,100*sc},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
+//	CheckBox PrefCtrl_4h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
+//	CheckBox PrefCtrl_4h value=root:Packages:NIST:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
+
+	CheckBox PrefCtrl_4i title="Do DIV Correction?",size={140*sc,14*sc},proc=DoDIVCorPref
+	CheckBox PrefCtrl_4i value=root:Packages:NIST:gDoDIVCor,pos={255*sc,120*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_4j title="Do DeadTime Correction?",size={140*sc,14*sc},proc=DoDeadTimeCorPref
+	CheckBox PrefCtrl_4j value=root:Packages:NIST:gDoDeadTimeCor,pos={255*sc,140*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_4k title="Do Solid Angle Correction?",size={140*sc,14*sc},proc=DoSolidAngleCorPref
+	CheckBox PrefCtrl_4k value=root:Packages:NIST:gDoSolidAngleCor,pos={255*sc,160*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
+	CheckBox PrefCtrl_4l title="Do Non-linear Correction?",size={140*sc,14*sc},proc=DoNonLinearCorPref,disable=2
+	CheckBox PrefCtrl_4l value=root:Packages:NIST:gDoNonLinearCor,pos={255*sc,180*sc},help={"Non-linear correction can't be turned off"}
+	CheckBox PrefCtrl_4m title="Do Downstream Window Corr?",size={140*sc,14*sc},proc=DoDownstreamWindowCorPref
+	CheckBox PrefCtrl_4m value=root:Packages:NIST:gDoDownstreamWindowCor,pos={255*sc,200*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
+//	CheckBox PrefCtrl_4n title="Do Monitor Normalization?",size={140,14},proc=V_DoMonitorNormPref
+//	CheckBox PrefCtrl_4n value=root:Packages:NIST:gDoMonitorNormalization,pos={255,220},help={"TURN OFF ONLY FOR DEBUGGING."}
+//	CheckBox PrefCtrl_4o title="Ignore Back Detector?",size={140*sc,14*sc},proc=V_IgnoreDetBPref
+//	CheckBox PrefCtrl_4o value=root:Packages:NIST:gIgnoreDetB,pos={150*sc,220*sc},help={"Will prevent data from Back detector being written to data files."}
+	
+	CheckBox PrefCtrl_4a,disable=1
+//	CheckBox PrefCtrl_4b,disable=1
+	CheckBox PrefCtrl_4c,disable=1
+	SetVariable PrefCtrl_4d,disable=1
+	SetVariable PrefCtrl_4e,disable=1
+	CheckBox PrefCtrl_4f,disable=1
+//	CheckBox PrefCtrl_4g,disable=1
+//	CheckBox PrefCtrl_4h,disable=1
+	CheckBox PrefCtrl_4i,disable=1
+	CheckBox PrefCtrl_4j,disable=1
+	CheckBox PrefCtrl_4k,disable=1
+	CheckBox PrefCtrl_4l,disable=1
+
+	CheckBox PrefCtrl_4g,value=0,disable=1		// angle dependent efficiency not done yet
+	CheckBox PrefCtrl_4m,value=0,disable=1		// downstream window transmission no done yet
+//	CheckBox PrefCtrl_4n,disable=1
+//	CheckBox PrefCtrl_40,disable=1
+	
+	
+	
 
 EndMacro
 

@@ -2025,7 +2025,7 @@ Function VaryPCTButton(ctrlName) : ButtonControl
 	
 	else
 		NVAR par = root:gNumManualParam
-		par = getParamFromWrapper()
+//		par = getParamFromWrapper()			//SRK 2022
 		
 		if(cw[par] != 0)	
 			loLim = cw[par] - percent*cw[par]/100

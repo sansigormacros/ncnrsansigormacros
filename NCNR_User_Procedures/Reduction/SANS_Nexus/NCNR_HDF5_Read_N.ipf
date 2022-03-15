@@ -786,7 +786,7 @@ Function getDet_azimuthal_angle(fname)
 	return(getRealValueFromHDF5(fname,path))
 End
 
-
+// for the 10m SANS, this will be in PIXELS
 Function getDet_beam_center_x(fname)
 	String fname
 
@@ -794,6 +794,7 @@ Function getDet_beam_center_x(fname)
 	return(getRealValueFromHDF5(fname,path))
 End
 
+// for the 10m SANS, this will be in PIXELS
 Function getDet_beam_center_y(fname)
 	String fname
 
@@ -1391,6 +1392,10 @@ End
 
 //
 // this value is stored in [cm], so [cm] is returned
+//
+// this value is apparently stored in [m]!!
+// -- so [m] is returned -- BEWARE - L2 is stored/returned in [cm]
+//
 Function getSourceAp_distance(fname)
 	String fname
 

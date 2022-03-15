@@ -31,6 +31,8 @@ Strconstant ksBaseDFPath = "root:Packages:NIST:RawSANS:"
 // SASCALC behaves *almost* as a WORK folder, but it is local. so add it in explicitly to the list if needed
 Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB;DRK;ADJ;SAS;"
 
+Constant kBCTR_CM = 0			//set to 1 to use beam center in cm. O to use pixels
+
 
 
 

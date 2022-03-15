@@ -121,6 +121,13 @@ End
 #include "WorkFileUtils_Tubes_N"
 //#include "WorkFileUtils_Ordela_N"
 
+#include "DetectorCorrections_N"		//for tube detectors
+
+
+
+
+
+
 
 
 // a simple list of items to add to the Beta menu

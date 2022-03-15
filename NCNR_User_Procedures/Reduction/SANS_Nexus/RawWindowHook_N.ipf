@@ -231,6 +231,9 @@ Function RawWindowHook(s)
 	Variable xpix,ypix,xaxval,yaxval,xint,yint,rawval
 	String msg
 	
+	Wave data_realDistX = $(curPath + ":entry:instrument:detector:data_realDistX")
+	Wave data_realDistY = $(curPath + ":entry:instrument:detector:data_realDistY")
+
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
 
@@ -252,14 +255,21 @@ Function RawWindowHook(s)
 			rawval = w[xint][yint]	
 			//update q, qX, and qY
 			if(cmpstr(cur_folder,"MSK")!=0)
-				Variable xctr=getDet_beam_center_x(fname)
+				Variable xctr=getDet_beam_center_x(fname)		//these values are currently in pixels
 				Variable yctr=getDet_beam_center_y(fname)
-				Variable sdd=getDet_Distance(fname) / 100 		// convert [cm] to [m] for CalcQval
+//				Variable xctr=getDet_beam_center_x_mm(fname)
+//				Variable yctr=getDet_beam_center_y_mm(fname)
+				Variable sdd=getDet_Distance(fname) 		// written in [cm]
 				Variable lam=getWavelength(fname)
-				Variable pixSize=getDet_x_pixel_size(fname)/10			//TODO -- verify the units!!
-				Variable/G root:myGlobals:gQQ = CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
-				Variable/G root:myGlobals:gQX = CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
-				Variable/G root:myGlobals:gQY = CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,pixSize)
+				Variable tube_width=getDet_tubeWidth(fname)
+				WAVE coefW = getDetTube_spatialCalib(fname)
+
+//				Variable/G root:myGlobals:gQQ = T_CalcQval(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
+//				Variable/G root:myGlobals:gQX = T_CalcQX(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
+//				Variable/G root:myGlobals:gQY = T_CalcQY(xaxval+1,yaxval+1,xctr,yctr,sdd,lam,data_realDistX,data_realDistY)
+				Variable/G root:myGlobals:gQQ = T_CalcQval(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
+				Variable/G root:myGlobals:gQX = T_CalcQX(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
+				Variable/G root:myGlobals:gQY = T_CalcQY(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 			else
 				Variable/G root:myGlobals:gQQ = 0
 				Variable/G root:myGlobals:gQX = 0

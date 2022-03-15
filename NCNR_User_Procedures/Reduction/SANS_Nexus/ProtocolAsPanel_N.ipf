@@ -1851,7 +1851,8 @@ Function ExecuteProtocol(protStr,samStr)
 			CircularAverageTo1D(activeType)
 			break
 		case "Sector":
-			CircularAverageTo1D(activeType)
+//			CircularAverageTo1D(activeType)
+			SectorAverageTo1D(activeType)
 			break
 		case "Sector_PlusMinus":
 			Sector_PlusMinus1D(activeType)

@@ -123,9 +123,10 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			AnnularAverageTo1D(type)
 			break
 		case "Circular":
-		case "Sector":
-			//circular or sector
 			CircularAverageTo1D(type)		//graph is drawn here
+		case "Sector":
+//			CircularAverageTo1D(type)		//graph is drawn here
+			SectorAverageTo1D(type)
 			break
 		case "2D_NXcanSAS":
 			WriteNxCanSAS2D(type,"",1)
@@ -517,11 +518,11 @@ Function MasterAngleDraw()
 	Endif			//if sector, draw dphi lines
 	
 	//if rectangular, draw the parallel rectangle lines
-	Variable xOffset,yOffset,beta
+	Variable xOffset,yOffset,betaAng
 	if (cmpstr(av_type,"Rectangular")==0)
-		beta = (90-phi)*Pi/180
-		xOffset = (width/2)*cos(beta)		//need phi in radians
-		yOffset = (width/2)*sin(beta)
+		betaAng = (90-phi)*Pi/180
+		xOffset = (width/2)*cos(betaAng)		//need angle in radians
+		yOffset = (width/2)*sin(betaAng)
 		if (phi == 0)
 			xOffset = 0
 			yOffset = width/2

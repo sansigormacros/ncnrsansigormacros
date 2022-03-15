@@ -1921,6 +1921,8 @@ Function writeDet_azimuthalAngle(fname,val)
 
 End
 
+
+// these are values in PIXELS
 Function writeDet_beam_center_x(fname,val)
 	String fname
 	Variable val
@@ -1946,6 +1948,7 @@ Function writeDet_beam_center_x(fname,val)
 	return(err)
 End
 
+// these are values in PIXELS
 // fname is a local WORK folder
 Function putDet_beam_center_x(fname,val)
 	String fname
@@ -1965,6 +1968,28 @@ Function putDet_beam_center_x(fname,val)
 
 End
 
+// these are values in mm
+// fname is a local WORK folder
+Function putDet_beam_center_x_mm(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_x
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:beam_center_x_mm"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
+// these are values in PIXELS
 // fname is a local WORK folder
 Function putDet_beam_center_x_pix(fname,val)
 	String fname
@@ -1984,6 +2009,8 @@ Function putDet_beam_center_x_pix(fname,val)
 
 End
 
+
+// these are values in PIXELS
 Function writeDet_beam_center_y(fname,val)
 	String fname
 	Variable val
@@ -2010,6 +2037,7 @@ Function writeDet_beam_center_y(fname,val)
 End
 
 
+// these are values in PIXELS
 // fname is a local WORK folder
 Function putDet_beam_center_y(fname,val)
 	String fname
@@ -2029,6 +2057,27 @@ Function putDet_beam_center_y(fname,val)
 
 End
 
+// these are values in mm
+// fname is a local WORK folder
+Function putDet_beam_center_y_mm(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:RAW:entry:instrument:detector:beam_center_y
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:beam_center_y_mm"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+// these are values in PIXELS
 // fname is a local WORK folder
 Function putDet_beam_center_y_pix(fname,val)
 	String fname

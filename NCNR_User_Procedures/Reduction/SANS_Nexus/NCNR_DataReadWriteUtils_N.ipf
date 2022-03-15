@@ -51,8 +51,8 @@ End
 
 
 
-//
-//simple, main entry procedure that will load a RAW sans data file (not a work file)
+// 
+// MAIN ENTRY procedure to load a RAW sans data file (not a work file)
 //into the RAW dataFolder. It is up to the calling procedure to display the file
 //
 // called by MainPanel.ipf and ProtocolAsPanel.ipf
@@ -120,51 +120,56 @@ Function LoadRawSANSData(file,folder)
 		// -- otherwise the mouse-over doesn't calculate the correct Q_values
 		// the display currently is not shifted or altered at all to account for the non-linearity
 		// or for display in q-values -- so why bother with this?
+		//
+		// For SANS, don't calculate the distance arrays. The beam center will be on the detector panel,
+		// and there is no offset, gap, or vert/horiz tube orientation. Simply use the coefficients
+		// to calculate q-values as needed.
+		//
 		
-//		NVAR gDoNonLinearCor = root:Packages:NIST:Globals:gDoNonLinearCor
-//		// generate a distance matrix for each of the detectors
-//		if (gDoNonLinearCor == 1)
-//			Print "Calculating Non-linear correction at RAW load time"// for "+ detStr
+		NVAR gDoNonLinearCor = root:Packages:NIST:gDoNonLinearCor
+		// generate a distance matrix for each of the detectors
+		if (gDoNonLinearCor == 1)
+			Print "Calculating Non-linear correction at RAW load time"// for "+ detStr
 //				
-//			Wave w = getDetectorDataW(folder)
-//	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
-//			Wave w_calib = V_getDetTube_spatialCalib(folder,detStr)
-//			Variable tube_width = V_getDet_tubeWidth(folder,detStr)
-//			V_NonLinearCorrection(folder,w,w_calib,tube_width,detStr,destPath)
+			Wave w = getDetectorDataW(folder)
+	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
+			Wave w_calib = getDetTube_spatialCalib(folder)
+			Variable tube_width = getDet_tubeWidth(folder)
+			NonLinearCorrection(folder,w,w_calib,tube_width,destPath)
 //				
-//				// --The proper definition of beam center is in [cm], so the conversion
-//				// is no longer needed (kBCTR_CM==1)
-//				
-//				if(kBCTR_CM)
+				// --The beam center for SANS is defined in PIXELS, kBCTR_CM==0
+				
+				if(kBCTR_CM)
 //					//V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
 //					//
 //	
-//					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-//					Make/O/D/N=1 $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-//					WAVE x_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_x_mm")
-//					WAVE y_mm = $(destPath + ":entry:instrument:detector_"+detStr+":beam_center_y_mm")
-//					x_mm[0] = V_getDet_beam_center_x(folder,detStr) * 10 		// convert cm to mm
-//					y_mm[0] = V_getDet_beam_center_y(folder,detStr) * 10 		// convert cm to mm
+//					Make/O/D/N=1 $(destPath + ":entry:instrument:detector:beam_center_x_mm")
+//					Make/O/D/N=1 $(destPath + ":entry:instrument:detector:beam_center_y_mm")
+//					WAVE x_mm = $(destPath + ":entry:instrument:detector:beam_center_x_mm")
+//					WAVE y_mm = $(destPath + ":entry:instrument:detector:beam_center_y_mm")
+//					x_mm[0] = getDet_beam_center_x(folder) * 10 		// convert cm to mm
+//					y_mm[0] = getDet_beam_center_y(folder) * 10 		// convert cm to mm
 //					
 //					// (DONE):::
 //				// now I need to convert the beam center in mm to pixels
 //				// and have some rational place to look for it...
-//					V_ConvertBeamCtr_to_pix(folder,detStr,destPath)
-//				else
-//					// beam center is in pixels, so use the old routine
-//					V_ConvertBeamCtrPix_to_mm(folder,detStr,destPath)
-//				endif				
-//				
-//				
-//				// (2.5) Calculate the q-values
-//				// calculating q-values can't be done unless the non-linear corrections are calculated
-//				// so go ahead and put it in this loop.
-//				//
-//				V_Detector_CalcQVals(folder,detStr,destPath)
-//							
-//		else
-//			Print "Non-linear correction not done on RAW data"
-//		endif			
+//					ConvertBeamCtr_to_pix(folder,destPath)
+				else
+					// beam center is in pixels, so use the old routine
+					ConvertBeamCtrPix_to_mm(folder,destPath)
+				endif				
+				
+				
+				// (2.5) Calculate the q-values
+				// calculating q-values can't be done unless the non-linear corrections are calculated
+				// so go ahead and put it in this loop.
+				//
+				
+				Detector_CalcQVals(folder,destPath)
+							
+		else
+			Print "Non-linear correction not done on RAW data"
+		endif			
 			
 	endif		/// END DATA CORRECTIONS FOR RAW	
 
