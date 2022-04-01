@@ -37,8 +37,8 @@ Proc InitializeAveragePanel()
 	Variable/G root:myGlobals:Drawing:gDrawPhi =0
 	Variable/G root:myGlobals:Drawing:gDrawWidth = 1
 	Variable/G root:myGlobals:Drawing:gDrawDPhi = 0
-	Variable/G root:myGlobals:Drawing:gDrawQCtr = 0
-	Variable/G root:myGlobals:Drawing:gDrawQDelta = 1
+	Variable/G root:myGlobals:Drawing:gDrawQCtr = 0.01
+	Variable/G root:myGlobals:Drawing:gDrawQDelta = 0.001
 	
 	//return to root
 	SetDataFolder root:
@@ -124,6 +124,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			break
 		case "Circular":
 			CircularAverageTo1D(type)		//graph is drawn here
+			break
 		case "Sector":
 //			CircularAverageTo1D(type)		//graph is drawn here
 			SectorAverageTo1D(type)
@@ -313,9 +314,9 @@ Window Average_Panel()
 	SetVariable Qctr_p,pos={155,66},size={130,15},proc=QctrSetVarProc,title="Q-center"
 	SetVariable Qctr_p,help={"Enter the q-center of the annular region (1/A). The circle will be drawn in light green."}
 	SetVariable Qctr_p,limits={1e-05,0.7,0.001},value= root:myGlobals:Drawing:gDrawQCtr
-	SetVariable QDelta_p,pos={155,90},size={130,15},proc=QDeltaSetVarProc,title="Q Delta (pixels)"
+	SetVariable QDelta_p,pos={155,90},size={130,15},proc=QDeltaSetVarProc,title="Q Delta (+/- Q)"
 	SetVariable QDelta_p,help={"Enter the total width of the annulus in pixels. The bounding circles will be draw in blue."}
-	SetVariable QDelta_p,limits={1,40,1},value= root:myGlobals:Drawing:gDrawQDelta
+	SetVariable QDelta_p,limits={1e-05,0.7,0.001},value= root:myGlobals:Drawing:gDrawQDelta
 	SetVariable DPhi_p,pos={166,154},size={110,15},proc=DeltaPhiSetVarProc,title="Delta Phi"
 	SetVariable DPhi_p,help={"Enter the +/- range (0,45) of azimuthal angles to be included in the average.  The bounding angles will be drawin in blue."}
 	SetVariable DPhi_p,limits={0,90,1},value= root:myGlobals:Drawing:gDrawDPhi
@@ -420,6 +421,11 @@ Function MasterAngleDraw()
 		Variable QCtr = NumberByKey("QCENTER",drawStr,"=",";")
 		Variable QDelta = NumberByKey("QDELTA",drawStr,"=",";")
 		Variable thetay,dy,pixelSize
+		
+		// dQStep is found by taking the q-width of one tube in the x-direction
+		// == delQ/pixel
+		NVAR dqStep = $("root:Packages:NIST:"+type+":entry:instrument:detector:gDelQ")
+		
 		//TODO -- verify the units!!
 		pixelSize=getDet_x_pixel_size(type)/10		//this is ONLY the x-direction, converted to cm
 		thetay = 2*asin(Qctr*lam/4/Pi)
@@ -431,13 +437,17 @@ Function MasterAngleDraw()
 		DrawACircle(x0,y0,dy,rr,gg,bb,thick)
 	
 		//then do the +/- Qdelta rings 
-		//QDelta is the width of the annulus, in pixels
+		//QDelta is NOW 1/2 the width of the annulus, NOW in units of q, so apprioximate as pixels
+		Variable tmpQ = QDelta
+		
+		QDelta = tmpQ/dqStep		// q/(q/pix) == pixels (approximately)
+		
 		rr=0
 		gg=0
 		bb=50000
-		DrawACircle(x0,y0,dy+(QDelta/2),rr,gg,bb,thick)
+		DrawACircle(x0,y0,dy+(QDelta),rr,gg,bb,thick)
 		// then the  (- delta) ring
-		DrawACircle(x0,y0,dy-(QDelta/2),rr,gg,bb,thick)
+		DrawACircle(x0,y0,dy-(QDelta),rr,gg,bb,thick)
 
 		//go back to the average panel
 //		DoWindow/F Average_Panel

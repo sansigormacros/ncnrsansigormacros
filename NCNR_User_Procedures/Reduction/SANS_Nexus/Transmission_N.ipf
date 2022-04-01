@@ -778,7 +778,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						// tables are part of the data file, so the data must be loaded
 						LoadRawSANSData(emptyFile,"RAW")
 						//adds to EMP
-						err = Raw_to_work_for_Ordela("EMP")
+						err = Raw_to_Work_for_Tubes("EMP")
 						
 						
 						GetXYBoxFromFile(emptyFile,x1,x2,y1,y2)
@@ -798,7 +798,7 @@ Function CalcSelTransFromHeader(startRow,endRow)
 						//read in trans file then add to SAM
 						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work_for_Ordela("SAM")
+						err = Raw_to_Work_for_Tubes("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 					
@@ -911,7 +911,7 @@ Function CalcTotalTrans(startRow,endRow)
 						// tables are part of the data file, so the data must be loaded
 						LoadRawSANSData(emptyFile,"RAW")
 						//adds to EMP
-						err = Raw_to_work_for_Ordela("EMP")
+						err = Raw_to_Work_for_Tubes("EMP")
 						
 						getXYBoxFromFile(emptyFile,x1,x2,y1,y2)
 						
@@ -932,7 +932,7 @@ Function CalcTotalTrans(startRow,endRow)
 						//read in trans file then add to SAM
 						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work_for_Ordela("SAM")
+						err = Raw_to_Work_for_Tubes("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(x1,x2,y1,y2,sam_ct_err,"SAM")	
 
@@ -1048,7 +1048,7 @@ Function CalcWholeTrans(startRow,endRow)
 						// tables are part of the data file, so the data must be loaded
 						LoadRawSANSData(emptyFile,"RAW")
 						//adds to EMP
-						err = Raw_to_work_for_Ordela("EMP")
+						err = Raw_to_Work_for_Tubes("EMP")
 						
 						getXYBoxFromFile(emptyFile,x1,x2,y1,y2)
 						
@@ -1069,7 +1069,7 @@ Function CalcWholeTrans(startRow,endRow)
 						//read in trans file then add to SAM
 						LoadRawSANSData(transFile,"RAW")
 						//adds to SAM
-						err = Raw_to_work_for_Ordela("SAM")
+						err = Raw_to_Work_for_Tubes("SAM")
 						//sum region in SAM
 						transCts =  SumCountsInBox(0,pixelsX-1,0,pixelsY-1,sam_ct_err,"SAM")	
 				
@@ -1301,7 +1301,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 		//no region selected
 		
 		//add the empty beam file to work.SAM
-		err = Raw_to_work_for_Ordela("SAM")
+		err = Raw_to_Work_for_Tubes("SAM")
 	
 		//the calling macro must change the display type
 		String/G root:myGlobals:gDataDisplayType="SAM"		//displayed data type is sam
@@ -1327,7 +1327,7 @@ Function Trn_SetXYBoxButton(ctrlName) : ButtonControl
 		If((V_flag)==1)
 			//get new box coordinates, same procedure as above
 			//add the empty beam file to work.SAM
-			err = Raw_to_work_for_Ordela("SAM")
+			err = Raw_to_Work_for_Tubes("SAM")
 	
 			//the calling macro must change the display type
 			String/G root:myGlobals:gDataDisplayType="SAM"		//displayed data type is sam

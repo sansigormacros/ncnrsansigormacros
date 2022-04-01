@@ -209,8 +209,8 @@ Function FindBeamCenter() :  GraphMarquee
 	wave data=getDetectorDataW(cur_folder)
 	
 	// get the real-space information
-//	Wave data_realDistX = $(dest + ":entry:instrument:detector:data_realDistX")
-//	Wave data_realDistY = $(dest + ":entry:instrument:detector:data_realDistY")
+	Wave data_realDistX = $(dest + ":entry:instrument:detector:data_realDistX")
+	Wave data_realDistY = $(dest + ":entry:instrument:detector:data_realDistY")
 	
 	
 	
@@ -243,8 +243,8 @@ Function FindBeamCenter() :  GraphMarquee
 				xzsum += jj*counts
 				yzsum += ii*counts
 				
-//				x_mm_sum += data_realDistX[jj][ii]*counts
-//				y_mm_sum += data_realDistY[jj][ii]*counts
+				x_mm_sum += data_realDistX[jj][ii]*counts
+				y_mm_sum += data_realDistY[jj][ii]*counts
 				
 				zsum += counts
 			while(jj<right)
@@ -253,8 +253,8 @@ Function FindBeamCenter() :  GraphMarquee
 		xctr = xzsum/zsum
 		yctr = yzsum/zsum
 		
-//		x_mm = x_mm_sum/zsum
-//		y_mm = y_mm_sum/zsum
+		x_mm = x_mm_sum/zsum
+		y_mm = y_mm_sum/zsum
 		
 		// add 1 to each to get to detector coordinates (1,128)
 		// rather than the data array which is [0,127]
@@ -437,7 +437,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work_for_Ordela("SAM")
+			err = Raw_to_Work_for_Tubes("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
@@ -1003,7 +1003,7 @@ Function DoAnnulusSum(fileStr,qCtr,delta,type)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work_for_Ordela("SAM")
+			err = Raw_to_Work_for_Tubes("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()
@@ -1184,7 +1184,7 @@ Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
-			err = Raw_to_work_for_Ordela("SAM")
+			err = Raw_to_Work_for_Tubes("SAM")
 		endif
 		String/G root:myGlobals:gDataDisplayType=type
 		fRawWindowHook()

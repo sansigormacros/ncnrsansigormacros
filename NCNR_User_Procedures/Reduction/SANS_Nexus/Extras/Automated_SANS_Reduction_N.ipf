@@ -683,7 +683,7 @@ Function Auto_SetXYBox(runNum)
 // load the data	and convert to SAM
 	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-	err = Raw_to_work_for_Ordela("SAM")
+	err = Raw_to_Work_for_Tubes("SAM")
 	String/G root:myGlobals:gDataDisplayType="SAM"
 	UpdateDisplayInformation("SAM")			//display the new type of data that was loaded
 //	fRawWindowHook()

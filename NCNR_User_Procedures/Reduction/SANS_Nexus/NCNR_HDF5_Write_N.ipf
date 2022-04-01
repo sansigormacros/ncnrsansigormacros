@@ -1433,6 +1433,26 @@ Function writeBeamMonNorm_data(fname,val)
 End
 
 
+
+// fname is a local WORK folder
+Function putBeamMonNorm_data(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:beam_monitor_norm:data"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 Function writeBeamMonNormDistance(fname,val)
 	String fname
 	Variable val

@@ -1599,7 +1599,7 @@ Function DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
-	NVAR gVal = root:Packages:NIST:gDoDetectorEffCorr
+	NVAR gVal = root:Packages:NIST:gDoTubeShadowCor
 	gVal = checked
 End
 
@@ -1799,8 +1799,8 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_4j value=root:Packages:NIST:gDoDeadTimeCor,pos={255*sc,140*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
 	CheckBox PrefCtrl_4k title="Do Solid Angle Correction?",size={140*sc,14*sc},proc=DoSolidAngleCorPref
 	CheckBox PrefCtrl_4k value=root:Packages:NIST:gDoSolidAngleCor,pos={255*sc,160*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
-	CheckBox PrefCtrl_4l title="Do Non-linear Correction?",size={140*sc,14*sc},proc=DoNonLinearCorPref,disable=2
-	CheckBox PrefCtrl_4l value=root:Packages:NIST:gDoNonLinearCor,pos={255*sc,180*sc},help={"Non-linear correction can't be turned off"}
+//	CheckBox PrefCtrl_4l title="Do Non-linear Correction?",size={140*sc,14*sc},proc=DoNonLinearCorPref,disable=2
+//	CheckBox PrefCtrl_4l value=root:Packages:NIST:gDoNonLinearCor,pos={255*sc,180*sc},help={"Non-linear correction can't be turned off"}
 	CheckBox PrefCtrl_4m title="Do Downstream Window Corr?",size={140*sc,14*sc},proc=DoDownstreamWindowCorPref
 	CheckBox PrefCtrl_4m value=root:Packages:NIST:gDoDownstreamWindowCor,pos={255*sc,200*sc},help={"TURN OFF ONLY FOR DEBUGGING."}
 //	CheckBox PrefCtrl_4n title="Do Monitor Normalization?",size={140,14},proc=V_DoMonitorNormPref
@@ -1819,7 +1819,7 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_4i,disable=1
 	CheckBox PrefCtrl_4j,disable=1
 	CheckBox PrefCtrl_4k,disable=1
-	CheckBox PrefCtrl_4l,disable=1
+//	CheckBox PrefCtrl_4l,disable=2
 
 	CheckBox PrefCtrl_4g,value=0,disable=1		// angle dependent efficiency not done yet
 	CheckBox PrefCtrl_4m,value=0,disable=1		// downstream window transmission no done yet

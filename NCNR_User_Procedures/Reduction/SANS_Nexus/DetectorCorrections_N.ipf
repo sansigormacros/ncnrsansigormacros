@@ -209,15 +209,26 @@ ThreadSafe Function Convert_yLoc_pix2mm(xPix,yPix,cw)
 	
 	Variable yLoc,tnum
 	
-	tnum = trunc(xPix-1)		// to get from pixel system to tube number in the array
-	yLoc = cw[0][tnum] + cw[1][tnum]*yPix + cw[2][tnum]*yPix*yPix
-	
-	if(tnum >= 112)
-		Print "tnum = ",tnum
+	tnum = round(xPix-1)		// to get from pixel system to tube number in the array
+	// keep selection in bounds
+	if(tnum > 111)
+		tnum = 111
 	endif
 	if(tnum < 0)
-		Print "tnum = ",tnum
+		tnum = 0
 	endif
+
+	if(yPix > 127)
+		yPix = 127
+	endif
+	if(yPix < 0)
+		yPix = 0
+	endif	
+	
+	yPix -= 1		// convert to 0->127
+	yLoc = cw[0][tnum] + cw[1][tnum]*yPix + cw[2][tnum]*(yPix)*(yPix)
+	
+
 	
 	return(yLoc)
 end
@@ -238,18 +249,18 @@ end
 Function ConvertBeamCtrPix_to_mm(folder,destPath)
 	String folder,destPath
 	
-	Wave data_realDistX = $(destPath + ":entry:instrument:detector:data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:instrument:detector:data_realDistY")	
+//	Wave data_realDistX = $(destPath + ":entry:instrument:detector:data_realDistX")
+//	Wave data_realDistY = $(destPath + ":entry:instrument:detector:data_realDistY")	
 
 	String orientation
 	Variable dimX,dimY,xCtr,yCtr
-	dimX = DimSize(data_realDistX,0)
-	dimY = DimSize(data_realDistX,1)
-	if(dimX > dimY)
-		orientation = "horizontal"
-	else
-		orientation = "vertical"
-	endif
+//	dimX = DimSize(data_realDistX,0)
+//	dimY = DimSize(data_realDistX,1)
+//	if(dimX > dimY)
+//		orientation = "horizontal"
+//	else
+//		orientation = "vertical"
+//	endif
 	
 	xCtr = getDet_beam_center_x(folder)
 	yCtr = getDet_beam_center_y(folder)	
@@ -264,6 +275,9 @@ Function ConvertBeamCtrPix_to_mm(folder,destPath)
 	WAVE cw = getDetTube_spatialCalib(folder)
 	x_mm[0] = Convert_xLoc_pix2mm(xCtr,tube_width)
 	y_mm[0] = Convert_yLoc_pix2mm(xCtr,yCtr,cw)
+
+//	Print "x mm = ", Convert_xLoc_pix2mm(xCtr,tube_width)
+//	Print "y mm = ", Convert_yLoc_pix2mm(xCtr,yCtr,cw)
 		
 	return(0)
 end
@@ -453,51 +467,6 @@ Function ConvertBeamCtr_to_pixB(folder,destPath)
 		
 	return(0)
 end
-
-//
-//
-// (DONE)
-// x- VERIFY the calculations
-// x- verify where this needs to be done (if the beam center is changed)
-// x- then the q-calculation needs to be re-done
-//
-// x- not much is known about the "B" detector, so this
-//    all hinges on the non-linear corrections being done correctly for that detector
-//
-// 	Variable detCtrX, detCtrY
-//	// get the pixel center of the detector (not the beam center)
-//	detCtrX = trunc( DimSize(dataW,0)/2 )		//
-//	detCtrY = trunc( DimSize(dataW,1)/2 )
-//
-//
-Function ConvertBeamCtrPix_to_mmB(folder,destPath)
-	String folder,destPath
-	
-	
-//	DoAlert 0,"Error - Beam center is being interpreted as pixels, but needs to be in cm. V_ConvertBeamCtrPix_to_mmB()"
-	
-	Wave data_realDistX = $(destPath + ":entry:instrument:detector:data_realDistX")
-	Wave data_realDistY = $(destPath + ":entry:instrument:detector:data_realDistY")	
-	
-	Variable xCtr,yCtr
-	xCtr = getDet_beam_center_x(folder)
-	yCtr = getDet_beam_center_y(folder)	
-	
-	Make/O/D/N=1 $(destPath + ":entry:instrument:detector:beam_center_x_mm")
-	Make/O/D/N=1 $(destPath + ":entry:instrument:detector:beam_center_y_mm")
-	WAVE x_mm = $(destPath + ":entry:instrument:detector:beam_center_x_mm")
-	WAVE y_mm = $(destPath + ":entry:instrument:detector:beam_center_y_mm")
-
-	x_mm[0] = data_realDistX[xCtr][0]
-	y_mm[0] = data_realDistY[0][yCtr]
-		
-	return(0)
-end
-
-
-
-
-
 
 
 
@@ -953,9 +922,9 @@ end
 // projection (see He (2015) and John's memo)
 //
 //
-Function SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+Function SolidAngleCorrection(w,w_err,fname,destPath)
 	Wave w,w_err
-	String fname,detStr,destPath
+	String fname,destPath
 
 	Variable sdd,xCtr,yCtr,lambda
 	String orientation
@@ -964,11 +933,9 @@ Function SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	orientation = "vertical"
 	sdd = getDet_Distance(fname)
 
-	// this is ctr in pixels
-	xCtr = getDet_beam_center_x(fname)
-	yCtr = getDet_beam_center_y(fname)
-	
-	DoAlert 0,"need to convert beam center to [mm] in SolidAngleCorrection"
+// beam center (pixels) was converted to [mm] at RAW load time
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
 	
 	lambda = getWavelength(fname)
 	
@@ -992,105 +959,65 @@ Function SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Variable ii,jj,numx,numy,dx,dy
 	numx = DimSize(tmp_theta,0)
 	numy = DimSize(tmp_theta,1)
-
-	if(cmpstr(detStr,"B")==0)
-		//detector B is a grid, straightforward cos^3 solid angle
-		for(ii=0	;ii<numx;ii+=1)
-			for(jj=0;jj<numy;jj+=1)
-				
-				if(ii==0)		//do a forward difference if ii==0
-					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
-				else
-					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
-				endif
-				
-				
-				if(jj==0)
-					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
-				else
-					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
-				endif
+	
+	//		
+	//different calculation for the tubes, different calculation based on XY orientation
+	//
+	if(cmpstr(orientation,"vertical")==0)
+		// L/R panels, tube axis is y-direction
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
+		tmp_theta_i = atan(tmp_dist)		//this is theta_y
 		
-				dx /= 10
-				dy /= 10		// convert mm to cm (since sdd is in cm)
-				solid_angle[ii][jj] = dx*dy		//this is in cm^2
-			endfor
-		endfor
-		
-		// to cover up any issues w/negative dx or dy
-		solid_angle = abs(solid_angle)
-		
-		// solid_angle correction
-		// == dx*dy*cos^3/sdd^2
-		solid_angle *= (cos(tmp_theta))^3
-		solid_angle /= sdd^2
-		
-		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
-		w /= solid_angle
-
-		// correctly apply the correction to the error wave (assume a perfect value?)
-	 	w_err /= solid_angle		//
-
 	else
-		//		
-		//different calculation for the tubes, different calculation based on XY orientation
-		//
-		if(cmpstr(orientation,"vertical")==0)
-			// L/R panels, tube axis is y-direction
-			// this is now a different tmp_dist
-			// convert everything to cm first!
-			// sdd is in [cm], everything else is in [mm]
-			tmp_dist = (data_realDistY/10 - yctr/10)/sqrt((data_realDistX/10 - xctr/10)^2 + sdd^2)		
-			tmp_theta_i = atan(tmp_dist)		//this is theta_y
-			
-		else
-			// horizontal orientation (T/B panels)
-			// this is now a different tmp_dist
-			// convert everything to cm first!
-			// sdd is in [cm], everything else is in [mm]
-			tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
-			tmp_theta_i = atan(tmp_dist)		//this is theta_x
-		
-		endif
-		
-		for(ii=0	;ii<numx;ii+=1)
-			for(jj=0;jj<numy;jj+=1)
-				
-				if(ii==0)		//do a forward difference if ii==0
-					dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
-				else
-					dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
-				endif
-				
-				
-				if(jj==0)
-					dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
-				else
-					dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
-				endif
-		
-				dx /= 10
-				dy /= 10		// convert mm to cm (since sdd is in cm)
-				solid_angle[ii][jj] = dx*dy		//this is in cm^2
-			endfor
-		endfor
-		
-		// to cover up any issues w/negative dx or dy
-		solid_angle = abs(solid_angle)
-		
-		// solid_angle correction
-		// == dx*dy*cos(th)^2*cos(th_i)/sdd^2		using either the theta_x or theta_y value
-		solid_angle *= (cos(tmp_theta))^2*cos(tmp_theta_i)
-		solid_angle /= sdd^2
-		
-		// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
-		w /= solid_angle
-		
-		//
-		// correctly apply the correction to the error wave (assume a perfect value?)
-	 	w_err /= solid_angle		//
+		// horizontal orientation (T/B panels)
+		// this is now a different tmp_dist
+		// convert everything to cm first!
+		// sdd is in [cm], everything else is in [mm]
+		tmp_dist = (data_realDistX/10 - xctr/10)/sqrt((data_realDistY/10 - yctr/10)^2 + sdd^2)		
+		tmp_theta_i = atan(tmp_dist)		//this is theta_x
 	
 	endif
+	
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			if(ii==0)		//do a forward difference if ii==0
+				dx = (data_realDistX[ii+1][jj] - data_realDistX[ii][jj])	//delta x for the pixel
+			else
+				dx = (data_realDistX[ii][jj] - data_realDistX[ii-1][jj])	//delta x for the pixel
+			endif
+			
+			
+			if(jj==0)
+				dy = (data_realDistY[ii][jj+1] - data_realDistY[ii][jj])	//delta y for the pixel
+			else
+				dy = (data_realDistY[ii][jj] - data_realDistY[ii][jj-1])	//delta y for the pixel
+			endif
+	
+			dx /= 10
+			dy /= 10		// convert mm to cm (since sdd is in cm)
+			solid_angle[ii][jj] = dx*dy		//this is in cm^2
+		endfor
+	endfor
+	
+	// to cover up any issues w/negative dx or dy
+	solid_angle = abs(solid_angle)
+	
+	// solid_angle correction
+	// == dx*dy*cos(th)^2*cos(th_i)/sdd^2		using either the theta_x or theta_y value
+	solid_angle *= (cos(tmp_theta))^2*cos(tmp_theta_i)
+	solid_angle /= sdd^2
+	
+	// Here it is! Apply the correction to the intensity (I divide -- to get the counts per solid angle!!)
+	w /= solid_angle
+	
+	//
+	// correctly apply the correction to the error wave (assume a perfect value?)
+ 	w_err /= solid_angle		//
+	
 	
 
 // DONE x- clean up after I'm satisfied computations are correct		
@@ -1208,11 +1135,9 @@ Function LargeAngleTransmissionCorr(w,w_err,fname,destPath)
 //	orientation = V_getDet_tubeOrientation(fname,detStr)
 	sdd = getDet_Distance(fname)
 
-	// this is ctr in pixels
-	xCtr = getDet_beam_center_x(fname)
-	yCtr = getDet_beam_center_y(fname)
-	
-		DoAlert 0,"need to convert beam center to [mm] in SolidAngleCorrection"
+// beam center (pixels) was converted to [mm] at RAW load time
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
 
 	trans = getSampleTransmission(fname)
 	trans_err = getSampleTransError(fname)
@@ -1387,7 +1312,6 @@ End
 
 //
 // (DONE):
-//   x- 	DoAlert 0,"This has not yet been updated for VSANS"
 //   x- how is the error propagation handled? Done the same way as for SANS.
 //      Be sure it is calculated correctly when DIV is generated
 //      and is applied correctly here...
@@ -1469,13 +1393,11 @@ Function TubeEfficiencyShadowCorr(w,w_err,fname,destPath)
 	orientation = "vertical"
 	sdd = getDet_Distance(fname)
 
-	// this is ctr in pixels
-	xCtr = getDet_beam_center_x(fname)
-	yCtr = getDet_beam_center_y(fname)
 	lambda = getWavelength(fname)
 
-		DoAlert 0,"need to convert beam center to [mm] in SolidAngleCorrection"
-
+// beam center (pixels) was converted to [mm] at RAW load time
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
 	
 	SetDataFolder $(destPath + ":entry:instrument:detector")
 	
@@ -1714,7 +1636,7 @@ Function TubeShadowEfficTableOneLam(lambda)
 				pWave[1] = indexToScale(eff,ii,0)		//set theta x 
 				pWave[2] = indexToScale(eff,jj,1)		//set theta y
 	
-				eff_with_shadow[jj] = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
+				eff_with_shadow[jj] = Integrate1D(Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)		// adaptive Gaussian quadrature
 				eff_with_shadow[jj] /= (2*kTube_ri)
 				
 				eff[ii][jj] = eff_with_shadow[jj]
@@ -1733,7 +1655,7 @@ Function TubeShadowEfficTableOneLam(lambda)
 	pWave[1] = 0
 	pWave[2] = 0
 ////	
-	normVal = Integrate1D(V_Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
+	normVal = Integrate1D(Efficiency_Integral,-kTube_ri,kTube_ri,2,0,pWave)
 	normVal /= (2*kTube_ri)
 //	
 //	print normVal
@@ -1921,12 +1843,9 @@ Function DownstreamWindowTransmission(w,w_err,fname,destPath)
 // get all of the geometry information	
 	sdd = getDet_Distance(fname)
 
-	// this is ctr in pixels
-	xCtr = getDet_beam_center_x(fname)
-	yCtr = getDet_beam_center_y(fname)
-	
-		DoAlert 0,"need to convert beam center to [mm] in SolidAngleCorrection"
-
+// beam center (pixels) was converted to [mm] at RAW load time
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
 
 // get the value of the overall transmission of the downstream components
 // + error if available.

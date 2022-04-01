@@ -1446,7 +1446,7 @@ Function AddFilesInList(type,list)
 		ReadHeaderAndData(filename,"RAW")
 		if(ii == 0)
 			//first pass, wipe out the old contents of the work file
-			err =  Raw_to_work_for_Ordela(type)
+			err =  Raw_to_Work_for_Tubes(type)
 		else
 			err = Add_raw_to_work(type)
 		Endif
@@ -1500,7 +1500,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
+			err =  Raw_to_Work_for_Tubes(activeType)		//this is the first file (default)
 			//Ask for another SAM file
 			do
 				DoAlert 1,"Do you want to add another Sample file?"
@@ -1550,7 +1550,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
+			err =  Raw_to_Work_for_Tubes(activeType)		//this is the first file (default)
 			//Ask for another BGD file
 			do
 				DoAlert 1,"Do you want to add another Background file?"
@@ -1604,7 +1604,7 @@ Function ExecuteProtocol(protStr,samStr)
 				Abort "reduction sequence aborted"
 			endif
 			UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-			err =  Raw_to_work_for_Ordela(activeType)		//this is the first file (default)
+			err =  Raw_to_Work_for_Tubes(activeType)		//this is the first file (default)
 			//Ask for another EMP file
 			do
 				DoAlert 1,"Do you want to add another Empty Cell file?"

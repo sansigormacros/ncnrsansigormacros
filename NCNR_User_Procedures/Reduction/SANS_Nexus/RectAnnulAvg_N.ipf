@@ -458,7 +458,7 @@ End
 //averaged data is written to the data folder and plotted. data is not written
 //to disk from this routine.
 //
-Function AnnularAverageTo1D(type)
+Function AnnularAverageTo1D_old(type)
 	String type
 	
 	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr
@@ -495,7 +495,8 @@ Function AnnularAverageTo1D(type)
 	
 	dtdist = 10*getDet_Distance(type)	// det distance converted from [cm] to [mm]
 	lambda = getWavelength(type)
-	
+
+
 	Variable qc = NumberByKey("QCENTER",keyListStr,"=",";")
 	Variable nw = NumberByKey("QDELTA",keyListStr,"=",";")
 	
@@ -668,3 +669,321 @@ Function AnnularAverageTo1D(type)
 	
 	Return 0
 End
+
+
+
+////////////////// NEW ANNULAR AVERAGE FOR TUBES
+//
+
+
+
+// TODO
+// x- fix NVAR reference to step size
+// x- duplicate/kill to rename waves at the end
+// x- fix the panel to get input in delta Q, not delta pixels
+// x- TEST
+
+
+
+// JUL 2021 SRK
+//
+//
+// x- fixed bug where for certain nPhi values, the last phi step would be deleted and n-1 steps
+// were written to the file (JUL 2021)
+//
+
+
+// Procedures to do an annular binning of the data
+//
+// As for SANS, needs a Q-center and Q-delta to define the annular ring,
+// and the number of bins to divide the 360 degree circle
+//
+// qWidth is +/- around the q-center
+//
+//
+//////////
+//
+//
+//
+// (DONE) 
+// x- "iErr" is not always defined correctly since it doesn't really apply here for data that is not 2D simulation
+//
+// ** Currently, type is being passed in as "" and ignored (looping through all of the detector panels
+// to potentially add to the annular bins)
+//
+// folderStr = WORK folder, type = the binning type (may include multiple detectors)
+//
+//	Variable qCtr_Ann = 0.1
+//	Variable qWidth = 0.02		// +/- in A^-1
+//
+//
+//Function AnnularAverageTo1D(folderStr,qCtr_Ann,qWidth)
+Function AnnularAverageTo1D(folderStr)
+	String folderStr
+	
+	Variable nSets = 0
+	Variable xDim,yDim
+	Variable ii,jj,kk
+	Variable qVal,nq,var,avesq,aveisq
+	Variable binIndex,val,isVCALC=0,maskMissing
+
+	String folderPath = "root:Packages:NIST:"+folderStr
+	String instPath = ":entry:instrument:detector"
+
+	SVAR keyListStr = root:myGlobals:Protocols:gAvgInfoStr
+
+	Variable qCtr_Ann = NumberByKey("QCENTER",keyListStr,"=",";")
+	Variable qWidth = NumberByKey("QDELTA",keyListStr,"=",";")
+	
+
+// set up the waves for the output
+//
+
+	// -- nq may need to be larger, if annular averaging on the back detector, but n=600 seems to be OK
+
+	nq = 600
+
+// -- where to put the averaged data -- right now, folderStr is forced to ""	
+//	SetDataFolder $("root:"+folderStr)		//should already be here, but make sure...	
+	Make/O/D/N=(nq)  $(folderPath+":"+"iPhiBin_qxqy")
+//	Make/O/D/N=(nq)  $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Make/O/D/N=(nq)  $(folderPath+":"+"phiBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"nPhiBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"iPhiBin2_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"ePhiBin_qxqy")
+	Make/O/D/N=(nq)  $(folderPath+":"+"ePhiBin2D_qxqy")
+	
+	Wave iPhiBin_qxqy = $(folderPath+":"+"iPhiBin_qxqy")
+//	Wave qBin_qxqy = $(folderPath+":"+"qBin_qxqy"+"_"+type)
+	Wave phiBin_qxqy = $(folderPath+":"+"phiBin_qxqy")
+	Wave nPhiBin_qxqy = $(folderPath+":"+"nPhiBin_qxqy")
+	Wave iPhiBin2_qxqy = $(folderPath+":"+"iPhiBin2_qxqy")
+	Wave ePhiBin_qxqy = $(folderPath+":"+"ePhiBin_qxqy")
+	Wave ePhiBin2D_qxqy = $(folderPath+":"+"ePhiBin2D_qxqy")
+	
+	
+	Variable nphi,dphi,isIn,phiij,iphi
+
+// DONE: define nphi (this is now set as a preference)
+//	dr = 1 			//minimum annulus width, keep this fixed at one
+	NVAR numPhiSteps = root:Packages:NIST:gNPhiSteps
+	nphi = numPhiSteps		//number of anular sectors is set by users
+	dphi = 360/nphi
+	
+
+	iPhiBin_qxqy = 0
+	iPhiBin2_qxqy = 0
+	ePhiBin_qxqy = 0
+	ePhiBin2D_qxqy = 0
+	nPhiBin_qxqy = 0	//number of intensities added to each bin
+
+
+// (DONE):
+// x- Solid_Angle -- waves will be present for WORK data other than RAW, but not for RAW
+//
+// assume that the mask files are missing unless we can find them. If VCALC data, 
+//  then the Mask is missing by definition
+
+
+
+	maskMissing=1
+
+//	if(isVCALC)
+//		WAVE inten = $(folderPath+instPath+"FL"+":det_"+detStr)
+//		WAVE/Z iErr = $("iErr_"+detStr)			// 2D errors -- may not exist, especially for simulation			
+//	else
+		Wave inten = getDetectorDataW(folderStr)
+		Wave iErr = getDetectorDataErrW(folderStr)
+		Wave/Z mask = $("root:Packages:NIST:MSK:entry:instrument:detector:data")
+		if(WaveExists(mask) == 1)
+			maskMissing = 0
+		endif
+//	endif	
+	Wave qTotal = $(folderPath+instPath+":qTot")			// 2D q-values	
+	Wave qx = $(folderPath+instPath+":qx")			// 2D qx-values	
+	Wave qy = $(folderPath+instPath+":qy")			// 2D qy-values	
+
+//(DONE): properly define the 2D errors here - I'll have this if I do the simulation
+// x- need to propagate the 2D errors up to this point
+//
+	if(WaveExists(iErr)==0  && WaveExists(inten) != 0)
+		Duplicate/O inten,iErr
+		Wave iErr=iErr
+//		iErr = 1+sqrt(inten+0.75)			// can't use this -- it applies to counts, not intensity (already a count rate...)
+		iErr = sqrt(inten+0.75)			// if the error not properly defined, using some fictional value
+	endif
+
+// if any of the masks don't exist, display the error, and proceed with the averaging, using all data
+	if(maskMissing == 1)
+		Print "Mask file not found for at least one detector - so all data is used"
+	endif
+
+
+// this needs to be a double loop now...
+// DONE:
+// x- the iErr (=2D) wave and accumulation of error is correctly propagated through all steps
+// x- the solid angle per pixel is completely implemented.
+//    -Solid angle will be present for WORK data other than RAW, but not for RAW
+
+
+	Variable mask_val
+
+	xDim=DimSize(inten,0)
+	yDim=DimSize(inten,1)
+
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			qVal = qTotal[ii][jj]
+			
+			isIn = CloseEnough(qVal,qCtr_Ann,qWidth)
+			
+			if(isIn)		// it's in the annulus somewhere, do something
+				// now I need the qx and qy to find phi
+				if (qy[ii][jj] >= 0)
+					//phiij is in degrees
+					phiij = atan2(qy[ii][jj],qx[ii][jj])*180/Pi		//0 to 180 deg
+				else
+					phiij = 360 + atan2(qy[ii][jj],qx[ii][jj])*180/Pi		//180 to 360 deg
+				Endif
+				if (phiij > (360-0.5*dphi))
+					phiij -= 360
+				Endif
+				iphi = trunc(phiij/dphi + 1.501)			// TODO: why the value of 1.501????
+						
+				val = inten[ii][jj]
+				
+				if(isVCALC || maskMissing)		// mask_val == 0 == keep, mask_val == 1 = YES, mask out the point
+					mask_val = 0
+				else
+					mask_val = mask[ii][jj]
+				endif
+				if (numType(val)==0 && mask_val == 0)		//count only the good points, ignore Nan or Inf
+					iPhiBin_qxqy[iphi-1] += val
+					iPhiBin2_qxqy[iphi-1] += val*val
+					ePhiBin2D_qxqy[iphi-1] += iErr[ii][jj]*iErr[ii][jj]
+					nPhiBin_qxqy[iphi-1] += 1
+				endif
+			
+			endif // isIn
+			
+		endfor
+	endfor
+	
+
+
+// after looping through all of the data on the panels, calculate errors on I(q),
+// just like in CircSectAve.ipf
+// DONE:
+// x- 2D Errors ARE properly acculumated through reduction, so this loop of calculations is correct
+// x- the error on the 1D intensity, is correctly calculated as the standard error of the mean.
+	for(ii=0;ii<nphi;ii+=1)
+	
+		phiBin_qxqy[ii] = dphi*ii
+		
+		if(nPhiBin_qxqy[ii] == 0)
+			//no pixels in annuli, data unknown
+			iPhiBin_qxqy[ii] = 0
+			ePhiBin_qxqy[ii] = 1
+			ePhiBin2D_qxqy[ii] = NaN
+		else
+			if(nPhiBin_qxqy[ii] <= 1)
+				//need more than one pixel to determine error
+				iPhiBin_qxqy[ii] /= nPhiBin_qxqy[ii]
+				ePhiBin_qxqy[ii] = 1
+				ePhiBin2D_qxqy[ii] /= (nPhiBin_qxqy[ii])^2
+			else
+				//assume that the intensity in each pixel in annuli is normally distributed about mean...
+				//  -- this is correctly calculating the error as the standard error of the mean, as
+				//    was always done for SANS as well.
+				iPhiBin_qxqy[ii] /= nPhiBin_qxqy[ii]
+				avesq = iPhiBin_qxqy[ii]^2
+				aveisq = iPhiBin2_qxqy[ii]/nPhiBin_qxqy[ii]
+				var = aveisq-avesq
+				if(var<=0)
+					ePhiBin_qxqy[ii] = 1e-6
+				else
+					ePhiBin_qxqy[ii] = sqrt(var/(nPhiBin_qxqy[ii] - 1))
+				endif
+				// and calculate as it is propagated pixel-by-pixel
+				ePhiBin2D_qxqy[ii] /= (nPhiBin_qxqy[ii])^2
+			endif
+		endif
+	endfor
+	
+	ePhiBin2D_qxqy = sqrt(ePhiBin2D_qxqy)		// as equation (3) of John's memo
+
+
+
+// I have more than nPhi points, so delete the rest
+//
+	Variable startElement,numElements
+	startElement = nphi
+	numElements = nq - startElement
+	DeletePoints startElement,numElements, iPhiBin_qxqy,phiBin_qxqy,nPhiBin_qxqy,iPhiBin2_qxqy,ePhiBin_qxqy,ePhiBin2D_qxqy
+
+
+	SetDataFolder folderPath
+	
+	Duplicate/O iPhiBin_qxqy, aveint
+	Duplicate/O phiBin_qxqy, phival
+	Duplicate/O ePhiBin_qxqy, sigave
+	Duplicate/O nPhiBin_qxqy, nCells
+	
+	Killwaves/Z iPhiBin_qxqy,phiBin_qxqy,ePhiBin_qxqy
+	//
+	WAVE phival = $(folderPath + ":phival")
+	WAVE aveint = $(folderPath + ":aveint")
+	WAVE sigave = $(folderPath + ":sigave")
+
+
+	//angle dependent transmission correction is not done in phiave
+	Ann_1D_Graph(aveint,phival,sigave)
+	
+	SetDataFolder root:
+	
+	return(0)
+End
+
+
+
+
+// 
+// x- I want to mask out everything that is "out" of the annulus
+//
+// 0 = keep the point
+// 1 = yes, mask the point
+Function MarkAnnularOverlayPixels(qTotal,overlay,qCtr_ann,qWidth)
+	Wave qTotal,overlay
+	Variable qCtr_ann,qWidth
+		
+	
+	Variable xDim=DimSize(qTotal, 0)
+	Variable yDim=DimSize(qTotal, 1)
+
+	Variable ii,jj,exclude,qVal
+	
+	// initialize the mask to == 1 == exclude everything
+	overlay = 1
+
+// now give every opportunity to keep pixel in
+	for(ii=0;ii<xDim;ii+=1)
+		for(jj=0;jj<yDim;jj+=1)
+			//qTot = sqrt(qx[ii]^2 + qy[ii]^2+ qz[ii]^2)
+			qval = qTotal[ii][jj]
+			exclude = 1
+		
+			// annulus as defined
+			if(CloseEnough(qval,qCtr_ann,qWidth))
+				exclude = 0
+			endif
+			
+			// set the mask value
+			overlay[ii][jj] = exclude
+		endfor
+	endfor
+
+
+	return(0)
+End
+
