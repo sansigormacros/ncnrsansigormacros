@@ -81,7 +81,7 @@ Proc S_initialize_space()
 	NewDataFolder/O root:Packages:NIST:SAS
 	
 	Make/O/D/N=23 root:Packages:NIST:SAS:integersRead
-	Make/O/D/N=52 root:Packages:NIST:SAS:realsRead
+	Make/O/D/N=53 root:Packages:NIST:SAS:realsRead
 	Make/O/T/N=11 root:Packages:NIST:SAS:textRead
 	// data
 	Make/O/D/N=(192,192) root:Packages:NIST:SAS:data,root:Packages:NIST:SAS:linear_data // [davidm] is bigger now!
@@ -106,6 +106,7 @@ Proc S_initialize_space()
 	Variable/G root:Packages:NIST:SAS:gLambda=5
 	Variable/G root:Packages:NIST:SAS:gDeltaLambda=0.14		//default value
 	String/G root:Packages:NIST:SAS:gSourceApString = "0.50 cm;1.00 cm;2.00 cm;3.00 cm;4.00 cm;5.00 cm;"
+	String/G root:Packages:NIST:SAS:gBeamstopIndexStr = "1;2;3;4;5;6"
 	
 	String/G root:Packages:NIST:SAS:gDeltaLambdaStdResStr = "0.068;0.100;0.180"
 	String/G root:Packages:NIST:SAS:gDeltaLambdaHighResStr = "0.041;0.064;0.140"
@@ -271,11 +272,13 @@ Function S_fillDefaultHeader(iW,rW,tW)
 	rw[26] = gLambda		//lambda in Angstroms
 	rw[4] = 1		//transmission
 	
-	rw[21] = 110 // [davidm] need to check with source code //  76.2			//BS diameter in mm
+	rw[21] = 101 // set for BS index = 1, diameter in mm
 	rw[23] = 50			//A1 diameter in mm
 	rw[24] = 10 // 12.7			//A2 diameter in mm
 	rw[25] = 20.3 // 7.02			//L1 distance in meters (derived from number of guides)
 	rw[27] = gDeltaLambda // 0.11			//DL/L wavelength spread
+
+	rw[52] = 56 // set for BS index = 1, distance in mm
 	
 	return(0)
 End
@@ -289,7 +292,7 @@ Window SASCALC_Panel()
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
 	
-	Display/W=(5,44,650,610)/K=1  aveint vs qval as "SASCALC"
+	Display/W=(5,44,650,630)/K=1  aveint vs qval as "SASCALC"
 	DoWindow/C SASCALC
 	ModifyGraph cbRGB=(49151,53155,65535)
 	ModifyGraph mode=3
@@ -347,7 +350,12 @@ Window SASCALC_Panel()
 	// Source Aperture
 	PopupMenu popup0 title="Source Aperture", pos={56,top}, size={100,20}, bodyWidth=70, proc=SourceAperturePopMenuProc
 	PopupMenu popup0 mode=1, value=root:Packages:NIST:SAS:gSourceApString
+
+	top += 20 + margin
 	
+	// Beamstop index
+	PopupMenu popup0_4 title="Beamstop Index", pos={56,top}, size={100,20}, bodyWidth=70, proc=BeamstopIndexPopMenuProc
+	PopupMenu popup0_4 mode=1, value=root:Packages:NIST:SAS:gBeamstopIndexStr	
 	top += 20 + margin
 	
 	// Number of Guides
@@ -510,6 +518,19 @@ Function SourceAperturePopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String popStr
 
 	sourceApertureDiam()			// sets the new value in the wave
+	
+	// [davidm] might require lense check
+	
+	ReCalculateInten(popNum)		// skip the recalculation if I pass in a zero
+End
+
+// change the source aperture
+Function BeamstopIndexPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+	String ctrlName
+	Variable popNum
+	String popStr
+
+	beamstopIndex()			// sets the new value in the wave
 	
 	// [davidm] might require lense check
 	
@@ -1283,7 +1304,8 @@ Function/S S_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	v_d = (DDet/2.3548)^2 + del_r^2/12.0
 	vz = vz_1 / lambda
 	yg = 0.5*g*L2*(L1+L2)/vz^2
-	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	//v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	v_g = (2.0*yg^2*v_lambda)					//factor of 2 correction removed 2022 JGB
 
 	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
 	delta = 0.5*(BS - r0)^2/v_d
@@ -1391,17 +1413,25 @@ Function/S GetConfigurationText()
 	NVAR gDetDist = root:Packages:NIST:SAS:gDetDist // chamberToDetectorDist
 	SVAR/Z aStr = root:Packages:NIST:gAngstStr
 
+	Variable bmDiameter = beamDiameter("maximum")
+	Variable bsDiameter = beamstopDiam()
+
 	AddLine(str, "Source Aperture Diameter",			"%8.1f cm",	sourceApertureDiam(),			-1)	
 	AddLine(str, "Source to Sample Distance (SSD)",	"%8.0f cm",	sourceToSampleDist(),			-1)
 	AddLine(str, "Sample Aperture to Detector",			"%8.0f cm",	sampleToDetectorDist(),			-1) // sampleToDetectorDist() + L2diff
-	AddLine(str, "Beam Diameter",						"%8.2f cm",	beamDiameter("maximum"),		-1)
-	AddLine(str, "Beamstop Diameter",					"%8.2f cm",	beamstopDiam(),					-1)
+	AddLine(str, "Beam Diameter",						"%8.2f cm",	bmDiameter,		-1)
+	if (bsDiameter < bmDiameter)
+		AddLine(str, "Beamstop Diameter",					"%8.2f cm ï¿½ < Beam diameter",	bsDiameter,					-1)
+	else
+		AddLine(str, "Beamstop Diameter",					"%8.2f cm",	beamstopDiam(),					-1)
+	endif
+	AddLine(str, "Beamstop Distance",					"%8.2f cm",	beamstopDist(),					-1)
 	
-	AddLine(str, "Minimum Q-value",					"%8.4f 1/Å (sigQ/Q = %4.1f%%)",	qMin(),			deltaQ(qMin()))
-	AddLine(str, "Maximum Q-value",					"%8.4f 1/Å (sigQ/Q = %4.1f%%)",	qMaxCorner(),	deltaQ(qMaxCorner()))
+	AddLine(str, "Minimum Q-value",					"%8.4f 1/A (sigQ/Q = %4.1f%%)",	qMin(),			deltaQ(qMin()))
+	AddLine(str, "Maximum Q-value",					"%8.4f 1/A (sigQ/Q = %4.1f%%)",	qMaxCorner(),	deltaQ(qMaxCorner()))
 	
-	AddLine(str, "Maximum Horizontal Q-value",			"%8.4f 1/Å",		qMaxHoriz(),					-1)
-	AddLine(str, "Maximum Vertical Q-value",			"%8.4f 1/Å",		qMaxVert(),					-1)
+	AddLine(str, "Maximum Horizontal Q-value",			"%8.4f 1/A",		qMaxHoriz(),					-1)
+	AddLine(str, "Maximum Vertical Q-value",			"%8.4f 1/A",		qMaxVert(),					-1)
 	AddLine(str, "Beam Intensity",						"%8.0f counts",	beamIntensity(),				-1)
 	AddLine(str, "Figure of Merit",						"%8.3g Å²/s",	figureOfMerit(),				-1)
 //	AddLine(str, "Attenuator transmission",				"%8.6f Atten",	attenuatorTransmission(),		-1)
@@ -1412,7 +1442,7 @@ Function/S GetConfigurationText()
 	AddLine(str, "Number of Guides",					"%8d",		numberOfGuides,			-1)
 //	AddLine(str, "Sample Chamber to Detector Distance",	"%8.1f cm",	gDetDist,				-1)
 	AddLine(str, "Detector Offset",						"%8.1f cm",	detectorOffset(),			-1)
-	AddLine(str, "Neutron Wavelength",					"%8.2f Å",	wavelength,				-1)
+	AddLine(str, "Neutron Wavelength",					"%8.2f A",	wavelength,				-1)
 	AddLine(str, "Wavelength Spread (FWHM)",			"%8.3f",		lambdaWidth,			-1)
 //	AddLine(str, "Sample Aperture to Sample Position",	"%8.2f cm",	L2Diff,					-1)
 	
@@ -1477,6 +1507,64 @@ Function sourceApertureDiam()
 	rw[23] = diam*10		//source aperture diameter in mm
 	
 	return diam
+end
+
+// parses the control for the beamstop index and sets the 
+// beamstop diameter and distance in the wave
+
+Function beamstopIndex()
+
+	Variable index
+	Variable diameter
+	Variable distance
+	
+	ControlInfo/W=SASCALC popup0_4
+	variable len = strlen(S_Value)
+	if (numtype(len) == 2) // strlen returned NaN?
+		return 0
+	endif
+
+	sscanf S_Value, "%d", index 
+	
+	if (V_flag != 1)
+		DoAlert 0, "Internal Error"
+	endif
+
+	switch(index)
+		case 1:
+			distance = 56
+			diameter = 101
+			break
+		case 2:
+			distance = 103
+			diameter = 80
+			break
+		case 3:
+			distance = 173
+			diameter = 61
+			break
+		case 4:
+			distance = 221
+			diameter = 22
+			break
+		case 5:
+			distance = 255
+			diameter = 20
+			break
+		case 6:
+			distance = 329
+			diameter = 10
+			break
+		default:
+			DoAlert 0, "no matching beamstop index, using index = 1"
+			distance = 56
+			diameter = 101
+	endswitch
+
+	WAVE rw=root:Packages:NIST:SAS:realsRead
+	rw[21] = diameter		//beamstop diameter in mm
+	rw[52] = distance		//beamstop distance in mm
+
 end
 
 //parses the control for A2 diam
@@ -1629,46 +1717,18 @@ Function beamDiameter(direction)
     endswitch
 End
 
-//on NG3 and NG7, allowable sizes are 1,2,3,4" diameter
-//will return values larger than 4.0*2.54 if a larger beam is needed
-//
-// - in an approximate way, account for lenses
-Function beamstopDiam() // [davidm] we have a list of beam stops
-
-	NVAR yesLens = root:Packages:NIST:SAS:gUsingLenses
-	Variable bm=0
-	Variable bs=0.0
+Function beamstopDiam() 
    
  	WAVE rw=root:Packages:NIST:SAS:realsRead
  	
-	if(yesLens)
-		//bm = sourceApertureDiam()		//ideal result, not needed
-		bs = 1								//force the diameter to 1"
-	else
-		bm = beamDiameter("maximum")
-		
-		if (bm < 2)
-			bs = 2
-		elseif (bm < 4)
-			bs = 4
-		elseif (bm < 6)
-			bs = 6
-		elseif (bm < 8)
-			bs = 8
-		elseif (bm < 10)
-			bs = 10
-		else
-			bs = 1000 + bm
-			if (rw[21] != bs*10)
-				DoAlert 0, "Beam is larger than the maximum Beam Stop Size"
-			endif
-		endif
-	endif
+    return rw[21] * 0.1	//return diameter in cm
+End
 
- 	//update the wave
- 	rw[21] = bs*10	//store the BS diameter in mm
+Function beamstopDist() // [davidm] we have a list of beam stops
+   
+ 	WAVE rw=root:Packages:NIST:SAS:realsRead
  	
-    return bs		//return diameter in cm
+    return rw[52] * 0.1		//return diameter in cm
 End
 
 //returns the projected diameter of the beamstop at the anode plane.
@@ -1684,7 +1744,9 @@ Function beamstopDiamProjection(flag)
 	Variable l2, LB, BS_P
     
 	l2 = sampleToDetectorDist() // + L2diff
-	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical) // epg to provide
+
+	LB = beamstopDist()
+	//LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical) // epg to provide
 	if(flag==0)
 		BS_P = bs + (bs+a2)*lb/(l2-lb)		//diameter of shadow from parallax
 	else

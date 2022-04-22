@@ -74,9 +74,16 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	del_r *= 0.1				//width of annulus, convert mm to [cm]
 	
 	BS *= 0.5*0.1			//nominal BS diameter passed in, convert to radius and [cm]
+
+	// Get the distance explicity from the raw data. Ideally it should added to the function
+	// argument but that implies all dependent functions will need to be updated across all 
+	// modules and not just QKK
+	Wave realw=$"root:Packages:NIST:RAW:RealsRead"
+	Variable LB = realw[57] * 0.1	// mm to cm
+	
 	// 21 MAR 07 SRK - use the projected BS diameter, based on a point sample aperture
-	Variable LB
-	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
+	//Variable LB
+	//LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
 	BS = bs + bs*lb/(l2-lb)		//adjusted diameter of shadow from parallax
 	
 	//Start resolution calculation
@@ -96,8 +103,9 @@ Function/S getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_r,
 	v_d = (DDet/2.3548)^2 + del_r^2/12.0
 	vz = vz_1 / lambda
 	yg = 0.5*g*L2*(L1+L2)/vz^2
-	v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
-
+	//v_g = 2.0*(2.0*yg^2*v_lambda)					//factor of 2 correction, B. Hammouda, 2007
+	v_g = (2.0*yg^2*v_lambda)					//factor of 2 correction removed 2022 JGB
+	
 	r0 = L2*tan(2.0*asin(lambda*inQ/(4.0*Pi) ))
 	delta = 0.5*(BS - r0)^2/v_d
 

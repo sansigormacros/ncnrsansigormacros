@@ -80,7 +80,7 @@ Function ReadHeaderAndData(fname)
 	String sansfname,textstr
 	
 	Make/D/O/N=23 $"root:Packages:NIST:RAW:IntegersRead"
-	Make/D/O/N=57 $"root:Packages:NIST:RAW:RealsRead"
+	Make/D/O/N=58 $"root:Packages:NIST:RAW:RealsRead"
 	Make/O/T/N=11 $"root:Packages:NIST:RAW:TextRead"
 	Make/O/N=7 $"root:Packages:NIST:RAW:LogicalsRead"
 
@@ -160,6 +160,9 @@ Function ReadHeaderAndData(fname)
 	
 	// beam stop diameter (assumes circular) (in mm)
 	realw[21] = getBSDiameter(fname)
+
+	// beam stop distance (mm)
+	realw[57] = getBSDistance(fname)
 	
 	// source aperture diameter (mm)
 	realw[23] = getSourceApertureDiam(fname)
@@ -1838,6 +1841,72 @@ Function getDetectorOffset(fname)
 	return(value)
 end
 
+//BS index is ued to determine actual diameter and distance
+Function getBSIndex(fname)
+	String fname
+	Variable value
+	// your code returning value
+	variable err
+	string dfName = ""
+	err = hdfRead(fname, dfName)
+	//err not handled here
+
+	string bsTag = dfName+":instrument:parameters:BeamStop"
+	if(WaveExists($(bsTag)))
+		Wave wBSIndex = $(bsTag)
+		value = wBSIndex[0]
+	else
+		print "Can't find Source Aperture Diameter in " + fname
+	endif
+	
+	KillWaves wBSIndex
+	
+	return(value)
+end
+
+
+
+//Beamstop distance ()
+Function getBSDistance(fname)
+	String fname
+
+	// your code returning value
+	variable err
+	string dfName = ""
+	err = hdfRead(fname, dfName)
+	//err not handled here
+
+	variable beamstop = getBSIndex(fname)
+
+	variable distance
+	
+	switch(beamstop)
+		case 1:
+			distance = 56
+			break
+		case 2:
+			distance = 103
+			break
+		case 3:
+			distance = 173
+			break
+		case 4:
+			distance = 221
+			break
+		case 5:
+			distance = 255
+			break
+		case 6:
+			distance = 329
+			break
+		default:
+			DoAlert 0, "no matching beamstop index, using index = 1"
+			distance = 56
+	endswitch
+
+	return(distance)
+end
+
 //Beamstop diameter (millimeters)
 Function getBSDiameter(fname)
 	String fname
@@ -1848,17 +1917,50 @@ Function getBSDiameter(fname)
 	err = hdfRead(fname, dfName)
 	//err not handled here
 
-	if(WaveExists($(dfName+":instrument:parameters:BSdiam"))) //canonical location
-		Wave wBSdiameter = $(dfName+":instrument:parameters:BSdiam")
-		value = wBSdiameter[0]
-	elseif(WaveExists($(dfName+":instrument:parameters:BSXmm")))
-		Wave wBSdiameter = $(dfName+":instrument:parameters:BSXmm") 
-		value = wBSdiameter[0]
+	variable beamstop = getBSIndex(fname)
+
+	String dateStr = getFileCreationDate(fname)
+
+	// convert string to igor date
+	Variable rDate = stringDate2Secs("2022-04-01 0:0:0")
+	Variable cDate = stringDate2Secs(dateStr)
+	if (cDate < rDate)
+		switch(beamstop)
+			case 1:
+				value = 101
+				break
+			case 2:
+				value = 80
+				break
+			case 3:
+				value = 61
+				break
+			case 4:
+				value = 22
+				break
+			case 5:
+				value = 20
+				break
+			case 6:
+				value = 10
+				break
+			default:
+				DoAlert 0, "no matching beamstop index, using index = 1"
+				value = 101
+		endswitch
 	else
-		print "Can't find Beamstop Diameter in " + fname
+		if(WaveExists($(dfName+":instrument:parameters:BSdiam"))) //canonical location
+			Wave wBSdiameter = $(dfName+":instrument:parameters:BSdiam")
+			value = wBSdiameter[0]
+		elseif(WaveExists($(dfName+":instrument:parameters:BSXmm")))
+			Wave wBSdiameter = $(dfName+":instrument:parameters:BSXmm") 
+			value = wBSdiameter[0]
+		else
+			print "Can't find Beamstop Diameter in " + fname
+		endif
+		
+		KillWaves wBSdiameter
 	endif
-	
-	KillWaves wBSdiameter
 	
 	return(value)	
 end
