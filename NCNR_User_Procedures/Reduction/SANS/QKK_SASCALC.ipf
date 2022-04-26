@@ -1422,6 +1422,7 @@ Function/S GetConfigurationText()
 	AddLine(str, "Beam Diameter",						"%8.2f cm",	bmDiameter,		-1)
 	if (bsDiameter < bmDiameter)
 		AddLine(str, "Beamstop Diameter",					"%8.2f cm � < Beam diameter",	bsDiameter,					-1)
+		DoAlert 0, "Beam is larger than the maximum Beam Stop Size"
 	else
 		AddLine(str, "Beamstop Diameter",					"%8.2f cm",	beamstopDiam(),					-1)
 	endif
@@ -1433,7 +1434,7 @@ Function/S GetConfigurationText()
 	AddLine(str, "Maximum Horizontal Q-value",			"%8.4f 1/A",		qMaxHoriz(),					-1)
 	AddLine(str, "Maximum Vertical Q-value",			"%8.4f 1/A",		qMaxVert(),					-1)
 	AddLine(str, "Beam Intensity",						"%8.0f counts",	beamIntensity(),				-1)
-	AddLine(str, "Figure of Merit",						"%8.3g Ų/s",	figureOfMerit(),				-1)
+	AddLine(str, "Figure of Merit",						"%8.3g A^2/s",	figureOfMerit(),				-1)
 //	AddLine(str, "Attenuator transmission",				"%8.6f Atten",	attenuatorTransmission(),		-1)
 
 	str += "*********************** Quokka ***********************\r"
