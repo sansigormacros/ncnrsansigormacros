@@ -433,7 +433,7 @@ Function DoBoxSum(fileStr,x1,x2,y1,y2,type)
 		item=StringFromList(ii,fileList,",")
 		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
-		ReadHeaderAndData(fullPath,"RAW")
+		LoadRawSANSData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
@@ -999,7 +999,7 @@ Function DoAnnulusSum(fileStr,qCtr,delta,type)
 		item=StringFromList(ii,fileList,",")
 		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
-		ReadHeaderAndData(fullPath,"RAW")
+		LoadRawSANSData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)
@@ -1180,7 +1180,7 @@ Function DoArcSum(fileStr,qCtr,delta,type,sideStr,phi,deltaPhi)
 		item=StringFromList(ii,fileList,",")
 		FileID[ii] = N_GetRunNumFromFile(item)		//do this here, since the list is now valid
 		fullPath = pathStr+item
-		ReadHeaderAndData(fullPath,"RAW")
+		LoadRawSANSData(fullPath,"RAW")
 //		String/G root:myGlobals:gDataDisplayType="RAW"
 //		fRawWindowHook()
 		if(cmpstr(type,"SAM")==0)

@@ -629,8 +629,8 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	if(change[16])      //source-sam dist
 		num = str2num(textVal[16])
 		num *= 100		// asking for [m], convert to [cm] to write
-		DoAlert 0,"Verify in the code that this is the correct distance (source ap to sample ap)"
-		writeSourceAp_distance(fname,num)		// TODO verify that this is the correct distance
+//		DoAlert 0,"Verify in the code that this is the correct distance (source ap to sample ap)"
+		writeSourceAp_distance(fname,num)		// DONE-- just like SDD, units are [cm]
 	Endif
 	if(change[17])      //det offset
 		num = str2num(textVal[17])

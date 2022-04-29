@@ -528,7 +528,7 @@ Function/S Auto_CalcKappa(runNum)
 	
 	filename = N_FindFileFromRunNumber(runNum)
 	
-	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
+	LoadRawSANSData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
 	
 	Wave data = getDetectorDataW("RAW")		//this will be the linear data
@@ -618,7 +618,7 @@ Function Auto_FindWriteBeamCenter(runNum)
 	
 	filename = N_FindFileFromRunNumber(runNum)
 	
-	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
+	LoadRawSANSData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
 
 	Wave data = getDetectorDataW("RAW")		//this will be the linear data
@@ -681,7 +681,7 @@ Function Auto_SetXYBox(runNum)
 	filename = N_FindFileFromRunNumber(runNum)
 
 // load the data	and convert to SAM
-	ReadHeaderAndData(filename,"RAW")	//this is the full Path+file
+	LoadRawSANSData(filename,"RAW")	//this is the full Path+file
 	UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
 	err = Raw_to_Work_for_Tubes("SAM")
 	String/G root:myGlobals:gDataDisplayType="SAM"

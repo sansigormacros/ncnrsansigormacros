@@ -363,8 +363,8 @@ Function Read_RT_File(msgStr)
 	//read in the data
 	//ReadOrdelaHST(filename)
 	
-	//ReadHeaderAndData(filename)
-	//Raw_to_Work("RealTime")
+	//LoadRawSANSData(filename,"RAW")
+	//Raw_to_Work_for_Tubes("RealTime")
 	ReadRTAndData(filename)
 
 	//the calling macro must change the display type

@@ -9,9 +9,13 @@
 // Adding columns to the table now means:
 // 1-Make the wave in BuildCatVeryShortTable
 // 2-Declare the wave in GetHeaderInfoToWave, and read/fill in the value
-// 3- update declarations in SortWves
+// 3- update declarations in SortWaves
 //
 //
+//
+// new columns of PURPOSE and INTENT can have the values:
+//   PURPOSE = Transmission, Scattering, He3
+//   INTENT = Sample, Empty Cell, Blocked Beam, Open Beam, Standard
 //
 
 
@@ -477,14 +481,14 @@ Function GetHeaderInfoToWave(fname,sname)
 	InsertPoints lastPoint,1,GLabels
 	GLabels[lastPoint]=getSampleDescription(fname)
 	
-	#if (exists("QUOKKA")==6)
+#if (exists("QUOKKA")==6)
 		InsertPoints lastPoint,1,GSICS
 		GSICS[lastPoint]=getSICSVersion(fname)
 			
 		//read the HDF version
 		InsertPoints lastPoint,1,GHDF
 		GHDF[lastPoint]=getHDFVersion(fname)
-	#endif
+#endif
 		
 	//read the reals
 	//detector count and (derived) count rate

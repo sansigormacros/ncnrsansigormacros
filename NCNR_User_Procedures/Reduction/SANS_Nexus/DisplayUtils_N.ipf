@@ -198,7 +198,7 @@ End
 
 Proc ChangeDisplay(type)
 	String type
-	Prompt type,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
+	Prompt type,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;ADJ;"
 	
 	fChangeDisplay(type)
 end

@@ -2,6 +2,10 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
+
+//
+//
+//
 // Work file (folder) operations that work with the tube detector panel on the
 // 10m SANS instrument. If 30m insturments eventually convert to tubes, this set of corrections
 // can be used
@@ -19,13 +23,6 @@
 //
 //
 //
-//
-//
-// MARCH 2011 - changed the references that manipulate the data to explcitly work on the linear_data wave
-//					at the end of routines that manipulate linear_data, it is copied back to "data" which is displayed
-//
-
-//
 
 //testing procedure, not called anymore
 Proc Add_to_Workfile(type, add)
@@ -41,10 +38,10 @@ Proc Add_to_Workfile(type, add)
 	Variable err
 	if(cmpstr(add,"No")==0)
 		//don't add to prev work contents, copy RAW contents to work and convert
-		err = Raw_to_work(type)
+		err = Raw_to_work_for_Tubes(type)
 	else
 		//yes, add RAW to the current work folder contents
-		err = Add_raw_to_work(type)
+		err = Add_raw_to_work_for_Tubes(type)
 	endif
 	
 	String newTitle = "WORK_"+type
@@ -62,8 +59,10 @@ End
 // - used when adding multiple runs together
 //(the function Raw_to_work(type) makes a fresh workfile)
 //
+// 2nd file is temporarily converted toa a workfile (ADJ), then added
+//
 //the current display type is updated to newType (global)
-Function Add_raw_to_work(newType)
+Function Add_raw_to_work_for_Tubes(newType)
 	String newType
 	
 	// NEW OCT 2014
@@ -77,184 +76,148 @@ Function Add_raw_to_work(newType)
 	String destPath=""
 	
 	// if the desired workfile doesn't exist, let the user know, and just make a new one
-	if(WaveExists($("root:Packages:NIST:"+newType + ":data")) == 0)
+	// root:Packages:NIST:RAW:entry:instrument:detector:data
+	if(WaveExists($("root:Packages:NIST:" + newType + ":entry:instrument:detector:data")) == 0)
 		Print "There is no old work file to add to - a new one will be created"
 		//call Raw_to_work(), then return from this function
 		Raw_to_Work_for_Tubes(newType)
 		Return(0)		//does not generate an error - a single file was converted to work.newtype
 	Endif
 	
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-	Variable pixelsX = getDet_pixel_num_x(newType)
-	Variable pixelsY = getDet_pixel_num_y(newType)
-		
+
+	// convert the RAW data to a WORK file.
+	// this will do all of the necessary corrections to the data
+	// put this in some separate work folder that can be cleaned out at the end (ADJ)
+	String tmpType="ADJ"
+	
+	//this step removes the read noise from the back so that neither added file will have this constant
+	Raw_to_Work_for_Tubes(tmpType)	
+
+
+/////////////////
+//fields that need to be added together
+// entry block
+	// collection_time  		getCollectionTime(fname)		putCollectionTime(fname,val)
+
+// instrument block
+	// beam_monitor_norm
+		// data (this will be 1e8)				getBeamMonNormData(fname)		putBeamMonNormData(fname,val)
+		// saved_count (this is the original monitor count)  getBeamMonNormSaved_count(fname)		putBeamMonNormSaved_count(fname,val)
+
+	// for each detector
+	// data		getDetectorDataW(fname,detStr)
+	// integrated_count		getDet_IntegratedCount(fname,detStr)   putDet_IntegratedCount(fname,detStr,val)
+	// linear_data		 getDetectorLinearDataW(fname,detStr)
+	// RECALCULATE (or add properly) linear_data_error		getDetectorDataErrW(fname,detStr)
+
+
+// control block (these may not actually be used?)
+	// count_time				getCount_time(fname)						putCount_time(fname,val)
+	// detector_counts		getDetector_counts(fname)				putDetector_counts(fname,val)
+	// monitor_counts		getControlMonitorCount(fname)		putControlMonitorCount(fname,val)
+
+// sample block - nothing
+// reduction block - nothing
+// user block - nothing
+
+// ?? need to add the file name to a list of what was actually added - so it will be saved with I(q)
+//
+////////////////////
+
+
 	//now make references to data in newType folder
 	DestPath="root:Packages:NIST:"+newType	
 	
+	
+	
 	WAVE data=getDetectorDataW(newType)			// these wave references point to the EXISTING work data
-//	WAVE data_copy=$(destPath +":data")			// these wave references point to the EXISTING work data
 	WAVE dest_data_err=getDetectorDataErrW(newType)			// these wave references point to the EXISTING work data
 	
-	Variable deadTime,defmon,total_mon,total_det,total_trn,total_numruns,total_rtime
-	Variable ii,jj,itim,cntrate,dscale,scale,uscale,wrk_beamx,wrk_beamy,xshift,yshift
 
-// 08/01 detector constants are now returned from a function, based on the detector type and beamline
-//	dt_ornl = 3.4e-6		//deadtime of Ordella detectors	as of 30-AUG-99
-//	dt_ill=3.0e-6			//Cerca detector deadtime constant as of 30-AUG-99
-
-	defmon=1e8			//default monitor counts
+	Variable saved_mon_dest,scale_dest,saved_mon_tmp,scale_tmp
+	Variable collection_time_dest,collection_time_tmp,count_time_dest,count_time_tmp
+	Variable detCount_dest,detCount_tmp,det_integrated_ct_dest,det_integrated_ct_tmp
+	Variable ii,new_scale,defMon
 	
-	//Yes, add to previous run(s) in work, that does exist
-	//use the actual monitor count run.savmon rather than the normalized monitor count
-	//in run.moncnt and unscale the work data
+	defMon=1e8			//default monitor counts
 	
-	total_mon = getBeamMonNormSaved_count(newType)	//saved monitor count
-	uscale = total_mon/defmon		//unscaling factor
-	total_det = uscale*getDetector_counts(newType)		//unscaled detector count
-
-	total_rtime = getCount_time(newType)		//total counting time in workfile
 	
-	//retrieve workfile beamcenter
-	wrk_beamx = getDet_beam_center_x(newType)
-	wrk_beamy = getDet_beam_center_y(newType)
-	//unscale the workfile data in "newType"
-	//
-	//check for log-scaling and adjust if necessary
-	// no need to convert the Nexus data to linear scale
-//	ConvertFolderToLinearScale(newType)
-	//
-	//then unscale the data array
-	data *= uscale
-	dest_data_err *= uscale
-	
-	//DetCorr() has not been applied to the data in RAW , do it now in a local reference to the raw data
-	WAVE raw_data = getDetectorDataW("RAW")
-	WAVE raw_data_err = getDetectorDataErrW("RAW")
-	
-	//check for log-scaling of the raw data - make sure it's linear
-//	ConvertFolderToLinearScale("RAW")
-	
-	// switches to control what is done, don't do the transmission correction for the BGD measurement
-	NVAR doEfficiency = root:Packages:NIST:gDoDetectorEffCorr
-	NVAR gDoTrans = root:Packages:NIST:gDoTransmissionCorr
-	Variable doTrans = gDoTrans
-	if(cmpstr("BGD",newtype) == 0)
-		doTrans = 0		//skip the trans correction for the BGD file but don't change the value of the global
-	endif	
-	
-	DetCorr(raw_data,raw_data_err,newType,doEfficiency,doTrans)	//applies correction to raw_data, and overwrites it
-	
-//	//if RAW data is ILL type detector, correct raw_data for same counts being written to 4 pixels
-//	if(cmpstr(raw_text[9], "ILL   ") == 0 )		//text field in header is 6 characters "ILL---"
-//		raw_data /= 4
-//		raw_data_err /= 4
-//	endif
-//	
-
-// TODO -- the dead time correction will be different for the tube detectors,
-// and for the Ordela will be accessed differently - with the dt constant in the file header
-//
-
-	//deadtime corrections to raw data
-//	deadTime = DetectorDeadtime(raw_text[3],raw_text[9],dateAndTimeStr=raw_text[1],dtime=raw_reals[48])		//pick the correct detector deadtime, switch on date too
-	deadTime = getDetectorDeadtime_Value("RAW")			// TODO -- returns a HARD WIRED value of 1e-6!!!
-	itim = getCount_time("RAW")
-	cntrate = sum(raw_data,-inf,inf)/itim		//080802 use data sum, rather than scaler value
-	dscale = 1/(1-deadTime*cntrate)
 	
 
-#if (exists("ILL_D22")==6)
-	Variable tubeSum
-	// for D22 detector might need to use cntrate/128 as it is the tube response
-	for(ii=0;ii<pixelsX;ii+=1)
-		//sum the counts in each tube
-		tubeSum = 0
-		for(jj=0;jj<pixelsY;jj+=1)
-			tubeSum += data[jj][ii]
-		endfor
-		// countrate in tube ii
-		cntrate = tubeSum/itim
-		// deadtime scaling in tube ii
-		dscale = 1/(1-deadTime*cntrate)
-		// multiply data[ii][] by the dead time
-		raw_data[][ii] *= dscale
-		raw_data_err[][ii] *= dscale
-	endfor
-#else
-	// dead time correction on all other RAW data, including NCNR
-	raw_data *= dscale
-	raw_data_err *= dscale
-#endif
+	// find the scaling factors, one for each folder
+	saved_mon_dest = getBeamMonNormSaved_count(newType)
+	scale_dest = saved_mon_dest/defMon		//un-scaling factor
+	
+	saved_mon_tmp = getBeamMonNormSaved_count(tmpType)
+	scale_tmp = saved_mon_tmp/defMon			//un-scaling factor
+
+	new_scale = defMon / (saved_mon_dest+saved_mon_tmp)
+	
+	
+	// get the count time for each (two locations)
+	collection_time_dest = getCollectionTime(newType)
+	collection_time_tmp = getCollectionTime(tmpType)
+	
+	count_time_dest = getCount_time(newType)
+	count_time_tmp = getCount_time(tmpType)
+	
+	detCount_dest = getDetector_counts(newType)
+	detCount_tmp = getDetector_counts(tmpType)
+
+// update the fields that are not in the detector blocks
+// in entry
+	putCollectionTime(newType,collection_time_dest+collection_time_tmp)
+
+// in control block
+	putCount_time(newType,count_time_dest+count_time_tmp)
+	putDetector_counts(newType,detCount_dest+detCount_tmp)
+	putControlMonitorCount(newType,saved_mon_dest+saved_mon_tmp)
+
+// (DONE)
+// the new, unscaled monitor count was written to the control block, but it needs to be 
+// written to the BeamMonNormSaved_count field instead, since this is where I read it from.
+// - so this worked in the past for adding two files, but fails on 3+
+// x- write to the NormSaved_count field...
+	putBeamMonNormSaved_count(newType,saved_mon_dest+saved_mon_tmp)			// save the true count
 
 
 
+// now adjust the data
 
-	//update totals by adding RAW values to the local ones (write to work header at end of function)
-	total_mon += getControlMonitorCount("RAW")
-#if (exists("ILL_D22")==6)
-	total_det += sum(raw_data,-inf,inf)			//add the newly scaled detector array
-#else
-	total_det += dscale*getDetector_counts("RAW")
-#endif
-//	total_trn += raw_reals[39]
-	total_rtime += getCount_time("RAW")
-	total_numruns +=1
+	Wave data_dest = getDetectorDataW(newType)
+	Wave data_err_dest = getDetectorDataErrW(newType)
+//	Wave linear_data_dest = getDetectorLinearDataW(newType)
+	det_integrated_ct_dest = getDet_IntegratedCount(newType)
+
+	Wave data_tmp = getDetectorDataW(tmpType)
+	Wave data_err_tmp = getDetectorDataErrW(tmpType)
+//	Wave linear_data_tmp = getDetectorLinearDataW(tmpType)
+	det_integrated_ct_tmp = getDet_IntegratedCount(tmpType)
 	
-	//do the beamcenter shifting if there is a mismatch
-	//and then add the two data sets together, changing "data" since it is the workfile data
-	xshift = getDet_beam_center_x("RAW") - wrk_beamx
-	yshift = getDet_beam_center_x("RAW") - wrk_beamy
+	// unscale the data arrays
+	data_dest *= scale_dest
+	data_err_dest *= scale_dest
+//	linear_data_dest *= scale_dest
 	
-	If((xshift != 0) || (yshift != 0))
-		DoAlert 1,"Do you want to ignore the beam center mismatch?"
-		if(V_flag==1)
-			xshift=0
-			yshift=0
-		endif
-	endif
+	data_tmp *= scale_tmp
+	data_err_tmp *= scale_tmp
+//	linear_data_tmp *= scale_tmp
+
+//			
+	// add them together, the dest is a wave so it is automatically changed in the "dest" folder
+	putDet_IntegratedCount(tmpType,sum(data_dest)+sum(data_tmp))		// adds the unscaled data sums
+//		putDet_IntegratedCount(tmpType,detStr,det_integrated_ct_dest+det_integrated_ct_tmp)		// wrong for "B", may be wrong for ML
+	data_dest += data_tmp
+	data_err_dest = sqrt(data_err_dest^2 + data_err_tmp^2)		// add in quadrature
+//	linear_data_dest += linear_data_tmp
 	
-	If((xshift == 0) && (yshift == 0))		//no shift, just add them
-		data += raw_data		//deadtime correction has already been done to the raw data
-		dest_data_err = sqrt(dest_data_err^2 + raw_data_err^2)			// error of the sum
-	else
-		//shift the beamcenter, then add
-		Make/O/N=1 $(destPath + ":noadd")		//needed to get noadd condition back from ShiftSum()
-		WAVE noadd = $(destPath + ":noadd")
-		Variable sh_sum			//returned value
-		Print "BEAM CENTER MISMATCH - - BEAM CENTER WILL BE SHIFTED TO THIS FILE'S VALUE"
-		//ii,jj are just indices here, not physical locations - so [0,127] is fine
-		ii=0
-		do
-			jj=0
-			do
-				//get the contribution of shifted data
-				sh_sum = ShiftSum(data,ii,jj,xshift,yshift,noadd)
-				if(noadd[0])
-					//don't do anything to data[][]
-				else
-					//add the raw_data + shifted sum (and do the deadtime correction on both)
-					data[ii][jj] += (raw_data[ii][jj]+sh_sum)		//do the deadtime correction on RAW here
-					dest_data_err[ii][jj] = sqrt(dest_data_err[ii][jj]^2 + raw_data_err[ii][jj]^2)			// error of the sum
-				Endif
-				jj+=1
-			while(jj<pixelsY)
-			ii+=1
-		while(ii<pixelsX)
-	Endif
-	
-	//scale the data to the default montor counts
-	scale = defmon/total_mon
-	data *= scale
-	dest_data_err *= scale
-	
-		
-	//all is done, except for the bookkeeping of updating the header info in the work folder
-//	textread[1] = date() + " " + time()		//date + time stamp
-	putBeamMonNormSaved_count(newType, total_mon)			//save the true monitor count
-	putControlMonitorCount(newType,defmon)				//monitor ct = defmon
-	putCollectionTime(newType,total_rtime)			// total counting time
-	putDetector_counts(newType, scale*total_det)			//scaled detector counts
+	// now rescale the data_dest to the monitor counts
+	data_dest *= new_scale
+	data_err_dest *= new_scale
+//	linear_data_dest *= new_scale
+
+
+
 	
 	//Add the added raw filename to the list of files in the workfile
 	String newfile = ";" + getFileNameFromFolder("RAW")
@@ -596,7 +559,7 @@ Function Raw_to_work_for_Tubes(newType)
 	
 // STILL TODO
 // flag to allow adding raw data files with different attenuation (normally not done)	
-// -- yet to be implemented as a prefrence panel item?
+// -- yet to be implemented as a preference panel item?
 //	NVAR gAdjustRawAtten = root:Packages:NIST:gDoAdjustRAW_Atten	
 	
 	
@@ -693,7 +656,7 @@ Function Add_Raw_to_Work_NoNorm(type)
 	String type
 	
 	putBeamMonNormSaved_count("RAW",1)		//true monitor counts, still in raw, set to 1
-	Add_Raw_to_work(type)
+	Add_Raw_to_work_for_Tubes(type)
 	//data is now in "type" folder
 	Wave data = getDetectorDataW(type)
 	Wave data_err = getDetectorDataErrW(type)
@@ -711,11 +674,33 @@ Function Add_Raw_to_Work_NoNorm(type)
 	return(0)
 End
 
+
+
+
+
+
+
+
+
+
+
+//
+// OLD corrections, used for Ordela
+// "x" comments out the whole function
+// -- verify this shorthand in the WM documentation
+//
+
+
+
+
 //performs solid angle and non-linear detector corrections to raw data as it is "added" to a work folder
 //function is called by Raw_to_work() and Add_raw_to_work() functions
 //works on the actual data array, assumes that is is already on LINEAR scale
 //
-Function DetCorr(data,data_err,fname,doEfficiency,doTrans)
+//
+//-- OLD style corrections for Ordela, not used for 10m SANS w/tubes
+//
+xFunction DetCorr(data,data_err,fname,doEfficiency,doTrans)
 	Wave data,data_err
 	String fname			//folder with the data
 	Variable doEfficiency,doTrans
@@ -857,7 +842,7 @@ Function DetCorr(data,data_err,fname,doEfficiency,doTrans)
 End
 
 //trig function used by DetCorr()
-Function dc_fx(x,sx,sx3,xcenter)
+xFunction dc_fx(x,sx,sx3,xcenter)
 	Variable x,sx,sx3,xcenter
 	
 	Variable result
@@ -867,7 +852,7 @@ Function dc_fx(x,sx,sx3,xcenter)
 End
 
 //trig function used by DetCorr()
-Function dc_fy(y,sy,sy3,ycenter)
+xFunction dc_fy(y,sy,sy3,ycenter)
 	Variable y,sy,sy3,ycenter
 	
 	Variable result
@@ -877,7 +862,7 @@ Function dc_fy(y,sy,sy3,ycenter)
 End
 
 //trig function used by DetCorr()
-Function dc_fxn(x,sx,sx3,xcenter)
+xFunction dc_fxn(x,sx,sx3,xcenter)
 	Variable x,sx,sx3,xcenter
 	
 	Variable result
@@ -887,7 +872,7 @@ Function dc_fxn(x,sx,sx3,xcenter)
 End
 
 //trig function used by DetCorr()
-Function dc_fym(y,sy,sy3,ycenter)
+xFunction dc_fym(y,sy,sy3,ycenter)
 	Variable y,sy,sy3,ycenter
 	
 	Variable result
@@ -900,7 +885,7 @@ End
 // dtdist is SDD
 // xd and yd are distances from the beam center to the current pixel
 //
-Function DetEffCorr(lambda,dtdist,xd,yd)
+xFunction DetEffCorr(lambda,dtdist,xd,yd)
 	Variable lambda,dtdist,xd,yd
 	
 	Variable theta,cosT,ff,stAl,stHe

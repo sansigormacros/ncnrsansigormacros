@@ -653,8 +653,10 @@ ThreadSafe Function T_CalcQX(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 
 	qval = T_CalcQval(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 	
-	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
-	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+//	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
+//	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+	dx = (xLoc_mm - xCtr_mm)		//delta x in mm
+	dy = (yLoc_mm - yCtr_mm)		//delta y in mm
 	
 	phi = T_FindPhi(dx,dy)
 	
@@ -694,8 +696,10 @@ ThreadSafe Function T_CalcQY(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 	
 	qval = T_CalcQval(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 
-	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
-	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+//	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
+//	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+	dx = (xLoc_mm - xCtr_mm)		//delta x in mm
+	dy = (yLoc_mm - yCtr_mm)		//delta y in mm
 
 		
 	phi = T_FindPhi(dx,dy)
@@ -737,8 +741,10 @@ ThreadSafe Function T_CalcQZ(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)
 	xLoc_mm = Convert_xLoc_pix2mm(xaxval,tube_width)
 	yLoc_mm = Convert_yLoc_pix2mm(xaxval,yaxval,coefW)
 	
-	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
-	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+//	dx = (xCtr_mm - xLoc_mm)		//delta x in mm
+//	dy = (yCtr_mm - yLoc_mm)		//delta y in mm
+	dx = (xLoc_mm - xCtr_mm)		//delta x in mm
+	dy = (yLoc_mm - yCtr_mm)		//delta y in mm
 
 	
 	qval = T_CalcQval(xaxval,yaxval,xctr,yctr,tube_width,sdd,lam,coefW)

@@ -299,7 +299,7 @@ Function ShowBoxButtonProc(ba) : ButtonControl
 					Abort "Bad file number in Plex field"
 				endif
 				// load the file
-				ReadHeaderAndData(fname,"RAW")	//this is the full Path+file
+				LoadRawSANSData(fname,"RAW")	//this is the full Path+file
 				UpdateDisplayInformation("RAW")
 				//draw a box of the specified size. This is persistent on the display as you scroll to the offset data
 				NVAR x1 = root:myGlobals:Protocols:gPlexX1

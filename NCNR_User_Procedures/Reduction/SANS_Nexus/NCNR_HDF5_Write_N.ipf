@@ -3586,6 +3586,7 @@ Function writeSourceAp_Description(fname,str)
 	return(err)
 End
 
+// units of [cm]
 Function writeSourceAp_distance(fname,val)
 	String fname
 	Variable val

@@ -863,7 +863,7 @@ Function CircularAverageTo1D(type)
 	Variable BS = getBeamStop_size(type)
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
-	Variable L1 = getSourceAp_distance(type) // N_getResolution is expecting [m]
+	Variable L1 = getSourceAp_distance(type) / 100 // N_getResolution is expecting [m]
 	lambda = getWavelength(type)
 	Variable lambdaWidth = getWavelength_spread(type)
 	String detStr=getDetDescription(type)
@@ -1341,7 +1341,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	Variable BS = getBeamStop_size(folderStr)
 	Variable S1 = getSourceAp_size(folderStr)
 	Variable S2 = getSampleAp_size(folderStr)
-	Variable L1 = getSourceAp_distance(folderStr) // N_getResolution is expecting [m]
+	Variable L1 = getSourceAp_distance(folderStr) / 100 // N_getResolution is expecting [m]
 	lambda = getWavelength(folderStr)
 	Variable lambdaWidth = getWavelength_spread(folderStr)
 	

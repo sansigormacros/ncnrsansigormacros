@@ -1393,8 +1393,6 @@ End
 //
 // this value is stored in [cm], so [cm] is returned
 //
-// this value is apparently stored in [m]!!
-// -- so [m] is returned -- BEWARE - L2 is stored/returned in [cm]
 //
 Function getSourceAp_distance(fname)
 	String fname

@@ -1443,12 +1443,13 @@ Function AddFilesInList(type,list)
 			return(err)
 		Endif
 		Close refnum		//file was found and opened, so close it
-		ReadHeaderAndData(filename,"RAW")
+		err = LoadRawSANSData(filename,"RAW")		//
+
 		if(ii == 0)
 			//first pass, wipe out the old contents of the work file
 			err =  Raw_to_Work_for_Tubes(type)
 		else
-			err = Add_raw_to_work(type)
+			err = Add_raw_to_work_for_Tubes(type)
 		Endif
 		ii+=1
 	while(ii<num)
@@ -1511,7 +1512,7 @@ Function ExecuteProtocol(protStr,samStr)
 						Abort "reduction sequence aborted"
 					endif
 					UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = Add_raw_to_work(activeType)
+					err = Add_raw_to_work_for_Tubes(activeType)
 					notDone = 1
 				else
 					notDone = 0
@@ -1561,7 +1562,7 @@ Function ExecuteProtocol(protStr,samStr)
 						Abort "reduction sequence aborted"
 					endif
 					UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = Add_raw_to_work(activeType)
+					err = Add_raw_to_work_for_Tubes(activeType)
 					notDone = 1
 				else
 					notDone = 0
@@ -1615,7 +1616,7 @@ Function ExecuteProtocol(protStr,samStr)
 						Abort "reduction sequence aborted"
 					endif
 					UpdateDisplayInformation("RAW")			//display the new type of data that was loaded
-					err = Add_raw_to_work(activeType)
+					err = Add_raw_to_work_for_Tubes(activeType)
 					notDone = 1
 				else
 					notDone = 0
@@ -1671,7 +1672,7 @@ Function ExecuteProtocol(protStr,samStr)
 	String fname="",drkStr=""
 	drkStr=StringByKey("DRK",prot[6],"=",",")
 	if(cmpstr(drkStr,"none") != 0)
-		err = ReadHeaderAndData( (pathStr+drkStr) ,"RAW")
+		err = LoadRawSANSData( (pathStr+drkStr) ,"RAW")
 		if(err)
 			PathInfo/S catPathName
 			Abort "reduction sequence aborted"
@@ -1880,25 +1881,29 @@ Function ExecuteProtocol(protStr,samStr)
 	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
 		//get name from textwave of the activeType dataset
-		String textStr = "root:Packages:NIST:"+activeType+":textread"
-		Wave/T textPath = $textStr
+//		String textStr = "root:Packages:NIST:"+activeType+":textread"
+//		Wave/T textPath = $textStr
 		String tempFilename = samStr
-		If(WaveExists(textPath) == 1)
-#if (exists("QUOKKA")==6)
-			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
-#elif (exists("HFIR")==6)
-//			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
-//			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
-//			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
-//			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
-			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
-#else
-			newFileName = UpperStr(N_GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
-#endif
-		else
-			newFileName = ""			//if the header is missing?
-			//Print "can't read the header - newfilename is null"
-		Endif
+		
+		newFileName = StringFromList(0, samStr, ",")
+		
+//		
+//		If(WaveExists(textPath) == 1)
+//#if (exists("QUOKKA")==6)
+//			newFileName = ReplaceString(".nx.hdf", tempFilename, "")
+//#elif (exists("HFIR")==6)
+////			newFileName = ReplaceString(".xml",textPath[0],"")		//removes 4 chars
+////			newFileName = ReplaceString("SANS",newFileName,"")		//removes 4 more chars = 8
+////			newFileName = ReplaceString("exp",newFileName,"")			//removes 3 more chars = 11
+////			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
+//			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
+//#else
+//			newFileName = UpperStr(N_GetNameFromHeader(samStr))		//NCNR data drops here, trims to 8 chars
+//#endif
+//		else
+//			newFileName = ""			//if the header is missing?
+//			//Print "can't read the header - newfilename is null"
+//		Endif
 		
 		//pick ABS or AVE extension
 		String exten = activeType

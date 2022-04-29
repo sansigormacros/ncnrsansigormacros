@@ -1076,8 +1076,8 @@ Function V_Add_raw_to_work(newType)
 // the new, unscaled monitor count was written to the control block, but it needs to be 
 // written to the BeamMonNormSaved_count field instead, since this is where I read it from.
 // - so this worked in the past for adding two files, but fails on 3+
-// x- write to the NormSaved_count field...
-	V_writeBeamMonNormSaved_count(newType,saved_mon_dest+saved_mon_tmp)			// save the true count
+// x- write (put) to the NormSaved_count field...
+	V_putBeamMonNormSaved_count(newType,saved_mon_dest+saved_mon_tmp)			// save the true count
 
 
 // now loop over all of the detector panels

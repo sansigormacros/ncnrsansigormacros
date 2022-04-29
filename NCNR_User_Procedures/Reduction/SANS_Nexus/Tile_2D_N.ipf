@@ -165,7 +165,7 @@ Function AddToLayoutButtonProc(ctrlName) : ButtonControl
 				MakePNGforLayout(minScale,maxScale,"ASC",ind)
 				ind+=1			//a running count of all of the PNG's
 			else
-				ReadHeaderAndData(fname,"RAW")		//fname is the full path
+				LoadRawSANSData(fname,"RAW")		//fname is the full path
 				String/G root:myGlobals:gDataDisplayType="RAW"	
 				fRawWindowHook()
 
@@ -306,7 +306,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 		//Modified for summer student 2014 by mjw
 		//Original is follows
 		//
-		//ReadHeaderAndData(fname)		//fname is the full path
+		//LoadRawSANSData(fname,"RAW")		//fname is the full path
 		//String/G root:myGlobals:gDataDisplayType="RAW"	
 		//fRawWindowHook()
 		//if(makeLog)
@@ -323,7 +323,7 @@ Function AddALLToLayout(ctrlName) : ButtonControl
 			MakePNGforLayout(minScale,maxScale,"ASC",ind)
 			ind+=1			//a running count of all of the PNG's
 		else
-			ReadHeaderAndData(fname,"RAW")		//fname is the full path
+			LoadRawSANSData(fname,"RAW")		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 
@@ -681,7 +681,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 	do
 		if(sel[ii] == 1)
 			fname=pathStr + N_FindValidFilename(fileWave[ii])		//in case of VAX version numbers
-			ReadHeaderAndData(fname,"RAW")		//fname is the full path
+			LoadRawSANSData(fname,"RAW")		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
 			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed

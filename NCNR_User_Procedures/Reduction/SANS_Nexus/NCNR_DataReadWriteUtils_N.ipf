@@ -188,6 +188,10 @@ End
 // -- the DAS_Logs are SKIPPED - since they are not needed for reduction
 // Attributes are NOT loaded at all.
 //
+// if data destination is RAW, calling function sets DF before passing
+// if data is to be sent to rawSANS, calling function sets DF to Packages:NIST level
+// -- reset here to make sure
+//
 //
 Function ReadHeaderAndData(fname,folderStr)
 	String fname,folderStr
@@ -242,6 +246,8 @@ Function ReadHeaderAndData(fname,folderStr)
 	endif
 	String base_name = folderStr
 	
+	// be sure I'm in the right base data folder 
+	SetDataFolder ksBaseDFPath
 	String curDF = GetDataFolder(1)
 
 	if(isFolder == -1)

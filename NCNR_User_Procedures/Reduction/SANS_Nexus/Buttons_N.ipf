@@ -347,7 +347,8 @@ Function LoadSelectedData()
 	
 	// display the specified RAW data file
 	String/G root:myGlobals:gDataDisplayType="RAW"
-	ReadHeaderAndData(S_Path+filename,"RAW")
+	
+	LoadRawSANSData(S_Path+filename,"RAW")
 	//data is displayed here
 	fRawWindowHook()
 
