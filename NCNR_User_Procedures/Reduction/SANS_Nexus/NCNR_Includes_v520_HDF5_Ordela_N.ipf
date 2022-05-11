@@ -10,8 +10,14 @@ Function NCNR_Nexus()
 	return(0)
 End
 
-Menu "NEXUS 10m-SANS MODE"
+Menu "NEXUS Ordela SANS MODE"
 End
+
+// In the Nexus file, the Ordela detector is treated as if it was tubes
+// with nonlinear corrections (=linear), but this flag chooses the corrections
+// that arespecific to the Ordela detetor rather than tubes
+StrConstant ksDetType = "Ordela"
+
 
 //*************
 // the list of files to include in the SANS reduction experiment
@@ -88,7 +94,9 @@ End
 #include "WriteModelData_v40"
 
 // SRK OCT 2012 - processing of event mode data
-#include "EventModeProcessing_N"
+// as of 2022, Ordela detector uses an event file structure different than tubes
+//#include "EventModeProcessing_N"
+#include "EventModeProcessing"
 
 // SRK JAN 2013 - to make simulation easier
 // SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
@@ -117,6 +125,9 @@ End
 // SRK FEB 2022 -- split out corrections to specific detector types
 #include "WorkFileUtils_Tubes_N"
 //#include "WorkFileUtils_Ordela_N"
+
+//mainly for tube detectors, with switch for Ordela
+#include "DetectorCorrections_N"		
 
 
 

@@ -385,6 +385,15 @@ Function Raw_to_work_for_Tubes(newType)
 	// x- this DOES alter the data
 	// x- verify the error propagation
 	//
+	// rescaling the total detector counts is not done here. the number of 
+	// detector counts is increased here my directly multiplying the data array.
+	// in step (8), when the monitor normalization is done, the integrated count 
+	// is updated by summing the actual counts in the data wave directly
+	// and replacing the value of the integrated counts (May 2022)
+	//
+	//
+	// *** there are different corrections for Ordela and Tubes ***
+	//
 	Variable countRate,ctTime
 	NVAR gDoDeadTimeCor = root:Packages:NIST:gDoDeadTimeCor
 	if (gDoDeadTimeCor == 1)
@@ -393,9 +402,23 @@ Function Raw_to_work_for_Tubes(newType)
 		Wave w_err = getDetectorDataErrW(fname)
 		ctTime = getCount_time(fname)
 
-		// do the corrections for tube panels
-		Wave w_dt = getDetector_deadtime(fname)
-		DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+		if(cmpstr(ksDetType,"Ordela") != 0)
+			// not a match, it's tubes
+			
+			// do the corrections for tube panels
+			Wave w_dt = getDetector_deadtime(fname)
+			DeadTimeCorrectionTubes(w,w_err,w_dt,ctTime)
+		
+		else
+			// Ordela - only a single DT value
+
+			// not correct, but get the "fake" Ordela tubes dt wave, and read only a single value
+			//		
+			Wave w_dt = getDetector_deadtime(fname)
+			Variable dt_val = w_dt[0][0]
+			DeadTimeCorrectionOrdela(w,w_err,dt_val,ctTime)
+		
+		endif
 		
 	else
 		Print "Dead Time correction NOT DONE"
@@ -403,11 +426,13 @@ Function Raw_to_work_for_Tubes(newType)
 	
 
 	// (4) solid angle correction
-	//  -- this currently calculates the correction factor AND applys it to the data
+	//  -- this currently calculates the correction factor AND applies it to the data
 	//  -- as a result, the data values are very large since they are divided by a very small
 	//     solid angle per pixel. But all of the count values are now on the basis of 
 	//    counts/(solid angle) --- meaning that they can all be binned together for I(q)
 	//    -and- - this is taken into account for absolute scaling (this part is already done)
+	//
+	// *** there are different corrections for Ordela and Tubes ***
 	//
 	NVAR gDoSolidAngleCor = root:Packages:NIST:gDoSolidAngleCor
 	NVAR/Z gDo_OLD_SolidAngleCor = root:Packages:NIST:gDo_OLD_SolidAngleCor
@@ -422,21 +447,30 @@ Function Raw_to_work_for_Tubes(newType)
 
 		Wave w = getDetectorDataW(fname)
 		Wave w_err = getDetectorDataErrW(fname)
-		// any other dimensions to pass in?
+
+
+		if(cmpstr(ksDetType,"Ordela") != 0)
+			// not a match, it's tubes
 		
-		if(gDo_OLD_SolidAngleCor == 0)
-			SolidAngleCorrection(w,w_err,fname,destPath)
-		else
-			// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
-			// function call above	 correctly handles either high-res grid or tubes. This COS3 function
-			// will incorrectly treat tubes as a grid	
-			//				Print "TESTING -- using incorrect COS^3 solid angle !"		
-//			SolidAngleCorrection_COS3(w,w_err,fname,destPath)
-		endif
+			if(gDo_OLD_SolidAngleCor == 0)
+				SolidAngleCorrection(w,w_err,fname,destPath)
+			else
+				// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
+				// function call above	 correctly handles either high-res grid or tubes. This COS3 function
+				// will incorrectly treat tubes as a grid	
+				//				Print "TESTING -- using incorrect COS^3 solid angle !"		
+	//			SolidAngleCorrection_COS3(w,w_err,fname,destPath)
+			endif
+					
 				
+			if(gDo_OLD_SolidAngleCor == 1)
+				DoAlert 0,"TESTING -- using incorrect COS^3 solid angle !"		
+			endif
 			
-		if(gDo_OLD_SolidAngleCor == 1)
-			DoAlert 0,"TESTING -- using incorrect COS^3 solid angle !"		
+		else
+			// it's Ordela, so use the "old" COS3 correction, which is the right thing to
+			// do for Ordela
+			SolidAngleCorrection_COS3(w,w_err,fname,destPath)
 		endif
 
 	else
@@ -454,6 +488,8 @@ Function Raw_to_work_for_Tubes(newType)
 	//
 	// TubeEfficiencyShadowCorr(w,w_err,fname,destPath)
 	//
+	// *** there are different corrections for Ordela and Tubes ***
+	//
 	NVAR gDoTubeShadowCor = root:Packages:NIST:gDoTubeShadowCor
 	if (gDoTubeShadowCor == 1)
 		Print "Doing Tube Efficiency+Shadow correction"
@@ -461,8 +497,19 @@ Function Raw_to_work_for_Tubes(newType)
 
 		Wave w = getDetectorDataW(fname)
 		Wave w_err = getDetectorDataErrW(fname)
+
+		if(cmpstr(ksDetType,"Ordela") != 0)
+			// not a match, it's tubes
 		
-		TubeEfficiencyShadowCorr(w,w_err,fname,destPath)
+			TubeEfficiencyShadowCorr(w,w_err,fname,destPath)
+		
+		else
+			// it's Ordela, do the proper detector efficiency correction
+			
+			Print "DetEffCorr calculated but NOT TESTED for Ordela - verify that the det_eff matrix is correctly calculated and applied"
+			OrdelaEfficiencyCorr(w,w_err,fname,destPath)
+
+		endif
 			
 	else
 		Print "Tube efficiency+shadowing correction NOT DONE"
@@ -881,25 +928,6 @@ xFunction dc_fym(y,sy,sy3,ycenter)
 	Return(result)
 End
 
-//distances passed in are in mm
-// dtdist is SDD
-// xd and yd are distances from the beam center to the current pixel
-//
-xFunction DetEffCorr(lambda,dtdist,xd,yd)
-	Variable lambda,dtdist,xd,yd
-	
-	Variable theta,cosT,ff,stAl,stHe
-	
-	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )
-	cosT = cos(theta)
-	
-	stAl = 0.00967*lambda*0.8		//dimensionless, constants from JGB memo
-	stHe = 0.146*lambda*2.5
-	
-	ff = exp(-stAl/cosT)*(1-exp(-stHe/cosT)) / ( exp(-stAl)*(1-exp(-stHe)) )
-		
-	return(ff)
-End
 
 
 //******************

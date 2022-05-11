@@ -109,6 +109,38 @@ Function DeadTimeCorrectionTubes(dataW,data_errW,dtW,ctTime)
 	return(0)
 end
 
+
+//
+// detector dead time -- for Ordela
+// 
+// input is the data array (N tubes x M pixels)
+// input of a single dead time value
+//
+// output is the corrected counts in data, overwriting the input data
+//
+// Note that the equation in Roe (eqn 2.15, p. 63) looks different, but it is really the 
+// same old equation, just written in a more complex form.
+//
+//
+//
+Function DeadTimeCorrectionOrdela(dataW,data_errW,deadtime,ctTime)
+	Wave dataW,data_errW
+	Variable deadtime,ctTime
+	
+	
+	Variable cntrate,dscale
+	cntrate = sum(dataW,-inf,inf)/ctTime		//080802 use data sum, rather than scaler value
+	dscale = 1/(1-deadTime*cntrate)
+
+// modify the actual data arrays and error
+	dataW *= dscale
+	data_errW *= dscale
+	
+	return(0)
+end
+
+
+
 // test function
 Function testDTCor()
 
@@ -1032,28 +1064,28 @@ Function SolidAngleCorrection(w,w_err,fname,destPath)
 	return(0)
 end
 
-// this is the incorrect solid angle correction that does not take into 
-// account the tube geometry. It is correct for the high-res detector (and the 30m Ordela)
+
+
 //
-// -- only for testing to prove that the cos(th)^2 *cos(th_i) is correct
+// this is correct for the 30m Ordela detector
 //
-xFunction V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
+//
+Function SolidAngleCorrection_COS3(w,w_err,fname,destPath)
 	Wave w,w_err
-	String fname,detStr,destPath
+	String fname,destPath
 
 	Variable sdd,xCtr,yCtr,lambda
 	String orientation
 	
 // get all of the geometry information	
-	orientation = V_getDet_tubeOrientation(fname,detStr)
-	sdd = V_getDet_ActualDistance(fname,detStr)
+	sdd = getDet_Distance(fname)
 
 	// this is ctr in mm
-	xCtr = V_getDet_beam_center_x_mm(fname,detStr)
-	yCtr = V_getDet_beam_center_y_mm(fname,detStr)
-	lambda = V_getWavelength(fname)
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
+	lambda = getWavelength(fname)
 	
-	SetDataFolder $(destPath + ":entry:instrument:detector_"+detStr)
+	SetDataFolder $(destPath + ":entry:instrument:detector")
 	
 	Wave data_realDistX = data_realDistX
 	Wave data_realDistY = data_realDistY
@@ -1092,6 +1124,13 @@ xFunction V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
 	
 			dx /= 10
 			dy /= 10		// convert mm to cm (since sdd is in cm)
+			
+//			if(numtype(dx) != 0)
+//				Print "dx is not a number"
+//			endif
+//			if(numtype(dy) !=0)
+//				Print "dy is not a number"
+//			endif
 			solid_angle[ii][jj] = dx*dy		//this is in cm^2
 		endfor
 	endfor
@@ -1112,11 +1151,92 @@ xFunction V_SolidAngleCorrection_COS3(w,w_err,fname,detStr,destPath)
 	
 
 // DONE x- clean up after I'm satisfied computations are correct		
-	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_theta_i
 	
 	SetDataFolder root:
 	return(0)
 end
+
+
+
+//
+// this is correct for the 30m Ordela detector
+//
+//
+Function OrdelaEfficiencyCorr(w,w_err,fname,destPath)
+	Wave w,w_err
+	String fname,destPath
+
+	Variable sdd,xCtr,yCtr,lambda,sdd_mm
+	
+// get all of the geometry information	
+	sdd = getDet_Distance(fname) // in [cm]
+	sdd_mm = sdd * 10
+
+	// this is ctr in mm
+	xCtr = getDet_beam_center_x_mm(fname)
+	yCtr = getDet_beam_center_y_mm(fname)
+	lambda = getWavelength(fname)
+	
+	SetDataFolder $(destPath + ":entry:instrument:detector")
+	
+	Wave data_realDistX = data_realDistX
+	Wave data_realDistY = data_realDistY
+
+	Duplicate/O w det_eff	//in the current df
+
+	Variable ii,jj,numx,numy,dx,dy
+
+
+	for(ii=0	;ii<numx;ii+=1)
+		for(jj=0;jj<numy;jj+=1)
+			
+			dx = (xCtr - data_realDistX[ii][jj])	//delta x for the pixel
+			dy = (yCtr - data_realDistY[ii][jj])	//delta y for the pixel
+			
+			det_eff[ii][jj] = DetEffCorr(lambda,sdd_mm,dx,dy)
+		endfor
+	endfor
+	
+	// Here it is! Apply the correction to the intensity (I divide)
+	w /= det_eff
+
+	// correctly apply the correction to the error wave (assume a perfect value?)
+ 	w_err /= det_eff		//
+	
+
+// DONE x- clean up after I'm satisfied computations are correct		
+//	KillWaves/Z det_eff
+	
+	SetDataFolder root:
+	return(0)
+end
+
+
+//
+// For the Ordela detectors
+//
+//distances passed in are in mm
+// dtdist is SDD
+// xd and yd are distances from the beam center to the current pixel
+//
+Function DetEffCorr(lambda,dtdist,xd,yd)
+	Variable lambda,dtdist,xd,yd
+	
+	Variable theta,cosT,ff,stAl,stHe
+	
+	theta = atan( (sqrt(xd^2 + yd^2))/dtdist )
+	cosT = cos(theta)
+	
+	stAl = 0.00967*lambda*0.8		//dimensionless, constants from JGB memo
+	stHe = 0.146*lambda*2.5
+	
+	ff = exp(-stAl/cosT)*(1-exp(-stHe/cosT)) / ( exp(-stAl)*(1-exp(-stHe)) )
+		
+	return(ff)
+End
+
+
 
 
 
@@ -1931,7 +2051,7 @@ Function DownstreamWindowTransmission(w,w_err,fname,destPath)
 	w_err = tmp_err	
 	
 	// DONE x- clean up after I'm satisfied computations are correct		
-	KillWaves/Z tmp_theta,tmp_dist,tmp_err,dwt_err
+//	KillWaves/Z tmp_theta,tmp_dist,tmp_err,dwt_err
 	
 	return(0)
 end

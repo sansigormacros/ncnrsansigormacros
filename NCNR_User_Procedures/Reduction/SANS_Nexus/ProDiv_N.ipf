@@ -49,19 +49,19 @@ Function NormalizeDIV(type)
 	String type
 	
 	Wave data = getDetectorDataW(type)		//this will be the linear data
-	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
-	WAVE data_err=$("root:Packages:NIST:"+type+":linear_data_error")
+//	WAVE data_lin=$("root:Packages:NIST:"+type+":linear_data")
+	WAVE data_err=getDetectorDataErrW(type)
 	
 	Variable totCts=sum(data,Inf,-Inf)		//sum all of the data
-	NVAR pixelX = root:myGlobals:gNPixelsX
-	NVAR pixelY = root:myGlobals:gNPixelsY
+	Variable pixelX = DimSize(data, 0)
+	Variable pixelY = DimSize(data, 1)
 
 	
 	data /= totCts
 	data *= pixelX*pixelY
 	
-	data_lin /= totCts
-	data_lin *= pixelX*pixelY
+//	data_lin /= totCts
+//	data_lin *= pixelX*pixelY
 	
 	data_err /= totCts
 	data_err *= pixelX*pixelY
@@ -175,21 +175,22 @@ Function ReplaceDataBlock(ctrType,offType,x1,x2,y1,y2)
 	Variable x1,x2,y1,y2
 	
 	//do it crudely, with nested for loops
-	WAVE ctrData=$("root:Packages:NIST:"+ctrtype+":data")
-	WAVE offData=$("root:Packages:NIST:"+offtype+":data")
+	getDetectorDataW(ctrtype)
+	WAVE ctrData=getDetectorDataW(ctrtype)
+	WAVE offData=getDetectorDataW(offType)
 	
-	WAVE ctrData_lin=$("root:Packages:NIST:"+ctrtype+":linear_data")
-	WAVE offData_lin=$("root:Packages:NIST:"+offtype+":linear_data")
+//	WAVE ctrData_lin=$("root:Packages:NIST:"+ctrtype+":linear_data")
+//	WAVE offData_lin=$("root:Packages:NIST:"+offtype+":linear_data")
 	
-	WAVE ctrData_err=$("root:Packages:NIST:"+ctrtype+":linear_data_error")
-	WAVE offData_err=$("root:Packages:NIST:"+offtype+":linear_data_error")
+	WAVE ctrData_err=getDetectorDataErrW(ctrtype)
+	WAVE offData_err=getDetectorDataErrW(offType)
 	
 	Variable ii,jj
 	
 	for(ii=x1;ii<=x2;ii+=1)
 		for(jj=y1;jj<=y2;jj+=1)
 			ctrData[ii][jj] = offData[ii][jj]
-			ctrData_lin[ii][jj] = offData_lin[ii][jj]
+//			ctrData_lin[ii][jj] = offData_lin[ii][jj]
 			ctrData_err[ii][jj] = offData_err[ii][jj]
 		endfor
 	endfor
@@ -536,7 +537,8 @@ Function ReloadDIVButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			Execute "ReadWork_DIV()"
-			WaveStats root:Packages:NIST:DIV:data
+			WaveStats root:SANS_DIV_file:entry:instrument:detector:data
+//			WaveStats root:Packages:NIST:DIV:data
 			Print "*"			
 //			Execute "ChangeDisplay(\"DIV\")"	
 			break
@@ -683,6 +685,27 @@ End
 //
 Proc H_Setup_SANS_DIV_Structure()
 	
+	
+	Variable nx, ny, c1, c2, c3, tubeWidth
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+		nx = 112
+		ny = 128
+		c1 = -521
+		c2 = 8.14
+		c3 = 0
+		tubeWidth = 8.4
+	else
+		//Ordela values
+		nx = 128
+		ny = 128
+		c1 = -320
+		c2 = 5.08
+		c3 = 0
+		tubeWidth = 5.08
+	endif
+	
+	
 	NewDataFolder/O/S root:SANS_DIV_file		
 
 	NewDataFolder/O/S root:SANS_DIV_file:entry	
@@ -693,9 +716,17 @@ Proc H_Setup_SANS_DIV_Structure()
 		NewDataFolder/O/S root:SANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "SANS_NGB"
 		NewDataFolder/O/S root:SANS_DIV_file:entry:instrument:detector
-			Make/O/D/N=(112,128)	data	= 1 
-			Make/O/D/N=(112,128)	linear_data_error	= 0.01
+			Make/O/D/N=(nx,ny)	data	= 1 
+			Make/O/D/N=(nx,ny)	linear_data_error	= 0.01
+			Make/O/D/N=1 tube_width = tubeWidth
+			Make/O/D/N=(3,nx) spatial_calibration
 
+			spatial_calibration[0][] = c1
+			spatial_calibration[1][] = c2
+			spatial_calibration[2][] = c3
+			
+			Make/O/D/N=1 pixel_num_x = nx
+			Make/O/D/N=1 pixel_num_y = ny
 		
 		// fake, empty folders so that the generic loaders can be used
 		NewDataFolder/O root:SANS_DIV_file:entry:DAS_logs

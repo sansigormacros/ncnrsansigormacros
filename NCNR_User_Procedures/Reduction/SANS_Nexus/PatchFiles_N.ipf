@@ -5,7 +5,7 @@
 //**************************
 // Vers. 1.2 092101
 //
-//proceures required to allow patching of raw SANS data headers
+//procedures required to allow patching of raw SANS data headers
 //only a limited number of fields are allowble for changes, although the list could
 //be enhanced quite easily, at the expense of a larger, more complex panel
 //information for the Patch Panel is stored in the root:myGlobals:Patch subfolder

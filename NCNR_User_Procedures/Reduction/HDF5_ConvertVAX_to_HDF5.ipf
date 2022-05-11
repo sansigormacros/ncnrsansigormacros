@@ -8,23 +8,34 @@
 // procedures so that the conversion can be done
 //
 // TODO:
-// -- update the tree structure to match the new Nexus
-// -- update the corresponding RTI data to fill in
-// -- update the writer so a proper HDF file can be written
-// -- do I need to change the file name or extension?
+// x- update the tree structure to match the new Nexus
+// x- update the corresponding RTI data to fill in
+// x- update the writer so a proper HDF file can be written
+// x- do I need to change the file name or extension?
 //
 //
 // -- for testing, how can I get data to test the DIV Read/Write/Generation?
 //		do I have old VAX data for this?
 //
-// -- how do I best truncate the detector data? 
-// -- how will this affect my comparison to the VAX-reduced data?
+// x- how do I best truncate the detector data? 
+// x- how will this affect my comparison to the VAX-reduced data?
 //
 //
 // ** I had to move some of the declarations -- compiler
 // complained that it was the wrong type (sample_aperture:shape:size declared as /D
 // -- but it's in a different data folder???)
 // -- is it because it's in the same function?
+
+
+// basic file structure is the same for simulated tubes at 10m SANS
+// or "faking" the Ordela as tubes
+// - just some different values need to be entered
+//
+//still need to patch (after conversion)
+// --atten tables
+// --detector deadtime
+// --detector calibration (fill here for Ordela?)
+// -- plus?? what else
 
 
 
@@ -42,6 +53,16 @@
 // lays out the tree
 
 Function SetupStructure()
+
+	SVAR detectorStyle = root:DetectorStyle
+	Variable gNumPix_x,gNumPix_y
+	if(cmpstr(detectorStyle,"Tubes")==0)
+		gNumPix_x = 112
+		gNumPix_y = 128
+	else
+		gNumPix_x = 128
+		gNumPix_y = 128
+	endif
 
 	SetDataFolder root:
 	
@@ -103,14 +124,14 @@ Function SetupStructure()
 		Make/O/D/N=1	sampled_fraction 	//0.0833
 
 	SetDataFolder root:toExport:entry:data
-	
-		Make/O/D/N=(112,128)	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
+
+		Make/O/D/N=(gNumPix_x,gNumPix_y)	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
 		Make/O/T/N=1	configuration   	//"4m 6A Scatt"
 		Make/O/T/N=1	sample_description   	//"Sample 1"
 		Make/O/D/N=1	sample_thickness 	//1
 		Make/O/T/N=1	slotIndex   	//"1"
 		Make/O/T/N=1	x0   	//"TIME"
-		Make/O/D/N=(112,128)	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(gNumPix_x,gNumPix_y)	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
 
 	SetDataFolder root:toExport:entry:instrument
 	
@@ -249,13 +270,24 @@ Function 	SetupCollimator()
 	SetDataFolder root:
 end
 
-Function	SetupDetector()						
+Function	SetupDetector()	
+
+	SVAR detectorStyle = root:DetectorStyle
+	Variable gNumPix_x,gNumPix_y
+	if(cmpstr(detectorStyle,"Tubes")==0)
+		gNumPix_x = 112
+		gNumPix_y = 128
+	else
+		gNumPix_x = 128
+		gNumPix_y = 128
+	endif
+						
 	SetDataFolder root:toExport:entry:instrument:detector 
 		Make/O/D/N=1		azimuthal_angle 	//0
 		Make/O/D/N=1		beam_center_x 	//113
 		Make/O/D/N=1		beam_center_y 	//63.3
-		Make/O/D/N=(112,128)		data //(2-D wave N=(112,128)) val=4605	typ=32bI
-		Make/O/D/N=(1,112)		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+		Make/O/D/N=(gNumPix_x,gNumPix_y)		data //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(gNumPix_x)		dead_time //(1-D wave N=(112)) val=5.2e-06	typ=32bF
 		Make/O/T/N=1		description   	//"fancy model"
 		Make/O/D/N=1		distance 	//120.009
 		Make/O/D/N=1		integrated_count //	1.76832e+08
@@ -268,11 +300,11 @@ Function	SetupDetector()
 		Make/O/D/N=1		polar_angle 	//0
 		Make/O/D/N=1		rotation_angle 	//0
 		Make/O/T/N=1		settings   //	"just right"
-		Make/O/D/N=(3,112)		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
+		Make/O/D/N=(3,gNumPix_x)		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
 		Make/O/D/N=1		tube_width 	//8.4
-		Make/O/D/N=128		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=(gNumPix_y)		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
 		Make/O/D/N=1		x_pixel_size 	//5.08
-		Make/O/D/N=128		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=(gNumPix_y)		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
 		Make/O/D/N=1		y_pixel_size 	//5.08
 		
 	SetDataFolder root:
@@ -580,7 +612,7 @@ Function	FillDetector(rw,tw,iw)
 		WAVE		beam_center_x 	//113
 		WAVE		beam_center_y 	//63.3
 		WAVE		data //(2-D wave N=(112,128)) val=4605	typ=32bI
-		WAVE		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+		WAVE		dead_time //(1-D wave N=(112)) val=5.2e-06	typ=32bF
 		WAVE/T		description   	//"fancy model"
 		WAVE		distance 	//120.009
 		WAVE		integrated_count //	1.76832e+08
@@ -607,52 +639,97 @@ Function	FillDetector(rw,tw,iw)
 		beam_center_y = rw[17]
 		distance = rw[18]	*100				// convert the value of [m] to [cm]
 		lateral_offset = rw[19]
-		
-// cut the right edge of the detector off since data is declared as 
-// (112,128), and Ordela is (128,128)
-		 Wave linear_data = root:Packages:NIST:RAW:linear_data
-//		 data = linear_data[p][q] // result data is (112,128)
 
-// trim evenly from each side L/R
-// 128-112 = 16, so start at the 8th col [7]
-// index runs from [7] to [7+111]
-//		 data = linear_data[p+7][q] // result data is (112,128)
+	 Wave linear_data = root:Packages:NIST:RAW:linear_data
+
+
+	SVAR detectorStyle = root:DetectorStyle
+
+// set some values here, and a constant to switch on:
+		Variable gNumPix_x,gNumPix_y, gtube_width, gx_pixel_size, gy_pixel_size, gpixel_fwhm_x, gpixel_fwhm_y	
+
+	// if the mode is tubes, trim to x=112 tubes, otherwise it's 128x128
+	if(cmpstr(detectorStyle,"Tubes")==0)	
 	
-// cut the left edge of the detector, since offset is to the right
+		// cut the right edge of the detector off since data is declared as 
+		// (112,128), and Ordela is (128,128)
+		//		 data = linear_data[p][q] // result data is (112,128)
+		
+		// trim evenly from each side L/R
+		// 128-112 = 16, so start at the 8th col [7]
+		// index runs from [7] to [7+111]
+		//		 data = linear_data[p+7][q] // result data is (112,128)
+			
+		// cut the left edge of the detector, since offset is to the right
 		 data = linear_data[p+15][q] // result data is (112,128)
-	
+		 
+		 
+		// approximate dead time per tube
+		dead_time = 5e-6
+		 
+		 // perfect cailbration of tubes
+		 
+		spatial_calibration[0][] = -521
+		spatial_calibration[1][] = 8.14
+		spatial_calibration[2][] = 0
 		
-		
-// different fill if i'm faking TUBES vs. verifying Ordela/30m SANS
-//
+		// for fake "tubes"
 
-// for TUBES
-	tube_width = 8.4
-	number_of_tubes = 112
-	
-	x_pixel_size = 8.4
-	y_pixel_size = 5
-	pixel_num_x = 112
-	pixel_num_y = 128
-	pixel_fwhm_x = 0.84
-	pixel_fwhm_y = 0.5		
+		gNumPix_x = 112
+		gNumPix_y = 128
+		gtube_width = 8.4
+		gx_pixel_size = 8.4
+		gy_pixel_size = 5
+		gpixel_fwhm_x = 0.84
+		gpixel_fwhm_y = 0.5		
+				
+		 
+	else
+		// ORDELA VALUES
+		// for 30m SANS/ duplicating Ordela:
+
+		
+		data = linear_data // result data is (128,128)
+		
+			// approximate dead time (only a single value used)
+		dead_time = 1e-6
+		 
+		 // "perfect" cailbration of Ordela detector 64 cm in y-direction (=640 mm)
+		 
+		spatial_calibration[0][] = -320
+		spatial_calibration[1][] = 5.08		// per pixel in y direction
+		spatial_calibration[2][] = 0
 		
 		
-// for 30m SANS/ duplicating Ordela:
+
+		gNumPix_x = 128
+		gNumPix_y = 128
+		gtube_width = 5.08		// fake tube width
+		gx_pixel_size = 5.08
+		gy_pixel_size = 5.08
+		gpixel_fwhm_x = 0.508
+		gpixel_fwhm_y = 0.508
+
+	endif
+		
+		
+// different fill if I'm faking TUBES vs. verifying Ordela/30m SANS
 //
-//	x_pixel_size = 5.08
-//	y_pixel_size = 5.08
-//	pixel_num_x = 128
-//	pixel_num_y = 128
-//	pixel_fwhm_x = 0.508
-//	pixel_fwhm_y = 0.508		
-//       CALX[0] = rw[10]
-//        CALX[1] = rw[11]
-//        CALX[2] = rw[12]
-//        CALY[0] = rw[13]
-//        CALY[1] = rw[14]
-//        CALY[2] = rw[15]	
+// values are set in the if block above
+
 	
+
+	tube_width = gtube_width
+	number_of_tubes = gNumPix_x
+	
+	x_pixel_size = gx_pixel_size
+	y_pixel_size = gy_pixel_size
+	pixel_num_x = gNumPix_x
+	pixel_num_y = gNumPix_y
+	pixel_fwhm_x = gpixel_fwhm_x
+	pixel_fwhm_y = gpixel_fwhm_y		
+		
+
 		
 	SetDataFolder root:
 end
@@ -1207,8 +1284,14 @@ End
 
 
 
-Macro BatchConvertToHDF5(firstFile,lastFile)
-	Variable firstFile=1,lastFile=100
+Macro BatchConvertToHDF5(firstFile,lastFile,style)
+	Variable firstFile=1,lastFile=10
+	String style="Tubes"
+	Prompt firstFile, "Enter first run number"
+	Prompt lastFile, "Enter last run number"
+	Prompt style, "Detector style", popup "Tubes;Ordela;"
+
+	String/G root:DetectorStyle = style
 
 	SetupStructure()
 	fBatchConvertToHDF5(firstFile,lastFile)

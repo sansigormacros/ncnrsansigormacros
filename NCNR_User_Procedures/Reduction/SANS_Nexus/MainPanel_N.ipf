@@ -131,6 +131,12 @@ Proc DisplayInterm_MainButtonProc(ctrlName) : ButtonControl
 	ChangeDisplay()
 End
 
+Proc KillWork_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	KillWorkFolder()
+End
+
 Proc ReadMask_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -376,7 +382,7 @@ Window Main_Panel()
 	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
 	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=Event_MainButtonProc
-	Button MainButton_3g,help={"Manipulate TISANE Timeslice data"}
+	Button MainButton_3g,help={"Manipulate Timeslice data"}
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
@@ -395,6 +401,11 @@ Window Main_Panel()
 	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
 	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
 	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
+
+
+	Button MainButton_4e,pos={180,90},size={130,20},proc=KillWork_MainButtonProc,title="Kill Work Folder"
+	Button MainButton_4e,help={"Kill a work data folder"}
+
 //	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
 //	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
 	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
@@ -408,7 +419,7 @@ Window Main_Panel()
 	Button MainButton_4b,disable=1
 	Button MainButton_4c,disable=1
 	Button MainButton_4d,disable=1
-//	Button MainButton_4e,disable=1
+	Button MainButton_4e,disable=1
 	Button MainButton_4f,disable=1
 	Button MainButton_4g,disable=1
 	Button MainButton_4h,disable=1

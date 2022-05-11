@@ -95,6 +95,8 @@ Function LoadRawSANSData(file,folder)
 	tmpStr = "root:Packages:NIST:"+folder+":entry:instrument:"
 	Duplicate/O data $(tmpStr+"detector:linear_data")
 
+	Variable tube_width
+
 // if the data is DIV, then handle the data errors differently since they are already part of the data file
 	if(cmpstr(folder,"DIV")==0)
 		// makes data error and linear copy -- DP waves if V_MakeDataWaves_DP() called above 
@@ -104,6 +106,13 @@ Function LoadRawSANSData(file,folder)
 		Duplicate/O data $(tmpStr+"detector:linear_data")
 		Wave linear_data_error=linear_data_error
 		Duplicate/O linear_data_error $(tmpStr+"detector:data_error")
+		
+		// do the nonlinear calculation so that the data can be displayed
+		Wave w = getDetectorDataW(folder)
+		Wave w_calib = getDetTube_spatialCalib(folder)
+		tube_width = getDet_tubeWidth(folder)
+		NonLinearCorrection(folder,w,w_calib,tube_width,destPath)
+		
 		SetDataFolder root:
 	endif
 
@@ -134,7 +143,7 @@ Function LoadRawSANSData(file,folder)
 			Wave w = getDetectorDataW(folder)
 	//			Wave w_err = V_getDetectorDataErrW(fname,detStr)		//not here, done above w/V_MakeDataError()
 			Wave w_calib = getDetTube_spatialCalib(folder)
-			Variable tube_width = getDet_tubeWidth(folder)
+			tube_width = getDet_tubeWidth(folder)
 			NonLinearCorrection(folder,w,w_calib,tube_width,destPath)
 //				
 				// --The beam center for SANS is defined in PIXELS, kBCTR_CM==0
@@ -238,6 +247,15 @@ Function ReadHeaderAndData(fname,folderStr)
 	
 	// if base_name is from my list of WORK folders + RawSANS;, then base_name = ""
 	// use a stringSwitch? WhichListItem?
+	//
+	// counterintuitive logic here on my part. If it is trying to load in a work folder (like RAW)
+	// - then "0" is returned (it's on the list), the folderStr is set to NULL, and data is loaded into the
+	// current data folder (which was set to folderStr before entering this procedure
+	// -- so this makes sure to NOT reset the data folder. If the folderStr is actually a raw file
+	// name, then it loads into RawSANS and uses the file name for the folder.
+	// -- very confused as to why I did this. Possibly some leftovers from the ansto reader 
+	// that I copied some ideas from.
+	//
 	Variable isFolder = WhichListItem(folderStr,ksWorkFolderListShort+"RawSANS;")
 	if(isFolder != -1)
 		folderStr = ""
@@ -247,11 +265,12 @@ Function ReadHeaderAndData(fname,folderStr)
 	String base_name = folderStr
 	
 	// be sure I'm in the right base data folder 
-	SetDataFolder ksBaseDFPath
+//	SetDataFolder ksBaseDFPath
 	String curDF = GetDataFolder(1)
 
 	if(isFolder == -1)
 		NewDataFolder/O/S $(curDF+folderStr)
+//		NewDataFolder/O/S $(ksBaseDFPath+":"+folderStr)
 	endif
 	
 //////// loads everything with one line	 (includes /DAS_logs)

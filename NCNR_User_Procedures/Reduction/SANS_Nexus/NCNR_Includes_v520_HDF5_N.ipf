@@ -13,6 +13,8 @@ End
 Menu "NEXUS 10m-SANS MODE"
 End
 
+StrConstant ksDetType = "Tubes"
+
 //*************
 // the list of files to include in the SANS reduction experiment
 //  - files must be located somewhere in the User Procedures folder

@@ -324,7 +324,19 @@ End
 
 
 
-
+Proc KillWorkFolder(type)
+	String type
+	Prompt type,"Kill WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;ADJ;"
+	
+	KillDataFolder/Z $("root:Packages:NIST:"+type)
+	
+	if(V_flag == 0)
+		DoAlert 0, "Success - the work folder was killed"
+	else
+		DoAlert 0, "The work folder was not killed, something is in use"
+	endif
+	
+end
 
 
 
@@ -510,6 +522,7 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 	
 	String fromDF, toDF
 	
+	
 	// make the DF paths - source and destination
 	fromDF = "root:Packages:NIST:"+fromStr
 	toDF = "root:Packages:NIST:"+toStr
@@ -521,6 +534,9 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 	// if it deosn't exist then do nothing (as for duplication for polarized beam)
 	if(DataFolderExists(toDF))
 		KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
+
+//		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
+
 	endif
 	
 	if(V_flag == 0)		// kill DF was OK

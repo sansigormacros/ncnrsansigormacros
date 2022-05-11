@@ -3937,8 +3937,11 @@ Function/S DateAndTime2HSTName(dateandtime)
 	
 	str=dateandtime
 	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
-	mon = monStr2num(monStr)
-
+#if (exists("NCNR_Nexus")==6)
+	mon = N_monStr2num(monStr)
+#else
+	mon = monStr2num(monStr)	// regualar VAX reduction is loaded
+#endif
 	fileStr = "Event"+yr+num2str(mon)+day+hh+mm+ss+".hst"
 	Print fileStr
 
@@ -3958,8 +3961,11 @@ Function DateAndTime2HSTNumber(dateandtime)
 	
 	str=dateandtime
 	sscanf str,"%2s-%3s-%4s %2s:%2s:%2s",day,monStr,yr,hh,mm,ss
-	mon = monStr2num(monStr)
-
+#if (exists("NCNR_Nexus")==6)
+	mon = N_monStr2num(monStr)
+#else
+	mon = monStr2num(monStr)	// regualar VAX reduction is loaded
+#endif
 	fileStr = yr+num2str(mon)+day+hh+mm+ss
 	num = str2num(fileStr)
 

@@ -1043,7 +1043,7 @@ End
 
 
 
-// following subset of funcitons is for detector, but non-standard
+// following subset of functions is for detector, but non-standard
 // values, some not initially stored in file
 
 Function/S getDetEventFileName(fname)
