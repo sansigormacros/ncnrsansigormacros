@@ -233,6 +233,14 @@ Function Add_raw_to_work_for_Tubes(newType)
 	Return(0)
 End
 
+
+//
+// this is the main procedure to get raw data to a corrected work file
+//
+// there are switches in place to use code proper for Tubes or Ordela as needed
+//
+//
+//
 //will copy the current contents of the RAW folder to the newType work folder
 //and do the geometric corrections and normalization to monitor counts
 //(the function Add_Raw_to_work(type) adds multiple runs together)

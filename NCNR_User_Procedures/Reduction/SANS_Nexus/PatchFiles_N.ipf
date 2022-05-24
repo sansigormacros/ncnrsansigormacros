@@ -1317,9 +1317,9 @@ Proc DeadtimePatchPanel() : Panel
 
 	Variable sc = 1
 			
-//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+	if(root:Packages:NIST:gLaptopMode == 1)
 		sc = 0.7
-//	endif
+	endif
 
 	Variable lo,hi
 	Find_LoHi_RunNum(lo,hi)		//set the globals
@@ -1594,9 +1594,9 @@ Proc CalibrationPatchPanel() : Panel
 
 	Variable sc = 1
 			
-//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+	if(root:Packages:NIST:gLaptopMode == 1)
 		sc = 0.7
-//	endif
+	endif
 	
 	Variable lo,hi
 	Find_LoHi_RunNum(lo,hi)		//set the globals
@@ -1880,9 +1880,9 @@ Proc DrawPatchAttenTablePanel() : Panel
 
 	Variable sc = 1
 			
-//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+	if(root:Packages:NIST:gLaptopMode == 1)
 		sc = 0.7
-//	endif
+	endif
 	
 	Variable lo,hi
 	Find_LoHi_RunNum(lo,hi)		//set the globals
@@ -2149,9 +2149,9 @@ Proc DrawPatchAttenErrTablePanel() : Panel
 
 	Variable sc = 1
 			
-//	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+	if(root:Packages:NIST:gLaptopMode == 1)
 		sc = 0.7
-//	endif
+	endif
 	
 	Variable lo,hi
 	Find_LoHi_RunNum(lo,hi)		//set the globals

@@ -1046,10 +1046,13 @@ End
 // following subset of functions is for detector, but non-standard
 // values, some not initially stored in file
 
+//
+//  root:Packages:NIST:RAW:entry:instrument:event_file_name
+//
 Function/S getDetEventFileName(fname)
 	String fname
 
-	String path = "entry:instrument:detector:event_file_name"
+	String path = "entry:instrument:event_file_name"
 	Variable num=60
 
 	return(getStringFromHDF5(fname,path,num))

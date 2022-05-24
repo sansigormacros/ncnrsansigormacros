@@ -59,7 +59,7 @@ Function CleanupData_w_Progress(indefinite, useIgorDraw)
 	
 	Variable sc = 1
 	
-	NVAR/Z gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+	NVAR/Z gLaptopMode = root:Packages:NIST:gLaptopMode
 		
 	if(gLaptopMode == 1)
 		sc = 0.7
@@ -148,4 +148,110 @@ Function CleanOutOneRawSANS()
 	
 	SetDataFolder root:	
 	return(numFolders)
+End
+
+
+// match BOTH the intent and purpose
+// -- needed to identify the SAMPLE + SCATTERING data files.
+//
+//
+// method is the method to use to find the file (currently ignored, CAT is always used)
+// 0 = (default) is to use the file catalog (= fastest)
+// 1 = Grep (not terribly slow)
+// 2 = read every file (bad choice)
+//
+Function/S getFileIntentPurposeList(intent,purpose,method)
+	String intent,purpose
+	Variable method
+	
+	Variable ii,num
+	String list="",item="",fname,newList
+
+//	// read every file...
+//	if(method == 2)
+//		PathInfo catPathName
+//		String path = S_path
+//		newList = V_GetRawDataFileList()
+//		num=ItemsInList(newList)
+//		
+//		for(ii=0;ii<num;ii+=1)
+//			item=StringFromList(ii, newList , ";")
+//			fname = path + item
+//			purpose = V_getReduction_purpose(fname)
+//			if(cmpstr(purpose,testStr) == 0)
+//				list += item + ";"
+//			endif
+//		endfor	
+//	endif
+//	
+//	// use Grep
+//	if(method == 1)
+//		newList = V_GetRawDataFileList()
+//		num=ItemsInList(newList)
+//		for(ii=0;ii<num;ii+=1)
+//			item=StringFromList(ii, newList , ";")
+//			Grep/P=catPathName/Q/E=("(?i)"+testStr) item
+//			if( V_value )	// at least one instance was found
+//	//				Print "found ", item,ii
+//				list += item + ";"
+//			endif
+//		endfor	
+//	
+//	else
+	// get the list from the file catalog
+		
+		WAVE/T fileNameW = root:myGlobals:CatVSHeaderInfo:Filenames
+		WAVE/T purposeW = root:myGlobals:CatVSHeaderInfo:Purpose
+		WAVE/T intentW = root:myGlobals:CatVSHeaderInfo:Intent
+		
+		Variable np = numpnts(purposeW)		//fileNameW is LONGER - so don't use numpnts(fileWave)
+		for(ii=0;ii<np;ii+=1)
+			if(cmpstr(purposeW[ii],purpose)==0 && cmpstr(intentW[ii],intent)==0)		//this is case-INSENSITIVE (necessary, since the case is unknown)
+				//print "adding  "+ fileNameW[ii]+"   "+num2str(ii)
+				list += fileNameW[ii] + ";"
+				
+			endif		
+		endfor
+		
+		List = SortList(List,";",0)
+	
+	return(list)
+end
+
+//
+// 
+// x- does this need to be more sophisticated?
+//
+// simple "not" of V_GetRawDataFileList()
+Function/S Get_NotRawDataFileList()
+	
+	//make sure that path exists
+	PathInfo catPathName
+	if (V_flag == 0)
+		Abort "Folder path does not exist - use Pick Path button on Main Panel"
+	Endif
+	String path = S_Path
+	
+	String list=IndexedFile(catPathName,-1,"????")
+	String newList="",item="",validName="",fullName=""
+	Variable num=ItemsInList(list,";"),ii
+	
+	for(ii=0;ii<num;ii+=1)
+		item = StringFromList(ii, list  ,";")
+
+//		validName = V_FindValidFileName(item)
+//		if(strlen(validName) != 0)		//non-null return from FindValidFileName()
+//			fullName = path + validName		
+
+	//method (2)			
+			if( !stringmatch(item,"*.nxs.ngv*") )
+				newlist += item + ";"
+			endif
+
+			
+//		endif
+		//print "ii=",ii
+	endfor
+	newList = SortList(newList,";",0)
+	return(newList)
 End

@@ -1505,7 +1505,7 @@ End
 //
 // interpolate the table for the correction - to avoid repeated integration
 //
-// store the tables in: root:Packages:NIST:VSANS:Globals:Efficiency:
+// store the tables in: root:myGlobals:Efficiency:eff
 //
 Function TubeEfficiencyShadowCorr(w,w_err,fname,destPath)
 	Wave w,w_err

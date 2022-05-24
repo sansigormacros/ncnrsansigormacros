@@ -2220,6 +2220,14 @@ Function V_ExecuteProtocol(protStr,samStr)
 	V_UpdateDisplayInformation(ActiveType)		
 
 
+//
+// DIV is not done here any more (CAL is not generated)
+// since the DIV step is done at file loading time -- doing it here would be
+// double-DIV-ing
+//
+
+
+
 //////////////////////////////
 //  ABSOLUTE SCALE
 //////////////////////////////

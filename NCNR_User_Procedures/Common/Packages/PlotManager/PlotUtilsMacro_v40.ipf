@@ -1486,6 +1486,9 @@ Proc Initialize_Preferences()
 	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1
 	Variable/G root:Packages:NIST:gDownstreamWinTransErr = 0
 
+
+	val = NumVarOrDefault("root:Packages:NIST:gLaptopMode", 1 )
+	Variable/G root:Packages:NIST:gLaptopMode = 1
 	
 	
 
@@ -1664,6 +1667,16 @@ Function DoDownstreamWindowCorPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+
+Function LaptopModePref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	NVAR gVal = root:Packages:NIST:gLaptopMode
+	gVal = checked
+End
+
+
 //set the angle->Q conversion factor
 // or set the Q->Q "conversion" factor
 // this is the same value that is set in Init_USANS_Facility()
@@ -1717,6 +1730,11 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_0b,pos={21,140},size={124,14},proc=WritePref,title="Use NXcanSAS HDF5 Output",mode=1
 	CheckBox PrefCtrl_0b,help={"Checking this will set the default output to be NXcanSAS HDF5 format"}
 	CheckBox PrefCtrl_0b,value= root:Packages:NIST:gNXcanSAS_Write
+	
+	CheckBox PrefCtrl_0c,pos={21,164},size={124,14},proc=LaptopModePref,title="Laptop Mode for Panels"
+	CheckBox PrefCtrl_0c,help={"Checking this will draw panels smaller to fit on a 1920x1080 laptop screen"}
+	CheckBox PrefCtrl_0c,value= root:Packages:NIST:gLaptopMode
+
 
 //on tab(1) - SANS
 	CheckBox PrefCtrl_1a,pos={21,100},size={171,14},proc=LogScalePrefCheck,title="Use Log scaling for 2D data display"

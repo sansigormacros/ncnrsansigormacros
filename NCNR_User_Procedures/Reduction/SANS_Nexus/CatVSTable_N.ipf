@@ -192,7 +192,7 @@ Function BuildCatVeryShortTable()
 	
 	numitems = ItemsInList(list,";")
 	Variable sc=1
-	NVAR/Z gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+	NVAR/Z gLaptopMode = root:Packages:NIST:gLaptopMode
 	if(gLaptopMode == 1)
 		sc = 0.7
 	endif
@@ -1090,13 +1090,13 @@ Function S_BuildCatSortPanel()
 	
 	print "Creating CAT Sort-Panel..."
 
-	Variable sc = 0.7
+	Variable sc
 	
-//	NVAR gLaptopMode = root:myGlobals:Globals:gLaptopMode
+	NVAR gLaptopMode = root:Packages:NIST:gLaptopMode
 		
-//	if(gLaptopMode == 1)
-//		sc = 0.7
-//	endif
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
 		
 	//PauseUpdate
 	NewPanel /W=(600*sc,360*sc,790*sc,740*sc)/K=1 as "CAT - Sort Panel"

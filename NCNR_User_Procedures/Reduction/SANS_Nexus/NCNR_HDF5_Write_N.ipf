@@ -2742,10 +2742,10 @@ End
 Function writeDetEventFileName(fname,str)
 	String fname,str
 
-//	String path = "entry:instrument:detector:event_file_name"
+//	String path = "entry:instrument:event_file_name"
 
 	Make/O/T/N=1 tmpTW
-	String groupName = "/entry/instrument/detector"	//	
+	String groupName = "/entry/instrument"	//	
 	String varName = "event_file_name"
 	tmpTW[0] = str //
 

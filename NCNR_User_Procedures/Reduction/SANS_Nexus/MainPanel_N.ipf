@@ -257,6 +257,20 @@ Proc Event_MainButtonProc(ctrlName) : ButtonControl
 	
 End
 
+Proc Event_MultReduceButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+		ReduceEventFilesPanel()
+	
+End
+
+Proc Event_FileTableButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+	
+		MakeEventFileTable()
+	
+End
+
 Proc Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
@@ -381,8 +395,14 @@ Window Main_Panel()
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
 	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
-	Button MainButton_3g,pos={150,180},size={100,20},title="Event Data",proc=Event_MainButtonProc
-	Button MainButton_3g,help={"Manipulate Timeslice data"}
+	Button MainButton_3g,pos={150,150},size={100,20},title="Event Data",proc=Event_MainButtonProc
+	Button MainButton_3g,help={"Manipulate Event data"}
+	
+	Button MainButton_3h,pos={150,180},size={140,20},title="Event Reduction",proc=Event_MultReduceButtonProc
+	Button MainButton_3h,help={"Reduce SANS Event Mode data"}
+	Button MainButton_3i,pos={150,210},size={140,20},title="Event File Table",proc=Event_FileTableButtonProc
+	Button MainButton_3i,help={"Make a table of raw data files and the associated event files"}
+	
 	
 	Button MainButton_3a,disable=1
 	Button MainButton_3b,disable=1
@@ -391,6 +411,8 @@ Window Main_Panel()
 	Button MainButton_3e,disable=1
 	Button MainButton_3f,disable=1
 	Button MainButton_3g,disable=1
+	Button MainButton_3h,disable=1
+	Button MainButton_3i,disable=1
 
 //on tab(4) - Miscellaneous operations
 	Button MainButton_4a,pos={15,90},size={80,20},proc=Draw3D_MainButtonProc,title="3D Display"
