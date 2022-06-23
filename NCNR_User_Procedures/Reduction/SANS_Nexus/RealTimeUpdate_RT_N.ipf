@@ -3,10 +3,12 @@
 #pragma IgorVersion=6.1
 
 //
-// AUG 2021
+// JUNE 2022
 //
-// This file and RT operations have NOT been updated for the Nexus file
-// structure, and may not ever be updated if the RT updating is no longer used.
+// This file and RT operations have been updated for the Nexus file
+// -- but has not been tested - since I do not know what the file strucure of the "live"
+// file will be - I'm assuming that it will be Nexus, and will be populated with 
+// all of the correct (available) metadata
 //
 //
 
@@ -43,13 +45,13 @@
 //
 //
 //
-Proc Init_FakeRT()
-	pInit_FakeRT()
-End
+//Proc Init_FakeRT()
+//	pInit_FakeRT()
+//End
 
-Proc Clear_RT_Folder()
-	ClearRTFolder()
-End
+//Proc Clear_RT_Folder()
+//	ClearRTFolder()
+//End
 
 //
 //
@@ -201,8 +203,7 @@ Proc RT_Panel()
 	Button button_1,help={"Load the data file for real-time display"}
 	Button button_2,pos={250,2},size={30,20},proc=RT_HelpButtonProc,title="?"
 	Button button_2,help={"Display the help file for real-time controls"}
-	//Button button_3,pos={230,80},size={60,20},proc=RT_DoneButtonProc,title="Done"
-	//Button button_3,help={"Closes the panel and stops the updating process"}
+
 	SetVariable setvar_6,pos={11,105},size={250,20},title="Total Detector Counts"
 	SetVariable setvar_6,help={"Total counts on the detector, as displayed"},noedit=1
 	SetVariable setvar_6,limits={0,Inf,0},value= root:myGlobals:RT:totalCounts
@@ -218,6 +219,9 @@ Proc RT_Panel()
 	SetVariable setvar_10,pos={11,171},size={250,20},title="    Monitor Count Rate"
 	SetVariable setvar_10,help={"Count rate, as displayed"},noedit=1
 	SetVariable setvar_10,limits={0,Inf,0},value= root:myGlobals:RT:monitorCountRate
+	
+	Button button_3,pos={230,195},size={60,20},proc=RT_DoneButtonProc,title="Done"
+	Button button_3,help={"Closes the panel and stops the updating process"}
 EndMacro
 
 //
@@ -266,22 +270,23 @@ Function RT_Param_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContro
 	String varStr
 	String varName
 
-	Wave rw=$"root:Packages:NIST:RealTime:RealsRead"
-	if(WaveExists(rw)==0)
-		return(1)
-	Endif
+
 	strswitch(ctrlName)	// string switch
 		case "setvar_0":		//xCtr
-			rw[16]=varNum
+			putDet_beam_center_x("RealTime",varNum)
+//			rw[16]=varNum
 			break	
 		case "setvar_1":		//yCtr
-			rw[17]=varNum
+			putDet_beam_center_y("RealTime",varNum)
+//			rw[17]=varNum
 			break	
 		case "setvar_2":		//SDD
-			rw[18]=varNum
+			putDet_distance("RealTime",varNum)
+//			rw[18]=varNum
 			break
 		case "setvar_3":		//lambda
-			rw[26]=varNum
+			putWavelength("RealTime",varNum)
+//			rw[26]=varNum
 			break
 	endswitch
 	//only update the graph if it is open, and is a RealTime display...
@@ -323,7 +328,7 @@ End
 //
 //(ununsed)
 Proc Load_RT_Data()
-	String msgStr = "Select a RT Ordela data file"
+	String msgStr = "Select the RT data file"
 	Read_RT_File(msgStr)
 End
 
@@ -355,6 +360,8 @@ Function Read_RT_File(msgStr)
 		SetDataFolder root:
 		Abort "No file selected, action aborted"
 	Endif
+	
+	
 	//set the globals and reset the RT_Path value
 	pathStr = N_GetPathStrFromfullName(filename)
 	NewPath/O RT_Path,pathStr
@@ -363,9 +370,8 @@ Function Read_RT_File(msgStr)
 	//read in the data
 	//ReadOrdelaHST(filename)
 	
-	//LoadRawSANSData(filename,"RAW")
-	//Raw_to_Work_for_Tubes("RealTime")
-	ReadRTAndData(filename)
+	LoadRawSANSData(filename,"RAW")
+	Raw_to_Work_for_Tubes("RealTime")
 
 	//the calling macro must change the display type
 	String/G root:myGlobals:gDataDisplayType="RealTime"		//displayed data type is RealTime
@@ -392,11 +398,10 @@ Function Read_RT_File(msgStr)
 		totCounts = sum(data, -Inf, Inf )
 	endif
 	//Update other live values
-	Wave intw = root:Packages:NIST:RealTime:IntegersRead
-	Wave realw = root:Packages:NIST:RealTime:RealsRead
-	countTime = intw[2]
+
+	countTime = getCount_time("RealTime")
 	countRate = totCounts/countTime
-	monitorCounts = realw[0]
+	monitorCounts = getBeamMonNormData("RealTime")
 	monitorCountRate = monitorCounts/countTime
 
 	fRawWindowHook()
@@ -408,127 +413,127 @@ Function Read_RT_File(msgStr)
 	return(0)
 End
 
-//function that does the guts of reading the binary data file
-//fname is the full path:name;vers required to open the file
-//The final root:Packages:NIST:RealTime:data wave is the real
-//neutron counts and can be directly used
-//
-//returns 0 if read was ok
-//returns 1 if there was an error
-Function ReadOrdelaHST(fname)
-	String fname
-	//this function is for reading in RealTime data only, so it will always put data in RealTime folder
-	SetDataFolder "root:Packages:NIST:RealTime"	
-	//keep a string with the filename in the RealTime folder
-	String/G root:Packages:NIST:RealTime:fileList = "Real-Time Data Display"
-	//get log/linear state based on SANS_Data window
-	Variable isLogScale=NumVarOrDefault("root:Packages:NIST:RealTime:gIsLogScale", 0)
-	Variable/G root:Packages:NIST:RealTime:gIsLogScale = isLogScale		//creates if needed, "sets" to cur val if already exists
-	
-	Variable refNum=0,ii,p1,p2,tot,num=128
-	String str=""
-	Make/O/T/N=11 hdrLines
-	Make/O/I/N=(num*num) a1		// /I flag = 32 bit integer data
-	
-	//full filename and path is now passed in...
-	//actually open the file
-	Open/R/Z refNum as fname		// /Z flag means I must handle open errors
-	if(refnum==0)		//FNF error, get out
-		DoAlert 0,"Could not find file: "+fname
-		Close/A
-		return(1)
-	endif
-	if(V_flag!=0)
-		DoAlert 0,"File open error: V_flag="+num2Str(V_Flag)
-		Close/A
-		return(1)
-	Endif
-	// as of 12MAY03, the run.hst for real-time display has no header lines (M. Doucet)
-//	for(ii=0;ii<11;ii+=1)		//read (or skip) 11 header lines
-//		FReadLine refnum,str
-//		hdrLines[ii]=str
-//	endfor
-	// 4-byte integer binary data follows, num*num integer values 
-	FBinRead/B=3/F=3 refnum,a1
-	//	
-	Close refnum
-	
-	//we want only the first [0,127][0,127] quadrant of the 256x256 image
-	// this is done most quickly by two successive redimension operations
-	// (the duplicate is for testing only)
-	//final redimension can make the data FP if desired..
-	//Redimension/N=(256,256) a1
-	Redimension/N=(128,128) a1
-
-	if(exists("root:Packages:NIST:RealTime:data")!=1)		//wave DN exist
-		Make/O/N=(128,128) $"root:Packages:NIST:RealTime:data"
-	endif
-	Wave data = getDetectorDataW("RealTIme")		//this will be the linear data
-//	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
-//	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
-//	lin_data=a1
-//	if(isLogScale)
-//		data=log(a1)
-//	else
-		data=a1
+////function that does the guts of reading the binary data file
+////fname is the full path:name;vers required to open the file
+////The final root:Packages:NIST:RealTime:data wave is the real
+////neutron counts and can be directly used
+////
+////returns 0 if read was ok
+////returns 1 if there was an error
+//Function ReadOrdelaHST(fname)
+//	String fname
+//	//this function is for reading in RealTime data only, so it will always put data in RealTime folder
+//	SetDataFolder "root:Packages:NIST:RealTime"	
+//	//keep a string with the filename in the RealTime folder
+//	String/G root:Packages:NIST:RealTime:fileList = "Real-Time Data Display"
+//	//get log/linear state based on SANS_Data window
+//	Variable isLogScale=NumVarOrDefault("root:Packages:NIST:RealTime:gIsLogScale", 0)
+//	Variable/G root:Packages:NIST:RealTime:gIsLogScale = isLogScale		//creates if needed, "sets" to cur val if already exists
+//	
+//	Variable refNum=0,ii,p1,p2,tot,num=128
+//	String str=""
+//	Make/O/T/N=11 hdrLines
+//	Make/O/I/N=(num*num) a1		// /I flag = 32 bit integer data
+//	
+//	//full filename and path is now passed in...
+//	//actually open the file
+//	Open/R/Z refNum as fname		// /Z flag means I must handle open errors
+//	if(refnum==0)		//FNF error, get out
+//		DoAlert 0,"Could not find file: "+fname
+//		Close/A
+//		return(1)
+//	endif
+//	if(V_flag!=0)
+//		DoAlert 0,"File open error: V_flag="+num2Str(V_Flag)
+//		Close/A
+//		return(1)
 //	Endif
-	
-	KillWaves/Z a1  
-	
-	//return the data folder to root
-	SetDataFolder root:
-	
-	Return 0
-End
+//	// as of 12MAY03, the run.hst for real-time display has no header lines (M. Doucet)
+////	for(ii=0;ii<11;ii+=1)		//read (or skip) 11 header lines
+////		FReadLine refnum,str
+////		hdrLines[ii]=str
+////	endfor
+//	// 4-byte integer binary data follows, num*num integer values 
+//	FBinRead/B=3/F=3 refnum,a1
+//	//	
+//	Close refnum
+//	
+//	//we want only the first [0,127][0,127] quadrant of the 256x256 image
+//	// this is done most quickly by two successive redimension operations
+//	// (the duplicate is for testing only)
+//	//final redimension can make the data FP if desired..
+//	//Redimension/N=(256,256) a1
+//	Redimension/N=(128,128) a1
+//
+//	if(exists("root:Packages:NIST:RealTime:data")!=1)		//wave DN exist
+//		Make/O/N=(128,128) $"root:Packages:NIST:RealTime:data"
+//	endif
+//	Wave data = getDetectorDataW("RealTIme")		//this will be the linear data
+////	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
+////	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
+////	lin_data=a1
+////	if(isLogScale)
+////		data=log(a1)
+////	else
+//		data=a1
+////	Endif
+//	
+//	KillWaves/Z a1  
+//	
+//	//return the data folder to root
+//	SetDataFolder root:
+//	
+//	Return 0
+//End
 
 // fills the "default" fake header so that the SANS Reduction machinery does not have to be altered
 // pay attention to what is/not to be trusted due to "fake" information
 //
-Function FillFakeHeader()
-
-	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
-	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
-	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
-	
-	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
-	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
-	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
-	
-	//Put in appropriate "fake" values
-	// first 4 are user-defined on the Real Time control panel, so user has the opportunity to change these values.
-	//
-	realw[16]=NumVarOrDefault("root:myGlobals:RT:xCtr", 64.5)		//xCtr(pixels)
-	realw[17]=NumVarOrDefault("root:myGlobals:RT:yCtr", 64.5)		//yCtr (pixels)
-	realw[18]=NumVarOrDefault("root:myGlobals:RT:SDD", 5)		//SDD (m)
-	realw[26]=NumVarOrDefault("root:myGlobals:RT:lambda", 6)		//wavelength (A)
-	//
-	// necessary values
-	realw[10]=5			//detector calibration constants, needed for averaging
-	realw[11]=10000
-	realw[13]=5
-	realw[14]=10000
-	//
-	// used in the resolution calculation, ONLY here to keep the routine from crashing
-	realw[20]=65		//det size
-	realw[27]=0.15	//delta lambda
-	realw[21]=50.8	//BS size
-	realw[23]=50		//A1
-	realw[24]=12.7	//A2
-	realw[25]=8.57	//A1A2 distance
-	realw[4]=1		//trans
-	realw[3]=0		//atten
-	realw[5]=0.1		//thick
-	//
-	//
-	realw[0]=1e8		//def mon cts
-
-	// fake values to get valid deadtime and detector constants
-	//
-	textw[9]="ORNL  "		//6 characters
-	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
-	
-	return(0)
-End
+//Function FillFakeHeader()
+//
+//	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
+//	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
+//	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
+//	
+//	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
+//	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
+//	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
+//	
+//	//Put in appropriate "fake" values
+//	// first 4 are user-defined on the Real Time control panel, so user has the opportunity to change these values.
+//	//
+//	realw[16]=NumVarOrDefault("root:myGlobals:RT:xCtr", 64.5)		//xCtr(pixels)
+//	realw[17]=NumVarOrDefault("root:myGlobals:RT:yCtr", 64.5)		//yCtr (pixels)
+//	realw[18]=NumVarOrDefault("root:myGlobals:RT:SDD", 5)		//SDD (m)
+//	realw[26]=NumVarOrDefault("root:myGlobals:RT:lambda", 6)		//wavelength (A)
+//	//
+//	// necessary values
+//	realw[10]=5			//detector calibration constants, needed for averaging
+//	realw[11]=10000
+//	realw[13]=5
+//	realw[14]=10000
+//	//
+//	// used in the resolution calculation, ONLY here to keep the routine from crashing
+//	realw[20]=65		//det size
+//	realw[27]=0.15	//delta lambda
+//	realw[21]=50.8	//BS size
+//	realw[23]=50		//A1
+//	realw[24]=12.7	//A2
+//	realw[25]=8.57	//A1A2 distance
+//	realw[4]=1		//trans
+//	realw[3]=0		//atten
+//	realw[5]=0.1		//thick
+//	//
+//	//
+//	realw[0]=1e8		//def mon cts
+//
+//	// fake values to get valid deadtime and detector constants
+//	//
+//	textw[9]="ORNL  "		//6 characters
+//	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
+//	
+//	return(0)
+//End
 
 // action procedure to start/stop the updating process.
 //checks for update display graph, current background task, etc..
@@ -577,10 +582,7 @@ End
 //
 Function BkgUpdateHST()
 
-	Wave data = getDetectorDataW("RealTIme")		//this will be the linear data
-	Wave intw = root:Packages:NIST:RealTime:IntegersRead
-	Wave realw = root:Packages:NIST:RealTime:RealsRead
-	Wave/T textw = root:Packages:NIST:RealTime:TextRead
+	Wave data = getDetectorDataW("RealTime")		//this will be the linear data
 
 	NVAR elapsed=root:myGlobals:RT:elapsed
 	NVAR timeout=root:myGlobals:RT:timeout
@@ -618,12 +620,17 @@ Function BkgUpdateHST()
 		
 		//err = ReadOrdelaHST(RT_fileStr)
 		//err = ReadHeaderAndData(RT_fileStr)
-		NVAR/Z gFakeUpdate = root:myGlobals:gFakeUpdate
-		if(NVAR_Exists(gFakeUpdate) && gFakeUpdate == 1)
-			err = FakeUpdate()
-		else
-			err = ReadRTAndData(RT_fileStr)
-		endif
+//		NVAR/Z gFakeUpdate = root:myGlobals:gFakeUpdate
+//		if(NVAR_Exists(gFakeUpdate) && gFakeUpdate == 1)
+//			err = FakeUpdate()
+//		else
+		
+			//err = ReadRTAndData(RT_fileStr)
+		
+			LoadRawSANSData(RT_fileStr,"RAW")
+			Raw_to_Work_for_Tubes("RealTime")
+
+//		endif
 		
 		if(err==1)
 			Button $"bkgStop",win=RT_Panel,title="Start Updating",rename=bkgStart
@@ -635,8 +642,8 @@ Function BkgUpdateHST()
 		//
 		MapSliderProc("reset", 0, 1)
 		
-		title=textw[0]
-		sampledesc=textw[6]
+		title=getSampleDescription("RealTime")
+		sampledesc=getSampleDescription("RealTime")
 		//sum the total counts, global variable will automatically update
 		WAVE/Z linear_data = $"root:Packages:NIST:RealTime:linear_data"
 		if(WaveExists(linear_data))
@@ -646,9 +653,9 @@ Function BkgUpdateHST()
 			totCounts = sum(data, -Inf, Inf )
 		endif
 		//Update other live values
-		countTime = intw[2]
+		countTime = getCount_time("RealTime")
 		countRate = totCounts/countTime
-		monitorCounts = realw[0]
+		monitorCounts = getBeamMonNormData("RealTime")
 		monitorCountRate = monitorCounts/countTime
 		
 		//if the 1D plot is open, update this too
@@ -658,19 +665,22 @@ Function BkgUpdateHST()
 		endif
 		
 		// check for the mask, generate one? Two pixels all around
+		
+		Variable numx = getDet_pixel_num_x("RealTime")
+		Variable numy = getDet_pixel_num_y("RealTime")
 		if(WaveExists($"root:Packages:NIST:MSK:data") == 0)
 			Print "There is no mask file loaded (WaveExists)- the data is not masked"
-			Make/O/N=(128,128) root:Packages:NIST:MSK:data
+			Make/O/N=(numx,numy) root:Packages:NIST:MSK:data
 			Wave mask = root:Packages:NIST:MSK:data
 			mask[0][] = 1
 			mask[1][] = 1
-			mask[126][] = 1
-			mask[127][] = 1
+			mask[numx-2][] = 1
+			mask[numx-1][] = 1
 			
 			mask[][0] = 1
 			mask[][1] = 1
-			mask[][126] = 1
-			mask[][127] = 1
+			mask[][numy-2] = 1
+			mask[][numy-1] = 1
 		endif
 		
 		// update the 1d plot
@@ -691,362 +701,6 @@ Function BkgUpdateHST()
 	
 End
 
-Function ReadRTAndData(fname)
-	String fname
-	//this function is for reading in RAW data only, so it will always put data in RAW folder
-	String curPath = "root:Packages:NIST:RealTime:"
-	SetDataFolder curPath		//use the full path, so it will always work
-	//Variable/G root:Packages:NIST:RAW:gIsLogScale = 0		//initial state is linear, keep this in RAW folder
-	Variable isLogScale=NumVarOrDefault("root:Packages:NIST:RealTime:gIsLogScale", 0)
-	Variable/G root:Packages:NIST:RealTime:gIsLogScale = isLogScale	
-	
-	Variable refNum,integer,realval
-	String sansfname,textstr
-	
-	Make/O/N=23 $"root:Packages:NIST:RealTime:IntegersRead"
-	Make/O/N=52 $"root:Packages:NIST:RealTime:RealsRead"
-	Make/O/T/N=11 $"root:Packages:NIST:RealTime:TextRead"
-	Make/O/N=7 $"root:Packages:NIST:RealTime:LogicalsRead"
-
-	
-	Wave intw=$"root:Packages:NIST:RealTime:IntegersRead"
-	Wave realw=$"root:Packages:NIST:RealTime:RealsRead"
-	Wave/T textw=$"root:Packages:NIST:RealTime:TextRead"
-	Wave logw=$"root:Packages:NIST:RealTime:LogicalsRead"
-	
-	//***NOTE ****
-	// the "current path" gets mysteriously reset to "root:" after the SECOND pass through
-	// this read routine, after the open dialog is presented
-	// the "--read" waves end up in the correct folder, but the data does not! Why?
-	//must re-set data folder before writing data array (done below)
-	
-	//full filename and path is now passed in...
-	//actually open the file
-	Open/R refNum as fname
-	//skip first two bytes (VAX record length markers, not needed here)
-	FSetPos refNum, 2
-	//read the next 21 bytes as characters (fname)
-	FReadLine/N=21 refNum,textstr
-	textw[0]= textstr
-	//read four i*4 values	/F=3 flag, B=3 flag
-	FBinRead/F=3/B=3 refNum, integer
-	intw[0] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[1] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[2] = integer
-	//
-	FBinRead/F=3/B=3 refNum, integer
-	intw[3] = integer
-	// 6 text fields
-	FSetPos refNum,55		//will start reading at byte 56
-	FReadLine/N=20 refNum,textstr
-	textw[1]= textstr
-	FReadLine/N=3 refNum,textstr
-	textw[2]= textstr
-	FReadLine/N=11 refNum,textstr
-	textw[3]= textstr
-	FReadLine/N=1 refNum,textstr
-	textw[4]= textstr
-	FReadLine/N=8 refNum,textstr
-	textw[5]= textstr
-	FReadLine/N=60 refNum,textstr
-	textw[6]= textstr
-	
-	//3 integers
-	FSetPos refNum,174
-	FBinRead/F=3/B=3 refNum, integer
-	intw[4] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[5] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[6] = integer
-	
-	//2 integers, 3 text fields
-	FSetPos refNum,194
-	FBinRead/F=3/B=3 refNum, integer
-	intw[7] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[8] = integer
-	FReadLine/N=6 refNum,textstr
-	textw[7]= textstr
-	FReadLine/N=6 refNum,textstr
-	textw[8]= textstr
-	FReadLine/N=6 refNum,textstr
-	textw[9]= textstr
-	
-	//2 integers
-	FSetPos refNum,244
-	FBinRead/F=3/B=3 refNum, integer
-	intw[9] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[10] = integer
-	
-	//2 integers
-	FSetPos refNum,308
-	FBinRead/F=3/B=3 refNum, integer
-	intw[11] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[12] = integer
-	
-	//2 integers
-	FSetPos refNum,332
-	FBinRead/F=3/B=3 refNum, integer
-	intw[13] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[14] = integer
-	
-	//3 integers
-	FSetPos refNum,376
-	FBinRead/F=3/B=3 refNum, integer
-	intw[15] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[16] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[17] = integer
-	
-	//1 text field - the file association for transmission are the first 4 bytes
-	FSetPos refNum,404
-	FReadLine/N=42 refNum,textstr
-	textw[10]= textstr
-	
-	//1 integer
-	FSetPos refNum,458
-	FBinRead/F=3/B=3 refNum, integer
-	intw[18] = integer
-	
-	//4 integers
-	FSetPos refNum,478
-	FBinRead/F=3/B=3 refNum, integer
-	intw[19] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[20] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[21] = integer
-	FBinRead/F=3/B=3 refNum, integer
-	intw[22] = integer
-	
-	//Get Logicals	
-	//Read logicals as int - ICE is writing integers here
-	FSetPos refNum,304
-	FBinRead/F=3/B=3 refNum, integer
-	logw[0] = integer
-	FSetPos refNum,316
-	FBinRead/F=3/B=3 refNum, integer
-	logw[1] = integer	
-	FSetPos refNum,340
-	FBinRead/F=3/B=3 refNum, integer
-	logw[2] = integer
-	FSetPos refNum,344
-	FBinRead/F=3/B=3 refNum, integer
-	logw[3] = integer		
-	FSetPos refNum,446
-	FBinRead/F=3/B=3 refNum, integer
-	logw[4] = integer
-	FSetPos refNum,462
-	FBinRead/F=3/B=3 refNum, integer
-	logw[5] = integer
-	FSetPos refNum,466
-	FBinRead/F=3/B=3 refNum, integer
-	logw[6] = integer		
-
-	
-	Close refNum
-	
-	//now get all of the reals
-	//
-	//Do all the GBLoadWaves at the end
-	//
-	//FBinRead Cannot handle 32 bit VAX floating point
-	//GBLoadWave, however, can properly read it
-	String GBLoadStr="GBLoadWave/O/N=tempGBwave/T={2,2}/J=2/W=1/Q"
-	String strToExecute,tmpfname=""
-	//append "/S=offset/U=numofreals" to control the read
-	// then append fname to give the full file path
-	// then execute
-	
-	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
-		PathInfo catPathName
-		if(V_flag==1)
-			//catPathName exists, use it
-			GBLoadStr += "/P=catPathName"
-		else
-			// need to create a temporary path
-			String tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
-			NewPath/O/Q tmpUNCPath tmpPathStr
-			GBLoadStr += "/P=tmpUNCPath"
-		endif
-		tmpfname = ParseFilePath(0, fname, ":", 1, 0)
-	else
-	// original case, fname is the full path:name and is Mac (or a mapped drive)
-		GBLoadStr += ""
-		tmpfname = fname
-	endif
-	
-	
-	Variable a=0,b=0
-	
-	SetDataFolder curPath
-	
-	// 4 R*4 values
-	strToExecute = GBLoadStr + "/S=39/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	Wave w=$"root:Packages:NIST:RealTime:tempGBWave0"
-	b=4	//num of reals read
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 4 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=158/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=4	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-
-///////////
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=186/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=2	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-
-	// 6 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=220/U=6" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=6	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 13 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=252/U=13" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=13
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 3 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=320/U=3" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=3	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 7 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=348/U=7" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=7
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 4 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=388/U=4" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=4	
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=450/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=2
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 2 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=470/U=2" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=2
-	realw[a,a+b-1] = w[p-a]
-	a+=b
-	
-	// 5 R*4 values
-	SetDataFolder curPath
-	strToExecute = GBLoadStr + "/S=494/U=5" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-	Execute/Z strToExecute
-	b=5	
-	realw[a,a+b-1] = w[p-a]
-	
-	//if the binary VAX data ws transferred to a MAC, all is OK
-	//if the data was trasnferred to an Intel machine (IBM), all the real values must be
-	//divided by 4 to get the correct floating point values
-	// I can't find any combination of settings in GBLoadWave or FBinRead to read data in correctly
-	// on an Intel machine.
-	//With the corrected version of GBLoadWave XOP (v. 1.43 or higher) Mac and PC both read
-	//VAX reals correctly, and no checking is necessary 12 APR 99
-	//if(cmpstr("Macintosh",IgorInfo(2)) == 0)
-		//do nothing
-	//else
-		//either Windows or Windows NT
-		//realw /= 4
-	//endif
-	
-	SetDataFolder curPath
-	//read in the data
-	if(cmpstr("\\\\",fname[0,1])==0)	//Windows user going through network neighborhood
-		PathInfo catPathName
-		if(V_flag==1)
-			//catPathName exists, use it
-			strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=catPathName" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-		else
-			// need to create a temporary path
-			tmpPathStr = ParseFilePath(1, fname, ":", 1, 0)
-			NewPath/O/Q tmpUNCPath tmpPathStr
-			strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q/P=tmpUNCPath" + "\"" + ParseFilePath(0, fname, ":", 1, 0) + "\""
-		endif
-	else
-	// original case, fname is the full path:name and is Mac (or a mapped drive)
-		strToExecute = "GBLoadWave/O/N=tempGBwave/B/T={16,2}/S=514/Q" + "\"" + fname + "\""
-	endif
-	
-	Execute/Z strToExecute
-
-	SetDataFolder curPath		//use the full path, so it will always work
-	
-	Make/O/N=16384 $"root:Packages:NIST:RealTime:data"
-	WAVE data=$"root:Packages:NIST:RealTime:data"
-//	SkipAndDecompressVAX(w,data)
-	Redimension/N=(128,128) data			//NIST raw data is 128x128 - do not generalize
-	
-	Duplicate/O data,$"root:Packages:NIST:RealTime:linear_data"
-	WAVE lin_data=$"root:Packages:NIST:RealTime:linear_data"
-	if(isLogScale)
-		data=log(lin_data)
-	else
-		data=lin_data
-	Endif
-	
-	//keep a string with the filename in the RAW folder
-	String/G root:Packages:NIST:RealTime:fileList = textw[0]
-	
-	//set the globals to the detector dimensions (pixels)
-	Variable/G root:myGlobals:gNPixelsX=128		//default for Ordela data (also set in Initialize/NCNR_Utils.ipf)
-	Variable/G root:myGlobals:gNPixelsY=128
-//	if(cmpstr(textW[9],"ILL   ")==0)		//override if OLD Cerca data
-//		Variable/G root:myGlobals:gNPixelsX=64
-//		Variable/G root:myGlobals:gNPixelsY=64
-//	endif
-	
-	//clean up - get rid of w = $"root:Packages:NIST:RAW:tempGBWave0"
-	KillWaves/Z w
-	
-	//return the data folder to root
-	SetDataFolder root:
-	
-	Return 0
-
-End
 
 /////not used////
 // function control a background task of "live" image updating
@@ -1066,112 +720,110 @@ Function UpdateImage(ctrlName) : ButtonControl
 End
 
 
-// puts a "clean" instance of SAS into RealTime
-Function ClearRTFolder()
-
-	String 	RTPath = "root:Packages:NIST:RealTime"
-	String 	SimPath = "root:Packages:NIST:SAS"
-	
-
-	Duplicate/O $(SimPath + ":data"),$(RTPath+":data")
-	Duplicate/O $(SimPath + ":linear_data"),$(RTPath+":linear_data")
-	Duplicate/O $(SimPath + ":textread"),$(RTPath+":textread")
-	Duplicate/O $(SimPath + ":integersread"),$(RTPath+":integersread")
-	Duplicate/O $(SimPath + ":realsread"),$(RTPath+":realsread")
-	
-	WAVE RT_rw = $(RTPath+":RealsRead")
-	WAVE RT_iw = $(RTPath+":IntegersRead")
-	
-	RT_iw[2] = 0
-	RT_rw[0] = 0 
-
-	Wave RTData = $(RTPath+":data")
-	Wave RTLinData = $(RTPath+":linear_data")
-	RTLinData = 0
-	RTData = 0
-
-	// get the right Q axes on the display
-	//add the qx and qy axes
-	Wave q_x_axis=$"root:myGlobals:q_x_axis"
-	Wave q_y_axis=$"root:myGlobals:q_y_axis"
-	Set_Q_Axes(q_x_axis,q_y_axis,RTPath)
-
-	return(0)
-End
-
-//not used, but useful for real-time display of the detector
-//old, and likely not up-to-date with the present data folder structure
-Function FakeUpdate()
-
-	//get the current displayed data (so the correct folder is used)
-	SVAR cur_folder=root:myGlobals:gDataDisplayType
-
-	STRUCT WMButtonAction ba
-	ba.eventCode = 2			//fake mouse click on button
-	MC_DoItButtonProc(ba)
-
-// would copy the work contents, but I want to add the MC results + times, etc.
-//	Execute	"CopyWorkFolder(\"Simulation\",\"RealTime\")"
-	
-	//check for existence of data in oldtype
-	// if the desired workfile doesn't exist, let the user know, and abort
-	String RTPath,SimPath
-	if(WaveExists($("root:Packages:NIST:RealTime:data")) == 0)
-		ClearRTFolder()
-//		Print "There is no work file in "+"SAS"+"--Aborting"
-//		Return(1) 		//error condition
-	Endif
-	
-	//check for log-scaling of the "type" data and adjust if necessary
-//	ConvertFolderToLinearScale("SAS")
-//	ConvertFolderToLinearScale("RealTime")
-//	Fix_LogLinButtonState(0)		//make sure the button reflects the new linear scaling
-	//then continue
-
-	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
-	SimPath = "root:Packages:NIST:SAS"
-	RTPath = "root:Packages:NIST:RealTime"
+//// puts a "clean" instance of SAS into RealTime
+//Function ClearRTFolder()
+//
+//	String 	RTPath = "root:Packages:NIST:RealTime"
+//	String 	SimPath = "root:Packages:NIST:SAS"
+//	
+//
+//	Duplicate/O $(SimPath + ":data"),$(RTPath+":data")
+//	Duplicate/O $(SimPath + ":linear_data"),$(RTPath+":linear_data")
 //	Duplicate/O $(SimPath + ":textread"),$(RTPath+":textread")
 //	Duplicate/O $(SimPath + ":integersread"),$(RTPath+":integersread")
 //	Duplicate/O $(SimPath + ":realsread"),$(RTPath+":realsread")
-//	Duplicate/O $(SimPath + ":linear_data_error"),$(RTPath+":linear_data_error")
+//	
+//	WAVE RT_rw = $(RTPath+":RealsRead")
+//	WAVE RT_iw = $(RTPath+":IntegersRead")
+//	
+//	RT_iw[2] = 0
+//	RT_rw[0] = 0 
+//
+//	Wave RTData = $(RTPath+":data")
+//	Wave RTLinData = $(RTPath+":linear_data")
+//	RTLinData = 0
+//	RTData = 0
+//
+//	// get the right Q axes on the display
+//	//add the qx and qy axes
+//	Wave q_x_axis=$"root:myGlobals:q_x_axis"
+//	Wave q_y_axis=$"root:myGlobals:q_y_axis"
+//	Set_Q_Axes(q_x_axis,q_y_axis,RTPath)
+//
+//	return(0)
+//End
 
-	WAVE RT_rw = $(RTPath+":RealsRead")
-	WAVE Sim_rw = $(SimPath+":RealsRead")
-	WAVE RT_iw = $(RTPath+":IntegersRead")
-	WAVE Sim_iw = $(SimPath+":IntegersRead")
-	
-	// accumulate the count time and monitor counts
-	RT_iw[2] += Sim_iw[2]
-	RT_rw[0] += Sim_rw[0]
-
-// accumulate the data
-	Wave RTData = $(RTPath+":data")
-	Wave RTLinData = $(RTPath+":linear_data")	
-	Wave SimLinData = $(SimPath+":linear_data")	
-	RTLinData += SimLinData
-
-	NVAR gIsLogScale = $(RTPath + ":gIsLogScale")
-	if(gIsLogScale)
-		RTData = log(RTLinData)
-	else
-		RTData = RTLinData
-	endif
-	
-//	Execute  "ChangeDisplay(\"RealTime\")"
-	//just need to update the color bar
-//	MapSliderProc("both",0,0)
-
-	//alter the raw data
-//	linear_data += abs(enoise(1)) + abs(cos(p*q))
-//	data = linear_data
-	
-
-	//back to root folder
-	SetDataFolder root:
-	
-	return 0
-End
+////not used, but useful for real-time display of the detector
+////old, and likely not up-to-date with the present data folder structure
+//Function FakeUpdate()
+//
+//	//get the current displayed data (so the correct folder is used)
+//	SVAR cur_folder=root:myGlobals:gDataDisplayType
+//
+//	STRUCT WMButtonAction ba
+//	ba.eventCode = 2			//fake mouse click on button
+//	MC_DoItButtonProc(ba)
+//
+//// would copy the work contents, but I want to add the MC results + times, etc.
+////	Execute	"CopyWorkFolder(\"Simulation\",\"RealTime\")"
+//	
+//	//check for existence of data in oldtype
+//	// if the desired workfile doesn't exist, let the user know, and abort
+//	String RTPath,SimPath
+//	if(WaveExists($("root:Packages:NIST:RealTime:data")) == 0)
+////		ClearRTFolder()
+////		Print "There is no work file in "+"SAS"+"--Aborting"
+////		Return(1) 		//error condition
+//	Endif
+//	
+//	//check for log-scaling of the "type" data and adjust if necessary
+////	ConvertFolderToLinearScale("SAS")
+////	ConvertFolderToLinearScale("RealTime")
+////	Fix_LogLinButtonState(0)		//make sure the button reflects the new linear scaling
+//	//then continue
+//
+//	//copy from current dir (type)=destPath to newtype, overwriting newtype contents
+//	SimPath = "root:Packages:NIST:SAS"
+//	RTPath = "root:Packages:NIST:RealTime"
+//
+//
+//
+//	WAVE RT_rw = $(RTPath+":RealsRead")
+//	WAVE Sim_rw = $(SimPath+":RealsRead")
+//	WAVE RT_iw = $(RTPath+":IntegersRead")
+//	WAVE Sim_iw = $(SimPath+":IntegersRead")
+//	
+//	// accumulate the count time and monitor counts
+//	RT_iw[2] += Sim_iw[2]
+//	RT_rw[0] += Sim_rw[0]
+//
+//// accumulate the data
+//	Wave RTData = $(RTPath+":data")
+//	Wave RTLinData = $(RTPath+":linear_data")	
+//	Wave SimLinData = $(SimPath+":linear_data")	
+//	RTLinData += SimLinData
+//
+//	NVAR gIsLogScale = $(RTPath + ":gIsLogScale")
+//	if(gIsLogScale)
+//		RTData = log(RTLinData)
+//	else
+//		RTData = RTLinData
+//	endif
+//	
+////	Execute  "ChangeDisplay(\"RealTime\")"
+//	//just need to update the color bar
+////	MapSliderProc("both",0,0)
+//
+//	//alter the raw data
+////	linear_data += abs(enoise(1)) + abs(cos(p*q))
+////	data = linear_data
+//	
+//
+//	//back to root folder
+//	SetDataFolder root:
+//	
+//	return 0
+//End
 
 //
 //
@@ -1183,81 +835,81 @@ End
 //	Execute/P "INSERTINCLUDE \"Sphere_v40\""
 //	Execute/P "COMPILEPROCEDURES "
 //	
+////
+//Function pInit_FakeRT()
 //
-Function pInit_FakeRT()
-
-
-
-// plot sphere model
-	String cmdStr,funcStr
-	funcStr = "SphereForm"
-	sprintf cmdStr, "Plot%s()",funcStr
-	Execute cmdStr
-	
-// close graph (top) and table
-	String topGraph= WinName(0,1)	//this is the topmost graph	
-	String topTable= WinName(0,2)	//this is the topmost table
-	KillWindow $topGraph
-	KillWindow $topTable
-		
-// change coef_sf[0] = 0.01
-	Wave coef_sf = root:coef_sf
-	coef_sf[0] = 0.01
-	
-	
-
-// open SASCALC
-	Execute "SASCALC()"
-	
-// open MC simulation window
-	DoWindow/F MC_SASCALC
-	if(V_flag==0)
-		Execute "MC_SASCALC()"		//sets the variable
-		AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
-	endif
-	NVAR doSim = root:Packages:NIST:SAS:doSimulation
-	doSim=1
-	
-// set model
-	SVAR gStr = root:Packages:NIST:SAS:gFuncStr 
-	gStr = "SphereForm"
-	String listStr = MC_FunctionPopupList()
-	Variable item = WhichListItem("SphereForm", listStr )
-	PopupMenu MC_popup0,win=MC_SASCALC,mode=(item+1)
-	
-// set ct time to 5 s
-	STRUCT WMSetVariableAction sva
-	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
-	ctTime = 5
-	sva.eventCode = 3		//update
-	sva.dval = ctTime		//5 seconds
-	CountTimeSetVarProc(sva)
-	
-// be sure check boxes are raw_cts / BS in / XOP
-	NVAR cts = root:Packages:NIST:SAS:gRawCounts
-	NVAR BSin = root:Packages:NIST:SAS:gBeamStopIn
-	NVAR xop = root:Packages:NIST:SAS:gUse_MC_XOP
-	cts = 1
-	BSin = 1
-	xop = 1
-	
-// run 1 simulation to "set" things
-	DoWindow/F MC_SASCALC
-	STRUCT WMButtonAction ba
-	ba.eventCode = 2			//fake mouse click on button
-	MC_DoItButtonProc(ba)
-
-
-// set RT fake flag
-	Variable/G root:myGlobals:gFakeUpdate=1
-
-// open RT window
-
-// load (any) data file
-
-// ClearFolder
-
-
-
-
-End
+//
+//
+//// plot sphere model
+//	String cmdStr,funcStr
+//	funcStr = "SphereForm"
+//	sprintf cmdStr, "Plot%s()",funcStr
+//	Execute cmdStr
+//	
+//// close graph (top) and table
+//	String topGraph= WinName(0,1)	//this is the topmost graph	
+//	String topTable= WinName(0,2)	//this is the topmost table
+//	KillWindow $topGraph
+//	KillWindow $topTable
+//		
+//// change coef_sf[0] = 0.01
+//	Wave coef_sf = root:coef_sf
+//	coef_sf[0] = 0.01
+//	
+//	
+//
+//// open SASCALC
+//	Execute "SASCALC()"
+//	
+//// open MC simulation window
+//	DoWindow/F MC_SASCALC
+//	if(V_flag==0)
+//		Execute "MC_SASCALC()"		//sets the variable
+//		AutoPositionWindow/M=1/R=SASCALC MC_SASCALC
+//	endif
+//	NVAR doSim = root:Packages:NIST:SAS:doSimulation
+//	doSim=1
+//	
+//// set model
+//	SVAR gStr = root:Packages:NIST:SAS:gFuncStr 
+//	gStr = "SphereForm"
+//	String listStr = MC_FunctionPopupList()
+//	Variable item = WhichListItem("SphereForm", listStr )
+//	PopupMenu MC_popup0,win=MC_SASCALC,mode=(item+1)
+//	
+//// set ct time to 5 s
+//	STRUCT WMSetVariableAction sva
+//	NVAR ctTime = root:Packages:NIST:SAS:gCntTime
+//	ctTime = 5
+//	sva.eventCode = 3		//update
+//	sva.dval = ctTime		//5 seconds
+//	CountTimeSetVarProc(sva)
+//	
+//// be sure check boxes are raw_cts / BS in / XOP
+//	NVAR cts = root:Packages:NIST:SAS:gRawCounts
+//	NVAR BSin = root:Packages:NIST:SAS:gBeamStopIn
+//	NVAR xop = root:Packages:NIST:SAS:gUse_MC_XOP
+//	cts = 1
+//	BSin = 1
+//	xop = 1
+//	
+//// run 1 simulation to "set" things
+//	DoWindow/F MC_SASCALC
+//	STRUCT WMButtonAction ba
+//	ba.eventCode = 2			//fake mouse click on button
+//	MC_DoItButtonProc(ba)
+//
+//
+//// set RT fake flag
+//	Variable/G root:myGlobals:gFakeUpdate=1
+//
+//// open RT window
+//
+//// load (any) data file
+//
+//// ClearFolder
+//
+//
+//
+//
+//End
