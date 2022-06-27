@@ -1625,8 +1625,9 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 //		FUNCREF SANSModelAAO_MCproto func=$("fSmeared"+funcStr)		//a wrapper for the structure version
 	FUNCREF SANSModelAAO_MCproto func=$(funcStr)		//unsmeared
 	WAVE results = root:Packages:NIST:SAS:results
-	WAVE linear_data = root:Packages:NIST:SAS:linear_data
-	WAVE data = root:Packages:NIST:SAS:data
+	
+	WAVE linear_data = getDetectorDataW("SAS")
+//	WAVE data = root:Packages:NIST:SAS:data
 
 	results = 0
 	linear_data = 0
@@ -1823,7 +1824,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	linear_data[3][0] = 0
 
 			
-	data = linear_data
+//	data = linear_data		// now there is only data, which is always linear
 	
 	// fill in bits of the header
 	putControlMonitorCount("SAS",imon)		// = imon		//the simulated monitor counts

@@ -1455,8 +1455,13 @@ Proc Initialize_Preferences()
 	Variable/G root:Packages:NIST:gNPhiSteps=val
 	
 	// flags to turn detector corrections on/off for testing (you should leave these ON)
+	// for Ordela
 	val = NumVarOrDefault("root:Packages:NIST:gDoDetectorEffCorr", 1 )
 	Variable/G root:Packages:NIST:gDoDetectorEffCorr = 1
+
+	// shadowing + efficiency for 10m SANS tubes
+	val = NumVarOrDefault("root:Packages:NIST:gDoTubeShadowCor", 1 )
+	Variable/G root:Packages:NIST:gDoTubeShadowCor = 1	
 	
 	val = NumVarOrDefault("root:Packages:NIST:gDoTransmissionCorr", 1 )
 	Variable/G root:Packages:NIST:gDoTransmissionCorr = 1
@@ -1483,12 +1488,12 @@ Proc Initialize_Preferences()
 
 	val = NumVarOrDefault("root:Packages:NIST:gDoDownstreamWindowCor", 1 )
 	Variable/G root:Packages:NIST:gDoDownstreamWindowCor = 1
-	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1
-	Variable/G root:Packages:NIST:gDownstreamWinTransErr = 0
+	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1		//default value
+	Variable/G root:Packages:NIST:gDownstreamWinTransErr = 0	//default value
 
 
-	val = NumVarOrDefault("root:Packages:NIST:gLaptopMode", 1 )
-	Variable/G root:Packages:NIST:gLaptopMode = 1
+	val = NumVarOrDefault("root:Packages:NIST:gLaptopMode", 0 )
+	Variable/G root:Packages:NIST:gLaptopMode = 0		//default to normal mode
 	
 	
 
@@ -1598,13 +1603,26 @@ Function DoTransCorrPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
+// detector efficiency -- for Ordela
 Function DoEfficiencyCorrPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+	
+	NVAR gVal = root:Packages:NIST:gDoDetectorEffCorr
+	gVal = checked
+End
+
+
+// tube shadowing for 10m sans tube detector
+Function DoTubeShadowingCorrPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
 	NVAR gVal = root:Packages:NIST:gDoTubeShadowCor
 	gVal = checked
 End
+
+
 
 Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	String ctrlName
@@ -1806,7 +1824,7 @@ Proc Pref_Panel()
 
 	CheckBox PrefCtrl_4f title="Do Transmssion Correction?",size={140*sc,14*sc},value=root:Packages:NIST:gDoTransmissionCorr,proc=DoTransCorrPref
 	CheckBox PrefCtrl_4f pos={255*sc,80*sc},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent transmssion."}
-	CheckBox PrefCtrl_4g title="Do Tube Efficiency+Shadowing?",size={140*sc,14*sc},proc=DoEfficiencyCorrPref
+	CheckBox PrefCtrl_4g title="Do Tube Efficiency+Shadowing?",size={140*sc,14*sc},proc=DoTubeShadowingCorrPref
 	CheckBox PrefCtrl_4g value=root:Packages:NIST:gDoTubeShadowCor,pos={255*sc,100*sc},help={"TURN OFF ONLY FOR DEBUGGING. This corrects the data for angle dependent detector efficiency."}
 //	CheckBox PrefCtrl_4h title="Adjust RAW attenuation?",size={140,14},proc=V_DoRawAttenAdjPref
 //	CheckBox PrefCtrl_4h value=root:Packages:NIST:gDoAdjustRAW_Atten,pos={255,140},help={"This is normally not done"}
@@ -1832,17 +1850,17 @@ Proc Pref_Panel()
 	SetVariable PrefCtrl_4d,disable=1
 	SetVariable PrefCtrl_4e,disable=1
 	CheckBox PrefCtrl_4f,disable=1
-//	CheckBox PrefCtrl_4g,disable=1
+	CheckBox PrefCtrl_4g,disable=1
 //	CheckBox PrefCtrl_4h,disable=1
 	CheckBox PrefCtrl_4i,disable=1
 	CheckBox PrefCtrl_4j,disable=1
 	CheckBox PrefCtrl_4k,disable=1
 //	CheckBox PrefCtrl_4l,disable=2
 
-	CheckBox PrefCtrl_4g,value=0,disable=1		// angle dependent efficiency not done yet
-	CheckBox PrefCtrl_4m,value=0,disable=1		// downstream window transmission no done yet
+	CheckBox PrefCtrl_4m,disable=1	
 //	CheckBox PrefCtrl_4n,disable=1
-//	CheckBox PrefCtrl_40,disable=1
+//	CheckBox PrefCtrl_4o,disable=1
+	SetVariable PrefCtrl_4p,disable=1
 	
 	
 	

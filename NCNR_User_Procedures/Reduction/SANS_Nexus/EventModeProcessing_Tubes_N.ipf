@@ -765,74 +765,73 @@ Proc SANS_EventModePanel()
 	Button button0,fSize=12*sc
 	Button button23,pos={sc*14,100*sc},size={sc*150,20*sc},proc=LoadEventLog_Button,title="Load From RAW"
 	Button button23,fSize=12*sc
-	TitleBox tb1,pos={sc*475,450*sc},size={sc*266,86*sc},fSize=10
+	TitleBox tb1,pos={sc*475,450*sc},size={sc*266,86*sc},fsize=12*sc
 	TitleBox tb1,variable= root:Packages:NIST:Event:gEventDisplayString
 
-	CheckBox chkbox2,pos={sc*376,151*sc},size={sc*81,15*sc},proc=LogIntEvent_Proc,title="Log Intensity"
-	CheckBox chkbox2,fSize=10*sc,variable= root:Packages:NIST:Event:gEvent_logint
-	CheckBox chkbox3,pos={sc*14,150*sc},size={sc*119,15*sc},title="Remove Bad Events?",fSize=10*sc
+	CheckBox chkbox2,pos={sc*376,150*sc},size={sc*81,15*sc},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,fsize=12*sc,variable= root:Packages:NIST:Event:gEvent_logint
+	CheckBox chkbox3,pos={sc*14,150*sc},size={sc*119,15*sc},title="Remove Bad Events?",fsize=12*sc
 	CheckBox chkbox3,variable= root:Packages:NIST:Event:gRemoveBadEvents
 	
 	Button doneButton,pos={sc*738,36*sc},size={sc*50,20*sc},proc=EventDone_Proc,title="Done"
 	Button doneButton,fSize=12*sc
-	Button button6,pos={sc*748,9*sc},size={sc*40,20*sc},proc=EventModeHelpButtonProc,title="?"
+	Button button6,pos={sc*748,9*sc},size={sc*40,20*sc},proc=EventModeHelpButtonProc,title="?",fSize=12*sc
 
 //	Button button5,pos={sc*633,228*sc},size={sc*140,20*sc},proc=ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
 
-	Button button8,pos={sc*570,35*sc},size={sc*120,20*sc},proc=CustomBinButtonProc,title="Custom Bins"
-	Button button2,pos={sc*570,65*sc},size={sc*140,20*sc},proc=ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={sc*570,95*sc},size={sc*140,20*sc},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button8,pos={sc*570,35*sc},size={sc*120,20*sc},proc=CustomBinButtonProc,title="Custom Bins",fSize=12*sc
+	Button button2,pos={sc*570,65*sc},size={sc*140,20*sc},proc=ShowEventDataButtonProc,title="Show Event Data",fSize=12*sc
+	Button button3,pos={sc*570,95*sc},size={sc*140,20*sc},proc=ShowBinDetailsButtonProc,title="Show Bin Details",fSize=12*sc
 
 			
-	Button button7,pos={sc*211,33*sc},size={sc*120,20*sc},proc=AdjustEventDataButtonProc,title="Adjust Events"
-	Button button4,pos={sc*211,63*sc},size={sc*120,20*sc},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button18,pos={sc*211,90*sc},size={sc*120,20*sc},proc=EC_ImportWavesButtonProc,title="Import Edited"
+	Button button7,pos={sc*211,33*sc},size={sc*120,20*sc},proc=AdjustEventDataButtonProc,title="Adjust Events",fSize=12*sc
+	Button button4,pos={sc*211,63*sc},size={sc*120,20*sc},proc=UndoTimeSortButtonProc,title="Undo Time Sort",fSize=12*sc
+	Button button18,pos={sc*211,90*sc},size={sc*120,20*sc},proc=EC_ImportWavesButtonProc,title="Import Edited",fSize=12*sc
 	
 	SetVariable setvar0,pos={sc*208,149*sc},size={sc*160,16*sc},proc=sliceSelectEvent_Proc,title="Display Time Slice"
-	SetVariable setvar0,fSize=10*sc
+	SetVariable setvar0,fsize=12*sc
 	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:Event:gEvent_tsdisp	
-	SetVariable setvar1,pos={sc*389,29*sc},size={sc*160,16*sc},title="Number of slices",fSize=10*sc
+	SetVariable setvar1,pos={sc*389,29*sc},size={sc*160,16*sc},title="Number of slices",fsize=12*sc
 	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:Event:gEvent_nslices
-	SetVariable setvar2,pos={sc*389,54*sc},size={sc*160,16*sc},title="Max Time (s)",fSize=10*sc
+	SetVariable setvar2,pos={sc*389,54*sc},size={sc*160,16*sc},title="Max Time (s)",fsize=12*sc
 	SetVariable setvar2,value= root:Packages:NIST:Event:gEvent_t_longest
 	
 	PopupMenu popup0,pos={sc*389,77*sc},size={sc*119,20*sc},proc=BinTypePopMenuProc,title="Bin Spacing"
-	PopupMenu popup0,fSize=10*sc
-	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},proc=ProcessEventLog_Button,title="Bin Event Data"
+	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\"",fSize=12*sc
+	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},proc=ProcessEventLog_Button,title="Bin Event Data",fSize=12*sc
 
 // NEW FOR VSANS
 //	Button button21,pos={sc*488,205*sc},size={sc*120,20*sc},proc=SplitToPanels_Button,title="Split to Panels"
 //	Button button22,pos={sc*488,240*sc},size={sc*120,20*sc},proc=GraphPanels_Button,title="Show Panels"
 	
-	Button button24,pos={sc*488,270*sc},size={sc*180,20*sc},proc=DuplRAWForExport_Button,title="Duplicate RAW for Export"
-	Button button25,pos={sc*488,300*sc},size={sc*180,20*sc},proc=CopySlicesForExport_Button,title="Copy Slices for Export"
-	Button button26,pos={sc*488,330*sc},size={sc*180,20*sc},proc=SaveExportedNexus_Button,title="Save Exported to Nexus"
+	Button button24,pos={sc*488,270*sc},size={sc*180,20*sc},proc=DuplRAWForExport_Button,title="Duplicate RAW for Export",fSize=12*sc
+	Button button25,pos={sc*488,300*sc},size={sc*180,20*sc},proc=CopySlicesForExport_Button,title="Copy Slices for Export",fSize=12*sc
+	Button button26,pos={sc*488,330*sc},size={sc*180,20*sc},proc=SaveExportedNexus_Button,title="Save Exported to Nexus",fSize=12*sc
 
 //	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File",disable=2
 //	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=Stream_LoadDecim,title="Load Split List",disable=2
 //	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=Stream_LoadAdjustedList,title="Load Edited List",disable=2
 //	Button button20,pos={sc*680,376*sc},size={sc*90,20*sc},proc=ShowList_ToLoad,title="Show List",disable=2
 //	SetVariable setvar3,pos={sc*487,378*sc},size={sc*150,16*sc},title="Decimation factor",disable=2
-//	SetVariable setvar3,fSize=10
+//	SetVariable setvar3,fsize=12
 //	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
 //
 //	Button button15_0,pos={sc*488,425*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Add First Slice",disable=2
 //	Button button16_1,pos={sc*488,450*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Add Next Slice",disable=2
 //	Button button17_2,pos={sc*620,425*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Display Total",disable=2
 
-	CheckBox chkbox1_0,pos={sc*25,30*sc},size={sc*69,14*sc},title="Oscillatory",fSize=10*sc
+	CheckBox chkbox1_0,pos={sc*25,30*sc},size={sc*69,14*sc},title="Oscillatory",fsize=12*sc
 	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=0
-	CheckBox chkbox1_1,pos={sc*25,50*sc},size={sc*53,14*sc},title="Stream",fSize=10*sc
+	CheckBox chkbox1_1,pos={sc*25,50*sc},size={sc*53,14*sc},title="Stream",fsize=12*sc
 	CheckBox chkbox1_1,proc=EventModeRadioProc,value=1,mode=1
-//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fSize=10
+//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fsize=12
 //	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_3,pos={sc*104,30*sc},size={sc*37,14*sc},title="TOF",fSize=10*sc
+	CheckBox chkbox1_3,pos={sc*104,30*sc},size={sc*37,14*sc},title="TOF",fsize=12*sc
 	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
 	
-//	CheckBox chkbox1_4,pos={sc*30,125*sc},size={sc*37,14*sc},title="F",fSize=10*sc
+//	CheckBox chkbox1_4,pos={sc*30,125*sc},size={sc*37,14*sc},title="F",fsize=12*sc
 //	CheckBox chkbox1_4,proc=EventCarrRadioProc,value=1,mode=1
-//	CheckBox chkbox1_5,pos={sc*90,125*sc},size={sc*37,14*sc},title="M",fSize=10*sc
+//	CheckBox chkbox1_5,pos={sc*90,125*sc},size={sc*37,14*sc},title="M",fsize=12*sc
 //	CheckBox chkbox1_5,proc=EventCarrRadioProc,value=0,mode=1
 	
 	GroupBox group0_0,pos={sc*5,5*sc},size={sc*174,140*sc},title="(1) Loading Mode",fSize=12*sc,fStyle=1
@@ -2427,19 +2426,19 @@ Proc EventCorrectionPanel()
 		SetAxis bottom 0,0.10*numpnts(rescaledTime)		//show 1st 10% of data for speed in displaying
 		
 		ControlBar 100
-		Button button0,pos={sc*20,12*sc},size={sc*70,20*sc},proc=EC_AddCursorButtonProc,title="Cursors"
-		Button button1,pos={sc*20,38*sc},size={sc*80,20*sc},proc=EC_ShowAllButtonProc,title="All Data"
+		Button button0,pos={sc*20,12*sc},size={sc*70,20*sc},proc=EC_AddCursorButtonProc,title="Cursors",fSize=12*sc
+		Button button1,pos={sc*20,38*sc},size={sc*80,20*sc},proc=EC_ShowAllButtonProc,title="All Data",fSize=12*sc
 //		Button button2,pos={sc*20,64*sc},size={sc*80,20*sc},proc=EC_ColorizeTimeButtonProc,title="Colorize"
 
 
 //		Button buttonDispAll,pos={sc*140,12*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-All"
 //		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-One"
 
-		Button buttonDispZoom,pos={sc*140,12*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-Zoom"
+		Button buttonDispZoom,pos={sc*140,12*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-Zoom",fSize=12*sc
 //		Button button4,pos={sc*140,38*sc},size={sc*100,20*sc},proc=EC_DisplayButtonProc,title="Display-One"
 
 		SetVariable setVar1,pos={sc*140,38*sc},size={sc*100,20*sc},title="Scale",value=_NUM:0.1
-		SetVariable setvar1,limits={0.01,1,0.02}
+		SetVariable setvar1,limits={0.01,1,0.02},fSize=12*sc
 
 //		Button button7,pos={sc*140,64*sc},size={sc*100,20*sc},proc=EC_FindOutlierButton,title="Zap Outlier"
 
@@ -2453,11 +2452,11 @@ Proc EventCorrectionPanel()
 	
 
 //		Button buttonCleanAll,pos={sc*(290+150),12*sc},size={sc*110,20*sc},proc=EC_SortTimeButtonProc,title="Sort-All"
-		Button button10,pos={sc*(290+150),64*sc},size={sc*110,20*sc},proc=EC_SaveWavesButtonProc,title="Save Waves"
+		Button button10,pos={sc*(290+150),64*sc},size={sc*110,20*sc},proc=EC_SaveWavesButtonProc,title="Save Waves",fSize=12*sc
 
 				
-		Button button11,pos={sc*683,12*sc},size={sc*30,20*sc},proc=EC_HelpButtonProc,title="?"
-		Button button12,pos={sc*658,90*sc},size={sc*60,20*sc},proc=EC_DoneButtonProc,title="Done"		
+		Button button11,pos={sc*683,12*sc},size={sc*30,20*sc},proc=EC_HelpButtonProc,title="?",fSize=12*sc
+		Button button12,pos={sc*658,90*sc},size={sc*60,20*sc},proc=EC_DoneButtonProc,title="Done",fSize=12*sc		
 
 	else
 		DoAlert 0, "Please load some event data, then you'll have something to edit."
@@ -3178,18 +3177,18 @@ Proc CustomBinPanel()
 	SetDrawLayer UserBack
 	
 	Button button0,pos={sc*654,42*sc}, size={sc*50,20*sc},title="Done"
-	Button button0,proc=CB_Done_Proc
-	Button button1,pos={sc*663,14*sc},size={sc*40,20*sc},proc=CB_HelpButtonProc,title="?"
-	Button button2,pos={sc*216,42*sc},size={sc*80,20*sc},title="Update",proc=CB_UpdateWavesButton	
+	Button button0,proc=CB_Done_Proc,fSize=12*sc
+	Button button1,pos={sc*663,14*sc},size={sc*40,20*sc},proc=CB_HelpButtonProc,title="?",fSize=12*sc
+	Button button2,pos={sc*216,42*sc},size={sc*80,20*sc},title="Update",proc=CB_UpdateWavesButton,fSize=12*sc	
 	SetVariable setvar1,pos={sc*23,13*sc},size={sc*160,20*sc},title="Number of slices"
-	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:Event:gEvent_nslices
-	SetVariable setvar2,pos={sc*24,44*sc},size={sc*160,20*sc},title="Max Time (s)",fSize=10
+	SetVariable setvar1,proc=CB_NumSlicesSetVarProc,value=root:Packages:NIST:Event:gEvent_nslices,fSize=12*sc
+	SetVariable setvar2,pos={sc*24,44*sc},size={sc*160,20*sc},title="Max Time (s)",fSize=12*sc
 	SetVariable setvar2,value=root:Packages:NIST:Event:gEvent_t_longest	
 
-	CheckBox chkbox1,pos={sc*216,14*sc},title="Enforce Max Time?"
+	CheckBox chkbox1,pos={sc*216,14*sc},title="Enforce Max Time?",fSize=12*sc
 	CheckBox chkbox1,variable = root:Packages:NIST:Event:gEvent_ForceTmaxBin
-	Button button3,pos={sc*500,14*sc},size={sc*90,20*sc},proc=CB_SaveBinsButtonProc,title="Save Bins"
-	Button button4,pos={sc*500,42*sc},size={sc*100,20*sc},proc=CB_ImportBinsButtonProc,title="Import Bins"	
+	Button button3,pos={sc*500,14*sc},size={sc*90,20*sc},proc=CB_SaveBinsButtonProc,title="Save Bins",fSize=12*sc
+	Button button4,pos={sc*500,42*sc},size={sc*100,20*sc},proc=CB_ImportBinsButtonProc,title="Import Bins",fSize=12*sc	
 		
 	SetDataFolder root:Packages:NIST:Event:
 
@@ -3648,7 +3647,7 @@ End
 //	NewPanel /W=(1602,44,1961,380)/K=1
 ////	ShowTools/A
 //	Button button0,pos={sc*29,15*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File"
-//	SetVariable setvar0,pos={sc*182,55*sc},size={sc*150,15*sc},title="Decimation factor",fsize=10
+//	SetVariable setvar0,pos={sc*182,55*sc},size={sc*150,15*sc},title="Decimation factor",fsize=12
 //	SetVariable setvar0,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
 //	Button button1,pos={sc*26,245*sc},size={sc*150,20*sc},proc=LoadDecimateButtonProc,title="Load and Decimate"
 //	Button button2,pos={sc*25,277*sc},size={sc*150,20*sc},proc=ConcatenateButtonProc,title="Concatenate"

@@ -349,15 +349,6 @@ Function Fast2dExport(type,fullpath,dialog)
 	If(!(WaveExists(data)))
 		Abort "data DNExist AsciiExport()"
 	Endif
-	If(!(WaveExists(intw)))
-		Abort "intw DNExist AsciiExport()"
-	Endif
-	If(!(WaveExists(rw)))
-		Abort "rw DNExist AsciiExport()"
-	Endif
-	If(!(WaveExists(textw)))
-		Abort "textw DNExist AsciiExport()"
-	Endif
 	If(!(WaveExists(proto)))
 		Abort "current protocol wave DNExist AsciiExport()"
 	Endif
@@ -825,16 +816,16 @@ Function QxQy_Export(type,fullpath,dialog)
 
 	Variable acc,ssd,lambda0,yg_d,qstar
 		
-	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
-	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
-	SDD = L2	*100	//1317
-	SSD = L1	*100	//1627 		//cm
-	lambda0 = lambda		//		15
-	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
-	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
-//		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
-	qstar = -2*pi/lambda0*2*yg_d/sdd
-	
+//	G = 981.  //!	ACCELERATION OF GRAVITY, CM/SEC^2
+//	acc = vz_1 		//	3.956E5 //!	CONVERT WAVELENGTH TO VELOCITY CM/SEC
+//	SDD = L2	*100	//1317
+//	SSD = L1	*100	//1627 		//cm
+//	lambda0 = lambda		//		15
+//	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
+//	Print "DISTANCE BEAM FALLS DUE TO GRAVITY (CM) = ",YG_d
+////		Print "Gravity q* = ",-2*pi/lambda0*2*yg_d/sdd
+//	qstar = -2*pi/lambda0*2*yg_d/sdd
+//	
 
 // the gravity center is not the resolution center
 // gravity center = beam center

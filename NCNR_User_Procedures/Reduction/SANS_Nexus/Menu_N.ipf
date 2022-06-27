@@ -42,21 +42,21 @@ Menu "SANS"
 		"2D Work file Math",Show_WorkMath_Panel()
 		"Tile Raw 2D files",Show_Tile_2D_Panel()
 		"Export 2D ASCII data",Export_RAW_Ascii_Panel()
-		"Bin QxQy Data to 1D",BinQxQy_to_1D()
+//		"Bin QxQy Data to 1D",BinQxQy_to_1D()
 	End
 	Submenu "Event Processing"
 		"Event Mode Process Panel",Show_Event_Panel()
 		"Adjust Events",ShowEventCorrectionPanel()
 		"Create Custom Bins",Show_CustomBinPanel()
-		"Display Data For Slicing",DisplayForSlicing()
+//		"Display Data For Slicing",DisplayForSlicing()
 		"-"
-		"Split Large File",SplitBigFile()
-		"Get List of ITX or Split Files",GetListofITXorSplitFiles()
-		"Accumulate First Slice",AccumulateSlices(0)
-		"Add Current Slice",AccumulateSlices(1)
-		"Display Accumulated Slices",AccumulateSlices(2)	
-		"-"
-		"Insert Time Reset",InsertTimeReset()
+//		"Split Large File",SplitBigFile()
+//		"Get List of ITX or Split Files",GetListofITXorSplitFiles()
+//		"Accumulate First Slice",AccumulateSlices(0)
+//		"Add Current Slice",AccumulateSlices(1)
+//		"Display Accumulated Slices",AccumulateSlices(2)	
+//		"-"
+//		"Insert Time Reset",InsertTimeReset()
 		"Estimate Frame Overlap",EstFrameOverlap()
 	End
 	"-"

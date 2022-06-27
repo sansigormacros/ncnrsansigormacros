@@ -1081,7 +1081,7 @@ end
 // functions to patch/correct items that are missing/incorrect in the test Nexus files
 //
 
-Macro Patch_PixelsPlus(lo,hi)
+Proc Patch_PixelsPlus(lo,hi)
 	Variable lo,hi
 	
 	fPatch_PixelsPlus(lo,hi)

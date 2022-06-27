@@ -684,8 +684,7 @@ Function RA_ExportButtonProc(ctrlName) : ButtonControl
 			LoadRawSANSData(fname,"RAW")		//fname is the full path
 			String/G root:myGlobals:gDataDisplayType="RAW"	
 			fRawWindowHook()
-			WAVE/T/Z tw = $"root:Packages:NIST:RAW:textRead"	//to be sure that wave exists if no data was ever displayed
-			newFileName= N_GetNameFromHeader(tw[0])		//02JUL13
+			newFileName = N_FindValidFilename(fileWave[ii])
 			
 			if(qxqy)
 				fullPath=pathStr+newFileName+".DAT"

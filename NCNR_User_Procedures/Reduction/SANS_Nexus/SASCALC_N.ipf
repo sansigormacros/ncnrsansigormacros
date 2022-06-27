@@ -545,7 +545,7 @@ Window SASCALC_Panel()
 	String fldrSav0= GetDataFolder(1)
 	SetDataFolder root:Packages:NIST:SAS:
 	
-	Display/W=(5,44,463,570)/K=1  aveint vs qval as "SASCALC"
+	Display/W=(5,44,463,550)/K=1  aveint vs qval as "SASCALC"
 	DoWindow/C SASCALC
 	ModifyGraph cbRGB=(49151,53155,65535)
 	ModifyGraph mode=3
@@ -577,8 +577,8 @@ Window SASCALC_Panel()
 	CheckBox checkCGB,value=0,mode=1
 	CheckBox checkNG7,pos={70,19},size={36,14},proc=SelectInstrumentCheckProc,title="NG7"
 	CheckBox checkNG7,value=0,mode=1
-	CheckBox checkCGB,disable=2		//hide the selection of NGB30 and NG7 for now
-	CheckBox checkNG7,disable=2
+//	CheckBox checkCGB,disable=2		//hide the selection of NGB30 and NG7 for now
+//	CheckBox checkNG7,disable=2
 
 	CheckBox checkChamber,pos={172,48},size={57,14},proc=TableCheckProc,title="Chamber"
 	CheckBox checkChamber,value=1,mode=1
@@ -1234,7 +1234,7 @@ End
 // get the wavelength from the panel control
 Function getSASCALCWavelength()
 
-	ControlInfo setvar0_2
+	ControlInfo/W=SASCALC setvar0_2
 	Variable val=V_Value
 	return(val)
 End

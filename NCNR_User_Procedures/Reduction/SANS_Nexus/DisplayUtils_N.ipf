@@ -21,6 +21,12 @@
 // plots the data in the "type" folder as a wireframe 3D surface.
 // uses (dynamically) the log/lin scaling of data in the folder
 //
+//
+// -- as of 2022 - not functioning --
+// ModifySurfer operation has not worked for years...
+// -- would need to rewrite in terms of Gizmo operations
+//
+//
 Proc Plot3DSurface(type)
 	String type
 	Prompt type,"Display 2-D data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;MSK;STO;SUB;DRK;RealTime"

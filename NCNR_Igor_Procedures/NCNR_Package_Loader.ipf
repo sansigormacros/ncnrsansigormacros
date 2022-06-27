@@ -51,6 +51,9 @@ Menu "Macros"
 //		StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
+		"-"
+		"Load Ordela SANS Nexus Reduction",LoadHDF5SANS_Ordela()
+
 	End
 	
 	Submenu	"Load USANS Reduction Macros"
@@ -59,7 +62,7 @@ Menu "Macros"
 //		StrVarOrDefault("root:Packages:NCNRItemStr3b","-"), NCNR_USANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr3b","-"))
 	End
 	
-	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
+//	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
 //	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
 
 	// for testing ONLY
@@ -73,8 +76,7 @@ Menu "Macros"
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
 	"-"
-	"Load HDF5 SANS Test 10m",LoadHDF5SANS()
-	"Load HDF5 SANS Test Ordela",LoadHDF5SANS_Ordela()
+	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
 
 
 end

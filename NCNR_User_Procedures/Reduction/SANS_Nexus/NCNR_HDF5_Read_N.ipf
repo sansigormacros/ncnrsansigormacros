@@ -1297,21 +1297,35 @@ Function/S getSampleAp_shape(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
-// this returns REAL - but input is TEXT, due to GUI input, == to diameter if CIRCLE
-//
-// TODO -- what are the units?? [mm] or [cm]
+// as of 6/2022 - the first files tested with the bucket
+// and the new tube detectors -- this field is a real value, not text
+// 
+// units are [mm]
 //
 Function getSampleAp_size(fname)
 	String fname
 
 	String path = "entry:instrument:sample_aperture:shape:size"
-	Variable num=60
-	variable val
-	String str2=""
-	String str = getStringFromHDF5(fname,path,num)
-	sscanf str, "%g %s\r", val,str2
-	return(val)
+	return(getRealValueFromHDF5(fname,path))
 End
+
+
+//// this returns REAL - but input is TEXT, due to GUI input, == to diameter if CIRCLE
+////
+//// TODO -- what are the units?? [mm] or [cm]
+////
+//Function getSampleAp_size(fname)
+//	String fname
+//
+//	String path = "entry:instrument:sample_aperture:shape:size"
+//	Variable num=60
+//	variable val
+//	String str2=""
+//	String str = getStringFromHDF5(fname,path,num)
+//	sscanf str, "%g %s\r", val,str2
+//	return(val)
+//End
+
 
 Function getSampleAp_width(fname)
 	String fname

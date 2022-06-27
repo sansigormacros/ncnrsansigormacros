@@ -293,29 +293,29 @@ Window Event_Reduce_Panel()
 	ModifyPanel fixedSize=1
 	SetDrawLayer UserBack
 	DrawLine 7*sc,30*sc,422*sc,30*sc
-	SetVariable PathDisplay,pos={sc*77,7*sc},size={sc*300,13*sc},title="Path"
+	SetVariable PathDisplay,pos={sc*77,7*sc},size={sc*300,13*sc},title="Path",fSize=12*sc
 	SetVariable PathDisplay,help={"This is the path to the folder that will be used to find the SANS data while reducing. If no files appear in the popup, make sure that this folder is set correctly"}
 	SetVariable PathDisplay,limits={-Inf,Inf,0},value= root:Packages:NIST:EVRED:gCatPathStr
 	Button PathButton,pos={sc*3,3*sc},size={sc*70,20*sc},proc=PickEVRPathButton,title="Pick Path"
-	Button PathButton,help={"Select the folder containing the raw SANS data files"}
+	Button PathButton,help={"Select the folder containing the raw SANS data files"},fSize=12*sc
 	Button helpButton,pos={sc*385,3*sc},size={sc*25,20*sc},proc=ShowEVRHelp,title="?"
-	Button helpButton,help={"Show the help file for reducing event files"}
+	Button helpButton,help={"Show the help file for reducing event files"},fSize=12*sc
 	PopupMenu ERFilesPopup,pos={sc*3,45*sc},size={sc*167,19*sc},proc=EVR_RedPopMenuProc,title="File to Reduce"
 	PopupMenu ERFilesPopup,help={"The displayed file is the one that will be reduced."}
-	PopupMenu ERFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:EVRED:gMRedList"
+	PopupMenu ERFilesPopup,mode=1,popvalue="none",value= #"root:Packages:NIST:EVRED:gMRedList",fSize=12*sc
 
 	SetVariable ERSlices,pos={sc*3,75*sc},size={sc*110,15*sc},title="# of slices"
-	SetVariable ERSlices,limits={0,1000,0},value=root:Packages:NIST:EVRED:gNumSlices
+	SetVariable ERSlices,limits={0,1000,0},value=root:Packages:NIST:EVRED:gNumSlices,fSize=12*sc
 	
 	SetVariable ERSelSlice,pos={sc*130,75*sc},size={sc*130,15*sc},title="current slice"
 	SetVariable ERSelSlice,limits={0,1000,1},value=root:Packages:NIST:EVRED:gCurSlice
-	SetVariable ERSelSlice,proc=ChangeSliceViewSetVar
+	SetVariable ERSelSlice,proc=ChangeSliceViewSetVar,fSize=12*sc
 
 	Button ToSTOButton,pos={sc*305,45*sc},size={sc*100,20*sc},proc=EVR_LoadAndSTO,title="Load to STO"
-	Button ToSTOButton,help={"Load the event file and copy to STO"}
+	Button ToSTOButton,help={"Load the event file and copy to STO"},fSize=12*sc
 
 	Button TimeBinButton,pos={sc*305,75*sc},size={sc*100,20*sc},proc=EVR_TimeBins,title="Time Bins"
-	Button TimeBinButton,help={"Display the time bins"}
+	Button TimeBinButton,help={"Display the time bins"},fSize=12*sc
 				
 //	SetVariable ERList,pos={sc*3,48*sc},size={sc*350,13*sc},proc=FileNumberListProc,title="File number list: "
 //	SetVariable ERList,help={"Enter a comma delimited list of file numbers to reduce. Ranges can be entered using a dash."}
@@ -323,14 +323,14 @@ Window Event_Reduce_Panel()
 
 	PopupMenu ERProto_pop,pos={sc*3,118*sc},size={sc*119,19*sc},proc=EVR_ProtoPopMenuProc,title="Protocol "
 	PopupMenu ERProto_pop,help={"All of the data files in the popup will be reduced using this protocol"}
-	PopupMenu ERProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:EVRED:gMRProtoList"
+	PopupMenu ERProto_pop,mode=1,popvalue="none",value= #"root:Packages:NIST:EVRED:gMRProtoList",fSize=12*sc
 	Button ReduceAllButton,pos={sc*3,178*sc},size={sc*180,20*sc},proc=EVR_ReduceAllSlices,title="Reduce All Slices"
-	Button ReduceAllButton,help={"This will reduce all slices."}
+	Button ReduceAllButton,help={"This will reduce all slices."},fSize=12*sc
 	Button ReduceOneButton,pos={sc*3,148*sc},size={sc*180,20*sc},proc=EVR_ReduceTopSlice,title="Reduce Selected Slice"
-	Button ReduceOneButton,help={"This will reduce the selected slice."}
+	Button ReduceOneButton,help={"This will reduce the selected slice."},fSize=12*sc
 	
 	Button DoneButton,pos={sc*290,178*sc},size={sc*110,20*sc},proc=EVR_DoneButtonProc,title="Done Reducing"
-	Button DoneButton,help={"When done reducing files, this will close this control panel."}
+	Button DoneButton,help={"When done reducing files, this will close this control panel."},fSize=12*sc
 EndMacro
 
 
