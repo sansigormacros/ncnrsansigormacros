@@ -1629,6 +1629,11 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	WAVE linear_data = getDetectorDataW("SAS")
 //	WAVE data = root:Packages:NIST:SAS:data
 
+// the XOP MUST have a 128x128 data array, or it will crash
+//
+// redimension to 128x128 and reduce the x-dimension later if needed for the 10m instrument
+	Redimension/N=(128,128) linear_data
+	
 	results = 0
 	linear_data = 0
 	

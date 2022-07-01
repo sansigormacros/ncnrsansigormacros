@@ -1090,7 +1090,7 @@ Function S_BuildCatSortPanel()
 	
 	print "Creating CAT Sort-Panel..."
 
-	Variable sc
+	Variable sc=1
 	
 	NVAR gLaptopMode = root:Packages:NIST:gLaptopMode
 		

@@ -2132,7 +2132,7 @@ Function AskForAbsoluteParams_Quest()
 		// now do the sum, only in the box	
 //		detCnt = sum($"root:Packages:NIST:raw:data", -inf, inf )
 //		Print "box is now ",x1,x2,y1,y2
-//		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
+		detCnt = SumCountsInBox(x1,x2,y1,y2,ct_err,"RAW")
 //		if(cmpstr(tw[9],"ILL   ")==0)
 //			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large this is usually corrected in the Add step
 //			pixel *= 1.04			// correction for true pixel size of the Cerca

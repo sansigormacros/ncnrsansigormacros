@@ -1188,6 +1188,9 @@ Function OrdelaEfficiencyCorr(w,w_err,fname,destPath)
 	Variable ii,jj,numx,numy,dx,dy
 
 
+	numx = DimSize(det_eff,0)
+	numy = DimSize(det_eff,1)
+	
 	for(ii=0	;ii<numx;ii+=1)
 		for(jj=0;jj<numy;jj+=1)
 			

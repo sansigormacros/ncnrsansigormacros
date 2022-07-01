@@ -95,7 +95,6 @@ Function Divide_work(type)
 	String destPath=""
 
 
-	Wave/Z data = getDetectorDataW("CAL")
 	Wave/Z div_data = getDetectorDataW("DIV")		//hard-wired in....
 
 	if(WaveExists(data) == 0)
@@ -128,6 +127,7 @@ Function Divide_work(type)
 	String/G $(destPath + ":fileList") = oldFileList
 
 
+	Wave/Z data = getDetectorDataW("CAL")
 	//do the division, changing data in CAL
 	data /= div_data
 

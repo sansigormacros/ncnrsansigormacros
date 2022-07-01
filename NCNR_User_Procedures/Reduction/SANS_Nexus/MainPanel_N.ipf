@@ -20,19 +20,19 @@ Proc PickPath_MainButtonProc(ctrlName) : ButtonControl
 	PickPath()
 	// read in DEFAULT.MASK, if it exists, otherwise, do nothing
 	//
-	PathInfo catPathName
-	if(V_flag==1)
-		String str = S_Path + "DEFAULT.MASK"
-		Variable refnum
-		Open/R/Z=1 refnum as str
-		if(strlen(S_filename) != 0)
-			Close refnum		//file can be found OK
-			ReadMCID_MASK(str)
-		else
-			// file not found, close just in case
-			Close/A
-		endif
-	endif
+//	PathInfo catPathName
+//	if(V_flag==1)
+//		String str = S_Path + "DEFAULT.MASK"
+//		Variable refnum
+//		Open/R/Z=1 refnum as str
+//		if(strlen(S_filename) != 0)
+//			Close refnum		//file can be found OK
+//			ReadMCID_MASK(str)
+//		else
+//			// file not found, close just in case
+//			Close/A
+//		endif
+//	endif
 End
 
 Proc DrawMask_MainButtonProc(ctrlName) : ButtonControl

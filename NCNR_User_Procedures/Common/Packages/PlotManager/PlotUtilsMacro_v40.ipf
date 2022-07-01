@@ -1398,6 +1398,9 @@ Function/S User_FunctionPopupList()
 	
 	list = RemoveFromList("Integrate_BuiltIn;intgrnd;xJointHistogram;",list,";")
 
+// 2022 -- from Nexus reader additions
+	list = RemoveFromList("Efficiency_Integral;CleanUpBeginning;EV_JointHistogram;",list,";")
+
 				
 	list = SortList(list)
 	return(list)
