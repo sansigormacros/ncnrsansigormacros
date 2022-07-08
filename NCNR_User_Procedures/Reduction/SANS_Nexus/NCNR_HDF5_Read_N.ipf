@@ -495,6 +495,11 @@ end
 
 // transmission value (error) for the attenuator in the beam
 // use this, but if something wrong, the tables are present
+//
+//
+// for the SANS instruments, the error table is presented in % ERROR
+// -- this correction is accounted for here in N_CalculateAttenuationError()
+//
 Function getAttenuator_trans_err(fname)
 	String fname
 	

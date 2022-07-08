@@ -94,6 +94,7 @@ Function Divide_work(type)
 	// if the desired workfile doesn't exist, let the user know, and abort
 	String destPath=""
 
+	Wave/Z data = getDetectorDataW(type)		// (usually COR)
 
 	Wave/Z div_data = getDetectorDataW("DIV")		//hard-wired in....
 

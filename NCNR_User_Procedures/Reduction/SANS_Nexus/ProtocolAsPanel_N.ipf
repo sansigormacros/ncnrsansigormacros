@@ -1886,7 +1886,10 @@ Function ExecuteProtocol(protStr,samStr)
 		String tempFilename = samStr
 		
 		newFileName = StringFromList(0, samStr, ",")
-		
+
+// remove the .nxs.ng? from the data file name
+		Variable offset = StrSearch(newFileName,".",0)		//find the first "."
+		newFileName = newFileName[0,offset-1]		
 
 //		newFileName = UpperStr(N_GetNameFromHeader(samStr))		//NCNR data drops here, trims to 8 chars
 
@@ -2137,8 +2140,16 @@ Function AskForAbsoluteParams_Quest()
 //			detCnt /= 4		// for cerca detector, header is right, sum(data) is 4x too large this is usually corrected in the Add step
 //			pixel *= 1.04			// correction for true pixel size of the Cerca
 //		endif
-		//		
-		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+		//
+		
+
+// ** this kappa is different than for (Ordela) SANS!!
+//
+// don't re-apply the solid angle here -- the data (COR) that this factor is applied to will already be
+// converted to counts per solid angle per pixel
+//		
+//		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)*(pixel/sdd)^2
+		kappa = detCnt/countTime/attenTrans*1.0e8/(monCnt/countTime)
 		
 		Variable kappa_err
 		kappa_err = (ct_err/detCnt)^2 + (atten_err/attenTrans)^2

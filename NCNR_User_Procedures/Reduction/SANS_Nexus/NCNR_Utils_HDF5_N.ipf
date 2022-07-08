@@ -1849,6 +1849,9 @@ End
 //
 // TODO -- check to be sure that the wavelength is in allowable range
 //
+// for the SANS instruments, the error table is presented in % ERROR
+// -- this correction is accounted for here in N_CalculateAttenuationError()
+//
 Function N_CalculateAttenuationError(fname)
 	String fname
 	
@@ -1871,7 +1874,8 @@ Function N_CalculateAttenuationError(fname)
 	val = interp(lambda, tmpLam, tmpVal )
 	
 	//killwaves/Z tmpVal,tmpLam
-	return(val)
+	return(val/100)		//convert the % ERROR to real value
+//	return(val)
 	
 End
 
