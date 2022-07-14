@@ -424,6 +424,8 @@ Function MasterAngleDraw()
 		
 		// dQStep is found by taking the q-width of one tube in the x-direction
 		// == delQ/pixel
+		SetDeltaQ(type)
+
 		NVAR dqStep = $("root:Packages:NIST:"+type+":entry:instrument:detector:gDelQ")
 		
 		//TODO -- verify the units!!

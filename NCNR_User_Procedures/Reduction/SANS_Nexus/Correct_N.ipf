@@ -285,14 +285,14 @@ Function CorrectMode_1()
 	emp_atten_err = getAttenuator_trans_err(fileStr)
 		
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonbgd = getControlMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = getBeamMonNormData("BGD")		//monitor count in BGD
 	cbgd = getDet_beam_center_x("BGD")
 	rbgd = getDet_beam_center_y("BGD")
-	tmonemp = getControlMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = getSampleTransmission("EMP")			//trans emp
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
@@ -406,10 +406,10 @@ Function CorrectMode_2()
 	//Print "atten = ",sam_attenFactor,bgd_attenFactor
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonbgd = getControlMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = getBeamMonNormData("BGD")		//monitor count in BGD
 	cbgd = getDet_beam_center_x("BGD")
 	rbgd = getDet_beam_center_y("BGD")
 
@@ -504,11 +504,11 @@ Function CorrectMode_3()
 	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonemp = getControlMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = getSampleTransmission("EMP")			//trans emp
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
@@ -672,14 +672,14 @@ Function CorrectMode_11()
 	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonbgd = getControlMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = getBeamMonNormData("BGD")		//monitor count in BGD
 	cbgd = getDet_beam_center_x("BGD")
 	rbgd = getDet_beam_center_y("BGD")
-	tmonemp = getControlMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = getSampleTransmission("EMP")			//trans emp
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
@@ -803,11 +803,11 @@ Function CorrectMode_12()
 	
 
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonbgd = getControlMonitorCount("BGD")		//monitor count in BGD
+	tmonbgd = getBeamMonNormData("BGD")		//monitor count in BGD
 	cbgd = getDet_beam_center_x("BGD")
 	rbgd = getDet_beam_center_y("BGD")
 	savmon_sam=getBeamMonNormSaved_count("SAM")		//true monitor count in SAM
@@ -911,11 +911,11 @@ Function CorrectMode_13()
 	emp_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field
-	tmonemp = getControlMonitorCount("EMP")		//monitor count in EMP
+	tmonemp = getBeamMonNormData("EMP")		//monitor count in EMP
 	temp = getSampleTransmission("EMP")			//trans emp
 	cemp = getDet_beam_center_x("EMP")		//beamcenter of EMP
 	remp = getDet_beam_center_y("EMP")
@@ -1019,7 +1019,7 @@ Function CorrectMode_14()
 	sam_atten_err = getAttenuator_trans_err(fileStr)
 	
 	//get relative monitor counts (should all be 10^8, since normalized in add step)
-	tmonsam = getControlMonitorCount("SAM")		//monitor count in SAM
+	tmonsam = getBeamMonNormData("SAM")		//monitor count in SAM
 	tsam = getSampleTransmission("SAM")		//SAM transmission
 	csam = getDet_beam_center_x("SAM")		//x center
 	rsam = getDet_beam_center_y("SAM")		//beam (x,y) define center of corrected field

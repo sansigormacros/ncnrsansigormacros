@@ -1852,14 +1852,18 @@ End
 // for the SANS instruments, the error table is presented in % ERROR
 // -- this correction is accounted for here in N_CalculateAttenuationError()
 //
+// -- need to calculate as err = (transmission * error / 100)
+//
 Function N_CalculateAttenuationError(fname)
 	String fname
 	
-	Variable val,lambda,numAtt
+	Variable val,lambda,numAtt,trans
 	String monoType
 	
 	numAtt = getAtten_number(fname)
 	lambda = getWavelength(fname)
+
+	trans = getAttenuator_transmission(fname)
 
 //	if(lambda < 4.52 || lambda > 19)
 //		Abort "Wavelength out of range for attenuation error table"
@@ -1874,7 +1878,7 @@ Function N_CalculateAttenuationError(fname)
 	val = interp(lambda, tmpLam, tmpVal )
 	
 	//killwaves/Z tmpVal,tmpLam
-	return(val/100)		//convert the % ERROR to real value
+	return(trans*val/100)		//convert the % ERROR to real value
 //	return(val)
 	
 End

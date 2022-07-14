@@ -317,7 +317,8 @@ Function	SetupSampleAperture()
 		SetDataFolder root:toExport:entry:instrument:sample_aperture:shape 
 			Make/O/D/N=1		height 	//0
 			Make/O/T/N=1			shape   	//"CIRCLE"
-			Make/O/T/N=1		size 	//"6.35 mm"
+//			Make/O/T/N=1		size 	//"6.35 mm"		as text
+			Make/O/D/N=1		size 	//"12.7 mm		as FP
 			Make/O/D/N=1		width 	//0
 			
 	SetDataFolder root:
@@ -396,7 +397,7 @@ Function FillStructureFromRTI()
 		count_time = iw[1]
 		count_time_preset = iw[1]
 		monitor_counts = rw[0]
-		detector_counts = rw[2]
+		detector_counts = rw[2]			// for the 112 tubes, this is corrected in the detector block
 		
 //		print iw[0]*iw[1],iw[2]
 
@@ -663,7 +664,12 @@ Function	FillDetector(rw,tw,iw)
 		// cut the left edge of the detector, since offset is to the right
 		 data = linear_data[p+15][q] // result data is (112,128)
 		 
-		 
+		 integrated_Count = sum(data,-inf,inf)
+
+//  correct the counts in the control block
+		WAVE	detector_counts = $("root:toExport:entry:control:detector_counts")
+		detector_counts = sum(data,-inf,inf)
+
 		// approximate dead time per tube
 		dead_time = 5e-6
 		 
@@ -687,6 +693,7 @@ Function	FillDetector(rw,tw,iw)
 	else
 		// ORDELA VALUES
 		// for 30m SANS/ duplicating Ordela:
+		integrated_Count = rw[2]
 
 		
 		data = linear_data // result data is (128,128)
@@ -749,10 +756,10 @@ Function	FillSampleAperture(rw,tw,iw)
 		SetDataFolder root:toExport:entry:instrument:sample_aperture:shape 
 			WAVE		height 	//0
 			WAVE/T			shape   	//"CIRCLE"
-			WAVE/T		size 	//6.35
+			WAVE		size 	// diameter in [mm]
 			WAVE		width 	//0
 			
-			size = num2Str(rw[24])
+			size = rw[24]
 			shape = "CIRCLE"
 			
 	SetDataFolder root:
@@ -770,7 +777,7 @@ Function 	FillSourceAperture(rw,tw,iw)
 			WAVE	distance 	//508
 			
 			description = "source aperture"
-			distance = rw[25]
+			distance = rw[25]*100		// convert [m] to [cm]
 			
 		SetDataFolder root:toExport:entry:instrument:source_aperture:shape 
 			WAVE/T		shape   	//"CIRCLE"

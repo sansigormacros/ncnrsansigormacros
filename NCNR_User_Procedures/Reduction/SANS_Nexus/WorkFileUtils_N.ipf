@@ -182,7 +182,7 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	//do the actual absolute scaling here, modifying the data in ABS
 	Variable defmon = 1e8,w_moncount,s1,s2,s3,s4
 	
-	w_moncount = getControlMonitorCount("ABS")		//monitor count in "ABS"
+	w_moncount = getBeamMonNormData("ABS")		//monitor count in "ABS"
 	if(w_moncount == 0)
 		//zero monitor counts will give divide by zero ---
 		DoAlert 0,"Total monitor count in data file is zero. No rescaling of data"
@@ -191,7 +191,7 @@ Function Absolute_Scale(type,w_trans,w_thick,s_trans,s_thick,s_izero,s_cross,kap
 	
 	//calculate scale factor
 	Variable scale,trans_err
-	s1 = defmon/getControlMonitorCount("ABS")		//[0] is monitor count (s1 should be 1)
+	s1 = defmon/getBeamMonNormData("ABS")		//[0] is monitor count (s1 should be 1)
 	s2 = s_thick/w_thick
 	s3 = s_trans/w_trans
 	s4 = s_cross/s_izero

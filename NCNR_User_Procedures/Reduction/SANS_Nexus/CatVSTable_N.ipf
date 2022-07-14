@@ -552,7 +552,7 @@ Function GetHeaderInfoToWave(fname,sname)
 	
 	// Monitor Count Rate
 	InsertPoints lastPoint,1,GMCR
-	GMCR[lastPoint]  = getControlMonitorCount(fname)/ctime		//total monitor count / total count time
+	GMCR[lastPoint]  = getBeamMonNormData(fname)/ctime		//total monitor count / total count time
 
 
 
@@ -976,7 +976,6 @@ End
 
 //
 // TODO:
-//  this is experimental...not been tested by any users yet
 // -- FEB 2020 copied this function over from VSANS, since it was popular there
 //
 // -- what else to add to the menu? (MSK and DIV now work)
@@ -986,6 +985,12 @@ End
 //
 // x- seems to not "let go" of a selection (missing the mouse up?)
 //    (possibly) less annoying if I only handle mouseup and present a menu then.
+//
+//
+// // new columns of PURPOSE and INTENT can have the values:
+//   PURPOSE = Transmission, Scattering, He3
+//   INTENT = Sample, Empty Cell, Blocked Beam, Open Beam, Standard
+//
 //
 Function CatTableHook(infoStr)
 	String infoStr
@@ -1003,15 +1008,29 @@ Function CatTableHook(infoStr)
 //			Variable xpix= NumberByKey("MOUSEX",infoStr)
 //			Variable ypix= NumberByKey("MOUSEY",infoStr)
 //			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
-			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"
-	
-	
-	
 
-//		root:myGlobals:CatVSHeaderInfo:Filenames	
+//		determine which column has been selected
+// answers are:
+// column =   Intent.d;
+// column =   Purpose.d; (ignore the input if multiple columns are selected, revert to "Load")
+			GetSelection table,CatVSTable,2
+//			Print "column = ",S_selection
+
+			if(cmpstr(S_selection,"Intent.d;") == 0)
+				PopupContextualMenu "Change Intent;-;Sample;Empty Cell;Blocked Beam;Open Beam;Standard;"
+				
+			elseif(cmpstr(S_selection,"Purpose.d;") == 0)
+				PopupContextualMenu "Change Purpose;-;TRANSMISSION;SCATTERING;He3;"
+				
+			else
+				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"
+
+			endif
+			
+
 			WAVE/T Filenames = $"root:myGlobals:CatVSHeaderInfo:Filenames"
 			Variable err
-			strswitch(S_selection)
+			strswitch(S_selection)			// S_selection is now the contextual selection
 				case "Load RAW":
 					GetSelection table,CatVSTable,1
 //					Print V_flag, V_startRow, V_startCol, V_endRow, V_endCol
@@ -1054,6 +1073,68 @@ Function CatTableHook(infoStr)
 						MREDPopMenuProc("",1,"")
 					endif
 					break
+
+// popups to modify the purpose or intent
+// Purpose -- Transmission;Scattering;He3;
+				case "TRANSMISSION":
+					Wave/T purpose = root:myGlobals:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReduction_Purpose(fileNames[ii],"TRANSMISSION")	
+						purpose[ii] = "TRANSMISSION"			//update the table too
+					break
+				case "SCATTERING":
+					Wave/T purpose = root:myGlobals:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReduction_Purpose(fileNames[ii],"SCATTERING")	
+						purpose[ii] = "SCATTERING"			//update the table too
+					break
+				case "He3":
+					Wave/T purpose = root:myGlobals:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReduction_Purpose(fileNames[ii],"He3")	
+						purpose[ii] = "He3"			//update the table too
+					break
+					
+// Intent --  "Change Intent;-;Sample;Empty Cell;Blocked Beam;Open Beam;Standard;"
+				case "Sample":
+					Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReductionIntent(fileNames[ii],"Sample")	
+						intent[ii] = "Sample"			//update the table too
+					break
+				case "Empty Cell":
+					Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReductionIntent(fileNames[ii],"Empty Cell")	
+						intent[ii] = "Empty Cell"			//update the table too
+					break
+				case "Blocked Beam":
+					Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReductionIntent(fileNames[ii],"Blocked Beam")	
+						intent[ii] = "Blocked Beam"			//update the table too
+					break
+				case "Open Beam":
+					Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReductionIntent(fileNames[ii],"Open Beam")	
+						intent[ii] = "Open Beam"			//update the table too
+					break
+				case "Standard":
+					Wave/T intent = root:myGlobals:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSTable,1
+						ii = V_StartRow
+						writeReductionIntent(fileNames[ii],"Standard")	
+						intent[ii] = "Standard"			//update the table too
+					break
+					
 					
 			endswitch		//popup selection
 	endswitch	// event

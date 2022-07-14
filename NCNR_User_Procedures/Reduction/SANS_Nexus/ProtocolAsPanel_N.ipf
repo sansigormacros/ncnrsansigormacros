@@ -2058,7 +2058,8 @@ Function AskForAbsoluteParams_Quest()
 	
 		countTime = getCount_time("RAW")
 		//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
-		monCnt = getControlMonitorCount("RAW")
+//		monCnt = getControlMonitorCount("RAW")
+		monCnt = getBeamMonNormData("RAW")
 		sdd = getDet_Distance("RAW")		// sdd is in [cm]
 				
 		//lookup table for transmission factor
@@ -2143,7 +2144,7 @@ Function AskForAbsoluteParams_Quest()
 		//
 		
 
-// ** this kappa is different than for (Ordela) SANS!!
+// ** this kappa is different than for (Ordela-VAX) SANS!!
 //
 // don't re-apply the solid angle here -- the data (COR) that this factor is applied to will already be
 // converted to counts per solid angle per pixel

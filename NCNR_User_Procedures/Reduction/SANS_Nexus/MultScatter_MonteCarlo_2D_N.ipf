@@ -1832,7 +1832,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 //	data = linear_data		// now there is only data, which is always linear
 	
 	// fill in bits of the header
-	putControlMonitorCount("SAS",imon)		// = imon		//the simulated monitor counts
+	putBeamMonNorm_data("SAS",imon)		// = imon		//the simulated monitor counts
 	putCollectionTime("SAS",ctTime)		// = ctTime		//simulated counting time in seconds
 	// re-average the 2D data
 	S_CircularAverageTo1D("SAS")
@@ -2125,7 +2125,7 @@ Function Sim_Fill1DHeader(folder)
 	NVAR trans1D = root:Packages:NIST:SAS:gSamTrans			//this is the input value used
 	NVAR totCts = root:Packages:NIST:SAS:g_1DTotCts
 	NVAR thick = root:Packages:NIST:SAS:gThick
-	putControlMonitorCount(fname,imon)
+	putBeamMonNorm_data(fname,imon)
 	putDetector_counts(fname,totCts)
 	putSampleTransmission(fname,trans1D)
 	putSampleThickness(fname,thick)

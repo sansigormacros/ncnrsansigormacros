@@ -592,9 +592,10 @@ Function WriteHeaderForPatch(fname,change,textVal)
 		num = str2num(textVal[7]) 
 		writeControlMonitorCount(fname,num)
 	Endif
-	if(change[8])     //total detector count
+	if(change[8])     //total detector count (both locations)
 		num = str2num(textVal[8])
 		writeDetector_counts(fname,num)
+		writeDet_Integratedcount(fname,num)
 	Endif
 	if(change[9])      //trans det count
 		num = str2num(textVal[9])
@@ -848,7 +849,7 @@ Function ReadHeaderForPatch(fname)
 	Variable/G root:myGlobals:Patch:gPV4 = getDet_beam_center_y(fname)
 	Variable/G root:myGlobals:Patch:gPV5 = getAtten_number(fname)
 	Variable/G root:myGlobals:Patch:gPV6 = getCount_time(fname)
-	Variable/G root:myGlobals:Patch:gPV7 = getControlMonitorCount(fname)
+	Variable/G root:myGlobals:Patch:gPV7 = getBeamMonNormData(fname)
 	Variable/G root:myGlobals:Patch:gPV8 = getDetector_counts(fname)
 	Variable/G root:myGlobals:Patch:gPV9 = 0  // replace this value --getTransDetectorCounts(fname)
 	Variable/G root:myGlobals:Patch:gPV10 = getWavelength(fname)
@@ -1960,9 +1961,9 @@ Function WriteCSVAttTableButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			DoAlert 0,"incomplete function WriteCSVAttTableButton()"
+//			DoAlert 0,"incomplete function WriteCSVAttTableButton()"
 			
-			return(0)
+	//		return(0)
 			
 //			ControlInfo popup_0
 //			String detStr = S_Value
@@ -1972,16 +1973,35 @@ Function WriteCSVAttTableButton(ba) : ButtonControl
 			Variable hi=V_Value
 			WAVE attenWave = root:myGlobals:Patch:attenWave
 			
-//			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-//				detStr = StringFromList(ii, ksDetectorListNoB, ";")
-				Wave tmp_a = $("root:tmp_a")
-				Wave tmp_b = $("root:tmp_b")
-				Wave tmp_c = $("root:tmp_c")
-				attenWave[0][] = tmp_a[q]
-				attenWave[1][] = tmp_b[q]
-				attenWave[2][] = tmp_c[q]
+				Wave NGBlambda = $("root:NGBlambda")
+				Wave NGBatt0 = $("root:NGBatt0")
+				Wave NGBatt1 = $("root:NGBatt1")
+				Wave NGBatt2 = $("root:NGBatt2")
+				Wave NGBatt3 = $("root:NGBatt3")
+				Wave NGBatt4 = $("root:NGBatt4")
+				Wave NGBatt5 = $("root:NGBatt5")
+				Wave NGBatt6 = $("root:NGBatt6")
+				Wave NGBatt7 = $("root:NGBatt7")
+				Wave NGBatt8 = $("root:NGBatt8")
+				Wave NGBatt9 = $("root:NGBatt9")
+				Wave NGBatt10 = $("root:NGBatt10")
+				
+				
+				attenWave[][0] = NGBlambda[p]
+				attenWave[][1] = NGBatt0[p]
+				attenWave[][2] = NGBatt1[p]
+				attenWave[][3] = NGBatt2[p]
+				attenWave[][4] = NGBatt3[p]
+				attenWave[][5] = NGBatt4[p]
+				attenWave[][6] = NGBatt5[p]
+				attenWave[][7] = NGBatt6[p]
+				attenWave[][8] = NGBatt7[p]
+				attenWave[][9] = NGBatt8[p]
+				attenWave[][10] = NGBatt9[p]
+				attenWave[][11] = NGBatt10[p]
+				
+				
 				fPatchAttenTable(lo,hi,attenWave)
-//			endfor
 			
 			break
 		case -1: // control being killed
@@ -2229,9 +2249,9 @@ Function WriteCSVAttErrTableButton(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			
-			DoAlert 0,"incomplete function WriteCSVAttErrTableButton()"
+//			DoAlert 0,"incomplete function WriteCSVAttErrTableButton()"
 			
-			return(0)
+//			return(0)
 			
 //			ControlInfo popup_0
 //			String detStr = S_Value
@@ -2241,16 +2261,35 @@ Function WriteCSVAttErrTableButton(ba) : ButtonControl
 			Variable hi=V_Value
 			WAVE attenErrWave = root:myGlobals:Patch:attenErrWave
 			
-//			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-//				detStr = StringFromList(ii, ksDetectorListNoB, ";")
-				Wave tmp_a = $("root:tmp_a")
-				Wave tmp_b = $("root:tmp_b")
-				Wave tmp_c = $("root:tmp_c")
-				attenErrWave[0][] = tmp_a[q]
-				attenErrWave[1][] = tmp_b[q]
-				attenErrWave[2][] = tmp_c[q]
+			
+				Wave NGBlambda = $("root:NGBlambda")
+				Wave NGBatt0_err = $("root:NGBatt0_err")
+				Wave NGBatt1_err = $("root:NGBatt1_err")
+				Wave NGBatt2_err = $("root:NGBatt2_err")
+				Wave NGBatt3_err = $("root:NGBatt3_err")
+				Wave NGBatt4_err = $("root:NGBatt4_err")
+				Wave NGBatt5_err = $("root:NGBatt5_err")
+				Wave NGBatt6_err = $("root:NGBatt6_err")
+				Wave NGBatt7_err = $("root:NGBatt7_err")
+				Wave NGBatt8_err = $("root:NGBatt8_err")
+				Wave NGBatt9_err = $("root:NGBatt9_err")
+				Wave NGBatt10_err = $("root:NGBatt10_err")
+				
+				
+				attenErrWave[][0] = NGBlambda[p]
+				attenErrWave[][1] = NGBatt0_err[p]
+				attenErrWave[][2] = NGBatt1_err[p]
+				attenErrWave[][3] = NGBatt2_err[p]
+				attenErrWave[][4] = NGBatt3_err[p]
+				attenErrWave[][5] = NGBatt4_err[p]
+				attenErrWave[][6] = NGBatt5_err[p]
+				attenErrWave[][7] = NGBatt6_err[p]
+				attenErrWave[][8] = NGBatt7_err[p]
+				attenErrWave[][9] = NGBatt8_err[p]
+				attenErrWave[][10] = NGBatt9_err[p]
+				attenErrWave[][11] = NGBatt10_err[p]
+				
 				fPatchAttenErrTable(lo,hi,attenErrWave)
-//			endfor
 			
 			break
 		case -1: // control being killed
@@ -2365,4 +2404,39 @@ End
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+
+
+// -- quick patch for the integrated detector count -- which should be
+//  correctly written in the converted files from this point
+//  (it is in the 10m files)
+//
+Function fPatch_IntegratedCount(lo,hi)
+	Variable lo,hi
+
+	
+	Variable ii,jj,cts
+	String fname
+	
+
+	//loop over all files
+	for(jj=lo;jj<=hi;jj+=1)
+		fname = N_FindFileFromRunNumber(jj)
+		if(strlen(fname) != 0)
+	
+			cts = getDetector_Counts(fname)
+			
+			writeDet_IntegratedCount(fname,cts)
+			
+			Print fname
+			printf "run number %d reset to correct values\r",jj
+			
+		else
+			printf "run number %d not found\r",jj
+		endif
+		
+	endfor
+	
+	return(0)
+End
 

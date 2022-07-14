@@ -78,7 +78,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	hdrStr1 = num2str(getBeamMonNormData(type))+"  "+num2str(getWavelength(type))
 	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
@@ -188,7 +188,7 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 		//Print "dialog fullpath = ",fullpath
 	Endif
 	
-	hdrStr1 = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	hdrStr1 = num2str(getBeamMonNormData(type))+"  "+num2str(getWavelength(type))
 	hdrStr1 += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	hdrStr1 += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type)) + ave +"   "+num2str(step) + "\r\n"
 
@@ -370,7 +370,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[0] = "FILE: "+getFileNameFromFolder(type)+"   CREATED: "+getDataStartTime(type)
 	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA(A)   DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)    COUNT TIME"
-	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	labelWave[3] = num2str(getBeamMonNormData(type))+"  "+num2str(getWavelength(type))
 	labelWave[3] +="       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
 	labelWave[3] +="     "+num2str(getCount_time(type))
@@ -494,7 +494,7 @@ Function Fast2dExport_OldStyle(type,fullpath,dialog)
 	String tw1=getDataStartTime(type)
 	String tw2=type
 	Variable iw2=getCount_time(type)
-	Variable rw0=getControlMonitorCount(type)
+	Variable rw0=getBeamMonNormData(type)
 	Variable rw39=0
 	Variable rw2=getDetector_counts(type)
 	Variable rw4=getSampleTransmission(type)
@@ -745,7 +745,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[0] = "FILE: "+getFileNameFromFolder(type)+"   CREATED: "+date() +"  "+ time()
 	labelWave[1] = "LABEL: "+getSampleDescription(type)
 	labelWave[2] = "MON CNT   LAMBDA (A)  DET_OFF(cm)   DET_DIST(m)   TRANS   THICK(cm)"
-	labelWave[3] = num2str(getControlMonitorCount(type))+"  "+num2str(getWavelength(type))
+	labelWave[3] = num2str(getBeamMonNormData(type))+"  "+num2str(getWavelength(type))
 	labelWave[3] += "       "+num2str(getDet_LateralOffset(type))+"     "+num2str(getDet_Distance(type)/100)
 	labelWave[3] += "     "+num2str(getSampleTransmission(type))+"     "+num2str(getSampleThickness(type))
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "

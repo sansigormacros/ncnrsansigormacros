@@ -544,7 +544,7 @@ Function/S Auto_CalcKappa(runNum)
 
 	countTime = getCount_time("RAW")
 	//detCnt = rw[2]		//080802 -use sum of data, not scaler from header
-	monCnt = getControlMonitorCount("RAW")
+	monCnt = getBeamMonNormData("RAW")
 	sdd = getDet_Distance(filename)		// return value is in [cm]
 				
 	//lookup table for transmission factor

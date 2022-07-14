@@ -77,8 +77,10 @@ Function StatusButton(ctrlName) : ButtonControl
 	
 	Variable xctr=getDet_beam_center_x(cur_folder)
 	Variable yctr=getDet_beam_center_y(cur_folder)
-	Variable detCts=getDetector_counts(cur_folder)
-	Variable monCts=getControlMonitorCount(cur_folder)
+//	Variable detCts=getDetector_counts(cur_folder)
+	Variable detCts=getDet_IntegratedCount(cur_folder)
+//	Variable monCts=getControlMonitorCount(cur_folder)
+	Variable monCts=getBeamMonNormData(cur_folder)
 	Variable trans=getSampleTransmission(cur_folder)
 	Variable thick=getSampleThickness(cur_folder)
 	

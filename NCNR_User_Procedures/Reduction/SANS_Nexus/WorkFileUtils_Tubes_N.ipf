@@ -101,7 +101,7 @@ Function Add_raw_to_work_for_Tubes(newType)
 
 // instrument block
 	// beam_monitor_norm
-		// data (this will be 1e8)				getBeamMonNormData(fname)		putBeamMonNormData(fname,val)
+		// data (this will be 1e8)				getBeamMonNormData(fname)		putBeamMonNorm_data(fname,val)
 		// saved_count (this is the original monitor count)  getBeamMonNormSaved_count(fname)		putBeamMonNormSaved_count(fname,val)
 
 	// for each detector
@@ -142,8 +142,6 @@ Function Add_raw_to_work_for_Tubes(newType)
 	defMon=1e8			//default monitor counts
 	
 	
-	
-
 	// find the scaling factors, one for each folder
 	saved_mon_dest = getBeamMonNormSaved_count(newType)
 	scale_dest = saved_mon_dest/defMon		//un-scaling factor
@@ -168,10 +166,11 @@ Function Add_raw_to_work_for_Tubes(newType)
 // in entry
 	putCollectionTime(newType,collection_time_dest+collection_time_tmp)
 
-// in control block
+
 	putCount_time(newType,count_time_dest+count_time_tmp)
 	putDetector_counts(newType,detCount_dest+detCount_tmp)
-	putControlMonitorCount(newType,saved_mon_dest+saved_mon_tmp)
+//	putBeamMonNorm_data(newType,saved_mon_dest+saved_mon_tmp)		//NO -- real total mon ct is saved below
+	putBeamMonNorm_data(newType,defmon)			// added files will still be scaled to defMon
 
 // (DONE)
 // the new, unscaled monitor count was written to the control block, but it needs to be 
@@ -211,12 +210,10 @@ Function Add_raw_to_work_for_Tubes(newType)
 	data_err_dest = sqrt(data_err_dest^2 + data_err_tmp^2)		// add in quadrature
 //	linear_data_dest += linear_data_tmp
 	
-	// now rescale the data_dest to the monitor counts
+	// now rescale the data_dest to the summed monitor counts
 	data_dest *= new_scale
 	data_err_dest *= new_scale
 //	linear_data_dest *= new_scale
-
-
 
 	
 	//Add the added raw filename to the list of files in the workfile
@@ -642,26 +639,6 @@ Function Raw_to_work_for_Tubes(newType)
 //	lin_w_err = w_err
 	
 
-// TODO
-// -- are these rescalings stored in the correct locations?
-// -- are any duplciated above in the rescaling?
-	
-	//update totals to put in the work header (at the end of the function)
-	total_mon += getControlMonitorCount(newType)
-
-	total_det += dscale*getDetector_counts(newType)
-
-	total_rtime += getCount_time(newType)
-	total_numruns +=1
-	
-	
-	//all is done, except for the bookkeeping, updating the header information in the work folder
-//	textread[1] = date() + " " + time()		//date + time stamp
-//	putBeamMonNormSaved_count(newType, total_mon)			//save the true monitor count
-//	putControlMonitorCount(newType,defmon)				//monitor ct = defmon
-	putCollectionTime(newType,total_rtime)			// total counting time
-	putDetector_counts(newType, scale*total_det)			//scaled detector counts
-		
 	//reset the current displaytype to "newtype"
 	String/G root:myGlobals:gDataDisplayType=newType
 	String/G root:Packages:NIST:gCurDispType=newType
@@ -691,7 +668,7 @@ Function Raw_to_Work_NoNorm(type)
 		
 	Variable norm_mon,tot_mon,scale
 	
-	norm_mon = getControlMonitorCount(type)		//should be 1e8
+	norm_mon = getBeamMonNormData(type)		//should be 1e8
 	tot_mon = getBeamMonNormSaved_count(type)		//should be 1
 	scale= norm_mon/tot_mon
 	
@@ -718,7 +695,7 @@ Function Add_Raw_to_Work_NoNorm(type)
 	
 	Variable norm_mon,tot_mon,scale
 	
-	norm_mon = getControlMonitorCount(type)		//should be 1e8
+	norm_mon = getBeamMonNormData(type)		//should be 1e8
 	tot_mon = getBeamMonNormSaved_count(type)		//should be 1
 	scale= norm_mon/tot_mon
 	

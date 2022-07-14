@@ -10,7 +10,7 @@
 //
 // - adding RAW data to a workfile
 // -- **this conversion applies the detector corrections**
-// -- Raw_to_work(newType) IS THE MAJOR ROUTINE TO APPLY DETECTOR CORRECTIONS
+// -- V_Raw_to_work(newType) IS THE MAJOR ROUTINE TO APPLY DETECTOR CORRECTIONS
 //
 //
 // - copying workfiles to another folder
@@ -887,9 +887,9 @@ Function V_Raw_to_work(newType)
 		savedMonCount	= monCount
 		scale = defMon/monCount		// scale factor to MULTIPLY data by to rescale to defmon
 
-		// write to newType=fname will put new values in the destination WORK folder
-		V_writeBeamMonNormSaved_count(fname,savedMonCount)			// save the true count
-		V_writeBeamMonNormData(fname,defMon)		// mon ct is now 10^8
+		// PUT to newType=fname will put new values in the destination WORK folder
+		V_putBeamMonNormSaved_count(fname,savedMonCount)			// save the true count
+		V_putBeamMonNormData(fname,defMon)		// mon ct is now 10^8
 					
 //			// TODO
 //			// the low efficiency monitor, expect to use this for white beam mode
@@ -917,9 +917,7 @@ Function V_Raw_to_work(newType)
 			// also, ML panel has the wrong value (Oct-nov 2019) and I don't know why. so sum the data
 			//
 			Variable integratedCount = sum(w)
-			V_writeDet_IntegratedCount(fname,detStr,integratedCount)		//already the scaled value for counts
-//			Variable integratedCount = V_getDet_IntegratedCount(fname,detStr)
-//			V_writeDet_IntegratedCount(fname,detStr,integratedCount*scale)
+			V_putDet_IntegratedCount(fname,detStr,integratedCount)		//already the scaled value for counts
 
 		endfor
 	else
@@ -1066,6 +1064,8 @@ Function V_Add_raw_to_work(newType)
 // update the fields that are not in the detector blocks
 // in entry
 	V_putCollectionTime(newType,collection_time_dest+collection_time_tmp)
+	
+	// the V_getBeamMonNorm_data(newType) is already defmon, do not need to re-put this value
 
 // in control block
 	V_putCount_time(newType,count_time_dest+count_time_tmp)
