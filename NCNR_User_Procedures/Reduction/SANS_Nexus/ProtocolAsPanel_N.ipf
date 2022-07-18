@@ -1464,6 +1464,11 @@ End
 //
 //function is long, but straightforward logic
 //
+// NOTE: DIV file is still included here to not break protocol definitions, 
+// - but the DIV step is NOT done here, since it is already done at the time
+// of conversion of RAW data to a WORK file
+//
+//
 Function ExecuteProtocol(protStr,samStr)
 	String protStr,samStr
 	//protStr is the full path to the selected protocol wave
@@ -1712,36 +1717,46 @@ Function ExecuteProtocol(protStr,samStr)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	While(0)
 	
-	//check for work.div file (prot[2])
-	//add if needed
-	// can't properly check the filename - so for now add and divide, if anything other than "none"
-	//do/skip divide step based on div answer
-	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
-		If(cmpstr("ask",prot[2]) == 0)
-			//ask user for file
-			 junkStr = PromptForPath("Select the detector sensitivity file")
-			If(strlen(junkStr)==0)
-				SetDataFolder root:
-				Abort "No file selected, data reduction aborted"
-			Endif
-			
-			LoadRawSANSData(junkStr, "DIV")
+//	//check for work.div file (prot[2])
+//	//add if needed
+//	// can't properly check the filename - so for now add and divide, if anything other than "none"
+//	//do/skip divide step based on div answer
+//	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
+//		If(cmpstr("ask",prot[2]) == 0)
+//			//ask user for file
+//			 junkStr = PromptForPath("Select the detector sensitivity file")
+//			If(strlen(junkStr)==0)
+//				SetDataFolder root:
+//				Abort "No file selected, data reduction aborted"
+//			Endif
+//			
+//			LoadRawSANSData(junkStr, "DIV")
+//
+//		else
+//			//assume it's a path, and that the first (and only) item is the path:file
+//			//list processing is necessary to remove any final comma
+//			junkStr = pathStr + StringFromList(0, prot[2],"," )
+//			LoadRawSANSData(junkStr, "DIV")
+//		Endif
+//		//got a DIV file, select the proper type of work data to DIV (= activeType)
+//		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
+//		If(err)
+//			SetDataFolder root:
+//			Abort "data missing in DIV step, call from executeProtocol"
+//		Endif
+//		activeType = "CAL"
+//		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
+//	Endif
 
-		else
-			//assume it's a path, and that the first (and only) item is the path:file
-			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			LoadRawSANSData(junkStr, "DIV")
-		Endif
-		//got a DIV file, select the proper type of work data to DIV (= activeType)
-		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
-		If(err)
-			SetDataFolder root:
-			Abort "data missing in DIV step, call from executeProtocol"
-		Endif
-		activeType = "CAL"
-		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	Endif
+
+//
+// DIV is not done here any more (CAL is not generated)
+// since the DIV step is done at Raw_to_Work() step -- doing it here would be
+// double-DIV-ing
+//
+
+// therefore -- activeType is still "COR" at this point...
+
 	
 	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired

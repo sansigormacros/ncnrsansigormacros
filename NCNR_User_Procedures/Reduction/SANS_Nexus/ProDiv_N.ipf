@@ -69,6 +69,9 @@ Function NormalizeDIV(type)
 	return(0)
 End
 
+//
+// -- UNUSED PROCEDURE -- SEE GenerateDIVButtonProc()
+//
 // prompts the user for the location of the "COR" -level data 
 // data can be copied to any data folder (except DIV) for use here...
 //

@@ -462,7 +462,20 @@ End
 //      and 0 = NO MASK == keep the data
 //
 Proc H_Setup_SANS_MASK_Structure()
-	
+
+	Variable nx, ny
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+		nx = 112
+		ny = 128
+
+	else
+		//Ordela values
+		nx = 128
+		ny = 128
+
+	endif
+		
 	NewDataFolder/O/S root:SANS_MASK_file		
 
 	NewDataFolder/O/S root:SANS_MASK_file:entry	
@@ -472,11 +485,11 @@ Proc H_Setup_SANS_MASK_Structure()
 			Make/O/T/N=1	name	= "SANS_NGB"
 			
 	NewDataFolder/O/S root:SANS_MASK_file:entry:instrument:detector		
-		Make/O/I/N=(112,128)	data	= 0
+		Make/O/I/N=(nx,ny)	data	= 0
 		data[0,2][] = 1
-		data[109,111][] = 1
+		data[nx-3,nx-1][] = 1
 		data[][0,2] = 1
-		data[][12125,127] = 1		
+		data[][ny-3,ny-1] = 1		
 			
 
 	// fake, empty folders so that the generic loaders can be used

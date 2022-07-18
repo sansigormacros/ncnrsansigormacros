@@ -2222,7 +2222,7 @@ Function V_ExecuteProtocol(protStr,samStr)
 
 //
 // DIV is not done here any more (CAL is not generated)
-// since the DIV step is done at file loading time -- doing it here would be
+// since the DIV step is done at V_Raw_to_Work() step -- doing it here would be
 // double-DIV-ing
 //
 

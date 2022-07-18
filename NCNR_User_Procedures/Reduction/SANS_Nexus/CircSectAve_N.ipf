@@ -829,8 +829,17 @@ Function CircularAverageTo1D(type)
 			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
 		endif
 		val -= 1
-	while(val>0)
+	while(val>=0)
 
+// remove any point with a zero q-value
+	val = numpnts(nBin_qxqy)-1
+	do
+		if(qBin_qxqy[val] == 0)
+			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		endif
+		val -= 1
+	while(val>=0)
+	
 // utility function to remove NaN values from the waves
 //	V_RemoveNaNsQIS(qBin_qxqy, iBin_qxqy, eBin_qxqy)
 
@@ -1305,7 +1314,16 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
 		endif
 		val -= 1
-	while(val>0)
+	while(val>=0)
+	
+// there may be a zero q-value, remove it
+	val = numpnts(nBin_qxqy)-1
+	do
+		if(qBin_qxqy[val] == 0)
+			DeletePoints val, 1, iBin_qxqy,qBin_qxqy,nBin_qxqy,iBin2_qxqy,eBin_qxqy,eBin2D_qxqy
+		endif
+		val -= 1
+	while(val>=0)
 
 // utility function to remove NaN values from the waves
 //
