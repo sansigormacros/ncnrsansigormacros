@@ -588,9 +588,10 @@ Function WriteHeaderForPatch(fname,change,textVal)
 		writeAtten_num_dropped(fname,num)
 	Endif
 	//[6] was the counting time, integer written above
-	if(change[7])    //monitor count
+	if(change[7])    //monitor count -- change in both places
 		num = str2num(textVal[7]) 
 		writeControlMonitorCount(fname,num)
+		writeBeamMonNorm_data(fname,num)
 	Endif
 	if(change[8])     //total detector count (both locations)
 		num = str2num(textVal[8])

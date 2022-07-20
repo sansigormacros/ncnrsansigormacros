@@ -372,14 +372,6 @@ end
 //////// DATA
 
 
-areaDetector (2-D wave N=(112,128)) val=4605	typ=32bI
-			configuration   	"4m 6A Scatt"
-			sample_description   	"Sample 1"
-			sample_thickness 	1
-			slotIndex   	"1"
-			x0   	"TIME"
-			y0 (2-D wave N=(112,128)) val=4605	typ=32bI
-
 Function/WAVE getData_areaDetector(fname)
 	String fname
 	

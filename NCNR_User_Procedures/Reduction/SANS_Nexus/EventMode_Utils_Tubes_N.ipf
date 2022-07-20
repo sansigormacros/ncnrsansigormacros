@@ -160,6 +160,21 @@ Function CopySlicesForExport()
 	Duplicate/O root:Packages:NIST:Event:timeWidth root:export:entry:reduction:timeWidth	
 	Duplicate/O root:Packages:NIST:Event:binCount root:export:entry:reduction:binCount
 
+// update the count time to reflect the event times that were kept - after discarding the bad events
+//
+// update the time everywhere
+//
+//
+// entry:control:count_time	// this is the field that is used
+// entry:collection_time		//this field is not used, but write it here too
+
+	NVAR longestTime = root:Packages:NIST:Event:gEvent_t_longest
+	
+	WAVE count_time = $"root:export:entry:control:count_time"
+	WAVE collection_time = $"root:export:entry:collection_time"
+	
+	count_time = longestTime
+	collection_time = longestTime
 
 	return(0)
 end
@@ -894,6 +909,13 @@ Function ExecuteProtocol_Event(protStr,samStr,sliceNum,skipLoad)
 	UpdateDisplayInformation(ActiveType)		
 
 
+//
+// DIV is not done here any more (CAL is not generated)
+// since the DIV step is done at Raw_to_Work() step -- doing it here would be
+// double-DIV-ing
+//
+
+
 //////////////////////////////
 //  ABSOLUTE SCALE
 //////////////////////////////
@@ -995,8 +1017,11 @@ Function ExecuteProtocol_Event(protStr,samStr,sliceNum,skipLoad)
 // Proto_SaveFile(avgStr,activeType,samFileLoaded,av_type,binType,detGroup,trimBegStr,trimEndStr)
 
 	String outputFileName
-	outputFileName = RemoveEnding(samStr,".nxs.ngv") + "_SL"+num2str(sliceNum)
+//	outputFileName = RemoveEnding(samStr,".nxs.ngv") + "_SL"+num2str(sliceNum)
 	
+	Variable offset = StrSearch(samStr,".",0)			//find the first "."
+	outputFileName = samStr[0,offset-1] + "_SL"+num2str(sliceNum)
+
 	
 		Proto_SaveFile(prot[5],activeType,outputFileName,av_type)
 	
