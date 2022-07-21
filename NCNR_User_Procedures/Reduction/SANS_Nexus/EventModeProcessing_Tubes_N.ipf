@@ -800,9 +800,6 @@ Proc SANS_EventModePanel()
 	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\"",fSize=12*sc
 	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},proc=ProcessEventLog_Button,title="Bin Event Data",fSize=12*sc
 
-// NEW FOR VSANS
-//	Button button21,pos={sc*488,205*sc},size={sc*120,20*sc},proc=SplitToPanels_Button,title="Split to Panels"
-//	Button button22,pos={sc*488,240*sc},size={sc*120,20*sc},proc=GraphPanels_Button,title="Show Panels"
 	
 	Button button24,pos={sc*488,270*sc},size={sc*180,20*sc},proc=DuplRAWForExport_Button,title="Duplicate RAW for Export",fSize=12*sc
 	Button button25,pos={sc*488,300*sc},size={sc*180,20*sc},proc=CopySlicesForExport_Button,title="Copy Slices for Export",fSize=12*sc
@@ -2519,7 +2516,7 @@ Function EC_ColorizeTimeButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			Group_as_Panel(-1)		//colorize the entire data set
+//			Group_as_Panel(-1)		//colorize the entire data set
 
 			// use the tube_panel wave generated in Group_as_Panel() to color the z
 			//
@@ -2695,7 +2692,7 @@ Function EC_DoDifferential(ba) : ButtonControl
 				ControlInfo setvar0
 			//	KeepOneGroup(V_Value) // not needed here - (fresh) grouping is done in Differentiate
 				
-				Differentiate_onePanel(V_Value,-1)		// do the whole data set
+//				Differentiate_onePanel(V_Value,-1)		// do the whole data set
 				// generates the wave onePanel_DIF
 
 				DoWindow/F EventCorrectionPanel
@@ -2778,7 +2775,7 @@ Function EC_TrimPointsButtonProc(ba) : ButtonControl
 			// no need to run KeepOneGroup() - this is done in Differentiate_onePanel
 			// to be sure that the grouping has been immediately done.
 			
-			Differentiate_onePanel(V_Value,-1)		// do the whole data set
+//			Differentiate_onePanel(V_Value,-1)		// do the whole data set
 			// generates the wave onePanel_DIF and badPoints
 
 			SetDataFolder root:Packages:NIST:Event:

@@ -36,114 +36,18 @@
 //
 
 
-//
-// for the event mode data with the proposed 64 bit structure, I use Igor for everything.
-// No need to write an XOP - Igor 8 has uint64 data type, and fast bit manipulation
-//
-//
-// Skipping the appropriate bits of the header (after I read them in) is possible with
-// either GBLoadWave (treating the entire wave as 64 bit, unsigned)
-// -- see in LoadWave, the suggestions for "Loading Large Waves" is speed is an issue
-//
-// Using a STRUCT for the specific bits of the 64-bit word does not seem possible, and direct decoding
-// seems to work fine. 
-//
-//Structure eventWord
-//	uchar eventTime[6]
-//	uchar location
-//	uchar tube
-//endStructure
-//
-
-
-
-
-
-Function SortAndSplitEvents()
-
-	return(0)
-End
-
-
-//
-// switch the "active" panel to the selected group (1-4) (5 concatenates them all together)
-//
-
-//
-// copy the set of tubes over to the "active" set that is to be histogrammed
-// and redimension them to be sure that they are double precision
-//
-Function SwitchTubeGroup(tubeGroup)
-	Variable tubeGroup
-	
-
-	return(0)
-End
-
-Proc SwitchGroupAndCleanup(num)
-	Variable num
-	
-
-
-end
-
-
-
-// Based on the numbering 0-191:
-// group 1 = R (0,47) 			MatrixOp out = ReverseRows(in)
-// group 2 = T (48,95) 		output = slices_T[q][p][r]
-// group 3 = B (96,143) 		output = slices_B[XBINS-q-1][YBINS-p-1][r]		(reverses rows and columns)
-// group 4 = L (144,191) 	MatrixOp out = ReverseCols(in)
-//
-// the transformation flips the panel to the view as if the detector was viewed from the sample position
-// (this is the standard view for SANS and VSANS)
-//
-// Takes the data that was binned, and separates it into the 4 detector panels
-// Waves are 3D waves x-y-time
-//
-// MatrixOp may not be necessary for the R/L transformations, but indexing or MatrixOp are both really fast.
-//
-//
-Function SplitBinnedToPanels()
-
-
-	return(0)
-End
-
-
-// simple panel to display the 4 detector panels after the data has been binned and sliced
-//
-// TODO:
-// -- label panels, axes
-// -- add a way to display different slices (this can still be done on the main panel, all at once)
-// -- any other manipulations?
-//
-
-Proc VSANS_EventPanels()
-
-
-End
 
 //
 /////// to copy a sliced data set to a folder to save
 //
 
-
 // load event file from RAW data loaded
-	// pick either the front or middle carriage
 	// pick the "mode" of loading data (osc, stream, etc.)
 // process the event data
-// split to panels
 // move slices to "export" location
 // move bin details to export location
-// repeat load + process + move with the 2nd carriage, using the same time binning
 //
 // save the data file, giving a new name to not overwrite the original data file
-//
-
-
-//
-// root:Packages:NIST:RAW:gFileList		//name of the data file(s) in raw (take 1st from semi-list)
 //
 
 Function DuplicateRAWForExport()
@@ -160,6 +64,12 @@ Function CopySlicesForExport()
 	Duplicate/O root:Packages:NIST:Event:timeWidth root:export:entry:reduction:timeWidth	
 	Duplicate/O root:Packages:NIST:Event:binCount root:export:entry:reduction:binCount
 
+//
+// TODO -- determine what the proper time is to fill in when the data is oscillatory
+//  and the slices have different meaning. Updating to the full collection time seems appropriate
+//  but what does that mean for absolute scaling?
+//
+//
 // update the count time to reflect the event times that were kept - after discarding the bad events
 //
 // update the time everywhere
@@ -1281,7 +1191,7 @@ Function Proto_doAverage(avgStr,av_type,activeType)
 			break
 			
 		case "Rectangular":
-//			RectangularAverageTo1D(activeType)
+			RectangularAverageTo1D(activeType)
 			break
 
 		case "Annular":
@@ -1520,201 +1430,80 @@ End
 
 
 ///////////////////////////////////////////////////////////
+// for VSANS ONLY
 
-
-//////////////////////
-
-// functions for testing the arrival time (reversal) seen in stream event data
-// JAN 2021
-
-
-// function to take the first 200 (or different number) of event points and 
-// mark them for which panel they are associated with
+//Function ReadEventHeader()
 //
-// after Group_as_Panel()
-// - use the Event_per_Panel() graph macro to plot the data, marking each different
-// panel with a different color.
-//
-//
-// it is clear that the time reversals are ocurring when data is read from a different panel.
-//
-// there are long stretches in time where the data is exclusively from a single panel - quite
-// improbable. 
-//
-// sorting the time values makes the panel order much more random, as I would expect.
-// (but is this the correct treatment?)
-//
-// -- I need to talk with Phil and find out if this is the expected behavior of "blocks" of data
-// read in from each panel (from a buffer?)
-//
-// if numPt = -1, then the entire wave is used
-Proc EventStream_by_Panel(numPt)
-	Variable numPt=1000
-	
-
-End
-
-//
-// this function takes a portion of the event stream and based on the tube number (0,191)
-// assigns each event the correct panel (1,2,3,4) since all of the events for the 4 panels
-// arrive in the same stream, but as it turns out, not necessarily in chronological order!
-//
-// if numPt = -1, then the entire wave is used
-Function Group_as_Panel(numPt)
-	Variable numPt
-
-
-	return(0)
-End
-
-
-
-
-
-Proc PlotEvent_per_Panel()
-
-
-EndMacro
-
-
-
-//////////////////////
-//
-// This test function looks for time reversal in a single panel
-//
-// 1) given a number of points, duplicate the time + tube number
-// 2) replace tube number with panel 1,2,3, or 4
-// 3) for the chosen panel number, keep only the times for than panel, all others set to NaN
-// 4) differentate the time. NaN are skipped in the differential
-//
-// It seems that there are a few "bad" time points, but not that many, and nothing systematic.
-//
-// runs rather quickly, only a few seconds with 1e6 points
-//
-Function Differentiate_onePanel(panelVal,numPt)
-	Variable panelVal		// panelVal = 1,2,3,4
-	Variable numPt		// number of points to duplicate
-	
-
-
-	return(0)
-End
-
-// as a proc
-// panelVal = 1,2,3,4
-//
-Proc pDifferentiate_onePanel(panelVal,numPt)
-	Variable panelVal,numpt
-//	Differentiate_onePanel(panelVal,numPt)
-end
-
-Function KeepOneGroup(panelVal)
-	Variable panelVal
-
-
-	return(0)
-End
-
-//File byte offset		Size (bytes)		Value				Description
-//		0							5	 			'VSANS'				magic number
-//		5							2				0xMajorMinor		Revision number = 0x00
-//		7							2				n bytes				Offset to data in bytes
-//		9							10				IEEE1588 - UTC	time origin for timestamp, IEEE1588 UTC
-//		19							1	 			'F'/'M'/'R'			detector carriage group
-//		20							2				HV (V)				HV Reading in Volt
-//		22							4				clk (Hz)				timestamp clock frequency in Hz
-//		26							N				tubeID				disabled tubes # ; 1 byte/tube if any
-//
-//
-// Feb 2021
-// !! per Phil, bug causes time stamp to be 12 bytes - but what happens to the remaing data?
-//
-//
-//	This is the current header from file 20201119164154001_0.hst on vsansdet1:
+//	String gVSANSStr=""
+//	String gDetStr=""
+//	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
+//	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
 //	
-//	56 53 41 4e 53 00 00 1b  00 40 3a 19 10 b3 e6 b6
-//	5f 00 00 00 00 d2 05 80  96 98 00 
+//	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol,gTime6
+//	Variable refnum,ii
+//	String filePathStr=""
 //	
-//	(5 b)  56 53 41 4e 53: VSANS Ð magic number
-//	(2 b)  00 00: file format revision
-//	(2 b)  1b  00: byte offset in file to event data
-//	(12 b)  40 3a 19 10 b3 e6 b6  5f 00 00 00 00 : time of origin (12 bytes instead of 10 as described in doc)
-//	(2 b)  d2 05: HV Value  (0x05d2 = 1490)
-//	(4 b)  80 96 98 00: timestamp clock frequency (0x989680 = 10000000)
-
-
-Function ReadEventHeader()
-
-	String gVSANSStr=""
-	String gDetStr=""
-	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
-	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
-	
-	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol,gTime6
-	Variable refnum,ii
-	String filePathStr=""
-	
-	Make/O/B/U/N=27 byteWave
-	
-	Open/R refnum as filepathstr
-	
-
-	FBinRead refnum, gVSANSStr
-	FBinRead/F=2/U/B=3 refnum, gRevision
-	FBinRead/F=2/U/B=3 refnum, gOffset
-	FBinRead/F=2/U/B=3 refnum, gTime1
-	FBinRead/F=2/U/B=3 refnum, gTime2
-	FBinRead/F=2/U/B=3 refnum, gTime3
-	FBinRead/F=2/U/B=3 refnum, gTime4
-	FBinRead/F=2/U/B=3 refnum, gTime5
-	FBinRead/F=2/U/B=3 refnum, gTime6
-//	FBinRead refnum, gDetStr
-	FBinRead/F=2/U/B=3 refnum, gVolt
-	FBinRead/F=3/U/B=3 refnum, gResol
-
-	FStatus refnum
-	FSetPos refnum, V_logEOF
-	
-	Close refnum
-	
-
-	Print "string = ",gVSANSStr
-	Print "revision = ",gRevision
-	Print "offset = ",gOffset
-	Print "time part 1 = ",gTime1
-	Print "time part 2 = ",gTime2
-	Print "time part 3 = ",gTime3
-	Print "time part 4 = ",gTime4
-	Print "time part 5 = ",gTime5
-	Print "time part 6 = ",gTime6
-//	Print "det group = ",gDetStr
-	Print "voltage (V) = ",gVolt
-	Print "clock freq (Hz) = ",gResol
-	
-	print "1/freq (s) = ",1/gResol
-
-
-//// read all as a byte wave
-	Make/O/B/U/N=27 byteWave
-	
-	Open/R refnum as filepathstr
-	
-
-	FBinRead refnum, byteWave
-
-
-	FStatus refnum
-	FSetPos refnum, V_logEOF
-	
-	Close refnum
-	
-	for(ii=0;ii<numpnts(byteWave);ii+=1)
-		printf "%X  ",byteWave[ii]
-	endfor
-	printf "\r"
-	
-	return(0)
-End
+//	Make/O/B/U/N=27 byteWave
+//	
+//	Open/R refnum as filepathstr
+//	
+//
+//	FBinRead refnum, gVSANSStr
+//	FBinRead/F=2/U/B=3 refnum, gRevision
+//	FBinRead/F=2/U/B=3 refnum, gOffset
+//	FBinRead/F=2/U/B=3 refnum, gTime1
+//	FBinRead/F=2/U/B=3 refnum, gTime2
+//	FBinRead/F=2/U/B=3 refnum, gTime3
+//	FBinRead/F=2/U/B=3 refnum, gTime4
+//	FBinRead/F=2/U/B=3 refnum, gTime5
+//	FBinRead/F=2/U/B=3 refnum, gTime6
+////	FBinRead refnum, gDetStr
+//	FBinRead/F=2/U/B=3 refnum, gVolt
+//	FBinRead/F=3/U/B=3 refnum, gResol
+//
+//	FStatus refnum
+//	FSetPos refnum, V_logEOF
+//	
+//	Close refnum
+//	
+//
+//	Print "string = ",gVSANSStr
+//	Print "revision = ",gRevision
+//	Print "offset = ",gOffset
+//	Print "time part 1 = ",gTime1
+//	Print "time part 2 = ",gTime2
+//	Print "time part 3 = ",gTime3
+//	Print "time part 4 = ",gTime4
+//	Print "time part 5 = ",gTime5
+//	Print "time part 6 = ",gTime6
+////	Print "det group = ",gDetStr
+//	Print "voltage (V) = ",gVolt
+//	Print "clock freq (Hz) = ",gResol
+//	
+//	print "1/freq (s) = ",1/gResol
+//
+//
+////// read all as a byte wave
+//	Make/O/B/U/N=27 byteWave
+//	
+//	Open/R refnum as filepathstr
+//	
+//
+//	FBinRead refnum, byteWave
+//
+//
+//	FStatus refnum
+//	FSetPos refnum, V_logEOF
+//	
+//	Close refnum
+//	
+//	for(ii=0;ii<numpnts(byteWave);ii+=1)
+//		printf "%X  ",byteWave[ii]
+//	endfor
+//	printf "\r"
+//	
+//	return(0)
+//End
 
 
 Proc EstFrameOverlap(lambda,fwhm,sdd)

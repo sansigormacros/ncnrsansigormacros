@@ -38,10 +38,10 @@
 
 
 
-// passing null file string presents a dialog
-Proc LoadFakeDIVData()
-	LoadRawSANSData("","DIV")
-End
+//// passing null file string presents a dialog
+//Proc LoadFakeDIVData()
+//	LoadRawSANSData("","DIV")
+//End
 
 // Moved to V_MaskUtils.ipf
 // passing null file string presents a dialog

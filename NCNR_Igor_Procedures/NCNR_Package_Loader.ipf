@@ -52,7 +52,7 @@ Menu "Macros"
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
 		"-"
-		"Load Ordela SANS Nexus Reduction",LoadHDF5SANS_Ordela()
+//		"Load Ordela SANS Nexus Reduction",LoadHDF5SANS_Ordela()
 
 	End
 	
@@ -75,8 +75,8 @@ Menu "Macros"
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
-	"-"
-	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
+//	"-"
+//	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
 
 
 end

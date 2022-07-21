@@ -191,16 +191,16 @@ Static Constant MODE_TOF = 3
 
 
 
-Proc Old_Show_Event_Panel()
+Proc Show_Event_Panel()
 	DoWindow/F EventModePanel
 	if(V_flag ==0)
-		o_Init_Event()
-		o_EventModePanel()
+		Init_Event()
+		EventModePanel()
 	EndIf
 End
 
 
-Function o_Init_Event()
+Function Init_Event()
 
 	NewDataFolder/O/S root:Packages:NIST:Event
 
@@ -4436,43 +4436,45 @@ Function fInsertTimeReset(period)
 	return(0)
 End
 
-
-Proc EstFrameOverlap(lambda,fwhm,sdd)
-	Variable lambda=6,fwhm=0.12,sdd=13
-	FrameOverlap(lambda,fwhm,sdd)
-End
-
-//fwhm = 2.355 sigma of the Gaussian
-// two standard deviations = 95% of distribution
 //
-// lam =5A, fwhm = 0.138, sdd=13.7m
+// in the EventMode_Utils file
 //
-Function FrameOverlap(lam,fwhm,sdd)
-	Variable lam,fwhm,sdd
-	
-	Variable speed_lo,speed_hi,sig,lam_lo,lam_hi
-	Variable time_lo,time_hi,delta
-	
-	
-	sig = fwhm/2.355
-	lam_lo = lam - 2*lam*sig
-	lam_hi = lam + 2*lam*sig
-
-
-	speed_lo = 3956/lam_lo		//if lam [=] A, speed [=] m/s
-	speed_hi = 3956/lam_hi		//if lam [=] A, speed [=] m/s
-
-// then the time to travel from sample to detector is:
-	time_lo = sdd/speed_lo
-	time_hi = sdd/speed_hi
-	
-	delta = (time_hi-time_lo)		//hi wavelength is slower
-
-	Print "Accounting for 2 sigma = 95% of distribution"
-	Print "Use bin widths larger than frame overlap time (s) = ",delta
-
-	return(delta)
-end
+//Proc EstFrameOverlap(lambda,fwhm,sdd)
+//	Variable lambda=6,fwhm=0.12,sdd=13
+//	FrameOverlap(lambda,fwhm,sdd)
+//End
+//
+////fwhm = 2.355 sigma of the Gaussian
+//// two standard deviations = 95% of distribution
+////
+//// lam =5A, fwhm = 0.138, sdd=13.7m
+////
+//Function FrameOverlap(lam,fwhm,sdd)
+//	Variable lam,fwhm,sdd
+//	
+//	Variable speed_lo,speed_hi,sig,lam_lo,lam_hi
+//	Variable time_lo,time_hi,delta
+//	
+//	
+//	sig = fwhm/2.355
+//	lam_lo = lam - 2*lam*sig
+//	lam_hi = lam + 2*lam*sig
+//
+//
+//	speed_lo = 3956/lam_lo		//if lam [=] A, speed [=] m/s
+//	speed_hi = 3956/lam_hi		//if lam [=] A, speed [=] m/s
+//
+//// then the time to travel from sample to detector is:
+//	time_lo = sdd/speed_lo
+//	time_hi = sdd/speed_hi
+//	
+//	delta = (time_hi-time_lo)		//hi wavelength is slower
+//
+//	Print "Accounting for 2 sigma = 95% of distribution"
+//	Print "Use bin widths larger than frame overlap time (s) = ",delta
+//
+//	return(delta)
+//end
 
 /////////////////////////////////
 //

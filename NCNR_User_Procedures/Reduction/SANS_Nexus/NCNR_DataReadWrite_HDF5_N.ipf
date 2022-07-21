@@ -2000,28 +2000,6 @@ Function ExamineHeader(type)
 End
 
 
-// Sept 2009 -SRK
-// the ICE instrument control software is not correctly writing out the file name to the header in the specific
-// case of a file prefix less than 5 characters. ICE is quite naturally putting the blanke space(s) at the end of
-// the string. However, the VAX puts them at the beginning...
-Proc PatchFileNameInHeader(firstFile,lastFile)
-	Variable firstFile=1,lastFile=100
-
-	fPatchFileName(firstFile,lastFile)
-
-End
-
-Proc ReadFileNameInHeader(firstFile,lastFile)
-	Variable firstFile=1,lastFile=100
-	
-	fReadFileName(firstFile,lastFile)
-End
-
-
-
-
-
-
 
 ////// OCT 2009, facility specific bits from ProDiv()
 //"type" is the data folder that has the corrected, patched, and normalized DIV data array

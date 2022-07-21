@@ -95,8 +95,10 @@ StrConstant ksDetType = "Ordela"
 
 // SRK OCT 2012 - processing of event mode data
 // as of 2022, Ordela detector uses an event file structure different than tubes
-//#include "EventModeProcessing_N"
-#include "EventModeProcessing"
+//#include "EventModeProcessing"
+#include "EventModeProcessing_OrdelaVAX_N"
+#include "EventMode_Utils_Tubes_N"
+
 
 // SRK JAN 2013 - to make simulation easier
 // SRK NOV 2014 -- moved to a separate loader to avoid reduction/analysis tangles
