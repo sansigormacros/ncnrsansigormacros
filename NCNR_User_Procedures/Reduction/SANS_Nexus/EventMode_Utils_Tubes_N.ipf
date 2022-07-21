@@ -78,13 +78,22 @@ Function CopySlicesForExport()
 // entry:control:count_time	// this is the field that is used
 // entry:collection_time		//this field is not used, but write it here too
 
+	NVAR gEvent_Mode = root:Packages:NIST:Event:gEvent_Mode				// ==0 for "stream", ==1 for Oscillatory
+
+
 	NVAR longestTime = root:Packages:NIST:Event:gEvent_t_longest
 	
 	WAVE count_time = $"root:export:entry:control:count_time"
 	WAVE collection_time = $"root:export:entry:collection_time"
 	
-	count_time = longestTime
-	collection_time = longestTime
+	if(gEvent_Mode == 0)		// stream
+		count_time = longestTime
+		collection_time = longestTime
+	else
+		//other ocsillatory modes
+		
+		// don't change any of the count times..
+	endif
 
 	return(0)
 end
@@ -683,7 +692,7 @@ Function ExecuteProtocol_Event(protStr,samStr,sliceNum,skipLoad)
 
 	//check for work.div file (prot[2])
 	//load in if needed
-	// no math is done here, DIV is applied as files are converted to WORK (the first operation in VSANS)
+	// no math is done here, DIV is applied as files are converted to WORK (the first operation in SANS)
 	//
 	// save the state of the DIV preference (this is not the choice in the protocol
 	//

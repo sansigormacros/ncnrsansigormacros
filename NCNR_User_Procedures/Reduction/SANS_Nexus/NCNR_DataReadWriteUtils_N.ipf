@@ -4,14 +4,10 @@
 
 
 //
-// May 2021 -- starting the process of re-writing to work
+// May 2021 -- re-writing to work
 // with a new, more complete nexus file definition
 //
-// I will need to start by removing calls to the gateway, and replace
-// with the loader from VSANS
-//
-// then pieces from VSANS will need to be added to SANS - replacing the old VAX referenced parts
-//
+
 // -- SANS reduction will need to be differentiated now - since all three instruments
 // will be slightly different in their file contents, and the differences between the 30m,
 // instruments and the 10m will be VERY significant. Not a place for a million "if" statements
@@ -493,7 +489,7 @@ Function getRealValueFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it, or report error
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SAS;RealTime;")
-	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))
 			Wave/Z w = $("root:Packages:NIST:"+folderStr+":"+path)
@@ -505,7 +501,7 @@ Function getRealValueFromHDF5(fname,path)
 
 
 	// (2) requesting from a file.
-	// look locally in RawVSANS if possible, or if not, load in the data from disk
+	// look locally in RawSANS if possible, or if not, load in the data from disk
 	// - if thee both fail, report an error
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
@@ -551,7 +547,7 @@ Function/WAVE getRealWaveFromHDF5(fname,path)
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SASCALC;RealTime;")
-	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
 			Wave/Z wOut = $("root:Packages:NIST:"+folderStr+":"+path)
@@ -570,7 +566,7 @@ Function/WAVE getRealWaveFromHDF5(fname,path)
 	endif
 
 	if(!valExists)
-		//then read in the file, putting the data in RawVSANS
+		//then read in the file, putting the data in RawSANS
 		SetDataFolder ksBaseDFPath
 		ReadHeaderAndData(fname,"")
 		SetDataFolder root:
@@ -606,7 +602,7 @@ Function/WAVE getTextWaveFromHDF5(fname,path)
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SASCALC;RealTime;")
-	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
 			Wave/Z/T wOut = $("root:Packages:NIST:"+folderStr+":"+path)
@@ -625,7 +621,7 @@ Function/WAVE getTextWaveFromHDF5(fname,path)
 	endif
 	
 	if(!valExists)
-		//then read in the file, putting the data in RawVSANS
+		//then read in the file, putting the data in RawSANS
 		SetDataFolder ksBaseDFPath
 		ReadHeaderAndData(fname,"")
 		SetDataFolder root:
@@ -674,7 +670,7 @@ End
 //		if it does not exist, return DUMMY value
 //
 //// -- if data requested from a file:
-// check to see if the value exists locally in RawVSANS (It will be a wave)
+// check to see if the value exists locally in RawSANS (It will be a wave)
 // -- if it does, return the value from the local folder
 // -- if not, read the file in, then return the value
 //
@@ -694,7 +690,7 @@ Function/S getStringFromHDF5(fname,path,num)
 
 // (1) if requesting data from a WORK folder, get it, or report error
 	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+"SASCALC;RealTime;")
-	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawVSANS)
+	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))
 			Wave/Z/T tw = $("root:Packages:NIST:"+folderStr+":"+path)
@@ -705,14 +701,14 @@ Function/S getStringFromHDF5(fname,path,num)
 	endif
 
 // (2) requesting from a file.
-// look locally in RawVSANS if possible, or if not, load in the data from disk
+// look locally in RawSANS if possible, or if not, load in the data from disk
 // - if thee both fail, report an error	
 	if(Exists(ksBaseDFPath+folderStr+":"+path))
 		valExists=1
 	endif
 
 	if(!valExists)
-		//then read in the file, putting the data in RawVSANS
+		//then read in the file, putting the data in RawSANS
 		SetDataFolder ksBaseDFPath
 		ReadHeaderAndData(fname,"")
 		SetDataFolder root:

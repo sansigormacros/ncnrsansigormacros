@@ -2,29 +2,31 @@
 #pragma IgorVersion=6.22
 
 
-// FEB 2022
+// JULY 2022
 //
-// TODO
-// this  file will need to be duplicated, one version for the Ordela-style event files and 
-// one for the new tube-style event files. The Ordela style requires little change, the tube-style
-// loading can be ported from VSANS, assuming the format will be the same
+// This file is for the event mode processing of the NISTO (.HST) event files from
+// the two 30m SANS instruments, as collected on the Ordela detectors
 //
-// MAY 2022
+// This event file format is different from the VSANS and 10m SANS Tubes
+// - the EventLoadWave (XOP) works only with this event format
 //
-// The SANS-Tube event file format is not the same as VSANS. It is 10 bytes per event:
-// 1 byte = xPos
-// 1 byte = yPos
-// 8 bytes = timeStamp
+// For the Ordela VAX files converted to Nexus (or eventually written as proper Nexus)
+// the input and processing follows the "old" style, but the saving of sliced data is
+// better suited for Nexus, including the batch reduction of the slices
 //
-// the header is very similar to VSANS, and is well documented.
+// So this file is in the process of merging the two requirements.
+//
+// *** EventMode_Utils_Tubes_N.ipf *** is used with the 10m SANS reduction
+// so it cannot be modified to work with any of the "old" routines. These modifications
+// must all be done within this OrdelaVAX file
 //
 //
 // This file is in the process of modification
-// -- new loader (struct based, native to Igor)
+// -- new loader (struct based, native to Igor -- eventually...)
 // -- all saving is now in terms of nexus files
-// -- dimensions are now 112 x 128 (or read them in)
-// -- routines to remove 6.7 s rollover steps can be removed
-// --
+// -- dimensions remain 128 x 128 (or read them in)
+// -- routines to remove 6.7 s rollover steps can be added back into the Correction Panel
+// -- Remove any VAX-related read/write or save functionality
 // 
 //
 
@@ -192,10 +194,10 @@ Static Constant MODE_TOF = 3
 
 
 Proc Show_Event_Panel()
-	DoWindow/F EventModePanel
+	DoWindow/F SANS_EventModePanel
 	if(V_flag ==0)
 		Init_Event()
-		EventModePanel()
+		SANS_EventModePanel()
 	EndIf
 End
 
@@ -251,101 +253,110 @@ Function Init_Event()
 	SetDataFolder root:
 End
 
-//
-// -- extra bits of buttons... not used
-//
-//	Button button9 title="Decimation",size={100,20},pos={490,400},proc=E_ShowDecimateButton
-//
-//	Button button11,pos={490,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
-//	Button button12,pos={490,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
-//	Button button13,pos={490,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
-//	
-//	GroupBox group0 title="Manual Controls",size={185,112},pos={490,220}
-//
-//	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
-//	DoWindow/C EventModePanel
-//	ModifyPanel fixedSize=1,noEdit =1
-Proc EventModePanel()
-	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(82,44,884,664)/N=EventModePanel/K=2
-	DoWindow/C EventModePanel
-//	ModifyPanel fixedSize=1,noEdit =1
 
-	SetDrawLayer UserBack
-	DrawText 479,345,"Stream Data"
-	DrawLine 563,338,775,338
-	DrawText 479,419,"Oscillatory Data"
-	DrawLine 580,411,775,411
+Proc SANS_EventModePanel()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+	PauseUpdate; Silent 1		// building window...
+	if(root:Packages:NIST:gLaptopMode == 1)
+		NewPanel /W=(82*sc,10*sc,884*sc,590*sc)/N=SANS_EventModePanel/K=2
+	else
+		NewPanel /W=(82,44,884,664)/N=SANS_EventModePanel/K=2
+	endif
+	
+	DoWindow/C SANS_EventModePanel
+	ModifyPanel fixedSize=1,noEdit =1
+
+//	SetDrawLayer UserBack
+//	DrawText 479,345,"Stream Data"
+//	DrawLine 563,338,775,338
+//	DrawText 479,419,"Oscillatory or Stream Data"
+//	DrawLine 647,411,775,411
 
 //	ShowTools/A
-	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
-	Button button0,fSize=12
-	TitleBox tb1,pos={475,500},size={266,86},fSize=10
+	Button button0,pos={sc*14,70*sc},size={sc*150,20*sc},proc=LoadEventLog_Button,title="Load Event Log File"
+	Button button0,fSize=12*sc
+	Button button23,pos={sc*14,100*sc},size={sc*150,20*sc},proc=LoadEventLog_Button,title="Load From RAW"
+	Button button23,fSize=12*sc
+	TitleBox tb1,pos={sc*475,450*sc},size={sc*266,86*sc},fsize=12*sc
 	TitleBox tb1,variable= root:Packages:NIST:Event:gEventDisplayString
 
-	CheckBox chkbox2,pos={376,151},size={81,15},proc=LogIntEvent_Proc,title="Log Intensity"
-	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:Event:gEvent_logint
-	CheckBox chkbox3,pos={14,125},size={119,15},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox2,pos={sc*376,150*sc},size={sc*81,15*sc},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,fsize=12*sc,variable= root:Packages:NIST:Event:gEvent_logint
+	CheckBox chkbox3,pos={sc*14,150*sc},size={sc*119,15*sc},title="Remove Bad Events?",fsize=12*sc
 	CheckBox chkbox3,variable= root:Packages:NIST:Event:gRemoveBadEvents
 	
-	Button doneButton,pos={738,36},size={50,20},proc=EventDone_Proc,title="Done"
-	Button doneButton,fSize=12
-	Button button2,pos={486,200},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
-	Button button3,pos={486,228},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
-	Button button5,pos={633,228},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
-	Button button6,pos={748,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
-		
-	Button button7,pos={211,33},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
-	Button button8,pos={653,201},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
-	Button button4,pos={211,63},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
-	Button button18,pos={211,90},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
+	Button doneButton,pos={sc*738,36*sc},size={sc*50,20*sc},proc=EventDone_Proc,title="Done"
+	Button doneButton,fSize=12*sc
+	Button button6,pos={sc*748,9*sc},size={sc*40,20*sc},proc=EventModeHelpButtonProc,title="?",fSize=12*sc
+
+//	Button button5,pos={sc*633,228*sc},size={sc*140,20*sc},proc=ExportSlicesButtonProc,title="Export Slices as VAX",disable=2
+
+	Button button8,pos={sc*570,35*sc},size={sc*120,20*sc},proc=CustomBinButtonProc,title="Custom Bins",fSize=12*sc
+	Button button2,pos={sc*570,65*sc},size={sc*140,20*sc},proc=ShowEventDataButtonProc,title="Show Event Data",fSize=12*sc
+	Button button3,pos={sc*570,95*sc},size={sc*140,20*sc},proc=ShowBinDetailsButtonProc,title="Show Bin Details",fSize=12*sc
+
+			
+	Button button7,pos={sc*211,33*sc},size={sc*120,20*sc},proc=AdjustEventDataButtonProc,title="Adjust Events",fSize=12*sc
+	Button button4,pos={sc*211,63*sc},size={sc*120,20*sc},proc=UndoTimeSortButtonProc,title="Undo Time Sort",fSize=12*sc
+	Button button18,pos={sc*211,90*sc},size={sc*120,20*sc},proc=EC_ImportWavesButtonProc,title="Import Edited",fSize=12*sc
 	
-	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
-	SetVariable setvar0,fSize=10
+	SetVariable setvar0,pos={sc*208,149*sc},size={sc*160,16*sc},proc=sliceSelectEvent_Proc,title="Display Time Slice"
+	SetVariable setvar0,fsize=12*sc
 	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:Event:gEvent_tsdisp	
-	SetVariable setvar1,pos={389,29},size={160,16},title="Number of slices",fSize=10
+	SetVariable setvar1,pos={sc*389,29*sc},size={sc*160,16*sc},title="Number of slices",fsize=12*sc
 	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:Event:gEvent_nslices
-	SetVariable setvar2,pos={389,54},size={160,16},title="Max Time (s)",fSize=10
+	SetVariable setvar2,pos={sc*389,54*sc},size={sc*160,16*sc},title="Max Time (s)",fsize=12*sc
 	SetVariable setvar2,value= root:Packages:NIST:Event:gEvent_t_longest
 	
-	PopupMenu popup0,pos={389,77},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
-	PopupMenu popup0,fSize=10
-	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
-	Button button1,pos={389,103},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
+	PopupMenu popup0,pos={sc*389,77*sc},size={sc*119,20*sc},proc=BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\"",fSize=12*sc
+	Button button1,pos={sc*389,103*sc},size={sc*120,20*sc},proc=ProcessEventLog_Button,title="Bin Event Data",fSize=12*sc
 
-	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
-	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load+Decimate"
-	Button button19,pos={639,350},size={130,20},proc=Stream_LoadAdjustedList,title="Load+Concatenate"
-	Button button20,pos={680,305},size={90,20},proc=ShowList_ToLoad,title="Show List"
+	
+	Button button24,pos={sc*488,270*sc},size={sc*180,20*sc},proc=DuplRAWForExport_Button,title="Duplicate RAW for Export",fSize=12*sc
+	Button button25,pos={sc*488,300*sc},size={sc*180,20*sc},proc=CopySlicesForExport_Button,title="Copy Slices for Export",fSize=12*sc
+	Button button26,pos={sc*488,330*sc},size={sc*180,20*sc},proc=SaveExportedNexus_Button,title="Save Exported to Nexus",fSize=12*sc
 
-	Button button21,pos={649,378},size={120,20},proc=Stream_LoadAdjList_BinOnFly,title="Load+Accumulate"
+//	Button button10,pos={sc*488,305*sc},size={sc*100,20*sc},proc=SplitFileButtonProc,title="Split Big File",disable=2
+//	Button button14,pos={sc*488,350*sc},size={sc*120,20*sc},proc=Stream_LoadDecim,title="Load Split List",disable=2
+//	Button button19,pos={sc*649,350*sc},size={sc*120,20*sc},proc=Stream_LoadAdjustedList,title="Load Edited List",disable=2
+//	Button button20,pos={sc*680,376*sc},size={sc*90,20*sc},proc=ShowList_ToLoad,title="Show List",disable=2
+//	SetVariable setvar3,pos={sc*487,378*sc},size={sc*150,16*sc},title="Decimation factor",disable=2
+//	SetVariable setvar3,fsize=12
+//	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
+//
+//	Button button15_0,pos={sc*488,425*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Add First Slice",disable=2
+//	Button button16_1,pos={sc*488,450*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Add Next Slice",disable=2
+//	Button button17_2,pos={sc*620,425*sc},size={sc*110,20*sc},proc=AccumulateSlicesButton,title="Display Total",disable=2
 
-	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
-	SetVariable setvar3,fSize=10
-	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
-
-	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
-	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
-	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
-	Button button22,pos={620,450},size={120,20},proc=Osc_LoadAdjList_BinOnFly,title="Load+Accumulate"
-
-	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
-	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
-	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
-	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
-	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
-	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
+	CheckBox chkbox1_0,pos={sc*25,30*sc},size={sc*69,14*sc},title="Oscillatory",fsize=12*sc
+	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=0
+	CheckBox chkbox1_1,pos={sc*25,50*sc},size={sc*53,14*sc},title="Stream",fsize=12*sc
+	CheckBox chkbox1_1,proc=EventModeRadioProc,value=1,mode=1
+//	CheckBox chkbox1_2,pos={sc*104,59*sc},size={sc*53,14*sc},title="TISANE",fsize=12
+//	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_3,pos={sc*104,30*sc},size={sc*37,14*sc},title="TOF",fsize=12*sc
 	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
 	
-	GroupBox group0_0,pos={5,5},size={174,112},title="(1) Loading Mode",fSize=12,fStyle=1
-	GroupBox group0_1,pos={372,5},size={192,127},title="(3) Bin Events",fSize=12,fStyle=1
-	GroupBox group0_2,pos={477,169},size={310,92},title="(4) View / Export",fSize=12,fStyle=1
-	GroupBox group0_3,pos={191,5},size={165,117},title="(2) Edit Events",fSize=12,fStyle=1
-	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
-	GroupBox group0_4,fStyle=1
+//	CheckBox chkbox1_4,pos={sc*30,125*sc},size={sc*37,14*sc},title="F",fsize=12*sc
+//	CheckBox chkbox1_4,proc=EventCarrRadioProc,value=1,mode=1
+//	CheckBox chkbox1_5,pos={sc*90,125*sc},size={sc*37,14*sc},title="M",fsize=12*sc
+//	CheckBox chkbox1_5,proc=EventCarrRadioProc,value=0,mode=1
 	
-	Display/W=(10,170,460,610)/HOST=# 
+	GroupBox group0_0,pos={sc*5,5*sc},size={sc*174,140*sc},title="(1) Loading Mode",fSize=12*sc,fStyle=1
+	GroupBox group0_3,pos={sc*191,5*sc},size={sc*165,130*sc},title="(2) Edit Events",fSize=12*sc,fStyle=1
+	GroupBox group0_1,pos={sc*372,5*sc},size={sc*350,130*sc},title="(3) Bin Events",fSize=12*sc,fStyle=1
+	GroupBox group0_2,pos={sc*477,169*sc},size={sc*310,250*sc},title="(4) View / Export",fSize=12*sc,fStyle=1
+
+//	GroupBox group0_4,pos={sc*474,278*sc},size={sc*312,200*sc},title="Split / Accumulate Files",fSize=12
+//	GroupBox group0_4,fStyle=1
+	
+	Display/W=(10*sc,170*sc,460*sc,610*sc)/HOST=# 
 	AppendImage/T/G=1 :Packages:NIST:Event:dispsliceData		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
 	ModifyImage dispsliceData ctab= {*,*,ColdWarm,0}
 	ModifyImage dispsliceData ctabAutoscale=3
@@ -361,6 +372,70 @@ Proc EventModePanel()
 	RenameWindow #,Event_slicegraph
 	SetActiveSubwindow ##
 EndMacro
+
+
+
+//
+//
+Function DuplRAWForExport_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			DuplicateRAWForExport()
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+// Split the binned to panels right before copying the slices
+// in case the user hasn't done this
+//
+Function CopySlicesForExport_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			//			//
+			CopySlicesForExport()
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+//
+//
+Function SaveExportedNexus_Button(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			//
+			Execute "SaveExportedEvents()"
+			//
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
 
 
 
@@ -536,7 +611,7 @@ Function EventDone_Proc(ba) : ButtonControl
 	String win = ba.win
 	switch (ba.eventCode)
 		case 2:
-			DoWindow/K EventModePanel
+			DoWindow/K SANS_EventModePanel
 			break
 	endswitch
 	return(0)
@@ -608,7 +683,7 @@ Function Osc_ProcessEventLog(ctrlName)
 
 
 	String binTypeStr=""
-	ControlInfo /W=EventModePanel popup0
+	ControlInfo /W=SANS_EventModePanel popup0
 	binTypeStr = S_value
 	
 	strswitch(binTypeStr)	// string switch
@@ -747,7 +822,7 @@ Function Stream_ProcessEventLog(ctrlName)
 	BinCount[nslices]=0
 	
 	String binTypeStr=""
-	ControlInfo /W=EventModePanel popup0
+	ControlInfo /W=SANS_EventModePanel popup0
 	binTypeStr = S_value
 	
 	strswitch(binTypeStr)	// string switch
@@ -1273,7 +1348,7 @@ Function sliceSelectEvent_Proc(ctrlName, varNum, varStr, varName) : SetVariableC
 		selectedslice = nslices-1
 		DoUpdate
 	else
-		ModifyImage/W=EventModePanel#Event_slicegraph ''#0 plane = varNum 
+		ModifyImage/W=SANS_EventModePanel#Event_slicegraph ''#0 plane = varNum 
 	endif
 
 End
@@ -1994,13 +2069,18 @@ End
 //////////////
 
 Proc BinEventBarGraph()
+	Variable sc = 1
+			
+	if(root:Packages:NIST:gLaptopMode == 1)
+		sc = 0.7
+	endif
 	
 	DoWindow/F EventBarGraph
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:Event:
-		Display /W=(110,705,610,1132)/N=EventBarGraph /K=1 binCount vs binEndTime
+		Display /W=(110*sc,705*sc,610*sc,1132*sc)/N=V_EventBarGraph /K=1 binCount vs binEndTime
 		SetDataFolder fldrSav0
 		ModifyGraph mode=5
 		ModifyGraph marker=19
@@ -2010,7 +2090,7 @@ Proc BinEventBarGraph()
 		ModifyGraph hbFill=2
 		ModifyGraph gaps=0
 		ModifyGraph usePlusRGB=1
-		ModifyGraph toMode=1
+		ModifyGraph toMode=0
 		ModifyGraph useBarStrokeRGB=1
 		ModifyGraph standoff=0
 		SetAxis left 0,*
@@ -2021,17 +2101,24 @@ End
 
 
 Proc ShowBinTable() 
+	Variable sc = 1
+			
+	if(root:Packages:NIST:gLaptopMode == 1)
+		sc = 0.7
+	endif
 
 	DoWindow/F BinEventTable
 	if(V_flag == 0)
 		PauseUpdate; Silent 1		// building window...
 		String fldrSav0= GetDataFolder(1)
 		SetDataFolder root:Packages:NIST:Event:
-		Edit/W=(498,699,1003,955) /K=1/N=BinEventTable binCount,binEndTime,timeWidth
-		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100
+		Edit/W=(498*sc,699*sc,1003*sc,955*sc) /K=1/N=BinEventTable binCount,binEndTime,timeWidth
+		ModifyTable format(Point)=1,sigDigits(binEndTime)=8,width(binEndTime)=100*sc
 		SetDataFolder fldrSav0
 	endif
 EndMacro
+
+
 
 
 // only show the first 1500 data points
@@ -2061,12 +2148,12 @@ EndMacro
 
 
 
-Proc ExportSlicesAsVAX(firstNum,prefix)
-	Variable firstNum=1
-	String prefix="SAMPL"
-
-	SaveSlicesAsVAX(firstNum,prefix[0,4])		//make sure that the prefix is 5 chars
-End
+//Proc ExportSlicesAsVAX(firstNum,prefix)
+//	Variable firstNum=1
+//	String prefix="SAMPL"
+//
+//	SaveSlicesAsVAX(firstNum,prefix[0,4])		//make sure that the prefix is 5 chars
+//End
 
 //////// procedures to be able to export the slices as RAW VAX files.
 //
@@ -2083,86 +2170,86 @@ End
 //    same way that VSANS event data is saved
 //
 //
-Function SaveSlicesAsVAX(firstNum,prefix)
-	Variable firstNum
-	String prefix
-
-	DoAlert 1,"Is the full data file loaded as a RAW data file? If not, load it and start over..."
-	if(V_flag == 2)
-		return (0)
-	endif
-	
-// copy the contents of RAW to STO so I can work from there
-	CopyWorkContents("RAW","STO")
-
-	// now declare all of the waves, now that they are sure to be there
-
-	WAVE slicedData=root:Packages:NIST:Event:slicedData
-	Make/O/D/N=(128,128) curSlice
-	
-	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
-	WAVE binEndTime = root:Packages:NIST:Event:binEndTime
-
-	Wave data=getDetectorDataW("STO")
-	Wave linear_data=data
-	
-// for generating the alphanumeric
-	String timeStr= secs2date(datetime,-1)
-	String monthStr=StringFromList(1, timeStr  ,"/")
-	String numStr="",labelStr
-
-	Variable ii,err,binFraction
-	
-	for(ii=0;ii<nslices;ii+=1)
-
-		//get the current slice and put it in the STO folder
-		curSlice = slicedData[p][q][ii]
-		data = curSlice
-		linear_data = curSlice
-		
-		// touch up the header as needed
-		// count time = iw[2]
-		// monCt = rw[0]
-		// detCt = rw[2]
-		//tw[0] must now be the file name
-		//
-		// count time = fraction of total binning * total count time
-		// ** NOTE that the count time can only be saved to the VAX file as an INTEGER VALUE
-		// so beware what time show up in the file for narrow time bins. Keep track of bin times
-		// manually and adjust the ABS scaling accordingly
-		//
-		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
-		
-		putCollectionTime("STO",trunc(binFraction*getCount_time("RAW")))
-//		Print (binFraction*iw_raw[2])		//this is the REAL precision value, not the saved integer value
-		putControlMonitorCount("STO",trunc(binFraction*getControlMonitorCount("RAW")))
-		putDetector_counts("STO",sum(curSlice,-inf,inf))		//total counts in slice
-	
-		if(firstNum<10)
-			numStr = "00"+num2str(firstNum)
-		else
-			if(firstNum<100)
-				numStr = "0"+num2str(firstNum)
-			else
-				numStr = num2str(firstNum)
-			Endif
-		Endif	
-		String tmpStr = prefix+numstr+".SA2_EVE_"+(num2char(str2num(monthStr)+64))+numStr
-//		putFileNameFromFolder(folder,tmpStr) 
-		labelStr = getSampleDescription("RAW")
-		
-		labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
-		putSampleDescription("STO",labelStr[0,59])
-		
-		//write out the file - this uses the tw[0] and home path
-		Write_VAXRaw_Data("STO","",0)
-
-		//increment the run number, alpha
-		firstNum += 1	
-	endfor
-
-	return(0)
-End
+//Function SaveSlicesAsVAX(firstNum,prefix)
+//	Variable firstNum
+//	String prefix
+//
+//	DoAlert 1,"Is the full data file loaded as a RAW data file? If not, load it and start over..."
+//	if(V_flag == 2)
+//		return (0)
+//	endif
+//	
+//// copy the contents of RAW to STO so I can work from there
+//	CopyWorkContents("RAW","STO")
+//
+//	// now declare all of the waves, now that they are sure to be there
+//
+//	WAVE slicedData=root:Packages:NIST:Event:slicedData
+//	Make/O/D/N=(128,128) curSlice
+//	
+//	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
+//	WAVE binEndTime = root:Packages:NIST:Event:binEndTime
+//
+//	Wave data=getDetectorDataW("STO")
+//	Wave linear_data=data
+//	
+//// for generating the alphanumeric
+//	String timeStr= secs2date(datetime,-1)
+//	String monthStr=StringFromList(1, timeStr  ,"/")
+//	String numStr="",labelStr
+//
+//	Variable ii,err,binFraction
+//	
+//	for(ii=0;ii<nslices;ii+=1)
+//
+//		//get the current slice and put it in the STO folder
+//		curSlice = slicedData[p][q][ii]
+//		data = curSlice
+//		linear_data = curSlice
+//		
+//		// touch up the header as needed
+//		// count time = iw[2]
+//		// monCt = rw[0]
+//		// detCt = rw[2]
+//		//tw[0] must now be the file name
+//		//
+//		// count time = fraction of total binning * total count time
+//		// ** NOTE that the count time can only be saved to the VAX file as an INTEGER VALUE
+//		// so beware what time show up in the file for narrow time bins. Keep track of bin times
+//		// manually and adjust the ABS scaling accordingly
+//		//
+//		binFraction = (binEndTime[ii+1]-binEndTime[ii])/(binEndTime[nslices]-binEndTime[0])
+//		
+//		putCollectionTime("STO",trunc(binFraction*getCount_time("RAW")))
+////		Print (binFraction*iw_raw[2])		//this is the REAL precision value, not the saved integer value
+//		putControlMonitorCount("STO",trunc(binFraction*getControlMonitorCount("RAW")))
+//		putDetector_counts("STO",sum(curSlice,-inf,inf))		//total counts in slice
+//	
+//		if(firstNum<10)
+//			numStr = "00"+num2str(firstNum)
+//		else
+//			if(firstNum<100)
+//				numStr = "0"+num2str(firstNum)
+//			else
+//				numStr = num2str(firstNum)
+//			Endif
+//		Endif	
+//		String tmpStr = prefix+numstr+".SA2_EVE_"+(num2char(str2num(monthStr)+64))+numStr
+////		putFileNameFromFolder(folder,tmpStr) 
+//		labelStr = getSampleDescription("RAW")
+//		
+//		labelStr = PadString(labelStr,60,0x20) 	//60 fortran-style spaces
+//		putSampleDescription("STO",labelStr[0,59])
+//		
+//		//write out the file - this uses the tw[0] and home path
+//		Write_VAXRaw_Data("STO","",0)
+//
+//		//increment the run number, alpha
+//		firstNum += 1	
+//	endfor
+//
+//	return(0)
+//End
 
 
 
@@ -4972,3 +5059,122 @@ Function RemoveZeroEvents(events)
 End
 
 //////////////////////////////
+
+
+
+
+
+////////////////////
+///////////////////		OLD PANEL -- not used
+///////////////////
+//
+// -- extra bits of buttons... not used
+//
+//	Button button9 title="Decimation",size={100,20},pos={490,400},proc=E_ShowDecimateButton
+//
+//	Button button11,pos={490,245},size={150,20},proc=LoadDecimateButtonProc,title="Load and Decimate"
+//	Button button12,pos={490,277},size={150,20},proc=ConcatenateButtonProc,title="Concatenate"
+//	Button button13,pos={490,305},size={150,20},proc=DisplayConcatenatedButtonProc,title="Display Concatenated"
+//	
+//	GroupBox group0 title="Manual Controls",size={185,112},pos={490,220}
+//
+//	NewPanel /W=(82,44,854,664)/N=EventModePanel/K=2
+//	DoWindow/C EventModePanel
+//	ModifyPanel fixedSize=1,noEdit =1
+Proc old_EventModePanel()
+	PauseUpdate; Silent 1		// building window...
+	NewPanel /W=(82,44,884,664)/N=EventModePanel/K=2
+	DoWindow/C EventModePanel
+//	ModifyPanel fixedSize=1,noEdit =1
+
+	SetDrawLayer UserBack
+	DrawText 479,345,"Stream Data"
+	DrawLine 563,338,775,338
+	DrawText 479,419,"Oscillatory Data"
+	DrawLine 580,411,775,411
+
+//	ShowTools/A
+	Button button0,pos={14,87},size={150,20},proc=LoadEventLog_Button,title="Load Event Log File"
+	Button button0,fSize=12
+	TitleBox tb1,pos={475,500},size={266,86},fSize=10
+	TitleBox tb1,variable= root:Packages:NIST:Event:gEventDisplayString
+
+	CheckBox chkbox2,pos={376,151},size={81,15},proc=LogIntEvent_Proc,title="Log Intensity"
+	CheckBox chkbox2,fSize=10,variable= root:Packages:NIST:Event:gEvent_logint
+	CheckBox chkbox3,pos={14,125},size={119,15},title="Remove Bad Events?",fSize=10
+	CheckBox chkbox3,variable= root:Packages:NIST:Event:gRemoveBadEvents
+	
+	Button doneButton,pos={738,36},size={50,20},proc=EventDone_Proc,title="Done"
+	Button doneButton,fSize=12
+	Button button2,pos={486,200},size={140,20},proc=ShowEventDataButtonProc,title="Show Event Data"
+	Button button3,pos={486,228},size={140,20},proc=ShowBinDetailsButtonProc,title="Show Bin Details"
+	Button button5,pos={633,228},size={140,20},proc=ExportSlicesButtonProc,title="Export Slices as VAX"
+	Button button6,pos={748,9},size={40,20},proc=EventModeHelpButtonProc,title="?"
+		
+	Button button7,pos={211,33},size={120,20},proc=AdjustEventDataButtonProc,title="Adjust Events"
+	Button button8,pos={653,201},size={120,20},proc=CustomBinButtonProc,title="Custom Bins"
+	Button button4,pos={211,63},size={120,20},proc=UndoTimeSortButtonProc,title="Undo Time Sort"
+	Button button18,pos={211,90},size={120,20},proc=EC_ImportWavesButtonProc,title="Import Edited"
+	
+	SetVariable setvar0,pos={208,149},size={160,16},proc=sliceSelectEvent_Proc,title="Display Time Slice"
+	SetVariable setvar0,fSize=10
+	SetVariable setvar0,limits={0,1000,1},value= root:Packages:NIST:Event:gEvent_tsdisp	
+	SetVariable setvar1,pos={389,29},size={160,16},title="Number of slices",fSize=10
+	SetVariable setvar1,limits={1,1000,1},value= root:Packages:NIST:Event:gEvent_nslices
+	SetVariable setvar2,pos={389,54},size={160,16},title="Max Time (s)",fSize=10
+	SetVariable setvar2,value= root:Packages:NIST:Event:gEvent_t_longest
+	
+	PopupMenu popup0,pos={389,77},size={119,20},proc=BinTypePopMenuProc,title="Bin Spacing"
+	PopupMenu popup0,fSize=10
+	PopupMenu popup0,mode=1,popvalue="Equal",value= #"\"Equal;Fibonacci;Custom;\""
+	Button button1,pos={389,103},size={120,20},fSize=12,proc=ProcessEventLog_Button,title="Bin Event Data"
+
+	Button button10,pos={488,305},size={100,20},proc=SplitFileButtonProc,title="Split Big File"
+	Button button14,pos={488,350},size={120,20},proc=Stream_LoadDecim,title="Load+Decimate"
+	Button button19,pos={639,350},size={130,20},proc=Stream_LoadAdjustedList,title="Load+Concatenate"
+	Button button20,pos={680,305},size={90,20},proc=ShowList_ToLoad,title="Show List"
+
+	Button button21,pos={649,378},size={120,20},proc=Stream_LoadAdjList_BinOnFly,title="Load+Accumulate"
+
+	SetVariable setvar3,pos={487,378},size={150,16},title="Decimation factor"
+	SetVariable setvar3,fSize=10
+	SetVariable setvar3,limits={1,inf,1},value= root:Packages:NIST:Event:gDecimation
+
+	Button button15_0,pos={488,425},size={110,20},proc=AccumulateSlicesButton,title="Add First Slice"
+	Button button16_1,pos={488,450},size={110,20},proc=AccumulateSlicesButton,title="Add Next Slice"
+	Button button17_2,pos={620,425},size={110,20},proc=AccumulateSlicesButton,title="Display Total"
+	Button button22,pos={620,450},size={120,20},proc=Osc_LoadAdjList_BinOnFly,title="Load+Accumulate"
+
+	CheckBox chkbox1_0,pos={25,34},size={69,14},title="Oscillatory",fSize=10
+	CheckBox chkbox1_0,mode=1,proc=EventModeRadioProc,value=1
+	CheckBox chkbox1_1,pos={25,59},size={53,14},title="Stream",fSize=10
+	CheckBox chkbox1_1,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_2,pos={104,59},size={53,14},title="TISANE",fSize=10
+	CheckBox chkbox1_2,proc=EventModeRadioProc,value=0,mode=1
+	CheckBox chkbox1_3,pos={104,34},size={37,14},title="TOF",fSize=10
+	CheckBox chkbox1_3,proc=EventModeRadioProc,value=0,mode=1
+	
+	GroupBox group0_0,pos={5,5},size={174,112},title="(1) Loading Mode",fSize=12,fStyle=1
+	GroupBox group0_1,pos={372,5},size={192,127},title="(3) Bin Events",fSize=12,fStyle=1
+	GroupBox group0_2,pos={477,169},size={310,92},title="(4) View / Export",fSize=12,fStyle=1
+	GroupBox group0_3,pos={191,5},size={165,117},title="(2) Edit Events",fSize=12,fStyle=1
+	GroupBox group0_4,pos={474,278},size={312,200},title="Split / Accumulate Files",fSize=12
+	GroupBox group0_4,fStyle=1
+	
+	Display/W=(10,170,460,610)/HOST=# 
+	AppendImage/T/G=1 :Packages:NIST:Event:dispsliceData		//  /G=1 flag prevents interpretation as RGB so 3, 4 slices display correctly
+	ModifyImage dispsliceData ctab= {*,*,ColdWarm,0}
+	ModifyImage dispsliceData ctabAutoscale=3
+	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
+	ModifyGraph mirror=2
+	ModifyGraph nticks=4
+	ModifyGraph minor=1
+	ModifyGraph fSize=9
+	ModifyGraph standoff=0
+	ModifyGraph tkLblRot(left)=90
+	ModifyGraph btLen=3
+	ModifyGraph tlOffset=-2
+	RenameWindow #,Event_slicegraph
+	SetActiveSubwindow ##
+EndMacro
+

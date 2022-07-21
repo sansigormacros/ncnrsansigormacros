@@ -975,11 +975,12 @@ Function SetDeltaQ(folderStr)
 	
 	Variable xDim,yDim,delQ
 	
-	// q-step laterally across the vertical tubes
-		delQ = abs(qx[0][0] - qx[1][0])/2
+// q-step laterally across the vertical tubes
+	delQ = abs(qx[0][0] - qx[1][0])/2
 
 	// multiply the deltaQ by the binWidth (=multiple of pixels)
-	// this defaults to 1.2, and is set in VSANS preferences
+	// this defaults to 1.0, and is set in SANS (or 10m SANS) preferences
+	// -- it is the same global in both locations
 	delQ *= binWidth
 	
 	// set the global

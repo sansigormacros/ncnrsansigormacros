@@ -4,7 +4,7 @@
 
 
 // NEW for SANS, from VSANS
-// clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
+// clear out the folders in the RawSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "stale" local copy will be read in for any subsequent operations.
 //
 // This operation is typically necessary after data files have been patched, or
@@ -98,10 +98,10 @@ End
 
 
 // 
-// x- this still does not quite work. If there are no sub folders present in the RawVSANS folder
+// x- this still does not quite work. If there are no sub folders present in the RawSANS folder
 //    it still thinks there is (1) item there.
 // x- if I replace the semicolon with a comma, it thinks there are two folders present and appears
-//    to delete the RawVSANS folder itself! seems very dangerous...this is because DataFolderDir returns
+//    to delete the RawSANS folder itself! seems very dangerous...this is because DataFolderDir returns
 //    a comma delimited list, but with a semicolon and \r at the end. need to remove these...
 //
 // x- for use with progress bar, kills only one folder, returns the new number of folders left

@@ -227,10 +227,17 @@ Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 End
 
 
+// TODO - this panel is not yet operational with the Nexus macros
+//
+// --as long as the ASC export is correct, this should work with minor modifications
+//
+//
 Proc WorkMath_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	Show_WorkMath_Panel()
+	DoAlert 0,"This operation is not yet available in this set of macros"
+
+	//Show_WorkMath_Panel()
 End
 
 //Proc TISANE_MainButtonProc(ctrlName) : ButtonControl
@@ -267,8 +274,12 @@ End
 Proc Event_FileTableButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
+	if(exists("MakeEventFileTable")==0)
+		// procedure file was not loaded
+		DoAlert 0,"This operation is not available in this set of macros"
+	else
 		MakeEventFileTable()
-	
+	endif
 End
 
 Proc Raw2ASCII_MainButtonProc(ctrlName) : ButtonControl

@@ -46,6 +46,10 @@
 //unused testing procedure, may not be up-to-date with other procedures
 //check before re-implementing
 //
+// in general, for the tubes, I do the DIV correction at the time of converting to a WORK file
+// -- so that DIV is NOT done as a separate step after subtraction of EMP and BGD (as was done
+// in SANS) -- so this function is of little use.
+//
 Proc DIV_a_Workfile(type)
 	String type
 	Prompt type,"WORK data type",popup,"COR;SAM;EMP;BGD"

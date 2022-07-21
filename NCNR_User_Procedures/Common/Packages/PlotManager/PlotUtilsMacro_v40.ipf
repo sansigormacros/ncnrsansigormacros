@@ -1768,7 +1768,7 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_1c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
 	CheckBox PrefCtrl_1c,value= root:Packages:NIST:gDoTransCheck
 	SetVariable PrefCtrl_1d,pos={21,170},size={200,15},title="Averaging Bin Width (pixels)"
-	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
+	SetVariable PrefCtrl_1d,limits={1,100,0.1},value= root:Packages:NIST:gBinWidth
 	SetVariable PrefCtrl_1e,pos={21,195},size={200,15},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
 	CheckBox PrefCtrl_1f title="Do Transmssion Correction?",size={140,14},value=root:Packages:NIST:gDoTransmissionCorr,proc=DoTransCorrPref
@@ -1819,7 +1819,7 @@ Proc Pref_Panel()
 	CheckBox PrefCtrl_4c,help={"Checking this will check for SAM or EMP Trans = 1 during data correction"}
 	CheckBox PrefCtrl_4c,value= root:Packages:NIST:gDoTransCheck
 	SetVariable PrefCtrl_4d,pos={21*sc,130*sc},size={200*sc,15*sc},title="Averaging Bin Width (pixels)"
-	SetVariable PrefCtrl_4d,limits={1,100,1},value= root:Packages:NIST:gBinWidth
+	SetVariable PrefCtrl_4d,limits={1,100,0.1},value= root:Packages:NIST:gBinWidth
 	SetVariable PrefCtrl_4e,pos={21*sc,155*sc},size={200*sc,15*sc},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_4e,limits={1,360,1},value= root:Packages:NIST:gNPhiSteps
 	SetVariable PrefCtrl_4p,pos={21*sc,180*sc},size={200*sc,15*sc},title="Window Transmission"

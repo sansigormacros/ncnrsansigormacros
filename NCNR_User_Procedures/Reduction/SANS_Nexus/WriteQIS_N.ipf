@@ -787,7 +787,6 @@ Function QxQy_Export(type,fullpath,dialog)
 //	MyMat2XYZ(data,qx_val,qy_val,z_val) 		//x and y are [p][q] indexes, not q-vals yet
 
 
-// TODO -- this will be different for tube panels with beam center in [cm], not pixel	
 	Variable xctr,yctr,sdd,lambda,pixSize
 	xctr = getDet_beam_center_x(type)
 	yctr = getDet_beam_center_y(type)
@@ -795,8 +794,16 @@ Function QxQy_Export(type,fullpath,dialog)
 	lambda = getWavelength(type)
 	pixSize = getDet_x_pixel_size(type)/10		//convert mm to cm (x and y are the same size pixels)
 	
-	qx_val = CalcQx(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)		//+1 converts to detector coordinate system
-	qy_val = CalcQy(p+1,q+1,xctr,yctr,sdd,lambda,pixSize)
+	Variable tube_width=getDet_tubeWidth(type)
+	WAVE coefW = getDetTube_spatialCalib(type)
+
+// these are expecting SDD in [cm]
+	qx_val = T_CalcQx(p+1,q+1,xctr,yctr,tube_width,sdd*100,lambda,coefW)		//+1 converts to detector coordinate system
+	qy_val = T_CalcQy(p+1,q+1,xctr,yctr,tube_width,sdd*100,lambda,coefW)
+	
+	qval = T_CalcQval(p+1,q+1,xctr,yctr,tube_width,sdd*100,lambda,coefW)
+	qz_val = T_CalcQz(p+1,q+1,xctr,yctr,tube_width,sdd*100,lambda,coefW)  //+1 converts to detector coordinate system
+
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
@@ -833,13 +840,6 @@ Function QxQy_Export(type,fullpath,dialog)
 ///************
 // do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	Variable tube_width=getDet_tubeWidth(type)
-	WAVE coefW = getDetTube_spatialCalib(type)
-		
-	
-	
-	qval = T_CalcQval(p+1,q+1,xctr,yctr,tube_width,sdd,lambda,coefW)
-	qz_val = T_CalcQz(p+1,q+1,xctr,yctr,tube_width,sdd,lambda,coefW)  //+1 converts to detector coordinate system
 	
 //	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
 //	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt

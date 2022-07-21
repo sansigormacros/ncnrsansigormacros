@@ -762,7 +762,7 @@ End
 //returns a string containing the full path to the file containing the 
 //run number "num". The null string is returned if no valid file can be found
 //the path "catPathName" used and is hard-wired, will abort if this path does not exist
-//the file returned will be a RAW VSANS data file, other types of files are 
+//the file returned will be a RAW SANS data file, other types of files are 
 //filtered out.
 //
 //
@@ -870,7 +870,7 @@ Function N_CheckIfDIVData(fname)
 	
 	// simply check for the characters "DIV" in the file name...
 	
-	String matchStr="*DIV*"		// this is part of the title of a VSANS _DIV_ file
+	String matchStr="*DIV*"		// this is part of the title of a SANS _DIV_ file
 	Variable val
 	val = stringmatch(fname,matchStr)		//==1 if there is a match
 	

@@ -170,7 +170,7 @@ Function BuildCatVeryShortTable()
 ///////////// progress window
 
 // NEW for SANS, from VSANS
-// clear out the folders in the RawVSANS folder, otherwise any changes/patches written to disk
+// clear out the folders in the RawSANS folder, otherwise any changes/patches written to disk
 // will not be read in, the "bad" local copy will be read in for any subsequent operations.
 //
 // This will display a progress bar

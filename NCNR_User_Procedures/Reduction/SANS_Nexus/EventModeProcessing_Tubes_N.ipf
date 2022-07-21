@@ -661,7 +661,7 @@ End
 
 
 
-// Initialization of the VSANS event mode panel
+// Initialization of the SANS event mode panel
 Proc Show_Event_Panel()
 	DoWindow/F SANS_EventModePanel
 	if(V_flag ==0)
@@ -680,7 +680,7 @@ Function Init_Event()
 	String/G 	root:Packages:NIST:Event:gEventDisplayString="Details of the file load"
 
 
-// globals that are the header of the VSANS event file
+// globals that are the header of the SANS (Tube) event file
 	String/G root:Packages:NIST:Event:gNASStr=""
 	Variable/G root:Packages:NIST:Event:gRevision = 0
 	Variable/G root:Packages:NIST:Event:gOffset=0		// = 25 bytes if no disabled tubes
@@ -717,7 +717,7 @@ Function Init_Event()
 	Duplicate/O slicedData dispsliceData
 
 
-// for decimation (not used for VSANS - may be added back in the future)
+// for decimation (not used for Tube SANS - may be added back in the future)
 	Variable/G root:Packages:NIST:Event:gEventFileTooLarge = 1501		// 1500 MB considered too large
 	Variable/G root:Packages:NIST:Event:gDecimation = 100
 	Variable/G root:Packages:NIST:Event:gEvent_t_longest_decimated = 0
@@ -733,7 +733,7 @@ End
 
 
 //
-// the main panel for VSANS Event mode
+// the main panel for SANS Event mode
 // -- a duplicate of the SANS panel, with the functions I'm not using disabled.
 //  could be added back in the future
 //
@@ -1318,8 +1318,8 @@ Function Stream_ProcessEventLog(ctrlName)
 	endswitch
 
 //
-// for VSANS, the stream data shows time reversal due to the communication
-// cycling between the 4 panels (I think), so sort the data to remove this.
+// for SANS Tube events, the stream data shows time reversal due to the communication
+// cycling between the packs of tubes (per Phil), so sort the data to remove this.
 // unfortunately, this removes any chance of seeing other time errors.
 // fortunately, no time encoding errors have been seen with the tubes.
 //
@@ -2384,7 +2384,7 @@ End
 //
 // TODO:
 // -- this is ALL geared towards ordela event mode data and the 6.7s errors, and bad signal
-//   I don't know if I'll need any of this for the VSANS event data.
+//   I don't know if I'll need any of this for the SANS Tube event data.
 //
 //
 Proc ShowEventCorrectionPanel()
@@ -2958,7 +2958,7 @@ End
 // don't un-do the sort, that was part of the necessary adjustments
 //
 // not implemented -- saving takes way too long...
-// and the VSANS data appears to be rather clean
+// and the SANS data appears to be rather clean
 //
 Function EC_SaveWavesButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
