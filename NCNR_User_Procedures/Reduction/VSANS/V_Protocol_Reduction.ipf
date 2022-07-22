@@ -1423,6 +1423,18 @@ Function V_SetAverageParamsButtonProc(ctrlName) : ButtonControl
 	// hard wired value
 	String autoPlot = "Yes"
 	
+	SVAR begStr = root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr
+	SVAR endStr = root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr
+	begStr = ksBinTrimBegDefault
+	endStr = ksBinTrimEndDefault
+	
+	// override these default values for narrow slit case
+	if(cmpstr(av_typ,"Narrow_Slit") == 0)
+		binType = "F2-M2-B"
+
+		begStr = ksBinTrimBegZero
+		endStr = ksBinTrimEndZero
+	endif
 		
 	// all averages need these values
 	gAvgInfoStr += "AVTYPE=" + av_typ + ";"

@@ -374,7 +374,11 @@ Function MasterAngleDraw()
 	SetDrawLayer/W=SANS_Data UserFront
 	
 	//what average type are we drawing for?
-	SVAR drawStr = root:myGlobals:Drawing:gDrawInfoStr
+	SVAR/Z drawStr = root:myGlobals:Drawing:gDrawInfoStr
+	if(SVAR_Exists(drawStr) == 0)
+		Execute "InitializeAveragePanel()"
+		SVAR drawStr = root:myGlobals:Drawing:gDrawInfoStr
+	endif
 	
 	//get the beam center from the currently displayed data type
 	SVAR type = root:myGlobals:gDataDisplayType

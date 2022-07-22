@@ -81,7 +81,9 @@ Constant kNumProtocolSteps = 12
 Strconstant ksPanelBinTypeList = "B;FT;FB;FL;FR;MT;MB;ML;MR;FTB;FLR;MTB;MLR;FLRTB;MLRTB;"
 Strconstant ksBinTrimBegDefault = "B=5;FT=3;FB=3;FL=3;FR=3;MT=3;MB=3;ML=3;MR=3;FTB=2;FLR=2;MTB=2;MLR=2;FLRTB=1;MLRTB=1;"
 Strconstant ksBinTrimEndDefault = "B=10;FT=5;FB=5;FL=5;FR=5;MT=5;MB=5;ML=5;MR=5;FTB=4;FLR=4;MTB=4;MLR=4;FLRTB=3;MLRTB=3;"
-
+// for the case of Narrow_Slit, don't trim any points by default
+Strconstant ksBinTrimBegZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
+Strconstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=0;FLR=0;MTB=0;MLR=0;FLRTB=0;MLRTB=0;"
 
 
 //////// HIGH RESOLUTION DETECTOR  ///////////////
