@@ -77,6 +77,8 @@ Menu "SANS"
 		"Patch Detector Deadtime Panel"
 		"Patch Atten Table Panel"
 		"Patch AttenErr Table Panel"
+		"-"
+		"Verify Field Contents",VerifyImportantUnits()
 	End
 End
 

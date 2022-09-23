@@ -2147,6 +2147,64 @@ Function writeDetectorData(fname,inW)
 	return(err)
 End
 
+// (DONE) -- write this function to return a WAVE with the data
+// either as a wave reference, or as an input parameter
+Function writeDetectorData_error(fname,inW)
+	String fname
+	Wave inW
+
+//	String path = "entry:instrument:detector:data"
+	
+	Duplicate/O inW wTmpWrite 	
+// then use redimension as needed to cast the wave to write to the specified type
+// see WaveType for the proper codes 
+//	Redimension/T=() wTmpWrite
+// -- May also need to check the dimension(s) before writing (don't trust the input)
+	String groupName = "/entry/instrument/detector"	
+	String varName = "data_error"
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
+
+// (DONE) -- write this function to return a WAVE with the data
+// either as a wave reference, or as an input parameter
+Function writeDetectorData_Lin_error(fname,inW)
+	String fname
+	Wave inW
+
+//	String path = "entry:instrument:detector:data"
+	
+	Duplicate/O inW wTmpWrite 	
+// then use redimension as needed to cast the wave to write to the specified type
+// see WaveType for the proper codes 
+//	Redimension/T=() wTmpWrite
+// -- May also need to check the dimension(s) before writing (don't trust the input)
+	String groupName = "/entry/instrument/detector"	
+	String varName = "linear_data_error"
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+End
+
 
 
 // (DONE) -- write this function to return a WAVE with the data

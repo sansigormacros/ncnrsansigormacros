@@ -639,7 +639,7 @@ Function WriteHeaderForPatch(fname,change,textVal)
 		writeDet_LateralOffset(fname,num)
 	Endif
 	if(change[18])      //beamstop diam
-		num = str2num(textVal[18])
+		num = str2num(textVal[18]) / 10		//field is [mm], store as [cm]
 		writeBeamStop_size(fname,num)
 	Endif
 	if(change[19])     //SDD
@@ -861,7 +861,7 @@ Function ReadHeaderForPatch(fname)
 	Variable/G root:myGlobals:Patch:gPV15 = getSampleAp_size(fname)
 	Variable/G root:myGlobals:Patch:gPV16 = getSourceAp_distance(fname) / 100 // convert [cm] to [m]
 	Variable/G root:myGlobals:Patch:gPV17 = getDet_LateralOffset(fname)
-	Variable/G root:myGlobals:Patch:gPV18 = getBeamStop_size(fname)
+	Variable/G root:myGlobals:Patch:gPV18 = getBeamStop_size(fname) * 10		// stored in =cm], present [mm]
 	Variable/G root:myGlobals:Patch:gPV19 = getDet_Distance(fname) / 100		// convert [cm] to [m]
 	
 	Return 0

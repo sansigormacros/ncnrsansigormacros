@@ -321,7 +321,7 @@ Function RectangularAverageTo1D(type)
 // ***************************************************************
 
 	Variable L2 = getDet_Distance(type) / 100		// convert [cm] to [m] for N_getResolution
-	Variable BS = getBeamStop_size(type)
+	Variable BS = getBeamStop_size(type) * 10		// N_getResolution is expecting [mm]
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
 	Variable L1 = getSourceAp_distance(type) / 100		// convert [cm] to [m] for N_getResolution

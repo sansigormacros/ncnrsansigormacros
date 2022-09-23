@@ -1450,7 +1450,12 @@ Proc Initialize_Preferences()
 	
 	val = NumVarOrDefault("root:Packages:NIST:gDoTransCheck", 1 )
 	Variable/G root:Packages:NIST:gDoTransCheck=val
-	
+
+// when a SANS experiment with tubes is initialized, this value is initialized to 2
+// in a separate initializaton step -- using a bin of 1 gives 2x the number of points as
+// was generated on the VAX, with larger per-point error. bin=2 much more closely replicates
+// the VAX reduction
+// 	Variable/G root:Packages:NIST:gBinWidth=val	
 	val = NumVarOrDefault("root:Packages:NIST:gBinWidth", 1 )
 	Variable/G root:Packages:NIST:gBinWidth=val
 	

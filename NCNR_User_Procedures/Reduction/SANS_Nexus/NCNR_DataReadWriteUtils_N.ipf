@@ -1022,3 +1022,85 @@ Function HDF_NXSANS_SaveGroupAsHDF5(dfPath, filename)
 	return result
 End
 
+
+
+// function to list selected contents of a file to verify that the values
+// have been stored (and are read in) with the expected units
+//
+// -- more items can be added in the future as needed
+//
+Proc VerifyImportantUnits(fname)
+	String fname
+	
+	fVerifyImportantUnits(fname)
+end
+
+Function fVerifyImportantUnits(fname)
+	String fname
+	
+	Variable val,val2
+	String str
+	
+	Print "*** units listed are the EXPECTED units ****"
+	Print "*** verify that the value makes sense with the listed units ***"
+	
+	// detector distance [cm]
+	val = getDet_distance(fname)
+	printf "Detector distance = %g [cm]\r",val
+	
+	// number of (x,y) pixels
+	val = getDet_pixel_num_x(fname)
+	val2 = getDet_pixel_num_y(fname)
+	printf "Number of pixels (x,y) = (%d,%d)\r",val,val2
+	
+	// beam center (x,y) in pixels
+	val = getDet_beam_center_x(fname)
+	val2 = getDet_beam_center_y(fname)
+	printf "Beam center in pixels (x,y) = (%g,%g)\r",val,val2
+
+	// lateral offset in [cm]
+	val = getDet_LateralOffset(fname)
+	printf "Lateral offset = %g [cm]\r",val
+	
+	// pixel fwhm (x,y) in [cm]
+	val = getDet_pixel_fwhm_x(fname)
+	val2 = getDet_pixel_fwhm_y(fname)
+	printf "Pixel FWHM (x,y) = (%g,%g) [cm]\r",val,val2
+
+	// tube width [mm]
+	val = getDet_tubeWidth(fname)
+	printf "Tube width = %g [mm]\r",val
+	
+	// pixel size (x,y) in [mm]
+	val = getDet_x_pixel_size(fname)
+	val2 = getDet_y_pixel_size(fname)
+	printf "Pixel size (x,y) = (%g,%g) [mm]\r",val,val2
+	
+	
+	
+	// beam stop size, diameter in [cm]
+	val = getBeamStop_size(fname)
+	printf "Beam stop diameter = %g [cm]\r",val
+	
+	
+	// sample aperture diameter [mm]
+	val = getSampleAp_size(fname)
+	printf "Sample aperture diameter = %g [mm]\r",val
+
+	// sample aperture distance (to sample, only a few cm) = [cm]
+	val = getSampleAp_distance(fname)
+	printf "Sample aperture distance (short) = %g [cm]\r",val
+	
+	
+	// source aperture diameter [mm] (derived a text value!)
+	val = getSourceAp_size(fname)
+	printf "Source aperture diameter = %g [mm]\r",val
+
+	// source aperture distance [cm]
+	val = getSourceAp_distance(fname)
+	printf "Source aperture distance = %g [cm]\r",val
+
+	
+	
+	return(0)
+End

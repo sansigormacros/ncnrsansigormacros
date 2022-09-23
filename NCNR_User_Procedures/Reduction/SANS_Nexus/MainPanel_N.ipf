@@ -344,25 +344,25 @@ Window Main_Panel()
 	TabControl MainTab labelBack=(65535,58981,27524)
 	
 //on tab(0) - Raw Data - initially visible
-	Button MainButton_0a,pos={15,90},size={130,20},proc=DisplayMainButtonProc,title="Display Raw Data"
+	Button MainButton_0a,pos={15,90},size={120,20},proc=DisplayMainButtonProc,title="Display Raw Data"
 	Button MainButton_0a,help={"Display will load and plot a single 2-D raw data file"}
 	Button MainButton_0b,pos={15,120},size={70,20},proc=PatchMainButtonProc,title="Patch"
 	Button MainButton_0b,help={"Patch will update incorrect information in raw data headers"}
-	Button MainButton_0c,pos={15,150},size={110,20},proc=TransMainButtonProc,title="Transmission"
+	Button MainButton_0c,pos={15,150},size={120,20},proc=TransMainButtonProc,title="Transmission"
 	Button MainButton_0c,help={"Shows the \"Patch\" panel which allows calculation of sample transmissions and entering these values into raw data headers"}
-	Button MainButton_0d,pos={15,180},size={130,20},proc=RealTime_MainButtonProc,title="RealTime Display"
+	Button MainButton_0d,pos={15,180},size={120,20},proc=RealTime_MainButtonProc,title="RealTime Display"
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
-	Button MainButton_0e,pos={15,210},size={130,20},proc=FileSort_MainButtonProc,title="Sort Catalog"
+	Button MainButton_0e,pos={15,210},size={120,20},proc=FileSort_MainButtonProc,title="Sort Catalog"
 	Button MainButton_0e,help={"Shows the panel for sorting the file catalog"}
 
 //on tab(1) - Reduction
-	Button MainButton_1a,pos={15,90},size={110,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
+	Button MainButton_1a,pos={15,90},size={120,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
 	Button MainButton_1a,help={"Shows a panel where the CATalog window is used as input for creating a protocol. Can also be used for standard reductions"}
-	Button MainButton_1b,pos={15,120},size={110,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
+	Button MainButton_1b,pos={15,120},size={120,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
 	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
-	Button MainButton_1c,pos={15,150},size={160,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
+	Button MainButton_1c,pos={15,150},size={120,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
 	Button MainButton_1c,help={"Use for reducing multiple raw datasets after protocol(s) have been created"}
-	Button MainButton_1d,pos={15,180},size={110,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
+	Button MainButton_1d,pos={15,180},size={120,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
 	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}
 	Button MainButton_1a,disable=1
 	Button MainButton_1b,disable=1
@@ -382,7 +382,7 @@ Window Main_Panel()
 //	Button MainButton_2e,help={"Shows panel for subtracting two 1-D data sets"}
 	Button MainButton_2e,pos={120,90},size={110,20},proc=Arithmetic1D_MainButtonProc,title="1D Arithmetic"
 	Button MainButton_2e,help={"Shows panel for doing arithmetic on 1D data sets"}
-	Button MainButton_2f,pos={120,120},size={130,20},proc=Combine1D_MainButtonProc,title="Combine 1D Files"
+	Button MainButton_2f,pos={120,120},size={110,20},proc=Combine1D_MainButtonProc,title="Combine 1D Files"
 	Button MainButton_2f,help={"Shows panel for batch combination of 1D data files. Use after you're comfortable with NSORT"}
 	Button MainButton_2a,disable=1
 	Button MainButton_2b,disable=1
@@ -400,11 +400,11 @@ Window Main_Panel()
 	Button MainButton_3b,help={"Draw a mask file and save it."}
 	Button MainButton_3c,pos={15,150},size={90,20},proc=ReadMask_MainButtonProc,title="Read Mask"
 	Button MainButton_3c,help={"Reads a mask file into the proper work folder, and displays a small image of the mask. Yellow areas will be excluded from the data"}
-	Button MainButton_3d,pos={15,180},size={100,20},title="Tile RAW 2D",proc=ShowTilePanel_MainButtonProc
+	Button MainButton_3d,pos={15,180},size={90,20},title="Tile RAW 2D",proc=ShowTilePanel_MainButtonProc
 	Button MainButton_3d,help={"Adds selected RAW data files to a layout."}
 	Button MainButton_3e,pos={150,90},size={100,20},title="Copy Work",proc=CopyWork_MainButtonProc
 	Button MainButton_3e,help={"Copies WORK data from specified folder to destination folder."}
-	Button MainButton_3f,pos={150,120},size={110,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
+	Button MainButton_3f,pos={150,120},size={100,20},title="WorkFile Math",proc=WorkMath_MainButtonProc
 	Button MainButton_3f,help={"Perfom simple math operations on workfile data"}
 	Button MainButton_3g,pos={150,150},size={100,20},title="Event Data",proc=Event_MainButtonProc
 	Button MainButton_3g,help={"Manipulate Event data"}
@@ -428,24 +428,24 @@ Window Main_Panel()
 //on tab(4) - Miscellaneous operations
 //	Button MainButton_4a,pos={15,90},size={80,20},proc=Draw3D_MainButtonProc,title="3D Display"
 //	Button MainButton_4a,help={"Plots a 3-D surface of the selected file type"}
-	Button MainButton_4b,pos={15,120},size={120,20},proc=ShowSchematic_MainButtonProc,title="Show Schematic"
+	Button MainButton_4b,pos={15,120},size={100,20},proc=ShowSchematic_MainButtonProc,title="Show Schematic"
 	Button MainButton_4b,help={"Use this to show a schematic of the data reduction process for a selected sample file and reduction protocol"}
-	Button MainButton_4c,pos={15,150},size={80,20},proc=ShowAvePanel_MainButtonProc,title="Average"
+	Button MainButton_4c,pos={15,150},size={100,20},proc=ShowAvePanel_MainButtonProc,title="Average"
 	Button MainButton_4c,help={"Shows a panel for interactive selection of the 1-D averaging step"}
-	Button MainButton_4d,pos={15,180},size={110,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
+	Button MainButton_4d,pos={15,180},size={100,20},proc=CatShort_MainButtonProc,title="CAT/Notebook"
 	Button MainButton_4d,help={"This will generate a CATalog notebook of all files in a specified local folder"}
 
 
-	Button MainButton_4e,pos={180,90},size={130,20},proc=KillWork_MainButtonProc,title="Kill Work Folder"
+	Button MainButton_4e,pos={180,90},size={120,20},proc=KillWork_MainButtonProc,title="Kill Work Folder"
 	Button MainButton_4e,help={"Kill a work data folder"}
 
 //	Button MainButton_4e,pos={180,90},size={130,20},proc=NG1TransConv_MainButtonProc,title="NG1 Files to Trans"
 //	Button MainButton_4e,help={"Converts NG1 transmission data files to be interpreted as such"}
-	Button MainButton_4f,pos={180,120},size={130,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
+	Button MainButton_4f,pos={180,120},size={120,20},proc=PRODIV_MainButtonProc,title="Make DIV file"
 	Button MainButton_4f,help={"Merges two stored workfiles (CORrected) into a DIV file, and saves the result"}
-	Button MainButton_4g,pos={180,150},size={130,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
+	Button MainButton_4g,pos={180,150},size={120,20},proc=Raw2ASCII_MainButtonProc,title="RAW ASCII Export"
 	Button MainButton_4g,help={"Exports selected RAW (2D) data file(s) as ASCII, either as pixel values or I(Qx,Qy)"}
-	Button MainButton_4h,pos={180,180},size={130,20},proc=Preferences_MainButtonProc,title="Preferences"
+	Button MainButton_4h,pos={180,180},size={120,20},proc=Preferences_MainButtonProc,title="Preferences"
 	Button MainButton_4h,help={"Sets user preferences for selected parameters"}
 	
 //	Button MainButton_4a,disable=1

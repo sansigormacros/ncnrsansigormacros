@@ -149,6 +149,15 @@ Function InitGlobals()
 	// if they already exist, they won't be overwritten
 	Execute "Initialize_Preferences()"	
 
+// when a SANS experiment with tubes is initialized, this preference value is initialized to 2
+// in a separate initializaton step -- using a bin of 1 gives 2x the number of points as
+// was generated on the VAX, with larger per-point error. bin=2 much more closely replicates
+// the VAX reduction
+ 	NVAR binWidth = root:Packages:NIST:gBinWidth
+	binWidth = 2
+
+	//
+
 	// set the lookup waves for log/lin display of the detector images
 	MakeImageLookupTables(10000,0,1)
 

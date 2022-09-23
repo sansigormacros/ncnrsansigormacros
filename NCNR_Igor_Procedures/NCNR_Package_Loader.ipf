@@ -69,14 +69,14 @@ Menu "Macros"
 	"-"
 	"Load SANS Polarization Reduction",PolarizationLoader()
 	"Load Real Space Modeling",RealSpaceLoader()
-	"Event Mode Processing",EventModeLoader()
+//	"Event Mode Processing",EventModeLoader()
 	"Load Batch Fitting - Beta",BatchFitLoader()
 	"Load Simulation Run Builder",SimSANSRunListLoader()
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
 //	"-"
-//	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
+	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
 
 
 end

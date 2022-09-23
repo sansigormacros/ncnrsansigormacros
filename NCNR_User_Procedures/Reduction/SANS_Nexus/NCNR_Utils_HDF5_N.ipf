@@ -113,7 +113,7 @@ Function/S N_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	L2 += apOff
 	del_r *= 0.1				//width of annulus, convert mm to [cm]
 	
-	BS *= 0.5*0.1			//nominal BS diameter passed in, convert to radius and [cm]
+	BS *= 0.5*0.1			//nominal BS diameter [mm] passed in, convert to radius and [cm]
 	// 21 MAR 07 SRK - use the projected BS diameter, based on a point sample aperture
 	Variable LB
 	LB = 20.1 + 1.61*BS			//distance in cm from beamstop to anode plane (empirical)
@@ -721,6 +721,7 @@ end
 //given a filename of a SANS data filename of the form
 // sansNNNN.nxs.ngnnn
 //returns the run number "NNNN" as a STRING of (x) characters
+// NOT NECESSARILY NNNN=4 characters -- the run number can be any length
 //
 // -- the run number incements from 1, so the number of digits is UNKNOWN
 // -- number starts at position [4] (the 5th character)
@@ -830,6 +831,13 @@ End
 // see the equivalent V_ function in the VSANS macros
 //
 //
+// exclude file with the last extension:
+// .ASC
+// .GSP
+// .ABS
+// .AVE
+// .DAT
+//
 Function N_CheckIfRawData(fname)
 	String fname
 	
@@ -843,8 +851,27 @@ Function N_CheckIfRawData(fname)
 	
 
 	// just look at the extension, ":" is the path separator
-//	extStr = ParseFilePath(4, fname, ":", 0, 0)
-//	if( cmpstr(extStr,"h5")==0 )
+	extStr = ParseFilePath(4, fname, ":", 0, 0)
+	if( cmpstr(extStr,"ASC")==0 )
+		return(0)
+	endif
+
+	if( cmpstr(extStr,"GSP")==0 )
+		return(0)
+	endif
+
+	if( cmpstr(extStr,"ABS")==0 )
+		return(0)
+	endif
+
+	if( cmpstr(extStr,"AVE")==0 )
+		return(0)
+	endif
+
+	if( cmpstr(extStr,"DAT")==0 )
+		return(0)
+	endif
+
 
 
 // look for .nxs. of a nexus file name, can't key on last extension
@@ -920,7 +947,7 @@ Function N_isTransFile(fname)
 	
 	testStr = getReduction_purpose(fname)
 
-	if(cmpstr(testStr,"TRANSMISSION",1) == 1)		// case-insensitive comparison
+	if(cmpstr(testStr,"TRANSMISSION",0) == 0)		// case-insensitive comparison flag = 0, match = 0
 		//yes, a transmission file
 		Return(1)
 	else

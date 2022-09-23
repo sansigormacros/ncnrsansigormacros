@@ -1731,7 +1731,7 @@ Function S_CircularAverageTo1D(type)
 // ***************************************************************
 
 	Variable L2 = getDet_Distance(type) / 100		// convert [cm] to [m] for N_getResolution
-	Variable BS = getBeamStop_size(type)
+	Variable BS = getBeamStop_size(type) * 10		// N_getResolution is expecting [mm]
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
 	Variable L1 = getSourceAp_distance(type) / 100		// convert [cm] to [m] for N_getResolution
@@ -1889,7 +1889,7 @@ Function/S S_getResolution(inQ,lambda,lambdaWidth,DDet,apOff,S1,S2,L1,L2,BS,del_
 	L2 *= 100.0
 	L2 += apOff
 
-	BS *= 0.5*0.1			//convert to radius and [cm]
+	BS *= 0.5*0.1			//convert [mm] to radius and [cm]
 	del_r *= 0.1				//width of annulus, convert mm to [cm]
 	
 	//Start resolution calculation

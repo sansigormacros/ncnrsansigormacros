@@ -471,11 +471,6 @@ Function getAttenuator_transmission(fname)
 	String fname
 	
 	Print "Atten read - diverted to calculation"
-//	Print "***ATTEN IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
-
-// see the equivalent VSANS function for how this is done - and see if SANS can reliably
-// write out the attenuator transmission
-//	
 
 //	return(1)
 	return(N_CalculateAttenuationFactor(fname))
@@ -496,7 +491,6 @@ Function getAttenuator_trans_err(fname)
 	String fname
 	
 	Print "Atten_err read - diverted to calculation"
-//	Print "***ATTEN_ERR IS NOT CALCULATED - FUNCTION NOT WRITTEN YET ***"
 
 //	return(0)
 	return(N_CalculateAttenuationError(fname))
@@ -678,7 +672,8 @@ Function/S getBeamStop_shape(fname)
 End
 
 // == diameter if shape = CIRCLE
-// value is expected in [mm] diameter
+// value is stored in [cm] diameter in Nexus
+// (was stored on VAX as [mm] - be careful)
 Function getBeamStop_size(fname)
 	String fname
 
@@ -1271,6 +1266,8 @@ Function/S getSampleAp_Description(fname)
 	return(getStringFromHDF5(fname,path,num))
 End
 
+
+//expecting units of [cm]
 Function getSampleAp_distance(fname)
 	String fname
 

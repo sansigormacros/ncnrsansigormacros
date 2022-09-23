@@ -318,7 +318,7 @@ Function CircularAverageTo1D_old(type)
 // ***************************************************************
 
 	Variable L2 = getDet_Distance(type) / 100		// N_getResolution is expecting [m]
-	Variable BS = getBeamStop_size(type)
+	Variable BS = getBeamStop_size(type) * 10		// N_getResolution is expecting [mm]
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
 	Variable L1 = getSourceAp_distance(type) / 100 // N_getResolution is expecting [m]
@@ -869,7 +869,7 @@ Function CircularAverageTo1D(type)
 	
 	
 	Variable L2 = getDet_Distance(type) / 100		// N_getResolution is expecting [m]
-	Variable BS = getBeamStop_size(type)
+	Variable BS = getBeamStop_size(type) * 10		// N_getResolution is expecting [mm]
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
 	Variable L1 = getSourceAp_distance(type) / 100 // N_getResolution is expecting [m]
@@ -1357,7 +1357,7 @@ Function fDoSectorBin_QxQy2D(folderStr,side,phi_rad,dphi_rad)
 	
 	
 	Variable L2 = getDet_Distance(folderStr) / 100		// N_getResolution is expecting [m]
-	Variable BS = getBeamStop_size(folderStr)
+	Variable BS = getBeamStop_size(folderStr) * 10		// N_getResolution is expecting [mm]
 	Variable S1 = getSourceAp_size(folderStr)
 	Variable S2 = getSampleAp_size(folderStr)
 	Variable L1 = getSourceAp_distance(folderStr) / 100 // N_getResolution is expecting [m]

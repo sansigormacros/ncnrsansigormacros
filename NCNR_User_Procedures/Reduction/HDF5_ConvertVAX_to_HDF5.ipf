@@ -37,7 +37,11 @@
 // --detector calibration (fill here for Ordela?)
 // -- plus?? what else
 
-
+// NOTE
+// the VAX stores beam stop diameter as [mm], but the Nexus structure is storing [cm]
+// -- so I convert the units to [cm]
+// -- reduction must be expecting this (especially for the resolution calculation)
+//
 
 
 
@@ -467,7 +471,7 @@ Function FillStructureFromRTI()
 			WAVE			size 	//5.08
 			WAVE			width 	//nan
 			
-			size = rw[21]		// wrong units?
+			size = rw[21]/10	//VAX is in [mm], Nexus is storing [cm] 
 			shape = "CIRCLE"
 			
 	FillCollimator()					

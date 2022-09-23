@@ -942,7 +942,7 @@ End
 
 //function to read in the ASC output of SANS reduction
 // currently the file has 20 header lines, followed by a single column
-// of 16384 values, Data is written by row, starting with Y=1 and X=(1->128)
+// of N values, Data is written by row, starting with Y=1 and X=(1->112) or X=(1->128)
 //
 //returns 0 if read was ok
 //returns 1 if there was an error
@@ -956,8 +956,15 @@ Function ReadASCData(fname,destPath)
 
 //	NVAR pixelsX = root:myGlobals:gNPixelsX
 //	NVAR pixelsY = root:myGlobals:gNPixelsY
-	Variable pixelsX = getDet_pixel_num_x(destPath)
-	Variable pixelsY = getDet_pixel_num_y(destPath)
+	Variable pixelsX,pixelsY
+	if(cmpstr(ksDetType,"Tubes") == 0)
+		pixelsX = 112
+		pixelsY = 128
+	else
+		//Ordela
+		pixelsX = 128
+		pixelsY = 128
+	endif
 	
 	Variable refNum=0,ii,p1,p2,tot,num=pixelsX,numHdrLines=20
 	String str=""
