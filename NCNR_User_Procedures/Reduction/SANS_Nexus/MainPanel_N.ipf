@@ -235,9 +235,9 @@ End
 Proc WorkMath_MainButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
-	DoAlert 0,"This operation is not yet available in this set of macros"
+//	DoAlert 0,"This operation is not yet available in this set of macros"
 
-	//Show_WorkMath_Panel()
+	Show_WorkMath_Panel()
 End
 
 //Proc TISANE_MainButtonProc(ctrlName) : ButtonControl

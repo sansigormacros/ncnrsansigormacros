@@ -702,14 +702,19 @@ Proc Init_WorkMath()
 	//create the data folder
 	//String str = "AAA;BBB;CCC;DDD;EEE;FFF;GGG;"
 	String str = "File_1;File_2;Result;"
+	NewDataFolder/O root:Packages:NIST:WorkMath_File_1
+	NewDataFolder/O root:Packages:NIST:WorkMath_File_2
+	NewDataFolder/O root:Packages:NIST:WorkMath_Result
+
 	NewDataFolder/O/S root:Packages:NIST:WorkMath
-	String/G gFolderList=str
-	Variable ii=0,num=itemsinlist(str)
-	do
-		Execute "NewDataFolder/O "+StringFromList(ii, str ,";")
-		ii+=1
-	while(ii<num)
 	Variable/G const1=1,const2=1
+
+//	String/G gFolderList=str
+//	Variable ii=0,num=itemsinlist(str)
+//	do
+//		Execute "NewDataFolder/O "+StringFromList(ii, str ,";")
+//		ii+=1
+//	while(ii<num)
 	
 	SetDataFolder root:
 End
@@ -732,7 +737,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	String str1,str2,oper,dest = "Result"
-	String pathStr,workMathStr="WorkMath:"
+	String pathStr,workMathStr="WorkMath_"
 	
 	//get the panel selections (these are the names of the files on disk)
 	PathInfo catPathName
@@ -759,14 +764,12 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	//set #1
 	Load_NamedASC_File(pathStr+str1,workMathStr+"File_1")
 	
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
 	SVAR type = root:myGlobals:gDataDisplayType
 	Variable pixelsX = getDet_pixel_num_x(type)
 	Variable pixelsY = getDet_pixel_num_y(type)
 		
-	WAVE/Z data1=$("root:Packages:NIST:"+workMathStr+"File_1:linear_data")
-	WAVE/Z err1=$("root:Packages:NIST:"+workMathStr+"File_1:linear_data_error")
+	WAVE/Z data1=getDetectorDataW("WorkMath_File_1")
+	WAVE/Z err1=getDetectorDataErrW("WorkMath_File_1")
 	
 	// set # 2
 	If(cmpstr(str2,"UNIT MATRIX")==0)
@@ -778,8 +781,8 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 	else
 		//Load set #2
 		Load_NamedASC_File(pathStr+str2,workMathStr+"File_2")
-		WAVE/Z data2=$("root:Packages:NIST:"+workMathStr+"File_2:linear_data")
-		WAVE/Z err2=$("root:Packages:NIST:"+workMathStr+"File_2:linear_data_error")
+		WAVE/Z data2=getDetectorDataW("WorkMath_File_2")
+		WAVE/Z err2=getDetectorDataErrW("WorkMath_File_2")
 	Endif
 
 	///////
@@ -792,9 +795,9 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 
 	//copy contents of str1 folder to dest and create the wave ref (it will exist)
 	CopyWorkContents(workMathStr+"File_1",workMathStr+dest)
-	WAVE/Z destData=$("root:Packages:NIST:"+workMathStr+dest+":linear_data")
-	WAVE/Z destData_log=$("root:Packages:NIST:"+workMathStr+dest+":data")
-	WAVE/Z destErr=$("root:Packages:NIST:"+workMathStr+dest+":linear_data_error")
+	
+	WAVE/Z destData=getDetectorDataW(workmathStr+dest)
+	WAVE/Z destErr=getDetectorDataErrW(workmathStr+dest)
 	
 	//dispatch
 	strswitch(oper)	
@@ -820,7 +823,7 @@ Function WorkMath_DoIt_ButtonProc(ctrlName) : ButtonControl
 			break			
 	endswitch
 	
-	destData_log = log(destData)		//for display
+//	destData_log = log(destData)		//for display
 	//show the result
 	WorkMath_Display_PopMenuProc("",0,"Result")
 	
@@ -843,7 +846,10 @@ Function WorkMath_Done_ButtonProc(ctrlName) : ButtonControl
 	if(strsearch(dataType, "WorkMath", 0 ) != -1)		//kill the SANS_Data graph if needed
 		DoWindow/K SANS_Data
 	Endif
-	KillDataFolder root:Packages:NIST:WorkMath
+	KillDataFolder/Z root:Packages:NIST:WorkMath
+	KillDataFolder/Z root:Packages:NIST:WorkMath_Result
+	KillDataFolder/Z root:Packages:NIST:WorkMath_File_1
+	KillDataFolder/Z root:Packages:NIST:WorkMath_File_2
 End
 
 // loads data into the specified folder
@@ -862,7 +868,7 @@ Function WorkMath_Load_ButtonProc(ctrlName) : ButtonControl
 		return(1)		//user abort, do nothing
 	Endif
 	
-	String destFolder = "WorkMath:"+destStr
+	String destFolder = "WorkMath_"+destStr
 	
 	Load_ASC_File("Pick the ASC file",destFolder)
 End
@@ -879,7 +885,7 @@ Function WorkMath_Display_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	Variable popNum
 	String popStr
 	
-	String folder="WorkMath:",pathStr,str1
+	String folder="WorkMath_",pathStr,str1
 
 	PathInfo catPathName
 	pathStr=S_Path
@@ -986,6 +992,10 @@ Function Load_NamedASC_File(fileStr,destFolder)
 	String fileStr,destFolder
 
 	Variable refnum
+	
+	// set up the nexus structure
+	SetupNexusStructure("root:Packages:NIST:"+destFolder)
+	
 	
 	//read in the data
 	ReadASCData(fileStr,destFolder)

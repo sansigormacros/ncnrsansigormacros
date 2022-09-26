@@ -624,8 +624,9 @@ Function WriteHeaderForPatch(fname,change,textVal)
 	if(change[14])      //source aperture, a string
 		writeSourceAp_size(fname,textVal[14])
 	Endif
-	if(change[15])      //sample aperture, a text value
-		writeSampleAp_size(fname,textVal[15])
+	if(change[15])      //sample aperture, a FP value (new for Nexus
+		num=str2num(textVal[15])		// write in units of [mm]
+		writeSampleAp_size(fname,num)
 	Endif
 	///
 	if(change[16])      //source-sam dist
@@ -1113,7 +1114,7 @@ Function fPatch_PixelsPlus(lo,hi)
 			writeDet_x_pixel_size(fname,8.4)
 			writeDet_y_pixel_size(fname,8.14)	// guessing, if the tubes are equivalent to VSANS
 			
-			writeSampleAp_size(fname,"1.27 cm")		// not sure if this is to be [cm]?
+			writeSampleAp_size(fname,12.7)		// default diam of 12.7 [mm]
 			
 			Print fname
 			printf "run number %d reset to correct values\r",jj

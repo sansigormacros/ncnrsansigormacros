@@ -1411,6 +1411,18 @@ Function MC_Display2DButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
+			
+			// be sure that the non-linear distances are calculated 
+			// before attempting to display
+				
+			Wave w = getDetectorDataW("SAS")
+			Wave w_calib = getDetTube_spatialCalib("SAS")
+			Variable tube_width = getDet_tubeWidth("SAS")
+			String destPath = "root:Packages:NIST:SAS"
+			NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
+			
+			
+			// then switch the display
 			Execute "ChangeDisplay(\"SAS\")"
 			break
 	endswitch

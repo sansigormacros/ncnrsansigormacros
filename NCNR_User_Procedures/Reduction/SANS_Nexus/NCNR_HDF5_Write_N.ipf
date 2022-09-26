@@ -2512,6 +2512,24 @@ Function writeDet_pixel_num_x(fname,val)
 	return(err)
 End
 
+// fname is a local WORK folder
+Function putDet_pixel_num_x(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:pixel_num_x"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
 // integer value
 Function writeDet_pixel_num_y(fname,val)
 	String fname
@@ -2538,6 +2556,24 @@ Function writeDet_pixel_num_y(fname,val)
 	return(err)
 End
 
+
+// fname is a local WORK folder
+Function putDet_pixel_num_y(fname,val)
+	String fname
+	Variable val
+
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:pixel_num_y"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
 
 Function writeDet_polar_angle(fname,val)
 	String fname
@@ -3186,6 +3222,26 @@ Function writeWavelength_spread(fname,val)
 end
 
 
+// fname is a local WORK folder
+Function putWavelength_spread(fname,val)
+	String fname
+	Variable val
+
+//root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FB:beam_center_y
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:monochromator:wavelength_error"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w[0] = val
+		return(0)
+	endif
+
+End
+
+
 ////////////
 // instrument/beam/monochromator/velocity_selector (data folder)
 Function writeVSDistance(fname,val)
@@ -3374,18 +3430,20 @@ Function writeSampleAp_shape(fname,str)
 	return(err)
 End
 
-Function writeSampleAp_size(fname,str)
-	String fname,str
+// in the Nexus files, this field is now a real FP value, not a string
+Function writeSampleAp_size(fname,val)
+	String fname
+	Variable val
 
 //	String path = "entry:instrument:sample_aperture:shape:shape"
 
-	Make/O/T/N=1 tmpTW
+	Make/O/N=1 wTmpWrite
 	String groupName = "/entry/instrument/sample_aperture/shape"
 	String varName = "size"
-	tmpTW[0] = str //
+	wTmpWrite[0] = val //
 
 	variable err
-	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
 	if(err)
 		Print "HDF write err = ",err
 	endif
@@ -3401,22 +3459,22 @@ End
 
 
 // fname is a local WORK folder
-Function putSampleAp_size(fname,str)
-	String fname,str
+Function putSampleAp_size(fname,val)
+	String fname
+	Variable val
 
 	String path = "root:Packages:NIST:"+fname+":"
 	path += "entry:sample_aperture:shape:size"
 	
-	Wave/Z/T w = $path
+	Wave/Z w = $path
 	if(waveExists(w) == 0)
 		return(1)
 	else
-	w[0] = str
+		w[0] = val
 		return(0)
 	endif
 
 End
-
 
 
 Function writeSampleAp_width(fname,val)

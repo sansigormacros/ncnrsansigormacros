@@ -82,6 +82,19 @@
 Function SetupNexusStructure(fStr)
 	String fStr
 
+	Variable nx, ny
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+		nx = 112
+		ny = 128
+
+	else
+		//Ordela values
+		nx = 128
+		ny = 128
+
+	endif
+
 	SetDataFolder root:
 	
 	NewDataFolder/O $fStr
@@ -143,13 +156,13 @@ Function SetupNexusStructure(fStr)
 
 	SetDataFolder $(fStr + ":entry:data")
 	
-		Make/O/D/N=(112,128)	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(nx,ny)	areaDetector //(2-D wave N=(112,128)) val=4605	typ=32bI
 		Make/O/T/N=1	configuration   	//"4m 6A Scatt"
 		Make/O/T/N=1	sample_description   	//"Sample 1"
 		Make/O/D/N=1	sample_thickness 	//1
 		Make/O/T/N=1	slotIndex   	//"1"
 		Make/O/T/N=1	x0   	//"TIME"
-		Make/O/D/N=(112,128)	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(nx,ny)	y0 //(2-D wave N=(112,128)) val=4605	typ=32bI
 
 	SetDataFolder $(fStr + ":entry:instrument")
 	
@@ -291,13 +304,26 @@ end
 
 Function	SetupDetector(fStr)
 	String fStr
+	
+		Variable nx, ny
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+		nx = 112
+		ny = 128
+
+	else
+		//Ordela values
+		nx = 128
+		ny = 128
+
+	endif
 							
 	SetDataFolder $(fStr + ":entry:instrument:detector") 
 		Make/O/D/N=1		azimuthal_angle 	//0
 		Make/O/D/N=1		beam_center_x 	//113
 		Make/O/D/N=1		beam_center_y 	//63.3
-		Make/O/D/N=(112,128)		data //(2-D wave N=(112,128)) val=4605	typ=32bI
-		Make/O/D/N=(1,112)		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+		Make/O/D/N=(nx,ny)		data //(2-D wave N=(112,128)) val=4605	typ=32bI
+		Make/O/D/N=(1,nx)		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
 		Make/O/T/N=1		description   	//"fancy model"
 		Make/O/D/N=1		distance 	//120.009
 		Make/O/D/N=1		integrated_count //	1.76832e+08
@@ -310,12 +336,15 @@ Function	SetupDetector(fStr)
 		Make/O/D/N=1		polar_angle 	//0
 		Make/O/D/N=1		rotation_angle 	//0
 		Make/O/T/N=1		settings   //	"just right"
-		Make/O/D/N=(3,112)		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
+		Make/O/D/N=(3,nx)		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
 		Make/O/D/N=1		tube_width 	//8.4
-		Make/O/D/N=128		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=(nx)		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
 		Make/O/D/N=1		x_pixel_size 	//5.08
-		Make/O/D/N=128		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		Make/O/D/N=(ny)		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
 		Make/O/D/N=1		y_pixel_size 	//5.08
+
+		Make/O/D/N=(nx,ny)		data_error //(2-D wave N=(112,128)) val=4605	typ=32bI
+
 		
 	SetDataFolder root:
 end
@@ -675,41 +704,54 @@ Function	FillDetector(fStr)
 // different fill if i'm faking TUBES vs. verifying Ordela/30m SANS
 //
 
-// for TUBES
-	tube_width = 8.4
-	number_of_tubes = 112
-	
-	x_pixel_size = 8.4
-	y_pixel_size = 5
-	pixel_num_x = 112
-	pixel_num_y = 128
-	pixel_fwhm_x = 0.84
-	pixel_fwhm_y = 0.5		
-
-// perfect calibration	
-	spatial_calibration[0][] = -521
-	spatial_calibration[1][] = 8.14
-	spatial_calibration[2][] = 0
-	
-// perfect deadTime
-	dead_time = 1e-18
-
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+	// for TUBES
+		tube_width = 8.4
+		number_of_tubes = 112
 		
+		x_pixel_size = 8.4
+		y_pixel_size = 5
+		pixel_num_x = 112
+		pixel_num_y = 128
+		pixel_fwhm_x = 0.84
+		pixel_fwhm_y = 0.5		
+	
+	// perfect calibration	
+		spatial_calibration[0][] = -521
+		spatial_calibration[1][] = 8.14
+		spatial_calibration[2][] = 0
+		
+	// perfect deadTime
+		dead_time = 1e-18
+
+
+	else
+		//Ordela values
 // for 30m SANS/ duplicating Ordela:
 //
-//	x_pixel_size = 5.08
-//	y_pixel_size = 5.08
-//	pixel_num_x = 128
-//	pixel_num_y = 128
-//	pixel_fwhm_x = 0.508
-//	pixel_fwhm_y = 0.508		
-//       CALX[0] = rw[10]
-//        CALX[1] = rw[11]
-//        CALX[2] = rw[12]
-//        CALY[0] = rw[13]
-//        CALY[1] = rw[14]
-//        CALY[2] = rw[15]	
+		x_pixel_size = 5.08
+		y_pixel_size = 5.08
+		pixel_num_x = 128
+		pixel_num_y = 128
+		pixel_fwhm_x = 0.508
+		pixel_fwhm_y = 0.508		
+
+		tube_width = 5.08		// fake tube width
+		number_of_tubes = 128
 	
+		// approximate dead time (only a single value used)
+		dead_time = 1e-6
+		 
+		 // "perfect" cailbration of Ordela detector 64 cm in y-direction (=640 mm)
+		 
+		spatial_calibration[0][] = -320
+		spatial_calibration[1][] = 5.08		// per pixel in y direction
+		spatial_calibration[2][] = 0
+		
+		
+	endif
+
 		
 	SetDataFolder root:
 end
@@ -1009,8 +1051,8 @@ Function ReadASCData(fname,destPath)
 	
 	//just in case there are odd inputs to this, like negative intensities
 	WaveStats/Q linear_data_error
-	linear_data_error = numtype(linear_data_error[p]) == 0 ? linear_data_error[p] : V_avg
-	linear_data_error = linear_data_error[p] != 0 ? linear_data_error[p] : V_avg
+	linear_data_error = numtype(linear_data_error[p][q]) == 0 ? linear_data_error[p][q] : V_avg
+	linear_data_error = linear_data_error[p][q] != 0 ? linear_data_error[p][q] : V_avg
 	
 	//linear_data = data
 	
@@ -1039,15 +1081,36 @@ End
 //
 Function FillFakeHeader_ASC(destFolder)
 	String destFolder
-	Make/O/D/N=23 $("root:Packages:NIST:"+destFolder+":IntegersRead")
-	Make/O/D/N=52 $("root:Packages:NIST:"+destFolder+":RealsRead")
-	Make/O/T/N=11 $("root:Packages:NIST:"+destFolder+":TextRead")
 	
-	Wave intw=$("root:Packages:NIST:"+destFolder+":IntegersRead")
-	Wave realw=$("root:Packages:NIST:"+destFolder+":RealsRead")
-	Wave/T textw=$("root:Packages:NIST:"+destFolder+":TextRead")
 	
-	//Put in appropriate "fake" values
+	//Put in appropriate "fake" values using "put" commands, or write directly
+	
+	
+	// fill in the data
+	Wave data=$("root:Packages:NIST:"+destFolder+":data")
+	Wave destData = $("root:Packages:NIST:"+destFolder+":entry:instrument:detector:data")
+	destData=data
+
+// and the data error
+	Wave data_err=$("root:Packages:NIST:"+destFolder+":linear_data_error")
+	Wave destData_err = $("root:Packages:NIST:"+destFolder+":entry:instrument:detector:data_error")
+	destData_err=data_err
+
+	Variable nx, ny
+	if(cmpstr(ksDetType,"Tubes")==0)
+		// tube values
+		nx = 112
+		ny = 128
+	else
+		//Ordela values
+		nx = 128
+		ny = 128
+	endif		
+	
+	// pixel numbers - x and y
+	putDet_pixel_num_x(destFolder,nx)
+	putDet_pixel_num_y(destFolder,ny)
+	
 	//parse values as needed from headerLines
 	Wave/T hdr=$("root:Packages:NIST:"+destFolder+":hdrLines")
 	Variable monCt,lam,offset,sdd,trans,thick
@@ -1062,38 +1125,41 @@ Function FillFakeHeader_ASC(destFolder)
 	tempStr=hdr[5]
 	sscanf tempStr,formatStr,xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam,detTyp
 //	Print xCtr,yCtr,a1,a2,a1a2Dist,dlam,bsDiam,detTyp
+
+
+	String fname = destFolder		//for convenience
+
+	putDet_beam_center_x(fname,xCtr)		//pixels
+	putDet_beam_center_y(fname,yCtr)	
+	putDet_distance(fname,sdd*100)		//convert [m] to [cm]
+	putWavelength(fname,lam)
 	
-	realw[16]=xCtr		//xCtr(pixels)
-	realw[17]=yCtr	//yCtr (pixels)
-	realw[18]=sdd		//SDD (m)
-	realw[26]=lam		//wavelength (A)
 	//
 	// necessary values
-	realw[10]=5			//detector calibration constants, needed for averaging
-	realw[11]=10000
-	realw[12]=0
-	realw[13]=5
-	realw[14]=10000
-	realw[15]=0
+	//detector calibration constants, needed for averaging
+	// these are filled in when the Nexus structure is generated (top of this function)
+
 	//
 	// used in the resolution calculation, ONLY here to keep the routine from crashing
-	realw[20]=65		//det size
-	realw[27]=dlam	//delta lambda
-	realw[21]=bsDiam	//BS size
-	realw[23]=a1		//A1
-	realw[24]=a2	//A2
-	realw[25]=a1a2Dist	//A1A2 distance
-	realw[4]=trans		//trans
-	realw[3]=0		//atten
-	realw[5]=thick		//thick
+	
+//	realw[20]=65		//det size
+	
+	putBeamStop_size(fname,bsDiam)		//should be in [cm]
+	putWavelength_spread(fname,dlam)
+	putSourceAp_size(fname,num2str(a1)+" mm")		//should be in [mm] diameter
+	putSampleAp_size(fname,a2)		//shoudlbe in [mm]
+	putSourceAp_distance(fname,a1a2Dist*100)	//store value in [cm]
+	putSampleThickness(fname,thick)
+	putSampleTransmission(fname,trans)
+	
 	//
 	//
-	realw[0]=monCt		//def mon cts
+	putBeamMonNorm_data(fname,monCt)
 
 	// fake values to get valid deadtime and detector constants
 	//
-	textw[9]=detTyp+"  "		//6 characters 4+2 spaces
-	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
+//	textw[9]=detTyp+"  "		//6 characters 4+2 spaces
+//	textw[3]="[NGxSANS00]"	//11 chars, NGx will return default values for atten trans, deadtime... 
 	
 	//set the string values
 	formatStr="FILE: %s CREATED: %s"
@@ -1101,14 +1167,29 @@ Function FillFakeHeader_ASC(destFolder)
 //	Print tempStr
 //	Print junkStr
 	String/G $("root:Packages:NIST:"+destFolder+":fileList") = tempStr
-	textw[0] = tempStr		//filename
-	textw[1] = junkStr		//run date-time
+//	textw[0] = tempStr		//filename
+//	textw[1] = junkStr		//run date-time
 	
 	//file label = hdr[1]
 	tempStr = hdr[1]
 	tempStr = tempStr[0,strlen(tempStr)-2]		//clean off the last LF
-//	Print tempStr
-	textW[6] = tempStr	//sample label
+	putSampleDescription(fname,tempStr)
+	
+	
+	// now do the non-linear calculation so that the real space distance waves are present
+	// and the 2D data can be displayed
+	
+	// hard-wire since the data is in a sub-folder, and the extra colon in the path
+	// causes problems with using the get functions
+	String destPath = "root:Packages:NIST:"+destFolder
+	Wave w = $(destPath + ":entry:instrument:detector:data")
+	Wave W_calib = $(destPath + ":entry:instrument:detector:spatial_calibration")
+	Wave tmp = $(destPath + ":entry:instrument:detector:tube_width")
+	Variable tube_width = tmp[0]
+	NonLinearCorrection(fname,w,w_calib,tube_width,destPath)
+//	
+
+				
 	
 	return(0)
 End

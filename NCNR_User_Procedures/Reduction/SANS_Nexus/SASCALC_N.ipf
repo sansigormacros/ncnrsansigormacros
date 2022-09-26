@@ -2222,7 +2222,8 @@ Function SampleApOtherSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableCo
 	String varStr
 	String varName
 		
-	putSampleAp_size("SAS",num2str(varNum) + " mm")		//sample aperture diameter in mm
+//	putSampleAp_size("SAS",num2str(varNum) + " mm")		//sample aperture diameter in mm
+	putSampleAp_size("SAS",varNum)		//sample aperture diameter in mm
 		
 	ReCalculateInten(1)
 	return(0)
@@ -2250,7 +2251,8 @@ Function sampleApertureDiam()
 		a2 = 2.54/16.0 * (V_Value)			//convert to cm		
 	endif
 	
-	putSampleAp_size("SAS",num2str(a2*10) + " mm")		//sample aperture diameter in mm
+//	putSampleAp_size("SAS",num2str(a2*10) + " mm")		//sample aperture diameter in mm
+	putSampleAp_size("SAS",(a2*10))		//sample aperture diameter in mm
 
 	return(a2)
 end
