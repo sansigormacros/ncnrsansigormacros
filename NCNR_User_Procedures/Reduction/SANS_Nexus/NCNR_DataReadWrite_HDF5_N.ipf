@@ -1083,6 +1083,33 @@ Function FillFakeHeader_ASC(destFolder)
 	String destFolder
 	
 	
+	SetDataFolder $("root:Packages:NIST:"+destFolder + ":entry:instrument:detector") 
+//		WAVE		azimuthal_angle 	//0
+		WAVE		beam_center_x 	//113
+		WAVE		beam_center_y 	//63.3
+		WAVE		data //(2-D wave N=(112,128)) val=4605	typ=32bI
+		WAVE		dead_time //(2-D wave N=(1,112)) val=5.2e-06	typ=32bF
+//		WAVE/T		description   	//"fancy model"
+//		WAVE		distance 	//120.009
+//		WAVE		integrated_count //	1.76832e+08
+//		WAVE		lateral_offset 	//0
+		WAVE		number_of_tubes 	//112
+		WAVE		pixel_fwhm_x 	//0.508
+		WAVE		pixel_fwhm_y 	//0.508
+		WAVE		pixel_num_x 	//112
+		WAVE		pixel_num_y 	//128
+//		WAVE		polar_angle 	//0
+//		WAVE		rotation_angle 	//0
+//		WAVE/T		settings   //	"just right"
+		WAVE		spatial_calibration //(2-D wave N=(3,112)) val=-521	typ=32bF
+		WAVE		tube_width 	//8.4
+		WAVE		x_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		WAVE		x_pixel_size 	//5.08
+		WAVE		y_offset //(1-D wave N=(128)) val=-322.58	typ=32bF
+		WAVE		y_pixel_size 	//5.08
+	
+	SetDataFolder root:
+	
 	//Put in appropriate "fake" values using "put" commands, or write directly
 	
 	
@@ -1097,20 +1124,60 @@ Function FillFakeHeader_ASC(destFolder)
 	destData_err=data_err
 
 	Variable nx, ny
+
 	if(cmpstr(ksDetType,"Tubes")==0)
 		// tube values
 		nx = 112
 		ny = 128
+	// for TUBES
+		tube_width = 8.4
+		number_of_tubes = 112
+		
+		x_pixel_size = 8.4
+		y_pixel_size = 5
+		pixel_num_x = 112
+		pixel_num_y = 128
+		pixel_fwhm_x = 0.84
+		pixel_fwhm_y = 0.5		
+	
+	// perfect calibration	
+		spatial_calibration[0][] = -521
+		spatial_calibration[1][] = 8.14
+		spatial_calibration[2][] = 0
+		
+	// perfect deadTime
+		dead_time = 1e-18
+
+
 	else
 		//Ordela values
 		nx = 128
 		ny = 128
-	endif		
+// for 30m SANS/ duplicating Ordela:
+//
+		x_pixel_size = 5.08
+		y_pixel_size = 5.08
+		pixel_num_x = 128
+		pixel_num_y = 128
+		pixel_fwhm_x = 0.508
+		pixel_fwhm_y = 0.508		
+
+		tube_width = 5.08		// fake tube width
+		number_of_tubes = 128
 	
-	// pixel numbers - x and y
-	putDet_pixel_num_x(destFolder,nx)
-	putDet_pixel_num_y(destFolder,ny)
-	
+		// approximate dead time (only a single value used)
+		dead_time = 1e-6
+		 
+		 // "perfect" cailbration of Ordela detector 64 cm in y-direction (=640 mm)
+		 
+		spatial_calibration[0][] = -320
+		spatial_calibration[1][] = 5.08		// per pixel in y direction
+		spatial_calibration[2][] = 0
+		
+		
+	endif
+
+
 	//parse values as needed from headerLines
 	Wave/T hdr=$("root:Packages:NIST:"+destFolder+":hdrLines")
 	Variable monCt,lam,offset,sdd,trans,thick
@@ -1185,11 +1252,16 @@ Function FillFakeHeader_ASC(destFolder)
 	Wave w = $(destPath + ":entry:instrument:detector:data")
 	Wave W_calib = $(destPath + ":entry:instrument:detector:spatial_calibration")
 	Wave tmp = $(destPath + ":entry:instrument:detector:tube_width")
-	Variable tube_width = tmp[0]
-	NonLinearCorrection(fname,w,w_calib,tube_width,destPath)
+	Variable tube_wid = tmp[0]
+	NonLinearCorrection(fname,w,w_calib,tube_wid,destPath)
+	
+	// calculate Q-values
+	ConvertBeamCtrPix_to_mm(fname,destPath)
+	
+	Detector_CalcQVals(fname,destPath)
 //	
 
-				
+	SetDataFolder root:				
 	
 	return(0)
 End
