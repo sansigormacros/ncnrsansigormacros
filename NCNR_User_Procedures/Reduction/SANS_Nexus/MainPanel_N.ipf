@@ -323,7 +323,8 @@ End
 //
 Window Main_Panel()
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(500,60,924,320) /K=2 as "SANS Reduction Controls"
+	NewPanel /W=(700,44,1125,300) /K=2 as "SANS Reduction Controls"
+
 	ModifyPanel cbRGB=(65535,58981,27524)
 	ModifyPanel fixedSize=1
 //////

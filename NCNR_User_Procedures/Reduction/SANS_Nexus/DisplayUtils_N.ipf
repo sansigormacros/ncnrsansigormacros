@@ -220,7 +220,7 @@ Function fChangeDisplay(type)
 	//and set it to the current display
 	
 	//check the contents of "type" to make sure that data exists
-	WAVE w=getDetectorDataW(type)
+	WAVE/Z w=getDetectorDataW(type)
 //	String wavePath = "root:Packages:NIST:"+type+":data"
 	if(WaveExists(w) == 0)
 		Abort "There is no data in "+type

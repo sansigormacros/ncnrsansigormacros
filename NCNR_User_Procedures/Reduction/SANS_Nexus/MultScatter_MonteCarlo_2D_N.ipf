@@ -1298,7 +1298,7 @@ Proc MC_SASCALC()
 	SetVariable cntVar,pos={185,73},size={90,15},proc=CountTimeSetVarProc,title="time(s)"
 	SetVariable cntVar,format="%d"
 	SetVariable cntVar,limits={1,3600,1},value= root:Packages:NIST:SAS:gCntTime
-	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsVAXButtonProc,title="Save 2D VAX"
+	Button MC_button2,pos={17,234},size={100,20},proc=SaveAsNexusButtonProc,title="Save 2D Nexus"
 	CheckBox check0,pos={216,180},size={68,14},title="Raw counts",variable = root:Packages:NIST:SAS:gRawCounts
 	CheckBox check0_1,pos={216,199},size={60,14},title="Yes Offset",variable= root:Packages:NIST:SAS:gDoTraceOffset
 	CheckBox check0_2,pos={216,199+19},size={60,14},title="Beam Stop in",variable= root:Packages:NIST:SAS:gBeamStopIn
@@ -1370,37 +1370,68 @@ Function MC_DoItButtonProc(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 #if (exists("Monte_SANSX"))	
-	// XOP exists, all is OK
+			// XOP exists, all is OK
 #else		
-	// XOP is not present, warn the user to re-run the installer
-	//check the 32-bit or 64-bit
-	String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
-	String alertStr
-	if(strsearch(igorKindStr, "64", 0 ) != -1)
-		alertStr = "The MonteCarlo XOP is not installed for the 64-bit version of Igor. Without it, simulation will "
-		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
-		alertStr += "do the installation, or NO to continue with the simulation."
-	else
-		alertStr = "The MonteCarlo XOP is not installed for the 32-bit version of Igor. Without it, simulation will "
-		alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
-		alertStr += "do the installation, or NO to continue with the simulation."
-	endif
-	DoAlert 1,alertStr	
-
-	if(V_flag == 1)
-		// get out gracefully
-		SetDataFolder root:
-		return(0)
-	endif
+			// XOP is not present, warn the user to re-run the installer
+			//check the 32-bit or 64-bit
+			String igorKindStr = StringByKey("IGORKIND", IgorInfo(0) )
+			String alertStr
+			if(strsearch(igorKindStr, "64", 0 ) != -1)
+				alertStr = "The MonteCarlo XOP is not installed for the 64-bit version of Igor. Without it, simulation will "
+				alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+				alertStr += "do the installation, or NO to continue with the simulation."
+			else
+				alertStr = "The MonteCarlo XOP is not installed for the 32-bit version of Igor. Without it, simulation will "
+				alertStr += "be slow. It is recommended that you re-run the NCNR Installer. Click YES to stop and "
+				alertStr += "do the installation, or NO to continue with the simulation."
+			endif
+			DoAlert 1,alertStr	
+		
+			if(V_flag == 1)
+				// get out gracefully
+				SetDataFolder root:
+				return(0)
+			endif
 #endif			
 			
-			NVAR doMC = root:Packages:NIST:SAS:gDoMonteCarlo
-			doMC = 1
-			ReCalculateInten(1)
-			doMC = 0		//so the next time won't be MC
+			// check for ctrlName to only recalculate if the button is pressed
+			if(cmpstr(ba.ctrlName,"MC_button0")==0)
+				NVAR doMC = root:Packages:NIST:SAS:gDoMonteCarlo
+				doMC = 1
+				ReCalculateInten(1)
+				doMC = 0		//so the next time won't be MC
+				
+				/// if the instrument is set for "tubes" then clip the data to (112,128)
+				//
+				// key on the instrument radio button, not the overall experiment??
+				//
+				// NGB is the 10m instrument
+				
+				SVAR  gSelectedInstrument = root:Packages:NIST:SAS:gSelectedInstrument
+				if(cmpstr(gSelectedInstrument,"checkNGB")==0)
+				
+					// cut the left edge of the detector, since offset is to the right
+					// this is what I do for the conversion Ordela->tubes (and is arbitrary)
+					// "live" change is direct on SAS folder
+					WAVE data = $("root:Packages:NIST:SAS:entry:instrument:detector:data")
+					Make/O/D/N=(112,128) $("root:Packages:NIST:SAS:entry:instrument:detector:data_tmp")
+					wave data_tmp = $("root:Packages:NIST:SAS:entry:instrument:detector:data_tmp")
+				////	WAVE dataErr = $("root:Pacakges:NIST:SAS:entry:instrument:detector:data_error")
+					 data_tmp = data[p+15][q] // result data is (112,128)
+				////	 dataErr = dataErr[p+15][q] // result data is (112,128)
+					Redimension/N=(112,128) data
+					data = data_tmp
+					
+				endif
+			else
+			
+			
+			endif
+			
 			break
 	endswitch
-
+	
+	
 	return 0
 End
 
@@ -1411,16 +1442,23 @@ Function MC_Display2DButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			
+						
 			// be sure that the non-linear distances are calculated 
 			// before attempting to display
+	
+	// this is now done in the initNGB() etc. in SASCALC as different instruments are selected
+	// with the radio buttons
 				
-			Wave w = getDetectorDataW("SAS")
-			Wave w_calib = getDetTube_spatialCalib("SAS")
-			Variable tube_width = getDet_tubeWidth("SAS")
-			String destPath = "root:Packages:NIST:SAS"
-			NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
-			
+//			Wave w = getDetectorDataW("SAS")
+//			Wave w_calib = getDetTube_spatialCalib("SAS")
+//			Variable tube_width = getDet_tubeWidth("SAS")
+//			String destPath = "root:Packages:NIST:SAS"
+//			NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
+//			
+//			// calculate Q-values
+//			ConvertBeamCtrPix_to_mm("SAS",destPath)
+//	
+//			Detector_CalcQVals("SAS",destPath)
 			
 			// then switch the display
 			Execute "ChangeDisplay(\"SAS\")"
@@ -1483,7 +1521,7 @@ End
 // A later call to Write_VAXRaw_Data() will check for the simulation data, and 
 // convert ABS simulated data to raw counts if necessary
 //
-Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
+Function SaveAsNexusButtonProc(ctrlName,[runIndex,simLabel])
 	String ctrlName
 	Variable runIndex
 	String simLabel
@@ -1507,7 +1545,7 @@ Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 	// Determine if the optional parameters were supplied
 	if( ParamIsDefault(runIndex))		//==1 if parameter was NOT specified
 		print "runIndex not specified"
-		autoSaveIndex=0					// 0 == bad value, test for this later
+//		autoSaveIndex=0					// 0 == bad value, test for this later
 	else
 		autoSaveIndex=runIndex
 	endif
@@ -1519,12 +1557,17 @@ Function SaveAsVAXButtonProc(ctrlName,[runIndex,simLabel])
 		autoSaveLabel=simLabel
 	endif
 	
-	String fullpath="",destStr=""
+	String fullpath="",destStr="",simFileStr=""
 	Variable refnum
 	
-	// this function needs to be replaced with the Nexus equivalent
+	// this function has been replaced with the Nexus equivalent
 	// 
-	fullpath = Write_RawData_File("SAS","",0)
+	simFileStr = "simSANS_"+num2str(autoSaveIndex)+".nxs.ngb"
+	
+	fullpath = Write_RawData_File("root:Packages:NIST:SAS",simFileStr,0)
+	
+	autoSaveIndex += 1
+
 	
 	// write out the results into a text file
 	destStr = "root:Packages:NIST:SAS:"
@@ -1623,7 +1666,7 @@ Function Simulate_2D_MC(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs,estimateOnl
 	xCtr = getSASCALCBeamCenter_x()
 	yCtr = getSASCALCBeamCenter_y()
 	sdd = sampleToDetectorDist()		//[cm]
-	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	pixSize = getSASCALC_x_pix_size()/10		// convert pix size in mm to cm
 	wavelength = getSASCALCWavelength()
 	deltaLam = getSASCALCWavelengthSpread()
 	coefStr = MC_getFunctionCoef(funcStr)
@@ -2305,7 +2348,7 @@ Function Simulate_1D(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 //	Print "error -- values need to come from panel, not folder read"
 	// these calls get values from either the initialized space, or directly from the panel controls.			
-	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	pixSize = getSASCALC_x_pix_size()/10		// convert pix size in mm to cm
 	sdd = sampleToDetectorDist()		// [cm]
 	wavelength = getSASCALCWavelength()		// in 1/A
 	
@@ -2514,7 +2557,7 @@ Function Simulate_1D_EmptyCell(funcStr,aveint,qval,sigave,sigmaq,qbar,fsubs)
 
 //	Print "error -- values need to come from panel, not folder read"			
 	// these values come from the initialized space, or from the SASCALC panel directly				
-	pixSize = getSASCALX_x_pix_size()/10		// convert pix size in mm to cm
+	pixSize = getSASCALC_x_pix_size()/10		// convert pix size in mm to cm
 	sdd = sampleToDetectorDist()		//[cm]
 	wavelength = getSASCALCWavelength()		// in 1/A
 	

@@ -994,7 +994,7 @@ Function Load_NamedASC_File(fileStr,destFolder)
 	Variable refnum
 	
 	// set up the nexus structure
-	SetupNexusStructure("root:Packages:NIST:"+destFolder)
+	SetupNexusStructure("root:Packages:NIST:"+destFolder,ksDetType)
 	
 	
 	//read in the data

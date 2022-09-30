@@ -162,9 +162,9 @@ Proc S_initialize_space()
 
 // set up the Neuxs tree in the SAS folder
 //
-	SetupNexusStructure("root:Packages:NIST:SAS")
+	SetupNexusStructure("root:Packages:NIST:SAS","Tubes")		//starting life as 10m-Tubes
 	// fill w/default values
-	FillFakeNexusStructure("root:Packages:NIST:SAS")
+	FillFakeNexusStructure("root:Packages:NIST:SAS","Tubes")
 	
 	
 	// other variables
@@ -259,7 +259,28 @@ Proc S_initialize_space()
 	
 End
 
+
+// the NGB 30m SANS
 Function initNG3()
+
+
+// set up the Neuxs tree in the SAS folder
+//
+	SetupNexusStructure("root:Packages:NIST:SAS","Ordela")		//be sure data is 128x128
+	// fill w/default values
+	FillFakeNexusStructure("root:Packages:NIST:SAS","Ordela")
+	
+// calculations needed to calc q and display data
+	Wave w = getDetectorDataW("SAS")
+	Wave w_calib = getDetTube_spatialCalib("SAS")
+	Variable tube_width = getDet_tubeWidth("SAS")
+	String destPath = "root:Packages:NIST:SAS"
+	NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
+	
+	// calculate Q-values
+	ConvertBeamCtrPix_to_mm("SAS",destPath)
+	Detector_CalcQVals("SAS",destPath)	
+
 
 	SetDataFolder root:Packages:NIST:SAS
 	
@@ -267,10 +288,13 @@ Function initNG3()
 //	String/G gInstStr = "NG3"
 	String/G gSelectedInstrument="checkCGB"
 	String/G gInstStr = "CGB"
+
 	
+		
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.508
 	Variable/G a_pixel = 0.508
+	Variable/G g_X_Pix_size_mm = 5.08		//new
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
 	Variable/G lambda_t = 5.50
@@ -331,14 +355,38 @@ end
 
 Function initNG7()
 
+
+
+// set up the Neuxs tree in the SAS folder
+//
+	SetupNexusStructure("root:Packages:NIST:SAS","Ordela")		//be sure data is 128x128
+	// fill w/default values
+	FillFakeNexusStructure("root:Packages:NIST:SAS","Ordela")
+
+// calculations needed to calc q and display data
+	Wave w = getDetectorDataW("SAS")
+	Wave w_calib = getDetTube_spatialCalib("SAS")
+	Variable tube_width = getDet_tubeWidth("SAS")
+	String destPath = "root:Packages:NIST:SAS"
+	NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
+	
+	// calculate Q-values
+	ConvertBeamCtrPix_to_mm("SAS",destPath)
+	Detector_CalcQVals("SAS",destPath)	
+	
+	
+
 	SetDataFolder root:Packages:NIST:SAS
 
 	String/G gSelectedInstrument="checkNG7"
-	String/G gInstStr = "NG7"
+	String/G gInstStr = "NG7"	
 	
+			
 	Variable/G s12 = 54.8
 	Variable/G d_det = 0.508
 	Variable/G a_pixel = 0.508
+	Variable/G g_X_Pix_size_mm = 5.08		//new
+
 	Variable/G del_r = 0.5
 	Variable/G det_width = 64.0
 	Variable/G lambda_t = 5.50
@@ -404,16 +452,39 @@ end
 //
 Function initNGB()
 
-	SetDataFolder root:Packages:NIST:SAS
 
+// set up the Neuxs tree in the SAS folder
+//
+	SetupNexusStructure("root:Packages:NIST:SAS","Tubes")		//10m-Tubes data is 112x128
+	// fill w/default values
+	FillFakeNexusStructure("root:Packages:NIST:SAS","Tubes")
+
+// calculations needed to calc q and display data
+	Wave w = getDetectorDataW("SAS")
+	Wave w_calib = getDetTube_spatialCalib("SAS")
+	Variable tube_width = getDet_tubeWidth("SAS")
+	String destPath = "root:Packages:NIST:SAS"
+	NonLinearCorrection("SAS",w,w_calib,tube_width,destPath)
+	
+	// calculate Q-values
+	ConvertBeamCtrPix_to_mm("SAS",destPath)
+	Detector_CalcQVals("SAS",destPath)	
+
+
+
+
+	SetDataFolder root:Packages:NIST:SAS
+	
 	String/G gSelectedInstrument="checkNGB"	
 	String/G gInstStr = "NGB"
-
+		
 	Variable/G s12 = 0			//**		no difference between sample and huber position
-	Variable/G d_det = 0.508
-	Variable/G a_pixel = 0.508
+	Variable/G d_det = 0.84
+	Variable/G a_pixel = 0.84
+	Variable/G g_X_Pix_size_mm = 8.4		//new
+
 	Variable/G del_r = 0.5
-	Variable/G det_width = 64.0
+	Variable/G det_width = 64.0		// not correct for tubes
 	Variable/G lambda_t = 5.50				//good, Jan 2013
 	Variable/G l2r_lower = 106
 	Variable/G l2r_upper =  525
@@ -887,7 +958,7 @@ Function SelectInstrumentCheckProc(ctrlName,checked) : CheckBoxControl
 
 
 	strswitch(ctrlName)	// string switch
-		case "checkCGB":			// 
+		case "checkCGB":			// NGB - 30m SANS
 			checkBox checkCGB,win=SASCALC, value=1
 			checkBox checkNG7,win=SASCALC, value=0
 			checkBox checkNGB,win=SASCALC, value=0
@@ -1266,13 +1337,13 @@ End
 
 
 // a stored value in [mm]
-// HARD-WIRED at the tube value of 8.4 mm
 //
 // TODO -- add this to the "initialize space" section
 //
-Function getSASCALX_x_pix_size()
+Function getSASCALC_x_pix_size()
 
-	Variable val = 8.4
+//	Variable val = 8.4
+	NVAR val=root:Packages:NIST:SAS:g_X_Pix_size_mm
 	return(val)
 end
 
