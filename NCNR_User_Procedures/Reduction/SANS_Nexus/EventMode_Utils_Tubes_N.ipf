@@ -17,18 +17,16 @@
 //
 // the header is very similar to VSANS, and is well documented.
 //
+
+// **** NOTE *****
 //
-// This file is in the process of modification
-// x- :VSANS paths removed
-// x- V_ prefixes removed
-// -- new loader (struct based, native to Igor)
-// -- all saving is now in terms of nexus files
-// -- dimensions are now 112 x 128 (or read them in)
-// -- routines to remove 6.7 s rollover steps can be removed
-// --
-// 
-
-
+// -- this file is, however NOT specific to the Tube event file format. It works with the
+//   Nexus-style data files that are the (sliced) output of the event processing. This file
+//   has the routines for Event Mode Reduction -- using the same protocols as the Tube data
+//  -- this includes Ordela data that has been "faked" to be tubes.
+//  --so this file is correct to be included for both the 10m Tubes and converted Ordela "tubes"
+//   (the processing panel + loader is different for 10m Tube/Ordela)
+//
 
 
 //

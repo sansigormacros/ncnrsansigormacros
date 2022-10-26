@@ -45,14 +45,15 @@ Menu "Macros"
 //	StrVarOrDefault("root:Packages:NCNRItemStr1b","-"), NCNR_AnalysisLoader(StrVarOrDefault("root:Packages:NCNRItemStr1b","-"))
 
 	Submenu	"Load SANS Reduction Macros"
-		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
+		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros for VAX"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
+		"Load NCNR SANS Nexus Reduction for 10m SANS",LoadSANS_Nexus_Tubes()
+		"Load NCNR SANS Nexus Reduction for Ordela",LoadSANS_Nexus_Ordela()
+		"-"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
-		"-"
-//		"Load Ordela SANS Nexus Reduction",LoadHDF5SANS_Ordela()
 
 	End
 	
@@ -75,8 +76,8 @@ Menu "Macros"
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
-//	"-"
-	"Load 10m SANS Nexus Reduction",LoadHDF5SANS()
+	"-"
+	"Include Batch HDF Converter",LoadBatchHDFConverter()
 
 
 end
@@ -113,7 +114,7 @@ Function ConflictingPackage(loaded)
 End
 
 
-Proc LoadHDF5SANS()
+Proc LoadSANS_Nexus_Tubes()
 
 	if(ConflictingPackage("NCNR_Nexus"))
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
@@ -127,7 +128,7 @@ Proc LoadHDF5SANS()
 	endif
 End
 
-Proc LoadHDF5SANS_Ordela()
+Proc LoadSANS_Nexus_Ordela()
 
 	if(ConflictingPackage("NCNR_Nexus"))
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	

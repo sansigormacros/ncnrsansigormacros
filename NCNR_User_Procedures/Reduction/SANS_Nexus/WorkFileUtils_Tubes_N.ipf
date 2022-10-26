@@ -2,25 +2,28 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 
-
+//
+//
+// SEP 2022
 //
 //
 //
 // Work file (folder) operations that work with the tube detector panel on the
 // 10m SANS instrument. If 30m insturments eventually convert to tubes, this set of corrections
-// can be used
+// can be used.
 //
-// The plan is to separate out the detector-specific functions (for each of the detecor
-// types, and keep everything else in common files
+// This set of procedures has been tested and does work if the Ordela data is converted to "fake"
+//  tubes with appropriate parameters.
+//
+// There are some simple switches for the corrrections that are different for the two different
+//  detector types. Search for the string constant ksDetType
+
 //
 // Loading of the data is the same for every HDF5/Nexus file. It's all loaded.
 // Reading/Writing is "common", but care must be taken to use only R/W functions that
 // correspond to actual fields that are in the data files.
 //
 // The functions here are for convering raw data to a work folder, adding raw data files (as work files)
-//
-//
-//
 //
 //
 

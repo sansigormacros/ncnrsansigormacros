@@ -14,7 +14,7 @@
 // the input and processing follows the "old" style, but the saving of sliced data is
 // better suited for Nexus, including the batch reduction of the slices
 //
-// So this file is in the process of merging the two requirements.
+// So this file straddles the two requirements.
 //
 // *** EventMode_Utils_Tubes_N.ipf *** is used with the 10m SANS reduction
 // so it cannot be modified to work with any of the "old" routines. These modifications
@@ -23,8 +23,8 @@
 //
 // This file is in the process of modification
 // -- new loader (struct based, native to Igor -- eventually...)
-// -- all saving is now in terms of nexus files
-// -- dimensions remain 128 x 128 (or read them in)
+// x- all saving is now in terms of nexus files
+// x- dimensions remain 128 x 128 (or read them in)
 // -- routines to remove 6.7 s rollover steps can be added back into the Correction Panel
 // -- Remove any VAX-related read/write or save functionality
 // 
@@ -40,12 +40,6 @@
 // TODO:
 //
 // -- search for TODO for unresolved issues not on this list
-//
-// -- add comments to the code as needed
-//
-// -- write the help file, and link the help buttons to the help docs
-//
-// -- examples?
 //
 // -- added a test function AutoFix_Rollover_Steps() that will search for steps (simple delta) that 
 //    are +/- 0.1s away from the 6.7s missed rollover. This function looks for up, down, then re-calculates

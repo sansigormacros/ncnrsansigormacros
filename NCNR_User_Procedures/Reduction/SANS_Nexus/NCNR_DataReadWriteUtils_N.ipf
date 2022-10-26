@@ -4,16 +4,8 @@
 
 
 //
-// May 2021 -- re-writing to work
-// with a new, more complete nexus file definition
+// May 2021
 //
-
-// -- SANS reduction will need to be differentiated now - since all three instruments
-// will be slightly different in their file contents, and the differences between the 30m,
-// instruments and the 10m will be VERY significant. Not a place for a million "if" statements
-//
-//
-
 
 
 //
