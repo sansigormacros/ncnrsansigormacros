@@ -44,8 +44,8 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	destStr = "root:Packages:NIST:"+type
 	//*****these waves MUST EXIST, or IGOR Pro will crash, with a type 2 error****
 //	WAVE intw = $(destStr + ":integersRead")		// SRK_0920
-	WAVE rw = $(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
+//	WAVE rw = $(destStr + ":realsRead")
+//	WAVE/T textw=$(destStr + ":textRead")
 	WAVE qvals =$(destStr + ":qval")
 	WAVE inten=$(destStr + ":aveint")
 	WAVE sig=$(destStr + ":sigave")
@@ -64,9 +64,9 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
-	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	Make/O/T/N=1 $(parentBase + ":title") = {getSampleDescription(type)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
-	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	Make/O/T/N=1 $(parentBase + ":run") = {getTitle(type)}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
@@ -75,7 +75,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 	String dataBase = parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",textw[1]}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q","NXdata","0",getDataStartTime(type)}
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create q entry
 	NewDataFolder/O/S $(dataBase + ":q")
@@ -99,7 +99,7 @@ Function WriteNxCanSAS1D(type,fullpath,dialog)
 		String processNote = process[0]
 		WriteProcess(fileID,nxcansasBase,parentBase,"NSORTed Data",processNote)
 	Else
-		WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
+		WriteMetaData(fileID,parentBase,nxcansasBase,type)
 	EndIf
 	
 	//
@@ -140,6 +140,14 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	// Define folder for data heirarchy
 	NewDataFolder/O/S root:NXcanSAS_file
 	
+	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
+	string tmpName = RemoveDotExtension(samFiles) + ".h5"
+	fullPath=tmpName
+	PathInfo home
+	if(strlen(S_Path) > 0)
+		fullpath = S_path+tmpName
+	endif
+	
 	// Check fullpath and dialog
 	fileID = NXcanSAS_OpenOrCreate(dialog,fullpath,base)
 
@@ -150,19 +158,23 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	destStr = "root:Packages:NIST:"+type
 
 	//must select the linear_data to export
-	NVAR isLog = $(destStr+":gIsLogScale")
-	if(isLog==1)
-		typeStr = ":linear_data"
-	else
-		typeStr = ":data"
-	endif
-	NVAR pixelsX = root:myGlobals:gNPixelsX
-	NVAR pixelsY = root:myGlobals:gNPixelsY
-	Wave data=$(destStr+typeStr)
-	Wave data_err=$(destStr+":linear_data_error")
-	WAVE intw=$(destStr + ":integersRead")
-	WAVE rw=$(destStr + ":realsRead")
-	WAVE/T textw=$(destStr + ":textRead")
+//	NVAR isLog = $(destStr+":gIsLogScale")
+//	if(isLog==1)
+//		typeStr = ":linear_data"
+//	else
+//		typeStr = ":data"
+//	endif
+//	NVAR pixelsX = root:myGlobals:gNPixelsX
+//	NVAR pixelsY = root:myGlobals:gNPixelsY
+	Variable pixelsX = getDet_pixel_num_x(type)
+	Variable pixelsY = getDet_pixel_num_y(type)
+	
+	WAVE data=getDetectorDataW(type)		//this is always linear data
+	Wave data_err=getDetectorDataErrW(type)
+	
+//	WAVE intw=$(destStr + ":integersRead")
+//	WAVE rw=$(destStr + ":realsRead")
+//	WAVE/T textw=$(destStr + ":textRead")
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Compute Qx, Qy data from pixel space
@@ -170,25 +182,35 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	Duplicate/O data,qx_val,qy_val,z_val,qval,qz_val,phi,r_dist
 	
 	Variable xctr,yctr,sdd,lambda,pixSize
-	xctr = rw[16]
-	yctr = rw[17]
-	sdd = rw[18]
-	lambda = rw[26]
-	pixSize = rw[13]/10		//convert mm to cm (x and y are the same size pixels)
+
+	xCtr = getDet_beam_center_x(type)
+	yCtr = getDet_beam_center_y(type)
+	sdd = getDet_Distance(type)		//distance in [cm]
+	lambda = getWavelength(type)
+	pixSize = getDet_x_pixel_size(type)/10		//convert mm to cm (x and y are the same size pixels)
 	
-	qx_val = CalcQx(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)		//+1 converts to detector coordinate system
-	qy_val = CalcQy(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qx_val = CalcQx(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)		//+1 converts to detector coordinate system
+	qy_val = CalcQy(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
-	Variable L2 = rw[18]
-	Variable BS = rw[21]
-	Variable S1 = rw[23]
-	Variable S2 = rw[24]
-	Variable L1 = rw[25]
-	Variable lambdaWidth = rw[27]	
-	Variable usingLenses = rw[28]		//new 2007
 
+	Variable L2 = getDet_Distance(type) / 100		// N_getResolution is expecting [m]
+	Variable BS = getBeamStop_size(type)
+	Variable S1 = getSourceAp_size(type)
+	Variable S2 = getSampleAp_size(type)
+	Variable L1 = getSourceAp_distance(type) / 100 // N_getResolution is expecting [m]
+	Variable lambdaWidth = getWavelength_spread(type)
+	Variable usingLenses = 0		//new 2007
+
+	if(cmpstr(getLensPrismStatus(type),"out") == 0 )		// TODO -- this read function is HARD-WIRED
+		// lenses and prisms are out
+		usingLenses = 0
+	else
+		usingLenses = 1
+	endif
+	
+	
 	Variable vz_1 = 3.956e5		//velocity [cm/s] of 1 A neutron
 	Variable g = 981.0				//gravity acceleration [cm/s^2]
 	Variable m_h	= 252.8			// m/h [=] s/cm^2
@@ -203,14 +225,15 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	YG_d = -0.5*G*SDD*(SSD+SDD)*(LAMBDA0/acc)^2
 	qstar = -2*pi/lambda0*2*yg_d/sdd
 
+
 	// the gravity center is not the resolution center
 	// gravity center = beam center
 	// resolution center = offset y = dy + (2)*yg_d
 	///************
 	// do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	qval = CalcQval(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
-	qz_val = CalcQz(p+1,q+1,rw[16],rw[17],rw[18],rw[26],rw[13]/10)
+	qval = CalcQval(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)
+	qz_val = CalcQz(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)
 	//	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr))		//(dx,dy)
 	//	r_dist = sqrt(  (pixSize*((p+1)-xctr))^2 +  (pixSize*((q+1)-yctr))^2 )		//radial distance from ctr to pt
 	phi = FindPhi( pixSize*((p+1)-xctr) , pixSize*((q+1)-yctr)+(2)*yg_d)		//(dx,dy+yg_d)
@@ -227,7 +250,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	//From conversation with JB on 01.06.99 these are the current good values
 	Variable DDet
 	NVAR apOff = root:myGlobals:apOff		//in cm
-	DDet = rw[10]/10			// header value (X) is in mm, want cm here
+	DDet = getDet_x_pixel_size(type)/10			// header value (X) is in mm, want cm here
 
 	Variable ret1,ret2,ret3,jj
 	Variable nq = 0
@@ -244,9 +267,9 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 			SigmaQ_combined[1][jj][ii] = ret2
 			shadow[jj][ii] = ret3
 			jj+=1
-		while(jj<pixelsX)
+		while(jj<pixelsY)
 		ii+=1
-	while(ii<pixelsY)
+	while(ii<pixelsX)
 	//
 	///////////////////////////////////////////////////////////////////////////
 
@@ -262,9 +285,9 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	
 	// Run Name and title
 	NewDataFolder/O/S $(parentBase)
-	Make/O/T/N=1 $(parentBase + ":title") = {textw[6]}
+	Make/O/T/N=1 $(parentBase + ":title") = {getSampleDescription(type)}  		//{textw[6]}
 	CreateStrNxCansas(fileID,nxcansasBase,"","title",$(parentBase + ":title"),empty,empty)
-	Make/O/T/N=1 $(parentBase + ":run") = {textw[0]}
+	Make/O/T/N=1 $(parentBase + ":run") = {getTitle(type)}		//{textW[0]}
 	CreateStrNxCansas(fileID,nxcansasBase,"","run",$(parentBase + ":run"),empty,empty)
 	
 	// SASData
@@ -273,7 +296,7 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	String dataBase = parentBase + ":sasdata"
 	NewDataFolder/O/S $(dataBase)
 	Make/O/T/N=5 $(dataBase + ":attr") = {"canSAS_class","signal","I_axes","NX_class","Q_indices", "timestamp"}
-	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",textw[1]}
+	Make/O/T/N=5 $(dataBase + ":attrVals") = {"SASdata","I","Q,Q","NXdata","0,1",getDataStartTime(type)}		//textW[1]
 	CreateStrNxCansas(fileID,dataParent,"","",empty,$(dataBase + ":attr"),$(dataBase + ":attrVals"))
 	// Create i entry
 	NewDataFolder/O/S $(dataBase + ":i")
@@ -298,13 +321,15 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	CreateVarNxCansas(fileID,dataParent,"sasdata","ShadowFactor",shadow,empty,empty)
 	
 	// Write all meta data
-	WriteMetaData(fileID,parentBase,nxcansasBase,rw,textw)
+	WriteMetaData(fileID,parentBase,nxcansasBase,type)
 	
 	// Close the file
 	if(fileID)
 		HDF5CloseFile /Z fileID
 	endif
 	
+	
+	Print "Wrote NXCanSAS2D data file ",fullpath
 	KillDataFolder/Z $base
 	
 End
@@ -316,11 +341,9 @@ End
 // - WriteMetaData - Method used to write non data elements into NXcanSAS
 // format. This is common between 1D and 2D data sets.
 
-Function WriteMetaData(fileID,base,parentBase,rw,textw)
-	String base,parentBase
+Function WriteMetaData(fileID,base,parentBase,type)
 	Variable fileID
-	Wave rw
-	Wave/T textw
+	String base,parentBase,type
 	
 	// Define common attribute waves
 	Make/T/O/N=1 empty = {""}
@@ -352,10 +375,10 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=1 $(apertureBase + ":shape") = {"pinhole"} 
 	CreateStrNxCansas(fileID,apertureParent,"sasaperture","shape",$(apertureBase + ":shape"),empty,empty)
 	// Create SASaperture x_gap entry
-	Make/O/N=1 $(apertureBase + ":x_gap") = {rw[24]}
+	Make/O/N=1 $(apertureBase + ":x_gap") = {getSampleAp_size(type)}
 	CreateVarNxCansas(fileID,apertureParent,"sasaperture","x_gap",$(apertureBase + ":x_gap"),units,mm)
 	// Create SASaperture y_gap entry
-	Make/O/N=1 $(apertureBase + ":y_gap") = {rw[24]}
+	Make/O/N=1 $(apertureBase + ":y_gap") = {getSampleAp_size(type)}
 	CreateVarNxCansas(fileID,apertureParent,"sasaperture","y_gap",$(apertureBase + ":y_gap"),units,mm)
 	
 	// SAScollimation
@@ -367,7 +390,7 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(collimationBase + ":attrVals") = {"SAScollimation","NXcollimator"}
 	CreateStrNxCansas(fileID,collimationParent,"","",empty,$(collimationBase + ":attr"),$(collimationBase + ":attrVals"))
 	// Create SAScollimation distance entry
-	Make/O/N=1 $(collimationBase + ":distance") = {rw[25]}
+	Make/O/N=1 $(collimationBase + ":distance") = {getSourceAp_distance(type) / 100}		//be sure units are [m]
 	CreateVarNxCansas(fileID,collimationParent,"sasaperture","distance",$(collimationBase + ":distance"),units,m)
 	
 	// SASdetector
@@ -379,22 +402,22 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(detectorBase + ":attrVals") = {"SASdetector","NXdetector"}
 	CreateStrNxCansas(fileID,detectorParent,"","",empty,$(detectorBase + ":attr"),$(detectorBase + ":attrVals"))
 	// Create SASdetector name entry
-	Make/O/T/N=1 $(detectorBase + ":name") = {textw[9]}
+	Make/O/T/N=1 $(detectorBase + ":name") = {getInstrumentNameFromFile(type)}
 	CreateStrNxCansas(fileID,detectorParent,"","name",$(detectorBase + ":name"),empty,empty)
 	// Create SASdetector distance entry
-	Make/O/N=1 $(detectorBase + ":SDD") = {rw[18]}
+	Make/O/N=1 $(detectorBase + ":SDD") = {getDet_Distance(type)/100}
 	CreateVarNxCansas(fileID,detectorParent,"","SDD",$(detectorBase + ":SDD"),units,m)
 	// Create SASdetector beam_center_x entry
-	Make/O/N=1 $(detectorBase + ":beam_center_x") = {rw[16]}
+	Make/O/N=1 $(detectorBase + ":beam_center_x") = {getDet_beam_center_x(type)}
 	CreateVarNxCansas(fileID,detectorParent,"","beam_center_x",$(detectorBase + ":beam_center_x"),units,pixel)
 	// Create SASdetector beam_center_y entry
-	Make/O/N=1 $(detectorBase + ":beam_center_y") = {rw[17]}
+	Make/O/N=1 $(detectorBase + ":beam_center_y") = {getDet_beam_center_y(type)}
 	CreateVarNxCansas(fileID,detectorParent,"","beam_center_y",$(detectorBase + ":beam_center_y"),units,pixel)
 	// Create SASdetector x_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {rw[10]}
+	Make/O/N=1 $(detectorBase + ":x_pixel_size") = {getDet_x_pixel_size(type)}
 	CreateVarNxCansas(fileID,detectorParent,"","x_pixel_size",$(detectorBase + ":x_pixel_size"),units,mm)
 	// Create SASdetector y_pixel_size entry
-	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {rw[13]}
+	Make/O/N=1 $(detectorBase + ":y_pixel_size") = {getDet_y_pixel_size(type)}
 	CreateVarNxCansas(fileID,detectorParent,"","y_pixel_size",$(detectorBase + ":y_pixel_size"),units,mm)
 	
 	// SASsource
@@ -411,10 +434,10 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=1 $(sourceBase + ":type") = {"Reactor Neutron Source"}
 	CreateStrNxCansas(fileID,sourceParent,"","type",$(sourceBase + ":type"),empty,empty)
 	// Create SASsource incident_wavelength entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {rw[26]}
+	Make/O/N=1 $(sourceBase + ":incident_wavelength") = {getWavelength(type)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength",$(sourceBase + ":incident_wavelength"),units,angstrom)
 	// Create SASsource incident_wavelength_spread entry
-	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {rw[27]}
+	Make/O/N=1 $(sourceBase + ":incident_wavelength_spread") = {getWavelength_spread(type)}
 	CreateVarNxCansas(fileID,sourceParent,"","incident_wavelength_spread",$(sourceBase + ":incident_wavelength_spread"),units,angstrom)
 	
 	// SASsample
@@ -426,13 +449,13 @@ Function WriteMetaData(fileID,base,parentBase,rw,textw)
 	Make/O/T/N=5 $(sampleBase + ":attrVals") = {"SASsample","NXsample"}
 	CreateStrNxCansas(fileID,sampleParent,"","",empty,$(sampleBase + ":attr"),$(sampleBase + ":attrVals"))
 	// Create SASsample name entry
-	Make/O/T/N=1 $(sampleBase + ":name") = {textw[6]}
+	Make/O/T/N=1 $(sampleBase + ":name") = {getSampleDescription(type)	}
 	CreateStrNxCansas(fileID,sampleParent,"","name",$(sampleBase + ":name"),empty,empty)
 	// Create SASsample thickness entry
-	Make/O/N=1 $(sampleBase + ":thickness") = {rw[5]}
+	Make/O/N=1 $(sampleBase + ":thickness") = {getSampleThickness(type)}
 	CreateVarNxCansas(fileID,sampleParent,"","thickness",$(sampleBase + ":thickness"),units,cm)
 	// Create SASsample transmission entry
-	Make/O/N=1 $(sampleBase + ":transmission") = {rw[4]}
+	Make/O/N=1 $(sampleBase + ":transmission") = {getSampleTransmission(type)}
 	CreateVarNxCansas(fileID,sampleParent,"","transmission",$(sampleBase + ":transmission"),empty,empty)
 End
 
@@ -520,11 +543,11 @@ Function WriteNSORTedNXcanSASFile(qw,iw,sw,firstFileName,secondFileName,thirdFil
 		Make/O/N=(pts) fSubS = 0
 	EndIf
 	
-	Make/O/T/N=11 textRead
-	textRead[6] = firstfileName
-	textRead[0] = "Combined data"
-	
-	Make/O/N=52 realsRead = 0
+//	Make/O/T/N=11 textRead
+//	textRead[6] = firstfileName
+//	textRead[0] = "Combined data"
+//	
+//	Make/O/N=52 realsRead = 0
 	
 	WriteNxCanSAS1D("NSORT",fullpath,dialog)
 	

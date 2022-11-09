@@ -542,7 +542,8 @@ Function Sector_PlusMinus1D(type)
 // do the left first, and call it negative
 	keyListStr = ReplaceStringByKey("SIDE",keyListStr,"left","=",";")
 
-	CircularAverageTo1D(type)
+//	CircularAverageTo1D(type)
+	SectorAverageTo1D(type)
 	
 	WAVE qval = $(destPath + "qval")
 	WAVE aveint = $(destPath + "aveint")
@@ -564,7 +565,8 @@ Function Sector_PlusMinus1D(type)
 // do the right side
 	keyListStr = ReplaceStringByKey("SIDE",keyListStr,"right","=",";")
 
-	CircularAverageTo1D(type)
+//	CircularAverageTo1D(type)
+	SectorAverageTo1D(type)
 	
 	// concatenate
 	WAVE tmp_q = $(destPath + "tmp_q")

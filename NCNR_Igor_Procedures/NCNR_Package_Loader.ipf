@@ -45,15 +45,17 @@ Menu "Macros"
 //	StrVarOrDefault("root:Packages:NCNRItemStr1b","-"), NCNR_AnalysisLoader(StrVarOrDefault("root:Packages:NCNRItemStr1b","-"))
 
 	Submenu	"Load SANS Reduction Macros"
-		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros for VAX"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
-		"Load NCNR SANS Nexus Reduction for 10m SANS",LoadSANS_Nexus_Tubes()
-		"Load NCNR SANS Nexus Reduction for Ordela",LoadSANS_Nexus_Ordela()
+		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros - VAX Data"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
+		"Load NCNR SANS Reduction 10m SANS - Nexus Data",LoadSANS_Nexus_Tubes()
+		"Load NCNR SANS Reduction Ordela - Nexus Data",LoadSANS_Nexus_Ordela()
 		"-"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2d","Load HFIR SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2e","Load HANARO SANS Reduction Macros"))
 //		StrVarOrDefault("root:Packages:NCNRItemStr2b","-"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","-"))	
+		"-"
+		"Include Batch HDF Converter",LoadBatchHDFConverter()
 
 	End
 	
@@ -76,8 +78,6 @@ Menu "Macros"
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
 	"-"
 	"Load VSANS Procedures",VSANSLoader()
-	"-"
-	"Include Batch HDF Converter",LoadBatchHDFConverter()
 
 
 end

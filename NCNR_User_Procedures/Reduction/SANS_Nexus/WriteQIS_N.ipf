@@ -85,7 +85,7 @@ Function WriteWaves_W_Protocol(type,fullpath,dialog)
 	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
 	hdrStr2 += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))
-	hdrStr2 +="    "+num2str(getBeamStop_size(type)*10)+"    "+getInstrumentName(type) + "\r\n"
+	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
 	
 	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
 	//actually open the file here
@@ -195,7 +195,7 @@ Function WritePhiave_W_Protocol(type,fullpath,dialog)
 	hdrStr2 = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	hdrStr2 += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
 	hdrStr2 += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))
-	hdrStr2 +="    "+num2str(getBeamStop_size(type)*10)+"    "+getInstrumentName(type) + "\r\n"
+	hdrStr2 +="    "+num2str(getBeamStop_size(type))+"    "+getInstrumentName(type) + "\r\n"
 	
 	
 	SVAR samFiles = $("root:Packages:NIST:"+type+":fileList")
@@ -353,9 +353,12 @@ Function Fast2dExport(type,fullpath,dialog)
 		Abort "current protocol wave DNExist AsciiExport()"
 	Endif
 	
+	string tmpName = RemoveDotExtension(samFiles)
+	
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")
+//		fullPath = DoSaveFileDialog("Save data as")
+		fullPath = DoSaveFileDialog("Save data as",fname=tmpName,suffix=".ASC")
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -377,7 +380,7 @@ Function Fast2dExport(type,fullpath,dialog)
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	labelWave[5] +="  "+num2str(getSourceAp_size(type))+"  "+num2str(getSampleAp_size(type))+"  "
-	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"  "+num2str(getWavelength_spread(type))+"  "+num2str(getBeamStop_size(type)*10)+"  "+getInstrumentNameFromFile(type)
+	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"  "+num2str(getWavelength_spread(type))+"  "+num2str(getBeamStop_size(type))+"  "+getInstrumentNameFromFile(type)
 	labelWave[6] = "PIXELS(X)    PIXELS(Y)   PIXELSIZE X (mm)  PIXELSIZE Y (mm)"
 	labelWave[7] += num2str(pixelsX)+"    "+num2str(pixelsY)+"    "+num2str(getDet_x_pixel_size(type))+"    "+num2str(getDet_y_pixel_size(type))
 	labelWave[8] =  "SAM: "+rawTag+samFiles
@@ -726,10 +729,13 @@ Function QxQy_Export(type,fullpath,dialog)
 	If(!(WaveExists(proto)))
 		Abort "current protocol wave DNExist QxQy_Export()"
 	Endif
+
+	string tmpName = RemoveDotExtension(samFiles)
 	
 	if(dialog)
 		PathInfo/S catPathName
-		fullPath = DoSaveFileDialog("Save data as")
+//		fullPath = DoSaveFileDialog("Save data as")
+		fullPath = DoSaveFileDialog("Save data as",fname=tmpName,suffix=".DAT")
 		If(cmpstr(fullPath,"")==0)
 			//user cancel, don't write out a file
 			Close/A
@@ -751,7 +757,7 @@ Function QxQy_Export(type,fullpath,dialog)
 	labelWave[4] = "BCENT(X,Y)   A1(mm)   A2(mm)   A1A2DIST(m)   DL/L   BSTOP(mm)   DET_TYP  "
 	labelWave[5] = num2str(getDet_beam_center_x(type))+"  "+num2str(getDet_beam_center_y(type))
 	labelWave[5] += "  "+num2str(getSourceAp_size(type))+"    "+num2str(getSampleAp_size(type))+"    "
-	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))+"    "+num2str(getBeamStop_size(type)*10)+"    "+getInstrumentNameFromFile(type) 
+	labelWave[5] += num2str(getSourceAp_distance(type)/100)+"    "+num2str(getWavelength_spread(type))+"    "+num2str(getBeamStop_size(type))+"    "+getInstrumentNameFromFile(type) 
 	labelWave[6] =  "SAM: "+rawTag+samFiles
 	labelWave[7] =  "BGD: "+proto[0]
 	labelWave[8] =  "EMP: "+proto[1]
@@ -810,7 +816,7 @@ Function QxQy_Export(type,fullpath,dialog)
 
 
 	Variable L2 = getDet_Distance(type) / 100 		// convert [cm] to [m]
-	Variable BS = getBeamStop_size(type) * 10		// N_getResolution is expecting [mm]
+	Variable BS = getBeamStop_size(type)
 	Variable S1 = getSourceAp_size(type)
 	Variable S2 = getSampleAp_size(type)
 	Variable L1 = getSourceAp_distance(type) / 100 		// convert [cm] to [m]

@@ -130,7 +130,7 @@ Function Panel_DoAverageButtonProc(ctrlName) : ButtonControl
 			SectorAverageTo1D(type)
 			break
 		case "2D_NXcanSAS":
-			WriteNxCanSAS2D(type,"",1)
+			WriteNxCanSAS2D(type,"",0)
 			break
 		case "2D ASCII":
 			Fast2dExport(type,"",1)
