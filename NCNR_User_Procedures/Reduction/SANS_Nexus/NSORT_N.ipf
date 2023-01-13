@@ -2389,7 +2389,8 @@ end
 Function TableToCombineAndSave(clear)
 	Variable clear
 	
-	if(clear)
+	// if user wants to clear, or if the waves don't exists - such as the first opening of the panel
+	if(clear || exists("root:myGlobals:CombineTable:LowRun") == 0   )
 		// make the waves and table for the sets to combine
 		Make/O/N=0 $"root:myGlobals:CombineTable:LowRun"
 		Make/O/N=0 $"root:myGlobals:CombineTable:MediumRun"

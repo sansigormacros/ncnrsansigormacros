@@ -2002,6 +2002,11 @@ Function/S N_ReducedDataFileList(ctrlName)
 	list = RemoveFromList(ListMatch(list,"*.DIV",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.GSP",";"), list, ";", 0)
 	list = RemoveFromList(ListMatch(list,"*.MASK",";"), list, ";", 0)
+	// added 2023 to remove nexus-related files
+	list = RemoveFromList(ListMatch(list,"*.itx",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.nxs*",";"), list, ";", 0)
+	list = RemoveFromList(ListMatch(list,"*.h5",";"), list, ";", 0)
+
 
 	//remove VAX version numbers
 //	list = RemoveVersNumsFromList(List)

@@ -3,6 +3,18 @@
 #pragma IgorVersion=6.1
 
 
+
+
+// TODO JAN 2023 -- update this to remove the CAL reference and graph
+// since the CAL is not generated for tubes as the DIV step is done immediately
+// to all files as they are converted to WORK files
+//
+// also -- at least on my laptop (windows) the graphics are a mess.
+
+//
+
+
+
 // RTI clean
 
 //***********************
@@ -321,7 +333,10 @@ Function SetGraphic(type,choice)
 	else
 		NVAR doLogScaling = root:Packages:NIST:gLogScalingAsDefault
 		
-		Wave data = getDetectorDataW(type)		//this will be the linear data
+		// /Z flag used to avoid error since CAL is not generated for tube data
+		// as the DIV is done in a different step
+		Wave/Z data = getDetectorDataW(type)		//this will be the linear data
+		
 		if(waveExists(data))
 			PauseUpdate; Silent 1		// building window...
 			Display /W=(40,40,196,196)
@@ -343,12 +358,14 @@ Function SetGraphic(type,choice)
 	       	//a mask on it do this
 	      		if(cmpstr(choice,"MSK overlay")==0)
 	        		nameStr = type+"MSK_PNG"
-	        		Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:overlay
-	         		Redimension/D root:Packages:NIST:MSK:overlay
-	         		String tempStr = "root:Packages:NIST:MSK:overlay"
-	    	       	ResetLoop(tempStr)
-	       	   	AppendImage root:Packages:NIST:MSK:overlay
-	         		ModifyImage overlay ctab={0,1,BlueRedGreen,0}
+	        		Wave maskData = getDetectorDataW("MSK")
+	        		//Duplicate/O root:Packages:NIST:MSK:data root:Packages:NIST:MSK:overlay
+	         		//Redimension/D root:Packages:NIST:MSK:overlay
+	         		//String tempStr = "root:Packages:NIST:MSK:overlay"
+	    	       	//ResetLoop(tempStr)
+	    	       //	maskData = maskData == 1 ? NaN : 1
+	      // 	   	AppendImage maskData
+	       //  		ModifyImage ''#1 ctab={0,1,BlueRedGreen,0}
 	       	endif
 	     		//end of overlay
 //	     		DoUpdate

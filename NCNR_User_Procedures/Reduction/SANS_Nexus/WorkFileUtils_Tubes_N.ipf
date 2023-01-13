@@ -448,6 +448,7 @@ Function Raw_to_work_for_Tubes(newType)
 	// so the old calculation is not done
 	if(NVAR_Exists(gDo_OLD_SolidAngleCor)==0)
 		Variable/G root:Packages:NIST:gDo_OLD_SolidAngleCor=0
+		NVAR/Z gDo_OLD_SolidAngleCor = root:Packages:NIST:gDo_OLD_SolidAngleCor
 	endif
 	if (gDoSolidAngleCor == 1)
 		Print "Doing Solid Angle correction"// for "+ detStr
