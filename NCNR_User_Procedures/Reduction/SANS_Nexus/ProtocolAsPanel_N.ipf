@@ -1492,6 +1492,32 @@ Function ExecuteProtocol(protStr,samStr)
 	//4 - abs params c2-c5
 	//5 - average params
 	//6 = DRK file (**out of sequence)
+
+
+// as done in VSANS, always load the DIV file here - so that it is available for correction
+// during the raw_to_work_for_tubes() step
+//
+//////////////////////////////
+// DIV
+//////////////////////////////
+
+	//check for work.div file (prot[2])
+	//load in if needed
+	// no math is done here, DIV is applied as files are converted to WORK 
+	//
+
+	// save the state of the DIV preference
+	NVAR gDoDIVCor = root:Packages:NIST:gDoDIVCor
+	Variable saved_gDoDIVCor = gDoDIVCor
+	
+	err = Proto_LoadDIV(prot[2])		// will load only if requested
+	gDoDIVCor = saved_gDoDIVCor		// since Proto_LoadDIV turns OFF the DIV correction!!
+
+	if(err)
+		SetDataFolder root:
+		Abort "No file selected, data reduction aborted"
+	endif
+
 	
 	//prompt for sam data => read raw data, add to sam folder
 	//or parse file(s) from the input paramter string
