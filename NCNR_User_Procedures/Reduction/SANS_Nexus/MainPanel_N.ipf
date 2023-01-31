@@ -226,6 +226,11 @@ Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 //	MakeDIVFile("","")			
 End
 
+Proc DataTree_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	ShowDataFolderTree()
+End
 
 // TODO - this panel is not yet operational with the Nexus macros
 //
@@ -355,7 +360,9 @@ Window Main_Panel()
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={120,20},proc=FileSort_MainButtonProc,title="Sort Catalog"
 	Button MainButton_0e,help={"Shows the panel for sorting the file catalog"}
-
+	Button MainButton_0f,pos={300,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
+	Button MainButton_0f,help={"Show the header and data tree"}
+	
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={120,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
 	Button MainButton_1a,help={"Shows a panel where the CATalog window is used as input for creating a protocol. Can also be used for standard reductions"}

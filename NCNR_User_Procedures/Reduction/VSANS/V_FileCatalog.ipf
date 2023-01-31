@@ -312,19 +312,48 @@ End
 // x- seems to not "let go" of a selection (missing the mouse up?)
 //    (possibly) less annoying if I only handle mouseup and present a menu then.
 //
+// // new columns of PURPOSE and INTENT can have the values:
+//   PURPOSE = Transmission, Scattering, He3
+//   INTENT = Sample, Empty Cell, Blocked Beam, Open Beam, Standard
+//
+//
 Function V_CatTableHook(infoStr)
 	String infoStr
 	String event= StringByKey("EVENT",infoStr)
 	
 	Variable ii
-	
+
+	String pathStr
+	PathInfo catPathName
+	pathStr = S_path
+		
 //	Print "EVENT= ",event
 	strswitch(event)
 		case "mouseup":
 //			Variable xpix= NumberByKey("MOUSEX",infoStr)
 //			Variable ypix= NumberByKey("MOUSEY",infoStr)
 //			PopupContextualMenu/C=(xpix, ypix) "yes;no;maybe;"
-			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"//Copy Run Number;"	//Paste Run Number;"
+
+
+//		determine which column has been selected
+// answers are:
+// column =   Intent.d;
+// column =   Purpose.d; (ignore the input if multiple columns are selected, revert to "Load")
+			GetSelection table,CatVSANSTable,2
+//			Print "column = ",S_selection
+
+			if(cmpstr(S_selection,"Intent.d;") == 0)
+				PopupContextualMenu "Change Intent;-;Sample;Empty Cell;Blocked Beam;Open Beam;Standard;"
+				
+			elseif(cmpstr(S_selection,"Purpose.d;") == 0)
+				PopupContextualMenu "Change Purpose;-;TRANSMISSION;SCATTERING;He3;"
+				
+			else
+				PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"
+
+			endif
+			
+//			PopupContextualMenu "Load RAW;Load MSK;Load DIV;-;Send to MRED;"//Copy Run Number;"	//Paste Run Number;"
 			
 			WAVE/T Filenames = $"root:Packages:NIST:VSANS:CatVSHeaderInfo:Filenames"
 			Variable err
@@ -377,6 +406,71 @@ Function V_CatTableHook(infoStr)
 						V_MREDPopMenuProc("",1,"")
 					endif
 					break
+					
+					
+// popups to modify the purpose or intent
+// Purpose -- Transmission;Scattering;He3;
+				case "TRANSMISSION":
+					Wave/T purpose = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReduction_Purpose(fileNames[ii],"TRANSMISSION")	
+						purpose[ii] = "TRANSMISSION"			//update the table too
+					break
+				case "SCATTERING":
+					Wave/T purpose = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReduction_Purpose(fileNames[ii],"SCATTERING")	
+						purpose[ii] = "SCATTERING"			//update the table too
+					break
+				case "He3":
+					Wave/T purpose = root:Packages:NIST:VSANS:CatVSHeaderInfo:Purpose
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReduction_Purpose(fileNames[ii],"He3")	
+						purpose[ii] = "He3"			//update the table too
+					break
+					
+// Intent --  "Change Intent;-;Sample;Empty Cell;Blocked Beam;Open Beam;Standard;"
+				case "Sample":
+					Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReductionIntent(fileNames[ii],"Sample")	
+						intent[ii] = "Sample"			//update the table too
+					break
+				case "Empty Cell":
+					Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReductionIntent(fileNames[ii],"Empty Cell")	
+						intent[ii] = "Empty Cell"			//update the table too
+					break
+				case "Blocked Beam":
+					Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReductionIntent(fileNames[ii],"Blocked Beam")	
+						intent[ii] = "Blocked Beam"			//update the table too
+					break
+				case "Open Beam":
+					Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReductionIntent(fileNames[ii],"Open Beam")	
+						intent[ii] = "Open Beam"			//update the table too
+					break
+				case "Standard":
+					Wave/T intent = root:Packages:NIST:VSANS:CatVSHeaderInfo:Intent
+						GetSelection table,CatVSANSTable,1
+						ii = V_StartRow
+						V_writeReductionIntent(fileNames[ii],"Standard")	
+						intent[ii] = "Standard"			//update the table too
+					break					
+					
+					
+					
 //				case "Copy Run Number":
 //					//
 //

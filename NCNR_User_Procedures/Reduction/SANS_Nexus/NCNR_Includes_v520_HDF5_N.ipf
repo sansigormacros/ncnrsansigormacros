@@ -127,6 +127,7 @@ StrConstant ksDetType = "Tubes"
 
 #include "DetectorCorrections_N"		//for tube detectors
 
+#include "ShowDataTree_N"			// to display the Nexus structure
 
 
 
