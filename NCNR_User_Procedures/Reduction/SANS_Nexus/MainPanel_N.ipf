@@ -316,6 +316,18 @@ Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
 	Show_Preferences_Panel()
 End
 
+Proc Patch_DeadTime_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	PatchDetectorDeadtimePanel()
+End
+
+Proc Patch_Calib_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	PatchDetectorCalibrationPanel()
+End
+
 ////////////////////////////////////////////////
 //************* NEW version of Main control Panel *****************
 //
@@ -362,6 +374,13 @@ Window Main_Panel()
 	Button MainButton_0e,help={"Shows the panel for sorting the file catalog"}
 	Button MainButton_0f,pos={300,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
 	Button MainButton_0f,help={"Show the header and data tree"}
+
+
+	Button MainButton_0g,pos={170,120},size={110,20},proc=Patch_DeadTime_MainButtonProc,title="Patch DeadTime"
+	Button MainButton_0g,help={"Easy patching of dead time tables to multiple files"}
+	Button MainButton_0h,pos={170,150},size={90,20},proc=Patch_Calib_MainButtonProc,title="Patch Calib"
+	Button MainButton_0h,help={"Easy patching of nonlinear calibration tables to multiple files"}
+
 	
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={120,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
