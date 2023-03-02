@@ -1640,12 +1640,13 @@ Function DoRawAttenAdjPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 End
 
-// 2022 - not yet added to panel for SANS
+// 2023 -- added to the 10m-SANS preference panel and is part of the reduction,
+//
 Function InitializeWindowTrans()
 
 	Variable/G root:Packages:NIST:gDoDownstreamWindowCor = 1
 
-	// TODO -- when correcting this, search for all occurences!!! also in V_WorkFolderUtils !!!
+	// TODO -- when correcting this, search for all occurences!!! also in WorkFolderUtils !!!
 	// these global values need to be replaced with real numbers
 	// error is currently set to zero
 	Variable/G root:Packages:NIST:gDownstreamWinTrans = 1

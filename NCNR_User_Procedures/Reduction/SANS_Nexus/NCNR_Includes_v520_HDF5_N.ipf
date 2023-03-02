@@ -94,7 +94,7 @@ StrConstant ksDetType = "Tubes"
 
 // SRK OCT 2012 - processing of event mode data
 //#include "EventModeProcessing_N"			//old VAX version + Ordela event file, eventually remove
-#include "EventModeProcessing_Tubes_N"		// VSANS - based panel
+#include "EventModeProcessing_Tubes_N"		// 
 #include "EventMode_Utils_Tubes_N"
 
 // SRK JAN 2013 - to make simulation easier

@@ -1121,7 +1121,7 @@ Function LoadPolarizedData(pType)
 
 	Print runList
 	// check for errors
-	parsedRuns =ParseRunNumberList(runlist)
+	parsedRuns =N_ParseRunNumberList(runlist)
 	if(strlen(parsedRuns) == 0)
 		Print "enter a valid file number before proceeding"
 		SetDataFolder root:
@@ -1250,8 +1250,8 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	for(ii=0;ii<num;ii+=1)
 		runStr = 	lb[ii][0]		//the run number
 		if(cmpstr(runStr, "" ) != 0)
-			fname = FindFileFromRunNumber(str2num(runStr))
-			proportion[ii] = getMonitorCount(fname)
+			fname = N_FindFileFromRunNumber(str2num(runStr))
+			proportion[ii] = getBeamMonNormData(fname)
 			summedMonCts += proportion[ii]
 		endif
 	endfor
@@ -1266,7 +1266,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 			fileCount += 1		//one more file is added
 			// get run number (str)
 			// get file name
-			fname = FindFileFromRunNumber(str2num(runStr))
+			fname = N_FindFileFromRunNumber(str2num(runStr))
 		
 			// get the cell string to get the Decay wave
 			cellStr = lb[ii][1]
@@ -1283,7 +1283,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 			Po = NumberByKey("P0", decayNote, "=", ",", 0)
 			err_Po = NumberByKey("err_P0", decayNote, "=", ",", 0)
 			// get the elapsed time to calculate PCell at the current file time
-			t1str = getFileCreationDate(fname)
+			t1str = getDataStartTime(fname)
 			t1 = ElapsedHours(t0Str,t1Str)
 			
 			PCell = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell)
@@ -1497,7 +1497,7 @@ End
 Function TagLoadedData(type,pType)
 	String type,pType
 
-	ConvertFolderToLinearScale(type)
+//	ConvertFolderToLinearScale(type)
 
 	ptype = "_" + pType			// add an extra underscore
 	String destPath = "root:Packages:NIST:" + type
@@ -1820,14 +1820,14 @@ Function getTimeMidpoint(listStr)
 	num=itemsinlist(listStr,",")
 	for(ii=0;ii<num;ii+=1)
 		run = str2num( StringFromList(ii, listStr ,",") )
-		fname = FindFileFromRunNumber(run)
-		t1 = ConvertVAXDateTime2Secs(getFileCreationDate(fname))
+		fname = N_FindFileFromRunNumber(run)
+		t1 = N_ConvertNexusDateTime2Secs(getDataStartTime(fname))
 		if(t1 < t_first)
 			t_first = t1
 		endif
 		if(t1 > t_last)
 			t_last = t1
-			runt_last = getCountTime(fname)		//seconds
+			runt_last = getDet_integratedCount(fname)		//seconds
 		endif
 	
 	endfor
@@ -2059,12 +2059,12 @@ Function ExecutePolarizedProtocol(protStr,pType)
 				SetDataFolder root:
 				Abort "No file selected, data reduction aborted"
 			Endif
-			 ReadHeaderAndWork("DIV", junkStr)
+			 LoadRawSANSData(junkStr,"DIV")
 		else
 			//assume it's a path, and that the first (and only) item is the path:file
 			//list processing is necessary to remove any final comma
 			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			ReadHeaderAndWork("DIV",junkStr)
+			LoadRawSANSData(junkStr,"DIV")
 		Endif
 		//got a DIV file, select the proper type of work data to DIV (= activeType)
 		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
@@ -2133,13 +2133,13 @@ Function ExecutePolarizedProtocol(protStr,pType)
 				DoAlert 0,"No Mask file selected, data not masked"
 			else
 				//read in the file from the dialog
-				ReadMCID_MASK(junkStr)
+				LoadRawSANSData(junkStr,"MSK")
 			Endif
 		else
 			//just read it in from the protocol
 			//list processing is necessary to remove any final comma
 			junkStr = pathStr + StringFromList(0, prot[3],"," )
-			ReadMCID_MASK(junkStr)
+			LoadRawSANSData(junkStr,"MSK")
 		Endif
 	else
 		//if none desired, make sure that the old mask is deleted
@@ -2173,7 +2173,7 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	Endif
 	
 	//convert the folder to linear scale before averaging, then revert by calling the window hook
-	ConvertFolderToLinearScale(activeType)
+//	ConvertFolderToLinearScale(activeType)
 	
 	strswitch(av_type)	//dispatch to the proper routine to average to 1D data
 		case "none":		
@@ -2229,7 +2229,7 @@ Function ExecutePolarizedProtocol(protStr,pType)
 //			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
 			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
 #else
-			newFileName = UpperStr(GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
+			newFileName = UpperStr(N_GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
 #endif
 		else
 			newFileName = ""			//if the header is missing?
@@ -2559,7 +2559,7 @@ Function MakePolProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[2] = str
 		else
-			tempStr = ParseRunNumberList(str)
+			tempStr = N_ParseRunNumberList(str)
 			if(strlen(tempStr)==0)
 				return(1)
 			else
@@ -2583,7 +2583,7 @@ Function MakePolProtocolFromPanel(w)
 		if(cmpstr(str,"ask")==0)
 			w[3] = str
 		else
-			tempstr = ParseRunNumberList(str)
+			tempstr = N_ParseRunNumberList(str)
 			if(strlen(tempstr)==0)
 				return(1)
 			else

@@ -8,6 +8,6 @@
 // JUN 2011 SRK
 	
 //#include "Pol_PolCorr"
-#include "Pol_PolarizationPanels"
-#include "Pol_PolarizationCorrection"
-#include "Pol_FlipperPanel"
+#include "Pol_PolarizationPanels_N"
+#include "Pol_PolarizationCorrection_N"
+#include "Pol_FlipperPanel_N"

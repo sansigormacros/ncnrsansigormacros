@@ -131,6 +131,8 @@ StrConstant ksDetType = "Ordela"
 //mainly for tube detectors, with switch for Ordela
 #include "DetectorCorrections_N"		
 
+#include "ShowDataTree_N"			// to display the Nexus structure
+
 
 
 // a simple list of items to add to the Beta menu

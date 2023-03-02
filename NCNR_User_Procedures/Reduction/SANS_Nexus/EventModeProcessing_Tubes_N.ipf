@@ -24,6 +24,10 @@
 //
 // TODO:
 //
+// -- can any of the loops be speeded up by using integers where possible (indexes, counters, etc.)
+//     rather than DP variables? --see the discussion list for suggestions?
+//
+//
 // -- Can any of this be multithreaded?
 //  -- the histogram operation, the Indexing for the histogram, all are candidates
 //  -- can the decoding be multithreaded as a wave assignment speedup?

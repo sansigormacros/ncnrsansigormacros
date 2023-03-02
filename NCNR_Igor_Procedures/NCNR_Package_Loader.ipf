@@ -786,13 +786,26 @@ Proc ClearDefinedSymbols()
 	SetIgorOption poundUnDefine=ILL_D22
 End
 
+//
 Function PolarizationLoader()
 
 	// be sure that the SANS reduction is loaded and compiles
-	NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	if( exists("NCNR")==6 || exists("NCNR_Nexus")==6 )
+		//do nothing
+	else
+		NCNR_SANSReductionLoader("Load NCNR SANS Reduction Macros")
+	endif
 	
-	// then the polarization
-	Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	if( exists("NCNR")==6)
+		// then the polarization
+		Execute/P "INSERTINCLUDE \"Include_Polarization\"";Execute/P "COMPILEPROCEDURES "
+	endif
+	
+	if( exists("NCNR_Nexus")==6)
+		// then the polarization
+		Execute/P "INSERTINCLUDE \"Include_Polarization_N\"";Execute/P "COMPILEPROCEDURES "
+	endif	
+	
 	BuildMenu "Macros"
 
 	return(0)

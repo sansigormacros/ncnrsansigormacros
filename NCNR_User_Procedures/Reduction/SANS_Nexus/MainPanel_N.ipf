@@ -387,7 +387,7 @@ Window Main_Panel()
 	Button MainButton_1a,help={"Shows a panel where the CATalog window is used as input for creating a protocol. Can also be used for standard reductions"}
 	Button MainButton_1b,pos={15,120},size={120,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
 	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
-	Button MainButton_1c,pos={15,150},size={120,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
+	Button MainButton_1c,pos={15,150},size={150,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
 	Button MainButton_1c,help={"Use for reducing multiple raw datasets after protocol(s) have been created"}
 	Button MainButton_1d,pos={15,180},size={120,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
 	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}

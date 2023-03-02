@@ -544,12 +544,12 @@ Function Calc_PsmPf(w,calc,gCellKW,selRow,err_PsmPf)
 	gam = NumberByKey("gamma", gCellKW, "=", ",", 0)
 	err_gam = NumberByKey("err_gamma", gCellKW, "=", ",", 0)
 
-	fname = FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
-	t1str = getFileCreationDate(fname)
+	fname = N_FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
+	t1str = getDataStartTime(fname)
 	t1 = ElapsedHours(t0Str,t1Str)
 	
-	fname = FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
-	t2str = getFileCreationDate(fname)
+	fname = N_FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
+	t2str = getDataStartTime(fname)
 	t2 = ElapsedHours(t0Str,t2Str)
 
 	PCell_t1 = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell_t1)
@@ -612,12 +612,12 @@ Function Calc_Psm(w,calc,gCellKW,selRow,err_Psm)
 	gam = NumberByKey("gamma", gCellKW, "=", ",", 0)
 	err_gam = NumberByKey("err_gamma", gCellKW, "=", ",", 0)
 
-	fname = FindFileFromRunNumber(w[selRow][%UU_Trans])
-	t1str = getFileCreationDate(fname)
+	fname = N_FindFileFromRunNumber(w[selRow][%UU_Trans])
+	t1str = getDataStartTime(fname)
 	t1 = ElapsedHours(t0Str,t1Str)
 	
-	fname = FindFileFromRunNumber(w[selRow][%DU_Trans])
-	t2str = getFileCreationDate(fname)
+	fname = N_FindFileFromRunNumber(w[selRow][%DU_Trans])
+	t2str = getDataStartTime(fname)
 	t2 = ElapsedHours(t0Str,t2Str)
 
 	PCell_t1 = Calc_PCell_atT(muPo,err_muPo,gam,err_gam,t1,err_PCell_t1)
@@ -905,49 +905,49 @@ Function ParseFlipperRow(w,selRow)
 	
 	
 	// are all file numbers valid?
-	fname = FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'UU_Trans?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"UU_Trans run "+num2str(w[selRow][%'UU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-		atten1 = getAttenNumber(fname)
-		sdd1 = getSDD(fname)
+		atten1 = getAtten_desired_num_atten_dropped(fname)
+		sdd1 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'DU_Trans?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"DU_Trans run "+num2str(w[selRow][%'DU_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-		atten2 = getAttenNumber(fname)
-		sdd2 = getSDD(fname)
+		atten2 = getAtten_desired_num_atten_dropped(fname)
+		sdd2 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'DD_Trans?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'DD_Trans?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"DD_Trans run "+num2str(w[selRow][%'DD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-		atten3 = getAttenNumber(fname)
-		sdd3 = getSDD(fname)
+		atten3 = getAtten_desired_num_atten_dropped(fname)
+		sdd3 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'UD_Trans?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'UD_Trans?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"UD_Trans run "+num2str(w[selRow][%'UD_Trans?'])+" is not a valid run number"
 		err = 1
 	else
-		atten4 = getAttenNumber(fname)
-		sdd4 = getSDD(fname)
+		atten4 = getAtten_desired_num_atten_dropped(fname)
+		sdd4 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'Blocked?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'Blocked?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
-		atten5 = getAttenNumber(fname)
-		sdd5 = getSDD(fname)
+		atten5 = getAtten_desired_num_atten_dropped(fname)
+		sdd5 = getDet_Distance(fname)
 	endif
 	
 	

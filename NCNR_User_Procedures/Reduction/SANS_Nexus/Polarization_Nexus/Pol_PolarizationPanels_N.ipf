@@ -799,8 +799,8 @@ Function CalcRowParamButton(ba) : ButtonControl
 
 				if(selRow == 0 && !overrideT0)
 					//find T0
-					fname = FindFileFromRunNumber(w[0][%'Trans_He_In?'])
-					t0str = getFileCreationDate(fname)
+					fname = N_FindFileFromRunNumber(w[0][%'Trans_He_In?'])
+					t0str = getDataStartTime(fname)
 					SVAR gT0 = root:Packages:NIST:Polarization:Cells:gT0
 					gT0 = t0Str		//for display
 					noteStr = note(w)
@@ -871,8 +871,8 @@ Function CalcRowParamButton(ba) : ButtonControl
 				w[selRow][%T_major] = Tmaj
 				
 				// elapsed hours
-				fname = FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
-				t1str = getFileCreationDate(fname)
+				fname =N_FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
+				t1str = getDataStartTime(fname)
 				w[selRow][%elapsed_hr] = ElapsedHours(t0Str,t1Str)
 				
 				// running average of muP and Po
@@ -1089,16 +1089,19 @@ Function TotalCR_FromRun(num,err_cr,noNorm)
 	String fname="",instr="",tmpStr=""
 	Variable cr,cts,err_cts,ctTime,monCts,attenNo,lambda,attenTrans,atten_err
 	
-	fname = FindFileFromRunNumber(num)
-	cts = getDetCount(fname)
+	fname = N_FindFileFromRunNumber(num)
+	cts = getDet_IntegratedCount(fname)
 	err_cts = sqrt(cts)
 	
-	ctTime = getCountTime(fname)
-	monCts = getMonitorCount(fname)
-	attenNo = getAttenNumber(fname)
-	instr = getAcctName(fname)		//this is 11 characters
-	lambda = getWavelength(fname)
-	attenTrans = AttenuationFactor(instr,lambda,AttenNo,atten_err)
+	ctTime = getCount_time(fname)
+	monCts = getBeamMonNormData(fname)
+
+//	attenNo = getAttenNumber(fname)
+//	instr = getAcctName(fname)		//this is 11 characters
+//	lambda = getWavelength(fname)
+//	attenTrans = AttenuationFactor(instr,lambda,AttenNo,atten_err)
+	
+	attenTrans = getAttenuator_transmission(fname)
 	
 	if(noNorm==1)			//don't normalize to attenuation
 		attenTrans=1
@@ -1121,8 +1124,8 @@ Function ElapsedHours(t0Str,t1Str)
 	
 	Variable t0,t1,elapsed
 	
-	t0 = ConvertVAXDateTime2Secs(t0Str)		//seconds
-	t1 = ConvertVAXDateTime2Secs(t1Str)
+	t0 = N_ConvertNexusDateTime2Secs(t0Str)		//seconds
+	t1 = N_ConvertNexusDateTime2Secs(t1Str)
 	
 	elapsed = t1-t0
 	elapsed /= 3600			//convert to hours
@@ -1541,31 +1544,31 @@ Function ParseDecayRow(w,selRow)
 	tol = 0.01		//SDDs within 1%
 	
 	// are all file numbers valid?
-	fname = FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'Trans_He_In?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Trans_He_In run "+num2str(w[selRow][%'Trans_He_In?'])+" is not a valid run number"
 		err = 1
 	else
-		atten1 = getAttenNumber(fname)
-		sdd1 = getSDD(fname)
+		atten1 = getAtten_desired_num_atten_dropped(fname)
+		sdd1 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'Trans_He_Out?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'Trans_He_Out?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Trans_He_Out run "+num2str(w[selRow][%'Trans_He_Out?'])+" is not a valid run number"
 		err = 1
 	else
-		atten2 = getAttenNumber(fname)
-		sdd2 = getSDD(fname)
+		atten2 = getAtten_desired_num_atten_dropped(fname)
+		sdd2 = getDet_Distance(fname)
 	endif
 	
-	fname = FindFileFromRunNumber(w[selRow][%'Blocked?'])
+	fname = N_FindFileFromRunNumber(w[selRow][%'Blocked?'])
 	if(cmpstr(fname,"")==0)
 		DoAlert 0,"Blocked run "+num2str(w[selRow][%'Blocked?'])+" is not a valid run number"
 		err = 1
 	else
-		atten3 = getAttenNumber(fname)
-		sdd3 = getSDD(fname)
+		atten3 = getAtten_desired_num_atten_dropped(fname)
+		sdd3 = getDet_Distance(fname)
 	endif
 	
 	
