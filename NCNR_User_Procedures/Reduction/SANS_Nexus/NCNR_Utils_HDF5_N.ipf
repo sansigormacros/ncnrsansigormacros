@@ -641,12 +641,11 @@ Function N_ConvertNexusDateTime2secs(dateAndTime)
 	string str,monStr
 	
 	str=dateandtime
-	sscanf str,"%d-%d-%d'T'%d:%d:%d",yr,mon,day,hh,mm,ss
+	sscanf str,"%d-%d-%dT%d:%d:%d",yr,mon,day,hh,mm,ss
 //	mon = N_monStr2num(monStr)
 //	print yr,mon,day,hh,mm,ss
 	time_secs = date2secs(yr,mon,day)
 	time_secs += hh*3600 + mm*60 + ss
-
 
 	return(time_secs)
 end

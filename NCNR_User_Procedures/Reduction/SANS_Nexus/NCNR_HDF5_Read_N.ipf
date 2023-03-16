@@ -674,11 +674,28 @@ End
 // == diameter if shape = CIRCLE
 // value is stored in [cm] diameter in Nexus
 // (was stored on VAX as [mm] - be careful)
+//
+//  as of 3/2023, size is not stored for 30m instruments
+// but is stored in: root:sans118676:entry:DAS_logs:beamStop:size
+//
+// so if -999999 is returned, look in the second place...
+//
+//
+//
 Function getBeamStop_size(fname)
 	String fname
 
+	variable val
 	String path = "entry:instrument:beam_stop:shape:size"
-	return(getRealValueFromHDF5(fname,path))
+	
+	val = getRealValueFromHDF5(fname,path)
+	
+	if(val < -999)
+		path = "entry:DAS_logs:beamStop:size"
+		val = getRealValueFromHDF5(fname,path)
+	endif
+	
+	return(val)
 End
 
 Function getBeamStop_width(fname)
@@ -1433,6 +1450,7 @@ Function getSourceAp_size(fname)
 	String fname
 
 	String path = "entry:instrument:source_aperture:shape:size"
+	
 	Variable num=60
 	variable val
 	String str2=""

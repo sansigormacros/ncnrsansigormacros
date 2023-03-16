@@ -185,6 +185,13 @@ End
 // -- the DAS_Logs are SKIPPED - since they are not needed for reduction
 // Attributes are NOT loaded at all.
 //
+//
+// ** as of 3/2023, one block of the DAS_logs is read in, entry/beam_stop/shape
+// to get to the /size field, since for (unknown) techincal reasons, this field
+// can't be written out to the NExus file. Again, the whole DAS_logs block is NOT
+// read in - it simply slows things down way too much.
+//
+//
 // if data destination is RAW, calling function sets DF before passing
 // if data is to be sent to rawSANS, calling function sets DF to Packages:NIST level
 // -- reset here to make sure
@@ -337,6 +344,34 @@ Function ReadHeaderAndData(fname,folderStr)
 	hdf5path = "/entry/program_data"
 	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
+
+// for the 30m SANS, as of 3/2023, the size of the beam stop is not
+// written out to the Nexus block, only to the DAS_logs in the location:
+//
+// entry:DAS_logs:beamStop:size
+//
+// -- do I read in just the beamStop block, or the whole DAS_log?
+//
+// -- reading in the whole DAS_logs is (2-4)x slower than skipping them, while just reading the 
+//  single beamStop block makes no difference in the read time. so read whatI need, no more.
+//
+//	if(isFolder == -1)
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
+//	else
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
+//	endif
+//	hdf5path = "/entry/DAS_logs"
+//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+
+	if(isFolder == -1)
+		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
+		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs:beamStop")
+	else
+		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
+		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs:beamStop")
+	endif
+	hdf5path = "/entry/DAS_logs/beamStop"
+	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	
 //

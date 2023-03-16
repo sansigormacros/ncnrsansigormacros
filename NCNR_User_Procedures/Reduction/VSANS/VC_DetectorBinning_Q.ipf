@@ -14,15 +14,19 @@
 //		Plotting the 1D I(q) data depending on the panel combinations
 //
 //
-//  There are some things in the current circular averaging that don't make any sense
-//  and don't seem to really do anything at all, so i have decided to trim them out.
+//  There are some things in the old VAX circular averaging that don't make any sense
+//  and don't seem to really do anything at all, so I have decided to trim them out.
 //  1) subdividing pixels near the beam stop into 9 sub-pixels
 //  2) non-linear correction (only applies to Ordela)
 //
 //
 //  Do I separate out the circular, sector, rectangular, annular averaging into
 //   separate routines? 
+// -- or do I make the correct shape mask, and average everything that is not masked?
 //
+// -- decided to draw a mask and use the same binning for everything
+//
+// Annular averaging is a separate set of routines.
 //
 //
 ///////////////////

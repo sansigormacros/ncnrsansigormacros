@@ -76,29 +76,44 @@ End
 //
 Function V_ISO8601_to_IgorTime(ISOstr)
 	String ISOstr
-	
-	Variable secs
-	String s1,s2
-	s1 = ISOstr[0,9] 		//taking strictly the first 10 characters YYYY-MM-DD
-	s2 = ISOstr[11,18]		// skip the "T" and take the next 8 chars HH:MM:SS
-	// skip the time zone...
-//	print s1
-//	print s2
-	
-	Variable yr,mo,dy,hh,mm,ss
-	yr = str2num(s1[0,3])
-	mo = str2num(s1[5,6])
-	dy = str2num(s1[8,9])
-	hh = str2num(s2[0,1])
-	mm = str2num(s2[3,4])
-	ss = str2num(s2[6,7])
 
-	secs = date2secs(yr,mo,dy)
-	secs += hh*60*60
-	secs += mm*60
-	secs += ss
+
+	Variable day,yr,mon,hh,mm,ss,time_secs
+	string str
 	
-	return(secs)
+	str=ISOStr
+	sscanf str,"%d-%d-%dT%d:%d:%d",yr,mon,day,hh,mm,ss
+//	mon = N_monStr2num(monStr)
+//	print yr,mon,day,hh,mm,ss
+	time_secs = date2secs(yr,mon,day)
+	time_secs += hh*3600 + mm*60 + ss
+
+	return(time_secs)
+
+
+// not as reliable...	
+//	Variable secs
+//	String s1,s2
+//	s1 = ISOstr[0,9] 		//taking strictly the first 10 characters YYYY-MM-DD
+//	s2 = ISOstr[11,18]		// skip the "T" and take the next 8 chars HH:MM:SS
+//	// skip the time zone...
+////	print s1
+////	print s2
+//	
+//	Variable yr,mo,dy,hh,mm,ss
+//	yr = str2num(s1[0,3])
+//	mo = str2num(s1[5,6])
+//	dy = str2num(s1[8,9])
+//	hh = str2num(s2[0,1])
+//	mm = str2num(s2[3,4])
+//	ss = str2num(s2[6,7])
+//
+//	secs = date2secs(yr,mo,dy)
+//	secs += hh*60*60
+//	secs += mm*60
+//	secs += ss
+//	
+//	return(secs)
 End
 
 

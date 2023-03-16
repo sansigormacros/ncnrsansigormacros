@@ -19,6 +19,9 @@
 //
 // Event mode prcessing for SANS-Tubes
 //
+// -- to turn the sorting of stream data "off", set (from the command line)
+// 	root:Packages:NIST:Event:gSortStreamEvents = 0
+//
 
 
 //
@@ -709,7 +712,7 @@ Function Init_Event()
 
 	Variable/G root:Packages:NIST:Event:gEvent_Mode = 0				// ==0 for "stream", ==1 for Oscillatory
 	Variable/G root:Packages:NIST:Event:gRemoveBadEvents = 1		// ==1 to remove "bad" events, ==0 to read "as-is"
-	Variable/G root:Packages:NIST:Event:gSortStreamEvents = 0		// ==1 to sort the event stream, a last resort for a stream of data
+	Variable/G root:Packages:NIST:Event:gSortStreamEvents = 1		// ==1 to sort the event stream, a last resort for a stream of data
 	
 	Variable/G root:Packages:NIST:Event:gEvent_ForceTmaxBin=1		//==1 to enforce t_longest in user-defined custom bins
 
@@ -1550,20 +1553,13 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	endif
 	
 	// load from raw?
-	// if so, which carriage?
 	String loadFromRAW="No"
 	String detStr
 	if(cmpstr(ctrlName,"button23")==0)
 		loadFromRAW = "Yes"	
 	endif
 	
-//	Prompt loadFromRAW,"Load from RAW?",popup,"Yes;No;"
-//	Prompt detStr,"Carriage",popup,"M;F;"
-//	DoPrompt "Load data from...",loadFromRAW,detStr
-	
-//	if(V_flag)		//user cancel
-//		return(0)
-//	endif
+
 	
 	if(cmpstr(loadFromRAW,"Yes")==0)
 		PathInfo catPathName
@@ -1602,7 +1598,7 @@ Function LoadEventLog_Button(ctrlName) : ButtonControl
 	Print "TotalBytes (MB) = ",totBytes
 	
 
-Variable t1 = ticks
+	Variable t1 = ticks
 	SetDataFolder root:Packages:NIST:Event:
 
 // load in the event file and decode it
@@ -1663,11 +1659,12 @@ Variable t1 = ticks
 	endif
 
 
-// FEB 2021 -- comb through each panel of data (separately) and look for bad time
+	NVAR removeBadEvents = root:Packages:NIST:Event:gRemoveBadEvents
+
+// FEB 2021 -- for VSANS 8-packs, comb through each panel of data (separately) and look for bad time
 // steps. (> 16 ms) -- eliminate these. Do for all 4 panels, then the data is "clean"
 // and any "bad" time steps are OK, just buffering
 //
-	NVAR removeBadEvents = root:Packages:NIST:Event:gRemoveBadEvents
 
 //tic()
 //	if(RemoveBadEvents)
@@ -1677,10 +1674,14 @@ Variable t1 = ticks
 //Printf "cleanup panels = "
 //toc()
 
+
+	NVAR gSortStreamEvents = root:Packages:NIST:Event:gSortStreamEvents
 tic()
+// per discussions with Phil about the "jumps" in time that are not errors, but rather 
+// cycling though the 8-packs and reading each buffer -- it is 
 // safe to sort stream data now, even if bad steps haven't been removed (the data is probably good)
 //	if(mode == MODE_STREAM && RemoveBadEvents)
-	if(mode == MODE_STREAM)
+	if(mode == MODE_STREAM && gSortStreamEvents)
 		SortTimeData()
 	Endif
 	printf "sort = "
@@ -1963,10 +1964,12 @@ tic()
 
 // throw away a few events (10 or less)
 // to make sure I've got a multiple of 10 (or num)
-	do
-		numEvents -= 1
-	while(mod(numEvents,num) != 0)
-
+	if(mod(numEvents,num) != 0)
+		do
+			numEvents -= 1
+		while(mod(numEvents,num) != 0)
+	endif
+	
 	step = num
 
 	if(step == 1)
