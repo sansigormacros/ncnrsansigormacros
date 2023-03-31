@@ -72,12 +72,12 @@ Function V_ListDataFolder(dfr, level, sNBName)
 			else
 			// variables show up as 1-point waves, don't report as (wave)
 //				sPrintf sString, "%s%s (wave)\r", indentStr, name
-				sPrintf sString, "%s%s \t%g\r", indentStr, name, w[0]
+				sPrintf sString, "%s%s \t%g \ttyp=%s\r", indentStr, name, w[0], V_PrintWaveType(w)
 			endif
 		else
 			WAVE/T wt=dfr:$name		// text wave is assumed...
 //			sPrintf sString, "%s%s (wave) \"%s\"\ttyp=text\r", indentStr, name, wt[0]
-			sPrintf sString, "%s%s   \t\"%s\"\r", indentStr, name, wt[0]
+			sPrintf sString, "%s%s   \t\"%s\"\ttyp=%s\r", indentStr, name, wt[0], V_PrintWaveType(wt)
 		endif
 		V_WriteBrowserInfo(sString, 2, sNBName)
 	endfor	

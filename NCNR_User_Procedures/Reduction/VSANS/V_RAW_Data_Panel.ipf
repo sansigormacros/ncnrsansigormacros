@@ -517,6 +517,9 @@ Function V_DataTabProc(tca) : TabControl
 		sc = 0.7
 	endif
 
+	Variable isDenex=0
+	String detDescription=""
+
 	switch( tca.eventCode )
 		case 2: // mouse up
 			Variable tab = tca.tab
@@ -530,6 +533,10 @@ Function V_DataTabProc(tca) : TabControl
 			
 			SVAR dataType = root:Packages:NIST:VSANS:Globals:gCurDispType
 			
+			if( cmpstr("Denex",V_getDetDescription(dataType,"B")) == 0)
+				isDenex = 1
+			endif
+
 // make sure log scaling is correct
 			NVAR state = root:Packages:NIST:VSANS:Globals:gIsLogScale
 			if(State == 0)
@@ -539,7 +546,7 @@ Function V_DataTabProc(tca) : TabControl
 				// lookup wave - the linear version
 				Wave LookupWave = root:Packages:NIST:VSANS:Globals:logLookupWave
 			endif
-						
+			
 			
 			//************
 			// -- can I use "ReplaceWave/W=VSANS_Data#det_panelsB allinCDF" to do this?
@@ -589,11 +596,14 @@ Function V_DataTabProc(tca) : TabControl
 				MoveSubWindow/W=VSANS_Data#det_panelsF fnum=(200*sc,70*sc,310*sc,160*sc)
 
 				ModifyImage/W=VSANS_Data#det_panelsB ''#0 ctabAutoscale=0,lookup= LookupWave
-				
+
+				if(isDenex)				
 //				// make the plot square
-//				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
+					ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,1}
+				else
 				// match the aspect ratio of the data
-				ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,0.41}			//680/1656 = 0.41
+					ModifyGraph/W=VSANS_Data#det_panelsB width={Aspect,0.41}			//680/1656 = 0.41
+				endif
 				
 				SetActiveSubWindow VSANS_Data#det_panelsB
 				Label left "pixels"

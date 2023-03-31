@@ -1902,6 +1902,7 @@ Function/S V_getDetSettings(fname,detStr)
 End
 
 
+// returns [mm]
 Function V_getDet_x_pixel_size(fname,detStr)
 	String fname,detStr
 

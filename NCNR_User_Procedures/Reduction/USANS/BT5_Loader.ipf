@@ -104,14 +104,18 @@ Function LoadBT5File(fname,type)
 	
 // test by date
 	Variable thisFileSecs
-	NVAR switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
-	thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
-	if(thisFileSecs >= switchSecs)
-		useNewDataFormat = 1
+	NVAR/Z switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
+	if(NVAR_Exists(switchSecs))
+		thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
+		if(thisFileSecs >= switchSecs)
+			useNewDataFormat = 1
+		else
+			useNewDataFormat = 0
+		endif
 	else
+		//definitely old data (or HANARO), use old format
 		useNewDataFormat = 0
 	endif
-
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	

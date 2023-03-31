@@ -60,7 +60,7 @@ Menu "VSANS"
 		"Patch Wavelength",V_Patch_Wavelength()
 		"Patch Monochromator Type",V_Patch_MonochromatorType()
 		"-"
-//		"Patch Back Detector Values",V_Patch_Back_Detector()
+		"Patch Back Detector Values Denex",V_Patch_Back_Detector_Denex()
 		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()
 		"Patch Beam Stop",V_Patch_BeamStop()
 		"Patch Sample Aperture",V_Patch_SampleAperture2()

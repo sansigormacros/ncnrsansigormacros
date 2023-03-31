@@ -476,52 +476,62 @@ End
 //
 Function DecayParamPanel()
 
+
+	Variable sc = 1
+	
+	NVAR/Z gLaptopMode = root:Packages:NIST:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+
+
 	SetDataFolder root:Packages:NIST:Polarization:Cells
 	
 	PauseUpdate; Silent 1		// building window...
-	NewPanel /W=(200,44,1013,664)/N=DecayPanel/K=1 as "Cell Decay Parameters"
+	NewPanel /W=(200*sc,44*sc,1013*sc,664*sc)/N=DecayPanel/K=1 as "Cell Decay Parameters"
 	ModifyPanel cbRGB=(32768,54615,65535)
-//	Button button_3,pos={505,16},size={35,20},proc=DecayHelpParButtonProc,title="?"
-	PopupMenu popup_0,pos={32,8},size={49,20},title="Cell",proc=DecayPanelPopMenuProc
+//	Button button_3,pos={sc*505,16*sc},size={sc*35,20*sc},proc=DecayHelpParButtonProc,title="?"
+	PopupMenu popup_0,pos={sc*32,8*sc},size={sc*49,20*sc},title="Cell",proc=DecayPanelPopMenuProc
 	PopupMenu popup_0,mode=1,value= #"D_CellNameList()"
 	
-	Button button_0,pos={560,294},size={70,20},proc=DecayFitButtonProc,title="Do Fit"
+	Button button_0,pos={sc*560,294*sc},size={sc*70,20*sc},proc=DecayFitButtonProc,title="Do Fit"
 	
-	GroupBox group_0,pos={560,329},size={230,149},title="FIT RESULTS",fSize=10
+	GroupBox group_0,pos={sc*560,329*sc},size={sc*230,149*sc},title="FIT RESULTS",fSize=10
 	GroupBox group_0,fStyle=1
-	SetVariable setvar_0,pos={570,358},size={200,13},title="muPo of 3He"
-	SetVariable setvar_0,fStyle=1,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_0,pos={sc*570,358*sc},size={sc*200,13*sc},title="muPo of 3He"
+	SetVariable setvar_0,fStyle=1,limits={0,0,0},barmisc={sc*0,1000}
 	SetVariable setvar_0,value= root:Packages:NIST:Polarization:Cells:gMuPo
-	SetVariable setvar_1,pos={570,390},size={200,13},title="Po of 3He"
-	SetVariable setvar_1,fStyle=1,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_1,pos={sc*570,390*sc},size={sc*200,13*sc},title="Po of 3He"
+	SetVariable setvar_1,fStyle=1,limits={0,0,0},barmisc={sc*0,1000}
 	SetVariable setvar_1,value= root:Packages:NIST:Polarization:Cells:gPo
-	SetVariable setvar_2,pos={570,448},size={200,13},title="Gamma (h)",fStyle=1
-	SetVariable setvar_2,limits={0,0,0},barmisc={0,1000}
+	SetVariable setvar_2,pos={sc*570,448*sc},size={sc*200,13*sc},title="Gamma (h)",fStyle=1
+	SetVariable setvar_2,limits={0,0,0},barmisc={sc*0,1000}
 	SetVariable setvar_2,value= root:Packages:NIST:Polarization:Cells:gGamma
-	SetVariable setvar_3,pos={570,418},size={200,13},title="T0",fStyle=1
+	SetVariable setvar_3,pos={sc*570,418*sc},size={sc*200,13*sc},title="T0",fStyle=1
 	SetVariable setvar_3,limits={0,0,0},value= root:Packages:NIST:Polarization:Cells:gT0
 	
 
-	Button button_1,pos={560,262},size={120,20},proc=CalcRowParamButton,title="Calculate Rows"
-	Button button_2,pos={307,8},size={110,20},proc=ClearDecayWavesButton,title="Clear Table"
-	Button button_3,pos={560,519},size={110,20},proc=ShowCalcRowButton,title="Show Calc"
-	Button button_4,pos={440,8},size={110,20},proc=ClearDecayWavesRowButton,title="Clear Row"
-	Button button_5,pos={620,8},size={40,20},proc=DecayHelpParButtonProc,title="?"
-	Button button_6,pos={560,574},size={110,20},proc=WindowSnapshotButton,title="Snapshot"
-	Button button_7,pos={560,547},size={110,20},proc=ManualEnterDecayButton,title="Manual Entry"
-	Button button_8,pos={690,547},size={110,20},proc=SaveDecayPanelButton,title="Save State"
-	Button button_9,pos={690,574},size={110,20},proc=RestoreDecayPanelButton,title="Restore State"
-	CheckBox check0,mode=0,pos={560,480},title="Overrride T0?",value=0
+	Button button_1,pos={sc*560,262*sc},size={sc*120,20*sc},proc=CalcRowParamButton,title="Calculate Rows"
+	Button button_2,pos={sc*307,8*sc},size={sc*110,20*sc},proc=ClearDecayWavesButton,title="Clear Table"
+	Button button_3,pos={sc*560,519*sc},size={sc*110,20*sc},proc=ShowCalcRowButton,title="Show Calc"
+	Button button_4,pos={sc*440,8*sc},size={sc*110,20*sc},proc=ClearDecayWavesRowButton,title="Clear Row"
+	Button button_5,pos={sc*620,8*sc},size={sc*40,20*sc},proc=DecayHelpParButtonProc,title="?"
+	Button button_6,pos={sc*560,574*sc},size={sc*110,20*sc},proc=WindowSnapshotButton,title="Snapshot"
+	Button button_7,pos={sc*560,547*sc},size={sc*110,20*sc},proc=ManualEnterDecayButton,title="Manual Entry"
+	Button button_8,pos={sc*690,547*sc},size={sc*110,20*sc},proc=SaveDecayPanelButton,title="Save State"
+	Button button_9,pos={sc*690,574*sc},size={sc*110,20*sc},proc=RestoreDecayPanelButton,title="Restore State"
+	CheckBox check0,mode=0,pos={sc*560,480*sc},title="Overrride T0?",value=0
 
 
 	// table
-	Edit/W=(14,35,794,240)/HOST=# 
+	Edit/W=(14*sc,35*sc,794*sc,240*sc)/HOST=# 
 	ModifyTable format=1,width=0
 	RenameWindow #,T0
 	SetActiveSubwindow ##
 	
 	// graph
-	Display/W=(15,250,540,610)/HOST=#  //root:yy vs root:xx
+	Display/W=(15*sc,250*sc,540*sc,610*sc)/HOST=#  //root:yy vs root:xx
 	ModifyGraph frameStyle=2
 	ModifyGraph mode=4
 	ModifyGraph marker=19

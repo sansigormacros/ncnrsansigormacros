@@ -2783,14 +2783,14 @@ End
 
 
 //
-// Not used any longer - as of 2019
-// this was filling in default values that have since been replaced with proper values
+// as of March 2023 - this procedure takes CCD HighRes data and "converts"
+// it to FAKE Denex data
 //
-//Proc V_Patch_Back_Detector(lo,hi)
-//	Variable lo,hi
-//	
-//	V_fPatch_BackDetector(lo,hi)
-//End
+Proc V_Patch_Back_Detector_Denex(lo,hi)
+	Variable lo,hi
+	
+	V_fPatch_BackDetector(lo,hi)
+End
 
 Proc V_Patch_Back_XYPixelSize(lo,hi)
 	Variable lo,hi
@@ -3130,27 +3130,49 @@ End
 // except for patching old data with the XY pixel dimensions (separate macro)
 //
 //
+// -- as of March 2023, this procedure "fakes" Denex data with
+// totally fake values, including a 512x512 array
+//
+//
+//
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
 Function V_fPatch_BackDetector(lo,hi)
 	Variable lo,hi
 
+//	Abort "this replaces the detector data. only for making fake data. modify function for patching"
+
 	
 	Variable ii,jj
-	String fname,detStr
+	String fname,detStr,descriptionStr
+	
+	Variable pixSize_x,pixSize_y
+	Variable pixNum_x,pixNum_y
+	Variable fwhm_x,fwhm_y,dead_time
+	
+	
+	pixSize_x = 0.5		// [mm]
+	pixSize_y = 0.5		// [mm]
+	pixNum_x = 512
+	pixNum_y = 512
+	
+	fwhm_x = 0.05		// [cm]
+	fwhm_y = 0.05		// [cm]
+	dead_time = 1e-20		// [s]
 	
 	detStr = "B"
+	descriptionStr = "Denex"
 	
 	Make/O/D/N=3 cal_x,cal_y
-	cal_x[0] = VCALC_getPixSizeX(detStr)			// pixel size in VCALC_getPixSizeX(detStr) is [cm]
+	cal_x[0] = pixSize_x/10			// pixel size in [cm]
 	cal_x[1] = 1
 	cal_x[2] = 10000
-	cal_y[0] = VCALC_getPixSizeY(detStr)			// pixel size in VCALC_getPixSizeX(detStr) is [cm]
+	cal_y[0] = pixSize_y/10			// pixel size in [cm]
 	cal_y[1] = 1
 	cal_y[2] = 10000
 	
-	Make/O/I/N=(680,1656) tmpData=1
+	Make/O/I/N=(512,512) tmpData=1
 	
 	//loop over all files
 	for(jj=lo;jj<=hi;jj+=1)
@@ -3162,28 +3184,37 @@ Function V_fPatch_BackDetector(lo,hi)
 			V_writeDet_cal_y(fname,detStr,cal_y)
 		
 		// patch n_pix_x and y
-			V_writeDet_pixel_num_x(fname,detStr,680)
-			V_writeDet_pixel_num_y(fname,detStr,1656)
+			V_writeDet_pixel_num_x(fname,detStr,pixNum_x)
+			V_writeDet_pixel_num_y(fname,detStr,pixNum_y)
 			
-		// patch pixel size x and y [cm]
-			V_writeDet_x_pixel_size(fname,detStr,0.034)
-			V_writeDet_y_pixel_size(fname,detStr,0.034)
+		// patch pixel size x and y [mm]
+			V_writeDet_x_pixel_size(fname,detStr,pixSize_x)
+			V_writeDet_y_pixel_size(fname,detStr,pixSize_y)
 			
 		// patch dead time
 		// TODO: enter a proper value here once it's actually measured
-			V_writeDetector_deadtime_B(fname,detStr,1e-20)
+			V_writeDetector_deadtime_B(fname,detStr,dead_time)
 		
 		// patch fwhm_x and y
 		// TODO: verify the values once they are measured, and also the UNITS!!! [cm]???
-			V_writeDet_pixel_fwhm_x(fname,detStr,0.034)
-			V_writeDet_pixel_fwhm_y(fname,detStr,0.034)
+			V_writeDet_pixel_fwhm_x(fname,detStr,fwhm_x)
+			V_writeDet_pixel_fwhm_y(fname,detStr,fwhm_y)
 		
 		// patch beam center (nominal x,y) [cm] values
-			V_writeDet_beam_center_x(fname,detStr,11)
-			V_writeDet_beam_center_y(fname,detStr,25)
+			V_writeDet_beam_center_x(fname,detStr,251)
+			V_writeDet_beam_center_y(fname,detStr,241)
 		
-		// fake data
-//			V_writeDetectorData(fname,detStr,tmpData)
+		// fake data by taking the real CCD data and trimming the center 512x512 out of it
+			Wave data = V_getDetectorDataW(fname,detStr)
+			tmpData[][] = data[p+100][q+520]
+			V_writeDetectorData(fname,detStr,tmpData)
+			
+		// update the integrated count on the "detector"
+			V_writeDet_IntegratedCount(fname,detStr,sum(tmpData))	
+			
+			
+		// write the detector description as "Denex" so it can be identified
+			V_writeDetDescription(fname,detStr,descriptionStr)
 			
 			
 		else
