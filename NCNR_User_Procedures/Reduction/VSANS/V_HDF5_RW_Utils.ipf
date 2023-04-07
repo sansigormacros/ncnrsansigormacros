@@ -135,7 +135,7 @@ Function V_LoadHDF5Data(file,folder)
 			Variable isDenex = 0
 			Variable nx,ny,ctrX,ctrY
 		
-		// since det_B does not exisi... test for Denex will always FAIL
+		// since det_B does not exist... test for Denex will always FAIL
 		// I need a different way to do this..
 			if( cmpstr("Denex",V_getDetDescription("RAW","B")) == 0)
 				isDenex = 1

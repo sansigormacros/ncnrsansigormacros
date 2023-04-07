@@ -725,6 +725,17 @@ End
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	
+	
+	if( cmpstr("Denex",V_getDetDescription(dataType,"B")) == 0)
+		isDenex = 1
+	endif
+
+	Variable nx = V_getDet_pixel_num_x("RAW","B")
+	Variable ny = V_getDet_pixel_num_y("RAW","B")		
+	
+	Print "DIV setup nx,ny = ",nx,ny
+	
+	
 	NewDataFolder/O/S root:VSANS_DIV_file		
 
 	NewDataFolder/O/S root:VSANS_DIV_file:entry	
@@ -733,8 +744,8 @@ Proc H_Setup_VSANS_DIV_Structure()
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
-			Make/O/D/N=(680,1656)	data	= 1 
-			Make/O/D/N=(680,1656)	linear_data_error	= 0.01
+			Make/O/D/N=(nx,ny)	data	= 1 
+			Make/O/D/N=(nx,ny)	linear_data_error	= 0.01
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
 			Make/O/D/N=(48,128)	data = 1
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01

@@ -862,12 +862,32 @@ Proc H_Setup_VSANS_MASK_Structure()
 				data[2599,2719][] = 1		// 
 				
 			else
-				Make/O/I/N=(680,1656)	data	= 0		
-
-				data[][0,5] = 1
-				data[][1650,1655] = 1
-				data[0,5][] = 1
-				data[675,679][] = 1
+			// binning will always be 4, even if Denex, so it will drop here
+				Variable isDenex=0
+				if( cmpstr("Denex",V_getDetDescription("RAW","B")) == 0)
+					isDenex = 1
+				endif
+				
+				if (isDenex)
+					Variable nx = V_getDet_pixel_num_x("RAW","B")
+					Variable ny = V_getDet_pixel_num_y("RAW","B")	
+				
+					Make/O/I/N=(nx,ny)	data	= 0		
+	
+					data[][0,10] = 1
+					data[][ny-11,ny-1] = 1
+					data[0,10][] = 1
+					data[nx-11,nx-1][] = 1
+				
+				else
+					// the normal HighRes CCD detector
+					Make/O/I/N=(680,1656)	data	= 0		
+	
+					data[][0,5] = 1
+					data[][1650,1655] = 1
+					data[0,5][] = 1
+					data[675,679][] = 1
+				endif
 
 		endif
 				
@@ -960,13 +980,36 @@ Function V_GenerateDefaultMask()
 				
 				break
 			case 4:
-				Make/O/I/N=(680,1656)	data	= 0		
+			// binning will still be the defult value of 4 even if it's the Denex detector
+				Variable isDenex=0
+				if( cmpstr("Denex",V_getDetDescription("RAW","B")) == 0)
+					isDenex = 1
+				endif
 
-				data[][0,38] = 1
-				data[][1535,1655] = 1
-//				data[0,10][] = 1
-				data[0,190][] = 1		//with the beam stop stuck on the detector
-				data[669,679][] = 1
+				if(isDenex)
+			
+					Variable nx = V_getDet_pixel_num_x("RAW","B")
+					Variable ny = V_getDet_pixel_num_y("RAW","B")
+					Print "MSK setup nx,ny = ",nx,ny
+				
+					Make/O/I/N=(nx,ny)	data	= 0		
+	
+					data[][0,10] = 1
+					data[][ny-11,ny-1] = 1
+	//				data[0,10][] = 1
+					data[0,10][] = 1		//with the beam stop stuck on the detector
+					data[nx-11,nx-1][] = 1
+				else
+					// HighRes CCD detector w/ normal 4x4 binning
+					Make/O/I/N=(680,1656)	data	= 0		
+	
+					data[][0,38] = 1
+					data[][1535,1655] = 1
+	//				data[0,10][] = 1
+					data[0,190][] = 1		//with the beam stop stuck on the detector
+					data[669,679][] = 1
+				
+				endif
 				break
 			default:
 				Abort "No binning case matches in V_GenerateDefaultMask"
@@ -1167,7 +1210,14 @@ Proc V_Display_Det_Panels()
 
 	Make/O/B/N=(48,128) tmpLR
 	Make/O/B/N=(128,48) tmpTB
-	Make/O/B/N=(680,1656) tmpB
+	//MSK will exist (at least a default based on RAW dimensions)
+//	Variable nx = V_getDet_pixel_num_x("MSK","B")		//this fails, since these fields are not in MSK data
+//	Variable ny = V_getDet_pixel_num_y("MSK","B")
+	Variable nx = V_getDet_pixel_num_x("RAW","B")		// call RAW, since I already trust it's there
+	Variable ny = V_getDet_pixel_num_y("RAW","B")
+	
+	Make/O/B/N=(nx,ny) tmpB
+//	Make/O/B/N=(680,1656) tmpB
 	
 	tmpLR = 1
 	tmpTB = 1
@@ -1339,6 +1389,10 @@ Function V_UpdateFourPanelDisp()
 		ModifyGraph tkLblRot(left)=90
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
+		
+		ModifyGraph height={Aspect,1}
+
+
 		SetActiveSubwindow ##
 		return(0)
 	endif

@@ -1699,15 +1699,31 @@ Proc VC_Initialize_Space()
 		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 1360.1	// == x beam center, in pixels +0.1 so I know it's from here
 		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 3312.1		// == y beam center, in pixels
 	else
-		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of [cm] here)
-		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
+	//
+	// old values for the HighRes CCD  detector
+//		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.034		// 340 micron resolution (units of [cm] here)
+//		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.034		
+//	
+//		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 680		// detector pixels in x-direction
+//		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 1656
+//		
+//	// pixel beam center - HDF style
+//		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels +0.1 so I know it's from here
+//		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
+
+
+// HARD WIRED DENEX VAULES (that are WRONG)
+// as of APRIL 2023
+//
+		Make/O/D/N=1 :entry:instrument:detector_B:x_pixel_size = 0.15		// 1.5 mm resolution (units of [cm] here)
+		Make/O/D/N=1 :entry:instrument:detector_B:y_pixel_size = 0.15		
 	
-		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 680		// detector pixels in x-direction
-		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 1656
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_x = 512		// detector pixels in x-direction
+		Make/O/D/N=1 :entry:instrument:detector_B:pixel_num_y = 512
 		
 	// pixel beam center - HDF style
-		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 340.1	// == x beam center, in pixels +0.1 so I know it's from here
-		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 828.1		// == y beam center, in pixels
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_x = 255.1	// == x beam center, in pixels +0.1 so I know it's from here
+		Make/O/D/N=1 :entry:instrument:detector_B:beam_center_y = 254.1		// == y beam center, in pixels
 	endif
 
 
