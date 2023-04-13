@@ -3172,7 +3172,7 @@ Function V_fPatch_BackDetector(lo,hi)
 	cal_y[1] = 1
 	cal_y[2] = 10000
 	
-	Make/O/I/N=(512,512) tmpData=1
+	Make/O/I/N=(kNum_x_Denex,kNum_y_Denex) tmpData=1
 	
 	//loop over all files
 	for(jj=lo;jj<=hi;jj+=1)

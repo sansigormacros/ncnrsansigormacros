@@ -133,7 +133,11 @@ Constant		kShift_TopY_bin1 = 420
 Constant		kShift_BottomX_bin1 = 20
 Constant		kShift_BottomY_bin1 = 130
 
+Constant 	kNum_x_HighRes_CCD = 680				//old High res, removed in April? 2023
+Constant		kNum_y_HighRes_CCD = 1656
 
+Constant		kNum_x_Denex = 512			// as of April 2023, these values are not known
+Constant		kNum_y_Denex = 512
 
 
 

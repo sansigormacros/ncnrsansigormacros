@@ -868,6 +868,9 @@ Proc H_Setup_VSANS_MASK_Structure()
 					isDenex = 1
 				endif
 				
+				// fill the same description string in the MSK file so that the (B) panel will display correctly
+				String detType=V_getDetDescription("RAW","B")
+	
 				if (isDenex)
 					Variable nx = V_getDet_pixel_num_x("RAW","B")
 					Variable ny = V_getDet_pixel_num_y("RAW","B")	
@@ -881,7 +884,7 @@ Proc H_Setup_VSANS_MASK_Structure()
 				
 				else
 					// the normal HighRes CCD detector
-					Make/O/I/N=(680,1656)	data	= 0		
+					Make/O/I/N=(kNum_x_HighRes_CCD,kNum_y_HighRes_CCD)	data	= 0		
 	
 					data[][0,5] = 1
 					data[][1650,1655] = 1
@@ -889,6 +892,9 @@ Proc H_Setup_VSANS_MASK_Structure()
 					data[675,679][] = 1
 				endif
 
+				Make/O/T/N=1 description
+				description = detType
+				
 		endif
 				
 			
@@ -1001,7 +1007,7 @@ Function V_GenerateDefaultMask()
 					data[nx-11,nx-1][] = 1
 				else
 					// HighRes CCD detector w/ normal 4x4 binning
-					Make/O/I/N=(680,1656)	data	= 0		
+					Make/O/I/N=(kNum_x_HighRes_CCD,kNum_y_HighRes_CCD)	data	= 0		
 	
 					data[][0,38] = 1
 					data[][1535,1655] = 1
@@ -1217,7 +1223,7 @@ Proc V_Display_Det_Panels()
 	Variable ny = V_getDet_pixel_num_y("RAW","B")
 	
 	Make/O/B/N=(nx,ny) tmpB
-//	Make/O/B/N=(680,1656) tmpB
+//	Make/O/B/N=(kNum_x_HighRes_CCD,kNum_y_HighRes_CCD) tmpB
 	
 	tmpLR = 1
 	tmpTB = 1
@@ -1389,8 +1395,10 @@ Function V_UpdateFourPanelDisp()
 		ModifyGraph tkLblRot(left)=90
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
-		
-		ModifyGraph height={Aspect,1}
+
+		if( cmpstr("Denex",V_getDetDescription(folder,"B")) == 0)
+			ModifyGraph height={Aspect,1}
+		endif		
 
 
 		SetActiveSubwindow ##
