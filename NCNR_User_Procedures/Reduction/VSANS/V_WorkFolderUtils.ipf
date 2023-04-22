@@ -658,7 +658,7 @@ Function V_Raw_to_work(newType)
 			
 		endfor
 
-		if(gIgnoreDetB==0)		// no difference if Denex or old HighRes
+		if(gIgnoreDetB==0)		// if calculating for "B", no difference if Denex or old HighRes
 			//"B" is separate
 			detStr = "B"
 			Wave w = V_getDetectorDataW(fname,detStr)

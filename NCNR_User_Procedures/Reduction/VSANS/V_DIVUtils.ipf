@@ -269,6 +269,8 @@ End
 
 // this is called from the button
 //
+// INDIVIDUAL is the correct method, others are simply for testing
+//
 Proc V_NormalizeDIV_proc(carriageStr)
 	String carriageStr="F"
 //	String reducedFolderType="COR",carriageStr="F"
@@ -279,11 +281,14 @@ Proc V_NormalizeDIV_proc(carriageStr)
 end
 
 
-// this function now treats all 8 panels as a single detector
+// this function now treats all 8 panels in different ways
 // for the normalization.
 // it is assuming that data from both carriages has been reduced to the COR stage
 // and has been copied over to the STO folder where it will be normalized before
 // copying to the DIV folder for saving.
+//
+// After testing and some careful thought, INDIVIDUAL is the correct method of
+// normalization. Other methods are left for testing, but should not be used.
 //
 Function Vf_NormalizeDIV_proc(carriageStr)
 	String carriageStr

@@ -1338,9 +1338,9 @@ Function Stream_ProcessEventLog(ctrlName)
 	
 // index the events before binning
 // if there is a sort of these events, I need to re-index the events for the histogram
-//	SetDataFolder root:Packages:NIST:Event
+	SetDataFolder root:Packages:NIST:Event
 	IndexForHistogram(xLoc,yLoc,binnedData)
-//	SetDataFolder root:
+	SetDataFolder root:
 	Wave index = root:Packages:NIST:Event:SavedIndex		//the index for the histogram
 	
 	
@@ -2444,12 +2444,12 @@ Proc EventCorrectionPanel()
 		SetVariable setVar1,pos={sc*140,38*sc},size={sc*100,20*sc},title="Scale",value=_NUM:0.1
 		SetVariable setvar1,limits={0.01,1,0.02},fSize=12*sc
 
-//		Button button7,pos={sc*140,64*sc},size={sc*100,20*sc},proc=EC_FindOutlierButton,title="Zap Outlier"
+		Button button7,pos={sc*140,64*sc},size={sc*100,20*sc},proc=EC_FindOutlierButton,title="Zap Outlier"
 
 //	
 //		Button buttonDiffAll,pos={sc*290,12*sc},size={sc*110,20*sc},proc=EC_DoDifferential,title="Differential-All"
 //		Button button6,pos={sc*290,38*sc},size={sc*110,20*sc},proc=EC_DoDifferential,title="Differential-One"	
-//		Button button9,pos={sc*290,64*sc},size={sc*110,20*sc},proc=EC_TrimPointsButtonProc,title="Clean-One"
+		Button button9,pos={sc*140,90*sc},size={sc*160,20*sc},proc=EC_TrimPointsButtonProc,title="Trim Between Cursors"
 //
 //		SetVariable setVar0,pos={sc*290,88*sc},size={sc*130,20*sc},title="Panel Number",value=_NUM:1
 //		SetVariable setvar0,limits={1,4,1}
@@ -2774,64 +2774,40 @@ Function EC_TrimPointsButtonProc(ba) : ButtonControl
 			l_min=V_min
 			l_max=V_max
 	
-			// get the panel number
-			ControlInfo setvar0
-			
-//			KeepOneGroup(V_Value)
-			
-			// no need to run KeepOneGroup() - this is done in Differentiate_onePanel
-			// to be sure that the grouping has been immediately done.
-			
-//			Differentiate_onePanel(V_Value,-1)		// do the whole data set
-			// generates the wave onePanel_DIF and badPoints
 
 			SetDataFolder root:Packages:NIST:Event:
 	
-	/// delete all of the "time reversal" points from the data
+//
 			Wave rescaledTime = rescaledTime
 			Wave/Z rescaledTime_DIF = rescaledTime_DIF
 			Wave timePt = timePt
 			Wave xLoc = xLoc
 			Wave yLoc = yLoc
-			Wave location = location
-			Wave tube=tube
+//			Wave location = location
+//			Wave tube=tube
 			Variable ii,num,pt,step16
 			
-			Wave bad=badPoints		// these are the "time reversal" points
-
-			num=numpnts(bad)
-			step16 = 0
-			// loop through backwards so I don't shift the index
-			for(ii=num-1;ii>=0;ii-=1)
-				pt = bad[ii]-1		// actually want to delete the point before
-				// is the time step > 16 ms? 
-				if((rescaledTime[ii] - rescaledTime[ii-1]) > kBadStep_s)
-					DeletePoints pt, 1, rescaledTime,location,timePt,xLoc,yLoc,tube
-					
-					if(WaveExists(rescaledTime_DIF))
-						DeletePoints pt, 1,rescaledTime_DIF		//may not extst
-					endif
-					
-					Printf "(Pt-1)=%d, time step (ms) = %g \r",pt,rescaledTime[ii] - rescaledTime[ii-1]
-					step16 += 1
-				endif
-			endfor
+			Variable ptA,ptB,numElements,lo,hi
 			
-			//purely to get the grammar right
-			if(step16 == 1)
-				Printf "%d point in set %d had step > 16 ms\r",step16,V_Value
-			else
-				Printf "%d points in set %d had step > 16 ms\r",step16,V_Value
-			endif	
+			ptA = pcsr(A)
+			ptB = pcsr(B)
+			lo=min(ptA,ptB)
+			hi=max(ptA,ptB)			
+			numElements = hi-lo			//
+
+			DeletePoints lo, numElements, rescaledTime,timePt,xLoc,yLoc
+
+			printf "Points %g to %g have been deleted in rescaledTime, timePt, xLoc, and yLoc\r",ptA,ptB
+			
+			// updates the longest time (as does every operation of adjusting the data)
+			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
+			t_longest = waveMax(rescaledTime)
+
 					
 			// restore the zoom
 			SetAxis left, l_min,l_max
 			SetAxis bottom, b_min,b_max
 
-			
-			// updates the longest time (as does every operation of adjusting the data)
-			NVAR t_longest = root:Packages:NIST:Event:gEvent_t_longest
-			t_longest = waveMax(rescaledTime)
 			
 			SetDataFolder root:
 			
