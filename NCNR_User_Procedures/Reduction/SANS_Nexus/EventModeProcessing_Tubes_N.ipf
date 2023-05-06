@@ -1076,7 +1076,7 @@ Function EventModeHelpButtonProc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
-			DisplayHelpTopic/Z "SANS Data Reduction Documentation[Processing SANS Event Data]"
+			DisplayHelpTopic/Z "Event Mode Data - 10m SANS"
 			break
 		case -1: // control being killed
 			break

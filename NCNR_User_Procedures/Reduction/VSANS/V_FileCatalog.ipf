@@ -341,7 +341,7 @@ Function V_CatTableHook(infoStr)
 // column =   Purpose.d; (ignore the input if multiple columns are selected, revert to "Load")
 			GetSelection table,CatVSANSTable,2
 //			Print "column = ",S_selection
-
+			
 			if(cmpstr(S_selection,"Intent.d;") == 0)
 				PopupContextualMenu "Change Intent;-;Sample;Empty Cell;Blocked Beam;Open Beam;Standard;"
 				

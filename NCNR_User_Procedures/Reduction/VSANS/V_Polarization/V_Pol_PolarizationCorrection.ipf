@@ -438,10 +438,15 @@ Window V_PolCor_Panel()
 	//
 	// now use the main protocol panel rather than trying to duplicate it here
 	//
-	Button button21,pos={sc*500,396*sc},size={sc*160,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
+	Button button21,pos={sc*500,390*sc},size={sc*160,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
 	Button button21,help={"Build a PolCor protocol using the standard Protocol Panel"}
 
-	Button button9,pos={sc*500,435*sc},size={sc*160,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Polarized Data"
+	Button button22,pos={sc*500,420*sc},size={sc*160,20*sc},proc=V_SavePolCorProtocolButton,title="Save Pol Protocol"
+	Button button22,help={"Save a PolCor protocol using the standard Protocol Panel"}
+
+
+
+	Button button9,pos={sc*500,450*sc},size={sc*160,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Polarized Data"
 	Button button9,help={"Reduce PolCor data"}
 
 
@@ -2514,16 +2519,16 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	//will prompt for protocol name, and save the protocol as a text wave
 	//prompt for name of new protocol wave to save
 	do
-		Execute "AskForName()"
-		SVAR newProtocol = root:myGlobals:Protocols:gNewStr
+		Execute "V_AskForName()"
+		SVAR newProtocol = root:Packages:NIST:VSANS:Globals:Protocols:gNewStr
 		
 		//make sure it's a valid IGOR name
 		newProtocol = CleanupName(newProtocol,0)	//strict naming convention
-		String/G root:myGlobals:Protocols:gNewStr=newProtocol		//reassign, if changed
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=newProtocol		//reassign, if changed
 		Print "newProtocol = ",newProtocol
 		
-		SetDataFolder root:myGlobals:Protocols
-		if(WaveExists( $("root:myGlobals:Protocols:" + newProtocol) ) == 1)
+		SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
+		if(WaveExists( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) ) == 1)
 			//wave already exists
 			DoAlert 1,"That name is already in use. Do you wish to overwrite the existing protocol?"
 			if(V_Flag==1)
@@ -2538,14 +2543,14 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 		Endif
 	while(notDone)
 	
-	//current data folder is  root:myGlobals:Protocols
+	//current data folder is  root:Packages:NIST:VSANS:Globals:Protocols
 	if(newProto)
-		Make/O/T/N=8 $("root:myGlobals:Protocols:" + newProtocol)
+		Make/O/T/N=8 $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
 	Endif
 	
-//	MakeProtocolFromPanel( $("root:myGlobals:Protocols:" + newProtocol) )
-	V_MakePolProtocolFromPanel( $("root:myGlobals:Protocols:" + newProtocol) )
-	String/G  root:myGlobals:Protocols:gProtoStr = newProtocol
+//	MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	V_MakePolProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtocol
 	
 	//the data folder WAS changed above, this must be reset to root:
 	SetDatafolder root:	
@@ -2566,9 +2571,7 @@ End
 Function V_MakePolProtocolFromPanel(w)
 	Wave/T w
 
-	DoAlert 0,"Not updated for VSANS -- using regular protocol panel instead"
-	return(0)
-		
+	
 	//construct the protocol text wave form the panel
 	//it is to be parsed by ExecuteProtocol() for the actual data reduction
 	PathInfo catPathName			//this is where the files came from
@@ -2601,7 +2604,7 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gDIV
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gDIV
 		if(cmpstr(str,"ask")==0)
 			w[2] = str
 		else
@@ -2616,7 +2619,7 @@ Function V_MakePolProtocolFromPanel(w)
 	else
 		//none used - set textwave (and global?)
 		w[2] = "none"
-		String/G root:myGlobals:Protocols:gDIV = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gDIV = "none"
 	endif
 	
 	//w[3] = mask file
@@ -2625,7 +2628,7 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gMASK
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gMASK
 		if(cmpstr(str,"ask")==0)
 			w[3] = str
 		else
@@ -2640,7 +2643,7 @@ Function V_MakePolProtocolFromPanel(w)
 	else
 		//none used - set textwave (and global?)
 		w[3] = "none"
-		String/G root:myGlobals:Protocols:gMASK = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gMASK = "none"
 	endif
 	
 	//w[4] = abs parameters
@@ -2649,12 +2652,12 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gAbsStr
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
 		w[4] = str
 	else
 		//none used - set textwave (and global?)
 		w[4] = "none"
-		String/G root:myGlobals:Protocols:gAbsStr = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr = "none"
 	endif
 	
 	//w[5] = averaging choices
@@ -2662,7 +2665,7 @@ Function V_MakePolProtocolFromPanel(w)
 	checked = V_value
 	if(checked)
 		//just read the global
-		SVAR avestr=root:myGlobals:Protocols:gAVE
+		SVAR avestr=root:Packages:NIST:VSANS:Globals:Protocols:gAVE
 		w[5] = avestr
 	else
 		//none used - set textwave
@@ -2671,7 +2674,7 @@ Function V_MakePolProtocolFromPanel(w)
 	
 	//w[6]
 	//work.DRK information
-	SVAR drkStr=root:myGlobals:Protocols:gDRK
+	SVAR drkStr=root:Packages:NIST:VSANS:Globals:Protocols:gDRK
 	w[6] = ""
 	
 	//w[7]

@@ -114,6 +114,7 @@ Proc DrawVCALC_Panel()
 	Button button_c,pos={sc*330,70*sc},size={sc*100,20*sc},title="Save Config",proc=V_VCALCSaveConfiguration
 	Button button_d,pos={sc*330,100*sc},size={sc*100,20*sc},title="Save NICE",proc=V_VCALCSaveNICEConfiguration
 
+	Button button_e,pos={sc*330,40*sc},size={sc*100,20*sc},title="Help",proc=V_VCALCHelpButtonProc
 
 	PopupMenu popup_a,pos={sc*50,40*sc},size={sc*142,20*sc},title="Presets"
 	PopupMenu popup_a,mode=1,popvalue="White Beam",value= root:Packages:NIST:VSANS:VCALC:gPresetPopStr
@@ -362,6 +363,16 @@ Proc DrawVCALC_Panel()
 	PopupMenu VCALCCtrl_5b,pos={sc*40,(260-50)*sc},size={sc*200,20*sc},title="Model Function",disable=1
 	PopupMenu VCALCCtrl_5b,mode=1,popvalue="Debye",value= root:Packages:NIST:VSANS:VCALC:gModelFunctionType,proc=VC_SimModelFunc_PopProc
 	
+End
+
+
+Function V_VCALCHelpButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	DisplayHelpTopic/Z/K=1 "VCALC"
+	if(V_flag !=0)
+		DoAlert 0,"The VCALC Help topic could not be found"
+	endif
 End
 
 Function V_VCALCShowMaskButtonProc(ba) : ButtonControl
@@ -1789,7 +1800,7 @@ Proc VC_Initialize_Space()
 
 // to fill in:
 // values for always-visible items
-	String/G gPresetPopStr = "F+M Ng0 Low Q;F+M Ng2 Mid Q;F+M Ng7 Mid Q;F+M Ng9 High Q;Converging Pinholes;Narrow Slit;White Beam;Super White Beam;Graphite;Polarizer;"
+	String/G gPresetPopStr = "F+M Ng0 Low Q;F+M Ng2 Mid Q;F+M Ng7 Mid Q;F+M Ng9 High Q;Converging Pinholes;White Beam;Super White Beam;Graphite;Narrow Slit;Polarizer;"
 	String/G gBinTypeStr = ksBinTypeStr
 	Variable/G gBeamIntensity= 0
 
