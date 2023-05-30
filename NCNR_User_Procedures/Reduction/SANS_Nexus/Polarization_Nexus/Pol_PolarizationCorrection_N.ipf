@@ -995,8 +995,8 @@ Function LoadRawPolarizedButton(ba) : ButtonControl
 // -- first checking to be sure that no rows are zero - this will result in a singular matrix otherwise		
 			ControlInfo/W=PolCor_Panel PolCorTab
 			type = S_value
-			WAVE matA = $("root:Packages:NIST:"+type+":PolMatrix")
-			WAVE matA_err = $("root:Packages:NIST:"+type+":PolMatrix_err")
+			WAVE matA = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix")
+			WAVE matA_err = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix_err")
 			matA_err = sqrt(matA_err)
 			
 			// check for zero rows before inverting -- means not all data loaded
@@ -1011,6 +1011,7 @@ Function LoadRawPolarizedButton(ba) : ButtonControl
 				// calculate the inverse of the coefficient matrix
 				SetDataFolder $("root:Packages:NIST:"+type)
 				MatrixInverse/G matA
+	//			MatrixInverse matA
 				Duplicate/O M_Inverse Inv_PolMatrix
 				
 				// now calculate the error of the inverse matrix
@@ -1148,16 +1149,22 @@ Function LoadPolarizedData(pType)
 	// this adds multiple raw data files, as specified by the list
 	err = AddFilesInList(type,parsedRuns)		// adds to a work file = type, not RAW
 	UpdateDisplayInformation(type)
-	
-	TagLoadedData(type,pType)		//see also DisplayTaggedData()
+
+// this will make a copy with pType but NOT _pc	(this is all the function TagLoaded did)
+	CopyHDFToWorkFolder(type,type+ "_" + pType)
+
+//	TagLoadedData(type,pType)		//see also DisplayTaggedData()
 	
 	// now add the appropriate bits to the matrix
-	if(!WaveExists($("root:Packages:NIST:"+type+":PolMatrix")))
-		Make/O/D/N=(4,4) $("root:Packages:NIST:"+type+":PolMatrix")
-		Make/O/D/N=(4,4) $("root:Packages:NIST:"+type+":PolMatrix_err")
+	//follow the lead of VSANS, not VAX code
+	if(!WaveExists($("root:Packages:NIST:Polarization:"+type+"_PolMatrix")))
+		Make/O/D/N=(4,4) $("root:Packages:NIST:Polarization:"+type+"_PolMatrix")
 	endif
-	WAVE matA = $("root:Packages:NIST:"+type+":PolMatrix")
-	WAVE matA_err = $("root:Packages:NIST:"+type+":PolMatrix_err")
+	if(!WaveExists($("root:Packages:NIST:Polarization:"+type+"_PolMatrix_err")))
+		Make/O/D/N=(4,4) $("root:Packages:NIST:Polarization:"+type+"_PolMatrix_err")
+	endif
+	WAVE matA = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix")
+	WAVE matA_err = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix_err")
 
 //			listStr = ControlNameList("PolCor_Panel",";","*"+pType+"*")
 
@@ -1168,12 +1175,33 @@ Function LoadPolarizedData(pType)
 	AddToPolMatrix(matA,matA_err,pType,tMid)
 
 
+// be sure the flag for polarization correction is cleared (killed)
+	// $("root:Packages:NIST:VSANS:"+type+"_UU:PolCorDone")
+	// check for their existence first to avoid errors (even though /Z) ???	
+	if(DataFolderExists("root:Packages:NIST:Polarization:"+type+"_UU"))
+		KillWaves/Z $("root:Packages:NIST:Polarization:"+type+"_UU:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:Polarization:"+type+"_DU"))
+		KillWaves/Z $("root:Packages:NIST:Polarization:"+type+"_DU:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:Polarization:"+type+"_DD"))
+		KillWaves/Z $("root:Packages:NIST:Polarization:"+type+"_DD:PolCorDone")
+	endif
+	if(DataFolderExists("root:Packages:NIST:Polarization:"+type+"_UD"))
+		KillWaves/Z $("root:Packages:NIST:Polarization:"+type+"_UD:PolCorDone")
+	endif
+	
 	SetDataFolder root:
 	
 	return(0)
 End
 
 
+//
+// at this point -- I think that the matB calculation (using the e-values) is the correct
+// calculation (see the uncommented matA=matB assignment at the end of the loop)
+// -- May 2023
+//
 // by definition-- the rows are:
 //
 //	UU = 0
@@ -1267,6 +1295,19 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	proportion /= summedMonCts
 
+	if(exists("root:Packages:NIST:Polarization:MatB")==0)
+		Make/O/D/N=(4,4) root:Packages:NIST:Polarization:MatB
+		Make/O/D/N=(4,4) root:Packages:NIST:Polarization:MatB_err
+	endif
+	WAVE matB = root:Packages:NIST:Polarization:MatB
+	WAVE matB_err = root:Packages:NIST:Polarization:MatB_err
+
+//// sometimes ends up in root:, so...
+//	if(exists("root:MatB")==0)
+//		Make/O/D/N=(4,4) MatB,MatB_err
+//	endif
+	
+	
 	// loop over the (10) rows in the listWave
 	fileCount=0
 	for(ii=0;ii<num;ii+=1)
@@ -1317,7 +1358,7 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 //			monCts /= 1e8		//to get a normalized value to add proportionally
 			
 			// use the proper proportion of each file to add to each row
-//			monCts = proportion[ii]
+			monCts = proportion[ii]
 			
 			Variable err_monCts
 			err_monCts = sqrt(monCts)
@@ -1329,22 +1370,27 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
 //					
-//					matA[row][0] += ea_uu*ec_uu*monCts
-//					matA[row][1] += ea_du*ec_uu*monCts
-//					matA[row][2] += ea_du*ec_du*monCts
-//					matA[row][3] += ea_uu*ec_du*monCts
-//
-//					matA_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB[row][0] += ea_uu*ec_uu*monCts
+					matB[row][1] += ea_du*ec_uu*monCts
+					matB[row][2] += ea_du*ec_du*monCts
+					matB[row][3] += ea_uu*ec_du*monCts
+
+					matB_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // end original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1365,22 +1411,27 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_uu*monCts
-//					matA[row][1] += ea_dd*ec_uu*monCts
-//					matA[row][2] += ea_dd*ec_du*monCts
-//					matA[row][3] += ea_ud*ec_du*monCts
-//					
-//					matA_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
+					
+					matB[row][0] += ea_ud*ec_uu*monCts
+					matB[row][1] += ea_dd*ec_uu*monCts
+					matB[row][2] += ea_dd*ec_du*monCts
+					matB[row][3] += ea_ud*ec_du*monCts
+					
+					matB_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1402,22 +1453,27 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_ud*monCts
-//					matA[row][1] += ea_dd*ec_ud*monCts
-//					matA[row][2] += ea_dd*ec_dd*monCts
-//					matA[row][3] += ea_ud*ec_dd*monCts					
-//
-//					matA_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_ud*ec_ud*monCts
+					matB[row][1] += ea_dd*ec_ud*monCts
+					matB[row][2] += ea_dd*ec_dd*monCts
+					matB[row][3] += ea_ud*ec_dd*monCts					
+
+					matB_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1438,22 +1494,27 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_uu*ec_ud*monCts
-//					matA[row][1] += ea_du*ec_ud*monCts
-//					matA[row][2] += ea_du*ec_dd*monCts
-//					matA[row][3] += ea_uu*ec_dd*monCts					
-//										
-//					matA_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_uu*ec_ud*monCts
+					matB[row][1] += ea_du*ec_ud*monCts
+					matB[row][2] += ea_du*ec_dd*monCts
+					matB[row][3] += ea_uu*ec_dd*monCts					
+										
+					matB_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // original version
 	
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1475,6 +1536,15 @@ Function AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
+
+	
+// use the original calculation (matB) whichi= I think is correct, or the version (matA) that was
+// ported from the c++ code and appears to be missing a factor of /4 , making the coefficients
+// too large, and the resulting cross sections too small (by the same factor of 4)
+	
+	matA = matB
+	
+	
 	
 	SetDataFolder root:
 	return(0)
@@ -1488,15 +1558,21 @@ End
 Function MakePCResultWaves(type,pType)
 	String type,pType
 
-	ptype = "_" + pType			// add an extra underscore
-	String pcExt = "_pc"
-	String destPath = "root:Packages:NIST:" + type
-	Duplicate/O $(destPath + ":data"+pType), $(destPath + ":data"+pType+pcExt)
-	Duplicate/O $(destPath + ":linear_data"+pType),$(destPath + ":linear_data"+pType+pcExt)
-	Duplicate/O $(destPath + ":linear_data_error"+pType),$(destPath + ":linear_data_error"+pType+pcExt)
-	Duplicate/O $(destPath + ":textread"+pType),$(destPath + ":textread"+pType+pcExt)
-	Duplicate/O $(destPath + ":integersread"+pType),$(destPath + ":integersread"+pType+pcExt)
-	Duplicate/O $(destPath + ":realsread"+pType),$(destPath + ":realsread"+pType+pcExt)
+	
+	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
+	
+	CopyHDFToWorkFolder(type,ptype)
+
+	
+//	ptype = "_" + pType			// add an extra underscore
+//	String pcExt = "_pc"
+//	String destPath = "root:Packages:NIST:" + type
+//	Duplicate/O $(destPath + ":data"+pType), $(destPath + ":data"+pType+pcExt)
+//	Duplicate/O $(destPath + ":linear_data"+pType),$(destPath + ":linear_data"+pType+pcExt)
+//	Duplicate/O $(destPath + ":linear_data_error"+pType),$(destPath + ":linear_data_error"+pType+pcExt)
+//	Duplicate/O $(destPath + ":textread"+pType),$(destPath + ":textread"+pType+pcExt)
+//	Duplicate/O $(destPath + ":integersread"+pType),$(destPath + ":integersread"+pType+pcExt)
+//	Duplicate/O $(destPath + ":realsread"+pType),$(destPath + ":realsread"+pType+pcExt)
 	
 	return(0)
 End
@@ -1509,17 +1585,27 @@ Function TagLoadedData(type,pType)
 
 //	ConvertFolderToLinearScale(type)
 
-	ptype = "_" + pType			// add an extra underscore
-	String destPath = "root:Packages:NIST:" + type
-	Duplicate/O $(destPath + ":data"), $(destPath + ":data"+pType)
-	Duplicate/O $(destPath + ":linear_data"),$(destPath + ":linear_data"+pType)
-	Duplicate/O $(destPath + ":linear_data_error"),$(destPath + ":linear_data_error"+pType)
-	Duplicate/O $(destPath + ":textread"),$(destPath + ":textread"+pType)
-	Duplicate/O $(destPath + ":integersread"),$(destPath + ":integersread"+pType)
-	Duplicate/O $(destPath + ":realsread"),$(destPath + ":realsread"+pType)
 	
-	SVAR FileList = $(destPath + ":FileList")		//stick the list of files as a wave note. Very inelegant...
-	Note $(destPath + ":textread"+pType),FileList
+	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
+	
+	CopyHDFToWorkFolder(type,ptype)
+
+	
+//	ptype = "_" + pType			// add an extra underscore
+//	String destPath = "root:Packages:NIST:" + type
+//	Duplicate/O $(destPath + ":data"), $(destPath + ":data"+pType)
+//	Duplicate/O $(destPath + ":linear_data"),$(destPath + ":linear_data"+pType)
+//	Duplicate/O $(destPath + ":linear_data_error"),$(destPath + ":linear_data_error"+pType)
+//	Duplicate/O $(destPath + ":textread"),$(destPath + ":textread"+pType)
+//	Duplicate/O $(destPath + ":integersread"),$(destPath + ":integersread"+pType)
+//	Duplicate/O $(destPath + ":realsread"),$(destPath + ":realsread"+pType)
+//
+
+// not sure that I need this at all - since each folder that I duplicate will have its
+// own file list
+	
+//	SVAR FileList = $(destPath + ":FileList")		//stick the list of files as a wave note. Very inelegant...
+//	Note $(destPath + ":textread"+pType),FileList
 	
 	
 	return(0)
@@ -1534,22 +1620,11 @@ Proc DisplayTaggedData(type,pType)
 	String type="SAM",pType="UU"
 
 	String/G root:myGlobals:gDataDisplayType=type
-	ConvertFolderToLinearScale(type)
-	
-	ptype = "_" + pType			// add an extra underscore
-	String destPath = "root:Packages:NIST:" + type
-	$(destPath + ":linear_data") = $(destPath + ":linear_data"+pType)
-	$(destPath + ":linear_data_error") = $(destPath + ":linear_data_error"+pType)
-	$(destPath + ":textread") = $(destPath + ":textread"+pType)
-	$(destPath + ":integersread") = $(destPath + ":integersread"+pType)
-	$(destPath + ":realsread") = $(destPath + ":realsread"+pType)
 
-// make the data equal to linear data
-	$(destPath + ":data") = $(destPath + ":linear_data"+pType)
-
+	CopyHDFToWorkFolder(type+"_"+pType,type)
 
 	root:myGlobals:gDataDisplayType = type + pType
-	
+
 	UpdateDisplayInformation(type)
 
 	//update the displayed filename, using FileList in the current data folder
@@ -1586,24 +1661,66 @@ Function PolCorButton(ba) : ButtonControl
 			// make waves for the result
 			// these duplicate the data and add "_pc" for later use
 			// linear_data_error_UU_pc etc. are created
-			MakePCResultWaves(type,"UU")
-			MakePCResultWaves(type,"DU")
-			MakePCResultWaves(type,"DD")
-			MakePCResultWaves(type,"UD")
 			
-			
+			// Don't do this -- it makes too many folders and the experiment becomes too large
+//			MakePCResultWaves(type,"UU")
+//			MakePCResultWaves(type,"DU")
+//			MakePCResultWaves(type,"DD")
+//			MakePCResultWaves(type,"UD")
+	
+			if(exists("root:Packages:NIST:"+type+"_UU:PolCorDone") == 0)
+			// instead, add a flag in the folders (each of the four) to signify that the polarization
+			// correction has been done and to be sure to not do it again
+				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_UU:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_DU:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_DD:PolCorDone")	
+				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_UD:PolCorDone")	
+			else
+				DoAlert 0,"Polarization correction already done, skipping"
+				return(0)
+			endif
+		
+	
 			SetDataFolder $("root:Packages:NIST:"+type)
 
-// the linear data and its errors, declare and initialize			
-			WAVE linear_data_UU_pc = linear_data_UU_pc
-			WAVE linear_data_DU_pc = linear_data_DU_pc
-			WAVE linear_data_DD_pc = linear_data_DD_pc
-			WAVE linear_data_UD_pc = linear_data_UD_pc
-			WAVE linear_data_error_UU_pc = linear_data_error_UU_pc
-			WAVE linear_data_error_DU_pc = linear_data_error_DU_pc
-			WAVE linear_data_error_DD_pc = linear_data_error_DD_pc
-			WAVE linear_data_error_UD_pc = linear_data_error_UD_pc
-						
+	// Use the data in "data" since it is always linear in VSANS and Nexus SANS
+			// Store the result in a "linear_data" copy locally
+			// copy the PolCor result back into data so that the whole folder is consistent and now
+			// polarized-corrected.
+			//
+			// there is not a separate "linear_data" wave in the folder, only "data"
+			
+			// the linear data and its errors, declare and initialize
+			
+			WAVE linear_data_UU = getDetectorDataW(type+"_UU")
+			WAVE linear_data_DU = getDetectorDataW(type+"_DU")
+			WAVE linear_data_DD = getDetectorDataW(type+"_DD")
+			WAVE linear_data_UD = getDetectorDataW(type+"_UD")
+			
+			WAVE linear_data_error_UU = getDetectorDataErrW(type+"_UU")
+			WAVE linear_data_error_DU = getDetectorDataErrW(type+"_DU")
+			WAVE linear_data_error_DD = getDetectorDataErrW(type+"_DD")
+			WAVE linear_data_error_UD = getDetectorDataErrW(type+"_UD")
+			
+			// make these "pc" waves as a copy of the data
+			Duplicate/O linear_data_UU $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")	
+			Duplicate/O linear_data_DU $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")	
+			Duplicate/O linear_data_DD $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")	
+			Duplicate/O linear_data_UD $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")	
+			Duplicate/O linear_data_UU $("root:Packages:NIST:"+type+"_UU:linear_data_error_UU_pc")	
+			Duplicate/O linear_data_DU $("root:Packages:NIST:"+type+"_DU:linear_data_error_DU_pc")	
+			Duplicate/O linear_data_DD $("root:Packages:NIST:"+type+"_DD:linear_data_error_DD_pc")	
+			Duplicate/O linear_data_UD $("root:Packages:NIST:"+type+"_UD:linear_data_error_UD_pc")	
+
+			WAVE linear_data_UU_pc = $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")	
+			WAVE linear_data_DU_pc = $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")	
+			WAVE linear_data_DD_pc = $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")	
+			WAVE linear_data_UD_pc = $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")	
+			WAVE linear_data_error_UU_pc = $("root:Packages:NIST:"+type+"_UU:linear_data_error_UU_pc")	
+			WAVE linear_data_error_DU_pc = $("root:Packages:NIST:"+type+"_DU:linear_data_error_DU_pc")	
+			WAVE linear_data_error_DD_pc = $("root:Packages:NIST:"+type+"_DD:linear_data_error_DD_pc")	
+			WAVE linear_data_error_UD_pc = $("root:Packages:NIST:"+type+"_UD:linear_data_error_UD_pc")	
+									
 			linear_data_UU_pc = 0
 			linear_data_DU_pc = 0
 			linear_data_DD_pc = 0
@@ -1618,22 +1735,20 @@ Function PolCorButton(ba) : ButtonControl
 			WAVE vecB = vecB
 			
 			// the coefficient matrix and the experimental data
-			WAVE matA = $("root:Packages:NIST:"+type+":PolMatrix")
-			WAVE linear_data_UU = linear_data_UU
-			WAVE linear_data_DU = linear_data_DU
-			WAVE linear_data_DD = linear_data_DD
-			WAVE linear_data_UD = linear_data_UD
+			WAVE matA = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix")
+			
+			
+
 
 // everything needed for the error calculation
 // the PolMatrix error matrices
 // and the data error
-			WAVE inv = Inv_PolMatrix
-			WAVE inv_err = Inv_PolMatrix_err			
-			WAVE linear_data_error_UU = linear_data_error_UU
-			WAVE linear_data_error_DU = linear_data_error_DU
-			WAVE linear_data_error_DD = linear_data_error_DD
-			WAVE linear_data_error_UD = linear_data_error_UD			
+
+//these are in the type folder, set the path directly
+			WAVE inv = $("root:Packages:NIST:"+type+":Inv_PolMatrix")
+			WAVE inv_err = $("root:Packages:NIST:"+type+":Inv_PolMatrix_err")
 			
+								
 			numRows = DimSize(linear_data_UU_pc, 0 )
 			numCols = DimSize(linear_data_UU_pc, 1 )
 			
@@ -1684,19 +1799,19 @@ Function PolCorButton(ba) : ButtonControl
 			linear_data_error_UD_pc = sqrt(linear_data_error_UD_pc)
 			
 			
-			//update the data as log of the linear. more correct to use the default scaling
-			// this is necessary for proper display of the data
-			SetDataFolder $("root:Packages:NIST:"+type)			// this should be redundant, but I somehow eneded up in root: here???
-
-			WAVE data_UU_pc = data_UU_pc
-			WAVE data_DU_pc = data_DU_pc
-			WAVE data_DD_pc = data_DD_pc
-			WAVE data_UD_pc = data_UD_pc
-			data_UU_pc = log(linear_data_UU_pc)
-			data_DU_pc = log(linear_data_DU_pc)
-			data_DD_pc = log(linear_data_DD_pc)
-			data_UD_pc = log(linear_data_UD_pc)
-			
+//			//update the data as log of the linear. more correct to use the default scaling
+//			// this is necessary for proper display of the data
+//			SetDataFolder $("root:Packages:NIST:"+type)			// this should be redundant, but I somehow eneded up in root: here???
+//
+//			WAVE data_UU_pc = data_UU_pc
+//			WAVE data_DU_pc = data_DU_pc
+//			WAVE data_DD_pc = data_DD_pc
+//			WAVE data_UD_pc = data_UD_pc
+//			data_UU_pc = log(linear_data_UU_pc)
+//			data_DU_pc = log(linear_data_DU_pc)
+//			data_DD_pc = log(linear_data_DD_pc)
+//			data_UD_pc = log(linear_data_UD_pc)
+//			
 			
 			SetDataFolder root:
 			
@@ -1780,7 +1895,7 @@ Function ShowPolMatrixButton(ba) : ButtonControl
 			Print "selected data type = ",type
 			tabNum = V_Value
 			
-			Wave/Z Pol = $("root:Packages:NIST:"+type+":PolMatrix")
+			Wave/Z Pol = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix")
 			if(WaveExists(Pol))
 				Edit/W=(5,44,510,251)/K=1 Pol
 			endif
@@ -1788,7 +1903,7 @@ Function ShowPolMatrixButton(ba) : ButtonControl
 			if(WaveExists(Inv_Pol))
 				Edit/W=(6,506,511,713)/K=1 Inv_Pol
 			endif
-			Wave/Z Pol_err = $("root:Packages:NIST:"+type+":PolMatrix_err")
+			Wave/Z Pol_err = $("root:Packages:NIST:Polarization:"+type+"_PolMatrix_err")
 			if(WaveExists(Pol_err))
 				Edit/W=(5,275,510,482)/K=1 Pol_err
 			endif
@@ -2662,35 +2777,35 @@ Function Display_4(type,scaling)
 	NVAR isLogscale = $(dest + ":gIsLogScale")
 
 	SetDataFolder $("root:Packages:NIST:"+type)
+
+
+// TODO
+// - declare the data waves explicitly, they are in separate folders
+// - change the wave scaling for log/lin scale to use lookup waves
+// -- extra copy of data for log scaling not needed since data is not changed
+//	
+//root:Packages:NIST:SAM_DD:linear_data_DD_pc
 	
-	wave uu = linear_data_uu_pc
-	wave d_uu = data_uu_pc
+	wave uu = $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")
+//	wave d_uu = data_uu_pc
 	
-	wave du = linear_data_du_pc
-	wave d_du = data_du_pc
+	wave du = $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")
+//	wave d_du = data_du_pc
 	
-	wave dd = linear_data_dd_pc
-	wave d_dd = data_dd_pc
+	wave dd = $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")
+//	wave d_dd = data_dd_pc
 	
-	wave ud = linear_data_ud_pc
-	wave d_ud = data_ud_pc
+	wave ud = $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")
+//	wave d_ud = data_ud_pc
 		
 	if(cmpstr(scaling,"log") == 0)
 
-		d_uu = log(uu)
-		d_du = log(du)
-		d_dd = log(dd)
-		d_ud = log(ud)			
-		
+		wave lookup = root:myGlobals:logLookupWave		
 		isLogScale = 1
 			
 	else
 
-		d_uu = uu
-		d_du = du
-		d_dd = dd
-		d_ud = ud
-			
+		wave lookup = root:myGlobals:linearLookupWave		
 		isLogScale = 0
 
 	endif
@@ -2707,23 +2822,31 @@ Function Display_4(type,scaling)
 		TitleBox title0 title="Only Polarization-corrected sets are displayed",pos={5,5}
 
 	else
-		RemoveImage/Z data_uu_pc		//remove the old images (different data folder)
-		RemoveImage/Z data_du_pc
-		RemoveImage/Z data_dd_pc
-		RemoveImage/Z data_ud_pc
+		RemoveImage/Z linear_data_UU_pc		//remove the old images (different data folder)
+		RemoveImage/Z linear_data_DU_pc
+		RemoveImage/Z linear_data_DD_pc
+		RemoveImage/Z linear_data_UD_pc
 		
 		DoWindow/T SANS_X4,type+"_pc"
 
 	endif
+
+
+//		ModifyImage data ctab= {*,*,ColdWarm,0},lookup= root:myGlobals:linearLookupWave
+
+
 	
-	AppendImage/B=bot_uu/L=left_uu data_UU_pc
-	ModifyImage data_UU_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_dd/L=left_dd data_DD_pc
-	ModifyImage data_DD_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_du/L=left_du data_DU_pc
-	ModifyImage data_DU_pc ctab= {*,*,YellowHot,0}
-	AppendImage/B=bot_ud/L=left_ud data_UD_pc
-	ModifyImage data_UD_pc ctab= {*,*,YellowHot,0}
+	AppendImage/B=bot_uu/L=left_uu UU
+	ModifyImage linear_data_UU_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	
+	AppendImage/B=bot_dd/L=left_dd dd
+	ModifyImage linear_data_DD_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	
+	AppendImage/B=bot_du/L=left_du du
+	ModifyImage linear_data_DU_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	
+	AppendImage/B=bot_ud/L=left_ud ud
+	ModifyImage linear_data_UD_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
 	
 	DoUpdate
 			

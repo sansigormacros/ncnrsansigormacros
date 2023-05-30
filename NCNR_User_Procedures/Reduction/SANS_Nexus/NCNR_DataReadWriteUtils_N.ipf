@@ -573,7 +573,15 @@ Function/WAVE getRealWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+// -- added in extra list of Polarized beam work folders
+
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))

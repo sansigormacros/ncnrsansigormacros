@@ -630,7 +630,9 @@ end
 // dd-mon-yyyy hh:mm:ss -> seconds
 // the VAX uses 24 hr time for hh
 //
-//
+// ** if I convert VAX->Nexus, the date/time will still be VAX format
+// -- check for this is a crude way... This causes issues with polarization reduction
+// if time is not interpreted properly
 //
 // dateAndTime is the full string of "yyyy-MM-dd'T'HH:mm:ssZ" OR "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 
@@ -641,8 +643,15 @@ Function N_ConvertNexusDateTime2secs(dateAndTime)
 	string str,monStr
 	
 	str=dateandtime
+	
+	
 	sscanf str,"%d-%d-%dT%d:%d:%d",yr,mon,day,hh,mm,ss
-//	mon = N_monStr2num(monStr)
+	if(mon == 0)
+		// string not interpreted properly, must be VAX
+	// // dd-mon-yyyy hh:mm:ss -> seconds	
+		sscanf str,"%d-%3s-%4d %d:%d:%d",day,monStr,yr,hh,mm,ss
+		mon = N_monStr2num(monStr)
+	endif
 //	print yr,mon,day,hh,mm,ss
 	time_secs = date2secs(yr,mon,day)
 	time_secs += hh*3600 + mm*60 + ss

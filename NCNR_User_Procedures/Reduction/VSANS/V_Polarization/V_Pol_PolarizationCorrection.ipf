@@ -1063,7 +1063,11 @@ Function V_LoadPolarizedData(pType)
 	return(0)
 End
 
-
+//
+// at this point -- I think that the matB calculation (using the e-values) is the correct
+// calculation (see the uncommented matA=matB assignment at the end of the loop)
+// -- May 2023
+//
 // by definition-- the rows are:
 //
 //	UU = 0
@@ -1157,6 +1161,15 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	proportion /= summedMonCts
 
+	if(exists("root:Packages:NIST:VSANS:Globals:Polarization:MatB")==0)
+		Make/O/D/N=(4,4) MatB,MatB_err
+	endif
+
+// sometimes ends up in root:, so...
+	if(exists("root:MatB")==0)
+		Make/O/D/N=(4,4) MatB,MatB_err
+	endif
+	
 	// loop over the (10) rows in the listWave
 	fileCount=0
 	for(ii=0;ii<num;ii+=1)
@@ -1207,7 +1220,7 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 //			monCts /= 1e8		//to get a normalized value to add proportionally
 			
 			// use the proper proportion of each file to add to each row
-//			monCts = proportion[ii]
+			monCts = proportion[ii]
 			
 			Variable err_monCts
 			err_monCts = sqrt(monCts)
@@ -1219,22 +1232,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
 //					
-//					matA[row][0] += ea_uu*ec_uu*monCts
-//					matA[row][1] += ea_du*ec_uu*monCts
-//					matA[row][2] += ea_du*ec_du*monCts
-//					matA[row][3] += ea_uu*ec_du*monCts
-//
-//					matA_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB[row][0] += ea_uu*ec_uu*monCts
+					matB[row][1] += ea_du*ec_uu*monCts
+					matB[row][2] += ea_du*ec_du*monCts
+					matB[row][3] += ea_uu*ec_du*monCts
+
+					matB_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // end original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1255,22 +1273,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_uu*monCts
-//					matA[row][1] += ea_dd*ec_uu*monCts
-//					matA[row][2] += ea_dd*ec_du*monCts
-//					matA[row][3] += ea_ud*ec_du*monCts
-//					
-//					matA_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
+					
+					matB[row][0] += ea_ud*ec_uu*monCts
+					matB[row][1] += ea_dd*ec_uu*monCts
+					matB[row][2] += ea_dd*ec_du*monCts
+					matB[row][3] += ea_ud*ec_du*monCts
+					
+					matB_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1292,22 +1315,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_ud*monCts
-//					matA[row][1] += ea_dd*ec_ud*monCts
-//					matA[row][2] += ea_dd*ec_dd*monCts
-//					matA[row][3] += ea_ud*ec_dd*monCts					
-//
-//					matA_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_ud*ec_ud*monCts
+					matB[row][1] += ea_dd*ec_ud*monCts
+					matB[row][2] += ea_dd*ec_dd*monCts
+					matB[row][3] += ea_ud*ec_dd*monCts					
+
+					matB_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1328,22 +1356,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_uu*ec_ud*monCts
-//					matA[row][1] += ea_du*ec_ud*monCts
-//					matA[row][2] += ea_du*ec_dd*monCts
-//					matA[row][3] += ea_uu*ec_dd*monCts					
-//										
-//					matA_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_uu*ec_ud*monCts
+					matB[row][1] += ea_du*ec_ud*monCts
+					matB[row][2] += ea_du*ec_dd*monCts
+					matB[row][3] += ea_uu*ec_dd*monCts					
+										
+					matB_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // original version
 	
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1365,6 +1398,14 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
+
+	
+// use the original calculation (matB) whichi= I think is correct, or the version (matA) that was
+// ported from the c++ code and appears to be missing a factor of /4 , making the coefficients
+// too large, and the resulting cross sections too small (by the same factor of 4)
+	
+	matA = matB
+	
 	
 	SetDataFolder root:
 	return(0)

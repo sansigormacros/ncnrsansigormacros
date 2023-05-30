@@ -627,6 +627,13 @@ End
 Function DecayPanelPopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 
+	Variable sc=1
+	NVAR/Z gLaptopMode = root:Packages:NIST:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	switch( pa.eventCode )
 		case 2: // mouse up
 			Variable popNum = pa.popNum
@@ -649,7 +656,7 @@ Function DecayPanelPopMenuProc(pa) : PopupMenuControl
 			SetDataFolder root:Packages:NIST:Polarization:Cells
 
 			KillWindow DecayPanel#T0
-			Edit/W=(14,35,794,240)/HOST=DecayPanel
+			Edit/W=(sc*14,sc*35,sc*794,sc*240)/HOST=DecayPanel
 			RenameWindow #,T0
 			AppendtoTable/W=DecayPanel#T0 decay.ld			//show the labels
 			ModifyTable width(Point)=0
