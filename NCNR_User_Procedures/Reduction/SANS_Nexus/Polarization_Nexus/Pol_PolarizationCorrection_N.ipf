@@ -633,7 +633,7 @@ Window PolCor_Panel()
 // BKG Tab -- DU, DD, UD are not shown, since the background is not dependent on the flipper states, so only one background
 // file is necessary - this is "incorrectly" labeled as UU. I'll get around to changing this in the future...
 //
-	TitleBox title_2_UU,pos={sc*250,100*sc},size={sc*400,48*sc},title="\\f01BGD files are independent of polarization\rEnter all as UU",fSize=12
+	TitleBox title_2_UU,pos={sc*250,100*sc},size={sc*400,48*sc},title="\\f01BGD files are independent of\rpolarization. Enter all as UU",fSize=12
 
 
 	// UU
@@ -1009,13 +1009,16 @@ Function LoadRawPolarizedButton(ba) : ButtonControl
 			endfor
 			if(flag)		//PolMatrix OK
 				// calculate the inverse of the coefficient matrix
-				SetDataFolder $("root:Packages:NIST:"+type)
+				SetDataFolder $("root:Packages:NIST:Polarization:")
 				MatrixInverse/G matA
-	//			MatrixInverse matA
-				Duplicate/O M_Inverse Inv_PolMatrix
+				Duplicate/O M_Inverse $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix")
+				
+				WAVE Inv_PolMatrix = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix")
 				
 				// now calculate the error of the inverse matrix
-				Duplicate/O Inv_PolMatrix Inv_PolMatrix_err
+				Duplicate/O Inv_PolMatrix $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix_err")
+				WAVE Inv_PolMatrix_err = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix_err")
+				
 				Inv_PolMatrix_err=0
 				
 				for(aa=0;aa<4;aa+=1)
@@ -1148,9 +1151,10 @@ Function LoadPolarizedData(pType)
 	
 	// this adds multiple raw data files, as specified by the list
 	err = AddFilesInList(type,parsedRuns)		// adds to a work file = type, not RAW
-	UpdateDisplayInformation(type)
+//	UpdateDisplayInformation(type)
 
 // this will make a copy with pType but NOT _pc	(this is all the function TagLoaded did)
+// this will also kill the SANS_Data display, so don't bother updating the display (above)
 	CopyHDFToWorkFolder(type,type+ "_" + pType)
 
 //	TagLoadedData(type,pType)		//see also DisplayTaggedData()
@@ -1190,6 +1194,9 @@ Function LoadPolarizedData(pType)
 	if(DataFolderExists("root:Packages:NIST:Polarization:"+type+"_UD"))
 		KillWaves/Z $("root:Packages:NIST:Polarization:"+type+"_UD:PolCorDone")
 	endif
+
+// show just the last file
+	UpdateDisplayInformation(type)
 	
 	SetDataFolder root:
 	
@@ -1586,7 +1593,8 @@ Function TagLoadedData(type,pType)
 //	ConvertFolderToLinearScale(type)
 
 	
-	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
+//	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
+	ptype = type+ "_" + pType			// add an extra underscore
 	
 	CopyHDFToWorkFolder(type,ptype)
 
@@ -1628,7 +1636,7 @@ Proc DisplayTaggedData(type,pType)
 	UpdateDisplayInformation(type)
 
 	//update the displayed filename, using FileList in the current data folder
-	String/G root:myGlobals:gCurDispFile = note($(destPath + ":textread"+pType))		//read from the wave note
+//	String/G root:myGlobals:gCurDispFile = note($(destPath + ":textread"+pType))		//read from the wave note
 	
 End
 
@@ -1745,8 +1753,8 @@ Function PolCorButton(ba) : ButtonControl
 // and the data error
 
 //these are in the type folder, set the path directly
-			WAVE inv = $("root:Packages:NIST:"+type+":Inv_PolMatrix")
-			WAVE inv_err = $("root:Packages:NIST:"+type+":Inv_PolMatrix_err")
+			WAVE inv = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix")
+			WAVE inv_err = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix_err")
 			
 								
 			numRows = DimSize(linear_data_UU_pc, 0 )
@@ -1899,7 +1907,7 @@ Function ShowPolMatrixButton(ba) : ButtonControl
 			if(WaveExists(Pol))
 				Edit/W=(5,44,510,251)/K=1 Pol
 			endif
-			Wave/Z Inv_Pol = $("root:Packages:NIST:"+type+":Inv_PolMatrix")
+			Wave/Z Inv_Pol = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix")
 			if(WaveExists(Inv_Pol))
 				Edit/W=(6,506,511,713)/K=1 Inv_Pol
 			endif
@@ -1907,7 +1915,7 @@ Function ShowPolMatrixButton(ba) : ButtonControl
 			if(WaveExists(Pol_err))
 				Edit/W=(5,275,510,482)/K=1 Pol_err
 			endif
-			Wave/Z Inv_Pol_err = $("root:Packages:NIST:"+type+":Inv_PolMatrix_err")
+			Wave/Z Inv_Pol_err = $("root:Packages:NIST:Polarization:"+type+"_Inv_PolMatrix_err")
 			if(WaveExists(Inv_Pol_err))
 				Edit/W=(6,736,511,943)/K=1 Inv_Pol_err
 			endif
@@ -2029,6 +2037,12 @@ End
 
 // very similar to ExecuteProtocol
 //
+//
+// -- 2023--
+// updated to remove the "_pc" tag. Now pc is "done" if the wave "PolCorDone" is present
+// --waves are no longer tagged
+//
+//
 // 
 // OCT 2012 - changed this to force a re-load of all of the data, and a re-calculation 
 //   of the Pol-corrected data, so that all of the "_pc" waves that are present are the 
@@ -2083,7 +2097,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	PolCorButton(ba)
 	
 	dataType="SAM"
-	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
 	Execute str
 	
 // force a re-load of BGD data, then re-tag it	
@@ -2168,7 +2183,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 			SetDataFolder root:
 			Abort "error in Correct, called from executeprotocol, normal cor"
 		endif
-		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	While(0)
 	
@@ -2198,7 +2214,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 			Abort "data missing in DIV step, call from executeProtocol"
 		Endif
 		activeType = "CAL"
-		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	Endif
 	
@@ -2235,7 +2252,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 			Abort "Error in Absolute_Scale(), called from executeProtocol"
 		endif
 		activeType = "ABS"
-		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType+"_pc")
+//		TagLoadedData(activeType,pType)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	Endif
 	

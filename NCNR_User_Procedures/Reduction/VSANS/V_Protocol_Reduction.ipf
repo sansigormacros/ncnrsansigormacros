@@ -976,6 +976,14 @@ End
 Function V_ReduceOneButton(ctrlName) : ButtonControl
 	String ctrlName
 
+// exit if polarized beam package is loaded
+	if(exists("V_ExecutePolarizedProtocol") != 0)
+		DoAlert 0,"To reduce polarized beam data, use the button on the Polarization Correction panel"
+		return(0)
+	endif
+
+// if polarized beam not loaded, proceed as ususal...
+
 	//parse the information on the panel and assign to tempProtocol wave (in protocol folder)
 	//and execute
 	String temp="root:Packages:NIST:VSANS:Globals:Protocols:tempProtocol"

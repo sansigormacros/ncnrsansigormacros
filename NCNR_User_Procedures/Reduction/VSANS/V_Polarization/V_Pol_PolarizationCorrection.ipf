@@ -1166,9 +1166,9 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 	endif
 
 // sometimes ends up in root:, so...
-	if(exists("root:MatB")==0)
-		Make/O/D/N=(4,4) MatB,MatB_err
-	endif
+//	if(exists("root:MatB")==0)
+//		Make/O/D/N=(4,4) MatB,MatB_err
+//	endif
 	
 	// loop over the (10) rows in the listWave
 	fileCount=0
@@ -2074,7 +2074,7 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	if(dfExists == 1 && PolCorFlag == 1)
 		V_CopyHDFToWorkFolder("SAM_"+pType,"SAM")
 	else
-		DoAlert 0,"Error with Polarized SAM Data"
+		DoAlert 0,"Error with Polarized SAM Data. Maually re-load the data"
 		Return(0)
 	endif	
 //	V_ChangeDataTab(0)		//SAM
