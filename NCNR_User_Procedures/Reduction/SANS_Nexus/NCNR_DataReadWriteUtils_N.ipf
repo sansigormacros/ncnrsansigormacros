@@ -170,7 +170,56 @@ Function LoadRawSANSData(file,folder)
 			
 	endif		/// END DATA CORRECTIONS FOR RAW	
 
+
+// SRK 2023 TEST -- the wave at : root:Packages:NIST:RAW:entry:instrument:type
+//  occasionally gives an error when trying to kill/duplicate the data folder stating
+// "name already exists as a variable", and then refuses to continue duplicating the folder.
+// -- I can't figure out why it fails sometimes, and not others.
+//
+// so -- try to re-name the wave
+//
+// -- I'll need to update the reader for this field (but NOT the writer)
+// root:Packages:NIST:RAW:entry:instrument:type
+//
+// -- this, with full paths, fails...
+//	Rename root:Packages:NIST:RAW:entry:instrument:type, root:Packages:NIST:RAW:entry:instrument:instrumentType
+// /Z flag covers the case when MSK or DIV files re read in during ExecuteProtocol
+
+	WAVE/Z instType = root:Packages:NIST:RAW:entry:instrument:type
+	if(waveExists(instType) == 1)
+		Rename instType instrumentType		//even without the full path, this magically ends up in the correct folder!
+	endif
 	
+// root:Packages:NIST:RAW:entry:instrument:attenuator:type
+	Wave/Z attType = root:Packages:NIST:RAW:entry:instrument:attenuator:type
+	if(waveExists(attType) == 1)
+		Rename attType attenType
+	endif
+	
+//root:Packages:NIST:RAW:entry:instrument:beam_monitor_norm:type	
+	WAVE/Z bmonType = root:Packages:NIST:RAW:entry:instrument:beam_monitor_norm:type
+	if(waveExists(bmonType) == 1)
+		Rename bmonType bmon_norm_type
+	endif
+	
+// root:Packages:NIST:RAW:entry:instrument:monochromator:type
+	WAVE/Z monoType = root:Packages:NIST:RAW:entry:instrument:monochromator:type
+	if(waveExists(monoType) == 1)
+		Rename monoType monochromator_Type
+	endif
+	
+// root:Packages:NIST:RAW:entry:instrument:source:type
+	WAVE/Z srcType = root:Packages:NIST:RAW:entry:instrument:source:type
+	if(waveExists(srcType) == 1)
+		Rename srcType source_Type
+	endif
+	
+// root:Packages:NIST:RAW:entry:program_data:type
+	WAVE/Z prgType = root:Packages:NIST:RAW:entry:program_data:type
+	if(waveExists(prgType) == 1)
+		Rename prgType program_type
+	endif
+		
 	SetDataFolder root:
 	return(0)
 	

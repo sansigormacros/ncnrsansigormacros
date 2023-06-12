@@ -2118,6 +2118,25 @@ Function putDet_beam_center_y_pix(fname,val)
 End
 
 
+// replaces the detector data in the LOCAL folder, not on disk
+Function putDetectorData(fname,inW)
+	String fname
+	WAVE inW
+
+//root:Packages:NIST:RAW:entry:instrument:detector:data
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:data"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w = inW
+		return(0)
+	endif
+
+End
+
 // (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 Function writeDetectorData(fname,inW)
@@ -2145,6 +2164,25 @@ Function writeDetectorData(fname,inW)
 //		Print "DataFolder kill err = ",err
 //	endif
 	return(err)
+End
+
+// replaces the detector data error in the LOCAL folder, not on disk
+Function putDetectorData_error(fname,inW)
+	String fname
+	WAVE inW
+
+//root:Packages:NIST:RAW:entry:instrument:detector:data_error
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:data_error"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w = inW
+		return(0)
+	endif
+
 End
 
 // (DONE) -- write this function to return a WAVE with the data

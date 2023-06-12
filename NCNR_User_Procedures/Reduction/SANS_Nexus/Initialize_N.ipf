@@ -34,7 +34,7 @@ Strconstant ksWorkFolderListShort = "RAW;SAM;EMP;BGD;COR;DIV;ABS;MSK;CAL;STO;SUB
 Strconstant ksWorkFolderListExtra = "SASCALC;RealTime;WorkMath;WorkMath_File_1;WorkMath_File_2;WorkMath_Result;"
 Strconstant ksWorkFolderListPol1 = "SAM_UU;SAM_UD;SAM_DD;SAM_DU;EMP_UU;EMP_UD;EMP_DD;EMP_DU;"
 Strconstant ksWorkFolderListPol2 = "COR_UU;COR_UD;COR_DD;COR_DU;CAL_UU;CAL_UD;CAL_DD;CAL_DU;COR;ABS;CAL;STO;"
-Strconstant ksWorkFolderListPol3 = "ABS_UU;ABS_UD;ABS_DD;ABS_DU;"
+Strconstant ksWorkFolderListPol3 = "ABS_UU;ABS_UD;ABS_DD;ABS_DU;BGD_UU;BGD_DU;BGD_DD;BGD_UD;"
 
 Constant kBCTR_CM = 0			//set to 1 to use beam center in cm. O to use pixels
 

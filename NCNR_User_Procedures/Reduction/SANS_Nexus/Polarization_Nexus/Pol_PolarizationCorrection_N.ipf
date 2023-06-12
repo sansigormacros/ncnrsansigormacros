@@ -1151,7 +1151,7 @@ Function LoadPolarizedData(pType)
 	
 	// this adds multiple raw data files, as specified by the list
 	err = AddFilesInList(type,parsedRuns)		// adds to a work file = type, not RAW
-//	UpdateDisplayInformation(type)
+	UpdateDisplayInformation(type)
 
 // this will make a copy with pType but NOT _pc	(this is all the function TagLoaded did)
 // this will also kill the SANS_Data display, so don't bother updating the display (above)
@@ -1629,7 +1629,7 @@ Proc DisplayTaggedData(type,pType)
 
 	String/G root:myGlobals:gDataDisplayType=type
 
-	CopyHDFToWorkFolder(type+"_"+pType,type)
+//	CopyHDFToWorkFolder(type+"_"+pType,type)		//not necessary
 
 	root:myGlobals:gDataDisplayType = type + pType
 
@@ -1698,7 +1698,7 @@ Function PolCorButton(ba) : ButtonControl
 			//
 			// there is not a separate "linear_data" wave in the folder, only "data"
 			
-			// the linear data and its errors, declare and initialize
+			// the data and its errors, declare and initialize
 			
 			WAVE linear_data_UU = getDetectorDataW(type+"_UU")
 			WAVE linear_data_DU = getDetectorDataW(type+"_DU")
@@ -1806,20 +1806,21 @@ Function PolCorButton(ba) : ButtonControl
 			linear_data_error_DD_pc = sqrt(linear_data_error_DD_pc)
 			linear_data_error_UD_pc = sqrt(linear_data_error_UD_pc)
 			
+
+	// now need to copy the polarization corrected data array to instrument/detector since this is the 
+	// location that correct() will be reading the data from -- it is simply going to call
+	// for the detectorData as in normal reduction
+	
+			putDetectorData(type+"_UU",linear_data_UU_pc)			
+			putDetectorData(type+"_DU",linear_data_DU_pc)			
+			putDetectorData(type+"_DD",linear_data_DD_pc)			
+			putDetectorData(type+"_UD",linear_data_UD_pc)
 			
-//			//update the data as log of the linear. more correct to use the default scaling
-//			// this is necessary for proper display of the data
-//			SetDataFolder $("root:Packages:NIST:"+type)			// this should be redundant, but I somehow eneded up in root: here???
-//
-//			WAVE data_UU_pc = data_UU_pc
-//			WAVE data_DU_pc = data_DU_pc
-//			WAVE data_DD_pc = data_DD_pc
-//			WAVE data_UD_pc = data_UD_pc
-//			data_UU_pc = log(linear_data_UU_pc)
-//			data_DU_pc = log(linear_data_DU_pc)
-//			data_DD_pc = log(linear_data_DD_pc)
-//			data_UD_pc = log(linear_data_UD_pc)
-//			
+			putDetectorData_error(type+"_UU",linear_data_error_UU_pc)			
+			putDetectorData_error(type+"_DU",linear_data_error_DU_pc)			
+			putDetectorData_error(type+"_DD",linear_data_error_DD_pc)			
+			putDetectorData_error(type+"_UD",linear_data_error_UD_pc)			
+			
 			
 			SetDataFolder root:
 			
@@ -2098,8 +2099,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	
 	dataType="SAM"
 //	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
-	Execute str
+//	sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
+//	Execute str
 	
 // force a re-load of BGD data, then re-tag it	
 	if(cmpstr(prot[0],"none") != 0)		//if BGD is used, protStr[0] = ""
@@ -2108,19 +2109,21 @@ Function ExecutePolarizedProtocol(protStr,pType)
 		PolCorButton(ba)
 		
 		dataType="BGD"
-		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-		Execute str
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
+//		Execute str
 	endif
 
 // force a re-load the EMP data, then re-tag it
 	if(cmpstr(prot[1],"none") != 0)		//if EMP is used, protStr[1] = ""
 		ChangeDataTab(1)		//EMP
-		LoadRawPolarizedButton(ba)
+		LoadRawPolarizedButton(ba)			// copies data to EMP_UU, EMP_DD, etc
 		PolCorButton(ba)
 	
 		dataType="EMP"
-		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
-		Execute str
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType+"_pc"
+//		sprintf str,"DisplayTaggedData(\"%s\",\"%s\")",dataType,pType
+//		Execute str
 	endif
 		
 //
@@ -2184,40 +2187,45 @@ Function ExecutePolarizedProtocol(protStr,pType)
 			Abort "error in Correct, called from executeprotocol, normal cor"
 		endif
 //		TagLoadedData(activeType,pType+"_pc")
-//		TagLoadedData(activeType,pType)
+		TagLoadedData(activeType,pType)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	While(0)
-	
-	//check for work.div file (prot[2])
-	//add if needed
-	// can't properly check the filename - so for now add and divide, if anything other than "none"
-	//do/skip divide step based on div answer
-	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
-		If(cmpstr("ask",prot[2]) == 0)
-			//ask user for file
-			 junkStr = PromptForPath("Select the detector sensitivity file")
-			If(strlen(junkStr)==0)
-				SetDataFolder root:
-				Abort "No file selected, data reduction aborted"
-			Endif
-			 LoadRawSANSData(junkStr,"DIV")
-		else
-			//assume it's a path, and that the first (and only) item is the path:file
-			//list processing is necessary to remove any final comma
-			junkStr = pathStr + StringFromList(0, prot[2],"," )
-			LoadRawSANSData(junkStr,"DIV")
-		Endif
-		//got a DIV file, select the proper type of work data to DIV (= activeType)
-		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
-		If(err)
-			SetDataFolder root:
-			Abort "data missing in DIV step, call from executeProtocol"
-		Endif
-		activeType = "CAL"
-//		TagLoadedData(activeType,pType+"_pc")
-//		TagLoadedData(activeType,pType)
-		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
-	Endif
+
+//
+// DIV step is NOT done here, since DIV is applied at file load time
+//
+// -- this is true for VSANS as well
+//	
+//	//check for work.div file (prot[2])
+//	//add if needed
+//	// can't properly check the filename - so for now add and divide, if anything other than "none"
+//	//do/skip divide step based on div answer
+//	If(cmpstr("none",prot[2])!=0)		// if !0, then there's a file requested
+//		If(cmpstr("ask",prot[2]) == 0)
+//			//ask user for file
+//			 junkStr = PromptForPath("Select the detector sensitivity file")
+//			If(strlen(junkStr)==0)
+//				SetDataFolder root:
+//				Abort "No file selected, data reduction aborted"
+//			Endif
+//			 LoadRawSANSData(junkStr,"DIV")
+//		else
+//			//assume it's a path, and that the first (and only) item is the path:file
+//			//list processing is necessary to remove any final comma
+//			junkStr = pathStr + StringFromList(0, prot[2],"," )
+//			LoadRawSANSData(junkStr,"DIV")
+//		Endif
+//		//got a DIV file, select the proper type of work data to DIV (= activeType)
+//		err = Divide_work(activeType)		//returns err = 1 if data doesn't exist in specified folders
+//		If(err)
+//			SetDataFolder root:
+//			Abort "data missing in DIV step, call from executeProtocol"
+//		Endif
+//		activeType = "CAL"
+////		TagLoadedData(activeType,pType+"_pc")
+////		TagLoadedData(activeType,pType)
+//		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
+//	Endif
 	
 	Variable c2,c3,c4,c5,kappa_err
 	//do absolute scaling if desired
@@ -2253,7 +2261,7 @@ Function ExecutePolarizedProtocol(protStr,pType)
 		endif
 		activeType = "ABS"
 //		TagLoadedData(activeType,pType+"_pc")
-//		TagLoadedData(activeType,pType)
+		TagLoadedData(activeType,pType)
 		UpdateDisplayInformation(ActiveType)		//update before breaking from loop
 	Endif
 	
@@ -2359,8 +2367,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 	If( (cmpstr(item,"Yes")==0) && (cmpstr(av_type,"none") != 0) )		
 		//then save
 		//get name from textwave of the activeType dataset
-		String textStr = "root:Packages:NIST:"+activeType+":textread"
-		Wave/T textPath = $textStr
+//		String textStr = "root:Packages:NIST:"+activeType+":textread"
+//		Wave/T textPath = $textStr
 		String tempFilename = samStr
 		If(WaveExists(textPath) == 1)
 #if (exists("QUOKKA")==6)
@@ -2372,7 +2380,8 @@ Function ExecutePolarizedProtocol(protStr,pType)
 //			newFileName = ReplaceString("scan",newFileName,"")		//removes 4 more chars = 15, should be enough?
 			newFileName = GetPrefixStrFromFile(textPath[0])+GetRunNumStrFromFile(textPath[0])
 #else
-			newFileName = UpperStr(N_GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
+//			newFileName = UpperStr(N_GetNameFromHeader(textPath[0]))		//NCNR data drops here, trims to 8 chars
+			newFileName = tempFileName	//NCNR data drops here, trims to 8 chars
 #endif
 		else
 			newFileName = ""			//if the header is missing?
@@ -2802,18 +2811,23 @@ Function Display_4(type,scaling)
 // - change the wave scaling for log/lin scale to use lookup waves
 // -- extra copy of data for log scaling not needed since data is not changed
 //	
-//root:Packages:NIST:SAM_DD:linear_data_DD_pc
+// don't use root:Packages:NIST:SAM_DD:linear_data_DD_pc
+// since this is not properly updated at wach step and I want to remove these waves
 	
 	wave uu = $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")
+	wave uu = getDetectorDataW(type+"_UU")
 //	wave d_uu = data_uu_pc
 	
 	wave du = $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")
+	wave du = getDetectorDataW(type+"_DU")
 //	wave d_du = data_du_pc
 	
 	wave dd = $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")
+	wave dd = getDetectorDataW(type+"_DD")
 //	wave d_dd = data_dd_pc
 	
 	wave ud = $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")
+	wave ud = getDetectorDataW(type+"_UD")
 //	wave d_ud = data_ud_pc
 		
 	if(cmpstr(scaling,"log") == 0)
@@ -2840,11 +2854,16 @@ Function Display_4(type,scaling)
 		TitleBox title0 title="Only Polarization-corrected sets are displayed",pos={5,5}
 
 	else
-		RemoveImage/Z linear_data_UU_pc		//remove the old images (different data folder)
-		RemoveImage/Z linear_data_DU_pc
-		RemoveImage/Z linear_data_DD_pc
-		RemoveImage/Z linear_data_UD_pc
-		
+		RemoveImage/Z data		//remove the old images (different data folder)
+		RemoveImage/Z data#1
+		RemoveImage/Z data#2
+		RemoveImage/Z data#3
+
+		RemoveImage/Z data		//for some reason (bug)? the last two waves #2#3 get renumbered to (0)#1 after
+		RemoveImage/Z data#1		// I remove the "first" (0) and #1
+
+		RemoveImage/Z data		// and the last image is renamed, yet again...
+				
 		DoWindow/T SANS_X4,type+"_pc"
 
 	endif
@@ -2855,16 +2874,16 @@ Function Display_4(type,scaling)
 
 	
 	AppendImage/B=bot_uu/L=left_uu UU
-	ModifyImage linear_data_UU_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	ModifyImage data ctab= {*,*,ColdWarm,0}, lookup=lookup
 	
 	AppendImage/B=bot_dd/L=left_dd dd
-	ModifyImage linear_data_DD_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	ModifyImage data#1 ctab= {*,*,ColdWarm,0}, lookup=lookup
 	
 	AppendImage/B=bot_du/L=left_du du
-	ModifyImage linear_data_DU_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	ModifyImage data#2 ctab= {*,*,ColdWarm,0}, lookup=lookup
 	
 	AppendImage/B=bot_ud/L=left_ud ud
-	ModifyImage linear_data_UD_pc ctab= {*,*,ColdWarm,0}, lookup=lookup
+	ModifyImage data#3 ctab= {*,*,ColdWarm,0}, lookup=lookup
 	
 	DoUpdate
 			

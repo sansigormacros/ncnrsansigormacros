@@ -538,16 +538,16 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 	// check to see if the data folder exists, if so, try to kill
 	// if it deosn't exist then do nothing (as for duplication for polarized beam)
 	if(DataFolderExists(toDF))
-		DoWindow/K SANS_Data		// data is often in this window...
+//		DoWindow/K SANS_Data		// data is often in this window...but this extra kill "flashes" the data display
 
-		KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
+		KillDataFolder $toDF			//DuplicateDataFolder will not overwrite, so Kill
 
-//		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
+		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
 
 	endif
 	
 	if(V_flag == 0)		// kill DF was OK
-		DuplicateDataFolder/O=1/Z $("root:Packages:NIST:"+fromStr),$("root:Packages:NIST:"+toStr)
+		DuplicateDataFolder $("root:Packages:NIST:"+fromStr),$("root:Packages:NIST:"+toStr)
 		
 		// I can delete these if they came along with RAW
 		//   DAS_logs
