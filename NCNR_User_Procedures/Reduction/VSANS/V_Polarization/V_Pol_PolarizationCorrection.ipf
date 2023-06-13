@@ -469,10 +469,10 @@ Window V_PolCor_Panel()
 //	Button button14,help={"Export the PolCor protocol, saving it on disk"}
 //	Button button15,pos={sc*546,363*sc},size={sc*120,20*sc},proc=V_ImportPolCorProtocolButton,title="Import Protocol"
 //	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
-//	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
-//	Button button16,help={"Save the state of the panel for later recall"}
-//	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
-//	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
+	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
+	Button button16,help={"Save the state of the panel for later recall"}
+	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
+	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
 
 
 			
@@ -967,12 +967,12 @@ Function V_LoadPolarizedData(pType)
 	// pick the condition, based on the tabNum
 	// == 0 = sam
 	// == 1 = emp
-	// == 2 = bgd, which requires no condition, so use the emp condition...
+	// == 2 = bgd, which requires no condition, so use the SAM condition...(in case there is no EMP)
 	//
 	if(tabNum==0 || tabNum==1)
 		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(tabNum)+"_1")
 	else
-		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(1)+"_1")		//use the condition of the empty tab
+		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(0)+"_1")		//use the condition of the SAM tab
 	endif
 	condStr = S_Value
 	Print "Using condition ",condStr," for ",type

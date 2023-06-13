@@ -661,82 +661,8 @@ Window PolCor_Panel()
 //	PopupMenu popup_2_UU_4,pos={sc*142,194*sc},size={sc*102,20*sc},title="Cell"
 //	PopupMenu popup_2_UU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
 
-	// DU
-////////	ListBox ListBox_2_DU,pos={sc*368,102*sc},size={sc*200,130*sc},proc=PolCor_FileListBoxProc,frame=2
-////////	ListBox ListBox_2_DU,listWave=root:Packages:NIST:Polarization:ListWave_2_DU,titleWave=root:Packages:NIST:Polarization:lbTitles
-////////	ListBox ListBox_2_DU,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DU,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_DU_0,pos={sc*368,102*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_0
-//	SetVariable setvar_2_DU_1,pos={sc*368,125*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_1,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_1
-//	SetVariable setvar_2_DU_2,pos={sc*368,149*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_2,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_2
-//	SetVariable setvar_2_DU_3,pos={sc*368,173*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_3,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_3
-//	SetVariable setvar_2_DU_4,pos={sc*368,197*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DU_4,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DU_4
-//	PopupMenu popup_2_DU_0,pos={sc*476,99*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_1,pos={sc*476,122*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_2,pos={sc*476,146*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_3,pos={sc*476,170*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DU_4,pos={sc*476,194*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DU_4,mode=1,popvalue="none",value= #"D_CellNameList()"
-
-// DD
-////////	ListBox ListBox_2_DD,pos={sc*33,286*sc},size={sc*200,130*sc},proc=PolCor_FileListBoxProc,frame=2
-////////	ListBox ListBox_2_DD,listWave=root:Packages:NIST:Polarization:ListWave_2_DD,titleWave=root:Packages:NIST:Polarization:lbTitles
-////////	ListBox ListBox_2_DD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_DD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_DD_0,pos={sc*33,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_0
-//	SetVariable setvar_2_DD_1,pos={sc*33,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_1,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_1
-//	SetVariable setvar_2_DD_2,pos={sc*33,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_2,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_2
-//	SetVariable setvar_2_DD_3,pos={sc*33,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_3,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_3
-//	SetVariable setvar_2_DD_4,pos={sc*33,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_DD_4,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_DD_4
-//	PopupMenu popup_2_DD_0,pos={sc*141,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_1,pos={sc*141,306*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_1,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_2,pos={sc*141,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_3,pos={sc*141,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_DD_4,pos={sc*141,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_DD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
-
-// UD
-////////	ListBox ListBox_2_UD,pos={sc*368,286*sc},size={sc*200,130*sc},proc=PolCor_FileListBoxProc,frame=2
-////////	ListBox ListBox_2_UD,listWave=root:Packages:NIST:Polarization:ListWave_2_UD,titleWave=root:Packages:NIST:Polarization:lbTitles
-////////	ListBox ListBox_2_UD,selWave=root:Packages:NIST:Polarization:lbSelWave_2_UD,mode= 6,selRow= 0,selCol= 0,editStyle= 2
-//	SetVariable setvar_2_UD_0,pos={sc*368,286*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_0,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_0
-//	SetVariable setvar_2_UD_1,pos={sc*368,309*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_1,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_1
-//	SetVariable setvar_2_UD_2,pos={sc*368,333*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_2,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_2
-//	SetVariable setvar_2_UD_3,pos={sc*368,357*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_3,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_3
-//	SetVariable setvar_2_UD_4,pos={sc*368,381*sc},size={sc*70,16*sc},title="File",fSize=10
-//	SetVariable setvar_2_UD_4,limits={-inf,inf,0},value= root:Packages:NIST:Polarization:gStr_PolCor_2_UD_4
-//	PopupMenu popup_2_UD_0,pos={sc*476,283*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_0,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_1,pos={sc*476,306*sc},size={sc*210,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_1,mode=3,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_2,pos={sc*476,330*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_2,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_3,pos={sc*476,354*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_3,mode=1,popvalue="none",value= #"D_CellNameList()"
-//	PopupMenu popup_2_UD_4,pos={sc*476,378*sc},size={sc*102,20*sc},title="Cell"
-//	PopupMenu popup_2_UD_4,mode=1,popvalue="none",value= #"D_CellNameList()"
-
 EndMacro
+
 
 Function SavePolCorPanelButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -974,8 +900,12 @@ Function LoadRawPolarizedButton(ba) : ButtonControl
 //				return 0									// user canceled
 //			endif
 
-			pType = "All"
-			
+			pType = ba.userData
+
+			if(strlen(pType) == 0)		//null string
+				pType = "All"
+			endif
+						
 			if(cmpstr(pType,"All") == 0)
 				LoadPolarizedData("UU")
 				LoadPolarizedData("DU")
@@ -1099,12 +1029,12 @@ Function LoadPolarizedData(pType)
 	// pick the condition, based on the tabNum
 	// == 0 = sam
 	// == 1 = emp
-	// == 2 = bgd, which requires no condition, so use the emp condition...
+	// == 2 = bgd, which requires no condition, so use the SAM condition... (in case there is no EMP)
 	//
 	if(tabNum==0 || tabNum==1)
 		ControlInfo/W=PolCor_Panel $("popup_"+num2str(tabNum)+"_1")
 	else
-		ControlInfo/W=PolCor_Panel $("popup_"+num2str(1)+"_1")		//use the condition of the empty tab
+		ControlInfo/W=PolCor_Panel $("popup_"+num2str(0)+"_1")		//use the condition of the SAM tab
 	endif
 	condStr = S_Value
 	Print "Using condition ",condStr," for ",type
@@ -1571,16 +1501,6 @@ Function MakePCResultWaves(type,pType)
 	CopyHDFToWorkFolder(type,ptype)
 
 	
-//	ptype = "_" + pType			// add an extra underscore
-//	String pcExt = "_pc"
-//	String destPath = "root:Packages:NIST:" + type
-//	Duplicate/O $(destPath + ":data"+pType), $(destPath + ":data"+pType+pcExt)
-//	Duplicate/O $(destPath + ":linear_data"+pType),$(destPath + ":linear_data"+pType+pcExt)
-//	Duplicate/O $(destPath + ":linear_data_error"+pType),$(destPath + ":linear_data_error"+pType+pcExt)
-//	Duplicate/O $(destPath + ":textread"+pType),$(destPath + ":textread"+pType+pcExt)
-//	Duplicate/O $(destPath + ":integersread"+pType),$(destPath + ":integersread"+pType+pcExt)
-//	Duplicate/O $(destPath + ":realsread"+pType),$(destPath + ":realsread"+pType+pcExt)
-	
 	return(0)
 End
 
@@ -1590,24 +1510,12 @@ End
 Function TagLoadedData(type,pType)
 	String type,pType
 
-//	ConvertFolderToLinearScale(type)
 
-	
 //	ptype = type+ "_" + pType + "_pc"			// add an extra underscore
 	ptype = type+ "_" + pType			// add an extra underscore
 	
 	CopyHDFToWorkFolder(type,ptype)
 
-	
-//	ptype = "_" + pType			// add an extra underscore
-//	String destPath = "root:Packages:NIST:" + type
-//	Duplicate/O $(destPath + ":data"), $(destPath + ":data"+pType)
-//	Duplicate/O $(destPath + ":linear_data"),$(destPath + ":linear_data"+pType)
-//	Duplicate/O $(destPath + ":linear_data_error"),$(destPath + ":linear_data_error"+pType)
-//	Duplicate/O $(destPath + ":textread"),$(destPath + ":textread"+pType)
-//	Duplicate/O $(destPath + ":integersread"),$(destPath + ":integersread"+pType)
-//	Duplicate/O $(destPath + ":realsread"),$(destPath + ":realsread"+pType)
-//
 
 // not sure that I need this at all - since each folder that I duplicate will have its
 // own file list
@@ -1631,9 +1539,9 @@ Proc DisplayTaggedData(type,pType)
 
 //	CopyHDFToWorkFolder(type+"_"+pType,type)		//not necessary
 
-	root:myGlobals:gDataDisplayType = type + pType
+	root:myGlobals:gDataDisplayType = type + "_" + pType
 
-	UpdateDisplayInformation(type)
+	UpdateDisplayInformation(type+"_"+pType)
 
 	//update the displayed filename, using FileList in the current data folder
 //	String/G root:myGlobals:gCurDispFile = note($(destPath + ":textread"+pType))		//read from the wave note
@@ -1684,7 +1592,7 @@ Function PolCorButton(ba) : ButtonControl
 				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_DD:PolCorDone")	
 				Make/O/D/N=1 $("root:Packages:NIST:"+type+"_UD:PolCorDone")	
 			else
-				DoAlert 0,"Polarization correction already done, skipping"
+				Print "Polarization correction already done, skipping for type = " + type
 				return(0)
 			endif
 		
@@ -1820,6 +1728,12 @@ Function PolCorButton(ba) : ButtonControl
 			putDetectorData_error(type+"_DU",linear_data_error_DU_pc)			
 			putDetectorData_error(type+"_DD",linear_data_error_DD_pc)			
 			putDetectorData_error(type+"_UD",linear_data_error_UD_pc)			
+
+
+// clear out the linear_data waves from the top level -- these shouln't be used since they cause
+// confusion about what the corrected data is, and this format can't be used with VSANS
+			KillWaves/Z linear_data_UU_pc,linear_data_DU_pc,linear_data_DD_pc,linear_data_UD_pc
+			KillWaves/Z linear_data_error_UU_pc,linear_data_error_DU_pc,linear_data_error_DD_pc,linear_data_error_UD_pc
 			
 			
 			SetDataFolder root:
@@ -1872,7 +1786,7 @@ Function ChangeDisplayedPolData(ba) : ButtonControl
 			// click code here
 			String dataType,pType,str
 			Prompt dataType,"Display WORK data type",popup,"SAM;EMP;BGD;DIV;COR;CAL;RAW;ABS;STO;SUB;DRK;SAS;"
-			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;UU_pc;DU_pc;DD_pc;UD_pc;"
+			Prompt pType,"Pol Type",popup,"UU;DU;DD;UD;"		//UU_pc;DU_pc;DD_pc;UD_pc;"
 			DoPrompt "Change Display",dataType,pType
 			
 			if(V_flag==0)		//continue
@@ -2087,7 +2001,7 @@ Function ExecutePolarizedProtocol(protStr,pType)
 
 	STRUCT WMButtonAction ba
 	ba.eventCode = 2		// mouse up
-	
+	ba.userData = pType		//UU, DU, etc.
 
 // Now ensure that the proper SAM data is loaded, then re-tag it	
 // the Polarization corrected data is UU_pc, DU_pc, etc.
@@ -2805,30 +2719,25 @@ Function Display_4(type,scaling)
 
 	SetDataFolder $("root:Packages:NIST:"+type)
 
-
 // TODO
 // - declare the data waves explicitly, they are in separate folders
 // - change the wave scaling for log/lin scale to use lookup waves
 // -- extra copy of data for log scaling not needed since data is not changed
 //	
 // don't use root:Packages:NIST:SAM_DD:linear_data_DD_pc
-// since this is not properly updated at wach step and I want to remove these waves
+// since this is not properly updated at each step and I want to remove these waves
 	
-	wave uu = $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")
+//	wave uu = $("root:Packages:NIST:"+type+"_UU:linear_data_UU_pc")
 	wave uu = getDetectorDataW(type+"_UU")
-//	wave d_uu = data_uu_pc
 	
-	wave du = $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")
+//	wave du = $("root:Packages:NIST:"+type+"_DU:linear_data_DU_pc")
 	wave du = getDetectorDataW(type+"_DU")
-//	wave d_du = data_du_pc
 	
-	wave dd = $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")
+//	wave dd = $("root:Packages:NIST:"+type+"_DD:linear_data_DD_pc")
 	wave dd = getDetectorDataW(type+"_DD")
-//	wave d_dd = data_dd_pc
 	
-	wave ud = $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")
+//	wave ud = $("root:Packages:NIST:"+type+"_UD:linear_data_UD_pc")
 	wave ud = getDetectorDataW(type+"_UD")
-//	wave d_ud = data_ud_pc
 		
 	if(cmpstr(scaling,"log") == 0)
 
@@ -2842,19 +2751,31 @@ Function Display_4(type,scaling)
 
 	endif
 
+
+	Variable sc=1	
+	NVAR gLaptopMode = root:Packages:NIST:gLaptopMode
+
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+
 	DoWindow/F SANS_X4
 	if(V_flag==0)
-		Display /W=(811,44,1479,758)/K=1
-		ControlBar 100
+//		Display /W=(811,44,1479,758)/K=1
+//		ControlBar 100
+		Display /W=(800*sc,40*sc,1480*sc,780*sc)/K=1
+		ControlBar 100*sc
+		
 		DoWindow/C SANS_X4
 		DoWindow/T SANS_X4,type+"_pc"
-		Button button0 pos={130,65},size={50,20},title="Do It",proc=Change4xsButtonProc
-		PopupMenu popup0 pos={20,35},title="Data Type",value="SAM;EMP;BGD;COR;CAL;ABS;"		//RAW, SAS, DIV, etc, won't have _pc data and are not valid
-		PopupMenu popup1 pos={190,35},title="Scaling",value="log;linear;"
+		Button button0 pos={sc*130,65*sc},size={sc*50,20*sc},title="Do It",proc=Change4xsButtonProc
+		PopupMenu popup0 pos={sc*20,35*sc},title="Data Type",value="SAM;EMP;BGD;COR;CAL;ABS;"		//RAW, SAS, DIV, etc, won't have _pc data and are not valid
+		PopupMenu popup1 pos={sc*190,35*sc},title="Scaling",value="log;linear;"
 		TitleBox title0 title="Only Polarization-corrected sets are displayed",pos={5,5}
 
 	else
-		RemoveImage/Z data		//remove the old images (different data folder)
+		RemoveImage/Z data		//remove the old images (same names, different data folders)
 		RemoveImage/Z data#1
 		RemoveImage/Z data#2
 		RemoveImage/Z data#3
@@ -2863,6 +2784,7 @@ Function Display_4(type,scaling)
 		RemoveImage/Z data#1		// I remove the "first" (0) and #1
 
 		RemoveImage/Z data		// and the last image is renamed, yet again...
+		RemoveImage/Z data		// and remove once more, just for spite.
 				
 		DoWindow/T SANS_X4,type+"_pc"
 
@@ -2971,227 +2893,3 @@ Function ClearPolCorEntries(ba) : ButtonControl
 End
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////
-//
-/////////// all of the functions below are unused. See the procedures for the 
-//// panels for the functions that interact with the input and calculated matrices
-//
-//
-//
-//
-//
-////
-//// (/S) FindFileFromRunNumber(num) gets fname
-//// [4] is trans, [41] is trans error, [40] is Twhole
-////
-//
-//
-//
-//Constant kTe = 0.87		// transmission of the unfilled cell
-//
-//
-//
-//// calculation of mu
-////
-//// Known: Te ===> Global constant currently, may change later
-////
-//// Input: T He (unpolarized), using unpolarized beam
-////			T He cell out, using unpolarized beam
-////			T background, using unpolarized beam
-////
-//// Equation 7
-////
-//Function opacity_mu(T_he,T_out,T_bk)
-//	Variable T_he,T_out,T_bk
-//
-//	Variable mu
-//
-//// using the global constant!
-//
-//	mu = (1/kTe)*(T_he - T_bk)/(T_out - t_bk)
-//	mu = -1*ln(mu)
-//
-//	return(mu)
-//End
-//
-//
-//
-//Proc calc_muP(mu, runT_he, runT_out, runT_bk)
-//	Variable mu=3.108, runT_he, runT_out, runT_bk
-//
-//	Variable muP,T_he, T_out, T_bk
-//	String fname
-//	
-//	fname = FindFileFromRunNumber(runT_he)
-//	T_he = getDetCount(fname)/getMonitorCount(fname)/getCountTime(fname)	//use CR, not trans (since no real empty condition)
-//	
-//	fname = FindFileFromRunNumber(runT_out)
-//	T_out = getDetCount(fname)/getMonitorCount(fname)/getCountTime(fname)
-//	
-//	fname = FindFileFromRunNumber(runT_bk)
-//	T_bk = getDetCount(fname)/getMonitorCount(fname)/getCountTime(fname)
-//	
-//	muP = Cell_muP(mu, T_he, T_out, T_bk)
-//	
-//	Print "Count rates T_he, T_out, T_bk = ",T_he, T_out, T_bk
-//	Print "Mu*P = ",muP
-//	Print "Time = ",getFileCreationDate(fname)
-//	
-//end
-//
-//
-//// ???? is this correct ????
-//// -- check the form of the equation. It's not the same in some documents
-////
-//// calculation of mu.P(t) from exerimental measurements
-////
-//// Known: Te and mu
-//// Input: T He cell (polarized cell), using unpolarized beam
-////			T He cell OUT, using unpolarized beam
-////			T background, using unpolarized beam
-////
-//// Equation 9, modified by multiplying the result by mu + moving tmp inside the acosh() 
-////
-//Function Cell_muP(mu, T_he, T_out, T_bk)
-//	Variable mu, T_he, T_out, T_bk
-//
-//// using the global constant!
-//
-//	Variable muP,tmp
-//	
-//	tmp = kTe*exp(-mu)		//note mu has been moved
-//	muP = acosh( (T_he - T_bk)/(T_out - T_bk)  * (1/tmp)) 
-//
-//	return(muP)
-//End
-//
-//
-////
-//// calculation of mu.P(t) from Gamma and t=0 value
-////
-//// Known: Gamma, muP_t0, t0, tn
-////
-//// times are in hours, Gamma [=] hours
-//// tn is later than t0, so t0-tn is negative
-////
-//// Equation 11
-////
-//Function muP_at_t(Gam_He, muP_t0, t0, tn)
-//	Variable Gam_He, muP_t0, t0, tn
-//
-//	Variable muP
-//	
-//	muP = muP_t0 * exp( (t0 - tn)/Gam_He )
-//	
-//	return(muP)
-//End
-//
-//// Calculation of Pcell(t)
-//// note that this is a time dependent quantity
-////
-//// Known: muP(t)
-//// Input: nothing additional
-////
-//// Equation 10
-////
-//Function PCell(muP)
-//	Variable muP
-//	
-//	Variable PCell
-//	PCell = tanh(muP)
-//	
-//	return(PCell)
-//End
-//
-//
-//// calculation of Pf (flipper)
-////
-//// Known: nothing
-//// Input: Tuu, Tdu, and Tdd, Tud
-////			(but exactly what measurement conditions?)
-////			( are these T's also calculated quantities???? -- Equation(s) 12--)
-////
-//// Equation 14
-////
-//// (implementation of equation 13 is more complicated, and not implemented yet)
-////
-//Function Flipper_Pf(Tuu, Tdu, Tdd, Tud)
-//	Variable Tuu, Tdu, Tdd, Tud
-//	
-//	Variable pf
-//	
-//	pf = (Tdd - Tdu)/(Tuu - Tud)
-//	
-//	return(pf)
-//End
-//
-//
-//
-//// (this is only one of 4 methods, simply the first one listed)
-//// ???? this equation doesn't match up with the equation in the SS handout
-////
-//// calculation of P'sm (supermirror)
-////
-//// Known: Pcell(t1), Pcell(t2) (some implementations need Pf )
-//// Input: Tuu(t1), Tud(t2)
-////
-//// Equation 15??
-////
-//Function SupMir_Psm(Pcell1,Pcell2,Tuu,Tud)
-//	Variable Pcell1,Pcell2,Tuu,Tud
-//	
-//	Variable Psm
-//	
-//	Psm = (Tuu - Tud)/(PCell1 + PCell2)
-//	
-//	return(Psm)
-//End

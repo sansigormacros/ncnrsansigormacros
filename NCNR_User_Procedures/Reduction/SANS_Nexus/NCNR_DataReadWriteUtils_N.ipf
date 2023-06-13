@@ -564,7 +564,13 @@ Function getRealValueFromHDF5(fname,path)
 	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))
@@ -685,7 +691,13 @@ Function/WAVE getTextWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -773,7 +785,13 @@ Function/S getStringFromHDF5(fname,path,num)
 	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))

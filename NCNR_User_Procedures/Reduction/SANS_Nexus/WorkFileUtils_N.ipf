@@ -540,7 +540,7 @@ Function CopyHDFToWorkFolder(fromStr,toStr)
 	if(DataFolderExists(toDF))
 //		DoWindow/K SANS_Data		// data is often in this window...but this extra kill "flashes" the data display
 
-		KillDataFolder $toDF			//DuplicateDataFolder will not overwrite, so Kill
+		KillDataFolder/Z $toDF			//DuplicateDataFolder will not overwrite, so Kill
 
 		KillWavesFullTree($toDF,toStr,0,"",1)			// this will traverse the whole tree, trying to kill what it can
 
