@@ -1400,7 +1400,7 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
 
 	
-// use the original calculation (matB) whichi= I think is correct, or the version (matA) that was
+// use the original calculation (matB) which I think is correct, or the version (matA) that was
 // ported from the c++ code and appears to be missing a factor of /4 , making the coefficients
 // too large, and the resulting cross sections too small (by the same factor of 4)
 	
@@ -2198,7 +2198,7 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 
 	//dispatch to the proper "mode" of Correct()
 //	V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
-	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])
+	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])			//as long as prot[0] and [1] are not "none", they will be used
 	
 	if(err)
 		PathInfo/S catPathName
@@ -2550,7 +2550,7 @@ End
 // at a first pass, uses the regular reduction protocol 	SaveProtocolButton(ctrlName)
 //
 // TODO
-// X- won't work, as it uses the MakeProtocolFromPanel function... so replace this
+// X- won't work, as it uses the MakeProtocolFromPanel function... so replace this (**OK now...)
 //
 Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	String ctrlName
@@ -2586,11 +2586,14 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	
 	//current data folder is  root:Packages:NIST:VSANS:Globals:Protocols
 	if(newProto)
-		Make/O/T/N=8 $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
+		Make/O/T/N=(kNumProtocolSteps) $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
 	Endif
 	
-//	MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
-	V_MakePolProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	V_MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	
+	// don't use V_MakePolProtocolFromPanel, it reads controls from panel that don't exist (different than SANS)
+//	V_MakePolProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+
 	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtocol
 	
 	//the data folder WAS changed above, this must be reset to root:
