@@ -16,6 +16,7 @@ End
 // In the Nexus file, the Ordela detector is treated as if it was tubes
 // with nonlinear corrections (=linear), but this flag chooses the corrections
 // that arespecific to the Ordela detetor rather than tubes
+// -- for the 10m instrument, ksDetType = "Tubes"
 StrConstant ksDetType = "Ordela"
 
 

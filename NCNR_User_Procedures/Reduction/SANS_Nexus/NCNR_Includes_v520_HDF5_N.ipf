@@ -13,6 +13,9 @@ End
 Menu "NEXUS 10m-SANS MODE"
 End
 
+// for the 10m instrument detType is "Tubes" and flags parts of the code to use Tube corrections and
+// --if the data is Ordela data "faked" to be tubes then ksDetType = "Ordela" and the proper switches
+// can be made to use Ordela corrections (non-linear, dead time, etc.)
 StrConstant ksDetType = "Tubes"
 
 //*************

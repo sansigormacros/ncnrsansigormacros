@@ -567,7 +567,7 @@ Function GetHeaderInfoToWave(fname,sname)
 
 	// acct name is "[NGxSANSxx]" -- [1,3] is the instrument "name" "NGx"
 	//so that Ng can be correctly calculated
-	// in Nexus, this is the last 3 characters of the file name
+	// in Nexus, this is the last extension, not necessarily the last 3 characters of the file name
 	String/G root:Packages:NIST:SAS:gInstStr = getInstrName(fname) 
 	
 	InsertPoints lastPoint,1,GNumGuides

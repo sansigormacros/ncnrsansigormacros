@@ -239,6 +239,8 @@ End
 // to get to the /size field, since for (unknown) techincal reasons, this field
 // can't be written out to the NExus file. Again, the whole DAS_logs block is NOT
 // read in - it simply slows things down way too much.
+// ---- as of 8/2023, entry/instrument/beam_stop is read in correctly, including size
+//   so that I do not need to read in any of DAS_logs, so this is now commented out.
 //
 //
 // if data destination is RAW, calling function sets DF before passing
@@ -393,7 +395,9 @@ Function ReadHeaderAndData(fname,folderStr)
 	hdf5path = "/entry/program_data"
 	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
-
+// ** as of 8/2023, beam+stop block is correctly written for the 30m SANS instruments
+// so that I do not need to read DAS_logs...
+//
 // for the 30m SANS, as of 3/2023, the size of the beam stop is not
 // written out to the Nexus block, only to the DAS_logs in the location:
 //
@@ -404,6 +408,7 @@ Function ReadHeaderAndData(fname,folderStr)
 // -- reading in the whole DAS_logs is (2-4)x slower than skipping them, while just reading the 
 //  single beamStop block makes no difference in the read time. so read whatI need, no more.
 //
+// Read in thw whole DAS_logs
 //	if(isFolder == -1)
 //		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
 //	else
@@ -411,16 +416,17 @@ Function ReadHeaderAndData(fname,folderStr)
 //	endif
 //	hdf5path = "/entry/DAS_logs"
 //	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
-
-	if(isFolder == -1)
-		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
-		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs:beamStop")
-	else
-		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
-		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs:beamStop")
-	endif
-	hdf5path = "/entry/DAS_logs/beamStop"
-	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+//
+// Read in just the beam stop block
+//	if(isFolder == -1)
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs:beamStop")
+//	else
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs:beamStop")
+//	endif
+//	hdf5path = "/entry/DAS_logs/beamStop"
+//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	
 //
