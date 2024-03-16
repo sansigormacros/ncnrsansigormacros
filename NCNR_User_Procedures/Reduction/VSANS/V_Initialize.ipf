@@ -4,7 +4,7 @@
 
 //
 //
-//
+// 15 MAR 2024 2nd test from GitHub on iMac
 // 7 MAR 2024 -- testing of GitHub Desktop on Mac
 //
 //
@@ -90,8 +90,8 @@ Strconstant ksBinTrimEndZero = "B=0;FT=0;FB=0;FL=0;FR=0;MT=0;MB=0;ML=0;MR=0;FTB=
 //////// HIGH RESOLUTION DETECTOR  ///////////////
 //
 // In May 2019 - after testing with Phil's procesing, the data from the detector has a
-// larger read noise value. It can also no longer be treated  as a constant value, but rather 
-// a detector file that is read in and subtracted pixel-by-pixel. 
+// larger read noise value. It can also no longer be treated  as a constant value, but rather
+// a detector file that is read in and subtracted pixel-by-pixel.
 //
 //
 // Currently, the processing to reduce the noise level on the highRes detector is done through Phil's software
@@ -157,22 +157,22 @@ Proc V_Initialize()
 
 	Variable curVersion = kVSANSVersion
 	Variable oldVersion = NumVarOrDefault("root:VSANS_RED_VERSION",curVersion)
-		
+
 	if(oldVersion == curVersion)
 		//must just be a new startup with the current version
 		Variable/G root:VSANS_RED_VERSION=kVSANSVersion
 	endif
-	
+
 	if(oldVersion < curVersion)
 		String str = 	"This experiment was created with version "+num2str(oldVersion)+" of the macros. I'll try to make this work, but please start new work with a current template"
 		DoAlert 0,str
 	endif
-	
+
 	V_InitFolders()
-	
-	
+
+
 	V_InitFakeProtocols()
-	V_InitGlobals()	
+	V_InitGlobals()
 	V_InitFacilityGlobals()
 	DoWindow/F Main_VSANS_Panel
 	If(V_flag == 0)
@@ -183,7 +183,7 @@ Proc V_Initialize()
 
 	VC_Initialize_Space()		//initialize folders for VCALC
 
-// (DONE) - be sure that NCNR is defined correctly	
+// (DONE) - be sure that NCNR is defined correctly
 	//unload the NCNR_Package_Loader, if NCNR not defined
 	UnloadNCNR_VSANS_Procedures()
 
@@ -196,22 +196,22 @@ End
 // x-- make sure that I have all of the folders that I need
 //
 Function V_InitFolders()
-	
+
 	NewDataFolder/O root:Packages
 	NewDataFolder/O root:Packages:NIST
 	NewDataFolder/O root:Packages:NIST:VSANS
-	
+
 // for the file catalog
 	NewDataFolder/O root:Packages:NIST:VSANS:CatVSHeaderInfo
 // for the globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Efficiency
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Patch
-	
+
 // for the raw nexus data (so I don't need to reload to get a single value)
 	NewDataFolder/O root:Packages:NIST:VSANS:RawVSANS
 
-// folders for the reduction steps		
+// folders for the reduction steps
 	NewDataFolder/O root:Packages:NIST:VSANS:RAW
 	NewDataFolder/O root:Packages:NIST:VSANS:SAM
 	NewDataFolder/O root:Packages:NIST:VSANS:EMP
@@ -236,7 +236,7 @@ Function V_InitFolders()
 //	NewDataFolder/O root:Packages:NIST:VSANS:SAS
 
 
-	
+
 	Return(0)
 End
 
@@ -250,11 +250,11 @@ End
 //
 //
 Function V_InitGlobals()
-	
-	
+
+
 	Variable/G root:Packages:NIST:VSANS:Globals:gIsLogScale = 0
 	String/G root:Packages:NIST:VSANS:Globals:gCurDispType = "RAW"
-	
+
 	//check platform, so Angstrom can be drawn correctly
 
 	//TODO	-- this is different on Igor 7. Macintosh # has been updated, but Windows has not
@@ -274,18 +274,18 @@ Function V_InitGlobals()
 		// SRK APRIL 2019 - removed this, does not exist in Igor 8 on WIN, and cause an error.
 //		Execute "SetIgorOption WinDraw,forceCOLORONCOLOR=1"
 	endif
-	
+
 	// DONE x- find the SANS preferences, copy over and update for VSANS
 	// x- these are all in PlotUtilsMacro_v40.ipf as the preferences are set up as common
 	// to all packages. I'm not sure that I want to do this with VSANS, but make the packages
-	// separate entities. I'm seeing little benefit of the crossover, especially now that 
+	// separate entities. I'm seeing little benefit of the crossover, especially now that
 	// Analysis is not mine. So for VSANS, there is a new, separate file: V_VSANS_Preferences.ipf
 
 	//this is critical to initialize now - as it has the y/n flags for the detector correction steps
-	Execute "Initialize_VSANSPreferences()"	
+	Execute "Initialize_VSANSPreferences()"
 
 	Execute "V_TubeZeroPointTables()"			// correction to the beam center
-	
+
 	// set the lookup waves for log/lin display of the detector images
 	V_MakeImageLookupTables(10000,0,1)
 
@@ -302,10 +302,10 @@ Function V_InitGlobals()
 // if this is set to 1, the OLD (incorrect) cos^3 solid angle will be applied to the tubes
 // and a lot of alerts will pop up...
 	Variable/G root:Packages:NIST:VSANS:Globals:gDo_OLD_SolidAngleCor = 0
-	
+
 	//set XML globals
 //	String/G root:Packages:NIST:gXMLLoader_Title = ""
-	
+
 	Return(0)
 End
 
@@ -328,22 +328,22 @@ Function V_MakeImageLookupTables(num,lo,hi)
 	// on log scale
 	SetDataFolder root:Packages:NIST:VSANS:Globals
 	Variable val,offset
-	
+
 	offset = 1/num		//can't use 1/lo if lo == 0
-	
+
 	Make/O/D/N=(num) logLookupWave,linearLookupWave
-	
+
 	linearLookupWave = (p+1)/num
-	
-	
+
+
 	logLookupWave = log(linearLookupWave)
 	val = logLookupWave[0]
 	logLookupWave += -val + offset
 	val = logLookupWave[num-1]
 	logLookupWave /= val
-	
+
 	SetDataFolder root:
-	
+
 	return(0)
 end
 
@@ -365,7 +365,7 @@ Function V_InitFacilityGlobals()
 //	//Detector -specific globals
 //	Variable/G root:myGlobals:gNPixelsX=128
 //	Variable/G root:myGlobals:gNPixelsY=128
-//	
+//
 //	// as of Jan2008, detector pixel sizes are read directly from the file header, so they MUST
 //	// be set correctly in instr.cfg - these values are not used, but declared to avoid errors
 //	Variable/G root:myGlobals:PixelResNG3_ILL = 1.0		//pixel resolution in cm
@@ -378,7 +378,7 @@ Function V_InitFacilityGlobals()
 ////	Variable/G root:myGlobals:PixelResCGB_ORNL = 0.5		// fiction
 //
 //	Variable/G root:myGlobals:PixelResDefault = 0.5
-//	
+//
 //	Variable/G root:myGlobals:DeadtimeNG3_ILL = 3.0e-6		//deadtime in seconds
 //	Variable/G root:myGlobals:DeadtimeNG5_ILL = 3.0e-6
 //	Variable/G root:myGlobals:DeadtimeNG7_ILL = 3.0e-6
@@ -397,8 +397,8 @@ Function V_InitFacilityGlobals()
 //	//new 11APR07
 //	Variable/G root:myGlobals:BeamstopXTol = -8			// (cm) is BS Xpos is -5 cm or less, it's a trans measurement
 //	// sample aperture offset is NOT stored in the VAX header, but it should be
-//	// - when it is, remove the global and write an accessor AND make a place for 
-//	// it in the RealsRead 
+//	// - when it is, remove the global and write an accessor AND make a place for
+//	// it in the RealsRead
 //	Variable/G root:myGlobals:apOff = 5.0				// (cm) distance from sample aperture to sample position
 
 End
@@ -410,11 +410,11 @@ End
 //////////////////////////////////////////////
 
 
-// 
+//
 // do I need to make the protocols any longer for VSANS? (yes -- now 12 points)
 // What other options for processing / averaging / saving are needed??
 //  (DONE)
-// x- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the 
+// x- likely that I'll want to have #pts to cut from I(q) as input to NSORT within the protocol so that the
 // entire reduction can be automatic
 //
 //
@@ -422,50 +422,50 @@ End
 // x- all protocols are kept in the root:Packages:NIST:VSANS:Globals:Protocols folder, created here
 //
 //
-//*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused 
+//*****as of 05_2017, protocols are 12 points long, [6] is used for work.drk, [7,8] are for trimmig points, and [9,11] are currently unused
 //
 Function V_InitFakeProtocols()
-	
+
 	NewDataFolder/O root:Packages:NIST:VSANS:Globals:Protocols
 	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:Base"={"none","none","ask","ask","none","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
 	Make/O/T $"root:Packages:NIST:VSANS:Globals:Protocols:DoAll"={"ask","ask","ask","ask","ask","AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;","DRK=none,DRKMODE=0,","","","","",""}
 	Make/O/T/N=(kNumProtocolSteps) $"root:Packages:NIST:VSANS:Globals:Protocols:CreateNew"			//null wave
 	//Initialize waves to store values in
-	
+
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAvgInfoStr = "AVTYPE=Circular;SAVE=Yes;NAME=Auto;PLOT=Yes;BINTYPE=F4-M4-B;"
-	
+
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gBegPtsStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gEndPtsStr=""
 	String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr=""
-	
+
 	Return(0)
 End
 
 //simple function to resize the comand window to a nice size, no matter what the resolution
 //need to test out on several different monitors and both platforms
 //
-// could easily be incorporated into the initialization routines to ensure that the 
+// could easily be incorporated into the initialization routines to ensure that the
 // command window is always visible at startup of the macros. No need for a hook function
 //
 Function V_ResizeCmdWindow()
 
 	String str=IgorInfo(0),rect="",platform=igorinfo(2)
 	Variable depth,left,top,right,bottom,factor
-	
+
 	if(cmpstr(platform,"Macintosh")==0)
 		factor=1
 	else
 		factor = 0.6		//fudge factor to get command window on-screen on Windows
 	endif
-	rect = StringByKey("SCREEN1", str  ,":",";")	
+	rect = StringByKey("SCREEN1", str  ,":",";")
 	sscanf rect,"DEPTH=%d,RECT=%d,%d,%d,%d",depth, left,top,right,bottom
 	MoveWindow/C  (left+3)*factor,(bottom-150)*factor,(right-50)*factor,(bottom-10)*factor
 End
 
 // since the NCNR procedures can't be loaded concurrently with the other facility functions,
-// unload this procedure file, and add this to the functions that run at initialization of the 
+// unload this procedure file, and add this to the functions that run at initialization of the
 // experiment
 //
 // (DONE) - be sure that this unloads correctly
@@ -515,7 +515,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 
 	// clean out, so that the file SAVE is not slow due to the large experiment size
 	// DONE -
-//	
+//
 //	V_CleanOutRawVSANS()
 // present a progress window
 	V_CleanupData_w_Progress(0,1)
@@ -526,7 +526,7 @@ Function BeforeExperimentSaveHook(rN,fileName,path,type,creator,kind)
 // these KillDF are a bad idea - it wipes out all of the current work
 // whenever a save is done - which is the opposite of what you want
 // to happen when you save!
-	
+
 		Printf "Hook cleaned out WORK folders, experiment saved\r"
 
 		KillDataFolder/Z root:Packages:NIST:VSANS:RAW
