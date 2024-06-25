@@ -7,12 +7,13 @@ For more information, please visit  https://www.nist.gov/ncnr/data-reduction-ana
 
 ## Latest release
 The current release is [v8.06](https://github.com/sansigormacros/ncnrsansigormacros/releases/tag/v8.06), released January 27, 2023.
+Earlier versions are available in the Releases Section
 
 [v7.98](http://danse.chem.utk.edu/trac/export/1225/sans/Dev/tags/NCNR_SANS_Package_7.98.zip) was released in February, 2020.
 All releases v7.98 and previous are available on the [old SVN host](http://danse.chem.utk.edu/trac/export/1225/sans/Dev/tags). All future releases will be made available here through GitHub.
 
 ## Issues
-Issue tracking, bug reports, feature requests, and general questions will be tracked here. The trac site at danse.chem.utk.edu/trac will not be actively monitored.
+Issue tracking, bug reports, feature requests, and general questions will be tracked here. The trac site at danse.chem.utk.edu/trac is no longer monitored and may be deactivated at any time.
 
 ## Citation
 If you used the macros to reduce and/or analyze your data, and plan to publish the data, please remember to include a citation:
