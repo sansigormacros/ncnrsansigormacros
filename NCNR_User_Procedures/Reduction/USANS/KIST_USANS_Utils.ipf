@@ -37,6 +37,8 @@ Function Init_USANS_Facility()
 	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=1.5707963e-4	// motor position in mm (x100) MHK for KIST ---07/19/2013
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=1.5707963e-2	// motor position in mm  MHK for KIST ---07/19/2013
 
+
+
 		
 	// extension string for the raw data files
 	// -- not that the extension as specified here starts with "."
