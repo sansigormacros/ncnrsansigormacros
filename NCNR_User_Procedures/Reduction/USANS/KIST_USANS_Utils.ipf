@@ -7,6 +7,14 @@
 // contains updated instrument constants (MHK) 2014-06-20
 // added to NCNR SVN 9/2015 (SRK)
 
+// updated in AUG 2024 to properly bypass the (NCNR) default of raw data in q-values
+// --also added functionality to allow the user to enter a calibration factor for conversion
+//   of angle->q
+// --added analysis preference to switch to qTrap for slit-smearing rather than the default
+//   matrix smearing. Sometimes the matrix fails, and at this point I don't know why.
+//
+
+
 //facility-specific constants
 Function Init_USANS_Facility()
 
@@ -22,7 +30,7 @@ Function Init_USANS_Facility()
 	
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
-	   Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09		//detector divergence, in terms of Q (1/A), mhk --09-12-2012 
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09		//detector divergence, in terms of Q (1/A), mhk --09-12-2012 
 	
 
 	String/G root:Packages:NIST:gXMLLoader_Title=""
@@ -37,20 +45,21 @@ Function Init_USANS_Facility()
 	DoAlert 0,"The data loader is set to interpret raw data in ANGLE not Q-Values. If your raw data is different, change this setting using the menu item USANS->NCNR Preferences"
 	
 	
-	
 // this variable should never be defined for HANARO data
 //	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs=0	
 	
 	
-	
 	// Ask the user to set the calibration factor -- MULTIPLICATIVE --
-	Variable gCalibration = NumVarOrDefault("gCalibration", 1.0)
+	// SRK AUG 6 2024
+	Variable gCalibration = NumVarOrDefault("gCalibration", 1.418)			//this is the default value for the calibration
 	Prompt gCalibration, "Enter the Multiplicative calibration correction"
 	DoPrompt "Calibration",gCalibration
 
 	Variable/G root:Packages:NIST:gCalibration = gCalibration			// Save for later use
+// it doesn't matter if the user cancelled -- we need a value for this. so if they cancel,
+// then the value is the default of 1
+	Print "Calibration correction is = ",gCalibration
 
-	
 	
 	// to convert from angle (in degrees) to Q (in 1/Angstrom)
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
@@ -60,7 +69,7 @@ Function Init_USANS_Facility()
 	Variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4		// motor position in mm (x100) MHK for KIST ---07/19/2013
 	NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base		//base calibration before corrections
 	
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration		//final value used for conversion
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = gDeg2QConv_base * gCalibration		//final value used for conversion
 
 		
 	// extension string for the raw data files

@@ -22,6 +22,24 @@
 	// length of time. This is now read in per line and stored in a wave - and is used for the dead time
 	// correction and the normalization to monitor count.
 	
+	// BUG - found in AUG 2024
+	// if temperature control was used, the temp value is written into the 2nd column where
+	// countTime is expected -- need to update the reader to catch this unexpected format
+	//
+	// **I can catch this now, but how (or IF) to correct the writing of the data file
+	// -- and if the file format changes again-- then what do I do?
+	//
+	// reading the column headers to see if the temperature was actually reported
+	// in the 2nd column (= s2). Then switch on this later to get the correct assignments
+	// -- if no temp, 5 columns
+	//    A2  MIN  MONITOR  COUNTS  EXTRA  
+
+	// -- if temp, 6 columns
+	//  A2  TEMP0  MIN  MONITOR  COUNTS  EXTRA
+
+
+	
+	
 // - thes wave note is a string of KEY:value items
 //
 //	str = "FILE:"+filen+";"
@@ -43,7 +61,7 @@ Function LoadBT5File(fname,type)
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Variable num=500,err=0,refnum
+	Variable num=500,err=0,refnum,timeCol
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":Angle")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":DetCts")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":ErrDetCts")
@@ -130,6 +148,7 @@ Function LoadBT5File(fname,type)
 		useNewDataFormat = 0		// is HANARO data, so use old data format
 	endif
 	
+	// set the two dead tim values based on the data collection date
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	
 	//skip line 2
@@ -137,11 +156,38 @@ Function LoadBT5File(fname,type)
 	//the next line is the sample label, use it all, minus the terminator
 	FReadLine refnum,filelabel
 	
-	//skip the next 10 lines
-	For(ii=0;ii<10;ii+=1)
+//	//skip the next 10 lines
+//	For(ii=0;ii<10;ii+=1)
+//		FReadLine refnum,buffer
+//	EndFor
+	
+	//skip the next 9 lines
+	// reading the column headers to see if the temperature was actually reported
+	// in the 2nd column (= s2). Then switch on this later to get the correct assignments
+	// -- if no temp, 5 columns
+	//    A2  MIN  MONITOR  COUNTS  EXTRA  
+
+	// -- if temp, 6 columns
+	//  A2  TEMP0  MIN  MONITOR  COUNTS  EXTRA
+
+	//
+	For(ii=0;ii<9;ii+=1)
 		FReadLine refnum,buffer
 	EndFor
-	
+	FReadLine refNum, buffer
+	sscanf buffer, "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
+//	Print s1,s2,s3,s4,s5,s6
+
+// figure out which column is MIN -- I don't care about the others right now
+// it's either s2 or s3
+
+	if(cmpstr(s2,"MIN") == 0)		//
+		timeCol = 2
+	else
+		Print "TEMP written to raw file"
+		timeCol = 3
+	endif
+
 	//read the data until EOF - assuming always a pair or lines
 	do
 		FReadLine refNum, buffer
@@ -153,11 +199,17 @@ Function LoadBT5File(fname,type)
 			break							// Hit blank line. End of data in the file.
 		endif
 		//1st line of pair
-		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
+//		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
+		sscanf buffer,"%g%g%g%g%g%g",v1,v2,v3,v4,v5,v6		// 5 or 6 values here now, last is zero if only 5
+
 		angle[numlinesloaded] = v1		//[0] is the ANGLE
 		if(gRawUSANSisQvalues==1)
 			// in this mode, each data point is collected for a different time
-			countTime = v2 * 60		// convert MIN to seconds
+			if(timeCol == 3)
+				countTime = v3 * 60		// temperature is v2, time is v3 convert MIN to seconds
+			else
+				countTime = v2 * 60		// time is v2 convert MIN to seconds
+			endif
 		endif
 		
 		
