@@ -2,6 +2,17 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+//
+// AUG 2024 SRK -- this file is loaded through the HANARO USANS reduction, and if the
+// NCNR analysis package is loaded, then the NCNR_Utils file clashes with all of the 
+// functions included here. This file is meant to be KIST-specific (although not much of
+// anything is...) But as a consequence of this - there is no obvious way to allow the 
+// USANS reduction and the analysis to be loaded at the same time. It's not a problem for
+// NCNR packages, since NCNR_Utils is simply loaded 2x.
+//
+
+
+
 // this file contains globals and functions that are specific to a
 // particular facility or data file format
 // branched out 29MAR07 - SRK

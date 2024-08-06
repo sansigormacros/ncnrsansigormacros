@@ -102,19 +102,32 @@ Function LoadBT5File(fname,type)
 	NVAR 	gRawUSANSisQvalues = root:Packages:NIST:gRawUSANSisQvalues
 	
 	
-// test by date
+// test by date, being sure to exclude KIST_USANS data from the test
+//
+
+	Variable isKIST_USANS=0
+	if(exists("KIST_USANS") == 3)		// function has been defined in the loader
+		isKIST_USANS = 1
+	endif
+
+	
 	Variable thisFileSecs
 	NVAR/Z switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
-	if(NVAR_Exists(switchSecs))
-		thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
-		if(thisFileSecs >= switchSecs)
-			useNewDataFormat = 1
+	
+	if(!isKIST_USANS)		// if NOT KIST data...
+		if(NVAR_Exists(switchSecs))					// this should never be defined for HANARO
+			thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
+			if(thisFileSecs >= switchSecs)
+				useNewDataFormat = 1
+			else
+				useNewDataFormat = 0
+			endif
 		else
+			//definitely old data (or HANARO), use old format
 			useNewDataFormat = 0
 		endif
 	else
-		//definitely old data (or HANARO), use old format
-		useNewDataFormat = 0
+		useNewDataFormat = 0		// is HANARO data, so use old data format
 	endif
 	
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)

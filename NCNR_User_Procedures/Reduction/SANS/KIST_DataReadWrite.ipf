@@ -2,6 +2,11 @@
 #pragma version=5.0
 #pragma IgorVersion=6.1
 
+
+// as of 2024, as far as I know, this file is only needed for the USANS Simulator.
+// -- and probably only a few functions are actually used.
+
+
 //**************************
 //
 // Vers. 1.2 092101

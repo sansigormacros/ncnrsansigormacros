@@ -897,7 +897,7 @@ Function Smear_Model_5(fcn,w,x,answer,resW)
 	Wave x	//x-value (q) for the calculation
 	Wave answer // ywave for calculation result
 	Wave resW		// Nx4 or NxN matrix of resolution
-	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	NVAR useTrap = root:Packages:NIST:gUSANSUseTrap
 
 	String weightStr,zStr
 	Variable nord=5
@@ -1003,7 +1003,7 @@ Function Smear_Model_20(fcn,w,x,answer,resW)
 	Wave x	//x-value (q) for the calculation
 	Wave answer // ywave for calculation result
 	Wave resW		// Nx4 or NxN matrix of resolution
-	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	NVAR useTrap = root:Packages:NIST:gUSANSUseTrap
 
 	String weightStr,zStr
 	Variable nord=20
@@ -1052,7 +1052,7 @@ Function Smear_Model_76(fcn,w,x,answer,resW)
 	Wave x	//x-value (q) for the calculation
 	Wave answer // ywave for calculation result
 	Wave resW		// Nx4 or NxN matrix of resolution
-	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	NVAR useTrap = root:Packages:NIST:gUSANSUseTrap
 
 	String weightStr,zStr
 	Variable nord=76
@@ -1662,7 +1662,7 @@ Function Smear_Model_N_AAO(fcn,w,x,resW,wi,zi,nord,sm_ans)
 	Wave sm_ans		// wave returned with the smeared model
 
 	NVAR dQv = root:Packages:NIST:USANS_dQv
-	NVAR useTrap = root:Packages:NIST:USANSUseTrap
+	NVAR useTrap = root:Packages:NIST:gUSANSUseTrap
 
 // local variables
 	Variable ii,jj

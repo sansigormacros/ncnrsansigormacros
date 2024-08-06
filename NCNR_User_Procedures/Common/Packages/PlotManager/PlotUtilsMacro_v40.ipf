@@ -1513,10 +1513,13 @@ Proc Initialize_Preferences()
 	val = NumVarOrDefault("root:Packages:NIST:gSASEntryNumber", 1 )
 	Variable/G root:Packages:NIST:gSASEntryNumber = val
 
-	/// items for SANS Analysis
+/// items for SANS Analysis
+	// set this to == 1 to use trapezoidal integration, == 0 for the matrix calculation
+	val = NumVarOrDefault("root:Packages:NIST:gUSANSUseTrap", 0 )
+	Variable/G root:Packages:NIST:gUSANSUseTrap = val
+
 	
-	
-	/// items for USANS Reduction
+/// items for USANS Reduction
 // is the data file from NICE and in terms of QValues rather than angle
 	val = NumVarOrDefault("root:Packages:NIST:gRawUSANSisQvalues", 1 )
 	Variable/G root:Packages:NIST:gRawUSANSisQvalues=val	
@@ -1715,11 +1718,34 @@ Function RawUSANSisQPref(ctrlName,checked) : CheckBoxControl
 	NVAR gVal = root:Packages:NIST:gRawUSANSisQvalues
 	gVal = checked
 	
+	Variable isKIST_USANS=0
+	if(exists("KIST_USANS") == 3)
+		isKIST_USANS = 1
+	endif
+	
 	if(checked == 1)
 		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 1		//so that the q-values are unchanged
 	else
-		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+		if(isKIST_USANS == 1)
+				NVAR gCalibration = root:Packages:NIST:gCalibration
+				NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base
+
+				Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration
+		else
+		
+			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+		endif
 	endif
+	
+	
+End
+
+Function UseQTrapPref(ctrlName,checked) : CheckBoxControl
+	String ctrlName
+	Variable checked
+
+	NVAR gVal = root:Packages:NIST:gUSANSUseTrap
+	gVal = checked
 End
 
 
@@ -1806,9 +1832,15 @@ Proc Pref_Panel()
 
 
 //on tab(3) - Analysis
-	GroupBox PrefCtrl_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
+//	GroupBox PrefCtrl_3a pos={21,100},size={1,1},title="nothing to set",fSize=12
+
+	CheckBox PrefCtrl_3a,pos={21,100},size={171,14},proc=UseQTrapPref,title="Use qTrap for Slit Smearing"
+	CheckBox PrefCtrl_3a,help={"Check this to force trapezoidal smearing. If unchecked, the smearing matrix method will be used."}
+	CheckBox PrefCtrl_3a,value= root:Packages:NIST:gUSANSUseTrap
+
+
 	
-	GroupBox PrefCtrl_3a,disable=1
+	CheckBox PrefCtrl_3a,disable=1
 	
 	
 	Variable sc = 1
