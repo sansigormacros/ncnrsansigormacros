@@ -11,7 +11,7 @@
 // --also added functionality to allow the user to enter a calibration factor for conversion
 //   of angle->q
 // --added analysis preference to switch to qTrap for slit-smearing rather than the default
-//   matrix smearing. Sometimes the matrix fails, and at this point I don't know why.
+//   matrix smearing. Sometimes the matrix fails, but the trapezoidal integration works.
 //
 
 
