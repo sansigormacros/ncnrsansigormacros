@@ -10,6 +10,7 @@
 // with the DetCts wave as a wave note
 //
 
+
 	// as of Feb 6 2019, USANS is using NICE for data collection rather than ICP
 	// as a consequence, the data file is somewhat different. Specifically, the 
 	// order of the detectors in the comma-delimited list is different, with the
@@ -26,11 +27,11 @@
 	// if temperature control was used, the temp value is written into the 2nd column where
 	// countTime is expected -- need to update the reader to catch this unexpected format
 	//
-	// **I can catch this now, but how (or IF) to correct the writing of the data file
-	// -- and if the file format changes again-- then what do I do?
+	// currently, of these 5 (or 6) columns, only the time (= MIN) is read in. all of the detector data is 
+	// written to the coma-delimited rows inbetween these columns.
+	// so-- I read in the header labels and determine which label is "MIN" (either the 2nd or 3rd) and
+	// use that information to select the time value rather than the temperature
 	//
-	// reading the column headers to see if the temperature was actually reported
-	// in the 2nd column (= s2). Then switch on this later to get the correct assignments
 	// -- if no temp, 5 columns
 	//    A2  MIN  MONITOR  COUNTS  EXTRA  
 
@@ -38,8 +39,6 @@
 	//  A2  TEMP0  MIN  MONITOR  COUNTS  EXTRA
 
 
-	
-	
 // - thes wave note is a string of KEY:value items
 //
 //	str = "FILE:"+filen+";"
