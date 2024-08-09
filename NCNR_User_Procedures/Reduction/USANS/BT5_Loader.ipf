@@ -178,15 +178,29 @@ Function LoadBT5File(fname,type)
 //	Print s1,s2,s3,s4,s5,s6
 
 // figure out which column is MIN -- I don't care about the others right now
-// it's either s2 or s3
-
+// it's probably s2 or s3, but I need to test them all in case NICE changes how the data is written out
+// a most unsophisticated way to do the test - but I just want it to work
+	timeCol = 0
+	if(cmpstr(s1,"MIN") == 0)		//
+		timeCol = 1
+	endif
 	if(cmpstr(s2,"MIN") == 0)		//
 		timeCol = 2
-	else
-		Print "TEMP written to raw file"
-		timeCol = 3
 	endif
-
+	if(cmpstr(s3,"MIN") == 0)		//
+		timeCol = 3
+	endif	
+	if(cmpstr(s4,"MIN") == 0)		//
+		timeCol = 4
+	endif
+	if(cmpstr(s5,"MIN") == 0)		//
+		timeCol = 5
+	endif	
+	if(cmpstr(s6,"MIN") == 0)		//
+		timeCol = 6
+	endif
+	
+	
 	//read the data until EOF - assuming always a pair or lines
 	do
 		FReadLine refNum, buffer
@@ -204,11 +218,27 @@ Function LoadBT5File(fname,type)
 		angle[numlinesloaded] = v1		//[0] is the ANGLE
 		if(gRawUSANSisQvalues==1)
 			// in this mode, each data point is collected for a different time
-			if(timeCol == 3)
-				countTime = v3 * 60		// temperature is v2, time is v3 convert MIN to seconds
-			else
+			//
+			// -- choose the correct column that contains the time
+			if(timeCol == 1)
+				countTime = v1 * 60
+			endif
+			if(timeCol == 2)
 				countTime = v2 * 60		// time is v2 convert MIN to seconds
 			endif
+			if(timeCol == 3)
+				countTime = v3 * 60		// temperature is v2, time is v3 convert MIN to seconds
+			endif
+			if(timeCol == 4)
+				countTime = v4 * 60
+			endif
+			if(timeCol == 5)
+				countTime = v5 * 60
+			endif
+			if(timeCol == 6)
+				countTime = v6 * 60
+			endif
+			
 		endif
 		
 		
