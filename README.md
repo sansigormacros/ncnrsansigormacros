@@ -6,7 +6,7 @@ The NCNR SANS reduction macros run in the commercial software suite Igor Pro. Yo
 For more information, please visit  https://www.nist.gov/ncnr/data-reduction-analysis/sans-software and the wiki pages for this project.
 
 ## Latest release
-The current release is [v8.06](https://github.com/sansigormacros/ncnrsansigormacros/releases/tag/v8.06), released January 27, 2023.
+The current release is [v8.07](https://github.com/sansigormacros/ncnrsansigormacros/releases/tag/v8.07), released August 15, 2024.
 
 Earlier versions are available in the Releases Section.
 
