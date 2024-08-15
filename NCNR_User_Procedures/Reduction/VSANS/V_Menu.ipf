@@ -12,6 +12,7 @@
 Menu "VSANS"
 	"Initialize",Initialize_VSANS()
 	"VSANS Help"
+	"Help for These Menu Items",VSANS_Menu_Help()
 	"-"
 	"VCALC",VCALC_Panel()
 	"VSANS Preferences",Show_VSANSPreferences_Panel()
@@ -60,10 +61,12 @@ Menu "VSANS"
 		"Patch Wavelength",V_Patch_Wavelength()
 		"Patch Monochromator Type",V_Patch_MonochromatorType()
 		"-"
-//		"Patch Back Detector Values",V_Patch_Back_Detector()
 		"Patch NumberOfGuides_SSD_Aperture ",V_Patch_Guide_SSD_Aperture()
 		"Patch Beam Stop",V_Patch_BeamStop()
 		"Patch Sample Aperture",V_Patch_SampleAperture2()
+		"-"
+		"Patch Back Detector Denex Values",V_Patch_Back_Detector_Denex()
+
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
@@ -220,3 +223,13 @@ Function VSANSHelp()
 		DoAlert 0,"The VSANS Data Reduction Help file could not be found"
 	endif
 End
+
+
+Function VSANS_Menu_Help()
+	DisplayHelpTopic/Z/K=1 "VSANS Menu Items"
+	if(V_flag !=0)
+		DoAlert 0,"The VSANS Menu Items Help subtopic could not be found"
+	endif
+End
+
+

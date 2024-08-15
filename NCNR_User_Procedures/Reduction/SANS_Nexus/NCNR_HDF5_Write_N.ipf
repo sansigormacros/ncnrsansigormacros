@@ -2118,6 +2118,25 @@ Function putDet_beam_center_y_pix(fname,val)
 End
 
 
+// replaces the detector data in the LOCAL folder, not on disk
+Function putDetectorData(fname,inW)
+	String fname
+	WAVE inW
+
+//root:Packages:NIST:RAW:entry:instrument:detector:data
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:data"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w = inW
+		return(0)
+	endif
+
+End
+
 // (DONE) -- write this function to return a WAVE with the data
 // either as a wave reference, or as an input parameter
 Function writeDetectorData(fname,inW)
@@ -2145,6 +2164,25 @@ Function writeDetectorData(fname,inW)
 //		Print "DataFolder kill err = ",err
 //	endif
 	return(err)
+End
+
+// replaces the detector data error in the LOCAL folder, not on disk
+Function putDetectorData_error(fname,inW)
+	String fname
+	WAVE inW
+
+//root:Packages:NIST:RAW:entry:instrument:detector:data_error
+	String path = "root:Packages:NIST:"+fname+":"
+	path += "entry:instrument:detector:data_error"
+	
+	Wave/Z w = $path
+	if(waveExists(w) == 0)
+		return(1)
+	else
+	w = inW
+		return(0)
+	endif
+
 End
 
 // (DONE) -- write this function to return a WAVE with the data
@@ -5824,6 +5862,256 @@ end
 
 
 
+//
+// polarized beam functions added for NG7 SANS
+//
+// -- as of 3/2023
+// (locations may change in the future...)
+//
+// ** NOTE: more is needed to include the cell information for the back polarizer (analyzer)
+// -- see VSANS cor how this is handled...
+
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:He3BackPolarizer:type (var)
+//
+Function write_He3BackPolarizer_type(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:He3BackPolarizer:type"	
+		Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/He3BackPolarizer"
+	String varName = "type"
+	wTmpWrite[0] = val
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:He3FrontPolarizer:type (var)
+//
+Function write_He3FrontPolarizer_type(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:He3FrontPolarizer:type"	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/He3FrontPolarizer"
+	String varName = "type"
+	wTmpWrite[0] = val
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:direction (text)
+//
+Function write_rfFrontFlipper_direction(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:rfFrontFlipper:direction"	
+	Make/O/T/N=1 tmpTW
+	String groupName = "/instrument/rfFrontFlipper"	//	
+	String varName = "direction"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:flip (text)
+//
+Function write_rfFrontFlipper_flip(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:rfFrontFlipper:flip"	
+	Make/O/T/N=1 tmpTW
+	String groupName = "/instrument/rfFrontFlipper"	//	
+	String varName = "flip"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:transmitted_power (var)
+//
+Function write_rfFrontFlipper_transmitted_power(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:rfFrontFlipper:transmitted_power"	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/rfFrontFlipper"
+	String varName = "transmitted_power"
+	wTmpWrite[0] = val
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:type (text)
+//
+Function write_rfFrontFlipper_type(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:rfFrontFlipper:type"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/instrument/rfFrontFlipper"	//	
+	String varName = "type"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+//
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:composition (text)
+//
+Function write_superMirror_composition(fname,str)
+	String fname,str
+
+//	String path = "entry:instrument:superMirror:composition"	
+	Make/O/T/N=1 tmpTW
+	String groupName = "/instrument/superMirror"	//	
+	String varName = "composition"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:efficiency (var)
+//
+Function write_superMirror_efficiency(fname,val)
+	String fname
+	Variable val
+	
+//	String path = "entry:instrument:superMirror:efficiency"	
+	Make/O/D/N=1 wTmpWrite
+//	Make/O/R/N=1 wTmpWrite
+	String groupName = "/entry/instrument/superMirror"
+	String varName = "efficiency"
+	wTmpWrite[0] = val
+
+	variable err
+	err = WriteWaveToHDF(fname, groupName, varName, wTmpWrite)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+	return(err)
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:type (text)
+//
+Function write_superMirror_type(fname,str)
+	String fname,str
+	
+//	String path = "entry:instrument:superMirror:type"	
+
+	Make/O/T/N=1 tmpTW
+	String groupName = "/instrument/superMirror"	//	
+	String varName = "type"
+	tmpTW[0] = str //
+
+	variable err
+	err = WriteTextWaveToHDF(fname, groupName, varName, tmpTW)
+	if(err)
+		Print "HDF write err = ",err
+	endif
+	
+	// now be sure to kill the data folder to force a re-read of the data next time this file is read in
+//	err = KillNamedDataFolder(fname)
+//	if(err)
+//		Print "DataFolder kill err = ",err
+//	endif
+		
+	return(err)
+End
+
+
+
+////////////////////////////////
 
 
 
@@ -5920,3 +6208,5 @@ end
 //	return(err)
 //End
 //
+
+

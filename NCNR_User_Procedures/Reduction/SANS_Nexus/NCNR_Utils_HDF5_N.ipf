@@ -542,13 +542,16 @@ Function N_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	
 	// if no date string is passed, default to the ICE values
 	if(strlen(dateAndTimeStr)==0)
-		dateAndTimeStr = "01-JAN-2011"		//dummy date to force to ICE values
+//		dateAndTimeStr = "01-JAN-2011"		//dummy date to force to ICE values
+		dateAndTimeStr = "2011-1-1"		//dummy date to force to ICE values
 	endif
 	
 	
-	Variable NG3_to_ICE = N_ConvertVAXDay2secs("23-JUL-2009")
-	Variable NG7_to_ICE = N_ConvertVAXDay2secs("25-FEB-2010")
-	Variable fileTime = N_ConvertVAXDay2secs(dateAndTimeStr)
+//	Variable NG3_to_ICE = N_ConvertNexusDay2secs("23-JUL-2009")
+//	Variable NG7_to_ICE = N_ConvertNexusDay2secs("25-FEB-2010")
+	Variable NG3_to_ICE = N_ConvertNexusDay2secs("2009-7-23")
+	Variable NG7_to_ICE = N_ConvertNexusDay2secs("2010-2-25")
+	Variable fileTime = N_ConvertNexusDay2secs(dateAndTimeStr)
 
 	
 	strswitch(instr)
@@ -606,17 +609,18 @@ End
 // converts ONLY DD-MON-YYYY portion of the data collection time
 // to a number of seconds from midnight on 1/1/1904, as Igor likes to do
 //
-// dateAndTime is the full string of "dd-mon-yyyy hh:mm:ss" as returned by the function
-// getFileCreationDate(file)
+// dateAndTime is the full string of "yyyy-MM-dd'T'HH:mm:ssZ" OR "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+// as returned by Function/S getDataStartTime(fname)
+//( replaces VAX version of getFileCreationDate(file)
 //
-Function N_ConvertVAXDay2secs(dateAndTime)
+Function N_ConvertNexusDay2secs(dateAndTime)
 	string dateAndTime
 	
 	Variable day,yr,mon,time_secs
 	string monStr
 
-	sscanf dateandtime,"%d-%3s-%4d",day,monStr,yr
-	mon = N_monStr2num(monStr)
+	sscanf dateandtime,"%d-%d-%d",yr,mon,day
+//	mon = N_monStr2num(monStr)
 //	print yr,mon,day
 	time_secs = date2secs(yr,mon,day)
 
@@ -626,19 +630,31 @@ end
 // dd-mon-yyyy hh:mm:ss -> seconds
 // the VAX uses 24 hr time for hh
 //
-Function N_ConvertVAXDateTime2secs(dateAndTime)
+// ** if I convert VAX->Nexus, the date/time will still be VAX format
+// -- check for this is a crude way... This causes issues with polarization reduction
+// if time is not interpreted properly
+//
+// dateAndTime is the full string of "yyyy-MM-dd'T'HH:mm:ssZ" OR "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+
+Function N_ConvertNexusDateTime2secs(dateAndTime)
 	string dateAndTime
 	
 	Variable day,yr,mon,hh,mm,ss,time_secs
 	string str,monStr
 	
 	str=dateandtime
-	sscanf str,"%d-%3s-%4d %d:%d:%d",day,monStr,yr,hh,mm,ss
-	mon = N_monStr2num(monStr)
+	
+	
+	sscanf str,"%d-%d-%dT%d:%d:%d",yr,mon,day,hh,mm,ss
+	if(mon == 0)
+		// string not interpreted properly, must be VAX
+	// // dd-mon-yyyy hh:mm:ss -> seconds	
+		sscanf str,"%d-%3s-%4d %d:%d:%d",day,monStr,yr,hh,mm,ss
+		mon = N_monStr2num(monStr)
+	endif
 //	print yr,mon,day,hh,mm,ss
 	time_secs = date2secs(yr,mon,day)
 	time_secs += hh*3600 + mm*60 + ss
-
 
 	return(time_secs)
 end

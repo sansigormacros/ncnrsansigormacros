@@ -13,6 +13,9 @@ End
 Menu "NEXUS 10m-SANS MODE"
 End
 
+// for the 10m instrument detType is "Tubes" and flags parts of the code to use Tube corrections and
+// --if the data is Ordela data "faked" to be tubes then ksDetType = "Ordela" and the proper switches
+// can be made to use Ordela corrections (non-linear, dead time, etc.)
 StrConstant ksDetType = "Tubes"
 
 //*************
@@ -94,7 +97,7 @@ StrConstant ksDetType = "Tubes"
 
 // SRK OCT 2012 - processing of event mode data
 //#include "EventModeProcessing_N"			//old VAX version + Ordela event file, eventually remove
-#include "EventModeProcessing_Tubes_N"		// VSANS - based panel
+#include "EventModeProcessing_Tubes_N"		// 
 #include "EventMode_Utils_Tubes_N"
 
 // SRK JAN 2013 - to make simulation easier
@@ -127,6 +130,7 @@ StrConstant ksDetType = "Tubes"
 
 #include "DetectorCorrections_N"		//for tube detectors
 
+#include "ShowDataTree_N"			// to display the Nexus structure
 
 
 

@@ -53,3 +53,7 @@ End
 
 #include "NIST_NXcanSAS_v709"
 #include "WriteUSANSNXcanSAS"          //NXcanSAS file writer
+
+
+// new utility MAR 2023
+#include "Rescale_RAW_USANS"

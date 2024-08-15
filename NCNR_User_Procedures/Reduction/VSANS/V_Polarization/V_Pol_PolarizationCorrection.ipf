@@ -438,10 +438,15 @@ Window V_PolCor_Panel()
 	//
 	// now use the main protocol panel rather than trying to duplicate it here
 	//
-	Button button21,pos={sc*500,396*sc},size={sc*160,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
+	Button button21,pos={sc*500,390*sc},size={sc*160,20*sc},proc=V_BuildProtocol_PolCorButtonProc,title="Build Protocol"
 	Button button21,help={"Build a PolCor protocol using the standard Protocol Panel"}
 
-	Button button9,pos={sc*500,435*sc},size={sc*160,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Polarized Data"
+	Button button22,pos={sc*500,420*sc},size={sc*160,20*sc},proc=V_SavePolCorProtocolButton,title="Save Pol Protocol"
+	Button button22,help={"Save a PolCor protocol using the standard Protocol Panel"}
+
+
+
+	Button button9,pos={sc*500,450*sc},size={sc*160,20*sc},proc=V_ReducePolCorDataButton,title="Reduce Polarized Data"
 	Button button9,help={"Reduce PolCor data"}
 
 
@@ -464,10 +469,10 @@ Window V_PolCor_Panel()
 //	Button button14,help={"Export the PolCor protocol, saving it on disk"}
 //	Button button15,pos={sc*546,363*sc},size={sc*120,20*sc},proc=V_ImportPolCorProtocolButton,title="Import Protocol"
 //	Button button15,help={"Import a PolCor protocol from a protocol previously saved to disk"}
-//	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
-//	Button button16,help={"Save the state of the panel for later recall"}
-//	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
-//	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
+	Button button16,pos={sc*546,216*sc},size={sc*110,20*sc},proc=V_SavePolCorPanelButton,title="Save State"
+	Button button16,help={"Save the state of the panel for later recall"}
+	Button button17,pos={sc*546,245*sc},size={sc*110,20*sc},proc=V_RestorePolCorPanelButton,title="Restore State"
+	Button button17,help={"Recall a saved state of the Pol_Cor panel"}
 
 
 			
@@ -962,12 +967,12 @@ Function V_LoadPolarizedData(pType)
 	// pick the condition, based on the tabNum
 	// == 0 = sam
 	// == 1 = emp
-	// == 2 = bgd, which requires no condition, so use the emp condition...
+	// == 2 = bgd, which requires no condition, so use the SAM condition...(in case there is no EMP)
 	//
 	if(tabNum==0 || tabNum==1)
 		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(tabNum)+"_1")
 	else
-		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(1)+"_1")		//use the condition of the empty tab
+		ControlInfo/W=V_PolCor_Panel $("popup_"+num2str(0)+"_1")		//use the condition of the SAM tab
 	endif
 	condStr = S_Value
 	Print "Using condition ",condStr," for ",type
@@ -1058,7 +1063,11 @@ Function V_LoadPolarizedData(pType)
 	return(0)
 End
 
-
+//
+// at this point -- I think that the matB calculation (using the e-values) is the correct
+// calculation (see the uncommented matA=matB assignment at the end of the loop)
+// -- May 2023
+//
 // by definition-- the rows are:
 //
 //	UU = 0
@@ -1152,6 +1161,15 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	proportion /= summedMonCts
 
+	if(exists("root:Packages:NIST:VSANS:Globals:Polarization:MatB")==0)
+		Make/O/D/N=(4,4) MatB,MatB_err
+	endif
+
+// sometimes ends up in root:, so...
+//	if(exists("root:MatB")==0)
+//		Make/O/D/N=(4,4) MatB,MatB_err
+//	endif
+	
 	// loop over the (10) rows in the listWave
 	fileCount=0
 	for(ii=0;ii<num;ii+=1)
@@ -1202,7 +1220,7 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 //			monCts /= 1e8		//to get a normalized value to add proportionally
 			
 			// use the proper proportion of each file to add to each row
-//			monCts = proportion[ii]
+			monCts = proportion[ii]
 			
 			Variable err_monCts
 			err_monCts = sqrt(monCts)
@@ -1214,22 +1232,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
 //					
-//					matA[row][0] += ea_uu*ec_uu*monCts
-//					matA[row][1] += ea_du*ec_uu*monCts
-//					matA[row][2] += ea_du*ec_du*monCts
-//					matA[row][3] += ea_uu*ec_du*monCts
-//
-//					matA_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB[row][0] += ea_uu*ec_uu*monCts
+					matB[row][1] += ea_du*ec_uu*monCts
+					matB[row][2] += ea_du*ec_du*monCts
+					matB[row][3] += ea_uu*ec_du*monCts
+
+					matB_err[row][0] += (ea_uu*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_uu*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_du*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // end original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1250,22 +1273,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_uu = (1+Pcell)/2
 //					ec_du = (1-Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_uu*monCts
-//					matA[row][1] += ea_dd*ec_uu*monCts
-//					matA[row][2] += ea_dd*ec_du*monCts
-//					matA[row][3] += ea_ud*ec_du*monCts
-//					
-//					matA_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_uu = Tmaj/2		// corrected eqn(5) in paper
+					ec_du = Tmin/2
+					
+					matB[row][0] += ea_ud*ec_uu*monCts
+					matB[row][1] += ea_dd*ec_uu*monCts
+					matB[row][2] += ea_dd*ec_du*monCts
+					matB[row][3] += ea_ud*ec_du*monCts
+					
+					matB_err[row][0] += (ea_ud*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_uu*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_du*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1287,22 +1315,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_ud = (1-PsmPf)/2
-//					ea_dd = (1+PsmPf)/2
+					ea_ud = (1-PsmPf)/2
+					ea_dd = (1+PsmPf)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_ud*ec_ud*monCts
-//					matA[row][1] += ea_dd*ec_ud*monCts
-//					matA[row][2] += ea_dd*ec_dd*monCts
-//					matA[row][3] += ea_ud*ec_dd*monCts					
-//
-//					matA_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_ud*ec_ud*monCts
+					matB[row][1] += ea_dd*ec_ud*monCts
+					matB[row][2] += ea_dd*ec_dd*monCts
+					matB[row][3] += ea_ud*ec_dd*monCts					
+
+					matB_err[row][0] += (ea_ud*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_dd*ec_ud*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_dd*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_ud*ec_dd*monCts)^2 * (err_PsmPf^2/PsmPf^2 + err_Pcell^2/Pcell^2)
 // original version
 
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1323,22 +1356,27 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 					if(ii==0)
 						matA[row][] = 0
 						matA_err[row][] = 0
+						matB[row][] = 0
+						matB_err[row][] = 0
 					endif
 // original version
-//					ea_uu = (1+Psm)/2
-//					ea_du = (1-Psm)/2
+					ea_uu = (1+Psm)/2
+					ea_du = (1-Psm)/2
 //					ec_ud = (1-Pcell)/2
 //					ec_dd = (1+Pcell)/2
-//					
-//					matA[row][0] += ea_uu*ec_ud*monCts
-//					matA[row][1] += ea_du*ec_ud*monCts
-//					matA[row][2] += ea_du*ec_dd*monCts
-//					matA[row][3] += ea_uu*ec_dd*monCts					
-//										
-//					matA_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
-//					matA_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+// or
+					ec_ud = Tmin/2		// corrected eqn(5) in paper
+					ec_dd = Tmaj/2
+					
+					matB[row][0] += ea_uu*ec_ud*monCts
+					matB[row][1] += ea_du*ec_ud*monCts
+					matB[row][2] += ea_du*ec_dd*monCts
+					matB[row][3] += ea_uu*ec_dd*monCts					
+										
+					matB_err[row][0] += (ea_uu*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][1] += (ea_du*ec_ud*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][2] += (ea_du*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
+					matB_err[row][3] += (ea_uu*ec_dd*monCts)^2 * (err_Psm^2/Psm^2 + err_Pcell^2/Pcell^2)
 // original version
 	
 // using Tmaj, Tmin calc from Po, not Pcell					
@@ -1360,6 +1398,14 @@ Function V_AddToPolMatrix(matA,matA_err,pType,tMid)
 	endfor
 	
 // can't take the SQRT here, since the matrix won't necessarily be full yet, 
+
+	
+// use the original calculation (matB) which I think is correct, or the version (matA) that was
+// ported from the c++ code and appears to be missing a factor of /4 , making the coefficients
+// too large, and the resulting cross sections too small (by the same factor of 4)
+	
+	matA = matB
+	
 	
 	SetDataFolder root:
 	return(0)
@@ -2028,7 +2074,7 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 	if(dfExists == 1 && PolCorFlag == 1)
 		V_CopyHDFToWorkFolder("SAM_"+pType,"SAM")
 	else
-		DoAlert 0,"Error with Polarized SAM Data"
+		DoAlert 0,"Error with Polarized SAM Data. Maually re-load the data"
 		Return(0)
 	endif	
 //	V_ChangeDataTab(0)		//SAM
@@ -2152,7 +2198,7 @@ Function V_ExecutePolarizedProtocol(protStr,pType)
 
 	//dispatch to the proper "mode" of Correct()
 //	V_Dispatch_to_Correct(bgdStr,empStr,drkStr)
-	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])
+	V_Dispatch_to_Correct(prot[0],prot[1],prot[6])			//as long as prot[0] and [1] are not "none", they will be used
 	
 	if(err)
 		PathInfo/S catPathName
@@ -2504,7 +2550,7 @@ End
 // at a first pass, uses the regular reduction protocol 	SaveProtocolButton(ctrlName)
 //
 // TODO
-// X- won't work, as it uses the MakeProtocolFromPanel function... so replace this
+// X- won't work, as it uses the MakeProtocolFromPanel function... so replace this (**OK now...)
 //
 Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	String ctrlName
@@ -2514,16 +2560,16 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 	//will prompt for protocol name, and save the protocol as a text wave
 	//prompt for name of new protocol wave to save
 	do
-		Execute "AskForName()"
-		SVAR newProtocol = root:myGlobals:Protocols:gNewStr
+		Execute "V_AskForName()"
+		SVAR newProtocol = root:Packages:NIST:VSANS:Globals:Protocols:gNewStr
 		
 		//make sure it's a valid IGOR name
 		newProtocol = CleanupName(newProtocol,0)	//strict naming convention
-		String/G root:myGlobals:Protocols:gNewStr=newProtocol		//reassign, if changed
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gNewStr=newProtocol		//reassign, if changed
 		Print "newProtocol = ",newProtocol
 		
-		SetDataFolder root:myGlobals:Protocols
-		if(WaveExists( $("root:myGlobals:Protocols:" + newProtocol) ) == 1)
+		SetDataFolder root:Packages:NIST:VSANS:Globals:Protocols
+		if(WaveExists( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) ) == 1)
 			//wave already exists
 			DoAlert 1,"That name is already in use. Do you wish to overwrite the existing protocol?"
 			if(V_Flag==1)
@@ -2538,14 +2584,17 @@ Function V_SavePolCorProtocolButton(ctrlName) : ButtonControl
 		Endif
 	while(notDone)
 	
-	//current data folder is  root:myGlobals:Protocols
+	//current data folder is  root:Packages:NIST:VSANS:Globals:Protocols
 	if(newProto)
-		Make/O/T/N=8 $("root:myGlobals:Protocols:" + newProtocol)
+		Make/O/T/N=(kNumProtocolSteps) $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol)
 	Endif
 	
-//	MakeProtocolFromPanel( $("root:myGlobals:Protocols:" + newProtocol) )
-	V_MakePolProtocolFromPanel( $("root:myGlobals:Protocols:" + newProtocol) )
-	String/G  root:myGlobals:Protocols:gProtoStr = newProtocol
+	V_MakeProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+	
+	// don't use V_MakePolProtocolFromPanel, it reads controls from panel that don't exist (different than SANS)
+//	V_MakePolProtocolFromPanel( $("root:Packages:NIST:VSANS:Globals:Protocols:" + newProtocol) )
+
+	String/G  root:Packages:NIST:VSANS:Globals:Protocols:gProtoStr = newProtocol
 	
 	//the data folder WAS changed above, this must be reset to root:
 	SetDatafolder root:	
@@ -2566,9 +2615,7 @@ End
 Function V_MakePolProtocolFromPanel(w)
 	Wave/T w
 
-	DoAlert 0,"Not updated for VSANS -- using regular protocol panel instead"
-	return(0)
-		
+	
 	//construct the protocol text wave form the panel
 	//it is to be parsed by ExecuteProtocol() for the actual data reduction
 	PathInfo catPathName			//this is where the files came from
@@ -2601,7 +2648,7 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gDIV
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gDIV
 		if(cmpstr(str,"ask")==0)
 			w[2] = str
 		else
@@ -2616,7 +2663,7 @@ Function V_MakePolProtocolFromPanel(w)
 	else
 		//none used - set textwave (and global?)
 		w[2] = "none"
-		String/G root:myGlobals:Protocols:gDIV = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gDIV = "none"
 	endif
 	
 	//w[3] = mask file
@@ -2625,7 +2672,7 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gMASK
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gMASK
 		if(cmpstr(str,"ask")==0)
 			w[3] = str
 		else
@@ -2640,7 +2687,7 @@ Function V_MakePolProtocolFromPanel(w)
 	else
 		//none used - set textwave (and global?)
 		w[3] = "none"
-		String/G root:myGlobals:Protocols:gMASK = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gMASK = "none"
 	endif
 	
 	//w[4] = abs parameters
@@ -2649,12 +2696,12 @@ Function V_MakePolProtocolFromPanel(w)
 	if(checked)
 		//build the list
 		//just read the global
-		SVAR str=root:myGlobals:Protocols:gAbsStr
+		SVAR str=root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr
 		w[4] = str
 	else
 		//none used - set textwave (and global?)
 		w[4] = "none"
-		String/G root:myGlobals:Protocols:gAbsStr = "none"
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gAbsStr = "none"
 	endif
 	
 	//w[5] = averaging choices
@@ -2662,7 +2709,7 @@ Function V_MakePolProtocolFromPanel(w)
 	checked = V_value
 	if(checked)
 		//just read the global
-		SVAR avestr=root:myGlobals:Protocols:gAVE
+		SVAR avestr=root:Packages:NIST:VSANS:Globals:Protocols:gAVE
 		w[5] = avestr
 	else
 		//none used - set textwave
@@ -2671,7 +2718,7 @@ Function V_MakePolProtocolFromPanel(w)
 	
 	//w[6]
 	//work.DRK information
-	SVAR drkStr=root:myGlobals:Protocols:gDRK
+	SVAR drkStr=root:Packages:NIST:VSANS:Globals:Protocols:gDRK
 	w[6] = ""
 	
 	//w[7]

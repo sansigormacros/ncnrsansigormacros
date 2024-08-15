@@ -170,7 +170,56 @@ Function LoadRawSANSData(file,folder)
 			
 	endif		/// END DATA CORRECTIONS FOR RAW	
 
+
+// SRK 2023 TEST -- the wave at : root:Packages:NIST:RAW:entry:instrument:type
+//  occasionally gives an error when trying to kill/duplicate the data folder stating
+// "name already exists as a variable", and then refuses to continue duplicating the folder.
+// -- I can't figure out why it fails sometimes, and not others.
+//
+// so -- try to re-name the wave
+//
+// -- I'll need to update the reader for this field (but NOT the writer)
+// root:Packages:NIST:RAW:entry:instrument:type
+//
+// -- this, with full paths, fails...
+//	Rename root:Packages:NIST:RAW:entry:instrument:type, root:Packages:NIST:RAW:entry:instrument:instrumentType
+// /Z flag covers the case when MSK or DIV files re read in during ExecuteProtocol
+
+	WAVE/Z instType = root:Packages:NIST:RAW:entry:instrument:type
+	if(waveExists(instType) == 1)
+		Rename instType instrumentType		//even without the full path, this magically ends up in the correct folder!
+	endif
 	
+// root:Packages:NIST:RAW:entry:instrument:attenuator:type
+	Wave/Z attType = root:Packages:NIST:RAW:entry:instrument:attenuator:type
+	if(waveExists(attType) == 1)
+		Rename attType attenType
+	endif
+	
+//root:Packages:NIST:RAW:entry:instrument:beam_monitor_norm:type	
+	WAVE/Z bmonType = root:Packages:NIST:RAW:entry:instrument:beam_monitor_norm:type
+	if(waveExists(bmonType) == 1)
+		Rename bmonType bmon_norm_type
+	endif
+	
+// root:Packages:NIST:RAW:entry:instrument:monochromator:type
+	WAVE/Z monoType = root:Packages:NIST:RAW:entry:instrument:monochromator:type
+	if(waveExists(monoType) == 1)
+		Rename monoType monochromator_Type
+	endif
+	
+// root:Packages:NIST:RAW:entry:instrument:source:type
+	WAVE/Z srcType = root:Packages:NIST:RAW:entry:instrument:source:type
+	if(waveExists(srcType) == 1)
+		Rename srcType source_Type
+	endif
+	
+// root:Packages:NIST:RAW:entry:program_data:type
+	WAVE/Z prgType = root:Packages:NIST:RAW:entry:program_data:type
+	if(waveExists(prgType) == 1)
+		Rename prgType program_type
+	endif
+		
 	SetDataFolder root:
 	return(0)
 	
@@ -184,6 +233,15 @@ End
 // this will load in the whole Nexus file all at once.
 // -- the DAS_Logs are SKIPPED - since they are not needed for reduction
 // Attributes are NOT loaded at all.
+//
+//
+// ** as of 3/2023, one block of the DAS_logs is read in, entry/beam_stop/shape
+// to get to the /size field, since for (unknown) techincal reasons, this field
+// can't be written out to the NExus file. Again, the whole DAS_logs block is NOT
+// read in - it simply slows things down way too much.
+// ---- as of 8/2023, entry/instrument/beam_stop is read in correctly, including size
+//   so that I do not need to read in any of DAS_logs, so this is now commented out.
+//
 //
 // if data destination is RAW, calling function sets DF before passing
 // if data is to be sent to rawSANS, calling function sets DF to Packages:NIST level
@@ -337,6 +395,38 @@ Function ReadHeaderAndData(fname,folderStr)
 	hdf5path = "/entry/program_data"
 	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
+// ** as of 8/2023, beam+stop block is correctly written for the 30m SANS instruments
+// so that I do not need to read DAS_logs...
+//
+// for the 30m SANS, as of 3/2023, the size of the beam stop is not
+// written out to the Nexus block, only to the DAS_logs in the location:
+//
+// entry:DAS_logs:beamStop:size
+//
+// -- do I read in just the beamStop block, or the whole DAS_log?
+//
+// -- reading in the whole DAS_logs is (2-4)x slower than skipping them, while just reading the 
+//  single beamStop block makes no difference in the read time. so read whatI need, no more.
+//
+// Read in thw whole DAS_logs
+//	if(isFolder == -1)
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
+//	else
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
+//	endif
+//	hdf5path = "/entry/DAS_logs"
+//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
+//
+// Read in just the beam stop block
+//	if(isFolder == -1)
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs")
+//		NewDataFolder/O/S $(curDF+base_name+":entry:DAS_logs:beamStop")
+//	else
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs")
+//		NewDataFolder/O/S $(curDF+base_name+"entry:DAS_logs:beamStop")
+//	endif
+//	hdf5path = "/entry/DAS_logs/beamStop"
+//	HDF5LoadGroup/Z/L=7/O/R=2  :, fileID, hdf5Path		//	YES recursive
 
 	
 //
@@ -480,7 +570,13 @@ Function getRealValueFromHDF5(fname,path)
 	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))
@@ -538,7 +634,15 @@ Function/WAVE getRealWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+// -- added in extra list of Polarized beam work folders
+
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -593,7 +697,13 @@ Function/WAVE getTextWaveFromHDF5(fname,path)
 
 // (1) if requesting data from a WORK folder, get it
 // no need to check for any existence, null return is OK
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 //	// check for a work folder first (note that "entry" is now NOT doubled)
 //		if(Exists("root:Packages:NIST:VSANS:"+folderStr+":"+path))
@@ -681,7 +791,13 @@ Function/S getStringFromHDF5(fname,path,num)
 	folderStr = RemoveDotExtension(N_GetFileNameFromPathNoSemi(fname))
 
 // (1) if requesting data from a WORK folder, get it, or report error
-	Variable isWORKFolder = WhichListItem(fname,ksWorkFolderListShort+ksWorkFolderListExtra)
+	String workFolderList = ""
+	workFolderList = ksWorkFolderListShort
+	workFolderList += ksWorkFolderListExtra
+	workFolderList += ksWorkFolderListPol1
+	workFolderList += ksWorkFolderListPol2
+	workFolderList += ksWorkFolderListPol3
+	Variable isWORKFolder = WhichListItem(fname,workFolderList)
 	if(isWORKFolder != -1)		//requesting value from a WORK folder (not RawSANS)
 	// check for a work folder first (note that "entry" is now NOT doubled)
 		if(Exists("root:Packages:NIST:"+folderStr+":"+path))

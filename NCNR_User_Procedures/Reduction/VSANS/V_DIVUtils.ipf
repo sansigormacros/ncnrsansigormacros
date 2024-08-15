@@ -203,7 +203,7 @@ Proc V_DIVCopy_proc(reducedFolderType,carriageStr,firstCopy)
 	String firstCopy="Yes"
 
 
-	Prompt reducedFolderType,"Save files to disk?"
+	Prompt reducedFolderType,"Folder with Reduced Data"
 	Prompt carriageStr,"Detector Carriage",popup,"F;M;B;"
 	Prompt firstCopy,"First time copying a carriage?",popup,"Yes;No;"
 	
@@ -269,6 +269,8 @@ End
 
 // this is called from the button
 //
+// INDIVIDUAL is the correct method, others are simply for testing
+//
 Proc V_NormalizeDIV_proc(carriageStr)
 	String carriageStr="F"
 //	String reducedFolderType="COR",carriageStr="F"
@@ -279,11 +281,14 @@ Proc V_NormalizeDIV_proc(carriageStr)
 end
 
 
-// this function now treats all 8 panels as a single detector
+// this function now treats all 8 panels in different ways
 // for the normalization.
 // it is assuming that data from both carriages has been reduced to the COR stage
 // and has been copied over to the STO folder where it will be normalized before
 // copying to the DIV folder for saving.
+//
+// After testing and some careful thought, INDIVIDUAL is the correct method of
+// normalization. Other methods are left for testing, but should not be used.
 //
 Function Vf_NormalizeDIV_proc(carriageStr)
 	String carriageStr
@@ -725,6 +730,22 @@ End
 //
 Proc H_Setup_VSANS_DIV_Structure()
 	
+	
+//	if( cmpstr("Denex",V_getDetDescription(dataType,"B")) == 0)
+//		isDenex = 1
+//	endif
+
+	// RAW data should be present at this point, so use the values from here
+	//
+	Variable nx = V_getDet_pixel_num_x("RAW","B")
+	Variable ny = V_getDet_pixel_num_y("RAW","B")		
+	
+	// fill the same description string in the DIV file so that the (B) panel will display correctly
+	String detType=V_getDetDescription("RAW","B")
+	
+	Print "DIV setup nx,ny = ",nx,ny
+	
+	
 	NewDataFolder/O/S root:VSANS_DIV_file		
 
 	NewDataFolder/O/S root:VSANS_DIV_file:entry	
@@ -733,8 +754,10 @@ Proc H_Setup_VSANS_DIV_Structure()
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument		
 			Make/O/T/N=1	name	= "NG3_VSANS"
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_B	
-			Make/O/D/N=(680,1656)	data	= 1 
-			Make/O/D/N=(680,1656)	linear_data_error	= 0.01
+			Make/O/D/N=(nx,ny)	data	= 1 
+			Make/O/D/N=(nx,ny)	linear_data_error	= 0.01
+			Make/O/T/N=1 description
+			description = detType
 		NewDataFolder/O/S root:VSANS_DIV_file:entry:instrument:detector_MR		
 			Make/O/D/N=(48,128)	data = 1
 			Make/O/D/N=(48,128)	linear_data_error	= 0.01
@@ -944,6 +967,13 @@ End
 // called by the "update" button
 Function V_UpdatePanelDisp()
 
+
+	NVAR laptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+	Variable sc = 1
+	if(LaptopMode == 1)
+		sc = 0.7
+	endif
+	
 	ControlInfo popup0
 	String carrStr = S_value
 	
@@ -1013,6 +1043,11 @@ Function V_UpdatePanelDisp()
 		ModifyGraph tkLblRot(left)=90
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
+		
+		if( cmpstr("Denex",V_getDetDescription(folder,"B")) == 0)
+			ModifyGraph height={Aspect,kNum_y_Denex/kNum_x_Denex}
+		endif		
+
 		SetActiveSubwindow ##
 		return(0)
 	endif
@@ -1029,6 +1064,8 @@ Function V_UpdatePanelDisp()
 		ModifyImage data ctab= {*,*,ColdWarm,0}
 		ModifyImage data ctabAutoscale=3	
 	endif
+	
+
 	ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14
 	ModifyGraph mirror=2
 	ModifyGraph nticks=4
@@ -1038,7 +1075,17 @@ Function V_UpdatePanelDisp()
 	ModifyGraph tkLblRot(left)=90
 	ModifyGraph btLen=3
 	ModifyGraph tlOffset=-2
+	
+	//be sure the aspect ratio is correct for the L panel, since it may have been
+	// set to 1 if the Denex (back) panel was displayed
+//	ModifyGraph height={Aspect,425/200}		// based on the aspect ratio of L panel as declared
+		// 266/140 should work, but it doesn't...
+//	Display/W=(10*sc,45*sc,210*sc,425*sc)/HOST=#
+	
+	ModifyGraph height=(425*sc-45*sc-14-14)
+	
 	SetActiveSubwindow ##
+
 
 
 //	RemoveImage/Z/W=VSANS_DIVPanels#Panel_T data

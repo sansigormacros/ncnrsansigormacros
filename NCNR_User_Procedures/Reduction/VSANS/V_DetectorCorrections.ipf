@@ -286,12 +286,14 @@ end
 
 
 //
-// Only the first elelment of the three is actually used
+// Only the first element of the three is actually used
 // - the stored values are in cm, and converted to mm
 //
 // cal_x[0] = 0.03175 [cm] = 0.3175 mm/pixel
 //
 // Since only the first element is used, the "correction" is linear.
+//
+// -- MAR 2023 -- this will work fine for the Denex, as long as cal_x and cal_y are set correctly
 //
 Function V_NonLinearCorrection_B(folder,dataW,cal_x,cal_y,detStr,destPath)
 	String folder
@@ -989,6 +991,9 @@ End
 // -using new calculation since the lateral direction of the tubes does not affect the solid angle
 // projection (see He (2015) and John's memo)
 //
+//
+// -- MAR 2023 -- this should be fine for the Denex detector which is a grid like the 
+//                previous highRes detector
 //
 Function V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
 	Wave w,w_err

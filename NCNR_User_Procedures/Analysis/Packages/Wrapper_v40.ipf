@@ -27,7 +27,7 @@ Function Init_WrapperPanel()
 	Variable/G root:Packages:NIST:SANS_ANA_VERSION=4.10
 	String/G root:Packages:NIST:SANS_ANA_EXTENSION="_v40"
 	//Set this variable to 1 to force use of trapezoidal integration routine for USANS smearing
-	Variable/G root:Packages:NIST:USANSUseTrap = 0
+	Variable/G root:Packages:NIST:gUSANSUseTrap = 0
 	Variable/G root:Packages:NIST:USANS_dQv = 0.117
 	Variable/G root:Packages:NIST:gUseGenCurveFit = 0			//set to 1 to use genetic optimization
 			

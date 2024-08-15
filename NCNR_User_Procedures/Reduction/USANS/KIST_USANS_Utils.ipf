@@ -7,6 +7,14 @@
 // contains updated instrument constants (MHK) 2014-06-20
 // added to NCNR SVN 9/2015 (SRK)
 
+// updated in AUG 2024 to properly bypass the (NCNR) default of raw data in q-values
+// --also added functionality to allow the user to enter a calibration factor for conversion
+//   of angle->q
+// --added analysis preference to switch to qTrap for slit-smearing rather than the default
+//   matrix smearing. Sometimes the matrix fails, but the trapezoidal integration works.
+//
+
+
 //facility-specific constants
 Function Init_USANS_Facility()
 
@@ -22,29 +30,53 @@ Function Init_USANS_Facility()
 	
 	//Variable/G  root:Globals:MainPanel:gDQv = 0.037		//divergence, in terms of Q (1/A) (pre- NOV 2004)
 	//Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.117		//divergence, in terms of Q (1/A)  (NOV 2004)
-	   Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09		//detector divergence, in terms of Q (1/A), mhk --09-12-2012 
+	Variable/G  	root:Packages:NIST:USANS:Globals:MainPanel:gDQv = 0.09		//detector divergence, in terms of Q (1/A), mhk --09-12-2012 
 	
 
 	String/G root:Packages:NIST:gXMLLoader_Title=""
 	
 	//November 2010 - deadtime corrections -- see USANS_DetectorDeadtime() below
 	//Only used in BT5_Loader.ipf and dependent on date, so defined there on each file load.
+
+
+// is the data file in terms of QValues rather than angle?
+	Variable/G root:Packages:NIST:gRawUSANSisQvalues=0		//== 1 means raw data is in Q, 0 means angle
+
+	DoAlert 0,"The data loader is set to interpret raw data in ANGLE not Q-Values. If your raw data is different, change this setting using the menu item USANS->NCNR Preferences"
 	
+	
+// this variable should never be defined for HANARO data
+//	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs=0	
+	
+	
+	// Ask the user to set the calibration factor -- MULTIPLICATIVE --
+	// SRK AUG 6 2024
+	Variable gCalibration = NumVarOrDefault("gCalibration", 1.418)			//this is the default value for the calibration
+	Prompt gCalibration, "Enter the Multiplicative calibration correction"
+	DoPrompt "Calibration",gCalibration
+
+	Variable/G root:Packages:NIST:gCalibration = gCalibration			// Save for later use
+// it doesn't matter if the user cancelled -- we need a value for this. so if they cancel,
+// then the value is the default of 1
+	Print "Calibration correction is = ",gCalibration
+
 	
 	// to convert from angle (in degrees) to Q (in 1/Angstrom)
-	//Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=2.741557e-2		//motor position in degree unit MHK for KIST ---08/15/2012
-	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=1.5707963e-4	// motor position in mm (x100) MHK for KIST ---07/19/2013
 	// Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=1.5707963e-2	// motor position in mm  MHK for KIST ---07/19/2013
+
+	Variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4		// motor position in mm (x100) MHK for KIST ---07/19/2013
+	NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base		//base calibration before corrections
+	
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = gDeg2QConv_base * gCalibration		//final value used for conversion
 
 		
 	// extension string for the raw data files
 	// -- not that the extension as specified here starts with "."
 	// String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".bt5"
-	    String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".kusan"     //mhk--08/15/2012
-	
-	
-	
+	String/G  	root:Packages:NIST:USANS:Globals:MainPanel:gUExt = ".kusan"     //mhk--08/15/2012
+		
 	
 	return(0)
 end
@@ -83,3 +115,44 @@ Function USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 
 	return(0)
 end
+
+// add a menu item so that this can be accessed
+Menu "USANS"
+
+	"-"
+	"Enter Calibration Value", fEnterCalibrationValue()
+	"-"
+
+End
+
+// SRK 2024 -- to allow adjustment of the calibration factor for ang->Q
+//
+// Ask the user to set the calibration factor -- MULTIPLICATIVE --
+// prints out the new (or unchanged) value
+//
+Function fEnterCalibrationValue()
+
+	NVAR gCalibration = root:Packages:NIST:gCalibration		// current value
+
+	Variable newCalibration = gCalibration
+	Prompt newCalibration, "Enter the Multiplicative calibration correction"
+	DoPrompt "Calibration",newCalibration
+
+	if(V_Flag == 1)		//user cancelled
+
+		Print "Calibration correction is (unchanged) = ",gCalibration
+
+		return(0)
+	endif
+	
+	Variable/G root:Packages:NIST:gCalibration = newCalibration			// update and Save for later use
+
+	NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base
+	
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * newCalibration
+
+	Print "New calibration correction is = ",newCalibration
+
+	return(0)
+End
+

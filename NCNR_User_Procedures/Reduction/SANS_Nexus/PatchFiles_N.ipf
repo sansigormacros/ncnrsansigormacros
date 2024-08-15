@@ -1528,16 +1528,33 @@ End
 // lo is the first file number
 // hi is the last file number (inclusive)
 //
+// TODO
+// -- use the flag ksDetType to switch on the type of detector (10m tubes or Ordela)
+// to allow only the correct dimension for the calibration waves (3,112) or (3,128)
+//
+//
 Function fPatchDetectorCalibration(lo,hi,calibW)
 	Variable lo,hi
 	Wave calibW
 	
-	Variable ii
+	Variable ii,xDim
 	String fname
 	
-	// check the dimensions of the calibW (3,112)
-	if (DimSize(calibW, 0) != 3 || DimSize(calibW, 1) != 112 )
-		Abort "Calibration wave is not of proper dimension (3,112)"
+	xDim = 0
+	if(cmpstr(ksDetType,"Ordela") == 0)
+		xDim = 128
+	endif
+	if(cmpstr(ksDetType,"Tubes") == 0)
+		xDim = 112
+	endif
+	
+	if(xDim == 0)
+		Abort "ksDetType unknown in PatchFiles:fPatchDetectorCalibration()"
+	endif
+	
+	// check the dimensions of the calibW (3,112) or (3,128)
+	if (DimSize(calibW, 0) != 3 || DimSize(calibW, 1) != xDim )
+		Abort "Calibration wave is not of proper dimension (3,"+num2str(xDim)+")"
 	endif
 	
 	//loop over all files
@@ -1716,6 +1733,9 @@ End
 
 //
 // "Perfect" values here are from Phil (2/2018)
+//
+// TODO -- "Ordela" vs "Tubes"
+// -- where is the calibrationWave generated -- need to redimension and re-fill
 //
 Function GeneratePerfCalibButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba

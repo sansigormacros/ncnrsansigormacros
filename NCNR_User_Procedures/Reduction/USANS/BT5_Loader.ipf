@@ -10,6 +10,7 @@
 // with the DetCts wave as a wave note
 //
 
+
 	// as of Feb 6 2019, USANS is using NICE for data collection rather than ICP
 	// as a consequence, the data file is somewhat different. Specifically, the 
 	// order of the detectors in the comma-delimited list is different, with the
@@ -22,6 +23,22 @@
 	// length of time. This is now read in per line and stored in a wave - and is used for the dead time
 	// correction and the normalization to monitor count.
 	
+	// BUG - found in AUG 2024
+	// if temperature control was used, the temp value is written into the 2nd column where
+	// countTime is expected -- need to update the reader to catch this unexpected format
+	//
+	// currently, of these 5 (or 6) columns, only the time (= MIN) is read in. all of the detector data is 
+	// written to the coma-delimited rows inbetween these columns.
+	// so-- I read in the header labels and determine which label is "MIN" (either the 2nd or 3rd) and
+	// use that information to select the time value rather than the temperature
+	//
+	// -- if no temp, 5 columns
+	//    A2  MIN  MONITOR  COUNTS  EXTRA  
+
+	// -- if temp, 6 columns
+	//  A2  TEMP0  MIN  MONITOR  COUNTS  EXTRA
+
+
 // - thes wave note is a string of KEY:value items
 //
 //	str = "FILE:"+filen+";"
@@ -43,7 +60,7 @@ Function LoadBT5File(fname,type)
 
 	SVAR USANSFolder = root:Packages:NIST:USANS:Globals:gUSANSFolder
 	
-	Variable num=500,err=0,refnum
+	Variable num=500,err=0,refnum,timeCol
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":Angle")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":DetCts")
 	Make/O/D/N=(num) $(USANSFolder+":"+type+":ErrDetCts")
@@ -102,17 +119,35 @@ Function LoadBT5File(fname,type)
 	NVAR 	gRawUSANSisQvalues = root:Packages:NIST:gRawUSANSisQvalues
 	
 	
-// test by date
-	Variable thisFileSecs
-	NVAR switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
-	thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
-	if(thisFileSecs >= switchSecs)
-		useNewDataFormat = 1
-	else
-		useNewDataFormat = 0
+// test by date, being sure to exclude KIST_USANS data from the test
+//
+
+	Variable isKIST_USANS=0
+	if(exists("KIST_USANS") == 3)		// function has been defined in the loader
+		isKIST_USANS = 1
 	endif
 
 	
+	Variable thisFileSecs
+	NVAR/Z switchSecs = root:Packages:NIST:USANS:Globals:MainPanel:gFileSwitchSecs
+	
+	if(!isKIST_USANS)		// if NOT KIST data...
+		if(NVAR_Exists(switchSecs))					// this should never be defined for HANARO
+			thisFileSecs = BT5DateTime2Secs(filedt)		// could use BT5Date2Secs() to exclude HR:MIN
+			if(thisFileSecs >= switchSecs)
+				useNewDataFormat = 1
+			else
+				useNewDataFormat = 0
+			endif
+		else
+			//definitely old data (or HANARO), use old format
+			useNewDataFormat = 0
+		endif
+	else
+		useNewDataFormat = 0		// is HANARO data, so use old data format
+	endif
+	
+	// set the two dead tim values based on the data collection date
 	USANS_DetectorDeadtime(filedt,MainDeadTime,TransDeadTime)
 	
 	//skip line 2
@@ -120,10 +155,51 @@ Function LoadBT5File(fname,type)
 	//the next line is the sample label, use it all, minus the terminator
 	FReadLine refnum,filelabel
 	
-	//skip the next 10 lines
-	For(ii=0;ii<10;ii+=1)
+//	//skip the next 10 lines
+//	For(ii=0;ii<10;ii+=1)
+//		FReadLine refnum,buffer
+//	EndFor
+	
+	//skip the next 9 lines
+	// reading the column headers to see if the temperature was actually reported
+	// in the 2nd column (= s2). Then switch on this later to get the correct assignments
+	// -- if no temp, 5 columns
+	//    A2  MIN  MONITOR  COUNTS  EXTRA  
+
+	// -- if temp, 6 columns
+	//  A2  TEMP0  MIN  MONITOR  COUNTS  EXTRA
+
+	//
+	For(ii=0;ii<9;ii+=1)
 		FReadLine refnum,buffer
 	EndFor
+	FReadLine refNum, buffer
+	sscanf buffer, "%s%s%s%s%s%s",s1,s2,s3,s4,s5,s6
+//	Print s1,s2,s3,s4,s5,s6
+
+// figure out which column is MIN -- I don't care about the others right now
+// it's probably s2 or s3, but I need to test them all in case NICE changes how the data is written out
+// a most unsophisticated way to do the test - but I just want it to work
+	timeCol = 0
+	if(cmpstr(s1,"MIN") == 0)		//
+		timeCol = 1
+	endif
+	if(cmpstr(s2,"MIN") == 0)		//
+		timeCol = 2
+	endif
+	if(cmpstr(s3,"MIN") == 0)		//
+		timeCol = 3
+	endif	
+	if(cmpstr(s4,"MIN") == 0)		//
+		timeCol = 4
+	endif
+	if(cmpstr(s5,"MIN") == 0)		//
+		timeCol = 5
+	endif	
+	if(cmpstr(s6,"MIN") == 0)		//
+		timeCol = 6
+	endif
+	
 	
 	//read the data until EOF - assuming always a pair or lines
 	do
@@ -136,11 +212,33 @@ Function LoadBT5File(fname,type)
 			break							// Hit blank line. End of data in the file.
 		endif
 		//1st line of pair
-		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
+//		sscanf buffer,"%g%g%g%g%g",v1,v2,v3,v4,v5		// 5 values here now
+		sscanf buffer,"%g%g%g%g%g%g",v1,v2,v3,v4,v5,v6		// 5 or 6 values here now, last is zero if only 5
+
 		angle[numlinesloaded] = v1		//[0] is the ANGLE
 		if(gRawUSANSisQvalues==1)
 			// in this mode, each data point is collected for a different time
-			countTime = v2 * 60		// convert MIN to seconds
+			//
+			// -- choose the correct column that contains the time
+			if(timeCol == 1)
+				countTime = v1 * 60
+			endif
+			if(timeCol == 2)
+				countTime = v2 * 60		// time is v2 convert MIN to seconds
+			endif
+			if(timeCol == 3)
+				countTime = v3 * 60		// temperature is v2, time is v3 convert MIN to seconds
+			endif
+			if(timeCol == 4)
+				countTime = v4 * 60
+			endif
+			if(timeCol == 5)
+				countTime = v5 * 60
+			endif
+			if(timeCol == 6)
+				countTime = v6 * 60
+			endif
+			
 		endif
 		
 		

@@ -674,11 +674,28 @@ End
 // == diameter if shape = CIRCLE
 // value is stored in [cm] diameter in Nexus
 // (was stored on VAX as [mm] - be careful)
+//
+//  as of 3/2023, size is not stored for 30m instruments
+// but is stored in: root:sans118676:entry:DAS_logs:beamStop:size
+//
+// so if -999999 is returned, look in the second place...
+//
+//
+//
 Function getBeamStop_size(fname)
 	String fname
 
+	variable val
 	String path = "entry:instrument:beam_stop:shape:size"
-	return(getRealValueFromHDF5(fname,path))
+	
+	val = getRealValueFromHDF5(fname,path)
+	
+	if(val < -999)
+		path = "entry:DAS_logs:beamStop:size"
+		val = getRealValueFromHDF5(fname,path)
+	endif
+	
+	return(val)
 End
 
 Function getBeamStop_width(fname)
@@ -1433,6 +1450,7 @@ Function getSourceAp_size(fname)
 	String fname
 
 	String path = "entry:instrument:source_aperture:shape:size"
+	
 	Variable num=60
 	variable val
 	String str2=""
@@ -2209,6 +2227,107 @@ Function getXYBoxFromFile(fname,x1,x2,y1,y2)
 
 	return(0)
 End
+
+
+//
+// polarized beam functions added for NG7 SANS
+// (write functions also added)
+//
+// -- as of 3/2023
+// (locations may change in the future...)
+//
+// ** NOTE: more is needed to include the cell information for the back polarizer (analyzer)
+// -- see VSANS cor how this is handled...
+//
+//
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:He3BackPolarizer:type (var)
+//
+Function get_He3BackPolarizer_type(fname)
+	String fname
+	
+	String path = "entry:instrument:He3BackPolarizer:type"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:He3FrontPolarizer:type (var)
+//
+Function get_He3FrontPolarizer_type(fname)
+	String fname
+	
+	String path = "entry:instrument:He3FrontPolarizer:type"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:direction (text)
+//
+Function/S get_rfFrontFlipper_direction(fname)
+	String fname
+
+	String path = "entry:instrument:rfFrontFlipper:direction"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:flip (text)
+//
+Function/S get_rfFrontFlipper_flip(fname)
+	String fname
+
+	String path = "entry:instrument:rfFrontFlipper:flip"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:transmitted_power (var)
+//
+Function get_rfFrontFlipper_transmitted_power(fname)
+	String fname
+	
+	String path = "entry:instrument:rfFrontFlipper:transmitted_power"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:rfFrontFlipper:type (text)
+//
+Function/S get_rfFrontFlipper_type(fname)
+	String fname
+
+	String path = "entry:instrument:rfFrontFlipper:type"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+//
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:composition (text)
+Function/S get_superMirror_composition(fname)
+	String fname
+
+	String path = "entry:instrument:superMirror:composition"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:efficiency (var)
+//
+Function get_superMirror_efficiency(fname)
+	String fname
+	
+	String path = "entry:instrument:superMirror:efficiency"	
+	return(getRealValueFromHDF5(fname,path))
+end
+
+// root:Packages:NIST:RawSANS:sans118664:entry:instrument:superMirror:type (text)
+//
+Function/S get_superMirror_type(fname)
+	String fname
+
+	String path = "entry:instrument:superMirror:type"	
+	Variable num=60
+	return(getStringFromHDF5(fname,path,num))
+End
+
+
+//////////////////////////////
 
 
 

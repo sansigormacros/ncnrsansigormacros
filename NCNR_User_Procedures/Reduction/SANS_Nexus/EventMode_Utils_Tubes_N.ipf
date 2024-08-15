@@ -32,6 +32,14 @@
 //
 // There are functions in this file to generate "fake" event data for testing
 //
+// to generate and save a fake event file, run the two commands:
+//
+//  MakeFakeEventWave(1e6)
+//  writeFakeEventFile("")
+//
+// currently the code for the fake event files is using 112 tubes as are on the 10m SANS
+// and the new 10-byte event word format
+//
 
 
 
@@ -1375,144 +1383,6 @@ End
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////
-//
-//
-/////////////////////////   TESTING ROUTINES
-//
-/////////////////////////   "FAKE" EVENT FILES - WRITE/READ
-//
-//
-Function testBitShift()
-
-//	// /L=64 bit, /U=unsigned
-//	Make/L/U/N=100 eventWave
-//	eventWave = 0
-	
-	// for each 64-bit value:
-	// byte 1: tube index [0,191]
-	// byte 2: pixel value [0,127]
-	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
-	
-	int64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
-	int64 i64_ticks,i64_start
-	
-	b1=255
-	b3=255
-	b5=255
-	b7=255
-	b2=0
-	b4=0
-	b6=0
-	b8=0
-	
-	b7 = b7 << 8
-	b6 = b6 << 16
-	b5 = b5 << 24
-	b4 = b4 << 32
-	b3 = b3 << 40
-	b2 = b2 << 48
-	b1 = b1 << 56
-	
-	i64_num = b1+b2+b3+b4+b5+b6+b7+b8
-	printf "%64b\r",i64_num
-	
-	return(0)
-End
-
-
-
-///////////////////////////////////////////////////////////
-// for VSANS ONLY
-
-//Function ReadEventHeader()
-//
-//	String gVSANSStr=""
-//	String gDetStr=""
-//	gVSANSStr = PadString(gVSANSStr,5,0x20)		//pad to 5 bytes
-//	gDetStr = PadString(gDetStr,1,0x20)				//pad to 1 byte
-//	
-//	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol,gTime6
-//	Variable refnum,ii
-//	String filePathStr=""
-//	
-//	Make/O/B/U/N=27 byteWave
-//	
-//	Open/R refnum as filepathstr
-//	
-//
-//	FBinRead refnum, gVSANSStr
-//	FBinRead/F=2/U/B=3 refnum, gRevision
-//	FBinRead/F=2/U/B=3 refnum, gOffset
-//	FBinRead/F=2/U/B=3 refnum, gTime1
-//	FBinRead/F=2/U/B=3 refnum, gTime2
-//	FBinRead/F=2/U/B=3 refnum, gTime3
-//	FBinRead/F=2/U/B=3 refnum, gTime4
-//	FBinRead/F=2/U/B=3 refnum, gTime5
-//	FBinRead/F=2/U/B=3 refnum, gTime6
-////	FBinRead refnum, gDetStr
-//	FBinRead/F=2/U/B=3 refnum, gVolt
-//	FBinRead/F=3/U/B=3 refnum, gResol
-//
-//	FStatus refnum
-//	FSetPos refnum, V_logEOF
-//	
-//	Close refnum
-//	
-//
-//	Print "string = ",gVSANSStr
-//	Print "revision = ",gRevision
-//	Print "offset = ",gOffset
-//	Print "time part 1 = ",gTime1
-//	Print "time part 2 = ",gTime2
-//	Print "time part 3 = ",gTime3
-//	Print "time part 4 = ",gTime4
-//	Print "time part 5 = ",gTime5
-//	Print "time part 6 = ",gTime6
-////	Print "det group = ",gDetStr
-//	Print "voltage (V) = ",gVolt
-//	Print "clock freq (Hz) = ",gResol
-//	
-//	print "1/freq (s) = ",1/gResol
-//
-//
-////// read all as a byte wave
-//	Make/O/B/U/N=27 byteWave
-//	
-//	Open/R refnum as filepathstr
-//	
-//
-//	FBinRead refnum, byteWave
-//
-//
-//	FStatus refnum
-//	FSetPos refnum, V_logEOF
-//	
-//	Close refnum
-//	
-//	for(ii=0;ii<numpnts(byteWave);ii+=1)
-//		printf "%X  ",byteWave[ii]
-//	endfor
-//	printf "\r"
-//	
-//	return(0)
-//End
-
-
 Proc EstFrameOverlap(lambda,fwhm,sdd)
 	Variable lambda=6,fwhm=0.12,sdd=13
 	FrameOverlap(lambda,fwhm,sdd)
@@ -1598,4 +1468,342 @@ End
 //Resample/DOWN=1000 rescaledTime_samp;DelayUpdate
 //
 //
+
+
+
+
+////////////////////////////////////////////////////////////////////////////
+//
+//
+/////////////////////////   TESTING ROUTINES
+//
+/////////////////////////   "FAKE" EVENT FILES - WRITE/READ
+//
+
+//
+//
+// to generate and save a file, run the two commands:
+//
+//  MakeFakeEventWave(1e6)
+//  writeFakeEventFile("")
+//
+//
+
+Structure eventWord_fake
+	uchar xPos
+	uchar yPos
+	uint64 eventTime
+endStructure
+
+
+
+Function testBitShift()
+
+//	// /L=64 bit, /U=unsigned
+//	Make/L/U/N=100 eventWave
+//	eventWave = 0
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	int64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	int64 i64_ticks,i64_start
+	
+//	b1=255
+//	b3=255
+//	b5=255
+//	b7=255
+//	b2=0
+//	b4=0
+//	b6=0
+//	b8=0
+	
+	b1=5
+	b3=15
+	b5=25
+	b7=35
+	b2=10
+	b4=20
+	b6=30
+	b8=40
+
+	
+	b7 = b7 << 8
+	b6 = b6 << 16
+	b5 = b5 << 24
+	b4 = b4 << 32
+	b3 = b3 << 40
+	b2 = b2 << 48
+	b1 = b1 << 56
+	
+	i64_num = b1+b2+b3+b4+b5+b6+b7+b8
+	printf "%64b\r",i64_num
+	
+//
+
+	b1 = (i64_num >> 56 ) & 0xFF			// = last byte, after shifting
+	b2 = (i64_num >> 48 ) & 0xFF		
+	b3 = (i64_num >> 40 ) & 0xFF		
+	b4 = (i64_num >> 32 ) & 0xFF		
+	b5 = (i64_num >> 24 ) & 0xFF		
+	b6 = (i64_num >> 16 ) & 0xFF		
+	b7 = (i64_num >> 8 ) & 0xFF		
+	b8 = (i64_num) & 0xFF				// first byte	
+	
+	Print b1, b2, b3, b4, b5, b6, b7, b8
+	
+	return(0)
+End
+
+
+
+
+
+//
+Function MakeFakeEventWave(num)
+	Variable num
+	
+	Variable ii
+	
+//	// /B= 8 bits, /U=unsigned, need 10 values per event
+	Make/O/B/U/N=(num*10) eventWave
+	eventWave = 0
+	
+	// for each 80-bit value:
+	// byte 1: tube index [0,127]
+	// byte 2: pixel value [0,127]
+	// bytes 3-10 (= 8 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8,xPos,yPos
+	uint64 i64_ticks,i64_start
+	
+	
+	i64_start = ticks
+	for(ii=0;ii<num;ii+=1)
+//		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
+
+		xPos = trunc(abs(enoise(112)))
+
+		yPos = trunc(abs(enoise(128)))		// same here, to get results [0,127]
+	
+		
+//		i64_ticks = ticks-i64_start
+		i64_ticks = i64_start + ii*1e6	// to get the time values into the correct magnitude (1e6->)
+
+
+//write out the x and y positions	
+		eventWave[10*ii] = xPos
+		eventWave[10*ii+1] = yPos
+
+// pick out each byte of the 64-bit time value		
+		b1 = (i64_ticks >> 56 ) & 0xFF			// = last byte, after shifting
+		b2 = (i64_ticks >> 48 ) & 0xFF		
+		b3 = (i64_ticks >> 40 ) & 0xFF		
+		b4 = (i64_ticks >> 32 ) & 0xFF		
+		b5 = (i64_ticks >> 24 ) & 0xFF		
+		b6 = (i64_ticks >> 16 ) & 0xFF		
+		b7 = (i64_ticks >> 8 ) & 0xFF		
+		b8 = (i64_ticks) & 0xFF				// first byte	
+
+//
+//  this is apparently the wrong order?
+//		
+//		eventWave[10*ii+2] = b1
+//		eventWave[10*ii+3] = b2
+//		eventWave[10*ii+4] = b3
+//		eventWave[10*ii+5] = b4
+//		eventWave[10*ii+6] = b5
+//		eventWave[10*ii+7] = b6
+//		eventWave[10*ii+8] = b7
+//		eventWave[10*ii+9] = b8
+
+//
+// this is correct -- it depends if I'm little or big endian...
+//  I need this to be little-endian
+//
+//	"Under little-endian byte ordering, 
+// which is commonly used on Windows,
+// the low-order byte is read from the file first."
+//
+		eventWave[10*ii+2] = b8
+		eventWave[10*ii+3] = b7
+		eventWave[10*ii+4] = b6
+		eventWave[10*ii+5] = b5
+		eventWave[10*ii+6] = b4
+		eventWave[10*ii+7] = b3
+		eventWave[10*ii+8] = b2
+		eventWave[10*ii+9] = b1
+		
+	endfor
+
+
+	return(0)
+End
+
+
+
+
+
+
+Function ReadFakeEvents()
+
+	String gNASStr=""
+	gNASStr = PadString(gNASStr,3,0x20)		//pad to 3 bytes
+	
+	Variable gRevision,gOffset,gTime1,gTime2,gTime3,gTime4,gTime5,gVolt,gResol,gTime6
+	Variable refnum,ii
+	String filePathStr=""
+	
+	
+	Open/R refnum as filepathstr
+	
+
+	FBinRead refnum, gNASStr
+	FBinRead/F=2/U/B=3 refnum, gRevision
+	FBinRead/F=2/U/B=3 refnum, gOffset
+	FBinRead/F=2/U/B=3 refnum, gTime1
+	FBinRead/F=2/U/B=3 refnum, gTime2
+	FBinRead/F=2/U/B=3 refnum, gTime3
+	FBinRead/F=2/U/B=3 refnum, gTime4
+	FBinRead/F=2/U/B=3 refnum, gTime5
+//	FBinRead/F=2/U/B=3 refnum, gTime6
+//	FBinRead refnum, gDetStr
+	FBinRead/F=2/U/B=3 refnum, gVolt
+	FBinRead/F=3/U/B=3 refnum, gResol
+
+	FStatus refnum
+	FSetPos refnum, V_logEOF
+	
+	Close refnum
+	
+
+	Print "string = ",gNASStr
+	Print "revision = ",gRevision
+	Print "offset = ",gOffset
+	Print "time part 1 = ",gTime1
+	Print "time part 2 = ",gTime2
+	Print "time part 3 = ",gTime3
+	Print "time part 4 = ",gTime4
+	Print "time part 5 = ",gTime5
+//	Print "time part 6 = ",gTime6
+//	Print "det group = ",gDetStr
+	Print "voltage (V) = ",gVolt
+	Print "clock freq (Hz) = ",gResol
+	
+	print "1/freq (s) = ",1/gResol
+
+	return(0)
+end
+
+
+//
+// TODO - Mar 2023
+// --untested--
+//
+Function writeFakeEventFile(fname)
+	String fname
+
+	WAVE w = eventWave
+	Variable refnum
+	
+	String sansStr="NAS"
+	Variable revision = 11
+	Variable offset = 26		// no disabled tubes
+	Variable time1 = 2017
+	Variable time2 = 0525
+	Variable time3 = 1122
+	Variable time4 = 3344		// these 4 time pieces are supposed to be 8 bytes total
+	Variable time5 = 3344		// these 5 time pieces are supposed to be 10 bytes total
+//	Variable time6 = 5566		// these 6 time pieces are supposed to be 10 bytes total
+//	String detStr = "M"
+	Variable volt = 1500
+	Variable resol = 1e9
+	
+
+	String gNASStr=""
+	gNASStr = PadString(gNASStr,3,0x20)		//pad to 3 bytes
+	
+		
+	Open refnum as fname
+
+	FBinWrite refnum, sansStr
+	FBinWrite/F=2/U refnum, revision
+	FBinWrite/F=2/U refnum, offset
+	FBinWrite/F=2/U refnum, time1
+	FBinWrite/F=2/U refnum, time2
+	FBinWrite/F=2/U refnum, time3
+	FBinWrite/F=2/U refnum, time4
+	FBinWrite/F=2/U refnum, time5
+//	FBinWrite/F=2/U refnum, time6
+//	FBinWrite refnum, detStr
+	FBinWrite/F=2/U refnum, volt
+	FBinWrite/F=3/U refnum, resol
+
+	FGetPos refnum 
+	Print "End of header = ",V_filePos
+	offset = V_filePos
+	
+	FSetPos refnum,7
+	FBinWrite/F=2/U refnum, offset			//write the correct offset 
+
+	
+	FSetPos refNum, offset
+	
+	FBinWrite refnum, w
+	
+	close refnum
+
+
+
+	return(0)
+End
+
+
+
+//
+//
+xFunction MakeFakeEvents()
+
+//	// /L=64 bit, /U=unsigned
+	Make/O/L/U/N=10 smallEventWave
+	smallEventWave = 0
+	
+	// for each 64-bit value:
+	// byte 1: tube index [0,191]
+	// byte 2: pixel value [0,127]
+	// bytes 3-8 (= 6 bytes): time stamp in resolution unit
+	
+	uint64 i64_num,b1,b2,b3,b4,b5,b6,b7,b8
+	uint64 i64_ticks,i64_start
+	
+//	b1 = 47
+//	b2 = 123
+//	i64_ticks = 123456789
+	b1 = 41
+	b2 = 66
+	i64_ticks = 15
+
+
+//	b2 = b2 << 48
+//	b1 = b1 << 56
+//	
+//	i64_num = b1+b2+i64_ticks
+
+	// don't shift b1
+	b2 = b2 << 8
+	i64_ticks = i64_ticks << 16
+
+	i64_num = b1+b2+i64_ticks
+
+	printf "%64b\r",i64_num
+	print i64_num
+	
+	smallEventWave[0] = i64_num
+	
+	return(0)
+End
+
+
 

@@ -226,6 +226,11 @@ Proc PRODIV_MainButtonProc(ctrlName) : ButtonControl
 //	MakeDIVFile("","")			
 End
 
+Proc DataTree_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	ShowDataFolderTree()
+End
 
 // TODO - this panel is not yet operational with the Nexus macros
 //
@@ -311,6 +316,18 @@ Proc Preferences_MainButtonProc(ctrlName) : ButtonControl
 	Show_Preferences_Panel()
 End
 
+Proc Patch_DeadTime_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	PatchDetectorDeadtimePanel()
+End
+
+Proc Patch_Calib_MainButtonProc(ctrlName) : ButtonControl
+	String ctrlName
+
+	PatchDetectorCalibrationPanel()
+End
+
 ////////////////////////////////////////////////
 //************* NEW version of Main control Panel *****************
 //
@@ -355,13 +372,22 @@ Window Main_Panel()
 	Button MainButton_0d,help={"Shows the panel for control of the RealTime data display. Only used during data collection"}
 	Button MainButton_0e,pos={15,210},size={120,20},proc=FileSort_MainButtonProc,title="Sort Catalog"
 	Button MainButton_0e,help={"Shows the panel for sorting the file catalog"}
+	Button MainButton_0f,pos={300,90},size={90,20},proc=DataTree_MainButtonProc,title="Data Tree"
+	Button MainButton_0f,help={"Show the header and data tree"}
 
+
+	Button MainButton_0g,pos={170,120},size={110,20},proc=Patch_DeadTime_MainButtonProc,title="Patch DeadTime"
+	Button MainButton_0g,help={"Easy patching of dead time tables to multiple files"}
+	Button MainButton_0h,pos={170,150},size={90,20},proc=Patch_Calib_MainButtonProc,title="Patch Calib"
+	Button MainButton_0h,help={"Easy patching of nonlinear calibration tables to multiple files"}
+
+	
 //on tab(1) - Reduction
 	Button MainButton_1a,pos={15,90},size={120,20},proc=BuildProtocol_MainButtonProc,title="Build Protocol"
 	Button MainButton_1a,help={"Shows a panel where the CATalog window is used as input for creating a protocol. Can also be used for standard reductions"}
 	Button MainButton_1b,pos={15,120},size={120,20},proc=ReduceAFile_MainButtonProc,title="Reduce a File"
 	Button MainButton_1b,help={"Presents a questionnare for creating a reduction protocol, then reduces a single file"}
-	Button MainButton_1c,pos={15,150},size={120,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
+	Button MainButton_1c,pos={15,150},size={150,20},proc=ReduceMultiple_MainButtonProc,title="Reduce Multiple Files"
 	Button MainButton_1c,help={"Use for reducing multiple raw datasets after protocol(s) have been created"}
 	Button MainButton_1d,pos={15,180},size={120,20},proc=ShowCatShort_MainButtonProc,title="Show CAT Table"
 	Button MainButton_1d,help={"This button will bring the CATalog window to the front, if it exists"}

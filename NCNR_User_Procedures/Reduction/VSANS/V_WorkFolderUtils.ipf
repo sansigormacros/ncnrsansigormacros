@@ -475,6 +475,8 @@ End
 //
 //the current display type is updated to newType (global)
 //
+// MAR 2023 -- updated to be sure that both types of HighRes detectors are handled correctly
+//
 Function V_Raw_to_work(newType)
 	String newType
 	
@@ -513,8 +515,14 @@ Function V_Raw_to_work(newType)
 
 	//except for removing the read noise of the back detector
 	NVAR gIgnoreDetB = root:Packages:NIST:VSANS:Globals:gIgnoreDetB
+	
+	Variable isDenex=0
+	if( cmpstr("Denex",V_getDetDescription("RAW","B")) == 0)
+		isDenex = 1
+	endif
 
-	if(gIgnoreDetB == 0)
+	if(gIgnoreDetB == 0 && !isDenex)
+		// it's the old CCD HighRes
 		Wave w = V_getDetectorDataW(fname,"B")
 		// I hate to hard-wire this, but the data must be in this specific location...
 		Wave/Z w_ReadNoise = $("root:Packages:NIST:VSANS:ReadNoise:entry:instrument:detector_B:data")
@@ -650,7 +658,7 @@ Function V_Raw_to_work(newType)
 			
 		endfor
 
-		if(gIgnoreDetB==0)		
+		if(gIgnoreDetB==0)		// if calculating for "B", no difference if Denex or old HighRes
 			//"B" is separate
 			detStr = "B"
 			Wave w = V_getDetectorDataW(fname,detStr)
@@ -706,7 +714,7 @@ Function V_Raw_to_work(newType)
 			Wave w_err = V_getDetectorDataErrW(fname,detStr)
 			ctTime = V_getCount_time(fname)
 
-			if(cmpstr(detStr,"B") == 0 )
+			if(cmpstr(detStr,"B") == 0 )		// Denex and HighRes both handled the same
 				if(gIgnoreDetB == 0)
 					Variable b_dt = V_getDetector_deadtime_B(fname,detStr)
 					// do the correction for the back panel
@@ -756,7 +764,7 @@ Function V_Raw_to_work(newType)
 				// any other dimensions to pass in?
 				
 				if(gDo_OLD_SolidAngleCor == 0)
-					V_SolidAngleCorrection(w,w_err,fname,detStr,destPath)
+					V_SolidAngleCorrection(w,w_err,fname,detStr,destPath) // this properly handles ALL detector types
 				else
 					// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
 					// function call above	 correctly handles either high-res grid or tubes. This COS3 function

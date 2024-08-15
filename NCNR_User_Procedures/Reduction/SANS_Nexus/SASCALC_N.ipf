@@ -2399,6 +2399,7 @@ Function numGuides(SSD)
 		case "CGB":
 		case "NG3":
 		case "NG7":
+		case "ngb30":
 			// NG3 and NG7 are both the same
 			Ng = SSD*100 + 5 - 1632
 			Ng /= -155

@@ -79,6 +79,12 @@ Function V_LoadHDF5Data(file,folder)
 		return(1)
 	endif
 	
+	// if a file was read in (by DisplayRawData), then pick up the file name
+	if(strlen(file)==0)
+		SVAR gFileName = root:file_name
+		file = gFileName
+	endif
+	
 	// if RAW data, then generate the errors and linear data copy
 	// do this 9x
 	// then do any "massaging" needed to redimension, fake values, etc.
@@ -126,8 +132,27 @@ Function V_LoadHDF5Data(file,folder)
 		WAVE/Z testB = V_getDetectorDataW(file,"B")
 		if(WaveExists(testB) == 0)		// null wave reference
 			
+			Variable isDenex = 0
+			Variable nx,ny,ctrX,ctrY
+		
+		// since det_B does not exist... test for Denex will always FAIL
+		// I need a different way to do this..
+			if( cmpstr("Denex",V_getDetDescription("RAW","B")) == 0)
+				isDenex = 1
+				nx = 512
+				ny = 512
+				ctrX = 255
+				ctrY = 255
+			else
+				nx = 680
+				ny = 1656
+				ctrX = 340
+				ctrY = 828
+			endif
+			
+			
 			// generate the fake data
-			Make/O/I/N=(680,1656) root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data	= 0		
+			Make/O/I/N=(nx,ny) root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data	= 0		
 			WAVE dataB = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:data
 			ii=0
 			do
@@ -142,8 +167,8 @@ Function V_LoadHDF5Data(file,folder)
 			// (could write the value in make, but use the call for completeness)
 			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:beam_center_x	= 0		
 			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:beam_center_y	= 0		
-			V_putDet_beam_center_x("RAW","B",340)
-			V_putDet_beam_center_y("RAW","B",828)
+			V_putDet_beam_center_x("RAW","B",ctrX)
+			V_putDet_beam_center_y("RAW","B",ctrY)
 			
 			// the integrated count is not written out - fake this == 1
 			Make/O/D/N=1 root:Packages:NIST:VSANS:RAW:entry:instrument:detector_B:integrated_count	= 0		

@@ -25,6 +25,7 @@ Menu "USANS"
 	"Desmear USANS Data",Desmear()
 	"Add two raw BT5 files",SelectFilesToAdd()
 	"Add two data sets",ShowUSANSAddPanel()
+	"Rescale a RAW BT5 file",SelectFileToRescale()
 	"-"
 	Submenu "1D Utilities"
 		"Load and Plot Manager", Show_Plot_Manager()
