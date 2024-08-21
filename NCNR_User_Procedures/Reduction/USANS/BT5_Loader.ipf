@@ -123,7 +123,7 @@ Function LoadBT5File(fname,type)
 //
 
 	Variable isKIST_USANS=0
-	if(exists("KIST_USANS") == 3)		// function has been defined in the loader
+	if(exists("KIST_USANS") == 6)		// function has been defined in the loader
 		isKIST_USANS = 1
 	endif
 

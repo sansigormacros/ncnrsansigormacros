@@ -1719,25 +1719,37 @@ Function RawUSANSisQPref(ctrlName,checked) : CheckBoxControl
 	gVal = checked
 	
 	Variable isKIST_USANS=0
-	if(exists("KIST_USANS") == 3)
+	if(exists("KIST_USANS") == 6)
 		isKIST_USANS = 1
 	endif
+
+	NVAR gCalibration = root:Packages:NIST:gCalibration
 	
 	if(checked == 1)
-		Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv = 1		//so that the q-values are unchanged
-	else
-		if(isKIST_USANS == 1)
-				NVAR gCalibration = root:Packages:NIST:gCalibration
-				NVAR gDeg2QConv_base = root:Packages:NIST:gDeg2QConv_base
-
-				Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration
+	// for both NCNR and KIST, only in different locations... :(
+		if(isKIST_USANS)
+			Variable/G root:Packages:NIST:gdeg2QConv_base = 1		//so that the q-values are unchanged
 		else
-		
-			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=5.55e-5		//JGB -- 2/24/01
+			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base = 1		//so that the q-values are unchanged
 		endif
+	else
+		if(isKIST_USANS)
+			Variable/G root:Packages:NIST:gDeg2QConv_base = 1.5707963e-4		// motor position in mm (x100) MHK for KIST ---07/19/2013
+			NVAR gDeg2QConv_base = root:Packages:NIST:gdeg2QConv_base			//different locations for this global...
+
+		else
+			NVAR gDeg2QConv_base = root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base
+
+			Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv_base = 5.55e-5		//JGB -- 2/24/01
+		endif
+
 	endif
 	
 	
+	Variable/G root:Packages:NIST:USANS:Globals:MainPanel:deg2QConv=gDeg2QConv_base * gCalibration   //multiply by calibration
+
+
+	return(0)
 End
 
 Function UseQTrapPref(ctrlName,checked) : CheckBoxControl

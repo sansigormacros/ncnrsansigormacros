@@ -13,6 +13,8 @@
 //   as the 2nd column (where count time is expected). Now checks header labels to locate time.
 //
 
+// Constant 
+
 
 //facility-specific constants
 Function Init_USANS_Facility()
