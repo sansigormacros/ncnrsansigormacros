@@ -273,41 +273,59 @@ Function FindBeamCenter() :  GraphMarquee
 // the lateral scan data (yet to be taken) is used to correct this. The span of zero points
 // is relatively small (+- 0.5 pixel) but is significant for certain conditions
 //	
-	// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
-//		Wave/Z tube_num = $("root:Packages:NIST:tube")
-//		Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr")
+
+// March 2025: I have updated the calculation to use the real-space postion as calculated from the non-linear
+// corrections. up until now, they have been treated as "perfect" values.
+//
+// the "manual" correction here is still done, but with "perfect" zero point values so that the calculation
+// is not altered. If someone needs to do a maual calculation, it can be done by switching to the
+// correct zero point tables.
+//
+//
+// constant has also been defined for the tube reference value so that it is not hard-coded
+// constant is defined in DetectorCorrections_N.ipf
+
+
+	// check that the correction waves exist, if not, generate them TubeZeroPointTables()
+//		Wave/Z tube_num = $("root:Packages:NIST:tube_zeroPt")
+//		Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr_zeroPt")
+
+// overwrite them every time since I have introduced the perfect table		
+
 //		if(!WaveExists(tube_num))
 //			Execute "TubeZeroPointTables()"
-//			Wave/Z tube_num = $("root:Packages:NIST:tube")
-//			Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr")
+			Execute "TubeZeroPointTables_perfect()"
+			Wave/Z tube_num = $("root:myGlobals:tube_zeroPt")
+			Wave/Z yCtr_tube = $("root:myGlobals:yCtr_zeroPt")
 //		endif
 //		
-//		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
-//		Variable yPixSize = getDet_y_pixel_size(cur_folder)
-//		yPixSize /= 10		// convert mm to cm
-//		// offsets were determined in Dec 2018 using:
-//		// FR tube # 7 = 61.70 pix
-//		// MR tube # 10 = 61.94 pix
+		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
+		Variable yPixSize = getDet_y_pixel_size(cur_folder)
+		yPixSize /= 10		// convert mm to cm
+//
+
 //		
-//		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
-//		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
-//		
-//		Print "X-center (cm) = ",x_mm/10
-//		Print "Y-center (cm) = ",y_mm/10
+		Print "X-center (cm) = ",x_mm/10
+		Print "Y-center (cm) = ",y_mm/10
 //
 //// TODO -- need to select a "zero" tube and make all of the other zero values relative to this one
-//		Print "Reference Y-Center is corrected for FR tube #7 zero position"		
+//		Print "Reference Y-Center is corrected for tube #??? zero position"		
 //
-//		yCorrection = 61.70 - yCorrection
-//		Print "yCorrection (pix) = ",yCorrection
-//		Print "yCorrection (cm) = ",yCorrection*yPixSize
-//		xRef = x_mm/10
-//		yRef = y_mm/10 + yCorrection*yPixSize
-//		Print "FRONT Reference X-center (cm) = ",xRef
-//		Print "FRONT Reference Y-center (cm) = ",yRef
+		yCorrection = k_tube_ZeroPoint - yCorrection
+		Print "yCorrection (pix) = ",yCorrection
+		Print "yCorrection (cm) = ",yCorrection*yPixSize
+		xRef = x_mm/10
+		yRef = y_mm/10 + yCorrection*yPixSize
+		Print "Reference X-center (cm) = ",xRef
+		Print "Reference Y-center (cm) = ",yRef
 
 	
 	endif
+	
+	//
+	// TODO
+	// -- do I automatically write out the beam center to the file? as pixels or as cm?
+	//
 	
 	//back to root folder (redundant)
 	SetDataFolder root:

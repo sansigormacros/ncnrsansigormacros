@@ -307,11 +307,6 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		// this function will modify the x and y values (passed by reference) as needed to keep on the panel
 		V_KeepSelectionInBounds(left,right,bottom,top,detStr,gCurDispType)
 				
-//		left = 3
-//		right = 11
-//		bottom = 56
-//		top = 71
-//		Print "OVERRIDE OF MARQUEE -- NEED TO REPLACE CODE"
 	
 		Print left,right,bottom,top
 			
@@ -377,21 +372,38 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 // the lateral scan data from Dec 2018 is used to correct this. The span of zero points
 // is relatively small (+- 0.5 pixel) but is significant for data using graphite monochromator
 //	
+//
+// March 2025: I have updated the calculation to use the real-space postion as calculated from the non-linear
+// corrections. up until now, they have been treated as "perfect" values.
+//
+// the "manual" correction here is still done, but with "perfect" zero point values so that the calculation
+// is not altered. If someone needs to do a maual calculation, it can be done by switching to the
+// correct zero point tables.
+//
+//
+// constants have also been defined for the tube reference values so that they are no longer hard-coded
+// constants are defined in V_TubeAdjustments.ipf
+//
+
+//
 	// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
-		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
-		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
-		if(!WaveExists(tube_num))
-			Execute "V_TubeZeroPointTables()"
+//		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
+//		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+
+// overwrite them every time since I have introduced the perfect table		
+//		if(!WaveExists(tube_num))
+//			Execute "V_TubeZeroPointTables()"
+			Execute "V_TubeZeroPointTables_Perfect()"
 			Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
 			Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
-		endif
+//		endif
 		
 		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
 		Variable yPixSize = V_getDet_y_pixel_size(gCurDispType,detStr)
 		yPixSize /= 10		// convert mm to cm
 		// offsets were determined in Dec 2018 using:
-		// FR tube # 7 = 61.70 pix
-		// MR tube # 10 = 61.94 pix
+		// FR tube # 7 = 61.70 pix = k_FR_tube_ZeroPoint
+		// MR tube # 10 = 61.94 pix = k_MR_tube_ZeroPoint
 		
 		Print "X-center (in array coordinates 0->n-1 ) = ",xctr
 		Print "Y-center (in array coordinates 0->n-1 ) = ",yctr
@@ -402,7 +414,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		if(cmpstr(detStr,"FR") == 0)
 			Print "Reference Y-Center is corrected for FR tube #7 zero position"		
 
-			yCorrection = 61.70 - yCorrection
+			yCorrection = k_FR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			xRef = x_mm/10
@@ -415,7 +427,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		if(cmpstr(detStr,"MR") == 0)
 			Print "Reference Y-Center is corrected for MR tube #10 zero position"		
 
-			yCorrection = 61.94 - yCorrection
+			yCorrection = k_MR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			xRef = x_mm/10

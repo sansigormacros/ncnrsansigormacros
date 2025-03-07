@@ -68,6 +68,8 @@ Menu "Macros"
 //	StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4a","Load NCNR SANS Live Data"))
 //	StrVarOrDefault("root:Packages:NCNRItemStr4b","-"), NCNR_SANSLiveLoader(StrVarOrDefault("root:Packages:NCNRItemStr4b","-"))
 
+	"Load VSANS Procedures",VSANSLoader()
+
 	// for testing ONLY
 	"-"
 	"Load SANS Polarization Reduction",PolarizationLoader()
@@ -76,8 +78,7 @@ Menu "Macros"
 	"Load Batch Fitting - Beta",BatchFitLoader()
 	"Load Simulation Run Builder",SimSANSRunListLoader()
 	"Automated SANS Reduction - Beta",AutomateSANSLoader()
-	"-"
-	"Load VSANS Procedures",VSANSLoader()
+//	"-"
 
 
 end

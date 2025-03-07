@@ -18,6 +18,13 @@
 //
 // Dec 2018 JGB data
 //
+// offsets were determined in Dec 2018 using:
+// FR tube # 7 = 61.70 pix
+// MR tube # 10 = 61.94 pix
+
+Constant k_FR_tube_ZeroPoint = 61.70
+Constant k_MR_tube_ZeroPoint = 61.94
+
 Proc V_TubeZeroPointTables()
 	SetDataFolder root:Packages:NIST:VSANS:Globals
 	
@@ -36,6 +43,29 @@ Proc V_TubeZeroPointTables()
 	Make/O/D/N=21 tube_FL, yCtr_FL
 	tube_FL[0]= {27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,41.98,42.99,43.98,44.98,45.98,46.98}
 	yCtr_FL[0]= {62.68,62.08,62.73,62.16,62.25,62.53,62,62.42,62.3,62.07,62.26,62.4,62.14,62.34,62.45,62.35,62.15,62.41,62.37,62.24,62.63}
+
+	SetDataFolder root:
+End
+
+
+Proc V_TubeZeroPointTables_perfect()
+	SetDataFolder root:Packages:NIST:VSANS:Globals
+	
+	Make/O/D/N=22 tube_MR,yCtr_MR
+	tube_MR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21}
+	yCtr_MR = k_MR_tube_ZeroPoint
+
+	Make/O/D/N=20 tube_ML,yCtr_ML
+	tube_ML[0]= {27,28,29,29.99,30.95,31.89,32.77,33,34,35,36,37,38,39,40,41,42,43,44,45}
+	yCtr_ML = k_MR_tube_ZeroPoint
+	
+	Make/O/D/N=21 tube_FR, yCtr_FR
+	tube_FR[0]= {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}
+	yCtr_FR = k_FR_tube_ZeroPoint
+
+	Make/O/D/N=21 tube_FL, yCtr_FL
+	tube_FL[0]= {27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,41.98,42.99,43.98,44.98,45.98,46.98}
+	yCtr_FL = k_FR_tube_ZeroPoint
 
 	SetDataFolder root:
 End

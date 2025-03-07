@@ -14,6 +14,7 @@
 
 
 
+
 // the function V_WindowTransmission(tw) is a testing function that can be used to 
 // plot the transmission correction as a function of angle or q-value
 // - it is named for the window transmission, but it is the same equation as the large
@@ -42,6 +43,36 @@ Constant kSig_8b_He = 0.593		// abs xs for 8 bar He(3) [cm-1 A-1] (multiply this
 Constant kSig_Al = 0.00967		// abs xs for Al [cm-1 A-1] (multiply this by wavelength)
 Constant kSig_ss = 0.146		// abs xs for 304 SS [cm-1 A-1] (multiply this by wavelength)
 
+
+// dummy values for teh zero point table that has yet to be measured at the 10m SANS
+// TODO
+//
+Constant k_tube_ZeroPoint = 64
+
+// TODO
+// fill this one in with the proper table, if it is not properly entered in the calibration CSV table
+//
+Proc TubeZeroPointTables()
+	SetDataFolder root:myGlobals
+	
+	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	tube_zeroPt = p
+	yCtr_zeroPt = k_tube_ZeroPoint
+
+	SetDataFolder root:
+End
+
+
+Proc TubeZeroPointTables_perfect()
+	SetDataFolder root:myGlobals
+	
+	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	tube_zeroPt = p
+	yCtr_zeroPt = k_tube_ZeroPoint
+
+
+	SetDataFolder root:
+End
 
 
 

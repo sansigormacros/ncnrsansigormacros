@@ -560,7 +560,7 @@ End
 //can't point to the gitHub page - you need to have an account to create a ticket
 Function V_emailFeedback(ctrlName)
 	String ctrlName
-	DoAlert 0,"To submit your feature/question/bug report, email directly to\r\rsteven.kline@nist.gov"
+	DoAlert 0,"To submit your feature/question/bug report, email directly to the support contacts as noted on the NCNR web page"
 //	DoAlert 1,"Your web browser will open to a page where you can submit your bug report or feature request. OK?"
 	if(V_flag==1)
 //		BrowseURL "https://github.com/sansigormacros/ncnrsansigormacros/issues"
