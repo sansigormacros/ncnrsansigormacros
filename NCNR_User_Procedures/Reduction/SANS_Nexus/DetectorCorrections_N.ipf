@@ -44,7 +44,7 @@ Constant kSig_Al = 0.00967		// abs xs for Al [cm-1 A-1] (multiply this by wavele
 Constant kSig_ss = 0.146		// abs xs for 304 SS [cm-1 A-1] (multiply this by wavelength)
 
 
-// dummy values for teh zero point table that has yet to be measured at the 10m SANS
+// dummy values for the zero point table that has yet to be measured at the 10m SANS
 // TODO
 //
 Constant k_tube_ZeroPoint = 64
@@ -57,7 +57,7 @@ Proc TubeZeroPointTables()
 	
 	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
 	tube_zeroPt = p
-	yCtr_zeroPt = k_tube_ZeroPoint
+	yCtr_zeroPt = k_tube_ZeroPoint		//replace this with real measured values
 
 	SetDataFolder root:
 End
@@ -68,7 +68,7 @@ Proc TubeZeroPointTables_perfect()
 	
 	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
 	tube_zeroPt = p
-	yCtr_zeroPt = k_tube_ZeroPoint
+	yCtr_zeroPt = k_tube_ZeroPoint		// keep this as the "perfect" value
 
 
 	SetDataFolder root:

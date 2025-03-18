@@ -380,19 +380,28 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 // is not altered. If someone needs to do a maual calculation, it can be done by switching to the
 // correct zero point tables.
 //
-//
 // constants have also been defined for the tube reference values so that they are no longer hard-coded
 // constants are defined in V_TubeAdjustments.ipf
 //
 
-//
-	// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
-//		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
-//		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+// check that the correction waves exist, if not, generate them V_TubeZeroPointTables()
 
-// overwrite them every time since I have introduced the perfect table		
+// overwrite the correction waves every time since I have introduced the perfect table		
 // -- Look at the global to see if tables are to be used (change with VSANS menu option)
 		NVAR gUseTables = root:Packages:NIST:VSANS:Globals:gUseZeroPointTables
+
+// --OR--
+// Programmatically determine if the zero point tables are needed
+//	by checking the average value of the first row of the calibration table. for FR, this
+// is  == -521 if "perfect"
+		WaveStats/RMD=[0,0]/Q root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:spatial_calibration
+	
+	//	Print V_avg
+		if(V_avg != -521)
+			gUseTables = 0
+		else
+			gUseTables = 1
+		endif
 
 //		if(!WaveExists(tube_num))
 		if(gUseTables == 1)

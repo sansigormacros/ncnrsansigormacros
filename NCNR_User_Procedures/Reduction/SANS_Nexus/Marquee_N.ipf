@@ -281,17 +281,27 @@ Function FindBeamCenter() :  GraphMarquee
 // is not altered. If someone needs to do a maual calculation, it can be done by switching to the
 // correct zero point tables.
 //
-//
 // constant has also been defined for the tube reference value so that it is not hard-coded
 // constant is defined in DetectorCorrections_N.ipf
 
+// overwrite correction waves every time since I have allowed for different tables to be used
 
-	// check that the correction waves exist, if not, generate them TubeZeroPointTables()
-//		Wave/Z tube_num = $("root:Packages:NIST:tube_zeroPt")
-//		Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr_zeroPt")
-
-// overwrite them every time since I have allowed for different tables to be used	
+// check the global to see if the tables are to be used
 		NVAR gUseTables = root:Packages:NIST:gUseZeroPointTables
+
+// -- OR --
+// Programmatically determine if the zero point tables are needed
+//	by checking the average value of the first row of the calibration table. for tubes at 10m, this
+// is  == -521 if "perfect"
+		WaveStats/RMD=[0,0]/Q root:Packages:NIST:RAW:entry:instrument:detector:spatial_calibration
+	
+	//	Print V_avg
+		if(V_avg != -521)
+			gUseTables = 0
+		else
+			gUseTables = 1
+		endif
+
 		
 //		if(!WaveExists(tube_num))
 		if(gUseTables == 1)
