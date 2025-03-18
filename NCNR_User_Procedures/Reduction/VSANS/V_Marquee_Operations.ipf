@@ -391,11 +391,18 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 //		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
 
 // overwrite them every time since I have introduced the perfect table		
+// -- Look at the global to see if tables are to be used (change with VSANS menu option)
+		NVAR gUseTables = root:Packages:NIST:VSANS:Globals:gUseZeroPointTables
+
 //		if(!WaveExists(tube_num))
-//			Execute "V_TubeZeroPointTables()"
+		if(gUseTables == 1)
+			Execute "V_TubeZeroPointTables()"
+		else
 			Execute "V_TubeZeroPointTables_Perfect()"
-			Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
-			Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
+		endif
+		
+		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
+		Wave/Z yCtr_tube = $("root:Packages:NIST:VSANS:Globals:yCtr_" + detStr)
 //		endif
 		
 		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)

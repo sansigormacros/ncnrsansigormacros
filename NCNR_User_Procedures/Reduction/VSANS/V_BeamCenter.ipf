@@ -20,6 +20,36 @@
 // -- am I working in detector coordinates (1->n) or in array coordinates (0->n-1)??
 
 
+//these are values from Dec 2018 data and the CENTROID on FR or MR
+Constant kBCtrOffset_FL_x = 0.13
+Constant kBCtrOffset_FL_y = 0.35
+Constant kBCtrOffset_FB_x = 0.95
+Constant kBCtrOffset_FB_y = 0.77
+Constant kBCtrOffset_FT_x = 1.59
+Constant kBCtrOffset_FT_y = 0.09
+Constant kBCtrOffset_ML_x = 0.26
+Constant kBCtrOffset_ML_y = -0.16
+Constant kBCtrOffset_MB_x = -0.89
+Constant kBCtrOffset_MB_y = 0.96
+Constant kBCtrOffset_MT_x = -0.28
+Constant kBCtrOffset_MT_y = 0.60
+
+////these are values from Dec 2018 data and the FITTED ARC on FR or MR
+// don't use these - the values from the centroid are superior) FEB 2019
+//Constant kBCtrOffset_FL_x = 0.49
+//Constant kBCtrOffset_FL_y = 0.48
+//Constant kBCtrOffset_FB_x = 1.31
+//Constant kBCtrOffset_FB_y = 0.90
+//Constant kBCtrOffset_FT_x = 1.95
+//Constant kBCtrOffset_FT_y = 0.22
+//Constant kBCtrOffset_ML_x = 0.44
+//Constant kBCtrOffset_ML_y = -0.32
+//Constant kBCtrOffset_MB_x = -0.71
+//Constant kBCtrOffset_MB_y = 0.80
+//Constant kBCtrOffset_MT_x = -0.10
+//Constant kBCtrOffset_MT_y = 0.44
+
+
 Function V_FindBeamCenter()
 	DoWindow/F PanelFit
 	if(V_flag==0)
@@ -797,38 +827,10 @@ Proc V_DeriveBeamCenters()
 	
 End
 
-//these are values from Dec 2018 data and the CENTROID on FR or MR
-Constant kBCtrOffset_FL_x = 0.13
-Constant kBCtrOffset_FL_y = 0.35
-Constant kBCtrOffset_FB_x = 0.95
-Constant kBCtrOffset_FB_y = 0.77
-Constant kBCtrOffset_FT_x = 1.59
-Constant kBCtrOffset_FT_y = 0.09
-Constant kBCtrOffset_ML_x = 0.26
-Constant kBCtrOffset_ML_y = -0.16
-Constant kBCtrOffset_MB_x = -0.89
-Constant kBCtrOffset_MB_y = 0.96
-Constant kBCtrOffset_MT_x = -0.28
-Constant kBCtrOffset_MT_y = 0.60
-
-////these are values from Dec 2018 data and the FITTED ARC on FR or MR
-// don't use these - the values from the centroid are superior) FEB 2019
-//Constant kBCtrOffset_FL_x = 0.49
-//Constant kBCtrOffset_FL_y = 0.48
-//Constant kBCtrOffset_FB_x = 1.31
-//Constant kBCtrOffset_FB_y = 0.90
-//Constant kBCtrOffset_FT_x = 1.95
-//Constant kBCtrOffset_FT_y = 0.22
-//Constant kBCtrOffset_ML_x = 0.44
-//Constant kBCtrOffset_ML_y = -0.32
-//Constant kBCtrOffset_MB_x = -0.71
-//Constant kBCtrOffset_MB_y = 0.80
-//Constant kBCtrOffset_MT_x = -0.10
-//Constant kBCtrOffset_MT_y = 0.44
 
 // (DONE):
-// if I change any of these values, I need to also change them in the V_FindCentroid function 
-// in V_Marquee_Operation.ipf (FEB 2019, this is done automatically with the defined constants)
+// as of FEB 2019, offset values are defined as constants
+// and used here and in the centroid caculation in the Marquee operations
 //
 // ** updated these values with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
 //

@@ -113,6 +113,16 @@ Proc Initialize_VSANSPreferences()
 	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gIgnoreDetB", 1 )
 	Variable/G root:Packages:NIST:VSANS:Globals:gIgnoreDetB = 1
 
+	// March 2025
+	// global to use the zero point tables for the tubes. if this global == 1,
+	// the tables are used (and calibration must be perfect or it will doubly correct position)
+	// If the global == 0, then the zero point tables are not used (no correction applied)
+	// and the zero point must be incorporated in the calibration tables.
+	// -- default is 1, since CSV tables have not yet been incorporated
+	val = NumVarOrDefault("root:Packages:NIST:VSANS:Globals:gUseZeroPointTables", 1 )
+	Variable/G root:Packages:NIST:VSANS:Globals:gUseZeroPointTables = 1
+	
+	
 // TODOHIGHRES
 // OCT 2018
 // new global to flag the highRes detector binning to accomodate the change in binning
@@ -134,7 +144,7 @@ Proc Initialize_VSANSPreferences()
 
 
 // this is now a VSANS menu item rather than a question at startup
-//	DoAlert 1,"Do you want small panels fo a laptop? (this can be changed later in preferences)"
+//	DoAlert 1,"Do you want small panels for a laptop? (this can be changed later in preferences)"
 //	if(V_flag == 1)
 //		// yes
 //		Variable/G root:Packages:NIST:VSANS:Globals:gLaptopMode = 1

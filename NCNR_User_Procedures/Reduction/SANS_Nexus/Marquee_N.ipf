@@ -290,13 +290,17 @@ Function FindBeamCenter() :  GraphMarquee
 //		Wave/Z tube_num = $("root:Packages:NIST:tube_zeroPt")
 //		Wave/Z yCtr_tube = $("root:Packages:NIST:yCtr_zeroPt")
 
-// overwrite them every time since I have introduced the perfect table		
-
+// overwrite them every time since I have allowed for different tables to be used	
+		NVAR gUseTables = root:Packages:NIST:gUseZeroPointTables
+		
 //		if(!WaveExists(tube_num))
-//			Execute "TubeZeroPointTables()"
+		if(gUseTables == 1)
+			Execute "TubeZeroPointTables()"
+		else
 			Execute "TubeZeroPointTables_perfect()"
-			Wave/Z tube_num = $("root:myGlobals:tube_zeroPt")
-			Wave/Z yCtr_tube = $("root:myGlobals:yCtr_zeroPt")
+		endif
+		Wave/Z tube_num = $("root:myGlobals:tube_zeroPt")
+		Wave/Z yCtr_tube = $("root:myGlobals:yCtr_zeroPt")
 //		endif
 //		
 		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)

@@ -79,6 +79,7 @@ Menu "SANS"
 		"Patch AttenErr Table Panel"
 		"-"
 		"Verify Field Contents",VerifyImportantUnits()
+		"Use Zero Point Tables?",UseZeroPointTables()
 	End
 End
 

@@ -66,7 +66,7 @@ Menu "VSANS"
 		"Patch Sample Aperture",V_Patch_SampleAperture2()
 		"-"
 		"Patch Back Detector Denex Values",V_Patch_Back_Detector_Denex()
-
+		"Use Zero Point Tables?",V_UseZeroPointTables()
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"
@@ -148,6 +148,19 @@ Function V_ForceMatrix()
 	useTrap = 0
 	return(0)
 End
+
+// Ask if zero point tables are to be used
+// 1 = use the tables (calibration is assumed to be perfect)
+// 0 = don't use tables (zero point is incorporated into the calibration table)
+Proc V_UseZeroPointTables(useZeroPtTables)
+	Variable useZeroPtTables = 1
+	
+	Prompt useZeroPtTables, "1 = Use Tables, 0 = Don't use Tables"
+	
+	root:Packages:NIST:VSANS:Globals:gUseZeroPointTables = useZeroPtTables
+End
+
+
 
 Function V_PolarizationLoader()
 
