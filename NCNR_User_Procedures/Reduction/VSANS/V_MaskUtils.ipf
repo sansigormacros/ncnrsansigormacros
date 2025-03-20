@@ -792,6 +792,8 @@ Function V_SaveMaskButtonProc(ba) : ButtonControl
 			
 			
 		// copy over what was actually drawn for all of the detector panels
+		// this step overwrites the "default" mask from H_Setup...
+		// and replaces it with what was actually drawn
 
 			Variable ii
 			String str

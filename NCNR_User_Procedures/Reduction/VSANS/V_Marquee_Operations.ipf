@@ -406,8 +406,10 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 //		if(!WaveExists(tube_num))
 		if(gUseTables == 1)
 			Execute "V_TubeZeroPointTables()"
+			Print "Using the built-in zero point tables"
 		else
 			Execute "V_TubeZeroPointTables_Perfect()"
+			Print "NOT using the built-in zero-point tables. Calibration tables used instead"
 		endif
 		
 		Wave/Z tube_num = $("root:Packages:NIST:VSANS:Globals:tube_" + detStr)
@@ -461,7 +463,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		if(cmpstr(detStr,"FL") == 0)
 			Print "Reference Y-Center is corrected for FR tube #7 zero position"		
 
-			yCorrection = 61.70 - yCorrection
+			yCorrection = k_FR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize		
 			xRef = x_mm/10 - kBCtrOffset_FL_x
@@ -474,7 +476,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		if(cmpstr(detStr,"ML") == 0)
 			Print "Reference Y-Center is corrected for MR tube #10 zero position"		
 
-			yCorrection = 61.94 - yCorrection
+			yCorrection = k_MR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
 			xRef = x_mm/10 - kBCtrOffset_ML_x

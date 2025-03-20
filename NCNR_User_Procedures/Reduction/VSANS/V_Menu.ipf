@@ -67,6 +67,7 @@ Menu "VSANS"
 		"-"
 		"Patch Back Detector Denex Values",V_Patch_Back_Detector_Denex()
 		"Use Zero Point Tables?",V_UseZeroPointTables()
+		"Visualize Adjusted Tubes",V_ShiftTubesDisplay()
 	End
 	SubMenu "File Tests"
 		"Load High Res Read Noise Data"

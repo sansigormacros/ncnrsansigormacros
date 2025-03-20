@@ -140,21 +140,21 @@ Function V_Phi_Graph_Proc(folderStr,detGroup)
 		RemoveFromGraph/Z iPhiBin_qxqy_All
 	endif
 
-
 	wave iPhiBin_qxqy_All = iPhiBin_qxqy_All
 	wave phiBin_qxqy_All = phiBin_qxqy_All
 	wave ePhiBin_qxqy_All = ePhiBin_qxqy_All
 	
 	AppendToGraph iPhiBin_qxqy_All vs phiBin_qxqy_All
-//		Display /W=(35,45,572,419)/N=V_Phi_Graph /K=1 iPhiBin_qxqy_All vs phiBin_qxqy_All
 	ModifyGraph mode=4
 	ModifyGraph marker=19
 	ModifyGraph rgb(iPhiBin_qxqy_All)=(3,52428,1)
 	ErrorBars iPhiBin_qxqy_All Y,wave=(ePhiBin_qxqy_All,ePhiBin_qxqy_All)
 	Label left "Counts"
 	Label bottom "Phi (degrees)"
-	Legend
-
+//don't keep appending more legends to the graph...only for new graph		
+	if(V_flag == 0)
+		Legend
+	endif
 
 // comment out these three if-blocks when calculating with ALL carriages
 // - un-comment for testing to make sure both methods agree

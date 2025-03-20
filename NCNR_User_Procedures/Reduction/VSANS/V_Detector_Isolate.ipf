@@ -3,6 +3,25 @@
 #pragma IgorVersion = 7.00
 
 
+
+// new function added MAR 2025:
+//
+// Function V_ShiftTubesDisplay()
+//
+// function to plot a panel after shifting the data as calculated in real space dimensions to an approximate
+// pixel representation. The martrix size will need to be expanded from the nominal panel dimensions
+//
+// provides two representation - one in "normal" pixel units, and one where the numer of y-pixels has been
+// expanded x10 so that shifts can be as small as 1/10 of a pixel. Most of the zero point shifts 
+// are less than a pixel.
+//
+// this is curently hard-wired to work only on the FR panel.. could be updated to ask for a particular panel
+// (only L/R)
+//
+
+
+
+
 // Isolation of a single detector panel for inspection, verifying the corrections, troubleshooting, etc.
 
 ////////////////////////////////
@@ -494,5 +513,104 @@ Function V_isoHelpButtonProc(ba) : ButtonControl
 	endswitch
 
 	return 0
+End
+
+
+
+
+//
+// MAR 2025
+//
+// function to plot a panel after shifting the data as calculated in real space dimensions to an approximate
+// pixel representation. The martrix size is expanded from the nominal panel dimensions
+//
+// provides two representations - one in "normal" pixel units, and one where the number of y-pixels has been
+// expanded x10 so that shifts can be as small as 1/10 of a pixel. Most of the zero point shifts 
+// are less than a pixel.
+//
+// --this is curently hard-wired to work only on the FR panel.. could be updated to ask for a particular panel
+// (only L/R)
+//
+// --Still need to manually display the images of shifted_data or (better) shifted_data_10 to compare to the
+// uncorrected data
+//
+Function V_ShiftTubesDisplay()
+
+	Variable min_y, max_y, min_add, max_add
+	Variable start_pix, numPix
+	Variable perfect_min, perfect_max, PixelSize
+	Wave tube_y = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data_realDistY
+	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
+	
+	// perfect values are min = -521 mm and max = 512.78 mm, pixel size is 8.14 mm
+	perfect_min = -521
+	perfect_max = 512.78
+	PixelSize = 8.14
+	
+	
+	WaveStats/Q tube_y
+	min_y = V_min
+	max_y = V_max
+	
+	numPix = ( perfect_min - min_y)/pixelSize
+//	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_y - perfect_max )/pixelSize
+//	Print numPix
+	max_add = trunc(numPix) + 1
+	
+	Make/O/D/N=(48,128+min_add+max_add) shifted_data
+	Make/O/D/N=128 tube_data
+	shifted_data = NaN	//so data outside of detector won't be displayed
+	tube_data = 0
+	
+	//loop over each tube and fill the shifted_data
+	Variable ii,p1
+	for(ii=0;ii<48;ii+=1)
+		tube_data = data[ii][p]		// the intensity values
+		
+		p1 = (tube_y[ii][0] - min_y)/pixelSize		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data[ii][p1,p1+128-1] = tube_data[q-p1]
+	endfor
+
+////////////	
+	// do the same, but expand the y values 10x for a finer gradation of the shift
+	Make/O/D/N=(48,128*10) data_10
+	for(ii=0;ii<128;ii+=1)
+		data_10[][ii*10,(ii+1)*10-1] = data[p][ii]
+	endfor
+
+	Variable pixelSize_10
+	pixelSize_10 = pixelSize/10		// == 8.14 mm / 10 == 0.814 mm
+
+	numPix = ( perfect_min - min_y)/pixelSize_10
+	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_y - perfect_max )/pixelSize_10
+	Print numPix
+	max_add = trunc(numPix) + 1
+
+	Make/O/D/N=(48,10*(128+min_add+max_add)) shifted_data_10
+	Make/O/D/N=(128*10) tube_data_10
+	shifted_data_10 = NaN	//so data outside of detector won't be displayed
+	tube_data_10 = 0
+
+	//loop over each tube and fill the shifted_data
+	for(ii=0;ii<48;ii+=1)
+		tube_data_10 = data_10[ii][p]		// the intensity values
+		
+		p1 = (tube_y[ii][0] - min_y)/pixelSize_10		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data_10[ii][p1,p1+128*10-1] = tube_data_10[q-p1]
+	endfor
+
+
+	
+	return(0)
 End
 
