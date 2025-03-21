@@ -268,8 +268,15 @@ Function V_Panels_AsQ(folder,carr)
 		V_getQxQyScaling_NXCS(det_xR,minQx,maxQx,minQy,maxQy)
 		SetScale/I x minQx,maxQx,"", det_xR		//this sets the left and right ends of the data scaling
 		SetScale/I y minQy,maxQy,"", det_xR	
-	
+
 	endif	
+
+// somewhere in here, need to get each data panel on a proper q-spacing, rather than simply
+// fudging the scaling of the pixel image
+// use the ImageFromXYZ operation -- do each panel individually
+
+
+
 	
 	String imageList,item
 	Variable ii,num
@@ -390,7 +397,7 @@ End
 
 
 //
-// this is the "Change Display6" button
+// this is the "Change Display" button
 //
 // - clears all of the old images off of the display
 // then fills in all of the data from the selected folder

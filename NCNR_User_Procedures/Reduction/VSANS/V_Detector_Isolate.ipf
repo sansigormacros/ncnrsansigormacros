@@ -534,13 +534,15 @@ End
 // --Still need to manually display the images of shifted_data or (better) shifted_data_10 to compare to the
 // uncorrected data
 //
-Function V_ShiftTubesDisplay()
+Function V_ShiftTubesforDisplay(folderStr,panelStr)
+	String folderStr,panelStr
 
 	Variable min_y, max_y, min_add, max_add
 	Variable start_pix, numPix
 	Variable perfect_min, perfect_max, PixelSize
-	Wave tube_y = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data_realDistY
-	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
+	Wave tube_y = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistY")
+	Wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+//	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
 	
 	// perfect values are min = -521 mm and max = 512.78 mm, pixel size is 8.14 mm
 	perfect_min = -521
@@ -594,7 +596,7 @@ Function V_ShiftTubesDisplay()
 	Print numPix
 	max_add = trunc(numPix) + 1
 
-	Make/O/D/N=(48,10*(128+min_add+max_add)) shifted_data_10
+	Make/O/D/N=(48,10*128+min_add+max_add) shifted_data_10
 	Make/O/D/N=(128*10) tube_data_10
 	shifted_data_10 = NaN	//so data outside of detector won't be displayed
 	tube_data_10 = 0
@@ -613,4 +615,232 @@ Function V_ShiftTubesDisplay()
 	
 	return(0)
 End
+
+
+
+
+
+
+//
+Proc V_ShiftDetectorPanel() : Panel
+	PauseUpdate; Silent 1		// building window...
+
+	Variable sc = 1
+			
+	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
+		sc = 0.7
+	endif
+
+	NewPanel /W=(662*sc,418*sc,1200*sc,960*sc)/N=ShiftDetector /K=1
+//	ShowTools/A
+
+	DrawText 99,70,"\\Zr125Original Data"
+	DrawText 304,70,"\\Zr125Tubes Shifted (Y-direction)"
+	
+	PopupMenu popup_0,pos={sc*169,18*sc},size={sc*109,20*sc},proc=V_ShiftDetPanelPopMenuProc,title="Detector Panel"
+//	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
+	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;ML;MR;\""
+	PopupMenu popup_2,pos={sc*20,18*sc},size={sc*109,20*sc},title="Data Source",proc=V_ShiftFldrPopMenuProc
+	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;\""
+		
+//	Button button_0,pos={sc*541,79*sc},size={sc*130,20*sc},proc=V_ShiftCorrectButtonProc,title="Apply Corrections"
+//	Button button_2,pos={sc*821,20*sc},size={sc*80,20*sc},proc=V_ShiftHelpButtonProc,title="Help"
+
+// do the calculation of shifted data pixels
+	V_ShiftTubesforDisplay("RAW","FR")
+
+	
+	// draw the correct images
+	V_ShiftDrawDetPanel("RAW","FR")
+
+EndMacro
+
+
+//
+// function to choose which detector panel to display, and then to actually display it
+//
+Function V_ShiftDetPanelPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+
+	// which work folder
+	String folderStr
+	ControlInfo/W=ShiftDetector popup_2
+	folderStr = S_Value
+	
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+						
+			// remove the old image (it may not be the right shape)
+			// -- but make sure it exists first...
+			String childList = ChildWindowList("ShiftDetector")
+			Variable flag
+			
+			flag = WhichListItem("DetData", ChildList)		//returns -1 if not in list, 0+ otherwise
+			if(flag != -1)
+				KillWindow ShiftDetector#DetData
+			endif
+			
+			flag = WhichListItem("ShiftedData", ChildList)
+			if(flag != -1)
+				KillWindow ShiftDetector#ShiftedData
+			endif
+
+			// do the calculation of shifted data pixels
+			V_ShiftTubesforDisplay(folderStr,popStr)
+	
+			// draw the correct images
+			V_shiftDrawDetPanel(folderStr,popStr)
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+////
+// currently doesn't do anything... simply sets the work data folder
+//
+Function V_ShiftFldrPopMenuProc(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			
+		
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function V_ShiftHelpButtonProc(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			
+			DoAlert 0,"Help file not written yet..."
+			
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+
+
+// draw the selected panel and the model calculation, adjusting for the 
+// orientation of the panel and the number of pixels, and pixel sizes
+//
+// str input is the panelStr ("FL" for example)
+Function V_ShiftDrawDetPanel(folderStr,panelStr)
+	String folderStr,panelStr
+	
+	// from the selection, find the path to the data
+	Variable xDim,yDim
+	Variable left,top,right,bottom
+	Variable height, width
+	Variable left2,top2,right2,bottom2
+	Variable nPix_X,nPix_Y,pixSize_X,pixSize_Y
+
+	// set the source of the uncorrected data.
+	wave dataW = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+	
+	// and the shifted wave to display	
+	wave corrW = $("root:shifted_data_10")
+
+	Variable scale = 0.5
+	
+	nPix_X = 48
+	nPix_Y = 128
+	PixSize_X = 8.4
+	PixSize_Y = 8.14
+	// common values (panel position, etc)
+	//  -- units are absolute, based on pixels in cm. make sure this is always correct
+//	strswitch(str)
+//		case "FL":
+//		case "FR":
+//		case "ML":
+//		case "MR":
+			width = trunc(nPix_X*pixSize_X *scale*1.15)			//48 tubes @ 8 mm
+			height = trunc(nPix_Y*pixSize_Y *scale*0.8)			//128 pixels @ 8 mm
+			
+			left = 20
+			top = 80
+			right = left+width
+			bottom = top+height
+			
+			left2 = right + 20
+			right2 = left2 + width
+			top2 = top
+			bottom2 = bottom
+			
+	Variable sc = 1
+	
+	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
+		
+	if(gLaptopMode == 1)
+		sc = 0.7
+	endif
+	
+	left *= sc
+	top *= sc
+	right *= sc
+	bottom *= sc
+	
+	left2 *= sc
+	top2 *= sc
+	right2 *= sc
+	bottom2 *= sc
+	
+	
+	//draw the detector panel
+	Display/W=(left,top,right,bottom)/HOST=# 
+	RenameWindow #,DetData
+	AppendImage/W=ShiftDetector#DetData dataW
+	ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
+	Label left "Y pixels"
+	Label bottom "X pixels"	
+	SetActiveSubwindow ##	
+	
+//	
+//	SetDataFolder $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+str)
+//	Wave data2 = data
+	
+	//draw the corrected detector panel
+	// see the main display of RAW data for example of multiple 'data' images
+	Display/W=(left2,top2,right2,bottom2)/HOST=#
+	RenameWindow #,ShiftedData
+	AppendImage/W=ShiftDetector#ShiftedData corrW
+	ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
+	Label left "Y pixels"
+	Label bottom "X pixels"	
+
+	SetActiveSubwindow ##	
+
+
+	SetDataFolder root:
+		
+	DoUpdate
+	
+	return(0)
+End
+
 

@@ -181,39 +181,107 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		Display /W=(560.4,39.8,942.6,387.2) $w1 vs $w0
 		ModifyGraph mode=3
 		ModifyGraph marker=16
-		ModifyGraph msize=1
-		ModifyGraph zColor($w1)={$w3,*,*,ColdWarm}
+		ModifyGraph msize=0
+		ModifyGraph zColor($w1)={$w2,*,*,ColdWarm}
 		ModifyGraph logZColor=1
-	
+
+
+//interpolate to a matrix
+//
+// ****This does not work well with the large gaps in the data between panels.
+//
+//
+//		Make /O /N=(300,300) dataMat=0
+//		SetScale/I x wavemin($w0),wavemax($w0),"",dataMat
+//		SetScale/I y wavemin($w1),wavemax($w1),"",dataMat
+//		Duplicate /O dataMat,countMat
+//
+//		ImageFromXYZ/AS {$w0,$w1,$w2}, dataMat,countMat
+////		NewImage/F dataMat
+//		dataMat /= countMat	// Replace cumulative z value with average
+//		MatrixFilter NanZapMedian, dataMat	// Apply median filter, zapping NaNs
+//
+//		Display /W=(477,72,714,630)
+//		AppendImage dataMat
+//		ModifyImage dataMat ctab= {*,*,ColdWarm,0}
+//		ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14,gFont="Helvetica"
+//		ModifyGraph mirror=2
+//		ModifyGraph nticks(left)=4,nticks(bottom)=2
+//		ModifyGraph minor=1
+//		ModifyGraph fSize=9
+//		ModifyGraph standoff=0
+//		ModifyGraph tkLblRot(left)=90
+//		ModifyGraph btLen=3
+//		ModifyGraph tlOffset=-2
+
+
 	else
 	
-		/// do this for all 2D data, whether or not resolution information was read in
-		
-		Variable/G gIsLogScale = 0
-		
-		Variable num=numpnts($w0)
-		// assume that the Q-grid is "uniform enough" for DISPLAY ONLY
-		// use the 3 original waves for all of the fitting...
+	// plot a single panel
+	// better to plot the data NOT on a fixed grid so that the correct q-values are used
+	// otherwise tube mislaignment will still be visible in the QxQy plot - and it shouldn't
+	//
+		Display /W=(90,50,90+4*numX,50+4*numY) $w1 vs $w0
+		ModifyGraph mode=3
+		ModifyGraph marker=16
+		ModifyGraph msize=0
+		ModifyGraph zColor($w1)={$w2,*,*,ColdWarm}
+//		ModifyGraph logZColor=1
+
+
+//interpolate to a matrix
+		Make /O /N=(numX+7,numY+7) dataMat=0
+		SetScale/I x wavemin($w0),wavemax($w0),"",dataMat
+		SetScale/I y wavemin($w1),wavemax($w1),"",dataMat
+		Duplicate /O dataMat,countMat
+
+		ImageFromXYZ/AS {$w0,$w1,$w2}, dataMat,countMat
+//		NewImage/F dataMat
+		dataMat /= countMat	// Replace cumulative z value with average
+		MatrixFilter NanZapMedian, dataMat	// Apply median filter, zapping NaNs
+
+		Display/W=(400,50,400+4*numX,50+4*numY)
+		AppendImage dataMat
+		ModifyImage dataMat ctab= {*,*,ColdWarm,0}
+		ModifyGraph margin(left)=14,margin(bottom)=14,margin(top)=14,margin(right)=14,gFont="Helvetica"
+		ModifyGraph mirror=2
+		ModifyGraph nticks(left)=4,nticks(bottom)=2
+		ModifyGraph minor=1
+		ModifyGraph fSize=9
+		ModifyGraph standoff=0
+		ModifyGraph tkLblRot(left)=90
+		ModifyGraph btLen=3
+		ModifyGraph tlOffset=-2
 	
-	// for L/R x=48,y=128
-	// for T/B x=128,y=48
-		
-		V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
 	
-		if(numCols == 9)		//mask is present
-			V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
-			Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
-		endif
-		Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
 	
-		Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")
-		ModifyImage $(baseStr+"_mat") ctab= {*,*,ColdWarm,0}
-	
-		if(exists("root:Packages:NIST:VSANS:Globals:logLookupWave")==1)
-			ModifyImage $(baseStr+"_mat") ctabAutoscale=0,lookup= root:Packages:NIST:VSANS:Globals:logLookupWave
-		endif
-		
-	//	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
+//		/// do this for all 2D data, whether or not resolution information was read in
+//		
+//		Variable/G gIsLogScale = 0
+//		
+//		Variable num=numpnts($w0)
+//		// assume that the Q-grid is "uniform enough" for DISPLAY ONLY
+//		// use the 3 original waves for all of the fitting...
+//	
+//	// for L/R x=48,y=128
+//	// for T/B x=128,y=48
+//		
+//		V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
+//	
+//		if(numCols == 9)		//mask is present
+//			V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
+//			Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
+//		endif
+//		Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
+//	
+//		Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")
+//		ModifyImage $(baseStr+"_mat") ctab= {*,*,ColdWarm,0}
+//	
+//		if(exists("root:Packages:NIST:VSANS:Globals:logLookupWave")==1)
+//			ModifyImage $(baseStr+"_mat") ctabAutoscale=0,lookup= root:Packages:NIST:VSANS:Globals:logLookupWave
+//		endif
+//		
+//	//	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
 
 	endif
 
