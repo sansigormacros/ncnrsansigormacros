@@ -634,8 +634,8 @@ Proc V_ShiftDetectorPanel() : Panel
 	NewPanel /W=(662*sc,418*sc,1200*sc,960*sc)/N=ShiftDetector /K=1
 //	ShowTools/A
 
-	DrawText 99,70,"\\Zr125Original Data"
-	DrawText 304,70,"\\Zr125Tubes Shifted (Y-direction)"
+	DrawText 90,70,"\\Zr125Original Pixel Grid"
+	DrawText 304,75,"\\Zr125Tubes Shifted (Y-direction)\r  to Align Zero Position"
 	
 	PopupMenu popup_0,pos={sc*169,18*sc},size={sc*109,20*sc},proc=V_ShiftDetPanelPopMenuProc,title="Detector Panel"
 //	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""

@@ -90,6 +90,7 @@ Menu "VSANS"
 		"Differentiate One Panel",pV_Differentiate_onePanel()
 		"Estimate Frame Overlap",V_EstFrameOverlap()
 		"-"
+		"Quick Save WORK to 2D NXcanSAS",V_QuickSave_as_NXcanSAS2D()
 		"Load+Display QxQy_ASCII DAT",V_LoadQxQy_ASCII_DAT_VSANS()
 		"Load+Display 2D NXcanSAS",V_Display_2D_VSANS()
 

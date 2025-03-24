@@ -29,14 +29,6 @@
 //
 //		Data columns are Qx - Qy - I(Qx,Qy) - err(I) - Qz - SigmaQ_parall - SigmaQ_perp - fSubS(beam stop shadow) - Mask
 
-//Proc V_LoadQxQy_VSANS_TopBottom()
-//	V_LoadQxQy_VSANS(128,48)
-//End
-//
-//Proc V_LoadQxQy_VSANS_LeftRight()
-//	V_LoadQxQy_VSANS(48,128)
-//End
-
 
 Proc V_LoadQxQy_ASCII_DAT_VSANS()
 	
@@ -183,12 +175,12 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		ModifyGraph marker=16
 		ModifyGraph msize=0
 		ModifyGraph zColor($w1)={$w2,*,*,ColdWarm}
-		ModifyGraph logZColor=1
+		ModifyGraph logZColor=0
 
 
 //interpolate to a matrix
 //
-// ****This does not work well with the large gaps in the data between panels.
+// ****This does not work well with the large gaps in the data between panels in the combined data set
 //
 //
 //		Make /O /N=(300,300) dataMat=0
@@ -219,7 +211,7 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 	
 	// plot a single panel
 	// better to plot the data NOT on a fixed grid so that the correct q-values are used
-	// otherwise tube mislaignment will still be visible in the QxQy plot - and it shouldn't
+	// otherwise tube misalignment will still be visible in the QxQy plot - and it shouldn't
 	//
 		Display /W=(90,50,90+4*numX,50+4*numY) $w1 vs $w0
 		ModifyGraph mode=3
@@ -253,36 +245,6 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 		ModifyGraph btLen=3
 		ModifyGraph tlOffset=-2
 	
-	
-	
-//		/// do this for all 2D data, whether or not resolution information was read in
-//		
-//		Variable/G gIsLogScale = 0
-//		
-//		Variable num=numpnts($w0)
-//		// assume that the Q-grid is "uniform enough" for DISPLAY ONLY
-//		// use the 3 original waves for all of the fitting...
-//	
-//	// for L/R x=48,y=128
-//	// for T/B x=128,y=48
-//		
-//		V_ConvertQxQy2Mat($w0,$w1,$w2,numX,numY,baseStr+"_mat")
-//	
-//		if(numCols == 9)		//mask is present
-//			V_ConvertQxQy2Mat($w0,$w1,$w8,numX,numY,baseStr+"_mat_mask")
-//			Display/W=(40,400,40+3*numX,400+3*numY);Appendimage $(baseStr+"_mat_mask")
-//		endif
-//		Duplicate/O $(baseStr+"_mat"),$(baseStr+"_lin") 		//keep a linear-scaled version of the data
-//	
-//		Display/W=(40,40,40+3*numX,40+3*numY);Appendimage $(baseStr+"_mat")
-//		ModifyImage $(baseStr+"_mat") ctab= {*,*,ColdWarm,0}
-//	
-//		if(exists("root:Packages:NIST:VSANS:Globals:logLookupWave")==1)
-//			ModifyImage $(baseStr+"_mat") ctabAutoscale=0,lookup= root:Packages:NIST:VSANS:Globals:logLookupWave
-//		endif
-//		
-//	//	PlotQxQy(baseStr)		//this sets the data folder back to root:!!
-
 	endif
 
 	//clean up		
@@ -292,41 +254,4 @@ Proc V_LoadQxQy_ASCII_DAT_VSANS()
 EndMacro
 
 
-
-
-// for reformatting the matrix of VSANS QxQy data after it's been read in
-//
-// this assumes that:
-// --QxQy data was written out in the format specified by the Igor macros, that is the x varies most rapidly
-//
-// TODO -- this needs to be made generic for reading in different panels with different XY dimensions
-// x- add the XY dimensions to the QxQyASCII file header somewhere so that it can be read in and used here
-//
-// the SANS analysis 2D loader assumes that the matrix is square, mangling the VSANS data.
-// the column data (for fitting) is still fine, but the matrix representation is incorrect.
-//
-Function V_ConvertQxQy2Mat(Qx,Qy,inten,numX,numY,matStr)
-	Wave Qx,Qy,inten
-	Variable numX,numY
-	String matStr
-	
-	String folderStr=GetWavesDataFolder(Qx,1)
-	
-//	Variable numX,numY
-//	numX=48
-//	numY=128
-	Make/O/D/N=(numX,numY) $(folderStr + matStr)
-	Wave mat=$(folderStr + matStr)
-	
-	WaveStats/Q Qx
-	SetScale/I x, V_min, V_max, "", mat
-	WaveStats/Q Qy
-	SetScale/I y, V_min, V_max, "", mat
-	
-	Variable xrows=numX
-	
-	mat = inten[q*xrows+p]
-	
-	return(0)
-End
 
