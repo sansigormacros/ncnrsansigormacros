@@ -768,7 +768,13 @@ Function V_WriteMetaData(fileID,base,parentBase,folderStr,proto)
 	// TODO: Include other sample environment when they are available
 	
 	// SASprocess
-	SVAR samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	SVAR/Z samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	//The global string may not exist if no reduction protocol ever processed (if saving RAW data)
+	if(!SVAR_Exists(samFiles))
+		String/G root:Packages:NIST:VSANS:Globals:Protocols:gSAM = ""
+		SVAR/Z samFiles = root:Packages:NIST:VSANS:Globals:Protocols:gSAM
+	endif
+	
 	String protoStr7,protoStr8
 	if(strlen(proto[7]) == 0)
 		protoStr7 = "(Default) "+ ksBinTrimBegDefault
