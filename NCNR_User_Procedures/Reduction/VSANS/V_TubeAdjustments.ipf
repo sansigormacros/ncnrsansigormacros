@@ -1,12 +1,58 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #pragma IgorVersion = 7.00
 
+
+//////////////////
 //
-// functions for testing and then actually applying the nonlinear corrections to the
-// tube detectors. These routines are for a test bank of 8 tubes (vertical) that were
-// run at a subdivision of 1024. VSANS will be different in practice
+// Functionality to process a single panel and fit the (5) peaks as measured through the slits
+// and generate the three calibration coefficients for each tube, and then the CSV file
+// for use at the instrument
 //
-// but the fundamental process is the same, and can be translated into proper functions as needed
+//////////////////////
+//
+// verified functions in March 2025, using data from Sep 2019
+//
+// -- works with the 5-slit masks on VSANS
+//
+// -- need to add the correct slit spacings
+//
+// -- will need to be modified slightly to work with 10m SANS, since # of tubes is different
+// and there are no different panels, only one
+//
+// -- some of the "steps" are nothing more than generating waves and blank tables.
+// these steps could be removed to stramline the process.
+// 	-- update instructions if this is done
+//
+//	-- add information here about how to display the results (VSANS menu options)
+//		-- reload the data once the corrected CSV files are written to the data file (refresh the catalog!)
+//		-- plot the shifted panels as pixel shifts
+//		-- save the data file as NXcanSAS_2D and replot in terms of QxQy to see the effect on Q
+//
+////////////////////////////
+//
+// 
+// x- need a way to generate the known, physical dimensions of the slots
+// Make/O/D/N=5 peak_spacing_mm_ctr
+// peak_spacing_mm_ctr = {-350,-190,0,190,350} (to be filled in with the correct measurements, 
+//   possibly different for each panel)
+//
+// x- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
+//   procedures to identify the peak positions.
+//
+// x- fit with either gauss or lor function to get non-integer pixel values for the peak locations
+//
+// x- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
+//    custom fit function and guess some good starting values for peak height, location, etc.
+// 
+//
+// x- find a way to display all of the results - in a way that can quickly identify any fits
+//    that may be incorrect
+//
+// -- Need quick instructions of what to do if some of the fits are wrong
+//   -- what steps to intervene, skip over, etc. to get final result
+//
+// -- need way to export CSV table or instructions for how to copy into Excel table to then export to
+//   a  file that can be used at VSANS
 //
 //
 
@@ -70,27 +116,15 @@ Proc V_TubeZeroPointTables_perfect()
 	SetDataFolder root:
 End
 
-//
-// 
-// x- need a way to generate the known, physical dimensions of the slots
-// Make/O/D/N=5 peak_spacing_mm_ctr
-// peak_spacing_mm_ctr = {-350,-190,0,190,350} (to be filled in with the correct measurements, 
-//   possibly different for each panel)
-//
-// x- a 128 point wave "tube_pixel" (=p) is made in V_ArrayToTubes(), and is needed for the WM
-//   procedures to identify the peak positions.
-//
-// x- fit with either gauss or lor function to get non-integer pixel values for the peak locations
-//
-// x- do I fit each individually to "tweak" the located values, or fit all 5 at once with a 
-//    custom fit function and guess some good starting values for peak height, location, etc.
-// 
-//
-// x- find a way to display all of the results - in a way that can quickly identify any fits
-//    that may be incorrect
-//
-//
 
+
+
+
+//////////////////
+// steps to process a single panel and fit the peaks as measured through the slits
+// and generate the three calibration coefficients for each tube, and then the CSV file
+// for use at the instrument
+//////////////////
 
 
 // the main routines are:
@@ -175,20 +209,20 @@ End
 // (1) -- get the individual tubes into an array
 //
 //
-Proc V_Tubes_to_Array()
-	Make/O/D/N=(8,1127) pack
-	edit pack
-	display;appendimage pack
-	pack[0][] = tube1[q]
-	pack[1][] = tube2[q]
-	pack[2][] = tube3[q]
-	pack[3][] = tube4[q]
-	pack[4][] = tube5[q]
-	pack[5][] = tube6[q]
-	pack[6][] = tube7[q]
-	pack[7][] = tube8[q]
-	ModifyImage pack ctab= {*,*,ColdWarm,0}
-End
+//Proc V_Tubes_to_Array()
+//	Make/O/D/N=(8,1127) pack
+//	edit pack
+//	display;appendimage pack
+//	pack[0][] = tube1[q]
+//	pack[1][] = tube2[q]
+//	pack[2][] = tube3[q]
+//	pack[3][] = tube4[q]
+//	pack[4][] = tube5[q]
+//	pack[5][] = tube6[q]
+//	pack[6][] = tube7[q]
+//	pack[7][] = tube8[q]
+//	ModifyImage pack ctab= {*,*,ColdWarm,0}
+//End
 
 // or the other way around
 // - get the array into individual tubes ready for fitting.
@@ -196,7 +230,7 @@ End
 Proc V_ArrayToTubes(detStr)
 	String detStr
 //	Prompt wStr,"Select detector panel",popup,WaveList("data_*",";","")
-	Prompt detStr,"Select detector panel",popup,ksDetectorListAll
+	Prompt detStr,"Select detector panel",popup,ksDetectorListNoB
 	
 	String/G root:detUsed = detStr
 	
@@ -460,19 +494,40 @@ Proc V_PlotFit_AllPeakPosition()
 
 End
 
+
+// choose the correct pixel size based on the panel used
+//
+// hold the pixel size fixed during fitting
+//
 Proc V_PlotFit_PeakPosition(ind)
 	Variable ind
 	
 	Duplicate/O WA_PeakCentersX, tmpX
 	
+	Make/O/D/N=3 poly_coef
+	poly_coef[0] = -300
+//	poly_coef[1] = 8.14
+//	poly_coef[1] = 4.16
+	poly_coef[2] = 2e-4
+
+	String detUsed = root:detUsed
+	
+	if(strsearch(detUsed,"L",0) >= 0 || strsearch(detUsed,"R",0) >= 0)
+		poly_coef[1] = 8.14			//use L/R panel value
+	else
+		poly_coef[1] = 4.16			//use T/B panel value
+	endif
+
+	
 //	tmpX = peakTableX[p][ind]
 	tmpX = position_refined[p][ind]
 //	Display peak_spacing_mm_ctr vs tmpX
 	
-//	CurveFit/M=2/W=0/TBOX=(0x310) poly 3, peak_spacing_mm_ctr/X=tmpX/D
-	CurveFit/M=0/W=2 poly 3, peak_spacing_mm_ctr/X=tmpX/D
+//	CurveFit/M=0/W=2 poly 3, peak_spacing_mm_ctr/X=tmpX/D
+	CurveFit/M=0/W=2/H="010" poly 3, kwCWave=poly_coef,peak_spacing_mm_ctr/X=tmpX/D
 	
-	TubeCoefTable[ind][] = W_coef[q]
+//	TubeCoefTable[ind][] = W_coef[q]
+	TubeCoefTable[ind][] = poly_coef[q]
 	TubeSigmaTable[ind][] = W_sigma[q]
 	
 End
@@ -709,16 +764,6 @@ Proc V_Interpolate_mm_tubes()
 	ModifyImage pack_image ctab= {*,*,ColdWarm,0}
 	
 End
-
-
-
-
-
-
-
-
-
-
 
 
 

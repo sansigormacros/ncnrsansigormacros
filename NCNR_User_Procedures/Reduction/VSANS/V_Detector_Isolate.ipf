@@ -6,7 +6,7 @@
 
 // new function added MAR 2025:
 //
-// Function V_ShiftTubesDisplay()
+// Function V_ShiftTubesforDisplay()
 //
 // function to plot a panel after shifting the data as calculated in real space dimensions to an approximate
 // pixel representation. The martrix size will need to be expanded from the nominal panel dimensions
@@ -18,6 +18,16 @@
 // this is curently hard-wired to work only on the FR panel.. could be updated to ask for a particular panel
 // (only L/R)
 //
+
+/////////////--NEW FUNCTIONS--////////
+// V_SetupGaussFit_EachTBTube()
+// V_GaussFit_EachTBTube()
+//
+// Procedures to automate the fitting of data on T/B panels that have been "completely"
+// blocked by closing L/R panels. This leaves a narrow slit of leakage through the gap, 
+// which can be used to refine the zero offset of the T/B panels.
+//
+// MARCH 2025
 
 
 
@@ -517,7 +527,7 @@ End
 
 
 
-
+////////////////////////////////////////////
 //
 // MAR 2025
 //
@@ -528,28 +538,43 @@ End
 // expanded x10 so that shifts can be as small as 1/10 of a pixel. Most of the zero point shifts 
 // are less than a pixel.
 //
-// --this is curently hard-wired to work only on the FR panel.. could be updated to ask for a particular panel
-// (only L/R)
-//
 // --Still need to manually display the images of shifted_data or (better) shifted_data_10 to compare to the
 // uncorrected data
 //
+
 Function V_ShiftTubesforDisplay(folderStr,panelStr)
+	String folderStr,panelStr
+
+	if(strsearch(panelStr,"L",0) >= 0 || strsearch(panelStr,"R",0) >= 0)
+		V_ShiftTubesforDisplay_LR(folderStr,panelStr)
+	else
+		V_ShiftTubesforDisplay_TB(folderStr,panelStr)
+	endif
+	
+	return(0)
+End
+
+
+// just work on either L or R panel
+// less switching this way, but does duplicate some calculations
+//
+Function V_ShiftTubesforDisplay_LR(folderStr,panelStr)
 	String folderStr,panelStr
 
 	Variable min_y, max_y, min_add, max_add
 	Variable start_pix, numPix
 	Variable perfect_min, perfect_max, PixelSize
 	Wave tube_y = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistY")
+//	Wave tube_x = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistX")
 	Wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
 //	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
-	
+
 	// perfect values are min = -521 mm and max = 512.78 mm, pixel size is 8.14 mm
 	perfect_min = -521
 	perfect_max = 512.78
 	PixelSize = 8.14
-	
-	
+
+
 	WaveStats/Q tube_y
 	min_y = V_min
 	max_y = V_max
@@ -611,16 +636,101 @@ Function V_ShiftTubesforDisplay(folderStr,panelStr)
 		shifted_data_10[ii][p1,p1+128*10-1] = tube_data_10[q-p1]
 	endfor
 
+	return(0)
+End
 
+// just work on either T or B panel
+// less switching this way, but does duplicate some calculations
+//
+Function V_ShiftTubesforDisplay_TB(folderStr,panelStr)
+	String folderStr,panelStr
+
+	Variable min_x, max_x, min_add, max_add
+	Variable start_pix, numPix
+	Variable perfect_min, perfect_max, PixelSize
+//	Wave tube_y = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistY")
+	Wave tube_x = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data_realDistX")
+	Wave data = $("root:Packages:NIST:VSANS:"+folderStr+":entry:instrument:detector_"+panelStr+":data")
+//	Wave data = root:Packages:NIST:VSANS:RAW:entry:instrument:detector_FR:data
+
+
+	// perfect values are min = -266 mm and max = 262.32 mm, pixel size is 8.14 mm
+	perfect_min = -266
+	perfect_max = 262.32
+	PixelSize = 4.16
+	
+	WaveStats/Q tube_x
+	min_x = V_min
+	max_x = V_max
+	
+	numPix = ( perfect_min - min_x)/pixelSize
+//	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_x - perfect_max )/pixelSize
+//	Print numPix
+	max_add = trunc(numPix) + 1
+	
+	Make/O/D/N=(128+min_add+max_add,48) shifted_data
+	Make/O/D/N=128 tube_data
+	shifted_data = NaN	//so data outside of detector won't be displayed
+	tube_data = 0
+	
+	//loop over each tube and fill the shifted_data
+	Variable ii,p1
+	for(ii=0;ii<48;ii+=1)
+		tube_data = data[p][ii]		// the intensity values
+		
+		p1 = (tube_x[0][ii] - min_x)/pixelSize		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data[p1,p1+128-1][ii] = tube_data[p-p1]
+	endfor
+
+////////////	
+	// do the same, but expand the y values 10x for a finer gradation of the shift
+	Make/O/D/N=(128*10,48) data_10
+	for(ii=0;ii<128;ii+=1)
+		data_10[ii*10,(ii+1)*10-1][] = data[ii][q]
+	endfor
+
+	Variable pixelSize_10
+	pixelSize_10 = pixelSize/10		// == 8.14 mm / 10 == 0.814 mm
+
+	numPix = ( perfect_min - min_x)/pixelSize_10
+	Print numPix
+	min_add = trunc(numPix) +1
+	
+	numPix = ( max_x - perfect_max )/pixelSize_10
+	Print numPix
+	max_add = trunc(numPix) + 1
+
+	Make/O/D/N=(10*128+min_add+max_add,48) shifted_data_10
+	Make/O/D/N=(128*10) tube_data_10
+	shifted_data_10 = NaN	//so data outside of detector won't be displayed
+	tube_data_10 = 0
+
+	//loop over each tube and fill the shifted_data
+	for(ii=0;ii<48;ii+=1)
+		tube_data_10 = data_10[p][ii]		// the intensity values
+		
+		p1 = (tube_x[0][ii] - min_x)/pixelSize_10		//use the minimum value for tube ii and the new minimum y distance
+		p1 = trunc(p1)
+			
+		shifted_data_10[p1,p1+128*10-1][ii] = tube_data_10[p-p1]
+	endfor
 	
 	return(0)
 End
 
 
 
-
-
-
+/////////////////
+// procedures to display the original panel alongside the shifted panel
+// can only display one panel at a time
+// the shifting calculations overwrite the shifted panel each time, so that the same-named data is
+// displayed. save the shifted data separately if needed
+//
 //
 Proc V_ShiftDetectorPanel() : Panel
 	PauseUpdate; Silent 1		// building window...
@@ -638,8 +748,8 @@ Proc V_ShiftDetectorPanel() : Panel
 	DrawText 304,75,"\\Zr125Tubes Shifted (Y-direction)\r  to Align Zero Position"
 	
 	PopupMenu popup_0,pos={sc*169,18*sc},size={sc*109,20*sc},proc=V_ShiftDetPanelPopMenuProc,title="Detector Panel"
-//	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;B;\""
-	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;ML;MR;\""
+	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;FT;FB;ML;MR;MT;MB;\""
+//	PopupMenu popup_0,mode=1,popvalue="FR",value= #"\"FL;FR;ML;MR;\""
 	PopupMenu popup_2,pos={sc*20,18*sc},size={sc*109,20*sc},title="Data Source",proc=V_ShiftFldrPopMenuProc
 	PopupMenu popup_2,mode=1,popvalue="RAW",value= #"\"RAW;SAM;EMP;BGD;\""
 		
@@ -744,8 +854,6 @@ End
 
 
 
-
-
 // draw the selected panel and the model calculation, adjusting for the 
 // orientation of the panel and the number of pixels, and pixel sizes
 //
@@ -766,74 +874,63 @@ Function V_ShiftDrawDetPanel(folderStr,panelStr)
 	// and the shifted wave to display	
 	wave corrW = $("root:shifted_data_10")
 
-	Variable scale = 0.5
-	
-	nPix_X = 48
-	nPix_Y = 128
-	PixSize_X = 8.4
-	PixSize_Y = 8.14
-	// common values (panel position, etc)
-	//  -- units are absolute, based on pixels in cm. make sure this is always correct
-//	strswitch(str)
-//		case "FL":
-//		case "FR":
-//		case "ML":
-//		case "MR":
-			width = trunc(nPix_X*pixSize_X *scale*1.15)			//48 tubes @ 8 mm
-			height = trunc(nPix_Y*pixSize_Y *scale*0.8)			//128 pixels @ 8 mm
-			
-			left = 20
-			top = 80
-			right = left+width
-			bottom = top+height
-			
-			left2 = right + 20
-			right2 = left2 + width
-			top2 = top
-			bottom2 = bottom
-			
-	Variable sc = 1
-	
-	NVAR gLaptopMode = root:Packages:NIST:VSANS:Globals:gLaptopMode
-		
-	if(gLaptopMode == 1)
-		sc = 0.7
-	endif
-	
-	left *= sc
-	top *= sc
-	right *= sc
-	bottom *= sc
-	
-	left2 *= sc
-	top2 *= sc
-	right2 *= sc
-	bottom2 *= sc
-	
-	
-	//draw the detector panel
-	Display/W=(left,top,right,bottom)/HOST=# 
-	RenameWindow #,DetData
-	AppendImage/W=ShiftDetector#DetData dataW
-	ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
-	Label left "Y pixels"
-	Label bottom "X pixels"	
-	SetActiveSubwindow ##	
-	
-//	
-//	SetDataFolder $("root:Packages:NIST:VSANS:ADJ:entry:instrument:detector_"+str)
-//	Wave data2 = data
-	
-	//draw the corrected detector panel
-	// see the main display of RAW data for example of multiple 'data' images
-	Display/W=(left2,top2,right2,bottom2)/HOST=#
-	RenameWindow #,ShiftedData
-	AppendImage/W=ShiftDetector#ShiftedData corrW
-	ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
-	Label left "Y pixels"
-	Label bottom "X pixels"	
 
-	SetActiveSubwindow ##	
+	if(strsearch(panelStr,"L",0) >= 0 || strsearch(panelStr,"R",0) >= 0)
+		DrawAction/L=UserBack delete
+		SetDrawLayer UserBack
+	
+		DrawText 90,70,"\\Zr125Original Pixel Grid"
+		DrawText 304,75,"\\Zr125Tubes Shifted (Y-direction)\r  to Align Zero Position"
+	
+		//draw the detector panel
+		Display/W=(20,80,251,496)/HOST=# 
+		RenameWindow #,DetData
+		AppendImage/W=ShiftDetector#DetData dataW
+		ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+		SetActiveSubwindow ##	
+			
+		//draw the corrected detector panel
+		// see the main display of RAW data for example of multiple 'data' images
+		Display/W=(271,80,502,496)/HOST=#
+		RenameWindow #,ShiftedData
+		AppendImage/W=ShiftDetector#ShiftedData corrW
+		ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+	
+		SetActiveSubwindow ##	
+
+	else
+		DrawAction/L=UserBack delete
+		SetDrawLayer UserBack
+		
+		DrawText 45,73,"\\Zr125Original Pixel Grid"
+		DrawText 45,310,"\\Zr125Tubes Shifted (X-direction) to Align Zero Position"
+	
+		//draw the detector panel
+		Display/W=(20,78,505,270)/HOST=# 
+		RenameWindow #,DetData
+		AppendImage/W=ShiftDetector#DetData dataW
+		ModifyImage/W=ShiftDetector#DetData '' ctab= {*,*,ColdWarm,0}
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+		SetActiveSubwindow ##	
+			
+		//draw the corrected detector panel
+		// see the main display of RAW data for example of multiple 'data' images
+		Display/W=(20,320,505,512)/HOST=#
+		RenameWindow #,ShiftedData
+		AppendImage/W=ShiftDetector#ShiftedData corrW
+		ModifyImage/W=ShiftDetector#ShiftedData '' ctab= {*,*,ColdWarm,0}		// the image is called '' even though the local ref is data2
+		Label left "Y pixels"
+		Label bottom "X pixels"	
+	
+		SetActiveSubwindow ##	
+	
+	endif
+
 
 
 	SetDataFolder root:
@@ -844,3 +941,82 @@ Function V_ShiftDrawDetPanel(folderStr,panelStr)
 End
 
 
+///////////////////////////////////
+// V_SetupGaussFit_EachTBTube()
+// V_GaussFit_EachTBTube()
+//
+// Procedures to automate the fitting of data on T/B panels that have been "completely"
+// blocked by closing L/R panels. This leaves a narrow slit of leakage through the gap, 
+// which can be used to refine the zero offset of the T/B panels.
+//
+// MARCH 2025
+//
+
+
+// With data loaded into RAW
+// need an output location (tube_num and pixel_num)
+//
+// and a temporary tube to use for the fit
+//
+//Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MT:data root:data
+
+Function V_SetupGaussFit_EachTBTube()
+	Make/O/D/N=128 tempTube
+	Make/O/D/N=48 tube_num,pixel_ctr,pixel_ctr_err
+	Make/O/D/N=48 pix_avg,pix_avg_err,pix_err2
+	
+	tube_num = p
+	pixel_ctr = 0
+	pixel_ctr_err = 0
+	
+	pix_avg = 0
+	pix_avg_err = 0
+	pix_err2 = 0
+	
+	Edit tube_num,pixel_ctr,pixel_ctr_err,pix_avg,pix_avg_err,pix_err2
+	
+	return(0)
+End
+
+//
+// hard wired for the MB panel in RAW
+//
+Function V_GaussFit_EachTBTube()
+
+	Wave tempTube=root:tempTube
+	Wave pixel_ctr=root:pixel_ctr
+	Wave pixel_ctr_err=root:pixel_ctr_err
+	Wave pix_avg=root:pix_avg
+	Wave pix_avg_err=root:pix_avg_err
+	Wave pix_err2=root:pix_err2
+	
+	
+	Wave dataPanel=root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MB:data
+	Wave/Z W_coef=W_coef
+	Wave/Z W_sigma=W_sigma
+
+
+	display tempTube
+	ModifyGraph mode=4,marker=19,rgb(tempTube)=(0,0,0)
+
+	Variable ii
+	
+	for(ii=0;ii<48;ii+=1)
+		tempTube = dataPanel[p][ii]
+//		CurveFit/Q/M=2/W=0/TBOX=(0x310) gauss, tempTube[37,60]/D
+		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[37,60]/D
+		pixel_ctr[ii] = W_coef[2]		//3rd value is the peak postion
+		pixel_ctr_err[ii] = W_sigma[2]
+		
+		pix_avg[ii] += W_coef[2]			//need to keep track of N myself, and do the math once all data has been added in
+		pix_err2[ii] += W_sigma[2]*W_sigma[2]
+		
+		//
+		// be sure to finish calculation-- avg /= N and err /= avg
+		//
+	endfor
+	
+	return(0)
+End
+
+/////////////////////////////////
