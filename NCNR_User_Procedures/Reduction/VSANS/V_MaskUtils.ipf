@@ -836,6 +836,8 @@ End
 //
 //  x- this is currently random 0|1 values, need to write an editor
 //
+//
+//
 // currently set up to use 1 = YES MASK == exclude the data
 //      and 0 = NO MASK == keep the data
 //
@@ -897,6 +899,7 @@ Proc H_Setup_VSANS_MASK_Structure()
 				Make/O/T/N=1 description
 				description = detType
 				
+//				Duplicate/O data overlay_B
 		endif
 				
 			
@@ -905,45 +908,56 @@ Proc H_Setup_VSANS_MASK_Structure()
 			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+//			Duplicate/O data overlay_MR
+			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_ML		
 			Make/O/I/N=(48,128)	data	= 0
 			data[0,3][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+//			Duplicate/O data overlay_ML
+			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_MT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+//			Duplicate/O data overlay_MT
 			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_MB		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+//			Duplicate/O data overlay_MB
 			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FR		
 			Make/O/I/N=(48,128)	data	= 0
 			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+//			Duplicate/O data overlay_FR
+			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FL		
 			Make/O/I/N=(48,128)	data	= 0
 			data[0,3][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+//			Duplicate/O data overlay_FL
+			
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+//			Duplicate/O data overlay_FT
 
 		NewDataFolder/O/S root:VSANS_MASK_file:entry:instrument:detector_FB		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
-
+//			Duplicate/O data overlay_FB
 
 		// fake, empty folders so that the generic loaders can be used
 		NewDataFolder/O root:VSANS_MASK_file:entry:DAS_logs
@@ -959,6 +973,9 @@ End
 // this default mask is only generated on startup of the panel, if a mask
 // has not been previously loaded. If any mask is present ("FT" is tested) then
 // this function is skipped and the existing mask is not overwritten
+//
+//  -x- makes a fake (default) mask and copies it to overlay_(detStr) for immediate use (APR 2025)
+//
 Function V_GenerateDefaultMask()
 
 	NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry	
@@ -985,7 +1002,8 @@ Function V_GenerateDefaultMask()
 				data[][6195,6623] = 1		// 107 pix *4 =428
 				data[0,40][] = 1
 				data[2679,2719][] = 1		// 10 pix (*4)
-				
+
+				Duplicate/O data overlay_B
 				break
 			case 4:
 			// binning will still be the defult value of 4 even if it's the Denex detector
@@ -1018,6 +1036,9 @@ Function V_GenerateDefaultMask()
 					data[669,679][] = 1
 				
 				endif
+
+				Duplicate/O data overlay_B
+
 				break
 			default:
 				Abort "No binning case matches in V_GenerateDefaultMask"
@@ -1030,23 +1051,29 @@ Function V_GenerateDefaultMask()
 			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+			Duplicate/O data overlay_MR
+
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_ML		
 			Make/O/I/N=(48,128)	data	= 0
 			data[0,3][] = 1
 //			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+			Duplicate/O data overlay_ML
+			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+			Duplicate/O data overlay_MT
 			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_MB		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+			Duplicate/O data overlay_MB
 			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FR		
 			Make/O/I/N=(48,128)	data	= 0
@@ -1054,23 +1081,29 @@ Function V_GenerateDefaultMask()
 			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+			Duplicate/O data overlay_FR
+			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FL		
 			Make/O/I/N=(48,128)	data	= 0
 			data[0,3][] = 1
 //			data[44,47][] = 1
 			data[][0,4] = 1
 			data[][123,127] = 1
+			Duplicate/O data overlay_FL
+			
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FT		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+			Duplicate/O data overlay_FT
 
 		NewDataFolder/O/S root:Packages:NIST:VSANS:MSK:entry:instrument:detector_FB		
 			Make/O/I/N=(128,48)	data	= 0
 			data[0,49][] = 1
 			data[78,127][] = 1
 			data[50,77][] = 0
+			Duplicate/O data overlay_FB
 			
 	SetDataFolder root:
 

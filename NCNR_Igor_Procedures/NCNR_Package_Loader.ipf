@@ -47,7 +47,7 @@ Menu "Macros"
 	Submenu	"Load SANS Reduction Macros"
 		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros - VAX Data"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
 		"Load NCNR SANS Reduction 10m SANS - Nexus Data",LoadSANS_Nexus_Tubes()
-//		"Load NCNR SANS Reduction Ordela - Nexus Data",LoadSANS_Nexus_Ordela()
+		"Load NCNR SANS Reduction Ordela - Nexus Data",LoadSANS_Nexus_Ordela()
 		"-"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
