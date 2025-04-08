@@ -218,7 +218,11 @@ Function V_LoadHDF5Data(file,folder)
 		// or for display in q-values -- so why bother with this?
 		NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 		// generate a distance matrix for each of the detectors
-		if (gDoNonLinearCor == 1)
+		
+		// APR 2025 - both true and false pass in, switch in V_NonLinearCorrection to either apply non-linear
+		// corections as in the data file, or "no", don't apply non-linear corrections and in V_NonLinearCorrection
+		// use the "perfect" values
+		if (gDoNonLinearCor == 1 || gDoNonLinearCor == 0)	
 			Print "Calculating Non-linear correction at RAW load time"// for "+ detStr
 			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 				detStr = StringFromList(ii, ksDetectorListNoB, ";")

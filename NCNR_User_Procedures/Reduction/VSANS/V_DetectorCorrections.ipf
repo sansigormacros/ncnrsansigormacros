@@ -177,6 +177,12 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 	Make/O/D/N=(dimX,dimY) $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
 	Wave data_realDistX = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistX")
 	Wave data_realDistY = $(destPath + ":entry:instrument:detector_"+detStr+":data_realDistY")
+
+// if set to zero, set the coefficients (just in this function) to "perfect" values so that there
+// is effectively no non-linear calculation done
+//
+	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
+	Duplicate/O coefW perfectCoefW
 	
 	// then per tube, do the quadratic calculation to get the real space distance along the tube
 	// the distance perpendicular to the tube is n*(8.4mm) per tube index
@@ -242,8 +248,14 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		else
 			data_realDistX[][] = tube_width*(p)
 		endif
-		data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
-	
+		if(gDoNonLinearCor != 0)
+			data_realDistY[][] = coefW[0][p] + coefW[1][p]*q + coefW[2][p]*q*q
+		else
+			perfectCoefW[0][] = -521
+			perfectCoefW[1][] = 8.14
+			perfectCoefW[2][] = 0
+			data_realDistY[][] = perfectCoefW[0][p] + perfectCoefW[1][p]*q + perfectCoefW[2][p]*q*q		//use perfect values
+		endif
 	
 	elseif(cmpstr(orientation,"horizontal")==0)
 		//	this is data (horizontal) dimensioned as (Npix,Ntubes)
@@ -273,7 +285,15 @@ Function V_NonLinearCorrection(fname,dataW,coefW,tube_width,detStr,destPath)
 		else
 			data_realDistY[][] = tube_width*(q)
 		endif
-		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
+		if(gDoNonLinearCor != 0)
+			data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
+		else
+			perfectCoefW[0][] = -266
+			perfectCoefW[1][] = 4.16
+			perfectCoefW[2][] = 0
+			data_realDistX[][] = perfectCoefW[0][q] + perfectCoefW[1][q]*p + perfectCoefW[2][q]*p*p
+		endif
+//		data_realDistX[][] = coefW[0][q] + coefW[1][q]*p + coefW[2][q]*p*p
 
 	else		
 		DoAlert 0,"Orientation not correctly passed in NonLinearCorrection(). No correction done."

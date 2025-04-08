@@ -607,7 +607,11 @@ Function V_Raw_to_work(newType)
 	// - other corrections may modify the data, this calculation does NOT modify the data
 	NVAR gDoNonLinearCor = root:Packages:NIST:VSANS:Globals:gDoNonLinearCor
 	// generate a distance matrix for each of the detectors
-	if (gDoNonLinearCor == 1)
+	
+	// APR 2025 - both true and false pass in, switch in V_NonLinearCorrection to either apply non-linear
+	// corections as in the data file, or "no", don't apply non-linear corrections and in V_NonLinearCorrection
+	// use the "perfect" values
+	if (gDoNonLinearCor == 1 || gDoNonLinearCor == 0)
 		Print "Doing Non-linear correction"// for "+ detStr
 		for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 			detStr = StringFromList(ii, ksDetectorListNoB, ";")
