@@ -1721,7 +1721,10 @@ End
 // and a temporary tube to use for the fit
 //
 //Duplicate/O root:Packages:NIST:VSANS:RAW:entry:instrument:detector_MT:data root:data
-
+//
+// always re-run this when switching panels or starting new fit so that this will 
+// re-zero the waves where the averages are accumulated
+//
 Function V_SetupGaussFit_EachTBTube()
 	Make/O/D/N=128 tempTube
 	Make/O/D/N=48 tube_num,pixel_ctr,pixel_ctr_err
@@ -1742,6 +1745,9 @@ End
 
 //
 // hard wired for the MB panel in RAW
+//
+// -- make this not hard-wired for a particular panel (input String)
+// -- when selecting panel, be sure that the tempTube is assigned correctly
 //
 Function V_GaussFit_EachTBTube()
 
@@ -1764,9 +1770,13 @@ Function V_GaussFit_EachTBTube()
 	Variable ii
 	
 	for(ii=0;ii<48;ii+=1)
-		tempTube = dataPanel[p][ii]
+		tempTube = dataPanel[p][ii]		// for T/B panels
+//		tempTube = dataPanel[ii][p]		// for L/R panels
+		
 //		CurveFit/Q/M=2/W=0/TBOX=(0x310) gauss, tempTube[37,60]/D
-		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[37,60]/D
+		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[37,60]/D		//if titting leakage, may need to adjust
+//		CurveFit/Q/M=2/W=2/TBOX=(0x310) gauss, tempTube[50,75]/D		//if fitting central of 5-slit mask
+		
 		pixel_ctr[ii] = W_coef[2]		//3rd value is the peak postion
 		pixel_ctr_err[ii] = W_sigma[2]
 		
@@ -1783,7 +1793,42 @@ End
 
 /////////////////////////////////
 
-
-
+// utility function to take non-linear coefficients and input postion (mm)
+// and returns the fractional pixel position along the tube
+Function V_ConvertNonLinPosition_to_pix(coefW,tube,pos)
+	Wave coefW
+	Variable tube,pos
+	
+	//solve the quadratic
+	//
+	// pos = c0 + c1*p + c2*p^2
+	//
+	// c2*p^2 + c1*p + (c0 - pos) = 0
+	//
+	Variable c0,c1,c2,ans1,ans2
+//	c0 = coefW[0][tube]			// this is how the waves are written to the data file [3,48]
+//	c1 = coefW[1][tube]
+//	c2 = coefW[2][tube]
+	
+	c0 = coefW[tube][0]			// this is more natural in a table, 48 rows, 3 columns
+	c1 = coefW[tube][1]
+	c2 = coefW[tube][2]
+	
+	ans1 = -c1 + sqrt(c1^2 - 4*c2*(c0-pos))
+	ans1 /= 2*c2
+	
+	ans2 = -c1 - sqrt(c1^2 - 4*c2*(c0-pos))
+	ans2 /= 2*c2	
+	
+//	Print "ans1, ans2 = ",ans1,ans2
+	
+	if(ans1 > 0 && ans1 < 128)
+		return(ans1)
+	else
+		return(ans2)		//may be bad, but return it anyways
+	endif
+	
+	return(0)
+end
 
 
