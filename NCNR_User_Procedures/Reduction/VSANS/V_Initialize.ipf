@@ -290,10 +290,13 @@ Function V_InitGlobals()
 	V_MakeImageLookupTables(10000,0,1)
 
 	// globals that store hi/lo file numbers for multiple patch panels
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo = 0
-	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi = 0
-
-
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_dt = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_dt = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_calib = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_calib = 0
+	
 	//set flag if Demo Version is detected
 	Variable/G root:Packages:NIST:VSANS:Globals:isDemoVersion = V_isDemo()
 

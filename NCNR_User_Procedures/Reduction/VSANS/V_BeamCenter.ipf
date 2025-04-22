@@ -1276,8 +1276,14 @@ Function V_PickOpenForBeamCenter(carrStr)
 	
 	// and the panel   Proc V_Patch_xyCtr_Panel() : Panel
 
-	Variable lo,hi
-	V_Find_LoHi_RunNum(lo,hi)
+// TODO -- figure out why I'm doing this ?? set the globals
+//	Variable lo,hi
+//	V_Find_LoHi_RunNum(lo,hi)
+//
+//	NVAR gLo = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+//	NVAR gHi = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+//	gLo = lo
+//	gHi = hi
 
 
 // these waves will exist since the panel is up

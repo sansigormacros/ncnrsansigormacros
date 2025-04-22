@@ -101,9 +101,6 @@ Proc V_CreatePatchGlobals()
 
 	Variable/G root:Packages:NIST:VSANS:Globals:Patch:gRadioVal = 1
 	
-	Variable lo,hi
-	V_Find_LoHi_RunNum(lo,hi)		//set the globals
-
 	SetDataFolder root:Packages:NIST:VSANS:Globals:Patch:	
 	Make/O/T/N=(10,3) PP_ListWave
 	Make/O/B/N=(10,3) PP_SelWave
@@ -1802,19 +1799,30 @@ End
 
 
 
-Proc V_PatchDetectorDeadtimePanel()
+Function V_PatchDetectorDeadtimePanel()
 	DoWindow/F DeadtimePanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
 
 		Make/O/D/N=48 deadTimeWave
-		Variable/G gFileNum_Lo,gFileNum_Hi
+		Variable/G gFileNum_Lo_dt,gFileNum_Hi_dt
+
+		Variable lo,hi
+			
+		NVAR gFileNum_Lo_dt = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_dt
+		NVAR gFileNum_Hi_dt = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_dt
+
+		V_Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_dt = lo
+		gFileNum_Hi_dt = hi
 		
 		SetDataFolder root:
 		
 		Execute "V_DeadtimePatchPanel()"
 	endif
+	
+	return(0)
 End
 
 
@@ -1836,9 +1844,7 @@ Proc V_DeadtimePatchPanel() : Panel
 		sc = 0.7
 	endif
 
-	Variable lo,hi
-	V_Find_LoHi_RunNum(lo,hi)		//set the globals
-	
+
 	NewPanel /W=(600*sc,400*sc,1000*sc,1000*sc)/N=DeadtimePanel /K=1
 //	ShowTools/A
 	ModifyPanel cbRGB=(16266,47753,2552,23355)
@@ -1863,9 +1869,9 @@ Proc V_DeadtimePatchPanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=V_WriteCSVDTButton,title="Write Dead Time CSV"
 	
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_dt
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_dt
 
 
 // display the wave	
@@ -2116,7 +2122,7 @@ Function V_fReadDetectorCalibration(lo,hi,detStr)
 End
 
 
-Proc V_PatchDetectorCalibrationPanel()
+Function V_PatchDetectorCalibrationPanel()
 	DoWindow/F CalibrationPanel
 	if(V_flag==0)
 	
@@ -2124,7 +2130,17 @@ Proc V_PatchDetectorCalibrationPanel()
 
 		Make/O/D/N=(3,48) calibrationWave
 		
-		Variable/G gFileNum_Lo,gFileNum_Hi
+		Variable/G gFileNum_Lo_calib,gFileNum_Hi_calib
+		Variable lo,hi
+			
+		NVAR gFileNum_Lo_calib = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_calib
+		NVAR gFileNum_Hi_calib = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_calib
+
+		V_Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_calib = lo
+		gFileNum_Hi_calib = hi
+		
+		
 		SetDataFolder root:
 		
 		Execute "V_CalibrationPatchPanel()"
@@ -2150,9 +2166,7 @@ Proc V_CalibrationPatchPanel() : Panel
 	if(root:Packages:NIST:VSANS:Globals:gLaptopMode == 1)
 		sc = 0.7
 	endif
-	
-	Variable lo,hi
-	V_Find_LoHi_RunNum(lo,hi)		//set the globals
+
 	
 	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=CalibrationPanel /K=1
 //	ShowTools/A
@@ -2178,9 +2192,9 @@ Proc V_CalibrationPatchPanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=V_WriteCSVCalibButton,title="Write Calibration CSV"
 		
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_calib
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_calib
 
 
 // display the wave	
@@ -2491,7 +2505,7 @@ End
 
 
 
-Proc V_PatchDet_xyCenters_Panel()
+Function V_PatchDet_xyCenters_Panel()
 	DoWindow/F Patch_XY_Panel
 	if(V_flag==0)
 	
@@ -2502,8 +2516,16 @@ Proc V_PatchDet_xyCenters_Panel()
 		
 		PanelW = {"FL","FR","FT","FB","ML","MR","MT","MB","B"}
 		
-		Variable/G gFileNum_Lo,gFileNum_Hi
-		
+		Variable/G gFileNum_Lo_xy,gFileNum_Hi_xy
+		Variable lo,hi
+			
+		NVAR gFileNum_Lo_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
+		NVAR gFileNum_Hi_xy = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
+
+		V_Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_xy = lo
+		gFileNum_Hi_xy = hi
+				
 		SetDataFolder root:
 		
 		Execute "V_Patch_xyCtr_Panel()"
@@ -2528,8 +2550,6 @@ Proc V_Patch_xyCtr_Panel() : Panel
 		sc = 0.7
 	endif
 
-	Variable lo,hi
-	V_Find_LoHi_RunNum(lo,hi)		//set the globals
 	
 	NewPanel /W=(600*sc,400*sc,1150*sc,800*sc)/N=Patch_XY_Panel /K=1
 //	ShowTools/A
@@ -2552,9 +2572,9 @@ Proc V_Patch_xyCtr_Panel() : Panel
 //	Button button0,pos={sc*12,81*sc},size={sc*50.00,20.00*sc},proc=V_ReadXYButtonProc,title="Read"
 //	Button button0_1,pos={sc*12,220*sc},size={sc*50.00,20.00*sc},proc=V_WriteXYButtonProc,title="Write"
 //	SetVariable setvar0,pos={sc*12,141*sc},size={sc*100.00,14.00*sc},title="first"
-//	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+//	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
 //	SetVariable setvar1,pos={sc*12,167*sc},size={sc*100.00,14.00*sc},title="last"
-//	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+//	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
 //
 ///// original panel
 //
@@ -2569,7 +2589,7 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 72*sc,(dn+116)*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 12*sc,(dn+258)*sc,"Write to all files(inlcusive)"
+	DrawText 12*sc,(dn+258)*sc,"Write to all files(inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 12*sc,(dn+144)*sc,"Run Number(s)"
 	DrawText 262*sc,30*sc,"Beam Center [cm]"
@@ -2587,9 +2607,9 @@ Proc V_Patch_xyCtr_Panel() : Panel
 	Button button5,pos={sc*12,140*sc},size={sc*50,20*sc},proc=V_BackRefFileButtonProc,title="Back"
 	
 	SetVariable setvar0,pos={sc*12,(dn+152)*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo_xy
 	SetVariable setvar1,pos={sc*12,(dn+178)*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi_xy
 	
 //
 ///// new panel

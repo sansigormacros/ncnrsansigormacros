@@ -1602,14 +1602,18 @@ End
 
 //
 // finds the lo, hi run numbers in the current directory
-// - sets the global values for later use
-// - you don't really need to pass anything in, the parameters are leftovers from 
+// - (NO)--sets the global values for later use
+//
+// - 2025 -- changed back to pass by reference to be able to set global values that are
+// 		specific to each patch panel and won't change unexpectedly
+//
+// - (NO) you don't really need to pass anything in, the parameters are leftovers from 
 // the initial version where the values were pass-by-reference and returned
 //
 // note that 1111 (is a special number for the ReadNoise file, ignore this run)
 //
 Function V_Find_LoHi_RunNum(lo,hi)
-	Variable lo,hi
+	Variable &lo,&hi
 	
 	String fileList="",fname=""
 	Variable ii,num,runNum
@@ -1633,11 +1637,11 @@ Function V_Find_LoHi_RunNum(lo,hi)
 	endfor
 
 	// set the globals	
-	NVAR loVal = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
-	NVAR hiVal = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
-	
-	loVal = lo
-	hiVal = hi
+//	NVAR loVal = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Lo
+//	NVAR hiVal = root:Packages:NIST:VSANS:Globals:Patch:gFileNum_Hi
+//	
+//	loVal = lo
+//	hiVal = hi
 	
 	return(0)
 End
