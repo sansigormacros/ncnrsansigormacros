@@ -61,8 +61,10 @@ Proc V_PlotBroadPeak_Pix2D(xDim,yDim)
 	// _mat is for display, _lin is the real calculation
 
 	// not a function evaluation - this simply keeps the matrix for display in sync with the triplet calculation
+	// and since coef_PeakPix2D is part of the parameter list (but not used) it will trigger a re-sync of the matrix
+	// every time the coefficients are changed
 	Variable/G g_PeakPix2Dmat=0
-	g_PeakPix2Dmat := V_UpdatePix2Mat(xwave_PeakPix2D,ywave_PeakPix2D,zwave_PeakPix2D,PeakPix2D_lin,PeakPix2D_mat)
+	g_PeakPix2Dmat := V_UpdatePix2Mat(coef_PeakPix2D,xwave_PeakPix2D,ywave_PeakPix2D,zwave_PeakPix2D,PeakPix2D_lin,PeakPix2D_mat)
 	
 	
 	SetDataFolder root:
@@ -95,9 +97,10 @@ Function V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,xDim,
 	return(0)
 End
 
-Function V_UpdatePix2Mat(Qx,Qy,inten,linMat,mat)
-	Wave Qx,Qy,inten,linMat,mat
-	
+// the coefficient wave is only part of the parameter list to trigger this function when coefficients are changed
+Function V_UpdatePix2Mat(coefW,Qx,Qy,inten,linMat,mat)
+	Wave coefW,Qx,Qy,inten,linMat,mat
+
 	Variable xrows=DimSize(mat, 0 )			
 	Variable yrows=DimSize(mat, 1 )			
 		

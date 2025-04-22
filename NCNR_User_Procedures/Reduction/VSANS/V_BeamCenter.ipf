@@ -338,7 +338,8 @@ Function V_DrawDetPanel(str)
 	
 		
 	// re-dimension the model calculation to be the proper dimensions	
-	Redimension/N=(nPix_X*nPix_Y) xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D	
+	Redimension/N=(nPix_X*nPix_Y) xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D
+	
 	V_FillPixTriplet(xwave_PeakPix2D, ywave_PeakPix2D,zwave_PeakPix2D,nPix_X,nPix_Y)
 	Make/O/D/N=(nPix_X,nPix_Y) PeakPix2D_mat		// use the point scaling of the matrix (=pixels)
 
