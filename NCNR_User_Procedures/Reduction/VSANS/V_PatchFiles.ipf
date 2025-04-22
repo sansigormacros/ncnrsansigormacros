@@ -1853,7 +1853,7 @@ Proc V_DeadtimePatchPanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 209*sc,30*sc,"Dead Time Constants"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -1929,14 +1929,17 @@ Function V_WriteCSVDTButton(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
-			
-			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-				detStr = StringFromList(ii, ksDetectorListNoB, ";")
-				Wave tmpW = $("root:deadtime_"+detStr)
-				deadTimeW = tmpW
-				V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
-			endfor
-			
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no			
+				for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+					detStr = StringFromList(ii, ksDetectorListNoB, ";")
+					Wave tmpW = $("root:deadtime_"+detStr)
+					deadTimeW = tmpW
+					V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
+				endfor
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -2026,9 +2029,12 @@ Function V_WriteDTButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
-			
-			V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
-			
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no			
+				V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -2128,7 +2134,7 @@ Function V_PatchDetectorCalibrationPanel()
 	
 		NewDataFolder/O/S root:Packages:NIST:VSANS:Globals:Patch
 
-		Make/O/D/N=(3,48) calibrationWave
+		Make/O/D/N=(3,48) calibrationWave=0
 		
 		Variable/G gFileNum_Lo_calib,gFileNum_Hi_calib
 		Variable lo,hi
@@ -2176,7 +2182,7 @@ Proc V_CalibrationPatchPanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 227*sc,28*sc,"Quadratic Calibration Constants per Tube"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -2254,18 +2260,21 @@ Function V_WriteCSVCalibButton(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			WAVE calibrationWave = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
-			
-			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
-				detStr = StringFromList(ii, ksDetectorListNoB, ";")
-				Wave tmp_a = $("root:a_"+detStr)
-				Wave tmp_b = $("root:b_"+detStr)
-				Wave tmp_c = $("root:c_"+detStr)
-				calibrationWave[0][] = tmp_a[q]
-				calibrationWave[1][] = tmp_b[q]
-				calibrationWave[2][] = tmp_c[q]
-				V_fPatchDetectorCalibration(lo,hi,detStr,calibrationWave)
-			endfor
-			
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no
+				for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
+					detStr = StringFromList(ii, ksDetectorListNoB, ";")
+					Wave tmp_a = $("root:a_"+detStr)
+					Wave tmp_b = $("root:b_"+detStr)
+					Wave tmp_c = $("root:c_"+detStr)
+					calibrationWave[0][] = tmp_a[q]
+					calibrationWave[1][] = tmp_b[q]
+					calibrationWave[2][] = tmp_c[q]
+					V_fPatchDetectorCalibration(lo,hi,detStr,calibrationWave)
+				endfor
+			endif
+
 			break
 		case -1: // control being killed
 			break
@@ -2374,8 +2383,11 @@ Function V_WriteCalibButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave calibW = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
-			
-			V_fPatchDetectorCalibration(lo,hi,detStr,calibW)
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no
+				V_fPatchDetectorCalibration(lo,hi,detStr,calibW)
+			endif
 			
 			break
 		case -1: // control being killed
@@ -2563,7 +2575,7 @@ Proc V_Patch_xyCtr_Panel() : Panel
 //	SetDrawEnv fsize= 14*sc,fstyle= 1
 //	DrawText 85*sc,99*sc,"Current Values"
 //	SetDrawEnv fsize= 14*sc,fstyle= 1
-//	DrawText 12*sc,258*sc,"Write to all files(inlcusive)"
+//	DrawText 12*sc,258*sc,"Write to all files(inclusive)"
 //	SetDrawEnv fsize= 14*sc,fstyle= 1
 //	DrawText 12*sc,133*sc,"Run Number(s)"
 //	DrawText 262*sc,30*sc,"Beam Center [cm]"
@@ -2738,8 +2750,11 @@ Function V_WriteXYButtonProc(ba) : ButtonControl
 
 // this function will write the new centers to the file and then delete the file from
 // RawVSANS to force a re-read of the data			
-			V_fPatchDet_xyCenters(lo,hi)
-
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no
+				V_fPatchDet_xyCenters(lo,hi)
+			endif
+			
 			break
 		case -1: // control being killed
 			break
