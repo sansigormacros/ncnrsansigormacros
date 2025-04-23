@@ -306,7 +306,7 @@ End
 //
 // -- what else to add to the menu? (MSK and DIV now work)
 // -- add directly to WORK files? (skip the "to WORK" button)
-// -- "set" as some special file type, intent, use? (quick "patch" operations)
+// x- "set" as some special file type, intent, use? (quick "patch" operations)
 // -- "check" the reduction protocol for completeness?
 //
 // x- seems to not "let go" of a selection (missing the mouse up?)

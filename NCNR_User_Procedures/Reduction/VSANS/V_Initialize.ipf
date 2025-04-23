@@ -123,24 +123,25 @@ Constant kReadNoiseLevel_Err_bin1 = 1
 // runs 12221,12225,27,33,34,35,38,42
 // middle CCD is not moved
 // See V_ShiftBackDetImage() for implementation
-Constant 	kShift_TopX_bin4 = 7
+Constant 		kShift_TopX_bin4 = 7
 Constant		kShift_TopY_bin4 = 105
 Constant		kShift_BottomX_bin4 = 5
 Constant		kShift_BottomY_bin4 = 35
 
 // TODOHIGHRES -- these values need to be verified. they are currently simply 4x the bin4 values
-Constant 	kShift_TopX_bin1 = 28
+Constant 		kShift_TopX_bin1 = 28
 Constant		kShift_TopY_bin1 = 420
 Constant		kShift_BottomX_bin1 = 20
 Constant		kShift_BottomY_bin1 = 130
 
-Constant 	kNum_x_HighRes_CCD = 680				//old High res, removed in April? 2023
+Constant 		kNum_x_HighRes_CCD = 680				//old High res, removed in April? 2023
 Constant		kNum_y_HighRes_CCD = 1656
 
-Constant		kNum_x_Denex = 512			// as of April 2023, these values are not known
+Constant		kNum_x_Denex = 512					// TODO -- as of April 2023, these values are not known
 Constant		kNum_y_Denex = 512
 
-
+Constant		kDownstreamWinTrans = 1				// TODO -- set these to measured values once they are known
+Constant		kDownstreamWinTransErr = 0
 
 
 

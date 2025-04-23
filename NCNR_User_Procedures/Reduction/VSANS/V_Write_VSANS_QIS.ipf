@@ -353,7 +353,7 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 	SetDataFolder $(pathStr+folderStr)
 
 
-	//TODO
+
 	//-- make sure the waves exist
 	
 //	if(WaveExists(qw) == 0)
@@ -390,7 +390,7 @@ Function V_Write1DData_ITX(pathStr,folderStr,saveName,binType)
 
 
 
-	// TODO:
+
 	// -- currently I'm using the Save comand and the /B flag
 	//    to save the data as Igor Text format, since otherwise the command string would be
 	//    too long. Need to come up with an Igor-demo friendly save here

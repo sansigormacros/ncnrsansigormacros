@@ -879,10 +879,6 @@ Function V_fDoAnnularBin_QxQy2D_New(folderStr,type,qCtr_Ann,qWidth)
 //    -Solid angle will be present for WORK data other than RAW, but not for RAW
 
 
-
-
-
-
 	Variable mask_val
 // use set 1 (no number) only
 		xDim=DimSize(inten,0)

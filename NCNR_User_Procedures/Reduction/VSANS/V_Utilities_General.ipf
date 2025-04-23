@@ -422,9 +422,10 @@ End
 //
 
 
-// TODO
-// -- getting the file_name from the root: global is a poor choice. 
-//     Need a better, more reliable solution than this
+// DONE
+// x- getting the file_name from the root: global is a poor choice. 
+//     Need a better, more reliable solution than this -- actually this is a fine choice, since
+//     I need to load a file (which sets the global) to get the button to display "next"
 //
 // DONE
 // x- load in the proper file

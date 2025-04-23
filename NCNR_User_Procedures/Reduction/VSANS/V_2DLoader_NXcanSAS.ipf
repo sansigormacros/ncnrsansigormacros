@@ -2,7 +2,12 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 
 //
-// TODO
+// Simple panel to load and plot NXcanSAS 2D data sets
+//
+// TODO:
+//		-- fails to plot data if there is no data in the back (high res) panel. data loads, but refuses to plot
+//      see the error generated and set it to bypass if there is no data, rather than fail.
+//
 //
 // x- add a macro to the VSANS menu
 // x- add a "load" button to the panel

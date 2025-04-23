@@ -171,8 +171,8 @@ Function V_InitializeWindowTrans()
 	// TODO -- when correcting this, search for all occurences!!! also in V_WorkFolderUtils !!!
 	// these global values need to be replaced with real numbers
 	// error is currently set to zero
-	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans = 1
-	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTransErr = 0
+	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans = kDownstreamWinTrans
+	Variable/G root:Packages:NIST:VSANS:Globals:gDownstreamWinTransErr = kDownstreamWinTransErr
 
 end
 
@@ -433,7 +433,7 @@ Proc VSANSPref_Panel()
 	SetVariable PrefCtrl_1d,limits={1,100,1},value= root:Packages:NIST:VSANS:Globals:gBinWidth
 	SetVariable PrefCtrl_1e,pos={21*sc,155*sc},size={200*sc,15*sc},title="# Phi Steps (annular avg)"
 	SetVariable PrefCtrl_1e,limits={1,360,1},value= root:Packages:NIST:VSANS:Globals:gNPhiSteps
-	SetVariable PrefCtrl_1p,pos={21*sc,180*sc},size={200*sc,15*sc},title="Window Transmission"
+	SetVariable PrefCtrl_1p,pos={21*sc,180*sc},size={200*sc,15*sc},title="Window Transmission",disable=2		//currently not editable
 	SetVariable PrefCtrl_1p,limits={0.01,1,0.001},value= root:Packages:NIST:VSANS:Globals:gDownstreamWinTrans
 
 
