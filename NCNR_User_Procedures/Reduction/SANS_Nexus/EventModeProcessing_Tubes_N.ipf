@@ -12,7 +12,6 @@
 // The event file shall be of binary format, with data encoded in little endian format.
 // The file shall have a header section and a data section
 //
-
 ////////////////////
 
 
@@ -22,7 +21,6 @@
 // -- to turn the sorting of stream data "off", set (from the command line)
 // 	root:Packages:NIST:Event:gSortStreamEvents = 0
 //
-
 
 //
 // TODO:
@@ -43,6 +41,13 @@
 // -- write the help file, and link the help buttons to the help docs
 //
 // -- examples?
+//
+
+////////////////////
+// DONE: 2025
+// NTUBES is not used, XBINS and YBINS are -- changed to local variables based on Ordela vs Tubes
+//   do set proper detector dimensions 
+/////////////
 //
 //
 // X- the slice display "fails" for data sets that have 3 or 4 slices, as the ModifyImage command
@@ -66,9 +71,14 @@
 //
 // NTUBES is the total number of tubes = 112
 //
-Constant NTUBES=112
-Constant XBINS=112
-Constant YBINS=128
+//
+// DONE: 2025
+// NTUBES is not used, XBINS and YBINS are -- change these to be globals instead so that I can
+// switch Ordela vs Tubes
+//
+//Constant NTUBES=112
+//Constant XBINS=112
+//Constant YBINS=128
 
 Static Constant MODE_STREAM = 0
 Static Constant MODE_OSCILL = 1
@@ -718,8 +728,16 @@ Function Init_Event()
 
 	NVAR nslices = root:Packages:NIST:Event:gEvent_nslices
 	
+	Variable xDim,yDim
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		xDim = 128
+		yDim = 128
+	else
+		xDim = 112
+		yDim = 128
+	endif
 		
-	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+	Make/D/O/N=(xDim,yDim,nslices) slicedData
 	Duplicate/O slicedData logslicedData
 	Duplicate/O slicedData dispsliceData
 
@@ -1132,7 +1150,16 @@ end
 Function Osc_ProcessEventLog(ctrlName)
 	String ctrlName
 
-	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:Event:binnedData
+	Variable xDim,yDim
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		xDim = 128
+		yDim = 128
+	else
+		xDim = 112
+		yDim = 128
+	endif
+	
+	Make/O/D/N=(xDim,yDim) root:Packages:NIST:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:Event:binnedData
 	Wave xLoc = root:Packages:NIST:Event:xLoc
@@ -1145,12 +1172,12 @@ Function Osc_ProcessEventLog(ctrlName)
 
 	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
 	
-	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+	Make/D/O/N=(xDim,yDim,nslices) slicedData
 		
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
 	Wave timePt = timePt
-	Make/O/D/N=(XBINS,YBINS) tmpData
+	Make/O/D/N=(xDim,yDim) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount
 	Make/O/D/N=(nslices) timeWidth
 	Wave timeWidth = timeWidth
@@ -1269,8 +1296,16 @@ Function Stream_ProcessEventLog(ctrlName)
 
 //	NVAR slicewidth = root:Packages:NIST:gTISANE_slicewidth
 
+	Variable xDim,yDim
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		xDim = 128
+		yDim = 128
+	else
+		xDim = 112
+		yDim = 128
+	endif
 	
-	Make/O/D/N=(XBINS,YBINS) root:Packages:NIST:Event:binnedData
+	Make/O/D/N=(xDim,yDim) root:Packages:NIST:Event:binnedData
 	
 	Wave binnedData = root:Packages:NIST:Event:binnedData
 	Wave xLoc = root:Packages:NIST:Event:xLoc
@@ -1284,11 +1319,11 @@ Function Stream_ProcessEventLog(ctrlName)
 
 	SetDataFolder root:Packages:NIST:Event		//don't count on the folder remaining here
 	
-	Make/D/O/N=(XBINS,YBINS,nslices) slicedData
+	Make/D/O/N=(xDim,yDim,nslices) slicedData
 		
 	Wave slicedData = slicedData
 	Wave rescaledTime = rescaledTime
-	Make/O/D/N=(XBINS,YBINS) tmpData
+	Make/O/D/N=(xDim,yDim) tmpData
 	Make/O/D/N=(nslices+1) binEndTime,binCount//,binStartTime
 	Make/O/D/N=(nslices) timeWidth
 	Wave binEndTime = binEndTime

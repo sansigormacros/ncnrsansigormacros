@@ -1252,12 +1252,18 @@ Function fPatchDetectorDeadtime(lo,hi,deadtimeW)
 	Variable lo,hi
 	Wave deadtimeW
 	
-	Variable ii
+	Variable ii,numTubes
 	String fname
 	
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		numTubes=128
+	else
+		numTubes=112
+	endif
+	
 	// check the dimensions of the deadtimeW/N=112
-	if (DimSize(deadtimeW, 0) != 112 )
-		Abort "dead time wave is not of proper dimension (112)"
+	if (DimSize(deadtimeW, 0) != numTubes )
+		Abort "dead time wave is not of proper dimension (N = " +num2str(numTubes)+")"
 	endif
 	
 	//loop over all files
@@ -1303,9 +1309,13 @@ Function PatchDetectorDeadtimePanel()
 	
 		NewDataFolder/O/S root:myGlobals:Patch
 
-		Make/O/D/N=112 deadTimeWave=0
+		if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+			Make/O/D/N=128 deadTimeWave=0
+		else
+			Make/O/D/N=112 deadTimeWave=0
+		endif
+		
 		Variable/G gFileNum_Lo_dt,gFileNum_Hi_dt
-
 		Variable lo,hi
 
 		NVAR gFileNum_Lo_dt = root:myGlobals:Patch:gFileNum_Lo_dt

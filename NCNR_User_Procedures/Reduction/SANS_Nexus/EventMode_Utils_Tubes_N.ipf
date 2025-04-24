@@ -3,6 +3,9 @@
 #pragma IgorVersion = 7.00
 
 
+// APRIL 2025--
+// no code here is hard-wired for either detector style
+//
 
 // MAY 2022
 //
@@ -38,8 +41,10 @@
 //  writeFakeEventFile("")
 //
 // currently the code for the fake event files is using 112 tubes as are on the 10m SANS
-// and the new 10-byte event word format
+// and the new 10-byte event word format, and 128 "Tubes" for the Ordela
 //
+//
+
 
 
 
@@ -58,7 +63,13 @@
 
 Function DuplicateRAWForExport()
 	KillDataFolder/Z root:export
-	DuplicateDataFolder root:Packages:NIST:RAW: root:export
+	
+	if (DataFolderExists("root:Packages:NIST:RAW:Entry") == 1)
+		DuplicateDataFolder root:Packages:NIST:RAW: root:export
+	else
+		DoAlert 0,"No RAW data folder exists. Please load the correct RAW data file and repeat this Duplicate step"	
+	endif
+	
 	return(0)
 end
 
@@ -1584,8 +1595,11 @@ Function MakeFakeEventWave(num)
 	for(ii=0;ii<num;ii+=1)
 //		sleep/T/C=-1 1			// 6 ticks, approx 0.1 s (without the delay, the loop is too fast)
 
-		xPos = trunc(abs(enoise(112)))
-
+		if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+			xPos = trunc(abs(enoise(128)))
+		else
+			xPos = trunc(abs(enoise(112)))
+		endif
 		yPos = trunc(abs(enoise(128)))		// same here, to get results [0,127]
 	
 		

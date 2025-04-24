@@ -2,6 +2,17 @@
 #pragma IgorVersion=6.22
 
 
+// APRIL 2025
+// per Phil, going forward aftere restart, 30m instruments will write Nexus data files
+// and will also write out efent data in 10-byte format (as well as PTP?)
+// -- but at least this simplifies things in that I don't need to support the old 4-byte
+//    event format of Ordela. I can move on with the (same-ish) new event routines
+//
+// -- the major difference between 10m and 30m is then the dimension of the detector (and the physical construction)
+//     and not the actual event structure and need for decoding 6.7s jumps
+//
+
+
 // JULY 2022
 //
 // This file is for the event mode processing of the NISTO (.HST) event files from
