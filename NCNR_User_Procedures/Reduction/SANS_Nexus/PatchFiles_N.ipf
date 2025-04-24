@@ -1297,15 +1297,24 @@ End
 
 
 
-Proc PatchDetectorDeadtimePanel()
+Function PatchDetectorDeadtimePanel()
 	DoWindow/F DeadtimePanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:myGlobals:Patch
 
-		Make/O/D/N=112 deadTimeWave
-		Variable/G gFileNum_Lo,gFileNum_Hi
-		
+		Make/O/D/N=112 deadTimeWave=0
+		Variable/G gFileNum_Lo_dt,gFileNum_Hi_dt
+
+		Variable lo,hi
+
+		NVAR gFileNum_Lo_dt = root:myGlobals:Patch:gFileNum_Lo_dt
+		NVAR gFileNum_Hi_dt = root:myGlobals:Patch:gFileNum_Hi_dt
+
+		Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_dt = lo
+		gFileNum_Hi_dt = hi
+				
 		SetDataFolder root:
 		
 		Execute "DeadtimePatchPanel()"
@@ -1324,8 +1333,8 @@ Proc DeadtimePatchPanel() : Panel
 		sc = 0.7
 	endif
 
-	Variable lo,hi
-	Find_LoHi_RunNum(lo,hi)		//set the globals
+//	Variable lo,hi
+//	Find_LoHi_RunNum(lo,hi)		//set the globals
 	
 	NewPanel /W=(600*sc,400*sc,1000*sc,1000*sc)/N=DeadtimePanel /K=1
 //	ShowTools/A
@@ -1335,7 +1344,7 @@ Proc DeadtimePatchPanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 209*sc,30*sc,"Dead Time Constants"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -1351,9 +1360,9 @@ Proc DeadtimePatchPanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVDTButton,title="Write Dead Time CSV"
 	
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo_dt
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi_dt
 
 
 // display the wave	
@@ -1407,8 +1416,11 @@ Function WriteCSVDTButton(ba) : ButtonControl
 			Variable hi=V_Value
 			Wave deadTimeW = root:myGlobals:Patch:deadTimeWave
 			
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no	
 				fPatchDetectorDeadtime(lo,hi,deadtimeW)
-			
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -1488,7 +1500,10 @@ Function WriteDTButtonProc(ba) : ButtonControl
 			Variable hi=V_Value
 			Wave deadTimeW = root:myGlobals:Patch:deadTimeWave
 			
-			fPatchDetectorDeadtime(lo,hi,deadtimeW)
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no			
+				fPatchDetectorDeadtime(lo,hi,deadtimeW)
+			endif
 			
 			break
 		case -1: // control being killed
@@ -1554,7 +1569,7 @@ Function fPatchDetectorCalibration(lo,hi,calibW)
 	
 	// check the dimensions of the calibW (3,112) or (3,128)
 	if (DimSize(calibW, 0) != 3 || DimSize(calibW, 1) != xDim )
-		Abort "Calibration wave is not of proper dimension (3,"+num2str(xDim)+")"
+		Abort "Calibration wave is not of proper dimension (3,"+num2istr(xDim)+")"
 	endif
 	
 	//loop over all files
@@ -1590,19 +1605,33 @@ Function fReadDetectorCalibration(lo,hi)
 	return(0)
 End
 
-
-Proc PatchDetectorCalibrationPanel()
+// switch based on whether the detector is Ordela (128 "tubes") or 10 m SANS (112 tubes)
+//
+Function PatchDetectorCalibrationPanel()
 	DoWindow/F CalibrationPanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:myGlobals:Patch
 
-		Make/O/D/N=(3,112) calibrationWave
-		
-		Variable/G gFileNum_Lo,gFileNum_Hi
-		SetDataFolder root:
-		
+		if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+			Make/O/D/N=(3,128) calibrationWave=0
+		else
+			Make/O/D/N=(3,112) calibrationWave=0
+		endif
+				
+		Variable/G gFileNum_Lo_calib,gFileNum_Hi_calib
+		Variable lo,hi
+
+		NVAR gFileNum_Lo_calib = root:myGlobals:Patch:gFileNum_Lo_calib
+		NVAR gFileNum_Hi_calib = root:myGlobals:Patch:gFileNum_Hi_calib
+
+		Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_calib = lo
+		gFileNum_Hi_calib = hi
+				
 		Execute "CalibrationPatchPanel()"
+		SetDataFolder root:
+
 	endif
 End
 
@@ -1618,8 +1647,8 @@ Proc CalibrationPatchPanel() : Panel
 		sc = 0.7
 	endif
 	
-	Variable lo,hi
-	Find_LoHi_RunNum(lo,hi)		//set the globals
+//	Variable lo,hi
+//	Find_LoHi_RunNum(lo,hi)		//set the globals
 	
 	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=CalibrationPanel /K=1
 //	ShowTools/A
@@ -1629,7 +1658,7 @@ Proc CalibrationPatchPanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 227*sc,28*sc,"Quadratic Calibration Constants per Tube"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -1645,9 +1674,9 @@ Proc CalibrationPatchPanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVCalibButton,title="Write Calibration CSV"
 		
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo_calib
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi_calib
 
 
 // display the wave	
@@ -1702,6 +1731,9 @@ Function WriteCSVCalibButton(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			WAVE calibrationWave = root:myGlobals:Patch:calibrationWave
+		
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no	
 			
 //			for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 //				detStr = StringFromList(ii, ksDetectorListNoB, ";")
@@ -1713,6 +1745,7 @@ Function WriteCSVCalibButton(ba) : ButtonControl
 				calibrationWave[2][] = tmp_c[q]
 				fPatchDetectorCalibration(lo,hi,calibrationWave)
 //			endfor
+			endif
 			
 			break
 		case -1: // control being killed
@@ -1746,10 +1779,16 @@ Function GeneratePerfCalibButton(ba) : ButtonControl
 
 			WAVE calibrationWave = root:myGlobals:Patch:calibrationWave
 
-			calibrationWave[0][] = -521
-			calibrationWave[1][] = 8.14
-			calibrationWave[2][] = 0
-			
+			if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+				calibrationWave[0][] = -320
+				calibrationWave[1][] = 5.08
+				calibrationWave[2][] = 0
+			else
+				calibrationWave[0][] = -521
+				calibrationWave[1][] = 8.14
+				calibrationWave[2][] = 0
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -1794,8 +1833,11 @@ Function WriteCalibButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave calibW = root:myGlobals:Patch:calibrationWave
-			
-			fPatchDetectorCalibration(lo,hi,calibW)
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no				
+				fPatchDetectorCalibration(lo,hi,calibW)
+			endif
 			
 			break
 		case -1: // control being killed
@@ -1880,15 +1922,25 @@ Function fReadAttenTable(lo,hi)
 End
 
 
-Proc PatchAttenTablePanel()
+Function PatchAttenTablePanel()
 	DoWindow/F AttenTablePanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:myGlobals:Patch
 
-		Make/O/D/N=(12,12) attenWave
+		Make/O/D/N=(12,12) attenWave=0
 		
-		Variable/G gFileNum_Lo,gFileNum_Hi
+		Variable/G gFileNum_Lo_att,gFileNum_Hi_att
+		Variable lo,hi
+
+		NVAR gFileNum_Lo_att = root:myGlobals:Patch:gFileNum_Lo_att
+		NVAR gFileNum_Hi_att = root:myGlobals:Patch:gFileNum_Hi_att
+
+		Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_att = lo
+		gFileNum_Hi_att = hi
+				
+		
 		SetDataFolder root:
 		
 		Execute "DrawPatchAttenTablePanel()"
@@ -1907,8 +1959,8 @@ Proc DrawPatchAttenTablePanel() : Panel
 		sc = 0.7
 	endif
 	
-	Variable lo,hi
-	Find_LoHi_RunNum(lo,hi)		//set the globals
+//	Variable lo,hi
+//	Find_LoHi_RunNum(lo,hi)		//set the globals
 	
 	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=AttenTablePanel /K=1
 //	ShowTools/A
@@ -1918,7 +1970,7 @@ Proc DrawPatchAttenTablePanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 227*sc,28*sc,"Attenuation Table"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -1932,9 +1984,9 @@ Proc DrawPatchAttenTablePanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVAttTableButton,title="Write Att Table CSV"
 		
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo_att
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi_att
 
 
 // display the wave	
@@ -1971,7 +2023,7 @@ End
 //
 // writes the entire content of the CSV file 
 //
-// first need to put the 12 1D wves into a 2D wve to write to file
+// first need to put the 12 1D waves into a 2D wave to write to file
 //
 Function WriteCSVAttTableButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -1994,6 +2046,9 @@ Function WriteCSVAttTableButton(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			WAVE attenWave = root:myGlobals:Patch:attenWave
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no	
 			
 				Wave NGBlambda = $("root:NGBlambda")
 				Wave NGBatt0 = $("root:NGBatt0")
@@ -2024,6 +2079,7 @@ Function WriteCSVAttTableButton(ba) : ButtonControl
 				
 				
 				fPatchAttenTable(lo,hi,attenWave)
+			endif
 			
 			break
 		case -1: // control being killed
@@ -2076,9 +2132,12 @@ Function WriteAttTableButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave attenWave = root:myGlobals:Patch:attenWave
-			
-			fPatchAttenTable(lo,hi,attenWave)
-			
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no				
+				fPatchAttenTable(lo,hi,attenWave)
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -2168,15 +2227,24 @@ Function fReadAttenErrTable(lo,hi)
 End
 
 
-Proc PatchAttenErrTablePanel()
+Function PatchAttenErrTablePanel()
 	DoWindow/F AttenErrTablePanel
 	if(V_flag==0)
 	
 		NewDataFolder/O/S root:myGlobals:Patch
 
-		Make/O/D/N=(12,12) attenErrWave
+		Make/O/D/N=(12,12) attenErrWave=0
 		
-		Variable/G gFileNum_Lo,gFileNum_Hi
+		Variable/G gFileNum_Lo_attErr,gFileNum_Hi_attErr
+		Variable lo,hi
+
+		NVAR gFileNum_Lo_attErr = root:myGlobals:Patch:gFileNum_Lo_attErr
+		NVAR gFileNum_Hi_attErr = root:myGlobals:Patch:gFileNum_Hi_attErr
+
+		Find_LoHi_RunNum(lo,hi)			//lo,hi returned pbr
+		gFileNum_Lo_attErr = lo
+		gFileNum_Hi_attErr = hi
+		
 		SetDataFolder root:
 		
 		Execute "DrawPatchAttenErrTablePanel()"
@@ -2195,8 +2263,8 @@ Proc DrawPatchAttenErrTablePanel() : Panel
 		sc = 0.7
 	endif
 	
-	Variable lo,hi
-	Find_LoHi_RunNum(lo,hi)		//set the globals
+//	Variable lo,hi
+//	Find_LoHi_RunNum(lo,hi)		//set the globals
 	
 	NewPanel /W=(600*sc,400*sc,1200*sc,1000*sc)/N=AttenErrTablePanel /K=1
 //	ShowTools/A
@@ -2206,7 +2274,7 @@ Proc DrawPatchAttenErrTablePanel() : Panel
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 85*sc,99*sc,"Current Values"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
-	DrawText 18*sc,258*sc,"Write to all files (inlcusive)"
+	DrawText 18*sc,258*sc,"Write to all files (inclusive)"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
 	DrawText 227*sc,28*sc,"Attenuation Error Table"
 	SetDrawEnv fsize= 14*sc,fstyle= 1
@@ -2220,9 +2288,9 @@ Proc DrawPatchAttenErrTablePanel() : Panel
 	Button button0_4,pos={sc*18.00,400.00*sc},size={sc*140.00,20.00*sc},proc=WriteCSVAttErrTableButton,title="Write Att Err Table CSV"
 		
 	SetVariable setvar0,pos={sc*20,141*sc},size={sc*100.00,14.00*sc},title="first"
-	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo
+	SetVariable setvar0,value= root:myGlobals:Patch:gFileNum_Lo_attErr
 	SetVariable setvar1,pos={sc*20.00,167*sc},size={sc*100.00,14.00*sc},title="last"
-	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi
+	SetVariable setvar1,value= root:myGlobals:Patch:gFileNum_Hi_attErr
 
 
 // display the wave	
@@ -2259,7 +2327,7 @@ End
 //
 // writes the entire content of the CSV file 
 //
-// first need to put the 12 1D wves into a 2D wve to write to file
+// first need to put the 12 1D waves into a 2D wave to write to file
 //
 Function WriteCSVAttErrTableButton(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
@@ -2364,9 +2432,12 @@ Function WriteAttErrTableButtonProc(ba) : ButtonControl
 			ControlInfo setvar1
 			Variable hi=V_Value
 			Wave attenErrWave = root:myGlobals:Patch:attenErrWave
-			
-			fPatchAttenErrTable(lo,hi,attenErrWave)
-			
+
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
+			if(V_Flag == 1)		//yes, anything else is a no				
+				fPatchAttenErrTable(lo,hi,attenErrWave)
+			endif
+						
 			break
 		case -1: // control being killed
 			break
@@ -2382,12 +2453,16 @@ End
 
 //
 // finds the lo, hi run numbers in the current directory
-// - sets the global values for later use
-// - you don't really need to pass anything in, the parameters are leftovers from 
+// - (NO)--sets the global values for later use
+//
+// - 2025 -- changed back to pass by reference to be able to set global values that are
+// 		specific to each patch panel and won't change unexpectedly
+//
+// - (NO) you don't really need to pass anything in, the parameters are leftovers from 
 // the initial version where the values were pass-by-reference and returned
 //
 Function Find_LoHi_RunNum(lo,hi)
-	Variable lo,hi
+	Variable &lo,&hi
 	
 	String fileList="",fname=""
 	Variable ii,num,runNum
@@ -2408,12 +2483,12 @@ Function Find_LoHi_RunNum(lo,hi)
 		hi = runNum > hi ? runNum : hi		// if runNum > hi, update
 	endfor
 
-	// set the globals	
-	NVAR loVal = root:myGlobals:Patch:gFileNum_Lo
-	NVAR hiVal = root:myGlobals:Patch:gFileNum_Hi
-	
-	loVal = lo
-	hiVal = hi
+//	// set the globals	
+//	NVAR loVal = root:myGlobals:Patch:gFileNum_Lo
+//	NVAR hiVal = root:myGlobals:Patch:gFileNum_Hi
+//	
+//	loVal = lo
+//	hiVal = hi
 	
 	return(0)
 End

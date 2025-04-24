@@ -419,7 +419,7 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 		Variable yCorrection = interp(xCtr,tube_num,yCtr_tube)
 		Variable yPixSize = V_getDet_y_pixel_size(gCurDispType,detStr)
 		yPixSize /= 10		// convert mm to cm
-		// offsets were determined in Dec 2018 using:
+		// Zero point offsets were determined in Dec 2018 using:
 		// FR tube # 7 = 61.70 pix = k_FR_tube_ZeroPoint
 		// MR tube # 10 = 61.94 pix = k_MR_tube_ZeroPoint
 		
@@ -466,8 +466,8 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 			yCorrection = k_FR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize		
-			xRef = x_mm/10 - kBCtrOffset_FL_x
-			yRef = y_mm/10 - kBCtrOffset_FL_y + yCorrection*yPixSize		
+			xRef = x_mm/10 - kBCtrDelta_FL_x
+			yRef = y_mm/10 - kBCtrDelta_FL_y + yCorrection*yPixSize		
 			Print "FRONT Reference X-center (cm) = ",xRef	// NEW Dec 2018 values
 			Print "FRONT Reference Y-center (cm) = ",yRef
 
@@ -479,8 +479,8 @@ Function V_Find_BeamCentroid() :  GraphMarquee
 			yCorrection = k_MR_tube_ZeroPoint - yCorrection
 			Print "yCorrection (pix) = ",yCorrection
 			Print "yCorrection (cm) = ",yCorrection*yPixSize
-			xRef = x_mm/10 - kBCtrOffset_ML_x
-			yRef = y_mm/10 - kBCtrOffset_ML_y + yCorrection*yPixSize			
+			xRef = x_mm/10 - kBCtrDelta_ML_x
+			yRef = y_mm/10 - kBCtrDelta_ML_y + yCorrection*yPixSize			
 			Print "MIDDLE Reference X-center (cm) = ",xRef
 			Print "MIDDLE Reference Y-center (cm) = ",yRef
 
