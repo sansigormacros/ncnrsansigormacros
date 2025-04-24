@@ -96,8 +96,10 @@ StrConstant ksDetType = "Ordela"
 
 // SRK OCT 2012 - processing of event mode data
 // as of 2022, Ordela detector uses an event file structure different than tubes
-//#include "EventModeProcessing"
-#include "EventModeProcessing_OrdelaVAX_N"
+// as of 2025, 30m SANS will write Nexus raw data and 10-byte event files
+//    so there is no need for separate event processing
+//#include "EventModeProcessing_OrdelaVAX_N"
+#include "EventModeProcessing_Tubes_N"
 #include "EventMode_Utils_Tubes_N"
 
 

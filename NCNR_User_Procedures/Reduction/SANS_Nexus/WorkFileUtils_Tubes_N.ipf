@@ -461,14 +461,14 @@ Function Raw_to_work_for_Tubes(newType)
 		if(cmpstr(ksDetType,"Ordela") != 0)
 			// not a match, it's tubes
 		
-			if(gDo_OLD_SolidAngleCor == 0)
-				SolidAngleCorrection(w,w_err,fname,destPath)
-			else
+			if(gDo_OLD_SolidAngleCor == 1)
 				// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
 				// function call above	 correctly handles either high-res grid or tubes. This COS3 function
 				// will incorrectly treat tubes as a grid	
 				//				Print "TESTING -- using incorrect COS^3 solid angle !"		
 	//			SolidAngleCorrection_COS3(w,w_err,fname,destPath)
+			else
+				SolidAngleCorrection(w,w_err,fname,destPath)		// proper correction for tubes
 			endif
 					
 				
