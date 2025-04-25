@@ -509,24 +509,32 @@ End
 Function V_GenerateDefaultMask()
 
 	NewDataFolder/O/S root:Packages:NIST:MSK:entry	
-		Make/O/T/N=1	title	= "This is a MASK file for 10m SANS NGB: SANS_MASK"
+		Make/O/T/N=1	title	= "This is a MASK file for SANS: SANS_MASK"
 		Make/O/T/N=1	start_date	= "2022-01-16T06:15:30-5:00"
 		NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument		
-			Make/O/T/N=1	name	= "SANS_NGB"
+			Make/O/T/N=1	name	= "SANS_NGx"
 	
 	// if a mask exists, don't create another, and don't overwrite what's there
 	if(exists("root:Packages:NIST:MSK:entry:instrument:detector:data") ==  1)
 		return(0)
 	endif		
 	
-			
-	NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument:detector		
-			Make/O/I/N=(112,128)	data	= 0
-			data[0,2][] = 1
-			data[109,111][] = 1
-			data[][0,2] = 1
-			data[][125,127] = 1
-			
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument:detector		
+		Make/O/I/N=(128,128)	data	= 0
+		data[0,2][] = 1
+		data[125,127][] = 1
+		data[][0,2] = 1
+		data[][125,127] = 1
+	else	
+		NewDataFolder/O/S root:Packages:NIST:MSK:entry:instrument:detector		
+		Make/O/I/N=(112,128)	data	= 0
+		data[0,2][] = 1
+		data[109,111][] = 1
+		data[][0,2] = 1
+		data[][125,127] = 1
+	endif
+	
 	SetDataFolder root:
 
 end

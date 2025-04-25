@@ -12,10 +12,10 @@
 // 10m SANS instrument. If 30m insturments eventually convert to tubes, this set of corrections
 // can be used.
 //
-// This set of procedures has been tested and does work if the Ordela data is converted to "fake"
+// ***This set of procedures has been tested and does work if the Ordela data is converted to "fake"
 //  tubes with appropriate parameters.
 //
-// There are some simple switches for the corrrections that are different for the two different
+//  ***There are some simple switches for the corrrections that are different for the two different
 //  detector types. Search for the string constant ksDetType
 
 //

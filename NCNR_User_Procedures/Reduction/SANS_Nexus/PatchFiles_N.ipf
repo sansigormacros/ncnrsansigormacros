@@ -1102,7 +1102,18 @@ Function fPatch_PixelsPlus(lo,hi)
 	
 	Variable ii,jj
 	String fname,detStr
+
+	Variable nx,tube_width,yPixel
 	
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		nx = 128
+		tube_width = 5.08
+		yPixel = 5.08
+	else
+		nx = 112
+		tube_width = 8.4
+		yPixel = 8.14
+	endif	
 
 	//loop over all files
 	for(jj=lo;jj<=hi;jj+=1)
@@ -1110,9 +1121,9 @@ Function fPatch_PixelsPlus(lo,hi)
 		if(strlen(fname) != 0)
 	
 			// pix num x = 112, not 128
-			writeDet_pixel_num_x(fname,112)		//
-			writeDet_x_pixel_size(fname,8.4)
-			writeDet_y_pixel_size(fname,8.14)	// guessing, if the tubes are equivalent to VSANS
+			writeDet_pixel_num_x(fname,nx)		//
+			writeDet_x_pixel_size(fname,tube_width)
+			writeDet_y_pixel_size(fname,yPixel)	// guessing, if the tubes are equivalent to VSANS
 			
 			writeSampleAp_size(fname,12.7)		// default diam of 12.7 [mm]
 			

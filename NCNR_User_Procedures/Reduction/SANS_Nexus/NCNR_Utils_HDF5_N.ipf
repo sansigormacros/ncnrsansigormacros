@@ -26,11 +26,15 @@
 //
 // called by Initialize.ipf
 //
+// 2025 
+//  most of these constants are --no longer used, use values in file instead
+//  or values are set by constants when switching on "Ordela" or "Tubes" 
+//
 Function N_InitFacilityGlobals()
 
 	//Detector -specific globals
-	Variable/G root:myGlobals:gNPixelsX=128
-	Variable/G root:myGlobals:gNPixelsY=128
+//	Variable/G root:myGlobals:gNPixelsX=128			
+//	Variable/G root:myGlobals:gNPixelsY=128			
 	
 	// as of Jan2008, detector pixel sizes are read directly from the file header, so they MUST
 	// be set correctly in instr.cfg - these values are not used, but declared to avoid errors
@@ -416,7 +420,7 @@ End
 // *** as of Jan 2008, depricated. Now detector pixel sizes are read from the file header
 // rw[10] = x size (mm); rw[13] = y size (mm)
 //
-Function N_xDetectorPixelResolution(fileStr,detStr)
+Function xN_DetectorPixelResolution(fileStr,detStr)
 	String fileStr,detStr
 	
 	Variable DDet
@@ -510,7 +514,10 @@ End
 // MAY 2014 -- if the beam is CGB (now that the NG3 SANS has been moved to NGB), the logic
 //     drops to select the values from NG3, since nothing has changed. When it does, I'll add in specifics for CGB
 //
-Function N_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
+//
+// as of 2025-- this appears to be completely depricated and is not called from anywhere
+//
+Function xN_DetectorDeadtime(fileStr,detStr,[dateAndTimeStr,dtime])
 	String fileStr,detStr,dateAndTimeStr
 	Variable dtime
 	
