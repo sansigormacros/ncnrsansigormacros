@@ -188,9 +188,15 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	sdd = getDet_Distance(type)		//distance in [cm]
 	lambda = getWavelength(type)
 	pixSize = getDet_x_pixel_size(type)/10		//convert mm to cm (x and y are the same size pixels)
-	
-	qx_val = CalcQx(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)		//+1 converts to detector coordinate system
-	qy_val = CalcQy(p+1,q+1,xCtr,yCtr,sdd,lambda,pixSize)
+
+	WAVE coefW = getDetTube_spatialCalib(type)
+	Variable tube_width=getDet_tubeWidth(type)
+
+	qx_val = T_CalcQx(p+1,q+1,xCtr,yCtr,tube_width,sdd,lambda,coefW)		//+1 converts to detector coordinate system
+	qy_val = T_CalcQy(p+1,q+1,xCtr,yCtr,tube_width,sdd,lambda,coefW)
+
+//	qx_val = CalcQx(p+1,q+1,xCtr,yCtr,sdd/100,lambda,pixSize)		//+1 converts to detector coordinate system
+//	qy_val = CalcQy(p+1,q+1,xCtr,yCtr,sdd/100,lambda,pixSize)		//need to convert SDD from cm to m
 	
 	Redimension/N=(pixelsX*pixelsY) qx_val,qy_val,z_val
 
@@ -232,9 +238,6 @@ Function WriteNxCanSAS2D(type,fullpath,dialog)
 	///************
 	// do everything to write out the resolution too
 	// un-comment these if you want to write out qz_val and qval too, then use the proper save command
-	
-	Variable tube_width=getDet_tubeWidth(type)
-	WAVE coefW = getDetTube_spatialCalib(type)
 	
 	qval = T_CalcQval(p+1,q+1,xCtr,yCtr,tube_width,sdd,lambda,coefW)
 	qz_val = T_CalcQz(p+1,q+1,xCtr,yCtr,tube_width,sdd,lambda,coefW)

@@ -310,18 +310,32 @@ Function Set_Q_Axes(qx,qy,curPath)
 
 	Variable xctr=getDet_beam_center_x(curPath)
 	Variable yctr=getDet_beam_center_y(curPath)
-	Variable sdd=getDet_Distance(curPath) / 100 		// convert [cm] to [m] for CalcQx,y
+	Variable sdd=getDet_Distance(curPath) 		// sdd in [cm] 
 	Variable lam=getWavelength(curPath)
 	Variable pixSize=getDet_x_pixel_size(curPath)/10			//TODO -- verify the units!! (need [cm])
+
+	WAVE coefW = getDetTube_spatialCalib(curPath)
+	Variable tube_width=getDet_tubeWidth(curPath)
 		
 	Variable maxX,minX,maxY,minY
 	
-	minX = CalcQX(1,yctr,xctr,yctr,sdd,lam,pixSize)
-	maxX = CalcQX(pixelsX,yctr,xctr,yctr,sdd,lam,pixSize)
+	minX = T_CalcQX(1,yctr,xctr,yctr,tube_width,sdd,lam,coefW)
+	maxX = T_CalcQX(pixelsX,yctr,xctr,yctr,tube_width,sdd,lam,coefW)
 	SetScale/I x minX,maxX,"",qx
 	
-	minY = CalcQY(xctr,1,xctr,yctr,sdd,lam,pixSize)
-	maxY = CalcQY(xctr,pixelsY,xctr,yctr,sdd,lam,pixSize)
+	minY = T_CalcQY(xctr,1,xctr,yctr,tube_width,sdd,lam,coefW)
+	maxY = T_CalcQY(xctr,pixelsY,xctr,yctr,tube_width,sdd,lam,coefW)
+
+
+//	sdd /= 100		//only for old non-"T" calculations, convert to [m] for CalcQx,y
+//	minX = CalcQX(1,yctr,xctr,yctr,sdd,lam,pixSize)
+//	maxX = CalcQX(pixelsX,yctr,xctr,yctr,sdd,lam,pixSize)
+//	SetScale/I x minX,maxX,"",qx
+//	
+//	minY = CalcQY(xctr,1,xctr,yctr,sdd,lam,pixSize)
+//	maxY = CalcQY(xctr,pixelsY,xctr,yctr,sdd,lam,pixSize)
+	
+	
 	qy[0] = minY
 	qy[1] = maxY
 	
