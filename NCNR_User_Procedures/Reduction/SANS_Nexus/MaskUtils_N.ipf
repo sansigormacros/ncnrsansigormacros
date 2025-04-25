@@ -9,12 +9,12 @@
 // -- mimics what is done in VSANS code
 
 //
-// TODO -- many path references are incorrect, poining to the old data
+// (DONE) -- many path references are incorrect, poining to the old data
 // location, not the new Nexus location.
 
 // root:Packages:NIST:RAW:entry:instrument:detector:data
 //
-// TODO - delete the MCID file R/W routines. make sure that they are gone
+// (DONE) - delete the MCID file R/W routines. make sure that they are gone
 // so they can't inadvertantly be called
 //
 
@@ -525,7 +525,7 @@ Function V_GenerateDefaultMask()
 			data[0,2][] = 1
 			data[109,111][] = 1
 			data[][0,2] = 1
-			data[][12125,127] = 1
+			data[][125,127] = 1
 			
 	SetDataFolder root:
 
