@@ -21,33 +21,33 @@
 
 
 //these are values from Dec 2018 data and the CENTROID on FR or MR
-Constant kBCtrOffset_FL_x = 0.13
-Constant kBCtrOffset_FL_y = 0.35
-Constant kBCtrOffset_FB_x = 0.95
-Constant kBCtrOffset_FB_y = 0.77
-Constant kBCtrOffset_FT_x = 1.59
-Constant kBCtrOffset_FT_y = 0.09
-Constant kBCtrOffset_ML_x = 0.26
-Constant kBCtrOffset_ML_y = -0.16
-Constant kBCtrOffset_MB_x = -0.89
-Constant kBCtrOffset_MB_y = 0.96
-Constant kBCtrOffset_MT_x = -0.28
-Constant kBCtrOffset_MT_y = 0.60
+Constant kBCtrDelta_FL_x = 0.13
+Constant kBCtrDelta_FL_y = 0.35
+Constant kBCtrDelta_FB_x = 0.95
+Constant kBCtrDelta_FB_y = 0.77
+Constant kBCtrDelta_FT_x = 1.59
+Constant kBCtrDelta_FT_y = 0.09
+Constant kBCtrDelta_ML_x = 0.26
+Constant kBCtrDelta_ML_y = -0.16
+Constant kBCtrDelta_MB_x = -0.89
+Constant kBCtrDelta_MB_y = 0.96
+Constant kBCtrDelta_MT_x = -0.28
+Constant kBCtrDelta_MT_y = 0.60
 
 ////these are values from Dec 2018 data and the FITTED ARC on FR or MR
 // don't use these - the values from the centroid are superior) FEB 2019
-//Constant kBCtrOffset_FL_x = 0.49
-//Constant kBCtrOffset_FL_y = 0.48
-//Constant kBCtrOffset_FB_x = 1.31
-//Constant kBCtrOffset_FB_y = 0.90
-//Constant kBCtrOffset_FT_x = 1.95
-//Constant kBCtrOffset_FT_y = 0.22
-//Constant kBCtrOffset_ML_x = 0.44
-//Constant kBCtrOffset_ML_y = -0.32
-//Constant kBCtrOffset_MB_x = -0.71
-//Constant kBCtrOffset_MB_y = 0.80
-//Constant kBCtrOffset_MT_x = -0.10
-//Constant kBCtrOffset_MT_y = 0.44
+//Constant kBCtrDelta_FL_x = 0.49
+//Constant kBCtrDelta_FL_y = 0.48
+//Constant kBCtrDelta_FB_x = 1.31
+//Constant kBCtrDelta_FB_y = 0.90
+//Constant kBCtrDelta_FT_x = 1.95
+//Constant kBCtrDelta_FT_y = 0.22
+//Constant kBCtrDelta_ML_x = 0.44
+//Constant kBCtrDelta_ML_y = -0.32
+//Constant kBCtrDelta_MB_x = -0.71
+//Constant kBCtrDelta_MB_y = 0.80
+//Constant kBCtrDelta_MT_x = -0.10
+//Constant kBCtrDelta_MT_y = 0.44
 
 
 Function V_FindBeamCenter()
@@ -830,7 +830,7 @@ End
 
 
 // (DONE):
-// as of FEB 2019, offset values are defined as constants
+// as of FEB 2019, Delta values are defined as constants
 // and used here and in the centroid caculation in the Marquee operations
 //
 // ** updated these values with fitted arcs of AgBeh (Dec 2018 data, multiple runs)
@@ -845,18 +845,18 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	// FL
 //	newXCtr_cm[0] = x_FrontReference - (0.03 + 0.03)/2		//OLD, pre Dec 2018
 //	newYCtr_cm[0] = y_FrontReference + (0.34 + 0.32)/2
-	newXCtr_cm[0] = x_FrontReference + kBCtrOffset_FL_x				//NEW Dec 2018
-	newYCtr_cm[0] = y_FrontReference + kBCtrOffset_FL_y
+	newXCtr_cm[0] = x_FrontReference + kBCtrDelta_FL_x				//NEW Dec 2018
+	newYCtr_cm[0] = y_FrontReference + kBCtrDelta_FL_y
 	// FB
 //	newXCtr_cm[3] = x_FrontReference - (2.02 + 2.06)/2		// OLD, pre Dec 2018
 //	newYCtr_cm[3] = y_FrontReference - (0.12 + 0.19)/2		// (-) is correct here
-	newXCtr_cm[3] = x_FrontReference + kBCtrOffset_FB_x					// NEW Dec 2018
-	newYCtr_cm[3] = y_FrontReference + kBCtrOffset_FB_y
+	newXCtr_cm[3] = x_FrontReference + kBCtrDelta_FB_x					// NEW Dec 2018
+	newYCtr_cm[3] = y_FrontReference + kBCtrDelta_FB_y
 	// FT 
 //	newXCtr_cm[2] = newXCtr_cm[3]				// OLD, pre Dec 2018
 //	newYCtr_cm[2] = newYCtr_cm[3]
-	newXCtr_cm[2] = x_FrontReference + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
-	newYCtr_cm[2] = y_FrontReference + kBCtrOffset_FT_y
+	newXCtr_cm[2] = x_FrontReference + kBCtrDelta_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
+	newYCtr_cm[2] = y_FrontReference + kBCtrDelta_FT_y
 	
 	// MR
 	newXCtr_cm[5] = x_MiddleReference
@@ -864,16 +864,16 @@ Proc V_fDeriveBeamCenters(x_FrontReference,y_FrontReference,x_MiddleReference,y_
 	// ML
 //	newXCtr_cm[4] = x_MiddleReference - (0.06 + 0.05)/2
 //	newYCtr_cm[4] = y_MiddleReference + (0.14 + 0.01)/2
-	newXCtr_cm[4] = x_MiddleReference + kBCtrOffset_ML_x
-	newYCtr_cm[4] = y_MiddleReference + kBCtrOffset_ML_y
+	newXCtr_cm[4] = x_MiddleReference + kBCtrDelta_ML_x
+	newYCtr_cm[4] = y_MiddleReference + kBCtrDelta_ML_y
 	// MB
 //	newXCtr_cm[7] = x_MiddleReference - (0.51 + 0.62)/2
 //	newYCtr_cm[7] = y_MiddleReference + (0.79 + 0.74)/2
-	newXCtr_cm[7] = x_MiddleReference + kBCtrOffset_MB_x
-	newYCtr_cm[7] = y_MiddleReference + kBCtrOffset_MB_y
+	newXCtr_cm[7] = x_MiddleReference + kBCtrDelta_MB_x
+	newYCtr_cm[7] = y_MiddleReference + kBCtrDelta_MB_y
 	// MT 
-	newXCtr_cm[6] = x_MiddleReference + kBCtrOffset_MT_x
-	newYCtr_cm[6] = y_MiddleReference + kBCtrOffset_MT_y
+	newXCtr_cm[6] = x_MiddleReference + kBCtrDelta_MT_x
+	newYCtr_cm[6] = y_MiddleReference + kBCtrDelta_MT_y
 	
 	
 	// default value for B (approx center) in pixels
@@ -1236,14 +1236,14 @@ Function V_PickOpenForBeamCenter(carrStr)
 		newXCtr_cm[1] = xRef_F
 		newYCtr_cm[1] = yRef_F
 		// FL
-		newXCtr_cm[0] = xRef_F + kBCtrOffset_FL_x				//NEW Dec 2018
-		newYCtr_cm[0] = yRef_F + kBCtrOffset_FL_y
+		newXCtr_cm[0] = xRef_F + kBCtrDelta_FL_x				//NEW Dec 2018
+		newYCtr_cm[0] = yRef_F + kBCtrDelta_FL_y
 		// FB
-		newXCtr_cm[3] = xRef_F + kBCtrOffset_FB_x					// NEW Dec 2018
-		newYCtr_cm[3] = yRef_F + kBCtrOffset_FB_y
+		newXCtr_cm[3] = xRef_F + kBCtrDelta_FB_x					// NEW Dec 2018
+		newYCtr_cm[3] = yRef_F + kBCtrDelta_FB_y
 		// FT 
-		newXCtr_cm[2] = xRef_F + kBCtrOffset_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
-		newYCtr_cm[2] = yRef_F + kBCtrOffset_FT_y
+		newXCtr_cm[2] = xRef_F + kBCtrDelta_FT_x				// NEW Dec 2018 (not a duplicate of FB anymore)
+		newYCtr_cm[2] = yRef_F + kBCtrDelta_FT_y
 	endif
 
 	if(isM)	
@@ -1251,14 +1251,14 @@ Function V_PickOpenForBeamCenter(carrStr)
 		newXCtr_cm[5] = xRef_M
 		newYCtr_cm[5] = yRef_M
 		// ML
-		newXCtr_cm[4] = xRef_M + kBCtrOffset_ML_x
-		newYCtr_cm[4] = yRef_M + kBCtrOffset_ML_y
+		newXCtr_cm[4] = xRef_M + kBCtrDelta_ML_x
+		newYCtr_cm[4] = yRef_M + kBCtrDelta_ML_y
 		// MB
-		newXCtr_cm[7] = xRef_M + kBCtrOffset_MB_x
-		newYCtr_cm[7] = yRef_M + kBCtrOffset_MB_y
+		newXCtr_cm[7] = xRef_M + kBCtrDelta_MB_x
+		newYCtr_cm[7] = yRef_M + kBCtrDelta_MB_y
 		// MT 
-		newXCtr_cm[6] = xRef_M + kBCtrOffset_MT_x
-		newYCtr_cm[6] = yRef_M + kBCtrOffset_MT_y
+		newXCtr_cm[6] = xRef_M + kBCtrDelta_MT_x
+		newYCtr_cm[6] = yRef_M + kBCtrDelta_MT_y
 	endif
 	
 	if(isB)	

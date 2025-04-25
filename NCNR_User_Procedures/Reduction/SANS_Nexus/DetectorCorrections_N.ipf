@@ -55,7 +55,12 @@ Constant k_tube_ZeroPoint = 64
 Proc TubeZeroPointTables()
 	SetDataFolder root:myGlobals
 	
-	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		Make/O/D/N=128 tube_zeroPt,yCtr_zeroPt
+	else
+		Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	endif
+	
 	tube_zeroPt = p
 	yCtr_zeroPt = k_tube_ZeroPoint		//replace this with real measured values
 
@@ -66,7 +71,12 @@ End
 Proc TubeZeroPointTables_perfect()
 	SetDataFolder root:myGlobals
 	
-	Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	if(cmpstr(ksDetType,"Ordela") == 0)		// either "Ordela" or "Tubes"
+		Make/O/D/N=128 tube_zeroPt,yCtr_zeroPt
+	else
+		Make/O/D/N=112 tube_zeroPt,yCtr_zeroPt
+	endif
+	
 	tube_zeroPt = p
 	yCtr_zeroPt = k_tube_ZeroPoint		// keep this as the "perfect" value
 

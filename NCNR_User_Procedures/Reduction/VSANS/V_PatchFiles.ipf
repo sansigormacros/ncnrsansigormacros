@@ -295,14 +295,14 @@ Function V_FillListBox0(listWave,selWave)
 	
 	
 	listWave[0][1] = "count_time (s)"
-	listWave[0][2] = num2str(V_getCount_time(fname))
+	listWave[0][2] = num2istr(V_getCount_time(fname))
 	
 	listWave[1][1] = "detector_counts"
-	listWave[1][2] = num2str(V_getDetector_counts(fname))
+	listWave[1][2] = num2istr(V_getDetector_counts(fname))
 	
 	listWave[2][1] = "monitor_counts"
-//	listWave[2][2] = num2str(V_getControlMonitorCount(fname))
-	listWave[2][2] = num2str(V_getBeamMonNormData(fname))
+//	listWave[2][2] = num2istr(V_getControlMonitorCount(fname))
+	listWave[2][2] = num2istr(V_getBeamMonNormData(fname))
 	
 	return(0)
 End
@@ -362,14 +362,14 @@ Function V_FillListBox1(listWave,selWave)
 	listWave[7][2] = V_getReduction_purpose(fname)
 	
 	listWave[8][1] = "group_id (sample)"
-	listWave[8][2] = num2str(V_getSample_groupID(fname))
+	listWave[8][2] = num2istr(V_getSample_groupID(fname))
 	
 	listWave[9][1] = "Box Coordinates"
 	WAVE boxCoord = V_getBoxCoordinates(fname)
 	listWave[9][2] = V_NumWave2List(boxCoord,";")
 
 	listWave[10][1] = "box_count"
-	listWave[10][2] = num2str(V_getBoxCounts(fname))
+	listWave[10][2] = num2istr(V_getBoxCounts(fname))
 	
 	listWave[11][1] = "box_count_error"
 	listWave[11][2] = num2str(V_getBoxCountsError(fname))
@@ -1930,7 +1930,7 @@ Function V_WriteCSVDTButton(ba) : ButtonControl
 			Variable hi=V_Value
 			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
 
-			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
 			if(V_Flag == 1)		//yes, anything else is a no			
 				for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 					detStr = StringFromList(ii, ksDetectorListNoB, ";")
@@ -2030,7 +2030,7 @@ Function V_WriteDTButtonProc(ba) : ButtonControl
 			Variable hi=V_Value
 			Wave deadTimeW = root:Packages:NIST:VSANS:Globals:Patch:deadTimeWave
 
-			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
 			if(V_Flag == 1)		//yes, anything else is a no			
 				V_fPatchDetectorDeadtime(lo,hi,detStr,deadtimeW)
 			endif
@@ -2261,7 +2261,7 @@ Function V_WriteCSVCalibButton(ba) : ButtonControl
 			Variable hi=V_Value
 			WAVE calibrationWave = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
 
-			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
 			if(V_Flag == 1)		//yes, anything else is a no
 				for(ii=0;ii<ItemsInList(ksDetectorListNoB);ii+=1)
 					detStr = StringFromList(ii, ksDetectorListNoB, ";")
@@ -2384,7 +2384,7 @@ Function V_WriteCalibButtonProc(ba) : ButtonControl
 			Variable hi=V_Value
 			Wave calibW = root:Packages:NIST:VSANS:Globals:Patch:calibrationWave
 
-			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
 			if(V_Flag == 1)		//yes, anything else is a no
 				V_fPatchDetectorCalibration(lo,hi,detStr,calibW)
 			endif
@@ -2750,7 +2750,7 @@ Function V_WriteXYButtonProc(ba) : ButtonControl
 
 // this function will write the new centers to the file and then delete the file from
 // RawVSANS to force a re-read of the data			
-			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2str(lo) +" to " + num2str(hi) + " ?"
+			DoAlert 2,"Do you want to write these values to ALL runs from\r"+num2istr(lo) +" to " + num2istr(hi) + " ?"
 			if(V_Flag == 1)		//yes, anything else is a no
 				V_fPatchDet_xyCenters(lo,hi)
 			endif

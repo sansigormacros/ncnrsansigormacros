@@ -461,14 +461,14 @@ Function Raw_to_work_for_Tubes(newType)
 		if(cmpstr(ksDetType,"Ordela") != 0)
 			// not a match, it's tubes
 		
-			if(gDo_OLD_SolidAngleCor == 0)
-				SolidAngleCorrection(w,w_err,fname,destPath)
-			else
+			if(gDo_OLD_SolidAngleCor == 1)
 				// for testing ONLY -- the cos^3 correction is incorrect for tubes, and the normal
 				// function call above	 correctly handles either high-res grid or tubes. This COS3 function
 				// will incorrectly treat tubes as a grid	
 				//				Print "TESTING -- using incorrect COS^3 solid angle !"		
 	//			SolidAngleCorrection_COS3(w,w_err,fname,destPath)
+			else
+				SolidAngleCorrection(w,w_err,fname,destPath)		// proper correction for tubes
 			endif
 					
 				
@@ -729,194 +729,194 @@ End
 
 
 
-//performs solid angle and non-linear detector corrections to raw data as it is "added" to a work folder
-//function is called by Raw_to_work() and Add_raw_to_work() functions
-//works on the actual data array, assumes that is is already on LINEAR scale
-//
-//
-//-- OLD style corrections for Ordela, not used for 10m SANS w/tubes
-//
-xFunction DetCorr(data,data_err,fname,doEfficiency,doTrans)
-	Wave data,data_err
-	String fname			//folder with the data
-	Variable doEfficiency,doTrans
-	
-	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,xx0,yy0
-	Variable ii,jj,dtdist,dtdis2
-	Variable xi,xd,yd,rad,ratio,domega,xy
-	Variable lambda,trans,trans_err,lat_err,tmp_err,lat_corr
-	
-//	Print "...doing jacobian and non-linear corrections"
+//////performs solid angle and non-linear detector corrections to raw data as it is "added" to a work folder
+//////function is called by Raw_to_work() and Add_raw_to_work() functions
+//////works on the actual data array, assumes that is is already on LINEAR scale
+//////
+//////
+//////-- OLD style corrections for Ordela, not used for 10m SANS w/tubes
+//////
+////xFunction DetCorr(data,data_err,fname,doEfficiency,doTrans)
+////	Wave data,data_err
+////	String fname			//folder with the data
+////	Variable doEfficiency,doTrans
+////	
+////	Variable xcenter,ycenter,x0,y0,sx,sx3,sy,sy3,xx0,yy0
+////	Variable ii,jj,dtdist,dtdis2
+////	Variable xi,xd,yd,rad,ratio,domega,xy
+////	Variable lambda,trans,trans_err,lat_err,tmp_err,lat_corr
+////	
+//////	Print "...doing jacobian and non-linear corrections"
+////
+//////	NVAR pixelsX = root:myGlobals:gNPixelsX
+//////	NVAR pixelsY = root:myGlobals:gNPixelsY
+////	SVAR type = root:myGlobals:gDataDisplayType
+////	Variable pixelsX = getDet_pixel_num_x(type)
+////	Variable pixelsY = getDet_pixel_num_y(type)
+////	
+////	//set up values to send to auxiliary trig functions
+////	xcenter = pixelsX/2 + 0.5		// == 64.5 for 128x128 Ordela
+////	ycenter = pixelsY/2 + 0.5		// == 64.5 for 128x128 Ordela
+////
+////	x0 = getDet_beam_center_x(fname)
+////	y0 = getDet_beam_center_y(fname)
+////	
+//////	WAVE calX=getDet_cal_x(fname)
+//////	WAVE calY=getDet_cal_y(fname)
+////	sx = getDet_x_pixel_size(fname)
+////	sx3 = 10000		// nonlinear correction - (10,000 turns correction "off")
+////	sy = getDet_y_pixel_size(fname)
+////	sy3 = 10000
+////	
+////	dtdist = 10*getDet_Distance(fname)	//sdd in mm
+////	dtdis2 = dtdist^2
+////	
+////	lambda = getWavelength(fname)
+////	trans = getSampleTransmission(fname)
+////	trans_err = getSampleTransError(fname)		//new, March 2011
+////	
+////	xx0 = dc_fx(x0,sx,sx3,xcenter)
+////	yy0 = dc_fy(y0,sy,sy3,ycenter)
+////	
+////
+////	//waves to contain repeated function calls
+////	Make/O/N=(pixelsX) fyy,xx,yy		//Assumes square detector !!!
+////	ii=0
+////	do
+////		xi = ii
+////		fyy[ii] = dc_fy(ii+1,sy,sy3,ycenter)
+////		xx[ii] = dc_fxn(ii+1,sx,sx3,xcenter)
+////		yy[ii] = dc_fym(ii+1,sy,sy3,ycenter)
+////		ii+=1
+////	while(ii<pixelsX)
+////	
+////	Make/O/N=(pixelsX,pixelsY) SolidAngle		// testing only
+////	
+////	ii=0
+////	do
+////		xi = ii
+////		xd = dc_fx(ii+1,sx,sx3,xcenter)-xx0
+////		jj=0
+////		do
+////			yd = fyy[jj]-yy0
+////			//rad is the distance of pixel ij from the sample
+////			//domega is the ratio of the solid angle of pixel ij versus center pixel
+////			// product xy = 1 for a detector with a linear spatial response (modern Ordela)
+////			// solid angle calculated, dW^3 >=1, so multiply data to raise measured values to correct values.
+////			rad = sqrt(dtdis2 + xd^2 + yd^2)
+////			domega = rad/dtdist
+////			ratio = domega^3
+////			xy = xx[ii]*yy[jj]
+////			
+////			data[ii][jj] *= xy*ratio
+////			
+////			solidAngle[ii][jj] = xy*ratio		//testing only	
+////			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
+////			
+////			
+////			// correction factor for detector efficiency JGB memo det_eff_cor2.doc 3/20/07
+////			// correction inserted 11/2007 SRK
+////			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
+////			// so divide here to get the correct answer (5/22/08 SRK)
+////			if(doEfficiency)
+////#if (exists("ILL_D22")==6)
+////				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
+////				data_err[ii][jj] /= DetEffCorrILL(lambda,dtdist,xd) 			//assumes correction is exact
+//////	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
+////#else
+////				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
+////				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
+//////				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
+////#endif
+////			endif
+////			
+////			// large angle transmission calculation is <= 1 and will "bump down" the measured value at the highest angles
+////			// so divide here to get the correct answer
+////			if(doTrans)
+////			
+////				if(trans<0.1 && ii==0 && jj==0)
+////					Print "***transmission is less than 0.1*** and is a significant correction"
+////				endif
+////				
+////				if(trans==0)
+////					if(ii==0 && jj==0)
+////						Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
+////					endif
+////					trans = 1
+////				endif
+////				
+////				// this function modifies the data + data_err
+////				LargeAngleTransmissionCorr(data,data_err,fname,"root:Packages:NIST:"+fname)
+////			
+//////				// pass in the transmission error, and the error in the correction is returned as the last parameter
+//////				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
+//////				data[ii][jj] /= lat_corr			//divide by the correction factor
+//////				//
+//////				//
+//////				//
+//////				// relative errors add in quadrature
+//////				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
+//////				tmp_err = sqrt(tmp_err)
+//////				
+//////				data_err[ii][jj] = tmp_err
+////				
+//////				solidAngle[ii][jj] = lat_err
+////
+////				
+////				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
+////			endif
+////			
+////			jj+=1
+////		while(jj<pixelsX)
+////		ii+=1
+////	while(ii<pixelsX)
+////	
+////	//clean up waves
+//////	Killwaves/Z fyy,xx,yy
+////	
+////	Return(0)
+////End
 
-//	NVAR pixelsX = root:myGlobals:gNPixelsX
-//	NVAR pixelsY = root:myGlobals:gNPixelsY
-	SVAR type = root:myGlobals:gDataDisplayType
-	Variable pixelsX = getDet_pixel_num_x(type)
-	Variable pixelsY = getDet_pixel_num_y(type)
-	
-	//set up values to send to auxiliary trig functions
-	xcenter = pixelsX/2 + 0.5		// == 64.5 for 128x128 Ordela
-	ycenter = pixelsY/2 + 0.5		// == 64.5 for 128x128 Ordela
-
-	x0 = getDet_beam_center_x(fname)
-	y0 = getDet_beam_center_y(fname)
-	
-//	WAVE calX=getDet_cal_x(fname)
-//	WAVE calY=getDet_cal_y(fname)
-	sx = getDet_x_pixel_size(fname)
-	sx3 = 10000		// nonlinear correction - (10,000 turns correction "off")
-	sy = getDet_y_pixel_size(fname)
-	sy3 = 10000
-	
-	dtdist = 10*getDet_Distance(fname)	//sdd in mm
-	dtdis2 = dtdist^2
-	
-	lambda = getWavelength(fname)
-	trans = getSampleTransmission(fname)
-	trans_err = getSampleTransError(fname)		//new, March 2011
-	
-	xx0 = dc_fx(x0,sx,sx3,xcenter)
-	yy0 = dc_fy(y0,sy,sy3,ycenter)
-	
-
-	//waves to contain repeated function calls
-	Make/O/N=(pixelsX) fyy,xx,yy		//Assumes square detector !!!
-	ii=0
-	do
-		xi = ii
-		fyy[ii] = dc_fy(ii+1,sy,sy3,ycenter)
-		xx[ii] = dc_fxn(ii+1,sx,sx3,xcenter)
-		yy[ii] = dc_fym(ii+1,sy,sy3,ycenter)
-		ii+=1
-	while(ii<pixelsX)
-	
-	Make/O/N=(pixelsX,pixelsY) SolidAngle		// testing only
-	
-	ii=0
-	do
-		xi = ii
-		xd = dc_fx(ii+1,sx,sx3,xcenter)-xx0
-		jj=0
-		do
-			yd = fyy[jj]-yy0
-			//rad is the distance of pixel ij from the sample
-			//domega is the ratio of the solid angle of pixel ij versus center pixel
-			// product xy = 1 for a detector with a linear spatial response (modern Ordela)
-			// solid angle calculated, dW^3 >=1, so multiply data to raise measured values to correct values.
-			rad = sqrt(dtdis2 + xd^2 + yd^2)
-			domega = rad/dtdist
-			ratio = domega^3
-			xy = xx[ii]*yy[jj]
-			
-			data[ii][jj] *= xy*ratio
-			
-			solidAngle[ii][jj] = xy*ratio		//testing only	
-			data_err[ii][jj] *= xy*ratio			//error propagation assumes that SA and Jacobian are exact, so simply scale error
-			
-			
-			// correction factor for detector efficiency JGB memo det_eff_cor2.doc 3/20/07
-			// correction inserted 11/2007 SRK
-			// large angle detector efficiency is >= 1 and will "bump up" the measured value at the highest angles
-			// so divide here to get the correct answer (5/22/08 SRK)
-			if(doEfficiency)
-#if (exists("ILL_D22")==6)
-				data[ii][jj]  /= DetEffCorrILL(lambda,dtdist,xd) 		//tube-by-tube corrections 
-				data_err[ii][jj] /= DetEffCorrILL(lambda,dtdist,xd) 			//assumes correction is exact
-//	          solidAngle[ii][jj] = DetEffCorrILL(lambda,dtdist,xd)
-#else
-				data[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-				data_err[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)
-//				solidAngle[ii][jj] /= DetEffCorr(lambda,dtdist,xd,yd)		//testing only
-#endif
-			endif
-			
-			// large angle transmission calculation is <= 1 and will "bump down" the measured value at the highest angles
-			// so divide here to get the correct answer
-			if(doTrans)
-			
-				if(trans<0.1 && ii==0 && jj==0)
-					Print "***transmission is less than 0.1*** and is a significant correction"
-				endif
-				
-				if(trans==0)
-					if(ii==0 && jj==0)
-						Print "***transmission is ZERO*** and has been reset to 1.0 for the averaging calculation"
-					endif
-					trans = 1
-				endif
-				
-				// this function modifies the data + data_err
-				LargeAngleTransmissionCorr(data,data_err,fname,"root:Packages:NIST:"+fname)
-			
-//				// pass in the transmission error, and the error in the correction is returned as the last parameter
-//				lat_corr = LargeAngleTransmissionCorr(trans,dtdist,xd,yd,trans_err,lat_err)		//moved from 1D avg SRK 11/2007
-//				data[ii][jj] /= lat_corr			//divide by the correction factor
-//				//
-//				//
-//				//
-//				// relative errors add in quadrature
-//				tmp_err = (data_err[ii][jj]/lat_corr)^2 + (lat_err/lat_corr)^2*data[ii][jj]*data[ii][jj]/lat_corr^2
-//				tmp_err = sqrt(tmp_err)
-//				
-//				data_err[ii][jj] = tmp_err
-				
-//				solidAngle[ii][jj] = lat_err
-
-				
-				//solidAngle[ii][jj] = LargeAngleTransmissionCorr(trans,dtdist,xd,yd)		//testing only
-			endif
-			
-			jj+=1
-		while(jj<pixelsX)
-		ii+=1
-	while(ii<pixelsX)
-	
-	//clean up waves
-//	Killwaves/Z fyy,xx,yy
-	
-	Return(0)
-End
-
-//trig function used by DetCorr()
-xFunction dc_fx(x,sx,sx3,xcenter)
-	Variable x,sx,sx3,xcenter
-	
-	Variable result
-	
-	result = sx3*tan((x-xcenter)*sx/sx3)
-	Return(result)
-End
-
-//trig function used by DetCorr()
-xFunction dc_fy(y,sy,sy3,ycenter)
-	Variable y,sy,sy3,ycenter
-	
-	Variable result
-	
-	result = sy3*tan((y-ycenter)*sy/sy3)
-	Return(result)
-End
-
-//trig function used by DetCorr()
-xFunction dc_fxn(x,sx,sx3,xcenter)
-	Variable x,sx,sx3,xcenter
-	
-	Variable result
-	
-	result = (cos((x-xcenter)*sx/sx3))^2
-	Return(result)
-End
-
-//trig function used by DetCorr()
-xFunction dc_fym(y,sy,sy3,ycenter)
-	Variable y,sy,sy3,ycenter
-	
-	Variable result
-	
-	result = (cos((y-ycenter)*sy/sy3))^2
-	Return(result)
-End
-
+//////trig function used by DetCorr()
+////xFunction dc_fx(x,sx,sx3,xcenter)
+////	Variable x,sx,sx3,xcenter
+////	
+////	Variable result
+////	
+////	result = sx3*tan((x-xcenter)*sx/sx3)
+////	Return(result)
+////End
+////
+//////trig function used by DetCorr()
+////xFunction dc_fy(y,sy,sy3,ycenter)
+////	Variable y,sy,sy3,ycenter
+////	
+////	Variable result
+////	
+////	result = sy3*tan((y-ycenter)*sy/sy3)
+////	Return(result)
+////End
+////
+//////trig function used by DetCorr()
+////xFunction dc_fxn(x,sx,sx3,xcenter)
+////	Variable x,sx,sx3,xcenter
+////	
+////	Variable result
+////	
+////	result = (cos((x-xcenter)*sx/sx3))^2
+////	Return(result)
+////End
+////
+//////trig function used by DetCorr()
+////xFunction dc_fym(y,sy,sy3,ycenter)
+////	Variable y,sy,sy3,ycenter
+////	
+////	Variable result
+////	
+////	result = (cos((y-ycenter)*sy/sy3))^2
+////	Return(result)
+////End
+////
 
 
 //******************
