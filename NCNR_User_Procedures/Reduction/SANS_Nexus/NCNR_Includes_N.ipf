@@ -2,6 +2,12 @@
 #pragma version=5.2
 #pragma IgorVersion=8.0
 
+//
+///// as of 2025 -- this is unused -- see the other includes files
+//
+
+
+
 // to properly set up the template for other facility reduction templates, 
 // function NCNR() must exist here in the Includes file.
 //
