@@ -46,8 +46,8 @@ Menu "Macros"
 
 	Submenu	"Load SANS Reduction Macros"
 		StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros - VAX Data"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2a","Load NCNR SANS Reduction Macros"))
-		"Load NCNR SANS Reduction 10m SANS - Nexus Data",LoadSANS_Nexus_Tubes()
-		"Load NCNR SANS Reduction Ordela - Nexus Data",LoadSANS_Nexus_Ordela()
+		"Load NCNR SANS Reduction 10m SANS Tubes+Nexus Data",LoadSANS_Nexus_Tubes()
+		"Load NCNR SANS Reduction 30m SANS Ordela+Nexus Data",LoadSANS_Nexus_Ordela()
 		"-"
 		StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2b","Load QUOKKA SANS Reduction Macros"))
 		StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"), NCNR_SANSReductionLoader(StrVarOrDefault("root:Packages:NCNRItemStr2c","Load ILL SANS Reduction Macros"))
@@ -121,7 +121,7 @@ Proc LoadSANS_Nexus_Tubes()
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
 	else
 
-		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_N\""
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_10mTubes_N\""
 		Execute/P "COMPILEPROCEDURES "
 		Execute/P ("Initialize()")
 	//			Execute/P ("PickPath()")
@@ -135,7 +135,7 @@ Proc LoadSANS_Nexus_Ordela()
 		DoAlert 0,"A SANS or USANS reduction package is already loaded. Please open a new experiment if you want to switch instruments."	
 	else
 
-		Execute/P "INSERTINCLUDE \"NCNR_Includes_v520_HDF5_Ordela_N\""
+		Execute/P "INSERTINCLUDE \"NCNR_Includes_30mOrdela_N\""
 		Execute/P "COMPILEPROCEDURES "
 		Execute/P ("Initialize()")
 	//			Execute/P ("PickPath()")
